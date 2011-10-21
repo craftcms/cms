@@ -48,3 +48,5 @@ Source/cms/blocks/app/business/web/Migration.php
 Source/cms/blocks/app/business/web/TemplateTranslator.php
 Source/cms/blocks/app/business/webservices/APIWebServiceEndPoints.php
 Source/cms/blocks/app/business/webservices/CIWebServiceEndPoints.php
+Source/cms/blocks/app/migrations/mysql_schema.sql
+Source/cms/blocks/app/migrations/mysql_data.sql
