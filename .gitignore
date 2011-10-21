@@ -4,3 +4,4 @@
 *.DS_Store
 Thumbs.db
 /aspnet_client/
+Source/cms/blocks/app/framework
