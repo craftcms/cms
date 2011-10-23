@@ -1,0 +1,34 @@
+{% set pageId = {url.seg 3} %}
+{% set page = {content.pages id=pageId} %}
+
+{% include -header title={"editing-title" title={page.title}} bodyClass='sidebar-layout' tab='content' %}
+{% include content/-sidebar page=page %}
+
+<div class="main">
+	<h1><input type="text" value="{page.title}"></h1>
+
+	<div class="fields">
+		<table class="zebra">
+			<thead>
+				<tr>
+					<th>{"url"}</th>
+					<td>{page.urlPrefix}<input type="text" name="url" value="{page.slug}"></td>
+				</tr>
+				<tr>
+					<th>{"data"}</th>
+					<td>{page.date}</td>
+				</tr>
+			</thead>
+			<tbody>
+				{% for b in page.blocks %}
+				<tr>
+					<th>{b.label}</th>
+					<td>{b.field}</th>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% include -footer %}
