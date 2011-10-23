@@ -1,6 +1,6 @@
 <?php
 
-class BlocksHtml extends BlocksBaseHtml
+class BlocksHtml extends CHtml
 {
 	public static function resource($resourcePath, $pluginHandle = null)
 	{
@@ -12,5 +12,11 @@ class BlocksHtml extends BlocksBaseHtml
 		}
 
 		return $resourceString;
+	}
+
+
+	public static function unixTimeToPrettyDate($unixTime)
+	{
+		return Blocks::app()->dateFormatter->format('MM-dd-yyyy HH:mm:ss', $unixTime);
 	}
 }

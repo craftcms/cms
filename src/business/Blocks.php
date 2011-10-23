@@ -1,6 +1,6 @@
 <?php
 
-class Blocks extends BlocksBase
+class Blocks extends Yii
 {
 	public static function getVersion()
 	{
@@ -15,5 +15,15 @@ class Blocks extends BlocksBase
 	public static function getEdition()
 	{
 		return '@@@edition@@@';
+	}
+
+	public static function getYiiVersion()
+	{
+		return Yii::getVersion();
+	}
+
+	public static function dump($target)
+	{
+		return CVarDumper::dump($target, 10, true) ;
 	}
 }

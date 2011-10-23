@@ -10,7 +10,7 @@ class InstallModule extends CmsWebModule
 		// import the module-level models and components
 		$this->setImport(array(
 			'install.models.*',
-			'install.components.*',
+			'install.business.*',
 		));
 	}
 

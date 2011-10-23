@@ -10,7 +10,7 @@ class UpdateModule extends CmsWebModule
 		// import the module-level models and components
 		$this->setImport(array(
 			'update.models.*',
-			'update.components.*',
+			'update.business.*',
 		));
 	}
 
