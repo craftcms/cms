@@ -4,11 +4,11 @@ class BlocksHtml extends CHtml
 {
 	public static function resource($resourcePath, $pluginHandle = null)
 	{
-		$resourceString = BLOCKS_RESOURCEPROCESSOR_URL.'?resourcePath='.BlocksBaseHtml::encode($resourcePath);
+		$resourceString = BLOCKS_RESOURCEPROCESSOR_URL.'?resourcePath='.self::encode($resourcePath);
 
 		if($pluginHandle != null)
 		{
-			$resourceString .= '&pluginHandle='.BlocksBaseHtml::encode($pluginHandle);
+			$resourceString .= '&pluginHandle='.self::encode($pluginHandle);
 		}
 
 		return $resourceString;

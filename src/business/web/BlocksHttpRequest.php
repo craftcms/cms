@@ -19,6 +19,7 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if ($this->_requestType == null)
 		{
+			$test = TemplateMatchType::Page;
 			if (REQUEST_TYPE == RequestType::ControlPanel)
 				$this->_requestType = RequestType::ControlPanel;
 			else

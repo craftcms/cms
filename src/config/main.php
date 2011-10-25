@@ -1,10 +1,8 @@
 <?php
 
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'common'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
+require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
 require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'site.php');
 require_once(BLOCKS_CONFIG_PATH.'db.php');
-
-Yii::setPathOfAlias('common', dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'common');
 
 // validate configs
 function generateConnectionString($dbConfig)
@@ -20,25 +18,20 @@ return array(
 
 	// autoloading model and component classes
 	'import' => array(
-		'application.models.*',
-		'application.components.*',
-		'application.controllers.*',
 		'application.business.*',
 		'application.business.enums.*',
+		'application.business.exceptions.*',
+		'application.business.repositories.*',
+		'application.business.utils.*',
 		'application.business.web.*',
 		'application.business.web.filters.*',
-		'application.business.repositories.*',
+		'application.business.web.httpclient.*',
+		'application.business.web.httpclient.adapter.*',
+		'application.business.web.httpclient.hostnames.*',
+		'application.business.webservices.*',
+		'application.controllers.*',
 		'application.migrations.*',
-		'common.business.*',
-		'common.business.enums.*',
-		'common.business.exceptions.*',
-		'common.business.utils.*',
-		'common.business.web.*',
-		'common.business.web.httpclient.*',
-		'common.business.web.httpclient.hostnames.*',
-		'common.business.web.httpclient.adapter.*',
-		'common.business.web.filters.*',
-		'common.business.webservices.*',
+		'application.models.*',
 	),
 
 	'modules' => array(
@@ -77,7 +70,7 @@ return array(
 		),
 
 		'file' => array(
-			'class' => 'common.business.utils.CFile'
+			'class' => 'application.business.utils.CFile'
 		),
 
 		'templateCPCache' => array(
@@ -119,7 +112,7 @@ return array(
 
 		'assetManager' => array(
 			'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets',
-			'baseUrl' => '../../system/app/blocks/assets',
+			'baseUrl' => '../app/assets',
 		),
 
 		'errorHandler' => array(
@@ -141,7 +134,7 @@ return array(
 		),
 
 		'request' => array(
-			'class' => 'common.business.web.BlocksHttpRequest',
+			'class' => 'application.business.web.BlocksHttpRequest',
 		),
 
 	),
