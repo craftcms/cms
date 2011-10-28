@@ -4,3 +4,6 @@
 *.DS_Store
 Thumbs.db
 /aspnet_client/
+runtime/*
+Builds/*
+!.gitignore
