@@ -3,6 +3,6 @@
 *.bak
 *.DS_Store
 Thumbs.db
-/aspnet_client/
-runtime/*
+/aspnet_client/*
+Builds/*
 !.gitignore
