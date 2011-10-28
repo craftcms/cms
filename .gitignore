@@ -4,5 +4,3 @@
 *.DS_Store
 Thumbs.db
 /aspnet_client/*
-/Source/blocks/app/runtime/*
-!.gitignore
