@@ -5,5 +5,4 @@
 Thumbs.db
 /aspnet_client/
 runtime/*
-Builds/*
 !.gitignore
