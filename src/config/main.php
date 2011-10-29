@@ -9,7 +9,8 @@ Yii::setPathOfAlias('base', dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY
 // validate configs
 function generateConnectionString($db)
 {
-	return strtolower($db['type']).':host='.$db['server'].';dbname='.$db['name'].';port='.$db['port'];
+	// TODO: fix port and type.
+	return strtolower('mysql:host='.$db['server'].';dbname='.$db['database'].';port=3306;');
 }
 
 return array(
@@ -99,13 +100,14 @@ return array(
 			),
 		),
 
+		// TODO: fix charset here.
 		'db' => array(
 			'connectionString'  => generateConnectionString($db),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
 			'username'          => $db['user'],
 			'password'          => $db['password'],
-			'charset'           => $db['charset'],
+			'charset'           => 'utf8',
 			'tablePrefix'       => $db['tablePrefix'],
 		),
 

@@ -23,7 +23,7 @@ class TemplateMatch
 		$path = str_replace('\\', '/', $path);
 		$pathSegments = array_merge(array_filter(explode('/', $path)));
 
-		if (!empty($pathSegments) && count($pathSegments) > 0)
+		if ($pathSegments)
 		{
 			$file = $pathSegments[count($pathSegments) - 1];
 

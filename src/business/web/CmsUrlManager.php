@@ -5,6 +5,7 @@ class CmsUrlManager extends CUrlManager
 	private $_path = null;
 	private $_pathSegments = null;
 	private $_templateMatch = null;
+	private $_extension = null;
 
 	public function init()
 	{
@@ -13,6 +14,7 @@ class CmsUrlManager extends CUrlManager
 
 		$this->_path = Blocks::app()->request->getPathInfo();
 		$this->_pathSegments = Blocks::app()->request->getPathSegments();
+		$this->_extension = '.'.Blocks::app()->request->getPathExtension();
 
 		if ($this->_pathSegments !== null && isset($this->_pathSegments[0]) && $this->_pathSegments === 'gii')
 			return;
@@ -63,8 +65,7 @@ class CmsUrlManager extends CUrlManager
 	public function matchRoute()
 	{
 		$test = $this->parseUrl(Blocks::app()->getRequest());
-		$test2 = $test;
-		return true;
+		return false;
 	}
 
 	public function parseUrl($request)
@@ -98,10 +99,16 @@ class CmsUrlManager extends CUrlManager
 
 	public function matchTemplate()
 	{
+		$moduleName = null;
 		$templatePath = Blocks::app()->getViewPath();
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
-		$pathMatchPattern = rtrim($pathMatchPattern, '.html');
-		$moduleName = null;
+		$tempPath = $this->_path;
+
+		if ($this->_extension !== null)
+		{
+			$pathMatchPattern = rtrim($pathMatchPattern, $this->_extension);
+			$tempPath = rtrim($tempPath, $this->_extension);
+		}
 
 		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
 		{
@@ -109,19 +116,19 @@ class CmsUrlManager extends CUrlManager
 			if (strpos($templatePath, DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR) !== false)
 			{
 				$moduleName = $this->_pathSegments[0];
-				$numSlashes = substr_count($this->_path, '/');
-				$requestPath = substr($this->_path, strlen($moduleName) + $numSlashes);
+				$numSlashes = substr_count($tempPath, '/');
+				$requestPath = substr($tempPath, strlen($moduleName) + $numSlashes);
 
 				if ($requestPath === false)
 					$requestPath = '';
 			}
 			else
 			{
-				$requestPath = $this->_path;
+				$requestPath = $tempPath;
 			}
 		}
 		else
-			$requestPath = $this->_path;
+			$requestPath = $tempPath;
 
 		$testPath = Blocks::app()->file->set($templatePath.$requestPath.'.html', false);
 
@@ -134,9 +141,7 @@ class CmsUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		//$path = substr($templatePath.$requestPath, strlen($templatePath)) == false ? '' : substr($testPath->getRealPath(), strlen($templatePath));
 		$path = $requestPath.DIRECTORY_SEPARATOR.'index';
-		//$path .= $path == '' ? 'index' : '/index';
 
 		// could be a file match.  check for it's existence.
 		$testPath = Blocks::app()->file->set($templatePath.$path.'.html', false);

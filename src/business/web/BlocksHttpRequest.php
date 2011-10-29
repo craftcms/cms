@@ -4,6 +4,7 @@ class BlocksHttpRequest extends CHttpRequest
 {
 	private $_requestType;
 	private $_pathSegments = null;
+	private $_extension = null;
 
 	public function getPathSegments()
 	{
@@ -13,6 +14,14 @@ class BlocksHttpRequest extends CHttpRequest
 		}
 
 		return $this->_pathSegments;
+	}
+
+	public function getPathExtension()
+	{
+		if (($ext = pathinfo($this->getPathInfo(), PATHINFO_EXTENSION)) !== '')
+			$this->_extension = strtolower($ext);
+
+		return $this->_extension;
 	}
 
 	public function getCMSRequestType()

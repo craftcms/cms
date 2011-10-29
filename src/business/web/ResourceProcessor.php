@@ -14,6 +14,46 @@ class ResourceProcessor
 		$this->parseRelativeResourcePath($this->_relativeResourcePathAndName);
 	}
 
+	public function setPluginHandle($pluginHandle)
+	{
+		$this->_pluginHandle = $pluginHandle;
+	}
+
+	public function getPluginHandle()
+	{
+		return $this->_pluginHandle;
+	}
+
+	public function setRelativeResourcePath($relativeResourcePath)
+	{
+		$this->_relativeResourcePath = $relativeResourcePath;
+	}
+
+	public function getRelativeResourcePath()
+	{
+		return $this->_relativeResourcePath;
+	}
+
+	public function setRelativeResourceName($relativeResourceName)
+	{
+		$this->_relativeResourceName = $relativeResourceName;
+	}
+
+	public function getRelativeResourceName()
+	{
+		return $this->_relativeResourceName;
+	}
+
+	public function setRelativeResourcePathAndName($relativeResourcePathAndName)
+	{
+		$this->_relativeResourcePathAndName = $relativeResourcePathAndName;
+	}
+
+	public function getRelativeResourcePathAndName()
+	{
+		return $this->_relativeResourcePathAndName;
+	}
+
 	public function processResourceRequest()
 	{
 		$resourceFullPath = $this->translateResourcePaths($this->_relativeResourcePathAndName);
@@ -42,7 +82,7 @@ class ResourceProcessor
 		}
 	}
 
-	private function parseRelativeResourcePath()
+	public function parseRelativeResourcePath()
 	{
 		// if the first char is a '/', then strip it.
 		if(strpos($this->_relativeResourcePathAndName, '/') == 0)
@@ -82,7 +122,7 @@ class ResourceProcessor
 
 	public function getMimeTypeByExtension($file)
 	{
-		$extensions = require_once(Blocks::app()->configRepo->getBlocksFrameworkPath().'utils'.DIRECTORY_SEPARATOR.'mimeTypes.php');
+		$extensions = require(Blocks::app()->configRepo->getBlocksFrameworkPath().'utils'.DIRECTORY_SEPARATOR.'mimeTypes.php');
 
 		if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '')
 		{

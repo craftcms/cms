@@ -4,11 +4,6 @@ class CmsController extends BaseController
 {
 	private $_templateMatch = null;
 
-	public function getTemplateMatch()
-	{
-		return $this->_templateMatch;
-	}
-
 	public function init()
 	{
 		parent::init();
@@ -32,7 +27,7 @@ class CmsController extends BaseController
 
 				// there is an explicit request to a controller and action
 				if (Blocks::app()->request->getParam('c', null) !== null
-				    || Blocks::app()->controller->getModule()->id == 'install'
+				    || (Blocks::app()->controller->getModule() !== null && Blocks::app()->controller->getModule()->id == 'install')
 				    || Blocks::app()->controller->id == 'update')
 				{
 					Blocks::app()->controller->init();

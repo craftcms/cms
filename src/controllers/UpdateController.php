@@ -8,7 +8,7 @@ class UpdateController extends BaseController
 
 		if($responseVersionInfo != null)
 		{
-			$this->render('index', array('model' => $responseVersionInfo));
+			$this->render('update/index', array('model' => $responseVersionInfo));
 		}
 	}
 
