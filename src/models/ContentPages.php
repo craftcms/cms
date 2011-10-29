@@ -74,13 +74,13 @@ class ContentPages extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentdrafts' => array(self::HAS_MANY, 'Contentdrafts', 'page_id'),
-			'parent' => array(self::BELONGS_TO, 'Contentpages', 'parent_id'),
-			'contentpages' => array(self::HAS_MANY, 'Contentpages', 'parent_id'),
-			'section' => array(self::BELONGS_TO, 'Contentsections', 'section_id'),
+			'contentdrafts' => array(self::HAS_MANY, 'ContentDrafts', 'page_id'),
+			'parent' => array(self::BELONGS_TO, 'ContentPages', 'parent_id'),
+			'contentpages' => array(self::HAS_MANY, 'ContentPages', 'parent_id'),
+			'section' => array(self::BELONGS_TO, 'ContentSections', 'section_id'),
 			'author' => array(self::BELONGS_TO, 'Users', 'author_id'),
-			'contentpagetitles' => array(self::HAS_MANY, 'Contentpagetitles', 'page_id'),
-			'contentversions' => array(self::HAS_MANY, 'Contentversions', 'page_id'),
+			'contentpagetitles' => array(self::HAS_MANY, 'ContentPageTitles', 'page_id'),
+			'contentversions' => array(self::HAS_MANY, 'ContentVersions', 'page_id'),
 		);
 	}
 

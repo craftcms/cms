@@ -69,10 +69,10 @@ class ContentBlocks extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'section' => array(self::BELONGS_TO, 'Contentsections', 'section_id'),
-			'contentblocksettings' => array(self::HAS_MANY, 'Contentblocksettings', 'block_id'),
-			'blxContentdrafts' => array(self::MANY_MANY, 'Contentdrafts', '{{_contentdraftdata}}(block_id, draft_id)'),
-			'blxContentversions' => array(self::MANY_MANY, 'Contentversions', '{{_contentversiondata}}(block_id, version_id)'),
+			'section' => array(self::BELONGS_TO, 'ContentSections', 'section_id'),
+			'contentblocksettings' => array(self::HAS_MANY, 'ContentBlockSettings', 'block_id'),
+			'blxContentdrafts' => array(self::MANY_MANY, 'ContentDrafts', '{{_contentdraftdata}}(block_id, draft_id)'),
+			'blxContentversions' => array(self::MANY_MANY, 'ContentVersions', '{{_contentversiondata}}(block_id, version_id)'),
 		);
 	}
 

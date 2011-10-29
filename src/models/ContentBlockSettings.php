@@ -60,7 +60,7 @@ class ContentBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'Contentblocks', 'block_id'),
+			'block' => array(self::BELONGS_TO, 'ContentBlocks', 'block_id'),
 		);
 	}
 

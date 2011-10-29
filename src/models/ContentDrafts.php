@@ -61,8 +61,8 @@ class ContentDrafts extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'blxContentblocks' => array(self::MANY_MANY, 'Contentblocks', '{{_contentdraftdata}}(draft_id, block_id)'),
-			'page' => array(self::BELONGS_TO, 'Contentpages', 'page_id'),
+			'blxContentblocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentdraftdata}}(draft_id, block_id)'),
+			'page' => array(self::BELONGS_TO, 'ContentPages', 'page_id'),
 			'author' => array(self::BELONGS_TO, 'Users', 'author_id'),
 		);
 	}

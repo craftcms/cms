@@ -70,10 +70,10 @@ class ContentSections extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentblocks' => array(self::HAS_MANY, 'Contentblocks', 'section_id'),
-			'contentpages' => array(self::HAS_MANY, 'Contentpages', 'section_id'),
-			'parent' => array(self::BELONGS_TO, 'Contentsections', 'parent_id'),
-			'contentsections' => array(self::HAS_MANY, 'Contentsections', 'parent_id'),
+			'contentblocks' => array(self::HAS_MANY, 'ContentBlocks', 'section_id'),
+			'contentpages' => array(self::HAS_MANY, 'ContentPages', 'section_id'),
+			'parent' => array(self::BELONGS_TO, 'ContentSections', 'parent_id'),
+			'contentsections' => array(self::HAS_MANY, 'ContentSections', 'parent_id'),
 			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}

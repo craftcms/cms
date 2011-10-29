@@ -60,7 +60,7 @@ class SiteBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'Siteblocks', 'block_id'),
+			'block' => array(self::BELONGS_TO, 'SiteBlocks', 'block_id'),
 		);
 	}
 

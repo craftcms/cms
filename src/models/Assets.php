@@ -60,8 +60,8 @@ class Assets extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'assetblocks' => array(self::HAS_MANY, 'Assetblocks', 'asset_id'),
-			'uploadFolder' => array(self::BELONGS_TO, 'Uploadfolders', 'upload_folder_id'),
+			'assetblocks' => array(self::HAS_MANY, 'AssetBlocks', 'asset_id'),
+			'uploadFolder' => array(self::BELONGS_TO, 'UploadFolders', 'upload_folder_id'),
 		);
 	}
 
