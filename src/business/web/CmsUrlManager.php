@@ -109,13 +109,13 @@ class CmsUrlManager extends CUrlManager
 			{
 				$moduleName = $this->_pathSegments[0];
 				$numSlashes = substr_count($this->_path, '/');
-				$requestPath = substr($this->_path, strlen(BLOCKS_CP_FOLDERNAME) + strlen($moduleName) + $numSlashes);
+				$requestPath = substr($this->_path, strlen($moduleName) + $numSlashes);
 				if ($requestPath === false)
 					$requestPath = '';
 			}
 			else
 			{
-				$requestPath = substr($this->_path, strlen(BLOCKS_CP_FOLDERNAME) + 1);
+				$requestPath = $this->_path;
 			}
 		}
 		else

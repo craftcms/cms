@@ -4,7 +4,7 @@ class BlocksHtml extends CHtml
 {
 	public static function resource($resourcePath, $pluginHandle = null)
 	{
-		$resourceString = BLOCKS_RESOURCEPROCESSOR_URL.'?resourcePath='.self::encode($resourcePath);
+		$resourceString = Blocks::app()->configRepo->getBlocksResourceProcessorUrl().'?resourcePath='.self::encode($resourcePath);
 
 		if($pluginHandle != null)
 		{

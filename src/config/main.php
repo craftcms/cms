@@ -1,17 +1,20 @@
 <?php
 
 require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'site.php');
-require_once(BLOCKS_CONFIG_PATH.'db.php');
+require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'blocks.php');
+require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
+
+Yii::setPathOfAlias('base', dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
 
 // validate configs
-function generateConnectionString($dbConfig)
+function generateConnectionString($db)
 {
-	return strtolower($dbConfig['type']).':host='.$dbConfig['server'].';dbname='.$dbConfig['name'].';port='.$dbConfig['port'];
+	return strtolower($db['type']).':host='.$db['server'].';dbname='.$db['name'].';port='.$db['port'];
 }
 
 return array(
 	'basePath'          => dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
+	'runtimePath'       => Yii::getPathOfAlias('base.runtime'),
 	'name'              => 'Blocks',
 
 	'preload' => array('log'),
@@ -75,12 +78,12 @@ return array(
 
 		'templateCPCache' => array(
 			'class' => 'CTemplateFileCache',
-			'cachePath' => BLOCKS_RUNTIME_PATH.'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates',
+			'cachePath' => 'base.app.templates',
 		),
 
 		'templateSiteCache' => array(
 			'class' => 'CTemplateFileCache',
-			'cachePath' => BLOCKS_RUNTIME_PATH.'cached'.DIRECTORY_SEPARATOR.'translated_site_templates',
+			'cachePath' => 'base.templates',
 		),
 
 		'urlManager' => array(
@@ -97,13 +100,13 @@ return array(
 		),
 
 		'db' => array(
-			'connectionString'  => generateConnectionString($dbConfig),
+			'connectionString'  => generateConnectionString($db),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
-			'username'          => $dbConfig['user'],
-			'password'          => $dbConfig['password'],
-			'charset'           => $dbConfig['charset'],
-			'tablePrefix'       => $dbConfig['tablePrefix'],
+			'username'          => $db['user'],
+			'password'          => $db['password'],
+			'charset'           => $db['charset'],
+			'tablePrefix'       => $db['tablePrefix'],
 		),
 
 		//'assetManager' => array(
@@ -142,8 +145,8 @@ return array(
 	'params' => array(
 		// this is used in contact page
 		'adminEmail' => 'brad@pixelandtonic.com',
-		'databaseConfig' => $dbConfig,
-		'siteConfig' => $siteConfig
+		'db' => $db,
+		'config' => $blocksConfig
 
 	),
 );

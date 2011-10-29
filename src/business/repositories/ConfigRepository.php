@@ -4,27 +4,27 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 {
 	public function getDatabaseServerName()
 	{
-		return Blocks::app()->params['databaseConfig']['server'];
+		return Blocks::app()->params['db']['server'];
 	}
 
 	public function getDatabasePort()
 	{
-		return Blocks::app()->params['databaseConfig']['port'];
+		return Blocks::app()->params['db']['port'];
 	}
 
 	public function getDatabaseCharset()
 	{
-		return Blocks::app()->params['databaseConfig']['charset'];
+		return Blocks::app()->params['db']['charset'];
 	}
 
 	public function getDatabaseCollation()
 	{
-		return Blocks::app()->params['databaseConfig']['collation'];
+		return Blocks::app()->params['db']['collation'];
 	}
 
 	public function getDatabaseType()
 	{
-		return Blocks::app()->params['databaseConfig']['type'];
+		return Blocks::app()->params['db']['type'];
 	}
 
 	public function getDatabaseVersion()
@@ -34,7 +34,7 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 
 	public function getDatabaseTablePrefix()
 	{
-		return Blocks::app()->params['databaseConfig']['tablePrefix'];
+		return Blocks::app()->params['db']['tablePrefix'];
 	}
 
 	public function getDatabaseSupportedTypes()
@@ -45,17 +45,83 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 
 	public function getDatabaseName()
 	{
-		return Blocks::app()->params['databaseConfig']['name'];
+		return Blocks::app()->params['db']['name'];
 	}
 
 	public function getDatabaseAuthName()
 	{
-		return Blocks::app()->params['databaseConfig']['user'];
+		return Blocks::app()->params['db']['user'];
 	}
 
 	public function getDatabaseAuthPassword()
 	{
-		return Blocks::app()->params['databaseConfig']['password'];
+		return Blocks::app()->params['db']['password'];
+	}
+
+	public function getBlocksBasePath()
+	{
+		return BLOCKS_BASE_PATH;
+	}
+
+	public function getBlocksConfigPath()
+	{
+		return $this->getBlocksBasePath().'config'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksPluginsPath()
+	{
+		return $this->getBlocksBasePath().'plugins'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksResourcesPath()
+	{
+		return $this->getBlocksBasePath().'resources'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksAppPath()
+	{
+		return Blocks::app()->getBasePath().DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksFrameworkPath()
+	{
+		return $this->getBlocksAppPath().'framework'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksRuntimePath()
+	{
+		return Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR;
+	}
+
+
+	public function getBlocksResourceProcessorPath()
+	{
+		return $this->getBlocksAppPath().'business'.DIRECTORY_SEPARATOR.'web'.DIRECTORY_SEPARATOR.'ResourceProcessor.php';
+	}
+
+	public function getBlocksResourceProcessorUrl()
+	{
+		return '/index.php/blocks/app/business/web/ResourceProcessor.php';
+	}
+
+	public function getBlocksCPTemplatePath()
+	{
+		return $this->getBlocksAppPath().'templates'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksSiteTemplatePath()
+	{
+		return $this->getBlocksBasePath().'templates'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksCPTemplateCachePath()
+	{
+		return $this->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
+	}
+
+	public function getBlocksSiteTemplateCachePath()
+	{
+		return $this->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
 	}
 
 	public function getDatabaseRequiredVersionByType($databaseType)
@@ -96,22 +162,22 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 
 	public function getSiteLicenseKey()
 	{
-		return Blocks::app()->params['siteConfig']['licenseKey'];
+		return Blocks::app()->params['config']['licenseKey'];
 	}
 
 	public function getSiteName()
 	{
-		return Blocks::app()->params['siteConfig']['siteName'];
+		return Blocks::app()->params['config']['siteName'];
 	}
 
 	public function getSiteLanguage()
 	{
-		return Blocks::app()->params['siteConfig']['language'];
+		return Blocks::app()->params['config']['language'];
 	}
 
 	public function getSiteUrl()
 	{
-		return Blocks::app()->params['siteConfig']['siteUrl'];
+		return Blocks::app()->params['config']['siteUrl'];
 	}
 
 	public function updateConfigFile($filePath, $key, $value)

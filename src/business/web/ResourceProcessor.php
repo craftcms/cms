@@ -1,24 +1,22 @@
 <?php
 
-if(isset($_GET) && array_key_exists('resourcePath', $_GET))
-{
-	$resourceProcessor = new ResourceProcessor();
-	$resourceProcessor->pluginHandle = isset($_GET['pluginHandle']) ? $_GET['pluginHandle'] : null;
-	$resourceProcessor->relativeResourcePathAndName = isset($_GET['resourcePath']) ? $_GET['resourcePath'] : null;
-	$resourceProcessor->parseRelativeResourcePath($resourceProcessor->relativeResourcePathAndName);
-	$resourceProcessor->processResourceRequest();
-}
-
 class ResourceProcessor
 {
-	public $pluginHandle;
-	public $relativeResourcePath;
-	public $relativeResourceName;
-	public $relativeResourcePathAndName;
+	private $_pluginHandle;
+	private $_relativeResourcePath;
+	private $_relativeResourceName;
+	private $_relativeResourcePathAndName;
+
+	function __construct()
+	{
+		$this->_pluginHandle = Blocks::app()->request->getQuery('pluginHandle', null);
+		$this->_relativeResourcePathAndName = Blocks::app()->request->getQuery('resourcePath', null);
+		$this->parseRelativeResourcePath($this->_relativeResourcePathAndName);
+	}
 
 	public function processResourceRequest()
 	{
-		$resourceFullPath = $this->translateResourcePaths($this->relativeResourcePathAndName);
+		$resourceFullPath = $this->translateResourcePaths($this->_relativeResourcePathAndName);
 
 		if(file_exists($resourceFullPath))
 		{
@@ -33,32 +31,32 @@ class ResourceProcessor
 	public function translateResourcePaths()
 	{
 		// plugin resource
-		if($this->pluginHandle !== null)
+		if($this->_pluginHandle !== null)
 		{
-			return BLOCKS_PLUGINS_PATH.$this->pluginHandle.DIRECTORY_SEPARATOR.$this->relativeResourcePathAndName;
+			return Blocks::app()->configRepo->getBlocksPluginsPath().$this->_pluginHandle.DIRECTORY_SEPARATOR.$this->_relativeResourcePathAndName;
 		}
 		// blocks resource
 		else
 		{
-			return BLOCKS_RESOURCE_PATH.$this->relativeResourcePathAndName;
+			return Blocks::app()->configRepo->getBlocksResourcesPath().$this->_relativeResourcePathAndName;
 		}
 	}
 
-	public function parseRelativeResourcePath()
+	private function parseRelativeResourcePath()
 	{
 		// if the first char is a '/', then strip it.
-		if(strpos($this->relativeResourcePathAndName, '/') == 0)
+		if(strpos($this->_relativeResourcePathAndName, '/') == 0)
 		{
-			$this->relativeResourcePathAndName = ltrim($this->relativeResourcePathAndName, '/');
+			$this->_relativeResourcePathAndName = ltrim($this->_relativeResourcePathAndName, '/');
 		}
 
-		$slashCount = substr_count($this->relativeResourcePathAndName, '/');
+		$slashCount = substr_count($this->_relativeResourcePathAndName, '/');
 
 		// bg.gif
 		if ($slashCount == 0)
 		{
-			$this->relativeResourcePath = null;
-			$this->relativeResourceName = $this->relativeResourcePathAndName;
+			$this->_relativeResourcePath = null;
+			$this->_relativeResourceName = $this->_relativeResourcePathAndName;
 		}
 		else
 		{
@@ -66,9 +64,9 @@ class ResourceProcessor
 			// dir1/dir2/bg.gif
 			if ($slashCount > 0)
 			{
-				$lastSlashPos = strrpos($this->relativeResourcePathAndName, '/');
-				$this->relativeResourceName = substr($this->relativeResourcePathAndName, $lastSlashPos + 1);
-				$this->relativeResourcePath = substr($this->relativeResourcePathAndName, 0, $lastSlashPos + 1);
+				$lastSlashPos = strrpos($this->_relativeResourcePathAndName, '/');
+				$this->_relativeResourceName = substr($this->_relativeResourcePathAndName, $lastSlashPos + 1);
+				$this->_relativeResourcePath = substr($this->_relativeResourcePathAndName, 0, $lastSlashPos + 1);
 			}
 			else
 			{
@@ -79,12 +77,12 @@ class ResourceProcessor
 
 	public function correctImagePaths($content)
 	{
-		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.BLOCKS_RESOURCEPROCESSOR_URL.'?resourcePath='.$this->relativeResourcePath.'$2$5)', ''.$content.'');
+		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.Blocks::app()->configRepo->getBlocksResourceProcessorUrl().'?resourcePath='.$this->_relativeResourcePath.'$2$5)', ''.$content.'');
 	}
 
 	public function getMimeTypeByExtension($file)
 	{
-		$extensions = require(BLOCKS_APP_FRAMEWORK_PATH.'utils'.DIRECTORY_SEPARATOR.'mimeTypes.php');
+		$extensions = require_once(Blocks::app()->configRepo->getBlocksFrameworkPath().'utils'.DIRECTORY_SEPARATOR.'mimeTypes.php');
 
 		if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '')
 		{

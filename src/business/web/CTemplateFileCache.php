@@ -58,11 +58,11 @@ class CTemplateFileCache extends CFileCache
 		switch ($requestType)
 		{
 			case RequestType::ControlPanel:
-				$cpTemplatePath = Blocks::app()->file->set(BLOCKS_CP_TEMPLATE_PATH);
+				$cpTemplatePath = Blocks::app()->file->set(Blocks::app()->configRepo->getBlocksCPTemplateCachePath());
 				break;
 
 			case RequestType::Site:
-				$cpTemplatePath = Blocks::app()->file->set(BLOCKS_SITE_TEMPLATE_PATH);
+				$cpTemplatePath = Blocks::app()->file->set(Blocks::app()->configRepo->getBlocksSiteTemplateCachePath());
 				break;
 		}
 
@@ -183,12 +183,12 @@ class CTemplateFileCache extends CFileCache
 		{
 			case RequestType::ControlPanel:
 				$cachedTemplatePath = Blocks::app()->file->set(Blocks::app()->templateCPCache->cachePath, false);
-				$tempTemplatePath = Blocks::app()->file->set(BLOCKS_CP_TEMPLATE_PATH, false)->getRealPath();
+				$tempTemplatePath = Blocks::app()->file->set(Blocks::app()->configRepo->getBlocksCPTemplateCachePath(), false)->getRealPath();
 				break;
 
 			case RequestType::Site:
 				$cachedTemplatePath = Blocks::app()->file->set(Blocks::app()->templateSiteCache->cachePath, false);
-				$tempTemplatePath = Blocks::app()->file->set(BLOCKS_SITE_TEMPLATE_PATH, false)->getRealPath();
+				$tempTemplatePath = Blocks::app()->file->set(Blocks::app()->configRepo->getBlocksSiteTemplateCachePath(), false)->getRealPath();
 				break;
 		}
 

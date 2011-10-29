@@ -9,8 +9,8 @@ class RequirementsChecker
 
 	private function init()
 	{
-		$dbConfigPath = realpath(BLOCKS_CONFIG_PATH).DIRECTORY_SEPARATOR.'db.php';
-		$siteConfigPath = realpath(BLOCKS_CONFIG_PATH).DIRECTORY_SEPARATOR.'site.php';
+		$dbConfigPath = Blocks::app()->configRepo->getBlocksConfigPath().'db.php';
+		$blocksConfigPath = Blocks::app()->configRepo->getBlocksConfigPath().'blocks.php';
 
 		$this->_requirements = array(
 			new Requirement(
@@ -132,7 +132,7 @@ class RequirementsChecker
 				Blocks::app()->configRepo->getSiteLicenseKey() !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your license key in the site config file at '.$siteConfigPath),
+				'Please set your license key in the site config file at '.$blocksConfigPath),
 		);
 
 		$connection = true;
@@ -154,7 +154,7 @@ class RequirementsChecker
 				false,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Cannot connect to the database with the current settings in the database config file at '.realpath(BLOCKS_CONFIG_PATH).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
+				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->configRepo->getBlocksConfigPath()).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
 		}
 		else
 		{

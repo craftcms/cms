@@ -8,6 +8,21 @@ class CmsWebApplication extends CWebApplication
 
 	//Blocks::app()->attachEventHandler('onBeginRequest', array($this, 'blar'));
 
+	public function init()
+	{
+		// run the resource processor if necessary.
+		if (Blocks::app()->request->getRequestType() == 'GET')
+		{
+			if (Blocks::app()->request->getQuery('resourcePath', null) !== null)
+			{
+				$resourceProcessor = new ResourceProcessor();
+				$resourceProcessor->processResourceRequest();
+			}
+		}
+
+		parent::init();
+	}
+
 	public function blar()
 	{
 		if ('127.0.0.1' === $_SERVER['REMOTE_ADDR'])
@@ -30,7 +45,7 @@ class CmsWebApplication extends CWebApplication
 	{
 		$pathInfo = Blocks::app()->request->getPathInfo();
 
-		if (strpos($pathInfo, BLOCKS_CP_FOLDERNAME.'/install') !== false)
+		if (strpos($pathInfo, '/install') !== false)
 			return;
 
 		if (strpos($pathInfo, '/error') !== false)
@@ -134,7 +149,7 @@ class CmsWebApplication extends CWebApplication
 			$requestType = Blocks::app()->request->getCMSRequestType();
 			if ($requestType == RequestType::Site)
 			{
-				$viewPath = str_replace('\\', '/', realpath(BLOCKS_SITE_TEMPLATE_PATH).'/');
+				$viewPath = str_replace('\\', '/', realpath(Blocks::app()->configRepo->getBlocksSiteTemplatePath()).'/');
 			}
 			else
 			{
@@ -145,7 +160,7 @@ class CmsWebApplication extends CWebApplication
 				}
 				else
 				{
-					$viewPath = str_replace('\\', '/', realpath(BLOCKS_CP_TEMPLATE_PATH).'/');
+					$viewPath = str_replace('\\', '/', realpath(Blocks::app()->configRepo->getBlocksCPTemplatePath()).'/');
 				}
 			}
 
