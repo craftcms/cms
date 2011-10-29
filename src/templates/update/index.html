@@ -1,8 +1,4 @@
-<?php
-$this->breadcrumbs=array(
-	$this->module->id,
-);
-?>
+<?php $this->breadcrumbs=array($this->module->id); ?>
 
 <center><h1>Update All</h1></center>
 
@@ -32,10 +28,10 @@ $this->breadcrumbs=array(
 					<td><b>Type</b></td>
 				</tr>
 				<tr>
-					<td><?php echo $blocksReleaseInfo['Version'] ?>.<?php echo $blocksReleaseInfo['BuildNumber']; ?></td>
-					<td><?php echo BlocksHtml::UnixTimeToPrettyDate($blocksReleaseInfo['ReleaseDate']); ?></td>
-					<td><?php echo nl2br($blocksReleaseInfo['ReleaseNotes']); ?></td>
-					<td><?php echo $blocksReleaseInfo['Type']; ?></td>
+					<td><?php echo $blocksReleaseInfo['version'] ?>.<?php echo $blocksReleaseInfo['build_number']; ?></td>
+					<td><?php echo BlocksHtml::UnixTimeToPrettyDate($blocksReleaseInfo['release_date']); ?></td>
+					<td><?php echo nl2br($blocksReleaseInfo['release_notes']); ?></td>
+					<td><?php echo $blocksReleaseInfo['type']; ?></td>
 				</tr>
 				<?php endforeach ?>
 			</table>

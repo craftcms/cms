@@ -25,6 +25,7 @@ return array(
 		'application.business.enums.*',
 		'application.business.exceptions.*',
 		'application.business.repositories.*',
+		'application.business.updates.*',
 		'application.business.utils.*',
 		'application.business.web.*',
 		'application.business.web.filters.*',
@@ -46,7 +47,6 @@ return array(
 			//'ipFilters' => array('127.0.0.1', '::1'),
 		),
 		'install',
-		'update',
 	),
 
 	// application components

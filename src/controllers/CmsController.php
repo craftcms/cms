@@ -11,11 +11,14 @@ class CmsController extends BaseController
 
 	public function init()
 	{
+		parent::init();
 		$this->_templateMatch = Blocks::app()->getUrlManager()->getTemplateMatch();
 	}
 
 	public function run($actionId)
 	{
+		parent::run($actionId);
+
 		if ($this->_templateMatch !== null)
 		{
 			// we found a matching controller for this request.
@@ -28,7 +31,9 @@ class CmsController extends BaseController
 				Blocks::app()->setController($this->getRequestController());
 
 				// there is an explicit request to a controller and action
-				if (Blocks::app()->request->getParam('c', null) !== null || Blocks::app()->controller->getModule()->id == 'install')
+				if (Blocks::app()->request->getParam('c', null) !== null
+				    || Blocks::app()->controller->getModule()->id == 'install'
+				    || Blocks::app()->controller->id == 'update')
 				{
 					Blocks::app()->controller->init();
 					Blocks::app()->controller->run($this->_templateMatch->getFileName());

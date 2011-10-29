@@ -1,6 +1,6 @@
 <?php
 
-class DefaultController extends BaseController
+class UpdateController extends BaseController
 {
 	public function actionIndex()
 	{

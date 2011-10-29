@@ -72,7 +72,7 @@ class VersionCheckFilter extends CFilter
 
 		if ($blocksVersionInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
-			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['Version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['BuildNumber'].'. '.BlocksHtml::link('Please update now.', array('update/index'));
+			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', array('update/index'));
 		}
 
 		foreach($blocksVersionInfo['blocksLicenseStatus'] as $licenseMessage)

@@ -100,6 +100,7 @@ class CmsUrlManager extends CUrlManager
 	{
 		$templatePath = Blocks::app()->getViewPath();
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
+		$pathMatchPattern = rtrim($pathMatchPattern, '.html');
 		$moduleName = null;
 
 		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
@@ -110,6 +111,7 @@ class CmsUrlManager extends CUrlManager
 				$moduleName = $this->_pathSegments[0];
 				$numSlashes = substr_count($this->_path, '/');
 				$requestPath = substr($this->_path, strlen($moduleName) + $numSlashes);
+
 				if ($requestPath === false)
 					$requestPath = '';
 			}
@@ -132,15 +134,16 @@ class CmsUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		$path = substr($templatePath.$requestPath, strlen($templatePath)) == false ? '' : substr($testPath->getRealPath(), strlen($templatePath));
-		$path .= $path == '' ? 'index' : '/index';
+		//$path = substr($templatePath.$requestPath, strlen($templatePath)) == false ? '' : substr($testPath->getRealPath(), strlen($templatePath));
+		$path = $requestPath.DIRECTORY_SEPARATOR.'index';
+		//$path .= $path == '' ? 'index' : '/index';
 
 		// could be a file match.  check for it's existence.
 		$testPath = Blocks::app()->file->set($templatePath.$path.'.html', false);
 
 		if ($testPath->getExists())
 		{
-			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.'/'.$path, $pathMatchPattern, TemplateMatchType::Template, $moduleName);
+			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.$path, $pathMatchPattern, TemplateMatchType::Template, $moduleName);
 			return true;
 		}
 

@@ -20,6 +20,7 @@ class TemplateMatch
 		$relativeTemplatePath = '';
 		$segments = null;
 
+		$path = str_replace('\\', '/', $path);
 		$pathSegments = array_merge(array_filter(explode('/', $path)));
 
 		if (!empty($pathSegments) && count($pathSegments) > 0)

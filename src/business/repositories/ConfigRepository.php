@@ -2,6 +2,11 @@
 
 class ConfigRepository extends CApplicationComponent implements IConfigRepository
 {
+	private $dbCharsetDefault = 'utf8';
+	private $dbPortDefault = '3306';
+	private $dbCollationDefault = 'utf8_unicode_ci';
+	private $dbTypeDefault = DatabaseType::MySQL;
+
 	public function getDatabaseServerName()
 	{
 		return Blocks::app()->params['db']['server'];
@@ -9,22 +14,34 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 
 	public function getDatabasePort()
 	{
-		return Blocks::app()->params['db']['port'];
+		if (isset(Blocks::app()->params['db']['port']))
+			return Blocks::app()->params['db']['port'];
+
+		return $this->dbPortDefault;
 	}
 
 	public function getDatabaseCharset()
 	{
-		return Blocks::app()->params['db']['charset'];
+		if (isset(Blocks::app()->params['db']['charset']))
+			return Blocks::app()->params['db']['charset'];
+
+		return $this->dbCharsetDefault;
 	}
 
 	public function getDatabaseCollation()
 	{
-		return Blocks::app()->params['db']['collation'];
+		if (isset(Blocks::app()->params['db']['collation']))
+			return Blocks::app()->params['db']['collation'];
+
+		return $this->dbCollationDefault;
 	}
 
 	public function getDatabaseType()
 	{
-		return Blocks::app()->params['db']['type'];
+		if (isset(Blocks::app()->params['db']['type']))
+			return Blocks::app()->params['db']['type'];
+
+		return $this->dbTypeDefault;
 	}
 
 	public function getDatabaseVersion()
@@ -45,7 +62,7 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 
 	public function getDatabaseName()
 	{
-		return Blocks::app()->params['db']['name'];
+		return Blocks::app()->params['db']['database'];
 	}
 
 	public function getDatabaseAuthName()
