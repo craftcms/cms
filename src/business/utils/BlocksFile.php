@@ -146,7 +146,7 @@ class BlocksFile extends CApplicationComponent
 	 */
 	private function addLog($message, $level='info')
 	{
-		Blocks::log($message.' (obj: '.$this->realpath.')', $level, 'ext.file');
+		Blocks::log($message.' (obj: '.$this->_realpath.')', $level, 'ext.file');
 	}
 
 	public function refresh()
@@ -637,7 +637,7 @@ class BlocksFile extends CApplicationComponent
 	 * @param mixed $format Number format (see {@link CNumberFormatter}) or 'false'
 	 * @return mixed Filesystem object size formatted (eg. '70.4 KB') or in bytes (eg. '72081') if $format set to 'false'
 	 */
-	public function getSize($format='0.00')
+	public function getSize($format = '0.00')
 	{
 		if (!isset($this->_size))
 		{
@@ -1323,7 +1323,6 @@ class BlocksFile extends CApplicationComponent
 
 	public function zipDir($srcDir)
 	{
-		// TODO: Need a zip fallback
 		if ($this->_exists)
 		{
 			$this->purge();
@@ -1333,56 +1332,49 @@ class BlocksFile extends CApplicationComponent
 			$this->create();
 		}
 
-		if (class_exists('ZipArchive'))
+		return $this->zipPclZip($srcDir);
+	}
+
+	private function zipPclZip($srcDir)
+	{
+		$zip = new PclZip($this->getRealPath());
+
+		$result = $zip->create($srcDir, PCLZIP_OPT_REMOVE_PATH, $srcDir);
+
+		if ($result == 0)
 		{
-			$zip = new ZipArchive;
-			$zipContents = $zip->open($this->getRealPath(), ZipArchive::CREATE);
-
-			if ($zipContents !== TRUE)
-			{
-				$this->addLog('Unable to create zip file.', 'error');
-				return false;
-			}
-
-			$this->recursiveZip($srcDir, $zip, $srcDir);
-			$zip->close();
+			$this->addLog('Unable to create zip file.', 'error');
+			return false;
 		}
 
 		return true;
 	}
 
-	private function zipZipArchive()
+	private function zipZipArchive($srcDir)
 	{
+		$zip = new ZipArchive;
+		$zipContents = $zip->open($this->getRealPath(), ZipArchive::CREATE);
 
-	}
-
-	private function recursiveZip($srcDir, &$zip, $path)
-	{
-		$dir = opendir($srcDir);
-
-		while (false !== ($file = readdir($dir)))
+		if ($zipContents !== TRUE)
 		{
-			if (($file != '.') && ($file != '..'))
-			{
-				$fullPath = $srcDir.DIRECTORY_SEPARATOR.$file;
-
-				if (is_dir($fullPath))
-				{
-					$this->recursiveZip($fullPath, $zip, $path);
-				}
-				else
-				{
-					$zip->addFile($fullPath, substr($fullPath, strlen($path) + 1));
-				}
-			}
+			$this->addLog('Unable to create zip file.', 'error');
+			return false;
 		}
 
-		closedir($dir);
+		$srcDir = Blocks::app()->file->set($srcDir);
+		$dirContents = $srcDir->getContents(true);
+
+		foreach ($dirContents as $itemToZip)
+		{
+			$zip->addFile(substr($itemToZip, strlen($srcDir->getRealPath()) + 1));
+		}
+
+		$zip->close();
+		return true;
 	}
 
 	public function unzip($destination)
 	{
-		// TODO: need a zip fallback.
 		if ($this->_isFile)
 		{
 			if ($this->getExtension() == 'zip')
@@ -1400,20 +1392,103 @@ class BlocksFile extends CApplicationComponent
 					else
 					{
 						$this->addLog('There was an error unzipping the file.', 'error');
-						return false;
 					}
 				}
 			}
 			else
 			{
 				$this->addLog(__METHOD__.' method is available only for zip files', 'warning');
-				return false;
 			}
 		}
 		else
 		{
 			$this->addLog(__METHOD__.' method is available only for files', 'warning');
+		}
+
+		// last chance, try pclzip
+		return $this->unzipPclZip($destination);
+	}
+
+	private function unzipPclZip($destination)
+	{
+		$zip = new PclZip($this->getRealPath());
+		$destDirectories = null;
+
+		// check to see if it's a valid archive.
+		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
+		{
+			$this->addLog('Not a valid zip archive.', 'error');
 			return false;
+		}
+
+		if (count($zipFiles) == 0)
+		{
+			$this->addLog('Empty zip archive.', 'error');
+			return false;
+		}
+
+		// find out which directories we need to create in the destination.
+		foreach ($zipFiles as $zipFile)
+		{
+			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
+				continue;
+
+			$destDirectories[] = $destination.DIRECTORY_SEPARATOR.rtrim($zipFile['folder'] ? $zipFile['filename'] : dirname($zipFile['filename']), '/');
+		}
+
+		$destDirectories = array_unique($destDirectories);
+
+		foreach ($destDirectories as $destDirectory)
+		{
+			// Skip over the working directory
+			if (rtrim($destination, '/') == $destDirectory)
+				continue;
+
+			// Make sure the current directory is within the working directory
+			if (strpos($destDirectory, $destination) === false)
+				continue;
+
+			$parentDirectory = dirname($destDirectory);
+
+			while (!empty($parentDirectory) && rtrim($destination, '/') != $parentDirectory && !in_array($parentDirectory, $destDirectories))
+			{
+				$destDirectories[] = $parentDirectory;
+				$parentDirectory = dirname($parentDirectory);
+			}
+		}
+
+		asort($destDirectories);
+
+		// Create the destination directories.
+		foreach ($destDirectories as $destDirectory)
+		{
+			$newDir = Blocks::app()->file->set($destDirectory, false);
+
+			if (!$newDir->createDir(0754) && !$newDir->getIsDir())
+			{
+				$this->addLog('Could not create directory during unzip.', 'error');
+				return false;
+			}
+		}
+
+		unset($destDirectories);
+
+		// Extract the files from the zip
+		foreach ($zipFiles as $zipFile)
+		{
+			// folders have already been created.
+			if ($zipFile['folder'])
+				continue;
+
+			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
+				continue;
+
+			$destFile = Blocks::app()->file->set($destination.DIRECTORY_SEPARATOR.$zipFile['filename']);
+			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
+			{
+				$this->addLog('Could not copy file during unzip.', 'error');
+				return false;
+			}
 		}
 
 		return true;
