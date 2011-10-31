@@ -74,7 +74,7 @@ return array(
 		),
 
 		'file' => array(
-			'class' => 'application.business.utils.CFile'
+			'class' => 'application.business.utils.BlocksFile'
 		),
 
 		'templateCPCache' => array(

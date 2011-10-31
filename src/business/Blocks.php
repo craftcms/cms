@@ -4,7 +4,7 @@ class Blocks extends Yii
 {
 	public static function getVersion()
 	{
-		return /*versionNumber*/ '0.1';
+		return /*versionNumber*/ '0.11';
 	}
 
 	public static function getBuildNumber()

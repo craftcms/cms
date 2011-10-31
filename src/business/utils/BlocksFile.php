@@ -10,7 +10,7 @@
  * Heavily modified for Blocks.
  */
 
-class CFile extends CApplicationComponent
+class BlocksFile extends CApplicationComponent
 {
 	/**
 	 * @var array object instances array with key set to $_filepath
@@ -123,16 +123,16 @@ class CFile extends CApplicationComponent
 	private $_uploadedInstance = null;
 
 	/**
-	 * Returns the instance of CFile for the specified file.
+	 * Returns the instance of BlocksFile for the specified file.
 	 *
 	 * @param string $filePath Path to file specified by user
-	 * @return object CFile instance
+	 * @return object BlocksFile instance
 	 */
 	public static function getInstance($filePath)
 	{
 		if (!array_key_exists($filePath, self::$_instances))
 		{
-			self::$_instances[$filePath] = new CFile($filePath);
+			self::$_instances[$filePath] = new BlocksFile($filePath);
 		}
 
 		return self::$_instances[$filePath];
@@ -155,13 +155,13 @@ class CFile extends CApplicationComponent
 	}
 
 	/**
-	 * Basic CFile method. Sets CFile object to work with specified filesystem object.
+	 * Basic BlocksFile method. Sets BlocksFile object to work with specified filesystem object.
 	 * Essentially path supplied by user is resolved into real path (see {@link getRealPath}), all the other property getting methods should use that real path.
 	 * Uploaded files are supported through {@link CUploadedFile} Yii class. Path aliases are supported through {@link getPathOfAlias} Yii method.
 	 *
 	 * @param string $filePath Path to the file specified by user, if not set exception is raised
 	 * @param boolean $greedy If true file properties (such as 'Size', 'Owner', 'Permission', etc.) would be autoloaded
-	 * @return object CFile instance for the specified filesystem object
+	 * @return object BlocksFile instance for the specified filesystem object
 	 */
 	public function set($filePath, $greedy=false)
 	{
@@ -211,7 +211,7 @@ class CFile extends CApplicationComponent
 					$instance->group;
 					$instance->permissions;
 					$instance->timeModified;
-					if ($instance->isFile)
+					if ($instance->_isFile)
 						$instance->mimeType;
 				}
 			}
@@ -222,7 +222,7 @@ class CFile extends CApplicationComponent
 	}
 
 	/**
-	 * Populates basic CFile properties (i.e. 'Dirname', 'Basename', etc.)
+	 * Populates basic BlocksFile properties (i.e. 'Dirname', 'Basename', etc.)
 	 * using values resolved by pathinfo() php function.
 	 * Detects filesystem object type (file, directory).
 	 */
@@ -395,9 +395,9 @@ class CFile extends CApplicationComponent
 	 */
 	public function getIsEmpty()
 	{
-		if (!isset($this->isEmpty))
+		if (!isset($this->_isEmpty))
 		{
-			if (($this->isFile && $this->getSize(false)==0) || (!$this->isFile && count($this->dirContents($this->_realpath)) == 0))
+			if (($this->_isFile && $this->getSize(false)==0) || (!$this->_isFile && count($this->dirContents($this->_realpath)) == 0))
 				$this->_isEmpty = true;
 			else
 				$this->_isEmpty = false;
@@ -493,11 +493,11 @@ class CFile extends CApplicationComponent
 	/**
 	 * Creates empty file if the current file doesn't exist.
 	 *
-	 * @return mixed Updated the current CFile object on success, 'false' on fail.
+	 * @return mixed Updated the current BlocksFile object on success, 'false' on fail.
 	 */
 	public function create()
 	{
-		if (!$this->exists)
+		if (!$this->_exists)
 		{
 			if ($this->open('w'))
 			{
@@ -517,8 +517,8 @@ class CFile extends CApplicationComponent
 	 * Creates empty directory defined either through {@link set} or through the $directory parameter.
 	 *
 	 * @param int|string $permissions Access permissions for the directory
-	 * @param string $directory Parameter used to create directory other than supplied by {@link set} method of the CFile
-	 * @return mixed Updated the current CFile object on success, 'false' on fail.
+	 * @param string $directory Parameter used to create directory other than supplied by {@link set} method of the BlocksFile
+	 * @return mixed Updated the current BlocksFile object on success, 'false' on fail.
 	 */
 	public function createDir($permissions = 0754, $directory = null)
 	{
@@ -547,7 +547,7 @@ class CFile extends CApplicationComponent
 	 * For now used only internally.
 	 *
 	 * @param string $mode Type of access required to the stream
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	private function open($mode)
 	{
@@ -585,7 +585,7 @@ class CFile extends CApplicationComponent
 	public function getOwner($getName = true)
 	{
 		if (!isset($this->_owner))
-			$this->_owner = $this->exists ? fileowner($this->_realpath) : null;
+			$this->_owner = $this->_exists ? fileowner($this->_realpath) : null;
 
 		if (is_int($this->_owner) && function_exists('posix_getpwuid') && $getName == true)
 		{
@@ -606,7 +606,7 @@ class CFile extends CApplicationComponent
 	public function getGroup($getName = true)
 	{
 		if (!isset($this->_group))
-			$this->_group = $this->exists ? filegroup($this->_realpath) : null;
+			$this->_group = $this->_exists ? filegroup($this->_realpath) : null;
 
 		if (is_int($this->_group) && function_exists('posix_getgrgid') && $getName == true)
 		{
@@ -625,7 +625,7 @@ class CFile extends CApplicationComponent
 	public function getPermissions()
 	{
 		if (!isset($this->_permissions))
-			$this->_permissions = $this->exists ? substr(sprintf('%o', fileperms($this->_realpath)), -4) : null;
+			$this->_permissions = $this->_exists ? substr(sprintf('%o', fileperms($this->_realpath)), -4) : null;
 
 		return $this->_permissions;
 	}
@@ -641,10 +641,10 @@ class CFile extends CApplicationComponent
 	{
 		if (!isset($this->_size))
 		{
-			if ($this->isFile)
-				$this->_size = $this->exists ? sprintf("%u", filesize($this->_realpath)) : null;
+			if ($this->_isFile)
+				$this->_size = $this->_exists ? sprintf("%u", filesize($this->_realpath)) : null;
 			else
-				$this->_size = $this->exists ? sprintf("%u", $this->dirSize()) : null;
+				$this->_size = $this->_exists ? sprintf("%u", $this->dirSize()) : null;
 		}
 
 		$size = $this->_size;
@@ -702,7 +702,7 @@ class CFile extends CApplicationComponent
 	public function getTimeModified()
 	{
 		if (empty($this->_timeModified))
-			$this->_timeModified = $this->exists ? filemtime($this->_realpath) :null;
+			$this->_timeModified = $this->_exists ? filemtime($this->_realpath) :null;
 
 		return $this->_timeModified;
 	}
@@ -758,9 +758,9 @@ class CFile extends CApplicationComponent
 	 */
 	public function getContents($recursive = false, $filter = null)
 	{
-		if ($this->readable)
+		if ($this->_readable)
 		{
-			if ($this->isFile)
+			if ($this->_isFile)
 			{
 				if ($contents = file_get_contents($this->_realpath))
 					return $contents;
@@ -868,7 +868,7 @@ class CFile extends CApplicationComponent
 	 * @param string $contents Contents to be written
 	 * @param boolean $autocreate If 'true' file will be created automatically
 	 * @param integer $flags Flags for file_put_contents(). E.g.: FILE_APPEND to append data to file instead of overwriting.
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setContents($destination = null, $contents = null, $autocreate = true, $flags = 0)
 	{
@@ -876,7 +876,7 @@ class CFile extends CApplicationComponent
 		{
 			$newFile = Blocks::app()->file->set($destination);
 
-			if ($autocreate && !$newFile->exists)
+			if ($autocreate && !$newFile->_exists)
 			{
 				$destDir = dirname($newFile->getRealPath());
 				if (!is_dir($destDir))
@@ -885,7 +885,7 @@ class CFile extends CApplicationComponent
 				$newFile->create();
 			}
 
-			if ($newFile->writeable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
+			if ($newFile->_writeable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
 				return $this;
 
 			$this->addLog('Unable to put file contents');
@@ -894,9 +894,9 @@ class CFile extends CApplicationComponent
 		}
 		else
 		{
-			if ($this->isFile)
+			if ($this->_isFile)
 			{
-				if ($autocreate && !$this->exists)
+				if ($autocreate && !$this->_exists)
 					$this->create();
 
 				if ($this->writeable && file_put_contents($this->_realpath, $contents, $flags) !== false)
@@ -917,19 +917,19 @@ class CFile extends CApplicationComponent
 	 * Sets basename for the current file. Lazy wrapper for {@link rename}. This method works only for files.
 	 *
 	 * @param bool|string $basename New file basename (eg. 'mynewfile.txt')
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setBaseName($basename = false)
 	{
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
-			if ($this->isUploaded)
+			if ($this->_isUploaded)
 			{
 				$this->addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
 				return false;
 			}
 
-			if($this->writeable && $basename !== false && $this->rename($basename))
+			if($this->_writeable && $basename !== false && $this->rename($basename))
 				return $this;
 
 			$this->addLog('Unable to set file basename "'.$basename.'"');
@@ -944,19 +944,19 @@ class CFile extends CApplicationComponent
 	 * Sets the current file name. Lazy wrapper for {@link rename}. This method works only for files.
 	 *
 	 * @param bool|string $filename New file name (eg. 'mynewfile')
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setFileName($filename = false)
 	{
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
-			if ($this->isUploaded)
+			if ($this->_isUploaded)
 			{
 				$this->addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
 				return false;
 			}
 
-			if ($this->writeable && $filename!==false && $this->rename(str_replace($this->filename, $filename, $this->basename)))
+			if ($this->_writeable && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
 				return $this;
 
 			$this->addLog('Unable to set file name "'.$filename.'"');
@@ -972,36 +972,36 @@ class CFile extends CApplicationComponent
 	 * Lazy wrapper for {@link rename}. This method works only for files.
 	 *
 	 * @param bool|string $extension New file extension (eg. 'txt')
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setExtension($extension = false)
 	{
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
-			if ($this->isUploaded)
+			if ($this->_isUploaded)
 			{
 				$this->addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
 				return false;
 			}
 
-			if($this->writeable && $extension !== false)
+			if($this->_writeable && $extension !== false)
 			{
 				$extension = trim($extension);
 
 				// drop current extension
 				if (is_null($extension) || $extension == '')
 				{
-					$newBaseName = $this->filename;
+					$newBaseName = $this->_filename;
 				}
 				// apply new extension
 				else
 				{
 					$extension = ltrim($extension, '.');
 
-					if (is_null($this->extension))
-						$newBaseName = $this->filename.'.'.$extension;
+					if (is_null($this->_extension))
+						$newBaseName = $this->_filename.'.'.$extension;
 					else
-						$newBaseName = str_replace($this->extension, $extension, $this->basename);
+						$newBaseName = str_replace($this->_extension, $extension, $this->_basename);
 				}
 
 				if ($this->rename($newBaseName))
@@ -1020,11 +1020,11 @@ class CFile extends CApplicationComponent
 	 * Sets the current filesystem object owner, updates $_owner property on success. For UNIX systems.
 	 *
 	 * @param mixed $owner New owner name or ID
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setOwner($owner)
 	{
-		if($this->exists && chown($this->_realpath, $owner))
+		if($this->_exists && chown($this->_realpath, $owner))
 		{
 			$this->_owner = $owner;
 			return $this;
@@ -1038,11 +1038,11 @@ class CFile extends CApplicationComponent
 	 * Sets the current filesystem object group, updates $_group property on success. For UNIX systems.
 	 *
 	 * @param mixed $group New group name or ID
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setGroup($group)
 	{
-		if ($this->exists && chgrp($this->_realpath, $group))
+		if ($this->_exists && chgrp($this->_realpath, $group))
 		{
 			$this->_group = $group;
 			return $this;
@@ -1056,11 +1056,11 @@ class CFile extends CApplicationComponent
 	 * Sets the current filesystem object permissions, updates $_permissions property on success. For UNIX systems.
 	 *
 	 * @param string $permissions New filesystem object permissions in numeric (octal, i.e. '0755') format
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function setPermissions($permissions)
 	{
-		if ($this->exists && is_numeric($permissions))
+		if ($this->_exists && is_numeric($permissions))
 		{
 			// '755' normalize to octal '0755'
 			$permissions = octdec(str_pad($permissions, 4, "0", STR_PAD_LEFT));
@@ -1086,7 +1086,7 @@ class CFile extends CApplicationComponent
 	private function resolveDestPath($fileDest)
 	{
 		if (strpos($fileDest, DIRECTORY_SEPARATOR) === false)
-			return $this->dirname.DIRECTORY_SEPARATOR.$fileDest;
+			return $this->_dirname.DIRECTORY_SEPARATOR.$fileDest;
 
 		return $this->realPath($fileDest);
 	}
@@ -1096,13 +1096,13 @@ class CFile extends CApplicationComponent
 	 *
 	 * @param string $fileDest Destination path for the current filesystem object to be copied to
 	 * @param bool $recursive If set to true, if the current filesystem object is a file, will recursively create the subdirectories needed to copy the file.
-	 * @return mixed New CFile object for newly created filesystem object on success, 'false' on fail.
+	 * @return mixed New BlocksFile object for newly created filesystem object on success, 'false' on fail.
 	 */
 	public function copy($fileDest, $recursive = false)
 	{
 		$destRealPath = $this->resolveDestPath($fileDest);
 
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
 			if ($recursive)
 			{
@@ -1111,12 +1111,13 @@ class CFile extends CApplicationComponent
 					mkdir($destDir, 0754, true);
 			}
 
-			if ($this->readable && @copy($this->_realpath, $destRealPath))
+			if ($this->_readable && @copy($this->_realpath, $destRealPath))
 				return $this->set($destRealPath);
 		}
 		else
 		{
 			Blocks::trace('Copying directory "'.$this->_realpath.'" to "'.$destRealPath.'"', 'ext.file');
+
 			$dirContents = $this->dirContents($this->_realpath, true);
 			foreach ($dirContents as $item)
 			{
@@ -1143,13 +1144,13 @@ class CFile extends CApplicationComponent
 	 * Renames/moves the current filesystem object to specified destination. Destination path supplied by user resolved to real destination path with {@link resolveDestPath}
 	 *
 	 * @param string $fileDest Destination path for the current filesystem object to be renamed/moved to
-	 * @return mixed Updated current CFile object on success, 'false' on fail.
+	 * @return mixed Updated current BlocksFile object on success, 'false' on fail.
 	 */
 	public function rename($fileDest)
 	{
 		$destRealPath = $this->resolveDestPath($fileDest);
 
-		if ($this->writeable && @rename($this->_realpath, $destRealPath))
+		if ($this->_writeable && @rename($this->_realpath, $destRealPath))
 		{
 			$this->_filepath = $fileDest;
 			$this->_realpath = $destRealPath;
@@ -1178,16 +1179,16 @@ class CFile extends CApplicationComponent
 	 * If the current filesystem object is a directory all its descendants are deleted.
 	 *
 	 * @param bool $path
-	 * @return mixed Current CFile object on success, 'false' on fail.
+	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
 	public function purge($path = false)
 	{
 		if (!$path) $path = $this->_realpath;
 
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
-			if ($this->writeable)
-				return $this->contents='';
+			if ($this->_writeable)
+				return '';
 		}
 		else
 		{
@@ -1220,9 +1221,9 @@ class CFile extends CApplicationComponent
 	 */
 	public function delete($purge = true)
 	{
-		if ($this->writeable)
+		if ($this->_writeable)
 		{
-			if (($this->isFile && @unlink($this->_realpath) ) || (!$this->isFile && ($purge ? $this->purge() : true) && rmdir($this->_realpath)))
+			if (($this->_isFile && @unlink($this->_realpath) ) || (!$this->_isFile && ($purge ? $this->purge() : true) && rmdir($this->_realpath)))
 			{
 				$this->_exists = $this->_readable = $this->_writeable = false;
 				return true;
@@ -1233,7 +1234,7 @@ class CFile extends CApplicationComponent
 		return false;
 	}
 
-	// Modified methods taken from Yii CFileHelper.php are listed below
+	// Modified methods taken from Yii BlocksFileHelper.php are listed below
 	// ===================================================
 
 	/**
@@ -1248,11 +1249,10 @@ class CFile extends CApplicationComponent
 		if ($this->_mimeType)
 			return $this->_mimeType;
 
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
-			if ($this->readable)
+			if ($this->_readable)
 			{
-
 				if ($this->_isUploaded)
 					return $this->_mimeType = $this->_uploadedInstance->getType();
 
@@ -1286,7 +1286,7 @@ class CFile extends CApplicationComponent
 	 */
 	public function getMimeTypeByExtension()
 	{
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
 			Blocks::trace('Trying to get MIME type for "'.$this->_realpath.'" from extension "'.$this->_extension.'"', 'ext.file');
 			static $extensions;
@@ -1310,7 +1310,7 @@ class CFile extends CApplicationComponent
 
 	public function generateMD5()
 	{
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
 			return md5_file($this->getRealPath());
 		}
@@ -1383,7 +1383,7 @@ class CFile extends CApplicationComponent
 	public function unzip($destination)
 	{
 		// TODO: need a zip fallback.
-		if ($this->isFile)
+		if ($this->_isFile)
 		{
 			if ($this->getExtension() == 'zip')
 			{
