@@ -131,7 +131,7 @@ class CoreUpdater
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
 			$downloadedFile = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
-			$tempDir = $this->getTempDirForPackage($downloadedFile);
+			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
 
@@ -155,8 +155,6 @@ class CoreUpdater
 						$updatedFiles[$counter] = $tempDir->getRealPath().';'.$manifestData[$i];
 					else
 						$updatedFiles[] = $tempDir->getRealPath().';'.$manifestData[$i];
-
-					break;
 				}
 			}
 		}
@@ -210,7 +208,7 @@ class CoreUpdater
 
 	public function cleanTempFiles($manifestFile)
 	{
-		$manifestData = explode(PHP_EOL, $manifestFile->getContents());
+		$manifestData = explode("\n", $manifestFile->getContents());
 
 		foreach ($manifestData as $row)
 		{
@@ -315,14 +313,14 @@ class CoreUpdater
 
 	public function backupFiles($masterManifest)
 	{
-		$manifestData = explode(PHP_EOL, $masterManifest->getContents());
+		$manifestData = explode("\r\n", $masterManifest->getContents());
 
 		try
 		{
 			foreach ($manifestData as $row)
 			{
 				$rowData = explode(';', $row);
-				$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.$rowData[1]);
+				$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.$rowData[1]);
 
 				// if the file doesn't exist, it's a new file
 				if ($file->exists)

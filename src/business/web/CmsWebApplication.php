@@ -35,7 +35,7 @@ class CmsWebApplication extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if (Blocks::app()->urlManager->getTemplateMatch() !== null)
+		if (Blocks::app()->urlManager->getTemplateMatch() !== null || Blocks::app()->request->getParam('c', null) !== null)
 			$this->catchAllRequest = array('cms/index');
 
 		parent::run();

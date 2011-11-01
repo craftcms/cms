@@ -36,8 +36,8 @@ class CmsUrlManager extends CUrlManager
 
 		if (!$matchFound)
 			if (!$this->matchTemplate())
-				if (!$this->matchRoute())
-					throw new BlocksHttpException('404', 'Page not found.');
+				$this->matchRoute();
+					//throw new BlocksHttpException('404', 'Page not found.');
 	}
 
 	public function getTemplateMatch()

@@ -4,17 +4,20 @@ class VersionCheckFilter extends CFilter
 {
 	protected function preFilter($filterChain)
 	{
-		// Don't execute this if we're already in the update module on the default controller.
-		if(Blocks::app()->controller->getModule() !== null)
-			if((Blocks::app()->controller->getModule()->id == 'update' || Blocks::app()->controller->getModule()->id == 'install') && Blocks::app()->controller->id == 'default')
+		if (Blocks::app()->controller->id == 'update')
+			return true;
+
+		// Don't execute this if we're already in the install module on the default controller.
+		if (Blocks::app()->controller->getModule() !== null)
+			if (Blocks::app()->controller->getModule()->id == 'install' && Blocks::app()->controller->id == 'default')
 				return true;
 
-		if(Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
+		if (Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
 			return true;
 
 		$responseVersionInfo = Blocks::app()->coreRepo->versionCheck();
 
-		if($responseVersionInfo != null)
+		if ($responseVersionInfo != null)
 		{
 			$blocksStatusMessages = $this->buildBlocksStatusMessages($responseVersionInfo);
 			$pluginStatusMessages = $this->buildPluginStatusMessages($responseVersionInfo['pluginNamesAndVersions']);
@@ -72,7 +75,7 @@ class VersionCheckFilter extends CFilter
 
 		if ($blocksVersionInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
-			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', 'admin.php/update');
+			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', '/admin.php/update');
 		}
 
 		foreach($blocksVersionInfo['blocksLicenseStatus'] as $licenseMessage)

@@ -1,10 +1,10 @@
-<?php $this->breadcrumbs=array($this->id); ?>
+<?php $this->breadcrumbs = array($this->id); ?>
 
 <center><h1>Update All</h1></center>
 
 <h1>Blocks</h1>
 
-<?php echo BlocksHtml::beginForm('coreupdate'); ?>
+<?php echo BlocksHtml::beginForm('coreupdate?c=update'); ?>
 <?php echo BlocksHtml::hiddenField('blocksLatestVersionNo', $model['blocksLatestVersionNo']); ?>
 <?php echo BlocksHtml::hiddenField('blocksLatestBuildNo', $model['blocksLatestBuildNo']); ?>
 

@@ -4,12 +4,12 @@ class UpdateHelper
 {
 	public static function rollBackFileChanges($manifestFile)
 	{
-		$manifestData = explode(PHP_EOL, $manifestFile->getContents());
+		$manifestData = explode("\n", $manifestFile->getContents());
 
 		foreach ($manifestData as $row)
 		{
 			$rowData = explode(';', $row);
-			$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.$rowData[1].'.bak');
+			$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.$rowData[1].'.bak');
 
 			if ($file->exists)
 				$file->rename($rowData[1]);
@@ -18,7 +18,7 @@ class UpdateHelper
 
 	public static function doFileUpdate($masterManifest)
 	{
-		$manifestData = explode(PHP_EOL, $masterManifest->getContents());
+		$manifestData = explode("\n", $masterManifest->getContents());
 
 		try
 		{
@@ -26,11 +26,10 @@ class UpdateHelper
 			{
 				$rowData = explode(';', $row);
 
-				$relativePath = self::stripRootBlocksPath($rowData[1]);
-				$destFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.$relativePath);
+				$destFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.$rowData[1]);
 				$sourceFile = Blocks::app()->file->set($rowData[0].DIRECTORY_SEPARATOR.$rowData[1]);
 
-				switch ($rowData[2])
+				switch (trim($rowData[2]))
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
@@ -92,7 +91,7 @@ class UpdateHelper
 		// get manifest file
 		$manifestFile = Blocks::app()->file->set($manifestDataPath.DIRECTORY_SEPARATOR.'blocks_manifest');
 		$manifestFileData = $manifestFile->getContents();
-		return explode(PHP_EOL, $manifestFileData);
+		return explode("\n", $manifestFileData);
 	}
 
 	public static function getTempDirForPackage($downloadPath)
@@ -115,7 +114,7 @@ class UpdateHelper
 		for ($counter; $counter < count($fileList); $counter++)
 		{
 			$pieces = explode(';', $fileList[$counter]);
-			if ($manifestDataRow === $pieces[1].';'.$pieces[2].';'.$pieces[3])
+			if ($manifestDataRow === $pieces[1].';'.$pieces[2])
 			{
 				$found = true;
 				break;

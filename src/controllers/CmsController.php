@@ -9,18 +9,45 @@ class CmsController extends BaseController
 		parent::init();
 		$this->_templateMatch = Blocks::app()->getUrlManager()->getTemplateMatch();
 	}
-
+/*
+ * if(($action=$this->createAction($actionID))!==null)
+		{
+			if(($parent=$this->getModule())===null)
+				$parent=Yii::app();
+			if($parent->beforeControllerAction($this,$action))
+			{
+				$this->runActionWithFilters($action,$this->filters());
+				$parent->afterControllerAction($this,$action);
+			}
+		}
+		else
+			$this->missingAction($actionID);
+ *
+ */
 	public function run($actionId)
 	{
+		// this will run through the filterchain on the cms controller.
 		parent::run($actionId);
 
-		if ($this->_templateMatch !== null)
+		if ($this->_templateMatch !== null || Blocks::app()->request->getParam('c', null) !== null)
 		{
-			// we found a matching controller for this request.
-			if (($ca = Blocks::app()->createController($this->_templateMatch->getRelativePath())) !== null)
+			if ($this->_templateMatch !== null)
 			{
-				list($requestController, $actionID) = $ca;
-				$this->setRequestController($requestController);
+				$tempController = $this->_templateMatch->getRelativePath();
+				$tempAction = $this->_templateMatch->getFileName();
+			}
+			else
+			{
+				$tempController = Blocks::app()->request->getParam('c');
+				$pathSegs = Blocks::app()->request->getPathSegments();
+				$tempAction = $pathSegs[0];
+			}
+
+			// we found a matching controller for this request.
+			if (($ca = Blocks::app()->createController($tempController)) !== null)
+			{
+				//list($requestController, $actionID) = $ca;
+				$this->setRequestController($ca[0]);
 				// save the current controller and swap out the new one.
 				$oldController = Blocks::app()->getController();
 				Blocks::app()->setController($this->getRequestController());
@@ -31,12 +58,14 @@ class CmsController extends BaseController
 				    || Blocks::app()->controller->id == 'update')
 				{
 					Blocks::app()->controller->init();
-					Blocks::app()->controller->run($this->_templateMatch->getFileName());
+					// now we run through the filterchain on the swapped out controller.
+					//parent::run($tempAction);
+					Blocks::app()->controller->run($tempAction);
 				}
 				else
 				{
 					// controller request, but no action specified, so just render template.
-					$this->showTemplate($this->_templateMatch->getFileName());
+					$this->showTemplate($tempAction);
 				}
 
 				Blocks::app()->setController($oldController);
@@ -44,7 +73,7 @@ class CmsController extends BaseController
 			// no matching controller, so just render the template.
 			else
 			{
-				$this->showTemplate($this->_templateMatch->getFileName());
+				$this->showTemplate($tempAction);
 			}
 		}
 		else
