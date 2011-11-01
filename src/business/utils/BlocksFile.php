@@ -1332,6 +1332,11 @@ class BlocksFile extends CApplicationComponent
 			$this->create();
 		}
 
+		if (@class_exists('ZipArchive', false))
+		{
+			return $this->zipZipArchive($srcDir);
+		}
+
 		return $this->zipPclZip($srcDir);
 	}
 
@@ -1381,7 +1386,7 @@ class BlocksFile extends CApplicationComponent
 			{
 				@ini_set('memory_limit', '256M');
 
-				if (class_exists('ZipArchive'))
+				if (@class_exists('ZipArchive', false))
 				{
 					$result = $this->unzipZipArchive($destination);
 

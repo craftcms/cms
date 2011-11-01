@@ -85,7 +85,7 @@ class CoreUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.$this->constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build']);
+			$downloadFilePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate['version'], $buildToUpdate['build'], $downloadFilePath))
@@ -114,24 +114,10 @@ class CoreUpdater
 		if (!$this->backupFiles($manifest))
 			throw new BlocksException('There was a problem backing up your files for the update.');
 
-		if (!UpdateHelper::doFileUpdate($manifest, UpdaterType::Core, true))
+		if (!UpdateHelper::doFileUpdate($manifest))
 			throw new BlocksException('There was a problem updating your files.');
 
 		$this->cleanTempFiles($manifest);
-		return true;
-	}
-
-	public function resume($manifestId, $status)
-	{
-		if ($status == '0')
-			throw new BlocksException('There was a problem performing the update.  Please try again.');
-
-		$manifestFile = Blocks::app()->file->set(Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'manifest_'.$manifestId);
-
-		if (!UpdateHelper::doFileUpdate($manifestFile, UpdaterType::Core, false))
-			throw new BlocksException('There was a problem updating your files.');
-
-		$this->cleanTempFiles($manifestFile);
 		return true;
 	}
 
@@ -140,17 +126,15 @@ class CoreUpdater
 		$masterManifest = Blocks::app()->file->set(Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'manifest_'.uniqid());
 		$masterManifest->exists ? $masterManifest->delete() : $masterManifest->create();
 
-		$updaterFiles = array();
-		$coreFiles = array();
+		$updatedFiles = array();
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.$this->constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build']);
+			$downloadedFile = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
 			$tempDir = $this->getTempDirForPackage($downloadedFile);
 
-			$manifestData = $this->getManifestData($tempDir->getRealPath());
+			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
 
-			// we get all of the updater files and core files separately because we need to update the updater files first.
 			for ($i = 0; $i < count($manifestData); $i++)
 			{
 				// first line is version information
@@ -164,111 +148,43 @@ class CoreUpdater
 				// catch any rogue blank lines
 				if (count($row) > 1)
 				{
-					switch (trim($row[2]))
-					{
-						// here we only want to add the latest unique file/action/updatetype combinations
-						case UpdaterType::Updater:
+					$counter = 0;
+					$found = UpdateHelper::inManifestList($counter, $manifestData[$i], $updatedFiles);
 
-							$counter = 0;
-							$found = $this->inManifestList($counter, $manifestData[$i], $updaterFiles);
+					if ($found)
+						$updatedFiles[$counter] = $tempDir->getRealPath().';'.$manifestData[$i];
+					else
+						$updatedFiles[] = $tempDir->getRealPath().';'.$manifestData[$i];
 
-							if ($found)
-								$updaterFiles[$counter] = $tempDir->getRealPath().';'.$manifestData[$i];
-							else
-								$updaterFiles[] = $tempDir->getRealPath().';'.$manifestData[$i];
-
-							break;
-
-						case UpdaterType::Core:
-
-							$counter = 0;
-							$found = $this->inManifestList($counter, $manifestData[$i], $coreFiles);
-
-							if ($found)
-								$coreFiles[$counter] = $tempDir->getRealPath().';'.$manifestData[$i];
-							else
-								$coreFiles[] = $tempDir->getRealPath().';'.$manifestData[$i];
-
-							break;
-					}
+					break;
 				}
 			}
 		}
 
-		if (count($updaterFiles) > 0)
+		if (count($updatedFiles) > 0)
 		{
-			// write the updater files first.
-			$uniqueUpdaterFiles = array_unique($updaterFiles, SORT_STRING);
+			// write the updated files out
+			$uniqueUpdatedFiles = array_unique($updatedFiles, SORT_STRING);
 
-			for ($counter = 0; $counter < count($uniqueUpdaterFiles); $counter++)
+			for ($counter = 0; $counter < count($uniqueUpdatedFiles); $counter++)
 			{
-				$row = explode(';', $uniqueUpdaterFiles[$counter]);
-				$this->processMigration($row);
+				$row = explode(';', $uniqueUpdatedFiles[$counter]);
 
-				$manifestContent = $uniqueUpdaterFiles[$counter].PHP_EOL;
+				// we found a migration
+				if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
+					$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($row[0].DIRECTORY_SEPARATOR.$row[1]);
 
-				// if we're on the last one and there are no changed core files, don't write the last newline.
-				if ($counter == count($uniqueUpdaterFiles) - 1)
-				{
-					if ($coreFiles == null)
-						$manifestContent = $uniqueUpdaterFiles[$counter];
-				}
-
-				$masterManifest->setContents(null, $manifestContent, true, FILE_APPEND);
-			}
-		}
-
-		if (count($coreFiles) > 0)
-		{
-			// write the core files
-			$uniqueCoreFiles = array_unique($coreFiles, SORT_STRING);
-
-			for ($counter = 0; $counter < count($uniqueCoreFiles); $counter++)
-			{
-				$row = explode(';', $uniqueCoreFiles[$counter]);
-				$this->processMigration($row);
-
-				$manifestContent = $uniqueCoreFiles[$counter].PHP_EOL;
+				$manifestContent = $uniqueUpdatedFiles[$counter].PHP_EOL;
 
 				// if we're on the last one don't write the last newline.
-				if ($counter == count($uniqueCoreFiles) - 1)
-					$manifestContent = $uniqueCoreFiles[$counter];
+				if ($counter == count($uniqueUpdatedFiles) - 1)
+					$manifestContent = $uniqueUpdatedFiles[$counter];
 
 				$masterManifest->setContents(null, $manifestContent, true, FILE_APPEND);
 			}
 		}
 
 		return $masterManifest;
-	}
-
-	private function processMigration($row)
-	{
-		if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
-			$this->copyMigrationFile($row);
-	}
-
-	private function copyMigrationFile($fileInfo)
-	{
-		$migrationFile = Blocks::app()->file->set($fileInfo[0].DIRECTORY_SEPARATOR.$fileInfo[1]);
-		$destinationFile = Blocks::app()->getBasePath().DIRECTORY_SEPARATOR.'migrations'.DIRECTORY_SEPARATOR.$migrationFile->getBaseName();
-		$migrationFile->copy($destinationFile, true);
-		$this->_migrationsToRun[] = $destinationFile;
-	}
-
-	private function inManifestList(&$counter, $manifestDataRow, $fileList)
-	{
-		$found = false;
-		for ($counter; $counter < count($fileList); $counter++)
-		{
-			$pieces = explode(';', $fileList[$counter]);
-			if ($manifestDataRow === $pieces[1].';'.$pieces[2].';'.$pieces[3])
-			{
-				$found = true;
-				break;
-			}
-		}
-
-		return $found;
 	}
 
 	public function putSiteInMaintenanceMode()
@@ -387,7 +303,7 @@ class CoreUpdater
 
 	public function unpackPackage($downloadPath)
 	{
-		$tempDir = $this->getTempDirForPackage($downloadPath);
+		$tempDir = UpdateHelper::getTempDirForPackage($downloadPath);
 		$tempDir->exists ? $tempDir->delete() : $tempDir->createDir(0754);
 
 		$downloadPath = Blocks::app()->file->set($downloadPath);
@@ -395,40 +311,6 @@ class CoreUpdater
 			return true;
 
 		return false;
-	}
-
-	private function getTempDirForPackage($downloadPath)
-	{
-		$downloadPath = Blocks::app()->file->set($downloadPath);
-		return Blocks::app()->file->set($downloadPath->getDirName().DIRECTORY_SEPARATOR.$downloadPath->getFileName().'_temp');
-	}
-
-	private function constructCoreReleasePatchFileName($version, $build)
-	{
-		if(StringHelper::IsNullOrEmpty($version) || StringHelper::IsNullOrEmpty($build) || StringHelper::IsNullOrEmpty($this->_edition))
-			throw new BlocksException('Missing versionNumber or buildNumber or edition.');
-
-		switch ($this->_edition)
-		{
-			case BlocksEdition::Personal:
-				return BLOCKSBUILDS_PERSONAL_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
-
-			case BlocksEdition::Pro:
-				return BLOCKSBUILDS_PRO_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
-
-			case BlocksEdition::Standard:
-				return BLOCKSBUILDS_STANDARD_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
-		}
-
-		throw new BlocksException('Unknown Blocks Edition: '.$this->_edition);
-	}
-
-	private function getManifestData($tempDirPath)
-	{
-		// get manifest file
-		$manifestFile = Blocks::app()->file->set($tempDirPath.DIRECTORY_SEPARATOR.'blocks_manifest');
-		$manifestFileData = $manifestFile->getContents();
-		return explode(PHP_EOL, $manifestFileData);
 	}
 
 	public function backupFiles($masterManifest)

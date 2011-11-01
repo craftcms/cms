@@ -16,7 +16,7 @@ class UpdateHelper
 		}
 	}
 
-	public static function doFileUpdate($masterManifest, $updaterType, $firstCheck)
+	public static function doFileUpdate($masterManifest)
 	{
 		$manifestData = explode(PHP_EOL, $masterManifest->getContents());
 
@@ -25,17 +25,6 @@ class UpdateHelper
 			foreach ($manifestData as $row)
 			{
 				$rowData = explode(';', $row);
-
-				// this isn't the first call in the update process and we've done all of the required updaterType updates
-				if ($rowData[3] !== $updaterType && !$firstCheck)
-					continue;
-
-				// first call in the update process, we need to see if any updater files need updating.
-				if ($rowData[3] == UpdaterType::Updater && $firstCheck)
-				{
-					$manifestId = explode('_', $masterManifest->getFileName());
-					Blocks::app()->request->redirect(array('update/updaterupdate', 'manifestId' => $manifestId[1]), true);
-				}
 
 				$relativePath = self::stripRootBlocksPath($rowData[1]);
 				$destFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.$relativePath);
@@ -70,6 +59,26 @@ class UpdateHelper
 		return true;
 	}
 
+	public static function constructCoreReleasePatchFileName($version, $build, $edition)
+	{
+		if(StringHelper::IsNullOrEmpty($version) || StringHelper::IsNullOrEmpty($build) || StringHelper::IsNullOrEmpty($edition))
+			throw new BlocksException('Missing versionNumber or buildNumber or edition.');
+
+		switch ($edition)
+		{
+			case BlocksEdition::Personal:
+				return BLOCKSBUILDS_PERSONAL_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
+
+			case BlocksEdition::Pro:
+				return BLOCKSBUILDS_PRO_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
+
+			case BlocksEdition::Standard:
+				return BLOCKSBUILDS_STANDARD_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
+		}
+
+		throw new BlocksException('Unknown Blocks Edition: '.$edition);
+	}
+
 	public static function stripRootBlocksPath($path)
 	{
 		if (strpos($path, 'blocks') == 0)
@@ -77,4 +86,43 @@ class UpdateHelper
 
 		return $path;
 	}
+
+	public static function getManifestData($manifestDataPath)
+	{
+		// get manifest file
+		$manifestFile = Blocks::app()->file->set($manifestDataPath.DIRECTORY_SEPARATOR.'blocks_manifest');
+		$manifestFileData = $manifestFile->getContents();
+		return explode(PHP_EOL, $manifestFileData);
+	}
+
+	public static function getTempDirForPackage($downloadPath)
+	{
+		$downloadPath = Blocks::app()->file->set($downloadPath);
+		return Blocks::app()->file->set($downloadPath->getDirName().DIRECTORY_SEPARATOR.$downloadPath->getFileName().'_temp');
+	}
+
+	public static function copyMigrationFile($filePath)
+	{
+		$migrationFile = Blocks::app()->file->set($filePath);
+		$destinationFile = Blocks::app()->getBasePath().DIRECTORY_SEPARATOR.'migrations'.DIRECTORY_SEPARATOR.$migrationFile->getBaseName();
+		$migrationFile->copy($destinationFile, true);
+		return $destinationFile;
+	}
+
+	public static function inManifestList(&$counter, $manifestDataRow, $fileList)
+	{
+		$found = false;
+		for ($counter; $counter < count($fileList); $counter++)
+		{
+			$pieces = explode(';', $fileList[$counter]);
+			if ($manifestDataRow === $pieces[1].';'.$pieces[2].';'.$pieces[3])
+			{
+				$found = true;
+				break;
+			}
+		}
+
+		return $found;
+	}
+
 }
