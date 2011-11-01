@@ -122,6 +122,8 @@ class BlocksFile extends CApplicationComponent
 	 */
 	private $_uploadedInstance = null;
 
+	private $_contents = null;
+
 	/**
 	 * Returns the instance of BlocksFile for the specified file.
 	 *
@@ -1188,7 +1190,7 @@ class BlocksFile extends CApplicationComponent
 		if ($this->_isFile)
 		{
 			if ($this->_writeable)
-				return '';
+				return $this->_contents = '';
 		}
 		else
 		{
@@ -1234,8 +1236,80 @@ class BlocksFile extends CApplicationComponent
 		return false;
 	}
 
-	// Modified methods taken from Yii BlocksFileHelper.php are listed below
-	// ===================================================
+	/**
+	 * Sends the current file to browser as a download with real or faked file name.
+	 * Browser caching is prevented.  This method works only for files.
+	 *
+	 * @param bool|string $fakeName New filename (eg. 'myfileFakedName.htm')
+	 * @param boolean $serverHandled Whether file contents delivery is handled by server internals (cf. when file contents is read and sent by php).
+	 * E.g.: lighttpd and Apache with mod-sendfile can use X-Senfile header to speed up file delivery blazingly.
+	 * Note: If you want to serve big or even huge files you are definitely advised to turn this option on and setup your server software appropriately, if not to say that it is your only alternative :).
+	 * @param null $contents Alternative contents to send other than what's on the file system.
+	 * @return file File download
+	 */
+	public function send($fakeName = false, $serverHandled = false, $contents = null)
+	{
+		if ($this->_isFile)
+		{
+			if ($this->_readable && !headers_sent())
+			{
+				$contentType = $this->_mimeType;
+
+				if (!$contentType)
+					$contentType = "application/octet-stream";
+
+				if ($fakeName)
+					$filename = $fakeName;
+				else
+					$filename = $this->_basename;
+
+				// disable browser caching
+				header('Cache-control: private');
+				header('Pragma: private');
+				header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+
+				header('Content-Type: '.$contentType);
+				header('Content-Transfer-Encoding: binary');
+				header('Content-Length: '.$this->getSize(false));
+				header('Content-Disposition: attachment;filename="'.$filename.'"');
+
+				if ($serverHandled)
+				{
+					header('X-Sendfile: '.$this->_realpath);
+				}
+				else
+				{
+					if ($contents == null)
+					{
+						$contents = $this->_contents;
+					}
+
+					echo $contents;
+				}
+
+				exit(0);
+			}
+
+			$this->addLog('Unable to prepare file for download. Headers already sent or file doesn\'t not exist');
+			return false;
+		}
+		else
+		{
+			$this->addLog('send() and download() methods are available only for files', 'warning');
+			return false;
+		}
+	}
+
+	/**
+	 * Alias for {@link send}
+	 * @param bool $fakeName
+	 * @param bool $serverHandled
+	 * @return \file
+	 */
+	function download($fakeName = false, $serverHandled = false)
+	{
+		return $this->send($fakeName, $serverHandled);
+	}
 
 	/**
 	 * Returns the MIME type of the current file. If $_mimeType property is set, returned value is read from that property.

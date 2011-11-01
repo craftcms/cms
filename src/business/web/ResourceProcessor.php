@@ -120,42 +120,15 @@ class ResourceProcessor
 		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.Blocks::app()->configRepo->getBlocksResourceProcessorUrl().'?resourcePath='.$this->_relativeResourcePath.'$2$5)', ''.$content.'');
 	}
 
-	public function getMimeTypeByExtension($file)
-	{
-		$extensions = require(Blocks::app()->configRepo->getBlocksFrameworkPath().'utils'.DIRECTORY_SEPARATOR.'mimeTypes.php');
-
-		if (($ext = pathinfo($file, PATHINFO_EXTENSION)) !== '')
-		{
-			$ext = strtolower($ext);
-
-			if (isset($extensions[$ext]))
-				return $extensions[$ext];
-		}
-
-		// return text by default
-		return 'text/plain';
-	}
-
 	public function sendResource($resourceFullPath)
 	{
 		$content = file_get_contents($resourceFullPath);
-		$mimeType = $this->getMimeTypeByExtension($resourceFullPath);
+		$file = Blocks::app()->file->set($resourceFullPath);
+		$mimeType = $file->getMimeType();
 
 		if(strpos($mimeType, 'css') > 0)
 			$content = $this->correctImagePaths($content);
 
-		header('Pragma: public');
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-		header("Content-type: $mimeType");
-
-		if(ini_get("output_handler") == '')
-			header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content, '8bit') : strlen($content)));
-
-		header("Content-Disposition: attachment; filename=\"$resourceFullPath\"");
-		header('Content-Transfer-Encoding: binary');
-
-		echo $content;
-		exit(0);
+		$file->send(false, false, $content);
 	}
 }
