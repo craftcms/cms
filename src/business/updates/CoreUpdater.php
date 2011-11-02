@@ -187,7 +187,7 @@ class CoreUpdater
 
 	public function putSiteInMaintenanceMode()
 	{
-		$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'index.php', false);
+		$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.'index.php', false);
 		$contents = $file->getContents();
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
 		$file->setContents(null, $contents);
@@ -225,7 +225,7 @@ class CoreUpdater
 				$tempFile->delete();
 
 			// delete the cms files we backed up.
-			$backupFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.$rowData[1].'.bak');
+			$backupFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.$rowData[1].'.bak');
 			if ($backupFile->exists)
 				$backupFile->delete();
 		}
