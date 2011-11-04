@@ -3,11 +3,21 @@
 class CmsController extends BaseController
 {
 	private $_templateMatch = null;
+	private $_defaultTemplateTags = null;
 
 	public function init()
 	{
 		parent::init();
 		$this->_templateMatch = Blocks::app()->getUrlManager()->getTemplateMatch();
+
+		if ($this->_templateMatch !== null)
+		{
+			// TODO: calculate site id based on url
+			$content = new ContentTag(1);
+			$this->_defaultTemplateTags = array(
+				$content,
+			);
+		}
 	}
 /*
  * if(($action=$this->createAction($actionID))!==null)
@@ -64,16 +74,16 @@ class CmsController extends BaseController
 				}
 				else
 				{
-					// controller request, but no action specified, so just render template.
-					$this->showTemplate($tempAction);
+					// controller request, but no action specified, so load the template.
+					$this->loadTemplate($tempAction);
 				}
 
 				Blocks::app()->setController($oldController);
 			}
-			// no matching controller, so just render the template.
+			// no matching controller, so load the template.
 			else
 			{
-				$this->showTemplate($tempAction);
+				$this->loadTemplate($tempAction);
 			}
 		}
 		else
@@ -82,6 +92,13 @@ class CmsController extends BaseController
 		}
 	}
 
+	public function loadTemplate($templatePath)
+	{
+		$data = $this->_defaultTemplateTags;
+		$this->render($templatePath, array('content' => $data[0]));
+	}
+
+	// required
 	public function actionIndex()
 	{
 	}
