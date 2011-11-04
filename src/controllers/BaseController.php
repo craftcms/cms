@@ -78,11 +78,6 @@ class BaseController extends CController
 		return $this->resolveViewFile($viewName, $this->getViewPath(), $basePath, $moduleViewPath);
 	}
 
-	protected function showTemplate($templatePath)
-	{
-		$this->render($templatePath);
-	}
-
 	public function getViewPath()
 	{
 		if (($requestController = $this->getRequestController()) !== null)
@@ -112,7 +107,11 @@ class BaseController extends CController
 		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
 			$extension = $renderer->fileExtension;
 		else
-			$extension='.html';
+		{
+			// default to html
+			$extension = 'html';
+		}
+
 
 		if ($viewName[0] === '/')
 		{
@@ -128,9 +127,18 @@ class BaseController extends CController
 
 		$viewFile = str_replace('\\', '/', $viewFile);
 
-		if(is_file($viewFile.$extension))
-			return Blocks::app()->findLocalizedFile($viewFile.$extension);
-		else if($extension!=='.php' && is_file($viewFile.'.php'))
+		foreach (Blocks::app()->configRepo->getAllowedTemplateFileExtensions() as $allowedExtension)
+		{
+			if(is_file($viewFile.'.'.$allowedExtension))
+			{
+				$extension = $allowedExtension;
+				break;
+			}
+		}
+
+		if(is_file($viewFile.'.'.$extension))
+			return Blocks::app()->findLocalizedFile($viewFile.'.'.$extension);
+		else if($extension !== '.php' && is_file($viewFile.'.php'))
 			return Blocks::app()->findLocalizedFile($viewFile.'.php');
 		else
 			return false;

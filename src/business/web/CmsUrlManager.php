@@ -5,7 +5,7 @@ class CmsUrlManager extends CUrlManager
 	private $_path = null;
 	private $_pathSegments = null;
 	private $_templateMatch = null;
-	private $_extension = null;
+	private $_requestExtension = null;
 
 	public function init()
 	{
@@ -14,7 +14,7 @@ class CmsUrlManager extends CUrlManager
 
 		$this->_path = Blocks::app()->request->getPathInfo();
 		$this->_pathSegments = Blocks::app()->request->getPathSegments();
-		$this->_extension = '.'.Blocks::app()->request->getPathExtension();
+		$this->_requestExtension = Blocks::app()->request->getPathExtension();
 
 		if ($this->_pathSegments !== null && isset($this->_pathSegments[0]) && $this->_pathSegments === 'gii')
 			return;
@@ -103,11 +103,12 @@ class CmsUrlManager extends CUrlManager
 		$templatePath = Blocks::app()->getViewPath();
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
 		$tempPath = $this->_path;
+		$testPath = null;
 
-		if ($this->_extension !== null)
+		if ($this->_requestExtension !== null)
 		{
-			$pathMatchPattern = rtrim($pathMatchPattern, $this->_extension);
-			$tempPath = rtrim($tempPath, $this->_extension);
+			$pathMatchPattern = rtrim($pathMatchPattern, '.'.$this->_requestExtension);
+			$tempPath = rtrim($tempPath, '.'.$this->_requestExtension);
 		}
 
 		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
@@ -130,25 +131,19 @@ class CmsUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
-		$testPath = Blocks::app()->file->set($templatePath.$requestPath.'.html', false);
-
-		// match the request to a template on the file system.
-		// see if it matches a file first.
-		if ($testPath->getIsFile())
+		if (($fullMatchPath = $this->doesTemplateExist($templatePath.$requestPath)) !== false)
 		{
-			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $moduleName);
+			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
+			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
 			return true;
 		}
 
 		// see if it matches directory/index'
-		$path = $requestPath.DIRECTORY_SEPARATOR.'index';
-
-		// could be a file match.  check for it's existence.
-		$testPath = Blocks::app()->file->set($templatePath.$path.'.html', false);
-
-		if ($testPath->getExists())
+		$path = $requestPath.'index';
+		if(($fullMatchPath = $this->doesTemplateExist($templatePath.$path)) !== false)
 		{
-			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.$path, $pathMatchPattern, TemplateMatchType::Template, $moduleName);
+			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
+			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.$path, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
 			return true;
 		}
 
@@ -156,12 +151,28 @@ class CmsUrlManager extends CUrlManager
 		return false;
 	}
 
-	private function setTemplateMatch($path, $pathMatchPattern, $matchType, $moduleName = null)
+	private function doesTemplateExist($path)
+	{
+		foreach (Blocks::app()->configRepo->getAllowedTemplateFileExtensions() as $allowedExtension)
+		{
+			$testPath = Blocks::app()->file->set($path.'.'.$allowedExtension, false);
+			if ($testPath->getIsFile())
+			{
+				return $testPath->getRealPath();
+				break;
+			}
+		}
+
+		return false;
+	}
+
+	private function setTemplateMatch($path, $pathMatchPattern, $matchType, $extension, $moduleName = null)
 	{
 		$templateMatch = new TemplateMatch($path);
 		$templateMatch->setMatchRequest($pathMatchPattern);
 		$templateMatch->setMatchType($matchType);
 		$templateMatch->setModuleName($moduleName);
+		$templateMatch->setMatchExtension($extension);
 		$this->_templateMatch = $templateMatch;
 	}
 }

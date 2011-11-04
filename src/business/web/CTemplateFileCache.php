@@ -192,6 +192,7 @@ class CTemplateFileCache extends CFileCache
 				break;
 		}
 
+		// TODO: fix the .html only check.
 		$relativePath = str_replace('.html', '.php', substr($sourceTemplatePath, strlen($tempTemplatePath) + 1));
 		return $cachedTemplatePath->getRealPath().DIRECTORY_SEPARATOR.$relativePath;
 	}

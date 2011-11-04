@@ -197,6 +197,16 @@ class ConfigRepository extends CApplicationComponent implements IConfigRepositor
 		return Blocks::app()->params['config']['siteUrl'];
 	}
 
+	public function getAllowedTemplateFileExtensions()
+	{
+		return array('html', 'php');
+	}
+
+	public function isExtensionInAllowedTemplateExtensions($extension)
+	{
+		return in_array($extension, $this->getAllowedTemplateFileExtensions());
+	}
+
 	public function updateConfigFile($filePath, $key, $value)
 	{
 		$configFile = Blocks::app()->file->set($filePath, true);
