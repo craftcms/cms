@@ -7,6 +7,7 @@ class TemplateMatch
 	private $_fullTemplatePath;
 	private $_matchRequest;
 	private $_matchType;
+	private $_matchExtension;
 	private $_moduleName;
 
 	public function __construct($path)
@@ -59,6 +60,11 @@ class TemplateMatch
 		return $this->_relativePath;
 	}
 
+	public function getMatchExtension()
+	{
+		return $this->_matchExtension;
+	}
+
 	public function setMatchRequest($matchRequest)
 	{
 		$this->_matchRequest = $matchRequest;
@@ -72,6 +78,11 @@ class TemplateMatch
 	public function setModuleName($moduleName)
 	{
 		$this->_moduleName = $moduleName;
+	}
+
+	public function setMatchExtension($extension)
+	{
+		$this->_matchExtension = $extension;
 	}
 
 }
