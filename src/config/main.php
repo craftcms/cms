@@ -26,6 +26,10 @@ return array(
 		'application.business.enums.*',
 		'application.business.exceptions.*',
 		'application.business.repositories.*',
+		'application.business.tags.*',
+		'application.business.tags.abstract.*',
+		'application.business.tags.content.*',
+		'application.business.tags.primitive.*',
 		'application.business.updates.*',
 		'application.business.utils.*',
 		'application.business.web.*',
@@ -67,6 +71,10 @@ return array(
 
 		'configRepo' => array(
 			'class' => 'application.business.repositories.ConfigRepository',
+		),
+
+		'contentRepo' => array(
+			'class' => 'application.business.repositories.ContentRepository',
 		),
 
 		'userRepo' => array(
