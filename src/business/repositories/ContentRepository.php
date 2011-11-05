@@ -48,9 +48,32 @@ class ContentRepository extends CApplicationComponent implements IContentReposit
 		return $pages;
 	}
 
-	public function getBlocksByPageId($pageId)
+	public function doesPageHaveSubPages($pageId)
 	{
-		
+		$exists = ContentPages::model()->exists(
+			'parent_id=:parentId',
+			array(':parentId' => $pageId)
+		);
+
+		return $exists;
+	}
+
+	public function getPageVersionsByPageId($pageId)
+	{
+		$versions = ContentVersions::model()->findAllByAttributes(array(
+			'page_id' => $pageId,
+		));
+
+		return $versions;
+	}
+
+	public function getPageVersionById($versionId)
+	{
+		$version = ContentVersions::model()->findByAttributes(array(
+			'id' => $versionId,
+		));
+
+		return $version;
 	}
 
 	/*
@@ -63,6 +86,16 @@ class ContentRepository extends CApplicationComponent implements IContentReposit
 		));
 
 		return $section;
+	}
+
+	public function doesSectionHaveSubSections($sectionId)
+	{
+		$exists = ContentSections::model()->exists(
+			'parent_id=:parentId',
+			array(':parentId' => $sectionId)
+		);
+
+		return $exists;
 	}
 
 	public function getSectionByHandle($handle)
@@ -90,5 +123,45 @@ class ContentRepository extends CApplicationComponent implements IContentReposit
 		));
 
 		return $sections;
+	}
+
+	/*
+	 * Blocks
+	 */
+	public function getBlocksBySectionId($sectionId)
+	{
+		$sections = ContentBlocks::model()->findAllByAttributes(array(
+			'section_id' => $sectionId,
+		));
+
+		return $sections;
+	}
+
+	public function getBlocksByPageId($pageId)
+	{
+		$prefix = Blocks::app()->configRepo->getDatabaseTablePrefix().'_';
+		$blocks = Blocks::app()->db->createCommand()
+			->select('cb.*')
+			->from($prefix.'contentblocks cb')
+			->join($prefix.'contentsections cs', 'cs.id = cb.section_id')
+			->join($prefix.'contentpages cp', 'cs.id = cp.section_id')
+			->where('cp.id=:pageId', array(':pageId' => $pageId))
+			->queryAll();
+
+		return $blocks;
+	}
+
+	public function getBlockByHandle($pageId, $handle)
+	{
+		$prefix = Blocks::app()->configRepo->getDatabaseTablePrefix().'_';
+		$blocks = Blocks::app()->db->createCommand()
+			->select('cb.*')
+			->from($prefix.'contentblocks cb')
+			->join($prefix.'contentsections cs', 'cs.id = cb.section_id')
+			->join($prefix.'contentpages cp', 'cs.id = cp.section_id')
+			->where('cp.id=:pageId AND cb.handle=:handle', array(':pageId' => $pageId, ':handle' => $handle))
+			->queryAll();
+
+		return $blocks;
 	}
 }
