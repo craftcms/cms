@@ -125,7 +125,7 @@ return array(
 
 		'assetManager' => array(
 			'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets',
-			'baseUrl' => '../app/assets',
+			'baseUrl' => '../../blocks/app/assets',
 		),
 
 		'errorHandler' => array(
