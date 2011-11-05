@@ -1,6 +1,6 @@
 <?php
 
-class MembershipRepository extends CApplicationComponent implements IMembershipRepository
+class MembershipService extends CApplicationComponent implements IMembershipService
 {
 	public function getAllUsers()
 	{

@@ -15,7 +15,7 @@ class VersionCheckFilter extends CFilter
 		if (Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
 			return true;
 
-		$responseVersionInfo = Blocks::app()->coreRepo->versionCheck();
+		$responseVersionInfo = Blocks::app()->core->versionCheck();
 
 		if ($responseVersionInfo != null)
 		{

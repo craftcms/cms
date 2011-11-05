@@ -13,7 +13,7 @@ return array(
 	// autoloading model and component classes
 	'import' => array(
 		'application.business.*',
-		'application.business.repositories.*',
+		'application.business.services.*',
 		'application.migrations.*',
 	),
 
@@ -30,8 +30,8 @@ return array(
 			'tablePrefix'       => $db['tablePrefix'],
 		),
 
-		'configRepo' => array(
-			'class' => 'application.business.repositories.ConfigRepository',
+		'config' => array(
+			'class' => 'application.business.services.ConfigService',
 		),
 	),
 

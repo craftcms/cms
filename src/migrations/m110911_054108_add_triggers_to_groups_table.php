@@ -4,8 +4,8 @@ class m110911_054108_add_triggers_to_groups_table extends CDbMigration
 {
 	public function safeUp()
 	{
-		$dbName = Blocks::app()->configRepo->getDatabaseName();
-		$tablePrefix = Blocks::app()->configRepo->getDatabaseTablePrefix();
+		$dbName = Blocks::app()->config->getDatabaseName();
+		$tablePrefix = Blocks::app()->config->getDatabaseTablePrefix();
 
 		$this->execute('
 			CREATE TRIGGER `AuditInfoInsert_Groups` BEFORE INSERT ON `'.$dbName.'`.`'.$tablePrefix.'_groups` FOR EACH ROW SET NEW.DateCreated = UTC_TIMESTAMP(), NEW.DateUpdated = UTC_TIMESTAMP(), NEW.Uid = UUID();

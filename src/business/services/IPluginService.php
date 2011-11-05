@@ -1,6 +1,6 @@
 <?php
 
-interface IPluginRepository
+interface IPluginService
 {
 	function getAllInstalledPlugins();
 	function getAllInstalledPluginHandlesAndVersions();

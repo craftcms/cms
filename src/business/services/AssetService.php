@@ -1,6 +1,6 @@
 <?php
 
-class AssetRepository implements IAssetRepository
+class AssetService implements IAssetService
 {
 	public function getUploadFoldersBySiteId($siteId)
 	{
@@ -31,7 +31,7 @@ class AssetRepository implements IAssetRepository
 
 	public function getAllFilesBySiteId($siteId)
 	{
-		$prefix = Blocks::app()->configRepo->getDatabaseTablePrefix().'_';
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$pages = Blocks::app()->db->createCommand()
 			->select('a.*')
 			->from($prefix.'assets a')

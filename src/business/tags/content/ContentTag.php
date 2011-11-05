@@ -10,7 +10,7 @@ class ContentTag extends Tag
 		return $this->section($method);
 	}
 
-	// TODO: figure out what to do if repo query returns null... exception?
+	// TODO: figure out what to do if service query returns null... exception?
 
 	function __construct($siteId)
 	{
@@ -20,28 +20,28 @@ class ContentTag extends Tag
 	public function sections($handles = array())
 	{
 		if (!$handles)
-			$sections = Blocks::app()->contentRepo->getAllSectionsBySiteId($this->_siteId);
+			$sections = Blocks::app()->content->getAllSectionsBySiteId($this->_siteId);
 		else
-			$sections = Blocks::app()->contentRepo->getSectionsByHandles($handles);
+			$sections = Blocks::app()->content->getSectionsByHandles($handles);
 
 		return new ContentSectionsTag($sections);
 	}
 
 	public function section($handle)
 	{
-		$section = Blocks::app()->contentRepo->getSectionByHandle($handle);
+		$section = Blocks::app()->content->getSectionByHandle($handle);
 		return new ContentSectionTag($section);
 	}
 
 	public function pages()
 	{
-		$pages = Blocks::app()->contentRepo->getAllPagesBySiteId($this->_siteId);
+		$pages = Blocks::app()->content->getAllPagesBySiteId($this->_siteId);
 		return new ContentPagesTag($pages);
 	}
 
 	public function page($pageId)
 	{
-		$page = Blocks::app()->contentRepo->getPageById($pageId);
+		$page = Blocks::app()->content->getPageById($pageId);
 		return new ContentPageTag($page);
 	}
 }

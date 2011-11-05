@@ -4,7 +4,7 @@ class UpdateController extends BaseController
 {
 	public function actionIndex()
 	{
-		$responseVersionInfo = Blocks::app()->coreRepo->versionCheck();
+		$responseVersionInfo = Blocks::app()->core->versionCheck();
 
 		if($responseVersionInfo != null)
 		{

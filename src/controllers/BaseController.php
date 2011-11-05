@@ -127,7 +127,7 @@ class BaseController extends CController
 
 		$viewFile = str_replace('\\', '/', $viewFile);
 
-		foreach (Blocks::app()->configRepo->getAllowedTemplateFileExtensions() as $allowedExtension)
+		foreach (Blocks::app()->config->getAllowedTemplateFileExtensions() as $allowedExtension)
 		{
 			if(is_file($viewFile.'.'.$allowedExtension))
 			{

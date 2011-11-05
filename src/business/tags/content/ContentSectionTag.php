@@ -39,7 +39,7 @@ class ContentSectionTag extends Tag
 
 	public function hasSubSections()
 	{
-		$hasSubSections = Blocks::app()->contentRepo->doesSectionHaveSubSections($this->_val->id);
+		$hasSubSections = Blocks::app()->content->doesSectionHaveSubSections($this->_val->id);
 		return new BoolTag($hasSubSections);
 	}
 
@@ -50,13 +50,13 @@ class ContentSectionTag extends Tag
 
 	public function pages()
 	{
-		$pages = Blocks::app()->contentRepo->getPagesBySectionId($this->_val->id);
+		$pages = Blocks::app()->content->getPagesBySectionId($this->_val->id);
 		return new ContentPagesTag($pages);
 	}
 
 	public function blocks()
 	{
-		$blocks = Blocks::app()->contentRepo->getBlocksBySectionId($this->_val->id);
+		$blocks = Blocks::app()->content->getBlocksBySectionId($this->_val->id);
 		return new ContentBlocksTag($blocks);
 	}
 }

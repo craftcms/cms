@@ -4,7 +4,7 @@ class DefaultController extends BaseController
 {
 	function __construct($id, $module = null)
 	{
-		$infoTable = Blocks::app()->db->schema->getTable(Blocks::app()->configRepo->getDatabaseTablePrefix().'_info');
+		$infoTable = Blocks::app()->db->schema->getTable(Blocks::app()->config->getDatabaseTablePrefix().'_info');
 		if ($infoTable !== null)
 			throw new BlocksHttpException('404', 'Page not found.');
 
@@ -25,7 +25,7 @@ class DefaultController extends BaseController
 				try
 				{
 					// validate P&T credentials & license key
-					$status = Blocks::app()->coreRepo->validateUserCredentialsAndKey($model->ptUserName, $model->ptPassword, Blocks::app()->configRepo->getSiteLicenseKey(), Blocks::getEdition());
+					$status = Blocks::app()->security->validatePTUserCredentialsAndKey($model->ptUserName, $model->ptPassword, Blocks::app()->config->getSiteLicenseKey(), Blocks::getEdition());
 
 					switch ($status)
 					{
@@ -48,7 +48,7 @@ class DefaultController extends BaseController
 						case WebServiceReturnStatus::CODE_404:
 						case LicenseKeyStatus::Valid:
 							// start the db install
-							$dbType = strtolower(Blocks::app()->configRepo->getDatabaseType());
+							$dbType = strtolower(Blocks::app()->config->getDatabaseType());
 							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_schema.sql');
 
 							$sqlSchemaContents = $baseSqlSchemaFile->getContents();
@@ -74,9 +74,9 @@ class DefaultController extends BaseController
 								$this->executeSQL($query);
 
 							// register the admin.
-							Blocks::app()->userRepo->registerUser($model->adminUserName, $model->adminEmail, $model->adminFirstName, $model->adminLastName, $model->adminPassword);
+							Blocks::app()->membership->registerUser($model->adminUserName, $model->adminEmail, $model->adminFirstName, $model->adminLastName, $model->adminPassword);
 
-							// update the info table.<
+							// update the info table.
 							$info = new Info();
 							$info->build_number = Blocks::getBuildNumber();
 							$info->edition = Blocks::getEdition();
@@ -103,7 +103,7 @@ class DefaultController extends BaseController
 	{
 		$connection = Blocks::app()->db;
 
-		$connection->charset = Blocks::app()->configRepo->getDatabaseCharset();
+		$connection->charset = Blocks::app()->config->getDatabaseCharset();
 		$connection->active = true;
 
 		if (preg_match('/(CREATE|DROP|ALTER|SET|INSERT)/i', $query))
@@ -115,9 +115,9 @@ class DefaultController extends BaseController
 
 	private function replaceTokens($fileContents)
 	{
-		$fileContents = str_replace('@@@', Blocks::app()->configRepo->getDatabaseTablePrefix(), $fileContents);
-		$fileContents = str_replace('^^^', Blocks::app()->configRepo->getDatabaseCharset(), $fileContents);
-		$fileContents = str_replace('###', Blocks::app()->configRepo->getDatabaseCollation(), $fileContents);
+		$fileContents = str_replace('@@@', Blocks::app()->config->getDatabaseTablePrefix(), $fileContents);
+		$fileContents = str_replace('^^^', Blocks::app()->config->getDatabaseCharset(), $fileContents);
+		$fileContents = str_replace('###', Blocks::app()->config->getDatabaseCollation(), $fileContents);
 
 		return $fileContents;
 	}

@@ -1,6 +1,6 @@
 <?php
 
-interface IConfigRepository
+interface IConfigService
 {
 	public function getDatabaseType();
 	public function getDatabasePort();

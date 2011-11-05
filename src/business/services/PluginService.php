@@ -1,6 +1,6 @@
 <?php
 
-class PluginRepository extends CApplicationComponent implements IPluginRepository
+class PluginService extends CApplicationComponent implements IPluginService
 {
 	public function getAllInstalledPlugins()
 	{

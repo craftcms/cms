@@ -73,12 +73,12 @@ class ResourceProcessor
 		// plugin resource
 		if($this->_pluginHandle !== null)
 		{
-			return Blocks::app()->configRepo->getBlocksPluginsPath().$this->_pluginHandle.DIRECTORY_SEPARATOR.$this->_relativeResourcePathAndName;
+			return Blocks::app()->config->getBlocksPluginsPath().$this->_pluginHandle.DIRECTORY_SEPARATOR.$this->_relativeResourcePathAndName;
 		}
 		// blocks resource
 		else
 		{
-			return Blocks::app()->configRepo->getBlocksResourcesPath().$this->_relativeResourcePathAndName;
+			return Blocks::app()->config->getBlocksResourcesPath().$this->_relativeResourcePathAndName;
 		}
 	}
 
@@ -117,7 +117,7 @@ class ResourceProcessor
 
 	public function correctImagePaths($content)
 	{
-		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.Blocks::app()->configRepo->getBlocksResourceProcessorUrl().'?resourcePath='.$this->_relativeResourcePath.'$2$5)', ''.$content.'');
+		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.Blocks::app()->config->getBlocksResourceProcessorUrl().'?resourcePath='.$this->_relativeResourcePath.'$2$5)', ''.$content.'');
 	}
 
 	public function sendResource($resourceFullPath)

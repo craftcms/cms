@@ -19,7 +19,7 @@ class ContentPageTag extends Tag
 
 	public function hasSubPages()
 	{
-		$hasSubPages = Blocks::app()->contentRepo->doesPageHaveSubPages($this->_val->id);
+		$hasSubPages = Blocks::app()->content->doesPageHaveSubPages($this->_val->id);
 		return new BoolTag($hasSubPages);
 	}
 
@@ -70,31 +70,31 @@ class ContentPageTag extends Tag
 
 	public function title($languageCode = 'en-us')
 	{
-		$pageTitle = Blocks::app()->contentRepo->getPageTitleByLanguageCode($this->_val, $languageCode);
+		$pageTitle = Blocks::app()->content->getPageTitleByLanguageCode($this->_val, $languageCode);
 		return new StringTag($pageTitle);
 	}
 
 	public function blocks()
 	{
-		$blocks = Blocks::app()->contentRepo->getBlocksByPageId($this->_val->id);
+		$blocks = Blocks::app()->content->getBlocksByPageId($this->_val->id);
 		return new ContentBlocksTag($blocks);
 	}
 
 	public function block($handle)
 	{
-		$block = Blocks::app()->contentRepo->getBlockByHandle($this->_val->id, $handle);
+		$block = Blocks::app()->content->getBlockByHandle($this->_val->id, $handle);
 		return new ContentBlockTag($block);
 	}
 
 	public function versions()
 	{
-		$versions = Blocks::app()->contentRepo->getPageVersionsByPageId($this->_val->id);
+		$versions = Blocks::app()->content->getPageVersionsByPageId($this->_val->id);
 		return new ContentVersionsTag($versions);
 	}
 
 	public function version($id)
 	{
-		$version = Blocks::app()->contentRepo->getPageVersionById($id);
+		$version = Blocks::app()->content->getPageVersionById($id);
 		return new ContentVersionTag($version);
 	}
 }

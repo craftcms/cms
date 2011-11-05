@@ -1,6 +1,6 @@
 <?php
 
-interface ICoreRepository
+interface ICoreService
 {
 	function versionCheck();
 }

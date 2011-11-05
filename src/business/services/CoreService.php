@@ -1,6 +1,6 @@
 <?php
 
-class CoreRepository extends CApplicationComponent implements ICoreRepository
+class CoreService extends CApplicationComponent implements ICoreService
 {
 	public function versionCheck()
 	{
@@ -12,8 +12,8 @@ class CoreRepository extends CApplicationComponent implements ICoreRepository
 
 		$versionCheckInfo['blocksClientVersionNo'] = Blocks::getVersion();
 		$versionCheckInfo['blocksClientEdition'] = Blocks::getEdition();
-		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->pluginRepo->getAllInstalledPluginHandlesAndVersions();
-		$versionCheckInfo['key'] = Blocks::app()->configRepo->getSiteLicenseKey();
+		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
+		$versionCheckInfo['key'] = Blocks::app()->config->getSiteLicenseKey();
 		$versionCheckInfo['requestingDomain'] = Blocks::app()->request->getServerName();
 
 		try
@@ -43,40 +43,5 @@ class CoreRepository extends CApplicationComponent implements ICoreRepository
 		}
 
 		return null;
-	}
-
-	public function validateUserCredentialsAndKey($userName, $password, $licenseKey, $edition)
-	{
-		try
-		{
-			$client = new HttpClient(APIWebServiceEndPoints::ValidateKeyByCredentials, array(
-					'timeout'       =>  1,
-					'maxredirects'  =>  0
-					));
-
-			$client->setParameterPost(array(
-				'userName' => $userName,
-				'password' => $password,
-				'licenseKey' => $licenseKey,
-				'edition' => $edition
-			));
-
-			$response = $client->request('POST');
-
-			if ($response->isSuccessful())
-			{
-				$responseBody = $response->getBody();
-				return $responseBody;
-			}
-			else
-			{
-				Blocks::log('Error in calling '.APIWebServiceEndPoints::ValidateKeyByCredentials.' Response: '.$response->getBody(), 'warning');
-				return WebServiceReturnStatus::CODE_404;
-			}
-		}
-		catch(Exception $e)
-		{
-			Blocks::log('Error in validateUserCredentialsAndKey. Message: '.$e->getMessage(), 'error');
-		}
 	}
 }

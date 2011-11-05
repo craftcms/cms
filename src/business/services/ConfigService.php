@@ -1,6 +1,6 @@
 <?php
 
-class ConfigRepository extends CApplicationComponent implements IConfigRepository
+class ConfigService extends CApplicationComponent implements IConfigService
 {
 	private $dbCharsetDefault = 'utf8';
 	private $dbPortDefault = '3306';

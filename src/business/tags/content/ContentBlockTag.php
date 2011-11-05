@@ -39,7 +39,7 @@ class ContentBlockTag extends Tag
 
 	public function section()
 	{
-		$section = Blocks::app()->contentRepo->getSectionById($this->_val->section_id);
+		$section = Blocks::app()->content->getSectionById($this->_val->section_id);
 		return new ContentSectionTag($section);
 	}
 }

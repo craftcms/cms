@@ -13,15 +13,15 @@ class ConfigCheckFilter extends CFilter
 
 		$messages = array();
 
-		$databaseServerName = Blocks::app()->configRepo->getDatabaseServerName();
-		$databaseAuthName = Blocks::app()->configRepo->getDatabaseAuthName();
-		$databaseAuthPassword = Blocks::app()->configRepo->getDatabaseAuthPassword();
-		$databaseName = Blocks::app()->configRepo->getDatabaseName();
-		$databaseType = Blocks::app()->configRepo->getDatabaseType();
-		$databasePort = Blocks::app()->configRepo->getDatabasePort();
-		$databaseTablePrefix = Blocks::app()->configRepo->getDatabaseTablePrefix();
-		$databaseCharset = Blocks::app()->configRepo->getDatabaseCharset();
-		$databaseCollation = Blocks::app()->configRepo->getDatabaseCollation();
+		$databaseServerName = Blocks::app()->config->getDatabaseServerName();
+		$databaseAuthName = Blocks::app()->config->getDatabaseAuthName();
+		$databaseAuthPassword = Blocks::app()->config->getDatabaseAuthPassword();
+		$databaseName = Blocks::app()->config->getDatabaseName();
+		$databaseType = Blocks::app()->config->getDatabaseType();
+		$databasePort = Blocks::app()->config->getDatabasePort();
+		$databaseTablePrefix = Blocks::app()->config->getDatabaseTablePrefix();
+		$databaseCharset = Blocks::app()->config->getDatabaseCharset();
+		$databaseCollation = Blocks::app()->config->getDatabaseCollation();
 
 		if (StringHelper::IsNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
@@ -51,7 +51,7 @@ class ConfigCheckFilter extends CFilter
 			$messages[] = 'The database type is not set in your db config file.';
 		else
 		{
-			if (!in_array($databaseType, Blocks::app()->configRepo->getDatabaseSupportedTypes()))
+			if (!in_array($databaseType, Blocks::app()->config->getDatabaseSupportedTypes()))
 				$messages[] = 'Blocks does not support the database type you have set in your db config file.';
 		}
 

@@ -28,11 +28,11 @@ class CoreUpdater
 
 	public function checkRequirements()
 	{
-		$localPHPVersion = Blocks::app()->configRepo->getLocalPHPVersion();
-		$localDatabaseType = Blocks::app()->configRepo->getDatabaseType();
-		$localDatabaseVersion = Blocks::app()->configRepo->getDatabaseVersion();
-		$requiredDatabaseVersion = Blocks::app()->configRepo->getDatabaseRequiredVersionByType($localDatabaseType);
-		$requiredPHPVersion = Blocks::app()->configRepo->getRequiredPHPVersion();
+		$localPHPVersion = Blocks::app()->config->getLocalPHPVersion();
+		$localDatabaseType = Blocks::app()->config->getDatabaseType();
+		$localDatabaseVersion = Blocks::app()->config->getDatabaseVersion();
+		$requiredDatabaseVersion = Blocks::app()->config->getDatabaseRequiredVersionByType($localDatabaseType);
+		$requiredPHPVersion = Blocks::app()->config->getRequiredPHPVersion();
 
 		$phpCompat = version_compare($localPHPVersion, $requiredPHPVersion, '>=');
 		$databaseCompat = version_compare($localDatabaseVersion, $requiredDatabaseVersion, '>=');

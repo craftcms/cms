@@ -1,6 +1,6 @@
 <?php
 
-class ContentRepository extends CApplicationComponent implements IContentRepository
+class ContentService extends CApplicationComponent implements IContentService
 {
 	/*
 	 * Pages
@@ -37,7 +37,7 @@ class ContentRepository extends CApplicationComponent implements IContentReposit
 
 	public function getAllPagesBySiteId($siteId)
 	{
-		$prefix = Blocks::app()->configRepo->getDatabaseTablePrefix().'_';
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$pages = Blocks::app()->db->createCommand()
 			->select('cp.*')
 			->from($prefix.'contentsections cs')
@@ -139,7 +139,7 @@ class ContentRepository extends CApplicationComponent implements IContentReposit
 
 	public function getBlocksByPageId($pageId)
 	{
-		$prefix = Blocks::app()->configRepo->getDatabaseTablePrefix().'_';
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$blocks = Blocks::app()->db->createCommand()
 			->select('cb.*')
 			->from($prefix.'contentblocks cb')
@@ -153,7 +153,7 @@ class ContentRepository extends CApplicationComponent implements IContentReposit
 
 	public function getBlockByHandle($pageId, $handle)
 	{
-		$prefix = Blocks::app()->configRepo->getDatabaseTablePrefix().'_';
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$blocks = Blocks::app()->db->createCommand()
 			->select('cb.*')
 			->from($prefix.'contentblocks cb')

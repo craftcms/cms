@@ -14,7 +14,7 @@ class FileTag extends Tag
 
 	public function folder()
 	{
-		$folder = Blocks::app()->assetRepo->getUploadFolderById($this->_val->upload_folder_id);
+		$folder = Blocks::app()->assets->getUploadFolderById($this->_val->upload_folder_id);
 		return new UploadFolderTag($folder);
 	}
 }

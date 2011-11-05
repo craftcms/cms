@@ -29,7 +29,7 @@ class UploadFolderTag extends Tag
 
 	public function files()
 	{
-		$files = Blocks::app()->assetRepo->getFilesForUploadFolder($this->_val->id);
+		$files = Blocks::app()->assets->getFilesForUploadFolder($this->_val->id);
 		return new FilesTag($files);
 	}
 }

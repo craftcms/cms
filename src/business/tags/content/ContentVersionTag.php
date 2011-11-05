@@ -9,7 +9,7 @@ class ContentVersionTag extends Tag
 
 	public function page()
 	{
-		$page = Blocks::app()->contentRepo->getPageById($this->_val->page_id);
+		$page = Blocks::app()->content->getPageById($this->_val->page_id);
 		return new ContentPageTag($page);
 	}
 

@@ -9,13 +9,13 @@ class RequirementsChecker
 
 	private function init()
 	{
-		$dbConfigPath = Blocks::app()->configRepo->getBlocksConfigPath().'db.php';
-		$blocksConfigPath = Blocks::app()->configRepo->getBlocksConfigPath().'blocks.php';
+		$dbConfigPath = Blocks::app()->config->getBlocksConfigPath().'db.php';
+		$blocksConfigPath = Blocks::app()->config->getBlocksConfigPath().'blocks.php';
 
 		$this->_requirements = array(
 			new Requirement(
 				'PHP Version',
-				version_compare(Blocks::app()->configRepo->getLocalPHPVersion(), BLOCKS_MIN_PHP_VERSION, ">="),
+				version_compare(Blocks::app()->config->getLocalPHPVersion(), BLOCKS_MIN_PHP_VERSION, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'PHP '.BLOCKS_MIN_PHP_VERSION.' or higher is required.'),
@@ -105,31 +105,31 @@ class RequirementsChecker
 				$message),
 			new Requirement(
 				'Database Config Server Name',
-				Blocks::app()->configRepo->getDatabaseServerName() !== '',
+				Blocks::app()->config->getDatabaseServerName() !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database server name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config User Name',
-				Blocks::app()->configRepo->getDatabaseAuthName() !== '',
+				Blocks::app()->config->getDatabaseAuthName() !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database user name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config User Password',
-				Blocks::app()->configRepo->getDatabaseAuthPassword() !== '',
+				Blocks::app()->config->getDatabaseAuthPassword() !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database user password in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config Database Name',
-				Blocks::app()->configRepo->getDatabaseName() !== '',
+				Blocks::app()->config->getDatabaseName() !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Site License Key Name',
-				Blocks::app()->configRepo->getSiteLicenseKey() !== '',
+				Blocks::app()->config->getSiteLicenseKey() !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your license key in the site config file at '.$blocksConfigPath),
@@ -154,14 +154,14 @@ class RequirementsChecker
 				false,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->configRepo->getBlocksConfigPath()).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
+				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->config->getBlocksConfigPath()).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
 		}
 		else
 		{
 			/* TODO: Find out what min versions of MySQL and other databases we are going to support. */
 			$this->_requirements[] = new Requirement(
 			'MySQL version',
-			version_compare(Blocks::app()->configRepo->getDatabaseVersion(), BLOCKS_MIN_MYSQL_VERSION, ">="),
+			version_compare(Blocks::app()->config->getDatabaseVersion(), BLOCKS_MIN_MYSQL_VERSION, ">="),
 			true,
 			'<a href="http://www.blockscms.com">Blocks</a>',
 			'MySQL '.BLOCKS_MIN_MYSQL_VERSION.' or higher is required to run Blocks.');

@@ -4,7 +4,7 @@ class m110902_020154_v0_1_311 extends CDbMigration
 {
 	public function safeUp()
 	{
-		$this->delete(Blocks::app()->configRepo->getDatabaseTablePrefix().'_test');
+		$this->delete(Blocks::app()->config->getDatabaseTablePrefix().'_test');
 	}
 
 	public function safeDown()

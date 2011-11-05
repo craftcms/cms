@@ -25,11 +25,14 @@ return array(
 		'application.business.*',
 		'application.business.enums.*',
 		'application.business.exceptions.*',
-		'application.business.repositories.*',
+		'application.business.services.*',
 		'application.business.tags.*',
 		'application.business.tags.abstract.*',
+		'application.business.tags.assets.*',
 		'application.business.tags.content.*',
+		'application.business.tags.membership.*',
 		'application.business.tags.primitive.*',
+		'application.business.tags.security.*',
 		'application.business.updates.*',
 		'application.business.utils.*',
 		'application.business.web.*',
@@ -61,24 +64,32 @@ return array(
 			'allowAutoLogin' => true,
 		),
 
-		'pluginRepo' => array(
-			'class' => 'application.business.repositories.PluginRepository',
+		'plugins' => array(
+			'class' => 'application.business.services.PluginService',
 		),
 
-		'coreRepo' => array(
-			'class' => 'application.business.repositories.CoreRepository',
+		'core' => array(
+			'class' => 'application.business.services.CoreService',
 		),
 
-		'configRepo' => array(
-			'class' => 'application.business.repositories.ConfigRepository',
+		'config' => array(
+			'class' => 'application.business.services.ConfigService',
 		),
 
-		'contentRepo' => array(
-			'class' => 'application.business.repositories.ContentRepository',
+		'content' => array(
+			'class' => 'application.business.services.ContentService',
 		),
 
-		'userRepo' => array(
-			'class' => 'application.business.repositories.UserRepository',
+		'membership' => array(
+			'class' => 'application.business.services.MembershipService',
+		),
+
+		'security' => array(
+			'class' => 'application.business.services.SecurityService',
+		),
+
+		'assets' => array(
+			'class' => 'application.business.services.AssetService',
 		),
 
 		'file' => array(
