@@ -38,4 +38,10 @@ class ContentTag extends Tag
 		$pages = Blocks::app()->contentRepo->getAllPagesBySiteId($this->_siteId);
 		return new ContentPagesTag($pages);
 	}
+
+	public function page($pageId)
+	{
+		$page = Blocks::app()->contentRepo->getPageById($pageId);
+		return new ContentPageTag($page);
+	}
 }

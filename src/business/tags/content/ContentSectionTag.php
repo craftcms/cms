@@ -37,6 +37,12 @@ class ContentSectionTag extends Tag
 		return $this->_val->parent_id == null ? null : new ContentSectionTag($this->_val->parent_id);
 	}
 
+	public function hasSubSections()
+	{
+		$hasSubSections = Blocks::app()->contentRepo->doesSectionHaveSubSections($this->_val->id);
+		return new BoolTag($hasSubSections);
+	}
+
 	public function site()
 	{
 		return new SiteTag($this->_val->site_id);
@@ -50,6 +56,7 @@ class ContentSectionTag extends Tag
 
 	public function blocks()
 	{
-		$blocks = Blocks::app()->
+		$blocks = Blocks::app()->contentRepo->getBlocksBySectionId($this->_val->id);
+		return new ContentBlocksTag($blocks);
 	}
 }

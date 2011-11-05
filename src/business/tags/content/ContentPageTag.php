@@ -2,14 +2,25 @@
 
 class ContentPageTag extends Tag
 {
+	function __call($method, $args)
+	{
+		return $this->block($method);
+	}
+
 	public function __toString()
 	{
 		return $this->title();
 	}
 
-	public function parent()
+	public function parentPage()
 	{
 		return $this->_val->parent_id == null ? null : new ContentPageTag($this->_val->parent_id);
+	}
+
+	public function hasSubPages()
+	{
+		$hasSubPages = Blocks::app()->contentRepo->doesPageHaveSubPages($this->_val->id);
+		return new BoolTag($hasSubPages);
 	}
 
 	public function section()
@@ -65,6 +76,25 @@ class ContentPageTag extends Tag
 
 	public function blocks()
 	{
-		
+		$blocks = Blocks::app()->contentRepo->getBlocksByPageId($this->_val->id);
+		return new ContentBlocksTag($blocks);
+	}
+
+	public function block($handle)
+	{
+		$block = Blocks::app()->contentRepo->getBlockByHandle($this->_val->id, $handle);
+		return new ContentBlockTag($block);
+	}
+
+	public function versions()
+	{
+		$versions = Blocks::app()->contentRepo->getPageVersionsByPageId($this->_val->id);
+		return new ContentVersionsTag($versions);
+	}
+
+	public function version($id)
+	{
+		$version = Blocks::app()->contentRepo->getPageVersionById($id);
+		return new ContentVersionTag($version);
 	}
 }
