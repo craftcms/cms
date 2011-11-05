@@ -6,6 +6,7 @@
  * The followings are the available columns in table '{{_uploadfolders}}':
  * @property integer $id
  * @property integer $site_id
+ * @property string $name
  * @property string $relative_path
  * @property integer $include_subfolders
  * @property integer $date_created
@@ -43,13 +44,14 @@ class UploadFolders extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('site_id', 'required'),
+			array('site_id, name', 'required'),
 			array('site_id, include_subfolders, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('name', 'length', 'max'=>200),
 			array('relative_path', 'length', 'max'=>500),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, site_id, relative_path, include_subfolders, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, site_id, name, relative_path, include_subfolders, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -74,6 +76,7 @@ class UploadFolders extends CActiveRecord
 		return array(
 			'id' => 'ID',
 			'site_id' => 'Site',
+			'name' => 'Name',
 			'relative_path' => 'Relative Path',
 			'include_subfolders' => 'Include Subfolders',
 			'date_created' => 'Date Created',
@@ -95,6 +98,7 @@ class UploadFolders extends CActiveRecord
 
 		$criteria->compare('id',$this->id);
 		$criteria->compare('site_id',$this->site_id);
+		$criteria->compare('name',$this->name,true);
 		$criteria->compare('relative_path',$this->relative_path,true);
 		$criteria->compare('include_subfolders',$this->include_subfolders);
 		$criteria->compare('date_created',$this->date_created);
