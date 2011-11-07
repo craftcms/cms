@@ -40,4 +40,32 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 
 		return $user;
 	}
+
+	public function getGroupsByUserId($userId)
+	{
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
+		$groups = Blocks::app()->db->createCommand()
+			->select('g.*')
+			->from($prefix.'groups g')
+			->join($prefix.'usergroups ug', 'g.id = ug.group_id')
+			->join($prefix.'users u', 'ug.user_id = u.id')
+			->where('u.id=:userId', array(':userId' => $userId))
+			->queryAll();
+
+		return $groups;
+	}
+
+	public function getUsersByGroupId($groupId)
+	{
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
+		$groups = Blocks::app()->db->createCommand()
+			->select('u.*')
+			->from($prefix.'groups g')
+			->join($prefix.'usergroups ug', 'g.id = ug.group_id')
+			->join($prefix.'users u', 'ug.user_id = u.id')
+			->where('g.id=:groupId', array(':groupId' => $groupId))
+			->queryAll();
+
+		return $groups;
+	}
 }
