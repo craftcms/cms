@@ -47,61 +47,61 @@ class BlocksViewRenderer extends CViewRenderer
 	private function parse($beginBlock, $endBlock)
 	{
 		$offset = $beginBlock;
-		while (($p = strpos($this->_input, "@", $offset)) !== false && $p < $endBlock)
+		while (($pos = strpos($this->_input, "%", $offset)) !== false && $pos < $endBlock)
 		{
 			// replace @@ -> @
-			if ($this->isNextToken($p, $endBlock, "@"))
+			if ($this->isNextToken($pos, $endBlock, "@"))
 			{
-				$this->_output .= substr($this->_input, $offset, $p - $offset + 1);
-				$offset = $p + 2;
+				$this->_output .= substr($this->_input, $offset, $pos - $offset + 1);
+				$offset = $pos + 2;
 				continue;
 			}
 
 			// replace multi-token statements @(...)
-			if ($this->isNextToken($p, $endBlock, "("))
+			if ($this->isNextToken($pos, $endBlock, "("))
 			{
-				$end = $this->findClosingBracket($p + 1, $endBlock, "(", ")");
-				$this->_output .= substr($this->_input, $offset, $p - $offset);
-				$this->generatePHPOutput($p, $end);
+				$end = $this->findClosingBracket($pos + 1, $endBlock, "(", ")");
+				$this->_output .= substr($this->_input, $offset, $pos - $offset);
+				$this->generatePHPOutput($pos, $end);
 				$offset = $end + 1;
 				continue;
 			}
 
 			// replace multi-line statements @{...}
-			if ($this->isNextToken($p, $endBlock, "{"))
+			if ($this->isNextToken($pos, $endBlock, "{"))
 			{
-				$end = $this->findClosingBracket($p + 1, $endBlock, "{", "}");
-				$this->_output .= substr($this->_input, $offset, $p - $offset);
-				$this->_output .= "<?php " . substr($this->_input, $p + 2, $end - $p - 2) . " ?>";
+				$end = $this->findClosingBracket($pos + 1, $endBlock, "{", "}");
+				$this->_output .= substr($this->_input, $offset, $pos - $offset);
+				$this->_output .= "<?php " . substr($this->_input, $pos + 2, $end - $pos - 2) . " ?>";
 				$offset = $end + 1;
 				continue;
 			}
 
 			// replace HTML-encoded statements @:...
-			if ($this->isNextToken($p, $endBlock, ":"))
+			if ($this->isNextToken($pos, $endBlock, ":"))
 			{
-				$statement = $this->detectStatement($p + 2, $endBlock);
-				$end = $this->findEndStatement($p + 1 + strlen($statement), $endBlock);
-				$this->_output .= substr($this->_input, $offset, $p - $offset);
-				$this->generatePHPOutput($p + 1, $end, true);
+				$statement = $this->detectStatement($pos + 2, $endBlock);
+				$end = $this->findEndStatement($pos + 1 + strlen($statement), $endBlock);
+				$this->_output .= substr($this->_input, $offset, $pos - $offset);
+				$this->generatePHPOutput($pos + 1, $end, true);
 				$offset = $end + 1;
 				continue;
 			}
 
-			$statement = $this->detectStatement($p + 1, $endBlock);
+			$statement = $this->detectStatement($pos + 1, $endBlock);
 			if ($statement == "foreach" || $statement == "for" || $statement == "while")
 			{
-				$offset = $this->processLoopStatement($p, $offset, $endBlock, $statement);
+				$offset = $this->processLoopStatement($pos, $offset, $endBlock, $statement);
 			}
 			elseif ($statement == "if")
 			{
-				$offset = $this->processIfStatement($p, $offset, $endBlock, $statement);
+				$offset = $this->processIfStatement($pos, $offset, $endBlock, $statement);
 			}
 			else
 			{
-				$end = $this->findEndStatement($p + strlen($statement), $endBlock);
-				$this->_output .= substr($this->_input, $offset, $p - $offset);
-				$this->generatePHPOutput($p, $end);
+				$end = $this->findEndStatement($pos + strlen($statement), $endBlock);
+				$this->_output .= substr($this->_input, $offset, $pos - $offset);
+				$this->generatePHPOutput($pos, $end);
 				$offset = $end + 1;
 			}
 		}
@@ -194,9 +194,15 @@ class BlocksViewRenderer extends CViewRenderer
 		return false;
 	}
 
+	// checks to see if the next token is the supplied token
 	private function isNextToken($currentPosition, $endBlock, $token)
 	{
-		return $currentPosition + strlen($token) < $endBlock && substr($this->_input, $currentPosition + 1, strlen($token)) == $token;
+		// make sure the next token isn't the end of the text
+		if ($currentPosition + strlen($token) < $endBlock)
+			if (substr($this->_input, $currentPosition + 1, strlen($token)) == $token)
+				return true;
+
+		return false;
 	}
 
 	private function isEscaped($currentPosition)
