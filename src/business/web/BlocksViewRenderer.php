@@ -6,6 +6,8 @@ class BlocksViewRenderer extends CViewRenderer
 	private $_output;
 	private $_sourceFile;
 
+	public $filePermission = 0755;
+
 	public function getAllowedFileExtensions()
 	{
 		return Blocks::app()->config->getAllowedTemplateFileExtensions();
@@ -41,7 +43,12 @@ class BlocksViewRenderer extends CViewRenderer
 		$cacheTemplatePath = Blocks::app()->config->getBlocksTemplateCachePath();
 		$relativePath = substr($file, strlen(Blocks::app()->config->getBlocksTemplatePath()));
 		$relativePath = substr($relativePath, 0, strpos($relativePath, '.'));
-		return $cacheTemplatePath.$relativePath.'.php';
+		$cacheTemplatePath = $cacheTemplatePath.$relativePath.'.php';
+
+		if(!is_file($cacheTemplatePath))
+			@mkdir(dirname($cacheTemplatePath), $this->filePermission, true);
+
+		return $cacheTemplatePath;
 	}
 
 	private function parse($beginBlock, $endBlock)
