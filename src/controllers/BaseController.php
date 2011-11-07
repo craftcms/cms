@@ -101,17 +101,10 @@ class BaseController extends CController
 		if (empty($viewName))
 			return false;
 
+		$extension = null;
+
 		if ($moduleViewPath === null)
 			$moduleViewPath = $basePath;
-
-		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
-			$extension = $renderer->fileExtension;
-		else
-		{
-			// default to html
-			$extension = 'html';
-		}
-
 
 		if ($viewName[0] === '/')
 		{
@@ -127,21 +120,53 @@ class BaseController extends CController
 
 		$viewFile = str_replace('\\', '/', $viewFile);
 
-		foreach (Blocks::app()->config->getAllowedTemplateFileExtensions() as $allowedExtension)
+		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
+			$extension = $renderer->fileExtension;
+		else
 		{
-			if(is_file($viewFile.'.'.$allowedExtension))
+			foreach (Blocks::app()->config->getAllowedTemplateFileExtensions() as $allowedExtension)
 			{
-				$extension = $allowedExtension;
-				break;
+				if(is_file($viewFile.'.'.$allowedExtension))
+				{
+					$extension = $allowedExtension;
+					break;
+				}
 			}
 		}
 
+		// fallback on html
+		if ($extension === null)
+			$extension = 'html';
+
 		if(is_file($viewFile.'.'.$extension))
-			return Blocks::app()->findLocalizedFile($viewFile.'.'.$extension);
+		{
+			$matchedFile = Blocks::app()->findLocalizedFile($viewFile.'.'.$extension);
+		}
 		else if($extension !== '.php' && is_file($viewFile.'.php'))
-			return Blocks::app()->findLocalizedFile($viewFile.'.php');
+		{
+			$matchedFile = Blocks::app()->findLocalizedFile($viewFile.'.php');
+		}
 		else
 			return false;
+
+		$sourceTemplatePath = Blocks::app()->file->set($matchedFile, false);
+		$sourceLastModified = $sourceTemplatePath->getTimeModified();
+
+		$cacheTemplatePath = Blocks::app()->config->getBlocksTemplateCachePath();
+		$translatedTemplate = Blocks::app()->file->set($cacheTemplatePath.$viewName.'.php', false);
+
+		// if the file hasn't been translated yet or it has been translated, but the source modified time is newer than the translated modified time, let's retranslate and cache.
+		if(!$translatedTemplate->getExists() || $sourceLastModified > $translatedTemplate->getTimeModified())
+		{
+			$translator = new TemplateTranslator();
+			if ($translator->translate($sourceTemplatePath->getRealPath()))
+				$translatedTemplate->refresh();
+			else
+				throw new BlocksException('There was a problem translating a template.');
+		}
+
+		// return cached template path.
+		return $translatedTemplate->getRealPath();
 	}
 
 	public function render($view, $data = null, $return = false)

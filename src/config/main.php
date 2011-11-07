@@ -96,14 +96,8 @@ return array(
 			'class' => 'application.business.utils.BlocksFile'
 		),
 
-		'templateCPCache' => array(
-			'class' => 'CTemplateFileCache',
-			'cachePath' => 'base.app.templates',
-		),
-
-		'templateSiteCache' => array(
-			'class' => 'CTemplateFileCache',
-			'cachePath' => 'base.templates',
+		'templateCache' => array(
+			'class' => 'TemplateFileCache',
 		),
 
 		'urlManager' => array(

@@ -14,16 +14,19 @@ class TemplateTranslator
 			throw new BlocksException('Cannot find the template at '.$templatePath);
 
 		$templateContents = $templateFile->getContents();
-
 		// magic translation
+		$tranlatedContents = $templateContents;
 
 		if ($cache)
-			if (!$this->cacheTemplate($templatePath, $templateContents))
+			if (!$this->cacheTemplate($templatePath, $tranlatedContents))
 				throw new BlocksException('There was a problem caching the template for '.$templatePath);
+
+		return $tranlatedContents ? true : false;
 	}
 
+	// TODO: Caching will move to a separate Blocks Cache Manager.
 	private function cacheTemplate($origTemplatePath, $translatedContents)
 	{
-		return Blocks::app()->templateSiteCache->add($origTemplatePath, $translatedContents, 0);
+		return Blocks::app()->templateCache->add($origTemplatePath, $translatedContents, 0);
 	}
 }

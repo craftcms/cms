@@ -131,14 +131,17 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		return $this->getBlocksBasePath().'templates'.DIRECTORY_SEPARATOR;
 	}
 
-	public function getBlocksCPTemplateCachePath()
+	public function getBlocksTemplatePath()
 	{
-		return $this->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
+		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
+			return $this->getBlocksSiteTemplatePath();
+
+		return $this->getBlocksCPTemplatePath();
 	}
 
-	public function getBlocksSiteTemplateCachePath()
+	public function getBlocksTemplateCachePath()
 	{
-		return $this->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
+		return Blocks::app()->templateCache->getTemplateCachePath();
 	}
 
 	public function getDatabaseRequiredVersionByType($databaseType)

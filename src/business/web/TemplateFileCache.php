@@ -1,6 +1,6 @@
 <?php
 
-class CTemplateFileCache extends CFileCache
+class TemplateFileCache extends CFileCache
 {
 	/**
 	 * @var string the directory to store cache files. Defaults to null, meaning
@@ -9,7 +9,7 @@ class CTemplateFileCache extends CFileCache
 	public $cachePath;
 
 	/**
-	 * @var string cache file suffix. Defaults to '.bin'.
+	 * @var string cache file suffix. Defaults to '.php'.
 	 */
 	public $cacheFileSuffix = '.php';
 
@@ -23,8 +23,20 @@ class CTemplateFileCache extends CFileCache
 	{
 		parent::init();
 
-		if ($this->cachePath === null)
-			$this->cachePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
+		$requestType = Blocks::app()->request->getCMSRequestType();
+		switch ($requestType)
+		{
+			case RequestType::Site:
+				$this->cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
+				break;
+
+			case RequestType::ControlPanel:
+				$this->cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
+				break;
+
+			default:
+				$this->cachePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
+		}
 
 		if (!is_dir($this->cachePath))
 			mkdir($this->cachePath, 0777, true);
@@ -50,23 +62,11 @@ class CTemplateFileCache extends CFileCache
 
 	protected function generateUniqueKey($templatePath)
 	{
-		$cpTemplatePath = null;
-		$templateCachePath = null;
-
-		$requestType = Blocks::app()->request->getCMSRequestType();
-
-		switch ($requestType)
-		{
-			case RequestType::ControlPanel:
-				$cpTemplatePath = Blocks::app()->file->set(Blocks::app()->config->getBlocksCPTemplateCachePath());
-				break;
-
-			case RequestType::Site:
-				$cpTemplatePath = Blocks::app()->file->set(Blocks::app()->config->getBlocksSiteTemplateCachePath());
-				break;
-		}
-
-		$relativePath = substr($templatePath, strlen($cpTemplatePath->getRealpath()) + 1);
+		// The key for cache is the relative path of the template minus the extension.
+		$templateCachePath = Blocks::app()->config->getBlocksTemplatePath();
+		$templatePath = str_replace('\\', '/', $templatePath);
+		$templateCachePath = str_replace('\\', '/', $templateCachePath);
+		$relativePath = substr($templatePath, strlen($templateCachePath));
 		return substr($relativePath, 0, strpos($relativePath, '.'));
 	}
 
@@ -149,51 +149,22 @@ class CTemplateFileCache extends CFileCache
 	 */
 	protected function getCacheFile($key)
 	{
-		return $this->cachePath.DIRECTORY_SEPARATOR.$key.$this->cacheFileSuffix;
+		return $this->cachePath.$key.$this->cacheFileSuffix;
 	}
 
 	public function get($id)
 	{
 		if (($value = $this->getValue($this->generateUniqueKey($id))) !== false)
 		{
-			//$data=unserialize($value);
-			//if(!is_array($data))
-			//	return false;
-
-			//if (!($data[1] instanceof ICacheDependency) || !$data[1]->getHasChanged())
-			//{
-				Blocks::trace('Serving "'.$id.'" from cache','system.caching.'.get_class($this));
-				return $value;
-			//}
+			Blocks::trace('Serving "'.$id.'" from cache','system.caching.'.get_class($this));
+			return $value;
 		}
 
 		return false;
 	}
 
-	public function getCachedTemplatePath($sourceTemplatePath)
+	public function getTemplateCachePath()
 	{
-		$cachedTemplatePath = null;
-		$templateCachePath = null;
-		$relativePath = null;
-		$tempTemplatePath = null;
-
-		$requestType = Blocks::app()->request->getCMSRequestType();
-
-		switch ($requestType)
-		{
-			case RequestType::ControlPanel:
-				$cachedTemplatePath = Blocks::app()->file->set(Blocks::app()->templateCPCache->cachePath, false);
-				$tempTemplatePath = Blocks::app()->file->set(Blocks::app()->config->getBlocksCPTemplateCachePath(), false)->getRealPath();
-				break;
-
-			case RequestType::Site:
-				$cachedTemplatePath = Blocks::app()->file->set(Blocks::app()->templateSiteCache->cachePath, false);
-				$tempTemplatePath = Blocks::app()->file->set(Blocks::app()->config->getBlocksSiteTemplateCachePath(), false)->getRealPath();
-				break;
-		}
-
-		// TODO: fix the .html only check.
-		$relativePath = str_replace('.html', '.php', substr($sourceTemplatePath, strlen($tempTemplatePath) + 1));
-		return $cachedTemplatePath->getRealPath().DIRECTORY_SEPARATOR.$relativePath;
+		return $this->cachePath;
 	}
 }
