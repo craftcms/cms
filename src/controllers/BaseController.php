@@ -3,6 +3,8 @@
 class BaseController extends CController
 {
 
+	private $_widgetStack = array();
+
 	/**
 	 * @var string the default layout for the controller view. Defaults to '//layouts/column1',
 	 * meaning using a single column layout. See 'protected/views/layouts/column1.php'.
@@ -121,52 +123,32 @@ class BaseController extends CController
 		$viewFile = str_replace('\\', '/', $viewFile);
 
 		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
-			$extension = $renderer->fileExtension;
-		else
 		{
-			foreach (Blocks::app()->config->getAllowedTemplateFileExtensions() as $allowedExtension)
+			if (get_class($renderer) == 'BlocksViewRenderer')
 			{
-				if(is_file($viewFile.'.'.$allowedExtension))
+				foreach ($renderer->getAllowedFileExtensions() as $allowedExtension)
 				{
-					$extension = $allowedExtension;
-					break;
+					if(is_file($viewFile.'.'.$allowedExtension))
+					{
+						$extension = $allowedExtension;
+						break;
+					}
 				}
 			}
-		}
-
-		// fallback on html
-		if ($extension === null)
-			$extension = 'html';
-
-		if(is_file($viewFile.'.'.$extension))
-		{
-			$matchedFile = Blocks::app()->findLocalizedFile($viewFile.'.'.$extension);
-		}
-		else if($extension !== '.php' && is_file($viewFile.'.php'))
-		{
-			$matchedFile = Blocks::app()->findLocalizedFile($viewFile.'.php');
+			else
+				$extension = $renderer->fileExtension;
 		}
 		else
-			return false;
-
-		$sourceTemplatePath = Blocks::app()->file->set($matchedFile, false);
-		$sourceLastModified = $sourceTemplatePath->getTimeModified();
-
-		$cacheTemplatePath = Blocks::app()->config->getBlocksTemplateCachePath();
-		$translatedTemplate = Blocks::app()->file->set($cacheTemplatePath.$viewName.'.php', false);
-
-		// if the file hasn't been translated yet or it has been translated, but the source modified time is newer than the translated modified time, let's retranslate and cache.
-		if(!$translatedTemplate->getExists() || $sourceLastModified > $translatedTemplate->getTimeModified())
 		{
-			$translator = new TemplateTranslator();
-			if ($translator->translate($sourceTemplatePath->getRealPath()))
-				$translatedTemplate->refresh();
-			else
-				throw new BlocksException('There was a problem translating a template.');
+			$extension = 'html';
 		}
 
-		// return cached template path.
-		return $translatedTemplate->getRealPath();
+		if (is_file($viewFile.'.'.$extension))
+			return Blocks::app()->findLocalizedFile($viewFile.'.'.$extension);
+		else if ($extension !== '.php' && is_file($viewFile.'.php'))
+			return Blocks::app()->findLocalizedFile($viewFile.'.php');
+		else
+			return false;
 	}
 
 	public function render($view, $data = null, $return = false)
@@ -191,6 +173,27 @@ class BaseController extends CController
 				return $output;
 			else
 				echo $output;
+		}
+	}
+
+	public function renderFile($viewFile, $data = null, $return = false)
+	{
+		$widgetCount = count($this->_widgetStack);
+		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
+		{
+			$extension = Blocks::app()->file->set($viewFile, false)->getExtension();
+			if ((get_class($renderer) === 'BlocksViewRenderer' && in_array($extension, $renderer->getAllowedFileExtensions()) || $renderer->fileExtension === '.'.$extension))
+				$content = $renderer->renderFile($this, $viewFile, $data, $return);
+		}
+		else
+			$content = $this->renderInternal($viewFile, $data, $return);
+
+		if (count($this->_widgetStack) === $widgetCount)
+			return $content;
+		else
+		{
+			$widget = end($this->_widgetStack);
+			throw new BlocksException(Blocks::t('yii','{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.', array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
 		}
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 
-class TemplateTranslator
+/*class TemplateTranslator
 {
 	public function translate($templatePath, $cache = true)
 	{
@@ -29,4 +29,4 @@ class TemplateTranslator
 	{
 		return Blocks::app()->templateCache->add($origTemplatePath, $translatedContents, 0);
 	}
-}
+}*/

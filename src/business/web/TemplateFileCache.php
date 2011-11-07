@@ -6,12 +6,12 @@ class TemplateFileCache extends CFileCache
 	 * @var string the directory to store cache files. Defaults to null, meaning
 	 * using 'protected/runtime/cache' as the directory.
 	 */
-	public $cachePath;
+//	public $cachePath;
 
 	/**
 	 * @var string cache file suffix. Defaults to '.php'.
 	 */
-	public $cacheFileSuffix = '.php';
+//	public $cacheFileSuffix = '.php';
 
 	/**
 	 * Initializes this application component.
@@ -19,7 +19,7 @@ class TemplateFileCache extends CFileCache
 	 * It checks the availability of memcache.
 	 * @throws CException if APC cache extension is not loaded or is disabled.
 	 */
-	public function init()
+/*	public function init()
 	{
 		parent::init();
 
@@ -40,13 +40,13 @@ class TemplateFileCache extends CFileCache
 
 		if (!is_dir($this->cachePath))
 			mkdir($this->cachePath, 0777, true);
-	}
+	}*/
 
-	public function add($id, $value, $expire = 0, $dependency = null)
+	/*public function add($id, $value, $expire = 0, $dependency = null)
 	{
 		Blocks::trace('Adding "'.$id.'" to cache','system.caching.'.get_class($this));
 		return $this->addValue($this->generateUniqueKey($id), $value);
-	}
+	}*/
 
 	/**
 	 * Deletes all values from cache.
@@ -54,13 +54,13 @@ class TemplateFileCache extends CFileCache
 	 * @return boolean whether the flush operation was successful.
 	 * @since 1.1.5
 	 */
-	protected function flushValues()
+	/*protected function flushValues()
 	{
 		$this->gc(false);
 		return true;
-	}
+	}*/
 
-	protected function generateUniqueKey($templatePath)
+	/*protected function generateUniqueKey($templatePath)
 	{
 		// The key for cache is the relative path of the template minus the extension.
 		$templateCachePath = Blocks::app()->config->getBlocksTemplatePath();
@@ -69,14 +69,14 @@ class TemplateFileCache extends CFileCache
 		$relativePath = substr($templatePath, strlen($templateCachePath));
 		return substr($relativePath, 0, strpos($relativePath, '.'));
 	}
-
+*/
 	/**
 	 * Retrieves a value from cache with a specified key.
 	 * This is the implementation of the method declared in the parent class.
 	 * @param string $key a unique key identifying the cached value
 	 * @return string the value stored in cache, false if the value is not in the cache or expired.
 	 */
-	protected function getValue($key)
+	/*protected function getValue($key)
 	{
 		$cacheFile = $this->getCacheFile($key);
 
@@ -85,7 +85,7 @@ class TemplateFileCache extends CFileCache
 		else if($time > 0)
 			@unlink($cacheFile);
 		return false;
-	}
+	}*/
 
 	/**
 	 * Stores a value identified by a key in cache.
@@ -96,7 +96,7 @@ class TemplateFileCache extends CFileCache
 	 * @param integer $expire the number of seconds in which the cached value will expire. 0 means never expire.
 	 * @return boolean true if the value is successfully stored into cache, false otherwise
 	 */
-	protected function setValue($key, $value, $expire = null)
+	/*protected function setValue($key, $value, $expire = null)
 	{
 		$cacheFile = $this->getCacheFile($key);
 
@@ -109,7 +109,7 @@ class TemplateFileCache extends CFileCache
 		}
 		else
 			return false;
-	}
+	}*/
 
 	/**
 	 * Stores a value identified by a key into cache if the cache does not contain this key.
@@ -120,7 +120,7 @@ class TemplateFileCache extends CFileCache
 	 * @param integer $expire the number of seconds in which the cached value will expire. 0 means never expire.
 	 * @return boolean true if the value is successfully stored into cache, false otherwise
 	 */
-	protected function addValue($key, $value, $expire = null)
+	/*protected function addValue($key, $value, $expire = null)
 	{
 		$cacheFile = $this->getCacheFile($key);
 
@@ -128,7 +128,7 @@ class TemplateFileCache extends CFileCache
 			return false;
 
 		return $this->setValue($key, $value);
-	}
+	}*/
 
 	/**
 	 * Deletes a value with the specified key from cache
@@ -136,18 +136,18 @@ class TemplateFileCache extends CFileCache
 	 * @param string $key the key of the value to be deleted
 	 * @return boolean if no error happens during deletion
 	 */
-	protected function deleteValue($key)
+	/*protected function deleteValue($key)
 	{
 		$cacheFile = $this->getCacheFile($key);
 		return @unlink($cacheFile);
-	}
+	}*/
 
 	/**
 	 * Returns the cache file path given the cache key.
 	 * @param string $key cache key
 	 * @return string the cache file path
 	 */
-	protected function getCacheFile($key)
+	/*protected function getCacheFile($key)
 	{
 		return $this->cachePath.$key.$this->cacheFileSuffix;
 	}
@@ -166,5 +166,5 @@ class TemplateFileCache extends CFileCache
 	public function getTemplateCachePath()
 	{
 		return $this->cachePath;
-	}
+	}*/
 }

@@ -141,7 +141,27 @@ class ConfigService extends CApplicationComponent implements IConfigService
 
 	public function getBlocksTemplateCachePath()
 	{
-		return Blocks::app()->templateCache->getTemplateCachePath();
+		$cachePath = null;
+
+		$requestType = Blocks::app()->request->getCMSRequestType();
+		switch ($requestType)
+		{
+			case RequestType::Site:
+				$cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
+				break;
+
+			case RequestType::ControlPanel:
+				$cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
+				break;
+
+			default:
+				$cachePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
+		}
+
+		if (!is_dir($cachePath))
+			mkdir($cachePath, 0777, true);
+
+		return $cachePath;
 	}
 
 	public function getDatabaseRequiredVersionByType($databaseType)
@@ -203,11 +223,6 @@ class ConfigService extends CApplicationComponent implements IConfigService
 	public function getAllowedTemplateFileExtensions()
 	{
 		return array('html', 'php');
-	}
-
-	public function isExtensionInAllowedTemplateExtensions($extension)
-	{
-		return in_array($extension, $this->getAllowedTemplateFileExtensions());
 	}
 
 	public function updateConfigFile($filePath, $key, $value)

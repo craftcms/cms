@@ -13,27 +13,15 @@ class CmsController extends BaseController
 		if ($this->_templateMatch !== null)
 		{
 			// TODO: calculate site id based on url
-			$content = new ContentTag(1);
 			$this->_defaultTemplateTags = array(
-				$content,
+				'content' => new ContentTag(1),
+				'assets' => new AssetsTag(1),
+				'membership' => new MembershipTag(1),
+				'security' => new SecurityTag(1),
 			);
 		}
 	}
-/*
- * if(($action=$this->createAction($actionID))!==null)
-		{
-			if(($parent=$this->getModule())===null)
-				$parent=Yii::app();
-			if($parent->beforeControllerAction($this,$action))
-			{
-				$this->runActionWithFilters($action,$this->filters());
-				$parent->afterControllerAction($this,$action);
-			}
-		}
-		else
-			$this->missingAction($actionID);
- *
- */
+
 	public function run($actionId)
 	{
 		// this will run through the filterchain on the cms controller.
@@ -41,6 +29,23 @@ class CmsController extends BaseController
 
 		if ($this->_templateMatch !== null || Blocks::app()->request->getParam('c', null) !== null)
 		{
+			/*
+            * if(($action=$this->createAction($actionID))!==null)
+			{
+				if(($parent=$this->getModule())===null)
+					$parent=Yii::app();
+				if($parent->beforeControllerAction($this,$action))
+				{
+					$this->runActionWithFilters($action,$this->filters());
+					$parent->afterControllerAction($this,$action);
+				}
+			}
+			else
+				$this->missingAction($actionID);
+ *
+ */
+
+
 			if ($this->_templateMatch !== null)
 			{
 				$tempController = $this->_templateMatch->getRelativePath();
@@ -94,8 +99,7 @@ class CmsController extends BaseController
 
 	public function loadTemplate($templatePath)
 	{
-		$data = $this->_defaultTemplateTags;
-		$this->render($templatePath, array('content' => $data[0]));
+		$this->render($templatePath, $this->_defaultTemplateTags);
 	}
 
 	// required

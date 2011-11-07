@@ -96,8 +96,12 @@ return array(
 			'class' => 'application.business.utils.BlocksFile'
 		),
 
-		'templateCache' => array(
-			'class' => 'TemplateFileCache',
+//		'templateCache' => array(
+//			'class' => 'application.business.web.TemplateFileCache',
+//		),
+
+		'viewRenderer' => array(
+			'class' => 'application.business.web.BlocksViewRenderer',
 		),
 
 		'urlManager' => array(
