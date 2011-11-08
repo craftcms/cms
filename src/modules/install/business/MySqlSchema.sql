@@ -9,7 +9,7 @@
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 11/04/2011 15:52:25 PM
+ Date: 11/08/2011 10:55:46 AM
 */
 
 SET NAMES utf8;
@@ -793,11 +793,14 @@ CREATE TABLE `blx_usergroups` (
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  `site_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `group_id_user_id_unique` (`user_id`,`group_id`) USING BTREE,
+  UNIQUE KEY `group_id_user_id_site_id_unique` (`user_id`,`group_id`,`site_id`),
   KEY `usergroups_users_fk` (`user_id`) USING BTREE,
   KEY `usergroups_groups_fk` (`group_id`) USING BTREE,
+  KEY `usergroups_sites_fk` (`site_id`),
+  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`),
   CONSTRAINT `usergroups_groups_fk` FOREIGN KEY (`group_id`) REFERENCES `blx_groups` (`id`),
   CONSTRAINT `usergroups_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
