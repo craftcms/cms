@@ -90,11 +90,7 @@ class BaseController extends CController
 		if ($module === null)
 			$module = Blocks::app();
 
-		$moduleViewPath = $module->getViewPath();
-
-		// TODO: This probably won't last.
-		//$path = $moduleViewPath.DIRECTORY_SEPARATOR.$this->getId();
-		$path = $moduleViewPath;
+		$path = $module->getViewPath();
 		return $path;
 	}
 

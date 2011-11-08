@@ -1210,7 +1210,7 @@ class BlocksFile extends CApplicationComponent
 				}
 			}
 
-			// @todo hey, still need a valid check here
+			// TODO: Still need a valid check here
 			return true;
 		}
 	}

@@ -4,7 +4,6 @@ class AssetsTag extends Tag
 {
 	private $_siteId;
 
-	// TODO: figure out what to do if service query returns null... exception?
 	function __construct($siteId)
 	{
 		$this->_siteId = $siteId;
