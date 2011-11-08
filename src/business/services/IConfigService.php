@@ -20,5 +20,4 @@ interface IConfigService
 	public function getSiteName();
 	public function getSiteLanguage();
 	public function getSiteUrl();
-	public function updateConfigFile($filePath, $key, $value);
 }

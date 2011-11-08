@@ -2,11 +2,7 @@
 
 class ConfigService extends CApplicationComponent implements IConfigService
 {
-	private $dbCharsetDefault = 'utf8';
-	private $dbPortDefault = '3306';
-	private $dbCollationDefault = 'utf8_unicode_ci';
-	private $dbTypeDefault = DatabaseType::MySQL;
-
+	/* Database */
 	public function getDatabaseServerName()
 	{
 		return Blocks::app()->params['db']['server'];
@@ -14,34 +10,22 @@ class ConfigService extends CApplicationComponent implements IConfigService
 
 	public function getDatabasePort()
 	{
-		if (isset(Blocks::app()->params['db']['port']))
-			return Blocks::app()->params['db']['port'];
-
-		return $this->dbPortDefault;
+		return Blocks::app()->params['db']['port'];
 	}
 
 	public function getDatabaseCharset()
 	{
-		if (isset(Blocks::app()->params['db']['charset']))
-			return Blocks::app()->params['db']['charset'];
-
-		return $this->dbCharsetDefault;
+		return Blocks::app()->params['db']['charset'];
 	}
 
 	public function getDatabaseCollation()
 	{
-		if (isset(Blocks::app()->params['db']['collation']))
-			return Blocks::app()->params['db']['collation'];
-
-		return $this->dbCollationDefault;
+		return Blocks::app()->params['db']['collation'];
 	}
 
 	public function getDatabaseType()
 	{
-		if (isset(Blocks::app()->params['db']['type']))
-			return Blocks::app()->params['db']['type'];
-
-		return $this->dbTypeDefault;
+		return Blocks::app()->params['db']['type'];
 	}
 
 	public function getDatabaseVersion()
@@ -75,6 +59,7 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		return Blocks::app()->params['db']['password'];
 	}
 
+	/* Paths */
 	public function getBlocksBasePath()
 	{
 		return BLOCKS_BASE_PATH;
@@ -109,7 +94,6 @@ class ConfigService extends CApplicationComponent implements IConfigService
 	{
 		return Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR;
 	}
-
 
 	public function getBlocksResourceProcessorPath()
 	{
@@ -170,6 +154,18 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		return $cachePath;
 	}
 
+	/* Environment */
+	public function getLocalPHPVersion()
+	{
+		return PHP_VERSION;
+	}
+
+	/* Requirements */
+	public function getRequiredPHPVersion()
+	{
+		return BLOCKS_MIN_PHP_VERSION;
+	}
+
 	public function getDatabaseRequiredVersionByType($databaseType)
 	{
 		if (StringHelper::IsNullOrEmpty($databaseType))
@@ -196,16 +192,7 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		throw new BlocksException('Unknown database type: '.$databaseType);
 	}
 
-	public function getLocalPHPVersion()
-	{
-		return PHP_VERSION;
-	}
-
-	public function getRequiredPHPVersion()
-	{
-		return BLOCKS_MIN_PHP_VERSION;
-	}
-
+	/* Site */
 	public function getSiteLicenseKey()
 	{
 		return Blocks::app()->params['config']['licenseKey'];
@@ -231,28 +218,16 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		return array('html', 'php');
 	}
 
-	public function updateConfigFile($filePath, $key, $value)
+	public function getSiteIdByUrl()
 	{
-		$configFile = Blocks::app()->file->set($filePath, true);
-		$configFileName = $configFile->getFileName();
+		$serverName = Blocks::app()->request->getServerName();
+		$httpServerName = 'http://'.$serverName;
+		$httpsServerName = 'https://'.$serverName;
 
-		clearstatcache();
+		$site = Sites::model()->find(
+			'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
+		);
 
-		if ($configFile->exists && $configFile->getWriteable())
-		{
-			$configFileContent = $configFile->getContents();
-
-			$configFileContent = $key == 'type' && $configFileName == 'db'
-								? preg_replace('/^(\$'.$configFileName.'Config\[\'('.$key.')\'\])(\s=\s)(\'?)(.*?)(\'?;)/m', '${1}${3}${4}DatabaseType::'.$value.'${6}', $configFileContent)
-								: preg_replace('/^(\$'.$configFileName.'Config\[\'('.$key.')\'\])(\s=\s)(\'?)(.*?)(\'?;)/m', '${1}${3}${4}'.$value.'${6}', $configFileContent);
-
-			$configFile->setContents(null, $configFileContent);
-
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		return !$site ? null : $site->id;
 	}
 }

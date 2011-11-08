@@ -6,12 +6,17 @@ require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'
 
 Yii::setPathOfAlias('base', dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
 
-// validate configs
-function generateConnectionString($db)
-{
-	// TODO: fix port and type.
-	return strtolower('mysql:host='.$db['server'].';dbname='.$db['database'].';port=3306;');
-}
+if (!isset($db['port']))
+	$db['port'] = '3306';
+
+if (!isset($db['charset']))
+	$db['charset'] = 'utf8';
+
+if (!isset($db['collation']))
+	$db['collation'] = 'utf8_unicode_ci';
+
+if (!isset($db['type']))
+	$db['type'] = DatabaseType::MySQL;
 
 return array(
 	'basePath'          => dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
@@ -117,14 +122,13 @@ return array(
 			),
 		),
 
-		// TODO: fix charset here.
 		'db' => array(
-			'connectionString'  => generateConnectionString($db),
+			'connectionString'  => strtolower($db['type'].':host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
 			'username'          => $db['user'],
 			'password'          => $db['password'],
-			'charset'           => 'utf8',
+			'charset'           => $db['charset'],
 			'tablePrefix'       => $db['tablePrefix'],
 		),
 
