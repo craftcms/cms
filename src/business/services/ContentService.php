@@ -98,19 +98,21 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $exists;
 	}
 
-	public function getSectionByHandle($handle)
+	public function getSectionBySiteIdHandle($siteId, $handle)
 	{
 		$section = ContentSections::model()->findByAttributes(array(
 			'handle' => $handle,
+			'site_id' => $siteId,
 		));
 
 		return $section;
 	}
 
-	public function getSectionsByHandles($handles)
+	public function getSectionsBySiteIdHandles($siteId, $handles)
 	{
 		$sections = ContentSections::model()->findAllByAttributes(array(
 			'handle' => $handles,
+			'site_id' => $siteId,
 		));
 
 		return $sections;
@@ -151,7 +153,7 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $blocks;
 	}
 
-	public function getBlockByHandle($pageId, $handle)
+	public function getBlockByPageIdHandle($pageId, $handle)
 	{
 		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$blocks = Blocks::app()->db->createCommand()

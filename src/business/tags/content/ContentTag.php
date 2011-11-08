@@ -6,11 +6,8 @@ class ContentTag extends Tag
 
 	function __call($method, $args)
 	{
-		//$args[0]['handle'] = $method;
 		return $this->section($method);
 	}
-
-	// TODO: figure out what to do if service query returns null... exception?
 
 	function __construct($siteId)
 	{
@@ -22,14 +19,14 @@ class ContentTag extends Tag
 		if (!$handles)
 			$sections = Blocks::app()->content->getAllSectionsBySiteId($this->_siteId);
 		else
-			$sections = Blocks::app()->content->getSectionsByHandles($handles);
+			$sections = Blocks::app()->content->getSectionsBySiteIdHandles($this->_siteId, $handles);
 
 		return new ContentSectionsTag($sections);
 	}
 
 	public function section($handle)
 	{
-		$section = Blocks::app()->content->getSectionByHandle($handle);
+		$section = Blocks::app()->content->getSectionBySiteIdHandle($this->_siteId, $handle);
 		return new ContentSectionTag($section);
 	}
 

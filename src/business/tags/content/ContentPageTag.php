@@ -82,7 +82,7 @@ class ContentPageTag extends Tag
 
 	public function block($handle)
 	{
-		$block = Blocks::app()->content->getBlockByHandle($this->_val->id, $handle);
+		$block = Blocks::app()->content->getBlockByPageIdHandle($this->_val->id, $handle);
 		return new ContentBlockTag($block);
 	}
 
@@ -90,11 +90,5 @@ class ContentPageTag extends Tag
 	{
 		$versions = Blocks::app()->content->getPageVersionsByPageId($this->_val->id);
 		return new ContentVersionsTag($versions);
-	}
-
-	public function version($id)
-	{
-		$version = Blocks::app()->content->getPageVersionById($id);
-		return new ContentVersionTag($version);
 	}
 }
