@@ -7,6 +7,20 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return Users::model()->findAll();
 	}
 
+	public function getAllUsersBySiteId($siteId)
+	{
+		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
+		$users = Blocks::app()->db->createCommand()
+			->select('u.*')
+			->from($prefix.'users g')
+			->join($prefix.'usergroups ug', 'u.id = ug.users_id')
+			->join($prefix.'sites s', 'ug.site_id = s.id')
+			->where('s.id=:siteId', array(':siteId' => $siteId))
+			->queryAll();
+
+		return $users;
+	}
+
 	public function isUserNameInUse($userName)
 	{
 		$exists = Users::model()->exists(array(
@@ -67,5 +81,10 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 			->queryAll();
 
 		return $groups;
+	}
+
+	public function getAllGroups()
+	{
+		return Groups::model()->findAll();
 	}
 }

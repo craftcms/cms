@@ -12,12 +12,13 @@ class CmsController extends BaseController
 
 		if ($this->_templateMatch !== null)
 		{
-			// TODO: calculate site id based on url
+			$siteId = Blocks::app()->config->getSiteIdByUrl();
+
 			$this->_defaultTemplateTags = array(
-				'content' => new ContentTag(1),
-				'assets' => new AssetsTag(1),
-				'membership' => new MembershipTag(1),
-				'security' => new SecurityTag(1),
+				'content' => new ContentTag($siteId),
+				'assets' => new AssetsTag($siteId),
+				'membership' => new MembershipTag($siteId),
+				'security' => new SecurityTag($siteId),
 			);
 		}
 	}
