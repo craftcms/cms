@@ -136,6 +136,9 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
 			return $this->getBlocksSiteTemplatePath();
 
+		if (($moduleName = Blocks::app()->urlManager->getTemplateMatch()->getModuleName()) !== null)
+			return $this->getBlocksAppPath().'modules'.DIRECTORY_SEPARATOR.$moduleName.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR;
+
 		return $this->getBlocksCPTemplatePath();
 	}
 
@@ -152,6 +155,9 @@ class ConfigService extends CApplicationComponent implements IConfigService
 
 			case RequestType::ControlPanel:
 				$cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
+
+				if (($moduleName = Blocks::app()->urlManager->getTemplateMatch()->getModuleName()) !== null)
+					$cachePath .= 'modules'.DIRECTORY_SEPARATOR.$moduleName.DIRECTORY_SEPARATOR;
 				break;
 
 			default:

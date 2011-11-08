@@ -2,13 +2,13 @@
 
 class TemplateMatch
 {
-	private $_relativePath;
-	private $_fileName;
-	private $_fullTemplatePath;
-	private $_matchRequest;
-	private $_matchType;
-	private $_matchExtension;
-	private $_moduleName;
+	private $_relativePath = null;
+	private $_fileName = null;
+	private $_fullTemplatePath = null;
+	private $_matchRequest = null;
+	private $_matchType = null;
+	private $_matchExtension = null;
+	private $_moduleName = null;
 
 	public function __construct($path)
 	{
@@ -78,6 +78,11 @@ class TemplateMatch
 	public function setModuleName($moduleName)
 	{
 		$this->_moduleName = $moduleName;
+	}
+
+	public function getModuleName()
+	{
+		return $this->_moduleName;
 	}
 
 	public function setMatchExtension($extension)

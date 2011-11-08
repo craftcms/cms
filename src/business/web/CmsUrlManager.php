@@ -55,7 +55,8 @@ class CmsUrlManager extends CUrlManager
 
 		if ($page !== null)
 		{
-			$this->setTemplateMatch($page->section->template, $pathMatchPattern, TemplateMatchType::Page);
+			$extension = pathinfo($page->section->template, PATHINFO_EXTENSION);
+			$this->setTemplateMatch($page->section->template, $pathMatchPattern, $extension, TemplateMatchType::Page);
 			return true;
 		}
 
@@ -139,7 +140,7 @@ class CmsUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		$path = $requestPath.'index';
+		$path = $requestPath.DIRECTORY_SEPARATOR.'index';
 		if(($fullMatchPath = $this->doesTemplateExist($templatePath.$path)) !== false)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);

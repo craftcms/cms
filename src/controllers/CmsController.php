@@ -24,9 +24,6 @@ class CmsController extends BaseController
 
 	public function run($actionId)
 	{
-		// this will run through the filterchain on the cms controller.
-		parent::run($actionId);
-
 		if ($this->_templateMatch !== null || Blocks::app()->request->getParam('c', null) !== null)
 		{
 			/*
@@ -88,6 +85,7 @@ class CmsController extends BaseController
 			// no matching controller, so load the template.
 			else
 			{
+				parent::run($actionId);
 				$this->loadTemplate($tempAction);
 			}
 		}

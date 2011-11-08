@@ -219,7 +219,7 @@ class RequirementsChecker
 	private function getWritableFolders()
 	{
 		$folders = array(
-			Blocks::app()->file->set(Blocks::getPathOfAlias('application.runtime').DIRECTORY_SEPARATOR, false),
+			Blocks::app()->file->set(Blocks::getPathOfAlias('base.runtime').DIRECTORY_SEPARATOR, false),
 			//Blocks::app()->file->set(Blocks::getPathOfAlias('application.runtime.cached').DIRECTORY_SEPARATOR, false),
 		);
 

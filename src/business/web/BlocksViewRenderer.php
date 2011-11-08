@@ -19,7 +19,9 @@ class BlocksViewRenderer extends CViewRenderer
 		$this->_input = file_get_contents($sourceFile);
 		$this->_output = "<?php /* source file: {$sourceFile} */ ?>".PHP_EOL;
 
-		$this->parse(0, strlen($this->_input));
+		$this->_output .= $this->_input;
+		// when we're ready to actually translate the template, uncomment.
+		//$this->parse(0, strlen($this->_input));
 		file_put_contents($viewFile, $this->_output);
 	}
 
@@ -41,6 +43,7 @@ class BlocksViewRenderer extends CViewRenderer
 	protected function getViewFile($file)
 	{
 		$cacheTemplatePath = Blocks::app()->config->getBlocksTemplateCachePath();
+
 		$relativePath = substr($file, strlen(Blocks::app()->config->getBlocksTemplatePath()));
 		$relativePath = substr($relativePath, 0, strpos($relativePath, '.'));
 		$cacheTemplatePath = $cacheTemplatePath.$relativePath.'.php';
