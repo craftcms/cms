@@ -26,7 +26,7 @@ class BlocksViewRenderer extends CViewRenderer
 			throw new BlocksException(Blocks::t('blocks', 'View file "{file}" does not exist.', array('{file}' => $sourceFile)));
 
 		$viewFile = $this->getViewFile($sourceFile);
-		if(@filemtime($sourceFile) > @filemtime($viewFile))
+		if($this->translateTemplateNeeded($sourceFile, $viewFile))
 		{
 			$this->generateViewFile($sourceFile, $viewFile);
 			@chmod($viewFile, $this->filePermission);
@@ -34,6 +34,8 @@ class BlocksViewRenderer extends CViewRenderer
 
 		return $context->renderInternal($viewFile, $data, $return);
 	}
+
+
 
 	public function getViewFile($file)
 	{
@@ -52,6 +54,39 @@ class BlocksViewRenderer extends CViewRenderer
 	public function getAllowedFileExtensions()
 	{
 		return Blocks::app()->config->getAllowedTemplateFileExtensions();
+	}
+
+	private function translateTemplateNeeded($sourceTemplate, $destTemplate)
+	{
+		// if last modified date or source is newer, regen
+		if (@filemtime($sourceTemplate) > @filemtime($destTemplate))
+			return true;
+
+		// if the sizes are different regen
+		if (@filesize($sourceTemplate) !== @filesize($destTemplate))
+			return true;
+
+		// the first two checks should catch 95% of all cases.  for the rest, fall back on comparing the files.
+		$sourceFile = fopen($sourceTemplate, 'rb');
+		$destFile = fopen($destTemplate, 'rb');
+
+		$translateNeeded = false;
+		while (!feof($sourceFile) && !feof($destFile))
+		{
+			if(fread($sourceFile, 4096) !== fread($destFile, 4096))
+			{
+				$translateNeeded = true;
+				break;
+			}
+		}
+
+		if (feof($sourceFile) !== feof($destFile))
+			$translateNeeded = true;
+
+		fclose($sourceFile);
+		fclose($destFile);
+
+		return $translateNeeded;
 	}
 
 	private function parse($beginBlock, $endBlock)
@@ -122,7 +157,7 @@ class BlocksViewRenderer extends CViewRenderer
 	private function generatePHPOutput($currentPosition, $endPosition, $htmlEncode = false)
 	{
 		$this->_output .= "<?php echo "
-				. ($htmlEncode ? "CHtml::encode(" : "")
+				. ($htmlEncode ? "BlocksHtml::encode(" : "")
 				. substr($this->_input, $currentPosition + 1, $endPosition - $currentPosition)
 				. ($htmlEncode ? ")" : "")
 				. "; ?>";
