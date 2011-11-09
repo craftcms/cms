@@ -21,6 +21,11 @@ class CmsController extends BaseController
 					'membership' => new MembershipTag($site->id),
 					'security' => new SecurityTag($site->id),
 				);
+
+				// if it's a CP request, add the CP tag.
+				if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
+					$this->_defaultTemplateTags[] = array('cp' => new CPTag($site->id));
+
 			}
 		}
 	}
