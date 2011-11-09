@@ -2,10 +2,17 @@
 require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
 require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
 
-function generateConnectionString($db)
-{
-	return strtolower($db['type']).':host='.$db['server'].';dbname='.$db['name'];
-}
+if (!isset($db['port']))
+	$db['port'] = '3306';
+
+if (!isset($db['charset']))
+	$db['charset'] = 'utf8';
+
+if (!isset($db['collation']))
+	$db['collation'] = 'utf8_unicode_ci';
+
+if (!isset($db['type']))
+	$db['type'] = DatabaseType::MySQL;
 
 return array(
 	'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
@@ -21,7 +28,7 @@ return array(
 	'components' => array(
 
 		'db' => array(
-			'connectionString'  => generateConnectionString($db),
+			'connectionString'  => strtolower($db['type'].':host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
 			'username'          => $db['user'],

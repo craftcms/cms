@@ -1,10 +1,9 @@
 <?php
+require_once(BLOCKS_BASE_PATH.'app'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
+require_once(BLOCKS_BASE_PATH.'config'.DIRECTORY_SEPARATOR.'blocks.php');
+require_once(BLOCKS_BASE_PATH.'config'.DIRECTORY_SEPARATOR.'db.php');
 
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'blocks.php');
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
-
-Yii::setPathOfAlias('base', dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR);
+Yii::setPathOfAlias('base', BLOCKS_BASE_PATH);
 
 if (!isset($db['port']))
 	$db['port'] = '3306';
@@ -19,7 +18,7 @@ if (!isset($db['type']))
 	$db['type'] = DatabaseType::MySQL;
 
 return array(
-	'basePath'          => dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
+	'basePath'          => BLOCKS_BASE_PATH.'app'.DIRECTORY_SEPARATOR,
 	'runtimePath'       => Yii::getPathOfAlias('base.runtime'),
 	'name'              => 'Blocks',
 
