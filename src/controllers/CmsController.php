@@ -12,14 +12,16 @@ class CmsController extends BaseController
 
 		if ($this->_templateMatch !== null)
 		{
-			$siteId = Blocks::app()->config->getSiteIdByUrl();
-
-			$this->_defaultTemplateTags = array(
-				'content' => new ContentTag($siteId),
-				'assets' => new AssetsTag($siteId),
-				'membership' => new MembershipTag($siteId),
-				'security' => new SecurityTag($siteId),
-			);
+			$site = Blocks::app()->request->getSiteInfo();
+			if ($site !== null)
+			{
+				$this->_defaultTemplateTags = array(
+					'content' => new ContentTag($site->id),
+					'assets' => new AssetsTag($site->id),
+					'membership' => new MembershipTag($site->id),
+					'security' => new SecurityTag($site->id),
+				);
+			}
 		}
 	}
 

@@ -77,7 +77,7 @@ class ConfigService extends CApplicationComponent implements IConfigService
 
 	public function getBlocksResourcesPath()
 	{
-		return $this->getBlocksBasePath().'resources'.DIRECTORY_SEPARATOR;
+		return $this->getBlocksAppPath().'resources'.DIRECTORY_SEPARATOR;
 	}
 
 	public function getBlocksAppPath()
@@ -112,7 +112,10 @@ class ConfigService extends CApplicationComponent implements IConfigService
 
 	public function getBlocksSiteTemplatePath()
 	{
-		return $this->getBlocksBasePath().'templates'.DIRECTORY_SEPARATOR;
+		$siteHandle = Blocks::app()->request->getSiteInfo();
+		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
+
+		return $this->getBlocksBasePath().'templates'.DIRECTORY_SEPARATOR.$siteHandle.DIRECTORY_SEPARATOR;
 	}
 
 	public function getBlocksTemplatePath()
@@ -134,7 +137,9 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		switch ($requestType)
 		{
 			case RequestType::Site:
-				$cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
+				$siteHandle = Blocks::app()->request->getSiteInfo();
+				$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
+				$cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.$siteHandle.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
 				break;
 
 			case RequestType::ControlPanel:
@@ -145,7 +150,7 @@ class ConfigService extends CApplicationComponent implements IConfigService
 				break;
 
 			default:
-				$cachePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'cache';
+				$cachePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'cached';
 		}
 
 		if (!is_dir($cachePath))
@@ -218,7 +223,7 @@ class ConfigService extends CApplicationComponent implements IConfigService
 		return array('html', 'php');
 	}
 
-	public function getSiteIdByUrl()
+	public function getSiteByUrl()
 	{
 		$serverName = Blocks::app()->request->getServerName();
 		$httpServerName = 'http://'.$serverName;
@@ -228,6 +233,6 @@ class ConfigService extends CApplicationComponent implements IConfigService
 			'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
 		);
 
-		return !$site ? null : $site->id;
+		return $site;
 	}
 }
