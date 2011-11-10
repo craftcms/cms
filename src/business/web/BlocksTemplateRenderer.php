@@ -4,41 +4,57 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 {
 	private $_input;
 	private $_output;
-	private $_sourceTemplateFile;
+	private $_sourceTemplatePath;
 	private $_filePermission = 0755;
 
-	public function renderFile($context, $sourceTemplateFile, $data, $return)
+	/**
+	 * Renders a template
+	 * @param $context The controller or widget who is rendering the template
+	 * @param string $sourceTemplatePath Path to the source template
+	 * @param array $tags The tags to be passed to the template
+	 * @param bool $return Whether the rendering result should be returned
+	 */
+	public function renderFile($context, $sourceTemplatePath, $tags, $return)
 	{
-		if (!is_file($sourceTemplateFile) || ($file = realpath($sourceTemplateFile)) === false)
-			throw new BlocksException(Blocks::t('blocks', 'Template file "{file}" does not exist.', array('{file}' => $sourceTemplateFile)));
+		if (!is_file($sourceTemplatePath) || realpath($sourceTemplatePath) === false)
+			throw new BlocksException(Blocks::t('blocks', 'The template "{path}" does not exist.', array('{path}' => $sourceTemplatePath)));
 
-		$destinationTemplateFile = $this->getDestinationTemplateFile($sourceTemplateFile);
-		if($this->translateTemplateNeeded($sourceTemplateFile, $destinationTemplateFile))
+		$parsedTemplatePath = $this->getParsedTemplatePath($sourceTemplatePath);
+		if($this->isParseTemplateNeeded($sourceTemplatePath, $parsedTemplatePath))
 		{
-			$this->generateTemplateFile($sourceTemplateFile, $destinationTemplateFile);
-			@chmod($destinationTemplateFile, $this->_filePermission);
+			$this->parseTemplate($sourceTemplatePath, $parsedTemplatePath);
+			@chmod($parsedTemplatePath, $this->_filePermission);
 		}
 
-		return $context->renderInternal($destinationTemplateFile, $data, $return);
+		return $context->renderInternal($parsedTemplatePath, $tags, $return);
 	}
 
-	private function generateTemplateFile($sourceTemplateFile, $destinationTemplateFile)
+	/**
+	 * Parses a template
+	 * @param string $sourceTemplatePath Path to the source template
+	 * @param string $parsedTemplatePath Path to the parsed template
+	 */
+	private function parseTemplate($sourceTemplatePath, $parsedTemplatePath)
 	{
-		$this->_sourceTemplateFile = $sourceTemplateFile;
-		$this->_input = file_get_contents($sourceTemplateFile);
-		$this->_output = "<?php /* source file: {$sourceTemplateFile} */ ?>".PHP_EOL;
+		$this->_sourceTemplatePath = $sourceTemplatePath;
+		$this->_input = file_get_contents($sourceTemplatePath);
+		$this->_output = "<?php /* source file: {$sourceTemplatePath} */ ?>".PHP_EOL;
 
 		$this->_output .= $this->_input;
-		// when we're ready to actually translate the template, uncomment.
+		// when we're ready to actually parse the template, uncomment.
 		//$this->parse(0, strlen($this->_input));
-		file_put_contents($destinationTemplateFile, $this->_output);
+		file_put_contents($parsedTemplatePath, $this->_output);
 	}
 
-	private function getDestinationTemplateFile($sourceTemplateFile)
+	/**
+	 * Returns the path to the parsed template
+	 * @param string $sourceTemplatePath Path to the source template
+	 */
+	private function getParsedTemplatePath($sourceTemplatePath)
 	{
 		$cacheTemplatePath = Blocks::app()->path->getTemplateCachePath();
 
-		$relativePath = substr($sourceTemplateFile, strlen(Blocks::app()->path->getTemplatePath()));
+		$relativePath = substr($sourceTemplatePath, strlen(Blocks::app()->path->getTemplatePath()));
 		$relativePath = substr($relativePath, 0, strpos($relativePath, '.'));
 		$cacheTemplatePath = $cacheTemplatePath.$relativePath.'.php';
 
@@ -48,306 +64,42 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		return $cacheTemplatePath;
 	}
 
-	private function translateTemplateNeeded($sourceTemplate, $destTemplate)
+	/**
+	 * Returns whether the template needs to be (re-)parsed
+	 * @param string $sourceTemplatePath Path to the source template
+	 * @param string $parsedTemplatePath Path to the parsed template
+	 */
+	private function isParseTemplateNeeded($sourceTemplatePath, $parsedTemplatePath)
 	{
 		// if last modified date or source is newer, regen
-		if (@filemtime($sourceTemplate) > @filemtime($destTemplate))
+		if (@filemtime($sourceTemplatePath) > @filemtime($parsedTemplatePath))
 			return true;
 
 		// if the sizes are different regen
-		if (@filesize($sourceTemplate) !== @filesize($destTemplate))
+		if (@filesize($sourceTemplatePath) !== @filesize($parsedTemplatePath))
 			return true;
 
 		// the first two checks should catch 95% of all cases.  for the rest, fall back on comparing the files.
-		$sourceFile = fopen($sourceTemplate, 'rb');
-		$destFile = fopen($destTemplate, 'rb');
+		$sourceFile = fopen($sourceTemplatePath, 'rb');
+		$parsedFile = fopen($parsedTemplatePath, 'rb');
 
-		$translateNeeded = false;
-		while (!feof($sourceFile) && !feof($destFile))
+		$parseNeeded = false;
+		while (!feof($sourceFile) && !feof($parsedFile))
 		{
-			if(fread($sourceFile, 4096) !== fread($destFile, 4096))
+			if(fread($sourceFile, 4096) !== fread($parsedFile, 4096))
 			{
-				$translateNeeded = true;
+				$parseNeeded = true;
 				break;
 			}
 		}
 
-		if (feof($sourceFile) !== feof($destFile))
-			$translateNeeded = true;
+		if (feof($sourceFile) !== feof($parsedFile))
+			$parseNeeded = true;
 
 		fclose($sourceFile);
-		fclose($destFile);
+		fclose($parsedFile);
 
-		return $translateNeeded;
+		return $parseNeeded;
 	}
 
-	private function parse($beginBlock, $endBlock)
-	{
-		$offset = $beginBlock;
-		while (($pos = strpos($this->_input, "%", $offset)) !== false && $pos < $endBlock)
-		{
-			// replace @@ -> @
-			if ($this->isNextToken($pos, $endBlock, "@"))
-			{
-				$this->_output .= substr($this->_input, $offset, $pos - $offset + 1);
-				$offset = $pos + 2;
-				continue;
-			}
-
-			// replace multi-token statements @(...)
-			if ($this->isNextToken($pos, $endBlock, "("))
-			{
-				$end = $this->findClosingBracket($pos + 1, $endBlock, "(", ")");
-				$this->_output .= substr($this->_input, $offset, $pos - $offset);
-				$this->generatePHPOutput($pos, $end);
-				$offset = $end + 1;
-				continue;
-			}
-
-			// replace multi-line statements @{...}
-			if ($this->isNextToken($pos, $endBlock, "{"))
-			{
-				$end = $this->findClosingBracket($pos + 1, $endBlock, "{", "}");
-				$this->_output .= substr($this->_input, $offset, $pos - $offset);
-				$this->_output .= "<?php " . substr($this->_input, $pos + 2, $end - $pos - 2) . " ?>";
-				$offset = $end + 1;
-				continue;
-			}
-
-			// replace HTML-encoded statements @:...
-			if ($this->isNextToken($pos, $endBlock, ":"))
-			{
-				$statement = $this->detectStatement($pos + 2, $endBlock);
-				$end = $this->findEndStatement($pos + 1 + strlen($statement), $endBlock);
-				$this->_output .= substr($this->_input, $offset, $pos - $offset);
-				$this->generatePHPOutput($pos + 1, $end, true);
-				$offset = $end + 1;
-				continue;
-			}
-
-			$statement = $this->detectStatement($pos + 1, $endBlock);
-			if ($statement == "foreach" || $statement == "for" || $statement == "while")
-			{
-				$offset = $this->processLoopStatement($pos, $offset, $endBlock, $statement);
-			}
-			elseif ($statement == "if")
-			{
-				$offset = $this->processIfStatement($pos, $offset, $endBlock, $statement);
-			}
-			else
-			{
-				$end = $this->findEndStatement($pos + strlen($statement), $endBlock);
-				$this->_output .= substr($this->_input, $offset, $pos - $offset);
-				$this->generatePHPOutput($pos, $end);
-				$offset = $end + 1;
-			}
-		}
-
-		$this->_output .= substr($this->_input, $offset, $endBlock - $offset);
-	}
-
-	private function generatePHPOutput($currentPosition, $endPosition, $htmlEncode = false)
-	{
-		$this->_output .= "<?php echo "
-				. ($htmlEncode ? "BlocksHtml::encode(" : "")
-				. substr($this->_input, $currentPosition + 1, $endPosition - $currentPosition)
-				. ($htmlEncode ? ")" : "")
-				. "; ?>";
-	}
-
-	private function processLoopStatement($currentPosition, $offset, $endBlock, $statement)
-	{
-		if (($bracketPosition = $this->findOpenBracketAtLine($currentPosition + 1, $endBlock)) === false)
-		{
-			throw new BlocksTemplateRendererException("Cannot find open bracket for '{$statement}' statement.", $this->_sourceTemplateFile, $this->getLineNumber($currentPosition));
-		}
-
-		$this->_output .= substr($this->_input, $offset, $currentPosition - $offset);
-		$this->_output .= "<?php " . substr($this->_input, $currentPosition + 1, $bracketPosition - $currentPosition) . " ?>";
-		$offset = $bracketPosition + 1;
-
-		$end = $this->findClosingBracket($bracketPosition, $endBlock, "{", "}");
-		$this->parse($offset, $end);
-		$this->_output .= "<?php } ?>";
-
-		return $end + 1;
-	}
-
-	private function processIfStatement($currentPosition, $offset, $endBlock, $statement)
-	{
-		$bracketPosition = $this->findOpenBracketAtLine($currentPosition + 1, $endBlock);
-		if ($bracketPosition === false)
-			throw new BlocksTemplateRendererException("Cannot find open bracket for '{$statement}' statement.", $this->_sourceTemplateFile, $this->getLineNumber($currentPosition));
-
-		$this->_output .= substr($this->_input, $offset, $currentPosition - $offset);
-		$start = $currentPosition + 1;
-		while (true)
-		{
-			$this->_output .= "<?php " . substr($this->_input, $start, $bracketPosition - $start + 1) . " ?>";
-			$offset = $bracketPosition + 1;
-
-			$end = $this->findClosingBracket($bracketPosition, $endBlock, "{", "}");
-			$this->parse($offset, $end);
-			$offset = $end + 1;
-
-			$bracketPosition = $this->findOpenBracketAtLine($offset, $endBlock);
-			if ($bracketPosition === false)
-			{
-				$this->_output .= "<?php } ?>";
-				break;
-			}
-
-			$start = $end;
-		}
-
-		return $offset;
-	}
-
-	private function findOpenBracketAtLine($currentPosition, $endBlock)
-	{
-		$openDoubleQuotes = false;
-		$openSingleQuotes = false;
-
-		for ($p = $currentPosition; $p < $endBlock; ++$p)
-		{
-			if ($this->_input[$p] == PHP_EOL)
-				return false;
-
-			$quotesNotOpened = !$openDoubleQuotes && !$openSingleQuotes;
-			if ($this->_input[$p] == '"')
-			{
-				$openDoubleQuotes = $this->getQuotesState($openDoubleQuotes, $quotesNotOpened, $p);
-			}
-			elseif ($this->_input[$p] == "'")
-			{
-				$openSingleQuotes = $this->getQuotesState($openSingleQuotes, $quotesNotOpened, $p);
-			}
-			elseif ($this->_input[$p] == "{" && $quotesNotOpened)
-			{
-				return $p;
-			}
-		}
-
-		return false;
-	}
-
-	// checks to see if the next token is the supplied token
-	private function isNextToken($currentPosition, $endBlock, $token)
-	{
-		// make sure the next token isn't the end of the text
-		if ($currentPosition + strlen($token) < $endBlock)
-			if (substr($this->_input, $currentPosition + 1, strlen($token)) == $token)
-				return true;
-
-		return false;
-	}
-
-	private function isEscaped($currentPosition)
-	{
-		$cntBackSlashes = 0;
-		for ($p = $currentPosition - 1; $p >= 0; --$p)
-		{
-			if ($this->_input[$p] != "\\")
-				break;
-
-			++$cntBackSlashes;
-		}
-
-		return $cntBackSlashes % 2 == 1;
-	}
-
-	private function getQuotesState($testedQuotes, $quotesNotOpened, $currentPosition)
-	{
-		if ($quotesNotOpened)
-			return true;
-
-		return $testedQuotes && !$this->isEscaped($currentPosition) ? false: $testedQuotes;
-	}
-
-	private function findClosingBracket($openBracketPosition, $endBlock, $openBracket, $closeBracket)
-	{
-		$opened = 0;
-		$openDoubleQuotes = false;
-		$openSingleQuotes = false;
-
-		for ($p = $openBracketPosition; $p < $endBlock; ++$p)
-		{
-			$quotesNotOpened = !$openDoubleQuotes && !$openSingleQuotes;
-
-			if ($this->_input[$p] == '"')
-			{
-				$openDoubleQuotes = $this->getQuotesState($openDoubleQuotes, $quotesNotOpened, $p);
-			}
-			elseif ($this->_input[$p] == "'")
-			{
-				$openSingleQuotes = $this->getQuotesState($openSingleQuotes, $quotesNotOpened, $p);
-			}
-			elseif ($this->_input[$p] == $openBracket && $quotesNotOpened)
-			{
-				$opened++;
-			}
-			elseif ($this->_input[$p] == $closeBracket && $quotesNotOpened)
-			{
-				if (--$opened == 0)
-					return $p;
-			}
-		}
-
-		throw new BlocksTemplateRendererException("Cannot find closing bracket.", $this->_sourceTemplateFile, $this->getLineNumber($openBracketPosition));
-	}
-
-	private function findEndStatement($endPosition, $endBlock)
-	{
-		if ($this->isNextToken($endPosition, $endBlock, "("))
-		{
-			$endPosition = $this->findClosingBracket($endPosition + 1, $endBlock, "(", ")");
-			$endPosition = $this->findEndStatement($endPosition, $endBlock);
-		}
-		elseif ($this->isNextToken($endPosition, $endBlock, "["))
-		{
-			$endPosition = $this->findClosingBracket($endPosition + 1, $endBlock, "[", "]");
-			$endPosition = $this->findEndStatement($endPosition, $endBlock);
-		}
-		elseif ($this->isNextToken($endPosition, $endBlock, "->"))
-		{
-			$endPosition += 2;
-			$statement = $this->detectStatement($endPosition + 1, $endBlock);
-			$endPosition = $this->findEndStatement($endPosition + strlen($statement), $endBlock);
-		}
-		elseif ($this->isNextToken($endPosition, $endBlock, "::"))
-		{
-			$endPosition += 2;
-			$statement = $this->detectStatement($endPosition + 1, $endBlock);
-			$endPosition = $this->findEndStatement($endPosition + strlen($statement), $endBlock);
-		}
-
-		return $endPosition;
-	}
-
-	private function detectStatement($currentPosition, $endBlock)
-	{
-		$invalidCharPosition = $endBlock;
-		for ($p = $currentPosition; $p < $invalidCharPosition; ++$p) {
-			if ($this->_input[$p] == "$" && $p == $currentPosition) {
-				continue;
-			}
-
-			if (preg_match('/[a-zA-Z0-9_]/', $this->_input[$p])) {
-				continue;
-			}
-
-			$invalidCharPosition = $p;
-			break;
-		}
-
-		if ($currentPosition == $invalidCharPosition)
-			throw new BlocksTemplateRendererException("Cannot detect statement.", $this->_sourceTemplateFile, $this->getLineNumber($currentPosition));
-
-		return substr($this->_input, $currentPosition, $invalidCharPosition - $currentPosition);
-	}
-
-	private function getLineNumber($currentPosition)
-	{
-		return count(explode(PHP_EOL, substr($this->_input, 0, $currentPosition)));
-	}
 }
