@@ -46,7 +46,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 		$versionCheckInfo['blocksClientVersionNo'] = Blocks::getVersion();
 		$versionCheckInfo['blocksClientEdition'] = Blocks::getEdition();
 		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
-		$versionCheckInfo['key'] = Blocks::app()->config->getSiteLicenseKey();
+		$versionCheckInfo['key'] = Blocks::app()->site->getSiteLicenseKey();
 		$versionCheckInfo['requestingDomain'] = Blocks::app()->request->getServerName();
 
 		try
