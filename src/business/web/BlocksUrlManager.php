@@ -65,7 +65,7 @@ class BlocksUrlManager extends CUrlManager
 
 	public function matchRoute()
 	{
-		$test = $this->parseUrl(Blocks::app()->getRequest());
+		$test = $this->parseUrl(Blocks::app()->request);
 		return false;
 	}
 
@@ -115,7 +115,7 @@ class BlocksUrlManager extends CUrlManager
 		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
 		{
 			// we're dealing with a module
-			if (strpos($templatePath, DIRECTORY_SEPARATOR.'modules'.DIRECTORY_SEPARATOR) !== false)
+			if (strpos($templatePath, '/modules/') !== false)
 			{
 				$moduleName = $this->_pathSegments[0];
 				$numSlashes = substr_count($tempPath, '/');
@@ -140,7 +140,7 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		$path = $requestPath.DIRECTORY_SEPARATOR.'index';
+		$path = $requestPath.'/index';
 		if(($fullMatchPath = $this->doesTemplateExist($templatePath.$path)) !== false)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);

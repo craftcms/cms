@@ -55,11 +55,11 @@ class Migration
 
 	private static function getRunner()
 	{
-		$commandPath = Blocks::app()->getBasePath().DIRECTORY_SEPARATOR.'commands';
+		$commandPath = Blocks::app()->path->getCommandsPath();
 		$runner = new CConsoleCommandRunner();
 		$runner->addCommands($commandPath);
 
-		$commandPath = Blocks::getFrameworkPath().DIRECTORY_SEPARATOR.'cli'.DIRECTORY_SEPARATOR.'commands';
+		$commandPath = Blocks::app()->path->getFrameworkPath().'cli/commands';
 		$runner->addCommands($commandPath);
 
 		return $runner;

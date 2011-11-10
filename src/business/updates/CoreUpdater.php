@@ -85,7 +85,7 @@ class CoreUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
+			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate['version'], $buildToUpdate['build'], $downloadFilePath))
@@ -123,14 +123,14 @@ class CoreUpdater
 
 	public function generateMasterManifest()
 	{
-		$masterManifest = Blocks::app()->file->set(Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.'manifest_'.uniqid());
+		$masterManifest = Blocks::app()->file->set(Blocks::app()->path->getRuntimePath().'manifest_'.uniqid());
 		$masterManifest->exists ? $masterManifest->delete() : $masterManifest->create();
 
 		$updatedFiles = array();
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
+			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
 			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
@@ -170,7 +170,7 @@ class CoreUpdater
 
 				// we found a migration
 				if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
-					$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($row[0].DIRECTORY_SEPARATOR.$row[1]);
+					$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($row[0].'/'.$row[1]);
 
 				$manifestContent = $uniqueUpdatedFiles[$counter].PHP_EOL;
 
@@ -187,7 +187,7 @@ class CoreUpdater
 
 	public function putSiteInMaintenanceMode()
 	{
-		$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.'index.php', false);
+		$file = Blocks::app()->file->set(Blocks::app()->path->getBasePath().'../index.php', false);
 		$contents = $file->getContents();
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
 		$file->setContents(null, $contents);
@@ -225,7 +225,7 @@ class CoreUpdater
 				$tempFile->delete();
 
 			// delete the cms files we backed up.
-			$backupFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.$rowData[1].'.bak');
+			$backupFile = Blocks::app()->file->set(Blocks::app()->path->getBasePath().'../'.$rowData[1].'.bak');
 			if ($backupFile->exists)
 				$backupFile->delete();
 		}
@@ -320,7 +320,7 @@ class CoreUpdater
 			foreach ($manifestData as $row)
 			{
 				$rowData = explode(';', $row);
-				$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'..'.DIRECTORY_SEPARATOR.$rowData[1]);
+				$file = Blocks::app()->file->set(Blocks::app()->path->getBasePath().'../'.$rowData[1]);
 
 				// if the file doesn't exist, it's a new file
 				if ($file->exists)

@@ -269,7 +269,7 @@ class BlocksFile extends CApplicationComponent
 	 * @param string $dir_separator Directory separator char (depends upon OS)
 	 * @return string Real file path
 	 */
-	public function getRealPath($dir_separator = DIRECTORY_SEPARATOR)
+	public function getRealPath($dir_separator = '/')
 	{
 		if (!isset($this->_realpath))
 			$this->_realpath = $this->realPath($this->_filepath, $dir_separator);
@@ -284,7 +284,7 @@ class BlocksFile extends CApplicationComponent
 	 * @param string $dir_separator Directory separator char (depends upon OS)
 	 * @return string Real file path
 	 */
-	private function realPath($suppliedPath, $dir_separator = DIRECTORY_SEPARATOR)
+	private function realPath($suppliedPath, $dir_separator = '/')
 	{
 		$currentPath = $suppliedPath;
 
@@ -806,11 +806,11 @@ class BlocksFile extends CApplicationComponent
 			}
 		}
 
-		if ($contents = @scandir($directory.DIRECTORY_SEPARATOR))
+		if ($contents = @scandir($directory.'/'))
 		{
 			foreach ($contents as $key=>$item)
 			{
-				$contents[$key] = $directory.DIRECTORY_SEPARATOR.$item;
+				$contents[$key] = $directory.'/'.$item;
 				if (!in_array($item, array(".", "..")))
 				{
 					if ($this->filterPassed($contents[$key], $filter))
@@ -823,7 +823,7 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			throw new BlocksException('Unable to get directory contents for "'.$directory.DIRECTORY_SEPARATOR.'"');
+			throw new BlocksException('Unable to get directory contents for "'.$directory.'/'.'"');
 		}
 
 		return $descendants;
@@ -1087,8 +1087,8 @@ class BlocksFile extends CApplicationComponent
 	 */
 	private function resolveDestPath($fileDest)
 	{
-		if (strpos($fileDest, DIRECTORY_SEPARATOR) === false)
-			return $this->_dirname.DIRECTORY_SEPARATOR.$fileDest;
+		if (strpos($fileDest, '/') === false)
+			return $this->_dirname.'/'.$fileDest;
 
 		return $this->realPath($fileDest);
 	}
@@ -1512,7 +1512,7 @@ class BlocksFile extends CApplicationComponent
 			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
 				continue;
 
-			$destDirectories[] = $destination.DIRECTORY_SEPARATOR.rtrim($zipFile['folder'] ? $zipFile['filename'] : dirname($zipFile['filename']), '/');
+			$destDirectories[] = $destination.'/'.rtrim($zipFile['folder'] ? $zipFile['filename'] : dirname($zipFile['filename']), '/');
 		}
 
 		$destDirectories = array_unique($destDirectories);
@@ -1562,7 +1562,7 @@ class BlocksFile extends CApplicationComponent
 			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
 				continue;
 
-			$destFile = Blocks::app()->file->set($destination.DIRECTORY_SEPARATOR.$zipFile['filename']);
+			$destFile = Blocks::app()->file->set($destination.'/'.$zipFile['filename']);
 			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
 			{
 				$this->addLog('Could not copy file during unzip.', 'error');
@@ -1599,8 +1599,8 @@ class BlocksFile extends CApplicationComponent
 			// found a directory
 			if (substr($info['name'], -1) === '/')
 			{
-				$dir = Blocks::app()->file->set($destination.DIRECTORY_SEPARATOR);
-				$dir->createDir(0754, $destination.DIRECTORY_SEPARATOR.$info['name']);
+				$dir = Blocks::app()->file->set($destination.'/');
+				$dir->createDir(0754, $destination.'/'.$info['name']);
 				continue;
 			}
 
@@ -1616,7 +1616,7 @@ class BlocksFile extends CApplicationComponent
 				return false;
 			}
 
-			if (!$this->setContents($destination.DIRECTORY_SEPARATOR.$info['name'], $contents, true, FILE_APPEND))
+			if (!$this->setContents($destination.'/'.$info['name'], $contents, true, FILE_APPEND))
 			{
 				$this->addLog('Could not copy file: '.$info['filename'], 'error');
 				return false;

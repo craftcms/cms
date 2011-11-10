@@ -73,7 +73,7 @@ class ResourceProcessor
 		// plugin resource
 		if($this->_pluginHandle !== null)
 		{
-			return Blocks::app()->path->getPluginsPath().$this->_pluginHandle.DIRECTORY_SEPARATOR.$this->_relativeResourcePathAndName;
+			return Blocks::app()->path->getPluginsPath().$this->_pluginHandle.'/'.$this->_relativeResourcePathAndName;
 		}
 		// blocks resource
 		else

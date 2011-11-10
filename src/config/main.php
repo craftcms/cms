@@ -1,7 +1,7 @@
 <?php
-require_once(BLOCKS_BASE_PATH.'app'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
-require_once(BLOCKS_BASE_PATH.'config'.DIRECTORY_SEPARATOR.'blocks.php');
-require_once(BLOCKS_BASE_PATH.'config'.DIRECTORY_SEPARATOR.'db.php');
+require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
+require_once(BLOCKS_BASE_PATH.'config/blocks.php');
+require_once(BLOCKS_BASE_PATH.'config/db.php');
 
 Yii::setPathOfAlias('base', BLOCKS_BASE_PATH);
 
@@ -18,7 +18,7 @@ if (!isset($db['type']))
 	$db['type'] = DatabaseType::MySQL;
 
 return array(
-	'basePath'          => BLOCKS_BASE_PATH.'app'.DIRECTORY_SEPARATOR,
+	'basePath'          => BLOCKS_BASE_PATH.'app/',
 	'runtimePath'       => Yii::getPathOfAlias('base.runtime'),
 	'name'              => 'Blocks',
 
@@ -56,7 +56,7 @@ return array(
 		'gii' => array(
 			'class'     => 'system.gii.GiiModule',
 			'password'  => 'letmein',
-			//'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets',
+			//'basePath' => dirname(__FILE__).'/../assets',
 			// If removed, Gii defaults to localhost only. Edit carefully to taste.
 			//'ipFilters' => array('127.0.0.1', '::1'),
 		),
@@ -143,7 +143,7 @@ return array(
 		),
 
 		'assetManager' => array(
-			'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets',
+			'basePath' => dirname(__FILE__).'/../assets',
 			'baseUrl' => '../../blocks/app/assets',
 		),
 

@@ -30,7 +30,7 @@ class ConfigService extends CApplicationComponent implements IConfigService
 
 	public function getDatabaseVersion()
 	{
-		return Blocks::db()->getServerVersion();
+		return Blocks::app()->db->getServerVersion();
 	}
 
 	public function getDatabaseTablePrefix()

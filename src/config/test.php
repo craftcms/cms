@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'Defines.php');
+require_once(dirname(__FILE__).'/../business/Defines.php');
 
 return CMap::mergeArray(
 	require(dirname(__FILE__) . '/main.php'),

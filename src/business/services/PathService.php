@@ -10,37 +10,37 @@ class PathService extends CApplicationComponent implements IPathService
 
 	public function getConfigPath()
 	{
-		return $this->getBasePath().'config'.DIRECTORY_SEPARATOR;
+		return $this->getBasePath().'config/';
 	}
 
 	public function getPluginsPath()
 	{
-		return $this->getBasePath().'plugins'.DIRECTORY_SEPARATOR;
+		return $this->getBasePath().'plugins/';
 	}
 
 	public function getResourcesPath()
 	{
-		return $this->getAppPath().'resources'.DIRECTORY_SEPARATOR;
+		return $this->getAppPath().'resources/';
 	}
 
 	public function getAppPath()
 	{
-		return Blocks::app()->getBasePath().DIRECTORY_SEPARATOR;
+		return Blocks::app()->getBasePath().'/';
 	}
 
 	public function getFrameworkPath()
 	{
-		return $this->getAppPath().'framework'.DIRECTORY_SEPARATOR;
+		return $this->getAppPath().'framework/';
 	}
 
 	public function getRuntimePath()
 	{
-		return Blocks::app()->getRuntimePath().DIRECTORY_SEPARATOR;
+		return Blocks::app()->getRuntimePath().'/';
 	}
 
 	public function getResourceProcessorPath()
 	{
-		return $this->getAppPath().'business'.DIRECTORY_SEPARATOR.'web'.DIRECTORY_SEPARATOR.'ResourceProcessor.php';
+		return $this->getAppPath().'business/web/ResourceProcessor.php';
 	}
 
 	public function getResourceProcessorUrl()
@@ -50,7 +50,17 @@ class PathService extends CApplicationComponent implements IPathService
 
 	public function getCPTemplatePath()
 	{
-		return $this->getAppPath().'templates'.DIRECTORY_SEPARATOR;
+		return $this->getAppPath().'templates/';
+	}
+
+	public function getMigrationsPath()
+	{
+		return $this->getAppPath().'migrations/';
+	}
+
+	public function getCommandsPath()
+	{
+		return $this->getAppPath().'commands/';
 	}
 
 	public function getSiteTemplatePath()
@@ -58,7 +68,7 @@ class PathService extends CApplicationComponent implements IPathService
 		$siteHandle = Blocks::app()->request->getSiteInfo();
 		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 
-		return $this->getBasePath().'templates'.DIRECTORY_SEPARATOR.$siteHandle.DIRECTORY_SEPARATOR;
+		return $this->getBasePath().'templates/'.$siteHandle.'/';
 	}
 
 	public function getTemplatePath()
@@ -67,7 +77,7 @@ class PathService extends CApplicationComponent implements IPathService
 			return $this->getSiteTemplatePath();
 
 		if (($moduleName = Blocks::app()->url->getTemplateMatch()->getModuleName()) !== null)
-			return $this->getAppPath().'modules'.DIRECTORY_SEPARATOR.$moduleName.DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR;
+			return $this->getAppPath().'modules/'.$moduleName.'/templates/';
 
 		return $this->getCPTemplatePath();
 	}
@@ -82,18 +92,18 @@ class PathService extends CApplicationComponent implements IPathService
 			case RequestType::Site:
 				$siteHandle = Blocks::app()->request->getSiteInfo();
 				$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-				$cachePath = $this->getRuntimePath().'cached'.DIRECTORY_SEPARATOR.$siteHandle.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
+				$cachePath = $this->getRuntimePath().'cached/'.$siteHandle.'/translated_site_templates/';
 				break;
 
 			case RequestType::ControlPanel:
-				$cachePath = $this->getRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
+				$cachePath = $this->getRuntimePath().'cached/translated_cp_templates/';
 
 				if (($moduleName = Blocks::app()->url->getTemplateMatch()->getModuleName()) !== null)
-					$cachePath .= 'modules'.DIRECTORY_SEPARATOR.$moduleName.DIRECTORY_SEPARATOR;
+					$cachePath .= 'modules/'.$moduleName.'/';
 				break;
 
 			default:
-				$cachePath = $this->getRuntimePath().DIRECTORY_SEPARATOR.'cached';
+				$cachePath = $this->getRuntimePath().'/cached';
 		}
 
 		if (!is_dir($cachePath))

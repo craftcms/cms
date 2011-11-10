@@ -1,6 +1,6 @@
 <?php
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'business'.DIRECTORY_SEPARATOR.'enums'.DIRECTORY_SEPARATOR.'DatabaseType.php');
-require_once(dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'config'.DIRECTORY_SEPARATOR.'db.php');
+require_once(dirname(__FILE__).'/../business/enums/DatabaseType.php');
+require_once(dirname(__FILE__).'/../../config/db.php');
 
 if (!isset($db['port']))
 	$db['port'] = '3306';
@@ -15,7 +15,7 @@ if (!isset($db['type']))
 	$db['type'] = DatabaseType::MySQL;
 
 return array(
-	'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..',
+	'basePath' => dirname(__FILE__).'/..',
 
 	// autoloading model and component classes
 	'import' => array(
