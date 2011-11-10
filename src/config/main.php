@@ -60,6 +60,7 @@ return array(
 			// If removed, Gii defaults to localhost only. Edit carefully to taste.
 			//'ipFilters' => array('127.0.0.1', '::1'),
 		),
+
 		'install',
 	),
 
@@ -70,12 +71,9 @@ return array(
 			'allowAutoLogin' => true,
 		),
 
-		'plugins' => array(
-			'class' => 'application.business.services.PluginService',
-		),
-
-		'core' => array(
-			'class' => 'application.business.services.CoreService',
+		// services
+		'assets' => array(
+			'class' => 'application.business.services.AssetService',
 		),
 
 		'config' => array(
@@ -90,28 +88,39 @@ return array(
 			'class' => 'application.business.services.MembershipService',
 		),
 
+		'path' => array(
+			'class' => 'application.business.services.PathService',
+		),
+
+		'plugins' => array(
+			'class' => 'application.business.services.PluginService',
+		),
+
 		'security' => array(
 			'class' => 'application.business.services.SecurityService',
 		),
 
-		'assets' => array(
-			'class' => 'application.business.services.AssetService',
+		'site' => array(
+			'class' => 'application.business.services.SiteService',
 		),
 
+
+
+		//
 		'file' => array(
 			'class' => 'application.business.utils.BlocksFile'
 		),
 
-//		'templateCache' => array(
-//			'class' => 'application.business.web.TemplateFileCache',
-//		),
-
-		'viewRenderer' => array(
-			'class' => 'application.business.web.BlocksViewRenderer',
+		'request' => array(
+			'class' => 'application.business.web.BlocksHttpRequest',
 		),
 
-		'urlManager' => array(
-			'class' => 'application.business.web.CmsUrlManager',
+		'viewRenderer' => array(
+			'class' => 'application.business.web.BlocksTemplateRenderer',
+		),
+
+		'url' => array(
+			'class' => 'application.business.web.BlocksUrlManager',
 			'urlFormat' => 'path',
 			'rules' => array(
 				//'<controller:\w+>/<id:\d+>' => '<controller>/view',
@@ -132,10 +141,6 @@ return array(
 			'charset'           => $db['charset'],
 			'tablePrefix'       => $db['tablePrefix'],
 		),
-
-		//'assetManager' => array(
-		//    'class' => 'application.business.BlocksAssetManager',
-		//),
 
 		'assetManager' => array(
 			'basePath' => dirname(__FILE__).DIRECTORY_SEPARATOR.'..'.DIRECTORY_SEPARATOR.'assets',
@@ -159,11 +164,6 @@ return array(
 				),
 			),
 		),
-
-		'request' => array(
-			'class' => 'application.business.web.BlocksHttpRequest',
-		),
-
 	),
 
 	'params' => array(

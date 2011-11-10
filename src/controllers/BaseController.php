@@ -120,9 +120,9 @@ class BaseController extends CController
 
 		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
 		{
-			if (get_class($renderer) == 'BlocksViewRenderer')
+			if (get_class($renderer) == 'BlocksTemplateRenderer')
 			{
-				foreach ($renderer->getAllowedFileExtensions() as $allowedExtension)
+				foreach (Blocks::app()->site->getAllowedTemplateFileExtensions() as $allowedExtension)
 				{
 					if(is_file($viewFile.'.'.$allowedExtension))
 					{
@@ -178,7 +178,7 @@ class BaseController extends CController
 		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
 		{
 			$extension = Blocks::app()->file->set($viewFile, false)->getExtension();
-			if ((get_class($renderer) === 'BlocksViewRenderer' && in_array($extension, $renderer->getAllowedFileExtensions()) || $renderer->fileExtension === '.'.$extension))
+			if ((get_class($renderer) === 'BlocksTemplateRenderer' && in_array($extension, Blocks::app()->site->getAllowedTemplateFileExtensions()) || $renderer->fileExtension === '.'.$extension))
 				$content = $renderer->renderFile($this, $viewFile, $data, $return);
 		}
 		else

@@ -1,7 +1,40 @@
 <?php
 
-class CoreService extends CApplicationComponent implements ICoreService
+class SiteService extends CApplicationComponent implements ISiteService
 {
+	public function getSiteLicenseKey()
+	{
+		return Blocks::app()->params['config']['licenseKey'];
+	}
+
+	public function getSiteName()
+	{
+		return Blocks::app()->params['config']['siteName'];
+	}
+
+	public function getSiteLanguage()
+	{
+		return Blocks::app()->params['config']['language'];
+	}
+
+	public function getSiteUrl()
+	{
+		return Blocks::app()->params['config']['siteUrl'];
+	}
+
+	public function getSiteByUrl()
+	{
+		$serverName = Blocks::app()->request->getServerName();
+		$httpServerName = 'http://'.$serverName;
+		$httpsServerName = 'https://'.$serverName;
+
+		$site = Sites::model()->find(
+			'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
+		);
+
+		return $site;
+	}
+
 	public function versionCheck()
 	{
 		$versionCheckInfo['blocksClientBuildNo'] = Blocks::getBuildNumber();
@@ -43,5 +76,10 @@ class CoreService extends CApplicationComponent implements ICoreService
 		}
 
 		return null;
+	}
+
+	public function getAllowedTemplateFileExtensions()
+	{
+		return array('html', 'php');
 	}
 }

@@ -16,8 +16,4 @@ interface IConfigService
 	public function getDatabaseRequiredVersionByType($databaseType);
 	public function getLocalPHPVersion();
 	public function getRequiredPHPVersion();
-	public function getSiteLicenseKey();
-	public function getSiteName();
-	public function getSiteLanguage();
-	public function getSiteUrl();
 }

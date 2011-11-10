@@ -19,7 +19,7 @@ class Blocks extends Yii
 
 	public static function getYiiVersion()
 	{
-		return Yii::getVersion();
+		return parent::getVersion();
 	}
 
 	public static function dump($target)

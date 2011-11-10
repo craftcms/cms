@@ -1,59 +1,51 @@
 <?php
 
-class BlocksViewRenderer extends CViewRenderer
+class BlocksTemplateRenderer extends CApplicationComponent implements IViewRenderer
 {
 	private $_input;
 	private $_output;
-	private $_sourceFile;
+	private $_sourceTemplateFile;
+	private $_filePermission = 0755;
 
-	public $filePermission = 0755;
-
-	protected function generateViewFile($sourceFile, $viewFile)
+	public function renderFile($context, $sourceTemplateFile, $data, $return)
 	{
-		$this->_sourceFile = $sourceFile;
-		$this->_input = file_get_contents($sourceFile);
-		$this->_output = "<?php /* source file: {$sourceFile} */ ?>".PHP_EOL;
+		if (!is_file($sourceTemplateFile) || ($file = realpath($sourceTemplateFile)) === false)
+			throw new BlocksException(Blocks::t('blocks', 'Template file "{file}" does not exist.', array('{file}' => $sourceTemplateFile)));
+
+		$destinationTemplateFile = $this->getDestinationTemplateFile($sourceTemplateFile);
+		if($this->translateTemplateNeeded($sourceTemplateFile, $destinationTemplateFile))
+		{
+			$this->generateTemplateFile($sourceTemplateFile, $destinationTemplateFile);
+			@chmod($destinationTemplateFile, $this->_filePermission);
+		}
+
+		return $context->renderInternal($destinationTemplateFile, $data, $return);
+	}
+
+	private function generateTemplateFile($sourceTemplateFile, $destinationTemplateFile)
+	{
+		$this->_sourceTemplateFile = $sourceTemplateFile;
+		$this->_input = file_get_contents($sourceTemplateFile);
+		$this->_output = "<?php /* source file: {$sourceTemplateFile} */ ?>".PHP_EOL;
 
 		$this->_output .= $this->_input;
 		// when we're ready to actually translate the template, uncomment.
 		//$this->parse(0, strlen($this->_input));
-		file_put_contents($viewFile, $this->_output);
+		file_put_contents($destinationTemplateFile, $this->_output);
 	}
 
-	public function renderFile($context, $sourceFile, $data, $return)
+	private function getDestinationTemplateFile($sourceTemplateFile)
 	{
-		if (!is_file($sourceFile) || ($file = realpath($sourceFile)) === false)
-			throw new BlocksException(Blocks::t('blocks', 'View file "{file}" does not exist.', array('{file}' => $sourceFile)));
+		$cacheTemplatePath = Blocks::app()->path->getTemplateCachePath();
 
-		$viewFile = $this->getViewFile($sourceFile);
-		if($this->translateTemplateNeeded($sourceFile, $viewFile))
-		{
-			$this->generateViewFile($sourceFile, $viewFile);
-			@chmod($viewFile, $this->filePermission);
-		}
-
-		return $context->renderInternal($viewFile, $data, $return);
-	}
-
-
-
-	public function getViewFile($file)
-	{
-		$cacheTemplatePath = Blocks::app()->config->getBlocksTemplateCachePath();
-
-		$relativePath = substr($file, strlen(Blocks::app()->config->getBlocksTemplatePath()));
+		$relativePath = substr($sourceTemplateFile, strlen(Blocks::app()->path->getTemplatePath()));
 		$relativePath = substr($relativePath, 0, strpos($relativePath, '.'));
 		$cacheTemplatePath = $cacheTemplatePath.$relativePath.'.php';
 
 		if(!is_file($cacheTemplatePath))
-			@mkdir(dirname($cacheTemplatePath), $this->filePermission, true);
+			@mkdir(dirname($cacheTemplatePath), $this->_filePermission, true);
 
 		return $cacheTemplatePath;
-	}
-
-	public function getAllowedFileExtensions()
-	{
-		return Blocks::app()->config->getAllowedTemplateFileExtensions();
 	}
 
 	private function translateTemplateNeeded($sourceTemplate, $destTemplate)
@@ -167,7 +159,7 @@ class BlocksViewRenderer extends CViewRenderer
 	{
 		if (($bracketPosition = $this->findOpenBracketAtLine($currentPosition + 1, $endBlock)) === false)
 		{
-			throw new BlocksViewRendererException("Cannot find open bracket for '{$statement}' statement.", $this->_sourceFile, $this->getLineNumber($currentPosition));
+			throw new BlocksTemplateRendererException("Cannot find open bracket for '{$statement}' statement.", $this->_sourceTemplateFile, $this->getLineNumber($currentPosition));
 		}
 
 		$this->_output .= substr($this->_input, $offset, $currentPosition - $offset);
@@ -185,7 +177,7 @@ class BlocksViewRenderer extends CViewRenderer
 	{
 		$bracketPosition = $this->findOpenBracketAtLine($currentPosition + 1, $endBlock);
 		if ($bracketPosition === false)
-			throw new BlocksViewRendererException("Cannot find open bracket for '{$statement}' statement.", $this->_sourceFile, $this->getLineNumber($currentPosition));
+			throw new BlocksTemplateRendererException("Cannot find open bracket for '{$statement}' statement.", $this->_sourceTemplateFile, $this->getLineNumber($currentPosition));
 
 		$this->_output .= substr($this->_input, $offset, $currentPosition - $offset);
 		$start = $currentPosition + 1;
@@ -301,7 +293,7 @@ class BlocksViewRenderer extends CViewRenderer
 			}
 		}
 
-		throw new BlocksViewRendererException("Cannot find closing bracket.", $this->_sourceFile, $this->getLineNumber($openBracketPosition));
+		throw new BlocksTemplateRendererException("Cannot find closing bracket.", $this->_sourceTemplateFile, $this->getLineNumber($openBracketPosition));
 	}
 
 	private function findEndStatement($endPosition, $endBlock)
@@ -349,7 +341,7 @@ class BlocksViewRenderer extends CViewRenderer
 		}
 
 		if ($currentPosition == $invalidCharPosition)
-			throw new BlocksViewRendererException("Cannot detect statement.", $this->_sourceFile, $this->getLineNumber($currentPosition));
+			throw new BlocksTemplateRendererException("Cannot detect statement.", $this->_sourceTemplateFile, $this->getLineNumber($currentPosition));
 
 		return substr($this->_input, $currentPosition, $invalidCharPosition - $currentPosition);
 	}

@@ -1,6 +1,6 @@
 <?php
 
-class CmsController extends BaseController
+class BlocksController extends BaseController
 {
 	private $_templateMatch = null;
 	private $_defaultTemplateTags = null;
@@ -8,7 +8,7 @@ class CmsController extends BaseController
 	public function init()
 	{
 		parent::init();
-		$this->_templateMatch = Blocks::app()->getUrlManager()->getTemplateMatch();
+		$this->_templateMatch = Blocks::app()->url->getTemplateMatch();
 
 		if ($this->_templateMatch !== null)
 		{

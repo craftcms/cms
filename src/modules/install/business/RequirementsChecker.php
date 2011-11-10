@@ -9,8 +9,8 @@ class RequirementsChecker
 
 	private function init()
 	{
-		$dbConfigPath = Blocks::app()->config->getBlocksConfigPath().'db.php';
-		$blocksConfigPath = Blocks::app()->config->getBlocksConfigPath().'blocks.php';
+		$dbConfigPath = Blocks::app()->path->getConfigPath().'db.php';
+		$blocksConfigPath = Blocks::app()->path->getConfigPath().'blocks.php';
 
 		$this->_requirements = array(
 			new Requirement(
@@ -154,7 +154,7 @@ class RequirementsChecker
 				false,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->config->getBlocksConfigPath()).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
+				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->path->getConfigPath()).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
 		}
 		else
 		{

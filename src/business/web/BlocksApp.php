@@ -1,6 +1,6 @@
 <?php
 
-class CmsWebApplication extends CWebApplication
+class BlocksApp extends CWebApplication
 {
 	private $_viewPath;
 	private $_layoutPath;
@@ -35,8 +35,8 @@ class CmsWebApplication extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if (Blocks::app()->urlManager->getTemplateMatch() !== null || Blocks::app()->request->getParam('c', null) !== null)
-			$this->catchAllRequest = array('cms/index');
+		if (Blocks::app()->url->getTemplateMatch() !== null || Blocks::app()->request->getParam('c', null) !== null)
+			$this->catchAllRequest = array('blocks/index');
 
 		parent::run();
 	}
@@ -149,7 +149,7 @@ class CmsWebApplication extends CWebApplication
 			$requestType = Blocks::app()->request->getCMSRequestType();
 			if ($requestType == RequestType::Site)
 			{
-				$viewPath = str_replace('\\', '/', realpath(Blocks::app()->config->getBlocksSiteTemplatePath()).'/');
+				$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getSiteTemplatePath()).'/');
 			}
 			else
 			{
@@ -160,7 +160,7 @@ class CmsWebApplication extends CWebApplication
 				}
 				else
 				{
-					$viewPath = str_replace('\\', '/', realpath(Blocks::app()->config->getBlocksCPTemplatePath()).'/');
+					$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getCPTemplatePath()).'/');
 				}
 			}
 

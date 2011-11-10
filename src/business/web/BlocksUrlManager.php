@@ -1,6 +1,6 @@
 <?php
 
-class CmsUrlManager extends CUrlManager
+class BlocksUrlManager extends CUrlManager
 {
 	private $_path = null;
 	private $_pathSegments = null;
@@ -154,7 +154,7 @@ class CmsUrlManager extends CUrlManager
 
 	private function doesTemplateExist($path)
 	{
-		foreach (Blocks::app()->config->getAllowedTemplateFileExtensions() as $allowedExtension)
+		foreach (Blocks::app()->site->getAllowedTemplateFileExtensions() as $allowedExtension)
 		{
 			$testPath = Blocks::app()->file->set($path.'.'.$allowedExtension, false);
 			if ($testPath->getIsFile())

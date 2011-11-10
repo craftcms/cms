@@ -42,7 +42,7 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if ($this->_siteInfo == null)
 		{
-			$this->_siteInfo = Blocks::app()->config->getSiteByUrl();
+			$this->_siteInfo = Blocks::app()->site->getSiteByUrl();
 		}
 
 		return $this->_siteInfo;

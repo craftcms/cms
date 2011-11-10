@@ -1,6 +1,6 @@
 <?php
 
-class InstallModule extends CmsWebModule
+class InstallModule extends BlocksWebModule
 {
 	public function init()
 	{

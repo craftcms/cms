@@ -1,6 +1,6 @@
 <?php
 
-class CmsWebModule extends CWebModule
+class BlocksWebModule extends CWebModule
 {
 	private $_viewPath;
 	private $_layoutPath;
