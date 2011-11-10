@@ -146,22 +146,29 @@ class BlocksApp extends CWebApplication
 			return $this->_viewPath;
 		else
 		{
-			$requestType = Blocks::app()->request->getCMSRequestType();
-			if ($requestType == RequestType::Site)
+			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
-				$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getSiteTemplatePath()).'/');
-			}
-			else
-			{
-				$pathInfo = Blocks::app()->request->getPathSegments();
-				if ($pathInfo && ($module = $this->getModule($pathInfo[0])) !== null)
+				$requestType = $this->request->getCMSRequestType();
+				if ($requestType == RequestType::Site)
 				{
-					$viewPath = $module->getViewPath();
+					$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getSiteTemplatePath()).'/');
 				}
 				else
 				{
-					$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getCPTemplatePath()).'/');
+					$pathInfo = Blocks::app()->request->getPathSegments();
+					if ($pathInfo && ($module = $this->getModule($pathInfo[0])) !== null)
+					{
+						$viewPath = $module->getViewPath();
+					}
+					else
+					{
+						$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getCPTemplatePath()).'/');
+					}
 				}
+			}
+			else
+			{
+				$viewPath = BLOCKS_BASE_PATH.'templates/';
 			}
 
 			$this->_viewPath = $viewPath;
