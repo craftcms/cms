@@ -184,4 +184,14 @@ class BlocksApp extends CWebApplication
 		else
 			return $this->_layoutPath = $this->getViewPath().'layouts';
 	}
+
+	/**
+	 * Get a config item
+	 * @param string $key The config item's key to retrieve
+	 * @return mixed The config item's value if set, null if not
+	 */
+	public function config($key = false)
+	{
+		return (is_string($key) && isset($this->params['config'][$key])) ? $this->params['config'][$key] : null;
+	}
 }
