@@ -55,6 +55,10 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function isTemplateParsingNeeded()
 	{
+		// always re-parse templates if in dev mode
+		if (Blocks::app()->config('devMode'))
+			return true;
+
 		// if last modified date or source is newer, regen
 		if (@filemtime($this->_sourceTemplatePath) > @filemtime($this->_destinationMetaPath))
 			return true;
