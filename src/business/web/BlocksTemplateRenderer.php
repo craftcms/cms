@@ -1,11 +1,13 @@
 <?php
 
 class BlocksTemplateRenderer extends CApplicationComponent implements IViewRenderer
-{
-	private $_variables;
+{	
+	private $_sourceTemplatePath;
+	private $_parsedTemplatePath;
 	private $_destinationMetaPath;
 	private $_filePermission = 0755;
-	private $_varPattern = '(A-Z|a-z)[-\w]*';
+	private $_template;
+	private $_variables;
 
 	/**
 	 * Renders a template
@@ -16,54 +18,53 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	public function renderFile($context, $sourceTemplatePath, $tags, $return)
 	{
-		if (!is_file($sourceTemplatePath) || realpath($sourceTemplatePath) === false)
-			throw new BlocksException(Blocks::t('blocks', 'The template "{path}" does not exist.', array('{path}' => $sourceTemplatePath)));
+		$this->_sourceTemplatePath = $sourceTemplatePath;
 
-		$parsedTemplatePath = $this->getParsedTemplatePath($sourceTemplatePath);
-		if($this->isTemplateParsingNeeded($sourceTemplatePath, $parsedTemplatePath))
+		if (!is_file($this->_sourceTemplatePath) || realpath($this->_sourceTemplatePath) === false)
+			throw new BlocksException(Blocks::t('blocks', 'The template "{path}" does not exist.', array('{path}' => $this->_sourceTemplatePath)));
+
+		$this->setParsedTemplatePath();
+
+		if($this->isTemplateParsingNeeded())
 		{
-			$this->parseTemplate($sourceTemplatePath, $parsedTemplatePath);
-			@chmod($parsedTemplatePath, $this->_filePermission);
+			$this->parseTemplate();
+			@chmod($this->_parsedTemplatePath, $this->_filePermission);
 		}
 
-		return $context->renderInternal($parsedTemplatePath, $tags, $return);
+		return $context->renderInternal($this->_parsedTemplatePath, $tags, $return);
 	}
 
 	/**
-	 * Returns the path to the parsed template
-	 * @param string $sourceTemplatePath Path to the source template
+	 * Sets the path to the parsed template
 	 */
-	private function getParsedTemplatePath($sourceTemplatePath)
+	private function setParsedTemplatePath()
 	{
 		$cacheTemplatePath = Blocks::app()->path->getTemplateCachePath();
 
-		$relativePath = substr($sourceTemplatePath, strlen(Blocks::app()->path->getTemplatePath()));
+		$relativePath = substr($this->_sourceTemplatePath, strlen(Blocks::app()->path->getTemplatePath()));
 		$relativePath = substr($relativePath, 0, strpos($relativePath, '.'));
-		$parsedTemplatePath = $cacheTemplatePath.$relativePath.'.php';
+		$this->_parsedTemplatePath = $cacheTemplatePath.$relativePath.'.php';
 		$this->_destinationMetaPath = $cacheTemplatePath.$relativePath.'.meta';
 
-		if(!is_file($parsedTemplatePath))
-			@mkdir(dirname($parsedTemplatePath), $this->_filePermission, true);
-
-		return $parsedTemplatePath;
+		if(!is_file($this->_parsedTemplatePath))
+			@mkdir(dirname($this->_parsedTemplatePath), $this->_filePermission, true);
 	}
 
 	/**
 	 * Returns whether the template needs to be (re-)parsed
-	 * @param string $sourceTemplatePath Path to the source template
 	 */
-	private function isTemplateParsingNeeded($sourceTemplatePath)
+	private function isTemplateParsingNeeded()
 	{
 		// if last modified date or source is newer, regen
-		if (@filemtime($sourceTemplatePath) > @filemtime($this->_destinationMetaPath))
+		if (@filemtime($this->_sourceTemplatePath) > @filemtime($this->_destinationMetaPath))
 			return true;
 
 		// if the sizes are different regen
-		if (@filesize($sourceTemplatePath) !== @filesize($this->_destinationMetaPath))
+		if (@filesize($this->_sourceTemplatePath) !== @filesize($this->_destinationMetaPath))
 			return true;
 
 		// the first two checks should catch 95% of all cases.  for the rest, fall back on comparing the files.
-		$sourceFile = fopen($sourceTemplatePath, 'rb');
+		$sourceFile = fopen($this->_sourceTemplatePath, 'rb');
 		$metaFile = fopen($this->_destinationMetaPath, 'rb');
 
 		$parseNeeded = false;
@@ -87,32 +88,20 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parses a template
-	 * @param string $sourceTemplatePath Path to the source template
-	 * @param string $parsedTemplatePath Path to the parsed template
 	 */
-	private function parseTemplate($sourceTemplatePath, $parsedTemplatePath)
+	private function parseTemplate()
 	{
 		// copy the source template to the meta file for comparison on future requests.
-		copy($sourceTemplatePath, $this->_destinationMetaPath);
+		copy($this->_sourceTemplatePath, $this->_destinationMetaPath);
 
-		$sourceTemplate = file_get_contents($sourceTemplatePath);
-		$parsedTemplate = $this->parse($sourceTemplate);
+		$this->_template = file_get_contents($this->_sourceTemplatePath);
 
-		file_put_contents($parsedTemplatePath, $parsedTemplate);
-	}
-
-	/**
-	 * Parse
-	 * @param string $template The template contents to parse
-	 */
-	private function parse($template)
-	{
 		$this->_variables = array();
 
-		$this->parseComments($template);
-		$this->parseActions($template);
-		$this->parseVariables($template);
-		$this->parseLanguage($template);
+		$this->parseComments();
+		$this->parseActions();
+		$this->parseVariables();
+		$this->parseLanguage();
 
 		if ($this->_variables)
 		{
@@ -125,26 +114,26 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			$head .= '?>';
 
-			$template = $head . $template;
+			$this->_template = $head . $this->_template;
 		}
 
-		return $template;
+		file_put_contents($this->_parsedTemplatePath, $this->_template);
 	}
 
 	/**
 	 * Parse comments
 	 */
-	private function parseComments(&$template)
+	private function parseComments()
 	{
-		$template = preg_replace('/\{\!\-\-.*\-\-\}/Um', '', $template);
+		$this->_template = preg_replace('/\{\!\-\-.*\-\-\}/Um', '', $this->_template);
 	}
 
 	/**
 	 * Parse actions
 	 */
-	private function parseActions(&$template)
+	private function parseActions()
 	{
-		$template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+)\s+)?\s*\%\}/Um', array(&$this, '_parseAction'), $template);
+		$this->_template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+)\s+)?\s*\%\}/Um', array(&$this, '_parseAction'), $this->_template);
 	}
 
 	private function _parseAction($match)
@@ -199,9 +188,9 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	/**
 	 * Parse variables
 	 */
-	private function parseVariables($template)
+	private function parseVariables()
 	{
-		return $template;
+		
 	}
 
 	/**
@@ -241,7 +230,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	/**
 	 * Parse language
 	 */
-	private function parseLanguage(&$template)
+	private function parseLanguage()
 	{
 		
 	}
