@@ -92,18 +92,18 @@ class PathService extends CApplicationComponent implements IPathService
 			case RequestType::Site:
 				$siteHandle = Blocks::app()->request->getSiteInfo();
 				$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-				$cachePath = $this->getRuntimePath().'cached/'.$siteHandle.'/translated_site_templates/';
+				$cachePath = $this->getRuntimePath().'parsed_templates/sites/'.$siteHandle.'/';
 				break;
 
 			case RequestType::ControlPanel:
-				$cachePath = $this->getRuntimePath().'cached/translated_cp_templates/';
+				$cachePath = $this->getRuntimePath().'parsed_templates/cp/';
 
 				if (($moduleName = Blocks::app()->url->getTemplateMatch()->getModuleName()) !== null)
 					$cachePath .= 'modules/'.$moduleName.'/';
 				break;
 
 			default:
-				$cachePath = $this->getRuntimePath().'/cached';
+				$cachePath = $this->getRuntimePath().'/parsed_templates/';
 		}
 
 		if (!is_dir($cachePath))
