@@ -11,9 +11,9 @@ class BlocksApp extends CWebApplication
 	public function init()
 	{
 		// run the resource processor if necessary.
-		if (Blocks::app()->request->getRequestType() == 'GET')
+		if ($this->request->getRequestType() == 'GET')
 		{
-			if (Blocks::app()->request->getQuery('resourcePath', null) !== null)
+			if ($this->request->getQuery('resourcePath', null) !== null)
 			{
 				$resourceProcessor = new ResourceProcessor();
 				$resourceProcessor->processResourceRequest();
@@ -35,7 +35,7 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if (Blocks::app()->url->getTemplateMatch() !== null || Blocks::app()->request->getParam('c', null) !== null)
+		if ($this->url->getTemplateMatch() !== null || $this->request->getParam('c', null) !== null)
 			$this->catchAllRequest = array('blocks/index');
 
 		parent::run();
@@ -43,7 +43,7 @@ class BlocksApp extends CWebApplication
 
 	private function validateConfig()
 	{
-		$pathInfo = Blocks::app()->request->getPathInfo();
+		$pathInfo = $this->request->getPathInfo();
 
 		if (strpos($pathInfo, '/install') !== false)
 			return;
@@ -53,15 +53,15 @@ class BlocksApp extends CWebApplication
 
 		$messages = array();
 
-		$databaseServerName = Blocks::app()->config->getDatabaseServerName();
-		$databaseAuthName = Blocks::app()->config->getDatabaseAuthName();
-		$databaseAuthPassword = Blocks::app()->config->getDatabaseAuthPassword();
-		$databaseName = Blocks::app()->config->getDatabaseName();
-		$databaseType = Blocks::app()->config->getDatabaseType();
-		$databasePort = Blocks::app()->config->getDatabasePort();
-		$databaseTablePrefix = Blocks::app()->config->getDatabaseTablePrefix();
-		$databaseCharset = Blocks::app()->config->getDatabaseCharset();
-		$databaseCollation = Blocks::app()->config->getDatabaseCollation();
+		$databaseServerName = $this->config->getDatabaseServerName();
+		$databaseAuthName = $this->config->getDatabaseAuthName();
+		$databaseAuthPassword = $this->config->getDatabaseAuthPassword();
+		$databaseName = $this->config->getDatabaseName();
+		$databaseType = $this->config->getDatabaseType();
+		$databasePort = $this->config->getDatabasePort();
+		$databaseTablePrefix = $this->config->getDatabaseTablePrefix();
+		$databaseCharset = $this->config->getDatabaseCharset();
+		$databaseCollation = $this->config->getDatabaseCollation();
 
 		if (StringHelper::IsNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
@@ -91,7 +91,7 @@ class BlocksApp extends CWebApplication
 			$messages[] = 'The database type is not set in your db config file.';
 		else
 		{
-			if (!in_array($databaseType, Blocks::app()->config->getDatabaseSupportedTypes()))
+			if (!in_array($databaseType, $this->config->getDatabaseSupportedTypes()))
 				$messages[] = 'Blocks does not support the database type you have set in your db config file.';
 		}
 
@@ -100,7 +100,7 @@ class BlocksApp extends CWebApplication
 
 		try
 		{
-			$connection = Blocks::app()->db;
+			$connection = $this->db;
 			if (!$connection)
 				$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
 		}
@@ -114,13 +114,13 @@ class BlocksApp extends CWebApplication
 
 		if (!$this->isDbInstalled())
 		{
-			if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
+			if ($this->request->getCMSRequestType() == RequestType::Site)
 					throw new BlocksHttpException(404, 'Page not found.');
 			else
 			{
-				$pathInfo = Blocks::app()->request->getPathSegments();
+				$pathInfo = $this->request->getPathSegments();
 				if (!$pathInfo || $pathInfo[0] !== 'install')
-					Blocks::app()->request->redirect('/admin.php/install');
+					$this->request->redirect('/admin.php/install');
 			}
 		}
 	}
@@ -130,7 +130,7 @@ class BlocksApp extends CWebApplication
 		if ($this->_dbInstalled == null)
 		{
 			// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
-			$infoTable = Blocks::app()->db->schema->getTable(Blocks::app()->config->getDatabaseTablePrefix().'_info');
+			$infoTable = $this->db->schema->getTable($this->config->getDatabaseTablePrefix().'_info');
 
 			$this->_dbInstalled = $infoTable === null ? false : true;
 		}
@@ -151,23 +151,24 @@ class BlocksApp extends CWebApplication
 				$requestType = $this->request->getCMSRequestType();
 				if ($requestType == RequestType::Site)
 				{
-					$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getSiteTemplatePath()).'/');
+					$viewPath = str_replace('\\', '/', realpath($this->path->getSiteTemplatePath()).'/');
 				}
 				else
 				{
-					$pathInfo = Blocks::app()->request->getPathSegments();
+					$pathInfo = $this->request->getPathSegments();
 					if ($pathInfo && ($module = $this->getModule($pathInfo[0])) !== null)
 					{
 						$viewPath = $module->getViewPath();
 					}
 					else
 					{
-						$viewPath = str_replace('\\', '/', realpath(Blocks::app()->path->getCPTemplatePath()).'/');
+						$viewPath = str_replace('\\', '/', realpath($this->path->getCPTemplatePath()).'/');
 					}
 				}
 			}
 			else
 			{
+				// in the case of an exception, our custom classes are not loaded.
 				$viewPath = BLOCKS_BASE_PATH.'templates/';
 			}
 
