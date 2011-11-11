@@ -1,6 +1,6 @@
 <?php
 
-class ContentPagesTag extends LoopTag
+class ContentPagesTag extends Tag
 {
 
 }

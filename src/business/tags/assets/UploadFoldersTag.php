@@ -1,6 +1,6 @@
 <?php
 
-class UploadFoldersTag extends LoopTag
+class UploadFoldersTag extends Tag
 {
 
 }

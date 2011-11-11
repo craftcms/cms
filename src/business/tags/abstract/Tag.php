@@ -1,17 +1,10 @@
 <?php
 
-abstract class Tag
+class Tag
 {
-	protected $_val;
-
-	function __construct($val)
-	{
-		$this->_val = $val;
-	}
-
 	public function __toString()
 	{
-		return $this->_val;
+		return '';
 	}
 
 	public function __toBool()
@@ -19,24 +12,22 @@ abstract class Tag
 		return (bool)$this->__toString();
 	}
 
-	public function __toTagArray()
+	public function __toArray()
 	{
 		$tags = array();
 
-		if (is_array($this->_val))
+		$letters = str_split($this->__toString());
+
+		foreach ($letters as $letter)
 		{
-			foreach ($this->_val as $val)
-			{
-				$tagType = get_class($this);
-				$tags[] = new $tagType($val);
-			}
-		}
-		else
-		{
-			$tagType = get_class($this);
-			$tags[] = new $tagType($this->_val);
+			$tags[] = new StringTag($letter);
 		}
 
 		return $tags;
+	}
+
+	public function __call($name, $args)
+	{
+		return new Tag();
 	}
 }

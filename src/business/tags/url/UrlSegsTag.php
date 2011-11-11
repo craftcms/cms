@@ -1,6 +1,6 @@
 <?php
 
-class UrlSegsTag extends LoopTag
+class UrlSegsTag extends Tag
 {
 
 }

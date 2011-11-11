@@ -1,6 +1,6 @@
 <?php
 
-class ContentVersionsTag extends LoopTag
+class ContentVersionsTag extends Tag
 {
 
 }

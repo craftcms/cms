@@ -1,6 +1,6 @@
 <?php
 
-class UsersTag extends LoopTag
+class UsersTag extends Tag
 {
 
 }

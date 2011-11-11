@@ -1,6 +1,6 @@
 <?php
 
-class CPSectionsTag extends LoopTag
+class CPSectionsTag extends Tag
 {
 
 }
