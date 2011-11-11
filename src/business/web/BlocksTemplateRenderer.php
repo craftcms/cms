@@ -5,6 +5,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private $_input;
 	private $_output;
 	private $_sourceTemplatePath;
+	private $_destinationMetaPath;
 	private $_filePermission = 0755;
 
 	/**
@@ -37,6 +38,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private function parseTemplate($sourceTemplatePath, $parsedTemplatePath)
 	{
 		$this->_sourceTemplatePath = $sourceTemplatePath;
+		// copy the source template to the meta file for comparison on future requests.
+		copy($sourceTemplatePath, $this->_destinationMetaPath);
 		$this->_input = file_get_contents($sourceTemplatePath);
 		$this->_output = "<?php /* source file: {$sourceTemplatePath} */ ?>".PHP_EOL;
 
@@ -56,48 +59,48 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		$relativePath = substr($sourceTemplatePath, strlen(Blocks::app()->path->getTemplatePath()));
 		$relativePath = substr($relativePath, 0, strpos($relativePath, '.'));
-		$cacheTemplatePath = $cacheTemplatePath.$relativePath.'.php';
+		$parsedTemplatePath = $cacheTemplatePath.$relativePath.'.php';
+		$this->_destinationMetaPath = $cacheTemplatePath.$relativePath.'.meta';
 
-		if(!is_file($cacheTemplatePath))
-			@mkdir(dirname($cacheTemplatePath), $this->_filePermission, true);
+		if(!is_file($parsedTemplatePath))
+			@mkdir(dirname($parsedTemplatePath), $this->_filePermission, true);
 
-		return $cacheTemplatePath;
+		return $parsedTemplatePath;
 	}
 
 	/**
 	 * Returns whether the template needs to be (re-)parsed
 	 * @param string $sourceTemplatePath Path to the source template
-	 * @param string $parsedTemplatePath Path to the parsed template
 	 */
-	private function isParseTemplateNeeded($sourceTemplatePath, $parsedTemplatePath)
+	private function isParseTemplateNeeded($sourceTemplatePath)
 	{
 		// if last modified date or source is newer, regen
-		if (@filemtime($sourceTemplatePath) > @filemtime($parsedTemplatePath))
+		if (@filemtime($sourceTemplatePath) > @filemtime($this->_destinationMetaPath))
 			return true;
 
 		// if the sizes are different regen
-		if (@filesize($sourceTemplatePath) !== @filesize($parsedTemplatePath))
+		if (@filesize($sourceTemplatePath) !== @filesize($this->_destinationMetaPath))
 			return true;
 
 		// the first two checks should catch 95% of all cases.  for the rest, fall back on comparing the files.
 		$sourceFile = fopen($sourceTemplatePath, 'rb');
-		$parsedFile = fopen($parsedTemplatePath, 'rb');
+		$metaFile = fopen($this->_destinationMetaPath, 'rb');
 
 		$parseNeeded = false;
-		while (!feof($sourceFile) && !feof($parsedFile))
+		while (!feof($sourceFile) && !feof($metaFile))
 		{
-			if(fread($sourceFile, 4096) !== fread($parsedFile, 4096))
+			if(fread($sourceFile, 4096) !== fread($metaFile, 4096))
 			{
 				$parseNeeded = true;
 				break;
 			}
 		}
 
-		if (feof($sourceFile) !== feof($parsedFile))
+		if (feof($sourceFile) !== feof($metaFile))
 			$parseNeeded = true;
 
 		fclose($sourceFile);
-		fclose($parsedFile);
+		fclose($metaFile);
 
 		return $parseNeeded;
 	}
