@@ -160,7 +160,7 @@ return array(
 					'levels' => 'error, warning',
 				),
 				array(
-					'class'=>'CWebLogRoute',
+					'class' => 'application.business.logging.BlocksWebLogRoute',
 				),
 			),
 		),
