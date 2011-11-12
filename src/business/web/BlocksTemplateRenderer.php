@@ -105,7 +105,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		$this->parseComments();
 		$this->parseActions();
-		//$this->parseVariables();
+		$this->parseVariableTags();
 		$this->parseLanguage();
 
 		if ($this->_variables)
@@ -195,12 +195,28 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	}
 
 	/**
+	 * Parse variable tags
+	 */
+	private function parseVariableTags()
+	{
+		// find any remaining {variable-tags} on the page, making sure not to pick up any JSON
+		$this->_template = preg_replace_callback('/\{\s*([A-Za-z][-\w]*)\s*(?!:)\}/Um', array(&$this, 'parseVariableTagMatch'), $this->_template);
+	}
+
+	/**
+	 * Parse a variable tag match
+	 */
+	private function parseVariableTagMatch($match)
+	{
+		$this->parseVariable($match[1]);
+		return '<?php echo ' . $match[1] . ' ?>';
+	}
+
+	/**
 	 * Parse variables
 	 */
 	private function parseVariables(&$str)
 	{
-		$offset = 0;
-
 		do {
 			$match = $this->parseVariable($str, $offset);
 		} while ($match);
