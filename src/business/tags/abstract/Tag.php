@@ -16,11 +16,16 @@ class Tag
 	{
 		$tags = array();
 
-		$letters = str_split($this->__toString());
+		$str = $this->__toString();
 
-		foreach ($letters as $letter)
+		if (strlen($str))
 		{
-			$tags[] = new StringTag($letter);
+			$letters = str_split($str);
+
+			foreach ($letters as $letter)
+			{
+				$tags[] = new StringTag($letter);
+			}
 		}
 
 		return $tags;

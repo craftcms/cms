@@ -5,9 +5,10 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private $_sourceTemplatePath;
 	private $_parsedTemplatePath;
 	private $_destinationMetaPath;
-	private $_filePermission = 0755;
 	private $_template;
 	private $_variables;
+
+	private static $_filePermission = 0755;
 
 	/**
 	 * Renders a template
@@ -28,7 +29,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		if($this->isTemplateParsingNeeded())
 		{
 			$this->parseTemplate();
-			@chmod($this->_parsedTemplatePath, $this->_filePermission);
+			@chmod($this->_parsedTemplatePath, self::$_filePermission);
 		}
 
 		return $context->renderInternal($this->_parsedTemplatePath, $tags, $return);
@@ -47,7 +48,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		$this->_destinationMetaPath = $cacheTemplatePath.$relativePath.'.meta';
 
 		if(!is_file($this->_parsedTemplatePath))
-			@mkdir(dirname($this->_parsedTemplatePath), $this->_filePermission, true);
+			@mkdir(dirname($this->_parsedTemplatePath), self::$_filePermission, true);
 	}
 
 	/**
@@ -104,7 +105,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		$this->parseComments();
 		$this->parseActions();
-		$this->parseVariables();
+		//$this->parseVariables();
 		$this->parseLanguage();
 
 		if ($this->_variables)
@@ -113,7 +114,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			foreach ($this->_variables as $var)
 			{
-				$head .= 'if (! isset($' . $var . ')) $' . $var . ' = new Tag();' . PHP_EOL;
+				$head .= 'if (!isset($' . $var . ')) $' . $var . ' = new Tag;' . PHP_EOL;
 			}
 
 			$head .= '?>';
@@ -129,7 +130,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseComments()
 	{
-		$this->_template = preg_replace('/\{\!\-\-.*\-\-\}/Um', '', $this->_template);
+		$this->_template = preg_replace('/\{\!\-\-.*\-\-\}/m', '', $this->_template);
 	}
 
 	/**
@@ -137,10 +138,13 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseActions()
 	{
-		$this->_template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+)\s+)?\s*\%\}/Um', array(&$this, '_parseAction'), $this->_template);
+		$this->_template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+)\s+)?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
 	}
 
-	private function _parseAction($match)
+	/**
+	 * Parse an action match
+	 */
+	private function parseActionMatch($match)
 	{
 		$action = $match[1];
 		$params = empty($match[3]) ? '' : $match[3];
@@ -150,10 +154,11 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// {% foreach page.fields as field %}
 
 			case 'foreach':
-				if (preg_match('/^(\S+)\s+as\s+(\S+)$/m', $params, $match))
+				if (preg_match('/^(.+)\s+as\s+(.+)$/m', $params, $match))
 				{
-					$var = $this->parseVariable($match[1]);
-					return '<?php foreach ('.$var.'->__toArray() as $'.$match[2].'): ?>';
+					$this->parseVariable($match[1]);
+					$this->parseVariable($match[2]);
+					return '<?php foreach ('.$match[1].'->__toArray() as '.$match[2].'): ?>';
 				}
 				return '';
 
@@ -192,43 +197,87 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	/**
 	 * Parse variables
 	 */
-	private function parseVariables()
+	private function parseVariables(&$str)
 	{
-		
+		$offset = 0;
+
+		do {
+			$match = $this->parseVariable($str, $offset);
+		} while ($match);
 	}
 
 	/**
-	 * Parses a variable
+	 * Parse variable
 	 */
-	private function parseVariable($var)
+	private function parseVariable(&$str, &$offset = 0)
 	{
-		$parts = explode('.', $var);
-
-		$first = array_shift($parts);
-
-		if (! in_array($first, $this->_variables))
+		if (preg_match('/(?<![-\.\'"\w])[A-Za-z][-\w]*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
-			$this->_variables[] = $first;
+			$tag = $tagMatch[0][0];
+			$parsedTag = '$'.$tag;
+			$tagLength = strlen($tagMatch[0][0]);
+			$tagOffset = $tagMatch[0][1];
+
+			// search for immidiately following subtags
+			$substr = substr($str, $tagOffset + $tagLength);
+
+			while (preg_match('/^
+				(?P<subtag>
+					\s*\.\s*
+					(?P<func>[A-Za-z][-\w]*)        # <func>
+					(?:\(                           # parentheses (optional)
+						(?P<params>                 # <params> (optional)
+							(?P<param>              # <param>
+								(?P<quote>[\'"])    # <quote>
+									.*?
+								(?<!\\\)(?P=quote)
+								|
+								[A-Za-z][-\w]*(?P>subtag)?
+							)
+							(?P<moreParams>         # <moreParams> (optional)
+								\s*\,\s*
+								(?P>param)
+								(?P>moreParams)?    # recursive <moreParams>
+							)?
+						)?
+					\))?
+				)/x', $substr, $subtagMatch))
+			{
+				if (isset($subtagMatch['params']))
+				{
+					$this->parseVariables($subtagMatch['params']);
+				}
+				else
+				{
+					$subtagMatch['params'] = '';
+				}
+
+				$parsedTag .= '->'.$subtagMatch['func'].'('.$subtagMatch['params'].')';
+
+				// chop the subtag match from the substring
+				$subtagLength = strlen($subtagMatch[0]);
+				$substr = substr($substr, $subtagLength);
+
+				// update the total tag length
+				$tagLength += $subtagLength;
+			}
+
+			// replace the tag with the parsed version
+			$str = substr($str, 0, $tagOffset) . $parsedTag . $substr;
+
+			// update the offset
+			$offset = $tagOffset + strlen($parsedTag);
+
+			// make sure the tag is defined at runtime
+			if (!in_array($tag, $this->_variables))
+			{
+				$this->_variables[] = $tag;
+			}
+
+			return true;
 		}
 
-		$parsed = '$'.$first;
-
-		foreach ($parts as $part)
-		{
-			$parsed .= '->'.$part.'()';
-		}
-
-		return $parsed;
-	}
-
-	private function _parseVariable($match)
-	{
-		if (! in_array($match[0], $this->_variables))
-		{
-			$this->_variables[] = $match[0];
-		}
-
-		return '$'.$match[0];
+		return false;
 	}
 
 	/**
