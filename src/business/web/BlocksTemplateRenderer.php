@@ -136,7 +136,9 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function extractPhp()
 	{
-		$this->_template = preg_replace_callback('/(\<\?=|\<\?|\<\?php)(.*)\?\>/Um', array(&$this, 'extractPhpMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Um', array(&$this, 'extractPhpMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Um', array(&$this, 'extractPhpShortTagMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?(.*)\?\>/Um', array(&$this, 'extractPhpMatch'), $this->_template);
 	}
 
 	/**
@@ -144,12 +146,29 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function extractPhpMatch($match)
 	{
-		$this->_phpCode[] = '<?php'.($match[1] == '<?=' ? ' echo ' : '') . $match[2] . '?>';
+		$code = $match[1];
+
+		// make sure it starts with whitespace
+		if (!preg_match('/^\s/', $code))
+		{
+			$code = ' '.$code;
+		}
+
+		$this->_phpCode[] = '<?php'.$code.'?>';
 		$marker = $this->_phpMarkers[] = '[PHP:'.count($this->_phpCode).']';
 
 		return $marker;
 	}
 
+	/**
+	 * Extract a PHP short tag match
+	 */
+	private function extractPhpShortTagMatch($match)
+	{
+		$match[1] = 'echo '.$match[1];
+		return $this->extractPhpMatch($match);
+	}
+ 
 	/**
 	 * Restore the PHP code
 	 */
