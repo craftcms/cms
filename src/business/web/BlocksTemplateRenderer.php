@@ -199,8 +199,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariableTags()
 	{
-		// find any remaining {variable-tags} on the page, making sure not to pick up any JSON
-		$this->_template = preg_replace_callback('/\{\s*([A-Za-z][-\w]*(\s*[\.\(].*)?)\s*\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
+		// find any remaining {variable-tags} on the page
+		$this->_template = preg_replace_callback('/\{(.*)\}/Um', array(&$this, 'parseVariableTagMatch'), $this->_template);
 	}
 
 	/**
@@ -208,24 +208,30 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariableTagMatch($match)
 	{
-		$this->parseVariable($match[1]);
+		// make sure this isn't JSON
+		if (preg_match('/^\s*\w+\s*:/m', $match[1]))
+		{
+			return $match[0];
+		}
+
+		$this->parseVariables($match[1], true);
 		return '<?php echo ' . $match[1] . ' ?>';
 	}
 
 	/**
 	 * Parse variables
 	 */
-	private function parseVariables(&$str)
+	private function parseVariables(&$str, $toString = false)
 	{
 		do {
-			$match = $this->parseVariable($str, $offset);
+			$match = $this->parseVariable($str, $offset, $toString);
 		} while ($match);
 	}
 
 	/**
 	 * Parse variable
 	 */
-	private function parseVariable(&$str, &$offset = 0)
+	private function parseVariable(&$str, &$offset = 0, $toString = false)
 	{
 		if (preg_match('/(?<![-\.\'"\w])[A-Za-z][-\w]*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
@@ -276,6 +282,11 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 				// update the total tag length
 				$tagLength += $subtagLength;
+			}
+
+			if ($toString)
+			{
+				$parsedTag .= '->__toString()';
 			}
 
 			// replace the tag with the parsed version
