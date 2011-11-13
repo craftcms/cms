@@ -260,8 +260,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariableTagMatch($match)
 	{
-		// make sure this isn't JSON
-		if (preg_match('/^\s*\w+\s*:/m', $match[1]))
+		// make sure this isn't JSON or CSS
+		if (preg_match('/^\s*[-\w]+\s*:/m', $match[1]))
 		{
 			return $match[0];
 		}
