@@ -6,6 +6,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private $_parsedTemplatePath;
 	private $_destinationMetaPath;
 	private $_template;
+	private $_phpMarkers;
+	private $_phpCode;
 	private $_variables;
 
 	private static $_filePermission = 0755;
@@ -101,12 +103,16 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		$this->_template = file_get_contents($this->_sourceTemplatePath);
 
+		$this->_phpMarkers = array();
+		$this->_phpCode = array();
 		$this->_variables = array();
 
+		$this->extractPhp();
 		$this->parseComments();
 		$this->parseActions();
 		$this->parseVariableTags();
 		$this->parseLanguage();
+		$this->restorePhp();
 
 		if ($this->_variables)
 		{
@@ -123,6 +129,33 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		}
 
 		file_put_contents($this->_parsedTemplatePath, $this->_template);
+	}
+
+	/**
+	 * Extracts PHP code, replacing it with markers so that we don't risk parsing something in the code that should have been left alone
+	 */
+	private function extractPhp()
+	{
+		$this->_template = preg_replace_callback('/(\<\?=|\<\?|\<\?php)(.*)\?\>/Um', array(&$this, 'extractPhpMatch'), $this->_template);
+	}
+
+	/**
+	 * Extract a PHP code match
+	 */
+	private function extractPhpMatch($match)
+	{
+		$this->_phpCode[] = '<?php'.($match[1] == '<?=' ? ' echo ' : '') . $match[2] . '?>';
+		$marker = $this->_phpMarkers[] = '[PHP:'.count($this->_phpCode).']';
+
+		return $marker;
+	}
+
+	/**
+	 * Restore the PHP code
+	 */
+	private function restorePhp()
+	{
+		$this->_template = str_replace($this->_phpMarkers, $this->_phpCode, $this->_template);
 	}
 
 	/**
