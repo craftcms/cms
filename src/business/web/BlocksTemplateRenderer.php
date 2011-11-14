@@ -207,7 +207,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseActions()
 	{
-		$this->_template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+)\s+)?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+))?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
 	}
 
 	/**
