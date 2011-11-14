@@ -116,20 +116,14 @@ class BaseController extends CController
 		else
 			$viewFile = $viewPath.$viewName;
 
-		$viewFile = str_replace('\\', '/', $viewFile);
+		$viewFile = Blocks::app()->path->normalizeDirectorySeparators($viewFile);
 
 		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
 		{
 			if (get_class($renderer) == 'BlocksTemplateRenderer')
 			{
-				foreach (Blocks::app()->site->getAllowedTemplateFileExtensions() as $allowedExtension)
-				{
-					if(is_file($viewFile.'.'.$allowedExtension))
-					{
-						$extension = $allowedExtension;
-						break;
-					}
-				}
+				if ($matchedTemplate = (Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($viewFile)) !== null)
+					$extension = pathinfo($matchedTemplate, PATHINFO_EXTENSION);
 			}
 			else
 				$extension = $renderer->fileExtension;
@@ -177,7 +171,7 @@ class BaseController extends CController
 		$widgetCount = count($this->_widgetStack);
 		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
 		{
-			$extension = Blocks::app()->file->set($viewFile, false)->getExtension();
+			$extension = pathinfo($viewFile, PATHINFO_EXTENSION);
 			if ((get_class($renderer) === 'BlocksTemplateRenderer' && in_array($extension, Blocks::app()->site->getAllowedTemplateFileExtensions()) || $renderer->fileExtension === '.'.$extension))
 				$content = $renderer->renderFile($this, $viewFile, $data, $return);
 		}
@@ -189,7 +183,7 @@ class BaseController extends CController
 		else
 		{
 			$widget = end($this->_widgetStack);
-			throw new BlocksException(Blocks::t('yii','{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.', array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
+			throw new BlocksException(Blocks::t('blocks','{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.', array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
 		}
 	}
 }

@@ -132,7 +132,7 @@ class BlocksUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
-		if (($fullMatchPath = $this->doesTemplateExist($templatePath.$requestPath)) !== false)
+		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
 			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
@@ -140,8 +140,8 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		$path = $requestPath.'/index';
-		if(($fullMatchPath = $this->doesTemplateExist($templatePath.$path)) !== false)
+		$path = $requestPath.'index';
+		if (($fullMatchPath = (Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$path)) !== null))
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
 			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.$path, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
@@ -149,21 +149,6 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// no template match.
-		return false;
-	}
-
-	private function doesTemplateExist($path)
-	{
-		foreach (Blocks::app()->site->getAllowedTemplateFileExtensions() as $allowedExtension)
-		{
-			$testPath = Blocks::app()->file->set($path.'.'.$allowedExtension, false);
-			if ($testPath->getIsFile())
-			{
-				return $testPath->getRealPath();
-				break;
-			}
-		}
-
 		return false;
 	}
 

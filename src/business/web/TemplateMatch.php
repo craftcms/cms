@@ -21,7 +21,7 @@ class TemplateMatch
 		$relativeTemplatePath = '';
 		$segments = null;
 
-		$path = str_replace('\\', '/', $path);
+		$path = Blocks::app()->path->normalizeDirectorySeparators($path);
 		$pathSegments = array_merge(array_filter(explode('/', $path)));
 
 		if ($pathSegments)

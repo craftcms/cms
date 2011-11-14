@@ -1594,7 +1594,7 @@ class BlocksFile extends CApplicationComponent
 			}
 
 			// normalize directory separators
-			$info = str_replace('\\', '/', $info);
+			$info = Blocks::app()->path->normalizeDirectorySeparators($info);
 
 			// found a directory
 			if (substr($info['name'], -1) === '/')

@@ -142,7 +142,7 @@ class CoreUpdater
 					continue;
 
 				// normalize directory separators
-				$manifestData[$i] = str_replace('\\', '/', $manifestData[$i]);
+				$manifestData[$i] = Blocks::app()->path->normalizeDirectorySeparators($manifestData[$i]);
 				$row = explode(';', $manifestData[$i]);
 
 				// catch any rogue blank lines
