@@ -224,11 +224,11 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'layout':
 				$this->parseVariables($params);
-				return '<?php $_layout->view = '.$params.'; ?>';
+				return "<?php \$_layout->view = {$params} ?>";
 
 			case 'region':
 				$this->parseVariables($params);
-				return '<?php $_layout->regions[] = $this->beginWidget(\'RegionWidget\', array(\'name\' => '.$params.')) ?>';
+				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => {$params})) ?>";
 
 			case 'endregion':
 				return '<?php $this->endWidget() ?>';
@@ -240,7 +240,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 				{
 					$this->parseVariable($match[1]);
 					$this->parseVariable($match[2]);
-					return '<?php foreach ('.$match[1].'->__toArray() as '.$match[2].'): ?>';
+					return "<?php foreach ({$match[1]}->__toArray() as {$match[2]}): ?>";
 				}
 				return '';
 
@@ -250,19 +250,25 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Conditionals
 
 			case 'if':
-				$this->parseVariables($params);
-				return '<?php if ('.$params.'): ?>';
+				$this->parseVariables($params, true);
+				return "<?php if ({$params}): ?>";
 
 			case 'elseif':
 			case 'elsif':
 				$this->parseVariables($params);
-				return '<?php elsif ('.$params.'): ?>';
+				return "<?php elsif ({$params}): ?>";
 
 			case 'else':
 				return '<?php else ?>';
 
 			case 'endif':
 				return '<?php endif ?>';
+
+			// Redirect
+
+			case 'redirect':
+				$this->parseVariables($params);
+				return "<?php header('Location: '.{$params}) ?>";
 		}
 	}
 

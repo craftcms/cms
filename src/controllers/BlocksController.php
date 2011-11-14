@@ -20,11 +20,12 @@ class BlocksController extends BaseController
 					'assets' => new AssetsTag($site->id),
 					'membership' => new MembershipTag($site->id),
 					'security' => new SecurityTag($site->id),
+					'resource' => new ResourceTag(),
 				);
 
 				// if it's a CP request, add the CP tag.
 				if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
-					$this->_defaultTemplateTags[] = array('cp' => new CPTag($site->id));
+					$this->_defaultTemplateTags['cp'] = new CPTag($site->id);
 
 			}
 		}
