@@ -285,7 +285,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariable(&$str, &$offset = 0, $toString = false)
 	{
-		if (preg_match('/(?<![-\.\'"\w])[A-Za-z][-\w]*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
+		if (preg_match('/(?<![-\.\'"\w])[A-Za-z]\w*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
 			$parsedTag = '$'.$tag;
@@ -298,7 +298,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			while (preg_match('/^
 				(?P<subtag>
 					\s*\.\s*
-					(?P<func>[A-Za-z][-\w]*)        # <func>
+					(?P<func>[A-Za-z]\w*)           # <func>
 					(?:\(                           # parentheses (optional)
 						(?P<params>                 # <params> (optional)
 							(?P<param>              # <param>
@@ -306,7 +306,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 									.*?
 								(?<!\\\)(?P=quote)
 								|
-								[A-Za-z][-\w]*(?P>subtag)?
+								[A-Za-z]\w*(?P>subtag)?
 							)
 							(?P<moreParams>         # <moreParams> (optional)
 								\s*\,\s*
