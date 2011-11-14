@@ -94,7 +94,7 @@ class BlocksController extends BaseController
 			else
 			{
 				parent::run($actionId);
-				$this->loadTemplate($tempAction);
+				$this->loadTemplate($tempController.'/'.$tempAction);
 			}
 		}
 		else

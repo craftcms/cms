@@ -122,7 +122,7 @@ class BaseController extends CController
 		{
 			if (get_class($renderer) == 'BlocksTemplateRenderer')
 			{
-				if ($matchedTemplate = (Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($viewFile)) !== null)
+				if (($matchedTemplate = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($viewFile)) !== null)
 					$extension = pathinfo($matchedTemplate, PATHINFO_EXTENSION);
 			}
 			else

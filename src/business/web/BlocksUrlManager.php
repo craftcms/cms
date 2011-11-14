@@ -140,8 +140,8 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		$path = $requestPath.'index';
-		if (($fullMatchPath = (Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$path)) !== null))
+		$path = $requestPath.'/index';
+		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$path)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
 			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.$path, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);

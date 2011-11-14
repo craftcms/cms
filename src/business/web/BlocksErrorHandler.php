@@ -99,14 +99,10 @@ class BlocksErrorHandler extends CErrorHandler
 		if($templateName === 'errors/error')
 		{
 			if (($templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/error'.$code, $srcLanguage)) == null)
-				if (($templateFile = Blocks::app()->site->getTemplatePathWithAllowedFileExtensions($templatePath.'errors/error', $srcLanguage)) == null)
-					throw new BlocksHttpException(404, 'Could not find error template to render.');
+				$templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/error', $srcLanguage);
 		}
 		else
-		{
-			if (($templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/exception', $srcLanguage)) == null)
-				throw new BlocksHttpException(404, 'Could not find error template to render.');
-		}
+			$templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/exception', $srcLanguage);
 
 		return $templateFile;
 	}
@@ -131,7 +127,7 @@ class BlocksErrorHandler extends CErrorHandler
 			if ($viewPath !== null)
 			{
 				// we don't want to allow an exception template on the front end
-				if ($view == 'errors/exception' && $viewPath !== Blocks::app()->path->getSiteTemplatePath())
+				if ($view !== 'errors/exception' || ($view == 'errors/exception' && $viewPath !== Blocks::app()->path->getSiteTemplatePath()))
 				{
 					$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);
 					if (is_file($viewFile))

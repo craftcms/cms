@@ -45,6 +45,7 @@ class PathService extends CApplicationComponent implements IPathService
 
 	public function getResourceProcessorUrl()
 	{
+		$entryScript = Blocks::app()->request->getScriptFile();
 		return '/index.php/blocks/app/business/web/ResourceProcessor.php';
 	}
 
