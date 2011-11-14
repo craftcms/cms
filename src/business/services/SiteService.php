@@ -82,4 +82,16 @@ class SiteService extends CApplicationComponent implements ISiteService
 	{
 		return array('html', 'php');
 	}
+
+	public function matchTemplatePathWithAllowedFileExtensions($templatePath, $srcLanguage = 'en-us')
+	{
+		foreach ($this->getAllowedTemplateFileExtensions() as $allowedExtension)
+		{
+			$templateFile = Blocks::app()->findLocalizedFile($templatePath.'.'.$allowedExtension, $srcLanguage);
+			if (is_file($templateFile))
+				return realpath($templateFile);
+		}
+
+		return null;
+	}
 }

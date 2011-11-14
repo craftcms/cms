@@ -2,7 +2,8 @@
 
 class BlocksApp extends CWebApplication
 {
-	private $_viewPath;
+	private $_requestTemplatePath;
+	private $_cpTemplatePath;
 	private $_layoutPath;
 	private $_dbInstalled = null;
 
@@ -142,8 +143,8 @@ class BlocksApp extends CWebApplication
 	// so we override getViewPath();
 	public function getViewPath()
 	{
-		if ($this->_viewPath !== null)
-			return $this->_viewPath;
+		if ($this->_requestTemplatePath !== null)
+			return $this->_requestTemplatePath;
 		else
 		{
 			if (get_class($this->request) == 'BlocksHttpRequest')
@@ -151,29 +152,30 @@ class BlocksApp extends CWebApplication
 				$requestType = $this->request->getCMSRequestType();
 				if ($requestType == RequestType::Site)
 				{
-					$viewPath = str_replace('\\', '/', realpath($this->path->getSiteTemplatePath()).'/');
+					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getSiteTemplatePath()).'/');
 				}
 				else
 				{
 					$pathInfo = $this->request->getPathSegments();
 					if ($pathInfo && ($module = $this->getModule($pathInfo[0])) !== null)
 					{
-						$viewPath = $module->getViewPath();
+						$templatePath = $module->getViewPath();
 					}
 					else
 					{
-						$viewPath = str_replace('\\', '/', realpath($this->path->getCPTemplatePath()).'/');
+						$this->_cpTemplatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getCPTemplatePath()).'/');
+						$templatePath = $this->_cpTemplatePath;
 					}
 				}
 			}
 			else
 			{
 				// in the case of an exception, our custom classes are not loaded.
-				$viewPath = BLOCKS_BASE_PATH.'templates/';
+				$templatePath = BLOCKS_BASE_PATH.'templates/';
 			}
 
-			$this->_viewPath = $viewPath;
-			return $this->_viewPath;
+			$this->_requestTemplatePath = $templatePath;
+			return $this->_requestTemplatePath;
 		}
 	}
 
@@ -185,9 +187,17 @@ class BlocksApp extends CWebApplication
 			return $this->_layoutPath = $this->getViewPath().'layouts';
 	}
 
+	public function getSystemViewPath()
+	{
+		if($this->_cpTemplatePath !== null)
+			return $this->_cpTemplatePath;
+		else
+			return Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getCPTemplatePath()).'/');
+	}
+
 	/**
 	 * Get a config item
-	 * @param string $key The config item's key to retrieve
+	 * @param bool|string $key The config item's key to retrieve
 	 * @return mixed The config item's value if set, null if not
 	 */
 	public function config($key = false)
