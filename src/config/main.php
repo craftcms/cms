@@ -43,6 +43,7 @@ return array(
 		'application.business.utils.*',
 		'application.business.web.*',
 		'application.business.web.filters.*',
+		'application.business.web.widgets.*',
 		'application.business.web.httpclient.*',
 		'application.business.web.httpclient.adapter.*',
 		'application.business.web.httpclient.hostnames.*',

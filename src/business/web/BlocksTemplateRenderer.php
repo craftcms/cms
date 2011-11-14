@@ -1,7 +1,7 @@
 <?php
 
 class BlocksTemplateRenderer extends CApplicationComponent implements IViewRenderer
-{	
+{
 	private $_sourceTemplatePath;
 	private $_parsedTemplatePath;
 	private $_destinationMetaPath;
@@ -113,20 +113,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		$this->parseVariableTags();
 		$this->parseLanguage();
 		$this->restorePhp();
-
-		if ($this->_variables)
-		{
-			$head = '<?php'.PHP_EOL;
-
-			foreach ($this->_variables as $var)
-			{
-				$head .= 'if (!isset($' . $var . ')) $' . $var . ' = new Tag;' . PHP_EOL;
-			}
-
-			$head .= '?>';
-
-			$this->_template = $head . $this->_template;
-		}
+		$this->prependHead();
+		$this->appendFoot();
 
 		file_put_contents($this->_parsedTemplatePath, $this->_template);
 	}
@@ -178,6 +166,35 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	}
 
 	/**
+	 * Prepend the PHP head to the template
+	 */
+	private function prependHead()
+	{
+		$head = '<?php'.PHP_EOL;
+
+		foreach ($this->_variables as $var)
+		{
+			$head .= 'if (!isset($' . $var . ')) $' . $var . ' = new Tag;' . PHP_EOL;
+		}
+		
+		$head .= '$this->layout = null;'.PHP_EOL;
+		$head .= '$_layout = $this->beginWidget(\'LayoutWidget\');'.PHP_EOL;
+
+		$head .= '?>';
+
+		$this->_template = $head . $this->_template;
+	}
+
+	/**
+	 * Append the PHP foot to the template
+	 */
+	private function appendFoot()
+	{
+		$foot = '<?php $this->endWidget(); ?>'.PHP_EOL;
+		$this->_template .= $foot;
+	}
+
+	/**
 	 * Parse comments
 	 */
 	private function parseComments()
@@ -203,7 +220,20 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		switch ($action)
 		{
-			// {% foreach page.fields as field %}
+			// Layouts and Regions
+
+			case 'layout':
+				$this->parseVariables($params);
+				return '<?php $_layout->view = '.$params.'; ?>';
+
+			case 'region':
+				$this->parseVariables($params);
+				return '<?php $_layout->regions[] = $this->beginWidget(\'RegionWidget\', array(\'name\' => '.$params.')) ?>';
+
+			case 'endregion':
+				return '<?php $this->endWidget() ?>';
+
+			// Loops
 
 			case 'foreach':
 				if (preg_match('/^(.+)\s+as\s+(.+)$/m', $params, $match))
@@ -217,7 +247,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			case 'endforeach':
 				return '<?php endforeach ?>';
 
-			// {% if condition %} [... {% elseif condition %}] [... {% else %}] ... {% endif %}
+			// Conditionals
 
 			case 'if':
 				$this->parseVariables($params);
@@ -233,16 +263,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'endif':
 				return '<?php endif ?>';
-
-			// {% include "path/to/template" %}
-
-			case 'include':
-				return '';
-
-			// {% layout "path/to/layout" %}
-
-			case 'layout':
-				return '';
 		}
 	}
 
@@ -285,7 +305,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariable(&$str, &$offset = 0, $toString = false)
 	{
-		if (preg_match('/(?<![-\.\'"\w])[A-Za-z]\w*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
+		if (preg_match('/(?<![-\.\'"\w\/])[A-Za-z]\w*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
 			$parsedTag = '$'.$tag;
@@ -298,7 +318,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			while (preg_match('/^
 				(?P<subtag>
 					\s*\.\s*
-					(?P<func>[A-Za-z]\w*)           # <func>
+					(?P<func>[A-Za-z]\w*)        # <func>
 					(?:\(                           # parentheses (optional)
 						(?P<params>                 # <params> (optional)
 							(?P<param>              # <param>

@@ -1,7 +1,7 @@
-<?php $this->beginContent('//layouts/main'); ?>
+{% layout 'layouts/main' %}
+
 <div class="container">
 	<div id="content">
-		<?php echo $content; ?>
+		{subtemplate}
 	</div><!-- content -->
 </div>
-<?php $this->endContent(); ?>

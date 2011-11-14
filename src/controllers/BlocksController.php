@@ -103,9 +103,10 @@ class BlocksController extends BaseController
 		}
 	}
 
-	public function loadTemplate($templatePath)
+	public function loadTemplate($templatePath, $tags = array(), $return = false)
 	{
-		$this->render($templatePath, $this->_defaultTemplateTags);
+		$tags = array_merge($this->_defaultTemplateTags, $tags);
+		return $this->renderPartial($templatePath, $tags, $return);
 	}
 
 	// required
