@@ -205,4 +205,4 @@
 			<div class="filename"><span>zinfandel</span><span>.png</span></div>
 		</li>
 	</ul>
-</div><!--/files-->
+</div>{!--/files--}

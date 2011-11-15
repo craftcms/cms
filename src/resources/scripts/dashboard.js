@@ -3,36 +3,34 @@
 
 var Dashboard = Base.extend({
 
-	constructor: function() {
+	constructor: function()
+	{
 		this.widgets = [];
 		var $widgets = $('.widget');
-		for (var w = 0; w < $widgets.length; w++) {
+		for (var w = 0; w < $widgets.length; w++)
+		{
 			this.widgets.push(new Dashboard.Widget($widgets[w]));
 		}
 
 		this.cols = [];
 
-		$window.resize($.proxy(this, '_updateMainWidth'));
-		this._updateMainWidth(false);
+		$(window).on('resizeWidth.dashboard', $.proxy(this, '_setCols'));
+		this._setCols();
 	},
 
-	_updateMainWidth: function(animate) {
-		if (this.mainWidth !== (this.mainWidth = $main.width())) {
-			this._setCols(animate !== false);
-		}
-	},
+	_setCols: function(event)
+	{
+		var totalCols = Math.floor((blx.windowWidth) / (Dashboard.gutterWidth + Dashboard.minColWidth)),
+			newColWidth = Math.floor(((blx.windowWidth) / totalCols) - Dashboard.gutterWidth);
 
-	_setCols: function(animate) {
-		var totalCols = Math.floor((this.mainWidth) / (Dashboard.gutterWidth + Dashboard.minColWidth)),
-			newColWidth = Math.floor(((this.mainWidth) / totalCols) - Dashboard.gutterWidth);
-
-		if (this.totalCols !== (this.totalCols = totalCols)) {
-
+		if (this.totalCols !== (this.totalCols = totalCols))
+		{
 			// -------------------------------------------
 			//  Cancel the current transitions
 			// -------------------------------------------
 
-			if (this.transition && this.transition.playing) {
+			if (this.transition && this.transition.playing)
+			{
 				this.transition.stop();
 			}
 
@@ -43,7 +41,8 @@ var Dashboard = Base.extend({
 			var oldCols = this.cols;
 			this.cols = [];
 
-			for (var c = 0; c < totalCols; c++) {
+			for (var c = 0; c < totalCols; c++)
+			{
 				this.cols[c] = new Dashboard.Col(c);
 				this.cols[c].setWidth(newColWidth);
 			}
@@ -52,8 +51,9 @@ var Dashboard = Base.extend({
 			//  Record the old widget offsets
 			// -------------------------------------------
 
-			if (animate) {
-				this.mainOffset = $main.offset();
+			if (event)
+			{
+				this.mainOffset = blx.cp.dom.$main.offset();
 				var oldWidgetPositions = this._getWidgetPositions();
 			}
 
@@ -61,7 +61,8 @@ var Dashboard = Base.extend({
 			//  Put them in their new places
 			// -------------------------------------------
 
-			for (var w in this.widgets) {
+			for (var w in this.widgets)
+			{
 				this.widgets[w].appendToCol(this._getShortestCol());
 			}
 
@@ -69,7 +70,8 @@ var Dashboard = Base.extend({
 			//  Remove the old columns
 			// -------------------------------------------
 
-			for (var c in oldCols) {
+			for (var c in oldCols)
+			{
 				oldCols[c].remove();
 			}
 
@@ -77,12 +79,14 @@ var Dashboard = Base.extend({
 			//  Animate the widgets into place
 			// -------------------------------------------
 
-			if (animate) {
+			if (event)
+			{
 				var targetWidgetPositions = this._getWidgetPositions();
 
 				var widgetTransitions = [];
 
-				for (var w in this.widgets) {
+				for (var w in this.widgets)
+				{
 					var widget = this.widgets[w];
 
 					widget.$elem.css({
@@ -102,26 +106,29 @@ var Dashboard = Base.extend({
 				}
 
 				this.transition = new blx.BatchTransition(widgetTransitions, {
-					onFinish: $.proxy(function() {
-						for (var w in this.widgets) {
-							this.widgets[w].$elem.css({
-								position: 'relative',
-								top: '',
-								left: '',
-								width: ''
-							});
-						}
-					}, this)
+					onFinish: $.proxy(function()
+						{
+							for (var w in this.widgets) {
+								this.widgets[w].$elem.css({
+									position: 'relative',
+									top: '',
+									left: '',
+									width: ''
+								});
+							}
+						}, this)
 				});
 			}
 		}
-		else {
+		else
+		{
 
 			// -------------------------------------------
 			//  Update the column widths
 			// -------------------------------------------
 
-			for (var c in this.cols) {
+			for (var c in this.cols)
+			{
 				this.cols[c].setWidth(newColWidth);
 			}
 
@@ -129,8 +136,10 @@ var Dashboard = Base.extend({
 			//  Update the transitions
 			// -------------------------------------------
 
-			if (this.transition && this.transition.playing) {
-				for (var w in this.widgets) {
+			if (this.transition && this.transition.playing)
+			{
+				for (var w in this.widgets)
+				{
 					var widget = this.widgets[w];
 					this.transition.transitions[w].targets.left = widget.col.getLeftPos();
 					this.transition.transitions[w].targets.width = newColWidth;
@@ -141,14 +150,17 @@ var Dashboard = Base.extend({
 		this.colWidth = newColWidth;
 	},
 
-	_getShortestCol: function() {
+	_getShortestCol: function()
+	{
 		var shortestCol,
 			shortestColHeight;
 
-		for (c in this.cols) {
+		for (c in this.cols)
+		{
 			var colHeight = this.cols[c].getHeight();
 
-			if (typeof shortestCol == 'undefined' || colHeight < shortestColHeight) {
+			if (typeof shortestCol == 'undefined' || colHeight < shortestColHeight)
+			{
 				shortestCol = this.cols[c];
 				shortestColHeight = colHeight;
 			}
@@ -157,10 +169,12 @@ var Dashboard = Base.extend({
 		return shortestCol;
 	},
 
-	_getWidgetPositions: function() {
+	_getWidgetPositions: function()
+	{
 		var positions = [];
 
-		for (var w in this.widgets) {
+		for (var w in this.widgets)
+		{
 			var widget = this.widgets[w],
 				offset = widget.$elem.offset();
 
@@ -181,25 +195,30 @@ var Dashboard = Base.extend({
 
 Dashboard.Col = Base.extend({
 
-	constructor: function(index) {
+	constructor: function(index)
+	{
 		this.index = index;
-		this.$elem = $('<div class="col" />').appendTo($main);
+		this.$elem = $('<div class="col" />').appendTo(blx.cp.dom.$main);
 	},
 
-	setWidth: function(width) {
+	setWidth: function(width)
+	{
 		this.width = width;
 		this.$elem.width(width);
 	},
 
-	getHeight: function() {
+	getHeight: function()
+	{
 		return this.$elem.height();
 	},
 
-	getLeftPos: function() {
+	getLeftPos: function()
+	{
 		return (this.width * this.index) + (Dashboard.gutterWidth * (this.index));
 	},
 
-	remove: function() {
+	remove: function()
+	{
 		this.$elem.remove();
 	}
 
@@ -208,15 +227,16 @@ Dashboard.Col = Base.extend({
 
 Dashboard.Widget = Base.extend({
 
-	constructor: function(elem) {
+	constructor: function(elem)
+	{
 		this.$elem = $(elem);
 	},
 
-	appendToCol: function(col) {
+	appendToCol: function(col)
+	{
 		this.col = col;
 		this.$elem.appendTo(col.$elem);
 	}
-
 });
 
 

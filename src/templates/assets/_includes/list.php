@@ -263,4 +263,4 @@
 			</tr>
 		</tbody>
 	</table>
-</div><!--/files-->
+</div>{!--/files--}

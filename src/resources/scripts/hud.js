@@ -42,11 +42,11 @@ blx.HUD = Base.extend({
 		//  Get all relevant dimensions, lengths, etc
 		// -------------------------------------------
 
-		this.windowWidth = $window.width();
-		this.windowHeight = $window.height();
+		this.windowWidth = $(window).width();
+		this.windowHeight = $(window).height();
 
-		this.windowScrollLeft = $window.scrollLeft();
-		this.windowScrollTop = $window.scrollTop();
+		this.windowScrollLeft = $(window).scrollLeft();
+		this.windowScrollTop = $(window).scrollTop();
 
 			// get the trigger element's dimensions
 		this.triggerWidth = this.$trigger.width() + parseInt(this.$trigger.css('paddingLeft')) + parseInt(this.$trigger.css('borderLeftWidth')) + parseInt(this.$trigger.css('paddingRight')) + parseInt(this.$trigger.css('borderRightWidth'));;
@@ -133,7 +133,7 @@ blx.HUD = Base.extend({
 		if (event.stopPropagation)
 			event.stopPropagation();
 
-		$body.bind('click.hud', $.proxy(this, 'hide'))
+		$(document.body).bind('click.hud', $.proxy(this, 'hide'))
 
 		this.showing = true;
 		blx.HUD.active = this;
