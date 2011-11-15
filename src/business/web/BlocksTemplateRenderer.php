@@ -225,11 +225,11 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private function parseActionMatch($match)
 	{
 		$action = $match[1];
-		$params = empty($match[3]) ? '' : $match[3];
+		$params = isset($match[3]) ? $match[3] : '';
 
 		switch ($action)
 		{
-			// Layouts and Regions
+			// Layouts, regions, and includes
 
 			case 'layout':
 				$this->_hasLayout = true;
@@ -243,6 +243,10 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'endregion':
 				return '<?php $this->endWidget() ?>';
+
+			case 'include':
+				$this->parseVariables($params);
+				return "<?php \$this->loadTemplate({$params}) ?>";
 
 			// Loops
 
