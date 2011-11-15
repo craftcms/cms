@@ -1,0 +1,5 @@
+<? if (empty($_GET['viewMode']) || $_GET['viewMode'] != 'list'): ?>
+	{%layout 'assets/_layouts/grid'%}
+<? else: ?>
+	{%layout 'assets/_layouts/list'%}
+<? endif ?>
