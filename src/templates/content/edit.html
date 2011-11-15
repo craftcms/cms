@@ -1,0 +1,206 @@
+{%layout '_layouts/cp'%}
+
+{%region 'pageTitle'%}Editing “Spread”{%endregion%}
+{%region 'bodyClass'%}content-edit{%endregion%}
+
+{%region 'main'%}
+	<div id="main">
+		<div class="centered">
+			<div class="toolbar page-toolbar">
+				<ul class="left">
+					<li class="status">
+						<? if (empty($_GET['published'])): ?>
+							<span class="status draft"></span>Never published
+						<? else: ?>
+							<span class="status live"></span>Live
+						<? endif ?>
+					</li>
+					<li>
+						<span class="btn-label">Viewing:</span>
+						<div class="btn">
+							<span class="label">Draft 1</span>
+							<span class="arrow"></span>
+						</div>
+					</li>
+					<li>
+						<div class="btn-group">
+							<a class="btn sel"><span class="icon icon136"></span></a>
+							<a class="btn"><span class="icon icon274"></span></a>
+						</div
+					</li>
+				</ul>
+
+				<ul class="right">
+					<li>
+						<div class="btn">
+							<span class="icon icon288"></span>
+							<span class="arrow"></span>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+
+			<div id="right">
+				<dl class="props">
+					<dt>Status</dt>
+					<dd class="status">
+						
+					</dd>
+
+					<dt>URL</dt>
+					<dd><span class="editable">pixelandtonic.com/spread</span></dd>
+
+					<dt>Author</dt>
+					<dd><span class="editable">Brandon</span></dd>
+
+					<dt>Publish Date</dt>
+					<dd class="date"><span class="editable"><span class="null">None set</span></span></dd>
+
+					<dt>Expiration Date</dt>
+					<dd class="date"><span class="editable"><span class="null">None set</span></span></dd>
+				</dl>
+
+				<fieldset id="drafts">
+					<legend>Drafts</legend>
+					<ul>
+						<li><a class="sel" href=""><span class="icon"></span><strong>Draft 1</strong> by Brandon</a></li>
+						<li><a href=""><span class="icon"></span><strong>Draft 2</strong> by Brandon</a></li>
+					</ul>
+
+					<a class="btn small"><span class="label">New Draft</span></a>
+				</fieldset>
+
+				<fieldset id="versions">
+					<legend>Versions</legend>
+					<span class="null">No versions yet</span>
+				</fieldset>
+			</div><!--/right-->
+
+			<div class="page">
+				<div class="field page-head">
+					<a class="settings-btn"></a>
+
+					<h1 class="editable">Spread</h1>
+					<div class="draft-btn btn">
+						<span class="label">Draft 1</span>
+						<span class="arrow"></span>
+						<ul>
+							<li><a href=""><strong>Draft 1</strong> by Brandon</a></li>
+							<li><a href=""><strong>Draft 2</strong> by Brandon</a>
+						</ul>
+					</div>
+
+					<div class="page-settings">
+						<table>
+							<tr>
+								<th>URL:</th>
+								<td><span class="editable">pixelandtonic.com/spread</span></td>
+							</tr>
+							<tr>
+								<th>Author:</th>
+								<td><span class="editable">Brandon</span></td>
+							</tr>
+							<tr>
+								<th>Publish Date:</th>
+								<td><span class="editable null">None set</span></td>
+							</tr>
+							<tr>
+								<th>Expiry Date:</th>
+								<td><span class="editable null">None set</span></td>
+							</tr>
+						</table>
+					</div>
+				</div>
+
+				<div class="field">
+					<label>Tagline</label>
+					<div class="input-wrapper"><input type="text" value="Simple spreadsheets"></div>
+				</div>
+
+				<div class="field">
+					<label>Cost</label>
+					<div class="input-wrapper" style="width: 50px"><input type="text" value="35"></div>
+				</div>
+
+				<div class="field">
+					<label>Content</label>
+					<textarea id="content">&lt;h2&gt;I'm serious as a heart attack&lt;/h2&gt;
+
+&lt;p&gt;My money's in that office, right? If she start giving me some bullshit about it ain't there, and we got to go someplace else and get it, I'm gonna shoot you in the head then and there. Then I'm gonna shoot that bitch in the kneecaps, find out where my goddamn money is. She gonna tell me too. Hey, look at me when I'm talking to you, motherfucker. You listen: we go in there, and that nigga Winston or anybody else is in there, you the first motherfucker to get shot. You understand?&lt;/p&gt;</textarea>
+				</div>
+
+				<!--div class="field">
+					<label>Features</label>
+					<table class="matrix input">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Heading</th>
+								<th width="66%">Body</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td colspan="4" class="norows"><span class="null">No rows yet.</span> <a href="">Add one</a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div-->
+
+				<div class="field">
+					<label>Quotes</label>
+					<table class="matrix input">
+						<thead>
+							<tr>
+								<th width="50%">Quote</th>
+								<th>Credit</th>
+								<th>Company Name</th>
+								<th>Company URL</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td colspan="4" class="norows"><span class="null">No rows yet.</span>. <a href="">Add one</a></td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+				<div class="field page-foot">
+					<a class="btn big" href=""><span class="label">Publish</span></a>
+				</div>
+			</div><!--/page-->
+		</div><!--/centered-->
+	</div><!--/main-->
+{%endregion%}
+
+{%region 'scripts'%}
+{resource.js('lib/rangy-1.2.1.js')}
+{resource.js('scripts/rte.js')}
+
+<script type="text/javascript">
+	var $settings = $('.page-settings'),
+		$settingsTable = $('table', $settings),
+		$settingsBtn = $('.settings-btn'),
+		showingSettings = false,
+		expandedHeight = $settingsTable.height() + 20;
+
+	$settingsBtn.click(function() {
+		showingSettings = ! showingSettings;
+		$settingsBtn.toggleClass('active');
+		$settings.stop().animate({ height: (showingSettings ? expandedHeight : 0) });
+	});
+
+	var $draftBtn = $('.draft-btn'),
+		$draftMenu = $('ul', $draftBtn);
+
+	$draftBtn.click(function() {
+		$draftMenu.toggle();
+	});
+
+	new blx.RTE('content', {
+		css: "{resource.url('styles/rte.css')}"
+	});
+
+</script>
+{%endregion%}

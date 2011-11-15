@@ -9,7 +9,6 @@ class CPTag extends Tag
 
 	public function baseUrl()
 	{
-		$baseUrl = Blocks::app()->request->getScriptFile().'/';
-		return new StringTag($baseUrl);
+		return new StringTag('/admin.php'.'/');
 	}
 }

@@ -61,9 +61,12 @@ blx.RTE = Base.extend({
 		// turn on design mode
 		this.iDoc.designMode = 'on';
 
-		// add the <head>
+		var html = '<html>';
+		if (this.settings.css) html += '<head><link rel="stylesheet" type="text/css" href="'+this.settings.css+'"></head>';
+		html += '<body>'+this.dom.textarea.value+'</body></html>'
+
 		this.iDoc.open();
-		this.iDoc.write('<html><head><link rel="stylesheet" type="text/css" href="/-/styles/rte.css"></head><body>'+this.dom.textarea.value+'</body></html>');
+		this.iDoc.write(html);
 		this.iDoc.close();
 
 		this.iWin.onload = $.proxy(this, '_buildStylesMenu');
@@ -366,7 +369,9 @@ blx.RTE.defaults = {
 		{ label: 'Heading 4', elem: 'h4' },
 		{ label: 'Heading 5', elem: 'h5' },
 		{ label: 'Heading 6', elem: 'h6' }
-	]
+	],
+
+	css: null
 }
 
 
