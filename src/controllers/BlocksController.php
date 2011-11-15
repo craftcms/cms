@@ -21,6 +21,7 @@ class BlocksController extends BaseController
 					'membership' => new MembershipTag($site->id),
 					'security' => new SecurityTag($site->id),
 					'resource' => new ResourceTag(),
+					'url' => new UrlTag(),
 				);
 
 				// if it's a CP request, add the CP tag.

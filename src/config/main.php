@@ -35,6 +35,7 @@ return array(
 		'application.business.tags.assets.*',
 		'application.business.tags.content.*',
 		'application.business.tags.cp.*',
+		'application.business.tags.url.*',
 		'application.business.tags.membership.*',
 		'application.business.tags.primitive.*',
 		'application.business.tags.security.*',

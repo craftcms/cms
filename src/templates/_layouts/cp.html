@@ -9,18 +9,18 @@
 	{resource.css('styles/icons.css')}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 </head>
-<body class="{sectionId} {bodyClass}">
+<body class="{url.segment(1)} {bodyClass}">
 
 	<div id="nav">
 		<ul>
-			<li id="nav-account"><a {%if sectionId=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><span><img src="{resource.url('images/avatar.jpg')}" alt="Brandon Kelly"></span><span class="arrow"></a></li>
+			<li id="nav-account"><a {%if url.segment(1)=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><span><img src="{resource.url('images/avatar.jpg')}" alt="Brandon Kelly"></span><span class="arrow"></a></li>
 			{%foreach cp.sections as section%}
-			<li id="nav-{section.handle}"><a {%if sectionId==section.handle%}class="sel"{%endif%} href="/admin.php/{section.handle}" title="{section.name}"><span class="icon"></span><span class="arrow"></a></li>
+			<li id="nav-{section.handle}"><a {%if url.segment(1)==section.handle%}class="sel"{%endif%} href="/admin.php/{section.handle}" title="{section.name}"><span class="icon"></span><span class="arrow"></a></li>
 			{%endforeach%}
 		</ul>
 	</div>
 
-	{subtemplate}
+	{main}
 
 {resource.js('lib/jquery-1.7.min.js')}
 {resource.js('lib/Base.js')}
@@ -28,5 +28,8 @@
 {resource.js('scripts/hud.js')}
 {resource.js('scripts/menu.js')}
 {resource.js('scripts/cp.js')}
+
+{!-- include any scripts defined by the subtemplate --}
+{scripts}
 </body>
 </html>

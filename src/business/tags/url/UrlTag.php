@@ -9,16 +9,18 @@ class UrlTag extends Tag
 		$this->_segs = Blocks::app()->request->getPathSegments();
 	}
 
-	public function segs()
+	public function segments()
 	{
-		return new UrlSegsTag($this->_segs);
+		return new UrlSegmentsTag($this->_segs);
 	}
 
-	public function seg($segNum)
+	public function segment($segNum)
 	{
-		if (isset($segs[$segNum]))
-			return new StringTag($segs[$segNum]);
+		$segIndex = $segNum - 1;
 
-		return null;
+		if (isset($this->_segs[$segIndex]))
+			return new StringTag($this->_segs[$segIndex]);
+
+		return new Tag;
 	}
 }

@@ -339,6 +339,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 					(?:\(                           # parentheses (optional)
 						(?P<params>                 # <params> (optional)
 							(?P<param>              # <param>
+								\d+
+								|
 								(?P<quote>[\'"])    # <quote>
 									.*?
 								(?<!\\\)(?P=quote)
