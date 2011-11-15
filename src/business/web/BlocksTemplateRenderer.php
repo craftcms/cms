@@ -126,9 +126,9 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function extractPhp()
 	{
-		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Um', array(&$this, 'extractPhpMatch'), $this->_template);
-		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Um', array(&$this, 'extractPhpShortTagMatch'), $this->_template);
-		$this->_template = preg_replace_callback('/\<\?(.*)\?\>/Um', array(&$this, 'extractPhpMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Ums', array(&$this, 'extractPhpMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Ums', array(&$this, 'extractPhpShortTagMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?(.*)\?\>/Ums', array(&$this, 'extractPhpMatch'), $this->_template);
 	}
 
 	/**
@@ -208,7 +208,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseComments()
 	{
-		$this->_template = preg_replace('/\{\!\-\-.*\-\-\}/m', '', $this->_template);
+		$this->_template = preg_replace('/\{\!\-\-.*\-\-\}/Ums', '', $this->_template);
 	}
 
 	/**
@@ -293,7 +293,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private function parseVariableTags()
 	{
 		// find any remaining {variable-tags} on the page
-		$this->_template = preg_replace_callback('/\{(.*)\}/Um', array(&$this, 'parseVariableTagMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\{(.*)\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
 	}
 
 	/**
