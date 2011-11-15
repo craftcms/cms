@@ -161,9 +161,9 @@ return array(
 					'class' => 'CFileLogRoute',
 					'levels' => 'error, warning',
 				),
-				array(
-					'class' => 'application.business.logging.BlocksWebLogRoute',
-				),
+				//array(
+				//	'class' => 'application.business.logging.BlocksWebLogRoute',
+				//),
 			),
 		),
 	),
