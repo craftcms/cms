@@ -2,26 +2,8 @@
 
 class BaseController extends CController
 {
-
 	private $_widgetStack = array();
-
-	/**
-	 * @var string the default layout for the controller view. Defaults to '//layouts/column1',
-	 * meaning using a single column layout. See 'protected/views/layouts/column1.php'.
-	 */
-	public $layout='//layouts/column1';
-
-	/**
-	 * @var array context menu items. This property will be assigned to {@link CMenu::items}.
-	 */
-	public $menu = array();
-
-	/**
-	 * @var array the breadcrumbs of the current page. The value of this property will
-	 * be assigned to {@link CBreadcrumbs::links}. Please refer to {@link CBreadcrumbs::links}
-	 * for more details on how to specify this property.
-	 */
-	public $breadcrumbs = array();
+	private $_defaultTemplateTags = null;
 
 	public function filterVersionCheck($filterChain)
 	{
@@ -185,5 +167,38 @@ class BaseController extends CController
 			$widget = end($this->_widgetStack);
 			throw new BlocksException(Blocks::t('blocks','{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.', array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
 		}
+	}
+
+	public function loadTemplate($templatePath, $data = array(), $return = false)
+	{
+		$data = array_merge($this->getDefaultTemplateTags(), $data);
+		return $this->renderPartial($templatePath, $data, $return);
+	}
+
+	public function getDefaultTemplateTags()
+	{
+		if ($this->_defaultTemplateTags !== null)
+			return $this->_defaultTemplateTags;
+
+		$defaultTags = null;
+		$site = Blocks::app()->request->getSiteInfo();
+		if ($site !== null)
+		{
+			$defaultTags = array(
+				'content' => new ContentTag($site->id),
+				'assets' => new AssetsTag($site->id),
+				'membership' => new MembershipTag($site->id),
+				'security' => new SecurityTag($site->id),
+				'resource' => new ResourceTag(),
+				'url' => new UrlTag(),
+			);
+
+			// if it's a CP request, add the CP tag.
+			if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
+				$defaultTags['cp'] = new CPTag($site->id);
+		}
+
+		$this->_defaultTemplateTags = $defaultTags;
+		return $this->_defaultTemplateTags == null ? array() : $this->_defaultTemplateTags;
 	}
 }

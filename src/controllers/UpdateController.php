@@ -8,7 +8,7 @@ class UpdateController extends BaseController
 
 		if($responseVersionInfo != null)
 		{
-			$this->render('update/index', array('model' => $responseVersionInfo));
+			$this->loadTemplate('update/index', array('model' => $responseVersionInfo));
 		}
 	}
 
@@ -55,24 +55,6 @@ class UpdateController extends BaseController
 		}
 
 		Blocks::app()->user->setFlash('notice', 'Update Successful!');
-		$this->redirect('index');
-	}
-
-	public function actionUpdaterUpdate($manifestId)
-	{
-		if (StringHelper::IsNullOrEmpty($manifestId) || StringHelper::IsNullOrEmpty($manifestId))
-			throw new BlocksException('There was a problem updating to the latest Blocks version.  Please try again.');
-
-		try
-		{
-			$updateUpdater = new UpdateUpdater($manifestId);
-			$updateUpdater->start();
-		}
-		catch (BlocksException $ex)
-		{
-			Blocks::app()->user->setFlash('error', $ex->getMessage());
-		}
-
-		$this->redirect('index');
+		$this->redirect('dashboard/index');
 	}
 }

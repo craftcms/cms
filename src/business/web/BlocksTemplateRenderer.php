@@ -329,7 +329,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			$tagLength = strlen($tagMatch[0][0]);
 			$tagOffset = $tagMatch[0][1];
 
-			// search for immidiately following subtags
+			// search for immediately following subtags
 			$substr = substr($str, $tagOffset + $tagLength);
 
 			while (preg_match('/^

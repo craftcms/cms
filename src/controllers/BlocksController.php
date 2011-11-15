@@ -3,37 +3,11 @@
 class BlocksController extends BaseController
 {
 	private $_templateMatch = null;
-	private $_defaultTemplateTags = null;
-
-	public function init()
-	{
-		parent::init();
-		$this->_templateMatch = Blocks::app()->url->getTemplateMatch();
-
-		if ($this->_templateMatch !== null)
-		{
-			$site = Blocks::app()->request->getSiteInfo();
-			if ($site !== null)
-			{
-				$this->_defaultTemplateTags = array(
-					'content' => new ContentTag($site->id),
-					'assets' => new AssetsTag($site->id),
-					'membership' => new MembershipTag($site->id),
-					'security' => new SecurityTag($site->id),
-					'resource' => new ResourceTag(),
-					'url' => new UrlTag(),
-				);
-
-				// if it's a CP request, add the CP tag.
-				if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
-					$this->_defaultTemplateTags['cp'] = new CPTag($site->id);
-
-			}
-		}
-	}
 
 	public function run($actionId)
 	{
+		$this->_templateMatch = Blocks::app()->url->getTemplateMatch();
+
 		if ($this->_templateMatch !== null || Blocks::app()->request->getParam('c', null) !== null)
 		{
 			/*
@@ -105,14 +79,9 @@ class BlocksController extends BaseController
 		}
 	}
 
-	public function loadTemplate($templatePath, $tags = array(), $return = false)
-	{
-		$tags = array_merge($this->_defaultTemplateTags, $tags);
-		return $this->renderPartial($templatePath, $tags, $return);
-	}
-
 	// required
 	public function actionIndex()
 	{
+		$test = 1;
 	}
 }

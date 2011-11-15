@@ -37,14 +37,24 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 	public function versionCheck()
 	{
-		$versionCheckInfo['blocksClientBuildNo'] = Blocks::getBuildNumber();
+		$buildNumber = Blocks::getBuildNumber();
+		// We're working on the source.  Get build number from the database.
+		if(strpos($buildNumber, '@@@') !== false)
+			$buildNumber = Blocks::getBuildNumber(true);
 
-		// We're working on the source.  No need to check.
-		if(strpos($versionCheckInfo['blocksClientBuildNo'], '@@@') !== false)
-			return null;
+		$version = Blocks::GetVersion();
+		// We're working on the source.  Get version from the database.
+		if(strpos($version, '@@@') !== false)
+			$version = Blocks::getVersion(true);
 
-		$versionCheckInfo['blocksClientVersionNo'] = Blocks::getVersion();
-		$versionCheckInfo['blocksClientEdition'] = Blocks::getEdition();
+		$edition = Blocks::getEdition();
+		// We're working on the source.  Get edition from the database.
+		if(strpos($edition, '@@@') !== false)
+			$edition = Blocks::getEdition(true);
+
+		$versionCheckInfo['blocksClientBuildNo'] = $buildNumber;
+		$versionCheckInfo['blocksClientVersionNo'] = $version;
+		$versionCheckInfo['blocksClientEdition'] = $edition;
 		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
 		$versionCheckInfo['key'] = Blocks::app()->site->getSiteLicenseKey();
 		$versionCheckInfo['requestingDomain'] = Blocks::app()->request->getServerName();

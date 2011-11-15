@@ -204,4 +204,27 @@ class BlocksApp extends CWebApplication
 	{
 		return (is_string($key) && isset($this->params['config'][$key])) ? $this->params['config'][$key] : null;
 	}
+
+	/**
+	 * Processes the current request.
+	 * It first resolves the request into controller and action,
+	 * and then creates the controller to perform the action.
+	 */
+	public function processRequest()
+	{
+		if(is_array($this->catchAllRequest) && isset($this->catchAllRequest[0]))
+		{
+			$route=$this->catchAllRequest[0];
+			foreach(array_splice($this->catchAllRequest,1) as $name=>$value)
+				$_GET[$name]=$value;
+		}
+		else
+			$route=$this->getUrlManager()->parseUrl($this->getRequest());
+
+		if ($route !== '')
+			$this->runController($route);
+		else
+			throw new BlocksHttpException(404, 'Could not find the requested page.');
+	}
+
 }
