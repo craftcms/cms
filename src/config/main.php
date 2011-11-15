@@ -37,7 +37,6 @@ return array(
 		'application.business.tags.membership.*',
 		'application.business.tags.security.*',
 		'application.business.tags.site.*',
-		'application.business.tags.url.*',
 		'application.business.updates.*',
 		'application.business.utils.*',
 		'application.business.web.*',
