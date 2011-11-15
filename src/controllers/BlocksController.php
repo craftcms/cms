@@ -10,23 +10,6 @@ class BlocksController extends BaseController
 
 		if ($this->_templateMatch !== null || Blocks::app()->request->getParam('c', null) !== null)
 		{
-			/*
-            * if(($action=$this->createAction($actionID))!==null)
-			{
-				if(($parent=$this->getModule())===null)
-					$parent=Yii::app();
-				if($parent->beforeControllerAction($this,$action))
-				{
-					$this->runActionWithFilters($action,$this->filters());
-					$parent->afterControllerAction($this,$action);
-				}
-			}
-			else
-				$this->missingAction($actionID);
- *
- */
-
-
 			if ($this->_templateMatch !== null)
 			{
 				$tempController = $this->_templateMatch->getRelativePath();
@@ -82,6 +65,5 @@ class BlocksController extends BaseController
 	// required
 	public function actionIndex()
 	{
-		$test = 1;
 	}
 }

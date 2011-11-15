@@ -72,8 +72,7 @@ class BaseController extends CController
 		if ($module === null)
 			$module = Blocks::app();
 
-		$path = $module->getViewPath();
-		return $path;
+		return $module->getViewPath();
 	}
 
 	public function resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath = null)
@@ -129,14 +128,6 @@ class BaseController extends CController
 		{
 			$output = $this->renderPartial($view, $data, true);
 
-			if (($requestController = $this->getRequestController()) !== null)
-				$layoutFile = $requestController->getLayoutFile($requestController->layout);
-			else
-				$layoutFile = $this->getLayoutFile($this->layout);
-
-			if ($layoutFile !== false)
-				$output = $this->renderFile($layoutFile, array('content' => $output), true);
-
 			$this->afterRender($view, $output);
 
 			$output = $this->processOutput($output);
@@ -172,7 +163,7 @@ class BaseController extends CController
 	public function loadTemplate($templatePath, $data = array(), $return = false)
 	{
 		$data = array_merge($this->getDefaultTemplateTags(), $data);
-		return $this->renderPartial($templatePath, $data, $return);
+		return $this->render($templatePath, $data, $return);
 	}
 
 	public function getDefaultTemplateTags()
