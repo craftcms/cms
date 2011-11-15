@@ -1,6 +1,6 @@
 <?php
 
-class CPSectionTag extends Tag
+class CpSectionTag extends Tag
 {
 	private $_handle = null;
 	private $_name = null;

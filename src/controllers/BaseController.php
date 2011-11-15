@@ -195,7 +195,7 @@ class BaseController extends CController
 
 			// if it's a CP request, add the CP tag.
 			if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
-				$defaultTags['cp'] = new CPTag($site->id);
+				$defaultTags['cp'] = new CpTag($site->id);
 		}
 
 		$this->_defaultTemplateTags = $defaultTags;

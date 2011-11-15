@@ -1,6 +1,6 @@
 <?php
 
-class CPTag extends Tag
+class CpTag extends Tag
 {
 	private static $defaultSections = array(
 		'dashboard' => 'Dashboard',
@@ -16,7 +16,7 @@ class CPTag extends Tag
 
 		foreach (self::$defaultSections as $handle => $name)
 		{
-			$sectionTags[] = new CPSectionTag($handle, $name);
+			$sectionTags[] = new CpSectionTag($handle, $name);
 		}
 
 		return new ArrayTag($sectionTags);
