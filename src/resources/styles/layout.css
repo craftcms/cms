@@ -120,14 +120,14 @@ body.content-edit #main .page .editable { display: inline-block; cursor: pointer
 body.content-edit #main .page .editable:hover { padding-right: 18px; background: url(../images/edit-icon.png) no-repeat 100% 50%; }
 body.content-edit #main .page .null { color: #aaa; }
 
-body.content-edit #main .page .page-toolbar { margin: 0; border-radius: 4px 4px 0 0; height: 55px; line-height: 24px; color: #666; }
+body.content-edit #main .page .page-toolbar { margin: 0; border-radius: 4px 4px 0 0; height: 55px; line-height: 24px; color: #666; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,0.5)), to(rgba(255,255,255,0))); }
 body.content-edit #main .page .page-toolbar ul.left { float: left; }
 body.content-edit #main .page .page-toolbar ul.right { float: right; }
 body.content-edit #main .page .page-toolbar ul li { float: left; padding: 6px 10px 10px; }
 body.content-edit #main .page .page-toolbar ul li + li { border-left: 1px solid rgba(0,0,0,0.1); }
 body.content-edit #main .page .page-toolbar ul li h6 { margin-bottom: 4px; font-size: 9px; line-height: 11px; color: #999; }
 
-body.content-edit #main .page .page-toolbar ul li.status div { border-radius: 2px; padding: 0 8px; line-height: 24px; white-space: nowrap; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#f3f3f3), to(#eaeaea)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 0 5px rgba(0,0,0,0.15); }
+body.content-edit #main .page .page-toolbar ul li.status div { border-radius: 2px; border: 1px solid rgba(0,0,0,0.25); padding: 0 8px; line-height: 22px; white-space: nowrap; background: #fcfcfc; -webkit-box-shadow: 0 1px 0 #fff; }
 body.content-edit #main .page .page-toolbar ul li.status span.status { margin: 5px 4px 0 0; }
 
 body.content-edit #main .page .fields { border-radius: 4px; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.15); }
