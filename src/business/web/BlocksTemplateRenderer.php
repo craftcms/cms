@@ -8,6 +8,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private $_template;
 	private $_phpMarkers;
 	private $_phpCode;
+	private $_hasLayout;
 	private $_variables;
 
 	private static $_filePermission = 0755;
@@ -105,6 +106,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		$this->_phpMarkers = array();
 		$this->_phpCode = array();
+		$this->_hasLayout = false;
 		$this->_variables = array();
 
 		$this->extractPhp();
@@ -178,7 +180,11 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		}
 		
 		$head .= '$this->layout = null;'.PHP_EOL;
-		$head .= '$_layout = $this->beginWidget(\'LayoutWidget\');'.PHP_EOL;
+
+		if ($this->_hasLayout)
+		{
+			$head .= '$_layout = $this->beginWidget(\'LayoutWidget\');'.PHP_EOL;
+		}
 
 		$head .= '?>';
 
@@ -190,8 +196,11 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function appendFoot()
 	{
-		$foot = '<?php $this->endWidget(); ?>'.PHP_EOL;
-		$this->_template .= $foot;
+		if ($this->_hasLayout)
+		{
+			$foot = '<?php $this->endWidget(); ?>'.PHP_EOL;
+			$this->_template .= $foot;
+		}
 	}
 
 	/**
@@ -223,10 +232,12 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Layouts and Regions
 
 			case 'layout':
+				$this->_hasLayout = true;
 				$this->parseVariables($params);
 				return "<?php \$_layout->view = {$params} ?>";
 
 			case 'region':
+				$this->_hasLayout = true;
 				$this->parseVariables($params);
 				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => {$params})) ?>";
 
