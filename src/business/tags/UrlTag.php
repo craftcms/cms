@@ -4,16 +4,27 @@ class UrlTag extends Tag
 {
 	private $_segments;
 
-	function __construct()
+	/**
+	 * Get Segments
+	 * @return array The URL segments
+	 * @access private
+	 */
+	private function _getSegments()
 	{
-		$this->_segments = Blocks::app()->request->getPathSegments();
+		if (!isset($this->_segments))
+			$this->_segments = Blocks::app()->request->getPathSegments();
+
+		return $this->_segments;
 	}
 
+	/**
+	 * Segments
+	 */
 	public function segments()
 	{
 		$tags = array();
 
-		foreach ($this->_segments as $segment)
+		foreach ($this->_getSegments() as $segment)
 		{
 			$tags[] = new StringTag($segment);
 		}
@@ -21,12 +32,17 @@ class UrlTag extends Tag
 		return new ArrayTag($tags);
 	}
 
+	/**
+	 * Segment
+	 * @param int $num Which segment to retrieve
+	 */
 	public function segment($num)
 	{
+		$segments = $this->_getSegments();
 		$index = $num - 1;
 
-		if (isset($this->_segments[$index]))
-			return new StringTag($this->_segments[$index]);
+		if (isset($segments[$index]))
+			return new StringTag($segments[$index]);
 
 		return new StringTag;
 	}
