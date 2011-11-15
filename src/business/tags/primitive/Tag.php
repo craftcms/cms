@@ -14,7 +14,7 @@ class Tag
 
 	public function __toArray()
 	{
-		return array();
+		return array($this);
 	}
 
 	public function __call($name, $args)
