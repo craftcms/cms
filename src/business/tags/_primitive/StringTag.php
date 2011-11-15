@@ -4,7 +4,7 @@ class StringTag extends Tag
 {
 	protected $_val;
 
-	public function __construct($val)
+	public function __construct($val = '')
 	{
 		$this->_val = (string)$val;
 	}
