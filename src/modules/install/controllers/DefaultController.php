@@ -83,7 +83,7 @@ class DefaultController extends BaseController
 							$info->version = Blocks::getVersion();
 							$info->save();
 
-							Blocks::app()->request->redirect('/admin.php');
+							Blocks::app()->request->redirect(Blocks::app()->urlManager->getBaseUrl());
 							break;
 					}
 				}

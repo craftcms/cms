@@ -127,7 +127,7 @@ class BlocksApp extends CWebApplication
 			{
 				$pathInfo = $this->request->getPathSegments();
 				if (!$pathInfo || $pathInfo[0] !== 'install')
-					$this->request->redirect('/admin.php/install');
+					$this->request->redirect(Blocks::app()->urlManager->getBaseUrl().'/install');
 			}
 		}
 	}
