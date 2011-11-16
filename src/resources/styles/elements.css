@@ -65,7 +65,7 @@ a:hover { text-decoration: underline; }
 .btn.disabled { opacity: 0.5; cursor: default; }
 
 /* button parts */
-.btn span { display: block; float: left; height: 22px; }
+.btn span { display: block; float: left; height: 100%; }
 
 .btn .label { margin: 0 8px; line-height: 22px; color: #333; text-align: center; white-space: nowrap; }
 .btn.disabled .label { text-shadow: none; }
@@ -204,7 +204,11 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 /* RTE */
 .rte { padding: 0; }
-.rte .toolbar { border-radius: 1px 1px 0 0; margin-bottom: 0; border-bottom: 1px solid #ccc; padding: 4px 10px 5px; white-space: nowrap; color: #666; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#fafafa)); }
+.rte .toolbar { border-radius: 1px 1px 0 0; margin-bottom: 0; border-bottom: 1px solid #ccc; height: 30px; white-space: nowrap; color: #666; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#fafafa)); }
+.rte .toolbar .btn { border: none; border-right: 1px solid #ccc; border-radius: 0; height: 30px; }
+.rte .toolbar .btn:first-child { border-top-lef-radius: 1px; }
+.rte .toolbar .btn .label { margin: 0 15px; line-height: 30px; }
+.rte .toolbar .btn .arrow { margin: 0 5px 0 -15px; }
 .rte .styles { position: absolute; top: 0; right: 0; width: 150px; }
 .rte iframe { border-radius: 0 0 1px 1px; }
 
