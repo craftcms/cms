@@ -10,7 +10,7 @@ class BlocksHtml extends CHtml
 	 */
 	public static function getResourceUrl($resourcePath, $plugin = null)
 	{
-		$baseUrl = Blocks::app()->getUrlManager()->getBaseUrl();
+		$baseUrl = Blocks::app()->urlManager->getBaseUrl();
 		$where = $plugin ? $plugin : 'app';
 
 		return "{$baseUrl}/resources/{$where}/".self::encode($resourcePath);
