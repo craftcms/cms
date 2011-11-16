@@ -3,10 +3,15 @@
 <head>
 	<meta charset="utf-8" />
 	<title>{%if pageTitle%}{pageTitle} – {%endif%}Blocks</title>
+
 	{resource.css('styles/reset.css')}
 	{resource.css('styles/layout.css')}
 	{resource.css('styles/elements.css')}
 	{resource.css('styles/icons.css')}
+
+	{!-- include any styles defined by the subtemplate --}
+	{styles}
+
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 </head>
 <body class="{url.segment(1)} {bodyClass}">

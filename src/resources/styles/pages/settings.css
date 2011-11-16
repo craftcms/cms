@@ -1,0 +1,10 @@
+/*-- URL Routing settings --*/
+body.routing #main .routes .site { margin-right: 2px; color: rgba(0,0,0,0.4); }
+body.routing #main .routes a { font-weight: normal; }
+body.routing #main .routes .new { border-top: 1px solid #aaa; padding: 18px 20px; }
+
+/*-- Plugins --*/
+body.plugins #main tr.uninstalled td { color: #999; text-shadow: 0 1px 0 #fff; }
+body.plugins #main th.status,
+body.plugins #main th.action { width: 0.01%; }
+body.plugins #main td { padding-top: 10px; padding-bottom: 10px; vertical-align: middle; }

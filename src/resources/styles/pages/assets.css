@@ -1,0 +1,10 @@
+/*-- grid --*/
+#main .files.grid ul { margin: -20px 0 0 -20px; }
+#main .files.grid ul:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+#main .files.grid ul li { float: left; margin: 20px 0 0 20px; width: 96px; height: 98px; padding: 2px 2px 0; text-align: center; }
+#main .files.grid ul li .filename { text-align: center; }
+
+/*-- list --*/
+#main .files.data table th:first-child,
+#main .files.data table td:first-child { padding-left: 54px; }
+#main .files.data table td:first-child img { display: block; float: left; margin-left: -34px; width: 24px; height: 24px; }
