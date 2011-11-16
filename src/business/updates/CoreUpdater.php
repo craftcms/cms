@@ -187,6 +187,7 @@ class CoreUpdater
 
 	public function putSiteInMaintenanceMode()
 	{
+		// TODO: Fix
 		$file = Blocks::app()->file->set(Blocks::app()->path->getBasePath().'../index.php', false);
 		$contents = $file->getContents();
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);

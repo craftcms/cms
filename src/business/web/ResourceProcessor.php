@@ -10,25 +10,10 @@ class ResourceProcessor
 	function __construct($resourcePath, $pluginHandle)
 	{
 		$this->_relativeResourcePathAndName = $resourcePath;
-		$this->_pluginHandle = $pluginHandle;
+		$this->_pluginHandle = $pluginHandle == 'app' ? null : $pluginHandle;
 		$this->parseRelativeResourcePath($this->_relativeResourcePathAndName);
 
 		$this->processResourceRequest();
-	}
-
-	public function setPluginHandle($pluginHandle)
-	{
-		$this->_pluginHandle = $pluginHandle;
-	}
-
-	public function getPluginHandle()
-	{
-		return $this->_pluginHandle;
-	}
-
-	public function setRelativeResourcePath($relativeResourcePath)
-	{
-		$this->_relativeResourcePath = $relativeResourcePath;
 	}
 
 	public function getRelativeResourcePath()
@@ -46,21 +31,11 @@ class ResourceProcessor
 		return $this->_relativeResourceName;
 	}
 
-	public function setRelativeResourcePathAndName($relativeResourcePathAndName)
-	{
-		$this->_relativeResourcePathAndName = $relativeResourcePathAndName;
-	}
-
-	public function getRelativeResourcePathAndName()
-	{
-		return $this->_relativeResourcePathAndName;
-	}
-
 	public function processResourceRequest()
 	{
 		$resourceFullPath = $this->translateResourcePaths($this->_relativeResourcePathAndName);
 
-		if(file_exists($resourceFullPath))
+		if(is_file($resourceFullPath) && file_exists($resourceFullPath))
 		{
 			$this->sendResource($resourceFullPath);
 		}
@@ -73,7 +48,7 @@ class ResourceProcessor
 	public function translateResourcePaths()
 	{
 		// plugin resource
-		if($this->_pluginHandle != 'app')
+		if($this->_pluginHandle !== null)
 		{
 			return Blocks::app()->path->getPluginsPath().$this->_pluginHandle.'/'.$this->_relativeResourcePathAndName;
 		}
@@ -87,7 +62,7 @@ class ResourceProcessor
 	public function parseRelativeResourcePath()
 	{
 		// if the first char is a '/', then strip it.
-		if(strpos($this->_relativeResourcePathAndName, '/') == 0)
+		if ($this->_relativeResourcePathAndName[0] == '/')
 		{
 			$this->_relativeResourcePathAndName = ltrim($this->_relativeResourcePathAndName, '/');
 		}

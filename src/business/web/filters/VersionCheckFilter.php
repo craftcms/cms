@@ -4,6 +4,10 @@ class VersionCheckFilter extends CFilter
 {
 	protected function preFilter($filterChain)
 	{
+		// Only run on the CP side.
+		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
+			return true;
+
 		if (Blocks::app()->controller->id == 'update')
 			return true;
 
@@ -75,7 +79,7 @@ class VersionCheckFilter extends CFilter
 
 		if ($blocksVersionInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
-			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', '/admin.php/update');
+			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', 'update');
 		}
 
 		foreach($blocksVersionInfo['blocksLicenseStatus'] as $licenseMessage)
