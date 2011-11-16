@@ -14,15 +14,6 @@ class BlocksHtml extends CHtml
 		$where = $plugin ? $plugin : 'app';
 
 		return "{$baseUrl}/resources/{$where}/".self::encode($resourcePath);
-
-
-
-		if ($pluginHandle != null)
-		{
-			$resourceString .= '&pluginHandle='.self::encode($pluginHandle);
-		}
-
-		return $resourceString;
 	}
 
 
