@@ -5,6 +5,15 @@ class UrlTag extends Tag
 	private $_segments;
 
 	/**
+	 * Base
+	 */
+	public function base()
+	{
+		$baseUrl = Blocks::app()->urlManager->getBaseUrl();
+		return new StringTag($baseUrl);
+	}
+
+	/**
 	 * Get Segments
 	 * @return array The URL segments
 	 * @access private

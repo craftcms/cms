@@ -21,9 +21,4 @@ class CpTag extends Tag
 
 		return new ArrayTag($sectionTags);
 	}
-
-	public function baseUrl()
-	{
-		return new StringTag('/admin.php'.'/');
-	}
 }
