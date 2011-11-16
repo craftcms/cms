@@ -77,7 +77,7 @@ class PathService extends CApplicationComponent implements IPathService
 		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
 			return $this->getSiteTemplatePath();
 
-		if (($moduleName = Blocks::app()->url->getTemplateMatch()->getModuleName()) !== null)
+		if (($moduleName = Blocks::app()->urlManager->getTemplateMatch()->getModuleName()) !== null)
 			return $this->getAppPath().'modules/'.$moduleName.'/templates/';
 
 		return $this->normalizeDirectorySeparators($this->getCPTemplatePath());
@@ -99,7 +99,7 @@ class PathService extends CApplicationComponent implements IPathService
 			case RequestType::ControlPanel:
 				$cachePath = $this->getRuntimePath().'parsed_templates/cp/';
 
-				if (($moduleName = Blocks::app()->url->getTemplateMatch()->getModuleName()) !== null)
+				if (($moduleName = Blocks::app()->urlManager->getTemplateMatch()->getModuleName()) !== null)
 					$cachePath .= 'modules/'.$moduleName.'/';
 				break;
 

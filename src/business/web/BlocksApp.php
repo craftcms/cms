@@ -36,10 +36,16 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if ($this->url->getTemplateMatch() !== null || $this->request->getParam('c', null) !== null)
+		if ($this->urlManager->getTemplateMatch() !== null || $this->request->getParam('c', null) !== null)
 			$this->catchAllRequest = array('blocks/index');
 
-		parent::run();
+		if($this->hasEventHandler('onBeginRequest'))
+			$this->onBeginRequest(new CEvent($this));
+
+		$this->processRequest();
+
+		if($this->hasEventHandler('onEndRequest'))
+			$this->onEndRequest(new CEvent($this));
 	}
 
 	private function validateConfig()
@@ -212,19 +218,18 @@ class BlocksApp extends CWebApplication
 	 */
 	public function processRequest()
 	{
-		if(is_array($this->catchAllRequest) && isset($this->catchAllRequest[0]))
+		if (is_array($this->catchAllRequest) && isset($this->catchAllRequest[0]))
 		{
-			$route=$this->catchAllRequest[0];
-			foreach(array_splice($this->catchAllRequest,1) as $name=>$value)
-				$_GET[$name]=$value;
+			$route = $this->catchAllRequest[0];
+			foreach (array_splice($this->catchAllRequest, 1) as $name => $value)
+				$_GET[$name] = $value;
 		}
 		else
-			$route=$this->getUrlManager()->parseUrl($this->getRequest());
+			$route = $this->urlManager->parseUrl($this->getRequest());
 
 		if ($route !== '')
 			$this->runController($route);
 		else
 			throw new BlocksHttpException(404, 'Could not find the requested page.');
 	}
-
 }

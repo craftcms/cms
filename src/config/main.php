@@ -103,8 +103,6 @@ return array(
 			'class' => 'application.business.services.SiteService',
 		),
 
-
-
 		//
 		'file' => array(
 			'class' => 'application.business.utils.BlocksFile'
@@ -118,16 +116,16 @@ return array(
 			'class' => 'application.business.web.BlocksTemplateRenderer',
 		),
 
-		'url' => array(
+		'urlManager' => array(
 			'class' => 'application.business.web.BlocksUrlManager',
 			'urlFormat' => 'path',
 			'rules' => array(
 				//'<controller:\w+>/<id:\d+>' => '<controller>/view',
 				//'<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
 				//'<controller:\w+>/<action:\w+>' => '<controller>/<action>',
-				'system/install/<action:\w+>' => 'install/default/<action>',
-				'system/update/<action:\w+>' => 'update/default/<action>',
-				///'error' => 'site/error',
+				//'system/install/<action:\w+>' => 'install/default/<action>',
+				//'system/update/<action:\w+>' => 'update/default/<action>',
+				//'admin' => 'admin.php',
 			),
 		),
 

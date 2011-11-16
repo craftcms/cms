@@ -9,9 +9,6 @@ class BlocksUrlManager extends CUrlManager
 
 	public function init()
 	{
-		// the default CUrlManager processes routes according to Yii's default routing.
-		parent::init();
-
 		$this->_path = Blocks::app()->request->getPathInfo();
 		$this->_pathSegments = Blocks::app()->request->getPathSegments();
 		$this->_requestExtension = Blocks::app()->request->getPathExtension();
@@ -67,35 +64,6 @@ class BlocksUrlManager extends CUrlManager
 	{
 		$test = $this->parseUrl(Blocks::app()->request);
 		return false;
-	}
-
-	public function parseUrl($request)
-	{
-		if($this->getUrlFormat()===self::PATH_FORMAT)
-		{
-			$rawPathInfo = $request->getPathInfo();
-			$pathInfo = $this->removeUrlSuffix($rawPathInfo, $this->urlSuffix);
-			foreach ($this->rules as $pattern => $rule)
-			{
-				if (is_array($rule))
-					$this->rules[$pattern] = $rule = Yii::createComponent($rule);
-
-				$rule = new CUrlRule($rule, $pattern);
-				if (($r = $rule->parseUrl($this, $request, $pathInfo, $rawPathInfo)) !== false)
-					return isset($_GET[$this->routeVar]) ? $_GET[$this->routeVar] : $r;
-			}
-
-			if ($this->useStrictParsing)
-				throw new CHttpException(404,Blocks::t('yii','Unable to resolve the request "{route}".', array('{route}' => $pathInfo)));
-			else
-				return $pathInfo;
-		}
-		else if(isset($_GET[$this->routeVar]))
-			return $_GET[$this->routeVar];
-		else if(isset($_POST[$this->routeVar]))
-			return $_POST[$this->routeVar];
-		else
-			return '';
 	}
 
 	public function matchTemplate()
