@@ -6,7 +6,7 @@ class BlocksController extends BaseController
 
 	public function run($actionId)
 	{
-		$this->_templateMatch = Blocks::app()->url->getTemplateMatch();
+		$this->_templateMatch = Blocks::app()->urlManager->getTemplateMatch();
 
 		if ($this->_templateMatch !== null || Blocks::app()->request->getParam('c', null) !== null)
 		{
@@ -25,20 +25,15 @@ class BlocksController extends BaseController
 			// we found a matching controller for this request.
 			if (($ca = Blocks::app()->createController($tempController)) !== null)
 			{
-				//list($requestController, $actionID) = $ca;
 				$this->setRequestController($ca[0]);
 				// save the current controller and swap out the new one.
 				$oldController = Blocks::app()->getController();
 				Blocks::app()->setController($this->getRequestController());
 
 				// there is an explicit request to a controller and action
-				if (Blocks::app()->request->getParam('c', null) !== null
-				    || (Blocks::app()->controller->getModule() !== null && Blocks::app()->controller->getModule()->id == 'install')
-				    || Blocks::app()->controller->id == 'update')
+				if (Blocks::app()->request->getParam('c', null) !== null || (Blocks::app()->controller->getModule() !== null && Blocks::app()->controller->getModule()->id == 'install') || Blocks::app()->controller->id == 'update')
 				{
 					Blocks::app()->controller->init();
-					// now we run through the filterchain on the swapped out controller.
-					//parent::run($tempAction);
 					Blocks::app()->controller->run($tempAction);
 				}
 				else
