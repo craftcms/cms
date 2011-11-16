@@ -7,11 +7,13 @@ class ResourceProcessor
 	private $_relativeResourceName;
 	private $_relativeResourcePathAndName;
 
-	function __construct()
+	function __construct($resourcePath, $pluginHandle)
 	{
-		$this->_pluginHandle = Blocks::app()->request->getQuery('pluginHandle', null);
-		$this->_relativeResourcePathAndName = Blocks::app()->request->getQuery('resourcePath', null);
+		$this->_relativeResourcePathAndName = $resourcePath;
+		$this->_pluginHandle = $pluginHandle;
 		$this->parseRelativeResourcePath($this->_relativeResourcePathAndName);
+
+		$this->processResourceRequest();
 	}
 
 	public function setPluginHandle($pluginHandle)
@@ -71,7 +73,7 @@ class ResourceProcessor
 	public function translateResourcePaths()
 	{
 		// plugin resource
-		if($this->_pluginHandle !== null)
+		if($this->_pluginHandle != 'app')
 		{
 			return Blocks::app()->path->getPluginsPath().$this->_pluginHandle.'/'.$this->_relativeResourcePathAndName;
 		}
@@ -117,7 +119,7 @@ class ResourceProcessor
 
 	public function correctImagePaths($content)
 	{
-		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.Blocks::app()->path->getResourceProcessorUrl().'?resourcePath='.$this->_relativeResourcePath.'$2$5)', ''.$content.'');
+		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.BlocksHtml::getResourceUrl($this->_relativeResourcePath.'$2', $this->_pluginHandle).'$5)', (string)$content);
 	}
 
 	public function sendResource($resourceFullPath)

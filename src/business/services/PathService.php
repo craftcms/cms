@@ -38,17 +38,6 @@ class PathService extends CApplicationComponent implements IPathService
 		return $this->normalizeDirectorySeparators(Blocks::app()->getRuntimePath().'/');
 	}
 
-	public function getResourceProcessorPath()
-	{
-		return $this->normalizeDirectorySeparators($this->getAppPath().'business/web/ResourceProcessor.php');
-	}
-
-	public function getResourceProcessorUrl()
-	{
-		$entryScript = Blocks::app()->request->getScriptFile();
-		return '/index.php/blocks/app/business/web/ResourceProcessor.php';
-	}
-
 	public function getCPTemplatePath()
 	{
 		return $this->normalizeDirectorySeparators($this->getAppPath().'templates/');
