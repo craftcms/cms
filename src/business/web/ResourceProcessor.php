@@ -41,7 +41,7 @@ class ResourceProcessor
 		}
 		else
 		{
-			$this->send404();
+			Blocks::app()->send404();
 		}
 	}
 
@@ -53,7 +53,7 @@ class ResourceProcessor
 		$this->_content = file_get_contents($this->_resourceFullPath);
 
 		if (! $this->_content)
-			$this->send404();
+			Blocks::app()->send404();
 
 		$file = Blocks::app()->file->set($this->_resourceFullPath);
 		$mimeType = $file->getMimeType();
@@ -81,13 +81,5 @@ class ResourceProcessor
 		}
 
 		return $match[1].$this->_rootFolderUrl.$this->_relResourceDirname.$match[3].$match[4];
-	}
-
-	/**
-	 * Sends a 404 error back to the client
-	 */
-	private function send404()
-	{
-		throw new BlocksHttpException(404, 'Page not found.');
 	}
 }
