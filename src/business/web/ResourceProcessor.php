@@ -2,110 +2,92 @@
 
 class ResourceProcessor
 {
-	private $_pluginHandle;
-	private $_relativeResourcePath;
-	private $_relativeResourceName;
-	private $_relativeResourcePathAndName;
+	private $_rootFolderPath;
+	private $_rootFolderUrl;
+	private $_relResourcePath;
+	private $_relResourceDirname;
+	private $_relResourceFilename;
+	private $_resourceFullPath;
 
-	function __construct($resourcePath, $pluginHandle)
+	/**
+	 * ResourceProcessor Constructor
+	 * @param string $rootFolderPath The path to the root folder containing the hidden files
+	 * @param string $rootFolderUrl The URL to the root folder containing the hidden files
+	 * @param string $relativeResourcePath The path to the resource, relative from the root folder
+	 */
+	public function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
 	{
-		$this->_relativeResourcePathAndName = $resourcePath;
-		$this->_pluginHandle = $pluginHandle == 'app' ? null : $pluginHandle;
-		$this->parseRelativeResourcePath($this->_relativeResourcePathAndName);
+		$this->_rootFolderPath = rtrim($rootFolderPath, '/').'/';
+		$this->_rootFolderUrl = rtrim($rootFolderUrl, '/').'/';
+		$this->_relResourcePath = trim($relResourcePath, '/');
 
-		$this->processResourceRequest();
+		// Parse the relative resource path, separating the directory path from the filename
+		$pathinfo = pathinfo($this->_relResourcePath);
+		$this->_relResourceDirname = isset($pathinfo['dirname']) && $pathinfo['dirname'] != '.' ? $pathinfo['dirname'].'/' : '';
+		$this->_relResourceFilename = $pathinfo['filename'];
+
+		// Save the full server path
+		$this->_resourceFullPath = $this->_rootFolderPath . $this->_relResourcePath;
 	}
 
-	public function getRelativeResourcePath()
-	{
-		return $this->_relativeResourcePath;
-	}
-
-	public function setRelativeResourceName($relativeResourceName)
-	{
-		$this->_relativeResourceName = $relativeResourceName;
-	}
-
-	public function getRelativeResourceName()
-	{
-		return $this->_relativeResourceName;
-	}
-
+	/**
+	 * Process the request
+	 */
 	public function processResourceRequest()
 	{
-		$resourceFullPath = $this->translateResourcePaths($this->_relativeResourcePathAndName);
-
-		if(is_file($resourceFullPath) && file_exists($resourceFullPath))
+		if (file_exists($this->_resourceFullPath) && is_file($this->_resourceFullPath))
 		{
-			$this->sendResource($resourceFullPath);
+			$this->sendResource();
 		}
 		else
 		{
-			// error
+			$this->send404();
 		}
 	}
 
-	public function translateResourcePaths()
+	/**
+	 * Send the file back to the browser
+	 */
+	public function sendResource()
 	{
-		// plugin resource
-		if($this->_pluginHandle !== null)
-		{
-			return Blocks::app()->path->getPluginsPath().$this->_pluginHandle.'/'.$this->_relativeResourcePathAndName;
-		}
-		// blocks resource
-		else
-		{
-			return Blocks::app()->path->getResourcesPath().$this->_relativeResourcePathAndName;
-		}
-	}
+		$this->_content = file_get_contents($this->_resourceFullPath);
 
-	public function parseRelativeResourcePath()
-	{
-		// if the first char is a '/', then strip it.
-		if ($this->_relativeResourcePathAndName[0] == '/')
-		{
-			$this->_relativeResourcePathAndName = ltrim($this->_relativeResourcePathAndName, '/');
-		}
+		if (! $this->_content)
+			$this->send404();
 
-		$slashCount = substr_count($this->_relativeResourcePathAndName, '/');
-
-		// bg.gif
-		if ($slashCount == 0)
-		{
-			$this->_relativeResourcePath = null;
-			$this->_relativeResourceName = $this->_relativeResourcePathAndName;
-		}
-		else
-		{
-			// dir1/bg.gif
-			// dir1/dir2/bg.gif
-			if ($slashCount > 0)
-			{
-				$lastSlashPos = strrpos($this->_relativeResourcePathAndName, '/');
-				$this->_relativeResourceName = substr($this->_relativeResourcePathAndName, $lastSlashPos + 1);
-				$this->_relativeResourcePath = substr($this->_relativeResourcePathAndName, 0, $lastSlashPos + 1);
-			}
-			else
-			{
-				// error, invalid path.
-			}
-		}
-	}
-
-	public function correctImagePaths($content)
-	{
-		return preg_replace('/url\((\')??((http(s)?\:\/\/)?.+)(\')?\)/U', 'url($5'.BlocksHtml::getResourceUrl($this->_relativeResourcePath.'$2', $this->_pluginHandle).'$5)', (string)$content);
-	}
-
-	public function sendResource($resourceFullPath)
-	{
-		$content = file_get_contents($resourceFullPath);
-		$file = Blocks::app()->file->set($resourceFullPath);
+		$file = Blocks::app()->file->set($this->_resourceFullPath);
 		$mimeType = $file->getMimeType();
 
-		if(strpos($mimeType, 'css') > 0)
-			$content = $this->correctImagePaths($content);
+		if (strpos($mimeType, 'css') > 0)
+			$this->convertRelativeUrls();
 
-		$file->send(false, false, $content);
+		$file->send(false, false, $this->_content);
+	}
+
+	/**
+	 * Convert relative URLs in CSS files to absolute paths based on the root folder URL
+	 */
+	private function convertRelativeUrls()
+	{
+		$this->_content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, 'convertRelativeUrlMatch'), $this->_content);
+	}
+
+	private function convertRelativeUrlMatch($match)
+	{
+		// ignore root-relative and absolute URLs
+		if (preg_match('/^(\/|https?:\/\/)/', $match[3]))
+		{
+			return $match[0];
+		}
+
+		return $match[1].$this->_rootFolderUrl.$this->_relResourceDirname.$match[3].$match[4];
+	}
+
+	/**
+	 * Sends a 404 error back to the client
+	 */
+	private function send404()
+	{
+		throw new BlocksHttpException(404, 'Page not found.');
 	}
 }

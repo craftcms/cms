@@ -12,13 +12,29 @@ class BlocksApp extends CWebApplication
 	public function init()
 	{
 		// run the resource processor if necessary.
-		if ($this->request->getRequestType() == 'GET')
+		if ($this->request->requestType == 'GET')
 		{
-			$segs = $this->request->getPathSegments();
+			$segs = $this->request->pathSegments;
+
 			if (array_shift($segs) == 'resources')
-				if ($pluginHandle = array_shift($segs))
-					if ($resourcePath = implode('/', $segs))
-						new ResourceProcessor($resourcePath, $pluginHandle);
+			{
+				$pluginHandle = array_shift($segs);
+
+				if ($pluginHandle == 'app')
+				{
+					$rootFolderPath = Blocks::app()->path->resourcesPath;
+				}
+				else
+				{
+					$rootFolderPath = Blocks::app()->path->pluginsPath.$pluginHandle.'/';
+				}
+
+				$rootFolderUrl = Blocks::app()->urlManager->baseUrl.'/'.'resources/'.$pluginHandle.'/';
+				$relativeResourcePath = implode('/', $segs);
+
+				$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+				$resourceProcessor->processResourceRequest();
+			}
 		}
 
 		parent::init();
