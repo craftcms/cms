@@ -66,12 +66,7 @@ class BlocksUrlManager extends CUrlManager
 	public function matchTemplate()
 	{
 		$moduleName = null;
-		$templatePath = Blocks::app()->getViewPath();
-
-		$lastChar = substr($templatePath, -1);
-		if ($lastChar !== '\\' && $lastChar !== '/')
-			$templatePath .= '/';
-
+		$templatePath = $this->normalizeTrailingSlash(Blocks::app()->getViewPath());
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
 		$tempPath = $this->_path;
 		$testPath = null;
@@ -101,6 +96,8 @@ class BlocksUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
+		$requestPath = $this->normalizeTrailingSlash($requestPath);
+
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
@@ -129,5 +126,14 @@ class BlocksUrlManager extends CUrlManager
 		$templateMatch->setModuleName($moduleName);
 		$templateMatch->setMatchExtension($extension);
 		$this->_templateMatch = $templateMatch;
+	}
+
+	public function normalizeTrailingSlash($path)
+	{
+		$lastChar = substr($path, -1);
+		if ($lastChar !== '\\' && $lastChar !== '/')
+			$path .= '/';
+
+		return $path;
 	}
 }

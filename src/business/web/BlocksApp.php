@@ -249,8 +249,20 @@ class BlocksApp extends CWebApplication
 		else
 			$route = $this->urlManager->parseUrl($this->getRequest());
 
-		if ($route !== '' && ($this->request->getCMSRequestType() !== RequestType::Site && $route == 'gii'))
+		if ($route !== '')
+		{
+			if ($this->request->getCMSRequestType() == RequestType::ControlPanel)
+			{
 				$this->runController($route);
+			}
+			else
+			{
+				if ($route !== 'gii')
+					$this->runController($route);
+				else
+					$this->send404();
+			}
+		}
 		else
 			$this->send404();
 	}
