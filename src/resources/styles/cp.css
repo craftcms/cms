@@ -120,7 +120,7 @@ a:hover { text-decoration: underline; }
 .btn-group .btn:last-child { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 
 /* buttons */
-.btn { display: inline-block; border: 1px solid rgba(0,0,0,0.25); border-radius: 3px; padding: 0; height: 22px; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,0.75)), to(rgba(255,255,255,0))); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1); cursor: pointer; }
+.btn { display: inline-block; border: 1px solid rgba(0,0,0,0.25); border-radius: 3px; padding: 0; height: 22px; text-shadow: 0 1px 0 rgba(255,255,255,0.5); text-decoration: none !important; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,0.75)), to(rgba(255,255,255,0))); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1); cursor: pointer; }
 .btn:last-child { margin-right: 0; }
 .btn:not(.disabled):hover { background-image: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(0,0,0,0.02)), to(rgba(0,0,0,0.04))); }
 .btn:not(.disabled):active,
@@ -131,7 +131,7 @@ a:hover { text-decoration: underline; }
 /* button parts */
 .btn span { display: block; float: left; height: 100%; }
 
-.btn .label { margin: 0 8px; line-height: 22px; color: #333; text-align: center; white-space: nowrap; text-decoration: none; }
+.btn .label { margin: 0 8px; line-height: 22px; color: #333; text-align: center; white-space: nowrap; }
 .btn.disabled .label { text-shadow: none; }
 .btn .icon { margin: -1px 4px; height: 24px; width: 24px; background: url(../images/sidebar_icons.png); opacity: 0.9; }
 .btn .arrow { width: 16px; background: url(../images/menu-arrow.png) no-repeat 50% 50%; opacity: 0.5; }
