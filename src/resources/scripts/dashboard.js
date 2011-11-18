@@ -6,22 +6,36 @@ var Dashboard = Base.extend({
 	constructor: function()
 	{
 		this.dom = {};
+		this._createTable();
+		this._getWidgets();
+		this.cols = [];
 
+		$(window).on('resizeWidth.dashboard', $.proxy(this, 'setCols'));
+		setTimeout($.proxy(this, 'setCols'), 1);
+	},
+
+	_createTable: function()
+	{
 		this.dom.table = document.createElement('table');
 		this.dom.table.className = 'widgets'
 		document.getElementById('main').appendChild(this.dom.table);
+
 		this.dom.tr = document.createElement('tr');
 		this.dom.table.appendChild(this.dom.tr);
-
-		this.$widgets = $('.widget');
-
-		this.cols = [];
-
-		$(window).on('resizeWidth.dashboard', $.proxy(this, '_setCols'));
-		setTimeout($.proxy(this, '_setCols'), 1);
 	},
 
-	_setCols: function(event)
+	_getWidgets: function()
+	{
+		var widgets = [];
+
+		$('.widget').each(function() {
+			widgets.push($(this));
+		});
+
+		this.widgets = widgets;
+	},
+
+	setCols: function(event)
 	{
 		var animate = !!event;
 
@@ -38,9 +52,9 @@ var Dashboard = Base.extend({
 			{
 				var oldWidgetOffsets = [];
 
-				for (var i = 0; i < this.$widgets.length; i++)
+				for (var i = 0; i < this.widgets.length; i++)
 				{
-					var $widget = $(this.$widgets[i]);
+					var $widget = this.widgets[i];
 					oldWidgetOffsets[i] = $widget.offset();
 				}
 			}
@@ -71,17 +85,15 @@ var Dashboard = Base.extend({
 			//  Put them in their new places
 			// -------------------------------------------
 
-			for (var i = 0; i < this.$widgets.length; i++)
+			for (var i = 0; i < this.widgets.length; i++)
 			{
-				var widget = this.$widgets[i],
+				var $widget = this.widgets[i],
 					shortestCol = this._getShortestCol();
 
-				shortestCol.addWidget(widget);
+				shortestCol.addWidget($widget[0]);
 
 				if (animate)
 				{
-					var $widget = $(widget);
-
 					// clear any current animations
 					$widget.stop();
 
@@ -89,16 +101,12 @@ var Dashboard = Base.extend({
 					$widget.css('position', 'static');
 					var settledOffset = $widget.offset();
 
-					try {
 					// put it back where it was
 					$widget.css({
 						position: 'relative',
 						top: oldWidgetOffsets[i].top - settledOffset.top,
 						left: oldWidgetOffsets[i].left - settledOffset.left
 					});
-				} catch (e) {
-					console.log(settledOffset); return;
-				}
 
 					// animate it into place
 					$widget.animate({top: 0, left: 0});
