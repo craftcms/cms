@@ -13,6 +13,13 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	private static $_filePermission = 0755;
 
+	// TODO: Don't know if it's possible to use conditionally select a template renderer (CViewRenderer for /app/framework and BlocksTemplateRenderer for everything else)
+	// so temporarily adding this.
+	/**
+	 * @var string Only used by CViewRenderer when we're rendering a file from the app/framework directory (as in gii).
+	 */
+	public $fileExtension = 'php';
+
 	/**
 	 * Renders a template
 	 * @param $context The controller or widget who is rendering the template
