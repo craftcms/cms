@@ -10,11 +10,11 @@ blx.HUD = Base.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(trigger, contents, options) {
+	constructor: function(trigger, contents, settings) {
 
 		this.$trigger = $(trigger);
 		this.$contents = $(contents);
-		this.options = $.extend({}, blx.HUD.defaults, options);
+		this.settings = $.extend({}, blx.HUD.defaults, settings);
 
 		this.showing = false;
 
@@ -64,8 +64,8 @@ blx.HUD = Base.extend({
 		this.height = this.$hud.height();
 
 		// get the minumum horizontal/vertical clearance needed to fit the HUD
-		this.minHorizontalClearance = this.width + this.options.triggerSpacing + this.options.windowSpacing;
-		this.minVerticalClearance = this.height + this.options.triggerSpacing + this.options.windowSpacing;
+		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
+		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
 
 		// find the actual available right/bottom/left/top clearances
 		this.rightClearance = this.windowWidth + this.windowScrollLeft - this.triggerOffsetRight;
@@ -81,28 +81,28 @@ blx.HUD = Base.extend({
 
 		// below?
 		if (this.bottomClearance >= this.minVerticalClearance) {
-			var top = this.triggerOffsetBottom + this.options.triggerSpacing;
+			var top = this.triggerOffsetBottom + this.settings.triggerSpacing;
 			this.$hud.css('top', top);
 			this._setLeftPos();
 			this._setTipClass('top');
 		}
 		// to the right?
 		else if (this.rightClearance >= this.minHorizontalClearance) {
-			var left = this.triggerOffsetRight + this.options.triggerSpacing;
+			var left = this.triggerOffsetRight + this.settings.triggerSpacing;
 			this.$hud.css('left', left);
 			this._setTopPos();
 			this._setTipClass('left');
 		}
 		// to the left?
 		else if (this.leftClearance >= this.minHorizontalClearance) {
-			var left = this.triggerOffsetLeft - (this.width + this.options.triggerSpacing);
+			var left = this.triggerOffsetLeft - (this.width + this.settings.triggerSpacing);
 			this.$hud.css('left', left);
 			this._setTopPos();
 			this._setTipClass('right');
 		}
 		// above?
 		else if (this.topClearance >= this.minVerticalClearance) {
-			var top = this.triggerOffsetTop - (this.height + this.options.triggerSpacing);
+			var top = this.triggerOffsetTop - (this.height + this.settings.triggerSpacing);
 			this.$hud.css('top', top);
 			this._setLeftPos();
 			this._setTipClass('bottom');
@@ -113,16 +113,16 @@ blx.HUD = Base.extend({
 				bottomCleananceDiff = this.minVerticalClearance - this.bottomClearance;
 
 			if (rightClearanceDiff >= bottomCleananceDiff) {
-				var left = this.windowWidth - (this.width + this.options.windowSpacing),
-					minLeft = this.triggerOffsetLeft + this.options.triggerSpacing;
+				var left = this.windowWidth - (this.width + this.settings.windowSpacing),
+					minLeft = this.triggerOffsetLeft + this.settings.triggerSpacing;
 				if (left < minLeft) left = minLeft;
 				this.$hud.css('left', left);
 				this._setTopPos();
 				this._setTipClass('left');
 			}
 			else {
-				var top = this.windowHeight - (this.height + this.options.windowSpacing),
-					minTop = this.triggerOffsetTop + this.options.triggerSpacing;
+				var top = this.windowHeight - (this.height + this.settings.windowSpacing),
+					minTop = this.triggerOffsetTop + this.settings.triggerSpacing;
 				if (top < minTop) top = minTop;
 				this.$hud.css('top', top);
 				this._setLeftPos();
@@ -139,15 +139,15 @@ blx.HUD = Base.extend({
 		blx.HUD.active = this;
 
 		// onShow callback
-		this.options.onShow();
+		this.settings.onShow();
 	},
 
 	/**
 	 * Set Top
 	 */
 	_setTopPos: function() {
-		var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.options.windowSpacing),
-			minTop = (this.windowScrollTop + this.options.windowSpacing),
+		var maxTop = (this.windowHeight + this.windowScrollTop) - (this.height + this.settings.windowSpacing),
+			minTop = (this.windowScrollTop + this.settings.windowSpacing),
 
 			triggerCenter = this.triggerOffsetTop + Math.round(this.triggerHeight / 2),
 			top = triggerCenter - Math.round(this.height / 2);
@@ -159,7 +159,7 @@ blx.HUD = Base.extend({
 		this.$hud.css('top', top);
 
 		// set the tip's top position
-		var tipTop = (triggerCenter - top) - (this.options.tipWidth / 2);
+		var tipTop = (triggerCenter - top) - (this.settings.tipWidth / 2);
 		this.$tip.css({ top: tipTop, left: '' });
 	},
 
@@ -167,8 +167,8 @@ blx.HUD = Base.extend({
 	 * Set Left
 	 */
 	_setLeftPos: function() {
-		var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.options.windowSpacing),
-			minLeft = (this.windowScrollLeft + this.options.windowSpacing),
+		var maxLeft = (this.windowWidth + this.windowScrollLeft) - (this.width + this.settings.windowSpacing),
+			minLeft = (this.windowScrollLeft + this.settings.windowSpacing),
 
 			triggerCenter = this.triggerOffsetLeft + Math.round(this.triggerWidth / 2),
 			left = triggerCenter - Math.round(this.width / 2);
@@ -180,7 +180,7 @@ blx.HUD = Base.extend({
 		this.$hud.css('left', left);
 
 		// set the tip's left position
-		var tipLeft = (triggerCenter - left) - (this.options.tipWidth / 2);
+		var tipLeft = (triggerCenter - left) - (this.settings.tipWidth / 2);
 		this.$tip.css({ left: tipLeft, top: '' });
 	},
 
@@ -205,7 +205,7 @@ blx.HUD = Base.extend({
 		blx.HUD.active = null;
 
 		// onHide callback
-		this.options.onHide();
+		this.settings.onHide();
 	}
 
 });
