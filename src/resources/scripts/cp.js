@@ -35,7 +35,7 @@ blx.cp =
 	 */
 	onWindowResizeHeight: function()
 	{
-		var bodyHeight = blx.windowHeight - this.navHeight;
+		var bodyHeight = blx.windowHeight - this.navHeight - 40;
 		this.dom.$sidebars.height(bodyHeight);
 		this.dom.$main.css('minHeight', bodyHeight);
 	},

@@ -3,6 +3,7 @@
 #main table.widgets td.col { padding: 10px; }
 
 #main .widget { position: relative; margin-bottom: 20px; border-radius: 4px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); }
+#main .widget:last-child { margin-bottom: 0; }
 
 #main .widget h3 { margin: 0; border-radius: 4px 4px 0 0; padding: 8px 10px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,0.5)), to(rgba(255,255,255,0))); }
 #main .widget .body { padding: 10px 20px; border-radius: 4px; background: #fff; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1); }
