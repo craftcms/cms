@@ -33,20 +33,34 @@ blx.cp =
 	/**
 	 * Updates #sidebar's height and #main's min-height
 	 */
-	updateHeights: function()
+	onWindowResizeHeight: function()
 	{
 		var bodyHeight = blx.windowHeight - this.navHeight;
 		this.dom.$sidebars.height(bodyHeight);
 		this.dom.$main.css('minHeight', bodyHeight);
+	},
+
+	onWindowScroll: function(event)
+	{
+		if (document.body.scrollTop > 15)
+		{
+			this.dom.$nav.addClass('scrolling');
+		}
+		else
+		{
+			this.dom.$nav.removeClass('scrolling');
+		}
 	}
 };
 
 
 blx.cp.navHeight = blx.cp.dom.$nav.outerHeight();
 
-$(window).on('resizeHeight.blx', $.proxy(blx.cp, 'updateHeights'));
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
+$(window).on('resizeHeight.blx', $.proxy(blx.cp, 'onWindowResizeHeight'));
+$(window).on('scroll.blx', $.proxy(blx.cp, 'onWindowScroll'))
 blx.onWindowResize();
+blx.cp.onWindowScroll();
 
 
 /*$('.btn.menu').each(function() {
