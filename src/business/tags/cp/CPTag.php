@@ -6,6 +6,7 @@ class CpTag extends Tag
 		'dashboard' => 'Dashboard',
 		'content' => 'Content',
 		'assets' => 'Assets',
+		'users' => 'Users',
 		'settings' => 'Settings',
 		'guide' => 'User Guide',
 	);
