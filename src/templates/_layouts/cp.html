@@ -15,15 +15,22 @@
 <body class="{url.segment(1)} {bodyClass}">
 
 	<div id="nav">
-		<ul class="left">
-			{%foreach cp.sections as section%}
-			<li id="nav-{section.handle}"><a {%if url.segment(1)==section.handle%}class="sel"{%endif%} href="{url.base}{section.handle}" title="{section.name}"><span class="icon"></span></a></li>
-			{%endforeach%}
-		</ul>
-
-		<ul class="right">
-			<li id="nav-account"><a {%if url.segment(1)=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><span><img src="{resource.url('images/avatar.jpg')}" alt="Brandon Kelly"></span></a></li>
-		</ul>
+		<div class="left">
+			<div id="site" class="btn">
+				<span class="label">pixelandtonic.com</span>
+				<span class="arrow"></span>
+			</div>
+			<ul>
+				{%foreach cp.sections as section%}
+				<li id="nav-{section.handle}"><a {%if url.segment(1)==section.handle%}class="sel"{%endif%} href="{url.base}{section.handle}" title="{section.name}"><span class="icon"></span></a></li>
+				{%endforeach%}
+			</ul>
+		</div>
+		<div>
+			<ul class="right">
+				<li id="nav-account"><a {%if url.segment(1)=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><span><img src="{resource.url('images/avatar.jpg')}" alt="Brandon Kelly"></span></a></li>
+			</ul>
+		</div>
 	</div>
 
 	<div id="body">
