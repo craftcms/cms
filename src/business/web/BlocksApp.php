@@ -52,6 +52,12 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
+		$pathSegs = Blocks::app()->request->getPathSegments();
+		if ($pathSegs !== null && isset($pathSegs[0]) && $pathSegs[0] !== 'gii')
+		{
+			$this->urlManager->processTemplateMatching();
+		}
+
 		if ($this->urlManager->getTemplateMatch() !== null || $this->request->getParam('c', null) !== null)
 			$this->catchAllRequest = array('blocks/index');
 

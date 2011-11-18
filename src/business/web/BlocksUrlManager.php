@@ -9,14 +9,11 @@ class BlocksUrlManager extends CUrlManager
 
 	public function init()
 	{
+		parent::init();
+
 		$this->_path = Blocks::app()->request->getPathInfo();
 		$this->_pathSegments = Blocks::app()->request->getPathSegments();
 		$this->_requestExtension = Blocks::app()->request->getPathExtension();
-
-		if ($this->_pathSegments !== null && isset($this->_pathSegments[0]) && $this->_pathSegments === 'gii')
-			return;
-
-		$this->processTemplateMatching();
 	}
 
 	public function processTemplateMatching()
@@ -70,6 +67,11 @@ class BlocksUrlManager extends CUrlManager
 	{
 		$moduleName = null;
 		$templatePath = Blocks::app()->getViewPath();
+
+		$lastChar = substr($templatePath, -1);
+		if ($lastChar !== '\\' && $lastChar !== '/')
+			$templatePath .= '/';
+
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
 		$tempPath = $this->_path;
 		$testPath = null;
@@ -83,11 +85,10 @@ class BlocksUrlManager extends CUrlManager
 		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
 		{
 			// we're dealing with a module
-			if (strpos($templatePath, '/modules/') !== false)
+			if (($module = Blocks::app()->getModule($this->_pathSegments[0])) !== null)
 			{
-				$moduleName = $this->_pathSegments[0];
-				$numSlashes = substr_count($tempPath, '/');
-				$requestPath = substr($tempPath, strlen($moduleName) + $numSlashes);
+				$moduleName = $module->getId();
+				$requestPath = substr($tempPath, strlen($moduleName) + 1);
 
 				if ($requestPath === false)
 					$requestPath = '';
@@ -108,7 +109,7 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// see if it matches directory/index'
-		$path = $requestPath.'/index';
+		$path = $requestPath.'index';
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$path)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
