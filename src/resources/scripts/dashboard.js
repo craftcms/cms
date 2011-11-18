@@ -5,6 +5,14 @@ var Dashboard = Base.extend({
 
 	constructor: function()
 	{
+		this.dom = {};
+
+		this.dom.table = document.createElement('table');
+		this.dom.table.className = 'widgets'
+		document.getElementById('main').appendChild(this.dom.table);
+		this.dom.tr = document.createElement('tr');
+		this.dom.table.appendChild(this.dom.tr);
+
 		this.widgets = [];
 		var $widgets = $('.widget');
 		for (var w = 0; w < $widgets.length; w++)
@@ -15,7 +23,7 @@ var Dashboard = Base.extend({
 		this.cols = [];
 
 		$(window).on('resizeWidth.dashboard', $.proxy(this, '_setCols'));
-		this._setCols();
+		setTimeout($.proxy(this, '_setCols'), 1);
 	},
 
 	_setCols: function(event)
@@ -40,12 +48,12 @@ var Dashboard = Base.extend({
 			// -------------------------------------------
 
 			var oldCols = this.cols;
+			this.colWidth = 100 / this.totalCols;
 			this.cols = [];
 
 			for (var c = 0; c < totalCols; c++)
 			{
 				this.cols[c] = new Dashboard.Col(c);
-				this.cols[c].setWidth(newColWidth);
 			}
 
 			// -------------------------------------------
@@ -123,16 +131,6 @@ var Dashboard = Base.extend({
 		}
 		else
 		{
-
-			// -------------------------------------------
-			//  Update the column widths
-			// -------------------------------------------
-
-			for (var c in this.cols)
-			{
-				this.cols[c].setWidth(newColWidth);
-			}
-
 			// -------------------------------------------
 			//  Update the transitions
 			// -------------------------------------------
@@ -199,28 +197,34 @@ Dashboard.Col = Base.extend({
 	constructor: function(index)
 	{
 		this.index = index;
-		this.$elem = $('<div class="col" />').appendTo(blx.cp.dom.$main);
+		this.dom = {};
+		this.dom.td = document.createElement('td');
+		this.dom.td.className = 'col';
+		dashboard.dom.tr.appendChild(this.dom.td);
+		this.dom.div = document.createElement('div');
+		this.dom.td.appendChild(this.dom.div);
+
+		$(this.dom.td).width(dashboard.colWidth+'%');
 	},
 
-	setWidth: function(width)
+	addWidget: function(widget)
 	{
-		this.width = width;
-		this.$elem.width(width);
+		$(this.dom.div).append(widget);
 	},
 
 	getHeight: function()
 	{
-		return this.$elem.height();
+		return $(this.dom.div).height();
 	},
 
 	getLeftPos: function()
 	{
-		return (this.width * this.index) + (Dashboard.gutterWidth * (this.index));
+		return $(this.dom.div).offset().left;
 	},
 
 	remove: function()
 	{
-		this.$elem.remove();
+		$(this.dom.td).remove();
 	}
 
 });
@@ -236,12 +240,12 @@ Dashboard.Widget = Base.extend({
 	appendToCol: function(col)
 	{
 		this.col = col;
-		this.$elem.appendTo(col.$elem);
+		this.col.addWidget(this.$elem);
 	}
 });
 
 
-dashboard = new Dashboard();
+window.dashboard = new Dashboard();
 
 
 })(jQuery);
