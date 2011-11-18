@@ -26,17 +26,17 @@ strong{font-weight:bold;}
 #nav .left #site { margin: 10px; float: left; margin: 10px; }
 #nav .left ul { float: left; }
 #nav ul li { position: relative; float: left; }
-#nav ul li a { display: block; position: relative; padding: 10px; width: 24px; height: 24px; }
+#nav ul li a { display: block; position: relative; padding: 10px; height: 24px; line-height: 24px; }
 #nav ul li a span.icon { display: block; float: left; width: 24px; height: 24px; background: url(../images/nav-icons.png) no-repeat; opacity: 0.25; -webkit-transition: opacity 150ms linear; }
 #nav ul li a:hover span.icon { opacity: 0.5; }
-#nav ul li a.sel { background: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#fafafa)); -webkit-box-shadow: inset 0 1px 0 1px rgba(0,0,0,0.02); }
+#nav ul li a.sel { background: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#fff)); -webkit-box-shadow: inset 0 1px 0 1px rgba(0,0,0,0.02); }
 #nav ul li a.sel span.icon { opacity: 1; }
 
 #nav li#nav-search { position: relative; }
 #nav li#nav-search #search { display: none; position: absolute; top: 0; left: 54px; width: 300px; height: 300px; background: #fff; }
-#nav li#nav-search #search .search-wrapper { margin-left: -54px; background: ; }
+#nav li#nav-search #search .search-wrapper { margin-left: -54px; }
 
-#nav li#nav-account a img { display: block; border-radius: 2px; width: 24px; height: 24px; }
+#nav li#nav-account a img { display: block; float: left; margin-right: 5px; border-radius: 2px; width: 24px; height: 24px; }
 #nav li#nav-dashboard a .icon { background-position: -222px -1702px; }
 #nav li#nav-content a .icon { background-position: 0 -1184px; }
 #nav li#nav-assets a .icon { background-position: -444px -1036px; }
@@ -130,7 +130,7 @@ a:hover { text-decoration: underline; }
 /* button parts */
 .btn span { display: block; float: left; height: 100%; }
 
-.btn .label { margin: 0 8px; line-height: 22px; color: #333; text-align: center; white-space: nowrap; }
+.btn .label { margin: 0 8px; line-height: 22px; color: #333; text-align: center; white-space: nowrap; text-decoration: none; }
 .btn.disabled .label { text-shadow: none; }
 .btn .icon { margin: -1px 4px; height: 24px; width: 24px; background: url(../images/sidebar_icons.png); opacity: 0.9; }
 .btn .arrow { width: 16px; background: url(../images/menu-arrow.png) no-repeat 50% 50%; opacity: 0.5; }
