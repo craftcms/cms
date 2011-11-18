@@ -180,7 +180,7 @@ class BlocksApp extends CWebApplication
 				else
 				{
 					$pathInfo = $this->request->getPathSegments();
-					if ($pathInfo && ($module = $this->getModule($pathInfo[0])) !== null)
+					if ($pathInfo && ($module = $this->urlManager->getCurrentModule()) !== null)
 					{
 						$templatePath = $module->getViewPath();
 					}

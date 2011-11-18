@@ -6,6 +6,7 @@ class BlocksUrlManager extends CUrlManager
 	private $_pathSegments = null;
 	private $_templateMatch = null;
 	private $_requestExtension = null;
+	private $_currentModule = null;
 
 	public function init()
 	{
@@ -37,6 +38,20 @@ class BlocksUrlManager extends CUrlManager
 	public function getTemplateMatch()
 	{
 		return $this->_templateMatch;
+	}
+
+	public function getCurrentModule()
+	{
+		if ($this->_currentModule == null)
+		{
+			if ($this->_pathSegments !== null && isset($this->_pathSegments[0]))
+			{
+				if (($module = Blocks::app()->getModule($this->_pathSegments[0])) !== null)
+					$this->_currentModule = $module;
+			}
+		}
+
+		return $this->_currentModule;
 	}
 
 	public function matchPage()
@@ -77,12 +92,12 @@ class BlocksUrlManager extends CUrlManager
 			$tempPath = rtrim($tempPath, '.'.$this->_requestExtension);
 		}
 
-		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel && isset($this->_pathSegments[0]))
+		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
 		{
 			// we're dealing with a module
-			if (($module = Blocks::app()->getModule($this->_pathSegments[0])) !== null)
+			if ($this->_currentModule !== null)
 			{
-				$moduleName = $module->getId();
+				$moduleName = $this->_currentModule->getId();
 				$requestPath = substr($tempPath, strlen($moduleName) + 1);
 
 				if ($requestPath === false)
@@ -96,21 +111,30 @@ class BlocksUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
+		if ($requestPath != '')
+		{
+			$requestPath = ltrim($requestPath, '\\/');
+			$templatePath = $this->normalizeTrailingSlash($templatePath);
+		}
+		else
+		{
+			$templatePath = rtrim($templatePath, '\\/');
+		}
+
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
+			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
 			return true;
 		}
 
-		$requestPath = $this->normalizeTrailingSlash($requestPath);
-
 		// see if it matches directory/index'
-		$path = $requestPath.'index';
-		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$path)) !== null)
+		$requestPath = $this->normalizeTrailingSlash($requestPath).'index';
+		$templatePath = rtrim($templatePath, '\\/').'/';
+		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($moduleName == null ? $path : $moduleName.$path, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
+			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
 			return true;
 		}
 
@@ -118,12 +142,11 @@ class BlocksUrlManager extends CUrlManager
 		return false;
 	}
 
-	private function setTemplateMatch($path, $pathMatchPattern, $matchType, $extension, $moduleName = null)
+	private function setTemplateMatch($path, $pathMatchPattern, $matchType, $extension)
 	{
 		$templateMatch = new TemplateMatch($path);
 		$templateMatch->setMatchRequest($pathMatchPattern);
 		$templateMatch->setMatchType($matchType);
-		$templateMatch->setModuleName($moduleName);
 		$templateMatch->setMatchExtension($extension);
 		$this->_templateMatch = $templateMatch;
 	}

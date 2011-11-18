@@ -31,7 +31,7 @@ class BlocksController extends BaseController
 				Blocks::app()->setController($this->getRequestController());
 
 				// there is an explicit request to a controller and action
-				if (Blocks::app()->request->getParam('c', null) !== null || (Blocks::app()->controller->getModule() !== null && Blocks::app()->controller->getModule()->id == 'install') || Blocks::app()->controller->id == 'update')
+				if (Blocks::app()->request->getParam('c', null) !== null || (($module = Blocks::app()->urlManager->getCurrentModule()) !== null && $module->getId() == 'install') || Blocks::app()->controller->id == 'update')
 				{
 					Blocks::app()->controller->init();
 					Blocks::app()->controller->run($tempAction);
