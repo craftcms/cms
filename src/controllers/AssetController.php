@@ -153,7 +153,7 @@
 		$model = Assets::model()->findByPk((int)$id);
 
 		if($model === null)
-			throw new BlocksHttpException(404, 'The requested page does not exist.');
+			Blocks::app()->send404();
 
 		return $model;
 	}*/
