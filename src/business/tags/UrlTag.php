@@ -9,7 +9,7 @@ class UrlTag extends Tag
 	 */
 	public function base()
 	{
-		$baseUrl = Blocks::app()->urlManager->getBaseUrl().'/';
+		$baseUrl = Blocks::app()->urlManager->getBaseUrl();
 		return new StringTag($baseUrl);
 	}
 

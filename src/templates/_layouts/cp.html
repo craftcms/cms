@@ -22,7 +22,7 @@
 			</div>
 			<ul>
 				{%foreach cp.sections as section%}
-				<li id="nav-{section.handle}"><a {%if url.segment(1)==section.handle%}class="sel"{%endif%} href="{url.base}{section.handle}" title="{section.name}"><span class="icon"></span></a></li>
+				<li id="nav-{section.handle}"><a {%if url.segment(1)==section.handle%}class="sel"{%endif%} href="{url.base}/{section.handle}" title="{section.name}"><span class="icon"></span></a></li>
 				{%endforeach%}
 			</ul>
 		</div>
