@@ -1,11 +1,14 @@
 (function($) {
 
 
+if (typeof blx.ui == 'undefined')
+	blx.ui = {};
+
+
 /**
  * HUD
- * Opens up a modal around a trigger element
  */
-blx.HUD = Base.extend({
+blx.ui.HUD = Base.extend({
 
 	/**
 	 * Constructor
@@ -14,7 +17,7 @@ blx.HUD = Base.extend({
 
 		this.$trigger = $(trigger);
 		this.$contents = $(contents);
-		this.settings = $.extend({}, blx.HUD.defaults, settings);
+		this.settings = $.extend({}, blx.ui.HUD.defaults, settings);
 
 		this.showing = false;
 
@@ -33,8 +36,8 @@ blx.HUD = Base.extend({
 
 		if (this.showing) return;
 
-		if (blx.HUD.active)
-			blx.HUD.active.hide();
+		if (blx.ui.HUD.active)
+			blx.ui.HUD.active.hide();
 
 		this.$hud.show();
 
@@ -133,10 +136,10 @@ blx.HUD = Base.extend({
 		if (event.stopPropagation)
 			event.stopPropagation();
 
-		$(document.body).bind('click.hud', $.proxy(this, 'hide'))
+		$(document.body).on('click.hud', $.proxy(this, 'hide'))
 
 		this.showing = true;
-		blx.HUD.active = this;
+		blx.ui.HUD.active = this;
 
 		// onShow callback
 		this.settings.onShow();
@@ -202,7 +205,7 @@ blx.HUD = Base.extend({
 		this.$hud.hide();
 		this.showing = false;
 
-		blx.HUD.active = null;
+		blx.ui.HUD.active = null;
 
 		// onHide callback
 		this.settings.onHide();
@@ -212,7 +215,7 @@ blx.HUD = Base.extend({
 
 
 
-blx.HUD.defaults = {
+blx.ui.HUD.defaults = {
 	triggerSpacing: 7,
 	windowSpacing: 20,
 	tipWidth: 8,

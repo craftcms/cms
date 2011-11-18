@@ -1,10 +1,14 @@
 (function($){
 
 
+if (typeof blx.ui == 'undefined')
+	blx.ui = {};
+
+
 /**
  * Rich Text Editor
  */
-blx.RTE = Base.extend({
+blx.ui.RTE = Base.extend({
 
 	/**
 	 * Constructor
@@ -12,7 +16,7 @@ blx.RTE = Base.extend({
 	constructor: function(id, settings)
 	{
 		this.id = id;
-		this.settings = $.extend({}, blx.RTE.defaults, settings);
+		this.settings = $.extend({}, blx.ui.RTE.defaults, settings);
 
 		this.focussed = false;
 
@@ -75,9 +79,9 @@ blx.RTE = Base.extend({
 		$(this.iWin).on('blur', $.proxy(this, '_onBlur'));
 
 		// keep the button states up-to-date with the selection
-		$(this.iDoc).bind('keypress', $.proxy(this, '_onKeypress'));
-		//$(this.dom.iframe).bind('focus blur', $.proxy(this, 'setButtonStates'));
-		//$(this.iDoc).bind('mouseup keydown keypress keyup textInput focus blur', $.proxy(this, 'setButtonStates'));
+		$(this.iDoc).on('keypress', $.proxy(this, '_onKeypress'));
+		//$(this.dom.iframe).on('focus blur', $.proxy(this, 'setButtonStates'));
+		//$(this.iDoc).on('mouseup keydown keypress keyup textInput focus blur', $.proxy(this, 'setButtonStates'));
 
 		// add the formatting buttons
 		//this.buttons = {
@@ -85,7 +89,7 @@ blx.RTE = Base.extend({
 		//	italic: this.addFormattingButton('italic', '<i>I</i>')
 		//};
 
-		blx.RTE.instances.push(this);
+		blx.ui.RTE.instances.push(this);
 	},
 
 	/**
@@ -119,7 +123,7 @@ blx.RTE = Base.extend({
 			options.push({ label: $label[0].outerHTML });
 		}
 
-		this.styleSelect = new blx.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
+		this.styleSelect = new blx.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
 
 		this.styleSelect.select(0);
 	},
@@ -357,7 +361,7 @@ blx.RTE = Base.extend({
 });
 
 
-blx.RTE.defaults = {
+blx.ui.RTE.defaults = {
 	bold: true,
 	italic: true,
 
@@ -465,7 +469,6 @@ var FormattingButton = Base.extend({
 			this.execCommand();
 	}
 });
-
 
 
 })(jQuery);

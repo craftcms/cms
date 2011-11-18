@@ -1,11 +1,14 @@
 (function($) {
 
 
+if (typeof blx.ui == 'undefined')
+	blx.ui = {};
+
 
 /**
  * Menu
  */
-blx.Menu = Base.extend({
+blx.ui.Menu = Base.extend({
 
 	/**
 	 * Constructor
@@ -30,7 +33,7 @@ blx.Menu = Base.extend({
 		this.dom.$btnLabel = $('span.label', this.dom.$btn);
 
 		this.options = options;
-		this.settings = $.extend({}, blx.Menu.defaults, settings);
+		this.settings = $.extend({}, blx.ui.Menu.defaults, settings);
 		this.callback = callback;
 
 		this.showing = false;
@@ -84,7 +87,7 @@ blx.Menu = Base.extend({
 		this.dom.ul.style.top = (btnOffset.top + btnHeight) + 'px';
 		this.dom.ul.style.minWidth = (btnWidth - 2) + 'px';
 
-		if (this.settings.align == blx.Menu.ALIGN_LEFT)
+		if (this.settings.align == blx.ui.Menu.ALIGN_LEFT)
 		{
 			this.dom.ul.style.left = (btnOffset.left + 1) + 'px';
 		}
@@ -141,102 +144,11 @@ blx.Menu = Base.extend({
 
 },
 {
-	ALIGN_LEFT: 'left',
-	ALIGN_RIGHT: 'right'
-});
-
-
-
-blx.Menu.defaults = { 
-	align: blx.Menu.ALIGN_LEFT,
-	ulClass: 'menu'
-};
-
-
-
-/**
- * Select Menu
- */
-blx.SelectMenu = blx.Menu.extend({
-
-	/** 
-	 * Constructor
-	 */
-	constructor: function(btn, options, settings, callback)
-	{
-		// argument mapping
-		if (typeof settings == 'function')
-		{
-			// (btn, options, callback)
-			callback = settings;
-			settings = {};
-		}
-
-		settings = $.extend({}, blx.SelectMenu.defaults, settings);
-
-		this.base(btn, options, settings, callback);
-
-		this.selected = -1;
-	},
-
-	/**
-	 * Build
-	 */
-	build: function() {
-		this.base();
-
-		if (this.selected != -1)
-			this._addSelectedOptionClass(this.selected);
-	},
-
-	/**
-	 * Select
-	 */
-	select: function(option)
-	{
-		// ignore if it's already selected
-		if (option == this.selected) return;
-
-		if (this.dom.ul)
-		{
-			if (this.selected != -1)
-				this.dom.options[this.selected].className = '';
-
-			this._addSelectedOptionClass(option);
-		}
-
-		this.selected = option;
-
-		// set the button text to the selected option
-		this.setBtnText($(this.options[option].label).text());
-
-		this.base(option);
-	},
-
-	/**
-	 * Add Selected Option Class
-	 */
-	_addSelectedOptionClass: function(option)
-	{
-		this.dom.options[option].className = 'sel';
-	},
-
-	/**
-	 * Set Button Text
-	 */
-	setBtnText: function(text)
-	{
-		this.dom.$btnLabel.text(text);
+	defaults: { 
+		align: 'left',
+		ulClass: 'menu'
 	}
-
 });
-
-
-
-blx.SelectMenu.defaults = {
-	ulClass: 'menu select'
-};
-
 
 
 })(jQuery);

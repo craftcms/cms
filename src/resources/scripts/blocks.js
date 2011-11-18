@@ -17,7 +17,7 @@ blx.onWindowResize = function()
 }
 
 
-blx.cp =
+blx.CP =
 {
 	dom:
 	{
@@ -54,20 +54,22 @@ blx.cp =
 };
 
 
-blx.cp.navHeight = blx.cp.dom.$nav.outerHeight();
+blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
-$(window).on('resizeHeight.blx', $.proxy(blx.cp, 'onWindowResizeHeight'));
-$(window).on('scroll.blx', $.proxy(blx.cp, 'onWindowScroll'))
+$(window).on('resizeHeight.cp', $.proxy(blx.CP, 'onWindowResizeHeight'));
+$(window).on('scroll.cp', $.proxy(blx.CP, 'onWindowScroll'))
 blx.onWindowResize();
-blx.cp.onWindowScroll();
+blx.CP.onWindowScroll();
+
+
 
 
 /*$('.btn.menu').each(function() {
 	var $btn = $(this),
 		$menu = $('> ul.menu', this);
 
-	new blx.HUD($btn, $menu, {
+	new blx.ui.HUD($btn, $menu, {
 		onShow: function() {
 			$btn.addClass('sel');
 		},
