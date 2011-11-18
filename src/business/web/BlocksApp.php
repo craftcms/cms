@@ -51,12 +51,7 @@ class BlocksApp extends CWebApplication
 	public function run()
 	{
 		$this->validateConfig();
-
-		$pathSegs = Blocks::app()->request->getPathSegments();
-		if ($pathSegs !== null && isset($pathSegs[0]) && $pathSegs[0] !== 'gii')
-		{
-			$this->urlManager->processTemplateMatching();
-		}
+		$this->urlManager->processTemplateMatching();
 
 		if ($this->urlManager->getTemplateMatch() !== null || $this->request->getParam('c', null) !== null)
 			$this->catchAllRequest = array('blocks/index');
@@ -249,7 +244,7 @@ class BlocksApp extends CWebApplication
 		else
 			$route = $this->urlManager->parseUrl($this->getRequest());
 
-		if ($route !== '')
+		if ($route !== '' && $this->urlManager->getTemplateMatch() !== null)
 		{
 			if ($this->request->getCMSRequestType() == RequestType::ControlPanel)
 			{

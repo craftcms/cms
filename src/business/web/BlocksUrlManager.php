@@ -77,7 +77,7 @@ class BlocksUrlManager extends CUrlManager
 			$tempPath = rtrim($tempPath, '.'.$this->_requestExtension);
 		}
 
-		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
+		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel && isset($this->_pathSegments[0]))
 		{
 			// we're dealing with a module
 			if (($module = Blocks::app()->getModule($this->_pathSegments[0])) !== null)
@@ -96,14 +96,14 @@ class BlocksUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
-		$requestPath = $this->normalizeTrailingSlash($requestPath);
-
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
 			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension, $moduleName);
 			return true;
 		}
+
+		$requestPath = $this->normalizeTrailingSlash($requestPath);
 
 		// see if it matches directory/index'
 		$path = $requestPath.'index';
