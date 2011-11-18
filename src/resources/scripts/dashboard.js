@@ -20,8 +20,9 @@ var Dashboard = Base.extend({
 
 	_setCols: function(event)
 	{
-		var totalCols = Math.floor((blx.windowWidth) / (Dashboard.gutterWidth + Dashboard.minColWidth)),
-			newColWidth = Math.floor(((blx.windowWidth) / totalCols) - Dashboard.gutterWidth);
+		var totalWidth = blx.windowWidth - Dashboard.gutterWidth,
+			totalCols = Math.floor(totalWidth / (Dashboard.minColWidth + Dashboard.gutterWidth)),
+			newColWidth = Math.floor(((totalWidth) / totalCols) - Dashboard.gutterWidth);
 
 		if (this.totalCols !== (this.totalCols = totalCols))
 		{
@@ -188,7 +189,7 @@ var Dashboard = Base.extend({
 	}
 },
 {
-	gutterWidth: 40,
+	gutterWidth: 20,
 	minColWidth: 280
 });
 
