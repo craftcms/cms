@@ -20,7 +20,8 @@ strong{font-weight:bold;}
 /* ----------------------------------------*/
 
 /*-- nav --*/
-#nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 44px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 100% 0, from(#fff), to(#fcfcfc)); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25), 0 1px 4px rgba(0,0,0,0.1), inset 0 0 0 1px #fff; }
+#nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 44px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 100% 0, from(#fff), to(#fcfcfc)); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 5px rgba(0,0,0,0.15); }
+#nav.scrolling { -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 10px rgba(0,0,0,0.15); }
 #nav .left { float: left; }
 #nav .right { float: right; margin-right: 10px; }
 #nav .left #site { margin: 10px; float: left; margin: 10px; }
