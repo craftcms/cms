@@ -182,7 +182,7 @@ class BlocksApp extends CWebApplication
 					$pathInfo = $this->request->getPathSegments();
 					if ($pathInfo && ($module = $this->urlManager->getCurrentModule()) !== null)
 					{
-						$templatePath = $module->getViewPath();
+						$templatePath = rtrim($module->getViewPath(), '\\/').'/';
 					}
 					else
 					{
@@ -244,21 +244,22 @@ class BlocksApp extends CWebApplication
 		else
 			$route = $this->urlManager->parseUrl($this->getRequest());
 
-		if ($route !== '' && $this->urlManager->getTemplateMatch() !== null)
+		if ($route !== '')
 		{
-			if ($this->request->getCMSRequestType() == RequestType::ControlPanel)
-			{
+			// run every route except for requests to gii
+			if (($module = $this->urlManager->getCurrentModule()) !== null && $module->getId() !== 'gii')
 				$this->runController($route);
-			}
 			else
 			{
-				if ($route !== 'gii')
+				// only show gii if it's a CP request.
+				if ($this->request->getCMSRequestType() == RequestType::ControlPanel)
 					$this->runController($route);
 				else
-					$this->send404();
+					$this->request->redirect('/');
 			}
 		}
 		else
+			// can't find any template or route to match.
 			$this->send404();
 	}
 

@@ -19,6 +19,9 @@ class BlocksUrlManager extends CUrlManager
 
 	public function processTemplateMatching()
 	{
+		if ($this->getCurrentModule() !== null && $this->getCurrentModule()->getId() == 'gii')
+			return;
+
 		$matchFound = false;
 
 		// we'll never have a db page match on a control panel request
