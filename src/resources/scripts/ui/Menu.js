@@ -77,7 +77,7 @@ blx.ui.Menu = Base.extend({
 
 		this.dom.$btn.addClass('sel');
 
-		if (! this.dom.ul)
+		if (!this.dom.ul)
 			this.build();
 
 		var btnOffset = this.dom.$btn.offset(),
@@ -113,7 +113,7 @@ blx.ui.Menu = Base.extend({
 	hide: function()
 	{
 		// ignore if not showing
-		if (! this.showing) return;
+		if (!this.showing) return;
 
 		this.dom.$btn.removeClass('sel');
 		this.dom.ul.style.display = 'none';

@@ -12,6 +12,21 @@ var Dashboard = Base.extend({
 
 		$(window).on('resizeWidth.dashboard', $.proxy(this, 'setCols'));
 		setTimeout($.proxy(this, 'setCols'), 1);
+
+		this.drag = new blx.ui.Sort(this.dom.table, {
+			helper: function($draggeeHelper)
+				{
+					return $draggeeHelper.addClass('dragging');
+				},
+			insertion: $.proxy(function()
+				{
+					var div = document.createElement('div');
+					div.className = 'widget';
+					div.style.height = this.drag.$draggees.height()+'px';
+					return div;
+				}, this)
+		});
+		this.drag.addItems(this.$widgets);
 	},
 
 	_createTable: function()
@@ -26,9 +41,11 @@ var Dashboard = Base.extend({
 
 	_getWidgets: function()
 	{
+		this.$widgets = $('.widget');
+
 		var widgets = [];
 
-		$('.widget').each(function() {
+		this.$widgets.each(function() {
 			widgets.push($(this));
 		});
 
@@ -117,17 +134,13 @@ var Dashboard = Base.extend({
 
 	_getShortestCol: function()
 	{
-		var shortestCol,
-			shortestColHeight;
+		var shortestCol;
 
 		for (c in this.cols)
 		{
-			var colHeight = this.cols[c].getHeight();
-
-			if (typeof shortestCol == 'undefined' || colHeight < shortestColHeight)
+			if (typeof shortestCol == 'undefined' || this.cols[c].height < shortestCol.height)
 			{
 				shortestCol = this.cols[c];
-				shortestColHeight = colHeight;
 			}
 		}
 
@@ -149,30 +162,26 @@ Dashboard.Col = Base.extend({
 		this.dom.td = document.createElement('td');
 		this.dom.td.className = 'col';
 		dashboard.dom.tr.appendChild(this.dom.td);
-		this.dom.div = document.createElement('div');
-		this.dom.td.appendChild(this.dom.div);
 
 		this.dom.td.style.width = dashboard.colWidth+'%';
+
+		this.height = 0;
 	},
 
 	addWidget: function(widget)
 	{
-		this.dom.div.appendChild(widget);
+		this.dom.td.appendChild(widget);
+		this.height += $(widget).outerHeight();
 	},
 
 	getWidth: function()
 	{
-		return $(this.dom.div).width();
-	},
-
-	getHeight: function()
-	{
-		return $(this.dom.div).height();
+		return $(this.dom.td).width();
 	},
 
 	getLeftPos: function()
 	{
-		return $(this.dom.div).offset().left;
+		return $(this.dom.td).offset().left;
 	},
 
 	remove: function()

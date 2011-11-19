@@ -154,7 +154,7 @@ blx.ui.RTE = Base.extend({
 	 */
 	_forceChildNode: function()
 	{
-		if (! this.iDoc.body.childNodes.length)
+		if (!this.iDoc.body.childNodes.length)
 		{
 			// create a new paragraph
 			var p = this.iDoc.createElement('p');
@@ -219,7 +219,7 @@ blx.ui.RTE = Base.extend({
 
 		elem = range.commonAncestorContainer
 
-		if (! range.collapsed)
+		if (!range.collapsed)
 		{
 			if (range.startContainer.nodeType === 3 && range.endContainer.nodeType === 3)
 			{
@@ -286,7 +286,7 @@ blx.ui.RTE = Base.extend({
 				var parent = range.endContainer.parentNode;
 
 				// delete the selection if there is one
-				if (! range.collapsed)
+				if (!range.collapsed)
 					range.deleteContents();
 
 				// extract the remaining text
@@ -345,7 +345,7 @@ blx.ui.RTE = Base.extend({
 	 */
 	setButtonStates: function(event)
 	{
-		if (! this.focussed)
+		if (!this.focussed)
 		{
 			$(this.dom.stylesBtn).addClass('disabled');
 			return
