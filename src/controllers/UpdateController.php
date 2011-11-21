@@ -37,24 +37,4 @@ class UpdateController extends BaseController
 			$this->redirect('index');
 		}
 	}
-
-	public function actionResumeUpdate($manifestId, $status)
-	{
-		if (StringHelper::IsNullOrEmpty($manifestId) || StringHelper::IsNullOrEmpty($status))
-			throw new BlocksException('There was a problem updating to the latest Blocks version.  Please try again.');
-
-		try
-		{
-			$coreUpdater = new CoreUpdater(null, null, null);
-			$coreUpdater->resume($manifestId, $status);
-		}
-		catch (BlocksException $ex)
-		{
-			Blocks::app()->user->setFlash('error', $ex->getMessage());
-			$this->redirect('index');
-		}
-
-		Blocks::app()->user->setFlash('notice', 'Update Successful!');
-		$this->redirect('dashboard/index');
-	}
 }
