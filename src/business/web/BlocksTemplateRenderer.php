@@ -241,19 +241,19 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			case 'layout':
 				$this->_hasLayout = true;
 				$this->parseVariables($params);
-				return "<?php \$_layout->view = {$params} ?>";
+				return "<?php \$_layout->view = {$params}; ?>";
 
 			case 'region':
 				$this->_hasLayout = true;
 				$this->parseVariables($params);
-				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => {$params})) ?>";
+				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => {$params})); ?>";
 
 			case 'endregion':
-				return '<?php $this->endWidget() ?>';
+				return '<?php $this->endWidget(); ?>';
 
 			case 'include':
 				$this->parseVariables($params);
-				return "<?php \$this->loadTemplate({$params}) ?>";
+				return "<?php \$this->loadTemplate({$params}); ?>";
 
 			// Loops
 
@@ -290,7 +290,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'redirect':
 				$this->parseVariables($params);
-				return "<?php header('Location: '.{$params}) ?>";
+				return "<?php header('Location: '.{$params}); ?>";
 		}
 	}
 
