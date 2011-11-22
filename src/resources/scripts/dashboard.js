@@ -216,13 +216,16 @@ var Dashboard = Base.extend({
 	moveWidget: function(from, to)
 	{
 		// capture the widget that was sorted
-		var widget = this.$widgets[from];
+		var widget = this.$widgets[from],
+			handle = this.dom.$widgetHandles[from];
 
 		// sort our internal widget array & jQuery object to match the new order
 		this.$widgets.splice(from, 1);
 		this.widgets.splice(from, 1);
+		this.dom.$widgetHandles.splice(from, 1);
 		this.$widgets.splice(to, 0, widget);
 		this.widgets.splice(to, 0, $(widget));
+		this.dom.$widgetHandles.splice(to, 0, handle);
 
 		// update the columns
 		this.refreshCols(true);
