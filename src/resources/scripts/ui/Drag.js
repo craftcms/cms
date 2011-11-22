@@ -7,8 +7,31 @@ if (typeof blx.ui == 'undefined')
 
 /**
  * Drag
+ * Used as a base class for DragDrop and DragSort
  */
 blx.ui.Drag = Base.extend({
+
+	$items: null,
+
+	mousedownX: null,
+	mousedownY: null,
+	targetMouseDiffX: null,
+	targetMouseDiffY: null,
+	mouseX: null,
+	mouseY: null,
+	lastMouseX: null,
+	lastMouseY: null,
+
+	dragging: false,
+	target: null,
+	$draggee: null,
+	//otherItems: null,
+
+	helpers: null,
+	helperTargets: null,
+	helperPositions: null,
+	helperLagIncrement: null,
+	updateHelperPosInterval: null,
 
 	/**
 	 * Constructor
@@ -18,28 +41,6 @@ blx.ui.Drag = Base.extend({
 		this.settings = $.extend({}, blx.ui.Drag.defaults, settings);
 
 		this.$items = $();
-
-		this.mousedownX;
-		this.mousedownY;
-		this.targetMouseDiffX;
-		this.targetMouseDiffY;
-		this.mouseX;
-		this.mouseY;
-		this.lastMouseX;
-		this.lastMouseY;
-
-		this.dragging = false;
-		this.target;
-		this.$draggees;
-		this.otherItems;
-
-		this.helpers;
-		this.helperTargets;
-		this.helperPositions;
-		this.helperLagIncrement;
-		this.updateHelperPosInterval;
-
-		this.activeDropTarget;
 	},
 
 	/**
@@ -84,13 +85,13 @@ blx.ui.Drag = Base.extend({
 			// has the mouse moved far enough to initiate dragging yet?
 			var mouseDist = blx.utils.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
 
-			if (mouseDist >= 1)
+			if (mouseDist >= blx.ui.Drag.minMouseDist)
 				this.startDragging();
 			else
 				return;
 		}
 
-		this.drag();
+		this.onDrag();
 	},
 
 	/**
@@ -118,29 +119,78 @@ blx.ui.Drag = Base.extend({
 		this.helperTargets = [];
 		this.helperPositions = [];
 
-		// get the draggees, based on the filter setting
+		this.getDraggee();
+		this.draggeeIndex = $.inArray(this.$draggee[0], this.$items);
+
+		// save their display style (block/table-row) so we can re-apply it later
+		this.draggeeDisplay = this.$draggee.css('display');
+
+		this.createHelpers();
+
+		// remove/hide the draggee
+		if (this.settings.removeDraggee)
+			this.$draggee.hide();
+		else
+			this.$draggee.css('opacity', 0.2)
+
+		this.lastMouseX = this.lastMouseY = null;
+
+		// keep the helpers following the cursor, with a little lag to smooth it out
+		this.helperLagIncrement = this.helpers.length == 1 ? 0 : blx.ui.Drag.helperLagIncrementDividend / (this.helpers.length-1);
+		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), blx.ui.Drag.updateHelperPosInterval);
+
+		//this.getOtherItems();
+
+		this.onDragStart();
+	},
+
+	/**
+	 * Get the draggee(s) based on the filter setting, with the clicked item listed first
+	 */
+	getDraggee: function()
+	{
 		switch (typeof this.settings.filter)
 		{
 			case 'function':
-				this.$draggees = this.settings.filter();
+				this.$draggee = this.settings.filter();
 				break;
 
 			case 'string':
-				this.$draggees = this.$items.filter(this.settings.filter);
+				this.$draggee = this.$items.filter(this.settings.filter);
 				break;
 
 			default:
-				this.$draggees = $(this.target);
+				this.$draggee = $(this.target);
 		}
 
 		// put the target item in the front of the list
-		this.$draggees = $([ this.target ].concat(this.$draggees.not(this.target).toArray()));
+		this.$draggee = $([ this.target ].concat(this.$draggee.not(this.target).toArray()));
+	},
 
-		this.draggeeDisplay = this.$draggees.css('display');
+	/**
+	 * Get the remaining items
+	 */
+	/*getOtherItems: function()
+	{
+		this.otherItems = [];
 
-		for (var i = 0; i < this.$draggees.length; i++)
+		for (var i = 0; i < this.$items.length; i++)
 		{
-			var $draggee = $(this.$draggees[i]),
+			var item = this.$items[i];
+
+			if ($.inArray(item, this.$draggee) == -1)
+				this.otherItems.push(item);
+		};
+	},*/
+
+	/**
+	 * Creates helper clones of the draggee(s)
+	 */
+	createHelpers: function()
+	{
+		for (var i = 0; i < this.$draggee.length; i++)
+		{
+			var $draggee = $(this.$draggee[i]),
 				draggeeOffset = $draggee.offset(),
 				$draggeeHelper = $draggee.clone();
 
@@ -158,8 +208,8 @@ blx.ui.Drag = Base.extend({
 				position: 'absolute',
 				top: draggeeOffset.top,
 				left: draggeeOffset.left,
-				zIndex: 1000 + this.$draggees.length - i,
-				opacity: (typeof this.settings.helperOpacity != 'undefined' ? this.settings.helperOpacity : 1)
+				zIndex: blx.ui.Drag.helperZindex, // + this.$draggee.length - i,
+				opacity: this.settings.helperOpacity
 			});
 
 			this.helperPositions[i] = {
@@ -168,108 +218,8 @@ blx.ui.Drag = Base.extend({
 			};
 
 			this.helpers.push($draggeeHelper);
-
-			if (this.settings.draggeePlaceholders)
-				$draggee.css('visibility', 'hidden')
-			else
-				$draggee.hide();
 		};
-
-		this.lastMouseX = this.lastMouseY = null;
-
-		this.helperLagIncrement = this.helpers.length == 1 ? 0 : 1.5 / (this.helpers.length-1);
-		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), 20);
-
-		// -------------------------------------------
-		//  Deal with the remaining items
-		// -------------------------------------------
-
-		// create an array of all the other items
-		this.otherItems = [];
-
-		for (var i = 0; i < this.$items.length; i++)
-		{
-			var item = this.$items[i];
-
-			if ($.inArray(item, this.$draggees) == -1)
-				this.otherItems.push(item);
-		};
-
-		// -------------------------------------------
-		//  Drop Targets
-		// -------------------------------------------
-
-		if (this.settings.dropTargets)
-		{
-			if (typeof this.settings.dropTargets == 'function')
-				this.dropTargets = this.settings.dropTargets();
-			else
-				this.dropTargets = this.settings.dropTargets;
-
-			// ignore if an empty array
-			if (!this.dropTargets.length)
-				this.dropTargets = false;
-		}
-		else
-		{
-			this.dropTargets = false;
-		}
-
-		this.activeDropTarget = null;
 	},
-
-	/**
-	 * Drag
-	 */
-	drag: function()
-	{
-		// -------------------------------------------
-		//  Drop Targets
-		// -------------------------------------------
-
-		if (this.dropTargets)
-		{
-			var _activeDropTarget;
-
-			// is the cursor over any of the drop target?
-			for (var i = 0; i < this.dropTargets.length; i++)
-			{
-				var elem = this.dropTargets[i];
-
-				if (blx.utils.hitTest(this.mouseX, this.mouseY, elem))
-				{
-					_activeDropTarget = elem;
-					break;
-				}
-			}
-
-			// has the drop target changed?
-			if (_activeDropTarget != this.activeDropTarget)
-			{
-				// was there a previous one?
-				if (this.activeDropTarget)
-				{
-					this.activeDropTarget.removeClass(this.settings.activeDropTargetClass);
-				}
-
-				// remember the new drop target
-				this.activeDropTarget = _activeDropTarget;
-
-				// is there a new one?
-				if (this.activeDropTarget)
-				{
-					this.activeDropTarget.addClass(this.settings.activeDropTargetClass);
-				}
-
-				this.onDropTargetChange();
-			}
-		}
-	},
-
-	/**
-	 * On Drop Target Change
-	 */
-	onDropTargetChange: function() { },
 
 	/**
 	 * Stop Dragging
@@ -281,12 +231,31 @@ blx.ui.Drag = Base.extend({
 		// clear the helper interval
 		clearInterval(this.updateHelperPosInterval);
 
-		// -------------------------------------------
-		//  Drop Targets
-		// -------------------------------------------
+		this.onDragStop();
+	},
 
-		if (this.settings.dropTargets && this.activeDropTarget)
-			this.activeDropTarget.removeClass(this.settings.activeDropTargetClass);
+	/**
+	 * On Drag Start
+	 */
+	onDragStart: function()
+	{
+		this.settings.onDragStart();
+	},
+
+	/**
+	 * On Drag
+	 */
+	onDrag: function()
+	{
+		this.settings.onDrag();
+	},
+
+	/**
+	 * On Drag Stop
+	 */
+	onDragStop: function()
+	{
+		this.settings.onDragStop();
 	},
 
 	/**
@@ -297,23 +266,23 @@ blx.ui.Drag = Base.extend({
 		// has the mouse moved?
 		if (this.mouseX !== this.lastMouseX || this.mouseY !== this.lastMouseY)
 		{
-			this.lastMouseX = this.mouseX;
-			this.lastMouseY = this.mouseY;
-
-			// figure out what each of the helpers' target positions are
-			// (they will gravitate toward their targets in updateHelperPos())
+			// get the new target helper positions
 			for (var i = 0; i < this.helpers.length; i++)
 			{
 				this.helperTargets[i] = {
-					left: this.mouseX - this.targetMouseDiffX + (i * 5),
-					top:  this.mouseY - this.targetMouseDiffY + (i * 5)
+					left: this.mouseX - this.targetMouseDiffX + (i * blx.ui.Drag.helperSpacingX),
+					top:  this.mouseY - this.targetMouseDiffY + (i * blx.ui.Drag.helperSpacingY)
 				};
 			};
+
+			this.lastMouseX = this.mouseX;
+			this.lastMouseY = this.mouseY;
 		}
 
+		// gravitate helpers toward their target positions
 		for (var i = 0; i < this.helpers.length; i++)
 		{
-			var lag = 1 + (this.helperLagIncrement * i);
+			var lag = blx.ui.Drag.helperLagBase + (this.helperLagIncrement * i);
 
 			this.helperPositions[i] = {
 				left: this.helperPositions[i].left + ((this.helperTargets[i].left - this.helperPositions[i].left) / lag),
@@ -325,13 +294,13 @@ blx.ui.Drag = Base.extend({
 	},
 
 	/**
-	 * Return Helpers to Draggees
+	 * Return Helpers to Draggee(s)
 	 */
-	returnHelpersToDraggees: function()
+	returnHelpersToDraggee: function()
 	{
-		for (var i = 0; i < this.$draggees.length; i++)
+		for (var i = 0; i < this.$draggee.length; i++)
 		{
-			var $draggee = $(this.$draggees[i]),
+			var $draggee = $(this.$draggee[i]),
 				$draggeeHelper = this.helpers[i],
 				draggeeOffset = $draggee.offset();
 
@@ -345,21 +314,6 @@ blx.ui.Drag = Base.extend({
 					$draggeeHelper.remove();
 				});
 			})($draggee, $draggeeHelper);
-		};
-	},
-
-	/**
-	 * Fade Out Helpers
-	 */
-	fadeOutHelpers: function()
-	{
-		for (var i = 0; i < this.helpers.length; i++)
-		{
-			(function($draggeeHelper) {
-				$draggeeHelper.fadeOut('fast', function() {
-					$draggeeHelper.remove();
-				});
-			})(this.helpers[i]);
 		};
 	},
 
@@ -398,8 +352,24 @@ blx.ui.Drag = Base.extend({
 		// reset local vars
 		this.$items = $();
 	}
-},{
-	defaults: {}
+},
+{
+	minMouseDist: 1,
+	helperZindex: 1000,
+	helperLagBase: 1,
+	helperLagIncrementDividend: 1.5,
+	updateHelperPosInterval: 20,
+	helperSpacingX: 5,
+	helperSpacingY: 5,
+
+	defaults: {
+		removeDraggee: false,
+		helperOpacity: 1,
+
+		onDragStart: function() {},
+		onDrag: function() {},
+		onDragStop: function() {}
+	}
 });
 
 

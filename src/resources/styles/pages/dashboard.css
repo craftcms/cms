@@ -1,8 +1,14 @@
-#main { background: none; padding: 10px; }
-#main table.widgets { width: 100%; }
-#main table.widgets td.col { padding: 10px; }
+#body { width: 100%; overflow: hidden; }
 
-.widget { position: relative; margin-bottom: 20px; border-radius: 4px; background: #f5f5f5; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); }
+#sidebar-btn { display: block; position: absolute; top: 20px; right: 20px; width: 16px; height: 16px; background: url(../../images/settings-btn.png); cursor: pointer; }
+#sidebar-btn.sel { background-position: 0 100%; }
+
+#main { top: 36px; background: none; padding: 10px; }
+
+.col { float: left; }
+.col .col-padding { padding: 10px; }
+
+.widget { position: relative; margin-bottom: 20px; border-radius: 4px; background: #f5f5f5; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); overflow: hidden; }
 .widget.dragging { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.1); }
 .widget:last-child { margin-bottom: 0; }
 
@@ -41,3 +47,11 @@
 .widget.analytics-referrers .body table tbody tr.breakdown > td { padding: 0 0 3px 30px; text-align: left; }
 .widget.analytics-referrers .body table tbody tr.breakdown > td td { padding: 0 0 2px 10px; }
 .widget.analytics-referrers .body table tbody tr.breakdown a { font-weight: normal; }
+
+/*-- sidebar --*/
+#sidebar { position: absolute; top: 56px; right: -220px; border-left: 1px dotted #ccc; width: 180px; padding-left: 20px; }
+#sidebar li { position: relative; margin-bottom: 10px; padding: 8px 25px 8px 35px; border-radius: 2px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,1)), to(rgba(255,255,255,0.5))); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); }
+#sidebar li span.grab { display: block; position: absolute; left: 10px; top: 50%; margin-top: -9px; width: 15px; height: 18px; background: url(../../images/grab-handle.png) no-repeat 50% 50%; }
+#sidebar li a.remove { display: block; position: absolute; right: 5px; top: 50%; margin-top: -7px; width: 12px; height: 14px; background: url(../../images/close.png) no-repeat 50% 50%; opacity: 0; -webkit-transition: opacity 150ms linear; }
+#sidebar li:hover a.remove { opacity: 0.5; }
+#sidebar li a.remove:hover { opacity: 1; }

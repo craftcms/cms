@@ -4,8 +4,9 @@
 {%region 'styles'%}{resource.css('styles/pages/dashboard.css')}{%endregion%}
 
 {%region 'main'%}
-	<div id="main">
+	<a id="sidebar-btn" title="Customize"></a>
 
+	<div id="main">
 			<div class="widget updates" id="widget1">
 				<h3>Updates Available</h3>
 				<div class="body">
@@ -334,10 +335,23 @@
 			</div>
 
 	</div>{!--/main--}
+
+	<div id="sidebar">
+		<ul>
+			<li><span class="grab"></span>Updates Available<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Referring Sites<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Content<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Recent Activity<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Blog &amp; Tonic<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Keywords<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Pageviews<a class="remove" title="Remove"></a></li>
+			<li><span class="grab"></span>Top Content<a class="remove" title="Remove"></a></li>
+		</ul>
+	</div>{!--/sidebar--}
 {%endregion%}
 
 {%region 'scripts'%}
 {resource.js('scripts/ui/Drag.js')}
-{resource.js('scripts/ui/Sort.js')}
+{resource.js('scripts/ui/DragSort.js')}
 {resource.js('scripts/dashboard.js')}
 {%endregion%}

@@ -3,136 +3,155 @@
 
 var Dashboard = Base.extend({
 
+	dom: {},
+	widgets: [],
+	$widgets: null,
+	cols: [],
+	$sidebarBtn: null,
+	$sidebar: null,
+	showingSidebar: false,
+
 	constructor: function()
 	{
-		this.dom = {};
-		this._createTable();
-		this._getWidgets();
-		this.cols = [];
+		this.dom.$main = $(document.getElementById('main'));
+		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
+		this.dom.$sidebar = $(document.getElementById('sidebar'));
 
-		$(window).on('resizeWidth.dashboard', $.proxy(this, 'setCols'));
+		//this.createTable();
+		this.getWidgets();
+
+		$(window).on('resizeWidth.dashboard', $.proxy(this, 'onWindowResize'));
 		setTimeout($.proxy(this, 'setCols'), 1);
 
-		this.drag = new blx.ui.Sort(this.dom.table, {
-			helper: function($draggeeHelper)
-				{
-					return $draggeeHelper.addClass('dragging');
-				},
-			insertion: $.proxy(function()
-				{
-					var div = document.createElement('div');
-					div.className = 'widget';
-					div.style.height = this.drag.$draggees.height()+'px';
-					return div;
-				}, this)
-		});
-		this.drag.addItems(this.$widgets);
+		this.dom.$sidebarBtn.on('click.dashboard', $.proxy(this, 'toggleSidebar'));
 	},
 
-	_createTable: function()
+	createTable: function()
 	{
 		this.dom.table = document.createElement('table');
 		this.dom.table.className = 'widgets'
-		document.getElementById('main').appendChild(this.dom.table);
+		this.dom.$main.append(this.dom.table);
 
 		this.dom.tr = document.createElement('tr');
 		this.dom.table.appendChild(this.dom.tr);
 	},
 
-	_getWidgets: function()
+	getWidgets: function()
 	{
-		this.$widgets = $('.widget');
+		this.$widgets = $('.widget', this.dom.$main);
 
-		var widgets = [];
-
-		this.$widgets.each(function() {
-			widgets.push($(this));
-		});
-
-		this.widgets = widgets;
+		for (var i = 0; i < this.$widgets.length; i++)
+		{
+			this.widgets.push($(this.$widgets[i]));
+		}
 	},
 
-	setCols: function(event)
+	onWindowResize: function()
 	{
-		var animate = !!event;
+		this.setCols(true);
+	},
 
-		var totalWidth = blx.windowWidth - Dashboard.gutterWidth,
-			totalCols = Math.floor(totalWidth / (Dashboard.minColWidth + Dashboard.gutterWidth));
+	setCols: function(animate, widgetOffsets)
+	{
+		var totalCols = Math.floor((this.dom.$main.width() + Dashboard.gutterWidth) / (Dashboard.minColWidth + Dashboard.gutterWidth));
 
 		if (this.totalCols !== (this.totalCols = totalCols))
 		{
-			// -------------------------------------------
-			//  Record the old widget offsets
-			// -------------------------------------------
+			this.refreshCols(animate, widgetOffsets);
+			return true;
+		}
 
-			if (animate)
-			{
-				var oldWidgetOffsets = [];
+		return false;
+	},
 
-				for (var i = 0; i < this.widgets.length; i++)
-				{
-					var $widget = this.widgets[i];
-					oldWidgetOffsets[i] = $widget.offset();
-				}
-			}
+	refreshCols: function(animate, widgetOffsets)
+	{
+		// Record the old widget offsets and widths
+		if (animate && typeof widgetOffsets == 'undefined')
+		{
+			widgetOffsets = this.getWidgetOffsets();
+		}
 
-			// -------------------------------------------
-			//  Create the new columns
-			// -------------------------------------------
+		// Detach the widgets before we remove the columns so they keep their events
+		for (var i = 0; i < this.widgets.length; i++)
+		{
+			this.widgets[i].detach();
+		}
 
-			var oldCols = this.cols;
-			this.colWidth = 100 / this.totalCols;
-			this.cols = [];
+		// Remove the old columns
+		for (var i = 0; i < this.cols.length; i++)
+		{
+			this.cols[i].remove();
+		}
 
-			for (var c = 0; c < totalCols; c++)
-			{
-				this.cols[c] = new Dashboard.Col(c);
-			}
+		// Create the new columns
+		this.cols = [];
+		this.colWidth = Math.floor(10000 / this.totalCols) / 100;
 
-			// -------------------------------------------
-			//  Remove the old columns
-			// -------------------------------------------
+		for (var i = 0; i < this.totalCols; i++)
+		{
+			this.cols[i] = new Dashboard.Col(i);
+		}
 
-			for (var c in oldCols)
-			{
-				oldCols[c].remove();
-			}
+		// Place the widgets
+		for (var i = 0; i < this.widgets.length; i++)
+		{
+			// add it to the shortest column
+			var shortestCol = this.getShortestCol();
+			shortestCol.addWidget(this.$widgets[i]);
+		}
 
-			// -------------------------------------------
-			//  Put them in their new places
-			// -------------------------------------------
+		this.relaxWidgets();
 
+		// animate the widgets into place
+		if (animate)
+		{
 			for (var i = 0; i < this.widgets.length; i++)
 			{
-				var $widget = this.widgets[i],
-					shortestCol = this._getShortestCol();
+				// clear any current animations
+				this.widgets[i].stop();
 
-				shortestCol.addWidget($widget[0]);
+				// get the new settled offset and width
+				var settledOffset = this.widgets[i].offset(),
+					settledWidth = this.widgets[i].width();
 
-				if (animate)
-				{
-					// clear any current animations
-					$widget.stop();
+				// put it back where it was
+				this.widgets[i].css({
+					position: 'relative',
+					top: widgetOffsets[i].top - settledOffset.top,
+					left: widgetOffsets[i].left - settledOffset.left,
+					width: widgetOffsets[i].width
+				});
 
-					// get the new settled offset
-					$widget.css('position', 'static');
-					var settledOffset = $widget.offset();
+				var onComplete = (i == this.widgets.length-1) ? $.proxy(this, 'relaxWidgets') : null;
 
-					// put it back where it was
-					$widget.css({
-						position: 'relative',
-						top: oldWidgetOffsets[i].top - settledOffset.top,
-						left: oldWidgetOffsets[i].left - settledOffset.left
-					});
-
-					// animate it into place
-					$widget.animate({top: 0, left: 0});
-				}
+				this.widgets[i].animate({top: 0, left: 0, width: settledWidth}, onComplete);
 			}
 		}
 	},
 
-	_getShortestCol: function()
+	relaxWidgets: function()
+	{
+		this.$widgets.css({position: 'static', width: 'auto'});
+	},
+
+	getWidgetOffsets: function()
+	{
+		this.relaxWidgets();
+
+		var widgetOffsets = [];
+
+		for (var i = 0; i < this.widgets.length; i++)
+		{
+			var $widget = this.widgets[i];
+			widgetOffsets[i] = $widget.offset();
+			widgetOffsets[i].width = $widget.width();
+		}
+
+		return widgetOffsets;
+	},
+
+	getShortestCol: function()
 	{
 		var shortestCol;
 
@@ -145,11 +164,55 @@ var Dashboard = Base.extend({
 		}
 
 		return shortestCol;
-	}
+	},
+
+	toggleSidebar: function()
+	{
+		// stop any current animations
+		this.dom.$main.stop();
+		this.dom.$sidebar.stop();
+
+		if (!this.showingSidebar)
+		{
+			var targetMainMargin = Dashboard.sidebarWidth + Dashboard.gutterWidth,
+				targetSidebarPos = Dashboard.gutterWidth;
+
+			this.dom.$sidebarBtn.addClass('sel');
+		}
+		else
+		{
+			var targetMainMargin = 0,
+				targetSidebarPos = -Dashboard.sidebarWidth;
+
+			this.dom.$sidebarBtn.removeClass('sel');
+		}
+
+		// get the current widget offsets
+		var widgetOffsets = this.getWidgetOffsets();
+
+		// record the current main margin, and stage the target one
+		var currentMainMargin = this.dom.$main.css('marginRight');
+		this.dom.$main.css('marginRight', targetMainMargin);
+
+		// set the new cols if necessary, otherwise just animate the margin
+		if (!this.setCols(true, widgetOffsets))
+		{
+			// restore the current margin, and animate to the target
+			this.dom.$main.css('marginRight', currentMainMargin);
+			this.dom.$main.animate({marginRight: targetMainMargin});
+		}
+
+		// slide the sidebar
+		this.dom.$sidebar.stop().animate({right: targetSidebarPos});
+
+		// invert the showingSidebar state
+		this.showingSidebar = !this.showingSidebar;
+	},
 },
 {
 	gutterWidth: 20,
-	minColWidth: 280
+	minColWidth: 280,
+	sidebarWidth: 200
 });
 
 
@@ -159,34 +222,28 @@ Dashboard.Col = Base.extend({
 	{
 		this.index = index;
 		this.dom = {};
-		this.dom.td = document.createElement('td');
-		this.dom.td.className = 'col';
-		dashboard.dom.tr.appendChild(this.dom.td);
 
-		this.dom.td.style.width = dashboard.colWidth+'%';
+		this.dom.outerDiv = document.createElement('div');
+		this.dom.outerDiv.className = 'col';
+		this.dom.outerDiv.style.width = dashboard.colWidth+'%';
+		dashboard.dom.$main.append(this.dom.outerDiv);
+
+		this.dom.innerDiv = document.createElement('div');
+		this.dom.innerDiv.className = 'col-padding';
+		this.dom.outerDiv.appendChild(this.dom.innerDiv);
 
 		this.height = 0;
 	},
 
 	addWidget: function(widget)
 	{
-		this.dom.td.appendChild(widget);
+		this.dom.innerDiv.appendChild(widget);
 		this.height += $(widget).outerHeight();
-	},
-
-	getWidth: function()
-	{
-		return $(this.dom.td).width();
-	},
-
-	getLeftPos: function()
-	{
-		return $(this.dom.td).offset().left;
 	},
 
 	remove: function()
 	{
-		$(this.dom.td).remove();
+		$(this.dom.outerDiv).remove();
 	}
 
 });
