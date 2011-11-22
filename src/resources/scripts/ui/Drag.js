@@ -25,7 +25,6 @@ blx.ui.Drag = Base.extend({
 	dragging: false,
 	target: null,
 	$draggee: null,
-	//otherItems: null,
 
 	helpers: null,
 	helperTargets: null,
@@ -77,8 +76,8 @@ blx.ui.Drag = Base.extend({
 	{
 		event.preventDefault();
 
-		this.mouseX = event.pageX;
-		this.mouseY = event.pageY;
+		if (this.settings.axis != 'y') this.mouseX = event.pageX;
+		if (this.settings.axis != 'x') this.mouseY = event.pageY;
 
 		if (!this.dragging)
 		{
@@ -131,15 +130,13 @@ blx.ui.Drag = Base.extend({
 		if (this.settings.removeDraggee)
 			this.$draggee.hide();
 		else
-			this.$draggee.css('opacity', 0.2)
+			this.$draggee.css('visibility', 'hidden')
 
 		this.lastMouseX = this.lastMouseY = null;
 
 		// keep the helpers following the cursor, with a little lag to smooth it out
 		this.helperLagIncrement = this.helpers.length == 1 ? 0 : blx.ui.Drag.helperLagIncrementDividend / (this.helpers.length-1);
 		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), blx.ui.Drag.updateHelperPosInterval);
-
-		//this.getOtherItems();
 
 		this.onDragStart();
 	},
@@ -168,22 +165,6 @@ blx.ui.Drag = Base.extend({
 	},
 
 	/**
-	 * Get the remaining items
-	 */
-	/*getOtherItems: function()
-	{
-		this.otherItems = [];
-
-		for (var i = 0; i < this.$items.length; i++)
-		{
-			var item = this.$items[i];
-
-			if ($.inArray(item, this.$draggee) == -1)
-				this.otherItems.push(item);
-		};
-	},*/
-
-	/**
 	 * Creates helper clones of the draggee(s)
 	 */
 	createHelpers: function()
@@ -201,6 +182,8 @@ blx.ui.Drag = Base.extend({
 
 			if (typeof this.settings.helper == 'function')
 				$draggeeHelper = this.settings.helper($draggeeHelper);
+			else if (this.settings.helper)
+				$draggeeHelper = $(this.settings.helper).append($draggeeHelper);
 
 			$draggeeHelper.appendTo(document.body);
 
@@ -363,6 +346,7 @@ blx.ui.Drag = Base.extend({
 	helperSpacingY: 5,
 
 	defaults: {
+		axis: null,
 		removeDraggee: false,
 		helperOpacity: 1,
 

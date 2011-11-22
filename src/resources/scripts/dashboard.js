@@ -17,23 +17,39 @@ var Dashboard = Base.extend({
 		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
 		this.dom.$sidebar = $(document.getElementById('sidebar'));
 
-		//this.createTable();
 		this.getWidgets();
 
 		$(window).on('resizeWidth.dashboard', $.proxy(this, 'onWindowResize'));
 		setTimeout($.proxy(this, 'setCols'), 1);
 
 		this.dom.$sidebarBtn.on('click.dashboard', $.proxy(this, 'toggleSidebar'));
-	},
 
-	createTable: function()
-	{
-		this.dom.table = document.createElement('table');
-		this.dom.table.className = 'widgets'
-		this.dom.$main.append(this.dom.table);
+		// set up the sidebar sorting
+		var $widgetHandles = $('ul.widget-handles > li', this.dom.$sidebar);
 
-		this.dom.tr = document.createElement('tr');
-		this.dom.table.appendChild(this.dom.tr);
+		this.widgetSort = new blx.ui.DragSort({
+			axis: 'y',
+			helper: '<ul class="widget-handles dragging" />',
+			onSortChange: $.proxy(function()
+				{
+					// capture the widget that was sorted
+					var widget = this.$widgets[this.widgetSort.draggeeStartIndex];
+
+					// sort our internal widget array & jQuery object to match the new order
+					console.log(this.$widgets[this.widgetSort.draggeeStartIndex], this.$widgets[this.widgetSort.draggeeIndex]);
+					this.$widgets.splice(this.widgetSort.draggeeStartIndex, 1);
+					this.widgets.splice(this.widgetSort.draggeeStartIndex, 1);
+					this.$widgets.splice(this.widgetSort.draggeeIndex, 0, widget);
+					this.widgets.splice(this.widgetSort.draggeeIndex, 0, $(widget));
+					console.log(this.$widgets[this.widgetSort.draggeeStartIndex], this.$widgets[this.widgetSort.draggeeIndex]);
+
+					// update the columns
+					this.refreshCols(true);
+				}, this)
+		});
+
+		
+		this.widgetSort.addItems($widgetHandles);
 	},
 
 	getWidgets: function()

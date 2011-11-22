@@ -11,7 +11,6 @@ if (typeof blx.ui == 'undefined')
 blx.ui.DragSort = blx.ui.Drag.extend({
 
 	$insertion: null,
-	caboose: null,
 	midpoints: null,
 	closestItemIndex: null,
 
@@ -30,10 +29,10 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 	onDragStart: function()
 	{
 		this.getInsertion();
-		this.addCaboose();
 		this.getMidpoints();
 
 		this.closestItem = -1;
+		this.draggeeStartIndex = this.draggeeIndex;
 
 		this.base();
 	},
@@ -50,24 +49,6 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 				this.$insertion = $(this.settings.insertion());
 			else
 				this.$insertion = $(this.settings.insertion);
-		}
-	},
-
-	/**
-	 * Adds the caboose to the end of the items
-	 */
-	addCaboose: function()
-	{
-		// add the caboose
-		if (this.settings.caboose)
-		{
-			if (typeof this.settings.caboose == 'function')
-				this.$caboose = $(this.settings.caboose());
-			else
-				this.$caboose = $(this.settings.caboose);
-
-			this.$caboose.insertAfter(this.$items[this.$items.length-1]);
-			this.otherItems.push(this.$caboose);
 		}
 	},
 
@@ -188,17 +169,8 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 	 */
 	onDragStop: function()
 	{
-			return;
-
-		if (this.closestItemIndex != -1)
-		{
-			this.$draggee.insertBefore(this.closestItemIndex);
-
-			if (this.$insertion)
-				this.$insertion.remove();
-
-			this.settings.onSortChange();
-		}
+		if (this.$insertion)
+			this.$insertion.remove();
 
 		// "show" the drag items, but make them invisible
 		this.$draggee.css({
@@ -209,18 +181,46 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 		// return the helpers to the draggees
 		this.returnHelpersToDraggees();
 
-		// hide the caboose
-		if (this.$caboose)
-			this.$caboose.remove();
-
 		this.base();
+
+		// has the item actually moved?
+		if (this.startDraggeeIndex != this.draggeeIndex)
+		{
+			this.settings.onSortChange();
+		}
 	},
+
+	/**
+	 * Return Helpers to Draggees
+	 */
+	returnHelpersToDraggees: function()
+	{
+		for (var i = 0; i < this.$draggee.length; i++)
+		{
+			var $draggee = $(this.$draggee[i]),
+				$helper = this.helpers[i],
+				draggeeOffset = $draggee.offset();
+
+			// preserve $draggee and $helper for the end of the animation
+			(
+				function($draggee, $helper)
+				{
+					$helper.animate({left: draggeeOffset.left, top: draggeeOffset.top}, 'fast',
+						function()
+						{
+							$draggee.css('visibility', 'visible');
+							$helper.remove();
+						}
+					);
+				}
+			)($draggee, $helper);
+		};
+	}
 },
 {
 	defaults: {
 		container: null,
 		insertion: null,
-		caboose: null,
 		onInsertionPointChange: function() {},
 		onSortChange: function() {}
 	}
