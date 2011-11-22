@@ -246,17 +246,12 @@ class BlocksApp extends CWebApplication
 
 		if ($route !== '')
 		{
-			// run every route except for requests to gii
-			if (($module = $this->urlManager->getCurrentModule()) !== null && $module->getId() !== 'gii')
-				$this->runController($route);
-			else
-			{
-				// only show gii if it's a CP request.
-				if ($this->request->getCMSRequestType() == RequestType::ControlPanel)
-					$this->runController($route);
-				else
+			// don't let a gii request on the front-end go through.
+			if (strpos($route, 'gii') !== false)
+				if ($this->request->getCMSRequestType() !== RequestType::ControlPanel)
 					$this->request->redirect('/');
-			}
+
+			$this->runController($route);
 		}
 		else
 			// can't find any template or route to match.
