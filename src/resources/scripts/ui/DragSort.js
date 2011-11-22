@@ -17,10 +17,18 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(settings)
+	constructor: function(items, settings)
 	{
+		// param mapping
+		if (typeof items.nodeType == 'undefined' && typeof items.length == 'undefined')
+		{
+			// (settings)
+			settings = items;
+			items = null;
+		}
+
 		settings = $.extend({}, blx.ui.DragSort.defaults, settings);
-		this.base(settings);
+		this.base(items, settings);
 	},
 
 	/**

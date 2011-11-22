@@ -35,11 +35,20 @@ blx.ui.Drag = Base.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(settings)
+	constructor: function(items, settings)
 	{
+		// param mapping
+		if (typeof items.nodeType == 'undefined' && typeof items.length == 'undefined')
+		{
+			// (settings)
+			settings = items;
+			items = null;
+		}
+
 		this.settings = $.extend({}, blx.ui.Drag.defaults, settings);
 
 		this.$items = $();
+		if (items) this.addItems(items);
 	},
 
 	/**
@@ -303,8 +312,10 @@ blx.ui.Drag = Base.extend({
 	/**
 	 * Add Items
 	 */
-	addItems: function($items)
+	addItems: function(items)
 	{
+		var $items = $(items);
+
 		// make a record of it
 		this.$items = this.$items.add($items);
 
@@ -315,8 +326,10 @@ blx.ui.Drag = Base.extend({
 	/**
 	 * Remove Items
 	 */
-	removeItems: function($items)
+	removeItems: function(items)
 	{
+		var $items = $(items);
+
 		// unbind all events
 		$items.off('.drag');
 

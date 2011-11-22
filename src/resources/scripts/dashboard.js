@@ -7,8 +7,6 @@ var Dashboard = Base.extend({
 	widgets: [],
 	$widgets: null,
 	cols: [],
-	$sidebarBtn: null,
-	$sidebar: null,
 	showingSidebar: false,
 
 	constructor: function()
@@ -24,32 +22,16 @@ var Dashboard = Base.extend({
 
 		this.dom.$sidebarBtn.on('click.dashboard', $.proxy(this, 'toggleSidebar'));
 
-		// set up the sidebar sorting
-		var $widgetHandles = $('ul.widget-handles > li', this.dom.$sidebar);
+		// set up the widget sorting
+		this.dom.$widgetHandles = $('ul.widget-handles > li', this.dom.$sidebar);
 
-		this.widgetSort = new blx.ui.DragSort({
+		this.widgetSort = new blx.ui.DragSort(this.dom.$widgetHandles, {
 			axis: 'y',
 			helper: '<ul class="widget-handles dragging" />',
-			onSortChange: $.proxy(function()
-				{
-					// capture the widget that was sorted
-					var widget = this.$widgets[this.widgetSort.draggeeStartIndex];
-
-					// sort our internal widget array & jQuery object to match the new order
-					console.log(this.$widgets[this.widgetSort.draggeeStartIndex], this.$widgets[this.widgetSort.draggeeIndex]);
-					this.$widgets.splice(this.widgetSort.draggeeStartIndex, 1);
-					this.widgets.splice(this.widgetSort.draggeeStartIndex, 1);
-					this.$widgets.splice(this.widgetSort.draggeeIndex, 0, widget);
-					this.widgets.splice(this.widgetSort.draggeeIndex, 0, $(widget));
-					console.log(this.$widgets[this.widgetSort.draggeeStartIndex], this.$widgets[this.widgetSort.draggeeIndex]);
-
-					// update the columns
-					this.refreshCols(true);
-				}, this)
+			onSortChange: $.proxy(this, 'onWidgetMove')
 		});
 
-		
-		this.widgetSort.addItems($widgetHandles);
+		$('a.remove', this.dom.$widgetHandles).on('click', $.proxy(this, 'onWidgetRemove'))
 	},
 
 	getWidgets: function()
@@ -59,7 +41,7 @@ var Dashboard = Base.extend({
 		for (var i = 0; i < this.$widgets.length; i++)
 		{
 			this.widgets.push($(this.$widgets[i]));
-			this.widgets[i].css('zIndex', i);
+			this.widgets[i].css('zIndex', i+1);
 		}
 	},
 
@@ -225,6 +207,74 @@ var Dashboard = Base.extend({
 		// invert the showingSidebar state
 		this.showingSidebar = !this.showingSidebar;
 	},
+
+	onWidgetMove: function()
+	{
+		this.moveWidget(this.widgetSort.draggeeStartIndex, this.widgetSort.draggeeIndex);
+	},
+
+	moveWidget: function(from, to)
+	{
+		// capture the widget that was sorted
+		var widget = this.$widgets[from];
+
+		// sort our internal widget array & jQuery object to match the new order
+		this.$widgets.splice(from, 1);
+		this.widgets.splice(from, 1);
+		this.$widgets.splice(to, 0, widget);
+		this.widgets.splice(to, 0, $(widget));
+
+		// update the columns
+		this.refreshCols(true);
+	},
+
+	onWidgetRemove: function(event)
+	{
+		// figure out which widget to remove
+		var $widgetHandle = $(event.currentTarget).parent(),
+			widgetIndex = $.inArray($widgetHandle[0], this.dom.$widgetHandles);
+
+		if (widgetIndex != -1)
+			this.removeWidget(widgetIndex);
+	},
+
+	removeWidget: function(i)
+	{
+		var $widget = this.widgets[i],
+			$handle = $(this.dom.$widgetHandles[i]),
+			handleHeight = $handle.outerHeight(),
+			mainOffset = this.dom.$main.offset(),
+			widgetOffset = $widget.offset(),
+			width = $widget.width();
+
+		// remove it from our internal widget arrays
+		this.$widgets.splice(i, 1);
+		this.widgets.splice(i, 1);
+		this.dom.$widgetHandles.splice(i, 1);
+
+		// update the columns
+		this.refreshCols(true);
+
+		this.widgetSort.removeItems($handle);
+
+		// remove the handle
+		$handle.animate({opacity: 0, marginBottom: -handleHeight}, function() {
+			$handle.remove();
+		});
+
+		// fade out the widget, and then remove it
+		$widget.appendTo(this.dom.$main);
+		$widget.css({
+			position: 'absolute',
+			zIndex: 0,
+			top: widgetOffset.top - mainOffset.top,
+			left: widgetOffset.left - mainOffset.left,
+			width: width
+		});
+		$widget.fadeOut($.proxy(function() {
+			$widget.remove();
+		}, this));
+	}
 },
 {
 	gutterWidth: 20,
