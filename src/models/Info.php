@@ -43,7 +43,7 @@ class Info extends CActiveRecord
 			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('version', 'length', 'max'=>15),
 			array('build_number', 'length', 'max'=>10),
-			array('edition', 'length', 'max'=>12),
+			array('edition', 'length', 'max'=>8),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.

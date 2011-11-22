@@ -60,7 +60,7 @@ class Groups extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'usergroups' => array(self::HAS_MANY, 'UserGroups', 'group_id'),
+			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'group_id'),
 		);
 	}
 

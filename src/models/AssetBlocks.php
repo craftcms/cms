@@ -65,7 +65,7 @@ class AssetBlocks extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'asset' => array(self::BELONGS_TO, 'Assets', 'asset_id'),
-			'assetblocksettings' => array(self::HAS_MANY, 'AssetBlockSettings', 'asset_block_id'),
+			'assetBlockSettings' => array(self::HAS_MANY, 'AssetBlockSettings', 'asset_block_id'),
 		);
 	}
 

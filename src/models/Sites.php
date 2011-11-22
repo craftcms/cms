@@ -17,6 +17,7 @@
  * @property SiteBlocks[] $siteblocks
  * @property SiteSettings[] $sitesettings
  * @property UploadFolders[] $uploadfolders
+ * @property UserGroups[] $usergroups
  */
 class Sites extends CActiveRecord
 {
@@ -65,10 +66,11 @@ class Sites extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentsections' => array(self::HAS_MANY, 'ContentSections', 'site_id'),
-			'siteblocks' => array(self::HAS_MANY, 'SiteBlocks', 'site_id'),
-			'sitesettings' => array(self::HAS_MANY, 'SiteSettings', 'site_id'),
-			'uploadfolders' => array(self::HAS_MANY, 'UploadFolders', 'site_id'),
+			'contentSections' => array(self::HAS_MANY, 'ContentSections', 'site_id'),
+			'siteBlocks' => array(self::HAS_MANY, 'SiteBlocks', 'site_id'),
+			'siteSettings' => array(self::HAS_MANY, 'SiteSettings', 'site_id'),
+			'uploadFolders' => array(self::HAS_MANY, 'UploadFolders', 'site_id'),
+			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'site_id'),
 		);
 	}
 

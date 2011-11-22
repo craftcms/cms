@@ -62,7 +62,7 @@ class UserGroups extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'usergrouppermissions' => array(self::HAS_MANY, 'UserGroupPermissions', 'user_group_id'),
+			'userGroupPermissions' => array(self::HAS_MANY, 'UserGroupPermissions', 'user_group_id'),
 			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 			'group' => array(self::BELONGS_TO, 'Groups', 'group_id'),
 			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),

@@ -68,10 +68,10 @@ class Users extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentdrafts' => array(self::HAS_MANY, 'ContentDrafts', 'author_id'),
-			'contentpages' => array(self::HAS_MANY, 'ContentPages', 'author_id'),
-			'userblocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
-			'usergroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
+			'contentDrafts' => array(self::HAS_MANY, 'ContentDrafts', 'author_id'),
+			'contentPages' => array(self::HAS_MANY, 'ContentPages', 'author_id'),
+			'userBlocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
+			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
 		);
 	}
 

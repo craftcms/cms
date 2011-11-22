@@ -13,7 +13,7 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property ContentBlocks[] $blxContentblocks
+ * @property ContentBlocks[] $contentBlocks
  * @property ContentPages $page
  * @property Users $author
  */
@@ -61,7 +61,7 @@ class ContentDrafts extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'blxContentblocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentdraftdata}}(draft_id, block_id)'),
+			'contentBlocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentdraftdata}}(draft_id, block_id)'),
 			'page' => array(self::BELONGS_TO, 'ContentPages', 'page_id'),
 			'author' => array(self::BELONGS_TO, 'Users', 'author_id'),
 		);

@@ -14,7 +14,7 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property ContentBlocks[] $blxContentblocks
+ * @property ContentBlocks[] $contentblocks
  * @property ContentPages $page
  */
 class ContentVersions extends CActiveRecord
@@ -61,8 +61,8 @@ class ContentVersions extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'blxContentblocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentversiondata}}(version_id, block_id)'),
-			'page' => array(self::BELONGS_TO, 'Contentpages', 'page_id'),
+			'contentBlocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentversiondata}}(version_id, block_id)'),
+			'page' => array(self::BELONGS_TO, 'ContentPages', 'page_id'),
 		);
 	}
 

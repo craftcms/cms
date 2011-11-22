@@ -67,7 +67,7 @@ class SiteBlocks extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
-			'siteblocksettings' => array(self::HAS_MANY, 'SiteBlockSettings', 'block_id'),
+			'siteBlockSettings' => array(self::HAS_MANY, 'SiteBlockSettings', 'block_id'),
 		);
 	}
 

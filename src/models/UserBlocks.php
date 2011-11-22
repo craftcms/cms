@@ -67,7 +67,7 @@ class UserBlocks extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
-			'userblocksettings' => array(self::HAS_MANY, 'UserBlockSettings', 'block_id'),
+			'userBlockSettings' => array(self::HAS_MANY, 'UserBlockSettings', 'block_id'),
 		);
 	}
 
