@@ -43,6 +43,7 @@ var Dashboard = Base.extend({
 		for (var i = 0; i < this.$widgets.length; i++)
 		{
 			this.widgets.push($(this.$widgets[i]));
+			this.widgets[i].css('zIndex', i);
 		}
 	},
 
