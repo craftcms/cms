@@ -28,13 +28,19 @@ class BlocksController extends BaseController
 				$this->setRequestController($ca[0]);
 				// save the current controller and swap out the new one.
 				$oldController = Blocks::app()->getController();
-				Blocks::app()->setController($this->getRequestController());
+				$newController = $this->getRequestController();
+				Blocks::app()->setController($newController);
 
-				// there is an explicit request to a controller and action
-				if (Blocks::app()->request->getParam('c', null) !== null || (($module = Blocks::app()->urlManager->getCurrentModule()) !== null && $module->getId() == 'install') || Blocks::app()->controller->id == 'update')
+				if (($action = $newController->createAction($tempAction)) !== null)
 				{
-					Blocks::app()->controller->init();
-					Blocks::app()->controller->run($tempAction);
+					if (($parent = $newController->getModule()) === null)
+						$parent = Blocks::app();
+
+					if ($parent->beforeControllerAction($newController, $action))
+					{
+						$newController->runActionWithFilters($action, $newController->filters());
+						$parent->afterControllerAction($newController, $action);
+					}
 				}
 				else
 				{
