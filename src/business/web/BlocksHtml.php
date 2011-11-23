@@ -8,12 +8,10 @@ class BlocksHtml extends CHtml
 	 * @param string $plugin The plugin name (optional)
 	 * @return string The URL to the resource, via Blocks' resource server
 	 */
-	public static function getResourceUrl($resourcePath, $plugin = null)
+	public static function getResourceUrl($resourcePath)
 	{
 		$baseUrl = Blocks::app()->urlManager->getBaseUrl();
-		$where = $plugin ? $plugin : 'app';
-
-		return "{$baseUrl}/resources/{$where}/".self::encode($resourcePath);
+		return $baseUrl.'/'.'resources/'.self::encode($resourcePath);
 	}
 
 	public static function unixTimeToPrettyDate($unixTime)

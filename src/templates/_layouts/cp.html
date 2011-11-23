@@ -4,8 +4,8 @@
 	<meta charset="utf-8" />
 	<title>{%if pageTitle%}{pageTitle} – {%endif%}Blocks</title>
 
-	{resource.css('styles/cp.css')}
-	{resource.css('styles/icons.css')}
+	{cp.resource('app/styles/cp.css').css}
+	{cp.resource('app/styles/icons.css').css}
 
 	{!-- include any styles defined by the subtemplate --}
 	{styles}
@@ -28,7 +28,7 @@
 		</div>
 		<div>
 			<ul class="right">
-				<li id="nav-account"><a {%if url.segment(1)=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><img src="{resource.url('images/avatar.jpg')}" alt="">Brandon</a></li>
+				<li id="nav-account"><a {%if url.segment(1)=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><img src="{cp.resource('app/images/avatar.jpg')}" alt="">Brandon</a></li>
 			</ul>
 		</div>
 	</div>
@@ -37,9 +37,9 @@
 		{main}
 	</div>
 
-{resource.js('lib/jquery-1.7.min.js')}
-{resource.js('lib/Base.js')}
-{resource.js('scripts/blocks.js')}
+{cp.resource('app/lib/jquery-1.7.min.js').js}
+{cp.resource('app/lib/Base.js').js}
+{cp.resource('app/scripts/blocks.js').js}
 <script type="text/javascript">blx.baseUrl = '{url.base}';</script>
 
 {!-- include any scripts defined by the subtemplate --}

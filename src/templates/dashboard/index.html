@@ -1,7 +1,7 @@
 {%layout '_layouts/cp'%}
 
 {%region 'pageTitle'%}Dashboard{%endregion%}
-{%region 'styles'%}{resource.css('styles/pages/dashboard.css')}{%endregion%}
+{%region 'styles'%}{cp.resource('app/styles/pages/dashboard.css').css}{%endregion%}
 
 {%region 'main'%}
 	<a id="sidebar-btn" title="Customize"></a>
@@ -351,7 +351,7 @@
 {%endregion%}
 
 {%region 'scripts'%}
-{resource.js('scripts/ui/Drag.js')}
-{resource.js('scripts/ui/DragSort.js')}
-{resource.js('scripts/dashboard.js')}
+{cp.resource('app/scripts/ui/Drag.js').js}
+{cp.resource('app/scripts/ui/DragSort.js').js}
+{cp.resource('app/scripts/dashboard.js').js}
 {%endregion%}

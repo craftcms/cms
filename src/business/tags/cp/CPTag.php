@@ -22,4 +22,9 @@ class CpTag extends Tag
 
 		return new ArrayTag($sectionTags);
 	}
+
+	public function resource($path)
+	{
+		return new CpResourceTag($path);
+	}
 }
