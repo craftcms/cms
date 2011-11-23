@@ -159,7 +159,7 @@
 
 	$settingsBtn.click(function() {
 		showingSettings = ! showingSettings;
-		$settingsBtn.toggleClass('active');
+		$settingsBtn.toggleClass('sel');
 		$settings.stop().animate({ height: (showingSettings ? expandedHeight : 0) });
 	});
 
