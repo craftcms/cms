@@ -281,7 +281,7 @@ var Dashboard = Base.extend({
 },
 {
 	gutterWidth: 20,
-	minColWidth: 280,
+	minColWidth: 300,
 	sidebarWidth: 200
 });
 
