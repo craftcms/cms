@@ -1,9 +1,9 @@
 {%layout '_layouts/cp'%}
 
-{%region 'pageTitle'%}Editing “Spread”{%endregion%}
-{%region 'styles'%}{cp.resource('app/styles/pages/content-edit.css').css}{%endregion%}
+{%region pageTitle%}Editing “Spread”{%endregion%}
+{%region styles%}{cp.resource('app/styles/pages/content-edit.css').css}{%endregion%}
 
-{%region 'main'%}
+{%region main%}
 	<div id="main">
 		<div class="centered">
 			{!--<div id="right">
@@ -143,7 +143,7 @@
 	</div>{!--/main--}
 {%endregion%}
 
-{%region 'scripts'%}
+{%region scripts%}
 {cp.resource('app/lib/rangy-1.2.1.js').js}
 {cp.resource('app/scripts/ui/Menu.js').js}
 {cp.resource('app/scripts/ui/SelectMenu.js').js}

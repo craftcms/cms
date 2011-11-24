@@ -253,8 +253,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'region':
 				$this->_hasLayout = true;
-				$this->parseVariables($params);
-				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => {$params})); ?>";
+				$regionName = trim($params, '\'"');
+				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => '{$regionName}')); ?>";
 
 			case 'endregion':
 				return '<?php $this->endWidget(); ?>';

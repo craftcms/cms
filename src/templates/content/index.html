@@ -1,7 +1,7 @@
 {%layout '_layouts/cp'%}
 
-{%region 'pageTitle'%}Content{%endregion%}
-{%region 'styles'%}{cp.resource('app/styles/pages/content-index.css').css}{%endregion%}
+{%region pageTitle%}Content{%endregion%}
+{%region styles%}{cp.resource('app/styles/pages/content-index.css').css}{%endregion%}
 
 <?php
 	function indent($level) {
@@ -9,7 +9,7 @@
 	}
 ?>
 
-{%region 'main'%}
+{%region main%}
 	<div id="main">
 		<table class="zebra">
 			<thead>
