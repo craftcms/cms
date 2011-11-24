@@ -2,17 +2,17 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8" />
-	<title>{%if pageTitle%}{pageTitle} – {%endif%}Blocks</title>
+	<title>{% if pageTitle %}{{ pageTitle }}} – {% endif %}Blocks</title>
 
-	{cp.resource('app/styles/cp.css').css}
-	{cp.resource('app/styles/icons.css').css}
+	{{ cp.resource('app/styles/cp.css').css }}
+	{{ cp.resource('app/styles/icons.css').css }}
 
 	{!-- include any styles defined by the subtemplate --}
-	{styles}
+	{{ styles }}
 
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 </head>
-<body class="{url.segment(1)} {bodyClass}">
+<body class="{{ url.segment(1) }} {{ bodyClass }}">
 
 	<div id="nav">
 		<div class="left">
@@ -21,28 +21,28 @@
 				<span class="arrow"></span>
 			</div>
 			<ul>
-				{%foreach cp.sections as section%}
-				<li id="nav-{section.handle}"><a {%if url.segment(1)==section.handle%}class="sel"{%endif%} href="{url.base}/{section.handle}" title="{section.name}"><span class="icon"></span></a></li>
-				{%endforeach%}
+				{% foreach cp.sections as section %}
+				<li id="nav-{{ section.handle }}"><a {% if url.segment(1)==section.handle %}class="sel"{% endif %} href="{{ url.base }}/{{ section.handle }}" title="{{ section.name }}"><span class="icon"></span></a></li>
+				{% endforeach %}
 			</ul>
 		</div>
 		<div>
 			<ul class="right">
-				<li id="nav-account"><a {%if url.segment(1)=='account'%}class="sel"{%endif%} href="/account.html" title="My Account"><img src="{cp.resource('app/images/avatar.jpg')}" alt="">Brandon</a></li>
+				<li id="nav-account"><a {% if url.segment(1)=='account' %}class="sel"{% endif %} href="/account.html" title="My Account"><img src="{{ cp.resource('app/images/avatar.jpg') }}" alt="">Brandon</a></li>
 			</ul>
 		</div>
 	</div>
 
 	<div id="body">
-		{main}
+		{{ main }}
 	</div>
 
-{cp.resource('app/lib/jquery-1.7.min.js').js}
-{cp.resource('app/lib/Base.js').js}
-{cp.resource('app/scripts/blocks.js').js}
-<script type="text/javascript">blx.baseUrl = '{url.base}';</script>
+{{ cp.resource('app/lib/jquery-1.7.min.js').js }}
+{{ cp.resource('app/lib/Base.js').js }}
+{{ cp.resource('app/scripts/blocks.js').js }}
+<script type="text/javascript">blx.baseUrl = '{{ url.base }}';</script>
 
 {!-- include any scripts defined by the subtemplate --}
-{scripts}
+{{ scripts }}
 </body>
 </html>

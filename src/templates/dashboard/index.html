@@ -1,9 +1,9 @@
-{%layout '_layouts/cp'%}
+{% layout '_layouts/cp' %}
 
-{%region pageTitle%}Dashboard{%endregion%}
-{%region styles%}{cp.resource('app/styles/pages/dashboard.css').css}{%endregion%}
+{% region pageTitle %}Dashboard{% endregion %}
+{% region styles %}{{ cp.resource('app/styles/pages/dashboard.css').css }}{% endregion %}
 
-{%region main%}
+{% region main %}
 	<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
 
 	<div id="main">
@@ -348,10 +348,10 @@
 			<li><span class="grab"></span>Top Content<a class="remove" title="Remove"></a></li>
 		</ul>
 	</div>{!--/sidebar--}
-{%endregion%}
+{% endregion %}
 
-{%region scripts%}
-{cp.resource('app/scripts/ui/Drag.js').js}
-{cp.resource('app/scripts/ui/DragSort.js').js}
-{cp.resource('app/scripts/dashboard.js').js}
-{%endregion%}
+{% region scripts %}
+{{ cp.resource('app/scripts/ui/Drag.js').js }}
+{{ cp.resource('app/scripts/ui/DragSort.js').js }}
+{{ cp.resource('app/scripts/dashboard.js').js }}
+{% endregion %}

@@ -308,7 +308,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private function parseVariableTags()
 	{
 		// find any remaining {variable-tags} on the page
-		$this->_template = preg_replace_callback('/\{(.*)\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\{\{(.*)\}\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
 	}
 
 	/**
@@ -316,12 +316,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariableTagMatch($match)
 	{
-		// make sure this isn't JSON or CSS
-		if (preg_match('/^\s*[-\w]+\s*:/m', $match[1]))
-		{
-			return $match[0];
-		}
-
 		$this->parseVariables($match[1], true);
 		return '<?php echo ' . $match[1] . ' ?>';
 	}

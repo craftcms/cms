@@ -1,9 +1,9 @@
-{%layout '_layouts/cp'%}
+{% layout '_layouts/cp' %}
 
-{%region pageTitle%}Editing “Spread”{%endregion%}
-{%region styles%}{cp.resource('app/styles/pages/content-edit.css').css}{%endregion%}
+{% region pageTitle %}Editing “Spread”{% endregion %}
+{% region styles %}{{ cp.resource('app/styles/pages/content-edit.css').css }}{% endregion %}
 
-{%region main%}
+{% region main %}
 	<div id="main">
 		<div class="centered">
 			{!--<div id="right">
@@ -42,7 +42,7 @@
 				</fieldset>
 			</div>--}
 
-			{%include 'content/_includes/toolbar'%}
+			{% include 'content/_includes/toolbar' %}
 
 			<div class="page">
 				{!--<div class="fields">--}
@@ -141,13 +141,13 @@
 			</div>{!--/page--}
 		</div>{!--/centered--}
 	</div>{!--/main--}
-{%endregion%}
+{% endregion %}
 
-{%region scripts%}
-{cp.resource('app/lib/rangy-1.2.1.js').js}
-{cp.resource('app/scripts/ui/Menu.js').js}
-{cp.resource('app/scripts/ui/SelectMenu.js').js}
-{cp.resource('app/scripts/ui/RTE.js').js}
+{% region scripts %}
+{{ cp.resource('app/lib/rangy-1.2.1.js').js }}
+{{ cp.resource('app/scripts/ui/Menu.js').js }}
+{{ cp.resource('app/scripts/ui/SelectMenu.js').js }}
+{{ cp.resource('app/scripts/ui/RTE.js').js }}
 
 <script type="text/javascript">
 
@@ -171,8 +171,8 @@
 	});
 
 	new blx.ui.RTE('content', {
-		css: "{cp.resource('app/styles/rte.css')}"
+		css: "{{ cp.resource('app/styles/rte.css') }}"
 	});
 
 </script>
-{%endregion%}
+{% endregion %}

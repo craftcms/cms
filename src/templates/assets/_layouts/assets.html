@@ -1,10 +1,10 @@
-{%layout '_layouts/cp'%}
+{% layout '_layouts/cp' %}
 
-{%region pageTitle%}Assets{%endregion%}
-{%region styles%}{cp.resource('app/styles/pages/assets.css').css}{%endregion%}
-{%region bodyClass%}sidebar-layout{%endregion%}
+{% region pageTitle %}Assets{% endregion %}
+{% region styles %}{{ cp.resource('app/styles/pages/assets.css').css }}{% endregion %}
+{% region bodyClass %}sidebar-layout{% endregion %}
 
-{%region main%}
+{% region main %}
 	<div id="sidebars">
 		<div class="sidebar">
 			<div class="tree">
@@ -42,8 +42,8 @@
 	<div id="main">
 		<div class="toolbar">
 			<div class="btn-group">
-				<a class="btn {%if viewMode=='grid'%}sel{%endif%}" href="?viewMode=grid" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
-				<a class="btn {%if viewMode=='list'%}sel{%endif%}" href="?viewMode=list" title="Display files in a list"><span class="icon icon276"></span></a></li>
+				<a class="btn {% if viewMode=='grid' %}sel{% endif %}" href="?viewMode=grid" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
+				<a class="btn {% if viewMode=='list' %}sel{% endif %}" href="?viewMode=list" title="Display files in a list"><span class="icon icon276"></span></a></li>
 			</div>
 
 			<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>
@@ -51,6 +51,6 @@
 			<div class="search"><input type="text" /></div>
 		</div>
 
-		{files}
+		{{ files }}
 	</div>
-{%endregion%}
+{% endregion %}
