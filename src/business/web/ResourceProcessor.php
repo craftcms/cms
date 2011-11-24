@@ -41,7 +41,7 @@ class ResourceProcessor
 		}
 		else
 		{
-			Blocks::app()->send404();
+			throw new BlocksHttpException(404);
 		}
 	}
 
@@ -53,7 +53,7 @@ class ResourceProcessor
 		$this->_content = file_get_contents($this->_resourceFullPath);
 
 		if (! $this->_content)
-			Blocks::app()->send404();
+			throw new BlocksHttpException(404);
 
 		$file = Blocks::app()->file->set($this->_resourceFullPath);
 		$mimeType = $file->getMimeType();

@@ -139,7 +139,7 @@ class BlocksApp extends CWebApplication
 		if (!$this->isDbInstalled())
 		{
 			if ($this->request->getCMSRequestType() == RequestType::Site)
-				$this->send404();
+				throw new BlocksHttpException(404);
 			else
 			{
 				$pathInfo = $this->request->getPathSegments();
@@ -255,14 +255,6 @@ class BlocksApp extends CWebApplication
 		}
 		else
 			// can't find any template or route to match.
-			$this->send404();
-	}
-
-	/**
-	 * Sends a 404 error back to the client
-	 */
-	public function send404()
-	{
-		throw new BlocksHttpException(404);
+			throw new BlocksHttpException(404);
 	}
 }
