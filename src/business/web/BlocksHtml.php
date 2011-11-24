@@ -5,7 +5,6 @@ class BlocksHtml extends CHtml
 	/**
 	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
 	 * @param string $resourcePath The path to the resource
-	 * @param string $plugin The plugin name (optional)
 	 * @return string The URL to the resource, via Blocks' resource server
 	 */
 	public static function getResourceUrl($resourcePath)

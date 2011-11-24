@@ -27,8 +27,7 @@
 #main .page .page-head .draft-btn ul { display: none; position: absolute; z-index: 1; top: 23px; left: 0; border-radius: 2px; width: 200px; height: 100px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.1); }
 
 #main .page .page-head { padding-bottom: 0; }
-#main .page .page-head .settings-btn { display: block; margin: -20px -60px 0 0; float: right; width: 16px; height: 16px; cursor: pointer; background: url(../../images/settings-btn.png); }
-#main .page .page-head .settings-btn.active { background-position: 0 100%; }
+#main .page .page-head .settings-btn { margin: -20px -60px 0 0; float: right; }
 #main .page .page-head .page-settings { margin-top: 18px; height: 0; overflow: hidden; padding-left: 68px; background: url(../../images/settings-bg.png) no-repeat 0 5px; }
 #main .page .page-head .page-settings table th,
 #main .page .page-head .page-settings table td { padding-top: 2px; }

@@ -1,7 +1,6 @@
 #body { width: 100%; overflow: hidden; }
 
-#sidebar-btn { display: block; position: absolute; top: 20px; right: 20px; width: 16px; height: 16px; background: url(../../images/settings-btn.png); cursor: pointer; }
-#sidebar-btn.sel { background-position: 0 100%; }
+#sidebar-btn { position: absolute; top: 20px; right: 20px; }
 
 #main { top: 36px; background: none; padding: 10px; }
 

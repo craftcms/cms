@@ -1,13 +1,13 @@
-{%layout 'assets/_layouts/assets'%}
+{% layout 'assets/_layouts/assets' %}
 
 <? if (empty($_GET['viewMode']) || $_GET['viewMode'] != 'list'): ?>
-	{%region 'viewMode'%}grid{%endregion%}
-	{%region 'files'%}
-		{%include 'assets/_includes/grid'%}
-	{%endregion%}
+	{% region viewMode %}grid{% endregion %}
+	{% region files %}
+		{% include 'assets/_includes/grid' %}
+	{% endregion %}
 <? else: ?>
-	{%region 'viewMode'%}list{%endregion%}
-	{%region 'files'%}
-		{%include 'assets/_includes/list'%}
-	{%endregion%}
+	{% region viewMode %}list{% endregion %}
+	{% region files %}
+		{% include 'assets/_includes/list' %}
+	{% endregion %}
 <? endif ?>
