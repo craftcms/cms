@@ -3,7 +3,7 @@
 class BaseController extends CController
 {
 	private $_widgetStack = array();
-	private $_defaultTemplateTags = null;
+	private $_defaultTemplateTags;
 
 	public function filterVersionCheck($filterChain)
 	{
@@ -162,36 +162,53 @@ class BaseController extends CController
 
 	public function loadTemplate($templatePath, $data = array(), $return = false)
 	{
-		$data = array_merge($this->getDefaultTemplateTags(), $data);
 		return $this->render($templatePath, $data, $return);
 	}
 
+	/**
+	 * Returns an array mapping the default tag handles to their tag class names
+	 * @return array The default tag handle/class name pairs
+	 */
 	public function getDefaultTemplateTags()
 	{
-		if ($this->_defaultTemplateTags !== null)
-			return $this->_defaultTemplateTags;
-
-		$defaultTags = null;
-		$site = Blocks::app()->request->getSiteInfo();
-		if ($site !== null)
+		if (!isset($this->_defaultTemplateTags))
 		{
-			$defaultTags = array(
-				'content' => new ContentTag($site->id),
-				'assets' => new AssetsTag($site->id),
-				'membership' => new MembershipTag($site->id),
-				'security' => new SecurityTag($site->id),
-				'url' => new UrlTag(),
+			$this->_defaultTemplateTags = array(
+				'content' => 'ContentTag',
+				'assets' => 'AssetsTag',
+				'membership' => 'MembershipTag',
+				'security' => 'SecurityTag',
+				'url' => 'UrlTag',
 			);
 
 			// if it's a CP request, add the CP tag.
 			if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
 			{
 				Blocks::import('application.business.tags.cp.*');
-				$defaultTags['cp'] = new CpTag($site->id);
+				$this->_defaultTemplateTags['cp'] = 'CpTag';
 			}
 		}
 
-		$this->_defaultTemplateTags = $defaultTags;
-		return $this->_defaultTemplateTags == null ? array() : $this->_defaultTemplateTags;
+		return $this->_defaultTemplateTags;
+	}
+
+	/**
+	 * Returns a new tag instance, which will either be one of the globals, or a generic tag, depending on the handle passed in
+	 * @param stirng $tagHandle The tag handle being used in the template
+	 * @return object The tag instance
+	 */
+	public function getTemplateTag($tagHandle)
+	{
+		$defaultTags = $this->getDefaultTemplateTags();
+
+		if (isset($defaultTags[$tagHandle]))
+		{
+			$tagClass = $defaultTags[$tagHandle];
+			$site = Blocks::app()->request->getSiteInfo();
+
+			return new $tagClass($site->id);
+		}
+
+		return new Tag;
 	}
 }

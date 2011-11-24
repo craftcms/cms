@@ -191,7 +191,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		foreach ($this->_variables as $var)
 		{
-			$head .= 'if (!isset($' . $var . ')) $' . $var . ' = new Tag;' . PHP_EOL;
+			$head .= "if (!isset(\${$var})) \${$var} = \$this->getTemplateTag('{$var}');".PHP_EOL;
 		}
 		
 		$head .= '$this->layout = null;'.PHP_EOL;
