@@ -289,7 +289,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Redirect
 
 			case 'redirect':
-				$this->parseVariables($params);
+				$this->parseVariables($params, true);
 				return "<?php header('Location: '.{$params}); ?>";
 		}
 	}
