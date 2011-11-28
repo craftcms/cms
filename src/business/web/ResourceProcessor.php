@@ -24,7 +24,7 @@ class ResourceProcessor
 		// Parse the relative resource path, separating the directory path from the filename
 		$pathinfo = pathinfo($this->_relResourcePath);
 		$this->_relResourceDirname = isset($pathinfo['dirname']) && $pathinfo['dirname'] != '.' ? $pathinfo['dirname'].'/' : '';
-		$this->_relResourceFilename = $pathinfo['filename'];
+		$this->_relResourceFilename = basename($this->_relResourcePath);
 
 		// Save the full server path
 		$this->_resourceFullPath = $this->_rootFolderPath . $this->_relResourcePath;
