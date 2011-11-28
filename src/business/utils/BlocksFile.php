@@ -146,9 +146,9 @@ class BlocksFile extends CApplicationComponent
 	 * @param string $message Message to be logged
 	 * @param string $level Level of the message (e.g. 'trace', 'warning', 'error', 'info', see CLogger constants definitions)
 	 */
-	private function addLog($message, $level='info')
+	private function addLog($message, $level = 'info')
 	{
-		Blocks::log($message.' (obj: '.$this->_realpath.')', $level, 'ext.file');
+		Blocks::log($message.' (obj: '.$this->_realpath.')', $level, 'BlocksFile');
 	}
 
 	public function refresh()
@@ -507,11 +507,11 @@ class BlocksFile extends CApplicationComponent
 				return $this->set($this->_realpath);
 			}
 
-			$this->addLog('Unable to create empty file');
+			$this->addLog('Unable to create empty file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog('File creation failed. File already exists');
+		$this->addLog('File creation failed. File already exists: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -539,7 +539,7 @@ class BlocksFile extends CApplicationComponent
 				return true;
 		}
 
-		$this->addLog('Unable to create empty directory "'.$dir.'"');
+		$this->addLog('Unable to create empty directory: '.$dir, 'warning');
 		return false;
 	}
 
@@ -558,7 +558,7 @@ class BlocksFile extends CApplicationComponent
 			if ($this->_handle = fopen($this->_realpath, $mode))
 				return $this;
 
-			$this->addLog('Unable to open file using mode "'.$mode.'"');
+			$this->addLog('Unable to open file: '.$this->_realpath.' using mode "'.$mode.'"', 'warning');
 			return false;
 		}
 	}
@@ -704,7 +704,7 @@ class BlocksFile extends CApplicationComponent
 	public function getTimeModified()
 	{
 		if (empty($this->_timeModified))
-			$this->_timeModified = $this->_exists ? filemtime($this->_realpath) :null;
+			$this->_timeModified = $this->_exists ? filemtime($this->_realpath) : null;
 
 		return $this->_timeModified;
 	}
@@ -775,7 +775,7 @@ class BlocksFile extends CApplicationComponent
 			}
 		}
 
-		$this->addLog('Unable to get filesystem object contents'.($filter !== null?' *using supplied filter*':''));
+		$this->addLog('Unable to get filesystem object contents for '.$this->_realpath.' '.($filter !== null?' *using supplied filter*':''), 'warning');
 		return false;
 	}
 
@@ -823,7 +823,7 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			throw new BlocksException('Unable to get directory contents for "'.$directory.'/'.'"');
+			throw new BlocksException('Unable to get directory contents for "'.$directory.'/'.'"', 'warning');
 		}
 
 		return $descendants;
@@ -868,17 +868,17 @@ class BlocksFile extends CApplicationComponent
 	 *
 	 * @param string $destination Alternative file to write to (not $this).
 	 * @param string $contents Contents to be written
-	 * @param boolean $autocreate If 'true' file will be created automatically
+	 * @param boolean $autoCreate If 'true' file will be created automatically
 	 * @param integer $flags Flags for file_put_contents(). E.g.: FILE_APPEND to append data to file instead of overwriting.
 	 * @return mixed Current BlocksFile object on success, 'false' on fail.
 	 */
-	public function setContents($destination = null, $contents = null, $autocreate = true, $flags = 0)
+	public function setContents($destination = null, $contents = null, $autoCreate = true, $flags = 0)
 	{
 		if ($destination != null)
 		{
 			$newFile = Blocks::app()->file->set($destination);
 
-			if ($autocreate && !$newFile->_exists)
+			if ($autoCreate && !$newFile->_exists)
 			{
 				$destDir = dirname($newFile->getRealPath());
 				if (!is_dir($destDir))
@@ -890,7 +890,7 @@ class BlocksFile extends CApplicationComponent
 			if ($newFile->_writeable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
 				return $this;
 
-			$this->addLog('Unable to put file contents');
+			$this->addLog('Unable to set file contents of '.$newFile->_realPath, 'warning');
 			return false;
 
 		}
@@ -898,13 +898,13 @@ class BlocksFile extends CApplicationComponent
 		{
 			if ($this->_isFile)
 			{
-				if ($autocreate && !$this->_exists)
+				if ($autoCreate && !$this->_exists)
 					$this->create();
 
 				if ($this->writeable && file_put_contents($this->_realpath, $contents, $flags) !== false)
 					return $this;
 
-				$this->addLog('Unable to put file contents');
+				$this->addLog('Unable to set file contents of '.$this->_realpath, 'warning');
 				return false;
 			}
 			else
@@ -934,11 +934,11 @@ class BlocksFile extends CApplicationComponent
 			if($this->_writeable && $basename !== false && $this->rename($basename))
 				return $this;
 
-			$this->addLog('Unable to set file basename "'.$basename.'"');
+			$this->addLog('Unable to set file basename "'.$basename.'" for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog(__METHOD__.' method is available only for files', 'warning');
+		$this->addLog(__METHOD__.' method is available only for files.', 'warning');
 		return false;
 	}
 
@@ -961,11 +961,11 @@ class BlocksFile extends CApplicationComponent
 			if ($this->_writeable && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
 				return $this;
 
-			$this->addLog('Unable to set file name "'.$filename.'"');
+			$this->addLog('Unable to set file name "'.$filename.'" for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog(__METHOD__.' method is available only for files', 'warning');
+		$this->addLog(__METHOD__.' method is available only for files.', 'warning');
 		return false;
 	}
 
@@ -1010,11 +1010,11 @@ class BlocksFile extends CApplicationComponent
 					return $this;
 			}
 
-			$this->addLog('Unable to set file extension "'.$extension.'"');
+			$this->addLog('Unable to set file extension "'.$extension.'" for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog(__METHOD__.' method is available only for files', 'warning');
+		$this->addLog(__METHOD__.' method is available only for files.', 'warning');
 		return false;
 	}
 
@@ -1032,7 +1032,7 @@ class BlocksFile extends CApplicationComponent
 			return $this;
 		}
 
-		$this->addLog('Unable to set owner for filesystem object to "'.$owner.'"');
+		$this->addLog('Unable to set owner for filesystem object to "'.$owner.'" for file: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1050,7 +1050,7 @@ class BlocksFile extends CApplicationComponent
 			return $this;
 		}
 
-		$this->addLog('Unable to set group for filesystem object to "'.$group.'"');
+		$this->addLog('Unable to set group for filesystem object to "'.$group.'" for file: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1074,7 +1074,7 @@ class BlocksFile extends CApplicationComponent
 			}
 		}
 
-		$this->addLog('Unable to change permissions for filesystem object to "'.$permissions.'"');
+		$this->addLog('Unable to change permissions for filesystem object to "'.$permissions.'" for file: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1118,13 +1118,12 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			Blocks::trace('Copying directory "'.$this->_realpath.'" to "'.$destRealPath.'"', 'ext.file');
+			Blocks::trace('Copying directory "'.$this->_realpath.'" to "'.$destRealPath.'"', 'BlocksFile');
 
 			$dirContents = $this->dirContents($this->_realpath, true);
 			foreach ($dirContents as $item)
 			{
 				$itemDest = $destRealPath.str_replace($this->_realpath, '', $item);
-
 				if (is_file($item))
 				{
 					@copy($item, $itemDest);
@@ -1138,7 +1137,7 @@ class BlocksFile extends CApplicationComponent
 			return $this->set($destRealPath);
 		}
 
-		$this->addLog('Unable to copy filesystem object into "'.$destRealPath.'".');
+		$this->addLog('Unable to copy filesystem object into "'.$destRealPath.'".', 'warning');
 		return false;
 	}
 
@@ -1162,7 +1161,7 @@ class BlocksFile extends CApplicationComponent
 			return $this;
 		}
 
-		$this->addLog('Unable to rename/move filesystem object into "'.$destRealPath.'"');
+		$this->addLog('Unable to rename/move filesystem object into "'.$destRealPath.'"', 'warning');
 		return false;
 	}
 
@@ -1194,7 +1193,7 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			Blocks::trace('Purging directory "'.$path.'"', 'ext.file');
+			Blocks::trace('Purging directory "'.$path.'"', 'BlocksFile');
 			$dirContents = $this->dirContents($path, true);
 
 			foreach ($dirContents as $item)
@@ -1232,7 +1231,7 @@ class BlocksFile extends CApplicationComponent
 			}
 		}
 
-		$this->addLog('Unable to delete filesystem object');
+		$this->addLog('Unable to delete filesystem object: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1290,12 +1289,12 @@ class BlocksFile extends CApplicationComponent
 				exit(0);
 			}
 
-			$this->addLog('Unable to prepare file for download. Headers already sent or file doesn\'t not exist');
+			$this->addLog('Unable to prepare file for download. Headers already sent or file doesn\'t not exist: '.$this->_realpath, 'warning');
 			return false;
 		}
 		else
 		{
-			$this->addLog('send() and download() methods are available only for files', 'warning');
+			$this->addLog('send() and download() methods are available only for files: '.$this->_realpath, 'warning');
 			return false;
 		}
 	}
@@ -1314,7 +1313,7 @@ class BlocksFile extends CApplicationComponent
 	/**
 	 * Returns the MIME type of the current file. If $_mimeType property is set, returned value is read from that property.
 	 *
-	 * This method will attempt the following approaches in order: 1)finfo 2)mime_content_type 3){@link getMimeTypeByExtension}
+	 * This method will attempt the following approaches in order: 1) finfo 2) {@link getMimeTypeByExtension}
 	 * This method works only for files.
 	 * @return mixed the MIME type on success, 'false' on fail.
 	 */
@@ -1336,19 +1335,16 @@ class BlocksFile extends CApplicationComponent
 						return $this->_mimeType = $result;
 				}
 
-				if (function_exists('mime_content_type') && ($result = @mime_content_type($this->_realpath)) !== false)
-						return $this->_mimeType = $result;
-
 				return $this->_mimeType = $this->getMimeTypeByExtension($this->_realpath);
 
 			}
 
-			$this->addLog('Unable to get mime type for file');
+			$this->addLog('Unable to get mime type for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 		else
 		{
-			$this->addLog('getMimeType() method is available only for files', 'warning');
+			$this->addLog('getMimeType() method is available only for files: '.$this->_realpath, 'warning');
 			return false;
 		}
 	}
@@ -1362,7 +1358,7 @@ class BlocksFile extends CApplicationComponent
 	{
 		if ($this->_isFile)
 		{
-			Blocks::trace('Trying to get MIME type for "'.$this->_realpath.'" from extension "'.$this->_extension.'"', 'ext.file');
+			Blocks::trace('Trying to get MIME type for "'.$this->_realpath.'" from extension "'.$this->_extension.'"', 'BlocksFile');
 			static $extensions;
 
 			if ($extensions === null)
@@ -1377,7 +1373,7 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			$this->addLog(__METHOD__.' method is available only for files', 'warning');
+			$this->addLog(__METHOD__.' method is available only for files.', 'warning');
 			return false;
 		}
 	}
@@ -1390,7 +1386,7 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			$this->addLog(__METHOD__.' method is available only for files', 'warning');
+			$this->addLog(__METHOD__.' method is available only for files.', 'warning');
 			return false;
 		}
 	}
@@ -1422,7 +1418,7 @@ class BlocksFile extends CApplicationComponent
 
 		if ($result == 0)
 		{
-			$this->addLog('Unable to create zip file.', 'error');
+			$this->addLog('Unable to create zip file: '.$this->_realpath, 'error');
 			return false;
 		}
 
@@ -1436,7 +1432,7 @@ class BlocksFile extends CApplicationComponent
 
 		if ($zipContents !== TRUE)
 		{
-			$this->addLog('Unable to create zip file.', 'error');
+			$this->addLog('Unable to create zip file: '.$this->_realpath, 'error');
 			return false;
 		}
 
@@ -1470,18 +1466,18 @@ class BlocksFile extends CApplicationComponent
 					}
 					else
 					{
-						$this->addLog('There was an error unzipping the file.', 'error');
+						$this->addLog('There was an error unzipping the file: '.$this->_realpath, 'error');
 					}
 				}
 			}
 			else
 			{
-				$this->addLog(__METHOD__.' method is available only for zip files', 'warning');
+				$this->addLog(__METHOD__.' method is available only for zip files.', 'warning');
 			}
 		}
 		else
 		{
-			$this->addLog(__METHOD__.' method is available only for files', 'warning');
+			$this->addLog(__METHOD__.' method is available only for files.', 'warning');
 		}
 
 		// last chance, try pclzip
@@ -1496,13 +1492,13 @@ class BlocksFile extends CApplicationComponent
 		// check to see if it's a valid archive.
 		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
 		{
-			$this->addLog('Not a valid zip archive.', 'error');
+			$this->addLog('Not a valid zip archive: '.$this->_realpath, 'error');
 			return false;
 		}
 
 		if (count($zipFiles) == 0)
 		{
-			$this->addLog('Empty zip archive.', 'error');
+			$this->addLog('Empty zip archive: '.$this->_realpath, 'error');
 			return false;
 		}
 
@@ -1545,7 +1541,7 @@ class BlocksFile extends CApplicationComponent
 
 			if (!$newDir->createDir(0754) && !$newDir->getIsDir())
 			{
-				$this->addLog('Could not create directory during unzip.', 'error');
+				$this->addLog('Could not create directory during unzip: '.$newDir->_realPath, 'error');
 				return false;
 			}
 		}
@@ -1565,7 +1561,7 @@ class BlocksFile extends CApplicationComponent
 			$destFile = Blocks::app()->file->set($destination.'/'.$zipFile['filename']);
 			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
 			{
-				$this->addLog('Could not copy file during unzip.', 'error');
+				$this->addLog('Could not copy file during unzip: '.$destFile->_realPath, 'error');
 				return false;
 			}
 		}
@@ -1581,7 +1577,7 @@ class BlocksFile extends CApplicationComponent
 
 		if ($zipContents !== true)
 		{
-			$this->addLog('Could not open the zip file.', 'error');
+			$this->addLog('Could not open the zip file: '.$this->_realpath, 'error');
 			return false;
 		}
 
