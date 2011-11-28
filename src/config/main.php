@@ -103,9 +103,9 @@ return array(
 			'class' => 'application.business.services.SiteService',
 		),
 
-		//
+		
 		'file' => array(
-			'class' => 'application.business.utils.BlocksFile'
+			'class' => 'application.business.utils.BlocksFile',
 		),
 
 		'request' => array(
@@ -168,7 +168,7 @@ return array(
 		// this is used in contact page
 		'adminEmail' => 'brad@pixelandtonic.com',
 		'db' => $db,
-		'config' => $blocksConfig
+		'config' => $blocksConfig,
 
 	),
 );

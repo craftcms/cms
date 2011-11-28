@@ -21,15 +21,11 @@ class BlocksApp extends CWebApplication
 				$pluginHandle = array_shift($segs);
 
 				if ($pluginHandle == 'app')
-				{
-					$rootFolderPath = Blocks::app()->path->resourcesPath;
-				}
+					$rootFolderPath = $this->path->resourcesPath;
 				else
-				{
-					$rootFolderPath = Blocks::app()->path->pluginsPath.$pluginHandle.'/';
-				}
+					$rootFolderPath = $this->path->pluginsPath.$pluginHandle.'/';
 
-				$rootFolderUrl = Blocks::app()->urlManager->baseUrl.'/'.'resources/'.$pluginHandle.'/';
+				$rootFolderUrl = $this->urlManager->baseUrl.'/'.'resources/'.$pluginHandle.'/';
 				$relativeResourcePath = implode('/', $segs);
 
 				$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
@@ -215,7 +211,10 @@ class BlocksApp extends CWebApplication
 		if($this->_cpTemplatePath !== null)
 			return $this->_cpTemplatePath;
 		else
-			return Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getCPTemplatePath()).'/');
+		{
+			$this->_cpTemplatePath = BLOCKS_BASE_PATH.'app/templates/';
+			return $this->_cpTemplatePath;
+		}
 	}
 
 	/**
