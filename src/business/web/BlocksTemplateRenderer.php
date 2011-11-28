@@ -274,9 +274,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 					if (!empty($match[2]))
 					{
-						$this->parseVariable($match[2]);
 						$as = "\${$match[2]} => {$as}";
-						$after = " \${$match[2]} = new NumTag(\${$match[2]})";
+						$after = " \${$match[2]} = new NumTag(\${$match[2]});";
 					}
 					else
 					{
