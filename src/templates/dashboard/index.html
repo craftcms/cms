@@ -8,7 +8,7 @@
 
 	<div id="main">
 		{% foreach cp.dashboard.widgets as count, widget %}
-			<div class="widget {{ widget.classname }}" id="widget{{ count }}">
+			<div class="widget {{ widget.classname }}" id="widget{{ count+1 }}">
 				<h3>{{ widget.title }}</h3>
 				<div class="body">
 					{{ widget.body }}
