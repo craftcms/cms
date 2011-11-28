@@ -1,6 +1,6 @@
 <?php
 
-class RegionWidget extends COutputProcessor
+class RegionTemplateWidget extends COutputProcessor
 {
 	public $name;
 	public $content;

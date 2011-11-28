@@ -1,7 +1,7 @@
 {% layout '_layouts/cp' %}
 
-{% region pageTitle %}Editing “Spread”{% endregion %}
-{% region styles %}{{ cp.resource('app/styles/pages/content-edit.css').css }}{% endregion %}
+{% region pageTitle %}Editing “Spread”{% /region %}
+{% region styles %}{{ cp.resource('app/styles/pages/content-edit.css').css }}{% /region %}
 
 {% region main %}
 	<div id="main">
@@ -141,7 +141,7 @@
 			</div>{!--/page--}
 		</div>{!--/centered--}
 	</div>{!--/main--}
-{% endregion %}
+{% /region %}
 
 {% region scripts %}
 {{ cp.resource('app/lib/rangy-1.2.1.js').js }}
@@ -175,4 +175,4 @@
 	});
 
 </script>
-{% endregion %}
+{% /region %}

@@ -31,14 +31,7 @@ class UrlTag extends Tag
 	 */
 	public function segments()
 	{
-		$tags = array();
-
-		foreach ($this->_getSegments() as $segment)
-		{
-			$tags[] = new StringTag($segment);
-		}
-
-		return new ArrayTag($tags);
+		return new ArrayTag($this->_getSegments());
 	}
 
 	/**

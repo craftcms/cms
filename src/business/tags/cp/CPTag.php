@@ -11,6 +11,16 @@ class CpTag extends Tag
 		'guide' => 'User Guide',
 	);
 
+	public function dashboard()
+	{
+		return new CpDashboardTag();
+	}
+
+	public function resource($path)
+	{
+		return new CpResourceTag($path);
+	}
+
 	public function sections()
 	{
 		$sectionTags = array();
@@ -21,10 +31,5 @@ class CpTag extends Tag
 		}
 
 		return new ArrayTag($sectionTags);
-	}
-
-	public function resource($path)
-	{
-		return new CpResourceTag($path);
 	}
 }

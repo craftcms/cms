@@ -135,7 +135,7 @@ class BlocksApp extends CWebApplication
 		if (!$this->isDbInstalled())
 		{
 			if ($this->request->getCMSRequestType() == RequestType::Site)
-				$this->send404();
+				throw new BlocksHttpException(404);
 			else
 			{
 				$pathInfo = $this->request->getPathSegments();
@@ -254,14 +254,23 @@ class BlocksApp extends CWebApplication
 		}
 		else
 			// can't find any template or route to match.
-			$this->send404();
+			throw new BlocksHttpException(404);
 	}
 
 	/**
-	 * Sends a 404 error back to the client
+	 * Returns the dashboard widgets for the current user
 	 */
-	public function send404()
+	public function getDashboardWidgets()
 	{
-		throw new BlocksHttpException(404);
+		return array(
+			new UpdatesWidget,
+			new RecentActivityWidget,
+			new ContentWidget,
+			new FeedWidget,
+			//new Analytics_ReferrersWidget,
+			//new Analytics_KeywordsWidget,
+			//new Analytics_PageviewsWidget,
+			//new Analytics_ContentWidget,
+		);
 	}
 }

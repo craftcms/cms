@@ -31,19 +31,13 @@ class StringTag extends Tag
 
 	public function chars()
 	{
-		$tags = array();
-
 		if (strlen($this->_val))
 		{
 			$chars = str_split($this->_val);
-
-			foreach ($chars as $char)
-			{
-				$tags[] = new StringTag($char);
-			}
+			return new ArrayTag($chars);
 		}
 
-		return new ArrayTag($tags);
+		return new ArrayTag;
 	}
 
 }
