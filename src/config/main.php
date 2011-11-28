@@ -104,7 +104,11 @@ return array(
 			'class' => 'application.business.services.SiteService',
 		),
 
-		
+		'cp' => array(
+			'class' => 'application.business.services.CpService',
+		),
+
+
 		'file' => array(
 			'class' => 'application.business.utils.BlocksFile',
 		),
