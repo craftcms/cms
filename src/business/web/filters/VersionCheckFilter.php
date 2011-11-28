@@ -28,9 +28,7 @@ class VersionCheckFilter extends CFilter
 			$statusMessages = array_merge($blocksStatusMessages, $pluginStatusMessages);
 
 			if (count($statusMessages) == 0)
-			{
 				$statusMessages[] = 'Blocks is up to date and everything is great!';
-			}
 
 			Blocks::app()->user->setFlash('notice', $statusMessages);
 		}
@@ -78,25 +76,26 @@ class VersionCheckFilter extends CFilter
 		$blocksStatusMessages = array();
 
 		if ($blocksVersionInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
-		{
 			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', 'update');
-		}
 
-		foreach($blocksVersionInfo['blocksLicenseStatus'] as $licenseMessage)
+		if (isset($blocksVersionInfo['blocksLicenseStatus']) && count($blocksVersionInfo['blocksLicenseStatus']) > 0)
 		{
-			switch ($licenseMessage)
+			foreach($blocksVersionInfo['blocksLicenseStatus'] as $licenseMessage)
 			{
-				case LicenseKeyStatus::InvalidDomain:
-					$blocksStatusMessages[] = "It appears Blocks is running on a domain that it wasn't licensed for.";
-					break;
+				switch ($licenseMessage)
+				{
+					case LicenseKeyStatus::InvalidDomain:
+						$blocksStatusMessages[] = "It appears Blocks is running on a domain that it wasn't licensed for.";
+						break;
 
-				case LicenseKeyStatus::UnknownKey:
-					$blocksStatusMessages[] = "Blocks doesn't recognize your license key.";
-					break;
+					case LicenseKeyStatus::UnknownKey:
+						$blocksStatusMessages[] = "Blocks doesn't recognize your license key.";
+						break;
 
-				case LicenseKeyStatus::WrongEdition:
-					$blocksStatusMessages[] = "It appears the Blocks version you are running isn't the correct one for your license key.";
-					break;
+					case LicenseKeyStatus::WrongEdition:
+						$blocksStatusMessages[] = "It appears the Blocks version you are running isn't the correct one for your license key.";
+						break;
+				}
 			}
 		}
 

@@ -25,7 +25,7 @@ class DefaultController extends BaseController
 				try
 				{
 					// validate P&T credentials & license key
-					$status = Blocks::app()->security->validatePTUserCredentialsAndKey($model->ptUserName, $model->ptPassword, Blocks::app()->config->getSiteLicenseKey(), Blocks::getEdition());
+					$status = Blocks::app()->security->validatePTUserCredentialsAndKey($model->ptUserName, $model->ptPassword, Blocks::app()->config->getSiteLicenseKeys(), Blocks::getEdition());
 
 					switch ($status)
 					{

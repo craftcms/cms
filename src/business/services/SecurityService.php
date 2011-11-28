@@ -2,11 +2,11 @@
 
 class SecurityService extends CApplicationComponent implements ISecurityService
 {
-	public function validatePTUserCredentialsAndKey($userName, $password, $licenseKey, $edition)
+	public function validatePTUserCredentialsAndKey($userName, $password, $licenseKeys, $edition)
 	{
 		try
 		{
-			$client = new HttpClient(APIWebServiceEndPoints::ValidateKeyByCredentials, array(
+			$client = new HttpClient(APIWebServiceEndPoints::ValidateKeysByCredentials, array(
 					'timeout'       =>  1,
 					'maxredirects'  =>  0
 					));
@@ -14,7 +14,7 @@ class SecurityService extends CApplicationComponent implements ISecurityService
 			$client->setParameterPost(array(
 				'userName' => $userName,
 				'password' => $password,
-				'licenseKey' => $licenseKey,
+				'licenseKeys' => $licenseKeys,
 				'edition' => $edition
 			));
 
@@ -27,13 +27,13 @@ class SecurityService extends CApplicationComponent implements ISecurityService
 			}
 			else
 			{
-				Blocks::log('Error in calling '.APIWebServiceEndPoints::ValidateKeyByCredentials.' Response: '.$response->getBody(), 'warning');
+				Blocks::log('Error in calling '.APIWebServiceEndPoints::ValidateKeysByCredentials.' Response: '.$response->getBody(), 'warning');
 				return WebServiceReturnStatus::CODE_404;
 			}
 		}
 		catch(Exception $e)
 		{
-			Blocks::log('Error in validateUserCredentialsAndKey. Message: '.$e->getMessage(), 'error');
+			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
 		}
 	}
 }

@@ -2,9 +2,9 @@
 
 class SiteService extends CApplicationComponent implements ISiteService
 {
-	public function getSiteLicenseKey()
+	public function getSiteLicenseKeys()
 	{
-		return Blocks::app()->params['config']['licenseKey'];
+		return Blocks::app()->params['config']['licenseKeys'];
 	}
 
 	public function getSiteName()
@@ -56,7 +56,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 		$versionCheckInfo['blocksClientVersionNo'] = $version;
 		$versionCheckInfo['blocksClientEdition'] = $edition;
 		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
-		$versionCheckInfo['key'] = Blocks::app()->site->getSiteLicenseKey();
+		$versionCheckInfo['keys'] = Blocks::app()->site->getSiteLicenseKeys();
 		$versionCheckInfo['requestingDomain'] = Blocks::app()->request->getServerName();
 
 		try
@@ -71,9 +71,8 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 			if ($response->isSuccessful())
 			{
-				$responseBody = $response->getBody();
-				$responseVersionInfo = CJSON::decode($responseBody);
-				return $responseVersionInfo;
+				$responseBody = CJSON::decode($response->getBody());
+				return $responseBody;
 			}
 			else
 			{
