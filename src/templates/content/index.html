@@ -1,7 +1,7 @@
 {% layout '_layouts/cp' %}
 
-{% region pageTitle %}Content{% endregion %}
-{% region styles %}{{ cp.resource('app/styles/pages/content-index.css').css }}{% endregion %}
+{% region pageTitle %}Content{% /region %}
+{% region styles %}{{ cp.resource('app/styles/pages/content-index.css').css }}{% /region %}
 
 <?php
 	function indent($level) {
@@ -170,4 +170,4 @@
 			</tbody>
 		</table>
 	</div>{!--/main--}
-{% endregion %}
+{% /region %}

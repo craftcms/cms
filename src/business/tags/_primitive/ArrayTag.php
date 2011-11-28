@@ -3,10 +3,26 @@
 class ArrayTag extends Tag
 {
 	protected $_val;
+	protected $_tagified = false;
 
 	public function __construct($val = array())
 	{
 		$this->_val = is_array($val) ? $val : array();
+	}
+
+	/**
+	 * Makes sure that each element of the array is a tag
+	 */
+	protected function _tagify()
+	{
+		if (!$this->_tagified)
+		{
+			foreach ($this->_val as &$tag)
+			{
+				$tag = self::_getVarTag($tag);
+			}
+			$this->_tagified = true;
+		}
 	}
 
 	public function __toString()
@@ -15,13 +31,13 @@ class ArrayTag extends Tag
 
 		foreach ($this->_val as $val)
 		{
-			if (is_object($val) && method_exists($val, '__toString'))
+			if (is_object($val))
 			{
 				$strings[] = $val->__toString();
 			}
 			else
 			{
-				$strings[] = 'NaT';
+				$strings[] = (string)$val;
 			}
 		}
 
@@ -30,6 +46,7 @@ class ArrayTag extends Tag
 
 	public function __toArray()
 	{
+		$this->_tagify();
 		return $this->_val;
 	}
 

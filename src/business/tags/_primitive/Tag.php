@@ -2,6 +2,40 @@
 
 class Tag
 {
+	public $__tag__ = true;
+
+	/**
+	 * Returns whether a variable is a tag or not
+	 */
+	public static function _isTag($var)
+	{
+		return (is_object($var) && isset($var->__tag__));
+	}
+
+	/**
+	 * Returns the appropriate tag for a variable
+	 * @param mixed $var The variable
+	 */
+	public static function _getVarTag($var = '')
+	{
+		if (self::_isTag($var))
+			return $var;
+
+		if (is_int($var) || is_float($var))
+			return new NumTag($var);
+
+		if (is_array($var))
+			return new ArrayTag($var);
+
+		if (is_bool($var))
+			return new BoolTag($var);
+
+		if (is_object($var))
+			return new StringTag($var->__toString());
+
+		return new StringTag($var);
+	}
+
 	public function __toString()
 	{
 		return '';

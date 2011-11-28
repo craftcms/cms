@@ -231,7 +231,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseActions()
 	{
-		$this->_template = preg_replace_callback('/\{\%\s*(\w+)(\s+(.+))?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\{\%\s*(\/?\w+)(\s+(.+))?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
 	}
 
 	/**
@@ -256,6 +256,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 				$regionName = trim($params, '\'"');
 				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => '{$regionName}')); ?>";
 
+			case '/region':
 			case 'endregion':
 				return '<?php $this->endWidget(); ?>';
 
@@ -266,14 +267,23 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Loops
 
 			case 'foreach':
-				if (preg_match('/^(.+)\s+as\s+(.+)$/m', $params, $match))
+				if (preg_match('/^(.+)\s+as\s+(?:([A-Za-z]\w*)\s*,\s*)?([A-Za-z]\w*)$/m', $params, $match))
 				{
 					$this->parseVariable($match[1]);
-					$this->parseVariable($match[2]);
-					return "<?php foreach ({$match[1]}->__toArray() as {$match[2]}): ?>";
+					$this->parseVariable($match[3]);
+					$as = $match[3];
+
+					if (!empty($match[2]))
+					{
+						$this->parseVariable($match[2]);
+						$as = $match[2].' => '.$as;
+					}
+
+					return "<?php foreach ({$match[1]}->__toArray() as {$as}): ?>";
 				}
 				return '';
 
+			case '/foreach':
 			case 'endforeach':
 				return '<?php endforeach ?>';
 
@@ -291,6 +301,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			case 'else':
 				return '<?php else ?>';
 
+			case '/if':
 			case 'endif':
 				return '<?php endif ?>';
 
