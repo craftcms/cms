@@ -198,7 +198,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		if ($this->_hasLayout)
 		{
-			$head .= '$_layout = $this->beginWidget(\'LayoutWidget\');'.PHP_EOL;
+			$head .= '$_layout = $this->beginWidget(\'LayoutTemplateWidget\');'.PHP_EOL;
 		}
 
 		$head .= '?>';
@@ -254,7 +254,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			case 'region':
 				$this->_hasLayout = true;
 				$regionName = trim($params, '\'"');
-				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionWidget', array('name' => '{$regionName}')); ?>";
+				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionTemplateWidget', array('name' => '{$regionName}')); ?>";
 
 			case '/region':
 			case 'endregion':
@@ -270,16 +270,20 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 				if (preg_match('/^(.+)\s+as\s+(?:([A-Za-z]\w*)\s*,\s*)?([A-Za-z]\w*)$/m', $params, $match))
 				{
 					$this->parseVariable($match[1]);
-					$this->parseVariable($match[3]);
-					$as = $match[3];
+					$as = '$'.$match[3];
 
 					if (!empty($match[2]))
 					{
 						$this->parseVariable($match[2]);
-						$as = $match[2].' => '.$as;
+						$as = "\${$match[2]} => {$as}";
+						$after = " \${$match[2]} = new NumTag(\${$match[2]})";
+					}
+					else
+					{
+						$after = '';
 					}
 
-					return "<?php foreach ({$match[1]}->__toArray() as {$as}): ?>";
+					return "<?php foreach ({$match[1]}->__toArray() as {$as}):{$after} ?>";
 				}
 				return '';
 

@@ -1,6 +1,6 @@
 <?php
 
-class LayoutWidget extends COutputProcessor
+class LayoutTemplateWidget extends COutputProcessor
 {
 	public $view;
 	public $regions = array();

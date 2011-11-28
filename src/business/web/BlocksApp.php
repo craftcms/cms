@@ -257,4 +257,21 @@ class BlocksApp extends CWebApplication
 			// can't find any template or route to match.
 			throw new BlocksHttpException(404);
 	}
+
+	/**
+	 * Returns the dashboard widgets for the current user
+	 */
+	public function getDashboardWidgets()
+	{
+		return array(
+			new UpdatesWidget,
+			new RecentActivityWidget,
+			new ContentWidget,
+			new FeedWidget,
+			//new Analytics_ReferrersWidget,
+			//new Analytics_KeywordsWidget,
+			//new Analytics_PageviewsWidget,
+			//new Analytics_ContentWidget,
+		);
+	}
 }

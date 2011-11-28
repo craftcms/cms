@@ -31,7 +31,14 @@ class Tag
 			return new BoolTag($var);
 
 		if (is_object($var))
-			return new StringTag($var->__toString());
+		{
+			if (method_exists($var, '__toString'))
+				$str = $var->__toString();
+			else
+				$str = get_class($var);
+
+			return new StringTag($str);
+		}
 
 		return new StringTag($var);
 	}
