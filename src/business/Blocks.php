@@ -8,7 +8,7 @@ class Blocks extends Yii
 			return /*versionNumber*/ '0.11';
 
 		$blocksVersion = Info::model()->findAll();
-		return $blocksVersion !== null ? $blocksVersion[0]->version : null;
+		return !empty($blocksVersion) ? $blocksVersion[0]->version : null;
 	}
 
 	public static function getBuildNumber($db = false)
@@ -17,7 +17,7 @@ class Blocks extends Yii
 			return '@@@buildNumber@@@';
 
 		$blocksBuildNumber = Info::model()->findAll();
-		return $blocksBuildNumber !== null ? $blocksBuildNumber[0]->build_number : null;
+		return !empty($blocksBuildNumber) ? $blocksBuildNumber[0]->build_number : null;
 	}
 
 	public static function getEdition($db = false)
@@ -26,7 +26,7 @@ class Blocks extends Yii
 			return '@@@edition@@@';
 
 		$blocksEdition = Info::model()->findAll();
-		return $blocksEdition !== null ? $blocksEdition[0]->edition : null;
+		return !empty($blocksEdition) ? $blocksEdition[0]->edition : null;
 	}
 
 	public static function getYiiVersion()
