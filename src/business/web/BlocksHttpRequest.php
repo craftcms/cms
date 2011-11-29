@@ -6,6 +6,17 @@ class BlocksHttpRequest extends CHttpRequest
 	private $_pathSegments = null;
 	private $_extension = null;
 	private $_siteInfo = null;
+	private $_blocksUpdateInfo = null;
+
+	public function setBlocksUpdateInfo($blocksUpdateInfo)
+	{
+		$this->_blocksUpdateInfo = $blocksUpdateInfo;
+	}
+
+	public function getBlocksUpdateInfo()
+	{
+		return $this->_blocksUpdateInfo;
+	}
 
 	public function getPathSegments()
 	{

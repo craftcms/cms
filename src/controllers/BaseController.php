@@ -186,7 +186,8 @@ class BaseController extends CController
 			if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
 			{
 				Blocks::import('application.business.tags.cp.*');
-				$this->_defaultTemplateTags['cp'] = 'CpTag';
+				$this->_defaultTemplateTags['cp'] =     'CpTag';
+				$this->_defaultTemplateTags['config'] = 'ConfigTag';
 			}
 		}
 
@@ -195,7 +196,7 @@ class BaseController extends CController
 
 	/**
 	 * Returns a new tag instance, which will either be one of the globals, or a generic tag, depending on the handle passed in
-	 * @param stirng $tagHandle The tag handle being used in the template
+	 * @param string $tagHandle The tag handle being used in the template
 	 * @return object The tag instance
 	 */
 	public function getTemplateTag($tagHandle)

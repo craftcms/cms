@@ -48,4 +48,9 @@ class UrlTag extends Tag
 
 		return new StringTag;
 	}
+
+	public function domain()
+	{
+		return new StringTag(Blocks::app()->request->getServerName());
+	}
 }

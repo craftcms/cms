@@ -15,7 +15,7 @@ class ContentVersionTag extends Tag
 
 	public function num()
 	{
-		return new NumericTag($this->_val->num);
+		return new NumTag($this->_val->num);
 	}
 
 	public function label()

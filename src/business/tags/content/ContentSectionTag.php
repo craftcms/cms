@@ -29,7 +29,7 @@ class ContentSectionTag extends Tag
 
 	public function maxPages()
 	{
-		return new NumericTag($this->_val->max_pages);
+		return new NumTag($this->_val->max_pages);
 	}
 
 	public function parent()

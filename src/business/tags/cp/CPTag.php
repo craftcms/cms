@@ -35,12 +35,18 @@ class CpTag extends Tag
 
 	public function noLicenseKey()
 	{
+		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
+			return $blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey ? new BoolTag(true) : new BoolTag(false);
+
 		return new BoolTag(false);
 	}
 
 	public function badLicenseKey()
 	{
-		return new BoolTag(true);
+		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
+			return $blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::InvalidKey ? new BoolTag(true) : new BoolTag(false);
+
+		return new BoolTag(false);
 	}
 
 	public function criticalUpdateAvailable()
