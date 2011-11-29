@@ -1,53 +1,51 @@
-{% layout '_layouts/cp' %}
+{% layout '_layouts/full' %}
 
 {% region pageTitle %}Dashboard{% /region %}
 {% region styles %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
 
 {% region main %}
-	<div id="main">
-		{% if cp.noLicenseKey %}
-			<div class="alert">
-				<p>You need to enter your license key into blocks/config/blocks.php. <a href="">See how</a></p>
-			</div>
-		{% elseif cp.badLicenseKey %}
-			<div class="alert">
-				<p>The license key you’re using isn’t authorized to run Blocks Standard on expressionengine.com. <a href="">Manage my licenses</a></p>
-			</div>
-		{% /if %}
+	{% if cp.noLicenseKey %}
+		<div class="alert">
+			<p>You need to enter your license key into blocks/config/blocks.php. <a href="">See how</a></p>
+		</div>
+	{% elseif cp.badLicenseKey %}
+		<div class="alert">
+			<p>The license key you’re using isn’t authorized to run Blocks Standard on expressionengine.com. <a href="">Manage my licenses</a></p>
+		</div>
+	{% /if %}
 
-		{% if cp.criticalUpdateAvailable %}
-			<div class="alert">
-				<p>There’s a critical update available for Blocks. <a href="">Update now</a></p>
-			</div>
-		{% /if %}
+	{% if cp.criticalUpdateAvailable %}
+		<div class="alert">
+			<p>There’s a critical update available for Blocks. <a href="">Update now</a></p>
+		</div>
+	{% /if %}
 
-		<div id="dashboard">
-			<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
+	<div id="dashboard">
+		<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
 
-			<div id="widgets">
-				{% foreach cp.dashboard.widgets as count, widget %}
-					<div class="widget {{ widget.classname }}" id="widget{{ count+1 }}">
-						<h3>{{ widget.title }}</h3>
-						<div class="body">
-							{{ widget.body }}
-						</div>
+		<div id="widgets">
+			{% foreach cp.dashboard.widgets as count, widget %}
+				<div class="widget {{ widget.classname }}" id="widget{{ count+1 }}">
+					<h3>{{ widget.title }}</h3>
+					<div class="body">
+						{{ widget.body }}
 					</div>
-				{% /foreach %}
-			</div>
+				</div>
+			{% /foreach %}
+		</div>
 
-			<div id="sidebar">
-				<ul class="widget-handles">
-					{% foreach cp.dashboard.widgets as widget %}
-						<li><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></li>
-					{% /foreach %}
-				</ul>
-			</div>
+		<div id="sidebar">
+			<ul class="widget-handles">
+				{% foreach cp.dashboard.widgets as widget %}
+					<li><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></li>
+				{% /foreach %}
+			</ul>
 		</div>
 	</div>
 {% /region %}
 
 {% region scripts %}
-{{ cp.resource('app/scripts/ui/Drag.js').js }}
-{{ cp.resource('app/scripts/ui/DragSort.js').js }}
-{{ cp.resource('app/scripts/dashboard.js').js }}
+	{{ cp.resource('app/scripts/ui/Drag.js').js }}
+	{{ cp.resource('app/scripts/ui/DragSort.js').js }}
+	{{ cp.resource('app/scripts/dashboard.js').js }}
 {% /region %}

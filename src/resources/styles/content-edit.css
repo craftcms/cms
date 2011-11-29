@@ -12,7 +12,7 @@
 #main .page { border-radius: 4px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.15); }
 
 #main .page .editable { display: inline-block; cursor: pointer; }
-#main .page .editable:hover { padding-right: 18px; background: url(../../images/edit-icon.png) no-repeat 100% 50%; }
+#main .page .editable:hover { padding-right: 18px; background: url(../images/edit-icon.png) no-repeat 100% 50%; }
 #main .page .null { color: #aaa; }
 
 #main .page .field { position: relative; padding: 20px 80px; border-bottom: 1px dotted #eee; background: -webkit-gradient(linear, 0 50%, 0 100%, from(#fff), to(#fcfcfc)) repeat-x 0 100%; }
@@ -23,12 +23,12 @@
 
 #main .page .page-head .draft-btn { display: none; position: relative; margin-left: 10px; border: 1px solid #36b2ff; background: transparent; }
 #main .page .page-head .draft-btn .label { color: #2d98db; }
-#main .page .page-head .draft-btn .arrow { background-image: url(../../images/draft-btn-arrow.png); opacity: 1; }
+#main .page .page-head .draft-btn .arrow { background-image: url(../images/draft-btn-arrow.png); opacity: 1; }
 #main .page .page-head .draft-btn ul { display: none; position: absolute; z-index: 1; top: 23px; left: 0; border-radius: 2px; width: 200px; height: 100px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.1); }
 
 #main .page .page-head { padding-bottom: 0; }
 #main .page .page-head .settings-btn { margin: -20px -60px 0 0; float: right; }
-#main .page .page-head .page-settings { margin-top: 18px; height: 0; overflow: hidden; padding-left: 68px; background: url(../../images/settings-bg.png) no-repeat 0 5px; }
+#main .page .page-head .page-settings { margin-top: 18px; height: 0; overflow: hidden; padding-left: 68px; background: url(../images/settings-bg.png) no-repeat 0 5px; }
 #main .page .page-head .page-settings table th,
 #main .page .page-head .page-settings table td { padding-top: 2px; }
 #main .page .page-head .page-settings table th { padding-right: 20px; color: #666; }
