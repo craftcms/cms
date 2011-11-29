@@ -57,7 +57,7 @@ strong{font-weight:bold;}
 
 #sidebars .sidebar .search { margin-bottom: 15px; }
 #sidebars .sidebar .tree a { font-weight: normal; color: #666; text-shadow: 0 1px 0 #eee; }
-#sidebars .sidebar .tree a.sel { margin: 0 -25px 0 -9999px; padding-left: 9999px; padding-right: 25px; border-radius: 2px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(0,0,0,0.05)), to(transparent)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(0,0,0,0.05), 0 1px 0 #fff; }
+#sidebars .sidebar .tree a.sel { margin: 0 -25px 0 -9999px; padding-left: 9974px; padding-right: 25px; border-radius: 2px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(0,0,0,0.05)), to(transparent)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(0,0,0,0.05), 0 1px 0 #fff; }
 
 
 /*-- main --*/

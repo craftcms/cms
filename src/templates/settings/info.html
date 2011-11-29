@@ -1,0 +1,27 @@
+{% layout 'settings/_layouts/settings' %}
+
+{% region pageTitle %}System Info{% /region %}
+{% region bodyClass %}info{% /region %}
+
+{% region main %}
+	<div class="fields">
+		<table class="zebra">
+			<tr>
+				<th>Blocks Version</th>
+				<td>Blocks 1.0 Standard, build 212212</td>
+			</tr>
+			<tr>
+				<th>Blocks License Key</th>
+				<td>70573ac9-d16b-498a-8be5-eb196b6bda9b-a89568ed-20a6-46a8-b402-c07721e34d7a</td>
+			</tr>
+			<tr>
+				<th>P&T Account</th>
+				<td>brandon@pixelandtonic.com</td>
+			</tr>
+			<tr>
+				<th>System Status</th>
+				<td><!--#include virtual="/-includes/switch.shtml"--></td>
+			</tr>
+		</table>
+	</div>
+{% /region %}
