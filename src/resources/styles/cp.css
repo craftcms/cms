@@ -292,8 +292,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Thumbs and filenames
 /* ----------------------------------------*/
 
-.thumb { display: inline-block; padding: 7px; background: #fff; -webkit-box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
-.thumb img { display: block; background: #fafafa; -webkit-box-shadow: inset 0 2px 1px rgba(0,0,0,0.03), inset 0 0 0 1px rgba(0,0,0,0.02); }
+.thumb { display: inline-block; }
+.thumb img { display: block; width: 75px; height: 75px; }
 .filename { margin-top: 4px; max-height: 28px; padding-bottom: 2px; overflow: hidden; text-overflow: ellipsis; line-height: 14px; }
 .filename span { display: inline-block; max-width: 96px; overflow: hidden; white-space: pre; text-overflow: ellipsis; }
 
