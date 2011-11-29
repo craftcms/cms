@@ -78,7 +78,7 @@ h2 { font-size: 24px; line-height: 1.4; color: #415466; }
 h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-size: 18px; line-height: 24px; color: #666; text-shadow: 0 1px 0 #fff; }
 h4 { margin: 15px 0 10px; font-weight: bold; color: #000; }
 
-p { margin-bottom: 1em; max-width: 50em; }
+p { margin-bottom: 1em; }
 
 em,
 i { font-style: italic; }

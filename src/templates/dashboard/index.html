@@ -4,26 +4,42 @@
 {% region styles %}{{ cp.resource('app/styles/pages/dashboard.css').css }}{% /region %}
 
 {% region main %}
-	<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
-
 	<div id="main">
-		{% foreach cp.dashboard.widgets as count, widget %}
-			<div class="widget {{ widget.classname }}" id="widget{{ count+1 }}">
-				<h3>{{ widget.title }}</h3>
-				<div class="body">
-					{{ widget.body }}
-				</div>
-			</div>
-		{% /foreach %}
-	</div>
+		<div class="alert">
+			<p>You need to enter your license key into blocks/config/blocks.php. <a href="">See how</a></p>
+		</div>
 
-	<div id="sidebar">
-		<ul class="widget-handles">
-			{% foreach cp.dashboard.widgets as widget %}
-				<li><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></li>
-			{% /foreach %}
-		</ul>
-	</div>{!--/sidebar--}
+		<div class="alert">
+			<p>The license key you’ve entered into blocks/config/blocks.php isn’t allowed to run on expressionengine.com. <a href="">Manage my licenses</a></p>
+		</div>
+
+		<div class="alert">
+			<p>There’s a critical update available for Blocks. <a href="">Update now</a></p>
+		</div>
+
+		<div id="dashboard">
+			<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
+
+			<div id="widgets">
+				{% foreach cp.dashboard.widgets as count, widget %}
+					<div class="widget {{ widget.classname }}" id="widget{{ count+1 }}">
+						<h3>{{ widget.title }}</h3>
+						<div class="body">
+							{{ widget.body }}
+						</div>
+					</div>
+				{% /foreach %}
+			</div>
+
+			<div id="sidebar">
+				<ul class="widget-handles">
+					{% foreach cp.dashboard.widgets as widget %}
+						<li><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></li>
+					{% /foreach %}
+				</ul>
+			</div>
+		</div>
+	</div>
 {% /region %}
 
 {% region scripts %}

@@ -11,7 +11,7 @@ var Dashboard = Base.extend({
 
 	constructor: function()
 	{
-		this.dom.$main = $(document.getElementById('main'));
+		this.dom.$container = $(document.getElementById('widgets'));
 		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
 		this.dom.$sidebar = $(document.getElementById('sidebar'));
 
@@ -36,7 +36,7 @@ var Dashboard = Base.extend({
 
 	getWidgets: function()
 	{
-		this.$widgets = $('.widget', this.dom.$main);
+		this.$widgets = $('.widget', this.dom.$container);
 
 		for (var i = 0; i < this.$widgets.length; i++)
 		{
@@ -52,7 +52,7 @@ var Dashboard = Base.extend({
 
 	setCols: function(animate, widgetOffsets)
 	{
-		var totalCols = Math.floor((this.dom.$main.width() + Dashboard.gutterWidth) / (Dashboard.minColWidth + Dashboard.gutterWidth));
+		var totalCols = Math.floor((this.dom.$container.width() + Dashboard.gutterWidth) / (Dashboard.minColWidth + Dashboard.gutterWidth));
 
 		if (this.totalCols !== (this.totalCols = totalCols))
 		{
@@ -168,20 +168,20 @@ var Dashboard = Base.extend({
 	toggleSidebar: function()
 	{
 		// stop any current animations
-		this.dom.$main.stop();
+		this.dom.$container.stop();
 		this.dom.$sidebar.stop();
 
 		if (!this.showingSidebar)
 		{
-			var targetMainMargin = Dashboard.sidebarWidth + Dashboard.gutterWidth,
-				targetSidebarPos = Dashboard.gutterWidth;
+			var targetContainerMargin = Dashboard.sidebarWidth + Dashboard.gutterWidth,
+				targetSidebarPos = 10;
 
 			this.dom.$sidebarBtn.addClass('sel');
 		}
 		else
 		{
-			var targetMainMargin = 0,
-				targetSidebarPos = -Dashboard.sidebarWidth;
+			var targetContainerMargin = 0,
+				targetSidebarPos = -(Dashboard.sidebarWidth + 11);
 
 			this.dom.$sidebarBtn.removeClass('sel');
 		}
@@ -189,16 +189,16 @@ var Dashboard = Base.extend({
 		// get the current widget offsets
 		var widgetOffsets = this.getWidgetOffsets();
 
-		// record the current main margin, and stage the target one
-		var currentMainMargin = this.dom.$main.css('marginRight');
-		this.dom.$main.css('marginRight', targetMainMargin);
+		// record the current container margin, and stage the target one
+		var currentContainerMargin = this.dom.$container.css('marginRight');
+		this.dom.$container.css('marginRight', targetContainerMargin);
 
 		// set the new cols if necessary, otherwise just animate the margin
 		if (!this.setCols(true, widgetOffsets))
 		{
 			// restore the current margin, and animate to the target
-			this.dom.$main.css('marginRight', currentMainMargin);
-			this.dom.$main.animate({marginRight: targetMainMargin});
+			this.dom.$container.css('marginRight', currentContainerMargin);
+			this.dom.$container.animate({marginRight: targetContainerMargin});
 		}
 
 		// slide the sidebar
@@ -246,7 +246,7 @@ var Dashboard = Base.extend({
 		var $widget = this.widgets[i],
 			$handle = $(this.dom.$widgetHandles[i]),
 			handleHeight = $handle.outerHeight(),
-			mainOffset = this.dom.$main.offset(),
+			containerOffset = this.dom.$container.offset(),
 			widgetOffset = $widget.offset(),
 			width = $widget.width();
 
@@ -266,12 +266,12 @@ var Dashboard = Base.extend({
 		});
 
 		// fade out the widget, and then remove it
-		$widget.appendTo(this.dom.$main);
+		$widget.appendTo(this.dom.$container);
 		$widget.css({
 			position: 'absolute',
 			zIndex: 0,
-			top: widgetOffset.top - mainOffset.top,
-			left: widgetOffset.left - mainOffset.left,
+			top: widgetOffset.top - containerOffset.top,
+			left: widgetOffset.left - containerOffset.left,
 			width: width
 		});
 		$widget.fadeOut($.proxy(function() {
@@ -296,7 +296,7 @@ Dashboard.Col = Base.extend({
 		this.dom.outerDiv = document.createElement('div');
 		this.dom.outerDiv.className = 'col';
 		this.dom.outerDiv.style.width = dashboard.colWidth+'%';
-		dashboard.dom.$main.append(this.dom.outerDiv);
+		dashboard.dom.$container.append(this.dom.outerDiv);
 
 		this.dom.innerDiv = document.createElement('div');
 		this.dom.innerDiv.className = 'col-padding';

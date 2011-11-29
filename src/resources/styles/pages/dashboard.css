@@ -1,17 +1,26 @@
 #body { width: 100%; overflow: hidden; }
 
-#sidebar-btn { position: absolute; top: 20px; right: 20px; }
+.alert,
+.widget { border-radius: 4px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.25); }
 
-#main { top: 36px; background: none; padding: 10px; }
+/* alerts */
+.alert { margin-bottom: 20px; padding: 8px 10px; border: 2px solid #e14545; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#fff5f2)); }
+.alert p:last-child { margin-bottom: 0; }
 
+/* dashboard */
+#dashboard { position: relative; margin: 0 -10px; padding-top: 26px; }
+#sidebar-btn { position: absolute; top: 0; right: 10px; }
+
+/* cols */
 .col { float: left; }
 .col .col-padding { padding: 10px; }
 
-.widget { position: relative; margin-bottom: 20px; border-radius: 4px; background: #f5f5f5; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); overflow: hidden; }
+/* widgets */
+.widget { position: relative; margin-bottom: 20px; overflow: hidden; }
 .widget.dragging { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.1); }
 .widget:last-child { margin-bottom: 0; }
 
-.widget h3 { margin: 0; border-radius: 4px 4px 0 0; padding: 8px 10px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,0.5)), to(rgba(255,255,255,0))); }
+.widget h3 { margin: 0; border-radius: 4px 4px 0 0; padding: 8px 10px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(rgba(255,255,255,0))); }
 .widget .body { padding: 10px 20px; border-radius: 4px; background: #fff; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1); }
 
 .widget .body table { width: 100%; }
@@ -48,7 +57,7 @@
 .widget.analytics-referrers .body table tbody tr.breakdown a { font-weight: normal; }
 
 /*-- sidebar --*/
-#sidebar { position: absolute; top: 56px; right: -220px; border-left: 1px dotted #ccc; width: 180px; padding-left: 20px; }
+#sidebar { position: absolute; top: 56px; right: -230px; border-left: 1px dotted #ccc; width: 180px; padding-left: 20px; }
 ul.widget-handles li { position: relative; margin-bottom: 10px; padding: 8px 25px 8px 35px; border-radius: 2px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,1)), to(rgba(255,255,255,0.5))); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); cursor: move; cursor: -webkit-grab; }
 ul.widget-handles.dragging li { cursor: -webkit-grabbing; }
 ul.widget-handles li span.grab { display: block; position: absolute; left: 10px; top: 50%; margin-top: -9px; width: 15px; height: 18px; background: url(../../images/grab-handle.png) no-repeat 50% 50%; }
