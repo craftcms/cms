@@ -1,6 +1,6 @@
 <?php
 
-class GroupTag extends Tag
+class UserGroupTag extends Tag
 {
 	function __call($method, $args)
 	{
