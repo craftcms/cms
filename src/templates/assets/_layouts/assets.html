@@ -1,56 +1,52 @@
-{% layout '_layouts/cp' %}
+{% layout '_layouts/sidebar' %}
 
 {% region pageTitle %}Assets{% /region %}
 {% region styles %}{{ cp.resource('app/styles/assets.css').css }}{% /region %}
 {% region bodyClass %}sidebar-layout{% /region %}
 
-{% region main %}
-	<div id="sidebars">
-		<div class="sidebar">
-			<div class="tree">
+{% region sidebar %}
+	<div class="tree">
+		<ul>
+			<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>shared</a>
 				<ul>
-					<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>shared</a>
-						<ul>
-							<li><a class="sel" href=""><span class="icon icon133"></span>drinks</a></li>
-						</ul>
-					</li>
-					<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>content</a>
-						<ul>
-							<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>add-ons</a>
-								<ul>
-									<li><a href=""><span class="icon icon133"></span>assets</a></li>
-									<li><a href=""><span class="icon icon133"></span>matrix</a></li>
-									<li><a href=""><span class="icon icon133"></span>playa</a></li>
-									<li><a href=""><span class="icon icon133"></span>wygwam</a></li>
-								</ul>
-							</li>
-							<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>blog-posts</a>
-								<ul>
-									<li><span class="toggle"></span><a href=""><span class="icon icon133"></span>2009</a></li>
-									<li><span class="toggle"></span><a href=""><span class="icon icon133"></span>2010</a></li>
-									<li><span class="toggle"></span><a href=""><span class="icon icon133"></span>2011</a></li>
-								</ul>
-							</li>
-							<li><a href=""><span class="icon icon133"></span>divebar</a></li>
-						</ul>
-					</li>
+					<li><a class="sel" href=""><span class="icon icon133"></span>drinks</a></li>
 				</ul>
-			</div>{!--/tree--}
+			</li>
+			<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>content</a>
+				<ul>
+					<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>add-ons</a>
+						<ul>
+							<li><a href=""><span class="icon icon133"></span>assets</a></li>
+							<li><a href=""><span class="icon icon133"></span>matrix</a></li>
+							<li><a href=""><span class="icon icon133"></span>playa</a></li>
+							<li><a href=""><span class="icon icon133"></span>wygwam</a></li>
+						</ul>
+					</li>
+					<li class="expanded"><span class="toggle"></span><a href=""><span class="icon icon133"></span>blog-posts</a>
+						<ul>
+							<li><span class="toggle"></span><a href=""><span class="icon icon133"></span>2009</a></li>
+							<li><span class="toggle"></span><a href=""><span class="icon icon133"></span>2010</a></li>
+							<li><span class="toggle"></span><a href=""><span class="icon icon133"></span>2011</a></li>
+						</ul>
+					</li>
+					<li><a href=""><span class="icon icon133"></span>divebar</a></li>
+				</ul>
+			</li>
+		</ul>
+	</div>
+{% /region %}
+
+{% region main %}
+	<div class="toolbar">
+		<div class="btn-group">
+			<a class="btn {% if viewMode=='grid' %}sel{% /if %}" href="?viewMode=grid" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
+			<a class="btn {% if viewMode=='list' %}sel{% /if %}" href="?viewMode=list" title="Display files in a list"><span class="icon icon276"></span></a></li>
 		</div>
+
+		<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>
+
+		<div class="search"><input type="text" /></div>
 	</div>
 
-	<div id="main">
-		<div class="toolbar">
-			<div class="btn-group">
-				<a class="btn {% if viewMode=='grid' %}sel{% /if %}" href="?viewMode=grid" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
-				<a class="btn {% if viewMode=='list' %}sel{% /if %}" href="?viewMode=list" title="Display files in a list"><span class="icon icon276"></span></a></li>
-			</div>
-
-			<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>
-
-			<div class="search"><input type="text" /></div>
-		</div>
-
-		{{ files }}
-	</div>
+	{{ files }}
 {% /region %}
