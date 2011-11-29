@@ -17,33 +17,56 @@ blx.onWindowResize = function()
 };
 
 
+/**
+ * Returns the body's proper scrollTop, discarding any document banding in Safari
+ */
+blx.getBodyScrollTop = function()
+{
+	var scrollTop = document.body.scrollTop;
+
+	if (scrollTop < 0)
+	{
+		scrollTop = 0;
+	}
+	else
+	{
+		var maxScrollTop = $(document.body).outerHeight() - this.windowHeight;
+		if (scrollTop > maxScrollTop)
+			scrollTop = maxScrollTop;
+	}
+
+	return scrollTop;
+};
+
+
 blx.CP =
 {
+	hasSidebar: $(document.body).hasClass('sidebar-layout'),
+	navHeight: null,
+	footerHeight: null,
+
 	dom:
 	{
 		$nav: $('#nav'),
 		$footer: $('#footer'),
-		$sidebars: $('#sidebars'),
+		$sidebar: $('#sidebar'),
+		$body: $('#body'),
 		$main: $('#main')
 	},
 
-	bodyHeightDiff: null,
-	windowWidth: null,
-	windowHeight: null,
-
-	/**
-	 * Updates #sidebar's height and #main's min-height
-	 */
 	onWindowResizeHeight: function()
 	{
-		var bodyHeight = blx.windowHeight - this.bodyHeightDiff;
-		this.dom.$sidebars.height(bodyHeight);
-		this.dom.$main.css('minHeight', bodyHeight);
+		// set the min #main height
+		var minMainHeight = blx.windowHeight - this.navHeight - this.footerHeight - 40;
+		this.dom.$main.css('minHeight', minMainHeight);
+
+		if (this.hasSidebar)
+			this.setSidebarHeight();
 	},
 
 	onWindowScroll: function(event)
 	{
-		if (document.body.scrollTop > 15)
+		if (blx.getBodyScrollTop() > 15)
 		{
 			this.dom.$nav.addClass('scrolling');
 		}
@@ -51,11 +74,28 @@ blx.CP =
 		{
 			this.dom.$nav.removeClass('scrolling');
 		}
+
+		if (this.hasSidebar)
+			this.setSidebarHeight();
+	},
+
+	setSidebarHeight: function()
+	{
+		// is the footer visible?
+		var footerScrollOffset = this.dom.$footer.offset().top - blx.getBodyScrollTop();
+		if (footerScrollOffset < blx.windowHeight)
+			visibleFooterHeight = blx.windowHeight - footerScrollOffset;
+		else
+			visibleFooterHeight = 0;
+
+		var sidebarHeight = blx.windowHeight - this.navHeight - visibleFooterHeight - 40;
+		this.dom.$sidebar.height(sidebarHeight);
 	}
 };
 
 
-blx.CP.bodyHeightDiff = blx.CP.dom.$nav.outerHeight() + blx.CP.dom.$footer.outerHeight() + 40;
+blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
+blx.CP.footerHeight = blx.CP.dom.$footer.outerHeight();
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
 $(window).on('resizeHeight.cp', $.proxy(blx.CP, 'onWindowResizeHeight'));
