@@ -10,6 +10,16 @@ class ArrayTag extends Tag
 		$this->_val = is_array($val) ? $val : array();
 	}
 
+	public function __call($name, $args)
+	{
+		if (isset($this->_val[$name]))
+		{
+			return self::_getVarTag($this->_val[$name]);
+		}
+
+		return parent::__call($name, $args);
+	}
+
 	/**
 	 * Makes sure that each element of the array is a tag
 	 */
