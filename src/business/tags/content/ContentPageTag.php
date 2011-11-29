@@ -55,7 +55,7 @@ class ContentPageTag extends Tag
 
 	public function pageOrder()
 	{
-		return new NumericTag($this->_val->page_order);
+		return new NumTag($this->_val->page_order);
 	}
 
 	public function archived()

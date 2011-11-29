@@ -67,7 +67,7 @@ blx.ui.RTE = Base.extend({
 
 		var html = '<html>';
 		if (this.settings.css) html += '<head><link rel="stylesheet" type="text/css" href="'+this.settings.css+'"></head>';
-		html += '<body>'+this.dom.textarea.value+'</body></html>'
+		html += '<body>'+this.dom.textarea.value+'</body></html>';
 
 		this.iDoc.open();
 		this.iDoc.write(html);
@@ -217,7 +217,7 @@ blx.ui.RTE = Base.extend({
 	{
 		var range = this._getRange();
 
-		elem = range.commonAncestorContainer
+		elem = range.commonAncestorContainer;
 
 		if (!range.collapsed)
 		{
@@ -376,7 +376,7 @@ blx.ui.RTE.defaults = {
 	],
 
 	css: null
-}
+};
 
 
 /**

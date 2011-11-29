@@ -76,7 +76,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 				left: offset.left + $item.width() / 2,
 				top:  offset.top + $item.height() / 2
 			});
-		};
+		}
 	},
 
 	/**
@@ -123,7 +123,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 				closestItemIndex = i;
 				closestItemMouseDiff = mouseDiff;
 			}
-		};
+		}
 
 		return closestItemIndex;
 	},
@@ -156,7 +156,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 		{
 			// reposition the draggee in teh $items array
 			this.$items.splice(this.draggeeIndex, 1);
-			this.$items.splice(this.closestItemIndex, 0, this.$draggee[0])
+			this.$items.splice(this.closestItemIndex, 0, this.$draggee[0]);
 
 			// update the indexes
 			this.draggeeIndex = this.closestItemIndex;
@@ -222,7 +222,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 					);
 				}
 			)($draggee, $helper);
-		};
+		}
 	}
 },
 {

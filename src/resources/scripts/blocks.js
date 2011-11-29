@@ -14,7 +14,7 @@ blx.onWindowResize = function()
 	// has the window height changed?
 	if (this.windowHeight !== (this.windowHeight = $(window).height()))
 		$(window).trigger('resizeHeight', this.windowHeight)
-}
+};
 
 
 blx.CP =
@@ -58,7 +58,7 @@ blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
 $(window).on('resizeHeight.cp', $.proxy(blx.CP, 'onWindowResizeHeight'));
-$(window).on('scroll.cp', $.proxy(blx.CP, 'onWindowScroll'))
+$(window).on('scroll.cp', $.proxy(blx.CP, 'onWindowScroll'));
 blx.onWindowResize();
 blx.CP.onWindowScroll();
 

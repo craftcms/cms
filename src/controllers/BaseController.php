@@ -194,7 +194,7 @@ class BaseController extends CController
 
 	/**
 	 * Returns a new tag instance, which will either be one of the globals, or a generic tag, depending on the handle passed in
-	 * @param stirng $tagHandle The tag handle being used in the template
+	 * @param string $tagHandle The tag handle being used in the template
 	 * @return object The tag instance
 	 */
 	public function getTemplateTag($tagHandle)

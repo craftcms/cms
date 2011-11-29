@@ -139,7 +139,7 @@ blx.ui.Drag = Base.extend({
 		if (this.settings.removeDraggee)
 			this.$draggee.hide();
 		else
-			this.$draggee.css('visibility', 'hidden')
+			this.$draggee.css('visibility', 'hidden');
 
 		this.lastMouseX = this.lastMouseY = null;
 
@@ -210,7 +210,7 @@ blx.ui.Drag = Base.extend({
 			};
 
 			this.helpers.push($draggeeHelper);
-		};
+		}
 	},
 
 	/**
@@ -265,7 +265,7 @@ blx.ui.Drag = Base.extend({
 					left: this.mouseX - this.targetMouseDiffX + (i * blx.ui.Drag.helperSpacingX),
 					top:  this.mouseY - this.targetMouseDiffY + (i * blx.ui.Drag.helperSpacingY)
 				};
-			};
+			}
 
 			this.lastMouseX = this.mouseX;
 			this.lastMouseY = this.mouseY;
@@ -282,7 +282,7 @@ blx.ui.Drag = Base.extend({
 			};
 
 			this.helpers[i].css(this.helperPositions[i]);
-		};
+		}
 	},
 
 	/**
@@ -306,7 +306,7 @@ blx.ui.Drag = Base.extend({
 					$draggeeHelper.remove();
 				});
 			})($draggee, $draggeeHelper);
-		};
+		}
 	},
 
 	/**

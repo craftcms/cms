@@ -34,7 +34,7 @@ class ContentBlockTag extends Tag
 
 	public function displayOrder()
 	{
-		return new NumericTag($this->_val->display_order);
+		return new NumTag($this->_val->display_order);
 	}
 
 	public function section()

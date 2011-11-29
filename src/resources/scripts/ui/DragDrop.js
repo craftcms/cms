@@ -113,7 +113,7 @@ blx.ui.DragDrop = blx.ui.Drag.extend({
 					$draggeeHelper.remove();
 				});
 			})(this.helpers[i]);
-		};
+		}
 	}
 },
 {
