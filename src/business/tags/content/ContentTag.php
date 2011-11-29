@@ -4,14 +4,14 @@ class ContentTag extends Tag
 {
 	private $_siteId;
 
+	function __construct()
+	{
+		$this->_siteId = Blocks::app()->request->getSiteInfo()->id;
+	}
+
 	function __call($method, $args)
 	{
 		return $this->section($method);
-	}
-
-	function __construct($siteId)
-	{
-		$this->_siteId = $siteId;
 	}
 
 	public function sections($handles = array())

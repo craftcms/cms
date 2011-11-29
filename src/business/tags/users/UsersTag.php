@@ -2,14 +2,8 @@
 
 class UsersTag extends Tag
 {
-	protected $_siteId;
 	protected $_users;
 	protected $_groups;
-
-	public function __construct($siteId)
-	{
-		$this->_siteId = $siteId;
-	}
 
 	protected function getUsers()
 	{

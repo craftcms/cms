@@ -206,9 +206,7 @@ class BaseController extends CController
 		if (isset($defaultTags[$tagHandle]))
 		{
 			$tagClass = $defaultTags[$tagHandle];
-			$site = Blocks::app()->request->getSiteInfo();
-
-			return new $tagClass($site->id);
+			return new $tagClass();
 		}
 
 		return new Tag;

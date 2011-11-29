@@ -4,9 +4,9 @@ class AssetsTag extends Tag
 {
 	private $_siteId;
 
-	function __construct($siteId)
+	function __construct()
 	{
-		$this->_siteId = $siteId;
+		$this->_siteId = Blocks::app()->request->getSiteInfo()->id;
 	}
 
 	public function folders()
