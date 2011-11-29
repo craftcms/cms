@@ -19,19 +19,16 @@ class VersionCheckFilter extends CFilter
 		if (Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
 			return true;
 
-		$responseVersionInfo = Blocks::app()->site->versionCheck();
-
-		if ($responseVersionInfo != null)
+		if (($keys = Blocks::app()->site->getSiteLicenseKeys()) == null || empty($keys))
 		{
-			$blocksStatusMessages = $this->buildBlocksStatusMessages($responseVersionInfo);
-			$pluginStatusMessages = $this->buildPluginStatusMessages($responseVersionInfo['pluginNamesAndVersions']);
-			$statusMessages = array_merge($blocksStatusMessages, $pluginStatusMessages);
-
-			if (count($statusMessages) == 0)
-				$statusMessages[] = 'Blocks is up to date and everything is great!';
-
-			Blocks::app()->user->setFlash('notice', $statusMessages);
+			$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
+			Blocks::app()->request->setBlocksUpdateInfo($blocksUpdateInfo);
+			return true;
 		}
+
+		$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+		if ($blocksUpdateInfo !== null)
+			Blocks::app()->request->setBlocksUpdateInfo($blocksUpdateInfo);
 
 		return true;
 	}
@@ -46,59 +43,20 @@ class VersionCheckFilter extends CFilter
 		{
 			if (isset($pluginInfo['status']))
 			{
-				 if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable)
-				 {
+				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable)
 					$pluginsToUpdate++;
-				 }
 
 				if ($pluginInfo['status'] == PluginVersionUpdateStatus::Deleted)
-				{
 					$deletedPlugins++;
-				}
 			}
 		}
 
 		if ($pluginsToUpdate > 0)
-		{
 			$pluginStatusMessages[] = $pluginsToUpdate.' of your installed plugins have updates. '.BlocksHtml::link('Please update now.', array('index'));
-		}
 
 		if ($deletedPlugins > 0)
-		{
 			$pluginStatusMessages[] = $deletedPlugins.' of your installed plugins have been deleted. '.BlocksHtml::link('Find out why.', array('index'));
-		}
 
 		return $pluginStatusMessages;
-	}
-
-	private function buildBlocksStatusMessages($blocksVersionInfo)
-	{
-		$blocksStatusMessages = array();
-
-		if ($blocksVersionInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
-			$blocksStatusMessages[] = 'You are '.count($blocksVersionInfo['blocksLatestCoreReleases']).' Blocks releases behind. The latest is v'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['version'].'.'.$blocksVersionInfo['blocksLatestCoreReleases'][0]['build_number'].'. '.BlocksHtml::link('Please update now.', 'update');
-
-		if (isset($blocksVersionInfo['blocksLicenseStatus']) && count($blocksVersionInfo['blocksLicenseStatus']) > 0)
-		{
-			foreach($blocksVersionInfo['blocksLicenseStatus'] as $licenseMessage)
-			{
-				switch ($licenseMessage)
-				{
-					case LicenseKeyStatus::InvalidDomain:
-						$blocksStatusMessages[] = "It appears Blocks is running on a domain that it wasn't licensed for.";
-						break;
-
-					case LicenseKeyStatus::UnknownKey:
-						$blocksStatusMessages[] = "Blocks doesn't recognize your license key.";
-						break;
-
-					case LicenseKeyStatus::WrongEdition:
-						$blocksStatusMessages[] = "It appears the Blocks version you are running isn't the correct one for your license key.";
-						break;
-				}
-			}
-		}
-
-		return $blocksStatusMessages;
 	}
 }
