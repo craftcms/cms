@@ -4,7 +4,7 @@
 	<meta charset="utf-8" />
 	<title>{% if pageTitle %}{{ pageTitle }} – {% /if %}Blocks</title>
 
-	{{ cp.resource('app/styles/cp.css').css }}
+	{{ cp.resource('app/styles/main.css').css }}
 	{{ cp.resource('app/styles/icons.css').css }}
 
 	{!-- include any styles defined by the subtemplate --}
@@ -35,6 +35,10 @@
 
 	<div id="body">
 		{{ body }}
+
+		<div id="footer">
+			Blocks Standard 1.0 build 212 — © {{ date.year }} Pixel &amp; Tonic
+		</div>
 	</div>
 
 {{ cp.resource('app/lib/jquery-1.7.min.js').js }}

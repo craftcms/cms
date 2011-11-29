@@ -2,5 +2,38 @@
 
 class DateTag extends Tag
 {
+	protected $_val;
 
+	public function __construct($val = null)
+	{
+		$this->_val = $this->getUnixTimestamp($val);
+	}
+
+	protected function getUnixTimestamp($val = null)
+	{
+		if ($val)
+		{
+			// was a Unix timestamp passed?
+			if (preg_match('/\d{10}/', (string)$val))
+				return (int)$val;
+		}
+
+		// just set to the current time
+		return time();
+	}
+
+	public function year()
+	{
+		return new NumTag(date('Y', $this->_val));
+	}
+
+	public function month()
+	{
+		return new NumTag(date('n', $this->_val));
+	}
+
+	public function day()
+	{
+		return new NumTag(date('j', $this->_val));
+	}
 }

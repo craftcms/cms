@@ -22,11 +22,12 @@ blx.CP =
 	dom:
 	{
 		$nav: $('#nav'),
+		$footer: $('#footer'),
 		$sidebars: $('#sidebars'),
 		$main: $('#main')
 	},
 
-	navHeight: null,
+	bodyHeightDiff: null,
 	windowWidth: null,
 	windowHeight: null,
 
@@ -35,7 +36,7 @@ blx.CP =
 	 */
 	onWindowResizeHeight: function()
 	{
-		var bodyHeight = blx.windowHeight - this.navHeight - 40;
+		var bodyHeight = blx.windowHeight - this.bodyHeightDiff;
 		this.dom.$sidebars.height(bodyHeight);
 		this.dom.$main.css('minHeight', bodyHeight);
 	},
@@ -54,7 +55,7 @@ blx.CP =
 };
 
 
-blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
+blx.CP.bodyHeightDiff = blx.CP.dom.$nav.outerHeight() + blx.CP.dom.$footer.outerHeight() + 40;
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
 $(window).on('resizeHeight.cp', $.proxy(blx.CP, 'onWindowResizeHeight'));

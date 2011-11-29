@@ -174,11 +174,12 @@ class BaseController extends CController
 		if (!isset($this->_defaultTemplateTags))
 		{
 			$this->_defaultTemplateTags = array(
-				'content' => 'ContentTag',
-				'assets' => 'AssetsTag',
-				'membership' => 'MembershipTag',
+				'assets'   => 'AssetsTag',
+				'content'  => 'ContentTag',
+				'date'     => 'DateTag',
+				'url'      => 'UrlTag',
+				'users'    => 'UsersTag',
 				'security' => 'SecurityTag',
-				'url' => 'UrlTag',
 			);
 
 			// if it's a CP request, add the CP tag.
