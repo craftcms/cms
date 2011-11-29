@@ -32,4 +32,19 @@ class CpTag extends Tag
 
 		return new ArrayTag($sectionTags);
 	}
+
+	public function noLicenseKey()
+	{
+		return new BoolTag(false);
+	}
+
+	public function badLicenseKey()
+	{
+		return new BoolTag(true);
+	}
+
+	public function criticalUpdateAvailable()
+	{
+		return new BoolTag(true);
+	}
 }

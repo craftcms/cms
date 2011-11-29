@@ -5,17 +5,21 @@
 
 {% region main %}
 	<div id="main">
-		<div class="alert">
-			<p>You need to enter your license key into blocks/config/blocks.php. <a href="">See how</a></p>
-		</div>
+		{% if cp.noLicenseKey %}
+			<div class="alert">
+				<p>You need to enter your license key into blocks/config/blocks.php. <a href="">See how</a></p>
+			</div>
+		{% elseif cp.badLicenseKey %}
+			<div class="alert">
+				<p>The license key you’re using isn’t authorized to run Blocks Standard on expressionengine.com. <a href="">Manage my licenses</a></p>
+			</div>
+		{% /if %}
 
-		<div class="alert">
-			<p>The license key you’ve entered into blocks/config/blocks.php isn’t allowed to run on expressionengine.com. <a href="">Manage my licenses</a></p>
-		</div>
-
-		<div class="alert">
-			<p>There’s a critical update available for Blocks. <a href="">Update now</a></p>
-		</div>
+		{% if cp.criticalUpdateAvailable %}
+			<div class="alert">
+				<p>There’s a critical update available for Blocks. <a href="">Update now</a></p>
+			</div>
+		{% /if %}
 
 		<div id="dashboard">
 			<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
