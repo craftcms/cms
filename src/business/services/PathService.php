@@ -13,6 +13,11 @@ class PathService extends CApplicationComponent implements IPathService
 		return $this->normalizeDirectorySeparators($this->getBasePath().'config/');
 	}
 
+	public function getBlocksConfigPath()
+	{
+		return $this->normalizeDirectorySeparators($this->getConfigPath().'blocks.php');
+	}
+
 	public function getPluginsPath()
 	{
 		return $this->normalizeDirectorySeparators($this->getBasePath().'plugins/');

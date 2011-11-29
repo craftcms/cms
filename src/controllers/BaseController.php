@@ -185,7 +185,8 @@ class BaseController extends CController
 			if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
 			{
 				Blocks::import('application.business.tags.cp.*');
-				$this->_defaultTemplateTags['cp'] = 'CpTag';
+				$this->_defaultTemplateTags['cp'] =     'CpTag';
+				$this->_defaultTemplateTags['config'] = 'ConfigTag';
 			}
 		}
 

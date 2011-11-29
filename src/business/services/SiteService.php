@@ -4,22 +4,34 @@ class SiteService extends CApplicationComponent implements ISiteService
 {
 	public function getSiteLicenseKeys()
 	{
-		return Blocks::app()->params['config']['licenseKeys'];
+		if (isset(Blocks::app()->params['config']['licenseKeys']))
+			return Blocks::app()->params['config']['licenseKeys'];
+
+		return null;
 	}
 
 	public function getSiteName()
 	{
-		return Blocks::app()->params['config']['siteName'];
+		if (isset(Blocks::app()->params['config']['siteName']))
+			return Blocks::app()->params['config']['siteName'];
+
+		return null;
 	}
 
 	public function getSiteLanguage()
 	{
-		return Blocks::app()->params['config']['language'];
+		if (isset(Blocks::app()->params['config']['language']))
+			return Blocks::app()->params['config']['language'];
+
+		return null;
 	}
 
 	public function getSiteUrl()
 	{
-		return Blocks::app()->params['config']['siteUrl'];
+		if (isset(Blocks::app()->params['config']['siteUrl']))
+			return Blocks::app()->params['config']['siteUrl'];
+
+		return null;
 	}
 
 	public function getSiteByUrl()
