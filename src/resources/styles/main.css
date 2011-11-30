@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Layout
 /* ----------------------------------------*/
 
-body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #f5f5f5; }
+body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fafafa; }
 
 /*-- nav --*/
 #nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 44px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 100% 0, from(#fff), to(#fcfcfc)); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 5px rgba(0,0,0,0.15); }
@@ -58,14 +58,14 @@ body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; f
 
 /*-- sidebar layout --*/
 body.sidebar-layout #main { margin-left: 240px; }
-body.sidebar-layout #sidebar { position: fixed; top: 44px; left: 0; width: 200px; border-right: 1px solid #dcdcdc; padding: 20px; overflow: auto; }
+body.sidebar-layout #sidebar { position: fixed; top: 44px; left: 0; width: 200px; border-right: 1px solid #ccc; padding: 20px; overflow: auto; }
 body.sidebar-layout #sidebar .search { margin-bottom: 15px; }
 body.sidebar-layout #sidebar .tree a { font-weight: normal; color: #666; text-shadow: 0 1px 0 #eee; }
-body.sidebar-layout #sidebar .tree a.sel { margin: 0 -20px 0 -9999px; padding-left: 9974px; padding-right: 25px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(0,0,0,0.05)), to(transparent)); -webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.15), inset 0 -1px 0 rgba(0,0,0,0.15), inset 0 2px 0 rgba(0,0,0,0.05), 0 1px 0 #fff; }
+body.sidebar-layout #sidebar .tree a.sel { margin: 0 -20px 0 -9999px; padding-left: 9974px; padding-right: 25px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#ddd), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #ccc, inset 0 -1px 0 #ccc; }
 
 
 /*-- footer --*/
-#footer { border-top: 1px solid #dcdcdc; padding: 10px; font-size: 11px; text-align: center; color: #999; }
+#footer { border-top: 1px solid #ccc; padding: 10px; font-size: 11px; text-align: center; color: #999; }
 
 
 /* ----------------------------------------
@@ -76,6 +76,9 @@ h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; 
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
 h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-size: 18px; line-height: 24px; color: #666; text-shadow: 0 1px 0 #fff; }
 h4 { margin: 15px 0 10px; font-weight: bold; color: #000; }
+h5 { margin: 15px 0 10px; font-weight: bold; color: #666; }
+
+h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child { margin-top: 0; }
 
 p { margin-bottom: 1em; }
 
@@ -86,7 +89,7 @@ i em { font-weight: bold; }
 a { color: #2d98db; cursor: pointer; }
 a:hover { text-decoration: underline; }
 
-.clear { clear: both; }
+.clear { display: block; clear: both; height: 0; }
 
 .sel { cursor: default; }
 
@@ -161,8 +164,8 @@ a:hover { text-decoration: underline; }
 .btn.small .label { margin: 0 6px; font-size: 11px; line-height: 17px; }
 
 /* big button */
-.btn.big { height: 30px; }
-.btn.big .label { margin: 0 12px; font-size: 14px; line-height: 30px; }
+.btn.big { height: 30px; border: none; background: -webkit-gradient(linear, 0 0, 0 100%, from(#33abf5), to(#2987c2)) !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15) !important; }
+.btn.big .label { margin: 0 12px; font-size: 14px; line-height: 30px; color: #fff; text-shadow: 0 -1px 0 #000; }
 .btn.big:hover { text-decoration: none; }
 
 /* switch */
@@ -186,7 +189,7 @@ a:hover { text-decoration: underline; }
 .tree ul li > .toggle { margin: 7px 0 0 -37px; }
 .tree ul li > a { display: block; margin-left: -25px; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
 .tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/sidebar_icons/etc.png) no-repeat 50% 50%; }
-.tree ul li > a span.icon { display: block; float: left; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }
+.tree ul li > a span.icon { display: block; float: left; margin-right: 2px; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }
 
 .tree a span.status { margin: 6px; }
 

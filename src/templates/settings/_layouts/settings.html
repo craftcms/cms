@@ -1,12 +1,15 @@
 {% layout '_layouts/sidebar' %}
 {% region pageTitle %}Settings – {{ pageTitle }}{% /region %}
 {% region bodyClass %}sidebar-layout {{ bodyClass }}{% /region %}
+{% region styles %}{{ cp.resource('app/styles/settings.css').css }}{% /region %}
+{% region scripts %}{{ scripts }}{% /region %}
 
 {% region sidebar %}
 	<div class="tree">
 		<h6>System Settings</h6>
 		<ul>
-			<li><a {% if url.segment(2) == 'info' %}class="sel"{% endif %} href="{{ url.base }}/settings"><span class="icon icon70"></span>System Info</a></li>
+			<li><a {% if url.segment(2) == 'info' %}class="sel"{% endif %} href="{{ url.base }}/settings/info"><span class="icon icon70"></span>System Info</a></li>
+			<li><a {% if url.segment(2) == 'updates' %}class="sel"{% endif %} href="{{ url.base }}/settings/updates"><span class="icon icon15"></span>Updates</a></li>
 			<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href=""><span class="icon icon100"></span>Sites</a></li>
 			<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>
 			<li><a {% if url.segment(2) == 'plugins' %}class="sel"{% endif %} href="{{ url.base }}/settings/plugins"><span class="icon icon269"></span>Plugins</a></li>

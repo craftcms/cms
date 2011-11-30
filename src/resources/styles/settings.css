@@ -8,3 +8,16 @@ body.plugins #main tr.uninstalled td { color: #999; text-shadow: 0 1px 0 #fff; }
 body.plugins #main th.status,
 body.plugins #main th.action { width: 0.01%; }
 body.plugins #main td { padding-top: 10px; padding-bottom: 10px; vertical-align: middle; }
+
+/*-- Updates --*/
+body.updates #checking { position: absolute; top: 50%; margin-top: -44px; padding-top: 68px; width: 100%; text-align: center; font-size: 16px; line-height: 20px; color: #666; text-shadow: 0 1px 0 #fff; background: url(../images/spinner-big.gif) no-repeat 50% 0; }
+body.updates #updates { display: none; }
+body.updates #updates #update-all { float: right; margin-top: -4px; }
+body.updates #updates .update { display: none; margin-bottom: 10px; border-radius: 2px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); }
+body.updates #updates .update .bar { padding: 8px 10px 8px 10px; border-radius: 2px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,1)), to(rgba(255,255,255,0.5))); }
+body.updates #updates .update .bar:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+body.updates #updates .update .bar .name { float: left; }
+body.updates #updates .update .bar .btn { float: right; margin: 0; }
+body.updates #updates .update .bar a.notes-toggle { display: block; float: right; margin: 0 10px; }
+body.updates #updates .update .notes { display: none; padding: 15px 20px; border-radius: 0 0 2px 2px; background: #fff; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1); }
+body.updates #updates .update .notes ul { list-style-type: square; margin-left: 2em; }

@@ -34,8 +34,7 @@
 #main .page .page-head .page-settings table th { padding-right: 20px; color: #666; }
 
 #main .page .page-foot { padding: 40px 80px; border-bottom: none; border-radius: 0 0 4px 4px; }
-#main .page .page-foot .btn.big { display: inline-block; float: none; margin-left: 0; border: none; background: -webkit-gradient(linear, 0 0, 0 100%, from(#33abf5), to(#2987c2)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);}
-#main .page .page-foot .btn.big .label { color: #fff; text-shadow: 0 -1px 0 #000; }
+#main .page .page-foot .btn.big { display: inline-block; float: none; margin-left: 0; }
 
 
 #right,
