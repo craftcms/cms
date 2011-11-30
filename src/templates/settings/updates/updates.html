@@ -7,6 +7,7 @@
 	<div class="update">
 		<div class="bar">
 			<div class="name">{{ update.name }} <strong>{{ update.version }}</strong></div>
+			{% if update.critical %}<div class="critical">Critical</div>{% /if %}
 			<div class="btn"><span class="label">Update</span></div>
 			<a class="notes-toggle">Show release notes</a>
 		</div>

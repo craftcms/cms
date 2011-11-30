@@ -17,7 +17,7 @@
 
 /* widgets */
 .widget { position: relative; margin-bottom: 20px; overflow: hidden; }
-.widget.dragging { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.1); }
+.widget.dragging { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.25), 0 5px 10px rgba(0,0,0,0.1); }
 .widget:last-child { margin-bottom: 0; }
 
 .widget h3 { margin: 0; border-radius: 4px 4px 0 0; padding: 8px 10px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(rgba(255,255,255,0))); }
@@ -58,7 +58,7 @@
 
 /*-- sidebar --*/
 #sidebar { position: absolute; top: 56px; right: -230px; border-left: 1px dotted #ccc; width: 180px; padding-left: 20px; }
-ul.widget-handles li { position: relative; margin-bottom: 10px; padding: 8px 25px 8px 35px; border-radius: 2px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,1)), to(rgba(255,255,255,0.5))); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.25); cursor: move; cursor: -webkit-grab; }
+ul.widget-handles li { position: relative; margin-bottom: 10px; padding: 8px 25px 8px 35px; border-radius: 2px; background: -webkit-gradient(linear, 0 0, 0 100%, from(rgba(255,255,255,1)), to(rgba(255,255,255,0.5))); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.25); cursor: move; cursor: -webkit-grab; }
 ul.widget-handles.dragging li { cursor: -webkit-grabbing; }
 ul.widget-handles li span.grab { display: block; position: absolute; left: 10px; top: 50%; margin-top: -9px; width: 15px; height: 18px; background: url(../images/grab-handle.png) no-repeat 50% 50%; }
 ul.widget-handles li a.remove { display: block; position: absolute; right: 5px; top: 50%; margin-top: -7px; width: 12px; height: 14px; background: url(../images/close.png) no-repeat 50% 50%; opacity: 0; -webkit-transition: opacity 150ms linear; }
