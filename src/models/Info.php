@@ -7,7 +7,6 @@
  * @property integer $id
  * @property string $version
  * @property string $build_number
- * @property string $edition
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -39,15 +38,14 @@ class Info extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('version, build_number, edition', 'required'),
+			array('version, build_number', 'required'),
 			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('version', 'length', 'max'=>15),
 			array('build_number', 'length', 'max'=>10),
-			array('edition', 'length', 'max'=>8),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, version, build_number, edition, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, version, build_number, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -71,7 +69,6 @@ class Info extends CActiveRecord
 			'id' => 'ID',
 			'version' => 'Version',
 			'build_number' => 'Build Number',
-			'edition' => 'Edition',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -92,7 +89,6 @@ class Info extends CActiveRecord
 		$criteria->compare('id',$this->id);
 		$criteria->compare('version',$this->version,true);
 		$criteria->compare('build_number',$this->build_number,true);
-		$criteria->compare('edition',$this->edition,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

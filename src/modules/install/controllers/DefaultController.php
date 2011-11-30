@@ -74,7 +74,6 @@ class DefaultController extends BaseController
 							// update the info table.
 							$info = new Info();
 							$info->build_number = Blocks::getBuildNumber();
-							$info->edition = Blocks::getEdition();
 							$info->version = Blocks::getVersion();
 							$info->save();
 

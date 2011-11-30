@@ -1,15 +1,15 @@
 /*
  Navicat MySQL Data Transfer
 
- Source Server         : Local
+ Source Server         : sydey
  Source Server Version : 50509
- Source Host           : 127.0.0.1
+ Source Host           : 192.168.168.60
  Source Database       : blocks
 
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 11/08/2011 10:55:46 AM
+ Date: 11/30/2011 11:57:32 AM
 */
 
 SET NAMES utf8;
@@ -90,7 +90,7 @@ CREATE TABLE `blx_assets` (
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   KEY `upload_folder_id_index` (`upload_folder_id`) USING BTREE,
   CONSTRAINT `assets_uploadfolders_fk` FOREIGN KEY (`upload_folder_id`) REFERENCES `blx_uploadfolders` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_assets` BEFORE INSERT ON `blx_assets` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -124,7 +124,7 @@ CREATE TABLE `blx_contentblocks` (
   UNIQUE KEY `handle_section_unique` (`handle`,`section_id`),
   KEY `contentblocks_contentsections_fk` (`section_id`) USING BTREE,
   CONSTRAINT `contentblocks_contentsections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_contentsections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_contentblocks` BEFORE INSERT ON `blx_contentblocks` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -256,7 +256,7 @@ CREATE TABLE `blx_contentpages` (
   CONSTRAINT `contentpages_contentpages_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_contentpages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `contentpages_contentsections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_contentsections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `contentpages_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_contentpages` BEFORE INSERT ON `blx_contentpages` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -320,7 +320,7 @@ CREATE TABLE `blx_contentsections` (
   KEY `site_id_index` (`site_id`) USING BTREE,
   CONSTRAINT `contentsections_contentsections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_contentsections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `contentsections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_contentsections` BEFORE INSERT ON `blx_contentsections` FOR EACH ROW SET NEW.date_created = UTC_TIMESTAMP(),
 	NEW.date_updated = UTC_TIMESTAMP(),
@@ -429,13 +429,12 @@ CREATE TABLE `blx_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `version` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
   `build_number` varchar(10) COLLATE utf8_unicode_ci NOT NULL,
-  `edition` enum('Personal','Standard','Pro') COLLATE utf8_unicode_ci NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_info` BEFORE INSERT ON `blx_info` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -590,7 +589,7 @@ CREATE TABLE `blx_sites` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `handle_unique` (`handle`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_sites` BEFORE INSERT ON `blx_sites` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -678,7 +677,7 @@ CREATE TABLE `blx_uploadfolders` (
   UNIQUE KEY `site_name_unique` (`site_id`,`name`),
   KEY `site_id_index` (`site_id`) USING BTREE,
   CONSTRAINT `uploadfolders_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_uploadfolders` BEFORE INSERT ON `blx_uploadfolders` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -800,8 +799,8 @@ CREATE TABLE `blx_usergroups` (
   KEY `usergroups_users_fk` (`user_id`) USING BTREE,
   KEY `usergroups_groups_fk` (`group_id`) USING BTREE,
   KEY `usergroups_sites_fk` (`site_id`),
-  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`),
   CONSTRAINT `usergroups_groups_fk` FOREIGN KEY (`group_id`) REFERENCES `blx_groups` (`id`),
+  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`),
   CONSTRAINT `usergroups_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
@@ -835,7 +834,7 @@ CREATE TABLE `blx_users` (
   UNIQUE KEY `id_unique` (`id`),
   UNIQUE KEY `email_unique` (`email`),
   UNIQUE KEY `user_name_unique` (`user_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_users` BEFORE INSERT ON `blx_users` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
