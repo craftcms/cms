@@ -5,17 +5,17 @@
 
 {% region main %}
 	{% if cp.noLicenseKey %}
-		<div class="alert">
+		<div class="alert pane">
 			<p>You need to enter your license key into {{ config.blocksConfigPath }}. <a href="">See how</a></p>
 		</div>
 	{% elseif cp.badLicenseKey %}
-		<div class="alert">
+		<div class="alert pane">
 			<p>The license key you’re using isn’t authorized to run Blocks {{ config.blocksEdition }} on {{ url.domain }}. <a href="">Manage my licenses</a></p>
 		</div>
 	{% /if %}
 
 	{% if cp.criticalUpdateAvailable %}
-		<div class="alert">
+		<div class="alert pane">
 			<p>There’s a critical update available for Blocks. <a href="">Update now</a></p>
 		</div>
 	{% /if %}
@@ -25,8 +25,10 @@
 
 		<div id="widgets">
 			{% foreach cp.dashboard.widgets as count, widget %}
-				<div class="widget {{ widget.classname }}" id="widget{{ count+1 }}">
-					<h3>{{ widget.title }}</h3>
+				<div class="widget pane {{ widget.classname }}" id="widget{{ count+1 }}">
+					<div class="head">
+						<h3>{{ widget.title }}</h3>
+					</div>
 					<div class="body">
 						{{ widget.body }}
 					</div>
@@ -37,7 +39,7 @@
 		<div id="sidebar">
 			<ul class="widget-handles">
 				{% foreach cp.dashboard.widgets as widget %}
-					<li><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></li>
+					<li class="pane"><div class="head"><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></div></li>
 				{% /foreach %}
 			</ul>
 		</div>

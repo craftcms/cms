@@ -234,8 +234,10 @@ var Dashboard = Base.extend({
 	onWidgetRemove: function(event)
 	{
 		// figure out which widget to remove
-		var $widgetHandle = $(event.currentTarget).parent(),
+		var $widgetHandle = $(event.currentTarget).parent().parent(),
 			widgetIndex = $.inArray($widgetHandle[0], this.dom.$widgetHandles);
+
+		console.log(widgetIndex);
 
 		if (widgetIndex != -1)
 			this.removeWidget(widgetIndex);
