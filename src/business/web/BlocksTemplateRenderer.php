@@ -301,7 +301,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 				return "<?php elseif ({$params}): ?>";
 
 			case 'else':
-				return '<?php else ?>';
+				return '<?php else: ?>';
 
 			case '/if':
 			case 'endif':
