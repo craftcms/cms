@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Layout
 /* ----------------------------------------*/
 
-body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fafafa; }
+body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #f7f7f7; }
 
 /*-- nav --*/
 #nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 44px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 100% 0, from(#fff), to(#fcfcfc)); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 5px rgba(0,0,0,0.15); }
