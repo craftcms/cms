@@ -11,7 +11,7 @@ class PluginService extends CApplicationComponent implements IPluginService
 	{
 		$installedPlugins = $this->getAllInstalledPlugins();
 
-		if(!ArrayHelper::IsValidArray($installedPlugins))
+		if(!is_array($installedPlugins))
 			return null;
 
 		$pluginNamesAndVersions = array();
