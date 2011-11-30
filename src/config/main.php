@@ -155,6 +155,10 @@ return array(
 			'class' => 'application.business.web.BlocksErrorHandler'
 		),
 
+		'fileCache' => array(
+			'class' => 'CFileCache',
+		),
+
 		'log' => array(
 			'class' => 'CLogRouter',
 			'routes' => array(

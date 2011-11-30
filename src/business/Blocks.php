@@ -26,7 +26,7 @@ class Blocks extends Yii
 			return '@@@edition@@@';
 
 		$blocksEdition = Info::model()->findAll();
-		return !empty($blocksEdition) ? $blocksEdition[0]->edition : null;
+		return !empty($blocksEdition) ? 'Pro' : null;
 	}
 
 	public static function getYiiVersion()
