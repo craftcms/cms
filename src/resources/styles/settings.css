@@ -19,5 +19,6 @@ body.updates #updates .update .bar:after { content: "."; display: block; height:
 body.updates #updates .update .bar .name { float: left; }
 body.updates #updates .update .bar .btn { float: right; margin: 0; }
 body.updates #updates .update .bar a.notes-toggle { display: block; float: right; margin: 0 10px; }
-body.updates #updates .update .notes { display: none; padding: 15px 20px; border-radius: 0 0 2px 2px; background: #fff; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1); }
+body.updates #updates .update .notes-container { height: 0; overflow: hidden; }
+body.updates #updates .update .notes { padding: 15px 20px; border-radius: 0 0 2px 2px; background: #fff; border-top: 1px solid rgba(0,0,0,0.1); }
 body.updates #updates .update .notes ul { list-style-type: square; margin-left: 2em; }

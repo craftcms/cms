@@ -1,0 +1,16 @@
+{% layout 'settings/_layouts/settings' %}
+
+{% region pageTitle %}Updates{% /region %}
+{% region bodyClass %}updates{% /region %}
+
+{% region main %}
+	<div id="checking">
+		Checking for updates…
+	</div>
+
+	<div id="updates"></div>
+{% /region %}
+
+{% region scripts %}
+	{{ cp.resource('app/scripts/updates.js').js }}
+{% /region %}
