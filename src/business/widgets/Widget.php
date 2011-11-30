@@ -4,7 +4,7 @@ abstract class Widget
 {
 	public $settings = array();
 	public $title = '';
-	public $classname = '';
+	public $className = '';
 	public $body = '';
 
 	public function __construct($settings = array())

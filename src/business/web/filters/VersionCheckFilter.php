@@ -32,31 +32,4 @@ class VersionCheckFilter extends CFilter
 
 		return true;
 	}
-
-	private function buildPluginStatusMessages($pluginsInfo)
-	{
-		$pluginsToUpdate = 0;
-		$deletedPlugins = 0;
-		$pluginStatusMessages = array();
-
-		foreach ($pluginsInfo as $pluginInfo)
-		{
-			if (isset($pluginInfo['status']))
-			{
-				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable)
-					$pluginsToUpdate++;
-
-				if ($pluginInfo['status'] == PluginVersionUpdateStatus::Deleted)
-					$deletedPlugins++;
-			}
-		}
-
-		if ($pluginsToUpdate > 0)
-			$pluginStatusMessages[] = $pluginsToUpdate.' of your installed plugins have updates. '.BlocksHtml::link('Please update now.', array('index'));
-
-		if ($deletedPlugins > 0)
-			$pluginStatusMessages[] = $deletedPlugins.' of your installed plugins have been deleted. '.BlocksHtml::link('Find out why.', array('index'));
-
-		return $pluginStatusMessages;
-	}
 }

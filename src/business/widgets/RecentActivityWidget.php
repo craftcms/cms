@@ -3,7 +3,7 @@
 class RecentActivityWidget extends Widget
 {
 	public $title = 'Recent Activity';
-	public $classname = 'recent_activity';
+	public $className = 'recent_activity';
 
 	public function init()
 	{

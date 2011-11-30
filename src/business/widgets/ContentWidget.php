@@ -3,7 +3,7 @@
 class ContentWidget extends Widget
 {
 	public $title = 'Content';
-	public $classname = 'content';
+	public $className = 'content';
 
 	public function init()
 	{

@@ -2,7 +2,7 @@
 
 class FeedWidget extends Widget
 {
-	public $classname = 'rss';
+	public $className = 'rss';
 
 	public $settings = array(
 		'url' => 'http://feeds.feedburner.com/blogandtonic',

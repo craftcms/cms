@@ -9,9 +9,9 @@ class CpDashboardWidgetTag extends Tag
 		$this->_widget = $widget;
 	}
 
-	public function classname()
+	public function className()
 	{
-		return new StringTag($this->_widget->classname);
+		return new StringTag($this->_widget->className);
 	}
 
 	public function title()

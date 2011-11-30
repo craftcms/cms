@@ -34,14 +34,9 @@ class DefaultController extends BaseController
 							Blocks::log('Invalid P&T.com credentials entered during install.');
 							break;
 
-						case LicenseKeyStatus::UnknownKey:
+						case LicenseKeyStatus::InvalidKey:
 							Blocks::app()->user->setFlash('notice', 'Unknown Blocks License Key');
-							Blocks::log('Blocks license key is not associated with the P&T account: '.$model->ptUserName);
-							break;
-
-						case LicenseKeyStatus::WrongEdition:
-							Blocks::app()->user->setFlash('notice', 'Wrong Blocks Edition for License Key');
-							Blocks::log('Blocks license key is registered to a different edition of Blocks that the one being installed.');
+							Blocks::log('Blocks license key is not associated with the P&T account: '.$model->ptUserName. ' or it is for a different edition.');
 							break;
 
 						// No net connection
