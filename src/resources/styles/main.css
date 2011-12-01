@@ -60,8 +60,8 @@ body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; f
 body.sidebar-layout #main { margin-left: 240px; }
 body.sidebar-layout #sidebar { position: fixed; top: 44px; left: 0; width: 200px; border-right: 1px solid #ccc; padding: 20px; overflow: auto; }
 body.sidebar-layout #sidebar .search { margin-bottom: 15px; }
-body.sidebar-layout #sidebar .tree a { font-weight: normal; color: #666; text-shadow: 0 1px 0 #eee; }
-body.sidebar-layout #sidebar .tree a.sel { margin: 0 -20px 0 -9999px; padding-left: 9974px; padding-right: 25px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#ddd), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #ccc, inset 0 -1px 0 #ccc; }
+body.sidebar-layout #sidebar .tree a { margin: 0 -20px 0 -9999px; padding-left: 9974px; padding-right: 25px; font-weight: normal; color: #666; text-shadow: 0 1px 0 #eee; }
+body.sidebar-layout #sidebar .tree a.sel { text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#ddd), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #ccc, inset 0 -1px 0 #ccc; }
 
 
 /*-- footer --*/
@@ -196,9 +196,8 @@ a:hover { text-decoration: underline; }
 .tree ul li > .toggle { margin: 7px 0 0 -37px; }
 .tree ul li > a { display: block; margin-left: -25px; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
 .tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/sidebar_icons/etc.png) no-repeat 50% 50%; }
-.tree ul li > a span.icon { display: block; float: left; margin-right: 2px; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }
-
-.tree a span.status { margin: 6px; }
+.tree ul li > a span.icon { margin-right: 2px; }
+.tree ul li > a span.status { margin: 6px; }
 
 .tree.collapsible ul li > h6,
 .tree.collapsible ul li > ul { display: none; }
@@ -209,12 +208,15 @@ a:hover { text-decoration: underline; }
 .toggle { display: block; float: left; margin: 3px 4px 0 0; width: 10px; height: 12px; background: url(../images/sidebar_icons/toggle.png) no-repeat 0 0; opacity: 0.5; }
 .toggle.expanded { background-position: 0 -10px; }
 
+/* icons */
+span.icon { display: block; float: left; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }
+
 /* status icons */
 span.status { display: block; float: left; width: 12px; height: 12px; background: url(../images/sidebar_icons/status.png) no-repeat; }
-span.status.live { background-position: 0 0; }
-span.status.limbo { background-position: 0 -12px; }
-span.status.offline { background-position: 0 -24px; }
-span.status.draft { background-position: 0 -36px; }
+span.status.on { background-position: 0 0; }
+span.status.pending { background-position: 0 -12px; }
+span.status.off { background-position: 0 -24px; }
+span.status.disabled { background-position: 0 -36px; }
 
 /* ----------------------------------------
 /*  Tables

@@ -12,7 +12,6 @@
 			<li><a {% if url.segment(2) == 'updates' %}class="sel"{% endif %} href="{{ url.base }}/settings/updates"><span class="icon icon15"></span>Updates</a></li>
 			<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href=""><span class="icon icon100"></span>Sites</a></li>
 			<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>
-			<li><a {% if url.segment(2) == 'plugins' %}class="sel"{% endif %} href="{{ url.base }}/settings/plugins"><span class="icon icon269"></span>Plugins</a></li>
 		</ul>
 
 		<h6>Site Settings</h6>
@@ -24,12 +23,12 @@
 		</ul>
 
 		<h6>Plugin Settings</h6>
-		<ul>
-			<li><a href=""><span class="icon icon287"></span>Brilliant Retail</a></li>
-			<li><a href=""><span class="icon icon287"></span>CE Image</a></li>
-			<li><a href=""><span class="icon icon287"></span>Freeform</a></li>
-			<li><a href=""><span class="icon icon287"></span>Tag</a></li>
-			<li><a href=""><span class="icon icon287"></span>Wygwam</a></li>
+		<ul id="plugins">
+			<li><a href=""><span class="icon icon287"></span>Brilliant Retail<span class="status on"></span></a></li>
+			<li><a href=""><span class="icon icon287"></span>CE Image<span class="status on"></span></a></li>
+			<li><a href=""><span class="icon icon287"></span>Freeform<span class="status on"></span></a></li>
+			<li><a href=""><span class="icon icon287"></span>Tag<span class="status off"></span></a></li>
+			<li><a href=""><span class="icon icon287"></span>Wygwam<span class="status disabled"></span></a></li>
 		</ul>
 	</div>
 {% /region %}
