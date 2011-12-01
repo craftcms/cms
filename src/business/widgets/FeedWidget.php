@@ -13,8 +13,11 @@ class FeedWidget extends Widget
 	protected function init()
 	{
 		$this->title = $this->settings['title'];
+	}
 
-		$this->body = '<table>
+	public function body()
+	{
+		return '<table>
 				<tr>
 					<td><a href="">Introducing Assets</a></td>
 					<td class="date">Jun 28, 2011</td>

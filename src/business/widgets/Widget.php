@@ -5,7 +5,6 @@ abstract class Widget
 	public $settings = array();
 	public $title = '';
 	public $className = '';
-	public $body = '';
 
 	public function __construct($settings = array())
 	{
@@ -17,6 +16,14 @@ abstract class Widget
 	}
 
 	protected function init() {}
-	protected function display() {}
-	protected function displaySettings() {}
+
+	public function body()
+	{
+		return false;
+	}
+
+	public function settings()
+	{
+		return false;
+	}
 }

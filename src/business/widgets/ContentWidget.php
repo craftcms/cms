@@ -5,9 +5,9 @@ class ContentWidget extends Widget
 	public $title = 'Content';
 	public $className = 'content';
 
-	public function init()
+	public function body()
 	{
-		$this->body = '<div class="search"><input type="text" /></div>
+		return '<div class="search"><input type="text" /></div>
 
 		<div class="tree content">
 			<h6>Add-ons</h6>

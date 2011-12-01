@@ -4,40 +4,32 @@ class UpdatesWidget extends Widget
 {
 	public $title = 'Updates Available';
 	public $className = 'updates';
-	private $_blocksUpdateInfo;
 
-	public function init()
+	public function body()
 	{
-		$this->_blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo();
-		$this->display();
-	}
+		$blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo();
 
-	public function display()
-	{
-		if ($this->_blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey)
+		if ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey)
 			return false;
 
-		$this->body =
-				'<a class="btn dark update-all" href=""><span class="label">Update all</span></a>
-					<table>
-						<tbody>';
+		$updates = '';
 
-		if ($this->_blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
+		if ($blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
-			$this->body .= '<tr>
-								<td>Blocks '.$this->_blocksUpdateInfo['blocksLatestVersionNo'].'.'.$this->_blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
+			$updates .= '<tr>
+								<td>Blocks '.$blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
 								<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
 								<td><a class="btn" href=""><span class="label">Update</span></a></td>
 							</tr>';
 		}
 
-		if (isset($this->_blocksUpdateInfo['pluginNamesAndVersions']) && $this->_blocksUpdateInfo['pluginNamesAndVersions'] !== null && count($this->_blocksUpdateInfo['pluginNamesAndVersions']) > 0)
+		if (isset($blocksUpdateInfo['pluginNamesAndVersions']) && $blocksUpdateInfo['pluginNamesAndVersions'] !== null && count($blocksUpdateInfo['pluginNamesAndVersions']) > 0)
 		{
-			foreach ($this->_blocksUpdateInfo['pluginNamesAndVersions'] as $pluginInfo)
+			foreach ($blocksUpdateInfo['pluginNamesAndVersions'] as $pluginInfo)
 			{
 				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable)
 				{
-					$this->body .= '<tr>
+					$updates .= '<tr>
 										<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
 										<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
 										<td><a class="btn" href=""><span class="label">Update</span></a></td>
@@ -46,6 +38,16 @@ class UpdatesWidget extends Widget
 			}
 		}
 
-		$this->body .= '</tbody></table>';
+		if ($updates)
+		{
+			return '<a class="btn dark update-all" href=""><span class="label">Update all</span></a>
+				<table>
+					<tbody>' .
+						$updates .
+					'</tbody>
+				</table>';
+		}
+
+		return false;
 	}
 }

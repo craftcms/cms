@@ -5,9 +5,9 @@ class RecentActivityWidget extends Widget
 	public $title = 'Recent Activity';
 	public $className = 'recent_activity';
 
-	public function init()
+	public function body()
 	{
-		$this->body = '<table>
+		return '<table>
 				<tr>
 					<td><a href="">Brandon</a> is editing <a href="">Blocks</a></td>
 					<td class="date">right now</td>

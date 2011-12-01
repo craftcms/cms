@@ -7,12 +7,14 @@ class CpService extends CApplicationComponent implements ICpService
 	 */
 
 	/**
-	 * Returns the dashboard widgets for the current user
+	 * Returns the dashboard widget data for the current user
 	 * @return array
 	 */
-	public function getDashboardWidgets()
+	public function getDashboardWidgetData()
 	{
-		return array(
+		$widgetData = array();
+
+		$widgets = array(
 			new UpdatesWidget,
 			new RecentActivityWidget,
 			new ContentWidget,
@@ -22,5 +24,21 @@ class CpService extends CApplicationComponent implements ICpService
 			//new Analytics_PageviewsWidget,
 			//new Analytics_ContentWidget,
 		);
+
+		foreach ($widgets as $widget)
+		{
+			$body = $widget->body();
+			if ($body !== false)
+			{
+				$widgetData[] = array(
+					'title' => $widget->title,
+					'className' => $widget->className,
+					'body' => $body,
+					'settings' => $widget->settings()
+				);
+			}
+		}
+
+		return $widgetData;
 	}
 }
