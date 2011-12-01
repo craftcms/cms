@@ -65,6 +65,7 @@ class CpTag extends Tag
 			$notes = $this->_generateUpdateNotes($blocksUpdateInfo['blocksLatestCoreReleases'], 'Blocks');
 			$arr[] = new ArrayTag(array(
 				'name' => 'Blocks '.$blocksUpdateInfo['blocksClientEdition'],
+				'handle' => 'Blocks',
 				'version' => $blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'],
 				'notes' => $notes,
 			));
@@ -81,6 +82,7 @@ class CpTag extends Tag
 					$notes = $this->_generateUpdateNotes($pluginInfo['newerReleases'], $pluginInfo['displayName']);
 					$arr[] = new ArrayTag(array(
 						'name' => $pluginInfo['displayName'],
+						'handle' => $pluginInfo['handle'],
 						'version' => $pluginInfo['latestVersion'],
 						'notes' => $notes,
 					));
