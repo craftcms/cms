@@ -27,7 +27,10 @@ class VersionCheckFilter extends CFilter
 		}
 
 		if (Blocks::app()->config('devMode'))
+		{
+			Blocks::app()->fileCache->delete('blocksUpdateInfo');
 			$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+		}
 		else
 		{
 			$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');

@@ -17,10 +17,10 @@ class UpdatesWidget extends Widget
 		if ($blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
 			$updates .= '<tr>
-								<td>Blocks '.$blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
-								<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
-								<td><a class="btn" href=""><span class="label">Update</span></a></td>
-							</tr>';
+							<td>Blocks '.$blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
+							<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
+							<td><a class="btn" href=""><span class="label">Update</span></a></td>
+						</tr>';
 		}
 
 		if (isset($blocksUpdateInfo['pluginNamesAndVersions']) && $blocksUpdateInfo['pluginNamesAndVersions'] !== null && count($blocksUpdateInfo['pluginNamesAndVersions']) > 0)
@@ -30,10 +30,10 @@ class UpdatesWidget extends Widget
 				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable)
 				{
 					$updates .= '<tr>
-										<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
-										<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
-										<td><a class="btn" href=""><span class="label">Update</span></a></td>
-									</tr>';
+									<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
+									<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
+									<td><a class="btn" href=""><span class="label">Update</span></a></td>
+								</tr>';
 				}
 			}
 		}
