@@ -37,6 +37,9 @@ class ArrayTag extends Tag
 
 	public function __toString()
 	{
+		if (!$this->_val)
+			return '';
+
 		$strings = array();
 
 		foreach ($this->_val as $val)
