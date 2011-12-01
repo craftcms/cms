@@ -19,7 +19,7 @@ class VersionCheckFilter extends CFilter
 		if (Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
 			return true;
 
-		if (($keys = Blocks::app()->site->getSiteLicenseKeys()) == null || empty($keys))
+		if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
 		{
 			$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
 			Blocks::app()->request->setBlocksUpdateInfo($blocksUpdateInfo);

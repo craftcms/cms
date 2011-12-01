@@ -129,7 +129,7 @@ class RequirementsChecker
 				'Please set your database name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Site License Key Name',
-				Blocks::app()->config->getSiteLicenseKeys() !== '',
+				Blocks::app()->config->getLicenseKeys() !== null,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your license key in the site config file at '.$blocksConfigPath),

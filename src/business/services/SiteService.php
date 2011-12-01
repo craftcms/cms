@@ -2,7 +2,7 @@
 
 class SiteService extends CApplicationComponent implements ISiteService
 {
-	public function getSiteLicenseKeys()
+	public function getLicenseKeys()
 	{
 		if (isset(Blocks::app()->params['config']['licenseKeys']))
 			return Blocks::app()->params['config']['licenseKeys'];
@@ -68,7 +68,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 		$versionCheckInfo['blocksClientVersionNo'] = $version;
 		$versionCheckInfo['blocksClientEdition'] = $edition;
 		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
-		$versionCheckInfo['keys'] = Blocks::app()->site->getSiteLicenseKeys();
+		$versionCheckInfo['keys'] = Blocks::app()->site->getLicenseKeys();
 		$versionCheckInfo['requestingDomain'] = Blocks::app()->request->getServerName();
 
 		try

@@ -8,11 +8,17 @@
 		<table class="zebra">
 			<tr>
 				<th>Blocks Version</th>
-				<td>Blocks Standard 1.0, build 212</td>
+				<td>Blocks {{ config.blocksEdition }} {{ config.blocksVersion }}.{{ config.blocksBuild }}</td>
 			</tr>
 			<tr>
-				<th>Blocks License Key</th>
-				<td>70573ac9-d16b-498a-8be5-eb196b6bda9b-a89568ed-20a6-46a8-b402-c07721e34d7a</td>
+				<th>Blocks License Keys</th>
+				<td>
+					<ul>
+						{% foreach config.licenseKeys as key %}
+							<li>{{ key }}</li>
+						{% /foreach %}
+					</ul>
+				</td>
 			</tr>
 			<tr>
 				<th>P&T Account</th>
