@@ -22,4 +22,5 @@ body.updates #updates .update .head .critical { float: left; margin: 2px 10px; p
 body.updates #updates .update .head .btn { float: right; margin: 0; }
 body.updates #updates .update .head a.notes-toggle { display: block; float: right; margin: 0 10px; }
 body.updates #updates .update .notes-container { height: 0; overflow: hidden; }
+body.updates #updates .update .body { max-height: 380px; overflow: auto; }
 body.updates #updates .update .body ul { list-style-type: square; margin-left: 2em; }
