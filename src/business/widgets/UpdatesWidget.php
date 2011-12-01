@@ -9,6 +9,7 @@ class UpdatesWidget extends Widget
 	public function init()
 	{
 		$this->_blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo();
+		$this->display();
 	}
 
 	public function display()
