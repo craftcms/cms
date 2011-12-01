@@ -26,7 +26,7 @@ class UpdatesWidget extends Widget
 		{
 			$this->body .= '<tr>
 								<td>Blocks '.$this->_blocksUpdateInfo['blocksLatestVersionNo'].'.'.$this->_blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
-								<td>'.BlocksHtml::link('Notes', array('settings/updates#app')).'</td>
+								<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
 								<td><a class="btn" href=""><span class="label">Update</span></a></td>
 							</tr>';
 		}
