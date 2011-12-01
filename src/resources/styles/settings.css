@@ -24,3 +24,4 @@ body.updates #updates .update .head a.notes-toggle { display: block; float: righ
 body.updates #updates .update .notes-container { height: 0; overflow: hidden; }
 body.updates #updates .update .body { max-height: 380px; overflow: auto; }
 body.updates #updates .update .body ul { list-style-type: square; margin-left: 2em; }
+body.updates #no-updates { position: absolute; top: 50%; left: 50%; margin-top: -43px; margin-left: -12em; width: 24em; }
