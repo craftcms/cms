@@ -9,13 +9,15 @@ class UpdatesWidget extends Widget
 	public function init()
 	{
 		$this->_blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo();
-		$this->_process();
 	}
 
-	private function _process()
+	public function display()
 	{
+		if ($this->_blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey)
+			return false;
+
 		$this->body =
-					'<a class="btn dark update-all" href=""><span class="label">Update all</span></a>
+				'<a class="btn dark update-all" href=""><span class="label">Update all</span></a>
 					<table>
 						<tbody>';
 
@@ -23,7 +25,7 @@ class UpdatesWidget extends Widget
 		{
 			$this->body .= '<tr>
 								<td>Blocks '.$this->_blocksUpdateInfo['blocksLatestVersionNo'].'.'.$this->_blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
-								<td><a href="">Notes</a></td>
+								<td>'.BlocksHtml::link('Notes', array('settings/updates#app')).'</td>
 								<td><a class="btn" href=""><span class="label">Update</span></a></td>
 							</tr>';
 		}
@@ -36,7 +38,7 @@ class UpdatesWidget extends Widget
 				{
 					$this->body .= '<tr>
 										<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
-										<td><a href="">Notes</a></td>
+										<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
 										<td><a class="btn" href=""><span class="label">Update</span></a></td>
 									</tr>';
 				}

@@ -26,12 +26,17 @@ class VersionCheckFilter extends CFilter
 			return true;
 		}
 
-		$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
-		if ($blocksUpdateInfo === false)
-		{
+		if (Blocks::app()->config('devMode'))
 			$blocksUpdateInfo = Blocks::app()->site->versionCheck();
-			// set cache expiry to 24 hours. 86400 seconds.
-			Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
+		else
+		{
+			$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
+			if ($blocksUpdateInfo === false)
+			{
+				$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+				// set cache expiry to 24 hours. 86400 seconds.
+				Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
+			}
 		}
 
 		if ($blocksUpdateInfo !== null)

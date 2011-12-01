@@ -17,4 +17,6 @@ abstract class Widget
 	}
 
 	protected function init() {}
+	protected function display() {}
+	protected function displaySettings() {}
 }
