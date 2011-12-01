@@ -16,7 +16,7 @@ body.plugins #main td { padding-top: 10px; padding-bottom: 10px; vertical-align:
 body.updates #checking { position: absolute; top: 50%; margin-top: -44px; padding-top: 68px; width: 100%; text-align: center; font-size: 16px; line-height: 20px; color: #666; text-shadow: 0 1px 0 #fff; background: url(../images/spinner-big.gif) no-repeat 50% 0; }
 body.updates #updates { display: none; }
 body.updates #updates #update-all { float: right; margin-top: -4px; }
-body.updates #updates .update { display: none; margin-bottom: 10px; }
+body.updates #updates .update { margin-bottom: 10px; opacity: 0; }
 body.updates #updates .update .head .name { float: left; }
 body.updates #updates .update .head .critical { float: left; margin: 2px 10px; padding: 0 4px; border: 2px solid #e14545; border-radius: 3px; font-size: 11px; line-height: 16px; color: #e14545; font-weight: bold; text-transform: uppercase; }
 body.updates #updates .update .head .btn { float: right; margin: 0; }
