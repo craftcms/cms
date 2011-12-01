@@ -16,12 +16,23 @@ window.Update = Base.extend({
 
 		this.dom.$toggle.on('click.update', $.proxy(this, 'toggle'));
 
+		if (location.hash && location.hash == '#'+this.dom.$update.attr('id'))
+		{
+			this.dom.$
+			this.dom.$notesContainer.height('auto');
+			this.expanded = true;
+
+			// scroll to this update
+			var scrollTo = this.dom.$update.offset().top - 54;
+			$('html, body').animate({scrollTop: scrollTo});
+		}
+
 		setTimeout($.proxy(this, 'fadeIn'), i * 100);
 	},
 
 	fadeIn: function()
 	{
-		this.dom.$update.fadeIn();
+		this.dom.$update.animate({opacity: 1});
 	},
 
 	toggle: function()
@@ -36,7 +47,7 @@ window.Update = Base.extend({
 	{
 		var height = this.dom.$notes.outerHeight();
 		this.dom.$notesContainer.stop().animate({height: height}, $.proxy(function() {
-			//this.dom.$notesContainer.height('auto');
+			this.dom.$notesContainer.height('auto');
 		}, this));
 
 		this.dom.$toggle.html('Hide release notes');

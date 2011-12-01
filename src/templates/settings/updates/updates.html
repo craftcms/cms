@@ -4,7 +4,7 @@
 	<h3>The following updates are available:</h3>
 
 	{% foreach cp.updates as update %}
-	<div class="update pane">
+	<div class="update pane" id="{{ update.handle }}">
 		<div class="head">
 			<div class="name">{{ update.name }} <strong>{{ update.version }}</strong></div>
 			{% if update.critical %}<div class="critical">Critical</div>{% /if %}
