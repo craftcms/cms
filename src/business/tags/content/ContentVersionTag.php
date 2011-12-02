@@ -7,10 +7,10 @@ class ContentVersionTag extends Tag
 		return $this->label();
 	}
 
-	public function page()
+	public function entry()
 	{
-		$page = Blocks::app()->content->getPageById($this->_val->page_id);
-		return new ContentPageTag($page);
+		$entry = Blocks::app()->content->getEntryById($this->_val->entry_id);
+		return new ContentEntryTag($entry);
 	}
 
 	public function num()
@@ -25,6 +25,6 @@ class ContentVersionTag extends Tag
 
 	public function isLive()
 	{
-		return new BoolTag($this->_val->is_list);
+		return new BoolTag($this->_val->is_live);
 	}
 }

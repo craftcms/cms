@@ -1,21 +1,24 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentversiondata}}".
+ * This is the model class for table "{{entrytitles}}".
  *
- * The followings are the available columns in table '{{_contentversiondata}}':
- * @property integer $version_id
- * @property integer $block_id
- * @property string $value
+ * The followings are the available columns in table '{{entrytitles}}':
+ * @property integer $entry_id
+ * @property string $language_code
+ * @property string $title
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
+ *
+ * The followings are the available model relations:
+ * @property Entries $entry
  */
-class ContentVersionData extends CActiveRecord
+class EntryTitles extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentVersionData the static model class
+	 * @return EntryTitles the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -27,7 +30,7 @@ class ContentVersionData extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentversiondata}}';
+		return '{{entrytitles}}';
 	}
 
 	/**
@@ -38,12 +41,13 @@ class ContentVersionData extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('version_id, block_id, value', 'required'),
-			array('version_id, block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('language_code, title', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('language_code', 'length', 'max'=>16),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('version_id, block_id, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('entry_id, language_code, title, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -55,6 +59,7 @@ class ContentVersionData extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'entry' => array(self::BELONGS_TO, 'Entries', 'entry_id'),
 		);
 	}
 
@@ -64,9 +69,9 @@ class ContentVersionData extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'version_id' => 'Version',
-			'block_id' => 'Block',
-			'value' => 'Value',
+			'entry_id' => 'Entry',
+			'language_code' => 'Language Code',
+			'title' => 'Title',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -84,9 +89,9 @@ class ContentVersionData extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('version_id',$this->version_id);
-		$criteria->compare('block_id',$this->block_id);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('entry_id',$this->entry_id);
+		$criteria->compare('language_code',$this->language_code,true);
+		$criteria->compare('title',$this->title,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

@@ -21,9 +21,7 @@ class BlocksHttpRequest extends CHttpRequest
 	public function getPathSegments()
 	{
 		if ($this->_pathSegments == null)
-		{
 			$this->_pathSegments = array_merge(array_filter(explode('/', $this->getPathInfo())));
-		}
 
 		return $this->_pathSegments;
 	}
@@ -52,9 +50,7 @@ class BlocksHttpRequest extends CHttpRequest
 	public function getSiteInfo()
 	{
 		if ($this->_siteInfo == null)
-		{
 			$this->_siteInfo = Blocks::app()->site->getSiteByUrl();
-		}
 
 		return $this->_siteInfo;
 	}

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentpages}}".
+ * This is the model class for table "{{entries}}".
  *
- * The followings are the available columns in table '{{_contentpages}}':
+ * The followings are the available columns in table '{{entries}}':
  * @property integer $id
  * @property integer $parent_id
  * @property integer $section_id
@@ -11,7 +11,7 @@
  * @property string $slug
  * @property string $full_uri
  * @property integer $expiration_date
- * @property integer $page_order
+ * @property integer $order
  * @property integer $archived
  * @property integer $date_created
  * @property integer $date_updated
@@ -20,19 +20,19 @@
  * @property integer $enabled
  *
  * The followings are the available model relations:
- * @property ContentDrafts[] $contentdrafts
- * @property ContentPages $parent
- * @property ContentPages[] $contentpages
- * @property ContentSections $section
+ * @property Entries $parent
+ * @property Entries[] $entries
+ * @property Sections $section
  * @property Users $author
- * @property ContentPageTitles[] $contentpagetitles
- * @property ContentVersions[] $contentversions
+ * @property EntryDrafts[] $entryDrafts
+ * @property EntryTitles[] $entryTitles
+ * @property EntryVersions[] $entryVersions
  */
-class ContentPages extends CActiveRecord
+class Entries extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentPages the static model class
+	 * @return Entries the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -44,7 +44,7 @@ class ContentPages extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentpages}}';
+		return '{{entries}}';
 	}
 
 	/**
@@ -55,14 +55,14 @@ class ContentPages extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('section_id, author_id, page_order, post_date', 'required'),
-			array('parent_id, section_id, author_id, expiration_date, page_order, archived, date_created, date_updated, post_date, enabled', 'numerical', 'integerOnly'=>true),
+			array('section_id, author_id, order, post_date', 'required'),
+			array('parent_id, section_id, author_id, expiration_date, order, archived, date_created, date_updated, post_date, enabled', 'numerical', 'integerOnly'=>true),
 			array('slug', 'length', 'max'=>250),
 			array('full_uri', 'length', 'max'=>1000),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, parent_id, section_id, author_id, slug, full_uri, expiration_date, page_order, archived, date_created, date_updated, uid, post_date, enabled', 'safe', 'on'=>'search'),
+			array('id, parent_id, section_id, author_id, slug, full_uri, expiration_date, order, archived, date_created, date_updated, uid, post_date, enabled', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -74,13 +74,13 @@ class ContentPages extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentDrafts' => array(self::HAS_MANY, 'ContentDrafts', 'page_id'),
-			'parent' => array(self::BELONGS_TO, 'ContentPages', 'parent_id'),
-			'contentPages' => array(self::HAS_MANY, 'ContentPages', 'parent_id'),
-			'section' => array(self::BELONGS_TO, 'ContentSections', 'section_id'),
+			'parent' => array(self::BELONGS_TO, 'Entries', 'parent_id'),
+			'entries' => array(self::HAS_MANY, 'Entries', 'parent_id'),
+			'section' => array(self::BELONGS_TO, 'Sections', 'section_id'),
 			'author' => array(self::BELONGS_TO, 'Users', 'author_id'),
-			'contentPageTitles' => array(self::HAS_MANY, 'ContentPageTitles', 'page_id'),
-			'contentVersions' => array(self::HAS_MANY, 'ContentVersions', 'page_id'),
+			'entryDrafts' => array(self::HAS_MANY, 'EntryDrafts', 'entry_id'),
+			'entryTitles' => array(self::HAS_MANY, 'EntryTitles', 'entry_id'),
+			'entryVersions' => array(self::HAS_MANY, 'EntryVersions', 'entry_id'),
 		);
 	}
 
@@ -97,7 +97,7 @@ class ContentPages extends CActiveRecord
 			'slug' => 'Slug',
 			'full_uri' => 'Full Uri',
 			'expiration_date' => 'Expiration Date',
-			'page_order' => 'Page Order',
+			'order' => 'Order',
 			'archived' => 'Archived',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
@@ -125,7 +125,7 @@ class ContentPages extends CActiveRecord
 		$criteria->compare('slug',$this->slug,true);
 		$criteria->compare('full_uri',$this->full_uri,true);
 		$criteria->compare('expiration_date',$this->expiration_date);
-		$criteria->compare('page_order',$this->page_order);
+		$criteria->compare('order',$this->order);
 		$criteria->compare('archived',$this->archived);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);

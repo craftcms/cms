@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_systemsettings}}".
+ * This is the model class for table "{{systemsettings}}".
  *
- * The followings are the available columns in table '{{_systemsettings}}':
+ * The followings are the available columns in table '{{systemsettings}}':
  * @property integer $id
  * @property string $key
  * @property string $value
@@ -27,7 +27,7 @@ class SystemSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_systemsettings}}';
+		return '{{systemsettings}}';
 	}
 
 	/**

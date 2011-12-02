@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_uploadfolders}}".
+ * This is the model class for table "{{uploadfolders}}".
  *
- * The followings are the available columns in table '{{_uploadfolders}}':
+ * The followings are the available columns in table '{{uploadfolders}}':
  * @property integer $id
  * @property integer $site_id
  * @property string $name
@@ -17,11 +17,11 @@
  * @property Assets[] $assets
  * @property Sites $site
  */
-class UploadFolders extends CActiveRecord
+class Uploadfolders extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return UploadFolders the static model class
+	 * @return Uploadfolders the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -33,7 +33,7 @@ class UploadFolders extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_uploadfolders}}';
+		return '{{uploadfolders}}';
 	}
 
 	/**

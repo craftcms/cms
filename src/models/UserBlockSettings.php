@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_userblocksettings}}".
+ * This is the model class for table "{{userblocksettings}}".
  *
- * The followings are the available columns in table '{{_userblocksettings}}':
+ * The followings are the available columns in table '{{userblocksettings}}':
  * @property integer $id
  * @property integer $block_id
  * @property string $key
@@ -31,7 +31,7 @@ class UserBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_userblocksettings}}';
+		return '{{userblocksettings}}';
 	}
 
 	/**

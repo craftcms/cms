@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_groups}}".
+ * This is the model class for table "{{groups}}".
  *
- * The followings are the available columns in table '{{_groups}}':
+ * The followings are the available columns in table '{{groups}}':
  * @property integer $id
  * @property string $name
  * @property string $description
@@ -12,7 +12,7 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property UserGroups[] $usergroups
+ * @property UserGroups[] $userGroups
  */
 class Groups extends CActiveRecord
 {
@@ -30,7 +30,7 @@ class Groups extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_groups}}';
+		return '{{groups}}';
 	}
 
 	/**

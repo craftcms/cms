@@ -31,16 +31,15 @@ class AssetService implements IAssetService
 
 	public function getAllFilesBySiteId($siteId)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
-		$pages = Blocks::app()->db->createCommand()
+		$files = Blocks::app()->db->createCommand()
 			->select('a.*')
-			->from($prefix.'assets a')
-			->join($prefix.'uploadfolders uf', 'a.upload_folder_id = uf.id')
-			->join($prefix.'sites s', 'uf.site_id = s.id')
+			->from('{{assets}} a')
+			->join('{{uploadfolders}} uf', 'a.upload_folder_id = uf.id')
+			->join('{{sites}} s', 'uf.site_id = s.id')
 			->where('s.id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 
-		return $pages;
+		return $files;
 	}
 
 	public function getFileById($fileId)

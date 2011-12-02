@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_plugins}}".
+ * This is the model class for table "{{plugins}}".
  *
- * The followings are the available columns in table '{{_plugins}}':
+ * The followings are the available columns in table '{{plugins}}':
  * @property string $name
  * @property string $version
  * @property integer $enabled
@@ -12,7 +12,7 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property PluginSettings[] $pluginsettings
+ * @property PluginSettings[] $pluginSettings
  */
 class Plugins extends CActiveRecord
 {
@@ -30,7 +30,7 @@ class Plugins extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_plugins}}';
+		return '{{plugins}}';
 	}
 
 	/**

@@ -30,15 +30,15 @@ class ContentTag extends Tag
 		return new ContentSectionTag($section);
 	}
 
-	public function pages()
+	public function entries()
 	{
-		$pages = Blocks::app()->content->getAllPagesBySiteId($this->_siteId);
-		return new ContentPagesTag($pages);
+		$entries = Blocks::app()->content->getAllEntriesBySiteId($this->_siteId);
+		return new ContentEntriesTag($entries);
 	}
 
-	public function page($pageId)
+	public function entry($entryId)
 	{
-		$page = Blocks::app()->content->getPageById($pageId);
-		return new ContentPageTag($page);
+		$entry = Blocks::app()->content->getEntryById($entryId);
+		return new ContentEntryTag($entry);
 	}
 }

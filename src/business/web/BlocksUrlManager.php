@@ -24,11 +24,11 @@ class BlocksUrlManager extends CUrlManager
 
 		$matchFound = false;
 
-		// we'll never have a db page match on a control panel request
+		// we'll never have a db entry match on a control panel request
 		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
 		{
 			if (Blocks::app()->isDbInstalled())
-				if ($this->matchPage())
+				if ($this->matchEntry())
 					$matchFound = true;
 		}
 
@@ -57,18 +57,18 @@ class BlocksUrlManager extends CUrlManager
 		return $this->_currentModule;
 	}
 
-	public function matchPage()
+	public function matchEntry()
 	{
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
 
-		$page = ContentPages::model()->findByAttributes(array(
+		$entry = Entries::model()->findByAttributes(array(
 			'full_uri' => $pathMatchPattern,
 		));
 
-		if ($page !== null)
+		if ($entry !== null)
 		{
-			$extension = pathinfo($page->section->template, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($page->section->template, $pathMatchPattern, $extension, TemplateMatchType::Page);
+			$extension = pathinfo($entry->section->template, PATHINFO_EXTENSION);
+			$this->setTemplateMatch($entry->section->template, $pathMatchPattern, $extension, TemplateMatchType::Entry);
 			return true;
 		}
 

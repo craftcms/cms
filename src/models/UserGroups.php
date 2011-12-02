@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_usergroups}}".
+ * This is the model class for table "{{usergroups}}".
  *
- * The followings are the available columns in table '{{_usergroups}}':
+ * The followings are the available columns in table '{{usergroups}}':
  * @property integer $id
  * @property integer $group_id
  * @property integer $user_id
@@ -13,9 +13,9 @@
  * @property integer $site_id
  *
  * The followings are the available model relations:
- * @property UserGroupPermissions[] $usergrouppermissions
- * @property Sites $site
+ * @property UserGroupPermissions[] $userGroupPermissions
  * @property Groups $group
+ * @property Sites $site
  * @property Users $user
  */
 class UserGroups extends CActiveRecord
@@ -34,7 +34,7 @@ class UserGroups extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_usergroups}}';
+		return '{{usergroups}}';
 	}
 
 	/**
@@ -63,8 +63,8 @@ class UserGroups extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'userGroupPermissions' => array(self::HAS_MANY, 'UserGroupPermissions', 'user_group_id'),
-			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 			'group' => array(self::BELONGS_TO, 'Groups', 'group_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
 		);
 	}

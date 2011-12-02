@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentblocks}}".
+ * This is the model class for table "{{entryblocks}}".
  *
- * The followings are the available columns in table '{{_contentblocks}}':
+ * The followings are the available columns in table '{{entryblocks}}':
  * @property integer $id
  * @property integer $section_id
  * @property string $handle
@@ -17,16 +17,16 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property ContentSections $section
- * @property ContentBlockSettings[] $contentblocksettings
- * @property ContentDrafts[] $blxContentdrafts
- * @property ContentVersions[] $blxContentversions
+ * @property Sections $section
+ * @property EntryBlockSettings[] $entryBlockSettings
+ * @property EntryVersions[] $entryVersions
+ * @property EntryDrafts[] $entryDrafts
  */
-class ContentBlocks extends CActiveRecord
+class EntryBlocks extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentBlocks the static model class
+	 * @return EntryBlocks the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -38,7 +38,7 @@ class ContentBlocks extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentblocks}}';
+		return '{{entryblocks}}';
 	}
 
 	/**
@@ -69,10 +69,10 @@ class ContentBlocks extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'section' => array(self::BELONGS_TO, 'ContentSections', 'section_id'),
-			'contentBlockSettings' => array(self::HAS_MANY, 'ContentBlockSettings', 'block_id'),
-			'contentDrafts' => array(self::MANY_MANY, 'ContentDrafts', '{{_contentdraftdata}}(block_id, draft_id)'),
-			'contentVersions' => array(self::MANY_MANY, 'ContentVersions', '{{_contentversiondata}}(block_id, version_id)'),
+			'section' => array(self::BELONGS_TO, 'Sections', 'section_id'),
+			'entryBlockSettings' => array(self::HAS_MANY, 'EntryBlockSettings', 'block_id'),
+			'entryVersions' => array(self::MANY_MANY, 'EntryVersions', '{{entrydata}}(block_id, version_id)'),
+			'entrydrafts' => array(self::MANY_MANY, 'EntryDrafts', '{{entrydraftdata}}(block_id, draft_id)'),
 		);
 	}
 

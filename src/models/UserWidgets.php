@@ -1,27 +1,26 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentdrafts}}".
+ * This is the model class for table "{{userwidgets}}".
  *
- * The followings are the available columns in table '{{_contentdrafts}}':
+ * The followings are the available columns in table '{{userwidgets}}':
  * @property integer $id
- * @property integer $page_id
- * @property integer $author_id
- * @property string $label
+ * @property integer $user_id
+ * @property string $type
+ * @property integer $display_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property ContentBlocks[] $contentBlocks
- * @property ContentPages $page
- * @property Users $author
+ * @property Users $user
+ * @property UserWidgetSettings[] $userWidgetSettings
  */
-class ContentDrafts extends CActiveRecord
+class UserWidgets extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentDrafts the static model class
+	 * @return Userwidgets the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -33,7 +32,7 @@ class ContentDrafts extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentdrafts}}';
+		return '{{userwidgets}}';
 	}
 
 	/**
@@ -44,12 +43,13 @@ class ContentDrafts extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('page_id, author_id, label', 'required'),
-			array('page_id, author_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('user_id, type, display_order', 'required'),
+			array('user_id, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('type', 'length', 'max'=>150),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, page_id, author_id, label, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_id, type, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -61,9 +61,8 @@ class ContentDrafts extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentBlocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentdraftdata}}(draft_id, block_id)'),
-			'page' => array(self::BELONGS_TO, 'ContentPages', 'page_id'),
-			'author' => array(self::BELONGS_TO, 'Users', 'author_id'),
+			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
+			'userWidgetSettings' => array(self::HAS_MANY, 'UserWidgetSettings', 'widget_id'),
 		);
 	}
 
@@ -74,9 +73,9 @@ class ContentDrafts extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'page_id' => 'Page',
-			'author_id' => 'Author',
-			'label' => 'Label',
+			'user_id' => 'User',
+			'type' => 'Type',
+			'display_order' => 'Display Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -95,9 +94,9 @@ class ContentDrafts extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('page_id',$this->page_id);
-		$criteria->compare('author_id',$this->author_id);
-		$criteria->compare('label',$this->label,true);
+		$criteria->compare('user_id',$this->user_id);
+		$criteria->compare('type',$this->type,true);
+		$criteria->compare('display_order',$this->display_order);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

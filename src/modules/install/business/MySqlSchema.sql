@@ -9,7 +9,7 @@
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 11/30/2011 11:57:32 AM
+ Date: 12/02/2011 15:08:01 PM
 */
 
 SET NAMES utf8;
@@ -104,10 +104,50 @@ CREATE TRIGGER `auditinfoupdate_assets` BEFORE UPDATE ON `blx_assets` FOR EACH R
 delimiter ;
 
 -- ----------------------------
---  Table structure for `blx_contentblocks`
+--  Table structure for `blx_entries`
 -- ----------------------------
-DROP TABLE IF EXISTS `blx_contentblocks`;
-CREATE TABLE `blx_contentblocks` (
+DROP TABLE IF EXISTS `blx_entries`;
+CREATE TABLE `blx_entries` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `parent_id` int(11) DEFAULT NULL,
+  `section_id` int(11) NOT NULL,
+  `author_id` int(11) NOT NULL,
+  `slug` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `full_uri` varchar(1000) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `expiration_date` int(11) DEFAULT NULL,
+  `archived` tinyint(1) NOT NULL DEFAULT '0',
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  `post_date` int(11) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  UNIQUE KEY `section_id_order_unique` (`section_id`),
+  KEY `section_id_index` (`section_id`) USING BTREE,
+  KEY `author_id_index` (`author_id`) USING BTREE,
+  KEY `entries_entries_fk` (`parent_id`) USING BTREE,
+  CONSTRAINT `entries_entries_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `entries_entrysections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `entries_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_entries` BEFORE INSERT ON `blx_entries` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_entries` BEFORE UPDATE ON `blx_entries` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_entryblocks`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_entryblocks`;
+CREATE TABLE `blx_entryblocks` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `section_id` int(11) NOT NULL,
   `handle` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
@@ -122,26 +162,26 @@ CREATE TABLE `blx_contentblocks` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `handle_section_unique` (`handle`,`section_id`),
-  KEY `contentblocks_contentsections_fk` (`section_id`) USING BTREE,
-  CONSTRAINT `contentblocks_contentsections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_contentsections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+  KEY `entryblocks_entrysections_fk` (`section_id`) USING BTREE,
+  CONSTRAINT `entryblocks_entrysections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentblocks` BEFORE INSERT ON `blx_contentblocks` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoinsert_entryblocks` BEFORE INSERT ON `blx_entryblocks` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.uid = UUID();
  ;;
 delimiter ;
 delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentblocks` BEFORE UPDATE ON `blx_contentblocks` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoupdate_entryblocks` BEFORE UPDATE ON `blx_entryblocks` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;
 
 -- ----------------------------
---  Table structure for `blx_contentblocksettings`
+--  Table structure for `blx_entryblocksettings`
 -- ----------------------------
-DROP TABLE IF EXISTS `blx_contentblocksettings`;
-CREATE TABLE `blx_contentblocksettings` (
+DROP TABLE IF EXISTS `blx_entryblocksettings`;
+CREATE TABLE `blx_entryblocksettings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `block_id` int(11) NOT NULL,
   `key` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
@@ -151,193 +191,27 @@ CREATE TABLE `blx_contentblocksettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `Key_unique` (`key`) USING BTREE,
-  KEY `contentblocksettings_contentblocks_fk` (`block_id`) USING BTREE,
-  CONSTRAINT `contentblocksettings_contentblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_contentblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  UNIQUE KEY `key_unique` (`key`,`block_id`) USING BTREE,
+  KEY `entryblocksettings_entryblocks_fk` (`block_id`) USING BTREE,
+  CONSTRAINT `entryblocksettings_entryblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_entryblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentblocksettings` BEFORE INSERT ON `blx_contentblocksettings` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoinsert_entryblocksettings` BEFORE INSERT ON `blx_entryblocksettings` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.uid = UUID();
  ;;
 delimiter ;
 delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentblocksettings` BEFORE UPDATE ON `blx_contentblocksettings` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoupdate_entryblocksettings` BEFORE UPDATE ON `blx_entryblocksettings` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;
 
 -- ----------------------------
---  Table structure for `blx_contentdraftdata`
+--  Table structure for `blx_entrydata`
 -- ----------------------------
-DROP TABLE IF EXISTS `blx_contentdraftdata`;
-CREATE TABLE `blx_contentdraftdata` (
-  `draft_id` int(11) NOT NULL,
-  `block_id` int(11) NOT NULL,
-  `value` text COLLATE utf8_unicode_ci NOT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`draft_id`,`block_id`),
-  UNIQUE KEY `draft_id_block_id_unique` (`draft_id`,`block_id`) USING BTREE,
-  KEY `contentdraftdata_contentdrafts_fk` (`draft_id`) USING BTREE,
-  KEY `contentdraftdata_contentblocks_fk` (`block_id`) USING BTREE,
-  CONSTRAINT `contentdraftdata_contentblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_contentblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `contentdraftdata_contentdrafts_fk` FOREIGN KEY (`draft_id`) REFERENCES `blx_contentdrafts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentdraftdata` BEFORE INSERT ON `blx_contentdraftdata` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentdraftdata` BEFORE UPDATE ON `blx_contentdraftdata` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_contentdrafts`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_contentdrafts`;
-CREATE TABLE `blx_contentdrafts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `page_id` int(11) NOT NULL,
-  `author_id` int(11) NOT NULL,
-  `label` text COLLATE utf8_unicode_ci NOT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  KEY `page_id_index` (`page_id`) USING BTREE,
-  KEY `author_id_index` (`author_id`) USING BTREE,
-  CONSTRAINT `contentdrafts_contentpages_fk` FOREIGN KEY (`page_id`) REFERENCES `blx_contentpages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `contentdrafts_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentdrafts` BEFORE INSERT ON `blx_contentdrafts` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentdrafts` BEFORE UPDATE ON `blx_contentdrafts` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_contentpages`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_contentpages`;
-CREATE TABLE `blx_contentpages` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) DEFAULT NULL,
-  `section_id` int(11) NOT NULL,
-  `author_id` int(11) NOT NULL,
-  `slug` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `full_uri` varchar(1000) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `expiration_date` int(11) DEFAULT NULL,
-  `page_order` int(11) NOT NULL,
-  `archived` tinyint(1) NOT NULL DEFAULT '0',
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  `post_date` int(11) NOT NULL,
-  `enabled` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `section_id_page_order_unique` (`section_id`,`page_order`),
-  KEY `section_id_index` (`section_id`) USING BTREE,
-  KEY `author_id_index` (`author_id`) USING BTREE,
-  KEY `contentpages_contentpages_fk` (`parent_id`) USING BTREE,
-  CONSTRAINT `contentpages_contentpages_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_contentpages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `contentpages_contentsections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_contentsections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `contentpages_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentpages` BEFORE INSERT ON `blx_contentpages` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentpages` BEFORE UPDATE ON `blx_contentpages` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_contentpagetitles`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_contentpagetitles`;
-CREATE TABLE `blx_contentpagetitles` (
-  `page_id` int(11) NOT NULL AUTO_INCREMENT,
-  `language_code` varchar(16) COLLATE utf8_unicode_ci NOT NULL,
-  `title` text COLLATE utf8_unicode_ci NOT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`page_id`,`language_code`),
-  UNIQUE KEY `page_id_language_code_unique` (`page_id`,`language_code`) USING BTREE,
-  KEY `contentpagetitles_contentpages_fk` (`page_id`) USING BTREE,
-  CONSTRAINT `contentpagetitles_contentpages_fk` FOREIGN KEY (`page_id`) REFERENCES `blx_contentpages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentpagetitles` BEFORE INSERT ON `blx_contentpagetitles` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentpagetitles` BEFORE UPDATE ON `blx_contentpagetitles` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_contentsections`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_contentsections`;
-CREATE TABLE `blx_contentsections` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `parent_id` int(11) DEFAULT NULL,
-  `site_id` int(11) NOT NULL,
-  `handle` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
-  `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
-  `url_format` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `max_pages` int(11) DEFAULT NULL,
-  `template` varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `handle_unique` (`handle`) USING BTREE,
-  KEY `parent_id_index` (`parent_id`) USING BTREE,
-  KEY `site_id_index` (`site_id`) USING BTREE,
-  CONSTRAINT `contentsections_contentsections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_contentsections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `contentsections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentsections` BEFORE INSERT ON `blx_contentsections` FOR EACH ROW SET NEW.date_created = UTC_TIMESTAMP(),
-	NEW.date_updated = UTC_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentsections` BEFORE UPDATE ON `blx_contentsections` FOR EACH ROW SET NEW.date_updated = UTC_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_contentversiondata`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_contentversiondata`;
-CREATE TABLE `blx_contentversiondata` (
+DROP TABLE IF EXISTS `blx_entrydata`;
+CREATE TABLE `blx_entrydata` (
   `version_id` int(11) NOT NULL,
   `block_id` int(11) NOT NULL,
   `value` text COLLATE utf8_unicode_ci NOT NULL,
@@ -346,51 +220,140 @@ CREATE TABLE `blx_contentversiondata` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`version_id`,`block_id`),
   UNIQUE KEY `version_id_block_id_unique` (`version_id`,`block_id`) USING BTREE,
-  KEY `contentversiondata_contentversions_fk` (`version_id`) USING BTREE,
-  KEY `contentversiondata_contentblocks_fk` (`block_id`) USING BTREE,
-  CONSTRAINT `contentversiondata_contentblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_contentblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `contentversiondata_contentversions_fk` FOREIGN KEY (`version_id`) REFERENCES `blx_contentversions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `entrydata_entryversions_fk` (`version_id`) USING BTREE,
+  KEY `entrydata_entryblocks_fk` (`block_id`) USING BTREE,
+  CONSTRAINT `entrydata_entryblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_entryblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `entrydata_entryversions_fk` FOREIGN KEY (`version_id`) REFERENCES `blx_entryversions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentversiondata` BEFORE INSERT ON `blx_contentversiondata` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoinsert_entrydata` BEFORE INSERT ON `blx_entrydata` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.uid = UUID();
  ;;
 delimiter ;
 delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentversiondata` BEFORE UPDATE ON `blx_contentversiondata` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoupdate_entrydata` BEFORE UPDATE ON `blx_entrydata` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;
 
 -- ----------------------------
---  Table structure for `blx_contentversions`
+--  Table structure for `blx_entrydraftdata`
 -- ----------------------------
-DROP TABLE IF EXISTS `blx_contentversions`;
-CREATE TABLE `blx_contentversions` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `page_id` int(11) NOT NULL,
-  `num` int(11) NOT NULL,
-  `label` text COLLATE utf8_unicode_ci NOT NULL,
-  `is_live` tinyint(1) NOT NULL,
+DROP TABLE IF EXISTS `blx_entrydraftdata`;
+CREATE TABLE `blx_entrydraftdata` (
+  `draft_id` int(11) NOT NULL,
+  `block_id` int(11) NOT NULL,
+  `value` text COLLATE utf8_unicode_ci NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `page_id_num_unique` (`page_id`,`num`) USING BTREE,
-  UNIQUE KEY `page_id_is_live_unique` (`page_id`,`is_live`) USING BTREE,
-  KEY `page_id_index` (`page_id`) USING BTREE,
-  CONSTRAINT `contentversions_contentpages_fk` FOREIGN KEY (`page_id`) REFERENCES `blx_contentpages` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  PRIMARY KEY (`draft_id`,`block_id`),
+  UNIQUE KEY `draft_id_block_id_unique` (`draft_id`,`block_id`) USING BTREE,
+  KEY `entrydraftdata_entrydrafts_fk` (`draft_id`) USING BTREE,
+  KEY `entrydraftdata_entryblocks_fk` (`block_id`) USING BTREE,
+  CONSTRAINT `entrydraftdata_entryblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_entryblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `entrydraftdata_entrydrafts_fk` FOREIGN KEY (`draft_id`) REFERENCES `blx_entrydrafts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
-CREATE TRIGGER `auditinfoinsert_contentversions` BEFORE INSERT ON `blx_contentversions` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoinsert_entrydraftdata` BEFORE INSERT ON `blx_entrydraftdata` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.uid = UUID();
  ;;
 delimiter ;
 delimiter ;;
-CREATE TRIGGER `auditinfoupdate_contentversions` BEFORE UPDATE ON `blx_contentversions` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+CREATE TRIGGER `auditinfoupdate_entrydraftdata` BEFORE UPDATE ON `blx_entrydraftdata` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_entrydrafts`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_entrydrafts`;
+CREATE TABLE `blx_entrydrafts` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `entry_id` int(11) NOT NULL,
+  `author_id` int(11) NOT NULL,
+  `label` text COLLATE utf8_unicode_ci NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  KEY `entry_id_index` (`entry_id`) USING BTREE,
+  KEY `author_id_index` (`author_id`) USING BTREE,
+  CONSTRAINT `entrydrafts_entries_fk` FOREIGN KEY (`entry_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `entrydrafts_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_entrydrafts` BEFORE INSERT ON `blx_entrydrafts` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_entrydrafts` BEFORE UPDATE ON `blx_entrydrafts` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_entrytitles`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_entrytitles`;
+CREATE TABLE `blx_entrytitles` (
+  `entry_id` int(11) NOT NULL AUTO_INCREMENT,
+  `language_code` varchar(16) COLLATE utf8_unicode_ci NOT NULL,
+  `title` text COLLATE utf8_unicode_ci NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`entry_id`,`language_code`),
+  UNIQUE KEY `entry_id_language_code_unique` (`entry_id`,`language_code`) USING BTREE,
+  KEY `entrytitles_entries_fk` (`entry_id`) USING BTREE,
+  CONSTRAINT `entrytitles_entries_fk` FOREIGN KEY (`entry_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_entrytitles` BEFORE INSERT ON `blx_entrytitles` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_entrytitles` BEFORE UPDATE ON `blx_entrytitles` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_entryversions`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_entryversions`;
+CREATE TABLE `blx_entryversions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `entry_id` int(11) NOT NULL,
+  `num` int(11) NOT NULL,
+  `label` text COLLATE utf8_unicode_ci NOT NULL,
+  `active` tinyint(1) NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  UNIQUE KEY `entry_id_num_unique` (`entry_id`,`num`) USING BTREE,
+  UNIQUE KEY `entry_id_is_live_unique` (`entry_id`,`active`) USING BTREE,
+  KEY `entry_id_index` (`entry_id`) USING BTREE,
+  CONSTRAINT `entryversions_entries_fk` FOREIGN KEY (`entry_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_entryversions` BEFORE INSERT ON `blx_entryversions` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_entryversions` BEFORE UPDATE ON `blx_entryversions` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;
@@ -408,7 +371,7 @@ CREATE TABLE `blx_groups` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_groups` BEFORE INSERT ON `blx_groups` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -512,6 +475,42 @@ CREATE TRIGGER `auditinfoupdate_pluginsettings` BEFORE UPDATE ON `blx_pluginsett
 delimiter ;
 
 -- ----------------------------
+--  Table structure for `blx_sections`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_sections`;
+CREATE TABLE `blx_sections` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `parent_id` int(11) DEFAULT NULL,
+  `site_id` int(11) NOT NULL,
+  `handle` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
+  `url_format` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `max_entries` int(11) DEFAULT NULL,
+  `template` varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  UNIQUE KEY `handle_unique` (`handle`) USING BTREE,
+  KEY `parent_id_index` (`parent_id`) USING BTREE,
+  KEY `site_id_index` (`site_id`) USING BTREE,
+  CONSTRAINT `sections_sections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `sections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_sections` BEFORE INSERT ON `blx_sections` FOR EACH ROW SET NEW.date_created = UTC_TIMESTAMP(),
+	NEW.date_updated = UTC_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_sections` BEFORE UPDATE ON `blx_sections` FOR EACH ROW SET NEW.date_updated = UTC_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
 --  Table structure for `blx_siteblocks`
 -- ----------------------------
 DROP TABLE IF EXISTS `blx_siteblocks`;
@@ -558,7 +557,7 @@ CREATE TABLE `blx_siteblocksettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`) USING BTREE,
+  UNIQUE KEY `key_unique` (`key`,`block_id`) USING BTREE,
   KEY `siteblocksettings_siteblocks_fk` (`block_id`) USING BTREE,
   CONSTRAINT `siteblocksettings_siteblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_siteblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -616,7 +615,7 @@ CREATE TABLE `blx_sitesettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`) USING BTREE,
+  UNIQUE KEY `key_unique` (`key`,`site_id`) USING BTREE,
   KEY `sitesettings_sites_fk` (`site_id`) USING BTREE,
   CONSTRAINT `sitesettings_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -737,7 +736,7 @@ CREATE TABLE `blx_userblocksettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`) USING BTREE,
+  UNIQUE KEY `key_unique` (`key`,`block_id`) USING BTREE,
   KEY `userblocksettings_userblocks_fk` (`block_id`) USING BTREE,
   CONSTRAINT `userblocksettings_userblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_userblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -834,7 +833,7 @@ CREATE TABLE `blx_users` (
   UNIQUE KEY `id_unique` (`id`),
   UNIQUE KEY `email_unique` (`email`),
   UNIQUE KEY `user_name_unique` (`user_name`)
-) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+) ENGINE=InnoDB AUTO_INCREMENT=22 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_users` BEFORE INSERT ON `blx_users` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
 	NEW.date_updated = UNIX_TIMESTAMP(),
@@ -843,6 +842,65 @@ CREATE TRIGGER `auditinfoinsert_users` BEFORE INSERT ON `blx_users` FOR EACH ROW
 delimiter ;
 delimiter ;;
 CREATE TRIGGER `auditinfoupdate_users` BEFORE UPDATE ON `blx_users` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_userwidgets`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_userwidgets`;
+CREATE TABLE `blx_userwidgets` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `type` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `display_order` int(11) NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  KEY `userwidgets_users_idx` (`user_id`) USING BTREE,
+  CONSTRAINT `userwidgets_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_userwidgets` BEFORE INSERT ON `blx_userwidgets` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_userwidgets` BEFORE UPDATE ON `blx_userwidgets` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_userwidgetsettings`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_userwidgetsettings`;
+CREATE TABLE `blx_userwidgetsettings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `widget_id` int(11) NOT NULL,
+  `key` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `value` text COLLATE utf8_unicode_ci NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  UNIQUE KEY `widget_id_key_unique` (`widget_id`,`key`) USING BTREE,
+  KEY `userwidgetsettings_userwidgets_idx` (`widget_id`) USING BTREE,
+  CONSTRAINT `userwidgetsettings_userwidgets_fk` FOREIGN KEY (`widget_id`) REFERENCES `blx_userwidgets` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_userwidgetsettings` BEFORE INSERT ON `blx_userwidgetsettings` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_userwidgetsettings` BEFORE UPDATE ON `blx_userwidgetsettings` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;

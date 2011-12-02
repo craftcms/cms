@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_users}}".
+ * This is the model class for table "{{users}}".
  *
- * The followings are the available columns in table '{{_users}}':
+ * The followings are the available columns in table '{{users}}':
  * @property integer $id
  * @property string $user_name
  * @property string $email
@@ -16,10 +16,11 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property ContentDrafts[] $contentdrafts
- * @property ContentPages[] $contentpages
- * @property UserBlocks[] $userblocks
- * @property UserGroups[] $usergroups
+ * @property Entries[] $entries
+ * @property EntryDrafts[] $entryDrafts
+ * @property UserBlocks[] $userBlocks
+ * @property UserGroups[] $userGroups
+ * @property UserWidgets[] $userWidgets
  */
 class Users extends CActiveRecord
 {
@@ -37,7 +38,7 @@ class Users extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_users}}';
+		return '{{users}}';
 	}
 
 	/**
@@ -68,10 +69,11 @@ class Users extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentDrafts' => array(self::HAS_MANY, 'ContentDrafts', 'author_id'),
-			'contentPages' => array(self::HAS_MANY, 'ContentPages', 'author_id'),
+			'entries' => array(self::HAS_MANY, 'Entries', 'author_id'),
+			'entryDrafts' => array(self::HAS_MANY, 'EntryDrafts', 'author_id'),
 			'userBlocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
 			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
+			'userWidgets' => array(self::HAS_MANY, 'UserWidgets', 'user_id'),
 		);
 	}
 

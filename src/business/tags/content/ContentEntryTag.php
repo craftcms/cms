@@ -1,6 +1,6 @@
 <?php
 
-class ContentPageTag extends Tag
+class ContentEntryTag extends Tag
 {
 	function __call($method, $args)
 	{
@@ -12,15 +12,15 @@ class ContentPageTag extends Tag
 		return $this->title();
 	}
 
-	public function parentPage()
+	public function parentEntry()
 	{
-		return $this->_val->parent_id == null ? null : new ContentPageTag($this->_val->parent_id);
+		return $this->_val->parent_id == null ? null : new ContentEntryTag($this->_val->parent_id);
 	}
 
-	public function hasSubPages()
+	public function hasSubEntries()
 	{
-		$hasSubPages = Blocks::app()->content->doesPageHaveSubPages($this->_val->id);
-		return new BoolTag($hasSubPages);
+		$hasSubEntries = Blocks::app()->content->doesEntryHaveSubEntries($this->_val->id);
+		return new BoolTag($hasSubEntries);
 	}
 
 	public function section()
@@ -53,9 +53,9 @@ class ContentPageTag extends Tag
 		return new DateTag($this->_val->expiration_date);
 	}
 
-	public function pageOrder()
+	public function order()
 	{
-		return new NumTag($this->_val->page_order);
+		return new NumTag($this->_val->order);
 	}
 
 	public function archived()
@@ -70,25 +70,25 @@ class ContentPageTag extends Tag
 
 	public function title($languageCode = 'en-us')
 	{
-		$pageTitle = Blocks::app()->content->getPageTitleByLanguageCode($this->_val, $languageCode);
-		return new StringTag($pageTitle);
+		$entryTitle = Blocks::app()->content->getEntryTitleByLanguageCode($this->_val, $languageCode);
+		return new StringTag($entryTitle);
 	}
 
 	public function blocks()
 	{
-		$blocks = Blocks::app()->content->getBlocksByPageId($this->_val->id);
+		$blocks = Blocks::app()->content->getBlocksByEntryId($this->_val->id);
 		return new ContentBlocksTag($blocks);
 	}
 
 	public function block($handle)
 	{
-		$block = Blocks::app()->content->getBlockByPageIdHandle($this->_val->id, $handle);
+		$block = Blocks::app()->content->getBlockByEntryIdHandle($this->_val->id, $handle);
 		return new ContentBlockTag($block);
 	}
 
 	public function versions()
 	{
-		$versions = Blocks::app()->content->getPageVersionsByPageId($this->_val->id);
+		$versions = Blocks::app()->content->getEntryVersionsByEntryId($this->_val->id);
 		return new ContentVersionsTag($versions);
 	}
 }

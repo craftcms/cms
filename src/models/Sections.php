@@ -1,27 +1,33 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentversions}}".
+ * This is the model class for table "{{sections}}".
  *
- * The followings are the available columns in table '{{_contentversions}}':
+ * The followings are the available columns in table '{{sections}}':
  * @property integer $id
- * @property integer $page_id
- * @property integer $num
+ * @property integer $parent_id
+ * @property integer $site_id
+ * @property string $handle
  * @property string $label
- * @property integer $is_live
+ * @property string $url_format
+ * @property integer $max_entries
+ * @property string $template
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property ContentBlocks[] $contentblocks
- * @property ContentPages $page
+ * @property Entries[] $entries
+ * @property EntryBlocks[] $entryBlocks
+ * @property Sections $parent
+ * @property Sections[] $sections
+ * @property Sites $site
  */
-class ContentVersions extends CActiveRecord
+class Sections extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentVersions the static model class
+	 * @return Sections the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -33,7 +39,7 @@ class ContentVersions extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentversions}}';
+		return '{{sections}}';
 	}
 
 	/**
@@ -44,12 +50,15 @@ class ContentVersions extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('page_id, num, label, is_live', 'required'),
-			array('page_id, num, is_live, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('site_id, handle, label', 'required'),
+			array('parent_id, site_id, max_entries, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('handle', 'length', 'max'=>150),
+			array('label, template', 'length', 'max'=>500),
+			array('url_format', 'length', 'max'=>250),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, page_id, num, label, is_live, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, parent_id, site_id, handle, label, url_format, max_entries, template, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -61,8 +70,11 @@ class ContentVersions extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'contentBlocks' => array(self::MANY_MANY, 'ContentBlocks', '{{_contentversiondata}}(version_id, block_id)'),
-			'page' => array(self::BELONGS_TO, 'ContentPages', 'page_id'),
+			'entries' => array(self::HAS_MANY, 'Entries', 'section_id'),
+			'entryBlocks' => array(self::HAS_MANY, 'EntryBlocks', 'section_id'),
+			'parent' => array(self::BELONGS_TO, 'Sections', 'parent_id'),
+			'sections' => array(self::HAS_MANY, 'Sections', 'parent_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}
 
@@ -73,10 +85,13 @@ class ContentVersions extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'page_id' => 'Page',
-			'num' => 'Num',
+			'parent_id' => 'Parent',
+			'site_id' => 'Site',
+			'handle' => 'Handle',
 			'label' => 'Label',
-			'is_live' => 'Is Live',
+			'url_format' => 'Url Format',
+			'max_entries' => 'Max Entries',
+			'template' => 'Template',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -95,10 +110,13 @@ class ContentVersions extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('page_id',$this->page_id);
-		$criteria->compare('num',$this->num);
+		$criteria->compare('parent_id',$this->parent_id);
+		$criteria->compare('site_id',$this->site_id);
+		$criteria->compare('handle',$this->handle,true);
 		$criteria->compare('label',$this->label,true);
-		$criteria->compare('is_live',$this->is_live);
+		$criteria->compare('url_format',$this->url_format,true);
+		$criteria->compare('max_entries',$this->max_entries);
+		$criteria->compare('template',$this->template,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

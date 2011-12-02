@@ -2,7 +2,7 @@
 
 class TemplateMatchType
 {
-	const Page = 'Page';
+	const Entry = 'Entry';
 	const Template = 'Template';
 	const Route = 'Route';
 }

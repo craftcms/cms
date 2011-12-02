@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_assets}}".
+ * This is the model class for table "{{assets}}".
  *
- * The followings are the available columns in table '{{_assets}}':
+ * The followings are the available columns in table '{{assets}}':
  * @property integer $id
  * @property integer $upload_folder_id
  * @property string $path
@@ -12,7 +12,7 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property AssetBlocks[] $assetblocks
+ * @property AssetBlocks[] $assetBlocks
  * @property UploadFolders $uploadFolder
  */
 class Assets extends CActiveRecord
@@ -31,7 +31,7 @@ class Assets extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_assets}}';
+		return '{{assets}}';
 	}
 
 	/**

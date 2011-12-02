@@ -4,7 +4,7 @@ class DefaultController extends BaseController
 {
 	function __construct($id, $module = null)
 	{
-		$infoTable = Blocks::app()->db->schema->getTable(Blocks::app()->config->getDatabaseTablePrefix().'_info');
+		$infoTable = Blocks::app()->db->schema->getTable('{{Info}}');
 		if ($infoTable !== null)
 			throw new BlocksHttpException('404', 'Page not found.');
 

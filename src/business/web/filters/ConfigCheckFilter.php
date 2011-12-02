@@ -73,7 +73,7 @@ class ConfigCheckFilter extends CFilter
 			throw new BlocksException(implode(PHP_EOL, $messages));
 
 		// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
-		$infoTable = Blocks::app()->db->schema->getTable($databaseTablePrefix.'_info');
+		$infoTable = Blocks::app()->db->schema->getTable('{{Info}}');
 
 		if ($infoTable === null)
 			Blocks::app()->request->redirect(Blocks::app()->createUrl('install/index'));

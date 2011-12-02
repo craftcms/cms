@@ -1,25 +1,21 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentblocksettings}}".
+ * This is the model class for table "{{entrydraftdata}}".
  *
- * The followings are the available columns in table '{{_contentblocksettings}}':
- * @property integer $id
+ * The followings are the available columns in table '{{entrydraftdata}}':
+ * @property integer $draft_id
  * @property integer $block_id
- * @property string $key
  * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
- *
- * The followings are the available model relations:
- * @property ContentBlocks $block
  */
-class ContentBlockSettings extends CActiveRecord
+class EntryDraftData extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentBlockSettings the static model class
+	 * @return EntryDraftData the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -31,7 +27,7 @@ class ContentBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentblocksettings}}';
+		return '{{entrydraftdata}}';
 	}
 
 	/**
@@ -42,13 +38,12 @@ class ContentBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('block_id, key, value', 'required'),
-			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('key', 'length', 'max'=>100),
+			array('draft_id, block_id, value', 'required'),
+			array('draft_id, block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('draft_id, block_id, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +55,6 @@ class ContentBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'ContentBlocks', 'block_id'),
 		);
 	}
 
@@ -70,9 +64,8 @@ class ContentBlockSettings extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
+			'draft_id' => 'Draft',
 			'block_id' => 'Block',
-			'key' => 'Key',
 			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
@@ -91,9 +84,8 @@ class ContentBlockSettings extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
+		$criteria->compare('draft_id',$this->draft_id);
 		$criteria->compare('block_id',$this->block_id);
-		$criteria->compare('key',$this->key,true);
 		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);

@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_siteblocks}}".
+ * This is the model class for table "{{siteblocks}}".
  *
- * The followings are the available columns in table '{{_siteblocks}}':
+ * The followings are the available columns in table '{{siteblocks}}':
  * @property integer $id
  * @property integer $site_id
  * @property string $handle
@@ -17,7 +17,7 @@
  *
  * The followings are the available model relations:
  * @property Sites $site
- * @property SiteBlockSettings[] $siteblocksettings
+ * @property SiteBlockSettings[] $siteBlockSettings
  */
 class SiteBlocks extends CActiveRecord
 {
@@ -35,7 +35,7 @@ class SiteBlocks extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_siteblocks}}';
+		return '{{siteblocks}}';
 	}
 
 	/**

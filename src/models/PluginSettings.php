@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_pluginsettings}}".
+ * This is the model class for table "{{pluginsettings}}".
  *
- * The followings are the available columns in table '{{_pluginsettings}}':
+ * The followings are the available columns in table '{{pluginsettings}}':
  * @property string $plugin_name
  * @property string $key
  * @property string $value
@@ -30,7 +30,7 @@ class PluginSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_pluginsettings}}';
+		return '{{pluginsettings}}';
 	}
 
 	/**

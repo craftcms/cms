@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_usergrouppermissions}}".
+ * This is the model class for table "{{usergrouppermissions}}".
  *
- * The followings are the available columns in table '{{_usergrouppermissions}}':
+ * The followings are the available columns in table '{{usergrouppermissions}}':
  * @property integer $user_group_id
  * @property string $key
  * @property integer $value
@@ -30,7 +30,7 @@ class UserGroupPermissions extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_usergrouppermissions}}';
+		return '{{usergrouppermissions}}';
 	}
 
 	/**

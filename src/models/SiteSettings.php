@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_sitesettings}}".
+ * This is the model class for table "{{sitesettings}}".
  *
- * The followings are the available columns in table '{{_sitesettings}}':
+ * The followings are the available columns in table '{{sitesettings}}':
  * @property integer $id
  * @property integer $site_id
  * @property string $key
@@ -31,7 +31,7 @@ class SiteSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_sitesettings}}';
+		return '{{sitesettings}}';
 	}
 
 	/**

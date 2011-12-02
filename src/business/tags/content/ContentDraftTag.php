@@ -7,10 +7,10 @@ class ContentDraftTag extends Tag
 		return $this->label();
 	}
 
-	public function page()
+	public function entry()
 	{
-		$page = Blocks::app()->content->getPageById($this->_val->page_id);
-		return new ContentPageTag($page);
+		$entry = Blocks::app()->content->getEntryById($this->_val->entry_id);
+		return new ContentEntryTag($entry);
 	}
 
 	public function author()

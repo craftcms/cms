@@ -9,12 +9,11 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 
 	public function getAllUsersBySiteId($siteId)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$users = Blocks::app()->db->createCommand()
 			->select('u.*')
-			->from($prefix.'users g')
-			->join($prefix.'usergroups ug', 'u.id = ug.users_id')
-			->join($prefix.'sites s', 'ug.site_id = s.id')
+			->from('{{users}} g')
+			->join('{{usergroups}} ug', 'u.id = ug.users_id')
+			->join('{{sites}} s', 'ug.site_id = s.id')
 			->where('s.id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 
@@ -57,12 +56,11 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 
 	public function getGroupsByUserId($userId)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$groups = Blocks::app()->db->createCommand()
 			->select('g.*')
-			->from($prefix.'groups g')
-			->join($prefix.'usergroups ug', 'g.id = ug.group_id')
-			->join($prefix.'users u', 'ug.user_id = u.id')
+			->from('{{groups}} g')
+			->join('{{usergroups}} ug', 'g.id = ug.group_id')
+			->join('{{users}} u', 'ug.user_id = u.id')
 			->where('u.id=:userId', array(':userId' => $userId))
 			->queryAll();
 
@@ -71,12 +69,11 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 
 	public function getUsersByGroupId($groupId)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$groups = Blocks::app()->db->createCommand()
 			->select('u.*')
-			->from($prefix.'groups g')
-			->join($prefix.'usergroups ug', 'g.id = ug.group_id')
-			->join($prefix.'users u', 'ug.user_id = u.id')
+			->from('{{groups}} g')
+			->join('{{usergroups}} ug', 'g.id = ug.group_id')
+			->join('{{users}} u', 'ug.user_id = u.id')
 			->where('g.id=:groupId', array(':groupId' => $groupId))
 			->queryAll();
 

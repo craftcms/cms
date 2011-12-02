@@ -141,7 +141,7 @@ return array(
 			'username'          => $db['user'],
 			'password'          => $db['password'],
 			'charset'           => $db['charset'],
-			'tablePrefix'       => $db['tablePrefix'],
+			'tablePrefix'       => rtrim($db['tablePrefix'], '_').'_',
 		),
 
 		'assetManager' => array(

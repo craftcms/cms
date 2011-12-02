@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_assetblocksettings}}".
+ * This is the model class for table "{{assetblocksettings}}".
  *
- * The followings are the available columns in table '{{_assetblocksettings}}':
+ * The followings are the available columns in table '{{assetblocksettings}}':
  * @property integer $asset_block_id
  * @property string $key
  * @property string $value
@@ -30,7 +30,7 @@ class AssetBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_assetblocksettings}}';
+		return '{{assetblocksettings}}';
 	}
 
 	/**

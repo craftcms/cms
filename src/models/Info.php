@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_info}}".
+ * This is the model class for table "{{info}}".
  *
- * The followings are the available columns in table '{{_info}}':
+ * The followings are the available columns in table '{{info}}':
  * @property integer $id
  * @property string $version
  * @property string $build_number
@@ -27,7 +27,7 @@ class Info extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_info}}';
+		return '{{info}}';
 	}
 
 	/**

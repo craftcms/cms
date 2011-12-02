@@ -1,21 +1,21 @@
 <?php
 
 /**
- * This is the model class for table "{{_contentdraftdata}}".
+ * This is the model class for table "{{entrydata}}".
  *
- * The followings are the available columns in table '{{_contentdraftdata}}':
- * @property integer $draft_id
+ * The followings are the available columns in table '{{entrydata}}':
+ * @property integer $version_id
  * @property integer $block_id
  * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  */
-class ContentDraftData extends CActiveRecord
+class EntryData extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return ContentDraftData the static model class
+	 * @return EntryData the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -27,7 +27,7 @@ class ContentDraftData extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_contentdraftdata}}';
+		return '{{entrydata}}';
 	}
 
 	/**
@@ -38,12 +38,12 @@ class ContentDraftData extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('draft_id, block_id, value', 'required'),
-			array('draft_id, block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('version_id, block_id, value', 'required'),
+			array('version_id, block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('draft_id, block_id, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('version_id, block_id, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -64,7 +64,7 @@ class ContentDraftData extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'draft_id' => 'Draft',
+			'version_id' => 'Version',
 			'block_id' => 'Block',
 			'value' => 'Value',
 			'date_created' => 'Date Created',
@@ -84,7 +84,7 @@ class ContentDraftData extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('draft_id',$this->draft_id);
+		$criteria->compare('version_id',$this->version_id);
 		$criteria->compare('block_id',$this->block_id);
 		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);

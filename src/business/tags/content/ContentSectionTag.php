@@ -27,9 +27,9 @@ class ContentSectionTag extends Tag
 		return new StringTag($this->_val->template);
 	}
 
-	public function maxPages()
+	public function maxEntries()
 	{
-		return new NumTag($this->_val->max_pages);
+		return new NumTag($this->_val->max_extries);
 	}
 
 	public function parent()
@@ -48,10 +48,10 @@ class ContentSectionTag extends Tag
 		return new SiteTag($this->_val->site_id);
 	}
 
-	public function pages()
+	public function entries()
 	{
-		$pages = Blocks::app()->content->getPagesBySectionId($this->_val->id);
-		return new ContentPagesTag($pages);
+		$entries = Blocks::app()->content->getEntriesBySectionId($this->_val->id);
+		return new ContentEntriesTag($entries);
 	}
 
 	public function blocks()

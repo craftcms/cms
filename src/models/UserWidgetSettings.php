@@ -1,29 +1,25 @@
 <?php
 
 /**
- * This is the model class for table "{{sites}}".
+ * This is the model class for table "{{userwidgetsettings}}".
  *
- * The followings are the available columns in table '{{sites}}':
+ * The followings are the available columns in table '{{userwidgetsettings}}':
  * @property integer $id
- * @property string $handle
- * @property string $label
- * @property string $url
+ * @property integer $widget_id
+ * @property string $key
+ * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Sections[] $sections
- * @property SiteBlocks[] $siteBlocks
- * @property SiteSettings[] $siteSettings
- * @property UploadFolders[] $uploadFolders
- * @property UserGroups[] $userGroups
+ * @property UserWidgets $widget
  */
-class Sites extends CActiveRecord
+class UserWidgetSettings extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Sites the static model class
+	 * @return UserWidgetSettings the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -35,7 +31,7 @@ class Sites extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{sites}}';
+		return '{{userwidgetsettings}}';
 	}
 
 	/**
@@ -46,15 +42,13 @@ class Sites extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('handle, label, url', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('handle', 'length', 'max'=>150),
-			array('label', 'length', 'max'=>500),
-			array('url', 'length', 'max'=>250),
+			array('widget_id, key, value', 'required'),
+			array('widget_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, handle, label, url, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, widget_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -66,11 +60,7 @@ class Sites extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'sections' => array(self::HAS_MANY, 'Sections', 'site_id'),
-			'siteBlocks' => array(self::HAS_MANY, 'SiteBlocks', 'site_id'),
-			'siteSettings' => array(self::HAS_MANY, 'SiteSettings', 'site_id'),
-			'uploadFolders' => array(self::HAS_MANY, 'UploadFolders', 'site_id'),
-			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'site_id'),
+			'widget' => array(self::BELONGS_TO, 'UserWidgets', 'widget_id'),
 		);
 	}
 
@@ -81,9 +71,9 @@ class Sites extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'handle' => 'Handle',
-			'label' => 'Label',
-			'url' => 'Url',
+			'widget_id' => 'Widget',
+			'key' => 'Key',
+			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -102,9 +92,9 @@ class Sites extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('handle',$this->handle,true);
-		$criteria->compare('label',$this->label,true);
-		$criteria->compare('url',$this->url,true);
+		$criteria->compare('widget_id',$this->widget_id);
+		$criteria->compare('key',$this->key,true);
+		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

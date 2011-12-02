@@ -1,9 +1,9 @@
 <?php
 
 /**
- * This is the model class for table "{{_siteblocksettings}}".
+ * This is the model class for table "{{siteblocksettings}}".
  *
- * The followings are the available columns in table '{{_siteblocksettings}}':
+ * The followings are the available columns in table '{{siteblocksettings}}':
  * @property integer $id
  * @property integer $block_id
  * @property string $key
@@ -31,7 +31,7 @@ class SiteBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{_siteblocksettings}}';
+		return '{{siteblocksettings}}';
 	}
 
 	/**

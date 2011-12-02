@@ -3,73 +3,72 @@
 class ContentService extends CApplicationComponent implements IContentService
 {
 	/*
-	 * Pages
+	 * Entries
 	 */
-	public function getPageById($pageId)
+	public function getEntryById($entryId)
 	{
-		$page = ContentPages::model()->findByAttributes(array(
-			'id' => $pageId,
+		$entry = Entries::model()->findByAttributes(array(
+			'id' => $entryId,
 		));
 
-		return $page;
+		return $entry;
 	}
 
-	public function getPagesBySectionId($sectionId)
+	public function getEntriesBySectionId($sectionId)
 	{
-		$pages = ContentPages::model()->findAllByAttributes(array(
+		$entries = Entries::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 
-		return $pages;
+		return $entries;
 	}
 
-	public function getPageTitleByLanguageCode($pageId, $languageCode)
+	public function getEntryTitleByLanguageCode($entryId, $languageCode)
 	{
-		$pageTitle = ContentPageTitles::model()->findByAttributes(
+		$entryTitle = EntryTitles::model()->findByAttributes(
 			array(
-				'page_id' => $pageId,
+				'entry_id' => $entryId,
 				'language_code' => $languageCode),
 			array(
 				'select' => 'title'));
 
-		return $pageTitle;
+		return $entryTitle;
 	}
 
-	public function getAllPagesBySiteId($siteId)
+	public function getAllEntriesBySiteId($siteId)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
-		$pages = Blocks::app()->db->createCommand()
-			->select('cp.*')
-			->from($prefix.'contentsections cs')
-			->join($prefix.'contentpages cp', 'cs.id = cp.section_id')
-			->where('cs.site_id=:siteId', array(':siteId' => $siteId))
+		$entries = Blocks::app()->db->createCommand()
+			->select('e.*')
+			->from('{{sections}} s')
+			->join('{{entries}} e', 's.id = e.section_id')
+			->where('s.site_id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 
-		return $pages;
+		return $entries;
 	}
 
-	public function doesPageHaveSubPages($pageId)
+	public function doesEntryHaveSubEntries($entryId)
 	{
-		$exists = ContentPages::model()->exists(
+		$exists = Entries::model()->exists(
 			'parent_id=:parentId',
-			array(':parentId' => $pageId)
+			array(':parentId' => $entryId)
 		);
 
 		return $exists;
 	}
 
-	public function getPageVersionsByPageId($pageId)
+	public function getEntryVersionsByEntryId($entryId)
 	{
-		$versions = ContentVersions::model()->findAllByAttributes(array(
-			'page_id' => $pageId,
+		$versions = EntryVersions::model()->findAllByAttributes(array(
+			'entry_id' => $entryId,
 		));
 
 		return $versions;
 	}
 
-	public function getPageVersionById($versionId)
+	public function getEntryVersionById($versionId)
 	{
-		$version = ContentVersions::model()->findByAttributes(array(
+		$version = EntryVersions::model()->findByAttributes(array(
 			'id' => $versionId,
 		));
 
@@ -81,7 +80,7 @@ class ContentService extends CApplicationComponent implements IContentService
 	 */
 	public function getSectionById($sectionId)
 	{
-		$section = ContentSections::model()->findByAttributes(array(
+		$section = Sections::model()->findByAttributes(array(
 			'id' => $sectionId,
 		));
 
@@ -90,7 +89,7 @@ class ContentService extends CApplicationComponent implements IContentService
 
 	public function doesSectionHaveSubSections($sectionId)
 	{
-		$exists = ContentSections::model()->exists(
+		$exists = Sections::model()->exists(
 			'parent_id=:parentId',
 			array(':parentId' => $sectionId)
 		);
@@ -100,7 +99,7 @@ class ContentService extends CApplicationComponent implements IContentService
 
 	public function getSectionBySiteIdHandle($siteId, $handle)
 	{
-		$section = ContentSections::model()->findByAttributes(array(
+		$section = Sections::model()->findByAttributes(array(
 			'handle' => $handle,
 			'site_id' => $siteId,
 		));
@@ -110,7 +109,7 @@ class ContentService extends CApplicationComponent implements IContentService
 
 	public function getSectionsBySiteIdHandles($siteId, $handles)
 	{
-		$sections = ContentSections::model()->findAllByAttributes(array(
+		$sections = Sections::model()->findAllByAttributes(array(
 			'handle' => $handles,
 			'site_id' => $siteId,
 		));
@@ -120,7 +119,7 @@ class ContentService extends CApplicationComponent implements IContentService
 
 	public function getAllSectionsBySiteId($siteId)
 	{
-		$sections = ContentSections::model()->findAllByAttributes(array(
+		$sections = Sections::model()->findAllByAttributes(array(
 			'site_id' => $siteId,
 		));
 
@@ -132,36 +131,34 @@ class ContentService extends CApplicationComponent implements IContentService
 	 */
 	public function getBlocksBySectionId($sectionId)
 	{
-		$sections = ContentBlocks::model()->findAllByAttributes(array(
+		$sections = EntryBlocks::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 
 		return $sections;
 	}
 
-	public function getBlocksByPageId($pageId)
+	public function getBlocksByEntryId($entryId)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$blocks = Blocks::app()->db->createCommand()
-			->select('cb.*')
-			->from($prefix.'contentblocks cb')
-			->join($prefix.'contentsections cs', 'cs.id = cb.section_id')
-			->join($prefix.'contentpages cp', 'cs.id = cp.section_id')
-			->where('cp.id=:pageId', array(':pageId' => $pageId))
+			->select('eb.*')
+			->from('{{entryblocks}} eb')
+			->join('{{sections}} s', 's.id = eb.section_id')
+			->join('{{entries}} e', 's.id = e.section_id')
+			->where('e.id=:entryId', array(':entryId' => $entryId))
 			->queryAll();
 
 		return $blocks;
 	}
 
-	public function getBlockByPageIdHandle($pageId, $handle)
+	public function getBlockByEntryIdHandle($entryId, $handle)
 	{
-		$prefix = Blocks::app()->config->getDatabaseTablePrefix().'_';
 		$blocks = Blocks::app()->db->createCommand()
-			->select('cb.*')
-			->from($prefix.'contentblocks cb')
-			->join($prefix.'contentsections cs', 'cs.id = cb.section_id')
-			->join($prefix.'contentpages cp', 'cs.id = cp.section_id')
-			->where('cp.id=:pageId AND cb.handle=:handle', array(':pageId' => $pageId, ':handle' => $handle))
+			->select('eb.*')
+			->from('{{entryblocks}} eb')
+			->join('{{sections}} s', 's.id = eb.section_id')
+			->join('{{entries}} e', 's.id = e.section_id')
+			->where('e.id=:entryId AND eb.handle=:handle', array(':entryId' => $entryId, ':handle' => $handle))
 			->queryAll();
 
 		return $blocks;
