@@ -24,14 +24,27 @@
 		<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
 
 		<div id="widgets">
-			{% foreach cp.dashboard.widgets as count, widget %}
-				<div class="widget pane {{ widget.classname }}" id="widget{{ count+1 }}">
-					<div class="head">
-						<h3>{{ widget.title }}</h3>
+			{% foreach cp.dashboard.widgets as widget %}
+				<div class="widget {{ widget.classname }}">
+					<div class="pane front" id="widget{{ count+1 }}">
+						<div class="head">
+							{% if widget.settings %}
+								<a class="settings-btn" title="Settings"></a>
+							{% /if %}
+							<h3>{{ widget.title }}</h3>
+						</div>
+						<div class="body">
+							{{ widget.body }}
+						</div>
 					</div>
-					<div class="body">
-						{{ widget.body }}
-					</div>
+					{% if widget.settings %}
+						<div class="pane headless back">
+							<div class="body">
+								{{ widget.settings }}
+								<a class="btn save-settings"><span class="label">Save</span></a>
+							</div>
+						</div>
+					{% /if %}
 				</div>
 			{% /foreach %}
 		</div>

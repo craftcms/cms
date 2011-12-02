@@ -5,7 +5,7 @@ class ContentWidget extends Widget
 	public $title = 'Content';
 	public $className = 'content';
 
-	public function body()
+	public function displayBody()
 	{
 		return '<div class="search"><input type="text" /></div>
 

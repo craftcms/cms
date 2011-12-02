@@ -27,14 +27,14 @@ class CpService extends CApplicationComponent implements ICpService
 
 		foreach ($widgets as $widget)
 		{
-			$body = $widget->body();
+			$body = $widget->displayBody();
 			if ($body !== false)
 			{
 				$widgetData[] = array(
 					'title' => $widget->title,
 					'className' => $widget->className,
 					'body' => $body,
-					'settings' => $widget->settings()
+					'settings' => $widget->displaySettings()
 				);
 			}
 		}

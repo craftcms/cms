@@ -7,7 +7,7 @@ class FeedWidget extends Widget
 	public $settings = array(
 		'url' => 'http://feeds.feedburner.com/blogandtonic',
 		'title' => 'Blog &amp; Tonic',
-		'show' => 5
+		'limit' => 5
 	);
 
 	protected function init()
@@ -15,7 +15,7 @@ class FeedWidget extends Widget
 		$this->title = $this->settings['title'];
 	}
 
-	public function body()
+	public function displayBody()
 	{
 		return '<table>
 				<tr>
@@ -39,5 +39,15 @@ class FeedWidget extends Widget
 					<td class="date">Jul 23, 2010</td>
 				</tr>
 			</table>';
+	}
+
+	public function displaySettings()
+	{
+		return '<label for="widget1-url">URL</label>
+			<div class="input-wrapper"><input id="widget1-url" type="text" value="'.$this->settings['url'].'"></div>
+			<label for="widget1-title">Title</label>
+			<div class="input-wrapper"><input id="widget1-url" type="text" value="'.$this->settings['title'].'"></div>
+			<label for="widget1-limit">Limit</label>
+			<input id="widget1-limit" type="number" value="'.$this->settings['limit'].'">';
 	}
 }
