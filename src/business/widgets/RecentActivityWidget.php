@@ -5,7 +5,7 @@ class RecentActivityWidget extends Widget
 	public $title = 'Recent Activity';
 	public $className = 'recent_activity';
 
-	public function body()
+	public function displayBody()
 	{
 		return '<table>
 				<tr>

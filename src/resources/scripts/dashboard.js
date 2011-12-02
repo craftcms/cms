@@ -40,8 +40,8 @@ var Dashboard = Base.extend({
 
 		for (var i = 0; i < this.$widgets.length; i++)
 		{
-			this.widgets.push($(this.$widgets[i]));
-			this.widgets[i].css('zIndex', i+1);
+			var widget = new Dashboard.Widget(this.$widgets[i], i);
+			this.widgets.push(widget);
 		}
 	},
 
@@ -74,7 +74,7 @@ var Dashboard = Base.extend({
 		// Detach the widgets before we remove the columns so they keep their events
 		for (var i = 0; i < this.widgets.length; i++)
 		{
-			this.widgets[i].detach();
+			this.widgets[i].$elem.detach();
 		}
 
 		// Remove the old columns
@@ -97,7 +97,7 @@ var Dashboard = Base.extend({
 		{
 			// add it to the shortest column
 			var shortestCol = this.getShortestCol();
-			shortestCol.addWidget(this.$widgets[i]);
+			shortestCol.addWidget(this.widgets[i].elem);
 		}
 
 		this.relaxWidgets();
@@ -108,14 +108,14 @@ var Dashboard = Base.extend({
 			for (var i = 0; i < this.widgets.length; i++)
 			{
 				// clear any current animations
-				this.widgets[i].stop();
+				this.widgets[i].$elem.stop();
 
 				// get the new settled offset and width
-				var settledOffset = this.widgets[i].offset(),
-					settledWidth = this.widgets[i].width();
+				var settledOffset = this.widgets[i].$elem.offset(),
+					settledWidth = this.widgets[i].$elem.width();
 
 				// put it back where it was
-				this.widgets[i].css({
+				this.widgets[i].$elem.css({
 					position: 'relative',
 					top: widgetOffsets[i].top - settledOffset.top,
 					left: widgetOffsets[i].left - settledOffset.left,
@@ -124,7 +124,7 @@ var Dashboard = Base.extend({
 
 				var onComplete = (i == this.widgets.length-1) ? $.proxy(this, 'relaxWidgets') : null;
 
-				this.widgets[i].animate({top: 0, left: 0, width: settledWidth}, onComplete);
+				this.widgets[i].$elem.animate({top: 0, left: 0, width: settledWidth}, onComplete);
 			}
 		}
 	},
@@ -142,7 +142,7 @@ var Dashboard = Base.extend({
 
 		for (var i = 0; i < this.widgets.length; i++)
 		{
-			var $widget = this.widgets[i];
+			var $widget = this.widgets[i].$elem;
 			widgetOffsets[i] = $widget.offset();
 			widgetOffsets[i].width = $widget.width();
 		}
@@ -216,15 +216,15 @@ var Dashboard = Base.extend({
 	moveWidget: function(from, to)
 	{
 		// capture the widget that was sorted
-		var widget = this.$widgets[from],
+		var widget = this.widgets[from],
 			handle = this.dom.$widgetHandles[from];
 
 		// sort our internal widget array & jQuery object to match the new order
 		this.$widgets.splice(from, 1);
 		this.widgets.splice(from, 1);
 		this.dom.$widgetHandles.splice(from, 1);
-		this.$widgets.splice(to, 0, widget);
-		this.widgets.splice(to, 0, $(widget));
+		this.$widgets.splice(to, 0, widget.elem);
+		this.widgets.splice(to, 0, widget);
 		this.dom.$widgetHandles.splice(to, 0, handle);
 
 		// update the columns
@@ -237,20 +237,18 @@ var Dashboard = Base.extend({
 		var $widgetHandle = $(event.currentTarget).parent().parent(),
 			widgetIndex = $.inArray($widgetHandle[0], this.dom.$widgetHandles);
 
-		console.log(widgetIndex);
-
 		if (widgetIndex != -1)
 			this.removeWidget(widgetIndex);
 	},
 
 	removeWidget: function(i)
 	{
-		var $widget = this.widgets[i],
+		var widget = this.widgets[i],
 			$handle = $(this.dom.$widgetHandles[i]),
 			handleHeight = $handle.outerHeight(),
 			containerOffset = this.dom.$container.offset(),
-			widgetOffset = $widget.offset(),
-			width = $widget.width();
+			widgetOffset = widget.$elem.offset(),
+			width = widget.$elem.width();
 
 		// remove it from our internal widget arrays
 		this.$widgets.splice(i, 1);
@@ -268,16 +266,16 @@ var Dashboard = Base.extend({
 		});
 
 		// fade out the widget, and then remove it
-		$widget.appendTo(this.dom.$container);
-		$widget.css({
+		widget.$elem.appendTo(this.dom.$container);
+		widget.$elem.css({
 			position: 'absolute',
 			zIndex: 0,
 			top: widgetOffset.top - containerOffset.top,
 			left: widgetOffset.left - containerOffset.left,
 			width: width
 		});
-		$widget.fadeOut($.proxy(function() {
-			$widget.remove();
+		widget.$elem.fadeOut($.proxy(function() {
+			widget.$elem.remove();
 		}, this));
 	}
 },
@@ -316,6 +314,45 @@ Dashboard.Col = Base.extend({
 	remove: function()
 	{
 		$(this.dom.outerDiv).remove();
+	}
+
+});
+
+
+Dashboard.Widget = Base.extend({
+
+	constructor: function(elem, i)
+	{
+		this.elem = elem;
+		this.$elem = $(elem);
+
+		this.$elem.css('zIndex', i+1);
+
+		this.dom = {};
+		this.dom.$front = $('.front', this.elem);
+		this.dom.$back = $('.back', this.elem);
+
+		if (this.dom.$back.length)
+		{
+			this.dom.$settingsBtn = $('.head .settings-btn', this.$front);
+			this.dom.$saveBtn = $('.save-settings', this.$back);
+
+			this.dom.$settingsBtn.on('click.widget', $.proxy(this, 'showSettings'));
+			this.dom.$saveBtn.on('click.widget', $.proxy(this, 'saveSettings'));
+		}
+	},
+
+	showSettings: function()
+	{
+		console.log(this);
+		this.dom.$back.show();
+		this.dom.$front.hide();
+	},
+
+	saveSettings: function()
+	{
+		this.dom.$front.show();
+		this.dom.$back.hide();
 	}
 
 });

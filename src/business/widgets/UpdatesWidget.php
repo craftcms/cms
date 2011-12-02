@@ -5,7 +5,7 @@ class UpdatesWidget extends Widget
 	public $title = 'Updates Available';
 	public $className = 'updates';
 
-	public function body()
+	public function displayBody()
 	{
 		$blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo();
 

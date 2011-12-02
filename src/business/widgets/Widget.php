@@ -17,12 +17,12 @@ abstract class Widget
 
 	protected function init() {}
 
-	public function body()
+	public function displayBody()
 	{
 		return false;
 	}
 
-	public function settings()
+	public function displaySettings()
 	{
 		return false;
 	}
