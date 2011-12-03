@@ -3,6 +3,7 @@
 class Tag
 {
 	public $__tag__ = true;
+	private $_tagCache = array();
 
 	/**
 	 * Returns whether a variable is a tag or not
@@ -43,6 +44,25 @@ class Tag
 		return new StringTag($var);
 	}
 
+	public function _tag($tag, $args = array())
+	{
+		$cacheKey = $this->_getTagCacheKey($tag, $args);
+		if (!isset($this->_tagCache[$cacheKey]))
+		{
+			$ret = call_user_func_array(array($this, $tag), $args);
+			$this->_tagCache[$cacheKey] = self::_getVarTag($ret);
+		}
+
+		return $this->_tagCache[$cacheKey];
+	}
+
+	private function _getTagCacheKey($tag, $args)
+	{
+		$cacheKey = $tag;
+		if ($args) $cacheKey .= '('.serialize($args).')';
+		return $cacheKey;
+	}
+
 	public function __toString()
 	{
 		return '';
@@ -65,6 +85,6 @@ class Tag
 
 	public function classname()
 	{
-		return new StringTag(get_class($this));
+		return get_class($this);
 	}
 }

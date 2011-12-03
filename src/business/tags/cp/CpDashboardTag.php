@@ -12,6 +12,6 @@ class CpDashboardTag extends Tag
 			$tags[] = new CpDashboardWidgetTag($widget);
 		}
 
-		return new ArrayTag($tags);
+		return $tags;
 	}
 }

@@ -16,28 +16,27 @@ class StringTag extends Tag
 
 	public function length()
 	{
-		return new NumTag(strlen($this->_val));
+		return strlen($this->_val);
 	}
 
 	public function uppercase()
 	{
-		return new StringTag(strtoupper($this->_val));
+		return strtoupper($this->_val);
 	}
 
 	public function lowercase()
 	{
-		return new StringTag(strtolower($this->_val));
+		return strtolower($this->_val);
 	}
 
 	public function chars()
 	{
 		if (strlen($this->_val))
 		{
-			$chars = str_split($this->_val);
-			return new ArrayTag($chars);
+			return str_split($this->_val);
 		}
 
-		return new ArrayTag;
+		return array();
 	}
 
 }

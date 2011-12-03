@@ -30,45 +30,45 @@ class CpTag extends Tag
 			$sectionTags[] = new CpSectionTag($handle, $name);
 		}
 
-		return new ArrayTag($sectionTags);
+		return $sectionTags;
 	}
 
 	public function noLicenseKey()
 	{
 		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
-			return $blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey ? new BoolTag(true) : new BoolTag(false);
+			return (bool) ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey);
 
-		return new BoolTag(false);
+		return false;
 	}
 
 	public function badLicenseKey()
 	{
 		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
-			return $blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::InvalidKey ? new BoolTag(true) : new BoolTag(false);
+			return (bool) ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::InvalidKey);
 
-		return new BoolTag(false);
+		return false;
 	}
 
 	public function criticalUpdateAvailable()
 	{
-		return new BoolTag(true);
+		return true;
 	}
 
 	public function updates()
 	{
 		$blocksUpdateInfo = Blocks::app()->site->versionCheck();
-		$arr = array();
+		$updates = array();
 
 		// blocks first.
 		if ($blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo['blocksLatestCoreReleases']) > 0)
 		{
 			$notes = $this->_generateUpdateNotes($blocksUpdateInfo['blocksLatestCoreReleases'], 'Blocks');
-			$arr[] = new ArrayTag(array(
+			$updates[] = array(
 				'name' => 'Blocks '.$blocksUpdateInfo['blocksClientEdition'],
 				'handle' => 'Blocks',
 				'version' => $blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'],
 				'notes' => $notes,
-			));
+			);
 
 		}
 
@@ -80,17 +80,17 @@ class CpTag extends Tag
 				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable && count($pluginInfo['newerReleases']) > 0)
 				{
 					$notes = $this->_generateUpdateNotes($pluginInfo['newerReleases'], $pluginInfo['displayName']);
-					$arr[] = new ArrayTag(array(
+					$upddates[] = array(
 						'name' => $pluginInfo['displayName'],
 						'handle' => $pluginInfo['handle'],
 						'version' => $pluginInfo['latestVersion'],
 						'notes' => $notes,
-					));
+					);
 				}
 			}
 		}
 
-		return new ArrayTag($arr);
+		return $updates;
 	}
 
 	private function _generateUpdateNotes($updates, $name)

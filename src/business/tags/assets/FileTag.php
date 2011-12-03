@@ -9,7 +9,7 @@ class FileTag extends Tag
 
 	public function path()
 	{
-		return new StringTag($this->_val->path);
+		return $this->_val->path;
 	}
 
 	public function folder()

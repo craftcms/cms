@@ -20,6 +20,6 @@ class ContentDraftTag extends Tag
 
 	public function label()
 	{
-		return new StringTag($this->_val->label);
+		return $this->_val->label;
 	}
 }

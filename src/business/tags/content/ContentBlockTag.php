@@ -9,32 +9,32 @@ class ContentBlockTag extends Tag
 
 	public function handle()
 	{
-		return new StringTag($this->_val->handle);
+		return $this->_val->handle;
 	}
 
 	public function label()
 	{
-		return new StringTag($this->_val->label);
+		return $this->_val->label;
 	}
 
 	public function type()
 	{
-		return new StringTag($this->_val->type);
+		return $this->_val->type;
 	}
 
 	public function instructions()
 	{
-		return new StringTag($this->_val->instructions);
+		return $this->_val->instructions;
 	}
 
 	public function required()
 	{
-		return new BoolTag($this->_val->required);
+		return (bool) $this->_val->required;
 	}
 
 	public function displayOrder()
 	{
-		return new NumTag($this->_val->display_order);
+		return $this->_val->display_order;
 	}
 
 	public function section()

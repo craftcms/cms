@@ -11,17 +11,17 @@ class CpDashboardWidgetTag extends Tag
 
 	public function className()
 	{
-		return new StringTag($this->_data['className']);
+		return $this->_data['className'];
 	}
 
 	public function title()
 	{
-		return new StringTag($this->_data['title']);
+		return $this->_data['title'];
 	}
 
 	public function body()
 	{
-		return new StringTag($this->_data['body']);
+		return $this->_data['body'];
 	}
 
 	public function settings()

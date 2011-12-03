@@ -24,16 +24,16 @@ class DateTag extends Tag
 
 	public function year()
 	{
-		return new NumTag(date('Y', $this->_val));
+		return date('Y', $this->_val);
 	}
 
 	public function month()
 	{
-		return new NumTag(date('n', $this->_val));
+		return date('n', $this->_val);
 	}
 
 	public function day()
 	{
-		return new NumTag(date('j', $this->_val));
+		return date('j', $this->_val);
 	}
 }

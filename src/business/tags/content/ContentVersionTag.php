@@ -15,16 +15,16 @@ class ContentVersionTag extends Tag
 
 	public function num()
 	{
-		return new NumTag($this->_val->num);
+		return $this->_val->num;
 	}
 
 	public function label()
 	{
-		return new StringTag($this->_val->label);
+		return $this->_val->label;
 	}
 
 	public function isLive()
 	{
-		return new BoolTag($this->_val->is_live);
+		return (bool) $this->_val->is_live;
 	}
 }

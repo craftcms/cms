@@ -14,12 +14,12 @@ class UserGroupTag extends Tag
 
 	public function name()
 	{
-		return new StringTag($this->_val->name);
+		return $this->_val->name;
 	}
 
 	public function description()
 	{
-		return new StringTag($this->_val->description);
+		return $this->_val->description;
 	}
 
 	public function users()

@@ -27,16 +27,16 @@ class CpResourceTag extends Tag
 
 	public function url()
 	{
-		return new StringTag($this->getUrl());
+		return $this->getUrl();
 	}
 
 	public function js()
 	{
-		return new StringTag('<script type="text/javascript" src="'.$this->getUrl().'"></script>');
+		return '<script type="text/javascript" src="'.$this->getUrl().'"></script>';
 	}
 
 	public function css()
 	{
-		return new StringTag('<link rel="stylesheet" type="text/css" href="'.$this->getUrl().'" />');
+		return '<link rel="stylesheet" type="text/css" href="'.$this->getUrl().'" />';
 	}
 }

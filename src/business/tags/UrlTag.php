@@ -9,8 +9,7 @@ class UrlTag extends Tag
 	 */
 	public function base()
 	{
-		$baseUrl = Blocks::app()->urlManager->getBaseUrl();
-		return new StringTag($baseUrl);
+		return Blocks::app()->urlManager->getBaseUrl();
 	}
 
 	/**
@@ -31,7 +30,7 @@ class UrlTag extends Tag
 	 */
 	public function segments()
 	{
-		return new ArrayTag($this->_getSegments());
+		return $this->_getSegments();
 	}
 
 	/**
@@ -44,13 +43,13 @@ class UrlTag extends Tag
 		$index = $num - 1;
 
 		if (isset($segments[$index]))
-			return new StringTag($segments[$index]);
+			return $segments[$index];
 
-		return new StringTag;
+		return false;
 	}
 
 	public function domain()
 	{
-		return new StringTag(Blocks::app()->request->getServerName());
+		return Blocks::app()->request->getServerName();
 	}
 }

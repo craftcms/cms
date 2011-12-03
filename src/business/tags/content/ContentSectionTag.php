@@ -9,27 +9,27 @@ class ContentSectionTag extends Tag
 
 	public function handle()
 	{
-		return new StringTag($this->_val->handle);
+		return $this->_val->handle;
 	}
 
 	public function label()
 	{
-		return new StringTag($this->_val->label);
+		return $this->_val->label;
 	}
 
 	public function urlFormat()
 	{
-		return new StringTag($this->_val->url_format);
+		return $this->_val->url_format;
 	}
 
 	public function template()
 	{
-		return new StringTag($this->_val->template);
+		return $this->_val->template;
 	}
 
 	public function maxEntries()
 	{
-		return new NumTag($this->_val->max_extries);
+		return $this->_val->max_extries;
 	}
 
 	public function parent()
@@ -39,8 +39,7 @@ class ContentSectionTag extends Tag
 
 	public function hasSubSections()
 	{
-		$hasSubSections = Blocks::app()->content->doesSectionHaveSubSections($this->_val->id);
-		return new BoolTag($hasSubSections);
+		return (bool) Blocks::app()->content->doesSectionHaveSubSections($this->_val->id);
 	}
 
 	public function site()

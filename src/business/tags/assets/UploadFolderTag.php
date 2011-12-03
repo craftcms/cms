@@ -9,17 +9,17 @@ class UploadFolderTag extends Tag
 
 	public function name()
 	{
-		return new StringTag($this->_val->name);
+		return $this->_val->name;
 	}
 
 	public function relativePath()
 	{
-		return new StringTag($this->_val->relative_path);
+		return $this->_val->relative_path;
 	}
 
 	public function includeSubFolders()
 	{
-		return new BoolTag($this->_val->include_subfolders);
+		return (bool) $this->_val->include_subfolders;
 	}
 
 	public function site()

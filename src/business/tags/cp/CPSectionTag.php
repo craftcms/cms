@@ -18,11 +18,11 @@ class CpSectionTag extends Tag
 
 	public function handle()
 	{
-		return new StringTag($this->_handle);
+		return $this->_handle;
 	}
 
 	public function name()
 	{
-		return new StringTag($this->_name);
+		return $this->_name;
 	}
 }

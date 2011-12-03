@@ -19,8 +19,7 @@ class ContentEntryTag extends Tag
 
 	public function hasSubEntries()
 	{
-		$hasSubEntries = Blocks::app()->content->doesEntryHaveSubEntries($this->_val->id);
-		return new BoolTag($hasSubEntries);
+		return (bool) Blocks::app()->content->doesEntryHaveSubEntries($this->_val->id);
 	}
 
 	public function section()
@@ -35,12 +34,12 @@ class ContentEntryTag extends Tag
 
 	public function slug()
 	{
-		return new StringTag($this->_val->slug);
+		return $this->_val->slug;
 	}
 
 	public function uri()
 	{
-		return new StringTag($this->_val->full_uri);
+		return $this->_val->full_uri;
 	}
 
 	public function postDate()
@@ -55,23 +54,22 @@ class ContentEntryTag extends Tag
 
 	public function order()
 	{
-		return new NumTag($this->_val->order);
+		return $this->_val->order;
 	}
 
 	public function archived()
 	{
-		return new BoolTag($this->_val->archived);
+		return (bool) $this->_val->archived;
 	}
 
 	public function enabled()
 	{
-		return new BoolTag($this->_val->enabled);
+		return (bool) $this->_val->enabled;
 	}
 
 	public function title($languageCode = 'en-us')
 	{
-		$entryTitle = Blocks::app()->content->getEntryTitleByLanguageCode($this->_val, $languageCode);
-		return new StringTag($entryTitle);
+		return Blocks::app()->content->getEntryTitleByLanguageCode($this->_val, $languageCode);
 	}
 
 	public function blocks()

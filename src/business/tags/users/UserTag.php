@@ -14,22 +14,22 @@ class UserTag extends Tag
 
 	public function userName()
 	{
-		return new StringTag($this->_val->user_name);
+		return $this->_val->user_name;
 	}
 
 	public function email()
 	{
-		return new StringTag($this->_val->email);
+		return $this->_val->email;
 	}
 
 	public function firstName()
 	{
-		return new StringTag($this->_val->first_name);
+		return $this->_val->first_name;
 	}
 
 	public function lastName()
 	{
-		return new StringTag($this->_val->last_name);
+		return $this->_val->last_name;
 	}
 
 	public function groups()
