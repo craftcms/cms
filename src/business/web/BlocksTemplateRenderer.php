@@ -382,7 +382,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 					\))?
 				)/x', $substr, $subtagMatch))
 			{
-				$parsedTag .= '->_tag(\''.$subtagMatch['func'].'\'';
+				$parsedTag .= '->_subtag(\''.$subtagMatch['func'].'\'';
 
 				if (isset($subtagMatch['params']))
 				{

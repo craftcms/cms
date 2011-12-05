@@ -58,7 +58,7 @@ class Tag
 		return new StringTag($var);
 	}
 
-	public function _tag($tag, $args = array())
+	public function _subtag($tag, $args = array())
 	{
 		$cacheKey = $this->_getTagCacheKey($tag, $args);
 		if (!isset($this->_tagCache[$cacheKey]))
