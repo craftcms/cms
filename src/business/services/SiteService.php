@@ -93,7 +93,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 		}
 		catch(Exception $e)
 		{
-			Blocks::log('Error in VersionCheckFilter. Message: '.$e->getMessage(), 'error');
+			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
 		}
 
 		return null;

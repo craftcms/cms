@@ -150,7 +150,7 @@ class BlocksApp extends CWebApplication
 		if ($this->_dbInstalled == null)
 		{
 			// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
-			$infoTable = $this->db->schema->getTable('{{Info}}');
+			$infoTable = $this->db->schema->getTable('{{info}}');
 
 			$this->_dbInstalled = $infoTable === null ? false : true;
 		}
