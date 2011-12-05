@@ -20,21 +20,6 @@ class ArrayTag extends Tag
 		return parent::__call($name, $args);
 	}
 
-	/**
-	 * Makes sure that each element of the array is a tag
-	 */
-	protected function _tagify()
-	{
-		if (!$this->_tagified)
-		{
-			foreach ($this->_val as &$tag)
-			{
-				$tag = self::_getVarTag($tag);
-			}
-			$this->_tagified = true;
-		}
-	}
-
 	public function __toString()
 	{
 		if (!$this->_val)
@@ -59,7 +44,6 @@ class ArrayTag extends Tag
 
 	public function __toArray()
 	{
-		$this->_tagify();
 		return $this->_val;
 	}
 

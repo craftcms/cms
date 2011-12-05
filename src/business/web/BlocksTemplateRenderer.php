@@ -270,19 +270,12 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 				if (preg_match('/^(.+)\s+as\s+(?:([A-Za-z]\w*)\s*,\s*)?([A-Za-z]\w*)$/m', $params, $match))
 				{
 					$this->parseVariable($match[1]);
-					$as = '$'.$match[3];
+					$index = '$'.(!empty($match[2]) ? $match[2] : 'index');
+					$subvar = '$'.$match[3];
 
-					if (!empty($match[2]))
-					{
-						$as = "\${$match[2]} => {$as}";
-						$after = " \${$match[2]} = new NumTag(\${$match[2]});";
-					}
-					else
-					{
-						$after = '';
-					}
-
-					return "<?php foreach ({$match[1]}->__toArray() as {$as}):{$after} ?>";
+					return "<?php foreach ({$match[1]}->__toArray() as {$index} => {$subvar}):" . PHP_EOL .
+						"{$index} = new NumTag({$index});" . PHP_EOL .
+						"{$subvar} = Tag::_getVarTag({$subvar}); ?>";
 				}
 				return '';
 
