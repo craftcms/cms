@@ -5,7 +5,7 @@ class ArrayTag extends Tag
 	protected $_val;
 	protected $_tagified = false;
 
-	public function __construct($val = array())
+	protected function init($val = array())
 	{
 		$this->_val = is_array($val) ? $val : array();
 	}

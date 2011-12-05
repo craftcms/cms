@@ -25,7 +25,7 @@
 
 		<div id="widgets">
 			{% foreach cp.dashboard.widgets as widget %}
-				<div class="widget {{ widget.classname }}">
+				<div id="widget{{ widget.id }}" class="widget {{ widget.classname }} {% if !widget.body %}hidden{% /if %}">
 					<div class="pane front" id="widget{{ count+1 }}">
 						<div class="head">
 							{% if widget.settings %}

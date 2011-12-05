@@ -4,7 +4,7 @@ class DateTag extends Tag
 {
 	protected $_val;
 
-	public function __construct($val = null)
+	protected function init($val = null)
 	{
 		$this->_val = $this->getUnixTimestamp($val);
 	}

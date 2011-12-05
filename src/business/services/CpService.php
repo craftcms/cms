@@ -7,38 +7,21 @@ class CpService extends CApplicationComponent implements ICpService
 	 */
 
 	/**
-	 * Returns the dashboard widget data for the current user
+	 * Returns the dashboard widgets for the current user
 	 * @return array
 	 */
-	public function getDashboardWidgetData()
+	public function getDashboardWidgets()
 	{
-		$widgetData = array();
+		$userId = 1;
+		$userWidgets = UserWidgets::model()->findAllByAttributes(array('user_id' => $userId));
+		$widgets = array();
 
-		$widgets = array(
-			new UpdatesWidget,
-			new RecentActivityWidget,
-			new ContentWidget,
-			new FeedWidget,
-			//new Analytics_ReferrersWidget,
-			//new Analytics_KeywordsWidget,
-			//new Analytics_PageviewsWidget,
-			//new Analytics_ContentWidget,
-		);
-
-		foreach ($widgets as $widget)
+		foreach ($userWidgets as $userWidget)
 		{
-			$body = $widget->displayBody();
-			if ($body !== false)
-			{
-				$widgetData[] = array(
-					'title' => $widget->title,
-					'className' => $widget->className,
-					'body' => $body,
-					'settings' => $widget->displaySettings()
-				);
-			}
+			$widgetClass = $userWidget->type;
+			$widgets[] = new $widgetClass($userWidget->id);
 		}
 
-		return $widgetData;
+		return $widgets;
 	}
 }

@@ -6,6 +6,20 @@ class Tag
 	private $_tagCache = array();
 
 	/**
+	 * Constructor - right now this is just a wrapper for init(), but some day we may want to do extra stuff on construct
+	 */
+	public function __construct()
+	{
+		$args = func_get_args();
+		call_user_func_array(array($this, 'init'), $args);
+	}
+
+	/**
+	 * Init
+	 */
+	protected function init() {}
+
+	/**
 	 * Returns whether a variable is a tag or not
 	 */
 	public static function _isTag($var)

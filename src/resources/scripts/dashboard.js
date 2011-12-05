@@ -95,6 +95,9 @@ var Dashboard = Base.extend({
 		// Place the widgets
 		for (var i = 0; i < this.widgets.length; i++)
 		{
+			// skip hidden widgets
+			if (this.widgets[i].hidden) continue;
+
 			// add it to the shortest column
 			var shortestCol = this.getShortestCol();
 			shortestCol.addWidget(this.widgets[i].elem);
@@ -325,6 +328,7 @@ Dashboard.Widget = Base.extend({
 	{
 		this.elem = elem;
 		this.$elem = $(elem);
+		this.hidden = this.$elem.hasClass('hidden');
 
 		this.$elem.css('zIndex', i+1);
 

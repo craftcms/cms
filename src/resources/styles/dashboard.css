@@ -17,6 +17,7 @@
 
 .widget { position: relative; margin-bottom: 20px; }
 .widget:last-child { margin-bottom: 0; }
+.widget.hidden { display: none; }
 
 .widget .front .body table { width: 100%; }
 .widget .front .body table tr td { padding: 4px 0; vertical-align: top; }

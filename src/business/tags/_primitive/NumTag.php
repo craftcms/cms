@@ -4,7 +4,7 @@ class NumTag extends Tag
 {
 	protected $_val;
 
-	public function __construct($val = 0)
+	protected function init($val = 0)
 	{
 		$this->_val = is_numeric($val) ? $val : 0;
 	}

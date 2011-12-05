@@ -5,7 +5,7 @@ class CpResourceTag extends Tag
 	private $path;
 	private $url;
 
-	public function __construct($path = '')
+	protected function init($path = '')
 	{
 		$this->path = $path;
 	}

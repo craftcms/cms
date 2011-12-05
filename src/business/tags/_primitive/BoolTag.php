@@ -4,7 +4,7 @@ class BoolTag extends Tag
 {
 	protected $_val;
 
-	public function __construct($val = false)
+	protected function init($val = false)
 	{
 		$this->_val = $val;
 	}
