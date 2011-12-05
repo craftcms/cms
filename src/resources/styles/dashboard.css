@@ -17,7 +17,6 @@
 
 .widget { position: relative; margin-bottom: 20px; }
 .widget:last-child { margin-bottom: 0; }
-.widget.hidden { display: none; }
 
 .widget .front .body table { width: 100%; }
 .widget .front .body table tr td { padding: 4px 0; vertical-align: top; }
@@ -57,6 +56,7 @@
 /*-- sidebar --*/
 #sidebar { position: absolute; top: 36px; right: -230px; border-left: 1px dotted #ccc; width: 180px; padding-left: 20px; }
 ul.widget-handles li { margin-bottom: 10px; cursor: move; cursor: -webkit-grab; }
+ul.widget-handles li.hidden { opacity: 0.5; }
 ul.widget-handles li .head { position: relative; padding: 8px 25px 8px 35px; }
 ul.widget-handles.dragging li { cursor: -webkit-grabbing; }
 ul.widget-handles li span.grab { display: block; position: absolute; left: 10px; top: 50%; margin-top: -9px; width: 15px; height: 18px; background: url(../images/grab-handle.png) no-repeat 50% 50%; }

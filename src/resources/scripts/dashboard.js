@@ -4,8 +4,7 @@
 var Dashboard = Base.extend({
 
 	dom: {},
-	widgets: [],
-	$widgets: null,
+	widgets: {},
 	cols: [],
 	showingSidebar: false,
 
@@ -15,15 +14,18 @@ var Dashboard = Base.extend({
 		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
 		this.dom.$sidebar = $(document.getElementById('sidebar'));
 
-		this.getWidgets();
+		this.getWidgetHandles();
 
-		$(window).on('resizeWidth.dashboard', $.proxy(this, 'onWindowResize'));
-		setTimeout($.proxy(this, 'setCols'), 1);
+		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
+		{
+			var widgetId = $(this.dom.$widgetHandles[i]).attr('data-widget-id'),
+				elem = document.getElementById(widgetId);
 
-		this.dom.$sidebarBtn.on('click.dashboard', $.proxy(this, 'toggleSidebar'));
-
-		// set up the widget sorting
-		this.dom.$widgetHandles = $('ul.widget-handles > li', this.dom.$sidebar);
+			if (elem)
+			{
+				this.widgets[widgetId] = new Dashboard.Widget(elem);;
+			}
+		}
 
 		this.widgetSort = new blx.ui.DragSort(this.dom.$widgetHandles, {
 			axis: 'y',
@@ -31,18 +33,30 @@ var Dashboard = Base.extend({
 			onSortChange: $.proxy(this, 'onWidgetMove')
 		});
 
+		// setup events
 		$('a.remove', this.dom.$widgetHandles).on('click', $.proxy(this, 'onWidgetRemove'))
+		this.dom.$sidebarBtn.on('click.dashboard', $.proxy(this, 'toggleSidebar'));
+		$(window).on('resizeWidth.dashboard', $.proxy(this, 'onWindowResize'));
+
+		// set the columns
+		this.setCols();
+		//setTimeout($.proxy(this, 'setCols'), 0);
 	},
 
-	getWidgets: function()
+	getWidgetHandles: function()
 	{
-		this.$widgets = $('.widget', this.dom.$container);
+		this.dom.$widgetHandles = $('ul.widget-handles > li', this.dom.$sidebar);
+	},
 
-		for (var i = 0; i < this.$widgets.length; i++)
-		{
-			var widget = new Dashboard.Widget(this.$widgets[i], i);
-			this.widgets.push(widget);
-		}
+	getWidget: function(i)
+	{
+		return typeof this.dom.$widgetHandles[i] != 'undefined' ? this.getWidgetFromHandle(this.dom.$widgetHandles[i]) : false;
+	},
+
+	getWidgetFromHandle: function(handle)
+	{
+		var widgetId = $(handle).attr('data-widget-id');
+		return typeof this.widgets[widgetId] != 'undefined' ? this.widgets[widgetId] : false;
 	},
 
 	onWindowResize: function()
@@ -72,7 +86,7 @@ var Dashboard = Base.extend({
 		}
 
 		// Detach the widgets before we remove the columns so they keep their events
-		for (var i = 0; i < this.widgets.length; i++)
+		for (var i in this.widgets)
 		{
 			this.widgets[i].$elem.detach();
 		}
@@ -89,18 +103,19 @@ var Dashboard = Base.extend({
 
 		for (var i = 0; i < this.totalCols; i++)
 		{
-			this.cols[i] = new Dashboard.Col(i);
+			this.cols[i] = new Dashboard.Col(this, i);
 		}
 
-		// Place the widgets
-		for (var i = 0; i < this.widgets.length; i++)
+		// Place the widgets in the order of the handles
+		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
 		{
-			// skip hidden widgets
-			if (this.widgets[i].hidden) continue;
-
 			// add it to the shortest column
-			var shortestCol = this.getShortestCol();
-			shortestCol.addWidget(this.widgets[i].elem);
+			var widget = this.getWidget(i);
+			if (widget)
+			{
+				var shortestCol = this.getShortestCol();
+				shortestCol.addWidget(widget.elem);
+			}
 		}
 
 		this.relaxWidgets();
@@ -108,33 +123,43 @@ var Dashboard = Base.extend({
 		// animate the widgets into place
 		if (animate)
 		{
-			for (var i = 0; i < this.widgets.length; i++)
+			var $lastVisibleHandle = this.dom.$widgetHandles.not('.hidden').last(),
+				lastIndex = $.inArray($lastVisibleHandle[0], this.dom.$widgetHandles);
+
+			for (var i = 0; i <= lastIndex; i++)
 			{
-				// clear any current animations
-				this.widgets[i].$elem.stop();
+				var widget = this.getWidget(i);
+				if (widget)
+				{
+					// clear any current animations
+					widget.$elem.stop();
 
-				// get the new settled offset and width
-				var settledOffset = this.widgets[i].$elem.offset(),
-					settledWidth = this.widgets[i].$elem.width();
+					// get the new settled offset and width
+					var settledOffset = widget.$elem.offset(),
+						settledWidth = widget.$elem.width();
 
-				// put it back where it was
-				this.widgets[i].$elem.css({
-					position: 'relative',
-					top: widgetOffsets[i].top - settledOffset.top,
-					left: widgetOffsets[i].left - settledOffset.left,
-					width: widgetOffsets[i].width
-				});
+					// put it back where it was
+					widget.$elem.css({
+						position: 'relative',
+						top: widgetOffsets[i].top - settledOffset.top,
+						left: widgetOffsets[i].left - settledOffset.left,
+						width: widgetOffsets[i].width
+					});
 
-				var onComplete = (i == this.widgets.length-1) ? $.proxy(this, 'relaxWidgets') : null;
+					var onComplete = (i == lastIndex) ? $.proxy(this, 'relaxWidgets') : null;
 
-				this.widgets[i].$elem.animate({top: 0, left: 0, width: settledWidth}, onComplete);
+					widget.$elem.animate({top: 0, left: 0, width: settledWidth}, onComplete);
+				}
 			}
 		}
 	},
 
 	relaxWidgets: function()
 	{
-		this.$widgets.css({position: 'static', width: 'auto'});
+		for (var i in this.widgets)
+		{
+			this.widgets[i].$elem.css({position: 'static', width: 'auto'});
+		}
 	},
 
 	getWidgetOffsets: function()
@@ -143,11 +168,14 @@ var Dashboard = Base.extend({
 
 		var widgetOffsets = [];
 
-		for (var i = 0; i < this.widgets.length; i++)
+		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
 		{
-			var $widget = this.widgets[i].$elem;
-			widgetOffsets[i] = $widget.offset();
-			widgetOffsets[i].width = $widget.width();
+			var widget = this.getWidget(i);
+			if (widget)
+			{
+				widgetOffsets[i] = widget.$elem.offset();
+				widgetOffsets[i].width = widget.$elem.width();
+			}
 		}
 
 		return widgetOffsets;
@@ -213,73 +241,49 @@ var Dashboard = Base.extend({
 
 	onWidgetMove: function()
 	{
-		this.moveWidget(this.widgetSort.draggeeStartIndex, this.widgetSort.draggeeIndex);
-	},
+		// update $widgetHandles
+		this.getWidgetHandles();
 
-	moveWidget: function(from, to)
-	{
-		// capture the widget that was sorted
-		var widget = this.widgets[from],
-			handle = this.dom.$widgetHandles[from];
-
-		// sort our internal widget array & jQuery object to match the new order
-		this.$widgets.splice(from, 1);
-		this.widgets.splice(from, 1);
-		this.dom.$widgetHandles.splice(from, 1);
-		this.$widgets.splice(to, 0, widget.elem);
-		this.widgets.splice(to, 0, widget);
-		this.dom.$widgetHandles.splice(to, 0, handle);
-
-		// update the columns
-		this.refreshCols(true);
+		var widget = this.getWidget(this.widgetSort.draggeeIndex);
+		if (widget)
+		{
+			this.refreshCols(true);
+		}
 	},
 
 	onWidgetRemove: function(event)
 	{
-		// figure out which widget to remove
-		var $widgetHandle = $(event.currentTarget).parent().parent(),
-			widgetIndex = $.inArray($widgetHandle[0], this.dom.$widgetHandles);
-
-		if (widgetIndex != -1)
-			this.removeWidget(widgetIndex);
-	},
-
-	removeWidget: function(i)
-	{
-		var widget = this.widgets[i],
-			$handle = $(this.dom.$widgetHandles[i]),
-			handleHeight = $handle.outerHeight(),
-			containerOffset = this.dom.$container.offset(),
-			widgetOffset = widget.$elem.offset(),
-			width = widget.$elem.width();
-
-		// remove it from our internal widget arrays
-		this.$widgets.splice(i, 1);
-		this.widgets.splice(i, 1);
-		this.dom.$widgetHandles.splice(i, 1);
-
-		// update the columns
-		this.refreshCols(true);
-
-		this.widgetSort.removeItems($handle);
-
-		// remove the handle
+		// fade out the handle, and then remove it
+		var $handle = $(event.currentTarget).parent().parent(),
+			handleHeight = $handle.outerHeight();
 		$handle.animate({opacity: 0, marginBottom: -handleHeight}, function() {
 			$handle.remove();
 		});
 
 		// fade out the widget, and then remove it
-		widget.$elem.appendTo(this.dom.$container);
-		widget.$elem.css({
-			position: 'absolute',
-			zIndex: 0,
-			top: widgetOffset.top - containerOffset.top,
-			left: widgetOffset.left - containerOffset.left,
-			width: width
-		});
-		widget.$elem.fadeOut($.proxy(function() {
-			widget.$elem.remove();
-		}, this));
+		var widget = this.getWidgetFromHandle($handle);
+		if (widget)
+		{
+			var containerOffset = this.dom.$container.offset(),
+				widgetOffset = widget.$elem.offset(),
+				width = widget.$elem.width();
+			widget.$elem.appendTo(this.dom.$container);
+			widget.$elem.css({
+				position: 'absolute',
+				zIndex: 0,
+				top: widgetOffset.top - containerOffset.top,
+				left: widgetOffset.left - containerOffset.left,
+				width: width
+			});
+			widget.$elem.fadeOut($.proxy(function() {
+				widget.$elem.remove();
+			}, this));
+		}
+
+		// remove the handle from $widgetHandles and reset the columns
+		var index = $.inArray($handle[0], this.dom.$widgetHandles);
+		this.dom.$widgetHandles.splice(i, 1);
+		this.refreshCols(true);
 	}
 },
 {
@@ -291,15 +295,16 @@ var Dashboard = Base.extend({
 
 Dashboard.Col = Base.extend({
 
-	constructor: function(index)
+	constructor: function(dashboard, index)
 	{
+		this.dashboard = dashboard;
 		this.index = index;
 		this.dom = {};
 
 		this.dom.outerDiv = document.createElement('div');
 		this.dom.outerDiv.className = 'col';
-		this.dom.outerDiv.style.width = dashboard.colWidth+'%';
-		dashboard.dom.$container.append(this.dom.outerDiv);
+		this.dom.outerDiv.style.width = this.dashboard.colWidth+'%';
+		this.dashboard.dom.$container.append(this.dom.outerDiv);
 
 		this.dom.innerDiv = document.createElement('div');
 		this.dom.innerDiv.className = 'col-padding';
@@ -328,7 +333,7 @@ Dashboard.Widget = Base.extend({
 	{
 		this.elem = elem;
 		this.$elem = $(elem);
-		this.hidden = this.$elem.hasClass('hidden');
+		this.id = this.$elem.attr('id');
 
 		this.$elem.css('zIndex', i+1);
 
@@ -348,7 +353,6 @@ Dashboard.Widget = Base.extend({
 
 	showSettings: function()
 	{
-		console.log(this);
 		this.dom.$back.show();
 		this.dom.$front.hide();
 	},
