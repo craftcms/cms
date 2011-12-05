@@ -114,7 +114,7 @@ class BlocksUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
-		if ($requestPath != '')
+		if ($requestPath !== '')
 		{
 			$requestPath = ltrim($requestPath, '\\/');
 			$templatePath = $this->normalizeTrailingSlash($templatePath);

@@ -17,16 +17,9 @@ class BaseController extends CController
 		$filter->filter($filterChain);
 	}
 
-	public function filterConfigCheck($filterChain)
-	{
-		$filter = new ConfigCheckFilter();
-		$filter->filter($filterChain);
-	}
-
 	public function filters()
 	{
 		return array(
-			'ConfigCheck',
 			'VersionCheck',
 			//'Https',
 		);
