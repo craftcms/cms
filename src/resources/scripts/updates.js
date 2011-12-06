@@ -18,9 +18,7 @@ window.Update = Base.extend({
 
 		if (location.hash && location.hash == '#'+this.dom.$update.attr('id'))
 		{
-			this.dom.$
-			this.dom.$notesContainer.height('auto');
-			this.expanded = true;
+			this.expand(false);
 
 			// scroll to this update
 			var scrollTo = this.dom.$update.offset().top - 54;
@@ -38,25 +36,40 @@ window.Update = Base.extend({
 	toggle: function()
 	{
 		if (!this.expanded)
-			this.expand();
+			this.expand(true);
 		else
-			this.collapse();
+			this.collapse(true);
 	},
 
-	expand: function()
+	expand: function(animate)
 	{
-		var height = this.dom.$notes.outerHeight();
-		this.dom.$notesContainer.stop().animate({height: height}, $.proxy(function() {
-			this.dom.$notesContainer.height('auto');
-		}, this));
+		if (animate)
+		{
+			var height = this.dom.$notes.outerHeight();
+			this.dom.$notesContainer.stop().animate({height: height}, $.proxy(function() {
+				this.dom.$notesContainer.height('auto');
+			}, this));
+		}
+		else
+		{
+			this.dom.$notesContainer.stop().height('auto');
+		}
 
 		this.dom.$toggle.html('Hide release notes');
 		this.expanded = true;
 	},
 
-	collapse: function()
+	collapse: function(animate)
 	{
-		this.dom.$notesContainer.stop().animate({height: 0});
+		if (animate)
+		{
+			this.dom.$notesContainer.stop().animate({height: 0});
+		}
+		else
+		{
+			this.dom.$notesContainer.stop().height(0);
+		}
+
 		this.dom.$toggle.html('Show release notes');
 		this.expanded = false;
 	}
