@@ -19,32 +19,7 @@ class VersionCheckFilter extends CFilter
 		if (Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
 			return true;
 
-		if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
-		{
-			$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
-			Blocks::app()->request->setBlocksUpdateInfo($blocksUpdateInfo);
-			return true;
-		}
-
-		if (Blocks::app()->config('devMode'))
-		{
-			Blocks::app()->fileCache->delete('blocksUpdateInfo');
-			$blocksUpdateInfo = Blocks::app()->site->versionCheck();
-		}
-		else
-		{
-			$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
-			if ($blocksUpdateInfo === false)
-			{
-				$blocksUpdateInfo = Blocks::app()->site->versionCheck();
-				// set cache expiry to 24 hours. 86400 seconds.
-				Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
-			}
-		}
-
-		if ($blocksUpdateInfo !== null)
-			Blocks::app()->request->setBlocksUpdateInfo($blocksUpdateInfo);
-
+		Blocks::app()->request->blocksUpdateInfo;
 		return true;
 	}
 }
