@@ -16,10 +16,32 @@ select{margin:0;}
 strong{font-weight:bold;}
 
 /* ----------------------------------------
-/*  Layout
+/*  Basic elements
 /* ----------------------------------------*/
 
 body { padding-top: 44px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #f7f7f7; }
+
+h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
+h2 { font-size: 24px; line-height: 1.4; color: #415466; }
+h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-size: 18px; line-height: 24px; color: #666; text-shadow: 0 1px 0 #fff; }
+h4 { margin: 15px 0 10px; font-weight: bold; color: #000; }
+h5 { margin: 15px 0 10px; font-weight: bold; color: #666; }
+
+p { margin-bottom: 1em; }
+
+em,
+i { font-style: italic; }
+i em { font-weight: bold; }
+
+a { color: #2d98db; cursor: pointer; }
+a:hover { text-decoration: underline; }
+
+h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child { margin-top: 0; }
+h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child { margin-bottom: 0; }
+
+/* ----------------------------------------
+/*  Layout
+/* ----------------------------------------*/
 
 /*-- nav --*/
 #nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 44px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 100% 0, from(#fff), to(#fcfcfc)); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 0 5px rgba(0,0,0,0.15); }
@@ -69,26 +91,8 @@ body.sidebar-layout #sidebar .tree a.sel { text-shadow: 0 1px 0 #fff; background
 
 
 /* ----------------------------------------
-/*  Basic elements
+/*  Basic structures
 /* ----------------------------------------*/
-
-h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
-h2 { font-size: 24px; line-height: 1.4; color: #415466; }
-h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-size: 18px; line-height: 24px; color: #666; text-shadow: 0 1px 0 #fff; }
-h4 { margin: 15px 0 10px; font-weight: bold; color: #000; }
-h5 { margin: 15px 0 10px; font-weight: bold; color: #666; }
-
-h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, p:first-child { margin-top: 0; }
-h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, p:last-child { margin-bottom: 0; }
-
-p { margin-bottom: 1em; }
-
-em,
-i { font-style: italic; }
-i em { font-weight: bold; }
-
-a { color: #2d98db; cursor: pointer; }
-a:hover { text-decoration: underline; }
 
 .clear { display: block; clear: both; height: 0; }
 
@@ -261,7 +265,10 @@ table.zebra > tbody > tr.even > td { border-radius: 0 !important; background: tr
 
 .input-wrapper > input,
 .input-wrapper > textarea,
-.input { display: block; border: 1px solid #ccc; border-radius: 2px; width: 100%; padding: 8px 10px; font-size: 13px; background: #fff; }
+.input { display: block; border: 1px solid #ccc; border-radius: 2px; padding: 8px 10px; font-size: 13px; background: #fff; }
+
+.input-wrapper > input,
+.input-wrapper > textarea { width: 100%; }
 
 .input-wrapper > input:focus,
 .input-wrapper > textarea:focus,

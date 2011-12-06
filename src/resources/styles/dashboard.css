@@ -25,10 +25,13 @@
 .widget .body table .btn { float: left; }
 
 .widget .settings-outer-container { position: relative; height: 0; overflow: hidden; }
-.widget .settings-outer-container.expanded { border-top: 1px solid #ccc; -webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.05), inset 0 -1px 0 rgba(0,0,0,0.05); background: #f7f7f7 url(../images/stripes.gif); }
-.widget .settings-inner-container { position: absolute; bottom: 0; width: 100%; }
-.widget .settings { padding: 15px 20px; }
-.widget .settings .buttons { margin-top: 15px; }
+.widget .settings-outer-container.expanded { border-top: 1px solid #ccc; background: #f3f3f3 url(../images/stripes.gif); }
+.widget .settings-inner-container { bottom: 0; width: 100%; }
+.widget .settings,
+.widget .settings-btns { margin: 5px; padding: 10px 15px; background: #f3f3f3; }
+.widget .settings label { display: block; margin: 10px 0 2px; font-weight: bold; color: #666; text-shadow: 0 1px 0 #fff; }
+.widget .settings label:first-child { margin-top: 0; }
+.widget .settings .buttons { margin-top: 15px; border-top: 1px solid #e0e0e0; padding-top: 15px; -webkit-box-shadow: inset 0 1px #fcfcfc; }
 
 /* updates */
 .widget.updates .update-all { float: right; margin: -42px 0 0 0; }

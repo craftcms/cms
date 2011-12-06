@@ -372,7 +372,11 @@ Dashboard.Widget = Base.extend({
 	{
 		this.dom.$settingsOuterContainer.addClass('expanded');
 		var height = this.dom.$settingsInnerContainer.height();
-		this.dom.$settingsOuterContainer.stop().animate({height: height});
+		this.dom.$settingsInnerContainer.css('position', 'absolute');
+		this.dom.$settingsOuterContainer.stop().animate({height: height}, $.proxy(function() {
+			this.dom.$settingsInnerContainer.css('position', 'static');
+			this.dom.$settingsOuterContainer.height('auto');
+		}, this));
 
 		this.dom.$settingsBtn.addClass('sel');
 		this.expanded = true;
@@ -380,6 +384,9 @@ Dashboard.Widget = Base.extend({
 
 	hideSettings: function()
 	{
+		var height = this.dom.$settingsInnerContainer.height();
+		this.dom.$settingsOuterContainer.height(height);
+		this.dom.$settingsInnerContainer.css('position', 'absolute')
 		this.dom.$settingsOuterContainer.stop().animate({height: 0}, $.proxy(function() {
 			this.dom.$settingsOuterContainer.removeClass('expanded');
 		}, this));

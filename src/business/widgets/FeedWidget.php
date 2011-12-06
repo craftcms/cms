@@ -48,6 +48,11 @@ class FeedWidget extends Widget
 			<label for="widget1-title">Title</label>
 			<div class="input-wrapper"><input id="widget1-url" type="text" value="'.$this->settings['title'].'"></div>
 			<label for="widget1-limit">Limit</label>
-			<input id="widget1-limit" type="number" value="'.$this->settings['limit'].'">';
+			<div class="btn-group">
+				<div class="btn sel"><span class="label">5</span></div>
+				<div class="btn"><span class="label">10</span></div>
+				<div class="btn"><span class="label">15</span></div>
+				<div class="btn"><span class="label">20</span></div>
+			</div>';
 	}
 }
