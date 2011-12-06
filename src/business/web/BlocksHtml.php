@@ -17,4 +17,14 @@ class BlocksHtml extends CHtml
 	{
 		return Blocks::app()->dateFormatter->format('MM-dd-yyyy HH:mm:ss', $unixTime);
 	}
+
+	public static function controllerLink($text, $controller, $action)
+	{
+		return parent::link($text, array(null, 'c' => $controller, 'a' => $action));
+	}
+
+	public static function controllerUrl($controller, $action)
+	{
+		return parent::normalizeUrl(array('/', 'c' => $controller, 'a' => $action));
+	}
 }
