@@ -39,12 +39,9 @@
 			Blocks {{ config.blocksEdition }} {{ config.blocksVersion }}.{{ config.blocksBuild }} — &copy; {{ date.year }} Pixel &amp; Tonic
 		</div>
 	</div>
+{% /region %}
 
-	{{ cp.resource('app/lib/jquery-1.7.min.js').js }}
-	{{ cp.resource('app/lib/Base.js').js }}
-	{{ cp.resource('app/scripts/blocks.js').js }}
-	<script type="text/javascript">blx.baseUrl = '{{ url.base }}';</script>
-
-	{!-- include any scripts defined by the subtemplate --}
+{% region scripts %}
+	{{ cp.resource('app/scripts/cp.js').js }}
 	{{ scripts }}
 {% /region %}

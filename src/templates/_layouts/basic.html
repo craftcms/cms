@@ -8,5 +8,10 @@
 </head>
 <body class="{{ bodyClass }}">
 	{{ body }}
+
+	{{ cp.resource('app/lib/jquery-1.7.min.js').js }}
+	{{ cp.resource('app/lib/Base.js').js }}
+	<script type="text/javascript">window.baseUrl = '{{ url.base }}';</script>
+	{{ scripts }}
 </body>
 </html>
