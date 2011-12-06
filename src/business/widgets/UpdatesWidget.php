@@ -40,7 +40,7 @@ class UpdatesWidget extends Widget
 
 		if ($updates)
 		{
-			return '<a class="btn dark update-all" href=""><span class="label">Update all</span></a>
+			return '<a class="btn dark update-all" href=""><span class="label">Update All</span></a>
 				<table>
 					<tbody>' .
 						$updates .
