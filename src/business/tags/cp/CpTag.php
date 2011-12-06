@@ -56,7 +56,7 @@ class CpTag extends Tag
 
 	public function updates()
 	{
-		$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+		$blocksUpdateInfo = Blocks::app()->request->blocksUpdateInfo;
 		$updates = array();
 
 		// blocks first.
@@ -80,7 +80,7 @@ class CpTag extends Tag
 				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable && count($pluginInfo['newerReleases']) > 0)
 				{
 					$notes = $this->_generateUpdateNotes($pluginInfo['newerReleases'], $pluginInfo['displayName']);
-					$upddates[] = array(
+					$updates[] = array(
 						'name' => $pluginInfo['displayName'],
 						'handle' => $pluginInfo['handle'],
 						'version' => $pluginInfo['latestVersion'],
