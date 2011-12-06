@@ -10,14 +10,12 @@ class Tag
 	 */
 	public function __construct()
 	{
-		$args = func_get_args();
-		call_user_func_array(array($this, 'init'), $args);
+		if (method_exists($this, 'init'))
+		{
+			$args = func_get_args();
+			call_user_func_array(array($this, 'init'), $args);
+		}
 	}
-
-	/**
-	 * Init
-	 */
-	protected function init() {}
 
 	/**
 	 * Returns whether a variable is a tag or not
