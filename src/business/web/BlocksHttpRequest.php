@@ -8,13 +8,35 @@ class BlocksHttpRequest extends CHttpRequest
 	private $_siteInfo = null;
 	private $_blocksUpdateInfo = null;
 
-	public function setBlocksUpdateInfo($blocksUpdateInfo)
-	{
-		$this->_blocksUpdateInfo = $blocksUpdateInfo;
-	}
-
 	public function getBlocksUpdateInfo()
 	{
+		if ($this->_blocksUpdateInfo !== null)
+			return $this->_blocksUpdateInfo;
+
+		if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
+			$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
+		else
+		{
+			if (Blocks::app()->config('devMode'))
+			{
+				Blocks::app()->fileCache->delete('blocksUpdateInfo');
+				$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+			}
+			else
+			{
+				$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
+				if ($blocksUpdateInfo === false)
+				{
+					$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+					// set cache expiry to 24 hours. 86400 seconds.
+					Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
+				}
+			}
+		}
+
+		if ($blocksUpdateInfo !== null)
+			$this->_blocksUpdateInfo = $blocksUpdateInfo;
+
 		return $this->_blocksUpdateInfo;
 	}
 

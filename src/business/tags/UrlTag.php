@@ -52,4 +52,9 @@ class UrlTag extends Tag
 	{
 		return Blocks::app()->request->getServerName();
 	}
+
+	public function controllerUrl($controller, $action)
+	{
+		return BlocksHtml::controllerUrl($controller, $action);
+	}
 }

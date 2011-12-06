@@ -49,7 +49,7 @@ class BlocksApp extends CWebApplication
 		$this->validateConfig();
 		$this->urlManager->processTemplateMatching();
 
-		if ($this->urlManager->getTemplateMatch() !== null || $this->request->getParam('c', null) !== null)
+		if ($this->urlManager->getTemplateMatch() !== null)
 			$this->catchAllRequest = array('blocks/index');
 
 		if($this->hasEventHandler('onBeginRequest'))
@@ -65,10 +65,10 @@ class BlocksApp extends CWebApplication
 	{
 		$pathInfo = $this->request->getPathInfo();
 
-		if (strpos($pathInfo, '/install') !== false)
+		if (strpos($pathInfo, 'install') !== false)
 			return;
 
-		if (strpos($pathInfo, '/error') !== false)
+		if (strpos($pathInfo, 'error') !== false)
 			return;
 
 		$messages = array();
