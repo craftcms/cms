@@ -1,19 +1,18 @@
-<!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
-<head>
-	<meta charset="utf-8" />
-	<title>{% if pageTitle %}{{ pageTitle }} – {% /if %}Blocks</title>
+{% layout '_layouts/basic' %}
 
-	{{ cp.resource('app/styles/main.css').css }}
+{% region title %}{% if pageTitle %}{{ pageTitle }} – {% /if %}Blocks{% /region %}
+
+{% region styles %}
+	{{ cp.resource('app/styles/cp.css').css }}
 	{{ cp.resource('app/styles/icons.css').css }}
 
 	{!-- include any styles defined by the subtemplate --}
 	{{ styles }}
+{% /region %}
 
-	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
-</head>
-<body class="{{ url.segment(1) }} {{ bodyClass }}">
+{% region bodyClass %}{{ bodyClass }}{% /region %}
 
+{% region body %}
 	<div id="nav">
 		<div class="left">
 			<div id="site" class="btn">
@@ -41,12 +40,11 @@
 		</div>
 	</div>
 
-{{ cp.resource('app/lib/jquery-1.7.min.js').js }}
-{{ cp.resource('app/lib/Base.js').js }}
-{{ cp.resource('app/scripts/blocks.js').js }}
-<script type="text/javascript">blx.baseUrl = '{{ url.base }}';</script>
+	{{ cp.resource('app/lib/jquery-1.7.min.js').js }}
+	{{ cp.resource('app/lib/Base.js').js }}
+	{{ cp.resource('app/scripts/blocks.js').js }}
+	<script type="text/javascript">blx.baseUrl = '{{ url.base }}';</script>
 
-{!-- include any scripts defined by the subtemplate --}
-{{ scripts }}
-</body>
-</html>
+	{!-- include any scripts defined by the subtemplate --}
+	{{ scripts }}
+{% /region %}
