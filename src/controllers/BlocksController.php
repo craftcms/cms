@@ -6,54 +6,67 @@ class BlocksController extends BaseController
 
 	public function run($actionId)
 	{
-		$this->_templateMatch = Blocks::app()->urlManager->getTemplateMatch();
 
-		if ($this->_templateMatch !== null)
+		// if there is a C && A in the URL params, attempt to create that controller and action
+		// if there is a template match, then just use that.
+		$requestController = Blocks::app()->request->getParam('c', null);
+		$requestAction = Blocks::app()->request->getParam('a', null);
+
+		if ($requestController !== null && $requestAction !== null)
 		{
-			$tempController = $this->_templateMatch->getRelativePath();
-			$tempAction = $this->_templateMatch->getFileName();
+			// we found a matching controller for this request.
+			if (($ca = Blocks::app()->createController($requestController)) !== null)
+			{
+				$newController = $ca[0];
+
+				if (($action = $newController->createAction($requestAction)) !== null)
+				{
+					$this->setRequestController($newController);
+
+					if (($parent = $newController->getModule()) === null)
+						$parent = Blocks::app();
+
+					if ($parent->beforeControllerAction($newController, $action))
+					{
+						$newController->runActionWithFilters($action, $newController->filters());
+						$parent->afterControllerAction($newController, $action);
+					}
+				}
+			}
 		}
 		else
 		{
-			$tempController = Blocks::app()->request->getParam('c');
-			$pathSegs = Blocks::app()->request->getPathSegments();
-			$tempAction = $pathSegs[0];
-		}
+			$this->_templateMatch = Blocks::app()->urlManager->getTemplateMatch();
 
-		// we found a matching controller for this request.
-		if (($ca = Blocks::app()->createController($tempController)) !== null)
-		{
-			$this->setRequestController($ca[0]);
-			// save the current controller and swap out the new one.
-			$oldController = Blocks::app()->getController();
-			$newController = $this->getRequestController();
-			Blocks::app()->setController($newController);
-
-			if (($action = $newController->createAction($tempAction)) !== null)
+			if ($this->_templateMatch !== null)
 			{
-				if (($parent = $newController->getModule()) === null)
-					$parent = Blocks::app();
+				parent::run($actionId);
+				$this->loadTemplate($this->_templateMatch->getRelativePath().'/'.$this->_templateMatch->getFileName());
 
-				if ($parent->beforeControllerAction($newController, $action))
-				{
-					$newController->runActionWithFilters($action, $newController->filters());
-					$parent->afterControllerAction($newController, $action);
-				}
+
+				//$tempController = $this->_templateMatch->getRelativePath();
+				//$tempAction = $this->_templateMatch->getFileName();
 			}
 			else
 			{
-				// controller request, but no action specified, so load the template.
-				$this->loadTemplate($tempAction);
+				//$tempController = Blocks::app()->request->getParam('c');
+				//$pathSegs = Blocks::app()->request->getPathSegments();
+				//$tempAction = $pathSegs[0];
 			}
+		}
 
-			Blocks::app()->setController($oldController);
-		}
-		// no matching controller, so load the template.
-		else
-		{
-			parent::run($actionId);
-			$this->loadTemplate($tempController.'/'.$tempAction);
-		}
+		// save the current controller and swap out the new one.
+		// $oldController = Blocks::app()->getController();
+		// Blocks::app()->setController($newController);
+
+		//	else
+		//	{
+		// controller request, but no action specified, so load the template.
+		//		$this->loadTemplate($tempAction);
+		//	}
+		//	Blocks::app()->setController($oldController);
+		//}
+	//}
 	}
 
 	// required

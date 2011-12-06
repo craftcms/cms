@@ -19,7 +19,7 @@ class BlocksUrlManager extends CUrlManager
 
 	public function processTemplateMatching()
 	{
-		if ($this->getCurrentModule() !== null && $this->getCurrentModule()->getId() == 'gii')
+		if (($this->getCurrentModule() !== null && $this->getCurrentModule()->getId() == 'gii') || strpos(Blocks::app()->request->getParam('r'), 'gii') !== false)
 			return;
 
 		$matchFound = false;
