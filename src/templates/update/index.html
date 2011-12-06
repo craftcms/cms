@@ -1,0 +1,17 @@
+{% layout '_layouts/basic' %}
+
+{% region title %}Blocks Update{% /region %}
+
+{% region styles %}
+	{{ cp.resource('app/styles/cp.css').css }}
+	{{ cp.resource('app/styles/update.css').css }}
+{% /region %}
+
+{% region body %}
+	<div id="status">Preparing to update…</div>
+{% /region %}
+
+{% region scripts %}
+	<script type="text/javascript">window.updateHandle = '{{ url.get('h') }}';</script>
+	{{ cp.resource('app/scripts/update.js').js }}
+{% /region %}

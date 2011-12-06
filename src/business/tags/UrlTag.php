@@ -57,4 +57,9 @@ class UrlTag extends Tag
 	{
 		return BlocksHtml::controllerUrl($controller, $action);
 	}
+
+	public function get($var)
+	{
+		return isset($_GET[$var]) ? $_GET[$var] : false;
+	}
 }

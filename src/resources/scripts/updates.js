@@ -76,7 +76,7 @@ window.Update = Base.extend({
 });
 
 
-var updatesUrl = blx.baseUrl+'/settings/updates/updates';
+var updatesUrl = baseUrl+'/settings/updates/updates';
 $('#updates').load(updatesUrl, function() {
 	$('#checking').fadeOut();
 	$('#updates').fadeIn(function() {
