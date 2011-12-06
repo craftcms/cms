@@ -10,7 +10,7 @@ blockquote,q{quotes:none;}
 blockquote:before,blockquote:after,q:before,q:after{content:'';content:none;}
 table{border-collapse:separate;border-spacing:0;}
 a{text-decoration:none;}
-input,textarea{margin:0;font-family:sans-serif;font-size:100%;color:#555;}
+input,textarea{margin:0;font-family:sans-serif;font-size:100%;}
 textarea{resize:none;}
 select{margin:0;}
 strong{font-weight:bold;}
@@ -143,7 +143,7 @@ body.sidebar-layout #sidebar .tree a.sel { text-shadow: 0 1px 0 #fff; background
 .btn-group .btn:last-child { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 
 /* buttons */
-.btn { display: inline-block; border-radius: 3px; padding: 0; height: 24px; text-shadow: 0 1px 0 #eee; text-decoration: none !important; background: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#d5d5d5)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3), inset 0 2px 0 #fff; cursor: pointer; }
+.btn { display: inline-block; border-radius: 3px; padding: 0; height: 24px; line-height: 24px; color: #505050; text-shadow: 0 1px 0 #eee; text-align: center; white-space: nowrap; text-decoration: none !important; background: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#d5d5d5)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3), inset 0 2px 0 #fff; cursor: pointer; }
 .btn:last-child { margin-right: 0; }
 .btn:not(.disabled):hover { background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#ddd)); }
 .btn:not(.disabled):active,
@@ -154,7 +154,7 @@ body.sidebar-layout #sidebar .tree a.sel { text-shadow: 0 1px 0 #fff; background
 /* button parts */
 .btn span { display: block; float: left; height: 100%; }
 
-.btn .label { margin: 0 8px; line-height: 24px; color: #505050; text-shadow: 0 1px 0 #eee; text-align: center; white-space: nowrap; }
+.btn .label { margin: 0 8px; }
 .btn.disabled .label { text-shadow: none; }
 .btn .icon { margin: 0 4px; height: 24px; width: 24px; background: url(../images/sidebar_icons.png); opacity: 0.9; }
 .btn .arrow { width: 16px; background: url(../images/menu-arrow.png) no-repeat 50% 50%; opacity: 0.75; }
@@ -166,25 +166,26 @@ body.sidebar-layout #sidebar .tree a.sel { text-shadow: 0 1px 0 #fff; background
 .btn ul.menu { display: none; }
 
 /* dark button */
-.btn.dark { background: -webkit-gradient(linear, 0 0, 0 100%, from(#999), to(#666)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3); }
+.btn.dark { color: #fff; text-shadow: 0 -1px 0 #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#999), to(#666)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.3); }
 .btn.dark:hover { background: -webkit-gradient(linear, 0 0, 0 100%, from(#777), to(#444)); }
 .btn.dark:active,
 .btn.dark.sel { background: -webkit-gradient(linear, 0 0, 0 100%, from(#000), to(#444)); }
-.btn.dark .label { color: #fff; text-shadow: 0 -1px 0 #000; }
 
 /* small button */
-.btn.small { height: 17px; }
-.btn.small .label { margin: 0 6px; font-size: 11px; line-height: 17px; }
+.btn.small { height: 17px; font-size: 11px; line-height: 17px; }
+.btn.small .label { margin: 0 6px; }
 
 /* big button */
-.btn.big { height: 30px; border: none; }
-.btn.big .label { margin: 0 12px; font-size: 14px; line-height: 30px; }
+.btn.big { height: 30px; border: none; font-size: 14px; line-height: 30px; }
+.btn.big .label { margin: 0 12px; }
 
 /* submit button */
 .btn.submit,
-.btn.big { background: -webkit-gradient(linear, 0 0, 0 100%, from(#33abf5), to(#2987c2)) !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15) !important; }
-.btn.submit .label,
-.btn.big .label { color: #fff; text-shadow: 0 -1px 0 #000; }
+.btn.big { color: #fff; text-shadow: 0 -1px 0 #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#33abf5), to(#2987c2)) !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15) !important; }
+
+/* input buttons */
+input.btn { padding: 0 8px; border: none; }
+input.btn.big { padding: 0 12px; }
 
 /* switch */
 .switch { border-radius: 3px; width: 51px; height: 24px; overflow: hidden; }
@@ -265,7 +266,7 @@ table.zebra > tbody > tr.even > td { border-radius: 0 !important; background: tr
 
 .input-wrapper > input,
 .input-wrapper > textarea,
-.input { display: block; border: 1px solid #ccc; border-radius: 2px; padding: 8px 10px; font-size: 13px; background: #fff; }
+.input { display: block; border: 1px solid #ccc; border-radius: 2px; padding: 8px 10px; font-size: 13px; color: #555; background: #fff; }
 
 .input-wrapper > input,
 .input-wrapper > textarea { width: 100%; }
