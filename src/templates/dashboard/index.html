@@ -27,25 +27,28 @@
 			{% foreach cp.dashboard.widgets as widget %}
 				{% if widget.body %}
 					<div id="widget{{ widget.id }}" class="widget {{ widget.classname }}">
-						<div class="pane front">
+						<div class="pane">
 							<div class="head">
 								{% if widget.settings %}
 									<a class="settings-btn" title="Settings"></a>
 								{% /if %}
 								<h3>{{ widget.title }}</h3>
 							</div>
+							{% if widget.settings %}
+								<div class="settings-outer-container"><div class="settings-inner-container">
+									<div class="settings">
+										{{ widget.settings }}
+										<div class="buttons">
+											<a class="btn submit"><span class="label">Save</span></a>
+											<a class="btn cancel"><span class="label">Cancel</span></a>
+										</div>
+									</div>
+								</div></div>
+							{% /if %}
 							<div class="body">
 								{{ widget.body }}
 							</div>
 						</div>
-						{% if widget.settings %}
-							<div class="pane headless back">
-								<div class="body">
-									{{ widget.settings }}
-									<a class="btn save-settings"><span class="label">Save</span></a>
-								</div>
-							</div>
-						{% /if %}
 					</div>
 				{% /if %}
 			{% /foreach %}

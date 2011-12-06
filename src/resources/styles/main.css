@@ -104,7 +104,7 @@ a:hover { text-decoration: underline; }
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { border-radius: 2px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.25); overflow: hidden; }
+.pane { border-radius: 2px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 4px rgba(0,0,0,0.25); }
 .pane .head { position: relative; border-radius: 2px 2px 0 0; padding: 8px 10px; line-height: 24px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#f5f5f5), to(#e5e5e5)); -webkit-box-shadow: inset 0 1px 0 #fff; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 20px; margin-top: -8px; }
@@ -173,9 +173,14 @@ a:hover { text-decoration: underline; }
 .btn.small .label { margin: 0 6px; font-size: 11px; line-height: 17px; }
 
 /* big button */
-.btn.big { height: 30px; border: none; background: -webkit-gradient(linear, 0 0, 0 100%, from(#33abf5), to(#2987c2)) !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15) !important; }
-.btn.big .label { margin: 0 12px; font-size: 14px; line-height: 30px; color: #fff; text-shadow: 0 -1px 0 #000; }
-.btn.big:hover { text-decoration: none; }
+.btn.big { height: 30px; border: none; }
+.btn.big .label { margin: 0 12px; font-size: 14px; line-height: 30px; }
+
+/* submit button */
+.btn.submit,
+.btn.big { background: -webkit-gradient(linear, 0 0, 0 100%, from(#33abf5), to(#2987c2)) !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15) !important; }
+.btn.submit .label,
+.btn.big .label { color: #fff; text-shadow: 0 -1px 0 #000; }
 
 /* switch */
 .switch { border-radius: 3px; width: 51px; height: 24px; overflow: hidden; }

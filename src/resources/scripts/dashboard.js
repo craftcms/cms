@@ -329,6 +329,12 @@ Dashboard.Col = Base.extend({
 
 Dashboard.Widget = Base.extend({
 
+	elem: null,
+	$elem: null,
+	id: null,
+	dom: null,
+	expanded: false,
+
 	constructor: function(elem, i)
 	{
 		this.elem = elem;
@@ -338,29 +344,52 @@ Dashboard.Widget = Base.extend({
 		this.$elem.css('zIndex', i+1);
 
 		this.dom = {};
-		this.dom.$front = $('.front', this.elem);
-		this.dom.$back = $('.back', this.elem);
+		this.dom.$settingsBtn = $('.head .settings-btn', this.$elem);
 
-		if (this.dom.$back.length)
+		if (this.dom.$settingsBtn.length)
 		{
-			this.dom.$settingsBtn = $('.head .settings-btn', this.$front);
-			this.dom.$saveBtn = $('.save-settings', this.$back);
+			this.dom.$settingsOuterContainer = $('.settings-outer-container', this.$elem);
+			this.dom.$settingsInnerContainer = this.dom.$settingsOuterContainer.children();
+			this.dom.$settings = this.dom.$settingsInnerContainer.children();
+			this.dom.$saveBtn = $('.btn.submit', this.dom.$settings);
+			this.dom.$cancelBtn = $('.btn.cancel', this.dom.$settings);
 
-			this.dom.$settingsBtn.on('click.widget', $.proxy(this, 'showSettings'));
+			this.dom.$settingsBtn.on('click.widget', $.proxy(this, 'toggleSettings'));
 			this.dom.$saveBtn.on('click.widget', $.proxy(this, 'saveSettings'));
+			this.dom.$cancelBtn.on('click.widget', $.proxy(this, 'hideSettings'));
 		}
+	},
+
+	toggleSettings: function()
+	{
+		if (!this.expanded)
+			this.showSettings();
+		else
+			this.hideSettings();
 	},
 
 	showSettings: function()
 	{
-		this.dom.$back.show();
-		this.dom.$front.hide();
+		this.dom.$settingsOuterContainer.addClass('expanded');
+		var height = this.dom.$settingsInnerContainer.height();
+		this.dom.$settingsOuterContainer.stop().animate({height: height});
+
+		this.dom.$settingsBtn.addClass('sel');
+		this.expanded = true;
+	},
+
+	hideSettings: function()
+	{
+		this.dom.$settingsOuterContainer.stop().animate({height: 0}, $.proxy(function() {
+			this.dom.$settingsOuterContainer.removeClass('expanded');
+		}, this));
+		this.dom.$settingsBtn.removeClass('sel');
+		this.expanded = false;
 	},
 
 	saveSettings: function()
 	{
-		this.dom.$front.show();
-		this.dom.$back.hide();
+		this.hideSettings();
 	}
 
 });
