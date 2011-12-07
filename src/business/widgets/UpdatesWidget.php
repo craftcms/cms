@@ -14,15 +14,17 @@ class UpdatesWidget extends Widget
 
 		$updates = '';
 
+		// Blocks first
 		if ($blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
 			$updates .= '<tr>
 							<td>Blocks '.$blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
 							<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
-							<td><a class="btn" href=""><span class="label">Update</span></a></td>
+							<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=Blocks"><input id="update" type="submit" value="Update"></form></td>
 						</tr>';
 		}
 
+		// Plugins next
 		if (isset($blocksUpdateInfo['pluginNamesAndVersions']) && $blocksUpdateInfo['pluginNamesAndVersions'] !== null && count($blocksUpdateInfo['pluginNamesAndVersions']) > 0)
 		{
 			foreach ($blocksUpdateInfo['pluginNamesAndVersions'] as $pluginInfo)
@@ -32,7 +34,7 @@ class UpdatesWidget extends Widget
 					$updates .= '<tr>
 									<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
 									<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
-									<td><a class="btn" href=""><span class="label">Update</span></a></td>
+									<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h='.$pluginInfo['handle'].'"><input id="update" type="submit" value="Update"></form></td>
 								</tr>';
 				}
 			}
@@ -40,7 +42,7 @@ class UpdatesWidget extends Widget
 
 		if ($updates)
 		{
-			return '<a class="btn dark update-all" href=""><span class="label">Update All</span></a>
+			return '<form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=all"><input id="update-all" class="btn dark update-all" type="submit" value="Update All"></form>
 				<table>
 					<tbody>' .
 						$updates .
