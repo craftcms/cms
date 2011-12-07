@@ -18,7 +18,7 @@ class CoreUpdater
 		$this->_latestVersionNumber = $latestVersionNumber;
 		$this->_edition = $edition;
 		$this->_type = CoreReleaseFileType::Patch;
-		$this->_localBuildNumber = Blocks::getBuildNumber();
+		$this->_localBuildNumber = Blocks::getBuild();
 		$this->_localVersionNumber = Blocks::getVersion();
 		$this->_localEdition = Blocks::getEdition();
 		$this->_migrationsToRun = null;

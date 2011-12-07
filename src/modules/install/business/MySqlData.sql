@@ -12,7 +12,7 @@ INSERT INTO `blx_sites` (`handle`,`label`,`url`) VALUES ('default', 'Default Sit
 /*
 	Data for the table `info`
 */
-INSERT INTO `blx_info` (`version`,`build_number`) VALUES ('0.1', '1');
+INSERT INTO `blx_info` (`edition`,`version`,`build`) VALUES ('Standard','0.1', '1');
 
 /*
 	Data for the table `plugins`

@@ -17,20 +17,18 @@ class BlocksHttpRequest extends CHttpRequest
 			$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
 		else
 		{
+			// delete the cache if we're in dev mode
 			if (Blocks::app()->config('devMode'))
 			{
 				Blocks::app()->fileCache->delete('blocksUpdateInfo');
-				$blocksUpdateInfo = Blocks::app()->site->versionCheck();
 			}
-			else
+
+			$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
+			if ($blocksUpdateInfo === false)
 			{
-				$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
-				if ($blocksUpdateInfo === false)
-				{
-					$blocksUpdateInfo = Blocks::app()->site->versionCheck();
-					// set cache expiry to 24 hours. 86400 seconds.
-					Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
-				}
+				$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+				// set cache expiry to 24 hours. 86400 seconds.
+				Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
 			}
 		}
 

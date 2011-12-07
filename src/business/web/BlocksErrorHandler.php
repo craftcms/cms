@@ -146,7 +146,7 @@ class BlocksErrorHandler extends CErrorHandler
 	{
 		if(YII_DEBUG)
 		{
-			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition().'.</a> v'.Blocks::getVersion().'.'.Blocks::getBuildNumber();
+			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition().'.</a> v'.Blocks::getVersion().'.'.Blocks::getBuild();
 			if(isset($_SERVER['SERVER_SOFTWARE']))
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
 		}

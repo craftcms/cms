@@ -168,6 +168,7 @@ class BaseController extends CController
 		{
 			$this->_defaultTemplateTags = array(
 				'assets'   => 'AssetsTag',
+				'blocks'   => 'BlocksTag',
 				'content'  => 'ContentTag',
 				'date'     => 'DateTag',
 				'url'      => 'UrlTag',
@@ -179,8 +180,7 @@ class BaseController extends CController
 			if (Blocks::app()->request->getCMSRequestType() == RequestType::ControlPanel)
 			{
 				Blocks::import('application.business.tags.cp.*');
-				$this->_defaultTemplateTags['cp'] =     'CpTag';
-				$this->_defaultTemplateTags['config'] = 'ConfigTag';
+				$this->_defaultTemplateTags['cp'] = 'CpTag';
 			}
 		}
 
