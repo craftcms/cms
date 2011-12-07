@@ -11,7 +11,6 @@
  * @property string $slug
  * @property string $full_uri
  * @property integer $expiration_date
- * @property integer $order
  * @property integer $archived
  * @property integer $date_created
  * @property integer $date_updated
@@ -55,14 +54,14 @@ class Entries extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('section_id, author_id, order, post_date', 'required'),
-			array('parent_id, section_id, author_id, expiration_date, order, archived, date_created, date_updated, post_date, enabled', 'numerical', 'integerOnly'=>true),
+			array('section_id, author_id, post_date', 'required'),
+			array('parent_id, section_id, author_id, expiration_date, archived, date_created, date_updated, post_date, enabled', 'numerical', 'integerOnly'=>true),
 			array('slug', 'length', 'max'=>250),
 			array('full_uri', 'length', 'max'=>1000),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, parent_id, section_id, author_id, slug, full_uri, expiration_date, order, archived, date_created, date_updated, uid, post_date, enabled', 'safe', 'on'=>'search'),
+			array('id, parent_id, section_id, author_id, slug, full_uri, expiration_date, archived, date_created, date_updated, uid, post_date, enabled', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -97,7 +96,6 @@ class Entries extends CActiveRecord
 			'slug' => 'Slug',
 			'full_uri' => 'Full Uri',
 			'expiration_date' => 'Expiration Date',
-			'order' => 'Order',
 			'archived' => 'Archived',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
@@ -125,7 +123,6 @@ class Entries extends CActiveRecord
 		$criteria->compare('slug',$this->slug,true);
 		$criteria->compare('full_uri',$this->full_uri,true);
 		$criteria->compare('expiration_date',$this->expiration_date);
-		$criteria->compare('order',$this->order);
 		$criteria->compare('archived',$this->archived);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);

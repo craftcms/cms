@@ -9,7 +9,7 @@
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 12/02/2011 15:08:01 PM
+ Date: 12/07/2011 12:54:38 PM
 */
 
 SET NAMES utf8;
@@ -390,7 +390,7 @@ delimiter ;
 DROP TABLE IF EXISTS `blx_info`;
 CREATE TABLE `blx_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `edition` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
+  `edition` enum('Pro','Standard','Personal') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Standard',
   `version` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
   `build` int(11) NOT NULL,
   `date_created` int(11) DEFAULT NULL,
@@ -824,7 +824,7 @@ CREATE TABLE `blx_users` (
   `user_name` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
   `first_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `last_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
+  `last_name` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
   `password` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `salt` varchar(128) COLLATE utf8_unicode_ci NOT NULL,
   `date_created` int(11) DEFAULT NULL,
