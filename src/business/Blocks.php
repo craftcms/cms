@@ -6,7 +6,7 @@ class Blocks extends Yii
 	private static $_version = '0.11';
 	private static $_build = '@@@build@@@';
 
-	public static function getEdition($db = false)
+	public static function getEdition()
 	{
 		if (strpos(self::$_edition, '@@@') !== false)
 			self::$_edition = self::getStoredEdition();
