@@ -51,7 +51,8 @@ class CpTag extends Tag
 
 	public function criticalUpdateAvailable()
 	{
-		return true;
+		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
+			return (bool) ($blocksUpdateInfo['blocksCriticalUpdateAvailable']);
 	}
 
 	public function updates()

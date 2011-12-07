@@ -19,9 +19,7 @@ class BlocksHttpRequest extends CHttpRequest
 		{
 			// delete the cache if we're in dev mode
 			if (Blocks::app()->config('devMode'))
-			{
 				Blocks::app()->fileCache->delete('blocksUpdateInfo');
-			}
 
 			$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
 			if ($blocksUpdateInfo === false)

@@ -17,6 +17,7 @@ class CpUpdatesTag extends Tag
 				'name' => 'Blocks '.$blocksUpdateInfo['blocksClientEdition'],
 				'handle' => 'Blocks',
 				'version' => $blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'],
+				'critical' => $blocksUpdateInfo['blocksCriticalUpdateAvailable'],
 				'notes' => $notes,
 			);
 
@@ -34,6 +35,7 @@ class CpUpdatesTag extends Tag
 						'name' => $pluginInfo['displayName'],
 						'handle' => $pluginInfo['handle'],
 						'version' => $pluginInfo['latestVersion'],
+						'critical' => $pluginInfo['criticalUpdateAvailable'],
 						'notes' => $notes,
 					);
 				}
