@@ -20,7 +20,7 @@ class UpdatesWidget extends Widget
 			$updates .= '<tr>
 							<td>Blocks '.$blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
 							<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
-							<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=Blocks"><input id="update" type="submit" value="Update"></form></td>
+							<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=Blocks"><input id="update" class="btn" type="submit" value="Update"></form></td>
 						</tr>';
 		}
 
@@ -34,7 +34,7 @@ class UpdatesWidget extends Widget
 					$updates .= '<tr>
 									<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
 									<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
-									<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h='.$pluginInfo['handle'].'"><input id="update" type="submit" value="Update"></form></td>
+									<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h='.$pluginInfo['handle'].'"><input id="update" class="btn" type="submit" value="Update"></form></td>
 								</tr>';
 				}
 			}
