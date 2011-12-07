@@ -9,7 +9,8 @@ class UpdatesWidget extends Widget
 	{
 		$blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo();
 
-		if ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey)
+		// don't show the widget if the update info isn't already cached or there's a missing license key
+		if ($blocksUpdateInfo === false || $blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey)
 			return false;
 
 		$updates = '';

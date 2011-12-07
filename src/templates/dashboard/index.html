@@ -4,21 +4,13 @@
 {% region styles %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
 
 {% region main %}
-	{% if cp.noLicenseKey %}
-		<div class="alert pane">
-			<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
-		</div>
-	{% elseif cp.badLicenseKey %}
-		<div class="alert pane">
-			<p>The license key you’re using isn’t authorized to run Blocks {{ blocks.edition }} on {{ url.domain }}. <a href="">Manage my licenses</a></p>
-		</div>
-	{% /if %}
-
-	{% if cp.criticalUpdateAvailable %}
-		<div class="alert pane">
-			<p>There is a critical update for Blocks available. <a href="">Update now</a></p>
-		</div>
-	{% /if %}
+	<div id="alerts">
+		{% if !blocks.config.licenseKeys %}
+			<div class="alert pane">
+				<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
+			</div>
+		{% /if %}
+	</div>
 
 	<div id="dashboard">
 		<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
@@ -68,4 +60,8 @@
 	{{ cp.resource('app/scripts/ui/Drag.js').js }}
 	{{ cp.resource('app/scripts/ui/DragSort.js').js }}
 	{{ cp.resource('app/scripts/dashboard.js').js }}
+
+	{% if cp.checkForUpdates %}
+		<script type="text/javascript">blx.checkForUpdates = true;</script>
+	{% /if %}
 {% /region %}

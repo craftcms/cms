@@ -127,7 +127,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		$this->extractPhp();
 		$this->parseComments();
 		$this->parseActions();
-		$this->parseVariableTags();
+		$this->_template = $this->parseVariableTags($this->_template);
 		$this->parseLanguage();
 		$this->restorePhp();
 		$this->prependHead();
@@ -303,18 +303,19 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Redirect
 
 			case 'redirect':
-				$this->parseVariables($params, true);
-				return "<?php header('Location: '.{$params}); ?>";
+				preg_match('/([\'\"]?)(.*)\1/', $params, $match);
+				$url = $this->parseVariableTags($match[2]);
+				return "<?php \$this->beginWidget('RedirectTemplateWidget'); ?>{$url}<?php \$this->endWidget(); ?>";
 		}
 	}
 
 	/**
 	 * Parse variable tags
 	 */
-	private function parseVariableTags()
+	private function parseVariableTags($template)
 	{
 		// find any remaining {variable-tags} on the page
-		$this->_template = preg_replace_callback('/\{\{(.*)\}\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
+		return preg_replace_callback('/\{\{(.*)\}\}/U', array(&$this, 'parseVariableTagMatch'), $template);
 	}
 
 	/**

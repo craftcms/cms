@@ -6,32 +6,35 @@ class BlocksHttpRequest extends CHttpRequest
 	private $_pathSegments = null;
 	private $_extension = null;
 	private $_siteInfo = null;
-	private $_blocksUpdateInfo = null;
+	private $_blocksUpdateInfo;
 
-	public function getBlocksUpdateInfo()
+	public function getBlocksUpdateInfo($fetch = false)
 	{
-		if ($this->_blocksUpdateInfo !== null)
-			return $this->_blocksUpdateInfo;
-
-		if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
-			$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
-		else
+		if (!isset($this->_blocksUpdateInfo) || ($this->_blocksUpdateInfo === false && $fetch))
 		{
-			// delete the cache if we're in dev mode
-			if (Blocks::app()->config('devMode'))
-				Blocks::app()->fileCache->delete('blocksUpdateInfo');
-
-			$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
-			if ($blocksUpdateInfo === false)
+			if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
 			{
-				$blocksUpdateInfo = Blocks::app()->site->versionCheck();
-				// set cache expiry to 24 hours. 86400 seconds.
-				Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, 86400);
+				// no license key
+				$blocksUpdateInfo['blocksLicenseStatus'] = LicenseKeyStatus::MissingKey;
 			}
-		}
+			else
+			{
+				// get the update info from the cache if it's there
+				$blocksUpdateInfo = Blocks::app()->fileCache->get('blocksUpdateInfo');
 
-		if ($blocksUpdateInfo !== null)
+				// if it wasn't cached, should we fetch it?
+				if ($blocksUpdateInfo === false && $fetch)
+				{
+					$blocksUpdateInfo = Blocks::app()->site->versionCheck();
+
+					// cache it and set it to expire in 24 hours (86400 seconds) or 60 seconds if dev mode
+					$expire = Blocks::app()->config('devMode') ? 60 : 86400;
+					Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, $expire);
+				}
+			}
+
 			$this->_blocksUpdateInfo = $blocksUpdateInfo;
+		}
 
 		return $this->_blocksUpdateInfo;
 	}

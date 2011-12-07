@@ -33,17 +33,9 @@ class CpTag extends Tag
 		return $sectionTags;
 	}
 
-	public function noLicenseKey()
-	{
-		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
-			return (bool) ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey);
-
-		return false;
-	}
-
 	public function badLicenseKey()
 	{
-		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
+		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== false)
 			return (bool) ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::InvalidKey);
 
 		return false;
@@ -53,6 +45,11 @@ class CpTag extends Tag
 	{
 		if (($blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo()) !== null)
 			return (bool) ($blocksUpdateInfo['blocksCriticalUpdateAvailable']);
+	}
+
+	public function checkForUpdates()
+	{
+		return (Blocks::app()->request->getBlocksUpdateInfo() === false);
 	}
 
 	public function updates()

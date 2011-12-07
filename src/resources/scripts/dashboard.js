@@ -10,6 +10,7 @@ var Dashboard = Base.extend({
 
 	constructor: function()
 	{
+		this.dom.$alerts = $(document.getElementById('alerts'));
 		this.dom.$container = $(document.getElementById('widgets'));
 		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
 		this.dom.$sidebar = $(document.getElementById('sidebar'));
@@ -40,7 +41,9 @@ var Dashboard = Base.extend({
 
 		// set the columns
 		this.setCols();
-		//setTimeout($.proxy(this, 'setCols'), 0);
+
+		// do the version check
+		$.getJSON(baseUrl+'?c=dashboard&a=versionCheck', $.proxy(this, 'displayAlerts'));
 	},
 
 	getWidgetHandles: function()
@@ -284,6 +287,22 @@ var Dashboard = Base.extend({
 		var index = $.inArray($handle[0], this.dom.$widgetHandles);
 		this.dom.$widgetHandles.splice(i, 1);
 		this.refreshCols(true);
+	},
+
+	displayAlerts: function(data, textStatus)
+	{
+		if (data && textStatus == 'success')
+		{
+			for (var i = 0; i < data.alerts.length; i++)
+			{
+				this.displayAlert(data.alerts[i]);
+			}
+		}
+	},
+
+	displayAlert: function(msg)
+	{
+		this.dom.$alerts.append('<div class="alert pane"><p>'+msg+'</p></div>');
 	}
 },
 {
@@ -402,6 +421,7 @@ Dashboard.Widget = Base.extend({
 });
 
 
+// initialize the dashboard
 window.dashboard = new Dashboard();
 
 
