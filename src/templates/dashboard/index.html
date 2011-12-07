@@ -6,11 +6,11 @@
 {% region main %}
 	{% if cp.noLicenseKey %}
 		<div class="alert pane">
-			<p>You need to enter your license key into {{ config.blocksConfigPath }}. <a href="">See how</a></p>
+			<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
 		</div>
 	{% elseif cp.badLicenseKey %}
 		<div class="alert pane">
-			<p>The license key you’re using isn’t authorized to run Blocks {{ config.blocksEdition }} on {{ url.domain }}. <a href="">Manage my licenses</a></p>
+			<p>The license key you’re using isn’t authorized to run Blocks {{ blocks.edition }} on {{ url.domain }}. <a href="">Manage my licenses</a></p>
 		</div>
 	{% /if %}
 
