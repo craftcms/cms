@@ -2,31 +2,50 @@
 
 class Blocks extends Yii
 {
-	public static function getVersion($db = false)
-	{
-		if (!$db)
-			return /*versionNumber*/ '0.11';
-
-		$blocksVersion = Info::model()->findAll();
-		return !empty($blocksVersion) ? $blocksVersion[0]->version : null;
-	}
-
-	public static function getBuildNumber($db = false)
-	{
-		if (!$db)
-			return '@@@buildNumber@@@';
-
-		$blocksBuildNumber = Info::model()->findAll();
-		return !empty($blocksBuildNumber) ? $blocksBuildNumber[0]->build_number : null;
-	}
+	private static $_edition = '@@@edition@@@';
+	private static $_version = '0.11';
+	private static $_build = '@@@build@@@';
 
 	public static function getEdition($db = false)
 	{
-		if (!$db)
-			return '@@@edition@@@';
+		if (strpos(self::$_edition, '@@@') !== false)
+			self::$_edition = self::getStoredEdition();
 
-		$blocksEdition = Info::model()->findAll();
-		return !empty($blocksEdition) ? 'Pro' : null;
+		return self::$_edition;
+	}
+
+	public static function getStoredEdition()
+	{
+		$info = Info::model()->findAll();
+		return !empty($info) ? $info[0]->edition : null;
+	}
+
+	public static function getVersion()
+	{
+		if (strpos(self::$_version, '@@@') !== false)
+			self::$_version = self::getStoredVersion();
+
+		return self::$_version;
+	}
+
+	public static function getStoredVerison()
+	{
+		$info = Info::model()->findAll();
+		return !empty($info) ? $info[0]->version : null;
+	}
+
+	public static function getBuild()
+	{
+		if (strpos(self::$_build, '@@@') !== false)
+			self::$_build = self::getStoredBuild();
+
+		return self::$_build;
+	}
+
+	public static function getStoredBuild()
+	{
+		$info = Info::model()->findAll();
+		return !empty($info) ? $info[0]->build : null;
 	}
 
 	public static function getYiiVersion()

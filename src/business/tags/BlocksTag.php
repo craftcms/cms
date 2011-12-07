@@ -14,7 +14,7 @@ class BlocksTag extends Tag
 
 	public function build()
 	{
-		return Blocks::getBuildNumber();
+		return Blocks::getBuild();
 	}
 
 	public function fullVersion()
@@ -22,7 +22,7 @@ class BlocksTag extends Tag
 		$edition = Blocks::getEdition();
 		$name = 'Blocks'.($edition != 'Standard' ? ' '.$edition : '');
 		$version = Blocks::getVersion();
-		$build = Blocks::getBuildNumber();
+		$build = Blocks::getBuild();
 
 		return "{$name} {$version}.{$build}";
 	}

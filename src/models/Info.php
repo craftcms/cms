@@ -5,8 +5,9 @@
  *
  * The followings are the available columns in table '{{info}}':
  * @property integer $id
+ * @property string $edition
  * @property string $version
- * @property string $build_number
+ * @property string $build
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -38,14 +39,14 @@ class Info extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('version, build_number', 'required'),
+			array('edition, version, build', 'required'),
 			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('edition', 'length', 'max'=>15),
 			array('version', 'length', 'max'=>15),
-			array('build_number', 'length', 'max'=>10),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, version, build_number, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, version, build, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -67,8 +68,9 @@ class Info extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
+			'edition' => 'Edition',
 			'version' => 'Version',
-			'build_number' => 'Build Number',
+			'build' => 'Build',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -87,8 +89,9 @@ class Info extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
+		$criteria->compare('edition',$this->iedition,true);
 		$criteria->compare('version',$this->version,true);
-		$criteria->compare('build_number',$this->build_number,true);
+		$criteria->compare('build',$this->build,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
