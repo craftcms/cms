@@ -30,10 +30,10 @@ if (!updateHandle)
 function getUpdateInfo()
 {
 	// get the name and latest version
-	$.getJSON(baseUrl+'?c=updates&a=getUpdateInfo&h='+updateHandle, function(data, textStatus) {
+	$.getJSON(baseUrl+'?c=update&a=getUpdateInfo&h='+updateHandle, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
-			showError('An unknown error occurred.')
+			showError('An unknown error occurred.');
 			return;
 		}
 
@@ -45,7 +45,8 @@ function getUpdateInfo()
 
 		if (!data.updateInfo)
 		{
-			showSuccess('You’re already up-to-date.')
+			showSuccess('You’re already up-to-date.');
+			return;
 		}
 
 		updateInfo = data.updateInfo;
