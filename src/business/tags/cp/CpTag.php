@@ -58,16 +58,4 @@ class CpTag extends Tag
 	{
 		return new CpUpdatesTag;
 	}
-
-	private function _generateUpdateNotes($updates, $name)
-	{
-		$notes = '';
-		foreach ($updates as $update)
-		{
-			$notes .= '<h5>'.$name.' '.$update['version'].($name == 'Blocks' ? '.'.$update['build_number'] : '').'</h5>';
-			$notes .= '<ul><li>'.$update['release_notes'].'</li></ul>';
-		}
-
-		return $notes;
-	}
 }
