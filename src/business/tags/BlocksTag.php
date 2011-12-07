@@ -20,10 +20,11 @@ class BlocksTag extends Tag
 	public function fullVersion()
 	{
 		$edition = Blocks::getEdition();
+		$name = 'Blocks'.($edition != 'Standard' ? ' '.$edition : '');
 		$version = Blocks::getVersion();
 		$build = Blocks::getBuildNumber();
 
-		return "Blocks {$edition} {$version}.{$build}";
+		return "{$name} {$version}.{$build}";
 	}
 
 	public function config()
