@@ -2,30 +2,82 @@
 
 class UpdateController extends BaseController
 {
-	public function actionIndex()
-	{
-		$responseVersionInfo = Blocks::app()->site->versionCheck();
+	// authenticate requests to this
 
-		if($responseVersionInfo != null)
+	private $_blocksUpdateInfo;
+
+	public function actionGetUpdateInfo($h)
+	{
+		$returnUpdateInfo = array();
+		$blocksUpdateInfo = Blocks::app()->request->blocksUpdateInfo;
+		if ($blocksUpdateInfo == null)
 		{
-			$this->loadTemplate('update/index', array('model' => $responseVersionInfo));
+			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.'));
+			return;
 		}
+
+		$this->_blocksUpdateInfo = $blocksUpdateInfo;
+
+		switch ($h)
+		{
+			case 'all':
+			{
+				// Blocks first.
+				$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo['blocksLatestVersionNo'].'.'.$this->_blocksUpdateInfo['blocksLatestBuildNo']);
+
+				// Plugins
+				foreach ($this->_blocksUpdateInfo['pluginNamesAndVersions'] as $pluginInfo)
+				{
+					if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable && count($pluginInfo['newerReleases']) > 0)
+						$returnUpdateInfo[] = array('handle' => $pluginInfo['handle'], 'name' => $pluginInfo['displayName'], 'version' => $pluginInfo['latestVersion']);
+				}
+
+				break;
+			}
+
+			case 'Blocks':
+			{
+				$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo['blocksLatestVersionNo'].'.'.$this->_blocksUpdateInfo['blocksLatestBuildNo']);
+				break;
+			}
+
+			// we assume it's a plugin handle.
+			default:
+			{
+				if (isset($this->_blocksUpdateInfo['pluginNamesAndVersions']) && count($this->_blocksUpdateInfo['pluginNamesAndVersions']) > 0)
+				{
+					if (isset($this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]) && $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['status'] == PluginVersionUpdateStatus::UpdateAvailable && count($this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['newerReleases']) > 0)
+						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['handle'], 'name' => $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['displayName'], 'version' => $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['latestVersion']);
+					else
+					{
+						echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.'));
+						return;
+					}
+				}
+				else
+				{
+					echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.'));
+					return;
+				}
+			}
+		}
+
+		echo CJSON::encode(array('updateInfo' => $returnUpdateInfo));
+		return;
 	}
 
-	public function actionCoreUpdate()
+	public function actionUpdate($h)
 	{
-		if (!Blocks::app()->request->isPostRequest)
-			$this->redirect('index');
+		echo CJSON::encode(array('success' => true));
+		return;
+	}
 
-		if (Blocks::app()->request->getPost('blocksLatestVersionNo', null) === null || Blocks::app()->request->getPost('blocksLatestBuildNo', null) === null)
-			throw new BlocksException('There was a problem updating to the latest Blocks version.  Please try again.');
-
-		$latestVersionNumber = Blocks::app()->request->getPost('blocksLatestVersionNo');
-		$latestBuildNumber = Blocks::app()->request->getPost('blocksLatestBuildNo');
-
+	private function _coreUpdate()
+	{
+		/*
 		try
 		{
-			$coreUpdater = new CoreUpdater($latestVersionNumber, $latestBuildNumber, Blocks::getEdition());
+			$coreUpdater = new CoreUpdater($this->_blocksUpdateInfo['blocksLatestVersionNo'], $this->_blocksUpdateInfo['blocksLatestBuildNo'], Blocks::getEdition());
 			if ($coreUpdater->start())
 				Blocks::app()->user->setFlash('notice', 'Update Successful!');
 
@@ -35,6 +87,11 @@ class UpdateController extends BaseController
 		{
 			Blocks::app()->user->setFlash('error', $ex->getMessage());
 			$this->redirect('index');
-		}
+		}*/
+	}
+
+	private function _pluginUpdate()
+	{
+
 	}
 }
