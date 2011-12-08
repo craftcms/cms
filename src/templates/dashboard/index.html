@@ -53,7 +53,7 @@
 		<div id="sidebar">
 			<ul class="widget-handles">
 				{% foreach cp.dashboard.widgets as widget %}
-					<li class="pane {% if !widget.body %}hidden{% /if %}" data-widget-id="widget{{ widget.id }}">
+					<li class="pane bodyless {% if !widget.body %}hidden{% /if %}" data-widget-id="widget{{ widget.id }}">
 						<div class="head"><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></div>
 					</li>
 				{% /foreach %}
