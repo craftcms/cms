@@ -294,16 +294,24 @@ var Dashboard = Base.extend({
 	{
 		if (data && textStatus == 'success')
 		{
+			var startHeight = this.dom.$alerts.height();
+
 			for (var i = 0; i < data.alerts.length; i++)
 			{
-				this.displayAlert(data.alerts[i]);
+				var $alert = $('<div class="alert pane"><p>'+data.alerts[i]+'</p></div>');
+				this.dom.$alerts.append($alert);
+				$alert.css({opacity: 0});
+				$alert.delay(i*blx.fx.delay).animate({opacity: 1});
 			}
-		}
-	},
 
-	displayAlert: function(msg)
-	{
-		this.dom.$alerts.append('<div class="alert pane"><p>'+msg+'</p></div>');
+			var endHeight = this.dom.$alerts.height(),
+				duration = blx.fx.duration + (data.alerts.length - 1) * blx.fx.delay;
+
+			this.dom.$alerts.height(startHeight);
+			this.dom.$alerts.animate({height: endHeight}, duration, $.proxy(function() {
+				this.dom.$alerts.height('auto');
+			}, this));
+		}
 	}
 },
 {

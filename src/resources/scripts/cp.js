@@ -173,6 +173,12 @@ blx.utils =
 };
 
 
+blx.fx = {
+	duration: 400,
+	delay: 100
+};
+
+
 
 /*$('.btn.menu').each(function() {
 	var $btn = $(this),

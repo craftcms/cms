@@ -25,12 +25,7 @@ window.Update = Base.extend({
 			$('html, body').animate({scrollTop: scrollTo});
 		}
 
-		setTimeout($.proxy(this, 'fadeIn'), i * 100);
-	},
-
-	fadeIn: function()
-	{
-		this.dom.$update.animate({opacity: 1});
+		this.dom.$update.delay(i*blx.fx.delay).animate({opacity: 1});
 	},
 
 	toggle: function()

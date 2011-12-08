@@ -27,8 +27,8 @@ class BlocksHttpRequest extends CHttpRequest
 				{
 					$blocksUpdateInfo = Blocks::app()->site->versionCheck();
 
-					// cache it and set it to expire in 24 hours (86400 seconds) or 60 seconds if dev mode
-					$expire = Blocks::app()->config('devMode') ? 60 : 86400;
+					// cache it and set it to expire in 24 hours (86400 seconds) or 5 seconds if dev mode
+					$expire = Blocks::app()->config('devMode') ? 5 : 86400;
 					Blocks::app()->fileCache->set('blocksUpdateInfo', $blocksUpdateInfo, $expire);
 				}
 			}
