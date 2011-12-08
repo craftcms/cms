@@ -2,6 +2,11 @@
 
 class CpDashboardTag extends Tag
 {
+	public function alerts()
+	{
+		return DashboardHelper::getAlerts();
+	}
+
 	public function widgets()
 	{
 		$widgets = Blocks::app()->cp->getDashboardWidgets();

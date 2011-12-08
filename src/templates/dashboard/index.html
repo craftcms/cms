@@ -10,6 +10,12 @@
 				<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
 			</div>
 		{% /if %}
+
+		{% foreach cp.dashboard.alerts as alert %}
+			<div class="alert pane">
+				<p>{{ alert }}</p>
+			</div>
+		{% /foreach %}
 	</div>
 
 	<div id="dashboard">
@@ -57,11 +63,11 @@
 {% /region %}
 
 {% region scripts %}
+	{% if !cp.updatesCached %}
+		<script type="text/javascript">window.getAlerts = true;</script>
+	{% /if %}
+
 	{{ cp.resource('app/scripts/ui/Drag.js').js }}
 	{{ cp.resource('app/scripts/ui/DragSort.js').js }}
 	{{ cp.resource('app/scripts/dashboard.js').js }}
-
-	{% if cp.checkForUpdates %}
-		<script type="text/javascript">blx.checkForUpdates = true;</script>
-	{% /if %}
 {% /region %}

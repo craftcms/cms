@@ -43,7 +43,8 @@ var Dashboard = Base.extend({
 		this.setCols();
 
 		// do the version check
-		$.getJSON(baseUrl+'?c=dashboard&a=versionCheck', $.proxy(this, 'displayAlerts'));
+		if (getAlerts)
+			$.getJSON(baseUrl+'?c=dashboard&a=getAlerts', $.proxy(this, 'displayAlerts'));
 	},
 
 	getWidgetHandles: function()

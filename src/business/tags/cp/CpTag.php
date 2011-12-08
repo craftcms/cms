@@ -47,9 +47,9 @@ class CpTag extends Tag
 			return (bool) ($blocksUpdateInfo['blocksCriticalUpdateAvailable']);
 	}
 
-	public function checkForUpdates()
+	public function updatesCached()
 	{
-		return (Blocks::app()->request->getBlocksUpdateInfo() === false);
+		return (Blocks::app()->request->getBlocksUpdateInfo() !== false);
 	}
 
 	public function updates()
