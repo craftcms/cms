@@ -15,7 +15,8 @@
 /* widgets */
 #widgets { position: relative; }
 
-.widget { position: relative; margin-bottom: 20px; }
+.widget { display: none; position: relative; margin-bottom: 20px; }
+.col .widget { display: block; }
 .widget:last-child { margin-bottom: 0; }
 
 .widget .body table { width: 100%; }
