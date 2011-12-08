@@ -12,7 +12,7 @@ class UpdateController extends BaseController
 		$blocksUpdateInfo = Blocks::app()->request->blocksUpdateInfo;
 		if ($blocksUpdateInfo == null)
 		{
-			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.'));
+			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
 			return;
 		}
 
@@ -50,13 +50,13 @@ class UpdateController extends BaseController
 						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['handle'], 'name' => $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['displayName'], 'version' => $this->_blocksUpdateInfo['pluginNamesAndVersions'][$h]['latestVersion']);
 					else
 					{
-						echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.'));
+						echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
 						return;
 					}
 				}
 				else
 				{
-					echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.'));
+					echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
 					return;
 				}
 			}
@@ -68,30 +68,40 @@ class UpdateController extends BaseController
 
 	public function actionUpdate($h)
 	{
-		echo CJSON::encode(array('success' => true));
-		return;
-	}
-
-	private function _coreUpdate()
-	{
-		/*
-		try
+		switch ($h)
 		{
-			$coreUpdater = new CoreUpdater($this->_blocksUpdateInfo['blocksLatestVersionNo'], $this->_blocksUpdateInfo['blocksLatestBuildNo'], Blocks::getEdition());
-			if ($coreUpdater->start())
-				Blocks::app()->user->setFlash('notice', 'Update Successful!');
+			case 'Blocks':
+			{
+				try
+				{
+					$coreUpdater = new CoreUpdater();
+					if ($coreUpdater->start())
+						echo CJSON::encode(array('success' => true));
+				}
+				catch (BlocksException $ex)
+				{
+					echo CJSON::encode(array('error' => $ex->getMessage(), 'fatal' => true));
+				}
 
-			$this->redirect('index');
+				return;
+			}
+
+			// plugin handle
+			default:
+			{
+				try
+				{
+					$pluginUpdater = new PluginUpdater();
+					if ($pluginUpdater->start())
+						echo CJSON::encode(array('success' => true));
+				}
+				catch (BlocksException $ex)
+				{
+					echo CJSON::encode(array('error' => $ex->getMessage(), 'fatal' => false));
+				}
+
+				return;
+			}
 		}
-		catch (BlocksException $ex)
-		{
-			Blocks::app()->user->setFlash('error', $ex->getMessage());
-			$this->redirect('index');
-		}*/
-	}
-
-	private function _pluginUpdate()
-	{
-
 	}
 }

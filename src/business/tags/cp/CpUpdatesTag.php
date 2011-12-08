@@ -58,7 +58,7 @@ class CpUpdatesTag extends Tag
 		$notes = '';
 		foreach ($updates as $update)
 		{
-			$notes .= '<h5>'.$name.' '.$update['version'].($name == 'Blocks' ? '.'.$update['build_number'] : '').'</h5>';
+			$notes .= '<h5>'.$name.' '.$update['version'].($name == 'Blocks' ? '.'.$update['build'] : '').'</h5>';
 			$notes .= '<ul><li>'.$update['release_notes'].'</li></ul>';
 		}
 
