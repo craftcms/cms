@@ -212,13 +212,9 @@ class CoreUpdater implements IUpdater
 		$response = $client->request('POST');
 
 		if ($response->isSuccessful())
-		{
 			return true;
-		}
 		else
-		{
 			throw new BlocksException('Error in calling '.APIWebServiceEndPoints::DownloadPackage.' Response: '.$response->getBody());
-		}
 	}
 
 	public function validatePackage($version, $build, $destinationPath)
