@@ -1,30 +1,17 @@
 <?php
 
-class CoreUpdater
+class CoreUpdater implements IUpdater
 {
-	private $_latestVersionNumber;
-	private $_latestBuildNumber;
-	private $_edition;
-	private $_type;
-	private $_localVersionNumber;
-	private $_localBuildNumber;
-	private $_localEdition;
-	private $_buildsToUpdate;
-	private $_migrationsToRun;
+	private $_buildsToUpdate = null;
+	private $_migrationsToRun = null;
+	private $_blocksUpdateInfo = null;
 
-	function __construct($latestVersionNumber, $latestBuildNumber, $edition)
+	function __construct()
 	{
-		$this->_latestBuildNumber = $latestBuildNumber;
-		$this->_latestVersionNumber = $latestVersionNumber;
-		$this->_edition = $edition;
-		$this->_type = CoreReleaseFileType::Patch;
-		$this->_localBuildNumber = Blocks::getBuild();
-		$this->_localVersionNumber = Blocks::getVersion();
-		$this->_localEdition = Blocks::getEdition();
+		$this->_blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo(true);
 		$this->_migrationsToRun = null;
-		$this->_buildsToUpdate = null;
+		$this->_buildsToUpdate = $this->_blocksUpdateInfo['blocksLatestCoreReleases'];
 	}
-
 
 	public function checkRequirements()
 	{
@@ -47,45 +34,16 @@ class CoreUpdater
 					throw new BlocksException('The update cannot be installed because Blocks requires '.$localDatabaseType.' version '.$requiredDatabaseVersion.' or higher and you have '.$localDatabaseType.' version '.$localPHPVersion.' installed.');
 	}
 
-	public function getReleaseNumbersToUpdate()
-	{
-		$client = new HttpClient(APIWebServiceEndPoints::GetReleaseNumbersToUpdate, array(
-			'timeout'       =>  30,
-			'maxredirects'  =>  0
-		));
-
-		$client->setParameterGet(array(
-			'buildNumber' => $this->_localBuildNumber,
-		));
-
-		$response = $client->request('GET');
-
-		if ($response->isSuccessful())
-		{
-			$buildsToUpdate = CJSON::decode($response->getBody());
-			return empty($buildsToUpdate) ? null : $buildsToUpdate;
-		}
-		else
-		{
-			throw new BlocksException('Error in calling '.APIWebServiceEndPoints::GetReleaseNumbersToUpdate.' Response: '.$response->getBody());
-		}
-	}
-
 	public function start()
 	{
 		$this->checkRequirements();
 
-		$this->_buildsToUpdate = $this->getReleaseNumbersToUpdate();
-
 		if ($this->_buildsToUpdate == null)
-		{
-			Blocks::app()->user->setFlash('notice', 'Blocks is already up to date.');
-			return false;
-		}
+			throw new BlocksException('Blocks is already up to date.');
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
+			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_blocksUpdateInfo['blocksClientEdition']);
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate['version'], $buildToUpdate['build'], $downloadFilePath))
@@ -130,7 +88,7 @@ class CoreUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_edition);
+			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_blocksUpdateInfo['blocksClientEdition']);
 			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
@@ -245,7 +203,7 @@ class CoreUpdater
 		$client->setParameterPost(array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_edition,
+			'edition' => $this->_blocksUpdateInfo['blocksClientEdition'],
 			'type' => CoreReleaseFileType::Patch
 		));
 
@@ -273,7 +231,7 @@ class CoreUpdater
 		$client->setParameterGet(array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_edition,
+			'edition' => $this->_blocksUpdateInfo['blocksClientEdition'],
 			'type' => CoreReleaseFileType::Patch
 		));
 
