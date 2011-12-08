@@ -294,21 +294,22 @@ var Dashboard = Base.extend({
 	{
 		if (data && textStatus == 'success')
 		{
-			var startHeight = this.dom.$alerts.height();
+			var startHeight = this.dom.$alerts.height(),
+				alerts = [];
 
+			// add the alerts w/ opacity:0
 			for (var i = 0; i < data.alerts.length; i++)
 			{
 				var $alert = $('<div class="alert pane"><p>'+data.alerts[i]+'</p></div>');
 				this.dom.$alerts.append($alert);
 				$alert.css({opacity: 0});
-				$alert.delay(i*blx.fx.delay).animate({opacity: 1});
+				$alert.delay((i+1)*blx.fx.delay).animate({opacity: 1});
 			}
 
-			var endHeight = this.dom.$alerts.height(),
-				duration = blx.fx.duration + (data.alerts.length - 1) * blx.fx.delay;
-
+			// make room for them
+			var endHeight = this.dom.$alerts.height();
 			this.dom.$alerts.height(startHeight);
-			this.dom.$alerts.animate({height: endHeight}, duration, $.proxy(function() {
+			this.dom.$alerts.animate({height: endHeight}, $.proxy(function() {
 				this.dom.$alerts.height('auto');
 			}, this));
 		}
