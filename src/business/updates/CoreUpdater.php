@@ -8,7 +8,7 @@ class CoreUpdater implements IUpdater
 
 	function __construct()
 	{
-		$this->_blocksUpdateInfo = Blocks::app()->request->getBlocksUpdateInfo(true);
+		$this->_blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo(true);
 		$this->_migrationsToRun = null;
 		$this->_buildsToUpdate = $this->_blocksUpdateInfo['blocksLatestCoreReleases'];
 	}

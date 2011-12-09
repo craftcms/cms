@@ -84,6 +84,10 @@ return array(
 			'class' => 'application.business.services.ContentService',
 		),
 
+		'cp' => array(
+					'class' => 'application.business.services.CpService',
+				),
+
 		'membership' => array(
 			'class' => 'application.business.services.MembershipService',
 		),
@@ -104,10 +108,11 @@ return array(
 			'class' => 'application.business.services.SiteService',
 		),
 
-		'cp' => array(
-			'class' => 'application.business.services.CpService',
+		'update' => array(
+					'class' => 'application.business.services.UpdateService',
 		),
 
+		// end services
 
 		'file' => array(
 			'class' => 'application.business.utils.BlocksFile',
@@ -127,7 +132,8 @@ return array(
 				//'<controller:\w+>/<id:\d+>' => '<controller>/view',
 				//'<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
 				//'<controller:\w+>/<action:\w+>' => '<controller>/<action>',
-				//'system/install/<action:\w+>' => 'install/default/<action>',
+				//'install/<action:\w+>' => 'install/default/<action>',
+				//'update/<pluginHandle:\w+>' =>
 				//'system/update/<action:\w+>' => 'update/default/<action>',
 				//'admin' => 'admin.php',
 			),

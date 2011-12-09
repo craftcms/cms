@@ -6,7 +6,7 @@ class CpUpdatesTag extends Tag
 
 	public function init()
 	{
-		$blocksUpdateInfo = Blocks::app()->request->blocksUpdateInfo;
+		$blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo();
 		$this->_updates = array();
 
 		// blocks first.

@@ -2,9 +2,11 @@
 
 class PluginUpdater implements IUpdater
 {
-	function __construct()
-	{
+	private $_pluginhandle = null;
 
+	function __construct($pluginHandle)
+	{
+		$this->_pluginhandle = $pluginHandle;
 	}
 
 	public function checkRequirements()
@@ -14,7 +16,6 @@ class PluginUpdater implements IUpdater
 
 	public function start()
 	{
-
 		return true;
 	}
 }

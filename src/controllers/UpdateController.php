@@ -9,7 +9,7 @@ class UpdateController extends BaseController
 	public function actionGetUpdateInfo($h)
 	{
 		$returnUpdateInfo = array();
-		$blocksUpdateInfo = Blocks::app()->request->blocksUpdateInfo;
+		$blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo();
 		if ($blocksUpdateInfo == null)
 		{
 			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
@@ -74,8 +74,7 @@ class UpdateController extends BaseController
 			{
 				try
 				{
-					$coreUpdater = new CoreUpdater();
-					if ($coreUpdater->start())
+					if (Blocks::app()->update->doCoreUpdate())
 						echo CJSON::encode(array('success' => true));
 				}
 				catch (BlocksException $ex)
@@ -91,8 +90,7 @@ class UpdateController extends BaseController
 			{
 				try
 				{
-					$pluginUpdater = new PluginUpdater();
-					if ($pluginUpdater->start())
+					if (Blocks::app()->update->doPluginUpdate($h))
 						echo CJSON::encode(array('success' => true));
 				}
 				catch (BlocksException $ex)
