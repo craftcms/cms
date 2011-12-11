@@ -19,7 +19,7 @@ class PluginService extends CApplicationComponent implements IPluginService
 		foreach($installedPlugins as $plugin)
 		{
 			$pluginVersionInfo['handle'] = $plugin->name;
-			$pluginVersionInfo['installedVersion'] = $plugin->version;
+			$pluginVersionInfo['localVersion'] = $plugin->version;
 
 			$pluginNamesAndVersions[$plugin->name] = $pluginVersionInfo;
 		}

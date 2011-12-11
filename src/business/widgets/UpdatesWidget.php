@@ -7,35 +7,35 @@ class UpdatesWidget extends Widget
 
 	public function displayBody()
 	{
-		$blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo();
+		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo();
 
 		// don't show the widget if the update info isn't already cached or there's a missing license key
-		if ($blocksUpdateInfo === false || $blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::MissingKey)
+		if ($blocksUpdateData === false || $blocksUpdateData->licenseStatus == LicenseKeyStatus::MissingKey)
 			return false;
 
 		$updates = '';
 
 		// Blocks first
-		if ($blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable)
+		if ($blocksUpdateData->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
 			$updates .= '<tr>
-							<td>Blocks '.$blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'].'</td>'.'
+							<td>Blocks '.$blocksUpdateData->latestVersion.'.'.$blocksUpdateData->latestBuild.'</td>'.'
 							<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
 							<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=Blocks"><input id="update" class="btn" type="submit" value="Update"></form></td>
 						</tr>';
 		}
 
 		// Plugins next
-		if (isset($blocksUpdateInfo['pluginNamesAndVersions']) && $blocksUpdateInfo['pluginNamesAndVersions'] !== null && count($blocksUpdateInfo['pluginNamesAndVersions']) > 0)
+		if ($blocksUpdateData->plugins !== null && count($blocksUpdateData->plugins) > 0)
 		{
-			foreach ($blocksUpdateInfo['pluginNamesAndVersions'] as $pluginInfo)
+			foreach ($blocksUpdateData->plugins as $plugin)
 			{
-				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable)
+				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
 					$updates .= '<tr>
-									<td>'.$pluginInfo['displayName'].' '.$pluginInfo['latestVersion'].'</td>
-									<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$pluginInfo['handle'])).'</td>
-									<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h='.$pluginInfo['handle'].'"><input id="update" class="btn" type="submit" value="Update"></form></td>
+									<td>'.$plugin->displayName.' '.$plugin->latestVersion.'</td>
+									<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$plugin->handle)).'</td>
+									<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h='.$plugin->handle.'"><input id="update" class="btn" type="submit" value="Update"></form></td>
 								</tr>';
 				}
 			}

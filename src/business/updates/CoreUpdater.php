@@ -4,13 +4,13 @@ class CoreUpdater implements IUpdater
 {
 	private $_buildsToUpdate = null;
 	private $_migrationsToRun = null;
-	private $_blocksUpdateInfo = null;
+	private $_blocksUpdateData = null;
 
 	function __construct()
 	{
-		$this->_blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo(true);
+		$this->_blocksUpdateData = Blocks::app()->update->blocksUpdateInfo(true);
 		$this->_migrationsToRun = null;
-		$this->_buildsToUpdate = $this->_blocksUpdateInfo['blocksLatestCoreReleases'];
+		$this->_buildsToUpdate = $this->_blocksUpdateData->newerReleases;
 	}
 
 	public function checkRequirements()
@@ -43,14 +43,14 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_blocksUpdateInfo['blocksClientEdition']);
+			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateData->localEdition);
 
 			// download the package
-			if (!$this->downloadPackage($buildToUpdate['version'], $buildToUpdate['build'], $downloadFilePath))
+			if (!$this->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
 				throw new BlocksException('There was a problem downloading the package.');
 
 			// validate
-			if (!$this->validatePackage($buildToUpdate['version'], $buildToUpdate['build'], $downloadFilePath))
+			if (!$this->validatePackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
 				throw new BlocksException('There was a problem validating the downloaded package.');
 
 			// unpack
@@ -88,7 +88,7 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate['version'], $buildToUpdate['build'], $this->_blocksUpdateInfo['blocksClientEdition']);
+			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateData['blocksClientEdition']);
 			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
@@ -203,7 +203,7 @@ class CoreUpdater implements IUpdater
 		$client->setParameterPost(array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_blocksUpdateInfo['blocksClientEdition'],
+			'edition' => $this->_blocksUpdateData->localEdition,
 			'type' => CoreReleaseFileType::Patch
 		));
 
@@ -227,7 +227,7 @@ class CoreUpdater implements IUpdater
 		$client->setParameterGet(array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_blocksUpdateInfo['blocksClientEdition'],
+			'edition' => $this->_blocksUpdateData->localEdition,
 			'type' => CoreReleaseFileType::Patch
 		));
 

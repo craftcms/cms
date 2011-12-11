@@ -35,16 +35,16 @@ class CpTag extends Tag
 
 	public function badLicenseKey()
 	{
-		if (($blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo()) !== false)
-			return (bool) ($blocksUpdateInfo['blocksLicenseStatus'] == LicenseKeyStatus::InvalidKey);
+		if (($blocksUpdateData = Blocks::app()->update->blocksUpdateData()) !== false)
+			return (bool)($blocksUpdateData->licenseStatus == LicenseKeyStatus::InvalidKey);
 
 		return false;
 	}
 
 	public function criticalUpdateAvailable()
 	{
-		if (($blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo()) !== null)
-			return (bool) ($blocksUpdateInfo['blocksCriticalUpdateAvailable']);
+		if (($blocksUpdateData = Blocks::app()->update->blocksUpdateInfo()) !== null)
+			return (bool)($blocksUpdateData->criticalUpdateAvailable);
 	}
 
 	public function updatesCached()

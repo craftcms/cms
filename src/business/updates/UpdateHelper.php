@@ -61,7 +61,7 @@ class UpdateHelper
 	public static function constructCoreReleasePatchFileName($version, $build, $edition)
 	{
 		if(StringHelper::IsNullOrEmpty($version) || StringHelper::IsNullOrEmpty($build) || StringHelper::IsNullOrEmpty($edition))
-			throw new BlocksException('Missing versionNumber or buildNumber or edition.');
+			throw new BlocksException('Missing version, build or edition.');
 
 		switch ($edition)
 		{

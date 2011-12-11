@@ -6,36 +6,36 @@ class CpUpdatesTag extends Tag
 
 	public function init()
 	{
-		$blocksUpdateInfo = Blocks::app()->update->blocksUpdateInfo();
+		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo();
 		$this->_updates = array();
 
 		// blocks first.
-		if ($blocksUpdateInfo['blocksVersionUpdateStatus'] == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo['blocksLatestCoreReleases']) > 0)
+		if ($blocksUpdateData->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateData->newerReleases) > 0)
 		{
-			$notes = $this->_generateUpdateNotes($blocksUpdateInfo['blocksLatestCoreReleases'], 'Blocks');
+			$notes = $this->_generateUpdateNotes($blocksUpdateData->newerReleases, 'Blocks');
 			$this->_updates[] = array(
-				'name' => 'Blocks '.$blocksUpdateInfo['blocksClientEdition'],
+				'name' => 'Blocks '.$blocksUpdateData->localEdition,
 				'handle' => 'Blocks',
-				'version' => $blocksUpdateInfo['blocksLatestVersionNo'].'.'.$blocksUpdateInfo['blocksLatestBuildNo'],
-				'critical' => $blocksUpdateInfo['blocksCriticalUpdateAvailable'],
+				'version' => $blocksUpdateData->latestVersion.'.'.$blocksUpdateData->latestBuild,
+				'critical' => $blocksUpdateData->criticalUpdateAvailable,
 				'notes' => $notes,
 			);
 
 		}
 
 		// plugins second.
-		if (isset($blocksUpdateInfo['pluginNamesAndVersions']) && count($blocksUpdateInfo['pluginNamesAndVersions']) > 0)
+		if ($blocksUpdateData->plugins !== null && count($blocksUpdateData->plugins) > 0)
 		{
-			foreach ($blocksUpdateInfo['pluginNamesAndVersions'] as $pluginInfo)
+			foreach ($blocksUpdateData->plugins as $plugin)
 			{
-				if ($pluginInfo['status'] == PluginVersionUpdateStatus::UpdateAvailable && count($pluginInfo['newerReleases']) > 0)
+				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
 				{
-					$notes = $this->_generateUpdateNotes($pluginInfo['newerReleases'], $pluginInfo['displayName']);
+					$notes = $this->_generateUpdateNotes($plugin->newerReleases, $plugin->displayName);
 					$this->_updates[] = array(
-						'name' => $pluginInfo['displayName'],
-						'handle' => $pluginInfo['handle'],
-						'version' => $pluginInfo['latestVersion'],
-						'critical' => $pluginInfo['criticalUpdateAvailable'],
+						'name' => $plugin->displayName,
+						'handle' => $plugin->handle,
+						'version' => $plugin->latestVersion,
+						'critical' => $plugin->criticalUpdateAvailable,
 						'notes' => $notes,
 					);
 				}
@@ -58,8 +58,8 @@ class CpUpdatesTag extends Tag
 		$notes = '';
 		foreach ($updates as $update)
 		{
-			$notes .= '<h5>'.$name.' '.$update['version'].($name == 'Blocks' ? '.'.$update['build'] : '').'</h5>';
-			$notes .= '<ul><li>'.$update['release_notes'].'</li></ul>';
+			$notes .= '<h5>'.$name.' '.$update->version.($name == 'Blocks' ? '.'.$update->build : '').'</h5>';
+			$notes .= '<ul><li>'.$update->releaseNotes.'</li></ul>';
 		}
 
 		return $notes;

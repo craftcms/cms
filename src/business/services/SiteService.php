@@ -47,43 +47,6 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return $site;
 	}
 
-	public function versionCheck()
-	{
-		$versionCheckInfo['blocksClientEdition'] = Blocks::getEdition();
-		$versionCheckInfo['blocksClientBuildNo'] = Blocks::getBuild();
-		$versionCheckInfo['blocksClientVersionNo'] = Blocks::getVersion();
-		$versionCheckInfo['pluginNamesAndVersions'] = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
-		$versionCheckInfo['keys'] = Blocks::app()->site->getLicenseKeys();
-		$versionCheckInfo['requestingDomain'] = Blocks::app()->request->getServerName();
-
-		try
-		{
-			$client = new HttpClient(APIWebServiceEndPoints::VersionCheck, array(
-					'timeout'       =>  6,
-					'maxredirects'  =>  0
-					));
-
-			$client->setRawData(CJSON::encode($versionCheckInfo), 'json')->request('POST');
-			$response = $client->request('POST');
-
-			if ($response->isSuccessful())
-			{
-				$responseBody = CJSON::decode($response->getBody());
-				return $responseBody;
-			}
-			else
-			{
-				Blocks::log('Error in calling '.APIWebServiceEndPoints::VersionCheck.' Response: '.$response->getBody(), 'warning');
-			}
-		}
-		catch(Exception $e)
-		{
-			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
-		}
-
-		return null;
-	}
-
 	public function getAllowedTemplateFileExtensions()
 	{
 		return array('html', 'php');
