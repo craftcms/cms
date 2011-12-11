@@ -15,7 +15,7 @@ return CMap::mergeArray(
 				'username'          => 'root',
 				'password'          => 'letmein',
 				'charset'           => 'utf8',
-				'tablePrefix'       => 'blx',
+				'tablePrefix'       => 'blx_',
 			),
 		),
 	)
