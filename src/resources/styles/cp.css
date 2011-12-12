@@ -44,10 +44,10 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 /* ----------------------------------------*/
 
 /*-- nav --*/
-#nav { position: fixed; top: 0; left: 0; z-index: 9999; border-bottom: 1px solid #10354d; width: 100%; height: 44px; padding: 0 0; background: #1081b8 url(../images/nav-bg.jpg); -webkit-box-shadow: 0 0 2px rgba(0,0,0,0.5); }
+#nav { position: fixed; top: 0; left: 0; z-index: 9999; border-bottom: 1px solid #10354d; width: 100%; height: 44px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#206D9B)); -webkit-box-shadow: 0 0 2px rgba(0,0,0,0.5); }
 #nav .left { float: left; }
 #nav .right { float: right; margin-right: 10px; }
-#nav .left #site { float: left; margin: 7px 10px; color: #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#0f94d2), to(#0c6c99)) !important; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.35) !important; }
+#nav .left #site { float: left; margin: 7px 10px; color: #fff; background: none !important; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.35) !important; }
 #nav .left ul { float: left; }
 #nav a { color: #fff; text-shadow: 0 1px 0 #000; }
 #nav ul li { position: relative; float: left; }
