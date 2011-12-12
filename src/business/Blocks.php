@@ -3,7 +3,7 @@
 class Blocks extends Yii
 {
 	private static $_edition = '@@@edition@@@';
-	private static $_version = '0.11';
+	private static $_version = '0.13';
 	private static $_build = '@@@build@@@';
 
 	public static function getEdition()

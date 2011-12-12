@@ -33,9 +33,8 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		if (!$matchFound)
-			if (!$this->matchTemplate())
-				$this->matchRoute();
-					//throw new BlocksHttpException('404', 'Page not found.');
+			if (!$this->matchRoute())
+				$this->matchTemplate();
 	}
 
 	public function getTemplateMatch()
@@ -77,7 +76,7 @@ class BlocksUrlManager extends CUrlManager
 
 	public function matchRoute()
 	{
-		$test = $this->parseUrl(Blocks::app()->request);
+		//$test = $this->parseUrl(Blocks::app()->request);
 		return false;
 	}
 
