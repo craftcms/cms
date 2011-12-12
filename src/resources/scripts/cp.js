@@ -66,15 +66,6 @@ blx.CP =
 
 	onWindowScroll: function(event)
 	{
-		if (blx.getBodyScrollTop() > 15)
-		{
-			this.dom.$nav.addClass('scrolling');
-		}
-		else
-		{
-			this.dom.$nav.removeClass('scrolling');
-		}
-
 		if (this.hasSidebar)
 			this.setSidebarHeight();
 	},

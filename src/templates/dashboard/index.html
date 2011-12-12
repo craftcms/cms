@@ -4,7 +4,7 @@
 {% region styles %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
 
 {% region main %}
-	<div id="alerts">
+	<div id="alerts" style="display:none">
 		{% if !blocks.config.licenseKeys %}
 			<div class="alert pane">
 				<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
