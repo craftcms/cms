@@ -823,7 +823,7 @@ class BlocksFile extends CApplicationComponent
 		}
 		else
 		{
-			throw new BlocksException('Unable to get directory contents for "'.$directory.'/'.'"', 'warning');
+			throw new BlocksException('Unable to get directory contents for "'.$directory.'/'.'"');
 		}
 
 		return $descendants;
@@ -1194,6 +1194,10 @@ class BlocksFile extends CApplicationComponent
 		else
 		{
 			Blocks::trace('Purging directory "'.$path.'"', 'BlocksFile');
+
+			if (!realpath($path))
+				return true;
+
 			$dirContents = $this->dirContents($path, true);
 
 			foreach ($dirContents as $item)
@@ -1441,7 +1445,15 @@ class BlocksFile extends CApplicationComponent
 
 		foreach ($dirContents as $itemToZip)
 		{
-			$zip->addFile(substr($itemToZip, strlen($srcDir->getRealPath()) + 1));
+			if ((file_exists($itemToZip) || is_readable($itemToZip)) && !is_dir($itemToZip))
+			{
+				// We can't use $zip->addFile() here but it's a terrible, horrible method that's buggy on Windows.
+				$fileContents = file_get_contents($itemToZip);
+				$relFilePath = substr($itemToZip, strlen($srcDir->getRealPath()) + 1);
+				if (!$zip->addFromString($relFilePath, $fileContents))
+					$this->addLog('There was an error adding the file at this path to the zip: '.$itemToZip, 'error');
+			}
+
 		}
 
 		$zip->close();
@@ -1541,7 +1553,7 @@ class BlocksFile extends CApplicationComponent
 
 			if (!$newDir->createDir(0754) && !$newDir->getIsDir())
 			{
-				$this->addLog('Could not create directory during unzip: '.$newDir->_realPath, 'error');
+				$this->addLog('Could not create directory during unzip: '.$newDir->getRealPath(), 'error');
 				return false;
 			}
 		}
@@ -1561,7 +1573,7 @@ class BlocksFile extends CApplicationComponent
 			$destFile = Blocks::app()->file->set($destination.'/'.$zipFile['filename']);
 			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
 			{
-				$this->addLog('Could not copy file during unzip: '.$destFile->_realPath, 'error');
+				$this->addLog('Could not copy file during unzip: '.$destFile->getRealPath(), 'error');
 				return false;
 			}
 		}
@@ -1577,7 +1589,7 @@ class BlocksFile extends CApplicationComponent
 
 		if ($zipContents !== true)
 		{
-			$this->addLog('Could not open the zip file: '.$this->_realpath, 'error');
+			$this->addLog('Could not open the zip file: '.$this->getRealPath(), 'error');
 			return false;
 		}
 
