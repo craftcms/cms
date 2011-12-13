@@ -80,7 +80,7 @@ blx.CP =
 			visibleFooterHeight = 0;
 
 		var sidebarHeight = blx.windowHeight - this.navHeight - visibleFooterHeight - 40;
-		this.dom.$sidebar.height(sidebarHeight);
+		this.dom.$sidebar.css('maxHeight', sidebarHeight);
 	}
 };
 
