@@ -52,8 +52,8 @@ class CpTag extends Tag
 		return (Blocks::app()->update->blocksUpdateInfo() !== false);
 	}
 
-	public function updates()
+	public function updates($fetch = false)
 	{
-		return new CpUpdatesTag;
+		return new CpUpdatesTag($fetch);
 	}
 }
