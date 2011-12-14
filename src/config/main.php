@@ -1,5 +1,6 @@
 <?php
 require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
 
