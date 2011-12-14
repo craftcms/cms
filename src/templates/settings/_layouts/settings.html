@@ -12,7 +12,7 @@
 		<div class="body tree">
 			<ul>
 				<li><a {% if url.segment(2) == 'info' %}class="sel"{% endif %} href="{{ url.base }}/settings/info"><span class="icon icon70"></span>System Info</a></li>
-				<li><a {% if url.segment(2) == 'updates' %}class="sel"{% endif %} href="{{ url.base }}/settings/updates"><span class="icon icon15"></span>Updates</a></li>
+				<li><a class="has-badge {% if url.segment(2) == 'updates' %}sel{% endif %}" href="{{ url.base }}/settings/updates"><span class="icon icon15"></span>Updates{% if cp.updates %}<span class="badge">{{ cp.updates.length }}</span>{% /if %}</a></li>
 				<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href=""><span class="icon icon100"></span>Sites</a></li>
 				<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>
 			</ul>
@@ -37,13 +37,13 @@
 		<div class="head secondary">
 			<h6>Plugin Settings</h6>
 		</div>
-		<div class="body tree" id="plugins">
-			<ul>
-				<li><a href=""><span class="icon icon287"></span>Brilliant Retail<span class="status on"></span></a></li>
-				<li><a href=""><span class="icon icon287"></span>CE Image<span class="status on"></span></a></li>
-				<li><a href=""><span class="icon icon287"></span>Freeform<span class="status on"></span></a></li>
-				<li><a href=""><span class="icon icon287"></span>Tag<span class="status off"></span></a></li>
-				<li><a href=""><span class="icon icon287"></span>Wygwam<span class="status disabled"></span></a></li>
+		<div class="body tree">
+			<ul class="plugins">
+				<li><a class="has-badge" href=""><span class="icon icon287"></span>Brilliant Retail<span class="status on"></span></a></li>
+				<li><a class="has-badge" href=""><span class="icon icon287"></span>CE Image<span class="status on"></span></a></li>
+				<li><a class="has-badge" href=""><span class="icon icon287"></span>Freeform<span class="status on"></span></a></li>
+				<li><a class="has-badge" href=""><span class="icon icon287"></span>Tag<span class="status off"></span></a></li>
+				<li><a class="has-badge" href=""><span class="icon icon287"></span>Wygwam<span class="status disabled"></span></a></li>
 			</ul>
 		</div>
 	</div>

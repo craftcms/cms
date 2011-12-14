@@ -4,9 +4,9 @@ class CpUpdatesTag extends Tag
 {
 	private $_updates;
 
-	public function init()
+	public function init($fetch)
 	{
-		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo();
+		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo($fetch);
 		$this->_updates = array();
 
 		// blocks first.
@@ -49,6 +49,11 @@ class CpUpdatesTag extends Tag
 	}
 
 	public function __toString()
+	{
+		return $this->_updates ? 'y' : '';
+	}
+
+	public function length()
 	{
 		return count($this->_updates);
 	}

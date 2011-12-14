@@ -1,5 +1,5 @@
-#sidebar #plugins li a { padding-right: 33px; }
-#sidebar #plugins li a .status { float: right; margin-right: -22px; }
+#sidebar .tree ul.plugins li a .status { float: right; margin: 7px -22px 0 0; }
+
 
 /*-- URL Routing settings --*/
 body.routing #main .routes .site { margin-right: 2px; color: rgba(0,0,0,0.4); }
