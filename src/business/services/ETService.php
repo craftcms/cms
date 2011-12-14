@@ -1,24 +1,15 @@
 <?php
 
-class ETService extends CApplicationComponent implements IUpdateService
+class ETService extends CApplicationComponent implements IETService
 {
 	private $_licenseKeyStatus;
 
 	public function getLicenseKeyStatus()
 	{
 		if (!isset($this->_licenseKeyStatus))
-		{
 			$this->_licenseKeyStatus = $this->_getLicenseKeyStatus();
 
-			if (!$keys)
-			{
-				$this->_licenseKeyStatus = LicenseKeyStatus::MissingKey;
-			}
-			else
-			{
-				
-			}
-		}
+		return $this->_licenseKeyStatus;
 		
 	}
 
