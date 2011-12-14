@@ -6,7 +6,7 @@ class SecurityService extends CApplicationComponent implements ISecurityService
 	{
 		try
 		{
-			$client = new HttpClient(APIWebServiceEndPoints::ValidateKeysByCredentials, array(
+			$client = new HttpClient(ETEndPoints::ValidateKeysByCredentials, array(
 					'timeout'       =>  1,
 					'maxredirects'  =>  0
 					));
@@ -27,7 +27,7 @@ class SecurityService extends CApplicationComponent implements ISecurityService
 			}
 			else
 			{
-				Blocks::log('Error in calling '.APIWebServiceEndPoints::ValidateKeysByCredentials.' Response: '.$response->getBody(), 'warning');
+				Blocks::log('Error in calling '.ETEndPoints::ValidateKeysByCredentials.' Response: '.$response->getBody(), 'warning');
 				return WebServiceReturnStatus::CODE_404;
 			}
 		}

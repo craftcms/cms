@@ -195,7 +195,7 @@ class CoreUpdater implements IUpdater
 
 	public function downloadPackage($version, $build, $destinationPath)
 	{
-		$client = new HttpClient(APIWebServiceEndPoints::DownloadPackage, array(
+		$client = new HttpClient(ETEndPoints::DownloadPackage, array(
 			'timeout'       =>  30,
 			'maxredirects'  =>  0
 		));
@@ -214,12 +214,12 @@ class CoreUpdater implements IUpdater
 		if ($response->isSuccessful())
 			return true;
 		else
-			throw new BlocksException('Error in calling '.APIWebServiceEndPoints::DownloadPackage.' Response: '.$response->getBody());
+			throw new BlocksException('Error in calling '.ETEndPoints::DownloadPackage.' Response: '.$response->getBody());
 	}
 
 	public function validatePackage($version, $build, $destinationPath)
 	{
-		$client = new HttpClient(APIWebServiceEndPoints::GetCoreReleaseFileMD5, array(
+		$client = new HttpClient(ETEndPoints::GetCoreReleaseFileMD5, array(
 			'timeout'       =>  30,
 			'maxredirects'  =>  0
 		));
@@ -242,7 +242,7 @@ class CoreUpdater implements IUpdater
 		}
 		else
 		{
-			throw new BlocksException('Error in calling '.APIWebServiceEndPoints::GetCoreReleaseFileMD5.' Response: '.$response->getBody());
+			throw new BlocksException('Error in calling '.ETEndPoints::GetCoreReleaseFileMD5.' Response: '.$response->getBody());
 		}
 
 		$localFile = Blocks::app()->file->set($destinationPath, false);

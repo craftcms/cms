@@ -10,7 +10,7 @@ class BlocksHtml extends CHtml
 	public static function getResourceUrl($resourcePath)
 	{
 		$baseUrl = Blocks::app()->urlManager->getBaseUrl();
-		return $baseUrl.'/'.'resources/'.self::encode($resourcePath);
+		return $baseUrl.'/'.Blocks::app()->config('resourceTriggerWord').'/'.self::encode($resourcePath);
 	}
 
 	public static function unixTimeToPrettyDate($unixTime)

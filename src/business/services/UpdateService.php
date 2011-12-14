@@ -99,7 +99,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 
 		try
 		{
-			$client = new HttpClient(APIWebServiceEndPoints::VersionCheck, array(
+			$client = new HttpClient(ETEndPoints::VersionCheck, array(
 					'timeout'       =>  6,
 					'maxredirects'  =>  0
 					));
@@ -114,7 +114,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 			}
 			else
 			{
-				Blocks::log('Error in calling '.APIWebServiceEndPoints::VersionCheck.' Response: '.$response->getBody(), 'warning');
+				Blocks::log('Error in calling '.ETEndPoints::VersionCheck.' Response: '.$response->getBody(), 'warning');
 			}
 		}
 		catch(Exception $e)
