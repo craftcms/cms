@@ -2,7 +2,7 @@
 
 class UpdateService extends CApplicationComponent implements IUpdateService
 {
-	private $_blocksUpdateData;
+	private $_updateInfo;
 
 	public function criticalBlocksUpdateAvailable($blocksReleases)
 	{
@@ -32,37 +32,42 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		return false;
 	}
 
-	public function blocksUpdateInfo($fetch = false)
+	public function isUpdateInfoCached()
 	{
-		if (!isset($this->_blocksUpdateData) || ($this->_blocksUpdateData === false && $fetch))
+		return (isset($this->_updateInfo) || Blocks::app()->fileCache->get('updateInfo') !== false);
+	}
+
+	public function getUpdateInfo($forceRefresh = false)
+	{
+		if (!isset($this->_updateInfo) || $forceRefresh)
 		{
-			$blocksUpdateData = new BlocksUpdateData();
+			$updateInfo = new BlocksUpdateData();
 			// no update info if we can't find the license keys.
 			if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
-				$blocksUpdateData->licenseStatus = LicenseKeyStatus::MissingKey;
+				$updateInfo->licenseStatus = LicenseKeyStatus::MissingKey;
 			else
 			{
 				// get the update info from the cache if it's there
-				$blocksUpdateData = Blocks::app()->fileCache->get('blocksUpdateData');
+				$updateInfo = Blocks::app()->fileCache->get('updateInfo');
 
-				// if it wasn't cached, should we fetch it?
-				if ($blocksUpdateData === false && $fetch)
+				// fetch it if it wasn't cached, or if we're forcing a refresh
+				if ($updateInfo === false || $forceRefresh)
 				{
-					$blocksUpdateData = $this->check();
+					$updateInfo = $this->check();
 
-					if ($blocksUpdateData == null)
-						$blocksUpdateData = new BlocksUpdateData();
+					if ($updateInfo == null)
+						$updateInfo = new BlocksUpdateData();
 
 					// cache it and set it to expire in 24 hours (86400 seconds) or 5 seconds if dev mode
 					$expire = Blocks::app()->config('devMode') ? 5 : 86400;
-					Blocks::app()->fileCache->set('blocksUpdateData', $blocksUpdateData, $expire);
+					Blocks::app()->fileCache->set('updateInfo', $updateInfo, $expire);
 				}
 			}
 
-			$this->_blocksUpdateData = $blocksUpdateData;
+			$this->_updateInfo = $updateInfo;
 		}
 
-		return $this->_blocksUpdateData;
+		return $this->_updateInfo;
 	}
 
 	public function doCoreUpdate()

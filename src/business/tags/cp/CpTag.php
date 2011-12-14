@@ -43,17 +43,20 @@ class CpTag extends Tag
 
 	public function criticalUpdateAvailable()
 	{
-		if (($blocksUpdateData = Blocks::app()->update->blocksUpdateInfo()) !== null)
-			return (bool)($blocksUpdateData->criticalUpdateAvailable);
+		if (!Blocks::app()->update->isUpdateInfoCached())
+			return false;
+
+		$updateInfo = Blocks::app()->update->getUpdateInfo();
+		return $updateInfo->criticalUpdateAvailable();
 	}
 
-	public function updatesCached()
+	public function updateInfoCached()
 	{
-		return (Blocks::app()->update->blocksUpdateInfo() !== false);
+		return Blocks::app()->update->isUpdateInfoCached();
 	}
 
-	public function updates($fetch = false)
+	public function updates($forceRefresh = false)
 	{
-		return new CpUpdatesTag($fetch);
+		return new CpUpdatesTag($forceRefresh);
 	}
 }

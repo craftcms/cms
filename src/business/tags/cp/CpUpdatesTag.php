@@ -4,9 +4,9 @@ class CpUpdatesTag extends Tag
 {
 	private $_updates;
 
-	public function init($fetch)
+	public function init($forceRefresh)
 	{
-		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo($fetch);
+		$blocksUpdateData = Blocks::app()->update->getUpdateInfo($forceRefresh);
 		$this->_updates = array();
 
 		// blocks first.

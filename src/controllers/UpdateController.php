@@ -9,7 +9,7 @@ class UpdateController extends BaseController
 	public function actionGetUpdateInfo($h)
 	{
 		$returnUpdateData = array();
-		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo();
+		$blocksUpdateData = Blocks::app()->update->getUpdateInfo();
 		if ($blocksUpdateData == null)
 		{
 			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));

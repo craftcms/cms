@@ -3,9 +3,9 @@
 class DashboardHelper
 {
 	// TODO: Eventually stuff like this should go into a global messaging service.
-	public static function getAlerts($fetch = false)
+	public static function getAlerts()
 	{
-		$blocksUpdateData = Blocks::app()->update->blocksUpdateInfo($fetch);
+		$blocksUpdateData = Blocks::app()->update->getUpdateInfo();
 
 		$alerts = array();
 

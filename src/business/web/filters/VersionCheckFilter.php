@@ -19,7 +19,7 @@ class VersionCheckFilter extends CFilter
 		if (Blocks::app()->controller->id == 'site' && Blocks::app()->controller->action->id == 'error')
 			return true;
 
-		Blocks::app()->update->blocksUpdateInfo(true);
+		Blocks::app()->update->getUpdateInfo();
 		return true;
 	}
 }
