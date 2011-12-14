@@ -9,7 +9,7 @@
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 12/07/2011 12:54:38 PM
+ Date: 12/14/2011 11:29:11 AM
 */
 
 SET NAMES utf8;
@@ -335,7 +335,7 @@ CREATE TABLE `blx_entryversions` (
   `entry_id` int(11) NOT NULL,
   `num` int(11) NOT NULL,
   `label` text COLLATE utf8_unicode_ci NOT NULL,
-  `active` tinyint(1) NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT '0',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -471,6 +471,36 @@ CREATE TRIGGER `auditinfoinsert_pluginsettings` BEFORE INSERT ON `blx_pluginsett
 delimiter ;
 delimiter ;;
 CREATE TRIGGER `auditinfoupdate_pluginsettings` BEFORE UPDATE ON `blx_pluginsettings` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_routes`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_routes`;
+CREATE TABLE `blx_routes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `site_id` int(11) NOT NULL,
+  `route` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
+  `template` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+  `display_order` int(11) NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  KEY `routes_sites_fk` (`site_id`) USING BTREE,
+  CONSTRAINT `routes_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_routes` BEFORE INSERT ON `blx_routes` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_routes` BEFORE UPDATE ON `blx_routes` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;

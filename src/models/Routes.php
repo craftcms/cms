@@ -1,30 +1,26 @@
 <?php
 
 /**
- * This is the model class for table "{{sites}}".
+ * This is the model class for table "{{routes}}".
  *
- * The followings are the available columns in table '{{sites}}':
+ * The followings are the available columns in table '{{routes}}':
  * @property integer $id
- * @property string $handle
- * @property string $label
- * @property string $url
+ * @property integer $site_id
+ * @property string $route
+ * @property string $template
+ * @property integer $display_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Routes[] $routes
- * @property Sections[] $sections
- * @property SiteBlocks[] $siteBlocks
- * @property SiteSettings[] $siteSettings
- * @property UploadFolders[] $uploadFolders
- * @property UserGroups[] $userGroups
+ * @property Sites $site
  */
-class Sites extends CActiveRecord
+class Routes extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Sites the static model class
+	 * @return Routes the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -36,7 +32,7 @@ class Sites extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{sites}}';
+		return '{{routes}}';
 	}
 
 	/**
@@ -47,15 +43,14 @@ class Sites extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('handle, label, url', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('handle', 'length', 'max'=>150),
-			array('label', 'length', 'max'=>500),
-			array('url', 'length', 'max'=>250),
+			array('site_id, route, template, display_order', 'required'),
+			array('site_id, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('route', 'length', 'max'=>500),
+			array('template', 'length', 'max'=>250),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, handle, label, url, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, site_id, route, template, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -67,12 +62,7 @@ class Sites extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'routes' => array(self::HAS_MANY, 'Routes', 'site_id'),
-			'sections' => array(self::HAS_MANY, 'Sections', 'site_id'),
-			'siteBlocks' => array(self::HAS_MANY, 'SiteBlocks', 'site_id'),
-			'siteSettings' => array(self::HAS_MANY, 'SiteSettings', 'site_id'),
-			'uploadFolders' => array(self::HAS_MANY, 'UploadFolders', 'site_id'),
-			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'site_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}
 
@@ -83,9 +73,10 @@ class Sites extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'handle' => 'Handle',
-			'label' => 'Label',
-			'url' => 'Url',
+			'site_id' => 'Site',
+			'route' => 'Route',
+			'template' => 'Template',
+			'display_order' => 'Display Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -104,9 +95,10 @@ class Sites extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('handle',$this->handle,true);
-		$criteria->compare('label',$this->label,true);
-		$criteria->compare('url',$this->url,true);
+		$criteria->compare('site_id',$this->site_id);
+		$criteria->compare('route',$this->route,true);
+		$criteria->compare('template',$this->template,true);
+		$criteria->compare('display_order',$this->display_order);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

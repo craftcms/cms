@@ -12,7 +12,7 @@ INSERT INTO `blx_sites` (`handle`,`label`,`url`) VALUES ('default', 'Default Sit
 /*
 	Data for the table `info`
 */
-INSERT INTO `blx_info` (`edition`,`version`,`build`) VALUES ('Standard','0.1', '1');
+INSERT INTO `blx_info` (`edition`,`version`,`build`) VALUES ('Standard', '0.1', '1');
 
 /*
 	Data for the table `plugins`
@@ -31,15 +31,15 @@ INSERT INTO `blx_users` (`user_name`,`email`,`first_name`,`last_name`,`password`
 /*
 	Data for the table `userwidgets`
 */
-INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('1', 'UpdateWidget', '1');
+INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('1', 'UpdatesWidget', '1');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('1', 'RecentActivityWidget', '2');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('1', 'ContentWidget', '3');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('1', 'FeedWidget', '4');
-INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('2', 'UpdateWidget', '1');
+INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('2', 'UpdatesWidget', '1');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('2', 'RecentActivityWidget', '2');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('2', 'ContentWidget', '3');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('2', 'FeedWidget', '4');
-INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('3', 'UpdateWidget', '1');
+INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('3', 'UpdatesWidget', '1');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('3', 'RecentActivityWidget', '2');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('3', 'ContentWidget', '3');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`display_order`) VALUES ('3', 'FeedWidget', '4');
