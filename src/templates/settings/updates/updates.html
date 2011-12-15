@@ -1,4 +1,4 @@
-{% if cp.updates %}
+{% if cp.updates('y') %}
 
 	<form method="post" action="{{ url.base }}/update?h=all"><input id="update-all" class="btn big" type="submit" value="Update All"></form>
 	<h3>The following updates are available:</h3>
