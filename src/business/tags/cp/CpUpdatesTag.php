@@ -6,8 +6,12 @@ class CpUpdatesTag extends Tag
 
 	public function init($forceRefresh)
 	{
-		$blocksUpdateData = Blocks::app()->update->getUpdateInfo($forceRefresh);
 		$this->_updates = array();
+
+		if (!$forceRefresh && !Blocks::app()->update->isUpdateInfoCached())
+			return;
+
+		$blocksUpdateData = Blocks::app()->update->getUpdateInfo($forceRefresh);
 
 		// blocks first.
 		if ($blocksUpdateData->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateData->newerReleases) > 0)
