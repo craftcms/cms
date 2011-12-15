@@ -47,11 +47,14 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 				$updateInfo->licenseStatus = LicenseKeyStatus::MissingKey;
 			else
 			{
-				// get the update info from the cache if it's there
-				$updateInfo = Blocks::app()->fileCache->get('updateInfo');
+				if (!$forceRefresh)
+				{
+					// get the update info from the cache if it's there
+					$updateInfo = Blocks::app()->fileCache->get('updateInfo');
+				}
 
 				// fetch it if it wasn't cached, or if we're forcing a refresh
-				if ($updateInfo === false || $forceRefresh)
+				if ($forceRefresh || $updateInfo === false)
 				{
 					$updateInfo = $this->check();
 
