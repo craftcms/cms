@@ -47,7 +47,7 @@ class CpTag extends Tag
 			return false;
 
 		$updateInfo = Blocks::app()->update->getUpdateInfo();
-		return $updateInfo->criticalUpdateAvailable();
+		return $updateInfo->criticalUpdateAvailable;
 	}
 
 	public function updateInfoCached()

@@ -92,8 +92,7 @@ body.sidebar-layout #sidebar .tree a.sel { color: #fff; text-shadow: 0 1px 1px #
 body.sidebar-layout #sidebar .tree a.sel .icon { background-image: url(../images/sidebar_icons_sel.png); }
 
 body.sidebar-layout #sidebar .tree a.has-badge { padding-right: 35px; }
-body.sidebar-layout #sidebar .tree a.has-badge .badge { display: block; float: right; margin: 5px -24px 0 0; border: 1px solid #2d98db; border-radius: 7px; padding: 0 3px; min-width: 6px; height: 12px; font-size: 10px; line-height: 12px; text-align: center; color: #2d98db; }
-body.sidebar-layout #sidebar .tree a.has-badge.sel .badge { border-color: #fff; color: #fff; -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.5); }
+body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5px -24px 0 0; }
 
 
 /*-- footer --*/
@@ -101,10 +100,14 @@ body.sidebar-layout #sidebar .tree a.has-badge.sel .badge { border-color: #fff; 
 
 
 /* ----------------------------------------
-/*  Basic structures
+/*  Basic stuff
 /* ----------------------------------------*/
 
 .clear { display: block; clear: both; height: 0; }
+
+.badge { display: block; margin: 5px -24px 0 0; border: 1px solid #2d98db; border-radius: 7px; padding: 0 3px; min-width: 6px; height: 12px; font-size: 10px; line-height: 12px; text-align: center; color: #2d98db; }
+.badge.alert { border-color: #e14545; color: #e14545; }
+.sel .badge { border-color: #fff; color: #fff; -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.5); }
 
 .var { display: inline-block; margin: 0 2px; border: 1px solid #808080; border-radius: 10px; padding: 0 7px 1px; line-height: 15px; }
 .var:first-child { margin-left: 0; }
