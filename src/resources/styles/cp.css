@@ -105,7 +105,7 @@ body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5p
 
 .clear { display: block; clear: both; height: 0; }
 
-.badge { display: block; margin: 5px -24px 0 0; border: 1px solid #2d98db; border-radius: 7px; padding: 0 3px; min-width: 6px; height: 12px; font-size: 10px; line-height: 12px; text-align: center; color: #2d98db; }
+.badge { display: block; margin: 5px -24px 0 0; border: 1px solid #2d98db; border-radius: 7px; padding: 0 4px; min-width: 6px; height: 12px; font-size: 10px; line-height: 12px; text-align: center; color: #2d98db; text-transform: uppercase; }
 .badge.alert { border-color: #e14545; color: #e14545; }
 .sel .badge { border-color: #fff; color: #fff; -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.5), 0 1px 1px rgba(0,0,0,0.5); }
 
