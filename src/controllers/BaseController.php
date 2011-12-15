@@ -5,12 +5,6 @@ class BaseController extends CController
 	private $_widgetStack = array();
 	private $_defaultTemplateTags;
 
-	public function filterVersionCheck($filterChain)
-	{
-		$filter = new VersionCheckFilter();
-		$filter->filter($filterChain);
-	}
-
 	public function filterHttps($filterChain)
 	{
 		$filter = new HttpsFilter();
@@ -20,7 +14,6 @@ class BaseController extends CController
 	public function filters()
 	{
 		return array(
-			'VersionCheck',
 			//'Https',
 		);
 	}
