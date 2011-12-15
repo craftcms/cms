@@ -73,9 +73,31 @@ window.Update = Base.extend({
 
 var updatesUrl = baseUrl+'/settings/updates/updates';
 $('#updates').load(updatesUrl, function() {
+	var $sidebarLink = $('#sb-updates'),
+		$sidebarBadge = $sidebarLink.find('span.badge'),
+		$updatesContainer = $('#updates'),
+		$updates = $updatesContainer.find('.update'),
+		totalUpdates = $updates.length;
+
+	// update the sidebar badge
+	if (totalUpdates)
+	{
+		// create the badge if it doesn't exist
+		if (!$sidebarBadge.length)
+			$sidebarBadge = $(document.createElement('span')).addClass('badge').appendTo($sidebarLink);
+
+		$sidebarBadge.html(totalUpdates);
+	}
+	else
+	{
+		// delete the badge if it exists
+		$sidebarBadge.remove();
+	}
+
+	// fade in the updates
 	$('#checking').fadeOut();
-	$('#updates').fadeIn(function() {
-		$('.update', this).each(function(i) {
+	$updatesContainer.fadeIn(function() {
+		$updates.each(function(i) {
 			var update = new Update(this, i);
 		});
 	});
