@@ -79,7 +79,7 @@ blx.CP =
 		else
 			visibleFooterHeight = 0;
 
-		var sidebarHeight = blx.windowHeight - this.navHeight - visibleFooterHeight - 40;
+		var sidebarHeight = blx.windowHeight - this.sidebarTop - visibleFooterHeight - 40;
 		this.dom.$sidebar.css('maxHeight', sidebarHeight);
 	}
 };
@@ -87,6 +87,7 @@ blx.CP =
 
 blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
 blx.CP.footerHeight = blx.CP.dom.$footer.outerHeight();
+blx.CP.sidebarTop = parseInt(blx.CP.dom.$sidebar.css('top'));
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
 $(window).on('resizeHeight.cp', $.proxy(blx.CP, 'onWindowResizeHeight'));

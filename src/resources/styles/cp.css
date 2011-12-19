@@ -80,7 +80,7 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 
 /*-- sidebar layout --*/
 body.sidebar-layout #main { margin-left: 240px; }
-body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; width: 200px; padding: 20px; overflow: auto; }
+body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; width: 199px; padding: 20px; overflow: auto; }
 body.sidebar-layout #sidebar .search { margin-bottom: 15px; }
 body.sidebar-layout #sidebar .pane { margin-bottom: 20px; }
 body.sidebar-layout #sidebar .pane:last-child { margin-bottom: 0; }
@@ -96,7 +96,7 @@ body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5p
 
 
 /*-- footer --*/
-#footer { border-top: 1px dotted #ccc; padding: 10px; font-size: 11px; text-align: center; color: #999; }
+#footer { border-top: 1px solid #e5e5e5; padding: 10px; font-size: 11px; text-align: center; color: #999; }
 
 
 /* ----------------------------------------
@@ -116,14 +116,26 @@ body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5p
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { border: 1px solid #ccc; border-radius: 3px; -webkit-box-shadow: 0 1px 1px #e5e5e5; overflow: hidden; background: #fff; }
-.pane .head { position: relative; border-radius: 2px 2px 0 0; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#f3f3f3)); -webkit-box-shadow: inset 0 1px 0 #fff; }
+.pane { border: 1px solid #ccc; border-radius: 4px; -webkit-box-shadow: 0 1px 1px #e5e5e5; overflow: hidden; background: #fff; }
+.pane .head { position: relative; border-radius: 3px 3px 0 0; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#f3f3f3)); -webkit-box-shadow: inset 0 1px 0 #fff; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head.secondary { border-radius: 0; border-top: 1px solid #ccc; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
-.pane .body { position: relative; padding: 10px 20px; border-top: 1px solid #ccc; border-radius: 0 0 2px 2px; }
-.pane.bodyless .head { border-radius: 2px; }
-.pane.headless .body { border-top: none; border-radius: 2px; }
+.pane .body { position: relative; padding: 10px 20px; border-top: 1px solid #ccc; }
+.pane.bodyless .head { border-radius: 3px; }
+.pane.headless .body { border-top: none; border-radius: 3px; }
+
+.grid { margin-left: -20px;  }
+.grid .col { float: left; }
+.grid .col .col-inner { margin-left: 20px; }
+
+.grid-2col .col { width: 50%; }
+.grid-3col .col { width: 33.33%; }
+.grid-3col .col:last-child { width: 33.34%; }
+.grid-4col .col { width: 25%; }
+.grid-5col .col { width: 20%; }
+.grid-6col .col { width: 16.67%; }
+.grid-6col .col:last-child { width: 16.65%; }
 
 /* ----------------------------------------
 /*  Toolbar
