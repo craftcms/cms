@@ -95,10 +95,6 @@ body.sidebar-layout #sidebar .tree a.has-badge { padding-right: 35px; }
 body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5px -24px 0 0; }
 
 
-/*-- footer --*/
-#footer { border-top: 1px solid #e5e5e5; padding: 10px; font-size: 11px; text-align: center; color: #999; }
-
-
 /* ----------------------------------------
 /*  Basic stuff
 /* ----------------------------------------*/

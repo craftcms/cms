@@ -43,12 +43,10 @@ blx.CP =
 {
 	hasSidebar: $(document.body).hasClass('sidebar-layout'),
 	navHeight: null,
-	footerHeight: null,
 
 	dom:
 	{
 		$nav: $('#nav'),
-		$footer: $('#footer'),
 		$sidebar: $('#sidebar'),
 		$body: $('#body'),
 		$main: $('#main')
@@ -57,7 +55,7 @@ blx.CP =
 	onWindowResizeHeight: function()
 	{
 		// set the min #main height
-		var minMainHeight = blx.windowHeight - this.navHeight - this.footerHeight - 40;
+		var minMainHeight = blx.windowHeight - this.navHeight - 40;
 		this.dom.$main.css('minHeight', minMainHeight);
 
 		if (this.hasSidebar)
@@ -72,21 +70,13 @@ blx.CP =
 
 	setSidebarHeight: function()
 	{
-		// is the footer visible?
-		var footerScrollOffset = this.dom.$footer.offset().top - blx.getBodyScrollTop();
-		if (footerScrollOffset < blx.windowHeight)
-			visibleFooterHeight = blx.windowHeight - footerScrollOffset;
-		else
-			visibleFooterHeight = 0;
-
-		var sidebarHeight = blx.windowHeight - this.sidebarTop - visibleFooterHeight - 40;
+		var sidebarHeight = blx.windowHeight - this.sidebarTop - 40;
 		this.dom.$sidebar.css('maxHeight', sidebarHeight);
 	}
 };
 
 
 blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
-blx.CP.footerHeight = blx.CP.dom.$footer.outerHeight();
 blx.CP.sidebarTop = parseInt(blx.CP.dom.$sidebar.css('top'));
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
