@@ -10,23 +10,23 @@ class UpdatesWidget extends Widget
 		if (!Blocks::app()->update->isUpdateInfoCached())
 			return false;
 
-		$blocksUpdateData = Blocks::app()->update->getUpdateInfo();
+		$updateInfo = Blocks::app()->update->getUpdateInfo();
 		$updates = '';
 
 		// Blocks first
-		if ($blocksUpdateData->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable)
+		if ($updateInfo->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
 			$updates .= '<tr>
-							<td>Blocks '.$blocksUpdateData->latestVersion.'.'.$blocksUpdateData->latestBuild.'</td>'.'
+							<td>Blocks '.$updateInfo->latestVersion.'.'.$updateInfo->latestBuild.'</td>'.'
 							<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
 							<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=Blocks"><input id="update" class="btn" type="submit" value="Update"></form></td>
 						</tr>';
 		}
 
 		// Plugins next
-		if ($blocksUpdateData->plugins !== null && count($blocksUpdateData->plugins) > 0)
+		if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
 		{
-			foreach ($blocksUpdateData->plugins as $plugin)
+			foreach ($updateInfo->plugins as $plugin)
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
