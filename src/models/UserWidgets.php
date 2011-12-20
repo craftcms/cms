@@ -7,7 +7,7 @@
  * @property integer $id
  * @property integer $user_id
  * @property string $type
- * @property integer $display_order
+ * @property integer $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -20,7 +20,7 @@ class UserWidgets extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Userwidgets the static model class
+	 * @return UserWidgets the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -43,13 +43,13 @@ class UserWidgets extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_id, type, display_order', 'required'),
-			array('user_id, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('user_id, type, sort_order', 'required'),
+			array('user_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('type', 'length', 'max'=>150),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, user_id, type, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_id, type, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -75,7 +75,7 @@ class UserWidgets extends CActiveRecord
 			'id' => 'ID',
 			'user_id' => 'User',
 			'type' => 'Type',
-			'display_order' => 'Display Order',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -96,7 +96,7 @@ class UserWidgets extends CActiveRecord
 		$criteria->compare('id',$this->id);
 		$criteria->compare('user_id',$this->user_id);
 		$criteria->compare('type',$this->type,true);
-		$criteria->compare('display_order',$this->display_order);
+		$criteria->compare('sort_order',$this->sort_order);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

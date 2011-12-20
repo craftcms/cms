@@ -1,27 +1,20 @@
 <?php
 
 /**
- * This is the model class for table "{{uploadfolders}}".
+ * This is the model class for table "{{licensekeys}}".
  *
- * The followings are the available columns in table '{{uploadfolders}}':
+ * The followings are the available columns in table '{{licensekeys}}':
  * @property integer $id
- * @property integer $site_id
- * @property string $name
- * @property string $relative_path
- * @property integer $include_subfolders
+ * @property string $key
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
- *
- * The followings are the available model relations:
- * @property Assets[] $assets
- * @property Sites $site
  */
-class UploadFolders extends CActiveRecord
+class LicenseKeys extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return UploadFolders the static model class
+	 * @return LicenseKeys the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -33,7 +26,7 @@ class UploadFolders extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{uploadfolders}}';
+		return '{{licensekeys}}';
 	}
 
 	/**
@@ -44,14 +37,13 @@ class UploadFolders extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('site_id, name', 'required'),
-			array('site_id, include_subfolders, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('name', 'length', 'max'=>200),
-			array('relative_path', 'length', 'max'=>500),
+			array('key', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, site_id, name, relative_path, include_subfolders, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, key, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -63,8 +55,6 @@ class UploadFolders extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'assets' => array(self::HAS_MANY, 'Assets', 'upload_folder_id'),
-			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}
 
@@ -75,10 +65,7 @@ class UploadFolders extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'site_id' => 'Site',
-			'name' => 'Name',
-			'relative_path' => 'Relative Path',
-			'include_subfolders' => 'Include Subfolders',
+			'key' => 'Key',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -97,10 +84,7 @@ class UploadFolders extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('site_id',$this->site_id);
-		$criteria->compare('name',$this->name,true);
-		$criteria->compare('relative_path',$this->relative_path,true);
-		$criteria->compare('include_subfolders',$this->include_subfolders);
+		$criteria->compare('key',$this->key,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
