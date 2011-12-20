@@ -8,7 +8,7 @@
  * @property integer $site_id
  * @property string $route
  * @property string $template
- * @property integer $display_order
+ * @property integer $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -43,14 +43,14 @@ class Routes extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('site_id, route, template, display_order', 'required'),
-			array('site_id, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('site_id, route, template, sort_order', 'required'),
+			array('site_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('route', 'length', 'max'=>500),
 			array('template', 'length', 'max'=>250),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, site_id, route, template, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, site_id, route, template, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -76,7 +76,7 @@ class Routes extends CActiveRecord
 			'site_id' => 'Site',
 			'route' => 'Route',
 			'template' => 'Template',
-			'display_order' => 'Display Order',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -98,7 +98,7 @@ class Routes extends CActiveRecord
 		$criteria->compare('site_id',$this->site_id);
 		$criteria->compare('route',$this->route,true);
 		$criteria->compare('template',$this->template,true);
-		$criteria->compare('display_order',$this->display_order);
+		$criteria->compare('sort_order',$this->sort_order);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

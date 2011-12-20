@@ -44,7 +44,7 @@ class EntryVersions extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('entry_id, num, label, active', 'required'),
+			array('entry_id, num, label', 'required'),
 			array('entry_id, num, active, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().

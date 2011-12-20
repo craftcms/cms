@@ -7,7 +7,7 @@
  * @property integer $id
  * @property string $edition
  * @property string $version
- * @property string $build
+ * @property integer $build
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid

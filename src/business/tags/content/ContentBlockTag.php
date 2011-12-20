@@ -32,9 +32,9 @@ class ContentBlockTag extends Tag
 		return (bool) $this->_val->required;
 	}
 
-	public function displayOrder()
+	public function sortOrder()
 	{
-		return $this->_val->display_order;
+		return $this->_val->sort_order;
 	}
 
 	public function section()

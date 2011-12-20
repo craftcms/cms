@@ -12,6 +12,7 @@
  * @property string $url_format
  * @property integer $max_entries
  * @property string $template
+ * @property integer $sortable
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -51,14 +52,14 @@ class Sections extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('site_id, handle, label', 'required'),
-			array('parent_id, site_id, max_entries, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('parent_id, site_id, max_entries, sortable, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('handle', 'length', 'max'=>150),
 			array('label, template', 'length', 'max'=>500),
 			array('url_format', 'length', 'max'=>250),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, parent_id, site_id, handle, label, url_format, max_entries, template, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, parent_id, site_id, handle, label, url_format, max_entries, template, sortable, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -92,6 +93,7 @@ class Sections extends CActiveRecord
 			'url_format' => 'Url Format',
 			'max_entries' => 'Max Entries',
 			'template' => 'Template',
+			'sortable' => 'Sortable',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -117,6 +119,7 @@ class Sections extends CActiveRecord
 		$criteria->compare('url_format',$this->url_format,true);
 		$criteria->compare('max_entries',$this->max_entries);
 		$criteria->compare('template',$this->template,true);
+		$criteria->compare('sortable',$this->sortable);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

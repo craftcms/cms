@@ -9,7 +9,7 @@
  * @property string $type
  * @property string $handle
  * @property string $label
- * @property integer $display_order
+ * @property integer $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -45,14 +45,14 @@ class AssetBlocks extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('type, handle, label, display_order', 'required'),
-			array('asset_id, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('type, handle, label, sort_order', 'required'),
+			array('asset_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('type, handle', 'length', 'max'=>150),
 			array('label', 'length', 'max'=>500),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, asset_id, type, handle, label, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, asset_id, type, handle, label, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -65,7 +65,7 @@ class AssetBlocks extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'asset' => array(self::BELONGS_TO, 'Assets', 'asset_id'),
-			'assetBlockSettings' => array(self::HAS_MANY, 'AssetBlockSettings', 'asset_block_id'),
+			'assetBlockSettings' => array(self::HAS_MANY, 'assetBlockSettings', 'asset_block_id'),
 		);
 	}
 
@@ -80,7 +80,7 @@ class AssetBlocks extends CActiveRecord
 			'type' => 'Type',
 			'handle' => 'Handle',
 			'label' => 'Label',
-			'display_order' => 'Display Order',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -103,7 +103,7 @@ class AssetBlocks extends CActiveRecord
 		$criteria->compare('type',$this->type,true);
 		$criteria->compare('handle',$this->handle,true);
 		$criteria->compare('label',$this->label,true);
-		$criteria->compare('display_order',$this->display_order);
+		$criteria->compare('sort_order',$this->sort_order);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

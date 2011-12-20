@@ -11,7 +11,7 @@
  * @property string $type
  * @property string $instructions
  * @property integer $required
- * @property integer $display_order
+ * @property integer $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -49,15 +49,15 @@ class EntryBlocks extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('section_id, handle, label, type, display_order', 'required'),
-			array('section_id, required, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('section_id, handle, label, type, sort_order', 'required'),
+			array('section_id, required, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('handle, type', 'length', 'max'=>150),
 			array('label', 'length', 'max'=>500),
 			array('uid', 'length', 'max'=>36),
 			array('instructions', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, section_id, handle, label, type, instructions, required, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, section_id, handle, label, type, instructions, required, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -72,7 +72,7 @@ class EntryBlocks extends CActiveRecord
 			'section' => array(self::BELONGS_TO, 'Sections', 'section_id'),
 			'entryBlockSettings' => array(self::HAS_MANY, 'EntryBlockSettings', 'block_id'),
 			'entryVersions' => array(self::MANY_MANY, 'EntryVersions', '{{entrydata}}(block_id, version_id)'),
-			'entrydrafts' => array(self::MANY_MANY, 'EntryDrafts', '{{entrydraftdata}}(block_id, draft_id)'),
+			'entryDrafts' => array(self::MANY_MANY, 'EntryDrafts', '{{entrydraftdata}}(block_id, draft_id)'),
 		);
 	}
 
@@ -89,7 +89,7 @@ class EntryBlocks extends CActiveRecord
 			'type' => 'Type',
 			'instructions' => 'Instructions',
 			'required' => 'Required',
-			'display_order' => 'Display Order',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -114,7 +114,7 @@ class EntryBlocks extends CActiveRecord
 		$criteria->compare('type',$this->type,true);
 		$criteria->compare('instructions',$this->instructions,true);
 		$criteria->compare('required',$this->required);
-		$criteria->compare('display_order',$this->display_order);
+		$criteria->compare('sort_order',$this->sort_order);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
