@@ -6,6 +6,7 @@ var Dashboard = Base.extend({
 	dom: {},
 	widgets: {},
 	cols: [],
+	totalWidgets: 0,
 	showingSidebar: false,
 
 	constructor: function()
@@ -24,7 +25,8 @@ var Dashboard = Base.extend({
 
 			if (elem)
 			{
-				this.widgets[widgetId] = new Dashboard.Widget(elem);;
+				this.widgets[widgetId] = new Dashboard.Widget(elem);
+				this.totalWidgets++;
 			}
 		}
 
@@ -71,6 +73,9 @@ var Dashboard = Base.extend({
 	setCols: function(animate, widgetOffsets)
 	{
 		var totalCols = Math.floor((this.dom.$container.width() + Dashboard.gutterWidth) / (Dashboard.minColWidth + Dashboard.gutterWidth));
+
+		if (totalCols > this.totalWidgets)
+			totalCols = this.totalWidgets;
 
 		if (this.totalCols !== (this.totalCols = totalCols))
 		{
