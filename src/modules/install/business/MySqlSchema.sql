@@ -9,7 +9,7 @@
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 12/19/2011 16:02:02 PM
+ Date: 12/21/2011 09:47:48 AM
 */
 
 SET NAMES utf8;
@@ -25,7 +25,7 @@ CREATE TABLE `blx_assetblocks` (
   `type` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `handle` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
-  `sort_order` int(11) NOT NULL,
+  `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -116,22 +116,21 @@ CREATE TABLE `blx_entries` (
   `full_uri` varchar(1000) COLLATE utf8_unicode_ci DEFAULT NULL,
   `post_date` int(11) DEFAULT NULL,
   `expiry_date` int(11) DEFAULT NULL,
-  `sort_order` int(11) DEFAULT NULL,
-  `enabled` tinyint(1) NOT NULL DEFAULT '1',
-  `archived` tinyint(1) NOT NULL DEFAULT '0',
+  `sort_order` int(11) unsigned DEFAULT NULL,
+  `enabled` tinyint(1) unsigned NOT NULL DEFAULT '1',
+  `archived` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `section_id_parent_id_sort_order_unique` (`section_id`,`parent_id`,`sort_order`) USING BTREE,
-  KEY `section_id_index` (`section_id`) USING BTREE,
-  KEY `author_id_index` (`author_id`) USING BTREE,
   KEY `entries_entries_fk` (`parent_id`) USING BTREE,
   KEY `entries_sections_fk` (`section_id`),
-  CONSTRAINT `entries_sections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  KEY `entries_users_fk` (`author_id`) USING BTREE,
+  CONSTRAINT `entries_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `entries_entries_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `entries_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `entries_sections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_entries` BEFORE INSERT ON `blx_entries` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -156,8 +155,8 @@ CREATE TABLE `blx_entryblocks` (
   `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
   `type` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `instructions` text COLLATE utf8_unicode_ci,
-  `required` tinyint(1) DEFAULT '0',
-  `sort_order` int(11) NOT NULL,
+  `required` tinyint(1) unsigned DEFAULT '0',
+  `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -210,103 +209,12 @@ CREATE TRIGGER `auditinfoupdate_entryblocksettings` BEFORE UPDATE ON `blx_entryb
 delimiter ;
 
 -- ----------------------------
---  Table structure for `blx_entrydata`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_entrydata`;
-CREATE TABLE `blx_entrydata` (
-  `version_id` int(11) NOT NULL,
-  `block_id` int(11) NOT NULL,
-  `value` text COLLATE utf8_unicode_ci NOT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`version_id`,`block_id`),
-  UNIQUE KEY `version_id_block_id_unique` (`version_id`,`block_id`) USING BTREE,
-  KEY `entrydata_entryversions_fk` (`version_id`) USING BTREE,
-  KEY `entrydata_entryblocks_fk` (`block_id`) USING BTREE,
-  CONSTRAINT `entrydata_entryblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_entryblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `entrydata_entryversions_fk` FOREIGN KEY (`version_id`) REFERENCES `blx_entryversions` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_entrydata` BEFORE INSERT ON `blx_entrydata` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_entrydata` BEFORE UPDATE ON `blx_entrydata` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_entrydraftdata`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_entrydraftdata`;
-CREATE TABLE `blx_entrydraftdata` (
-  `draft_id` int(11) NOT NULL,
-  `block_id` int(11) NOT NULL,
-  `value` text COLLATE utf8_unicode_ci NOT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`draft_id`,`block_id`),
-  UNIQUE KEY `draft_id_block_id_unique` (`draft_id`,`block_id`) USING BTREE,
-  KEY `entrydraftdata_entrydrafts_fk` (`draft_id`) USING BTREE,
-  KEY `entrydraftdata_entryblocks_fk` (`block_id`) USING BTREE,
-  CONSTRAINT `entrydraftdata_entryblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_entryblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `entrydraftdata_entrydrafts_fk` FOREIGN KEY (`draft_id`) REFERENCES `blx_entrydrafts` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_entrydraftdata` BEFORE INSERT ON `blx_entrydraftdata` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_entrydraftdata` BEFORE UPDATE ON `blx_entrydraftdata` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
---  Table structure for `blx_entrydrafts`
--- ----------------------------
-DROP TABLE IF EXISTS `blx_entrydrafts`;
-CREATE TABLE `blx_entrydrafts` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `entry_id` int(11) NOT NULL,
-  `author_id` int(11) NOT NULL,
-  `label` text COLLATE utf8_unicode_ci NOT NULL,
-  `date_created` int(11) DEFAULT NULL,
-  `date_updated` int(11) DEFAULT NULL,
-  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  KEY `entry_id_index` (`entry_id`) USING BTREE,
-  KEY `author_id_index` (`author_id`) USING BTREE,
-  CONSTRAINT `entrydrafts_entries_fk` FOREIGN KEY (`entry_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `entrydrafts_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
-delimiter ;;
-CREATE TRIGGER `auditinfoinsert_entrydrafts` BEFORE INSERT ON `blx_entrydrafts` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
-	NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.uid = UUID();
- ;;
-delimiter ;
-delimiter ;;
-CREATE TRIGGER `auditinfoupdate_entrydrafts` BEFORE UPDATE ON `blx_entrydrafts` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
-	NEW.date_created = OLD.date_created;
- ;;
-delimiter ;
-
--- ----------------------------
 --  Table structure for `blx_entrytitles`
 -- ----------------------------
 DROP TABLE IF EXISTS `blx_entrytitles`;
 CREATE TABLE `blx_entrytitles` (
   `entry_id` int(11) NOT NULL AUTO_INCREMENT,
-  `language_code` varchar(16) COLLATE utf8_unicode_ci NOT NULL,
+  `language_code` varchar(5) COLLATE utf8_unicode_ci NOT NULL,
   `title` text COLLATE utf8_unicode_ci NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
@@ -314,6 +222,7 @@ CREATE TABLE `blx_entrytitles` (
   PRIMARY KEY (`entry_id`,`language_code`),
   UNIQUE KEY `entry_id_language_code_unique` (`entry_id`,`language_code`) USING BTREE,
   KEY `entrytitles_entries_fk` (`entry_id`) USING BTREE,
+  KEY `entrytitles_languages_fk` (`language_code`),
   CONSTRAINT `entrytitles_entries_fk` FOREIGN KEY (`entry_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
@@ -335,17 +244,18 @@ DROP TABLE IF EXISTS `blx_entryversions`;
 CREATE TABLE `blx_entryversions` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `entry_id` int(11) NOT NULL,
-  `num` int(11) NOT NULL,
+  `num` int(11) unsigned NOT NULL,
   `label` text COLLATE utf8_unicode_ci NOT NULL,
-  `active` tinyint(1) NOT NULL DEFAULT '0',
+  `active` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `draft` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `entry_id_num_unique` (`entry_id`,`num`) USING BTREE,
-  UNIQUE KEY `entry_id_is_live_unique` (`entry_id`,`active`) USING BTREE,
-  KEY `entry_id_index` (`entry_id`) USING BTREE,
+  UNIQUE KEY `entry_id_active_unique` (`entry_id`,`active`) USING BTREE,
+  KEY `entryversions_entry_fk` (`entry_id`) USING BTREE,
   CONSTRAINT `entryversions_entries_fk` FOREIGN KEY (`entry_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
@@ -394,7 +304,7 @@ CREATE TABLE `blx_info` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `edition` enum('Pro','Standard','Personal') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'Standard',
   `version` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
-  `build` int(11) NOT NULL,
+  `build` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -409,6 +319,30 @@ CREATE TRIGGER `auditinfoinsert_info` BEFORE INSERT ON `blx_info` FOR EACH ROW S
 delimiter ;
 delimiter ;;
 CREATE TRIGGER `auditinfoupdate_info` BEFORE UPDATE ON `blx_info` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.date_created = OLD.date_created;
+ ;;
+delimiter ;
+
+-- ----------------------------
+--  Table structure for `blx_languages`
+-- ----------------------------
+DROP TABLE IF EXISTS `blx_languages`;
+CREATE TABLE `blx_languages` (
+  `language_code` varchar(5) COLLATE utf8_unicode_ci NOT NULL,
+  `date_created` int(11) DEFAULT NULL,
+  `date_updated` int(11) DEFAULT NULL,
+  `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
+  PRIMARY KEY (`language_code`),
+  UNIQUE KEY `language_code_unique` (`language_code`) USING BTREE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
+delimiter ;;
+CREATE TRIGGER `auditinfoinsert_languages` BEFORE INSERT ON `blx_languages` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
+	NEW.uid = UUID();
+ ;;
+delimiter ;
+delimiter ;;
+CREATE TRIGGER `auditinfoupdate_languages` BEFORE UPDATE ON `blx_languages` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;
@@ -456,7 +390,7 @@ DROP TABLE IF EXISTS `blx_plugins`;
 CREATE TABLE `blx_plugins` (
   `name` varchar(50) COLLATE utf8_unicode_ci NOT NULL,
   `version` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
-  `enabled` tinyint(1) NOT NULL DEFAULT '1',
+  `enabled` tinyint(1) unsigned NOT NULL DEFAULT '1',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -512,7 +446,7 @@ CREATE TABLE `blx_routes` (
   `site_id` int(11) NOT NULL,
   `route` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
   `template` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
-  `sort_order` int(11) NOT NULL,
+  `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -544,19 +478,19 @@ CREATE TABLE `blx_sections` (
   `handle` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
   `url_format` varchar(250) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `max_entries` int(11) DEFAULT NULL,
+  `max_entries` int(11) unsigned DEFAULT NULL,
   `template` varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `sortable` tinyint(1) NOT NULL DEFAULT '0',
+  `sortable` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `handle_unique` (`handle`) USING BTREE,
-  KEY `parent_id_index` (`parent_id`) USING BTREE,
-  KEY `site_id_index` (`site_id`) USING BTREE,
-  CONSTRAINT `sections_sections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `sections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY `sections_sections_fk` (`parent_id`) USING BTREE,
+  KEY `sections_sites_fk` (`site_id`) USING BTREE,
+  CONSTRAINT `sections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `sections_sections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_sections` BEFORE INSERT ON `blx_sections` FOR EACH ROW SET NEW.date_created = UTC_TIMESTAMP(),
@@ -581,7 +515,7 @@ CREATE TABLE `blx_siteblocks` (
   `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
   `type` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `instructions` text COLLATE utf8_unicode_ci,
-  `sort_order` int(11) NOT NULL,
+  `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -617,7 +551,7 @@ CREATE TABLE `blx_siteblocksettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`,`block_id`) USING BTREE,
+  UNIQUE KEY `key_block_id_unique` (`key`,`block_id`) USING BTREE,
   KEY `siteblocksettings_siteblocks_fk` (`block_id`) USING BTREE,
   CONSTRAINT `siteblocksettings_siteblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_siteblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -675,7 +609,7 @@ CREATE TABLE `blx_sitesettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`,`site_id`) USING BTREE,
+  UNIQUE KEY `key_site_id_unique` (`key`,`site_id`) USING BTREE,
   KEY `sitesettings_sites_fk` (`site_id`) USING BTREE,
   CONSTRAINT `sitesettings_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -727,7 +661,7 @@ CREATE TABLE `blx_uploadfolders` (
   `site_id` int(11) NOT NULL,
   `name` varchar(200) COLLATE utf8_unicode_ci NOT NULL,
   `relative_path` varchar(500) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `include_subfolders` tinyint(1) DEFAULT '0',
+  `include_subfolders` tinyint(1) unsigned DEFAULT '0',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -760,7 +694,7 @@ CREATE TABLE `blx_userblocks` (
   `handle` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `label` varchar(500) COLLATE utf8_unicode_ci NOT NULL,
   `instructions` text COLLATE utf8_unicode_ci,
-  `display_order` int(11) NOT NULL,
+  `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -796,7 +730,7 @@ CREATE TABLE `blx_userblocksettings` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`,`block_id`) USING BTREE,
+  UNIQUE KEY `key_block_id_unique` (`key`,`block_id`) USING BTREE,
   KEY `userblocksettings_userblocks_fk` (`block_id`) USING BTREE,
   CONSTRAINT `userblocksettings_userblocks_fk` FOREIGN KEY (`block_id`) REFERENCES `blx_userblocks` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -819,7 +753,7 @@ DROP TABLE IF EXISTS `blx_usergrouppermissions`;
 CREATE TABLE `blx_usergrouppermissions` (
   `user_group_id` int(11) NOT NULL,
   `key` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `value` tinyint(1) DEFAULT '0',
+  `value` tinyint(1) unsigned DEFAULT '0',
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
@@ -848,19 +782,19 @@ CREATE TABLE `blx_usergroups` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `group_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `site_id` int(11) NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  `site_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `group_id_user_id_site_id_unique` (`user_id`,`group_id`,`site_id`),
   KEY `usergroups_users_fk` (`user_id`) USING BTREE,
   KEY `usergroups_groups_fk` (`group_id`) USING BTREE,
   KEY `usergroups_sites_fk` (`site_id`),
-  CONSTRAINT `usergroups_groups_fk` FOREIGN KEY (`group_id`) REFERENCES `blx_groups` (`id`),
-  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`),
-  CONSTRAINT `usergroups_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`)
+  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `usergroups_groups_fk` FOREIGN KEY (`group_id`) REFERENCES `blx_groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `usergroups_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_usergroups` BEFORE INSERT ON `blx_usergroups` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -914,13 +848,13 @@ CREATE TABLE `blx_userwidgets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
   `type` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
-  `sort_order` int(11) NOT NULL,
+  `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  KEY `userwidgets_users_idx` (`user_id`) USING BTREE,
+  KEY `userwidgets_users_fk` (`user_id`) USING BTREE,
   CONSTRAINT `userwidgets_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
@@ -950,7 +884,7 @@ CREATE TABLE `blx_userwidgetsettings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
   UNIQUE KEY `widget_id_key_unique` (`widget_id`,`key`) USING BTREE,
-  KEY `userwidgetsettings_userwidgets_idx` (`widget_id`) USING BTREE,
+  KEY `userwidgetsettings_userwidgets_fk` (`widget_id`) USING BTREE,
   CONSTRAINT `userwidgetsettings_userwidgets_fk` FOREIGN KEY (`widget_id`) REFERENCES `blx_userwidgets` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
