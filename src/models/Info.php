@@ -7,7 +7,7 @@
  * @property integer $id
  * @property string $edition
  * @property string $version
- * @property integer $build
+ * @property string $build
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -40,9 +40,10 @@ class Info extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('version, build', 'required'),
-			array('build, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('edition', 'length', 'max'=>8),
 			array('version', 'length', 'max'=>15),
+			array('build', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -91,7 +92,7 @@ class Info extends CActiveRecord
 		$criteria->compare('id',$this->id);
 		$criteria->compare('edition',$this->edition,true);
 		$criteria->compare('version',$this->version,true);
-		$criteria->compare('build',$this->build);
+		$criteria->compare('build',$this->build,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

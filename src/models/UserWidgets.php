@@ -7,7 +7,7 @@
  * @property integer $id
  * @property integer $user_id
  * @property string $type
- * @property integer $sort_order
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -44,8 +44,9 @@ class UserWidgets extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('user_id, type, sort_order', 'required'),
-			array('user_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('user_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('type', 'length', 'max'=>150),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -96,7 +97,7 @@ class UserWidgets extends CActiveRecord
 		$criteria->compare('id',$this->id);
 		$criteria->compare('user_id',$this->user_id);
 		$criteria->compare('type',$this->type,true);
-		$criteria->compare('sort_order',$this->sort_order);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

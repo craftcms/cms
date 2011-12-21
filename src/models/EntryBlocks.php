@@ -11,7 +11,7 @@
  * @property string $type
  * @property string $instructions
  * @property integer $required
- * @property integer $sort_order
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -19,10 +19,8 @@
  * The followings are the available model relations:
  * @property Sections $section
  * @property EntryBlockSettings[] $entryBlockSettings
- * @property EntryVersions[] $entryVersions
- * @property EntryDrafts[] $entryDrafts
  */
-class EntryBlocks extends CActiveRecord
+class Entryblocks extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
@@ -50,9 +48,10 @@ class EntryBlocks extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('section_id, handle, label, type, sort_order', 'required'),
-			array('section_id, required, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('section_id, required, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('handle, type', 'length', 'max'=>150),
 			array('label', 'length', 'max'=>500),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			array('instructions', 'safe'),
 			// The following rule is used by search().
@@ -71,8 +70,6 @@ class EntryBlocks extends CActiveRecord
 		return array(
 			'section' => array(self::BELONGS_TO, 'Sections', 'section_id'),
 			'entryBlockSettings' => array(self::HAS_MANY, 'EntryBlockSettings', 'block_id'),
-			'entryVersions' => array(self::MANY_MANY, 'EntryVersions', '{{entrydata}}(block_id, version_id)'),
-			'entryDrafts' => array(self::MANY_MANY, 'EntryDrafts', '{{entrydraftdata}}(block_id, draft_id)'),
 		);
 	}
 
@@ -114,7 +111,7 @@ class EntryBlocks extends CActiveRecord
 		$criteria->compare('type',$this->type,true);
 		$criteria->compare('instructions',$this->instructions,true);
 		$criteria->compare('required',$this->required);
-		$criteria->compare('sort_order',$this->sort_order);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

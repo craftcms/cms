@@ -10,7 +10,7 @@
  * @property string $handle
  * @property string $label
  * @property string $instructions
- * @property integer $display_order
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -19,7 +19,7 @@
  * @property Users $user
  * @property UserBlockSettings[] $userBlockSettings
  */
-class Userblocks extends CActiveRecord
+class UserBlocks extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
@@ -46,15 +46,16 @@ class Userblocks extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_id, type, handle, label, display_order', 'required'),
-			array('user_id, display_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('user_id, type, handle, label, sort_order', 'required'),
+			array('user_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('type, handle', 'length', 'max'=>150),
 			array('label', 'length', 'max'=>500),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			array('instructions', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, user_id, type, handle, label, instructions, display_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_id, type, handle, label, instructions, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -83,7 +84,7 @@ class Userblocks extends CActiveRecord
 			'handle' => 'Handle',
 			'label' => 'Label',
 			'instructions' => 'Instructions',
-			'display_order' => 'Display Order',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -107,7 +108,7 @@ class Userblocks extends CActiveRecord
 		$criteria->compare('handle',$this->handle,true);
 		$criteria->compare('label',$this->label,true);
 		$criteria->compare('instructions',$this->instructions,true);
-		$criteria->compare('display_order',$this->display_order);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
