@@ -1,21 +1,19 @@
 <?php
 
 /**
- * This is the model class for table "{{entrydraftdata}}".
+ * This is the model class for table "{{languages}}".
  *
- * The followings are the available columns in table '{{entrydraftdata}}':
- * @property integer $draft_id
- * @property integer $block_id
- * @property string $value
+ * The followings are the available columns in table '{{languages}}':
+ * @property string $language_code
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  */
-class EntryDraftData extends CActiveRecord
+class Languages extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return EntryDraftData the static model class
+	 * @return Languages the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -27,7 +25,7 @@ class EntryDraftData extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{entrydraftdata}}';
+		return '{{languages}}';
 	}
 
 	/**
@@ -38,12 +36,13 @@ class EntryDraftData extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('draft_id, block_id, value', 'required'),
-			array('draft_id, block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('language_code', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('language_code', 'length', 'max'=>5),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('draft_id, block_id, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('language_code, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -64,9 +63,7 @@ class EntryDraftData extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'draft_id' => 'Draft',
-			'block_id' => 'Block',
-			'value' => 'Value',
+			'language_code' => 'Language Code',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -84,9 +81,7 @@ class EntryDraftData extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('draft_id',$this->draft_id);
-		$criteria->compare('block_id',$this->block_id);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('language_code',$this->language_code,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

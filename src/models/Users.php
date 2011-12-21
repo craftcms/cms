@@ -17,7 +17,6 @@
  *
  * The followings are the available model relations:
  * @property Entries[] $entries
- * @property EntryDrafts[] $entryDrafts
  * @property UserBlocks[] $userBlocks
  * @property UserGroups[] $userGroups
  * @property UserWidgets[] $userWidgets
@@ -70,7 +69,6 @@ class Users extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'entries' => array(self::HAS_MANY, 'Entries', 'author_id'),
-			'entryDrafts' => array(self::HAS_MANY, 'EntryDrafts', 'author_id'),
 			'userBlocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
 			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
 			'userWidgets' => array(self::HAS_MANY, 'UserWidgets', 'user_id'),

@@ -6,15 +6,15 @@
  * The followings are the available columns in table '{{entryversions}}':
  * @property integer $id
  * @property integer $entry_id
- * @property integer $num
+ * @property string $num
  * @property string $label
  * @property integer $active
+ * @property integer $draft
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property EntryBlocks[] $entryBlocks
  * @property Entries $entry
  */
 class EntryVersions extends CActiveRecord
@@ -45,11 +45,12 @@ class EntryVersions extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('entry_id, num, label', 'required'),
-			array('entry_id, num, active, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('entry_id, active, draft, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('num', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, entry_id, num, label, active, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, entry_id, num, label, active, draft, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -61,7 +62,6 @@ class EntryVersions extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'entryBlocks' => array(self::MANY_MANY, 'EntryBlocks', '{{entrydata}}(version_id, block_id)'),
 			'entry' => array(self::BELONGS_TO, 'Entries', 'entry_id'),
 		);
 	}
@@ -77,6 +77,7 @@ class EntryVersions extends CActiveRecord
 			'num' => 'Num',
 			'label' => 'Label',
 			'active' => 'Active',
+			'draft' => 'Draft',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -96,9 +97,10 @@ class EntryVersions extends CActiveRecord
 
 		$criteria->compare('id',$this->id);
 		$criteria->compare('entry_id',$this->entry_id);
-		$criteria->compare('num',$this->num);
+		$criteria->compare('num',$this->num,true);
 		$criteria->compare('label',$this->label,true);
 		$criteria->compare('active',$this->active);
+		$criteria->compare('draft',$this->draft);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

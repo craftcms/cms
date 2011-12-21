@@ -7,15 +7,15 @@
  * @property integer $id
  * @property integer $group_id
  * @property integer $user_id
+ * @property integer $site_id
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
- * @property integer $site_id
  *
  * The followings are the available model relations:
  * @property UserGroupPermissions[] $userGroupPermissions
- * @property Groups $group
  * @property Sites $site
+ * @property Groups $group
  * @property Users $user
  */
 class UserGroups extends CActiveRecord
@@ -46,11 +46,11 @@ class UserGroups extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('group_id, user_id, site_id', 'required'),
-			array('group_id, user_id, date_created, date_updated, site_id', 'numerical', 'integerOnly'=>true),
+			array('group_id, user_id, site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, group_id, user_id, date_created, date_updated, uid, site_id', 'safe', 'on'=>'search'),
+			array('id, group_id, user_id, site_id, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -63,8 +63,8 @@ class UserGroups extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'userGroupPermissions' => array(self::HAS_MANY, 'UserGroupPermissions', 'user_group_id'),
-			'group' => array(self::BELONGS_TO, 'Groups', 'group_id'),
 			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
+			'group' => array(self::BELONGS_TO, 'Groups', 'group_id'),
 			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
 		);
 	}
@@ -78,10 +78,10 @@ class UserGroups extends CActiveRecord
 			'id' => 'ID',
 			'group_id' => 'Group',
 			'user_id' => 'User',
+			'site_id' => 'Site',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
-			'site_id' => 'Site',
 		);
 	}
 
@@ -99,10 +99,10 @@ class UserGroups extends CActiveRecord
 		$criteria->compare('id',$this->id);
 		$criteria->compare('group_id',$this->group_id);
 		$criteria->compare('user_id',$this->user_id);
+		$criteria->compare('site_id',$this->site_id);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
-		$criteria->compare('site_id',$this->site_id);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

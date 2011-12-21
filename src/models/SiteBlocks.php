@@ -10,7 +10,7 @@
  * @property string $label
  * @property string $type
  * @property string $instructions
- * @property integer $sort_order
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -47,9 +47,10 @@ class SiteBlocks extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('site_id, handle, label, type, sort_order', 'required'),
-			array('site_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('handle, type', 'length', 'max'=>150),
 			array('label', 'length', 'max'=>500),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			array('instructions', 'safe'),
 			// The following rule is used by search().
@@ -107,7 +108,7 @@ class SiteBlocks extends CActiveRecord
 		$criteria->compare('label',$this->label,true);
 		$criteria->compare('type',$this->type,true);
 		$criteria->compare('instructions',$this->instructions,true);
-		$criteria->compare('sort_order',$this->sort_order);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

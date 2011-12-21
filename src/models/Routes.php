@@ -8,7 +8,7 @@
  * @property integer $site_id
  * @property string $route
  * @property string $template
- * @property integer $sort_order
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -44,9 +44,10 @@ class Routes extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('site_id, route, template, sort_order', 'required'),
-			array('site_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('route', 'length', 'max'=>500),
 			array('template', 'length', 'max'=>250),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -98,7 +99,7 @@ class Routes extends CActiveRecord
 		$criteria->compare('site_id',$this->site_id);
 		$criteria->compare('route',$this->route,true);
 		$criteria->compare('template',$this->template,true);
-		$criteria->compare('sort_order',$this->sort_order);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

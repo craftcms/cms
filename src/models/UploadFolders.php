@@ -21,7 +21,7 @@ class UploadFolders extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return UploadFolders the static model class
+	 * @return Uploadfolders the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{

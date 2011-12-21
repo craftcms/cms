@@ -9,7 +9,7 @@
  * @property string $type
  * @property string $handle
  * @property string $label
- * @property integer $sort_order
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -46,9 +46,10 @@ class AssetBlocks extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('type, handle, label, sort_order', 'required'),
-			array('asset_id, sort_order, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('asset_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('type, handle', 'length', 'max'=>150),
 			array('label', 'length', 'max'=>500),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -65,7 +66,7 @@ class AssetBlocks extends CActiveRecord
 		// class name for the relations automatically generated below.
 		return array(
 			'asset' => array(self::BELONGS_TO, 'Assets', 'asset_id'),
-			'assetBlockSettings' => array(self::HAS_MANY, 'assetBlockSettings', 'asset_block_id'),
+			'assetBlockSettings' => array(self::HAS_MANY, 'AssetBlockSettings', 'asset_block_id'),
 		);
 	}
 
@@ -103,7 +104,7 @@ class AssetBlocks extends CActiveRecord
 		$criteria->compare('type',$this->type,true);
 		$criteria->compare('handle',$this->handle,true);
 		$criteria->compare('label',$this->label,true);
-		$criteria->compare('sort_order',$this->sort_order);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

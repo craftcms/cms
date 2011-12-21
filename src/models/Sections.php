@@ -10,7 +10,7 @@
  * @property string $handle
  * @property string $label
  * @property string $url_format
- * @property integer $max_entries
+ * @property string $max_entries
  * @property string $template
  * @property integer $sortable
  * @property integer $date_created
@@ -20,9 +20,9 @@
  * The followings are the available model relations:
  * @property Entries[] $entries
  * @property EntryBlocks[] $entryBlocks
+ * @property Sites $site
  * @property Sections $parent
  * @property Sections[] $sections
- * @property Sites $site
  */
 class Sections extends CActiveRecord
 {
@@ -52,10 +52,11 @@ class Sections extends CActiveRecord
 		// will receive user inputs.
 		return array(
 			array('site_id, handle, label', 'required'),
-			array('parent_id, site_id, max_entries, sortable, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('parent_id, site_id, sortable, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('handle', 'length', 'max'=>150),
 			array('label, template', 'length', 'max'=>500),
 			array('url_format', 'length', 'max'=>250),
+			array('max_entries', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
@@ -73,9 +74,9 @@ class Sections extends CActiveRecord
 		return array(
 			'entries' => array(self::HAS_MANY, 'Entries', 'section_id'),
 			'entryBlocks' => array(self::HAS_MANY, 'EntryBlocks', 'section_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 			'parent' => array(self::BELONGS_TO, 'Sections', 'parent_id'),
 			'sections' => array(self::HAS_MANY, 'Sections', 'parent_id'),
-			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}
 
@@ -117,7 +118,7 @@ class Sections extends CActiveRecord
 		$criteria->compare('handle',$this->handle,true);
 		$criteria->compare('label',$this->label,true);
 		$criteria->compare('url_format',$this->url_format,true);
-		$criteria->compare('max_entries',$this->max_entries);
+		$criteria->compare('max_entries',$this->max_entries,true);
 		$criteria->compare('template',$this->template,true);
 		$criteria->compare('sortable',$this->sortable);
 		$criteria->compare('date_created',$this->date_created);

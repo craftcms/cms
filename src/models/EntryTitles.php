@@ -43,7 +43,7 @@ class EntryTitles extends CActiveRecord
 		return array(
 			array('language_code, title', 'required'),
 			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('language_code', 'length', 'max'=>16),
+			array('language_code', 'length', 'max'=>5),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
