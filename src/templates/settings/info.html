@@ -4,30 +4,22 @@
 {% region bodyClass %}info{% /region %}
 
 {% region main %}
-	<div class="fields">
-		<table class="zebra">
-			<tr>
-				<th>Blocks Version</th>
-				<td>{{ blocks.fullVersion }}</td>
-			</tr>
-			<tr>
-				<th>Blocks License Keys</th>
-				<td>
-					<ul>
-						{% foreach blocks.config.licenseKeys as key %}
-							<li>{{ key }}</li>
-						{% /foreach %}
-					</ul>
-				</td>
-			</tr>
-			<tr>
-				<th>P&T Account</th>
-				<td>brandon@pixelandtonic.com</td>
-			</tr>
-			<tr>
-				<th>System Status</th>
-				<td><!--#include virtual="/-includes/switch.shtml"--></td>
-			</tr>
-		</table>
+	<img id="logo" src="{{ cp.resource('app/images/logo.png') }}">
+
+	<p id="version">{{ blocks.fullVersion }}</p>
+
+	<div id="license-keys" class="pane">
+		<div class="head">
+			<h3>License Keys</h3>
+		</div>
+		<ul class="body">
+			{% foreach blocks.config.licenseKeys as key %}
+				<li>{{ key }}</li>
+			{% /foreach %}
+		</ul>
+	</div>
+	<div class="btn-group">
+		<div class="btn"><span class="icon icon44"></span></div>
+		<div class="btn disabled"><span class="icon icon45"></span></div>
 	</div>
 {% /region %}
