@@ -16,7 +16,7 @@ class BlocksApp extends CWebApplication
 		{
 			$segs = $this->request->pathSegments;
 
-			if (array_shift($segs) == $this->config('resourceTriggerWord'))
+			if (($this->config('resourceTriggerWord')) !== null && (array_shift($segs) == $this->config('resourceTriggerWord')))
 			{
 				$pluginHandle = array_shift($segs);
 
