@@ -493,13 +493,13 @@ CREATE TABLE `blx_sections` (
   CONSTRAINT `sections_sections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
-CREATE TRIGGER `auditinfoinsert_sections` BEFORE INSERT ON `blx_sections` FOR EACH ROW SET NEW.date_created = UTC_TIMESTAMP(),
-	NEW.date_updated = UTC_TIMESTAMP(),
+CREATE TRIGGER `auditinfoinsert_sections` BEFORE INSERT ON `blx_sections` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
+	NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.uid = UUID();
  ;;
 delimiter ;
 delimiter ;;
-CREATE TRIGGER `auditinfoupdate_sections` BEFORE UPDATE ON `blx_sections` FOR EACH ROW SET NEW.date_updated = UTC_TIMESTAMP(),
+CREATE TRIGGER `auditinfoupdate_sections` BEFORE UPDATE ON `blx_sections` FOR EACH ROW SET NEW.date_updated = UNIX_TIMESTAMP(),
 	NEW.date_created = OLD.date_created;
  ;;
 delimiter ;
