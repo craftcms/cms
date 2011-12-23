@@ -1,5 +1,25 @@
 <?php
 require_once(dirname(__FILE__).'/../business/Defines.php');
+require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
+require_once(BLOCKS_BASE_PATH.'config/blocks.php');
+require_once(BLOCKS_BASE_PATH.'config/db.php');
+
+//defined('TEST') || define('TEST', true);
+
+if (!isset($db['port']))
+	$db['port'] = '3306';
+
+if (!isset($db['charset']))
+	$db['charset'] = 'utf8';
+
+if (!isset($db['collation']))
+	$db['collation'] = 'utf8_unicode_ci';
+
+if (!isset($db['type']))
+	$db['type'] = DatabaseType::MySQL;
+
+$db['database'] = $db['database'].'_test';
 
 return CMap::mergeArray(
 	require(dirname(__FILE__) . '/main.php'),
@@ -10,13 +30,21 @@ return CMap::mergeArray(
 			),
 
 			'db' => array(
-				'connectionString'  => 'mysql:host=127.0.0.1;dbname=blocks_test',
+				'connectionString'  => strtolower($db['type'].':host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
+				// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 				'emulatePrepare'    => true,
-				'username'          => 'root',
-				'password'          => 'letmein',
-				'charset'           => 'utf8',
-				'tablePrefix'       => 'blx_',
+				'username'          => $db['user'],
+				'password'          => $db['password'],
+				'charset'           => $db['charset'],
+				'tablePrefix'       => rtrim($db['tablePrefix'], '_').'_',
 			),
+		),
+
+		'params' => array(
+				// this is used in contact page
+				'adminEmail' => 'brad@pixelandtonic.com',
+				'db' => $db,
+				'config' => $blocksConfig,
 		),
 	)
 );
