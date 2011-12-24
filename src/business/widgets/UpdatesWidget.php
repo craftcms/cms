@@ -10,7 +10,7 @@ class UpdatesWidget extends Widget
 		if (!Blocks::app()->update->isUpdateInfoCached())
 			return false;
 
-		$updateInfo = Blocks::app()->update->getUpdateInfo();
+		$updateInfo = Blocks::app()->update->updateInfo;
 		$updates = '';
 
 		// Blocks first
@@ -24,7 +24,7 @@ class UpdatesWidget extends Widget
 		}
 
 		// Plugins next
-		if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
+		if ($updateInfo->plugins !== null && count($blocksUpdateInfo->plugins) > 0)
 		{
 			foreach ($updateInfo->plugins as $plugin)
 			{

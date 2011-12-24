@@ -4,13 +4,13 @@ class CoreUpdater implements IUpdater
 {
 	private $_buildsToUpdate = null;
 	private $_migrationsToRun = null;
-	private $_blocksUpdateData = null;
+	private $_blocksUpdateInfo = null;
 
 	function __construct()
 	{
-		$this->_blocksUpdateData = Blocks::app()->update->getUpdateInfo(true);
+		$this->_blocksUpdateInfo = Blocks::app()->update->getUpdateInfo(true);
 		$this->_migrationsToRun = null;
-		$this->_buildsToUpdate = $this->_blocksUpdateData->newerReleases;
+		$this->_buildsToUpdate = $this->_blocksUpdateInfo->newerReleases;
 	}
 
 	public function checkRequirements()
@@ -43,7 +43,7 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateData->localEdition);
+			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateInfo->localEdition);
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
@@ -88,7 +88,7 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateData['blocksClientEdition']);
+			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateInfo['blocksClientEdition']);
 			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
@@ -195,63 +195,43 @@ class CoreUpdater implements IUpdater
 
 	public function downloadPackage($version, $build, $destinationPath)
 	{
-		$client = new HttpClient(ETEndPoints::DownloadPackage, array(
-			'timeout'       =>  30,
-			'maxredirects'  =>  0
-		));
-
-		$client->setParameterPost(array(
+		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_blocksUpdateData->localEdition,
+			'edition' => $this->_blocksUpdateInfo->localEdition,
 			'type' => CoreReleaseFileType::Patch
-		));
+		);
 
-		$client->setStream($destinationPath);
-
-		$response = $client->request('POST');
-
-		if ($response->isSuccessful())
-			return true;
-		else
-			throw new BlocksException('Error in calling '.ETEndPoints::DownloadPackage.' Response: '.$response->getBody());
+		$et = new ET(ETEndPoints::DownloadPackage, WebRequestType::POST, $params, WebResponseType::Binary, 30);
+		$et->phoneHome();
 	}
 
 	public function validatePackage($version, $build, $destinationPath)
 	{
-		$client = new HttpClient(ETEndPoints::GetCoreReleaseFileMD5, array(
-			'timeout'       =>  30,
-			'maxredirects'  =>  0
-		));
-
-		$client->setParameterGet(array(
+		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_blocksUpdateData->localEdition,
+			'edition' => $this->_blocksUpdateInfo->localEdition,
 			'type' => CoreReleaseFileType::Patch
-		));
+		);
 
-		$response = $client->request('GET');
+		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5, WebRequestType::GET, $params);
+		$et->phoneHome();
 
-		if ($response->isSuccessful())
-		{
-			$sourceMD5 = $response->getBody();
 
-			if(StringHelper::IsNullOrEmpty($sourceMD5))
-				throw new BlocksException('Error in getting the MD5 hash for the download.');
-		}
-		else
-		{
-			throw new BlocksException('Error in calling '.ETEndPoints::GetCoreReleaseFileMD5.' Response: '.$response->getBody());
-		}
 
-		$localFile = Blocks::app()->file->set($destinationPath, false);
-		$localMD5 = $localFile->generateMD5();
+		//	$sourceMD5 = $response->getBody();
 
-		if($localMD5 === $sourceMD5)
-			return true;
+		//	if(StringHelper::IsNullOrEmpty($sourceMD5))
+		//		throw new BlocksException('Error in getting the MD5 hash for the download.');
 
-		return false;
+//		$localFile = Blocks::app()->file->set($destinationPath, false);
+//		$localMD5 = $localFile->generateMD5();
+
+//		if($localMD5 === $sourceMD5)
+//			return true;
+
+//		return false;
 	}
 
 	public function unpackPackage($downloadPath)

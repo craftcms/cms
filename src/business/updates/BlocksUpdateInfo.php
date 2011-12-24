@@ -1,18 +1,14 @@
 <?php
 
-class BlocksUpdateData
+class BlocksUpdateInfo
 {
 	public $localBuild = null;
 	public $localVersion = null;
-	public $localEdition = null;
 	public $latestVersion = null;
 	public $latestBuild = null;
 	public $criticalUpdateAvailable = null;
 	public $versionUpdateStatus = null;
-	public $licenseKeys = null;
-	public $licenseStatus = null;
 	public $plugins = null;
-	public $requestingDomain = null;
 	public $newerReleases = null;
 
 	function __construct($properties = null)
@@ -22,26 +18,22 @@ class BlocksUpdateData
 
 		$this->localBuild = isset($properties['localBuild']) ? $properties['localBuild'] : null;
 		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
-		$this->localEdition = isset($properties['localEdition']) ? $properties['localEdition'] : null;
 		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
 		$this->latestBuild = isset($properties['latestBuild']) ? $properties['latestBuild'] : null;
 		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
 		$this->versionUpdateStatus = isset($properties['versionUpdateStatus']) ? $properties['versionUpdateStatus'] : null;
-		$this->licenseKeys = isset($properties['licenseKeys']) ? $properties['licenseKeys'] : null;
-		$this->licenseStatus = isset($properties['licenseStatus']) ? $properties['licenseStatus'] : null;
-		$this->requestingDomain = isset($properties['requestingDomain']) ? $properties['requestingDomain'] : null;
 
-		if (isset($properties['newerReleases']))
+		if (isset($properties['newerReleases']) && count($properties['newerReleases']) > 0)
 			foreach ($properties['newerReleases'] as $blocksReleaseData)
-				$this->newerReleases[] = new BlocksNewReleaseUpdateData($blocksReleaseData);;
+				$this->newerReleases[] = new BlocksNewReleaseUpdateInfo($blocksReleaseData);;
 
-		if (isset($properties['plugins']))
+		if (isset($properties['plugins']) && count($properties['plugins']) > 0)
 			foreach ($properties['plugins'] as $pluginData)
 				$this->plugins[$pluginData['handle']] = new PluginUpdateData($pluginData);
 	}
 }
 
-class BlocksNewReleaseUpdateData
+class BlocksNewReleaseUpdateInfo
 {
 	public $version = null;
 	public $build = null;

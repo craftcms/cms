@@ -11,26 +11,26 @@ class CpUpdatesTag extends Tag
 		if (!$forceRefresh && !Blocks::app()->update->isUpdateInfoCached())
 			return;
 
-		$blocksUpdateData = Blocks::app()->update->getUpdateInfo($forceRefresh);
+		$blocksUpdateInfo = Blocks::app()->update->getUpdateInfo($forceRefresh);
 
 		// blocks first.
-		if ($blocksUpdateData->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateData->newerReleases) > 0)
+		if ($blocksUpdateInfo->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo->newerReleases) > 0)
 		{
-			$notes = $this->_generateUpdateNotes($blocksUpdateData->newerReleases, 'Blocks');
+			$notes = $this->_generateUpdateNotes($blocksUpdateInfo->newerReleases, 'Blocks');
 			$this->_updates[] = array(
-				'name' => 'Blocks '.$blocksUpdateData->localEdition,
+				'name' => 'Blocks '.$blocksUpdateInfo->localEdition,
 				'handle' => 'Blocks',
-				'version' => $blocksUpdateData->latestVersion.'.'.$blocksUpdateData->latestBuild,
-				'critical' => $blocksUpdateData->criticalUpdateAvailable,
+				'version' => $blocksUpdateInfo->latestVersion.'.'.$blocksUpdateInfo->latestBuild,
+				'critical' => $blocksUpdateInfo->criticalUpdateAvailable,
 				'notes' => $notes,
 			);
 
 		}
 
 		// plugins second.
-		if ($blocksUpdateData->plugins !== null && count($blocksUpdateData->plugins) > 0)
+		if ($blocksUpdateInfo->plugins !== null && count($blocksUpdateInfo->plugins) > 0)
 		{
-			foreach ($blocksUpdateData->plugins as $plugin)
+			foreach ($blocksUpdateInfo->plugins as $plugin)
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
 				{

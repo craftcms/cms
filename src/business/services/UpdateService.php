@@ -41,10 +41,10 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 	{
 		if (!isset($this->_updateInfo) || $forceRefresh)
 		{
-			$updateInfo = new BlocksUpdateData();
+			$updateInfo = new BlocksUpdateInfo();
 			// no update info if we can't find the license keys.
 			if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
-				$updateInfo->licenseStatus = LicenseKeyStatus::MissingKey;
+				$updateInfo->licenseKeyStatus = LicenseKeyStatus::MissingKey;
 			else
 			{
 				if (!$forceRefresh)
@@ -59,7 +59,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 					$updateInfo = $this->check();
 
 					if ($updateInfo == null)
-						$updateInfo = new BlocksUpdateData();
+						$updateInfo = new BlocksUpdateInfo();
 
 					// cache it and set it to expire in 24 hours (86400 seconds) or 5 seconds if dev mode
 					$expire = Blocks::app()->config('devMode') ? 5 : 86400;
@@ -93,43 +93,19 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 
 	public function check()
 	{
-		$blocksUpdateData = new BlocksUpdateData();
-		$blocksUpdateData->localEdition = Blocks::getEdition();
-		$blocksUpdateData->localBuild = Blocks::getBuild();
-		$blocksUpdateData->localVersion = Blocks::getVersion();
+		$blocksUpdateInfo = new BlocksUpdateInfo();
+		$blocksUpdateInfo->localBuild = Blocks::getBuild();
+		$blocksUpdateInfo->localVersion = Blocks::getVersion();
 
 		$plugins = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
 		foreach ($plugins as $plugin)
-			$blocksUpdateData->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
+			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 
-		$blocksUpdateData->licenseKeys = Blocks::app()->site->getLicenseKeys();
-		$blocksUpdateData->requestingDomain = Blocks::app()->request->getServerName();
+		$et = new ET(ETEndPoints::Check);
+		$et->getPackage()->data = $blocksUpdateInfo;
+		$response = $et->phoneHome();
 
-		try
-		{
-			$client = new HttpClient(ETEndPoints::VersionCheck, array(
-					'timeout'       =>  6,
-					'maxredirects'  =>  0
-					));
-
-			$client->setRawData(CJSON::encode($blocksUpdateData), 'json')->request('POST');
-			$response = $client->request('POST');
-
-			if ($response->isSuccessful())
-			{
-				$responseBody = CJSON::decode($response->getBody());
-				return new BlocksUpdateData($responseBody);
-			}
-			else
-			{
-				Blocks::log('Error in calling '.ETEndPoints::VersionCheck.' Response: '.$response->getBody(), 'warning');
-			}
-		}
-		catch(Exception $e)
-		{
-			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
-		}
-
-		return null;
+		$blocksUpdateInfo = $response == null ? new BlocksUpdateInfo() : new BlocksUpdateInfo($response->data);
+		return $blocksUpdateInfo;
 	}
 }

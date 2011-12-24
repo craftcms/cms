@@ -6,7 +6,7 @@ class ContentTag extends Tag
 
 	function __construct()
 	{
-		$this->_siteId = Blocks::app()->request->getSiteInfo()->id;
+		$this->_siteId = Blocks::app()->site->getCurrentSiteByUrl()->id;
 	}
 
 	function __call($method, $args)

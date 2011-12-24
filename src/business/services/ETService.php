@@ -13,6 +13,11 @@ class ETService extends CApplicationComponent implements IETService
 		
 	}
 
+	public function setLicenseKeyStatus($licenseKeyStatus)
+	{
+		$this->_licenseKeyStatus = $licenseKeyStatus;
+	}
+
 	private function _getLicenseKeyStatus()
 	{
 		$licenseKeys = Blocks::app()->site->getLicenseKeys();
@@ -20,11 +25,18 @@ class ETService extends CApplicationComponent implements IETService
 		if (!$licenseKeys)
 			return LicenseKeyStatus::MissingKey;
 
-		$licenseKeyStatus = Blocks::app()->fileCache->get('licenseKeyStatus');
+		$this->ping();
+		return $this->_licenseKeyStatus;
+		//$licenseKeyStatus = Blocks::app()->fileCache->get('licenseKeyStatus');
 
-		if (!$licenseKeyStatus)
-			return $licenseKeyStatus;
+		//if (!$licenseKeyStatus)
+		//	return $licenseKeyStatus;
+	}
 
-		
+	public function ping()
+	{
+		$et = new ET(ETEndPoints::Ping);
+
+		$response = $et->phoneHome();
 	}
 }

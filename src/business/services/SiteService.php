@@ -2,6 +2,8 @@
 
 class SiteService extends CApplicationComponent implements ISiteService
 {
+	private $_currentSite = null;
+
 	public function getLicenseKeys()
 	{
 		if (isset(Blocks::app()->params['config']['licenseKeys']))
@@ -34,15 +36,50 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return null;
 	}
 
-	public function getSiteByUrl()
+	public function getCurrentSiteByUrl()
 	{
-		$serverName = Blocks::app()->request->getServerName();
-		$httpServerName = 'http://'.$serverName;
-		$httpsServerName = 'https://'.$serverName;
+		if ($this->_currentSite == null)
+		{
+			$serverName = Blocks::app()->request->getServerName();
+			$httpServerName = 'http://'.$serverName;
+			$httpsServerName = 'https://'.$serverName;
+
+			$site = Sites::model()->find(
+				'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
+			);
+
+			$this->_currentSite = $site;
+		}
+
+		return $this->_currentSite;
+	}
+
+	public function getSiteByUrl($url)
+	{
+		$url = ltrim('http://', $url);
+		$url = ltrim('https://', $url);
+
+		$httpServerName = 'http://'.$url;
+		$httpsServerName = 'https://'.$url;
 
 		$site = Sites::model()->find(
-			'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
+			'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $url, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
 		);
+
+		return $site;
+	}
+
+	public function getSiteById($id)
+	{
+		$site = Sites::model()->findByPk($id);
+		return $site;
+	}
+
+	public function getSiteByHandle($handle)
+	{
+		$site = Sites::model()->findByAttributes(array(
+			'handle' => $handle,
+		));
 
 		return $site;
 	}

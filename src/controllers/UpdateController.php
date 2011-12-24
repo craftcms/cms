@@ -3,33 +3,32 @@
 class UpdateController extends BaseController
 {
 	// authenticate requests to this
-
-	private $_blocksUpdateData;
+	private $_blocksUpdateInfo;
 
 	public function actionGetUpdateInfo($h)
 	{
-		$returnUpdateData = array();
-		$blocksUpdateData = Blocks::app()->update->getUpdateInfo();
-		if ($blocksUpdateData == null)
+		$returnUpdateInfo = array();
+		$blocksUpdateInfo = Blocks::app()->update->updateInfo;
+		if ($blocksUpdateInfo == null)
 		{
 			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
 			return;
 		}
 
-		$this->_blocksUpdateData = $blocksUpdateData;
+		$this->_blocksUpdateInfo = $blocksUpdateInfo;
 
 		switch ($h)
 		{
 			case 'all':
 			{
 				// Blocks first.
-				$returnUpdateData[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateData->latestVersion.'.'.$this->_blocksUpdateData->latestBuild);
+				$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo->latestVersion.'.'.$this->_blocksUpdateInfo->latestBuild);
 
 				// Plugins
-				foreach ($this->_blocksUpdateData->plugins as $plugin)
+				foreach ($this->_blocksUpdateInfo->plugins as $plugin)
 				{
 					if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
-						$returnUpdateData[] = array('handle' => $plugin->handle, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+						$returnUpdateInfo[] = array('handle' => $plugin->handle, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
 				}
 
 				break;
@@ -37,17 +36,17 @@ class UpdateController extends BaseController
 
 			case 'Blocks':
 			{
-				$returnUpdateData[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateData->latestVersion.'.'.$this->_blocksUpdateData->latestBuild);
+			$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo->latestVersion.'.'.$this->_blocksUpdateInfo->latestBuild);
 				break;
 			}
 
 			// we assume it's a plugin handle.
 			default:
 			{
-				if ($this->_blocksUpdateData->plugins !== null && count($this->_blocksUpdateData->plugins) > 0)
+				if ($this->_blocksUpdateInfo->plugins !== null && count($this->_blocksUpdateInfo->plugins) > 0)
 				{
-					if (isset($this->_blocksUpdateData->plugins[$h]) && $this->_blocksUpdateData->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($this->_blocksUpdateData->plugins[$h]->newerReleases) > 0)
-						$returnUpdateData[] = array('handle' => $this->_blocksUpdateData->plugins[$h]->handle, 'name' => $this->_blocksUpdateData->plugins[$h]->displayName, 'version' => $this->_blocksUpdateData->plugins[$h]->latestVersion);
+					if (isset($this->_blocksUpdateInfo->plugins[$h]) && $this->_blocksUpdateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($this->_blocksUpdateInfo->plugins[$h]->newerReleases) > 0)
+						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo->plugins[$h]->handle, 'name' => $this->_blocksUpdateInfo->plugins[$h]->displayName, 'version' => $this->_blocksUpdateInfo->plugins[$h]->latestVersion);
 					else
 					{
 						echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
@@ -62,7 +61,7 @@ class UpdateController extends BaseController
 			}
 		}
 
-		echo CJSON::encode(array('updateInfo' => $returnUpdateData));
+		echo CJSON::encode(array('updateInfo' => $returnUpdateInfo));
 		return;
 	}
 

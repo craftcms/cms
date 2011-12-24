@@ -5,7 +5,6 @@ class BlocksHttpRequest extends CHttpRequest
 	private $_requestType;
 	private $_pathSegments = null;
 	private $_extension = null;
-	private $_siteInfo = null;
 
 	public function getPathSegments()
 	{
@@ -34,13 +33,5 @@ class BlocksHttpRequest extends CHttpRequest
 		}
 
 		return $this->_requestType;
-	}
-
-	public function getSiteInfo()
-	{
-		if ($this->_siteInfo == null)
-			$this->_siteInfo = Blocks::app()->site->getSiteByUrl();
-
-		return $this->_siteInfo;
 	}
 }

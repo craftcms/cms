@@ -4,36 +4,13 @@ class SecurityService extends CApplicationComponent implements ISecurityService
 {
 	public function validatePTUserCredentialsAndKey($userName, $password, $licenseKeys, $edition)
 	{
-		try
-		{
-			$client = new HttpClient(ETEndPoints::ValidateKeysByCredentials, array(
-					'timeout'       =>  1,
-					'maxredirects'  =>  0
-					));
+		$params = array(
+			'userName' => $userName,
+			'password' => $password,
+			'licenseKeys' => $licenseKeys,
+			'edition' => $edition
+		);
 
-			$client->setParameterPost(array(
-				'userName' => $userName,
-				'password' => $password,
-				'licenseKeys' => $licenseKeys,
-				'edition' => $edition
-			));
-
-			$response = $client->request('POST');
-
-			if ($response->isSuccessful())
-			{
-				$responseBody = $response->getBody();
-				return $responseBody;
-			}
-			else
-			{
-				Blocks::log('Error in calling '.ETEndPoints::ValidateKeysByCredentials.' Response: '.$response->getBody(), 'warning');
-				return WebServiceReturnStatus::CODE_404;
-			}
-		}
-		catch(Exception $e)
-		{
-			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
-		}
+		$et = new ET(ETEndPoints::ValidateKeysByCredentials, WebRequestType::POST, $params);
 	}
 }

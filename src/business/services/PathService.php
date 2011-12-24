@@ -60,7 +60,7 @@ class PathService extends CApplicationComponent implements IPathService
 
 	public function getSiteTemplatePath()
 	{
-		$siteHandle = Blocks::app()->request->getSiteInfo();
+		$siteHandle = Blocks::app()->site->getCurrentSiteByUrl();
 		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 
 		return $this->normalizeDirectorySeparators($this->getBasePath().'templates/'.$siteHandle.'/');
@@ -85,7 +85,7 @@ class PathService extends CApplicationComponent implements IPathService
 		switch ($requestType)
 		{
 			case RequestType::Site:
-				$siteHandle = Blocks::app()->request->getSiteInfo();
+				$siteHandle = Blocks::app()->site->getCurrentSiteByUrl();
 				$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 				$cachePath = $this->getRuntimePath().'parsed_templates/sites/'.$siteHandle.'/';
 				break;
