@@ -30,6 +30,8 @@ class BlocksController extends BaseController
 					{
 						$this->setRequestController($newController);
 
+						$newController->init();
+
 						if (($parent = $newController->getModule()) === null)
 							$parent = Blocks::app();
 
