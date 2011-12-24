@@ -1,7 +1,6 @@
 <?php
 require_once(dirname(__FILE__).'/../business/Defines.php');
 require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
-require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
 
@@ -37,6 +36,7 @@ return CMap::mergeArray(
 				'password'          => $db['password'],
 				'charset'           => $db['charset'],
 				'tablePrefix'       => rtrim($db['tablePrefix'], '_').'_',
+				'driverMap'         => getDbDriverMap(),
 			),
 		),
 

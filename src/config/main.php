@@ -1,5 +1,6 @@
 <?php
 require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
+require_once(BLOCKS_BASE_PATH.'app/business/db/DriverMap.php');
 require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
@@ -28,6 +29,7 @@ return array(
 	// autoloading model and component classes
 	'import' => array(
 		'application.business.*',
+		'application.business.db.*',
 		'application.business.enums.*',
 		'application.business.exceptions.*',
 		'application.business.services.*',
@@ -86,8 +88,12 @@ return array(
 		),
 
 		'cp' => array(
-					'class' => 'application.business.services.CpService',
-				),
+			'class' => 'application.business.services.CpService',
+		),
+
+		'et' => array(
+			'class' => 'application.business.services.ETService',
+		),
 
 		'membership' => array(
 			'class' => 'application.business.services.MembershipService',
@@ -148,6 +154,8 @@ return array(
 			'password'          => $db['password'],
 			'charset'           => $db['charset'],
 			'tablePrefix'       => rtrim($db['tablePrefix'], '_').'_',
+			'driverMap'         => getDbDriverMap(),
+			'class'             => 'application.business.db.BlocksDbConnection'
 		),
 
 		'assetManager' => array(
