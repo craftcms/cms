@@ -4,6 +4,7 @@ class BlocksUpdateInfo
 {
 	public $localBuild = null;
 	public $localVersion = null;
+	public $localEdition = null;
 	public $latestVersion = null;
 	public $latestBuild = null;
 	public $criticalUpdateAvailable = null;
@@ -18,6 +19,7 @@ class BlocksUpdateInfo
 
 		$this->localBuild = isset($properties['localBuild']) ? $properties['localBuild'] : null;
 		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
+		$this->localEdition = isset($properties['localEdition']) ? $properties['localEdition'] : null;
 		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
 		$this->latestBuild = isset($properties['latestBuild']) ? $properties['latestBuild'] : null;
 		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;

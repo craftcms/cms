@@ -96,6 +96,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		$blocksUpdateInfo = new BlocksUpdateInfo();
 		$blocksUpdateInfo->localBuild = Blocks::getBuild();
 		$blocksUpdateInfo->localVersion = Blocks::getVersion();
+		$blocksUpdateInfo->localEdition = Blocks::getEdition();
 
 		$plugins = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
 		foreach ($plugins as $plugin)
