@@ -9,7 +9,7 @@ class DashboardHelper
 
 		$alerts = array();
 
-		if (Blocks::app()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
+		if (Blocks::app()->site->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
 			$alerts[] = 'The license key you’re using isn’t authorized to run Blocks '.Blocks::getEdition().' on '.Blocks::app()->request->getServerName().'. <a href="">Manage my licenses</a>';
 
 		if ($blocksUpdateInfo->newerReleases !== null && count($blocksUpdateInfo->newerReleases) > 0)

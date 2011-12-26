@@ -3,6 +3,7 @@
 class SiteService extends CApplicationComponent implements ISiteService
 {
 	private $_currentSite = null;
+	private $_licenseKeyStatus = null;
 
 	public function getLicenseKeys()
 	{
@@ -99,5 +100,31 @@ class SiteService extends CApplicationComponent implements ISiteService
 		}
 
 		return null;
+	}
+
+	public function getLicenseKeyStatus()
+	{
+		if (!isset($this->_licenseKeyStatus))
+			$this->_licenseKeyStatus = $this->_getLicenseKeyStatus();
+
+		return $this->_licenseKeyStatus;
+
+	}
+
+	public function setLicenseKeyStatus($licenseKeyStatus)
+	{
+		$this->_licenseKeyStatus = $licenseKeyStatus;
+	}
+
+	private function _getLicenseKeyStatus()
+	{
+		$licenseKeys = Blocks::app()->site->getLicenseKeys();
+
+		if (!$licenseKeys)
+			return LicenseKeyStatus::MissingKey;
+
+		$package = Blocks::app()->et->ping();
+		$this->_licenseKeyStatus = $package->licenseKeyStatus;
+		return $this->_licenseKeyStatus;
 	}
 }

@@ -89,8 +89,8 @@ class ET
 				$test2 = CJSON::decode($test);
 				$package = new ETPackage($test2);
 
-				//Blocks::app()->et->setLicenseKeyStatus($package->licenseKeyStatus);
-
+				// we set the license key status on every request
+				Blocks::app()->site->setLicenseKeyStatus($package->licenseKeyStatus);
 
 				return $package;
 			}
