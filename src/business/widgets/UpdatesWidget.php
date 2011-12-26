@@ -24,7 +24,7 @@ class UpdatesWidget extends Widget
 		}
 
 		// Plugins next
-		if ($updateInfo->plugins !== null && count($blocksUpdateInfo->plugins) > 0)
+		if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
 		{
 			foreach ($updateInfo->plugins as $plugin)
 			{
