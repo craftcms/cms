@@ -18,7 +18,7 @@ class CpUpdatesTag extends Tag
 		{
 			$notes = $this->_generateUpdateNotes($blocksUpdateInfo->newerReleases, 'Blocks');
 			$this->_updates[] = array(
-				'name' => 'Blocks '.$blocksUpdateInfo->localEdition,
+				'name' => 'Blocks '.Blocks::getEdition(),
 				'handle' => 'Blocks',
 				'version' => $blocksUpdateInfo->latestVersion.'.'.$blocksUpdateInfo->latestBuild,
 				'critical' => $blocksUpdateInfo->criticalUpdateAvailable,

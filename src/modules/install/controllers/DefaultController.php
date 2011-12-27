@@ -40,7 +40,6 @@ class DefaultController extends BaseController
 							break;
 
 						// No net connection
-						case WebServiceReturnStatus::CODE_404:
 						case LicenseKeyStatus::Valid:
 							// start the db install
 							$dbType = strtolower(Blocks::app()->config->getDatabaseType());

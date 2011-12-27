@@ -43,10 +43,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		{
 			$updateInfo = new BlocksUpdateInfo();
 			// no update info if we can't find the license keys.
-			//if (($keys = Blocks::app()->site->getLicenseKeys()) == null || empty($keys))
-			//	$updateInfo-> licenseKeyStatus = LicenseKeyStatus::MissingKey;
-			//else
-			//{
+
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
@@ -65,7 +62,6 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 				$expire = Blocks::app()->config('devMode') ? 5 : 86400;
 				Blocks::app()->fileCache->set('updateInfo', $updateInfo, $expire);
 			}
-		//}
 
 			$this->_updateInfo = $updateInfo;
 		}
@@ -96,7 +92,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		$blocksUpdateInfo = new BlocksUpdateInfo();
 		$blocksUpdateInfo->localBuild = Blocks::getBuild();
 		$blocksUpdateInfo->localVersion = Blocks::getVersion();
-		$blocksUpdateInfo->localEdition = Blocks::getEdition();
+		//$blocksUpdateInfo->localEdition = Blocks::getEdition();
 
 		$plugins = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
 		foreach ($plugins as $plugin)

@@ -43,7 +43,7 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateInfo->localEdition);
+			$downloadFilePath = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
@@ -88,7 +88,7 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, $this->_blocksUpdateInfo['blocksClientEdition']);
+			$downloadedFile = Blocks::app()->path->getRuntimePath().UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->getRealPath());
@@ -198,12 +198,16 @@ class CoreUpdater implements IUpdater
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_blocksUpdateInfo->localEdition,
 			'type' => CoreReleaseFileType::Patch
 		);
 
-		$et = new ET(ETEndPoints::DownloadPackage, WebRequestType::POST, $params, WebResponseType::Binary, 30);
-		$et->phoneHome();
+		$et = new ET(ETEndPoints::DownloadPackage, 60);
+		$et->setStreamPath($destinationPath);
+		$et->getPackage()->data = $params;
+		if ($et->phoneHome())
+			return true;
+
+		return false;
 	}
 
 	public function validatePackage($version, $build, $destinationPath)
@@ -211,27 +215,25 @@ class CoreUpdater implements IUpdater
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'edition' => $this->_blocksUpdateInfo->localEdition,
 			'type' => CoreReleaseFileType::Patch
 		);
 
-		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5, WebRequestType::GET, $params);
-		$et->phoneHome();
+		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5);
+		$et->getPackage()->data = $params;
+		$package = $et->phoneHome();
 
+		$sourceMD5 = $package->data;
 
+		if(StringHelper::IsNullOrEmpty($sourceMD5))
+			throw new BlocksException('Error in getting the MD5 hash for the download.');
 
-		//	$sourceMD5 = $response->getBody();
+		$localFile = Blocks::app()->file->set($destinationPath, false);
+		$localMD5 = $localFile->generateMD5();
 
-		//	if(StringHelper::IsNullOrEmpty($sourceMD5))
-		//		throw new BlocksException('Error in getting the MD5 hash for the download.');
+		if($localMD5 === $sourceMD5)
+			return true;
 
-//		$localFile = Blocks::app()->file->set($destinationPath, false);
-//		$localMD5 = $localFile->generateMD5();
-
-//		if($localMD5 === $sourceMD5)
-//			return true;
-
-//		return false;
+		return false;
 	}
 
 	public function unpackPackage($downloadPath)
