@@ -34,14 +34,10 @@
 .widget .settings .buttons { margin-top: 15px; border-top: 1px solid #e0e0e0; padding-top: 15px; -webkit-box-shadow: inset 0 1px #fcfcfc; }
 
 /* updates */
-.widget.updates .update-all { float: right; margin: -41px 0 0 0; }
+.widget.updates .update-all { float: right; margin: -33px 10px 0 0; }
 .widget.updates .body table tbody td { vertical-align: middle; }
 .widget.updates .body table tbody td:first-child { width: 99.99%; }
 .widget.updates .body table tbody td a { font-weight: normal; }
-
-/* content */
-.widget.content .search { margin-bottom: 15px; }
-.widget.content .body .tree a { color: #333; }
 
 /* pageviews */
 .widget.analytics-pageviews .body { background: none; -webkit-box-shadow: none; }

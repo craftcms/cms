@@ -84,9 +84,7 @@ body.sidebar-layout #main { margin-left: 240px; }
 body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; width: 199px; padding: 20px; overflow: auto; }
 body.sidebar-layout #sidebar .search { margin-bottom: 15px; }
 body.sidebar-layout #sidebar .pane .head { line-height: 1; }
-body.sidebar-layout #sidebar .pane .body.tree { padding-left: 20px; }
-body.sidebar-layout #sidebar .pane .body.tree ul { margin-left: 0; }
-body.sidebar-layout #sidebar .tree a { margin: 0 -11px 0 -9999px; padding-left: 9974px; padding-right: 21px; font-weight: normal; color: #666; }
+body.sidebar-layout #sidebar .tree a { margin: 0 -11px 0 -9999px; padding-left: 9999px; padding-right: 11px; font-weight: normal; color: #666; }
 body.sidebar-layout #sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
 body.sidebar-layout #sidebar .tree a.sel { color: #fff; text-shadow: 0 1px 1px #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#2782bb)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 body.sidebar-layout #sidebar .tree a:hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
@@ -126,11 +124,15 @@ body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5p
 .pane .head { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#f3f3f3)); -webkit-box-shadow: inset 0 1px 0 #fff; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
-.pane .body { position: relative; padding: 8px 10px; }
+.pane .body { position: relative; }
+.pane .body .table { width: 100%; }
 
-.pane ul.body { padding: 0; }
-.pane ul.body li { padding: 8px 10px; }
-.pane ul.body li:not(:first-child) { border-top: 1px solid #eee; }
+.pane .body .item,
+.pane .body tr.item > th,
+.pane .body tr.item > td { border-top: 1px solid #eee; padding: 7px 10px; }
+.pane .body tr.item { border-top: none; padding: 0; }
+.pane .body tr.item > th:not(:first-child),
+.pane .body tr.item > td:not(:first-child) { padding-left: 0; }
 
 
 .pane.transparent { background: none; -webkit-box-shadow: none; }
@@ -240,11 +242,11 @@ input.btn.big { padding: 0 12px; }
 
 .tree { }
 .tree h6 { margin-bottom: 2px; font-weight: bold; line-height: 18px; color: #777; }
+.tree ul { margin-left: 10px; }
 .tree ul h6 { margin-top: 2px; }
-.tree ul { margin-left: 12px; }
-.tree ul li { padding-left: 25px; }
-.tree ul li > .toggle { margin: 7px 0 0 -37px; }
-.tree ul li > a { display: block; margin-left: -25px; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
+.tree ul ul { margin-left: 25px; }
+.tree ul li > .toggle { margin: 7px 0 0 -10px; }
+.tree ul li > a { display: block; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
 .tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/sidebar_icons/etc.png) no-repeat 50% 50%; }
 .tree ul li > a span.icon { margin-right: 2px; }
 .tree ul li > a span.status { margin: 7px; }
@@ -262,11 +264,10 @@ input.btn.big { padding: 0 12px; }
 span.icon { display: block; float: left; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }
 
 /* status icons */
-span.status { display: block; float: left; width: 10px; height: 10px; background: url(../images/sidebar_icons/status.png) no-repeat; }
+span.status { display: block; float: left; width: 10px; height: 10px; background: url(../images/sidebar_icons/status.png) no-repeat 0 -30px; }
 span.status.on { background-position: 0 0; }
 span.status.pending { background-position: 0 -10px; }
 span.status.off { background-position: 0 -20px; }
-span.status.disabled { background-position: 0 -30px; }
 
 /* ----------------------------------------
 /*  Tables

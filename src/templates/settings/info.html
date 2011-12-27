@@ -12,11 +12,13 @@
 		<div class="head">
 			<h3>License Keys</h3>
 		</div>
-		<ul class="body">
-			{% foreach blocks.config.licenseKeys as key %}
-				<li>{{ key }}</li>
-			{% /foreach %}
-		</ul>
+		<div class="body">
+			<ul class="flush">
+				{% foreach blocks.config.licenseKeys as key %}
+				<li class="item">{{ key }}</li>
+				{% /foreach %}
+			</ul>
+		</div>
 	</div>
 	<div class="btn-group">
 		<div class="btn"><span class="icon icon44"></span></div>
