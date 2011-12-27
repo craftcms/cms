@@ -243,7 +243,7 @@ input.btn.big { padding: 0 12px; }
 
 .tree { }
 .tree h6 { margin-bottom: 2px; font-weight: bold; line-height: 18px; color: #777; }
-.tree > h6:not(:first-child) { margin-top: 10px; }
+.tree ul h6 { margin-top: 2px; }
 .tree ul { margin-left: 12px; }
 .tree ul li { padding-left: 25px; }
 .tree ul li > .toggle { margin: 7px 0 0 -37px; }
