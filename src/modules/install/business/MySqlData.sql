@@ -33,13 +33,13 @@ INSERT INTO `blx_users` (`user_name`,`email`,`first_name`,`last_name`,`password`
 */
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('1', 'UpdatesWidget', '1');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('1', 'RecentActivityWidget', '2');
-INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('1', 'ContentWidget', '3');
+INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('1', 'SiteMapWidget', '3');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('1', 'FeedWidget', '4');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('2', 'UpdatesWidget', '1');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('2', 'RecentActivityWidget', '2');
-INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('2', 'ContentWidget', '3');
+INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('2', 'SiteMapWidget', '3');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('2', 'FeedWidget', '4');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('3', 'UpdatesWidget', '1');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('3', 'RecentActivityWidget', '2');
-INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('3', 'ContentWidget', '3');
+INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('3', 'SiteMapWidget', '3');
 INSERT INTO `blx_userwidgets` (`user_id`,`type`,`sort_order`) VALUES ('3', 'FeedWidget', '4');

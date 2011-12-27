@@ -1,9 +1,9 @@
 <?php
 
-class ContentWidget extends Widget
+class SiteMapWidget extends Widget
 {
-	public $title = 'Content';
-	public $className = 'content';
+	public $title = 'Site Map';
+	public $className = 'sitemap';
 
 	public function displayBody()
 	{
