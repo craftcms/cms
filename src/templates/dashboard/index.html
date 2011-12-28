@@ -50,14 +50,21 @@
 			{% /foreach %}
 		</div>
 
-		<div id="sidebar">
-			<ul class="widget-handles">
-				{% foreach cp.dashboard.widgets as widget %}
-					<li class="pane {% if !widget.body %}hidden{% /if %}" data-widget-id="widget{{ widget.id }}">
-						<div class="head"><span class="grab"></span>{{ widget.title }}<a class="remove" title="Remove"></a></div>
-					</li>
-				{% /foreach %}
-			</ul>
+		<div id="dashboard-sidebar" class="sidebar">
+			<div class="pane">
+				<div class="head">
+					<h6>Widget Order</h6>
+				</div>
+				<div class="body">
+					<ul class="widget-handles">
+						{% foreach cp.dashboard.widgets as widget %}
+						<li class="item {% if !widget.body %}hidden{% /if %}" data-widget-id="widget{{ widget.id }}">
+							<span class="grab"></span><span class="title">{{ widget.title }}</span><a class="remove" title="Remove"></a>
+						</li>
+						{% /foreach %}
+					</ul>
+				</div>
+			</div>
 		</div>
 	</div>
 {% /region %}

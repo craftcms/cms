@@ -56,11 +56,10 @@
 .widget.analytics-referrers .body table tbody tr.breakdown a { font-weight: normal; }
 
 /*-- sidebar --*/
-#sidebar { position: absolute; top: 36px; right: -230px; border-left: 1px dotted #ccc; width: 180px; padding-left: 20px; }
-ul.widget-handles li { margin-bottom: 10px; cursor: move; cursor: -webkit-grab; }
-ul.widget-handles li.hidden { opacity: 0.5; }
-ul.widget-handles li .head { position: relative; padding: 8px 25px 8px 35px; }
-ul.widget-handles.dragging li { cursor: -webkit-grabbing; }
+.sidebar { position: absolute; top: 36px; right: -240px; padding-top: 0; }
+ul.widget-handles li { position: relative; padding: 7px 25px 7px 35px !important; cursor: move; cursor: -webkit-grab; }
+ul.widget-handles li.hidden .title { color: #ccc; }
+ul.widget-handles.dragging li { cursor: -webkit-grabbing; border: solid #eee; border-width: 1px 0; background: #fff; }
 ul.widget-handles li span.grab { display: block; position: absolute; left: 10px; top: 50%; margin-top: -9px; width: 15px; height: 18px; background: url(../images/grab-handle.png) no-repeat 50% 50%; }
 ul.widget-handles li a.remove { display: block; position: absolute; right: 5px; top: 50%; margin-top: -7px; width: 12px; height: 14px; background: url(../images/close.png) no-repeat 50% 50%; opacity: 0; -webkit-transition: opacity 150ms linear; }
 ul.widget-handles li:hover a.remove { opacity: 0.5; }

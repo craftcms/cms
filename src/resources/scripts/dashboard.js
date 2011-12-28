@@ -14,7 +14,7 @@ var Dashboard = Base.extend({
 		this.dom.$alerts = $(document.getElementById('alerts'));
 		this.dom.$container = $(document.getElementById('widgets'));
 		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
-		this.dom.$sidebar = $(document.getElementById('sidebar'));
+		this.dom.$sidebar = $(document.getElementById('dashboard-sidebar'));
 
 		this.getWidgetHandles();
 
@@ -213,15 +213,15 @@ var Dashboard = Base.extend({
 
 		if (!this.showingSidebar)
 		{
-			var targetContainerMargin = Dashboard.sidebarWidth + Dashboard.gutterWidth,
-				targetSidebarPos = 10;
+			var targetContainerMargin = Dashboard.sidebarWidth,
+				targetSidebarPos = -10;
 
 			this.dom.$sidebarBtn.addClass('sel');
 		}
 		else
 		{
 			var targetContainerMargin = 0,
-				targetSidebarPos = -(Dashboard.sidebarWidth + 11);
+				targetSidebarPos = -(Dashboard.sidebarWidth);
 
 			this.dom.$sidebarBtn.removeClass('sel');
 		}
@@ -263,8 +263,9 @@ var Dashboard = Base.extend({
 	onWidgetRemove: function(event)
 	{
 		// fade out the handle, and then remove it
-		var $handle = $(event.currentTarget).parent().parent(),
+		var $handle = $(event.currentTarget).parent(),
 			handleHeight = $handle.outerHeight();
+
 		$handle.animate({opacity: 0, marginBottom: -handleHeight}, function() {
 			$handle.remove();
 		});
@@ -279,6 +280,7 @@ var Dashboard = Base.extend({
 			widget.$elem.appendTo(this.dom.$container);
 			widget.$elem.css({
 				position: 'absolute',
+				display: 'block',
 				zIndex: 0,
 				top: widgetOffset.top - containerOffset.top,
 				left: widgetOffset.left - containerOffset.left,
@@ -291,7 +293,7 @@ var Dashboard = Base.extend({
 
 		// remove the handle from $widgetHandles and reset the columns
 		var index = $.inArray($handle[0], this.dom.$widgetHandles);
-		this.dom.$widgetHandles.splice(i, 1);
+		this.dom.$widgetHandles.splice(index, 1);
 		this.refreshCols(true);
 	},
 
@@ -323,7 +325,7 @@ var Dashboard = Base.extend({
 {
 	gutterWidth: 20,
 	minColWidth: 300,
-	sidebarWidth: 200
+	sidebarWidth: 240
 });
 
 
