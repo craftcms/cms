@@ -15,6 +15,12 @@ INSERT INTO `blx_sites` (`handle`,`label`,`url`) VALUES ('default', 'Default Sit
 INSERT INTO `blx_info` (`edition`,`version`,`build`) VALUES ('Standard', '0.1', '1');
 
 /*
+	Data for the table `licensekeys`
+*/
+INSERT INTO `blx_licensekeys` (`key`) VALUES ('70573ac9-d16b-498a-8be5-eb196b6bda9b-a89568ed-20a6-46a8-b402-c07721e34d7a');
+INSERT INTO `blx_licensekeys` (`key`) VALUES ('edc591cd-ebb0-4cfd-96fd-2423c2f1c8a3-cbb099c4-fe6a-410d-b58e-dfa520cce28f');
+
+/*
 	Data for the table `plugins`
 */
 INSERT INTO `blx_plugins` (`name`,`version`,`enabled`) VALUES ('BrilliantRetail', '1.0', '1');

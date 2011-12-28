@@ -9,7 +9,7 @@
  Target Server Version : 50509
  File Encoding         : utf-8
 
- Date: 12/21/2011 09:47:48 AM
+ Date: 12/28/2011 11:01:03 AM
 */
 
 SET NAMES utf8;
@@ -128,9 +128,9 @@ CREATE TABLE `blx_entries` (
   KEY `entries_entries_fk` (`parent_id`) USING BTREE,
   KEY `entries_sections_fk` (`section_id`),
   KEY `entries_users_fk` (`author_id`) USING BTREE,
-  CONSTRAINT `entries_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `entries_entries_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_entries` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `entries_sections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `entries_sections_fk` FOREIGN KEY (`section_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `entries_users_fk` FOREIGN KEY (`author_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_entries` BEFORE INSERT ON `blx_entries` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -352,13 +352,11 @@ delimiter ;
 -- ----------------------------
 DROP TABLE IF EXISTS `blx_licensekeys`;
 CREATE TABLE `blx_licensekeys` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
   `key` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_unique` (`id`) USING BTREE,
+  PRIMARY KEY (`key`),
   UNIQUE KEY `key_unique` (`key`) USING BTREE,
   KEY `key` (`key`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
@@ -490,8 +488,8 @@ CREATE TABLE `blx_sections` (
   UNIQUE KEY `handle_unique` (`handle`) USING BTREE,
   KEY `sections_sections_fk` (`parent_id`) USING BTREE,
   KEY `sections_sites_fk` (`site_id`) USING BTREE,
-  CONSTRAINT `sections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `sections_sections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
+  CONSTRAINT `sections_sections_fk` FOREIGN KEY (`parent_id`) REFERENCES `blx_sections` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `sections_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_sections` BEFORE INSERT ON `blx_sections` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -793,8 +791,8 @@ CREATE TABLE `blx_usergroups` (
   KEY `usergroups_users_fk` (`user_id`) USING BTREE,
   KEY `usergroups_groups_fk` (`group_id`) USING BTREE,
   KEY `usergroups_sites_fk` (`site_id`),
-  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `usergroups_groups_fk` FOREIGN KEY (`group_id`) REFERENCES `blx_groups` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT `usergroups_sites_fk` FOREIGN KEY (`site_id`) REFERENCES `blx_sites` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
   CONSTRAINT `usergroups_users_fk` FOREIGN KEY (`user_id`) REFERENCES `blx_users` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
@@ -848,7 +846,7 @@ DROP TABLE IF EXISTS `blx_userwidgets`;
 CREATE TABLE `blx_userwidgets` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `user_id` int(11) NOT NULL,
-  `type` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
+  `class` varchar(150) COLLATE utf8_unicode_ci NOT NULL,
   `sort_order` int(11) unsigned NOT NULL,
   `date_created` int(11) DEFAULT NULL,
   `date_updated` int(11) DEFAULT NULL,

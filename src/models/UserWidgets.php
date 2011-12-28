@@ -6,7 +6,7 @@
  * The followings are the available columns in table '{{userwidgets}}':
  * @property integer $id
  * @property integer $user_id
- * @property string $type
+ * @property string $class
  * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
@@ -43,14 +43,14 @@ class UserWidgets extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_id, type, sort_order', 'required'),
+			array('user_id, class, sort_order', 'required'),
 			array('user_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('type', 'length', 'max'=>150),
+			array('class', 'length', 'max'=>150),
 			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, user_id, type, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_id, class, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -75,7 +75,7 @@ class UserWidgets extends CActiveRecord
 		return array(
 			'id' => 'ID',
 			'user_id' => 'User',
-			'type' => 'Type',
+			'class' => 'Class',
 			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
@@ -96,7 +96,7 @@ class UserWidgets extends CActiveRecord
 
 		$criteria->compare('id',$this->id);
 		$criteria->compare('user_id',$this->user_id);
-		$criteria->compare('type',$this->type,true);
+		$criteria->compare('class',$this->class,true);
 		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);

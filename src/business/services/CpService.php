@@ -18,7 +18,7 @@ class CpService extends CApplicationComponent implements ICpService
 
 		foreach ($userWidgets as $userWidget)
 		{
-			$widgetClass = $userWidget->type;
+			$widgetClass = $userWidget->class;
 			$widgets[] = new $widgetClass($userWidget->id);
 		}
 

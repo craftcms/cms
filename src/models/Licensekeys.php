@@ -4,7 +4,6 @@
  * This is the model class for table "{{licensekeys}}".
  *
  * The followings are the available columns in table '{{licensekeys}}':
- * @property integer $id
  * @property string $key
  * @property integer $date_created
  * @property integer $date_updated
@@ -43,7 +42,7 @@ class LicenseKeys extends CActiveRecord
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, key, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('key, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -64,7 +63,6 @@ class LicenseKeys extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
 			'key' => 'Key',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
@@ -83,7 +81,6 @@ class LicenseKeys extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
 		$criteria->compare('key',$this->key,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
