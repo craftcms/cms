@@ -3,11 +3,6 @@
 /*
  *
  */
-$blocksConfig['licenseKeys'] = null;
-
-/*
- *
- */
 $blocksConfig['devMode'] = false;
 
 /*
