@@ -305,14 +305,14 @@ var Dashboard = Base.extend({
 			// add the alerts w/ opacity:0
 			for (var i = 0; i < data.alerts.length; i++)
 			{
-				var $alert = $('<div class="alert pane"><p>'+data.alerts[i]+'</p></div>');
+				var $alert = $('<div class="alert"><p>'+data.alerts[i]+'</p></div>');
 				this.dom.$alerts.append($alert);
 				$alert.css({opacity: 0});
 				$alert.delay((i+1)*blx.fx.delay).animate({opacity: 1});
 			}
 
 			// make room for them
-			var endHeight = this.dom.$alerts.height();
+			var endHeight = this.dom.$alerts.height() + 20;
 			this.dom.$alerts.height(startHeight);
 			this.dom.$alerts.animate({height: endHeight}, $.proxy(function() {
 				this.dom.$alerts.height('auto');

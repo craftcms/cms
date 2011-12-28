@@ -2,7 +2,6 @@
 
 /* alerts */
 .alert { margin: 0 -1px 20px; padding: 8px 10px; border: 2px solid #e14545; border-radius: 4px; color: #e14545; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#fff5f2)); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
-.alert p:last-child { margin-bottom: 0; }
 
 /* dashboard */
 #dashboard { position: relative; margin: 0 -10px; padding-top: 26px; }

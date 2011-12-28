@@ -4,15 +4,15 @@
 {% region styles %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
 
 {% region main %}
-	<div id="alerts" style="display:none">
+	<div id="alerts">
 		{% if !blocks.config.licenseKeys %}
-			<div class="alert pane">
+			<div class="alert">
 				<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
 			</div>
 		{% /if %}
 
 		{% foreach cp.dashboard.alerts as alert %}
-			<div class="alert pane">
+			<div class="alert">
 				<p>{{ alert }}</p>
 			</div>
 		{% /foreach %}
