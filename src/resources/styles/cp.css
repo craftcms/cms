@@ -85,6 +85,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 
 .sidebar { width: 200px; padding: 20px; }
 .sidebar .search { margin-bottom: 15px; }
+.sidebar .pane { -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.05); }
 .sidebar .pane .head { line-height: 1; }
 .sidebar .tree a { margin: 0 -11px 0 -9999px; padding-left: 9999px; padding-right: 11px; font-weight: normal; color: #666; }
 .sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
