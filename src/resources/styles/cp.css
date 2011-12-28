@@ -112,16 +112,16 @@ body.sidebar-layout #sidebar .tree a.has-badge .badge { float: right; margin: 5p
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin-bottom: 20px; border: 1px solid #ccc; border-radius: 4px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.05); }
+.pane { margin-bottom: 20px; border: 1px solid #bbb; border-radius: 4px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
 
 .pane .head:not(:first-child),
-.pane .body:not(:first-child) { border-top: 1px solid #ccc; }
+.pane .body:not(:first-child) { border-top: 1px solid #bbb; }
 .pane .head:first-child,
 .pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
 .pane .head:last-child,
 .pane .body:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
 
-.pane .head { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#f3f3f3)); -webkit-box-shadow: inset 0 1px 0 #fff; }
+.pane .head { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #fff; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
 .pane .body { position: relative; }
