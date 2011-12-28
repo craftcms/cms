@@ -358,10 +358,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Thumbs and filenames
 /* ----------------------------------------*/
 
-.thumb { display: inline-block; }
-.thumb img { display: block; width: 75px; height: 75px; }
-.filename { margin-top: 4px; max-height: 28px; padding-bottom: 2px; overflow: hidden; text-overflow: ellipsis; line-height: 14px; }
-.filename span { display: inline-block; max-width: 96px; overflow: hidden; white-space: pre; text-overflow: ellipsis; }
+.thumb img { display: block; margin: 0 auto; width: 60px; height: 60px; }
+.filename { margin-top: 5px; height: 14px; line-height: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 /* ----------------------------------------
 /*  HUD
