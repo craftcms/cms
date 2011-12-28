@@ -359,7 +359,8 @@ CREATE TABLE `blx_licensekeys` (
   `uid` varchar(36) COLLATE utf8_unicode_ci DEFAULT '',
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`) USING BTREE,
-  UNIQUE KEY `key_unique` (`key`) USING BTREE
+  UNIQUE KEY `key_unique` (`key`) USING BTREE,
+  KEY `key` (`key`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_licensekeys` BEFORE INSERT ON `blx_licensekeys` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),

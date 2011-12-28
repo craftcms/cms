@@ -7,8 +7,14 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 	public function getLicenseKeys()
 	{
-		if (isset(Blocks::app()->params['config']['licenseKeys']))
-			return Blocks::app()->params['config']['licenseKeys'];
+		$keysArr = array();
+		$licenseKeys = LicenseKeys::model()->findAll();
+
+		foreach ($licenseKeys as $licenseKey)
+			$keysArr[] = $licenseKey->key;
+
+		if (count($keysArr) > 0)
+			return $keysArr;
 
 		return null;
 	}
@@ -104,16 +110,18 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 	public function getLicenseKeyStatus()
 	{
-		if (!isset($this->_licenseKeyStatus))
-			$this->_licenseKeyStatus = $this->_getLicenseKeyStatus();
+		$licenseKeyStatus = Blocks::app()->fileCache->get('licenseKeyStatus');
+		if ($licenseKeyStatus == false)
+			$licenseKeyStatus = $this->_getLicenseKeyStatus();
 
-		return $this->_licenseKeyStatus;
+		return $licenseKeyStatus;
 
 	}
 
 	public function setLicenseKeyStatus($licenseKeyStatus)
 	{
-		$this->_licenseKeyStatus = $licenseKeyStatus;
+		// cache it and set it to expire according to config
+		Blocks::app()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, Blocks::app()->config('cacheTimeSeconds'));
 	}
 
 	private function _getLicenseKeyStatus()
@@ -124,7 +132,8 @@ class SiteService extends CApplicationComponent implements ISiteService
 			return LicenseKeyStatus::MissingKey;
 
 		$package = Blocks::app()->et->ping();
-		$this->_licenseKeyStatus = $package->licenseKeyStatus;
-		return $this->_licenseKeyStatus;
+		$licenseKeyStatus = $package->licenseKeyStatus;
+		$this->setLicenseKeyStatus($licenseKeyStatus);
+		return $licenseKeyStatus;
 	}
 }

@@ -58,9 +58,8 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 				if ($updateInfo == null)
 					$updateInfo = new BlocksUpdateInfo();
 
-				// cache it and set it to expire in 24 hours (86400 seconds) or 5 seconds if dev mode
-				$expire = Blocks::app()->config('devMode') ? 5 : 86400;
-				Blocks::app()->fileCache->set('updateInfo', $updateInfo, $expire);
+				// cache it and set it to expire according to config
+				Blocks::app()->fileCache->set('updateInfo', $updateInfo, Blocks::app()->config('cacheTimeSeconds'));
 			}
 
 			$this->_updateInfo = $updateInfo;
@@ -92,7 +91,6 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		$blocksUpdateInfo = new BlocksUpdateInfo();
 		$blocksUpdateInfo->localBuild = Blocks::getBuild();
 		$blocksUpdateInfo->localVersion = Blocks::getVersion();
-		//$blocksUpdateInfo->localEdition = Blocks::getEdition();
 
 		$plugins = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
 		foreach ($plugins as $plugin)

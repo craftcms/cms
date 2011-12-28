@@ -7,6 +7,9 @@ require_once(BLOCKS_BASE_PATH.'config/db.php');
 
 Yii::setPathOfAlias('base', BLOCKS_BASE_PATH);
 
+if ($blocksConfig['devMode'] == true)
+	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
+
 if (!isset($db['port']))
 	$db['port'] = '3306';
 

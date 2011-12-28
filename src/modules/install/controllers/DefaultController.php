@@ -76,6 +76,8 @@ class DefaultController extends BaseController
 							$info->version = Blocks::getVersion();
 							$info->save();
 
+							// insert license key(s) into LicenseKeys table.
+
 							Blocks::app()->request->redirect(Blocks::app()->urlManager->getBaseUrl());
 							break;
 					}
