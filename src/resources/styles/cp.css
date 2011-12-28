@@ -87,7 +87,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .sidebar .search { margin-bottom: 15px; }
 .sidebar .pane { -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.05); }
 .sidebar .pane .head { line-height: 1; }
-.sidebar .tree a { margin: 0 -11px 0 -9999px; padding-left: 9999px; padding-right: 11px; font-weight: normal; color: #666; }
+.sidebar .tree a { margin: 0 -11px 0 -9999px; padding-left: 9974px; padding-right: 11px; font-weight: normal; color: #666; }
 .sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
 .sidebar .tree a.sel { color: #fff; text-shadow: 0 1px 1px #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#2782bb)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .sidebar .tree a:hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
@@ -244,11 +244,11 @@ input.btn.big { padding: 0 12px; }
 
 .tree { }
 .tree h6 { margin-bottom: 2px; font-weight: bold; line-height: 18px; color: #777; }
-.tree ul { margin-left: 10px; }
+.tree > ul { margin-left: 10px; }
 .tree ul h6 { margin-top: 2px; }
-.tree ul ul { margin-left: 25px; }
-.tree ul li > .toggle { margin: 7px 0 0 -10px; }
-.tree ul li > a { display: block; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
+.tree ul li { margin-left: 25px; }
+.tree ul li > .toggle { margin: 7px 0 0 -35px; }
+.tree ul li > a { display: block; margin-left: -25px; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
 .tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/sidebar_icons/etc.png) no-repeat 50% 50%; }
 .tree ul li > a span.icon { margin-right: 2px; }
 .tree ul li > a span.status { margin: 7px; }
