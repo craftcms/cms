@@ -11,7 +11,7 @@ class SecurityService extends CApplicationComponent implements ISecurityService
 			'edition' => $edition
 		);
 
-		$et = new ET(ETEndPoints::ValidateKeysByCredentials);
+		$et = new ET(ETEndPoints::ValidateKeysByCredentials());
 		$et->getPackage()->data = $params;
 		$et->phoneHome();
 	}

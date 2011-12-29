@@ -96,7 +96,7 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		foreach ($plugins as $plugin)
 			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 
-		$et = new ET(ETEndPoints::Check);
+		$et = new ET(ETEndPoints::Check());
 		$et->getPackage()->data = $blocksUpdateInfo;
 		$response = $et->phoneHome();
 

@@ -2,11 +2,28 @@
 
 class ETEndPoints
 {
-	const Check = 'http://et.blockscms.com/admin.php/actions/core/check';
-	const DownloadPackage = 'http://et.blockscms.com/admin.php/actions/core/downloadpackage';
-	const GetCoreReleaseFileMD5 = 'http://et.blockscms.com/admin.php/actions/core/getcorereleasefilemd5';
-	const ValidateKeysByCredentials = 'http://et.blockscms.com/admin.php/actions/core/validateKeysByCredentials';
-	const Ping = 'http://et.blockscms.com/admin.php/actions/core/ping';
+	public static function Check()
+	{
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/core/check';
+	}
 
+	public static function DownloadPackage()
+	{
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/core/downloadpackage';
+	}
 
+	public static function GetCoreReleaseFileMD5()
+	{
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/core/getcorereleasefilemd5';
+	}
+
+	public static function ValidateKeysByCredentials()
+	{
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/core/validateKeysByCredentials';
+	}
+
+	public static function Ping()
+	{
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/core/ping';
+	}
 }

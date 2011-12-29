@@ -201,7 +201,7 @@ class CoreUpdater implements IUpdater
 			'type' => CoreReleaseFileType::Patch
 		);
 
-		$et = new ET(ETEndPoints::DownloadPackage, 60);
+		$et = new ET(ETEndPoints::DownloadPackage(), 60);
 		$et->setStreamPath($destinationPath);
 		$et->getPackage()->data = $params;
 		if ($et->phoneHome())
@@ -218,7 +218,7 @@ class CoreUpdater implements IUpdater
 			'type' => CoreReleaseFileType::Patch
 		);
 
-		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5);
+		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5());
 		$et->getPackage()->data = $params;
 		$package = $et->phoneHome();
 
