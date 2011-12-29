@@ -11,6 +11,7 @@ class BlocksUrlManager extends CUrlManager
 	public function init()
 	{
 		parent::init();
+		$this->appendParams = false;
 
 		$this->_path = Blocks::app()->request->getPathInfo();
 		$this->_pathSegments = Blocks::app()->request->getPathSegments();

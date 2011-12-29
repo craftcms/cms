@@ -26,10 +26,15 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if ($this->_requestType == null)
 		{
-			if (REQUEST_TYPE == RequestType::ControlPanel)
-				$this->_requestType = RequestType::ControlPanel;
+			if (isset($this->pathSegments[0]) && ($this->pathSegments[0] == Blocks::app()->config('actionTriggerWord')))
+				$this->_requestType = RequestType::Controller;
 			else
-				$this->_requestType = RequestType::Site;
+			{
+				if (REQUEST_TYPE == RequestType::ControlPanel)
+					$this->_requestType = RequestType::ControlPanel;
+				else
+					$this->_requestType = RequestType::Site;
+			}
 		}
 
 		return $this->_requestType;

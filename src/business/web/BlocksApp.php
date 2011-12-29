@@ -47,9 +47,11 @@ class BlocksApp extends CWebApplication
 	public function run()
 	{
 		$this->validateConfig();
-		$this->urlManager->processTemplateMatching();
 
-		if ($this->urlManager->getTemplateMatch() !== null)
+		if ($this->request->getCMSRequestType() !== RequestType::Controller)
+			$this->urlManager->processTemplateMatching();
+
+		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->getCMSRequestType() == RequestType::Controller))
 			$this->catchAllRequest = array('blocks/index');
 
 		if($this->hasEventHandler('onBeginRequest'))
@@ -138,9 +140,9 @@ class BlocksApp extends CWebApplication
 				throw new BlocksHttpException(404);
 			else
 			{
-				$pathInfo = $this->request->getPathSegments();
+				$pathInfo = $this->request->pathSegments;
 				if (!$pathInfo || $pathInfo[0] !== 'install')
-					$this->request->redirect(Blocks::app()->urlManager->getBaseUrl().'/install');
+					$this->request->redirect(Blocks::app()->urlManager->baseUrl.'/install');
 			}
 		}
 	}
@@ -166,6 +168,9 @@ class BlocksApp extends CWebApplication
 			return $this->_requestTemplatePath;
 		else
 		{
+			if ($this->request->getCMSRequestType() == RequestType::Controller)
+				return null;
+
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
 				$requestType = $this->request->getCMSRequestType();

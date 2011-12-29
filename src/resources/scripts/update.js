@@ -30,7 +30,7 @@ if (!updateHandle)
 function getUpdateInfo()
 {
 	// get the name and latest version
-	$.getJSON(baseUrl+'?c=update&a=getUpdateInfo&h='+updateHandle, function(data, textStatus) {
+	$.getJSON(baseUrl+'/actions/update/getupdateinfo?h='+updateHandle, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
 			showError('An unknown error occurred.');
@@ -63,7 +63,7 @@ function updateNext()
 
 	$status.html('Updating '+updateInfo[updating].name+' to version '+updateInfo[updating].version+' ('+updating+' of '+totalUpdates+')');
 
-	$.getJSON(baseUrl+'?c=update&a=update&h='+updateInfo[updating].handle, function(data, textStatus) {
+	$.getJSON(baseUrl+'/actions/update/update?h='+updateInfo[updating].handle, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
 			showError('An unknown error occurred while updating '+updateInfo[updating].name+'.');
