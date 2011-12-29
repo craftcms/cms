@@ -1,0 +1,130 @@
+{% layout '_layouts/full' %}
+
+{% region pageTitle %}Dev Status{% /region %}
+
+{% region main %}
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Routing</li>
+		<li>* Control Panel requests will never go to the db routes table.</li>
+		<li>* Request matching order should be:</li>
+		<li style="text-indent: 3em;">1) Database page match</li>
+		<li style="text-indent: 3em;">2) Global route</li>
+		<li style="text-indent: 3em;">3) Site specific route</li>
+		<li style="text-indent: 3em;">4) Template</li>
+		<li style="text-indent: 3em;">5) 404</li>
+		<li>* Template tag with pre-defined regex patterns, or advanced with freeform regex.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Installer</li>
+		<li>* Remove P&T login.</li>
+		<li>* Add license key entry and authentication.  If we don't know license key, stop install.</li>
+		<li>* Steps:</li>
+		<li style="text-indent: 3em;">1) Requirements check</li>
+		<li style="text-indent: 3em;">2) License key check and validation</li>
+		<li style="text-indent: 3em;">3) Admin account creation</li>
+		<li style="text-indent: 3em;">4) Site setup wizard in CP</li>
+		<li>* Insert the site info into db from wizard.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Controller Requests</li>
+		<li>* Move from c=controller, a=action to {actionTriggerWord}/controller/action.</li>
+		<li>* Write URL generation methods to handle controller URLs as well as request URLs.  Params/Vars should accept either string literal or array.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Updates</li>
+		<li>* From notes: rename update folder to _update, add route that matches updates and is a post request.  Return _update/index.html.</li>
+		<li>* Second slim requests separate from the E.T. check call with extraneous info stripped.</li>
+		<li>* Invalidate Blocks updateInfo cache on successful update.</li>
+		<li>* Extend migrations to not use timestamp, but blocks version/build number only.</li>
+		<li>* BlocksApp to compare file system version against db version and run migrations as necessary.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Atoms</li>
+		<li>* Atom is the smallest unit of data.  Consists of id, date_created, date_updated, uid.</li>
+		<li>* Every model that extends Atom gets it's own table.</li>
+		<li>* All models should extend Atom.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Plugins</li>
+		<li>* Everything</li>
+		<li>* A plugin is installed if there is a record in the db and the enabled bit is set to true.  A plugin is disabled when the bit is set to false.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Misc</li>
+		<li>* Any template folder that begins with an underscore should not be directly accessible on the front end.</li>
+		<li>* Matrix code and schema.</li>
+		<li>* Models should be able to reverse engineer themselves and create their own SQL schema.</li>
+		<li>* Cleaner environment setup (eg. Fuel).</li>
+		<li>* Disable PathInfo in php.ini and make sure routing, URL generation works with query strings only.</li>
+		<li>* phpUnit / xDebug to work on *nix.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Documentation</li>
+		<li>* Manual</li>
+		<li>* Automatic (Sphynx, phpDocumentor, doxygen, phpdoc, twintext, apigen).</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Errors</li>
+		<li>* Error reporting service that catches exceptions and phones home to E.T. so we can log in a db.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Licensing</li>
+		<li>* Licensing review.</li>
+		<li>* Add license blurb to each file (build server).</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Permissions / Roles / Authentication</li>
+		<li>* Login, session management, roles.</li>
+		<li>* All permissions are global.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Tests</li>
+		<li>* More of them.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Localization</li>
+		<li>* Translation services (Transifex).</li>
+		<li>* Support for localized data in the code and schema.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Security</li>
+		<li>* Fallback encryption depending on environment (bcrypt, md5, etc).</li>
+		<li>* Security audit (XSS, sql injection, etc.)</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Performance</li>
+		<li>* Audit caching, attach profiler, db indexes and queries, minify/compress css/js.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Intranet / E.T.</li>
+		<li>* Release notes on separate lines?</li>
+		<li>* Select which files to include in a release and patch.</li>
+		<li>* Log all API activity into a separate reporting db with schema.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">Production</li>
+		<li>* Setup, test, deployment.</li>
+	</ul>
+
+	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
+		<li style="text-indent: -3em; font-weight: bold;">* Install YouTrack</li>
+	</ul>
+
+{% /region %}
