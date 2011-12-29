@@ -33,12 +33,9 @@ class UrlHelper
 		$path = ltrim($path, '/');
 		$pathParts = explode('/', $path);
 
-		$pluginHandle = null;
-		if ($pathParts[0] !== 'app')
-			$pluginHandle = '/'.array_shift($pathParts);
-
+		$handle = '/'.array_shift($pathParts);
 		$path = '/'.implode('/', $pathParts);
-		$pathStr = '/'.$triggerWord.$pluginHandle.$path;
+		$pathStr = '/'.$triggerWord.$handle.$path;
 
 		if (is_array($params))
 			$path = array_merge(array($pathStr), $params);
