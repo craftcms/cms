@@ -71,7 +71,10 @@
 
 {% region scripts %}
 	{% if !cp.updateInfoCached %}
-		<script type="text/javascript">window.getAlerts = true;</script>
+		<script type="text/javascript">
+			window.getAlerts = true;
+			window.getAlertsUrl = '{{ url.generateActionUrl('app/dashboard/getalerts') }}';
+		</script>
 	{% /if %}
 
 	{{ cp.resource('app/scripts/ui/Drag.js').js }}

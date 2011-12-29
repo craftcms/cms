@@ -46,7 +46,7 @@ var Dashboard = Base.extend({
 
 		// do the version check
 		if (getAlerts)
-			$.getJSON(baseUrl+'/actions/dashboard/getalerts', $.proxy(this, 'displayAlerts'));
+			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
 	},
 
 	getWidgetHandles: function()

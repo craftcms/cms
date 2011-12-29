@@ -62,4 +62,19 @@ class UrlTag extends Tag
 	{
 		return isset($_GET[$var]) ? $_GET[$var] : false;
 	}
+
+	public function generateResourceUrl($path, $params = null)
+	{
+		return UrlHelper::generateResourceUrl($path, $params);
+	}
+
+	public function generateActionUrl($path, $params = null)
+	{
+		return UrlHelper::generateActionUrl($path, $params);
+	}
+
+	public function generateUrl($path, $params = null)
+	{
+		return UrlHelper::generateUrl($path, $params);
+	}
 }
