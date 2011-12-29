@@ -1333,14 +1333,7 @@ class BlocksFile extends CApplicationComponent
 				if ($this->_isUploaded)
 					return $this->_mimeType = $this->_uploadedInstance->getType();
 
-				if (function_exists('finfo_open'))
-				{
-					if (($info = @finfo_open(FILEINFO_MIME)) && ($result = finfo_file($info, $this->_realpath)) !== false)
-						return $this->_mimeType = $result;
-				}
-
 				return $this->_mimeType = $this->getMimeTypeByExtension($this->_realpath);
-
 			}
 
 			$this->addLog('Unable to get mime type for file: '.$this->_realpath, 'warning');
