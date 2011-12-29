@@ -61,7 +61,7 @@ class ET
 			}
 			else
 			{
-				if ($this->_streamPath !== null)
+				if ($this->_streamPath == null)
 					Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), 'warning');
 				else
 					Blocks::log('Error in calling '.$this->_endpoint.'.', 'warning');
