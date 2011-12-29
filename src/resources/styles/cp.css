@@ -23,12 +23,14 @@ body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; f
 
 h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
-h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-size: 18px; line-height: 24px; color: #666; }
+h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-weight: normal; font-size: 18px; line-height: 24px; color: #666; }
 h4 { margin: 15px 0 10px; font-weight: bold; color: #000; }
 h5 { margin: 15px 0 10px; font-weight: bold; color: #666; }
 h6 { margin: 15px 0 0; font-weight: normal; color: #666; }
 
 p { margin-bottom: 1em; }
+
+ol { padding-left: 40px; list-style-type: decimal; }
 
 em,
 i { font-style: italic; }
@@ -37,6 +39,8 @@ i em { font-weight: bold; }
 a { color: #2d98db; cursor: pointer; }
 a:hover { text-decoration: underline; }
 a.sel:hover { text-decoration: none; cursor: default; }
+
+code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 
 h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child { margin-top: 0 !important; }
 h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, .pane:last-child { margin-bottom: 0 !important; }
@@ -129,7 +133,7 @@ table.pane > *:first-child > tr > *:last-child { border-top-right-radius: 3px; }
 table.pane > *:last-child > tr > *:first-child { border-bottom-left-radius: 3px; }
 table.pane > *:last-child > tr > *:last-child { border-bottom-right-radius: 3px; }
 table.pane > thead > tr > * { border-bottom: 1px solid #bbb; }
-table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.1); }
+table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
 
 .pane .head,
 table.pane > thead > tr > * { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #fff; }
@@ -140,8 +144,8 @@ table.pane > thead > tr > * { position: relative; padding: 8px 10px; line-height
 .pane .body .item,
 .pane .body tr.item > th,
 .pane .body tr.item > td,
-table.pane > tbody > tr > * { border-top: 1px solid #eee; padding: 7px 10px; }
-table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
+table.pane > tbody > tr > * { border-top: 1px solid #e5e5e5; padding: 7px 10px; }
+table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #e5e5e5; }
 .pane .body tr.item { border-top: none; padding: 0; }
 .pane .body tr.item > th:not(:first-child),
 .pane .body tr.item > td:not(:first-child) { padding-left: 0; }

@@ -4,127 +4,197 @@
 
 {% region main %}
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Routing</li>
-		<li>* Control Panel requests will never go to the db routes table.</li>
-		<li>* Request matching order should be:</li>
-		<li style="text-indent: 3em;">1) Database page match</li>
-		<li style="text-indent: 3em;">2) Global route</li>
-		<li style="text-indent: 3em;">3) Site specific route</li>
-		<li style="text-indent: 3em;">4) Template</li>
-		<li style="text-indent: 3em;">5) 404</li>
-		<li>* Template tag with pre-defined regex patterns, or advanced with freeform regex.</li>
-	</ul>
+	<table class="pane">
+		<thead>
+			<tr>
+				<th>Component</th>
+				<th>Notes</th>
+				<th>Status</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<th><h3>Routing</h3></th>
+				<td><p>Should flow like this:</p>
+					<table class="pane" style="width: auto">
+						<thead>
+							<tr>
+								<th width="50%">CP request</th>
+								<th>Site request</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td colspan="2">Check if the first URL segment matches the <code>actionTriggerWord</code></td>
+							</tr>
+							<tr>
+								<td colspan="2">Check if the first URL segment matches the <code>resourceTriggerWord</code></td>
+							</tr>
+							<tr>
+								<td>Check CP routing array (matches “content/edit/{entry_id}”, etc)</td>
+								<td>Check routes defined in <code>blx_siteroutes</code></td>
+							</tr>
+							<tr>
+								<td></td>
+								<td>Check for a <code>blx_entries . full_url</code> match</td>
+							</tr>
+							<tr>
+								<td colspan="2">Check for a template match</td>
+							</tr>
+							<tr>
+								<td colspan="2">404</td>
+							</tr>
+						</tbody>
+					</table>
+					<p>Need to write URL generation functions.</p>
+					<p>URL patterns stored in <code>blx_siteroutes</code> may contain tags representing predefined or custom regex patterns.</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Installer</li>
-		<li>* Remove P&T login.</li>
-		<li>* Add license key entry and authentication.  If we don't know license key, stop install.</li>
-		<li>* Steps:</li>
-		<li style="text-indent: 3em;">1) Requirements check</li>
-		<li style="text-indent: 3em;">2) License key check and validation</li>
-		<li style="text-indent: 3em;">3) Admin account creation</li>
-		<li style="text-indent: 3em;">4) Site setup wizard in CP</li>
-		<li>* Insert the site info into db from wizard.</li>
-	</ul>
+			<tr>
+				<th><h3>Models</h3></th>
+				<td>
+					<p>“Atom” is the base abstract model that every other model extends. It consists of <code>id</code>, <code>date_created</code>, <code>date_updated</code>, and <code>uid</code>. The latter 3 will be used by Blocks Pro for server syncing, so it's important that every single table in the DB has them.) Atom will provide triggers so that they get auto-generated.</p>
+					<p>Every non-abstract model that extends Atom will get its own table.</p>
+					<p>Models should be able to create their own schema.</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Controller Requests</li>
-		<li>* Move from c=controller, a=action to {actionTriggerWord}/controller/action.</li>
-		<li>* Write URL generation methods to handle controller URLs as well as request URLs.  Params/Vars should accept either string literal or array.</li>
-	</ul>
+			<tr>
+				<th><h3>Installer</h3></th>
+				<td><p>Should flow like this:</p>
+					<ol>
+						<li>Requirements check / status report</li>
+						<li>License key check and validation</li>
+						<li>Admin account creation</li>
+						<li>Site setup wizard in the CP</li>
+					</ol>
+				</td>
+				<td>Current script checks for P&amp;T login. Should be swapped with license key check.</td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Updates</li>
-		<li>* From notes: rename update folder to _update, add route that matches updates and is a post request.  Return _update/index.html.</li>
-		<li>* Second slim requests separate from the E.T. check call with extraneous info stripped.</li>
-		<li>* Invalidate Blocks updateInfo cache on successful update.</li>
-		<li>* Extend migrations to not use timestamp, but blocks version/build number only.</li>
-		<li>* BlocksApp to compare file system version against db version and run migrations as necessary.</li>
-	</ul>
+			<tr>
+				<th><h3>Updates</h3></th>
+				<td>
+					<p>Invalidate Blocks updateInfo cache on successful update</p>
+					<p>Develop an alternate, version-based migration mechanism for when Dev Mode is off</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Atoms</li>
-		<li>* Atom is the smallest unit of data.  Consists of id, date_created, date_updated, uid.</li>
-		<li>* Every model that extends Atom gets it's own table.</li>
-		<li>* All models should extend Atom.</li>
-	</ul>
+			<tr>
+				<th><h3>Plugins</h3></th>
+				<td>
+					<p>A plugin is installed if there is a record in the db.</p>
+					<p>A plugin is enabled if its <code>enabled</code> bit in <code>blx_plugins</code> is set to true.</p>
+					<p>Plugins can add their own controllers, resources, CP sections, Dashboard widgets, block types, template tags, user permissions, etc. etc.</p>
+					<p>Plugins can have global settings.</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Plugins</li>
-		<li>* Everything</li>
-		<li>* A plugin is installed if there is a record in the db and the enabled bit is set to true.  A plugin is disabled when the bit is set to false.</li>
-	</ul>
+			<tr>
+				<th><h3>Miscellaneous</h3></th>
+				<td>
+					<p>Any template folder that begins with an underscore should not be directly accessible on the front end.</p>
+					<p>Matrix code and schema.</p>
+					<p>Define environment config profiles (see Fuel).</p>
+					<p>Disable PathInfo in php.ini and make sure routing, URL generation works with query strings only.</p>
+					<p>Install YouTrack</p>
+				</td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Misc</li>
-		<li>* Any template folder that begins with an underscore should not be directly accessible on the front end.</li>
-		<li>* Matrix code and schema.</li>
-		<li>* Models should be able to reverse engineer themselves and create their own SQL schema.</li>
-		<li>* Cleaner environment setup (eg. Fuel).</li>
-		<li>* Disable PathInfo in php.ini and make sure routing, URL generation works with query strings only.</li>
-		<li>* phpUnit / xDebug to work on *nix.</li>
-	</ul>
+			<tr>
+				<th><h3>Documentation</h3></th>
+				<td>
+					<p>Look into documentation HTML generators (Sphynx, phpDocumentor, doxygen, phpdoc, twintext, apigen).</p>
+					<p>Would be great if documentation could live as Textile/Markdown files in app/docs/ and plugins/*/docs/, and then we could parse and display them right in the CP.</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Documentation</li>
-		<li>* Manual</li>
-		<li>* Automatic (Sphynx, phpDocumentor, doxygen, phpdoc, twintext, apigen).</li>
-	</ul>
+			<tr>
+				<th><h3>Errors</h3></th>
+				<td>
+					<p>Error reporting service that catches exceptions and reports them to us</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Errors</li>
-		<li>* Error reporting service that catches exceptions and phones home to E.T. so we can log in a db.</li>
-	</ul>
+			<tr>
+				<th><h3>Licensing</h3></th>
+				<td>
+					<p>Licensing review by a laywer</p>
+					<p>Add license blurb to each file (build server)</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Licensing</li>
-		<li>* Licensing review.</li>
-		<li>* Add license blurb to each file (build server).</li>
-	</ul>
+			<tr>
+				<th><h3>Permissions, Roles, and Authentication</h3></th>
+				<td>
+					<p>Login, session management, roles.</p>
+					<p>All permissions are global</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Permissions / Roles / Authentication</li>
-		<li>* Login, session management, roles.</li>
-		<li>* All permissions are global.</li>
-	</ul>
+			<tr>
+				<th><h3>Tests</h3></th>
+				<td>
+					<p>More of them.</p>
+					<p>Get phpUnit / xDebug working on *nix</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Tests</li>
-		<li>* More of them.</li>
-	</ul>
+			<tr>
+				<th><h3>Translations</h3></th>
+				<td>
+					<p>All language in the CP should come from language files, rather than hard coded</p>
+					<p>Look into translation services (e.g. Transifex) for providing 1st party CP translations</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Localization</li>
-		<li>* Translation services (Transifex).</li>
-		<li>* Support for localized data in the code and schema.</li>
-	</ul>
+			<tr>
+				<th><h3>Security</h3></th>
+				<td>
+					<p>Fallback encryption depending on environment (bcrypt, md5, etc).</p>
+					<p>Security audit (XSS, sql injection, etc.)</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Security</li>
-		<li>* Fallback encryption depending on environment (bcrypt, md5, etc).</li>
-		<li>* Security audit (XSS, sql injection, etc.)</li>
-	</ul>
+			<tr>
+				<th><h3>Performance</h3></th>
+				<td>
+					<p>Audit caching, attach profiler, db indexes and queries, minify/compress css/js.</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Performance</li>
-		<li>* Audit caching, attach profiler, db indexes and queries, minify/compress css/js.</li>
-	</ul>
+			<tr>
+				<th><h3>Intranet and E.T.</h3></th>
+				<td>
+					Release notes on separate lines?</p>
+					<p>Select which files to include in a release and patch.</p>
+					<p>Log all API activity into a separate reporting db with schema</p>
+				</td>
+				<td></td>
+			</tr>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Intranet / E.T.</li>
-		<li>* Release notes on separate lines?</li>
-		<li>* Select which files to include in a release and patch.</li>
-		<li>* Log all API activity into a separate reporting db with schema.</li>
-	</ul>
+			<tr>
+				<th><h3>Production</h3></th>
+				<td>
+					<p>Setup, test, deployment</p>
+				</td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
 
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">Production</li>
-		<li>* Setup, test, deployment.</li>
-	</ul>
-
-	<ul style="margin: 2px; padding: 10px 2px 2px 75px;">
-		<li style="text-indent: -3em; font-weight: bold;">* Install YouTrack</li>
-	</ul>
 
 {% /region %}
