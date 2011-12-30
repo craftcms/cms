@@ -2,6 +2,30 @@
 
 class TemplateHelper
 {
+	public static $globalTags = array(
+		'assets'   => 'AssetsTag',
+		'blocks'   => 'BlocksTag',
+		'content'  => 'ContentTag',
+		'cp'       => 'CpTag',
+		'date'     => 'DateTag',
+		'url'      => 'UrlTag',
+		'users'    => 'UsersTag',
+		'security' => 'SecurityTag'
+	);
+
+	/**
+	 * Returns a new tag instance, which will either be one of the globals, or a generic tag, depending on the handle passed in
+	 * @param string $handle The tag handle being used in the template
+	 * @return object The tag instance
+	 */
+	public static function getGlobalTag($handle)
+	{
+		if (isset(self::$globalTags[$handle]))
+			return new self::$globalTags[$handle];
+
+		return new Tag;
+	}
+
 	/**
 	 * Returns whether a variable is a tag or not
 	 * @param mixed $var The variable
