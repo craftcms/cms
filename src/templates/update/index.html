@@ -12,6 +12,10 @@
 {% /region %}
 
 {% region scripts %}
-	<script type="text/javascript">window.updateHandle = '{{ url.get('h') }}';</script>
+	<script type="text/javascript">
+		window.updateHandle = '{{ url.get('h') }}';
+		window.updateInfoUrl = '{{ url.generateActionUrl('app/update/getupdateinfo', 'h=') }}';
+		window.updateUrl = '{{ url.generateActionUrl('app/update/update', 'h=') }}';
+	</script>
 	{{ cp.resource('app/scripts/update.js').js }}
 {% /region %}
