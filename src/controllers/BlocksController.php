@@ -73,20 +73,4 @@ class BlocksController extends BaseController
 	public function actionIndex()
 	{
 	}
-
-	/**
-	 * Convert all template vars to tags before sending them to the template
-	 */
-	public function loadTemplate($templatePath, $data = array(), $return = false)
-	{
-		if (!is_array($data))
-			$data = array();
-
-		foreach ($data as &$tag)
-		{
-			$tag = TemplateHelper::getVarTag($tag);
-		}
-
-		return parent::loadTemplate($templatePath, $data, $return);
-	}
 }

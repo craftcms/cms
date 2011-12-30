@@ -146,8 +146,19 @@ class BaseController extends CController
 		}
 	}
 
+	/**
+	 * Convert all template vars to tags before sending them to the template
+	 */
 	public function loadTemplate($templatePath, $data = array(), $return = false)
 	{
+		if (!is_array($data))
+			$data = array();
+
+		foreach ($data as &$tag)
+		{
+			$tag = TemplateHelper::getVarTag($tag);
+		}
+
 		return $this->render($templatePath, $data, $return);
 	}
 
