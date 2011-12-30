@@ -9,12 +9,16 @@ class ArrayHelper
 	{
 		$flattened = array();
 
-		foreach ($arr as $key => $value) {
+		foreach ($arr as $key => $value)
+		{
 			if ($prefix) $key = "{$prefix}[{$key}]";
 
-			if (is_array($value)) {
+			if (is_array($value))
+			{
 				$flattened = array_merge($flattened, flatten_settings($value, $key));
-			} else {
+			}
+			else
+			{
 				$flattened[$key] = $value;
 			}
 		}
@@ -29,12 +33,16 @@ class ArrayHelper
 	{
 		$expanded = array();
 
-		foreach ($arr as $key => $value) {
+		foreach ($arr as $key => $value)
+		{
 			// is this an array element?
-			if (preg_match('/^(\w+)(\[.*)/', $key, $m)) {
+			if (preg_match('/^(\w+)(\[.*)/', $key, $m))
+			{
 				$key = '$expanded["'.$m[1].'"]' . preg_replace('/\[([a-zA-Z]\w*?)\]/', "[\"$1\"]", $m[2]);
 				eval($key.' = "'.addslashes($value).'";');
-			} else {
+			}
+			else
+			{
 				$expanded[$key] = $value;
 			}
 		}

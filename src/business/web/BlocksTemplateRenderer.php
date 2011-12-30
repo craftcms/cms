@@ -267,15 +267,15 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Loops
 
 			case 'foreach':
-				if (preg_match('/^(.+)\s+as\s+(?:([A-Za-z]\w*)\s*,\s*)?([A-Za-z]\w*)$/m', $params, $match))
+				if (preg_match('/^(.+)\s+as\s+(?:([A-Za-z]\w*)\s*=>\s*)?([A-Za-z]\w*)$/m', $params, $match))
 				{
 					$this->parseVariable($match[1]);
 					$index = '$'.(!empty($match[2]) ? $match[2] : 'index');
 					$subvar = '$'.$match[3];
 
 					return "<?php foreach ({$match[1]}->__toArray() as {$index} => {$subvar}):" . PHP_EOL .
-						"{$index} = new NumTag({$index});" . PHP_EOL .
-						"{$subvar} = Tag::_getVarTag({$subvar}); ?>";
+						"{$index} = TemplateHelper::getVarTag({$index});" . PHP_EOL .
+						"{$subvar} = TemplateHelper::getVarTag({$subvar}); ?>";
 				}
 				return '';
 

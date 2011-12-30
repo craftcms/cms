@@ -3,7 +3,6 @@
 class ArrayTag extends Tag
 {
 	protected $_val;
-	protected $_tagified = false;
 
 	protected function init($val = array())
 	{
@@ -14,7 +13,7 @@ class ArrayTag extends Tag
 	{
 		if (isset($this->_val[$name]))
 		{
-			return self::_getVarTag($this->_val[$name]);
+			return $this->_val[$name];
 		}
 
 		return parent::__call($name, $args);

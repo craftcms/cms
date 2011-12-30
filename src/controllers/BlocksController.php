@@ -84,7 +84,7 @@ class BlocksController extends BaseController
 
 		foreach ($data as &$tag)
 		{
-			$tag = Tag::_getVarTag($tag);
+			$tag = TemplateHelper::getVarTag($tag);
 		}
 
 		return parent::loadTemplate($templatePath, $data, $return);
