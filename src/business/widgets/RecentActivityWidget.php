@@ -7,19 +7,23 @@ class RecentActivityWidget extends Widget
 
 	public function displayBody()
 	{
-		return '<table>
-				<tr class="item">
-					<td><a href="">Brandon</a> is editing <a href="">Blocks</a></td>
-					<td class="date">right now</td>
-				</tr>
-				<tr class="item">
-					<td><a href="">Brandon</a> published a new version of <a href="">Assets</a></td>
-					<td class="date">yesterday</td>
-				</tr>
-				<tr class="item">
-					<td><a href="">Brad</a> updated Blocks and Wygwam</a></td>
-					<td class="date">Sep 5, 2011</td>
-				</tr>
-			</table>';
+		$tags = array(
+			'actions' => array(
+				array(
+					'action' => '<a>Brandon</a> is editing <a>Blocks</a>',
+					'date' => 'right now'
+				),
+				array(
+					'action' => '<a>Brandon</a> published a new version of <a>Assets</a>',
+					'date' => 'yesterday'
+				),
+				array(
+					'action' => '<a>Brad</a> updated Blocks and Wygwam</a>',
+					'date' => 'Sep 5, 2011'
+				)
+			)
+		);
+
+		return Blocks::app()->controller->loadTemplate('_widgets/RecentActivityWidget/body', $tags, true);
 	}
 }

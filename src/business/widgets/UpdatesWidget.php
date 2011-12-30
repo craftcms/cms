@@ -11,16 +11,16 @@ class UpdatesWidget extends Widget
 			return false;
 
 		$updateInfo = Blocks::app()->update->updateInfo;
-		$updates = '';
+		$updates = array();
 
 		// Blocks first
 		if ($updateInfo->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable)
 		{
-			$updates .= '<tr class="item">
-							<td>Blocks '.$updateInfo->latestVersion.'.'.$updateInfo->latestBuild.'</td>'.'
-							<td>'.BlocksHtml::link('Notes', array('settings/updates#Blocks')).'</td>
-							<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=Blocks"><input id="update" class="btn" type="submit" value="Update"></form></td>
-						</tr>';
+			$updates[] = array(
+				'name' => 'Blocks',
+				'handle' => 'Blocks',
+				'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild
+			);
 		}
 
 		// Plugins next
@@ -30,23 +30,22 @@ class UpdatesWidget extends Widget
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
-					$updates .= '<tr class="item">
-									<td>'.$plugin->displayName.' '.$plugin->latestVersion.'</td>
-									<td>'.BlocksHtml::link('Notes', array('settings/updates#'.$plugin->handle)).'</td>
-									<td><form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h='.$plugin->handle.'"><input id="update" class="btn" type="submit" value="Update"></form></td>
-								</tr>';
+					$updates[] = array(
+						'name' => $plugin->displayName,
+						'handle' => $plugin->handle,
+						'version' => $plugin->latestVersion
+					);
 				}
 			}
 		}
 
 		if ($updates)
 		{
-			return '<form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=all"><input id="update-all" class="btn dark update-all" type="submit" value="Update All"></form>
-				<table>
-					<tbody>' .
-						$updates .
-					'</tbody>
-				</table>';
+			$tags = array(
+				'updates' => $updates
+			);
+
+			return Blocks::app()->controller->loadTemplate('_widgets/UpdatesWidget/body', $tags, true);
 		}
 
 		return false;

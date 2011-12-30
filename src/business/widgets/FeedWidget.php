@@ -17,42 +17,45 @@ class FeedWidget extends Widget
 
 	public function displayBody()
 	{
-		return '<table>
-				<tr class="item">
-					<td><a href="">Introducing Assets</a></td>
-					<td class="date">Jun 28, 2011</td>
-				</tr>
-				<tr class="item">
-					<td><a href="">Wygwam 2.2 Released</a></td>
-					<td class="date">Feb 9, 2011</td>
-				</tr>
-				<tr class="item">
-					<td><a href="">Playa 4 has arrived!</a></td>
-					<td class="date">Feb 2, 2011</td>
-				</tr>
-				<tr class="item">
-					<td><a href="">Have a drink on us!</a></td>
-					<td class="date">Sep 9, 2010</td>
-				</tr>
-				<tr class="item">
-					<td><a href="">Introducing the Dive Bar</a></td>
-					<td class="date">Jul 23, 2010</td>
-				</tr>
-			</table>';
+		$tags = array(
+			'items' => array(
+				array(
+					'url' => 'http://feedproxy.google.com/~r/blogandtonic/~3/KrG7zZ_5zF0/assets-moty',
+					'title' => 'Assets Voted Module of the Year',
+					'date' => 'Dec 22, 2011'
+				),
+				array(
+					'url' => 'http://feedproxy.google.com/~r/blogandtonic/~3/WXqTFhOZP0o/php-developer',
+					'title' => 'We’re Looking for a PHP Developer',
+					'date' => 'Dec 2, 2011'
+				),
+				array(
+					'url' => 'http://feedproxy.google.com/~r/blogandtonic/~3/hwoW_CDbEF8/introducing-assets',
+					'title' => 'Introducing Assets',
+					'date' => 'Jun 28, 2011'
+				),
+				array(
+					'url' => 'http://feedproxy.google.com/~r/blogandtonic/~3/D2fEpY3KITQ/wygwam22',
+					'title' => 'Wygwam 2.2 Released!',
+					'date' => 'Feb 9, 2011'
+				),
+				array(
+					'url' => 'http://feedproxy.google.com/~r/blogandtonic/~3/To6-CuOmKlA/playa4',
+					'title' => 'Playa 4 has arrived!',
+					'date' => 'Feb 2, 2011'
+				)
+			)
+		);
+
+		return Blocks::app()->controller->loadTemplate('_widgets/FeedWidget/body', $tags, true);
 	}
 
 	public function displaySettings()
 	{
-		return '<label for="widget1-url">URL</label>
-			<div class="input-wrapper"><input id="widget1-url" type="text" value="'.$this->settings['url'].'"></div>
-			<label for="widget1-title">Title</label>
-			<div class="input-wrapper"><input id="widget1-url" type="text" value="'.$this->settings['title'].'"></div>
-			<label for="widget1-limit">Limit</label>
-			<div class="btn-group">
-				<div class="btn sel"><span class="label">5</span></div>
-				<div class="btn"><span class="label">10</span></div>
-				<div class="btn"><span class="label">15</span></div>
-				<div class="btn"><span class="label">20</span></div>
-			</div>';
+		$tags = array(
+			'settings' => $this->settings
+		);
+
+		return Blocks::app()->controller->loadTemplate('_widgets/FeedWidget/settings', $tags, true);
 	}
 }

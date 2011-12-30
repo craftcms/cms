@@ -1,0 +1,19 @@
+<form method="post" action="'.Blocks::app()->urlManager->getBaseUrl().'/update?h=all">
+	<input id="update-all" class="btn dark update-all" type="submit" value="Update All">
+</form>
+
+<table>
+	<tbody>
+		{% foreach updates as update %}
+		<tr class="item">
+			<td>{{ update.name }} {{ update.version }}</td>
+			<td><a href="{{ url.generateUrl('settings/updates') }}#{{ update.handle }}">Notes</a></td>
+			<td>
+				<form method="post" action="{{ url.generateUrl('update', 'h=') }}{{ update.handle }}">
+					<input id="update" class="btn" type="submit" value="Update">
+				</form>
+			</td>
+		</tr>
+		{% /foreach %}
+	</tbody>
+</table>

@@ -1,0 +1,11 @@
+<label for="widget1-url">URL</label>
+<div class="input-wrapper"><input id="widget1-url" type="text" value="{{ settings.url }}"></div>
+<label for="widget1-title">Title</label>
+<div class="input-wrapper"><input id="widget1-url" type="text" value="{{ settings.title }}"></div>
+<label for="widget1-limit">Limit</label>
+<div class="btn-group">
+	<div class="btn {% if settings.limit == 5 %}sel{% /if %}"><span class="label">5</span></div>
+	<div class="btn {% if settings.limit == 10 %}sel{% /if %}"><span class="label">10</span></div>
+	<div class="btn {% if settings.limit == 15 %}sel{% /if %}"><span class="label">15</span></div>
+	<div class="btn {% if settings.limit == 20 %}sel{% /if %}"><span class="label">20</span></div>
+</div>
