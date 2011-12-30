@@ -11,13 +11,17 @@ class BlocksController extends BaseController
 			$requestController = null;
 			$requestAction = null;
 
+			// requestHandle will either be 'app' or {pluginHandle}
 			if (isset(Blocks::app()->request->pathSegments[1]))
-				$requestController = Blocks::app()->request->pathSegments[1];
+				$requestHandle = Blocks::app()->request->pathSegments[1];
 
 			if (isset(Blocks::app()->request->pathSegments[2]))
-				$requestAction = Blocks::app()->request->pathSegments[2];
+				$requestController = Blocks::app()->request->pathSegments[2];
 
-			if ($requestController !== null && $requestAction !== null)
+			if (isset(Blocks::app()->request->pathSegments[3]))
+				$requestAction = Blocks::app()->request->pathSegments[3];
+
+			if ($requestController !== null && $requestAction !== null) // and requestHandle == app
 			{
 				// we found a matching controller for this request.
 				if (($ca = Blocks::app()->createController($requestController)) !== null)
