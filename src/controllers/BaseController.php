@@ -3,7 +3,6 @@
 class BaseController extends CController
 {
 	private $_widgetStack = array();
-	private $_defaultTemplateTags;
 
 	public function filterHttps($filterChain)
 	{

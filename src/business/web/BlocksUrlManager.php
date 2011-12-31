@@ -11,6 +11,8 @@ class BlocksUrlManager extends CUrlManager
 	public function init()
 	{
 		parent::init();
+
+		// set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
 		$this->_path = Blocks::app()->request->getPathInfo();
@@ -20,6 +22,7 @@ class BlocksUrlManager extends CUrlManager
 
 	public function processTemplateMatching()
 	{
+		// if it's a gii request, no need to do template matching.
 		if (($this->getCurrentModule() !== null && $this->getCurrentModule()->getId() == 'gii') || strpos(Blocks::app()->request->getParam('r'), 'gii') !== false)
 			return;
 
@@ -57,6 +60,11 @@ class BlocksUrlManager extends CUrlManager
 		return $this->_currentModule;
 	}
 
+
+	/**
+	 * Attempts to match a request with an entry in the database.  If one is found, we set the template match property.
+	 * @return bool True if a match was found, false otherwise.
+	 */
 	public function matchEntry()
 	{
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
@@ -81,6 +89,14 @@ class BlocksUrlManager extends CUrlManager
 		return false;
 	}
 
+	/**
+	 * Attempts to match a request to a file on the file system.
+	 * Will return false for any directory that has a "_" as the first character.
+	 * Will attempt to match "path/to/folder/file.{allowedFileExtensions}" first, "path/to/folder/file/index.{allowedFileExtensions}" second.
+	 * Sets the template match property if a match is found.
+	 *
+	 * @return bool True is a match is found, false otherwise.
+	 */
 	public function matchTemplate()
 	{
 		$moduleName = null;
@@ -89,12 +105,14 @@ class BlocksUrlManager extends CUrlManager
 		$tempPath = $this->_path;
 		$testPath = null;
 
+		// if the request comes in with an extension at the end, trim it off
 		if ($this->_requestExtension !== null)
 		{
 			$pathMatchPattern = rtrim($pathMatchPattern, '.'.$this->_requestExtension);
 			$tempPath = rtrim($tempPath, '.'.$this->_requestExtension);
 		}
 
+		// if this is a control panel request, let's see if we can match it to a module as well.
 		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
 		{
 			// we're dealing with a module
@@ -114,6 +132,7 @@ class BlocksUrlManager extends CUrlManager
 		else
 			$requestPath = $tempPath;
 
+		// fix the trailing and ending slashes
 		if ($requestPath !== '')
 		{
 			$requestPath = ltrim($requestPath, '\\/');
@@ -124,6 +143,15 @@ class BlocksUrlManager extends CUrlManager
 			$templatePath = rtrim($templatePath, '\\/');
 		}
 
+		// if there are any folders that have a '_' as the first character of the name, then it's hidden and there is no template match.
+		$requestPathSegs = explode('/', $requestPath);
+		foreach ($requestPathSegs as $requestPathSeg)
+		{
+			if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
+				return false;
+		}
+
+		// first try to match /path/to/folder.{allowedTemplateFileExtensions}
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
@@ -131,7 +159,7 @@ class BlocksUrlManager extends CUrlManager
 			return true;
 		}
 
-		// see if it matches directory/index'
+		// now try to match /path/to/folder/index.{allowedTemplateFileExtensions}
 		$requestPath = $this->normalizeTrailingSlash($requestPath).'index';
 		$templatePath = rtrim($templatePath, '\\/').'/';
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
@@ -145,6 +173,12 @@ class BlocksUrlManager extends CUrlManager
 		return false;
 	}
 
+	/**
+	 * @param $path
+	 * @param $pathMatchPattern
+	 * @param $matchType
+	 * @param $extension
+	 */
 	private function setTemplateMatch($path, $pathMatchPattern, $matchType, $extension)
 	{
 		$templateMatch = new TemplateMatch($path);
@@ -154,12 +188,14 @@ class BlocksUrlManager extends CUrlManager
 		$this->_templateMatch = $templateMatch;
 	}
 
-	public function normalizeTrailingSlash($path)
+	/**
+	 * Adds a trailing slash to the end of a path if one does not exist
+	 * @param $path The path to normalize.
+	 *
+	 * @return string The normalized path.
+	 */public function normalizeTrailingSlash($path)
 	{
-		$lastChar = substr($path, -1);
-		if ($lastChar !== '\\' && $lastChar !== '/')
-			$path .= '/';
-
+		$path = rtrim($path, '\\/').'/';
 		return $path;
 	}
 }
