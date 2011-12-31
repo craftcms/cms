@@ -128,15 +128,19 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .pane .body:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
 
 table.pane { width: 100%; }
-table.pane > *:first-child > tr > *:first-child { border-top-left-radius: 3px; }
-table.pane > *:first-child > tr > *:last-child { border-top-right-radius: 3px; }
-table.pane > *:last-child > tr > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > *:last-child > tr > *:last-child { border-bottom-right-radius: 3px; }
-table.pane > thead > tr > * { border-bottom: 1px solid #bbb; }
-table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
+table.pane > *:first-child > tr:first-child > *:first-child { border-top-left-radius: 3px; }
+table.pane > *:first-child > tr:first-child > *:last-child { border-top-right-radius: 3px; }
+table.pane > *:last-child > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
+table.pane > *:last-child > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
+table.pane > thead > tr > *,
+table.pane > tbody > tr.head > * { border-bottom: 1px solid #bbb; }
+table.pane > thead > tr > *:not(:first-child),
+table.pane > tbody > tr.head > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
 
 .pane .head,
-table.pane > thead > tr > * { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #fff; }
+table.pane > thead > tr > *,
+table.pane > tbody > tr.head > * { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #fff; }
+table.pane > tbody > tr.head > * { line-height: 1; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
 .pane .body { position: relative; }
