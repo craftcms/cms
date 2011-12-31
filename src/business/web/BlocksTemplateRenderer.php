@@ -248,13 +248,13 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'layout':
 				$this->_hasLayout = true;
-				$template = $this->parseParam($template);
-				return "<?php \$_layout->template = '{$template}'; ?>";
+				$template = $this->parseParam($params);
+				return "<?php \$_layout->template = {$template}; ?>";
 
 			case 'region':
 				$this->_hasLayout = true;
 				$regionName = $this->parseParam($params);
-				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionTemplateWidget', array('name' => '{$regionName}')); ?>";
+				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionTemplateWidget', array('name' => {$regionName})); ?>";
 
 			case '/region':
 			case 'endregion':
@@ -304,7 +304,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'redirect':
 				$url = $this->parseParam($params);
-				return "<?php header('Location: {$url}'); ?>";
+				return "<?php header('Location: '.{$url}); ?>";
 		}
 	}
 
@@ -314,7 +314,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private function parseParam($str)
 	{
 		preg_match('/([\'\"]?)(.*)\1/', $str, $match);
-		return $this->parseVariableTags($match[2], true);
+		return '\''.$this->parseVariableTags($match[2], true).'\'';
 	}
 
 	/**
