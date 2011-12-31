@@ -304,27 +304,37 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'redirect':
 				preg_match('/([\'\"]?)(.*)\1/', $params, $match);
-				$url = $this->parseVariableTags($match[2]);
-				return "<?php \$this->beginWidget('RedirectTemplateWidget'); ?>{$url}<?php \$this->endWidget(); ?>";
+				$url = $this->parseVariableTags($match[2], true);
+				return "<?php header('Location: {$url}'); ?>";
 		}
 	}
 
 	/**
 	 * Parse variable tags
 	 */
-	private function parseVariableTags($template)
+	private function parseVariableTags($template, $partOfString = false)
 	{
 		// find any remaining {variable-tags} on the page
-		return preg_replace_callback('/\{\{(.*)\}\}/U', array(&$this, 'parseVariableTagMatch'), $template);
+		$func = $partOfString ? 'parseVariableTagMatchInString' : 'parseVariableTagMatchInTemplate';
+		return preg_replace_callback('/\{\{\s*(.+)\s*\}\}/U', array(&$this, $func), $template);
 	}
 
 	/**
-	 * Parse a variable tag match
+	 * Parse a variable tag match within a string
 	 */
-	private function parseVariableTagMatch($match)
+	private function parseVariableTagMatchInString($match)
 	{
 		$this->parseVariables($match[1], true);
-		return '<?php echo ' . $match[1] . ' ?>';
+		return "'.{$match[1]}.'";
+	}
+
+	/**
+	 * Parse a variable tag match within the main template
+	 */
+	private function parseVariableTagMatchInTemplate($match)
+	{
+		$this->parseVariables($match[1], true);
+		return "<?php echo {$match[1]} ?>";
 	}
 
 	/**
