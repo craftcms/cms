@@ -13,6 +13,10 @@
 			</tr>
 		</thead>
 		<tbody>
+			<tr class="head">
+				<th colspan="3">System Compontents</th>
+			</tr>
+
 			<tr>
 				<th><h3>Routing</h3></th>
 				<td><p>Should flow like this:</p>
@@ -103,14 +107,8 @@
 					<p>Define environment config profiles (see Fuel).</p>
 					<p>Disable PathInfo in php.ini and make sure routing, URL generation works with query strings only.</p>
 					<p>Install YouTrack</p>
-				</td>
-			</tr>
-
-			<tr>
-				<th><h3>Documentation</h3></th>
-				<td>
-					<p>Look into documentation HTML generators (Sphynx, phpDocumentor, doxygen, phpdoc, twintext, apigen).</p>
-					<p>Would be great if documentation could live as Textile/Markdown files in app/docs/ and plugins/*/docs/, and then we could parse and display them right in the CP.</p>
+					<p>Activity Log service (used by the Recent Activity widget)</p>
+					<p>Notification service</p>
 				</td>
 				<td></td>
 			</tr>
@@ -124,28 +122,10 @@
 			</tr>
 
 			<tr>
-				<th><h3>Licensing</h3></th>
-				<td>
-					<p>Licensing review by a laywer</p>
-					<p>Add license blurb to each file (build server)</p>
-				</td>
-				<td></td>
-			</tr>
-
-			<tr>
 				<th><h3>Permissions, Roles, and Authentication</h3></th>
 				<td>
 					<p>Login, session management, roles.</p>
 					<p>All permissions are global</p>
-				</td>
-				<td></td>
-			</tr>
-
-			<tr>
-				<th><h3>Tests</h3></th>
-				<td>
-					<p>More of them.</p>
-					<p>Get phpUnit / xDebug working on *nix</p>
 				</td>
 				<td></td>
 			</tr>
@@ -179,9 +159,103 @@
 			<tr>
 				<th><h3>Intranet and E.T.</h3></th>
 				<td>
-					Release notes on separate lines?</p>
+					<p>Release notes on separate lines?</p>
 					<p>Select which files to include in a release and patch.</p>
 					<p>Log all API activity into a separate reporting db with schema</p>
+				</td>
+				<td></td>
+			</tr>
+
+
+
+			<tr class="head">
+				<th colspan="3">CP Sections</th>
+			</tr>
+
+			<tr>
+				<th><h3>Dashboard</h3></th>
+				<td>
+					<p>Widget settings saving</p>
+					<p>Ability to add new widgets and customize their order</p>
+					<p>Recent Activity widget (relies on the Activity Log service)</p>
+					<p>Site Map widget</p>
+					<p>Feed widget</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Content</h3></th>
+				<td>
+					<p>Section administration</p>
+					<p>Site Map</p>
+					<p>Recent Entries</p>
+					<p>Drafts and versions</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Assets</h3></th>
+				<td>
+					<p>Copy all functionality from our EE add-on</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Users</h3></th>
+				<td>
+					<p>Everything</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Settings</h3></th>
+				<td>
+					<p>Pretty much everything</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Docs</h3></th>
+				<td>
+					<p>Everything</p>
+				</td>
+				<td></td>
+			</tr>
+
+
+
+			<tr class="head">
+				<th colspan="3">Other Tasks</th>
+			</tr>
+
+			<tr>
+				<th><h3>Documentation</h3></th>
+				<td>
+					<p>Look into documentation HTML generators (Sphynx, phpDocumentor, doxygen, phpdoc, twintext, apigen).</p>
+					<p>Would be great if documentation could live as Textile/Markdown files in app/docs/ and plugins/*/docs/, and then we could parse and display them right in the CP.</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Tests</h3></th>
+				<td>
+					<p>More of them.</p>
+					<p>Get phpUnit / xDebug working on *nix</p>
+				</td>
+				<td></td>
+			</tr>
+
+			<tr>
+				<th><h3>Licensing</h3></th>
+				<td>
+					<p>Licensing review by a laywer</p>
+					<p>Add license blurb to each file (build server)</p>
 				</td>
 				<td></td>
 			</tr>
