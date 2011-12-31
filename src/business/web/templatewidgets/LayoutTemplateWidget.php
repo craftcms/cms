@@ -2,12 +2,12 @@
 
 class LayoutTemplateWidget extends COutputProcessor
 {
-	public $view;
+	public $template;
 	public $regions = array();
 
 	public function processOutput($output)
 	{
-		if ($this->view)
+		if ($this->template)
 		{
 			$owner = $this->getOwner();
 
@@ -18,7 +18,7 @@ class LayoutTemplateWidget extends COutputProcessor
 				$tags[$region->name] = new StringTag($region->content);
 			}
 
-			$output = $owner->loadTemplate($this->view, $tags, true);
+			$output = $owner->loadTemplate($this->template, $tags, true);
 		}
 
 		parent::processOutput($output);

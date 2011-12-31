@@ -248,12 +248,12 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'layout':
 				$this->_hasLayout = true;
-				$this->parseVariables($params);
-				return "<?php \$_layout->view = {$params}; ?>";
+				$template = $this->parseParam($template);
+				return "<?php \$_layout->template = '{$template}'; ?>";
 
 			case 'region':
 				$this->_hasLayout = true;
-				$regionName = trim($params, '\'"');
+				$regionName = $this->parseParam($params);
 				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionTemplateWidget', array('name' => '{$regionName}')); ?>";
 
 			case '/region':
@@ -261,8 +261,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 				return '<?php $this->endWidget(); ?>';
 
 			case 'include':
-				$this->parseVariables($params);
-				return "<?php \$this->loadTemplate({$params}); ?>";
+				$template = $this->parseParam($params);
+				return "<?php \$this->loadTemplate({$template}); ?>";
 
 			// Loops
 
@@ -303,10 +303,18 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Redirect
 
 			case 'redirect':
-				preg_match('/([\'\"]?)(.*)\1/', $params, $match);
-				$url = $this->parseVariableTags($match[2], true);
+				$url = $this->parseParam($params);
 				return "<?php header('Location: {$url}'); ?>";
 		}
+	}
+
+	/**
+	 * Parse action tag param for variable tags
+	 */
+	private function parseParam($str)
+	{
+		preg_match('/([\'\"]?)(.*)\1/', $str, $match);
+		return $this->parseVariableTags($match[2], true);
 	}
 
 	/**
