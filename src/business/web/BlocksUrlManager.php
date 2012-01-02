@@ -85,7 +85,23 @@ class BlocksUrlManager extends CUrlManager
 
 	public function matchRoute()
 	{
-		//$test = $this->parseUrl(Blocks::app()->request);
+		/*
+		if (Blocks::app()->request->type == RequestType::CP)
+		{
+			$routes = array(
+				array('content/edit/{entryId}', 'content/_edit', array(
+					'entryId' => RoutePatterns::Integer
+				)),
+				array('assets/edit/{path}', 'assets/_edit', array(
+					'path' => RoutePatterns::Wild
+				)),
+				array('users/edit/{userId}', 'users/_edit', array(
+					'userId' => RoutePatterns::Integer
+				)),
+			);
+		}
+		*/
+
 		return false;
 	}
 
