@@ -48,10 +48,10 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if ($this->request->getCMSRequestType() !== RequestType::Controller)
+		if ($this->request->cmsRequestType !== RequestType::Controller)
 			$this->urlManager->processTemplateMatching();
 
-		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->getCMSRequestType() == RequestType::Controller))
+		if ($this->urlManager->templateMatch !== null || ($this->request->cmsRequestType() == RequestType::Controller))
 			$this->catchAllRequest = array('blocks/index');
 
 		if($this->hasEventHandler('onBeginRequest'))
@@ -65,7 +65,7 @@ class BlocksApp extends CWebApplication
 
 	private function validateConfig()
 	{
-		$pathInfo = $this->request->getPathInfo();
+		$pathInfo = $this->request->pathInfo;
 
 		if (strpos($pathInfo, 'install') !== false)
 			return;
@@ -75,15 +75,15 @@ class BlocksApp extends CWebApplication
 
 		$messages = array();
 
-		$databaseServerName = $this->config->getDatabaseServerName();
-		$databaseAuthName = $this->config->getDatabaseAuthName();
-		$databaseAuthPassword = $this->config->getDatabaseAuthPassword();
-		$databaseName = $this->config->getDatabaseName();
-		$databaseType = $this->config->getDatabaseType();
-		$databasePort = $this->config->getDatabasePort();
-		$databaseTablePrefix = $this->config->getDatabaseTablePrefix();
-		$databaseCharset = $this->config->getDatabaseCharset();
-		$databaseCollation = $this->config->getDatabaseCollation();
+		$databaseServerName = $this->config->databaseServerName;
+		$databaseAuthName = $this->config->databaseAuthName;
+		$databaseAuthPassword = $this->config->databaseAuthPassword;
+		$databaseName = $this->config->databaseName;
+		$databaseType = $this->config->databaseType;
+		$databasePort = $this->config->databasePort;
+		$databaseTablePrefix = $this->config->databaseTablePrefix;
+		$databaseCharset = $this->config->databaseCharset;
+		$databaseCollation = $this->config->databaseCollation;
 
 		if (StringHelper::IsNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
@@ -113,7 +113,7 @@ class BlocksApp extends CWebApplication
 			$messages[] = 'The database type is not set in your db config file.';
 		else
 		{
-			if (!in_array($databaseType, $this->config->getDatabaseSupportedTypes()))
+			if (!in_array($databaseType, $this->config->databaseSupportedTypes))
 				$messages[] = 'Blocks does not support the database type you have set in your db config file.';
 		}
 
@@ -136,7 +136,7 @@ class BlocksApp extends CWebApplication
 
 		if (!$this->isDbInstalled())
 		{
-			if ($this->request->getCMSRequestType() == RequestType::Site)
+			if ($this->request->cmsRequestType == RequestType::Site)
 				throw new BlocksHttpException(404);
 			else
 			{
@@ -168,26 +168,26 @@ class BlocksApp extends CWebApplication
 			return $this->_requestTemplatePath;
 		else
 		{
-			if ($this->request->getCMSRequestType() == RequestType::Controller)
+			if ($this->request->cmsRequestType == RequestType::Controller)
 				return null;
 
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
-				$requestType = $this->request->getCMSRequestType();
+				$requestType = $this->request->cmsRequestType;
 				if ($requestType == RequestType::Site)
 				{
-					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getSiteTemplatePath()).'/');
+					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
 				}
 				else
 				{
-					$pathInfo = $this->request->getPathSegments();
-					if ($pathInfo && ($module = $this->urlManager->getCurrentModule()) !== null)
+					$pathInfo = $this->request->pathSegments;
+					if ($pathInfo && ($module = $this->urlManager->currentModule) !== null)
 					{
-						$templatePath = rtrim($module->getViewPath(), '\\/').'/';
+						$templatePath = rtrim($module->viewPath, '\\/').'/';
 					}
 					else
 					{
-						$this->_cpTemplatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getCPTemplatePath()).'/');
+						$this->_cpTemplatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
 						$templatePath = $this->_cpTemplatePath;
 					}
 				}
@@ -208,7 +208,7 @@ class BlocksApp extends CWebApplication
 		if ($this->_layoutPath !==null)
 			return $this->_layoutPath;
 		else
-			return $this->_layoutPath = $this->getViewPath().'layouts';
+			return $this->_layoutPath = $this->viewPath.'layouts';
 	}
 
 	public function getSystemViewPath()
@@ -246,13 +246,13 @@ class BlocksApp extends CWebApplication
 				$_GET[$name] = $value;
 		}
 		else
-			$route = $this->urlManager->parseUrl($this->getRequest());
+			$route = $this->urlManager->parseUrl($this->request);
 
 		if ($route !== '')
 		{
 			// don't let a gii request on the front-end go through.
 			if (strpos($route, 'gii') !== false)
-				if ($this->request->getCMSRequestType() !== RequestType::ControlPanel)
+				if ($this->request->cmsRequestType !== RequestType::ControlPanel)
 					$this->request->redirect('/');
 
 			$this->runController($route);

@@ -2,22 +2,22 @@
 
 class CpResourceTag extends Tag
 {
-	private $path;
-	private $url;
+	private $_path;
+	private $_url;
 
 	protected function init($path = '')
 	{
-		$this->path = $path;
+		$this->_path = $path;
 	}
 
 	private function getUrl()
 	{
-		if (!isset($this->url))
+		if (!isset($this->_url))
 		{
-			$this->url = UrlHelper::generateResourceUrl($this->path);
+			$this->_url = UrlHelper::generateResourceUrl($this->_path);
 		}
 
-		return $this->url;
+		return $this->_url;
 	}
 
 	public function __toString()

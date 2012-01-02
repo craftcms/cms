@@ -129,7 +129,7 @@ class ContentService extends CApplicationComponent implements IContentService
 	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
 	{
 		$connection = Blocks::app()->db;
-		$dbName = Blocks::app()->config->getDatabaseName();
+		$dbName = Blocks::app()->config->databaseName;
 		$site = Blocks::app()->site->getSiteByHandle($siteHandle);
 
 		$transaction = $connection->beginTransaction();
@@ -193,7 +193,7 @@ class ContentService extends CApplicationComponent implements IContentService
 		catch (Exception $e)
 		{
 			$transaction->rollBack();
-			throw new BlocksException($e->getMessage());
+			throw $e;
 		}
 	}
 
@@ -240,10 +240,8 @@ class ContentService extends CApplicationComponent implements IContentService
 		catch (Exception $e)
 		{
 			$transaction->rollBack();
-			throw new BlocksException($e->getMessage());
+			throw $e;
 		}
-
-		return false;
 	}
 
 	public function getBlocksBySectionId($sectionId)
@@ -291,7 +289,7 @@ class ContentService extends CApplicationComponent implements IContentService
 		Blocks::app()->db->schema->refresh();
 		$dataTable = Blocks::app()->db->schema->getTable('{{'.$table.'}}');
 
-		$columnNames = $dataTable->getColumnNames();
+		$columnNames = $dataTable->columnNames();
 
 		$lastBlockMatch = null;
 		foreach ($columnNames as $columnName)

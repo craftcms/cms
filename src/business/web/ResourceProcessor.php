@@ -56,7 +56,7 @@ class ResourceProcessor
 			throw new BlocksHttpException(404);
 
 		$file = Blocks::app()->file->set($this->_resourceFullPath);
-		$mimeType = $file->getMimeType();
+		$mimeType = $file->mimeType;
 
 		if (strpos($mimeType, 'css') > 0)
 			$this->convertRelativeUrls();

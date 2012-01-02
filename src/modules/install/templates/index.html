@@ -1,5 +1,5 @@
 	<p>
-		<?php if ($model->requirementsInfo->getInstallResult() == InstallStatus::Warning): ?>
+		<?php if ($model->requirementsInfo->installResult == InstallStatus::Warning): ?>
 		Please pay attention to the warnings listed below if your application will use the corresponding features.
 		<?php else: ?>
 		Unfortunately you did not meet the minimum requirements to run Blocks.
@@ -17,27 +17,27 @@
 			<th>Notes</th>
 		</tr>
 
-		<?php foreach($model->requirementsInfo->getRequirements() as $requirement): ?>
-			<?php if ($requirement->getResult() != RequirementResult::Success): ?>
+		<?php foreach($model->requirementsInfo->requirements as $requirement): ?>
+			<?php if ($requirement->result != RequirementResult::Success): ?>
 				<tr>
 					<td>
-						<?php echo $requirement->getName(); ?>
+						<?php echo $requirement->name; ?>
 					</td>
 					<td class="<?php echo strtolower($requirement->getResult()); ?>">
-						<?php echo $requirement->getResult(); ?>
+						<?php echo $requirement->result; ?>
 					</td>
 					<td>
-						<?php echo $requirement->getRequiredBy(); ?>
+						<?php echo $requirement->requiredBy; ?>
 					</td>
 					<td>
-						<?php echo $requirement->getNotes(); ?>
+						<?php echo $requirement->notes; ?>
 					</td>
 				</tr>
 			<?php endif ?>
 		<?php endforeach; ?>
 	</table>
 
-	<?php if (($errorFolders = $model->requirementsInfo->getErrorFolders()) !== null) : ?>
+	<?php if (($errorFolders = $model->requirementsInfo->errorFolders) !== null) : ?>
 	<p />
 	The following directories must be writable:<br />
 	<table border="1" cellpadding="1" cellspacing="0">
@@ -52,7 +52,7 @@
 	<?php endif ?>
 
 
-<?php if ($model->requirementsInfo->getInstallResult() !== InstallStatus::Failure) : ?>
+<?php if ($model->requirementsInfo->installResult !== InstallStatus::Failure) : ?>
 
 	<?php $form = $this->beginWidget('CActiveForm', array(
 					'id' => 'InstallConfigForm',

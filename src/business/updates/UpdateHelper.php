@@ -4,12 +4,12 @@ class UpdateHelper
 {
 	public static function rollBackFileChanges($manifestFile)
 	{
-		$manifestData = explode("\n", $manifestFile->getContents());
+		$manifestData = explode("\n", $manifestFile->contents);
 
 		foreach ($manifestData as $row)
 		{
 			$rowData = explode(';', $row);
-			$file = Blocks::app()->file->set(Blocks::app()->path->getBasePath().'../'.$rowData[1].'.bak');
+			$file = Blocks::app()->file->set(Blocks::app()->path->basePath.'../'.$rowData[1].'.bak');
 
 			if ($file->exists)
 				$file->rename($rowData[1]);
@@ -18,7 +18,7 @@ class UpdateHelper
 
 	public static function doFileUpdate($masterManifest)
 	{
-		$manifestData = explode("\n", $masterManifest->getContents());
+		$manifestData = explode("\n", $masterManifest->contents);
 
 		try
 		{
@@ -26,19 +26,19 @@ class UpdateHelper
 			{
 				$rowData = explode(';', $row);
 
-				$destFile = Blocks::app()->file->set(Blocks::app()->path->getBasePath().'../'.$rowData[1]);
+				$destFile = Blocks::app()->file->set(Blocks::app()->path->basePath.'../'.$rowData[1]);
 				$sourceFile = Blocks::app()->file->set($rowData[0].'/'.$rowData[1]);
 
 				switch (trim($rowData[2]))
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
-						$sourceFile->copy($destFile->getRealPath(), true);
+						$sourceFile->copy($destFile->realPath, true);
 						break;
 
 					case PatchManifestFileAction::Remove:
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
-						$destFile->rename($destFile->getRealPath().'.bak');
+						$destFile->rename($destFile->realPath.'.bak');
 						break;
 
 					default:
@@ -90,20 +90,20 @@ class UpdateHelper
 	{
 		// get manifest file
 		$manifestFile = Blocks::app()->file->set($manifestDataPath.'/blocks_manifest');
-		$manifestFileData = $manifestFile->getContents();
+		$manifestFileData = $manifestFile->contents;
 		return explode("\n", $manifestFileData);
 	}
 
 	public static function getTempDirForPackage($downloadPath)
 	{
 		$downloadPath = Blocks::app()->file->set($downloadPath);
-		return Blocks::app()->file->set($downloadPath->getDirName().'/'.$downloadPath->getFileName().'_temp');
+		return Blocks::app()->file->set($downloadPath->dirName.'/'.$downloadPath->fileName.'_temp');
 	}
 
 	public static function copyMigrationFile($filePath)
 	{
 		$migrationFile = Blocks::app()->file->set($filePath);
-		$destinationFile = Blocks::app()->path->getMigrationsPath().$migrationFile->getBaseName();
+		$destinationFile = Blocks::app()->path->migrationsPath.$migrationFile->baseName;
 		$migrationFile->copy($destinationFile, true);
 		return $destinationFile;
 	}

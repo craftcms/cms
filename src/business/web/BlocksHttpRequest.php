@@ -9,14 +9,14 @@ class BlocksHttpRequest extends CHttpRequest
 	public function getPathSegments()
 	{
 		if ($this->_pathSegments == null)
-			$this->_pathSegments = array_merge(array_filter(explode('/', $this->getPathInfo())));
+			$this->_pathSegments = array_merge(array_filter(explode('/', $this->pathInfo)));
 
 		return $this->_pathSegments;
 	}
 
 	public function getPathExtension()
 	{
-		if (($ext = pathinfo($this->getPathInfo(), PATHINFO_EXTENSION)) !== '')
+		if (($ext = pathinfo($this->pathInfo, PATHINFO_EXTENSION)) !== '')
 			$this->_extension = strtolower($ext);
 
 		return $this->_extension;

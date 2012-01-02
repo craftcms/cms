@@ -9,13 +9,13 @@ class RequirementsChecker
 
 	private function init()
 	{
-		$dbConfigPath = Blocks::app()->path->getConfigPath().'db.php';
-		$blocksConfigPath = Blocks::app()->path->getConfigPath().'blocks.php';
+		$dbConfigPath = Blocks::app()->path->configPath.'db.php';
+		$blocksConfigPath = Blocks::app()->path->configPath.'blocks.php';
 
 		$this->_requirements = array(
 			new Requirement(
 				'PHP Version',
-				version_compare(Blocks::app()->config->getLocalPHPVersion(), BLOCKS_MIN_PHP_VERSION, ">="),
+				version_compare(Blocks::app()->config->localPHPVersion, BLOCKS_MIN_PHP_VERSION, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'PHP '.BLOCKS_MIN_PHP_VERSION.' or higher is required.'),
@@ -105,31 +105,31 @@ class RequirementsChecker
 				$message),
 			new Requirement(
 				'Database Config Server Name',
-				Blocks::app()->config->getDatabaseServerName() !== '',
+				Blocks::app()->config->databaseServerName !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database server name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config User Name',
-				Blocks::app()->config->getDatabaseAuthName() !== '',
+				Blocks::app()->config->databaseAuthName !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database user name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config User Password',
-				Blocks::app()->config->getDatabaseAuthPassword() !== '',
+				Blocks::app()->config->databaseAuthPassword !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database user password in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config Database Name',
-				Blocks::app()->config->getDatabaseName() !== '',
+				Blocks::app()->config->databaseName !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Site License Key Name',
-				Blocks::app()->site->getLicenseKeys() !== null,
+				Blocks::app()->site->licenseKeys !== null,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your license key in the site config file at '.$blocksConfigPath),
@@ -154,14 +154,14 @@ class RequirementsChecker
 				false,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->path->getConfigPath()).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
+				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->path->configPath).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
 		}
 		else
 		{
 			/* TODO: Find out what min versions of MySQL and other databases we are going to support. */
 			$this->_requirements[] = new Requirement(
 			'MySQL version',
-			version_compare(Blocks::app()->config->getDatabaseVersion(), BLOCKS_MIN_MYSQL_VERSION, ">="),
+			version_compare(Blocks::app()->config->databaseVersion, BLOCKS_MIN_MYSQL_VERSION, ">="),
 			true,
 			'<a href="http://www.blockscms.com">Blocks</a>',
 			'MySQL '.BLOCKS_MIN_MYSQL_VERSION.' or higher is required to run Blocks.');
@@ -234,22 +234,22 @@ class RequirementsChecker
 
 		foreach ($this->_requirements as $requirement)
 		{
-			if ($requirement->getResult() == RequirementResult::Failed)
+			if ($requirement->result == RequirementResult::Failed)
 			{
 				$installResult = InstallStatus::Failure;
 				break;
 			}
-			else if ($requirement->getResult() == RequirementResult::Warning)
+			else if ($requirement->result == RequirementResult::Warning)
 				$installResult = InstallStatus::Warning;
 		}
 
-		$writableFolders = $this->getWritableFolders();
+		$writableFolders = $this->writableFolders;
 		$errorFolders = null;
 		foreach($writableFolders as $writableFolder)
 		{
-			if (!$writableFolder->getWriteable())
+			if (!$writableFolder->writeable)
 			{
-				$errorFolders[] = $writableFolder->getRealPath();
+				$errorFolders[] = $writableFolder->realPath;
 				$installResult = InstallStatus::Failure;
 			}
 		}

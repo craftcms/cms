@@ -92,12 +92,12 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		$blocksUpdateInfo->localBuild = Blocks::getBuild();
 		$blocksUpdateInfo->localVersion = Blocks::getVersion();
 
-		$plugins = Blocks::app()->plugins->getAllInstalledPluginHandlesAndVersions();
+		$plugins = Blocks::app()->plugins->allInstalledPluginHandlesAndVersions();
 		foreach ($plugins as $plugin)
 			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 
 		$et = new ET(ETEndPoints::Check());
-		$et->getPackage()->data = $blocksUpdateInfo;
+		$et->package->data = $blocksUpdateInfo;
 		$response = $et->phoneHome();
 
 		$blocksUpdateInfo = $response == null ? new BlocksUpdateInfo() : new BlocksUpdateInfo($response->data);

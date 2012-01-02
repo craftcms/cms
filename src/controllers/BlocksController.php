@@ -2,11 +2,9 @@
 
 class BlocksController extends BaseController
 {
-	private $_templateMatch = null;
-
 	public function run($actionId)
 	{
-		if (Blocks::app()->request->getCMSRequestType() == RequestType::Controller)
+		if (Blocks::app()->request->cmsRequestType == RequestType::Controller)
 		{
 			$requestController = null;
 			$requestAction = null;
@@ -34,7 +32,7 @@ class BlocksController extends BaseController
 
 						$newController->init();
 
-						if (($parent = $newController->getModule()) === null)
+						if (($parent = $newController->module) === null)
 							$parent = Blocks::app();
 
 						if ($parent->beforeControllerAction($newController, $action))
@@ -50,12 +48,10 @@ class BlocksController extends BaseController
 		else
 		{
 			// see if we can match a template on the file system.
-			$this->_templateMatch = Blocks::app()->urlManager->getTemplateMatch();
-
-			if ($this->_templateMatch !== null)
+			if (($templateMatch = Blocks::app()->urlManager->templateMatch) !== null)
 			{
 				parent::run($actionId);
-				$this->loadTemplate($this->_templateMatch->getRelativePath().'/'.$this->_templateMatch->getFileName());
+				$this->loadTemplate($templateMatch->getRelativePath().'/'.$templateMatch->getFileName());
 			}
 		}
 

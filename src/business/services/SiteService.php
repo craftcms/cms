@@ -47,7 +47,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 	{
 		if ($this->_currentSite == null)
 		{
-			$serverName = Blocks::app()->request->getServerName();
+			$serverName = Blocks::app()->request->serverName;
 			$httpServerName = 'http://'.$serverName;
 			$httpsServerName = 'https://'.$serverName;
 
@@ -98,7 +98,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 	public function matchTemplatePathWithAllowedFileExtensions($templatePath, $srcLanguage = 'en-us')
 	{
-		foreach ($this->getAllowedTemplateFileExtensions() as $allowedExtension)
+		foreach ($this->allowedTemplateFileExtensions as $allowedExtension)
 		{
 			$templateFile = Blocks::app()->findLocalizedFile($templatePath.'.'.$allowedExtension, $srcLanguage);
 			if (is_file($templateFile))
@@ -126,7 +126,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 	private function _getLicenseKeyStatus()
 	{
-		$licenseKeys = Blocks::app()->site->getLicenseKeys();
+		$licenseKeys = Blocks::app()->site->licenseKeys;
 
 		if (!$licenseKeys)
 			return LicenseKeyStatus::MissingKey;

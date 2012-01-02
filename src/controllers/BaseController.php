@@ -31,33 +31,33 @@ class BaseController extends CController
 
 	public function getViewFile($viewName)
 	{
-		if (($theme = Blocks::app()->getTheme()) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
+		if (($theme = Blocks::app()->theme) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
 			return $viewFile;
 
-		$moduleViewPath = $basePath = Blocks::app()->getViewPath();
+		$moduleViewPath = $basePath = Blocks::app()->viewPath;
 
-		if (($requestController = $this->getRequestController()) !== null)
-			$module = $requestController->getModule();
+		if (($requestController = $this->requestController) !== null)
+			$module = $requestController->module;
 		else
-			$module = $this->getModule();
+			$module = $this->module;
 
 		if ($module !== null)
-			$moduleViewPath = $module->getViewPath();
+			$moduleViewPath = $module->viewPath;
 
-		return $this->resolveViewFile($viewName, $this->getViewPath(), $basePath, $moduleViewPath);
+		return $this->resolveViewFile($viewName, $this->viewPath, $basePath, $moduleViewPath);
 	}
 
 	public function getViewPath()
 	{
-		if (($requestController = $this->getRequestController()) !== null)
-			$module = $requestController->getModule();
+		if (($requestController = $this->requestController) !== null)
+			$module = $requestController->module;
 		else
-			$module = $this->getModule();
+			$module = $this->module;
 
 		if ($module === null)
 			$module = Blocks::app();
 
-		return $module->getViewPath();
+		return $module->viewPath;
 	}
 
 	public function resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath = null)
@@ -84,7 +84,7 @@ class BaseController extends CController
 
 		$viewFile = Blocks::app()->path->normalizeDirectorySeparators($viewFile);
 
-		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
+		if (($renderer = Blocks::app()->viewRenderer) !== null)
 		{
 			if (get_class($renderer) == 'BlocksTemplateRenderer')
 			{
@@ -127,10 +127,10 @@ class BaseController extends CController
 	public function renderFile($viewFile, $data = null, $return = false)
 	{
 		$widgetCount = count($this->_widgetStack);
-		if (($renderer = Blocks::app()->getViewRenderer()) !== null)
+		if (($renderer = Blocks::app()->viewRenderer) !== null)
 		{
 			$extension = pathinfo($viewFile, PATHINFO_EXTENSION);
-			if ((get_class($renderer) === 'BlocksTemplateRenderer' && in_array($extension, Blocks::app()->site->getAllowedTemplateFileExtensions()) || $renderer->fileExtension === '.'.$extension))
+			if ((get_class($renderer) === 'BlocksTemplateRenderer' && in_array($extension, Blocks::app()->site->allowedTemplateFileExtensions) || $renderer->fileExtension === '.'.$extension))
 				$content = $renderer->renderFile($this, $viewFile, $data, $return);
 		}
 		else

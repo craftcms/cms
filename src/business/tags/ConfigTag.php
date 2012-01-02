@@ -4,11 +4,11 @@ class ConfigTag extends Tag
 {
 	public function configPath()
 	{
-		return Blocks::app()->path->getBlocksConfigPath();
+		return Blocks::app()->path->blocksConfigPath;
 	}
 
 	public function licenseKeys()
 	{
-		return Blocks::app()->site->getLicenseKeys();
+		return Blocks::app()->site->licenseKeys;
 	}
 }

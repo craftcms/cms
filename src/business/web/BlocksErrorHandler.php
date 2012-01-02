@@ -116,10 +116,10 @@ class BlocksErrorHandler extends CErrorHandler
 	protected function getViewFile($view, $code)
 	{
 		$viewPaths = array(
-			Blocks::app()->getTheme()===null ? null : Blocks::app()->getTheme()->getSystemViewPath(),
-			Blocks::app()->path->getSiteTemplatePath(),
-			Blocks::app() instanceof CWebApplication ? Blocks::app()->getSystemViewPath() : null,
-			Blocks::app()->path->getFrameworkPath().'views/',
+			Blocks::app()->theme === null ? null : Blocks::app()->theme->systemViewPath,
+			Blocks::app()->path->siteTemplatePath,
+			Blocks::app() instanceof CWebApplication ? Blocks::app()->systemViewPath : null,
+			Blocks::app()->path->frameworkPath.'views/',
 		);
 
 		foreach ($viewPaths as $i => $viewPath)
@@ -127,7 +127,7 @@ class BlocksErrorHandler extends CErrorHandler
 			if ($viewPath !== null)
 			{
 				// we don't want to allow an exception template on the front end
-				if ($view !== 'errors/exception' || ($view == 'errors/exception' && $viewPath !== Blocks::app()->path->getSiteTemplatePath()))
+				if ($view !== 'errors/exception' || ($view == 'errors/exception' && $viewPath !== Blocks::app()->path->siteTemplatePath))
 				{
 					$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);
 					if (is_file($viewFile))

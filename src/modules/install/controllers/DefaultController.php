@@ -25,7 +25,7 @@ class DefaultController extends BaseController
 				try
 				{
 					// validate P&T credentials & license key
-					$status = Blocks::app()->security->validatePTUserCredentialsAndKey($model->ptUserName, $model->ptPassword, Blocks::app()->site->getLicenseKeys(), Blocks::getEdition());
+					$status = Blocks::app()->security->validatePTUserCredentialsAndKey($model->ptUserName, $model->ptPassword, Blocks::app()->site->licenseKeys, Blocks::getEdition());
 
 					switch ($status)
 					{
@@ -42,10 +42,10 @@ class DefaultController extends BaseController
 						// No net connection
 						case LicenseKeyStatus::Valid:
 							// start the db install
-							$dbType = strtolower(Blocks::app()->config->getDatabaseType());
+							$dbType = strtolower(Blocks::app()->config->databaseType);
 							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_schema.sql');
 
-							$sqlSchemaContents = $baseSqlSchemaFile->getContents();
+							$sqlSchemaContents = $baseSqlSchemaFile->contents;
 							$sqlSchemaContents = $this->replaceTokens($sqlSchemaContents);
 
 							$baseSqlSchemaFile->setContents(null, $sqlSchemaContents);
@@ -57,7 +57,7 @@ class DefaultController extends BaseController
 
 							$baseSqlDataFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_data.sql');
 
-							$sqlDataContents = $baseSqlDataFile->getContents();
+							$sqlDataContents = $baseSqlDataFile->contents;
 							$sqlDataContents = $this->replaceTokens($sqlDataContents);
 
 							$baseSqlDataFile->setContents(null, $sqlDataContents);
@@ -78,7 +78,7 @@ class DefaultController extends BaseController
 
 							// insert license key(s) into LicenseKeys table.
 
-							Blocks::app()->request->redirect(Blocks::app()->urlManager->getBaseUrl());
+							Blocks::app()->request->redirect(Blocks::app()->urlManager->baseUrl);
 							break;
 					}
 				}
@@ -98,7 +98,7 @@ class DefaultController extends BaseController
 	{
 		$connection = Blocks::app()->db;
 
-		$connection->charset = Blocks::app()->config->getDatabaseCharset();
+		$connection->charset = Blocks::app()->config->databaseCharset;
 		$connection->active = true;
 
 		if (preg_match('/(CREATE|DROP|ALTER|SET|INSERT)/i', $query))
@@ -110,9 +110,9 @@ class DefaultController extends BaseController
 
 	private function replaceTokens($fileContents)
 	{
-		$fileContents = str_replace('@@@', Blocks::app()->config->getDatabaseTablePrefix(), $fileContents);
-		$fileContents = str_replace('^^^', Blocks::app()->config->getDatabaseCharset(), $fileContents);
-		$fileContents = str_replace('###', Blocks::app()->config->getDatabaseCollation(), $fileContents);
+		$fileContents = str_replace('@@@', Blocks::app()->config->databaseTablePrefix(), $fileContents);
+		$fileContents = str_replace('^^^', Blocks::app()->config->databaseCharset(), $fileContents);
+		$fileContents = str_replace('###', Blocks::app()->config->databaseCollation(), $fileContents);
 
 		return $fileContents;
 	}

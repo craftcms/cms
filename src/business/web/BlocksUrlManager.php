@@ -8,6 +8,10 @@ class BlocksUrlManager extends CUrlManager
 	private $_requestExtension = null;
 	private $_currentModule = null;
 
+	public $routeVar = 'p';
+	private $_isServerPathInfoRequest = null;
+
+
 	public function init()
 	{
 		parent::init();
@@ -15,21 +19,42 @@ class BlocksUrlManager extends CUrlManager
 		// set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
-		$this->_path = Blocks::app()->request->getPathInfo();
-		$this->_pathSegments = Blocks::app()->request->getPathSegments();
-		$this->_requestExtension = Blocks::app()->request->getPathExtension();
+		if ($this->isServerPathInfoRequest)
+			$this->setUrlFormat(self::PATH_FORMAT);
+		else
+			$this->setUrlFormat(self::GET_FORMAT);
+
+		$this->_path = Blocks::app()->request->pathInfo;
+		$this->_pathSegments = Blocks::app()->request->pathSegments;
+		$this->_requestExtension = Blocks::app()->request->pathExtension;
+	}
+
+	/**
+	 * @return Returns whether the $_SERVER["PATH_INFO"] variable is set or not.
+	 */
+	public function getIsServerPathInfoRequest()
+	{
+		if ($this->_isServerPathInfoRequest == null)
+		{
+			if (isset($_SERVER["PATH_INFO"]))
+				$this->_isServerPathInfoRequest = true;
+			else
+				$this->_isServerPathInfoRequest = false;
+		}
+
+		return $this->_isServerPathInfoRequest;
 	}
 
 	public function processTemplateMatching()
 	{
 		// if it's a gii request, no need to do template matching.
-		if (($this->getCurrentModule() !== null && $this->getCurrentModule()->getId() == 'gii') || strpos(Blocks::app()->request->getParam('r'), 'gii') !== false)
+		if (($this->currentModule !== null && $this->currentModule->Id == 'gii') || strpos(Blocks::app()->request->getParam('r'), 'gii') !== false)
 			return;
 
 		$matchFound = false;
 
 		// we'll never have a db entry match on a control panel request
-		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
+		if (Blocks::app()->request->cmsRequestType == RequestType::Site)
 		{
 			if (Blocks::app()->isDbInstalled())
 				if ($this->matchEntry())
@@ -67,7 +92,7 @@ class BlocksUrlManager extends CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
+		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
 
 		$entry = Entries::model()->findByAttributes(array(
 			'full_uri' => $pathMatchPattern,
@@ -100,8 +125,19 @@ class BlocksUrlManager extends CUrlManager
 	public function matchTemplate()
 	{
 		$moduleName = null;
-		$templatePath = $this->normalizeTrailingSlash(Blocks::app()->getViewPath());
-		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
+		$templatePath = $this->normalizeTrailingSlash(Blocks::app()->viewPath);
+		$pathInfoPath = Blocks::app()->request->getParam($this->routeVar, null);
+
+		if ($this->isServerPathInfoRequest)
+			$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
+		else
+		{
+			if ($pathInfoPath !== null)
+				$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.$pathInfoPath, '/');
+			else
+				$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
+		}
+
 		$tempPath = $this->_path;
 		$testPath = null;
 
@@ -113,21 +149,19 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// if this is a control panel request, let's see if we can match it to a module as well.
-		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
+		if (Blocks::app()->request->cmsRequestType == RequestType::ControlPanel)
 		{
 			// we're dealing with a module
 			if ($this->_currentModule !== null)
 			{
-				$moduleName = $this->_currentModule->getId();
+				$moduleName = $this->_currentModule->Id;
 				$requestPath = substr($tempPath, strlen($moduleName) + 1);
 
 				if ($requestPath === false)
 					$requestPath = '';
 			}
 			else
-			{
 				$requestPath = $tempPath;
-			}
 		}
 		else
 			$requestPath = $tempPath;
@@ -155,7 +189,11 @@ class BlocksUrlManager extends CUrlManager
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.'/'.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
+
+			if ($moduleName !== null)
+				$requestPath = $moduleName.'/'.$requestPath;
+
+			$this->setTemplateMatch($requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
 			return true;
 		}
 
@@ -165,7 +203,14 @@ class BlocksUrlManager extends CUrlManager
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($moduleName == null ? $requestPath : $moduleName.$requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
+
+			if ($moduleName !== null)
+				$requestPath = $moduleName.$requestPath;
+
+			if ($pathInfoPath !== null)
+				$requestPath = $pathInfoPath.$requestPath;
+
+			$this->setTemplateMatch($requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
 			return true;
 		}
 

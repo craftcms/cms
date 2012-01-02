@@ -19,7 +19,7 @@
 	</head>
 
 	<body>
-		<?php foreach(Blocks::app()->user->getFlashes() as $key => $message)
+		<?php foreach(Blocks::app()->user->flashes as $key => $message)
 		  {
 			  if ($key == 'counters')
 				  continue;

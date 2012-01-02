@@ -9,7 +9,7 @@ class UrlTag extends Tag
 	 */
 	public function base()
 	{
-		return Blocks::app()->urlManager->getBaseUrl();
+		return Blocks::app()->urlManager->baseUrl;
 	}
 
 	/**
@@ -20,7 +20,7 @@ class UrlTag extends Tag
 	private function _getSegments()
 	{
 		if (!isset($this->_segments))
-			$this->_segments = Blocks::app()->request->getPathSegments();
+			$this->_segments = Blocks::app()->request->pathSegments;
 
 		return $this->_segments;
 	}
@@ -50,12 +50,7 @@ class UrlTag extends Tag
 
 	public function domain()
 	{
-		return Blocks::app()->request->getServerName();
-	}
-
-	public function controllerUrl($controller, $action)
-	{
-		return BlocksHtml::controllerUrl($controller, $action);
+		return Blocks::app()->request->serverName;
 	}
 
 	public function get($var)

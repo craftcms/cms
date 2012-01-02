@@ -6,7 +6,7 @@ class AssetsTag extends Tag
 
 	function __construct()
 	{
-		$this->_siteId = Blocks::app()->site->getCurrentSiteByUrl()->id;
+		$this->_siteId = Blocks::app()->site->currentSiteByUrl->id;
 	}
 
 	public function folders()

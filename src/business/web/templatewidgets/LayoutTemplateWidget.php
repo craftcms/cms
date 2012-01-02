@@ -9,7 +9,7 @@ class LayoutTemplateWidget extends COutputProcessor
 	{
 		if ($this->template)
 		{
-			$owner = $this->getOwner();
+			$owner = $this->owner;
 
 			$tags['subtemplate'] = new StringTag($output);
 

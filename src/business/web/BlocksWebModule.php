@@ -10,7 +10,7 @@ class BlocksWebModule extends CWebModule
 		if($this->_viewPath!==null)
 			return $this->_viewPath;
 		else
-			return $this->_viewPath=$this->getBasePath().'/templates/';
+			return $this->_viewPath=$this->basePath.'/templates/';
 	}
 
 	public function getLayoutPath()
@@ -18,6 +18,6 @@ class BlocksWebModule extends CWebModule
 		if ($this->_layoutPath !== null)
 			return $this->_layoutPath;
 		else
-			return $this->_layoutPath = $this->getViewPath().'layouts/';
+			return $this->_layoutPath = $this->viewPath.'layouts/';
 	}
 }

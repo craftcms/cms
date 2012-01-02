@@ -51,10 +51,10 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private function setParsedTemplatePath()
 	{
 		// get the relative template path
-		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(Blocks::app()->path->getTemplatePath()));
+		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(Blocks::app()->path->templatePath));
 
 		// set the parsed template path
-		$this->_parsedTemplatePath = Blocks::app()->path->getTemplateCachePath().$relTemplatePath;
+		$this->_parsedTemplatePath = Blocks::app()->path->templateCachePath.$relTemplatePath;
 
 		// set the meta path
 		$this->_destinationMetaPath = $this->_parsedTemplatePath.'.meta';
