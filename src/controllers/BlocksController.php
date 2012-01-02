@@ -4,7 +4,7 @@ class BlocksController extends BaseController
 {
 	public function run($actionId)
 	{
-		if (Blocks::app()->request->cmsRequestType == RequestType::Controller)
+		if (Blocks::app()->mode == AppMode::Action)
 		{
 			$requestController = null;
 			$requestAction = null;
