@@ -2,6 +2,7 @@
 
 class BlocksApp extends CWebApplication
 {
+	private $_mode;
 	private $_requestTemplatePath;
 	private $_cpTemplatePath;
 	private $_layoutPath;
@@ -11,29 +12,55 @@ class BlocksApp extends CWebApplication
 
 	public function init()
 	{
-		// run the resource processor if necessary.
-		if ($this->request->requestType == 'GET')
+		// Is this a resource request?
+		if ($this->mode == AppMode::Resource)
 		{
-			$segs = $this->request->pathSegments;
+			$segs = array_slice($this->request->pathSegments, 1);
 
-			if (($this->config('resourceTriggerWord')) !== null && (array_shift($segs) == $this->config('resourceTriggerWord')))
-			{
-				$pluginHandle = array_shift($segs);
+			$handle = array_shift($segs);
 
-				if ($pluginHandle == 'app')
-					$rootFolderPath = $this->path->resourcesPath;
-				else
-					$rootFolderPath = $this->path->pluginsPath.$pluginHandle.'/';
+			if ($handle == 'app')
+				$rootFolderPath = $this->path->resourcesPath;
+			else
+				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
 
-				$rootFolderUrl = $this->urlManager->baseUrl.'/'.'resources/'.$pluginHandle.'/';
-				$relativeResourcePath = implode('/', $segs);
+			$rootFolderUrl = $this->urlManager->baseUrl.'/'.'resources/'.$handle.'/';
+			$relativeResourcePath = implode('/', $segs);
 
-				$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
-				$resourceProcessor->processResourceRequest();
-			}
+			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+			$resourceProcessor->processResourceRequest();
 		}
 
 		parent::init();
+	}
+
+	public function getMode()
+	{
+		if (!isset($this->_mode))
+		{
+			// Controller action?
+			if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('actionTriggerWord')))
+			{
+				$this->_mode = AppMode::Action;
+			}
+			// Resource?
+			else if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('resourceTriggerWord')))
+			{
+				$this->_mode = AppMode::Resource;
+			}
+			// CP?
+			else if (defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true)
+			{
+				$this->_mode = AppMode::CP;
+			}
+			// Then it's a site
+			else
+			{
+				$this->_mode = AppMode::Site;
+			}
+		}
+
+		return $this->_mode;
 	}
 
 	public function blar()
@@ -48,10 +75,10 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if ($this->request->type !== RequestType::Action)
+		if ($this->mode !== AppMode::Action)
 			$this->urlManager->processTemplateMatching();
 
-		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->type == RequestType::Action))
+		if ($this->urlManager->getTemplateMatch() !== null || ($this->mode == AppMode::Action))
 			$this->catchAllRequest = array('blocks/index');
 
 		if($this->hasEventHandler('onBeginRequest'))
@@ -136,7 +163,7 @@ class BlocksApp extends CWebApplication
 
 		if (!$this->isDbInstalled())
 		{
-			if ($this->request->type == RequestType::Site)
+			if ($this->mode == AppMode::Site)
 				throw new BlocksHttpException(404);
 			else
 			{
@@ -168,13 +195,13 @@ class BlocksApp extends CWebApplication
 			return $this->_requestTemplatePath;
 		else
 		{
-			if ($this->request->type == RequestType::Action)
+			if ($this->mode == AppMode::Action)
 				return null;
 
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
-				$requestType = $this->request->type;
-				if ($requestType == RequestType::Site)
+				$requestType = $this->mode;
+				if ($requestType == AppMode::Site)
 				{
 					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getSiteTemplatePath()).'/');
 				}
@@ -252,7 +279,7 @@ class BlocksApp extends CWebApplication
 		{
 			// don't let a gii request on the front-end go through.
 			if (strpos($route, 'gii') !== false)
-				if ($this->request->type !== RequestType::CP)
+				if ($this->mode !== AppMode::CP)
 					$this->request->redirect('/');
 
 			$this->runController($route);

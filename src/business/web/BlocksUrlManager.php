@@ -29,7 +29,7 @@ class BlocksUrlManager extends CUrlManager
 		$matchFound = false;
 
 		// we'll never have a db entry match on a control panel request
-		if (Blocks::app()->request->type == RequestType::Site)
+		if (Blocks::app()->mode == AppMode::Site)
 		{
 			if (Blocks::app()->isDbInstalled())
 				if ($this->matchEntry())
@@ -86,7 +86,7 @@ class BlocksUrlManager extends CUrlManager
 	public function matchRoute()
 	{
 		/*
-		if (Blocks::app()->request->type == RequestType::CP)
+		if (Blocks::app()->mode == AppMode::CP)
 		{
 			$routes = array(
 				array('content/edit/{entryId}', 'content/_edit', array(
@@ -129,7 +129,7 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// if this is a control panel request, let's see if we can match it to a module as well.
-		if (Blocks::app()->request->type == RequestType::CP)
+		if (Blocks::app()->mode == AppMode::CP)
 		{
 			// we're dealing with a module
 			if ($this->_currentModule !== null)
