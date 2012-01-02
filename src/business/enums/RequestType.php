@@ -2,7 +2,7 @@
 
 class RequestType
 {
-	const ControlPanel = 'ControlPanel';
+	const CP = 'CP';
 	const Site = 'Site';
-	const Controller = 'Controller';
+	const Action = 'Action';
 }

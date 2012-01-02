@@ -113,7 +113,7 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// if this is a control panel request, let's see if we can match it to a module as well.
-		if (Blocks::app()->request->getCmsRequestType() == RequestType::ControlPanel)
+		if (Blocks::app()->request->getCmsRequestType() == RequestType::CP)
 		{
 			// we're dealing with a module
 			if ($this->_currentModule !== null)

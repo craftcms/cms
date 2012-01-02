@@ -6,7 +6,7 @@ class BlocksController extends BaseController
 
 	public function run($actionId)
 	{
-		if (Blocks::app()->request->getCMSRequestType() == RequestType::Controller)
+		if (Blocks::app()->request->getCMSRequestType() == RequestType::Action)
 		{
 			$requestController = null;
 			$requestAction = null;

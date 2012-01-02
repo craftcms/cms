@@ -48,10 +48,10 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if ($this->request->getCMSRequestType() !== RequestType::Controller)
+		if ($this->request->getCMSRequestType() !== RequestType::Action)
 			$this->urlManager->processTemplateMatching();
 
-		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->getCMSRequestType() == RequestType::Controller))
+		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->getCMSRequestType() == RequestType::Action))
 			$this->catchAllRequest = array('blocks/index');
 
 		if($this->hasEventHandler('onBeginRequest'))
@@ -168,7 +168,7 @@ class BlocksApp extends CWebApplication
 			return $this->_requestTemplatePath;
 		else
 		{
-			if ($this->request->getCMSRequestType() == RequestType::Controller)
+			if ($this->request->getCMSRequestType() == RequestType::Action)
 				return null;
 
 			if (get_class($this->request) == 'BlocksHttpRequest')
@@ -252,7 +252,7 @@ class BlocksApp extends CWebApplication
 		{
 			// don't let a gii request on the front-end go through.
 			if (strpos($route, 'gii') !== false)
-				if ($this->request->getCMSRequestType() !== RequestType::ControlPanel)
+				if ($this->request->getCMSRequestType() !== RequestType::CP)
 					$this->request->redirect('/');
 
 			$this->runController($route);

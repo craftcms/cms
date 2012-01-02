@@ -30,7 +30,7 @@ class TemplateFileCache extends CFileCache
 				$this->cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
 				break;
 
-			case RequestType::ControlPanel:
+			case RequestType::CP:
 				$this->cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
 				break;
 
