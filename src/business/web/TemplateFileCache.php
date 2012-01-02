@@ -23,7 +23,7 @@ class TemplateFileCache extends CFileCache
 	{
 		parent::init();
 
-		$requestType = Blocks::app()->request->getCMSRequestType();
+		$requestType = Blocks::app()->request->type;
 		switch ($requestType)
 		{
 			case RequestType::Site:

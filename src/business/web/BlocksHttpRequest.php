@@ -3,31 +3,38 @@
 class BlocksHttpRequest extends CHttpRequest
 {
 	private $_requestType;
-	private $_pathSegments = null;
-	private $_extension = null;
+	private $_pathSegments;
+	private $_extension;
 
 	public function getPathSegments()
 	{
-		if ($this->_pathSegments == null)
+		if (!isset($this->_pathSegments))
+		{
 			$this->_pathSegments = array_merge(array_filter(explode('/', $this->getPathInfo())));
+		}
 
 		return $this->_pathSegments;
 	}
 
 	public function getPathExtension()
 	{
-		if (($ext = pathinfo($this->getPathInfo(), PATHINFO_EXTENSION)) !== '')
+		if (!isset($this->_extension))
+		{
+			$ext = pathinfo($this->getPathInfo(), PATHINFO_EXTENSION);
 			$this->_extension = strtolower($ext);
+		}
 
 		return $this->_extension;
 	}
 
-	public function getCMSRequestType()
+	public function getType()
 	{
-		if ($this->_requestType == null)
+		if (!isset($this->_requestType))
 		{
 			if (isset($this->pathSegments[0]) && ($this->pathSegments[0] == Blocks::app()->config('actionTriggerWord')))
+			{
 				$this->_requestType = RequestType::Action;
+			}
 			else
 			{
 				if (REQUEST_TYPE == RequestType::CP)

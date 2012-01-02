@@ -16,7 +16,7 @@ class ET
 
 		$this->_package = new ETPackage();
 		$this->_package->licenseKeys = Blocks::app()->site->getLicenseKeys();
-		$this->_package->domain = Blocks::app()->request->getServerName();
+		$this->_package->domain = Blocks::app()->request->serverName;
 		$this->_package->edition = Blocks::getEdition();
 	}
 

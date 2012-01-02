@@ -20,7 +20,7 @@ class UrlTag extends Tag
 	private function _getSegments()
 	{
 		if (!isset($this->_segments))
-			$this->_segments = Blocks::app()->request->getPathSegments();
+			$this->_segments = Blocks::app()->request->pathSegments;
 
 		return $this->_segments;
 	}
@@ -50,7 +50,7 @@ class UrlTag extends Tag
 
 	public function domain()
 	{
-		return Blocks::app()->request->getServerName();
+		return Blocks::app()->request->serverName;
 	}
 
 	public function controllerUrl($controller, $action)

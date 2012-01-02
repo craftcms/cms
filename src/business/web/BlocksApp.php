@@ -48,10 +48,10 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if ($this->request->getCMSRequestType() !== RequestType::Action)
+		if ($this->request->type !== RequestType::Action)
 			$this->urlManager->processTemplateMatching();
 
-		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->getCMSRequestType() == RequestType::Action))
+		if ($this->urlManager->getTemplateMatch() !== null || ($this->request->type == RequestType::Action))
 			$this->catchAllRequest = array('blocks/index');
 
 		if($this->hasEventHandler('onBeginRequest'))
@@ -136,7 +136,7 @@ class BlocksApp extends CWebApplication
 
 		if (!$this->isDbInstalled())
 		{
-			if ($this->request->getCMSRequestType() == RequestType::Site)
+			if ($this->request->type == RequestType::Site)
 				throw new BlocksHttpException(404);
 			else
 			{
@@ -168,19 +168,19 @@ class BlocksApp extends CWebApplication
 			return $this->_requestTemplatePath;
 		else
 		{
-			if ($this->request->getCMSRequestType() == RequestType::Action)
+			if ($this->request->type == RequestType::Action)
 				return null;
 
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
-				$requestType = $this->request->getCMSRequestType();
+				$requestType = $this->request->type;
 				if ($requestType == RequestType::Site)
 				{
 					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->getSiteTemplatePath()).'/');
 				}
 				else
 				{
-					$pathInfo = $this->request->getPathSegments();
+					$pathInfo = $this->request->pathSegments;
 					if ($pathInfo && ($module = $this->urlManager->getCurrentModule()) !== null)
 					{
 						$templatePath = rtrim($module->getViewPath(), '\\/').'/';
@@ -252,7 +252,7 @@ class BlocksApp extends CWebApplication
 		{
 			// don't let a gii request on the front-end go through.
 			if (strpos($route, 'gii') !== false)
-				if ($this->request->getCMSRequestType() !== RequestType::CP)
+				if ($this->request->type !== RequestType::CP)
 					$this->request->redirect('/');
 
 			$this->runController($route);

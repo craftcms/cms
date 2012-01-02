@@ -47,7 +47,7 @@ class SiteService extends CApplicationComponent implements ISiteService
 	{
 		if ($this->_currentSite == null)
 		{
-			$serverName = Blocks::app()->request->getServerName();
+			$serverName = Blocks::app()->request->serverName;
 			$httpServerName = 'http://'.$serverName;
 			$httpsServerName = 'https://'.$serverName;
 

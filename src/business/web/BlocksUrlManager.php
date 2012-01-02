@@ -15,9 +15,9 @@ class BlocksUrlManager extends CUrlManager
 		// set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
-		$this->_path = Blocks::app()->request->getPathInfo();
-		$this->_pathSegments = Blocks::app()->request->getPathSegments();
-		$this->_requestExtension = Blocks::app()->request->getPathExtension();
+		$this->_path = Blocks::app()->request->pathInfo;
+		$this->_pathSegments = Blocks::app()->request->pathSegments;
+		$this->_requestExtension = Blocks::app()->request->pathExtension;
 	}
 
 	public function processTemplateMatching()
@@ -29,7 +29,7 @@ class BlocksUrlManager extends CUrlManager
 		$matchFound = false;
 
 		// we'll never have a db entry match on a control panel request
-		if (Blocks::app()->request->getCMSRequestType() == RequestType::Site)
+		if (Blocks::app()->request->type == RequestType::Site)
 		{
 			if (Blocks::app()->isDbInstalled())
 				if ($this->matchEntry())
@@ -67,7 +67,7 @@ class BlocksUrlManager extends CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
+		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
 
 		$entry = Entries::model()->findByAttributes(array(
 			'full_uri' => $pathMatchPattern,
@@ -101,7 +101,7 @@ class BlocksUrlManager extends CUrlManager
 	{
 		$moduleName = null;
 		$templatePath = $this->normalizeTrailingSlash(Blocks::app()->getViewPath());
-		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->getPathInfo(), '/');
+		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
 		$tempPath = $this->_path;
 		$testPath = null;
 
@@ -113,7 +113,7 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// if this is a control panel request, let's see if we can match it to a module as well.
-		if (Blocks::app()->request->getCmsRequestType() == RequestType::CP)
+		if (Blocks::app()->request->type == RequestType::CP)
 		{
 			// we're dealing with a module
 			if ($this->_currentModule !== null)
