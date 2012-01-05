@@ -160,7 +160,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #e5e5e5; 
 .pane.transparent { background: none; -webkit-box-shadow: none; }
 .pane.transparent .head { background: none; -webkit-box-shadow: none; }
 
-.pane + .btn-group { margin-top: -15px; }
+.pane + .btn-group { margin-top: -10px; }
 
 /* grids */
 .grid { margin-left: -20px;  }
@@ -296,19 +296,6 @@ span.status.off { background-position: 0 -20px; }
 /* ----------------------------------------*/
 
 table th { font-weight: bold; color: #666; text-align: left; vertical-align: top; }
-
-/* zebra tables */
-table.zebra { width: 100%; }
-table.zebra > tbody > tr:nth-child(odd) > *,
-table.zebra > tbody > tr.odd > * { /*background: -webkit-gradient(linear, 0 0, 0 100%, from(#f7f7f7), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #eee, inset 0 -1px 0 #eee;*/ background: #eee; }
-
-/*table.zebra > tbody > tr:nth-child(odd) > *:first-child,
-table.zebra > tbody > tr.odd > *:first-child { border-radius: 3px 0 0 3px; -webkit-box-shadow: inset 0 1px 0 #eee, inset 0 -1px 0 #eee, inset 1px 0 0 #eee; }
-table.zebra > tbody > tr:nth-child(odd) > *:last-child,
-table.zebra > tbody > tr.odd > *:last-child { border-radius: 0 3px 3px 0; -webkit-box-shadow: inset 0 1px 0 #eee, inset -1px 0 0 #eee, inset 0 -1px 0 #eee; }*/
-
-table.zebra > tbody > tr.even > th,
-table.zebra > tbody > tr.even > td { border-radius: 0 !important; background: transparent !important; -webkit-box-shadow: none !important; }
 
 /* fields */
 .fields > table > tbody > tr > th { width: 140px; vertical-align: middle; border-right: 1px solid #bbb; }
