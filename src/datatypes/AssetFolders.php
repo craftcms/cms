@@ -7,7 +7,7 @@ class AssetFolder extends BlocksDataType
 	);
 
 	static $belongsTo = array(
-		'site' => 'Site'
+		'site' => 'Sites'
 	);
 
 	static $attributes = array(
