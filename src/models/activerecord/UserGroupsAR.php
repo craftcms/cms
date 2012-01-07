@@ -1,31 +1,28 @@
 <?php
 
 /**
- * This is the model class for table "{{users}}".
+ * This is the model class for table "{{usergroups}}".
  *
- * The followings are the available columns in table '{{users}}':
+ * The followings are the available columns in table '{{usergroups}}':
  * @property integer $id
- * @property string $user_name
- * @property string $email
- * @property string $first_name
- * @property string $last_name
- * @property string $password
- * @property string $salt
+ * @property integer $group_id
+ * @property integer $user_id
+ * @property integer $site_id
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Entries[] $entries
- * @property UserBlocks[] $userBlocks
- * @property UserGroups[] $userGroups
- * @property UserWidgets[] $userWidgets
+ * @property UserGroupPermissions[] $userGroupPermissions
+ * @property Sites $site
+ * @property Groups $group
+ * @property Users $user
  */
-class Users extends CActiveRecord
+class UserGroupsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Users the static model class
+	 * @return UserGroups the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -37,7 +34,7 @@ class Users extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{users}}';
+		return '{{usergroups}}';
 	}
 
 	/**
@@ -48,15 +45,12 @@ class Users extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_name, email, first_name, password, salt', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('user_name, email', 'length', 'max'=>250),
-			array('first_name, last_name', 'length', 'max'=>100),
-			array('password, salt', 'length', 'max'=>128),
+			array('group_id, user_id, site_id', 'required'),
+			array('group_id, user_id, site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, user_name, email, first_name, last_name, password, salt, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, group_id, user_id, site_id, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -68,10 +62,10 @@ class Users extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'entries' => array(self::HAS_MANY, 'Entries', 'author_id'),
-			'userBlocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
-			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
-			'userWidgets' => array(self::HAS_MANY, 'UserWidgets', 'user_id'),
+			'userGroupPermissions' => array(self::HAS_MANY, 'UserGroupPermissions', 'user_group_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
+			'group' => array(self::BELONGS_TO, 'Groups', 'group_id'),
+			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
 		);
 	}
 
@@ -82,12 +76,9 @@ class Users extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'user_name' => 'User Name',
-			'email' => 'Email',
-			'first_name' => 'First Name',
-			'last_name' => 'Last Name',
-			'password' => 'Password',
-			'salt' => 'Salt',
+			'group_id' => 'Group',
+			'user_id' => 'User',
+			'site_id' => 'Site',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -106,12 +97,9 @@ class Users extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('user_name',$this->user_name,true);
-		$criteria->compare('email',$this->email,true);
-		$criteria->compare('first_name',$this->first_name,true);
-		$criteria->compare('last_name',$this->last_name,true);
-		$criteria->compare('password',$this->password,true);
-		$criteria->compare('salt',$this->salt,true);
+		$criteria->compare('group_id',$this->group_id);
+		$criteria->compare('user_id',$this->user_id);
+		$criteria->compare('site_id',$this->site_id);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

@@ -1,10 +1,11 @@
 <?php
 
 /**
- * This is the model class for table "{{assetblocksettings}}".
+ * This is the model class for table "{{entryblocksettings}}".
  *
- * The followings are the available columns in table '{{assetblocksettings}}':
- * @property integer $asset_block_id
+ * The followings are the available columns in table '{{entryblocksettings}}':
+ * @property integer $id
+ * @property integer $block_id
  * @property string $key
  * @property string $value
  * @property integer $date_created
@@ -12,13 +13,13 @@
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property AssetBlocks $assetBlock
+ * @property EntryBlocks $block
  */
-class AssetBlockSettings extends CActiveRecord
+class EntryBlockSettingsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return AssetBlockSettings the static model class
+	 * @return EntryBlockSettings the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +31,7 @@ class AssetBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{assetblocksettings}}';
+		return '{{entryblocksettings}}';
 	}
 
 	/**
@@ -41,14 +42,13 @@ class AssetBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('asset_block_id, key', 'required'),
-			array('asset_block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('block_id, key, value', 'required'),
+			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
-			array('value', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('asset_block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +60,7 @@ class AssetBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'assetBlock' => array(self::BELONGS_TO, 'AssetBlocks', 'asset_block_id'),
+			'block' => array(self::BELONGS_TO, 'EntryBlocks', 'block_id'),
 		);
 	}
 
@@ -70,7 +70,8 @@ class AssetBlockSettings extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'asset_block_id' => 'Asset Block',
+			'id' => 'ID',
+			'block_id' => 'Block',
 			'key' => 'Key',
 			'value' => 'Value',
 			'date_created' => 'Date Created',
@@ -90,7 +91,8 @@ class AssetBlockSettings extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('asset_block_id',$this->asset_block_id);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('block_id',$this->block_id);
 		$criteria->compare('key',$this->key,true);
 		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);

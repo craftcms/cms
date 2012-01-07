@@ -114,8 +114,8 @@ abstract class BlocksModel
 	 *
 	 * @return mixed
 	 */
-	public static function model($className = __CLASS__)
+	public static function model()
 	{
-		return BlocksActiveRecord::model($className);
+		return BlocksActiveRecord::model(get_called_class().'AR');
 	}
 }

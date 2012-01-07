@@ -1,24 +1,27 @@
 <?php
 
 /**
- * This is the model class for table "{{pluginsettings}}".
+ * This is the model class for table "{{entryversions}}".
  *
- * The followings are the available columns in table '{{pluginsettings}}':
- * @property string $plugin_name
- * @property string $key
- * @property string $value
+ * The followings are the available columns in table '{{entryversions}}':
+ * @property integer $id
+ * @property integer $entry_id
+ * @property string $num
+ * @property string $label
+ * @property integer $active
+ * @property integer $draft
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Plugins $pluginName
+ * @property Entries $entry
  */
-class PluginSettings extends CActiveRecord
+class EntryVersionsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return PluginSettings the static model class
+	 * @return EntryVersions the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +33,7 @@ class PluginSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{pluginsettings}}';
+		return '{{entryversions}}';
 	}
 
 	/**
@@ -41,15 +44,13 @@ class PluginSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('plugin_name, key', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('plugin_name', 'length', 'max'=>50),
-			array('key', 'length', 'max'=>100),
+			array('entry_id, num, label', 'required'),
+			array('entry_id, active, draft, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('num', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
-			array('value', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('plugin_name, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, entry_id, num, label, active, draft, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -61,7 +62,7 @@ class PluginSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'pluginName' => array(self::BELONGS_TO, 'Plugins', 'plugin_name'),
+			'entry' => array(self::BELONGS_TO, 'Entries', 'entry_id'),
 		);
 	}
 
@@ -71,9 +72,12 @@ class PluginSettings extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'plugin_name' => 'Plugin Name',
-			'key' => 'Key',
-			'value' => 'Value',
+			'id' => 'ID',
+			'entry_id' => 'Entry',
+			'num' => 'Num',
+			'label' => 'Label',
+			'active' => 'Active',
+			'draft' => 'Draft',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -91,9 +95,12 @@ class PluginSettings extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('plugin_name',$this->plugin_name,true);
-		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('entry_id',$this->entry_id);
+		$criteria->compare('num',$this->num,true);
+		$criteria->compare('label',$this->label,true);
+		$criteria->compare('active',$this->active);
+		$criteria->compare('draft',$this->draft);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

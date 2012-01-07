@@ -1,27 +1,24 @@
 <?php
 
 /**
- * This is the model class for table "{{uploadfolders}}".
+ * This is the model class for table "{{pluginsettings}}".
  *
- * The followings are the available columns in table '{{uploadfolders}}':
- * @property integer $id
- * @property integer $site_id
- * @property string $name
- * @property string $relative_path
- * @property integer $include_subfolders
+ * The followings are the available columns in table '{{pluginsettings}}':
+ * @property string $plugin_name
+ * @property string $key
+ * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Assets[] $assets
- * @property Sites $site
+ * @property Plugins $pluginName
  */
-class UploadFolders extends CActiveRecord
+class PluginSettingsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Uploadfolders the static model class
+	 * @return PluginSettings the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -33,7 +30,7 @@ class UploadFolders extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{uploadfolders}}';
+		return '{{pluginsettings}}';
 	}
 
 	/**
@@ -44,14 +41,15 @@ class UploadFolders extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('site_id, name', 'required'),
-			array('site_id, include_subfolders, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('name', 'length', 'max'=>200),
-			array('relative_path', 'length', 'max'=>500),
+			array('plugin_name, key', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('plugin_name', 'length', 'max'=>50),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
+			array('value', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, site_id, name, relative_path, include_subfolders, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('plugin_name, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -63,8 +61,7 @@ class UploadFolders extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'assets' => array(self::HAS_MANY, 'Assets', 'upload_folder_id'),
-			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
+			'pluginName' => array(self::BELONGS_TO, 'Plugins', 'plugin_name'),
 		);
 	}
 
@@ -74,11 +71,9 @@ class UploadFolders extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
-			'site_id' => 'Site',
-			'name' => 'Name',
-			'relative_path' => 'Relative Path',
-			'include_subfolders' => 'Include Subfolders',
+			'plugin_name' => 'Plugin Name',
+			'key' => 'Key',
+			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -96,11 +91,9 @@ class UploadFolders extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
-		$criteria->compare('site_id',$this->site_id);
-		$criteria->compare('name',$this->name,true);
-		$criteria->compare('relative_path',$this->relative_path,true);
-		$criteria->compare('include_subfolders',$this->include_subfolders);
+		$criteria->compare('plugin_name',$this->plugin_name,true);
+		$criteria->compare('key',$this->key,true);
+		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

@@ -1,14 +1,13 @@
 <?php
 
 /**
- * This is the model class for table "{{routes}}".
+ * This is the model class for table "{{sitesettings}}".
  *
- * The followings are the available columns in table '{{routes}}':
+ * The followings are the available columns in table '{{sitesettings}}':
  * @property integer $id
  * @property integer $site_id
- * @property string $route
- * @property string $template
- * @property string $sort_order
+ * @property string $key
+ * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
@@ -16,11 +15,11 @@
  * The followings are the available model relations:
  * @property Sites $site
  */
-class Routes extends CActiveRecord
+class SiteSettingsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Routes the static model class
+	 * @return SiteSettings the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -32,7 +31,7 @@ class Routes extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{routes}}';
+		return '{{sitesettings}}';
 	}
 
 	/**
@@ -43,15 +42,13 @@ class Routes extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('site_id, route, template, sort_order', 'required'),
+			array('site_id, key, value', 'required'),
 			array('site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('route', 'length', 'max'=>500),
-			array('template', 'length', 'max'=>250),
-			array('sort_order', 'length', 'max'=>11),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, site_id, route, template, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, site_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -75,9 +72,8 @@ class Routes extends CActiveRecord
 		return array(
 			'id' => 'ID',
 			'site_id' => 'Site',
-			'route' => 'Route',
-			'template' => 'Template',
-			'sort_order' => 'Sort Order',
+			'key' => 'Key',
+			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -97,9 +93,8 @@ class Routes extends CActiveRecord
 
 		$criteria->compare('id',$this->id);
 		$criteria->compare('site_id',$this->site_id);
-		$criteria->compare('route',$this->route,true);
-		$criteria->compare('template',$this->template,true);
-		$criteria->compare('sort_order',$this->sort_order,true);
+		$criteria->compare('key',$this->key,true);
+		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

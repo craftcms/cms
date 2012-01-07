@@ -1,19 +1,25 @@
 <?php
 
 /**
- * This is the model class for table "{{languages}}".
+ * This is the model class for table "{{userblocksettings}}".
  *
- * The followings are the available columns in table '{{languages}}':
- * @property string $language_code
+ * The followings are the available columns in table '{{userblocksettings}}':
+ * @property integer $id
+ * @property integer $block_id
+ * @property string $key
+ * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
+ *
+ * The followings are the available model relations:
+ * @property UserBlocks $block
  */
-class Languages extends CActiveRecord
+class UserBlockSettingsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Languages the static model class
+	 * @return UserBlockSettings the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -25,7 +31,7 @@ class Languages extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{languages}}';
+		return '{{userblocksettings}}';
 	}
 
 	/**
@@ -36,13 +42,13 @@ class Languages extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('language_code', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('language_code', 'length', 'max'=>5),
+			array('block_id, key, value', 'required'),
+			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('language_code, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -54,6 +60,7 @@ class Languages extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'block' => array(self::BELONGS_TO, 'UserBlocks', 'block_id'),
 		);
 	}
 
@@ -63,7 +70,10 @@ class Languages extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'language_code' => 'Language Code',
+			'id' => 'ID',
+			'block_id' => 'Block',
+			'key' => 'Key',
+			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -81,7 +91,10 @@ class Languages extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('language_code',$this->language_code,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('block_id',$this->block_id);
+		$criteria->compare('key',$this->key,true);
+		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

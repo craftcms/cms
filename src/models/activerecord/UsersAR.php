@@ -1,24 +1,31 @@
-<?php
+AR<?php
 
 /**
- * This is the model class for table "{{entrytitles}}".
+ * This is the model class for table "{{users}}".
  *
- * The followings are the available columns in table '{{entrytitles}}':
- * @property integer $entry_id
- * @property string $language_code
- * @property string $title
+ * The followings are the available columns in table '{{users}}':
+ * @property integer $id
+ * @property string $user_name
+ * @property string $email
+ * @property string $first_name
+ * @property string $last_name
+ * @property string $password
+ * @property string $salt
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Entries $entry
+ * @property Entries[] $entries
+ * @property UserBlocks[] $userBlocks
+ * @property UserGroups[] $userGroups
+ * @property UserWidgets[] $userWidgets
  */
-class EntryTitles extends CActiveRecord
+class UsersAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return EntryTitles the static model class
+	 * @return Users the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +37,7 @@ class EntryTitles extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{entrytitles}}';
+		return '{{users}}';
 	}
 
 	/**
@@ -41,13 +48,15 @@ class EntryTitles extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('language_code, title', 'required'),
+			array('user_name, email, first_name, password, salt', 'required'),
 			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('language_code', 'length', 'max'=>5),
+			array('user_name, email', 'length', 'max'=>250),
+			array('first_name, last_name', 'length', 'max'=>100),
+			array('password, salt', 'length', 'max'=>128),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('entry_id, language_code, title, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_name, email, first_name, last_name, password, salt, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -59,7 +68,10 @@ class EntryTitles extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'entry' => array(self::BELONGS_TO, 'Entries', 'entry_id'),
+			'entries' => array(self::HAS_MANY, 'Entries', 'author_id'),
+			'userBlocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
+			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
+			'userWidgets' => array(self::HAS_MANY, 'UserWidgets', 'user_id'),
 		);
 	}
 
@@ -69,9 +81,13 @@ class EntryTitles extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'entry_id' => 'Entry',
-			'language_code' => 'Language Code',
-			'title' => 'Title',
+			'id' => 'ID',
+			'user_name' => 'User Name',
+			'email' => 'Email',
+			'first_name' => 'First Name',
+			'last_name' => 'Last Name',
+			'password' => 'Password',
+			'salt' => 'Salt',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -89,9 +105,13 @@ class EntryTitles extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('entry_id',$this->entry_id);
-		$criteria->compare('language_code',$this->language_code,true);
-		$criteria->compare('title',$this->title,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('user_name',$this->user_name,true);
+		$criteria->compare('email',$this->email,true);
+		$criteria->compare('first_name',$this->first_name,true);
+		$criteria->compare('last_name',$this->last_name,true);
+		$criteria->compare('password',$this->password,true);
+		$criteria->compare('salt',$this->salt,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

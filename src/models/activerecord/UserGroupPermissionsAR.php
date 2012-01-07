@@ -1,24 +1,24 @@
 <?php
 
 /**
- * This is the model class for table "{{plugins}}".
+ * This is the model class for table "{{usergrouppermissions}}".
  *
- * The followings are the available columns in table '{{plugins}}':
- * @property string $name
- * @property string $version
- * @property integer $enabled
+ * The followings are the available columns in table '{{usergrouppermissions}}':
+ * @property integer $user_group_id
+ * @property string $key
+ * @property integer $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property PluginSettings[] $pluginSettings
+ * @property UserGroups $userGroup
  */
-class Plugins extends CActiveRecord
+class UserGroupPermissionsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Plugins the static model class
+	 * @return UserGroupPermissions the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +30,7 @@ class Plugins extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{plugins}}';
+		return '{{usergrouppermissions}}';
 	}
 
 	/**
@@ -41,14 +41,13 @@ class Plugins extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('name, version', 'required'),
-			array('enabled, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('name', 'length', 'max'=>50),
-			array('version', 'length', 'max'=>15),
+			array('user_group_id, key', 'required'),
+			array('user_group_id, value, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('name, version, enabled, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('user_group_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +59,7 @@ class Plugins extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'pluginSettings' => array(self::HAS_MANY, 'PluginSettings', 'plugin_name'),
+			'userGroup' => array(self::BELONGS_TO, 'UserGroups', 'user_group_id'),
 		);
 	}
 
@@ -70,9 +69,9 @@ class Plugins extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'name' => 'Name',
-			'version' => 'Version',
-			'enabled' => 'Enabled',
+			'user_group_id' => 'User Group',
+			'key' => 'Key',
+			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -90,9 +89,9 @@ class Plugins extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('name',$this->name,true);
-		$criteria->compare('version',$this->version,true);
-		$criteria->compare('enabled',$this->enabled);
+		$criteria->compare('user_group_id',$this->user_group_id);
+		$criteria->compare('key',$this->key,true);
+		$criteria->compare('value',$this->value);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

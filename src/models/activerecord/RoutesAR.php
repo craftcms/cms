@@ -1,26 +1,26 @@
 <?php
 
 /**
- * This is the model class for table "{{userwidgets}}".
+ * This is the model class for table "{{routes}}".
  *
- * The followings are the available columns in table '{{userwidgets}}':
+ * The followings are the available columns in table '{{routes}}':
  * @property integer $id
- * @property integer $user_id
- * @property string $class
+ * @property integer $site_id
+ * @property string $route
+ * @property string $template
  * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Users $user
- * @property UserWidgetSettings[] $userWidgetSettings
+ * @property Sites $site
  */
-class UserWidgets extends CActiveRecord
+class RoutesAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return UserWidgets the static model class
+	 * @return Routes the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -32,7 +32,7 @@ class UserWidgets extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{userwidgets}}';
+		return '{{routes}}';
 	}
 
 	/**
@@ -43,14 +43,15 @@ class UserWidgets extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('user_id, class, sort_order', 'required'),
-			array('user_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('class', 'length', 'max'=>150),
+			array('site_id, route, template, sort_order', 'required'),
+			array('site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('route', 'length', 'max'=>500),
+			array('template', 'length', 'max'=>250),
 			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, user_id, class, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, site_id, route, template, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -62,8 +63,7 @@ class UserWidgets extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
-			'userWidgetSettings' => array(self::HAS_MANY, 'UserWidgetSettings', 'widget_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}
 
@@ -74,8 +74,9 @@ class UserWidgets extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'user_id' => 'User',
-			'class' => 'Class',
+			'site_id' => 'Site',
+			'route' => 'Route',
+			'template' => 'Template',
 			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
@@ -95,8 +96,9 @@ class UserWidgets extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('user_id',$this->user_id);
-		$criteria->compare('class',$this->class,true);
+		$criteria->compare('site_id',$this->site_id);
+		$criteria->compare('route',$this->route,true);
+		$criteria->compare('template',$this->template,true);
 		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);

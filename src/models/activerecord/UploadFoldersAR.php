@@ -1,25 +1,27 @@
 <?php
 
 /**
- * This is the model class for table "{{userblocksettings}}".
+ * This is the model class for table "{{uploadfolders}}".
  *
- * The followings are the available columns in table '{{userblocksettings}}':
+ * The followings are the available columns in table '{{uploadfolders}}':
  * @property integer $id
- * @property integer $block_id
- * @property string $key
- * @property string $value
+ * @property integer $site_id
+ * @property string $name
+ * @property string $relative_path
+ * @property integer $include_subfolders
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property UserBlocks $block
+ * @property Assets[] $assets
+ * @property Sites $site
  */
-class UserBlockSettings extends CActiveRecord
+class UploadFoldersAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return UserBlockSettings the static model class
+	 * @return Uploadfolders the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -31,7 +33,7 @@ class UserBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{userblocksettings}}';
+		return '{{uploadfolders}}';
 	}
 
 	/**
@@ -42,13 +44,14 @@ class UserBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('block_id, key, value', 'required'),
-			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('key', 'length', 'max'=>100),
+			array('site_id, name', 'required'),
+			array('site_id, include_subfolders, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('name', 'length', 'max'=>200),
+			array('relative_path', 'length', 'max'=>500),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, site_id, name, relative_path, include_subfolders, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +63,8 @@ class UserBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'UserBlocks', 'block_id'),
+			'assets' => array(self::HAS_MANY, 'Assets', 'upload_folder_id'),
+			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
 		);
 	}
 
@@ -71,9 +75,10 @@ class UserBlockSettings extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'block_id' => 'Block',
-			'key' => 'Key',
-			'value' => 'Value',
+			'site_id' => 'Site',
+			'name' => 'Name',
+			'relative_path' => 'Relative Path',
+			'include_subfolders' => 'Include Subfolders',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -92,9 +97,10 @@ class UserBlockSettings extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('block_id',$this->block_id);
-		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('site_id',$this->site_id);
+		$criteria->compare('name',$this->name,true);
+		$criteria->compare('relative_path',$this->relative_path,true);
+		$criteria->compare('include_subfolders',$this->include_subfolders);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

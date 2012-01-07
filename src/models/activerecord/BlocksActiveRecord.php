@@ -1,15 +1,15 @@
 <?php
 
-class BlocksActveRecord extends CActiveRecord
+class BlocksActiveRecord extends CActiveRecord
 {
-	function init($className)
+	public static function model($className = __CLASS__)
 	{
-		$this->className = $className;
+		return parent::model($className);
 	}
 
 	public function relations()
 	{
-		return $className::$relations;
+		//return $className::$relations;
 	}
 
 	public function rules()

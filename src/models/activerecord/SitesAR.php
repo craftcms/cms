@@ -20,7 +20,7 @@
  * @property UploadFolders[] $uploadFolders
  * @property UserGroups[] $userGroups
  */
-class Sites extends CActiveRecord
+class SitesAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

@@ -1,22 +1,25 @@
 <?php
 
 /**
- * This is the model class for table "{{info}}".
+ * This is the model class for table "{{assets}}".
  *
- * The followings are the available columns in table '{{info}}':
+ * The followings are the available columns in table '{{assets}}':
  * @property integer $id
- * @property string $edition
- * @property string $version
- * @property string $build
+ * @property integer $upload_folder_id
+ * @property string $path
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
+ *
+ * The followings are the available model relations:
+ * @property AssetBlocks[] $assetBlocks
+ * @property UploadFolders $uploadFolder
  */
-class Info extends CActiveRecord
+class AssetsAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Info the static model class
+	 * @return Assets the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -28,7 +31,7 @@ class Info extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{info}}';
+		return '{{assets}}';
 	}
 
 	/**
@@ -39,15 +42,13 @@ class Info extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('version, build', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('edition', 'length', 'max'=>8),
-			array('version', 'length', 'max'=>15),
-			array('build', 'length', 'max'=>11),
+			array('upload_folder_id, path', 'required'),
+			array('upload_folder_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('path', 'length', 'max'=>500),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, edition, version, build, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, upload_folder_id, path, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -59,6 +60,8 @@ class Info extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
+			'assetBlocks' => array(self::HAS_MANY, 'AssetBlocks', 'asset_id'),
+			'uploadFolder' => array(self::BELONGS_TO, 'UploadFolders', 'upload_folder_id'),
 		);
 	}
 
@@ -69,9 +72,8 @@ class Info extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'edition' => 'Edition',
-			'version' => 'Version',
-			'build' => 'Build',
+			'upload_folder_id' => 'Upload Folder',
+			'path' => 'Path',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -90,9 +92,8 @@ class Info extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('edition',$this->edition,true);
-		$criteria->compare('version',$this->version,true);
-		$criteria->compare('build',$this->build,true);
+		$criteria->compare('upload_folder_id',$this->upload_folder_id);
+		$criteria->compare('path',$this->path,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

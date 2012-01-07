@@ -1,25 +1,19 @@
 <?php
 
 /**
- * This is the model class for table "{{entryblocksettings}}".
+ * This is the model class for table "{{licensekeys}}".
  *
- * The followings are the available columns in table '{{entryblocksettings}}':
- * @property integer $id
- * @property integer $block_id
+ * The followings are the available columns in table '{{licensekeys}}':
  * @property string $key
- * @property string $value
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
- *
- * The followings are the available model relations:
- * @property EntryBlocks $block
  */
-class EntryBlockSettings extends CActiveRecord
+class LicenseKeysAR extends CActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return EntryBlockSettings the static model class
+	 * @return LicenseKeys the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -31,7 +25,7 @@ class EntryBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{entryblocksettings}}';
+		return '{{licensekeys}}';
 	}
 
 	/**
@@ -42,13 +36,13 @@ class EntryBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('block_id, key, value', 'required'),
-			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('key', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
 			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('key, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +54,6 @@ class EntryBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'EntryBlocks', 'block_id'),
 		);
 	}
 
@@ -70,10 +63,7 @@ class EntryBlockSettings extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
-			'block_id' => 'Block',
 			'key' => 'Key',
-			'value' => 'Value',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -91,10 +81,7 @@ class EntryBlockSettings extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
-		$criteria->compare('block_id',$this->block_id);
 		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
