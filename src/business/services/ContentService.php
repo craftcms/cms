@@ -143,12 +143,12 @@ class ContentService extends CApplicationComponent implements IContentService
 
 			// create dynamic data table
 			$connection->createCommand()->createTable('{{'.$tableName.'}}',
-				array('id'              => DatabaseColumnType::PK,
-					  'entry_id'        => DatabaseColumnType::Integer.' NOT NULL',
-					  'version_id'      => DatabaseColumnType::Integer.' NOT NULL',
-					  'date_created'    => DatabaseColumnType::Integer,
-					  'date_updated'    => DatabaseColumnType::Integer,
-					  'uid'             => DatabaseColumnType::String
+				array('id'              => AttributeType::PK,
+					  'entry_id'        => AttributeType::Integer.' NOT NULL',
+					  'version_id'      => AttributeType::Integer.' NOT NULL',
+					  'date_created'    => AttributeType::Integer,
+					  'date_updated'    => AttributeType::Integer,
+					  'uid'             => AttributeType::String
 				));
 
 			$entriesFKName = strtolower($tableName.'_entries_fk');
@@ -201,7 +201,7 @@ class ContentService extends CApplicationComponent implements IContentService
 	 * Blocks
 	 */
 
-	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = DatabaseColumnType::Text, $instructions = null, $required = false)
+	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = AttributeType::Text, $instructions = null, $required = false)
 	{
 		$connection = Blocks::app()->db;
 		$site = Blocks::app()->site->getSiteByHandle($siteHandle);
