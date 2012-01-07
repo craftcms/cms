@@ -2,14 +2,14 @@
 
 class Assets extends BlocksModel
 {
-	private static $hasContent = true;
-	private static $hasCustomBlocks = true;
+	protected static $hasContent = true;
+	protected static $hasCustomBlocks = true;
 
-	private static $belongsTo = array(
+	protected static $belongsTo = array(
 		'folder' => 'AssetFolders'
 	);
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'path'      => array('type' => AttributeType::String, 'maxSize' => 1000, 'required' => true),
 		'filename'  => array('type' => AttributeType::String, 'maxSize' => 1000, 'required' => true),
 		'extension' => array('type' => AttributeType::String, 'maxSize' => 50, 'required' => false)

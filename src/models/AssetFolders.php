@@ -1,16 +1,16 @@
 <?php
 
-class AssetFolder extends BlocksModel
+class AssetFolders extends BlocksModel
 {
-	private static $hasMany = array(
+	protected static $hasMany = array(
 		'assets' => 'Assets.folder'
 	);
 
-	private static $belongsTo = array(
+	protected static $belongsTo = array(
 		'site' => 'Sites'
 	);
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'name' => array('type' => 'varchar', 'size' => 1000, 'required' => true),
 		'path' => array('type' => 'varchar', 'size' => 1000, 'required' => true)
 	);

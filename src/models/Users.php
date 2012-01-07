@@ -2,14 +2,14 @@
 
 class Users extends BlocksModel
 {
-	private static $hasContent = true;
-	private static $hasCustomBlocks = true;
+	protected static $hasContent = true;
+	protected static $hasCustomBlocks = true;
 
-	private static $hasAndBelongsToMany = array(
+	protected static $hasAndBelongsToMany = array(
 		'groups' => 'UserGroups.users'
 	);
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'username'    => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
 		'first_name'  => array('type' => AttributeType::String, 'maxSize' => 100, 'required' => true),
 		'last_name'   => array('type' => AttributeType::String, 'maxSize' => 100),

@@ -2,16 +2,16 @@
 
 abstract class BlocksModel
 {
-	private static $hasSettings = false;
-	private static $hasContent = false;
-	private static $hasCustomBlocks = false;
+	protected static $hasSettings = false;
+	protected static $hasContent = false;
+	protected static $hasCustomBlocks = false;
 
-	private static $hasMany = array();
-	private static $hasOne = array();
-	private static $hasAndBelongsToMany = array();
-	private static $belongsTo = array();
+	protected static $hasMany = array();
+	protected static $hasOne = array();
+	protected static $hasAndBelongsToMany = array();
+	protected static $belongsTo = array();
 
-	private static $attributes = array();
+	protected static $attributes = array();
 
 	/**
 	 * Constructor
@@ -31,7 +31,7 @@ abstract class BlocksModel
 	 */
 	public function getHasSettings()
 	{
-		return self::$hasSettings;
+		return static::$hasSettings;
 	}
 
 	/**
@@ -40,7 +40,7 @@ abstract class BlocksModel
 	 */
 	public function getHasContent()
 	{
-		return self::$hasContent;
+		return static::$hasContent;
 	}
 
 	/**
@@ -49,7 +49,7 @@ abstract class BlocksModel
 	 */
 	public function getHasCustomBlocks()
 	{
-		return self::$hasCustomBlocks;
+		return static::$hasCustomBlocks;
 	}
 
 	/**
@@ -58,7 +58,7 @@ abstract class BlocksModel
 	 */
 	public function getHasMany()
 	{
-		return self::$hasMany;
+		return static::$hasMany;
 	}
 
 	/**
@@ -67,7 +67,7 @@ abstract class BlocksModel
 	 */
 	public function getHasOne()
 	{
-		return self::$hasOne;
+		return static::$hasOne;
 	}
 
 	/**
@@ -76,7 +76,7 @@ abstract class BlocksModel
 	 */
 	public function getHasAndBelongsToMany()
 	{
-		return self::$hasAndBelongsToMany;
+		return static::$hasAndBelongsToMany;
 	}
 
 	/**
@@ -85,7 +85,7 @@ abstract class BlocksModel
 	 */
 	public function getBelongsTo()
 	{
-		return self::$belongsTo;
+		return static::$belongsTo;
 	}
 
 	/**
@@ -94,7 +94,7 @@ abstract class BlocksModel
 	 */
 	public function getAttributes()
 	{
-		return self::$attributes;
+		return static::$attributes;
 	}
 
 	/**

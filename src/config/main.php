@@ -57,6 +57,7 @@ return array(
 		'application.controllers.*',
 		'application.migrations.*',
 		'application.models.activerecord.*',
+		'application.models.*',
 	),
 
 	'modules' => array(

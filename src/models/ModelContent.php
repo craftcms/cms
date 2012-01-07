@@ -4,7 +4,7 @@ class ModelContent extends BlocksModel
 {
 	private $_blocksModel;
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'num'    => array('type' => AttributeType::Integer, 'required' => true),
 		'label'  => array('type' => AttributeType::String, 'maxSize' => 150),
 		'active' => array('type' => AttributeType::Boolean, 'required' => true),

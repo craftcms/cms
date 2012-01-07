@@ -2,11 +2,11 @@
 
 class UserGroupPermissions extends BlocksModel
 {
-	private static $belongsTo = array(
+	protected static $belongsTo = array(
 		'group' => 'UserGroups'
 	);
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'name' => array('type' => AttributeType::String, 'required' => true),
 		'value' => array('type' => AttributeType::Integer, 'required' => true)
 	);

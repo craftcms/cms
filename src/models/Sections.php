@@ -2,18 +2,18 @@
 
 class Sections extends BlocksModel
 {
-	private static $hasCustomBlocks = true;
+	protected static $hasCustomBlocks = true;
 
-	private static $hasMany = array(
+	protected static $hasMany = array(
 		'children' => 'Sections.parent'
 	);
 
-	private static $belongsTo = array(
+	protected static $belongsTo = array(
 		'parent' => 'Sections',
 		'site'   => 'Sites'
 	);
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'handle'      => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
 		'label'       => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
 		'url_format'  => array('type' => AttributeType::String, 'maxLength' => 250),

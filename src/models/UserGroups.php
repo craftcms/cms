@@ -2,15 +2,15 @@
 
 class UserGroups extends BlocksModel
 {
-	private static $hasAndBelongsToMany = array(
+	protected static $hasAndBelongsToMany = array(
 		'users' => 'Users.groups'
 	);
 
-	private static $hasMany = array(
+	protected static $hasMany = array(
 		'permissions' => 'UserGroupPermissions.group'
 	);
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'name'        => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
 		'description' => array('type' => AttributeType::Text)
 	);

@@ -4,7 +4,7 @@ class ModelBlocks extends BlocksModel
 {
 	private $_blocksModel;
 
-	private static $attributes = array(
+	protected static $attributes = array(
 		'required'     => array('type' => AttributeType::Boolean, 'required' => true),
 		'sort_order'   => array('type' => AttributeType::Integer, 'required' => true)
 	);
