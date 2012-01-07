@@ -5,7 +5,7 @@ class Sections extends BlocksDataType
 	static $hasCustomBlocks = true;
 
 	static $hasMany = array(
-		'parent' => 'Sections'
+		'children' => 'Sections.parent'
 	);
 
 	static $belongsTo = array(

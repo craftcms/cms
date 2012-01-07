@@ -6,7 +6,7 @@ class Users extends BlocksDataType
 	static $hasCustomBlocks = true;
 
 	static $hasAndBelongsToMany = array(
-		'groups' => 'UserGroups'
+		'groups' => 'UserGroups.users'
 	);
 
 	static $attributes = array(

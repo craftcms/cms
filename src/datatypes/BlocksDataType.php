@@ -18,6 +18,26 @@ abstract class BlocksDataType
 	public static $hasCustomBlocks = false;
 
 	/**
+	 * @static array One-to-many relationships
+	 */
+	public static $hasMany = array();
+
+	/**
+	 * @static array One-to-one relationships
+	 */
+	public static $hasOne = array();
+
+	/**
+	 * @static array Many-to-many relationships
+	 */
+	public static $hasAndBelongsToMany = array();
+
+	/**
+	 * @static array One-to-many or one-to-one relationships
+	 */
+	public static $belongsTo = array();
+
+	/**
 	 * Creates the table(s) necessary for this datatype to save its data
 	 * @static
 	 */

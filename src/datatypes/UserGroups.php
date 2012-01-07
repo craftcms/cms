@@ -3,8 +3,11 @@
 class UserGroups extends BlocksDataType
 {
 	static $hasAndBelongsToMany = array(
-		'users'       => 'Users',
-		'permissions' => 'UserGroupPermissions'
+		'users' => 'Users.groups'
+	);
+
+	static $hasMany = array(
+		'permissions' => 'UserGroupPermissions.group'
 	);
 
 	static $attributes = array(

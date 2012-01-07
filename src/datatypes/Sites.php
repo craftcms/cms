@@ -7,9 +7,9 @@ class Sites extends BlocksDataType
 	static $hasCustomBlocks = true;
 
 	static $hasMany = array(
-		'assetFolders' => 'AssetFolders',
-		'routes'       => 'Routes',
-		'sections'     => 'Sections'
+		'assetFolders' => 'AssetFolders.site',
+		'routes'       => 'Routes.site',
+		'sections'     => 'Sections.site'
 	);
 
 	static $attributes = array(

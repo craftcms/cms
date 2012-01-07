@@ -3,7 +3,7 @@
 class AssetFolder extends BlocksDataType
 {
 	static $hasMany = array(
-		'assets' => 'Assets'
+		'assets' => 'Assets.folder'
 	);
 
 	static $belongsTo = array(

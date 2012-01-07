@@ -5,7 +5,7 @@ class Entries extends BlocksDataType
 	static $hasContent = true;
 
 	static $hasMany = array(
-		'children' => 'Entries'
+		'children' => 'Entries.parent'
 	);
 
 	static $belongsTo = array(
