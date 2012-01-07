@@ -1,5 +1,5 @@
-<div class="files data">
-	<table class="zebra">
+<div class="files list">
+	<table class="pane">
 		<thead>
 			<th scope="col">Name</th>
 			<th scope="col">Date Modified</th>

@@ -115,13 +115,13 @@ class BlocksUrlManager extends CUrlManager
 		{
 			$routes = array(
 				array('content/edit/{entryId}', 'content/_edit', array(
-					'entryId' => RoutePatterns::Integer
+					'entryId' => RoutePattern::Integer
 				)),
 				array('assets/edit/{path}', 'assets/_edit', array(
-					'path' => RoutePatterns::Wild
+					'path' => RoutePattern::Wild
 				)),
 				array('users/edit/{userId}', 'users/_edit', array(
-					'userId' => RoutePatterns::Integer
+					'userId' => RoutePattern::Integer
 				)),
 			);
 		}

@@ -50,16 +50,18 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 /* ----------------------------------------*/
 
 /*-- nav --*/
-#nav { position: fixed; top: 0; left: 0; z-index: 9999; border-bottom: 1px solid #10354d; width: 100%; height: 40px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#206D9B)); -webkit-box-shadow: 0 0 2px rgba(0,0,0,0.5); }
+#nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 40px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 0 100%, from(#404040), to(#2a2a2a)); -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.65); }
 #nav .left { float: left; }
-#nav .right { float: right; margin-right: 10px; }
-#nav .left #site { float: left; margin-right: 10px; border-right: 1px solid rgba(0,0,0,0.25); border-radius: 0; padding: 0 2px; height: 40px; line-height: 40px; color: #fff; text-shadow: 0 1px 1px #000; background: none !important; -webkit-box-shadow: inset -1px 0 rgba(255,255,255,0.1); }
+#nav .right { float: right; }
+#nav .left #site { float: left; margin: 0 10px; border-radius: 0; padding: 0 2px; height: 40px; line-height: 40px; color: #ccc; text-shadow: 0 1px 1px #000; background: none !important; -webkit-box-shadow: none; }
+#nav .left #site .label { margin: 0 10px; }
 #nav .left #site .arrow { background-image: url(../images/menu-arrow-white.png); }
 #nav .left ul { float: left; }
 #nav a { color: #fff; text-shadow: 0 1px 0 #000; }
 #nav ul li { position: relative; float: left; }
-#nav ul li a { display: block; position: relative; width: 40px; height: 40px; line-height: 40px; backrgound: no-repeat; }
-#nav ul li a.sel { background-position: 0 100%; }
+#nav ul li a { display: block; position: relative; width: 40px; height: 40px; line-height: 40px; backrgound: no-repeat; background-position: 0 100%; opacity: 0.35; -webkit-transition: opacity 150ms linear; }
+#nav ul li a:hover { opacity: 0.85; }
+#nav ul li a.sel { opacity: 1 !important; }
 
 #nav li#nav-search { position: relative; }
 #nav li#nav-search #search { display: none; position: absolute; top: 0; left: 54px; width: 300px; height: 300px; background: #fff; }
@@ -72,8 +74,8 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 #nav li#nav-settings a { background-image: url(../images/nav-icons/266.png); }
 #nav li#nav-guide a { background-image: url(../images/nav-icons/240.png); }
 
-#nav li#nav-account a { width: auto; }
-#nav li#nav-account a img { display: block; float: left; margin: 5px 7px 0 0; border-radius: 2px; width: 30px; height: 30px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 3px rgba(0,0,0,0.35); }
+#nav li#nav-account a { margin-right: 10px; padding-right: 10px; width: auto; color: #ccc; text-decoration: none; opacity: 1; }
+#nav li#nav-account a img { display: block; float: left; margin: 8px 7px 0 0; border-radius: 2px; width: 24px; height: 24px; -webkit-box-shadow: 0 1px 5px #000; }
 
 /*-- body --*/
 #body { position: relative; width: 100%; }
@@ -158,7 +160,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #e5e5e5; 
 .pane.transparent { background: none; -webkit-box-shadow: none; }
 .pane.transparent .head { background: none; -webkit-box-shadow: none; }
 
-.pane + .btn-group { margin-top: -15px; }
+.pane + .btn-group { margin-top: -10px; }
 
 /* grids */
 .grid { margin-left: -20px;  }
@@ -267,7 +269,7 @@ input.btn.big { padding: 0 12px; }
 .tree ul li { margin-left: 25px; }
 .tree ul li > .toggle { margin: 7px 0 0 -35px; }
 .tree ul li > a { display: block; margin-left: -25px; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
-.tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/sidebar_icons/etc.png) no-repeat 50% 50%; }
+.tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/etc.png) no-repeat 50% 50%; }
 .tree ul li > a span.icon { margin-right: 2px; }
 .tree ul li > a span.status { margin: 7px; }
 
@@ -277,14 +279,14 @@ input.btn.big { padding: 0 12px; }
 .tree.collapsible ul li.expanded > ul { display: block; }
 
 /* toggle */
-.toggle { display: block; float: left; margin: 3px 4px 0 0; width: 10px; height: 12px; background: url(../images/sidebar_icons/toggle.png) no-repeat 0 0; opacity: 0.5; }
+.toggle { display: block; float: left; margin: 3px 4px 0 0; width: 10px; height: 12px; background: url(../images/toggle.png) no-repeat 0 0; opacity: 0.5; }
 .toggle.expanded { background-position: 0 -10px; }
 
 /* icons */
 span.icon { display: block; float: left; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }
 
 /* status icons */
-span.status { display: block; float: left; width: 10px; height: 10px; background: url(../images/sidebar_icons/status.png) no-repeat 0 -30px; }
+span.status { display: block; float: left; width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
 span.status.on { background-position: 0 0; }
 span.status.pending { background-position: 0 -10px; }
 span.status.off { background-position: 0 -20px; }
@@ -294,19 +296,6 @@ span.status.off { background-position: 0 -20px; }
 /* ----------------------------------------*/
 
 table th { font-weight: bold; color: #666; text-align: left; vertical-align: top; }
-
-/* zebra tables */
-table.zebra { width: 100%; }
-table.zebra > tbody > tr:nth-child(odd) > *,
-table.zebra > tbody > tr.odd > * { /*background: -webkit-gradient(linear, 0 0, 0 100%, from(#f7f7f7), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #eee, inset 0 -1px 0 #eee;*/ background: #eee; }
-
-/*table.zebra > tbody > tr:nth-child(odd) > *:first-child,
-table.zebra > tbody > tr.odd > *:first-child { border-radius: 3px 0 0 3px; -webkit-box-shadow: inset 0 1px 0 #eee, inset 0 -1px 0 #eee, inset 1px 0 0 #eee; }
-table.zebra > tbody > tr:nth-child(odd) > *:last-child,
-table.zebra > tbody > tr.odd > *:last-child { border-radius: 0 3px 3px 0; -webkit-box-shadow: inset 0 1px 0 #eee, inset -1px 0 0 #eee, inset 0 -1px 0 #eee; }*/
-
-table.zebra > tbody > tr.even > th,
-table.zebra > tbody > tr.even > td { border-radius: 0 !important; background: transparent !important; -webkit-box-shadow: none !important; }
 
 /* fields */
 .fields > table > tbody > tr > th { width: 140px; vertical-align: middle; border-right: 1px solid #bbb; }

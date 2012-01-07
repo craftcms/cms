@@ -1,6 +1,6 @@
 <?php
 
-class RoutePatterns
+class RoutePattern
 {
 	const Wild = '.+';
 	const Integer = '\d+';

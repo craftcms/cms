@@ -5,6 +5,6 @@
 #main .files.thumbs ul li .filename { text-align: center; }
 
 /*-- list --*/
-#main .files.data table th:first-child,
-#main .files.data table td:first-child { padding-left: 54px; }
-#main .files.data table td:first-child img { display: block; float: left; margin-left: -34px; width: 24px; height: 24px; }
+#main .files.list table th:first-child,
+#main .files.list table td:first-child { padding-left: 39px; }
+#main .files.list table td:first-child img { display: block; float: left; margin: -3px 0 -3px -29px; width: 24px; height: 24px; }
