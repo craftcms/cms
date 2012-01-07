@@ -33,4 +33,5 @@ class AttributeType
 	const Time      = 'time';
 	const Date      = 'date';
 	const Binary    = 'binary';
+	const Enum      = 'enum';
 }

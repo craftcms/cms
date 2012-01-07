@@ -2,40 +2,92 @@
 
 abstract class BlocksDataType
 {
-	/**
-	 * @static bool Whether this datatype has settings (stored in blx_DataTypeClass_settings)
-	 */
-	public static $hasSettings = false;
+	private static $hasSettings = false;
+	private static $hasContent = false;
+	private static $hasCustomBlocks = false;
+
+	private static $hasMany = array();
+	private static $hasOne = array();
+	private static $hasAndBelongsToMany = array();
+	private static $belongsTo = array();
+
+	private static $attributes = array();
 
 	/**
-	 * @static bool Whether this datatype has content (joined to blx_content via blx_DataTypeClass_content)
+	 * Constructor
 	 */
-	public static $hasContent = false;
+	public function __construct()
+	{
+		if (method_exists($this, 'init'))
+		{
+			$args = func_get_args();
+			call_user_func_array(array($this, 'init'), $args);
+		}
+	}
 
 	/**
-	 * @static bool Whether this datatype has custom blocks (joined to blx_contentblocks via blx_DataTypeClass_blocks)
+	 * Whether this datatype has settings (stored in blx_DataTypeClass_settings)
 	 */
-	public static $hasCustomBlocks = false;
+	public function getHasSettings()
+	{
+		return self::$hasSettings;
+	}
 
 	/**
-	 * @static array One-to-many relationships
+	 * Whether this datatype has content (joined to blx_content via blx_DataTypeClass_content)
 	 */
-	public static $hasMany = array();
+	public function getHasContent()
+	{
+		return self::$hasContent;
+	}
 
 	/**
-	 * @static array One-to-one relationships
+	 * Whether this datatype has custom blocks (joined to blx_contentblocks via blx_DataTypeClass_blocks)
 	 */
-	public static $hasOne = array();
+	public function getHasCustomBlocks()
+	{
+		return self::$hasCustomBlocks;
+	}
 
 	/**
-	 * @static array Many-to-many relationships
+	 * One-to-many relationships
 	 */
-	public static $hasAndBelongsToMany = array();
+	public function getHasMany()
+	{
+		return self::$hasMany;
+	}
 
 	/**
-	 * @static array One-to-many or one-to-one relationships
+	 * One-to-one relationships
 	 */
-	public static $belongsTo = array();
+	public function getHasOne()
+	{
+		return self::$hasOne;
+	}
+
+	/**
+	 * Many-to-many relationships
+	 */
+	public function getHasAndBelongsToMany()
+	{
+		return self::$hasAndBelongsToMany;
+	}
+
+	/**
+	 * One-to-many or one-to-one relationships
+	 */
+	public function getBelongsTo()
+	{
+		return self::$belongsTo;
+	}
+
+	/**
+	 * The datatype's non-relational attributes
+	 */
+	public function getAttributes()
+	{
+		return self::$attributes;
+	}
 
 	/**
 	 * Creates the table(s) necessary for this datatype to save its data

@@ -2,19 +2,19 @@
 
 class Entries extends BlocksDataType
 {
-	static $hasContent = true;
+	private static $hasContent = true;
 
-	static $hasMany = array(
+	private static $hasMany = array(
 		'children' => 'Entries.parent'
 	);
 
-	static $belongsTo = array(
+	private static $belongsTo = array(
 		'parent'  => 'Entries',
 		'section' => 'Sections',
 		'author'  => 'Users'
 	);
 
-	static $attributes = array(
+	private static $attributes = array(
 		'slug'        => array('type' => AttributeType::String, 'maxSize' => 250),
 		'full_uri'    => array('type' => AttributeType::String, 'maxSize' => 1000),
 		'post_date'   => array('type' => AttributeType::Integer),
