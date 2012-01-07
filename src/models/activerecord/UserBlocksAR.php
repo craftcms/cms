@@ -19,7 +19,7 @@
  * @property Users $user
  * @property UserBlockSettings[] $userBlockSettings
  */
-class UserBlocksAR extends CActiveRecord
+class UserBlocksAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

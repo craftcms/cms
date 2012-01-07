@@ -9,7 +9,7 @@
  * @property integer $date_updated
  * @property string $uid
  */
-class LicenseKeysAR extends CActiveRecord
+class LicenseKeysAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

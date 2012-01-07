@@ -15,7 +15,7 @@
  * The followings are the available model relations:
  * @property EntryBlocks $block
  */
-class EntryBlockSettingsAR extends CActiveRecord
+class EntryBlockSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

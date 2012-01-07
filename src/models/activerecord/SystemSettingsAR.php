@@ -11,7 +11,7 @@
  * @property integer $date_updated
  * @property string $uid
  */
-class SystemSettingsAR extends CActiveRecord
+class SystemSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

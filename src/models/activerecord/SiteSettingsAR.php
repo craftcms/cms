@@ -15,7 +15,7 @@
  * The followings are the available model relations:
  * @property Sites $site
  */
-class SiteSettingsAR extends CActiveRecord
+class SiteSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

@@ -14,7 +14,7 @@
  * The followings are the available model relations:
  * @property AssetBlocks $assetBlock
  */
-class AssetBlockSettingsAR extends CActiveRecord
+class AssetBlockSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

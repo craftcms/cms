@@ -20,7 +20,7 @@
  * @property Sections $section
  * @property EntryBlockSettings[] $entryBlockSettings
  */
-class EntryBlocksAR extends CActiveRecord
+class EntryBlocksAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

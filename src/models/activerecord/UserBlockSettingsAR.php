@@ -15,7 +15,7 @@
  * The followings are the available model relations:
  * @property UserBlocks $block
  */
-class UserBlockSettingsAR extends CActiveRecord
+class UserBlockSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

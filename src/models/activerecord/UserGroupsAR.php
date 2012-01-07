@@ -18,7 +18,7 @@
  * @property Groups $group
  * @property Users $user
  */
-class UserGroupsAR extends CActiveRecord
+class UserGroupsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

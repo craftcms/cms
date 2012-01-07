@@ -18,7 +18,7 @@
  * @property Assets $asset
  * @property AssetBlockSettings[] $assetBlockSettings
  */
-class AssetBlocksAR extends CActiveRecord
+class AssetBlocksAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

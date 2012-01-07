@@ -14,7 +14,7 @@
  * The followings are the available model relations:
  * @property Plugins $pluginName
  */
-class PluginSettingsAR extends CActiveRecord
+class PluginSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

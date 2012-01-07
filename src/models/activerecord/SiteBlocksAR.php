@@ -19,7 +19,7 @@
  * @property Sites $site
  * @property SiteBlockSettings[] $siteBlockSettings
  */
-class SiteBlocksAR extends CActiveRecord
+class SiteBlocksAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

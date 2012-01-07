@@ -14,7 +14,7 @@
  * The followings are the available model relations:
  * @property Entries $entry
  */
-class EntryTitlesAR extends CActiveRecord
+class EntryTitlesAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

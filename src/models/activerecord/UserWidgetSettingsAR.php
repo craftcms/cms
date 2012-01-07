@@ -15,7 +15,7 @@
  * The followings are the available model relations:
  * @property UserWidgets $widget
  */
-class UserWidgetSettingsAR extends CActiveRecord
+class UserWidgetSettingsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

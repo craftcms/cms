@@ -16,7 +16,7 @@
  * @property Users $user
  * @property UserWidgetSettings[] $userWidgetSettings
  */
-class UserWidgetsAR extends CActiveRecord
+class UserWidgetsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

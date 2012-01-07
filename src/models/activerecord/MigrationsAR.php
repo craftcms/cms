@@ -7,7 +7,7 @@
  * @property string $version
  * @property integer $apply_time
  */
-class MigrationsAR extends CActiveRecord
+class MigrationsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

@@ -16,7 +16,7 @@
  * The followings are the available model relations:
  * @property Sites $site
  */
-class RoutesAR extends CActiveRecord
+class RoutesAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

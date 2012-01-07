@@ -9,7 +9,7 @@
  * @property integer $date_updated
  * @property string $uid
  */
-class LanguagesAR extends CActiveRecord
+class LanguagesAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

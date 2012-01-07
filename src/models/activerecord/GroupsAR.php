@@ -14,7 +14,7 @@
  * The followings are the available model relations:
  * @property UserGroups[] $userGroups
  */
-class GroupsAR extends CActiveRecord
+class GroupsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

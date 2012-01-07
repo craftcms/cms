@@ -27,7 +27,7 @@
  * @property EntryTitles[] $entryTitles
  * @property EntryVersions[] $entryVersions
  */
-class EntriesAR extends CActiveRecord
+class EntriesAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

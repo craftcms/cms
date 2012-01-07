@@ -21,7 +21,7 @@ AR<?php
  * @property UserGroups[] $userGroups
  * @property UserWidgets[] $userWidgets
  */
-class UsersAR extends CActiveRecord
+class UsersAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

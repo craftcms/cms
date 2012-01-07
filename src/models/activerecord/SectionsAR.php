@@ -24,7 +24,7 @@
  * @property Sections $parent
  * @property Sections[] $sections
  */
-class SectionsAR extends CActiveRecord
+class SectionsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.

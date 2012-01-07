@@ -15,7 +15,7 @@
  * @property AssetBlocks[] $assetBlocks
  * @property UploadFolders $uploadFolder
  */
-class AssetsAR extends CActiveRecord
+class AssetsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
