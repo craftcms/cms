@@ -1,8 +1,8 @@
 <?php
 
-class DataTypeContent extends BlocksDataType
+class ModelContent extends BlocksModel
 {
-	private $_dataType;
+	private $_blocksModel;
 
 	private static $attributes = array(
 		'num'    => array('type' => AttributeType::Integer, 'required' => true),
@@ -11,15 +11,15 @@ class DataTypeContent extends BlocksDataType
 		'type'   => array('type' => AttributeType::Enum, 'values' => 'published,draft,autosave', 'default' => 'draft', 'required' => true),
 	);
 
-	public function init($dataType)
+	public function init($blocksModel)
 	{
-		$this->_dataType = $dataType;
+		$this->_blocksModel = $blocksModel;
 	}
 
 	public function getBelongsTo()
 	{
 		return array(
-			strtolower($this->_dataType) => $this->_dataType,
+			strtolower($this->_blocksModel) => $this->_blocksModel,
 			'content' => 'Content'
 		);
 	}

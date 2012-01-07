@@ -1,23 +1,23 @@
 <?php
 
-class DataTypeBlocks extends BlocksDataType
+class ModelBlocks extends BlocksModel
 {
-	private $_dataType;
+	private $_blocksModel;
 
 	private static $attributes = array(
 		'required'     => array('type' => AttributeType::Boolean, 'required' => true),
 		'sort_order'   => array('type' => AttributeType::Integer, 'required' => true)
 	);
 
-	public function init($dataType)
+	public function init($blocksModel)
 	{
-		$this->_dataType = $dataType;
+		$this->_blocksModel = $blocksModel;
 	}
 
 	public function getBelongsTo()
 	{
 		return array(
-			strtolower($this->_dataType) => $this->_dataType,
+			strtolower($this->_blocksModel) => $this->_blocksModel,
 			'block' => 'ContentBlocks'
 		);
 	}

@@ -1,6 +1,6 @@
 <?php
 
-abstract class BlocksDataType
+abstract class BlocksModel
 {
 	private static $hasSettings = false;
 	private static $hasContent = false;
@@ -26,7 +26,8 @@ abstract class BlocksDataType
 	}
 
 	/**
-	 * Whether this datatype has settings (stored in blx_DataTypeClass_settings)
+	 * Whether this BlocksModel has settings (stored in blx_blocksmodelclass_settings)
+	 * @return bool
 	 */
 	public function getHasSettings()
 	{
@@ -34,7 +35,8 @@ abstract class BlocksDataType
 	}
 
 	/**
-	 * Whether this datatype has content (joined to blx_content via blx_DataTypeClass_content)
+	 * Whether this BlocksModel has content (joined to blx_content via blx_blocksmodelclass_content)
+	 * @return bool
 	 */
 	public function getHasContent()
 	{
@@ -42,7 +44,8 @@ abstract class BlocksDataType
 	}
 
 	/**
-	 * Whether this datatype has custom blocks (joined to blx_contentblocks via blx_DataTypeClass_blocks)
+	 * Whether this BlocksModel has custom blocks (joined to blx_contentblocks via blx_blocksmodelclass_blocks)
+	 * @return bool
 	 */
 	public function getHasCustomBlocks()
 	{
@@ -51,6 +54,7 @@ abstract class BlocksDataType
 
 	/**
 	 * One-to-many relationships
+	 * @return array
 	 */
 	public function getHasMany()
 	{
@@ -59,6 +63,7 @@ abstract class BlocksDataType
 
 	/**
 	 * One-to-one relationships
+	 * @return array
 	 */
 	public function getHasOne()
 	{
@@ -67,6 +72,7 @@ abstract class BlocksDataType
 
 	/**
 	 * Many-to-many relationships
+	 * @return array
 	 */
 	public function getHasAndBelongsToMany()
 	{
@@ -75,6 +81,7 @@ abstract class BlocksDataType
 
 	/**
 	 * One-to-many or one-to-one relationships
+	 * @return array
 	 */
 	public function getBelongsTo()
 	{
@@ -82,7 +89,8 @@ abstract class BlocksDataType
 	}
 
 	/**
-	 * The datatype's non-relational attributes
+	 * The BlocksModel's non-relational attributes
+	 * @return array
 	 */
 	public function getAttributes()
 	{
@@ -90,7 +98,7 @@ abstract class BlocksDataType
 	}
 
 	/**
-	 * Creates the table(s) necessary for this datatype to save its data
+	 * Creates the table(s) necessary for this BlocksModel to save its data
 	 * @static
 	 */
 	public static function install()
@@ -99,8 +107,12 @@ abstract class BlocksDataType
 	}
 
 	/**
-	 * Returns the active record model for this datatype
+	 * Returns the active record model for this BlocksModel
 	 * @static
+	 *
+	 * @param string $className
+	 *
+	 * @return mixed
 	 */
 	public static function model($className = __CLASS__)
 	{

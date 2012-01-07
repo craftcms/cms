@@ -1,12 +1,12 @@
 <?php
 
-class ContentBlocks extends BlocksDataType
+class ContentBlocks extends BlocksModel
 {
 	public function getHasMany()
 	{
 		$hasMany = array();
 
-		// add all datatypes that have blocks
+		// add all BlocksModels that have blocks
 
 		return $hasMany;
 	}

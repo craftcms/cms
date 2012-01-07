@@ -1,6 +1,6 @@
 <?php
 
-class AssetFolder extends BlocksDataType
+class AssetFolder extends BlocksModel
 {
 	private static $hasMany = array(
 		'assets' => 'Assets.folder'
