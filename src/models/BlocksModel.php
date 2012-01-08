@@ -2,16 +2,6 @@
 
 abstract class BlocksModel extends CActiveRecord
 {
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
-
 	protected static $hasSettings = false;
 	protected static $hasContent = false;
 	protected static $hasCustomBlocks = false;
@@ -29,7 +19,10 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public static function model($class = __CLASS__)
 	{
-		return parent::model($class);
+		if (version_compare(Blocks::app()->config->getLocalPHPVersion(), '5.3.0', '>='))
+			return parent::model(get_called_class());
+		else
+			return parent::model(__CLASS__);
 	}
 
 	/**
@@ -167,13 +160,13 @@ abstract class BlocksModel extends CActiveRecord
 		foreach ($this->getHasMany() as $key => $model)
 		{
 			$model = explode('.', $model);
-			$relations[$key] => array(self::HAS_MANY, $model[0], $model[1].'_id');
+			$relations[$key] = array(self::HAS_MANY, $model[0], $model[1].'_id');
 		}
 
 		foreach ($this->getHasOne() as $key => $model)
 		{
 			$model = explode('.', $model);
-			$relations[$key] => array(self::HAS_ONE, $model[0], $model[1].'_id');
+			$relations[$key] = array(self::HAS_ONE, $model[0], $model[1].'_id');
 		}
 
 		foreach ($this->getHasAndBelongsToMany() as $key => $model)
@@ -182,12 +175,12 @@ abstract class BlocksModel extends CActiveRecord
 			$models = array(get_class($this), $model);
 			sort($models);
 
-			$relations[$key] => array(self::MANY_MANY, $model, strtolower('{{'.$models[0].'_'.$models[1].'}}('.get_class($this).'_id, '.$model.'_id)'));
+			$relations[$key] = array(self::MANY_MANY, $model, strtolower('{{'.$models[0].'_'.$models[1].'}}('.get_class($this).'_id, '.$model.'_id)'));
 		}
 
 		foreach ($this->getBelongsTo() as $key => $model)
 		{
-			$relations[$key] => array(self::BELONGS_TO, $model, $key.'_id');
+			$relations[$key] = array(self::BELONGS_TO, $model, $key.'_id');
 		}
 
 		return $relations;
