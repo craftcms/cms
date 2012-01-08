@@ -56,7 +56,6 @@ return array(
 		'application.business.widgets.*',
 		'application.controllers.*',
 		'application.migrations.*',
-		'application.models.activerecord.*',
 		'application.models.*',
 	),
 

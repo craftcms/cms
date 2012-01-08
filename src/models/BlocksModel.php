@@ -1,7 +1,17 @@
 <?php
 
-abstract class BlocksModel
+abstract class BlocksModel extends CActiveRecord
 {
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
+	}
+
 	protected static $hasSettings = false;
 	protected static $hasContent = false;
 	protected static $hasCustomBlocks = false;
@@ -14,20 +24,16 @@ abstract class BlocksModel
 	protected static $attributes = array();
 
 	/**
-	 * Constructor
+	 * @return object An instance of the specified model
+	 * @static
 	 */
-	public function __construct()
+	public static function model($class = __CLASS__)
 	{
-		if (method_exists($this, 'init'))
-		{
-			$args = func_get_args();
-			call_user_func_array(array($this, 'init'), $args);
-		}
+		return parent::model($class);
 	}
 
 	/**
-	 * Whether this BlocksModel has settings (stored in blx_blocksmodelclass_settings)
-	 * @return bool
+	 * @return bool Whether this model has settings (stored in blx_blocksmodelclass_settings)
 	 */
 	public function getHasSettings()
 	{
@@ -35,8 +41,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * Whether this BlocksModel has content (joined to blx_content via blx_blocksmodelclass_content)
-	 * @return bool
+	 * @return bool Whether this model has content (joined to blx_content via blx_blocksmodelclass_content)
 	 */
 	public function getHasContent()
 	{
@@ -44,8 +49,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * Whether this BlocksModel has custom blocks (joined to blx_contentblocks via blx_blocksmodelclass_blocks)
-	 * @return bool
+	 * @return bool Whether this model has custom blocks (joined to blx_contentblocks via blx_blocksmodelclass_blocks)
 	 */
 	public function getHasCustomBlocks()
 	{
@@ -53,8 +57,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * One-to-many relationships
-	 * @return array
+	 * @return array The model's one-to-many relationships
 	 */
 	public function getHasMany()
 	{
@@ -62,8 +65,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * One-to-one relationships
-	 * @return array
+	 * @return array The model's one-to-one relationships
 	 */
 	public function getHasOne()
 	{
@@ -71,8 +73,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * Many-to-many relationships
-	 * @return array
+	 * @return array The model's many-to-many relationships
 	 */
 	public function getHasAndBelongsToMany()
 	{
@@ -80,8 +81,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * One-to-many or one-to-one relationships
-	 * @return array
+	 * @return array One-to-many or one-to-one relationships
 	 */
 	public function getBelongsTo()
 	{
@@ -89,8 +89,7 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * The BlocksModel's non-relational attributes
-	 * @return array
+	 * @return array The model's non-relational attributes
 	 */
 	public function getAttributes()
 	{
@@ -98,24 +97,130 @@ abstract class BlocksModel
 	}
 
 	/**
-	 * Creates the table(s) necessary for this BlocksModel to save its data
+	 * @return string The associated database table name
+	 */
+	public function tableName()
+	{
+		return '{{'.strtolower(get_class($this)).'}}';
+	}
+
+	/**
+	 * @return array Validation rules for model's attributes
+	 */
+	public function rules()
+	{
+		$attributes = $this->getAttributes();
+
+		$required = array();
+		$searchable = array();
+		$integers = array();
+		$maxSizes = array();
+
+		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxSize' => 150, 'required' => false, 'searchable' => false);
+
+		foreach ($attributes as $attributeName => $attributeSettings)
+		{
+			$attributeSettings = array_merge($defaultAttributeSettings, $attributeSettings);
+
+			if ($attributeSettings['required'] === true)
+				$required[] = $attributeName;
+
+			if ($attributeSettings['searchable'] === true)
+				$searchable[] = $attributeName;
+
+			if ($attributeSettings['type'] == AttributeType::Integer)
+				$integers[] = $attributeName;
+
+			if ($attributeSettings['type'] == AttributeType::String)
+				$maxSizes[(string)$attributeName['maxSize']][] = $attributeName;
+		}
+
+		$rules = array();
+
+		if ($required)
+			$rules[] = array(implode(', ', $required), 'required');
+
+		if ($searchable)
+			$rules[] = array(implode(', ', $searchable), 'safe', 'on' => 'search');
+
+		if ($integers)
+			$rules[] = array(implode(', ', $integers), 'numerical', 'interegOnly' => true);
+
+		if ($maxSizes)
+		{
+			foreach ($maxSizes as $maxSize => $attributeNames)
+			{
+				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxSize);
+			}
+		}
+
+		return $rules;
+	}
+
+	/**
+	 * @return array Relational rules
+	 */
+	public function relations()
+	{
+		$relations = array();
+
+		foreach ($this->getHasMany() as $key => $model)
+		{
+			$model = explode('.', $model);
+			$relations[$key] => array(self::HAS_MANY, $model[0], $model[1].'_id');
+		}
+
+		foreach ($this->getHasOne() as $key => $model)
+		{
+			$model = explode('.', $model);
+			$relations[$key] => array(self::HAS_ONE, $model[0], $model[1].'_id');
+		}
+
+		foreach ($this->getHasAndBelongsToMany() as $key => $model)
+		{
+			// alphabetize the models
+			$models = array(get_class($this), $model);
+			sort($models);
+
+			$relations[$key] => array(self::MANY_MANY, $model, strtolower('{{'.$models[0].'_'.$models[1].'}}('.get_class($this).'_id, '.$model.'_id)'));
+		}
+
+		foreach ($this->getBelongsTo() as $key => $model)
+		{
+			$relations[$key] => array(self::BELONGS_TO, $model, $key.'_id');
+		}
+
+		return $relations;
+	}
+
+	/**
+	 * Retrieves a list of models based on the current search/filter conditions.
+	 * @return CActiveDataProvider The data provider that can return the models based on the search/filter conditions.
+	 */
+	public function search()
+	{
+		// Warning: Please modify the following code to remove attributes that
+		// should not be searched.
+
+		$criteria = new CDbCriteria;
+
+		foreach ($this->getAttributes() as $attributeName => $attributeSettings)
+		{
+			if (isset($attributeSettings['searchable']) && $attributeSettings['searchable'] === true)
+				$criteria->compare($attributeName, $this->$attributeName);
+		}
+
+		return new CActiveDataProvider($this, array(
+			'criteria' => $criteria
+		));
+	}
+
+	/**
+	 * Creates the table(s) necessary for this model to save its data
 	 * @static
 	 */
 	public static function install()
 	{
 		
-	}
-
-	/**
-	 * Returns the active record model for this BlocksModel
-	 * @static
-	 *
-	 * @param string $className
-	 *
-	 * @return mixed
-	 */
-	public static function model()
-	{
-		return BlocksActiveRecord::model(get_called_class().'AR');
 	}
 }

@@ -2,7 +2,15 @@
 
 class ModelContent extends BlocksModel
 {
-	private $_blocksModel;
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
+	}
 
 	protected static $attributes = array(
 		'num'    => array('type' => AttributeType::Integer, 'required' => true),
@@ -10,11 +18,6 @@ class ModelContent extends BlocksModel
 		'active' => array('type' => AttributeType::Boolean, 'required' => true),
 		'type'   => array('type' => AttributeType::Enum, 'values' => 'published,draft,autosave', 'default' => 'draft', 'required' => true),
 	);
-
-	public function init($blocksModel)
-	{
-		$this->_blocksModel = $blocksModel;
-	}
 
 	public function getBelongsTo()
 	{
