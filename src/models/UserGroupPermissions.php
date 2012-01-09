@@ -13,7 +13,7 @@ class UserGroupPermissions extends BlocksModel
 	}
 
 	protected static $belongsTo = array(
-		'group' => 'UserGroups'
+		'group' => array('model' => 'UserGroups', 'required' => true)
 	);
 
 	protected static $attributes = array(

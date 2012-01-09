@@ -16,7 +16,7 @@ class Assets extends BlocksModel
 	protected static $hasCustomBlocks = true;
 
 	protected static $belongsTo = array(
-		'folder' => 'AssetFolders'
+		'folder' => array('model' => 'AssetFolders', 'required' => true)
 	);
 
 	protected static $attributes = array(

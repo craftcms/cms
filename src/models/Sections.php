@@ -19,8 +19,8 @@ class Sections extends BlocksModel
 	);
 
 	protected static $belongsTo = array(
-		'parent' => 'Sections',
-		'site'   => 'Sites'
+		'parent' => array('model' => 'Sections'),
+		'site'   => array('model' => 'Sites', 'required' => true)
 	);
 
 	protected static $attributes = array(

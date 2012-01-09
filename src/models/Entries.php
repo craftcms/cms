@@ -19,9 +19,9 @@ class Entries extends BlocksModel
 	);
 
 	protected static $belongsTo = array(
-		'parent'  => 'Entries',
-		'section' => 'Sections',
-		'author'  => 'Users'
+		'parent'  => array('model' => 'Entries'),
+		'section' => array('model' => 'Sections', 'required' => true),
+		'author'  => array('model' => 'Users', 'required' => true)
 	);
 
 	protected static $attributes = array(
