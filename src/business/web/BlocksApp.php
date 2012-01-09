@@ -15,16 +15,44 @@ class BlocksApp extends CWebApplication
 		// Is this a resource request?
 		if ($this->mode == AppMode::Resource)
 		{
-			$segs = array_slice($this->request->pathSegments, 1);
-
-			$handle = array_shift($segs);
-
-			if ($handle == 'app')
-				$rootFolderPath = $this->path->resourcesPath;
+			$pathVar = Blocks::app()->config('pathVar');
+			// non path_info format
+			if (!Blocks::app()->request->isServerPathInfoRequest && ($pathRequest = Blocks::app()->request->getParam($pathVar, null)) !== null)
+			{
+				$segs = array_slice(explode('/', $pathRequest), 1);
+				$handle = array_shift($segs);
+			}
 			else
-				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+			// path_info format
+			{
+				$segs = array_slice($this->request->pathSegments, 1);
+				$handle = array_shift($segs);
+			}
 
-			$rootFolderUrl = $this->urlManager->baseUrl.'/'.'resources/'.$handle.'/';
+			if (Blocks::app()->request->isServerPathInfoRequest)
+			{
+				if ($handle == 'app')
+					$rootFolderPath = $this->path->resourcesPath;
+				else
+					$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+
+				$rootFolderUrl = $this->urlManager->baseUrl.'/'.'resources/'.$handle.'/';
+			}
+			else
+			{
+				// PATH_INFO not enabled
+				if ($handle == 'app')
+				{
+					$rootFolderPath = $this->path->resourcesPath;
+					$rootFolderUrl = 'blocks/app/resources';
+				}
+				else
+				{
+					$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+					$rootFolderUrl = 'blocks/plugins/'.$handle.'/resources';
+				}
+			}
+
 			$relativeResourcePath = implode('/', $segs);
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
@@ -38,25 +66,51 @@ class BlocksApp extends CWebApplication
 	{
 		if (!isset($this->_mode))
 		{
-			// Controller action?
+			// Controller action with path_info format
 			if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('actionTriggerWord')))
 			{
 				$this->_mode = AppMode::Action;
 			}
-			// Resource?
-			else if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('resourceTriggerWord')))
+			// Controller action with non-path_info format
+			else if (($queryStrPath = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null)) !== null)
 			{
-				$this->_mode = AppMode::Resource;
+				$pathSegs = explode('/', $queryStrPath);
+				if (isset($pathSegs[0]) && $pathSegs[0] == Blocks::app()->config('actionTriggerWord'))
+				{
+					$this->_mode = AppMode::Action;
+				}
 			}
-			// CP?
-			else if (defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true)
+
+			if (!isset($this->_mode))
 			{
-				$this->_mode = AppMode::CP;
+				// Resource request with path_info format
+				if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('resourceTriggerWord')))
+				{
+					$this->_mode = AppMode::Resource;
+				}
+				// Resource request with non-path_info format
+				else if (($queryStrPath = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null)) !== null)
+				{
+					$pathSegs = explode('/', $queryStrPath);
+					if (isset($pathSegs[0]) && $pathSegs[0] == Blocks::app()->config('resourceTriggerWord'))
+					{
+						$this->_mode = AppMode::Resource;
+					}
+				}
 			}
-			// Then it's a site
-			else
+
+			if (!isset($this->_mode))
 			{
-				$this->_mode = AppMode::Site;
+				// CP request
+				if (defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true)
+				{
+					$this->_mode = AppMode::CP;
+				}
+				// Then it's a site
+				else
+				{
+					$this->_mode = AppMode::Site;
+				}
 			}
 		}
 

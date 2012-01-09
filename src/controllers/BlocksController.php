@@ -10,14 +10,34 @@ class BlocksController extends BaseController
 			$requestAction = null;
 
 			// requestHandle will either be 'app' or {pluginHandle}
-			if (isset(Blocks::app()->request->pathSegments[1]))
-				$requestHandle = Blocks::app()->request->pathSegments[1];
+			// pathInfo format.
+			if (Blocks::app()->request->isServerPathInfoRequest)
+			{
+				if (isset(Blocks::app()->request->pathSegments[1]))
+					$requestHandle = Blocks::app()->request->pathSegments[1];
 
-			if (isset(Blocks::app()->request->pathSegments[2]))
-				$requestController = Blocks::app()->request->pathSegments[2];
+				if (isset(Blocks::app()->request->pathSegments[2]))
+					$requestController = Blocks::app()->request->pathSegments[2];
 
-			if (isset(Blocks::app()->request->pathSegments[3]))
-				$requestAction = Blocks::app()->request->pathSegments[3];
+				if (isset(Blocks::app()->request->pathSegments[3]))
+					$requestAction = Blocks::app()->request->pathSegments[3];
+			}
+			else
+			{
+				// queryString format.
+				if (($path = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null)) !== null)
+				{
+					$pathSegs = explode('/', $path);
+					if (isset($pathSegs[1]))
+						$requestHandle = $pathSegs[1];
+
+					if (isset($pathSegs[2]))
+						$requestController = $pathSegs[2];
+
+					if (isset($pathSegs[3]))
+						$requestAction = $pathSegs[3];
+				}
+			}
 
 			if ($requestController !== null && $requestAction !== null) // and requestHandle == app
 			{

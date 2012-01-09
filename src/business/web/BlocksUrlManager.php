@@ -8,9 +8,12 @@ class BlocksUrlManager extends CUrlManager
 	private $_requestExtension = null;
 	private $_currentModule = null;
 
-	public $routeVar = 'p';
-	private $_isServerPathInfoRequest = null;
+	public $routeVar;
 
+	function __construct()
+	{
+		$this->routeVar = Blocks::app()->config('pathVar');
+	}
 
 	public function init()
 	{
@@ -19,36 +22,32 @@ class BlocksUrlManager extends CUrlManager
 		// set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
-		if ($this->isServerPathInfoRequest)
+		if (Blocks::app()->request->isServerPathInfoRequest)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
 
-		$this->_path = Blocks::app()->request->pathInfo;
-		$this->_pathSegments = Blocks::app()->request->pathSegments;
-		$this->_requestExtension = Blocks::app()->request->pathExtension;
-	}
+		if (Blocks::app()->request->isServerPathInfoRequest)
+			$this->_path = Blocks::app()->request->pathInfo;
+		else
+			$this->_path = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null);
 
-	/**
-	 * @return Returns whether the $_SERVER["PATH_INFO"] variable is set or not.
-	 */
-	public function getIsServerPathInfoRequest()
-	{
-		if ($this->_isServerPathInfoRequest == null)
+		if (($ext = pathinfo($this->_path, PATHINFO_EXTENSION)) !== '')
 		{
-			if (isset($_SERVER["PATH_INFO"]))
-				$this->_isServerPathInfoRequest = true;
-			else
-				$this->_isServerPathInfoRequest = false;
+			$this->_requestExtension = $ext;
+			$dot = strpos($this->_path, '.');
+			$this->_path = substr($this->_path, 0, $dot);
 		}
 
-		return $this->_isServerPathInfoRequest;
+		$this->_pathSegments = Blocks::app()->request->pathSegments;
 	}
+
+
 
 	public function processTemplateMatching()
 	{
 		// if it's a gii request, no need to do template matching.
-		if (($this->currentModule !== null && $this->currentModule->Id == 'gii') || strpos(Blocks::app()->request->getParam('r'), 'gii') !== false)
+		if (($this->currentModule !== null && $this->currentModule->Id == 'gii') || strpos(Blocks::app()->request->getParam($this->routeVar), 'gii') !== false)
 			return;
 
 		$matchFound = false;
@@ -142,56 +141,28 @@ class BlocksUrlManager extends CUrlManager
 	{
 		$moduleName = null;
 		$templatePath = $this->normalizeTrailingSlash(Blocks::app()->viewPath);
-		$pathInfoPath = Blocks::app()->request->getParam($this->routeVar, null);
-
-		if ($this->isServerPathInfoRequest)
-			$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
-		else
-		{
-			if ($pathInfoPath !== null)
-				$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.$pathInfoPath, '/');
-			else
-				$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
-		}
+		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.$this->_path, '/');
 
 		$tempPath = $this->_path;
 		$testPath = null;
 
-		// if the request comes in with an extension at the end, trim it off
-		if ($this->_requestExtension !== null)
+		// if this is a control panel request, let's see if we can match it to a module as well and we're dealing with a module
+		if (Blocks::app()->mode == AppMode::CP && $this->_currentModule !== null)
 		{
-			$pathMatchPattern = rtrim($pathMatchPattern, '.'.$this->_requestExtension);
-			$tempPath = rtrim($tempPath, '.'.$this->_requestExtension);
-		}
+			$moduleName = $this->_currentModule->Id;
+			$requestPath = substr($tempPath, strlen($moduleName) + 1);
 
-		// if this is a control panel request, let's see if we can match it to a module as well.
-		if (Blocks::app()->mode == AppMode::CP)
-		{
-			// we're dealing with a module
-			if ($this->_currentModule !== null)
-			{
-				$moduleName = $this->_currentModule->Id;
-				$requestPath = substr($tempPath, strlen($moduleName) + 1);
-
-				if ($requestPath === false)
-					$requestPath = '';
-			}
-			else
-				$requestPath = $tempPath;
+			if ($requestPath === false)
+				$requestPath = '';
 		}
 		else
 			$requestPath = $tempPath;
 
 		// fix the trailing and ending slashes
 		if ($requestPath !== '')
-		{
 			$requestPath = ltrim($requestPath, '\\/');
-			$templatePath = $this->normalizeTrailingSlash($templatePath);
-		}
-		else
-		{
-			$templatePath = rtrim($templatePath, '\\/');
-		}
+
+		$templatePath = $this->normalizeTrailingSlash($templatePath);
 
 		// if there are any folders that have a '_' as the first character of the name, then it's hidden and there is no template match.
 		$requestPathSegs = explode('/', $requestPath);
@@ -202,35 +173,32 @@ class BlocksUrlManager extends CUrlManager
 		}
 
 		// first try to match /path/to/folder.{allowedTemplateFileExtensions}
-		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
-		{
-			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-
-			if ($moduleName !== null)
-				$requestPath = $moduleName.'/'.$requestPath;
-
-			$this->setTemplateMatch($requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
+		if ($this->_attemptTemplateMatch($templatePath.$requestPath, $requestPath, $moduleName, $pathMatchPattern))
 			return true;
-		}
 
 		// now try to match /path/to/folder/index.{allowedTemplateFileExtensions}
 		$requestPath = $this->normalizeTrailingSlash($requestPath).'index';
 		$templatePath = rtrim($templatePath, '\\/').'/';
-		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.$requestPath)) !== null)
+		if ($this->_attemptTemplateMatch($templatePath.$requestPath, $requestPath, $moduleName, $pathMatchPattern))
+			return true;
+
+		// no template match.
+		return false;
+	}
+
+	private function _attemptTemplateMatch($path, $requestPath, $moduleName, $pathMatchPattern)
+	{
+		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($path)) !== null)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
 
 			if ($moduleName !== null)
 				$requestPath = $moduleName.$requestPath;
 
-			if ($pathInfoPath !== null)
-				$requestPath = $pathInfoPath.$requestPath;
-
 			$this->setTemplateMatch($requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
 			return true;
 		}
 
-		// no template match.
 		return false;
 	}
 
