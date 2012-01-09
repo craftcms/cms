@@ -203,7 +203,7 @@ class CoreUpdater implements IUpdater
 
 		$et = new ET(ETEndPoints::DownloadPackage(), 60);
 		$et->setStreamPath($destinationPath);
-		$et->package->data = $params;
+		$et->getPackage()->data = $params;
 		if ($et->phoneHome())
 			return true;
 
@@ -219,7 +219,7 @@ class CoreUpdater implements IUpdater
 		);
 
 		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5());
-		$et->package->data = $params;
+		$et->getPackage()->data = $params;
 		$package = $et->phoneHome();
 
 		$sourceMD5 = $package->data;
