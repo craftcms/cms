@@ -8,6 +8,7 @@ class ResourceProcessor
 	private $_relResourceDirname;
 	private $_relResourceFilename;
 	private $_resourceFullPath;
+	private $_content;
 
 	/**
 	 * ResourceProcessor Constructor
@@ -59,7 +60,7 @@ class ResourceProcessor
 		$mimeType = $file->mimeType;
 
 		if (strpos($mimeType, 'css') > 0)
-			$this->convertRelativeUrls();
+			$this->_convertRelativeUrls();
 
 		$file->send(false, false, $this->_content);
 	}
@@ -67,12 +68,12 @@ class ResourceProcessor
 	/**
 	 * Convert relative URLs in CSS files to absolute paths based on the root folder URL
 	 */
-	private function convertRelativeUrls()
+	private function _convertRelativeUrls()
 	{
-		$this->_content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, 'convertRelativeUrlMatch'), $this->_content);
+		$this->_content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_convertRelativeUrlMatch'), $this->_content);
 	}
 
-	private function convertRelativeUrlMatch($match)
+	private function _convertRelativeUrlMatch($match)
 	{
 		// ignore root-relative and absolute URLs
 		if (preg_match('/^(\/|https?:\/\/)/', $match[3]))
