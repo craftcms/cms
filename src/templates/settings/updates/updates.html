@@ -1,6 +1,6 @@
 {% if cp.updates('y') %}
 
-	<form method="post" action="{{ url.base }}/update?h=all"><input id="update-all" class="btn big" type="submit" value="Update All"></form>
+	<form method="post" action="{{ url.generateUrl('update', 'h=all') }}"><input id="update-all" class="btn big" type="submit" value="Update All"></form>
 	<h3>The following updates are available:</h3>
 
 	{% foreach cp.updates('y') as update %}
@@ -8,7 +8,7 @@
 		<div class="head">
 			<div class="name">{{ update.name }} <strong>{{ update.version }}</strong></div>
 			{% if update.critical %}<div class="badge alert">Critical</div>{% /if %}
-			<form method="post" action="{{ url.base }}/update?h={{ update.handle }}"><input class="btn" type="submit" value="Update"></form>
+			<form method="post" action="{{ url.generateUrl('update', 'h=') }}"><input class="btn" type="submit" value="Update"></form>
 			<a class="notes-toggle">Show release notes</a>
 		</div>
 		<div class="notes-container">

@@ -12,8 +12,8 @@
 		<div class="body">
 			<div class="item tree">
 				<ul>
-					<li><a {% if url.segment(2) == 'info' %}class="sel"{% endif %} href="{{ url.base }}/settings/info"><span class="icon icon70"></span>System Info</a></li>
-					<li><a id="sb-updates" class="has-badge {% if url.segment(2) == 'updates' %}sel{% endif %}" href="{{ url.base }}/settings/updates"><span class="icon icon15"></span>Updates{% if cp.updateInfoCached && cp.updates %}<span class="badge {% if cp.criticalUpdateAvailable %}alert{% /if %}">{{ cp.updates.length }}</span>{% /if %}</a></li>
+					<li><a {% if url.segment(2) == 'info' %}class="sel"{% endif %} href="{{ url.generateUrl('settings/info') }}"><span class="icon icon70"></span>System Info</a></li>
+					<li><a id="sb-updates" class="has-badge {% if url.segment(2) == 'updates' %}sel{% endif %}" href="{{ url.generateUrl('settings/updates') }}"><span class="icon icon15"></span>Updates{% if cp.updateInfoCached && cp.updates %}<span class="badge {% if cp.criticalUpdateAvailable %}alert{% /if %}">{{ cp.updates.length }}</span>{% /if %}</a></li>
 					<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href=""><span class="icon icon100"></span>Sites</a></li>
 					<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>
 				</ul>
@@ -28,8 +28,8 @@
 		<div class="body">
 			<div class="item tree">
 				<ul>
-					<li><a {% if url.segment(2) == 'routing' %}class="sel"{% endif %} href="{{ url.base }}/settings/routing"><span class="icon icon14"></span>URL Routing</a></li>
-					<li><a {% if url.segment(2) == 'sections' %}class="sel"{% endif %} href="{{ url.base }}/settings/sections"><span class="icon icon274"></span>Content Sections</a></li>
+					<li><a {% if url.segment(2) == 'routing' %}class="sel"{% endif %} href="{{ url.generateUrl('settings/routing') }}"><span class="icon icon14"></span>URL Routing</a></li>
+					<li><a {% if url.segment(2) == 'sections' %}class="sel"{% endif %} href="{{ url.generateUrl('settings/sections') }}"><span class="icon icon274"></span>Content Sections</a></li>
 					<li><a {% if url.segment(2) == 'workflows' %}class="sel"{% endif %} href=""><span class="icon icon61"></span>Publishing Workflows</a></li>
 					<li><a {% if url.segment(2) == 'folders' %}class="sel"{% endif %} href=""><span class="icon icon133"></span>Asset Folders</a></li>
 				</ul>

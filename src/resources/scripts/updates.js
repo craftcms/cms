@@ -71,7 +71,7 @@ window.Update = Base.extend({
 });
 
 
-var updatesUrl = baseUrl+'/settings/updates/updates';
+var updatesUrl = baseUrl+'?p=settings/updates/updates';
 $('#updates').load(updatesUrl, function() {
 	var $sidebarLink = $('#sb-updates'),
 		$sidebarBadge = $sidebarLink.find('span.badge'),

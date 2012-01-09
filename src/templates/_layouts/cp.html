@@ -21,13 +21,13 @@
 			</div>
 			<ul>
 				{% foreach cp.sections as section %}
-				<li id="nav-{{ section.handle }}"><a {% if url.segment(1)==section.handle %}class="sel"{% /if %} href="{{ url.base }}/{{ section.handle }}" title="{{ section.name }}"></a></li>
+				<li id="nav-{{ section.handle }}"><a {% if url.segment(1)==section.handle %}class="sel"{% /if %} href="{{ url.generateUrl(section.handle) }}" title="{{ section.name }}"></a></li>
 				{% /foreach %}
 			</ul>
 		</div>
 		<div>
 			<ul class="right">
-				<li id="nav-account"><a {% if url.segment(1)=='account' %}class="sel"{% /if %} href="/account.html" title="My Account"><img src="{{ cp.resource('app/images/avatar.jpg') }}" alt="">Brandon</a></li>
+				<li id="nav-account"><a {% if url.segment(1)=='account' %}class="sel"{% /if %} href="{{ url.generateUrl('account') }}" title="My Account"><img src="{{ cp.resource('app/images/avatar.jpg') }}" alt="">Brandon</a></li>
 			</ul>
 		</div>
 	</div>

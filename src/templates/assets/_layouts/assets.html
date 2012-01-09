@@ -46,8 +46,8 @@
 {% region main %}
 	<div class="toolbar">
 		<div class="btn-group">
-			<a class="btn {% if viewMode=='thumbs' %}sel{% /if %}" href="?viewMode=thumbs" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
-			<a class="btn {% if viewMode=='list' %}sel{% /if %}" href="?viewMode=list" title="Display files in a list"><span class="icon icon276"></span></a></li>
+			<a class="btn {% if viewMode=='thumbs' %}sel{% /if %}" href="{{ url.generateUrl('assets', 'viewMode=thumbs') }}" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
+			<a class="btn {% if viewMode=='list' %}sel{% /if %}" href="{{ url.generateUrl('assets', 'viewMode=list') }}" title="Display files in a list"><span class="icon icon276"></span></a></li>
 		</div>
 
 		<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>
