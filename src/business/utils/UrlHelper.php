@@ -34,8 +34,8 @@ class UrlHelper
 		$pathParts = explode('/', $path);
 
 		$handle = '/'.array_shift($pathParts);
-		$path = '/'.implode('/', $pathParts);
-		$pathStr = '/'.$triggerWord.$handle.$path;
+		$path = count($pathParts) == 0 ? '' : '/'.implode('/', $pathParts);
+		$pathStr = $triggerWord == '' ? $handle.$path : '/'.$triggerWord.$handle.$path;
 
 		if (is_array($params))
 			$path = array_merge(array($pathStr), $params);
@@ -46,7 +46,10 @@ class UrlHelper
 				$params = ltrim($params, '?');
 				$params = ltrim($params, '&');
 
-				$path = array($pathStr.'?'.$params);
+				if (!Blocks::app()->request->isServerPathInfoRequest)
+					$path = array($pathStr.'&'.$params);
+				else
+					$path = array($pathStr.'?'.$params);
 			}
 			else
 				$path = array($pathStr);
