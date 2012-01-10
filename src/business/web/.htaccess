@@ -1,0 +1,5 @@
+# Only allow access to PathInfoCheck here.
+<Files PathInfoCheck.php>
+order deny,allow
+allow from all
+</Files>
