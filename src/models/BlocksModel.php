@@ -105,11 +105,10 @@ abstract class BlocksModel extends CActiveRecord
 		$attributes = $this->getAttributes();
 
 		$required = array();
-		$searchable = array();
 		$integers = array();
 		$maxSizes = array();
 
-		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxSize' => 150, 'required' => false, 'searchable' => false);
+		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxSize' => 150, 'required' => false);
 
 		foreach ($attributes as $attributeName => $attributeSettings)
 		{
@@ -117,9 +116,6 @@ abstract class BlocksModel extends CActiveRecord
 
 			if ($attributeSettings['required'] === true)
 				$required[] = $attributeName;
-
-			if ($attributeSettings['searchable'] === true)
-				$searchable[] = $attributeName;
 
 			if ($attributeSettings['type'] == AttributeType::Integer)
 				$integers[] = $attributeName;
@@ -133,9 +129,6 @@ abstract class BlocksModel extends CActiveRecord
 		if ($required)
 			$rules[] = array(implode(', ', $required), 'required');
 
-		if ($searchable)
-			$rules[] = array(implode(', ', $searchable), 'safe', 'on' => 'search');
-
 		if ($integers)
 			$rules[] = array(implode(', ', $integers), 'numerical', 'interegOnly' => true);
 
@@ -146,6 +139,8 @@ abstract class BlocksModel extends CActiveRecord
 				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxSize);
 			}
 		}
+
+		$rules[] = implode(', ', array_keys($attributes), 'safe', 'on' => 'search');
 
 		return $rules;
 	}
@@ -199,8 +194,7 @@ abstract class BlocksModel extends CActiveRecord
 
 		foreach ($this->getAttributes() as $attributeName => $attributeSettings)
 		{
-			if (isset($attributeSettings['searchable']) && $attributeSettings['searchable'] === true)
-				$criteria->compare($attributeName, $this->$attributeName);
+			$criteria->compare($attributeName, $this->$attributeName);
 		}
 
 		return new CActiveDataProvider($this, array(
