@@ -143,25 +143,14 @@ abstract class BlocksModel extends CActiveRecord
 	{
 		$relations = array();
 
-		foreach ($this->getHasMany() as $key => $model)
+		foreach ($this->getHasMany() as $key => $settings)
 		{
-			$model = explode('.', $model);
-			$relations[$key] = array(self::HAS_MANY, $model[0], $model[1].'_id');
+			$relations[$key] = $this->generateHasXRelation(self::HAS_MANY, $settings);
 		}
 
 		foreach ($this->getHasOne() as $key => $model)
 		{
-			$model = explode('.', $model);
-			$relations[$key] = array(self::HAS_ONE, $model[0], $model[1].'_id');
-		}
-
-		foreach ($this->getHasAndBelongsToMany() as $key => $model)
-		{
-			// alphabetize the models
-			$models = array(get_class($this), $model);
-			sort($models);
-
-			$relations[$key] = array(self::MANY_MANY, $model, strtolower('{{'.$models[0].'_'.$models[1].'}}('.get_class($this).'_id, '.$model.'_id)'));
+			$relations[$key] = $this->generateHasXRelation(self::HAS_ONE, $settings);
 		}
 
 		foreach ($this->getBelongsTo() as $key => $model)
@@ -170,6 +159,36 @@ abstract class BlocksModel extends CActiveRecord
 		}
 
 		return $relations;
+	}
+
+	/**
+	 * Generates HAS_MANY and HAS_ONE relations
+	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)
+	 * @param array $settings The relation settings
+	 * @return array The CActiveRecord relation
+	 * @access protected
+	 */
+	protected function generateHasXRelation($relationType, $settings)
+	{
+		if (is_array($settings['foreignKey']))
+		{
+			$fk = array();
+			foreach ($settings['foreignKey'] as $fk1 => $fk2)
+			{
+				$fk[$fk1.'_id'] = $fk2.'_id';
+			}
+		}
+		else
+		{
+			$fk = $settings['foreignKey'].'_id';
+		}
+
+		$relation = array($relationType, $settings['model'], $fk);
+
+		if (isset($settings['through']))
+			$relation['through'] = $settings['through'];
+
+		return $relation;
 	}
 
 	/**
