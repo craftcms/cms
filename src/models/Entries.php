@@ -15,7 +15,7 @@ class Entries extends BlocksModel
 	protected static $hasContent = true;
 
 	protected static $hasMany = array(
-		'children' => 'Entries.parent'
+		'children' => array('model' => 'Entries', 'foreignKey' => 'parent')
 	);
 
 	protected static $belongsTo = array(

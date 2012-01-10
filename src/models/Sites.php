@@ -17,9 +17,9 @@ class Sites extends BlocksModel
 	protected static $hasCustomBlocks = true;
 
 	protected static $hasMany = array(
-		'assetFolders' => 'AssetFolders.site',
-		'routes'       => 'Routes.site',
-		'sections'     => 'Sections.site'
+		'assetFolders' => array('model' => 'AssetFolders', 'foreignKey' => 'site'),
+		'routes'       => array('model' => 'Routes', 'foreignKey' => 'site'),
+		'sections'     => array('model' => 'Sections', 'foreignKey' => 'site')
 	);
 
 	protected static $attributes = array(

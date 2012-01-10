@@ -13,7 +13,7 @@ class AssetFolders extends BlocksModel
 	}
 
 	protected static $hasMany = array(
-		'assets' => 'Assets.folder'
+		'assets' => array('model' => 'Assets', 'foreignKey' => 'folder')
 	);
 
 	protected static $belongsTo = array(

@@ -8,7 +8,6 @@ abstract class BlocksModel extends CActiveRecord
 
 	protected static $hasMany = array();
 	protected static $hasOne = array();
-	protected static $hasAndBelongsToMany = array();
 	protected static $belongsTo = array();
 
 	protected static $attributes = array();
@@ -63,14 +62,6 @@ abstract class BlocksModel extends CActiveRecord
 	public function getHasOne()
 	{
 		return static::$hasOne;
-	}
-
-	/**
-	 * @return array The model's many-to-many relationships
-	 */
-	public function getHasAndBelongsToMany()
-	{
-		return static::$hasAndBelongsToMany;
 	}
 
 	/**

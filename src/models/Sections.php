@@ -15,7 +15,7 @@ class Sections extends BlocksModel
 	protected static $hasCustomBlocks = true;
 
 	protected static $hasMany = array(
-		'children' => 'Sections.parent'
+		'children' => array('model' => 'Sections', 'foreignKey' => 'parent')
 	);
 
 	protected static $belongsTo = array(

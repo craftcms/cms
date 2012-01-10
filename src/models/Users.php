@@ -15,8 +15,9 @@ class Users extends BlocksModel
 	protected static $hasContent = true;
 	protected static $hasCustomBlocks = true;
 
-	protected static $hasAndBelongsToMany = array(
-		'groups' => 'UserGroups.users'
+	protected static $hasMany = array(
+		'members' => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
+		'groups' => array('model' => 'UserGroups', 'through' => 'UserGroupMembers', 'foreignKey' => array('user'=>'group')))
 	);
 
 	protected static $attributes = array(
