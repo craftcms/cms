@@ -398,7 +398,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 				if (isset($subtagMatch['params']))
 				{
-					$this->parseVariables($subtagMatch['params']);
+					$this->parseVariables($subtagMatch['params'], $toString);
 					$parsedTag .= ', array('.$subtagMatch['params'].')';
 				}
 
