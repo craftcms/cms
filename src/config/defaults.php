@@ -23,7 +23,7 @@ $blocksConfig['cacheTimeSeconds'] = 86400;
 /*
  *
  */
-$blocksConfig['devCacheTimeSeconds'] = 120;
+$blocksConfig['devCacheTimeSeconds'] = 5;
 
 /*
  *  If set to UrlFormat::Auto, Blocks will attempt to check if the web server's PATH_INFO is enabled.

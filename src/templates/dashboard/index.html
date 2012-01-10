@@ -7,7 +7,7 @@
 	<div id="alerts">
 		{% if !blocks.config.licenseKeys %}
 			<div class="alert">
-				<p>You need to enter your license key into {{ blocks.config.configPath }}. <a href="">See how</a></p>
+				<p>You need to enter your license key into your <a href="{{ url.generateUrl('settings/info') }}">System Info</a> page.</p>
 			</div>
 		{% /if %}
 
