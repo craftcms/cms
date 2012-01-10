@@ -1,6 +1,6 @@
 <?php
 
-class ContentBlocks extends BlocksModel
+class ContentBlocks extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model
@@ -16,7 +16,7 @@ class ContentBlocks extends BlocksModel
 	{
 		$hasMany = array();
 
-		// add all BlocksModels that have blocks
+		// add all BaseModels that have blocks
 
 		return $hasMany;
 	}

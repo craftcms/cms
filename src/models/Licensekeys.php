@@ -1,6 +1,6 @@
 <?php
 
-class LicenseKeys extends BlocksModel
+class LicenseKeys extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

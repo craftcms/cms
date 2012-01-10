@@ -1,6 +1,6 @@
 <?php
 
-class Sections extends BlocksModel
+class Sections extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

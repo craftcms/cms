@@ -1,6 +1,6 @@
 <?php
 
-class Assets extends BlocksModel
+class Assets extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

@@ -1,6 +1,6 @@
 <?php
 
-abstract class BlocksModel extends CActiveRecord
+abstract class BaseModel extends CActiveRecord
 {
 	protected $hasSettings = false;
 	protected $hasContent = false;

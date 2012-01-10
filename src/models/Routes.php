@@ -1,6 +1,6 @@
 <?php
 
-class Routes extends BlocksModel
+class Routes extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

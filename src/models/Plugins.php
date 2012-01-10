@@ -1,6 +1,6 @@
 <?php
 
-class Plugins extends BlocksModel
+class Plugins extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

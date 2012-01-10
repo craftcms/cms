@@ -1,6 +1,6 @@
 <?php
 
-class UserGroupPermissions extends BlocksModel
+class UserGroupPermissions extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

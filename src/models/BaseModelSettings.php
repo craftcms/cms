@@ -1,6 +1,6 @@
 <?php
 
-class ModelSettings extends BlocksModel
+abstract class BaseModelSettings extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model

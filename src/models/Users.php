@@ -1,6 +1,6 @@
 <?php
 
-class Users extends BlocksModel
+class Users extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model
