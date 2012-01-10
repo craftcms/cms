@@ -1,25 +1,24 @@
 <?php
 
 /**
- * This is the model class for table "{{userblocksettings}}".
+ * This is the model class for table "{{groups}}".
  *
- * The followings are the available columns in table '{{userblocksettings}}':
+ * The followings are the available columns in table '{{groups}}':
  * @property integer $id
- * @property integer $block_id
- * @property string $key
- * @property string $value
+ * @property string $name
+ * @property string $description
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property UserBlocks $block
+ * @property UserGroups[] $userGroups
  */
-class UserBlockSettings extends CActiveRecord
+class GroupsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return UserBlockSettings the static model class
+	 * @return Groups the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -31,7 +30,7 @@ class UserBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{userblocksettings}}';
+		return '{{groups}}';
 	}
 
 	/**
@@ -42,13 +41,14 @@ class UserBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('block_id, key, value', 'required'),
-			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('key', 'length', 'max'=>100),
+			array('name', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('name', 'length', 'max'=>250),
 			array('uid', 'length', 'max'=>36),
+			array('description', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, name, description, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +60,7 @@ class UserBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'UserBlocks', 'block_id'),
+			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'group_id'),
 		);
 	}
 
@@ -71,9 +71,8 @@ class UserBlockSettings extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'block_id' => 'Block',
-			'key' => 'Key',
-			'value' => 'Value',
+			'name' => 'Name',
+			'description' => 'Description',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -92,9 +91,8 @@ class UserBlockSettings extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('block_id',$this->block_id);
-		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('name',$this->name,true);
+		$criteria->compare('description',$this->description,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

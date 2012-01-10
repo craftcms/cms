@@ -1,24 +1,17 @@
 <?php
 
 /**
- * This is the model class for table "{{entrytitles}}".
+ * This is the model class for table "{{migrations}}".
  *
- * The followings are the available columns in table '{{entrytitles}}':
- * @property integer $entry_id
- * @property string $language_code
- * @property string $title
- * @property integer $date_created
- * @property integer $date_updated
- * @property string $uid
- *
- * The followings are the available model relations:
- * @property Entries $entry
+ * The followings are the available columns in table '{{migrations}}':
+ * @property string $version
+ * @property integer $apply_time
  */
-class EntryTitles extends CActiveRecord
+class MigrationsAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return EntryTitles the static model class
+	 * @return Migrations the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +23,7 @@ class EntryTitles extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{entrytitles}}';
+		return '{{migrations}}';
 	}
 
 	/**
@@ -41,13 +34,12 @@ class EntryTitles extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('language_code, title', 'required'),
-			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('language_code', 'length', 'max'=>5),
-			array('uid', 'length', 'max'=>36),
+			array('version', 'required'),
+			array('apply_time', 'numerical', 'integerOnly'=>true),
+			array('version', 'length', 'max'=>255),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('entry_id, language_code, title, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('version, apply_time', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -59,7 +51,6 @@ class EntryTitles extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'entry' => array(self::BELONGS_TO, 'Entries', 'entry_id'),
 		);
 	}
 
@@ -69,12 +60,8 @@ class EntryTitles extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'entry_id' => 'Entry',
-			'language_code' => 'Language Code',
-			'title' => 'Title',
-			'date_created' => 'Date Created',
-			'date_updated' => 'Date Updated',
-			'uid' => 'Uid',
+			'version' => 'Version',
+			'apply_time' => 'Apply Time',
 		);
 	}
 
@@ -89,12 +76,8 @@ class EntryTitles extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('entry_id',$this->entry_id);
-		$criteria->compare('language_code',$this->language_code,true);
-		$criteria->compare('title',$this->title,true);
-		$criteria->compare('date_created',$this->date_created);
-		$criteria->compare('date_updated',$this->date_updated);
-		$criteria->compare('uid',$this->uid,true);
+		$criteria->compare('version',$this->version,true);
+		$criteria->compare('apply_time',$this->apply_time);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,

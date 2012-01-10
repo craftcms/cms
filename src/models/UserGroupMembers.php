@@ -1,6 +1,6 @@
 <?php
 
-class Languages
+class UserGroupMembers extends BlocksModel
 {
 	/**
 	 * Returns an instance of the specified model
@@ -12,7 +12,8 @@ class Languages
 		return parent::model($class);
 	}
 
-	protected $attributes = array(
-		'language_code' => array('type' => AttributeType::String, 'maxSize' => 5)
+	protected $belongsTo = array(
+		'user'  => array('model' => 'Users', 'required' => true),
+		'group' => array('model' => 'Groups', 'required' => true)
 	);
 }

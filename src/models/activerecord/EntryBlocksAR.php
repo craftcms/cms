@@ -1,24 +1,30 @@
 <?php
 
 /**
- * This is the model class for table "{{assetblocksettings}}".
+ * This is the model class for table "{{entryblocks}}".
  *
- * The followings are the available columns in table '{{assetblocksettings}}':
- * @property integer $asset_block_id
- * @property string $key
- * @property string $value
+ * The followings are the available columns in table '{{entryblocks}}':
+ * @property integer $id
+ * @property integer $section_id
+ * @property string $handle
+ * @property string $label
+ * @property string $type
+ * @property string $instructions
+ * @property integer $required
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property AssetBlocks $assetBlock
+ * @property Sections $section
+ * @property EntryBlockSettings[] $entryBlockSettings
  */
-class AssetBlockSettings extends CActiveRecord
+class EntryBlocksAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return AssetBlockSettings the static model class
+	 * @return EntryBlocks the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +36,7 @@ class AssetBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{assetblocksettings}}';
+		return '{{entryblocks}}';
 	}
 
 	/**
@@ -41,14 +47,16 @@ class AssetBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('asset_block_id, key', 'required'),
-			array('asset_block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('key', 'length', 'max'=>100),
+			array('section_id, handle, label, type, sort_order', 'required'),
+			array('section_id, required, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('handle, type', 'length', 'max'=>150),
+			array('label', 'length', 'max'=>500),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
-			array('value', 'safe'),
+			array('instructions', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('asset_block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, section_id, handle, label, type, instructions, required, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +68,8 @@ class AssetBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'assetBlock' => array(self::BELONGS_TO, 'AssetBlocks', 'asset_block_id'),
+			'section' => array(self::BELONGS_TO, 'Sections', 'section_id'),
+			'entryBlockSettings' => array(self::HAS_MANY, 'EntryBlockSettings', 'block_id'),
 		);
 	}
 
@@ -70,9 +79,14 @@ class AssetBlockSettings extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'asset_block_id' => 'Asset Block',
-			'key' => 'Key',
-			'value' => 'Value',
+			'id' => 'ID',
+			'section_id' => 'Section',
+			'handle' => 'Handle',
+			'label' => 'Label',
+			'type' => 'Type',
+			'instructions' => 'Instructions',
+			'required' => 'Required',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -90,9 +104,14 @@ class AssetBlockSettings extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('asset_block_id',$this->asset_block_id);
-		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('id',$this->id);
+		$criteria->compare('section_id',$this->section_id);
+		$criteria->compare('handle',$this->handle,true);
+		$criteria->compare('label',$this->label,true);
+		$criteria->compare('type',$this->type,true);
+		$criteria->compare('instructions',$this->instructions,true);
+		$criteria->compare('required',$this->required);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

@@ -1,25 +1,31 @@
-<?php
+AR<?php
 
 /**
- * This is the model class for table "{{sitesettings}}".
+ * This is the model class for table "{{users}}".
  *
- * The followings are the available columns in table '{{sitesettings}}':
+ * The followings are the available columns in table '{{users}}':
  * @property integer $id
- * @property integer $site_id
- * @property string $key
- * @property string $value
+ * @property string $user_name
+ * @property string $email
+ * @property string $first_name
+ * @property string $last_name
+ * @property string $password
+ * @property string $salt
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property Sites $site
+ * @property Entries[] $entries
+ * @property UserBlocks[] $userBlocks
+ * @property UserGroups[] $userGroups
+ * @property UserWidgets[] $userWidgets
  */
-class SiteSettings extends CActiveRecord
+class UsersAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return SiteSettings the static model class
+	 * @return Users the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -31,7 +37,7 @@ class SiteSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{sitesettings}}';
+		return '{{users}}';
 	}
 
 	/**
@@ -42,13 +48,15 @@ class SiteSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('site_id, key, value', 'required'),
-			array('site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('key', 'length', 'max'=>100),
+			array('user_name, email, first_name, password, salt', 'required'),
+			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('user_name, email', 'length', 'max'=>250),
+			array('first_name, last_name', 'length', 'max'=>100),
+			array('password, salt', 'length', 'max'=>128),
 			array('uid', 'length', 'max'=>36),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, site_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_name, email, first_name, last_name, password, salt, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +68,10 @@ class SiteSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
+			'entries' => array(self::HAS_MANY, 'Entries', 'author_id'),
+			'userBlocks' => array(self::HAS_MANY, 'UserBlocks', 'user_id'),
+			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'user_id'),
+			'userWidgets' => array(self::HAS_MANY, 'UserWidgets', 'user_id'),
 		);
 	}
 
@@ -71,9 +82,12 @@ class SiteSettings extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'site_id' => 'Site',
-			'key' => 'Key',
-			'value' => 'Value',
+			'user_name' => 'User Name',
+			'email' => 'Email',
+			'first_name' => 'First Name',
+			'last_name' => 'Last Name',
+			'password' => 'Password',
+			'salt' => 'Salt',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -92,9 +106,12 @@ class SiteSettings extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('site_id',$this->site_id);
-		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('user_name',$this->user_name,true);
+		$criteria->compare('email',$this->email,true);
+		$criteria->compare('first_name',$this->first_name,true);
+		$criteria->compare('last_name',$this->last_name,true);
+		$criteria->compare('password',$this->password,true);
+		$criteria->compare('salt',$this->salt,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

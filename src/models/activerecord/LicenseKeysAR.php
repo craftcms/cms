@@ -1,24 +1,19 @@
 <?php
 
 /**
- * This is the model class for table "{{groups}}".
+ * This is the model class for table "{{licensekeys}}".
  *
- * The followings are the available columns in table '{{groups}}':
- * @property integer $id
- * @property string $name
- * @property string $description
+ * The followings are the available columns in table '{{licensekeys}}':
+ * @property string $key
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
- *
- * The followings are the available model relations:
- * @property UserGroups[] $userGroups
  */
-class Groups extends CActiveRecord
+class LicenseKeysAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return Groups the static model class
+	 * @return LicenseKeys the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -30,7 +25,7 @@ class Groups extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{groups}}';
+		return '{{licensekeys}}';
 	}
 
 	/**
@@ -41,14 +36,13 @@ class Groups extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('name', 'required'),
+			array('key', 'required'),
 			array('date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('name', 'length', 'max'=>250),
+			array('key', 'length', 'max'=>100),
 			array('uid', 'length', 'max'=>36),
-			array('description', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, name, description, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('key, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +54,6 @@ class Groups extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'userGroups' => array(self::HAS_MANY, 'UserGroups', 'group_id'),
 		);
 	}
 
@@ -70,9 +63,7 @@ class Groups extends CActiveRecord
 	public function attributeLabels()
 	{
 		return array(
-			'id' => 'ID',
-			'name' => 'Name',
-			'description' => 'Description',
+			'key' => 'Key',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -90,9 +81,7 @@ class Groups extends CActiveRecord
 
 		$criteria=new CDbCriteria;
 
-		$criteria->compare('id',$this->id);
-		$criteria->compare('name',$this->name,true);
-		$criteria->compare('description',$this->description,true);
+		$criteria->compare('key',$this->key,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);

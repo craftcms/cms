@@ -1,111 +1,25 @@
 <?php
 
-/**
- * This is the model class for table "{{usergroups}}".
- *
- * The followings are the available columns in table '{{usergroups}}':
- * @property integer $id
- * @property integer $group_id
- * @property integer $user_id
- * @property integer $site_id
- * @property integer $date_created
- * @property integer $date_updated
- * @property string $uid
- *
- * The followings are the available model relations:
- * @property UserGroupPermissions[] $userGroupPermissions
- * @property Sites $site
- * @property Groups $group
- * @property Users $user
- */
-class UserGroups extends CActiveRecord
+class UserGroups extends BlocksModel
 {
 	/**
-	 * Returns the static model of the specified AR class.
-	 * @return UserGroups the static model class
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
 	 */
-	public static function model($className=__CLASS__)
+	public static function model($class = __CLASS__)
 	{
-		return parent::model($className);
+		return parent::model($class);
 	}
 
-	/**
-	 * @return string the associated database table name
-	 */
-	public function tableName()
-	{
-		return '{{usergroups}}';
-	}
+	protected $hasMany = array(
+		'members'     => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
+		'users'       => array('model' => 'Users', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user'))),
+		'permissions' => array('model' => 'UserGroupPermissions', 'foreignKey' => 'group')
+	);
 
-	/**
-	 * @return array validation rules for model attributes.
-	 */
-	public function rules()
-	{
-		// NOTE: you should only define rules for those attributes that
-		// will receive user inputs.
-		return array(
-			array('group_id, user_id, site_id', 'required'),
-			array('group_id, user_id, site_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('uid', 'length', 'max'=>36),
-			// The following rule is used by search().
-			// Please remove those attributes that should not be searched.
-			array('id, group_id, user_id, site_id, date_created, date_updated, uid', 'safe', 'on'=>'search'),
-		);
-	}
-
-	/**
-	 * @return array relational rules.
-	 */
-	public function relations()
-	{
-		// NOTE: you may need to adjust the relation name and the related
-		// class name for the relations automatically generated below.
-		return array(
-			'userGroupPermissions' => array(self::HAS_MANY, 'UserGroupPermissions', 'user_group_id'),
-			'site' => array(self::BELONGS_TO, 'Sites', 'site_id'),
-			'group' => array(self::BELONGS_TO, 'Groups', 'group_id'),
-			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
-		);
-	}
-
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array(
-			'id' => 'ID',
-			'group_id' => 'Group',
-			'user_id' => 'User',
-			'site_id' => 'Site',
-			'date_created' => 'Date Created',
-			'date_updated' => 'Date Updated',
-			'uid' => 'Uid',
-		);
-	}
-
-	/**
-	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider the data provider that can return the models based on the search/filter conditions.
-	 */
-	public function search()
-	{
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
-
-		$criteria=new CDbCriteria;
-
-		$criteria->compare('id',$this->id);
-		$criteria->compare('group_id',$this->group_id);
-		$criteria->compare('user_id',$this->user_id);
-		$criteria->compare('site_id',$this->site_id);
-		$criteria->compare('date_created',$this->date_created);
-		$criteria->compare('date_updated',$this->date_updated);
-		$criteria->compare('uid',$this->uid,true);
-
-		return new CActiveDataProvider($this, array(
-			'criteria'=>$criteria,
-		));
-	}
+	protected $attributes = array(
+		'name'        => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
+		'description' => array('type' => AttributeType::Text)
+	);
 }

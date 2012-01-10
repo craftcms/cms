@@ -19,7 +19,7 @@
  *
 */
 
-class DatabaseColumnType
+class AttributeType
 {
 	const PK        = 'pk';
 	const String    = 'string';
@@ -33,6 +33,5 @@ class DatabaseColumnType
 	const Time      = 'time';
 	const Date      = 'date';
 	const Binary    = 'binary';
+	const Enum      = 'enum';
 }
-
-

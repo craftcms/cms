@@ -1,6 +1,6 @@
 <?php
 
-class Routes extends BlocksModel
+class AssetFolders extends BlocksModel
 {
 	/**
 	 * Returns an instance of the specified model
@@ -12,13 +12,16 @@ class Routes extends BlocksModel
 		return parent::model($class);
 	}
 
+	protected $hasMany = array(
+		'assets' => array('model' => 'Assets', 'foreignKey' => 'folder')
+	);
+
 	protected $belongsTo = array(
 		'site' => array('model' => 'Sites', 'required' => true)
 	);
 
 	protected $attributes = array(
-		'route'      => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
-		'template'   => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
-		'sort_order' => array('type' => AttributeType::Integer, 'required' => true)
+		'name' => array('type' => 'varchar', 'size' => 1000, 'required' => true),
+		'path' => array('type' => 'varchar', 'size' => 1000, 'required' => true)
 	);
 }

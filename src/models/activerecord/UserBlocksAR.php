@@ -1,25 +1,29 @@
 <?php
 
 /**
- * This is the model class for table "{{siteblocksettings}}".
+ * This is the model class for table "{{userblocks}}".
  *
- * The followings are the available columns in table '{{siteblocksettings}}':
+ * The followings are the available columns in table '{{userblocks}}':
  * @property integer $id
- * @property integer $block_id
- * @property string $key
- * @property string $value
+ * @property integer $user_id
+ * @property string $type
+ * @property string $handle
+ * @property string $label
+ * @property string $instructions
+ * @property string $sort_order
  * @property integer $date_created
  * @property integer $date_updated
  * @property string $uid
  *
  * The followings are the available model relations:
- * @property SiteBlocks $block
+ * @property Users $user
+ * @property UserBlockSettings[] $userBlockSettings
  */
-class SiteBlockSettings extends CActiveRecord
+class UserBlocksAR extends BlocksActiveRecord
 {
 	/**
 	 * Returns the static model of the specified AR class.
-	 * @return SiteBlockSettings the static model class
+	 * @return UserBlocks the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
@@ -31,7 +35,7 @@ class SiteBlockSettings extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{siteblocksettings}}';
+		return '{{userblocks}}';
 	}
 
 	/**
@@ -42,13 +46,16 @@ class SiteBlockSettings extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('block_id, key, value', 'required'),
-			array('block_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
-			array('key', 'length', 'max'=>100),
+			array('user_id, type, handle, label, sort_order', 'required'),
+			array('user_id, date_created, date_updated', 'numerical', 'integerOnly'=>true),
+			array('type, handle', 'length', 'max'=>150),
+			array('label', 'length', 'max'=>500),
+			array('sort_order', 'length', 'max'=>11),
 			array('uid', 'length', 'max'=>36),
+			array('instructions', 'safe'),
 			// The following rule is used by search().
 			// Please remove those attributes that should not be searched.
-			array('id, block_id, key, value, date_created, date_updated, uid', 'safe', 'on'=>'search'),
+			array('id, user_id, type, handle, label, instructions, sort_order, date_created, date_updated, uid', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -60,7 +67,8 @@ class SiteBlockSettings extends CActiveRecord
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
 		return array(
-			'block' => array(self::BELONGS_TO, 'SiteBlocks', 'block_id'),
+			'user' => array(self::BELONGS_TO, 'Users', 'user_id'),
+			'userBlockSettings' => array(self::HAS_MANY, 'UserBlockSettings', 'block_id'),
 		);
 	}
 
@@ -71,9 +79,12 @@ class SiteBlockSettings extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'block_id' => 'Block',
-			'key' => 'Key',
-			'value' => 'Value',
+			'user_id' => 'User',
+			'type' => 'Type',
+			'handle' => 'Handle',
+			'label' => 'Label',
+			'instructions' => 'Instructions',
+			'sort_order' => 'Sort Order',
 			'date_created' => 'Date Created',
 			'date_updated' => 'Date Updated',
 			'uid' => 'Uid',
@@ -92,9 +103,12 @@ class SiteBlockSettings extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id);
-		$criteria->compare('block_id',$this->block_id);
-		$criteria->compare('key',$this->key,true);
-		$criteria->compare('value',$this->value,true);
+		$criteria->compare('user_id',$this->user_id);
+		$criteria->compare('type',$this->type,true);
+		$criteria->compare('handle',$this->handle,true);
+		$criteria->compare('label',$this->label,true);
+		$criteria->compare('instructions',$this->instructions,true);
+		$criteria->compare('sort_order',$this->sort_order,true);
 		$criteria->compare('date_created',$this->date_created);
 		$criteria->compare('date_updated',$this->date_updated);
 		$criteria->compare('uid',$this->uid,true);
