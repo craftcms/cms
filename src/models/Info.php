@@ -12,7 +12,7 @@ class Info extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'edition' => array('type' => AttributeType::Enum, 'values' => 'Pro,Standard,Personal', 'required' => true),
 		'version' => array('type' => AttributeType::String, 'maxSize' => 15, 'required' => true),
 		'build'   => array('type' => AttributeType::Integer, 'required' => true)

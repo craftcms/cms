@@ -12,15 +12,15 @@ class Users extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $hasContent = true;
-	protected static $hasCustomBlocks = true;
+	protected $hasContent = true;
+	protected $hasCustomBlocks = true;
 
-	protected static $hasMany = array(
+	protected $hasMany = array(
 		'members' => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
 		'groups' => array('model' => 'UserGroups', 'through' => 'UserGroupMembers', 'foreignKey' => array('user'=>'group')))
 	);
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'username'    => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
 		'first_name'  => array('type' => AttributeType::String, 'maxSize' => 100, 'required' => true),
 		'last_name'   => array('type' => AttributeType::String, 'maxSize' => 100),

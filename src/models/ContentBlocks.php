@@ -21,7 +21,7 @@ class ContentBlocks extends BlocksModel
 		return $hasMany;
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'handle'       => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
 		'label'        => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
 		'class'        => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),

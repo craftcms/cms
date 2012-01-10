@@ -12,7 +12,7 @@ class ModelSettings extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'key'   => array('type' => AttributeType::String, 'maxSize' => 100, 'required' => true),
 		'value' => array('type' => AttirbuteType::Text)
 	);

@@ -12,7 +12,7 @@ class ModelBlocks extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'required'     => array('type' => AttributeType::Boolean, 'required' => true),
 		'sort_order'   => array('type' => AttributeType::Integer, 'required' => true)
 	);

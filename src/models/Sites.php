@@ -12,17 +12,17 @@ class Sites extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $hasSettings = true;
-	protected static $hasContent = true;
-	protected static $hasCustomBlocks = true;
+	protected $hasSettings = true;
+	protected $hasContent = true;
+	protected $hasCustomBlocks = true;
 
-	protected static $hasMany = array(
+	protected $hasMany = array(
 		'assetFolders' => array('model' => 'AssetFolders', 'foreignKey' => 'site'),
 		'routes'       => array('model' => 'Routes', 'foreignKey' => 'site'),
 		'sections'     => array('model' => 'Sections', 'foreignKey' => 'site')
 	);
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'handle' => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
 		'label'  => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
 		'url'    => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true)

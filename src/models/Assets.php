@@ -12,14 +12,14 @@ class Assets extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $hasContent = true;
-	protected static $hasCustomBlocks = true;
+	protected $hasContent = true;
+	protected $hasCustomBlocks = true;
 
-	protected static $belongsTo = array(
+	protected $belongsTo = array(
 		'folder' => array('model' => 'AssetFolders', 'required' => true)
 	);
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'path'      => array('type' => AttributeType::String, 'maxSize' => 1000, 'required' => true),
 		'filename'  => array('type' => AttributeType::String, 'maxSize' => 1000, 'required' => true),
 		'extension' => array('type' => AttributeType::String, 'maxSize' => 50, 'required' => false)

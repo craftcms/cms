@@ -12,19 +12,19 @@ class Entries extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $hasContent = true;
+	protected $hasContent = true;
 
-	protected static $hasMany = array(
+	protected $hasMany = array(
 		'children' => array('model' => 'Entries', 'foreignKey' => 'parent')
 	);
 
-	protected static $belongsTo = array(
+	protected $belongsTo = array(
 		'parent'  => array('model' => 'Entries'),
 		'section' => array('model' => 'Sections', 'required' => true),
 		'author'  => array('model' => 'Users', 'required' => true)
 	);
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'slug'        => array('type' => AttributeType::String, 'maxSize' => 250),
 		'full_uri'    => array('type' => AttributeType::String, 'maxSize' => 1000),
 		'post_date'   => array('type' => AttributeType::Integer),

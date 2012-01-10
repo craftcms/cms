@@ -12,7 +12,7 @@ class LicenseKeys extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'key' => array('type' => AttributeTypes::String, 'maxLength' => 36, 'required' => true)
 	);
 }

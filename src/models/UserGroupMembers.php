@@ -12,7 +12,7 @@ class UserGroupMembers extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $belongsTo = array(
+	protected $belongsTo = array(
 		'user'  => array('model' => 'Users', 'required' => true),
 		'group' => array('model' => 'Groups', 'required' => true)
 	);

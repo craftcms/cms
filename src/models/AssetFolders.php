@@ -12,15 +12,15 @@ class AssetFolders extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $hasMany = array(
+	protected $hasMany = array(
 		'assets' => array('model' => 'Assets', 'foreignKey' => 'folder')
 	);
 
-	protected static $belongsTo = array(
+	protected $belongsTo = array(
 		'site' => array('model' => 'Sites', 'required' => true)
 	);
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'name' => array('type' => 'varchar', 'size' => 1000, 'required' => true),
 		'path' => array('type' => 'varchar', 'size' => 1000, 'required' => true)
 	);

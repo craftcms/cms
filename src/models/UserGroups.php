@@ -12,13 +12,13 @@ class UserGroups extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $hasMany = array(
+	protected $hasMany = array(
 		'members'     => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
 		'users'       => array('model' => 'Users', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user'))),
 		'permissions' => array('model' => 'UserGroupPermissions', 'foreignKey' => 'group')
 	);
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'name'        => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
 		'description' => array('type' => AttributeType::Text)
 	);

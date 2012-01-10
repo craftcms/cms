@@ -12,7 +12,7 @@ class ModelContent extends BlocksModel
 		return parent::model($class);
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'num'    => array('type' => AttributeType::Integer, 'required' => true),
 		'label'  => array('type' => AttributeType::String, 'maxSize' => 150),
 		'active' => array('type' => AttributeType::Boolean, 'required' => true),

@@ -12,7 +12,7 @@ class Languages
 		return parent::model($class);
 	}
 
-	protected static $attributes = array(
+	protected $attributes = array(
 		'language_code' => array('type' => AttributeType::String, 'maxSize' => 5)
 	);
 }

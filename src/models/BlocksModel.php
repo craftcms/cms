@@ -2,15 +2,15 @@
 
 abstract class BlocksModel extends CActiveRecord
 {
-	protected static $hasSettings = false;
-	protected static $hasContent = false;
-	protected static $hasCustomBlocks = false;
+	protected $hasSettings = false;
+	protected $hasContent = false;
+	protected $hasCustomBlocks = false;
 
-	protected static $hasMany = array();
-	protected static $hasOne = array();
-	protected static $belongsTo = array();
+	protected $hasMany = array();
+	protected $hasOne = array();
+	protected $belongsTo = array();
 
-	protected static $attributes = array();
+	protected $attributes = array();
 
 	/**
 	 * @return object An instance of the specified model
@@ -29,7 +29,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getHasSettings()
 	{
-		return static::$hasSettings;
+		return $this->hasSettings;
 	}
 
 	/**
@@ -37,7 +37,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getHasContent()
 	{
-		return static::$hasContent;
+		return $this->hasContent;
 	}
 
 	/**
@@ -45,7 +45,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getHasCustomBlocks()
 	{
-		return static::$hasCustomBlocks;
+		return $this->hasCustomBlocks;
 	}
 
 	/**
@@ -53,7 +53,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getHasMany()
 	{
-		return static::$hasMany;
+		return $this->hasMany;
 	}
 
 	/**
@@ -61,7 +61,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getHasOne()
 	{
-		return static::$hasOne;
+		return $this->hasOne;
 	}
 
 	/**
@@ -69,7 +69,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getBelongsTo()
 	{
-		return static::$belongsTo;
+		return $this->belongsTo;
 	}
 
 	/**
@@ -77,7 +77,7 @@ abstract class BlocksModel extends CActiveRecord
 	 */
 	public function getAttributes()
 	{
-		return static::$attributes;
+		return $this->attributes;
 	}
 
 	/**
