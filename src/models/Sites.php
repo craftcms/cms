@@ -12,9 +12,17 @@ class Sites extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasSettings = true;
-	protected $hasContent = true;
-	protected $hasCustomBlocks = true;
+	protected $hasSettings = array(
+		'settings' => array('through' => 'SiteSettings', 'foreignKey' => 'site')
+	);
+
+	protected $hasBlocks = array(
+		'blocks' => array('through' => 'SiteBlocks', 'foreignKey' => 'site')
+	);
+
+	protected $hasContent = array(
+		'content' => array('through' => 'SiteContent', 'foreignKey' => 'site')
+	);
 
 	protected $hasMany = array(
 		'assetFolders' => array('model' => 'AssetFolders', 'foreignKey' => 'site'),

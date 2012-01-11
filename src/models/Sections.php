@@ -12,7 +12,9 @@ class Sections extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasCustomBlocks = true;
+	protected $hasBlocks = array(
+		'blocks' => array('through' => 'SectionBlocks', 'foreignKey' => 'section')
+	);
 
 	protected $hasMany = array(
 		'children' => array('model' => 'Sections', 'foreignKey' => 'parent')

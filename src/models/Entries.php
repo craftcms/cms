@@ -12,7 +12,9 @@ class Entries extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasContent = true;
+	protected $hasContent = array(
+		'content' => array('through' => 'EntryContent', 'foreignKey' => 'entry')
+	);
 
 	protected $hasMany = array(
 		'children' => array('model' => 'Entries', 'foreignKey' => 'parent')

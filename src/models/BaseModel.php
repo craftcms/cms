@@ -2,9 +2,9 @@
 
 abstract class BaseModel extends CActiveRecord
 {
-	protected $hasSettings = false;
-	protected $hasContent = false;
-	protected $hasCustomBlocks = false;
+	protected $hasSettings = array();
+	protected $hasBlocks = array();
+	protected $hasContent = array();
 
 	protected $hasMany = array();
 	protected $hasOne = array();
@@ -43,9 +43,9 @@ abstract class BaseModel extends CActiveRecord
 	/**
 	 * @return bool Whether this model has custom blocks (joined to blx_contentblocks via blx_blocksmodelclass_blocks)
 	 */
-	public function getHasCustomBlocks()
+	public function getHasBlocks()
 	{
-		return $this->hasCustomBlocks;
+		return $this->hasBlocks;
 	}
 
 	/**

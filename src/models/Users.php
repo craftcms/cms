@@ -12,8 +12,13 @@ class Users extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasContent = true;
-	protected $hasCustomBlocks = true;
+	protected $hasBlocks = array(
+		'blocks' => array('through' => 'UserBlocks', 'foreignKey' => 'user')
+	);
+
+	protected $hasContent = array(
+		'content' => array('through' => 'UserContent', 'foreignKey' => 'user')
+	);
 
 	protected $hasMany = array(
 		'members' => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),

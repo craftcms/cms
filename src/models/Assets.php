@@ -12,8 +12,13 @@ class Assets extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasContent = true;
-	protected $hasCustomBlocks = true;
+	protected $hasBlocks = array(
+		'blocks' => array('through' => 'AssetBlocks', 'foreignKey' => 'asset')
+	);
+
+	protected $hasContent = array(
+		'content' => array('through' => 'AssetContent', 'foreignKey' => 'asset')
+	);
 
 	protected $belongsTo = array(
 		'folder' => array('model' => 'AssetFolders', 'required' => true)
