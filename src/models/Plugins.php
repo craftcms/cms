@@ -15,8 +15,8 @@ class Plugins extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasSettings = array(
-		'settings' => array('through' => 'PluginSettings', 'foreignKey' => 'plugin')
+	protected $hasMany = array(
+		'settings' => array('model' => 'PluginSettings', 'foreignKey' => 'plugin')
 	);
 
 	protected $attributes = array(

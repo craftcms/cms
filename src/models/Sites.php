@@ -15,10 +15,6 @@ class Sites extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasSettings = array(
-		'settings' => array('through' => 'SiteSettings', 'foreignKey' => 'site')
-	);
-
 	protected $hasBlocks = array(
 		'blocks' => array('through' => 'SiteBlocks', 'foreignKey' => 'site')
 	);
@@ -28,6 +24,7 @@ class Sites extends BaseModel
 	);
 
 	protected $hasMany = array(
+		'settings'     => array('model' => 'SiteSettings', 'foreignKey' => 'site'),
 		'assetFolders' => array('model' => 'AssetFolders', 'foreignKey' => 'site'),
 		'routes'       => array('model' => 'Routes', 'foreignKey' => 'site'),
 		'sections'     => array('model' => 'Sections', 'foreignKey' => 'site')

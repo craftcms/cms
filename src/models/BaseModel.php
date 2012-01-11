@@ -2,7 +2,6 @@
 
 abstract class BaseModel extends CActiveRecord
 {
-	protected $hasSettings = array();
 	protected $hasBlocks = array();
 	protected $hasContent = array();
 
@@ -23,14 +22,6 @@ abstract class BaseModel extends CActiveRecord
 	public static function model($class = __CLASS__)
 	{
 		return parent::model($class);
-	}
-
-	/**
-	 * @return bool Whether this model has settings (stored in blx_blocksmodelclass_settings)
-	 */
-	public function getHasSettings()
-	{
-		return $this->hasSettings;
 	}
 
 	/**
@@ -144,6 +135,16 @@ abstract class BaseModel extends CActiveRecord
 	{
 		$relations = array();
 
+		foreach ($this->getHasBlocks() as $key => $settings)
+		{
+			$relations[$key] = $this->generateJoinThroughRelation('ContentBlocks', 'block_id', $settings);
+		}
+
+		foreach ($this->getHasContent() as $key => $settings)
+		{
+			$relations[$key] = $this->generateJoinThroughRelation('Content', 'content_id', $settings);
+		}
+
 		foreach ($this->getHasMany() as $key => $settings)
 		{
 			$relations[$key] = $this->generateHasXRelation(self::HAS_MANY, $settings);
@@ -160,6 +161,19 @@ abstract class BaseModel extends CActiveRecord
 		}
 
 		return $relations;
+	}
+
+	/**
+	 * Generates HAS_MANY relations to a model through another model
+	 * @param string $model The destination model
+	 * @param string $fk2 The join table's foreign key to the destination model
+	 * @param array $settings The initial model's settings for the relation
+	 * @return The CActiveRecord relation
+	 * @access protected
+	 */
+	protected function generateJoinThroughRelation($model, $fk2, $settings)
+	{
+		return array(self::HAS_MANY, $model, array($settings['foreignKey'].'_id' => $fk2), 'through' => $settings['through']);
 	}
 
 	/**
