@@ -12,6 +12,35 @@ class BlocksApp extends CWebApplication
 
 	public function init()
 	{
+		// URL format correction
+		if (!$this->request->path)
+		{
+			if ($this->request->urlFormat == UrlFormat::PathInfo)
+			{
+				$pathVar = Blocks::app()->config('pathVar');
+				$path = $this->request->getParam($pathVar);
+
+				if ($path)
+				{
+					$params = isset($_GET) ? $_GET : array();
+					unset($params[$pathVar]);
+					$url = UrlHelper::generateUrl($path, $params);
+					$this->request->redirect($url);
+				}
+
+			}
+			else
+			{
+				if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'])
+				{
+					$params = isset($_GET) ? $_GET : array();
+					$url = UrlHelper::generateUrl($_SERVER['PATH_INFO'], $params);
+					$this->request->redirect($url);
+				}
+			}
+		}
+
+
 		// Is this a resource request?
 		if ($this->mode == AppMode::Resource)
 		{
