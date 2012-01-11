@@ -13,15 +13,16 @@ abstract class BaseModel extends CActiveRecord
 	protected $attributes = array();
 
 	/**
-	 * @return object An instance of the specified model
+	 * Returns an instance of the specified model
+	 *
+	 * @param string $class
+	 *
+	 * @return object The model instance
 	 * @static
-	 */
+	*/
 	public static function model($class = __CLASS__)
 	{
-		if (version_compare(Blocks::app()->config->getLocalPHPVersion(), '5.3.0', '>='))
-			return parent::model(get_called_class());
-		else
-			return parent::model(__CLASS__);
+		return parent::model($class);
 	}
 
 	/**
@@ -75,7 +76,7 @@ abstract class BaseModel extends CActiveRecord
 	/**
 	 * @return array The model's non-relational attributes
 	 */
-	public function getAttributes()
+	public function getAttributes($names = true)
 	{
 		return $this->attributes;
 	}
@@ -121,7 +122,7 @@ abstract class BaseModel extends CActiveRecord
 			$rules[] = array(implode(', ', $required), 'required');
 
 		if ($integers)
-			$rules[] = array(implode(', ', $integers), 'numerical', 'interegOnly' => true);
+			$rules[] = array(implode(', ', $integers), 'numerical', 'integerOnly' => true);
 
 		if ($maxSizes)
 		{

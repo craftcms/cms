@@ -4,9 +4,12 @@ class UserGroups extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model
+	 *
+	 * @param string $class
+	 *
 	 * @return object The model instance
 	 * @static
-	 */
+	*/
 	public static function model($class = __CLASS__)
 	{
 		return parent::model($class);
@@ -14,7 +17,7 @@ class UserGroups extends BaseModel
 
 	protected $hasMany = array(
 		'members'     => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
-		'users'       => array('model' => 'Users', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user'))),
+		'users'       => array('model' => 'Users', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user')),
 		'permissions' => array('model' => 'UserGroupPermissions', 'foreignKey' => 'group')
 	);
 
