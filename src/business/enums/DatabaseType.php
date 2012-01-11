@@ -2,9 +2,9 @@
  
 class DatabaseType
 {
-	const MySQL = 'MySQL';
-	const PostgreSQL = 'PostgreSQL';
-	const SQLite = 'SQLite';
-	const SQLServer = 'SQLServer';
-	const Oracle = 'Oracle';
+	const MySQL = 'mysql';
+	const PostgreSQL = 'postgresql';
+	const SQLite = 'sqlite';
+	const SQLServer = 'sqlserver';
+	const Oracle = 'oracle';
 }

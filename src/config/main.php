@@ -1,6 +1,4 @@
 <?php
-require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
-require_once(BLOCKS_BASE_PATH.'app/business/enums/UrlFormat.php');
 require_once(BLOCKS_BASE_PATH.'app/business/db/DriverMap.php');
 require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
@@ -21,7 +19,7 @@ if (!isset($db['collation']))
 	$db['collation'] = 'utf8_unicode_ci';
 
 if (!isset($db['type']))
-	$db['type'] = DatabaseType::MySQL;
+	$db['type'] = 'mysql';
 
 return array(
 	'basePath'          => BLOCKS_BASE_PATH.'app/',

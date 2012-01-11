@@ -1,7 +1,5 @@
 <?php
 require_once(dirname(__FILE__).'/../business/Defines.php');
-require_once(BLOCKS_BASE_PATH.'app/business/enums/DatabaseType.php');
-require_once(BLOCKS_BASE_PATH.'app/business/enums/UrlFormat.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
 
@@ -17,7 +15,7 @@ if (!isset($db['collation']))
 	$db['collation'] = 'utf8_unicode_ci';
 
 if (!isset($db['type']))
-	$db['type'] = DatabaseType::MySQL;
+	$db['type'] = 'mysql';
 
 $db['database'] = $db['database'].'_test';
 

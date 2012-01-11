@@ -1,5 +1,4 @@
 <?php
-require_once(dirname(__FILE__).'/../business/enums/DatabaseType.php');
 require_once(dirname(__FILE__).'/../../config/db.php');
 
 if (!isset($db['port']))
@@ -12,7 +11,7 @@ if (!isset($db['collation']))
 	$db['collation'] = 'utf8_unicode_ci';
 
 if (!isset($db['type']))
-	$db['type'] = DatabaseType::MySQL;
+	$db['type'] = 'mysql';
 
 return array(
 	'basePath' => dirname(__FILE__).'/..',
