@@ -36,7 +36,7 @@ class BaseController extends CController
 
 		$moduleViewPath = $basePath = Blocks::app()->viewPath;
 
-		if (($requestController = $this->requestController) !== null)
+		if (($requestController = $this->getRequestController()) !== null)
 			$module = $requestController->module;
 		else
 			$module = $this->module;
@@ -49,7 +49,7 @@ class BaseController extends CController
 
 	public function getViewPath()
 	{
-		if (($requestController = $this->requestController) !== null)
+		if (($requestController = $this->getRequestController()) !== null)
 			$module = $requestController->module;
 		else
 			$module = $this->module;

@@ -21,6 +21,9 @@ class BlocksController extends BaseController
 
 				if (isset(Blocks::app()->request->pathSegments[3]))
 					$requestAction = Blocks::app()->request->pathSegments[3];
+
+				if ($requestAction == null)
+					$requestAction = 'index';
 			}
 			else
 			{
@@ -36,6 +39,9 @@ class BlocksController extends BaseController
 
 					if (isset($pathSegs[3]))
 						$requestAction = $pathSegs[3];
+
+					if ($requestAction == null)
+						$requestAction = 'index';
 				}
 			}
 

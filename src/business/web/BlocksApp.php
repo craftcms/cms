@@ -249,27 +249,29 @@ class BlocksApp extends CWebApplication
 			return $this->_requestTemplatePath;
 		else
 		{
-			if ($this->mode == AppMode::Action)
-				return null;
-
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
 				$requestType = $this->mode;
-				if ($requestType == AppMode::Site)
+				// Site request OR action request, but coming in through index.php
+				if ($requestType == AppMode::Site || ($requestType == AppMode::Action && !defined('BLOCKS_CP_REQUEST')))
 				{
 					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
 				}
 				else
 				{
-					$pathInfo = $this->request->pathSegments;
-					if ($pathInfo && ($module = $this->urlManager->currentModule) !== null)
+					// CP request OR action request, but coming in through admin.php
+					if ($requestType == AppMode::CP || ($requestType == AppMode::Action && defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true))
 					{
-						$templatePath = rtrim($module->viewPath, '\\/').'/';
-					}
-					else
-					{
-						$this->_cpTemplatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
-						$templatePath = $this->_cpTemplatePath;
+						$pathInfo = $this->request->pathSegments;
+						if ($pathInfo && ($module = $this->urlManager->currentModule) !== null)
+						{
+							$templatePath = rtrim($module->viewPath, '\\/').'/';
+						}
+						else
+						{
+							$this->_cpTemplatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
+							$templatePath = $this->_cpTemplatePath;
+						}
 					}
 				}
 			}
