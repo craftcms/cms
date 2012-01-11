@@ -20,7 +20,7 @@ abstract class BaseSettingsModel extends BaseModel
 
 	protected $attributes = array(
 		'key'   => array('type' => AttributeType::String, 'maxSize' => 100, 'required' => true),
-		'value' => array('type' => AttirbuteType::Text)
+		'value' => array('type' => AttributeType::Text)
 	);
 
 	public function getBelongsTo()
