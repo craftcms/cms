@@ -15,6 +15,10 @@ class UserGroups extends BaseModel
 		return parent::model($class);
 	}
 
+	protected $hasBlocks = array(
+		'blocks' => array('through' => 'UserGroupBlocks', 'foreignKey' => 'group')
+	);
+
 	protected $hasMany = array(
 		'members'     => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
 		'users'       => array('model' => 'Users', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user')),
