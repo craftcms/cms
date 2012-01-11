@@ -11,7 +11,7 @@ class BlocksController extends BaseController
 
 			// requestHandle will either be 'app' or {pluginHandle}
 			// pathInfo format.
-			if (Blocks::app()->request->isServerPathInfoRequest)
+			if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
 			{
 				if (isset(Blocks::app()->request->pathSegments[1]))
 					$requestHandle = Blocks::app()->request->pathSegments[1];

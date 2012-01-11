@@ -22,24 +22,23 @@ class BlocksUrlManager extends CUrlManager
 		// set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
-		if (Blocks::app()->request->isServerPathInfoRequest)
+		if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
 
-		if (Blocks::app()->request->isServerPathInfoRequest)
-			$this->_path = Blocks::app()->request->pathInfo;
-		else
-			$this->_path = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null);
+		// save an internal copy of the path, sans-extension
+		$this->_path = Blocks::app()->request->path;
 
-		if (($ext = pathinfo($this->_path, PATHINFO_EXTENSION)) !== '')
+		if (($ext = Blocks::app()->request->pathExtension) !== '')
 		{
 			$this->_requestExtension = $ext;
-			$dot = strpos($this->_path, '.');
-			$this->_path = substr($this->_path, 0, $dot);
+
+			// remove the extension from our internal path
+			$this->_path = substr($this->_path, 0, -(strlen($ext)+1));
 		}
 
-		$this->_pathSegments = Blocks::app()->request->pathSegments;
+		$this->_pathSegments = array_filter(explode('/', $this->_path));
 	}
 
 

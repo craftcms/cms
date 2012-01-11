@@ -15,44 +15,22 @@ class BlocksApp extends CWebApplication
 		// Is this a resource request?
 		if ($this->mode == AppMode::Resource)
 		{
-			$pathVar = Blocks::app()->config('pathVar');
-			// non path_info format
-			if (!Blocks::app()->request->isServerPathInfoRequest && ($pathRequest = Blocks::app()->request->getParam($pathVar, null)) !== null)
-			{
-				$segs = array_slice(explode('/', $pathRequest), 1);
-				$handle = array_shift($segs);
-			}
-			else
-			// path_info format
-			{
-				$segs = array_slice($this->request->pathSegments, 1);
-				$handle = array_shift($segs);
-			}
+			// get the path segments, except for the first one which we already know is "resources"
+			$segs = array_slice(array_merge($this->request->pathSegments), 1);
 
-			if (Blocks::app()->request->isServerPathInfoRequest)
-			{
-				if ($handle == 'app')
-					$rootFolderPath = $this->path->resourcesPath;
-				else
-					$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+			// get the resource handle ("app" or a plugin class)
+			$handle = array_shift($segs);
 
-				$rootFolderUrl = $this->urlManager->baseUrl.'/'.'resources/'.$handle.'/';
+			if ($handle == 'app')
+			{
+				$rootFolderPath = $this->path->resourcesPath;
 			}
 			else
 			{
-				// PATH_INFO not enabled
-				if ($handle == 'app')
-				{
-					$rootFolderPath = $this->path->resourcesPath;
-					$rootFolderUrl = 'blocks/app/resources';
-				}
-				else
-				{
-					$rootFolderPath = $this->path->pluginsPath.$handle.'/';
-					$rootFolderUrl = 'blocks/plugins/'.$handle.'/resources';
-				}
+				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
 			}
 
+			$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
 			$relativeResourcePath = implode('/', $segs);
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);

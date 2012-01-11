@@ -2,16 +2,37 @@
 
 class BlocksHttpRequest extends CHttpRequest
 {
+	private $_urlFormat;
 	private $_path;
 	private $_pathSegments;
-	private $_extension;
-	private $_urlFormat;
+	private $_pathExtension;
+
+	public function getPath()
+	{
+		if (!isset($this->_path))
+		{
+			if ($this->urlFormat == UrlFormat::PathInfo)
+			{
+				$this->_path = $this->pathInfo;
+			}
+			else
+			{
+				$pathVar = Blocks::app()->config('pathVar');
+				$this->_path = $this->getParam($pathVar, '');
+
+				// trim trailing/leading slashes
+				$this->_path = trim($this->_path, '/');
+			}
+		}
+
+		return $this->_path;
+	}
 
 	public function getPathSegments()
 	{
 		if (!isset($this->_pathSegments))
 		{
-			$this->_pathSegments = array_merge(array_filter(explode('/', $this->getPathInfo())));
+			$this->_pathSegments = array_filter(explode('/', $this->path));
 		}
 
 		return $this->_pathSegments;
@@ -19,13 +40,13 @@ class BlocksHttpRequest extends CHttpRequest
 
 	public function getPathExtension()
 	{
-		if (!isset($this->_extension))
+		if (!isset($this->_pathExtension))
 		{
-			$ext = pathinfo($this->getPathInfo(), PATHINFO_EXTENSION);
-			$this->_extension = strtolower($ext);
+			$ext = pathinfo($this->path, PATHINFO_EXTENSION);
+			$this->_pathExtension = strtolower($ext);
 		}
 
-		return $this->_extension;
+		return $this->_pathExtension;
 	}
 
 	/**
@@ -89,10 +110,5 @@ class BlocksHttpRequest extends CHttpRequest
 		}
 
 		return $this->_urlFormat;
-	}
-
-	public function getIsServerPathInfoRequest()
-	{
-		return ($this->urlFormat == UrlFormat::PathInfo);
 	}
 }

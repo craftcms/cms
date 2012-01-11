@@ -46,10 +46,10 @@ class UrlHelper
 				$params = ltrim($params, '?');
 				$params = ltrim($params, '&');
 
-				if (!Blocks::app()->request->isServerPathInfoRequest)
-					$path = array($pathStr.'&'.$params);
-				else
+				if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
 					$path = array($pathStr.'?'.$params);
+				else
+					$path = array($pathStr.'&'.$params);
 			}
 			else
 				$path = array($pathStr);
