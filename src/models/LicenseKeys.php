@@ -16,6 +16,6 @@ class LicenseKeys extends BaseModel
 	}
 
 	protected $attributes = array(
-		'key' => array('type' => AttributeTypes::String, 'maxLength' => 36, 'required' => true)
+		'key' => array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true)
 	);
 }
