@@ -12,7 +12,9 @@ class Plugins extends BaseModel
 		return parent::model($class);
 	}
 
-	protected $hasSettings = true;
+	protected $hasSettings = array(
+		'settings' => array('through' => 'PluginSettings', 'foreignKey' => 'plugin')
+	);
 
 	protected $attributes = array(
 		'name'    => array('type' => AttributeType::String, 'maxSize' => 50),
