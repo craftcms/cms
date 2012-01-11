@@ -68,42 +68,52 @@ class PathService extends CApplicationComponent implements IPathService
 
 	public function getTemplatePath()
 	{
-		if (Blocks::app()->mode == AppMode::Site)
-			return $this->siteTemplatePath;
+		$mode = Blocks::app()->mode;
 
-		if (Blocks::app()->mode == AppMode::Action)
+		// site request or action request coming in through index.php
+		if ($mode == AppMode::Site || ($mode == AppMode::Action && !defined('BLOCKS_CP_REQUEST')))
+		{
+			$templatePath = $this->siteTemplatePath;
+		}
+		// cp request or action request coming in through admin.php
+		elseif ($mode == AppMode::CP || ($mode == AppMode::Action && defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true))
+		{
+			$templatePath = $this->cpTemplatePath;
+
+			if (($module = Blocks::app()->urlManager->currentModule) !== null)
+				$templatePath = $this->appPath.'modules/'.$module->Id.'/templates/';
+		}
+		else
+		{
 			return null;
+		}
 
-		if (($module = Blocks::app()->urlManager->currentModule) !== null)
-			return $this->appPath.'modules/'.$module->Id.'/templates/';
-
-		return $this->normalizeDirectorySeparators($this->cpTemplatePath);
+		return $this->normalizeDirectorySeparators($templatePath);
 	}
 
 	public function getTemplateCachePath()
 	{
 		$cachePath = null;
+		$mode = Blocks::app()->mode;
 
-		switch (Blocks::app()->mode)
+		// site request or action request coming in through index.php
+		if ($mode == AppMode::Site || ($mode == AppMode::Action && !defined('BLOCKS_CP_REQUEST')))
 		{
-			case AppMode::Site:
-				$siteHandle = Blocks::app()->site->currentSiteByUrl;
-				$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-				$cachePath = $this->runtimePath.'parsed_templates/sites/'.$siteHandle.'/';
-				break;
+			$siteHandle = Blocks::app()->site->currentSiteByUrl;
+			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
+			$cachePath = $this->runtimePath.'parsed_templates/sites/'.$siteHandle.'/';
+		}
+		// cp request or action request coming in through admin.php
+		elseif ($mode == AppMode::CP || ($mode == AppMode::Action && defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true))
+		{
+			$cachePath = $this->runtimePath.'parsed_templates/cp/';
 
-			case AppMode::CP:
-				$cachePath = $this->runtimePath.'parsed_templates/cp/';
-
-				if (($module = Blocks::app()->urlManager->currentModule) !== null)
-					$cachePath .= 'modules/'.$module->Id.'/';
-				break;
-
-			case AppMode::Action:
-				return null;
-
-			default:
-				$cachePath = $this->runtimePath.'/parsed_templates/';
+			if (($module = Blocks::app()->urlManager->currentModule) !== null)
+				$cachePath .= 'modules/'.$module->Id.'/';
+		}
+		else
+		{
+			$cachePath = $this->runtimePath.'/parsed_templates/';
 		}
 
 		if (!is_dir($cachePath))
