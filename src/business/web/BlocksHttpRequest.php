@@ -85,8 +85,7 @@ class BlocksHttpRequest extends CHttpRequest
 			}
 
 			// cache it and set it to expire according to config
-			$cachedValue = $this->_isServerPathInfoRequest ? 1 : 0;
-			Blocks::app()->fileCache->set('pathInfoRequestStatus', $cachedValue, Blocks::app()->config('cacheTimeSeconds'));
+			Blocks::app()->fileCache->set('pathInfoRequestStatus', (int)$this->_isServerPathInfoRequest, Blocks::app()->config('cacheTimeSeconds'));
 		}
 
 		return $this->_isServerPathInfoRequest;
