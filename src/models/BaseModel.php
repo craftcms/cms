@@ -131,7 +131,7 @@ abstract class BaseModel extends CActiveRecord
 			}
 		}
 
-		$rules[] = implode(', ', array_keys($attributes), 'safe', 'on' => 'search');
+		$rules[] = array(implode(', ', array_keys($attributes)), 'safe', 'on' => 'search');
 
 		return $rules;
 	}

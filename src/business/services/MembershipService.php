@@ -23,7 +23,7 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 	public function isUserNameInUse($userName)
 	{
 		$exists = Users::model()->exists(array(
-			'user_name=:userName',
+			'username=:userName',
 			array(':userName' => $userName),
 		));
 
@@ -43,7 +43,7 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 	public function registerUser($userName, $email, $firstName, $lastName, $password)
 	{
 		$user = new Users();
-		$user->user_name = $userName;
+		$user->username = $userName;
 		$user->email = $email;
 		$user->first_name = $firstName;
 		$user->last_name = $lastName;
@@ -82,6 +82,6 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 
 	public function getAllGroups()
 	{
-		return Groups::model()->findAll();
+		return UserGroups::model()->findAll();
 	}
 }

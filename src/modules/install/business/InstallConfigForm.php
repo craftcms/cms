@@ -20,7 +20,7 @@ class InstallConfigForm extends CFormModel
 			array('adminEmail', 'email'),
 			// can't use these two because the schema hasn't been installed yet.
 			//array('adminEmail', 'unique', 'allowEmpty' => false, 'className' => 'Users', 'attributeName' => 'email', 'caseSensitive' => false),
-			//array('adminUserName', 'unique', 'allowEmpty' => false, 'className' => 'Users', 'attributeName' => 'user_name', 'caseSensitive' => false),
+			//array('adminUserName', 'unique', 'allowEmpty' => false, 'className' => 'Users', 'attributeName' => 'username', 'caseSensitive' => false),
 		);
 	}
 

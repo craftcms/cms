@@ -14,7 +14,7 @@ class UserTag extends Tag
 
 	public function userName()
 	{
-		return $this->_val->user_name;
+		return $this->_val->username;
 	}
 
 	public function email()

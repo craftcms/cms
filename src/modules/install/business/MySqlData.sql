@@ -30,9 +30,9 @@ INSERT INTO `blx_plugins` (`name`,`version`,`enabled`) VALUES ('Wygwam', '1.0', 
 /*
 	Data for the table `users`
 */
-INSERT INTO `blx_users` (`user_name`,`email`,`first_name`,`last_name`,`password`,`salt`) VALUES ('brad', 'brad@pixelandtonic.com', 'Brad', 'Bell', 'letmein', 'letmein');
-INSERT INTO `blx_users` (`user_name`,`email`,`first_name`,`last_name`,`password`,`salt`) VALUES ('admin', 'admin@pixelandtonic.com', 'Ad', 'Min', 'letmein', 'letmein');
-INSERT INTO `blx_users` (`user_name`,`email`,`first_name`,`last_name`,`password`,`salt`) VALUES ('brandon', 'brandon@pixelandtonic.com', 'Brandon', 'Kelly', 'letmein', 'letmein');
+INSERT INTO `blx_users` (`username`,`email`,`first_name`,`last_name`,`password`,`salt`) VALUES ('brad', 'brad@pixelandtonic.com', 'Brad', 'Bell', 'letmein', 'letmein');
+INSERT INTO `blx_users` (`username`,`email`,`first_name`,`last_name`,`password`,`salt`) VALUES ('admin', 'admin@pixelandtonic.com', 'Ad', 'Min', 'letmein', 'letmein');
+INSERT INTO `blx_users` (`username`,`email`,`first_name`,`last_name`,`password`,`salt`) VALUES ('brandon', 'brandon@pixelandtonic.com', 'Brandon', 'Kelly', 'letmein', 'letmein');
 
 /*
 	Data for the table `userwidgets`

@@ -23,18 +23,6 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $entries;
 	}
 
-	public function getEntryTitleByLanguageCode($entryId, $languageCode)
-	{
-		$entryTitle = EntryTitles::model()->findByAttributes(
-			array(
-				'entry_id' => $entryId,
-				'language_code' => $languageCode),
-			array(
-				'select' => 'title'));
-
-		return $entryTitle;
-	}
-
 	public function getAllEntriesBySiteId($siteId)
 	{
 		$entries = Blocks::app()->db->createCommand()
@@ -246,7 +234,7 @@ class ContentService extends CApplicationComponent implements IContentService
 
 	public function getBlocksBySectionId($sectionId)
 	{
-		$sections = EntryBlocks::model()->findAllByAttributes(array(
+		$sections = SectionBlocks::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 

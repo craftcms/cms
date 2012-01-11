@@ -4,7 +4,7 @@ class AssetService implements IAssetService
 {
 	public function getUploadFoldersBySiteId($siteId)
 	{
-		$uploadFolders = UploadFolders::model()->findAllByAttributes(array(
+		$uploadFolders = AssetFolders::model()->findAllByAttributes(array(
 			'site_id' => $siteId,
 		));
 
@@ -14,7 +14,7 @@ class AssetService implements IAssetService
 	public function getFilesForUploadFolder($uploadFolderId)
 	{
 		$files = Assets::model()->findAllByAttributes(array(
-			'upload_folder_id' => $uploadFolderId,
+			'folder_id' => $uploadFolderId,
 		));
 
 		return $files;
@@ -22,7 +22,7 @@ class AssetService implements IAssetService
 
 	public function getUploadFolderById($uploadFolderId)
 	{
-		$folder = UploadFolders::model()->findByAttributes(array(
+		$folder = AssetFolders::model()->findByAttributes(array(
 			'upload_folder_id' => $uploadFolderId,
 		));
 

@@ -813,7 +813,7 @@ delimiter ;
 DROP TABLE IF EXISTS `blx_users`;
 CREATE TABLE `blx_users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `user_name` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
+  `username` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
   `email` varchar(250) COLLATE utf8_unicode_ci NOT NULL,
   `first_name` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
   `last_name` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
@@ -825,7 +825,7 @@ CREATE TABLE `blx_users` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_unique` (`id`),
   UNIQUE KEY `email_unique` (`email`),
-  UNIQUE KEY `user_name_unique` (`user_name`)
+  UNIQUE KEY `username_unique` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci ROW_FORMAT=COMPACT;
 delimiter ;;
 CREATE TRIGGER `auditinfoinsert_users` BEFORE INSERT ON `blx_users` FOR EACH ROW SET NEW.date_created = UNIX_TIMESTAMP(),
