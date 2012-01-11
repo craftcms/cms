@@ -1,7 +1,7 @@
 <?php
 class UrlFormat
 {
-	const Auto          = 'Auto';
-	const QueryString   = 'QueryString';
-	const PathInfo      = 'PathInfo';
+	const Auto          = 'auto';
+	const QueryString   = 'querystring';
+	const PathInfo      = 'pathinfo';
 }
