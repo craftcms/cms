@@ -22,9 +22,9 @@ abstract class BaseSettingsModel extends BaseModel
 
 	public function getBelongsTo()
 	{
-		return array(
-			$this->foreignKey => $this->model,
-			'content'         => 'Content'
-		);
+		if (isset($this->foreignKey) && isset($this->model))
+			return $belongsTo[$this->foreignKey] = $this->model;
+
+		return array();
 	}
 }
