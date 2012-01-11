@@ -29,6 +29,16 @@ class StringTag extends Tag
 		return strtolower($this->_val);
 	}
 
+	public function encode()
+	{
+		return BlocksHtml::encode($this->_val);
+	}
+
+	public function decode()
+	{
+		return BlocksHtml::decode($this->_val);
+	}
+
 	public function chars()
 	{
 		if (strlen($this->_val))
