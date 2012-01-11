@@ -22,7 +22,8 @@ class Users extends BaseModel
 
 	protected $hasMany = array(
 		'members' => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
-		'groups' => array('model' => 'UserGroups', 'through' => 'UserGroupMembers', 'foreignKey' => array('user'=>'group')))
+		'groups'  => array('model' => 'UserGroups', 'through' => 'UserGroupMembers', 'foreignKey' => array('user'=>'group')),
+		'widgets' => array('model' => 'UserWidgets', 'foreignKey' => 'user')
 	);
 
 	protected $attributes = array(
