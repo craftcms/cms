@@ -6,6 +6,16 @@
 class ContentBlocks extends BaseModel
 {
 	/**
+	 * @return array
+	 */
+	protected $attributes = array(
+		'handle'       => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
+		'label'        => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
+		'class'        => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
+		'instructions' => array('type' => AttributeType::Text)
+	);
+
+	/**
 	 * Returns an instance of the specified model
 	 * @static
 	 * @param string $class
@@ -15,14 +25,4 @@ class ContentBlocks extends BaseModel
 	{
 		return parent::model($class);
 	}
-
-	/**
-	 * @return array
-	 */
-	protected $attributes = array(
-		'handle'       => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
-		'label'        => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
-		'class'        => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
-		'instructions' => array('type' => AttributeType::Text)
-	);
 }

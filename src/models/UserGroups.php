@@ -5,15 +5,10 @@
  */
 class UserGroups extends BaseModel
 {
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
+	protected $attributes = array(
+		'name'        => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
+		'description' => array('type' => AttributeType::Text)
+	);
 
 	protected $hasBlocks = array(
 		'blocks' => array('through' => 'UserGroupBlocks', 'foreignKey' => 'group')
@@ -25,8 +20,13 @@ class UserGroups extends BaseModel
 		'permissions' => array('model' => 'UserGroupPermissions', 'foreignKey' => 'group')
 	);
 
-	protected $attributes = array(
-		'name'        => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
-		'description' => array('type' => AttributeType::Text)
-	);
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
+	}
 }

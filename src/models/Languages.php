@@ -5,6 +5,10 @@
  */
 class Languages
 {
+	protected $attributes = array(
+		'language_code' => array('type' => AttributeType::String, 'maxSize' => 5)
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance
@@ -14,8 +18,4 @@ class Languages
 	{
 		return parent::model($class);
 	}
-
-	protected $attributes = array(
-		'language_code' => array('type' => AttributeType::String, 'maxSize' => 5)
-	);
 }

@@ -5,6 +5,12 @@
  */
 class Info extends BaseModel
 {
+	protected $attributes = array(
+		'edition' => array('type' => AttributeType::Enum, 'values' => 'Pro,Standard,Personal', 'required' => true),
+		'version' => array('type' => AttributeType::String, 'maxSize' => 15, 'required' => true),
+		'build'   => array('type' => AttributeType::Integer, 'required' => true)
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance
@@ -14,10 +20,4 @@ class Info extends BaseModel
 	{
 		return parent::model($class);
 	}
-
-	protected $attributes = array(
-		'edition' => array('type' => AttributeType::Enum, 'values' => 'Pro,Standard,Personal', 'required' => true),
-		'version' => array('type' => AttributeType::String, 'maxSize' => 15, 'required' => true),
-		'build'   => array('type' => AttributeType::Integer, 'required' => true)
-	);
 }

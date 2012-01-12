@@ -5,6 +5,10 @@
  */
 class LicenseKeys extends BaseModel
 {
+	protected $attributes = array(
+		'key' => array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true)
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance
@@ -14,8 +18,4 @@ class LicenseKeys extends BaseModel
 	{
 		return parent::model($class);
 	}
-
-	protected $attributes = array(
-		'key' => array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true)
-	);
 }

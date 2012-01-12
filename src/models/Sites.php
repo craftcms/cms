@@ -5,15 +5,11 @@
  */
 class Sites extends BaseModel
 {
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
+	protected $attributes = array(
+		'handle' => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
+		'label'  => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
+		'url'    => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true)
+	);
 
 	protected $hasBlocks = array(
 		'blocks' => array('through' => 'SiteBlocks', 'foreignKey' => 'site')
@@ -30,9 +26,13 @@ class Sites extends BaseModel
 		'sections'     => array('model' => 'Sections', 'foreignKey' => 'site')
 	);
 
-	protected $attributes = array(
-		'handle' => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
-		'label'  => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
-		'url'    => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true)
-	);
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
+	}
 }

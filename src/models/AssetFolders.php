@@ -5,6 +5,19 @@
  */
 class AssetFolders extends BaseModel
 {
+	protected $attributes = array(
+		'name' => array('type' => 'varchar', 'size' => 1000, 'required' => true),
+		'path' => array('type' => 'varchar', 'size' => 1000, 'required' => true)
+	);
+
+	protected $belongsTo = array(
+		'site' => array('model' => 'Sites', 'required' => true)
+	);
+
+	protected $hasMany = array(
+		'assets' => array('model' => 'Assets', 'foreignKey' => 'folder')
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance
@@ -14,17 +27,4 @@ class AssetFolders extends BaseModel
 	{
 		return parent::model($class);
 	}
-
-	protected $hasMany = array(
-		'assets' => array('model' => 'Assets', 'foreignKey' => 'folder')
-	);
-
-	protected $belongsTo = array(
-		'site' => array('model' => 'Sites', 'required' => true)
-	);
-
-	protected $attributes = array(
-		'name' => array('type' => 'varchar', 'size' => 1000, 'required' => true),
-		'path' => array('type' => 'varchar', 'size' => 1000, 'required' => true)
-	);
 }

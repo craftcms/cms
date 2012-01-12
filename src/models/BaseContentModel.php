@@ -8,16 +8,6 @@ abstract class BaseContentModel extends BaseModel
 	protected $foreignKey;
 	protected $model;
 
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
-
 	protected $attributes = array(
 		'num'    => array('type' => AttributeType::Integer, 'required' => true),
 		'label'  => array('type' => AttributeType::String, 'maxSize' => 150),
@@ -26,7 +16,7 @@ abstract class BaseContentModel extends BaseModel
 	);
 
 	/**
-	 * @return array
+	 * Dynamically set $this->belongsTo from $this->foreignKey and $this->model
 	 */
 	public function init()
 	{
@@ -34,5 +24,15 @@ abstract class BaseContentModel extends BaseModel
 			$this->foreignKey => $this->model,
 			'content'         => 'Content'
 		);
+	}
+
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
 	}
 }

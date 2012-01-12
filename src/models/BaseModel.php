@@ -5,24 +5,12 @@
  */
 abstract class BaseModel extends CActiveRecord
 {
+	protected $attributes = array();
+	protected $belongsTo = array();
 	protected $hasBlocks = array();
 	protected $hasContent = array();
-
 	protected $hasMany = array();
 	protected $hasOne = array();
-	protected $belongsTo = array();
-
-	protected $attributes = array();
-
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
 
 	/**
 	 * @param bool $names
@@ -185,5 +173,15 @@ abstract class BaseModel extends CActiveRecord
 	public static function install()
 	{
 		
+	}
+
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
 	}
 }
