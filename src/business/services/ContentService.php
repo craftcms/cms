@@ -176,7 +176,6 @@ class ContentService extends CApplicationComponent
 	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
 	{
 		$connection = Blocks::app()->db;
-		$dbName = Blocks::app()->config->databaseName;
 		$site = Blocks::app()->site->getSiteByHandle($siteHandle);
 
 		$transaction = $connection->beginTransaction();
@@ -208,8 +207,8 @@ class ContentService extends CApplicationComponent
 				$entryVersionsFKName, '{{'.$tableName.'}}', 'version_id', '{{entryversions}}', 'id', 'NO ACTION', 'NO ACTION'
 			);
 
-			DatabaseHelper::createInsertAuditTrigger($dbName, $tableName);
-			DatabaseHelper::createUpdateAuditTrigger($dbName, $tableName);
+			DatabaseHelper::createInsertAuditTrigger($tableName);
+			DatabaseHelper::createUpdateAuditTrigger($tableName);
 
 			// check result.
 			$section = new Sections();

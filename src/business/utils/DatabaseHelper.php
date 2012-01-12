@@ -11,8 +11,10 @@ class DatabaseHelper
 	 * @param $tableName
 	 * @todo MySql specific.  Need to abstract.
 	 */
-	public static function createInsertAuditTrigger($dbName, $tableName)
+	public static function createInsertAuditTrigger($tableName)
 	{
+		$dbName = Blocks::app()->config->databaseName;
+
 		Blocks::app()->db->createCommand(
 							'CREATE
 							 TRIGGER `'.$dbName.'`.`auditinfoinsert_'.$tableName.'`
@@ -32,8 +34,10 @@ class DatabaseHelper
 	 * @param $tableName
 	 * @todo MySql specific.  Need to abstract.
 	 */
-	public static function createUpdateAuditTrigger($dbName, $tableName)
+	public static function createUpdateAuditTrigger($tableName)
 	{
+		$dbName = Blocks::app()->config->databaseName;
+
 		Blocks::app()->db->createCommand(
 							'CREATE
 							 TRIGGER `'.$dbName.'`.`auditinfoupdate_'.$tableName.'`
