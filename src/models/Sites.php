@@ -7,9 +7,8 @@ class Sites extends BaseModel
 {
 	/**
 	 * Returns an instance of the specified model
-	 * @static
-	 * @param string $class
 	 * @return object The model instance
+	 * @static
 	 */
 	public static function model($class = __CLASS__)
 	{
