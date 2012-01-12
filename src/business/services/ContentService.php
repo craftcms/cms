@@ -8,10 +8,7 @@ class ContentService extends CApplicationComponent
 	/* Entries */
 
 	/**
-	 * @access public
-	 *
 	 * @param $entryId
-	 *
 	 * @return mixed
 	 */
 	public function getEntryById($entryId)
@@ -24,10 +21,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $sectionId
-	 *
 	 * @return mixed
 	 */
 	public function getEntriesBySectionId($sectionId)
@@ -40,10 +34,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
-	 *
 	 * @return array
 	 */
 	public function getAllEntriesBySiteId($siteId)
@@ -59,10 +50,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $entryId
-	 *
 	 * @return mixed
 	 */
 	public function doesEntryHaveSubEntries($entryId)
@@ -76,10 +64,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $entryId
-	 *
 	 * @return mixed
 	 */
 	public function getEntryVersionsByEntryId($entryId)
@@ -92,10 +77,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $versionId
-	 *
 	 * @return mixed
 	 */
 	public function getEntryVersionById($versionId)
@@ -110,10 +92,7 @@ class ContentService extends CApplicationComponent
 	/* Sections */
 
 	/**
-	 * @access public
-	 *
 	 * @param $sectionId
-	 *
 	 * @return mixed
 	 */
 	public function getSectionById($sectionId)
@@ -126,10 +105,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $sectionId
-	 *
 	 * @return mixed
 	 */
 	public function doesSectionHaveSubSections($sectionId)
@@ -143,11 +119,8 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
 	 * @param $handle
-	 *
 	 * @return mixed
 	 */
 	public function getSectionBySiteIdHandle($siteId, $handle)
@@ -161,11 +134,8 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
 	 * @param $handles
-	 *
 	 * @return mixed
 	 */
 	public function getSectionsBySiteIdHandles($siteId, $handles)
@@ -179,10 +149,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
-	 *
 	 * @return mixed
 	 */
 	public function getAllSectionsBySiteId($siteId)
@@ -195,8 +162,6 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $sectionHandle
 	 * @param $siteHandle
 	 * @param $label
@@ -205,9 +170,7 @@ class ContentService extends CApplicationComponent
 	 * @param null $template
 	 * @param bool $sortable
 	 * @param null $parentId
-	 *
 	 * @return Sections
-	 *
 	 * @throws Exception
 	 */
 	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
@@ -284,8 +247,6 @@ class ContentService extends CApplicationComponent
 	/* Blocks */
 
 	/**
-	 * @access public
-	 *
 	 * @param $blockHandle
 	 * @param $sectionHandle
 	 * @param $siteHandle
@@ -295,9 +256,7 @@ class ContentService extends CApplicationComponent
 	 * @param string $blockDataType
 	 * @param null $instructions
 	 * @param bool $required
-	 *
 	 * @return EntryBlocks
-	 *
 	 * @throws Exception
 	 */
 	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = AttributeType::Text, $instructions = null, $required = false)
@@ -344,10 +303,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $sectionId
-	 *
 	 * @return mixed
 	 */
 	public function getBlocksBySectionId($sectionId)
@@ -360,10 +316,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $entryId
-	 *
 	 * @return array
 	 */
 	public function getBlocksByEntryId($entryId)
@@ -380,11 +333,8 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $entryId
 	 * @param $handle
-	 *
 	 * @return array
 	 */
 	public function getBlockByEntryIdHandle($entryId, $handle)
@@ -401,11 +351,8 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteHandle
 	 * @param $sectionHandle
-	 *
 	 * @return string
 	 */
 	private function _getEntryDataTableName($siteHandle, $sectionHandle)
@@ -414,10 +361,7 @@ class ContentService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $table
-	 *
 	 * @return null|string
 	 */
 	private function _getLastBlockColumnName($table)

@@ -6,8 +6,6 @@
 class PluginService extends CApplicationComponent
 {
 	/**
-	 * @access public
-	 *
 	 * @return Plugins
 	 */
 	public function getAllInstalledPlugins()
@@ -16,8 +14,6 @@ class PluginService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array|null
 	 */
 	public function getAllInstalledPluginHandlesAndVersions()

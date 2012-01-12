@@ -6,8 +6,6 @@
 class ContentVersionTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -16,8 +14,6 @@ class ContentVersionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentEntryTag
 	 */
 	public function entry()
@@ -27,8 +23,6 @@ class ContentVersionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function num()
@@ -37,8 +31,6 @@ class ContentVersionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function label()
@@ -47,8 +39,6 @@ class ContentVersionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function isLive()

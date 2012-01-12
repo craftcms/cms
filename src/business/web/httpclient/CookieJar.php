@@ -54,25 +54,21 @@ class CookieJar
 {
 	/**
 	 * Return cookie(s) as a HttpCookie object
-	 *
 	 */
 	const COOKIE_OBJECT = 0;
 
 	/**
 	 * Return cookie(s) as a string (suitable for sending in an HTTP request)
-	 *
 	 */
 	const COOKIE_STRING_ARRAY = 1;
 
 	/**
 	 * Return all cookies as one long string (suitable for sending in an HTTP request)
-	 *
 	 */
 	const COOKIE_STRING_CONCAT = 2;
 
 	/**
 	 * Array storing cookies
-	 *
 	 * Cookies are stored according to domain and path:
 	 * $cookies
 	 *  + www.mydomain.com
@@ -84,29 +80,25 @@ class CookieJar
 	 *  + www.otherdomain.net
 	 *    + /
 	 *      - alsocookie
-	 *
 	 * @var array
 	 */
 	protected $cookies = array();
 
 	/**
-		* The HttpCookie array
-		*
-		* @var array
-		*/
-		protected $_rawCookies = array();
+	 * The HttpCookie array
+	 * @var array
+	 */
+	protected $_rawCookies = array();
 
-		/**
-		 * Construct a new CookieJar object
-		 *
-		 */
-		public function __construct()
-		{ }
+	/**
+	 * Construct a new CookieJar object
+	 */
+	public function __construct()
+	{ }
 
 	/**
 	 * Add a cookie to the jar. Cookie should be passed either as a HttpCookie object
 	 * or as a string - in which case an object is created from the string.
-	 *
 	 * @param HttpCookie|string $cookie
 	 * @param UriHttp|string    $ref_uri Optional reference URI (for domain, path, secure)
 	 * @param boolean $encodeValue
@@ -141,7 +133,6 @@ class CookieJar
 	/**
 	 * Parse an HTTP response, adding all the cookies set in that response
 	 * to the cookie jar.
-	 *
 	 * @param HttpResponse $response
 	 * @param UriHttp|string $ref_uri Requested URI
 	 * @param boolean $encodeValue
@@ -173,7 +164,6 @@ class CookieJar
 
 	/**
 	 * Get all cookies in the cookie jar as an array
-	 *
 	 * @param int $ret_as Whether to return cookies as objects of HttpCookie or as strings
 	 * @return array|string
 	 */
@@ -187,7 +177,6 @@ class CookieJar
 	 * Return an array of all cookies matching a specific request according to the request URI,
 	 * whether session cookies should be sent or not, and the time to consider as "now" when
 	 * checking cookie expiry time.
-	 *
 	 * @param string|UriHttp $uri URI to check against (secure, domain, path)
 	 * @param boolean $matchSessionCookies Whether to send session cookies
 	 * @param int $ret_as Whether to return cookies as objects of HttpCookie or as strings
@@ -228,7 +217,6 @@ class CookieJar
 
 	/**
 	 * Get a specific cookie according to a URI and name
-	 *
 	 * @param UriHttp|string $uri The uri (domain and path) to match
 	 * @param string $cookie_name The cookie's name
 	 * @param int $ret_as Whether to return cookies as objects of HttpCookie or as strings
@@ -281,7 +269,6 @@ class CookieJar
 
 	/**
 	 * Helper function to recursively flatten an array. Should be used when exporting the cookies array (or parts of it)
-	 *
 	 * @param HttpCookie|array $ptr
 	 * @param int $ret_as What value to return
 	 * @return array|string
@@ -332,9 +319,7 @@ class CookieJar
 
 	/**
 	 * Return a subset of the cookies array matching a specific domain
-	 *
 	 * Returned array is actually an array of pointers to items in the $this->cookies array.
-	 *
 	 * @param string $domain
 	 * @return array
 	 */
@@ -355,7 +340,6 @@ class CookieJar
 
 	/**
 	 * Return a subset of a domain-matching cookies that also match a specified path
-	 *
 	 * @param $domains
 	 * @param string $path
 	 * @return array
@@ -388,7 +372,6 @@ class CookieJar
 	 * cookies set in an Http_Response object. If $uri is set, it will be
 	 * considered as the requested URI for setting default domain and path
 	 * of the cookie.
-	 *
 	 * @param HttpResponse $response HTTP Response object
 	 * @param UriHttp|string $ref_uri The requested URI
 	 * @return HttpCookieJar
@@ -403,7 +386,6 @@ class CookieJar
 
 	/**
 	 * Required by Countable interface
-	 *
 	 * @return int
 	 */
 	public function count()
@@ -413,7 +395,6 @@ class CookieJar
 
 	/**
 	 * Required by IteratorAggregate interface
-	 *
 	 * @return ArrayIterator
 	 */
 	public function getIterator()
@@ -423,7 +404,6 @@ class CookieJar
 
 	/**
 	 * Tells if the jar is empty of any cookie
-	 *
 	 * @return bool
 	 */
 	public function isEmpty()
@@ -433,7 +413,6 @@ class CookieJar
 
 	/**
 	 * Empties the cookieJar of any cookie
-	 *
 	 * @return CookieJar
 	 */
 	public function reset()

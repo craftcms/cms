@@ -43,14 +43,12 @@ interface HttpClientAdapterInterface
 {
 	/**
 	 * Set the configuration array for the adapter
-	 *
 	 * @param array $config
 	 */
 	public function setConfig($config = array());
 
 	/**
 	 * Connect to the remote server
-	 *
 	 * @param string  $host
 	 * @param int     $port
 	 * @param boolean $secure
@@ -59,7 +57,6 @@ interface HttpClientAdapterInterface
 
 	/**
 	 * Send request to the remote server
-	 *
 	 * @param string        $method
 	 * @param UriHttp       $url
 	 * @param string        $http_ver
@@ -71,14 +68,12 @@ interface HttpClientAdapterInterface
 
 	/**
 	 * Read response from server
-	 *
 	 * @return string
 	 */
 	public function read();
 
 	/**
 	 * Close the connection to the server
-	 *
 	 */
 	public function close();
 }

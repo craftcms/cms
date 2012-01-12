@@ -7,9 +7,7 @@ class HttpsFilter extends CFilter
 {
 	/**
 	 * @access protected
-	 *
 	 * @param $filterChain
-	 *
 	 * @return bool
 	 */
 	protected function preFilter($filterChain)

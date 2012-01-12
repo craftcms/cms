@@ -48,56 +48,48 @@ class UriHttp extends Uri
 
 	/**
 	 * HTTP username
-	 *
 	 * @var string
 	 */
 	protected $_userName = '';
 
 	/**
 	 * HTTP password
-	 *
 	 * @var string
 	 */
 	protected $_password = '';
 
 	/**
 	 * HTTP host
-	 *
 	 * @var string
 	 */
 	protected $_host = '';
 
 	/**
 	 * HTTP post
-	 *
 	 * @var string
 	 */
 	protected $_port = '';
 
 	/**
 	 * HTTP part
-	 *
 	 * @var string
 	 */
 	protected $_path = '';
 
 	/**
 	 * HTTP query
-	 *
 	 * @var string
 	 */
 	protected $_query = '';
 
 	/**
 	 * HTTP fragment
-	 *
 	 * @var string
 	 */
 	protected $_fragment = '';
 
 	/**
 	 * Regular expression grammar rules for validation; values added by constructor
-	 *
 	 * @var array
 	 */
 	protected $_regex = array();
@@ -105,7 +97,6 @@ class UriHttp extends Uri
 	/**
 	 * Constructor accepts a string $scheme (e.g., http, https) and a scheme-specific part of the URI
 	 * (e.g., example.com/path/to/resource?query=param#fragment)
-	 *
 	 * @param  string $scheme         The scheme of the URI
 	 * @param  string $schemeSpecific The scheme-specific part of the URI
 	 * @throws BlocksException When the URI is not valid
@@ -150,7 +141,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Creates a UriHttp from the given string
-	 *
 	 * @param  string $uri String to create URI from, must start with 'http://' or 'https://'
 	 * @throws InvalidArgumentException  When the given $uri is not a string or does not start with http:// or https://
 	 * @throws BlocksException When the given $uri is invalid
@@ -178,7 +168,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Parse the scheme-specific portion of the URI and place its parts into instance variables.
-	 *
 	 * @param  string $schemeSpecific The scheme-specific portion to parse
 	 * @throws BlocksException When scheme-specific decomposition fails
 	 * @throws BlocksException When authority decomposition fails
@@ -228,7 +217,6 @@ class UriHttp extends Uri
 	/**
 	 * Returns a URI based on current values of the instance variables. If any
 	 * part of the URI does not pass validation, then an exception is thrown.
-	 *
 	 * @throws BlocksException When one or more parts of the URI are invalid
 	 * @return string
 	 */
@@ -257,7 +245,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Validate the current URI from the instance variables. Returns true if and only if all parts pass validation.
-	 *
 	 * @return boolean
 	 */
 	public function valid()
@@ -274,7 +261,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns the username portion of the URL, or FALSE if none.
-	 *
 	 * @return string
 	 */
 	public function getUsername()
@@ -285,7 +271,6 @@ class UriHttp extends Uri
 	/**
 	 * Returns true if and only if the userName passes validation. If no userName is passed,
 	 * then the userName contained in the instance variable is used.
-	 *
 	 * @param  string $userName The HTTP username
 	 * @throws BlocksException When username validation fails
 	 * @return boolean
@@ -316,7 +301,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Sets the userName for the current URI, and returns the old userName
-	 *
 	 * @param  string $userName The HTTP userName
 	 * @throws BlocksException When $userName is not a valid HTTP userName
 	 * @return string
@@ -336,7 +320,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns the password portion of the URL, or FALSE if none.
-	 *
 	 * @return string
 	 */
 	public function getPassword()
@@ -346,7 +329,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns true if and only if the password passes validation. If no password is passed, then the password contained in the instance variable is used.
-	 *
 	 * @param  string $password The HTTP password
 	 * @throws CException When password validation fails
 	 * @return boolean
@@ -383,7 +365,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Sets the password for the current URI, and returns the old password
-	 *
 	 * @param  string $password The HTTP password
 	 * @throws CException When $password is not a valid HTTP password
 	 * @return string
@@ -403,7 +384,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns the domain or host IP portion of the URL, or FALSE if none.
-	 *
 	 * @return string
 	 */
 	public function getHost()
@@ -414,7 +394,6 @@ class UriHttp extends Uri
 	/**
 	 * Returns true if and only if the host string passes validation. If no host is passed,
 	 * then the host contained in the instance variable is used.
-	 *
 	 * @param  string $host The HTTP host
 	 * @return boolean
 	 * @uses   HostNameValidator
@@ -440,7 +419,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Sets the host for the current URI, and returns the old host
-	 *
 	 * @param  string $host The HTTP host
 	 * @throws BlocksException When $host is not a valid HTTP host
 	 * @return string
@@ -460,7 +438,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns the TCP port, or FALSE if none.
-	 *
 	 * @return string
 	 */
 	public function getPort()
@@ -470,7 +447,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns true if and only if the TCP port string passes validation. If no port is passed, then the port contained in the instance variable is used.
-	 *
 	 * @param  string $port The HTTP port
 	 * @return boolean
 	 */
@@ -493,7 +469,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Sets the port for the current URI, and returns the old port
-	 *
 	 * @param  string $port The HTTP port
 	 * @throws BlocksException When $port is not a valid HTTP port
 	 * @return string
@@ -513,7 +488,6 @@ class UriHttp extends Uri
 
 	/**
 	 * * Returns the path and filename portion of the URL.
-	 *
 	 * @return string
 	 */
 	public function getPath()
@@ -523,7 +497,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns true if and only if the path string passes validation. If no path is passed, then the path contained in the instance variable is used.
-	 *
 	 * @param  string $path The HTTP path
 	 * @throws BlocksException When path validation fails
 	 * @return boolean
@@ -554,7 +527,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Sets the path for the current URI, and returns the old path
-	 *
 	 * @param  string $path The HTTP path
 	 * @throws BlocksException When $path is not a valid HTTP path
 	 * @return string
@@ -574,7 +546,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns the query portion of the URL (after ?), or FALSE if none.
-	 *
 	 * @return string
 	 */
 	public function getQuery()
@@ -586,7 +557,6 @@ class UriHttp extends Uri
 	 * Returns the query portion of the URL (after ?) as a
 	 * key-value-array. If the query is empty an empty array
 	 * is returned
-	 *
 	 * @return array
 	 */
 	public function getQueryAsArray()
@@ -605,7 +575,6 @@ class UriHttp extends Uri
 	/**
 	 * Returns true if and only if the query string passes validation. If no query is passed,
 	 * then the query string contained in the instance variable is used.
-	 *
 	 * @param  string $query The query to validate
 	 * @throws BlocksException When query validation fails
 	 * @return boolean
@@ -639,7 +608,6 @@ class UriHttp extends Uri
 	/**
 	 * Add or replace params in the query string for the current URI, and
 	 * return the old query.
-	 *
 	 * @param  array $queryParams
 	 * @return string Old query string
 	 */
@@ -652,7 +620,6 @@ class UriHttp extends Uri
 	/**
 	 * Remove params in the query string for the current URI, and
 	 * return the old query.
-	 *
 	 * @param  array $queryParamKeys
 	 * @return string Old query string
 	 */
@@ -665,7 +632,6 @@ class UriHttp extends Uri
 	/**
 	 * Set the query string for the current URI, and return the old query
 	 * string This method accepts both strings and arrays.
-	 *
 	 * @param  string|array $query The query string or array
 	 * @throws CException When $query is not a valid query string
 	 * @return string Old query string
@@ -710,7 +676,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Returns the fragment portion of the URL (after #), or FALSE if none.
-	 *
 	 * @return string|false
 	 */
 	public function getFragment()
@@ -721,7 +686,6 @@ class UriHttp extends Uri
 	/**
 	 * Returns true if and only if the fragment passes validation. If no fragment is passed,
 	 * then the fragment contained in the instance variable is used.
-	 *
 	 * @param  string $fragment Fragment of an URI
 	 * @throws BlocksException When fragment validation fails
 	 * @return boolean
@@ -754,7 +718,6 @@ class UriHttp extends Uri
 
 	/**
 	 * Sets the fragment for the current URI, and returns the old fragment
-	 *
 	 * @param  string $fragment Fragment of the current URI
 	 * @throws BlocksException When $fragment is not a valid HTTP fragment
 	 * @return string

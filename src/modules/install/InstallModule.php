@@ -6,7 +6,6 @@
 class InstallModule extends BlocksWebModule
 {
 	/**
-	 * @access public
 	 */
 	public function init()
 	{
@@ -21,11 +20,8 @@ class InstallModule extends BlocksWebModule
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $controller
 	 * @param $action
-	 *
 	 * @return bool
 	 */
 	public function beforeControllerAction($controller, $action)

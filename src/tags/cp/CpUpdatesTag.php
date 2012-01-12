@@ -8,10 +8,7 @@ class CpUpdatesTag extends Tag
 	private $_updates;
 
 	/**
-	 * @access public
-	 *
 	 * @param $forceRefresh
-	 *
 	 * @return mixed
 	 */
 	public function init($forceRefresh)
@@ -58,8 +55,6 @@ class CpUpdatesTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toArray()
@@ -68,8 +63,6 @@ class CpUpdatesTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -78,8 +71,6 @@ class CpUpdatesTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return int
 	 */
 	public function length()
@@ -88,11 +79,8 @@ class CpUpdatesTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $updates
 	 * @param $name
-	 *
 	 * @return string
 	 */
 	private function _generateUpdateNotes($updates, $name)

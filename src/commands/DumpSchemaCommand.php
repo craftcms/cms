@@ -6,10 +6,7 @@
 class DumpSchemaCommand extends CConsoleCommand
 {
 	/**
-	 * @access public
-	 *
 	 * @param $args
-	 *
 	 * @return mixed
 	 */
 	public function run($args)
@@ -38,10 +35,7 @@ class DumpSchemaCommand extends CConsoleCommand
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $col
-	 *
 	 * @return string
 	 */
 	public function getColType($col)

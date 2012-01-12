@@ -14,7 +14,6 @@ class BlocksUrlManager extends CUrlManager
 	public $routeVar;
 
 	/**
-	 * @access public
 	 */
 	function __construct()
 	{
@@ -22,7 +21,6 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
-	 * @access public
 	 */
 	public function init()
 	{
@@ -51,7 +49,6 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
-	 * @access public
 	 */
 	public function processTemplateMatching()
 	{
@@ -75,8 +72,6 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getTemplateMatch()
@@ -85,8 +80,6 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getCurrentModule()
@@ -106,9 +99,6 @@ class BlocksUrlManager extends CUrlManager
 
 	/**
 	 * Attempts to match a request with an entry in the database.  If one is found, we set the template match property.
-	 *
-	 * @access public
-	 *
 	 * @return bool True if a match was found, false otherwise.
 	 */
 	public function matchEntry()
@@ -130,8 +120,6 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function matchRoute()
@@ -161,9 +149,6 @@ class BlocksUrlManager extends CUrlManager
 	 * Will return false for any directory that has a "_" as the first character.
 	 * Will attempt to match "path/to/folder/file.{allowedFileExtensions}" first, "path/to/folder/file/index.{allowedFileExtensions}" second.
 	 * Sets the template match property if a match is found.
-	 *
-	 * @access public
-	 *
 	 * @return bool True is a match is found, false otherwise.
 	 */
 	public function matchTemplate()
@@ -217,12 +202,10 @@ class BlocksUrlManager extends CUrlManager
 
 	/**
 	 * @access private
-	 *
 	 * @param $path
 	 * @param $requestPath
 	 * @param $moduleName
 	 * @param $pathMatchPattern
-	 *
 	 * @return bool
 	 */
 	private function _attemptTemplateMatch($path, $requestPath, $moduleName, $pathMatchPattern)
@@ -243,7 +226,6 @@ class BlocksUrlManager extends CUrlManager
 
 	/**
 	 * @access private
-	 *
 	 * @param $path
 	 * @param $pathMatchPattern
 	 * @param $matchType
@@ -260,11 +242,7 @@ class BlocksUrlManager extends CUrlManager
 
 	/**
 	 * Adds a trailing slash to the end of a path if one does not exist
-	 *
-	 * @access public
-	 *
 	 * @param $path The path to normalize.
-	 *
 	 * @return string The normalized path.
 	 */
 	public function normalizeTrailingSlash($path)

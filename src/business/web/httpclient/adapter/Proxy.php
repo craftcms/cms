@@ -44,7 +44,6 @@ class Proxy extends HttpClientAdapterSocket
 {
 	/**
 	 * Parameters array
-	 *
 	 * @var array
 	 */
 	protected $config = array(
@@ -62,17 +61,14 @@ class Proxy extends HttpClientAdapterSocket
 
 	/**
 	 * Whether HTTPS CONNECT was already negotiated with the proxy or not
-	 *
 	 * @var boolean
 	 */
 	protected $negotiated = false;
 
 	/**
 	 * Connect to the remote server
-	 *
 	 * Will try to connect to the proxy server. If no proxy was set, will
 	 * fall back to the target server (behave like regular Socket adapter)
-	 *
 	 * @param string  $host
 	 * @param int     $port
 	 * @param boolean $secure
@@ -101,7 +97,6 @@ class Proxy extends HttpClientAdapterSocket
 
 	/**
 	 * Send request to the proxy server
-	 *
 	 * @param string        $method
 	 * @param UriHttp 		$uri
 	 * @param string        $http_ver
@@ -203,7 +198,6 @@ class Proxy extends HttpClientAdapterSocket
 
 	/**
 	 * Preform handshaking with HTTPS proxy using CONNECT method
-	 *
 	 * @param string  $host
 	 * @param integer $port
 	 * @param string  $http_ver
@@ -282,7 +276,6 @@ class Proxy extends HttpClientAdapterSocket
 
 	/**
 	 * Close the connection to the server
-	 *
 	 */
 	public function close()
 	{
@@ -292,7 +285,6 @@ class Proxy extends HttpClientAdapterSocket
 
 	/**
 	 * Destructor: make sure the socket is disconnected
-	 *
 	 */
 	public function __destruct()
 	{

@@ -9,8 +9,6 @@ class UsersTag extends Tag
 	protected $_groups;
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getUsers()
@@ -24,8 +22,6 @@ class UsersTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getGroups()

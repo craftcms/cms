@@ -18,11 +18,7 @@ class TemplateHelper
 
 	/**
 	 * Returns a new tag instance, which will either be one of the globals, or a generic tag, depending on the handle passed in
-	 *
-	 * @access public
-	 *
 	 * @param string $handle The tag handle being used in the template
-	 *
 	 * @return object The tag instance
 	 */
 	public static function getGlobalTag($handle)
@@ -35,11 +31,7 @@ class TemplateHelper
 
 	/**
 	 * Returns whether a variable is a tag or not
-	 *
-	 * @access public
-	 *
 	 * @param mixed $var The variable
-	 *
 	 * @return bool Whether it's a tag or not
 	 */
 	public static function isTag($var)
@@ -49,12 +41,8 @@ class TemplateHelper
 
 	/**
 	 * Returns the appropriate tag for a variable
-	 *
-	 * @access public
-	 *
 	 * @param mixed $var The variable
 	 * @param object A tag instance for the variable
-	 *
 	 * @return \ArrayTag|\BoolTag|mixed|\NumTag|\ObjectTag|string|\StringTag
 	 */
 	public static function getVarTag($var = '')
@@ -87,12 +75,8 @@ class TemplateHelper
 
 	/**
 	 * Combines and serializes the subtag name and arguments into a unique key
-	 *
-	 * @access public
-	 *
 	 * @param string $tag The subtag name
 	 * @param array $args The arguments passed to the subtag
-	 *
 	 * @return string The subtag's cache key
 	 */
 	public static function generateTagCacheKey($tag, $args)

@@ -9,8 +9,6 @@ class SiteService extends CApplicationComponent
 	private $_licenseKeyStatus = null;
 
 	/**
-	 * @access public
-	 *
 	 * @return array|null
 	 */
 	public function getLicenseKeys()
@@ -28,8 +26,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string|null
 	 */
 	public function getSiteName()
@@ -41,8 +37,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string|null
 	 */
 	public function getSiteLanguage()
@@ -54,8 +48,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string|null
 	 */
 	public function getSiteUrl()
@@ -67,8 +59,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return Sites
 	 */
 	public function getCurrentSiteByUrl()
@@ -90,10 +80,7 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $url
-	 *
 	 * @return Sites
 	 */
 	public function getSiteByUrl($url)
@@ -112,10 +99,7 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $id
-	 *
 	 * @return Sites
 	 */
 	public function getSiteById($id)
@@ -125,10 +109,7 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $handle
-	 *
 	 * @return Sites
 	 */
 	public function getSiteByHandle($handle)
@@ -141,8 +122,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function getAllowedTemplateFileExtensions()
@@ -151,11 +130,8 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $templatePath
 	 * @param string $srcLanguage
-	 *
 	 * @return null|string
 	 */
 	public function matchTemplatePathWithAllowedFileExtensions($templatePath, $srcLanguage = 'en-us')
@@ -171,8 +147,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getLicenseKeyStatus()
@@ -186,8 +160,6 @@ class SiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $licenseKeyStatus
 	 */
 	public function setLicenseKeyStatus($licenseKeyStatus)
@@ -198,7 +170,6 @@ class SiteService extends CApplicationComponent
 
 	/**
 	 * @access private
-	 *
 	 * @return string
 	 */
 	private function _getLicenseKeyStatus()

@@ -7,12 +7,8 @@ class ArrayHelper
 {
 	/**
 	 * Flattens a multi-dimensional array into a single-dimensional array
-	 *
-	 * @access public
-	 *
 	 * @param        $arr
 	 * @param string $prefix
-	 *
 	 * @return array
 	 */
 	public static function flattenArray($arr, $prefix = '')
@@ -38,11 +34,7 @@ class ArrayHelper
 
 	/**
 	 * Expands a flattened array back into its original form
-	 *
-	 * @access public
-	 *
 	 * @param $arr
-	 *
 	 * @return array
 	 */
 	public static function expandArray($arr)
@@ -67,10 +59,7 @@ class ArrayHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $settings
-	 *
 	 * @return array
 	 */
 	public static function expandSettingsArray($settings)

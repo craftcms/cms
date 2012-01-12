@@ -6,11 +6,8 @@
 class ContentEntryTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @param $method
 	 * @param $args
-	 *
 	 * @return ContentBlockTag
 	 */
 	function __call($method, $args)
@@ -19,8 +16,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -29,8 +24,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentEntryTag|null
 	 */
 	public function parentEntry()
@@ -39,8 +32,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function hasSubEntries()
@@ -49,8 +40,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentSectionTag
 	 */
 	public function section()
@@ -59,8 +48,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return UserTag
 	 */
 	public function author()
@@ -69,8 +56,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function slug()
@@ -79,8 +64,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function uri()
@@ -89,8 +72,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return DateTag
 	 */
 	public function postDate()
@@ -99,8 +80,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return DateTag
 	 */
 	public function expirationDate()
@@ -109,8 +88,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function order()
@@ -127,8 +104,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function enabled()
@@ -137,10 +112,7 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param string $languageCode
-	 *
 	 * @return mixed
 	 */
 	public function title($languageCode = 'en-us')
@@ -149,8 +121,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentBlocksTag
 	 */
 	public function blocks()
@@ -160,10 +130,7 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $handle
-	 *
 	 * @return ContentBlockTag
 	 */
 	public function block($handle)
@@ -173,8 +140,6 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentVersionsTag
 	 */
 	public function versions()

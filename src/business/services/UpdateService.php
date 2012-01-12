@@ -8,10 +8,7 @@ class UpdateService extends CApplicationComponent
 	private $_updateInfo;
 
 	/**
-	 * @access public
-	 *
 	 * @param $blocksReleases
-	 *
 	 * @return bool
 	 */
 	public function criticalBlocksUpdateAvailable($blocksReleases)
@@ -26,10 +23,7 @@ class UpdateService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $plugins
-	 *
 	 * @return bool
 	 */
 	public function criticalPluginUpdateAvailable($plugins)
@@ -50,8 +44,6 @@ class UpdateService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function isUpdateInfoCached()
@@ -60,10 +52,7 @@ class UpdateService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param bool $forceRefresh
-	 *
 	 * @return mixed
 	 */
 	public function getUpdateInfo($forceRefresh = false)
@@ -98,8 +87,6 @@ class UpdateService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function doCoreUpdate()
@@ -112,10 +99,7 @@ class UpdateService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $pluginHandle
-	 *
 	 * @return bool
 	 */
 	public function doPluginUpdate($pluginHandle)
@@ -128,8 +112,6 @@ class UpdateService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return BlocksUpdateInfo
 	 */
 	public function check()

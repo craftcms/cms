@@ -41,51 +41,43 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 {
 	/**
 	 * Parameters array
-	 *
 	 * @var array
 	 */
 	protected $_config = array();
 
 	/**
 	 * What host/port are we connected to?
-	 *
 	 * @var array
 	 */
 	protected $_connected_to = array(null, null);
 
 	/**
 	 * The curl session handle
-	 *
 	 * @var resource|null
 	 */
 	protected $_curl = null;
 
 	/**
 	 * List of cURL options that should never be overwritten
-	 *
 	 * @var array
 	 */
 	protected $_invalidOverwritableCurlOptions;
 
 	/**
 	 * Response gotten from server
-	 *
 	 * @var string
 	 */
 	protected $_response = null;
 
 	/**
 	 * Stream for storing output
-	 *
 	 * @var resource
 	 */
 	protected $out_stream;
 
 	/**
 	 * Adapter constructor
-	 *
 	 * Config is set using setConfig()
-	 *
 	 * @return \HttpClientAdapterCurl
 	 * @throws HttpClientAdapterException
 	 */
@@ -117,7 +109,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Set the configuration array for the adapter
-	 *
 	 * @throws BlocksException
 	 * @param  array $config
 	 * @return HttpClientAdapterCurl
@@ -168,7 +159,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Direct setter for cURL adapter related options.
-	 *
 	 * @param  string|int $option
 	 * @param  mixed $value
 	 * @return HttpAdapterCurl
@@ -186,7 +176,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Initialize curl
-	 *
 	 * @param  string  $host
 	 * @param  int     $port
 	 * @param  boolean $secure
@@ -247,7 +236,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Send request to the remote server
-	 *
 	 * @param  string        $method
 	 * @param  UriHttp       $uri
 	 * @param float          $httpVersion
@@ -477,7 +465,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Return read response from server
-	 *
 	 * @return string
 	 */
 	public function read()
@@ -487,7 +474,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Close the connection to the server
-	 *
 	 */
 	public function close()
 	{
@@ -502,7 +488,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Get cUrl Handle
-	 *
 	 * @return resource
 	 */
 	public function getHandle()
@@ -512,7 +497,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Set output stream for the response
-	 *
 	 * @param resource $stream
 	 * @return HttpClientAdapterSocket
 	 */
@@ -524,7 +508,6 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Header reader function for CURL
-	 *
 	 * @param resource $curl
 	 * @param string $header
 	 * @return int

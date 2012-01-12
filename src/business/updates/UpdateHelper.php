@@ -6,10 +6,7 @@
 class UpdateHelper
 {
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $manifestFile
 	 */
 	public static function rollBackFileChanges($manifestFile)
@@ -27,12 +24,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $masterManifest
-	 *
 	 * @return bool
 	 */
 	public static function doFileUpdate($masterManifest)
@@ -78,14 +71,10 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $version
 	 * @param $build
 	 * @param $edition
-	 *
 	 * @return string
 	 * @throws BlocksException
 	 */
@@ -110,12 +99,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $path
-	 *
 	 * @return string
 	 */
 	public static function stripRootBlocksPath($path)
@@ -127,12 +112,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $manifestDataPath
-	 *
 	 * @return array
 	 */
 	public static function getManifestData($manifestDataPath)
@@ -144,12 +125,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $downloadPath
-	 *
 	 * @return mixed
 	 */
 	public static function getTempDirForPackage($downloadPath)
@@ -159,12 +136,8 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $filePath
-	 *
 	 * @return string
 	 */
 	public static function copyMigrationFile($filePath)
@@ -176,14 +149,10 @@ class UpdateHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $counter
 	 * @param $manifestDataRow
 	 * @param $fileList
-	 *
 	 * @return bool
 	 */
 	public static function inManifestList(&$counter, $manifestDataRow, $fileList)

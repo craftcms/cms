@@ -10,7 +10,6 @@ class CoreUpdater implements IUpdater
 	private $_blocksUpdateInfo = null;
 
 	/**
-	 * @access public
 	 */
 	function __construct()
 	{
@@ -20,7 +19,6 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
 	 */
 	public function checkRequirements()
 	{
@@ -44,10 +42,7 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
-	 *
 	 * @throws BlocksException
 	 */
 	public function start()
@@ -96,8 +91,6 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return
 	 */
 	public function generateMasterManifest()
@@ -165,12 +158,8 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @todo Fix
-	 *
 	 * @return bool
-	 *
 	 */
 	public function putSiteInMaintenanceMode()
 	{
@@ -182,8 +171,6 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function doDatabaseUpdate()
@@ -199,8 +186,6 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $manifestFile
 	 */
 	public function cleanTempFiles($manifestFile)
@@ -232,12 +217,9 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $version
 	 * @param $build
 	 * @param $destinationPath
-	 *
 	 * @return bool
 	 */
 	public function downloadPackage($version, $build, $destinationPath)
@@ -258,14 +240,10 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $version
 	 * @param $build
 	 * @param $destinationPath
-	 *
 	 * @return bool
-	 *
 	 * @throws BlocksException
 	 */
 	public function validatePackage($version, $build, $destinationPath)
@@ -295,10 +273,7 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $downloadPath
-	 *
 	 * @return bool
 	 */
 	public function unpackPackage($downloadPath)
@@ -314,10 +289,7 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $masterManifest
-	 *
 	 * @return bool
 	 */
 	public function backupFiles($masterManifest)

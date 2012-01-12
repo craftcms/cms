@@ -15,8 +15,6 @@ class PluginUpdateData
 	public $newerReleases = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param null $properties
 	 */
 	function __construct($properties = null)
@@ -49,8 +47,6 @@ class PluginNewReleaseUpdateData
 	public $critical = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param null $properties
 	 */
 	function __construct($properties = null)

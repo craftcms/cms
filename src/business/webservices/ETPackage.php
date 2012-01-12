@@ -13,8 +13,6 @@ class ETPackage
 	public $errors = array();
 
 	/**
-	 * @access public
-	 *
 	 * @param null $properties
 	 */
 	function __construct($properties = null)
@@ -30,7 +28,6 @@ class ETPackage
 	}
 
 	/*
-	 * @access public
 	 */
 	public function encodeAndEcho()
 	{
@@ -38,7 +35,6 @@ class ETPackage
 	}
 
 	/*
-	 * @access public
 	 */
 	public function decode()
 	{

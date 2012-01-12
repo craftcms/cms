@@ -6,7 +6,6 @@
 class DashboardController extends BaseController
 {
 	/**
-	 * @access public
 	 */
 	public function actionGetAlerts()
 	{

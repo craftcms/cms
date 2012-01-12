@@ -11,8 +11,6 @@ abstract class Widget
 	public $className = '';
 
 	/**
-	 * @access public
-	 *
 	 * @param $id
 	 */
 	public function __construct($id)
@@ -32,8 +30,6 @@ abstract class Widget
 	protected function init() {}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function displayBody()
@@ -42,8 +38,6 @@ abstract class Widget
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function displaySettings()

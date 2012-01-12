@@ -10,7 +10,6 @@ class CpResourceTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param string $path
 	 */
 	protected function init($path = '')
@@ -20,7 +19,6 @@ class CpResourceTag extends Tag
 
 	/**
 	 * @access private
-	 *
 	 * @return mixed
 	 */
 	private function getUrl()
@@ -34,8 +32,6 @@ class CpResourceTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -44,8 +40,6 @@ class CpResourceTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function url()
@@ -54,8 +48,6 @@ class CpResourceTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function js()
@@ -64,8 +56,6 @@ class CpResourceTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function css()

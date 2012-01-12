@@ -9,7 +9,6 @@ class CpDashboardWidgetTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param $widget
 	 */
 	protected function init($widget)
@@ -18,8 +17,6 @@ class CpDashboardWidgetTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function title()
@@ -28,8 +25,6 @@ class CpDashboardWidgetTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function id()
@@ -38,8 +33,6 @@ class CpDashboardWidgetTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function classname()
@@ -48,8 +41,6 @@ class CpDashboardWidgetTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function body()
@@ -58,8 +49,6 @@ class CpDashboardWidgetTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function settings()

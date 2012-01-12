@@ -9,7 +9,6 @@ class BoolTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param bool $val
 	 */
 	protected function init($val = false)
@@ -18,8 +17,6 @@ class BoolTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()

@@ -6,8 +6,6 @@
 class BlocksException extends CException
 {
 	/**
-	 * @access public
-	 *
 	 * @param     $message
 	 * @param int $code
 	 */

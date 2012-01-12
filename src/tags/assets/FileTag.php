@@ -6,8 +6,6 @@
 class FileTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -16,8 +14,6 @@ class FileTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function path()
@@ -26,8 +22,6 @@ class FileTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return UploadFolderTag
 	 */
 	public function folder()

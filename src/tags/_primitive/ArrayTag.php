@@ -9,7 +9,6 @@ class ArrayTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param array $val
 	 */
 	protected function init($val = array())
@@ -18,11 +17,8 @@ class ArrayTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $name
 	 * @param $args
-	 *
 	 * @return Tag
 	 */
 	public function __call($name, $args)
@@ -36,8 +32,6 @@ class ArrayTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -63,8 +57,6 @@ class ArrayTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toArray()
@@ -73,8 +65,6 @@ class ArrayTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return int
 	 */
 	public function length()

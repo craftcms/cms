@@ -8,7 +8,6 @@ class ContentTag extends Tag
 	private $_siteId;
 
 	/**
-	 * @access public
 	 */
 	function __construct()
 	{
@@ -16,11 +15,8 @@ class ContentTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $method
 	 * @param $args
-	 *
 	 * @return ContentSectionTag
 	 */
 	function __call($method, $args)
@@ -29,10 +25,7 @@ class ContentTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param array $handles
-	 *
 	 * @return ContentSectionsTag
 	 */
 	public function sections($handles = array())
@@ -46,10 +39,7 @@ class ContentTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $handle
-	 *
 	 * @return ContentSectionTag
 	 */
 	public function section($handle)
@@ -59,8 +49,6 @@ class ContentTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentEntriesTag
 	 */
 	public function entries()
@@ -70,10 +58,7 @@ class ContentTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $entryId
-	 *
 	 * @return ContentEntryTag
 	 */
 	public function entry($entryId)

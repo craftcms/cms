@@ -15,13 +15,9 @@ class ResourceProcessor
 
 	/**
 	 * ResourceProcessor Constructor
-	 *
-	 * @access public
-	 *
 	 * @param string $rootFolderPath The path to the root folder containing the hidden files
 	 * @param string $rootFolderUrl The URL to the root folder containing the hidden files
 	 * @param        $relResourcePath
-	 *
 	 * @internal param string $relativeResourcePath The path to the resource, relative from the root folder
 	 */
 	public function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
@@ -41,8 +37,6 @@ class ResourceProcessor
 
 	/**
 	 * Process the request
-	 *
-	 * @access public
 	 */
 	public function processResourceRequest()
 	{
@@ -58,8 +52,6 @@ class ResourceProcessor
 
 	/**
 	 * Send the file back to the browser
-	 *
-	 * @access public
 	 */
 	public function sendResource()
 	{
@@ -79,7 +71,6 @@ class ResourceProcessor
 
 	/**
 	 * Convert relative URLs in CSS files to absolute paths based on the root folder URL
-	 *
 	 * @access private
 	 */
 	private function _convertRelativeUrls()
@@ -89,9 +80,7 @@ class ResourceProcessor
 
 	/**
 	 * @access private
-	 *
 	 * @param $match
-	 *
 	 * @return string
 	 */
 	private function _convertRelativeUrlMatch($match)

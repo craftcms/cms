@@ -6,8 +6,6 @@
 class ConfigTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function configPath()
@@ -16,8 +14,6 @@ class ConfigTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function licenseKeys()

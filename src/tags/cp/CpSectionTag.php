@@ -9,8 +9,6 @@ class CpSectionTag extends Tag
 	private $_name = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param $handle
 	 * @param $name
 	 */
@@ -21,8 +19,6 @@ class CpSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function __toString()
@@ -31,8 +27,6 @@ class CpSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function handle()
@@ -41,8 +35,6 @@ class CpSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function name()

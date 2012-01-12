@@ -9,8 +9,6 @@ class LayoutTemplateWidget extends COutputProcessor
 	public $regions = array();
 
 	/**
-	 * @access public
-	 *
 	 * @param $output
 	 */
 	public function processOutput($output)

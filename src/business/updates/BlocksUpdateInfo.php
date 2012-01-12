@@ -15,8 +15,6 @@ class BlocksUpdateInfo
 	public $newerReleases = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param null $properties
 	 */
 	function __construct($properties = null)
@@ -54,8 +52,6 @@ class BlocksNewReleaseUpdateInfo
 	public $critical = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param null $properties
 	 */
 	function __construct($properties = null)

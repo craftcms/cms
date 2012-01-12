@@ -9,8 +9,6 @@ class RegionTemplateWidget extends COutputProcessor
 	public $content;
 
 	/**
-	 * @access public
-	 *
 	 * @param $output
 	 */
 	public function processOutput($output)

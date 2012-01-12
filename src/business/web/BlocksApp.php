@@ -12,7 +12,6 @@ class BlocksApp extends CWebApplication
 	private $_dbInstalled = null;
 
 	/**
-	 * @access public
 	 */
 	public function init()
 	{
@@ -73,8 +72,6 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getMode()
@@ -133,7 +130,6 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @access public
 	 */
 	public function run()
 	{
@@ -155,10 +151,7 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
-	 *
 	 * @throws BlocksException|BlocksHttpException
 	 */
 	private function validateConfig()
@@ -246,8 +239,6 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function isDbInstalled()
@@ -266,9 +257,6 @@ class BlocksApp extends CWebApplication
 	/**
 	 * Gets the viewPath for the incoming request.
 	 * We can't use setViewPath() because our view path depends on the request type, which is initialized after web application, so we override getViewPath();
-	 *
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getViewPath()
@@ -315,8 +303,6 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getLayoutPath()
@@ -328,8 +314,6 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getSystemViewPath()
@@ -345,11 +329,7 @@ class BlocksApp extends CWebApplication
 
 	/**
 	 * Get a config item
-	 *
-	 * @access public
-	 *
 	 * @param bool|string $key The config item's key to retrieve
-	 *
 	 * @return mixed The config item's value if set, null if not
 	 */
 	public function config($key = false)
@@ -361,9 +341,6 @@ class BlocksApp extends CWebApplication
 	 * Processes the current request.
 	 * It first resolves the request into controller and action,
 	 * and then creates the controller to perform the action.
-	 *
-	 * @access public
-	 *
 	 * @throws BlocksHttpException
 	 */
 	public function processRequest()

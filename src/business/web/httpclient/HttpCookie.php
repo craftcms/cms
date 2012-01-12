@@ -48,58 +48,49 @@ class HttpCookie
 {
 	/**
 	 * HttpCookie name
-	 *
 	 * @var string
 	 */
 	protected $name;
 
 	/**
 	 * HttpCookie value
-	 *
 	 * @var string
 	 */
 	protected $value;
 
 	/**
 	 * HttpCookie expiry date
-	 *
 	 * @var int
 	 */
 	protected $expires;
 
 	/**
 	 * HttpCookie domain
-	 *
 	 * @var string
 	 */
 	protected $domain;
 
 	/**
 	 * HttpCookie path
-	 *
 	 * @var string
 	 */
 	protected $path;
 
 	/**
 	 * Whether the cookie is secure or not
-	 *
 	 * @var boolean
 	 */
 	protected $secure;
 
 	/**
 	 * Whether the cookie value has been encoded/decoded
-	 *
 	 * @var boolean
 	 */
 	protected $encodeValue;
 
 	/**
 	 * HttpCookie object constructor
-	 *
 	 * @todo Add validation of each one of the parameters (legal domain, etc.)
-	 *
 	 * @param string $name
 	 * @param string $value
 	 * @param string $domain
@@ -132,7 +123,6 @@ class HttpCookie
 
 	/**
 	 * Get HttpCookie name
-	 *
 	 * @return string
 	 */
 	public function getName()
@@ -142,7 +132,6 @@ class HttpCookie
 
 	/**
 	 * Get cookie value
-	 *
 	 * @return string
 	 */
 	public function getValue()
@@ -152,7 +141,6 @@ class HttpCookie
 
 	/**
 	 * Get cookie domain
-	 *
 	 * @return string
 	 */
 	public function getDomain()
@@ -162,7 +150,6 @@ class HttpCookie
 
 	/**
 	 * Get the cookie path
-	 *
 	 * @return string
 	 */
 	public function getPath()
@@ -172,7 +159,6 @@ class HttpCookie
 
 	/**
 	 * Get the expiry time of the cookie, or null if no expiry time is set
-	 *
 	 * @return int|null
 	 */
 	public function getExpiryTime()
@@ -182,7 +168,6 @@ class HttpCookie
 
 	/**
 	 * Check whether the cookie should only be sent over secure connections
-	 *
 	 * @return boolean
 	 */
 	public function isSecure()
@@ -192,9 +177,7 @@ class HttpCookie
 
 	/**
 	 * Check whether the cookie has expired
-	 *
 	 * Always returns false if the cookie is a session cookie (has no expiry time)
-	 *
 	 * @param int $now Timestamp to consider as "now"
 	 * @return boolean
 	 */
@@ -215,7 +198,6 @@ class HttpCookie
 
 	/**
 	 * Check whether the cookie is a session cookie (has no expiry time set)
-	 *
 	 * @return boolean
 	 */
 	public function isSessionCookie()
@@ -225,7 +207,6 @@ class HttpCookie
 
 	/**
 	 * Checks whether the cookie should be sent or not in a specific scenario
-	 *
 	 * @param string|UriHttp $uri URI to check against (secure, domain, path)
 	 * @param boolean $matchSessionCookies Whether to send session cookies
 	 * @param int $now Override the current time when checking for expiry time
@@ -272,7 +253,6 @@ class HttpCookie
 
 	/**
 	 * Get the cookie as a string, suitable for sending as a "HttpCookie" header in an HTTP request
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -287,7 +267,6 @@ class HttpCookie
 
 	/**
 	 * Generate a new HttpCookie object from a cookie string (for example the value of the Set-HttpCookie HTTP header)
-	 *
 	 * @param string $cookieStr
 	 * @param UriHttp|string $refUri Reference URI for default values (domain, path)
 	 * @param boolean $encodeValue Whether or not the cookie's value should be passed through urlencode/urldecode
@@ -376,12 +355,9 @@ class HttpCookie
 
 	/**
 	 * Check if a cookie's domain matches a host name.
-	 *
 	 * Used by HttpCookie and CookieJar for cookie matching
-	 *
 	 * @param  string $cookieDomain
 	 * @param  string $host
-	 *
 	 * @return boolean
 	 */
 	public static function matchCookieDomain($cookieDomain, $host)
@@ -410,9 +386,7 @@ class HttpCookie
 
 	/**
 	 * Check if a cookie's path matches a URL path
-	 *
 	 * Used by HttpCookie and CookieJar for cookie matching
-	 *
 	 * @param  string $cookiePath
 	 * @param  string $path
 	 * @return boolean

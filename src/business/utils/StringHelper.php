@@ -6,14 +6,9 @@
 class StringHelper
 {
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $value
-	 *
 	 * @return bool
-	 *
 	 * @throws BlocksException
 	 */
 	public static function IsNullOrEmpty($value)
@@ -29,14 +24,9 @@ class StringHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $value
-	 *
 	 * @return bool
-	 *
 	 * @throws BlocksException
 	 */
 	public static function IsNotNullOrEmpty($value)

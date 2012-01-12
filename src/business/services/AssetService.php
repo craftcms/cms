@@ -6,10 +6,7 @@
 class AssetService extends CApplicationComponent
 {
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
-	 *
 	 * @return AssetFolders
 	 */
 	public function getAssetFoldersBySiteId($siteId)
@@ -22,10 +19,7 @@ class AssetService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $assetFolderId
-	 *
 	 * @return Assets
 	 */
 	public function getAssetsInAssetFolder($assetFolderId)
@@ -38,10 +32,7 @@ class AssetService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $assetFolderId
-	 *
 	 * @return AssetFolders
 	 */
 	public function getAssetFolderById($assetFolderId)
@@ -54,10 +45,7 @@ class AssetService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
-	 *
 	 * @return Assets
 	 */
 	public function getAllAssetsBySiteId($siteId)
@@ -74,10 +62,7 @@ class AssetService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $assetId
-	 *
 	 * @return Assets
 	 */
 	public function getAssetById($assetId)

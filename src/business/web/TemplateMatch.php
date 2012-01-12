@@ -13,8 +13,6 @@ class TemplateMatch
 	private $_matchExtension = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
 	 */
 	public function __construct($path)
@@ -25,7 +23,6 @@ class TemplateMatch
 
 	/**
 	 * @access private
-	 *
 	 * @param $path
 	 */
 	private function init($path)
@@ -58,8 +55,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getFullTemplatePath()
@@ -68,8 +63,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getFileName()
@@ -78,8 +71,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getRelativePath()
@@ -88,8 +79,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getMatchExtension()
@@ -98,8 +87,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $matchRequest
 	 */
 	public function setMatchRequest($matchRequest)
@@ -108,8 +95,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $matchType
 	 */
 	public function setMatchType($matchType)
@@ -118,8 +103,6 @@ class TemplateMatch
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $extension
 	 */
 	public function setMatchExtension($extension)

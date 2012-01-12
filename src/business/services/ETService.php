@@ -6,8 +6,6 @@
 class ETService extends CApplicationComponent
 {
 	/**
-	 * @access public
-	 *
 	 * @return bool|ETPackage
 	 */
 	public function ping()

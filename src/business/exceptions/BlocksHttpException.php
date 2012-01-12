@@ -6,8 +6,6 @@
 class BlocksHttpException extends CHttpException
 {
 	/**
-	 * @access public
-	 *
 	 * @param      $status
 	 * @param null $message
 	 * @param int  $code

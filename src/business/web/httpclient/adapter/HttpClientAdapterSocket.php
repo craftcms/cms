@@ -41,28 +41,24 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 {
 	/**
 	 * The socket for server connection
-	 *
 	 * @var resource|null
 	 */
 	protected $socket = null;
 
 	/**
 	 * What host/port are we connected to?
-	 *
 	 * @var array
 	 */
 	protected $connectedTo = array(null, null);
 
 	/**
 	 * Stream for storing output
-	 *
 	 * @var resource
 	 */
 	protected $outStream = null;
 
 	/**
 	 * Parameters array
-	 *
 	 * @var array
 	 */
 	protected $config = array(
@@ -75,14 +71,12 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Request method - will be set by write() and might be used by read()
-	 *
 	 * @var string
 	 */
 	protected $method = null;
 
 	/**
 	 * Stream context
-	 *
 	 * @var resource
 	 */
 	protected $_context = null;
@@ -96,7 +90,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Set the configuration array for the adapter
-	 *
 	 * @param array $config
 	 */
 	public function setConfig($config = array())
@@ -124,12 +117,10 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	 /**
 	 * Set the stream context for the TCP connection to the server
-	 *
 	 * Can accept either a pre-existing stream context resource, or an array
 	 * of stream options, similar to the options array passed to the
 	 * stream_context_create() PHP function. In such case a new stream context
 	 * will be created using the passed options.
-	 *
 	 * @param  mixed $context Stream context or array of context options
 	 * @return HttpClientAdapterSocket
 	 */
@@ -158,9 +149,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Get the stream context for the TCP connection to the server.
-	 *
 	 * If no stream context is set, will create a default one.
-	 *
 	 * @return resource
 	 */
 	public function getStreamContext()
@@ -175,7 +164,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Connect to the remote server
-	 *
 	 * @param string  $host
 	 * @param int     $port
 	 * @param boolean $secure
@@ -250,7 +238,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Send request to the remote server
-	 *
 	 * @param string        $method
 	 * @param UriHttp 		$uri
 	 * @param string        $http_ver
@@ -326,7 +313,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Read response from server
-	 *
 	 * @return string
 	 */
 	public function read()
@@ -549,7 +535,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Close the connection to the server
-	 *
 	 */
 	public function close()
 	{
@@ -565,7 +550,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 	/**
 	 * Check if the socket has timed out - if so close connection and throw
 	 * an exception
-	 *
 	 * @throws BlocksException with READ_TIMEOUT code
 	 */
 	protected function _checkSocketReadTimeout()
@@ -585,7 +569,6 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Set output stream for the response
-	 *
 	 * @param resource $stream
 	 * @return HttpClientAdapterSocket
 	 */
@@ -597,9 +580,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 	/**
 	 * Destructor: make sure the socket is disconnected
-	 *
 	 * If we are in persistent TCP mode, will not close the connection
-	 *
 	 */
 	public function __destruct()
 	{

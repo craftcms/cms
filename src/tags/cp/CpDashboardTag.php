@@ -6,8 +6,6 @@
 class CpDashboardTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function alerts()
@@ -16,8 +14,6 @@ class CpDashboardTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function widgets()

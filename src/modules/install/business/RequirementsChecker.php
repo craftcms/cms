@@ -12,7 +12,6 @@ class RequirementsChecker
 
 	/**
 	 * @access private
-	 *
 	 * @todo Find out what min versions of MySQL and other databases we are going to support.
 	 */
 	private function init()
@@ -178,7 +177,6 @@ class RequirementsChecker
 
 	/**
 	 * @access private
-	 *
 	 * @return string
 	 */
 	private function checkServerVar()
@@ -206,7 +204,6 @@ class RequirementsChecker
 
 	/**
 	 * @access private
-	 *
 	 * @return string
 	 */
 	private function checkGD()
@@ -226,7 +223,6 @@ class RequirementsChecker
 
 	/**
 	 * @access private
-	 *
 	 * @return string
 	 */
 	private function calculateServerInfo()
@@ -241,7 +237,6 @@ class RequirementsChecker
 
 	/**
 	 * @access private
-	 *
 	 * @return array
 	 */
 	private function getWritableFolders()
@@ -255,7 +250,6 @@ class RequirementsChecker
 	}
 
 	/**
-	 * @access public
 	 */
 	public function run()
 	{
@@ -290,8 +284,6 @@ class RequirementsChecker
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getInstallResult()
@@ -300,8 +292,6 @@ class RequirementsChecker
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getServerInfo()
@@ -310,8 +300,6 @@ class RequirementsChecker
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getErrorFolders()
@@ -320,8 +308,6 @@ class RequirementsChecker
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getRequirements()

@@ -22,8 +22,6 @@ class FeedWidget extends Widget
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function displayBody()
@@ -62,8 +60,6 @@ class FeedWidget extends Widget
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function displaySettings()

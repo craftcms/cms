@@ -8,8 +8,6 @@ class PathService extends CApplicationComponent
 	/* Paths */
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getBasePath()
@@ -18,8 +16,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getConfigPath()
@@ -28,8 +24,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getBlocksConfigPath()
@@ -38,8 +32,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getPluginsPath()
@@ -48,8 +40,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getResourcesPath()
@@ -58,8 +48,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getAppPath()
@@ -73,8 +61,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getRuntimePath()
@@ -83,8 +69,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getCPTemplatePath()
@@ -93,8 +77,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getMigrationsPath()
@@ -103,8 +85,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getCommandsPath()
@@ -113,8 +93,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getSiteTemplatePath()
@@ -126,8 +104,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getTemplatePath()
@@ -156,8 +132,6 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getTemplateCachePath()
@@ -192,10 +166,7 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
-	 *
 	 * @return mixed
 	 */
 	public function normalizeDirectorySeparators($path)

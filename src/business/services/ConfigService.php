@@ -12,8 +12,6 @@ class ConfigService extends CApplicationComponent
 	/* Database */
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseServerName()
@@ -22,8 +20,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabasePort()
@@ -32,8 +28,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseCharset()
@@ -42,8 +36,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseCollation()
@@ -52,8 +44,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseType()
@@ -62,8 +52,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseVersion()
@@ -72,8 +60,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseTablePrefix()
@@ -82,8 +68,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function getDatabaseSupportedTypes()
@@ -93,8 +77,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseName()
@@ -103,8 +85,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseAuthName()
@@ -113,8 +93,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getDatabaseAuthPassword()
@@ -125,8 +103,6 @@ class ConfigService extends CApplicationComponent
 	/* Environment */
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getLocalPHPVersion()
@@ -135,8 +111,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getBuildPersonalFileNamePrefix()
@@ -145,8 +119,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getBuildProFileNamePrefix()
@@ -155,8 +127,6 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getBuildStandardFileNamePrefix()
@@ -167,8 +137,6 @@ class ConfigService extends CApplicationComponent
 	/* Requirements */
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getRequiredPHPVersion()
@@ -177,12 +145,8 @@ class ConfigService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $databaseType
-	 *
 	 * @return string
-	 *
 	 * @throws BlocksException
 	 */
 	public function getDatabaseRequiredVersionByType($databaseType)

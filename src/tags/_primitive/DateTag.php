@@ -9,7 +9,6 @@ class DateTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param null $val
 	 */
 	protected function init($val = null)
@@ -19,9 +18,7 @@ class DateTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param null $val
-	 *
 	 * @return int
 	 */
 	protected function getUnixTimestamp($val = null)
@@ -38,8 +35,6 @@ class DateTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function year()
@@ -48,8 +43,6 @@ class DateTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function month()
@@ -58,8 +51,6 @@ class DateTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function day()

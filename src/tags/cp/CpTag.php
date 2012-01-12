@@ -15,8 +15,6 @@ class CpTag extends Tag
 	);
 
 	/**
-	 * @access public
-	 *
 	 * @return CpDashboardTag
 	 */
 	public function dashboard()
@@ -25,10 +23,7 @@ class CpTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
-	 *
 	 * @return CpResourceTag
 	 */
 	public function resource($path)
@@ -37,8 +32,6 @@ class CpTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function sections()
@@ -54,8 +47,6 @@ class CpTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function badLicenseKey()
@@ -68,8 +59,6 @@ class CpTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function criticalUpdateAvailable()
@@ -82,8 +71,6 @@ class CpTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function updateInfoCached()
@@ -92,10 +79,7 @@ class CpTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param bool $forceRefresh
-	 *
 	 * @return CpUpdatesTag
 	 */
 	public function updates($forceRefresh = false)

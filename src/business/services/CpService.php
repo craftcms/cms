@@ -11,9 +11,6 @@ class CpService extends CApplicationComponent
 
 	/**
 	 * Returns the dashboard widgets for the current user
-	 *
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function getDashboardWidgets()

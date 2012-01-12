@@ -9,8 +9,6 @@ class SiteMapWidget extends Widget
 	public $className = 'sitemap';
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function displayBody()

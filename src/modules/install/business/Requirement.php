@@ -13,8 +13,6 @@ class Requirement
 	private $_result = RequirementResult::Success;
 
 	/**
-	 * @access public
-	 *
 	 * @param      $name
 	 * @param      $condition
 	 * @param bool $required
@@ -51,8 +49,6 @@ class Requirement
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getName()
@@ -61,8 +57,6 @@ class Requirement
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getResult()
@@ -71,8 +65,6 @@ class Requirement
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function getRequired()
@@ -81,8 +73,6 @@ class Requirement
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getRequiredBy()
@@ -91,8 +81,6 @@ class Requirement
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getNotes()

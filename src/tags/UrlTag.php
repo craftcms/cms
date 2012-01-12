@@ -9,9 +9,6 @@ class UrlTag extends Tag
 
 	/**
 	 * The base URL for the site.
-	 *
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function base()
@@ -21,9 +18,7 @@ class UrlTag extends Tag
 
 	/**
 	 * Get Segments
-	 *
 	 * @access private
-	 *
 	 * @return array The URL segments
 	 */
 	private function _getSegments()
@@ -36,9 +31,6 @@ class UrlTag extends Tag
 
 	/**
 	 * Segments
-	 *
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function segments()
@@ -48,11 +40,7 @@ class UrlTag extends Tag
 
 	/**
 	 * Segment
-	 *
-	 * @access public
-	 *
 	 * @param int $num Which segment to retrieve
-	 *
 	 * @return bool
 	 */
 	public function segment($num)
@@ -67,8 +55,6 @@ class UrlTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function domain()
@@ -77,10 +63,7 @@ class UrlTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $var
-	 *
 	 * @return bool
 	 */
 	public function get($var)
@@ -89,11 +72,8 @@ class UrlTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
 	 * @param null $params
-	 *
 	 * @return string
 	 */
 	public function generateResourceUrl($path, $params = null)
@@ -102,11 +82,8 @@ class UrlTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
 	 * @param null $params
-	 *
 	 * @return array|string
 	 */
 	public function generateActionUrl($path, $params = null)
@@ -115,11 +92,8 @@ class UrlTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
 	 * @param null $params
-	 *
 	 * @return array|string
 	 */
 	public function generateUrl($path, $params = null)

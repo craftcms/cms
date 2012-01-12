@@ -10,10 +10,7 @@ class Blocks extends Yii
 	private static $_build = '@@@build@@@';
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function getEdition()
@@ -25,10 +22,7 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return null
 	 */
 	public static function getStoredEdition()
@@ -38,10 +32,7 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function getVersion()
@@ -53,8 +44,6 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
 	 * @return null
 	 */
@@ -65,8 +54,6 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
 
 	 * @return string
@@ -80,10 +67,7 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return null
 	 */
 	public static function getStoredBuild()
@@ -93,10 +77,7 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return mixed
 	 */
 	public static function getYiiVersion()
@@ -105,12 +86,8 @@ class Blocks extends Yii
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $target
-	 *
 	 * @return string
 	 */
 	public static function dump($target)

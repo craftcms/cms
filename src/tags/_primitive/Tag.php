@@ -10,8 +10,6 @@ class Tag
 
 	/**
 	 * Constructor - right now this is just a wrapper for init(), but some day we may want to do extra stuff on construct
-	 *
-	 * @access public
 	 */
 	public function __construct()
 	{
@@ -23,11 +21,8 @@ class Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $tag
 	 * @param array $args
-	 *
 	 * @return mixed
 	 */
 	public function _subtag($tag, $args = array())
@@ -44,8 +39,6 @@ class Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -54,8 +47,6 @@ class Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function __toBool()
@@ -64,8 +55,6 @@ class Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function __toArray()
@@ -74,11 +63,8 @@ class Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $name
 	 * @param $args
-	 *
 	 * @return Tag
 	 */
 	public function __call($name, $args)
@@ -87,8 +73,6 @@ class Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function classname()

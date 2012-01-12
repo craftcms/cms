@@ -42,7 +42,6 @@ class HttpResponse
 {
 	/**
 	 * List of all known HTTP response codes - used by responseCodeAsText() to translate numeric codes to messages.
-	 *
 	 * @var array
 	 */
 	protected static $messages = array(
@@ -101,14 +100,12 @@ class HttpResponse
 
 	/**
 	 * The HTTP version (1.0, 1.1)
-	 *
 	 * @var string
 	 */
 	protected $version;
 
 	/**
 	 * The HTTP response code
-	 *
 	 * @var int
 	 */
 	protected $code;
@@ -116,37 +113,30 @@ class HttpResponse
 	/**
 	 * The HTTP response code as string
 	 * (e.g. 'Not Found' for 404 or 'Internal Server Error' for 500)
-	 *
 	 * @var string
 	 */
 	protected $message;
 
 	/**
 	 * The HTTP response headers array
-	 *
 	 * @var array
 	 */
 	protected $headers = array();
 
 	/**
 	 * The HTTP response body
-	 *
 	 * @var string
 	 */
 	protected $body;
 
 	/**
 	 * HTTP response constructor
-	 *
 	 * In most cases, you would use HttpResponse::fromString to parse an HTTP
 	 * response string and create a new HttpResponse object.
-	 *
 	 * NOTE: The constructor no longer accepts nulls or empty values for the code and
 	 * headers and will throw an exception if the passed values do not form a valid HTTP
 	 * responses.
-	 *
 	 * If no message is passed, the message will be guessed according to the response code.
-	 *
 	 * @param int $code HttpResponse code (200, 404, ...)
 	 * @param array $headers Headers array
 	 * @param string $body HttpResponse body
@@ -206,7 +196,6 @@ class HttpResponse
 
 	/**
 	 * Check whether the response is an error
-	 *
 	 * @return boolean
 	 */
 	public function isError()
@@ -223,7 +212,6 @@ class HttpResponse
 
 	/**
 	 * Check whether the response in successful
-	 *
 	 * @return boolean
 	 */
 	public function isSuccessful()
@@ -240,7 +228,6 @@ class HttpResponse
 
 	/**
 	 * Check whether the response is a redirection
-	 *
 	 * @return boolean
 	 */
 	public function isRedirect()
@@ -257,12 +244,9 @@ class HttpResponse
 
 	/**
 	 * Get the response body as string
-	 *
 	 * This method returns the body of the HTTP response (the content), as it should be in it's readable version - that is, after decoding it (if it
 	 * was decoded), deflating it (if it was gzip compressed), etc.
-	 *
 	 * If you want to get the raw body (as transferred on wire) use $this->getRawBody() instead.
-	 *
 	 * @return string
 	 */
 	public function getBody()
@@ -305,9 +289,7 @@ class HttpResponse
 
 	/**
 	 * Get the raw response body (as transferred "on wire") as string
-	 *
 	 * If the body is encoded (with Transfer-Encoding, not content-encoding - IE "chunked" body), gzip compressed, etc. it will not be decoded.
-	 *
 	 * @return string
 	 */
 	public function getRawBody()
@@ -317,7 +299,6 @@ class HttpResponse
 
 	/**
 	 * Get the HTTP version of the response
-	 *
 	 * @return string
 	 */
 	public function getVersion()
@@ -327,7 +308,6 @@ class HttpResponse
 
 	/**
 	 * Get the HTTP response status code
-	 *
 	 * @return int
 	 */
 	public function getStatus()
@@ -337,7 +317,6 @@ class HttpResponse
 
 	/**
 	 * Return a message describing the HTTP response code (Eg. "OK", "Not Found", "Moved Permanently")
-	 *
 	 * @return string
 	 */
 	public function getMessage()
@@ -347,7 +326,6 @@ class HttpResponse
 
 	/**
 	 * Get the response headers
-	 *
 	 * @return array
 	 */
 	public function getHeaders()
@@ -357,7 +335,6 @@ class HttpResponse
 
 	/**
 	 * Get a specific header as string, or null if it is not set
-	 *
 	 * @param string$header
 	 * @return string|array|null
 	 */
@@ -372,7 +349,6 @@ class HttpResponse
 
 	/**
 	 * Get all headers as string
-	 *
 	 * @param boolean $status_line Whether to return the first status line (IE "HTTP 200 OK")
 	 * @param string $br Line breaks (eg. "\n", "\r\n", "<br />")
 	 * @return string
@@ -411,7 +387,6 @@ class HttpResponse
 
 	/**
 	 * Get the entire response as string
-	 *
 	 * @param string $br Line breaks (eg. "\n", "\r\n", "<br />")
 	 * @return string
 	 */
@@ -422,7 +397,6 @@ class HttpResponse
 
 	/**
 	 * Implements magic __toString()
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -434,10 +408,8 @@ class HttpResponse
 	 * A convenience function that returns a text representation of
 	 * HTTP response codes. Returns 'Unknown' for unknown codes.
 	 * Returns array of all codes, if $code is not specified.
-	 *
 	 * Conforms to HTTP/1.1 as defined in RFC 2616 (except for 'Unknown')
 	 * See http://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html#sec10 for reference
-	 *
 	 * @param int $code HTTP response code
 	 * @param boolean $http11 Use HTTP version 1.1
 	 * @return string
@@ -470,7 +442,6 @@ class HttpResponse
 
 	/**
 	 * Extract the response code from a response string
-	 *
 	 * @param string $responseStr
 	 * @return int
 	 */
@@ -490,7 +461,6 @@ class HttpResponse
 
 	/**
 	 * Extract the HTTP message from a response
-	 *
 	 * @param string $responseStr
 	 * @return string
 	 */
@@ -510,7 +480,6 @@ class HttpResponse
 
 	/**
 	 * Extract the HTTP version from a response
-	 *
 	 * @param string $responseStr
 	 * @return string
 	 */
@@ -530,7 +499,6 @@ class HttpResponse
 
 	/**
 	 * Extract the headers from a response string
-	 *
 	 * @param string $responseStr
 	 * @return array
 	 */
@@ -602,7 +570,6 @@ class HttpResponse
 
 	/**
 	 * Extract the body from a response string
-	 *
 	 * @param string $responseStr
 	 * @return string
 	 */
@@ -620,7 +587,6 @@ class HttpResponse
 
 	/**
 	 * Decode a "chunked" transfer-encoded body and return the decoded text
-	 *
 	 * @param string $body
 	 * @return string
 	 */
@@ -660,9 +626,7 @@ class HttpResponse
 
 	/**
 	 * Decode a gzip encoded message (when Content-encoding = gzip)
-	 *
 	 * Currently requires PHP with zlib support
-	 *
 	 * @param string $body
 	 * @return string
 	 */
@@ -678,9 +642,7 @@ class HttpResponse
 
 	/**
 	 * Decode a zlib deflated message (when Content-encoding = deflate)
-	 *
 	 * Currently requires PHP with zlib support
-	 *
 	 * @param string $body
 	 * @return string
 	 */
@@ -693,11 +655,8 @@ class HttpResponse
 
 		/**
 		 * Some servers (IIS ?) send a broken deflate response, without the RFC-required zlib header.
-		 *
 		 * We try to detect the zlib header, and if it does not exist we teat the body is plain DEFLATE content.
-		 *
 		 * This method was adapted from PEAR HTTP_Request2 by (c) Alexey Borzov
-		 *
 		 * @link http://framework.zend.com/issues/browse/ZF-6040
 		 */
 		$zlibHeader = unpack('n', substr($body, 0, 2));
@@ -713,7 +672,6 @@ class HttpResponse
 
 	/**
 	 * Create a new HttpResponse object from a string
-	 *
 	 * @param string $responseStr
 	 * @return HttpResponse
 	 */

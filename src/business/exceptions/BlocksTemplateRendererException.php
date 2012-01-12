@@ -6,8 +6,6 @@
 class BlocksTemplateRendererException extends BlocksException
 {
 	/**
-	 * @access public
-	 *
 	 * @param $message
 	 * @param $templateFileName
 	 * @param $line

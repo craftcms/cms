@@ -7,12 +7,8 @@ class UrlHelper
 {
 	/**
 	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
-	 *
-	 * @access public
-	 *
 	 * @param string $resourcePath The path to the resource
 	 * @param null   $params
-	 *
 	 * @return string The URL to the resource, via Blocks' resource server
 	 */
 	public static function generateResourceUrl($resourcePath, $params = null)
@@ -22,13 +18,9 @@ class UrlHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param      $actionPath
 	 * @param null $params
-	 *
 	 * @return array|string
 	 */
 	public static function generateActionUrl($actionPath, $params = null)
@@ -38,13 +30,9 @@ class UrlHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param      $path
 	 * @param null $params
-	 *
 	 * @return array|string
 	 */
 	public static function generateUrl($path, $params = null)
@@ -54,14 +42,10 @@ class UrlHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param        $path
 	 * @param        $params
 	 * @param string $triggerWord
-	 *
 	 * @return array|string
 	 */
 	private static function _normalizePath($path, $params, $triggerWord = '')

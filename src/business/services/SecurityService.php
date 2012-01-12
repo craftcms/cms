@@ -6,8 +6,6 @@
 class SecurityService extends CApplicationComponent
 {
 	/**
-	 * @access public
-	 *
 	 * @param $userName
 	 * @param $password
 	 * @param $licenseKeys

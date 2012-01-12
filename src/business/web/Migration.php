@@ -6,10 +6,7 @@
 class Migration
 {
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function runToTop()
@@ -24,12 +21,8 @@ class Migration
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $migrationName
-	 *
 	 * @return string
 	 */
 	public static function run($migrationName)
@@ -47,12 +40,8 @@ class Migration
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $number
-	 *
 	 * @return string
 	 */
 	public static function revert($number)
@@ -70,12 +59,8 @@ class Migration
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $migrationName
-	 *
 	 * @return string
 	 */
 	public static function create($migrationName)
@@ -92,9 +77,7 @@ class Migration
 
 	/**
 	 * @access private
-	 *
 	 * @static
-	 *
 	 * @return \CConsoleCommandRunner
 	 */
 	private static function getRunner()

@@ -6,8 +6,6 @@
 class ETEndPoints
 {
 	/**
-	 * @access public
-	 *
 	 * @static
 	 * @return string
 	 */
@@ -17,10 +15,7 @@ class ETEndPoints
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function DownloadPackage()
@@ -29,10 +24,7 @@ class ETEndPoints
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function GetCoreReleaseFileMD5()
@@ -41,10 +33,7 @@ class ETEndPoints
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function ValidateKeysByCredentials()
@@ -53,10 +42,7 @@ class ETEndPoints
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @return string
 	 */
 	public static function Ping()

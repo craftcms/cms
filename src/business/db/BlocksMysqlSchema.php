@@ -6,13 +6,10 @@
 class BlocksMysqlSchema extends CMysqlSchema
 {
 	/**
-	 * @access public
-	 *
 	 * @param $table
 	 * @param $column
 	 * @param $type
 	 * @param $after
-	 *
 	 * @return string
 	 */
 	public function addColumnAfter($table, $column, $type, $after)

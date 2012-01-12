@@ -9,7 +9,6 @@ class StringTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param string $val
 	 */
 	protected function init($val = '')
@@ -18,8 +17,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -28,8 +25,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return int
 	 */
 	public function length()
@@ -38,8 +33,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function uppercase()
@@ -48,8 +41,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function lowercase()
@@ -58,8 +49,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function encode()
@@ -68,8 +57,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function decode()
@@ -78,8 +65,6 @@ class StringTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function chars()

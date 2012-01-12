@@ -17,24 +17,17 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private static $_filePermission = 0755;
 
 	/**
-	 * @access public
-	 *
 	 * @todo Don't know if it's possible to use conditionally select a template renderer (CViewRenderer for /app/framework and BlocksTemplateRenderer for everything else) so temporarily adding this.
-	 *
 	 * @var string Only used by CViewRenderer when we're rendering a file from the app/framework directory (as in gii).
 	 */
 	public $fileExtension = 'php';
 
 	/**
 	 * Renders a template
-	 *
-	 * @access public
-	 *
 	 * @param        $context The controller or widget who is rendering the template
 	 * @param string $sourceTemplatePath Path to the source template
 	 * @param array  $tags The tags to be passed to the template
 	 * @param bool   $return Whether the rendering result should be returned
-	 *
 	 * @return mixed
 	 */
 	public function renderFile($context, $sourceTemplatePath, $tags, $return)
@@ -57,7 +50,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Sets the path to the parsed template
-	 *
 	 * @access private
 	 */
 	private function setParsedTemplatePath()
@@ -83,9 +75,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Returns whether the template needs to be (re-)parsed
-	 *
 	 * @access private
-	 *
 	 * @return bool
 	 */
 	private function isTemplateParsingNeeded()
@@ -127,7 +117,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parses a template
-	 *
 	 * @access private
 	 */
 	private function parseTemplate()
@@ -156,7 +145,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Extracts PHP code, replacing it with markers so that we don't risk parsing something in the code that should have been left alone
-	 *
 	 * @access private
 	 */
 	private function extractPhp()
@@ -168,12 +156,9 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Extract a PHP code match
-	 *
 	 * @access private
 
-	 *
 	 * @param $match
-	 *
 	 * @return array
 	 */
 	private function extractPhpMatch($match)
@@ -194,11 +179,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Extract a PHP short tag match
-	 *
 	 * @access private
-	 *
 	 * @param $match
-	 *
 	 * @return array
 	 */
 	private function extractPhpShortTagMatch($match)
@@ -209,7 +191,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
  
 	/**
 	 * Restore the PHP code
-	 *
 	 * @access private
 	 */
 	private function restorePhp()
@@ -219,7 +200,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Prepend the PHP head to the template
-	 *
 	 * @access private
 	 */
 	private function prependHead()
@@ -245,7 +225,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Append the PHP foot to the template
-	 *
 	 * @access private
 	 */
 	private function appendFoot()
@@ -259,7 +238,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse comments
-	 *
 	 * @access private
 	 */
 	private function parseComments()
@@ -269,7 +247,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse actions
-	 *
 	 * @access private
 	 */
 	private function parseActions()
@@ -279,11 +256,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse an action match
-	 *
 	 * @access private
-	 *
 	 * @param $match
-	 *
 	 * @return string
 	 */
 	private function parseActionMatch($match)
@@ -358,11 +332,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse action tag param for variable tags
-	 *
 	 * @access private
-	 *
 	 * @param $str
-	 *
 	 * @return string
 	 */
 	private function parseParam($str)
@@ -373,12 +344,9 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse variable tags
-	 *
 	 * @access private
-	 *
 	 * @param      $template
 	 * @param bool $partOfString
-	 *
 	 * @return mixed
 	 */
 	private function parseVariableTags($template, $partOfString = false)
@@ -390,11 +358,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse a variable tag match within a string
-	 *
 	 * @access private
-	 *
 	 * @param $match
-	 *
 	 * @return string
 	 */
 	private function parseVariableTagMatchInString($match)
@@ -405,11 +370,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse a variable tag match within the main template
-	 *
 	 * @access private
-	 *
 	 * @param $match
-	 *
 	 * @return string
 	 */
 	private function parseVariableTagMatchInTemplate($match)
@@ -420,9 +382,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse variables
-	 *
 	 * @access private
-	 *
 	 * @param      $str
 	 * @param bool $toString
 	 */
@@ -435,13 +395,10 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse variable
-	 *
 	 * @access private
-	 *
 	 * @param      $str
 	 * @param int  $offset
 	 * @param bool $toString
-	 *
 	 * @return bool
 	 */
 	private function parseVariable(&$str, &$offset = 0, $toString = false)
@@ -523,7 +480,6 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse language
-	 *
 	 * @access private
 	 */
 	private function parseLanguage()

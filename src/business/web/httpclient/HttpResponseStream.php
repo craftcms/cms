@@ -42,30 +42,25 @@ class HttpResponseStream extends HttpResponse
 {
 	/**
 	 * Response as stream
-	 *
 	 * @var resource
 	 */
 	protected $stream;
 
 	/**
 	 * The name of the file containing the stream
-	 *
 	 * Will be empty if stream is not file-based.
-	 *
 	 * @var string
 	 */
 	protected $streamName;
 
 	/**
 	 * Should we clean up the stream file when this response is closed?
-	 *
 	 * @var boolean
 	 */
 	protected $_cleanup;
 
 	/**
 	 * Get the response as stream
-	 *
 	 * @return resource
 	 */
 	public function getStream()
@@ -75,7 +70,6 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Set the response stream
-	 *
 	 * @param resource $stream
 	 * @return Zend_Http_Response_Stream
 	 */
@@ -87,7 +81,6 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Get the cleanup trigger
-	 *
 	 * @return boolean
 	 */
 	public function getCleanup()
@@ -97,7 +90,6 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Set the cleanup trigger
-	 *
 	 * @param bool $cleanup Set cleanup trigger
 	 */
 	public function setCleanup($cleanup = true)
@@ -107,7 +99,6 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Get file name associated with the stream
-	 *
 	 * @return string
 	 */
 	public function getStreamName()
@@ -117,7 +108,6 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Set file name associated with the stream
-	 *
 	 * @param string $streamName Name to set
 	 * @return Zend_Http_Response_Stream
 	 */
@@ -130,15 +120,11 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * HTTP response constructor
-	 *
 	 * In most cases, you would use HttpResponse::fromString to parse an HTTP response string and create a new HttpResponse object.
-	 *
 	 * NOTE: The constructor no longer accepts nulls or empty values for the code and
 	 * headers and will throw an exception if the passed values do not form a valid HTTP
 	 * responses.
-	 *
 	 * If no message is passed, the message will be guessed according to the response code.
-	 *
 	 * @param int $code Response code (200, 404, ...)
 	 * @param array $headers Headers array
 	 * @param string $body Response body
@@ -159,7 +145,6 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Create a new HttpResponseStream object from a string
-	 *
 	 * @param string $responseStr
 	 * @param resource $stream
 	 * @return HttpResponseStream
@@ -176,14 +161,11 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Get the response body as string
-	 *
 	 * This method returns the body of the HTTP response (the content), as it
 	 * should be in it's readable version - that is, after decoding it (if it
 	 * was decoded), deflating it (if it was gzip compressed), etc.
-	 *
 	 * If you want to get the raw body (as transferred on wire) use
 	 * $this->getRawBody() instead.
-	 *
 	 * @return string
 	 */
 	public function getBody()
@@ -198,10 +180,8 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Get the raw response body (as transferred "on wire") as string
-	 *
 	 * If the body is encoded (with Transfer-Encoding, not content-encoding -
 	 * IE "chunked" body), gzip compressed, etc. it will not be decoded.
-	 *
 	 * @return string
 	 */
 	public function getRawBody()
@@ -216,9 +196,7 @@ class HttpResponseStream extends HttpResponse
 
 	/**
 	 * Read stream content and return it as string
-	 *
 	 * Function reads the remainder of the body from the stream and closes the stream.
-	 *
 	 * @return string
 	 */
 	protected function readStream()

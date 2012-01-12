@@ -80,7 +80,6 @@ class HttpClient
 
 	/**
 	 * Configuration array, set using the constructor or using ::setConfig()
-	 *
 	 * @var array
 	 */
 	protected $config = array(
@@ -102,117 +101,98 @@ class HttpClient
 
 	/**
 	 * The adapter used to preform the actual connection to the server
-	 *
 	 * @var HttpClientAdapterInterface
 	 */
 	protected $adapter = null;
 
 	/**
 	 * Request URI
-	 *
 	 * @var UriHttp
 	 */
 	protected $uri = null;
 
 	/**
 	 * Associative array of request headers
-	 *
 	 * @var array
 	 */
 	protected $headers = array();
 
 	/**
 	 * HTTP request method
-	 *
 	 * @var string
 	 */
 	protected $method = self::GET;
 
 	/**
 	 * Associative array of GET parameters
-	 *
 	 * @var array
 	 */
 	protected $paramsGet = array();
 
 	/**
 	 * Associative array of POST parameters
-	 *
 	 * @var array
 	 */
 	protected $paramsPost = array();
 
 	/**
 	 * Request body content type (for POST requests)
-	 *
 	 * @var string
 	 */
 	protected $encType = null;
 
 	/**
 	 * The raw post data to send. Could be set by setRawData($data, $encType).
-	 *
 	 * @var string
 	 */
 	protected $rawPostData = null;
 
 	/**
 	 * HTTP Authentication settings
-	 *
 	 * Expected to be an associative array with this structure:
 	 * $this->auth = array('user' => 'username', 'password' => 'password', 'type' => 'basic')
 	 * Where 'type' should be one of the supported authentication types (see the AUTH_*
 	 * constants), for example 'basic' or 'digest'.
-	 *
 	 * If null, no authentication will be used.
-	 *
 	 * @var array|null
 	 */
 	protected $auth;
 
 	/**
 	 * File upload arrays (used in POST requests)
-	 *
 	 * An associative array, where each element is of the format: 'name' => array('filename.txt', 'text/plain', 'This is the actual file contents')
-	 *
 	 * @var array
 	 */
 	protected $files = array();
 
 	/**
 	 * The client's cookie jar
-	 *
 	 * @var CookieJar
 	 */
 	protected $cookieJar = null;
 
 	/**
 	 * The last HTTP request sent by the client, as string
-	 *
 	 * @var string
 	 */
 	protected $lastRequest = null;
 
 	/**
 	 * The last HTTP response received by the client
-	 *
 	 * @var HttpResponse
 	 */
 	protected $lastResponse = null;
 
 	/**
 	 * Redirection counter
-	 *
 	 * @var int
 	 */
 	protected $redirectCounter = 0;
 
 	/**
 	 * FileInfo magic database resource
-	 *
 	 * This variable is populated the first time _detectFileMimeType is called
 	 * and is then reused on every call to this method
-	 *
 	 * @var resource
 	 */
 	static protected $_fileInfoDb = null;
@@ -220,7 +200,6 @@ class HttpClient
 	/**
 	 * Constructor method. Will create a new HTTP client. Accepts the target
 	 * URL and optionally configuration array.
-	 *
 	 * @param UriHttp|string $uri
 	 * @param array $config Configuration key-value pairs.
 	 */
@@ -239,7 +218,6 @@ class HttpClient
 
 	/**
 	 * Set the URI for the next request
-	 *
 	 * @param  UriHttp|string $uri
 	 * @return HttpClient
 	 * @throws BlocksException
@@ -273,7 +251,6 @@ class HttpClient
 
 	/**
 	 * Get the URI for the next request
-	 *
 	 * @param boolean $as_string If true, will return the URI as a string
 	 * @return UriHttp|string
 	 */
@@ -291,7 +268,6 @@ class HttpClient
 
 	/**
 	 * Set configuration parameters for this HTTP client
-	 *
 	 * @param array $config
 	 * @return HttpClient
 	 * @throws BlocksException
@@ -311,9 +287,7 @@ class HttpClient
 
 	/**
 	 * Set the next request's method
-	 *
 	 * Validated the passed method and sets it. If we have files set for POST requests, and the new method is not POST, the files are silently dropped.
-	 *
 	 * @param string $method
 	 * @return HttpClient
 	 * @throws BlocksException
@@ -337,7 +311,6 @@ class HttpClient
 
 	/**
 	 * Set one or more request headers
-	 *
 	 * This function can be used in several ways to set the client's request
 	 * headers:
 	 * 1. By providing two parameters: $name as the header to set (eg. 'Host')
@@ -347,7 +320,6 @@ class HttpClient
 	 * 3. By providing an array of headers as the first parameter
 	 *    eg. array('host' => 'www.example.com', 'x-foo: bar'). In This case
 	 *    the function will call itself recursively for each array item.
-	 *
 	 * @param string|array $name Header name, full header string ('Header: value') or an array of headers
 	 * @param mixed $value Header value or null
 	 * @return HttpClient
@@ -408,9 +380,7 @@ class HttpClient
 
 	/**
 	 * Get the value of a specific header
-	 *
 	 * Note that if the header has more than one value, an array will be returned.
-	 *
 	 * @param string $key
 	 * @return string|array|null The header value or null if it is not set
 	 */
@@ -430,7 +400,6 @@ class HttpClient
 
 	/**
 	 * Set a GET parameter for the request. Wrapper around _setParameter
-	 *
 	 * @param string|array $name
 	 * @param string $value
 	 * @return HttpClient
@@ -454,7 +423,6 @@ class HttpClient
 
 	/**
 	 * Set a POST parameter for the request. Wrapper around _setParameter
-	 *
 	 * @param string|array $name
 	 * @param string $value
 	 * @return HttpClient
@@ -478,7 +446,6 @@ class HttpClient
 
 	/**
 	 * Set a GET or POST parameter - used by SetParameterGet and SetParameterPost
-	 *
 	 * @param string $type GET or POST
 	 * @param string $name
 	 * @param string $value
@@ -514,7 +481,6 @@ class HttpClient
 
 	/**
 	 * Get the number of redirections done on the last request
-	 *
 	 * @return int
 	 */
 	public function getRedirectionsCount()
@@ -524,19 +490,15 @@ class HttpClient
 
 	/**
 	 * Set HTTP authentication parameters
-	 *
 	 * $type should be one of the supported types - see the self::AUTH_* constants.
-	 *
 	 * To enable authentication:
 	 * <code>
 	 * $this->setAuth('shahar', 'secret', HttpClient::AUTH_BASIC);
 	 * </code>
-	 *
 	 * To disable authentication:
 	 * <code>
 	 * $this->setAuth(false);
 	 * </code>
-	 *
 	 * @see http://www.faqs.org/rfcs/rfc2617.html
 	 * @param string|false $user User name or false disable authentication
 	 * @param string $password Password
@@ -579,9 +541,7 @@ class HttpClient
 
 	/**
 	 * Set the HTTP client's cookie jar.
-	 *
 	 * A cookie jar is an object that holds and maintains cookies across HTTP requests and responses.
-	 *
 	 * @param HttpCookieJar|boolean $cookieJar Existing CookieJar object, true to create a new one, false to disable
 	 * @return HttpClient
 	 * @throws BlocksException
@@ -619,7 +579,6 @@ class HttpClient
 
 	/**
 	 * Return the current cookie jar or null if none.
-	 *
 	 * @return HttpCookieJar|null
 	 */
 	public function getCookieJar()
@@ -630,7 +589,6 @@ class HttpClient
 	/**
 	 * Add a cookie to the request. If the client has no Cookie Jar, the cookies
 	 * will be added directly to the headers array as "Cookie" headers.
-	 *
 	 * @param HttpCookie|string $cookie
 	 * @param string|null $value If "cookie" is a string, this is the cookie value.
 	 * @return HttpClient
@@ -707,16 +665,13 @@ class HttpClient
 
 	/**
 	 * Set a file to upload (using a POST request)
-	 *
 	 * Can be used in two ways:
-	 *
 	 * 1. $data is null (default): $filename is treated as the name if a local file which
 	 *    will be read and sent. Will try to guess the content type using mime_content_type().
 	 * 2. $data is set - $filename is sent as the file name, but $data is sent as the file
 	 *    contents and no file is read from the file system. In this case, you need to
 	 *    manually set the content-type ($cType) or it will default to
 	 *    application/octet-stream.
-	 *
 	 * @param string $fileName Name of file to upload, or name to save as
 	 * @param string $formName Name of form element to send as
 	 * @param string $data Data to send (if null, $filename is read and sent)
@@ -754,7 +709,6 @@ class HttpClient
 
 	/**
 	 * Set the encoding type for POST data
-	 *
 	 * @param string $encType
 	 * @return HttpClient
 	 */
@@ -766,14 +720,11 @@ class HttpClient
 
 	/**
 	 * Set the raw (already encoded) POST data.
-	 *
 	 * This function is here for two reasons:
 	 * 1. For advanced user who would like to set their own data, already encoded
 	 * 2. For backwards compatibility: If someone uses the old post($data) method.
 	 *    this method will be used to set the encoded data.
-	 *
 	 * $data can also be stream (such as file) from which the data will be read.
-	 *
 	 * @param string|resource $data
 	 * @param string $encType
 	 * @return HttpClient
@@ -799,10 +750,8 @@ class HttpClient
 
 	/**
 	 * Clear all GET and POST parameters
-	 *
 	 * Should be used to reset the request parameters if the client is used for several concurrent requests.
 	 * clearAll parameter controls if we clean just parameters or also headers and last_*
-	 *
 	 * @param bool $clearAll Should all data be cleared?
 	 * @return HttpClient
 	 */
@@ -839,7 +788,6 @@ class HttpClient
 
 	/**
 	 * Get the last HTTP request as string
-	 *
 	 * @return string
 	 */
 	public function getLastRequest()
@@ -849,10 +797,8 @@ class HttpClient
 
 	/**
 	 * Get the last HTTP response received by this client
-	 *
 	 * If $config['storeresponse'] is set to false, or no response was
 	 * stored yet, will return null
-	 *
 	 * @return HttpResponse or null if none
 	 */
 	public function getLastResponse()
@@ -862,9 +808,7 @@ class HttpClient
 
 	/**
 	 * Load the connection adapter
-	 *
 	 * While this method is not called more than one for a client, it is separated from ->request() to preserve logic and readability
-	 *
 	 * @param HttpClientAdapterInterface $adapter
 	 * @return null
 	 * @throws BlocksException
@@ -886,7 +830,6 @@ class HttpClient
 
 	/**
 	 * Load the connection adapter
-	 *
 	 * @return HttpClientAdapterInterface $adapter
 	 */
 	public function getAdapter()
@@ -896,7 +839,6 @@ class HttpClient
 
 	/**
 	 * Set streaming for received data
-	 *
 	 * @param string|boolean $streamFile Stream file, true for temp file, false/null for no streaming
 	 * @return HttpClient
 	 */
@@ -917,7 +859,6 @@ class HttpClient
 
 	/**
 	 * Create temporary stream
-	 *
 	 * @return resource
 	 */
 	protected function _openTempStream()
@@ -945,7 +886,6 @@ class HttpClient
 
 	/**
 	 * Send the HTTP request and return an HTTP response object
-	 *
 	 * @param string $method
 	 * @return HttpResponse
 	 * @throws BlocksException
@@ -1119,7 +1059,6 @@ class HttpClient
 
 	/**
 	 * Prepare the request headers
-	 *
 	 * @return array
 	 */
 	protected function _prepareHeaders()
@@ -1211,7 +1150,6 @@ class HttpClient
 
 	/**
 	 * Prepare the request body (for POST and PUT requests)
-	 *
 	 * @return string
 	 * @throws BlocksException
 	 */
@@ -1313,15 +1251,11 @@ class HttpClient
 
 	/**
 	 * Helper method that gets a possibly multi-level parameters array (get or post) and flattens it.
-	 *
 	 * The method returns an array of (key, value) pairs (because keys are not
 	 * necessarily unique. If one of the parameters in as array, it will also
 	 * add a [] suffix to the key.
-	 *
 	 * This method is deprecated since Zend Framework 1.9 in favour of self::_flattenParametersArray() and will be dropped in 2.0
-	 *
 	 * @deprecated since 1.9
-	 *
 	 * @param array $pArray The parameters array
 	 * @param bool $urlEncode Whether to urlEncode the name and value
 	 * @return array
@@ -1369,15 +1303,12 @@ class HttpClient
 
 	/**
 	 * Attempt to detect the MIME type of a file using available extensions
-	 *
 	 * This method will try to detect the MIME type of a file. If the fileInfo
 	 * extension is available, it will be used. If not, the mime_magic
 	 * extension which is deprecated but is still available in many PHP setups
 	 * will be tried.
-	 *
 	 * If neither extension is available, the default application/octet-stream
 	 * MIME type will be returned
-	 *
 	 * @param string $file File path
 	 * @return string MIME type
 	 */
@@ -1417,7 +1348,6 @@ class HttpClient
 
 	/**
 	 * Encode data to a multipart/form-data part suitable for a POST request.
-	 *
 	 * @param string $boundary
 	 * @param string $name
 	 * @param mixed $value
@@ -1451,7 +1381,6 @@ class HttpClient
 	/**
 	 * Create a HTTP authentication "Authorization:" header according to the
 	 * specified user, password and authentication method.
-	 *
 	 * @see http://www.faqs.org/rfcs/rfc2617.html
 	 * @param string $user
 	 * @param string $password
@@ -1489,14 +1418,11 @@ class HttpClient
 	}
 	/**
 	 * Convert an array of parameters into a flat array of (key, value) pairs
-	 *
 	 * Will flatten a potentially multi-dimentional array of parameters (such
 	 * as POST parameters) into a flat array of (key, value) paris. In case
 	 * of multi-dimentional arrays, square brackets ([]) will be added to the
 	 * key to indicate an array.
-	 *
 	 * @since  1.9
-	 *
 	 * @param  array  $pArray
 	 * @param  string $prefix
 	 * @return array

@@ -9,7 +9,6 @@ class NumTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param int $val
 	 */
 	protected function init($val = 0)
@@ -18,8 +17,6 @@ class NumTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()

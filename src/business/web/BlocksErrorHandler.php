@@ -9,9 +9,7 @@ class BlocksErrorHandler extends CErrorHandler
 
 	/**
 	 * Handles the exception.
-	 *
 	 * @access protected
-	 *
 	 * @param Exception $exception the exception captured
 	 */
 	protected function handleException($exception)
@@ -72,13 +70,9 @@ class BlocksErrorHandler extends CErrorHandler
 
 	/**
 	 * Renders the template.
-	 *
 	 * @access protected
-	 *
 	 * @param string $template the template name (file name without extension).
-	 *
 	 * See {@link getViewFile} for how a template is located given its name.
-	 *
 	 * @param array $data data to be passed to the template
 	 */
 	protected function render($template, $data)
@@ -97,14 +91,11 @@ class BlocksErrorHandler extends CErrorHandler
 
 	/**
 	 * Looks for the template under the specified directory.
-	 *
 	 * @access protected
-	 *
 	 * @param string $templatePath the directory containing the views
 	 * @param string $templateName template name (either 'errors/exception' or 'errors/error')
 	 * @param integer $code HTTP status code
 	 * @param string $srcLanguage the language that the template is in
-	 *
 	 * @return string template path
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
@@ -124,12 +115,9 @@ class BlocksErrorHandler extends CErrorHandler
 
 	/**
 	 * Determines which view file should be used.
-	 *
 	 * @access protected
-	 *
 	 * @param string $view view name (either 'exception' or 'error')
 	 * @param integer $code HTTP status code
-	 *
 	 * @return string view file path
 	 */
 	protected function getViewFile($view, $code)
@@ -159,9 +147,7 @@ class BlocksErrorHandler extends CErrorHandler
 	/**
 	 * Returns server version information.
 	 * If the application is in production mode, empty string is returned.
-	 *
 	 * @access protected
-	 *
 	 * @return string server version information. Empty if in production mode.
 	 */
 	protected function getVersionInfo()

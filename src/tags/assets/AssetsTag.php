@@ -8,7 +8,6 @@ class AssetsTag extends Tag
 	private $_siteId;
 
 	/**
-	 * @access public
 	 */
 	function __construct()
 	{
@@ -16,8 +15,6 @@ class AssetsTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return UploadFoldersTag
 	 */
 	public function folders()
@@ -27,8 +24,6 @@ class AssetsTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return FilesTag
 	 */
 	public function files()
@@ -38,10 +33,7 @@ class AssetsTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $id
-	 *
 	 * @return FileTag
 	 */
 	public function file($id)

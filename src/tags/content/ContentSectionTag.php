@@ -6,8 +6,6 @@
 class ContentSectionTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -16,8 +14,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function handle()
@@ -26,8 +22,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function label()
@@ -36,8 +30,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function urlFormat()
@@ -46,8 +38,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function template()
@@ -56,8 +46,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function maxEntries()
@@ -66,8 +54,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentSectionTag|null
 	 */
 	public function parent()
@@ -76,8 +62,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function hasSubSections()
@@ -86,8 +70,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return SiteTag
 	 */
 	public function site()
@@ -96,8 +78,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentEntriesTag
 	 */
 	public function entries()
@@ -107,8 +87,6 @@ class ContentSectionTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentBlocksTag
 	 */
 	public function blocks()

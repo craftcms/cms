@@ -6,14 +6,9 @@
 class DashboardHelper
 {
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param bool $fetch
-	 *
 	 * @return array
-	 *
 	 * @todo Eventually stuff like this should go into a global messaging service.
 	 */
 	public static function getAlerts($fetch = false)

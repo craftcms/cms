@@ -6,13 +6,9 @@
 class DatabaseHelper
 {
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $dbName
 	 * @param $tableName
-	 *
 	 * @todo MySql specific.  Need to abstract.
 	 */
 	public static function createInsertAuditTrigger($dbName, $tableName)
@@ -31,13 +27,9 @@ class DatabaseHelper
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $dbName
 	 * @param $tableName
-	 *
 	 * @todo MySql specific.  Need to abstract.
 	 */
 	public static function createUpdateAuditTrigger($dbName, $tableName)

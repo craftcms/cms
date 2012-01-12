@@ -9,7 +9,6 @@ class ObjectTag extends Tag
 
 	/**
 	 * @access protected
-	 *
 	 * @param null $obj
 	 */
 	protected function init($obj = null)
@@ -18,11 +17,8 @@ class ObjectTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $name
 	 * @param $args
-	 *
 	 * @return mixed|Tag
 	 */
 	public function __call($name, $args)
@@ -41,8 +37,6 @@ class ObjectTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function __toString()
@@ -54,8 +48,6 @@ class ObjectTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toArray()
@@ -64,8 +56,6 @@ class ObjectTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return int
 	 */
 	public function length()

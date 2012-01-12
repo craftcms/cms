@@ -65,7 +65,6 @@ class HostNameValidator
 
 	/**
 	 * The value to be validated
-	 *
 	 * @var mixed
 	 */
 	protected $_value;
@@ -104,7 +103,6 @@ class HostNameValidator
 
 	/**
 	 * Array of valid top-level-domains
-	 *
 	 * @see ftp://data.iana.org/TLD/tlds-alpha-by-domain.txt  List of all TLDs by domain
 	 * @see http://www.iana.org/domains/root/db/ Official list of supported TLDs
 	 * @var array
@@ -183,7 +181,6 @@ class HostNameValidator
 	 * (.TR) Turkey https://www.nic.tr/index.php
 	 * (.VE) Venice http://www.iana.org/domains/idn-tables/tables/ve_es_1.0.html
 	 * (.VN) Vietnam http://www.vnnic.vn/english/5-6-300-2-2-04-20071115.htm#1.%20Introduction
-	 *
 	 * @var array
 	 */
 	protected $_validIdns = array(
@@ -316,9 +313,7 @@ class HostNameValidator
 
 	/**
 	 * Sets validator options
-	 *
 	 * @param array $options
-	 *
 	 * @return \HostNameValidator
 	 * @see http://www.iana.org/cctld/specifications-policies-cctlds-01apr02.htm  Technical Specifications for ccTLDs
 	 */
@@ -353,7 +348,6 @@ class HostNameValidator
 
 	/**
 	 * Returns all set options
-	 *
 	 * @return array
 	 */
 	public function getOptions()
@@ -363,7 +357,6 @@ class HostNameValidator
 
 	/**
 	 * Sets the options for this validator
-	 *
 	 * @param array $options
 	 * @return HostNameValidator
 	 */
@@ -394,7 +387,6 @@ class HostNameValidator
 
 	/**
 	 * Returns the set ip validator
-	 *
 	 * @return IpValidator
 	 */
 	public function getIpValidator()
@@ -418,7 +410,6 @@ class HostNameValidator
 
 	/**
 	 * Returns the allow option
-	 *
 	 * @return integer
 	 */
 	public function getAllow()
@@ -428,7 +419,6 @@ class HostNameValidator
 
 	/**
 	 * Sets the allow option
-	 *
 	 * @param  integer $allow
 	 * @return HostNameValidator Provides a fluent interface
 	 */
@@ -440,7 +430,6 @@ class HostNameValidator
 
 	/**
 	 * Returns the set idn option
-	 *
 	 * @return boolean
 	 */
 	public function getValidateIdn()
@@ -450,9 +439,7 @@ class HostNameValidator
 
 	/**
 	 * Set whether IDN domains are validated
-	 *
 	 * This only applies when DNS hostnames are validated
-	 *
 	 * @param boolean $allowed Set allowed to true to validate IDNs, and false to not validate them
 	 * @return \HostNameValidator
 	 */
@@ -464,7 +451,6 @@ class HostNameValidator
 
 	/**
 	 * Returns the set tld option
-	 *
 	 * @return boolean
 	 */
 	public function getValidateTld()
@@ -474,9 +460,7 @@ class HostNameValidator
 
 	/**
 	 * Set whether the TLD element of a hostname is validated
-	 *
 	 * This only applies when DNS hostnames are validated
-	 *
 	 * @param boolean $allowed Set allowed to true to validate TLDs, and false to not validate them
 	 * @return \HostNameValidator
 	 */
@@ -488,7 +472,6 @@ class HostNameValidator
 
 	/**
 	 * Returns true if and only if the $value is a valid hostname with respect to the current allow option
-	 *
 	 * @param  string $value
 	 * @throws Zend_Validate_Exception if a fatal error occurs for validation process
 	 * @return boolean
@@ -723,7 +706,6 @@ class HostNameValidator
 	/**
 	 * Decodes a Punycode encoded string to it's original utf8 string
 	 * In case of a decoding failure the original string is returned
-	 *
 	 * @param  string $encoded Punycode encoded string to decode
 	 * @return string
 	 */
@@ -837,7 +819,6 @@ class HostNameValidator
 
 	 /**
 	 * Sets the value to be validated and clears the messages and errors arrays
-	 *
 	 * @param  mixed $value
 	 * @return void
 	 */

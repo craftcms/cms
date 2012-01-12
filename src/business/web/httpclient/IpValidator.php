@@ -38,7 +38,6 @@ class IpValidator
 
 	/**
 	 * The value to be validated
-	 *
 	 * @var mixed
 	 */
 	protected $_value;
@@ -53,7 +52,6 @@ class IpValidator
 
 	/**
 	 * internal options
-	 *
 	 * @var array
 	 */
 	protected $_options = array(
@@ -63,7 +61,6 @@ class IpValidator
 
 	/**
 	 * Sets validator options
-	 *
 	 * @param array $options OPTIONAL Options to set, see the manual for all available options
 	 * @return \IpValidator
 	 */
@@ -88,7 +85,6 @@ class IpValidator
 
 	/**
 	 * Returns all set options
-	 *
 	 * @return array
 	 */
 	public function getOptions()
@@ -98,7 +94,6 @@ class IpValidator
 
 	/**
 	 * Sets the options for this validator
-	 *
 	 * @param array $options
 	 * @return IpValidator
 	 */
@@ -124,7 +119,6 @@ class IpValidator
 
 	/**
 	 * Returns true if and only if $value is a valid IP address
-	 *
 	 * @param  mixed $value
 	 * @return boolean
 	 */
@@ -150,7 +144,6 @@ class IpValidator
 
 	/**
 	 * Validates an IPv4 address
-	 *
 	 * @param string $value
 	 * @return bool
 	 */
@@ -168,7 +161,6 @@ class IpValidator
 
 	/**
 	 * Validates an IPv6 address
-	 *
 	 * @param  string $value Value to check against
 	 * @return boolean True when $value is a valid ipv6 address, False otherwise
 	 */
@@ -212,7 +204,6 @@ class IpValidator
 
 	 /**
 	 * Sets the value to be validated and clears the messages and errors arrays
-	 *
 	 * @param  mixed $value
 	 * @return void
 	 */

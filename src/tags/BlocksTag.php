@@ -6,8 +6,6 @@
 class BlocksTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function edition()
@@ -16,8 +14,6 @@ class BlocksTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function version()
@@ -26,8 +22,6 @@ class BlocksTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function build()
@@ -36,8 +30,6 @@ class BlocksTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function fullVersion()
@@ -51,8 +43,6 @@ class BlocksTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ConfigTag
 	 */
 	public function config()

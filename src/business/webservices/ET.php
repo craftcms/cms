@@ -12,8 +12,6 @@ class ET
 	private $_package;
 
 	/**
-	 * @access public
-	 *
 	 * @param     $endPoint
 	 * @param int $timeout
 	 * @param int $maxRedirects
@@ -31,8 +29,6 @@ class ET
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $path
 	 */
 	public function setStreamPath($path)
@@ -41,8 +37,6 @@ class ET
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return \ETPackage
 	 */
 	public function getPackage()
@@ -51,8 +45,6 @@ class ET
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool|\ETPackage
 	 */
 	public function phoneHome()

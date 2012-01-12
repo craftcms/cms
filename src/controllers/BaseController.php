@@ -9,8 +9,6 @@ class BaseController extends CController
 	private $_requestController = null;
 
 	/**
-	 * @access public
-	 *
 	 * @param $filterChain
 	 */
 	public function filterHttps($filterChain)
@@ -20,8 +18,6 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function filters()
@@ -32,8 +28,6 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return null
 	 */
 	public function getRequestController()
@@ -42,8 +36,6 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $requestController
 	 */
 	public function setRequestController($requestController)
@@ -52,10 +44,7 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $viewName
-	 *
 	 * @return bool
 	 */
 	public function getViewFile($viewName)
@@ -77,8 +66,6 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getViewPath()
@@ -95,13 +82,10 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param      $viewName
 	 * @param      $viewPath
 	 * @param      $basePath
 	 * @param null $moduleViewPath
-	 *
 	 * @return bool
 	 */
 	public function resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath = null)
@@ -152,12 +136,9 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param      $view
 	 * @param null $data
 	 * @param bool $return
-	 *
 	 * @return mixed
 	 */
 	public function render($view, $data = null, $return = false)
@@ -178,14 +159,10 @@ class BaseController extends CController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param      $viewFile
 	 * @param null $data
 	 * @param bool $return
-	 *
 	 * @return mixed
-	 *
 	 * @throws BlocksException
 	 */
 	public function renderFile($viewFile, $data = null, $return = false)
@@ -211,13 +188,9 @@ class BaseController extends CController
 
 	/**
 	 * Convert all template vars to tags before sending them to the template
-	 *
-	 * @access public
-	 *
 	 * @param       $templatePath
 	 * @param array $data
 	 * @param bool  $return
-	 *
 	 * @return mixed
 	 */
 	public function loadTemplate($templatePath, $data = array(), $return = false)

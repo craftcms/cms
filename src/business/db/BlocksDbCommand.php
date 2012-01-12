@@ -6,13 +6,10 @@
 class BlocksDbCommand extends CDbCommand
 {
 	/**
-	 * @access public
-	 *
 	 * @param $table
 	 * @param $column
 	 * @param $type
 	 * @param $after
-	 *
 	 * @return mixed
 	 */
 	public function addColumnAfter($table, $column, $type, $after)

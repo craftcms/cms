@@ -6,8 +6,6 @@
 class UploadFolderTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -16,8 +14,6 @@ class UploadFolderTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function name()
@@ -26,8 +22,6 @@ class UploadFolderTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function relativePath()
@@ -36,8 +30,6 @@ class UploadFolderTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function includeSubFolders()
@@ -46,8 +38,6 @@ class UploadFolderTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return SiteTag
 	 */
 	public function site()
@@ -56,8 +46,6 @@ class UploadFolderTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return FilesTag
 	 */
 	public function files()

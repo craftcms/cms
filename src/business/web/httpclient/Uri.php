@@ -39,7 +39,6 @@ abstract class Uri
 {
 	/**
 	 * Scheme of this URI (http, ftp, etc.)
-	 *
 	 * @var string
 	 */
 	protected $_scheme = '';
@@ -55,7 +54,6 @@ abstract class Uri
 
 		/**
 	 * Return a string representation of this URI.
-	 *
 	 * @see getUri()
 	 * @return string
 	 */
@@ -68,7 +66,6 @@ abstract class Uri
 	 * Convenience function, checks that a $uri string is well-formed
 	 * by validating it but not returning an object.  Returns TRUE if
 	 * $uri is a well-formed URI, or FALSE otherwise.
-	 *
 	 * @param string $uri The URI to check
 	 * @return boolean
 	 */
@@ -89,7 +86,6 @@ abstract class Uri
 	/**
 	 * Create a new Uri object for a URI.  If building a new URI, then $uri should contain
 	 * only the scheme (http, ftp, etc).  Otherwise, supply $uri with the complete URI.
-	 *
 	 * @param  string $uri The URI form which a Uri instance is created
 	 * @throws BlocksException When an empty string was supplied for the scheme
 	 * @throws BlocksException When an illegal scheme is supplied
@@ -145,7 +141,6 @@ abstract class Uri
 
 	/**
 	 * Get the URI's scheme
-	 *
 	 * @return string|false Scheme or false if no scheme is set.
 	 */
 	public function getScheme()
@@ -163,7 +158,6 @@ abstract class Uri
 	/**
 	 * Uri and its subclasses cannot be instantiated directly.
 	 * Use Uri::factory() to return a new Uri object.
-	 *
 	 * @param string $scheme         The scheme of the URI
 	 * @param string $schemeSpecific The scheme-specific part of the URI
 	 */
@@ -171,14 +165,12 @@ abstract class Uri
 
 	/**
 	 * Return a string representation of this URI.
-	 *
 	 * @return string
 	 */
 	abstract public function getUri();
 
 	/**
 	 * Returns TRUE if this URI is valid, or FALSE otherwise.
-	 *
 	 * @return boolean
 	 */
 	abstract public function valid();

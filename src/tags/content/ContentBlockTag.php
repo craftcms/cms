@@ -6,8 +6,6 @@
 class ContentBlockTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	*/
 	public function __toString()
@@ -16,8 +14,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	*/
 	public function handle()
@@ -26,8 +22,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function label()
@@ -36,8 +30,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function type()
@@ -46,8 +38,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function instructions()
@@ -56,8 +46,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function required()
@@ -66,8 +54,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function sortOrder()
@@ -76,8 +62,6 @@ class ContentBlockTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentSectionTag
 	 */
 	public function section()

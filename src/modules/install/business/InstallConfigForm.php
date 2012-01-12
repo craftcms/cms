@@ -16,8 +16,6 @@ class InstallConfigForm extends CFormModel
 	public $requirementsInfo;
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function rules()
@@ -33,7 +31,6 @@ class InstallConfigForm extends CFormModel
 	}
 
 	/**
-	 * @access public
 	 */
 	public function checkRequirements()
 	{
@@ -43,8 +40,6 @@ class InstallConfigForm extends CFormModel
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array
 	 */
 	public function attributeLabels()

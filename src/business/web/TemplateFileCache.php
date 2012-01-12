@@ -92,7 +92,6 @@ class TemplateFileCache extends CFileCache
 	/**
 	 * Stores a value identified by a key in cache.
 	 * This is the implementation of the method declared in the parent class.
-	 *
 	 * @param string $key the key identifying the value to be cached
 	 * @param string $value the value to be cached
 	 * @param integer $expire the number of seconds in which the cached value will expire. 0 means never expire.
@@ -116,7 +115,6 @@ class TemplateFileCache extends CFileCache
 	/**
 	 * Stores a value identified by a key into cache if the cache does not contain this key.
 	 * This is the implementation of the method declared in the parent class.
-	 *
 	 * @param string $key the key identifying the value to be cached
 	 * @param string $value the value to be cached
 	 * @param integer $expire the number of seconds in which the cached value will expire. 0 means never expire.

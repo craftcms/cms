@@ -6,12 +6,8 @@
 class BlocksHtml extends CHtml
 {
 	/**
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param $unixTime
-	 *
 	 * @return mixed
 	 */
 	public static function unixTimeToPrettyDate($unixTime)

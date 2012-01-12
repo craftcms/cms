@@ -6,8 +6,6 @@
 class BlocksController extends BaseController
 {
 	/**
-	 * @access public
-	 *
 	 * @param $actionId
 	 */
 	public function run($actionId)
@@ -100,8 +98,6 @@ class BlocksController extends BaseController
 	}
 
 	/**
-	 * @access public
-	 *
 	 * Required
 	 */
 	public function actionIndex()

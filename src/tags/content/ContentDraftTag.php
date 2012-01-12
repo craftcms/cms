@@ -6,8 +6,6 @@
 class ContentDraftTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -16,8 +14,6 @@ class ContentDraftTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return ContentEntryTag
 	 */
 	public function entry()
@@ -27,7 +23,6 @@ class ContentDraftTag extends Tag
 	}
 
 	/**
-	 * @access public
 	 */
 	public function author()
 	{
@@ -35,8 +30,6 @@ class ContentDraftTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function label()

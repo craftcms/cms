@@ -32,8 +32,6 @@ class BlocksHttpRequest extends CHttpRequest
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getPathSegments()
@@ -47,8 +45,6 @@ class BlocksHttpRequest extends CHttpRequest
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function getPathExtension()
@@ -63,10 +59,8 @@ class BlocksHttpRequest extends CHttpRequest
 	}
 
 	/**
-	 * @access public
 	 * 
 	 * @return Returns which URL format we're using (PATH_INFO or the query string)
-	 *
 	 */
 	public function getUrlFormat()
 	{

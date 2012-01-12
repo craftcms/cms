@@ -16,13 +16,8 @@ abstract class BaseModel extends CActiveRecord
 
 	/**
 	 * Returns an instance of the specified model
-	 *
-	 * @access public
-	 *
 	 * @static
-	 *
 	 * @param string $class
-	 *
 	 * @return object The model instance
 	 */
 	public static function model($class = __CLASS__)
@@ -31,22 +26,7 @@ abstract class BaseModel extends CActiveRecord
 	}
 
 	/**
-	 * @access public
-	 *
-	 * @access public
-	 *
-	 * @access public
-	 *
-	 * @access public
-	 *
-	 * @access public
-	 *
-	 * @access public
-	 *
 	 * @param bool $names
-	 *
-	 * @access public
-	 *
 	 * @return string The associated database table name
 	 */
 	public function tableName()
@@ -55,8 +35,6 @@ abstract class BaseModel extends CActiveRecord
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array Validation rules for model's attributes
 	 */
 	public function rules()
@@ -103,8 +81,6 @@ abstract class BaseModel extends CActiveRecord
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return array Relational rules
 	 */
 	public function relations()
@@ -141,13 +117,10 @@ abstract class BaseModel extends CActiveRecord
 
 	/**
 	 * Generates HAS_MANY relations to a model through another model
-	 *
 	 * @access protected
-	 *
 	 * @param string $model The destination model
 	 * @param string $fk2 The join table's foreign key to the destination model
 	 * @param array $settings The initial model's settings for the relation
-	 *
 	 * @return The CActiveRecord relation
 	 */
 	protected function generateJoinThroughRelation($model, $fk2, $settings)
@@ -157,12 +130,9 @@ abstract class BaseModel extends CActiveRecord
 
 	/**
 	 * Generates HAS_MANY and HAS_ONE relations
-	 *
 	 * @access protected
-	 *
 	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)
 	 * @param array $settings The relation settings
-	 *
 	 * @return array The CActiveRecord relation
 	 */
 	protected function generateHasXRelation($relationType, $settings)
@@ -190,9 +160,6 @@ abstract class BaseModel extends CActiveRecord
 
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
-	 *
-	 * @access public
-	 *
 	 * @return CActiveDataProvider The data provider that can return the models based on the search/filter conditions.
 	 */
 	public function search()
@@ -214,9 +181,6 @@ abstract class BaseModel extends CActiveRecord
 
 	/**
 	 * Creates the table(s) necessary for this model to save its data
-	 *
-	 * @access public
-	 *
 	 * @static
 	 */
 	public static function install()

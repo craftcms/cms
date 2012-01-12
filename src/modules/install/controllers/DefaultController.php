@@ -6,8 +6,6 @@
 class DefaultController extends BaseController
 {
 	/**
-	 * @access public
-	 *
 	 * @param      $id
 	 * @param null $module
 	 */
@@ -22,7 +20,6 @@ class DefaultController extends BaseController
 	}
 
 	/**
-	 * @access public
 	 */
 	public function actionIndex()
 	{
@@ -108,7 +105,6 @@ class DefaultController extends BaseController
 
 	/**
 	 * @access private
-	 *
 	 * @param $query
 	 */
 	private function executeSQL($query)
@@ -127,9 +123,7 @@ class DefaultController extends BaseController
 
 	/**
 	 * @access private
-	 *
 	 * @param $fileContents
-	 *
 	 * @return mixed
 	 */
 	private function replaceTokens($fileContents)
@@ -143,9 +137,7 @@ class DefaultController extends BaseController
 
 	/**
 	 * @access private
-	 *
 	 * @param $schema
-	 *
 	 * @return array
 	 */
 	private function breakDownSchema($schema)

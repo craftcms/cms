@@ -8,10 +8,7 @@ class UpdateController extends BaseController
 	private $_blocksUpdateInfo;
 
 	/**
-	 * @access public
-	 *
 	 * @param $h
-	 *
 	 * @return mixed
 	 */
 	public function actionGetUpdateInfo($h)
@@ -76,9 +73,6 @@ class UpdateController extends BaseController
 
 	/**
 	 * @param $h
-	 *
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function actionUpdate($h)

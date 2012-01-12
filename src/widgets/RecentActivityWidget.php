@@ -9,8 +9,6 @@ class RecentActivityWidget extends Widget
 	public $className = 'recent_activity';
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function displayBody()

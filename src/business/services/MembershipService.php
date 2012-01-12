@@ -6,8 +6,6 @@
 class MembershipService extends CApplicationComponent
 {
 	/**
-	 * @access public
-	 *
 	 * @return Users
 	 */
 	public function getAllUsers()
@@ -16,10 +14,7 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $siteId
-	 *
 	 * @return array
 	 */
 	public function getAllUsersBySiteId($siteId)
@@ -36,10 +31,7 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $userName
-	 *
 	 * @return mixed
 	 */
 	public function isUserNameInUse($userName)
@@ -53,10 +45,7 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $email
-	 *
 	 * @return mixed
 	 */
 	public function isEmailInUse($email)
@@ -70,14 +59,11 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $userName
 	 * @param $email
 	 * @param $firstName
 	 * @param $lastName
 	 * @param $password
-	 *
 	 * @return Users
 	 */
 	public function registerUser($userName, $email, $firstName, $lastName, $password)
@@ -95,10 +81,7 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $userId
-	 *
 	 * @return array
 	 */
 	public function getGroupsByUserId($userId)
@@ -115,10 +98,7 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @param $groupId
-	 *
 	 * @return array
 	 */
 	public function getUsersByGroupId($groupId)
@@ -135,8 +115,6 @@ class MembershipService extends CApplicationComponent
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return UserGroups
 	 */
 	public function getAllGroups()

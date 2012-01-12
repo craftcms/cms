@@ -6,11 +6,8 @@
 class UserGroupTag extends Tag
 {
 	/**
-	 * @access public
-	 *
 	 * @param $method
 	 * @param $args
-	 *
 	 * @return mixed
 	 */
 	function __call($method, $args)
@@ -19,8 +16,6 @@ class UserGroupTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function __toString()
@@ -29,8 +24,6 @@ class UserGroupTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function name()
@@ -39,8 +32,6 @@ class UserGroupTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return mixed
 	 */
 	public function description()
@@ -49,8 +40,6 @@ class UserGroupTag extends Tag
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return UsersTag
 	 */
 	public function users()

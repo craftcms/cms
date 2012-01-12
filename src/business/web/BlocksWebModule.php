@@ -9,8 +9,6 @@ class BlocksWebModule extends CWebModule
 	private $_layoutPath;
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getViewPath()
@@ -22,8 +20,6 @@ class BlocksWebModule extends CWebModule
 	}
 
 	/**
-	 * @access public
-	 *
 	 * @return string
 	 */
 	public function getLayoutPath()

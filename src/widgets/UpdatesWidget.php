@@ -9,8 +9,6 @@ class UpdatesWidget extends Widget
 	public $className = 'updates';
 
 	/**
-	 * @access public
-	 *
 	 * @return bool
 	 */
 	public function displayBody()
