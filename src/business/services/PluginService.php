@@ -1,12 +1,25 @@
 <?php
 
-class PluginService extends CApplicationComponent implements IPluginService
+/**
+ *
+ */
+class PluginService extends CApplicationComponent
 {
+	/**
+	 * @access public
+	 *
+	 * @return Plugins
+	 */
 	public function getAllInstalledPlugins()
 	{
 		return Plugins::model()->findAll();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return array|null
+	 */
 	public function getAllInstalledPluginHandlesAndVersions()
 	{
 		$installedPlugins = $this->allInstalledPlugins;

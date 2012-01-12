@@ -1,11 +1,18 @@
 <?php
 
+/**
+ *
+ */
 class UrlTag extends Tag
 {
 	private $_segments;
 
 	/**
-	 * Base
+	 * The base URL for the site.
+	 *
+	 * @access public
+	 *
+	 * @return string
 	 */
 	public function base()
 	{
@@ -14,8 +21,10 @@ class UrlTag extends Tag
 
 	/**
 	 * Get Segments
-	 * @return array The URL segments
+	 *
 	 * @access private
+	 *
+	 * @return array The URL segments
 	 */
 	private function _getSegments()
 	{
@@ -27,6 +36,10 @@ class UrlTag extends Tag
 
 	/**
 	 * Segments
+	 *
+	 * @access public
+	 *
+	 * @return array
 	 */
 	public function segments()
 	{
@@ -35,7 +48,12 @@ class UrlTag extends Tag
 
 	/**
 	 * Segment
+	 *
+	 * @access public
+	 *
 	 * @param int $num Which segment to retrieve
+	 *
+	 * @return bool
 	 */
 	public function segment($num)
 	{
@@ -48,26 +66,62 @@ class UrlTag extends Tag
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function domain()
 	{
 		return Blocks::app()->request->serverName;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $var
+	 *
+	 * @return bool
+	 */
 	public function get($var)
 	{
 		return isset($_GET[$var]) ? $_GET[$var] : false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $path
+	 * @param null $params
+	 *
+	 * @return string
+	 */
 	public function generateResourceUrl($path, $params = null)
 	{
 		return UrlHelper::generateResourceUrl($path, $params);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $path
+	 * @param null $params
+	 *
+	 * @return array|string
+	 */
 	public function generateActionUrl($path, $params = null)
 	{
 		return UrlHelper::generateActionUrl($path, $params);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $path
+	 * @param null $params
+	 *
+	 * @return array|string
+	 */
 	public function generateUrl($path, $params = null)
 	{
 		return UrlHelper::generateUrl($path, $params);

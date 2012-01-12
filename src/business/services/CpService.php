@@ -1,6 +1,9 @@
 <?php
 
-class CpService extends CApplicationComponent implements ICpService
+/**
+ *
+ */
+class CpService extends CApplicationComponent
 {
 	/*
 	 * Dashboard
@@ -8,6 +11,9 @@ class CpService extends CApplicationComponent implements ICpService
 
 	/**
 	 * Returns the dashboard widgets for the current user
+	 *
+	 * @access public
+	 *
 	 * @return array
 	 */
 	public function getDashboardWidgets()

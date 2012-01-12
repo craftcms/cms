@@ -1,53 +1,91 @@
 <?php
 
-class AssetService implements IAssetService
+/**
+ *
+ */
+class AssetService extends CApplicationComponent
 {
-	public function getUploadFoldersBySiteId($siteId)
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 *
+	 * @return AssetFolders
+	 */
+	public function getAssetFoldersBySiteId($siteId)
 	{
-		$uploadFolders = AssetFolders::model()->findAllByAttributes(array(
+		$asssetFolders = AssetFolders::model()->findAllByAttributes(array(
 			'site_id' => $siteId,
 		));
 
-		return $uploadFolders;
+		return $asssetFolders;
 	}
 
-	public function getFilesForUploadFolder($uploadFolderId)
+	/**
+	 * @access public
+	 *
+	 * @param $assetFolderId
+	 *
+	 * @return Assets
+	 */
+	public function getAssetsInAssetFolder($assetFolderId)
 	{
-		$files = Assets::model()->findAllByAttributes(array(
-			'folder_id' => $uploadFolderId,
+		$assets = Assets::model()->findAllByAttributes(array(
+			'folder_id' => $assetFolderId,
 		));
 
-		return $files;
+		return $assets;
 	}
 
-	public function getUploadFolderById($uploadFolderId)
+	/**
+	 * @access public
+	 *
+	 * @param $assetFolderId
+	 *
+	 * @return AssetFolders
+	 */
+	public function getAssetFolderById($assetFolderId)
 	{
 		$folder = AssetFolders::model()->findByAttributes(array(
-			'upload_folder_id' => $uploadFolderId,
+			'asset_folder_id' => $assetFolderId,
 		));
 
 		return $folder;
 	}
 
-	public function getAllFilesBySiteId($siteId)
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 *
+	 * @return Assets
+	 */
+	public function getAllAssetsBySiteId($siteId)
 	{
-		$files = Blocks::app()->db->createCommand()
+		$assets = Blocks::app()->db->createCommand()
 			->select('a.*')
 			->from('{{assets}} a')
-			->join('{{uploadfolders}} uf', 'a.upload_folder_id = uf.id')
-			->join('{{sites}} s', 'uf.site_id = s.id')
+			->join('{{assetfolders}} af', 'a.asset_folder_id = af.id')
+			->join('{{sites}} s', 'af.site_id = s.id')
 			->where('s.id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 
-		return $files;
+		return $assets;
 	}
 
-	public function getFileById($fileId)
+	/**
+	 * @access public
+	 *
+	 * @param $assetId
+	 *
+	 * @return Assets
+	 */
+	public function getAssetById($assetId)
 	{
-		$file = Assets::model()->findByAttributes(array(
-			'id' => $fileId,
+		$asset = Assets::model()->findByAttributes(array(
+			'id' => $assetId,
 		));
 
-		return $file;
+		return $asset;
 	}
 }

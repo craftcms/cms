@@ -1,7 +1,17 @@
 <?php
 
+/**
+ *
+ */
 class DumpSchemaCommand extends CConsoleCommand
 {
+	/**
+	 * @access public
+	 *
+	 * @param $args
+	 *
+	 * @return mixed
+	 */
 	public function run($args)
 	{
 		if (count($args) == 0)
@@ -27,6 +37,13 @@ class DumpSchemaCommand extends CConsoleCommand
 		echo $result;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $col
+	 *
+	 * @return string
+	 */
 	public function getColType($col)
 	{
 		if ($col->isPrimaryKey)

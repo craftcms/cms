@@ -1,10 +1,18 @@
 <?php
 
+/**
+ *
+ */
 class LayoutTemplateWidget extends COutputProcessor
 {
 	public $template;
 	public $regions = array();
 
+	/**
+	 * @access public
+	 *
+	 * @param $output
+	 */
 	public function processOutput($output)
 	{
 		if ($this->template)

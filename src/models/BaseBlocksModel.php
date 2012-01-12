@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @abstract
+ */
 abstract class BaseBlocksModel extends BaseModel
 {
 	protected $foreignKey;
@@ -8,11 +11,14 @@ abstract class BaseBlocksModel extends BaseModel
 	/**
 	 * Returns an instance of the specified model
 	 *
+	 * @access public
+	 *
+	 * @static
+	 *
 	 * @param string $class
 	 *
 	 * @return object The model instance
-	 * @static
-	*/
+	 */
 	public static function model($class = __CLASS__)
 	{
 		return parent::model($class);
@@ -23,6 +29,11 @@ abstract class BaseBlocksModel extends BaseModel
 		'sort_order'   => array('type' => AttributeType::Integer, 'required' => true)
 	);
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function getBelongsTo()
 	{
 		return array(

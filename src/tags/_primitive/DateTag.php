@@ -1,14 +1,29 @@
 <?php
 
+/**
+ *
+ */
 class DateTag extends Tag
 {
 	protected $_val;
 
+	/**
+	 * @access protected
+	 *
+	 * @param null $val
+	 */
 	protected function init($val = null)
 	{
 		$this->_val = $this->getUnixTimestamp($val);
 	}
 
+	/**
+	 * @access protected
+	 *
+	 * @param null $val
+	 *
+	 * @return int
+	 */
 	protected function getUnixTimestamp($val = null)
 	{
 		if ($val)
@@ -22,16 +37,31 @@ class DateTag extends Tag
 		return time();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function year()
 	{
 		return date('Y', $this->_val);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function month()
 	{
 		return date('n', $this->_val);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function day()
 	{
 		return date('j', $this->_val);

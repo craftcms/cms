@@ -1,7 +1,16 @@
 <?php
 
+/**
+ *
+ */
 class DefaultController extends BaseController
 {
+	/**
+	 * @access public
+	 *
+	 * @param      $id
+	 * @param null $module
+	 */
 	function __construct($id, $module = null)
 	{
 		$infoTable = Blocks::app()->db->schema->getTable('{{info}}');
@@ -12,6 +21,9 @@ class DefaultController extends BaseController
 		$this->layout = 'installer';
 	}
 
+	/**
+	 * @access public
+	 */
 	public function actionIndex()
 	{
 		$model = new InstallConfigForm();
@@ -94,6 +106,11 @@ class DefaultController extends BaseController
 		$this->render('index', array('model' => $model));
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @param $query
+	 */
 	private function executeSQL($query)
 	{
 		$connection = Blocks::app()->db;
@@ -108,6 +125,13 @@ class DefaultController extends BaseController
 		}
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @param $fileContents
+	 *
+	 * @return mixed
+	 */
 	private function replaceTokens($fileContents)
 	{
 		$fileContents = str_replace('@@@', Blocks::app()->config->databaseTablePrefix(), $fileContents);
@@ -117,6 +141,13 @@ class DefaultController extends BaseController
 		return $fileContents;
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @param $schema
+	 *
+	 * @return array
+	 */
 	private function breakDownSchema($schema)
 	{
 		$buffer = array();

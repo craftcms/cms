@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class AppMode
 {
 	const CP = 'cp';

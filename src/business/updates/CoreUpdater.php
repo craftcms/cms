@@ -1,11 +1,17 @@
 <?php
 
+/**
+ *
+ */
 class CoreUpdater implements IUpdater
 {
 	private $_buildsToUpdate = null;
 	private $_migrationsToRun = null;
 	private $_blocksUpdateInfo = null;
 
+	/**
+	 * @access public
+	 */
 	function __construct()
 	{
 		$this->_blocksUpdateInfo = Blocks::app()->update->getUpdateInfo(true);
@@ -13,6 +19,9 @@ class CoreUpdater implements IUpdater
 		$this->_buildsToUpdate = $this->_blocksUpdateInfo->newerReleases;
 	}
 
+	/**
+	 * @access public
+	 */
 	public function checkRequirements()
 	{
 		$localPHPVersion = Blocks::app()->config->localPHPVersion;
@@ -34,6 +43,13 @@ class CoreUpdater implements IUpdater
 					throw new BlocksException('The update cannot be installed because Blocks requires '.$localDatabaseType.' version '.$requiredDatabaseVersion.' or higher and you have '.$localDatabaseType.' version '.$localPHPVersion.' installed.');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 *
+	 * @throws BlocksException
+	 */
 	public function start()
 	{
 		$this->checkRequirements();
@@ -79,6 +95,11 @@ class CoreUpdater implements IUpdater
 		return true;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return
+	 */
 	public function generateMasterManifest()
 	{
 		$masterManifest = Blocks::app()->file->set(Blocks::app()->path->runtimePath.'manifest_'.uniqid());
@@ -143,9 +164,16 @@ class CoreUpdater implements IUpdater
 		return $masterManifest;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @todo Fix
+	 *
+	 * @return bool
+	 *
+	 */
 	public function putSiteInMaintenanceMode()
 	{
-		// TODO: Fix
 		$file = Blocks::app()->file->set(Blocks::app()->path->basePath.'../index.php', false);
 		$contents = $file->contents;
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
@@ -153,6 +181,11 @@ class CoreUpdater implements IUpdater
 		return true;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function doDatabaseUpdate()
 	{
 		foreach ($this->_migrationsToRun as $migrationName)
@@ -165,6 +198,11 @@ class CoreUpdater implements IUpdater
 		return true;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $manifestFile
+	 */
 	public function cleanTempFiles($manifestFile)
 	{
 		$manifestData = explode("\n", $manifestFile->contents);
@@ -193,6 +231,15 @@ class CoreUpdater implements IUpdater
 		$manifestFile->delete();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $version
+	 * @param $build
+	 * @param $destinationPath
+	 *
+	 * @return bool
+	 */
 	public function downloadPackage($version, $build, $destinationPath)
 	{
 		$params = array(
@@ -210,6 +257,17 @@ class CoreUpdater implements IUpdater
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $version
+	 * @param $build
+	 * @param $destinationPath
+	 *
+	 * @return bool
+	 *
+	 * @throws BlocksException
+	 */
 	public function validatePackage($version, $build, $destinationPath)
 	{
 		$params = array(
@@ -236,6 +294,13 @@ class CoreUpdater implements IUpdater
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $downloadPath
+	 *
+	 * @return bool
+	 */
 	public function unpackPackage($downloadPath)
 	{
 		$tempDir = UpdateHelper::getTempDirForPackage($downloadPath);
@@ -248,6 +313,13 @@ class CoreUpdater implements IUpdater
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $masterManifest
+	 *
+	 * @return bool
+	 */
 	public function backupFiles($masterManifest)
 	{
 		$manifestData = explode("\r\n", $masterManifest->contents);

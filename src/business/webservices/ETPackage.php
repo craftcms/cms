@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class ETPackage
 {
 	public $licenseKeyStatus;
@@ -9,6 +12,11 @@ class ETPackage
 	public $data;
 	public $errors = array();
 
+	/**
+	 * @access public
+	 *
+	 * @param null $properties
+	 */
 	function __construct($properties = null)
 	{
 		if ($properties == null)
@@ -21,11 +29,17 @@ class ETPackage
 		$this->edition = isset($properties['edition']) ? $properties['edition'] : null;
 	}
 
+	/*
+	 * @access public
+	 */
 	public function encodeAndEcho()
 	{
 		echo CJSON::encode($this);
 	}
 
+	/*
+	 * @access public
+	 */
 	public function decode()
 	{
 		echo CJSON::decode($this);

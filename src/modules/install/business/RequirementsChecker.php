@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class RequirementsChecker
 {
 	private $_requirements;
@@ -7,6 +10,11 @@ class RequirementsChecker
 	private $_serverInfo;
 	private $_errorFolders = null;
 
+	/**
+	 * @access private
+	 *
+	 * @todo Find out what min versions of MySQL and other databases we are going to support.
+	 */
 	private function init()
 	{
 		$dbConfigPath = Blocks::app()->path->configPath.'db.php';
@@ -158,7 +166,7 @@ class RequirementsChecker
 		}
 		else
 		{
-			/* TODO: Find out what min versions of MySQL and other databases we are going to support. */
+
 			$this->_requirements[] = new Requirement(
 			'MySQL version',
 			version_compare(Blocks::app()->config->databaseVersion, BLOCKS_MIN_MYSQL_VERSION, ">="),
@@ -168,6 +176,11 @@ class RequirementsChecker
 		}
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @return string
+	 */
 	private function checkServerVar()
 	{
 		$vars = array('HTTP_HOST', 'SERVER_NAME', 'SERVER_PORT', 'SCRIPT_NAME', 'SCRIPT_FILENAME', 'PHP_SELF', 'HTTP_ACCEPT', 'HTTP_USER_AGENT');
@@ -191,6 +204,11 @@ class RequirementsChecker
 		return '';
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @return string
+	 */
 	private function checkGD()
 	{
 		if (extension_loaded('gd'))
@@ -206,6 +224,11 @@ class RequirementsChecker
 		return 'GD not installed';
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @return string
+	 */
 	private function calculateServerInfo()
 	{
 		$info[] = '<a href="http://www.blockscms.com/">Blocks</a> v'.Blocks::getVersion().'.'.Blocks::getBuild();
@@ -216,6 +239,11 @@ class RequirementsChecker
 		return implode(' | ', $info);
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @return array
+	 */
 	private function getWritableFolders()
 	{
 		$folders = array(
@@ -226,9 +254,11 @@ class RequirementsChecker
 		return $folders;
 	}
 
+	/**
+	 * @access public
+	 */
 	public function run()
 	{
-
 		$this->init();
 		$installResult = InstallStatus::Success;
 
@@ -259,21 +289,41 @@ class RequirementsChecker
 		$this->_errorFolders = $errorFolders;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getInstallResult()
 	{
 		return $this->_installResult;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getServerInfo()
 	{
 		return $this->_serverInfo;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getErrorFolders()
 	{
 		return $this->_errorFolders;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getRequirements()
 	{
 		return $this->_requirements;

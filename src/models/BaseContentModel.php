@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @abstract
+ */
 abstract class BaseContentModel extends BaseModel
 {
 	protected $foreignKey;
@@ -8,11 +11,14 @@ abstract class BaseContentModel extends BaseModel
 	/**
 	 * Returns an instance of the specified model
 	 *
+	 * @access public
+	 *
+	 * @static
+	 *
 	 * @param string $class
 	 *
 	 * @return object The model instance
-	 * @static
-	*/
+	 */
 	public static function model($class = __CLASS__)
 	{
 		return parent::model($class);
@@ -25,6 +31,11 @@ abstract class BaseContentModel extends BaseModel
 		'type'   => array('type' => AttributeType::Enum, 'values' => 'published,draft,autosave', 'default' => 'draft', 'required' => true),
 	);
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function getBelongsTo()
 	{
 		return array(

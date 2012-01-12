@@ -1,10 +1,22 @@
 <?php
 
+/**
+ *
+ */
 class DatabaseHelper
 {
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $dbName
+	 * @param $tableName
+	 *
+	 * @todo MySql specific.  Need to abstract.
+	 */
 	public static function createInsertAuditTrigger($dbName, $tableName)
 	{
-		// TODO: MySQL specific.  Abstract away.
 		Blocks::app()->db->createCommand(
 							'CREATE
 							 TRIGGER `'.$dbName.'`.`auditinfoinsert_'.$tableName.'`
@@ -18,9 +30,18 @@ class DatabaseHelper
 					)->execute();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $dbName
+	 * @param $tableName
+	 *
+	 * @todo MySql specific.  Need to abstract.
+	 */
 	public static function createUpdateAuditTrigger($dbName, $tableName)
 	{
-		// TODO: MySQL specific.  Abstract away.
 		Blocks::app()->db->createCommand(
 							'CREATE
 							 TRIGGER `'.$dbName.'`.`auditinfoupdate_'.$tableName.'`

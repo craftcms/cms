@@ -1,10 +1,18 @@
 <?php
 
+/**
+ *
+ */
 class UpdatesWidget extends Widget
 {
 	public $title = 'Updates Available';
 	public $className = 'updates';
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function displayBody()
 	{
 		if (!Blocks::app()->update->isUpdateInfoCached())

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @abstract
+ */
 abstract class Widget
 {
 	public $id;
@@ -7,6 +10,11 @@ abstract class Widget
 	public $title = '';
 	public $className = '';
 
+	/**
+	 * @access public
+	 *
+	 * @param $id
+	 */
 	public function __construct($id)
 	{
 		$this->id = $id;
@@ -18,13 +26,26 @@ abstract class Widget
 		$this->init();
 	}
 
+	/**
+	 * @access protected
+	 */
 	protected function init() {}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function displayBody()
 	{
 		return false;
 	}
 
+	/**
+	 * @access public
+	 * 
+	 * @return bool
+	 */
 	public function displaySettings()
 	{
 		return false;

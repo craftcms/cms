@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class BlocksEdition
 {
 	const Personal = 'Personal';

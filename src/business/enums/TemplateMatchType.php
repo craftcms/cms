@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class TemplateMatchType
 {
 	const Entry = 'Entry';

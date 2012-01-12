@@ -1,9 +1,18 @@
 <?php
 
-class ContentService extends CApplicationComponent implements IContentService
+/**
+ *
+ */
+class ContentService extends CApplicationComponent
 {
-	/*
-	 * Entries
+	/* Entries */
+
+	/**
+	 * @access public
+	 *
+	 * @param $entryId
+	 *
+	 * @return mixed
 	 */
 	public function getEntryById($entryId)
 	{
@@ -14,6 +23,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $entry;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $sectionId
+	 *
+	 * @return mixed
+	 */
 	public function getEntriesBySectionId($sectionId)
 	{
 		$entries = Entries::model()->findAllByAttributes(array(
@@ -23,6 +39,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $entries;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 *
+	 * @return array
+	 */
 	public function getAllEntriesBySiteId($siteId)
 	{
 		$entries = Blocks::app()->db->createCommand()
@@ -35,6 +58,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $entries;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $entryId
+	 *
+	 * @return mixed
+	 */
 	public function doesEntryHaveSubEntries($entryId)
 	{
 		$exists = Entries::model()->exists(
@@ -45,6 +75,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $exists;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $entryId
+	 *
+	 * @return mixed
+	 */
 	public function getEntryVersionsByEntryId($entryId)
 	{
 		$versions = EntryVersions::model()->findAllByAttributes(array(
@@ -54,6 +91,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $versions;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $versionId
+	 *
+	 * @return mixed
+	 */
 	public function getEntryVersionById($versionId)
 	{
 		$version = EntryVersions::model()->findByAttributes(array(
@@ -63,8 +107,14 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $version;
 	}
 
-	/*
-	 * Sections
+	/* Sections */
+
+	/**
+	 * @access public
+	 *
+	 * @param $sectionId
+	 *
+	 * @return mixed
 	 */
 	public function getSectionById($sectionId)
 	{
@@ -75,6 +125,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $section;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $sectionId
+	 *
+	 * @return mixed
+	 */
 	public function doesSectionHaveSubSections($sectionId)
 	{
 		$exists = Sections::model()->exists(
@@ -85,6 +142,14 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $exists;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 * @param $handle
+	 *
+	 * @return mixed
+	 */
 	public function getSectionBySiteIdHandle($siteId, $handle)
 	{
 		$section = Sections::model()->findByAttributes(array(
@@ -95,6 +160,14 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $section;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 * @param $handles
+	 *
+	 * @return mixed
+	 */
 	public function getSectionsBySiteIdHandles($siteId, $handles)
 	{
 		$sections = Sections::model()->findAllByAttributes(array(
@@ -105,6 +178,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $sections;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 *
+	 * @return mixed
+	 */
 	public function getAllSectionsBySiteId($siteId)
 	{
 		$sections = Sections::model()->findAllByAttributes(array(
@@ -114,6 +194,22 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $sections;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $sectionHandle
+	 * @param $siteHandle
+	 * @param $label
+	 * @param null $urlFormat
+	 * @param null $maxEntries
+	 * @param null $template
+	 * @param bool $sortable
+	 * @param null $parentId
+	 *
+	 * @return Sections
+	 *
+	 * @throws Exception
+	 */
 	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
 	{
 		$connection = Blocks::app()->db;
@@ -185,10 +281,25 @@ class ContentService extends CApplicationComponent implements IContentService
 		}
 	}
 
-	/*
-	 * Blocks
-	 */
+	/* Blocks */
 
+	/**
+	 * @access public
+	 *
+	 * @param $blockHandle
+	 * @param $sectionHandle
+	 * @param $siteHandle
+	 * @param $label
+	 * @param $type
+	 * @param $sortOrder
+	 * @param string $blockDataType
+	 * @param null $instructions
+	 * @param bool $required
+	 *
+	 * @return EntryBlocks
+	 *
+	 * @throws Exception
+	 */
 	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = AttributeType::Text, $instructions = null, $required = false)
 	{
 		$connection = Blocks::app()->db;
@@ -232,6 +343,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		}
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $sectionId
+	 *
+	 * @return mixed
+	 */
 	public function getBlocksBySectionId($sectionId)
 	{
 		$sections = SectionBlocks::model()->findAllByAttributes(array(
@@ -241,6 +359,13 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $sections;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $entryId
+	 *
+	 * @return array
+	 */
 	public function getBlocksByEntryId($entryId)
 	{
 		$blocks = Blocks::app()->db->createCommand()
@@ -254,6 +379,14 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $blocks;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $entryId
+	 * @param $handle
+	 *
+	 * @return array
+	 */
 	public function getBlockByEntryIdHandle($entryId, $handle)
 	{
 		$blocks = Blocks::app()->db->createCommand()
@@ -267,11 +400,26 @@ class ContentService extends CApplicationComponent implements IContentService
 		return $blocks;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $siteHandle
+	 * @param $sectionHandle
+	 *
+	 * @return string
+	 */
 	private function _getEntryDataTableName($siteHandle, $sectionHandle)
 	{
 		return strtolower('entrydata_'.$siteHandle.'_'.$sectionHandle);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $table
+	 *
+	 * @return null|string
+	 */
 	private function _getLastBlockColumnName($table)
 	{
 		Blocks::app()->db->schema->refresh();

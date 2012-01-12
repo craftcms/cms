@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class FeedWidget extends Widget
 {
 	public $className = 'rss';
@@ -10,11 +13,19 @@ class FeedWidget extends Widget
 		'limit' => 5
 	);
 
+	/**
+	 * @access protected
+	 */
 	protected function init()
 	{
 		$this->title = $this->settings['title'];
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function displayBody()
 	{
 		$tags = array(
@@ -50,6 +61,11 @@ class FeedWidget extends Widget
 		return Blocks::app()->controller->loadTemplate('_widgets/FeedWidget/body', $tags, true);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function displaySettings()
 	{
 		$tags = array(

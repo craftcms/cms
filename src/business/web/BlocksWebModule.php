@@ -1,10 +1,18 @@
 <?php
 
+/**
+ *
+ */
 class BlocksWebModule extends CWebModule
 {
 	private $_viewPath;
 	private $_layoutPath;
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getViewPath()
 	{
 		if($this->_viewPath!==null)
@@ -13,6 +21,11 @@ class BlocksWebModule extends CWebModule
 			return $this->_viewPath=$this->basePath.'/templates/';
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getLayoutPath()
 	{
 		if ($this->_layoutPath !== null)

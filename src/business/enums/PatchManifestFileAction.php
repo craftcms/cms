@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class PatchManifestFileAction
 {
 	const Add = 'Add';

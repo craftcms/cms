@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class BlocksVersionUpdateStatus
 {
 	const UpToDate = 'UpToDate';

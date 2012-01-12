@@ -1,12 +1,27 @@
 <?php
 
-class MembershipService extends CApplicationComponent implements IMembershipService
+/**
+ *
+ */
+class MembershipService extends CApplicationComponent
 {
+	/**
+	 * @access public
+	 *
+	 * @return Users
+	 */
 	public function getAllUsers()
 	{
 		return Users::model()->findAll();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $siteId
+	 *
+	 * @return array
+	 */
 	public function getAllUsersBySiteId($siteId)
 	{
 		$users = Blocks::app()->db->createCommand()
@@ -20,6 +35,13 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return $users;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $userName
+	 *
+	 * @return mixed
+	 */
 	public function isUserNameInUse($userName)
 	{
 		$exists = Users::model()->exists(array(
@@ -30,6 +52,13 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return $exists;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $email
+	 *
+	 * @return mixed
+	 */
 	public function isEmailInUse($email)
 	{
 		$exists = Users::model()->exists(array(
@@ -40,6 +69,17 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return $exists;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $userName
+	 * @param $email
+	 * @param $firstName
+	 * @param $lastName
+	 * @param $password
+	 *
+	 * @return Users
+	 */
 	public function registerUser($userName, $email, $firstName, $lastName, $password)
 	{
 		$user = new Users();
@@ -54,6 +94,13 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return $user;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $userId
+	 *
+	 * @return array
+	 */
 	public function getGroupsByUserId($userId)
 	{
 		$groups = Blocks::app()->db->createCommand()
@@ -67,6 +114,13 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return $groups;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $groupId
+	 *
+	 * @return array
+	 */
 	public function getUsersByGroupId($groupId)
 	{
 		$groups = Blocks::app()->db->createCommand()
@@ -80,6 +134,11 @@ class MembershipService extends CApplicationComponent implements IMembershipServ
 		return $groups;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return UserGroups
+	 */
 	public function getAllGroups()
 	{
 		return UserGroups::model()->findAll();

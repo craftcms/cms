@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class BlocksApp extends CWebApplication
 {
 	private $_mode;
@@ -8,8 +11,9 @@ class BlocksApp extends CWebApplication
 	private $_layoutPath;
 	private $_dbInstalled = null;
 
-	//Blocks::app()->attachEventHandler('onBeginRequest', array($this, 'blar'));
-
+	/**
+	 * @access public
+	 */
 	public function init()
 	{
 		// Is this a resource request?
@@ -62,6 +66,11 @@ class BlocksApp extends CWebApplication
 		parent::init();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getMode()
 	{
 		if (!isset($this->_mode))
@@ -117,14 +126,9 @@ class BlocksApp extends CWebApplication
 		return $this->_mode;
 	}
 
-	public function blar()
-	{
-		if ('127.0.0.1' === $_SERVER['REMOTE_ADDR'])
-		{
-			//Blocks::app()->catchAllRequest = null;
-		}
-	}
-
+	/**
+	 * @access public
+	 */
 	public function run()
 	{
 		$this->validateConfig();
@@ -144,6 +148,13 @@ class BlocksApp extends CWebApplication
 			$this->onEndRequest(new CEvent($this));
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 *
+	 * @throws BlocksException|BlocksHttpException
+	 */
 	private function validateConfig()
 	{
 		$pathInfo = $this->request->pathInfo;
@@ -228,6 +239,11 @@ class BlocksApp extends CWebApplication
 		}
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function isDbInstalled()
 	{
 		if ($this->_dbInstalled == null)
@@ -241,8 +257,14 @@ class BlocksApp extends CWebApplication
 		return $this->_dbInstalled;
 	}
 
-	// we can't use setViewPath() because our view path depends on the request type, which is initialized after web application.
-	// so we override getViewPath();
+	/**
+	 * Gets the viewPath for the incoming request.
+	 * We can't use setViewPath() because our view path depends on the request type, which is initialized after web application, so we override getViewPath();
+	 *
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getViewPath()
 	{
 		if ($this->_requestTemplatePath !== null)
@@ -286,6 +308,11 @@ class BlocksApp extends CWebApplication
 		}
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getLayoutPath()
 	{
 		if ($this->_layoutPath !==null)
@@ -294,6 +321,11 @@ class BlocksApp extends CWebApplication
 			return $this->_layoutPath = $this->viewPath.'layouts';
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getSystemViewPath()
 	{
 		if($this->_cpTemplatePath !== null)
@@ -307,7 +339,11 @@ class BlocksApp extends CWebApplication
 
 	/**
 	 * Get a config item
+	 *
+	 * @access public
+	 *
 	 * @param bool|string $key The config item's key to retrieve
+	 *
 	 * @return mixed The config item's value if set, null if not
 	 */
 	public function config($key = false)
@@ -319,6 +355,10 @@ class BlocksApp extends CWebApplication
 	 * Processes the current request.
 	 * It first resolves the request into controller and action,
 	 * and then creates the controller to perform the action.
+	 *
+	 * @access public
+	 *
+	 * @throws BlocksHttpException
 	 */
 	public function processRequest()
 	{

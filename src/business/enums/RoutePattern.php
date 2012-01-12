@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class RoutePattern
 {
 	const Wild = '.+';

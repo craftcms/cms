@@ -1,7 +1,17 @@
 <?php
 
+/**
+ *
+ */
 class Migration
 {
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @return string
+	 */
 	public static function runToTop()
 	{
 		$runner = self::getRunner();
@@ -13,6 +23,15 @@ class Migration
 		return htmlentities(ob_get_clean(), null, Blocks::app()->charset);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $migrationName
+	 *
+	 * @return string
+	 */
 	public static function run($migrationName)
 	{
 		// migration names always start with timestamp m'yymmdd_hhmmss'
@@ -27,6 +46,15 @@ class Migration
 		return htmlentities(ob_get_clean(), null, Blocks::app()->charset);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $number
+	 *
+	 * @return string
+	 */
 	public static function revert($number)
 	{
 		if (!isset($number))
@@ -41,6 +69,15 @@ class Migration
 		return htmlentities(ob_get_clean(), null, Blocks::app()->charset);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $migrationName
+	 *
+	 * @return string
+	 */
 	public static function create($migrationName)
 	{
 		$migrationName = str_replace(' ', '_', $migrationName);
@@ -53,6 +90,13 @@ class Migration
 		return htmlentities(ob_get_clean(), null, Blocks::app()->charset);
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @static
+	 *
+	 * @return \CConsoleCommandRunner
+	 */
 	private static function getRunner()
 	{
 		$commandPath = Blocks::app()->path->commandsPath;

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * @abstract
+ */
 abstract class BaseSettingsModel extends BaseModel
 {
 	protected $foreignKey;
@@ -8,11 +11,14 @@ abstract class BaseSettingsModel extends BaseModel
 	/**
 	 * Returns an instance of the specified model
 	 *
+	 * @access public
+	 *
+	 * @static
+	 *
 	 * @param string $class
 	 *
 	 * @return object The model instance
-	 * @static
-	*/
+	 */
 	public static function model($class = __CLASS__)
 	{
 		return parent::model($class);
@@ -23,6 +29,11 @@ abstract class BaseSettingsModel extends BaseModel
 		'value' => array('type' => AttributeType::Text)
 	);
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function getBelongsTo()
 	{
 		if (isset($this->foreignKey) && isset($this->model))

@@ -1,14 +1,30 @@
 <?php
 
+/**
+ *
+ */
 class ArrayTag extends Tag
 {
 	protected $_val;
 
+	/**
+	 * @access protected
+	 *
+	 * @param array $val
+	 */
 	protected function init($val = array())
 	{
 		$this->_val = is_array($val) ? $val : array();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $name
+	 * @param $args
+	 *
+	 * @return Tag
+	 */
 	public function __call($name, $args)
 	{
 		if (isset($this->_val[$name]))
@@ -19,6 +35,11 @@ class ArrayTag extends Tag
 		return parent::__call($name, $args);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function __toString()
 	{
 		if (!$this->_val)
@@ -41,11 +62,21 @@ class ArrayTag extends Tag
 		return '['.implode(',', $strings).']';
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function __toArray()
 	{
 		return $this->_val;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return int
+	 */
 	public function length()
 	{
 		return count($this->_val);

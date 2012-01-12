@@ -1,7 +1,13 @@
 <?php
 
+/**
+ *
+ */
 class InstallModule extends BlocksWebModule
 {
+	/**
+	 * @access public
+	 */
 	public function init()
 	{
 		// this method is called when the module is being created
@@ -14,6 +20,14 @@ class InstallModule extends BlocksWebModule
 		));
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $controller
+	 * @param $action
+	 *
+	 * @return bool
+	 */
 	public function beforeControllerAction($controller, $action)
 	{
 		if(parent::beforeControllerAction($controller, $action))

@@ -1,7 +1,18 @@
 <?php
 
-class SecurityService extends CApplicationComponent implements ISecurityService
+/**
+ *
+ */
+class SecurityService extends CApplicationComponent
 {
+	/**
+	 * @access public
+	 *
+	 * @param $userName
+	 * @param $password
+	 * @param $licenseKeys
+	 * @param $edition
+	 */
 	public function validatePTUserCredentialsAndKey($userName, $password, $licenseKeys, $edition)
 	{
 		$params = array(

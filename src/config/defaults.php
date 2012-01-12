@@ -10,7 +10,7 @@
  */
 
 /*
- *
+ * Determines whether the site is in dev mode or not.
  */
 $blocksConfig['devMode'] = false;
 

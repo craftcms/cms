@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 interface IUpdater
 {
 	function start();

@@ -1,11 +1,19 @@
 <?php
 
+/**
+ *
+ */
 class UsersTag extends Tag
 {
 	protected $_users;
 	protected $_groups;
 
-	protected function getUsers()
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
+	public function getUsers()
 	{
 		if (!isset($this->_users))
 		{
@@ -15,7 +23,12 @@ class UsersTag extends Tag
 		return $this->_users;
 	}
 
-	protected function getGroups()
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
+	public function getGroups()
 	{
 		if (!isset($this->_groups))
 		{

@@ -1,9 +1,17 @@
 <?php
 
+/**
+ *
+ */
 class PluginUpdater implements IUpdater
 {
 	private $_pluginHandle = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param $pluginHandle
+	 */
 	function __construct($pluginHandle)
 	{
 		$this->_pluginHandle = $pluginHandle;
@@ -14,6 +22,11 @@ class PluginUpdater implements IUpdater
 
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function start()
 	{
 		return true;

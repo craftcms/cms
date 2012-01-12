@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class CoreReleaseFileType
 {
 	const Full = 'Full';

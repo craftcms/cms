@@ -1,4 +1,8 @@
 <?php
+
+/**
+ *
+ */
 class RequirementResult
 {
 	const Success = 'Success';

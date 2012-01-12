@@ -1,10 +1,19 @@
 <?php
 
+/**
+ * @todo Authenticate requests to this.
+ */
 class UpdateController extends BaseController
 {
-	// authenticate requests to this
 	private $_blocksUpdateInfo;
 
+	/**
+	 * @access public
+	 *
+	 * @param $h
+	 *
+	 * @return mixed
+	 */
 	public function actionGetUpdateInfo($h)
 	{
 		$returnUpdateInfo = array();
@@ -65,6 +74,13 @@ class UpdateController extends BaseController
 		return;
 	}
 
+	/**
+	 * @param $h
+	 *
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function actionUpdate($h)
 	{
 		switch ($h)

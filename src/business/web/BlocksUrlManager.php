@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class BlocksUrlManager extends CUrlManager
 {
 	private $_path = null;
@@ -10,11 +13,17 @@ class BlocksUrlManager extends CUrlManager
 
 	public $routeVar;
 
+	/**
+	 * @access public
+	 */
 	function __construct()
 	{
 		$this->routeVar = Blocks::app()->config('pathVar');
 	}
 
+	/**
+	 * @access public
+	 */
 	public function init()
 	{
 		parent::init();
@@ -42,8 +51,9 @@ class BlocksUrlManager extends CUrlManager
 		$this->_pathSegments = Blocks::app()->request->pathSegments;
 	}
 
-
-
+	/**
+	 * @access public
+	 */
 	public function processTemplateMatching()
 	{
 		// if it's a gii request, no need to do template matching.
@@ -65,11 +75,21 @@ class BlocksUrlManager extends CUrlManager
 				$this->matchTemplate();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getTemplateMatch()
 	{
 		return $this->_templateMatch;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getCurrentModule()
 	{
 		if ($this->_currentModule == null)
@@ -87,6 +107,9 @@ class BlocksUrlManager extends CUrlManager
 
 	/**
 	 * Attempts to match a request with an entry in the database.  If one is found, we set the template match property.
+	 *
+	 * @access public
+	 *
 	 * @return bool True if a match was found, false otherwise.
 	 */
 	public function matchEntry()
@@ -107,6 +130,11 @@ class BlocksUrlManager extends CUrlManager
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function matchRoute()
 	{
 		/*
@@ -134,6 +162,8 @@ class BlocksUrlManager extends CUrlManager
 	 * Will return false for any directory that has a "_" as the first character.
 	 * Will attempt to match "path/to/folder/file.{allowedFileExtensions}" first, "path/to/folder/file/index.{allowedFileExtensions}" second.
 	 * Sets the template match property if a match is found.
+	 *
+	 * @access public
 	 *
 	 * @return bool True is a match is found, false otherwise.
 	 */
@@ -186,6 +216,16 @@ class BlocksUrlManager extends CUrlManager
 		return false;
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @param $path
+	 * @param $requestPath
+	 * @param $moduleName
+	 * @param $pathMatchPattern
+	 *
+	 * @return bool
+	 */
 	private function _attemptTemplateMatch($path, $requestPath, $moduleName, $pathMatchPattern)
 	{
 		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($path)) !== null)
@@ -203,6 +243,8 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
+	 * @access private
+	 *
 	 * @param $path
 	 * @param $pathMatchPattern
 	 * @param $matchType
@@ -219,10 +261,14 @@ class BlocksUrlManager extends CUrlManager
 
 	/**
 	 * Adds a trailing slash to the end of a path if one does not exist
+	 *
+	 * @access public
+	 *
 	 * @param $path The path to normalize.
 	 *
 	 * @return string The normalized path.
-	 */public function normalizeTrailingSlash($path)
+	 */
+	public function normalizeTrailingSlash($path)
 	{
 		$path = rtrim($path, '\\/').'/';
 		return $path;

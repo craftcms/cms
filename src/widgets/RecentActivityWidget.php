@@ -1,10 +1,18 @@
 <?php
 
+/**
+ *
+ */
 class RecentActivityWidget extends Widget
 {
 	public $title = 'Recent Activity';
 	public $className = 'recent_activity';
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function displayBody()
 	{
 		$tags = array(

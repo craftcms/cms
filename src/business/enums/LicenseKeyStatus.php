@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class LicenseKeyStatus
 {
 	const Valid = 'Valid';

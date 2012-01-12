@@ -1,7 +1,21 @@
 <?php
 
+/**
+ *
+ */
 class StringHelper
 {
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $value
+	 *
+	 * @return bool
+	 *
+	 * @throws BlocksException
+	 */
 	public static function IsNullOrEmpty($value)
 	{
 		if (!isset($value))
@@ -14,6 +28,17 @@ class StringHelper
 		return $value === '' ? true : false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $value
+	 *
+	 * @return bool
+	 *
+	 * @throws BlocksException
+	 */
 	public static function IsNotNullOrEmpty($value)
 	{
 		if (!isset($value))

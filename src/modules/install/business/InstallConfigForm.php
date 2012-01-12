@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class InstallConfigForm extends CFormModel
 {
 	public $ptUserName;
@@ -12,6 +15,11 @@ class InstallConfigForm extends CFormModel
 	public $adminPasswordConfirm;
 	public $requirementsInfo;
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function rules()
 	{
 		return array(
@@ -24,6 +32,9 @@ class InstallConfigForm extends CFormModel
 		);
 	}
 
+	/**
+	 * @access public
+	 */
 	public function checkRequirements()
 	{
 		$requirementsInfo = new RequirementsChecker();
@@ -31,6 +42,11 @@ class InstallConfigForm extends CFormModel
 		$this->requirementsInfo = $requirementsInfo;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function attributeLabels()
 	{
 		return array(

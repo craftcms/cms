@@ -151,6 +151,9 @@ class BlocksFile extends CApplicationComponent
 		Blocks::log($message.' (obj: '.$this->_realpath.')', $level, 'BlocksFile');
 	}
 
+	/**
+	 * @return BlocksFile|object
+	 */
 	public function refresh()
 	{
 		return $this->set($this->_filepath);
@@ -1407,7 +1410,11 @@ class BlocksFile extends CApplicationComponent
 		return $this->zipPclZip($srcDir);
 	}
 
-	private function zipPclZip($srcDir)
+	/**
+	 * @param $srcDir
+	 *
+	 * @return bool
+	 */private function zipPclZip($srcDir)
 	{
 		$zip = new PclZip($this->getRealPath());
 
@@ -1422,7 +1429,11 @@ class BlocksFile extends CApplicationComponent
 		return true;
 	}
 
-	private function zipZipArchive($srcDir)
+	/**
+	 * @param $srcDir
+	 *
+	 * @return bool
+	 */private function zipZipArchive($srcDir)
 	{
 		$zip = new ZipArchive;
 		$zipContents = $zip->open($this->getRealPath(), ZipArchive::CREATE);
@@ -1453,7 +1464,11 @@ class BlocksFile extends CApplicationComponent
 		return true;
 	}
 
-	public function unzip($destination)
+	/**
+	 * @param $destination
+	 *
+	 * @return bool
+	 */public function unzip($destination)
 	{
 		if ($this->_isFile)
 		{
@@ -1489,7 +1504,11 @@ class BlocksFile extends CApplicationComponent
 		return $this->unzipPclZip($destination);
 	}
 
-	private function unzipPclZip($destination)
+	/**
+	 * @param $destination
+	 *
+	 * @return bool
+	 */private function unzipPclZip($destination)
 	{
 		$zip = new PclZip($this->getRealPath());
 		$destDirectories = null;
@@ -1574,7 +1593,11 @@ class BlocksFile extends CApplicationComponent
 		return true;
 	}
 
-	private function unzipZipArchive($destination)
+	/**
+	 * @param $destination
+	 *
+	 * @return bool
+	 */private function unzipZipArchive($destination)
 	{
 		$zipArchive = new ZipArchive();
 

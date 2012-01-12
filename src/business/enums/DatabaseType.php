@@ -1,5 +1,8 @@
 <?php
- 
+
+/**
+ *
+ */
 class DatabaseType
 {
 	const MySQL = 'mysql';

@@ -1,10 +1,18 @@
 <?php
 
-class SiteService extends CApplicationComponent implements ISiteService
+/**
+ *
+ */
+class SiteService extends CApplicationComponent
 {
 	private $_currentSite = null;
 	private $_licenseKeyStatus = null;
 
+	/**
+	 * @access public
+	 *
+	 * @return array|null
+	 */
 	public function getLicenseKeys()
 	{
 		$keysArr = array();
@@ -19,6 +27,11 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return null;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string|null
+	 */
 	public function getSiteName()
 	{
 		if (isset(Blocks::app()->params['config']['siteName']))
@@ -27,6 +40,11 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return null;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string|null
+	 */
 	public function getSiteLanguage()
 	{
 		if (isset(Blocks::app()->params['config']['language']))
@@ -35,6 +53,11 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return null;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string|null
+	 */
 	public function getSiteUrl()
 	{
 		if (isset(Blocks::app()->params['config']['siteUrl']))
@@ -43,6 +66,11 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return null;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return Sites
+	 */
 	public function getCurrentSiteByUrl()
 	{
 		if ($this->_currentSite == null)
@@ -61,6 +89,13 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return $this->_currentSite;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $url
+	 *
+	 * @return Sites
+	 */
 	public function getSiteByUrl($url)
 	{
 		$url = ltrim('http://', $url);
@@ -76,12 +111,26 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return $site;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $id
+	 *
+	 * @return Sites
+	 */
 	public function getSiteById($id)
 	{
 		$site = Sites::model()->findByPk($id);
 		return $site;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $handle
+	 *
+	 * @return Sites
+	 */
 	public function getSiteByHandle($handle)
 	{
 		$site = Sites::model()->findByAttributes(array(
@@ -91,11 +140,24 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return $site;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function getAllowedTemplateFileExtensions()
 	{
 		return array('html', 'php');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $templatePath
+	 * @param string $srcLanguage
+	 *
+	 * @return null|string
+	 */
 	public function matchTemplatePathWithAllowedFileExtensions($templatePath, $srcLanguage = 'en-us')
 	{
 		foreach ($this->allowedTemplateFileExtensions as $allowedExtension)
@@ -108,6 +170,11 @@ class SiteService extends CApplicationComponent implements ISiteService
 		return null;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getLicenseKeyStatus()
 	{
 		$licenseKeyStatus = Blocks::app()->fileCache->get('licenseKeyStatus');
@@ -118,12 +185,22 @@ class SiteService extends CApplicationComponent implements ISiteService
 
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $licenseKeyStatus
+	 */
 	public function setLicenseKeyStatus($licenseKeyStatus)
 	{
 		// cache it and set it to expire according to config
 		Blocks::app()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, Blocks::app()->config('cacheTimeSeconds'));
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @return string
+	 */
 	private function _getLicenseKeyStatus()
 	{
 		$licenseKeys = Blocks::app()->site->licenseKeys;

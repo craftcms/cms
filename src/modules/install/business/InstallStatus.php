@@ -1,4 +1,8 @@
 <?php
+
+/**
+ *
+ */
 class InstallStatus
 {
 	const Success = 0;

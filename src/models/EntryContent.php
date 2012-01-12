@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class EntryContent extends BaseContentModel
 {
 	protected $model = 'Entries';
@@ -8,10 +11,13 @@ class EntryContent extends BaseContentModel
 	/**
 	 * Returns an instance of the specified model
 	 *
+	 * @access public
+	 *
+	 * @static
+	 *
 	 * @param string $class
 	 *
 	 * @return object The model instance
-	 * @static
 	*/
 	public static function model($class = __CLASS__)
 	{

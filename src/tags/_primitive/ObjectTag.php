@@ -1,14 +1,30 @@
 <?php
 
+/**
+ *
+ */
 class ObjectTag extends Tag
 {
 	protected $_obj;
 
+	/**
+	 * @access protected
+	 *
+	 * @param null $obj
+	 */
 	protected function init($obj = null)
 	{
 		$this->_obj = is_object($obj) ? $obj : new stdClass;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $name
+	 * @param $args
+	 *
+	 * @return mixed|Tag
+	 */
 	public function __call($name, $args)
 	{
 		if (method_exists($this->_obj, $name))
@@ -24,6 +40,11 @@ class ObjectTag extends Tag
 		return parent::__call($name, $args);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function __toString()
 	{
 		if (method_exists($this->_obj, '__toString'))
@@ -32,11 +53,21 @@ class ObjectTag extends Tag
 		return get_class($this->_obj);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function __toArray()
 	{
 		return $this->_obj;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return int
+	 */
 	public function length()
 	{
 		return count($this->_obj);

@@ -1,8 +1,21 @@
 <?php
 
+/**
+ *
+ */
 class DashboardHelper
 {
-	// TODO: Eventually stuff like this should go into a global messaging service.
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param bool $fetch
+	 *
+	 * @return array
+	 *
+	 * @todo Eventually stuff like this should go into a global messaging service.
+	 */
 	public static function getAlerts($fetch = false)
 	{
 		$alerts = array();

@@ -1,9 +1,19 @@
 <?php
 
+/**
+ *
+ */
 class CpUpdatesTag extends Tag
 {
 	private $_updates;
 
+	/**
+	 * @access public
+	 *
+	 * @param $forceRefresh
+	 *
+	 * @return mixed
+	 */
 	public function init($forceRefresh)
 	{
 		$this->_updates = array();
@@ -47,21 +57,44 @@ class CpUpdatesTag extends Tag
 		}
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function __toArray()
 	{
 		return $this->_updates;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function __toString()
 	{
 		return $this->_updates ? 'y' : '';
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return int
+	 */
 	public function length()
 	{
 		return count($this->_updates);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $updates
+	 * @param $name
+	 *
+	 * @return string
+	 */
 	private function _generateUpdateNotes($updates, $name)
 	{
 		$notes = '';

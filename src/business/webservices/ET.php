@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class ET
 {
 	private $_endpoint;
@@ -8,6 +11,13 @@ class ET
 	private $_streamPath = null;
 	private $_package;
 
+	/**
+	 * @access public
+	 *
+	 * @param     $endPoint
+	 * @param int $timeout
+	 * @param int $maxRedirects
+	 */
 	function __construct($endPoint, $timeout = 6, $maxRedirects = 0)
 	{
 		$this->_endpoint = $endPoint;
@@ -20,16 +30,31 @@ class ET
 		$this->_package->edition = Blocks::getEdition();
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $path
+	 */
 	public function setStreamPath($path)
 	{
 		$this->_streamPath = $path;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return \ETPackage
+	 */
 	public function getPackage()
 	{
 		return $this->_package;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool|\ETPackage
+	 */
 	public function phoneHome()
 	{
 		try

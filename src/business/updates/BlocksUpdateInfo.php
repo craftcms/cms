@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class BlocksUpdateInfo
 {
 	public $localBuild = null;
@@ -11,6 +14,11 @@ class BlocksUpdateInfo
 	public $plugins = null;
 	public $newerReleases = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param null $properties
+	 */
 	function __construct($properties = null)
 	{
 		if ($properties == null)
@@ -33,6 +41,9 @@ class BlocksUpdateInfo
 	}
 }
 
+/**
+ *
+ */
 class BlocksNewReleaseUpdateInfo
 {
 	public $version = null;
@@ -42,6 +53,11 @@ class BlocksNewReleaseUpdateInfo
 	public $type = null;
 	public $critical = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param null $properties
+	 */
 	function __construct($properties = null)
 	{
 		if ($properties == null)

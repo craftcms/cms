@@ -1,7 +1,17 @@
 <?php
 
+/**
+ *
+ */
 class UpdateHelper
 {
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $manifestFile
+	 */
 	public static function rollBackFileChanges($manifestFile)
 	{
 		$manifestData = explode("\n", $manifestFile->contents);
@@ -16,6 +26,15 @@ class UpdateHelper
 		}
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $masterManifest
+	 *
+	 * @return bool
+	 */
 	public static function doFileUpdate($masterManifest)
 	{
 		$manifestData = explode("\n", $masterManifest->contents);
@@ -58,6 +77,18 @@ class UpdateHelper
 		return true;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $version
+	 * @param $build
+	 * @param $edition
+	 *
+	 * @return string
+	 * @throws BlocksException
+	 */
 	public static function constructCoreReleasePatchFileName($version, $build, $edition)
 	{
 		if(StringHelper::IsNullOrEmpty($version) || StringHelper::IsNullOrEmpty($build) || StringHelper::IsNullOrEmpty($edition))
@@ -78,6 +109,15 @@ class UpdateHelper
 		throw new BlocksException('Unknown Blocks Edition: '.$edition);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $path
+	 *
+	 * @return string
+	 */
 	public static function stripRootBlocksPath($path)
 	{
 		if (strpos($path, 'blocks') == 0)
@@ -86,6 +126,15 @@ class UpdateHelper
 		return $path;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $manifestDataPath
+	 *
+	 * @return array
+	 */
 	public static function getManifestData($manifestDataPath)
 	{
 		// get manifest file
@@ -94,12 +143,30 @@ class UpdateHelper
 		return explode("\n", $manifestFileData);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $downloadPath
+	 *
+	 * @return mixed
+	 */
 	public static function getTempDirForPackage($downloadPath)
 	{
 		$downloadPath = Blocks::app()->file->set($downloadPath);
 		return Blocks::app()->file->set($downloadPath->dirName.'/'.$downloadPath->fileName.'_temp');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $filePath
+	 *
+	 * @return string
+	 */
 	public static function copyMigrationFile($filePath)
 	{
 		$migrationFile = Blocks::app()->file->set($filePath);
@@ -108,6 +175,17 @@ class UpdateHelper
 		return $destinationFile;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param $counter
+	 * @param $manifestDataRow
+	 * @param $fileList
+	 *
+	 * @return bool
+	 */
 	public static function inManifestList(&$counter, $manifestDataRow, $fileList)
 	{
 		$found = false;

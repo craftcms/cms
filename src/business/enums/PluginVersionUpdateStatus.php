@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class PluginVersionUpdateStatus
 {
 	const UpToDate = 'UpToDate';

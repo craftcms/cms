@@ -1,9 +1,19 @@
 <?php
 
-class UpdateService extends CApplicationComponent implements IUpdateService
+/**
+ *
+ */
+class UpdateService extends CApplicationComponent
 {
 	private $_updateInfo;
 
+	/**
+	 * @access public
+	 *
+	 * @param $blocksReleases
+	 *
+	 * @return bool
+	 */
 	public function criticalBlocksUpdateAvailable($blocksReleases)
 	{
 		foreach ($blocksReleases as $blocksRelease)
@@ -15,6 +25,13 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $plugins
+	 *
+	 * @return bool
+	 */
 	public function criticalPluginUpdateAvailable($plugins)
 	{
 		foreach ($plugins as $plugin)
@@ -32,11 +49,23 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function isUpdateInfoCached()
 	{
 		return (isset($this->_updateInfo) || Blocks::app()->fileCache->get('updateInfo') !== false);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param bool $forceRefresh
+	 *
+	 * @return mixed
+	 */
 	public function getUpdateInfo($forceRefresh = false)
 	{
 		if (!isset($this->_updateInfo) || $forceRefresh)
@@ -68,6 +97,11 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		return $this->_updateInfo;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return bool
+	 */
 	public function doCoreUpdate()
 	{
 		$coreUpdater = new CoreUpdater();
@@ -77,6 +111,13 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $pluginHandle
+	 *
+	 * @return bool
+	 */
 	public function doPluginUpdate($pluginHandle)
 	{
 		$pluginUpdater = new PluginUpdater($pluginHandle);
@@ -86,6 +127,11 @@ class UpdateService extends CApplicationComponent implements IUpdateService
 		return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return BlocksUpdateInfo
+	 */
 	public function check()
 	{
 		$blocksUpdateInfo = new BlocksUpdateInfo();

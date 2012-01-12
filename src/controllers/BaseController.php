@@ -1,15 +1,29 @@
 <?php
 
+/**
+ *
+ */
 class BaseController extends CController
 {
 	private $_widgetStack = array();
+	private $_requestController = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param $filterChain
+	 */
 	public function filterHttps($filterChain)
 	{
 		$filter = new HttpsFilter();
 		$filter->filter($filterChain);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return array
+	 */
 	public function filters()
 	{
 		return array(
@@ -17,18 +31,33 @@ class BaseController extends CController
 		);
 	}
 
-	private $_requestController = null;
-
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getRequestController()
 	{
 		return $this->_requestController;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $requestController
+	 */
 	public function setRequestController($requestController)
 	{
 		$this->_requestController = $requestController;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $viewName
+	 *
+	 * @return bool
+	 */
 	public function getViewFile($viewName)
 	{
 		if (($theme = Blocks::app()->theme) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
@@ -47,6 +76,11 @@ class BaseController extends CController
 		return $this->resolveViewFile($viewName, $this->viewPath, $basePath, $moduleViewPath);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getViewPath()
 	{
 		if (($requestController = $this->getRequestController()) !== null)
@@ -60,6 +94,16 @@ class BaseController extends CController
 		return $module->viewPath;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param      $viewName
+	 * @param      $viewPath
+	 * @param      $basePath
+	 * @param null $moduleViewPath
+	 *
+	 * @return bool
+	 */
 	public function resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath = null)
 	{
 		if (empty($viewName))
@@ -107,6 +151,15 @@ class BaseController extends CController
 			return false;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param      $view
+	 * @param null $data
+	 * @param bool $return
+	 *
+	 * @return mixed
+	 */
 	public function render($view, $data = null, $return = false)
 	{
 		if ($this->beforeRender($view))
@@ -124,6 +177,17 @@ class BaseController extends CController
 		}
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param      $viewFile
+	 * @param null $data
+	 * @param bool $return
+	 *
+	 * @return mixed
+	 *
+	 * @throws BlocksException
+	 */
 	public function renderFile($viewFile, $data = null, $return = false)
 	{
 		$widgetCount = count($this->_widgetStack);
@@ -147,6 +211,14 @@ class BaseController extends CController
 
 	/**
 	 * Convert all template vars to tags before sending them to the template
+	 *
+	 * @access public
+	 *
+	 * @param       $templatePath
+	 * @param array $data
+	 * @param bool  $return
+	 *
+	 * @return mixed
 	 */
 	public function loadTemplate($templatePath, $data = array(), $return = false)
 	{

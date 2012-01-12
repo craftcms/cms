@@ -1,33 +1,67 @@
 <?php
 
-class PathService extends CApplicationComponent implements IPathService
+/**
+ *
+ */
+class PathService extends CApplicationComponent
 {
 	/* Paths */
+
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getBasePath()
 	{
 		return $this->normalizeDirectorySeparators(BLOCKS_BASE_PATH);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getConfigPath()
 	{
 		return $this->normalizeDirectorySeparators($this->basePath.'config/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getBlocksConfigPath()
 	{
 		return $this->normalizeDirectorySeparators($this->configPath.'blocks.php');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getPluginsPath()
 	{
 		return $this->normalizeDirectorySeparators($this->basePath.'plugins/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getResourcesPath()
 	{
 		return $this->normalizeDirectorySeparators($this->appPath.'resources/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getAppPath()
 	{
 		return $this->normalizeDirectorySeparators(Blocks::app()->basePath.'/');
@@ -38,26 +72,51 @@ class PathService extends CApplicationComponent implements IPathService
 		return $this->normalizeDirectorySeparators($this->appPath.'framework/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getRuntimePath()
 	{
 		return $this->normalizeDirectorySeparators(Blocks::app()->runtimePath.'/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getCPTemplatePath()
 	{
 		return $this->normalizeDirectorySeparators($this->appPath.'templates/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getMigrationsPath()
 	{
 		return $this->normalizeDirectorySeparators($this->appPath.'migrations/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getCommandsPath()
 	{
 		return $this->normalizeDirectorySeparators($this->appPath.'commands/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getSiteTemplatePath()
 	{
 		$siteHandle = Blocks::app()->site->currentSiteByUrl;
@@ -66,6 +125,11 @@ class PathService extends CApplicationComponent implements IPathService
 		return $this->normalizeDirectorySeparators($this->basePath.'templates/'.$siteHandle.'/');
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getTemplatePath()
 	{
 		$mode = Blocks::app()->mode;
@@ -85,12 +149,17 @@ class PathService extends CApplicationComponent implements IPathService
 		}
 		else
 		{
-			return null;
+			$templatePath = $this->siteTemplatePath;
 		}
 
 		return $this->normalizeDirectorySeparators($templatePath);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
 	public function getTemplateCachePath()
 	{
 		$cachePath = null;
@@ -122,6 +191,13 @@ class PathService extends CApplicationComponent implements IPathService
 		return $this->normalizeDirectorySeparators($cachePath);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $path
+	 *
+	 * @return mixed
+	 */
 	public function normalizeDirectorySeparators($path)
 	{
 		return str_replace('\\', '/', $path);

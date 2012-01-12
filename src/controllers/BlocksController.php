@@ -1,7 +1,15 @@
 <?php
 
+/**
+ *
+ */
 class BlocksController extends BaseController
 {
+	/**
+	 * @access public
+	 *
+	 * @param $actionId
+	 */
 	public function run($actionId)
 	{
 		if (Blocks::app()->mode == AppMode::Action)
@@ -23,7 +31,7 @@ class BlocksController extends BaseController
 					$requestAction = Blocks::app()->request->pathSegments[3];
 
 				if ($requestAction == null)
-					$requestAction = 'index';
+					$requestAction = $actionId;
 			}
 			else
 			{
@@ -91,7 +99,11 @@ class BlocksController extends BaseController
 //		}
 	}
 
-	// required
+	/**
+	 * @access public
+	 *
+	 * Required
+	 */
 	public function actionIndex()
 	{
 	}

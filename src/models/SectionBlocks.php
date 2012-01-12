@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class SectionBlocks extends BaseBlocksModel
 {
 	protected $model = 'Sections';
@@ -8,11 +11,14 @@ class SectionBlocks extends BaseBlocksModel
 	/**
 	 * Returns an instance of the specified model
 	 *
+	 * @access public
+	 *
+	 * @static
+	 *
 	 * @param string $class
 	 *
 	 * @return object The model instance
-	 * @static
-	*/
+	 */
 	public static function model($class = __CLASS__)
 	{
 		return parent::model($class);

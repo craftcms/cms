@@ -1,11 +1,19 @@
 <?php
 
+/**
+ *
+ */
 class BlocksHttpRequest extends CHttpRequest
 {
 	private $_pathSegments;
 	private $_extension;
 	private $_isServerPathInfoRequest;
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getPathSegments()
 	{
 		if (!isset($this->_pathSegments))
@@ -16,6 +24,11 @@ class BlocksHttpRequest extends CHttpRequest
 		return $this->_pathSegments;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return mixed
+	 */
 	public function getPathExtension()
 	{
 		if (!isset($this->_extension))
@@ -28,6 +41,8 @@ class BlocksHttpRequest extends CHttpRequest
 	}
 
 	/**
+	 * @access public
+	 *
 	 * @return Returns whether the $_SERVER["PATH_INFO"] variable is set or not.
 	 */
 	public function getIsServerPathInfoRequest()

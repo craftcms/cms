@@ -1,9 +1,14 @@
 <?php
 
+/**
+ *
+ */
 class UrlHelper
 {
 	/**
 	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
+	 *
+	 * @access public
 	 *
 	 * @param string $resourcePath The path to the resource
 	 * @param null   $params
@@ -16,18 +21,49 @@ class UrlHelper
 		return BlocksHtml::normalizeUrl($path);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param      $actionPath
+	 * @param null $params
+	 *
+	 * @return array|string
+	 */
 	public static function generateActionUrl($actionPath, $params = null)
 	{
 		$path = self::_normalizePath($actionPath, $params, Blocks::app()->config('actionTriggerWord'));
 		return BlocksHtml::normalizeUrl($path);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param      $path
+	 * @param null $params
+	 *
+	 * @return array|string
+	 */
 	public static function generateUrl($path, $params = null)
 	{
 		$path = self::_normalizePath($path, $params);
 		return BlocksHtml::normalizeUrl($path);
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @static
+	 *
+	 * @param        $path
+	 * @param        $params
+	 * @param string $triggerWord
+	 *
+	 * @return array|string
+	 */
 	private static function _normalizePath($path, $params, $triggerWord = '')
 	{
 		$path = ltrim($path, '/');

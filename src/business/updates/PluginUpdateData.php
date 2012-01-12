@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class PluginUpdateData
 {
 	public $handle = null;
@@ -11,6 +14,11 @@ class PluginUpdateData
 	public $criticalUpdateAvailable = null;
 	public $newerReleases = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param null $properties
+	 */
 	function __construct($properties = null)
 	{
 		if ($properties == null)
@@ -30,6 +38,9 @@ class PluginUpdateData
 	}
 }
 
+/**
+ *
+ */
 class PluginNewReleaseUpdateData
 {
 	public $version = null;
@@ -37,6 +48,11 @@ class PluginNewReleaseUpdateData
 	public $releaseNotes = null;
 	public $critical = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param null $properties
+	 */
 	function __construct($properties = null)
 	{
 		if ($properties == null)

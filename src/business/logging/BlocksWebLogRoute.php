@@ -1,8 +1,19 @@
 <?php
 
+/**
+ *
+ */
 class BlocksWebLogRoute extends CWebLogRoute
 {
 
+	/**
+	 * @access protected
+	 *
+	 * @param $view
+	 * @param $data
+	 *
+	 * @return mixed
+	 */
 	protected function render($view, $data)
 	{
 		$app = Blocks::app();

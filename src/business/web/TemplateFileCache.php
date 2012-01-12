@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class TemplateFileCache extends CFileCache
 {
 	/**

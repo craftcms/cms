@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class PTAccountCredentialStatus
 {
 	const Valid = 'ValidCreds';

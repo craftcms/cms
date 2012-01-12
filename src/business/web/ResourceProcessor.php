@@ -1,20 +1,28 @@
 <?php
 
+/**
+ *
+ */
 class ResourceProcessor
 {
 	private $_rootFolderPath;
 	private $_rootFolderUrl;
 	private $_relResourcePath;
-	private $_relResourceDirname;
-	private $_relResourceFilename;
+	private $_relResourceDirName;
+	private $_relResourceFileName;
 	private $_resourceFullPath;
 	private $_content;
 
 	/**
 	 * ResourceProcessor Constructor
+	 *
+	 * @access public
+	 *
 	 * @param string $rootFolderPath The path to the root folder containing the hidden files
 	 * @param string $rootFolderUrl The URL to the root folder containing the hidden files
-	 * @param string $relativeResourcePath The path to the resource, relative from the root folder
+	 * @param        $relResourcePath
+	 *
+	 * @internal param string $relativeResourcePath The path to the resource, relative from the root folder
 	 */
 	public function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
 	{
@@ -23,9 +31,9 @@ class ResourceProcessor
 		$this->_relResourcePath = trim($relResourcePath, '/');
 
 		// Parse the relative resource path, separating the directory path from the filename
-		$pathinfo = pathinfo($this->_relResourcePath);
-		$this->_relResourceDirname = isset($pathinfo['dirname']) && $pathinfo['dirname'] != '.' ? $pathinfo['dirname'].'/' : '';
-		$this->_relResourceFilename = basename($this->_relResourcePath);
+		$pathInfo = pathinfo($this->_relResourcePath);
+		$this->_relResourceDirName = isset($pathInfo['dirname']) && $pathInfo['dirname'] != '.' ? $pathInfo['dirname'].'/' : '';
+		$this->_relResourceFileName = basename($this->_relResourcePath);
 
 		// Save the full server path
 		$this->_resourceFullPath = $this->_rootFolderPath . $this->_relResourcePath;
@@ -33,6 +41,8 @@ class ResourceProcessor
 
 	/**
 	 * Process the request
+	 *
+	 * @access public
 	 */
 	public function processResourceRequest()
 	{
@@ -48,6 +58,8 @@ class ResourceProcessor
 
 	/**
 	 * Send the file back to the browser
+	 *
+	 * @access public
 	 */
 	public function sendResource()
 	{
@@ -67,12 +79,21 @@ class ResourceProcessor
 
 	/**
 	 * Convert relative URLs in CSS files to absolute paths based on the root folder URL
+	 *
+	 * @access private
 	 */
 	private function _convertRelativeUrls()
 	{
 		$this->_content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_convertRelativeUrlMatch'), $this->_content);
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @param $match
+	 *
+	 * @return string
+	 */
 	private function _convertRelativeUrlMatch($match)
 	{
 		// ignore root-relative and absolute URLs
@@ -81,6 +102,6 @@ class ResourceProcessor
 			return $match[0];
 		}
 
-		return $match[1].$this->_rootFolderUrl.$this->_relResourceDirname.$match[3].$match[4];
+		return $match[1].$this->_rootFolderUrl.$this->_relResourceDirName.$match[3].$match[4];
 	}
 }

@@ -1,4 +1,8 @@
 <?php
+
+/**
+ *
+ */
 class UrlFormat
 {
 	const Auto          = 'auto';

@@ -1,5 +1,8 @@
 <?php
 
+/**
+ *
+ */
 class TemplateMatch
 {
 	private $_relativePath = null;
@@ -9,12 +12,22 @@ class TemplateMatch
 	private $_matchType = null;
 	private $_matchExtension = null;
 
+	/**
+	 * @access public
+	 *
+	 * @param $path
+	 */
 	public function __construct($path)
 	{
 		$this->_fullTemplatePath = $path;
 		$this->init($path);
 	}
 
+	/**
+	 * @access private
+	 *
+	 * @param $path
+	 */
 	private function init($path)
 	{
 		$relativeTemplatePath = '';
@@ -44,36 +57,71 @@ class TemplateMatch
 		$this->_relativePath = $relativeTemplatePath;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getFullTemplatePath()
 	{
 		return $this->_fullTemplatePath;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getFileName()
 	{
 		return $this->_fileName;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getRelativePath()
 	{
 		return $this->_relativePath;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return null
+	 */
 	public function getMatchExtension()
 	{
 		return $this->_matchExtension;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $matchRequest
+	 */
 	public function setMatchRequest($matchRequest)
 	{
 		$this->_matchRequest = $matchRequest;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $matchType
+	 */
 	public function setMatchType($matchType)
 	{
 		$this->_matchType = $matchType;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @param $extension
+	 */
 	public function setMatchExtension($extension)
 	{
 		$this->_matchExtension = $extension;
