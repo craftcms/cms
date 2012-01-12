@@ -43,7 +43,7 @@ abstract class Widget
 
 	/**
 	 * @access public
-	 * 
+	 *
 	 * @return bool
 	 */
 	public function displaySettings()

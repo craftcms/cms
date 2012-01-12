@@ -3,10 +3,10 @@
 /**
  *
  */
-class UserBlocks extends BaseBlocksModel
+class UserGroupBlocks extends BaseBlocksModel
 {
-	protected $model = 'Users';
-	protected $foreignKey = 'user';
+	protected $model = 'UserGroups';
+	protected $foreignKey = 'group';
 
 	/**
 	 * Returns an instance of the specified model

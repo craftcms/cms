@@ -29,14 +29,13 @@ abstract class BaseBlocksModel extends BaseModel
 		'sort_order'   => array('type' => AttributeType::Integer, 'required' => true)
 	);
 
-	/**
-	 * @access public
+	/** @access public
 	 *
 	 * @return array
 	 */
-	public function getBelongsTo()
+	public function init()
 	{
-		return array(
+		$this->belongsTo = array(
 			$this->foreignKey => $this->model,
 			'block'           => 'ContentBlocks'
 		);

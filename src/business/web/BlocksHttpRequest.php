@@ -5,9 +5,31 @@
  */
 class BlocksHttpRequest extends CHttpRequest
 {
+	private $_urlFormat;
+	private $_path;
 	private $_pathSegments;
-	private $_extension;
-	private $_isServerPathInfoRequest;
+	private $_pathExtension;
+
+	public function getPath()
+	{
+		if (!isset($this->_path))
+		{
+			if ($this->urlFormat == UrlFormat::PathInfo)
+			{
+				$this->_path = $this->pathInfo;
+			}
+			else
+			{
+				$pathVar = Blocks::app()->config('pathVar');
+				$this->_path = $this->getParam($pathVar, '');
+
+				// trim trailing/leading slashes
+				$this->_path = trim($this->_path, '/');
+			}
+		}
+
+		return $this->_path;
+	}
 
 	/**
 	 * @access public
@@ -18,7 +40,7 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if (!isset($this->_pathSegments))
 		{
-			$this->_pathSegments = array_merge(array_filter(explode('/', $this->getPathInfo())));
+			$this->_pathSegments = array_filter(explode('/', $this->path));
 		}
 
 		return $this->_pathSegments;
@@ -31,78 +53,78 @@ class BlocksHttpRequest extends CHttpRequest
 	 */
 	public function getPathExtension()
 	{
-		if (!isset($this->_extension))
+		if (!isset($this->_pathExtension))
 		{
-			$ext = pathinfo($this->getPathInfo(), PATHINFO_EXTENSION);
-			$this->_extension = strtolower($ext);
+			$ext = pathinfo($this->path, PATHINFO_EXTENSION);
+			$this->_pathExtension = strtolower($ext);
 		}
 
-		return $this->_extension;
+		return $this->_pathExtension;
 	}
 
 	/**
 	 * @access public
+	 * 
+	 * @return Returns which URL format we're using (PATH_INFO or the query string)
 	 *
-	 * @return Returns whether the $_SERVER["PATH_INFO"] variable is set or not.
 	 */
-	public function getIsServerPathInfoRequest()
+	public function getUrlFormat()
 	{
-		// Check if the instance variable has been set.
-		if (isset($this->_isServerPathInfoRequest))
-			return $this->_isServerPathInfoRequest;
-
-		// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-		if (Blocks::app()->config('urlFormat') == UrlFormat::PathInfo)
+		if (! isset($this->_urlFormat))
 		{
-			$this->_isServerPathInfoRequest = true;
-		}
-		else if (Blocks::app()->config('urlFormat') == UrlFormat::QueryString)
-		{
-			$this->_isServerPathInfoRequest = false;
-		}
-		// Check if it's cached
-		else if (($cachedValue = Blocks::app()->fileCache->get('pathInfoRequestStatus')) !== false)
-		{
-			$this->_isServerPathInfoRequest = (bool)$cachedValue;
-		}
-		else
-		{
-			// If there is already a PATH_INFO var available, we know it supports it.
-			if (isset($_SERVER['PATH_INFO']))
+			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
+			if (Blocks::app()->config('urlFormat') == UrlFormat::PathInfo)
 			{
-				$this->_isServerPathInfoRequest = true;
+				$this->_urlFormat = UrlFormat::PathInfo;
 			}
-			// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
-			else if ($this->getParam(Blocks::app()->config('pathVar'), null) !== null)
+			else if (Blocks::app()->config('urlFormat') == UrlFormat::QueryString)
 			{
-				$this->_isServerPathInfoRequest = false;
+				$this->_urlFormat = UrlFormat::QueryString;
+			}
+			// Check if it's cached
+			else if (($cachedUrlFormat = Blocks::app()->fileCache->get('urlFormat')) !== false)
+			{
+				$this->_urlFormat = $cachedUrlFormat;
 			}
 			else
 			{
-				$this->_isServerPathInfoRequest = false;
-
-				// Last ditch, let's try to determine if PATH_INFO is enabled on the server.
-				try
+				// If there is already a PATH_INFO var available, we know it supports it.
+				if (isset($_SERVER['PATH_INFO']))
 				{
-					$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
-					if (($result = @file_get_contents(Blocks::app()->request->hostInfo.'/blocks/app/business/web/PathInfoCheck.php/test', 0, $context)) !== false)
+					$this->_urlFormat = UrlFormat::PathInfo;
+				}
+				// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
+				else if ($this->getParam(Blocks::app()->config('pathVar'), null) !== null)
+				{
+					$this->_urlFormat = UrlFormat::QueryString;
+				}
+				else
+				{
+					$this->_urlFormat = UrlFormat::QueryString;
+
+					// Last ditch, let's try to determine if PATH_INFO is enabled on the server.
+					try
 					{
-						if ($result === '/test' )
+						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
+						if (($result = @file_get_contents(Blocks::app()->request->hostInfo.'/blocks/app/business/web/PathInfoCheck.php/test', 0, $context)) !== false)
 						{
-							$this->_isServerPathInfoRequest = true;
+							if ($result === '/test' )
+							{
+								$this->_urlFormat = UrlFormat::PathInfo;
+							}
 						}
 					}
+					catch (Exception $e)
+					{
+						Blocks::log('Unable to determine if server PATH_INFO is enabled: '.$e->getMessage());
+					}
 				}
-				catch (Exception $e)
-				{
-					Blocks::log('Unable to determine if server PATH_INFO is enabled: '.$e->getMessage());
-				}
-			}
 
-			// cache it and set it to expire according to config
-			Blocks::app()->fileCache->set('pathInfoRequestStatus', (int)$this->_isServerPathInfoRequest, Blocks::app()->config('cacheTimeSeconds'));
+				// cache it and set it to expire according to config
+				Blocks::app()->fileCache->set('urlFormat', $this->_urlFormat, Blocks::app()->config('cacheTimeSeconds'));
+			}
 		}
 
-		return $this->_isServerPathInfoRequest;
+		return $this->_urlFormat;
 	}
 }

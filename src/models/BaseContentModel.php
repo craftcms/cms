@@ -36,9 +36,9 @@ abstract class BaseContentModel extends BaseModel
 	 *
 	 * @return array
 	 */
-	public function getBelongsTo()
+	public function init()
 	{
-		return array(
+		$this->belongsTo = array(
 			$this->foreignKey => $this->model,
 			'content'         => 'Content'
 		);

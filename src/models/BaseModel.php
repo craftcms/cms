@@ -33,66 +33,18 @@ abstract class BaseModel extends CActiveRecord
 	/**
 	 * @access public
 	 *
-	 * @return bool Whether this model has content (joined to blx_content via blx_blocksmodelclass_content)
-	 */
-	public function getHasContent()
-	{
-		return $this->hasContent;
-	}
-
-	/**
 	 * @access public
 	 *
-	 * @return bool Whether this model has custom blocks (joined to blx_contentblocks via blx_blocksmodelclass_blocks)
-	 */
-	public function getHasBlocks()
-	{
-		return $this->hasBlocks;
-	}
-
-	/**
 	 * @access public
 	 *
-	 * @return array The model's one-to-many relationships
-	 */
-	public function getHasMany()
-	{
-		return $this->hasMany;
-	}
-
-	/**
 	 * @access public
 	 *
-	 * @return array The model's one-to-one relationships
-	 */
-	public function getHasOne()
-	{
-		return $this->hasOne;
-	}
-
-	/**
 	 * @access public
 	 *
-	 * @return array One-to-many or one-to-one relationships
-	 */
-	public function getBelongsTo()
-	{
-		return $this->belongsTo;
-	}
-
-	/**
 	 * @access public
 	 *
 	 * @param bool $names
 	 *
-	 * @return array The model's non-relational attributes
-	 */
-	public function getAttributes($names = true)
-	{
-		return $this->attributes;
-	}
-
-	/**
 	 * @access public
 	 *
 	 * @return string The associated database table name
@@ -109,15 +61,13 @@ abstract class BaseModel extends CActiveRecord
 	 */
 	public function rules()
 	{
-		$attributes = $this->getAttributes();
-
 		$required = array();
 		$integers = array();
 		$maxSizes = array();
 
 		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxSize' => 150, 'required' => false);
 
-		foreach ($attributes as $attributeName => $attributeSettings)
+		foreach ($this->attributes as $attributeName => $attributeSettings)
 		{
 			$attributeSettings = array_merge($defaultAttributeSettings, $attributeSettings);
 
@@ -147,7 +97,7 @@ abstract class BaseModel extends CActiveRecord
 			}
 		}
 
-		$rules[] = array(implode(', ', array_keys($attributes)), 'safe', 'on' => 'search');
+		$rules[] = array(implode(', ', array_keys($this->attributes)), 'safe', 'on' => 'search');
 
 		return $rules;
 	}
@@ -161,27 +111,27 @@ abstract class BaseModel extends CActiveRecord
 	{
 		$relations = array();
 
-		foreach ($this->getHasBlocks() as $key => $settings)
+		foreach ($this->hasBlocks as $key => $settings)
 		{
 			$relations[$key] = $this->generateJoinThroughRelation('ContentBlocks', 'block_id', $settings);
 		}
 
-		foreach ($this->getHasContent() as $key => $settings)
+		foreach ($this->hasContent as $key => $settings)
 		{
 			$relations[$key] = $this->generateJoinThroughRelation('Content', 'content_id', $settings);
 		}
 
-		foreach ($this->getHasMany() as $key => $settings)
+		foreach ($this->hasMany as $key => $settings)
 		{
 			$relations[$key] = $this->generateHasXRelation(self::HAS_MANY, $settings);
 		}
 
-		foreach ($this->getHasOne() as $key => $model)
+		foreach ($this->hasOne as $key => $model)
 		{
 			$relations[$key] = $this->generateHasXRelation(self::HAS_ONE, $settings);
 		}
 
-		foreach ($this->getBelongsTo() as $key => $model)
+		foreach ($this->belongsTo as $key => $model)
 		{
 			$relations[$key] = array(self::BELONGS_TO, $model, $key.'_id');
 		}
@@ -252,7 +202,7 @@ abstract class BaseModel extends CActiveRecord
 
 		$criteria = new CDbCriteria;
 
-		foreach ($this->getAttributes() as $attributeName => $attributeSettings)
+		foreach ($this->attributes as $attributeName => $attributeSettings)
 		{
 			$criteria->compare($attributeName, $this->$attributeName);
 		}
