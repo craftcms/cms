@@ -5,6 +5,10 @@
  */
 class ConfigService extends CApplicationComponent
 {
+	const BUILD_PERSONAL_FILENAME_PREFIX = 'blocks_personal_';
+	const BUILD_PRO_FILENAME_PREFIX = 'blocks_pro_';
+	const BUILD_STANDARD_FILENAME_PREFIX = 'blocks_standard_';
+
 	/* Database */
 
 	/**
@@ -130,6 +134,36 @@ class ConfigService extends CApplicationComponent
 		return PHP_VERSION;
 	}
 
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
+	public function getBuildPersonalFileNamePrefix()
+	{
+		return $this::BUILD_PERSONAL_FILENAME_PREFIX;
+	}
+
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
+	public function getBuildProFileNamePrefix()
+	{
+		return $this::BUILD_PRO_FILENAME_PREFIX;
+	}
+
+	/**
+	 * @access public
+	 *
+	 * @return string
+	 */
+	public function getBuildStandardFileNamePrefix()
+	{
+		return $this::BUILD_STANDARD_FILENAME_PREFIX;
+	}
+
 	/* Requirements */
 
 	/**
@@ -139,11 +173,11 @@ class ConfigService extends CApplicationComponent
 	 */
 	public function getRequiredPHPVersion()
 	{
-		return BLOCKS_MIN_PHP_VERSION;
+		return '5.1.0';
 	}
 
 	/**
-	 * @access publi
+	 * @access public
 	 *
 	 * @param $databaseType
 	 *
@@ -159,19 +193,19 @@ class ConfigService extends CApplicationComponent
 		switch($databaseType)
 		{
 			case DatabaseType::MySQL:
-				return BLOCKS_MIN_MYSQL_VERSION;
+				return '';
 
 			case DatabaseType::Oracle:
-				return BLOCKS_MIN_ORACLE_VERSION;
+				return '';
 
 			case DatabaseType::PostgreSQL:
-				return BLOCKS_MIN_POSTGRESQL_VERSION;
+				return '';
 
 			case DatabaseType::SQLite:
-				return BLOCKS_MIN_SQLITE_VERSION;
+				return '';
 
 			case DatabaseType::SQLServer:
-				return BLOCKS_MIN_SQLSERVER_VERSION;
+				return '';
 		}
 
 		throw new BlocksException('Unknown database type: '.$databaseType);

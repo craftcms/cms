@@ -23,10 +23,10 @@ class RequirementsChecker
 		$this->_requirements = array(
 			new Requirement(
 				'PHP Version',
-				version_compare(Blocks::app()->config->localPHPVersion, BLOCKS_MIN_PHP_VERSION, ">="),
+				version_compare(Blocks::app()->config->localPHPVersion, Blocks::app()->config->requiredPHPVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'PHP '.BLOCKS_MIN_PHP_VERSION.' or higher is required.'),
+				'PHP '.Blocks::app()->config->requiredPHPVersion.' or higher is required.'),
 			new Requirement(
 				'$_SERVER Variable',
 				($message = $this->checkServerVar()) === '',
@@ -169,10 +169,10 @@ class RequirementsChecker
 
 			$this->_requirements[] = new Requirement(
 			'MySQL version',
-			version_compare(Blocks::app()->config->databaseVersion, BLOCKS_MIN_MYSQL_VERSION, ">="),
+			version_compare(Blocks::app()->config->databaseVersion, Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL), ">="),
 			true,
 			'<a href="http://www.blockscms.com">Blocks</a>',
-			'MySQL '.BLOCKS_MIN_MYSQL_VERSION.' or higher is required to run Blocks.');
+			'MySQL '.Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL).' or higher is required to run Blocks.');
 		}
 	}
 

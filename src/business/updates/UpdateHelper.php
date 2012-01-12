@@ -97,13 +97,13 @@ class UpdateHelper
 		switch ($edition)
 		{
 			case BlocksEdition::Personal:
-				return BLOCKSBUILDS_PERSONAL_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
+				return Blocks::app()->config->buildPersonalFileNamePrefix.'v'.$version.'.'.$build.'_patch.zip';
 
 			case BlocksEdition::Pro:
-				return BLOCKSBUILDS_PRO_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
+				return Blocks::app()->config->buildProFileNamePrefix.'v'.$version.'.'.$build.'_patch.zip';
 
 			case BlocksEdition::Standard:
-				return BLOCKSBUILDS_STANDARD_FILENAME.'v'.$version.'.'.$build.'_patch.zip';
+				return Blocks::app()->config->buildStandardFileNamePrefix.'v'.$version.'.'.$build.'_patch.zip';
 		}
 
 		throw new BlocksException('Unknown Blocks Edition: '.$edition);

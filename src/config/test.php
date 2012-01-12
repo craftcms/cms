@@ -1,9 +1,6 @@
 <?php
-require_once(dirname(__FILE__).'/../business/Defines.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
-
-//defined('TEST') || define('TEST', true);
 
 if (!isset($db['port']))
 	$db['port'] = '3306';
