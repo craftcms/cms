@@ -27,7 +27,6 @@ class BlocksApp extends CWebApplication
 					$url = UrlHelper::generateUrl($path, $params);
 					$this->request->redirect($url);
 				}
-
 			}
 			else
 			{

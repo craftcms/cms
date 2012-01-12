@@ -25,9 +25,9 @@ abstract class BaseContentModel extends BaseModel
 		'type'   => array('type' => AttributeType::Enum, 'values' => 'published,draft,autosave', 'default' => 'draft', 'required' => true),
 	);
 
-	public function getBelongsTo()
+	public function init()
 	{
-		return array(
+		$this->belongsTo = array(
 			$this->foreignKey => $this->model,
 			'content'         => 'Content'
 		);
