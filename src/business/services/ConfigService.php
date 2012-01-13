@@ -134,6 +134,49 @@ class ConfigService extends CApplicationComponent
 		return $this::BUILD_STANDARD_FILENAME_PREFIX;
 	}
 
+	/**
+	 * Gets the sessionTimeout config var and converts it into seconds.
+	 *
+	 * If we can't figure out what sessionTimeout setting is, then we default to $defaultTimeout.
+	 *
+	 * @return int
+	 */
+	public function getSessionTimeoutInSeconds()
+	{
+		// If we can't figure out what the setting is, we'll default to this, which is 1 hour (3600 seconds).
+		$defaultTimeout = 3600;
+
+		$timeOut = Blocks::app()->config('sessionTimeout');
+
+		if (StringHelper::IsNullOrEmpty($timeOut))
+			return $defaultTimeout;
+
+		$unit = $timeOut[strlen($timeOut) - 1];
+		$time = substr($timeOut, 0, strlen($timeOut) - 1);
+
+		if ($unit !== 'm' && $unit !== 'h' && $unit !== 'd' && !is_numeric($time))
+			return $defaultTimeout;
+
+		switch ($unit)
+		{
+			case 'm':
+				return (int)$time * 60;
+				break;
+
+			case 'h':
+				return (int)$time * 60 * 60;
+				break;
+
+			case 'd':
+				return (int)$time * 60 * 60 * 24;
+				break;
+
+			default:
+				return $defaultTimeout;
+				break;
+		}
+	}
+
 	/* Requirements */
 
 	/**
