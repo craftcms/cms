@@ -57,7 +57,7 @@ abstract class BaseModel extends CActiveRecord
 				$integers[] = $attributeName;
 
 			if ($attributeSettings['type'] == AttributeType::String)
-				$maxLengths[(string)$attributeName['maxLength']][] = $attributeName;
+				$maxLengths[(string)$attributeSettings['maxLength']][] = $attributeName;
 		}
 
 		$rules = array();
