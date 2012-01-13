@@ -7,7 +7,7 @@ class Info extends BaseModel
 {
 	protected $attributes = array(
 		'edition' => array('type' => AttributeType::Enum, 'values' => 'Pro,Standard,Personal', 'required' => true),
-		'version' => array('type' => AttributeType::String, 'maxSize' => 15, 'required' => true),
+		'version' => array('type' => AttributeType::String, 'maxLength' => 15, 'required' => true),
 		'build'   => array('type' => AttributeType::Integer, 'required' => true)
 	);
 

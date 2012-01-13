@@ -6,12 +6,12 @@
 class Users extends BaseModel
 {
 	protected $attributes = array(
-		'username'    => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
-		'first_name'  => array('type' => AttributeType::String, 'maxSize' => 100, 'required' => true),
-		'last_name'   => array('type' => AttributeType::String, 'maxSize' => 100),
-		'email'       => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
-		'password'    => array('type' => AttributeType::String, 'maxSize' => 128, 'required' => true),
-		'salt'        => array('type' => AttributeType::String, 'maxSize' => 128, 'required' => true)
+		'username'    => array('type' => AttributeType::String, 'required' => true),
+		'first_name'  => array('type' => AttributeType::String, 'maxLength' => 100, 'required' => true),
+		'last_name'   => array('type' => AttributeType::String, 'maxLength' => 100),
+		'email'       => array('type' => AttributeType::String, 'required' => true),
+		'password'    => array('type' => AttributeType::String, 'maxLength' => 128, 'required' => true),
+		'salt'        => array('type' => AttributeType::String, 'maxLength' => 128, 'required' => true)
 	);
 
 	protected $hasContent = array(

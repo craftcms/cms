@@ -6,8 +6,8 @@
 class Entries extends BaseModel
 {
 	protected $attributes = array(
-		'slug'        => array('type' => AttributeType::String, 'maxSize' => 250),
-		'full_uri'    => array('type' => AttributeType::String, 'maxSize' => 1000),
+		'slug'        => array('type' => AttributeType::String),
+		'full_uri'    => array('type' => AttributeType::String, 'maxLength' => 1000),
 		'post_date'   => array('type' => AttributeType::Integer),
 		'expiry_date' => array('type' => AttributeType::Integer),
 		'sort_order'  => array('type' => AttributeType::Integer),

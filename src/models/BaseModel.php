@@ -42,9 +42,9 @@ abstract class BaseModel extends CActiveRecord
 	{
 		$required = array();
 		$integers = array();
-		$maxSizes = array();
+		$maxLengths = array();
 
-		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxSize' => 150, 'required' => false);
+		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxLength' => 255, 'required' => false);
 
 		foreach ($this->attributes as $attributeName => $attributeSettings)
 		{
@@ -57,7 +57,7 @@ abstract class BaseModel extends CActiveRecord
 				$integers[] = $attributeName;
 
 			if ($attributeSettings['type'] == AttributeType::String)
-				$maxSizes[(string)$attributeName['maxSize']][] = $attributeName;
+				$maxLengths[(string)$attributeName['maxLength']][] = $attributeName;
 		}
 
 		$rules = array();
@@ -68,11 +68,11 @@ abstract class BaseModel extends CActiveRecord
 		if ($integers)
 			$rules[] = array(implode(', ', $integers), 'numerical', 'integerOnly' => true);
 
-		if ($maxSizes)
+		if ($maxLengths)
 		{
-			foreach ($maxSizes as $maxSize => $attributeNames)
+			foreach ($maxLengths as $maxLength => $attributeNames)
 			{
-				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxSize);
+				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxLength);
 			}
 		}
 

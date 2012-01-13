@@ -6,9 +6,9 @@
 class Assets extends BaseModel
 {
 	protected $attributes = array(
-		'path'      => array('type' => AttributeType::String, 'maxSize' => 1000, 'required' => true),
-		'filename'  => array('type' => AttributeType::String, 'maxSize' => 1000, 'required' => true),
-		'extension' => array('type' => AttributeType::String, 'maxSize' => 50, 'required' => false)
+		'path'      => array('type' => AttributeType::String, 'maxLength' => 1000, 'required' => true),
+		'filename'  => array('type' => AttributeType::String, 'maxLength' => 1000, 'required' => true),
+		'extension' => array('type' => AttributeType::String, 'maxLength' => 50, 'required' => false)
 	);
 
 	protected $belongsTo = array(
