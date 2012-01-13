@@ -7,7 +7,6 @@ class DatabaseHelper
 {
 	/**
 	 * @static
-	 * @param $dbName
 	 * @param $tableName
 	 * @todo MySql specific.  Need to abstract.
 	 */
@@ -30,7 +29,6 @@ class DatabaseHelper
 
 	/**
 	 * @static
-	 * @param $dbName
 	 * @param $tableName
 	 * @todo MySql specific.  Need to abstract.
 	 */
