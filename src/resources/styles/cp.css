@@ -122,7 +122,6 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 /* panes */
 .pane { margin-bottom: 20px; border: 1px solid #bbb; border-radius: 4px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
 
-.pane .head:not(:first-child),
 .pane .body:not(:first-child) { border-top: 1px solid #bbb; }
 .pane .head:first-child,
 .pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }

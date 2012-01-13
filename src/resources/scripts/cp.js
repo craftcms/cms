@@ -70,8 +70,8 @@ blx.CP =
 
 	setSidebarHeight: function()
 	{
-		var sidebarHeight = blx.windowHeight - this.sidebarTop - 40;
-		this.dom.$sidebar.css('maxHeight', sidebarHeight);
+		var sidebarHeight = blx.windowHeight - this.sidebarTop;
+		this.dom.$sidebar.height(sidebarHeight);
 	}
 };
 
