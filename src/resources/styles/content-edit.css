@@ -1,3 +1,5 @@
+body { background: #f5f5f5; }
+
 #main .centered { margin: 0 auto; max-width: 800px; }
 
 #main .page-toolbar { border-radius: 4px 4px 0 0; height: 39px; line-height: 24px; color: #666; }

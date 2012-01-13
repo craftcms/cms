@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Basic elements
 /* ----------------------------------------*/
 
-body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fdfdfd; }
+body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fff; }
 
 h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
@@ -87,10 +87,11 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 
 /*-- sidebars --*/
 body.sidebar-layout #main { margin-left: 220px; }
-body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: auto; border-right: 1px solid #ececec; }
+body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: auto; border-right: 1px solid #d5d5d5; background: #f5f5f5; }
 
 .sidebar { width: 219px; }
-.sidebar h5 { margin: 0; border-top: 1px solid #ececec; border-bottom: 1px solid #ccc; padding: 8px 20px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee)); }
+.sidebar h5 { margin: 0; border-bottom: 1px solid #c5c5c5; padding: 8px 20px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#e5e5e5), to(#ddd)); }
+.sidebar h5:not(:first-child) { border-top: 1px solid #d5d5d5; }
 .sidebar .tree { padding: 8px 20px; }
 .sidebar .tree a { margin: 0 -20px 0 -9999px; padding-left: 9979px; padding-right: 10px; font-weight: normal; color: #666; }
 .sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
@@ -119,7 +120,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin: 1px 1px 21px 1px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 3px 8px rgba(0,0,0,0.15); }
+.pane { margin: 1px 1px 21px 1px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
 
 .pane .head:first-child,
 .pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
