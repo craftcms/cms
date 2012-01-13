@@ -179,7 +179,8 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
 /*  Toolbar
 /* ----------------------------------------*/
 
-.toolbar { margin: -20px -20px 20px; padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.1); height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#f7f7f7)); }
+.toolbar { padding: 10px 20px; border-bottom: 1px solid rgba(0,0,0,0.1); height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#f7f7f7)); }
+#main > .toolbar { margin: -20px -20px 20px; }
 .toolbar .search { float: right; width: 227px; }
 .toolbar .btn,
 .toolbar .btn-group { float: left; margin-right: 10px; }
