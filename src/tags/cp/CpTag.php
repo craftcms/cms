@@ -11,7 +11,7 @@ class CpTag extends Tag
 		'assets' => 'Assets',
 		'users' => 'Users',
 		'settings' => 'Settings',
-		'guide' => 'User Guide',
+		'userguide' => 'User Guide',
 	);
 
 	/**

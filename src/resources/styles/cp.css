@@ -72,7 +72,7 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 #nav li#nav-assets a { background-image: url(../images/nav-icons/258.png); }
 #nav li#nav-users a { background-image: url(../images/nav-icons/244.png); }
 #nav li#nav-settings a { background-image: url(../images/nav-icons/266.png); }
-#nav li#nav-guide a { background-image: url(../images/nav-icons/240.png); }
+#nav li#nav-userguide a { background-image: url(../images/nav-icons/240.png); }
 
 #nav li#nav-account a { margin-right: 10px; padding-right: 10px; width: auto; color: #ccc; text-decoration: none; opacity: 1; }
 #nav li#nav-account a img { display: block; float: left; margin: 8px 7px 0 0; border-radius: 2px; width: 24px; height: 24px; -webkit-box-shadow: 0 1px 5px #000; }
