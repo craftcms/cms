@@ -168,7 +168,6 @@ class BlocksApp extends CWebApplication
 
 		$databaseServerName = $this->config->databaseServerName;
 		$databaseAuthName = $this->config->databaseAuthName;
-		$databaseAuthPassword = $this->config->databaseAuthPassword;
 		$databaseName = $this->config->databaseName;
 		$databaseType = $this->config->databaseType;
 		$databasePort = $this->config->databasePort;
@@ -181,9 +180,6 @@ class BlocksApp extends CWebApplication
 
 		if (StringHelper::IsNullOrEmpty($databaseAuthName))
 			$messages[] = 'The database user name is not set in your db config file.';
-
-		if (StringHelper::IsNullOrEmpty($databaseAuthPassword))
-			$messages[] = 'The database password is not set in your db config file.';
 
 		if (StringHelper::IsNullOrEmpty($databaseName))
 			$messages[] = 'The database name is not set in your db config file.';
