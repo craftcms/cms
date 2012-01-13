@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Basic elements
 /* ----------------------------------------*/
 
-body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fafafa; }
+body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fff; }
 
 h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
@@ -50,7 +50,7 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 /* ----------------------------------------*/
 
 /*-- nav --*/
-#nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 40px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 0 100%, from(#404040), to(#2a2a2a)); -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.65); }
+#nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 40px; padding: 0 0; background: -webkit-gradient(linear, 0 0, 0 100%, from(#404040), to(rgba(15,15,15,0.9))); -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.65); }
 #nav .left { float: left; }
 #nav .right { float: right; }
 #nav .left #site { float: left; margin: 0 10px; border-radius: 0; padding: 0 2px; height: 40px; line-height: 40px; color: #ccc; text-shadow: 0 1px 1px #000; background: none !important; -webkit-box-shadow: none; }
@@ -86,14 +86,13 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 
 
 /*-- sidebars --*/
-body.sidebar-layout #main { margin-left: 240px; }
-body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: auto; }
+body.sidebar-layout #main { margin-left: 220px; }
+body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: auto; border-right: 1px solid #eee; }
 
-.sidebar { width: 200px; padding: 20px; }
-.sidebar .search { margin-bottom: 15px; }
-.sidebar .pane { -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.05), 0 2px 5px rgba(0,0,0,0.05); }
-.sidebar .pane .head { line-height: 1; }
-.sidebar .tree a { margin: 0 -11px 0 -9999px; padding-left: 9974px; padding-right: 11px; font-weight: normal; color: #666; }
+.sidebar { width: 219px; }
+.sidebar h5 { margin: 0; border-top: 1px solid #eee; border-bottom: 1px solid #ccc; padding: 8px 20px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee)); }
+.sidebar .tree { padding: 8px 20px; }
+.sidebar .tree a { margin: 0 -20px 0 -9999px; padding-left: 9979px; padding-right: 10px; font-weight: normal; color: #666; }
 .sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
 .sidebar .tree a.sel { color: #fff; text-shadow: 0 1px 1px #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#2782bb)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .sidebar .tree a:hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
@@ -120,10 +119,8 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin-bottom: 20px; border: 1px solid #bbb; border-radius: 4px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.1); }
+.pane { margin: 1px 1px 21px 1px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 3px 8px rgba(0,0,0,0.15); }
 
-.pane .head:not(:first-child),
-.pane .body:not(:first-child) { border-top: 1px solid #bbb; }
 .pane .head:first-child,
 .pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
 .pane .head:last-child,
@@ -134,14 +131,12 @@ table.pane > *:first-child > tr:first-child > *:first-child { border-top-left-ra
 table.pane > *:first-child > tr:first-child > *:last-child { border-top-right-radius: 3px; }
 table.pane > *:last-child > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
 table.pane > *:last-child > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
-table.pane > thead > tr > *,
-table.pane > tbody > tr.head > * { border-bottom: 1px solid #bbb; }
 table.pane > thead > tr > *:not(:first-child),
 table.pane > tbody > tr.head > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
 
 .pane .head,
 table.pane > thead > tr > *,
-table.pane > tbody > tr.head > * { position: relative; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fcfcfc), to(#eee)); -webkit-box-shadow: inset 0 1px 0 #fff; }
+table.pane > tbody > tr.head > * { position: relative; border-bottom: 1px solid #ccc; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee)); }
 table.pane > tbody > tr.head > * { line-height: 1; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
@@ -150,8 +145,12 @@ table.pane > tbody > tr.head > * { line-height: 1; }
 .pane .body .item,
 .pane .body tr.item > th,
 .pane .body tr.item > td,
-table.pane > tbody > tr > * { border-top: 1px solid #e5e5e5; padding: 7px 10px; }
-table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #e5e5e5; }
+table.pane > tbody > tr > * { padding: 7px 10px; }
+.pane .body .item:not(:first-child),
+.pane .body tr.item:not(:first-child) > th,
+.pane .body tr.item:not(:first-child) > td,
+table.pane > tbody > tr:not(:first-child) > * { border-top: 1px solid #eee; padding: 7px 10px; }
+table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
 .pane .body tr.item { border-top: none; padding: 0; }
 .pane .body tr.item > th:not(:first-child),
 .pane .body tr.item > td:not(:first-child) { padding-left: 0; }
