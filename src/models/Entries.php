@@ -10,9 +10,9 @@ class Entries extends BaseModel
 		'full_uri'    => array('type' => AttributeType::String, 'maxLength' => 1000),
 		'post_date'   => array('type' => AttributeType::Integer),
 		'expiry_date' => array('type' => AttributeType::Integer),
-		'sort_order'  => array('type' => AttributeType::Integer),
-		'enabled'     => array('type' => AttributeType::Boolean, 'required' => true, 'default' => true),
-		'archived'    => array('type' => AttributeType::Boolean, 'required' => true, 'default' => false)
+		'sort_order'  => array('type' => AttributeType::Integer, 'unsigned' => true),
+		'enabled'     => array('type' => AttributeType::Boolean, 'required' => true, 'default' => true, 'unsigned' => true),
+		'archived'    => array('type' => AttributeType::Boolean, 'required' => true, 'default' => false, 'unsigned' => true)
 	);
 
 	protected $belongsTo = array(

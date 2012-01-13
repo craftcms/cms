@@ -9,9 +9,9 @@ class Sections extends BaseModel
 		'handle'      => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
 		'label'       => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
 		'url_format'  => array('type' => AttributeType::String),
-		'max_entries' => array('type' => AttributeType::Integer),
+		'max_entries' => array('type' => AttributeType::Integer, 'unsigned' => true),
 		'template'    => array('type' => AttributeType::String, 'maxLength' => 500),
-		'sortable'    => array('type' => AttributeType::Boolean, 'required' => true)
+		'sortable'    => array('type' => AttributeType::Boolean, 'required' => true, 'unsigned' => true)
 	);
 
 	protected $belongsTo = array(

@@ -8,7 +8,7 @@ class Plugins extends BaseModel
 	protected $attributes = array(
 		'name'    => array('type' => AttributeType::String, 'maxLength' => 50),
 		'version' => array('type' => AttributeType::String, 'maxLength' => 15),
-		'enabled' => array('type' => AttributeType::Boolean, 'default' => true, 'required' => true)
+		'enabled' => array('type' => AttributeType::Boolean, 'default' => true, 'required' => true, 'unsigned' => true)
 	);
 
 	protected $hasMany = array(

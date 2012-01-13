@@ -7,7 +7,7 @@ class UserWidgets extends BaseModel
 {
 	protected $attributes = array(
 		'class'      => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
-		'sort_order' => array('type' => AttributeType::Integer, 'required' => true)
+		'sort_order' => array('type' => AttributeType::Integer, 'required' => true, 'unsigned' => true)
 	);
 
 	protected $belongsTo = array(
