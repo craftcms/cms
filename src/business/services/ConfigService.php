@@ -115,7 +115,7 @@ class ConfigService extends CApplicationComponent
 	 */
 	public function getBuildPersonalFileNamePrefix()
 	{
-		return $this::BUILD_PERSONAL_FILENAME_PREFIX;
+		return self::BUILD_PERSONAL_FILENAME_PREFIX;
 	}
 
 	/**
@@ -123,7 +123,7 @@ class ConfigService extends CApplicationComponent
 	 */
 	public function getBuildProFileNamePrefix()
 	{
-		return $this::BUILD_PRO_FILENAME_PREFIX;
+		return self::BUILD_PRO_FILENAME_PREFIX;
 	}
 
 	/**
@@ -131,7 +131,7 @@ class ConfigService extends CApplicationComponent
 	 */
 	public function getBuildStandardFileNamePrefix()
 	{
-		return $this::BUILD_STANDARD_FILENAME_PREFIX;
+		return self::BUILD_STANDARD_FILENAME_PREFIX;
 	}
 
 	/* Requirements */
