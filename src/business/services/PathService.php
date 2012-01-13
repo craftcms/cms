@@ -166,6 +166,19 @@ class PathService extends CApplicationComponent
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getSessionPath()
+	{
+		$path = $this->runtimePath.'sessions/';
+
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
+
+		return $this->normalizeDirectorySeparators($path);
+	}
+
+	/**
 	 * @param $path
 	 * @return mixed
 	 */
