@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Basic elements
 /* ----------------------------------------*/
 
-body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fff; }
+body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fdfdfd; }
 
 h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
@@ -87,10 +87,10 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 
 /*-- sidebars --*/
 body.sidebar-layout #main { margin-left: 220px; }
-body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: auto; border-right: 1px solid #eee; }
+body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: auto; border-right: 1px solid #ececec; }
 
 .sidebar { width: 219px; }
-.sidebar h5 { margin: 0; border-top: 1px solid #eee; border-bottom: 1px solid #ccc; padding: 8px 20px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee)); }
+.sidebar h5 { margin: 0; border-top: 1px solid #ececec; border-bottom: 1px solid #ccc; padding: 8px 20px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee)); }
 .sidebar .tree { padding: 8px 20px; }
 .sidebar .tree a { margin: 0 -20px 0 -9999px; padding-left: 9979px; padding-right: 10px; font-weight: normal; color: #666; }
 .sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
