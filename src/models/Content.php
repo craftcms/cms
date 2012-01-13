@@ -6,7 +6,7 @@
 class Content extends BaseModel
 {
 	protected $attributes = array(
-		'language_code' => array('type' => AttributeType::String, 'maxSize' => 5, 'required' => true)
+		'language_code' => array('type' => AttributeType::String, 'maxLength' => 5, 'required' => true)
 	);
 
 	/**

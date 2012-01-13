@@ -10,7 +10,7 @@ abstract class BaseContentModel extends BaseModel
 
 	protected $attributes = array(
 		'num'    => array('type' => AttributeType::Integer, 'required' => true),
-		'label'  => array('type' => AttributeType::String, 'maxSize' => 150),
+		'label'  => array('type' => AttributeType::String, 'maxLength' => 150),
 		'active' => array('type' => AttributeType::Boolean, 'required' => true),
 		'type'   => array('type' => AttributeType::Enum, 'values' => 'published,draft,autosave', 'default' => 'draft', 'required' => true),
 	);

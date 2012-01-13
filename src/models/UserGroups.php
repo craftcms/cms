@@ -6,7 +6,7 @@
 class UserGroups extends BaseModel
 {
 	protected $attributes = array(
-		'name'        => array('type' => AttributeType::String, 'maxSize' => 250, 'required' => true),
+		'name'        => array('type' => AttributeType::String, 'required' => true),
 		'description' => array('type' => AttributeType::Text)
 	);
 

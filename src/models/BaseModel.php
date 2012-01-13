@@ -11,14 +11,28 @@ abstract class BaseModel extends CActiveRecord
 	protected $hasContent = array();
 	protected $hasMany = array();
 	protected $hasOne = array();
+	protected $_tableName;
 
 	/**
 	 * @param bool $names
-	 * @return string The associated database table name
+	 * @return string The model's table name
 	 */
 	public function tableName()
 	{
-		return '{{'.strtolower(get_class($this)).'}}';
+		return '{{'.$this->tableName.'}}';
+	}
+
+	/**
+	 * Get the model's table name (without the curly brackets)
+	 * @return string The table name
+	 * @access protected
+	 */
+	protected function getTableName()
+	{
+		if (!isset($this->_tableName))
+			$this->_tableName = strtolower(get_class($this));
+
+		return $this->_tableName;
 	}
 
 	/**
@@ -28,9 +42,9 @@ abstract class BaseModel extends CActiveRecord
 	{
 		$required = array();
 		$integers = array();
-		$maxSizes = array();
+		$maxLengths = array();
 
-		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxSize' => 150, 'required' => false);
+		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxLength' => 255, 'required' => false);
 
 		foreach ($this->attributes as $attributeName => $attributeSettings)
 		{
@@ -43,7 +57,7 @@ abstract class BaseModel extends CActiveRecord
 				$integers[] = $attributeName;
 
 			if ($attributeSettings['type'] == AttributeType::String)
-				$maxSizes[(string)$attributeName['maxSize']][] = $attributeName;
+				$maxLengths[(string)$attributeName['maxLength']][] = $attributeName;
 		}
 
 		$rules = array();
@@ -54,11 +68,11 @@ abstract class BaseModel extends CActiveRecord
 		if ($integers)
 			$rules[] = array(implode(', ', $integers), 'numerical', 'integerOnly' => true);
 
-		if ($maxSizes)
+		if ($maxLengths)
 		{
-			foreach ($maxSizes as $maxSize => $attributeNames)
+			foreach ($maxLengths as $maxLength => $attributeNames)
 			{
-				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxSize);
+				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxLength);
 			}
 		}
 
@@ -167,12 +181,113 @@ abstract class BaseModel extends CActiveRecord
 	}
 
 	/**
-	 * Creates the table(s) necessary for this model to save its data
-	 * @static
+	 * Creates the model's table
 	 */
-	public static function install()
+	public function createTable()
 	{
-		
+		$connection = Blocks::app()->db;
+
+		// make sure that the table doesn't already exist
+		if ($connection->schema->getTable('{{'.$this->tableName.'}}') !== null)
+			throw new BlocksException($this->tableName.' already exists.');
+
+		$columns['id'] = AttributeType::PK;
+
+		foreach ($this->belongsTo as $name => $settings)
+		{
+			$required = isset($settings['required']) ? $settings['required'] : false;
+			$settings = array('type' => AttributeType::Integer, 'required' => $required);
+			$columns[$name.'_id'] = DatabaseHelper::generateColumnDefinition($settings);
+		}
+
+		foreach ($this->attributes as $name => $settings)
+		{
+			$columns[$name] = DatabaseHelper::generateColumnDefinition($settings);
+		}
+
+		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
+		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
+		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true));
+
+		// start the transaction
+		$transaction = $connection->beginTransaction();
+		try
+		{
+			// create the table
+			$connection->createCommand()->createTable('{{'.$this->tableName.'}}', $columns);
+
+			// add the insert and update triggers
+			DatabaseHelper::createInsertAuditTrigger($this->tableName);
+			DatabaseHelper::createUpdateAuditTrigger($this->tableName);
+		}
+		catch (Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
+	 * Adds foreign keys to the model's table
+	 */
+	public function addForeignKeys()
+	{
+		$connection = Blocks::app()->db;
+
+		// start the transaction
+		$transaction = $connection->beginTransaction();
+		try
+		{
+			foreach ($this->belongsTo as $name => $settings)
+			{
+				$otherTableName = strtolower($settings['model']);
+				$fkName = $this->tableName.'_'.$otherTableName.'_fk';
+				$connection->createCommand()->addForeignKey($fkName, '{{'.$this->tableName.'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id');
+			}
+		}
+		catch (Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
+	 * Drops the foreign keys from the model's table
+	 */
+	public function dropForeignKeys()
+	{
+		$connection = Blocks::app()->db;
+
+		// start the transaction
+		$transaction = $connection->beginTransaction();
+		try
+		{
+			foreach ($this->belongsTo as $name => $settings)
+			{
+				$otherTableName = strtolower($settings['model']);
+				$fkName = $this->tableName.'_'.$otherTableName.'_fk';
+				$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->tableName.'}}');
+			}
+		}
+		catch (Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
+	 * Drops the model's table
+	 */
+	public function dropTable()
+	{
+		$connection = Blocks::app()->db;
+
+		if ($connection->schema->getTable($this->tableName) !== null)
+		{
+			$connection->createCommand()->dropTable($this->tableName);
+		}
 	}
 
 	/**

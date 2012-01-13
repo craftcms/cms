@@ -9,9 +9,9 @@ class ContentBlocks extends BaseModel
 	 * @return array
 	 */
 	protected $attributes = array(
-		'handle'       => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
-		'label'        => array('type' => AttributeType::String, 'maxSize' => 500, 'required' => true),
-		'class'        => array('type' => AttributeType::String, 'maxSize' => 150, 'required' => true),
+		'handle'       => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
+		'label'        => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
+		'class'        => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
 		'instructions' => array('type' => AttributeType::Text)
 	);
 

@@ -9,7 +9,7 @@ abstract class BaseSettingsModel extends BaseModel
 	protected $model;
 
 	protected $attributes = array(
-		'key'   => array('type' => AttributeType::String, 'maxSize' => 100, 'required' => true),
+		'key'   => array('type' => AttributeType::String, 'maxLength' => 100, 'required' => true),
 		'value' => array('type' => AttributeType::Text)
 	);
 
