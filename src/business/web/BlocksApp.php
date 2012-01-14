@@ -144,7 +144,7 @@ class BlocksApp extends CWebApplication
 		if($this->hasEventHandler('onBeginRequest'))
 			$this->onBeginRequest(new CEvent($this));
 
-		$this->processRequest();
+		$this->runController('blocks/index');
 
 		if($this->hasEventHandler('onEndRequest'))
 			$this->onEndRequest(new CEvent($this));

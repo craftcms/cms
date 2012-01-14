@@ -12,70 +12,39 @@ class BlocksController extends BaseController
 	{
 		if (Blocks::app()->mode == AppMode::Action)
 		{
-			$requestController = null;
-			$requestAction = null;
+			if (!isset(Blocks::app()->request->pathSegments[2]))
+				throw new BlocksHttpException(404);
 
 			// requestHandle will either be 'app' or {pluginHandle}
-			// pathInfo format.
-			if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
-			{
-				if (isset(Blocks::app()->request->pathSegments[1]))
-					$requestHandle = Blocks::app()->request->pathSegments[1];
+			$requestHandle = Blocks::app()->request->pathSegments[1];
+			$requestController = Blocks::app()->request->pathSegments[2];
 
-				if (isset(Blocks::app()->request->pathSegments[2]))
-					$requestController = Blocks::app()->request->pathSegments[2];
-
-				if (isset(Blocks::app()->request->pathSegments[3]))
-					$requestAction = Blocks::app()->request->pathSegments[3];
-
-				if ($requestAction == null)
-					$requestAction = $actionId;
-			}
+			if (isset(Blocks::app()->request->pathSegments[2]))
+				$requestAction = Blocks::app()->request->pathSegments[3];
 			else
+				$requestAction = 'index';
+
+			// we found a matching controller for this request.
+			if (($ca = Blocks::app()->createController($requestController)) !== null)
 			{
-				// queryString format.
-				if (($path = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null)) !== null)
+				$newController = $ca[0];
+
+				if (($action = $newController->createAction($requestAction)) !== null)
 				{
-					$pathSegs = explode('/', $path);
-					if (isset($pathSegs[1]))
-						$requestHandle = $pathSegs[1];
+					$this->setRequestController($newController);
 
-					if (isset($pathSegs[2]))
-						$requestController = $pathSegs[2];
+					$newController->init();
 
-					if (isset($pathSegs[3]))
-						$requestAction = $pathSegs[3];
+					if (($parent = $newController->module) === null)
+						$parent = Blocks::app();
 
-					if ($requestAction == null)
-						$requestAction = 'index';
-				}
-			}
-
-			if ($requestController !== null && $requestAction !== null) // and requestHandle == app
-			{
-				// we found a matching controller for this request.
-				if (($ca = Blocks::app()->createController($requestController)) !== null)
-				{
-					$newController = $ca[0];
-
-					if (($action = $newController->createAction($requestAction)) !== null)
+					if ($parent->beforeControllerAction($newController, $action))
 					{
-						$this->setRequestController($newController);
-
-						$newController->init();
-
-						if (($parent = $newController->module) === null)
-							$parent = Blocks::app();
-
-						if ($parent->beforeControllerAction($newController, $action))
-						{
-							$newController->runActionWithFilters($action, $newController->filters());
-							$parent->afterControllerAction($newController, $action);
-						}
+						$newController->runActionWithFilters($action, $newController->filters());
+						$parent->afterControllerAction($newController, $action);
 					}
 				}
 			}
-			// else can't find module/controller/action try index?  404?
 		}
 		else
 		{
