@@ -14,7 +14,7 @@ class TemplateController extends BaseController
 		$templateMatch = Blocks::app()->urlManager->templateMatch;
 
 		// see if we can match a template on the file system.
-		if (($templateMatch) !== null)
+		if ($templateMatch !== null)
 		{
 			parent::run($actionId);
 			$this->loadTemplate($templateMatch->getRelativePath().'/'.$templateMatch->getFileName());

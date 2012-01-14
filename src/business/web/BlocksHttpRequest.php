@@ -64,7 +64,7 @@ class BlocksHttpRequest extends CHttpRequest
 	 */
 	public function getUrlFormat()
 	{
-		if (! isset($this->_urlFormat))
+		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
 			if (Blocks::app()->config('urlFormat') == UrlFormat::PathInfo)

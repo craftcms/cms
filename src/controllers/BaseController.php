@@ -28,6 +28,7 @@ class BaseController extends CController
 	}
 
 	/**
+	 * @todo revisit once we find out about module support.
 	 * @return null
 	 */
 	public function getRequestController()
@@ -36,33 +37,12 @@ class BaseController extends CController
 	}
 
 	/**
+	 * @todo revisit once we find out about module support.
 	 * @param $requestController
 	 */
 	public function setRequestController($requestController)
 	{
 		$this->_requestController = $requestController;
-	}
-
-	/**
-	 * @param $viewName
-	 * @return bool
-	 */
-	public function getViewFile($viewName)
-	{
-		if (($theme = Blocks::app()->theme) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
-			return $viewFile;
-
-		$moduleViewPath = $basePath = Blocks::app()->viewPath;
-
-		if (($requestController = $this->getRequestController()) !== null)
-			$module = $requestController->module;
-		else
-			$module = $this->module;
-
-		if ($module !== null)
-			$moduleViewPath = $module->viewPath;
-
-		return $this->resolveViewFile($viewName, $this->viewPath, $basePath, $moduleViewPath);
 	}
 
 	/**
