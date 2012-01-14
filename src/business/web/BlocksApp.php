@@ -12,6 +12,7 @@ class BlocksApp extends CWebApplication
 	private $_dbInstalled = null;
 
 	/**
+	 *
 	 */
 	public function init()
 	{
@@ -41,7 +42,6 @@ class BlocksApp extends CWebApplication
 				}
 			}
 		}
-
 
 		// Is this a resource request?
 		if ($this->mode == AppMode::Resource)
@@ -331,36 +331,5 @@ class BlocksApp extends CWebApplication
 	public function config($key = false)
 	{
 		return (is_string($key) && isset($this->params['config'][$key])) ? $this->params['config'][$key] : null;
-	}
-
-	/**
-	 * Processes the current request.
-	 * It first resolves the request into controller and action,
-	 * and then creates the controller to perform the action.
-	 * @throws BlocksHttpException
-	 */
-	public function processRequest()
-	{
-		if (is_array($this->catchAllRequest) && isset($this->catchAllRequest[0]))
-		{
-			$route = $this->catchAllRequest[0];
-			foreach (array_splice($this->catchAllRequest, 1) as $name => $value)
-				$_GET[$name] = $value;
-		}
-		else
-			$route = $this->urlManager->parseUrl($this->request);
-
-		if ($route !== '')
-		{
-			// don't let a gii request on the front-end go through.
-			if (strpos($route, 'gii') !== false)
-				if ($this->mode !== AppMode::CP)
-					$this->request->redirect('/');
-
-			$this->runController($route);
-		}
-		else
-			// can't find any template or route to match.
-			throw new BlocksHttpException(404);
 	}
 }
