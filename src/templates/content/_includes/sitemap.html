@@ -1,8 +1,8 @@
-<div class="tree content">
-	<h6>Add-ons</h6>
+<h5>Add-ons</h5>
+<div class="tree">
 	<ul>
 		<li><span class="toggle expanded"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Assets</a>
-			<h6>Docs</h6>
+			<h5>Docs</h5>
 			<ul>
 				<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Installation Instructions</a></li>
 				<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Updating Instructions</a></li>
@@ -13,18 +13,22 @@
 		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Matrix</a></li>
 		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Playa</a></li>
 		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam</a></li>
-		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status"></span>Spread</a></li>
+		<li><span class="toggle"></span><a {% if url.segment(2) == "edit" %}class="sel"{% /if %} href="{{ url.generateUrl('content/edit') }}"><span class="status"></span>Spread</a></li>
 	</ul>
+</div>
 
-	<h6>Dive Bar</h6>
+<h5>Dive Bar</h5>
+<div class="tree">
 	<ul>
 		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Field Pack</a></li>
 		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T List</a></li>
 		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Pill</a></li>
 		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Switch</a></li>
 	</ul>
+</div>
 
-	<h6>Blog &amp; Tonic</h6>
+<h5>Blog &amp; Tonic</h5>
+<div class="tree">
 	<ul>
 		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Introducing Assets</a></li>
 		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam 2.2 Released!</a></li>

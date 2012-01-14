@@ -1,0 +1,51 @@
+{% layout _layouts/sidebar %}
+
+{% region pageTitle %}){{ pageTitle }}{% /region %}
+{% region styles %}{{ cp.resource('app/styles/content.css').css }}{% /region %}
+
+{% region sidebar %}
+	{% include "content/_includes/sitemap" %}
+{% /region %}
+
+{% region main %}
+	{% if page %}
+		{% include content/_includes/toolbar %}
+		<div class="page">
+			{{ page }}
+		</div>
+	{% /if %}
+{% /region %}
+
+{% region scripts %}
+	{{ cp.resource('app/lib/rangy-1.2.1.js').js }}
+	{{ cp.resource('app/scripts/ui/Menu.js').js }}
+	{{ cp.resource('app/scripts/ui/SelectMenu.js').js }}
+	{{ cp.resource('app/scripts/ui/RTE.js').js }}
+
+	<script type="text/javascript">
+
+		var $settings = $('.page-settings'),
+			$settingsTable = $('table', $settings),
+			$settingsBtn = $('.settings-btn'),
+			showingSettings = false,
+			expandedHeight = $settingsTable.height() + 20;
+
+		$settingsBtn.click(function() {
+			showingSettings = ! showingSettings;
+			$settingsBtn.toggleClass('sel');
+			$settings.stop().animate({ height: (showingSettings ? expandedHeight : 0) });
+		});
+
+		var $draftBtn = $('.draft-btn'),
+			$draftMenu = $('ul', $draftBtn);
+
+		$draftBtn.click(function() {
+			$draftMenu.toggle();
+		});
+
+		new blx.ui.RTE('content', {
+			css: "{{ cp.resource('app/styles/rte.css') }}"
+		});
+
+	</script>
+{% /region %}

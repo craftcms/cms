@@ -1,34 +1,26 @@
 <div class="toolbar page-toolbar">
-	<ul class="left">
-		<li class="status">
-			<div>
-				<? if (empty($_GET['published'])): ?>
-					<span class="status draft"></span>Never published
-				<? else: ?>
-					<span class="status on"></span>Live
-				<? endif ?>
-			</div>
-		</li>
-		<li>
-			<div class="btn">
-				<span class="label">Draft 1</span>
-				<span class="arrow"></span>
-			</div>
-		</li>
-		<li>
-			<div class="btn-group">
-				<a class="btn sel"><span class="icon icon136"></span></a>
-				<a class="btn"><span class="icon icon274"></span></a>
-			</div>
-		</li>
-	</ul>
+	<div class="left">
+		<div class="status">
+			<? if (empty($_GET['published'])): ?>
+				<span class="status draft"></span>Never published
+			<? else: ?>
+				<span class="status on"></span>Live
+			<? endif ?>
+		</div>
+		<div class="btn">
+			<span class="label">Draft 1</span>
+			<span class="arrow"></span>
+		</div>
+		<div class="btn-group">
+			<a class="btn sel"><span class="icon icon136"></span></a>
+			<a class="btn"><span class="icon icon274"></span></a>
+		</div>
+	</div>
 
-	<ul class="right">
-		<li>
-			<div class="btn">
-				<span class="icon icon288"></span>
-				<span class="arrow"></span>
-			</div>
-		</li>
-	</ul>
+	<div class="right">
+		<div class="btn">
+			<span class="icon icon265"></span>
+			<span class="arrow"></span>
+		</div>
+	</div>
 </div>
