@@ -43,31 +43,6 @@ class BlocksApp extends CWebApplication
 			}
 		}
 
-		// Is this a resource request?
-		if ($this->mode == AppMode::Resource)
-		{
-			// get the path segments, except for the first one which we already know is "resources"
-			$segs = array_slice(array_merge($this->request->pathSegments), 1);
-
-			// get the resource handle ("app" or a plugin class)
-			$handle = array_shift($segs);
-
-			if ($handle == 'app')
-			{
-				$rootFolderPath = $this->path->resourcesPath;
-			}
-			else
-			{
-				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
-			}
-
-			$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
-			$relativeResourcePath = implode('/', $segs);
-
-			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
-			$resourceProcessor->processResourceRequest();
-		}
-
 		parent::init();
 	}
 
@@ -135,19 +110,7 @@ class BlocksApp extends CWebApplication
 	{
 		$this->validateConfig();
 
-		if ($this->mode !== AppMode::Action)
-			$this->urlManager->processTemplateMatching();
-
-		if ($this->urlManager->templateMatch !== null || ($this->mode == AppMode::Action))
-			$this->catchAllRequest = array('blocks/index');
-
-		if($this->hasEventHandler('onBeginRequest'))
-			$this->onBeginRequest(new CEvent($this));
-
-		$this->runController('blocks/index');
-
-		if($this->hasEventHandler('onEndRequest'))
-			$this->onEndRequest(new CEvent($this));
+		parent::run();
 	}
 
 	/**
@@ -248,6 +211,61 @@ class BlocksApp extends CWebApplication
 		}
 
 		return $this->_dbInstalled;
+	}
+
+	/**
+	 * Process the request
+	 */
+	public function processRequest()
+	{
+		switch ($this->mode)
+		{
+			case AppMode::Resource:
+
+				// get the path segments, except for the first one which we already know is "resources"
+				$segs = array_slice(array_merge($this->request->pathSegments), 1);
+
+				// get the resource handle ("app" or a plugin class)
+				$handle = array_shift($segs);
+
+				if ($handle == 'app')
+				{
+					$rootFolderPath = $this->path->resourcesPath;
+				}
+				else
+				{
+					$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+				}
+
+				$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
+				$relativeResourcePath = implode('/', $segs);
+
+				$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+				$resourceProcessor->processResourceRequest();
+
+				break;
+
+			case AppMode::Action:
+
+				if (!isset($this->request->pathSegments[2]))
+					throw new BlocksHttpException(404);
+
+				$handle = $this->request->pathSegments[1];
+				$controller = $this->request->pathSegments[2];
+
+				if (isset($this->request->pathSegments[2]))
+					$action = $this->request->pathSegments[3];
+				else
+					$action = 'index';
+
+				$this->runController($controller.'/'.$action);
+
+				break;
+
+			default:
+
+				$this->runController('template/index');
+		}
 	}
 
 	/**
