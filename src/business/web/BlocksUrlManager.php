@@ -29,6 +29,7 @@ class BlocksUrlManager extends CUrlManager
 		// set this to false so extra query string parameters don't get the path treatment
 		$this->appendParams = false;
 
+		// makes more sense to set in BlocksHttpRequest
 		if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
@@ -49,13 +50,10 @@ class BlocksUrlManager extends CUrlManager
 	}
 
 	/**
+	 * @return null
 	 */
 	public function processTemplateMatching()
 	{
-		// if it's a gii request, no need to do template matching.
-		if (($this->currentModule !== null && $this->currentModule->Id == 'gii') || strpos(Blocks::app()->request->getParam($this->routeVar), 'gii') !== false)
-			return;
-
 		$matchFound = false;
 
 		// we'll never have a db entry match on a control panel request
@@ -124,6 +122,8 @@ class BlocksUrlManager extends CUrlManager
 	 */
 	public function matchRoute()
 	{
+
+
 		/*
 		if (Blocks::app()->mode == AppMode::CP)
 		{
