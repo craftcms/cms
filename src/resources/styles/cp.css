@@ -174,11 +174,12 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
 
 .toolbar { padding: 8px 20px 7px; border-bottom: 1px solid rgba(0,0,0,0.1); height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.05))); -webkit-background-clip: padding-box; }
 #main > .toolbar { margin: -20px -20px 20px; }
+.toolbar .center { height: 0; text-align: center; }
+.toolbar .center > div { float: none !important; display: inline-block; }
 .toolbar .search { float: right; width: 227px; }
 .toolbar .btn,
-.toolbar .btn-group,
-.toolbar div.status { float: left; margin-right: 10px; }
-.toolbar div.status { border-radius: 2px; border: 1px solid rgba(0,0,0,0.25); padding: 0 8px; line-height: 22px; white-space: nowrap; color: rgba(0,0,0,0.5); text-shadow: 0 1px 0 rgba(255,255,255,0.35); }
+.toolbar .btn-group { float: left; margin-right: 10px; }
+.toolbar div.status { border-radius: 2px; border: 1px solid rgba(0,0,0,0.2); padding: 0 8px; line-height: 22px; white-space: nowrap; color: rgba(0,0,0,0.65); text-shadow: 0 1px 0 rgba(255,255,255,0.35); background: rgba(0,0,0,0.05); -webkit-box-shadow: 0 1px 0  rgba(255,255,255,0.25); }
 .toolbar div.status span.status { margin: 5px 4px 0 0; }
 
 /* search */
