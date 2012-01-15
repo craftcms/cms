@@ -27,6 +27,17 @@ class BaseController extends CController
 	}
 
 	/**
+	 * @return mixed
+	 */
+	public function getViewPath()
+	{
+		if (($module = $this->getModule()) === null)
+			$module = Blocks::app();
+
+		return $module->getViewPath().DIRECTORY_SEPARATOR;
+	}
+
+	/**
 	 * @param      $viewName
 	 * @param      $viewPath
 	 * @param      $basePath
