@@ -251,7 +251,7 @@ class BlocksApp extends CWebApplication
 			$handle = $this->request->pathSegments[1];
 			$controller = $this->request->pathSegments[2];
 
-			if (isset($this->request->pathSegments[2]))
+			if (isset($this->request->pathSegments[3]))
 				$action = $this->request->pathSegments[3];
 			else
 				$action = 'index';
