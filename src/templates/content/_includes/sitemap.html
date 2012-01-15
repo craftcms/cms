@@ -1,39 +1,38 @@
 <h5>Add-ons</h5>
 <div class="tree">
 	<ul>
-		<li><span class="toggle expanded"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Assets</a>
-			<h5>Docs</h5>
+		<li><span class="toggle expanded"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Assets</a>
 			<ul>
-				<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Installation Instructions</a></li>
-				<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Updating Instructions</a></li>
-				<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Template Tags &amp; Parameters</a></li>
+				<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Installation Instructions</a></li>
+				<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Updating Instructions</a></li>
+				<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Template Tags &amp; Parameters</a></li>
 			</ul>
 		</li>
-		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status off"></span>FieldFrame</a></li>
-		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Matrix</a></li>
-		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Playa</a></li>
-		<li><span class="toggle"></span><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam</a></li>
-		<li><span class="toggle"></span><a {% if url.segment(2) == "edit" %}class="sel"{% /if %} href="{{ url.generateUrl('content/edit') }}"><span class="status"></span>Spread</a></li>
+		<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status off"></span>FieldFrame</a></li>
+		<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Matrix</a></li>
+		<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Playa</a></li>
+		<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam</a></li>
+		<li><span class="toggle"></span><a class="has-status {% if url.segment(2) == "edit" %}sel{% /if %}" href="{{ url.generateUrl('content/edit') }}"><span class="status"></span>Spread</a></li>
 	</ul>
 </div>
 
 <h5>Dive Bar</h5>
 <div class="tree">
 	<ul>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Field Pack</a></li>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T List</a></li>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Pill</a></li>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Switch</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Field Pack</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T List</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Pill</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>P&amp;T Switch</a></li>
 	</ul>
 </div>
 
 <h5>Blog &amp; Tonic</h5>
 <div class="tree">
 	<ul>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Introducing Assets</a></li>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam 2.2 Released!</a></li>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Playa 4 has arrived!</a></li>
-		<li><a href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Have a drink on us!</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Introducing Assets</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam 2.2 Released!</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Playa 4 has arrived!</a></li>
+		<li><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Have a drink on us!</a></li>
 		<li><a class="etc" href="{{ url.generateUrl('content/edit') }}"></a></li>
 	</ul>
 </div>

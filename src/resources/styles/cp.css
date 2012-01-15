@@ -102,6 +102,8 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 
 .sidebar .tree a.has-badge { padding-right: 35px; }
 .sidebar .tree a.has-badge .badge { float: right; margin: 5px -24px 0 0; }
+.sidebar .tree a.has-status { padding-right: 28px; }
+.sidebar .tree a.has-status .status { float: right; margin: 7px -18px 0 0; }
 
 
 /* ----------------------------------------
