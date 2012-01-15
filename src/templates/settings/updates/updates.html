@@ -8,7 +8,7 @@
 		<div class="head">
 			<div class="name">{{ update.name }} <strong>{{ update.version }}</strong></div>
 			{% if update.critical %}<div class="badge alert">Critical</div>{% /if %}
-			<form method="post" action="{{ url.generateUrl('update', 'h=') }}"><input class="btn" type="submit" value="Update"></form>
+			<form method="post" action="{{ url.generateUrl('update', 'h=') }}{{ update.handle }}"><input class="btn" type="submit" value="Update"></form>
 			<a class="notes-toggle">Show release notes</a>
 		</div>
 		<div class="notes-container">
