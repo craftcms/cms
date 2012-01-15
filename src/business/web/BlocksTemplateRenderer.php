@@ -9,8 +9,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	private $_parsedTemplatePath;
 	private $_destinationMetaPath;
 	private $_template;
-	private $_phpMarkers;
-	private $_phpCode;
+	private $_markers;
 	private $_hasLayout;
 	private $_variables;
 
@@ -120,8 +119,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 		$this->_template = file_get_contents($this->_sourceTemplatePath);
 
-		$this->_phpMarkers = array();
-		$this->_phpCode = array();
+		$this->_markers = array();
 		$this->_hasLayout = false;
 		$this->_variables = array();
 
@@ -130,11 +128,25 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		$this->parseActions();
 		$this->_template = $this->parseVariableTags($this->_template);
 		$this->parseLanguage();
-		$this->restorePhp();
+		$this->replaceMarkers();
 		$this->prependHead();
 		$this->appendFoot();
 
 		file_put_contents($this->_parsedTemplatePath, $this->_template);
+	}
+
+	/**
+	 * Creates a marker
+	 * @param array $match The preg_replace_callback match
+	 * @return string The new marker
+	 * @access private
+	 */
+	private function createMarker($match)
+	{
+		$num = count($this->_markers) + 1;
+		$marker = '[MARKER:'.$num.']';
+		$this->_markers[$marker] = $match[0];
+		return $marker;
 	}
 
 	/**
@@ -143,19 +155,18 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function extractPhp()
 	{
-		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Ums', array(&$this, 'extractPhpMatch'), $this->_template);
-		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Ums', array(&$this, 'extractPhpShortTagMatch'), $this->_template);
-		$this->_template = preg_replace_callback('/\<\?(.*)\?\>/Ums', array(&$this, 'extractPhpMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Ums', array(&$this, 'createPhpMarker'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Ums', array(&$this, 'createPhpShortTagMarker'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?(.*)\?\>/Ums', array(&$this, 'createPhpMarker'), $this->_template);
 	}
 
 	/**
-	 * Extract a PHP code match
+	 * Creates a marker for PHP code
+	 * @param array $match The preg_replace_callback match
+	 * @return string The new marker
 	 * @access private
-
-	 * @param $match
-	 * @return array
 	 */
-	private function extractPhpMatch($match)
+	private function createPhpMarker($match)
 	{
 		$code = $match[1];
 
@@ -165,31 +176,29 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			$code = ' '.$code;
 		}
 
-		$this->_phpCode[] = '<?php'.$code.'?>';
-		$marker = $this->_phpMarkers[] = '[PHP:'.count($this->_phpCode).']';
-
-		return $marker;
+		$match[0] = '<?php'.$code.'?>';
+		return $this->createMarker($match);
 	}
 
 	/**
-	 * Extract a PHP short tag match
+	 * Creates a marker for PHP code using PHP short tags (<? ... ?>)
+	 * @param array $match The preg_replace_callback match
+	 * @return string The new marker
 	 * @access private
-	 * @param $match
-	 * @return array
 	 */
-	private function extractPhpShortTagMatch($match)
+	private function createPhpShortTagMarker($match)
 	{
 		$match[1] = 'echo '.$match[1];
-		return $this->extractPhpMatch($match);
+		return $this->createPhpMarker($match);
 	}
- 
+
 	/**
-	 * Restore the PHP code
+	 * Restore any extracted code
 	 * @access private
 	 */
-	private function restorePhp()
+	private function replaceMarkers()
 	{
-		$this->_template = str_replace($this->_phpMarkers, $this->_phpCode, $this->_template);
+		$this->_template = str_replace(array_keys($this->_markers), $this->_markers, $this->_template);
 	}
 
 	/**
@@ -397,7 +406,10 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	 */
 	private function parseVariable(&$str, &$offset = 0, $toString = false)
 	{
-		if (preg_match('/(?<![-\.\'"\w\/])[A-Za-z]\w*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
+		// extract any strings first
+		$str = preg_replace_callback('/([\'"]).*\1/Ums', array(&$this, 'createMarker'), $str);
+
+		if (preg_match('/(?<![-\.\'"\w\/\[])[A-Za-z]\w*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
 			$parsedTag = '$'.$tag;
@@ -416,9 +428,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 							(?P<param>              # <param>
 								\d+
 								|
-								(?P<quote>[\'"])    # <quote>
-									.*?
-								(?<!\\\)(?P=quote)
+								\[MARKER:\d+\]
 								|
 								[A-Za-z]\w*(?P>subtag)?
 							)
