@@ -93,17 +93,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .sidebar { width: 219px; }
 .sidebar > h5 { margin: 0; border-bottom: 1px solid #c5c5c5; padding: 11px 20px 10px; line-height: 18px; text-shadow: 0 1px 0 #fff; background: -webkit-gradient(linear, 0 0, 0 100%, from(#e5e5e5), to(#d5d5d5)); }
 .sidebar > h5:not(:first-child) { border-top: 1px solid #d5d5d5; padding-top: 10px; }
-.sidebar .tree { padding: 8px 20px; }
-.sidebar .tree a { margin: 0 -20px 0 -9999px; padding-left: 9979px; padding-right: 10px; font-weight: normal; color: #666; }
-.sidebar .tree a:hover { color: #2d98db; text-decoration: none; }
-.sidebar .tree a.sel { color: #fff; text-shadow: 0 1px 1px #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#2782bb)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
-.sidebar .tree a:hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
-.sidebar .tree a.sel .icon { background-image: url(../images/sidebar_icons_sel.png); }
-
-.sidebar .tree a.has-badge { padding-right: 35px; }
-.sidebar .tree a.has-badge .badge { float: right; margin: 5px -24px 0 0; }
-.sidebar .tree a.has-status { padding-right: 28px; }
-.sidebar .tree a.has-status .status { float: right; margin: 7px -18px 0 0; }
+.sidebar .nav { padding: 8px 20px; }
 
 
 /* ----------------------------------------
@@ -266,24 +256,27 @@ input.btn.big { padding: 0 12px; }
 .switch .btn { display: block; float: left; margin-left: -51px !important; padding: 0; width: 20px; height: 22px; -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.5); }
 
 /* ----------------------------------------
-/*  Tree
+/*  Nav
 /* ----------------------------------------*/
 
-.tree { }
-.tree h5 { margin-bottom: 2px; font-weight: bold; line-height: 18px; color: #777; }
-.tree > ul { margin-left: 10px; }
-.tree ul h5 { margin-top: 2px; }
-.tree ul li { margin-left: 25px; }
-.tree ul li > .toggle { margin: 7px 0 0 -35px; }
-.tree ul li > a { display: block; margin-left: -25px; line-height: 24px; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
-.tree ul li > a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/etc.png) no-repeat 50% 50%; }
-.tree ul li > a span.icon { margin-right: 2px; }
-.tree ul li > a span.status { margin: 7px; }
+.nav li a { display: block; padding: 3px 10px 3px 0; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
+.nav li a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/etc.png) no-repeat 50% 50%; }
+.nav li a .icon { margin: -3px 0 -3px -4px; }
 
-.tree.collapsible ul li > h5,
-.tree.collapsible ul li > ul { display: none; }
-.tree.collapsible ul li.expanded > h5,
-.tree.collapsible ul li.expanded > ul { display: block; }
+.nav li a.has-badge { padding-right: 35px; }
+.nav li a.has-badge .badge { float: right; margin: 5px -24px 0 0; }
+.nav li a.has-status { padding-right: 30px; }
+.nav li a.has-status .status { float: right; margin: 4px -20px 0 0; }
+
+ul.tree,
+.tree ul { margin-left: 20px; }
+.tree li .toggle { margin: 7px 0 0 -15px; }
+
+.sidebar .nav li a { margin: 0 -20px 0 -9999px; padding-left: 9999px; font-weight: normal; color: #666; }
+.sidebar .nav li a.sel { color: #fff; text-shadow: 0 1px 1px #000; background: -webkit-gradient(linear, 0 0, 0 100%, from(#2d98db), to(#2782bb)); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
+.sidebar .nav li a.sel .icon { background-image: url(../images/sidebar_icons_sel.png); }
+.sidebar .nav li a:hover { color: #2d98db; text-decoration: none; }
+.sidebar .nav li a:hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
 
 /* toggle */
 .toggle { display: block; float: left; margin: 3px 4px 0 0; width: 10px; height: 12px; background: url(../images/toggle.png) no-repeat 0 0; opacity: 0.5; }
