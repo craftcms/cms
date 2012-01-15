@@ -320,7 +320,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			// Redirect
 			case 'redirect':
 				$url = $this->parseParam($params);
-				return "<?php header('Location: '.{$url}); ?>";
+				return "<?php Blocks::app()->request->redirect({$url}); ?>";
 		}
 	}
 
