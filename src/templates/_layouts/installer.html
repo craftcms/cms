@@ -1,0 +1,58 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta name="language" content="en" />
+
+		<!-- blueprint CSS framework -->
+		<link rel="stylesheet" type="text/css" href="<?php echo UrlHelper::generateResourceUrl('app/css/screen.css') ?>" media="screen, projection" />
+		<link rel="stylesheet" type="text/css" href="<?php echo UrlHelper::generateResourceUrl('app/css/print.css') ?>" media="print" />
+		<!--[if lt IE 8]>
+		<link rel="stylesheet" type="text/css" href="<?php echo UrlHelper::generateResourceUrl('app/css/ie.css') ?>" media="screen, projection" />
+		<![endif]-->
+
+		<link rel="stylesheet" type="text/css" href="<?php echo UrlHelper::generateResourceUrl('app/css/main.css') ?>" />
+		<link rel="stylesheet" type="text/css" href="<?php echo UrlHelper::generateResourceUrl('app/css/form.css') ?>" />
+		<link rel="stylesheet" type="text/css" href="<?php echo UrlHelper::generateResourceUrl('app/css/requirements.css') ?>" media="screen, projection" />
+
+		<title>Blocks Installer</title>
+	</head>
+
+	<body>
+		<?php foreach(Blocks::app()->user->flashes as $key => $message)
+		  {
+			  if ($key == 'counters')
+				  continue;
+
+			  echo '<div class="flash-'.$key.'">';
+			  if(is_array($message))
+			  {
+				  foreach($message as $innerMessage)
+					  echo $innerMessage.'<br />';
+			  }
+			  else
+			  {
+				  echo $message.'<br />';
+			  }
+
+			  echo '</div>';
+		  } ?>
+
+		<table border="0" cellpadding="2" cellspacing="2" align="center" bgcolor="#EFEFEF" width="100%">
+			<tr>
+				<td style="text-align: center"><h2>Blocks Installer</h2></td>
+			</tr>
+		</table>
+
+		<p /><br>
+
+		<?php echo $content; ?>
+
+		<table border="0" cellpadding="2" cellspacing="2" align="center" bgcolor="#EFEFEF" width="100%">
+			<tr>
+				<td align="center" style="text-align: center">Copyright &copy; <?php echo date('Y'); ?> by Pixel & Tonic, Inc. All Rights Reserved.</td>
+			</tr>
+		</table>
+
+	</body>
+</html>

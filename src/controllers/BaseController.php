@@ -6,7 +6,6 @@
 class BaseController extends CController
 {
 	private $_widgetStack = array();
-	private $_requestController = null;
 
 	/**
 	 * @param $filterChain
@@ -25,40 +24,6 @@ class BaseController extends CController
 		return array(
 			//'Https',
 		);
-	}
-
-	/**
-	 * @todo revisit once we find out about module support.
-	 * @return null
-	 */
-	public function getRequestController()
-	{
-		return $this->_requestController;
-	}
-
-	/**
-	 * @todo revisit once we find out about module support.
-	 * @param $requestController
-	 */
-	public function setRequestController($requestController)
-	{
-		$this->_requestController = $requestController;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getViewPath()
-	{
-		if (($requestController = $this->getRequestController()) !== null)
-			$module = $requestController->module;
-		else
-			$module = $this->module;
-
-		if ($module === null)
-			$module = Blocks::app();
-
-		return $module->viewPath;
 	}
 
 	/**

@@ -3,7 +3,7 @@
 /**
  *
  */
-class DefaultController extends BaseController
+class InstallController extends BaseController
 {
 	/**
 	 * @param      $id
@@ -11,9 +11,12 @@ class DefaultController extends BaseController
 	 */
 	function __construct($id, $module = null)
 	{
-		$infoTable = Blocks::app()->db->schema->getTable('{{info}}');
-		if ($infoTable !== null)
-			throw new BlocksHttpException('404', 'Page not found.');
+		if (!Blocks::app()->config('devMode'))
+		{
+			$infoTable = Blocks::app()->db->schema->getTable('{{info}}');
+			if ($infoTable !== null)
+				throw new BlocksHttpException(404);
+		}
 
 		parent::__construct($id, $module);
 		$this->layout = 'installer';
