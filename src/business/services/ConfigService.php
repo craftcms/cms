@@ -56,7 +56,7 @@ class ConfigService extends CApplicationComponent
 	 */
 	public function getDatabaseVersion()
 	{
-		return Blocks::app()->db->serverVersion();
+		return Blocks::app()->db->serverVersion;
 	}
 
 	/**

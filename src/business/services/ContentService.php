@@ -368,7 +368,7 @@ class ContentService extends CApplicationComponent
 		Blocks::app()->db->schema->refresh();
 		$dataTable = Blocks::app()->db->schema->getTable('{{'.$table.'}}');
 
-		$columnNames = $dataTable->columnNames();
+		$columnNames = $dataTable->columnNames;
 
 		$lastBlockMatch = null;
 		foreach ($columnNames as $columnName)
