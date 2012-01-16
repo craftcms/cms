@@ -9,6 +9,7 @@ class BlocksHttpRequest extends CHttpRequest
 	private $_path;
 	private $_pathSegments;
 	private $_pathExtension;
+	private $_isMobileBrowser;
 
 	public function getPath()
 	{
@@ -120,5 +121,23 @@ class BlocksHttpRequest extends CHttpRequest
 		}
 
 		return $this->_urlFormat;
+	}
+
+	/**
+	 * Returns whether the request is coming from a mobile browser
+	 * Regex courtesy of http://www.dannyherran.com/2011/02/detect-mobile-browseruser-agent-with-php-ipad-iphone-blackberry-and-others/
+	 * @return bool Whether the request is coming from a mobile browser
+	 */
+	public function getIsMobileBrowser()
+	{
+		if (!isset($this->_isMobileBrowser))
+		{
+			if (preg_match('/(alcatel|amoi|android|avantgo|blackberry|benq|cell|cricket|docomo|elaine|htc|iemobile|iphone|ipad|ipaq|ipod|j2me|java|midp|mini|mmp|mobi|motorola|nec-|nokia|palm|panasonic|philips|phone|sagem|sharp|sie-|smartphone|sony|symbian|t-mobile|telus|up\.browser|up\.link|vodafone|wap|webos|wireless|xda|xoom|zte)/i', $_SERVER['HTTP_USER_AGENT']))
+				$this->_isMobileBrowser = true;
+			else
+				$this->_isMobileBrowser = false;
+		}
+
+		return $this->_isMobileBrowser;
 	}
 }
