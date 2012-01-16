@@ -51,7 +51,7 @@ class BlocksApp extends CWebApplication
 					$this->request->redirect($url);
 				}
 
-				$this->runController('install/index');
+				$this->runController('install');
 			}
 			else
 			{
@@ -81,7 +81,7 @@ class BlocksApp extends CWebApplication
 		// template request
 		else
 		{
-			$this->runController('template/index');
+			$this->runController('template');
 		}
 	}
 
