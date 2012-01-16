@@ -9,32 +9,32 @@
  * blocks/config/config.php, and make your change there.
  */
 
-/*
+/**
  * Determines whether the site is in dev mode or not.
  */
 $blocksConfig['devMode'] = false;
 
-/*
+/**
  *
  */
 $blocksConfig['resourceTriggerWord'] = 'resources';
 
-/*
+/**
  *
  */
 $blocksConfig['actionTriggerWord'] = 'actions';
 
-/*
- *
+/**
+ * If you're running with devMode = false, this cache time will be used instead of devCacheTimeSeconds.
  */
 $blocksConfig['cacheTimeSeconds'] = 86400;
 
-/*
- *
+/**
+ * If you're running with devMode = true, this cache time will be used instead of cacheTimeSeconds.
  */
 $blocksConfig['devCacheTimeSeconds'] = 5;
 
-/*
+/**
  * How to format the URLs
  *
  * Possible values:
@@ -46,7 +46,16 @@ $blocksConfig['devCacheTimeSeconds'] = 5;
  */
 $blocksConfig['urlFormat'] = 'auto';
 
-/*
+/**
  * The variable to use when specifying paths in the query string (see 'urlFormat')
  */
 $blocksConfig['pathVar'] = 'p';
+
+/**
+ * The time a user stays logged in.
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
+ */
+$blocksConfig['sessionTimeout'] = '1h';
