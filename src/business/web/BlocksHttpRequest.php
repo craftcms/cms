@@ -89,9 +89,9 @@ class BlocksHttpRequest extends CHttpRequest
 	 * Returns a specific path segment
 	 * @return mixed The requested path segment, or null
 	 */
-	public function getPathSegment($num = null, $default = null)
+	public function getPathSegment($num, $default = null)
 	{
-		if (is_numeric($num) && isset($this->pathSegments[$num-1]))
+		if (isset($this->pathSegments[$num-1]))
 			return $this->pathSegments[$num-1];
 
 		return $default;

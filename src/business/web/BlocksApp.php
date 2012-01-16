@@ -239,9 +239,9 @@ class BlocksApp extends CWebApplication
 	 * @param bool|string $key The config item's key to retrieve
 	 * @return mixed The config item's value if set, null if not
 	 */
-	public function getConfig($key = null, $default = null)
+	public function getConfig($key, $default = null)
 	{
-		if (is_string($key) && isset($this->params['config'][$key]))
+		if (isset($this->params['config'][$key]))
 			return $this->params['config'][$key];
 
 		return $default;
