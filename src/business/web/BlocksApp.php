@@ -8,7 +8,7 @@ class BlocksApp extends CWebApplication
 	private $_templatePath;
 	private $_cpTemplatePath;
 	private $_layoutPath;
-	private $_dbInstalled;
+	private $_isDbInstalled;
 
 	/**
 	 * Process the request
@@ -131,7 +131,7 @@ class BlocksApp extends CWebApplication
 		if (!empty($messages))
 			throw new BlocksException(implode(PHP_EOL, $messages));
 
-		if (!$this->isDbInstalled())
+		if (!$this->isDbInstalled)
 		{
 			if ($this->request->mode == RequestMode::Site)
 				throw new BlocksHttpException(404);
@@ -147,17 +147,17 @@ class BlocksApp extends CWebApplication
 	/**
 	 * @return bool
 	 */
-	public function isDbInstalled()
+	public function getIsDbInstalled()
 	{
-		if (!isset($this->_dbInstalled))
+		if (!isset($this->_isDbInstalled))
 		{
 			// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
 			$infoTable = $this->db->schema->getTable('{{info}}');
 
-			$this->_dbInstalled = ($infoTable !== null);
+			$this->_isDbInstalled = ($infoTable !== null);
 		}
 
-		return $this->_dbInstalled;
+		return $this->_isDbInstalled;
 	}
 
 	/**
