@@ -4,6 +4,14 @@
 {% region styles %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
 
 {% region main %}
+	<div class="toolbar">
+		<div class="right">
+			<div id="sidebar-btn" class="btn">
+				<span class="icon icon265"></span>
+			</div>
+		</div>
+	</div>
+
 	<div id="alerts">
 		{% if !blocks.config.licenseKeys %}
 			<div class="alert">
@@ -19,16 +27,6 @@
 	</div>
 
 	<div id="dashboard">
-		<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
-		<?php if (!Blocks::app()->user->isGuest)
-			  {
-			      echo 'Logged in as '.Blocks::app()->user->name.'.';
-			  }
-			  else
-			  {
-			      echo 'Not logged in.';
-			  }
-		?>
 		<div id="widgets">
 			{% foreach cp.dashboard.widgets as widget %}
 				{% if widget.body %}
