@@ -73,8 +73,7 @@ class MembershipService extends CApplicationComponent
 		$user->email = $email;
 		$user->first_name = $firstName;
 		$user->last_name = $lastName;
-		$user->password = $password;
-		$user->salt = $password;
+		$user->password = Blocks::app()->security->hasPassword($password);
 		$user->save();
 
 		return $user;
