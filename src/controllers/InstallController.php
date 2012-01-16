@@ -80,7 +80,7 @@ class InstallController extends BaseController
 								$this->executeSQL($query);
 
 							// register the admin.
-							Blocks::app()->users->registerUser($model->adminUserName, $model->adminEmail, $model->adminFirstName, $model->adminLastName, $model->adminPassword);
+							Blocks::app()->users->registerUser($model->adminUserName, $model->adminEmail, $model->adminFirstName, $model->adminLastName, $model->adminPassword, false);
 
 							// update the info table.
 							$info = new Info();
