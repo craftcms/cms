@@ -63,11 +63,11 @@ class BlocksApp extends CWebApplication
 		// Action request?
 		else if ($this->request->mode == RequestMode::Action)
 		{
-			if (!$this->request->getPathSegment(3))
+			if (!$this->request->getPathSegment(2))
 				throw new BlocksHttpException(404);
 
 			$handle = $this->request->getPathSegment(2);
-			$controller = $this->request->getPathSegment(3);
+			$controller = $this->request->getPathSegment(3, 'default');
 			$action = $this->request->getPathSegment(4, 'index');
 
 			$this->runController($controller.'/'.$action);
