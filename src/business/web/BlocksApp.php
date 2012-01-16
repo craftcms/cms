@@ -70,6 +70,11 @@ class BlocksApp extends CWebApplication
 			$controller = $this->request->getPathSegment(3, 'default');
 			$action = $this->request->getPathSegment(4, 'index');
 
+			if ($handle != 'app')
+			{
+				Blocks::import("base.plugins.{$handle}.controllers.*");
+			}
+
 			$this->runController($controller.'/'.$action);
 		}
 
