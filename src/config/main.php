@@ -34,6 +34,7 @@ return array(
 		'application.business.db.*',
 		'application.business.enums.*',
 		'application.business.exceptions.*',
+		'application.business.install.*',
 		'application.business.services.*',
 		'application.business.updates.*',
 		'application.business.utils.*',
@@ -47,6 +48,7 @@ return array(
 		'application.controllers.*',
 		'application.migrations.*',
 		'application.models.*',
+		'application.models.forms.*',
 		'application.widgets.*',
 		'application.tags.*',
 		'application.tags._primitive.*',
@@ -59,24 +61,10 @@ return array(
 	),
 
 	'modules' => array(
-		'gii' => array(
-			'class'     => 'system.gii.GiiModule',
-			'password'  => 'letmein',
-			'assetsUrl' => '../../../blocks/app/framework/gii/assets',
-			//'basePath' => dirname(__FILE__).'/../assets',
-			'ipFilters' => array('127.0.0.1', '::1'),
-		),
-
-		'install',
 	),
 
 	// application components
 	'components' => array(
-		'user' => array(
-			// enable cookie-based authentication
-			'allowAutoLogin' => true,
-		),
-
 		// services
 		'assets' => array(
 			'class' => 'application.business.services.AssetService',
@@ -96,10 +84,6 @@ return array(
 
 		'et' => array(
 			'class' => 'application.business.services.ETService',
-		),
-
-		'membership' => array(
-			'class' => 'application.business.services.MembershipService',
 		),
 
 		'path' => array(
@@ -122,6 +106,10 @@ return array(
 					'class' => 'application.business.services.UpdateService',
 		),
 
+		'users' => array(
+			'class' => 'application.business.services.UsersService',
+		),
+
 		// end services
 
 		'file' => array(
@@ -130,6 +118,7 @@ return array(
 
 		'request' => array(
 			'class' => 'application.business.web.BlocksHttpRequest',
+			'enableCookieValidation'      => true,
 		),
 
 		'viewRenderer' => array(
@@ -180,13 +169,27 @@ return array(
 			'class' => 'CLogRouter',
 			'routes' => array(
 				array(
-					'class' => 'CFileLogRoute',
+					'class'  => 'CFileLogRoute',
 					'levels' => 'error, warning',
 				),
 				//array(
 				//	'class' => 'application.business.logging.BlocksWebLogRoute',
 				//),
 			),
+		),
+
+		'session' => array(
+			'autoStart'     => true,
+			'cookieMode'    => 'only',
+			'class'         => 'application.business.web.BlocksHttpSession',
+			'sessionName'   => 'BlocksSessionId',
+		),
+
+		'user' => array(
+			'class'             => 'application.business.web.BlocksWebUser',
+			'allowAutoLogin'    => true,
+			'loginUrl'          => array('/login'),
+			'autoRenewCookie'   => true,
 		),
 	),
 
