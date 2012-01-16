@@ -6,13 +6,15 @@
 class BlocksApp extends CWebApplication
 {
 	private $_mode;
-	private $_requestTemplatePath;
+	private $_templatePath;
 	private $_cpTemplatePath;
 	private $_layoutPath;
-	private $_dbInstalled = null;
+	private $_dbInstalled;
 
 	/**
-	 *
+	 * Before we get too far along in the app initialization,
+	 * check to see if we need to redirect to a different URL,
+	 * or if it's a resource request, return the resource.
 	 */
 	public function init()
 	{
@@ -21,7 +23,7 @@ class BlocksApp extends CWebApplication
 		{
 			if ($this->request->urlFormat == UrlFormat::PathInfo)
 			{
-				$pathVar = Blocks::app()->config('pathVar');
+				$pathVar = $this->config('pathVar');
 				$path = $this->request->getParam($pathVar);
 
 				if ($path)
@@ -53,13 +55,9 @@ class BlocksApp extends CWebApplication
 			$handle = array_shift($segs);
 
 			if ($handle == 'app')
-			{
 				$rootFolderPath = $this->path->resourcesPath;
-			}
 			else
-			{
 				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
-			}
 
 			$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
 			$relativeResourcePath = implode('/', $segs);
@@ -72,58 +70,23 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * @return mixed
+	 * @return string The app mode (Action, Resource, CP, or Site)
 	 */
 	public function getMode()
 	{
 		if (!isset($this->_mode))
 		{
-			// Controller action with path_info format
-			if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('actionTriggerWord')))
-			{
+			if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->config('actionTriggerWord'))
 				$this->_mode = AppMode::Action;
-			}
-			// Controller action with non-path_info format
-			else if (($queryStrPath = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null)) !== null)
-			{
-				$pathSegs = explode('/', $queryStrPath);
-				if (isset($pathSegs[0]) && $pathSegs[0] == Blocks::app()->config('actionTriggerWord'))
-				{
-					$this->_mode = AppMode::Action;
-				}
-			}
 
-			if (!isset($this->_mode))
-			{
-				// Resource request with path_info format
-				if (isset($this->request->pathSegments[0]) && ($this->request->pathSegments[0] == Blocks::app()->config('resourceTriggerWord')))
-				{
-					$this->_mode = AppMode::Resource;
-				}
-				// Resource request with non-path_info format
-				else if (($queryStrPath = Blocks::app()->request->getParam(Blocks::app()->config('pathVar'), null)) !== null)
-				{
-					$pathSegs = explode('/', $queryStrPath);
-					if (isset($pathSegs[0]) && $pathSegs[0] == Blocks::app()->config('resourceTriggerWord'))
-					{
-						$this->_mode = AppMode::Resource;
-					}
-				}
-			}
+			else if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->config('resourceTriggerWord'))
+				$this->_mode = AppMode::Resource;
 
-			if (!isset($this->_mode))
-			{
-				// CP request
-				if (defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true)
-				{
-					$this->_mode = AppMode::CP;
-				}
-				// Then it's a site
-				else
-				{
-					$this->_mode = AppMode::Site;
-				}
-			}
+			else if (BLOCKS_CP_REQUEST === true)
+				$this->_mode = AppMode::CP;
+
+			else
+				$this->_mode = AppMode::Site;
 		}
 
 		return $this->_mode;
@@ -144,12 +107,12 @@ class BlocksApp extends CWebApplication
 	 */
 	private function validateConfig()
 	{
-		$pathInfo = $this->request->pathInfo;
+		$path = $this->request->path;
 
-		if (strpos($pathInfo, 'install') !== false)
+		if (strpos($path, 'install') !== false)
 			return;
 
-		if (strpos($pathInfo, 'error') !== false)
+		if (strpos($path, 'error') !== false)
 			return;
 
 		$messages = array();
@@ -215,9 +178,9 @@ class BlocksApp extends CWebApplication
 				throw new BlocksHttpException(404);
 			else
 			{
-				$pathInfo = $this->request->pathSegments;
-				if (!$pathInfo || $pathInfo[0] !== 'install')
-					$this->request->redirect(Blocks::app()->urlManager->baseUrl.'/install');
+				$pathSegments = $this->request->pathSegments;
+				if (!$pathSegments || $pathSegments[0] !== 'install')
+					$this->request->redirect($this->urlManager->baseUrl.'/install');
 			}
 		}
 	}
@@ -227,12 +190,12 @@ class BlocksApp extends CWebApplication
 	 */
 	public function isDbInstalled()
 	{
-		if ($this->_dbInstalled == null)
+		if (!isset($this->_dbInstalled))
 		{
 			// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
 			$infoTable = $this->db->schema->getTable('{{info}}');
 
-			$this->_dbInstalled = $infoTable === null ? false : true;
+			$this->_dbInstalled = ($infoTable !== null);
 		}
 
 		return $this->_dbInstalled;
@@ -271,32 +234,29 @@ class BlocksApp extends CWebApplication
 	 */
 	public function getViewPath()
 	{
-		if ($this->_requestTemplatePath !== null)
-			return $this->_requestTemplatePath;
-		else
+		if (!isset($this->_templatePath))
 		{
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
-				$requestType = $this->mode;
 				// Site request OR action request, but coming in through index.php
-				if ($requestType == AppMode::Site || ($requestType == AppMode::Action && !defined('BLOCKS_CP_REQUEST')))
+				if ($this->mode == AppMode::Site || ($this->mode == AppMode::Action && BLOCKS_CP_REQUEST !== true))
 				{
-					$templatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
+					$this->_templatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
 				}
 				else
 				{
 					// CP request OR action request, but coming in through admin.php
-					if ($requestType == AppMode::CP || ($requestType == AppMode::Action && defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true))
+					if ($this->mode == AppMode::CP || ($this->mode == AppMode::Action && BLOCKS_CP_REQUEST === true))
 					{
-						$pathInfo = $this->request->pathSegments;
-						if ($pathInfo && ($module = $this->urlManager->currentModule) !== null)
+						$pathSegments = $this->request->pathSegments;
+						if ($pathSegments && ($module = $this->urlManager->currentModule) !== null)
 						{
-							$templatePath = rtrim($module->viewPath, '\\/').'/';
+							$this->_templatePath = rtrim($module->viewPath, '\\/').'/';
 						}
 						else
 						{
-							$this->_cpTemplatePath = Blocks::app()->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
-							$templatePath = $this->_cpTemplatePath;
+							$this->_cpTemplatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
+							$this->_templatePath = $this->_cpTemplatePath;
 						}
 					}
 				}
@@ -304,12 +264,11 @@ class BlocksApp extends CWebApplication
 			else
 			{
 				// in the case of an exception, our custom classes are not loaded.
-				$templatePath = BLOCKS_BASE_PATH.'templates/';
+				$this->_templatePath = BLOCKS_BASE_PATH.'templates/';
 			}
-
-			$this->_requestTemplatePath = $templatePath;
-			return $this->_requestTemplatePath;
 		}
+
+		return $this->_templatePath;
 	}
 
 	/**
@@ -317,10 +276,10 @@ class BlocksApp extends CWebApplication
 	 */
 	public function getLayoutPath()
 	{
-		if ($this->_layoutPath !==null)
-			return $this->_layoutPath;
-		else
-			return $this->_layoutPath = $this->viewPath.'layouts';
+		if (!isset($this->_layoutPath))
+			$this->_layoutPath = $this->viewPath.'layouts';
+
+		return $this->_layoutPath;
 	}
 
 	/**
@@ -328,13 +287,10 @@ class BlocksApp extends CWebApplication
 	 */
 	public function getSystemViewPath()
 	{
-		if($this->_cpTemplatePath !== null)
-			return $this->_cpTemplatePath;
-		else
-		{
+		if (!isset($this->_cpTemplatePath))
 			$this->_cpTemplatePath = BLOCKS_BASE_PATH.'app/templates/';
-			return $this->_cpTemplatePath;
-		}
+
+		return $this->_cpTemplatePath;
 	}
 
 	/**

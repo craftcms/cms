@@ -111,12 +111,12 @@ class PathService extends CApplicationComponent
 		$mode = Blocks::app()->mode;
 
 		// site request or action request coming in through index.php
-		if ($mode == AppMode::Site || ($mode == AppMode::Action && !defined('BLOCKS_CP_REQUEST')))
+		if ($mode == AppMode::Site || ($mode == AppMode::Action && BLOCKS_CP_REQUEST !== true))
 		{
 			$templatePath = $this->siteTemplatePath;
 		}
 		// cp request or action request coming in through admin.php
-		elseif ($mode == AppMode::CP || ($mode == AppMode::Action && defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true))
+		elseif ($mode == AppMode::CP || ($mode == AppMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$templatePath = $this->cpTemplatePath;
 
@@ -140,14 +140,14 @@ class PathService extends CApplicationComponent
 		$mode = Blocks::app()->mode;
 
 		// site request or action request coming in through index.php
-		if ($mode == AppMode::Site || ($mode == AppMode::Action && !defined('BLOCKS_CP_REQUEST')))
+		if ($mode == AppMode::Site || ($mode == AppMode::Action && BLOCKS_CP_REQUEST !== true))
 		{
 			$siteHandle = Blocks::app()->site->currentSiteByUrl;
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 			$cachePath = $this->runtimePath.'parsed_templates/sites/'.$siteHandle.'/';
 		}
 		// cp request or action request coming in through admin.php
-		elseif ($mode == AppMode::CP || ($mode == AppMode::Action && defined('BLOCKS_CP_REQUEST') && BLOCKS_CP_REQUEST === true))
+		elseif ($mode == AppMode::CP || ($mode == AppMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$cachePath = $this->runtimePath.'parsed_templates/cp/';
 
