@@ -20,7 +20,15 @@
 
 	<div id="dashboard">
 		<a id="sidebar-btn" class="settings-btn" title="Customize"></a>
-
+		<?php if (!Blocks::app()->user->isGuest)
+			  {
+			      echo 'Logged in as '.Blocks::app()->user->name.'.';
+			  }
+			  else
+			  {
+			      echo 'Not logged in.';
+			  }
+		?>
 		<div id="widgets">
 			{% foreach cp.dashboard.widgets as widget %}
 				{% if widget.body %}

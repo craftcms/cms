@@ -1,37 +1,35 @@
 <?php
 
-//class SessionController extends BaseController
-//{
-	//public function actionIndex()
-	//{
-	//	$this->render('index');
-	//}
-
-	// -----------------------------------------------------------
-	// Uncomment the following methods and override them if needed
-	/*
-	public function filters()
+/**
+ * Handles session related tasks including logging in and out.
+ */
+class SessionController extends BaseController
+{
+	/**
+	 * Displays the login template. If valid login information, redirects to previous template.
+	 */
+	public function actionLogin()
 	{
-		// return the filter configuration for this controller, e.g.:
-		return array(
-			'inlineFilterName',
-			array(
-				'class'=>'path.to.FilterClass',
-				'propertyName'=>'propertyValue',
-			),
-		);
+		$model = new LoginForm();
+
+		// Check to see if it's a submit.
+		if(Blocks::app()->request->isPostRequest)
+		{
+			$model->loginName = Blocks::app()->request->getPost('loginName');
+			$model->password = Blocks::app()->request->getPost('password');
+
+			// validate user input and redirect to the previous page if valid
+			if($model->validate() && $model->login())
+				$this->redirect(Blocks::app()->user->returnUrl);
+		}
+
+		// display the login form
+		$this->loadTemplate('login', array('model' => $model));
 	}
 
-	public function actions()
+	public function actionLogout()
 	{
-		// return external action classes, e.g.:
-		return array(
-			'action1'=>'path.to.ActionClass',
-			'action2'=>array(
-				'class'=>'path.to.AnotherActionClass',
-				'propertyName'=>'propertyValue',
-			),
-		);
+		Blocks::app()->user->logout();
 	}
-	*/
-//}
+}
+
