@@ -5,7 +5,6 @@
  */
 class BlocksApp extends CWebApplication
 {
-	private $_mode;
 	private $_templatePath;
 	private $_cpTemplatePath;
 	private $_layoutPath;
