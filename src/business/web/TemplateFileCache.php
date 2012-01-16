@@ -26,13 +26,13 @@ class TemplateFileCache extends CFileCache
 	{
 		parent::init();
 
-		switch (Blocks::app()->mode)
+		switch (Blocks::app()->request->mode)
 		{
-			case AppMode::Site:
+			case RequestMode::Site:
 				$this->cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_site_templates'.DIRECTORY_SEPARATOR;
 				break;
 
-			case AppMode::CP:
+			case RequestMode::CP:
 				$this->cachePath = Blocks::app()->config->getBlocksRuntimePath().'cached'.DIRECTORY_SEPARATOR.'translated_cp_templates'.DIRECTORY_SEPARATOR;
 				break;
 

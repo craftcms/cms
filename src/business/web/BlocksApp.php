@@ -17,7 +17,7 @@ class BlocksApp extends CWebApplication
 	public function processRequest()
 	{
 		// Resources
-		if ($this->mode == AppMode::Resource)
+		if ($this->request->mode == RequestMode::Resource)
 		{
 			// get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->pathSegments), 1);
@@ -40,7 +40,7 @@ class BlocksApp extends CWebApplication
 		// validate the config
 		$this->validateConfig();
 
-		if ($this->mode == AppMode::Action)
+		if ($this->request->mode == RequestMode::Action)
 		{
 			if (!isset($this->request->pathSegments[2]))
 				throw new BlocksHttpException(404);
@@ -59,29 +59,6 @@ class BlocksApp extends CWebApplication
 		{
 			$this->runController('template/index');
 		}
-	}
-
-	/**
-	 * @return string The app mode (Action, Resource, CP, or Site)
-	 */
-	public function getMode()
-	{
-		if (!isset($this->_mode))
-		{
-			if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->getConfig('actionTriggerWord'))
-				$this->_mode = AppMode::Action;
-
-			else if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->getConfig('resourceTriggerWord'))
-				$this->_mode = AppMode::Resource;
-
-			else if (BLOCKS_CP_REQUEST === true)
-				$this->_mode = AppMode::CP;
-
-			else
-				$this->_mode = AppMode::Site;
-		}
-
-		return $this->_mode;
 	}
 
 	/**
@@ -157,7 +134,7 @@ class BlocksApp extends CWebApplication
 
 		if (!$this->isDbInstalled())
 		{
-			if ($this->mode == AppMode::Site)
+			if ($this->request->mode == RequestMode::Site)
 				throw new BlocksHttpException(404);
 			else
 			{
@@ -196,14 +173,14 @@ class BlocksApp extends CWebApplication
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
 				// Site request OR action request, but coming in through index.php
-				if ($this->mode == AppMode::Site || ($this->mode == AppMode::Action && BLOCKS_CP_REQUEST !== true))
+				if ($this->request->mode == RequestMode::Site || ($this->request->mode == RequestMode::Action && BLOCKS_CP_REQUEST !== true))
 				{
 					$this->_templatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
 				}
 				else
 				{
 					// CP request OR action request, but coming in through admin.php
-					if ($this->mode == AppMode::CP || ($this->mode == AppMode::Action && BLOCKS_CP_REQUEST === true))
+					if ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
 					{
 						$pathSegments = $this->request->pathSegments;
 						if ($pathSegments && ($module = $this->urlManager->currentModule) !== null)

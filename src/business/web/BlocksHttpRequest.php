@@ -10,6 +10,7 @@ class BlocksHttpRequest extends CHttpRequest
 	private $_queryStringPath;
 	private $_pathSegments;
 	private $_pathExtension;
+	private $_mode;
 	private $_isMobileBrowser;
 
 	public function init()
@@ -160,6 +161,29 @@ class BlocksHttpRequest extends CHttpRequest
 		}
 
 		return $this->_urlFormat;
+	}
+
+	/**
+	 * @return string The app mode (Action, Resource, CP, or Site)
+	 */
+	public function getMode()
+	{
+		if (!isset($this->_mode))
+		{
+			if (isset($this->pathSegments[0]) && $this->pathSegments[0] == Blocks::app()->getConfig('actionTriggerWord'))
+				$this->_mode = RequestMode::Action;
+
+			else if (isset($this->pathSegments[0]) && $this->pathSegments[0] == Blocks::app()->getConfig('resourceTriggerWord'))
+				$this->_mode = RequestMode::Resource;
+
+			else if (BLOCKS_CP_REQUEST === true)
+				$this->_mode = RequestMode::CP;
+
+			else
+				$this->_mode = RequestMode::Site;
+		}
+
+		return $this->_mode;
 	}
 
 	/**
