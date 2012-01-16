@@ -66,14 +66,18 @@ class UsersService extends CApplicationComponent
 	 * @param $password
 	 * @return Users
 	 */
-	public function registerUser($userName, $email, $firstName, $lastName, $password)
+	public function registerUser($userName, $email, $firstName, $lastName, $password, $passwordReset = false)
 	{
+		$hashAndType = Blocks::app()->security->hashPassword($password);
+
 		$user = new Users();
 		$user->username = $userName;
 		$user->email = $email;
 		$user->first_name = $firstName;
 		$user->last_name = $lastName;
-		$user->password = Blocks::app()->security->hashPassword($password);
+		$user->password = $hashAndType['hash'];
+		$user->enc_type = $hashAndType['encType'];
+		$user->password_reset_required = $passwordReset;
 		$user->save();
 
 		return $user;
