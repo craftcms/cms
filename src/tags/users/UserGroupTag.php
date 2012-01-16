@@ -44,7 +44,7 @@ class UserGroupTag extends Tag
 	 */
 	public function users()
 	{
-		$groups = Blocks::app()->membership->getUsersByGroupId($this->_val->id);
+		$groups = Blocks::app()->users->getUsersByGroupId($this->_val->id);
 		return new UsersTag($groups);
 	}
 }

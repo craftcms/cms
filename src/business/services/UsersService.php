@@ -3,7 +3,7 @@
 /**
  *
  */
-class MembershipService extends CApplicationComponent
+class UsersService extends CApplicationComponent
 {
 	/**
 	 * @return Users
@@ -73,7 +73,7 @@ class MembershipService extends CApplicationComponent
 		$user->email = $email;
 		$user->first_name = $firstName;
 		$user->last_name = $lastName;
-		$user->password = Blocks::app()->security->hasPassword($password);
+		$user->password = Blocks::app()->security->hashPassword($password);
 		$user->save();
 
 		return $user;

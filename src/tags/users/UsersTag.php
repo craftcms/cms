@@ -15,7 +15,7 @@ class UsersTag extends Tag
 	{
 		if (!isset($this->_users))
 		{
-			$this->_users = Blocks::app()->membership->allUsers;
+			$this->_users = Blocks::app()->users->allUsers;
 		}
 
 		return $this->_users;
@@ -28,7 +28,7 @@ class UsersTag extends Tag
 	{
 		if (!isset($this->_groups))
 		{
-			$this->_groups = Blocks::app()->membership->allGroups;
+			$this->_groups = Blocks::app()->users->allGroups;
 		}
 
 		return $this->_groups;
