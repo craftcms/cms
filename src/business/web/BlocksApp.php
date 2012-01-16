@@ -12,39 +12,10 @@ class BlocksApp extends CWebApplication
 	private $_dbInstalled;
 
 	/**
-	 * Before we get too far along in the app initialization,
-	 * check to see if we need to redirect to a different URL,
-	 * or if it's a resource request, return the resource.
+	 * Process the request
 	 */
-	public function init()
+	public function processRequest()
 	{
-		// URL format correction
-		if (!$this->request->path)
-		{
-			if ($this->request->urlFormat == UrlFormat::PathInfo)
-			{
-				$pathVar = $this->config('pathVar');
-				$path = $this->request->getParam($pathVar);
-
-				if ($path)
-				{
-					$params = isset($_GET) ? $_GET : array();
-					unset($params[$pathVar]);
-					$url = UrlHelper::generateUrl($path, $params);
-					$this->request->redirect($url);
-				}
-			}
-			else
-			{
-				if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'])
-				{
-					$params = isset($_GET) ? $_GET : array();
-					$url = UrlHelper::generateUrl($_SERVER['PATH_INFO'], $params);
-					$this->request->redirect($url);
-				}
-			}
-		}
-
 		// Resources
 		if ($this->mode == AppMode::Resource)
 		{
@@ -66,7 +37,28 @@ class BlocksApp extends CWebApplication
 			$resourceProcessor->processResourceRequest();
 		}
 
-		parent::init();
+		// validate the config
+		$this->validateConfig();
+
+		if ($this->mode == AppMode::Action)
+		{
+			if (!isset($this->request->pathSegments[2]))
+				throw new BlocksHttpException(404);
+
+			$handle = $this->request->pathSegments[1];
+			$controller = $this->request->pathSegments[2];
+
+			if (isset($this->request->pathSegments[3]))
+				$action = $this->request->pathSegments[3];
+			else
+				$action = 'index';
+
+			$this->runController($controller.'/'.$action);
+		}
+		else
+		{
+			$this->runController('template/index');
+		}
 	}
 
 	/**
@@ -90,15 +82,6 @@ class BlocksApp extends CWebApplication
 		}
 
 		return $this->_mode;
-	}
-
-	/**
-	 */
-	public function run()
-	{
-		$this->validateConfig();
-
-		parent::run();
 	}
 
 	/**
@@ -199,32 +182,6 @@ class BlocksApp extends CWebApplication
 		}
 
 		return $this->_dbInstalled;
-	}
-
-	/**
-	 * Process the request
-	 */
-	public function processRequest()
-	{
-		if ($this->mode == AppMode::Action)
-		{
-			if (!isset($this->request->pathSegments[2]))
-				throw new BlocksHttpException(404);
-
-			$handle = $this->request->pathSegments[1];
-			$controller = $this->request->pathSegments[2];
-
-			if (isset($this->request->pathSegments[3]))
-				$action = $this->request->pathSegments[3];
-			else
-				$action = 'index';
-
-			$this->runController($controller.'/'.$action);
-		}
-		else
-		{
-			$this->runController('template/index');
-		}
 	}
 
 	/**

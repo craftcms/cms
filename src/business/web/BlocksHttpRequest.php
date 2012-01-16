@@ -7,29 +7,68 @@ class BlocksHttpRequest extends CHttpRequest
 {
 	private $_urlFormat;
 	private $_path;
+	private $_queryStringPath;
 	private $_pathSegments;
 	private $_pathExtension;
 	private $_isMobileBrowser;
+
+	public function init()
+	{
+		parent::init();
+		Blocks::app()->attachEventHandler('onBeginRequest',array($this,'correctUrlFormat'));
+	}
+
+	/**
+	 * If there is no URL path, check for a path against the "other" URL format, and redirect to the correct URL format if we find one
+	 */
+	public function correctUrlFormat()
+	{
+		if (!$this->path)
+		{
+			if ($this->urlFormat == UrlFormat::PathInfo)
+			{
+				if ($this->queryStringPath)
+				{
+					$params = isset($_GET) ? $_GET : array();
+					unset($params[$pathVar]);
+					$url = UrlHelper::generateUrl($this->queryStringPath, $params);
+					$this->redirect($url);
+				}
+			}
+			else
+			{
+				if ($this->pathInfo)
+				{
+					$params = isset($_GET) ? $_GET : array();
+					$url = UrlHelper::generateUrl($this->pathInfo, $params);
+					$this->redirect($url);
+				}
+			}
+		}
+	}
 
 	public function getPath()
 	{
 		if (!isset($this->_path))
 		{
 			if ($this->urlFormat == UrlFormat::PathInfo)
-			{
 				$this->_path = $this->pathInfo;
-			}
 			else
-			{
-				$pathVar = Blocks::app()->config('pathVar');
-				$this->_path = $this->getParam($pathVar, '');
-
-				// trim trailing/leading slashes
-				$this->_path = trim($this->_path, '/');
-			}
+				$this->_path = $this->queryStringPath;
 		}
 
 		return $this->_path;
+	}
+
+	public function getQueryStringPath()
+	{
+		if (!isset($this->_queryStringPath))
+		{
+			$pathVar = Blocks::app()->config('pathVar');
+			$this->_queryStringPath = trim($this->getParam($pathVar, ''), '/');
+		}
+
+		return $this->_queryStringPath;
 	}
 
 	/**
