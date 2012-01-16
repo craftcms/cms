@@ -66,7 +66,7 @@ class BlocksHttpRequest extends CHttpRequest
 		if (!isset($this->_queryStringPath))
 		{
 			$pathVar = Blocks::app()->getConfig('pathVar');
-			$this->_queryStringPath = trim($this->getParam($pathVar, ''), '/');
+			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 
 		return $this->_queryStringPath;
@@ -83,6 +83,18 @@ class BlocksHttpRequest extends CHttpRequest
 		}
 
 		return $this->_pathSegments;
+	}
+
+	/**
+	 * Returns a specific path segment
+	 * @return mixed The requested path segment, or null
+	 */
+	public function getPathSegment($num = null, $default = null)
+	{
+		if (is_numeric($num) && isset($this->pathSegments[$num-1]))
+			return $this->pathSegments[$num-1];
+
+		return $default;
 	}
 
 	/**
@@ -129,7 +141,7 @@ class BlocksHttpRequest extends CHttpRequest
 					$this->_urlFormat = UrlFormat::PathInfo;
 				}
 				// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
-				else if ($this->getParam(Blocks::app()->getConfig('pathVar'), null) !== null)
+				else if ($this->getQuery(Blocks::app()->getConfig('pathVar')) !== null)
 				{
 					$this->_urlFormat = UrlFormat::QueryString;
 				}
@@ -170,10 +182,10 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			if (isset($this->pathSegments[0]) && $this->pathSegments[0] == Blocks::app()->getConfig('actionTriggerWord'))
+			if ($this->getPathSegment(1) == Blocks::app()->getConfig('actionTriggerWord'))
 				$this->_mode = RequestMode::Action;
 
-			else if (isset($this->pathSegments[0]) && $this->pathSegments[0] == Blocks::app()->getConfig('resourceTriggerWord'))
+			else if ($this->getPathSegment(1) == Blocks::app()->getConfig('resourceTriggerWord'))
 				$this->_mode = RequestMode::Resource;
 
 			else if (BLOCKS_CP_REQUEST === true)

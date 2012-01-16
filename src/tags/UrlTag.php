@@ -5,8 +5,6 @@
  */
 class UrlTag extends Tag
 {
-	private $_segments;
-
 	/**
 	 * The base URL for the site.
 	 * @return string
@@ -17,25 +15,12 @@ class UrlTag extends Tag
 	}
 
 	/**
-	 * Get Segments
-	 * @access private
-	 * @return array The URL segments
-	 */
-	private function _getSegments()
-	{
-		if (!isset($this->_segments))
-			$this->_segments = Blocks::app()->request->pathSegments;
-
-		return $this->_segments;
-	}
-
-	/**
 	 * Segments
 	 * @return array
 	 */
 	public function segments()
 	{
-		return $this->_getSegments();
+		return Blocks::app()->request->pathSegments;
 	}
 
 	/**
@@ -43,15 +28,9 @@ class UrlTag extends Tag
 	 * @param int $num Which segment to retrieve
 	 * @return bool
 	 */
-	public function segment($num)
+	public function segment($num = null, $default = '')
 	{
-		$segments = $this->_getSegments();
-		$index = $num - 1;
-
-		if (isset($segments[$index]))
-			return $segments[$index];
-
-		return false;
+		return Blocks::app()->request->getPathSegment($num, $default);
 	}
 
 	/**
@@ -66,9 +45,9 @@ class UrlTag extends Tag
 	 * @param $var
 	 * @return bool
 	 */
-	public function get($var)
+	public function get($var = null, $default = '')
 	{
-		return isset($_GET[$var]) ? $_GET[$var] : false;
+		return Blocks::app()->request->getQuery($var, $default);
 	}
 
 	/**

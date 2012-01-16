@@ -39,21 +39,41 @@ class BlocksApp extends CWebApplication
 		// validate the config
 		$this->validateConfig();
 
-		if ($this->request->mode == RequestMode::Action)
+		// is Blocks actually installed?
+		if (!$this->isDbInstalled)
 		{
-			if (!isset($this->request->pathSegments[2]))
+			if ($this->request->mode == RequestMode::CP)
+			{
+				if ($this->request->getPathSegment(1) !== 'install')
+				{
+					// redirect to /install
+					$url = UrlHelper::generateUrl('install');
+					$this->request->redirect($url);
+				}
+
+				$this->runController('install/index');
+			}
+			else
+			{
+				// return 404
+				throw new BlocksHttpException(404);
+			}
+		}
+
+		// Action request?
+		else if ($this->request->mode == RequestMode::Action)
+		{
+			if (!$this->request->getPathSegment(3))
 				throw new BlocksHttpException(404);
 
-			$handle = $this->request->pathSegments[1];
-			$controller = $this->request->pathSegments[2];
-
-			if (isset($this->request->pathSegments[3]))
-				$action = $this->request->pathSegments[3];
-			else
-				$action = 'index';
+			$handle = $this->request->getPathSegment(2);
+			$controller = $this->request->getPathSegment(3);
+			$action = $this->request->getPathSegment(4, 'index');
 
 			$this->runController($controller.'/'.$action);
 		}
+
+		// template request
 		else
 		{
 			$this->runController('template/index');
@@ -130,18 +150,6 @@ class BlocksApp extends CWebApplication
 
 		if (!empty($messages))
 			throw new BlocksException(implode(PHP_EOL, $messages));
-
-		if (!$this->isDbInstalled)
-		{
-			if ($this->request->mode == RequestMode::Site)
-				throw new BlocksHttpException(404);
-			else
-			{
-				$pathSegments = $this->request->pathSegments;
-				if (!$pathSegments || $pathSegments[0] !== 'install')
-					$this->request->redirect($this->urlManager->baseUrl.'/install');
-			}
-		}
 	}
 
 	/**
@@ -231,8 +239,11 @@ class BlocksApp extends CWebApplication
 	 * @param bool|string $key The config item's key to retrieve
 	 * @return mixed The config item's value if set, null if not
 	 */
-	public function getConfig($key = null)
+	public function getConfig($key = null, $default = null)
 	{
-		return (is_string($key) && isset($this->params['config'][$key])) ? $this->params['config'][$key] : null;
+		if (is_string($key) && isset($this->params['config'][$key]))
+			return $this->params['config'][$key];
+
+		return $default;
 	}
 }
