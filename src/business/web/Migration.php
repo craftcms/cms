@@ -12,7 +12,7 @@ class Migration
 	public static function runToTop()
 	{
 		$runner = self::getRunner();
-		$args = array('yiic', 'migrate', '--migrationTable='.Blocks::app()->config->databaseTablePrefix.'_migrations', '--interactive=0');
+		$args = array('yiic', 'migrate', '--migrationTable='.Blocks::app()->getDbConfig('tablePrefix').'_migrations', '--interactive=0');
 
 		ob_start();
 		$runner->run($args);
@@ -31,7 +31,7 @@ class Migration
 		$migrationShortName = substr(Blocks::app()->file->set($migrationName, false)->fileName, 1, 13);
 
 		$runner = self::getRunner();
-		$args = array('yiic', 'migrate', 'to', $migrationShortName, '--migrationTable='.Blocks::app()->config->databaseTablePrefix.'_migrations', '--interactive=0');
+		$args = array('yiic', 'migrate', 'to', $migrationShortName, '--migrationTable='.Blocks::app()->getDbConfig('tablePrefix').'_migrations', '--interactive=0');
 
 		ob_start();
 		$runner->run($args);
@@ -50,7 +50,7 @@ class Migration
 			$number = 1;
 
 		$runner = self::getRunner();
-		$args = array('yiic', 'migrate', '--migrationTable='.Blocks::app()->config->databaseTablePrefix.'migrations', 'down', $number, '--interactive=0');
+		$args = array('yiic', 'migrate', '--migrationTable='.Blocks::app()->getDbConfig('tablePrefix').'migrations', 'down', $number, '--interactive=0');
 
 		ob_start();
 		$runner->run($args);

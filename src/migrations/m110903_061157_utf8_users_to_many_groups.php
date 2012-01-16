@@ -4,9 +4,9 @@ class m110903_061157_utf8_users_to_many_groups extends CDbMigration
 {
 	public function safeUp()
 	{
-		$dbName = Blocks::app()->config->databaseName;
-		$tablePrefix = Blocks::app()->config->databaseTablePrefix;
-		$userName = Blocks::app()->config->databaseAuthName;
+		$dbName = Blocks::app()->getDbConfig('database');
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$userName = Blocks::app()->getDbConfig('user');
 
 		$this->execute(
 		'

@@ -1,6 +1,8 @@
 <?php
+
 require_once(BLOCKS_BASE_PATH.'app/business/db/DriverMap.php');
-require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults/config.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults/db.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
 

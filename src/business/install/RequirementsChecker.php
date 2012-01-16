@@ -112,25 +112,25 @@ class RequirementsChecker
 				$message),
 			new Requirement(
 				'Database Config Server Name',
-				Blocks::app()->config->databaseServerName !== '',
+				Blocks::app()->getDbConfig('server') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database server name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config User Name',
-				Blocks::app()->config->databaseAuthName !== '',
+				Blocks::app()->getDbConfig('user') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database user name in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config User Password',
-				Blocks::app()->config->databaseAuthPassword !== '',
+				Blocks::app()->getDbConfig('password') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database user password in the database config file at '.$dbConfigPath),
 			new Requirement(
 				'Database Config Database Name',
-				Blocks::app()->config->databaseName !== '',
+				Blocks::app()->getDbConfig('database') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'Please set your database name in the database config file at '.$dbConfigPath),
@@ -168,7 +168,7 @@ class RequirementsChecker
 
 			$this->_requirements[] = new Requirement(
 			'MySQL version',
-			version_compare(Blocks::app()->config->databaseVersion, Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL), ">="),
+			version_compare(Blocks::app()->db->serverVersion, Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL), ">="),
 			true,
 			'<a href="http://www.blockscms.com">Blocks</a>',
 			'MySQL '.Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL).' or higher is required to run Blocks.');

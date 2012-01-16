@@ -91,24 +91,16 @@ class BlocksApp extends CWebApplication
 	 */
 	private function validateConfig()
 	{
-		$path = $this->request->path;
-
-		if (strpos($path, 'install') !== false)
-			return;
-
-		if (strpos($path, 'error') !== false)
-			return;
-
 		$messages = array();
 
-		$databaseServerName = $this->config->databaseServerName;
-		$databaseAuthName = $this->config->databaseAuthName;
-		$databaseName = $this->config->databaseName;
-		$databaseType = $this->config->databaseType;
-		$databasePort = $this->config->databasePort;
-		$databaseTablePrefix = $this->config->databaseTablePrefix;
-		$databaseCharset = $this->config->databaseCharset;
-		$databaseCollation = $this->config->databaseCollation;
+		$databaseServerName = $this->getDbConfig('server');
+		$databaseAuthName = $this->getDbConfig('user');
+		$databaseName = $this->getDbConfig('database');
+		$databaseType = $this->getDbConfig('type');
+		$databasePort = $this->getDbConfig('port');
+		$databaseTablePrefix = $this->getDbConfig('tablePrefix');
+		$databaseCharset = $this->getDbConfig('charset');
+		$databaseCollation = $this->getDbConfig('collation');
 
 		if (StringHelper::IsNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
@@ -240,7 +232,7 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
-	 * Get a config item
+	 * Get a general config item
 	 * @param bool|string $key The config item's key to retrieve
 	 * @return mixed The config item's value if set, null if not
 	 */
@@ -248,6 +240,19 @@ class BlocksApp extends CWebApplication
 	{
 		if (isset($this->params['config'][$key]))
 			return $this->params['config'][$key];
+
+		return $default;
+	}
+
+	/**
+	 * Get a config item
+	 * @param bool|string $key The config item's key to retrieve
+	 * @return mixed The config item's value if set, null if not
+	 */
+	public function getDbConfig($key, $default = null)
+	{
+		if (isset($this->params['db'][$key]))
+			return $this->params['db'][$key];
 
 		return $default;
 	}

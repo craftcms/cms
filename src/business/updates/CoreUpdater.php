@@ -23,8 +23,8 @@ class CoreUpdater implements IUpdater
 	public function checkRequirements()
 	{
 		$localPHPVersion = Blocks::app()->config->localPHPVersion;
-		$localDatabaseType = Blocks::app()->config->databaseType;
-		$localDatabaseVersion = Blocks::app()->config->databaseVersion;
+		$localDatabaseType = Blocks::app()->getDbConfig('type');
+		$localDatabaseVersion = Blocks::app()->db->serverVersion;
 		$requiredDatabaseVersion = Blocks::app()->config->getDatabaseRequiredVersionByType($localDatabaseType);
 		$requiredPHPVersion = Blocks::app()->config->requiredPHPVersion;
 

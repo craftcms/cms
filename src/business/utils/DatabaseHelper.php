@@ -77,7 +77,7 @@ class DatabaseHelper
 	 */
 	public static function createInsertAuditTrigger($tableName)
 	{
-		$dbName = Blocks::app()->config->databaseName;
+		$dbName = Blocks::app()->getDbConfig('database');
 
 		Blocks::app()->db->createCommand(
 							'CREATE
@@ -98,7 +98,7 @@ class DatabaseHelper
 	 */
 	public static function createUpdateAuditTrigger($tableName)
 	{
-		$dbName = Blocks::app()->config->databaseName;
+		$dbName = Blocks::app()->getDbConfig('database');
 
 		Blocks::app()->db->createCommand(
 							'CREATE
