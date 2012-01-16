@@ -32,20 +32,42 @@ class SecurityService extends CApplicationComponent
 	public function hashPassword($password)
 	{
 		$passwordHasher = new PasswordHash(8, false);
-		$hash = $passwordHasher->hashPassword($password);
-		$check = $passwordHasher->checkPassword($password, $hash);
+		$hashAndType = $passwordHasher->hashPassword($password);
+		$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 
 		if (!$check)
 		{
 			$passwordHasher = new PasswordHash(8, true);
-			$hash = $passwordHasher->hashPassword($password);
-			$check = $passwordHasher->checkPassword($password, $hash);
+			$hashAndType = $passwordHasher->hashPassword($password);
+			$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 		}
 
 		if ($check)
-			return $hash;
+			return $hashAndType;
 
 		throw new BlocksException('Could not hash the given password.');
+	}
+
+	/**
+	 * @param $password
+	 * @param $storedHash
+	 * @param $storedEncType
+	 * @return bool
+	 */
+	public function checkPassword($password, $storedHash, $storedEncType)
+	{
+		$passwordHasher = new PasswordHash(8, false);
+		$check = $passwordHasher->checkPassword($password, $storedHash);
+
+		if (!$check)
+		{
+			if (($storedEncType == 'blowfish' && CRYPT_BLOWFISH !== 1) || ($storedEncType == 'extdes' && CRYPT_EXT_DES !== 1))
+				throw new BlocksException('This password was encrypted with .'.$storedEncType.', but it appears the server does not support it.  It could have been disabled or was created on a different server.');
+
+			return false;
+		}
+
+		return true;
 	}
 
 	/**
