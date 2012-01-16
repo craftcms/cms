@@ -265,7 +265,7 @@ input.btn.big { padding: 0 12px; }
 .nav li a .icon { margin: -3px 0 -3px -4px; }
 
 .nav li a.has-badge { padding-right: 35px; }
-.nav li a.has-badge .badge { float: right; margin: 5px -24px 0 0; }
+.nav li a.has-badge .badge { float: right; margin: 2px -25px 0 0; }
 .nav li a.has-status { padding-right: 25px; }
 .nav li a.has-status .status { float: right; margin: 4px -15px 0 0; }
 
