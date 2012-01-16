@@ -165,7 +165,7 @@ class SiteService extends CApplicationComponent
 	public function setLicenseKeyStatus($licenseKeyStatus)
 	{
 		// cache it and set it to expire according to config
-		Blocks::app()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, Blocks::app()->config('cacheTimeSeconds'));
+		Blocks::app()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, Blocks::app()->getConfig('cacheTimeSeconds'));
 	}
 
 	/**

@@ -11,7 +11,7 @@ class InstallController extends BaseController
 	 */
 	function __construct($id, $module = null)
 	{
-		if (!Blocks::app()->config('devMode'))
+		if (!Blocks::app()->getConfig('devMode'))
 		{
 			$infoTable = Blocks::app()->db->schema->getTable('{{info}}');
 			if ($infoTable !== null)

@@ -64,7 +64,7 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = Blocks::app()->config('pathVar');
+			$pathVar = Blocks::app()->getConfig('pathVar');
 			$this->_queryStringPath = trim($this->getParam($pathVar, ''), '/');
 		}
 
@@ -107,11 +107,11 @@ class BlocksHttpRequest extends CHttpRequest
 		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (Blocks::app()->config('urlFormat') == UrlFormat::PathInfo)
+			if (Blocks::app()->getConfig('urlFormat') == UrlFormat::PathInfo)
 			{
 				$this->_urlFormat = UrlFormat::PathInfo;
 			}
-			else if (Blocks::app()->config('urlFormat') == UrlFormat::QueryString)
+			else if (Blocks::app()->getConfig('urlFormat') == UrlFormat::QueryString)
 			{
 				$this->_urlFormat = UrlFormat::QueryString;
 			}
@@ -128,7 +128,7 @@ class BlocksHttpRequest extends CHttpRequest
 					$this->_urlFormat = UrlFormat::PathInfo;
 				}
 				// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
-				else if ($this->getParam(Blocks::app()->config('pathVar'), null) !== null)
+				else if ($this->getParam(Blocks::app()->getConfig('pathVar'), null) !== null)
 				{
 					$this->_urlFormat = UrlFormat::QueryString;
 				}
@@ -155,7 +155,7 @@ class BlocksHttpRequest extends CHttpRequest
 				}
 
 				// cache it and set it to expire according to config
-				Blocks::app()->fileCache->set('urlFormat', $this->_urlFormat, Blocks::app()->config('cacheTimeSeconds'));
+				Blocks::app()->fileCache->set('urlFormat', $this->_urlFormat, Blocks::app()->getConfig('cacheTimeSeconds'));
 			}
 		}
 

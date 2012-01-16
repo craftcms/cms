@@ -68,10 +68,10 @@ class BlocksApp extends CWebApplication
 	{
 		if (!isset($this->_mode))
 		{
-			if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->config('actionTriggerWord'))
+			if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->getConfig('actionTriggerWord'))
 				$this->_mode = AppMode::Action;
 
-			else if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->config('resourceTriggerWord'))
+			else if (isset($this->request->pathSegments[0]) && $this->request->pathSegments[0] == $this->getConfig('resourceTriggerWord'))
 				$this->_mode = AppMode::Resource;
 
 			else if (BLOCKS_CP_REQUEST === true)
@@ -255,7 +255,7 @@ class BlocksApp extends CWebApplication
 	 * @param bool|string $key The config item's key to retrieve
 	 * @return mixed The config item's value if set, null if not
 	 */
-	public function config($key = false)
+	public function getConfig($key = null)
 	{
 		return (is_string($key) && isset($this->params['config'][$key])) ? $this->params['config'][$key] : null;
 	}

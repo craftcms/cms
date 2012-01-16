@@ -77,7 +77,7 @@ class UpdateService extends CApplicationComponent
 					$updateInfo = new BlocksUpdateInfo();
 
 				// cache it and set it to expire according to config
-				Blocks::app()->fileCache->set('updateInfo', $updateInfo, Blocks::app()->config('cacheTimeSeconds'));
+				Blocks::app()->fileCache->set('updateInfo', $updateInfo, Blocks::app()->getConfig('cacheTimeSeconds'));
 			}
 
 			$this->_updateInfo = $updateInfo;

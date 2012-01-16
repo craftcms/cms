@@ -11,7 +11,7 @@ class ETEndPoints
 	 */
 	public static function Check()
 	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/app/core/check';
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->getConfig('actionTriggerWord').'/app/core/check';
 	}
 
 	/**
@@ -20,7 +20,7 @@ class ETEndPoints
 	 */
 	public static function DownloadPackage()
 	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/app/core/downloadpackage';
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->getConfig('actionTriggerWord').'/app/core/downloadpackage';
 	}
 
 	/**
@@ -29,7 +29,7 @@ class ETEndPoints
 	 */
 	public static function GetCoreReleaseFileMD5()
 	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/app/core/getcorereleasefilemd5';
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->getConfig('actionTriggerWord').'/app/core/getcorereleasefilemd5';
 	}
 
 	/**
@@ -38,7 +38,7 @@ class ETEndPoints
 	 */
 	public static function ValidateKeysByCredentials()
 	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/app/core/validateKeysByCredentials';
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->getConfig('actionTriggerWord').'/app/core/validateKeysByCredentials';
 	}
 
 	/**
@@ -47,6 +47,6 @@ class ETEndPoints
 	 */
 	public static function Ping()
 	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config('actionTriggerWord').'/app/core/ping';
+		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->getConfig('actionTriggerWord').'/app/core/ping';
 	}
 }

@@ -146,7 +146,7 @@ class ConfigService extends CApplicationComponent
 		// If we can't figure out what the setting is, we'll default to this, which is 1 hour (3600 seconds).
 		$defaultTimeout = 3600;
 
-		$timeOut = Blocks::app()->config('sessionTimeout');
+		$timeOut = Blocks::app()->getConfig('sessionTimeout');
 
 		if (StringHelper::IsNullOrEmpty($timeOut))
 			return $defaultTimeout;

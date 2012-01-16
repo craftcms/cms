@@ -13,7 +13,7 @@ class UrlHelper
 	 */
 	public static function generateResourceUrl($resourcePath, $params = null)
 	{
-		$path = self::_normalizePath($resourcePath, $params, Blocks::app()->config('resourceTriggerWord'));
+		$path = self::_normalizePath($resourcePath, $params, Blocks::app()->getConfig('resourceTriggerWord'));
 		return BlocksHtml::normalizeUrl($path);
 	}
 
@@ -25,7 +25,7 @@ class UrlHelper
 	 */
 	public static function generateActionUrl($actionPath, $params = null)
 	{
-		$path = self::_normalizePath($actionPath, $params, Blocks::app()->config('actionTriggerWord'));
+		$path = self::_normalizePath($actionPath, $params, Blocks::app()->getConfig('actionTriggerWord'));
 		return BlocksHtml::normalizeUrl($path);
 	}
 
