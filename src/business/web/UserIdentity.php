@@ -7,27 +7,90 @@
  */
 class UserIdentity extends CUserIdentity
 {
+	private $_id;
+	private $_model;
+	//private $_authToken;
+
+	public $loginName;
+	public $password;
+
 	/**
-	 * Authenticates a user.
-	 * The example implementation makes sure if the username and password
-	 * are both 'demo'.
-	 * In practical applications, this should be changed to authenticate
-	 * against some persistent user identity storage (e.g. database).
+	 * Constructor.
+	 * @param string $loginName
+	 * @param string $password
+	 */
+	public function __construct($loginName, $password)
+	{
+		$this->loginName = $loginName;
+		$this->password = $password;
+	}
+
+	/**
+	 * Returns the display name for the identity.
+	 * The default implementation simply returns {@link loginName}.
+	 * This method is required by {@link IUserIdentity}.
+	 * @return string the display name for the identity.
+	 */
+	public function getName()
+	{
+		return $this->loginName;
+	}
+
+	/**
+	 * Authenticates a user against the database.
+	 *
 	 * @return boolean whether authentication succeeds.
 	 */
 	public function authenticate()
 	{
-		$users=array(
-			// username => password
-			'demo'=>'demo',
-			'admin'=>'admin',
-		);
-		if(!isset($users[$this->username]))
-			$this->errorCode=self::ERROR_USERNAME_INVALID;
-		else if($users[$this->username]!==$this->password)
-			$this->errorCode=self::ERROR_PASSWORD_INVALID;
+		$user = Users::model()->find(array(
+			'condition' => 'username=:userName OR email=:email',
+			'params' => array(':userName' => $this->loginName, ':email' => $this->loginName),
+		));
+
+		if ($user === null)
+			$this->errorCode = self::ERROR_USERNAME_INVALID;
 		else
-			$this->errorCode=self::ERROR_NONE;
+		{
+			$checkPassword = Blocks::app()->security->checkPassword($this->password, $user->password, $user->enc_type);
+
+			if (!$checkPassword)
+				$this->errorCode = self::ERROR_PASSWORD_INVALID;
+			else
+			{
+				$this->_id = $user->id;
+				//$this->_model = $user;
+				$this->username = $user->username;
+				$this->errorCode = self::ERROR_NONE;
+
+				//$this->_authToken = $authToken;
+	//			$user->authToken = $authToken;
+				if (!$user->save())
+				{
+					throw new BlocksException('There was a problem logging you in:'.implode(' ', $user->errors));
+				}
+
+				//$this->setState('authToken', $authToken);
+				//$this->setState('userModel', $user);
+			}
+	}
+
 		return !$this->errorCode;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getId()
+	{
+		return $this->_id;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getModel()
+	{
+		return $this->_model;
 	}
 }
