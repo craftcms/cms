@@ -48,9 +48,7 @@ class PasswordHash
 			$iterationCountLog2 = 8;
 
 		$this->_iterationCountLog2 = $iterationCountLog2;
-
 		$this->_portableHashes = $portableHashes;
-
 		$this->_randomState = microtime();
 
 		if (function_exists('getmypid'))
@@ -137,6 +135,11 @@ class PasswordHash
 		return $output;
 	}
 
+	/**
+	 * @param $password
+	 * @param $setting
+	 * @return string
+	 */
 	private function _crypt($password, $setting)
 	{
 		$output = '*0';
@@ -265,7 +268,7 @@ class PasswordHash
 			$hash = crypt($password, $this->_genSaltBlowfish($random));
 
 			if (strlen($hash) == 60)
-				return $hash;
+				return array('encType' => 'blowfish', 'hash' => $hash);
 		}
 
 		if (CRYPT_EXT_DES == 1 && !$this->_portableHashes)
@@ -276,7 +279,7 @@ class PasswordHash
 			$hash = crypt($password, $this->_genSaltExtended($random));
 
 			if (strlen($hash) == 20)
-				return $hash;
+				return array('encType' => 'extdes', 'hash' => $hash);
 		}
 
 		if (strlen($random) < 6)
@@ -285,7 +288,7 @@ class PasswordHash
 		$hash = $this->_crypt($password, $this->_genSalt($random));
 
 		if (strlen($hash) == 34)
-			return $hash;
+			return array('encType' => 'md5', 'hash' => $hash);
 
 		// Returning '*' on error is safe here, but would _not_ be safe in a crypt(3)-like function used _both_ for generating new
 		// hashes and for validating passwords against existing hashes.
