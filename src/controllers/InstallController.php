@@ -54,8 +54,7 @@ class InstallController extends BaseController
 						// No net connection
 						case LicenseKeyStatus::Valid:
 							// start the db install
-							$dbType = strtolower(Blocks::app()->config->databaseType);
-							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_schema.sql');
+							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.'mysql_schema.sql');
 
 							$sqlSchemaContents = $baseSqlSchemaFile->contents;
 							$sqlSchemaContents = $this->replaceTokens($sqlSchemaContents);
@@ -67,7 +66,7 @@ class InstallController extends BaseController
 							foreach ($schemaQueryArr as $query)
 								$this->executeSQL($query);
 
-							$baseSqlDataFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_data.sql');
+							$baseSqlDataFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.'mysql_data.sql');
 
 							$sqlDataContents = $baseSqlDataFile->contents;
 							$sqlDataContents = $this->replaceTokens($sqlDataContents);
@@ -114,7 +113,7 @@ class InstallController extends BaseController
 	{
 		$connection = Blocks::app()->db;
 
-		$connection->charset = Blocks::app()->config->databaseCharset;
+		$connection->charset = Blocks::app()->getDbConfig('charset');
 		$connection->active = true;
 
 		if (preg_match('/(CREATE|DROP|ALTER|SET|INSERT)/i', $query))
@@ -131,9 +130,9 @@ class InstallController extends BaseController
 	 */
 	private function replaceTokens($fileContents)
 	{
-		$fileContents = str_replace('@@@', Blocks::app()->config->databaseTablePrefix(), $fileContents);
-		$fileContents = str_replace('^^^', Blocks::app()->config->databaseCharset(), $fileContents);
-		$fileContents = str_replace('###', Blocks::app()->config->databaseCollation(), $fileContents);
+		$fileContents = str_replace('@@@', Blocks::app()->getDbConfig('tablePrefix')(), $fileContents);
+		$fileContents = str_replace('^^^', Blocks::app()->getDbConfig('charset')(), $fileContents);
+		$fileContents = str_replace('###', Blocks::app()->getDbConfig('collation'), $fileContents);
 
 		return $fileContents;
 	}

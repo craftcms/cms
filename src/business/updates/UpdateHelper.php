@@ -80,19 +80,19 @@ class UpdateHelper
 	 */
 	public static function constructCoreReleasePatchFileName($version, $build, $edition)
 	{
-		if(StringHelper::IsNullOrEmpty($version) || StringHelper::IsNullOrEmpty($build) || StringHelper::IsNullOrEmpty($edition))
+		if(StringHelper::isNullOrEmpty($version) || StringHelper::isNullOrEmpty($build) || StringHelper::isNullOrEmpty($edition))
 			throw new BlocksException('Missing version, build or edition.');
 
 		switch ($edition)
 		{
 			case BlocksEdition::Personal:
-				return Blocks::app()->config->buildPersonalFileNamePrefix.'v'.$version.'.'.$build.'_patch.zip';
+				return "blocks_personal_v{$version}.{$build}_patch.zip";
 
 			case BlocksEdition::Pro:
-				return Blocks::app()->config->buildProFileNamePrefix.'v'.$version.'.'.$build.'_patch.zip';
+				return "blocks_pro_v{$version}.{$build}_patch.zip";
 
 			case BlocksEdition::Standard:
-				return Blocks::app()->config->buildStandardFileNamePrefix.'v'.$version.'.'.$build.'_patch.zip';
+				return "blocks_standard_v{$version}.{$build}_patch.zip";
 		}
 
 		throw new BlocksException('Unknown Blocks Edition: '.$edition);

@@ -5,7 +5,7 @@ defined('BLOCKS_CP_REQUEST') || define('BLOCKS_CP_REQUEST', false);
 
 // change the following paths if necessary
 $framework = BLOCKS_BASE_PATH.'app/framework/yii.php';
-$framework_config = BLOCKS_BASE_PATH.'app/config/main.php';
+$config    = BLOCKS_BASE_PATH.'app/config/main.php';
 
 // remove the following lines when in production mode
 defined('YII_DEBUG') || define('YII_DEBUG', true);
@@ -20,5 +20,5 @@ if(!class_exists('Yii'))
 
 require_once(BLOCKS_BASE_PATH.'app/business/web/BlocksApp.php');
 
-$app = new BlocksApp($framework_config);
+$app = new BlocksApp($config);
 $app->run();

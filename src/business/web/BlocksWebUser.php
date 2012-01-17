@@ -12,7 +12,7 @@ class BlocksWebUser extends CWebUser
 	 */
 	public function init()
 	{
-		$this->authTimeout = Blocks::app()->config->getSessionTimeoutInSeconds();
+		$this->authTimeout = ConfigHelper::getTimeInSeconds('sessionTimeout');
 		parent::init();
 	}
 

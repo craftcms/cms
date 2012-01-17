@@ -1,6 +1,8 @@
 <?php
+
 require_once(BLOCKS_BASE_PATH.'app/business/db/DriverMap.php');
-require_once(BLOCKS_BASE_PATH.'app/config/defaults.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults/blocks.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults/db.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
 
@@ -9,24 +11,12 @@ Yii::setPathOfAlias('base', BLOCKS_BASE_PATH);
 if ($blocksConfig['devMode'] == true)
 	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
 
-if (!isset($db['port']))
-	$db['port'] = '3306';
-
-if (!isset($db['charset']))
-	$db['charset'] = 'utf8';
-
-if (!isset($db['collation']))
-	$db['collation'] = 'utf8_unicode_ci';
-
-if (!isset($db['type']))
-	$db['type'] = 'mysql';
-
 return array(
-	'basePath'          => BLOCKS_BASE_PATH.'app/',
-	'runtimePath'       => Yii::getPathOfAlias('base.runtime'),
-	'name'              => 'Blocks',
+	'basePath'    => BLOCKS_BASE_PATH.'app/',
+	'runtimePath' => Yii::getPathOfAlias('base.runtime'),
+	'name'        => 'Blocks',
 
-	'preload' => array('log'),
+	'preload'     => array('log'),
 
 	// autoloading model and component classes
 	'import' => array(
@@ -69,10 +59,6 @@ return array(
 		// services
 		'assets' => array(
 			'class' => 'application.business.services.AssetService',
-		),
-
-		'config' => array(
-			'class' => 'application.business.services.ConfigService',
 		),
 
 		'content' => array(
@@ -144,7 +130,7 @@ return array(
 		),
 
 		'db' => array(
-			'connectionString'  => strtolower($db['type'].':host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
+			'connectionString'  => strtolower('mysql:host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
 			'username'          => $db['user'],
@@ -203,6 +189,7 @@ return array(
 		'adminEmail' => 'brad@pixelandtonic.com',
 		'db' => $db,
 		'config' => $blocksConfig,
-
+		'requiredPhpVersion' => '5.1.0',
+		'requiredMysqlVersion' => ''
 	),
 );

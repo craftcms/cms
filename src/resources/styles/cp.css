@@ -113,7 +113,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin: 1px 1px 21px 1px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
+.pane { margin: 1px 1px 21px 1px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
 
 .pane .head:first-child,
 .pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
@@ -130,11 +130,11 @@ table.pane > tbody > tr.head > *:not(:first-child) { border-left: 1px dotted rgb
 
 .pane .head,
 table.pane > thead > tr > *,
-table.pane > tbody > tr.head > * { position: relative; border-bottom: 1px solid #ccc; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#eee)); }
+table.pane > tbody > tr.head > * { position: relative; border-bottom: 1px solid #ccc; padding: 8px 10px; line-height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.075))); }
 table.pane > tbody > tr.head > * { line-height: 1; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
-.pane .body { position: relative; }
+.pane .body { position: relative; background: #fff; }
 
 .pane .body .item,
 .pane .body tr.item > th,
@@ -172,7 +172,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
 /*  Toolbar
 /* ----------------------------------------*/
 
-.toolbar { padding: 8px 20px 7px; border-bottom: 1px solid rgba(0,0,0,0.15); height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.05))); -webkit-background-clip: padding-box; }
+.toolbar { padding: 8px 20px 7px; border-bottom: 1px solid rgba(0,0,0,0.15); height: 24px; background: -webkit-gradient(linear, 0 0, 0 100%, from(transparent), to(rgba(0,0,0,0.075))); -webkit-background-clip: padding-box; }
 #main > .toolbar { margin: -20px -20px 20px; }
 .toolbar .center { height: 0; text-align: center; }
 .toolbar .center > div { float: none !important; display: inline-block; }

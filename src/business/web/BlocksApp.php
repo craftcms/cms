@@ -51,7 +51,7 @@ class BlocksApp extends CWebApplication
 					$this->request->redirect($url);
 				}
 
-				$this->runController('install/index');
+				$this->runController('install');
 			}
 			else
 			{
@@ -63,12 +63,17 @@ class BlocksApp extends CWebApplication
 		// Action request?
 		else if ($this->request->mode == RequestMode::Action)
 		{
-			if (!$this->request->getPathSegment(3))
+			if (!$this->request->getPathSegment(2))
 				throw new BlocksHttpException(404);
 
 			$handle = $this->request->getPathSegment(2);
-			$controller = $this->request->getPathSegment(3);
+			$controller = $this->request->getPathSegment(3, 'default');
 			$action = $this->request->getPathSegment(4, 'index');
+
+			if ($handle != 'app')
+			{
+				Blocks::import("base.plugins.{$handle}.controllers.*");
+			}
 
 			$this->runController($controller.'/'.$action);
 		}
@@ -76,7 +81,7 @@ class BlocksApp extends CWebApplication
 		// template request
 		else
 		{
-			$this->runController('template/index');
+			$this->runController('template');
 		}
 	}
 
@@ -86,53 +91,36 @@ class BlocksApp extends CWebApplication
 	 */
 	private function validateConfig()
 	{
-		$path = $this->request->path;
-
-		if (strpos($path, 'install') !== false)
-			return;
-
-		if (strpos($path, 'error') !== false)
-			return;
-
 		$messages = array();
 
-		$databaseServerName = $this->config->databaseServerName;
-		$databaseAuthName = $this->config->databaseAuthName;
-		$databaseName = $this->config->databaseName;
-		$databaseType = $this->config->databaseType;
-		$databasePort = $this->config->databasePort;
-		$databaseTablePrefix = $this->config->databaseTablePrefix;
-		$databaseCharset = $this->config->databaseCharset;
-		$databaseCollation = $this->config->databaseCollation;
+		$databaseServerName = $this->getDbConfig('server');
+		$databaseAuthName = $this->getDbConfig('user');
+		$databaseName = $this->getDbConfig('database');
+		$databasePort = $this->getDbConfig('port');
+		$databaseTablePrefix = $this->getDbConfig('tablePrefix');
+		$databaseCharset = $this->getDbConfig('charset');
+		$databaseCollation = $this->getDbConfig('collation');
 
-		if (StringHelper::IsNullOrEmpty($databaseServerName))
+		if (StringHelper::isNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseAuthName))
+		if (StringHelper::isNullOrEmpty($databaseAuthName))
 			$messages[] = 'The database user name is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseName))
+		if (StringHelper::isNullOrEmpty($databaseName))
 			$messages[] = 'The database name is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databasePort))
+		if (StringHelper::isNullOrEmpty($databasePort))
 			$messages[] = 'The database port is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseTablePrefix))
+		if (StringHelper::isNullOrEmpty($databaseTablePrefix))
 			$messages[] = 'The database table prefix is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseCharset))
+		if (StringHelper::isNullOrEmpty($databaseCharset))
 			$messages[] = 'The database charset is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseCollation))
+		if (StringHelper::isNullOrEmpty($databaseCollation))
 			$messages[] = 'The database collation is not set in your db config file.';
-
-		if (StringHelper::IsNullOrEmpty($databaseType))
-			$messages[] = 'The database type is not set in your db config file.';
-		else
-		{
-			if (!in_array($databaseType, $this->config->databaseSupportedTypes))
-				$messages[] = 'Blocks does not support the database type you have set in your db config file.';
-		}
 
 		if (!empty($messages))
 			throw new BlocksException(implode(PHP_EOL, $messages));
@@ -235,14 +223,27 @@ class BlocksApp extends CWebApplication
 	}
 
 	/**
+	 * Get a general config item
+	 * @param bool|string $key The config item's key to retrieve
+	 * @return mixed The config item's value if set, null if not
+	 */
+	public function getConfig($key, $default = null)
+	{
+		if (isset($this->params['config'][$key]))
+			return $this->params['config'][$key];
+
+		return $default;
+	}
+
+	/**
 	 * Get a config item
 	 * @param bool|string $key The config item's key to retrieve
 	 * @return mixed The config item's value if set, null if not
 	 */
-	public function getConfig($key = null, $default = null)
+	public function getDbConfig($key, $default = null)
 	{
-		if (is_string($key) && isset($this->params['config'][$key]))
-			return $this->params['config'][$key];
+		if (isset($this->params['db'][$key]))
+			return $this->params['db'][$key];
 
 		return $default;
 	}
