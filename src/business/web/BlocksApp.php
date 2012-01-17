@@ -102,28 +102,28 @@ class BlocksApp extends CWebApplication
 		$databaseCharset = $this->getDbConfig('charset');
 		$databaseCollation = $this->getDbConfig('collation');
 
-		if (StringHelper::IsNullOrEmpty($databaseServerName))
+		if (StringHelper::isNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseAuthName))
+		if (StringHelper::isNullOrEmpty($databaseAuthName))
 			$messages[] = 'The database user name is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseName))
+		if (StringHelper::isNullOrEmpty($databaseName))
 			$messages[] = 'The database name is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databasePort))
+		if (StringHelper::isNullOrEmpty($databasePort))
 			$messages[] = 'The database port is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseTablePrefix))
+		if (StringHelper::isNullOrEmpty($databaseTablePrefix))
 			$messages[] = 'The database table prefix is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseCharset))
+		if (StringHelper::isNullOrEmpty($databaseCharset))
 			$messages[] = 'The database charset is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseCollation))
+		if (StringHelper::isNullOrEmpty($databaseCollation))
 			$messages[] = 'The database collation is not set in your db config file.';
 
-		if (StringHelper::IsNullOrEmpty($databaseType))
+		if (StringHelper::isNullOrEmpty($databaseType))
 			$messages[] = 'The database type is not set in your db config file.';
 		else
 		{

@@ -260,7 +260,7 @@ class CoreUpdater implements IUpdater
 
 		$sourceMD5 = $package->data;
 
-		if(StringHelper::IsNullOrEmpty($sourceMD5))
+		if(StringHelper::isNullOrEmpty($sourceMD5))
 			throw new BlocksException('Error in getting the MD5 hash for the download.');
 
 		$localFile = Blocks::app()->file->set($destinationPath, false);

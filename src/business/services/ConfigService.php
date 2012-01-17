@@ -71,7 +71,7 @@ class ConfigService extends CApplicationComponent
 	 */
 	public function getDatabaseRequiredVersionByType($databaseType)
 	{
-		if (StringHelper::IsNullOrEmpty($databaseType))
+		if (StringHelper::isNullOrEmpty($databaseType))
 			throw new BlocksException('databaseType is required.');
 
 		switch($databaseType)

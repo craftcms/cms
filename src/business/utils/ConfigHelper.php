@@ -8,7 +8,7 @@ class ConfigHelper
 		if (is_numeric($time))
 			return $time;
 
-		if (StringHelper::IsNullOrEmpty($time))
+		if (StringHelper::isNullOrEmpty($time))
 			return $default;
 
 		if (!preg_match('/(\d+)(m|h|d)/', $time, $match))
