@@ -130,8 +130,8 @@ class InstallController extends BaseController
 	 */
 	private function replaceTokens($fileContents)
 	{
-		$fileContents = str_replace('@@@', Blocks::app()->getDbConfig('tablePrefix')(), $fileContents);
-		$fileContents = str_replace('^^^', Blocks::app()->getDbConfig('charset')(), $fileContents);
+		$fileContents = str_replace('@@@', Blocks::app()->getDbConfig('tablePrefix'), $fileContents);
+		$fileContents = str_replace('^^^', Blocks::app()->getDbConfig('charset'), $fileContents);
 		$fileContents = str_replace('###', Blocks::app()->getDbConfig('collation'), $fileContents);
 
 		return $fileContents;
