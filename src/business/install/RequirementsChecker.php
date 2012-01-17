@@ -19,61 +19,73 @@ class RequirementsChecker
 		$dbConfigPath = Blocks::app()->path->configPath.'db.php';
 		$blocksConfigPath = Blocks::app()->path->configPath.'blocks.php';
 
+		$requiredPhpVersion = Blocks::app()->params['requiredPhpVersion'];
+		$requiredMysqlVersion = Blocks::app()->params['requiredMysqlVersion'];
+
 		$this->_requirements = array(
 			new Requirement(
 				'PHP Version',
-				version_compare(Blocks::app()->config->localPHPVersion, Blocks::app()->config->requiredPHPVersion, ">="),
+				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'PHP '.Blocks::app()->config->requiredPHPVersion.' or higher is required.'),
+				'PHP '.$requiredPhpVersion.' or higher is required.'
+			),
 			new Requirement(
 				'$_SERVER Variable',
 				($message = $this->checkServerVar()) === '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				$message),
+				$message
+			),
 			new Requirement(
 				'Reflection extension',
 				class_exists('Reflection', false),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				''),
+				''
+			),
 			new Requirement(
 				'PCRE extension',
 				extension_loaded("pcre"),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				''),
+				''
+			),
 			new Requirement(
 				'SPL extension',
 				extension_loaded("SPL"),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				''),
+				''
+			),
 			new Requirement(
 				'DOM extension',
 				class_exists("DOMDocument",false),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CHtmlPurifier">CHtmlPurifier</a>, <a href="http://www.yiiframework.com/doc/api/CWsdlGenerator">CWsdlGenerator</a>',
-				''),
+				''
+			),
 			new Requirement(
 				'PDO extension',
 				extension_loaded('pdo'),
 				false,
 				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
-				''),
+				''
+			),
 			new Requirement(
 				'PDO SQLite extension',
 				extension_loaded('pdo_sqlite'),
 				false,
 				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
-				'This is required if you are using SQLite database.'),
+				'This is required if you are using SQLite database.'
+			),
 			new Requirement(
 				'PDO MySQL extension',
 				extension_loaded('pdo_mysql'),
 				false,
 				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
-				'This is required if you are using MySQL database.'),
+				'This is required if you are using MySQL database.'
+			),
 			new Requirement(
 				'PDO PostgreSQL extension',
 				extension_loaded('pdo_pgsql'),
@@ -85,61 +97,71 @@ class RequirementsChecker
 				extension_loaded("memcache") || extension_loaded("memcached"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CMemCache">CMemCache</a>',
-				extension_loaded("memcached") ? 'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' : 'Only required if you plan on using Memcache.'),
+				extension_loaded("memcached") ? 'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' : 'Only required if you plan on using Memcache.'
+			),
 			new Requirement(
 				'APC extension',
 				extension_loaded("apc"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CApcCache">CApcCache</a>',
-				'Only required if you plan on APC for caching.'),
+				'Only required if you plan on APC for caching.'
+			),
 			new Requirement(
 				'Mcrypt extension',
 				extension_loaded("mcrypt"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
-				'This is required by encrypt and decrypt methods.'),
+				'This is required by encrypt and decrypt methods.'
+			),
 			new Requirement(
 				'SOAP extension',
 				extension_loaded("soap"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CWebService">CWebService</a>, <a href="http://www.yiiframework.com/doc/api/CWebServiceAction">CWebServiceAction</a>',
-				''),
+				''
+			),
 			new Requirement(
 				'GD extension w/ FreeType support',
 				($message = $this->checkGD()) === '',
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CCaptchaAction">CCaptchaAction</a>, Assets',
-				$message),
+				$message
+			),
 			new Requirement(
 				'Database Config Server Name',
 				Blocks::app()->getDbConfig('server') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database server name in the database config file at '.$dbConfigPath),
+				'Please set your database server name in the database config file at '.$dbConfigPath
+			),
 			new Requirement(
 				'Database Config User Name',
 				Blocks::app()->getDbConfig('user') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database user name in the database config file at '.$dbConfigPath),
+				'Please set your database user name in the database config file at '.$dbConfigPath
+			),
 			new Requirement(
 				'Database Config User Password',
 				Blocks::app()->getDbConfig('password') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database user password in the database config file at '.$dbConfigPath),
+				'Please set your database user password in the database config file at '.$dbConfigPath
+			),
 			new Requirement(
 				'Database Config Database Name',
 				Blocks::app()->getDbConfig('database') !== '',
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database name in the database config file at '.$dbConfigPath),
+				'Please set your database name in the database config file at '.$dbConfigPath
+			),
 			new Requirement(
 				'Site License Key Name',
 				Blocks::app()->site->licenseKeys !== null,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your license key in the site config file at '.$blocksConfigPath),
+				'Please set your license key in the site config file at '.$blocksConfigPath
+			),
 		);
 
 		$connection = true;
@@ -161,17 +183,18 @@ class RequirementsChecker
 				false,
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->path->configPath).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message);
+				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->path->configPath).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message
+			);
 		}
 		else
 		{
-
 			$this->_requirements[] = new Requirement(
-			'MySQL version',
-			version_compare(Blocks::app()->db->serverVersion, Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL), ">="),
-			true,
-			'<a href="http://www.blockscms.com">Blocks</a>',
-			'MySQL '.Blocks::app()->config->getDatabaseRequiredVersionByType(DatabaseType::MySQL).' or higher is required to run Blocks.');
+				'MySQL version',
+				version_compare(Blocks::app()->db->serverVersion, $requiredMysqlVersion, ">="),
+				true,
+				'<a href="http://www.blockscms.com">Blocks</a>',
+				'MySQL '.$requiredMysqlVersion.' or higher is required to run Blocks.'
+			);
 		}
 	}
 

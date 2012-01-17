@@ -96,7 +96,6 @@ class BlocksApp extends CWebApplication
 		$databaseServerName = $this->getDbConfig('server');
 		$databaseAuthName = $this->getDbConfig('user');
 		$databaseName = $this->getDbConfig('database');
-		$databaseType = $this->getDbConfig('type');
 		$databasePort = $this->getDbConfig('port');
 		$databaseTablePrefix = $this->getDbConfig('tablePrefix');
 		$databaseCharset = $this->getDbConfig('charset');
@@ -122,14 +121,6 @@ class BlocksApp extends CWebApplication
 
 		if (StringHelper::isNullOrEmpty($databaseCollation))
 			$messages[] = 'The database collation is not set in your db config file.';
-
-		if (StringHelper::isNullOrEmpty($databaseType))
-			$messages[] = 'The database type is not set in your db config file.';
-		else
-		{
-			if (!in_array($databaseType, $this->config->databaseSupportedTypes))
-				$messages[] = 'Blocks does not support the database type you have set in your db config file.';
-		}
 
 		if (!empty($messages))
 			throw new BlocksException(implode(PHP_EOL, $messages));

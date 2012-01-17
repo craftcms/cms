@@ -54,8 +54,7 @@ class InstallController extends BaseController
 						// No net connection
 						case LicenseKeyStatus::Valid:
 							// start the db install
-							$dbType = strtolower(Blocks::app()->getDbConfig('type'));
-							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_schema.sql');
+							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.'mysql_schema.sql');
 
 							$sqlSchemaContents = $baseSqlSchemaFile->contents;
 							$sqlSchemaContents = $this->replaceTokens($sqlSchemaContents);
@@ -67,7 +66,7 @@ class InstallController extends BaseController
 							foreach ($schemaQueryArr as $query)
 								$this->executeSQL($query);
 
-							$baseSqlDataFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.$dbType.'_data.sql');
+							$baseSqlDataFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.'mysql_data.sql');
 
 							$sqlDataContents = $baseSqlDataFile->contents;
 							$sqlDataContents = $this->replaceTokens($sqlDataContents);

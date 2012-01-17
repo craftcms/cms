@@ -22,23 +22,21 @@ class CoreUpdater implements IUpdater
 	 */
 	public function checkRequirements()
 	{
-		$localPHPVersion = Blocks::app()->config->localPHPVersion;
-		$localDatabaseType = Blocks::app()->getDbConfig('type');
-		$localDatabaseVersion = Blocks::app()->db->serverVersion;
-		$requiredDatabaseVersion = Blocks::app()->config->getDatabaseRequiredVersionByType($localDatabaseType);
-		$requiredPHPVersion = Blocks::app()->config->requiredPHPVersion;
+		$installedMysqlVersion = Blocks::app()->db->serverVersion;
+		$requiredMysqlVersion = Blocks::app()->params['requiredMysqlVersion'];
+		$requiredPhpVersion = Blocks::app()->params['requiredPhpVersion'];
 
-		$phpCompat = version_compare($localPHPVersion, $requiredPHPVersion, '>=');
-		$databaseCompat = version_compare($localDatabaseVersion, $requiredDatabaseVersion, '>=');
+		$phpCompat = version_compare(PHP_VERSION, $requiredPhpVersion, '>=');
+		$databaseCompat = version_compare($installedMysqlVersion, $requiredMysqlVersion, '>=');
 
 		if (!$phpCompat && !$databaseCompat)
-			throw new BlocksException('The update cannot be installed because Blocks requires PHP version '.$requiredPHPVersion.' or higher and '.$localDatabaseType.' version '.$requiredDatabaseVersion.' or higher.  You have PHP version '.$localPHPVersion.' and '.$localDatabaseType.' version '.$localDatabaseVersion.' installed.');
+			throw new BlocksException('The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and MySQL version '.$requiredMysqlVersion.' or higher.  You have PHP version '.PHP_VERSION.' and MySQL version '.$installedMysqlVersion.' installed.');
 		else
 			if (!$phpCompat)
-				throw new BlocksException('The update cannot be installed because Blocks requires PHP version '.$requiredPHPVersion.' or higher and you have PHP version '.$localPHPVersion.' installed.');
+				throw new BlocksException('The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and you have PHP version '.PHP_VERSION.' installed.');
 			else
 				if (!$databaseCompat)
-					throw new BlocksException('The update cannot be installed because Blocks requires '.$localDatabaseType.' version '.$requiredDatabaseVersion.' or higher and you have '.$localDatabaseType.' version '.$localPHPVersion.' installed.');
+					throw new BlocksException('The update cannot be installed because Blocks requires MySQL version '.$requiredMysqlVersion.' or higher and you have MySQL version '.PHP_VERSION.' installed.');
 	}
 
 	/**
