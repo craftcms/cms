@@ -229,8 +229,8 @@ class BlocksApp extends CWebApplication
 	 */
 	public function getConfig($key, $default = null)
 	{
-		if (isset($this->params['config'][$key]))
-			return $this->params['config'][$key];
+		if (isset($this->params['blocksConfig'][$key]))
+			return $this->params['blocksConfig'][$key];
 
 		return $default;
 	}
@@ -242,8 +242,8 @@ class BlocksApp extends CWebApplication
 	 */
 	public function getDbConfig($key, $default = null)
 	{
-		if (isset($this->params['db'][$key]))
-			return $this->params['db'][$key];
+		if (isset($this->params['dbConfig'][$key]))
+			return $this->params['dbConfig'][$key];
 
 		return $default;
 	}

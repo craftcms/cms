@@ -1,10 +1,10 @@
 <?php
-require_once(dirname(__FILE__).'/defaults/blocks.php');
-require_once(dirname(__FILE__).'/defaults/db.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults/blocks.php');
+require_once(BLOCKS_BASE_PATH.'app/config/defaults/db.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
 require_once(BLOCKS_BASE_PATH.'config/db.php');
 
-$db['database'] = $db['database'].'_test';
+$dbConfig['database'] = $dbConfig['database'].'_test';
 
 return CMap::mergeArray(
 	require(dirname(__FILE__) . '/main.php'),
@@ -15,22 +15,22 @@ return CMap::mergeArray(
 			),
 
 			'db' => array(
-				'connectionString'  => strtolower('mysql:host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
+				'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
 				// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 				'emulatePrepare'    => true,
-				'username'          => $db['user'],
-				'password'          => $db['password'],
-				'charset'           => $db['charset'],
-				'tablePrefix'       => rtrim($db['tablePrefix'], '_').'_',
+				'username'          => $dbConfig['user'],
+				'password'          => $dbConfig['password'],
+				'charset'           => $dbConfig['charset'],
+				'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
 				'driverMap'         => getDbDriverMap(),
 			),
 		),
 
 		'params' => array(
 				// this is used in contact page
-				'adminEmail' => 'brad@pixelandtonic.com',
-				'db' => $db,
-				'config' => $blocksConfig,
+				'adminEmail'   => 'brad@pixelandtonic.com',
+				'dbConfig'     => $dbConfig,
+				'blocksConfig' => $blocksConfig,
 		),
 	)
 );
