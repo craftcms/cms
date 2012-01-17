@@ -130,13 +130,13 @@ return array(
 		),
 
 		'db' => array(
-			'connectionString'  => strtolower('mysql:host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
+			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
-			'username'          => $db['user'],
-			'password'          => $db['password'],
-			'charset'           => $db['charset'],
-			'tablePrefix'       => rtrim($db['tablePrefix'], '_').'_',
+			'username'          => $dbConfig['user'],
+			'password'          => $dbConfig['password'],
+			'charset'           => $dbConfig['charset'],
+			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
 			'driverMap'         => getDbDriverMap(),
 			'class'             => 'application.business.db.BlocksDbConnection'
 		),
@@ -186,10 +186,10 @@ return array(
 
 	'params' => array(
 		// this is used in contact page
-		'adminEmail' => 'brad@pixelandtonic.com',
-		'db' => $db,
-		'config' => $blocksConfig,
-		'requiredPhpVersion' => '5.1.0',
+		'adminEmail'           => 'brad@pixelandtonic.com',
+		'dbConfig'             => $dbConfig,
+		'blocksConfig'         => $blocksConfig,
+		'requiredPhpVersion'   => '5.1.0',
 		'requiredMysqlVersion' => ''
 	),
 );

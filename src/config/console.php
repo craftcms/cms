@@ -16,19 +16,19 @@ return array(
 	'components' => array(
 
 		'db' => array(
-			'connectionString'  => strtolower('mysql:host='.$db['server'].';dbname='.$db['database'].';port='.$db['port'].';'),
+			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
 			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
-			'username'          => $db['user'],
-			'password'          => $db['password'],
-			'charset'           => $db['charset'],
-			'tablePrefix'       => $db['tablePrefix'],
+			'username'          => $dbConfig['user'],
+			'password'          => $dbConfig['password'],
+			'charset'           => $dbConfig['charset'],
+			'tablePrefix'       => $dbConfig['tablePrefix'],
 		),
 	),
 
 	// application-level parameters that can be accessed
 	// using Blocks::app()->params['paramName']
 	'params' => array(
-		'db' => $db,
+		'dbConfig' => $dbConfig,
 	),
 );

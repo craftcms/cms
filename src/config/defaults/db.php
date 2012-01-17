@@ -12,39 +12,39 @@
 /*
  * The database server name or IP address
  */
-$db['server'] = 'localhost';
+$dbConfig['server'] = 'localhost';
 
 /**
  * The database server port
  */
-$db['port'] = '3306';
+$dbConfig['port'] = '3306';
 
 /*
  * The database username to connect with
  */
-$db['user'] = 'root';
+$dbConfig['user'] = 'root';
 
 /*
  * The database password to connect with
  */
-$db['password'] = '';
+$dbConfig['password'] = '';
 
 /*
  * The database name to select
  */
-$db['database'] = '';
+$dbConfig['database'] = '';
 
 /*
  * The prefix to use when naming tables
  */
-$db['tablePrefix'] = 'blx';
+$dbConfig['tablePrefix'] = 'blx';
 
 /**
  * The charset to use when creating tables
  */
-$db['charset'] = 'utf8';
+$dbConfig['charset'] = 'utf8';
 
 /**
  * The collation to use when creating tables
  */
-$db['collation'] = 'utf8_general_ci';
+$dbConfig['collation'] = 'utf8_general_ci';
