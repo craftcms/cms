@@ -1,9 +1,9 @@
-{% layout _layouts/full %}
+{% layout "_layouts/full" %}
 
-{% region pageTitle %}Dashboard{% /region %}
-{% region styles %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
+{% region "pageTitle" %}Dashboard{% /region %}
+{% region "styles" %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
 
-{% region main %}
+{% region "main" %}
 	<div class="toolbar">
 		<div class="right">
 			<div id="sidebar-btn" class="btn">
@@ -75,7 +75,7 @@
 	</div>
 {% /region %}
 
-{% region scripts %}
+{% region "scripts" %}
 	{% if !cp.updateInfoCached %}
 		<script type="text/javascript">
 			window.getAlerts = true;

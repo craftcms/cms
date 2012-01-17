@@ -1,9 +1,9 @@
-{% layout settings/_layouts/settings %}
+{% layout "settings/_layouts/settings" %}
 
-{% region pageTitle %}Updates{% /region %}
-{% region bodyClass %}updates{% /region %}
+{% region "pageTitle" %}Updates{% /region %}
+{% region "bodyClass" %}updates{% /region %}
 
-{% region main %}
+{% region "main" %}
 	<div id="checking">
 		Checking for updates…
 	</div>
@@ -11,6 +11,6 @@
 	<div id="updates"></div>
 {% /region %}
 
-{% region scripts %}
+{% region "scripts" %}
 	{{ cp.resource('app/scripts/updates.js').js }}
 {% /region %}

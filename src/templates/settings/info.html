@@ -1,9 +1,9 @@
-{% layout settings/_layouts/settings %}
+{% layout "settings/_layouts/settings" %}
 
-{% region pageTitle %}System Info{% /region %}
-{% region bodyClass %}info{% /region %}
+{% region "pageTitle" %}System Info{% /region %}
+{% region "bodyClass" %}info{% /region %}
 
-{% region main %}
+{% region "main" %}
 	<img id="logo" src="{{ cp.resource('app/images/logo.png') }}">
 
 	<p id="version">{{ blocks.fullVersion }}</p>
