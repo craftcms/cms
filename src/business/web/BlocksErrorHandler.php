@@ -124,22 +124,32 @@ class BlocksErrorHandler extends CErrorHandler
 	{
 		$viewPaths = array(
 			Blocks::app()->theme === null ? null : Blocks::app()->theme->systemViewPath,
-			Blocks::app()->path->siteTemplatePath,
 			Blocks::app() instanceof CWebApplication ? Blocks::app()->systemViewPath : null,
 			Blocks::app()->path->frameworkPath.'views/',
 		);
+
+		try
+		{
+			$connection = Blocks::app()->db;
+			if ($connection)
+				$viewPaths[] = Blocks::app()->path->siteTemplatePath;
+		}
+		catch(Exception $e)
+		{
+			// swallow the exception.
+		}
 
 		foreach ($viewPaths as $i => $viewPath)
 		{
 			if ($viewPath !== null)
 			{
-				// we don't want to allow an exception template on the front end
-				if ($view !== 'errors/exception' || ($view == 'errors/exception' && $viewPath !== Blocks::app()->path->siteTemplatePath))
-				{
-					$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);
-					if (is_file($viewFile))
-						return $viewFile;
-				}
+				// if it's an exception on the front-end, we don't show the exception template, on the error template.
+				if ($view == 'errors/exception' && Blocks::app()->request->mode == RequestMode::Site)
+					$view = 'errors/error';
+
+				$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);
+				if (is_file($viewFile))
+					return $viewFile;
 			}
 		}
 	}
@@ -154,7 +164,7 @@ class BlocksErrorHandler extends CErrorHandler
 	{
 		if(YII_DEBUG)
 		{
-			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition().'.</a> v'.Blocks::getVersion().'.'.Blocks::getBuild();
+			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition(false).'.</a> v'.Blocks::getVersion(false).'.'.Blocks::getBuild(false);
 			if(isset($_SERVER['SERVER_SOFTWARE']))
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
 		}
