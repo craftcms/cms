@@ -128,74 +128,13 @@ class RequirementsChecker
 				$message
 			),
 			new Requirement(
-				'Database Config Server Name',
-				Blocks::app()->getDbConfig('server') !== '',
-				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database server name in the database config file at '.$dbConfigPath
-			),
-			new Requirement(
-				'Database Config User Name',
-				Blocks::app()->getDbConfig('user') !== '',
-				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database user name in the database config file at '.$dbConfigPath
-			),
-			new Requirement(
-				'Database Config User Password',
-				Blocks::app()->getDbConfig('password') !== '',
-				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database user password in the database config file at '.$dbConfigPath
-			),
-			new Requirement(
-				'Database Config Database Name',
-				Blocks::app()->getDbConfig('database') !== '',
-				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your database name in the database config file at '.$dbConfigPath
-			),
-			new Requirement(
-				'Site License Key Name',
-				Blocks::app()->site->licenseKeys !== null,
-				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Please set your license key in the site config file at '.$blocksConfigPath
-			),
-		);
-
-		$connection = true;
-
-		try
-		{
-			Blocks::app()->db;
-		}
-		catch (Exception $e)
-		{
-			$connection = false;
-			$message = $e->getMessage();
-		}
-
-		if (!$connection)
-		{
-			$this->_requirements[] = new Requirement(
-				'Database Connection',
-				false,
-				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'Cannot connect to the database with the current settings in the database config file at '.realpath(Blocks::app()->path->configPath).DIRECTORY_SEPARATOR.'db.php.<br /><br />Message:<br />'.$message
-			);
-		}
-		else
-		{
-			$this->_requirements[] = new Requirement(
 				'MySQL version',
 				version_compare(Blocks::app()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'MySQL '.$requiredMysqlVersion.' or higher is required to run Blocks.'
-			);
-		}
+			),
+		);
 	}
 
 	/**
@@ -290,7 +229,7 @@ class RequirementsChecker
 				$installResult = InstallStatus::Warning;
 		}
 
-		$writableFolders = $this->writableFolders;
+		$writableFolders = $this->getWritableFolders();
 		$errorFolders = null;
 		foreach($writableFolders as $writableFolder)
 		{

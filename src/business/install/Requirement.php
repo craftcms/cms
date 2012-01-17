@@ -3,7 +3,7 @@
 /**
  *
  */
-class Requirement
+class Requirement extends CComponent
 {
 	private $_name;
 	private $_condition;
