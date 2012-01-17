@@ -32,6 +32,7 @@ return array(
 	'import' => array(
 		'application.business.*',
 		'application.business.db.*',
+		'application.business.email.*',
 		'application.business.enums.*',
 		'application.business.exceptions.*',
 		'application.business.install.*',
@@ -80,6 +81,10 @@ return array(
 
 		'cp' => array(
 			'class' => 'application.business.services.CpService',
+		),
+
+		'email' => array(
+			'class' => 'application.business.services.EmailService',
 		),
 
 		'et' => array(
