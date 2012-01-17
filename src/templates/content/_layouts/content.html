@@ -1,22 +1,22 @@
-{% layout _layouts/sidebar %}
+{% layout "_layouts/sidebar" %}
 
-{% region pageTitle %}{{ pageTitle }}{% /region %}
-{% region styles %}{{ cp.resource('app/styles/content.css').css }}{% /region %}
+{% region "pageTitle" %}{{ pageTitle }}{% /region %}
+{% region "styles" %}{{ cp.resource('app/styles/content.css').css }}{% /region %}
 
-{% region sidebar %}
+{% region "sidebar" %}
 	{% include "content/_includes/sitemap" %}
 {% /region %}
 
-{% region main %}
+{% region "main" %}
 	{% if page %}
-		{% include content/_includes/toolbar %}
+		{% include "content/_includes/toolbar" %}
 		<div class="page">
 			{{ page }}
 		</div>
 	{% /if %}
 {% /region %}
 
-{% region scripts %}
+{% region "scripts" %}
 	{{ cp.resource('app/lib/rangy-1.2.1.js').js }}
 	{{ cp.resource('app/scripts/ui/Menu.js').js }}
 	{{ cp.resource('app/scripts/ui/SelectMenu.js').js }}

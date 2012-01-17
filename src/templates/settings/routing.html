@@ -1,9 +1,9 @@
-{% layout settings/_layouts/settings %}
+{% layout "settings/_layouts/settings" %}
 
-{% region pageTitle %}URL Routing{% /region %}
-{% region bodyClass %}routing{% /region %}
+{% region "pageTitle" %}URL Routing{% /region %}
+{% region "bodyClass" %}routing{% /region %}
 
-{% region main %}
+{% region "main" %}
 	<p>If an incoming request’s URL doesn’t match a page or a template, these “routes” are Blocks’ last resort before responding with a 404. A route basically says, <i>“If the URL looks like <em>this</em>, then return <em>that</em>.”</i></p>
 	<p>Each route is composed of a pattern which Blocks compares the URL with, and the template to load if it’s a match. Patterns usually contain “vars” that could match a range of different things, and Blocks makes their matches available as template variables.</p>
 

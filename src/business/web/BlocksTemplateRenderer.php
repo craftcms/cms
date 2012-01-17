@@ -17,7 +17,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Renders a template
-	 * @param        $context The controller or widget who is rendering the template
+	 * @param object $context The controller or widget who is rendering the template
 	 * @param string $sourceTemplatePath Path to the source template
 	 * @param array  $tags The tags to be passed to the template
 	 * @param bool   $return Whether the rendering result should be returned
@@ -68,8 +68,8 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Returns whether the template needs to be (re-)parsed
-	 * @access private
 	 * @return bool
+	 * @access private
 	 */
 	private function isTemplateParsingNeeded()
 	{
@@ -126,7 +126,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 		$this->extractPhp();
 		$this->parseComments();
 		$this->parseActions();
-		$this->_template = $this->parseVariableTags($this->_template);
+		$this->parseVariableTags();
 		$this->parseLanguage();
 		$this->replaceMarkers();
 		$this->prependHead();
@@ -190,6 +190,16 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 	{
 		$match[1] = 'echo '.$match[1];
 		return $this->createPhpMarker($match);
+	}
+
+	/**
+	 * Extracts Strings, replacing them with markers
+	 * @param string &$template The template to extract strings from
+	 * @access private
+	 */
+	private function extractStrings(&$template)
+	{
+		$template = preg_replace_callback('/([\'"]).*\1/Ums', array(&$this, 'createMarker'), $template);
 	}
 
 	/**
@@ -259,14 +269,15 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 	/**
 	 * Parse an action match
+	 * @param array $match The preg_replace_callback match
+	 * @return string The parsed action tag
 	 * @access private
-	 * @param $match
-	 * @return string
 	 */
 	private function parseActionMatch($match)
 	{
 		$action = $match[1];
 		$params = isset($match[3]) ? $match[3] : '';
+		$this->extractStrings($params);
 
 		switch ($action)
 		{
@@ -274,21 +285,21 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			case 'layout':
 				$this->_hasLayout = true;
-				$template = $this->parseParam($params);
-				return "<?php \$_layout->template = {$template}; ?>";
+				$this->parseVariables($params, true);
+				return "<?php \$_layout->template = {$params}; ?>";
 
 			case 'region':
 				$this->_hasLayout = true;
-				$regionName = $this->parseParam($params);
-				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionTemplateWidget', array('name' => {$regionName})); ?>";
+				$this->parseVariables($params, true);
+				return "<?php \$_layout->regions[] = \$this->beginWidget('RegionTemplateWidget', array('name' => {$params})); ?>";
 
 			case '/region':
 			case 'endregion':
 				return '<?php $this->endWidget(); ?>';
 
 			case 'include':
-				$template = $this->parseParam($params);
-				return "<?php \$this->loadTemplate({$template}); ?>";
+				$this->parseVariables($params, true);
+				return "<?php \$this->loadTemplate({$params}); ?>";
 
 			// Loops
 
@@ -328,88 +339,61 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 
 			// Redirect
 			case 'redirect':
-				$url = $this->parseParam($params);
-				return "<?php Blocks::app()->request->redirect({$url}); ?>";
+				$this->parseVariables($params, true);
+				return "<?php Blocks::app()->request->redirect({$params}); ?>";
 		}
 	}
 
 	/**
-	 * Parse action tag param for variable tags
-	 * @access private
-	 * @param $str
-	 * @return string
-	 */
-	private function parseParam($str)
-	{
-		preg_match('/([\'\"]?)(.*)\1/', $str, $match);
-		return '\''.$this->parseVariableTags($match[2], true).'\'';
-	}
-
-	/**
 	 * Parse variable tags
-	 * @access private
-	 * @param      $template
-	 * @param bool $partOfString
+	 * @param string $template The template to parse variable tags in
+	 * @param bool $partOfString Whether $template is part of a string
 	 * @return mixed
+	 * @access private
 	 */
-	private function parseVariableTags($template, $partOfString = false)
+	private function parseVariableTags()
 	{
-		// find any remaining {variable-tags} on the page
-		$func = $partOfString ? 'parseVariableTagMatchInString' : 'parseVariableTagMatchInTemplate';
-		return preg_replace_callback('/\{\{\s*(.+)\s*\}\}/U', array(&$this, $func), $template);
+		// find any {{variable-tags}} on the page
+		$this->_template = preg_replace_callback('/\{\{\s*(.+)\s*\}\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
 	}
 
 	/**
-	 * Parse a variable tag match within a string
+	 * Parse a variable tag match
+	 * @param array $match The preg_replace_callback match
+	 * @return string The parsed variable tag
 	 * @access private
-	 * @param $match
-	 * @return string
 	 */
-	private function parseVariableTagMatchInString($match)
+	private function parseVariableTagMatch($match)
 	{
-		$this->parseVariables($match[1], true);
-		return "'.{$match[1]}.'";
-	}
-
-	/**
-	 * Parse a variable tag match within the main template
-	 * @access private
-	 * @param $match
-	 * @return string
-	 */
-	private function parseVariableTagMatchInTemplate($match)
-	{
+		$this->extractStrings($match[1]);
 		$this->parseVariables($match[1], true);
 		return "<?php echo {$match[1]} ?>";
 	}
 
 	/**
 	 * Parse variables
+	 * @param string $template The template to parse for variables
+	 * @param bool $toString Whether to include "->__toString()" at the end of the parsed variables
 	 * @access private
-	 * @param      $str
-	 * @param bool $toString
 	 */
-	private function parseVariables(&$str, $toString = false)
+	private function parseVariables(&$template, $toString = false)
 	{
 		do {
-			$match = $this->parseVariable($str, $offset, $toString);
+			$match = $this->parseVariable($template, $offset, $toString);
 		} while ($match);
 	}
 
 	/**
 	 * Parse variable
+	 * @param string $template The template to be parsed
+	 * @param int $offset The offset to start searching for a variable
+	 * @param bool $toString Whether to include "->__toString()" at the end of the parsed variable
+	 * @return bool Whether a variable was found and parsed
 	 * @access private
-	 * @param      $str
-	 * @param int  $offset
-	 * @param bool $toString
-	 * @return bool
 	 */
-	private function parseVariable(&$str, &$offset = 0, $toString = false)
+	private function parseVariable(&$template, &$offset = 0, $toString = false)
 	{
-		// extract any strings first
-		$str = preg_replace_callback('/([\'"]).*\1/Ums', array(&$this, 'createMarker'), $str);
-
-		if (preg_match('/(?<![-\.\'"\w\/\[])[A-Za-z]\w*/', $str, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
+		if (preg_match('/(?<![-\.\'"\w\/\[])[A-Za-z]\w*/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
 			$parsedTag = '$'.$tag;
@@ -417,7 +401,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			$tagOffset = $tagMatch[0][1];
 
 			// search for immediately following subtags
-			$substr = substr($str, $tagOffset + $tagLength);
+			$substr = substr($template, $tagOffset + $tagLength);
 
 			while (preg_match('/^
 				(?P<subtag>
@@ -465,7 +449,7 @@ class BlocksTemplateRenderer extends CApplicationComponent implements IViewRende
 			}
 
 			// replace the tag with the parsed version
-			$str = substr($str, 0, $tagOffset) . $parsedTag . $substr;
+			$template = substr($template, 0, $tagOffset) . $parsedTag . $substr;
 
 			// update the offset
 			$offset = $tagOffset + strlen($parsedTag);

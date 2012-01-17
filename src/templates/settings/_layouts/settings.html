@@ -1,10 +1,10 @@
-{% layout _layouts/sidebar %}
-{% region pageTitle %}Settings – {{ pageTitle }}{% /region %}
-{% region bodyClass %}{{ bodyClass }}{% /region %}
-{% region styles %}{{ cp.resource('app/styles/settings.css').css }}{% /region %}
-{% region scripts %}{{ scripts }}{% /region %}
+{% layout "_layouts/sidebar" %}
+{% region "pageTitle" %}Settings – {{ pageTitle }}{% /region %}
+{% region "bodyClass" %}{{ bodyClass }}{% /region %}
+{% region "styles" %}{{ cp.resource('app/styles/settings.css').css }}{% /region %}
+{% region "scripts" %}{{ scripts }}{% /region %}
 
-{% region sidebar %}
+{% region "sidebar" %}
 
 	<h5>System Settings</h5>
 	<ul class="nav">
@@ -33,7 +33,7 @@
 
 {% /region %}
 
-{% region main %}
+{% region "main" %}
 	<h1>{{ pageTitle }}</h1>
 
 	{{ main }}

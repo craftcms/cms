@@ -1,8 +1,8 @@
-{% layout _layouts/basic %}
+{% layout "_layouts/basic" %}
 
-{% region title %}{% if pageTitle %}{{ pageTitle }} – {% /if %}Blocks{% /region %}
+{% region "title" %}{% if pageTitle %}{{ pageTitle }} – {% /if %}Blocks{% /region %}
 
-{% region styles %}
+{% region "styles" %}
 	{{ cp.resource('app/styles/cp.css').css }}
 	{{ cp.resource('app/styles/icons.css').css }}
 
@@ -10,9 +10,9 @@
 	{{ styles }}
 {% /region %}
 
-{% region bodyClass %}{{ bodyClass }}{% /region %}
+{% region "bodyClass" %}{{ bodyClass }}{% /region %}
 
-{% region body %}
+{% region "body" %}
 	<div id="nav">
 		<div class="left">
 			<div id="site" class="btn">
@@ -37,7 +37,7 @@
 	</div>
 {% /region %}
 
-{% region scripts %}
+{% region "scripts" %}
 	{{ cp.resource('app/scripts/cp.js').js }}
 	{{ scripts }}
 {% /region %}
