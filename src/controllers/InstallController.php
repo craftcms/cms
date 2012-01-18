@@ -9,17 +9,11 @@ class InstallController extends BaseController
 	 * @param      $id
 	 * @param null $module
 	 */
-	function __construct($id, $module = null)
+	function init()
 	{
-		if (!Blocks::app()->getConfig('devMode'))
-		{
-			$infoTable = Blocks::app()->db->schema->getTable('{{info}}');
-			if ($infoTable !== null)
-				throw new BlocksHttpException(404);
-		}
-
-		parent::__construct($id, $module);
-		$this->layout = 'installer';
+		// Return a 404 if Blocks is installed
+		if (Blocks::app()->isInstalled)
+			throw new BlocksHttpException(404);
 	}
 
 	/**
@@ -28,11 +22,11 @@ class InstallController extends BaseController
 	{
 		$model = new InstallConfigForm();
 
-		if(Blocks::app()->request->getPost('InstallConfigForm', null) !== null)
+		if (Blocks::app()->request->getPost('InstallConfigForm', null) !== null)
 		{
 			$model->attributes = Blocks::app()->request->getPost('InstallConfigForm');
 
-			if($model->validate())
+			if ($model->validate())
 			{
 				try
 				{
@@ -102,7 +96,7 @@ class InstallController extends BaseController
 		}
 
 		$model->checkRequirements();
-		$this->render('index', array('model' => $model));
+		$this->render('install/index', array('model' => $model));
 	}
 
 	/**

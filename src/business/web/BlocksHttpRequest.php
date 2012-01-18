@@ -182,14 +182,19 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			if ($this->getPathSegment(1) == Blocks::app()->getConfig('actionTriggerWord'))
+			if ($this->getPathSegment(1) === Blocks::app()->getConfig('actionTriggerWord'))
 				$this->_mode = RequestMode::Action;
 
-			else if ($this->getPathSegment(1) == Blocks::app()->getConfig('resourceTriggerWord'))
+			else if ($this->getPathSegment(1) === Blocks::app()->getConfig('resourceTriggerWord'))
 				$this->_mode = RequestMode::Resource;
 
 			else if (BLOCKS_CP_REQUEST === true)
-				$this->_mode = RequestMode::CP;
+			{
+				if ($this->getPathSegment(1) === 'install')
+					$this->_mode = RequestMode::Install;
+				else
+					$this->_mode = RequestMode::CP;
+			}
 
 			else
 				$this->_mode = RequestMode::Site;

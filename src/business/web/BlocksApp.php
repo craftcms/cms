@@ -8,59 +8,44 @@ class BlocksApp extends CWebApplication
 	private $_templatePath;
 	private $_cpTemplatePath;
 	private $_layoutPath;
-	private $_isDbInstalled;
+	private $_isInstalled;
 
 	/**
 	 * Process the request
 	 */
 	public function processRequest()
 	{
-		// Resources
+		// Is this a resource request?
 		if ($this->request->mode == RequestMode::Resource)
 		{
-			// get the path segments, except for the first one which we already know is "resources"
-			$segs = array_slice(array_merge($this->request->pathSegments), 1);
-
-			// get the resource handle ("app" or a plugin class)
-			$handle = array_shift($segs);
-
-			if ($handle == 'app')
-				$rootFolderPath = $this->path->resourcesPath;
-			else
-				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
-
-			$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
-			$relativeResourcePath = implode('/', $segs);
-
-			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
-			$resourceProcessor->processResourceRequest();
+			$this->processResourceRequest();
+			return;
 		}
 
-		// validate the config
+		// Config validation
 		$this->validateConfig();
 
-		// is Blocks actually installed?
-		if (!$this->isDbInstalled)
+		// Is this an install request?
+		if ($this->request->mode == RequestMode::Install)
 		{
-			if ($this->request->mode == RequestMode::CP)
-			{
-				if ($this->request->getPathSegment(1) !== 'install')
-				{
-					// redirect to /install
-					$url = UrlHelper::generateUrl('install');
-					$this->request->redirect($url);
-				}
-
-				$this->runController('install');
-			}
-			else
-			{
-				// return 404
-				throw new BlocksHttpException(404);
-			}
+			$this->runController('install');
 		}
 
-		// Action request?
+		// Ensure that Blocks is installed
+		else if (!$this->isInstalled)
+		{
+			// Redirect to the installer if this is a CP request
+			if ($this->request->mode == RequestMode::CP)
+			{
+				$url = UrlHelper::generateUrl('install');
+				$this->request->redirect($url);
+			}
+			// Otherwise return a 404
+			else
+				throw new BlocksHttpException(404);
+		}
+
+		// Is this an action request?
 		else if ($this->request->mode == RequestMode::Action)
 		{
 			if (!$this->request->getPathSegment(2))
@@ -78,11 +63,34 @@ class BlocksApp extends CWebApplication
 			$this->runController($controller.'/'.$action);
 		}
 
-		// template request
+		// Must be a template request
 		else
 		{
 			$this->runController('template');
 		}
+	}
+
+	/**
+	 * Process a resource request
+	 */
+	private function processResourceRequest()
+	{
+		// get the path segments, except for the first one which we already know is "resources"
+		$segs = array_slice(array_merge($this->request->pathSegments), 1);
+
+		// get the resource handle ("app" or a plugin class)
+		$handle = array_shift($segs);
+
+		if ($handle == 'app')
+			$rootFolderPath = $this->path->resourcesPath;
+		else
+			$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+
+		$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
+		$relativeResourcePath = implode('/', $segs);
+
+		$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+		$resourceProcessor->processResourceRequest();
 	}
 
 	/**
@@ -143,17 +151,17 @@ class BlocksApp extends CWebApplication
 	/**
 	 * @return bool
 	 */
-	public function getIsDbInstalled()
+	public function getIsInstalled()
 	{
-		if (!isset($this->_isDbInstalled))
+		if (!isset($this->_isInstalled))
 		{
 			// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
 			$infoTable = $this->db->schema->getTable('{{info}}');
 
-			$this->_isDbInstalled = ($infoTable !== null);
+			$this->_isInstalled = ($infoTable !== null);
 		}
 
-		return $this->_isDbInstalled;
+		return $this->_isInstalled;
 	}
 
 	/**
