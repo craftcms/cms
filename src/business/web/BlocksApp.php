@@ -26,7 +26,7 @@ class BlocksApp extends CWebApplication
 		$this->validateConfig();
 
 		// Is this an install request?
-		if ($this->request->mode == RequestMode::Install)
+		if ($this->request->mode == RequestMode::CP && $this->request->getPathSegment(1) === 'install')
 		{
 			$this->runController('install');
 		}

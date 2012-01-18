@@ -119,7 +119,7 @@ class PathService extends CApplicationComponent
 			$templatePath = $this->siteTemplatePath;
 		}
 		// cp request or install request or action request coming in through admin.php
-		elseif ($mode == RequestMode::CP || $mode == RequestMode::Install || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
+		elseif ($mode == RequestMode::CP || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$templatePath = $this->cpTemplatePath;
 

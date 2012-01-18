@@ -189,12 +189,7 @@ class BlocksHttpRequest extends CHttpRequest
 				$this->_mode = RequestMode::Resource;
 
 			else if (BLOCKS_CP_REQUEST === true)
-			{
-				if ($this->getPathSegment(1) === 'install')
-					$this->_mode = RequestMode::Install;
-				else
-					$this->_mode = RequestMode::CP;
-			}
+				$this->_mode = RequestMode::CP;
 
 			else
 				$this->_mode = RequestMode::Site;
