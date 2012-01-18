@@ -34,7 +34,7 @@ class InstallConfigForm extends CFormModel
 	 */
 	public function checkRequirements()
 	{
-		$requirementsInfo = new RequirementsChecker();
+		$requirementsInfo = new bRequirementsChecker();
 		$requirementsInfo->run();
 		$this->requirementsInfo = $requirementsInfo;
 	}

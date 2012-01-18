@@ -53,7 +53,7 @@ class StringTag extends Tag
 	 */
 	public function encode()
 	{
-		return BlocksHtml::encode($this->_val);
+		return bHtml::encode($this->_val);
 	}
 
 	/**
@@ -61,7 +61,7 @@ class StringTag extends Tag
 	 */
 	public function decode()
 	{
-		return BlocksHtml::decode($this->_val);
+		return bHtml::decode($this->_val);
 	}
 
 	/**

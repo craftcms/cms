@@ -18,7 +18,7 @@ defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 if(!class_exists('Yii'))
 	require_once($framework);
 
-require_once(BLOCKS_BASE_PATH.'app/business/web/BlocksApp.php');
+require_once(BLOCKS_BASE_PATH.'app/business/web/bApp.php');
 
-$app = new BlocksApp($config);
+$app = new bApp($config);
 $app->run();

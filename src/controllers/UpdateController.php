@@ -86,7 +86,7 @@ class UpdateController extends BaseController
 					if (Blocks::app()->update->doCoreUpdate())
 						echo CJSON::encode(array('success' => true));
 				}
-				catch (BlocksException $ex)
+				catch (bException $ex)
 				{
 					echo CJSON::encode(array('error' => $ex->getMessage(), 'fatal' => true));
 				}
@@ -102,7 +102,7 @@ class UpdateController extends BaseController
 					if (Blocks::app()->update->doPluginUpdate($h))
 						echo CJSON::encode(array('success' => true));
 				}
-				catch (BlocksException $ex)
+				catch (bException $ex)
 				{
 					echo CJSON::encode(array('error' => $ex->getMessage(), 'fatal' => false));
 				}

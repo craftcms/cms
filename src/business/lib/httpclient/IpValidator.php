@@ -111,7 +111,7 @@ class IpValidator
 
 		if (!$this->_options['allowipv4'] && !$this->_options['allowipv6'])
 		{
-			throw new BlocksException('Nothing to validate. Check your options');
+			throw new bException('Nothing to validate. Check your options');
 		}
 
 		return $this;

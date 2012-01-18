@@ -25,7 +25,7 @@ class CpResourceTag extends Tag
 	{
 		if (!isset($this->_url))
 		{
-			$this->_url = UrlHelper::generateResourceUrl($this->_path);
+			$this->_url = bUrlHelper::generateResourceUrl($this->_path);
 		}
 
 		return $this->_url;

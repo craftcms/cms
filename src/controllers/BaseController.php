@@ -32,7 +32,7 @@ abstract class BaseController extends CController
 
 		foreach ($data as &$tag)
 		{
-			$tag = TemplateHelper::getVarTag($tag);
+			$tag = bTemplateHelper::getVarTag($tag);
 		}
 
 		return $this->renderPartial($templatePath, $data, $return);

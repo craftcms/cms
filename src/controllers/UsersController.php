@@ -30,7 +30,7 @@ class UsersController extends BaseController
 				if ($user !== null)
 				{
 					// success message (flash?)
-					$this->redirect(UrlHelper::generateActionUrl('app/users/register'));
+					$this->redirect(bUrlHelper::generateActionUrl('app/users/register'));
 				}
 			}
 

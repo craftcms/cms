@@ -9,7 +9,7 @@ class DashboardController extends BaseController
 	 */
 	public function actionGetAlerts()
 	{
-		$alerts = DashboardHelper::getAlerts(true);
+		$alerts = bDashboardHelper::getAlerts(true);
 		echo CJSON::encode(array('alerts' => $alerts));
 	}
 }

@@ -10,7 +10,7 @@ class CpDashboardTag extends Tag
 	 */
 	public function alerts()
 	{
-		return DashboardHelper::getAlerts();
+		return bDashboardHelper::getAlerts();
 	}
 
 	/**

@@ -99,7 +99,7 @@ class UriHttp extends Uri
 	 * (e.g., example.com/path/to/resource?query=param#fragment)
 	 * @param  string $scheme         The scheme of the URI
 	 * @param  string $schemeSpecific The scheme-specific part of the URI
-	 * @throws BlocksException When the URI is not valid
+	 * @throws bException When the URI is not valid
 	 */
 	protected function __construct($scheme, $schemeSpecific = '')
 	{
@@ -135,7 +135,7 @@ class UriHttp extends Uri
 		// Validate the URI
 		if ($this->valid() === false)
 		{
-			throw new BlocksException('Invalid URI supplied');
+			throw new bException('Invalid URI supplied');
 		}
 	}
 
@@ -143,7 +143,7 @@ class UriHttp extends Uri
 	 * Creates a UriHttp from the given string
 	 * @param  string $uri String to create URI from, must start with 'http://' or 'https://'
 	 * @throws InvalidArgumentException  When the given $uri is not a string or does not start with http:// or https://
-	 * @throws BlocksException When the given $uri is invalid
+	 * @throws bException When the given $uri is invalid
 	 * @return UriHttp
 	 */
 	public static function fromString($uri)
@@ -169,8 +169,8 @@ class UriHttp extends Uri
 	/**
 	 * Parse the scheme-specific portion of the URI and place its parts into instance variables.
 	 * @param  string $schemeSpecific The scheme-specific portion to parse
-	 * @throws BlocksException When scheme-specific decomposition fails
-	 * @throws BlocksException When authority decomposition fails
+	 * @throws bException When scheme-specific decomposition fails
+	 * @throws bException When authority decomposition fails
 	 * @return void
 	 */
 	protected function _parseUri($schemeSpecific)
@@ -181,7 +181,7 @@ class UriHttp extends Uri
 
 		if ($status === false)
 		{
-			throw new BlocksException('Internal error: scheme-specific decomposition failed');
+			throw new bException('Internal error: scheme-specific decomposition failed');
 		}
 
 		// Failed decomposition; no further processing needed
@@ -217,14 +217,14 @@ class UriHttp extends Uri
 	/**
 	 * Returns a URI based on current values of the instance variables. If any
 	 * part of the URI does not pass validation, then an exception is thrown.
-	 * @throws BlocksException When one or more parts of the URI are invalid
+	 * @throws bException When one or more parts of the URI are invalid
 	 * @return string
 	 */
 	public function getUri()
 	{
 		if ($this->valid() === false)
 		{
-			throw new BlocksException('One or more parts of the URI are invalid');
+			throw new bException('One or more parts of the URI are invalid');
 		}
 
 		$password = strlen($this->_password) > 0 ? ":$this->_password" : '';
@@ -272,7 +272,7 @@ class UriHttp extends Uri
 	 * Returns true if and only if the userName passes validation. If no userName is passed,
 	 * then the userName contained in the instance variable is used.
 	 * @param  string $userName The HTTP username
-	 * @throws BlocksException When username validation fails
+	 * @throws bException When username validation fails
 	 * @return boolean
 	 * @link   http://www.faqs.org/rfcs/rfc2396.html
 	 */
@@ -293,7 +293,7 @@ class UriHttp extends Uri
 		$status = @preg_match('/^(?:'.$this->_regex['escaped'].'|['.self::CHAR_ALNUM.self::CHAR_MARK.';:&=+$,'.'])+$/', $userName);
 		if ($status === false)
 		{
-			throw new BlocksException('Internal error: userName validation failed');
+			throw new bException('Internal error: userName validation failed');
 		}
 
 		return $status === 1;
@@ -302,14 +302,14 @@ class UriHttp extends Uri
 	/**
 	 * Sets the userName for the current URI, and returns the old userName
 	 * @param  string $userName The HTTP userName
-	 * @throws BlocksException When $userName is not a valid HTTP userName
+	 * @throws bException When $userName is not a valid HTTP userName
 	 * @return string
 	 */
 	public function setUserName($userName)
 	{
 		if ($this->validateUserName($userName) === false)
 		{
-			throw new BlocksException("UserName \"$userName\" is not a valid HTTP username");
+			throw new bException("UserName \"$userName\" is not a valid HTTP username");
 		}
 
 		$oldUserName = $this->_userName;
@@ -357,7 +357,7 @@ class UriHttp extends Uri
 		$status = @preg_match('/^(?:'.$this->_regex['escaped'].'|['.self::CHAR_ALNUM.self::CHAR_MARK.';:&=+$,'.'])+$/', $password);
 		if ($status === false)
 		{
-			throw new BlocksException('Internal error: password validation failed.');
+			throw new bException('Internal error: password validation failed.');
 		}
 
 		return $status == 1;
@@ -373,7 +373,7 @@ class UriHttp extends Uri
 	{
 		if ($this->validatePassword($password) === false)
 		{
-			throw new BlocksException("Password \"$password\" is not a valid HTTP password.");
+			throw new bException("Password \"$password\" is not a valid HTTP password.");
 		}
 
 		$oldPassword = $this->_password;
@@ -420,14 +420,14 @@ class UriHttp extends Uri
 	/**
 	 * Sets the host for the current URI, and returns the old host
 	 * @param  string $host The HTTP host
-	 * @throws BlocksException When $host is not a valid HTTP host
+	 * @throws bException When $host is not a valid HTTP host
 	 * @return string
 	 */
 	public function setHost($host)
 	{
 		if ($this->validateHost($host) === false)
 		{
-			throw new BlocksException("Host \"$host\" is not a valid HTTP host");
+			throw new bException("Host \"$host\" is not a valid HTTP host");
 		}
 
 		$oldHost = $this->_host;
@@ -470,14 +470,14 @@ class UriHttp extends Uri
 	/**
 	 * Sets the port for the current URI, and returns the old port
 	 * @param  string $port The HTTP port
-	 * @throws BlocksException When $port is not a valid HTTP port
+	 * @throws bException When $port is not a valid HTTP port
 	 * @return string
 	 */
 	public function setPort($port)
 	{
 		if ($this->validatePort($port) === false)
 		{
-			throw new BlocksException("Port \"$port\" is not a valid HTTP port.");
+			throw new bException("Port \"$port\" is not a valid HTTP port.");
 		}
 
 		$oldPort = $this->_port;
@@ -498,7 +498,7 @@ class UriHttp extends Uri
 	/**
 	 * Returns true if and only if the path string passes validation. If no path is passed, then the path contained in the instance variable is used.
 	 * @param  string $path The HTTP path
-	 * @throws BlocksException When path validation fails
+	 * @throws bException When path validation fails
 	 * @return boolean
 	 */
 	public function validatePath($path = null)
@@ -519,7 +519,7 @@ class UriHttp extends Uri
 		$status  = @preg_match($pattern, $path);
 		if ($status === false)
 		{
-			throw new BlocksException('Internal error: path validation failed');
+			throw new bException('Internal error: path validation failed');
 		}
 
 		return (boolean) $status;
@@ -528,14 +528,14 @@ class UriHttp extends Uri
 	/**
 	 * Sets the path for the current URI, and returns the old path
 	 * @param  string $path The HTTP path
-	 * @throws BlocksException When $path is not a valid HTTP path
+	 * @throws bException When $path is not a valid HTTP path
 	 * @return string
 	 */
 	public function setPath($path)
 	{
 		if ($this->validatePath($path) === false)
 		{
-			throw new BlocksException("Path \"$path\" is not a valid HTTP path");
+			throw new bException("Path \"$path\" is not a valid HTTP path");
 		}
 
 		$oldPath = $this->_path;
@@ -576,7 +576,7 @@ class UriHttp extends Uri
 	 * Returns true if and only if the query string passes validation. If no query is passed,
 	 * then the query string contained in the instance variable is used.
 	 * @param  string $query The query to validate
-	 * @throws BlocksException When query validation fails
+	 * @throws bException When query validation fails
 	 * @return boolean
 	 * @link   http://www.faqs.org/rfcs/rfc2396.html
 	 */
@@ -599,7 +599,7 @@ class UriHttp extends Uri
 
 		if ($status === false)
 		{
-			throw new BlocksException('Internal error: query validation failed');
+			throw new bException('Internal error: query validation failed');
 		}
 
 		return $status == 1;
@@ -687,7 +687,7 @@ class UriHttp extends Uri
 	 * Returns true if and only if the fragment passes validation. If no fragment is passed,
 	 * then the fragment contained in the instance variable is used.
 	 * @param  string $fragment Fragment of an URI
-	 * @throws BlocksException When fragment validation fails
+	 * @throws bException When fragment validation fails
 	 * @return boolean
 	 * @link   http://www.faqs.org/rfcs/rfc2396.html
 	 */
@@ -710,7 +710,7 @@ class UriHttp extends Uri
 
 		if ($status === false)
 		{
-			throw new BlocksException('Internal error: fragment validation failed');
+			throw new bException('Internal error: fragment validation failed');
 		}
 
 		return (boolean) $status;
@@ -719,14 +719,14 @@ class UriHttp extends Uri
 	/**
 	 * Sets the fragment for the current URI, and returns the old fragment
 	 * @param  string $fragment Fragment of the current URI
-	 * @throws BlocksException When $fragment is not a valid HTTP fragment
+	 * @throws bException When $fragment is not a valid HTTP fragment
 	 * @return string
 	 */
 	public function setFragment($fragment)
 	{
 		if ($this->validateFragment($fragment) === false)
 		{
-			throw new BlocksException("Fragment \"$fragment\" is not a valid HTTP fragment");
+			throw new bException("Fragment \"$fragment\" is not a valid HTTP fragment");
 		}
 
 		$oldFragment = $this->_fragment;

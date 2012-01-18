@@ -102,17 +102,17 @@ class HttpCookie
 	{
 		if (preg_match("/[=,; \t\r\n\013\014]/", $name))
 		{
-			throw new BlocksException("Cookie name cannot contain these characters: =,; \\t\\r\\n\\013\\014 ({$name})");
+			throw new bException("Cookie name cannot contain these characters: =,; \\t\\r\\n\\013\\014 ({$name})");
 		}
 
 		if (! $this->name = (string)$name)
 		{
-			throw new BlocksException('Cookies must have a name');
+			throw new bException('Cookies must have a name');
 		}
 
 		if (! $this->domain = (string)$domain)
 		{
-			throw new BlocksException('Cookies must have a domain');
+			throw new bException('Cookies must have a domain');
 		}
 
 		$this->value = (string)$value;

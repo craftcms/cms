@@ -18,7 +18,7 @@
 
 <body>
 	<h1>Error <?php echo $data['code']; ?></h1>
-	<h2><?php echo nl2br(BlocksHtml::encode($data['message'])); ?></h2>
+	<h2><?php echo nl2br(bHtml::encode($data['message'])); ?></h2>
 
 	<p>The above error occurred when the Web server was processing your request.</p>
 	<p>If you think this is a server error, please contact <?php echo $data['admin']; ?>.</p>

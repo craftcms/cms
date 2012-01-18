@@ -142,14 +142,14 @@ class HttpResponse
 	 * @param string $body HttpResponse body
 	 * @param string $version HTTP version
 	 * @param string $message HttpResponse code as text
-	 * @throws BlocksException
+	 * @throws bException
 	 */
 	public function __construct($code, $headers, $body = null, $version = '1.1', $message = null)
 	{
 		// Make sure the response code is valid and set it
 		if (self::responseCodeAsText($code) === null)
 		{
-			throw new BlocksException("{$code} is not a valid HTTP response code");
+			throw new bException("{$code} is not a valid HTTP response code");
 		}
 
 		$this->code = $code;
@@ -161,7 +161,7 @@ class HttpResponse
 				$header = explode(":", $value, 2);
 				if (count($header) != 2)
 				{
-					throw new BlocksException("'{$value}' is not a valid HTTP header");
+					throw new bException("'{$value}' is not a valid HTTP header");
 				}
 
 				$name  = trim($header[0]);

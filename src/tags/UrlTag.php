@@ -57,7 +57,7 @@ class UrlTag extends Tag
 	 */
 	public function generateResourceUrl($path, $params = null)
 	{
-		return UrlHelper::generateResourceUrl($path, $params);
+		return bUrlHelper::generateResourceUrl($path, $params);
 	}
 
 	/**
@@ -67,7 +67,7 @@ class UrlTag extends Tag
 	 */
 	public function generateActionUrl($path, $params = null)
 	{
-		return UrlHelper::generateActionUrl($path, $params);
+		return bUrlHelper::generateActionUrl($path, $params);
 	}
 
 	/**
@@ -77,6 +77,6 @@ class UrlTag extends Tag
 	 */
 	public function generateUrl($path, $params = null)
 	{
-		return UrlHelper::generateUrl($path, $params);
+		return bUrlHelper::generateUrl($path, $params);
 	}
 }

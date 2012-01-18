@@ -27,12 +27,12 @@ class Tag
 	 */
 	public function _subtag($tag, $args = array())
 	{
-		$cacheKey = TemplateHelper::generateTagCacheKey($tag, $args);
+		$cacheKey = bTemplateHelper::generateTagCacheKey($tag, $args);
 
 		if (!isset($this->_tagCache[$cacheKey]))
 		{
 			$ret = call_user_func_array(array($this, $tag), $args);
-			$this->_tagCache[$cacheKey] = TemplateHelper::getVarTag($ret);
+			$this->_tagCache[$cacheKey] = bTemplateHelper::getVarTag($ret);
 		}
 
 		return $this->_tagCache[$cacheKey];

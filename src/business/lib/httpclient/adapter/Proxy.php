@@ -115,7 +115,7 @@ class Proxy extends HttpClientAdapterSocket
 		// Make sure we're properly connected
 		if (! $this->socket)
 		{
-			throw new BlocksException('Trying to write but we are not connected');
+			throw new bException('Trying to write but we are not connected');
 		}
 
 		$host = $this->config['proxy_host'];
@@ -123,7 +123,7 @@ class Proxy extends HttpClientAdapterSocket
 
 		if ($this->connectedTo[0] != "tcp://$host" || $this->connectedTo[1] != $port)
 		{
-		   throw new BlocksException("Trying to write but we are connected to the wrong proxy server");
+		   throw new bException("Trying to write but we are connected to the wrong proxy server");
 		}
 
 		// Add Proxy-Authorization header
@@ -182,14 +182,14 @@ class Proxy extends HttpClientAdapterSocket
 		// Send the request
 		if (!@fwrite($this->socket, $request))
 		{
-			throw new BlocksException("Error writing request to proxy server");
+			throw new bException("Error writing request to proxy server");
 		}
 
 		if(is_resource($body))
 		{
 			if(stream_copy_to_stream($body, $this->socket) == 0)
 			{
-				throw new BlocksException('Error writing request to server');
+				throw new bException('Error writing request to server');
 			}
 		}
 
@@ -225,7 +225,7 @@ class Proxy extends HttpClientAdapterSocket
 		// Send the request
 		if (! @fwrite($this->socket, $request))
 		{
-			throw new BlocksException("Error writing request to proxy server");
+			throw new bException("Error writing request to proxy server");
 		}
 
 		// Read response headers only
@@ -247,7 +247,7 @@ class Proxy extends HttpClientAdapterSocket
 		// Check that the response from the proxy is 200
 		if (HttpResponse::extractCode($response) != 200)
 		{
-				throw new BlocksException("Unable to connect to HTTPS proxy. Server response: " . $response);
+				throw new bException("Unable to connect to HTTPS proxy. Server response: " . $response);
 		}
 
 		// If all is good, switch socket to secure mode. We have to fall back through the different modes
@@ -270,7 +270,7 @@ class Proxy extends HttpClientAdapterSocket
 
 		if (!$success)
 		{
-		  throw new BlocksException("Unable to connect to HTTPS server through proxy: could not negotiate secure connection.");
+		  throw new bException("Unable to connect to HTTPS server through proxy: could not negotiate secure connection.");
 		}
 	}
 

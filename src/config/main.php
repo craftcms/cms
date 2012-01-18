@@ -57,66 +57,66 @@ return array(
 	'components' => array(
 		// services
 		'assets' => array(
-			'class' => 'application.business.services.AssetService',
+			'class' => 'application.business.services.bAssetService',
 		),
 
 		'content' => array(
-			'class' => 'application.business.services.ContentService',
+			'class' => 'application.business.services.bContentService',
 		),
 
 		'cp' => array(
-			'class' => 'application.business.services.CpService',
+			'class' => 'application.business.services.bCpService',
 		),
 
 		'email' => array(
-			'class' => 'application.business.services.EmailService',
+			'class' => 'application.business.services.bEmailService',
 		),
 
 		'et' => array(
-			'class' => 'application.business.services.ETService',
+			'class' => 'application.business.services.BEtService',
 		),
 
 		'path' => array(
-			'class' => 'application.business.services.PathService',
+			'class' => 'application.business.services.bPathService',
 		),
 
 		'plugins' => array(
-			'class' => 'application.business.services.PluginService',
+			'class' => 'application.business.services.bPluginService',
 		),
 
 		'security' => array(
-			'class' => 'application.business.services.SecurityService',
+			'class' => 'application.business.services.bSecurityService',
 		),
 
 		'site' => array(
-			'class' => 'application.business.services.SiteService',
+			'class' => 'application.business.services.bSiteService',
 		),
 
 		'update' => array(
-					'class' => 'application.business.services.UpdateService',
+					'class' => 'application.business.services.bUpdateService',
 		),
 
 		'users' => array(
-			'class' => 'application.business.services.UsersService',
+			'class' => 'application.business.services.bUsersService',
 		),
 
 		// end services
 
 		'file' => array(
-			'class' => 'application.business.utils.BlocksFile',
+			'class' => 'application.business.utils.bFile',
 		),
 
 		'request' => array(
-			'class' => 'application.business.web.BlocksHttpRequest',
+			'class' => 'application.business.web.bHttpRequest',
 			'enableCookieValidation'      => true,
 		),
 
 		'viewRenderer' => array(
-			'class' => 'application.business.web.BlocksTemplateRenderer',
+			'class' => 'application.business.web.bTemplateRenderer',
 		),
 
 		'urlManager' => array(
-			'class' => 'application.business.web.BlocksUrlManager',
+			'class' => 'application.business.web.bUrlManager',
 			'rules' => array(
 				//'<controller:\w+>/<id:\d+>' => '<controller>/view',
 				//'<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
@@ -148,7 +148,7 @@ return array(
 		'errorHandler' => array(
 			// use 'site/error' action to display errors
 			//'errorAction' => 'site/error',
-			'class' => 'application.business.web.BlocksErrorHandler'
+			'class' => 'application.business.web.bErrorHandler'
 		),
 
 		'fileCache' => array(
@@ -163,7 +163,7 @@ return array(
 					'levels' => 'error, warning',
 				),
 				//array(
-				//	'class' => 'application.business.logging.BlocksWebLogRoute',
+				//	'class' => 'application.business.logging.bWebLogRoute',
 				//),
 			),
 		),
@@ -171,12 +171,12 @@ return array(
 		'session' => array(
 			'autoStart'     => true,
 			'cookieMode'    => 'only',
-			'class'         => 'application.business.web.BlocksHttpSession',
+			'class'         => 'application.business.web.bHttpSession',
 			'sessionName'   => 'BlocksSessionId',
 		),
 
 		'user' => array(
-			'class'             => 'application.business.web.BlocksWebUser',
+			'class'             => 'application.business.web.bWebUser',
 			'allowAutoLogin'    => true,
 			'loginUrl'          => array('/login'),
 			'autoRenewCookie'   => true,

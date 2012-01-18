@@ -189,7 +189,7 @@ abstract class BaseModel extends CActiveRecord
 
 		// make sure that the table doesn't already exist
 		if ($connection->schema->getTable('{{'.$this->tableName.'}}') !== null)
-			throw new BlocksException($this->tableName.' already exists.');
+			throw new bException($this->tableName.' already exists.');
 
 		$columns['id'] = bAttributeType::PK;
 
@@ -197,17 +197,17 @@ abstract class BaseModel extends CActiveRecord
 		{
 			$required = isset($settings['required']) ? $settings['required'] : false;
 			$settings = array('type' => bAttributeType::Integer, 'required' => $required);
-			$columns[$name.'_id'] = DatabaseHelper::generateColumnDefinition($settings);
+			$columns[$name.'_id'] = bDatabaseHelper::generateColumnDefinition($settings);
 		}
 
 		foreach ($this->attributes as $name => $settings)
 		{
-			$columns[$name] = DatabaseHelper::generateColumnDefinition($settings);
+			$columns[$name] = bDatabaseHelper::generateColumnDefinition($settings);
 		}
 
-		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
-		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
-		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true));
+		$columns['date_created'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
+		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
+		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true));
 
 		// start the transaction
 		$transaction = $connection->beginTransaction();
@@ -217,8 +217,8 @@ abstract class BaseModel extends CActiveRecord
 			$connection->createCommand()->createTable('{{'.$this->tableName.'}}', $columns);
 
 			// add the insert and update triggers
-			DatabaseHelper::createInsertAuditTrigger($this->tableName);
-			DatabaseHelper::createUpdateAuditTrigger($this->tableName);
+			bDatabaseHelper::createInsertAuditTrigger($this->tableName);
+			bDatabaseHelper::createUpdateAuditTrigger($this->tableName);
 		}
 		catch (Exception $e)
 		{

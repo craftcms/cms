@@ -13,7 +13,7 @@ class InstallController extends BaseController
 	{
 		// Return a 404 if Blocks is installed
 		if (Blocks::app()->isInstalled)
-			throw new BlocksHttpException(404);
+			throw new bHttpException(404);
 	}
 
 	/**
@@ -90,7 +90,7 @@ class InstallController extends BaseController
 				catch(Exception $e)
 				{
 					Blocks::log($e->getMessage());
-					throw new BlocksException('There was a problem installing Blocks: '.$e->getMessage());
+					throw new bException('There was a problem installing Blocks: '.$e->getMessage());
 				}
 			}
 		}
