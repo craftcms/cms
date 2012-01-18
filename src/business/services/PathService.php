@@ -140,17 +140,14 @@ class PathService extends CApplicationComponent
 	public function getTemplateCachePath()
 	{
 		$cachePath = null;
-		$mode = Blocks::app()->request->mode;
-
-		// site request or action request coming in through index.php
-		if ($mode == RequestMode::Site || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST !== true))
+		if (BLOCKS_CP_REQUEST !== true)
 		{
 			$siteHandle = Blocks::app()->site->currentSiteByUrl;
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 			$cachePath = $this->runtimePath.'parsed_templates/sites/'.$siteHandle.'/';
 		}
 		// cp request or action request coming in through admin.php
-		elseif ($mode == RequestMode::CP || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
+		elseif (BLOCKS_CP_REQUEST === true)
 		{
 			$cachePath = $this->runtimePath.'parsed_templates/cp/';
 

@@ -175,17 +175,13 @@ class BlocksApp extends CWebApplication
 		{
 			if (get_class($this->request) == 'BlocksHttpRequest')
 			{
-				$requestMode = $this->request->mode;
-
-				// Site request OR action request, but coming in through index.php
-				if ($requestMode == RequestMode::Site || ($requestMode == RequestMode::Action && BLOCKS_CP_REQUEST !== true))
+				if (BLOCKS_CP_REQUEST !== true)
 				{
 					$this->_templatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
 				}
 				else
 				{
-					// CP request OR Install request OR action request, but coming in through admin.php
-					if ($requestMode == RequestMode::CP || $requestMode == RequestMode::Install || ($requestMode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
+					if (BLOCKS_CP_REQUEST === true)
 					{
 						$pathSegments = $this->request->pathSegments;
 						if ($pathSegments && ($module = $this->urlManager->currentModule) !== null)
