@@ -113,13 +113,13 @@ class PathService extends CApplicationComponent
 	{
 		$mode = Blocks::app()->request->mode;
 
-		// site request or action request coming in through index.php
+		// site or site-action request
 		if ($mode == RequestMode::Site || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST !== true))
 		{
 			$templatePath = $this->siteTemplatePath;
 		}
-		// cp request or install request or action request coming in through admin.php
-		elseif ($mode == RequestMode::CP || $mode == RequestMode::Install || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
+		// CP or CP-action request
+		elseif ($mode == RequestMode::CP || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$templatePath = $this->cpTemplatePath;
 
@@ -146,17 +146,13 @@ class PathService extends CApplicationComponent
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 			$cachePath = $this->runtimePath.'parsed_templates/sites/'.$siteHandle.'/';
 		}
-		// cp request or action request coming in through admin.php
-		elseif (BLOCKS_CP_REQUEST === true)
+		// CP or action request
+		else
 		{
 			$cachePath = $this->runtimePath.'parsed_templates/cp/';
 
 			if (($module = Blocks::app()->urlManager->currentModule) !== null)
 				$cachePath .= 'modules/'.$module->Id.'/';
-		}
-		else
-		{
-			$cachePath = $this->runtimePath.'/parsed_templates/';
 		}
 
 		if (!is_dir($cachePath))
