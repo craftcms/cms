@@ -26,7 +26,7 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if (!$this->path)
 		{
-			if ($this->urlFormat == UrlFormat::PathInfo)
+			if ($this->urlFormat == bUrlFormat::PathInfo)
 			{
 				if ($this->queryStringPath)
 				{
@@ -52,7 +52,7 @@ class BlocksHttpRequest extends CHttpRequest
 	{
 		if (!isset($this->_path))
 		{
-			if ($this->urlFormat == UrlFormat::PathInfo)
+			if ($this->urlFormat == bUrlFormat::PathInfo)
 				$this->_path = $this->pathInfo;
 			else
 				$this->_path = $this->queryStringPath;
@@ -120,13 +120,13 @@ class BlocksHttpRequest extends CHttpRequest
 		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (Blocks::app()->getConfig('urlFormat') == UrlFormat::PathInfo)
+			if (Blocks::app()->getConfig('urlFormat') == bUrlFormat::PathInfo)
 			{
-				$this->_urlFormat = UrlFormat::PathInfo;
+				$this->_urlFormat = bUrlFormat::PathInfo;
 			}
-			else if (Blocks::app()->getConfig('urlFormat') == UrlFormat::QueryString)
+			else if (Blocks::app()->getConfig('urlFormat') == bUrlFormat::QueryString)
 			{
-				$this->_urlFormat = UrlFormat::QueryString;
+				$this->_urlFormat = bUrlFormat::QueryString;
 			}
 			// Check if it's cached
 			else if (($cachedUrlFormat = Blocks::app()->fileCache->get('urlFormat')) !== false)
@@ -138,16 +138,16 @@ class BlocksHttpRequest extends CHttpRequest
 				// If there is already a PATH_INFO var available, we know it supports it.
 				if (isset($_SERVER['PATH_INFO']))
 				{
-					$this->_urlFormat = UrlFormat::PathInfo;
+					$this->_urlFormat = bUrlFormat::PathInfo;
 				}
 				// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
 				else if ($this->getQuery(Blocks::app()->getConfig('pathVar')) !== null)
 				{
-					$this->_urlFormat = UrlFormat::QueryString;
+					$this->_urlFormat = bUrlFormat::QueryString;
 				}
 				else
 				{
-					$this->_urlFormat = UrlFormat::QueryString;
+					$this->_urlFormat = bUrlFormat::QueryString;
 
 					// Last ditch, let's try to determine if PATH_INFO is enabled on the server.
 					try
@@ -157,7 +157,7 @@ class BlocksHttpRequest extends CHttpRequest
 						{
 							if ($result === '/test' )
 							{
-								$this->_urlFormat = UrlFormat::PathInfo;
+								$this->_urlFormat = bUrlFormat::PathInfo;
 							}
 						}
 					}
@@ -183,16 +183,16 @@ class BlocksHttpRequest extends CHttpRequest
 		if (!isset($this->_mode))
 		{
 			if ($this->getPathSegment(1) === Blocks::app()->getConfig('actionTriggerWord'))
-				$this->_mode = RequestMode::Action;
+				$this->_mode = bRequestMode::Action;
 
 			else if ($this->getPathSegment(1) === Blocks::app()->getConfig('resourceTriggerWord'))
-				$this->_mode = RequestMode::Resource;
+				$this->_mode = bRequestMode::Resource;
 
 			else if (BLOCKS_CP_REQUEST === true)
-				$this->_mode = RequestMode::CP;
+				$this->_mode = bRequestMode::CP;
 
 			else
-				$this->_mode = RequestMode::Site;
+				$this->_mode = bRequestMode::Site;
 		}
 
 		return $this->_mode;

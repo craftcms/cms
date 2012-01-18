@@ -177,7 +177,7 @@ class SiteService extends CApplicationComponent
 		$licenseKeys = Blocks::app()->site->licenseKeys;
 
 		if (!$licenseKeys)
-			return LicenseKeyStatus::MissingKey;
+			return bLicenseKeyStatus::MissingKey;
 
 		$package = Blocks::app()->et->ping();
 		$licenseKeyStatus = $package->licenseKeyStatus;

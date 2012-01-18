@@ -44,7 +44,7 @@ abstract class BaseModel extends CActiveRecord
 		$integers = array();
 		$maxLengths = array();
 
-		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxLength' => 255, 'required' => false);
+		$defaultAttributeSettings = array('type' => bAttributeType::String, 'maxLength' => 255, 'required' => false);
 
 		foreach ($this->attributes as $attributeName => $attributeSettings)
 		{
@@ -53,10 +53,10 @@ abstract class BaseModel extends CActiveRecord
 			if ($attributeSettings['required'] === true)
 				$required[] = $attributeName;
 
-			if ($attributeSettings['type'] == AttributeType::Integer)
+			if ($attributeSettings['type'] == bAttributeType::Integer)
 				$integers[] = $attributeName;
 
-			if ($attributeSettings['type'] == AttributeType::String)
+			if ($attributeSettings['type'] == bAttributeType::String)
 				$maxLengths[(string)$attributeSettings['maxLength']][] = $attributeName;
 		}
 
@@ -191,12 +191,12 @@ abstract class BaseModel extends CActiveRecord
 		if ($connection->schema->getTable('{{'.$this->tableName.'}}') !== null)
 			throw new BlocksException($this->tableName.' already exists.');
 
-		$columns['id'] = AttributeType::PK;
+		$columns['id'] = bAttributeType::PK;
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$required = isset($settings['required']) ? $settings['required'] : false;
-			$settings = array('type' => AttributeType::Integer, 'required' => $required);
+			$settings = array('type' => bAttributeType::Integer, 'required' => $required);
 			$columns[$name.'_id'] = DatabaseHelper::generateColumnDefinition($settings);
 		}
 
@@ -205,9 +205,9 @@ abstract class BaseModel extends CActiveRecord
 			$columns[$name] = DatabaseHelper::generateColumnDefinition($settings);
 		}
 
-		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
-		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
-		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true));
+		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
+		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
+		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true));
 
 		// start the transaction
 		$transaction = $connection->beginTransaction();

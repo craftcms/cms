@@ -3,7 +3,7 @@
 /**
  * Extends CDbCommand
  */
-class BlocksDbCommand extends CDbCommand
+class bDbCommand extends CDbCommand
 {
 	/**
 	 * @param $table

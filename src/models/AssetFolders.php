@@ -6,8 +6,8 @@
 class AssetFolders extends BaseModel
 {
 	protected $attributes = array(
-		'name' => array('type' => AttributeType::String, 'size' => 1000, 'required' => true),
-		'path' => array('type' => AttributeType::String, 'size' => 1000, 'required' => true)
+		'name' => array('type' => bAttributeType::String, 'size' => 1000, 'required' => true),
+		'path' => array('type' => bAttributeType::String, 'size' => 1000, 'required' => true)
 	);
 
 	protected $belongsTo = array(

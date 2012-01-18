@@ -30,7 +30,7 @@ class UpdateService extends CApplicationComponent
 	{
 		foreach ($plugins as $plugin)
 		{
-			if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+			if ($plugin->status == bPluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
 			{
 				foreach ($plugin->newerReleases as $release)
 				{

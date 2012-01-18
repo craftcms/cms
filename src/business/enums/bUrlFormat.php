@@ -3,7 +3,7 @@
 /**
  *
  */
-class UrlFormat
+class bUrlFormat
 {
 	const Auto          = 'auto';
 	const QueryString   = 'querystring';

@@ -6,7 +6,7 @@
 class Languages
 {
 	protected $attributes = array(
-		'language_code' => array('type' => AttributeType::String, 'maxLength' => 5)
+		'language_code' => array('type' => bAttributeType::String, 'maxLength' => 5)
 	);
 
 	/**

@@ -3,7 +3,7 @@
 /**
  *
  */
-class TemplateMatchType
+class bTemplateMatchType
 {
 	const Entry = 'Entry';
 	const Template = 'Template';

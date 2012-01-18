@@ -136,8 +136,8 @@ return array(
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
 			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
-			'driverMap'         => array('mysql' => 'BlocksMysqlSchema'),
-			'class'             => 'application.business.db.BlocksDbConnection'
+			'driverMap'         => array('mysql' => 'bMysqlSchema'),
+			'class'             => 'application.business.db.bDbConnection'
 		),
 
 		'assetManager' => array(

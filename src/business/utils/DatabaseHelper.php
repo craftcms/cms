@@ -21,7 +21,7 @@ class DatabaseHelper
 			if (isset($settings[0]))
 				$settings['type'] = $settings[0];
 			else
-				$settings['type'] = AttributeType::String;
+				$settings['type'] = bAttributeType::String;
 		}
 
 		$def = $settings['type'];
@@ -31,16 +31,16 @@ class DatabaseHelper
 		{
 			switch ($settings['type'])
 			{
-				case AttributeType::String:
+				case bAttributeType::String:
 					$def = 'VARCHAR('.$settings['maxLength'].')';
 					break;
-				case AttributeType::Integer:
+				case bAttributeType::Integer:
 					$def = 'INT('.$settings['maxLength'].')';
 					break;
-				case AttributeType::Float:
+				case bAttributeType::Float:
 					$def = 'FLOAT('.$settings['maxLength'].')';
 					break;
-				case AttributeType::Decimal:
+				case bAttributeType::Decimal:
 					$def = 'DECIMAL('.$settings['maxLength'].')';
 					break;
 			}

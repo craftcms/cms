@@ -6,9 +6,9 @@
 class Routes extends BaseModel
 {
 	protected $attributes = array(
-		'route'      => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
-		'template'   => array('type' => AttributeType::String, 'required' => true),
-		'sort_order' => array('type' => AttributeType::Integer, 'required' => true, 'unsigned' => true)
+		'route'      => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
+		'template'   => array('type' => bAttributeType::String, 'required' => true),
+		'sort_order' => array('type' => bAttributeType::Integer, 'required' => true, 'unsigned' => true)
 	);
 
 	protected $belongsTo = array(

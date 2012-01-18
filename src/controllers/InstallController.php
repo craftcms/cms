@@ -35,18 +35,18 @@ class InstallController extends BaseController
 
 					switch ($status)
 					{
-						case PTAccountCredentialStatus::Invalid:
+						case bPtAccountCredentialStatus::Invalid:
 							Blocks::app()->user->setFlash('notice', 'Invalid P&T Credentials');
 							Blocks::log('Invalid P&T.com credentials entered during install.');
 							break;
 
-						case LicenseKeyStatus::InvalidKey:
+						case bLicenseKeyStatus::InvalidKey:
 							Blocks::app()->user->setFlash('notice', 'Unknown Blocks License Key');
 							Blocks::log('Blocks license key is not associated with the P&T account: '.$model->ptUserName. ' or it is for a different edition.');
 							break;
 
 						// No net connection
-						case LicenseKeyStatus::Valid:
+						case bLicenseKeyStatus::Valid:
 							// start the db install
 							$baseSqlSchemaFile = Blocks::app()->file->set(Blocks::getPathOfAlias('application.migrations').DIRECTORY_SEPARATOR.'mysql_schema.sql');
 

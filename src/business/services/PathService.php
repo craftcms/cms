@@ -114,12 +114,12 @@ class PathService extends CApplicationComponent
 		$mode = Blocks::app()->request->mode;
 
 		// site or site-action request
-		if ($mode == RequestMode::Site || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST !== true))
+		if ($mode == bRequestMode::Site || ($mode == bRequestMode::Action && BLOCKS_CP_REQUEST !== true))
 		{
 			$templatePath = $this->siteTemplatePath;
 		}
 		// CP or CP-action request
-		elseif ($mode == RequestMode::CP || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
+		elseif ($mode == bRequestMode::CP || ($mode == bRequestMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$templatePath = $this->cpTemplatePath;
 

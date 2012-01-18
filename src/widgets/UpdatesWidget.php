@@ -20,7 +20,7 @@ class UpdatesWidget extends Widget
 		$updates = array();
 
 		// Blocks first
-		if ($updateInfo->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable)
+		if ($updateInfo->versionUpdateStatus == bVersionUpdateStatus::UpdateAvailable)
 		{
 			$updates[] = array(
 				'name' => 'Blocks',
@@ -34,7 +34,7 @@ class UpdatesWidget extends Widget
 		{
 			foreach ($updateInfo->plugins as $plugin)
 			{
-				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
+				if ($plugin->status == bPluginVersionUpdateStatus::UpdateAvailable)
 				{
 					$updates[] = array(
 						'name' => $plugin->displayName,

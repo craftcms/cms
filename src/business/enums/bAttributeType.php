@@ -19,7 +19,7 @@
  *
 */
 
-class AttributeType
+class bAttributeType
 {
 	const PK        = 'pk';
 	const String    = 'string';

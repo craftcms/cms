@@ -6,8 +6,8 @@
 class UserGroupPermissions extends BaseModel
 {
 	protected $attributes = array(
-		'name' => array('type' => AttributeType::String, 'required' => true),
-		'value' => array('type' => AttributeType::Integer, 'required' => true)
+		'name' => array('type' => bAttributeType::String, 'required' => true),
+		'value' => array('type' => bAttributeType::Integer, 'required' => true)
 	);
 
 	protected $belongsTo = array(

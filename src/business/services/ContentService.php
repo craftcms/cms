@@ -189,12 +189,12 @@ class ContentService extends CApplicationComponent
 
 			// create dynamic data table
 			$connection->createCommand()->createTable('{{'.$tableName.'}}',
-				array('id'              => AttributeType::PK,
-					  'entry_id'        => AttributeType::Integer.' NOT NULL',
-					  'version_id'      => AttributeType::Integer.' NOT NULL',
-					  'date_created'    => AttributeType::Integer,
-					  'date_updated'    => AttributeType::Integer,
-					  'uid'             => AttributeType::String
+				array('id'              => bAttributeType::PK,
+					  'entry_id'        => bAttributeType::Integer.' NOT NULL',
+					  'version_id'      => bAttributeType::Integer.' NOT NULL',
+					  'date_created'    => bAttributeType::Integer,
+					  'date_updated'    => bAttributeType::Integer,
+					  'uid'             => bAttributeType::String
 				));
 
 			$entriesFKName = strtolower($tableName.'_entries_fk');
@@ -258,7 +258,7 @@ class ContentService extends CApplicationComponent
 	 * @return EntryBlocks
 	 * @throws Exception
 	 */
-	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = AttributeType::Text, $instructions = null, $required = false)
+	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = bAttributeType::Text, $instructions = null, $required = false)
 	{
 		$connection = Blocks::app()->db;
 		$site = Blocks::app()->site->getSiteByHandle($siteHandle);

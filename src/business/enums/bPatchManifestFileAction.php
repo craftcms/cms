@@ -3,7 +3,7 @@
 /**
  *
  */
-class PatchManifestFileAction
+class bPatchManifestFileAction
 {
 	const Add = 'Add';
 	const Remove = 'Remove';

@@ -3,7 +3,7 @@
 /**
  *
  */
-class RoutePattern
+class bRoutePattern
 {
 	const Wild = '.+';
 	const Integer = '\d+';

@@ -6,9 +6,9 @@
 class Sites extends BaseModel
 {
 	protected $attributes = array(
-		'handle' => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
-		'label'  => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
-		'url'    => array('type' => AttributeType::String, 'required' => true)
+		'handle' => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
+		'label'  => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
+		'url'    => array('type' => bAttributeType::String, 'required' => true)
 	);
 
 	protected $hasBlocks = array(

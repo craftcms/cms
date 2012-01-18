@@ -144,7 +144,7 @@ class BlocksErrorHandler extends CErrorHandler
 			if ($viewPath !== null)
 			{
 				// if it's an exception on the front-end, we don't show the exception template, on the error template.
-				if ($view == 'errors/exception' && Blocks::app()->request->mode == RequestMode::Site)
+				if ($view == 'errors/exception' && Blocks::app()->request->mode == bRequestMode::Site)
 					$view = 'errors/error';
 
 				$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);

@@ -30,7 +30,7 @@ class BlocksUrlManager extends CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in BlocksHttpRequest
-		if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
+		if (Blocks::app()->request->urlFormat == bUrlFormat::PathInfo)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
@@ -57,7 +57,7 @@ class BlocksUrlManager extends CUrlManager
 		$matchFound = false;
 
 		// we'll never have a db entry match on a control panel request
-		if (Blocks::app()->request->mode == RequestMode::Site)
+		if (Blocks::app()->request->mode == bRequestMode::Site)
 		{
 			if (Blocks::app()->isInstalled)
 				if ($this->matchEntry())
@@ -110,7 +110,7 @@ class BlocksUrlManager extends CUrlManager
 		if ($entry !== null)
 		{
 			$extension = pathinfo($entry->section->template, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($entry->section->template, $pathMatchPattern, $extension, TemplateMatchType::Entry);
+			$this->setTemplateMatch($entry->section->template, $pathMatchPattern, $extension, bTemplateMatchType::Entry);
 			return true;
 		}
 
@@ -125,17 +125,17 @@ class BlocksUrlManager extends CUrlManager
 
 
 		/*
-		if (Blocks::app()->request->mode == RequestMode::CP)
+		if (Blocks::app()->request->mode == bRequestMode::CP)
 		{
 			$routes = array(
 				array('content/edit/{entryId}', 'content/_edit', array(
-					'entryId' => RoutePattern::Integer
+					'entryId' => bRoutePattern::Integer
 				)),
 				array('assets/edit/{path}', 'assets/_edit', array(
-					'path' => RoutePattern::Wild
+					'path' => bRoutePattern::Wild
 				)),
 				array('users/edit/{userId}', 'users/_edit', array(
-					'userId' => RoutePattern::Integer
+					'userId' => bRoutePattern::Integer
 				)),
 			);
 		}
@@ -161,7 +161,7 @@ class BlocksUrlManager extends CUrlManager
 		$testPath = null;
 
 		// if this is a control panel request, let's see if we can match it to a module as well and we're dealing with a module
-		if (Blocks::app()->request->mode == RequestMode::CP && $this->_currentModule !== null)
+		if (Blocks::app()->request->mode == bRequestMode::CP && $this->_currentModule !== null)
 		{
 			$moduleName = $this->_currentModule->Id;
 			$requestPath = substr($tempPath, strlen($moduleName) + 1);
@@ -217,7 +217,7 @@ class BlocksUrlManager extends CUrlManager
 			if ($moduleName !== null)
 				$requestPath = $moduleName.$requestPath;
 
-			$this->setTemplateMatch($requestPath, $pathMatchPattern, TemplateMatchType::Template, $extension);
+			$this->setTemplateMatch($requestPath, $pathMatchPattern, bTemplateMatchType::Template, $extension);
 			return true;
 		}
 

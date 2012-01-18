@@ -3,7 +3,7 @@
 /**
  *
  */
-class BlocksEdition
+class bEdition
 {
 	const Personal = 'Personal';
 	const Standard = 'Standard';

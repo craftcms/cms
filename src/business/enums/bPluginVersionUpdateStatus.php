@@ -3,7 +3,7 @@
 /**
  *
  */
-class PluginVersionUpdateStatus
+class bPluginVersionUpdateStatus
 {
 	const UpToDate = 'UpToDate';
 	const UpdateAvailable = 'UpdateAvailable';

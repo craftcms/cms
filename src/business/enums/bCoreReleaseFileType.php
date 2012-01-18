@@ -3,7 +3,7 @@
 /**
  *
  */
-class CoreReleaseFileType
+class bCoreReleaseFileType
 {
 	const Full = 'Full';
 	const Patch = 'Patch';

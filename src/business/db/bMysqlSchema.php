@@ -3,7 +3,7 @@
 /**
  *
  */
-class BlocksMysqlSchema extends CMysqlSchema
+class bMysqlSchema extends CMysqlSchema
 {
 	/**
 	 * @param $table

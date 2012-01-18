@@ -21,7 +21,7 @@ class CpUpdatesTag extends Tag
 		$blocksUpdateInfo = Blocks::app()->update->getUpdateInfo($forceRefresh);
 
 		// blocks first.
-		if ($blocksUpdateInfo->versionUpdateStatus == BlocksVersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo->newerReleases) > 0)
+		if ($blocksUpdateInfo->versionUpdateStatus == bVersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo->newerReleases) > 0)
 		{
 			$notes = $this->_generateUpdateNotes($blocksUpdateInfo->newerReleases, 'Blocks');
 			$this->_updates[] = array(
@@ -39,7 +39,7 @@ class CpUpdatesTag extends Tag
 		{
 			foreach ($blocksUpdateInfo->plugins as $plugin)
 			{
-				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+				if ($plugin->status == bPluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
 				{
 					$notes = $this->_generateUpdateNotes($plugin->newerReleases, $plugin->displayName);
 					$this->_updates[] = array(

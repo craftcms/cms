@@ -3,16 +3,16 @@
 /**
  *
  */
-class BlocksDbConnection extends CDbConnection
+class bDbConnection extends CDbConnection
 {
 	/**
 	 * @param null $query
-	 * @return \BlocksDbCommand
+	 * @return \bDbCommand
 	 */
 	public function createCommand($query = null)
 	{
 		$this->setActive(true);
-		return new BlocksDbCommand($this, $query);
+		return new bDbCommand($this, $query);
 	}
 
 	/**

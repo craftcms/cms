@@ -3,7 +3,7 @@
 /**
  *
  */
-class LicenseKeyStatus
+class bLicenseKeyStatus
 {
 	const Valid = 'Valid';
 	// we either can't find the given key, the key isn't tied to the version of Blocks they are running or it's not tied to the domain they are running on.

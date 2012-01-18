@@ -139,7 +139,7 @@ class CoreUpdater implements IUpdater
 				$row = explode(';', $uniqueUpdatedFiles[$counter]);
 
 				// we found a migration
-				if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
+				if (strpos($row[1], '/migrations/') !== false && $row[2] == bPatchManifestFileAction::Add)
 					$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($row[0].'/'.$row[1]);
 
 				$manifestContent = $uniqueUpdatedFiles[$counter].PHP_EOL;
@@ -225,7 +225,7 @@ class CoreUpdater implements IUpdater
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'type' => CoreReleaseFileType::Patch
+			'type' => bCoreReleaseFileType::Patch
 		);
 
 		$et = new ET(ETEndPoints::DownloadPackage(), 60);
@@ -249,7 +249,7 @@ class CoreUpdater implements IUpdater
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'type' => CoreReleaseFileType::Patch
+			'type' => bCoreReleaseFileType::Patch
 		);
 
 		$et = new ET(ETEndPoints::GetCoreReleaseFileMD5());

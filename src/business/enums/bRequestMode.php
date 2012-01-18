@@ -3,7 +3,7 @@
 /**
  *
  */
-class RequestMode
+class bRequestMode
 {
 	const CP = 'cp';
 	const Site = 'site';

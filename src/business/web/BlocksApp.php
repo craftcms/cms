@@ -16,7 +16,7 @@ class BlocksApp extends CWebApplication
 	public function processRequest()
 	{
 		// Is this a resource request?
-		if ($this->request->mode == RequestMode::Resource)
+		if ($this->request->mode == bRequestMode::Resource)
 		{
 			$this->processResourceRequest();
 			return;
@@ -26,7 +26,7 @@ class BlocksApp extends CWebApplication
 		$this->validateConfig();
 
 		// Is this an install request?
-		if ($this->request->mode == RequestMode::CP && $this->request->getPathSegment(1) === 'install')
+		if ($this->request->mode == bRequestMode::CP && $this->request->getPathSegment(1) === 'install')
 		{
 			$this->runController('install');
 		}
@@ -35,7 +35,7 @@ class BlocksApp extends CWebApplication
 		else if (!$this->isInstalled)
 		{
 			// Redirect to the installer if this is a CP request
-			if ($this->request->mode == RequestMode::CP)
+			if ($this->request->mode == bRequestMode::CP)
 			{
 				$url = UrlHelper::generateUrl('install');
 				$this->request->redirect($url);
@@ -46,7 +46,7 @@ class BlocksApp extends CWebApplication
 		}
 
 		// Is this an action request?
-		else if ($this->request->mode == RequestMode::Action)
+		else if ($this->request->mode == bRequestMode::Action)
 		{
 			if (!$this->request->getPathSegment(2))
 				throw new BlocksHttpException(404);

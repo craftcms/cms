@@ -52,7 +52,7 @@ class CpTag extends Tag
 	public function badLicenseKey()
 	{
 		$licenseKeyStatus = Blocks::app()->site->licenseKeyStatus;
-		if ($licenseKeyStatus->licenseKeyStatus == LicenseKeyStatus::InvalidKey)
+		if ($licenseKeyStatus->licenseKeyStatus == bLicenseKeyStatus::InvalidKey)
 			return true;
 
 		return false;

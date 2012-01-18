@@ -9,8 +9,8 @@ abstract class BaseBlocksModel extends BaseModel
 	protected $model;
 
 	protected $attributes = array(
-		'required'     => array('type' => AttributeType::Boolean, 'required' => true, 'unsigned' => true),
-		'sort_order'   => array('type' => AttributeType::Integer, 'required' => true, 'unsigned' => true)
+		'required'     => array('type' => bAttributeType::Boolean, 'required' => true, 'unsigned' => true),
+		'sort_order'   => array('type' => bAttributeType::Integer, 'required' => true, 'unsigned' => true)
 	);
 
 	/**

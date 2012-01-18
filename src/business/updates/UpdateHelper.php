@@ -44,17 +44,17 @@ class UpdateHelper
 				switch (trim($rowData[2]))
 				{
 					// update the file
-					case PatchManifestFileAction::Add:
+					case bPatchManifestFileAction::Add:
 						$sourceFile->copy($destFile->realPath, true);
 						break;
 
-					case PatchManifestFileAction::Remove:
+					case bPatchManifestFileAction::Remove:
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
 						$destFile->rename($destFile->realPath.'.bak');
 						break;
 
 					default:
-						Blocks::log('Unknown PatchManifestFileAction');
+						Blocks::log('Unknown bPatchManifestFileAction');
 						UpdateHelper::rollBackFileChanges($manifestData);
 						return false;
 				}
@@ -85,13 +85,13 @@ class UpdateHelper
 
 		switch ($edition)
 		{
-			case BlocksEdition::Personal:
+			case bEdition::Personal:
 				return "blocks_personal_v{$version}.{$build}_patch.zip";
 
-			case BlocksEdition::Pro:
+			case bEdition::Pro:
 				return "blocks_pro_v{$version}.{$build}_patch.zip";
 
-			case BlocksEdition::Standard:
+			case bEdition::Standard:
 				return "blocks_standard_v{$version}.{$build}_patch.zip";
 		}
 
