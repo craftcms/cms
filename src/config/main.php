@@ -1,6 +1,5 @@
 <?php
 
-require_once(BLOCKS_BASE_PATH.'app/business/db/DriverMap.php');
 require_once(BLOCKS_BASE_PATH.'app/config/defaults/blocks.php');
 require_once(BLOCKS_BASE_PATH.'app/config/defaults/db.php');
 require_once(BLOCKS_BASE_PATH.'config/blocks.php');
@@ -137,7 +136,7 @@ return array(
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
 			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
-			'driverMap'         => getDbDriverMap(),
+			'driverMap'         => array('mysql' => 'BlocksMysqlSchema'),
 			'class'             => 'application.business.db.BlocksDbConnection'
 		),
 
