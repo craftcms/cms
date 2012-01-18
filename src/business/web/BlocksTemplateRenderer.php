@@ -5,6 +5,8 @@
  */
 class BlocksTemplateRenderer extends CApplicationComponent implements IViewRenderer
 {
+	public $fileExtension = '.html';
+
 	private $_sourceTemplatePath;
 	private $_parsedTemplatePath;
 	private $_destinationMetaPath;
