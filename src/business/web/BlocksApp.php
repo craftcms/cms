@@ -181,18 +181,15 @@ class BlocksApp extends CWebApplication
 				}
 				else
 				{
-					if (BLOCKS_CP_REQUEST === true)
+					$pathSegments = $this->request->pathSegments;
+					if ($pathSegments && ($module = $this->urlManager->currentModule) !== null)
 					{
-						$pathSegments = $this->request->pathSegments;
-						if ($pathSegments && ($module = $this->urlManager->currentModule) !== null)
-						{
-							$this->_templatePath = rtrim($module->viewPath, '\\/').'/';
-						}
-						else
-						{
-							$this->_cpTemplatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
-							$this->_templatePath = $this->_cpTemplatePath;
-						}
+						$this->_templatePath = rtrim($module->viewPath, '\\/').'/';
+					}
+					else
+					{
+						$this->_cpTemplatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
+						$this->_templatePath = $this->_cpTemplatePath;
 					}
 				}
 			}
