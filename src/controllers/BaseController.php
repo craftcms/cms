@@ -3,7 +3,7 @@
 /**
  *
  */
-class BaseController extends CController
+abstract class BaseController extends CController
 {
 	private $_widgetStack = array();
 
