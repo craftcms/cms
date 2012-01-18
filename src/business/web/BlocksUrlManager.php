@@ -59,7 +59,7 @@ class BlocksUrlManager extends CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (Blocks::app()->request->mode == RequestMode::Site)
 		{
-			if (Blocks::app()->isDbInstalled)
+			if (Blocks::app()->isInstalled)
 				if ($this->matchEntry())
 					$matchFound = true;
 		}

@@ -55,6 +55,9 @@ class PathService extends CApplicationComponent
 		return $this->normalizeDirectorySeparators(Blocks::app()->basePath.'/');
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getFrameworkPath()
 	{
 		return $this->normalizeDirectorySeparators($this->appPath.'framework/');
@@ -115,8 +118,8 @@ class PathService extends CApplicationComponent
 		{
 			$templatePath = $this->siteTemplatePath;
 		}
-		// cp request or action request coming in through admin.php
-		elseif ($mode == RequestMode::CP || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
+		// cp request or install request or action request coming in through admin.php
+		elseif ($mode == RequestMode::CP || $mode == RequestMode::Install || ($mode == RequestMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$templatePath = $this->cpTemplatePath;
 

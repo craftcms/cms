@@ -189,7 +189,7 @@ class RequirementsChecker
 	 */
 	private function calculateServerInfo()
 	{
-		$info[] = '<a href="http://www.blockscms.com/">Blocks</a> v'.Blocks::getVersion().'.'.Blocks::getBuild();
+		$info[] = '<a href="http://www.blockscms.com/">Blocks</a> v'.Blocks::getVersion(false).'.'.Blocks::getBuild(false);
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Blocks::getYiiVersion();
 		$info[] = @strftime('%Y-%m-%d %H:%M', time());
