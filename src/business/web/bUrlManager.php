@@ -9,7 +9,6 @@ class bUrlManager extends CUrlManager
 	private $_pathSegments = null;
 	private $_templateMatch = null;
 	private $_requestExtension = null;
-	private $_currentModule = null;
 
 	public $routeVar;
 
@@ -78,24 +77,6 @@ class bUrlManager extends CUrlManager
 	}
 
 	/**
-	 * @return null
-	 */
-	public function getCurrentModule()
-	{
-		if ($this->_currentModule == null)
-		{
-			if ($this->_pathSegments !== null && isset($this->_pathSegments[0]))
-			{
-				if (($module = Blocks::app()->getModule($this->_pathSegments[0])) !== null)
-					$this->_currentModule = $module;
-			}
-		}
-
-		return $this->_currentModule;
-	}
-
-
-	/**
 	 * Attempts to match a request with an entry in the database.  If one is found, we set the template match property.
 	 * @return bool True if a match was found, false otherwise.
 	 */
@@ -153,30 +134,13 @@ class bUrlManager extends CUrlManager
 	 */
 	public function matchTemplate()
 	{
-		$moduleName = null;
-		$templatePath = $this->normalizeTrailingSlash(Blocks::app()->viewPath);
+		$templatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->viewPath);
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.$this->_path, '/');
-
-		$tempPath = $this->_path;
-		$testPath = null;
-
-		// if this is a control panel request, let's see if we can match it to a module as well and we're dealing with a module
-		if (Blocks::app()->request->mode == bRequestMode::CP && $this->_currentModule !== null)
-		{
-			$moduleName = $this->_currentModule->Id;
-			$requestPath = substr($tempPath, strlen($moduleName) + 1);
-
-			if ($requestPath === false)
-				$requestPath = '';
-		}
-		else
-			$requestPath = $tempPath;
+		$requestPath = $this->_path;
 
 		// fix the trailing and ending slashes
 		if ($requestPath !== '')
 			$requestPath = ltrim($requestPath, '\\/');
-
-		$templatePath = $this->normalizeTrailingSlash($templatePath);
 
 		// if there are any folders that have a '_' as the first character of the name, then it's hidden and there is no template match.
 		$requestPathSegs = explode('/', $requestPath);
@@ -186,42 +150,17 @@ class bUrlManager extends CUrlManager
 				return false;
 		}
 
-		// first try to match /path/to/folder.{allowedTemplateFileExtensions}
-		if ($this->_attemptTemplateMatch($templatePath.$requestPath, $requestPath, $moduleName, $pathMatchPattern))
-			return true;
-
-		// now try to match /path/to/folder/index.{allowedTemplateFileExtensions}
-		$requestPath = $this->normalizeTrailingSlash($requestPath).'index';
-		$templatePath = rtrim($templatePath, '\\/').'/';
-		if ($this->_attemptTemplateMatch($templatePath.$requestPath, $requestPath, $moduleName, $pathMatchPattern))
-			return true;
-
-		// no template match.
-		return false;
-	}
-
-	/**
-	 * @access private
-	 * @param $path
-	 * @param $requestPath
-	 * @param $moduleName
-	 * @param $pathMatchPattern
-	 * @return bool
-	 */
-	private function _attemptTemplateMatch($path, $requestPath, $moduleName, $pathMatchPattern)
-	{
-		if (($fullMatchPath = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($path)) !== null)
+		if (($fullMatchPath = bTemplateHelper::findFileSystemMatch($templatePath, $requestPath)) !== false)
 		{
 			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-
-			if ($moduleName !== null)
-				$requestPath = $moduleName.$requestPath;
-
 			$this->setTemplateMatch($requestPath, $pathMatchPattern, bTemplateMatchType::Template, $extension);
 			return true;
 		}
-
-		return false;
+		else
+		{
+			// no template match.
+			return false;
+		}
 	}
 
 	/**
@@ -238,16 +177,5 @@ class bUrlManager extends CUrlManager
 		$templateMatch->setMatchType($matchType);
 		$templateMatch->setMatchExtension($extension);
 		$this->_templateMatch = $templateMatch;
-	}
-
-	/**
-	 * Adds a trailing slash to the end of a path if one does not exist
-	 * @param $path The path to normalize.
-	 * @return string The normalized path.
-	 */
-	public function normalizeTrailingSlash($path)
-	{
-		$path = rtrim($path, '\\/').'/';
-		return $path;
 	}
 }

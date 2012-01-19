@@ -86,4 +86,33 @@ class bTemplateHelper
 
 		return $cacheKey;
 	}
+
+	/**
+	 * @static
+	 * @param $templatePath
+	 * @param $requestPath
+	 * @return bool|string
+	 */
+	public static function findFileSystemMatch(&$templatePath, &$requestPath)
+	{
+		$fullMatchPath = false;
+
+		// check the given path+fileExtension.
+		$matchPath = Blocks::app()->findLocalizedFile($templatePath.$requestPath.Blocks::app()->viewRenderer->fileExtension);
+		if (is_file($matchPath))
+			$fullMatchPath = realpath($matchPath);
+
+		if ($fullMatchPath === false)
+		{
+			// now try to match /path/to/folder/index+fileExtension
+			$requestPath = ltrim(Blocks::app()->path->normalizeTrailingSlash($requestPath).'index', '/');
+			$templatePath = Blocks::app()->path->normalizeTrailingSlash($templatePath);
+
+			$matchPath = Blocks::app()->findLocalizedFile($templatePath.$requestPath.Blocks::app()->viewRenderer->fileExtension);
+			if (is_file($matchPath))
+				$fullMatchPath = realpath($matchPath);
+		}
+
+		return $fullMatchPath;
+	}
 }

@@ -20,12 +20,12 @@ abstract class bBaseController extends CController
 
 	/**
 	 * Loads a template
-	 * @param       $templatePath
-	 * @param array $data Any variables that should be available to the templtae
+	 * @param       $relativeTemplatePath
+	 * @param array $data Any variables that should be available to the template
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $data = array(), $return = false)
+	public function loadTemplate($relativeTemplatePath, $data = array(), $return = false)
 	{
 		if (!is_array($data))
 			$data = array();
@@ -35,6 +35,11 @@ abstract class bBaseController extends CController
 			$tag = bTemplateHelper::getVarTag($tag);
 		}
 
-		return $this->renderPartial($templatePath, $data, $return);
+		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->viewPath);
+
+		if (bTemplateHelper::findFileSystemMatch($baseTemplatePath, $relativeTemplatePath) !== false)
+			return $this->renderPartial($relativeTemplatePath, $data, $return);
+
+		throw new bHttpException(404);
 	}
 }

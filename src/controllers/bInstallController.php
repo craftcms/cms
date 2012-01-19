@@ -96,7 +96,7 @@ class bInstallController extends bBaseController
 		}
 
 		$model->checkRequirements();
-		$this->render('install/index', array('model' => $model));
+		$this->loadTemplate('install', array('model' => $model));
 	}
 
 	/**
