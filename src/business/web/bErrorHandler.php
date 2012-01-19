@@ -100,15 +100,9 @@ class bErrorHandler extends CErrorHandler
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
-		$templateFile = null;
-
-		if($templateName === 'errors/error')
-		{
-			if (($templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/error'.$code, $srcLanguage)) == null)
-				$templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/error', $srcLanguage);
-		}
-		else
-			$templateFile = Blocks::app()->site->matchTemplatePathWithAllowedFileExtensions($templatePath.'errors/exception', $srcLanguage);
+		$templateFile = Blocks::app()->findLocalizedFile($templatePath.$templateName.Blocks::app()->viewRenderer->fileExtension, $srcLanguage);
+		if (is_file($templateFile))
+			$templateFile = realpath($templateFile);
 
 		return $templateFile;
 	}

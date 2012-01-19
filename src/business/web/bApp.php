@@ -15,6 +15,7 @@ class bApp extends CWebApplication
 	 */
 	public function processRequest()
 	{
+		//Blocks::app()->email->emailSettings;
 		// Is this a resource request?
 		if ($this->request->mode == bRequestMode::Resource)
 		{
@@ -58,6 +59,10 @@ class bApp extends CWebApplication
 			if ($handle != 'app')
 			{
 				Blocks::import("base.plugins.{$handle}.controllers.*");
+			}
+			else
+			{
+				$controller = 'b'.$controller;
 			}
 
 			$this->runController($controller.'/'.$action);
@@ -181,16 +186,8 @@ class bApp extends CWebApplication
 				}
 				else
 				{
-					$pathSegments = $this->request->pathSegments;
-					if ($pathSegments && ($module = $this->urlManager->currentModule) !== null)
-					{
-						$this->_templatePath = rtrim($module->viewPath, '\\/').'/';
-					}
-					else
-					{
-						$this->_cpTemplatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
-						$this->_templatePath = $this->_cpTemplatePath;
-					}
+					$this->_cpTemplatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
+					$this->_templatePath = $this->_cpTemplatePath;
 				}
 			}
 			else
