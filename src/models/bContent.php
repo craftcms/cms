@@ -3,7 +3,7 @@
 /**
  *
  */
-class Content extends bBaseModel
+class bContent extends bBaseModel
 {
 	protected $tableName = 'content';
 

@@ -3,7 +3,7 @@
 /**
  *
  */
-class bUserGroupMembers extends bBaseModel
+class bUserGroupMember extends bBaseModel
 {
 	protected $tableName = 'usergroupmembers';
 

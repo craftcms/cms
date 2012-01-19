@@ -3,7 +3,7 @@
 /**
  *
  */
-class bSiteSettings extends bBaseSettingsModel
+class bSiteSetting extends bBaseSettingsModel
 {
 	protected $tableName = 'sitesettings';
 	protected $model = 'bSite';

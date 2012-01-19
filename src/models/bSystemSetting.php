@@ -3,9 +3,18 @@
 /**
  *
  */
-class bSystemSettings extends bBaseSettingsModel
+class bSystemSetting extends bBaseSettingsModel
 {
 	protected $tableName = 'systemsettings';
+
+	/**
+	 *
+	 */
+	function init()
+	{
+		parent::init();
+		$this->attributes[] = array('category' => array('type' => bAttributeType::String, 'maxLength' => 250, 'required' => true));
+	}
 
 	/**
 	 * Returns an instance of the specified model
