@@ -122,9 +122,6 @@ class bPathService extends CApplicationComponent
 		elseif ($mode == bRequestMode::CP || ($mode == bRequestMode::Action && BLOCKS_CP_REQUEST === true))
 		{
 			$templatePath = $this->cpTemplatePath;
-
-			if (($module = Blocks::app()->urlManager->currentModule) !== null)
-				$templatePath = $this->appPath.'modules/'.$module->Id.'/templates/';
 		}
 		else
 		{
@@ -150,9 +147,6 @@ class bPathService extends CApplicationComponent
 		else
 		{
 			$cachePath = $this->runtimePath.'parsed_templates/cp/';
-
-			if (($module = Blocks::app()->urlManager->currentModule) !== null)
-				$cachePath .= 'modules/'.$module->Id.'/';
 		}
 
 		if (!is_dir($cachePath))

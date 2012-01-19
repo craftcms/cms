@@ -122,31 +122,6 @@ class bSiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @return array
-	 */
-	public function getAllowedTemplateFileExtensions()
-	{
-		return array('html', 'php');
-	}
-
-	/**
-	 * @param $templatePath
-	 * @param string $srcLanguage
-	 * @return null|string
-	 */
-	public function matchTemplatePathWithAllowedFileExtensions($templatePath, $srcLanguage = 'en-us')
-	{
-		foreach ($this->allowedTemplateFileExtensions as $allowedExtension)
-		{
-			$templateFile = Blocks::app()->findLocalizedFile($templatePath.'.'.$allowedExtension, $srcLanguage);
-			if (is_file($templateFile))
-				return realpath($templateFile);
-		}
-
-		return null;
-	}
-
-	/**
 	 * @return string
 	 */
 	public function getLicenseKeyStatus()
