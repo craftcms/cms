@@ -3,7 +3,7 @@
 /**
  * @abstract
  */
-abstract class Widget
+abstract class bWidget
 {
 	public $id;
 	public $settings = array();

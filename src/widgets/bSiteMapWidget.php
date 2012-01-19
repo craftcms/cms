@@ -3,7 +3,7 @@
 /**
  *
  */
-class SiteMapWidget extends Widget
+class bSiteMapWidget extends bWidget
 {
 	public $title = 'Site Map';
 	public $className = 'sitemap';

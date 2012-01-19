@@ -3,7 +3,7 @@
 /**
  *
  */
-class RecentActivityWidget extends Widget
+class bRecentActivityWidget extends bWidget
 {
 	public $title = 'Recent Activity';
 	public $className = 'recent_activity';

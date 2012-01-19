@@ -3,7 +3,7 @@
 /**
  *
  */
-class UpdatesWidget extends Widget
+class bUpdatesWidget extends bWidget
 {
 	public $title = 'Updates Available';
 	public $className = 'updates';

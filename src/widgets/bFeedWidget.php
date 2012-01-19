@@ -3,7 +3,7 @@
 /**
  *
  */
-class FeedWidget extends Widget
+class bFeedWidget extends bWidget
 {
 	public $className = 'rss';
 
