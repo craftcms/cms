@@ -3,7 +3,7 @@
 /**
  *
  */
-class BEtService extends CApplicationComponent
+class bEtService extends CApplicationComponent
 {
 	/**
 	 * @return bool|bEtPackage

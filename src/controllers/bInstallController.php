@@ -6,8 +6,8 @@
 class bInstallController extends bBaseController
 {
 	/**
-	 * @param      $id
-	 * @param null $module
+	 * @internal param $id
+	 * @internal param null $module
 	 */
 	function init()
 	{

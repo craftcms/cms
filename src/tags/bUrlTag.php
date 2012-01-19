@@ -25,7 +25,8 @@ class bUrlTag extends bTag
 
 	/**
 	 * Segment
-	 * @param int $num Which segment to retrieve
+	 * @param int    $num Which segment to retrieve
+	 * @param string $default
 	 * @return bool
 	 */
 	public function segment($num = null, $default = '')
@@ -42,7 +43,8 @@ class bUrlTag extends bTag
 	}
 
 	/**
-	 * @param $var
+	 * @param        $var
+	 * @param string $default
 	 * @return bool
 	 */
 	public function get($var = null, $default = '')

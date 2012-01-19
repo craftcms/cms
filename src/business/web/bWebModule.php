@@ -13,7 +13,7 @@ class bWebModule extends CWebModule
 	 */
 	public function getViewPath()
 	{
-		if($this->_viewPath!==null)
+		if ($this->_viewPath !== null)
 			return $this->_viewPath;
 		else
 			return $this->_viewPath=$this->basePath.'/templates/';

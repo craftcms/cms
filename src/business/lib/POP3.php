@@ -1,7 +1,7 @@
 <?php
 /*
 .---------------------------------------------------------------------------.
-|  Software: PHPMailer - PHP email class                                    |
+|  Software: PhpMailer - PHP email class                                    |
 |   Version: 5.2.1                                                          |
 |      Site: https://code.google.com/a/apache-extras.org/p/phpmailer/       |
 | ------------------------------------------------------------------------- |
@@ -25,7 +25,7 @@
 /**
  * PHPMailer - PHP POP Before SMTP Authentication Class
  * NOTE: Designed for use with PHP version 5 and up
- * @package PHPMailer
+ * @package PhpMailer
  * @author Andy Prevost
  * @author Marcus Bointon
  * @author Jim Jagielski
@@ -52,29 +52,29 @@
  * This class is rfc 1939 compliant and implements all the commands
  * required for POP3 connection, authentication and disconnection.
  *
- * @package PHPMailer
+ * @package PhpMailer
  * @author Richard Davey
  */
 
-class POP3
+class Pop3
 {
 	/**
 	* Default POP3 port
 	* @var int
 	*/
-	public $POP3Port = 110;
+	public $pop3Port = 110;
 
 	/**
 	* Default Timeout
 	* @var int
 	*/
-	public $POP3Timeout = 30;
+	public $pop3Timeout = 30;
 
 	/**
 	* POP3 Carriage Return + Line Feed
 	* @var string
 	*/
-	public $CRLF = "\r\n";
+	public $crlf = "\r\n";
 
 	/**
 	* Displaying Debug warnings? (0 = now, 1+ = yes)
@@ -125,7 +125,7 @@ class POP3
 	/**
 	* Constructor, sets the initial values
 	* @access public
-	* @return POP3
+	* @return Pop3
 	*/
 	public function __construct()
 	{
@@ -146,19 +146,19 @@ class POP3
 	 *
 	 * @return bool
 	 */
-	public function Authorize($host, $port = false, $tVal = false, $username, $password, $debugLevel = 0)
+	public function authorize($host, $port = false, $tVal = false, $username, $password, $debugLevel = 0)
 	{
 		$this->host = $host;
 
 		// If no port value is passed, retrieve it
 		if ($port == false)
-			$this->port = $this->POP3Port;
+			$this->port = $this->pop3Port;
 		else
 			$this->port = $port;
 
 		// If no timeout value is passed, retrieve it
 		if ($tVal == false)
-			$this->tVal = $this->POP3Timeout;
+			$this->tVal = $this->pop3Timeout;
 		else
 			$this->tVal = $tVal;
 
@@ -284,8 +284,8 @@ class POP3
 		if (empty($password))
 			$password = $this->password;
 
-		$POPUserName = "USER $userName".$this->CRLF;
-		$POPPassword = "PASS $password".$this->CRLF;
+		$POPUserName = "USER $userName".$this->crlf;
+		$POPPassword = "PASS $password".$this->crlf;
 
 		// Send the Username
 		$this->sendString($POPUserName);

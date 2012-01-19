@@ -20,9 +20,9 @@ abstract class bBaseController extends CController
 
 	/**
 	 * Loads a template
-	 * @param string $template The template to load
+	 * @param       $templatePath
 	 * @param array $data Any variables that should be available to the templtae
-	 * @param bool $return Whether to return the results, rather than output them
+	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed
 	 */
 	public function loadTemplate($templatePath, $data = array(), $return = false)

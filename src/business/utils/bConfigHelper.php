@@ -1,7 +1,16 @@
 <?php
 
+/**
+ *
+ */
 class bConfigHelper
 {
+	/**
+	 * @static
+	 * @param $time
+	 * @param int $default
+	 * @return int
+	 */
 	public static function getTimeInSeconds($time, $default = 3600)
 	{
 		// if $time is just a number, assume it's already in seconds
