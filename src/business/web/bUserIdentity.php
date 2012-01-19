@@ -43,7 +43,7 @@ class bUserIdentity extends CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = Users::model()->find(array(
+		$user = bUser::model()->find(array(
 			'condition' => 'username=:userName OR email=:email',
 			'params' => array(':userName' => $this->loginName, ':email' => $this->loginName),
 		));

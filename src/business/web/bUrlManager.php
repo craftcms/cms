@@ -103,7 +103,7 @@ class bUrlManager extends CUrlManager
 	{
 		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
 
-		$entry = Entries::model()->findByAttributes(array(
+		$entry = bEntry::model()->findByAttributes(array(
 			'full_uri' => $pathMatchPattern,
 		));
 

@@ -29,7 +29,7 @@ class bWebUser extends CWebUser
 		if (isset($states['authToken']))
 			$authToken = $states['authToken'];
 
-		$user = Users::model()->findByPk($id);
+		$user = bUser::model()->findByPk($id);
 
 		if ($user === null || $user->authToken !== $authToken)
 		{

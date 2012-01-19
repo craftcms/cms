@@ -6,11 +6,11 @@
 class bUsersService extends CApplicationComponent
 {
 	/**
-	 * @return Users
+	 * @return bUser
 	 */
 	public function getAllUsers()
 	{
-		return Users::model()->findAll();
+		return bUser::model()->findAll();
 	}
 
 	/**
@@ -36,7 +36,7 @@ class bUsersService extends CApplicationComponent
 	 */
 	public function isUserNameInUse($userName)
 	{
-		$exists = Users::model()->exists(array(
+		$exists = bUser::model()->exists(array(
 			'username=:userName',
 			array(':userName' => $userName),
 		));
@@ -50,7 +50,7 @@ class bUsersService extends CApplicationComponent
 	 */
 	public function isEmailInUse($email)
 	{
-		$exists = Users::model()->exists(array(
+		$exists = bUser::model()->exists(array(
 			'email=:userName',
 			array(':email' => $email),
 		));
@@ -64,13 +64,13 @@ class bUsersService extends CApplicationComponent
 	 * @param $firstName
 	 * @param $lastName
 	 * @param $password
-	 * @return Users
+	 * @return bUser
 	 */
 	public function registerUser($userName, $email, $firstName, $lastName, $password, $passwordReset = false)
 	{
 		$hashAndType = Blocks::app()->security->hashPassword($password);
 
-		$user = new Users();
+		$user = new bUser();
 		$user->username = $userName;
 		$user->email = $email;
 		$user->first_name = $firstName;
@@ -118,10 +118,10 @@ class bUsersService extends CApplicationComponent
 	}
 
 	/**
-	 * @return UserGroups
+	 * @return bUserGroup
 	 */
 	public function getAllGroups()
 	{
-		return UserGroups::model()->findAll();
+		return bUserGroup::model()->findAll();
 	}
 }

@@ -13,7 +13,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getEntryById($entryId)
 	{
-		$entry = Entries::model()->findByAttributes(array(
+		$entry = bEntry::model()->findByAttributes(array(
 			'id' => $entryId,
 		));
 
@@ -26,7 +26,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getEntriesBySectionId($sectionId)
 	{
-		$entries = Entries::model()->findAllByAttributes(array(
+		$entries = bEntry::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 
@@ -55,7 +55,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function doesEntryHaveSubEntries($entryId)
 	{
-		$exists = Entries::model()->exists(
+		$exists = bEntry::model()->exists(
 			'parent_id=:parentId',
 			array(':parentId' => $entryId)
 		);
@@ -97,7 +97,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getSectionById($sectionId)
 	{
-		$section = Sections::model()->findByAttributes(array(
+		$section = bSection::model()->findByAttributes(array(
 			'id' => $sectionId,
 		));
 
@@ -110,7 +110,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function doesSectionHaveSubSections($sectionId)
 	{
-		$exists = Sections::model()->exists(
+		$exists = bSection::model()->exists(
 			'parent_id=:parentId',
 			array(':parentId' => $sectionId)
 		);
@@ -125,7 +125,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getSectionBySiteIdHandle($siteId, $handle)
 	{
-		$section = Sections::model()->findByAttributes(array(
+		$section = bSection::model()->findByAttributes(array(
 			'handle' => $handle,
 			'site_id' => $siteId,
 		));
@@ -140,7 +140,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getSectionsBySiteIdHandles($siteId, $handles)
 	{
-		$sections = Sections::model()->findAllByAttributes(array(
+		$sections = bSection::model()->findAllByAttributes(array(
 			'handle' => $handles,
 			'site_id' => $siteId,
 		));
@@ -154,7 +154,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getAllSectionsBySiteId($siteId)
 	{
-		$sections = Sections::model()->findAllByAttributes(array(
+		$sections = bSection::model()->findAllByAttributes(array(
 			'site_id' => $siteId,
 		));
 
@@ -170,7 +170,7 @@ class bContentService extends CApplicationComponent
 	 * @param null $template
 	 * @param bool $sortable
 	 * @param null $parentId
-	 * @return Sections
+	 * @return bSection
 	 * @throws Exception
 	 */
 	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
@@ -211,7 +211,7 @@ class bContentService extends CApplicationComponent
 			bDatabaseHelper::createUpdateAuditTrigger($tableName);
 
 			// check result.
-			$section = new Sections();
+			$section = new bSection();
 			$section->site_id = $site->id;
 
 			if ($parentId !== null)
@@ -307,7 +307,7 @@ class bContentService extends CApplicationComponent
 	 */
 	public function getBlocksBySectionId($sectionId)
 	{
-		$sections = SectionBlocks::model()->findAllByAttributes(array(
+		$sections = bSectionBlock::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 

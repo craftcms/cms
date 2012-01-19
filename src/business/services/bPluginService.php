@@ -10,7 +10,7 @@ class bPluginService extends CApplicationComponent
 	 */
 	public function getAllInstalledPlugins()
 	{
-		return Plugins::model()->findAll();
+		return bPlugin::model()->findAll();
 	}
 
 	/**

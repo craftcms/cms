@@ -16,7 +16,7 @@ class bCpService extends CApplicationComponent
 	public function getDashboardWidgets()
 	{
 		$userId = 1;
-		$userWidgets = UserWidgets::model()->findAllByAttributes(array('user_id' => $userId));
+		$userWidgets = bUserWidget::model()->findAllByAttributes(array('user_id' => $userId));
 		$widgets = array();
 
 		foreach ($userWidgets as $userWidget)

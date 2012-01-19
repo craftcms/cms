@@ -14,7 +14,7 @@ class bSiteService extends CApplicationComponent
 	public function getLicenseKeys()
 	{
 		$keysArr = array();
-		$licenseKeys = LicenseKeys::model()->findAll();
+		$licenseKeys = bLicenseKey::model()->findAll();
 
 		foreach ($licenseKeys as $licenseKey)
 			$keysArr[] = $licenseKey->key;
@@ -59,7 +59,7 @@ class bSiteService extends CApplicationComponent
 	}
 
 	/**
-	 * @return Sites
+	 * @return bSite
 	 */
 	public function getCurrentSiteByUrl()
 	{
@@ -69,7 +69,7 @@ class bSiteService extends CApplicationComponent
 			$httpServerName = 'http://'.$serverName;
 			$httpsServerName = 'https://'.$serverName;
 
-			$site = Sites::model()->find(
+			$site = bSite::model()->find(
 				'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
 			);
 
@@ -81,7 +81,7 @@ class bSiteService extends CApplicationComponent
 
 	/**
 	 * @param $url
-	 * @return Sites
+	 * @return bSite
 	 */
 	public function getSiteByUrl($url)
 	{
@@ -91,7 +91,7 @@ class bSiteService extends CApplicationComponent
 		$httpServerName = 'http://'.$url;
 		$httpsServerName = 'https://'.$url;
 
-		$site = Sites::model()->find(
+		$site = bSite::model()->find(
 			'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $url, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
 		);
 
@@ -100,21 +100,21 @@ class bSiteService extends CApplicationComponent
 
 	/**
 	 * @param $id
-	 * @return Sites
+	 * @return bSite
 	 */
 	public function getSiteById($id)
 	{
-		$site = Sites::model()->findByPk($id);
+		$site = bSite::model()->findByPk($id);
 		return $site;
 	}
 
 	/**
 	 * @param $handle
-	 * @return Sites
+	 * @return bSite
 	 */
 	public function getSiteByHandle($handle)
 	{
-		$site = Sites::model()->findByAttributes(array(
+		$site = bSite::model()->findByAttributes(array(
 			'handle' => $handle,
 		));
 

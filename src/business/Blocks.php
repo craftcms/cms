@@ -28,7 +28,7 @@ class Blocks extends Yii
 	 */
 	public static function getStoredEdition()
 	{
-		$info = Info::model()->findAll();
+		$info = bInfo::model()->findAll();
 		return !empty($info) ? $info[0]->edition : null;
 	}
 
@@ -51,7 +51,7 @@ class Blocks extends Yii
 	 */
 	public static function getStoredVersion()
 	{
-		$info = Info::model()->findAll();
+		$info = bInfo::model()->findAll();
 		return !empty($info) ? $info[0]->version : null;
 	}
 
@@ -74,7 +74,7 @@ class Blocks extends Yii
 	 */
 	public static function getStoredBuild()
 	{
-		$info = Info::model()->findAll();
+		$info = bInfo::model()->findAll();
 		return !empty($info) ? $info[0]->build : null;
 	}
 

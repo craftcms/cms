@@ -28,7 +28,7 @@ class bApp extends CWebApplication
 		// Is this an install request?
 		if ($this->request->mode == bRequestMode::CP && $this->request->getPathSegment(1) === 'install')
 		{
-			$this->runController('install');
+			$this->runController('bInstall');
 		}
 
 		// Ensure that Blocks is installed
@@ -66,7 +66,7 @@ class bApp extends CWebApplication
 		// Must be a template request
 		else
 		{
-			$this->runController('template');
+			$this->runController('bTemplate');
 		}
 	}
 

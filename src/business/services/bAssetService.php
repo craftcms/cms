@@ -7,11 +7,11 @@ class bAssetService extends CApplicationComponent
 {
 	/**
 	 * @param $siteId
-	 * @return AssetFolders
+	 * @return bAssetFolder
 	 */
 	public function getAssetFoldersBySiteId($siteId)
 	{
-		$asssetFolders = AssetFolders::model()->findAllByAttributes(array(
+		$asssetFolders = bAssetFolder::model()->findAllByAttributes(array(
 			'site_id' => $siteId,
 		));
 
@@ -20,11 +20,11 @@ class bAssetService extends CApplicationComponent
 
 	/**
 	 * @param $assetFolderId
-	 * @return Assets
+	 * @return Asset
 	 */
 	public function getAssetsInAssetFolder($assetFolderId)
 	{
-		$assets = Assets::model()->findAllByAttributes(array(
+		$assets = bAsset::model()->findAllByAttributes(array(
 			'folder_id' => $assetFolderId,
 		));
 
@@ -33,11 +33,11 @@ class bAssetService extends CApplicationComponent
 
 	/**
 	 * @param $assetFolderId
-	 * @return AssetFolders
+	 * @return bAssetFolder
 	 */
 	public function getAssetFolderById($assetFolderId)
 	{
-		$folder = AssetFolders::model()->findByAttributes(array(
+		$folder = bAssetFolder::model()->findByAttributes(array(
 			'asset_folder_id' => $assetFolderId,
 		));
 
@@ -67,7 +67,7 @@ class bAssetService extends CApplicationComponent
 	 */
 	public function getAssetById($assetId)
 	{
-		$asset = Assets::model()->findByAttributes(array(
+		$asset = bAsset::model()->findByAttributes(array(
 			'id' => $assetId,
 		));
 

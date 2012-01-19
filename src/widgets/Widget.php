@@ -17,7 +17,7 @@ abstract class Widget
 	{
 		$this->id = $id;
 
-		$settings = UserWidgetSettings::model()->findAllByAttributes(array('widget_id' => $this->id));
+		$settings = bUserWidgetSetting::model()->findAllByAttributes(array('widget_id' => $this->id));
 		$this->settings = array_merge($this->settings, bArrayHelper::expandSettingsArray($settings));
 
 		// call init() so widgets have an easy way to do constructor stuff without having to overwrite __construct
