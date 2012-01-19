@@ -17,11 +17,11 @@ class bLayoutTemplateWidget extends COutputProcessor
 		{
 			$owner = $this->owner;
 
-			$tags['subtemplate'] = new StringTag($output);
+			$tags['subtemplate'] = new bStringTag($output);
 
 			foreach ($this->regions as $region)
 			{
-				$tags[$region->name] = new StringTag($region->content);
+				$tags[$region->name] = new bStringTag($region->content);
 			}
 
 			$output = $owner->loadTemplate($this->template, $tags, true);

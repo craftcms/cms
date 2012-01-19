@@ -6,14 +6,14 @@
 class bTemplateHelper
 {
 	public static $globalTags = array(
-		'assets'   => 'AssetsTag',
-		'blocks'   => 'BlocksTag',
-		'content'  => 'ContentTag',
-		'cp'       => 'CpTag',
-		'date'     => 'DateTag',
-		'url'      => 'UrlTag',
-		'users'    => 'UsersTag',
-		'security' => 'SecurityTag'
+		'assets'   => 'bAssetsTag',
+		'blocks'   => 'bBlocksTag',
+		'content'  => 'bContentTag',
+		'cp'       => 'bCpTag',
+		'date'     => 'bDateTag',
+		'url'      => 'bUrlTag',
+		'users'    => 'bUsersTag',
+		'security' => 'bSecurityTag'
 	);
 
 	/**
@@ -26,7 +26,7 @@ class bTemplateHelper
 		if (isset(self::$globalTags[$handle]))
 			return new self::$globalTags[$handle];
 
-		return new Tag;
+		return new bTag;
 	}
 
 	/**
@@ -43,7 +43,7 @@ class bTemplateHelper
 	 * Returns the appropriate tag for a variable
 	 * @param mixed $var The variable
 	 * @param object A tag instance for the variable
-	 * @return \ArrayTag|\BoolTag|mixed|\NumTag|\ObjectTag|string|\StringTag
+	 * @return \bArrayTag|\bBoolTag|mixed|\bNumTag|\bObjectTag|string|\bStringTag
 	 */
 	public static function getVarTag($var = '')
 	{
@@ -53,24 +53,24 @@ class bTemplateHelper
 
 		// is it a number?
 		if (is_int($var) || is_float($var))
-			return new NumTag($var);
+			return new bNumTag($var);
 
 		// is it an array?
 		if (is_array($var))
-			return new ArrayTag($var);
+			return new bArrayTag($var);
 
 		// is it a bool?
 		if (is_bool($var))
-			return new BoolTag($var);
+			return new bBoolTag($var);
 
 		// is it an object?
 		if (is_object($var))
 		{
-			return new ObjectTag($var);
+			return new bObjectTag($var);
 		}
 
 		// default to a string
-		return new StringTag($var);
+		return new bStringTag($var);
 	}
 
 	/**
