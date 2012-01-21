@@ -13,7 +13,7 @@ class bSystemSetting extends bBaseSettingsModel
 	function init()
 	{
 		parent::init();
-		$this->attributes[] = array('category' => array('type' => bAttributeType::String, 'maxLength' => 250, 'required' => true));
+		$this->attributes['category'] = array('type' => bAttributeType::String, 'maxLength' => 250, 'required' => true);
 	}
 
 	/**
