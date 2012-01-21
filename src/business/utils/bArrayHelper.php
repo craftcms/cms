@@ -21,7 +21,7 @@ class bArrayHelper
 
 			if (is_array($value))
 			{
-				$flattened = array_merge($flattened, flatten_settings($value, $key));
+				$flattened = array_merge($flattened, self::flattenArray($value, $key));
 			}
 			else
 			{
@@ -67,9 +67,7 @@ class bArrayHelper
 		$arr = array();
 
 		foreach ($settings as $setting)
-		{
 			$arr[$setting->key] = $setting->value;
-		}
 
 		return self::expandArray($arr);
 	}
