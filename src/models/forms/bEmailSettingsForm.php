@@ -48,7 +48,6 @@ class bEmailSettingsForm extends CFormModel
 
 		switch ($this->emailerType)
 		{
-			case bEmailerType::GmailSmtp:
 			case bEmailerType::Smtp:
 			{
 				if ($this->smtpAuth)
@@ -62,6 +61,13 @@ class bEmailSettingsForm extends CFormModel
 				}
 
 				$rules[] = array('port, hostName', 'required');
+				break;
+			}
+
+			case bEmailerType::GmailSmtp:
+			{
+				$rules[] = array('userName, password', 'required');
+				$rules[] = array('userName', 'email');
 				break;
 			}
 
