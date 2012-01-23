@@ -19,11 +19,11 @@ class bSettingsController extends bBaseController
 			$model->emailerType                   = Blocks::app()->request->getPost('emailerType');
 			$model->hostName                    = Blocks::app()->request->getPost('hostName');
 			$model->port                        = Blocks::app()->request->getPost('port');
-			$model->smtpAuth                    = Blocks::app()->request->getPost('smtpAuth');
+			$model->smtpAuth                    = Blocks::app()->request->getPost('smtpAuth') == 'on' ? 1 : null;
 			$model->userName                    = Blocks::app()->request->getPost('userName');
 			$model->password                    = Blocks::app()->request->getPost('password');
-			$model->smtpKeepAlive               = Blocks::app()->request->getPost('smtpKeepAlive');
-			$model->smtpSecureTransport         = Blocks::app()->request->getPost('smtpSecureTransport');
+			$model->smtpKeepAlive               = Blocks::app()->request->getPost('smtpKeepAlive') == 'on' ? 1 : null;
+			$model->smtpSecureTransport         = Blocks::app()->request->getPost('smtpSecureTransport') == 'on' ? 1 : null;
 			$model->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
 
 			// validate user input
@@ -36,20 +36,24 @@ class bSettingsController extends bBaseController
 					{
 						if ($model->smtpAuth)
 						{
-							$settings['smtpAuth'] = true;
+							$settings['smtpAuth'] = 1;
 							$settings['userName'] = $model->userName;
 							$settings['password'] = $model->password;
 						}
 
 						if ($model->smtpSecureTransport)
 						{
-							$settings['smtpSecureTransport'] = true;
+							$settings['smtpSecureTransport'] = 1;
 							$settings['smtpSecureTransportType'] = $model->smtpSecureTransportType;
 						}
 
 						$settings['port'] = $model->port;
 						$settings['hostName'] = $model->hostName;
-						$settings['smtpKeepAlive'] = $model->smtpKeepAlive;
+
+						if ($model->smtpKeepAlive)
+						{
+							$settings['smtpKeepAlive'] = 1;
+						}
 
 						break;
 					}
@@ -67,8 +71,11 @@ class bSettingsController extends bBaseController
 					case bEmailerType::GmailSmtp:
 					{
 						$settings['host'] = $gMailSmtp;
-						$settings['smtpSecureTransport'] = true;
+						$settings['smtpSecureTransport'] = 1;
 						$settings['smtpSecureTransportType'] = $model->smtpSecureTransportType;
+						$settings['userName'] = $model->userName;
+						$settings['password'] = $model->password;
+						$settings['port'] = $model->smtpSecureTransportType == 'Tls' ? '587' : '465';
 						break;
 					}
 				}
