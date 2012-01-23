@@ -34,6 +34,7 @@
 		</div>
 		<div class="body">
 
+			<!-- Need to figure out how we're doing this -->.
 			<?php
 				if (!isset($emailSettings))
 					$emailSettings = new bEmailSettingsForm(Blocks::app()->email->emailSettings);
@@ -45,6 +46,7 @@
 					}
 				}
 			?>
+			<!-- Need to figure out how /if we're doing this .-->
 			<p><?php echo bHtml::errorSummary($emailSettings); ?></p>
 
 			<form action="{{ url.generateActionUrl('app/settings/saveemail') }}" method="post">
@@ -64,49 +66,49 @@
 				<div class="input-wrapper">
 					<label for="hostName">
 						Host Name:
-						<input type="text" id="hostName" name="hostName">
+						<input type="text" id="hostName" name="hostName" value="<?php echo $emailSettings->hostName; ?>">
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="port">
 						Port:
-						<input type="text" id="port" name="port">
+						<input type="text" id="port" name="port" value="<?php echo $emailSettings->port; ?>">
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="smtpAuth">
 						Use SMTP Authentication?
-						<input type="checkbox" id="smtpAuth" name="smtpAuth">
+						<input type="checkbox" id="smtpAuth" name="smtpAuth"<?php if ($emailSettings->smtpAuth): ?> checked<?php endif; ?>">
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="userName">
 						Username:
-						<input type="text" id="userName" name="userName">
+						<input type="text" id="userName" name="userName" value="<?php echo $emailSettings->userName; ?>">
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="password">
 						Password:
-						<input type="password" id="password" name="password">
+						<input type="password" id="password" name="password" value="<?php echo $emailSettings->password; ?>">
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="smtpKeepAlive">
 						Use SMTP Keep Alive?
-						<input type="checkbox" id="smtpKeepAlive" name="smtpKeepAlive">
+						<input type="checkbox" id="smtpKeepAlive" name="smtpKeepAlive"<?php if ($emailSettings->smtpKeepAlive): ?> checked<?php endif; ?>">
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="smtpSecureTransport">
 						Use SMTP Secure Transport?
-						<input type="checkbox" id="smtpSecureTransport" name="smtpSecureTransport">
+						<input type="checkbox" id="smtpSecureTransport" name="smtpSecureTransport"<?php if ($emailSettings->smtpSecureTransport): ?> checked<?php endif; ?>">
 					</label>
 				</div>
 				<p />
@@ -114,8 +116,8 @@
 					<label for="smtpSecureTransportType">
 						SMTP Secure Transport Type:
 						<select id="smtpSecureTransportType" name="smtpSecureTransportType">
-							<option value="Ssl">SSL</option>
-							<option value="Tls">TLS</option>
+							<option value="Ssl" <?php if ($emailSettings->smtpSecureTransportType == 'Ssl'): ?>selected<?php endif ?>>SSL</option>
+							<option value="Tls" <?php if ($emailSettings->smtpSecureTransportType == 'Tls'): ?>selected<?php endif ?>>TLS</option>
 						</select>
 					</label>
 				</div>
