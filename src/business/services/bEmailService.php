@@ -5,62 +5,61 @@
  */
 class bEmailService extends CApplicationComponent
 {
+	private $_defaultEmailTimeout = 10;
+
 	/**
-	 * @param        $from
-	 * @param        $replyTo
-	 * @param        $to
-	 * @param        $subject
-	 * @param        $body
-	 * @param string $altBody
-	 * @param bool   $isHTML
+	 * @param \bEmailAddress $from
+	 * @param \bEmailAddress $replyTo
+	 * @param array          $to
+	 * @param array          $cc
+	 * @param array          $bcc
+	 * @param                $subject
+	 * @param                $body
+	 * @param string         $altBody
+	 * @param bool           $isHTML
 	 *
 	 * @internal param $fromEmail
 	 * @internal param $fromName
 	 * @internal param $replyToEmail
 	 * @internal param $replyToName
 	 */
-	public function sendEmail($from, $replyTo, $to, $subject, $body, $altBody = '', $isHTML = true)
+	public function sendEmail(bEmailAddress $from, bEmailAddress $replyTo, array $to, array $cc, array $bcc, $subject, $body, $altBody = null, $isHTML = true)
 	{
-		// methods to support
-		// 1) mail() // tested with localhost
-		// 2) sendmail() // can't test on windows, but installed on some/most? unix servers
-		// 3) pop before smtp
-		// 4) gmail smtp // tested make sure openssl is enabled in php.ini and you use ssl port 465 or tls port 587
-		// 5) smtp no auth // tested on localhost
-		// 6) smtp auth
+		if (bStringHelper::isNullOrEmpty($from->getEmailAddress()))
+			throw new bException('You must supply an email address that the email is sent from.');
 
-		// SETTINGS
-		// get host
-		// get emailertype
-		//
-		//
+		if (empty($to))
+			throw new bException('You must supply at least one email address to send the email to.');
 
 		$emailSettings = $this->emailSettings;
+
+		if (!isset($emailSettings['emailerType']))
+			throw new bException('Could not determine how to send the email.  Check your email settings.');
+
 		$email = new PhpMailer(true);
 
-		switch ($emailSettings['email']->emailerType)
+		switch ($emailSettings['emailerType'])
 		{
+			case bEmailerType::GmailSmtp:
 			case bEmailerType::Smtp:
 			{
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
 			}
 
-			case bEmailerType::GmailSmtp:
-			{
-				$this->_setSmtpSettings($email, $emailSettings);
-
-				// or tls port 587
-				$email->port = '465';
-				$email->smtpSecure = 'ssl';
-				$email->host = 'smtp.gmail.com';
-				break;
-			}
-
 			case bEmailerType::Pop:
 			{
 				$pop = new Pop3();
-				$pop->authorize($emailSettings['email']->hostName, 110, 30, 'username', 'password', 1);
+				if (!isset($emailSettings['hostName']) || !isset($emailSettings['port']) || !isset($emailSettings['userName']) || !isset($emailSettings['password']) ||
+				    bStringHelper::isNullOrEmpty($emailSettings['hostName']) || bStringHelper::isNullOrEmpty($emailSettings['port']) || bStringHelper::isNullOrEmpty($emailSettings['userName']) || bStringHelper::isNullOrEmpty($emailSettings['password']))
+				{
+					throw new bException('Hostname, port, username and password must be configured under your email settings.');
+				}
+
+				if (!isset($emailSettings['timeout']))
+					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
+
+				$pop->authorize($emailSettings['hostName'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['userName'], $emailSettings['password'], Blocks::app()->getConfig('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -84,24 +83,38 @@ class bEmailService extends CApplicationComponent
 			}
 		}
 
-		$body = 'Html Hello.';
+		$email->body = $body;
+		$email->from = $from->getEmailAddress();
+		$email->fromName = $from->getName();
+		$email->addReplyTo($replyTo->getEmailAddress(), $replyTo->getName());
 
-		//$email->Host = 'secure.emailsrvr.com';
-		//$email->Port = 25;
-		//$email->Username = 'brad@pixelandtonic.com';
-		//$email->Password = 'WqYJ3IsKbc1erC';
+		foreach ($to as $toAddress)
+		{
+			$email->addAddress($toAddress->getEmailAddress(), $toAddress->getName());
+		}
 
-		$email->from = 'brad@pixelandtonic.com';
-		$email->fromName = 'Blocks Admin';
-		$email->subject = 'This is a very important subject.';
-		$email->altBody = 'Plain Text Hello.';
+		foreach ($cc as $toCcAddress)
+		{
+			$email->addCc($toCcAddress->getEmailAddress(), $toCcAddress->getName());
+		}
 
-		$email->msgHtml($body);
+		foreach ($bcc as $toBccAddress)
+		{
+			$email->addBcc($toBccAddress->getEmailAddress(), $toBccAddress->getName());
+		}
 
-		$email->addReplyTo('brad@pixelandtonic.com', 'Blocks Admin');
-		$email->addAddress('takobell@gmail.com', 'Brad Bell');
+		$email->subject = $subject;
+		$email->body = $body;
 
-		$email->isHtml(true);
+		if ($email->altBody !== null)
+			$email->altBody = $altBody;
+
+		if ($isHTML)
+		{
+			$email->isHtml(true);
+			$email->msgHtml($body);
+
+		}
 
 		if (!$email->send())
 		{
@@ -117,24 +130,37 @@ class bEmailService extends CApplicationComponent
 	{
 		$email->isSmtp();
 
-		if (Blocks::app()->config('devMode'))
+		if (Blocks::app()->getConfig('devMode'))
 			$email->smtpDebug = 2;
 
-		if ($emailSettings['email']->smtpAuth)
+		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
 		{
 			$email->smtpAuth = true;
-			$email->userName = $emailSettings['email']->userName;
-			$email->password = $emailSettings['email']->password;
+			if ((!isset($emailSettings['userName']) && bStringHelper::isNullOrEmpty($emailSettings['userName'])) || (!isset($emailSettings['password']) && bStringHelper::isNullOrEmpty($emailSettings['password'])))
+				throw new bException('Username and password are required.  Check your email settings.');
+
+			$email->userName = $emailSettings['userName'];
+			$email->password = $emailSettings['password'];
 		}
 
-		if ($emailSettings['email']->keepAlive)
+		if (isset($emailSettings['smtpKeepAlive']) && $emailSettings['smtpKeepAlive'] == 1)
 			$email->smtpKeepAlive = true;
 
-		if ($emailSettings['email']->smtpSecure !== '')
-			$email->smtpSecure = $emailSettings['email']->smtpSecure;
+		if (isset($emailSettings['smtpSecureTransport']) && $emailSettings['smtpSecureTransport'] == 1)
+			$email->smtpSecure = strtolower($emailSettings['smtpSecureTransportType']);
 
-		$email->host = implode(';', $emailSettings['email']->hostName);
-		$email->port = $emailSettings['email']->port;
+		if (!isset($emailSettings['host']))
+			throw new bException('You must specify a host name in your email settings.');
+
+		if (!isset($emailSettings['port']))
+			throw new bException('You must specify a port in your email settings.');
+
+		if (!isset($emailSettings['timeout']))
+			$emailSettings['timeout'] = $this->_defaultEmailTimeout;
+
+		$email->host = $emailSettings['host'];
+		$email->port = $emailSettings['port'];
+		$email->timeout = $emailSettings['timeout'];
 	}
 
 	/**
