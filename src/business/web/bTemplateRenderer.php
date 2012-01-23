@@ -339,6 +339,15 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 			case 'endif':
 				return '<?php endif ?>';
 
+			// Set
+			case 'set':
+				if (preg_match('/^([A-Za-z]\w*)\s*=\s*(.*)$/m', $params, $match))
+				{
+					$this->parseVariables($match[2]);
+					return "<?php \${$match[1]} = bTemplateHelper::getVarTag({$match[2]}); ?>";
+				}
+				return '';
+
 			// Redirect
 			case 'redirect':
 				$this->parseVariables($params, true);
