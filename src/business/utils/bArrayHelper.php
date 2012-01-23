@@ -11,13 +11,14 @@ class bArrayHelper
 	 * @param string $prefix
 	 * @return array
 	 */
-	public static function flattenArray($arr, $prefix = '')
+	public static function flattenArray($arr, $prefix = null)
 	{
 		$flattened = array();
 
 		foreach ($arr as $key => $value)
 		{
-			if ($prefix) $key = "{$prefix}[{$key}]";
+			if ($prefix !== null)
+				$key = "{$prefix}[{$key}]";
 
 			if (is_array($value))
 			{
