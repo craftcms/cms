@@ -24,4 +24,106 @@
 		<div class="btn"><span class="icon icon44"></span></div>
 		<div class="btn disabled"><span class="icon icon45"></span></div>
 	</div>
+
+	<p />
+	<br />
+
+	<div id="email-settings" class="pane">
+		<div class="head">
+			<h3>Email Settings</h3>
+		</div>
+		<div class="body">
+
+			<?php
+				if (!isset($emailSettings))
+					$emailSettings = new bEmailSettingsForm(Blocks::app()->email->emailSettings);
+				else
+				{
+					if (get_class($emailSettings) == 'bObjectTag')
+					{
+						$emailSettings = $emailSettings->__toArray();
+					}
+				}
+			?>
+			<p><?php echo bHtml::errorSummary($emailSettings); ?></p>
+
+			<form action="{{ url.generateActionUrl('app/settings/saveemail') }}" method="post">
+				<div class="input-wrapper">
+					<label for="emailerType">
+						Email Type:
+						<select id="emailerType" name="emailerType">
+							<option value="PhpMail" <?php if ($emailSettings->emailerType == 'PhpMail'): ?>selected<?php endif ?>>PHP Mail</option>
+							<option value="Sendmail" <?php if ($emailSettings->emailerType == 'Sendmail'): ?>selected<?php endif ?>>Sendmail</option>
+							<option value="Smtp" <?php if ($emailSettings->emailerType == 'Smtp'): ?>selected<?php endif ?>>SMTP</option>
+							<option value="GmailSmtp" <?php if ($emailSettings->emailerType == 'GmailSmtp'): ?>selected<?php endif ?>>Gmail SMTP</option>
+							<option value="Pop" <?php if ($emailSettings->emailerType == 'Pop'): ?>selected<?php endif ?>>POP before SMTP</option>
+						</select>
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="hostName">
+						Host Name:
+						<input type="text" id="hostName" name="hostName">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="port">
+						Port:
+						<input type="text" id="port" name="port">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="smtpAuth">
+						Use SMTP Authentication?
+						<input type="checkbox" id="smtpAuth" name="smtpAuth">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="userName">
+						Username:
+						<input type="text" id="userName" name="userName">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="password">
+						Password:
+						<input type="password" id="password" name="password">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="smtpKeepAlive">
+						Use SMTP Keep Alive?
+						<input type="checkbox" id="smtpKeepAlive" name="smtpKeepAlive">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="smtpSecureTransport">
+						Use SMTP Secure Transport?
+						<input type="checkbox" id="smtpSecureTransport" name="smtpSecureTransport">
+					</label>
+				</div>
+				<p />
+				<div class="input-wrapper">
+					<label for="smtpSecureTransportType">
+						SMTP Secure Transport Type:
+						<select id="smtpSecureTransportType" name="smtpSecureTransportType">
+							<option value="Ssl">SSL</option>
+							<option value="Tls">TLS</option>
+						</select>
+					</label>
+				</div>
+				<p />
+				<br />
+				<input class="btn" type="submit" value="Save Email Settings">
+				<p />
+			</form>
+		</div>
+	</div>
 {% /region %}

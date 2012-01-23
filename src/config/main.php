@@ -88,6 +88,10 @@ return array(
 			'class' => 'application.business.services.bSecurityService',
 		),
 
+		'settings' => array(
+			'class' => 'application.business.services.bSettingsService',
+		),
+
 		'site' => array(
 			'class' => 'application.business.services.bSiteService',
 		),

@@ -11,17 +11,18 @@ class bArrayHelper
 	 * @param string $prefix
 	 * @return array
 	 */
-	public static function flattenArray($arr, $prefix = '')
+	public static function flattenArray($arr, $prefix = null)
 	{
 		$flattened = array();
 
 		foreach ($arr as $key => $value)
 		{
-			if ($prefix) $key = "{$prefix}[{$key}]";
+			if ($prefix !== null)
+				$key = "{$prefix}[{$key}]";
 
 			if (is_array($value))
 			{
-				$flattened = array_merge($flattened, flatten_settings($value, $key));
+				$flattened = array_merge($flattened, self::flattenArray($value, $key));
 			}
 			else
 			{
@@ -67,9 +68,7 @@ class bArrayHelper
 		$arr = array();
 
 		foreach ($settings as $setting)
-		{
 			$arr[$setting->key] = $setting->value;
-		}
 
 		return self::expandArray($arr);
 	}
