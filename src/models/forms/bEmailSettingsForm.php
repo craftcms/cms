@@ -6,7 +6,7 @@
  */
 class bEmailSettingsForm extends CFormModel
 {
-	public $emailType;
+	public $emailerType;
 	public $hostName;
 	public $port;
 	public $smtpAuth;
@@ -17,14 +17,36 @@ class bEmailSettingsForm extends CFormModel
 	public $smtpSecureTransportType;
 
 	/**
+	 * @param $properties
+	 * @param string $scenario
+	 */
+	function __construct($properties = null, $scenario = '')
+	{
+		parent::__construct($scenario);
+
+		if ($properties !== null)
+		{
+			$this->emailerType = isset($properties['emailerType']) ? $properties['emailerType'] : null;
+			$this->hostName = isset($properties['hostName']) ? $properties['hostName'] : null;
+			$this->password = isset($properties['password']) ? $properties['password'] : null;
+			$this->port = isset($properties['port']) ? $properties['port'] : null;
+			$this->smtpAuth = isset($properties['smtpAuth']) ? $properties['smtpAuth'] : null;
+			$this->smtpKeepAlive = isset($properties['smtpKeepAlive']) ? $properties['smtpKeepAlive'] : null;
+			$this->smtpSecureTransport = isset($properties['smtpSecureTransport']) ? $properties['smtpSecureTransport'] : null;
+			$this->smtpSecureTransportType = isset($properties['smtpSecureTransportType']) ? $properties['smtpSecureTransportType'] : null;
+			$this->userName = isset($properties['userName']) ? $properties['userName'] : null;
+		}
+	}
+
+	/**
 	 * Declares the validation rules.
 	 * @return array of validation rules.
 	 */
 	public function rules()
 	{
-		$rules[] = array('emailType', 'required');
+		$rules[] = array('emailerType', 'required');
 
-		switch ($this->emailType)
+		switch ($this->emailerType)
 		{
 			case bEmailerType::GmailSmtp:
 			case bEmailerType::Smtp:
