@@ -21,6 +21,7 @@ return array(
 	'import' => array(
 		'application.business.*',
 		'application.business.db.*',
+		'application.business.email.*',
 		'application.business.enums.*',
 		'application.business.exceptions.*',
 		'application.business.install.*',

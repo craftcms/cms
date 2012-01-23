@@ -428,7 +428,7 @@ class PhpMailer
 	 * @param string $name
 	 * @return boolean true on success, false if address already used
 	 */
-	public function addCC($address, $name = '')
+	public function addCc($address, $name = '')
 	{
 		return $this->addAnAddress('cc', $address, $name);
 	}
