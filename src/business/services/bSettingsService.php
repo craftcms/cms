@@ -13,12 +13,12 @@ class bSettingsService extends CApplicationComponent
 	 * @param bool   $deletePrevious
 	 * @return bool
 	 */
-	public function saveSettings($table, $settings, $prefix = '', $category = null, $deletePrevious = false)
+	public function saveSettings($table, $settings, $prefix = null, $category = null, $deletePrevious = false)
 	{
 		$flattened = bArrayHelper::flattenArray($settings, $prefix);
 
 		if ($deletePrevious)
-			$this->deleteSettings($table, array_keys($flattened), $category);
+			$this->deleteSettings($table, $category);
 
 		$settingsPrep = array();
 		foreach ($flattened as $key => $value)
@@ -37,20 +37,20 @@ class bSettingsService extends CApplicationComponent
 
 	/**
 	 * @param       $table
-	 * @param array $keys
 	 * @param null  $category
+	 * @param array $keys
 	 * @return bool
 	 */
-	public function deleteSettings($table, $keys = array(), $category = null)
+	public function deleteSettings($table, $category = null, $keys = array())
 	{
 		$result = false;
 
 		if (!empty($keys) && $category == null)
-			$result = Blocks::app()->db->delete('{{'.$table.'}}', array('in', 'key', $keys));
+			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('in', 'key', $keys));
 		elseif (empty($keys) && $category !== null)
-			$result = Blocks::app()->db->delete('{{'.$table.'}}', 'category = '.$category);
+			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', 'category = :category', array(':category' => $category));
 		elseif (!empty($keys) && $category !== null)
-			$result = Blocks::app()->db->delete('{{'.$table.'}}', array('and', array('in', 'key', $keys), 'category = '.$category));
+			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('and', array('in', 'key', $keys), 'category = :category', array(':category' => $category)));
 
 		if ($result === false)
 			return false;
