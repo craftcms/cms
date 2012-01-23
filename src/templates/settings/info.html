@@ -34,19 +34,29 @@
 		</div>
 		<div class="body">
 
-			<?php if (!isset($emailSettings)) $emailSettings = new bEmailSettingsForm(); ?>
-			<!--<p><?php //echo bHtml::errorSummary($emailSettings); ?></p>-->
+			<?php
+				if (!isset($emailSettings))
+					$emailSettings = new bEmailSettingsForm(Blocks::app()->email->emailSettings);
+				else
+				{
+					if (get_class($emailSettings) == 'bObjectTag')
+					{
+						$emailSettings = $emailSettings->__toArray();
+					}
+				}
+			?>
+			<p><?php echo bHtml::errorSummary($emailSettings); ?></p>
 
 			<form action="{{ url.generateActionUrl('app/settings/saveemail') }}" method="post">
 				<div class="input-wrapper">
-					<label for="emailType">
+					<label for="emailerType">
 						Email Type:
-						<select id="emailType" name="emailType">
-							<option value="PhpMail" {% if emailSettings.emailType == 'PhpMail' %}selected{% /if %}>PHP Mail</option>
-							<option value="Sendmail" {% if emailSettings.emailType == 'Sendmail' %}selected{% /if %}>Sendmail</option>
-							<option value="Smtp" {% if emailSettings.emailType == 'Smtp' %}selected{% /if %}>SMTP</option>
-							<option value="GmailSmtp" {% if emailSettings.emailType == 'GmailSmtp' %}selected{% /if %}>Gmail SMTP</option>
-							<option value="Pop" {% if emailSettings.emailType == 'Pop' %}selected{% /if %}>POP before SMTP</option>
+						<select id="emailerType" name="emailerType">
+							<option value="PhpMail" <?php if ($emailSettings->emailerType == 'PhpMail'): ?>selected<?php endif ?>>PHP Mail</option>
+							<option value="Sendmail" <?php if ($emailSettings->emailerType == 'Sendmail'): ?>selected<?php endif ?>>Sendmail</option>
+							<option value="Smtp" <?php if ($emailSettings->emailerType == 'Smtp'): ?>selected<?php endif ?>>SMTP</option>
+							<option value="GmailSmtp" <?php if ($emailSettings->emailerType == 'GmailSmtp'): ?>selected<?php endif ?>>Gmail SMTP</option>
+							<option value="Pop" <?php if ($emailSettings->emailerType == 'Pop'): ?>selected<?php endif ?>>POP before SMTP</option>
 						</select>
 					</label>
 				</div>
