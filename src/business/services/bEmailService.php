@@ -5,7 +5,21 @@
  */
 class bEmailService extends CApplicationComponent
 {
-	public function sendEmail()
+	/**
+	 * @param        $from
+	 * @param        $replyTo
+	 * @param        $to
+	 * @param        $subject
+	 * @param        $body
+	 * @param string $altBody
+	 * @param bool   $isHTML
+	 *
+	 * @internal param $fromEmail
+	 * @internal param $fromName
+	 * @internal param $replyToEmail
+	 * @internal param $replyToName
+	 */
+	public function sendEmail($from, $replyTo, $to, $subject, $body, $altBody = '', $isHTML = true)
 	{
 		// methods to support
 		// 1) mail() // tested with localhost
@@ -15,40 +29,133 @@ class bEmailService extends CApplicationComponent
 		// 5) smtp no auth // tested on localhost
 		// 6) smtp auth
 
-		$email = new PHPMailer();
-		$body = 'Html Hello.';
+		// SETTINGS
+		// get host
+		// get emailertype
+		//
+		//
 
-		$email->IsSMTP();
-		$email->SMTPAuth = true;
-		$email->SMTPDebug = 2;
-		$email->Host = 'smtp.gmail.com';
-		$email->SMTPSecure = 'ssl';
-		$email->Port = 465;
-		$email->Username = 'takobell@gmail.com';
-		$email->Password = 'NAOAMTxd7F7UkVDihWXd0tUd';
+		$emailSettings = $this->emailSettings;
+		$email = new PhpMailer(true);
+
+		switch ($emailSettings['email']->emailerType)
+		{
+			case bEmailerType::Smtp:
+			{
+				$this->_setSmtpSettings($email, $emailSettings);
+				break;
+			}
+
+			case bEmailerType::GmailSmtp:
+			{
+				$this->_setSmtpSettings($email, $emailSettings);
+
+				// or tls port 587
+				$email->port = '465';
+				$email->smtpSecure = 'ssl';
+				$email->host = 'smtp.gmail.com';
+				break;
+			}
+
+			case bEmailerType::Pop:
+			{
+				$pop = new Pop3();
+				$pop->authorize($emailSettings['email']->hostName, 110, 30, 'username', 'password', 1);
+
+				$this->_setSmtpSettings($email, $emailSettings);
+				break;
+			}
+
+			case bEmailerType::Sendmail:
+			{
+				$email->isSendmail();
+				break;
+			}
+
+			case bEmailerType::PhpMail:
+			{
+				$email->isMail();
+				break;
+			}
+
+			default:
+			{
+				$email->isMail();
+			}
+		}
+
+		$body = 'Html Hello.';
 
 		//$email->Host = 'secure.emailsrvr.com';
 		//$email->Port = 25;
 		//$email->Username = 'brad@pixelandtonic.com';
 		//$email->Password = 'WqYJ3IsKbc1erC';
 
-		$email->From = 'brad@pixelandtonic.com';
-		$email->FromName = 'Blocks Admin';
-		$email->Subject = 'This is a very important subject.';
-		$email->AltBody = 'Plain Text Hello.';
+		$email->from = 'brad@pixelandtonic.com';
+		$email->fromName = 'Blocks Admin';
+		$email->subject = 'This is a very important subject.';
+		$email->altBody = 'Plain Text Hello.';
 
-		$email->MsgHTML($body);
+		$email->msgHtml($body);
 
-		$email->AddReplyTo('brad@pixelandtonic.com', 'Blocks Admin');
-		$email->AddAddress('takobell@gmail.com', 'Brad Bell');
+		$email->addReplyTo('brad@pixelandtonic.com', 'Blocks Admin');
+		$email->addAddress('takobell@gmail.com', 'Brad Bell');
 
-		$email->IsHTML(true);
+		$email->isHtml(true);
 
-		if (!$email->Send())
+		if (!$email->send())
 		{
-			$error = $email->ErrorInfo;
+			$error = $email->errorInfo;
+		}
+	}
+
+	/**
+	 * @param $email
+	 * @param $emailSettings
+	 */
+	private function _setSmtpSettings(&$email, $emailSettings)
+	{
+		$email->isSmtp();
+
+		if (Blocks::app()->config('devMode'))
+			$email->smtpDebug = 2;
+
+		if ($emailSettings['email']->smtpAuth)
+		{
+			$email->smtpAuth = true;
+			$email->userName = $emailSettings['email']->userName;
+			$email->password = $emailSettings['email']->password;
 		}
 
+		if ($emailSettings['email']->keepAlive)
+			$email->smtpKeepAlive = true;
 
+		if ($emailSettings['email']->smtpSecure !== '')
+			$email->smtpSecure = $emailSettings['email']->smtpSecure;
+
+		$email->host = implode(';', $emailSettings['email']->hostName);
+		$email->port = $emailSettings['email']->port;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getEmailSettings()
+	{
+		$emailSettings = Blocks::app()->settings->getSystemSettings('email');
+		$emailSettings = bArrayHelper::expandSettingsArray($emailSettings);
+		return $emailSettings;
+	}
+
+	/**
+	 * @param $settings
+	 * @return bool
+	 */
+	public function saveEmailSettings($settings)
+	{
+		if (Blocks::app()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
+			return true;
+
+		return false;
 	}
 }
