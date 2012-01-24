@@ -11,12 +11,12 @@ class bSettingsController extends bBaseController
 	public function actionSaveEmail()
 	{
 		$model = new bEmailSettingsForm();
-		$gMailSmtp = 'smtp.google.com';
+		$gMailSmtp = 'smtp.gmail.com';
 
 		// Check to see if it's a submit.
 		if(Blocks::app()->request->isPostRequest)
 		{
-			$model->emailerType                   = Blocks::app()->request->getPost('emailerType');
+			$model->emailerType                 = Blocks::app()->request->getPost('emailerType');
 			$model->hostName                    = Blocks::app()->request->getPost('hostName');
 			$model->port                        = Blocks::app()->request->getPost('port');
 			$model->smtpAuth                    = Blocks::app()->request->getPost('smtpAuth') == 'on' ? 1 : null;
@@ -25,6 +25,7 @@ class bSettingsController extends bBaseController
 			$model->smtpKeepAlive               = Blocks::app()->request->getPost('smtpKeepAlive') == 'on' ? 1 : null;
 			$model->smtpSecureTransport         = Blocks::app()->request->getPost('smtpSecureTransport') == 'on' ? 1 : null;
 			$model->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
+			$model->timeout                     = Blocks::app()->request->getPost('timeout');
 
 			// validate user input
 			if($model->validate())
@@ -49,6 +50,7 @@ class bSettingsController extends bBaseController
 
 						$settings['port'] = $model->port;
 						$settings['hostName'] = $model->hostName;
+						$settings['timeout'] = $model->timeout;
 
 						if ($model->smtpKeepAlive)
 						{
@@ -64,6 +66,7 @@ class bSettingsController extends bBaseController
 						$settings['hostName'] = $model->hostName;
 						$settings['userName'] = $model->userName;
 						$settings['password'] = $model->password;
+						$settings['timeout'] = $model->timeout;
 
 						break;
 					}
@@ -71,11 +74,13 @@ class bSettingsController extends bBaseController
 					case bEmailerType::GmailSmtp:
 					{
 						$settings['host'] = $gMailSmtp;
+						$settings['smtpAuth'] = 1;
 						$settings['smtpSecureTransport'] = 1;
 						$settings['smtpSecureTransportType'] = $model->smtpSecureTransportType;
 						$settings['userName'] = $model->userName;
 						$settings['password'] = $model->password;
 						$settings['port'] = $model->smtpSecureTransportType == 'Tls' ? '587' : '465';
+						$settings['timeout'] = $model->timeout;
 						break;
 					}
 				}

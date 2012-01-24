@@ -15,6 +15,7 @@ class bEmailSettingsForm extends CFormModel
 	public $smtpKeepAlive;
 	public $smtpSecureTransport;
 	public $smtpSecureTransportType;
+	public $timeout;
 
 	/**
 	 * @param $properties
@@ -35,6 +36,7 @@ class bEmailSettingsForm extends CFormModel
 			$this->smtpSecureTransport = isset($properties['smtpSecureTransport']) ? $properties['smtpSecureTransport'] : null;
 			$this->smtpSecureTransportType = isset($properties['smtpSecureTransportType']) ? $properties['smtpSecureTransportType'] : null;
 			$this->userName = isset($properties['userName']) ? $properties['userName'] : null;
+			$this->timeout = isset($properties['timeout']) ? $properties['timeout'] : null;
 		}
 	}
 
@@ -60,20 +62,20 @@ class bEmailSettingsForm extends CFormModel
 					$rules[] = array('smtpSecureTransportType', 'required');
 				}
 
-				$rules[] = array('port, hostName', 'required');
+				$rules[] = array('port, hostName, timeout', 'required');
 				break;
 			}
 
 			case bEmailerType::GmailSmtp:
 			{
-				$rules[] = array('userName, password', 'required');
+				$rules[] = array('userName, password, timeout', 'required');
 				$rules[] = array('userName', 'email');
 				break;
 			}
 
 			case bEmailerType::Pop:
 			{
-				$rules[] = array('port, hostName, userName, password', 'required');
+				$rules[] = array('port, hostName, userName, password, timeout', 'required');
 				break;
 			}
 
