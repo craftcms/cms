@@ -117,9 +117,7 @@ class bEmailService extends CApplicationComponent
 		}
 
 		if (!$email->send())
-		{
-			$error = $email->errorInfo;
-		}
+			throw new bException($email->errorInfo);
 	}
 
 	/**
