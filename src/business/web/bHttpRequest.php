@@ -87,6 +87,8 @@ class bHttpRequest extends CHttpRequest
 
 	/**
 	 * Returns a specific path segment
+	 * @param      $num
+	 * @param null $default
 	 * @return mixed The requested path segment, or null
 	 */
 	public function getPathSegment($num, $default = null)
