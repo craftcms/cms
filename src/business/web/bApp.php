@@ -10,19 +10,21 @@ class bApp extends CWebApplication
 	private $_layoutPath;
 	private $_isInstalled;
 
+	public function init()
+	{
+		// Is this a resource request?
+		if ($this->request->mode == bRequestMode::Resource)
+		{
+			$this->processResourceRequest();
+			exit(1);
+		}
+	}
+
 	/**
 	 * Process the request
 	 */
 	public function processRequest()
 	{
-		//Blocks::app()->email->emailSettings;
-		// Is this a resource request?
-		if ($this->request->mode == bRequestMode::Resource)
-		{
-			$this->processResourceRequest();
-			return;
-		}
-
 		// Config validation
 		$this->validateConfig();
 
@@ -225,6 +227,7 @@ class bApp extends CWebApplication
 	/**
 	 * Get a general config item
 	 * @param bool|string $key The config item's key to retrieve
+	 * @param null        $default
 	 * @return mixed The config item's value if set, null if not
 	 */
 	public function getConfig($key, $default = null)
@@ -238,6 +241,7 @@ class bApp extends CWebApplication
 	/**
 	 * Get a config item
 	 * @param bool|string $key The config item's key to retrieve
+	 * @param null        $default
 	 * @return mixed The config item's value if set, null if not
 	 */
 	public function getDbConfig($key, $default = null)
