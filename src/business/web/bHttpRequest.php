@@ -31,6 +31,7 @@ class bHttpRequest extends CHttpRequest
 				if ($this->queryStringPath)
 				{
 					$params = isset($_GET) ? $_GET : array();
+					$pathVar = Blocks::app()->getConfig('pathVar');
 					unset($params[$pathVar]);
 					$url = bUrlHelper::generateUrl($this->queryStringPath, $params);
 					$this->redirect($url);
