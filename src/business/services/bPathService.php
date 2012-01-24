@@ -103,7 +103,15 @@ class bPathService extends CApplicationComponent
 		$siteHandle = Blocks::app()->site->currentSiteByUrl;
 		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 
-		return $this->normalizeDirectorySeparators($this->basePath.'templates/'.$siteHandle.'/');
+		return $this->normalizeDirectorySeparators($this->basePath.'templates/site_templates/'.$siteHandle.'/');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEmailTemplatePath()
+	{
+		return $this->normalizeDirectorySeparators($this->basePath.'templates/email_templates/');
 	}
 
 	/**
@@ -111,22 +119,12 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getTemplatePath()
 	{
-		$mode = Blocks::app()->request->mode;
-
-		// site or site-action request
-		if ($mode == bRequestMode::Site || ($mode == bRequestMode::Action && BLOCKS_CP_REQUEST !== true))
-		{
+		// site request
+		if (BLOCKS_CP_REQUEST !== true)
 			$templatePath = $this->siteTemplatePath;
-		}
-		// CP or CP-action request
-		elseif ($mode == bRequestMode::CP || ($mode == bRequestMode::Action && BLOCKS_CP_REQUEST === true))
-		{
-			$templatePath = $this->cpTemplatePath;
-		}
 		else
-		{
-			$templatePath = $this->siteTemplatePath;
-		}
+			// CP request
+			$templatePath = $this->cpTemplatePath;
 
 		return $this->normalizeDirectorySeparators($templatePath);
 	}
@@ -134,20 +132,33 @@ class bPathService extends CApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getTemplateCachePath()
+	public function getSiteTemplateCachePath()
 	{
 		$cachePath = null;
+
 		if (BLOCKS_CP_REQUEST !== true)
 		{
 			$siteHandle = Blocks::app()->site->currentSiteByUrl;
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-			$cachePath = $this->runtimePath.'parsed_templates/sites/'.$siteHandle.'/';
+			$cachePath = $this->runtimePath.'parsed_templates/custom/site_templates/'.$siteHandle.'/';
 		}
-		// CP or action request
 		else
 		{
 			$cachePath = $this->runtimePath.'parsed_templates/cp/';
 		}
+
+		if (!is_dir($cachePath))
+			mkdir($cachePath, 0777, true);
+
+		return $this->normalizeDirectorySeparators($cachePath);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getEmailTemplateCachePath()
+	{
+		$cachePath = $this->runtimePath.'parsed_templates/email_templates/';
 
 		if (!is_dir($cachePath))
 			mkdir($cachePath, 0777, true);
