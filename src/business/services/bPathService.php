@@ -10,6 +10,46 @@ class bPathService extends CApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getAppPath()
+	{
+		return BLOCKS_APP_PATH;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getConfigPath()
+	{
+		return BLOCKS_CONFIG_PATH;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getPluginsPath()
+	{
+		return BLOCKS_PLUGINS_PATH;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRuntimePath()
+	{
+		return BLOCKS_RUNTIME_PATH;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getTemplatesPath()
+	{
+		return BLOCKS_TEMPLATES_PATH;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getResourcesPath()
 	{
 		return BLOCKS_APP_PATH.'resources/';
@@ -55,7 +95,7 @@ class bPathService extends CApplicationComponent
 		$siteHandle = Blocks::app()->site->currentSiteByUrl;
 		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 
-		return BLOCKS_TEMPLATES_PATH.'site_templates/'.$siteHandle.'/';
+		return $this->templatesPath.'site_templates/'.$siteHandle.'/';
 	}
 
 	/**
@@ -63,7 +103,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getEmailTemplatePath()
 	{
-		return BLOCKS_TEMPLATES_PATH.'email_templates/';
+		return $this->templatesPath.'email_templates/';
 	}
 
 	/**
@@ -90,11 +130,11 @@ class bPathService extends CApplicationComponent
 		{
 			$siteHandle = Blocks::app()->site->currentSiteByUrl;
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-			$cachePath = BLOCKS_RUNTIME_PATH.'parsed_templates/custom/site_templates/'.$siteHandle.'/';
+			$cachePath = $this->runtimePath.'parsed_templates/custom/site_templates/'.$siteHandle.'/';
 		}
 		else
 		{
-			$cachePath = BLOCKS_RUNTIME_PATH.'parsed_templates/cp/';
+			$cachePath = $this->runtimePath.'parsed_templates/cp/';
 		}
 
 		if (!is_dir($cachePath))
@@ -108,7 +148,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getEmailTemplateCachePath()
 	{
-		$cachePath = BLOCKS_RUNTIME_PATH.'parsed_templates/email_templates/';
+		$cachePath = $this->runtimePath.'parsed_templates/email_templates/';
 
 		if (!is_dir($cachePath))
 			mkdir($cachePath, 0777, true);
@@ -121,7 +161,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getSessionPath()
 	{
-		$path = BLOCKS_RUNTIME_PATH.'sessions/';
+		$path = $this->runtimePath.'sessions/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
