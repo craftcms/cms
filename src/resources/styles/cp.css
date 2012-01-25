@@ -392,3 +392,14 @@ ul.menu li:not(.disabled):not(.sel):hover { color: #fff; background: -webkit-gra
 
 ul.menu.select li { padding-left: 24px; }
 ul.menu.select li.sel { color: #999; background: url(../images/checkmark.png) no-repeat 6px 50%; cursor: default; }
+
+/* ----------------------------------------
+/*  Messages
+/* ----------------------------------------*/
+div.flash-error, div.flash-notice, div.flash-success { padding: .8em; margin-bottom: 1em; border: 2px solid #ddd; }
+div.flash-error { background: #FBE3E4; color: #8a1f11; border-color: #FBC2C4; }
+div.flash-notice { background: #FFF6BF; color: #514721; border-color: #FFD324; }
+div.flash-success { background: #E6EFC2; color: #264409; border-color: #C6D880; }
+div.flash-error a { color:#8a1f11; }
+div.flash-notice a { color:#514721; }
+div.flash-success a { color:#264409; }
