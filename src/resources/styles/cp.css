@@ -394,3 +394,14 @@ ul.menu li:not(.disabled):not(.sel):hover { color: #fff; background: -webkit-gra
 
 ul.menu.select li { padding-left: 24px; }
 ul.menu.select li.sel { color: #999; background: url(../images/checkmark.png) no-repeat 6px 50%; cursor: default; }
+
+/* ----------------------------------------
+/*  Messages
+/* ----------------------------------------*/
+div.message-error, div.message-notice, div.message-success { padding: .8em; margin-top: 40px; margin-bottom: 1em; border: 2px solid #ddd; }
+div.message-error { background: #FBE3E4; color: #8a1f11; border-color: #FBC2C4; }
+div.message-notice { background: #FFF6BF; color: #514721; border-color: #FFD324; }
+div.message-success { background: #E6EFC2; color: #264409; border-color: #C6D880; }
+div.message-error a { color:#8a1f11; }
+div.message-notice a { color:#514721; }
+div.message-success a { color:#264409; }
