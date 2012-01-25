@@ -10,7 +10,7 @@ class bConfigTag extends bTag
 	 */
 	public function configPath()
 	{
-		return BLOCKS_CONFIG_PATH.'config.php';
+		return Blocks::app()->path->configPath.'config.php';
 	}
 
 	/**

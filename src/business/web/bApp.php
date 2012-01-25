@@ -91,7 +91,7 @@ class bApp extends CWebApplication
 		if ($handle == 'app')
 			$rootFolderPath = $this->path->resourcesPath;
 		else
-			$rootFolderPath = BLOCKS_PLUGINS_PATH.$handle.'/';
+			$rootFolderPath = $this->path->pluginsPath.$handle.'/';
 
 		$rootFolderUrl = bUrlHelper::generateUrl('resources/'.$handle).'/';
 		$relativeResourcePath = implode('/', $segs);
