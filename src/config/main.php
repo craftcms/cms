@@ -82,14 +82,9 @@ return array(
 			'class' => 'application.business.services.bEtService',
 		),
 
-		'message' => array(
-			'class' => 'application.business.services.bMessageService',
-		),
-		
 		'install' => array(
 			'class' => 'application.business.services.bInstallService',
 		),
-
 
 		'path' => array(
 			'class' => 'application.business.services.bPathService',
