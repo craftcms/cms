@@ -816,7 +816,7 @@ class bFile extends CApplicationComponent
 	 * Applies an array of filter rules to the string representing filepath. Used internally by {@link dirContents} method.
 	 * @param string $str String representing filepath to be filtered
 	 * @param array $filter An array of filter rules, where each rule is a string, supposing that the string starting with '/' is a regular
-	 * expression. Any other string reated as an extension part of the given filepath (eg. file extension)
+	 * expression. Any other string treated as an extension part of the given filepath (eg. file extension)
 	 * @return boolean Returns 'true' if the supplied string matched one of the filter rules.
 	 * @access private
 	 */
