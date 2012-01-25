@@ -3,10 +3,10 @@
 /**
  *
  */
-class bRequirementsChecker
+class bRequirementsChecker extends CComponent
 {
 	private $_requirements;
-	private $_installResult;
+	private $_result;
 	private $_serverInfo;
 	private $_errorFolders = null;
 
@@ -240,7 +240,7 @@ class bRequirementsChecker
 			}
 		}
 
-		$this->_installResult = $installResult;
+		$this->_result = $installResult;
 		$this->_serverInfo = $this->calculateServerInfo();
 		$this->_errorFolders = $errorFolders;
 	}
@@ -248,9 +248,9 @@ class bRequirementsChecker
 	/**
 	 * @return mixed
 	 */
-	public function getInstallResult()
+	public function getResult()
 	{
-		return $this->_installResult;
+		return $this->_result;
 	}
 
 	/**

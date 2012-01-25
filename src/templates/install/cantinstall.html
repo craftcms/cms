@@ -1,0 +1,18 @@
+{% layout "_layouts/basic" %}
+
+{% region "title" %}Unable to install Blocks{% endregion %}
+
+{% region "styles" %}
+	{{ cp.resource('app/styles/cp.css').css }}
+	{{ cp.resource('app/styles/install.css').css }}
+{% endregion %}
+
+{% region "body" %}
+	<p>Your server doesn’t meet the minimum requirements to install Blocks. Please talk to your host / IT department about these deficiencies:</p>
+
+	<ul>
+		{% foreach requirements as req %}
+		<li>{{ req.name }}</li>
+		{% endforeach %}
+	</ul>
+{% endregion %}
