@@ -81,7 +81,7 @@ class bDatabaseHelper
 
 		Blocks::app()->db->createCommand(
 							'CREATE
-							 TRIGGER `'.$dbName.'`.`auditinfoinsert_'.$tableName.'`
+							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->getDbConfig('tablePrefix').'_auditinfoinsert_'.$tableName.'`
 							 BEFORE INSERT ON `'.$dbName.'`.`{{'.$tableName.'}}`
 							 FOR EACH ROW
 							 SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -102,7 +102,7 @@ class bDatabaseHelper
 
 		Blocks::app()->db->createCommand(
 							'CREATE
-							 TRIGGER `'.$dbName.'`.`auditinfoupdate_'.$tableName.'`
+							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->getDbConfig('tablePrefix').'_auditinfoupdate_'.$tableName.'`
 							 BEFORE UPDATE ON `'.$dbName.'`.`{{'.$tableName.'}}`
 							 FOR EACH ROW
 							 SET NEW.date_updated = UNIX_TIMESTAMP(),
