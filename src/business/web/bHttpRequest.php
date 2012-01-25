@@ -156,9 +156,10 @@ class bHttpRequest extends CHttpRequest
 					try
 					{
 						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
-						if (($result = @file_get_contents(Blocks::app()->request->hostInfo.'/blocks/app/business/web/PathInfoCheck.php/test', 0, $context)) !== false)
+						$url = Blocks::app()->request->hostInfo.Blocks::app()->request->url.'/testpathinfo';
+						if (($result = @file_get_contents($url, 0, $context)) !== false)
 						{
-							if ($result === '/test' )
+							if ($result === 'success')
 							{
 								$this->_urlFormat = bUrlFormat::PathInfo;
 							}

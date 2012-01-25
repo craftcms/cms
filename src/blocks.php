@@ -1,5 +1,11 @@
 <?php
 
+// Is this a PATH_INFO test?
+if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testpathinfo')
+{
+	exit('success');
+}
+
 defined('BLOCKS_BASE_PATH') || define('BLOCKS_BASE_PATH', realpath(dirname(__FILE__).'/../').'/');
 defined('BLOCKS_CP_REQUEST') || define('BLOCKS_CP_REQUEST', false);
 
