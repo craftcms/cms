@@ -60,7 +60,7 @@ class bApp extends CWebApplication
 
 			if ($handle != 'app')
 			{
-				Blocks::import("base.plugins.{$handle}.controllers.*");
+				Blocks::import("plugins.{$handle}.controllers.*");
 			}
 			else
 			{
@@ -91,7 +91,7 @@ class bApp extends CWebApplication
 		if ($handle == 'app')
 			$rootFolderPath = $this->path->resourcesPath;
 		else
-			$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+			$rootFolderPath = BLOCKS_PLUGINS_PATH.$handle.'/';
 
 		$rootFolderUrl = bUrlHelper::generateUrl('resources/'.$handle).'/';
 		$relativeResourcePath = implode('/', $segs);

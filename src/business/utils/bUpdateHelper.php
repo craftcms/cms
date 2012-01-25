@@ -16,7 +16,7 @@ class bUpdateHelper
 		foreach ($manifestData as $row)
 		{
 			$rowData = explode(';', $row);
-			$file = Blocks::app()->file->set(Blocks::app()->path->basePath.'../'.$rowData[1].'.bak');
+			$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
 
 			if ($file->exists)
 				$file->rename($rowData[1]);
@@ -38,7 +38,7 @@ class bUpdateHelper
 			{
 				$rowData = explode(';', $row);
 
-				$destFile = Blocks::app()->file->set(Blocks::app()->path->basePath.'../'.$rowData[1]);
+				$destFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
 				$sourceFile = Blocks::app()->file->set($rowData[0].'/'.$rowData[1]);
 
 				switch (trim($rowData[2]))
