@@ -52,7 +52,7 @@ class bCoreUpdater implements bIUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->path->runtimePath.bUpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
+			$downloadFilePath = BLOCKS_RUNTIME_PATH.bUpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
@@ -93,14 +93,14 @@ class bCoreUpdater implements bIUpdater
 	 */
 	public function generateMasterManifest()
 	{
-		$masterManifest = Blocks::app()->file->set(Blocks::app()->path->runtimePath.'manifest_'.uniqid());
+		$masterManifest = Blocks::app()->file->set(BLOCKS_RUNTIME_PATH.'manifest_'.uniqid());
 		$masterManifest->exists ? $masterManifest->delete() : $masterManifest->create();
 
 		$updatedFiles = array();
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->path->runtimePath.bUpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
+			$downloadedFile = BLOCKS_RUNTIME_PATH.bUpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 			$tempDir = bUpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = bUpdateHelper::getManifestData($tempDir->realPath);
@@ -161,7 +161,7 @@ class bCoreUpdater implements bIUpdater
 	 */
 	public function putSiteInMaintenanceMode()
 	{
-		$file = Blocks::app()->file->set(Blocks::app()->path->basePath.'../index.php', false);
+		$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../index.php', false);
 		$contents = $file->contents;
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
 		$file->setContents(null, $contents);
@@ -205,7 +205,7 @@ class bCoreUpdater implements bIUpdater
 				$tempFile->delete();
 
 			// delete the cms files we backed up.
-			$backupFile = Blocks::app()->file->set(Blocks::app()->path->basePath.'../'.$rowData[1].'.bak');
+			$backupFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
 			if ($backupFile->exists)
 				$backupFile->delete();
 		}
@@ -299,7 +299,7 @@ class bCoreUpdater implements bIUpdater
 			foreach ($manifestData as $row)
 			{
 				$rowData = explode(';', $row);
-				$file = Blocks::app()->file->set(Blocks::app()->path->basePath.'../'.$rowData[1]);
+				$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
 
 				// if the file doesn't exist, it's a new file
 				if ($file->exists)

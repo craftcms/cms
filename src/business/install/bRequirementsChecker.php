@@ -16,8 +16,8 @@ class bRequirementsChecker extends CComponent
 	 */
 	private function init()
 	{
-		$dbConfigPath = Blocks::app()->path->configPath.'db.php';
-		$blocksConfigPath = Blocks::app()->path->configPath.'blocks.php';
+		$dbConfigPath = BLOCKS_CONFIG_PATH.'db.php';
+		$blocksConfigPath = BLOCKS_CONFIG_PATH.'blocks.php';
 
 		$requiredPhpVersion = Blocks::app()->params['requiredPhpVersion'];
 		$requiredMysqlVersion = Blocks::app()->params['requiredMysqlVersion'];
@@ -204,8 +204,8 @@ class bRequirementsChecker extends CComponent
 	private function getWritableFolders()
 	{
 		$folders = array(
-			Blocks::app()->file->set(Blocks::getPathOfAlias('base.runtime').DIRECTORY_SEPARATOR, false),
-			//Blocks::app()->file->set(Blocks::getPathOfAlias('application.runtime.cached').DIRECTORY_SEPARATOR, false),
+			Blocks::app()->file->set(BLOCKS_RUNTIME_PATH, false),
+			//Blocks::app()->file->set(BLOCKS_RUNTIME_PATH.'cached/', false),
 		);
 
 		return $folders;

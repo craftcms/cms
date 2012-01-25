@@ -1,18 +1,23 @@
 <?php
 
-require_once(BLOCKS_BASE_PATH.'app/config/defaults/blocks.php');
-require_once(BLOCKS_BASE_PATH.'app/config/defaults/db.php');
-require_once(BLOCKS_BASE_PATH.'config/blocks.php');
-require_once(BLOCKS_BASE_PATH.'config/db.php');
+require_once(BLOCKS_APP_PATH.'config/defaults/blocks.php');
+require_once(BLOCKS_APP_PATH.'config/defaults/db.php');
+require_once(BLOCKS_CONFIG_PATH.'blocks.php');
+require_once(BLOCKS_CONFIG_PATH.'db.php');
 
 Yii::setPathOfAlias('base', BLOCKS_BASE_PATH);
+Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
+Yii::setPathOfAlias('config', BLOCKS_CONFIG_PATH);
+Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
+Yii::setPathOfAlias('runtime', BLOCKS_RUNTIME_PATH);
+Yii::setPathOfAlias('templates', BLOCKS_TEMPLATES_PATH);
 
 if ($blocksConfig['devMode'] == true)
 	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
 
 return array(
-	'basePath'    => BLOCKS_BASE_PATH.'app/',
-	'runtimePath' => Yii::getPathOfAlias('base.runtime'),
+	'basePath'    => BLOCKS_APP_PATH,
+	'runtimePath' => BLOCKS_RUNTIME_PATH,
 	'name'        => 'Blocks',
 
 	'preload'     => array('log'),
@@ -80,6 +85,11 @@ return array(
 		'message' => array(
 			'class' => 'application.business.services.bMessageService',
 		),
+		
+		'install' => array(
+			'class' => 'application.business.services.bInstallService',
+		),
+
 
 		'path' => array(
 			'class' => 'application.business.services.bPathService',
