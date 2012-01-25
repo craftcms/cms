@@ -52,7 +52,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getResourcesPath()
 	{
-		return BLOCKS_APP_PATH.'resources/';
+		return $this->appPath.'resources/';
 	}
 
 	/**
@@ -60,7 +60,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getFrameworkPath()
 	{
-		return BLOCKS_APP_PATH.'framework/';
+		return $this->appPath.'framework/';
 	}
 
 	/**
@@ -68,7 +68,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getCPTemplatePath()
 	{
-		return BLOCKS_APP_PATH.'templates/';
+		return $this->appPath.'templates/';
 	}
 
 	/**
@@ -76,7 +76,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getMigrationsPath()
 	{
-		return BLOCKS_APP_PATH.'migrations/';
+		return $this->appPath.'migrations/';
 	}
 
 	/**
@@ -84,7 +84,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getCommandsPath()
 	{
-		return BLOCKS_APP_PATH.'commands/';
+		return $this->appPath.'commands/';
 	}
 
 	/**
