@@ -42,4 +42,13 @@ abstract class bBaseController extends CController
 
 		throw new bHttpException(404);
 	}
+
+	/**
+	 * Returns a 404 if this isn't a POST request
+	 */
+	public function requirePostRequest()
+	{
+		if (Blocks::app()->request->requestType !== 'POST')
+			throw new bHttpException(404);
+	}
 }

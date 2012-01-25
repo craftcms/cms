@@ -5,40 +5,36 @@
  */
 class bInstallController extends bBaseController
 {
+	public function init()
+	{
+		// Return a 404 if Blocks is already installed
+		if (!Blocks::app()->getConfig('devMode') && Blocks::app()->install->isBlocksInstalled)
+			throw new bHttpException(404);
+	}
+
 	/**
 	 */
 	public function actionIndex()
 	{
-		$this->ensureBlocksIsUninstalled();
-
 		$reqCheck = new bRequirementsChecker();
 		$reqCheck->run();
 
 		if ($reqCheck->result !== bInstallStatus::Failure)
-		{
 			$this->loadTemplate('install');
-		}
 		else
-		{
 			$this->loadTemplate('install/cantinstall', array('requirements' => $reqCheck->requirements));
-		}
 	}
 
 	public function actionInstall()
 	{
-		$this->ensureBlocksIsUninstalled();
+		// This must be a POST request
+		$this->requirePostRequest();
 
-		die('installing!');
-	}
+		// Run the installer
+		Blocks::app()->install->installBlocks();
 
-	/**
-	 * Ensures that Blocks is uninstalled, or returns a 404
-	 */
-	private function ensureBlocksIsUninstalled()
-	{
-		// Return a 404 if Blocks is installed
-		if (!Blocks::app()->getConfig('devMode') && Blocks::app()->isInstalled)
-			throw new bHttpException(404);
+		// TODO: redirect to the setup wizard
+		die('Blocks is installed!');
 	}
 
 	/**

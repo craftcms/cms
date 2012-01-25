@@ -31,7 +31,8 @@ class bApp extends CWebApplication
 		// Is this an install request?
 		if ($this->request->mode == bRequestMode::CP && $this->request->getPathSegment(1) === 'install')
 		{
-			$this->runController('bInstall');
+			$action = $this->request->getPathSegment(2, 'index');
+			$this->runController('bInstall/'.$action);
 		}
 
 		// Ensure that Blocks is installed

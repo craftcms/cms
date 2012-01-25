@@ -834,7 +834,9 @@ class bFile extends CApplicationComponent
 					$passed = (bool)substr_count($str, $rule, strlen($str) - strlen($rule));
 				}
 				else
+				{
 					$passed = (bool)preg_match($rule, $str);
+				}
 
 				if ($passed)
 					break;

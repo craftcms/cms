@@ -15,6 +15,23 @@ abstract class bBaseModel extends CActiveRecord
 	protected $_tblName;
 
 	/**
+	 * Constructor
+	 */
+	public function __construct($scenario = 'insert')
+	{
+		// If Blocks isn't installed, this model's table won't exist yet,
+		// so just create an instance of the class, for use by the installer
+		if (!Blocks::app()->isInstalled)
+		{
+			// Just do the bare minimum of constructor-type stuff.
+			// Maybe init() is all that's necessary?
+			$this->init();
+		}
+		else
+			parent::__construct($scenario);
+	}
+
+	/**
 	 * @param bool $names
 	 * @return string The model's table name
 	 */

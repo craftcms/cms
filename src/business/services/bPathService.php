@@ -82,6 +82,14 @@ class bPathService extends CApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getModelsPath()
+	{
+		return $this->appPath.'models/';
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getCommandsPath()
 	{
 		return $this->appPath.'commands/';
