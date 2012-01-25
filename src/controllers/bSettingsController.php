@@ -87,9 +87,17 @@ class bSettingsController extends bBaseController
 
 				if (Blocks::app()->email->saveEmailSettings($settings))
 				{
+					Blocks::app()->user->setMessage(bMessageStatus::Success, 'Settings updated successfully.');
 					$this->redirect(bUrlHelper::generateUrl('settings/info'));
 				}
 			}
+
+			$messages = array();
+			foreach ($model->getErrors() as $error)
+				foreach ($error as $innerError)
+					$messages[] = $innerError;
+
+			Blocks::app()->user->setMessage(bMessageStatus::Error, $messages);
 		}
 
 		// display the login form
