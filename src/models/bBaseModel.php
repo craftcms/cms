@@ -12,7 +12,7 @@ abstract class bBaseModel extends CActiveRecord
 	protected $hasContent = array();
 	protected $hasMany = array();
 	protected $hasOne = array();
-	protected $_tblName;
+	protected $_tableName;
 
 	/**
 	 * Constructor
@@ -37,7 +37,7 @@ abstract class bBaseModel extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return '{{'.$this->tblName.'}}';
+		return '{{'.$this->getTableName().'}}';
 	}
 
 	/**
@@ -45,17 +45,17 @@ abstract class bBaseModel extends CActiveRecord
 	 * @return string The table name
 	 * @access protected
 	 */
-	protected function getTblName()
+	protected function getTableName()
 	{
-		if (!isset($this->_tblName))
+		if (!isset($this->_tableName))
 		{
 			if (isset($this->tableName))
-				$this->_tblName = $this->tableName;
+				$this->_tableName = $this->tableName;
 			else
-				$this->_tblName = strtolower(get_class($this));
+				$this->_tableName = strtolower(get_class($this));
 		}
 
-		return $this->_tblName;
+		return $this->_tableName;
 	}
 
 	/**
@@ -211,8 +211,8 @@ abstract class bBaseModel extends CActiveRecord
 		$connection = Blocks::app()->db;
 
 		// make sure that the table doesn't already exist
-		if ($connection->schema->getTable('{{'.$this->tblName.'}}') !== null)
-			throw new bException($this->tblName.' already exists.');
+		if ($connection->schema->getTable('{{'.$this->getTableName().'}}') !== null)
+			throw new bException($this->getTableName().' already exists.');
 
 		$columns['id'] = bAttributeType::PK;
 
@@ -237,11 +237,11 @@ abstract class bBaseModel extends CActiveRecord
 		try
 		{
 			// create the table
-			$connection->createCommand()->createTable('{{'.$this->tblName.'}}', $columns);
+			$connection->createCommand()->createTable('{{'.$this->getTableName().'}}', $columns);
 
 			// add the insert and update triggers
-			bDatabaseHelper::createInsertAuditTrigger($this->tblName);
-			bDatabaseHelper::createUpdateAuditTrigger($this->tblName);
+			bDatabaseHelper::createInsertAuditTrigger($this->getTableName());
+			bDatabaseHelper::createUpdateAuditTrigger($this->getTableName());
 		}
 		catch (Exception $e)
 		{
@@ -264,8 +264,8 @@ abstract class bBaseModel extends CActiveRecord
 			foreach ($this->belongsTo as $name => $settings)
 			{
 				$otherTableName = strtolower($settings['model']);
-				$fkName = $this->tblName.'_'.$otherTableName.'_fk';
-				$connection->createCommand()->addForeignKey($fkName, '{{'.$this->tblName.'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id');
+				$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
+				$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id');
 			}
 		}
 		catch (Exception $e)
@@ -289,8 +289,8 @@ abstract class bBaseModel extends CActiveRecord
 			foreach ($this->belongsTo as $name => $settings)
 			{
 				$otherTableName = strtolower($settings['model']);
-				$fkName = $this->tblName.'_'.$otherTableName.'_fk';
-				$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->tblName.'}}');
+				$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
+				$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->getTableName().'}}');
 			}
 		}
 		catch (Exception $e)
@@ -307,9 +307,9 @@ abstract class bBaseModel extends CActiveRecord
 	{
 		$connection = Blocks::app()->db;
 
-		if ($connection->schema->getTable($this->tblName) !== null)
+		if ($connection->schema->getTable($this->getTableName()) !== null)
 		{
-			$connection->createCommand()->dropTable($this->tblName);
+			$connection->createCommand()->dropTable($this->getTableName());
 		}
 	}
 
