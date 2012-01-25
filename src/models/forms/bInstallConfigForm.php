@@ -13,7 +13,6 @@ class bInstallConfigForm extends CFormModel
 	public $adminLastName;
 	public $adminPassword;
 	public $adminPasswordConfirm;
-	public $requirementsInfo;
 
 	/**
 	 * @return array
@@ -28,15 +27,6 @@ class bInstallConfigForm extends CFormModel
 			//array('adminEmail', 'unique', 'allowEmpty' => false, 'className' => 'bUser', 'attributeName' => 'email', 'caseSensitive' => false),
 			//array('adminUserName', 'unique', 'allowEmpty' => false, 'className' => 'bUser', 'attributeName' => 'username', 'caseSensitive' => false),
 		);
-	}
-
-	/**
-	 */
-	public function checkRequirements()
-	{
-		$requirementsInfo = new bRequirementsChecker();
-		$requirementsInfo->run();
-		$this->requirementsInfo = $requirementsInfo;
 	}
 
 	/**

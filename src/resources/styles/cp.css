@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Basic elements
 /* ----------------------------------------*/
 
-body { padding-top: 40px; font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fff; }
+body { font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #fff; }
 
 h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
@@ -79,7 +79,7 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 #nav li#nav-account a img { display: block; float: left; margin: 8px 7px 0 0; border-radius: 2px; width: 24px; height: 24px; -webkit-box-shadow: 0 1px 5px #000; }
 
 /*-- body --*/
-#body { position: relative; width: 100%; }
+#body { position: absolute; top: 40px; width: 100%; }
 
 /*-- main --*/
 #main { position: relative; padding: 20px; }
