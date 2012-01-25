@@ -232,22 +232,12 @@ abstract class bBaseModel extends CActiveRecord
 		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
 		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true));
 
-		// start the transaction
-		$transaction = $connection->beginTransaction();
-		try
-		{
-			// create the table
-			$connection->createCommand()->createTable('{{'.$this->getTableName().'}}', $columns);
+		// create the table
+		$connection->createCommand()->createTable('{{'.$this->getTableName().'}}', $columns);
 
-			// add the insert and update triggers
-			bDatabaseHelper::createInsertAuditTrigger($this->getTableName());
-			bDatabaseHelper::createUpdateAuditTrigger($this->getTableName());
-		}
-		catch (Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
+		// add the insert and update triggers
+		bDatabaseHelper::createInsertAuditTrigger($this->getTableName());
+		bDatabaseHelper::createUpdateAuditTrigger($this->getTableName());
 	}
 
 	/**
@@ -257,21 +247,11 @@ abstract class bBaseModel extends CActiveRecord
 	{
 		$connection = Blocks::app()->db;
 
-		// start the transaction
-		$transaction = $connection->beginTransaction();
-		try
+		foreach ($this->belongsTo as $name => $settings)
 		{
-			foreach ($this->belongsTo as $name => $settings)
-			{
-				$otherTableName = strtolower($settings['model']);
-				$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
-				$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id');
-			}
-		}
-		catch (Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
+			$otherTableName = strtolower($settings['model']);
+			$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
+			$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id');
 		}
 	}
 
@@ -282,21 +262,11 @@ abstract class bBaseModel extends CActiveRecord
 	{
 		$connection = Blocks::app()->db;
 
-		// start the transaction
-		$transaction = $connection->beginTransaction();
-		try
+		foreach ($this->belongsTo as $name => $settings)
 		{
-			foreach ($this->belongsTo as $name => $settings)
-			{
-				$otherTableName = strtolower($settings['model']);
-				$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
-				$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->getTableName().'}}');
-			}
-		}
-		catch (Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
+			$otherTableName = strtolower($settings['model']);
+			$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
+			$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->getTableName().'}}');
 		}
 	}
 
