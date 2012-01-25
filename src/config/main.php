@@ -74,7 +74,11 @@ return array(
 		),
 
 		'et' => array(
-			'class' => 'application.business.services.BEtService',
+			'class' => 'application.business.services.bEtService',
+		),
+
+		'message' => array(
+			'class' => 'application.business.services.bMessageService',
 		),
 
 		'path' => array(
@@ -98,7 +102,7 @@ return array(
 		),
 
 		'update' => array(
-					'class' => 'application.business.services.bUpdateService',
+			'class' => 'application.business.services.bUpdateService',
 		),
 
 		'users' => array(
