@@ -44,6 +44,11 @@ class bInstallService extends CApplicationComponent
 			{
 				$model->addForeignKeys();
 			}
+
+			foreach ($models as $model)
+			{
+				$model->addIndexes();
+			}
 		}
 		catch (Exception $e)
 		{

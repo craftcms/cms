@@ -28,6 +28,10 @@ class bSite extends bBaseModel
 		'sections'     => array('model' => 'bSection', 'foreignKey' => 'site')
 	);
 
+	protected $indexes = array(
+		array('column' => 'handle', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

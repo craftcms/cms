@@ -17,6 +17,10 @@ class bPlugin extends bBaseModel
 		'settings' => array('model' => 'bPluginSetting', 'foreignKey' => 'plugin')
 	);
 
+	protected $indexes = array(
+		array('column' => 'name', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

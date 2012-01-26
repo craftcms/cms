@@ -20,6 +20,10 @@ class bAssetFolder extends bBaseModel
 		'assets' => array('model' => 'bAsset', 'foreignKey' => 'folder')
 	);
 
+	protected $indexes = array(
+		array('column' => 'name,site_id', 'unique' => true)
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

@@ -17,6 +17,14 @@ class bContentBlock extends bBaseModel
 		'instructions' => array('type' => bAttributeType::Text)
 	);
 
+	protected $belongsTo = array(
+		'site' => array('model' => 'bSite', 'required' => true)
+	);
+
+	protected $indexes = array(
+		array('column' => 'site_id,handle', 'unique' => true)
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @static

@@ -31,6 +31,10 @@ class bEntry extends bBaseModel
 		'children' => array('model' => 'bEntry', 'foreignKey' => 'parent')
 	);
 
+	protected $indexes = array(
+		array('column' => 'section_id, parent_id, sort_order', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

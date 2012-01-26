@@ -13,6 +13,10 @@ abstract class bBaseSettingsModel extends bBaseModel
 		'value' => array('type' => bAttributeType::Text)
 	);
 
+	protected $indexes = array(
+		array('column' => 'key', 'unique' => true),
+	);
+
 	/**
 	 * Dynamically set $this->belongsTo from $this->foreignKey and $this->model, if they're set
 	 */

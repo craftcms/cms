@@ -22,6 +22,10 @@ class bUserGroup extends bBaseModel
 		'permissions' => array('model' => 'bUserGroupPermission', 'foreignKey' => 'group')
 	);
 
+	protected $indexes = array(
+		array('column' => 'name', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

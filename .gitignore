@@ -6,3 +6,5 @@ Thumbs.db
 /aspnet_client/*
 
 Source/webgrind/
+Source/blocks/config/blocks.php
+Source/blocks/config/db.php

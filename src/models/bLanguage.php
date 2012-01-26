@@ -11,6 +11,10 @@ class bLanguage extends bBaseModel
 		'language_code' => array('type' => bAttributeType::String, 'maxLength' => 5)
 	);
 
+	protected $indexes = array(
+		array('column' => 'language_code', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

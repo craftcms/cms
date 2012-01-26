@@ -8,6 +8,7 @@ abstract class bBaseModel extends CActiveRecord
 	protected $tableName;
 	protected $attributes = array();
 	protected $belongsTo = array();
+	protected $indexes = array();
 	protected $hasBlocks = array();
 	protected $hasContent = array();
 	protected $hasMany = array();
@@ -16,6 +17,7 @@ abstract class bBaseModel extends CActiveRecord
 
 	/**
 	 * Constructor
+	 * @param string $scenario
 	 */
 	public function __construct($scenario = 'insert')
 	{
@@ -32,7 +34,6 @@ abstract class bBaseModel extends CActiveRecord
 	}
 
 	/**
-	 * @param bool $names
 	 * @return string The model's table name
 	 */
 	public function tableName()
@@ -240,6 +241,34 @@ abstract class bBaseModel extends CActiveRecord
 		bDatabaseHelper::createUpdateAuditTrigger($this->getTableName());
 	}
 
+	public function addIndexes()
+	{
+		$connection = Blocks::app()->db;
+
+		// manually add unique index to id.
+		$connection->createCommand()->createIndex('id_unique', Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName(), 'id', true);
+
+		foreach ($this->indexes as $index)
+		{
+			$unique = false;
+			if (isset($index['unique']) && $index['unique'] == true)
+				$unique = true;
+
+			$name = '';
+			$cols = explode(',', $index['column']);
+
+			foreach ($cols as $col)
+				$name .= $col.'_';
+
+			if ($unique)
+				$name .= 'unique_';
+
+			$name .= 'idx';
+
+			$connection->createCommand()->createIndex($name, Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName(), $index['column'], $unique);
+		}
+	}
+
 	/**
 	 * Adds foreign keys to the model's table
 	 */
@@ -251,7 +280,7 @@ abstract class bBaseModel extends CActiveRecord
 		{
 			$otherModel = new $settings['model'];
 			$fkName = Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName().'_'.$otherModel->getTableName().'_fk';
-			$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherModel->getTableName().'}}', 'id');
+			$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherModel->getTableName().'}}', 'id', 'NO ACTION', 'NO ACTION');
 		}
 	}
 

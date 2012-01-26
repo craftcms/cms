@@ -11,6 +11,11 @@ class bLicenseKey extends bBaseModel
 		'key' => array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true)
 	);
 
+	protected $indexes = array(
+		array('column' => 'key', 'unique' => true),
+		array('column' => 'key'),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

@@ -34,6 +34,11 @@ class bUser extends bBaseModel
 		'widgets' => array('model' => 'bUserWidget', 'foreignKey' => 'user')
 	);
 
+	protected $indexes = array(
+		array('column' => 'username', 'unique' => true),
+		array('column' => 'email', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

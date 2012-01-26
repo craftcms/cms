@@ -29,6 +29,10 @@ class bSection extends bBaseModel
 		'children' => array('model' => 'bSection', 'foreignKey' => 'parent')
 	);
 
+	protected $indexes = array(
+		array('column' => 'handle', 'unique' => true),
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance
