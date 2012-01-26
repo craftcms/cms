@@ -12,7 +12,7 @@ abstract class bBaseContentModel extends bBaseModel
 		'num'    => array('type' => bAttributeType::Integer, 'required' => true, 'unsigned' => true),
 		'label'  => array('type' => bAttributeType::String, 'maxLength' => 150),
 		'active' => array('type' => bAttributeType::Boolean, 'required' => true),
-		'type'   => array('type' => bAttributeType::Enum, 'values' => 'published,draft,autosave', 'default' => 'draft', 'required' => true),
+		'type'   => array('type' => bAttributeType::Enum, 'values' => array('published','draft','autosave'), 'default' => 'draft', 'required' => true),
 	);
 
 	/**

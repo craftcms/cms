@@ -249,9 +249,9 @@ abstract class bBaseModel extends CActiveRecord
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
-			$otherTableName = strtolower($settings['model']);
-			$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
-			$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id');
+			$otherModel = new $settings['model'];
+			$fkName = Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName().'_'.$otherModel->getTableName().'_fk';
+			$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherModel->getTableName().'}}', 'id');
 		}
 	}
 
@@ -264,8 +264,8 @@ abstract class bBaseModel extends CActiveRecord
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
-			$otherTableName = strtolower($settings['model']);
-			$fkName = $this->getTableName().'_'.$otherTableName.'_fk';
+			$otherModel = new $settings['model'];
+			$fkName = Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName().'_'.$otherModel->getTableName().'_fk';
 			$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->getTableName().'}}');
 		}
 	}

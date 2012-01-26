@@ -46,6 +46,17 @@ class bDatabaseHelper
 			}
 		}
 
+		if ($settings['type'] == bAttributeType::Enum)
+		{
+			$def = 'ENUM(';
+			foreach ($settings['values'] as $i => $value)
+			{
+				if ($i > 0) $def .= ',';
+				$def .= '\''.addslashes($value).'\'';
+			}
+			$def .= ')';
+		}
+
 		if (isset($settings['unsigned']) && $settings['unsigned'] === true)
 			$def .= ' UNSIGNED';
 
@@ -62,7 +73,7 @@ class bDatabaseHelper
 			if (is_string($settings['default']) && !is_numeric($settings['default']))
 				$def .= ' DEFAULT "'.$settings['default'].'"';
 			else
-				$def .= ' DEFAULT '.$settings['default'];
+				$def .= ' DEFAULT '.(int)$settings['default'];
 		}
 
 		if (isset($settings['unique']) && $settings['unique'] === true)

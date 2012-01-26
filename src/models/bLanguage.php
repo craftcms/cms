@@ -3,7 +3,7 @@
 /**
  *
  */
-class bLanguage
+class bLanguage extends bBaseModel
 {
 	protected $tableName = 'languages';
 
