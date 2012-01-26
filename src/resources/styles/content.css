@@ -6,7 +6,7 @@ body { background: #b2b8c0; }
 #main .page .editable:hover { padding-right: 18px; background: url(../images/edit-icon.png) no-repeat 100% 50%; }
 #main .page .null { color: #aaa; }
 
-#main .page .field { position: relative; padding: 20px 80px; border-bottom: 1px dotted #eee; background: -webkit-gradient(linear, 0 50%, 0 100%, from(#fff), to(#fcfcfc)) repeat-x 0 100%; }
+#main .page .field { position: relative; padding: 20px 80px; border-bottom: 1px dotted #eee; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
 #main .page .field label { display: block; margin-bottom: 5px; font-size: 12px; font-weight: bold; color: #666; }
 
 #main .page .page-head { padding: 40px 80px 20px; border-radius: 4px 4px 0 0; }
