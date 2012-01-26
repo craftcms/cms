@@ -9,7 +9,7 @@ class bUserGroupMember extends bBaseModel
 
 	protected $belongsTo = array(
 		'user'  => array('model' => 'bUser', 'required' => true),
-		'group' => array('model' => 'Groups', 'required' => true)
+		'group' => array('model' => 'bUserGroup', 'required' => true)
 	);
 
 	/**

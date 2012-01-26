@@ -21,8 +21,8 @@ abstract class bBaseContentModel extends bBaseModel
 	public function init()
 	{
 		$this->belongsTo = array(
-			$this->foreignKey => $this->model,
-			'content'         => 'bContent'
+			$this->foreignKey => array('model' => $this->model, 'required' => true),
+			'content'         => array('model' => 'bContent', 'required' => true)
 		);
 	}
 

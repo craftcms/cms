@@ -19,8 +19,8 @@ abstract class bBaseBlocksModel extends bBaseModel
 	public function init()
 	{
 		$this->belongsTo = array(
-			$this->foreignKey => $this->model,
-			'block'           => 'bContentBlock'
+			$this->foreignKey => array('model' => $this->model, 'required' => true),
+			'block'           => array('model' => 'bContentBlock', 'required' => true)
 		);
 	}
 
