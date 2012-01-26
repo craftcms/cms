@@ -17,7 +17,7 @@ class bUpdateController extends bBaseController
 		$blocksUpdateInfo = Blocks::app()->update->updateInfo;
 		if ($blocksUpdateInfo == null)
 		{
-			echo CJSON::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
+			echo bJson::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
 			return;
 		}
 
@@ -55,19 +55,19 @@ class bUpdateController extends bBaseController
 						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo->plugins[$h]->handle, 'name' => $this->_blocksUpdateInfo->plugins[$h]->displayName, 'version' => $this->_blocksUpdateInfo->plugins[$h]->latestVersion);
 					else
 					{
-						echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
+						echo bJson::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
 						return;
 					}
 				}
 				else
 				{
-					echo CJSON::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
+					echo bJson::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
 					return;
 				}
 			}
 		}
 
-		echo CJSON::encode(array('updateInfo' => $returnUpdateInfo));
+		echo bJson::encode(array('updateInfo' => $returnUpdateInfo));
 		return;
 	}
 
@@ -84,11 +84,11 @@ class bUpdateController extends bBaseController
 				try
 				{
 					if (Blocks::app()->update->doCoreUpdate())
-						echo CJSON::encode(array('success' => true));
+						echo bJson::encode(array('success' => true));
 				}
 				catch (bException $ex)
 				{
-					echo CJSON::encode(array('error' => $ex->getMessage(), 'fatal' => true));
+					echo bJson::encode(array('error' => $ex->getMessage(), 'fatal' => true));
 				}
 
 				return;
@@ -100,11 +100,11 @@ class bUpdateController extends bBaseController
 				try
 				{
 					if (Blocks::app()->update->doPluginUpdate($h))
-						echo CJSON::encode(array('success' => true));
+						echo bJson::encode(array('success' => true));
 				}
 				catch (bException $ex)
 				{
-					echo CJSON::encode(array('error' => $ex->getMessage(), 'fatal' => false));
+					echo bJson::encode(array('error' => $ex->getMessage(), 'fatal' => false));
 				}
 
 				return;

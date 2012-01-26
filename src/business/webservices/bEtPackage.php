@@ -31,13 +31,13 @@ class bEtPackage
 	 */
 	public function encodeAndEcho()
 	{
-		echo CJSON::encode($this);
+		echo bJson::encode($this);
 	}
 
 	/*
 	 */
 	public function decode()
 	{
-		echo CJSON::decode($this);
+		echo bJson::decode($this);
 	}
 }

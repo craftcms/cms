@@ -56,7 +56,7 @@ class bEt
 				'maxredirects'  =>  $this->_maxRedirects
 			));
 
-			$client->setRawData(CJSON::encode($this->_package), 'json');
+			$client->setRawData(bJson::encode($this->_package), 'json');
 
 			if ($this->_streamPath !== null)
 				$client->setStream($this->_streamPath);
@@ -68,7 +68,7 @@ class bEt
 				if ($this->_streamPath !== null)
 					return true;
 
-				$packageData = CJSON::decode($response->getBody());
+				$packageData = bJson::decode($response->getBody());
 				$package = new bEtPackage($packageData);
 
 				// we set the license key status on every request
