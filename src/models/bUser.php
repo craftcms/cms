@@ -15,6 +15,7 @@ class bUser extends bBaseModel
 		'password'                              => array('type' => bAttributeType::String,  'maxLength' => 128, 'required' => true),
 		'enc_type'                              => array('type' => bAttributeType::String,  'maxLength' => 32, 'required' => true),
 		'auth_token'                            => array('type' => bAttributeType::String,  'maxLength' => 32),
+		'is_admin'                              => array('type' => bAttributeType::Boolean, 'unsigned'  => true),
 		'html_email'                            => array('type' => bAttributeType::Boolean, 'unsigned'  => true),
 		'password_reset_required'               => array('type' => bAttributeType::Boolean, 'unsigned'  => true),
 		'last_login_date'                       => array('type' => bAttributeType::Integer, 'maxLength' => 11),
