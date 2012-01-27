@@ -11,7 +11,7 @@ class bContentBlock extends bBaseModel
 	 * @return array
 	 */
 	protected $attributes = array(
-		'label'        => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
+		'name'         => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
 		'handle'       => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
 		'class'        => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
 		'instructions' => array('type' => bAttributeType::Text)

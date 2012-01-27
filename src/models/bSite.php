@@ -8,7 +8,7 @@ class bSite extends bBaseModel
 	protected $tableName = 'sites';
 
 	protected $attributes = array(
-		'label'  => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true, 'unique' => true),
+		'name'   => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true, 'unique' => true),
 		'handle' => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true, 'unique' => true),
 		'url'    => array('type' => bAttributeType::String, 'required' => true)
 	);
