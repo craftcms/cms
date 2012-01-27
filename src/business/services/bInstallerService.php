@@ -3,12 +3,12 @@
 /**
  *
  */
-class bInstallService extends CApplicationComponent
+class bInstallerService extends CApplicationComponent
 {
 	/**
-	 * Installs Blocks
+	 * Run the installer
 	 */
-	public function installBlocks()
+	public function run()
 	{
 		if (Blocks::app()->isInstalled)
 			throw new bException('Blocks is already installed.');

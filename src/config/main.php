@@ -82,8 +82,8 @@ return array(
 			'class' => 'application.business.services.bEtService',
 		),
 
-		'install' => array(
-			'class' => 'application.business.services.bInstallService',
+		'installer' => array(
+			'class' => 'application.business.services.bInstallerService',
 		),
 
 		'path' => array(

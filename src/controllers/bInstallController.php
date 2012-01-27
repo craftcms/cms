@@ -34,7 +34,7 @@ class bInstallController extends bBaseController
 		// Run the installer
 		try
 		{
-			Blocks::app()->install->installBlocks();
+			Blocks::app()->installer->run();
 
 			$r = array('success' => true);
 		}
