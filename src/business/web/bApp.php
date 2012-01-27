@@ -183,15 +183,7 @@ class bApp extends CWebApplication
 		{
 			if (get_class($this->request) == 'bHttpRequest')
 			{
-				if (BLOCKS_CP_REQUEST !== true)
-				{
-					$this->_templatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->siteTemplatePath).'/');
-				}
-				else
-				{
-					$this->_cpTemplatePath = $this->path->normalizeDirectorySeparators(realpath($this->path->cpTemplatePath).'/');
-					$this->_templatePath = $this->_cpTemplatePath;
-				}
+				$this->_templatePath = $this->path->templatePath;
 			}
 			else
 			{
