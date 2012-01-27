@@ -8,7 +8,7 @@ class bUserGroup extends bBaseModel
 	protected $tableName = 'usergroups';
 
 	protected $attributes = array(
-		'name'        => array('type' => bAttributeType::String, 'required' => true),
+		'name'        => array('type' => bAttributeType::String, 'required' => true, 'unique' => true),
 		'description' => array('type' => bAttributeType::Text)
 	);
 
@@ -20,10 +20,6 @@ class bUserGroup extends bBaseModel
 		'members'     => array('model' => 'bUserGroupMembers', 'foreignKey' => 'user'),
 		'users'       => array('model' => 'bUser', 'through' => 'bUserGroupMembers', 'foreignKey' => array('group'=>'user')),
 		'permissions' => array('model' => 'bUserGroupPermission', 'foreignKey' => 'group')
-	);
-
-	protected $indexes = array(
-		array('column' => 'name', 'unique' => true),
 	);
 
 	/**

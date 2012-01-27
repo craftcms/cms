@@ -6,7 +6,6 @@
 class bAssetBlock extends bBaseBlocksModel
 {
 	protected $tableName = 'assetblocks';
-
 	protected $model = 'bAsset';
 	protected $foreignKey = 'asset';
 

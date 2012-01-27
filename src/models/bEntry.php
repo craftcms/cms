@@ -9,7 +9,7 @@ class bEntry extends bBaseModel
 
 	protected $attributes = array(
 		'slug'        => array('type' => bAttributeType::String),
-		'full_uri'    => array('type' => bAttributeType::String, 'maxLength' => 1000),
+		'full_uri'    => array('type' => bAttributeType::String, 'maxLength' => 1000, 'unique' => true),
 		'post_date'   => array('type' => bAttributeType::Integer),
 		'expiry_date' => array('type' => bAttributeType::Integer),
 		'sort_order'  => array('type' => bAttributeType::Integer, 'unsigned' => true),
@@ -32,7 +32,7 @@ class bEntry extends bBaseModel
 	);
 
 	protected $indexes = array(
-		array('column' => 'section_id, parent_id, sort_order', 'unique' => true),
+		array('columns' => array('section_id','slug'), 'unique' => true),
 	);
 
 	/**

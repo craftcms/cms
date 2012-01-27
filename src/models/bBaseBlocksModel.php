@@ -22,6 +22,10 @@ abstract class bBaseBlocksModel extends bBaseModel
 			$this->foreignKey => array('model' => $this->model, 'required' => true),
 			'block'           => array('model' => 'bContentBlock', 'required' => true)
 		);
+
+		$this->indexes = array(
+			array('columns' => array($this->foreignKey.'_id', 'block_id'), 'unique' => true)
+		);
 	}
 
 	/**

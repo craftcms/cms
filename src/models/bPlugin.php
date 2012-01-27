@@ -8,17 +8,13 @@ class bPlugin extends bBaseModel
 	protected $tableName = 'plugins';
 
 	protected $attributes = array(
-		'name'    => array('type' => bAttributeType::String, 'maxLength' => 50),
+		'name'    => array('type' => bAttributeType::String, 'maxLength' => 50, 'unique' => true),
 		'version' => array('type' => bAttributeType::String, 'maxLength' => 15),
 		'enabled' => array('type' => bAttributeType::Boolean, 'default' => true, 'required' => true, 'unsigned' => true)
 	);
 
 	protected $hasMany = array(
 		'settings' => array('model' => 'bPluginSetting', 'foreignKey' => 'plugin')
-	);
-
-	protected $indexes = array(
-		array('column' => 'name', 'unique' => true),
 	);
 
 	/**

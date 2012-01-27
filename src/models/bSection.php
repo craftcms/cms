@@ -8,8 +8,8 @@ class bSection extends bBaseModel
 	protected $tableName = 'sections';
 
 	protected $attributes = array(
+		'name'        => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
 		'handle'      => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
-		'label'       => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
 		'url_format'  => array('type' => bAttributeType::String),
 		'max_entries' => array('type' => bAttributeType::Integer, 'unsigned' => true),
 		'template'    => array('type' => bAttributeType::String, 'maxLength' => 500),
@@ -30,7 +30,8 @@ class bSection extends bBaseModel
 	);
 
 	protected $indexes = array(
-		array('column' => 'handle', 'unique' => true),
+		array('columns' => array('site_id', 'name'), 'unique' => true),
+		array('columns' => array('site_id', 'handle'), 'unique' => true),
 	);
 
 	/**

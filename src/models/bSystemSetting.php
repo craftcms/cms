@@ -7,14 +7,17 @@ class bSystemSetting extends bBaseSettingsModel
 {
 	protected $tableName = 'systemsettings';
 
+	protected $indexes = array(
+		array('columns' => array('category','key'), 'unique' => true)
+	);
+
 	/**
-	 * Add a category attribute to system settings as well as a unique index on category and key.
+	 * Init
 	 */
 	function init()
 	{
-		parent::init();
-		$this->attributes['category'] = array('type' => bAttributeType::String, 'maxLength' => 250, 'required' => true);
-		$this->indexes[] = array('column' => 'category, key', 'unique' => true);
+		// Add the `category` attribute
+		$this->attributes['category'] = array('type' => bAttributeType::String, 'required' => true);
 	}
 
 	/**

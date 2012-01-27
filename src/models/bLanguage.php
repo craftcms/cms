@@ -8,11 +8,7 @@ class bLanguage extends bBaseModel
 	protected $tableName = 'languages';
 
 	protected $attributes = array(
-		'language_code' => array('type' => bAttributeType::String, 'maxLength' => 5)
-	);
-
-	protected $indexes = array(
-		array('column' => 'language_code', 'unique' => true),
+		'language_code' => array('type' => bAttributeType::String, 'maxLength' => 5, 'unique' => true)
 	);
 
 	/**
