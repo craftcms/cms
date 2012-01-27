@@ -173,6 +173,14 @@ class bApp extends CWebApplication
 	}
 
 	/**
+	 * Updates isInstalled
+	 */
+	public function setIsInstalled($isInstalled)
+	{
+		$this->_isInstalled = (bool)$isInstalled;
+	}
+
+	/**
 	 * Gets the viewPath for the incoming request.
 	 * We can't use setViewPath() because our view path depends on the request type, which is initialized after web application, so we override getViewPath();
 	 * @return mixed

@@ -29,21 +29,31 @@ class bInstallService extends CApplicationComponent
 			$models[] = new $fileName;
 		}
 
-		// start the transaction
+		// Start the transaction
 		$transaction = Blocks::app()->db->beginTransaction();
 		try
 		{
-			// create the tables
+			// Create the tables
 			foreach ($models as $model)
 			{
 				$model->createTable();
 			}
 
-			// create the foreign keys
+			// Create the foreign keys
 			foreach ($models as $model)
 			{
 				$model->addForeignKeys();
 			}
+
+			// Tell Blocks that it's installed now
+			Blocks::app()->isInstalled = true;
+
+			// Populate the info table
+			$info = new bInfo;
+			$info->edition = Blocks::getEdition(false);
+			$info->version = Blocks::getVersion(false);
+			$info->build = Blocks::getBuild(false);
+			$info->save();
 
 			$transaction->commit();
 		}
