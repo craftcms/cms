@@ -18,6 +18,18 @@ abstract class bBaseController extends CController
 		return $module->getViewPath().'/';
 	}
 
+	public function getViewFile($viewName)
+	{
+		if (($theme = Blocks::app()->getTheme()) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
+			return $viewFile;
+
+		$moduleViewPath = $basePath = Blocks::app()->getViewPath();
+		if (($module = $this->getModule()) !== null)
+			$moduleViewPath = $module->getViewPath();
+
+		return $this->resolveViewFile($viewName, $this->getViewPath(), $basePath, $moduleViewPath);
+	}
+
 	/**
 	 * Loads a template
 	 * @param       $relativeTemplatePath
@@ -41,6 +53,29 @@ abstract class bBaseController extends CController
 			return $this->renderPartial($relativeTemplatePath, $data, $return);
 
 		throw new bHttpException(404);
+	}
+
+	/**
+	 * @param $relativeTemplatePath
+	 * @param array $data
+	 * @return mixed
+	 */
+	public function loadEmailTemplate($relativeTemplatePath, $data = array())
+	{
+		if (!is_array($data))
+			$data = array();
+
+		foreach ($data as &$tag)
+		{
+			$tag = bTemplateHelper::getVarTag($tag);
+		}
+
+		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->path->emailTemplatePath);
+
+		if (bTemplateHelper::findFileSystemMatch($baseTemplatePath, $relativeTemplatePath) !== false)
+			return $this->renderPartial($relativeTemplatePath, $data, true);
+
+		// exception?
 	}
 
 	/**
