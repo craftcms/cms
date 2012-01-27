@@ -49,6 +49,8 @@ class bInstallService extends CApplicationComponent
 			{
 				$model->addIndexes();
 			}
+
+			$transaction->commit();
 		}
 		catch (Exception $e)
 		{
