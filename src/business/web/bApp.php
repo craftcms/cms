@@ -9,6 +9,7 @@ class bApp extends CWebApplication
 	private $_cpTemplatePath;
 	private $_layoutPath;
 	private $_isInstalled;
+	private $_isSetup;
 
 	public function init()
 	{
@@ -28,29 +29,51 @@ class bApp extends CWebApplication
 		// Config validation
 		$this->validateConfig();
 
-		// Is this an install request?
-		if ($this->request->mode == bRequestMode::CP && $this->request->getPathSegment(1) === 'install')
+		// Process install and setup requests?
+		$this->processInstallAndSetupRequest('install', !$this->isInstalled);
+		$this->processInstallAndSetupRequest('setup', !$this->isSetup);
+
+		// Otherwise maybe it's an action request?
+		$this->processActionRequest();
+
+		// Otherwise run the template controller
+		$this->runController('bTemplate');
+	}
+
+	/**
+	 * Process install and setup requests
+	 */
+	private function processInstallAndSetupRequest($what, $force)
+	{
+		// Are they requesting this specifically?
+		if ($this->request->mode == bRequestMode::CP && $this->request->getPathSegment(1) === $what)
 		{
 			$action = $this->request->getPathSegment(2, 'index');
-			$this->runController('bInstall/'.$action);
+			$this->runController("b{$what}/{$action}");
+			$this->end();
 		}
 
-		// Ensure that Blocks is installed
-		else if (!$this->isInstalled)
+		// Should they be?
+		else if ($force)
 		{
-			// Redirect to the installer if this is a CP request
+			// Give it to them if accessing the CP
 			if ($this->request->mode == bRequestMode::CP)
 			{
-				$url = bUrlHelper::generateUrl('install');
+				$url = bUrlHelper::generateUrl($what);
 				$this->request->redirect($url);
 			}
 			// Otherwise return a 404
 			else
 				throw new bHttpException(404);
 		}
+	}
 
-		// Is this an action request?
-		else if ($this->request->mode == bRequestMode::Action)
+	/**
+	 * Process action requests
+	 */
+	private function processActionRequest()
+	{
+		if ($this->request->mode == bRequestMode::Action)
 		{
 			if (!$this->request->getPathSegment(2))
 				throw new bHttpException(404);
@@ -69,12 +92,7 @@ class bApp extends CWebApplication
 			}
 
 			$this->runController($controller.'/'.$action);
-		}
-
-		// Must be a template request
-		else
-		{
-			$this->runController('bTemplate');
+			$this->end();
 		}
 	}
 
@@ -170,6 +188,30 @@ class bApp extends CWebApplication
 		}
 
 		return $this->_isInstalled;
+	}
+
+	/**
+	 * Updates isInstalled
+	 */
+	public function setIsInstalled($isInstalled)
+	{
+		$this->_isInstalled = (bool)$isInstalled;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getIsSetup()
+	{
+		if (!isset($this->_isSetup))
+		{
+			// Check to see if a site exists.  If not, we're still in setup mode
+			$totalSites = bSite::model()->count('enabled=:enabled', array(':enabled'=>true));
+
+			$this->_isSetup = ($totalSites > 0);
+		}
+
+		return $this->_isSetup;
 	}
 
 	/**

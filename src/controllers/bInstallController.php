@@ -5,6 +5,9 @@
  */
 class bInstallController extends bBaseController
 {
+	/**
+	 * Init
+	 */
 	public function init()
 	{
 		// Return a 404 if Blocks is already installed
@@ -13,6 +16,7 @@ class bInstallController extends bBaseController
 	}
 
 	/**
+	 * Index action
 	 */
 	public function actionIndex()
 	{
@@ -20,11 +24,14 @@ class bInstallController extends bBaseController
 		$reqCheck->run();
 
 		if ($reqCheck->result !== bInstallStatus::Failure)
-			$this->loadTemplate('install');
+			$this->loadTemplate('_special/install');
 		else
-			$this->loadTemplate('install/cantinstall', array('requirements' => $reqCheck->requirements));
+			$this->loadTemplate('_special/install/cantinstall', array('requirements' => $reqCheck->requirements));
 	}
 
+	/**
+	 * Install action
+	 */
 	public function actionInstall()
 	{
 		// This must be a POST and Ajax request
@@ -34,7 +41,7 @@ class bInstallController extends bBaseController
 		// Run the installer
 		try
 		{
-			Blocks::app()->install->installBlocks();
+			Blocks::app()->installer->run();
 
 			$r = array('success' => true);
 		}
