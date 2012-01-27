@@ -51,4 +51,13 @@ abstract class bBaseController extends CController
 		if (Blocks::app()->request->requestType !== 'POST')
 			throw new bHttpException(404);
 	}
+
+	/**
+	 * Returns a 404 if this isn't an Ajax request
+	 */
+	public function requireAjaxRequest()
+	{
+		if (!Blocks::app()->request->isAjaxRequest)
+			throw new bHttpException(404);
+	}
 }

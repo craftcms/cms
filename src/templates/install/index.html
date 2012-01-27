@@ -8,7 +8,67 @@
 {% endregion %}
 
 {% region "body" %}
-	<form id="install" action="{{ url.generateUrl('install/install') }}" method="post">
-		<input id="install-btn" class="btn big submit" type="submit" value="Install Blocks" />
-	</form>
+	<div class="install-container">
+		<div id="install-btn" class="btn big submit">
+			<span class="label">Install Blocks</span>
+		</div>
+	</div>
+{% endregion %}
+
+{% region "scripts" %}
+	<script type="text/javascript">
+		var $btn = $('#install-btn'),
+			$btnLabel = $btn.find('.label');
+
+		$btn.on('click.install', function() {
+			// Prevent double-clicks
+			$btn.off('click.install');
+
+			$btn.removeClass('submit').addClass('sel');
+
+			var $newBtnLabel = $('<span class="label iconlabel installing">Installing Blocks…</span>');
+			updateBtnLabel($newBtnLabel, runInstaller)
+		});
+
+		function runInstaller()
+		{
+			// Run the ajax request
+			$.post('{{ url.generateUrl("install/install") }}', function(data, textStatus, jqXHR) {
+				if (textStatus != 'success')
+					displayError('An unknown error occurred.');
+				else if (data.error)
+					displayError(data.error);
+				else
+				{
+					var $newBtnLabel = $('<span class="label iconlabel success">Installed!</span>');
+					updateBtnLabel($newBtnLabel, function() {
+						// Redirect to the dashboard
+						setTimeout(function() {
+							window.location = '{{ url.base }}'
+						}, 1000);
+					});
+				}
+			});
+		}
+
+		function displayError(error)
+		{
+			var $newBtnLabel = $('<span class="label iconlabel error">'+error+'</span>');
+			updateBtnLabel($newBtnLabel);
+		}
+
+		function updateBtnLabel($newBtnLabel, callback)
+		{
+			$btn.width($btn.width());
+			$newBtnLabel.appendTo($btn);
+			$btnLabel.show().fadeOut('fast');
+			$newBtnLabel.hide().delay('fast').fadeIn('fast');
+			$btn.animate({ width: $newBtnLabel.outerWidth() + 24 }, function() {
+				$btnLabel.remove();
+				$btnLabel = $newBtnLabel;
+				if (typeof callback == 'function')
+					callback();
+			});
+		}
+	</script>
 {% endregion %}

@@ -27,13 +27,23 @@ class bInstallController extends bBaseController
 
 	public function actionInstall()
 	{
-		// This must be a POST request
+		// This must be a POST and Ajax request
 		$this->requirePostRequest();
+		$this->requireAjaxRequest();
 
 		// Run the installer
-		Blocks::app()->install->installBlocks();
+		try
+		{
+			Blocks::app()->install->installBlocks();
 
-		// TODO: redirect to the setup wizard
-		die('Blocks is installed!');
+			$r = array('success' => true);
+		}
+		catch (Exception $e)
+		{
+			$r = array('error' => $e->getMessage());
+		}
+
+		bJson::sendJsonHeaders();
+		echo bJson::encode($r);
 	}
 }
