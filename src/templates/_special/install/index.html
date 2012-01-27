@@ -55,7 +55,7 @@
 					updateBtnLabel($newBtnLabel, function() {
 						// Redirect to the dashboard
 						setTimeout(function() {
-							window.location = '{{ url.base }}'
+							window.location = '{{ url.generateUrl("setup") }}'
 						}, 1000);
 					});
 				}

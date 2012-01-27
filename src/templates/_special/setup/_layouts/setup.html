@@ -1,0 +1,34 @@
+{% layout "_layouts/full" %}
+
+{% region "pageTitle" %}Blocks Setup{% /region %}
+{% region "styles" %}{{ cp.resource('app/styles/setup.css').css }}{% /region %}
+
+{% region "main" %}
+
+	<div class="pane">
+		<div class="head"><h3>Blocks Setup Wizard</h3></div>
+		<div class="body">
+			<div class="sidebar">
+				<ol class="nav">
+					<li><a class="disabled {% if step == 1 %}sel{% endif %}"><span class="step">1</span>Introduction</a></li>
+					<li><a class="disabled {% if step == 2 %}sel{% endif %}"><span class="step">2</span>Create your account</a></li>
+					<li><a class="disabled {% if step == 3 %}sel{% endif %}"><span class="step">3</span>Setup your first site</a></li>
+				</ol>
+			</div>
+			<div class="step-contents">
+				{{ stepContents }}
+			</div>
+			<div class="step-nav">
+				{% if step > 1 %}
+					<div class="left">
+						<a class="btn big"><span class="label">Back</span></a>
+					</div>
+				{% endif %}
+				<div class="right">
+					<a class="btn big submit"><span class="label">Next</span></a>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endregion %}
