@@ -8,11 +8,11 @@ abstract class bBaseModel extends CActiveRecord
 	protected $tableName;
 	protected $attributes = array();
 	protected $belongsTo = array();
-	protected $indexes = array();
 	protected $hasBlocks = array();
 	protected $hasContent = array();
 	protected $hasMany = array();
 	protected $hasOne = array();
+	protected $indexes = array();
 	protected $_tableName;
 
 	/**
@@ -210,63 +210,62 @@ abstract class bBaseModel extends CActiveRecord
 	public function createTable()
 	{
 		$connection = Blocks::app()->db;
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tableName = $this->getTableName();
 
-		// make sure that the table doesn't already exist
-		if ($connection->schema->getTable('{{'.$this->getTableName().'}}') !== null)
-			throw new bException($this->getTableName().' already exists.');
+		// Make sure that the table doesn't already exist
+		if ($connection->schema->getTable('{{'.$tableName.'}}') !== null)
+			throw new bException($tableName.' already exists.');
 
+		// Begin assembling the columns and indexes
 		$columns['id'] = bAttributeType::PK;
+		$indexes = array_merge($this->indexes);
 
+		// Add any Foreign Key columns
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$required = isset($settings['required']) ? $settings['required'] : false;
 			$settings = array('type' => bAttributeType::Integer, 'required' => $required);
 			$columns[$name.'_id'] = bDatabaseHelper::generateColumnDefinition($settings);
+
+			// Add unique index for this column?
+			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
+			if (isset($settings['unique']) && $settings['unique'] === true)
+				$indexes[] = array('columns' => array($name.'_id'), 'unique' => $unique);
 		}
 
+		// Add all other columns
 		foreach ($this->attributes as $name => $settings)
 		{
 			$columns[$name] = bDatabaseHelper::generateColumnDefinition($settings);
+
+			// Add (unique) index for this column?
+			$unique = (isset($settings['unique']) && $settings['unique'] === true);
+			if ($unique || (isset($settings['indexed']) && $settings['indexed'] === true))
+				$indexes[] = array('columns' => array($name), 'unique' => $unique);
 		}
 
+		// Add the remaining global columns
 		$columns['date_created'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
 		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
 		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true));
 
-		// create the table
-		$connection->createCommand()->createTable('{{'.$this->getTableName().'}}', $columns);
+		// Create the table
+		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);
 
-		// add the insert and update triggers
-		bDatabaseHelper::createInsertAuditTrigger($this->getTableName());
-		bDatabaseHelper::createUpdateAuditTrigger($this->getTableName());
-	}
-
-	public function addIndexes()
-	{
-		$connection = Blocks::app()->db;
-
-		// manually add unique index to id.
-		$connection->createCommand()->createIndex('id_unique', Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName(), 'id', true);
-
-		foreach ($this->indexes as $index)
+		// Create the indexes
+		foreach ($this->indexes as $i => $index)
 		{
-			$unique = false;
-			if (isset($index['unique']) && $index['unique'] == true)
-				$unique = true;
+			$columns = is_array($index['columns']) ? $index['columns'] : explode(',', $index['columns']);
+			$unique = (isset($index['unique']) && $index['unique'] === true);
+			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
-			$name = '';
-			$cols = explode(',', $index['column']);
-
-			foreach ($cols as $col)
-				$name .= $col.'_';
-
-			if ($unique)
-				$name .= 'unique_';
-
-			$name .= 'idx';
-
-			$connection->createCommand()->createIndex($name, Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName(), $index['column'], $unique);
+			$connection->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
 		}
+
+		// Add the INSERT and UPDATE triggers
+		bDatabaseHelper::createInsertAuditTrigger($tableName);
+		bDatabaseHelper::createUpdateAuditTrigger($tableName);
 	}
 
 	/**
@@ -275,12 +274,15 @@ abstract class bBaseModel extends CActiveRecord
 	public function addForeignKeys()
 	{
 		$connection = Blocks::app()->db;
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$otherModel = new $settings['model'];
-			$fkName = Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName().'_'.$otherModel->getTableName().'_fk';
-			$connection->createCommand()->addForeignKey($fkName, '{{'.$this->getTableName().'}}', $name.'_id', '{{'.$otherModel->getTableName().'}}', 'id', 'NO ACTION', 'NO ACTION');
+			$otherTableName = $otherModel->getTableName();
+			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
+			$connection->createCommand()->addForeignKey($fkName, '{{'.$tableName.'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id', 'NO ACTION', 'NO ACTION');
 		}
 	}
 
@@ -290,12 +292,15 @@ abstract class bBaseModel extends CActiveRecord
 	public function dropForeignKeys()
 	{
 		$connection = Blocks::app()->db;
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$otherModel = new $settings['model'];
-			$fkName = Blocks::app()->getDbConfig('tablePrefix').'_'.$this->getTableName().'_'.$otherModel->getTableName().'_fk';
-			$connection->createCommand()->dropForeignKey($fkName, '{{'.$this->getTableName().'}}');
+			$otherTableName = $otherModel->getTableName();
+			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
+			$connection->createCommand()->dropForeignKey($fkName, '{{'.$tableName.'}}');
 		}
 	}
 
@@ -305,10 +310,11 @@ abstract class bBaseModel extends CActiveRecord
 	public function dropTable()
 	{
 		$connection = Blocks::app()->db;
+		$tableName = $this->getTableName();
 
-		if ($connection->schema->getTable($this->getTableName()) !== null)
+		if ($connection->schema->getTable($tableName) !== null)
 		{
-			$connection->createCommand()->dropTable($this->getTableName());
+			$connection->createCommand()->dropTable($tableName);
 		}
 	}
 

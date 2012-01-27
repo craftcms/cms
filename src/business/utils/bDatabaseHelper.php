@@ -76,9 +76,6 @@ class bDatabaseHelper
 				$def .= ' DEFAULT '.(int)$settings['default'];
 		}
 
-		if (isset($settings['unique']) && $settings['unique'] === true)
-			$def .= ' UNIQUE';
-
 		return $def;
 	}
 

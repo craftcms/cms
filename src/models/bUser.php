@@ -8,10 +8,10 @@ class bUser extends bBaseModel
 	protected $tableName = 'users';
 
 	protected $attributes = array(
-		'username'                              => array('type' => bAttributeType::String,  'required'  => true),
+		'username'                              => array('type' => bAttributeType::String,  'required'  => true, 'unique' => true),
 		'first_name'                            => array('type' => bAttributeType::String,  'maxLength' => 100, 'required' => true),
 		'last_name'                             => array('type' => bAttributeType::String,  'maxLength' => 100),
-		'email'                                 => array('type' => bAttributeType::String,  'required'  => true),
+		'email'                                 => array('type' => bAttributeType::String,  'required'  => true, 'unique' => true),
 		'password'                              => array('type' => bAttributeType::String,  'maxLength' => 128, 'required' => true),
 		'enc_type'                              => array('type' => bAttributeType::String,  'maxLength' => 32, 'required' => true),
 		'auth_token'                            => array('type' => bAttributeType::String,  'maxLength' => 32),
@@ -32,11 +32,6 @@ class bUser extends bBaseModel
 		'members' => array('model' => 'bUserGroupMembers', 'foreignKey' => 'user'),
 		'groups'  => array('model' => 'bUserGroup', 'through' => 'bUserGroupMembers', 'foreignKey' => array('user'=>'group')),
 		'widgets' => array('model' => 'bUserWidget', 'foreignKey' => 'user')
-	);
-
-	protected $indexes = array(
-		array('column' => 'username', 'unique' => true),
-		array('column' => 'email', 'unique' => true),
 	);
 
 	/**

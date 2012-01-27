@@ -11,8 +11,8 @@ class bContentBlock extends bBaseModel
 	 * @return array
 	 */
 	protected $attributes = array(
-		'handle'       => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
 		'label'        => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
+		'handle'       => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
 		'class'        => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
 		'instructions' => array('type' => bAttributeType::Text)
 	);
@@ -22,7 +22,7 @@ class bContentBlock extends bBaseModel
 	);
 
 	protected $indexes = array(
-		array('column' => 'site_id,handle', 'unique' => true)
+		array('columns' => array('site_id','handle'), 'unique' => true)
 	);
 
 	/**

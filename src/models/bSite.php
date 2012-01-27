@@ -8,8 +8,8 @@ class bSite extends bBaseModel
 	protected $tableName = 'sites';
 
 	protected $attributes = array(
-		'handle' => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
-		'label'  => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
+		'label'  => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true, 'unique' => true),
+		'handle' => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true, 'unique' => true),
 		'url'    => array('type' => bAttributeType::String, 'required' => true)
 	);
 
@@ -26,10 +26,6 @@ class bSite extends bBaseModel
 		'assetFolders' => array('model' => 'bAssetFolder', 'foreignKey' => 'site'),
 		'routes'       => array('model' => 'bRoute', 'foreignKey' => 'site'),
 		'sections'     => array('model' => 'bSection', 'foreignKey' => 'site')
-	);
-
-	protected $indexes = array(
-		array('column' => 'handle', 'unique' => true),
 	);
 
 	/**

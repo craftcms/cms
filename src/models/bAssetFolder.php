@@ -21,7 +21,7 @@ class bAssetFolder extends bBaseModel
 	);
 
 	protected $indexes = array(
-		array('column' => 'name,site_id', 'unique' => true)
+		array('columns' => array('site_id','name'), 'unique' => true)
 	);
 
 	/**

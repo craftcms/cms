@@ -12,6 +12,10 @@ class bUserGroupMember extends bBaseModel
 		'group' => array('model' => 'bUserGroup', 'required' => true)
 	);
 
+	protected $indexes = array(
+		array('columns' => array('user_id', 'group_id'), 'unique' => true)
+	);
+
 	/**
 	 * Returns an instance of the specified model
 	 * @return object The model instance

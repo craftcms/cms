@@ -14,7 +14,7 @@ abstract class bBaseSettingsModel extends bBaseModel
 	);
 
 	protected $indexes = array(
-		array('column' => 'key', 'unique' => true),
+		array('columns' => 'key', 'unique' => true)
 	);
 
 	/**
@@ -22,10 +22,14 @@ abstract class bBaseSettingsModel extends bBaseModel
 	 */
 	public function init()
 	{
-		if (isset($this->foreignKey) && isset($this->model))
+		if (!empty($this->foreignKey) && !empty($this->model))
 		{
 			$this->belongsTo = array(
 				$this->foreignKey => array('model' => $this->model, 'required' => true)
+			);
+
+			$this->indexes = array(
+				array('columns' => array($this->foreignKey.'_id', 'key'), 'unique' => true)
 			);
 		}
 	}
