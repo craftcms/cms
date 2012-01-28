@@ -1,0 +1,30 @@
+{% layout "users/_layouts/users" %}
+
+{% region "pageTitle" %}Register{% /region %}
+
+{% region "pageTitle" %}Users{% /region %}
+
+{% region "main" %}
+
+	<div><strong>Register a new account.</strong></div>
+	<p>
+		<?php if (!isset($model)) $model = new bRegisterUserForm(); ?>
+		<?php echo bHtml::beginForm(bUrlHelper::generateActionUrl('app/users/register')); ?>
+
+		<p><?php echo bHtml::errorSummary($model); ?></p>
+
+		<div class="input-wrapper">Username: <input type="text" name="userName"></div><br />
+		<div class="input-wrapper">Email: <input type="text" name="email"></div><br />
+		<div class="input-wrapper">First Name: <input type="text" name="firstName"></div><br />
+		<div class="input-wrapper">Last Name: <input type="text" name="lastName"></div><br />
+
+		<p>Send new user registration email with password reset link? <input type="checkbox" name="sendRegistrationEmail" checked /></p>
+
+		<br /><p />
+
+		<input class="btn" type="submit" value="Register User">
+
+		<?php echo bHtml::endForm(); ?>
+	</p>
+
+{% /region %}
