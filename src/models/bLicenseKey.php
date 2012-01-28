@@ -8,7 +8,7 @@ class bLicenseKey extends bBaseModel
 	protected $tableName = 'licensekeys';
 
 	protected $attributes = array(
-		'key' => array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true, 'unique' => true)
+		'key' => array('type' => bAttributeType::String, 'maxLength' => 73, 'required' => true, 'unique' => true)
 	);
 
 	/**
