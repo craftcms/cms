@@ -7,7 +7,7 @@
 class bEmailSettingsForm extends CFormModel
 {
 	public $emailerType;
-	public $hostName;
+	public $host;
 	public $port;
 	public $smtpAuth;
 	public $userName;
@@ -28,7 +28,7 @@ class bEmailSettingsForm extends CFormModel
 		if ($properties !== null)
 		{
 			$this->emailerType = isset($properties['emailerType']) ? $properties['emailerType'] : null;
-			$this->hostName = isset($properties['hostName']) ? $properties['hostName'] : null;
+			$this->host = isset($properties['host']) ? $properties['host'] : null;
 			$this->password = isset($properties['password']) ? $properties['password'] : null;
 			$this->port = isset($properties['port']) ? $properties['port'] : null;
 			$this->smtpAuth = isset($properties['smtpAuth']) ? $properties['smtpAuth'] : null;
@@ -62,7 +62,7 @@ class bEmailSettingsForm extends CFormModel
 					$rules[] = array('smtpSecureTransportType', 'required');
 				}
 
-				$rules[] = array('port, hostName, timeout', 'required');
+				$rules[] = array('port, host, timeout', 'required');
 				break;
 			}
 
@@ -75,7 +75,7 @@ class bEmailSettingsForm extends CFormModel
 
 			case bEmailerType::Pop:
 			{
-				$rules[] = array('port, hostName, userName, password, timeout', 'required');
+				$rules[] = array('port, host, userName, password, timeout', 'required');
 				break;
 			}
 

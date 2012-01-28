@@ -17,7 +17,7 @@ class bSettingsController extends bBaseController
 		if(Blocks::app()->request->isPostRequest)
 		{
 			$model->emailerType                 = Blocks::app()->request->getPost('emailerType');
-			$model->hostName                    = Blocks::app()->request->getPost('hostName');
+			$model->host                        = Blocks::app()->request->getPost('host');
 			$model->port                        = Blocks::app()->request->getPost('port');
 			$model->smtpAuth                    = Blocks::app()->request->getPost('smtpAuth') == 'on' ? 1 : null;
 			$model->userName                    = Blocks::app()->request->getPost('userName');
@@ -49,7 +49,7 @@ class bSettingsController extends bBaseController
 						}
 
 						$settings['port'] = $model->port;
-						$settings['hostName'] = $model->hostName;
+						$settings['host'] = $model->host;
 						$settings['timeout'] = $model->timeout;
 
 						if ($model->smtpKeepAlive)
@@ -63,7 +63,7 @@ class bSettingsController extends bBaseController
 					case bEmailerType::Pop:
 					{
 						$settings['port'] = $model->port;
-						$settings['hostName'] = $model->hostName;
+						$settings['host'] = $model->host;
 						$settings['userName'] = $model->userName;
 						$settings['password'] = $model->password;
 						$settings['timeout'] = $model->timeout;

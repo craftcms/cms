@@ -62,9 +62,9 @@
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="hostName">
+					<label for="host">
 						Host Name:
-						<input type="text" id="hostName" name="hostName" value="<?php echo $emailSettings->hostName; ?>">
+						<input type="text" id="host" name="host" value="<?php echo $emailSettings->host; ?>">
 					</label>
 				</div>
 				<p/>
@@ -78,7 +78,7 @@
 				<div class="input-wrapper">
 					<label for="smtpAuth">
 						Use SMTP Authentication?
-						<input type="checkbox" id="smtpAuth" name="smtpAuth"<?php if ($emailSettings->smtpAuth): ?> checked<?php endif; ?>">
+						<input type="checkbox" id="smtpAuth" name="smtpAuth"<?php if ($emailSettings->smtpAuth == 1): ?> checked<?php endif; ?>>
 					</label>
 				</div>
 				<p/>
@@ -99,14 +99,14 @@
 				<div class="input-wrapper">
 					<label for="smtpKeepAlive">
 						Use SMTP Keep Alive?
-						<input type="checkbox" id="smtpKeepAlive" name="smtpKeepAlive"<?php if ($emailSettings->smtpKeepAlive): ?> checked<?php endif; ?>">
+						<input type="checkbox" id="smtpKeepAlive" name="smtpKeepAlive"<?php if ($emailSettings->smtpKeepAlive == 1): ?> checked<?php endif; ?>>
 					</label>
 				</div>
 				<p/>
 				<div class="input-wrapper">
 					<label for="smtpSecureTransport">
 						Use SMTP Secure Transport?
-						<input type="checkbox" id="smtpSecureTransport" name="smtpSecureTransport"<?php if ($emailSettings->smtpSecureTransport): ?> checked<?php endif; ?>">
+						<input type="checkbox" id="smtpSecureTransport" name="smtpSecureTransport"<?php if ($emailSettings->smtpSecureTransport == 1): ?> checked<?php endif; ?>>
 					</label>
 				</div>
 				<p />
