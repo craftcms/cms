@@ -11,7 +11,7 @@ class bSite extends bBaseModel
 		'name'     => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true, 'unique' => true),
 		'handle'   => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true, 'unique' => true),
 		'url'      => array('type' => bAttributeType::String, 'required' => true),
-		'enabled'  => array('type' => bAttributeType::Boolean, 'required' => true, 'deafult' => true, 'unsigned' => true)
+		'enabled'  => array('type' => bAttributeType::Boolean, 'required' => true, 'default' => true, 'unsigned' => true)
 	);
 
 	protected $hasBlocks = array(
