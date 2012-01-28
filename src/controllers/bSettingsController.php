@@ -26,11 +26,16 @@ class bSettingsController extends bBaseController
 			$model->smtpSecureTransport         = Blocks::app()->request->getPost('smtpSecureTransport') == 'on' ? 1 : null;
 			$model->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
 			$model->timeout                     = Blocks::app()->request->getPost('timeout');
+			$model->fromEmail                   = Blocks::app()->request->getPost('fromEmail');
+			$model->fromName                    = Blocks::app()->request->getPost('fromName');
 
 			// validate user input
 			if($model->validate())
 			{
 				$settings = array('emailerType' => $model->emailerType);
+				$settings['fromEmail'] = $model->fromEmail;
+				$settings['fromName'] = $model->fromName;
+
 				switch ($model->emailerType)
 				{
 					case bEmailerType::Smtp:

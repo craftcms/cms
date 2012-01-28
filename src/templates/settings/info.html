@@ -34,7 +34,7 @@
 		</div>
 		<div class="body">
 
-			<!-- Need to figure out how we're doing this -->.
+			<!-- Need to figure out how we're doing this -->
 			<?php
 				if (!isset($emailSettings))
 					$emailSettings = new bEmailSettingsForm(Blocks::app()->email->emailSettings);
@@ -124,6 +124,20 @@
 					<label for="timeout">
 						Timeout:
 						<input type="text" id="timeout" name="timeout" value="<?php echo $emailSettings->timeout; ?>">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="fromEmail">
+						Default From Email:
+						<input type="text" id="fromEmail" name="fromEmail" value="<?php echo $emailSettings->fromEmail; ?>">
+					</label>
+				</div>
+				<p/>
+				<div class="input-wrapper">
+					<label for="fromName">
+						Default From Name:
+						<input type="text" id="fromName" name="fromName" value="<?php echo $emailSettings->fromName; ?>">
 					</label>
 				</div>
 				<p/>

@@ -16,6 +16,8 @@ class bEmailSettingsForm extends CFormModel
 	public $smtpSecureTransport;
 	public $smtpSecureTransportType;
 	public $timeout;
+	public $fromEmail;
+	public $fromName;
 
 	/**
 	 * @param $properties
@@ -37,6 +39,8 @@ class bEmailSettingsForm extends CFormModel
 			$this->smtpSecureTransportType = isset($properties['smtpSecureTransportType']) ? $properties['smtpSecureTransportType'] : null;
 			$this->userName = isset($properties['userName']) ? $properties['userName'] : null;
 			$this->timeout = isset($properties['timeout']) ? $properties['timeout'] : null;
+			$this->fromEmail = isset($properties['fromEmail']) ? $properties['fromEmail'] : null;
+			$this->fromName = isset($properties['fromName']) ? $properties['fromName'] : null;
 		}
 	}
 
@@ -46,7 +50,7 @@ class bEmailSettingsForm extends CFormModel
 	 */
 	public function rules()
 	{
-		$rules[] = array('emailerType', 'required');
+		$rules[] = array('emailerType, fromEmail, fromName', 'required');
 
 		switch ($this->emailerType)
 		{
