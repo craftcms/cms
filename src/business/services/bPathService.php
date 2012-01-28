@@ -156,7 +156,7 @@ class bPathService extends CApplicationComponent
 	 */
 	public function getEmailTemplateCachePath()
 	{
-		$cachePath = $this->runtimePath.'parsed_templates/email_templates/';
+		$cachePath = $this->runtimePath.'parsed_templates/custom/email_templates/';
 
 		if (!is_dir($cachePath))
 			mkdir($cachePath, 0777, true);
