@@ -30,7 +30,6 @@ class bSection extends bBaseModel
 	);
 
 	protected $indexes = array(
-		array('columns' => array('site_id', 'name'), 'unique' => true),
 		array('columns' => array('site_id', 'handle'), 'unique' => true),
 	);
 
