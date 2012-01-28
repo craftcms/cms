@@ -5,6 +5,8 @@
  */
 abstract class bBaseController extends CController
 {
+	private $_widgetStack = array();
+
 	/**
 	 * Returns the directory containing view files for this controller.
 	 * We're overriding this since CController's version defaults $module to Yii::app().
@@ -18,6 +20,11 @@ abstract class bBaseController extends CController
 		return $module->getViewPath().'/';
 	}
 
+	/**
+	 * Overriding so we can check if the viewName is a request for an email template vs. a site template.
+	 * @param $viewName
+	 * @return mixed
+	 */
 	public function getViewFile($viewName)
 	{
 		if (($theme = Blocks::app()->getTheme()) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
@@ -27,7 +34,15 @@ abstract class bBaseController extends CController
 		if (($module = $this->getModule()) !== null)
 			$moduleViewPath = $module->getViewPath();
 
-		return $this->resolveViewFile($viewName, $this->getViewPath(), $basePath, $moduleViewPath);
+		if (strncmp($viewName,'///email', 8) === 0)
+		{
+			$viewPath = rtrim(Blocks::app()->path->emailTemplatePath, '/');
+			$viewName = substr($viewName, 9);
+		}
+		else
+			$viewPath = $this->getViewPath();
+
+		return $this->resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath);
 	}
 
 	/**
@@ -73,9 +88,46 @@ abstract class bBaseController extends CController
 		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->path->emailTemplatePath);
 
 		if (bTemplateHelper::findFileSystemMatch($baseTemplatePath, $relativeTemplatePath) !== false)
+		{
+			$relativeTemplatePath = '///email/'.$relativeTemplatePath;
 			return $this->renderPartial($relativeTemplatePath, $data, true);
+		}
 
-		// exception?
+		throw new bException('Could not find the email template '.$relativeTemplatePath);
+	}
+
+	/**
+	 * @param $viewFile
+	 * @param null $data
+	 * @param bool $return
+	 * @return mixed|string
+	 * @throws bException
+	 */
+	public function renderFile($viewFile, $data = null, $return = false)
+	{
+		$widgetCount = count($this->_widgetStack);
+
+		if (strpos($viewFile, 'email_templates') !== false)
+		{
+			$emailRenderer = new bEmailTemplateRenderer();
+			$content = $emailRenderer->renderFile($this, $viewFile, $data, $return);
+		}
+		else
+		{
+			if (($renderer = Blocks::app()->getViewRenderer()) !== null && $renderer->fileExtension === '.'.CFileHelper::getExtension($viewFile))
+				$content = $renderer->renderFile($this, $viewFile, $data, $return);
+			else
+				$content = $this->renderInternal($viewFile, $data, $return);
+		}
+
+		if (count($this->_widgetStack) === $widgetCount)
+			return $content;
+		else
+		{
+			$widget = end($this->_widgetStack);
+			throw new bException(Blocks::t('blocks','{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.',
+				array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
+		}
 	}
 
 	/**

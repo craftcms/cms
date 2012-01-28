@@ -8,29 +8,11 @@ class bEmailService extends CApplicationComponent
 	private $_defaultEmailTimeout = 10;
 
 	/**
-	 * @param \bEmailAddress $from
-	 * @param \bEmailAddress $replyTo
-	 * @param array          $to
-	 * @param array          $cc
-	 * @param array          $bcc
-	 * @param                $subject
-	 * @param                $body
-	 * @param string         $altBody
-	 * @param bool           $isHTML
-	 *
-	 * @internal param $fromEmail
-	 * @internal param $fromName
-	 * @internal param $replyToEmail
-	 * @internal param $replyToName
+	 * @param bEmailMessage $emailMessage
+	 * @throws bException
 	 */
-	public function sendEmail(bEmailAddress $from, bEmailAddress $replyTo, array $to, array $cc, array $bcc, $subject, $body, $altBody = null, $isHTML = true)
+	public function sendEmail(bEmailMessage $emailMessage)
 	{
-		if (bStringHelper::isNullOrEmpty($from->getEmailAddress()))
-			throw new bException('You must supply an email address that the email is sent from.');
-
-		if (empty($to))
-			throw new bException('You must supply at least one email address to send the email to.');
-
 		$emailSettings = $this->emailSettings;
 
 		if (!isset($emailSettings['emailerType']))
@@ -50,16 +32,16 @@ class bEmailService extends CApplicationComponent
 			case bEmailerType::Pop:
 			{
 				$pop = new Pop3();
-				if (!isset($emailSettings['hostName']) || !isset($emailSettings['port']) || !isset($emailSettings['userName']) || !isset($emailSettings['password']) ||
-				    bStringHelper::isNullOrEmpty($emailSettings['hostName']) || bStringHelper::isNullOrEmpty($emailSettings['port']) || bStringHelper::isNullOrEmpty($emailSettings['userName']) || bStringHelper::isNullOrEmpty($emailSettings['password']))
+				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['userName']) || !isset($emailSettings['password']) ||
+				    bStringHelper::isNullOrEmpty($emailSettings['host']) || bStringHelper::isNullOrEmpty($emailSettings['port']) || bStringHelper::isNullOrEmpty($emailSettings['userName']) || bStringHelper::isNullOrEmpty($emailSettings['password']))
 				{
-					throw new bException('Hostname, port, username and password must be configured under your email settings.');
+					throw new bException('Host, port, username and password must be configured under your email settings.');
 				}
 
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['hostName'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['userName'], $emailSettings['password'], Blocks::app()->getConfig('devMode') ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['userName'], $emailSettings['password'], Blocks::app()->getConfig('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -83,41 +65,64 @@ class bEmailService extends CApplicationComponent
 			}
 		}
 
-		$email->body = $body;
-		$email->from = $from->getEmailAddress();
-		$email->fromName = $from->getName();
-		$email->addReplyTo($replyTo->getEmailAddress(), $replyTo->getName());
+		$email->body = $emailMessage->getBody();
+		$email->from = $emailMessage->getFrom()->getEmailAddress();
+		$email->fromName = $emailMessage->getFrom()->getName();
+		$email->addReplyTo($emailMessage->getReplyTo()->getEmailAddress(), $emailMessage->getReplyTo()->getName());
 
-		foreach ($to as $toAddress)
+		foreach ($emailMessage->getTo() as $toAddress)
 		{
 			$email->addAddress($toAddress->getEmailAddress(), $toAddress->getName());
 		}
 
-		foreach ($cc as $toCcAddress)
+		foreach ($emailMessage->getCc() as $toCcAddress)
 		{
 			$email->addCc($toCcAddress->getEmailAddress(), $toCcAddress->getName());
 		}
 
-		foreach ($bcc as $toBccAddress)
+		foreach ($emailMessage->getBcc() as $toBccAddress)
 		{
 			$email->addBcc($toBccAddress->getEmailAddress(), $toBccAddress->getName());
 		}
 
-		$email->subject = $subject;
-		$email->body = $body;
+		$email->subject = $emailMessage->getSubject();
+		$email->body = $emailMessage->getBody();
 
 		if ($email->altBody !== null)
-			$email->altBody = $altBody;
+			$email->altBody = $emailMessage->getAltBody();
 
-		if ($isHTML)
+		if ($emailMessage->getIsHtml())
 		{
-			$email->isHtml(true);
-			$email->msgHtml($body);
-
+			$email->msgHtml($emailMessage->getBody());
 		}
 
 		if (!$email->send())
 			throw new bException($email->errorInfo);
+	}
+
+	/**
+	 * @param bEmailMessage $emailMessage
+	 * @param $templateFile
+	 */
+	public function sendTemplateEmail(bEmailMessage $emailMessage, $templateFile)
+	{
+		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, array());
+		$emailMessage->setBody($renderedTemplate);
+
+		$this->sendEmail($emailMessage);
+	}
+
+	/**
+	 * @param bRegisterUserForm $registerUserData
+	 */
+	public function sendRegistrationEmail(bRegisterUserForm $registerUserData)
+	{
+
+		$emailSettings = $this->getEmailSettings();
+		$email = new bEmailMessage(new bEmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new bEmailAddress($registerUserData->email, $registerUserData->firstName.' '.$registerUserData->lastName)));
+		$email->setIsHtml(true);
+		$email->setSubject('Confirm Your Registration');
+		Blocks::app()->email->sendTemplateEmail($email, 'register');
 	}
 
 	/**

@@ -7,15 +7,15 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 {
 	public $fileExtension = '.html';
 
-	private $_sourceTemplatePath;
-	private $_parsedTemplatePath;
-	private $_destinationMetaPath;
-	private $_template;
-	private $_markers;
-	private $_hasLayout;
-	private $_variables;
+	protected $_sourceTemplatePath;
+	protected $_parsedTemplatePath;
+	protected $_destinationMetaPath;
+	protected $_template;
+	protected $_markers;
+	protected $_hasLayout;
+	protected $_variables;
 
-	private static $_filePermission = 0755;
+	protected static $_filePermission = 0755;
 
 	/**
 	 * Renders a template
@@ -45,9 +45,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Sets the path to the parsed template
-	 * @access private
+	 * @access protected
 	 */
-	private function setParsedTemplatePath()
+	protected function setParsedTemplatePath()
 	{
 		// get the relative template path
 		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(Blocks::app()->path->templatePath));
@@ -71,9 +71,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	/**
 	 * Returns whether the template needs to be (re-)parsed
 	 * @return bool
-	 * @access private
+	 * @access protected
 	 */
-	private function isTemplateParsingNeeded()
+	protected function isTemplateParsingNeeded()
 	{
 		// always re-parse templates if in dev mode
 		if (Blocks::app()->getConfig('devMode'))
@@ -112,9 +112,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Parses a template
-	 * @access private
+	 * @access protected
 	 */
-	private function parseTemplate()
+	protected function parseTemplate()
 	{
 		// copy the source template to the meta file for comparison on future requests.
 		copy($this->_sourceTemplatePath, $this->_destinationMetaPath);
@@ -141,9 +141,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * Creates a marker
 	 * @param array $match The preg_replace_callback match
 	 * @return string The new marker
-	 * @access private
+	 * @access protected
 	 */
-	private function createMarker($match)
+	protected function createMarker($match)
 	{
 		$num = count($this->_markers) + 1;
 		$marker = '[MARKER:'.$num.']';
@@ -153,9 +153,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Extracts PHP code, replacing it with markers so that we don't risk parsing something in the code that should have been left alone
-	 * @access private
+	 * @access protected
 	 */
-	private function extractPhp()
+	protected function extractPhp()
 	{
 		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Ums', array(&$this, 'createPhpMarker'), $this->_template);
 		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Ums', array(&$this, 'createPhpShortTagMarker'), $this->_template);
@@ -166,9 +166,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * Creates a marker for PHP code
 	 * @param array $match The preg_replace_callback match
 	 * @return string The new marker
-	 * @access private
+	 * @access protected
 	 */
-	private function createPhpMarker($match)
+	protected function createPhpMarker($match)
 	{
 		$code = $match[1];
 
@@ -186,9 +186,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * Creates a marker for PHP code using PHP short tags (<? ... ?>)
 	 * @param array $match The preg_replace_callback match
 	 * @return string The new marker
-	 * @access private
+	 * @access protected
 	 */
-	private function createPhpShortTagMarker($match)
+	protected function createPhpShortTagMarker($match)
 	{
 		$match[1] = 'echo '.$match[1];
 		return $this->createPhpMarker($match);
@@ -197,27 +197,27 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	/**
 	 * Extracts Strings, replacing them with markers
 	 * @param string &$template The template to extract strings from
-	 * @access private
+	 * @access protected
 	 */
-	private function extractStrings(&$template)
+	protected function extractStrings(&$template)
 	{
 		$template = preg_replace_callback('/([\'"]).*\1/Ums', array(&$this, 'createMarker'), $template);
 	}
 
 	/**
 	 * Restore any extracted code
-	 * @access private
+	 * @access protected
 	 */
-	private function replaceMarkers()
+	protected function replaceMarkers()
 	{
 		$this->_template = str_replace(array_keys($this->_markers), $this->_markers, $this->_template);
 	}
 
 	/**
 	 * Prepend the PHP head to the template
-	 * @access private
+	 * @access protected
 	 */
-	private function prependHead()
+	protected function prependHead()
 	{
 		$head = '<?php'.PHP_EOL;
 
@@ -240,9 +240,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Append the PHP foot to the template
-	 * @access private
+	 * @access protected
 	 */
-	private function appendFoot()
+	protected function appendFoot()
 	{
 		if ($this->_hasLayout)
 		{
@@ -253,18 +253,18 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Parse comments
-	 * @access private
+	 * @access protected
 	 */
-	private function parseComments()
+	protected function parseComments()
 	{
 		$this->_template = preg_replace('/\{\!\-\-.*\-\-\}/Ums', '', $this->_template);
 	}
 
 	/**
 	 * Parse actions
-	 * @access private
+	 * @access protected
 	 */
-	private function parseActions()
+	protected function parseActions()
 	{
 		$this->_template = preg_replace_callback('/\{\%\s*(\/?\w+)(\s+(.+))?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
 	}
@@ -273,9 +273,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * Parse an action match
 	 * @param array $match The preg_replace_callback match
 	 * @return string The parsed action tag
-	 * @access private
+	 * @access protected
 	 */
-	private function parseActionMatch($match)
+	protected function parseActionMatch($match)
 	{
 		$action = $match[1];
 		$params = isset($match[3]) ? $match[3] : '';
@@ -357,12 +357,10 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Parse variable tags
-	 * @param string $template The template to parse variable tags in
-	 * @param bool $partOfString Whether $template is part of a string
 	 * @return mixed
-	 * @access private
+	 * @access protected
 	 */
-	private function parseVariableTags()
+	protected function parseVariableTags()
 	{
 		// find any {{variable-tags}} on the page
 		$this->_template = preg_replace_callback('/\{\{\s*(.+)\s*\}\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
@@ -372,9 +370,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * Parse a variable tag match
 	 * @param array $match The preg_replace_callback match
 	 * @return string The parsed variable tag
-	 * @access private
+	 * @access protected
 	 */
-	private function parseVariableTagMatch($match)
+	protected function parseVariableTagMatch($match)
 	{
 		$this->extractStrings($match[1]);
 		$this->parseVariables($match[1], true);
@@ -385,9 +383,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * Parse variables
 	 * @param string $template The template to parse for variables
 	 * @param bool $toString Whether to include "->__toString()" at the end of the parsed variables
-	 * @access private
+	 * @access protected
 	 */
-	private function parseVariables(&$template, $toString = false)
+	protected function parseVariables(&$template, $toString = false)
 	{
 		do {
 			$match = $this->parseVariable($template, $offset, $toString);
@@ -400,9 +398,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 * @param int $offset The offset to start searching for a variable
 	 * @param bool $toString Whether to include "->__toString()" at the end of the parsed variable
 	 * @return bool Whether a variable was found and parsed
-	 * @access private
+	 * @access protected
 	 */
-	private function parseVariable(&$template, &$offset = 0, $toString = false)
+	protected function parseVariable(&$template, &$offset = 0, $toString = false)
 	{
 		if (preg_match('/(?<![-\.\'"\w\/\[])[A-Za-z]\w*/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
@@ -479,9 +477,9 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	/**
 	 * Parse language
-	 * @access private
+	 * @access protected
 	 */
-	private function parseLanguage()
+	protected function parseLanguage()
 	{
 		
 	}
