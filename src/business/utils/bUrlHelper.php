@@ -9,36 +9,39 @@ class bUrlHelper
 	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
 	 * @param string $resourcePath The path to the resource
 	 * @param null   $params
+	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return string The URL to the resource, via Blocks' resource server
 	 */
-	public static function generateResourceUrl($resourcePath, $params = null)
+	public static function generateResourceUrl($resourcePath, $params = null, $protocol = '')
 	{
 		$path = self::_normalizePath($resourcePath, $params, Blocks::app()->getConfig('resourceTriggerWord'));
-		return bHtml::normalizeUrl($path);
+		return  Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
 	}
 
 	/**
 	 * @static
 	 * @param      $actionPath
 	 * @param null $params
+	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
-	public static function generateActionUrl($actionPath, $params = null)
+	public static function generateActionUrl($actionPath, $params = null, $protocol = '')
 	{
 		$path = self::_normalizePath($actionPath, $params, Blocks::app()->getConfig('actionTriggerWord'));
-		return bHtml::normalizeUrl($path);
+		return Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
 	}
 
 	/**
 	 * @static
 	 * @param      $path
 	 * @param null $params
+	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
-	public static function generateUrl($path, $params = null)
+	public static function generateUrl($path, $params = null, $protocol = '')
 	{
 		$path = self::_normalizePath($path, $params);
-		return bHtml::normalizeUrl($path);
+		return  Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
 	}
 
 	/**
