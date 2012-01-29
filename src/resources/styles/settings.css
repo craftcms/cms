@@ -1,3 +1,5 @@
+body { background: #e5e5e5; }
+
 /*-- System Info --*/
 body.info #logo { display: block; margin: 0 auto 10px; }
 body.info #version { margin-bottom: 20px; text-align: center; font-weight: bold; }

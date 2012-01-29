@@ -206,7 +206,7 @@ class bApp extends CWebApplication
 		if (!isset($this->_isSetup))
 		{
 			// Check to see if a site exists.  If not, we're still in setup mode
-			$totalSites = bSite::model()->count('enabled=:enabled', array(':enabled'=>true));
+			$totalSites = bSite::model()->exists('enabled=:enabled', array(':enabled'=>true));
 
 			$this->_isSetup = ($totalSites > 0);
 		}

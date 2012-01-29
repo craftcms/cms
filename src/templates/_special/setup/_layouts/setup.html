@@ -5,30 +5,43 @@
 
 {% region "main" %}
 
-	<div class="pane">
-		<div class="head"><h3>Blocks Setup Wizard</h3></div>
-		<div class="body">
-			<div class="sidebar">
-				<ol class="nav">
-					<li><a class="disabled {% if step == 1 %}sel{% endif %}"><span class="step">1</span>Introduction</a></li>
-					<li><a class="disabled {% if step == 2 %}sel{% endif %}"><span class="step">2</span>Create your account</a></li>
-					<li><a class="disabled {% if step == 3 %}sel{% endif %}"><span class="step">3</span>Setup your first site</a></li>
-				</ol>
-			</div>
-			<div class="step-contents">
-				{{ stepContents }}
-			</div>
-			<div class="step-nav">
-				{% if step > 1 %}
-					<div class="left">
-						<a class="btn big"><span class="label">Back</span></a>
+	<form id="form" method="post" action="{{ url.generateUrl('setup/save') }}{{ step }}">
+		<div class="pane">
+			<div class="head"><h5>Blocks Setup Wizard</h5></div>
+			<div class="body">
+				<div class="sidebar">
+					<ol class="nav">
+						<li><a class="{% if step == 'LicenseKey' %}sel{% endif %}"><span class="step">1</span>Introduction</a></li>
+						<li><a class="{% if step == 'Account' %}sel{% endif %}"><span class="step">2</span>Create your account</a></li>
+						<li><a class="{% if step == 'Site' %}sel{% endif %}"><span class="step">3</span>Setup your site</a></li>
+					</ol>
+				</div>
+				<div class="step-contents">
+					{{ stepContents }}
+				</div>
+				<div class="step-nav">
+					{% if step != 'LicenseKey' %}
+						<div class="left">
+							<input id="go-back" class="btn big" type="button" value="Back" />
+						</div>
+					{% endif %}
+					<div class="right">
+						<input class="btn big submit" type="submit" value="{% if step != 'Site' %}Next{% else %}Finish setup{% endif %}" />
 					</div>
-				{% endif %}
-				<div class="right">
-					<a class="btn big submit"><span class="label">Next</span></a>
 				</div>
 			</div>
 		</div>
-	</div>
+	</form>
 
+{% endregion %}
+
+{% region "scripts" %}
+	<script type="text/javascript">
+		var form = document.forms['form'];
+		form.elements[0].focus();
+		$('#go-back').click(function() {
+			form.action += '?goback=1';
+			form.submit();
+		});
+	</script>
 {% endregion %}

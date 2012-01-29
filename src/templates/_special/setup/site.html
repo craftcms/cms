@@ -1,0 +1,28 @@
+{% layout "_special/setup/_layouts/setup" %}
+
+{% region "step" %}Site{% endregion %}
+
+{% region "stepContents" %}
+
+	<h2>Setup your site</h2>
+
+	{% if site %}
+		<input type="hidden" name="site_id" value="{{ site.id }}" />
+	{% endif %}
+
+	<div class="field">
+		<label for="name">Site Name</label>
+		<div class="input-wrapper"><input id="name" name="name" type="text" maxlength="500" value="{{ site.name }}" /></div>
+	</div>
+
+	<div class="field">
+		<label for="handle">Site Handle</label>
+		<div class="input-wrapper"><input id="handle" name="handle" type="text" maxlength="150" value="{{ site.handle }}" /></div>
+	</div>
+
+	<div class="field">
+		<label for="url">Site URL</label>
+		<div class="input-wrapper"><input id="url" name="url" type="text" maxlength="500" value="{{ site.url }}" /></div>
+	</div>
+
+{% endregion %}

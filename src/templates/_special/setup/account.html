@@ -1,0 +1,53 @@
+{% layout "_special/setup/_layouts/setup" %}
+
+{% region "step" %}Account{% endregion %}
+
+{% region "stepContents" %}
+
+	<h2>Create your account</h2>
+
+	{% if user %}
+		<input type="hidden" name="user_id" value="{{ user.id }}" />
+	{% endif %}
+
+	<div class="grid grid-2col">
+		<div class="col"><div class="col-inner">
+			<div class="field">
+				<label for="first_name">First Name</label>
+				<div class="input-wrapper"><input id="first_name" name="first_name" type="text" maxlength="100%" value="{{ user.first_name }}" /></div>
+			</div>
+		</div></div>
+		<div class="col"><div class="col-inner">
+			<div class="field">
+				<label for="last_name">Last Name</label>
+				<div class="input-wrapper"><input id="last_name" name="last_name" type="text" maxlength="100" value="{{ user.last_name }}" /></div>
+			</div>
+		</div></div>
+	</div>
+
+	<div class="field">
+		<label for="username">Username</label>
+		<div class="input-wrapper"><input id="username" name="username" type="text" maxlength="255" value="{{ user.username }}"></div>
+	</div>
+
+	<div class="field">
+		<label for="email">Email</label>
+		<div class="input-wrapper"><input id="email" name="email" type="text" maxlength="255" value="{{ user.email }}"></div>
+	</div>
+
+	<div class="grid grid-2col">
+		<div class="col"><div class="col-inner">
+			<div class="field">
+				<label for="password">Password</label>
+				<div class="input-wrapper"><input id="password" name="password" type="password" /></div>
+			</div>
+		</div></div>
+		<div class="col"><div class="col-inner">
+			<div class="field">
+				<label for="password2">Password (again)</label>
+				<div class="input-wrapper"><input id="password2" name="password2" type="password" /></div>
+			</div>
+		</div></div>
+	</div>
+
+{% endregion %}

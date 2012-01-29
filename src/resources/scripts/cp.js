@@ -52,16 +52,6 @@ blx.CP =
 		$main: $('#main')
 	},
 
-	onWindowResizeHeight: function()
-	{
-		// set the min #main height
-		var minMainHeight = blx.windowHeight - this.navHeight - 40;
-		this.dom.$main.css('minHeight', minMainHeight);
-
-		if (this.hasSidebar)
-			this.setSidebarHeight();
-	},
-
 	onWindowScroll: function(event)
 	{
 		if (this.hasSidebar)
@@ -80,7 +70,8 @@ blx.CP.navHeight = blx.CP.dom.$nav.outerHeight();
 blx.CP.sidebarTop = parseInt(blx.CP.dom.$sidebar.css('top'));
 
 $(window).on('resize.blx', $.proxy(blx, 'onWindowResize'));
-$(window).on('resizeHeight.cp', $.proxy(blx.CP, 'onWindowResizeHeight'));
+if (blx.CP.hasSidebar)
+	$(window).on('resizeHeight.cp', $.proxy(blx.CP, 'setSidebarHeight'));
 $(window).on('scroll.cp', $.proxy(blx.CP, 'onWindowScroll'));
 blx.onWindowResize();
 blx.CP.onWindowScroll();

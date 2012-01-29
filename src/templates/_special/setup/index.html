@@ -1,12 +1,21 @@
 {% layout "_special/setup/_layouts/setup" %}
 
-{% region "step" %}1{% endregion %}
+{% region "step" %}LicenseKey{% endregion %}
 
 {% region "stepContents" %}
 
-	<h1>Welcome to Blocks!</h1>
+	<h2>Welcome to Blocks!</h2>
 	<p>Before we get started, please enter your license key below. Entering a valid license key will enable features like update notifications and one-click installing.</p>
-	<div class="input-wrapper"><input id="license-key" type="text" /></div>
+
+	{% if licenseKey %}
+		<input type="hidden" name="licensekey_id" value="{{ licenseKey.id }}" />
+	{% endif %}
+
+	<div class="field">
+		<label for="license-key">Your license key</label>
+		<div class="input-wrapper"><input id="license-key" class="code" name="licensekey" type="text" maxlength="73" value="{{ licenseKey.key }}" /></div>
+	</div>
+
 	<p>You can manage your license key(s) at any time from Settings &rarr; System Info.</p>
 
 {% endregion %}
