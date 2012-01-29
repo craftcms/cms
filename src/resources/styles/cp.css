@@ -19,7 +19,7 @@ strong{font-weight:bold;}
 /*  Basic elements
 /* ----------------------------------------*/
 
-body { font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #9da2a8; }
+body { font-family: HelveticaNeue, sans-serif; color: #333; font-size: 13px; line-height: 18px; background: #9da2a8 url(../images/bg.jpg); }
 
 h1 { margin: 0 0 20px -2px; font-size: 36px; line-height: 40px; color: #2d3a46; }
 h2 { font-size: 24px; line-height: 1.4; color: #415466; }
