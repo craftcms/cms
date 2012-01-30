@@ -18,7 +18,7 @@ class bCpDashboardTag extends bTag
 	 */
 	public function widgets()
 	{
-		$widgets = Blocks::app()->cp->getDashboardWidgets();
+		$widgets = Blocks::app()->dashboard->getUserWidgets();
 		$tags = array();
 
 		foreach ($widgets as $widget)

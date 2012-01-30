@@ -74,6 +74,10 @@ return array(
 			'class' => 'application.business.services.bCpService',
 		),
 
+		'dashboard' => array(
+			'class' => 'application.business.services.bDashboardService',
+		),
+
 		'email' => array(
 			'class' => 'application.business.services.bEmailService',
 		),
