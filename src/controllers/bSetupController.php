@@ -126,7 +126,6 @@ class bSetupController extends bBaseController
 			$site->name = Blocks::app()->request->getPost('name');
 			$site->handle = Blocks::app()->request->getPost('handle');
 			$site->url = Blocks::app()->request->getPost('url');
-			$site->enabled = true;
 
 			if ($site->save())
 			{
