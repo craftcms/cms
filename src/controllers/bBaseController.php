@@ -147,4 +147,15 @@ abstract class bBaseController extends CController
 		if (!Blocks::app()->getConfig('devMode') && !Blocks::app()->request->isAjaxRequest)
 			throw new bHttpException(404);
 	}
+
+	/**
+	 * Redirect
+	 */
+	public function redirect($url, $terminate=true, $statusCode=302)
+	{
+		if (is_string($url))
+			$url = bUrlHelper::generateUrl($url);
+
+		parent::redirect($url, $terminate, $statusCode);
+	}
 }

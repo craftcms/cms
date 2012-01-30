@@ -205,6 +205,22 @@ abstract class bBaseModel extends CActiveRecord
 	}
 
 	/**
+	 * Saves the record, whether it's new or existing
+	 */
+	function save($runValidation = true, $attributes = null)
+	{
+		if ($this->isNewRecord)
+		   return parent::save($runValidation, $attributes);
+
+		if (!$runValidation || $this->validate())
+		{
+			return $this->update($attributes);
+		}
+
+		return false;
+	}
+
+	/**
 	 * Creates the model's table
 	 */
 	public function createTable()

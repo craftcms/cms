@@ -11,6 +11,6 @@ html, body { height: 100%; }
 .pane .body .sidebar ol li a .step { display: block; float: left; margin: -3px 8px -3px 0; border-radius: 12px; width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 14px; color: #fff; text-shadow: none; background: #999; }
 .pane .body .sidebar ol li a.sel .step { color: #2d98db; background: #fff; -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
-.pane .body .step-contents { position: absolute; top: 0; left: 220px; width: 540px; padding: 16px 20px; }
+.pane .body .step-contents { position: absolute; top: 0; left: 220px; padding: 16px 20px; width: 540px; height: 360px; overflow: auto; }
 
-.pane .body .step-nav { position: absolute; bottom: 0; left: 221px; border-bottom-right-radius: 3px; width: 539px; padding: 8px 20px; border-top: 1px solid #eee; background: #fcfcfc; }
+.pane .body .step-nav { position: absolute; bottom: 0; left: 221px; border-bottom-right-radius: 3px; width: 539px; padding: 8px 20px; background: #fcfcfc; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.15); }

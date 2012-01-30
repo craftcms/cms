@@ -14,32 +14,47 @@
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="first_name">First Name</label>
-				<div class="input-wrapper"><input id="first_name" name="first_name" type="text" maxlength="100%" value="{{ user.first_name }}" /></div>
+				<div class="input-wrapper"><input id="first_name" name="first_name" {% if user.errors.first_name %}class="error"{% endif %} type="text" maxlength="100%" value="{{ user.first_name }}" /></div>
+				{% if user.errors.first_name %}
+					{% include "_includes/error_list" errors=user.errors.first_name %}
+				{% endif %}
 			</div>
 		</div></div>
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="last_name">Last Name</label>
-				<div class="input-wrapper"><input id="last_name" name="last_name" type="text" maxlength="100" value="{{ user.last_name }}" /></div>
+				<div class="input-wrapper"><input id="last_name" name="last_name" {% if user.errors.last_name %}class="error"{% endif %} type="text" maxlength="100" value="{{ user.last_name }}" /></div>
+				{% if user.errors.last_name %}
+					{% include "_includes/error_list" errors=user.errors.last_name %}
+				{% endif %}
 			</div>
 		</div></div>
 	</div>
 
 	<div class="field">
 		<label for="username">Username</label>
-		<div class="input-wrapper"><input id="username" name="username" type="text" maxlength="255" value="{{ user.username }}"></div>
+		<div class="input-wrapper"><input id="username" name="username" {% if user.errors.username %}class="error"{% endif %} type="text" maxlength="255" value="{{ user.username }}"></div>
+		{% if user.errors.username %}
+			{% include "_includes/error_list" errors=user.errors.username %}
+		{% endif %}
 	</div>
 
 	<div class="field">
 		<label for="email">Email</label>
-		<div class="input-wrapper"><input id="email" name="email" type="text" maxlength="255" value="{{ user.email }}"></div>
+		<div class="input-wrapper"><input id="email" name="email" {% if user.errors.email %}class="error"{% endif %} type="text" maxlength="255" value="{{ user.email }}"></div>
+		{% if user.errors.email %}
+			{% include "_includes/error_list" errors=user.errors.email %}
+		{% endif %}
 	</div>
 
 	<div class="grid grid-2col">
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="password">Password</label>
-				<div class="input-wrapper"><input id="password" name="password" type="password" /></div>
+				<div class="input-wrapper"><input id="password" name="password" {% if user.errors.password %}class="error"{% endif %} type="password" /></div>
+				{% if user.errors.password %}
+					{% include "_includes/error_list" errors=user.errors.password %}
+				{% endif %}
 			</div>
 		</div></div>
 		<div class="col"><div class="col-inner">

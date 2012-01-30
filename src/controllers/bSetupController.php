@@ -20,8 +20,10 @@ class bSetupController extends bBaseController
 	 */
 	public function actionIndex()
 	{
-		// Grab the license key if it's already saved
-		$licenseKey = bLicenseKey::model()->find();
+		$licenseKey = Blocks::app()->user->getFlash('licenseKey');
+
+		if (!$licenseKey)
+			$licenseKey = bLicenseKey::model()->find();
 
 		$this->loadTemplate('_special/setup', array(
 			'licenseKey' => $licenseKey
@@ -45,12 +47,15 @@ class bSetupController extends bBaseController
 
 		$licenseKey->key = Blocks::app()->request->getPost('licensekey');
 
-		if ($licenseKey->isNewRecord)
-			$licenseKey->save();
+		if ($licenseKey->save())
+		{
+			$this->redirect('setup/account');
+		}
 		else
-			$licenseKey->update();
-
-		$this->redirectAfterSave('setup/account');
+		{
+			Blocks::app()->user->setFlash('licenseKey', $licenseKey);
+			$this->redirect('setup');
+		}
 	}
 
 	/**
@@ -58,8 +63,10 @@ class bSetupController extends bBaseController
 	 */
 	public function actionAccount()
 	{
-		// Grab the user if it's already saved
-		$user = bUser::model()->find('admin=:admin', array(':admin'=>true));
+		$user = Blocks::app()->user->getFlash('user');
+
+		if (!$user)
+			$user = bUser::model()->find('admin=:admin', array(':admin'=>true));
 
 		$this->loadTemplate('_special/setup/account', array(
 			'user' => $user
@@ -94,25 +101,34 @@ class bSetupController extends bBaseController
 		$user->enc_type = 'md5';
 		$user->admin = true;
 
-		if ($user->isNewRecord)
-		{
-			$user->save();
+		$new = $user->isNewRecord;
 
-			// Add the default dashboard widgets
-			$widgets = array('bUpdatesWidget', 'bRecentActivityWidget', 'bSiteMapWidget', 'bFeedWidget');
-			foreach ($widgets as $i => $widgetClass)
+		if ($user->save())
+		{
+			if ($new)
 			{
-				$widget = new bUserWidget;
-				$widget->user_id = $user->id;
-				$widget->class = $widgetClass;
-				$widget->sort_order = ($i+1);
-				$widget->save();
+				// Add the default dashboard widgets
+				$widgets = array('bUpdatesWidget', 'bRecentActivityWidget', 'bSiteMapWidget', 'bFeedWidget');
+				foreach ($widgets as $i => $widgetClass)
+				{
+					$widget = new bUserWidget;
+					$widget->user_id = $user->id;
+					$widget->class = $widgetClass;
+					$widget->sort_order = ($i+1);
+					$widget->save();
+				}
 			}
+
+			if (Blocks::app()->request->getQuery('goback') === null)
+				$this->redirect('setup/site');
+			else
+				$this->redirect('setup');
 		}
 		else
-			$user->update();
-
-		$this->redirectAfterSave('setup/site', 'setup');
+		{
+			Blocks::app()->user->setFlash('user', $user);
+			$this->redirect('setup/account');
+		}
 	}
 
 	/**
@@ -120,8 +136,10 @@ class bSetupController extends bBaseController
 	 */
 	public function actionSite()
 	{
-		// Grab the site if it's already saved
-		$site = bSite::model()->find('enabled=:enabled', array(':enabled'=>true));
+		$site = Blocks::app()->user->getFlash('site');
+
+		if (!$site)
+			$site = bSite::model()->find('enabled=:enabled', array(':enabled'=>true));
 
 		$this->loadTemplate('_special/setup/site', array(
 			'site' => $site
@@ -148,24 +166,17 @@ class bSetupController extends bBaseController
 		$site->url = Blocks::app()->request->getPost('url');
 		$site->enabled = true;
 
-		if ($site->isNewRecord)
-			$site->save();
+		if ($site->save())
+		{
+			if (Blocks::app()->request->getQuery('goback') === null)
+				$this->redirect('dashboard');
+			else
+				$this->redirect('setup/account');
+		}
 		else
-			$site->update();
-
-		$this->redirectAfterSave('dashboard', 'setup/account');
-	}
-
-	/**
-	 * Redirect after save
-	 */
-	private function redirectAfterSave($nextUri, $prevUri = 'setup')
-	{
-		if (Blocks::app()->request->getQuery('goback') === null)
-			$url = bUrlHelper::generateUrl($nextUri);
-		else
-			$url = bUrlHelper::generateUrl($prevUri);
-
-		Blocks::app()->request->redirect($url);
+		{
+			Blocks::app()->user->setFlash('site', $site);
+			$this->redirect('setup/site');
+		}
 	}
 }
