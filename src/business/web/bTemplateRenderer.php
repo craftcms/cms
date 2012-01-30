@@ -17,6 +17,29 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 	protected static $_filePermission = 0755;
 
+	const stringPattern = '\[MARKER:\d+\]';
+	const tagPattern = '(?<![-\.\'"\w\/\[])[A-Za-z]\w*';
+	const subtagPattern = '(?P<subtag>
+		\.
+		(?P<func>[A-Za-z]\w*)        # <func>
+		(?:\(                           # parentheses (optional)
+			(?P<params>                 # <params> (optional)
+				(?P<param>              # <param>
+					\d+
+					|
+					\[MARKER:\d+\]
+					|
+					[A-Za-z]\w*(?P>subtag)?
+				)
+				(?P<moreParams>         # <moreParams> (optional)
+					\s*\,\s*
+					(?P>param)
+					(?P>moreParams)?    # recursive <moreParams>
+				)?
+			)?
+		\))?
+	)';
+
 	/**
 	 * Renders a template
 	 * @param object $context The controller or widget who is rendering the template
@@ -108,6 +131,15 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 		fclose($metaFile);
 
 		return $parseNeeded;
+	}
+
+	/**
+	 * Throws a parse error exception
+	 * @param string $message The exception message
+	 */
+	protected function throwParseException($message)
+	{
+		throw new bTemplateRendererException($message, $this->_sourceTemplatePath);
 	}
 
 	/**
@@ -300,8 +332,14 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 				return '<?php $this->endWidget(); ?>';
 
 			case 'include':
-				$this->parseVariables($params, true);
-				return "<?php \$this->loadTemplate({$params}); ?>";
+				if (preg_match('/^(\[MARKER:\d+\]|'.self::tagPattern.self::subtagPattern.')(\s.*)?$/x', $params, $match))
+				{
+					$template = $match[1];
+					$params = isset($match[7]) ? trim($match[7]) : '';
+					$this->parseVariable($template, $offset, true);
+					$params = $this->parseParams($params);
+					return "<?php \$this->loadTemplate({$template}, array({$params})); ?>";
+				}
 
 			// Loops
 
@@ -393,6 +431,56 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	}
 
 	/**
+	 * Parse parameters
+	 * @param string $template The parameter template chunk
+	 * @return string The parsed parameters as PHP array code
+	 */
+	protected function parseParams($template)
+	{
+		$template = trim($template);
+
+		if (!$template)
+			return '';
+
+		$params = array();
+
+		do {
+			$nextEq = strpos($template, '=');
+
+			if ($nextEq === false)
+				$this->throwParseException("Invalid parameter “{$template}”");
+
+			if ($nextEq === 0)
+				$this->throwParseException('Invalid parameter “”');
+
+			$paramName = rtrim(substr($template, 0, $nextEq));
+
+			if (!preg_match('/^'.self::tagPattern.'$/', $paramName))
+				$this->throwParseException('Invalid parameter “'.$paramName.'”');
+
+			$remainingTemplate = ltrim(substr($template, $nextEq+1));
+
+			if (!$remainingTemplate)
+				$this->throwParseException("No value set for the parameter “{$paramName}”");
+
+			$recurringSubtagPattern = substr(self::subtagPattern, 0, -1).'(?P>subtag)?)';
+			if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.$recurringSubtagPattern.'?)(\s+|$)/x', $remainingTemplate, $match))
+				$this->throwParseException("Invalid value set for the parameter “{$paramName}”");
+
+			$paramValueLength = strlen($match[0]);
+			$paramValue = rtrim(substr($remainingTemplate, 0, $paramValueLength));
+			$template = substr($remainingTemplate, $paramValueLength);
+
+			$this->parseVariable($paramValue);
+
+			$params[] = "'{$paramName}'=>{$paramValue}";
+
+		} while ($template);
+
+		return implode(', ', $params);
+	}
+
+	/**
 	 * Parse variable
 	 * @param string $template The template to be parsed
 	 * @param int $offset The offset to start searching for a variable
@@ -402,7 +490,7 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 */
 	protected function parseVariable(&$template, &$offset = 0, $toString = false)
 	{
-		if (preg_match('/(?<![-\.\'"\w\/\[])[A-Za-z]\w*/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
+		if (preg_match('/'.self::tagPattern.'/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
 			$parsedTag = '$'.$tag;
@@ -412,27 +500,7 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 			// search for immediately following subtags
 			$substr = substr($template, $tagOffset + $tagLength);
 
-			while (preg_match('/^
-				(?P<subtag>
-					\s*\.\s*
-					(?P<func>[A-Za-z]\w*)        # <func>
-					(?:\(                           # parentheses (optional)
-						(?P<params>                 # <params> (optional)
-							(?P<param>              # <param>
-								\d+
-								|
-								\[MARKER:\d+\]
-								|
-								[A-Za-z]\w*(?P>subtag)?
-							)
-							(?P<moreParams>         # <moreParams> (optional)
-								\s*\,\s*
-								(?P>param)
-								(?P>moreParams)?    # recursive <moreParams>
-							)?
-						)?
-					\))?
-				)/x', $substr, $subtagMatch))
+			while (preg_match('/^'.self::subtagPattern.'/x', $substr, $subtagMatch))
 			{
 				$parsedTag .= '->_subtag(\''.$subtagMatch['func'].'\'';
 
