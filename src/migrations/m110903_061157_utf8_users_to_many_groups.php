@@ -1,6 +1,7 @@
 <?php
+namespace Blocks;
 
-class m110903_061157_utf8_users_to_many_groups extends CDbMigration
+class m110903_061157_utf8_users_to_many_groups extends \CDbMigration
 {
 	public function safeUp()
 	{

@@ -24,36 +24,10 @@ return array(
 
 	// autoloading model and component classes
 	'import' => array(
-		'application.business.*',
-		'application.business.db.*',
-		'application.business.email.*',
-		'application.business.enums.*',
-		'application.business.exceptions.*',
-		'application.business.install.*',
 		'application.business.lib.*',
 		'application.business.lib.httpclient.*',
 		'application.business.lib.httpclient.adapter.*',
 		'application.business.lib.httpclient.hostnames.*',
-		'application.business.services.*',
-		'application.business.updates.*',
-		'application.business.utils.*',
-		'application.business.web.*',
-		'application.business.web.filters.*',
-		'application.business.web.templatewidgets.*',
-		'application.business.webservices.*',
-		'application.controllers.*',
-		'application.migrations.*',
-		'application.models.*',
-		'application.models.forms.*',
-		'application.widgets.*',
-		'application.tags.*',
-		'application.tags._primitive.*',
-		'application.tags.assets.*',
-		'application.tags.content.*',
-		'application.tags.cp.*',
-		'application.tags.users.*',
-		'application.tags.security.*',
-		'application.tags.site.*',
 	),
 
 	'modules' => array(
@@ -63,74 +37,74 @@ return array(
 	'components' => array(
 		// services
 		'assets' => array(
-			'class' => 'application.business.services.bAssetService',
+			'class' => 'application.business.services.AssetService',
 		),
 
 		'content' => array(
-			'class' => 'application.business.services.bContentService',
+			'class' => 'application.business.services.ContentService',
 		),
 
 		'cp' => array(
-			'class' => 'application.business.services.bCpService',
+			'class' => 'application.business.services.CpService',
 		),
 
 		'email' => array(
-			'class' => 'application.business.services.bEmailService',
+			'class' => 'application.business.services.EmailService',
 		),
 
 		'et' => array(
-			'class' => 'application.business.services.bEtService',
+			'class' => 'application.business.services.EtService',
 		),
 
 		'installer' => array(
-			'class' => 'application.business.services.bInstallerService',
+			'class' => 'application.business.services.InstallerService',
 		),
 
 		'path' => array(
-			'class' => 'application.business.services.bPathService',
+			'class' => 'application.business.services.PathService',
 		),
 
 		'plugins' => array(
-			'class' => 'application.business.services.bPluginService',
+			'class' => 'application.business.services.PluginService',
 		),
 
 		'security' => array(
-			'class' => 'application.business.services.bSecurityService',
+			'class' => 'application.business.services.SecurityService',
 		),
 
 		'settings' => array(
-			'class' => 'application.business.services.bSettingsService',
+			'class' => 'application.business.services.SettingsService',
 		),
 
 		'site' => array(
-			'class' => 'application.business.services.bSiteService',
+			'class' => 'application.business.services.SiteService',
 		),
 
 		'update' => array(
-			'class' => 'application.business.services.bUpdateService',
+			'class' => 'application.business.services.UpdateService',
 		),
 
 		'users' => array(
-			'class' => 'application.business.services.bUsersService',
+			'class' => 'application.business.services.UsersService',
 		),
 
 		// end services
 
 		'file' => array(
-			'class' => 'application.business.utils.bFile',
+			'class' => 'application.business.utils.File',
 		),
 
 		'request' => array(
-			'class' => 'application.business.web.bHttpRequest',
+			'class' => 'Blocks\HttpRequest',
 			'enableCookieValidation'      => true,
 		),
 
 		'viewRenderer' => array(
-			'class' => 'application.business.web.bTemplateRenderer',
+			'class' => 'application.business.web.TemplateRenderer',
 		),
 
 		'urlManager' => array(
-			'class' => 'application.business.web.bUrlManager',
+			'class' => 'application.business.web.UrlManager',
 			'rules' => array(
 				//'<controller:\w+>/<id:\d+>' => '<controller>/view',
 				//'<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
@@ -150,8 +124,8 @@ return array(
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
 			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
-			'driverMap'         => array('mysql' => 'bMysqlSchema'),
-			'class'             => 'application.business.db.bDbConnection'
+			'driverMap'         => array('mysql' => 'MysqlSchema'),
+			'class'             => 'application.business.db.DbConnection'
 		),
 
 		'assetManager' => array(
@@ -162,7 +136,7 @@ return array(
 		'errorHandler' => array(
 			// use 'site/error' action to display errors
 			//'errorAction' => 'site/error',
-			'class' => 'application.business.web.bErrorHandler'
+			'class' => 'application.business.web.ErrorHandler'
 		),
 
 		'fileCache' => array(
@@ -177,7 +151,7 @@ return array(
 					'levels' => 'error, warning',
 				),
 				//array(
-				//	'class' => 'application.business.logging.bWebLogRoute',
+				//	'class' => 'application.business.logging.WebLogRoute',
 				//),
 			),
 		),
@@ -185,12 +159,12 @@ return array(
 		'session' => array(
 			'autoStart'     => true,
 			'cookieMode'    => 'only',
-			'class'         => 'application.business.web.bHttpSession',
+			'class'         => 'application.business.web.HttpSession',
 			'sessionName'   => 'BlocksSessionId',
 		),
 
 		'user' => array(
-			'class'             => 'application.business.web.bWebUser',
+			'class'             => 'application.business.web.WebUser',
 			'allowAutoLogin'    => true,
 			'loginUrl'          => array('/login'),
 			'autoRenewCookie'   => true,

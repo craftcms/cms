@@ -1,6 +1,7 @@
 <?php
+namespace Blocks;
 
-class m110906_180044_migration_encoding_utf8 extends CDbMigration
+class m110906_180044_migration_encoding_utf8 extends \CDbMigration
 {
 	public function safeUp()
 	{

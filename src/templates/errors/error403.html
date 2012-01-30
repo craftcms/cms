@@ -17,7 +17,7 @@
 
 <body>
 	<h1>Unauthorized</h1>
-	<h2><?php echo nl2br(bHtml::encode($data['message'])); ?></h2>
+	<h2><?php echo nl2br(HtmlHelper::encode($data['message'])); ?></h2>
 
 	<p>You do not have the proper credential to access this page.</p>
 	<p>If you think this is a server error, please contact <?php echo $data['admin']; ?>.</p>

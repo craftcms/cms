@@ -1,9 +1,10 @@
 <?php
+namespace Blocks;
 
 /**
  *
 */
-class Blocks extends Yii
+class Blocks extends \Yii
 {
 	private static $_edition = '@@@edition@@@';
 	private static $_version = '0.12';
@@ -28,7 +29,7 @@ class Blocks extends Yii
 	 */
 	public static function getStoredEdition()
 	{
-		$info = bInfo::model()->findAll();
+		$info = Info::model()->findAll();
 		return !empty($info) ? $info[0]->edition : null;
 	}
 
@@ -51,7 +52,7 @@ class Blocks extends Yii
 	 */
 	public static function getStoredVersion()
 	{
-		$info = bInfo::model()->findAll();
+		$info = Info::model()->findAll();
 		return !empty($info) ? $info[0]->version : null;
 	}
 
@@ -74,7 +75,7 @@ class Blocks extends Yii
 	 */
 	public static function getStoredBuild()
 	{
-		$info = bInfo::model()->findAll();
+		$info = Info::model()->findAll();
 		return !empty($info) ? $info[0]->build : null;
 	}
 
@@ -94,6 +95,6 @@ class Blocks extends Yii
 	 */
 	public static function dump($target)
 	{
-		return CVarDumper::dump($target, 10, true);
+		return \CVarDumper::dump($target, 10, true);
 	}
 }

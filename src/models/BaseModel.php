@@ -1,0 +1,347 @@
+<?php
+namespace Blocks;
+
+/**
+ * @abstract
+ */
+abstract class BaseModel extends \CActiveRecord
+{
+	protected $tableName;
+	protected $attributes = array();
+	protected $belongsTo = array();
+	protected $hasBlocks = array();
+	protected $hasContent = array();
+	protected $hasMany = array();
+	protected $hasOne = array();
+	protected $indexes = array();
+	protected $_tableName;
+
+	/**
+	 * Constructor
+	 * @param string $scenario
+	 */
+	public function __construct($scenario = 'insert')
+	{
+		// If Blocks isn't installed, this model's table won't exist yet,
+		// so just create an instance of the class, for use by the installer
+		if (!Blocks::app()->isInstalled)
+		{
+			// Just do the bare minimum of constructor-type stuff.
+			// Maybe init() is all that's necessary?
+			$this->init();
+		}
+		else
+			parent::__construct($scenario);
+	}
+
+	/**
+	 * @return string The model's table name
+	 */
+	public function tableName()
+	{
+		return '{{'.$this->getTableName().'}}';
+	}
+
+	/**
+	 * Get the model's table name (without the curly brackets)
+	 * @return string The table name
+	 * @access protected
+	 */
+	protected function getTableName()
+	{
+		if (!isset($this->_tableName))
+		{
+			if (isset($this->tableName))
+				$this->_tableName = $this->tableName;
+			else
+				$this->_tableName = strtolower(get_class($this));
+		}
+
+		return $this->_tableName;
+	}
+
+	/**
+	 * @return array Validation rules for model's attributes
+	 */
+	public function rules()
+	{
+		$required = array();
+		$integers = array();
+		$maxLengths = array();
+
+		$defaultAttributeSettings = array('type' => AttributeType::String, 'maxLength' => 255, 'required' => false);
+
+		foreach ($this->attributes as $attributeName => $attributeSettings)
+		{
+			$attributeSettings = array_merge($defaultAttributeSettings, $attributeSettings);
+
+			if ($attributeSettings['required'] === true)
+				$required[] = $attributeName;
+
+			if ($attributeSettings['type'] == AttributeType::Integer)
+				$integers[] = $attributeName;
+
+			if ($attributeSettings['type'] == AttributeType::String)
+				$maxLengths[(string)$attributeSettings['maxLength']][] = $attributeName;
+		}
+
+		$rules = array();
+
+		if ($required)
+			$rules[] = array(implode(', ', $required), 'required');
+
+		if ($integers)
+			$rules[] = array(implode(', ', $integers), 'numerical', 'integerOnly' => true);
+
+		if ($maxLengths)
+		{
+			foreach ($maxLengths as $maxLength => $attributeNames)
+			{
+				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxLength);
+			}
+		}
+
+		$rules[] = array(implode(', ', array_keys($this->attributes)), 'safe', 'on' => 'search');
+
+		return $rules;
+	}
+
+	/**
+	 * @return array Relational rules
+	 */
+	public function relations()
+	{
+		$relations = array();
+
+		foreach ($this->hasBlocks as $key => $settings)
+		{
+			$relations[$key] = $this->generateJoinThroughRelation('ContentBlock', 'block_id', $settings);
+		}
+
+		foreach ($this->hasContent as $key => $settings)
+		{
+			$relations[$key] = $this->generateJoinThroughRelation('Content', 'content_id', $settings);
+		}
+
+		foreach ($this->hasMany as $key => $settings)
+		{
+			$relations[$key] = $this->generateHasXRelation(self::HAS_MANY, $settings);
+		}
+
+		foreach ($this->hasOne as $key => $model)
+		{
+			$relations[$key] = $this->generateHasXRelation(self::HAS_ONE, $settings);
+		}
+
+		foreach ($this->belongsTo as $key => $model)
+		{
+			$relations[$key] = array(self::BELONGS_TO, $model, $key.'_id');
+		}
+
+		return $relations;
+	}
+
+	/**
+	 * Generates HAS_MANY relations to a model through another model
+	 * @access protected
+	 * @param string $model The destination model
+	 * @param string $fk2 The join table's foreign key to the destination model
+	 * @param array $settings The initial model's settings for the relation
+	 * @return The CActiveRecord relation
+	 */
+	protected function generateJoinThroughRelation($model, $fk2, $settings)
+	{
+		return array(self::HAS_MANY, $model, array($settings['foreignKey'].'_id' => $fk2), 'through' => $settings['through']);
+	}
+
+	/**
+	 * Generates HAS_MANY and HAS_ONE relations
+	 * @access protected
+	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)
+	 * @param array $settings The relation settings
+	 * @return array The CActiveRecord relation
+	 */
+	protected function generateHasXRelation($relationType, $settings)
+	{
+		if (is_array($settings['foreignKey']))
+		{
+			$fk = array();
+			foreach ($settings['foreignKey'] as $fk1 => $fk2)
+			{
+				$fk[$fk1.'_id'] = $fk2.'_id';
+			}
+		}
+		else
+		{
+			$fk = $settings['foreignKey'].'_id';
+		}
+
+		$relation = array($relationType, $settings['model'], $fk);
+
+		if (isset($settings['through']))
+			$relation['through'] = $settings['through'];
+
+		return $relation;
+	}
+
+	/**
+	 * Retrieves a list of models based on the current search/filter conditions.
+	 * @return CActiveDataProvider The data provider that can return the models based on the search/filter conditions.
+	 */
+	public function search()
+	{
+		// Warning: Please modify the following code to remove attributes that
+		// should not be searched.
+
+		$criteria = new CDbCriteria;
+
+		foreach ($this->attributes as $attributeName => $attributeSettings)
+		{
+			$criteria->compare($attributeName, $this->$attributeName);
+		}
+
+		return new CActiveDataProvider($this, array(
+			'criteria' => $criteria
+		));
+	}
+
+	/**
+	 * Saves the record, whether it's new or existing
+	 */
+	function save($runValidation = true, $attributes = null)
+	{
+		if ($this->isNewRecord)
+		   return parent::save($runValidation, $attributes);
+
+		if (!$runValidation || $this->validate())
+		{
+			return $this->update($attributes);
+		}
+
+		return false;
+	}
+
+	/**
+	 * Creates the model's table
+	 */
+	public function createTable()
+	{
+		$connection = Blocks::app()->db;
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tableName = $this->getTableName();
+
+		// Make sure that the table doesn't already exist
+		if ($connection->schema->getTable('{{'.$tableName.'}}') !== null)
+			throw new bException($tableName.' already exists.');
+
+		// Begin assembling the columns and indexes
+		$columns['id'] = AttributeType::PK;
+		$indexes = array_merge($this->indexes);
+
+		// Add any Foreign Key columns
+		foreach ($this->belongsTo as $name => $settings)
+		{
+			$required = isset($settings['required']) ? $settings['required'] : false;
+			$settings = array('type' => AttributeType::Integer, 'required' => $required);
+			$columns[$name.'_id'] = bDatabaseHelper::generateColumnDefinition($settings);
+
+			// Add unique index for this column?
+			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
+			if (isset($settings['unique']) && $settings['unique'] === true)
+				$indexes[] = array('columns' => array($name.'_id'), 'unique' => $unique);
+		}
+
+		// Add all other columns
+		foreach ($this->attributes as $name => $settings)
+		{
+			$columns[$name] = bDatabaseHelper::generateColumnDefinition($settings);
+
+			// Add (unique) index for this column?
+			$unique = (isset($settings['unique']) && $settings['unique'] === true);
+			if ($unique || (isset($settings['indexed']) && $settings['indexed'] === true))
+				$indexes[] = array('columns' => array($name), 'unique' => $unique);
+		}
+
+		// Add the remaining global columns
+		$columns['date_created'] = bDatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
+		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
+		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true));
+
+		// Create the table
+		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);
+
+		// Create the indexes
+		foreach ($this->indexes as $i => $index)
+		{
+			$columns = is_array($index['columns']) ? $index['columns'] : explode(',', $index['columns']);
+			$unique = (isset($index['unique']) && $index['unique'] === true);
+			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
+
+			$connection->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
+		}
+
+		// Add the INSERT and UPDATE triggers
+		bDatabaseHelper::createInsertAuditTrigger($tableName);
+		bDatabaseHelper::createUpdateAuditTrigger($tableName);
+	}
+
+	/**
+	 * Adds foreign keys to the model's table
+	 */
+	public function addForeignKeys()
+	{
+		$connection = Blocks::app()->db;
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tableName = $this->getTableName();
+
+		foreach ($this->belongsTo as $name => $settings)
+		{
+			$otherModel = new $settings['model'];
+			$otherTableName = $otherModel->getTableName();
+			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
+			$connection->createCommand()->addForeignKey($fkName, '{{'.$tableName.'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id', 'NO ACTION', 'NO ACTION');
+		}
+	}
+
+	/**
+	 * Drops the foreign keys from the model's table
+	 */
+	public function dropForeignKeys()
+	{
+		$connection = Blocks::app()->db;
+		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tableName = $this->getTableName();
+
+		foreach ($this->belongsTo as $name => $settings)
+		{
+			$otherModel = new $settings['model'];
+			$otherTableName = $otherModel->getTableName();
+			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
+			$connection->createCommand()->dropForeignKey($fkName, '{{'.$tableName.'}}');
+		}
+	}
+
+	/**
+	 * Drops the model's table
+	 */
+	public function dropTable()
+	{
+		$connection = Blocks::app()->db;
+		$tableName = $this->getTableName();
+
+		if ($connection->schema->getTable($tableName) !== null)
+		{
+			$connection->createCommand()->dropTable($tableName);
+		}
+	}
+
+	/**
+	 * Returns an instance of the specified model
+	 * @return object The model instance
+	 * @static
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model($class);
+	}
+}

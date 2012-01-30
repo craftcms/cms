@@ -27,11 +27,11 @@ error_reporting(E_ALL);
 // specify how many levels of call stack should be shown in each log message
 defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 
+
 // In case yiic is running
 if(!class_exists('Yii'))
 	require_once($framework);
 
-require_once(BLOCKS_APP_PATH.'business/web/bApp.php');
-
-$app = new bApp($config);
+require_once(BLOCKS_APP_PATH.'business/web/App.php');
+$app = new Blocks\App($config);
 $app->run();

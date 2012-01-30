@@ -1,6 +1,7 @@
 <?php
+namespace Blocks;
 
-class m110902_020154_v0_1_311 extends CDbMigration
+class m110902_020154_v0_1_311 extends \CDbMigration
 {
 	public function safeUp()
 	{
