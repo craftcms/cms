@@ -190,11 +190,11 @@ class bContentService extends CApplicationComponent
 			// create dynamic data table
 			$connection->createCommand()->createTable('{{'.$tableName.'}}',
 				array('id'              => bAttributeType::PK,
-					  'entry_id'        => bAttributeType::Integer.' NOT NULL',
-					  'version_id'      => bAttributeType::Integer.' NOT NULL',
-					  'date_created'    => bAttributeType::Integer,
-					  'date_updated'    => bAttributeType::Integer,
-					  'uid'             => bAttributeType::String
+					  'entry_id'        => bAttributeType::Int.' NOT NULL',
+					  'version_id'      => bAttributeType::Int.' NOT NULL',
+					  'date_created'    => bAttributeType::Int,
+					  'date_updated'    => bAttributeType::Int,
+					  'uid'             => bAttributeType::Varchar
 				));
 
 			$entriesFKName = strtolower($tableName.'_entries_fk');

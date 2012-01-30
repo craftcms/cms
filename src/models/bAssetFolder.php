@@ -8,8 +8,8 @@ class bAssetFolder extends bBaseModel
 	protected $tableName = 'assetfolders';
 
 	protected $attributes = array(
-		'name' => array('type' => bAttributeType::String, 'size' => 1000, 'required' => true),
-		'path' => array('type' => bAttributeType::String, 'size' => 1000, 'required' => true)
+		'name' => bAttributeType::Name,
+		'path' => array('type' => bAttributeType::Varchar, 'size' => 1000, 'required' => true)
 	);
 
 	protected $belongsTo = array(

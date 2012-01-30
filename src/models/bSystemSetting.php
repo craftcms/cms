@@ -17,7 +17,7 @@ class bSystemSetting extends bBaseSettingsModel
 	function init()
 	{
 		// Add the `category` attribute
-		$this->attributes['category'] = array('type' => bAttributeType::String, 'required' => true);
+		$this->attributes['category'] = array('type' => bAttributeType::Char, 'maxLength' => 15, 'required' => true);
 	}
 
 	/**

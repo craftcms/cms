@@ -9,8 +9,8 @@ abstract class bBaseSettingsModel extends bBaseModel
 	protected $model;
 
 	protected $attributes = array(
-		'key'   => array('type' => bAttributeType::String, 'maxLength' => 100, 'required' => true),
-		'value' => array('type' => bAttributeType::Text)
+		'key'   => array('type' => bAttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+		'value' => bAttributeType::Text
 	);
 
 	protected $indexes = array(

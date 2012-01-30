@@ -21,17 +21,30 @@
 
 class bAttributeType
 {
-	const PK        = 'pk';
-	const String    = 'string';
-	const Text      = 'text';
-	const Integer   = 'integer';
-	const Boolean   = 'boolean';
-	const Float     = 'float';
-	const Decimal   = 'decimal';
-	const DateTime  = 'datetime';
-	const Timestamp = 'timestamp';
-	const Time      = 'time';
-	const Date      = 'date';
-	const Binary    = 'binary';
-	const Enum      = 'enum';
+	const PK           = 'pk';
+	const Char         = 'char';
+	const Varchar      = 'varchar';
+	const Text         = 'text';
+	const TinyInt      = 'tinyint';
+	const SmallInt     = 'smallint';
+	const MediumInt    = 'mediumint';
+	const Int          = 'integer';
+	const BigInt       = 'bigint';
+	const Boolean      = 'boolean';
+	const Float        = 'float';
+	const Decimal      = 'decimal';
+	const DateTime     = 'datetime';
+	const Timestamp    = 'timestamp';
+	const Time         = 'time';
+	const Date         = 'date';
+	const Binary       = 'binary';
+	const Enum         = 'enum';
+
+	const ClassName    = 'classname';
+	const Handle       = 'handle';
+	const LanguageCode = 'languagecode';
+	const Name         = 'name';
+	const SortOrder    = 'sortorder';
+	const Template     = 'template';
+	const Version      = 'version';
 }

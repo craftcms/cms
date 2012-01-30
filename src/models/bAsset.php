@@ -8,9 +8,9 @@ class bAsset extends bBaseModel
 	protected $tableName = 'assets';
 
 	protected $attributes = array(
-		'path'      => array('type' => bAttributeType::String, 'maxLength' => 1000, 'required' => true),
-		'filename'  => array('type' => bAttributeType::String, 'maxLength' => 1000, 'required' => true),
-		'extension' => array('type' => bAttributeType::String, 'maxLength' => 50, 'required' => false)
+		'path'      => array('type' => bAttributeType::Varchar, 'maxLength' => 1000, 'required' => true),
+		'filename'  => array('type' => bAttributeType::Varchar, 'maxLength' => 1000, 'required' => true),
+		'extension' => array('type' => bAttributeType::Char, 'maxLength' => 15, 'required' => false)
 	);
 
 	protected $belongsTo = array(

@@ -8,12 +8,12 @@ class bSection extends bBaseModel
 	protected $tableName = 'sections';
 
 	protected $attributes = array(
-		'name'        => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
-		'handle'      => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
-		'url_format'  => array('type' => bAttributeType::String),
-		'max_entries' => array('type' => bAttributeType::Integer, 'unsigned' => true),
-		'template'    => array('type' => bAttributeType::String, 'maxLength' => 500),
-		'sortable'    => array('type' => bAttributeType::Boolean, 'required' => true, 'unsigned' => true)
+		'name'        => bAttributeType::Name,
+		'handle'      => bAttributeType::Handle,
+		'url_format'  => bAttributeType::Varchar,
+		'max_entries' => array('type' => bAttributeType::TinyInt, 'unsigned' => true),
+		'template'    => bAttributeType::Template,
+		'sortable'    => bAttributeType::Boolean
 	);
 
 	protected $belongsTo = array(

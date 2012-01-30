@@ -8,9 +8,9 @@ class bPlugin extends bBaseModel
 	protected $tableName = 'plugins';
 
 	protected $attributes = array(
-		'name'    => array('type' => bAttributeType::String, 'maxLength' => 50, 'unique' => true),
-		'version' => array('type' => bAttributeType::String, 'maxLength' => 15),
-		'enabled' => array('type' => bAttributeType::Boolean, 'default' => true, 'required' => true, 'unsigned' => true)
+		'class'   => bAttributeType::ClassName,
+		'version' => bAttributeType::Version,
+		'enabled' => array('type' => bAttributeType::Boolean, 'default' => true)
 	);
 
 	protected $hasMany = array(

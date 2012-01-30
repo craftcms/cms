@@ -8,21 +8,21 @@ class bUser extends bBaseModel
 	protected $tableName = 'users';
 
 	protected $attributes = array(
-		'username'                              => array('type' => bAttributeType::String,  'required'  => true, 'unique' => true),
-		'first_name'                            => array('type' => bAttributeType::String,  'maxLength' => 100, 'required' => true),
-		'last_name'                             => array('type' => bAttributeType::String,  'maxLength' => 100),
-		'email'                                 => array('type' => bAttributeType::String,  'required'  => true, 'unique' => true),
-		'password'                              => array('type' => bAttributeType::String,  'maxLength' => 128, 'required' => true),
-		'enc_type'                              => array('type' => bAttributeType::String,  'maxLength' => 32, 'required' => true),
-		'auth_token'                            => array('type' => bAttributeType::String,  'maxLength' => 32),
-		'admin'                                 => array('type' => bAttributeType::Boolean, 'unsigned'  => true),
-		'html_email'                            => array('type' => bAttributeType::Boolean, 'unsigned'  => true),
-		'password_reset_required'               => array('type' => bAttributeType::Boolean, 'unsigned'  => true),
-		'last_login_date'                       => array('type' => bAttributeType::Integer, 'maxLength' => 11),
-		'last_password_change_date'             => array('type' => bAttributeType::Integer, 'maxLength' => 11),
-		'last_lockout_date'                     => array('type' => bAttributeType::Integer, 'maxLength' => 11),
-		'failed_password_attempt_count'         => array('type' => bAttributeType::Integer, 'maxLength' => 11, 'unsigned' => true),
-		'failed_password_attempt_window_start'  => array('type' => bAttributeType::Integer, 'maxLength' => 11)
+		'username'                              => array('type' => bAttributeType::Varchar, 'maxLength' => 100, 'required'  => true, 'unique' => true),
+		'first_name'                            => array('type' => bAttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+		'last_name'                             => array('type' => bAttributeType::Varchar, 'maxLength' => 100),
+		'email'                                 => array('type' => bAttributeType::Varchar, 'required'  => true, 'unique' => true),
+		'password'                              => array('type' => bAttributeType::Char, 'required' => true),
+		'enc_type'                              => array('type' => bAttributeType::Char, 'maxLength' => 10, 'required' => true),
+		'auth_token'                            => array('type' => bAttributeType::Char, 'maxLength' => 32),
+		'admin'                                 => bAttributeType::Boolean,
+		'html_email'                            => bAttributeType::Boolean,
+		'password_reset_required'               => bAttributeType::Boolean,
+		'last_login_date'                       => bAttributeType::Int,
+		'last_password_change_date'             => bAttributeType::Int,
+		'last_lockout_date'                     => bAttributeType::Int,
+		'failed_password_attempt_count'         => array('type' => bAttributeType::TinyInt, 'unsigned' => true),
+		'failed_password_attempt_window_start'  => bAttributeType::Int
 	);
 
 	protected $hasContent = array(

@@ -8,13 +8,17 @@ class bRoute extends bBaseModel
 	protected $tableName = 'routes';
 
 	protected $attributes = array(
-		'route'      => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
-		'template'   => array('type' => bAttributeType::String, 'required' => true),
-		'sort_order' => array('type' => bAttributeType::Integer, 'required' => true, 'unsigned' => true)
+		'route'      => array('type' => bAttributeType::Varchar, 'maxLength' => 500, 'required' => true),
+		'template'   => array('type' => bAttributeType::Template, 'required' => true),
+		'sort_order' => bAttributeType::SortOrder
 	);
 
 	protected $belongsTo = array(
 		'site' => array('model' => 'bSite', 'required' => true)
+	);
+
+	protected $indexes = array(
+		array('columns' => array('site_id','route'), 'unique' => true)
 	);
 
 	/**

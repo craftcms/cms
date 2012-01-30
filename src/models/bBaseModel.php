@@ -68,20 +68,19 @@ abstract class bBaseModel extends CActiveRecord
 		$integers = array();
 		$maxLengths = array();
 
-		$defaultAttributeSettings = array('type' => bAttributeType::String, 'maxLength' => 255, 'required' => false);
-
-		foreach ($this->attributes as $attributeName => $attributeSettings)
+		foreach ($this->attributes as $name => $settings)
 		{
-			$attributeSettings = array_merge($defaultAttributeSettings, $attributeSettings);
+			$settings = bDatabaseHelper::normalizeAttributeSettings($settings);
 
-			if ($attributeSettings['required'] === true)
-				$required[] = $attributeName;
+			// Only enforce 'required' validation if there's no default value
+			if (isset($settings['required']) && $settings['required'] === true && !isset($settings['default']))
+				$required[] = $name;
 
-			if ($attributeSettings['type'] == bAttributeType::Integer)
-				$integers[] = $attributeName;
+			if ($settings['type'] == bAttributeType::Int)
+				$integers[] = $name;
 
-			if ($attributeSettings['type'] == bAttributeType::String)
-				$maxLengths[(string)$attributeSettings['maxLength']][] = $attributeName;
+			if ($settings['type'] == bAttributeType::Varchar)
+				$maxLengths[(string)$settings['maxLength']][] = $name;
 		}
 
 		$rules = array();
@@ -194,7 +193,7 @@ abstract class bBaseModel extends CActiveRecord
 
 		$criteria = new CDbCriteria;
 
-		foreach ($this->attributes as $attributeName => $attributeSettings)
+		foreach (array_keys($this->attributes) as $attributeName)
 		{
 			$criteria->compare($attributeName, $this->$attributeName);
 		}
@@ -241,7 +240,7 @@ abstract class bBaseModel extends CActiveRecord
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$required = isset($settings['required']) ? $settings['required'] : false;
-			$settings = array('type' => bAttributeType::Integer, 'required' => $required);
+			$settings = array('type' => bAttributeType::Int, 'required' => $required);
 			$columns[$name.'_id'] = bDatabaseHelper::generateColumnDefinition($settings);
 
 			// Add unique index for this column?
@@ -253,6 +252,7 @@ abstract class bBaseModel extends CActiveRecord
 		// Add all other columns
 		foreach ($this->attributes as $name => $settings)
 		{
+			$settings = bDatabaseHelper::normalizeAttributeSettings($settings);
 			$columns[$name] = bDatabaseHelper::generateColumnDefinition($settings);
 
 			// Add (unique) index for this column?
@@ -262,9 +262,9 @@ abstract class bBaseModel extends CActiveRecord
 		}
 
 		// Add the remaining global columns
-		$columns['date_created'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
-		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Integer, 'required' => true));
-		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::String, 'maxLength' => 36, 'required' => true));
+		$columns['date_created'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Int, 'required' => true));
+		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Int, 'required' => true));
+		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => bAttributeType::Varchar, 'maxLength' => 36, 'required' => true));
 
 		// Create the table
 		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);

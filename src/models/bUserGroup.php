@@ -8,8 +8,8 @@ class bUserGroup extends bBaseModel
 	protected $tableName = 'usergroups';
 
 	protected $attributes = array(
-		'name'        => array('type' => bAttributeType::String, 'required' => true, 'unique' => true),
-		'description' => array('type' => bAttributeType::Text)
+		'name'        => bAttributeType::Name,
+		'description' => bAttributeType::Text
 	);
 
 	protected $hasBlocks = array(

@@ -9,9 +9,9 @@ abstract class bBaseContentModel extends bBaseModel
 	protected $model;
 
 	protected $attributes = array(
-		'num'    => array('type' => bAttributeType::Integer, 'required' => true, 'unsigned' => true),
-		'name'   => array('type' => bAttributeType::String, 'maxLength' => 150),
-		'active' => array('type' => bAttributeType::Boolean, 'required' => true),
+		'num'    => array('type' => bAttributeType::Int, 'required' => true, 'unsigned' => true),
+		'name'   => bAttributeType::Name,
+		'active' => bAttributeType::Boolean,
 		'type'   => array('type' => bAttributeType::Enum, 'values' => array('published','draft','autosave'), 'default' => 'draft', 'required' => true),
 	);
 

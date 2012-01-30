@@ -8,8 +8,8 @@ class bUserWidget extends bBaseModel
 	protected $tableName = 'userwidgets';
 
 	protected $attributes = array(
-		'class'      => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
-		'sort_order' => array('type' => bAttributeType::Integer, 'required' => true, 'unsigned' => true)
+		'class'      => bAttributeType::ClassName,
+		'sort_order' => bAttributeType::SortOrder
 	);
 
 	protected $belongsTo = array(

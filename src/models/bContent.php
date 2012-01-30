@@ -8,7 +8,7 @@ class bContent extends bBaseModel
 	protected $tableName = 'content';
 
 	protected $attributes = array(
-		'language_code' => array('type' => bAttributeType::String, 'maxLength' => 5, 'required' => true)
+		'language_code' => bAttributeType::LanguageCode
 	);
 
 	/**

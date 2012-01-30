@@ -8,10 +8,10 @@ class bSite extends bBaseModel
 	protected $tableName = 'sites';
 
 	protected $attributes = array(
-		'name'     => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true, 'unique' => true),
-		'handle'   => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true, 'unique' => true),
-		'url'      => array('type' => bAttributeType::String, 'required' => true),
-		'enabled'  => array('type' => bAttributeType::Boolean, 'required' => true, 'default' => true, 'unsigned' => true)
+		'name'     => bAttributeType::Name,
+		'handle'   => bAttributeType::Handle,
+		'url'      => array('type' => bAttributeType::Varchar, 'required' => true),
+		'enabled'  => array('type' => bAttributeType::Boolean, 'default' => true)
 	);
 
 	protected $hasBlocks = array(

@@ -11,10 +11,10 @@ class bContentBlock extends bBaseModel
 	 * @return array
 	 */
 	protected $attributes = array(
-		'name'         => array('type' => bAttributeType::String, 'maxLength' => 500, 'required' => true),
-		'handle'       => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
-		'class'        => array('type' => bAttributeType::String, 'maxLength' => 150, 'required' => true),
-		'instructions' => array('type' => bAttributeType::Text)
+		'name'         => bAttributeType::Name,
+		'handle'       => bAttributeType::Handle,
+		'class'        => bAttributeType::ClassName,
+		'instructions' => bAttributeType::Text
 	);
 
 	protected $belongsTo = array(

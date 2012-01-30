@@ -8,13 +8,13 @@ class bEntry extends bBaseModel
 	protected $tableName = 'entries';
 
 	protected $attributes = array(
-		'slug'        => array('type' => bAttributeType::String),
-		'full_uri'    => array('type' => bAttributeType::String, 'maxLength' => 1000, 'unique' => true),
-		'post_date'   => array('type' => bAttributeType::Integer),
-		'expiry_date' => array('type' => bAttributeType::Integer),
-		'sort_order'  => array('type' => bAttributeType::Integer, 'unsigned' => true),
-		'enabled'     => array('type' => bAttributeType::Boolean, 'required' => true, 'default' => true, 'unsigned' => true),
-		'archived'    => array('type' => bAttributeType::Boolean, 'required' => true, 'default' => false, 'unsigned' => true)
+		'slug'        => bAttributeType::Handle,
+		'full_uri'    => array('type' => bAttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
+		'post_date'   => bAttributeType::Int,
+		'expiry_date' => bAttributeType::Int,
+		'sort_order'  => array('type' => bAttributeType::Int, 'unsigned' => true),
+		'enabled'     => array('type' => bAttributeType::Boolean, 'default' => true),
+		'archived'    => bAttributeType::Boolean
 	);
 
 	protected $belongsTo = array(

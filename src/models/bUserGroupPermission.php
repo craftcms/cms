@@ -8,8 +8,8 @@ class bUserGroupPermission extends bBaseModel
 	protected $tableName = 'usergrouppermissions';
 
 	protected $attributes = array(
-		'name' => array('type' => bAttributeType::String, 'required' => true),
-		'value' => array('type' => bAttributeType::Integer, 'required' => true)
+		'name' => array('type' => bAttributeType::Char, 'required' => true),
+		'value' => array('type' => bAttributeType::TinyInt, 'unsigned' => true, 'required' => true)
 	);
 
 	protected $belongsTo = array(

@@ -89,6 +89,11 @@ class bSetupController extends bBaseController
 				else
 					$this->redirect('setup');
 			}
+			else
+			{
+				print_r($user->errors);
+				die('didnt save');
+			}
 		}
 		else
 			// Does an admin user already exist?
