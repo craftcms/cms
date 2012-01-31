@@ -1,20 +1,19 @@
-{% layout "_layouts/sidebar" %}
-{% region "pageTitle" %}Users – {{ pageTitle }}{% /region %}
-{% region "bodyClass" %}{{ bodyClass }}{% /region %}
-{% region "styles" %}{{ cp.resource('app/styles/settings.css').css }}{% /region %}
-{% region "scripts" %}{{ scripts }}{% /region %}
+{% layout "_layouts/sidebar" bodyClass=bodyClass scripts=scripts %}
+{% region "pageTitle" %}Users – {{ pageTitle }}{% endregion %}
+
+{% region "styles" %}
+	{{ cp.resource('app/styles/settings.css').css }}
+{% endregion %}
 
 {% region "sidebar" %}
-
 	<h5>User Management</h5>
 	<ul class="nav">
 		<li><a {% if url.segment(2) == 'register' %}class="sel"{% endif %} href="{{ url.generateUrl('users/register') }}"><span class="icon icon70"></span>Register</a></li>
 	</ul>
-
-{% /region %}
+{% endregion %}
 
 {% region "main" %}
 	<h1>{{ pageTitle }}</h1>
 
 	{{ main }}
-{% /region %}
+{% endregion %}

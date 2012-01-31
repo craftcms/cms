@@ -1,10 +1,7 @@
-{% layout "_layouts/cp" %}
-{% region "pageTitle" %}{{ pageTitle }}{% /region %}
-{% region "bodyClass" %}{{ bodyClass }}{% /region %}
-{% region "styles" %}{{ styles }}{% /region %}
-{% region "scripts" %}{{ scripts }}{% /region %}
+{% layout "_layouts/cp" pageTitle=pageTitle bodyClass=bodyClass styles=styles scripts=scripts %}
+
 {% region "body" %}
 	<div id="main">
 		{{ main }}
 	</div>
-{% /region %}
+{% endregion %}

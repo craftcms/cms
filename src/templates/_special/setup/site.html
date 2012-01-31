@@ -1,12 +1,10 @@
-{% layout "_special/setup/_layouts/setup" %}
-
-{% region "step" %}Site{% endregion %}
+{% layout "_special/setup/_layouts/setup" step="Site" %}
 
 {% region "stepContents" %}
 
 	<h2>Setup your site</h2>
 
-	{% if site %}
+	{% if site.id %}
 		<input type="hidden" name="site_id" value="{{ site.id }}" />
 	{% endif %}
 

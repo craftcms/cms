@@ -1,7 +1,8 @@
-{% layout "_layouts/full" %}
+{% layout "_layouts/full" pageTitle="Dashboard" %}
 
-{% region "pageTitle" %}Dashboard{% /region %}
-{% region "styles" %}{{ cp.resource('app/styles/dashboard.css').css }}{% /region %}
+{% region "styles" %}
+	{{ cp.resource('app/styles/dashboard.css').css }}
+{% endregion %}
 
 {% region "main" %}
 	<div class="toolbar">
@@ -17,13 +18,13 @@
 			<div class="alert">
 				<p>You need to enter your license key into your <a href="{{ url.generateUrl('settings/info') }}">System Info</a> page.</p>
 			</div>
-		{% /if %}
+		{% endif %}
 
 		{% foreach cp.dashboard.alerts as alert %}
 			<div class="alert">
 				<p>{{ alert }}</p>
 			</div>
-		{% /foreach %}
+		{% endforeach %}
 	</div>
 
 	<div id="dashboard">
@@ -34,7 +35,7 @@
 						<div class="head">
 							{% if widget.settings %}
 								<a class="settings-btn" title="Settings"></a>
-							{% /if %}
+							{% endif %}
 							<h5>{{ widget.title }}</h5>
 						</div>
 						{% if widget.settings %}
@@ -47,13 +48,13 @@
 									</div>
 								</div>
 							</div></div>
-						{% /if %}
+						{% endif %}
 						<div class="body">
 							{{ widget.body }}
 						</div>
 					</div>
-				{% /if %}
-			{% /foreach %}
+				{% endif %}
+			{% endforeach %}
 		</div>
 
 		<div id="dashboard-sidebar" class="sidebar">
@@ -64,16 +65,16 @@
 				<div class="body">
 					<ul class="widget-handles">
 						{% foreach cp.dashboard.widgets as widget %}
-						<li class="item {% if !widget.body %}hidden{% /if %}" data-widget-id="widget{{ widget.id }}">
+						<li class="item {% if !widget.body %}hidden{% endif %}" data-widget-id="widget{{ widget.id }}">
 							<span class="grab"></span><span class="title">{{ widget.title }}</span><a class="remove" title="Remove"></a>
 						</li>
-						{% /foreach %}
+						{% endforeach %}
 					</ul>
 				</div>
 			</div>
 		</div>
 	</div>
-{% /region %}
+{% endregion %}
 
 {% region "scripts" %}
 	{% if !cp.updateInfoCached %}
@@ -81,9 +82,9 @@
 			window.getAlerts = true;
 			window.getAlertsUrl = '{{ url.generateActionUrl('app/dashboard/getalerts') }}';
 		</script>
-	{% /if %}
+	{% endif %}
 
 	{{ cp.resource('app/scripts/ui/Drag.js').js }}
 	{{ cp.resource('app/scripts/ui/DragSort.js').js }}
 	{{ cp.resource('app/scripts/dashboard.js').js }}
-{% /region %}
+{% endregion %}

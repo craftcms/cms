@@ -1,8 +1,4 @@
-{% layout "users/_layouts/users" %}
-
-{% region "pageTitle" %}Register{% /region %}
-
-{% region "pageTitle" %}Users{% /region %}
+{% layout "users/_layouts/users" pageTitle="Register" %}
 
 {% region "main" %}
 
@@ -27,4 +23,4 @@
 		<?php echo bHtml::endForm(); ?>
 	</p>
 
-{% /region %}
+{% endregion %}

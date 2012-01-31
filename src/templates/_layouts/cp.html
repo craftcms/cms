@@ -1,5 +1,4 @@
-{% layout "_layouts/basic" %}
-
+{% layout "_layouts/basic" bodyClass=bodyClass %}
 {% region "title" %}{% if pageTitle %}{{ pageTitle }} – {% endif %}Blocks{% endregion %}
 
 {% region "styles" %}
@@ -10,23 +9,21 @@
 	{{ styles }}
 {% endregion %}
 
-{% region "bodyClass" %}{{ bodyClass }}{% endregion %}
-
 {% region "body" %}
 
-<?php
-	foreach (Blocks::app()->user->getMessages() as $key => $message)
-	{
-		echo '<div class="message-'.$message->getStatus().'" style="text-align: center;">';
+	<?php
+		foreach (Blocks::app()->user->getMessages() as $key => $message)
+		{
+			echo '<div class="message-'.$message->getStatus().'" style="text-align: center;">';
 
-		if (is_array($message->getMessage()))
-			echo implode('<br />', $message->getMessage());
-		else
-			echo $message->getMessage().'<br />';
+			if (is_array($message->getMessage()))
+				echo implode('<br />', $message->getMessage());
+			else
+				echo $message->getMessage().'<br />';
 
-		echo '</div>';
-	}
-?>
+			echo '</div>';
+		}
+	?>
 
 	<div id="nav">
 		{% if url.segment(1) != 'setup' %}

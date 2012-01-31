@@ -309,6 +309,7 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 */
 	protected function parseActionMatch($match)
 	{
+		$tag = $match[0];
 		$action = $match[1];
 		$params = isset($match[3]) ? $match[3] : '';
 		$this->extractStrings($params);
@@ -318,9 +319,23 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 			// Layouts, regions, and includes
 
 			case 'layout':
+				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s.*)?$/x', $params, $match))
+					$this->throwException("Invalid layout tag “{$tag}”");
+
+				$template = $match[1];
+				$params = isset($match[7]) ? trim($match[7]) : '';
+				$this->parseVariable($template, $offset, true);
 				$this->_hasLayout = true;
-				$this->parseVariables($params, true);
-				return "<?php \$_layout->template = {$params}; ?>";
+				$r = '<?php'.PHP_EOL."\$_layout->template = {$template};".PHP_EOL;
+
+				$params = $this->parseParams($params);
+				foreach ($params as $paramName => $paramValue)
+				{
+					$r .= "\$_layout->tags['{$paramName}'] = {$paramValue};".PHP_EOL;
+				}
+
+				$r .= '?>';
+				return $r;
 
 			case 'region':
 				$this->_hasLayout = true;
@@ -332,14 +347,25 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 				return '<?php $this->endWidget(); ?>';
 
 			case 'include':
-				if (preg_match('/^(\[MARKER:\d+\]|'.self::tagPattern.self::subtagPattern.')(\s.*)?$/x', $params, $match))
+				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s.*)?$/x', $params, $match))
+					$this->throwException("Invalid include tag “{$tag}”");
+
+				$template = $match[1];
+				$params = isset($match[7]) ? trim($match[7]) : '';
+				$this->parseVariable($template, $offset, true);
+				$r = "<?php \$this->loadTemplate({$template}";
+				$params = $this->parseParams($params);
+				if ($params)
 				{
-					$template = $match[1];
-					$params = isset($match[7]) ? trim($match[7]) : '';
-					$this->parseVariable($template, $offset, true);
-					$params = $this->parseParams($params);
-					return "<?php \$this->loadTemplate({$template}, array({$params})); ?>";
+					$strParams = array();
+					foreach ($params as $paramName => $paramValue)
+					{
+						$strParams[] = "'{$paramName}' = {$paramValue}";
+					}
+					$r .= ', array('.implode(', ', $strParams).')';
 				}
+				$r .= '); ?>';
+				return $r;
 
 			// Loops
 
@@ -437,14 +463,10 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 	 */
 	protected function parseParams($template)
 	{
+		$params = array();
 		$template = trim($template);
 
-		if (!$template)
-			return '';
-
-		$params = array();
-
-		do {
+		while ($template) {
 			$nextEq = strpos($template, '=');
 
 			if ($nextEq === false)
@@ -473,11 +495,11 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 
 			$this->parseVariable($paramValue);
 
-			$params[] = "'{$paramName}'=>{$paramValue}";
+			$params[$paramName] = $paramValue;
 
-		} while ($template);
+		}
 
-		return implode(', ', $params);
+		return $params;
 	}
 
 	/**

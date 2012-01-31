@@ -1,7 +1,8 @@
-{% layout "_layouts/full" %}
+{% layout "_layouts/full" pageTitle="Blocks Setup" %}
 
-{% region "pageTitle" %}Blocks Setup{% /region %}
-{% region "styles" %}{{ cp.resource('app/styles/setup.css').css }}{% /region %}
+{% region "styles" %}
+	{{ cp.resource('app/styles/setup.css').css }}
+{% endregion %}
 
 {% region "main" %}
 

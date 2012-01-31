@@ -1,7 +1,4 @@
-{% layout "settings/_layouts/settings" %}
-
-{% region "pageTitle" %}URL Routing{% /region %}
-{% region "bodyClass" %}routing{% /region %}
+{% layout "settings/_layouts/settings" pageTitle="URL Routing" %}
 
 {% region "main" %}
 	<p>If an incoming request’s URL doesn’t match a page or a template, these “routes” are Blocks’ last resort before responding with a 404. A route basically says, <i>“If the URL looks like <em>this</em>, then return <em>that</em>.”</i></p>
@@ -42,4 +39,4 @@
 		<div class="btn"><span class="icon icon44"></span></div>
 		<div class="btn disabled"><span class="icon icon45"></span></div>
 	</div>
-{% /region %}
+{% endregion %}

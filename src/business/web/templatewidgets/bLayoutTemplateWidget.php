@@ -6,6 +6,7 @@
 class bLayoutTemplateWidget extends COutputProcessor
 {
 	public $template;
+	public $tags = array();
 	public $regions = array();
 
 	/**
@@ -17,14 +18,14 @@ class bLayoutTemplateWidget extends COutputProcessor
 		{
 			$owner = $this->owner;
 
-			$tags['subtemplate'] = new bStringTag($output);
+			$this->tags['subtemplate'] = new bStringTag($output);
 
 			foreach ($this->regions as $region)
 			{
-				$tags[$region->name] = new bStringTag($region->content);
+				$this->tags[$region->name] = $region->content;
 			}
 
-			$output = $owner->loadTemplate($this->template, $tags, true);
+			$output = $owner->loadTemplate($this->template, $this->tags, true);
 		}
 
 		parent::processOutput($output);

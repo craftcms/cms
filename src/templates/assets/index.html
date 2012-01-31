@@ -1,13 +1,13 @@
 {% layout "assets/_layouts/assets" %}
 
 {% if url.get('viewMode') != 'list' %}
-	{% region "viewMode" %}thumbs{% /region %}
+	{% region "viewMode" %}thumbs{% endregion %}
 	{% region "files" %}
 		{% include "assets/_includes/thumbs" %}
-	{% /region %}
+	{% endregion %}
 {% else %}
-	{% region "viewMode" %}list{% /region %}
+	{% region "viewMode" %}list{% endregion %}
 	{% region "files" %}
 		{% include "assets/_includes/list" %}
-	{% /region %}
-{% /if %}
+	{% endregion %}
+{% endif %}

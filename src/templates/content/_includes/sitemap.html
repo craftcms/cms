@@ -11,7 +11,7 @@
 	<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Matrix</a></li>
 	<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Playa</a></li>
 	<li><span class="toggle"></span><a class="has-status" href="{{ url.generateUrl('content/edit') }}"><span class="status on"></span>Wygwam</a></li>
-	<li><span class="toggle"></span><a class="has-status {% if url.segment(2) == "edit" %}sel{% /if %}" href="{{ url.generateUrl('content/edit') }}"><span class="status"></span>Spread</a></li>
+	<li><span class="toggle"></span><a class="has-status {% if url.segment(2) == "edit" %}sel{% endif %}" href="{{ url.generateUrl('content/edit') }}"><span class="status"></span>Spread</a></li>
 </ul>
 
 <h5>Dive Bar</h5>

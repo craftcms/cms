@@ -1,15 +1,13 @@
-{% layout "_layouts/basic" %}
-
-{% region "title" %}Blocks Update{% /region %}
+{% layout "_layouts/basic" title="Blocks Update" %}
 
 {% region "styles" %}
 	{{ cp.resource('app/styles/cp.css').css }}
 	{{ cp.resource('app/styles/update.css').css }}
-{% /region %}
+{% endregion %}
 
 {% region "body" %}
 	<div id="status">Preparing to update…</div>
-{% /region %}
+{% endregion %}
 
 {% region "scripts" %}
 	<script type="text/javascript">
@@ -18,4 +16,4 @@
 		window.updateUrl = '{{ url.generateActionUrl('app/update/update', 'h=') }}';
 	</script>
 	{{ cp.resource('app/scripts/update.js').js }}
-{% /region %}
+{% endregion %}

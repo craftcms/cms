@@ -1,12 +1,10 @@
-{% layout "_special/setup/_layouts/setup" %}
-
-{% region "step" %}Account{% endregion %}
+{% layout "_special/setup/_layouts/setup" step="Account" %}
 
 {% region "stepContents" %}
 
 	<h2>Create your account</h2>
 
-	{% if user %}
+	{% if user.id %}
 		<input type="hidden" name="user_id" value="{{ user.id }}" />
 	{% endif %}
 
