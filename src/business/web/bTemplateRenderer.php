@@ -360,7 +360,7 @@ class bTemplateRenderer extends CApplicationComponent implements IViewRenderer
 					$strParams = array();
 					foreach ($params as $paramName => $paramValue)
 					{
-						$strParams[] = "'{$paramName}' = {$paramValue}";
+						$strParams[] = "'{$paramName}' => {$paramValue}";
 					}
 					$r .= ', array('.implode(', ', $strParams).')';
 				}
