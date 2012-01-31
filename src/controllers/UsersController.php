@@ -11,7 +11,7 @@ class UsersController extends BaseController
 	 */
 	public function actionRegister()
 	{
-		$model = new bRegisterUserForm();
+		$model = new RegisterUserForm();
 
 		// Check to see if it's a submit.
 		if(Blocks::app()->request->isPostRequest)
@@ -31,7 +31,7 @@ class UsersController extends BaseController
 				if ($user !== null)
 				{
 					// success message (flash?)
-					$this->redirect(bUrlHelper::generateActionUrl('app/users/register'));
+					$this->redirect(UrlHelper::generateActionUrl('app/users/register'));
 				}
 			}
 
