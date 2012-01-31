@@ -1,5 +1,5 @@
 <?php
-namespace Blocks;
+namespace blocks\app\tags\_primitive;
 
 /**
  *
