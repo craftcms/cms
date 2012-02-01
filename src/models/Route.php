@@ -17,8 +17,4 @@ class Route extends BaseModel
 	protected $belongsTo = array(
 		'site' => array('model' => 'Site', 'required' => true)
 	);
-
-	protected $indexes = array(
-		array('columns' => array('site_id','route'), 'unique' => true)
-	);
 }
