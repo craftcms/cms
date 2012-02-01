@@ -87,20 +87,20 @@ abstract class BaseModel extends \CActiveRecord
 		$rules = array();
 
 		if ($required)
-			$rules[] = array(implode(', ', $required), 'required');
+			$rules[] = array(implode(',', $required), 'required');
 
 		if ($integers)
-			$rules[] = array(implode(', ', $integers), 'numerical', 'integerOnly' => true);
+			$rules[] = array(implode(',', $integers), 'numerical', 'integerOnly' => true);
 
 		if ($maxLengths)
 		{
 			foreach ($maxLengths as $maxLength => $attributeNames)
 			{
-				$rules[] = array(implode(', ', $attributeNames), 'length', 'max' => (int)$maxLength);
+				$rules[] = array(implode(',', $attributeNames), 'length', 'max' => (int)$maxLength);
 			}
 		}
 
-		$rules[] = array(implode(', ', array_keys($this->attributes)), 'safe', 'on' => 'search');
+		$rules[] = array(implode(',', array_keys($this->attributes)), 'safe', 'on' => 'search');
 
 		return $rules;
 	}
