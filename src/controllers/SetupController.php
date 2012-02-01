@@ -35,7 +35,7 @@ class SetupController extends BaseController
 			$licenseKey->key = Blocks::app()->request->getPost('licensekey');
 
 			if ($licenseKey->save())
-				$this->redirect('setup/account');
+				$this->redirect('setup/site');
 		}
 		else
 			// Does a license key already exist?
@@ -43,6 +43,44 @@ class SetupController extends BaseController
 
 		$this->loadTemplate('_special/setup', array(
 			'licenseKey' => $licenseKey
+		));
+	}
+
+	/**
+	 * Site form
+	 */
+	public function actionSite()
+	{
+		// Is this a post request?
+		if (Blocks::app()->request->requestType == 'POST')
+		{
+			$postSiteId = Blocks::app()->request->getPost('site_id');
+
+			if ($postSiteId)
+				$site = Site::model()->findByPk($postSiteId);
+
+			if (empty($site))
+				$site = new Site;
+
+			$site->name = Blocks::app()->request->getPost('name');
+			$site->handle = Blocks::app()->request->getPost('handle');
+			$site->url = Blocks::app()->request->getPost('url');
+			$site->enabled = true;
+
+			if ($site->save())
+			{
+				if (Blocks::app()->request->getQuery('goback') === null)
+					$this->redirect('setup/account');
+				else
+					$this->redirect('setup');
+			}
+		}
+		else
+			// Does a site already exist?
+			$site = Site::model()->find('enabled=:enabled', array(':enabled'=>true));
+
+		$this->loadTemplate('_special/setup/site', array(
+			'site' => $site
 		));
 	}
 
@@ -86,14 +124,9 @@ class SetupController extends BaseController
 					Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);
 
 				if (Blocks::app()->request->getQuery('goback') === null)
-					$this->redirect('setup/site');
+					$this->redirect('dashboard');
 				else
-					$this->redirect('setup');
-			}
-			else
-			{
-				print_r($user->errors);
-				die('didnt save');
+					$this->redirect('setup/site');
 			}
 		}
 		else
@@ -102,44 +135,6 @@ class SetupController extends BaseController
 
 		$this->loadTemplate('_special/setup/account', array(
 			'user' => $user
-		));
-	}
-
-	/**
-	 * Site form
-	 */
-	public function actionSite()
-	{
-		// Is this a post request?
-		if (Blocks::app()->request->requestType == 'POST')
-		{
-			$postSiteId = Blocks::app()->request->getPost('site_id');
-
-			if ($postSiteId)
-				$site = Site::model()->findByPk($postSiteId);
-
-			if (empty($site))
-				$site = new Site;
-
-			$site->name = Blocks::app()->request->getPost('name');
-			$site->handle = Blocks::app()->request->getPost('handle');
-			$site->url = Blocks::app()->request->getPost('url');
-			$site->enabled = true;
-
-			if ($site->save())
-			{
-				if (Blocks::app()->request->getQuery('goback') === null)
-					$this->redirect('dashboard');
-				else
-					$this->redirect('setup/account');
-			}
-		}
-		else
-			// Does a site already exist?
-			$site = Site::model()->find('enabled=:enabled', array(':enabled'=>true));
-
-		$this->loadTemplate('_special/setup/site', array(
-			'site' => $site
 		));
 	}
 }

@@ -313,11 +313,11 @@ class App extends \CWebApplication
 	{
 		if (!isset($this->_isSetup))
 		{
-			// For Blocks to be considered "set up", there must be at least one license key, one admin user, and one enabled site.
+			// For Blocks to be considered "set up", there must be at least one license key, enabled site, and admin user.
 			$this->_isSetup = (
 				LicenseKey::model()->exists()
-				&& User::model()->find('admin=:admin', array(':admin'=>true))
-				&& Site::model()->exists('enabled=:enabled', array(':enabled'=>true)));
+				&& Site::model()->exists('enabled=:enabled', array(':enabled'=>true))
+				&& User::model()->exists('admin=:admin', array(':admin'=>true)));
 		}
 
 		return $this->_isSetup;
