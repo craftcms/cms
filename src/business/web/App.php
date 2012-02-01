@@ -14,20 +14,27 @@ class App extends \CWebApplication
 
 	public function init()
 	{
-		$this->_importClassMap();
+		// Import the bare minimum to determine if what type of request this is
+		self::import('business.Blocks');
+		self::import('business.enums.UrlFormat');
+		self::import('business.enums.RequestMode');
+		self::import('business.web.HttpRequest');
 
-		// Is this a resource request?
-		if ($this->request->mode == RequestMode::Resource)
-		{
-			$this->processResourceRequest();
-			exit(1);
-		}
+		// Process resources before all else
+		$this->processResourceRequest();
+
+		// Import the rest of Blocks' classes
+		$this->importClasses();
 	}
 
-	private function _importClassMap()
+	/**
+	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths
+	 */
+	private function importClasses()
 	{
-		$dirs = array(
-			'business.*',
+		$aliases = array(
+			'business.EmailAddress',
+			'business.WebLogRoute',
 			'business.db.*',
 			'business.email.*',
 			'business.enums.*',
@@ -56,9 +63,9 @@ class App extends \CWebApplication
 			'widgets.*',
 		);
 
-		foreach ($dirs as $dir)
+		foreach ($aliases as $alias)
 		{
-			self::import($dir);
+			self::import($alias);
 		}
 	}
 
@@ -178,22 +185,36 @@ class App extends \CWebApplication
 	 */
 	private function processResourceRequest()
 	{
-		// get the path segments, except for the first one which we already know is "resources"
-		$segs = array_slice(array_merge($this->request->pathSegments), 1);
+		if ($this->request->mode == RequestMode::Resource)
+		{
+			// Import the bare minimum to process a resource
+			self::import('business.utils.File');
+			self::import('business.utils.HtmlHelper');
+			self::import('business.utils.UrlHelper');
+			self::import('business.web.ErrorHandler');
+			self::import('business.web.ResourceProcessor');
+			self::import('business.web.UrlManager');
+			self::import('business.services.PathService');
 
-		// get the resource handle ("app" or a plugin class)
-		$handle = array_shift($segs);
+			// get the path segments, except for the first one which we already know is "resources"
+			$segs = array_slice(array_merge($this->request->pathSegments), 1);
 
-		if ($handle == 'app')
-			$rootFolderPath = $this->path->resourcesPath;
-		else
-			$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+			// get the resource handle ("app" or a plugin class)
+			$handle = array_shift($segs);
 
-		$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
-		$relativeResourcePath = implode('/', $segs);
+			if ($handle == 'app')
+				$rootFolderPath = $this->path->resourcesPath;
+			else
+				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
 
-		$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
-		$resourceProcessor->processResourceRequest();
+			$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
+			$relativeResourcePath = implode('/', $segs);
+
+			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+			$resourceProcessor->processResourceRequest();
+
+			exit(1);
+		}
 	}
 
 	/**
