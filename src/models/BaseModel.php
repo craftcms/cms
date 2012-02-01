@@ -174,12 +174,12 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->hasBlocks as $key => $settings)
 		{
-			$relations[$key] = $this->generateJoinThroughRelation('ContentBlock', 'block_id', $settings);
+			$relations[$key] = $this->generateJoinThroughRelation('Blocks\\ContentBlock', 'block_id', $settings);
 		}
 
 		foreach ($this->hasContent as $key => $settings)
 		{
-			$relations[$key] = $this->generateJoinThroughRelation('Content', 'content_id', $settings);
+			$relations[$key] = $this->generateJoinThroughRelation('Blocks\\Content', 'content_id', $settings);
 		}
 
 		foreach ($this->hasMany as $key => $settings)
@@ -194,7 +194,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->belongsTo as $key => $settings)
 		{
-			$relations[$key] = array(self::BELONGS_TO, $settings['model'], $key.'_id');
+			$relations[$key] = array(self::BELONGS_TO, __NAMESPACE__.'\\'.$settings['model'], $key.'_id');
 		}
 
 		return $relations;
@@ -210,7 +210,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	protected function generateJoinThroughRelation($model, $fk2, $settings)
 	{
-		return array(self::HAS_MANY, $model, array($settings['foreignKey'].'_id' => $fk2), 'through' => $settings['through']);
+		return array(self::HAS_MANY, __NAMESPACE__.'\\'.$model, array($settings['foreignKey'].'_id' => $fk2), 'through' => __NAMESPACE__.'\\'.$settings['through']);
 	}
 
 	/**
@@ -235,10 +235,10 @@ abstract class BaseModel extends \CActiveRecord
 			$fk = $settings['foreignKey'].'_id';
 		}
 
-		$relation = array($relationType, $settings['model'], $fk);
+		$relation = array($relationType, __NAMESPACE__.'\\'.$settings['model'], $fk);
 
 		if (isset($settings['through']))
-			$relation['through'] = $settings['through'];
+			$relation['through'] =  __NAMESPACE__.'\\'.$settings['through'];
 
 		return $relation;
 	}
