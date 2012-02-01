@@ -70,6 +70,7 @@ abstract class BaseModel extends \CActiveRecord
 		$required = array();
 		$integers = array();
 		$emails = array();
+		$strictLengths = array();
 		$minLengths = array();
 		$maxLengths = array();
 
@@ -94,11 +95,17 @@ abstract class BaseModel extends \CActiveRecord
 				$rules[] = array($name, 'in', 'range' => $values);
 			}
 
-			if (isset($settings['minLength']) && is_numeric($settings['minLength']) && $settings['minLength'] > 0)
-				$minLengths[(string)$settings['minLength']][] = $name;
+			if (isset($settings['length']) && is_numeric($settings['length']) && $settings['length'] > 0)
+				$strictLengths[(string)$settings['length']][] = $name;
+			else
+			{
+				// Only worry about min- and max-lengths if a strict length isn't set
+				if (isset($settings['minLength']) && is_numeric($settings['minLength']) && $settings['minLength'] > 0)
+					$minLengths[(string)$settings['minLength']][] = $name;
 
-			if (isset($settings['maxLength']) && is_numeric($settings['maxLength']) && $settings['maxLength'] > 0)
-				$maxLengths[(string)$settings['maxLength']][] = $name;
+				if (isset($settings['maxLength']) && is_numeric($settings['maxLength']) && $settings['maxLength'] > 0)
+					$maxLengths[(string)$settings['maxLength']][] = $name;
+			}
 		}
 
 		if ($required)
@@ -109,6 +116,14 @@ abstract class BaseModel extends \CActiveRecord
 
 		if ($emails)
 			$rules[] = array(implode(',', $emails), 'email');
+
+		if ($strictLengths)
+		{
+			foreach ($strictLengths as $strictLength => $attributeNames)
+			{
+				$rules[] = array(implode(',', $attributeNames), 'length', 'is' => (int)$strictLength);
+			}
+		}
 
 		if ($minLengths)
 		{
