@@ -263,6 +263,8 @@ abstract class BaseModel extends \CActiveRecord
 			$unique = (isset($settings['unique']) && $settings['unique'] === true);
 			if ($unique || (isset($settings['indexed']) && $settings['indexed'] === true))
 				$indexes[] = array('columns' => array($name), 'unique' => $unique);
+
+			$columns[$name] = DatabaseHelper::generateColumnDefinition($settings);
 		}
 
 		// Add the remaining global columns
