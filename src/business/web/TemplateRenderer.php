@@ -257,14 +257,14 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 
 		foreach ($this->_variables as $var)
 		{
-			$head .= "if (!isset(\${$var})) \${$var} = \\Blocks\\TemplateHelper::getGlobalTag('{$var}');".PHP_EOL;
+			$head .= "if (!isset(\${$var})) \${$var} = TemplateHelper::getGlobalTag('{$var}');".PHP_EOL;
 		}
 		
 		$head .= '$this->layout = null;'.PHP_EOL;
 
 		if ($this->_hasLayout)
 		{
-			$head .= '$_layout = $this->beginWidget(\'\\Blocks\\LayoutTemplateWidget\');'.PHP_EOL;
+			$head .= '$_layout = $this->beginWidget(\'Blocks\\LayoutTemplateWidget\');'.PHP_EOL;
 		}
 
 		$head .= '?>';
@@ -342,7 +342,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 			case 'region':
 				$this->_hasLayout = true;
 				$this->parseVariables($params, true);
-				return "<?php \$_layout->regions[] = \$this->beginWidget('\\Blocks\\RegionTemplateWidget', array('name' => {$params})); ?>";
+				return "<?php \$_layout->regions[] = \$this->beginWidget('Blocks\\RegionTemplateWidget', array('name' => {$params})); ?>";
 
 			case '/region':
 			case 'endregion':
@@ -379,8 +379,8 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 					$subvar = '$'.$match[3];
 
 					return "<?php foreach ({$match[1]}->__toArray() as {$index} => {$subvar}):" . PHP_EOL .
-						"{$index} = \\Blocks\\TemplateHelper::getVarTag({$index});" . PHP_EOL .
-						"{$subvar} = \\Blocks\\TemplateHelper::getVarTag({$subvar}); ?>";
+						"{$index} = TemplateHelper::getVarTag({$index});" . PHP_EOL .
+						"{$subvar} = TemplateHelper::getVarTag({$subvar}); ?>";
 				}
 				return '';
 
@@ -410,14 +410,14 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 				if (preg_match('/^([A-Za-z]\w*)\s*=\s*(.*)$/m', $params, $match))
 				{
 					$this->parseVariables($match[2]);
-					return "<?php \${$match[1]} = \\Blocks\\TemplateHelper::getVarTag({$match[2]}); ?>";
+					return "<?php \${$match[1]} = TemplateHelper::getVarTag({$match[2]}); ?>";
 				}
 				return '';
 
 			// Redirect
 			case 'redirect':
 				$this->parseVariables($params, true);
-				return "<?php \\Blocks\\Blocks::app()->request->redirect({$params}); ?>";
+				return "<?php Blocks::app()->request->redirect({$params}); ?>";
 		}
 	}
 
