@@ -417,7 +417,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 			// Redirect
 			case 'redirect':
 				$this->parseVariables($params, true);
-				return "<?php Blocks::app()->request->redirect({$params}); ?>";
+				return "<?php Blocks::app()->request->redirect(UrlHelper::generateUrl({$params})); ?>";
 		}
 	}
 
