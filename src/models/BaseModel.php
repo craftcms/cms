@@ -68,6 +68,7 @@ abstract class BaseModel extends \CActiveRecord
 		$required = array();
 		$integers = array();
 		$emails = array();
+		$minLengths = array();
 		$maxLengths = array();
 
 		foreach ($this->attributes as $name => $settings)
@@ -85,7 +86,10 @@ abstract class BaseModel extends \CActiveRecord
 			if ($settings['type'] == AttributeType::Int)
 				$integers[] = $name;
 
-			if ($settings['type'] == AttributeType::Varchar)
+			if (isset($settings['minLength']) && is_numeric($settings['minLength']) && $settings['minLength'] > 0)
+				$minLengths[(string)$settings['minLength']][] = $name;
+
+			if (isset($settings['maxLength']) && is_numeric($settings['maxLength']) && $settings['maxLength'] > 0)
 				$maxLengths[(string)$settings['maxLength']][] = $name;
 		}
 
@@ -99,6 +103,14 @@ abstract class BaseModel extends \CActiveRecord
 
 		if ($emails)
 			$rules[] = array(implode(',', $emails), 'email');
+
+		if ($minLengths)
+		{
+			foreach ($minLengths as $minLength => $attributeNames)
+			{
+				$rules[] = array(implode(',', $attributeNames), 'length', 'min' => (int)$minLength);
+			}
+		}
 
 		if ($maxLengths)
 		{
