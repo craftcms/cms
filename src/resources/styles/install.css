@@ -4,9 +4,9 @@ body { background: #333 -webkit-radial-gradient(#333, #111); }
 
 .install-container { position: absolute; top: 50%; margin-top: -16px; width: 100%; text-align: center; }
 
-#install-btn { display: inline-block; border-radius: 4px; height: 40px; line-height: 40px; font-size: 16px; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.15), 0 2px 20px rgba(0,0,0,0.25); }
+#install-btn { display: inline-block; border-radius: 4px; height: 40px; line-height: 40px; font-size: 16px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 20px rgba(0,0,0,0.25) !important; }
 #install-btn:active,
-#install-btn.sel { margin: 1px 0 0 !important; padding: 0 !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 5px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.15); }
+#install-btn.sel { margin: 1px 0 0 !important; padding: 0 !important; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 0 5px rgba(0,0,0,0.5), 0 0 0 1px rgba(0,0,0,0.15) !important; }
 
 #install-btn.sel { position: relative; overflow: hidden; cursor: default; }
 #install-btn.sel .iconlabel { display: block; position: absolute; top: 0; left: 0; padding-right: 24px; background: no-repeat 100% 50%; }
