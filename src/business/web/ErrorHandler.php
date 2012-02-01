@@ -211,7 +211,7 @@ class ErrorHandler extends \CErrorHandler
 		try
 		{
 			$connection = Blocks::app()->db;
-			if ($connection)
+			if ($connection && Blocks::app()->db->schema->getTable('{{site}}' !== null))
 				$viewPaths[] = Blocks::app()->path->siteTemplatePath;
 		}
 		catch(Exception $e)
