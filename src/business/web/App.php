@@ -313,10 +313,11 @@ class App extends \CWebApplication
 	{
 		if (!isset($this->_isSetup))
 		{
-			// Check to see if a site exists.  If not, we're still in setup mode
-			$totalSites = Site::model()->exists('enabled=:enabled', array(':enabled'=>true));
-
-			$this->_isSetup = ($totalSites > 0);
+			// For Blocks to be considered "set up", there must be at least one license key, one admin user, and one enabled site.
+			$this->_isSetup = (
+				LicenseKey::model()->exists()
+				&& User::model()->find('admin=:admin', array(':admin'=>true))
+				&& Site::model()->exists('enabled=:enabled', array(':enabled'=>true)));
 		}
 
 		return $this->_isSetup;
