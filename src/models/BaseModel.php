@@ -85,7 +85,7 @@ abstract class BaseModel extends \CActiveRecord
 			if ($settings['type'] == AttributeType::Int)
 				$integers[] = $name;
 
-			if ($settings['type'] == AttributeType::Varchar)
+			if (isset($settings['maxLength']) && is_numeric($settings['maxLength']) && $settings['maxLength'] > 0)
 				$maxLengths[(string)$settings['maxLength']][] = $name;
 		}
 
