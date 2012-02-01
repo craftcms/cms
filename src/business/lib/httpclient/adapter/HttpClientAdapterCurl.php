@@ -85,7 +85,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 	{
 		if (!extension_loaded('curl'))
 		{
-			throw new bException('cURL extension has to be loaded to use this HttpClient adapter.');
+			throw new Exception('cURL extension has to be loaded to use this HttpClient adapter.');
 		}
 
 		$this->_invalidOverwritableCurlOptions = array(
@@ -109,7 +109,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 	/**
 	 * Set the configuration array for the adapter
-	 * @throws bException
+	 * @throws Exception
 	 * @param  array $config
 	 * @return HttpClientAdapterCurl
 	 */
@@ -117,7 +117,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 	{
 		if (!is_array($config))
 		{
-			throw new bException('Array expected, got '.gettype($config));
+			throw new Exception('Array expected, got '.gettype($config));
 		}
 
 		if(isset($config['proxy_user']) && isset($config['proxy_pass']))
@@ -180,7 +180,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 	 * @param  int     $port
 	 * @param  boolean $secure
 	 * @return void
-	 * @throws bException if unable to connect
+	 * @throws Exception if unable to connect
 	 */
 	public function connect($host, $port = 80, $secure = false)
 	{
@@ -213,7 +213,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 		if (!$this->_curl)
 		{
 			$this->close();
-			throw new bException('Unable to Connect to '.$host.':'.$port);
+			throw new Exception('Unable to Connect to '.$host.':'.$port);
 		}
 
 		if ($secure !== false)
@@ -242,19 +242,19 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 	 * @param  array         $headers
 	 * @param  string        $body
 	 * @return string        $request
-	 * @throws bException If connection fails, connected to wrong host, no PUT file defined, unsupported method, or unsupported cURL option
+	 * @throws Exception If connection fails, connected to wrong host, no PUT file defined, unsupported method, or unsupported cURL option
 	 */
 	public function write($method, $uri, $httpVersion = 1.1, $headers = array(), $body = '')
 	{
 		// Make sure we're properly connected
 		if (!$this->_curl)
 		{
-			throw new bException("Trying to write but we are not connected");
+			throw new Exception("Trying to write but we are not connected");
 		}
 
 		if ($this->_connected_to[0] != $uri->getHost() || $this->_connected_to[1] != $uri->getPort())
 		{
-			throw new bException("Trying to write but we are connected to the wrong host");
+			throw new Exception("Trying to write but we are connected to the wrong host");
 		}
 
 		// set URL
@@ -298,7 +298,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 					if (!isset($this->_config['curloptions'][CURLOPT_INFILESIZE]))
 					{
-						throw new bException("Cannot set a file-handle for cURL option CURLOPT_INFILE without also setting its size in CURLOPT_INFILESIZE.");
+						throw new Exception("Cannot set a file-handle for cURL option CURLOPT_INFILE without also setting its size in CURLOPT_INFILESIZE.");
 					}
 
 					if(is_resource($body))
@@ -338,12 +338,12 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 			default:
 				// For now, through an exception for unsupported request methods
-				throw new bException("Method currently not supported");
+				throw new Exception("Method currently not supported");
 		}
 
 		if(is_resource($body) && $curlMethod != CURLOPT_PUT)
 		{
-			throw new bException("Streaming requests are allowed only with PUT");
+			throw new Exception("Streaming requests are allowed only with PUT");
 		}
 
 		// get http version to use
@@ -412,7 +412,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 				{
 					if (curl_setopt($this->_curl, $k, $v) == false)
 					{
-						throw new bException(sprintf("Unknown or erroreous cURL option '%s' set", $k));
+						throw new Exception(sprintf("Unknown or erroreous cURL option '%s' set", $k));
 					}
 				}
 			}
@@ -432,7 +432,7 @@ class HttpClientAdapterCurl implements HttpClientAdapterInterface, HttpClientAda
 
 		if (empty($this->_response))
 		{
-			throw new bException("Error in cURL request: ".curl_error($this->_curl));
+			throw new Exception("Error in cURL request: ".curl_error($this->_curl));
 		}
 
 		// cURL automatically decodes chunked-messages, this means we have to disallow the HttpResponse to do it again

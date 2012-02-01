@@ -220,7 +220,7 @@ class HttpClient
 	 * Set the URI for the next request
 	 * @param  UriHttp|string $uri
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setUri($uri)
 	{
@@ -231,7 +231,7 @@ class HttpClient
 
 		if (!$uri instanceof UriHttp)
 		{
-			throw new bException('Passed parameter is not a valid HTTP URI.');
+			throw new Exception('Passed parameter is not a valid HTTP URI.');
 		}
 
 		// Set auth if username and password has been specified in the uri
@@ -270,13 +270,13 @@ class HttpClient
 	 * Set configuration parameters for this HTTP client
 	 * @param array $config
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setConfig($config = array())
 	{
 		if (!is_array($config))
 		{
-			throw new bException('Expected array parameter, given '.gettype($config));
+			throw new Exception('Expected array parameter, given '.gettype($config));
 		}
 
 		foreach ($config as $k => $v)
@@ -290,13 +290,13 @@ class HttpClient
 	 * Validated the passed method and sets it. If we have files set for POST requests, and the new method is not POST, the files are silently dropped.
 	 * @param string $method
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setMethod($method = self::GET)
 	{
 		if (!preg_match('/^[^\x00-\x1f\x7f-\xff\(\)<>@,;:\\\\"\/\[\]\?={}\s]+$/', $method))
 		{
-			throw new bException("'{$method}' is not a valid HTTP request method.");
+			throw new Exception("'{$method}' is not a valid HTTP request method.");
 		}
 
 		if ($method == self::POST && $this->encType === null)
@@ -323,7 +323,7 @@ class HttpClient
 	 * @param string|array $name Header name, full header string ('Header: value') or an array of headers
 	 * @param mixed $value Header value or null
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setHeaders($name, $value = null)
 	{
@@ -351,7 +351,7 @@ class HttpClient
 			// Make sure the name is valid if we are in strict mode
 			if ($this->config['strict'] && (!preg_match('/^[a-zA-Z0-9-]+$/', $name)))
 			{
-				throw new bException("{$name} is not a valid HTTP header name");
+				throw new Exception("{$name} is not a valid HTTP header name");
 			}
 
 			$normalized_name = strtolower($name);
@@ -504,7 +504,7 @@ class HttpClient
 	 * @param string $password Password
 	 * @param string $type Authentication type
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setAuth($user, $password = '', $type = self::AUTH_BASIC)
 	{
@@ -526,7 +526,7 @@ class HttpClient
 			// Check we got a proper authentication type
 			if (!defined('self::AUTH_'.strtoupper($type)))
 			{
-				throw new bException("Invalid or not supported authentication type: '$type'");
+				throw new Exception("Invalid or not supported authentication type: '$type'");
 			}
 
 			$this->auth = array(
@@ -544,7 +544,7 @@ class HttpClient
 	 * A cookie jar is an object that holds and maintains cookies across HTTP requests and responses.
 	 * @param HttpCookieJar|boolean $cookieJar Existing CookieJar object, true to create a new one, false to disable
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setCookieJar($cookieJar = true)
 	{
@@ -569,7 +569,7 @@ class HttpClient
 				}
 				else
 				{
-					throw new bException('Invalid parameter type passed as CookieJar');
+					throw new Exception('Invalid parameter type passed as CookieJar');
 				}
 			}
 		}
@@ -592,7 +592,7 @@ class HttpClient
 	 * @param HttpCookie|string $cookie
 	 * @param string|null $value If "cookie" is a string, this is the cookie value.
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setCookie($cookie, $value = null)
 	{
@@ -647,7 +647,7 @@ class HttpClient
 
 			if (preg_match("/[=,; \t\r\n\013\014]/", $cookie))
 			{
-				throw new bException("Cookie name cannot contain these characters: =,; \t\r\n\013\014 ({$cookie})");
+				throw new Exception("Cookie name cannot contain these characters: =,; \t\r\n\013\014 ({$cookie})");
 			}
 
 			$value = addslashes($value);
@@ -677,7 +677,7 @@ class HttpClient
 	 * @param string $data Data to send (if null, $filename is read and sent)
 	 * @param string $cType Content type to use (if $data is set and $cType is null, will be application/octet-stream)
 	 * @return HttpClient
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setFileUpload($fileName, $formName, $data = null, $cType = null)
 	{
@@ -685,7 +685,7 @@ class HttpClient
 		{
 			if (($data = @file_get_contents($fileName)) === false)
 			{
-				throw new bException("Unable to read file '{$fileName}' for upload");
+				throw new Exception("Unable to read file '{$fileName}' for upload");
 			}
 
 			if (!$cType)
@@ -811,7 +811,7 @@ class HttpClient
 	 * While this method is not called more than one for a client, it is separated from ->request() to preserve logic and readability
 	 * @param HttpClientAdapterInterface $adapter
 	 * @return null
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function setAdapter($adapter)
 	{
@@ -819,7 +819,7 @@ class HttpClient
 
 		if (!$adapter instanceof HttpClientAdapterInterface)
 		{
-			throw new bException('Passed adapter is not a HTTP connection adapter');
+			throw new Exception('Passed adapter is not a HTTP connection adapter');
 		}
 
 		$this->adapter = $adapter;
@@ -878,7 +878,7 @@ class HttpClient
 					$this->adapter->close();
 				}
 
-				throw new bException("Could not open temp file {$this->_streamName}");
+				throw new Exception("Could not open temp file {$this->_streamName}");
 		}
 
 		return $fp;
@@ -888,13 +888,13 @@ class HttpClient
 	 * Send the HTTP request and return an HTTP response object
 	 * @param string $method
 	 * @return HttpResponse
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function request($method = null)
 	{
 		if (!$this->uri instanceof UriHttp)
 		{
-			throw new bException('No valid URI has been passed to the client');
+			throw new Exception('No valid URI has been passed to the client');
 		}
 
 		if ($method)
@@ -936,7 +936,7 @@ class HttpClient
 			// check that adapter supports streaming before using it
 			if (is_resource($body) && !($this->adapter instanceof HttpClientAdapterStream))
 			{
-				throw new bException('Adapter does not support streaming');
+				throw new Exception('Adapter does not support streaming');
 			}
 
 			// Open the connection, send the request and read the response
@@ -951,7 +951,7 @@ class HttpClient
 				}
 				else
 				{
-					throw new bException('Adapter does not support streaming');
+					throw new Exception('Adapter does not support streaming');
 				}
 			}
 
@@ -961,7 +961,7 @@ class HttpClient
 
 			if (!$response)
 			{
-				throw new bException('Unable to read response, or response is empty');
+				throw new Exception('Unable to read response, or response is empty');
 			}
 
 			if($this->config['output_stream'])
@@ -1151,7 +1151,7 @@ class HttpClient
 	/**
 	 * Prepare the request body (for POST and PUT requests)
 	 * @return string
-	 * @throws bException
+	 * @throws Exception
 	 */
 	protected function _prepareBody()
 	{
@@ -1230,7 +1230,7 @@ class HttpClient
 						mb_internal_encoding($mbIntEnc);
 					}
 						
-					throw new bException("Cannot handle content type '{$this->encType}' automatically."." Please use HttpClient::setRawData to send this kind of content.");
+					throw new Exception("Cannot handle content type '{$this->encType}' automatically."." Please use HttpClient::setRawData to send this kind of content.");
 					break;
 			}
 		}
@@ -1386,7 +1386,7 @@ class HttpClient
 	 * @param string $password
 	 * @param string $type
 	 * @return string
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public static function encodeAuthHeader($user, $password, $type = self::AUTH_BASIC)
 	{
@@ -1398,7 +1398,7 @@ class HttpClient
 				// In basic authentication, the user name cannot contain ":"
 				if (strpos($user, ':') !== false)
 				{
-					throw new bException("The user name cannot contain ':' in 'Basic' HTTP authentication");
+					throw new Exception("The user name cannot contain ':' in 'Basic' HTTP authentication");
 				}
 
 				$authHeader = 'Basic '.base64_encode($user.':'.$password);
@@ -1411,7 +1411,7 @@ class HttpClient
 			//    break;
 
 			default:
-				throw new bException("Not a supported HTTP authentication type: '$type'");
+				throw new Exception("Not a supported HTTP authentication type: '$type'");
 		}
 
 		return $authHeader;

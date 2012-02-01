@@ -96,7 +96,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 	{
 		if (!is_array($config))
 		{
-			throw new bException('$config expects an array, '.gettype($config).' received.');
+			throw new Exception('$config expects an array, '.gettype($config).' received.');
 		}
 
 		foreach ($config as $k => $v)
@@ -140,7 +140,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 			else
 			{
 				// Invalid parameter
-				throw new bException("Expecting either a stream context resource or array, got ".gettype($context));
+				throw new Exception("Expecting either a stream context resource or array, got ".gettype($context));
 			}
 		}
 
@@ -193,7 +193,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 				{
 					if (!stream_context_set_option($context, 'ssl', 'local_cert', $this->config['sslcert']))
 					{
-					   throw new bException('Unable to set sslcert option');
+					   throw new Exception('Unable to set sslcert option');
 					}
 				}
 
@@ -201,7 +201,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 				{
 					if (!stream_context_set_option($context, 'ssl', 'passphrase', $this->config['sslpassphrase']))
 					{
-						throw new bException('Unable to set sslpassphrase option');
+						throw new Exception('Unable to set sslpassphrase option');
 					}
 				}
 			}
@@ -222,13 +222,13 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 			if (!$this->socket)
 			{
 				$this->close();
-				throw new bException('Unable to Connect to '.$host.':'.$port.'. Error #'.$errno.': '.$errstr);
+				throw new Exception('Unable to Connect to '.$host.':'.$port.'. Error #'.$errno.': '.$errstr);
 			}
 
 			// Set the stream timeout
 			if (!stream_set_timeout($this->socket, (int) $this->config['timeout']))
 			{
-				throw new bException('Unable to set the connection timeout');
+				throw new Exception('Unable to set the connection timeout');
 			}
 
 			// Update connected_to
@@ -250,7 +250,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 		// Make sure we're properly connected
 		if (!$this->socket)
 		{
-			throw new bException('Trying to write but we are not connected');
+			throw new Exception('Trying to write but we are not connected');
 		}
 
 		$host = $uri->getHost();
@@ -258,7 +258,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 
 		if ($this->connectedTo[0] != $host || $this->connectedTo[1] != $uri->getPort())
 		{
-			throw new bException('Trying to write but we are connected to the wrong host');
+			throw new Exception('Trying to write but we are connected to the wrong host');
 		}
 
 		// Save request method for later
@@ -297,14 +297,14 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 		// Send the request
 		if (!@fwrite($this->socket, $request))
 		{
-			throw new bException('Error writing request to server');
+			throw new Exception('Error writing request to server');
 		}
 
 		if (is_resource($body))
 		{
 			if (stream_copy_to_stream($body, $this->socket) == 0)
 			{
-				throw new bException('Error writing request to server');
+				throw new Exception('Error writing request to server');
 			}
 		}
 
@@ -379,7 +379,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 					if (!ctype_xdigit($chunksize))
 					{
 						$this->close();
-						throw new bException('Invalid chunk size "'.$chunksize.'" unable to read chunked body');
+						throw new Exception('Invalid chunk size "'.$chunksize.'" unable to read chunked body');
 					}
 
 					// Convert the hexadecimal value to plain integer
@@ -430,7 +430,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 			else
 			{
 				$this->close();
-				throw new bException('Cannot handle "'.$headers['transfer-encoding'].'" transfer encoding');
+				throw new Exception('Cannot handle "'.$headers['transfer-encoding'].'" transfer encoding');
 			}
 
 			// We automatically decode chunked-messages when writing to a stream
@@ -550,7 +550,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 	/**
 	 * Check if the socket has timed out - if so close connection and throw
 	 * an exception
-	 * @throws bException with READ_TIMEOUT code
+	 * @throws Exception with READ_TIMEOUT code
 	 */
 	protected function _checkSocketReadTimeout()
 	{
@@ -562,7 +562,7 @@ class HttpClientAdapterSocket implements HttpClientAdapterInterface, HttpClientA
 			if ($timedout)
 			{
 				$this->close();
-				throw new bException("Read timed out after {$this->config['timeout']} seconds");
+				throw new Exception("Read timed out after {$this->config['timeout']} seconds");
 			}
 		}
 	}

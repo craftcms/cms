@@ -87,10 +87,10 @@ abstract class Uri
 	 * Create a new Uri object for a URI.  If building a new URI, then $uri should contain
 	 * only the scheme (http, ftp, etc).  Otherwise, supply $uri with the complete URI.
 	 * @param  string $uri The URI form which a Uri instance is created
-	 * @throws bException When an empty string was supplied for the scheme
-	 * @throws bException When an illegal scheme is supplied
-	 * @throws bException When the scheme is not supported
-	 * @throws bException When $className doesn't exist or doesn't implement Uri
+	 * @throws Exception When an empty string was supplied for the scheme
+	 * @throws Exception When an illegal scheme is supplied
+	 * @throws Exception When the scheme is not supported
+	 * @throws Exception When $className doesn't exist or doesn't implement Uri
 	 * @return Uri
 	 * @link   http://www.faqs.org/rfcs/rfc2396.html
 	 */
@@ -103,13 +103,13 @@ abstract class Uri
 
 		if (strlen($scheme) === 0)
 		{
-			throw new bException('An empty string was supplied for the scheme');
+			throw new Exception('An empty string was supplied for the scheme');
 		}
 
 		// Security check: $scheme is used to load a class file, so only alphanumerics are allowed.
 		if (ctype_alnum($scheme) === false)
 		{
-			throw new bException('Illegal scheme supplied, only alphanumeric characters are permitted');
+			throw new Exception('Illegal scheme supplied, only alphanumeric characters are permitted');
 		}
 
 		/**
@@ -126,14 +126,14 @@ abstract class Uri
 			case 'mailto':
 				// TODO
 			default:
-				throw new bException("Scheme \"$scheme\" is not supported");
+				throw new Exception("Scheme \"$scheme\" is not supported");
 				break;
 		}
 
 		$schemeHandler = new $className($scheme, $schemeSpecific);
 			if (!$schemeHandler instanceof Uri)
 		{
-					throw new bException("\"$className\" is not an instance of Uri");
+					throw new Exception("\"$className\" is not an instance of Uri");
 		}
 
 		return $schemeHandler;

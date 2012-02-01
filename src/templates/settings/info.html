@@ -34,10 +34,10 @@
 			<!-- Need to figure out how we're doing this -->
 			<?php
 				if (!isset($emailSettings))
-					$emailSettings = new bEmailSettingsForm(Blocks::app()->email->emailSettings);
+					$emailSettings = new EmailSettingsForm(Blocks::app()->email->emailSettings);
 				else
 				{
-					if (get_class($emailSettings) == 'bObjectTag')
+					if (get_class($emailSettings) == 'ObjectTag')
 					{
 						$emailSettings = $emailSettings->__toArray();
 					}

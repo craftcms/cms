@@ -1,6 +1,7 @@
 <?php
+namespace Blocks;
 
-class m110911_054108_add_triggers_to_groups_table extends CDbMigration
+class m110911_054108_add_triggers_to_groups_table extends \CDbMigration
 {
 	public function safeUp()
 	{
