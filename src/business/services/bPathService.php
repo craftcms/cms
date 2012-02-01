@@ -66,7 +66,7 @@ class bPathService extends CApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getCPTemplatePath()
+	public function getCpTemplatePath()
 	{
 		return $this->appPath.'templates/';
 	}

@@ -7,9 +7,9 @@
 		{% foreach updates as update %}
 		<tr class="item">
 			<td>{{ update.name }} {{ update.version }}</td>
-			<td><a href="{{ url.generateUrl('settings/updates') }}#{{ update.handle }}">Notes</a></td>
+			<td><a href="{{ url.base }}settings/updates#{{ update.handle }}">Notes</a></td>
 			<td>
-				<form method="post" action="{{ url.generateUrl('update', 'h=') }}{{ update.handle }}">
+				<form method="post" action="{{ url.base }}update/{{ update.handle }}">
 					<input id="update" class="btn" type="submit" value="Update">
 				</form>
 			</td>

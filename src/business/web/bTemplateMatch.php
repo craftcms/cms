@@ -8,7 +8,6 @@ class bTemplateMatch
 	private $_relativePath = null;
 	private $_fileName = null;
 	private $_fullTemplatePath = null;
-	private $_matchRequest = null;
 	private $_matchType = null;
 	private $_matchExtension = null;
 
@@ -84,14 +83,6 @@ class bTemplateMatch
 	public function getMatchExtension()
 	{
 		return $this->_matchExtension;
-	}
-
-	/**
-	 * @param $matchRequest
-	 */
-	public function setMatchRequest($matchRequest)
-	{
-		$this->_matchRequest = $matchRequest;
 	}
 
 	/**

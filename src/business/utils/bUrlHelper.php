@@ -12,9 +12,10 @@ class bUrlHelper
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return string The URL to the resource, via Blocks' resource server
 	 */
-	public static function generateResourceUrl($resourcePath, $params = null, $protocol = '')
+	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = self::_normalizePath($resourcePath, $params, Blocks::app()->getConfig('resourceTriggerWord'));
+		$path = Blocks::app()->getConfig('resourceTriggerWord').'/'.trim($path, '/');
+		$path = self::_normalizePath($path, $params);
 		return  Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
 	}
 
@@ -25,9 +26,10 @@ class bUrlHelper
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
-	public static function generateActionUrl($actionPath, $params = null, $protocol = '')
+	public static function generateActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = self::_normalizePath($actionPath, $params, Blocks::app()->getConfig('actionTriggerWord'));
+		$path = Blocks::app()->getConfig('actionTriggerWord').'/'.trim($path, '/');
+		$path = self::_normalizePath($path, $params);
 		return Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
 	}
 
@@ -38,9 +40,9 @@ class bUrlHelper
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
-	public static function generateUrl($path, $params = null, $protocol = '')
+	public static function generateUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = self::_normalizePath($path, $params);
+		$path = self::_normalizePath(trim($path, '/'), $params);
 		return  Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
 	}
 
@@ -51,33 +53,31 @@ class bUrlHelper
 	 * @param string $triggerWord
 	 * @return array|string
 	 */
-	private static function _normalizePath($path, $params, $triggerWord = '')
+	private static function _normalizePath($path, $params)
 	{
-		$path = ltrim($path, '/');
-		$pathParts = explode('/', $path);
-
-		$handle = '/'.array_shift($pathParts);
-		$path = count($pathParts) == 0 ? '' : '/'.implode('/', $pathParts);
-		$pathStr = $triggerWord == '' ? $handle.$path : '/'.$triggerWord.$handle.$path;
+		$path = '/'.$path;
 
 		if (is_array($params))
-			$path = array_merge(array($pathStr), $params);
-		else
 		{
-			if (is_string($params))
+			$paramsStr = '';
+			foreach ($params as $paramName => $paramValue)
 			{
-				$params = ltrim($params, '?');
-				$params = ltrim($params, '&');
-
-				if (Blocks::app()->request->urlFormat == bUrlFormat::PathInfo)
-					$path = array($pathStr.'?'.$params);
-				else
-					$path = array($pathStr.'&'.$params);
+				$paramsStr .= '&'.$paramName.'='.$paramValue;
 			}
-			else
-				$path = array($pathStr);
+			$params = $paramsStr;
 		}
 
-		return $path;
+		if (is_string($params))
+		{
+			$params = ltrim($params, '?&');
+
+			if (Blocks::app()->request->urlFormat == bUrlFormat::PathInfo)
+				return array($path.'?'.$params);
+
+			return array($path.'&'.$params);
+		}
+
+		return array($path);
+
 	}
 }

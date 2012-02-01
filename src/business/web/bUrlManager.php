@@ -5,10 +5,8 @@
  */
 class bUrlManager extends CUrlManager
 {
-	private $_path = null;
-	private $_pathSegments = null;
 	private $_templateMatch = null;
-	private $_requestExtension = null;
+	private $_templateTags = array();
 
 	public $routeVar;
 
@@ -33,19 +31,6 @@ class bUrlManager extends CUrlManager
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
-
-		// save an internal copy of the path, sans-extension
-		$this->_path = Blocks::app()->request->path;
-
-		if (($ext = Blocks::app()->request->pathExtension) !== '')
-		{
-			$this->_requestExtension = $ext;
-
-			// remove the extension from our internal path
-			$this->_path = substr($this->_path, 0, -(strlen($ext)+1));
-		}
-
-		$this->_pathSegments = array_filter(explode('/', $this->_path));
 	}
 
 	/**
@@ -82,16 +67,14 @@ class bUrlManager extends CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.Blocks::app()->request->pathInfo, '/');
-
 		$entry = bEntry::model()->findByAttributes(array(
-			'full_uri' => $pathMatchPattern,
+			'full_uri' => Blocks::app()->request->path,
 		));
 
 		if ($entry !== null)
 		{
-			$extension = pathinfo($entry->section->template, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($entry->section->template, $pathMatchPattern, $extension, bTemplateMatchType::Entry);
+			$this->setTemplateMatch($entry->section->template, bTemplateMatchType::Entry);
+			$this->_templateTags['entry'] = new bContentEntryTag($entry);
 			return true;
 		}
 
@@ -103,24 +86,50 @@ class bUrlManager extends CUrlManager
 	 */
 	public function matchRoute()
 	{
+		$routePatterns = array(
+			'{wild}'    => '.+',
+			'{segment}' => '[^\/]*',
+			'{integer}' => '\d+',
+			'{word}'    => '[A-Za-z]\w*',
+		);
 
-
-		/*
 		if (Blocks::app()->request->mode == bRequestMode::CP)
 		{
 			$routes = array(
-				array('content/edit/{entryId}', 'content/_edit', array(
-					'entryId' => bRoutePattern::Integer
-				)),
-				array('assets/edit/{path}', 'assets/_edit', array(
-					'path' => bRoutePattern::Wild
-				)),
-				array('users/edit/{userId}', 'users/_edit', array(
-					'userId' => bRoutePattern::Integer
-				)),
+				array('update/({segment})', 'update', array('handle'))
 			);
+
+			foreach ($routes as $route)
+			{
+				// Escape special regex characters from the pattern
+				$pattern = str_replace(array('.','/'), array('\.','\/'), $routePatterns, $route[0]);
+
+				// Mix in the predefined subpatterns
+				$pattern = str_replace(array_keys($routePatterns), $routePatterns, $pattern);
+
+				// Does it match?
+				if (preg_match("/{$pattern}/", Blocks::app()->request->path, $match))
+				{
+					$templatePath = bTemplateHelper::resolveTemplatePath(trim($route[1], '/'));
+					if ($templatePath !== false)
+						$this->setTemplateMatch($templatePath, bTemplateMatchType::Route);
+
+					// Set any capture tags
+					if (!empty($route[2]))
+					{
+						foreach ($route[2] as $i => $tagName)
+						{
+							if (isset($match[$i+1]))
+								$this->_templateTags[$tagName] = $match[$i+1];
+							else
+								break;
+						}
+					}
+
+					return true;
+				}
+			}
 		}
-		*/
 
 		return false;
 	}
@@ -134,48 +143,33 @@ class bUrlManager extends CUrlManager
 	 */
 	public function matchTemplate()
 	{
-		$templatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->viewPath);
-		$pathMatchPattern = rtrim(Blocks::app()->request->serverName.Blocks::app()->request->scriptUrl.'/'.$this->_path, '/');
-		$requestPath = $this->_path;
-
-		// fix the trailing and ending slashes
-		if ($requestPath !== '')
-			$requestPath = ltrim($requestPath, '\\/');
-
-		// if there are any folders that have a '_' as the first character of the name, then it's hidden and there is no template match.
-		$requestPathSegs = explode('/', $requestPath);
-		foreach ($requestPathSegs as $requestPathSeg)
+		// Make sure they're not trying to access a private template
+		foreach (Blocks::app()->request->pathSegments as $requestPathSeg)
 		{
 			if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
 				return false;
 		}
 
-		if (($fullMatchPath = bTemplateHelper::findFileSystemMatch($templatePath, $requestPath)) !== false)
+		// Does a request path match a template?
+		$templatePath = bTemplateHelper::resolveTemplatePath(Blocks::app()->request->path);
+		if ($templatePath !== false)
 		{
-			$extension = pathinfo($fullMatchPath, PATHINFO_EXTENSION);
-			$this->setTemplateMatch($requestPath, $pathMatchPattern, bTemplateMatchType::Template, $extension);
+			$this->setTemplateMatch($templatePath, bTemplateMatchType::Template);
 			return true;
 		}
-		else
-		{
-			// no template match.
-			return false;
-		}
+
+		return false;
 	}
 
 	/**
 	 * @access private
 	 * @param $path
-	 * @param $pathMatchPattern
 	 * @param $matchType
-	 * @param $extension
 	 */
-	private function setTemplateMatch($path, $pathMatchPattern, $matchType, $extension)
+	private function setTemplateMatch($path, $matchType)
 	{
 		$templateMatch = new bTemplateMatch($path);
-		$templateMatch->setMatchRequest($pathMatchPattern);
 		$templateMatch->setMatchType($matchType);
-		$templateMatch->setMatchExtension($extension);
 		$this->_templateMatch = $templateMatch;
 	}
 }

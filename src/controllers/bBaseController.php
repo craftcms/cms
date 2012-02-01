@@ -52,20 +52,21 @@ abstract class bBaseController extends CController
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed
 	 */
-	public function loadTemplate($relativeTemplatePath, $data = array(), $return = false)
+	public function loadTemplate($templatePath, $data = array(), $return = false)
 	{
-		if (!is_array($data))
-			$data = array();
-
-		foreach ($data as &$tag)
+		$templatePath = bTemplateHelper::resolveTemplatePath($templatePath);
+		if ($templatePath !== false)
 		{
-			$tag = bTemplateHelper::getVarTag($tag);
+			if (!is_array($data))
+				$data = array();
+
+			foreach ($data as &$tag)
+			{
+				$tag = bTemplateHelper::getVarTag($tag);
+			}
+
+			return $this->renderPartial($templatePath, $data, $return);
 		}
-
-		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->viewPath);
-
-		if (bTemplateHelper::findFileSystemMatch($baseTemplatePath, $relativeTemplatePath) !== false)
-			return $this->renderPartial($relativeTemplatePath, $data, $return);
 
 		throw new bHttpException(404);
 	}
@@ -87,7 +88,7 @@ abstract class bBaseController extends CController
 
 		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->path->emailTemplatePath);
 
-		if (bTemplateHelper::findFileSystemMatch($baseTemplatePath, $relativeTemplatePath) !== false)
+		if (bTemplateHelper::resolveTemplatePath($baseTemplatePath, $relativeTemplatePath) !== false)
 		{
 			$relativeTemplatePath = '///email/'.$relativeTemplatePath;
 			return $this->renderPartial($relativeTemplatePath, $data, true);

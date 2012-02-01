@@ -137,6 +137,7 @@ table.pane > thead > tr > *,
 table.pane > tbody > tr.head > * { position: relative; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head h5 { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
+.pane .head .buttons { margin: -3px 0; height: 24px; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
 .pane .body { position: relative; background: #fff; }
 table.pane > tbody > tr > * { background: #fff; }
@@ -183,10 +184,15 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
 .toolbar .center > div { float: none !important; display: inline-block; }
 .toolbar .search { float: right; width: 227px; }
 .toolbar .btn,
-.toolbar .btn-group { display: block; float: left; margin-right: 10px; }
+.toolbar .btn-group,
+.buttons .btn,
+.buttons .btn-group { display: block; float: left; margin-right: 10px; }
 .toolbar .btn:last-child,
 .toolbar .btn-group:last-child,
-.toolbar .btn-group .btn { margin-right: 0; }
+.toolbar .btn-group .btn,
+.buttons .btn:last-child,
+.buttons .btn-group:last-child,
+.buttons .btn-group .btn { margin-right: 0; }
 .toolbar div.status { border-radius: 2px; border: 1px solid rgba(0,0,0,0.2); padding: 0 8px; line-height: 22px; white-space: nowrap; color: rgba(0,0,0,0.65); text-shadow: 0 1px 0 rgba(255,255,255,0.35); background: rgba(0,0,0,0.05); -webkit-box-shadow: 0 1px 0  rgba(255,255,255,0.25); }
 .toolbar div.status span.status { margin: 5px 4px 0 0; }
 

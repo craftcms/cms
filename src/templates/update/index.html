@@ -11,7 +11,7 @@
 
 {% region "scripts" %}
 	<script type="text/javascript">
-		window.updateHandle = '{{ url.get('h') }}';
+		window.updateHandle = '{{ handle }}';
 		window.updateInfoUrl = '{{ url.generateActionUrl('app/update/getupdateinfo', 'h=') }}';
 		window.updateUrl = '{{ url.generateActionUrl('app/update/update', 'h=') }}';
 	</script>

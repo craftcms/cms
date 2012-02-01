@@ -88,31 +88,26 @@ class bTemplateHelper
 	}
 
 	/**
-	 * @static
+	 * Resolves a template path to an actual template file by possibly adding "/index" to it
 	 * @param $templatePath
-	 * @param $requestPath
-	 * @return bool|string
+	 * @return mixed If a template match was found, returns the $templatePath string, possibly with "/index" appended to it, otherwise false
+	 * @static
 	 */
-	public static function findFileSystemMatch(&$templatePath, &$requestPath)
+	public static function resolveTemplatePath($templatePath)
 	{
-		$fullMatchPath = false;
+		$templatePath = trim($templatePath, '/');
 
-		// check the given path+fileExtension.
-		$matchPath = Blocks::app()->findLocalizedFile($templatePath.$requestPath.Blocks::app()->viewRenderer->fileExtension);
-		if (is_file($matchPath))
-			$fullMatchPath = realpath($matchPath);
+		// Check if request/path.ext exists
+		$testTemplatePath = $templatePath.Blocks::app()->viewRenderer->fileExtension;
+		if (is_file(Blocks::app()->findLocalizedFile(Blocks::app()->viewPath.$testTemplatePath)))
+			return $templatePath;
 
-		if ($fullMatchPath === false)
-		{
-			// now try to match /path/to/folder/index+fileExtension
-			$requestPath = ltrim(Blocks::app()->path->normalizeTrailingSlash($requestPath).'index', '/');
-			$templatePath = Blocks::app()->path->normalizeTrailingSlash($templatePath);
+		// Otherwise check if request/path/index.ext exists
+		$templatePath .= '/index';
+		$testTemplatePath = $templatePath.Blocks::app()->viewRenderer->fileExtension;
+		if (is_file(Blocks::app()->findLocalizedFile(Blocks::app()->viewPath.$testTemplatePath)))
+			return $templatePath;
 
-			$matchPath = Blocks::app()->findLocalizedFile($templatePath.$requestPath.Blocks::app()->viewRenderer->fileExtension);
-			if (is_file($matchPath))
-				$fullMatchPath = realpath($matchPath);
-		}
-
-		return $fullMatchPath;
+		return false;
 	}
 }

@@ -11,7 +11,7 @@ class bUrlTag extends bTag
 	 */
 	public function base()
 	{
-		return Blocks::app()->urlManager->baseUrl;
+		return substr(bUrlHelper::generateUrl('p'), 0, -1);
 	}
 
 	/**

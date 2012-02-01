@@ -42,7 +42,7 @@
 		function runInstaller()
 		{
 			// Run the ajax request
-			$.post('{{ url.generateUrl("install/install") }}', function(data, textStatus, jqXHR) {
+			$.post('{{ url.base }}install/install', function(data, textStatus, jqXHR) {
 				if (textStatus != 'success' || !(data.error || data.success))
 					displayError('An unknown error occurred.');
 				else if (data.error)
@@ -53,7 +53,7 @@
 					updateBtnLabel($newBtnLabel, function() {
 						// Redirect to the dashboard
 						setTimeout(function() {
-							window.location = '{{ url.generateUrl("setup") }}'
+							window.location = '{{ url.base }}setup'
 						}, 1000);
 					});
 				}
