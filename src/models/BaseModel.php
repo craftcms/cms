@@ -187,14 +187,14 @@ abstract class BaseModel extends \CActiveRecord
 			$relations[$key] = $this->generateHasXRelation(self::HAS_MANY, $settings);
 		}
 
-		foreach ($this->hasOne as $key => $model)
+		foreach ($this->hasOne as $key => $settings)
 		{
 			$relations[$key] = $this->generateHasXRelation(self::HAS_ONE, $settings);
 		}
 
-		foreach ($this->belongsTo as $key => $model)
+		foreach ($this->belongsTo as $key => $settings)
 		{
-			$relations[$key] = array(self::BELONGS_TO, $model, $key.'_id');
+			$relations[$key] = array(self::BELONGS_TO, $settings['model'], $key.'_id');
 		}
 
 		return $relations;
