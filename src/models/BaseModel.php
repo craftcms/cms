@@ -68,11 +68,13 @@ abstract class BaseModel extends \CActiveRecord
 		$rules = array();
 
 		$required = array();
-		$integers = array();
 		$emails = array();
 		$strictLengths = array();
 		$minLengths = array();
 		$maxLengths = array();
+
+		$numberTypes = array(AttributeType::TinyInt, AttributeType::SmallInt, AttributeType::MediumInt, AttributeType::Int, AttributeType::BigInt, AttributeType::Float, AttributeType::Decimal);
+		$integerTypes = array(AttributeType::TinyInt, AttributeType::SmallInt, AttributeType::MediumInt, AttributeType::Int, AttributeType::BigInt);
 
 		foreach ($this->attributes as $name => $settings)
 		{
@@ -86,33 +88,44 @@ abstract class BaseModel extends \CActiveRecord
 			if (isset($settings['required']) && $settings['required'] === true && !isset($settings['default']))
 				$required[] = $name;
 
-			if ($settings['type'] == AttributeType::Int)
-				$integers[] = $name;
+			// Numbers
+			if (in_array($settings['type'], $numberTypes))
+			{
+				$rule = array($name);
 
+				if (isset($settings['min']) && is_numeric($settings['min']))
+					$rule['min'] = $settings['min'];
+
+				if (isset($settings['max']) && is_numeric($settings['max']))
+					$rule['max'] = $settings['max'];
+
+				if (in_array($settings['type'], $integerTypes))
+					$rule['integerOnly'] = true;
+			}
+
+			// Enum attribute values
 			if ($settings['type'] == AttributeType::Enum)
 			{
 				$values = ArrayHelper::stringToArray($settings['values']);
 				$rules[] = array($name, 'in', 'range' => $values);
 			}
 
-			if (isset($settings['length']) && is_numeric($settings['length']) && $settings['length'] > 0)
+			// Strict, min, and max lengths
+			if (isset($settings['length']) && is_numeric($settings['length']))
 				$strictLengths[(string)$settings['length']][] = $name;
 			else
 			{
 				// Only worry about min- and max-lengths if a strict length isn't set
-				if (isset($settings['minLength']) && is_numeric($settings['minLength']) && $settings['minLength'] > 0)
+				if (isset($settings['minLength']) && is_numeric($settings['minLength']))
 					$minLengths[(string)$settings['minLength']][] = $name;
 
-				if (isset($settings['maxLength']) && is_numeric($settings['maxLength']) && $settings['maxLength'] > 0)
+				if (isset($settings['maxLength']) && is_numeric($settings['maxLength']))
 					$maxLengths[(string)$settings['maxLength']][] = $name;
 			}
 		}
 
 		if ($required)
 			$rules[] = array(implode(',', $required), 'required');
-
-		if ($integers)
-			$rules[] = array(implode(',', $integers), 'numerical', 'integerOnly' => true);
 
 		if ($emails)
 			$rules[] = array(implode(',', $emails), 'email');
