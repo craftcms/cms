@@ -58,14 +58,7 @@ class bUrlHelper
 		$path = '/'.$path;
 
 		if (is_array($params))
-		{
-			$paramsStr = '';
-			foreach ($params as $paramName => $paramValue)
-			{
-				$paramsStr .= '&'.$paramName.'='.$paramValue;
-			}
-			$params = $paramsStr;
-		}
+			return array_merge(array($path), $params);
 
 		if (is_string($params))
 		{
