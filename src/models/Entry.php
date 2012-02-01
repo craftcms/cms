@@ -9,13 +9,13 @@ class Entry extends BaseModel
 	protected $tableName = 'entries';
 
 	protected $attributes = array(
-		'slug'        => array('type' => AttributeType::String),
-		'full_uri'    => array('type' => AttributeType::String, 'maxLength' => 1000, 'unique' => true),
-		'post_date'   => array('type' => AttributeType::Integer),
-		'expiry_date' => array('type' => AttributeType::Integer),
-		'sort_order'  => array('type' => AttributeType::Integer, 'unsigned' => true),
-		'enabled'     => array('type' => AttributeType::Boolean, 'required' => true, 'default' => true, 'unsigned' => true),
-		'archived'    => array('type' => AttributeType::Boolean, 'required' => true, 'default' => false, 'unsigned' => true)
+		'slug'        => AttributeType::Handle,
+		'full_uri'    => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
+		'post_date'   => AttributeType::Int,
+		'expiry_date' => AttributeType::Int,
+		'sort_order'  => array('type' => AttributeType::Int, 'unsigned' => true),
+		'enabled'     => array('type' => AttributeType::Boolean, 'default' => true),
+		'archived'    => AttributeType::Boolean
 	);
 
 	protected $belongsTo = array(

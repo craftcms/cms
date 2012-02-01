@@ -9,12 +9,12 @@ class Section extends BaseModel
 	protected $tableName = 'sections';
 
 	protected $attributes = array(
-		'name'        => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
-		'handle'      => array('type' => AttributeType::String, 'maxLength' => 150, 'required' => true),
-		'url_format'  => array('type' => AttributeType::String),
-		'max_entries' => array('type' => AttributeType::Integer, 'unsigned' => true),
-		'template'    => array('type' => AttributeType::String, 'maxLength' => 500),
-		'sortable'    => array('type' => AttributeType::Boolean, 'required' => true, 'unsigned' => true)
+		'name'        => AttributeType::Name,
+		'handle'      => AttributeType::Handle,
+		'url_format'  => AttributeType::Varchar,
+		'max_entries' => array('type' => AttributeType::TinyInt, 'unsigned' => true),
+		'template'    => AttributeType::Template,
+		'sortable'    => AttributeType::Boolean
 	);
 
 	protected $belongsTo = array(

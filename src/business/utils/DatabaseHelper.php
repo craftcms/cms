@@ -1,44 +1,48 @@
 <?php
+namespace Blocks;
 
 /**
  *
  */
-class bDatabaseHelper
+class DatabaseHelper
 {
 	/**
 	 * Default attribute settings
 	 */
 	protected static $attributeTypeDefaults = array(
-		bAttributeType::Char => array('maxLength'=>255),
-		bAttributeType::Varchar => array('maxLength'=>255),
-		bAttributeType::TinyInt => array('maxLength'=>4),
-		bAttributeType::SmallInt => array('maxLength'=>6),
-		bAttributeType::MediumInt => array('maxLength'=>9),
-		bAttributeType::Int => array('maxLength'=>11),
-		bAttributeType::BigInt => array('maxLength'=>20),
-		bAttributeType::TinyInt => array('maxLength'=>4),
-		bAttributeType::Boolean => array('type'=>bAttributeType::TinyInt, 'maxLength'=>1, 'unsigned'=>true, 'required'=>true, 'default'=>false),
-		bAttributeType::Enum => array('values'=>array()),
+		AttributeType::Char         => array('maxLength' => 255),
+		AttributeType::Varchar      => array('maxLength' => 255),
+		AttributeType::TinyInt      => array('maxLength' => 4),
+		AttributeType::SmallInt     => array('maxLength' => 6),
+		AttributeType::MediumInt    => array('maxLength' => 9),
+		AttributeType::Int          => array('maxLength' => 11),
+		AttributeType::BigInt       => array('maxLength' => 20),
+		AttributeType::TinyInt      => array('maxLength' => 4),
+		AttributeType::Boolean      => array('type '=> AttributeType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
+		AttributeType::Enum         => array('values' => array()),
 
 		// Common model attribute types
-		bAttributeType::ClassName => array('type'=>bAttributeType::Char, 'maxLength'=>150, 'required'=>true),
-		bAttributeType::Handle => array('type'=>bAttributeType::Char, 'maxLength'=>100, 'required'=>true),
-		bAttributeType::LanguageCode => array('type'=>bAttributeType::Char, 'maxLength'=>5, 'required'=>true),
-		bAttributeType::Name => array('type'=>bAttributeType::Varchar, 'maxLength'=>100, 'required'=>true),
-		bAttributeType::SortOrder => array('type'=>bAttributeType::SmallInt, 'required'=>true, 'unsigned'=>true),
-		bAttributeType::Template => array('type'=>bAttributeType::Varchar, 'maxLength'=>500),
-		bAttributeType::Version => array('type'=>bAttributeType::Char, 'maxLength'=>15, 'required'=>true),
+		AttributeType::ClassName    => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
+		AttributeType::Handle       => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
+		AttributeType::LanguageCode => array('type' => AttributeType::Char, 'maxLength' => 5, 'required' => true),
+		AttributeType::Name         => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+		AttributeType::SortOrder    => array('type' => AttributeType::SmallInt, 'required' => true, 'unsigned' => true),
+		AttributeType::Template     => array('type' => AttributeType::Varchar, 'maxLength' => 500),
+		AttributeType::Version      => array('type' => AttributeType::Char, 'maxLength' => 15, 'required' => true),
 	);
 
 	/**
 	 * Normalize attribute settings
+	 *
+	 * @param $settings
+	 * @return array
 	 */
 	public static function normalizeAttributeSettings($settings)
 	{
 		if (is_string($settings))
 			$settings = array('type' => $settings);
-		else if (! isset($settings['type']))
-			$settings['type'] = bAttributeType::Varchar;
+		else if (!isset($settings['type']))
+			$settings['type'] = AttributeType::Varchar;
 
 		// Merge in the default settings
 		if (isset(self::$attributeTypeDefaults[$settings['type']]))
@@ -72,34 +76,34 @@ class bDatabaseHelper
 		// Start the column definition
 		switch ($settings['type'])
 		{
-			case bAttributeType::Char:
+			case AttributeType::Char:
 				$def = 'CHAR('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::Varchar:
+			case AttributeType::Varchar:
 				$def = 'VARCHAR('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::TinyInt:
+			case AttributeType::TinyInt:
 				$def = 'TINYINT('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::SmallInt:
+			case AttributeType::SmallInt:
 				$def = 'SMALLINT('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::MediumInt:
+			case AttributeType::MediumInt:
 				$def = 'MEDIUMINT('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::Int:
+			case AttributeType::Int:
 				$def = 'INT('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::BigInt:
+			case AttributeType::BigInt:
 				$def = 'BIGINT('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::Float:
+			case AttributeType::Float:
 				$def = 'FLOAT('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::Decimal:
+			case AttributeType::Decimal:
 				$def = 'DECIMAL('.$settings['maxLength'].')';
 				break;
-			case bAttributeType::Enum:
+			case AttributeType::Enum:
 				$def = 'ENUM(';
 				$values = is_array($settings['values']) ? $settings['values'] : explode(',', $settings['values']);
 				foreach ($values as $i => $value)

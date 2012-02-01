@@ -74,8 +74,8 @@ class UrlManager extends \CUrlManager
 
 		if ($entry !== null)
 		{
-			$this->setTemplateMatch($entry->section->template, bTemplateMatchType::Entry);
-			$this->_templateTags['entry'] = new bContentEntryTag($entry);
+			$this->setTemplateMatch($entry->section->template, TemplateMatchType::Entry);
+			$this->_templateTags['entry'] = new ContentEntryTag($entry);
 			return true;
 		}
 
@@ -111,9 +111,9 @@ class UrlManager extends \CUrlManager
 				// Does it match?
 				if (preg_match("/{$pattern}/", Blocks::app()->request->path, $match))
 				{
-					$templatePath = bTemplateHelper::resolveTemplatePath(trim($route[1], '/'));
+					$templatePath = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
 					if ($templatePath !== false)
-						$this->setTemplateMatch($templatePath, bTemplateMatchType::Route);
+						$this->setTemplateMatch($templatePath, TemplateMatchType::Route);
 
 					// Set any capture tags
 					if (!empty($route[2]))
@@ -152,10 +152,10 @@ class UrlManager extends \CUrlManager
 		}
 
 		// Does a request path match a template?
-		$templatePath = bTemplateHelper::resolveTemplatePath(Blocks::app()->request->path);
+		$templatePath = TemplateHelper::resolveTemplatePath(Blocks::app()->request->path);
 		if ($templatePath !== false)
 		{
-			$this->setTemplateMatch($templatePath, bTemplateMatchType::Template);
+			$this->setTemplateMatch($templatePath, TemplateMatchType::Template);
 			return true;
 		}
 

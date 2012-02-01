@@ -69,6 +69,11 @@ class App extends \CWebApplication
 		}
 	}
 
+	/**
+	 * @static
+	 * @param      $alias
+	 * @param bool $forceInclude
+	 */
 	public static function import($alias, $forceInclude = false)
 	{
 		$path = BLOCKS_APP_PATH.str_replace('.', '/', $alias);
@@ -96,6 +101,10 @@ class App extends \CWebApplication
 		}
 	}
 
+	/**
+	 * @static
+	 * @param $file
+	 */
 	private static function importFile($file)
 	{
 		$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);

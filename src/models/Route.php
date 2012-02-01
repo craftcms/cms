@@ -9,13 +9,17 @@ class Route extends BaseModel
 	protected $tableName = 'routes';
 
 	protected $attributes = array(
-		'route'      => array('type' => AttributeType::String, 'maxLength' => 500, 'required' => true),
-		'template'   => array('type' => AttributeType::String, 'required' => true),
-		'sort_order' => array('type' => AttributeType::Integer, 'required' => true, 'unsigned' => true)
+		'route'      => array('type' => AttributeType::Varchar, 'maxLength' => 500, 'required' => true),
+		'template'   => array('type' => AttributeType::Template, 'required' => true),
+		'sort_order' => AttributeType::SortOrder
 	);
 
 	protected $belongsTo = array(
 		'site' => array('model' => 'Site', 'required' => true)
+	);
+
+	protected $indexes = array(
+		array('columns' => array('site_id','route'), 'unique' => true)
 	);
 
 	/**

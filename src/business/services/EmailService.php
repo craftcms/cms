@@ -19,7 +19,7 @@ class EmailService extends \CApplicationComponent
 		if (!isset($emailSettings['emailerType']))
 			throw new Exception('Could not determine how to send the email.  Check your email settings.');
 
-		$email = new PhpMailer(true);
+		$email = new \PhpMailer(true);
 
 		switch ($emailSettings['emailerType'])
 		{
@@ -32,7 +32,7 @@ class EmailService extends \CApplicationComponent
 
 			case EmailerType::Pop:
 			{
-				$pop = new Pop3();
+				$pop = new \Pop3();
 				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['userName']) || !isset($emailSettings['password']) ||
 				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['userName']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{

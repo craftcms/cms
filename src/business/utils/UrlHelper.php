@@ -8,7 +8,9 @@ class UrlHelper
 {
 	/**
 	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
-	 * @param string $resourcePath The path to the resource
+	 *
+	 * @static
+	 * @param string $path
 	 * @param null   $params
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return string The URL to the resource, via Blocks' resource server
@@ -17,13 +19,13 @@ class UrlHelper
 	{
 		$path = Blocks::app()->getConfig('resourceTriggerWord').'/'.trim($path, '/');
 		$path = self::_normalizePath($path, $params);
-		return  Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
+		return  Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 	}
 
 	/**
 	 * @static
-	 * @param      $actionPath
-	 * @param null $params
+	 * @param string $path
+	 * @param null   $params
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
@@ -31,7 +33,7 @@ class UrlHelper
 	{
 		$path = Blocks::app()->getConfig('actionTriggerWord').'/'.trim($path, '/');
 		$path = self::_normalizePath($path, $params);
-		return Blocks::app()->request->getHostInfo($protocol).bHtml::normalizeUrl($path);
+		return Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 	}
 
 	/**
@@ -51,7 +53,6 @@ class UrlHelper
 	 * @static
 	 * @param        $path
 	 * @param        $params
-	 * @param string $triggerWord
 	 * @return array|string
 	 */
 	private static function _normalizePath($path, $params)
@@ -72,7 +73,7 @@ class UrlHelper
 		{
 			$params = ltrim($params, '?&');
 
-			if (Blocks::app()->request->urlFormat == bUrlFormat::PathInfo)
+			if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
 				return array($path.'?'.$params);
 
 			return array($path.'&'.$params);

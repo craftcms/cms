@@ -9,9 +9,9 @@ class Plugin extends BaseModel
 	protected $tableName = 'plugins';
 
 	protected $attributes = array(
-		'name'    => array('type' => AttributeType::String, 'maxLength' => 50, 'unique' => true),
-		'version' => array('type' => AttributeType::String, 'maxLength' => 15),
-		'enabled' => array('type' => AttributeType::Boolean, 'default' => true, 'required' => true, 'unsigned' => true)
+		'class'   => AttributeType::ClassName,
+		'version' => AttributeType::Version,
+		'enabled' => array('type' => AttributeType::Boolean, 'default' => true)
 	);
 
 	protected $hasMany = array(

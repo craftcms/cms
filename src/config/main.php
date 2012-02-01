@@ -49,7 +49,7 @@ return array(
 		),
 
 		'dashboard' => array(
-			'class' => 'application.business.services.bDashboardService',
+			'class' => 'Blocks\DashboardService',
 		),
 
 		'email' => array(

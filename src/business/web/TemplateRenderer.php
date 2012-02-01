@@ -322,7 +322,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 
 			case 'layout':
 				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s.*)?$/x', $params, $match))
-					$this->throwException("Invalid layout tag “{$tag}”");
+					$this->throwParseException("Invalid layout tag “{$tag}”");
 
 				$template = $match[1];
 				$params = isset($match[7]) ? trim($match[7]) : '';
@@ -350,7 +350,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 
 			case 'include':
 				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s.*)?$/x', $params, $match))
-					$this->throwException("Invalid include tag “{$tag}”");
+					$this->throwParseException("Invalid include tag “{$tag}”");
 
 				$template = $match[1];
 				$params = isset($match[7]) ? trim($match[7]) : '';

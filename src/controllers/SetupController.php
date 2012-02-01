@@ -39,7 +39,7 @@ class SetupController extends BaseController
 		}
 		else
 			// Does a license key already exist?
-			$licenseKey = bLicenseKey::model()->find();
+			$licenseKey = LicenseKey::model()->find();
 
 		$this->loadTemplate('_special/setup', array(
 			'licenseKey' => $licenseKey
@@ -98,7 +98,7 @@ class SetupController extends BaseController
 		}
 		else
 			// Does an admin user already exist?
-			$user = bUser::model()->find('admin=:admin', array(':admin'=>true));
+			$user = User::model()->find('admin=:admin', array(':admin'=>true));
 
 		$this->loadTemplate('_special/setup/account', array(
 			'user' => $user
@@ -136,7 +136,7 @@ class SetupController extends BaseController
 		}
 		else
 			// Does a site already exist?
-			$site = bSite::model()->find('enabled=:enabled', array(':enabled'=>true));
+			$site = Site::model()->find('enabled=:enabled', array(':enabled'=>true));
 
 		$this->loadTemplate('_special/setup/site', array(
 			'site' => $site

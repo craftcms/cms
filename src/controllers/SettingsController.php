@@ -39,7 +39,7 @@ class SettingsController extends BaseController
 
 				switch ($model->emailerType)
 				{
-					case bEmailerType::Smtp:
+					case EmailerType::Smtp:
 					{
 						if ($model->smtpAuth)
 						{
@@ -66,7 +66,7 @@ class SettingsController extends BaseController
 						break;
 					}
 
-					case bEmailerType::Pop:
+					case EmailerType::Pop:
 					{
 						$settings['port'] = $model->port;
 						$settings['host'] = $model->host;
@@ -77,7 +77,7 @@ class SettingsController extends BaseController
 						break;
 					}
 
-					case bEmailerType::GmailSmtp:
+					case EmailerType::GmailSmtp:
 					{
 						$settings['host'] = $gMailSmtp;
 						$settings['smtpAuth'] = 1;

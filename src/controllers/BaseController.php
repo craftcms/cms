@@ -48,14 +48,16 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Loads a template
-	 * @param       $relativeTemplatePath
+	 *
+	 * @param       $templatePath
 	 * @param array $data Any variables that should be available to the template
+	 * @param bool  $return
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed
 	 */
 	public function loadTemplate($templatePath, $data = array(), $return = false)
 	{
-		$templatePath = bTemplateHelper::resolveTemplatePath($templatePath);
+		$templatePath = TemplateHelper::resolveTemplatePath($templatePath);
 		if ($templatePath !== false)
 		{
 			if (!is_array($data))
@@ -63,12 +65,11 @@ abstract class BaseController extends \CController
 
 			foreach ($data as &$tag)
 			{
-			$tag = TemplateHelper::getVarTag($tag);
+				$tag = TemplateHelper::getVarTag($tag);
 			}
 
 			return $this->renderPartial($templatePath, $data, $return);
 		}
-		if (TemplateHelper::findFileSystemMatch($baseTemplatePath, $relativeTemplatePath) !== false)
 
 		throw new HttpException(404);
 	}

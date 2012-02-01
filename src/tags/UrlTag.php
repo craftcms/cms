@@ -12,7 +12,7 @@ class UrlTag extends Tag
 	 */
 	public function base()
 	{
-		return substr(bUrlHelper::generateUrl('p'), 0, -1);
+		return substr(UrlHelper::generateUrl('p'), 0, -1);
 	}
 
 	/**

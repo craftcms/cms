@@ -9,8 +9,8 @@ class UserGroup extends BaseModel
 	protected $tableName = 'usergroups';
 
 	protected $attributes = array(
-		'name'        => array('type' => AttributeType::String, 'required' => true, 'unique' => true),
-		'description' => array('type' => AttributeType::Text)
+		'name'        => AttributeType::Name,
+		'description' => AttributeType::Text
 	);
 
 	protected $hasBlocks = array(

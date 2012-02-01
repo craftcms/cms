@@ -38,7 +38,7 @@ class Et
 	}
 
 	/**
-	 * @return \bEtPackage
+	 * @return \EtPackage
 	 */
 	public function getPackage()
 	{
@@ -46,7 +46,7 @@ class Et
 	}
 
 	/**
-	 * @return bool|\bEtPackage
+	 * @return bool|\EtPackage
 	 */
 	public function phoneHome()
 	{

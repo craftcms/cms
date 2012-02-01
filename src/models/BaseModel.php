@@ -71,7 +71,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->attributes as $name => $settings)
 		{
-			$settings = bDatabaseHelper::normalizeAttributeSettings($settings);
+			$settings = DatabaseHelper::normalizeAttributeSettings($settings);
 
 			// Only enforce 'required' validation if there's no default value
 			if (isset($settings['required']) && $settings['required'] === true && !isset($settings['default']))
@@ -206,6 +206,10 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Saves the record, whether it's new or existing
+	 *
+	 * @param bool $runValidation
+	 * @param null $attributes
+	 * @return bool
 	 */
 	function save($runValidation = true, $attributes = null)
 	{
