@@ -74,6 +74,10 @@ class DatabaseHelper
 	{
 		$settings = self::normalizeAttributeSettings($settings);
 
+		// Treat strict lengths as max lengths when defining columns
+		if (isset($settings['length']) && is_numeric($settings['length']) && $settings['length'] > 0)
+			$settings['maxLength'] = $settings['length'];
+
 		// Start the column definition
 		switch ($settings['type'])
 		{
