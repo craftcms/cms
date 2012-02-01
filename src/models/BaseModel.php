@@ -91,7 +91,7 @@ abstract class BaseModel extends \CActiveRecord
 			// Numbers
 			if (in_array($settings['type'], $numberTypes))
 			{
-				$rule = array($name);
+				$rule = array($name, 'numerical');
 
 				if (isset($settings['min']) && is_numeric($settings['min']))
 					$rule['min'] = $settings['min'];
