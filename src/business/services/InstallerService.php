@@ -24,10 +24,11 @@ class InstallerService extends \CApplicationComponent
 			$fileName = $file->fileName;
 
 			// Ignore base classes
-			if (strncmp($fileName, 'Base', 5) === 0)
+			if (strncmp($fileName, 'Base', 4) === 0)
 				continue;
 
-			$models[] = new $fileName;
+			$class = __NAMESPACE__.'\\'.$fileName;
+			$models[] = new $class;
 		}
 
 		// Start the transaction
