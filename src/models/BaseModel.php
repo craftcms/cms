@@ -101,6 +101,8 @@ abstract class BaseModel extends \CActiveRecord
 
 				if (in_array($settings['type'], $integerTypes))
 					$rule['integerOnly'] = true;
+
+				$rules[] = $rule;
 			}
 
 			// Enum attribute values
