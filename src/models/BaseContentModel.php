@@ -26,14 +26,4 @@ abstract class BaseContentModel extends BaseModel
 			'content'         => array('model' => 'Content', 'required' => true)
 		);
 	}
-
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
 }

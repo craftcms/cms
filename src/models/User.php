@@ -35,14 +35,4 @@ class User extends BaseModel
 		'groups'  => array('model' => 'UserGroup', 'through' => 'UserGroupMembers', 'foreignKey' => array('user'=>'group')),
 		'widgets' => array('model' => 'UserWidget', 'foreignKey' => 'user')
 	);
-
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
 }

@@ -22,14 +22,4 @@ class UserGroup extends BaseModel
 		'users'       => array('model' => 'User', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user')),
 		'permissions' => array('model' => 'UserGroupPermission', 'foreignKey' => 'group')
 	);
-
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
 }

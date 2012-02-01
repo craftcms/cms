@@ -20,14 +20,4 @@ class SystemSetting extends BaseSettingsModel
 		// Add the `category` attribute
 		$this->attributes['category'] = array('type' => AttributeType::Char, 'maxLength' => 15, 'required' => true);
 	}
-
-	/**
-	 * Returns an instance of the specified model
-	 * @return object The model instance
-	 * @static
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model($class);
-	}
 }
