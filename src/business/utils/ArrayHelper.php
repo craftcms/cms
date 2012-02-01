@@ -73,4 +73,18 @@ class ArrayHelper
 
 		return self::expandArray($arr);
 	}
+
+	/**
+	 * Converts a comma-delimited string into a trimmed array
+	 * ex: ArrayHelper::stringToArray('one, two, three') => array('one', 'two', 'three')
+	 * @param mixed $str The string to convert to an array
+	 * @return array The trimmed array
+	 */
+	public static function stringToArray($str)
+	{
+		if (is_array($str))
+			return $str;
+
+		return array_map('trim', explode(',', $str));
+	}
 }

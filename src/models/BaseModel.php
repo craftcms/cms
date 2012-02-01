@@ -65,6 +65,8 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function rules()
 	{
+		$rules = array();
+
 		$required = array();
 		$integers = array();
 		$emails = array();
@@ -86,14 +88,18 @@ abstract class BaseModel extends \CActiveRecord
 			if ($settings['type'] == AttributeType::Int)
 				$integers[] = $name;
 
+			if ($settings['type'] == AttributeType::Enum)
+			{
+				$values = ArrayHelper::stringToArray($settings['values']);
+				$rules[] = array($name, 'in', 'range' => $values);
+			}
+
 			if (isset($settings['minLength']) && is_numeric($settings['minLength']) && $settings['minLength'] > 0)
 				$minLengths[(string)$settings['minLength']][] = $name;
 
 			if (isset($settings['maxLength']) && is_numeric($settings['maxLength']) && $settings['maxLength'] > 0)
 				$maxLengths[(string)$settings['maxLength']][] = $name;
 		}
-
-		$rules = array();
 
 		if ($required)
 			$rules[] = array(implode(',', $required), 'required');
@@ -298,7 +304,7 @@ abstract class BaseModel extends \CActiveRecord
 		// Create the indexes
 		foreach ($this->indexes as $i => $index)
 		{
-			$columns = is_array($index['columns']) ? $index['columns'] : explode(',', $index['columns']);
+			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);
 			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
