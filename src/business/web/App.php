@@ -47,7 +47,7 @@ class App extends \CWebApplication
 			'business.web.*',
 			'business.web.filters.*',
 			'business.web.templatewidgets.*',
-			'business.web.webservices.*',
+			'business.webservices.*',
 			'commands.*',
 			'controllers.*',
 			'migrations.*',
