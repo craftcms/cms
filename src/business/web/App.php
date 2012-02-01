@@ -63,7 +63,7 @@ class App extends \CWebApplication
 			{
 				foreach ($contents as $file)
 				{
-					\Yii::$classMap[__NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME)] = substr($file, strlen(BLOCKS_BASE_PATH) - 7);
+					\Yii::$classMap[__NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME)] = $file;
 				}
 			}
 		}
