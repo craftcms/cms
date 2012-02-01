@@ -301,7 +301,8 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
-			$otherModel = new $settings['model'];
+			$otherModelClass = __NAMESPACE__.'\\'.$settings['model'];
+			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
 			$connection->createCommand()->addForeignKey($fkName, '{{'.$tableName.'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id', 'NO ACTION', 'NO ACTION');
@@ -319,7 +320,8 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
-			$otherModel = new $settings['model'];
+			$otherModelClass = __NAMESPACE__.'\\'.$settings['model'];
+			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
 			$connection->createCommand()->dropForeignKey($fkName, '{{'.$tableName.'}}');
