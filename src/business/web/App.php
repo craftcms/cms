@@ -27,46 +27,72 @@ class App extends \CWebApplication
 	private function _importClassMap()
 	{
 		$dirs = array(
-			'business',
-			'business/db',
-			'business/email',
-			'business/enums',
-			'business/exceptions',
-			'business/install',
-			'business/logging',
-			'business/services',
-			'business/updates',
-			'business/utils',
-			'business/web',
-			'business/web/filters',
-			'business/web/templatewidgets',
-			'business/web/webservices',
-			'commands',
-			'controllers',
-			'migrations',
-			'models',
-			'models/forms',
-			'tags',
-			'tags/assets',
-			'tags/content',
-			'tags/cp',
-			'tags/primitive',
-			'tags/security',
-			'tags/users',
-			'widgets',
+			'business.*',
+			'business.db.*',
+			'business.email.*',
+			'business.enums.*',
+			'business.exceptions.*',
+			'business.install.*',
+			'business.logging.*',
+			'business.services.*',
+			'business.updates.*',
+			'business.utils.*',
+			'business.web.*',
+			'business.web.filters.*',
+			'business.web.templatewidgets.*',
+			'business.web.webservices.*',
+			'commands.*',
+			'controllers.*',
+			'migrations.*',
+			'models.*',
+			'models.forms.*',
+			'tags.*',
+			'tags.assets.*',
+			'tags.content.*',
+			'tags.cp.*',
+			'tags.primitive.*',
+			'tags.security.*',
+			'tags.users.*',
+			'widgets.*',
 		);
 
 		foreach ($dirs as $dir)
 		{
-			$dir = BLOCKS_APP_PATH.$dir.'/';
-			if (($contents = @glob($dir."*.php")) !== false)
+			self::import($dir);
+		}
+	}
+
+	public static function import($alias, $forceInclude = false)
+	{
+		$path = BLOCKS_APP_PATH.str_replace('.', '/', $alias);
+
+		$directory = (substr($path, -2) == '/*');
+		if ($directory)
+		{
+			$path = substr($path, 0, -1);
+
+			if (($files = @glob($path."*.php")) !== false)
 			{
-				foreach ($contents as $file)
+				foreach ($files as $file)
 				{
-					\Yii::$classMap[__NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME)] = $file;
+					self::importFile($file);
 				}
 			}
 		}
+		else
+		{
+			$file = $path.'.php';
+			self::importFile($file);
+
+			if ($forceInclude)
+				require_once $file;
+		}
+	}
+
+	private static function importFile($file)
+	{
+		$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);
+		\Yii::$classMap[$class] = $file;
 	}
 
 	/**
