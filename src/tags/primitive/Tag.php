@@ -1,5 +1,5 @@
 <?php
-namespace blocks\app\_primitive;
+namespace Blocks;
 
 /**
  *

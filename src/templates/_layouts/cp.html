@@ -15,7 +15,7 @@
 {% region "body" %}
 
 <?php
-	foreach (Blocks::app()->user->getMessages() as $key => $message)
+	foreach (Blocks\Blocks::app()->user->getMessages() as $key => $message)
 	{
 		echo '<div class="message-'.$message->getStatus().'" style="text-align: center;">';
 

@@ -21,7 +21,7 @@ class TemplateController extends BaseController
 			$this->loadTemplate($templateMatch->getRelativePath().'/'.$templateMatch->getFileName());
 		}
 		else
-			throw new bHttpException(404);
+			throw new HttpException(404);
 	}
 
 	/**

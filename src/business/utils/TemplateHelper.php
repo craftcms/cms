@@ -14,7 +14,7 @@ class TemplateHelper
 		'date'     => 'DateTag',
 		'url'      => 'UrlTag',
 		'users'    => 'UsersTag',
-		'security' => 'securityTag'
+		'security' => 'SecurityTag'
 	);
 
 	/**
@@ -24,6 +24,7 @@ class TemplateHelper
 	 */
 	public static function getGlobalTag($handle)
 	{
+		$handle = __NAMESPACE__.'\\'.$handle;
 		if (isset(self::$globalTags[$handle]))
 			return new self::$globalTags[$handle];
 

@@ -135,6 +135,13 @@ class RequirementsChecker extends \CComponent
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'MySQL '.$requiredMysqlVersion.' or higher is required to run Blocks.'
 			),
+			new Requirement(
+				'Glob',
+				function_exists('glob'),
+				true,
+				'<a href="http://www.blockscms.com">Blocks</a>',
+				'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.'
+			),
 		);
 	}
 

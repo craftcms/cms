@@ -14,11 +14,58 @@ class App extends \CWebApplication
 
 	public function init()
 	{
+		$this->_importClassMap();
+
 		// Is this a resource request?
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			$this->processResourceRequest();
 			exit(1);
+		}
+	}
+
+	private function _importClassMap()
+	{
+		$dirs = array(
+			'business',
+			'business/db',
+			'business/email',
+			'business/enums',
+			'business/exceptions',
+			'business/install',
+			'business/logging',
+			'business/services',
+			'business/updates',
+			'business/utils',
+			'business/web',
+			'business/web/filters',
+			'business/web/templatewidgets',
+			'business/web/webservices',
+			'commands',
+			'controllers',
+			'migrations',
+			'models',
+			'models/forms',
+			'tags',
+			'tags/assets',
+			'tags/content',
+			'tags/cp',
+			'tags/primitive',
+			'tags/security',
+			'tags/users',
+			'widgets',
+		);
+
+		foreach ($dirs as $dir)
+		{
+			$dir = BLOCKS_APP_PATH.$dir.'/';
+			if (($contents = @glob($dir."*.php")) !== false)
+			{
+				foreach ($contents as $file)
+				{
+					\Yii::$classMap[__NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME)] = substr($file, strlen(BLOCKS_BASE_PATH) - 7);
+				}
+			}
 		}
 	}
 
@@ -196,6 +243,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Updates isInstalled
+	 * @param $isInstalled
 	 */
 	public function setIsInstalled($isInstalled)
 	{
@@ -227,7 +275,7 @@ class App extends \CWebApplication
 	{
 		if (!isset($this->_templatePath))
 		{
-			if (get_class($this->request) == 'HttpRequest')
+			if (strpos(get_class($this->request), 'HttpRequest') !== false)
 			{
 				$this->_templatePath = $this->path->templatePath;
 			}

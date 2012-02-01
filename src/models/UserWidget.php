@@ -14,7 +14,8 @@ class UserWidget extends BaseModel
 	);
 
 	protected $belongsTo = array(
-		'user' => array('model' => 'User', 'required' => true)
+		'user' => array('model' => 'User', 'required' => true),
+		'plugin' => array('model' => 'Plugin')
 	);
 
 	protected $hasMany = array(
