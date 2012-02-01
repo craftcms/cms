@@ -124,6 +124,10 @@ abstract class BaseModel extends \CActiveRecord
 				if (isset($settings['maxLength']) && is_numeric($settings['maxLength']))
 					$maxLengths[(string)$settings['maxLength']][] = $name;
 			}
+
+			// Regex pattern matching
+			if (!empty($settings['matchPattern']))
+				$rules[] = array($name, 'match', 'pattern' => $settings['matchPattern']);
 		}
 
 		if ($required)
