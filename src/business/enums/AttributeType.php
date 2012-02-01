@@ -42,6 +42,7 @@ class AttributeType
 	const Enum         = 'enum';
 
 	const ClassName    = 'classname';
+	const Email        = 'email';
 	const Handle       = 'handle';
 	const LanguageCode = 'languagecode';
 	const Name         = 'name';

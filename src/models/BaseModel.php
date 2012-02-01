@@ -67,10 +67,15 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		$required = array();
 		$integers = array();
+		$emails = array();
 		$maxLengths = array();
 
 		foreach ($this->attributes as $name => $settings)
 		{
+			// Catch email addresses before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
+			if (isset($settings['type']) && $settings['type'] == AttributeType::Email)
+				$emails[] = $name;
+
 			$settings = DatabaseHelper::normalizeAttributeSettings($settings);
 
 			// Only enforce 'required' validation if there's no default value
@@ -91,6 +96,9 @@ abstract class BaseModel extends \CActiveRecord
 
 		if ($integers)
 			$rules[] = array(implode(',', $integers), 'numerical', 'integerOnly' => true);
+
+		if ($emails)
+			$rules[] = array(implode(',', $emails), 'email');
 
 		if ($maxLengths)
 		{
