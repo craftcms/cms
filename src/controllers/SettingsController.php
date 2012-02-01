@@ -93,8 +93,8 @@ class SettingsController extends BaseController
 
 				if (Blocks::app()->email->saveEmailSettings($settings))
 				{
-					Blocks::app()->user->setMessage(bMessageStatus::Success, 'Settings updated successfully.');
-					$this->redirect(bUrlHelper::generateUrl('settings/info'));
+					Blocks::app()->user->setMessage(MessageStatus::Success, 'Settings updated successfully.');
+					$this->redirect(UrlHelper::generateUrl('settings/info'));
 				}
 			}
 
@@ -103,7 +103,7 @@ class SettingsController extends BaseController
 				foreach ($error as $innerError)
 					$messages[] = $innerError;
 
-			Blocks::app()->user->setMessage(bMessageStatus::Error, $messages);
+			Blocks::app()->user->setMessage(MessageStatus::Error, $messages);
 		}
 
 		// display the login form

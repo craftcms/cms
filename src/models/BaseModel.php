@@ -193,14 +193,14 @@ abstract class BaseModel extends \CActiveRecord
 		// Warning: Please modify the following code to remove attributes that
 		// should not be searched.
 
-		$criteria = new CDbCriteria;
+		$criteria = new \CDbCriteria;
 
 		foreach ($this->attributes as $attributeName => $attributeSettings)
 		{
 			$criteria->compare($attributeName, $this->$attributeName);
 		}
 
-		return new CActiveDataProvider($this, array(
+		return new \CActiveDataProvider($this, array(
 			'criteria' => $criteria
 		));
 	}
@@ -232,7 +232,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		// Make sure that the table doesn't already exist
 		if ($connection->schema->getTable('{{'.$tableName.'}}') !== null)
-			throw new bException($tableName.' already exists.');
+			throw new Exception($tableName.' already exists.');
 
 		// Begin assembling the columns and indexes
 		$columns['id'] = AttributeType::PK;
@@ -243,18 +243,18 @@ abstract class BaseModel extends \CActiveRecord
 		{
 			$required = isset($settings['required']) ? $settings['required'] : false;
 			$settings = array('type' => AttributeType::Integer, 'required' => $required);
-			$columns[$name.'_id'] = bDatabaseHelper::generateColumnDefinition($settings);
+			$columns[$name.'_id'] = DatabaseHelper::generateColumnDefinition($settings);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
 			if (isset($settings['unique']) && $settings['unique'] === true)
-				$indexes[] = array('columns' => array($name.'_id'), 'unique' => $unique);
+				$indexes[] = array('columns' => array($name.'_id'), 'unique' => $settings['unique']);
 		}
 
 		// Add all other columns
 		foreach ($this->attributes as $name => $settings)
 		{
-			$columns[$name] = bDatabaseHelper::generateColumnDefinition($settings);
+			$columns[$name] = DatabaseHelper::generateColumnDefinition($settings);
 
 			// Add (unique) index for this column?
 			$unique = (isset($settings['unique']) && $settings['unique'] === true);
@@ -263,9 +263,9 @@ abstract class BaseModel extends \CActiveRecord
 		}
 
 		// Add the remaining global columns
-		$columns['date_created'] = bDatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
-		$columns['date_updated'] = bDatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
-		$columns['uid']          = bDatabaseHelper::generateColumnDefinition(array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true));
+		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
+		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Integer, 'required' => true));
+		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::String, 'maxLength' => 36, 'required' => true));
 
 		// Create the table
 		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);
@@ -281,8 +281,8 @@ abstract class BaseModel extends \CActiveRecord
 		}
 
 		// Add the INSERT and UPDATE triggers
-		bDatabaseHelper::createInsertAuditTrigger($tableName);
-		bDatabaseHelper::createUpdateAuditTrigger($tableName);
+		DatabaseHelper::createInsertAuditTrigger($tableName);
+		DatabaseHelper::createUpdateAuditTrigger($tableName);
 	}
 
 	/**

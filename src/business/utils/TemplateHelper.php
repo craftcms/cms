@@ -7,14 +7,14 @@ namespace Blocks;
 class TemplateHelper
 {
 	public static $globalTags = array(
-		'assets'   => 'AssetsTag',
-		'blocks'   => 'BlocksTag',
-		'content'  => 'ContentTag',
-		'cp'       => 'CpTag',
-		'date'     => 'DateTag',
-		'url'      => 'UrlTag',
-		'users'    => 'UsersTag',
-		'security' => 'SecurityTag'
+		'assets'   => 'Blocks\AssetsTag',
+		'blocks'   => 'Blocks\BlocksTag',
+		'content'  => 'Blocks\ContentTag',
+		'cp'       => 'Blocks\CpTag',
+		'date'     => 'Blocks\DateTag',
+		'url'      => 'Blocks\UrlTag',
+		'users'    => 'Blocks\UsersTag',
+		'security' => 'Blocks\SecurityTag'
 	);
 
 	/**
@@ -24,7 +24,6 @@ class TemplateHelper
 	 */
 	public static function getGlobalTag($handle)
 	{
-		$handle = __NAMESPACE__.'\\'.$handle;
 		if (isset(self::$globalTags[$handle]))
 			return new self::$globalTags[$handle];
 
@@ -45,7 +44,7 @@ class TemplateHelper
 	 * Returns the appropriate tag for a variable
 	 * @param mixed $var The variable
 	 * @param object A tag instance for the variable
-	 * @return \bArrayTag|\bBoolTag|mixed|\bNumTag|\bObjectTag|string|\bStringTag
+	 * @return \ArrayTag|\BoolTag|mixed|\NumTag|\ObjectTag|string|\StringTag
 	 */
 	public static function getVarTag($var = '')
 	{

@@ -19,6 +19,7 @@ class TemplateController extends BaseController
 		{
 			parent::run($actionId);
 			$this->loadTemplate($templateMatch->getRelativePath().'/'.$templateMatch->getFileName());
+
 		}
 		else
 			throw new HttpException(404);

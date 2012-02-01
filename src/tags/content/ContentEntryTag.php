@@ -73,15 +73,15 @@ class ContentEntryTag extends Tag
 	}
 
 	/**
-	 * @return bDateTag
+	 * @return DateTag
 	 */
 	public function postDate()
 	{
-		return new bDateTag($this->_val->post_date);
+		return new DateTag($this->_val->post_date);
 	}
 
 	/**
-	 * @return bDateTag
+	 * @return DateTag
 	 */
 	public function expirationDate()
 	{

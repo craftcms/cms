@@ -126,7 +126,7 @@ class CookieJar
 		}
 		else
 		{
-			throw new bException('Argument is not a valid cookie string or object');
+			throw new Exception('Argument is not a valid cookie string or object');
 		}
 	}
 
@@ -141,7 +141,7 @@ class CookieJar
 	{
 		if (!$response instanceof HttpResponse)
 		{
-			throw new bException('$response is expected to be a Response object, '.gettype($response).' was passed');
+			throw new Exception('$response is expected to be a Response object, '.gettype($response).' was passed');
 		}
 
 		$cookie_hdrs = $response->getHeader('Set-Cookie');
@@ -190,7 +190,7 @@ class CookieJar
 
 		if (!$uri instanceof UriHttp)
 		{
-			throw new bException("Invalid URI string or object passed");
+			throw new Exception("Invalid URI string or object passed");
 		}
 
 		// First, reduce the array of cookies to only those matching domain and path
@@ -257,7 +257,7 @@ class CookieJar
 					break;
 
 				default:
-					throw new bException("Invalid value passed for \$ret_as: {$ret_as}");
+					throw new Exception("Invalid value passed for \$ret_as: {$ret_as}");
 					break;
 			}
 		}

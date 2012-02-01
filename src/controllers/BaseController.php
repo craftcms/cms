@@ -102,7 +102,7 @@ abstract class BaseController extends \CController
 	 * @param null $data
 	 * @param bool $return
 	 * @return mixed|string
-	 * @throws bException
+	 * @throws Exception
 	 */
 	public function renderFile($viewFile, $data = null, $return = false)
 	{

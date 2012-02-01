@@ -60,7 +60,7 @@ class SiteService extends \CApplicationComponent
 	}
 
 	/**
-	 * @return bSite
+	 * @return Site
 	 */
 	public function getCurrentSiteByUrl()
 	{
@@ -82,7 +82,7 @@ class SiteService extends \CApplicationComponent
 
 	/**
 	 * @param $url
-	 * @return bSite
+	 * @return Site
 	 */
 	public function getSiteByUrl($url)
 	{
@@ -101,7 +101,7 @@ class SiteService extends \CApplicationComponent
 
 	/**
 	 * @param $id
-	 * @return bSite
+	 * @return Site
 	 */
 	public function getSiteById($id)
 	{
@@ -111,7 +111,7 @@ class SiteService extends \CApplicationComponent
 
 	/**
 	 * @param $handle
-	 * @return bSite
+	 * @return Site
 	 */
 	public function getSiteByHandle($handle)
 	{

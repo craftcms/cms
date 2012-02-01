@@ -13,7 +13,7 @@ class InstallController extends BaseController
 	{
 		// Return a 404 if Blocks is already installed
 		if (!Blocks::app()->getConfig('devMode') && Blocks::app()->isInstalled)
-			throw new bHttpException(404);
+			throw new HttpException(404);
 	}
 
 	/**
@@ -21,10 +21,10 @@ class InstallController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		$reqCheck = new bRequirementsChecker();
+		$reqCheck = new RequirementsChecker();
 		$reqCheck->run();
 
-		if ($reqCheck->result !== bInstallStatus::Failure)
+		if ($reqCheck->result !== InstallStatus::Failure)
 			$this->loadTemplate('_special/install');
 		else
 			$this->loadTemplate('_special/install/cantinstall', array('requirements' => $reqCheck->requirements));
@@ -51,7 +51,7 @@ class InstallController extends BaseController
 			$r = array('error' => $e->getMessage());
 		}
 
-		bJson::sendJsonHeaders();
-		echo bJson::encode($r);
+		Json::sendJsonHeaders();
+		echo Json::encode($r);
 	}
 }

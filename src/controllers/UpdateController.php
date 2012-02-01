@@ -18,7 +18,7 @@ class UpdateController extends BaseController
 		$blocksUpdateInfo = Blocks::app()->update->updateInfo;
 		if ($blocksUpdateInfo == null)
 		{
-			echo bJson::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
+			echo Json::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
 			return;
 		}
 
@@ -34,7 +34,7 @@ class UpdateController extends BaseController
 				// Plugins
 				foreach ($this->_blocksUpdateInfo->plugins as $plugin)
 				{
-					if ($plugin->status == bPluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+					if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
 						$returnUpdateInfo[] = array('handle' => $plugin->handle, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
 				}
 
@@ -52,23 +52,23 @@ class UpdateController extends BaseController
 			{
 				if ($this->_blocksUpdateInfo->plugins !== null && count($this->_blocksUpdateInfo->plugins) > 0)
 				{
-					if (isset($this->_blocksUpdateInfo->plugins[$h]) && $this->_blocksUpdateInfo->plugins[$h]->status == bPluginVersionUpdateStatus::UpdateAvailable && count($this->_blocksUpdateInfo->plugins[$h]->newerReleases) > 0)
+					if (isset($this->_blocksUpdateInfo->plugins[$h]) && $this->_blocksUpdateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($this->_blocksUpdateInfo->plugins[$h]->newerReleases) > 0)
 						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo->plugins[$h]->handle, 'name' => $this->_blocksUpdateInfo->plugins[$h]->displayName, 'version' => $this->_blocksUpdateInfo->plugins[$h]->latestVersion);
 					else
 					{
-						echo bJson::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
+						echo Json::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
 						return;
 					}
 				}
 				else
 				{
-					echo bJson::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
+					echo Json::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
 					return;
 				}
 			}
 		}
 
-		echo bJson::encode(array('updateInfo' => $returnUpdateInfo));
+		echo Json::encode(array('updateInfo' => $returnUpdateInfo));
 		return;
 	}
 
@@ -85,11 +85,11 @@ class UpdateController extends BaseController
 				try
 				{
 					if (Blocks::app()->update->doCoreUpdate())
-						echo bJson::encode(array('success' => true));
+						echo Json::encode(array('success' => true));
 				}
-				catch (bException $ex)
+				catch (Exception $ex)
 				{
-					echo bJson::encode(array('error' => $ex->getMessage(), 'fatal' => true));
+					echo Json::encode(array('error' => $ex->getMessage(), 'fatal' => true));
 				}
 
 				return;
@@ -101,11 +101,11 @@ class UpdateController extends BaseController
 				try
 				{
 					if (Blocks::app()->update->doPluginUpdate($h))
-						echo bJson::encode(array('success' => true));
+						echo Json::encode(array('success' => true));
 				}
-				catch (bException $ex)
+				catch (Exception $ex)
 				{
-					echo bJson::encode(array('error' => $ex->getMessage(), 'fatal' => false));
+					echo Json::encode(array('error' => $ex->getMessage(), 'fatal' => false));
 				}
 
 				return;

@@ -9,16 +9,16 @@
 	<div><strong>Hey... you need to login.</strong></div>
 	<p>
 		<?php if (!isset($model)) $model = new LoginForm(); ?>
-		<?php echo HtmlHelper::beginForm(UrlHelper::generateActionUrl('app/session/login')); ?>
+		<?php echo Blocks\HtmlHelper::beginForm(UrlHelper::generateActionUrl('app/session/login')); ?>
 
-		<p><?php echo HtmlHelper::errorSummary($model); ?></p>
+		<p><?php echo Blocks\HtmlHelper::errorSummary($model); ?></p>
 
 		<div class="input-wrapper">Email or Username: <input type="text" name="loginName"></div><br />
 		<div class="input-wrapper">Password: <input type="password" name="password"></div><br />
 
 		<input class="btn" type="submit" value="Login">
 
-		<?php echo HtmlHelper::endForm(); ?>
+		<?php echo Blocks\HtmlHelper::endForm(); ?>
 	</p>
 
 {% /region %}

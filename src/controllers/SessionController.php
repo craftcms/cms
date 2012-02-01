@@ -11,7 +11,7 @@ class SessionController extends BaseController
 	 */
 	public function actionLogin()
 	{
-		$model = new bLoginForm();
+		$model = new LoginForm();
 
 		// Check to see if it's a submit.
 		if(Blocks::app()->request->isPostRequest)

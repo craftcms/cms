@@ -17,12 +17,14 @@ class CpService extends \CApplicationComponent
 	public function getDashboardWidgets()
 	{
 		$userId = 1;
-		$userWidgets = UserWidget::model()->with('plugins')->findAllByAttributes(array('user_id' => $userId));
+		$userWidgets = UserWidget::model()->findAllByAttributes(array('user_id' => $userId));
 		$widgets = array();
 
 		foreach ($userWidgets as $userWidget)
 		{
-			$widgetClass = $userWidget->plugin !== null ? $userWidget->plugin->name.'\\'.$userWidget->class : __NAMESPACE__.'\\'.$userWidget->class;
+			// TODO: Check on active record lazy loading.
+			//$widgetClass = $userWidget->plugin !== null ? $userWidget->plugin->name.'\\'.$userWidget->class : __NAMESPACE__.'\\'.$userWidget->class;
+			$widgetClass = __NAMESPACE__.'\\'.$userWidget->class;
 			$widgets[] = new $widgetClass($userWidget->id);
 		}
 

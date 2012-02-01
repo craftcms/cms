@@ -8,7 +8,7 @@ class DbConnection extends \CDbConnection
 {
 	/**
 	 * @param null $query
-	 * @return \bDbCommand
+	 * @return \DbCommand
 	 */
 	public function createCommand($query = null)
 	{

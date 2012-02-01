@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title><?php echo HtmlHelper::encode($data['type'])?></title>
+	<title><?php echo Blocks\HtmlHelper::encode($data['type'])?></title>
 
 	<style type="text/css">
 	/*<![CDATA[*/
@@ -159,11 +159,11 @@
 	<h1><?php echo $data['type']?></h1>
 
 	<p class="message">
-		<?php echo nl2br(HtmlHelper::encode($data['message']))?>
+		<?php echo nl2br(Blocks\HtmlHelper::encode($data['message']))?>
 	</p>
 
 	<div class="source">
-		<p class="file"><?php echo HtmlHelper::encode($data['file'])."({$data['line']})"?></p>
+		<p class="file"><?php echo Blocks\HtmlHelper::encode($data['file'])."({$data['line']})"?></p>
 		<?php echo $this->renderSourceCode($data['file'],$data['line'],$this->maxSourceLines); ?>
 	</div>
 
@@ -194,13 +194,13 @@
 					<?php endif; ?>
 					<?php
 						echo '&nbsp;';
-						echo HtmlHelper::encode($trace['file'])."(".$trace['line'].")";
+						echo Blocks\HtmlHelper::encode($trace['file'])."(".$trace['line'].")";
 						echo ': ';
 						if (!empty($trace['class']))
 							echo "<strong>{$trace['class']}</strong>{$trace['type']}";
 						echo "<strong>{$trace['function']}</strong>(";
 						if (!empty($trace['args']))
-							echo HtmlHelper::encode($this->argumentsToString($trace['args']));
+							echo Blocks\HtmlHelper::encode($this->argumentsToString($trace['args']));
 						echo ')';
 					?>
 				</div>

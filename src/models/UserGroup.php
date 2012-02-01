@@ -18,8 +18,8 @@ class UserGroup extends BaseModel
 	);
 
 	protected $hasMany = array(
-		'members'     => array('model' => 'bUserGroupMembers', 'foreignKey' => 'user'),
-		'users'       => array('model' => 'User', 'through' => 'bUserGroupMembers', 'foreignKey' => array('group'=>'user')),
+		'members'     => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
+		'users'       => array('model' => 'User', 'through' => 'UserGroupMembers', 'foreignKey' => array('group'=>'user')),
 		'permissions' => array('model' => 'UserGroupPermission', 'foreignKey' => 'group')
 	);
 

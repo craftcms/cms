@@ -114,9 +114,9 @@ class EmailService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param bRegisterUserForm $registerUserData
+	 * @param RegisterUserForm $registerUserData
 	 */
-	public function sendRegistrationEmail(bRegisterUserForm $registerUserData)
+	public function sendRegistrationEmail(RegisterUserForm $registerUserData)
 	{
 
 		$emailSettings = $this->getEmailSettings();

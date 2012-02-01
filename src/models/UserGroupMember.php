@@ -9,8 +9,8 @@ class UserGroupMember extends BaseModel
 	protected $tableName = 'usergroupmembers';
 
 	protected $belongsTo = array(
-		'user'  => array('model' => 'bUser', 'required' => true),
-		'group' => array('model' => 'bUserGroup', 'required' => true)
+		'user'  => array('model' => 'User', 'required' => true),
+		'group' => array('model' => 'UserGroup', 'required' => true)
 	);
 
 	protected $indexes = array(

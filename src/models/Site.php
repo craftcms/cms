@@ -24,10 +24,10 @@ class Site extends BaseModel
 	);
 
 	protected $hasMany = array(
-		'settings'     => array('model' => 'bSiteSettings', 'foreignKey' => 'site'),
-		'assetFolders' => array('model' => 'bAssetFolder', 'foreignKey' => 'site'),
-		'routes'       => array('model' => 'bRoute', 'foreignKey' => 'site'),
-		'sections'     => array('model' => 'bSection', 'foreignKey' => 'site')
+		'settings'     => array('model' => 'SiteSettings', 'foreignKey' => 'site'),
+		'assetFolders' => array('model' => 'AssetFolder', 'foreignKey' => 'site'),
+		'routes'       => array('model' => 'Route', 'foreignKey' => 'site'),
+		'sections'     => array('model' => 'Section', 'foreignKey' => 'site')
 	);
 
 	/**
