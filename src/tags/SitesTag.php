@@ -8,6 +8,9 @@ class SitesTag extends Tag
 {
 	/**
 	 * Get site by ID
+	 *
+	 * @param $siteId
+	 * @return mixed
 	 */
 	function getById($siteId)
 	{
@@ -16,6 +19,7 @@ class SitesTag extends Tag
 
 	/**
 	 * Get all sites
+	 * @return
 	 */
 	function __toArray()
 	{
