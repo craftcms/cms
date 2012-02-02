@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class PluginUpdateData
 {
-	public $handle = null;
+	public $class = null;
 	public $localVersion = null;
 	public $latestVersion = null;
 	public $status = null;
@@ -23,7 +23,7 @@ class PluginUpdateData
 		if ($properties == null)
 			return;
 
-		$this->handle = isset($properties['handle']) ? $properties['handle'] : null;
+		$this->handle = isset($properties['class']) ? $properties['class'] : null;
 		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
 		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
 		$this->status = isset($properties['status']) ? $properties['status'] : null;

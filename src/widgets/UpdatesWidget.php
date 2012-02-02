@@ -39,7 +39,7 @@ class UpdatesWidget extends Widget
 				{
 					$updates[] = array(
 						'name' => $plugin->displayName,
-						'handle' => $plugin->handle,
+						'handle' => $plugin->class,
 						'version' => $plugin->latestVersion
 					);
 				}

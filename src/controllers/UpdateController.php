@@ -35,7 +35,7 @@ class UpdateController extends BaseController
 				foreach ($this->_blocksUpdateInfo->plugins as $plugin)
 				{
 					if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
-						$returnUpdateInfo[] = array('handle' => $plugin->handle, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+						$returnUpdateInfo[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
 				}
 
 				break;

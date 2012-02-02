@@ -28,10 +28,10 @@ class PluginService extends \CApplicationComponent
 
 		foreach($installedPlugins as $plugin)
 		{
-			$pluginVersionInfo['handle'] = $plugin->name;
+			$pluginVersionInfo['handle'] = $plugin->class;
 			$pluginVersionInfo['localVersion'] = $plugin->version;
 
-			$pluginNamesAndVersions[$plugin->name] = $pluginVersionInfo;
+			$pluginNamesAndVersions[$plugin->class] = $pluginVersionInfo;
 		}
 
 		return $pluginNamesAndVersions;

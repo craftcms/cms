@@ -45,7 +45,7 @@ class CpUpdatesTag extends Tag
 					$notes = $this->_generateUpdateNotes($plugin->newerReleases, $plugin->displayName);
 					$this->_updates[] = array(
 						'name' => $plugin->displayName,
-						'handle' => $plugin->handle,
+						'handle' => $plugin->class,
 						'version' => $plugin->latestVersion,
 						'critical' => $plugin->criticalUpdateAvailable,
 						'notes' => $notes,
