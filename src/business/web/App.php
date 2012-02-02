@@ -179,7 +179,7 @@ class App extends \CWebApplication
 			if ($handle != 'app')
 				Blocks::import("plugins.{$handle}.controllers.*");
 
-			$this->runController($this->request->actionController.'/'.$this->request->actionIndex);
+			$this->runController($this->request->actionController.'/'.$this->request->actionAction);
 			$this->end();
 		}
 	}
