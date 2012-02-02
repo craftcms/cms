@@ -52,7 +52,7 @@ class CpTag extends Tag
 	 */
 	public function badLicenseKey()
 	{
-		$licenseKeyStatus = Blocks::app()->site->licenseKeyStatus;
+		$licenseKeyStatus = Blocks::app()->sites->licenseKeyStatus;
 		if ($licenseKeyStatus->licenseKeyStatus == LicenseKeyStatus::InvalidKey)
 			return true;
 
@@ -64,10 +64,10 @@ class CpTag extends Tag
 	 */
 	public function criticalUpdateAvailable()
 	{
-		if (!Blocks::app()->update->isUpdateInfoCached())
+		if (!Blocks::app()->updates->isUpdateInfoCached())
 			return false;
 
-		$updateInfo = Blocks::app()->update->updateInfo;
+		$updateInfo = Blocks::app()->updates->updateInfo;
 		return $updateInfo->criticalUpdateAvailable;
 	}
 
@@ -76,7 +76,7 @@ class CpTag extends Tag
 	 */
 	public function updateInfoCached()
 	{
-		return Blocks::app()->update->isUpdateInfoCached();
+		return Blocks::app()->updates->isUpdateInfoCached();
 	}
 
 	/**

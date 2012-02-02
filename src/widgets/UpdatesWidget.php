@@ -14,10 +14,10 @@ class UpdatesWidget extends Widget
 	 */
 	public function displayBody()
 	{
-		if (!Blocks::app()->update->isUpdateInfoCached())
+		if (!Blocks::app()->updates->isUpdateInfoCached())
 			return false;
 
-		$updateInfo = Blocks::app()->update->updateInfo;
+		$updateInfo = Blocks::app()->updates->updateInfo;
 		$updates = array();
 
 		// Blocks first

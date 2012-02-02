@@ -15,7 +15,7 @@ class UpdateController extends BaseController
 	public function actionGetUpdateInfo($h)
 	{
 		$returnUpdateInfo = array();
-		$blocksUpdateInfo = Blocks::app()->update->updateInfo;
+		$blocksUpdateInfo = Blocks::app()->updates->updateInfo;
 		if ($blocksUpdateInfo == null)
 		{
 			echo Json::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
@@ -84,7 +84,7 @@ class UpdateController extends BaseController
 			{
 				try
 				{
-					if (Blocks::app()->update->doCoreUpdate())
+					if (Blocks::app()->updates->doCoreUpdate())
 						echo Json::encode(array('success' => true));
 				}
 				catch (Exception $ex)
@@ -100,7 +100,7 @@ class UpdateController extends BaseController
 			{
 				try
 				{
-					if (Blocks::app()->update->doPluginUpdate($h))
+					if (Blocks::app()->updates->doPluginUpdate($h))
 						echo Json::encode(array('success' => true));
 				}
 				catch (Exception $ex)

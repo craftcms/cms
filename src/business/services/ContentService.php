@@ -177,7 +177,7 @@ class ContentService extends \CApplicationComponent
 	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
 	{
 		$connection = Blocks::app()->db;
-		$site = Blocks::app()->site->getSiteByHandle($siteHandle);
+		$site = Blocks::app()->sites->getSiteByHandle($siteHandle);
 
 		$transaction = $connection->beginTransaction();
 		try
@@ -213,7 +213,7 @@ class ContentService extends \CApplicationComponent
 
 			// check result.
 			$section = new Section();
-			$section->site_id = $site->id;
+			$section->sites->_id = $site->id;
 
 			if ($parentId !== null)
 				$section->parent_id = $parentId;
@@ -262,7 +262,7 @@ class ContentService extends \CApplicationComponent
 	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = AttributeType::Text, $instructions = null, $required = false)
 	{
 		$connection = Blocks::app()->db;
-		$site = Blocks::app()->site->getSiteByHandle($siteHandle);
+		$site = Blocks::app()->sites->getSiteByHandle($siteHandle);
 		$section = $this->getSectionBySiteIdHandle($site->id, $sectionHandle);
 
 		$transaction = $connection->beginTransaction();

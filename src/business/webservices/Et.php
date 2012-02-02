@@ -24,7 +24,7 @@ class Et
 		$this->_maxRedirects = $maxRedirects;
 
 		$this->_package = new EtPackage();
-		$this->_package->licenseKeys = Blocks::app()->site->licenseKeys;
+		$this->_package->licenseKeys = Blocks::app()->sites->licenseKeys;
 		$this->_package->domain = Blocks::app()->request->serverName;
 		$this->_package->edition = Blocks::getEdition();
 	}
@@ -73,7 +73,7 @@ class Et
 				$package = new EtPackage($packageData);
 
 				// we set the license key status on every request
-				Blocks::app()->site->setLicenseKeyStatus($package->licenseKeyStatus);
+				Blocks::app()->sites->setLicenseKeyStatus($package->licenseKeyStatus);
 
 				return $package;
 			}

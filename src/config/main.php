@@ -37,7 +37,7 @@ return array(
 	'components' => array(
 		// services
 		'assets' => array(
-			'class' => 'Blocks\AssetService',
+			'class' => 'Blocks\AssetsService',
 		),
 
 		'content' => array(
@@ -69,7 +69,7 @@ return array(
 		),
 
 		'plugins' => array(
-			'class' => 'Blocks\PluginService',
+			'class' => 'Blocks\PluginsService',
 		),
 
 		'security' => array(
@@ -80,12 +80,12 @@ return array(
 			'class' => 'Blocks\SettingsService',
 		),
 
-		'site' => array(
-			'class' => 'Blocks\SiteService',
+		'sites' => array(
+			'class' => 'Blocks\SitesService',
 		),
 
-		'update' => array(
-			'class' => 'Blocks\UpdateService',
+		'updates' => array(
+			'class' => 'Blocks\UpdatesService',
 		),
 
 		'users' => array(
@@ -170,7 +170,7 @@ return array(
 		),
 
 		'user' => array(
-			'class'             => 'Blocks\WebUser',
+			'class'             => 'Blocks\UserSessionService',
 			'allowAutoLogin'    => true,
 			'loginUrl'          => array('/login'),
 			'autoRenewCookie'   => true,

@@ -101,7 +101,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getSiteTemplatePath()
 	{
-		$siteHandle = Blocks::app()->site->currentSiteByUrl;
+		$siteHandle = Blocks::app()->sites->currentSiteByUrl;
 		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 
 		return $this->templatesPath.'site_templates/'.$siteHandle.'/';
@@ -122,7 +122,7 @@ class PathService extends \CApplicationComponent
 	{
 		// site request
 		if (BLOCKS_CP_REQUEST !== true)
-			return $this->siteTemplatePath;
+			return $this->sites->TemplatePath;
 
 		// CP request
 		return $this->cpTemplatePath;
@@ -137,7 +137,7 @@ class PathService extends \CApplicationComponent
 
 		if (BLOCKS_CP_REQUEST !== true)
 		{
-			$siteHandle = Blocks::app()->site->currentSiteByUrl;
+			$siteHandle = Blocks::app()->sites->currentSiteByUrl;
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 			$cachePath = $this->runtimePath.'parsed_templates/custom/site_templates/'.$siteHandle.'/';
 		}

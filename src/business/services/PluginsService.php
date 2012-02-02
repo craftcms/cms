@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PluginService extends \CApplicationComponent
+class PluginsService extends \CApplicationComponent
 {
 	/**
 	 * @return Plugins
