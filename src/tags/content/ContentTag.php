@@ -12,7 +12,7 @@ class ContentTag extends Tag
 	 */
 	function __construct()
 	{
-		$this->_siteId = Blocks::app()->sites->currentSiteByUrl->id;
+		$this->_siteId = Blocks::app()->sites->currentSite;
 	}
 
 	/**
