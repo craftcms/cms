@@ -32,6 +32,16 @@ class UsersService extends \CApplicationComponent
 	}
 
 	/**
+	 * @param $userId
+	 * @return mixed
+	 */
+	public function getUserById($userId)
+	{
+		$user = User::model()->findByPk($userId);
+		return $user;
+	}
+
+	/**
 	 * @param $userName
 	 * @return mixed
 	 */

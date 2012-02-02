@@ -9,8 +9,9 @@ class EmailService extends \CApplicationComponent
 	private $_defaultEmailTimeout = 10;
 
 	/**
-	 * @param EmailMessage $emailMessage
-	 * @throws Exception
+	 * @param \Blocks\EmailMessage $emailMessage
+	 * @param EmailMessage         $emailMessage
+	 * @return bool|string
 	 */
 	public function sendEmail(EmailMessage $emailMessage)
 	{
@@ -98,32 +99,44 @@ class EmailService extends \CApplicationComponent
 		}
 
 		if (!$email->send())
-			throw new Exception($email->errorInfo);
+			return $email->errorInfo;
+
+		return true;
 	}
 
 	/**
 	 * @param EmailMessage $emailMessage
-	 * @param $templateFile
+	 * @param              $templateFile
+	 * @param              $data
 	 */
-	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile)
+	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile, $data)
 	{
-		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, array());
+		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, $data);
 		$emailMessage->setBody($renderedTemplate);
 
 		$this->sendEmail($emailMessage);
 	}
 
 	/**
-	 * @param RegisterUserForm $registerUserData
+	 * @param User         $user
+	 * @param \Blocks\Site $site
+	 *
+	 * @return bool
 	 */
-	public function sendRegistrationEmail(RegisterUserForm $registerUserData)
+	public function sendRegistrationEmail(User $user, Site $site)
 	{
 
 		$emailSettings = $this->getEmailSettings();
-		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new EmailAddress($registerUserData->email, $registerUserData->firstName.' '.$registerUserData->lastName)));
+		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new EmailAddress($user->email, $user->first_name.(StringHelper::isNotNullOrEmpty($user->last_name) ? $user->last_name : ''))));
 		$email->setIsHtml(true);
 		$email->setSubject('Confirm Your Registration');
-		Blocks::app()->email->sendTemplateEmail($email, 'register');
+
+		$data = array($user->first_name, $user->last_name, $user->email, $user->username, $user->password, $user->password_reset_required, $site->name, $site->url);
+
+		if (($emailStatus = Blocks::app()->email->sendTemplateEmail($email, 'register', $data)) !== true)
+			return $emailStatus;
+
+		return true;
 	}
 
 	/**

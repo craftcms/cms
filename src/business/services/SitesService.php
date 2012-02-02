@@ -82,6 +82,7 @@ class SitesService extends \CApplicationComponent
 
 	/**
 	 * Returns all sites
+	 * @return
 	 */
 	public function getAllSites()
 	{

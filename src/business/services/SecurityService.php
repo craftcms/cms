@@ -97,7 +97,7 @@ class SecurityService extends \CApplicationComponent
 			$randomString .= $randomChar;
 		}
 
-		// return our finished random string
+		// return our randomly generated hashed password and type.
 		return $randomString;
 	}
 }
