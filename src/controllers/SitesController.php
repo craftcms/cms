@@ -16,7 +16,7 @@ class SitesController extends BaseController
 		// Are we editing an existing site?
 		$postSiteId = Blocks::app()->request->getPost('site_id');
 		if ($postSiteId)
-			$site = Site::model()->findByPk($postSiteId);
+			$site = Blocks::app()->sites->getSiteById($postSiteId);
 
 		// Otherwise create a new site
 		if (empty($site))
