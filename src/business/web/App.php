@@ -211,7 +211,7 @@ class App extends \CWebApplication
 			else
 				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
 
-			$rootFolderUrl = UrlHelper::generateUrl('resources/'.$handle).'/';
+			$rootFolderUrl = UrlHelper::generateUrl($this->getConfig('resourceTriggerWord').'/'.$handle).'/';
 			$relativeResourcePath = implode('/', $segs);
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
