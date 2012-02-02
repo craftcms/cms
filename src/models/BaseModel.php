@@ -67,6 +67,7 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		$rules = array();
 
+		$uniques = array();
 		$required = array();
 		$emails = array();
 		$strictLengths = array();
@@ -83,6 +84,10 @@ abstract class BaseModel extends \CActiveRecord
 				$emails[] = $name;
 
 			$settings = DatabaseHelper::normalizeAttributeSettings($settings);
+
+			// Uniques
+			if (isset($settings['unique']) && $settings['unique'] === true)
+				$uniques[] = $name;
 
 			// Only enforce 'required' validation if there's no default value
 			if (isset($settings['required']) && $settings['required'] === true && !isset($settings['default']))
@@ -129,6 +134,9 @@ abstract class BaseModel extends \CActiveRecord
 			if (!empty($settings['matchPattern']))
 				$rules[] = array($name, 'match', 'pattern' => $settings['matchPattern']);
 		}
+
+		if ($uniques)
+			$rules[] = array(implode(',', $uniques), 'unique');
 
 		if ($required)
 			$rules[] = array(implode(',', $required), 'required');
