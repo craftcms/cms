@@ -6,32 +6,23 @@ namespace Blocks;
  */
 class UsersTag extends Tag
 {
-	protected $_users;
-	protected $_groups;
-
 	/**
+	 * Get user by ID
+	 *
+	 * @param $userId
 	 * @return mixed
 	 */
-	public function getUsers()
+	function getById($userId)
 	{
-		if (!isset($this->_users))
-		{
-			$this->_users = Blocks::app()->users->allUsers;
-		}
-
-		return $this->_users;
+		return Blocks::app()->users->getUserById($userId);
 	}
 
 	/**
-	 * @return mixed
+	 * Get all users
+	 * @return
 	 */
-	public function getGroups()
+	function __toArray()
 	{
-		if (!isset($this->_groups))
-		{
-			$this->_groups = Blocks::app()->users->allGroups;
-		}
-
-		return $this->_groups;
+		return Blocks::app()->users->getAllUsers();
 	}
 }
