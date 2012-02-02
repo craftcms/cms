@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ContentService extends \CApplicationComponent
+class ContentService extends BaseService
 {
 	/* Entries */
 
@@ -93,30 +93,38 @@ class ContentService extends \CApplicationComponent
 	/* Sections */
 
 	/**
-	 * @param $sectionId
-	 * @return mixed
+	 * Get all sections for the current site
+	 * @return array
 	 */
-	public function getSectionById($sectionId)
+	public function getSections()
 	{
-		$section = Section::model()->findByAttributes(array(
-			'id' => $sectionId,
+		$sections = Section::model()->findAllByAttributes(array(
+			'site_id' => Blocks::app()->sites->currentSite->id,
 		));
 
-		return $section;
+		return $sections;
 	}
 
 	/**
-	 * @param $sectionId
-	 * @return mixed
+	 * Get the sub sections of another section
+	 * @param int $parentId The ID of the parent section
+	 * @return array
 	 */
-	public function doesSectionHaveSubSections($sectionId)
+	public function getSubSections($parentId)
 	{
-		$exists = Section::model()->exists(
-			'parent_id=:parentId',
-			array(':parentId' => $sectionId)
-		);
+		return Section::model()->findAllByAttributes(array(
+			'parent_id' => $parentId
+		));
+	}
 
-		return $exists;
+	/**
+	 * Get a specific section by ID
+	 * @param int $sectionId The ID of the section to get
+	 * @return Section
+	 */
+	public function getSectionById($sectionId)
+	{
+		return Section::model()->findByPk($sectionId);
 	}
 
 	/**
@@ -143,19 +151,6 @@ class ContentService extends \CApplicationComponent
 	{
 		$sections = Section::model()->findAllByAttributes(array(
 			'handle' => $handles,
-			'site_id' => $siteId,
-		));
-
-		return $sections;
-	}
-
-	/**
-	 * @param $siteId
-	 * @return mixed
-	 */
-	public function getAllSectionsBySiteId($siteId)
-	{
-		$sections = Section::model()->findAllByAttributes(array(
 			'site_id' => $siteId,
 		));
 

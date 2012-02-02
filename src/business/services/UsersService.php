@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UsersService extends \CApplicationComponent
+class UsersService extends BaseService
 {
 	/**
 	 * @return User

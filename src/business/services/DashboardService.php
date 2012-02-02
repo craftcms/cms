@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DashboardService extends \CApplicationComponent
+class DashboardService extends BaseService
 {
 	/**
 	 * Returns the dashboard widgets for the current user

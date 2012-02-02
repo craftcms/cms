@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class CpService extends \CApplicationComponent
+class CpService extends BaseService
 {
 	
 }

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UpdatesService extends \CApplicationComponent
+class UpdatesService extends BaseService
 {
 	private $_updateInfo;
 

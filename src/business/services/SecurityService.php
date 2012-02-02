@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SecurityService extends \CApplicationComponent
+class SecurityService extends BaseService
 {
 	/**
 	 * @param $userName
