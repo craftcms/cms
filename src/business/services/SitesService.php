@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SitesService extends \CApplicationComponent
+class SitesService extends BaseService
 {
 	private $_currentSite = null;
 	private $_licenseKeyStatus = null;
@@ -24,6 +24,17 @@ class SitesService extends \CApplicationComponent
 			return $keysArr;
 
 		return null;
+	}
+
+	/**
+	 * Get the current site
+	 */
+	public function getCurrentSite()
+	{
+		if (!isset($this->_currentSite))
+			$this->_currentSite = Site::model()->find();
+
+		return $this->_currentSite;
 	}
 
 	/**

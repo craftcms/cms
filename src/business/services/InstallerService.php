@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallerService extends \CApplicationComponent
+class InstallerService extends BaseService
 {
 	/**
 	 * Run the installer
