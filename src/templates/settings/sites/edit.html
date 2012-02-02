@@ -7,25 +7,31 @@
 {% region "main" %}
 	<div class="pane">
 		<div class="head">
-			<h5>Edit Site “{{ site.name }}”</h5>
+			{% if site %}
+				<h5>Edit Site “{{ site.name }}”</h5>
+			{% else %}
+				<h5>Create a new site</h5>
+			{% endif %}
 		</div>
 		<div class="body">
-			<div class="item">
-				<div class="field">
-					<label for="name">Site Name</label>
-					<div class="input-wrapper"><input id="name" type="text" value="{{ site.name }}" /></div>
-				</div>
-				<div class="field">
-					<label for="handle">Site Handle</label>
-					<div class="input-wrapper"><input id="handle" type="text" value="{{ site.handle }}" /></div>
-				</div>
-				<div class="field">
-					<label for="url">Site URL</label>
-					<div class="input-wrapper"><input id="url" type="text" value="{{ site.url }}" /></div>
-				</div>
+			<form method="post" action="">
+				<div class="item">
+					<div class="field">
+						<label for="name">Site Name</label>
+						<div class="input-wrapper"><input id="name" type="text" value="{{ site.name }}" /></div>
+					</div>
+					<div class="field">
+						<label for="handle">Site Handle</label>
+						<div class="input-wrapper"><input id="handle" type="text" value="{{ site.handle }}" /></div>
+					</div>
+					<div class="field">
+						<label for="url">Site URL</label>
+						<div class="input-wrapper"><input id="url" type="text" value="{{ site.url }}" /></div>
+					</div>
 
-				<input class="btn big submit" type="submit" value="Save Site" />
-			</div>
+					<input class="btn big submit" type="submit" value="Save Site" />
+				</div>
+			</form>
 		</div>
 	</div>
 {% endregion %}
