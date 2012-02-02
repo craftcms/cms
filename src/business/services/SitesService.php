@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SiteService extends \CApplicationComponent
+class SitesService extends \CApplicationComponent
 {
 	private $_currentSite = null;
 	private $_licenseKeyStatus = null;
@@ -158,7 +158,7 @@ class SiteService extends \CApplicationComponent
 	 */
 	private function _getLicenseKeyStatus()
 	{
-		$licenseKeys = Blocks::app()->site->licenseKeys;
+		$licenseKeys = Blocks::app()->sites->licenseKeys;
 
 		if (!$licenseKeys)
 			return LicenseKeyStatus::MissingKey;

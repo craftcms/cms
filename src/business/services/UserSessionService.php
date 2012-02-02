@@ -4,10 +4,10 @@ namespace Blocks;
 /**
  *
  */
-class WebUser extends \CWebUser
+class UserSessionService extends \CWebUser
 {
-	const FLASH_KEY_PREFIX = 'Blocks.WebUser.flash.';
-	const FLASH_COUNTERS   = 'Blocks.WebUser.flashcounters';
+	const FLASH_KEY_PREFIX = 'Blocks.UserSessionService.flash.';
+	const FLASH_COUNTERS   = 'Blocks.UserSessionService.flashcounters';
 
 	public $authTimeout;
 

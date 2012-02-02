@@ -43,7 +43,7 @@ class UploadFolderTag extends Tag
 	 */
 	public function site()
 	{
-		return new SiteTag($this->_val->site_id);
+		return new SiteTag($this->_val->sites->_id);
 	}
 
 	/**

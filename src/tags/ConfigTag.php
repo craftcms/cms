@@ -20,6 +20,6 @@ class ConfigTag extends Tag
 	 */
 	public function licenseKeys()
 	{
-		return Blocks::app()->site->licenseKeys;
+		return Blocks::app()->sites->licenseKeys;
 	}
 }

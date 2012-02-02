@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetService extends \CApplicationComponent
+class AssetsService extends \CApplicationComponent
 {
 	/**
 	 * @param $siteId

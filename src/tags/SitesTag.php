@@ -11,7 +11,7 @@ class SitesTag extends Tag
 	 */
 	function getById($siteId)
 	{
-		return Blocks::app()->site->getSiteById($siteId);
+		return Blocks::app()->sites->getSiteById($siteId);
 	}
 
 	/**
@@ -19,6 +19,6 @@ class SitesTag extends Tag
 	 */
 	function __toArray()
 	{
-		return Blocks::app()->site->getAllSites();
+		return Blocks::app()->sites->getAllSites();
 	}
 }
