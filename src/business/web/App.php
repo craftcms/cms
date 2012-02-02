@@ -179,10 +179,6 @@ class App extends \CWebApplication
 			{
 				Blocks::import("plugins.{$handle}.controllers.*");
 			}
-			else
-			{
-				$controller = 'b'.$controller;
-			}
 
 			$this->runController($controller.'/'.$action);
 			$this->end();
