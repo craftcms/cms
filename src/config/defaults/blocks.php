@@ -17,12 +17,12 @@ $blocksConfig['devMode'] = false;
 /**
  *
  */
-$blocksConfig['resourceTriggerWord'] = 'resources';
+$blocksConfig['resourceTriggerWord'] = 'resource';
 
 /**
  *
  */
-$blocksConfig['actionTriggerWord'] = 'actions';
+$blocksConfig['actionTriggerWord'] = 'action';
 
 /**
  * If you're running with devMode = false, this cache time will be used instead of devCacheTimeSeconds.

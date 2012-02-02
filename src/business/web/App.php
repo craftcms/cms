@@ -171,16 +171,15 @@ class App extends \CWebApplication
 			if (!$this->request->getPathSegment(2))
 				throw new HttpException(404);
 
-			$handle = $this->request->getPathSegment(2);
-			$controller = $this->request->getPathSegment(3, 'default');
-			$action = $this->request->getPathSegment(4, 'index');
+			$handle = $this->request->actionHandle;
+
+			if (!$handle)
+				throw new HttpException(404);
 
 			if ($handle != 'app')
-			{
 				Blocks::import("plugins.{$handle}.controllers.*");
-			}
 
-			$this->runController($controller.'/'.$action);
+			$this->runController($this->request->actionController.'/'.$this->request->actionIndex);
 			$this->end();
 		}
 	}

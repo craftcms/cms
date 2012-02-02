@@ -6,6 +6,10 @@ namespace Blocks;
  */
 class HttpRequest extends \CHttpRequest
 {
+	public $actionHandle;
+	public $actionController;
+	public $actionAction;
+
 	private $_urlFormat;
 	private $_path;
 	private $_queryStringPath;
@@ -187,11 +191,27 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			if ($this->getPathSegment(1) === Blocks::app()->getConfig('actionTriggerWord'))
-				$this->_mode = RequestMode::Action;
+			$resourceTriggerWord = Blocks::app()->getConfig('resourceTriggerWord');
+			$actionTriggerWord = Blocks::app()->getConfig('actionTriggerWord');
 
-			else if ($this->getPathSegment(1) === Blocks::app()->getConfig('resourceTriggerWord'))
+			if ($this->getPathSegment(1) === $resourceTriggerWord)
 				$this->_mode = RequestMode::Resource;
+
+			else if ($this->getPathSegment(1) === $actionTriggerWord)
+			{
+				$this->_mode = RequestMode::Action;
+				$this->actionHandle     = $this->getPathSegment(2);
+				$this->actionController = $this->getPathSegment(3, 'default');
+				$this->actionAction     = $this->getPathSegment(4, 'index');
+			}
+
+			else if (($action = $this->getPost($actionTriggerWord)) !== null && ($actionParts = array_filter(explode('/', $action))))
+			{
+				$this->_mode = RequestMode::Action;
+				$this->actionHandle     = isset($actionParts[0]) ? $actionParts[0] : null;
+				$this->actionController = isset($actionParts[1]) ? $actionParts[1] : 'default';
+				$this->actionAction     = isset($actionParts[2]) ? $actionParts[2] : 'index';
+			}
 
 			else if (BLOCKS_CP_REQUEST === true)
 				$this->_mode = RequestMode::CP;
