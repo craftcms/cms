@@ -81,6 +81,14 @@ class SiteService extends \CApplicationComponent
 	}
 
 	/**
+	 * Returns all sites
+	 */
+	public function getAllSites()
+	{
+		return Site::model()->findAll('enabled=:enabled', array(':enabled'=>true));
+	}
+
+	/**
 	 * @param $url
 	 * @return Site
 	 */

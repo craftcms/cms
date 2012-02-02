@@ -7,7 +7,9 @@
 		</div>
 		<div class="body">
 			<ul>
-				<li><a class="item" href="{{ url.base }}settings/sites/edit/1">pixelandtonic.com</a></li>
+				{% foreach sites as site %}
+					<li class="item"><a href="{{ url.base }}settings/sites/edit/{{ site.id }}">{{ site.name }}</a></li>
+				{% endforeach %}
 			</ul>
 		</div>
 	</div>

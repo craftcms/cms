@@ -44,7 +44,7 @@ class UrlManager extends \CUrlManager
 		$matchFound = false;
 
 		// we'll never have a db entry match on a control panel request
-		if (Blocks::app()->request->mode == RequestMode::Site)
+		if (!BLOCKS_CP_REQUEST)
 		{
 			if (Blocks::app()->isInstalled)
 				if ($this->matchEntry())
@@ -97,7 +97,7 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchRoute()
 	{
-		if (Blocks::app()->request->mode == RequestMode::CP)
+		if (BLOCKS_CP_REQUEST)
 		{
 			foreach ($this->cpRoutes as $route)
 			{

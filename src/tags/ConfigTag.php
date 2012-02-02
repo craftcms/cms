@@ -6,12 +6,13 @@ namespace Blocks;
  */
 class ConfigTag extends Tag
 {
+
 	/**
-	 * @return mixed
+	 * Get a config item
 	 */
-	public function configPath()
+	public function item($item)
 	{
-		return Blocks::app()->path->configPath.'config.php';
+		return Blocks::app()->getConfig($item);
 	}
 
 	/**

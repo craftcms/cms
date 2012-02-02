@@ -117,8 +117,8 @@ return array(
 			),
 			'cpRoutes' => array(
 				array('update/({segment})',             'update', array('handle')),
-				array('settings/sites/new',             'settings/sites/edit'),
-				array('settings/sites/edit/({number})', 'settings/sites/edit', array('siteId')),
+				array('settings/sites/new',             'settings/sites/_edit'),
+				array('settings/sites/edit/({number})', 'settings/sites/_edit', array('siteId')),
 			),
 		),
 

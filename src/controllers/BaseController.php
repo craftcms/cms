@@ -47,6 +47,26 @@ abstract class BaseController extends \CController
 	}
 
 	/**
+	 * Loads the requested template
+	 */
+	public function loadRequestedTemplate($tags = array())
+	{
+		Blocks::app()->urlManager->processTemplateMatching();
+		$templateMatch = Blocks::app()->urlManager->templateMatch;
+
+		// see if we can match a template on the file system.
+		if ($templateMatch !== null)
+		{
+			$template = $templateMatch->getRelativePath().'/'.$templateMatch->getFileName();
+			$tags = array_merge(Blocks::app()->urlManager->templateTags, $tags);
+			$this->loadTemplate($template, $tags);
+
+		}
+		else
+			throw new HttpException(404);
+	}
+
+	/**
 	 * Loads a template
 	 *
 	 * @param       $templatePath
@@ -55,20 +75,20 @@ abstract class BaseController extends \CController
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $data = array(), $return = false)
+	public function loadTemplate($templatePath, $tags = array(), $return = false)
 	{
 		$templatePath = TemplateHelper::resolveTemplatePath($templatePath);
 		if ($templatePath !== false)
 		{
-			if (!is_array($data))
-				$data = array();
+			if (!is_array($tags))
+				$tags = array();
 
-			foreach ($data as &$tag)
+			foreach ($tags as &$tag)
 			{
 				$tag = TemplateHelper::getVarTag($tag);
 			}
 
-			return $this->renderPartial($templatePath, $data, $return);
+			return $this->renderPartial($templatePath, $tags, $return);
 		}
 
 		throw new HttpException(404);
