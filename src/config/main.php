@@ -109,14 +109,16 @@ return array(
 
 		'urlManager' => array(
 			'class' => 'Blocks\UrlManager',
-			'rules' => array(
-				//'<controller:\w+>/<id:\d+>' => '<controller>/view',
-				//'<controller:\w+>/<action:\w+>/<id:\d+>' => '<controller>/<action>',
-				//'<controller:\w+>/<action:\w+>' => '<controller>/<action>',
-				//'install/<action:\w+>' => 'install/default/<action>',
-				//'update/<pluginHandle:\w+>' =>
-				//'system/update/<action:\w+>' => 'update/default/<action>',
-				//'admin' => 'admin.php',
+			'routePatterns' => array(
+				'{wild}'    => '.+',
+				'{segment}' => '[^\/]*',
+				'{number}'  => '\d+',
+				'{word}'    => '[A-Za-z]\w*',
+			),
+			'cpRoutes' => array(
+				array('update/({segment})',             'update', array('handle')),
+				array('settings/sites/new',             'settings/sites/edit'),
+				array('settings/sites/edit/({number})', 'settings/sites/edit', array('siteId')),
 			),
 		),
 

@@ -530,7 +530,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 
 				if (isset($subtagMatch['params']))
 				{
-					$this->parseVariables($subtagMatch['params'], $toString);
+					$this->parseVariables($subtagMatch['params'], true);
 					$parsedTag .= ', array('.$subtagMatch['params'].')';
 				}
 

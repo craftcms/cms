@@ -18,7 +18,8 @@ class TemplateController extends BaseController
 		if ($templateMatch !== null)
 		{
 			parent::run($actionId);
-			$this->loadTemplate($templateMatch->getRelativePath().'/'.$templateMatch->getFileName());
+			$template = $templateMatch->getRelativePath().'/'.$templateMatch->getFileName();
+			$this->loadTemplate($template, Blocks::app()->urlManager->templateTags);
 
 		}
 		else

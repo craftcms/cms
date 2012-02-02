@@ -14,7 +14,8 @@ class TemplateHelper
 		'date'     => 'Blocks\DateTag',
 		'url'      => 'Blocks\UrlTag',
 		'users'    => 'Blocks\UsersTag',
-		'security' => 'Blocks\SecurityTag'
+		'security' => 'Blocks\SecurityTag',
+		'sites'    => 'Blocks\SitesTag',
 	);
 
 	/**

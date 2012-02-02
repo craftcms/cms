@@ -117,7 +117,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin: 1px 1px 21px 1px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
+.pane { margin-bottom: 20px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
 
 .pane .head:first-child,
 .pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
@@ -146,6 +146,7 @@ table.pane > tbody > tr > * { background: #fff; }
 .pane .body tr.item > th,
 .pane .body tr.item > td,
 table.pane > tbody > tr > * { padding: 8px 20px; }
+.pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
 .pane .body tr.item:not(:first-child) > th,
 .pane .body tr.item:not(:first-child) > td,

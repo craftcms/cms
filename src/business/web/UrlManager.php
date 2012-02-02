@@ -9,6 +9,8 @@ class UrlManager extends \CUrlManager
 	private $_templateMatch = null;
 	private $_templateTags = array();
 
+	public $routePatterns;
+	public $cpRoutes;
 	public $routeVar;
 
 	/**
@@ -63,6 +65,14 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
+	 * @return array Any tags that should be passed into the matched template
+	 */
+	public function getTemplateTags()
+	{
+		return $this->_templateTags;
+	}
+
+	/**
 	 * Attempts to match a request with an entry in the database.  If one is found, we set the template match property.
 	 * @return bool True if a match was found, false otherwise.
 	 */
@@ -87,29 +97,18 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchRoute()
 	{
-		$routePatterns = array(
-			'{wild}'    => '.+',
-			'{segment}' => '[^\/]*',
-			'{integer}' => '\d+',
-			'{word}'    => '[A-Za-z]\w*',
-		);
-
 		if (Blocks::app()->request->mode == RequestMode::CP)
 		{
-			$routes = array(
-				array('update/({segment})', 'update', array('handle'))
-			);
-
-			foreach ($routes as $route)
+			foreach ($this->cpRoutes as $route)
 			{
 				// Escape special regex characters from the pattern
-				$pattern = str_replace(array('.','/'), array('\.','\/'), $routePatterns, $route[0]);
+				$pattern = str_replace(array('.','/'), array('\.','\/'), $route[0]);
 
 				// Mix in the predefined subpatterns
-				$pattern = str_replace(array_keys($routePatterns), $routePatterns, $pattern);
+				$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
 
 				// Does it match?
-				if (preg_match("/{$pattern}/", Blocks::app()->request->path, $match))
+				if (preg_match("/^{$pattern}$/", Blocks::app()->request->path, $match))
 				{
 					$templatePath = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
 					if ($templatePath !== false)
