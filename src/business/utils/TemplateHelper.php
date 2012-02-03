@@ -7,15 +7,8 @@ namespace Blocks;
 class TemplateHelper
 {
 	public static $globalTags = array(
-		'assets'   => 'Blocks\AssetsTag',
 		'blocks'   => 'Blocks\BlocksTag',
-		'content'  => 'Blocks\ContentTag',
-		'cp'       => 'Blocks\CpTag',
-		'date'     => 'Blocks\DateTag',
 		'url'      => 'Blocks\UrlTag',
-		'users'    => 'Blocks\UsersTag',
-		'security' => 'Blocks\SecurityTag',
-		'sites'    => 'Blocks\SitesTag',
 	);
 
 	/**
