@@ -127,7 +127,7 @@ table.pane > thead > tr:first-child > *:first-child { border-top-left-radius: 3p
 table.pane > thead > tr:first-child > *:last-child { border-top-right-radius: 3px; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .pane .head h5,
-table.pane > thead { line-height: 18px; text-shadow: 0 1px 0 #fff; }
+table.pane > thead { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
 .pane .head .buttons { margin: -3px 0; height: 24px; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
 
