@@ -2,10 +2,10 @@
 	<input id="update-all" class="btn dark update-all" type="submit" value="Update All">
 </form>
 
-<table>
+<table class="body">
 	<tbody>
 		{% foreach updates as update %}
-		<tr class="item">
+		<tr>
 			<td>{{ update.name }} {{ update.version }}</td>
 			<td><a href="{{ url.base }}settings/updates#{{ update.handle }}">Notes</a></td>
 			<td>

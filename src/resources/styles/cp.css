@@ -117,50 +117,39 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin-bottom: 20px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
+.pane { margin-bottom: 20px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
 
-.pane .head:first-child,
-.pane .body:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
-.pane .head:last-child,
-.pane .body:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
-
-table.pane { width: 100%; }
-table.pane > *:first-child > tr:first-child > *:first-child { border-top-left-radius: 3px; }
-table.pane > *:first-child > tr:first-child > *:last-child { border-top-right-radius: 3px; }
-table.pane > *:last-child > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > *:last-child > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
-table.pane > thead > tr > *:not(:first-child),
-table.pane > tbody > tr.head > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
-
+/* pane head */
 .pane .head,
-table.pane > thead > tr > *,
-table.pane > tbody > tr.head > * { position: relative; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); }
+table.pane > thead > tr > * { position: relative; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); }
+.pane .head { border-top-left-radius: 3px; border-top-right-radius: 3px; }
+table.pane > thead > tr:first-child > *:first-child { border-top-left-radius: 3px; }
+table.pane > thead > tr:first-child > *:last-child { border-top-right-radius: 3px; }
 .pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
-.pane .head h5 { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
+.pane .head h5,
+table.pane > thead { line-height: 18px; text-shadow: 0 1px 0 #fff; }
 .pane .head .buttons { margin: -3px 0; height: 24px; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
-.pane .body { position: relative; background: #fff; }
-table.pane > tbody > tr > * { background: #fff; }
 
+/* pane body items */
 .pane .body .item,
-.pane .body tr.item > th,
-.pane .body tr.item > td,
-table.pane > tbody > tr > * { padding: 12px 20px; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
+.pane table.body > tbody > tr > *,
+table.pane > tbody > tr > * { position: relative; padding: 12px 20px; background: #fff; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
 .pane .body .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+table.pane > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
+table.pane > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
 .pane .body .no-items { text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
-.pane .body tr.item:not(:first-child) > th,
-.pane .body tr.item:not(:first-child) > td,
+.pane table.body > tbody > tr:not(:first-child) > *,
 table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #e5e5e5; }
+.pane table.body > tbody > tr > th:not(:first-child),
+.pane table.body > tbody > tr > td:not(:first-child) { padding-left: 0; }
+
+/* table-only styles */
+table.pane { width: 100%; }
+table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
 table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #e5e5e5; }
-.pane .body tr.item { border-top: none; padding: 0; }
-.pane .body tr.item > th:not(:first-child),
-.pane .body tr.item > td:not(:first-child) { padding-left: 0; }
-
-
-.pane.transparent { background: none; -webkit-box-shadow: none; }
-.pane.transparent .head { background: none; -webkit-box-shadow: none; }
 
 .pane + .btn-group { margin-top: -12px; }
 
