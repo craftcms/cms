@@ -17,7 +17,7 @@ class CpService extends BaseService
 			array('handle' => 'assets', 'name' => 'Assets'),
 			array('handle' => 'users', 'name' => 'Users'),
 			array('handle' => 'settings', 'name' => 'Settings'),
-			array('handel' => 'userguide', 'name' => 'User Guide'),
+			array('handle' => 'userguide', 'name' => 'User Guide'),
 		);
 	}
 }
