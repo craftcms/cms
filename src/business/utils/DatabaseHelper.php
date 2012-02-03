@@ -23,7 +23,7 @@ class DatabaseHelper
 
 		// Common model attribute types
 		AttributeType::ClassName    => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
-		AttributeType::Email        => array('type' => AttributeType::Varchar),
+		AttributeType::Email        => array('type' => AttributeType::Varchar, 'minLength' => 5),
 		AttributeType::Handle       => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
 		AttributeType::LanguageCode => array('type' => AttributeType::Char, 'maxLength' => 5, 'required' => true),
 		AttributeType::Name         => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
