@@ -8,6 +8,8 @@
 		<div class="body">
 			{% if content.sections %}
 				{% include "settings/sections/_includes/sections_list" sections=content.sections %}
+			{% else %}
+				<p class="item no-items">No sections exist yet. <a href="{{ url.base }}settings/sections/new">Create the first one.</a></p>
 			{% endif %}
 		</div>
 	</div>

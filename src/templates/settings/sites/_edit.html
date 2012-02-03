@@ -19,29 +19,28 @@
 				<input type="hidden" name="redirect" value="settings/sites" />
 				{% if site.id %}<input type="hidden" name="site_id" value="{{ site.id }}">{% endif %}
 
+				<div class="item field">
+					<label for="site-name">Site Name</label>
+					<div class="input-wrapper"><input id="site-name" name="site[name]" class="{% if site.errors.name %}error{% endif %}" type="text" value="{{ site.name }}" /></div>
+					{% if site.errors.name %}
+						{% include "_includes/error_list" errors=site.errors.name %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<label for="handle">Site Handle</label>
+					<div class="input-wrapper"><input id="site-handle" name="site[handle]" class="code {% if site.errors.handle %}error{% endif %}" type="text" value="{{ site.handle }}" /></div>
+					{% if site.errors.handle %}
+						{% include "_includes/error_list" errors=site.errors.handle %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<label for="site-url">Site URL</label>
+					<div class="input-wrapper"><input id="site-url" name="site[url]" class="{% if site.errors.url %}error{% endif %}" type="text" value="{{ site.url }}" /></div>
+					{% if site.errors.url %}
+						{% include "_includes/error_list" errors=site.errors.url %}
+					{% endif %}
+				</div>
 				<div class="item">
-					<div class="field">
-						<label for="site-name">Site Name</label>
-						<div class="input-wrapper"><input id="site-name" name="site[name]" class="{% if site.errors.name %}error{% endif %}" type="text" value="{{ site.name }}" /></div>
-						{% if site.errors.name %}
-							{% include "_includes/error_list" errors=site.errors.name %}
-						{% endif %}
-					</div>
-					<div class="field">
-						<label for="handle">Site Handle</label>
-						<div class="input-wrapper"><input id="site-handle" name="site[handle]" class="code {% if site.errors.handle %}error{% endif %}" type="text" value="{{ site.handle }}" /></div>
-						{% if site.errors.handle %}
-							{% include "_includes/error_list" errors=site.errors.handle %}
-						{% endif %}
-					</div>
-					<div class="field">
-						<label for="site-url">Site URL</label>
-						<div class="input-wrapper"><input id="site-url" name="site[url]" class="{% if site.errors.url %}error{% endif %}" type="text" value="{{ site.url }}" /></div>
-						{% if site.errors.url %}
-							{% include "_includes/error_list" errors=site.errors.url %}
-						{% endif %}
-					</div>
-
 					<input class="btn big submit" type="submit" value="Save Site" />
 				</div>
 			</form>

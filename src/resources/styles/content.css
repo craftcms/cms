@@ -4,7 +4,7 @@
 #main .page .editable:hover { padding-right: 18px; background: url(../images/edit-icon.png) no-repeat 100% 50%; }
 #main .page .null { color: #aaa; }
 
-#main .page .field { margin: 0; padding: 20px 80px; border-bottom: 1px dotted #eee; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
+#main .page .field { margin: 0; padding: 20px 80px; }
 
 #main .page .page-head { padding: 40px 80px 20px; border-radius: 4px 4px 0 0; }
 #main .page .page-head h1 { margin: 0; }

@@ -145,13 +145,15 @@ table.pane > tbody > tr > * { background: #fff; }
 .pane .body .item,
 .pane .body tr.item > th,
 .pane .body tr.item > td,
-table.pane > tbody > tr > * { padding: 8px 20px; }
+table.pane > tbody > tr > * { padding: 12px 20px; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
+.pane .body .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+.pane .body .no-items { text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
 .pane .body tr.item:not(:first-child) > th,
 .pane .body tr.item:not(:first-child) > td,
-table.pane > tbody > tr:not(:first-child) > * { border-top: 1px solid #eee; padding: 8px 20px; }
-table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
+table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #e5e5e5; }
+table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #e5e5e5; }
 .pane .body tr.item { border-top: none; padding: 0; }
 .pane .body tr.item > th:not(:first-child),
 .pane .body tr.item > td:not(:first-child) { padding-left: 0; }
@@ -160,7 +162,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px solid #eee; }
 .pane.transparent { background: none; -webkit-box-shadow: none; }
 .pane.transparent .head { background: none; -webkit-box-shadow: none; }
 
-.pane + .btn-group { margin-top: -10px; }
+.pane + .btn-group { margin-top: -12px; }
 
 /* grids */
 .grid { margin: 20px 0 20px -20px; }
@@ -355,7 +357,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Fields
 /* ----------------------------------------*/
 
-.field { position: relative; margin: 20px 0; }
+.field { position: relative; }
 .field label { display: block; margin-bottom: 5px; font-weight: bold; color: #666; }
 
 /* inputs */
