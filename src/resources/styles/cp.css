@@ -136,8 +136,10 @@ table.pane > thead { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
 .pane table.body > tbody > tr > *,
 table.pane > tbody > tr > * { position: relative; padding: 12px 20px; background: #fff; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
 .pane .body .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
-table.pane > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
+table.pane > tbody > tr:last-child > *:first-child,
+.pane table.body > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
+table.pane > tbody > tr:last-child > *:last-child,
+.pane table.body > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
 .pane .body .no-items { text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
