@@ -298,7 +298,7 @@ abstract class BaseModel extends \CActiveRecord
 	public function createTable()
 	{
 		$connection = Blocks::app()->db;
-		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		$tableName = $this->getTableName();
 
 		// Make sure that the table doesn't already exist
@@ -364,7 +364,7 @@ abstract class BaseModel extends \CActiveRecord
 	public function addForeignKeys()
 	{
 		$connection = Blocks::app()->db;
-		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
@@ -383,7 +383,7 @@ abstract class BaseModel extends \CActiveRecord
 	public function dropForeignKeys()
 	{
 		$connection = Blocks::app()->db;
-		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)

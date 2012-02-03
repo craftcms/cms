@@ -1,7 +1,7 @@
 {% layout "settings/_layouts/settings" pageTitle="Edit Site" %}
 
 {% if !site && siteId %}
-	{% set site = sites.getById(siteId) %}
+	{% set site = sites.getSiteById(siteId) %}
 {% endif %}
 
 {% region "main" %}

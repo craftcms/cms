@@ -12,12 +12,13 @@ class DashboardService extends BaseService
 	 * @param null $userId
 	 * @return array
 	 */
-	public function getUserWidgets($userId = null)
+	public function getWidgets()
 	{
-		if ($userId === null)
-			$userId = 1;
+		$userId = 1;
 
-		$userWidgets = UserWidget::model()->with('plugin')->findAllByAttributes(array('user_id' => $userId));
+		$userWidgets = UserWidget::model()->with('plugin')->findAllByAttributes(array(
+			'user_id' => $userId
+		));
 		$widgets = array();
 
 		foreach ($userWidgets as $userWidget)
@@ -49,5 +50,13 @@ class DashboardService extends BaseService
 			$widget->sort_order = ($i+1);
 			$widget->save();
 		}
+	}
+
+	/**
+	 * TEMPORARY -- this will be replaced by the global notification service
+	 */
+	public function getAlerts()
+	{
+		return DashboardHelper::getAlerts();
 	}
 }

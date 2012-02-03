@@ -12,7 +12,7 @@ class InstallController extends BaseController
 	public function init()
 	{
 		// Return a 404 if Blocks is already installed
-		if (!Blocks::app()->getConfig('devMode') && Blocks::app()->isInstalled)
+		if (!Blocks::app()->config->getItem('devMode') && Blocks::app()->isInstalled)
 			throw new HttpException(404);
 	}
 

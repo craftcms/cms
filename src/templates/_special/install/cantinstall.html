@@ -1,8 +1,8 @@
 {% layout "_layouts/basic" title="Unable to install Blocks" %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/cp.css').css }}
-	{{ cp.resource('app/styles/install.css').css }}
+	{% include "_includes/css_include" file="app/styles/cp.css" %}
+	{% include "_includes/css_include" file="app/styles/install.css" %}
 {% endregion %}
 
 {% region "body" %}

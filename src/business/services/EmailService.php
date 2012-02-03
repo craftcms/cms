@@ -9,9 +9,8 @@ class EmailService extends BaseService
 	private $_defaultEmailTimeout = 10;
 
 	/**
-	 * @param \Blocks\EmailMessage $emailMessage
-	 * @param EmailMessage         $emailMessage
-	 * @return bool|string
+	 * @param EmailMessage $emailMessage
+	 * @throws Exception
 	 */
 	public function sendEmail(EmailMessage $emailMessage)
 	{
@@ -43,7 +42,7 @@ class EmailService extends BaseService
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['userName'], $emailSettings['password'], Blocks::app()->getConfig('devMode') ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['userName'], $emailSettings['password'], Blocks::app()->config->getItem('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -99,44 +98,32 @@ class EmailService extends BaseService
 		}
 
 		if (!$email->send())
-			return $email->errorInfo;
-
-		return true;
+			throw new Exception($email->errorInfo);
 	}
 
 	/**
 	 * @param EmailMessage $emailMessage
-	 * @param              $templateFile
-	 * @param              $data
+	 * @param $templateFile
 	 */
-	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile, $data)
+	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile)
 	{
-		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, $data);
+		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, array());
 		$emailMessage->setBody($renderedTemplate);
 
 		$this->sendEmail($emailMessage);
 	}
 
 	/**
-	 * @param User         $user
-	 * @param \Blocks\Site $site
-	 *
-	 * @return bool
+	 * @param RegisterUserForm $registerUserData
 	 */
-	public function sendRegistrationEmail(User $user, Site $site)
+	public function sendRegistrationEmail(RegisterUserForm $registerUserData)
 	{
 
 		$emailSettings = $this->getEmailSettings();
-		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new EmailAddress($user->email, $user->first_name.(StringHelper::isNotNullOrEmpty($user->last_name) ? $user->last_name : ''))));
+		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new EmailAddress($registerUserData->email, $registerUserData->firstName.' '.$registerUserData->lastName)));
 		$email->setIsHtml(true);
 		$email->setSubject('Confirm Your Registration');
-
-		$data = array($user->first_name, $user->last_name, $user->email, $user->username, $user->password, $user->password_reset_required, $site->name, $site->url);
-
-		if (($emailStatus = Blocks::app()->email->sendTemplateEmail($email, 'register', $data)) !== true)
-			return $emailStatus;
-
-		return true;
+		Blocks::app()->email->sendTemplateEmail($email, 'register');
 	}
 
 	/**
@@ -147,7 +134,7 @@ class EmailService extends BaseService
 	{
 		$email->isSmtp();
 
-		if (Blocks::app()->getConfig('devMode'))
+		if (Blocks::app()->config->getItem('devMode'))
 			$email->smtpDebug = 2;
 
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)

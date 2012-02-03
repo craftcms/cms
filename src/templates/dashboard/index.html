@@ -1,7 +1,7 @@
 {% layout "_layouts/full" pageTitle="Dashboard" %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/dashboard.css').css }}
+	{% include "_includes/css_include" file="app/styles/dashboard.css" %}
 {% endregion %}
 
 {% region "main" %}
@@ -14,13 +14,13 @@
 	</div>
 
 	<div id="alerts">
-		{% if !blocks.config.licenseKeys %}
+		{% if !config.licenseKeys %}
 			<div class="alert">
 				<p>You need to enter your license key into your <a href="{{ url.base }}settings/info">System Info</a> page.</p>
 			</div>
 		{% endif %}
 
-		{% foreach cp.dashboard.alerts as alert %}
+		{% foreach dashboard.alerts as alert %}
 			<div class="alert">
 				<p>{{ alert }}</p>
 			</div>
@@ -29,19 +29,19 @@
 
 	<div id="dashboard">
 		<div id="widgets">
-			{% foreach cp.dashboard.widgets as widget %}
-				{% if widget.body %}
+			{% foreach dashboard.widgets as widget %}
+				{% if widget.displayBody %}
 					<div id="widget{{ widget.id }}" class="pane widget {{ widget.classname }}">
 						<div class="head">
-							{% if widget.settings %}
+							{% if widget.displaySettings %}
 								<a class="settings-btn" title="Settings"></a>
 							{% endif %}
 							<h5>{{ widget.title }}</h5>
 						</div>
-						{% if widget.settings %}
+						{% if widget.displaySettings %}
 							<div class="settings-outer-container"><div class="settings-inner-container">
 								<div class="settings">
-									{{ widget.settings }}
+									{{ widget.displaySettings }}
 									<div class="buttons">
 										<a class="btn submit"><span class="label">Save</span></a>
 										<a class="btn cancel"><span class="label">Cancel</span></a>
@@ -50,7 +50,7 @@
 							</div></div>
 						{% endif %}
 						<div class="body">
-							{{ widget.body }}
+							{{ widget.displayBody }}
 						</div>
 					</div>
 				{% endif %}
@@ -64,8 +64,8 @@
 				</div>
 				<div class="body">
 					<ul class="widget-handles">
-						{% foreach cp.dashboard.widgets as widget %}
-						<li class="item {% if !widget.body %}hidden{% endif %}" data-widget-id="widget{{ widget.id }}">
+						{% foreach dashboard.widgets as widget %}
+						<li class="item {% if !widget.displayBody %}hidden{% endif %}" data-widget-id="widget{{ widget.id }}">
 							<span class="grab"></span><span class="title">{{ widget.title }}</span><a class="remove" title="Remove"></a>
 						</li>
 						{% endforeach %}
@@ -84,7 +84,7 @@
 		</script>
 	{% endif %}
 
-	{{ cp.resource('app/scripts/ui/Drag.js').js }}
-	{{ cp.resource('app/scripts/ui/DragSort.js').js }}
-	{{ cp.resource('app/scripts/dashboard.js').js }}
+	{% include "_includes/js_include" file="app/scripts/ui/Drag.js" %}
+	{% include "_includes/js_include" file="app/scripts/ui/DragSort.js" %}
+	{% include "_includes/js_include" file="app/scripts/dashboard.js" %}
 {% endregion %}

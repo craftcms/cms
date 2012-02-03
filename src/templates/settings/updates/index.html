@@ -9,5 +9,5 @@
 {% endregion %}
 
 {% region "scripts" %}
-	{{ cp.resource('app/scripts/updates.js').js }}
+	{% include "_includes/js_include" file="app/scripts/updates.js" %}
 {% endregion %}

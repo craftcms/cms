@@ -17,7 +17,7 @@ class UrlHelper
 	 */
 	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = Blocks::app()->getConfig('resourceTriggerWord').'/'.trim($path, '/');
+		$path = Blocks::app()->config->getItem('resourceTriggerWord').'/'.trim($path, '/');
 		$path = self::_normalizePath($path, $params);
 		return  Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 	}
@@ -31,7 +31,7 @@ class UrlHelper
 	 */
 	public static function generateActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = Blocks::app()->getConfig('actionTriggerWord').'/'.trim($path, '/');
+		$path = Blocks::app()->config->getItem('actionTriggerWord').'/'.trim($path, '/');
 		$path = self::_normalizePath($path, $params);
 		return Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 	}

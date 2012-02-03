@@ -37,6 +37,7 @@ class ArrayTag extends Tag
 	 */
 	public function __toString()
 	{
+		return empty($this->_val) ? '' : '1';
 		if (!$this->_val)
 			return '';
 
@@ -44,7 +45,7 @@ class ArrayTag extends Tag
 
 		foreach ($this->_val as $val)
 		{
-			if (is_object($val))
+			if (is_object($val) && method_exists($val, '__toString'))
 			{
 				$strings[] = $val->__toString();
 			}

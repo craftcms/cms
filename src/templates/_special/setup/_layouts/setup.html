@@ -1,7 +1,7 @@
 {% layout "_layouts/full" pageTitle="Blocks Setup" %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/setup.css').css }}
+	{% include "_includes/css_include" file="app/styles/setup.css" %}
 {% endregion %}
 
 {% region "main" %}

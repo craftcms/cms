@@ -60,7 +60,10 @@ class ObjectTag extends Tag
 	 */
 	public function __toArray()
 	{
-		return $this->_obj;
+		if (method_exists($this->_obj, 'getAll'))
+			return $this->_obj->getAll();
+
+		return array();
 	}
 
 	/**

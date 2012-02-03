@@ -12,7 +12,7 @@ class ConfigTag extends Tag
 	 */
 	public function item($item)
 	{
-		return Blocks::app()->getConfig($item);
+		return Blocks::app()->config->getItem($item);
 	}
 
 	/**
