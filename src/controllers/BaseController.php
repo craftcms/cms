@@ -48,6 +48,8 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Loads the requested template
+	 *
+	 * @param array $tags
 	 */
 	public function loadRequestedTemplate($tags = array())
 	{
@@ -70,7 +72,7 @@ abstract class BaseController extends \CController
 	 * Loads a template
 	 *
 	 * @param       $templatePath
-	 * @param array $data Any variables that should be available to the template
+	 * @param array $tags Any variables that should be available to the template
 	 * @param bool  $return
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed

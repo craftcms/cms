@@ -122,7 +122,7 @@ class PathService extends BaseService
 	{
 		// site request
 		if (BLOCKS_CP_REQUEST !== true)
-			return $this->sites->TemplatePath;
+			return $this->templatesPath;
 
 		// CP request
 		return $this->cpTemplatePath;
