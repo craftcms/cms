@@ -145,13 +145,14 @@ table.pane > tbody > tr:last-child > *:last-child,
 .pane .body .item:not(:first-child),
 .pane table.body > tbody > tr:not(:first-child) > *,
 table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #e5e5e5; }
-.pane table.body > tbody > tr > th:not(:first-child),
-.pane table.body > tbody > tr > td:not(:first-child) { padding-left: 0; }
 
 /* table-only styles */
-table.pane { width: 100%; }
+table.pane,
+pane table.body { width: 100%; }
 table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
 table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #e5e5e5; }
+.pane table.body > tbody > tr > th:not(:first-child),
+.pane table.body > tbody > tr > td:not(:first-child) { padding-left: 0; }
 
 .pane + .btn-group { margin-top: -12px; }
 
