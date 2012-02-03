@@ -119,6 +119,8 @@ return array(
 				array('update/({segment})',             'update', array('handle')),
 				array('settings/sites/new',             'settings/sites/_edit'),
 				array('settings/sites/edit/({number})', 'settings/sites/_edit', array('siteId')),
+				array('users/new',                      'users/_edit'),
+				array('users/edit/({number})',          'users/_edit', array('userId')),
 			),
 		),
 
