@@ -1,7 +1,7 @@
 {% layout "_layouts/sidebar" pageTitle=pageTitle %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/content.css').css }}
+	{% include "_includes/css_include" file="app/styles/content.css" %}
 {% endregion %}
 
 {% region "sidebar" %}
@@ -18,10 +18,10 @@
 {% endregion %}
 
 {% region "scripts" %}
-	{{ cp.resource('app/lib/rangy-1.2.1.js').js }}
-	{{ cp.resource('app/scripts/ui/Menu.js').js }}
-	{{ cp.resource('app/scripts/ui/SelectMenu.js').js }}
-	{{ cp.resource('app/scripts/ui/RTE.js').js }}
+	{% include "_includes/js_include" file="app/lib/rangy-1.2.1.js" %}
+	{% include "_includes/js_include" file="app/scripts/ui/Menu.js" %}
+	{% include "_includes/js_include" file="app/scripts/ui/SelectMenu.js" %}
+	{% include "_includes/js_include" file="app/scripts/ui/RTE.js" %}
 
 	<script type="text/javascript">
 
@@ -45,7 +45,7 @@
 		});
 
 		new blx.ui.RTE('content', {
-			css: "{{ cp.resource('app/styles/rte.css') }}"
+			css: "{{ url.resource('app/styles/rte.css') }}"
 		});
 
 	</script>

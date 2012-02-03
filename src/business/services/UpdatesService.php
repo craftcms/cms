@@ -78,7 +78,7 @@ class UpdatesService extends BaseService
 					$updateInfo = new UpdateInfo();
 
 				// cache it and set it to expire according to config
-				Blocks::app()->fileCache->set('updateInfo', $updateInfo, Blocks::app()->getConfig('cacheTimeSeconds'));
+				Blocks::app()->fileCache->set('updateInfo', $updateInfo, Blocks::app()->config->getItem('cacheTimeSeconds'));
 			}
 
 			$this->_updateInfo = $updateInfo;

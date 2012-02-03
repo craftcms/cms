@@ -25,6 +25,9 @@ class TemplateHelper
 	 */
 	public static function getGlobalTag($handle)
 	{
+		if (isset(Blocks::app()->$handle) && isset(Blocks::app()->$handle->__service__) && Blocks::app()->$handle->__service__ === true)
+			return new ObjectTag(Blocks::app()->$handle);
+
 		if (isset(self::$globalTags[$handle]))
 			return new self::$globalTags[$handle];
 

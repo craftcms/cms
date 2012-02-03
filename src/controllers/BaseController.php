@@ -159,7 +159,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (!Blocks::app()->getConfig('devMode') && Blocks::app()->request->requestType !== 'POST')
+		if (!Blocks::app()->config->getItem('devMode') && Blocks::app()->request->requestType !== 'POST')
 			throw new HttpException(404);
 	}
 
@@ -168,7 +168,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!Blocks::app()->getConfig('devMode') && !Blocks::app()->request->isAjaxRequest)
+		if (!Blocks::app()->config->getItem('devMode') && !Blocks::app()->request->isAjaxRequest)
 			throw new HttpException(404);
 	}
 

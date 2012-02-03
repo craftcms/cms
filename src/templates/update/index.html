@@ -1,8 +1,8 @@
 {% layout "_layouts/basic" title="Blocks Update" %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/cp.css').css }}
-	{{ cp.resource('app/styles/update.css').css }}
+	{% include "_includes/css_include" file="app/styles/cp.css" %}
+	{% include "_includes/css_include" file="app/styles/update.css" %}
 {% endregion %}
 
 {% region "body" %}
@@ -15,5 +15,5 @@
 		window.updateInfoUrl = '{{ url.generateActionUrl('app/update/getupdateinfo', 'h=') }}';
 		window.updateUrl = '{{ url.generateActionUrl('app/update/update', 'h=') }}';
 	</script>
-	{{ cp.resource('app/scripts/update.js').js }}
+	{% include "_includes/js_include" file="app/scripts/update.js" %}
 {% endregion %}

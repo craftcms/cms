@@ -1,7 +1,7 @@
 {% layout "settings/_layouts/settings" pageTitle="System Info" %}
 
 {% region "main" %}
-	<img id="logo" src="{{ cp.resource('app/images/logo.png') }}">
+	<img id="logo" src="{{ url.resource('app/images/logo.png') }}">
 
 	<p id="version">{{ blocks.fullVersion }}</p>
 
@@ -11,8 +11,8 @@
 		</div>
 		<div class="body">
 			<ul class="flush">
-				{% foreach blocks.config.licenseKeys as key %}
-				<li class="item">{{ key }}</li>
+				{% foreach config.licenseKeys as licenseKey %}
+				<li class="item">{{ licenseKey.key }}</li>
 				{% endforeach %}
 			</ul>
 		</div>

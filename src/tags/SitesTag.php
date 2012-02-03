@@ -23,6 +23,6 @@ class SitesTag extends Tag
 	 */
 	function __toArray()
 	{
-		return Blocks::app()->sites->getAllSites();
+		return Blocks::app()->sites->getAll();
 	}
 }

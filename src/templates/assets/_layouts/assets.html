@@ -1,7 +1,7 @@
 {% layout "_layouts/sidebar" pageTitle="Assets" %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/assets.css').css }}
+	{% include "_includes/css_include" file="app/styles/assets.css" %}
 {% endregion %}
 
 {% region "sidebar" %}

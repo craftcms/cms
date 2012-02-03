@@ -12,7 +12,7 @@ class SetupController extends BaseController
 	public function init()
 	{
 		// Return a 404 if Blocks is already setup
-		if (!Blocks::app()->getConfig('devMode') && Blocks::app()->isSetup)
+		if (!Blocks::app()->config->getItem('devMode') && Blocks::app()->isSetup)
 			throw new HttpException(404);
 	}
 

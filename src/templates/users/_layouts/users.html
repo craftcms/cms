@@ -2,7 +2,7 @@
 {% region "pageTitle" %}Users – {{ pageTitle }}{% endregion %}
 
 {% region "styles" %}
-	{{ cp.resource('app/styles/settings.css').css }}
+	{% include "_includes/css_include" file="app/styles/settings.css" %}
 {% endregion %}
 
 {% region "sidebar" %}

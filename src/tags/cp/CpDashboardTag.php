@@ -19,7 +19,7 @@ class CpDashboardTag extends Tag
 	 */
 	public function widgets()
 	{
-		$widgets = Blocks::app()->dashboard->getUserWidgets();
+		$widgets = Blocks::app()->dashboard->getWidgets();
 		$tags = array();
 
 		foreach ($widgets as $widget)

@@ -1,0 +1,17 @@
+{% layout "settings/_layouts/settings" pageTitle="Content Sections" %}
+
+{% region "main" %}
+	<div class="pane">
+		<div class="head">
+			<h5>Content Sections</h5>
+		</div>
+		<div class="body">
+			{% if content.sections %}
+				{% include "settings/sections/_includes/sections_list" sections=content.sections %}
+			{% endif %}
+		</div>
+	</div>
+	<div class="btn-group">
+		<a class="btn" href="{{ url.base }}settings/sections/new" title="Create a new section"><span class="icon icon44"></span></a>
+	</div>
+{% endregion %}

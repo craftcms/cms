@@ -18,6 +18,8 @@ class App extends \CWebApplication
 		self::import('business.Blocks');
 		self::import('business.enums.UrlFormat');
 		self::import('business.enums.RequestMode');
+		self::import('business.services.BaseService');
+		self::import('business.services.ConfigService');
 		self::import('business.web.HttpRequest');
 
 		// Process resources before all else
@@ -211,7 +213,7 @@ class App extends \CWebApplication
 			else
 				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
 
-			$rootFolderUrl = UrlHelper::generateUrl($this->getConfig('resourceTriggerWord').'/'.$handle).'/';
+			$rootFolderUrl = UrlHelper::generateUrl($this->config->getItem('resourceTriggerWord').'/'.$handle).'/';
 			$relativeResourcePath = implode('/', $segs);
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
@@ -229,13 +231,13 @@ class App extends \CWebApplication
 	{
 		$messages = array();
 
-		$databaseServerName = $this->getDbConfig('server');
-		$databaseAuthName = $this->getDbConfig('user');
-		$databaseName = $this->getDbConfig('database');
-		$databasePort = $this->getDbConfig('port');
-		$databaseTablePrefix = $this->getDbConfig('tablePrefix');
-		$databaseCharset = $this->getDbConfig('charset');
-		$databaseCollation = $this->getDbConfig('collation');
+		$databaseServerName = $this->config->getDbItem('server');
+		$databaseAuthName = $this->config->getDbItem('user');
+		$databaseName = $this->config->getDbItem('database');
+		$databasePort = $this->config->getDbItem('port');
+		$databaseTablePrefix = $this->config->getDbItem('tablePrefix');
+		$databaseCharset = $this->config->getDbItem('charset');
+		$databaseCollation = $this->config->getDbItem('collation');
 
 		if (StringHelper::isNullOrEmpty($databaseServerName))
 			$messages[] = 'The database server name is not set in your db config file.';
@@ -361,33 +363,5 @@ class App extends \CWebApplication
 			$this->_cpTemplatePath = BLOCKS_BASE_PATH.'app/templates/';
 
 		return $this->_cpTemplatePath;
-	}
-
-	/**
-	 * Get a general config item
-	 * @param bool|string $key The config item's key to retrieve
-	 * @param null        $default
-	 * @return mixed The config item's value if set, null if not
-	 */
-	public function getConfig($key, $default = null)
-	{
-		if (isset($this->params['blocksConfig'][$key]))
-			return $this->params['blocksConfig'][$key];
-
-		return $default;
-	}
-
-	/**
-	 * Get a config item
-	 * @param bool|string $key The config item's key to retrieve
-	 * @param null        $default
-	 * @return mixed The config item's value if set, null if not
-	 */
-	public function getDbConfig($key, $default = null)
-	{
-		if (isset($this->params['dbConfig'][$key]))
-			return $this->params['dbConfig'][$key];
-
-		return $default;
 	}
 }

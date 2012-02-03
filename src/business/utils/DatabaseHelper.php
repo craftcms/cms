@@ -23,7 +23,7 @@ class DatabaseHelper
 
 		// Common model attribute types
 		AttributeType::ClassName    => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
-		AttributeType::Email        => array('type' => AttributeType::Varchar, 'minLength' => 5),
+		AttributeType::Email        => array('type' => AttributeType::Varchar),
 		AttributeType::Handle       => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
 		AttributeType::LanguageCode => array('type' => AttributeType::Char, 'maxLength' => 5, 'required' => true),
 		AttributeType::Name         => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
@@ -150,11 +150,11 @@ class DatabaseHelper
 	 */
 	public static function createInsertAuditTrigger($tableName)
 	{
-		$dbName = Blocks::app()->getDbConfig('database');
+		$dbName = Blocks::app()->config->getDbItem('database');
 
 		Blocks::app()->db->createCommand(
 							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->getDbConfig('tablePrefix').'_auditinfoinsert_'.$tableName.'`
+							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->config->getDbItem('tablePrefix').'_auditinfoinsert_'.$tableName.'`
 							 BEFORE INSERT ON `'.$dbName.'`.`{{'.$tableName.'}}`
 							 FOR EACH ROW
 							 SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -171,11 +171,11 @@ class DatabaseHelper
 	 */
 	public static function createUpdateAuditTrigger($tableName)
 	{
-		$dbName = Blocks::app()->getDbConfig('database');
+		$dbName = Blocks::app()->config->getDbItem('database');
 
 		Blocks::app()->db->createCommand(
 							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->getDbConfig('tablePrefix').'_auditinfoupdate_'.$tableName.'`
+							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->config->getDbItem('tablePrefix').'_auditinfoupdate_'.$tableName.'`
 							 BEFORE UPDATE ON `'.$dbName.'`.`{{'.$tableName.'}}`
 							 FOR EACH ROW
 							 SET NEW.date_updated = UNIX_TIMESTAMP(),

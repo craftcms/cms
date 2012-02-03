@@ -9,8 +9,8 @@
 <body class="{{ bodyClass }}">
 	{{ body }}
 
-	{{ cp.resource('app/lib/jquery-1.7.min.js').js }}
-	{{ cp.resource('app/lib/Base.js').js }}
+	{% include "_includes/js_include" file="app/lib/jquery-1.7.min.js" %}
+	{% include "_includes/js_include" file="app/lib/Base.js" %}
 	<script type="text/javascript">window.baseUrl = '{{ url.base }}';</script>
 	{{ scripts }}
 </body>

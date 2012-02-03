@@ -16,6 +16,22 @@ class UrlTag extends Tag
 	}
 
 	/**
+	 * The resource URL prefix
+	 */
+	public function resource($path = '')
+	{
+		return UrlHelper::generateResourceUrl($path);
+	}
+
+	/**
+	 * The action URL prefix
+	 */
+	public function action($path = '')
+	{
+		return UrlHelper::generateActionUrl($path);
+	}
+
+	/**
 	 * Segments
 	 * @return array
 	 */

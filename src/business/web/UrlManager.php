@@ -17,7 +17,7 @@ class UrlManager extends \CUrlManager
 	 */
 	function __construct()
 	{
-		$this->routeVar = Blocks::app()->getConfig('pathVar');
+		$this->routeVar = Blocks::app()->config->getItem('pathVar');
 	}
 
 	/**

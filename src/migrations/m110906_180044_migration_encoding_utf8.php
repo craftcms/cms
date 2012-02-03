@@ -5,8 +5,8 @@ class m110906_180044_migration_encoding_utf8 extends \CDbMigration
 {
 	public function safeUp()
 	{
-		$dbName = Blocks::app()->getDbConfig('database');
-		$tablePrefix = Blocks::app()->getDbConfig('tablePrefix');
+		$dbName = Blocks::app()->config->getDbItem('database');
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 
 		$this->execute('
 			ALTER TABLE `'.$dbName.'`.`'.$tablePrefix.'_migrations` DEFAULT CHARACTER SET = utf8 COLLATE = utf8_unicode_ci;
