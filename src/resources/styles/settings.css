@@ -3,6 +3,9 @@ body.info #logo { display: block; margin: 0 auto 10px; }
 body.info #version { margin-bottom: 20px; text-align: center; font-weight: bold; }
 body.info #license-keys li { font-family: Menlo, monospace; font-size: 12px; cursor: default; }
 
+/*-- Sites --*/
+body.sites #sites li.primary { font-weight: bold; }
+
 /*-- URL Routing settings --*/
 body.routing #main .routes .site { margin-right: 2px; color: rgba(0,0,0,0.4); }
 body.routing #main .routes a { font-weight: normal; }

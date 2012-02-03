@@ -1,14 +1,16 @@
 {% layout "settings/_layouts/settings" pageTitle="Sites" %}
 
 {% region "main" %}
-	<div class="pane">
+	<div id="sites" class="pane">
 		<div class="head">
 			<h5>Sites</h5>
 		</div>
 		<div class="body">
 			<ul>
 				{% foreach sites as site %}
-					<li class="item"><a href="{{ url.base }}settings/sites/edit/{{ site.id }}">{{ site.name }}</a></li>
+					<li class="item {% if site.primary %}primary{% endif %}">
+						<a href="{{ url.base }}settings/sites/edit/{{ site.id }}">{{ site.name }}</a>
+					</li>
 				{% endforeach %}
 			</ul>
 		</div>

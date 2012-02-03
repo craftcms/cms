@@ -67,6 +67,7 @@ class SitesService extends BaseService
 	{
 		if ($this->_currentSite == null)
 		{
+			// Try to find the site that matches the request URL
 			$serverName = Blocks::app()->request->serverName;
 			$httpServerName = 'http://'.$serverName;
 			$httpsServerName = 'https://'.$serverName;
@@ -74,6 +75,14 @@ class SitesService extends BaseService
 			$site = Site::model()->find(
 				'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
 			);
+
+			// Get the primary site if we can't find a site with a URL match
+			if (!$site)
+			{
+				$site = Site::model()->findByAttributes(array(
+					'primary' => true
+				));
+			}
 
 			$this->_currentSite = $site;
 		}
@@ -87,7 +96,7 @@ class SitesService extends BaseService
 	 */
 	public function getAll()
 	{
-		return Site::model()->findAll('enabled=:enabled', array(':enabled'=>true));
+		return Site::model()->findAll();
 	}
 
 	/**

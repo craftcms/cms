@@ -65,7 +65,7 @@ class SetupController extends BaseController
 			$site->name = Blocks::app()->request->getPost('name');
 			$site->handle = Blocks::app()->request->getPost('handle');
 			$site->url = Blocks::app()->request->getPost('url');
-			$site->enabled = true;
+			$site->primary = true;
 
 			if ($site->save())
 			{
@@ -77,7 +77,7 @@ class SetupController extends BaseController
 		}
 		else
 			// Does a site already exist?
-			$site = Site::model()->find('enabled=:enabled', array(':enabled'=>true));
+			$site = Site::model()->find();
 
 		$this->loadTemplate('_special/setup/site', array(
 			'site' => $site

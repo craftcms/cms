@@ -9,10 +9,10 @@ class Site extends BaseModel
 	protected $tableName = 'sites';
 
 	protected $attributes = array(
-		'name'     => AttributeType::Name,
-		'handle'   => AttributeType::Handle,
-		'url'      => array('type' => AttributeType::Varchar, 'required' => true),
-		'enabled'  => array('type' => AttributeType::Boolean, 'default' => true)
+		'name'    => AttributeType::Name,
+		'handle'  => AttributeType::Handle,
+		'url'     => array('type' => AttributeType::Varchar, 'required' => true),
+		'primary' => array('type' => AttributeType::Boolean, 'required' => false, 'default' => null, 'unique' => true)
 	);
 
 	protected $hasBlocks = array(
