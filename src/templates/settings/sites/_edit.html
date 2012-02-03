@@ -27,7 +27,7 @@
 					{% endif %}
 				</div>
 				<div class="item field">
-					<label for="handle">Site Handle</label>
+					<label for="site-handle">Site Handle</label>
 					<div class="input-wrapper"><input id="site-handle" name="site[handle]" class="code {% if site.errors.handle %}error{% endif %}" type="text" value="{{ site.handle }}" /></div>
 					{% if site.errors.handle %}
 						{% include "_includes/error_list" errors=site.errors.handle %}

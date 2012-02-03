@@ -4,10 +4,7 @@
 
 	<div><strong>Register a new account.</strong></div>
 	<p>
-		<?php if (!isset($model)) $model = new RegisterUserForm(); ?>
-		<?php echo Blocks\HtmlHelper::beginForm(UrlHelper::generateActionUrl('app/users/register')); ?>
-
-		<p><?php echo Blocks\HtmlHelper::errorSummary($model); ?></p>
+		<?php echo HtmlHelper::beginForm(UrlHelper::generateActionUrl('app/users/register')); ?>
 
 		<div class="input-wrapper">Username: <input type="text" name="userName"></div><br />
 		<div class="input-wrapper">Email: <input type="text" name="email"></div><br />
@@ -20,7 +17,7 @@
 
 		<input class="btn" type="submit" value="Register User">
 
-		<?php echo Blocks\HtmlHelper::endForm(); ?>
+		<?php echo HtmlHelper::endForm(); ?>
 	</p>
 
 {% endregion %}

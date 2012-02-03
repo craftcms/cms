@@ -9,7 +9,7 @@ class UsersService extends BaseService
 	/**
 	 * @return User
 	 */
-	public function getAllUsers()
+	public function getAll()
 	{
 		return User::model()->findAll();
 	}
@@ -35,7 +35,7 @@ class UsersService extends BaseService
 	 * @param $userId
 	 * @return mixed
 	 */
-	public function getUserById($userId)
+	public function getById($userId)
 	{
 		$user = User::model()->findByPk($userId);
 		return $user;
