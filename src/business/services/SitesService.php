@@ -27,17 +27,6 @@ class SitesService extends BaseService
 	}
 
 	/**
-	 * Get the current site
-	 */
-	public function getCurrentSite()
-	{
-		if (!isset($this->_currentSite))
-			$this->_currentSite = Site::model()->find();
-
-		return $this->_currentSite;
-	}
-
-	/**
 	 * @return string|null
 	 */
 	public function getSiteName()
@@ -71,9 +60,10 @@ class SitesService extends BaseService
 	}
 
 	/**
+	 * Gets the current site model by Url
 	 * @return Site
 	 */
-	public function getCurrentSiteByUrl()
+	public function getCurrentSite()
 	{
 		if ($this->_currentSite == null)
 		{
@@ -93,6 +83,7 @@ class SitesService extends BaseService
 
 	/**
 	 * Returns all sites
+	 * @return
 	 */
 	public function getAll()
 	{
