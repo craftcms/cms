@@ -63,16 +63,23 @@ class UsersController extends BaseController
 		$this->loadTemplate('users/register', array('user' => $user));
 	}
 
-	public function actionEdit()
+	public function actionSave()
 	{
 		$this->requirePostRequest();
 
-		// Are we editing an existing site?
-		$postUserId = Blocks::app()->request->getPost('user_id');
-		if (!$postUserId)
-			throw new Exception('Missing user_id when trying to edit user.');
+		$existingUser = false;
+		$randomPassword = null;
 
-		$user = Blocks::app()->users->getById($postUserId);
+		// Are we editing an existing user?
+		$postUserId = Blocks::app()->request->getPost('user_id');
+		if ($postUserId)
+		{
+			$existingUser = true;
+			$user = Blocks::app()->users->getById($postUserId);
+		}
+
+		if (empty($user))
+			$user = new User();
 
 		$postUser = Blocks::app()->request->getPost('user');
 		$user->username = $postUser['username'];
@@ -83,9 +90,48 @@ class UsersController extends BaseController
 		$user->html_email = isset($postUser['html_email']) ? 1 : 0;
 		$user->password_reset_required = isset($postUser['password_reset']) ? 1 : 0;
 
-		if ($user->save())
+		if (!$existingUser)
 		{
-			Blocks::app()->user->setMessage(MessageStatus::Success, 'User saved successfully.');
+			$randomPassword = Blocks::app()->security->generatePassword();
+			$user->password = $randomPassword;
+			$user->enc_type = 'md5';
+		}
+
+		if ($user->validate())
+		{
+			if (!$existingUser)
+			{
+				$user = Blocks::app()->users->registerUser($user, $randomPassword, true);
+
+				if ($user !== null)
+				{
+					if (isset($postUser['send_registration_email']))
+					{
+						$site = Blocks::app()->sites->currentSite;
+
+						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
+						{
+							// registered and sent email
+							Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user and sent registration email.');
+						}
+						else
+						{
+							// registered but there was a problem sending the email.
+							Blocks::app()->user->setMessage(MessageStatus::Notice, 'Successfully registered user, but there was a problem sending the email: '.$emailStatus);
+						}
+					}
+				}
+				else
+				{
+					// there was a problem registering the user.
+					Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem registering the user.  Check your log files.');
+				}
+			}
+			else
+				$user->save(false);
+
+			if ($existingUser)
+				Blocks::app()->user->setMessage(MessageStatus::Success, 'User saved successfully.');
 
 			$url = Blocks::app()->request->getPost('redirect');
 			if ($url !== null)

@@ -114,13 +114,13 @@ class EmailService extends BaseService
 	}
 
 	/**
-	 * @param RegisterUserForm $registerUserData
+	 * @param User $user
 	 */
-	public function sendRegistrationEmail(RegisterUserForm $registerUserData)
+	public function sendRegistrationEmail(User $user)
 	{
 
 		$emailSettings = $this->getEmailSettings();
-		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new EmailAddress($registerUserData->email, $registerUserData->firstName.' '.$registerUserData->lastName)));
+		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['emailName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
 		$email->setIsHtml(true);
 		$email->setSubject('Confirm Your Registration');
 		Blocks::app()->email->sendTemplateEmail($email, 'register');

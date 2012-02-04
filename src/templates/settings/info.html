@@ -12,7 +12,7 @@
 		<div class="body">
 			<ul class="flush">
 				{% foreach config.licenseKeys as licenseKey %}
-				<li class="item">{{ licenseKey.key }}</li>
+					<li class="item">{{ licenseKey.key }}</li>
 				{% endforeach %}
 			</ul>
 		</div>
@@ -31,111 +31,79 @@
 		</div>
 		<div class="body">
 
-			<!-- Need to figure out how we're doing this -->
-			<?php
-				if (!isset($emailSettings))
-					$emailSettings = new EmailSettingsForm(Blocks::app()->email->emailSettings);
-				else
-				{
-					if (get_class($emailSettings) == 'ObjectTag')
-					{
-						$emailSettings = $emailSettings->__toArray();
-					}
-				}
-			?>
+			{% set emailSettings = email.emailSettings %}
 
-			<form action="{{ url.generateActionUrl('app/settings/saveemail') }}" method="post">
+			<form method="post" action="">
+				<input type="hidden" name="action" value="app/settings/saveemail" />
+				<input type="hidden" name="redirect" value="settings/info" />
+
 				<div class="input-wrapper">
-					<label for="emailerType">
-						Email Type:
-						<select id="emailerType" name="emailerType">
-							<option value="PhpMail" <?php if ($emailSettings->emailerType == 'PhpMail'): ?>selected<?php endif ?>>PHP Mail</option>
-							<option value="Sendmail" <?php if ($emailSettings->emailerType == 'Sendmail'): ?>selected<?php endif ?>>Sendmail</option>
-							<option value="Smtp" <?php if ($emailSettings->emailerType == 'Smtp'): ?>selected<?php endif ?>>SMTP</option>
-							<option value="GmailSmtp" <?php if ($emailSettings->emailerType == 'GmailSmtp'): ?>selected<?php endif ?>>Gmail SMTP</option>
-							<option value="Pop" <?php if ($emailSettings->emailerType == 'Pop'): ?>selected<?php endif ?>>POP before SMTP</option>
-						</select>
-					</label>
+					<label for="emailerType">Email Type:</label>
+					<select id="emailerType" name="email[emailerType]">
+						<option value="PhpMail" {% if emailSettings.emailerType == 'PhpMail' %}selected{% endif %}>PHP Mail</option>
+						<option value="Sendmail" {% if emailSettings.emailerType == 'Sendmail' %}selected{% endif %}>Sendmail</option>
+						<option value="Smtp" {% if emailSettings.emailerType == 'Smtp' %}selected{% endif %}>SMTP</option>
+						<option value="GmailSmtp" {% if emailSettings.emailerType == 'GmailSmtp' %}selected{% endif %}>Gmail SMTP</option>
+						<option value="Pop" {% if emailSettings.emailerType == 'Pop' %}selected{% endif %}>POP before SMTP</option>
+					</select>
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="host">
-						Host Name:
-						<input type="text" id="host" name="host" value="<?php echo $emailSettings->host; ?>">
-					</label>
+					<label for="host">Host Name:</label>
+					<input type="text" id="host" name="email[host]" value="{{ emailSettings.host }}">
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="port">
-						Port:
-						<input type="text" id="port" name="port" value="<?php echo $emailSettings->port; ?>">
-					</label>
+					<label for="port">Port:</label>
+					<input type="text" id="port" name="email[port]" value="{{ emailSettings.port }}">
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="smtpAuth">
-						Use SMTP Authentication?
-						<input type="checkbox" id="smtpAuth" name="smtpAuth"<?php if ($emailSettings->smtpAuth == 1): ?> checked<?php endif; ?>>
-					</label>
+					<label for="smtpAuth">Use SMTP Authentication?</label>
+					<input type="checkbox" id="smtpAuth" name="email[smtpAuth]"{% if emailSettings.smtpAuth == 1 %} checked{% endif %}>
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="userName">
-						Username:
-						<input type="text" id="userName" name="userName" value="<?php echo $emailSettings->userName; ?>">
-					</label>
+					<label for="userName">Username:</label>
+					<input type="text" id="userName" name="email[userName]" value="{{ emailSettings.userName }}">
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="password">
-						Password:
-						<input type="password" id="password" name="password" value="<?php echo $emailSettings->password; ?>">
-					</label>
+					<label for="password">Password:</label>
+					<input type="password" id="password" name="email[password]" value="{{ emailSettings.password }}">
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="smtpKeepAlive">
-						Use SMTP Keep Alive?
-						<input type="checkbox" id="smtpKeepAlive" name="smtpKeepAlive"<?php if ($emailSettings->smtpKeepAlive == 1): ?> checked<?php endif; ?>>
-					</label>
+					<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
+					<input type="checkbox" id="smtpKeepAlive" name="email[smtpKeepAlive]"{% if emailSettings.smtpKeepAlive == 1 %} checked{% endif %}>
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="smtpSecureTransport">
-						Use SMTP Secure Transport?
-						<input type="checkbox" id="smtpSecureTransport" name="smtpSecureTransport"<?php if ($emailSettings->smtpSecureTransport == 1): ?> checked<?php endif; ?>>
-					</label>
+					<label for="smtpSecureTransport">Use SMTP Secure Transport?</label>
+					<input type="checkbox" id="smtpSecureTransport" name="email[smtpSecureTransport]"{% if emailSettings.smtpSecureTransport == 1 %} checked{% endif %}>
 				</div>
 				<p />
 				<div class="input-wrapper">
-					<label for="smtpSecureTransportType">
-						SMTP Secure Transport Type:
-						<select id="smtpSecureTransportType" name="smtpSecureTransportType">
-							<option value="Ssl" <?php if ($emailSettings->smtpSecureTransportType == 'Ssl'): ?>selected<?php endif ?>>SSL</option>
-							<option value="Tls" <?php if ($emailSettings->smtpSecureTransportType == 'Tls'): ?>selected<?php endif ?>>TLS</option>
-						</select>
-					</label>
+					<label for="smtpSecureTransportType">SMTP Secure Transport Type:</label>
+					<select id="smtpSecureTransportType" name="email[smtpSecureTransportType]">
+						<option value="Ssl" {% if emailSettings.smtpSecureTransportType == 'Ssl' %}selected{% endif %}>SSL</option>
+						<option value="Tls" {% if emailSettings.smtpSecureTransportType == 'Tls' %}selected{% endif %}>TLS</option>
+					</select>
 				</div>
 				<p />
 				<div class="input-wrapper">
-					<label for="timeout">
-						Timeout:
-						<input type="text" id="timeout" name="timeout" value="<?php echo $emailSettings->timeout; ?>">
-					</label>
+					<label for="timeout">Timeout:</label>
+					<input type="text" id="timeout" name="email[timeout]" value="{{ emailSettings.timeout }}">
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="fromEmail">
-						Default From Email:
-						<input type="text" id="fromEmail" name="fromEmail" value="<?php echo $emailSettings->fromEmail; ?>">
-					</label>
+					<label for="fromEmail">Default From Email:</label>
+					<input type="text" id="fromEmail" name="email[fromEmail]" value="{{ emailSettings.fromEmail }}">
 				</div>
 				<p/>
 				<div class="input-wrapper">
-					<label for="fromName">
-						Default From Name:
-						<input type="text" id="fromName" name="fromName" value="<?php echo $emailSettings->fromName; ?>">
-					</label>
+					<label for="fromName">Default From Name:</label>
+					<input type="text" id="fromName" name="email[fromName]" value="{{ emailSettings.fromName }}">
 				</div>
 				<p/>
 				<br />

@@ -1,4 +1,4 @@
-{% layout "users/_layouts/users" pageTitle="Edit User" %}
+{% layout "users/_layouts/users" %}
 
 {% if !theUser && userId %}
 	{% set theUser = users.getById(userId) %}
@@ -8,14 +8,14 @@
 	<div class="pane">
 		<div class="head">
 			{% if theUser.id %}
-				<h5>Edit User {% if thetheUser.user_name %}“{{ thetheUser.user_name }}”{% endif %}</h5>
+				<h5>Edit User {% if theUser.user_name %}“{{ theUser.user_name }}”{% endif %}</h5>
 			{% else %}
 				<h5>Register a new user</h5>
 			{% endif %}
 		</div>
 		<div class="body">
 			<form method="post" action="">
-				<input type="hidden" name="action" value="app/users/edit" />
+				<input type="hidden" name="action" value="app/users/save" />
 				<input type="hidden" name="redirect" value="users" />
 				{% if theUser.id %}<input type="hidden" name="user_id" value="{{ theUser.id }}">{% endif %}
 
@@ -60,22 +60,32 @@
 						<label for="html_email">Html Emails</label>
 						<div class="input-wrapper"><input id="html_email" name="user[html_email]" type="checkbox" {% if theUser.html_email %}checked{% endif %} /></div>
 					</div>
-					<div class="field">
-						<label for="password_reset">Password Reset Required</label>
-						<div class="input-wrapper"><input id="password_reset" name="user[password_reset]" type="checkbox" {% if theUser.password_reset_required %}checked{% endif %} /></div>
-					</div>
-					<div class="field">
-						<div><b>Last Login Date:</b> {% if theUser.last_login_date %}theUser.last_login_date{% else %}Never{% endif %}</div>
-					</div>
-					<div class="field">
-						<div><b>Last Password Changed Date:</b> {% if theUser.last_password_changed_date %}theUser.last_password_changed_date{% else %}Never{% endif %}</div>
-					</div>
-					<div class="field">
-						<div><b>Last Lockout Date:</b> {% if theUser.last_lockout_date %}theUser.last_lockout_date{% else %}Never{% endif %}</div>
-					</div>
-					<div class="field">
-						<div><b>Failed Password Attempt Count:</b> {% if theUser.failed_password_attempt_count %}theUser.failed_password_attempt_count{% else %}0{% endif %}</div>
-					</div>
+					{% if theUser.id %}
+						<div class="field">
+							<label for="password_reset">Password Reset Required</label>
+							<div class="input-wrapper"><input id="password_reset" name="user[password_reset]" type="checkbox" {% if theUser.password_reset_required %}checked{% endif %} /></div>
+						</div>
+					{% endif %}
+					{% if !theUser.id %}
+						<div class="field">
+							<label for="send_registration_email">Send new user registration email with password reset link?</label>
+							<div class="input-wrapper"><input id="send_registration_email" name="user[send_registration_email]" type="checkbox" {% if theUser.send_registration_email %}checked{% endif %} /></div>
+						</div>
+					{% endif %}
+					{% if theUser.id %}
+						<div class="field">
+							<div><b>Last Login Date:</b> {% if theUser.last_login_date %}theUser.last_login_date{% else %}Never{% endif %}</div>
+						</div>
+						<div class="field">
+							<div><b>Last Password Changed Date:</b> {% if theUser.last_password_changed_date %}theUser.last_password_changed_date{% else %}Never{% endif %}</div>
+						</div>
+						<div class="field">
+							<div><b>Last Lockout Date:</b> {% if theUser.last_lockout_date %}theUser.last_lockout_date{% else %}Never{% endif %}</div>
+						</div>
+						<div class="field">
+							<div><b>Failed Password Attempt Count:</b> {% if theUser.failed_password_attempt_count %}theUser.failed_password_attempt_count{% else %}0{% endif %}</div>
+						</div>
+					{% endif %}
 
 					<p />
 					<input class="btn big submit" type="submit" value="Save User" />
