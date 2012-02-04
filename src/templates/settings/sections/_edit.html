@@ -17,21 +17,38 @@
 			<form method="post" action="">
 				<input type="hidden" name="action" value="app/content/saveSection" />
 				<input type="hidden" name="redirect" value="settings/sections" />
-				{% if section.id %}<input type="hidden" name="section_id" value="{{ section.id }}">{% endif %}
+				{% if section.id %}<input type="hidden" name="id" value="{{ section.id }}">{% endif %}
 
 				<div class="item field">
-					<label for="section-name">Section Name</label>
-					<div class="input-wrapper"><input id="section-name" name="section[name]" class="{% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}" /></div>
+					<label for="name">Section Name</label>
+					<div class="input-wrapper"><input id="name" name="name" class="{% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}" /></div>
 					{% if section.errors.name %}
 						{% include "_includes/error_list" errors=section.errors.name %}
 					{% endif %}
 				</div>
 				<div class="item field">
 					<label for="handle">Section Handle</label>
-					<div class="input-wrapper"><input id="section-handle" name="section[handle]" class="code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}" /></div>
+					<div class="input-wrapper"><input id="handle" name="handle" class="code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}" /></div>
 					{% if section.errors.handle %}
 						{% include "_includes/error_list" errors=section.errors.handle %}
 					{% endif %}
+				</div>
+				<div class="item field">
+					<label for="max_entries">Max Entries</label>
+					<input id="max_entries" name="max_entries" class="input {% if section.errors.max_entries %}error{% endif %}" type="number" value="{{ section.handle }}" size="5" />
+					{% if section.errors.max_entries %}
+						{% include "_includes/error_list" errors=section.errors.max_entries %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<label for="max_entries">Do entries in this section get their own URLs?</label>
+					<div class="switch">
+						<div class="container">
+							<div class="label on">Yes</div>
+							<div class="label off">No</div>
+							<div class="btn"></div>
+						</div>
+					</div>
 				</div>
 
 				<div class="item">

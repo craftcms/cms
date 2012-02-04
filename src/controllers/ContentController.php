@@ -14,17 +14,16 @@ class ContentController extends BaseController
 		$this->requirePostRequest();
 
 		// Are we editing an existing section?
-		$postSectionId = Blocks::app()->request->getPost('section_id');
-		if ($postSectionId)
-			$section = Blocks::app()->content->getSectionById($postSectionId);
+		$sectionId = Blocks::app()->request->getPost('id');
+		if ($sectionId)
+			$section = Blocks::app()->content->getSectionById($sectionId);
 
 		// Otherwise create a new section
 		if (empty($section))
 			$section = new Section;
 
-		$postSection = Blocks::app()->request->getPost('section');
-		$section->name = $postSection['name'];
-		$section->handle = $postSection['handle'];
+		$section->name = Blocks::app()->request->getPost('name');
+		$section->handle = Blocks::app()->request->getPost('handle');
 
 		if ($section->save())
 		{

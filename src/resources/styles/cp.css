@@ -144,13 +144,13 @@ table.pane > tbody > tr:last-child > *:last-child,
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
 .pane table.body > tbody > tr:not(:first-child) > *,
-table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #e5e5e5; }
+table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #eaeaea; }
 
 /* table-only styles */
 table.pane,
 pane table.body { width: 100%; }
 table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
-table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #e5e5e5; }
+table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea; }
 .pane table.body > tbody > tr > th:not(:first-child),
 .pane table.body > tbody > tr > td:not(:first-child) { padding-left: 0; }
 
@@ -258,13 +258,13 @@ input.btn.big.submit:not(.disabled):active { background: url(../images/go.png) n
 .btn-group .btn:not(:last-child) .arrow { margin-right: 4px; }
 
 /* switch */
-.switch { border-radius: 3px; width: 51px; height: 24px; overflow: hidden; }
+.switch { border-radius: 3px; width: 56px; height: 24px; overflow: hidden; }
 .switch .container { width: 90px; }
 .switch.off .container { margin-left: -29px; }
-.switch .label { float: left; width: 30px; font-size: 11px; text-align: center; text-transform: uppercase; color: #fff; text-shadow: 0 -1px 0 #000; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25); }
-.switch .label.on { border-radius: 3px 0 0 3px; padding-right: 10px; background: -webkit-linear-gradient(#11a041, #18c552); }
-.switch .label.off { border-radius: 0 3px 3px 0; padding-left: 10px; background: -webkit-linear-gradient(#a03911, #c54a1a); }
-.switch .btn { display: block; float: left; margin-left: -51px !important; padding: 0; width: 20px; height: 22px; -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+.switch .label { float: left; width: 31px; height: 24px; font-size: 11px; line-height: 24px; text-align: center; text-transform: uppercase; color: #fff; text-shadow: 0 -1px 0 #000; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25); }
+.switch .label.on { border-radius: 3px 0 0 3px; padding: 0 12px 0 1px; background: -webkit-linear-gradient(#11a041, #18c552); }
+.switch .label.off { border-radius: 0 3px 3px 0; padding: 0 1px 0 12px;; background: -webkit-linear-gradient(#a03911, #c54a1a); }
+.switch .btn { display: block; float: left; margin: 1px 0 1px -55px !important; border-radius: 2px; padding: 0; width: 22px; height: 22px; -webkit-box-shadow: 0 0 0 1px #808080; }
 
 /* ----------------------------------------
 /*  Nav
