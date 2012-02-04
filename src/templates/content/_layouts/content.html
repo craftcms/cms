@@ -12,7 +12,7 @@
 	{% if page %}
 		{% include "content/_includes/toolbar" %}
 		<div class="page">
-			{{ page }}
+			{page}
 		</div>
 	{% endif %}
 {% endregion %}
@@ -34,7 +34,7 @@
 		$settingsBtn.click(function() {
 			showingSettings = ! showingSettings;
 			$settingsBtn.toggleClass('sel');
-			$settings.stop().animate({ height: (showingSettings ? expandedHeight : 0) });
+			$settings.stop().animate(\{ height: (showingSettings ? expandedHeight : 0) \});
 		});
 
 		var $draftBtn = $('.draft-btn'),
@@ -45,7 +45,7 @@
 		});
 
 		new blx.ui.RTE('content', {
-			css: "{{ url.resource('app/styles/rte.css') }}"
+			css: "{url.resource('app/styles/rte.css')}"
 		});
 
 	</script>

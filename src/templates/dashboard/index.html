@@ -16,13 +16,13 @@
 	<div id="alerts">
 		{% if !config.licenseKeys %}
 			<div class="alert">
-				<p>You need to enter your license key into your <a href="{{ url.base }}settings/info">System Info</a> page.</p>
+				<p>You need to enter your license key into your <a href="{url.base}settings/info">System Info</a> page.</p>
 			</div>
 		{% endif %}
 
 		{% foreach dashboard.alerts as alert %}
 			<div class="alert">
-				<p>{{ alert }}</p>
+				<p>{alert}</p>
 			</div>
 		{% endforeach %}
 	</div>
@@ -31,17 +31,17 @@
 		<div id="widgets">
 			{% foreach dashboard.widgets as widget %}
 				{% if widget.displayBody %}
-					<div id="widget{{ widget.id }}" class="pane widget {{ widget.classname }}">
+					<div id="widget{widget.id}" class="pane widget {widget.classname}">
 						<div class="head">
 							{% if widget.displaySettings %}
 								<a class="settings-btn" title="Settings"></a>
 							{% endif %}
-							<h5>{{ widget.title }}</h5>
+							<h5>{widget.title}</h5>
 						</div>
 						{% if widget.displaySettings %}
 							<div class="settings-outer-container"><div class="settings-inner-container">
 								<div class="settings">
-									{{ widget.displaySettings }}
+									{widget.displaySettings}
 									<div class="buttons">
 										<a class="btn submit"><span class="label">Save</span></a>
 										<a class="btn cancel"><span class="label">Cancel</span></a>
@@ -50,7 +50,7 @@
 							</div></div>
 						{% endif %}
 
-						{{ widget.displayBody }}
+						{widget.displayBody}
 					</div>
 				{% endif %}
 			{% endforeach %}
@@ -64,8 +64,8 @@
 				<div class="body">
 					<ul class="widget-handles">
 						{% foreach dashboard.widgets as widget %}
-						<li class="item {% if !widget.displayBody %}hidden{% endif %}" data-widget-id="widget{{ widget.id }}">
-							<span class="grab"></span><span class="title">{{ widget.title }}</span><a class="remove" title="Remove"></a>
+						<li class="item {% if !widget.displayBody %}hidden{% endif %}" data-widget-id="widget{widget.id}">
+							<span class="grab"></span><span class="title">{widget.title}</span><a class="remove" title="Remove"></a>
 						</li>
 						{% endforeach %}
 					</ul>
@@ -79,7 +79,7 @@
 	{% if !cp.updateInfoCached %}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{{ url.generateActionUrl('app/dashboard/getalerts') }}';
+			window.getAlertsUrl = '{url.generateActionUrl('app/dashboard/getalerts')}';
 		</script>
 	{% endif %}
 

@@ -16,10 +16,10 @@
 				</tr>
 				{% foreach users as user %}
 					<tr>
-						<td><a href="{{ url.base }}users/edit/{{ user.id }}">{{ user.username }}</a></td>
-						<td>{{ user.first_name }}</td>
-						<td>{{ user.last_name }}</td>
-						<td><a href="mailto://{{ user.email }}">{{ user.email }}</a></td>
+						<td><a href="{url.base}users/edit/{user.id}">{user.username}</a></td>
+						<td>{user.first_name}</td>
+						<td>{user.last_name}</td>
+						<td><a href="mailto://{user.email}">{user.email}</a></td>
 						<td>{% if user.admin %}Yes{% endif %}</td>
 					</tr>
 				{% endforeach %}
@@ -28,6 +28,6 @@
 		</div>
 	</div>
 	<div class="btn-group">
-		<a class="btn" href="{{ url.base }}users/new" title="Register a new user"><span class="icon icon44"></span></a>
+		<a class="btn" href="{url.base}users/new" title="Register a new user"><span class="icon icon44"></span></a>
 	</div>
 {% endregion %}

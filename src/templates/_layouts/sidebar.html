@@ -1,11 +1,11 @@
 {% layout "_layouts/cp" pageTitle=pageTitle styles=styles scripts=scripts %}
-{% region "bodyClass" %}sidebar-layout {{ bodyClass }}{% endregion %}
+{% region "bodyClass" %}sidebar-layout {bodyClass}{% endregion %}
 
 {% region "body" %}
 	<div id="sidebar" class="sidebar">
-		{{ sidebar }}
+		{sidebar}
 	</div>
 	<div id="main">
-		{{ main }}
+		{main}
 	</div>
 {% endregion %}

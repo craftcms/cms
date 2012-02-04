@@ -9,13 +9,13 @@
 			<ul>
 				{% foreach sites as site %}
 					<li class="item {% if site.primary %}primary{% endif %}">
-						<a href="{{ url.base }}settings/sites/edit/{{ site.id }}">{{ site.name }}</a>
+						<a href="{url.base}settings/sites/edit/{site.id}">{site.name}</a>
 					</li>
 				{% endforeach %}
 			</ul>
 		</div>
 	</div>
 	<div class="btn-group">
-		<a class="btn" href="{{ url.base }}settings/sites/new" title="Create a new site"><span class="icon icon44"></span></a>
+		<a class="btn" href="{url.base}settings/sites/new" title="Create a new site"><span class="icon icon44"></span></a>
 	</div>
 {% endregion %}

@@ -11,9 +11,9 @@
 
 {% region "scripts" %}
 	<script type="text/javascript">
-		window.updateHandle = '{{ handle }}';
-		window.updateInfoUrl = '{{ url.generateActionUrl('app/update/getupdateinfo', 'h=') }}';
-		window.updateUrl = '{{ url.generateActionUrl('app/update/update', 'h=') }}';
+		window.updateHandle = '{handle}';
+		window.updateInfoUrl = '{url.generateActionUrl('app/update/getupdateinfo', 'h=')}';
+		window.updateUrl = '{url.generateActionUrl('app/update/update', 'h=')}';
 	</script>
 	{% include "_includes/js_include" file="app/scripts/update.js" %}
 {% endregion %}

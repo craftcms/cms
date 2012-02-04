@@ -1,5 +1,5 @@
 {% layout "_layouts/sidebar" bodyClass=bodyClass scripts=scripts %}
-{% region "pageTitle" %}Users – {{ pageTitle }}{% endregion %}
+{% region "pageTitle" %}Users – {pageTitle}{% endregion %}
 
 {% region "styles" %}
 	{% include "_includes/css_include" file="app/styles/settings.css" %}
@@ -8,12 +8,12 @@
 {% region "sidebar" %}
 	<h5>User Management</h5>
 	<ul class="nav">
-		<li><a {% if url.segment(2) == 'register' %}class="sel"{% endif %} href="{{ url.base }}users/register"><span class="icon icon70"></span>Register</a></li>
+		<li><a {% if url.segment(2) == 'register' %}class="sel"{% endif %} href="{url.base}users/register"><span class="icon icon70"></span>Register</a></li>
 	</ul>
 {% endregion %}
 
 {% region "main" %}
-	<h1>{{ pageTitle }}</h1>
+	<h1>{pageTitle}</h1>
 
-	{{ main }}
+	{main}
 {% endregion %}

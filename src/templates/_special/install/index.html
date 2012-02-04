@@ -25,7 +25,7 @@
 			$newBtnLabel.appendTo($btn);
 			$btnLabel.show().fadeOut('fast');
 			$newBtnLabel.hide().delay('fast').fadeIn('fast');
-			$btn.animate({ width: $newBtnLabel.outerWidth() + 24 }, function() {
+			$btn.animate(\{ width: $newBtnLabel.outerWidth() + 24 \}, function() {
 				$btnLabel.remove();
 				$btnLabel = $newBtnLabel;
 				if (typeof callback == 'function')
@@ -42,7 +42,7 @@
 		function runInstaller()
 		{
 			// Run the ajax request
-			$.post('{{ url.base }}install/install', function(data, textStatus, jqXHR) {
+			$.post('{url.base}install/install', function(data, textStatus, jqXHR) {
 				if (textStatus != 'success' || !(data.error || data.success))
 					displayError('An unknown error occurred.');
 				else if (data.error)
@@ -53,7 +53,7 @@
 					updateBtnLabel($newBtnLabel, function() {
 						// Redirect to the dashboard
 						setTimeout(function() {
-							window.location = '{{ url.base }}setup'
+							window.location = '{url.base}setup'
 						}, 1000);
 					});
 				}

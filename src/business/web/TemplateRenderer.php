@@ -33,7 +33,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 					[A-Za-z]\w*(?P>subtag)?
 				)
 				(?P<moreParams>         # <moreParams> (optional)
-					\s*\,\s*
+					[\t ]*\,[\t ]*
 					(?P>param)
 					(?P>moreParams)?    # recursive <moreParams>
 				)?
@@ -163,6 +163,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 		$this->parseActions();
 		$this->parseVariableTags();
 		$this->parseLanguage();
+		$this->unescapeCurlyBrackets();
 		$this->replaceMarkers();
 		$this->prependHead();
 		$this->appendFoot();
@@ -321,7 +322,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 			// Layouts, regions, and includes
 
 			case 'layout':
-				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s.*)?$/x', $params, $match))
+				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s+.*)?$/x', $params, $match))
 					$this->throwParseException("Invalid layout tag “{$tag}”");
 
 				$template = $match[1];
@@ -349,7 +350,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 				return '<?php $this->endWidget(); ?>';
 
 			case 'include':
-				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s.*)?$/x', $params, $match))
+				if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s+.*)?$/x', $params, $match))
 					$this->throwParseException("Invalid include tag “{$tag}”");
 
 				$template = $match[1];
@@ -429,7 +430,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	protected function parseVariableTags()
 	{
 		// find any {{variable-tags}} on the page
-		$this->_template = preg_replace_callback('/\{\{\s*(.+)\s*\}\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/(?<!\\\)\{[\t ]*(.+)[\t ]*(?<!\\\)\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
 	}
 
 	/**
@@ -574,5 +575,15 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	protected function parseLanguage()
 	{
 		
+	}
+
+	/**
+	 * Unescape any escaped curly brackets
+	 * @return mixed
+	 * @access protected
+	 */
+	protected function unescapeCurlyBrackets()
+	{
+		$this->_template = str_replace(array('\{', '\}'), array('{', '}'), $this->_template);
 	}
 }

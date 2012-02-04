@@ -8,7 +8,7 @@
 	<div class="pane">
 		<div class="head">
 			{% if theUser.id %}
-				<h5>Edit User {% if theUser.user_name %}“{{ theUser.user_name }}”{% endif %}</h5>
+				<h5>Edit User {% if theUser.user_name %}“{theUser.user_name}”{% endif %}</h5>
 			{% else %}
 				<h5>Register a new user</h5>
 			{% endif %}
@@ -17,13 +17,13 @@
 			<form method="post" action="">
 				<input type="hidden" name="action" value="app/users/save" />
 				<input type="hidden" name="redirect" value="users" />
-				{% if theUser.id %}<input type="hidden" name="user_id" value="{{ theUser.id }}">{% endif %}
+				{% if theUser.id %}<input type="hidden" name="user_id" value="{theUser.id}">{% endif %}
 
 				<div class="item">
 					<div class="field">
 						<label for="username">Username</label>
 						{% set userNameErrors = theUser.errors.username %}
-						<div class="input-wrapper"><input id="username" name="user[username]" class="{% if userNameErrors %}error{% endif %}" type="text" value="{{ theUser.username }}" /></div>
+						<div class="input-wrapper"><input id="username" name="user[username]" class="{% if userNameErrors %}error{% endif %}" type="text" value="{theUser.username}" /></div>
 						{% if userNameErrors %}
 							{% include "_includes/error_list" errors=userNameErrors %}
 						{% endif %}
@@ -31,7 +31,7 @@
 					<div class="field">
 						<label for="first_name">First Name</label>
 						{% set firstNameErrors = theUser.errors.first_name %}
-						<div class="input-wrapper"><input id="first_name" name="user[first_name]" class="{% if firstNameErrors %}error{% endif %}" type="text" value="{{ theUser.first_name }}" /></div>
+						<div class="input-wrapper"><input id="first_name" name="user[first_name]" class="{% if firstNameErrors %}error{% endif %}" type="text" value="{theUser.first_name}" /></div>
 						{% if firstNameErrors %}
 							{% include "_includes/error_list" errors=firstNameErrors %}
 						{% endif %}
@@ -39,7 +39,7 @@
 					<div class="field">
 						<label for="last_name">Last Name</label>
 						{% set lastNameErrors = theUser.errors.last_name %}
-						<div class="input-wrapper"><input id="last_name" name="user[last_name]" class="{% if lastNameErrors %}error{% endif %}" type="text" value="{{ theUser.last_name }}" /></div>
+						<div class="input-wrapper"><input id="last_name" name="user[last_name]" class="{% if lastNameErrors %}error{% endif %}" type="text" value="{theUser.last_name}" /></div>
 						{% if lastNameErrors %}
 							{% include "_includes/error_list" errors=lastNameErrors %}
 						{% endif %}
@@ -47,7 +47,7 @@
 					<div class="field">
 						<label for="email">Email</label>
 						{% set emailErrors = theUser.errors.email %}
-						<div class="input-wrapper"><input id="email" name="user[email]" class="{% if emailErrors %}error{% endif %}" type="text" value="{{ theUser.email }}" /></div>
+						<div class="input-wrapper"><input id="email" name="user[email]" class="{% if emailErrors %}error{% endif %}" type="text" value="{theUser.email}" /></div>
 						{% if emailErrors %}
 							{% include "_includes/error_list" errors=emailErrors %}
 						{% endif %}

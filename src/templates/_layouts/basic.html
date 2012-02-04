@@ -2,16 +2,16 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8" />
-	<title>{{ title }}</title>
-	{{ styles }}
+	<title>{title}</title>
+	{styles}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 </head>
-<body class="{{ bodyClass }}">
-	{{ body }}
+<body class="{bodyClass}">
+	{body}
 
 	{% include "_includes/js_include" file="app/lib/jquery-1.7.min.js" %}
 	{% include "_includes/js_include" file="app/lib/Base.js" %}
-	<script type="text/javascript">window.baseUrl = '{{ url.base }}';</script>
-	{{ scripts }}
+	<script type="text/javascript">window.baseUrl = '{url.base}';</script>
+	{scripts}
 </body>
 </html>

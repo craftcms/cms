@@ -9,11 +9,11 @@
 			{% if content.sections %}
 				{% include "settings/sections/_includes/sections_list" sections=content.sections %}
 			{% else %}
-				<p class="item no-items">No sections exist yet. <a href="{{ url.base }}settings/sections/new">Create the first one.</a></p>
+				<p class="item no-items">No sections exist yet. <a href="{url.base}settings/sections/new">Create the first one.</a></p>
 			{% endif %}
 		</div>
 	</div>
 	<div class="btn-group">
-		<a class="btn" href="{{ url.base }}settings/sections/new" title="Create a new section"><span class="icon icon44"></span></a>
+		<a class="btn" href="{url.base}settings/sections/new" title="Create a new section"><span class="icon icon44"></span></a>
 	</div>
 {% endregion %}
