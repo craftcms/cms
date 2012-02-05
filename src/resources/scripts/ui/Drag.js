@@ -9,7 +9,7 @@ if (typeof blx.ui == 'undefined')
  * Drag
  * Used as a base class for DragDrop and DragSort
  */
-blx.ui.Drag = Base.extend({
+blx.ui.Drag = blx.Base.extend({
 
 	$items: null,
 
@@ -35,7 +35,7 @@ blx.ui.Drag = Base.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(items, settings)
+	init: function(items, settings)
 	{
 		// param mapping
 		if (typeof items.nodeType == 'undefined' && typeof items.length == 'undefined')
@@ -74,8 +74,8 @@ blx.ui.Drag = Base.extend({
 		this.targetMouseDiffY = event.pageY - offset.top;
 
 		// listen for mousemove, mouseup
-		$(document).on('mousemove.drag', $.proxy(this, 'onMouseMove'));
-		$(document).on('mouseup.drag', $.proxy(this, 'onMouseUp'));
+		this.addListener(blx.$document, 'mousemove', 'onMouseMove');
+		this.addListener(blx.$document, 'mouseup', 'onMouseUp');
 	},
 
 	/**
@@ -108,7 +108,7 @@ blx.ui.Drag = Base.extend({
 	onMouseUp: function(event)
 	{
 		// unbind the document events
-		$(document).off('.drag');
+		this.removeAllListeners(blx.$document);
 
 		if (this.dragging)
 			this.stopDragging();
@@ -320,7 +320,7 @@ blx.ui.Drag = Base.extend({
 		this.$items = this.$items.add($items);
 
 		// bind mousedown listener
-		$items.on('mousedown.drag', $.proxy(this, 'onMouseDown'));
+		this.addListener($items, 'mousedown', 'onMouseDown');
 	},
 
 	/**
@@ -331,7 +331,7 @@ blx.ui.Drag = Base.extend({
 		var $items = $(items);
 
 		// unbind all events
-		$items.off('.drag');
+		this.removeAllListeners($items);
 
 		// remove the record of it
 		this.$items = this.$items.not($items);
@@ -343,7 +343,7 @@ blx.ui.Drag = Base.extend({
 	reset: function()
 	{
 		// unbind the events
-		this.$items.off('.drag');
+		this.removeAllListeners($items);
 
 		// reset local vars
 		this.$items = $();

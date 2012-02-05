@@ -8,12 +8,12 @@ if (typeof blx.ui == 'undefined')
 /**
  * Rich Text Editor
  */
-blx.ui.RTE = Base.extend({
+blx.ui.RTE = blx.Base.extend({
 
 	/**
 	 * Constructor
 	 */
-	constructor: function(id, settings)
+	init: function(id, settings)
 	{
 		this.id = id;
 		this.settings = $.extend({}, blx.ui.RTE.defaults, settings);
@@ -75,11 +75,11 @@ blx.ui.RTE = Base.extend({
 
 		this.iWin.onload = $.proxy(this, '_buildStylesMenu');
 
-		$(this.iWin).on('focus', $.proxy(this, '_onFocus'));
-		$(this.iWin).on('blur', $.proxy(this, '_onBlur'));
+		this.addListener(this.iWin, 'focus', '_onFocus');
+		this.addListener(this.iWin, 'blur', '_onBlur');
 
 		// keep the button states up-to-date with the selection
-		$(this.iDoc).on('keypress', $.proxy(this, '_onKeypress'));
+		this.addListener(this.iDoc, 'keypress', '_onKeypress');
 		//$(this.dom.iframe).on('focus blur', $.proxy(this, 'setButtonStates'));
 		//$(this.iDoc).on('mouseup keydown keypress keyup textInput focus blur', $.proxy(this, 'setButtonStates'));
 
@@ -107,7 +107,7 @@ blx.ui.RTE = Base.extend({
 			var $sample = $(document.createElement(style.elem));
 			$sample.appendTo(this.iDoc.body);
 
-			var $label = $(document.createElement('span'));
+			var $label = $('<span />');
 			$label.text(style.label);
 			$label.css({
 				fontFamily: $sample.css('fontFamily'),
@@ -382,11 +382,11 @@ blx.ui.RTE.defaults = {
 /**
  * Formatting Button
  */
-var FormattingButton = Base.extend({
+var FormattingButton = blx.Base.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(editor, command, btnLabel)
+	init: function(editor, command, btnLabel)
 	{
 		this.editor = editor;
 		this.command = command;
@@ -394,7 +394,7 @@ var FormattingButton = Base.extend({
 		// add the button
 		this.$btn = $('<a class="btn" href=""><span class="label">'+btnLabel+'</span></a>');
 		this.$btn.insertBefore(this.editor.iframe);
-		this.$btn.click($.proxy(this, 'toggleCommand'));
+		this.addListener(this.$btn, 'click', 'toggleCommand')
 
 		this.setButtonState();
 	},

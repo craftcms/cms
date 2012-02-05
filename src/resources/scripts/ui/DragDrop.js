@@ -16,7 +16,7 @@ blx.ui.DragDrop = blx.ui.Drag.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(settings)
+	init: function(settings)
 	{
 		settings = $.extend({}, blx.ui.DragDrop.defaults, settings);
 		this.base(settings);

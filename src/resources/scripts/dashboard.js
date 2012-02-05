@@ -1,7 +1,7 @@
 (function($) {
 
 
-var Dashboard = Base.extend({
+var Dashboard = blx.Base.extend({
 
 	dom: {},
 	widgets: {},
@@ -9,12 +9,12 @@ var Dashboard = Base.extend({
 	totalWidgets: 0,
 	showingSidebar: false,
 
-	constructor: function()
+	init: function()
 	{
-		this.dom.$alerts = $(document.getElementById('alerts'));
-		this.dom.$container = $(document.getElementById('widgets'));
-		this.dom.$sidebarBtn = $(document.getElementById('sidebar-btn'));
-		this.dom.$sidebar = $(document.getElementById('dashboard-sidebar'));
+		this.dom.$alerts = $('#alerts');
+		this.dom.$container = $('#widgets');
+		this.dom.$sidebarBtn = $('#sidebar-btn');
+		this.dom.$sidebar = $('#dashboard-sidebar');
 
 		this.getWidgetHandles();
 
@@ -25,7 +25,7 @@ var Dashboard = Base.extend({
 
 			if (elem)
 			{
-				this.widgets[widgetId] = new Dashboard.Widget(elem);
+				this.widgets[widgetId] = new Widget(elem);
 				this.totalWidgets++;
 			}
 		}
@@ -37,9 +37,9 @@ var Dashboard = Base.extend({
 		});
 
 		// setup events
-		$('a.remove', this.dom.$widgetHandles).on('click', $.proxy(this, 'onWidgetRemove'))
-		this.dom.$sidebarBtn.on('click.dashboard', $.proxy(this, 'toggleSidebar'));
-		$(window).on('resizeWidth.dashboard', $.proxy(this, 'onWindowResize'));
+		this.addListener($('a.remove', this.dom.$widgetHandles), 'click', 'onWidgetRemove');
+		this.addListener(this.dom.$sidebarBtn, 'click', 'toggleSidebar');
+		this.addListener(blx.$window, 'resize', 'onWindowResize');
 
 		// set the columns
 		this.setCols();
@@ -112,7 +112,7 @@ var Dashboard = Base.extend({
 
 		for (var i = 0; i < this.totalCols; i++)
 		{
-			this.cols[i] = new Dashboard.Col(this, i);
+			this.cols[i] = new Col(this, i);
 		}
 
 		// Place the widgets in the order of the handles
@@ -329,9 +329,9 @@ var Dashboard = Base.extend({
 });
 
 
-Dashboard.Col = Base.extend({
+var Col = blx.Base.extend({
 
-	constructor: function(dashboard, index)
+	init: function(dashboard, index)
 	{
 		this.dashboard = dashboard;
 		this.index = index;
@@ -363,7 +363,7 @@ Dashboard.Col = Base.extend({
 });
 
 
-Dashboard.Widget = Base.extend({
+var Widget = blx.Base.extend({
 
 	elem: null,
 	$elem: null,
@@ -371,7 +371,7 @@ Dashboard.Widget = Base.extend({
 	dom: null,
 	expanded: false,
 
-	constructor: function(elem, i)
+	init: function(elem, i)
 	{
 		this.elem = elem;
 		this.$elem = $(elem);
@@ -390,9 +390,9 @@ Dashboard.Widget = Base.extend({
 			this.dom.$saveBtn = $('.btn.submit', this.dom.$settings);
 			this.dom.$cancelBtn = $('.btn.cancel', this.dom.$settings);
 
-			this.dom.$settingsBtn.on('click.widget', $.proxy(this, 'toggleSettings'));
-			this.dom.$saveBtn.on('click.widget', $.proxy(this, 'saveSettings'));
-			this.dom.$cancelBtn.on('click.widget', $.proxy(this, 'hideSettings'));
+			this.addListener(this.dom.$settingsBtn, 'click', 'toggleSettings');
+			this.addListener(this.dom.$saveBtn, 'click', 'saveSettings');
+			this.addListener(this.dom.$cancelBtn, 'click', 'hideSettings');
 		}
 	},
 
@@ -438,8 +438,7 @@ Dashboard.Widget = Base.extend({
 });
 
 
-// initialize the dashboard
-window.dashboard = new Dashboard();
+blx.dashboard = new Dashboard();
 
 
 })(jQuery);

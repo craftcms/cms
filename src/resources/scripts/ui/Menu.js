@@ -8,12 +8,12 @@ if (typeof blx.ui == 'undefined')
 /**
  * Menu
  */
-blx.ui.Menu = Base.extend({
+blx.ui.Menu = blx.Base.extend({
 
 	/**
 	 * Constructor
 	 */
-	constructor: function(btn, options, settings, callback)
+	init: function(btn, options, settings, callback)
 	{
 		// argument mapping
 		if (typeof settings == 'function')
@@ -38,7 +38,7 @@ blx.ui.Menu = Base.extend({
 
 		this.showing = false;
 
-		this.dom.$btn.on('click.menu', $.proxy(this, 'toggle'));
+		this.addListener(this.dom.$btn, 'click', 'toggle');
 	},
 
 	/**
@@ -103,7 +103,7 @@ blx.ui.Menu = Base.extend({
 
 		// wait for this event to finish propagating, and then listen for new clicks
 		setTimeout($.proxy(function() {
-			$(document.body).on('click.menu', $.proxy(this, 'hide'));
+			this.addListener(blx.$body, 'click', 'hide');
 		}, this), 1);
 	},
 
@@ -118,7 +118,7 @@ blx.ui.Menu = Base.extend({
 		this.dom.$btn.removeClass('sel');
 		this.dom.ul.style.display = 'none';
 
-		$(document.body).off('click.menu');
+		this.removeListener(blx.$body, 'click');
 
 		this.showing = false;
 	},
