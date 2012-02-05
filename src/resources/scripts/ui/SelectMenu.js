@@ -13,7 +13,7 @@ blx.ui.SelectMenu = blx.ui.Menu.extend({
 	/** 
 	 * Constructor
 	 */
-	constructor: function(btn, options, settings, callback)
+	init: function(btn, options, settings, callback)
 	{
 		// argument mapping
 		if (typeof settings == 'function')

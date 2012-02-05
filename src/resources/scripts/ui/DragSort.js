@@ -17,7 +17,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 	/**
 	 * Constructor
 	 */
-	constructor: function(items, settings)
+	init: function(items, settings)
 	{
 		// param mapping
 		if (typeof items.nodeType == 'undefined' && typeof items.length == 'undefined')

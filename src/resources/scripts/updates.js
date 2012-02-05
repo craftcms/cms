@@ -1,12 +1,12 @@
 (function($) {
 
 
-window.Update = Base.extend({
+var Update = blx.Base.extend({
 
 	dom: null,
 	expanded: false,
 
-	constructor: function(div, i)
+	init: function(div, i)
 	{
 		this.dom = {};
 		this.dom.$update = $(div);
@@ -14,7 +14,7 @@ window.Update = Base.extend({
 		this.dom.$notesContainer = $('.notes-container', this.dom.$update);
 		this.dom.$notes = $('.notes', this.dom.$notesContainer);
 
-		this.dom.$toggle.on('click.update', $.proxy(this, 'toggle'));
+		this.addListener(this.dom.$toggle, 'click', 'toggle');
 
 		if (location.hash && location.hash == '#'+this.dom.$update.attr('id'))
 		{
@@ -84,7 +84,7 @@ $('#updates').load(updatesUrl, function() {
 	{
 		// create the badge if it doesn't exist
 		if (!$sidebarBadge.length)
-			$sidebarBadge = $(document.createElement('span')).addClass('badge').appendTo($sidebarLink);
+			$sidebarBadge = $('<span />').addClass('badge').appendTo($sidebarLink);
 
 		$sidebarBadge.html(totalUpdates);
 	}

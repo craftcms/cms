@@ -8,12 +8,12 @@ if (typeof blx.ui == 'undefined')
 /**
  * HUD
  */
-blx.ui.HUD = Base.extend({
+blx.ui.HUD = blx.Base.extend({
 
 	/**
 	 * Constructor
 	 */
-	constructor: function(trigger, contents, settings) {
+	init: function(trigger, contents, settings) {
 
 		this.$trigger = $(trigger);
 		this.$contents = $(contents);
@@ -26,7 +26,7 @@ blx.ui.HUD = Base.extend({
 
 		this.$contents.appendTo(this.$hud);
 
-		this.$trigger.click($.proxy(this, 'show'));
+		this.addListener(this.$trigger, 'click', 'show');
 	},
 
 	/**
@@ -136,7 +136,7 @@ blx.ui.HUD = Base.extend({
 		if (event.stopPropagation)
 			event.stopPropagation();
 
-		$(document.body).on('click.hud', $.proxy(this, 'hide'));
+		this.addListener(blx.$body, 'click', 'hide');
 
 		this.showing = true;
 		blx.ui.HUD.active = this;
