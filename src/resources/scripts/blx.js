@@ -11,85 +11,6 @@ blx.$body = $(document.body);
 
 
 /**
- * Base class
- */
-blx.Base = Base.extend({
-
-	namespace: null,
-
-	constructor: function()
-	{
-		this.namespace = '.blx'+Math.floor(Math.random()*999999999);
-		this.init.apply(this, arguments);
-	},
-
-	init: function(){},
-
-	addListener: function(elem, event, func)
-	{
-		if (typeof func == 'function')
-			func = $.proxy(func, this);
-		else
-			func = $.proxy(this, func);
-
-		$(elem).on(event+this.namespace, func);
-	},
-
-	removeListener: function(elem, event)
-	{
-		$(elem).off(event+this.namespace);
-	},
-
-	removeAllListeners: function(elem)
-	{
-		$(elem).off(this.namespace);
-	}
-
-});
-
-
-/**
- * Blocks class
- */
-var CP = blx.Base.extend({
-
-	_windowHeight: null,
-	_$sidebar: null,
-	_sidebarTop: null,
-
-	init: function()
-	{
-		var $sidebar = $('#sidebar');
-		if ($sidebar.length)
-		{
-			this._$sidebar = $sidebar;
-			this._sidebarTop = parseInt(this._$sidebar.css('top'));
-
-			this.setSidebarHeight();
-			this.addListener(blx.$window, 'resize', 'setSidebarHeight');
-			this.addListener(blx.$window, 'scroll', 'setSidebarHeight');
-		}
-	},
-
-	setSidebarHeight: function()
-	{
-		if (! this._$sidebar)
-			return false;
-
-		// has the window height changed?
-		if (this._windowHeight !== (this._windowHeight = blx.$window.height()))
-		{
-			var sidebarHeight = this._windowHeight - this._sidebarTop;
-			this._$sidebar.height(sidebarHeight);
-		}
-	}
-
-});
-
-blx.cp = new CP();
-
-
-/**
  * Utility functions
  */
 blx.utils =
@@ -108,6 +29,43 @@ blx.utils =
 		}
 
 		return num;
+	},
+
+	/**
+	 * Converts a comma-delimited string into an array
+	 */
+	stringToArray: function(str)
+	{
+		if (typeof str != 'string')
+			return str;
+
+		var arr = str.split(',');
+		for (var i = 0; i < arr.length; i++)
+		{
+			arr[i] = $.trim(arr[i]);
+		}
+		return arr;
+	},
+
+	/**
+	 * Converts extended ASCII characters to ASCII
+	 */
+	asciiCharMap: {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae','230':'ae','228':'ae','231':'c','232':'e','233':'e','234':'e','235':'e','236':'i','237':'i','238':'i','239':'i','241':'n','242':'o','243':'o','244':'o','245':'o','246':'oe','249':'u','250':'u','251':'u','252':'ue','255':'y','257':'aa','269':'ch','275':'ee','291':'gj','299':'ii','311':'kj','316':'lj','326':'nj','353':'sh','363':'uu','382':'zh','256':'aa','268':'ch','274':'ee','290':'gj','298':'ii','310':'kj','315':'lj','325':'nj','352':'sh','362':'uu','381':'zh'},
+
+	asciiString: function(str)
+	{
+		var asciiStr = '';
+
+		for (c = 0; c < str.length; c++) {
+			charCode = str.charCodeAt(c);
+
+			if (charCode >= 32 && charCode < 128)
+				asciiStr += str.charAt(c);
+			else if (typeof this.asciiCharMap[charCode] != 'undefined')
+				asciiStr += this.asciiCharMap[charCode];
+		}
+
+		return asciiStr;
 	},
 
 	/**
@@ -184,6 +142,99 @@ blx.fx = {
 	duration: 400,
 	delay: 100
 };
+
+
+/**
+ * Base class
+ */
+blx.Base = Base.extend({
+
+	namespace: null,
+
+	constructor: function()
+	{
+		this.namespace = '.blx'+Math.floor(Math.random()*999999999);
+		this.init.apply(this, arguments);
+	},
+
+	init: function(){},
+
+	_formatEvents: function(events)
+	{
+		events = blx.utils.stringToArray(events);
+		for (var i = 0; i < events.length; i++)
+		{
+			events[i] += this.namespace;
+		}
+		return events.join(' ');
+	},
+
+	addListener: function(elem, events, func)
+	{
+		events = this._formatEvents(events);
+
+		if (typeof func == 'function')
+			func = $.proxy(func, this);
+		else
+			func = $.proxy(this, func);
+
+		$(elem).on(events, func);
+	},
+
+	removeListener: function(elem, events)
+	{
+		events = this._formatEvents(events);
+		$(elem).off(events);
+	},
+
+	removeAllListeners: function(elem)
+	{
+		$(elem).off(this.namespace);
+	}
+
+});
+
+
+/**
+ * Blocks class
+ */
+var CP = blx.Base.extend({
+
+	_windowHeight: null,
+	_$sidebar: null,
+	_sidebarTop: null,
+
+	init: function()
+	{
+		var $sidebar = $('#sidebar');
+		if ($sidebar.length)
+		{
+			this._$sidebar = $sidebar;
+			this._sidebarTop = parseInt(this._$sidebar.css('top'));
+
+			this.setSidebarHeight();
+			this.addListener(blx.$window, 'resize', 'setSidebarHeight');
+			this.addListener(blx.$window, 'scroll', 'setSidebarHeight');
+		}
+	},
+
+	setSidebarHeight: function()
+	{
+		if (! this._$sidebar)
+			return false;
+
+		// has the window height changed?
+		if (this._windowHeight !== (this._windowHeight = blx.$window.height()))
+		{
+			var sidebarHeight = this._windowHeight - this._sidebarTop;
+			this._$sidebar.height(sidebarHeight);
+		}
+	}
+
+});
+
+
+blx.cp = new CP();
 
 
 })(jQuery);
