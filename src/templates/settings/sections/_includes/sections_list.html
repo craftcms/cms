@@ -1,5 +1,5 @@
 <ul>
-	{% sections as section %}
+	{% foreach sections as section %}
 		<li class="item"><a href="{url.base}settings/sections/edit/{section.id}">{section.name}</a>
 			{% set subSections = content.getSubSections(section.id) %}
 			{% if subSections %}
