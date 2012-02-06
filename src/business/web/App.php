@@ -194,6 +194,7 @@ class App extends \CWebApplication
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
+			self::import('business.exceptions.HttpException');
 			self::import('business.utils.File');
 			self::import('business.utils.HtmlHelper');
 			self::import('business.utils.UrlHelper');
