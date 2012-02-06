@@ -19,75 +19,86 @@
 				<input type="hidden" name="redirect" value="users" />
 				{% if theUser.id %}<input type="hidden" name="user_id" value="{theUser.id}">{% endif %}
 
-				<div class="item">
-					<div class="field">
+				<div class="item field">
+					<div class="input-wrapper">
 						<label for="username">Username</label>
-						{% set userNameErrors = theUser.errors.username %}
-						<div class="input-wrapper"><input id="username" name="user[username]" class="{% if userNameErrors %}error{% endif %}" type="text" value="{theUser.username}" /></div>
-						{% if userNameErrors %}
-							{% include "_includes/error_list" errors=userNameErrors %}
-						{% endif %}
+						<input id="username" name="user[username]" class="{% if userNameErrors %}error{% endif %}" type="text" value="{theUser.username}" />
 					</div>
-					<div class="field">
+					{% if theUser.errors.username %}
+						{% include "_includes/error_list" errors=theUser.errors.username %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<div class="input-wrapper">
 						<label for="first_name">First Name</label>
-						{% set firstNameErrors = theUser.errors.first_name %}
-						<div class="input-wrapper"><input id="first_name" name="user[first_name]" class="{% if firstNameErrors %}error{% endif %}" type="text" value="{theUser.first_name}" /></div>
-						{% if firstNameErrors %}
-							{% include "_includes/error_list" errors=firstNameErrors %}
-						{% endif %}
+						<input id="first_name" name="user[first_name]" class="{% if firstNameErrors %}error{% endif %}" type="text" value="{theUser.first_name}" />
 					</div>
-					<div class="field">
+					{% if theUser.errors.first_name %}
+						{% include "_includes/error_list" errors=theUser.errors.first_name %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<div class="input-wrapper">
 						<label for="last_name">Last Name</label>
-						{% set lastNameErrors = theUser.errors.last_name %}
-						<div class="input-wrapper"><input id="last_name" name="user[last_name]" class="{% if lastNameErrors %}error{% endif %}" type="text" value="{theUser.last_name}" /></div>
-						{% if lastNameErrors %}
-							{% include "_includes/error_list" errors=lastNameErrors %}
-						{% endif %}
+						<input id="last_name" name="user[last_name]" class="{% if lastNameErrors %}error{% endif %}" type="text" value="{theUser.last_name}" />
 					</div>
-					<div class="field">
+					{% if theUser.errors.last_name %}
+						{% include "_includes/error_list" errors=theUser.errors.last_name %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<div class="input-wrapper">
 						<label for="email">Email</label>
-						{% set emailErrors = theUser.errors.email %}
-						<div class="input-wrapper"><input id="email" name="user[email]" class="{% if emailErrors %}error{% endif %}" type="text" value="{theUser.email}" /></div>
-						{% if emailErrors %}
-							{% include "_includes/error_list" errors=emailErrors %}
-						{% endif %}
+						<input id="email" name="user[email]" class="{% if emailErrors %}error{% endif %}" type="text" value="{theUser.email}" />
 					</div>
-					<div class="field">
+					{% if theUser.errors.email %}
+						{% include "_includes/error_list" errors=theUser.errors.email %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<div class="input-wrapper">
 						<label for="admin">Admin</label>
-						<div class="input-wrapper"><input id="admin" name="user[admin]" type="checkbox" {% if theUser.admin %}checked{% endif %} /></div>
+						<input id="admin" name="user[admin]" type="checkbox" {% if theUser.admin %}checked{% endif %} />
 					</div>
-					<div class="field">
+				</div>
+				<div class="item field">
+					<div class="input-wrapper">
 						<label for="html_email">Html Emails</label>
-						<div class="input-wrapper"><input id="html_email" name="user[html_email]" type="checkbox" {% if theUser.html_email %}checked{% endif %} /></div>
+						<input id="html_email" name="user[html_email]" type="checkbox" {% if theUser.html_email || !theUser %}checked{% endif %} />
 					</div>
-					{% if theUser.id %}
-						<div class="field">
-							<label for="password_reset">Password Reset Required</label>
-							<div class="input-wrapper"><input id="password_reset" name="user[password_reset]" type="checkbox" {% if theUser.password_reset_required %}checked{% endif %} /></div>
+				</div>
+				{% if theUser.id %}
+					<div class="item field">
+						<div class="input-wrapper">
+						<label for="password_reset">Password Reset Required</label>
+						<input id="password_reset" name="user[password_reset]" type="checkbox" {% if theUser.password_reset_required %}checked{% endif %} />
 						</div>
-					{% endif %}
-					{% if !theUser.id %}
-						<div class="field">
+					</div>
+				{% endif %}
+				{% if !theUser.id %}
+					<div class="item field">
+						<div class="input-wrapper">
 							<label for="send_registration_email">Send new user registration email with password reset link?</label>
-							<div class="input-wrapper"><input id="send_registration_email" name="user[send_registration_email]" type="checkbox" {% if theUser.send_registration_email %}checked{% endif %} /></div>
+							<input id="send_registration_email" name="user[send_registration_email]" type="checkbox" {% if theUser.send_registration_email || !theUser %}checked{% endif %} />
 						</div>
-					{% endif %}
-					{% if theUser.id %}
-						<div class="field">
-							<div><b>Last Login Date:</b> {% if theUser.last_login_date %}theUser.last_login_date{% else %}Never{% endif %}</div>
-						</div>
-						<div class="field">
-							<div><b>Last Password Changed Date:</b> {% if theUser.last_password_changed_date %}theUser.last_password_changed_date{% else %}Never{% endif %}</div>
-						</div>
-						<div class="field">
-							<div><b>Last Lockout Date:</b> {% if theUser.last_lockout_date %}theUser.last_lockout_date{% else %}Never{% endif %}</div>
-						</div>
-						<div class="field">
-							<div><b>Failed Password Attempt Count:</b> {% if theUser.failed_password_attempt_count %}theUser.failed_password_attempt_count{% else %}0{% endif %}</div>
-						</div>
-					{% endif %}
+					</div>
+				{% endif %}
+				{% if theUser.id %}
+					<div class="item">
+						Last Login Date: {% if theUser.last_login_date %}theUser.last_login_date{% else %}Never{% endif %}
+					</div>
+					<div class="item">
+						Last Password Changed Date: {% if theUser.last_password_changed_date %}theUser.last_password_changed_date{% else %}Never{% endif %}
+					</div>
+					<div class="item">
+						Last Lockout Date: {% if theUser.last_lockout_date %}theUser.last_lockout_date{% else %}Never{% endif %}
+					</div>
+					<div class="item">
+						Failed Password Attempt Count: {% if theUser.failed_password_attempt_count %}theUser.failed_password_attempt_count{% else %}0{% endif %}
+					</div>
+				{% endif %}
 
-					<p />
+				<div class="item">
 					<input class="btn big submit" type="submit" value="Save User" />
 				</div>
 			</form>

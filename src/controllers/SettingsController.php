@@ -11,103 +11,97 @@ class SettingsController extends BaseController
 	 */
 	public function actionSaveEmail()
 	{
-		$model = new EmailSettingsForm();
+		$this->requirePostRequest();
+
+		$emailSettings = new EmailSettingsForm();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		// Check to see if it's a submit.
-		if(Blocks::app()->request->isPostRequest)
+		$postEmailSettings = Blocks::app()->request->getPost('email');
+		$emailSettings->emailerType                 = $postEmailSettings['emailerType'];
+		$emailSettings->host                        = $postEmailSettings['host'];
+		$emailSettings->port                        = $postEmailSettings['port'];
+		$emailSettings->smtpAuth                    = isset($postEmailSettings['smtpAuth']) ? 1 : 0;
+		$emailSettings->userName                    = $postEmailSettings['userName'];
+		$emailSettings->password                    = $postEmailSettings['password'];
+		$emailSettings->smtpKeepAlive               = isset($postEmailSettings['smtpKeepAlive']) ? 1 : 0;
+		$emailSettings->smtpSecureTransport         = isset($postEmailSettings['smtpSecureTransport']) ? 1 : 0;
+		$emailSettings->smtpSecureTransportType     = $postEmailSettings['smtpSecureTransportType'];
+		$emailSettings->timeout                     = $postEmailSettings['timeout'];
+		$emailSettings->fromEmail                   = $postEmailSettings['fromEmail'];
+		$emailSettings->fromName                    = $postEmailSettings['fromName'];
+
+		// validate user input
+		if($emailSettings->validate())
 		{
-			$model->emailerType                 = Blocks::app()->request->getPost('emailerType');
-			$model->host                        = Blocks::app()->request->getPost('host');
-			$model->port                        = Blocks::app()->request->getPost('port');
-			$model->smtpAuth                    = Blocks::app()->request->getPost('smtpAuth') == 'on' ? 1 : null;
-			$model->userName                    = Blocks::app()->request->getPost('userName');
-			$model->password                    = Blocks::app()->request->getPost('password');
-			$model->smtpKeepAlive               = Blocks::app()->request->getPost('smtpKeepAlive') == 'on' ? 1 : null;
-			$model->smtpSecureTransport         = Blocks::app()->request->getPost('smtpSecureTransport') == 'on' ? 1 : null;
-			$model->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
-			$model->timeout                     = Blocks::app()->request->getPost('timeout');
-			$model->fromEmail                   = Blocks::app()->request->getPost('fromEmail');
-			$model->fromName                    = Blocks::app()->request->getPost('fromName');
+			$settings = array('emailerType' => $emailSettings->emailerType);
+			$settings['fromEmail'] = $emailSettings->fromEmail;
+			$settings['fromName'] = $emailSettings->fromName;
 
-			// validate user input
-			if($model->validate())
+			switch ($emailSettings->emailerType)
 			{
-				$settings = array('emailerType' => $model->emailerType);
-				$settings['fromEmail'] = $model->fromEmail;
-				$settings['fromName'] = $model->fromName;
-
-				switch ($model->emailerType)
+				case EmailerType::Smtp:
 				{
-					case EmailerType::Smtp:
+					if ($emailSettings->smtpAuth)
 					{
-						if ($model->smtpAuth)
-						{
-							$settings['smtpAuth'] = 1;
-							$settings['userName'] = $model->userName;
-							$settings['password'] = $model->password;
-						}
-
-						if ($model->smtpSecureTransport)
-						{
-							$settings['smtpSecureTransport'] = 1;
-							$settings['smtpSecureTransportType'] = $model->smtpSecureTransportType;
-						}
-
-						$settings['port'] = $model->port;
-						$settings['host'] = $model->host;
-						$settings['timeout'] = $model->timeout;
-
-						if ($model->smtpKeepAlive)
-						{
-							$settings['smtpKeepAlive'] = 1;
-						}
-
-						break;
-					}
-
-					case EmailerType::Pop:
-					{
-						$settings['port'] = $model->port;
-						$settings['host'] = $model->host;
-						$settings['userName'] = $model->userName;
-						$settings['password'] = $model->password;
-						$settings['timeout'] = $model->timeout;
-
-						break;
-					}
-
-					case EmailerType::GmailSmtp:
-					{
-						$settings['host'] = $gMailSmtp;
 						$settings['smtpAuth'] = 1;
-						$settings['smtpSecureTransport'] = 1;
-						$settings['smtpSecureTransportType'] = $model->smtpSecureTransportType;
-						$settings['userName'] = $model->userName;
-						$settings['password'] = $model->password;
-						$settings['port'] = $model->smtpSecureTransportType == 'Tls' ? '587' : '465';
-						$settings['timeout'] = $model->timeout;
-						break;
+						$settings['userName'] = $emailSettings->userName;
+						$settings['password'] = $emailSettings->password;
 					}
+
+					if ($emailSettings->smtpSecureTransport)
+					{
+						$settings['smtpSecureTransport'] = 1;
+						$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
+					}
+
+					$settings['port'] = $emailSettings->port;
+					$settings['host'] = $emailSettings->host;
+					$settings['timeout'] = $emailSettings->timeout;
+
+					if ($emailSettings->smtpKeepAlive)
+					{
+						$settings['smtpKeepAlive'] = 1;
+					}
+
+					break;
 				}
 
-				if (Blocks::app()->email->saveEmailSettings($settings))
+				case EmailerType::Pop:
 				{
-					Blocks::app()->user->setMessage(MessageStatus::Success, 'Settings updated successfully.');
-					$this->redirect(UrlHelper::generateUrl('settings/info'));
+					$settings['port'] = $emailSettings->port;
+					$settings['host'] = $emailSettings->host;
+					$settings['userName'] = $emailSettings->userName;
+					$settings['password'] = $emailSettings->password;
+					$settings['timeout'] = $emailSettings->timeout;
+
+					break;
+				}
+
+				case EmailerType::GmailSmtp:
+				{
+					$settings['host'] = $gMailSmtp;
+					$settings['smtpAuth'] = 1;
+					$settings['smtpSecureTransport'] = 1;
+					$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
+					$settings['userName'] = $emailSettings->userName;
+					$settings['password'] = $emailSettings->password;
+					$settings['port'] = $emailSettings->smtpSecureTransportType == 'Tls' ? '587' : '465';
+					$settings['timeout'] = $emailSettings->timeout;
+					break;
 				}
 			}
 
-			$messages = array();
-			foreach ($model->getErrors() as $error)
-				foreach ($error as $innerError)
-					$messages[] = $innerError;
+			if (Blocks::app()->email->saveEmailSettings($settings))
+			{
+				Blocks::app()->user->setMessage(MessageStatus::Success, 'Settings updated successfully.');
 
-			Blocks::app()->user->setMessage(MessageStatus::Error, $messages);
+				$url = Blocks::app()->request->getPost('redirect');
+				if ($url !== null)
+					$this->redirect($url);
+			}
 		}
 
-		// display the login form
-		$this->loadTemplate('settings/info', array('emailSettings' => $model));
+		$this->loadRequestedTemplate(array('emailSettings' => $emailSettings));
 	}
 }
 
