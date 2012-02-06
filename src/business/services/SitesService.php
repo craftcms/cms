@@ -175,7 +175,8 @@ class SitesService extends BaseService
 			return LicenseKeyStatus::MissingKey;
 
 		$package = Blocks::app()->et->ping();
-		$licenseKeyStatus = $package->licenseKeyStatus;
+		$licenseKeyStatus = isset($package->licenseKeyStatus) ? $package->licenseKeyStatus : $licenseKeyStatus = LicenseKeyStatus::InvalidKey;
+
 		$this->setLicenseKeyStatus($licenseKeyStatus);
 		return $licenseKeyStatus;
 	}
