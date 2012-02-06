@@ -100,6 +100,7 @@ class ContentService extends BaseService
 	{
 		$sections = Section::model()->findAllByAttributes(array(
 			'site_id' => Blocks::app()->sites->currentSite->id,
+			'parent_id' => null
 		));
 
 		return $sections;

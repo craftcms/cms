@@ -41,7 +41,7 @@ blx.ui.HandleGenerator = blx.Base.extend({
 		handle = handle.replace(/(\s|\/|\\|\+\-)+/, '-');
 
 		// Strip out non alphanumeric/hyphen/underscore/period characters
-		handle = handle.replace(/[^a-z0-9\-\._]/g, ''); // strip non alphanumeric/hyphen/period/underscore
+		handle = handle.replace(/[^a-z0-9\-\._]/g, '');
 
 		// Handle must start with a letter and end with a letter/number
 		handle = handle.replace(/^[^a-z]+/, '');
