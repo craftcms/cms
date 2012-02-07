@@ -146,6 +146,8 @@ table.pane > tbody > tr:last-child > *:last-child,
 .pane table.body > tbody > tr:not(:first-child) > *,
 table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #eaeaea; }
 
+.pane .body .item a .icon { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
+
 /* table-only styles */
 table.pane,
 pane table.body { width: 100%; }

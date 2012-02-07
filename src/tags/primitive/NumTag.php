@@ -25,6 +25,26 @@ class NumTag extends Tag
 		return (string)$this->_val;
 	}
 
+	public function plus($num)
+	{
+		return $this->_val + $num;
+	}
+
+	public function minus($num)
+	{
+		return $this->_val - $num;
+	}
+
+	public function dividedBy($num)
+	{
+		return $this->_val / $num;
+	}
+
+	public function times($num)
+	{
+		return $this->_val * $num;
+	}
+
 	//public function round() {}
 	//public function format() {}
 

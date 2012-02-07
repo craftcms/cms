@@ -1,10 +1,10 @@
-<ul>
-	{% foreach sections as section %}
-		<li class="item"><a href="{url.base}settings/sections/edit/{section.id}">{section.name}</a>
-			{% set subSections = content.getSubSections(section.id) %}
-			{% if subSections %}
-				{% include "settings/sections/_includes/sections_list" sections=subSections %}
-			{% endif %}
-		</li>
-	{% endforeach %}
-</ul>
+{% foreach sections as section %}
+	<li class="item" style="padding-left: {indent*20}px">
+		<a href="{url.base}settings/sections/edit/{section.id}"><span class="icon icon111"></span>{section.name}</a>
+	</li>
+	{% set subSections = content.subSections(section.id) %}
+	{% if subSections %}
+		{% set subIndent = indent.plus(1) %}
+		{% include "settings/sections/_includes/sections_list" sections=subSections indent=subIndent %}
+	{% endif %}
+{% endforeach %}
