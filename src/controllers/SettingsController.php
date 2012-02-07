@@ -9,7 +9,7 @@ class SettingsController extends BaseController
 	/**
 	 *
 	 */
-	public function actionSaveEmail()
+	public function actionSaveEmailSettings()
 	{
 		$this->requirePostRequest();
 
