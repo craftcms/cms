@@ -12,6 +12,7 @@ blx.ui.Switch = blx.Base.extend({
 
 	$outerContainer: null,
 	$innerContainer: null,
+	$btn: null,
 	$input: null,
 	on: null,
 
@@ -21,19 +22,20 @@ blx.ui.Switch = blx.Base.extend({
 	{
 		this.$outerContainer = $(outerContainer);
 		this.$innerContainer = this.$outerContainer.find('.container:first');
+		this.$btn = this.$innerContainer.find('.btn:first');
 		this.$input = this.$outerContainer.find('input:first');
 
 		this.on = this.$outerContainer.hasClass('on');
 
 		blx.utils.preventOutlineOnMouseFocus(this.$outerContainer);
-		this.addListener(this.$outerContainer, 'click', 'toggle');
-		this.addListener(this.$outerContainer, 'keydown', 'onKeydown');
+		this.addListener(this.$innerContainer, 'mousedown', '_onMouseDown');
+		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
 		this.dragger = new blx.ui.DragCore(this.$innerContainer, {
 			axis: 'x',
-			onDragStart: $.proxy(this, 'onDragStart'),
-			onDrag:      $.proxy(this, 'onDrag'),
-			onDragStop:  $.proxy(this, 'onDragStop')
+			onDragStart: $.proxy(this, '_onDragStart'),
+			onDrag:      $.proxy(this, '_onDrag'),
+			onDragStop:  $.proxy(this, '_onDragStop')
 		});
 	},
 
@@ -51,7 +53,7 @@ blx.ui.Switch = blx.Base.extend({
 		this.on = false;
 	},
 
-	toggle: function()
+	toggle: function(event)
 	{
 		if (!this.on)
 			this.turnOn();
@@ -59,7 +61,23 @@ blx.ui.Switch = blx.Base.extend({
 			this.turnOff();
 	},
 
-	onKeydown: function(event)
+	_onMouseDown: function()
+	{
+		this.$btn.addClass('sel');
+		this.addListener(blx.$document, 'mouseup', '_onMouseUp')
+	},
+
+	_onMouseUp: function()
+	{
+		this.$btn.removeClass('sel');
+		this.removeListener(blx.$document, 'mouseup');
+
+		// Was this a click?
+		if (!this.dragger.dragging)
+			this.toggle();
+	},
+
+	_onKeyDown: function(event)
 	{
 		switch (event.keyCode)
 		{
@@ -78,12 +96,17 @@ blx.ui.Switch = blx.Base.extend({
 		}
 	},
 
-	onDragStart: function()
+	_getMargin: function()
 	{
-		this.dragStartMargin = parseInt(this.$innerContainer.css('marginLeft'));
+		return parseInt(this.$innerContainer.css('marginLeft'))
 	},
 
-	onDrag: function()
+	_onDragStart: function()
+	{
+		this.dragStartMargin = this._getMargin();
+	},
+
+	_onDrag: function()
 	{
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
@@ -95,11 +118,11 @@ blx.ui.Switch = blx.Base.extend({
 		this.$innerContainer.css('marginLeft', margin);
 	},
 
-	onDragStop: function()
+	_onDragStop: function()
 	{
-		var margin = parseInt(this.$innerContainer.css('marginLeft'));
+		var margin = this._getMargin();
 
-		if (margin < -16)
+		if (margin > -16)
 			this.turnOn();
 		else
 			this.turnOff();
