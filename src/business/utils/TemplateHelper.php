@@ -6,9 +6,26 @@ namespace Blocks;
  */
 class TemplateHelper
 {
+	public static $services = array(
+		'assets',
+		'config',
+		'content',
+		'cp',
+		'dashboard',
+		'email',
+		'plugins',
+		'request',
+		'session',
+		'settings',
+		'sites',
+		'updates',
+		'user',
+		'users',
+	);
+
 	public static $globalTags = array(
-		'blocks'   => 'Blocks\BlocksTag',
-		'url'      => 'Blocks\UrlTag',
+		'blocks'    => 'Blocks\BlocksTag',
+		'url'       => 'Blocks\UrlTag',
 	);
 
 	/**
@@ -18,7 +35,7 @@ class TemplateHelper
 	 */
 	public static function getGlobalTag($handle)
 	{
-		if (isset(Blocks::app()->$handle) && isset(Blocks::app()->$handle->__service__) && Blocks::app()->$handle->__service__ === true)
+		if (in_array($handle, self::$services))
 			return new ObjectTag(Blocks::app()->$handle);
 
 		if (isset(self::$globalTags[$handle]))

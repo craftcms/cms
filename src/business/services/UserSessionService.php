@@ -9,8 +9,6 @@ class UserSessionService extends \CWebUser
 	const FLASH_KEY_PREFIX = 'Blocks.UserSessionService.flash.';
 	const FLASH_COUNTERS   = 'Blocks.UserSessionService.flashcounters';
 
-	public $__service__ = true;
-
 	public $authTimeout;
 
 	/**
