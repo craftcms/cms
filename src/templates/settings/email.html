@@ -45,10 +45,8 @@
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="smtpAuth">Use SMTP Authentication?</label>
-						<input type="checkbox" id="smtpAuth" name="email[smtpAuth]"{% if emailSettings.smtpAuth == 1 %} checked{% endif %}>
-					</div>
+					<label for="smtpAuth">Use SMTP Authentication?</label>
+					{% include "_includes/switch" id="smtpAuth" name="email[smtpAuth]" on=emailSettings.smtpAuth %}
 					{% if emailSettings.errors.smtpAuth %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpAuth %}
 					{% endif %}
@@ -72,19 +70,15 @@
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
-						<input type="checkbox" id="smtpKeepAlive" name="email[smtpKeepAlive]"{% if emailSettings.smtpKeepAlive == 1 %} checked{% endif %}>
-					</div>
+					<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
+					{% include "_includes/switch" id="smtpKeepAlive" name="email[smtpKeepAlive]" on=emailSettings.smtpKeepAlive %}
 					{% if emailSettings.errors.smtpKeepAlive %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpKeepAlive %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="smtpSecureTransport">Use SMTP Secure Transport?</label>
-						<input type="checkbox" id="smtpSecureTransport" name="email[smtpSecureTransport]"{% if emailSettings.smtpSecureTransport == 1 %} checked{% endif %}>
-					</div>
+					<label for="smtpSecureTransport">Use SMTP Secure Transport?</label>
+					{% include "_includes/switch" id="smtpSecureTransport" name="smtpSecureTransport" on=emailSettings.smtpSecureTransport %}
 					{% if emailSettings.errors.smtpSecureTransport %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpSecureTransport %}
 					{% endif %}
@@ -134,4 +128,12 @@
 			</form>
 		</div>
 	</div>
+{% endregion %}
+
+{% region "scripts" %}
+	<script type="text/javascript">
+		new blx.ui.Switch('#smtpAuth');
+		new blx.ui.Switch('#smtpKeepAlive');
+		new blx.ui.Switch('#smtpSecureTransport');
+	</script>
 {% endregion %}

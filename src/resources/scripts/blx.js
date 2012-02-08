@@ -5,9 +5,23 @@ if (typeof blx == 'undefined')
 	blx = {};
 
 
+// jQuery objects for common elements
 blx.$window = $(window);
 blx.$document = $(document);
 blx.$body = $(document.body);
+
+
+// Key code constants
+blx.DELETE_KEY = 8;
+blx.SHIFT_KEY  = 16;
+blx.ALT_KEY    = 18;
+blx.RETURN_KEY = 13;
+blx.ESC_KEY    = 27;
+blx.SPACE_KEY  = 32;
+blx.LEFT_KEY   = 37;
+blx.UP_KEY     = 38;
+blx.RIGHT_KEY  = 39;
+blx.DOWN_KEY   = 40;
 
 
 /**
@@ -79,14 +93,14 @@ blx.utils =
 	/**
 	 * Check if an element is touching an x/y coordinate
 	 */
-	hitTest: function(x0, y0, element)
+	hitTest: function(x0, y0, elem)
 	{
-		var $element = $(element),
-			offset = $element.offset(),
+		var $elem = $(elem),
+			offset = $elem.offset(),
 			x1 = offset.left,
 			y1 = offset.top,
-			x2 = x1 + $element.width(),
-			y2 = y1 + $element.height();
+			x2 = x1 + $elem.width(),
+			y2 = y1 + $elem.height();
 
 		return (x0 >= x1 && x0 < x2 && y0 >= y1 && y0 < y2);
 	},
@@ -94,9 +108,24 @@ blx.utils =
 	/**
 	 * Check if the cursor is over an element
 	 */
-	isCursorOver: function(event, element)
+	isCursorOver: function(event, elem)
 	{
-		return blx.utils.hitTest(event.pageX, event.pageY, element);
+		return blx.utils.hitTest(event.pageX, event.pageY, elem);
+	},
+
+	/**
+	 * Prevents the outline when an element is focussed by the mouse
+	 */
+	preventOutlineOnMouseFocus: function(elem)
+	{
+		var $elem = $(elem),
+			namespace = '.preventOutlineOnMouseFocus';
+
+		$elem.on('mousedown'+namespace, function() {
+			$elem.addClass('no-outline');
+		}).blur(function() {
+			$elem.removeClass('no-outline');
+		});
 	},
 
 	/**

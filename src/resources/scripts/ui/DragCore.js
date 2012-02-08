@@ -14,6 +14,8 @@ blx.ui.DragCore = blx.Base.extend({
 
 	mousedownX: null,
 	mousedownY: null,
+	mouseDistX: null,
+	mouseDistY: null,
 	targetMouseDiffX: null,
 	targetMouseDiffY: null,
 	mouseX: null,
@@ -79,6 +81,9 @@ blx.ui.DragCore = blx.Base.extend({
 
 		if (this.settings.axis != 'y') this.mouseX = event.pageX;
 		if (this.settings.axis != 'x') this.mouseY = event.pageY;
+
+		this.mouseDistX = this.mouseX - this.mousedownX;
+		this.mouseDistY = this.mouseY - this.mousedownY;
 
 		if (!this.dragging)
 		{

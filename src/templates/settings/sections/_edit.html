@@ -45,17 +45,7 @@
 				<div class="item field">
 					<label for="sortable">Sortable?</label>
 					<p>Do entries in this section have a sortable display order?</p>
-					{!--<div class="switch off">
-						<div class="container">
-							<div class="label on">Yes</div>
-							<div class="label off">No</div>
-							<div class="btn"></div>
-						</div>
-					</div>--}
-					<select id="sortable" name="sortable">
-						<option value="y">Yes</option>
-						<option value="n" {% if !section.sortable %}selected{% endif %}>No</option>
-					</select>
+					{% include "_includes/switch" name="sortable" on=section.sortable %}
 					{% if section.errors.sortable %}
 						{% include "_includes/error_list" errors=section.errors.sortable %}
 					{% endif %}
@@ -86,9 +76,8 @@
 {% endregion %}
 
 {% region "scripts" %}
-	{% if !section.handle %}
-		<script type="text/javascript">
-			new blx.ui.HandleGenerator('#name', '#handle');
-		</script>
-	{% endif %}
+	<script type="text/javascript">
+		{% if !section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
+		new blx.ui.Switch('#sortable');
+	</script>
 {% endregion %}

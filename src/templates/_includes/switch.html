@@ -1,0 +1,11 @@
+{% if !id %}
+	{% set id = name %}
+{% endif %}
+<div id="{id}" class="switch {% if on %}on{% endif %}" tabindex="0">
+	<div class="container">
+		<div class="label on">Yes</div>
+		<div class="label off">No</div>
+		<div class="btn"></div>
+	</div>
+	<input type="hidden" name="{name}" value="{% if on %}y{% endif %}">
+</div>
