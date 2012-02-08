@@ -15,9 +15,9 @@
 				<input type="hidden" name="action" value="app/settings/saveemailsettings" />
 
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="emailerType">Email Type:</label>
-						<select id="emailerType" name="email[emailerType]">
+					<label for="emailerType">Email Type</label>
+					<div>
+						<select id="emailerType" name="emailerType">
 							<option value="PhpMail" {% if emailSettings.emailerType == 'PhpMail' %}selected{% endif %}>PHP Mail</option>
 							<option value="Sendmail" {% if emailSettings.emailerType == 'Sendmail' %}selected{% endif %}>Sendmail</option>
 							<option value="Smtp" {% if emailSettings.emailerType == 'Smtp' %}selected{% endif %}>SMTP</option>
@@ -27,66 +27,58 @@
 					</div>
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="host">Host Name:</label>
-						<input type="text" id="host" name="email[host]" value="{ emailSettings.host }">
-					</div>
+					<label for="host">Host Name</label>
+					<div class="input-wrapper"><input id="host" name="host" type="text" value="{emailSettings.host}" /></div>
 					{% if emailSettings.errors.host %}
 						{% include "_includes/error_list" errors=emailSettings.errors.host %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="port">Port:</label>
-						<input type="text" id="port" name="email[port]" value="{ emailSettings.port }">
-					</div>
+					<label for="port">Port</label>
+					<input id="port" name="port" type="text" value="{emailSettings.port}" size="5" />
 					{% if emailSettings.errors.port %}
 						{% include "_includes/error_list" errors=emailSettings.errors.port %}
 					{% endif %}
 				</div>
 				<div class="item field">
 					<label for="smtpAuth">Use SMTP Authentication?</label>
-					{% include "_includes/switch" id="smtpAuth" name="email[smtpAuth]" on=emailSettings.smtpAuth %}
+					{% include "_includes/switch" name="smtpAuth" on=emailSettings.smtpAuth %}
 					{% if emailSettings.errors.smtpAuth %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpAuth %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="userName">Username:</label>
-						<input type="text" id="userName" name="email[userName]" value="{ emailSettings.userName }">
-					</div>
+					<label for="userName">Username</label>
+					<div class="input-wrapper"><input id="userName" name="userName" type="text" value="{emailSettings.userName}" /></div>
 					{% if emailSettings.errors.userName %}
 						{% include "_includes/error_list" errors=emailSettings.errors.userName %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="password">Password:</label>
-						<input type="password" id="password" name="email[password]" value="{ emailSettings.password }">
-					</div>
+					<label for="password">Password</label>
+					<div class="input-wrapper"><input id="password" name="password" type="password" value="{emailSettings.password}" /></div>
 					{% if emailSettings.errors.password %}
 						{% include "_includes/error_list" errors=emailSettings.errors.password %}
 					{% endif %}
 				</div>
 				<div class="item field">
 					<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
-					{% include "_includes/switch" id="smtpKeepAlive" name="email[smtpKeepAlive]" on=emailSettings.smtpKeepAlive %}
+					{% include "_includes/switch" name="smtpKeepAlive" on=emailSettings.smtpKeepAlive %}
 					{% if emailSettings.errors.smtpKeepAlive %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpKeepAlive %}
 					{% endif %}
 				</div>
 				<div class="item field">
 					<label for="smtpSecureTransport">Use SMTP Secure Transport?</label>
-					{% include "_includes/switch" id="smtpSecureTransport" name="smtpSecureTransport" on=emailSettings.smtpSecureTransport %}
+					{% include "_includes/switch" name="smtpSecureTransport" on=emailSettings.smtpSecureTransport %}
 					{% if emailSettings.errors.smtpSecureTransport %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpSecureTransport %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="smtpSecureTransportType">SMTP Secure Transport Type:</label>
-						<select id="smtpSecureTransportType" name="email[smtpSecureTransportType]">
+					<label for="smtpSecureTransportType">SMTP Secure Transport Type</label>
+					<div>
+						<select id="smtpSecureTransportType" name="smtpSecureTransportType">
 							<option value="Ssl" {% if emailSettings.smtpSecureTransportType == 'Ssl' %}selected{% endif %}>SSL</option>
 							<option value="Tls" {% if emailSettings.smtpSecureTransportType == 'Tls' %}selected{% endif %}>TLS</option>
 						</select>
@@ -96,34 +88,28 @@
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="timeout">Timeout:</label>
-						<input type="text" id="timeout" name="email[timeout]" value="{ emailSettings.timeout }">
-					</div>
+					<label for="timeout">Timeout</label>
+					<input id="timeout" name="timeout" type="text" value="{emailSettings.timeout}" size="5" />
 					{% if emailSettings.errors.timeout %}
 						{% include "_includes/error_list" errors=emailSettings.errors.timeout %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="fromEmail">Default From Email:</label>
-						<input type="text" id="fromEmail" name="email[fromEmail]" value="{ emailSettings.fromEmail }">
-					</div>
+					<label for="fromEmail">Default From Email</label>
+					<div class="input-wrapper"><input id="fromEmail" name="fromEmail" type="text" value="{emailSettings.fromEmail}" /></div>
 					{% if emailSettings.errors.fromEmail %}
 						{% include "_includes/error_list" errors=emailSettings.errors.fromEmail %}
 					{% endif %}
 				</div>
 				<div class="item field">
-					<div class="input-wrapper">
-						<label for="fromName">Default From Name:</label>
-						<input type="text" id="fromName" name="email[fromName]" value="{ emailSettings.fromName }">
-					</div>
+					<label for="fromName">Default From Name</label>
+					<div class="input-wrapper"><input id="fromName" name="fromName" type="text" value="{emailSettings.fromName}" /></div>
 					{% if emailSettings.errors.fromName %}
 						{% include "_includes/error_list" errors=emailSettings.errors.fromName %}
 					{% endif %}
 				</div>
 				<div class="item">
-					<input class="btn big submit" type="submit" value="Save Email Settings">
+					<input class="btn big submit" type="submit" value="Save Email Settings" />
 				</div>
 			</form>
 		</div>

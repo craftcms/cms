@@ -16,19 +16,18 @@ class SettingsController extends BaseController
 		$emailSettings = new EmailSettingsForm();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$postEmailSettings = Blocks::app()->request->getPost('email');
-		$emailSettings->emailerType                 = $postEmailSettings['emailerType'];
-		$emailSettings->host                        = $postEmailSettings['host'];
-		$emailSettings->port                        = $postEmailSettings['port'];
-		$emailSettings->smtpAuth                    = isset($postEmailSettings['smtpAuth']) ? 1 : 0;
-		$emailSettings->userName                    = $postEmailSettings['userName'];
-		$emailSettings->password                    = $postEmailSettings['password'];
-		$emailSettings->smtpKeepAlive               = isset($postEmailSettings['smtpKeepAlive']) ? 1 : 0;
-		$emailSettings->smtpSecureTransport         = isset($postEmailSettings['smtpSecureTransport']) ? 1 : 0;
-		$emailSettings->smtpSecureTransportType     = $postEmailSettings['smtpSecureTransportType'];
-		$emailSettings->timeout                     = $postEmailSettings['timeout'];
-		$emailSettings->fromEmail                   = $postEmailSettings['fromEmail'];
-		$emailSettings->fromName                    = $postEmailSettings['fromName'];
+		$emailSettings->emailerType                 = Blocks::app()->request->getPost('emailerType');
+		$emailSettings->host                        = Blocks::app()->request->getPost('host');
+		$emailSettings->port                        = Blocks::app()->request->getPost('port');
+		$emailSettings->smtpAuth                    = (Blocks::app()->request->getPost('smtpAuth') === 'y');
+		$emailSettings->userName                    = Blocks::app()->request->getPost('userName');
+		$emailSettings->password                    = Blocks::app()->request->getPost('password');
+		$emailSettings->smtpKeepAlive               = (Blocks::app()->request->getPost('smtpKeepAlive') === 'y');
+		$emailSettings->smtpSecureTransport         = (Blocks::app()->request->getPost('smtpSecureTransport') === 'y');
+		$emailSettings->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
+		$emailSettings->timeout                     = Blocks::app()->request->getPost('timeout');
+		$emailSettings->fromEmail                   = Blocks::app()->request->getPost('fromEmail');
+		$emailSettings->fromName                    = Blocks::app()->request->getPost('fromName');
 
 		// validate user input
 		if($emailSettings->validate())
