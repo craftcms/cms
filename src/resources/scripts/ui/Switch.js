@@ -10,6 +10,7 @@ if (typeof blx.ui == 'undefined')
  */
 blx.ui.Switch = blx.Base.extend({
 
+	settings: null,
 	$outerContainer: null,
 	$innerContainer: null,
 	$btn: null,
@@ -18,8 +19,10 @@ blx.ui.Switch = blx.Base.extend({
 
 	dragStartMargin: null,
 
-	init: function(outerContainer)
+	init: function(outerContainer, settings)
 	{
+		this.settings = $.extend({}, blx.ui.Switch.defaults, settings);
+
 		this.$outerContainer = $(outerContainer);
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$btn = this.$innerContainer.find('.btn:first');
@@ -44,6 +47,7 @@ blx.ui.Switch = blx.Base.extend({
 		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
 		this.$input.val('y');
 		this.on = true;
+		this.settings.onChange();
 	},
 
 	turnOff: function()
@@ -51,6 +55,7 @@ blx.ui.Switch = blx.Base.extend({
 		this.$innerContainer.stop().animate({marginLeft: -32}, 'fast');
 		this.$input.val('');
 		this.on = false;
+		this.settings.onChange();
 	},
 
 	toggle: function(event)
@@ -128,6 +133,10 @@ blx.ui.Switch = blx.Base.extend({
 			this.turnOff();
 	}
 
+}, {
+	defaults: {
+		onChange: function(){}
+	}
 });
 
 

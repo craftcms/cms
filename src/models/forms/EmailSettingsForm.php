@@ -7,18 +7,17 @@ namespace Blocks;
  */
 class EmailSettingsForm extends \CFormModel
 {
-	public $emailerType;
+	public $protocol;
 	public $host;
 	public $port;
 	public $smtpAuth;
-	public $userName;
+	public $username;
 	public $password;
 	public $smtpKeepAlive;
-	public $smtpSecureTransport;
 	public $smtpSecureTransportType;
 	public $timeout;
-	public $fromEmail;
-	public $fromName;
+	public $emailAddress;
+	public $senderName;
 
 	/**
 	 * @param $properties
@@ -30,18 +29,17 @@ class EmailSettingsForm extends \CFormModel
 
 		if ($properties !== null)
 		{
-			$this->emailerType = isset($properties['emailerType']) ? $properties['emailerType'] : null;
+			$this->protocol = isset($properties['protocol']) ? $properties['protocol'] : null;
 			$this->host = isset($properties['host']) ? $properties['host'] : null;
 			$this->password = isset($properties['password']) ? $properties['password'] : null;
 			$this->port = isset($properties['port']) ? $properties['port'] : null;
 			$this->smtpAuth = isset($properties['smtpAuth']) ? $properties['smtpAuth'] : null;
 			$this->smtpKeepAlive = isset($properties['smtpKeepAlive']) ? $properties['smtpKeepAlive'] : null;
-			$this->smtpSecureTransport = isset($properties['smtpSecureTransport']) ? $properties['smtpSecureTransport'] : null;
-			$this->smtpSecureTransportType = isset($properties['smtpSecureTransportType']) ? $properties['smtpSecureTransportType'] : null;
-			$this->userName = isset($properties['userName']) ? $properties['userName'] : null;
+			$this->smtpSecureTransportType = isset($properties['smtpSecureTransportType']) ? $properties['smtpSecureTransportType'] : 'none';
+			$this->username = isset($properties['username']) ? $properties['username'] : null;
 			$this->timeout = isset($properties['timeout']) ? $properties['timeout'] : null;
-			$this->fromEmail = isset($properties['fromEmail']) ? $properties['fromEmail'] : null;
-			$this->fromName = isset($properties['fromName']) ? $properties['fromName'] : null;
+			$this->emailAddress = isset($properties['emailAddress']) ? $properties['emailAddress'] : null;
+			$this->senderName = isset($properties['senderName']) ? $properties['senderName'] : null;
 		}
 	}
 
@@ -51,21 +49,18 @@ class EmailSettingsForm extends \CFormModel
 	 */
 	public function rules()
 	{
-		$rules[] = array('emailerType, fromEmail, fromName', 'required');
+		$rules[] = array('protocol, emailAddress, senderName', 'required');
 
-		switch ($this->emailerType)
+		switch ($this->protocol)
 		{
 			case EmailerType::Smtp:
 			{
 				if ($this->smtpAuth)
 				{
-					$rules[] = array('userName, password', 'required');
+					$rules[] = array('username, password', 'required');
 				}
 
-				if ($this->smtpSecureTransport)
-				{
-					$rules[] = array('smtpSecureTransportType', 'required');
-				}
+				$rules[] = array('smtpSecureTransportType', 'required');
 
 				$rules[] = array('port, host, timeout', 'required');
 				break;
@@ -73,14 +68,14 @@ class EmailSettingsForm extends \CFormModel
 
 			case EmailerType::GmailSmtp:
 			{
-				$rules[] = array('userName, password, timeout', 'required');
-				$rules[] = array('userName', 'email');
+				$rules[] = array('username, password, timeout', 'required');
+				$rules[] = array('username', 'email');
 				break;
 			}
 
 			case EmailerType::Pop:
 			{
-				$rules[] = array('port, host, userName, password, timeout', 'required');
+				$rules[] = array('port, host, username, password, timeout', 'required');
 				break;
 			}
 

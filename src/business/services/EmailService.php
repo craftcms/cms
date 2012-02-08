@@ -16,12 +16,12 @@ class EmailService extends BaseService
 	{
 		$emailSettings = $this->emailSettings;
 
-		if (!isset($emailSettings['emailerType']))
+		if (!isset($emailSettings['protocol']))
 			throw new Exception('Could not determine how to send the email.  Check your email settings.');
 
 		$email = new \PhpMailer(true);
 
-		switch ($emailSettings['emailerType'])
+		switch ($emailSettings['protocol'])
 		{
 			case EmailerType::GmailSmtp:
 			case EmailerType::Smtp:
@@ -33,8 +33,8 @@ class EmailService extends BaseService
 			case EmailerType::Pop:
 			{
 				$pop = new \Pop3();
-				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['userName']) || !isset($emailSettings['password']) ||
-				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['userName']) || StringHelper::isNullOrEmpty($emailSettings['password']))
+				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
+				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{
 					throw new Exception('Host, port, username and password must be configured under your email settings.');
 				}
@@ -42,7 +42,7 @@ class EmailService extends BaseService
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['userName'], $emailSettings['password'], Blocks::app()->config->getItem('devMode') ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], Blocks::app()->config->getItem('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -120,7 +120,7 @@ class EmailService extends BaseService
 	{
 
 		$emailSettings = $this->getEmailSettings();
-		$email = new EmailMessage(new EmailAddress($emailSettings['fromEmail'], $emailSettings['fromName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
+		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
 		$email->setIsHtml(true);
 		$email->setSubject('Confirm Your Registration');
 		Blocks::app()->email->sendTemplateEmail($email, 'register');
@@ -140,18 +140,17 @@ class EmailService extends BaseService
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
 		{
 			$email->smtpAuth = true;
-			if ((!isset($emailSettings['userName']) && StringHelper::isNullOrEmpty($emailSettings['userName'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
+			if ((!isset($emailSettings['username']) && StringHelper::isNullOrEmpty($emailSettings['username'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
 				throw new Exception('Username and password are required.  Check your email settings.');
 
-			$email->userName = $emailSettings['userName'];
+			$email->userName = $emailSettings['username'];
 			$email->password = $emailSettings['password'];
 		}
 
 		if (isset($emailSettings['smtpKeepAlive']) && $emailSettings['smtpKeepAlive'] == 1)
 			$email->smtpKeepAlive = true;
 
-		if (isset($emailSettings['smtpSecureTransport']) && $emailSettings['smtpSecureTransport'] == 1)
-			$email->smtpSecure = $emailSettings['smtpSecureTransportType'];
+		$email->smtpSecure = $emailSettings['smtpSecureTransportType'] != 'none' ? $emailSettings['smtpSecureTransportType'] : null;
 
 		if (!isset($emailSettings['host']))
 			throw new Exception('You must specify a host name in your email settings.');

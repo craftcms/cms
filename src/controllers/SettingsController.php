@@ -16,42 +16,37 @@ class SettingsController extends BaseController
 		$emailSettings = new EmailSettingsForm();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->emailerType                 = Blocks::app()->request->getPost('emailerType');
+		$emailSettings->protocol                 = Blocks::app()->request->getPost('protocol');
 		$emailSettings->host                        = Blocks::app()->request->getPost('host');
 		$emailSettings->port                        = Blocks::app()->request->getPost('port');
 		$emailSettings->smtpAuth                    = (Blocks::app()->request->getPost('smtpAuth') === 'y');
-		$emailSettings->userName                    = Blocks::app()->request->getPost('userName');
+		$emailSettings->username                    = Blocks::app()->request->getPost('username');
 		$emailSettings->password                    = Blocks::app()->request->getPost('password');
 		$emailSettings->smtpKeepAlive               = (Blocks::app()->request->getPost('smtpKeepAlive') === 'y');
-		$emailSettings->smtpSecureTransport         = (Blocks::app()->request->getPost('smtpSecureTransport') === 'y');
 		$emailSettings->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
 		$emailSettings->timeout                     = Blocks::app()->request->getPost('timeout');
-		$emailSettings->fromEmail                   = Blocks::app()->request->getPost('fromEmail');
-		$emailSettings->fromName                    = Blocks::app()->request->getPost('fromName');
+		$emailSettings->emailAddress                = Blocks::app()->request->getPost('emailAddress');
+		$emailSettings->senderName                  = Blocks::app()->request->getPost('senderName');
 
 		// validate user input
 		if($emailSettings->validate())
 		{
-			$settings = array('emailerType' => $emailSettings->emailerType);
-			$settings['fromEmail'] = $emailSettings->fromEmail;
-			$settings['fromName'] = $emailSettings->fromName;
+			$settings = array('protocol' => $emailSettings->protocol);
+			$settings['emailAddress'] = $emailSettings->emailAddress;
+			$settings['senderName'] = $emailSettings->senderName;
 
-			switch ($emailSettings->emailerType)
+			switch ($emailSettings->protocol)
 			{
 				case EmailerType::Smtp:
 				{
 					if ($emailSettings->smtpAuth)
 					{
 						$settings['smtpAuth'] = 1;
-						$settings['userName'] = $emailSettings->userName;
+						$settings['username'] = $emailSettings->username;
 						$settings['password'] = $emailSettings->password;
 					}
 
-					if ($emailSettings->smtpSecureTransport)
-					{
-						$settings['smtpSecureTransport'] = 1;
-						$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
-					}
+					$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
 
 					$settings['port'] = $emailSettings->port;
 					$settings['host'] = $emailSettings->host;
@@ -69,7 +64,7 @@ class SettingsController extends BaseController
 				{
 					$settings['port'] = $emailSettings->port;
 					$settings['host'] = $emailSettings->host;
-					$settings['userName'] = $emailSettings->userName;
+					$settings['username'] = $emailSettings->username;
 					$settings['password'] = $emailSettings->password;
 					$settings['timeout'] = $emailSettings->timeout;
 
@@ -80,9 +75,8 @@ class SettingsController extends BaseController
 				{
 					$settings['host'] = $gMailSmtp;
 					$settings['smtpAuth'] = 1;
-					$settings['smtpSecureTransport'] = 1;
 					$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
-					$settings['userName'] = $emailSettings->userName;
+					$settings['username'] = $emailSettings->username;
 					$settings['password'] = $emailSettings->password;
 					$settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
 					$settings['timeout'] = $emailSettings->timeout;
