@@ -255,7 +255,7 @@ input.btn.big.submit:not(.disabled):hover { background: url(../images/go.png) no
 input.btn.big.submit:not(.disabled):active { background: url(../images/go.png) no-repeat 100% 50%, -webkit-linear-gradient(#077ab4, #2886c2); }
 
 /* button groups */
-.btn-group { height: 24px; }
+.btn-group { display: inline-block; height: 24px; }
 .btn-group .btn { float: left; }
 .btn-group .btn:not(:first-child) { border-left-color: rgba(0,0,0,0.25); border-top-left-radius: 0; border-bottom-left-radius: 0; }
 .btn-group .btn:not(:last-child) { border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; }

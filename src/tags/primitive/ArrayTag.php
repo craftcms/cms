@@ -66,6 +66,14 @@ class ArrayTag extends Tag
 		return $this->_val;
 	}
 
+	public function get($index)
+	{
+		if (isset($this->_val[$index]))
+			return $this->_val[$index];
+
+		return '';
+	}
+
 	/**
 	 * @return int
 	 */

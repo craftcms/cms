@@ -151,7 +151,7 @@ class EmailService extends BaseService
 			$email->smtpKeepAlive = true;
 
 		if (isset($emailSettings['smtpSecureTransport']) && $emailSettings['smtpSecureTransport'] == 1)
-			$email->smtpSecure = strtolower($emailSettings['smtpSecureTransportType']);
+			$email->smtpSecure = $emailSettings['smtpSecureTransportType'];
 
 		if (!isset($emailSettings['host']))
 			throw new Exception('You must specify a host name in your email settings.');

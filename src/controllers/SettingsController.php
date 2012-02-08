@@ -84,7 +84,7 @@ class SettingsController extends BaseController
 					$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
 					$settings['userName'] = $emailSettings->userName;
 					$settings['password'] = $emailSettings->password;
-					$settings['port'] = $emailSettings->smtpSecureTransportType == 'Tls' ? '587' : '465';
+					$settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
 					$settings['timeout'] = $emailSettings->timeout;
 					break;
 				}

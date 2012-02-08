@@ -78,4 +78,12 @@ class StringTag extends Tag
 		return array();
 	}
 
+	/**
+	 * Split
+	 */
+	public function split($delimiter = ',')
+	{
+		return array_map('trim', explode($delimiter, $this->_val));
+	}
+
 }

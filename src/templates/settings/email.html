@@ -77,12 +77,11 @@
 				</div>
 				<div class="item field">
 					<label for="smtpSecureTransportType">SMTP Secure Transport Type</label>
-					<div>
-						<select id="smtpSecureTransportType" name="smtpSecureTransportType">
-							<option value="Ssl" {% if emailSettings.smtpSecureTransportType == 'Ssl' %}selected{% endif %}>SSL</option>
+					{% include "_includes/pill" name="smtpSecureTransportType" options="ssl:SSL,tls:TLS" default="ssl" value=emailSettings.smtpSecureTransportType %}
+						{!--<select id="smtpSecureTransportType" name="smtpSecureTransportType">
+							<option value="ssl" {% if emailSettings.smtpSecureTransportType == 'Ssl' %}selected{% endif %}>SSL</option>
 							<option value="Tls" {% if emailSettings.smtpSecureTransportType == 'Tls' %}selected{% endif %}>TLS</option>
-						</select>
-					</div>
+						</select>--}
 					{% if emailSettings.errors.smtpSecureTransportType %}
 						{% include "_includes/error_list" errors=emailSettings.errors.smtpSecureTransportType %}
 					{% endif %}
@@ -121,5 +120,6 @@
 		new blx.ui.Switch('#smtpAuth');
 		new blx.ui.Switch('#smtpKeepAlive');
 		new blx.ui.Switch('#smtpSecureTransport');
+		new blx.ui.Pill('#smtpSecureTransportType');
 	</script>
 {% endregion %}
