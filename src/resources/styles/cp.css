@@ -234,6 +234,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 
 .btn.big,
 .btn.submit { -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25) !important; }
+.btn.big.submit { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.5) !important; }
 
 /* big button */
 .btn.big { height: 32px; border: none; font-size: 14px; line-height: 32px; }

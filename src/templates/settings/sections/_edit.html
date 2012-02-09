@@ -5,20 +5,19 @@
 {% endif %}
 
 {% region "main" %}
-	<div class="pane">
-		<div class="head">
-			{% if section.id %}
-				<h5>Edit Section {% if section.name %}“{section.name}”{% endif %}</h5>
-			{% else %}
-				<h5>Create a new section</h5>
-			{% endif %}
-		</div>
-		<div class="body">
-			<form method="post" action="">
-				<input type="hidden" name="action" value="app/content/saveSection" />
-				<input type="hidden" name="redirect" value="settings/sections" />
-				{% if section.id %}<input type="hidden" name="id" value="{section.id}">{% endif %}
-
+	<form method="post" action="">
+		<input type="hidden" name="action" value="app/content/saveSection" />
+		<input type="hidden" name="redirect" value="settings/sections" />
+		{% if section.id %}<input type="hidden" name="id" value="{section.id}">{% endif %}
+		<div class="pane">
+			<div class="head">
+				{% if section.id %}
+					<h5>Edit Section {% if section.name %}“{section.name}”{% endif %}</h5>
+				{% else %}
+					<h5>Create a new section</h5>
+				{% endif %}
+			</div>
+			<div class="body">
 				<div class="item field">
 					<label class="required" for="name">Section Name</label>
 					<div class="input-wrapper"><input id="name" name="name" class="{% if section.errors.name %}error{% endif %}" type="text" value="{section.name}" /></div>
@@ -66,13 +65,11 @@
 						{% include "_includes/error_list" errors=section.errors.template %}
 					{% endif %}
 				</div>
-
-				<div class="item">
-					<input class="btn big submit" type="submit" value="Save Section" />
-				</div>
-			</form>
+			</div>
 		</div>
-	</div>
+
+		<input class="btn big submit" type="submit" value="Save Section" />
+	</form>
 {% endregion %}
 
 {% region "scripts" %}
