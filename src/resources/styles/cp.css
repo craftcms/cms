@@ -36,9 +36,11 @@ em,
 i { font-style: italic; }
 i em { font-weight: bold; }
 
+.sel { cursor: default !important; }
+
 a { color: #2d98db; cursor: pointer; }
 a:hover { text-decoration: underline; }
-a.sel:hover { text-decoration: none; cursor: default; }
+a.sel:hover { text-decoration: none; }
 
 code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 .code { font-family: Menlo, monospace; font-size: 12px !important; }

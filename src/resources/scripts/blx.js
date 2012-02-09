@@ -123,7 +123,9 @@ blx.utils =
 
 		$elem.on('mousedown'+namespace, function() {
 			$elem.addClass('no-outline');
-		}).blur(function() {
+			$elem.focus();
+		})
+		.on('keydown'+namespace+' blur'+namespace, function() {
 			$elem.removeClass('no-outline');
 		});
 	},
