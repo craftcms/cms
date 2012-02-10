@@ -113,7 +113,7 @@ abstract class BaseController extends \CController
 
 		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->path->emailTemplatePath);
 
-		if (TemplateHelper::resolveTemplatePath($baseTemplatePath, $relativeTemplatePath) !== false)
+		if (TemplateHelper::resolveTemplatePath($baseTemplatePath.$relativeTemplatePath) !== false)
 		{
 			$relativeTemplatePath = '///email/'.$relativeTemplatePath;
 			return $this->renderPartial($relativeTemplatePath, $data, true);
