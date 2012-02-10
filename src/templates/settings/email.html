@@ -63,7 +63,7 @@
 			
 			<div id="port-field" class="item field">
 				<label for="port">Port</label>
-				<input id="port" name="port" class="input" type="text" value="{emailSettings.port}" size="5" />
+				<input id="port" name="port" class="input" type="text" value="{% if emailSettings.port %}{emailSettings.port}{% else %}25{% endif %}" size="5" />
 				{% if emailSettings.errors.port %}
 					{% include "_includes/error_list" errors=emailSettings.errors.port %}
 				{% endif %}
@@ -79,7 +79,7 @@
 
 			<div id="timeout-field" class="item field">
 				<label for="timeout">Timeout</label>
-				<input id="timeout" name="timeout" class="input" type="text" value="{emailSettings.timeout}" size="5" />
+				<input id="timeout" name="timeout" class="input" type="text" value="{% if emailSettings.timeout %}{emailSettings.timeout}{% else %}30{% endif %}" size="5" />
 				{% if emailSettings.errors.timeout %}
 					{% include "_includes/error_list" errors=emailSettings.errors.timeout %}
 				{% endif %}
