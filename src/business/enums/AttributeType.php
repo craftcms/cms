@@ -49,4 +49,5 @@ class AttributeType
 	const SortOrder    = 'sortorder';
 	const Template     = 'template';
 	const Version      = 'version';
+	const Url          = 'url';
 }

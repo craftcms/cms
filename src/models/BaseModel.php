@@ -70,6 +70,7 @@ abstract class BaseModel extends \CActiveRecord
 		$uniques = array();
 		$required = array();
 		$emails = array();
+		$urls = array();
 		$strictLengths = array();
 		$minLengths = array();
 		$maxLengths = array();
@@ -79,9 +80,12 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->attributes as $name => $settings)
 		{
-			// Catch email addresses before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
+			// Catch email addresses and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
 			if (isset($settings['type']) && $settings['type'] == AttributeType::Email)
 				$emails[] = $name;
+
+			if (isset($settings['type']) && $settings['type'] == AttributeType::Url)
+				$urls[] = $name;
 
 			$settings = DatabaseHelper::normalizeAttributeSettings($settings);
 
@@ -143,6 +147,9 @@ abstract class BaseModel extends \CActiveRecord
 
 		if ($emails)
 			$rules[] = array(implode(',', $emails), 'email');
+
+		if ($urls)
+			$rules[] = array(implode(',', $urls), 'Blocks\UrlValidator');
 
 		if ($strictLengths)
 		{

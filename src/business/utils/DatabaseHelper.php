@@ -30,6 +30,7 @@ class DatabaseHelper
 		AttributeType::SortOrder    => array('type' => AttributeType::SmallInt, 'required' => true, 'unsigned' => true),
 		AttributeType::Template     => array('type' => AttributeType::Varchar, 'maxLength' => 500),
 		AttributeType::Version      => array('type' => AttributeType::Char, 'maxLength' => 15, 'required' => true),
+		AttributeType::Url          => array('type' => AttributeType::Varchar, 'maxLength' => 255),
 	);
 
 	/**

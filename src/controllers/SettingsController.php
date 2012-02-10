@@ -16,7 +16,7 @@ class SettingsController extends BaseController
 		$emailSettings = new EmailSettingsForm();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->protocol                 = Blocks::app()->request->getPost('protocol');
+		$emailSettings->protocol                    = Blocks::app()->request->getPost('protocol');
 		$emailSettings->host                        = Blocks::app()->request->getPost('host');
 		$emailSettings->port                        = Blocks::app()->request->getPost('port');
 		$emailSettings->smtpAuth                    = (Blocks::app()->request->getPost('smtpAuth') === 'y');
