@@ -75,7 +75,7 @@ class SettingsController extends BaseController
 				{
 					$settings['host'] = $gMailSmtp;
 					$settings['smtpAuth'] = 1;
-					$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
+					$settings['smtpSecureTransportType'] = 'tls';
 					$settings['username'] = $emailSettings->username;
 					$settings['password'] = $emailSettings->password;
 					$settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
