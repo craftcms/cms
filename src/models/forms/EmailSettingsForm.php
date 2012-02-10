@@ -60,8 +60,6 @@ class EmailSettingsForm extends \CFormModel
 					$rules[] = array('username, password', 'required');
 				}
 
-				$rules[] = array('smtpSecureTransportType', 'required');
-
 				$rules[] = array('port, host, timeout', 'required');
 				break;
 			}
