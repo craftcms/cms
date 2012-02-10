@@ -46,6 +46,7 @@ class App extends \CWebApplication
 			'business.services.*',
 			'business.updates.*',
 			'business.utils.*',
+			'business.validators.*',
 			'business.web.*',
 			'business.web.filters.*',
 			'business.web.templatewidgets.*',
