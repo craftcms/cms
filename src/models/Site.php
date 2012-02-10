@@ -11,7 +11,7 @@ class Site extends BaseModel
 	protected $attributes = array(
 		'name'    => AttributeType::Name,
 		'handle'  => AttributeType::Handle,
-		'url'     => array('type' => AttributeType::Varchar, 'required' => true),
+		'url'     => array('type' => AttributeType::Url, 'required' => true),
 		'primary' => array('type' => AttributeType::Boolean, 'required' => false, 'default' => null, 'unique' => true)
 	);
 
