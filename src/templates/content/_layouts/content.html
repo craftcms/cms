@@ -11,8 +11,10 @@
 {% region "main" %}
 	{% if page %}
 		{% include "content/_includes/toolbar" %}
-		<div class="page">
-			{page}
+		<div class="pane page">
+			<div class="body">
+				{page}
+			</div>
 		</div>
 	{% endif %}
 {% endregion %}

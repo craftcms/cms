@@ -121,7 +121,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { margin-bottom: 20px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.15); }
+.pane { margin-bottom: 20px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25); }
 
 /* pane head */
 .pane .head,

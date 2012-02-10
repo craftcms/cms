@@ -29,15 +29,14 @@ blx.ui.RTE = blx.Base.extend({
 		// find the textarea
 		this.dom.textarea = document.getElementById(this.id);
 
+		// add the toolbar
+		this.dom.toolbar = document.createElement('div');
+		this.dom.textarea.parentNode.insertBefore(this.dom.toolbar, this.dom.textarea);
+
 		// add the container div
 		this.dom.container = document.createElement('div');
 		this.dom.container.className = 'rte input';
 		this.dom.textarea.parentNode.insertBefore(this.dom.container, this.dom.textarea);
-
-		// add the toolbar
-		this.dom.toolbar = document.createElement('div');
-		this.dom.toolbar.className = 'toolbar';
-		this.dom.container.appendChild(this.dom.toolbar);
 
 		// add the styles button
 		this.dom.stylesBtn = document.createElement('div');
