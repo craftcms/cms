@@ -14,18 +14,17 @@ class SitesController extends BaseController
 		$this->requirePostRequest();
 
 		// Are we editing an existing site?
-		$postSiteId = Blocks::app()->request->getPost('site_id');
-		if ($postSiteId)
-			$site = Blocks::app()->sites->getSiteById($postSiteId);
+		$siteId = Blocks::app()->request->getPost('site_id');
+		if ($siteId)
+			$site = Blocks::app()->sites->getSiteById($siteId);
 
 		// Otherwise create a new site
 		if (empty($site))
 			$site = new Site;
 
-		$postSite = Blocks::app()->request->getPost('site');
-		$site->name = $postSite['name'];
-		$site->handle = $postSite['handle'];
-		$site->url = $postSite['url'];
+		$site->name = Blocks::app()->request->getPost('name');
+		$site->handle = Blocks::app()->request->getPost('handle');
+		$site->url = Blocks::app()->request->getPost('url');
 
 		if ($site->save())
 		{
