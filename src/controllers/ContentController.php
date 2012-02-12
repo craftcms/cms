@@ -2,19 +2,19 @@
 namespace Blocks;
 
 /**
- * Handles site management tasks
+ * Handles content management tasks
  */
 class ContentController extends BaseController
 {
 	/**
-	 * Saves a site
+	 * Saves a section
 	 */
 	public function actionSaveSection()
 	{
 		$this->requirePostRequest();
 
 		// Are we editing an existing section?
-		$sectionId = Blocks::app()->request->getPost('id');
+		$sectionId = Blocks::app()->request->getPost('section_id');
 		if ($sectionId)
 			$section = Blocks::app()->content->getSectionById($sectionId);
 
