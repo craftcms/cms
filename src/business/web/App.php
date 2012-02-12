@@ -35,6 +35,7 @@ class App extends \CWebApplication
 	private function importClasses()
 	{
 		$aliases = array(
+			'blocktypes.*',
 			'business.EmailAddress',
 			'business.WebLogRoute',
 			'business.db.*',

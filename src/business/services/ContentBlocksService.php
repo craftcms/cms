@@ -6,6 +6,7 @@ namespace Blocks;
  */
 class ContentBlocksService extends BaseService
 {
+	private $_blockTypes;
 
 	/**
 	 * Returns all content blocks
@@ -31,18 +32,25 @@ class ContentBlocksService extends BaseService
 	 */
 	public function getBlockTypes()
 	{
-		return array(
-			array('class' => 'Assets',       'name' => 'Assets'),
-			array('class' => 'Checkboxes',   'name' => 'Checkboxes'),
-			array('class' => 'Dropdown',     'name' => 'Dropdown'),
-			array('class' => 'List',         'name' => 'List'),
-			array('class' => 'Multiselect',  'name' => 'Multiselect'),
-			array('class' => 'PillSelect',   'name' => 'Pill Select'),
-			array('class' => 'RadioButtons', 'name' => 'Radio Buttons'),
-			array('class' => 'Switch',       'name' => 'Switch'),
-			array('class' => 'Table',        'name' => 'Table'),
-			array('class' => 'Text',         'name' => 'Text'),
-		);
+		if (!isset($this->_blockTypes))
+		{
+			$this->_blockTypes = array();
+
+			if (($files = @glob(Blocks::app()->path->blockTypesPath."*Block.php")) !== false)
+			{
+				foreach ($files as $file)
+				{
+					$className = pathinfo($file, PATHINFO_FILENAME);
+					if ($className !== 'BaseBlock')
+					{
+						$className = 'Blocks\\'.$className;
+						$this->_blockTypes[] = new $className;
+					}
+				}
+			}
+		}
+
+		return $this->_blockTypes;
 	}
 
 }
