@@ -1,0 +1,25 @@
+{% layout "settings/_layouts/settings" pageTitle="Content Blocks" %}
+
+{% region "main" %}
+	<div class="pane">
+		<div class="head">
+			<h5>Content Blocks</h5>
+		</div>
+		<div class="body">
+			{% if contentBlocks %}
+				<ul>
+					{% foreach contentBlocks as block %}
+						<li class="item">
+							<a href="{url.base}settings/blocks/edit/{block.id}"><span class="icon icon137"></span>{block.name}</a>
+						</li>
+					{% endforeach %}
+				</ul>
+			{% else %}
+				<p class="item no-items">No content blocks exist yet. <a href="{url.base}settings/blocks/new">Create the first one.</a></p>
+			{% endif %}
+		</div>
+	</div>
+	<div class="btn-group">
+		<a class="btn" href="{url.base}settings/blocks/new" title="Create a new content block"><span class="icon icon44"></span></a>
+	</div>
+{% endregion %}

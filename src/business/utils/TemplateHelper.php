@@ -10,6 +10,7 @@ class TemplateHelper
 		'assets',
 		'config',
 		'content',
+		'contentBlocks',
 		'cp',
 		'dashboard',
 		'email',

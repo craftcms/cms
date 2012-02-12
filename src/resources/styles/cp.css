@@ -144,7 +144,7 @@ table.pane > tbody > tr:last-child > *:first-child,
 .pane table.body > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
 table.pane > tbody > tr:last-child > *:last-child,
 .pane table.body > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
-.pane .body .no-items { text-align: center; }
+.pane .body .no-items { color: #808080; text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
 .pane table.body > tbody > tr:not(:first-child) > *,
