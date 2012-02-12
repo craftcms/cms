@@ -38,7 +38,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 					<div>
 						<select id="class" name="class">
 							{% foreach contentBlocks.blockTypes as blockType %}
-								<option value="{blockType.class}">{blockType.name}</option>
+								<option value="{blockType.class}" {% if blockType.class == block.class %}selected{% endif %}>{blockType.name}</option>
 							{% endforeach %}
 						</select>
 					</div>
