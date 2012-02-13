@@ -48,6 +48,10 @@ return array(
 			'class' => 'Blocks\ContentService',
 		),
 
+		'contentBlocks' => array(
+			'class' => 'Blocks\ContentBlocksService',
+		),
+
 		'cp' => array(
 			'class' => 'Blocks\CpService',
 		),
@@ -123,10 +127,12 @@ return array(
 				array('update/({segment})',                'update', array('handle')),
 				array('users/new',                         'users/_edit'),
 				array('users/edit/({number})',             'users/_edit', array('userId')),
-				array('settings/sites/new',                'settings/sites/_edit'),
-				array('settings/sites/edit/({number})',    'settings/sites/_edit', array('siteId')),
+				array('settings/blocks/new',               'settings/blocks/_edit'),
+				array('settings/blocks/edit/({number})',   'settings/blocks/_edit', array('blockId')),
 				array('settings/sections/new',             'settings/sections/_edit'),
 				array('settings/sections/edit/({number})', 'settings/sections/_edit', array('sectionId')),
+				array('settings/sites/new',                'settings/sites/_edit'),
+				array('settings/sites/edit/({number})',    'settings/sites/_edit', array('siteId')),
 			),
 		),
 

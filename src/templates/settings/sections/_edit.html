@@ -8,7 +8,7 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="app/content/saveSection" />
 		<input type="hidden" name="redirect" value="settings/sections" />
-		{% if section.id %}<input type="hidden" name="id" value="{section.id}">{% endif %}
+		{% if section.id %}<input type="hidden" name="section_id" value="{section.id}">{% endif %}
 		<div class="pane">
 			<div class="head">
 				{% if section.id %}
