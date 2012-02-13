@@ -133,7 +133,7 @@ class TemplateHelper
 	 * @param string $namespace The namespace to make inputs belong to
 	 * @return string The template with namespaced inputs
 	 */
-	function namespaceInputs($template, $namespace)
+	public static function namespaceInputs($template, $namespace)
 	{
 		return preg_replace('/(name=([\'\"]))([^\'"\[\]]+)([^\'"]*)(\2)/i', '$1'.$namespace.'[$3]$4$5', $template);
 	}
