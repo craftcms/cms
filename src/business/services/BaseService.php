@@ -4,6 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BaseService extends \CApplicationComponent
+abstract class BaseService extends BaseComponent
 {
+	protected $classSuffix = 'Service';
 }

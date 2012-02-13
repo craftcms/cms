@@ -15,6 +15,7 @@ class App extends \CWebApplication
 	public function init()
 	{
 		// Import the bare minimum to determine if what type of request this is
+		self::import('business.BaseComponent');
 		self::import('business.Blocks');
 		self::import('business.enums.UrlFormat');
 		self::import('business.enums.RequestMode');
