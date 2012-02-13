@@ -45,6 +45,11 @@ class NumTag extends Tag
 		return $this->_val * $num;
 	}
 
+	public function formatDate($format = 'MM-dd-yyyy HH:mm:ss')
+	{
+		return Blocks::app()->dateFormatter->format($format, $this->_val);
+	}
+
 	//public function round() {}
 	//public function format() {}
 
