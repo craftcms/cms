@@ -124,7 +124,7 @@ class SitesService extends BaseService
 	 */
 	public function getSiteById($id)
 	{
-		$site = Site::model()->findByPk($id);
+		$site = Site::model()->findById($id);
 		return $site;
 	}
 

@@ -27,7 +27,7 @@ class SetupController extends BaseController
 			$postLicenseKeyId = Blocks::app()->request->getPost('licensekey_id');
 
 			if ($postLicenseKeyId)
-				$licenseKey = LicenseKey::model()->findByPk($postLicenseKeyId);
+				$licenseKey = LicenseKey::model()->findById($postLicenseKeyId);
 
 			if (empty($licenseKey))
 				$licenseKey = new LicenseKey;
@@ -57,7 +57,7 @@ class SetupController extends BaseController
 			$postSiteId = Blocks::app()->request->getPost('site_id');
 
 			if ($postSiteId)
-				$site = Site::model()->findByPk($postSiteId);
+				$site = Site::model()->findById($postSiteId);
 
 			if (empty($site))
 				$site = new Site;
@@ -95,7 +95,7 @@ class SetupController extends BaseController
 			$postUserId = Blocks::app()->request->getPost('user_id');
 
 			if ($postUserId)
-				$user = User::model()->findByPk($postUserId);
+				$user = User::model()->findById($postUserId);
 
 			if (empty($user))
 				$user = new User;

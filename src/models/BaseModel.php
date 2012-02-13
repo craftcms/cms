@@ -260,7 +260,7 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Retrieves a list of models based on the current search/filter conditions.
-	 * @return CActiveDataProvider The data provider that can return the models based on the search/filter conditions.
+	 * @return \CActiveDataProvider The data provider that can return the models based on the search/filter conditions.
 	 */
 	public function search()
 	{
@@ -415,6 +415,17 @@ abstract class BaseModel extends \CActiveRecord
 		{
 			$connection->createCommand()->dropTable($tableName);
 		}
+	}
+
+	/**
+	 * @param $id
+	 * @param string $condition
+	 * @param array $params
+	 * @return \CActiveRecord
+	 */
+	public function findById($id, $condition = '', $params = array())
+	{
+		return $this->findByPk($id, $condition, $params);
 	}
 
 	/**

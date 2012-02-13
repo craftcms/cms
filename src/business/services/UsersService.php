@@ -37,7 +37,7 @@ class UsersService extends BaseService
 	 */
 	public function getById($userId)
 	{
-		$user = User::model()->findByPk($userId);
+		$user = User::model()->findById($userId);
 		return $user;
 	}
 

@@ -125,7 +125,7 @@ class ContentService extends BaseService
 	 */
 	public function getSectionById($sectionId)
 	{
-		return Section::model()->findByPk($sectionId);
+		return Section::model()->findById($sectionId);
 	}
 
 	/**

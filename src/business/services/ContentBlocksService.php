@@ -19,11 +19,13 @@ class ContentBlocksService extends BaseService
 
 	/**
 	 * Returns a block by its ID
+	 *
+	 * @param $blockId
 	 * @return ContentBlock
 	 */
 	public function getBlockById($blockId)
 	{
-		return ContentBlock::model()->findByPk($blockId);
+		return ContentBlock::model()->findById($blockId);
 	}
 
 	/**

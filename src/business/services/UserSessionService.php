@@ -33,7 +33,7 @@ class UserSessionService extends \CWebUser
 		if (isset($states['authToken']))
 			$authToken = $states['authToken'];
 
-		$user = User::model()->findByPk($id);
+		$user = User::model()->findById($id);
 
 		if ($user === null || $user->authToken !== $authToken)
 		{
