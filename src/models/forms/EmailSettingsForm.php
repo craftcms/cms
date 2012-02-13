@@ -19,29 +19,7 @@ class EmailSettingsForm extends \CFormModel
 	public $emailAddress;
 	public $senderName;
 
-	/**
-	 * @param $properties
-	 * @param string $scenario
-	 */
-	function __construct($properties = null, $scenario = '')
-	{
-		parent::__construct($scenario);
 
-		if ($properties !== null)
-		{
-			$this->protocol = isset($properties['protocol']) ? $properties['protocol'] : null;
-			$this->host = isset($properties['host']) ? $properties['host'] : null;
-			$this->password = isset($properties['password']) ? $properties['password'] : null;
-			$this->port = isset($properties['port']) ? $properties['port'] : null;
-			$this->smtpAuth = isset($properties['smtpAuth']) ? $properties['smtpAuth'] : null;
-			$this->smtpKeepAlive = isset($properties['smtpKeepAlive']) ? $properties['smtpKeepAlive'] : null;
-			$this->smtpSecureTransportType = isset($properties['smtpSecureTransportType']) ? $properties['smtpSecureTransportType'] : 'none';
-			$this->username = isset($properties['username']) ? $properties['username'] : null;
-			$this->timeout = isset($properties['timeout']) ? $properties['timeout'] : null;
-			$this->emailAddress = isset($properties['emailAddress']) ? $properties['emailAddress'] : null;
-			$this->senderName = isset($properties['senderName']) ? $properties['senderName'] : null;
-		}
-	}
 
 	/**
 	 * Declares the validation rules.
