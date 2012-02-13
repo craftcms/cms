@@ -491,7 +491,6 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 			$recurringSubtagPattern = substr(self::subtagPattern, 0, -1).'(?P>subtag)?)';
 			if (!preg_match('/^('.self::stringPattern.'|\d*\.?\d+|'.self::tagPattern.$recurringSubtagPattern.'?)(\s+|$)/x', $remainingTemplate, $match))
 				{
-					print_r($template); die();
 					$this->throwParseException("Invalid value set for the parameter “{$paramName}”");}
 
 			$paramValueLength = strlen($match[0]);

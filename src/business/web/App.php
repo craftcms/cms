@@ -37,6 +37,7 @@ class App extends \CWebApplication
 		$aliases = array(
 			'business.EmailAddress',
 			'business.WebLogRoute',
+			'business.*',
 			'business.db.*',
 			'business.email.*',
 			'business.enums.*',
