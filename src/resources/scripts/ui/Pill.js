@@ -6,7 +6,7 @@ if (typeof blx.ui == 'undefined')
 
 
 /**
- * Switch
+ * Pill
  */
 blx.ui.Pill = blx.Base.extend({
 
@@ -19,6 +19,16 @@ blx.ui.Pill = blx.Base.extend({
 	init: function(outerContainer)
 	{
 		this.$outerContainer = $(outerContainer);
+
+		// Is this already a pill?
+		if (this.$outerContainer.data('pill'))
+		{
+			blx.log('Double-instantiating a pill on an element');
+			this.$outerContainer.data('pill').destroy();
+		}
+
+		this.$outerContainer.data('pill', this);
+
 		this.$innerContainer = this.$outerContainer.find('.btn-group:first');
 		this.$btns = this.$innerContainer.find('.btn');
 		this.$selectedBtn = this.$btns.filter('.sel:first');
@@ -80,6 +90,21 @@ blx.ui.Pill = blx.Base.extend({
 		}
 	}
 
+});
+
+
+$.fn.pill = function()
+{
+	return this.each(function()
+	{
+		if (!$.data(this, 'pill'))
+			new blx.ui.Pill(this);
+	});
+};
+
+blx.$document.ready(function()
+{
+	$('.pill').pill();
 });
 
 

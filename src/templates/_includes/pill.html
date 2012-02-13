@@ -1,7 +1,7 @@
 {% if !id %}
 	{% set id = name %}
 {% endif %}
-<div id="{id}">
+<div id="{id}" class="pill">
 	<div class="btn-group" tabindex="0">
 		{% foreach options.split as option %}
 			{% set option = option.split(':') %}

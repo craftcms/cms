@@ -338,7 +338,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .field { position: relative; }
 .field label { display: inline-block; margin-bottom: 5px; font-weight: bold; color: #666; }
-.field label.required { padding-right: 16px; background: url(../images/field-required.png) no-repeat 100% 50%; }
+.field label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
 .field p { margin: -3px 0 8px; color: #808080; }
 
 /* inputs */

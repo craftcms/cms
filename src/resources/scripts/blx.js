@@ -25,6 +25,16 @@ blx.DOWN_KEY   = 40;
 
 
 /**
+ * Log
+ */
+blx.log = function(msg)
+{
+	if (typeof console != 'undefined' && typeof console.log == 'function')
+		console.log(msg);
+};
+
+
+/**
  * Utility functions
  */
 blx.utils =
@@ -165,6 +175,18 @@ blx.utils =
 		}
 
 		return scrollTop;
+	},
+
+	/**
+	 * Returns the first element in a jQuery object
+	 */
+	getElement: function(elem)
+	{
+		// Is this already an element?
+		if (typeof elem.nodeType != 'undefined')
+			return elem;
+
+		return (typeof elem[0] != 'undefined' && typeof elem[0].nodeType != 'undefined' ? elem[0] : null);
 	}
 };
 
@@ -180,22 +202,32 @@ blx.fx = {
  */
 blx.Base = Base.extend({
 
-	namespace: null,
+	settings: null,
+
+	_namespace: null,
+	_$listeners: null,
 
 	constructor: function()
 	{
-		this.namespace = '.blx'+Math.floor(Math.random()*999999999);
+		this._namespace = '.blx'+Math.floor(Math.random()*999999999);
+		this._$listeners = $();
 		this.init.apply(this, arguments);
 	},
 
 	init: function(){},
+
+	setSettings: function(settings, defaults)
+	{
+		var baseSettings = (typeof this.settings == 'undefined' ? {} : this.settings);
+		this.settings = $.extend(baseSettings, defaults, settings);
+	},
 
 	_formatEvents: function(events)
 	{
 		events = blx.utils.stringToArray(events);
 		for (var i = 0; i < events.length; i++)
 		{
-			events[i] += this.namespace;
+			events[i] += this._namespace;
 		}
 		return events.join(' ');
 	},
@@ -210,6 +242,9 @@ blx.Base = Base.extend({
 			func = $.proxy(this, func);
 
 		$(elem).on(events, func);
+
+		// Remember that we're listening to this element
+		this._$listeners = this._$listeners.add(elem);
 	},
 
 	removeListener: function(elem, events)
@@ -220,7 +255,12 @@ blx.Base = Base.extend({
 
 	removeAllListeners: function(elem)
 	{
-		$(elem).off(this.namespace);
+		$(elem).off(this._namespace);
+	},
+
+	destroy: function()
+	{
+		this.removeAllListeners(this._$listeners);
 	}
 
 });

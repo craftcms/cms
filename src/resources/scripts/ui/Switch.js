@@ -21,9 +21,19 @@ blx.ui.Switch = blx.Base.extend({
 
 	init: function(outerContainer, settings)
 	{
-		this.settings = $.extend({}, blx.ui.Switch.defaults, settings);
-
 		this.$outerContainer = $(outerContainer);
+
+		// Is this already a switch?
+		if (this.$outerContainer.data('switch'))
+		{
+			blx.log('Double-instantiating a switch on an element');
+			this.$outerContainer.data('switch').destroy();
+		}
+
+		this.$outerContainer.data('switch', this);
+
+		this.setSettings(settings, blx.ui.Switch.defaults);
+
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$btn = this.$innerContainer.find('.btn:first');
 		this.$input = this.$outerContainer.find('input:first');
@@ -137,6 +147,39 @@ blx.ui.Switch = blx.Base.extend({
 	defaults: {
 		onChange: function(){}
 	}
+});
+
+
+$.fn.switch = function(settings, settingName, settingValue)
+{
+	if (settings == 'settings')
+	{
+		if (typeof settingName == 'string')
+		{
+			settings = {};
+			settings[settingName] = settingValue;
+		}
+		else
+			settings = settingName;
+
+		return this.each(function()
+		{
+			var obj = $.data(this, 'switch');
+			if (obj)
+				obj.setSettings(settings);
+		});
+	}
+
+	return this.each(function()
+	{
+		if (!$.data(this, 'switch'))
+			new blx.ui.Switch(this, settings);
+	});
+};
+
+blx.$document.ready(function()
+{
+	$('.switch').switch();
 });
 
 

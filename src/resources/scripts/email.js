@@ -28,13 +28,10 @@ var EmailSettingsForm = blx.Base.extend({
 		});
 
 		if (!this.smtpAuthSwitch.on)
-			{
-				this.$authFields.css('opacity', 0.5);
-				this.$authFields.find('input').attr('disabled', 'disabled');
-			}
-
-		new blx.ui.Switch('#smtpKeepAlive');
-		new blx.ui.Pill('#smtpSecureTransportType');
+		{
+			this.$authFields.css('opacity', 0.5);
+			this.$authFields.find('input').attr('disabled', 'disabled');
+		}
 	},
 
 	_buildProtocolSettingsPane: function()

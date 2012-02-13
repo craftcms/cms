@@ -4,6 +4,10 @@ namespace Blocks;
 abstract class BaseBlock extends \CApplicationComponent
 {
 	public $name;
+	public $settings = array();
+
+	protected $settingsTemplate;
+
 	private $_class;
 
 	/**
@@ -40,5 +44,21 @@ abstract class BaseBlock extends \CApplicationComponent
 		}
 
 		return $this->_class;
+	}
+
+	/**
+	 * Display settings
+	 */
+	public function displaySettings()
+	{
+		if (empty($this->settingsTemplate))
+			return '';
+
+		$tags = array(
+			'settings' => $this->settings
+		);
+
+		$template = Blocks::app()->controller->loadTemplate($this->settingsTemplate, $tags, true);
+		return TemplateHelper::namespaceInputs($template, $this->class);
 	}
 }

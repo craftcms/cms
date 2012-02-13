@@ -126,4 +126,15 @@ class TemplateHelper
 
 		return false;
 	}
+
+	/**
+	 * Renames input names so they belong to a namespace
+	 * @param string $template The template with the inputs
+	 * @param string $namespace The namespace to make inputs belong to
+	 * @return string The template with namespaced inputs
+	 */
+	function namespaceInputs($template, $namespace)
+	{
+		return preg_replace('/(name=([\'\"]))([^\'"\[\]]+)([^\'"]*)(\2)/i', '$1'.$namespace.'[$3]$4$5', $template);
+	}
 }
