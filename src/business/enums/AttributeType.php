@@ -50,4 +50,7 @@ class AttributeType
 	const Template     = 'template';
 	const Version      = 'version';
 	const Url          = 'url';
+	const Build        = 'build';
+	const Edition      = 'edition';
+	const Key          = 'key';
 }

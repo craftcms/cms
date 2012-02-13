@@ -9,7 +9,7 @@ class LicenseKey extends BaseModel
 	protected $tableName = 'licensekeys';
 
 	protected $attributes = array(
-		'key' => array('type' => AttributeType::Char, 'length' => 36, 'matchPattern' => '/[\w0-9]{8}-[\w0-9]{4}-[\w0-9]{4}-[\w0-9]{4}-[\w0-9]{12}/', 'required' => true, 'unique' => true)
+		'key' => AttributeType::Key
 	);
 
 	public function rules()
