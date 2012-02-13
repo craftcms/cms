@@ -67,7 +67,7 @@ class TemplateHelper
 			return $var;
 
 		// is it a number?
-		if (is_int($var) || is_float($var))
+		if (is_numeric($var))
 			return new NumTag($var);
 
 		// is it an array?
