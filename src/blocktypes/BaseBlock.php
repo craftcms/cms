@@ -8,6 +8,8 @@ abstract class BaseBlock extends BaseComponent
 
 	protected $settings = array();
 	protected $settingsTemplate;
+	protected $columnType = AttributeType::Text;
+
 	protected $classSuffix = 'Block';
 
 	public function setSettings($settings)
@@ -45,5 +47,13 @@ abstract class BaseBlock extends BaseComponent
 
 		$template = Blocks::app()->controller->loadTemplate($this->settingsTemplate, $tags, true);
 		return TemplateHelper::namespaceInputs($template, $this->class);
+	}
+
+	/**
+	 * Get the content column type
+	 */
+	public function getColumnType()
+	{
+		return $this->columnType;
 	}
 }

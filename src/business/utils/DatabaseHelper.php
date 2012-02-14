@@ -18,6 +18,7 @@ class DatabaseHelper
 		AttributeType::Int          => array('maxLength' => 11),
 		AttributeType::BigInt       => array('maxLength' => 20),
 		AttributeType::TinyInt      => array('maxLength' => 4),
+		AttributeType::Decimal      => array('maxLength' => 10),
 		AttributeType::Boolean      => array('type '=> AttributeType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
 		AttributeType::Enum         => array('values' => array()),
 
@@ -105,9 +106,6 @@ class DatabaseHelper
 				break;
 			case AttributeType::BigInt:
 				$def = 'BIGINT('.$settings['maxLength'].')';
-				break;
-			case AttributeType::Float:
-				$def = 'FLOAT('.$settings['maxLength'].')';
 				break;
 			case AttributeType::Decimal:
 				$def = 'DECIMAL('.$settings['maxLength'].')';

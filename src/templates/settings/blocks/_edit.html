@@ -5,6 +5,10 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 {% endif %}
 
 {% region "main" %}
+	<div class="toolbar">
+		{% include "_includes/back_btn" label="Content Blocks" uri="settings/blocks" %}
+	</div>
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="app/contentblocks/save" />
 		<input type="hidden" name="redirect" value="settings/blocks" />
@@ -13,7 +17,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 		<div class="pane">
 			<div class="head">
 				{% if block.id %}
-					<h5>Edit Conent Block {% if block.name %}“{block.name}”{% endif %}</h5>
+					<h5>Edit Content Block {% if block.name %}“{block.name}”{% endif %}</h5>
 				{% else %}
 					<h5>Create a new content block</h5>
 				{% endif %}

@@ -5,6 +5,10 @@
 {% endif %}
 
 {% region "main" %}
+	<div class="toolbar">
+		{% include "_includes/back_btn" label="Sites" uri="settings/sites" %}
+	</div>
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="app/sites/save" />
 		<input type="hidden" name="redirect" value="settings/sites" />
