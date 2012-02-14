@@ -135,6 +135,12 @@ class TemplateHelper
 	 */
 	public static function namespaceInputs($template, $namespace)
 	{
-		return preg_replace('/(name=([\'\"]))([^\'"\[\]]+)([^\'"]*)(\2)/i', '$1'.$namespace.'[$3]$4$5', $template);
+		// name= attributes
+		$template = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $template);
+
+		// id= and for= attributes
+		$template = preg_replace('/((id=|for=)(\'|"))([^\'"]+)\3/', '$1'.$namespace.'-$4$3', $template);
+
+		return $template;
 	}
 }

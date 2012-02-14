@@ -120,7 +120,7 @@ class ContentBlocksService extends BaseService
 				foreach ($files as $file)
 				{
 					$className = pathinfo($file, PATHINFO_FILENAME);
-					if ($className !== 'BaseBlock')
+					if (substr($className, 0, 4) !== 'Base')
 					{
 						$className = __NAMESPACE__.'\\'.$className;
 						$this->_blockTypes[] = new $className;
