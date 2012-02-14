@@ -4,24 +4,24 @@ namespace Blocks;
 abstract class BaseBlock extends BaseComponent
 {
 	public $name;
-	public $settings = array();
 
+	protected $settings = array();
 	protected $settingsTemplate;
 	protected $classSuffix = 'Block';
 
-	/**
-	 * Constructor
-	 */
-	public function __construct()
+	public function validateSettings($settings = array())
 	{
-		$this->init();
+		return true;
 	}
 
-	/**
-	 * Init
-	 */
-	public function init()
+	public function onBeforeSaveSettings($settings = array())
 	{
+		return $settings;
+	}
+
+	public function setSettings($settings)
+	{
+		$this->settings = array_merge($this->settings, $settings);
 	}
 
 	/**

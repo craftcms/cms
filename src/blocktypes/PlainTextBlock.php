@@ -5,7 +5,7 @@ class PlainTextBlock extends BaseBlock
 {
 	public $name = 'Plain Text';
 
-	public $settings = array(
+	protected $settings = array(
 		'multiline' => false,
 		'maxLength' => null
 	);
