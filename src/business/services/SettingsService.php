@@ -26,9 +26,9 @@ class SettingsService extends BaseService
 			$settingsPrep[] = $category !== null ? array($key, $value, $category) : array($key, $value);
 
 		if ($category !== null)
-			$result = Blocks::app()->db->createCommand()->insertAll('{{'.$table.'}}', array('key', 'value', 'category'), $settingsPrep);
+			$result = Blocks::app()->db->createCommand()->insertAll('{{'.$table.'}}', array('name', 'value', 'category'), $settingsPrep);
 		else
-			$result = Blocks::app()->db->createCommand()->insertAll('{{'.$table.'}}', array('key', 'value'), $settingsPrep);
+			$result = Blocks::app()->db->createCommand()->insertAll('{{'.$table.'}}', array('name', 'value'), $settingsPrep);
 
 		if ($result === false)
 			return false;
@@ -39,19 +39,19 @@ class SettingsService extends BaseService
 	/**
 	 * @param       $table
 	 * @param null  $category
-	 * @param array $keys
+	 * @param array $names
 	 * @return bool
 	 */
-	public function deleteSettings($table, $category = null, $keys = array())
+	public function deleteSettings($table, $category = null, $names = array())
 	{
 		$result = false;
 
-		if (!empty($keys) && $category == null)
-			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('in', 'key', $keys));
-		elseif (empty($keys) && $category !== null)
+		if (!empty($names) && $category == null)
+			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('in', 'name', $names));
+		elseif (empty($names) && $category !== null)
 			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', 'category = :category', array(':category' => $category));
-		elseif (!empty($keys) && $category !== null)
-			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('and', array('in', 'key', $keys), 'category = :category', array(':category' => $category)));
+		elseif (!empty($names) && $category !== null)
+			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('and', array('in', 'name', $names), 'category = :category', array(':category' => $category)));
 
 		if ($result === false)
 			return false;

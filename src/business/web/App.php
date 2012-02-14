@@ -39,7 +39,6 @@ class App extends \CWebApplication
 			'blocktypes.*',
 			'business.EmailAddress',
 			'business.WebLogRoute',
-			'business.*',
 			'business.db.*',
 			'business.email.*',
 			'business.enums.*',

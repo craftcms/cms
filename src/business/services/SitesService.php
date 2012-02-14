@@ -18,7 +18,7 @@ class SitesService extends BaseService
 		$licenseKeys = LicenseKey::model()->findAll();
 
 		foreach ($licenseKeys as $licenseKey)
-			$keysArr[] = $licenseKey->key;
+			$keysArr[] = $licenseKey->license_key;
 
 		if (count($keysArr) > 0)
 			return $keysArr;

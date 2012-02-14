@@ -43,8 +43,13 @@ class ContentBlocksService extends BaseService
 		return ContentBlock::model()->findById($blockId);
 	}
 
-	/** 
+	/**
 	 * Saves a block
+	 *
+	 * @param      $blockSettings
+	 * @param null $blockTypeSettings
+	 * @param null $blockId
+	 * @return \Blocks\ContentBlock
 	 */
 	public function saveBlock($blockSettings, $blockTypeSettings = null, $blockId = null)
 	{
@@ -88,7 +93,7 @@ class ContentBlocksService extends BaseService
 				{
 					$setting = new ContentBlockSetting;
 					$setting->block_id = $block->id;
-					$setting->key = $key;
+					$setting->name = $key;
 					$setting->value = $value;
 					$setting->save();
 				}

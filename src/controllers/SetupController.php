@@ -32,7 +32,7 @@ class SetupController extends BaseController
 			if (empty($licenseKey))
 				$licenseKey = new LicenseKey;
 
-			$licenseKey->key = Blocks::app()->request->getPost('licensekey');
+			$licenseKey->license_key = Blocks::app()->request->getPost('licensekey');
 
 			if ($licenseKey->save())
 				$this->redirect('setup/site');

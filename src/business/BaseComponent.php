@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 abstract class BaseComponent extends \CApplicationComponent
 {
 	protected $classPrefix;
@@ -18,7 +21,7 @@ abstract class BaseComponent extends \CApplicationComponent
 			$this->_class = get_class($this);
 
 			// Chop off the namespace
-			$namespaceLength = strlen(__NAMESPACE__)+1;
+			$namespaceLength = strlen(__NAMESPACE__) + 1;
 			if (substr($this->_class, 0, $namespaceLength) == __NAMESPACE__.'\\')
 				$this->_class = substr($this->_class, $namespaceLength);
 

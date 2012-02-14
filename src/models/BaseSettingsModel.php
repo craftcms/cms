@@ -10,12 +10,12 @@ abstract class BaseSettingsModel extends BaseModel
 	protected $model;
 
 	protected $attributes = array(
-		'key'   => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+		'name'   => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
 		'value' => AttributeType::Text
 	);
 
 	protected $indexes = array(
-		array('columns' => 'key', 'unique' => true)
+		array('columns' => 'name', 'unique' => true)
 	);
 
 	/**
@@ -30,7 +30,7 @@ abstract class BaseSettingsModel extends BaseModel
 			);
 
 			$this->indexes = array(
-				array('columns' => array($this->foreignKey.'_id', 'key'), 'unique' => true)
+				array('columns' => array($this->foreignKey.'_id', 'name'), 'unique' => true)
 			);
 		}
 	}
