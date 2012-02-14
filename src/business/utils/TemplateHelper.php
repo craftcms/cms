@@ -22,6 +22,7 @@ class TemplateHelper
 		'updates',
 		'user',
 		'users',
+		'request',
 	);
 
 	public static $globalTags = array(
