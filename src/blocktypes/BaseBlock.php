@@ -21,7 +21,8 @@ abstract class BaseBlock extends BaseComponent
 
 	public function setSettings($settings)
 	{
-		$this->settings = array_merge($this->settings, $settings);
+		if (is_array($settings))
+			$this->settings = array_merge($this->settings, $settings);
 	}
 
 	/**

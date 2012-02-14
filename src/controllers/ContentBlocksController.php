@@ -23,6 +23,7 @@ class ContentBlocksController extends BaseController
 
 		$block = Blocks::app()->contentBlocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
 
+		// Did it save?
 		if (!$block->isNewRecord)
 		{
 			Blocks::app()->user->setMessage(MessageStatus::Success, 'Content block saved successfully.');
@@ -32,6 +33,10 @@ class ContentBlocksController extends BaseController
 				$this->redirect($url);
 		}
 
+		// Save the block type settings on the block type
+		$block->blockType->settings = $blockTypeSettings;
+
+		// Reload the original template
 		$this->loadRequestedTemplate(array('block' => $block));
 	}
 }
