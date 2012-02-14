@@ -12,18 +12,6 @@ class RadioButtonsBlock extends BaseBlock
 	protected $settingsTemplate = '_blocktypes/RadioButtons/settings';
 
 	/**
-	 * Settings validation
-	 * @return bool Whether the settings passed validation
-	 */
-	public function validateSettings()
-	{
-		if (empty($this->settings['options']))
-			$this->errors['options'] = 'Radio Button Options cannot be blank.';
-
-		return empty($this->errors);
-	}
-
-	/**
 	 * Set the settings
 	 */
 	public function setSettings($settings)
@@ -36,6 +24,18 @@ class RadioButtonsBlock extends BaseBlock
 
 		// Filter out any blank options
 		$this->settings['options'] = array_filter($this->settings['options']);
+	}
+
+	/**
+	 * Settings validation
+	 * @return bool Whether the settings passed validation
+	 */
+	public function validateSettings()
+	{
+		if (empty($this->settings['options']))
+			$this->errors['options'] = 'Radio Button Options cannot be blank.';
+
+		return empty($this->errors);
 	}
 
 }

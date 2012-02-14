@@ -10,15 +10,6 @@ abstract class BaseBlock extends BaseComponent
 	protected $settingsTemplate;
 	protected $classSuffix = 'Block';
 
-	public function validateSettings()
-	{
-		return true;
-	}
-
-	public function onBeforeSaveSettings()
-	{
-	}
-
 	public function setSettings($settings)
 	{
 		if (is_array($settings))
@@ -28,6 +19,15 @@ abstract class BaseBlock extends BaseComponent
 	public function getSettings()
 	{
 		return $this->settings;
+	}
+
+	public function validateSettings()
+	{
+		return true;
+	}
+
+	public function onBeforeSaveSettings()
+	{
 	}
 
 	/**
