@@ -9,6 +9,58 @@ class UpdatesService extends BaseService
 	private $_updateInfo;
 
 	/**
+	 * @param $forceRefresh
+	 * @return mixed
+	 */
+	public function updates($forceRefresh)
+	{
+		// TODO: WTF
+		$forceRefresh = $forceRefresh == 'y' ? true : false;
+
+		$updates = array();
+
+		if (!$forceRefresh && !$this->isUpdateInfoCached())
+			return;
+
+		$blocksUpdateInfo = $this->getUpdateInfo($forceRefresh);
+
+		// blocks first.
+		if ($blocksUpdateInfo->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo->newerReleases) > 0)
+		{
+			$notes = $this->_generateUpdateNotes($blocksUpdateInfo->newerReleases, 'Blocks');
+			$updates[] = array(
+				'name' => 'Blocks '.Blocks::getEdition(),
+				'handle' => 'Blocks',
+				'version' => $blocksUpdateInfo->latestVersion.'.'.$blocksUpdateInfo->latestBuild,
+				'critical' => $blocksUpdateInfo->criticalUpdateAvailable,
+				'notes' => $notes,
+			);
+
+		}
+
+		// plugins second.
+		if ($blocksUpdateInfo->plugins !== null && count($blocksUpdateInfo->plugins) > 0)
+		{
+			foreach ($blocksUpdateInfo->plugins as $plugin)
+			{
+				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+				{
+					$notes = $this->_generateUpdateNotes($plugin->newerReleases, $plugin->displayName);
+					$updates[] = array(
+						'name' => $plugin->displayName,
+						'handle' => $plugin->class,
+						'version' => $plugin->latestVersion,
+						'critical' => $plugin->criticalUpdateAvailable,
+						'notes' => $notes,
+					);
+				}
+			}
+		}
+
+		return $updates;
+	}
+
+	/**
 	 * @param $blocksReleases
 	 * @return bool
 	 */
@@ -131,5 +183,22 @@ class UpdatesService extends BaseService
 
 		$blocksUpdateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
 		return $blocksUpdateInfo;
+	}
+
+	/**
+	 * @param $updates
+	 * @param $name
+	 * @return string
+	 */
+	private function _generateUpdateNotes($updates, $name)
+	{
+		$notes = '';
+		foreach ($updates as $update)
+		{
+			$notes .= '<h5>'.$name.' '.$update->version.($name == 'Blocks' ? '.'.$update->build : '').'</h5>';
+			$notes .= '<ul><li>'.$update->releaseNotes.'</li></ul>';
+		}
+
+		return $notes;
 	}
 }

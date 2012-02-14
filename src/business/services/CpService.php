@@ -8,6 +8,7 @@ class CpService extends BaseService
 {
 	/**
 	 * Get the sections of the CP
+	 * @return array
 	 */
 	public function getSections()
 	{

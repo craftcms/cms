@@ -1,9 +1,9 @@
-{% if cp.updates('y') %}
+{% if updates.updates('y') %}
 
 	<form method="post" action="{url.base}update/all"><input id="update-all" class="btn big" type="submit" value="Update All"></form>
 	<h3>The following updates are available:</h3>
 
-	{% foreach cp.updates('y') as update %}
+	{% foreach updates.updates('y') as update %}
 	<div id="{update.handle}" class="update pane">
 		<div class="head">
 			<div class="name">{update.name} <strong>{update.version}</strong></div>
