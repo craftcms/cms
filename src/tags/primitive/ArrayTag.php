@@ -81,4 +81,9 @@ class ArrayTag extends Tag
 	{
 		return count($this->_val);
 	}
+
+	public function join($glue = ', ')
+	{
+		return implode($glue, $this->_val);
+	}
 }

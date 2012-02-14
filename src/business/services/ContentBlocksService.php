@@ -56,47 +56,49 @@ class ContentBlocksService extends BaseService
 		$block->instructions = $blockSettings['instructions'];
 		$block->site_id = Blocks::app()->sites->currentSite->id;
 
-		if ($block->validate())
+		$blockType = $this->getBlockType($block->class);
+		$blockType->settings = $blockTypeSettings;
+		$block->blockType = $blockType;
+
+		// Run the validation
+		$isBlockValid = $block->validate();
+		$isBlockTypeValid = $blockType->validateSettings();
+
+		if ($isBlockValid && $isBlockTypeValid)
 		{
-			$blockType = $this->getBlockType($block->class);
-
-			if ($blockType->validateSettings($blockTypeSettings))
+			// Start a transaction
+			$transaction = Blocks::app()->db->beginTransaction();
+			try
 			{
-				// Start a transaction
-				$transaction = Blocks::app()->db->beginTransaction();
-				try
+				// Delete the previous block type settings
+				if (!$block->isNewRecord)
 				{
-					// Delete the previous block type settings
-					if (!$block->isNewRecord)
-					{
-						ContentBlockSetting::model()->deleteAllByAttributes(array(
-							'block_id' => $block->id
-						));
-					}
-
-					// Save the block
-					$block->save();
-
-					// Save the block type settings
-					$blockTypeSettings = $blockType->onBeforeSaveSettings($blockTypeSettings);
-					$flattened = ArrayHelper::flattenArray($blockTypeSettings);
-
-					foreach ($flattened as $key => $value)
-					{
-						$setting = new ContentBlockSetting;
-						$setting->block_id = $block->id;
-						$setting->key = $key;
-						$setting->value = $value;
-						$setting->save();
-					}
-
-					$transaction->commit();
+					ContentBlockSetting::model()->deleteAllByAttributes(array(
+						'block_id' => $block->id
+					));
 				}
-				catch (Exception $e)
+
+				// Save the block
+				$block->save();
+
+				// Save the block type settings
+				$blockType->onBeforeSaveSettings();
+				$flattened = ArrayHelper::flattenArray($blockType->settings);
+				foreach ($flattened as $key => $value)
 				{
-					$transaction->rollBack();
-					throw $e;
+					$setting = new ContentBlockSetting;
+					$setting->block_id = $block->id;
+					$setting->key = $key;
+					$setting->value = $value;
+					$setting->save();
 				}
+
+				$transaction->commit();
+			}
+			catch (Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
 			}
 		}
 

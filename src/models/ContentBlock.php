@@ -49,4 +49,12 @@ class ContentBlock extends BaseModel
 
 		return $this->_blockType;
 	}
+
+	/**
+	 * Set the block type
+	 */
+	public function setBlockType($blockType)
+	{
+		$this->_blockType = $blockType;
+	}
 }
