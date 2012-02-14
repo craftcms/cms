@@ -25,4 +25,8 @@ class ContentBlock extends BaseModel
 	protected $indexes = array(
 		array('columns' => array('site_id','handle'), 'unique' => true)
 	);
+
+	protected $hasMany = array(
+		'settings' => array('model' => 'ContentBlockSetting', 'foreignKey' => 'block')
+	);
 }
