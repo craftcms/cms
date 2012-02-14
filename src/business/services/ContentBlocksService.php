@@ -89,6 +89,8 @@ class ContentBlocksService extends BaseService
 						$setting->value = $value;
 						$setting->save();
 					}
+
+					$transaction->commit();
 				}
 				catch (Exception $e)
 				{
