@@ -32,7 +32,7 @@ class ContentBlock extends BaseModel
 	);
 
 	/**
-	 * Returns 
+	 * Returns the content block's block type, filled up with settings
 	 */
 	public function getBlockType()
 	{
@@ -41,10 +41,7 @@ class ContentBlock extends BaseModel
 			if ($this->class)
 			{
 				$this->_blockType = Blocks::app()->contentBlocks->getBlockType($this->class);
-
-				// Set the block type settings
-				$settings = ArrayHelper::expandSettingsArray($this->settings);
-				$this->_blockType->setSettings($settings);
+				$this->_blockType->settings = ArrayHelper::expandSettingsArray($this->settings);
 			}
 			else
 				$this->_blockType = false;
