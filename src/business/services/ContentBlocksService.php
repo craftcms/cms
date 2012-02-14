@@ -12,7 +12,7 @@ class ContentBlocksService extends BaseService
 	 * Returns all content blocks
 	 * @return array
 	 */
-	public function getAll()
+	public function getBlocks()
 	{
 		return ContentBlock::model()->findAll();
 	}
