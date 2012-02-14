@@ -6,48 +6,9 @@ namespace Blocks;
  */
 class EtEndPoints
 {
-	/**
-	 * @static
-	 * @return string
-	 */
-	public static function Check()
-	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config->getItem('actionTriggerWord').'/app/core/check';
-	}
-
-	/**
-	 * @static
-	 * @return string
-	 */
-	public static function DownloadPackage()
-	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config->getItem('actionTriggerWord').'/app/core/downloadpackage';
-	}
-
-	/**
-	 * @static
-	 * @return string
-	 */
-	public static function GetCoreReleaseFileMD5()
-	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config->getItem('actionTriggerWord').'/app/core/getcorereleasefilemd5';
-	}
-
-	/**
-	 * @static
-	 * @return string
-	 */
-	public static function ValidateKeysByCredentials()
-	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config->getItem('actionTriggerWord').'/app/core/validateKeysByCredentials';
-	}
-
-	/**
-	 * @static
-	 * @return string
-	 */
-	public static function Ping()
-	{
-		return 'http://et.blockscms.com/admin.php/'.Blocks::app()->config->getItem('actionTriggerWord').'/app/core/ping';
-	}
+	const Check                         = 'http://et.blockscms.com/admin.php/action/app/core/check';
+	const DownloadPackage               = 'http://et.blockscms.com/admin.php/action/app/core/downloadpackage';
+	const GetCoreReleaseFileMD5         = 'http://et.blockscms.com/admin.php/action/app/core/getcorereleasefilemd5';
+	const ValidateKeysByCredentials     = 'http://et.blockscms.com/admin.php/action/app/core/validateKeysByCredentials';
+	const Ping                          = 'http://et.blockscms.com/admin.php/action/app/core/ping';
 }

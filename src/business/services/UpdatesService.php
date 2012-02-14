@@ -125,7 +125,7 @@ class UpdatesService extends BaseService
 		foreach ($plugins as $plugin)
 			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 
-		$et = new Et(EtEndPoints::Check());
+		$et = new Et(EtEndPoints::Check);
 		$et->getPackage()->data = $blocksUpdateInfo;
 		$response = $et->phoneHome();
 

@@ -21,7 +21,7 @@ class SecurityService extends BaseService
 			'edition' => $edition
 		);
 
-		$et = new Et(EtEndPoints::ValidateKeysByCredentials());
+		$et = new Et(EtEndPoints::ValidateKeysByCredentials);
 		$et->getPackage()->data = $params;
 		$et->phoneHome();
 	}

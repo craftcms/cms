@@ -11,7 +11,7 @@ class EtService extends BaseService
 	 */
 	public function ping()
 	{
-		$et = new Et(EtEndPoints::Ping());
+		$et = new Et(EtEndPoints::Ping);
 		$response = $et->phoneHome();
 		return $response;
 	}

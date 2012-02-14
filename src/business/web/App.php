@@ -93,7 +93,7 @@ class App extends \CWebApplication
 			{
 				foreach ($files as $file)
 				{
-					self::importFile($file);
+					self::importFile(realpath($file));
 				}
 			}
 		}
