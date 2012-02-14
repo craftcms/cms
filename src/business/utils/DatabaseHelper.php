@@ -106,9 +106,6 @@ class DatabaseHelper
 			case AttributeType::BigInt:
 				$def = 'BIGINT('.$settings['maxLength'].')';
 				break;
-			case AttributeType::Float:
-				$def = 'FLOAT('.$settings['maxLength'].')';
-				break;
 			case AttributeType::Decimal:
 				$def = 'DECIMAL('.$settings['maxLength'].')';
 				break;
