@@ -49,6 +49,11 @@ class ContentBlocksService extends BaseService
 	public function saveBlock($blockSettings, $blockTypeSettings = null, $blockId = null)
 	{
 		$block = $this->getBlock($blockId);
+		$isNewBlock = $block->isNewRecord;
+
+		// Remember the original handle for later
+		if (!$isNewBlock)
+			$oldColumnName = $this->getContentColumnNameForBlock($block);
 
 		$block->name = $blockSettings['name'];
 		$block->handle = $blockSettings['handle'];
@@ -71,7 +76,7 @@ class ContentBlocksService extends BaseService
 			try
 			{
 				// Delete the previous block type settings
-				if (!$block->isNewRecord)
+				if (!$isNewBlock)
 				{
 					ContentBlockSetting::model()->deleteAllByAttributes(array(
 						'block_id' => $block->id
@@ -93,6 +98,25 @@ class ContentBlocksService extends BaseService
 					$setting->save();
 				}
 
+				// Add or modify the block's content column
+				$columnName = $this->getContentColumnNameForBlock($block);
+				$columnType = DatabaseHelper::generateColumnDefinition($blockType->columnType);
+
+				if ($isNewBlock)
+				{
+					// Add the new column
+					Blocks::app()->db->createCommand()->addColumn('{{content}}', $columnName, $columnType);
+				}
+				else
+				{
+					// Rename the column if the block has a new handle
+					if ($columnName != $oldColumnName)
+						Blocks::app()->db->createCommand()->renameColumn('{{content}}', $oldColumnName, $columnName);
+
+					// Update the column's type
+					Blocks::app()->db->createCommand()->alterColumn('{{content}}', $columnName, $columnType);
+				}
+
 				$transaction->commit();
 			}
 			catch (Exception $e)
@@ -103,6 +127,11 @@ class ContentBlocksService extends BaseService
 		}
 
 		return $block;
+	}
+
+	public function getContentColumnNameForBlock($block)
+	{
+		return strtolower($block->handle).'_'.$block->id;
 	}
 
 	/**
