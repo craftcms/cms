@@ -7,6 +7,7 @@ namespace Blocks;
 class ContentBlock extends BaseModel
 {
 	protected $tableName = 'contentblocks';
+	protected $_blockType;
 
 	/**
 	 * @return array
@@ -29,4 +30,26 @@ class ContentBlock extends BaseModel
 	protected $hasMany = array(
 		'settings' => array('model' => 'ContentBlockSetting', 'foreignKey' => 'block')
 	);
+
+	/**
+	 * Returns 
+	 */
+	public function getBlockType()
+	{
+		if (!isset($this->_blockType))
+		{
+			if ($this->class)
+			{
+				$this->_blockType = Blocks::app()->contentBlocks->getBlockType($this->class);
+
+				// Set the block type settings
+				$settings = ArrayHelper::expandSettingsArray($this->settings);
+				$this->_blockType->setSettings($settings);
+			}
+			else
+				$this->_blockType = false;
+		}
+
+		return $this->_blockType;
+	}
 }

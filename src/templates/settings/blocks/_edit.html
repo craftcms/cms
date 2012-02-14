@@ -62,7 +62,11 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 					<div class="head">
 						<h5>{blockType.name} Settings</h5>
 					</div>
-					{blockType.displaySettings}
+					{% if blockType.class == block.class %}
+						{block.blockType.displaySettings}
+					{% else %}
+						{blockType.displaySettings}
+					{% endif %}
 				</div>
 			{% endif %}
 		{% endforeach %}
