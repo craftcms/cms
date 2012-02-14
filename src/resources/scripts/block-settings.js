@@ -10,9 +10,14 @@ var BlockSettingsForm = blx.Base.extend({
 	init: function()
 	{
 		this.$blockTypeSelect = $('#class');
-
-		this.onBlockTypeChange();
 		this.addListener(this.$blockTypeSelect, 'change', 'onBlockTypeChange');
+		this.setBlockType();
+	},
+
+	setBlockType: function()
+	{
+		this.blockType = this.$blockTypeSelect.val();
+		this.$blockTypeSettings = $('#'+this.blockType+'-settings');
 	},
 
 	onBlockTypeChange: function()
@@ -20,8 +25,7 @@ var BlockSettingsForm = blx.Base.extend({
 		if (this.$blockTypeSettings)
 			this.$blockTypeSettings.hide();
 
-		this.blockType = this.$blockTypeSelect.val();
-		this.$blockTypeSettings = $('#'+this.blockType+'-settings');
+		this.setBlockType();
 		this.$blockTypeSettings.show();
 	}
 
