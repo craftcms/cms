@@ -26,7 +26,7 @@ class UsersController extends BaseController
 			{
 				$randomPassword = Blocks::app()->security->generatePassword();
 
-				$user = Blocks::app()->users->registerUser($user->username, $user->email, $user->first_name, $user->last_name, $randomPassword, true);
+				$user = Blocks::app()->users->registerUser($user, $randomPassword, true);
 
 				if ($user !== null)
 				{
@@ -81,14 +81,13 @@ class UsersController extends BaseController
 		if (empty($user))
 			$user = new User();
 
-		$postUser = Blocks::app()->request->getPost('user');
-		$user->username = $postUser['username'];
-		$user->first_name = $postUser['first_name'];
-		$user->last_name = $postUser['last_name'];
-		$user->email = $postUser['email'];
-		$user->admin = isset($postUser['admin']) ? 1 : 0;
-		$user->html_email = isset($postUser['html_email']) ? 1 : 0;
-		$user->password_reset_required = isset($postUser['password_reset']) ? 1 : 0;
+		$user->username = Blocks::app()->request->getPost('username');
+		$user->first_name = Blocks::app()->request->getPost('first_name');
+		$user->last_name = Blocks::app()->request->getPost('last_name');
+		$user->email = Blocks::app()->request->getPost('email');
+		$user->admin = (Blocks::app()->request->getPost('admin') === 'y');
+		$user->html_email = (Blocks::app()->request->getPost('html_email') === 'y');
+		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
 
 		if (!$existingUser)
 		{
@@ -105,7 +104,7 @@ class UsersController extends BaseController
 
 				if ($user !== null)
 				{
-					if (isset($postUser['send_registration_email']))
+					if (Blocks::app()->request->getPost('send_registration_email') === 'y')
 					{
 						$site = Blocks::app()->sites->currentSite;
 

@@ -103,23 +103,8 @@ abstract class BaseController extends \CController
 	 */
 	public function loadEmailTemplate($relativeTemplatePath, $data = array())
 	{
-		if (!is_array($data))
-			$data = array();
-
-		foreach ($data as &$tag)
-		{
-			$tag = TemplateHelper::getVarTag($tag);
-		}
-
-		$baseTemplatePath = Blocks::app()->path->normalizeTrailingSlash(Blocks::app()->path->emailTemplatePath);
-
-		if (TemplateHelper::resolveTemplatePath($baseTemplatePath.$relativeTemplatePath) !== false)
-		{
-			$relativeTemplatePath = '///email/'.$relativeTemplatePath;
-			return $this->renderPartial($relativeTemplatePath, $data, true);
-		}
-
-		throw new Exception('Could not find the email template '.$relativeTemplatePath);
+		$relativeTemplatePath = '///email/'.$relativeTemplatePath;
+		return $this->loadTemplate($relativeTemplatePath, $data, true);
 	}
 
 	/**

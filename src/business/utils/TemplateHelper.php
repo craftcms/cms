@@ -112,18 +112,29 @@ class TemplateHelper
 	 */
 	public static function resolveTemplatePath($templatePath)
 	{
-		$templatePath = trim($templatePath, '/');
+		$copyTemplatePath = $templatePath;
+
+		if (strncmp($templatePath,'///email', 8) === 0)
+		{
+			$viewPath = Blocks::app()->path->emailTemplatePath;
+			$templatePath = substr($templatePath, 9);
+		}
+		else
+		{
+			$viewPath = Blocks::app()->viewPath;
+			$copyTemplatePath = trim($templatePath, '/');
+		}
 
 		// Check if request/path.ext exists
 		$testTemplatePath = $templatePath.Blocks::app()->viewRenderer->fileExtension;
-		if (is_file(Blocks::app()->findLocalizedFile(Blocks::app()->viewPath.$testTemplatePath)))
-			return $templatePath;
+		if (is_file(Blocks::app()->findLocalizedFile($viewPath.$testTemplatePath)))
+			return $copyTemplatePath;
 
 		// Otherwise check if request/path/index.ext exists
-		$templatePath .= '/index';
-		$testTemplatePath = $templatePath.Blocks::app()->viewRenderer->fileExtension;
-		if (is_file(Blocks::app()->findLocalizedFile(Blocks::app()->viewPath.$testTemplatePath)))
-			return $templatePath;
+		$copyTemplatePath .= '/index';
+		$testTemplatePath = $copyTemplatePath.Blocks::app()->viewRenderer->fileExtension;
+		if (is_file(Blocks::app()->findLocalizedFile($viewPath.$testTemplatePath)))
+			return $copyTemplatePath;
 
 		return false;
 	}

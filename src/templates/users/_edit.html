@@ -22,7 +22,7 @@
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="username">Username</label>
-						<input id="username" name="user[username]" class="{% if userNameErrors %}error{% endif %}" type="text" value="{theUser.username}" />
+						<input id="username" name="username" class="{% if theUser.errors.username %}error{% endif %}" type="text" value="{theUser.username}" />
 					</div>
 					{% if theUser.errors.username %}
 						{% include "_includes/error_list" errors=theUser.errors.username %}
@@ -31,7 +31,7 @@
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="first_name">First Name</label>
-						<input id="first_name" name="user[first_name]" class="{% if firstNameErrors %}error{% endif %}" type="text" value="{theUser.first_name}" />
+						<input id="first_name" name="first_name" class="{% if theUser.errors.first_name %}error{% endif %}" type="text" value="{theUser.first_name}" />
 					</div>
 					{% if theUser.errors.first_name %}
 						{% include "_includes/error_list" errors=theUser.errors.first_name %}
@@ -40,7 +40,7 @@
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="last_name">Last Name</label>
-						<input id="last_name" name="user[last_name]" class="{% if lastNameErrors %}error{% endif %}" type="text" value="{theUser.last_name}" />
+						<input id="last_name" name="last_name" class="{% if theUser.errors.last_name %}error{% endif %}" type="text" value="{theUser.last_name}" />
 					</div>
 					{% if theUser.errors.last_name %}
 						{% include "_includes/error_list" errors=theUser.errors.last_name %}
@@ -49,7 +49,7 @@
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="email">Email</label>
-						<input id="email" name="user[email]" class="{% if emailErrors %}error{% endif %}" type="text" value="{theUser.email}" />
+						<input id="email" name="email" class="{% if theUser.errors.email %}error{% endif %}" type="text" value="{theUser.email}" />
 					</div>
 					{% if theUser.errors.email %}
 						{% include "_includes/error_list" errors=theUser.errors.email %}
@@ -58,20 +58,20 @@
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="admin">Admin</label>
-						<input id="admin" name="user[admin]" type="checkbox" {% if theUser.admin %}checked{% endif %} />
+						{% include "_includes/switch" name="admin" on=theUser.admin %}
 					</div>
 				</div>
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="html_email">Html Emails</label>
-						<input id="html_email" name="user[html_email]" type="checkbox" {% if theUser.html_email || !theUser %}checked{% endif %} />
+						{% include "_includes/switch" name="html_email" on=theUser.html_email default="y" %}
 					</div>
 				</div>
 				{% if theUser.id %}
 					<div class="item field">
 						<div class="input-wrapper">
-						<label for="password_reset">Password Reset Required</label>
-						<input id="password_reset" name="user[password_reset]" type="checkbox" {% if theUser.password_reset_required %}checked{% endif %} />
+							<label for="password_reset">Password Reset Required</label>
+							{% include "_includes/switch" name="password_reset" on=theUser.password_reset_required %}
 						</div>
 					</div>
 				{% endif %}
@@ -79,7 +79,7 @@
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="send_registration_email">Send new user registration email with password reset link?</label>
-							<input id="send_registration_email" name="user[send_registration_email]" type="checkbox" {% if theUser.send_registration_email || !theUser %}checked{% endif %} />
+							{% include "_includes/switch" name="send_registration_email" on=request.getPost('send_registration_email') default="y" %}
 						</div>
 					</div>
 				{% endif %}
