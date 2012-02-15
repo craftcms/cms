@@ -152,7 +152,7 @@ table.pane > tbody > tr:last-child > *:last-child,
 .pane table.body > tbody > tr:not(:first-child) > *,
 table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #eaeaea; }
 
-.pane .body .item a .icon { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
+.pane .body .item a:not(.btn) .icon { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
 
 /* table-only styles */
 table.pane,
@@ -381,10 +381,11 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 .colorpicker .sample { display: inline-block; margin: 0 4px -1px 0; width: 12px; height: 12px; border-radius: 6px; }
 
 /* blocks */
-.blocks ul li { margin-bottom: 4px;  }
-.blocks ul li .icon { margin: -3px 0; }
-.blocks ul li .block-name { font-weight: bold; }
-.blocks ul li .block-type { margin-left: 1px; font-size: 11px; color: #999; }
+.blocks .input ul li { margin-bottom: 4px;  }
+.blocks .input ul li .icon { margin: -3px 0; }
+.blocks .input ul li .block-name { font-weight: bold; }
+.blocks .input ul li .block-type { margin-left: 1px; font-size: 11px; color: #999; }
+.blocks > .btn { margin-top: 8px; }
 
 /* ----------------------------------------
 /*  Thumbs and filenames
