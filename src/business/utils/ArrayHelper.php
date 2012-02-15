@@ -69,7 +69,7 @@ class ArrayHelper
 		$arr = array();
 
 		foreach ($settings as $setting)
-			$arr[$setting->key] = $setting->value;
+			$arr[$setting->name] = $setting->value;
 
 		return self::expandArray($arr);
 	}

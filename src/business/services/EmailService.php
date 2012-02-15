@@ -10,6 +10,7 @@ class EmailService extends BaseService
 
 	/**
 	 * @param EmailMessage $emailMessage
+	 * @return bool
 	 * @throws Exception
 	 */
 	public function sendEmail(EmailMessage $emailMessage)
@@ -99,31 +100,43 @@ class EmailService extends BaseService
 
 		if (!$email->send())
 			throw new Exception($email->errorInfo);
+
+		return true;
 	}
 
 	/**
 	 * @param EmailMessage $emailMessage
-	 * @param $templateFile
+	 * @param              $templateFile
+	 * @param array        $data
+	 *
+	 * @return bool
 	 */
-	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile)
+	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile, $data = array())
 	{
-		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, array());
+		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, $data);
 		$emailMessage->setBody($renderedTemplate);
 
-		$this->sendEmail($emailMessage);
+		if ($this->sendEmail($emailMessage))
+			return true;
+
+		return false;
 	}
 
 	/**
 	 * @param User $user
+	 * @return bool
 	 */
 	public function sendRegistrationEmail(User $user)
 	{
-
 		$emailSettings = $this->getEmailSettings();
 		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
 		$email->setIsHtml(true);
 		$email->setSubject('Confirm Your Registration');
-		Blocks::app()->email->sendTemplateEmail($email, 'register');
+
+		if ($this->sendTemplateEmail($email, 'register', array('user' => $user)))
+			return true;
+
+		return false;
 	}
 
 	/**

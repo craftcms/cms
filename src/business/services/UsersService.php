@@ -70,13 +70,9 @@ class UsersService extends BaseService
 	}
 
 	/**
-	 * @param      $userName
-	 * @param      $email
-	 * @param      $firstName
-	 * @param      $lastName
-	 * @param      $password
-	 * @param bool $passwordReset
-	 *
+	 * @param \Blocks\User $user
+	 * @param              $password
+	 * @param bool         $passwordReset
 	 * @return User
 	 */
 	public function registerUser(User $user, $password, $passwordReset = false)

@@ -11,9 +11,9 @@
 
 	<div class="field">
 		<label for="license-key">Your license key</label>
-		<div class="input-wrapper"><input id="license-key" class="code {% if licenseKey.errors.key %}error{% endif %}" name="licensekey" type="text" maxlength="73" value="{licenseKey.key}" /></div>
-		{% if licenseKey.errors.key %}
-			{% include "_includes/error_list" errors=licenseKey.errors.key %}
+		<div class="input-wrapper"><input id="license-key" class="code {% if licenseKey.errors.license_key %}error{% endif %}" name="licensekey" type="text" maxlength="73" value="{licenseKey.license_key}" /></div>
+		{% if licenseKey.errors.license_key %}
+			{% include "_includes/error_list" errors=licenseKey.errors.license_key %}
 		{% endif %}
 	</div>
 

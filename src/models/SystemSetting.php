@@ -9,7 +9,7 @@ class SystemSetting extends BaseSettingsModel
 	protected $tableName = 'systemsettings';
 
 	protected $indexes = array(
-		array('columns' => array('category','key'), 'unique' => true)
+		array('columns' => array('category','name'), 'unique' => true)
 	);
 
 	/**
