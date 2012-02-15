@@ -164,7 +164,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .pane + .btn-group { display: block; margin-top: -12px; margin-bottom: 20px; }
 
 /* grids */
-.grid { margin: 20px 0 20px -20px; }
+.grid { margin-left: -20px; }
 .grid:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
 .grid .col { float: left; }
 .grid .col .col-inner { margin-left: 20px; }
@@ -342,7 +342,11 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Fields
 /* ----------------------------------------*/
 
-.field { position: relative; }
+.field { padding-top: 16px !important; padding-bottom: 20px !important; position: relative; }
+.field + .field,
+.grid + .field,
+.field + .grid .field:first-child,
+.grid + .grid .field:first-child { padding-top: 0 !important; }
 .field label { display: inline-block; margin-bottom: 5px; font-weight: bold; color: #666; }
 .field label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
 .field p { margin: -3px 0 8px; color: #808080; }
