@@ -189,12 +189,16 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->hasBlocks as $key => $settings)
 		{
-			$relations[$key] = $this->generateJoinThroughRelation('ContentBlock', 'block_id', $settings);
+			$join_key = $key.'_join';
+			$relations[$join_key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['through'], $settings['foreignKey'].'_id');
+			$relations[$key]      = array(self::HAS_MANY, __NAMESPACE__.'\\ContentBlock', array('block_id' => 'id'), 'through' => $join_key);
 		}
 
 		foreach ($this->hasContent as $key => $settings)
 		{
-			$relations[$key] = $this->generateJoinThroughRelation('Content', 'content_id', $settings);
+			$join_key = $key.'_join';
+			$relations[$join_key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['through'], $settings['foreignKey'].'_id');
+			$relations[$key]      = array(self::HAS_MANY, __NAMESPACE__.'\\Content', array('content_id' => 'id'), 'through' => $join_key);
 		}
 
 		foreach ($this->hasMany as $key => $settings)
@@ -213,19 +217,6 @@ abstract class BaseModel extends \CActiveRecord
 		}
 
 		return $relations;
-	}
-
-	/**
-	 * Generates HAS_MANY relations to a model through another model
-	 * @access protected
-	 * @param string $model The destination model
-	 * @param string $fk2 The join table's foreign key to the destination model
-	 * @param array $settings The initial model's settings for the relation
-	 * @return The CActiveRecord relation
-	 */
-	protected function generateJoinThroughRelation($model, $fk2, $settings)
-	{
-		return array(self::HAS_MANY, __NAMESPACE__.'\\'.$model, array($settings['foreignKey'].'_id' => $fk2), 'through' => __NAMESPACE__.'\\'.$settings['through']);
 	}
 
 	/**

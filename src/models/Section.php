@@ -33,12 +33,4 @@ class Section extends BaseModel
 	protected $indexes = array(
 		array('columns' => array('site_id', 'handle'), 'unique' => true),
 	);
-
-	public function relations()
-	{
-		return array(
-			'contentblocks' => array(self::HAS_MANY, 'Blocks\SectionBlock', 'section_id'),
-			'blocks' => array(self::HAS_MANY, 'Blocks\ContentBlock', array('block_id' => 'id'), 'through' => 'contentblocks')
-		);
-	}
 }
