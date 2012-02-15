@@ -69,10 +69,30 @@
 						{% include "_includes/error_list" errors=section.errors.template %}
 					{% endif %}
 				</div>
+				<div class="item field">
+					<label for="blocks">Content Blocks</label>
+					<p>Which content blocks should be present when editing an entry in this section?</p>
+					<div class="input blocks">
+						{% if section.blocks %}
+							<ul>
+								{% foreach section.blocks as block %}
+									<li>
+										<span class="icon icon137"></span>
+										<span class="block-name">{block.name}</span>
+										<span class="block-type">{block.blockType.name}</span>
+									</li>
+								{% endforeach %}
+							</ul>
+							<a class="btn" title="Add a content block"><span class="icon icon44"></span></a>
+						{% else %}
+							<p class="no-items">This section doesn’t have any content blocks yet. <a class="go">Add one</a></p>
+						{% endif %}
+					</div>
+				</div>
 			</div>
 		</div>
 
-		<input class="btn big submit" type="submit" value="Save Section" />
+		<div><input class="btn big submit" type="submit" value="Save Section" /></div>
 	</form>
 {% endregion %}
 

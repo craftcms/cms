@@ -189,12 +189,12 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->hasBlocks as $key => $settings)
 		{
-			$relations[$key] = $this->generateJoinThroughRelation('Blocks\\ContentBlock', 'block_id', $settings);
+			$relations[$key] = $this->generateJoinThroughRelation('ContentBlock', 'block_id', $settings);
 		}
 
 		foreach ($this->hasContent as $key => $settings)
 		{
-			$relations[$key] = $this->generateJoinThroughRelation('Blocks\\Content', 'content_id', $settings);
+			$relations[$key] = $this->generateJoinThroughRelation('Content', 'content_id', $settings);
 		}
 
 		foreach ($this->hasMany as $key => $settings)
