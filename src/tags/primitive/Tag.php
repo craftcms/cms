@@ -72,12 +72,4 @@ class Tag
 	{
 		return new Tag;
 	}
-
-	/**
-	 * @return string
-	 */
-	public function classname()
-	{
-		return get_class($this);
-	}
 }

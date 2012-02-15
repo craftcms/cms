@@ -29,7 +29,7 @@
 .widget .settings .buttons { margin-top: 15px; border-top: 1px solid #e0e0e0; padding-top: 15px; -webkit-box-shadow: inset 0 1px #fcfcfc; }
 
 /* updates */
-.widget.updates .update-all { float: right; margin: -33px 10px 0 0; }
+.widget.updates .update-all { position: relative; float: right; margin: -33px 20px 0 0; }
 .widget.updates table.body tbody td { vertical-align: middle; }
 .widget.updates table.body tbody td:first-child { width: 99.99%; }
 .widget.updates table.body tbody td a { font-weight: normal; }
