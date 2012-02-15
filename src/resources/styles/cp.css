@@ -343,7 +343,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /* ----------------------------------------*/
 
 .field { padding-top: 16px !important; padding-bottom: 20px !important; position: relative; }
-.field + .field,
+.field + .field:not(.item),
 .grid + .field,
 .field + .grid .field:first-child,
 .grid + .grid .field:first-child { padding-top: 0 !important; }
