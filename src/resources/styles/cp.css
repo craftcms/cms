@@ -257,9 +257,9 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 /* input buttons */
 input.btn { padding: 0 8px !important; border: none; }
 input.btn.big { padding: 0 12px !important; }
-input.btn.big.submit { padding-right: 32px !important; background: url(../images/go.png) no-repeat 100% 50%, -webkit-linear-gradient(#33abf5, #2987c2); }
-input.btn.big.submit:not(.disabled):hover { background: url(../images/go.png) no-repeat 100% 50%, -webkit-linear-gradient(#47b8ff, #3c93cf); }
-input.btn.big.submit:not(.disabled):active { background: url(../images/go.png) no-repeat 100% 50%, -webkit-linear-gradient(#077ab4, #2886c2); }
+input.btn.big.submit { padding-right: 32px !important; background: url(../images/submit.png) no-repeat 100% 50%, -webkit-linear-gradient(#33abf5, #2987c2); }
+input.btn.big.submit:not(.disabled):hover { background: url(../images/submit.png) no-repeat 100% 50%, -webkit-linear-gradient(#47b8ff, #3c93cf); }
+input.btn.big.submit:not(.disabled):active { background: url(../images/submit.png) no-repeat 100% 50%, -webkit-linear-gradient(#077ab4, #2886c2); }
 
 /* button groups */
 .btn-group { display: inline-block; height: 24px; }
