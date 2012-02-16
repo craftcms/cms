@@ -16,6 +16,7 @@ blx.ui.Switch = blx.Base.extend({
 	$btn: null,
 	$input: null,
 	on: null,
+	dragger: null,
 
 	dragStartMargin: null,
 
@@ -141,6 +142,12 @@ blx.ui.Switch = blx.Base.extend({
 			this.turnOn();
 		else
 			this.turnOff();
+	},
+
+	destroy: function()
+	{
+		this.base();
+		this.dragger.destroy();
 	}
 
 }, {
