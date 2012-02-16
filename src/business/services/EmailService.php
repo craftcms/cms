@@ -124,16 +124,18 @@ class EmailService extends BaseService
 
 	/**
 	 * @param User $user
+	 * @param      $site
+	 * @param      $authCode
 	 * @return bool
 	 */
-	public function sendRegistrationEmail(User $user)
+	public function sendRegistrationEmail(User $user, Site $site, $authCode)
 	{
 		$emailSettings = $this->getEmailSettings();
 		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
 		$email->setIsHtml(true);
 		$email->setSubject('Confirm Your Registration');
 
-		if ($this->sendTemplateEmail($email, 'register', array('user' => $user)))
+		if ($this->sendTemplateEmail($email, 'register', array('user' => $user, 'site' => $site, 'authCode' => $authCode)))
 			return true;
 
 		return false;

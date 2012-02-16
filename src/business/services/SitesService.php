@@ -92,7 +92,7 @@ class SitesService extends BaseService
 
 	/**
 	 * Returns all sites
-	 * @return
+	 * @return mixed
 	 */
 	public function getAll()
 	{
@@ -151,7 +151,18 @@ class SitesService extends BaseService
 			$licenseKeyStatus = $this->_getLicenseKeyStatus();
 
 		return $licenseKeyStatus;
+	}
 
+	/**
+	 * @return mixed
+	 */
+	public function getPrimarySite()
+	{
+		$site = Site::model()->findByAttributes(array(
+			'primary' => 1
+		));
+
+		return $site;
 	}
 
 	/**
