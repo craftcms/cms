@@ -8,17 +8,29 @@
 
 	<div><strong>Hey... you need to login.</strong></div>
 	<p>
-		<?php if (!isset($model)) $model = new LoginForm(); ?>
-		<?php echo Blocks\HtmlHelper::beginForm(UrlHelper::generateActionUrl('app/session/login')); ?>
+		<form method="post" action="">
+			<input type="hidden" name="action" value="app/session/login" />
 
-		<p><?php echo Blocks\HtmlHelper::errorSummary($model); ?></p>
+			<div class="body">
+				<div class="item field">
+					<label for="loginName">Email or Username:</label>
+					<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginName}" /></div>
+					{% if emailSettings.errors.emailAddress %}
+						{% include "_includes/error_list" errors=emailSettings.errors.emailAddress %}
+					{% endif %}
+				</div>
+				<div class="item field">
+					<label for="password">Password:</label>
+					<div class="input-wrapper"><input id="password" name="password" type="password" value="{password}" /></div>
+					{% if emailSettings.errors.emailAddress %}
+						{% include "_includes/error_list" errors=emailSettings.errors.emailAddress %}
+					{% endif %}
+				</div>
 
-		<div class="input-wrapper">Email or Username: <input type="text" name="loginName"></div><br />
-		<div class="input-wrapper">Password: <input type="password" name="password"></div><br />
+			</div>
 
-		<input class="btn" type="submit" value="Login">
-
-		<?php echo Blocks\HtmlHelper::endForm(); ?>
+			<input class="btn big submit" type="submit" value="Login" />
+		</form>
 	</p>
 
 {% /region %}
