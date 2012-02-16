@@ -49,7 +49,7 @@ code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 .code { font-family: Menlo, monospace; font-size: 12px !important; }
 
 h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .grid:first-child, .field:first-child { margin-top: 0 !important; }
-h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, .pane:last-child, .grid:last-child, .field:last-child, .blocks ul li:last-child { margin-bottom: 0 !important; }
+h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, .pane:last-child, .grid:last-child, .field:last-child, .blocksselect ul li:last-child { margin-bottom: 0 !important; }
 
 .left { float: left; }
 .right { float: right; }
@@ -385,14 +385,14 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 .colorpicker { font-family: Menlo, monospace; }
 .colorpicker .sample { display: inline-block; margin: 0 4px -1px 0; width: 12px; height: 12px; border-radius: 6px; }
 
-/* blocks */
-.blocks .input { padding: 0 4px; }
-.blocks .input ul li { min-height: 18px; padding: 4px 0; }
-.blocks .input ul li:not(:first-child) { border-top: 1px dotted #ddd; }
-.blocks .input ul li .icon { margin: -3px 0; }
-.blocks .input ul li .block-name { font-weight: bold; font-family: sans-serif; }
-.blocks .input ul li .block-type { margin-left: 1px; font-size: 11px; line-height: 15px; color: #999; }
-.blocks > .btn { margin-top: 8px; }
+/* blocks select */
+.blocksselect .input { padding: 0 4px; }
+.blocksselect .input ul li { min-height: 18px; padding: 4px 0; }
+.blocksselect .input ul li:not(:first-child) { border-top: 1px dotted #ddd; }
+.blocksselect .input ul li .icon { margin: -3px 0; }
+.blocksselect .input ul li .block-name { font-weight: bold; font-family: sans-serif; }
+.blocksselect .input ul li .block-type { margin-left: 1px; font-size: 11px; line-height: 15px; color: #999; }
+.blocksselect > .btn { margin-top: 8px; }
 
 /* ----------------------------------------
 /*  Thumbs and filenames
