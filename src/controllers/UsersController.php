@@ -87,12 +87,14 @@ class UsersController extends BaseController
 		$user->email = Blocks::app()->request->getPost('email');
 		$user->admin = (Blocks::app()->request->getPost('admin') === 'y');
 		$user->html_email = (Blocks::app()->request->getPost('html_email') === 'y');
+		$user->status = Blocks::app()->request->getPost('status');
 		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
 
 		if (!$existingUser)
 		{
 			$randomPassword = Blocks::app()->security->generatePassword();
 			$user->password = $randomPassword;
+			// set this to anything to pass validation.  registerUser correctly sets it.
 			$user->enc_type = 'md5';
 		}
 
@@ -100,15 +102,14 @@ class UsersController extends BaseController
 		{
 			if (!$existingUser)
 			{
-				$user = Blocks::app()->users->registerUser($user, $randomPassword, true);
+				$result = Blocks::app()->users->registerUser($user, $randomPassword, true);
 
-				if ($user !== null)
+				if (isset($result['user']) && $result['user'] !== null)
 				{
 					if (Blocks::app()->request->getPost('send_registration_email') === 'y')
 					{
 						$site = Blocks::app()->sites->currentSite;
-
-						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
+						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site, $result['authCode']->code)) == true)
 						{
 							// registered and sent email
 							Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user and sent registration email.');
@@ -138,6 +139,21 @@ class UsersController extends BaseController
 		}
 
 		$this->loadRequestedTemplate(array('theUser' => $user));
+	}
+
+	/**
+	 * @param $code
+	 */
+	public function actionValidate($code)
+	{
+		if (($user = Blocks::app()->security->validateUserRegistration($code)) !== null)
+		{
+			Blocks::app()->user->setMessage(MessageStatus::Success, 'Success!');
+			$this->redirect('login');
+		}
+
+		Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem validating this code.');
+		$this->redirect('');
 	}
 }
 

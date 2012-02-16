@@ -70,21 +70,37 @@ class UsersService extends BaseService
 	}
 
 	/**
-	 * @param \Blocks\User $user
-	 * @param              $password
-	 * @param bool         $passwordReset
+	 * @param \Blocks\User                     $user
+	 * @param                                  $password
+	 * @param bool                             $passwordReset
+	 *
 	 * @return User
 	 */
-	public function registerUser(User $user, $password, $passwordReset = false)
+	public function registerUser(User $user, $password, $passwordReset = true)
 	{
 		$hashAndType = Blocks::app()->security->hashPassword($password);
 		$user->password = $hashAndType['hash'];
 		$user->enc_type = $hashAndType['encType'];
+		$user->status = UserAccountStatus::PendingVerification;
 		$user->password_reset_required = $passwordReset;
 
 		$user->save();
 
-		return $user;
+		// refresh to get the user id
+		$user->refresh();
+
+		$authCode = new AuthCode();
+		$authCode->user_id = $user->id;
+		$date = new \DateTime();
+		$authCode->date_issued = $date->getTimestamp();
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
+		$authCode->expiration_date = $date->add($dateInterval)->getTimestamp();
+		$authCode->type = AuthorizationCodeType::Registration;
+		$authCode->save();
+		// refresh to get the db generated code.
+		$authCode->refresh();
+
+		return array('user' => $user, 'authCode' => $authCode);
 	}
 
 	/**
@@ -128,4 +144,27 @@ class UsersService extends BaseService
 	{
 		return UserGroup::model()->findAll();
 	}
+
+	public function getTotalUsers()
+	{
+		return User::model()->count();
+	}
+
+	public function unlockUser(User $user)
+	{
+		$user->status = UserAccountStatus::Approved;
+		$user->save();
+		return $user;
+	}
+
+	public function getUserByAuthCode($authCode)
+	{
+		$authCode = AuthCode::model()->findByAttributes(array(
+				'code' => $authCode,
+		));
+
+		return $authCode->user;
+	}
+
+
 }

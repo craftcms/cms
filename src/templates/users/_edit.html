@@ -70,6 +70,18 @@
 				{% if theUser.id %}
 					<div class="item field">
 						<div class="input-wrapper">
+							<label for="status">Status</label>
+							<select id="status" name="status">
+								<option value="Approved" {% if theUser.status == 'Approved' %}selected{% endif %}>Approved</option>
+								<option value="PendingVerification" {% if theUser.status == 'PendingVerification' %}selected{% endif %}>Pending Verification</option>
+								<option value="Suspended" {% if theUser.status == 'Suspended' %}selected{% endif %}>Suspended</option>
+								<option value="PasswordLockout" {% if theUser.status == 'PasswordLockout' %}selected{% endif %}>Password Lockout</option>
+								<option value="MustChangePassword" {% if theUser.status == 'MustChangePassword' %}selected{% endif %}>Must Change Password</option>
+							</select>
+						</div>
+					</div>
+					<div class="item field">
+						<div class="input-wrapper">
 							<label for="password_reset">Password Reset Required</label>
 							{% include "_includes/switch" name="password_reset" on=theUser.password_reset_required %}
 						</div>
@@ -78,7 +90,7 @@
 				{% if !theUser.id %}
 					<div class="item field">
 						<div class="input-wrapper">
-							<label for="send_registration_email">Send new user registration email with password reset link?</label>
+							<label for="send_registration_email">Send new user registration email?</label>
 							{% include "_includes/switch" name="send_registration_email" on=request.getPost('send_registration_email') default="y" %}
 						</div>
 					</div>
