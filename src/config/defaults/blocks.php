@@ -25,6 +25,11 @@ $blocksConfig['resourceTriggerWord'] = 'resource';
 $blocksConfig['actionTriggerWord'] = 'action';
 
 /**
+ *
+ */
+$blocksConfig['logoutTriggerWord'] = 'logout';
+
+/**
  * If you're running with devMode = false, this cache time will be used instead of devCacheTimeSeconds.
  */
 $blocksConfig['cacheTimeSeconds'] = 86400;
