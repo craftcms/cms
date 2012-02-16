@@ -193,15 +193,29 @@ class HttpRequest extends \CHttpRequest
 		{
 			$resourceTriggerWord = Blocks::app()->config->getItem('resourceTriggerWord');
 			$actionTriggerWord = Blocks::app()->config->getItem('actionTriggerWord');
+			$logoutTriggerWord = Blocks::app()->config->getItem('logoutTriggerWord');
 
-			if ($this->getPathSegment(1) === $resourceTriggerWord)
+			$firstPathSegment = $this->getPathSegment(1);
+
+			if ($firstPathSegment === $resourceTriggerWord)
 				$this->_mode = RequestMode::Resource;
 
-			else if ($this->getPathSegment(1) === $actionTriggerWord)
+			else if ($firstPathSegment === $actionTriggerWord || $firstPathSegment === $logoutTriggerWord)
 			{
 				$this->_mode = RequestMode::Action;
-				// get the URL segments without the "action" segment
-				$segs = array_slice(array_merge($this->pathSegments), 1);
+
+				// if we see a request with $logoutTriggerWord come in (/logout), we are going to treat it like an action request
+				if ($firstPathSegment === $logoutTriggerWord)
+				{
+					$segs[0] = 'session';
+					$segs[1] = 'logout';
+				}
+				else
+				{
+					// get the URL segments without the "action" segment
+					$segs = array_slice(array_merge($this->pathSegments), 1);
+				}
+
 				$this->setActionVars($segs);
 			}
 
@@ -223,13 +237,15 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Set action request variables
+	 *
+	 * @param $segs
 	 */
 	protected function setActionVars($segs)
 	{
 		$this->actionPlugin = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
 		$i = ($this->actionPlugin === false ? 0 : 2);
 		$this->actionController = (isset($segs[$i]) ? $segs[$i] : 'default');
-		$this->actionAction     = (isset($segs[$i+1]) ? $segs[$i+1] : 'index');
+		$this->actionAction     = (isset($segs[$i + 1]) ? $segs[$i + 1] : 'index');
 	}
 
 	/**
