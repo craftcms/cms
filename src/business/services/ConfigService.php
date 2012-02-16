@@ -8,6 +8,10 @@ class ConfigService extends BaseService
 {
 	/**
 	 * Get a config item
+	 *
+	 * @param      $item
+	 * @param null $default
+	 * @return null
 	 */
 	public function getItem($item, $default = null)
 	{
@@ -19,6 +23,10 @@ class ConfigService extends BaseService
 
 	/**
 	 * Get a DB config item
+	 *
+	 * @param      $item
+	 * @param null $default
+	 * @return null
 	 */
 	public function getDbItem($item, $default = null)
 	{
@@ -30,6 +38,7 @@ class ConfigService extends BaseService
 
 	/**
 	 * Get all license keys
+	 * @return mixed
 	 */
 	public function getLicenseKeys()
 	{
