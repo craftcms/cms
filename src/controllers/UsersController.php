@@ -90,6 +90,8 @@ class UsersController extends BaseController
 		$user->status = Blocks::app()->request->getPost('status');
 		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
 
+		$requireEmailValidation = (Blocks::app()->request->getPost('require_email_validation') === 'y');
+
 		if (!$existingUser)
 		{
 			$randomPassword = Blocks::app()->security->generatePassword();
@@ -102,11 +104,11 @@ class UsersController extends BaseController
 		{
 			if (!$existingUser)
 			{
-				$result = Blocks::app()->users->registerUser($user, $randomPassword, true);
+				$result = Blocks::app()->users->registerUser($user, $randomPassword, $requireEmailValidation, true);
 
 				if (isset($result['user']) && $result['user'] !== null)
 				{
-					if (Blocks::app()->request->getPost('send_registration_email') === 'y')
+					if ($requireEmailValidation)
 					{
 						$site = Blocks::app()->sites->currentSite;
 						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site, $result['authCode']->code)) == true)
@@ -119,6 +121,11 @@ class UsersController extends BaseController
 							// registered but there was a problem sending the email.
 							Blocks::app()->user->setMessage(MessageStatus::Notice, 'Successfully registered user, but there was a problem sending the email: '.$emailStatus);
 						}
+					}
+					else
+					{
+						// registered user with no email validation
+						Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user.');
 					}
 				}
 				else

@@ -73,32 +73,42 @@ class UsersService extends BaseService
 	 * @param \Blocks\User                     $user
 	 * @param                                  $password
 	 * @param bool                             $passwordReset
+	 * @param                                  $emailValidation
 	 *
 	 * @return User
 	 */
-	public function registerUser(User $user, $password, $passwordReset = true)
+	public function registerUser(User $user, $password, $emailValidation = true, $passwordReset = true)
 	{
 		$hashAndType = Blocks::app()->security->hashPassword($password);
 		$user->password = $hashAndType['hash'];
 		$user->enc_type = $hashAndType['encType'];
-		$user->status = UserAccountStatus::PendingVerification;
 		$user->password_reset_required = $passwordReset;
+		$authCode = null;
 
-		$user->save();
+		if ($emailValidation)
+		{
+			$user->status = UserAccountStatus::PendingVerification;
+			$user->save();
 
-		// refresh to get the user id
-		$user->refresh();
+			// refresh to get the user id
+			$user->refresh();
 
-		$authCode = new AuthCode();
-		$authCode->user_id = $user->id;
-		$date = new \DateTime();
-		$authCode->date_issued = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
-		$authCode->expiration_date = $date->add($dateInterval)->getTimestamp();
-		$authCode->type = AuthorizationCodeType::Registration;
-		$authCode->save();
-		// refresh to get the db generated code.
-		$authCode->refresh();
+			$authCode = new AuthCode();
+			$authCode->user_id = $user->id;
+			$date = new \DateTime();
+			$authCode->date_issued = $date->getTimestamp();
+			$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
+			$authCode->expiration_date = $date->add($dateInterval)->getTimestamp();
+			$authCode->type = AuthorizationCodeType::Registration;
+			$authCode->save();
+			// refresh to get the db generated code.
+			$authCode->refresh();
+		}
+		else
+		{
+			$user->status = UserAccountStatus::Approved;
+			$user->save();
+		}
 
 		return array('user' => $user, 'authCode' => $authCode);
 	}

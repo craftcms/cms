@@ -117,7 +117,7 @@ class SecurityService extends BaseService
 
 			if ($user !== null)
 			{
-				$user->status == UserAccountStatus::Approved;
+				$user->status = UserAccountStatus::Approved;
 				$user->save();
 			}
 
@@ -134,13 +134,15 @@ class SecurityService extends BaseService
 	private function _validateAuthorizationRequest($code)
 	{
 		$authCode = Blocks::app()->security->getAuthCodeByCode($code);
-		$user = $authCode->user;
+
 
 		if ($authCode == null)
 		{
-			Blocks::log('Unable to find auth code:'.$authCode->code);
+			Blocks::log('Unable to find auth code:'.$code);
 			throw new Exception('Unable to validate this authorization code.');
 		}
+		else
+			$user = $authCode->user;
 
 		if ($authCode->date_activated !== null)
 		{

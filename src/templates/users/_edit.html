@@ -90,8 +90,8 @@
 				{% if !theUser.id %}
 					<div class="item field">
 						<div class="input-wrapper">
-							<label for="send_registration_email">Send new user registration email?</label>
-							{% include "_includes/switch" name="send_registration_email" on=request.getPost('send_registration_email') default="y" %}
+							<label for="require_email_validation">Require Email Validation?</label>
+							{% include "_includes/switch" name="require_email_validation" on=request.getPost('require_email_validation') default="y" %}
 						</div>
 					</div>
 				{% endif %}
