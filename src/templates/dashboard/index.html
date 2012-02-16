@@ -1,7 +1,7 @@
 {% layout "_layouts/full" pageTitle="Dashboard" %}
 
 {% region "styles" %}
-	{% include "_includes/css_include" file="app/styles/dashboard.css" %}
+	{% include "_includes/css_include" file="styles/dashboard.css" %}
 {% endregion %}
 
 {% region "main" %}
@@ -79,9 +79,9 @@
 	{% if !cp.updateInfoCached %}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{url.generateActionUrl('app/dashboard/getalerts')}';
+			window.getAlertsUrl = '{url.generateActionUrl('dashboard/getalerts')}';
 		</script>
 	{% endif %}
 
-	{% include "_includes/js_include" file="app/scripts/dashboard.js" %}
+	{% include "_includes/js_include" file="scripts/dashboard.js" %}
 {% endregion %}

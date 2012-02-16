@@ -6,7 +6,7 @@
 
 {% region "main" %}
 	<form method="post" action="">
-		<input type="hidden" name="action" value="app/settings/saveemailsettings" />
+		<input type="hidden" name="action" value="settings/saveemailsettings" />
 
 		<div id="email-settings" class="pane">
 			<div class="head">
@@ -113,5 +113,5 @@
 {% endregion %}
 
 {% region "scripts" %}
-	{% include "_includes/js_include" file="app/scripts/email.js" %}
+	{% include "_includes/js_include" file="scripts/email.js" %}
 {% endregion %}

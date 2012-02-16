@@ -1,0 +1,10 @@
+<div class="blocksselect">
+	<div class="input">
+		<ul>
+			{% include "_includes/blocksselect/blocks_list" blocks=blocks %}
+			<li><a><span class="icon icon44"></span>Add a content block</a></li>
+			{% if blocks.length < 1 %}<li></li>{% endif %}
+			{% if blocks.length < 2 %}<li></li>{% endif %}
+		</ul>
+	</div>
+</div>

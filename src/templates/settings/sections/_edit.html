@@ -10,7 +10,7 @@
 	</div>
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="app/content/saveSection" />
+		<input type="hidden" name="action" value="content/saveSection" />
 		<input type="hidden" name="redirect" value="settings/sections" />
 		{% if section.id %}<input type="hidden" name="section_id" value="{section.id}">{% endif %}
 		<div class="pane">
@@ -72,21 +72,7 @@
 				<div class="item field">
 					<label for="blocks">Content Blocks</label>
 					<p>Which content blocks should be present when editing an entry in this section?</p>
-					<div class="blocksselect">
-						<div class="input">
-							<ul>
-								{% foreach section.blocks as block %}
-									<li>
-										<span class="icon icon137"></span><span class="block-name">{block.name}</span>
-										<span class="block-type">{block.blockType.name}</span>
-									</li>
-								{% endforeach %}
-								<li><a><span class="icon icon44"></span>Add a content block</a></li>
-								{% if section.blocks.length < 1 %}<li></li>{% endif %}
-								{% if section.blocks.length < 2 %}<li></li>{% endif %}
-							</ul>
-						</div>
-					</div>
+					{% include "_includes/blocksselect/field" blocks=section.blocks %}
 				</div>
 			</div>
 		</div>

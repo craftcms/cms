@@ -173,13 +173,14 @@ class App extends \CWebApplication
 	{
 		if ($this->request->mode == RequestMode::Action)
 		{
-			$handle = $this->request->actionHandle;
+			$plugin = $this->request->actionPlugin;
+			if ($plugin !== false)
+			{
+				if ($plugin === null)
+					throw new HttpException(404);
 
-			if (!$handle)
-				throw new HttpException(404);
-
-			if ($handle != 'app')
-				Blocks::import("plugins.{$handle}.controllers.*");
+				Blocks::import("plugins.{$plugin}.controllers.*");
+			}
 
 			$this->runController($this->request->actionController.'/'.$this->request->actionAction);
 			$this->end();
@@ -203,18 +204,27 @@ class App extends \CWebApplication
 			self::import('business.web.UrlManager');
 			self::import('business.services.PathService');
 
-			// get the path segments, except for the first one which we already know is "resources"
+			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->pathSegments), 1);
 
-			// get the resource handle ("app" or a plugin class)
-			$handle = array_shift($segs);
+			// Is this a plugin resource?
+			$plugin = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
+			if ($plugin !== false)
+			{
+				if ($plugin === null)
+					throw new HttpException(404);
 
-			if ($handle == 'app')
-				$rootFolderPath = $this->path->resourcesPath;
+				$segs = array_splice($segs, 2);
+
+				$rootFolderUrl = UrlHelper::generateUrl($this->config->getItem('resourceTriggerWord')."/plugin/{$plugin}/");
+				$rootFolderPath = $this->path->pluginsPath."{$plugin}/resources/";
+			}
 			else
-				$rootFolderPath = $this->path->pluginsPath.$handle.'/';
+			{
+				$rootFolderUrl = UrlHelper::generateUrl($this->config->getItem('resourceTriggerWord').'/');
+				$rootFolderPath = $this->path->resourcesPath;
+			}
 
-			$rootFolderUrl = UrlHelper::generateUrl($this->config->getItem('resourceTriggerWord').'/'.$handle).'/';
 			$relativeResourcePath = implode('/', $segs);
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
