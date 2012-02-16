@@ -59,3 +59,18 @@ $blocksConfig['pathVar'] = 'p';
  * d = day(s)
  */
 $blocksConfig['sessionTimeout'] = '1h';
+
+/**
+ * The length of time a newly generated authorization code will remain active before expiring.
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
+ */
+$blocksConfig['authCodeExpiration'] = '48h';
+
+
+/**
+ * The number of invalid login attempts before the user account is locked.
+ */
+$blocksConfig['maxInvalidPasswordAttempts'] = 4;
