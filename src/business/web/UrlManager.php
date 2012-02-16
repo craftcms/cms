@@ -53,7 +53,7 @@ class UrlManager extends \CUrlManager
 
 		if (!$matchFound)
 			if (!$this->matchRoute())
-				$this->matchTemplate();
+				$this->matchTemplatePath();
 	}
 
 	/**
@@ -141,13 +141,16 @@ class UrlManager extends \CUrlManager
 	 * Sets the template match property if a match is found.
 	 * @return bool True is a match is found, false otherwise.
 	 */
-	public function matchTemplate()
+	public function matchTemplatePath()
 	{
 		// Make sure they're not trying to access a private template
-		foreach (Blocks::app()->request->pathSegments as $requestPathSeg)
+		if (!Blocks::app()->request->isAjaxRequest)
 		{
-			if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
-				return false;
+			foreach (Blocks::app()->request->pathSegments as $requestPathSeg)
+			{
+				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
+					return false;
+			}
 		}
 
 		// Does a request path match a template?
