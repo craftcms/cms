@@ -100,4 +100,98 @@ class SecurityService extends BaseService
 		// return our randomly generated hashed password and type.
 		return $randomString;
 	}
+
+	public function getAuthCodeByCode($code)
+	{
+		return AuthCode::model()->findByAttributes(array(
+			'code' => $code,
+		));
+	}
+
+	public function validateUserRegistration($code)
+	{
+		$transaction = Blocks::app()->db->beginTransaction();
+		try
+		{
+			$user = $this->_validateAuthorizationRequest($code);
+
+			if ($user !== null)
+			{
+				$user->status == UserAccountStatus::Approved;
+				$user->save();
+			}
+
+			$transaction->commit();
+			return $user;
+		}
+		catch(Exception $e)
+		{
+			$transaction->rollback();
+			throw $e;
+		}
+	}
+
+	private function _validateAuthorizationRequest($code)
+	{
+		$authCode = Blocks::app()->security->getAuthCodeByCode($code);
+		$user = $authCode->user;
+
+		if ($authCode == null)
+		{
+			Blocks::log('Unable to find auth code:'.$authCode->code);
+			throw new Exception('Unable to validate this authorization code.');
+		}
+
+		if ($authCode->date_activated !== null)
+		{
+			Blocks::log('AuthCode: '.$authCode->code.' has already been activated.');
+			throw new Exception('Unable to validate this authorization code.');
+		}
+
+		if (DateTimeHelper::getCurrentUnixTimeStamp() > $authCode->expiration_date)
+		{
+			Blocks::log('AuthCode: '.$authCode->code.' has already expired.');
+			throw new Exception('Unable to validate this authorization code.');
+		}
+
+		if ($authCode->type == AuthorizationCodeType::Registration)
+		{
+			switch ($user->status)
+			{
+				case UserAccountStatus::Approved:
+				{
+					Blocks::log('The user account '.$user->username.' has already been approved.');
+					throw new Exception('Unable to validate this authorization code.');
+					break;
+				}
+
+				case UserAccountStatus::Suspended:
+				{
+					Blocks::log('The user account '.$user->username.' is in a suspended state and can\'t be verified.');
+					throw new Exception('Unable to validate this authorization code.');
+					break;
+				}
+
+				case UserAccountStatus::PasswordLockout:
+				{
+					Blocks::log('The user account '.$user->username.' is in a locked state and can\'t be verified.');
+					throw new Exception('Unable to validate this authorization code.');
+					break;
+				}
+
+				case UserAccountStatus::PendingVerification:
+				{
+					// validate?
+					$authCode->date_activated = DateTimeHelper::getCurrentUnixTimeStamp();
+					$authCode->save();
+					return $user;
+				}
+			}
+		}
+
+		if ($authCode->type == AuthorizationCodeType::ResetPassword || $authCode->type == AuthorizationCodeType::ForgotPassword)
+		{
+			// verifyauthcode with hashed info?
+		}
+	}
 }
