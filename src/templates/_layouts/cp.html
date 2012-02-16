@@ -2,8 +2,8 @@
 {% region "title" %}{% if pageTitle %}{pageTitle} – {% endif %}Blocks{% endregion %}
 
 {% region "styles" %}
-	{% include "_includes/css_include" file="app/styles/cp.css" %}
-	{% include "_includes/css_include" file="app/styles/icons.css" %}
+	{% include "_includes/css_include" file="styles/cp.css" %}
+	{% include "_includes/css_include" file="styles/icons.css" %}
 
 	{!-- include any styles defined by the subtemplate --}
 	{styles}
@@ -40,7 +40,7 @@
 			</div>
 			<div>
 				<ul class="right">
-					<li id="nav-account"><a {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account" title="My Account"><img src="{url.resource('app/images/avatar.jpg')}" alt="">Brandon</a></li>
+					<li id="nav-account"><a {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account" title="My Account"><img src="{url.resource('images/avatar.jpg')}" alt="">Brandon</a></li>
 				</ul>
 			</div>
 		{% else %}
@@ -56,17 +56,17 @@
 {% endregion %}
 
 {% region "scripts" %}
-	{% include "_includes/js_include" file="app/scripts/blx.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/DragCore.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/Drag.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/DragSort.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/HandleGenerator.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/HUD.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/Menu.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/Pill.js" %}
-	{% include "_includes/js_include" file="app/lib/rangy-1.2.1.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/RTE.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/SelectMenu.js" %}
-	{% include "_includes/js_include" file="app/scripts/ui/Switch.js" %}
+	{% include "_includes/js_include" file="scripts/blx.js" %}
+	{% include "_includes/js_include" file="scripts/ui/DragCore.js" %}
+	{% include "_includes/js_include" file="scripts/ui/Drag.js" %}
+	{% include "_includes/js_include" file="scripts/ui/DragSort.js" %}
+	{% include "_includes/js_include" file="scripts/ui/HandleGenerator.js" %}
+	{% include "_includes/js_include" file="scripts/ui/HUD.js" %}
+	{% include "_includes/js_include" file="scripts/ui/Menu.js" %}
+	{% include "_includes/js_include" file="scripts/ui/Pill.js" %}
+	{% include "_includes/js_include" file="lib/rangy-1.2.1.js" %}
+	{% include "_includes/js_include" file="scripts/ui/RTE.js" %}
+	{% include "_includes/js_include" file="scripts/ui/SelectMenu.js" %}
+	{% include "_includes/js_include" file="scripts/ui/Switch.js" %}
 	{scripts}
 {% endregion %}

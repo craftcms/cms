@@ -52,7 +52,7 @@ class UsersController extends BaseController
 					Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem registering the user.  Check your log files.');
 				}
 
-				$this->redirect(UrlHelper::generateActionUrl('app/users/register'));
+				$this->redirect(UrlHelper::generateActionUrl('users/register'));
 			}
 
 			$messages = ModelHelper::flattenErrors($user);

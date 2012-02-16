@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class HttpRequest extends \CHttpRequest
 {
-	public $actionHandle;
+	public $actionPlugin;
 	public $actionController;
 	public $actionAction;
 
@@ -200,17 +200,15 @@ class HttpRequest extends \CHttpRequest
 			else if ($this->getPathSegment(1) === $actionTriggerWord)
 			{
 				$this->_mode = RequestMode::Action;
-				$this->actionHandle     = $this->getPathSegment(2);
-				$this->actionController = $this->getPathSegment(3, 'default');
-				$this->actionAction     = $this->getPathSegment(4, 'index');
+				// get the URL segments without the "action" segment
+				$segs = array_slice(array_merge($this->pathSegments), 1);
+				$this->setActionVars($segs);
 			}
 
-			else if (($action = $this->getPost($actionTriggerWord)) !== null && ($actionParts = array_filter(explode('/', $action))))
+			else if (($action = $this->getPost($actionTriggerWord)) !== null && ($segs = array_filter(explode('/', $action))))
 			{
 				$this->_mode = RequestMode::Action;
-				$this->actionHandle     = isset($actionParts[0]) ? $actionParts[0] : null;
-				$this->actionController = isset($actionParts[1]) ? $actionParts[1] : 'default';
-				$this->actionAction     = isset($actionParts[2]) ? $actionParts[2] : 'index';
+				$this->setActionVars($segs);
 			}
 
 			else if (BLOCKS_CP_REQUEST === true)
@@ -221,6 +219,17 @@ class HttpRequest extends \CHttpRequest
 		}
 
 		return $this->_mode;
+	}
+
+	/**
+	 * Set action request variables
+	 */
+	protected function setActionVars($segs)
+	{
+		$this->actionPlugin = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
+		$i = ($this->actionPlugin === false ? 0 : 2);
+		$this->actionController = (isset($segs[$i]) ? $segs[$i] : 'default');
+		$this->actionAction     = (isset($segs[$i+1]) ? $segs[$i+1] : 'index');
 	}
 
 	/**

@@ -1,8 +1,8 @@
 {% layout "_layouts/basic" title="Blocks Update" %}
 
 {% region "styles" %}
-	{% include "_includes/css_include" file="app/styles/cp.css" %}
-	{% include "_includes/css_include" file="app/styles/update.css" %}
+	{% include "_includes/css_include" file="styles/cp.css" %}
+	{% include "_includes/css_include" file="styles/update.css" %}
 {% endregion %}
 
 {% region "body" %}
@@ -12,8 +12,8 @@
 {% region "scripts" %}
 	<script type="text/javascript">
 		window.updateHandle = '{handle}';
-		window.updateInfoUrl = '{url.generateActionUrl('app/update/getupdateinfo', 'h=')}';
-		window.updateUrl = '{url.generateActionUrl('app/update/update', 'h=')}';
+		window.updateInfoUrl = '{url.generateActionUrl('update/getupdateinfo', 'h=')}';
+		window.updateUrl = '{url.generateActionUrl('update/update', 'h=')}';
 	</script>
-	{% include "_includes/js_include" file="app/scripts/update.js" %}
+	{% include "_includes/js_include" file="scripts/update.js" %}
 {% endregion %}

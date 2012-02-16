@@ -1,7 +1,7 @@
 {% layout "_layouts/sidebar" pageTitle=pageTitle %}
 
 {% region "styles" %}
-	{% include "_includes/css_include" file="app/styles/content.css" %}
+	{% include "_includes/css_include" file="styles/content.css" %}
 {% endregion %}
 
 {% region "sidebar" %}
@@ -42,7 +42,7 @@
 		});
 
 		new blx.ui.RTE('content', {
-			css: "{url.resource('app/styles/rte.css')}"
+			css: "{url.resource('styles/rte.css')}"
 		});
 
 	</script>

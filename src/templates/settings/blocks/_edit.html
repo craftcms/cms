@@ -10,7 +10,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 	</div>
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="app/contentblocks/save" />
+		<input type="hidden" name="action" value="contentblocks/save" />
 		<input type="hidden" name="redirect" value="settings/blocks" />
 		{% if block.id %}<input type="hidden" name="block_id" value="{block.id}">{% endif %}
 
@@ -82,7 +82,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 {% endregion %}
 
 {% region "scripts" %}
-	{% include "_includes/js_include" file="app/scripts/block-settings.js" %}
+	{% include "_includes/js_include" file="scripts/block-settings.js" %}
 	<script type="text/javascript">
 		{% if !block.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
 	</script>

@@ -9,7 +9,7 @@
 	<div><strong>Hey... you need to login.</strong></div>
 	<p>
 		<?php if (!isset($model)) $model = new LoginForm(); ?>
-		<?php echo Blocks\HtmlHelper::beginForm(UrlHelper::generateActionUrl('app/session/login')); ?>
+		<?php echo Blocks\HtmlHelper::beginForm(UrlHelper::generateActionUrl('session/login')); ?>
 
 		<p><?php echo Blocks\HtmlHelper::errorSummary($model); ?></p>
 
