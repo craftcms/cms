@@ -173,9 +173,6 @@ class App extends \CWebApplication
 	{
 		if ($this->request->mode == RequestMode::Action)
 		{
-			if (!$this->request->getPathSegment(2))
-				throw new HttpException(404);
-
 			$handle = $this->request->actionHandle;
 
 			if (!$handle)
