@@ -154,17 +154,27 @@ class DatabaseHelper
 	{
 		$dbName = Blocks::app()->config->getDbItem('database');
 
-		Blocks::app()->db->createCommand(
-							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->config->getDbItem('tablePrefix').'_auditinfoinsert_'.$tableName.'`
-							 BEFORE INSERT ON `'.$dbName.'`.`{{'.$tableName.'}}`
-							 FOR EACH ROW
-							 SET NEW.date_created = UNIX_TIMESTAMP(),
-								 NEW.date_updated = UNIX_TIMESTAMP(),
-								 NEW.uid = UUID();
-								 END;
-								 SQL;'
-					)->execute();
+		$sql = 'CREATE
+				TRIGGER `'.$dbName.'`.`'.Blocks::app()->config->getDbItem('tablePrefix').'_auditinfoinsert_'.$tableName.'`
+				BEFORE INSERT ON `'.$dbName.'`.`{{'.$tableName.'}}`
+				FOR EACH ROW
+				SET NEW.date_created = UNIX_TIMESTAMP(),
+					NEW.date_updated = UNIX_TIMESTAMP(),';
+
+		if ($tableName == 'AuthCode')
+		{
+			$sql .= 'NEW.uid = UUID(),
+					 NEW.code = UUID();';
+		}
+		else
+		{
+			$sql .= 'NEW.uid = UUID();';
+		}
+
+		$sql .= 'END;
+				 SQL;';
+
+		Blocks::app()->db->createCommand($sql)->execute();
 	}
 
 	/**
