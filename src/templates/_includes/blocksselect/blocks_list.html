@@ -1,0 +1,8 @@
+{% foreach blocks as block %}
+	{% if !block.id.in(selected) %}
+		<li>
+			<span class="icon icon137"></span><span class="block-name">{block.name}</span>
+			<span class="block-type">{block.blockType.name}</span>
+		</li>
+	{% endif %}
+{% endforeach %}
