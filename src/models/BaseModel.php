@@ -336,7 +336,7 @@ abstract class BaseModel extends \CActiveRecord
 		// Add the remaining global columns
 		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Int, 'required' => true));
 		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Int, 'required' => true));
-		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Varchar, 'maxLength' => 36, 'required' => true));
+		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true));
 
 		// Create the table
 		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);
