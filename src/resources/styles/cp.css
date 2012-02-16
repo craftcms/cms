@@ -13,7 +13,6 @@ a{text-decoration:none;}
 input,textarea{margin:0;font-family:sans-serif;font-size:100%;}
 textarea{resize:none;}
 select{margin:0;}
-strong{font-weight:bold;}
 
 /* ----------------------------------------
 /*  Basic elements
@@ -34,7 +33,9 @@ ol { padding-left: 40px; list-style-type: decimal; }
 
 em,
 i { font-style: italic; }
-i em { font-weight: bold; }
+
+strong,
+i em { font-weight: bold; font-family: sans-serif; }
 
 .sel { cursor: default !important; }
 
@@ -319,7 +320,7 @@ span.status.off { background-position: 0 -20px; }
 /*  Tables
 /* ----------------------------------------*/
 
-table th { font-weight: bold; color: #666; text-align: left; vertical-align: top; }
+table th { font-weight: bold; font-family: sans-serif; color: #666; text-align: left; vertical-align: top; }
 
 /* matrix */
 table.matrix { display: table; padding: 0; }
@@ -347,7 +348,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .grid + .field,
 .field + .grid .field:first-child,
 .grid + .grid .field:first-child { padding-top: 0 !important; }
-.field label { display: inline-block; margin-bottom: 5px; font-weight: bold; color: #666; }
+.field label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
 .field label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
 .field p { margin: -3px 0 8px; color: #808080; }
 
@@ -389,8 +390,8 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 .blocks .input ul li { min-height: 18px; padding: 4px 0; }
 .blocks .input ul li:not(:first-child) { border-top: 1px dotted #ddd; }
 .blocks .input ul li .icon { margin: -3px 0; }
-.blocks .input ul li .block-name { font-weight: bold; }
-.blocks .input ul li .block-type { margin-left: 1px; font-size: 11px; color: #999; }
+.blocks .input ul li .block-name { font-weight: bold; font-family: sans-serif; }
+.blocks .input ul li .block-type { margin-left: 1px; font-size: 11px; line-height: 15px; color: #999; }
 .blocks > .btn { margin-top: 8px; }
 
 /* ----------------------------------------
