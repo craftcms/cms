@@ -385,7 +385,9 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 .colorpicker .sample { display: inline-block; margin: 0 4px -1px 0; width: 12px; height: 12px; border-radius: 6px; }
 
 /* blocks */
-.blocks .input ul li { margin-bottom: 4px;  }
+.blocks .input { padding: 0 4px; }
+.blocks .input ul li { min-height: 18px; padding: 4px 0; }
+.blocks .input ul li:not(:first-child) { border-top: 1px dotted #ddd; }
 .blocks .input ul li .icon { margin: -3px 0; }
 .blocks .input ul li .block-name { font-weight: bold; }
 .blocks .input ul li .block-type { margin-left: 1px; font-size: 11px; color: #999; }

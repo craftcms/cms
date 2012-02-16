@@ -60,7 +60,7 @@ class Tag
 	 */
 	public function __toArray()
 	{
-		return array($this);
+		return array();
 	}
 
 	/**
