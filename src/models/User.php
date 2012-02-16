@@ -17,8 +17,8 @@ class User extends BaseModel
 		'enc_type'                              => array('type' => AttributeType::Char, 'maxLength' => 10, 'required' => true),
 		'auth_token'                            => array('type' => AttributeType::Char, 'maxLength' => 32),
 		'admin'                                 => AttributeType::Boolean,
-		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),
 		'password_reset_required'               => AttributeType::Boolean,
+		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),
 		'last_login_date'                       => AttributeType::Int,
 		'last_password_change_date'             => AttributeType::Int,
 		'last_lockout_date'                     => AttributeType::Int,
@@ -31,8 +31,9 @@ class User extends BaseModel
 	);
 
 	protected $hasMany = array(
-		'members' => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
-		'groups'  => array('model' => 'UserGroup', 'through' => 'UserGroupMembers', 'foreignKey' => array('user'=>'group')),
-		'widgets' => array('model' => 'UserWidget', 'foreignKey' => 'user')
+		'members'   => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
+		'groups'    => array('model' => 'UserGroup', 'through' => 'UserGroupMembers', 'foreignKey' => array('user' => 'group')),
+		'widgets'   => array('model' => 'UserWidget', 'foreignKey' => 'user'),
+		'authCodes' => array('model' => 'AuthCode', 'foreignKey' => 'authCode')
 	);
 }
