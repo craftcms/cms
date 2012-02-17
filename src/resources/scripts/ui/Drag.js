@@ -68,6 +68,17 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 	},
 
 	/**
+	 * On Drag Stop
+	 */
+	onDragStop: function()
+	{
+		// clear the helper interval
+		clearInterval(this.updateHelperPosInterval);
+
+		this.base();
+	},
+
+	/**
 	 * Get the draggee(s) based on the filter setting, with the clicked item listed first
 	 */
 	getDraggee: function()
@@ -83,11 +94,11 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 				break;
 
 			default:
-				this.$draggee = $(this.target);
+				this.$draggee = this.$targetItem;
 		}
 
 		// put the target item in the front of the list
-		this.$draggee = $([ this.target ].concat(this.$draggee.not(this.target).toArray()));
+		this.$draggee = $([ this.$targetItem[0] ].concat(this.$draggee.not(this.$targetItem[0]).toArray()));
 	},
 
 	/**
@@ -98,7 +109,6 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 		for (var i = 0; i < this.$draggee.length; i++)
 		{
 			var $draggee = $(this.$draggee[i]),
-				draggeeOffset = $draggee.offset(),
 				$draggeeHelper = $draggee.clone();
 
 			$draggeeHelper.css({
@@ -113,21 +123,34 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 
 			$draggeeHelper.appendTo(document.body);
 
+			var helperPos = this.getHelperTarget(i);
+
 			$draggeeHelper.css({
 				position: 'absolute',
-				top: draggeeOffset.top,
-				left: draggeeOffset.left,
+				top: helperPos.top,
+				left: helperPos.left,
 				zIndex: blx.ui.Drag.helperZindex, // + this.$draggee.length - i,
 				opacity: this.settings.helperOpacity
 			});
 
 			this.helperPositions[i] = {
-				top:  draggeeOffset.top,
-				left: draggeeOffset.left
+				top:  helperPos.top,
+				left: helperPos.left
 			};
 
 			this.helpers.push($draggeeHelper);
 		}
+	},
+
+	/**
+	 * Get the helper position for a draggee helper
+	 */
+	getHelperTarget: function(i)
+	{
+		return {
+			left: this.mouseX - this.targetItemMouseDiffX + (i * blx.ui.Drag.helperSpacingX),
+			top:  this.mouseY - this.targetItemMouseDiffY + (i * blx.ui.Drag.helperSpacingY)
+		};
 	},
 
 	/**
@@ -141,10 +164,7 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 			// get the new target helper positions
 			for (var i = 0; i < this.helpers.length; i++)
 			{
-				this.helperTargets[i] = {
-					left: this.mouseX - this.targetMouseDiffX + (i * blx.ui.Drag.helperSpacingX),
-					top:  this.mouseY - this.targetMouseDiffY + (i * blx.ui.Drag.helperSpacingY)
-				};
+				this.helperTargets[i] = this.getHelperTarget(i);
 			}
 
 			this.lastMouseX = this.mouseX;
@@ -199,7 +219,8 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 
 	defaults: {
 		removeDraggee: false,
-		helperOpacity: 1
+		helperOpacity: 1,
+		helper: null
 	}
 });
 

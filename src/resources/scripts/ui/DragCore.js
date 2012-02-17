@@ -11,20 +11,22 @@ if (typeof blx.ui == 'undefined')
 blx.ui.DragCore = blx.Base.extend({
 
 	$items: null,
+	$handles: null,
+
+	dragging: false,
 
 	mousedownX: null,
 	mousedownY: null,
 	mouseDistX: null,
 	mouseDistY: null,
-	targetMouseDiffX: null,
-	targetMouseDiffY: null,
+	$targetItem: null,
+	targetItemMouseDiffX: null,
+	targetItemMouseDiffY: null,
 	mouseX: null,
 	mouseY: null,
 	lastMouseX: null,
 	lastMouseY: null,
 
-	dragging: false,
-	target: null,
 
 	/**
 	 * Init
@@ -42,6 +44,8 @@ blx.ui.DragCore = blx.Base.extend({
 		this.settings = $.extend({}, blx.ui.DragCore.defaults, settings);
 
 		this.$items = $();
+		this.$handles = $();
+
 		if (items) this.addItems(items);
 	},
 
@@ -51,21 +55,22 @@ blx.ui.DragCore = blx.Base.extend({
 	onMouseDown: function(event)
 	{
 		// ignore if we already have a target
-		if (this.target) return;
+		if (this.$targetItem) return;
 
 		event.preventDefault();
 
 		// capture the target
-		this.target = event.currentTarget;
+		var index = $.inArray(event.currentTarget, this.$handles);
+		this.$targetItem = $(this.$items[index]);
 
 		// capture the current mouse position
 		this.mousedownX = this.mouseX = event.pageX;
 		this.mousedownY = this.mouseY = event.pageY;
 
 		// capture the difference between the mouse position and the target item's offset
-		var offset = $(this.target).offset();
-		this.targetMouseDiffX = event.pageX - offset.left;
-		this.targetMouseDiffY = event.pageY - offset.top;
+		var offset = this.$targetItem.offset();
+		this.targetItemMouseDiffX = event.pageX - offset.left + parseInt(this.$targetItem.css('marginLeft'));
+		this.targetItemMouseDiffY = event.pageY - offset.top  + parseInt(this.$targetItem.css('marginTop'));
 
 		// listen for mousemove, mouseup
 		this.addListener(blx.$document, 'mousemove', 'onMouseMove');
@@ -110,7 +115,7 @@ blx.ui.DragCore = blx.Base.extend({
 		if (this.dragging)
 			this.stopDragging();
 
-		this.target = null;
+		this.$targetItem = null;
 	},
 
 	/**
@@ -128,9 +133,6 @@ blx.ui.DragCore = blx.Base.extend({
 	stopDragging: function()
 	{
 		this.dragging = false;
-
-		// clear the helper interval
-		clearInterval(this.updateHelperPosInterval);
 
 		this.onDragStop();
 	},
@@ -164,13 +166,37 @@ blx.ui.DragCore = blx.Base.extend({
 	 */
 	addItems: function(items)
 	{
-		var $items = $(items);
+		items = $.makeArray(items);
 
-		// make a record of it
-		this.$items = this.$items.add($items);
+		for (var i = 0; i < items.length; i++)
+		{
+			var item = items[i];
 
-		// bind mousedown listener
-		this.addListener($items, 'mousedown', 'onMouseDown');
+			// Make sure this element wasn't already added
+			if ($.inArray(item, this.$items) == -1)
+			{
+				// Add the element
+				this.$items.push(item);
+
+				// Get the handle
+				if (this.settings.handle)
+				{
+					if (typeof this.settings.handle == 'object')
+						var handle = blx.utils.getElement(this.settings.handle);
+					else if (typeof this.settings.handle == 'string')
+						var handle = blx.utils.getElement($(item).find(this.settings.handle));
+					else if (typeof this.settings.handle == 'function')
+						var handle = blx.utils.getElement(this.settings.handle(item));
+				}
+				else
+					var handle = item;
+
+				this.$handles.push(handle);
+
+				// Listen for mousedown's
+				this.addListener(handle, 'mousedown', 'onMouseDown');
+			}
+		}
 	},
 
 	/**
@@ -178,13 +204,25 @@ blx.ui.DragCore = blx.Base.extend({
 	 */
 	removeItems: function(items)
 	{
-		var $items = $(items);
+		items = $.makeArray(items);
 
-		// unbind all events
-		this.removeAllListeners($items);
+		for (var i = 0; i < items.length; i++)
+		{
+			var item = items[i];
 
-		// remove the record of it
-		this.$items = this.$items.not($items);
+			// Make sure we actually know about this itme
+			var index = $.inArray(item, this.$items);
+			if (index != -1)
+			{
+				// Stop listening to the handle
+				var handle = this.$handles[index];
+				this.removeAllListeners(handle, 'mousedown');
+
+				// Remove the item and handle records
+				this.$items.splice(index, 1);
+				this.$handles.splice(index, 1);
+			}
+		}
 	},
 
 	/**
@@ -193,16 +231,18 @@ blx.ui.DragCore = blx.Base.extend({
 	reset: function()
 	{
 		// unbind the events
-		this.removeAllListeners($items);
+		this.removeAllListeners(this.$handles);
 
 		// reset local vars
 		this.$items = $();
+		this.$handles = $();
 	}
 },
 {
 	minMouseDist: 1,
 
 	defaults: {
+		handle: null,
 		axis: null,
 
 		onDragStart: function() {},

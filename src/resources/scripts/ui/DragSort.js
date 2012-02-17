@@ -137,32 +137,30 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 		if (this.closestItemIndex == this.draggeeIndex)
 			return;
 
-		// going right?
-		if (this.closestItemIndex > this.draggeeIndex)
+		var draggee = this.$draggee[0],
+			handle = this.$handles[this.draggeeIndex],
+			goingDown = (this.closestItemIndex > this.draggeeIndex);
+
+		// Reposition the draggee in the $items and $handles arrays
+		this.$items.splice(this.draggeeIndex, 1);
+		this.$items.splice(this.closestItemIndex, 0, draggee);
+
+		this.$handles.splice(this.draggeeIndex, 1);
+		this.$handles.splice(this.closestItemIndex, 0, handle);
+
+		// Update the draggee index
+		this.draggeeIndex = this.closestItemIndex;
+
+		// Going down?
+		if (goingDown)
 		{
-			// reposition the draggee in the $items array
-			this.$items.splice(this.draggeeIndex, 1);
-			this.$items.splice(this.closestItemIndex, 0, this.$draggee[0]);
-
-			// update the indexes
-			this.draggeeIndex = this.closestItemIndex;
 			this.closestItemIndex--;
-
-			// put the draggee in place
 			this.$draggee.insertAfter(this.$closestItem);
 		}
-		// going left
+		// Going up?
 		else
 		{
-			// reposition the draggee in teh $items array
-			this.$items.splice(this.draggeeIndex, 1);
-			this.$items.splice(this.closestItemIndex, 0, this.$draggee[0]);
-
-			// update the indexes
-			this.draggeeIndex = this.closestItemIndex;
 			this.closestItemIndex++;
-
-			// put the draggee in place
 			this.$draggee.insertBefore(this.$closestItem);
 		}
 
