@@ -24,6 +24,9 @@ blx.RIGHT_KEY  = 39;
 blx.DOWN_KEY   = 40;
 
 
+blx.navHeight = 40;
+
+
 /**
  * Log
  */
@@ -182,11 +185,7 @@ blx.utils =
 	 */
 	getElement: function(elem)
 	{
-		// Is this already an element?
-		if (typeof elem.nodeType != 'undefined')
-			return elem;
-
-		return (typeof elem[0] != 'undefined' && typeof elem[0].nodeType != 'undefined' ? elem[0] : null);
+		return $.makeArray(elem)[0];
 	}
 };
 

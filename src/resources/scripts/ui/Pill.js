@@ -104,7 +104,7 @@ $.fn.pill = function()
 
 blx.$document.ready(function()
 {
-	$('.pill').pill();
+	$('#body .pill').pill();
 });
 
 

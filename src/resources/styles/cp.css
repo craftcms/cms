@@ -128,7 +128,7 @@ body.sidebar-layout #sidebar { position: fixed; top: 40px; left: 0; overflow: au
 
 /* pane head */
 .pane .head,
-table.pane > thead > tr > * { position: relative; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); }
+table.pane > thead > tr > * { position: relative; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); cursor: default; }
 .pane .head { border-top-left-radius: 3px; border-top-right-radius: 3px; }
 table.pane > thead > tr:first-child > *:first-child { border-top-left-radius: 3px; }
 table.pane > thead > tr:first-child > *:last-child { border-top-right-radius: 3px; }
@@ -138,15 +138,23 @@ table.pane > thead { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
 .pane .head .buttons { margin: -3px 0; height: 24px; }
 .pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
 
+/* pane foot */
+.pane .foot,
+table.pane > tfoot > tr > * { position: relative; border-top: 1px solid #b5b5b5; padding: 4px 20px; background: -webkit-linear-gradient(#f5f5f5, #e5e5e5); }
+.pane .foot { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+table.pane > tfoot > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
+table.pane > tfoot > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
+.pane .foot:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+
 /* pane body items */
 .pane .body .item,
 .pane table.body > tbody > tr > *,
 table.pane > tbody > tr > * { position: relative; padding: 12px 20px; background: #fff; background: -webkit-linear-gradient(#fff, #fcfcfc) repeat-x 0 100%; }
-.pane .body .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
-table.pane > tbody > tr:last-child > *:first-child,
-.pane table.body > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > tbody > tr:last-child > *:last-child,
-.pane table.body > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
+.pane .body:last-child .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+table.pane > tbody:last-child > tr:last-child > *:first-child,
+.pane table.body:last-child > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
+table.pane > tbody:last > tr:last-child > *:last-child,
+.pane table.body:last-child > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
 .pane .body .no-items { color: #999; text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
@@ -163,6 +171,11 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .pane table.body > * > tr > *:not(:first-child) { padding-left: 0; }
 
 .pane + .btn-group { display: block; margin-top: -12px; margin-bottom: 20px; }
+
+/* modals */
+.modal { display: none; position: absolute; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); -webkit-user-select: none; }
+
+#blocksselect { width: 300px; }
 
 /* grids */
 .grid { margin-left: -20px; }
@@ -190,7 +203,9 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .toolbar .btn,
 .toolbar .btn-group,
 .buttons .btn,
-.buttons .btn-group { display: block; float: left; margin-right: 10px; }
+.buttons .btn-group,
+.pane .foot .btn,
+.pane .foot .btn-group { display: block; float: left; margin-right: 10px; }
 .toolbar .btn:last-child,
 .toolbar .btn-group:last-child,
 .toolbar .btn-group .btn,
@@ -387,12 +402,11 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 
 /* blocks select */
 .blocksselect .input { padding: 0 4px; }
-.blocksselect .input ul li { min-height: 18px; padding: 4px 0; }
-.blocksselect .input ul li:not(:first-child) { border-top: 1px dotted #ddd; }
-.blocksselect .input ul li .icon { margin: -3px 0; }
-.blocksselect .input ul li .block-name { font-weight: bold; font-family: sans-serif; }
-.blocksselect .input ul li .block-type { margin-left: 1px; font-size: 11px; line-height: 15px; color: #999; }
-.blocksselect > .btn { margin-top: 8px; }
+.blocksselect ul li { min-height: 18px; padding: 4px 0; }
+.blocksselect ul li:not(:first-child) { border-top: 1px dotted #ddd; }
+.blocksselect ul li .icon { margin: -3px 0; }
+.blocksselect ul li .block-name { font-weight: bold; font-family: sans-serif; }
+.blocksselect ul li .block-type { margin-left: 1px; font-size: 11px; line-height: 15px; color: #999; }
 
 /* ----------------------------------------
 /*  Thumbs and filenames

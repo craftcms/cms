@@ -59,20 +59,26 @@
 	<div id="body">
 		{body}
 	</div>
+
+	{% include "_includes/blocksselect/modal" %}
 {% endregion %}
 
 {% region "scripts" %}
+	{% include "_includes/js_include" file="lib/rangy-1.2.1.js" %}
 	{% include "_includes/js_include" file="scripts/blx.js" %}
+	{% include "_includes/js_include" file="scripts/ui/BlocksSelect.js" %}
 	{% include "_includes/js_include" file="scripts/ui/DragCore.js" %}
 	{% include "_includes/js_include" file="scripts/ui/Drag.js" %}
+	{% include "_includes/js_include" file="scripts/ui/DragMove.js" %}
 	{% include "_includes/js_include" file="scripts/ui/DragSort.js" %}
 	{% include "_includes/js_include" file="scripts/ui/HandleGenerator.js" %}
 	{% include "_includes/js_include" file="scripts/ui/HUD.js" %}
 	{% include "_includes/js_include" file="scripts/ui/Menu.js" %}
+	{% include "_includes/js_include" file="scripts/ui/Modal.js" %}
 	{% include "_includes/js_include" file="scripts/ui/Pill.js" %}
-	{% include "_includes/js_include" file="lib/rangy-1.2.1.js" %}
 	{% include "_includes/js_include" file="scripts/ui/RTE.js" %}
 	{% include "_includes/js_include" file="scripts/ui/SelectMenu.js" %}
 	{% include "_includes/js_include" file="scripts/ui/Switch.js" %}
+	{% include "_includes/js_include" file="scripts/ui/BlocksSelectModal.js" %}
 	{scripts}
 {% endregion %}

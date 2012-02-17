@@ -14,7 +14,9 @@ class ContentBlocksService extends BaseService
 	 */
 	public function getBlocks()
 	{
-		return ContentBlock::model()->findAll();
+		return ContentBlock::model()->findAll(array(
+			'order' => 'name'
+		));
 	}
 
 	/**

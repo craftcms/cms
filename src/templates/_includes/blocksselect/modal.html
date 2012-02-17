@@ -1,10 +1,14 @@
-<div class="pane modal blockschooser">
+<div id="blocksselect" class="pane modal blocksselect">
 	<div class="head">
-		<h5>Content Blocks</h5>
+		<h5>Add a Content Block</h5>
 	</div>
 	<div class="body">
-		<ul>
+		<ul class="item">
 			{% include "_includes/blocksselect/blocks_list" blocks=contentBlocks.blocks selected=selected %}
 		</ul>
+	</div>
+	<div class="foot">
+		<div class="btn add disabled"><span class="label">Add Block</span></div>
+		<div class="btn cancel"><span class="label">Cancel</span></div>
 	</div>
 </div>

@@ -186,7 +186,7 @@ $.fn.switch = function(settings, settingName, settingValue)
 
 blx.$document.ready(function()
 {
-	$('.switch').switch();
+	$('#body .switch').switch();
 });
 
 
