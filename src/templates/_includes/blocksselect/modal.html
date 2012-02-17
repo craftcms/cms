@@ -1,14 +1,19 @@
 <div id="blocksselect" class="pane modal blocksselect">
 	<div class="head">
-		<h5>Add a Content Block</h5>
+		<h5>Add Content Blocks</h5>
 	</div>
 	<div class="body">
-		<ul class="item">
-			{% include "_includes/blocksselect/blocks_list" blocks=contentBlocks.blocks selected=selected %}
-		</ul>
+		<div class="scrollpane">
+			<ul>
+				{% include "_includes/blocksselect/blocks_list" blocks=contentBlocks.blocks selected=selected %}
+				<li class="add"><a><span class="icon icon44"></span>Create a new content block</a></li>
+				{% if contentBlocks.blocks.length < 1 %}<li class="filler"></li>{% endif %}
+				{% if contentBlocks.blocks.length < 2 %}<li class="filler"></li>{% endif %}
+			</ul>
+		</div>
 	</div>
 	<div class="foot">
-		<div class="btn add disabled"><span class="label">Add Block</span></div>
+		<div class="btn add disabled"><span class="label">Add Blocks</span></div>
 		<div class="btn cancel"><span class="label">Cancel</span></div>
 	</div>
 </div>

@@ -40,8 +40,9 @@ blx.ui.BlocksSelect = blx.Base.extend({
 
 	showModal: function()
 	{
-		blx.blocksSelectModal.positionRelativeTo(this.$container);
-		blx.blocksSelectModal.show();
+		var modal = blx.getBlocksSelectModal();
+		modal.positionRelativeTo(this.$container);
+		modal.show();
 	}
 
 });
