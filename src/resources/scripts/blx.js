@@ -181,6 +181,34 @@ blx.utils =
 	},
 
 	/**
+	 * Scrolls a container to an element within it
+	 */
+	scrollContainerToElement: function(container, elem) {
+		var $container = $(container),
+			$elem = $(elem);
+
+		if (! $container.length || ! $elem.length)
+			return;
+
+		var scrollTop = $container.scrollTop(),
+			elemOffset = $elem.offset().top,
+			containerOffset = $container.offset().top,
+			offsetDiff = elemOffset - containerOffset;
+
+		if (offsetDiff < 0) {
+			$container.scrollTop(scrollTop + offsetDiff);
+		}
+		else {
+			var elemHeight = $elem.outerHeight(),
+				containerHeight = $container[0].clientHeight;
+
+			if (offsetDiff + elemHeight > containerHeight) {
+				$container.scrollTop(scrollTop + (offsetDiff - (containerHeight - elemHeight)));
+			}
+		}
+	},
+
+	/**
 	 * Returns the first element in a jQuery object
 	 */
 	getElement: function(elem)

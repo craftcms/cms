@@ -293,7 +293,7 @@ blx.ui.Select = blx.Base.extend({
 		//  Scroll to the item
 		// -------------------------------------------
 
-		Assets.scrollContainerToElement(this.$scrollpane, $item);
+		blx.utils.scrollContainerToElement(this.$scrollpane, $item);
 
 		// -------------------------------------------
 		//  Select the item
