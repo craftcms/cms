@@ -1,6 +1,10 @@
 {% foreach blocks as block %}
 	{% if !block.id.in(selected) %}
-		<li><div class="block"><span class="icon icon137"></span><span class="block-name">{block.name}</span>
-			<span class="block-type">{block.blockType.name}</span></div></li>
+		<li class="block-item" data-block-id="{block.id}"><div class="block"><span class="icon icon137"></span><span class="block-name">{block.name}</span>
+			<span class="block-type">{block.blockType.name}</span></div>
+			{% if name %}
+				<input type="hidden" name="{name}[]" value="{block.id}">
+			{% endif %}
+		</li>
 	{% endif %}
 {% endforeach %}

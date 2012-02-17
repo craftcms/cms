@@ -32,8 +32,8 @@ blx.ui.DragCore = blx.Base.extend({
 	 */
 	init: function(items, settings)
 	{
-		// param mapping
-		if (typeof items.nodeType == 'undefined' && typeof items.length == 'undefined')
+		// Param mapping
+		if (!settings && blx.utils.isObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -54,6 +54,14 @@ blx.ui.DragCore = blx.Base.extend({
 	{
 		// ignore if we already have a target
 		if (this.$targetItem) return;
+
+		// Make sure the target isn't a button (unless the button is the handle)
+		if (event.currentTarget != event.target)
+		{
+			var $target = $(event.target);
+			if ($target.hasClass('btn') || $target.closest('.btn').length)
+				return;
+		}
 
 		event.preventDefault();
 

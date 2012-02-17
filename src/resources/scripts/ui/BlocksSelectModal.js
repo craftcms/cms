@@ -18,11 +18,20 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 	$fillerItems: null,
 	$blockItems: null,
 
-	select: null,
+	selector: null,
+	$selectedItems: null,
+
+	field: null,
 
 	init: function()
 	{
 		this.base('#blocksselect');
+
+		this.selector = new blx.ui.Select(this.$body, {
+			multi: true,
+			waitForDblClick: true,
+			onSelectionChange: $.proxy(this, 'onSelectionChange')
+		});
 
 		this.$addBtn = this.$footBtns.filter('.add:first');
 		this.$cancelBtn = this.$footBtns.filter('.cancel:first');
@@ -33,17 +42,108 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$items = this.$container.find('li');
 		this.$addItem = this.$items.filter('.add:first');
 		this.$fillerItems = this.$items.filter('.filler');
-		this.$blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
+		this.$blockItems = $();
+		this.$selectedItems = $();
 
-		this.select = new blx.ui.Select(this.$body, this.$blockItems, {
-			multi: true,
-			multiDblClick: true
-		});
+		var $blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
+		this.addBlocks($blockItems);
+	},
+
+	attachToField: function(field)
+	{
+		if (!this.visible)
+			this.$container.show();
+
+		// Show only the blocks that aren't already selected
+		this.$blockItems.hide();
+		var selectedBlockIds = [];
+		for (var i = 0; i < field.$blockItems.length; i++)
+		{
+			var blockId = field.$blockItems[i].getAttribute('data-block-id');
+			selectedBlockIds.push(blockId);
+		}
+		for (var i = 0; i < this.$blockItems.length; i++)
+		{
+			var blockId = this.$blockItems[i].getAttribute('data-block-id');
+			if ($.inArray(blockId, selectedBlockIds) == -1)
+			{
+				$(this.$blockItems[i]).show();
+			}
+		}
+
+		this.setFillers();
+
+		// Hard-set the body's height
+		this.$body.height('auto');
+		this.$body.height(this.$body.height());
+
+		if (!this.visible)
+			this.$container.hide();
+
+		this.field = field;
+		this.positionRelativeTo(field.$container);
+		this.show();
+	},
+
+	addBlocks: function(blockItems)
+	{
+		var $blockItems = $(blockItems);
+		this.selector.addItems($blockItems);
+		this.$blockItems = this.$blockItems.add($blockItems);
+		this.addListener($blockItems, 'dblclick', 'onDblClick');
+	},
+
+	onDblClick: function()
+	{
+		clearTimeout(this.selector.clearMouseUpTimeout());
+		this.onSelectionChange();
+		this.addSelectedBlocks();
+	},
+
+	onSelectionChange: function()
+	{
+		this.$selectedItems = this.selector.getSelectedItems();
+
+		if (this.$selectedItems.length)
+			this.$addBtn.removeClass('disabled');
+		else
+			this.$addBtn.addClass('disabled');
 	},
 
 	addSelectedBlocks: function()
 	{
-		
+		this.field.addBlocks(this.$selectedItems.clone());
+		this.$selectedItems.removeClass('sel').hide();
+		this.hide();
+	},
+
+	setFillers: function()
+	{
+		var totalFillers = this.$fillerItems.length,
+			totalBlocks = this.$blockItems.filter(':visible').length,
+			neededFillers = 2 - totalBlocks;
+
+		if (neededFillers > totalFillers)
+		{
+			var missingFillers = neededFillers - totalFillers;
+			for (var i = 0; i < missingFillers; i++)
+			{
+				var $filler = $(document.createElement('li'));
+				$filler.addClass('filler');
+				$filler.insertAfter(this.$addItem);
+				this.$fillerItems = this.$fillerItems.add($filler);
+			}
+		}
+		else if (neededFillers < totalFillers)
+		{
+			var extraFillers = totalFillers - neededFillers;
+			for (var i = 0; i < extraFillers; i++)
+			{
+				var $filler = this.$fillerItems.last();
+				this.$fillerItems = this.$fillerItems.not($filler);
+				$filler.remove();
+			}
+		}
 	}
 
 });

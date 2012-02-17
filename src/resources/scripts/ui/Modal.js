@@ -12,6 +12,7 @@ blx.ui.Modal = blx.Base.extend({
 
 	$container: null,
 	$head: null,
+	$body: null,
 	$foot: null,
 	$footBtns: null,
 
