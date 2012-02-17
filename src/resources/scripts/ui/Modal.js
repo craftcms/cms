@@ -30,15 +30,16 @@ blx.ui.Modal = blx.Base.extend({
 		}
 
 		this.$head = this.$container.find('.head:first');
-		if (this.$head.length)
-		{
-			this.dragger = new blx.ui.DragMove(this.$container, {
-				handle: this.$head
-			});
-		}
-
 		this.$foot = this.$container.find('.foot:first');
 		this.$footBtns = this.$foot.find('.btn');
+
+		var $dragHandles = this.$head.add(this.$foot);
+		if ($dragHandles.length)
+		{
+			this.dragger = new blx.ui.DragMove(this.$container, {
+				handle: $dragHandles
+			});
+		}
 
 		this.visible = false;
 	},

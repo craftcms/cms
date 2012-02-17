@@ -11,7 +11,6 @@ if (typeof blx.ui == 'undefined')
 blx.ui.DragCore = blx.Base.extend({
 
 	$items: null,
-	$handles: null,
 
 	dragging: false,
 
@@ -44,7 +43,6 @@ blx.ui.DragCore = blx.Base.extend({
 		this.settings = $.extend({}, blx.ui.DragCore.defaults, settings);
 
 		this.$items = $();
-		this.$handles = $();
 
 		if (items) this.addItems(items);
 	},
@@ -60,8 +58,7 @@ blx.ui.DragCore = blx.Base.extend({
 		event.preventDefault();
 
 		// capture the target
-		var index = $.inArray(event.currentTarget, this.$handles);
-		this.$targetItem = $(this.$items[index]);
+		this.$targetItem = $($.data(event.currentTarget, 'drag-item'));
 
 		// capture the current mouse position
 		this.mousedownX = this.mouseX = event.pageX;
@@ -172,30 +169,33 @@ blx.ui.DragCore = blx.Base.extend({
 		{
 			var item = items[i];
 
-			// Make sure this element wasn't already added
-			if ($.inArray(item, this.$items) == -1)
+			// Make sure this element doesn't belong to another dragger
+			if ($.data(item, 'drag'))
 			{
-				// Add the element
-				this.$items.push(item);
-
-				// Get the handle
-				if (this.settings.handle)
-				{
-					if (typeof this.settings.handle == 'object')
-						var handle = blx.utils.getElement(this.settings.handle);
-					else if (typeof this.settings.handle == 'string')
-						var handle = blx.utils.getElement($(item).find(this.settings.handle));
-					else if (typeof this.settings.handle == 'function')
-						var handle = blx.utils.getElement(this.settings.handle(item));
-				}
-				else
-					var handle = item;
-
-				this.$handles.push(handle);
-
-				// Listen for mousedown's
-				this.addListener(handle, 'mousedown', 'onMouseDown');
+				blx.log('Element was added to more than one dragger');
+				$.data(item, 'drag').removeItems(item);
 			}
+
+			// Add the item
+			$.data(item, 'drag', this);
+			this.$items.push(item);
+
+			// Get the handle
+			if (this.settings.handle)
+			{
+				if (typeof this.settings.handle == 'object')
+					var $handle = $(this.settings.handle);
+				else if (typeof this.settings.handle == 'string')
+					var $handle = $(item).find(this.settings.handle);
+				else if (typeof this.settings.handle == 'function')
+					var $handle = $(this.settings.handle(item));
+			}
+			else
+				var $handle = $(item);
+
+			$.data(item, 'drag-handle', $handle);
+			$handle.data('drag-item', item);
+			this.addListener($handle, 'mousedown', 'onMouseDown');
 		}
 	},
 
@@ -210,32 +210,18 @@ blx.ui.DragCore = blx.Base.extend({
 		{
 			var item = items[i];
 
-			// Make sure we actually know about this itme
+			// Make sure we actually know about this item
 			var index = $.inArray(item, this.$items);
 			if (index != -1)
 			{
-				// Stop listening to the handle
-				var handle = this.$handles[index];
-				this.removeAllListeners(handle, 'mousedown');
-
-				// Remove the item and handle records
+				var $handle = $.data(item, 'drag-handle');
+				$handle.data('drag-item', null);
+				$.data(item, 'drag', null);
+				$.data(item, 'drag-handle', null);
+				this.removeAllListeners($handle);
 				this.$items.splice(index, 1);
-				this.$handles.splice(index, 1);
 			}
 		}
-	},
-
-	/**
-	 * Reset
-	 */
-	reset: function()
-	{
-		// unbind the events
-		this.removeAllListeners(this.$handles);
-
-		// reset local vars
-		this.$items = $();
-		this.$handles = $();
 	}
 },
 {

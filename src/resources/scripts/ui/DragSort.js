@@ -138,15 +138,11 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 			return;
 
 		var draggee = this.$draggee[0],
-			handle = this.$handles[this.draggeeIndex],
 			goingDown = (this.closestItemIndex > this.draggeeIndex);
 
-		// Reposition the draggee in the $items and $handles arrays
+		// Reposition the draggee in the $items array
 		this.$items.splice(this.draggeeIndex, 1);
 		this.$items.splice(this.closestItemIndex, 0, draggee);
-
-		this.$handles.splice(this.draggeeIndex, 1);
-		this.$handles.splice(this.closestItemIndex, 0, handle);
 
 		// Update the draggee index
 		this.draggeeIndex = this.closestItemIndex;
