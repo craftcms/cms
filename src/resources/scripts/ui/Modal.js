@@ -18,7 +18,7 @@ blx.ui.Modal = blx.Base.extend({
 	visible: null,
 	dragger: null,
 
-	init: function(container)
+	init: function(container, settings)
 	{
 		this.$container = $(container);
 
@@ -29,16 +29,21 @@ blx.ui.Modal = blx.Base.extend({
 			this.$container.data('modal').destroy();
 		}
 
+		this.setSettings(settings, blx.ui.Modal.defaults);
+
 		this.$head = this.$container.find('.head:first');
 		this.$foot = this.$container.find('.foot:first');
 		this.$footBtns = this.$foot.find('.btn');
 
-		var $dragHandles = this.$head.add(this.$foot);
-		if ($dragHandles.length)
+		if (this.settings.draggable)
 		{
-			this.dragger = new blx.ui.DragMove(this.$container, {
-				handle: $dragHandles
-			});
+			var $dragHandles = this.$head.add(this.$foot);
+			if ($dragHandles.length)
+			{
+				this.dragger = new blx.ui.DragMove(this.$container, {
+					handle: $dragHandles
+				});
+			}
 		}
 
 		this.visible = false;
@@ -97,7 +102,10 @@ blx.ui.Modal = blx.Base.extend({
 	}
 
 }, {
-	relativeElemPadding: 8
+	relativeElemPadding: 8,
+	defaults: {
+		draggable: true
+	}
 });
 
 
