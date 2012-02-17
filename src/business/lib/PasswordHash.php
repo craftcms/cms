@@ -307,7 +307,7 @@ class PasswordHash
 		if ($hash[0] == '*')
 			$hash = crypt($password, $storedHash);
 
-		return $hash == $storedHash;
+		return $hash === $storedHash;
 	}
 }
 

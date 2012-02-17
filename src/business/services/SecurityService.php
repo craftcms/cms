@@ -78,7 +78,7 @@ class SecurityService extends BaseService
 	{
 		$validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
 		$randomString = "";
-		$length = 80;
+		$length = 60;
 
 		// count the number of chars in the valid chars string so we know how many choices we have
 		$numValidChars = strlen($validChars);
@@ -101,6 +101,10 @@ class SecurityService extends BaseService
 		return $randomString;
 	}
 
+	/**
+	 * @param $code
+	 * @return mixed
+	 */
 	public function getAuthCodeByCode($code)
 	{
 		return AuthCode::model()->findByAttributes(array(
@@ -108,6 +112,11 @@ class SecurityService extends BaseService
 		));
 	}
 
+	/**
+	 * @param $code
+	 * @return mixed
+	 * @throws Exception
+	 */
 	public function validateUserRegistration($code)
 	{
 		$transaction = Blocks::app()->db->beginTransaction();
@@ -131,6 +140,11 @@ class SecurityService extends BaseService
 		}
 	}
 
+	/**
+	 * @param $code
+	 * @return mixed
+	 * @throws Exception
+	 */
 	private function _validateAuthorizationRequest($code)
 	{
 		$authCode = Blocks::app()->security->getAuthCodeByCode($code);
