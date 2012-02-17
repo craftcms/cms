@@ -34,7 +34,6 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$addItem = this.$items.filter('.add:first');
 		this.$fillerItems = this.$items.filter('.filler');
 		this.$blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
-		console.log(this.$blockItems);
 
 		this.select = new blx.ui.Select(this.$body, this.$blockItems, {
 			multi: true,

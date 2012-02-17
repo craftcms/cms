@@ -192,7 +192,6 @@ blx.ui.Select = blx.Base.extend({
 	 * On Mouse Down
 	 */
 	onMouseDown: function(event) {
-		console.log('mousedown');
 		// ignore right clicks
 		if (event.button == 2) return;
 
