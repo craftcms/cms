@@ -63,7 +63,7 @@ class PasswordHash
 	{
 		$output = '';
 
-		if (is_readable('/dev/urandom') && ($fh = @fopen('/dev/urandom', 'rb')))
+		if (@is_readable('/dev/urandom') && ($fh = @fopen('/dev/urandom', 'rb')))
 		{
 			$output = fread($fh, $count);
 			fclose($fh);

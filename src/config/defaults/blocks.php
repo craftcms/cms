@@ -79,3 +79,16 @@ $blocksConfig['authCodeExpiration'] = '48h';
  * The number of invalid login attempts before the user account is locked.
  */
 $blocksConfig['maxInvalidPasswordAttempts'] = 4;
+
+// PHPPass Config
+
+/**
+ * Controls the number of iterations for key stretching. A setting of 8 means the hash algorithm will be applied 2^8 = 256 times.
+ * This setting should be kept between 4 and 31.
+ */
+$blocksConfig['phpPass-iterationCount'] = 8;
+
+/**
+ * Controls whether portable hashes should be used or not. Portable hashes are salted MD5 hashes prefixed by $P$.
+ */
+$blocksConfig['phpPass-portableHashes'] = false;

@@ -6,6 +6,21 @@ namespace Blocks;
  */
 class SecurityService extends BaseService
 {
+	private $_iterationCount;
+	private $_portableHashes;
+
+	/**
+	 *
+	 */
+	public function __construct()
+	{
+		parent::init();
+
+		$this->_iterationCount = Blocks::app()->config->getItem('phpPass-iterationCount');
+		$this->_portableHashes = Blocks::app()->config->getItem('phpPass-portableHashes');
+	}
+
+
 	/**
 	 * @param $userName
 	 * @param $password
@@ -32,13 +47,15 @@ class SecurityService extends BaseService
 	 */
 	public function hashPassword($password)
 	{
-		$passwordHasher = new \PasswordHash(8, false);
+
+
+		$passwordHasher = new \PasswordHash($this->_iterationCount, $this->_portableHashes);
 		$hashAndType = $passwordHasher->hashPassword($password);
 		$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 
 		if (!$check)
 		{
-			$passwordHasher = new \PasswordHash(8, true);
+			$passwordHasher = new \PasswordHash($this->_iterationCount, !$this->_portableHashes);
 			$hashAndType = $passwordHasher->hashPassword($password);
 			$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 		}
@@ -57,7 +74,7 @@ class SecurityService extends BaseService
 	 */
 	public function checkPassword($password, $storedHash, $storedEncType)
 	{
-		$passwordHasher = new \PasswordHash(8, false);
+		$passwordHasher = new \PasswordHash($this->_iterationCount, $this->_portableHashes);
 		$check = $passwordHasher->checkPassword($password, $storedHash);
 
 		if (!$check)
