@@ -32,8 +32,8 @@ blx.ui.DragCore = blx.Base.extend({
 	 */
 	init: function(items, settings)
 	{
-		// param mapping
-		if (typeof items.nodeType == 'undefined' && typeof items.length == 'undefined')
+		// Param mapping
+		if (!settings && blx.utils.isObject(items))
 		{
 			// (settings)
 			settings = items;

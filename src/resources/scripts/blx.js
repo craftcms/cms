@@ -214,6 +214,14 @@ blx.utils =
 	getElement: function(elem)
 	{
 		return $.makeArray(elem)[0];
+	},
+
+	/**
+	 * Returns whether an object is not an element or a jQuery object
+	 */
+	isObject: function(obj)
+	{
+		return (typeof obj == 'object' && typeof obj.nodeType == 'undefined' && !(obj instanceof jQuery));
 	}
 };
 

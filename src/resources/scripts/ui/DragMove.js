@@ -10,10 +10,8 @@ if (typeof blx.ui == 'undefined')
  */
 blx.ui.DragMove = blx.ui.DragCore.extend({
 
-	onDrag: function()
+	onDrag: function(items, settings)
 	{
-		this.base();
-
 		this.$targetItem.css({
 			left: this.mouseX - this.targetItemMouseDiffX,
 			top:  this.mouseY - this.targetItemMouseDiffY

@@ -34,7 +34,15 @@ blx.ui.Select = blx.Base.extend({
 
 		this.$container = $(container);
 
-		// Is this already a switch?
+		// Param mapping
+		if (!settings && blx.utils.isObject(items))
+		{
+			// (container, settings)
+			settings = items;
+			items = null;
+		}
+
+		// Is this already a select?
 		if (this.$container.data('select'))
 		{
 			blx.log('Double-instantiating a select on an element');
@@ -44,7 +52,7 @@ blx.ui.Select = blx.Base.extend({
 		this.$container.data('select', this);
 
 		this.setSettings(settings, blx.ui.Select.defaults);
-		this.mouseUpTimeoutDuration = (this.settings.multiDblClick ? 300 : 0);
+		this.mouseUpTimeoutDuration = (this.settings.waitForDblClick ? 300 : 0);
 
 		this.$scrollpane = $('.scrollpane:first', this.$container);
 		this.$items = $();
@@ -434,8 +442,8 @@ blx.ui.Select = blx.Base.extend({
 
 }, {
 	defaults: {
-		multiDblClick: false,
 		multi: false,
+		waitForDblClick: false,
 		onSelectionChange: function(){}
 	}
 });

@@ -119,6 +119,22 @@ class ContentService extends BaseService
 	}
 
 	/**
+	 * Returns a Section instance, whether it already exists based on an ID, or is new
+	 * @param int $sectionId The Section ID if it exists
+	 * @return Section
+	 */
+	public function getSection($sectionId = null)
+	{
+		if ($sectionId)
+			$section = $this->getSectionById($sectionId);
+
+		if (empty($section))
+			$section = new Section;
+
+		return $section;
+	}
+
+	/**
 	 * Get a specific section by ID
 	 * @param int $sectionId The ID of the section to get
 	 * @return Section
@@ -156,6 +172,64 @@ class ContentService extends BaseService
 		));
 
 		return $sections;
+	}
+
+	/**
+	 * Saves a section
+	 *
+	 * @param      $sectionSettings
+	 * @param null $sectionBlockIds
+	 * @param null $sectionId
+	 * @return \Blocks\Section
+	 */
+	public function saveSection($sectionSettings, $sectionBlockIds = array(), $sectionId = null)
+	{
+		$section = $this->getSection($sectionId);
+		$isNewSection = $section->isNewRecord;
+
+		$section->name = $sectionSettings['name'];
+		$section->handle = $sectionSettings['handle'];
+		$section->max_entries = $sectionSettings['max_entries'];
+		$section->sortable = $sectionSettings['sortable'];
+		$section->url_format = $sectionSettings['url_format'];
+		$section->template = $sectionSettings['template'];
+		$section->site_id = Blocks::app()->sites->currentSite->id;
+
+		if ($section->validate())
+		{
+			// Start a transaction
+			$transaction = Blocks::app()->db->beginTransaction();
+			try
+			{
+				// Save the block
+				$section->save();
+
+				// Delete the previous content block selections
+				if (!$isNewSection)
+				{
+					SectionBlock::model()->deleteAllByAttributes(array(
+						'section_id' => $section->id
+					));
+				}
+
+				// Add new content block selections
+				$sectionBlocksData = array();
+				foreach ($sectionBlockIds as $sortOrder => $blockId)
+				{
+					$sectionBlocksData[] = array($section->id, $blockId, false, $sortOrder+1);
+				}
+				Blocks::app()->db->createCommand()->insertAll('{{sectionblocks}}', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
+
+				$transaction->commit();
+			}
+			catch (Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
+			}
+		}
+
+		return $section;
 	}
 
 	/**

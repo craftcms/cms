@@ -13,32 +13,27 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		// Are we editing an existing section?
-		$sectionId = Blocks::app()->request->getPost('section_id');
-		if ($sectionId)
-			$section = Blocks::app()->content->getSectionById($sectionId);
-
-		// Otherwise create a new section
-		if (empty($section))
-			$section = new Section;
-
-		$section->site_id = Blocks::app()->sites->currentSite->id;
-
-		$section->name = Blocks::app()->request->getPost('name');
-		$section->handle = Blocks::app()->request->getPost('handle');
+		$sectionSettings['name'] = Blocks::app()->request->getPost('name');
+		$sectionSettings['handle'] = Blocks::app()->request->getPost('handle');
 
 		$maxEntries = Blocks::app()->request->getPost('max_entries');
-		$section->max_entries = ($maxEntries ? $maxEntries : null);
+		$sectionSettings['max_entries'] = ($maxEntries ? $maxEntries : null);
 
-		$section->sortable = (Blocks::app()->request->getPost('sortable') === 'y');
+		$sectionSettings['sortable'] = (Blocks::app()->request->getPost('sortable') === 'y');
 
 		$urlFormat = Blocks::app()->request->getPost('url_format');
-		$section->url_format = ($urlFormat ? $urlFormat : null);
+		$sectionSettings['url_format'] = ($urlFormat ? $urlFormat : null);
 
 		$template = Blocks::app()->request->getPost('template');
-		$section->template = ($template ? $template : null);
+		$sectionSettings['template'] = ($template ? $template : null);
 
-		if ($section->save())
+		$sectionBlockIds = Blocks::app()->request->getPost('blocks', array());
+		$sectionId = Blocks::app()->request->getPost('section_id');
+
+		$section = Blocks::app()->content->saveSection($sectionSettings, $sectionBlockIds, $sectionId);
+
+		// Did it save?
+		if (!$section->errors)
 		{
 			Blocks::app()->user->setMessage(MessageStatus::Success, 'Section saved successfully.');
 
@@ -47,6 +42,19 @@ class ContentController extends BaseController
 				$this->redirect($url);
 		}
 
-		$this->loadRequestedTemplate(array('section' => $section));
+		// Get ContentBlock instances for each selected block
+		$sectionBlocks = array();
+		foreach ($sectionBlockIds as $blockId)
+		{
+			$block = Blocks::app()->contentBlocks->getBlockById($blockId);
+			if ($block)
+				$sectionBlocks[] = $block;
+		}
+
+		// Reload the original template
+		$this->loadRequestedTemplate(array(
+			'section'       => $section,
+			'sectionBlocks' => $sectionBlocks
+		));
 	}
 }
