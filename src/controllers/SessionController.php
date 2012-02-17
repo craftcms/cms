@@ -11,26 +11,26 @@ class SessionController extends BaseController
 	 */
 	public function actionLogin()
 	{
-		$model = new LoginForm();
+		$this->requirePostRequest();
+
+		$loginInfo = new LoginForm();
 
 		// Check to see if it's a submit.
-		if(Blocks::app()->request->isPostRequest)
-		{
-			$model->loginName = Blocks::app()->request->getPost('loginName');
-			$model->password = Blocks::app()->request->getPost('password');
+		$loginInfo->loginName = Blocks::app()->request->getPost('loginName');
+		$loginInfo->password = Blocks::app()->request->getPost('password');
 
-			// validate user input and redirect to the previous page if valid
-			if($model->validate() && $model->login())
-				$this->redirect(Blocks::app()->user->returnUrl);
-		}
+		// validate user input and redirect to the previous page if valid
+		if ($loginInfo->validate() && $loginInfo->login())
+			$this->redirect(Blocks::app()->user->returnUrl);
 
 		// display the login form
-		$this->loadTemplate('login', array('model' => $model));
+		$this->loadTemplate('login', array('loginInfo' => $loginInfo));
 	}
 
 	public function actionLogout()
 	{
 		Blocks::app()->user->logout();
+		$this->redirect('/');
 	}
 }
 

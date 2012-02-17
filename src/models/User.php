@@ -15,7 +15,7 @@ class User extends BaseModel
 		'email'                                 => array('type' => AttributeType::Email, 'required'  => true, 'unique' => true),
 		'password'                              => array('type' => AttributeType::Char, 'required' => true),
 		'enc_type'                              => array('type' => AttributeType::Char, 'maxLength' => 10, 'required' => true),
-		'auth_token'                            => array('type' => AttributeType::Char, 'maxLength' => 32),
+		'auth_session_token'                    => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'admin'                                 => AttributeType::Boolean,
 		'password_reset_required'               => AttributeType::Boolean,
 		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),

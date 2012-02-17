@@ -29,11 +29,8 @@ class LoginForm extends \CFormModel
 	/**
 	 * Authenticates the password.
 	 * This is the 'authenticate' validator as declared in rules().
-	 *
-	 * @param $attribute
-	 * @param $params
 	 */
-	public function authenticate($attribute, $params)
+	public function authenticate()
 	{
 		if (!$this->hasErrors())
 		{

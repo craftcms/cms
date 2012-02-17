@@ -16,7 +16,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function init()
 	{
-		$this->authTimeout = ConfigHelper::getTimeInSeconds('sessionTimeout');
+		$this->authTimeout = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('sessionTimeout'));
 		parent::init();
 	}
 
@@ -28,20 +28,34 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function beforeLogin($id, $states, $fromCookie)
 	{
-		$authToken = '1';
-
-		if (isset($states['authToken']))
-			$authToken = $states['authToken'];
-
-		$user = User::model()->findById($id);
-
-		if ($user === null || $user->authToken !== $authToken)
+		if (isset($states['authSessionToken']))
 		{
-			Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authToken: '.$authToken.' did not match the one we have on record: '.$user->authToken.'.');
-			return false;
+			$authSessionToken = $states['authSessionToken'];
+
+			$user = User::model()->findById($id);
+
+			if ($user === null || $user->auth_session_token !== $authSessionToken)
+			{
+				// everything is not cool.
+				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record: '.$user->authToken.'.');
+				return false;
+			}
+
+			// everything is cool.
+			return true;
 		}
 
-		return true;
+		// also not cool.
+		return false;
+	}
+
+	/**
+	 * @param null $defaultUrl
+	 * @return mixed
+	 */
+	public function getReturnUrl($defaultUrl = null)
+	{
+		return $this->getState('__returnUrl', $defaultUrl === null ? '/' : \CHtml::normalizeUrl($defaultUrl));
 	}
 
 	/**
@@ -189,5 +203,14 @@ class UserSessionService extends \CWebUser
 			return array();
 
 		return array_keys($counters);
+	}
+
+	/**
+	 * Check to see if the current web user is logged in.
+	 * @return bool
+	 */
+	public function getIsLoggedIn()
+	{
+		return !$this->getIsGuest();
 	}
 }

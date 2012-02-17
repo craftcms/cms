@@ -5,32 +5,35 @@
 {% region "main" %}
 
 <!-- TODO: Add JavaScript to check if cookies are enabled and display error if not -->
+	{% if !user.isLoggedIn %}
+		<div><strong>Hey... you need to login.</strong></div>
+		<p>
+			<form method="post" action="">
+				<input type="hidden" name="action" value="session/login" />
 
-	<div><strong>Hey... you need to login.</strong></div>
-	<p>
-		<form method="post" action="">
-			<input type="hidden" name="action" value="app/session/login" />
+				<div class="body">
+					<div class="item field">
+						<label for="loginName">Email or Username:</label>
+						<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginInfo.loginName}" /></div>
+						{% if loginInfo.errors.loginName %}
+							{% include "_includes/error_list" errors=loginInfo.errors.loginName %}
+						{% endif %}
+					</div>
+					<div class="item field">
+						<label for="password">Password:</label>
+						<div class="input-wrapper"><input id="password" name="password" type="password" /></div>
+						{% if loginInfo.errors.password %}
+							{% include "_includes/error_list" errors=loginInfo.errors.password %}
+						{% endif %}
+					</div>
 
-			<div class="body">
-				<div class="item field">
-					<label for="loginName">Email or Username:</label>
-					<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginName}" /></div>
-					{% if emailSettings.errors.emailAddress %}
-						{% include "_includes/error_list" errors=emailSettings.errors.emailAddress %}
-					{% endif %}
 				</div>
-				<div class="item field">
-					<label for="password">Password:</label>
-					<div class="input-wrapper"><input id="password" name="password" type="password" value="{password}" /></div>
-					{% if emailSettings.errors.emailAddress %}
-						{% include "_includes/error_list" errors=emailSettings.errors.emailAddress %}
-					{% endif %}
-				</div>
 
-			</div>
+				<input class="btn big submit" type="submit" value="Login" />
+			</form>
+		</p>
+	{% else %}
+		<div><strong>You're already logged in.</strong></div>
+	{% endif %}
 
-			<input class="btn big submit" type="submit" value="Login" />
-		</form>
-	</p>
-
-{% /region %}
+{% endregion %}

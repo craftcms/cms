@@ -10,7 +10,7 @@ class UserIdentity extends \CUserIdentity
 {
 	private $_id;
 	private $_model;
-	//private $_authToken;
+	private $_authToken;
 
 	public $loginName;
 	public $password;
@@ -64,15 +64,20 @@ class UserIdentity extends \CUserIdentity
 				$this->username = $user->username;
 				$this->errorCode = self::ERROR_NONE;
 
-				//$this->_authToken = $authToken;
-	//			$user->authToken = $authToken;
+				$authSessionToken = crypt(uniqid(rand(), true));
+				$this->_authToken = $authSessionToken;
+				$user->auth_session_token = $authSessionToken;
+				$user->last_login_date = DateTimeHelper::getCurrentUnixTimeStamp();
 				if (!$user->save())
 				{
-					throw new Exception('There was a problem logging you in:'.implode(' ', $user->errors));
+					$errorMsg = '';
+					foreach ($user->errors as $errorArr)
+						$errorMsg .= implode(' ', $errorArr);
+
+					throw new Exception('There was a problem logging you in:'.$errorMsg);
 				}
 
-				//$this->setState('authToken', $authToken);
-				//$this->setState('userModel', $user);
+				$this->setState('authSessionToken', $authSessionToken);
 			}
 	}
 

@@ -40,7 +40,13 @@
 			</div>
 			<div>
 				<ul class="right">
-					<li id="nav-account"><a {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account" title="My Account"><img src="{url.resource('images/avatar.jpg')}" alt="">Brandon</a></li>
+					<li id="nav-account">
+						{% if user.isLoggedIn %}
+							<a {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account" title="My Account"><img src="{url.resource('images/avatar.jpg')}" alt="">Brandon</a><a href="{url.base}logout">Logout</a>
+						{% else %}
+							<a href="{url.base}login">Login</a>
+						{% endif %}
+					</li>
 				</ul>
 			</div>
 		{% else %}
