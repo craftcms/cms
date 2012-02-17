@@ -32,6 +32,7 @@ blx.ui.Modal = blx.Base.extend({
 		this.setSettings(settings, blx.ui.Modal.defaults);
 
 		this.$head = this.$container.find('.head:first');
+		this.$body = this.$container.find('.body:first');
 		this.$foot = this.$container.find('.foot:first');
 		this.$footBtns = this.$foot.find('.btn');
 
