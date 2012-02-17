@@ -55,6 +55,14 @@ blx.ui.DragCore = blx.Base.extend({
 		// ignore if we already have a target
 		if (this.$targetItem) return;
 
+		// Make sure the target isn't a button (unless the button is the handle)
+		if (event.currentTarget != event.target)
+		{
+			var $target = $(event.target);
+			if ($target.hasClass('btn') || $target.closest('.btn').length)
+				return;
+		}
+
 		event.preventDefault();
 
 		// capture the target
