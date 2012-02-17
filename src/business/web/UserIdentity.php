@@ -60,14 +60,13 @@ class UserIdentity extends \CUserIdentity
 			else
 			{
 				$this->_id = $user->id;
-				//$this->_model = $user;
 				$this->username = $user->username;
 				$this->errorCode = self::ERROR_NONE;
 
 				$authSessionToken = crypt(uniqid(rand(), true));
 				$this->_authToken = $authSessionToken;
 				$user->auth_session_token = $authSessionToken;
-				$user->last_login_date = DateTimeHelper::getCurrentUnixTimeStamp();
+				$user->last_login_date = DateTimeHelper::currentTime();
 				if (!$user->save())
 				{
 					$errorMsg = '';

@@ -181,7 +181,7 @@ class SecurityService extends BaseService
 			throw new Exception('Unable to validate this authorization code.');
 		}
 
-		if (DateTimeHelper::getCurrentUnixTimeStamp() > $authCode->expiration_date)
+		if (DateTimeHelper::currentTime() > $authCode->expiration_date)
 		{
 			Blocks::log('AuthCode: '.$authCode->code.' has already expired.');
 			throw new Exception('Unable to validate this authorization code.');
@@ -215,7 +215,7 @@ class SecurityService extends BaseService
 				case UserAccountStatus::PendingVerification:
 				{
 					// validate?
-					$authCode->date_activated = DateTimeHelper::getCurrentUnixTimeStamp();
+					$authCode->date_activated = DateTimeHelper::currentTime();
 					$authCode->save();
 					return $user;
 				}
