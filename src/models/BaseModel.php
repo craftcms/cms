@@ -200,7 +200,10 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->hasBlocks as $key => $settings)
 		{
-			$relations[$key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['model'], $settings['foreignKey'].'_id', 'with' => 'block');
+			$relations[$key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['model'], $settings['foreignKey'].'_id',
+				'order' => 'sort_order',
+				'with'  => 'block'
+			);
 		}
 
 		foreach ($this->hasContent as $key => $settings)
