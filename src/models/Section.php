@@ -23,7 +23,7 @@ class Section extends BaseModel
 	);
 
 	protected $hasBlocks = array(
-		'blocks' => array('through' => 'SectionBlock', 'foreignKey' => 'section')
+		'blocks' => array('model' => 'SectionBlock', 'foreignKey' => 'section')
 	);
 
 	protected $hasMany = array(

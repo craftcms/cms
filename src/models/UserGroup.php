@@ -14,7 +14,7 @@ class UserGroup extends BaseModel
 	);
 
 	protected $hasBlocks = array(
-		'blocks' => array('through' => 'UserGroupBlock', 'foreignKey' => 'group')
+		'blocks' => array('model' => 'UserGroupBlock', 'foreignKey' => 'group')
 	);
 
 	protected $hasMany = array(

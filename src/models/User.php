@@ -30,7 +30,7 @@ class User extends BaseModel
 	);
 
 	protected $hasContent = array(
-		'content' => array('through' => 'UserContent', 'foreignKey' => 'user')
+		'content' => array('model' => 'UserContent', 'foreignKey' => 'user')
 	);
 
 	protected $hasMany = array(

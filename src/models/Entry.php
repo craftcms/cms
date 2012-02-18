@@ -25,7 +25,7 @@ class Entry extends BaseModel
 	);
 
 	protected $hasContent = array(
-		'content' => array('through' => 'EntryContent', 'foreignKey' => 'entry')
+		'content' => array('model' => 'EntryContent', 'foreignKey' => 'entry')
 	);
 
 	protected $hasMany = array(

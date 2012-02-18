@@ -200,16 +200,12 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->hasBlocks as $key => $settings)
 		{
-			$join_key = $key.'_join';
-			$relations[$join_key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['through'], $settings['foreignKey'].'_id');
-			$relations[$key]      = array(self::HAS_MANY, __NAMESPACE__.'\\ContentBlock', array('block_id' => 'id'), 'through' => $join_key);
+			$relations[$key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['model'], $settings['foreignKey'].'_id', 'with' => 'block');
 		}
 
 		foreach ($this->hasContent as $key => $settings)
 		{
-			$join_key = $key.'_join';
-			$relations[$join_key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['through'], $settings['foreignKey'].'_id');
-			$relations[$key]      = array(self::HAS_MANY, __NAMESPACE__.'\\Content', array('content_id' => 'id'), 'through' => $join_key);
+			$relations[$key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['model'], $settings['foreignKey'].'_id', 'with' => 'content');
 		}
 
 		foreach ($this->hasMany as $key => $settings)

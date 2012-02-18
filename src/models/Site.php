@@ -16,11 +16,11 @@ class Site extends BaseModel
 	);
 
 	protected $hasBlocks = array(
-		'blocks' => array('through' => 'SiteBlock', 'foreignKey' => 'site')
+		'blocks' => array('model' => 'SiteBlock', 'foreignKey' => 'site')
 	);
 
 	protected $hasContent = array(
-		'content' => array('through' => 'SiteContent', 'foreignKey' => 'site')
+		'content' => array('model' => 'SiteContent', 'foreignKey' => 'site')
 	);
 
 	protected $hasMany = array(

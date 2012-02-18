@@ -19,10 +19,10 @@ class Asset extends BaseModel
 	);
 
 	protected $hasBlocks = array(
-		'blocks' => array('through' => 'AssetBlock', 'foreignKey' => 'asset')
+		'blocks' => array('model' => 'AssetBlock', 'foreignKey' => 'asset')
 	);
 
 	protected $hasContent = array(
-		'content' => array('through' => 'AssetContent', 'foreignKey' => 'asset')
+		'content' => array('model' => 'AssetContent', 'foreignKey' => 'asset')
 	);
 }
