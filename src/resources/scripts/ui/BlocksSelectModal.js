@@ -40,6 +40,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 		this.addListener(this.$addBtn, 'click', 'addSelectedBlocks');
 		this.addListener(this.$cancelBtn, 'click', 'hide');
+		this.addListener(this.$body, 'keydown', 'onKeyDown');
 
 		this.$items = this.$container.find('li');
 		this.$addItem = this.$items.filter('.add:first');
@@ -163,6 +164,24 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 				this.$fillerItems = this.$fillerItems.not($filler);
 				$filler.remove();
 			}
+		}
+	},
+
+	onKeyDown: function(event)
+	{
+		// Ignore if meta key is down
+		if (event.metaKey) return;
+
+		// Ignore if the modal body doesn't have focus
+		if (event.target != this.$body[0]) return;
+
+		// Ignore if there are no selected items
+		if (! this.$selectedItems.length) return;
+
+		if (event.keyCode == blx.SPACE_KEY || event.keyCode == blx.RETURN_KEY)
+		{
+			event.preventDefault();
+			this.addSelectedBlocks();
 		}
 	}
 
