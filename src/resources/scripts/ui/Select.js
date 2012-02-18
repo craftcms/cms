@@ -71,7 +71,6 @@ blx.ui.Select = blx.Base.extend({
 
 		// --------------------------------------------------------------------
 
-		this.$container.attr('tabindex', '0');
 		blx.utils.preventOutlineOnMouseFocus(this.$container);
 
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
