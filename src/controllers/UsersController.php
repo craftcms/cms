@@ -68,7 +68,6 @@ class UsersController extends BaseController
 		$this->requirePostRequest();
 
 		$existingUser = false;
-		$randomPassword = null;
 
 		// Are we editing an existing user?
 		$postUserId = Blocks::app()->request->getPost('user_id');
@@ -92,26 +91,18 @@ class UsersController extends BaseController
 
 		$requireEmailValidation = (Blocks::app()->request->getPost('require_email_validation') === 'y');
 
-		if (!$existingUser)
-		{
-			$randomPassword = Blocks::app()->security->generatePassword();
-			$user->password = $randomPassword;
-			// set this to anything to pass validation.  registerUser correctly sets it.
-			$user->enc_type = 'md5';
-		}
-
 		if ($user->validate())
 		{
 			if (!$existingUser)
 			{
-				$result = Blocks::app()->users->registerUser($user, $randomPassword, $requireEmailValidation, true);
+				$user = Blocks::app()->users->registerUser($user, null, $requireEmailValidation, true);
 
-				if (isset($result['user']) && $result['user'] !== null)
+				if ($user !== null)
 				{
 					if ($requireEmailValidation)
 					{
 						$site = Blocks::app()->sites->currentSite;
-						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site, $result['authCode']->code)) == true)
+						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
 						{
 							// registered and sent email
 							Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user and sent registration email.');
@@ -155,8 +146,8 @@ class UsersController extends BaseController
 	{
 		if (($user = Blocks::app()->security->validateUserRegistration($code)) !== null)
 		{
-			Blocks::app()->user->setMessage(MessageStatus::Success, 'Success!');
-			$this->redirect('login');
+			Blocks::app()->user->setMessage(MessageStatus::Notice, 'You need to set a password for your account.');
+			$this->redirect('account/password?code='.$user->authcode);
 		}
 
 		Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem validating this code.');

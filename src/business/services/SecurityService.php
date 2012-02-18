@@ -47,8 +47,6 @@ class SecurityService extends BaseService
 	 */
 	public function hashPassword($password)
 	{
-
-
 		$passwordHasher = new \PasswordHash($this->_iterationCount, $this->_portableHashes);
 		$hashAndType = $passwordHasher->hashPassword($password);
 		$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
@@ -89,43 +87,13 @@ class SecurityService extends BaseService
 	}
 
 	/**
-	 * @return string
-	 */
-	public function generatePassword()
-	{
-		$validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
-		$randomString = "";
-		$length = 60;
-
-		// count the number of chars in the valid chars string so we know how many choices we have
-		$numValidChars = strlen($validChars);
-
-		// repeat the steps until we've created a string of the right length
-		for ($i = 0; $i < $length; $i++)
-		{
-			// pick a random number from 1 up to the number of valid chars
-			$randomPick = mt_rand(1, $numValidChars);
-
-			// take the random character out of the string of valid chars
-			// subtract 1 from $randomPick because strings are indexed starting at 0, and we started picking at 1
-			$randomChar = $validChars[$randomPick - 1];
-
-			// add the randomly-chosen char onto the end of our string
-			$randomString .= $randomChar;
-		}
-
-		// return our randomly generated hashed password and type.
-		return $randomString;
-	}
-
-	/**
 	 * @param $code
 	 * @return mixed
 	 */
-	public function getAuthCodeByCode($code)
+	public function getUserByAuthCode($code)
 	{
-		return AuthCode::model()->findByAttributes(array(
-			'code' => $code,
+		return User::model()->findByAttributes(array(
+			'authcode' => $code,
 		));
 	}
 
@@ -136,25 +104,8 @@ class SecurityService extends BaseService
 	 */
 	public function validateUserRegistration($code)
 	{
-		$transaction = Blocks::app()->db->beginTransaction();
-		try
-		{
-			$user = $this->_validateAuthorizationRequest($code);
-
-			if ($user !== null)
-			{
-				$user->status = UserAccountStatus::Approved;
-				$user->save();
-			}
-
-			$transaction->commit();
-			return $user;
-		}
-		catch(Exception $e)
-		{
-			$transaction->rollback();
-			throw $e;
-		}
+		$user = $this->_validateAuthorizationRequest($code);
+		return $user !== null;
 	}
 
 	/**
@@ -164,30 +115,26 @@ class SecurityService extends BaseService
 	 */
 	private function _validateAuthorizationRequest($code)
 	{
-		$authCode = Blocks::app()->security->getAuthCodeByCode($code);
+		$user = $this->getUserByAuthCode($code);
 
-
-		if ($authCode == null)
+		if ($user == null)
 		{
 			Blocks::log('Unable to find auth code:'.$code);
 			throw new Exception('Unable to validate this authorization code.');
 		}
+
+		if (DateTimeHelper::currentTime() > $user->authcode_expire_date)
+		{
+			Blocks::log('AuthCode: '.$code.' has already expired.');
+			throw new Exception('Unable to validate this authorization code.');
+		}
+
+		if ($user->password !== null)
+		{
+			Blocks::log('The user account '.$user->username.' already has a password set.  Ignoring the auth code: '.$code.'.');
+			throw new Exception('Unable to validate this authorization code.');
+		}
 		else
-			$user = $authCode->user;
-
-		if ($authCode->date_activated !== null)
-		{
-			Blocks::log('AuthCode: '.$authCode->code.' has already been activated.');
-			throw new Exception('Unable to validate this authorization code.');
-		}
-
-		if (DateTimeHelper::currentTime() > $authCode->expiration_date)
-		{
-			Blocks::log('AuthCode: '.$authCode->code.' has already expired.');
-			throw new Exception('Unable to validate this authorization code.');
-		}
-
-		if ($authCode->type == AuthorizationCodeType::Registration)
 		{
 			switch ($user->status)
 			{
@@ -214,17 +161,18 @@ class SecurityService extends BaseService
 
 				case UserAccountStatus::PendingVerification:
 				{
-					// validate?
-					$authCode->date_activated = DateTimeHelper::currentTime();
-					$authCode->save();
+					// valid auth request.
+					//$user->authcode = null;
+					//$user->authcode_issued_date = null;
+					//$user->authcode_expire_date = null;
+					//$user->status = UserAccountStatus::Approved;
+					//$user->save();
+
 					return $user;
 				}
 			}
 		}
 
-		if ($authCode->type == AuthorizationCodeType::ResetPassword || $authCode->type == AuthorizationCodeType::ForgotPassword)
-		{
-			// verifyauthcode with hashed info?
-		}
+		return null;
 	}
 }

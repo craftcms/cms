@@ -79,30 +79,26 @@ class UsersService extends BaseService
 	 */
 	public function registerUser(User $user, $password, $emailValidation = true, $passwordReset = true)
 	{
-		$hashAndType = Blocks::app()->security->hashPassword($password);
-		$user->password = $hashAndType['hash'];
-		$user->enc_type = $hashAndType['encType'];
+		// if the password is null, we know someone on the back-end wants to create the account.
+		if ($password !== null)
+		{
+			$hashAndType = Blocks::app()->security->hashPassword($password);
+			$user->password = $hashAndType['hash'];
+			$user->enc_type = $hashAndType['encType'];
+		}
+
 		$user->password_reset_required = $passwordReset;
-		$authCode = null;
 
 		if ($emailValidation)
 		{
 			$user->status = UserAccountStatus::PendingVerification;
-			$user->save();
 
-			// refresh to get the user id
-			$user->refresh();
-
-			$authCode = new AuthCode();
-			$authCode->user_id = $user->id;
+			$user->authcode = StringHelper::randomString();
 			$date = new \DateTime();
-			$authCode->date_issued = $date->getTimestamp();
+			$user->authcode_issued_date = $date->getTimestamp();
 			$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
-			$authCode->expiration_date = $date->add($dateInterval)->getTimestamp();
-			$authCode->type = AuthorizationCodeType::Registration;
-			$authCode->save();
-			// refresh to get the db generated code.
-			$authCode->refresh();
+			$user->authcode_expire_date = $date->add($dateInterval)->getTimestamp();
+			$user->save();
 		}
 		else
 		{
@@ -110,7 +106,7 @@ class UsersService extends BaseService
 			$user->save();
 		}
 
-		return array('user' => $user, 'authCode' => $authCode);
+		return $user;
 	}
 
 	/**
