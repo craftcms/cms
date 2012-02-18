@@ -10,6 +10,8 @@ class UserSessionService extends \CWebUser
 	const FLASH_COUNTERS   = 'Blocks.UserSessionService.flashcounters';
 
 	public $authTimeout;
+	public $changePasswordUrl = array('/user/password');
+	private $_model;
 
 	/**
 	 *
@@ -18,6 +20,31 @@ class UserSessionService extends \CWebUser
 	{
 		$this->authTimeout = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('sessionTimeout'));
 		parent::init();
+	}
+
+	/**
+	 * Returns the User model of the currently logged in user and null if is user is not logged in.
+	 * @return User The model of the logged in user.
+	 */
+	public function getModel()
+	{
+		return $this->loadUser(Blocks::app()->user->id);
+	}
+
+	/**
+	 * Retrieves a User model from the database
+	 * @param integer $id the id of the User to be retrieved
+	 * @return User the User model
+	 */
+	protected function loadUser($id = null)
+	{
+		if ($this->_model === null)
+		{
+			if ($id !== null)
+				$this->_model = User::model()->findById($id);
+		}
+
+		return $this->_model;
 	}
 
 	/**
