@@ -27,10 +27,10 @@ class ContentController extends BaseController
 		$template = Blocks::app()->request->getPost('template');
 		$sectionSettings['template'] = ($template ? $template : null);
 
-		$sectionBlockIds = Blocks::app()->request->getPost('blocks', array());
+		$sectionBlocksData = Blocks::app()->request->getPost('blocks');
 		$sectionId = Blocks::app()->request->getPost('section_id');
 
-		$section = Blocks::app()->content->saveSection($sectionSettings, $sectionBlockIds, $sectionId);
+		$section = Blocks::app()->content->saveSection($sectionSettings, $sectionBlocksData, $sectionId);
 
 		// Did it save?
 		if (!$section->errors)
@@ -44,12 +44,18 @@ class ContentController extends BaseController
 
 		// Get ContentBlock instances for each selected block
 		$sectionBlocks = array();
-		foreach ($sectionBlockIds as $blockId)
+
+		if (!empty($sectionBlocksData['selections']))
 		{
-			$block = Blocks::app()->contentBlocks->getBlockById($blockId);
-			if ($block)
+			foreach ($sectionBlocksData['selections'] as $blockId)
+			{
+				$block = new SectionBlock;
+				$block->required = (isset($sectionBlocksData['required'][$blockId]) && $sectionBlocksData['required'][$blockId] === 'y');
+				$block->block = Blocks::app()->contentBlocks->getBlockById($blockId);
 				$sectionBlocks[] = $block;
+			}
 		}
+		
 
 		// Reload the original template
 		$this->loadRequestedTemplate(array(

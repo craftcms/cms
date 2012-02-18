@@ -178,11 +178,11 @@ class ContentService extends BaseService
 	 * Saves a section
 	 *
 	 * @param            $sectionSettings
-	 * @param array|null $sectionBlockIds
+	 * @param array|null $sectionBlocks
 	 * @param null       $sectionId
 	 * @return \Blocks\Section
 	 */
-	public function saveSection($sectionSettings, $sectionBlockIds = array(), $sectionId = null)
+	public function saveSection($sectionSettings, $sectionBlocks = null, $sectionId = null)
 	{
 		$section = $this->getSection($sectionId);
 		$isNewSection = $section->isNewRecord;
@@ -213,12 +213,18 @@ class ContentService extends BaseService
 				}
 
 				// Add new content block selections
-				$sectionBlocksData = array();
-				foreach ($sectionBlockIds as $sortOrder => $blockId)
+				if (!empty($sectionBlocks['selections']))
 				{
-					$sectionBlocksData[] = array($section->id, $blockId, false, $sortOrder+1);
+					$sectionBlocksData = array();
+
+					foreach ($sectionBlocks['selections'] as $sortOrder => $blockId)
+					{
+						$required = (isset($sectionBlocks['required'][$blockId]) && $sectionBlocks['required'][$blockId] === 'y');
+						$sectionBlocksData[] = array($section->id, $blockId, $required, $sortOrder+1);
+					}
+
+					Blocks::app()->db->createCommand()->insertAll('{{sectionblocks}}', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
 				}
-				Blocks::app()->db->createCommand()->insertAll('{{sectionblocks}}', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
 
 				$transaction->commit();
 			}

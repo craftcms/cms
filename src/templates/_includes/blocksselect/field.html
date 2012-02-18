@@ -3,9 +3,11 @@
 		<div class="scrollpane">
 			<ul>
 				{% foreach blocks as block %}
-					<li class="block-item" data-block-id="{block.block.id}"><div class="block"><span class="icon icon137"></span><span class="block-name">{block.block.name}</span>
-						<span class="block-type">{block.block.blockType.name}</span></div>
-						<input type="hidden" name="{name}[]" value="{block.block.id}">
+					<li class="block-item" data-block-id="{block.block.id}">
+						<label class="required" title="Required?"><input type="checkbox" name="{name}[required][{block.block.id}]" value="y" {% if block.required %}checked{% endif %}></label>
+						<div class="block"><span class="icon icon137"></span><span class="block-name">{block.block.name}</span>
+							<span class="block-type">{block.block.blockType.name}</span></div>
+						<input type="hidden" name="{name}[selections][]" value="{block.block.id}">
 					</li>
 				{% endforeach %}
 				<li class="add"><a><span class="icon icon44"></span>Add content blocks</a></li>

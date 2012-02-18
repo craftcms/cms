@@ -80,11 +80,27 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		// Add the hidden inputs
 		for (var i = 0; i < $blockItems.length; i++)
 		{
+			// Get the block ID
+			var blockId = $blockItems[i].getAttribute('data-block-id');
+
+			// Add the [selections] input
 			var $input = $(document.createElement('input'));
 			$input.attr('type', 'hidden');
-			$input.attr('name', this.inputName+'[]');
-			$input.attr('value', $blockItems[i].getAttribute('data-block-id'));
+			$input.attr('name', this.inputName+'[selections][]');
+			$input.attr('value', blockId);
 			$input.appendTo($blockItems[i]);
+
+			// Add the [required] label + input
+			var $label = $(document.createElement('label'));
+			$label.addClass('required');
+			$label.attr('title', 'Required?');
+			$label.prependTo($blockItems[i]);
+
+			var $input = $(document.createElement('input'));
+			$input.attr('type', 'checkbox');
+			$input.attr('name', this.inputName+'[required]['+blockId+']');
+			$input.attr('value', 'y');
+			$input.appendTo($label);
 		}
 
 		$blockItems.insertBefore(this.$addItem);
