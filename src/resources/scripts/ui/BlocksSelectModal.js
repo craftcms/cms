@@ -131,7 +131,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 	addSelectedBlocks: function()
 	{
-		this.field.addBlocks(this.$selectedItems.clone());
+		this.field.addBlocks(this.$selectedItems.clone().removeClass('first'));
 		this.$selectedItems.removeClass('sel').hide();
 		this.hide();
 	},
