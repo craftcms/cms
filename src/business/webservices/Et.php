@@ -89,5 +89,7 @@ class Et
 		{
 			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
 		}
+
+		return null;
 	}
 }

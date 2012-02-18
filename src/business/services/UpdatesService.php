@@ -20,7 +20,7 @@ class UpdatesService extends BaseService
 		$updates = array();
 
 		if (!$forceRefresh && !$this->isUpdateInfoCached())
-			return;
+			return null;
 
 		$blocksUpdateInfo = $this->getUpdateInfo($forceRefresh);
 

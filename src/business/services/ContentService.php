@@ -177,9 +177,9 @@ class ContentService extends BaseService
 	/**
 	 * Saves a section
 	 *
-	 * @param      $sectionSettings
-	 * @param null $sectionBlockIds
-	 * @param null $sectionId
+	 * @param            $sectionSettings
+	 * @param array|null $sectionBlockIds
+	 * @param null       $sectionId
 	 * @return \Blocks\Section
 	 */
 	public function saveSection($sectionSettings, $sectionBlockIds = array(), $sectionId = null)
@@ -261,10 +261,10 @@ class ContentService extends BaseService
 			// create dynamic data table
 			$connection->createCommand()->createTable('{{'.$tableName.'}}',
 				array('id'              => AttributeType::PK,
-					  'entry_id'        => AttributeType::Integer.' NOT NULL',
-					  'version_id'      => AttributeType::Integer.' NOT NULL',
-					  'date_created'    => AttributeType::Integer,
-					  'date_updated'    => AttributeType::Integer,
+					  'entry_id'        => AttributeType::Int.' NOT NULL',
+					  'version_id'      => AttributeType::Int.' NOT NULL',
+					  'date_created'    => AttributeType::Int,
+					  'date_updated'    => AttributeType::Int,
 					  'uid'             => AttributeType::Varchar
 				));
 

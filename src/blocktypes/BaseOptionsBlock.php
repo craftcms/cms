@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 abstract class BaseOptionsBlock extends BaseBlock
 {
 	protected $settings = array(
@@ -9,6 +12,8 @@ abstract class BaseOptionsBlock extends BaseBlock
 
 	/**
 	 * Set the settings
+	 *
+	 * @param $settings
 	 */
 	public function setSettings($settings)
 	{

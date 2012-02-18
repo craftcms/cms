@@ -393,7 +393,7 @@ var FormattingButton = blx.Base.extend({
 		// add the button
 		this.$btn = $('<a class="btn" href=""><span class="label">'+btnLabel+'</span></a>');
 		this.$btn.insertBefore(this.editor.iframe);
-		this.addListener(this.$btn, 'click', 'toggleCommand')
+		this.addListener(this.$btn, 'click', 'toggleCommand');
 
 		this.setButtonState();
 	},

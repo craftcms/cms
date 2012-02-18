@@ -39,6 +39,8 @@ class NumberBlock extends BaseBlock
 				return AttributeType::Float;
 			case 'dec':
 				return AttributeType::Decimal;
-		}	
+		}
+
+		return null;
 	}
 }

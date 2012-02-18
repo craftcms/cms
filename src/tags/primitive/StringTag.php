@@ -80,6 +80,9 @@ class StringTag extends Tag
 
 	/**
 	 * Split
+	 *
+	 * @param string $delimiter
+	 * @return array
 	 */
 	public function split($delimiter = ',')
 	{

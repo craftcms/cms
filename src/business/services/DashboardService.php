@@ -9,7 +9,6 @@ class DashboardService extends BaseService
 	/**
 	 * Returns the dashboard widgets for the current user
 	 *
-	 * @param null $userId
 	 * @return array
 	 */
 	public function getWidgets()
@@ -54,6 +53,7 @@ class DashboardService extends BaseService
 
 	/**
 	 * TEMPORARY -- this will be replaced by the global notification service
+	 * @return array
 	 */
 	public function getAlerts()
 	{

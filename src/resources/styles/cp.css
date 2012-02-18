@@ -68,7 +68,7 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 #nav .left ul { float: left; }
 #nav a { color: #fff; text-shadow: 0 1px 0 #000; }
 #nav ul li { position: relative; float: left; }
-#nav ul li a { display: block; position: relative; width: 40px; height: 40px; line-height: 40px; backrgound: no-repeat; background-position: 0 100%; opacity: 0.35; -webkit-transition: opacity 150ms linear; }
+#nav ul li a { display: block; position: relative; width: 40px; height: 40px; line-height: 40px; background: no-repeat; background-position: 0 100%; opacity: 0.35; -webkit-transition: opacity 150ms linear; }
 #nav ul li a:hover { opacity: 0.85; }
 #nav ul li a.sel { opacity: 1 !important; }
 
@@ -391,7 +391,7 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 .rte { padding: 0; }
 .rte .toolbar { border-radius: 1px 1px 0 0; margin-bottom: 0; border-bottom: 1px solid #ccc; height: 30px; white-space: nowrap; color: #666; background: -webkit-linear-gradient(#fff, #fafafa); }
 .rte .toolbar .btn { border: none; border-right: 1px solid #ccc; border-radius: 0; height: 30px; }
-.rte .toolbar .btn:first-child { border-top-lef-radius: 1px; }
+.rte .toolbar .btn:first-child { border-top-left-radius: 1px; }
 .rte .toolbar .btn .label { margin: 0 15px; line-height: 30px; }
 .rte .toolbar .btn .arrow { margin: 0 5px 0 -15px; }
 .rte .styles { position: absolute; top: 0; right: 0; width: 150px; }

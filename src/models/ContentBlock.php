@@ -52,6 +52,8 @@ class ContentBlock extends BaseModel
 
 	/**
 	 * Set the block type
+	 *
+	 * @param $blockType
 	 */
 	public function setBlockType($blockType)
 	{

@@ -34,6 +34,7 @@ abstract class BaseBlock extends BaseComponent
 
 	/**
 	 * Display settings
+	 * @return string
 	 */
 	public function displaySettings()
 	{
@@ -51,6 +52,7 @@ abstract class BaseBlock extends BaseComponent
 
 	/**
 	 * Get the content column type
+	 * @return string
 	 */
 	public function getColumnType()
 	{

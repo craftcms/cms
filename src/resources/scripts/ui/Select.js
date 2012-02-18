@@ -247,7 +247,7 @@ blx.ui.Select = blx.Base.extend({
 
 			// wait a moment before deselecting others
 			// to give the user a chance to double-click
-			this.clearMouseUpTimeout()
+			this.clearMouseUpTimeout();
 			this.mouseUpTimeout = setTimeout($.proxy(function() {
 				this.deselectOthers($item);
 			}, this), this.mouseUpTimeoutDuration);
@@ -299,9 +299,10 @@ blx.ui.Select = blx.Base.extend({
 
 			case blx.ESC_KEY:
 				this.deselectAll(true);
+				break;
 
 			default: return;
-		};
+		}
 
 		if (! $item || ! $item.length) return;
 

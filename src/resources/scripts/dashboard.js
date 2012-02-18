@@ -422,7 +422,7 @@ var Widget = blx.Base.extend({
 	{
 		var height = this.dom.$settingsInnerContainer.height();
 		this.dom.$settingsOuterContainer.height(height);
-		this.dom.$settingsInnerContainer.css('position', 'absolute')
+		this.dom.$settingsInnerContainer.css('position', 'absolute');
 		this.dom.$settingsOuterContainer.stop().animate({height: 0}, $.proxy(function() {
 			this.dom.$settingsOuterContainer.removeClass('expanded');
 		}, this));
