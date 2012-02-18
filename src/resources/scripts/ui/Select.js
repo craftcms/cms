@@ -71,7 +71,6 @@ blx.ui.Select = blx.Base.extend({
 
 		// --------------------------------------------------------------------
 
-		this.$container.attr('tabindex', '0');
 		blx.utils.preventOutlineOnMouseFocus(this.$container);
 
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
@@ -304,7 +303,7 @@ blx.ui.Select = blx.Base.extend({
 			default: return;
 		}
 
-		if (! $item || ! $item.length) return;
+		if (typeof $item == 'undefined' || !$item.length) return;
 
 		// -------------------------------------------
 		//  Scroll to the item

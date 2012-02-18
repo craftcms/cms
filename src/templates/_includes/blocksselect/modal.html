@@ -2,7 +2,7 @@
 	<div class="head">
 		<h5>Add Content Blocks</h5>
 	</div>
-	<div class="body">
+	<div class="body" tabindex="0">
 		<div class="scrollpane">
 			<ul>
 				{% include "_includes/blocksselect/blocks_list" blocks=contentBlocks.blocks selected=selected %}
@@ -13,7 +13,7 @@
 		</div>
 	</div>
 	<div class="foot">
-		<div class="btn add disabled"><span class="label">Add Blocks</span></div>
+		<div class="btn submit add disabled"><span class="label">Add Blocks</span></div>
 		<div class="btn cancel"><span class="label">Cancel</span></div>
 	</div>
 </div>
