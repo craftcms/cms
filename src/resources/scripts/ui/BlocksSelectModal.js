@@ -17,6 +17,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 	$addItem: null,
 	$fillerItems: null,
 	$blockItems: null,
+	$visibleBlockItems: null,
 
 	selector: null,
 	$selectedItems: null,
@@ -43,6 +44,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$addItem = this.$items.filter('.add:first');
 		this.$fillerItems = this.$items.filter('.filler');
 		this.$blockItems = $();
+		this.$visibleBlockItems = $();
 		this.$selectedItems = $();
 
 		var $blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
@@ -54,9 +56,18 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		if (!this.visible)
 			this.$container.show();
 
+		if (this.$visibleBlockItems.length)
+			this.$visibleBlockItems.first().removeClass('first');
+		else
+			this.$addItem.removeClass('first');
+
 		// Show only the blocks that aren't already selected
 		this.$blockItems.hide();
+		this.$visibleBlockItems = $();
 		var selectedBlockIds = [];
+		this.selector.reset();
+		this.onSelectionChange();
+
 		for (var i = 0; i < field.$blockItems.length; i++)
 		{
 			var blockId = field.$blockItems[i].getAttribute('data-block-id');
@@ -68,8 +79,16 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 			if ($.inArray(blockId, selectedBlockIds) == -1)
 			{
 				$(this.$blockItems[i]).show();
+				this.$visibleBlockItems = this.$visibleBlockItems.add(this.$blockItems[i]);
 			}
 		}
+
+		if (this.$visibleBlockItems.length)
+			this.$visibleBlockItems.first().addClass('first');
+		else
+			this.$addItem.addClass('first');
+
+		this.selector.addItems(this.$visibleBlockItems);
 
 		this.setFillers();
 
@@ -120,7 +139,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 	setFillers: function()
 	{
 		var totalFillers = this.$fillerItems.length,
-			totalBlocks = this.$blockItems.filter(':visible').length,
+			totalBlocks = this.$visibleBlockItems.length,
 			neededFillers = 2 - totalBlocks;
 
 		if (neededFillers > totalFillers)
