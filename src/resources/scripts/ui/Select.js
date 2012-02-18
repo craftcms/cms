@@ -30,8 +30,8 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Init
 	 */
-	init: function(container, items, settings) {
-
+	init: function(container, items, settings)
+	{
 		this.$container = $(container);
 
 		// Param mapping
@@ -60,13 +60,13 @@ blx.ui.Select = blx.Base.extend({
 
 		// --------------------------------------------------------------------
 
-		this.addListener(this.$container, 'click', function(event) {
-			if (this.ignoreClick) {
+		this.addListener(this.$container, 'click', function(event)
+		{
+			if (this.ignoreClick)
 				this.ignoreClick = false;
-			} else {
+			else
 				// deselect all items on container click
 				this.deselectAll(true);
-			}
 		});
 
 		// --------------------------------------------------------------------
@@ -83,24 +83,26 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Get Item Index
 	 */
-	getItemIndex: function($item) {
+	getItemIndex: function($item)
+	{
 		return this.$items.index($item[0]);
 	},
 
 	/**
 	 * Is Selected?
 	 */
-	isSelected: function($item) {
+	isSelected: function($item)
+	{
 		return $item.hasClass('sel');
 	},
 
 	/**
 	 * Select Item
 	 */
-	selectItem: function($item) {
-		if (! this.settings.multi) {
+	selectItem: function($item)
+	{
+		if (! this.settings.multi)
 			this.deselectAll();
-		}
 
 		$item.addClass('sel');
 
@@ -115,10 +117,10 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Select Range
 	 */
-	selectRange: function($item) {
-		if (! this.settings.multi) {
+	selectRange: function($item)
+	{
+		if (! this.settings.multi)
 			return this.selectItem($item);
-		}
 
 		this.deselectAll();
 
@@ -126,10 +128,13 @@ blx.ui.Select = blx.Base.extend({
 		this.last = this.getItemIndex($item);
 
 		// prepare params for $.slice()
-		if (this.first < this.last) {
+		if (this.first < this.last)
+		{
 			var sliceFrom = this.first,
 				sliceTo = this.last + 1;
-		} else { 
+		}
+		else
+		{ 
 			var sliceFrom = this.last,
 				sliceTo = this.first + 1;
 		}
@@ -144,7 +149,8 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Deselect Item
 	 */
-	deselectItem: function($item) {
+	deselectItem: function($item)
+	{
 		$item.removeClass('sel');
 
 		var index = this.getItemIndex($item);
@@ -159,12 +165,12 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Deselect All
 	 */
-	deselectAll: function(clearFirst) {
+	deselectAll: function(clearFirst)
+	{
 		this.$items.removeClass('sel');
 
-		if (clearFirst) {
+		if (clearFirst)
 			this.$first = this.first = this.$last = this.last = null;
-		}
 
 		this.totalSelected = 0;
 
@@ -174,7 +180,8 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Deselect Others
 	 */
-	deselectOthers: function($item) {
+	deselectOthers: function($item)
+	{
 		this.deselectAll();
 		this.selectItem($item);
 	},
@@ -182,39 +189,40 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Toggle Item
 	 */
-	toggleItem: function($item) {
-		if (! this.isSelected($item)) {
+	toggleItem: function($item)
+	{
+		if (! this.isSelected($item))
 			this.selectItem($item);
-		} else {
+		else
 			this.deselectItem($item);
-		}
 	},
 
 	// --------------------------------------------------------------------
 
-	clearMouseUpTimeout: function() {
+	clearMouseUpTimeout: function()
+	{
 		clearTimeout(this.mouseUpTimeout);
 	},
 
 	/**
 	 * On Mouse Down
 	 */
-	onMouseDown: function(event) {
+	onMouseDown: function(event)
+	{
 		// ignore right clicks
 		if (event.button == 2) return;
 
 		this.mousedownX = event.pageX;
 		this.mousedownY = event.pageY;
 
-		var $item = $(event.currentTarget);
+		var $item = $($.data(event.currentTarget, 'select-item'));
 
-		if (event.metaKey) {
+		if (event.metaKey)
 			this.toggleItem($item);
-		}
-		else if (this.first !== null && event.shiftKey) {
+		else if (this.first !== null && event.shiftKey)
 			this.selectRange($item);
-		}
-		else if (! this.isSelected($item)) {
+		else if (! this.isSelected($item))
+		{
 			this.deselectAll();
 			this.selectItem($item);
 		}
@@ -225,14 +233,16 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * On Mouse Up
 	 */
-	onMouseUp: function(event) {
+	onMouseUp: function(event)
+	{
 		// ignore right clicks
 		if (event.button == 2) return;
 
-		var $item = $(event.currentTarget);
+		var $item = $($.data(event.currentTarget, 'select-item'));
 
 		// was this a click?
-		if (! event.metaKey && ! event.shiftKey && blx.utils.getDist(this.mousedownX, this.mousedownY, event.pageX, event.pageY) < 1) {
+		if (! event.metaKey && ! event.shiftKey && blx.utils.getDist(this.mousedownX, this.mousedownY, event.pageX, event.pageY) < 1)
+		{
 			this.selectItem($item);
 
 			// wait a moment before deselecting others
@@ -249,7 +259,8 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * On Key Down
 	 */
-	onKeyDown: function(event) {
+	onKeyDown: function(event)
+	{
 		// ignore if meta key is down
 		if (event.metaKey) return;
 
@@ -261,31 +272,28 @@ blx.ui.Select = blx.Base.extend({
 
 		var anchor = event.shiftKey ? this.last : this.first;
 
-		switch (event.keyCode) {
+		switch (event.keyCode)
+		{
 			case blx.DOWN_KEY:
 				event.preventDefault();
 
-				if (this.first === null) {
+				if (this.first === null)
 					// select the first item
 					$item = $(this.$items[0]);
-				}
-				else if (this.$items.length >= anchor + 2) {
+				else if (this.$items.length >= anchor + 2)
 					// select the item after the last selected item
 					$item = $(this.$items[anchor+1]);
-				}
 
 				break;
 
 			case blx.UP_KEY:
 				event.preventDefault();
 
-				if (this.first === null) {
+				if (this.first === null)
 					// select the last item
 					$item = $(this.$items[this.$items.length-1]);
-				}
-				else if (anchor > 0) {
+				else if (anchor > 0)
 					$item = $(this.$items[anchor-1]);
-				}
 
 				break;
 
@@ -307,10 +315,10 @@ blx.ui.Select = blx.Base.extend({
 		//  Select the item
 		// -------------------------------------------
 
-		if (this.first !== null && event.shiftKey) {
+		if (this.first !== null && event.shiftKey)
 			this.selectRange($item);
-		}
-		else {
+		else
+		{
 			this.deselectAll();
 			this.selectItem($item);
 		}
@@ -321,26 +329,56 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Get Total Selected
 	 */
-	getTotalSelected: function() {
+	getTotalSelected: function()
+	{
 		return this.totalSelected;
 	},
 
 	/**
 	 * Add Items
 	 */
-	addItems: function(items) {
+	addItems: function(items)
+	{
 		var $items = $(items);
 
-		// make a record of it
-		this.$items = this.$items.add($items);
+		for (var i = 0; i < $items.length; i++)
+		{
+			var item = $items[i];
 
-		// bind listeners
-		this.addListener($items, 'mousedown', 'onMouseDown');
-		this.addListener($items, 'mouseup', 'onMouseUp');
+			// Make sure this element doesn't belong to another selector
+			if ($.data(item, 'select'))
+			{
+				blx.log('Element was added to more than one selector');
+				$.data(item, 'select').removeItems(item);
+			}
 
-		this.addListener($items, 'click', function(event) {
-			this.ignoreClick = true;
-		});
+			// Add the item
+			$.data(item, 'select', this);
+			this.$items.push(item);
+
+			// Get the handle
+			if (this.settings.handle)
+			{
+				if (typeof this.settings.handle == 'object')
+					var $handle = $(this.settings.handle);
+				else if (typeof this.settings.handle == 'string')
+					var $handle = $(item).find(this.settings.handle);
+				else if (typeof this.settings.handle == 'function')
+					var $handle = $(this.settings.handle(item));
+			}
+			else
+				var $handle = $(item);
+
+			$.data(item, 'select-handle', $handle);
+			$handle.data('select-item', item);
+
+			this.addListener($handle, 'mousedown', 'onMouseDown');
+			this.addListener($handle, 'mouseup', 'onMouseUp');
+			this.addListener($handle, 'click', function(event)
+			{
+				this.ignoreClick = true;
+			});
+		}
 
 		this.totalSelected += $items.filter('.sel').length;
 
@@ -350,23 +388,26 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Remove Items
 	 */
-	removeItems: function(items) {
-		var $items = $(items);
+	removeItems: function(items)
+	{
+		items = $.makeArray(items);
 
-		for (var i = 0; i < $items.length; i++) {
-			var $item = $($items[i]);
+		for (var i = 0; i < items.length; i++)
+		{
+			var item = items[i];
 
-			// deselect it first
-			if (this.isSelected($item)) {
-				this.deselectItem($item);
+			// Make sure we actually know about this item
+			var index = $.inArray(item, this.$items);
+			if (index != -1)
+			{
+				var $handle = $.data(item, 'select-handle');
+				$handle.data('select-item', null);
+				$.data(item, 'select', null);
+				$.data(item, 'select-handle', null);
+				this.removeAllListeners($handle);
+				this.$items.splice(index, 1);
 			}
-		};
-
-		// unbind all events
-		this.removeAllListeners($items);
-
-		// remove the record of it
-		this.$items = this.$items.not($items);
+		}
 
 		this.updateIndexes();
 	},
@@ -374,23 +415,19 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Reset
 	 */
-	reset: function() {
-		// unbind the events
-		this.removeAllListeners(this.$items);
-
-		// reset local vars
-		this.$items = $();
+	reset: function()
+	{
+		this.removeItems(this.$items);
 		this.totalSelected = 0;
 		this.$first = this.first = this.$last = this.last = null;
-
-		// clear timeout
 		this.clearCallbackTimeout();
 	},
 
 	/**
 	 * Destroy
 	 */
-	destroy: function() {
+	destroy: function()
+	{
 		this.base();
 
 		// clear timeout
@@ -400,8 +437,10 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Update First/Last indexes
 	 */
-	updateIndexes: function() {
-		if (this.first !== null) {
+	updateIndexes: function()
+	{
+		if (this.first !== null)
+		{
 			this.first = this.getItemIndex(this.$first);
 			this.last = this.getItemIndex(this.$last);
 		}
@@ -412,21 +451,24 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Clear Callback Timeout
 	 */
-	clearCallbackTimeout: function() {
-		if (this.settings.onSelectionChange) {
+	clearCallbackTimeout: function()
+	{
+		if (this.settings.onSelectionChange)
 			clearTimeout(this.callbackTimeout);
-		}
 	},
 
 	/**
 	 * Set Callback Timeout
 	 */
-	setCallbackTimeout: function() {
-		if (this.settings.onSelectionChange) {
+	setCallbackTimeout: function()
+	{
+		if (this.settings.onSelectionChange)
+		{
 			// clear the last one
 			this.clearCallbackTimeout();
 
-			this.callbackTimeout = setTimeout($.proxy(function() {
+			this.callbackTimeout = setTimeout($.proxy(function()
+			{
 				this.callbackTimeout = null;
 				this.settings.onSelectionChange.call();
 			}, this), 300);
@@ -436,7 +478,8 @@ blx.ui.Select = blx.Base.extend({
 	/**
 	 * Get Selected Items
 	 */
-	getSelectedItems: function() {
+	getSelectedItems: function()
+	{
 		return this.$items.filter('.sel');
 	}
 
@@ -444,6 +487,7 @@ blx.ui.Select = blx.Base.extend({
 	defaults: {
 		multi: false,
 		waitForDblClick: false,
+		handle: null,
 		onSelectionChange: function(){}
 	}
 });

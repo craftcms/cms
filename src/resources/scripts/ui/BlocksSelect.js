@@ -37,11 +37,13 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		this.inputName = this.$container.attr('data-input-name');
 
 		this.selector = new blx.ui.Select(this.$container, {
-			multi: true
+			multi: true,
+			handle: 'div.block'
 		});
 
 		this.sorter = new blx.ui.DragSort({
 			axis: 'y',
+			handle: 'div.block',
 			helper: '<ul />',
 			filter: '.sel',
 			onSortChange: $.proxy(this, 'onSortChange')

@@ -31,6 +31,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.selector = new blx.ui.Select(this.$body, {
 			multi: true,
 			waitForDblClick: true,
+			handle: 'div.block',
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
