@@ -24,7 +24,7 @@ class ContentBlock extends BaseModel
 	);
 
 	protected $indexes = array(
-		array('columns' => array('site_id','handle'), 'unique' => true)
+		array('columns' => array('handle','site_id'), 'unique' => true)
 	);
 
 	protected $hasMany = array(

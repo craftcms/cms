@@ -139,6 +139,17 @@ abstract class BaseModel extends \CActiveRecord
 				$rules[] = array($name, 'match', 'pattern' => $settings['matchPattern']);
 		}
 
+		// Catch any unique indexes
+		foreach ($this->indexes as $index)
+		{
+			if (isset($index['unique']) && $index['unique'] === true)
+			{
+				$columns = ArrayHelper::stringToArray($index['columns']);
+				$initialColumn = array_shift($columns);
+				$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
+			}
+		}
+
 		if ($uniques)
 			$rules[] = array(implode(',', $uniques), 'unique');
 
@@ -342,7 +353,7 @@ abstract class BaseModel extends \CActiveRecord
 		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);
 
 		// Create the indexes
-		foreach ($this->indexes as $i => $index)
+		foreach ($this->indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);

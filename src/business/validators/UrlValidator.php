@@ -13,7 +13,7 @@ class UrlValidator extends \CUrlValidator
 	 * @param $object
 	 * @param $attribute
 	 */
-	protected function validateAttribute($object,$attribute)
+	protected function validateAttribute($object, $attribute)
 	{
 		if (!$this->requireSchema)
 			$this->pattern = self::optionalSchemaUrlRegex;
