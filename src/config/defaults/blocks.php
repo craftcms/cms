@@ -72,7 +72,7 @@ $blocksConfig['sessionTimeout'] = '1h';
  * h = hour(s)
  * d = day(s)
  */
-$blocksConfig['authCodeExpiration'] = '48h';
+$blocksConfig['authCodeExpiration'] = '24h';
 
 
 /**
