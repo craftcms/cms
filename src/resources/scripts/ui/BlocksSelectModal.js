@@ -50,7 +50,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$selectedItems = $();
 
 		var $blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
-		this.addBlocks($blockItems);
+		this.addBlocks($blockItems, false);
 	},
 
 	attachToField: function(field)
@@ -104,14 +104,17 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.field = field;
 		this.positionRelativeTo(field.$container);
 		this.show();
+		this.$body.focus();
 	},
 
-	addBlocks: function(blockItems)
+	addBlocks: function(blockItems, addToSelector)
 	{
 		var $blockItems = $(blockItems);
-		this.selector.addItems($blockItems);
 		this.$blockItems = this.$blockItems.add($blockItems);
 		this.addListener($blockItems, 'dblclick', 'onDblClick');
+
+		if (addToSelector)
+			this.selector.addItems($blockItems);
 	},
 
 	onDblClick: function()
@@ -136,6 +139,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.field.addBlocks(this.$selectedItems.clone().removeClass('first'));
 		this.$selectedItems.removeClass('sel').hide();
 		this.hide();
+		this.field.$container.focus();
 	},
 
 	setFillers: function()
@@ -175,14 +179,19 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		// Ignore if the modal body doesn't have focus
 		if (event.target != this.$body[0]) return;
 
-		// Ignore if there are no selected items
-		if (! this.$selectedItems.length) return;
-
-		if (event.keyCode == blx.SPACE_KEY || event.keyCode == blx.RETURN_KEY)
+		switch (event.keyCode)
 		{
-			event.preventDefault();
-			this.addSelectedBlocks();
+			case blx.SPACE_KEY:
+			case blx.RETURN_KEY:
+				event.preventDefault();
+				if (this.$selectedItems.length)
+					this.addSelectedBlocks();
+				break;
+			case blx.ESC_KEY:
+				event.preventDefault();
+				this.hide();
 		}
+
 	}
 
 });

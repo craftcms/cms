@@ -15,6 +15,7 @@ blx.ui.BlocksSelect = blx.Base.extend({
 	$addItem: null,
 	$fillerItems: null,
 	$blockItems: null,
+	$selectedItems: null,
 
 	inputName: null,
 
@@ -38,7 +39,8 @@ blx.ui.BlocksSelect = blx.Base.extend({
 
 		this.selector = new blx.ui.Select(this.$container, {
 			multi: true,
-			handle: 'div.block'
+			handle: 'div.block',
+			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
 		this.sorter = new blx.ui.DragSort({
@@ -55,10 +57,13 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		this.$blockItems = $();
 
 		var $blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
-		this.initBlocks($blockItems);
+		if ($blockItems)
+			this.initBlocks($blockItems);
 
 		this.$addBtn = this.$addItem.find('a');
 		this.addListener(this.$addBtn, 'click', 'showModal');
+
+		this.addListener(this.$container, 'keydown', 'onKeyDown');
 	},
 
 	showModal: function()
@@ -96,10 +101,15 @@ blx.ui.BlocksSelect = blx.Base.extend({
 
 	removeBlocks: function($blockItems)
 	{
-		$blockItems.remove();
-		this.$blockItems = this.$blockItems.not($blockItems);
 		this.selector.removeItems($blockItems);
+		this.$blockItems = this.$blockItems.not($blockItems);
+		$blockItems.remove();
 		this.setFillers();
+	},
+
+	removeSelectedBlocks: function()
+	{
+		this.removeBlocks(this.$selectedItems);
 	},
 
 	onSortChange: function()
@@ -134,6 +144,29 @@ blx.ui.BlocksSelect = blx.Base.extend({
 				this.$fillerItems = this.$fillerItems.not($filler);
 				$filler.remove();
 			}
+		}
+	},
+
+	onSelectionChange: function()
+	{
+		this.$selectedItems = this.selector.getSelectedItems();
+	},
+
+	onKeyDown: function(event)
+	{
+		// Ignore if meta key is down
+		if (event.metaKey) return;
+
+		// Ignore if the container doesn't have focus
+		if (event.target != this.$container[0]) return;
+
+		// Ignore if there are no selected items
+		if (! this.$selectedItems.length) return;
+
+		if (event.keyCode == blx.DELETE_KEY)
+		{
+			event.preventDefault();
+			this.removeSelectedBlocks();
 		}
 	}
 
