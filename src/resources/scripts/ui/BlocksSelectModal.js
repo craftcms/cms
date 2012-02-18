@@ -65,6 +65,8 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$blockItems.hide();
 		this.$visibleBlockItems = $();
 		var selectedBlockIds = [];
+		this.selector.reset();
+		this.onSelectionChange();
 
 		for (var i = 0; i < field.$blockItems.length; i++)
 		{
@@ -85,6 +87,8 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 			this.$visibleBlockItems.first().addClass('first');
 		else
 			this.$addItem.addClass('first');
+
+		this.selector.addItems(this.$visibleBlockItems);
 
 		this.setFillers();
 
