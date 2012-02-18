@@ -405,7 +405,7 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 .blocksselect .input { padding: 0; }
 .blocksselect .scrollpane { max-height: 202px; overflow: auto; }
 .blocksselect ul { padding: 0 4px; }
-.blocksselect ul li:not(:first-child) { border-top: 1px dotted #ddd; }
+.blocksselect ul li:not(:first-child):not(.first) { border-top: 1px dotted #ddd; }
 .blocksselect ul li.add a { display: inline-block; padding: 5px 0 5px 4px; }
 .blocksselect ul li.filler { height: 28px; }
 li.block-item { min-height: 24px; padding: 2px 0; }
