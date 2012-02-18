@@ -52,6 +52,9 @@ blx.ui.DragCore = blx.Base.extend({
 	 */
 	onMouseDown: function(event)
 	{
+		// Ignore right clicks
+		if (event.button == 2) return;
+
 		// ignore if we already have a target
 		if (this.$targetItem) return;
 

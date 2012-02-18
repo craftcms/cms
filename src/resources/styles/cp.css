@@ -411,8 +411,8 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color:
 li.block-item { min-height: 24px; padding: 2px 0; }
 li.block-item .icon { margin: -3px 0; }
 li.block-item .block { display: inline-block; padding: 3px 8px 3px 4px; border-radius: 12px; cursor: default; }
-li.block-item:hover .block { background: #f5f5f5; }
-li.block-item:active .block,
+li.block-item .block:hover { background: #f5f5f5; }
+li.block-item .block:active,
 li.block-item.sel .block { background: #e5e5e5; }
 li.block-item .block .block-name { font-weight: bold; font-family: sans-serif; }
 li.block-item .block .block-type { margin-left: 1px; font-size: 11px; line-height: 14px; color: #999; }

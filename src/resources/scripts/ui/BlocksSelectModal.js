@@ -31,6 +31,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.selector = new blx.ui.Select(this.$body, {
 			multi: true,
 			waitForDblClick: true,
+			handle: 'div.block',
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
@@ -131,7 +132,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 	addSelectedBlocks: function()
 	{
-		this.field.addBlocks(this.$selectedItems.clone());
+		this.field.addBlocks(this.$selectedItems.clone().removeClass('first'));
 		this.$selectedItems.removeClass('sel').hide();
 		this.hide();
 	},
