@@ -2,7 +2,12 @@
 	<div class="input">
 		<div class="scrollpane">
 			<ul>
-				{% include "_includes/blocksselect/blocks_list" blocks=blocks name=name %}
+				{% foreach blocks as block %}
+					<li class="block-item" data-block-id="{block.block.id}"><div class="block"><span class="icon icon137"></span><span class="block-name">{block.block.name}</span>
+						<span class="block-type">{block.block.blockType.name}</span></div>
+						<input type="hidden" name="{name}[]" value="{block.block.id}">
+					</li>
+				{% endforeach %}
 				<li class="add"><a><span class="icon icon44"></span>Add content blocks</a></li>
 				{% if blocks.length < 1 %}<li class="filler"></li>{% endif %}
 				{% if blocks.length < 2 %}<li class="filler"></li>{% endif %}

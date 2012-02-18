@@ -5,7 +5,11 @@
 	<div class="body" tabindex="0">
 		<div class="scrollpane">
 			<ul>
-				{% include "_includes/blocksselect/blocks_list" blocks=contentBlocks.blocks selected=selected %}
+				{% foreach contentBlocks.blocks as block %}
+					<li class="block-item" data-block-id="{block.id}"><div class="block"><span class="icon icon137"></span><span class="block-name">{block.name}</span>
+						<span class="block-type">{block.blockType.name}</span></div>
+					</li>
+				{% endforeach %}
 				<li class="add"><a><span class="icon icon44"></span>Create a new content block</a></li>
 				{% if contentBlocks.blocks.length < 1 %}<li class="filler"></li>{% endif %}
 				{% if contentBlocks.blocks.length < 2 %}<li class="filler"></li>{% endif %}
