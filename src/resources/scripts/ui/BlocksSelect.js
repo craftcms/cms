@@ -43,7 +43,8 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		this.sorter = new blx.ui.DragSort({
 			axis: 'y',
 			helper: '<ul />',
-			filter: '.sel'
+			filter: '.sel',
+			onSortChange: $.proxy(this, 'onSortChange')
 		});
 
 		this.$items = this.$container.find('li');
@@ -97,6 +98,12 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		this.$blockItems = this.$blockItems.not($blockItems);
 		this.selector.removeItems($blockItems);
 		this.setFillers();
+	},
+
+	onSortChange: function()
+	{
+		this.selector.reset();
+		this.selector.addItems(this.sorter.$items);
 	},
 
 	setFillers: function()
