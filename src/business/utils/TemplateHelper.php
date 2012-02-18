@@ -23,6 +23,7 @@ class TemplateHelper
 		'user',
 		'users',
 		'request',
+		'security',
 	);
 
 	public static $globalTags = array(
