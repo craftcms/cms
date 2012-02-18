@@ -19,11 +19,13 @@ abstract class BaseContentModel extends BaseModel
 	/**
 	 * Dynamically set $this->belongsTo from $this->foreignKey and $this->model
 	 */
-	public function init()
+	public function __construct($scenario = 'insert')
 	{
 		$this->belongsTo = array(
 			$this->foreignKey => array('model' => $this->model, 'required' => true),
 			'content'         => array('model' => 'Content', 'required' => true)
 		);
+
+		parent::__construct($scenario);
 	}
 }

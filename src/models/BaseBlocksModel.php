@@ -17,7 +17,7 @@ abstract class BaseBlocksModel extends BaseModel
 	/**
 	 * Dynamically set $this->belongsTo from $this->foreignKey and $this->model
 	 */
-	public function init()
+	public function __construct($scenario = 'insert')
 	{
 		$this->belongsTo = array(
 			$this->foreignKey => array('model' => $this->model, 'required' => true),
@@ -27,5 +27,7 @@ abstract class BaseBlocksModel extends BaseModel
 		$this->indexes = array(
 			array('columns' => array($this->foreignKey.'_id', 'block_id'), 'unique' => true)
 		);
+
+		parent::__construct($scenario);
 	}
 }

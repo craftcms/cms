@@ -21,7 +21,7 @@ abstract class BaseSettingsModel extends BaseModel
 	/**
 	 * Dynamically set $this->belongsTo from $this->foreignKey and $this->model, if they're set
 	 */
-	public function init()
+	public function __construct($scenario = 'insert')
 	{
 		if (!empty($this->foreignKey) && !empty($this->model))
 		{
@@ -33,5 +33,7 @@ abstract class BaseSettingsModel extends BaseModel
 				array('columns' => array($this->foreignKey.'_id', 'name'), 'unique' => true)
 			);
 		}
+
+		parent::__construct($scenario);
 	}
 }
