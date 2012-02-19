@@ -24,7 +24,7 @@ blx.RIGHT_KEY  = 39;
 blx.DOWN_KEY   = 40;
 
 
-blx.navHeight = 40;
+blx.navHeight = 48;
 
 
 /**
@@ -308,7 +308,6 @@ var CP = blx.Base.extend({
 
 	_windowHeight: null,
 	_$sidebar: null,
-	_sidebarTop: null,
 
 	init: function()
 	{
@@ -316,7 +315,6 @@ var CP = blx.Base.extend({
 		if ($sidebar.length)
 		{
 			this._$sidebar = $sidebar;
-			this._sidebarTop = parseInt(this._$sidebar.css('top'));
 
 			this.setSidebarHeight();
 			this.addListener(blx.$window, 'resize', 'setSidebarHeight');
@@ -332,7 +330,7 @@ var CP = blx.Base.extend({
 		// has the window height changed?
 		if (this._windowHeight !== (this._windowHeight = blx.$window.height()))
 		{
-			var sidebarHeight = this._windowHeight - this._sidebarTop;
+			var sidebarHeight = this._windowHeight - blx.navHeight;
 			this._$sidebar.height(sidebarHeight);
 		}
 	}
