@@ -210,7 +210,7 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 /* ----------------------------------------*/
 
 .toolbar,
-.pane table.body > thead > tr > th { padding: 8px 20px 7px; border-bottom: 1px solid rgba(0,0,0,0.15); height: 24px; background: -webkit-linear-gradient(transparent, rgba(0,0,0,0.075)); -webkit-background-clip: padding-box; }
+.pane table.body > thead > tr > th { padding: 8px 20px 7px; border-bottom: 1px solid rgba(0,0,0,0.15); height: 24px; background: -webkit-linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0.05)); -webkit-background-clip: padding-box; }
 .toolbar .center { height: 0; text-align: center; }
 .toolbar .center > div { float: none !important; display: inline-block; }
 .toolbar .search { float: right; width: 227px; }
