@@ -162,7 +162,7 @@ table.pane > tbody > tr > * { position: relative; padding: 12px 20px; background
 .pane .body:last-child .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
 table.pane > tbody:last-child > tr:last-child > *:first-child,
 .pane table.body:last-child > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > tbody:last > tr:last-child > *:last-child,
+table.pane > tbody:last-child > tr:last-child > *:last-child,
 .pane table.body:last-child > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
 .pane .body .no-items { color: #999; text-align: center; }
 .pane .body a.item { display: block; }
