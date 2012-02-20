@@ -19,9 +19,9 @@ class App extends \CWebApplication
 		self::import('business.Blocks');
 		self::import('business.enums.UrlFormat');
 		self::import('business.enums.RequestMode');
-		self::import('business.services.BaseService');
-		self::import('business.services.ConfigService');
 		self::import('business.web.HttpRequest');
+		self::import('services.BaseService');
+		self::import('services.ConfigService');
 
 		// Process resources before all else
 		$this->processResourceRequest();
@@ -45,7 +45,6 @@ class App extends \CWebApplication
 			'business.exceptions.*',
 			'business.install.*',
 			'business.logging.*',
-			'business.services.*',
 			'business.updates.*',
 			'business.utils.*',
 			'business.validators.*',
@@ -58,6 +57,7 @@ class App extends \CWebApplication
 			'migrations.*',
 			'models.*',
 			'models.forms.*',
+			'services.*',
 			'tags.*',
 			'tags.assets.*',
 			'tags.content.*',
@@ -202,7 +202,7 @@ class App extends \CWebApplication
 			self::import('business.web.ErrorHandler');
 			self::import('business.web.ResourceProcessor');
 			self::import('business.web.UrlManager');
-			self::import('business.services.PathService');
+			self::import('services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->pathSegments), 1);
