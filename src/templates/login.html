@@ -1,39 +1,36 @@
-{% layout "_layouts/full" %}
+{% if user.isloggedIn %}
+	{% redirect "dashboard" %}
+{% endif %}
 
-{% region "pageTitle" %}Login{% /region %}
+{% layout "_layouts/basic" pageTitle="Login" %}
 
-{% region "main" %}
+{% region "styles" %}
+	{% include "_includes/css_include" file="styles/login.css" %}
+{% endregion %}
 
-<!-- TODO: Add JavaScript to check if cookies are enabled and display error if not -->
-	{% if !user.isLoggedIn %}
-		<div><strong>Hey... you need to login.</strong></div>
-		<p>
-			<form method="post" action="">
-				<input type="hidden" name="action" value="session/login" />
-
-				<div class="body">
-					<div class="item field">
-						<label for="loginName">Email or Username:</label>
-						<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginInfo.loginName}" /></div>
-						{% if loginInfo.errors.loginName %}
-							{% include "_includes/error_list" errors=loginInfo.errors.loginName %}
-						{% endif %}
-					</div>
-					<div class="item field">
-						<label for="password">Password:</label>
-						<div class="input-wrapper"><input id="password" name="password" type="password" /></div>
-						{% if loginInfo.errors.password %}
-							{% include "_includes/error_list" errors=loginInfo.errors.password %}
-						{% endif %}
-					</div>
-
+{% region "body" %}
+	<!-- TODO: Add JavaScript to check if cookies are enabled and display error if not -->
+	<form id="login" method="post" action="">
+		<input type="hidden" name="action" value="session/login" />
+		<div class="pane">
+			<div class="body">
+				<div class="item field">
+					<label for="loginName">Username or email</label>
+					<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginInfo.loginName}" /></div>
+					{% if loginInfo.errors.loginName %}
+						{% include "_includes/error_list" errors=loginInfo.errors.loginName %}
+					{% endif %}
 				</div>
+				<div class="item field">
+					<label for="password">Password</label>
+					<div class="input-wrapper"><input id="password" name="password" type="password" /></div>
+					{% if loginInfo.errors.password %}
+						{% include "_includes/error_list" errors=loginInfo.errors.password %}
+					{% endif %}
+				</div>
+			</div>
+		</div>
 
-				<input class="btn big submit" type="submit" value="Login" />
-			</form>
-		</p>
-	{% else %}
-		<div><strong>You're already logged in.</strong></div>
-	{% endif %}
-
+		<input class="btn big submit" type="submit" value="Login" />
+	</form>
 {% endregion %}

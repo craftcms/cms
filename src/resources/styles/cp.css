@@ -164,11 +164,19 @@ table.pane > tfoot > tr:last-child > *:last-child { border-bottom-right-radius: 
 .pane .body .item,
 .pane table.body > tbody > tr > *,
 table.pane > tbody > tr > * { position: relative; padding: 12px 20px; background: #fff; background: -webkit-linear-gradient(#fdfdfd, #fbfbfb) repeat-x 0 100%; -webkit-box-shadow: inset 0 1px 0 #fff; }
+
+.pane .body:first-child .item:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
+table.pane > tbody:first-child > tr:first-child > *:first-child,
+.pane table.body:first-child > tbody > tr:first-child > *:first-child { border-top-left-radius: 3px; }
+table.pane > tbody:first-child > tr:first-child > *:last-child,
+.pane table.body:first-child > tbody > tr:first-child > *:last-child { border-top-right-radius: 3px; }
+
 .pane .body:last-child .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
 table.pane > tbody:last-child > tr:last-child > *:first-child,
 .pane table.body:last-child > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
 table.pane > tbody:last-child > tr:last-child > *:last-child,
 .pane table.body:last-child > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
+
 .pane .body .no-items { color: #999; text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),

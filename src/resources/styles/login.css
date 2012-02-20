@@ -1,1 +1,3 @@
-.fields { margin: 200px auto 0; width: 400px; }
+html, body { height: 100%; }
+
+#login { display: block; position: absolute; top: 33.33%; left: 50%; margin: -92px 0 0 -200px; width: 400px; }
