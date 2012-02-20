@@ -200,20 +200,4 @@ class UsersService extends BaseService
 
 		return false;
 	}
-
-	/**
-	 * @param User $user
-	 * @param $userAccountStatus
-	 */
-	public function removeAuthCodeAndUpdateStatus(User $user, $userAccountStatus)
-	{
-		$user->authcode = null;
-		$user->authcode_issued_date = null;
-		$user->authcode_expire_date = null;
-		$user->status = $userAccountStatus;
-
-		$user->save();
-	}
-
-
 }

@@ -49,7 +49,7 @@ class AccountController extends BaseController
 				$user = Blocks::app()->users->getById(Blocks::app()->request->getPost('userId'));
 				if ($user !== null)
 				{
-					$this->_processChangePassword($user, $changePasswordInfo->password);
+					$this->_processChangePassword($user, $changePasswordInfo->password, true);
 				}
 				else
 				{
@@ -66,17 +66,21 @@ class AccountController extends BaseController
 
 	/**
 	 * @param User $user
-	 * @param $password
-	 * @param bool $removeAuthCode
+	 * @param      $password
+	 * @param bool $authCodeRequest
 	 */
-	private function _processChangePassword(User $user, $password, $removeAuthCode = false)
+	private function _processChangePassword(User $user, $password, $authCodeRequest = false)
 	{
 		if (($user = Blocks::app()->users->changePassword($user, $password)) !== false)
 		{
-			if ($removeAuthCode)
+			if ($authCodeRequest)
 			{
-				// remove the auth request
-				Blocks::app()->users->removeAuthCodeAndUpdateStatus($user, UserAccountStatus::Approved);
+				$user->authcode = null;
+				$user->authcode_issued_date = null;
+				$user->authcode_expire_date = null;
+				$user->status = UserAccountStatus::Approved;
+				$user->password_reset_required = false;
+				$user->save();
 			}
 
 			$user->last_password_change_date = DateTimeHelper::currentTime();
