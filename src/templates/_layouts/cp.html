@@ -1,13 +1,4 @@
-{% layout "_layouts/basic" bodyClass=bodyClass %}
-{% region "title" %}{% if pageTitle %}{pageTitle} – {% endif %}Blocks{% endregion %}
-
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/cp.css" %}
-	{% include "_includes/css_include" file="styles/icons.css" %}
-
-	{!-- include any styles defined by the subtemplate --}
-	{styles}
-{% endregion %}
+{% layout "_layouts/basic" title=title styles=styles bodyClass=bodyClass %}
 
 {% region "body" %}
 

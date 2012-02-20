@@ -2,8 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8" />
-	<title>{title}</title>
-	{styles}
+	<title>{% if pageTitle %}{pageTitle} – {% endif %}Blocks</title>
+	{% region "styles" %}
+		{% include "_includes/css_include" file="styles/cp.css" %}
+		{% include "_includes/css_include" file="styles/icons.css" %}
+		{styles}
+	{% endregion %}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 </head>
 <body class="{bodyClass}">
