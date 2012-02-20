@@ -110,14 +110,15 @@ h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:la
 body.sidebar-layout #main { margin-left: 220px; }
 body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: auto; }
 
-.sidebar { width: 220px; background: rgba(0,0,0,0.05); -webkit-box-shadow: inset -1px 0 0 rgba(0,0,0,0.25), 1px 0 0 rgba(255,255,255,0.15); }
-.sidebar > h5 { margin: 0 1px 0 0; border-bottom: 1px solid rgba(0,0,0,0.25); padding: 11px 20px 10px; line-height: 18px; color: #555; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: -webkit-linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0.05)); }
-.sidebar > h5:not(:first-child) { border-top: 1px solid rgba(0,0,0,0.05); padding-top: 10px; }
+.sidebar { width: 220px; background: #ececec; -webkit-box-shadow: 1px 0 0 rgba(0,0,0,0.15); }
+.sidebar > h5 { margin: 0; border-bottom: 1px solid #bcbcbc; padding: 11px 20px 10px; line-height: 18px; text-shadow: 0 1px 0 #fff; background: -webkit-linear-gradient(#dcdcdc, #ccc); }
+.sidebar > h5:not(:first-child) { border-top: 1px solid #ccc; padding-top: 10px; }
 .sidebar .nav { padding: 8px 20px; }
-.sidebar .nav li a { margin: 0 -20px 0 -9999px; padding-left: 9999px; font-weight: normal; color: #333; text-shadow: 0 1px 0 rgba(255,255,255,0.25); }
-.sidebar .nav li a.sel { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.75); background: rgba(0,0,0,0.15); -webkit-box-shadow: inset 0 1px 0 rgba(0,0,0,0.15), 0 1px 0 rgba(255,255,255,0.1); }
+.sidebar .nav li a { margin: 0 -20px 0 -9999px; padding-left: 9999px; font-weight: normal; color: #666; }
+.sidebar .nav li a.sel { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); background: -webkit-linear-gradient(#2d98db, #2782bb); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .sidebar .nav li a.sel .icon { background-image: url(../images/sidebar_icons_sel.png); }
-.sidebar .nav li a:hover { text-decoration: none; }
+.sidebar .nav li a:not(.sel):not(.disabled):hover { color: #2d98db; text-decoration: none; }
+.sidebar .nav li a:not(.sel):not(.disabled):hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
 
 
 /* ----------------------------------------
