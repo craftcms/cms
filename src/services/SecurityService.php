@@ -161,13 +161,6 @@ class SecurityService extends BaseService
 
 				case UserAccountStatus::PendingVerification:
 				{
-					// valid auth request.
-					//$user->authcode = null;
-					//$user->authcode_issued_date = null;
-					//$user->authcode_expire_date = null;
-					//$user->status = UserAccountStatus::Approved;
-					//$user->save();
-
 					return $user;
 				}
 			}

@@ -77,6 +77,19 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * @param $fromCookie
+	 */
+	protected function afterLogin($fromCookie)
+	{
+		if (Blocks::app()->user->isLoggedIn)
+		{
+			$user = Blocks::app()->user->getModel();
+			$user->last_login_date = DateTimeHelper::currentTime();
+			$user->save();
+		}
+	}
+
+	/**
 	 * @param null $defaultUrl
 	 * @return mixed
 	 */

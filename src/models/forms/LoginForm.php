@@ -51,6 +51,7 @@ class LoginForm extends \CFormModel
 			$this->_identity = new UserIdentity($this->loginName, $this->password);
 			$this->_identity->authenticate();
 		}
+
 		if($this->_identity->errorCode === UserIdentity::ERROR_NONE)
 		{
 			Blocks::app()->user->login($this->_identity, ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('sessionTimeout')));

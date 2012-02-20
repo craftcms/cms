@@ -138,20 +138,5 @@ class UsersController extends BaseController
 
 		$this->loadRequestedTemplate(array('theUser' => $user));
 	}
-
-	/**
-	 * @param $code
-	 */
-	public function actionValidate($code)
-	{
-		if (($user = Blocks::app()->security->validateUserRegistration($code)) !== null)
-		{
-			Blocks::app()->user->setMessage(MessageStatus::Notice, 'You need to set a password for your account.');
-			$this->redirect('account/password?code='.$user->authcode);
-		}
-
-		Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem validating this code.');
-		$this->redirect('');
-	}
 }
 

@@ -1,0 +1,19 @@
+{% layout "_layouts/sidebar" bodyClass=bodyClass scripts=scripts %}
+{% region "pageTitle" %}Account – {pageTitle}{% endregion %}
+
+{% region "styles" %}
+	{% include "_includes/css_include" file="styles/settings.css" %}
+{% endregion %}
+
+{% region "sidebar" %}
+	<h5>Account Management</h5>
+	<ul class="nav">
+		<li><a {% if url.segment(2) == 'password' %}class="sel"{% endif %} href="{url.base}account/password"><span class="icon icon70"></span>Password</a></li>
+	</ul>
+{% endregion %}
+
+{% region "main" %}
+	<h1>{pageTitle}</h1>
+
+	{main}
+{% endregion %}
