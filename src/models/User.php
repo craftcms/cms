@@ -18,6 +18,7 @@ class User extends BaseModel
 		'auth_session_token'                    => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'admin'                                 => AttributeType::Boolean,
 		'password_reset_required'               => AttributeType::Boolean,
+		'status'                                => array('type' => AttributeType::Enum, 'values' => array('PasswordLockout', 'Suspended', 'PendingVerification', 'Approved'), 'default' => 'PendingVerification'),
 		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),
 		'last_login_date'                       => AttributeType::Int,
 		'last_password_change_date'             => AttributeType::Int,
