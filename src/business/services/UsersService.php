@@ -151,11 +151,18 @@ class UsersService extends BaseService
 		return UserGroup::model()->findAll();
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getTotalUsers()
 	{
 		return User::model()->count();
 	}
 
+	/**
+	 * @param User $user
+	 * @return User
+	 */
 	public function unlockUser(User $user)
 	{
 		$user->status = UserAccountStatus::Approved;
@@ -163,6 +170,10 @@ class UsersService extends BaseService
 		return $user;
 	}
 
+	/**
+	 * @param $authCode
+	 * @return mixed
+	 */
 	public function getUserByAuthCode($authCode)
 	{
 		$authCode = AuthCode::model()->findByAttributes(array(
@@ -170,6 +181,25 @@ class UsersService extends BaseService
 		));
 
 		return $authCode->user;
+	}
+
+	/**
+	 * @param User $user
+	 * @param $newPassword
+	 * @return \Blocks\User|bool
+	 */
+	public function changePassword(User $user, $newPassword)
+	{
+		$hashAndType = Blocks::app()->security->hashPassword($newPassword);
+		$user->password = $hashAndType['hash'];
+		$user->enc_type = $hashAndType['encType'];
+		$user->status = UserAccountStatus::Approved;
+
+		if ($user->save())
+			return $user;
+
+		return false;
+
 	}
 
 
