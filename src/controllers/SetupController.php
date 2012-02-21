@@ -124,6 +124,12 @@ class SetupController extends BaseController
 					// Give them the default dashboard widgets
 					Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);
 
+				// setup the default email settings.
+				$settings['protocol'] = EmailerType::PhpMail;
+				$settings['emailAddress'] = $user->email;
+				$settings['senderName'] = Blocks::app()->sites->primarySite->name;
+				Blocks::app()->email->saveEmailSettings($settings);
+
 				if (Blocks::app()->request->getQuery('goback') === null)
 					$this->redirect('dashboard');
 				else
