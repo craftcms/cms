@@ -7,6 +7,14 @@ namespace Blocks;
 class UsersController extends BaseController
 {
 	/**
+	 * All user actions require the user to be logged in
+	 */
+	public function run()
+	{
+		$this->requireLogin();
+	}
+
+	/**
 	 * Displays the register template for creating a new user.
 	 */
 	public function actionRegister()

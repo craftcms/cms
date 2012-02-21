@@ -11,6 +11,10 @@ class TemplateController extends BaseController
 	 */
 	public function actionIndex()
 	{
+		// Require user to be logged in on every page but /login
+		if (Blocks::app()->request->path != 'login')
+			$this->requireLogin();
+
 		$this->loadRequestedTemplate();
 	}
 }

@@ -7,6 +7,14 @@ namespace Blocks;
 class ContentBlocksController extends BaseController
 {
 	/**
+	 * All content block actions require the user to be logged in
+	 */
+	public function run()
+	{
+		$this->requireLogin();
+	}
+
+	/**
 	 * Saves a content block
 	 */
 	public function actionSave()

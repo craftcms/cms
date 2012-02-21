@@ -142,6 +142,15 @@ abstract class BaseController extends \CController
 	}
 
 	/**
+	 * Redirects user to the login template if they're not logged in
+	 */
+	public function requireLogin()
+	{
+		if (Blocks::app()->user->isGuest)
+			Blocks::app()->user->loginRequired();
+	}
+
+	/**
 	 * Returns a 404 if this isn't a POST request
 	 */
 	public function requirePostRequest()

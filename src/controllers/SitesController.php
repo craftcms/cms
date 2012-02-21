@@ -7,6 +7,14 @@ namespace Blocks;
 class SitesController extends BaseController
 {
 	/**
+	 * All site actions require the user to be logged in
+	 */
+	public function run()
+	{
+		$this->requireLogin();
+	}
+
+	/**
 	 * Saves a site
 	 */
 	public function actionSave()
