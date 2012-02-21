@@ -193,7 +193,7 @@ class UsersService extends BaseService
 		$hashAndType = Blocks::app()->security->hashPassword($newPassword);
 		$user->password = $hashAndType['hash'];
 		$user->enc_type = $hashAndType['encType'];
-		$user->status = UserAccountStatus::Approved;
+		$user->status = UserAccountStatus::Active;
 
 		if ($user->save())
 			return $user;
