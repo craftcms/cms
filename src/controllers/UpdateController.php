@@ -9,6 +9,14 @@ class UpdateController extends BaseController
 	private $_blocksUpdateInfo;
 
 	/**
+	 * All update actions require the user to be logged in
+	 */
+	public function run()
+	{
+		$this->requireLogin();
+	}
+
+	/**
 	 * @param $h
 	 * @return mixed
 	 */

@@ -7,6 +7,14 @@ namespace Blocks;
 class SettingsController extends BaseController
 {
 	/**
+	 * All settings actions require the user to be logged in
+	 */
+	public function run()
+	{
+		$this->requireLogin();
+	}
+
+	/**
 	 *
 	 */
 	public function actionSaveEmailSettings()
