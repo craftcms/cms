@@ -230,6 +230,32 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
+	 * Get the records that were recently created
+	 * @param int limit Number of rows to get (default is 50)
+	 */
+	public function recentlyCreated($limit = 50)
+	{
+		$this->getDbCriteria()->mergeWith(array(
+			'order' => 'date_created DESC',
+			'limit' => $limit,
+		));
+		return $this;
+	}
+
+	/**
+	 * Get the records that were recently modified
+	 * @param int limit Number of rows to get (default is 50)
+	 */
+	public function recentlyUpdated($limit = 50)
+	{
+		$this->getDbCriteria()->mergeWith(array(
+			'order' => 'date_modified DESC',
+			'limit' => $limit,
+		));
+		return $this;
+	}
+
+	/**
 	 * Generates HAS_MANY and HAS_ONE relations
 	 * @access protected
 	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)

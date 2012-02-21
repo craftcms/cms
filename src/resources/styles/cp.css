@@ -123,8 +123,10 @@ body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: au
 .sidebar .nav li a { margin: 0 -20px 0 -9999px; padding-left: 9999px; font-weight: normal; color: #666; }
 .sidebar .nav li a.sel { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); background: -webkit-linear-gradient(#2d98db, #2782bb); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .sidebar .nav li a.sel .icon { background-image: url(../images/sidebar_icons_sel.png); }
-.sidebar .nav li a:not(.sel):not(.disabled):hover { color: #2d98db; text-decoration: none; }
-.sidebar .nav li a:not(.sel):not(.disabled):hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
+
+.sidebar .nav li a:not(.sel).new { color: #2d98db; }
+.sidebar .nav li a:not(.sel).new:hover { text-decoration: underline !important; }
+.sidebar .nav li a:not(.sel).new .icon { background-image: url(../images/sidebar_icons_hover.png); }
 
 
 /* ----------------------------------------

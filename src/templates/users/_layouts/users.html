@@ -6,8 +6,11 @@
 {% endregion %}
 
 {% region "sidebar" %}
-	<h5>User Management</h5>
+	<h5>Recent Users</h5>
 	<ul class="nav">
-		<li><a {% if url.segment(2) == 'register' %}class="sel"{% endif %} href="{url.base}users/register"><span class="icon icon70"></span>Register</a></li>
+		{% foreach users.recent as user %}
+			<li><a href="{url.base}users/edit/{user.id}" {% if url.segment(3) == user.id %}class="sel"{% endif %}><span class="icon icon243"></span>{user.fullName}</a></li>
+		{% endforeach %}
+		<li><a class="new {% if url.segment(2) == 'new' %}sel{% endif %}" href="{url.base}users/new"><span class="icon icon44"></span>Register a new user</a></li>
 	</ul>
 {% endregion %}

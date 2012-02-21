@@ -39,4 +39,14 @@ class User extends BaseModel
 		'groups'    => array('model' => 'UserGroup', 'through' => 'UserGroupMembers', 'foreignKey' => array('user' => 'group')),
 		'widgets'   => array('model' => 'UserWidget', 'foreignKey' => 'user'),
 	);
+
+	public function getFullName()
+	{
+		$fullName = $this->first_name;
+
+		if ($this->last_name)
+		 	$fullName .= ' '.$this->last_name;
+
+		return $fullName;
+	}
 }

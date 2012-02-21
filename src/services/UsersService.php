@@ -15,6 +15,14 @@ class UsersService extends BaseService
 	}
 
 	/**
+	 * Returns the 50 most recent users
+	 */
+	public function getRecent()
+	{
+		return User::model()->recentlyCreated()->findAll();
+	}
+
+	/**
 	 * @param $siteId
 	 * @return array
 	 */

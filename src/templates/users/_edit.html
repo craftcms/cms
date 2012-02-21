@@ -5,20 +5,24 @@
 {% endif %}
 
 {% region "main" %}
-	<div class="pane">
-		<div class="head">
-			{% if theUser.id %}
-				<h5>Edit User {% if theUser.user_name %}“{theUser.user_name}”{% endif %}</h5>
-			{% else %}
-				<h5>Register a new user</h5>
-			{% endif %}
-		</div>
-		<div class="body">
-			<form method="post" action="">
-				<input type="hidden" name="action" value="users/save" />
-				<input type="hidden" name="redirect" value="users" />
-				{% if theUser.id %}<input type="hidden" name="user_id" value="{theUser.id}">{% endif %}
+	<div class="toolbar">
+		{% include "_includes/back_btn" label="Users" uri="users" %}
+	</div>
 
+	<form method="post" action="">
+		<input type="hidden" name="action" value="users/save" />
+		<input type="hidden" name="redirect" value="users" />
+		{% if theUser.id %}<input type="hidden" name="user_id" value="{theUser.id}">{% endif %}
+
+		<div class="pane">
+			<div class="head">
+				{% if theUser.id %}
+					<h5>Edit User {% if theUser.user_name %}“{theUser.user_name}”{% endif %}</h5>
+				{% else %}
+					<h5>Register a new user</h5>
+				{% endif %}
+			</div>
+			<div class="body">
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="username">Username</label>
@@ -108,11 +112,9 @@
 						Failed Password Attempt Count: {% if theUser.failed_password_attempt_count %}theUser.failed_password_attempt_count{% else %}0{% endif %}
 					</div>
 				{% endif %}
-
-				<div class="item">
-					<input class="btn big submit" type="submit" value="Save User" />
-				</div>
-			</form>
+			</div>
 		</div>
-	</div>
+
+		<input class="btn big submit" type="submit" value="Save User" />
+	</form>
 {% endregion %}
