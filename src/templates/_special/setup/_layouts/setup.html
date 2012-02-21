@@ -38,8 +38,13 @@
 
 {% region "scripts" %}
 	<script type="text/javascript">
-		var form = document.forms['form'];
-		form.elements[0].focus();
+		var form = document.forms['form'],
+			$errorInputs = $(form.elements).filter('.error:first');
+		if ($errorInputs.length)
+			$errorInputs.focus();
+		else
+			form.elements[0].focus();
+
 		$('#go-back').click(function() {
 			form.action += '?goback=1';
 			form.submit();
