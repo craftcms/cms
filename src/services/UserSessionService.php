@@ -90,15 +90,6 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param null $defaultUrl
-	 * @return mixed
-	 */
-	public function getReturnUrl($defaultUrl = null)
-	{
-		return $this->getState('__returnUrl', $defaultUrl === null ? '/' : \CHtml::normalizeUrl($defaultUrl));
-	}
-
-	/**
 	 * Saves necessary user data into a cookie.
 	 * This method is used when automatic login ({@link allowAutoLogin}) is enabled.
 	 * This method saves user ID, username, other identity states and a validation key to cookie.

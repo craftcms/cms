@@ -169,21 +169,6 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Redirect
-	 *
-	 * @param      $url
-	 * @param bool $terminate
-	 * @param int  $statusCode
-	 */
-	public function redirect($url, $terminate = true, $statusCode = 302)
-	{
-		if (is_string($url))
-			$url = UrlHelper::generateUrl($url);
-
-		parent::redirect($url, $terminate, $statusCode);
-	}
-
-	/**
 	 * @return array
 	 */
 	public function filters()
