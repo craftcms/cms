@@ -99,8 +99,8 @@ class HttpRequest extends \CHttpRequest
 	 */
 	public function getPathSegment($num, $default = null)
 	{
-		if (isset($this->pathSegments[$num-1]))
-			return $this->pathSegments[$num-1];
+		if (isset($this->pathSegments[$num - 1]))
+			return $this->pathSegments[$num - 1];
 
 		return $default;
 	}

@@ -10,7 +10,7 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns the directory containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to Yii::app().
+	 * We're overriding this since CController's version defaults $module to Blocks::app().
 	 * @return string the directory containing the view files for this controller.
 	 */
 	public function getViewPath()
@@ -172,5 +172,23 @@ abstract class BaseController extends \CController
 			$url = UrlHelper::generateUrl($url);
 
 		parent::redirect($url, $terminate, $statusCode);
+	}
+
+	/**
+	 * @return array
+	 */
+	public function filters()
+	{
+		return array('changePassword');
+	}
+
+	/**
+	 * Runs the Password filter
+	 * @param $filterChain
+	 */
+	public function filterChangePassword($filterChain)
+	{
+		$filter = new ChangePasswordFilter();
+		$filter->filter($filterChain);
 	}
 }
