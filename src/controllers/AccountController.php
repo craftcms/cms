@@ -78,7 +78,7 @@ class AccountController extends BaseController
 				$user->authcode = null;
 				$user->authcode_issued_date = null;
 				$user->authcode_expire_date = null;
-				$user->status = UserAccountStatus::Approved;
+				$user->status = UserAccountStatus::Active;
 				$user->password_reset_required = false;
 				$user->save();
 			}

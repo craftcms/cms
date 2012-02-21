@@ -72,10 +72,10 @@
 						<div class="input-wrapper">
 							<label for="status">Status</label>
 							<select id="status" name="status">
-								<option value="Approved" {% if theUser.status == 'Approved' %}selected{% endif %}>Approved</option>
-								<option value="PendingVerification" {% if theUser.status == 'PendingVerification' %}selected{% endif %}>Pending Verification</option>
-								<option value="Suspended" {% if theUser.status == 'Suspended' %}selected{% endif %}>Suspended</option>
-								<option value="PasswordLockout" {% if theUser.status == 'PasswordLockout' %}selected{% endif %}>Password Lockout</option>
+								<option value="active" {% if theUser.status == 'active' %}selected{% endif %}>Active</option>
+								<option value="pending" {% if theUser.status == 'pending' %}selected{% endif %}>Pending</option>
+								<option value="suspended" {% if theUser.status == 'suspended' %}selected{% endif %}>Suspended</option>
+								<option value="locked" {% if theUser.status == 'locked' %}selected{% endif %}>Locked</option>
 							</select>
 						</div>
 					</div>

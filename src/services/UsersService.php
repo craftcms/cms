@@ -91,7 +91,7 @@ class UsersService extends BaseService
 
 		if ($emailValidation)
 		{
-			$user->status = UserAccountStatus::PendingVerification;
+			$user->status = UserAccountStatus::Pending;
 
 			$user->authcode = StringHelper::randomString();
 			$date = new \DateTime();
@@ -102,7 +102,7 @@ class UsersService extends BaseService
 		}
 		else
 		{
-			$user->status = UserAccountStatus::Approved;
+			$user->status = UserAccountStatus::Active;
 			$user->save();
 		}
 

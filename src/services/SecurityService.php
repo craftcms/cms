@@ -138,28 +138,28 @@ class SecurityService extends BaseService
 		{
 			switch ($user->status)
 			{
-				case UserAccountStatus::Approved:
+				case UserAccountStatus::Active:
 				{
-					Blocks::log('The user account '.$user->username.' has already been approved.');
+					Blocks::log('The user account '.$user->username.' is already active.');
 					throw new Exception('Unable to validate this authorization code.');
 					break;
 				}
 
 				case UserAccountStatus::Suspended:
 				{
-					Blocks::log('The user account '.$user->username.' is in a suspended state and can\'t be verified.');
+					Blocks::log('The user account '.$user->username.' is suspended and can\'t be verified.');
 					throw new Exception('Unable to validate this authorization code.');
 					break;
 				}
 
-				case UserAccountStatus::PasswordLockout:
+				case UserAccountStatus::Locked:
 				{
-					Blocks::log('The user account '.$user->username.' is in a locked state and can\'t be verified.');
+					Blocks::log('The user account '.$user->username.' is in locked and can\'t be verified.');
 					throw new Exception('Unable to validate this authorization code.');
 					break;
 				}
 
-				case UserAccountStatus::PendingVerification:
+				case UserAccountStatus::Pending:
 				{
 					return $user;
 				}

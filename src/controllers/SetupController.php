@@ -104,7 +104,7 @@ class SetupController extends BaseController
 			$user->email = Blocks::app()->request->getPost('email');
 			$user->first_name = Blocks::app()->request->getPost('first_name');
 			$user->last_name = Blocks::app()->request->getPost('last_name');
-			$user->status = UserAccountStatus::Approved;
+			$user->status = UserAccountStatus::Active;
 			$user->password_reset_required = false;
 			$user->admin = true;
 
