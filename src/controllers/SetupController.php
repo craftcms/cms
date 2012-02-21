@@ -104,8 +104,6 @@ class SetupController extends BaseController
 			$user->email = Blocks::app()->request->getPost('email');
 			$user->first_name = Blocks::app()->request->getPost('first_name');
 			$user->last_name = Blocks::app()->request->getPost('last_name');
-			$user->status = UserAccountStatus::Active;
-			$user->password_reset_required = false;
 			$user->admin = true;
 
 			$newUser = $user->isNewRecord;
@@ -118,11 +116,20 @@ class SetupController extends BaseController
 				$user->enc_type = $hashAndType['encType'];
 			}
 
-			if ($user->save())
+			if (($user = Blocks::app()->users->registerUser($user, $password, false, false)) !== null)
 			{
 				if ($newUser)
 					// Give them the default dashboard widgets
 					Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);
+
+				$loginInfo = new LoginForm();
+
+				// Check to see if it's a submit.
+				$loginInfo->loginName = $user->username;
+				$loginInfo->password = $password;
+
+				// log the user in
+				$loginInfo->login();
 
 				// setup the default email settings.
 				$settings['protocol'] = EmailerType::PhpMail;
