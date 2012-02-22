@@ -50,7 +50,7 @@ class UserSessionService extends \CWebUser
 
 		if (!$request->getIsAjaxRequest())
 		{
-			if ($request->pathInfo !== null)
+			if ($request->pathInfo !== '')
 				$this->setReturnUrl($request->url);
 		}
 		elseif (isset($this->loginRequiredAjaxResponse))
@@ -83,10 +83,10 @@ class UserSessionService extends \CWebUser
 		$scriptFilePath = Blocks::app()->request->scriptFile;
 		$scriptFileName = pathinfo($scriptFilePath, PATHINFO_FILENAME).'.'.pathinfo($scriptFilePath, PATHINFO_EXTENSION);
 
-		if (substr($value, 1, strlen($scriptFileName)) == $scriptFileName)
-			$value = substr($value, strlen($scriptFileName) + 2);
+		if (substr(trim($value, '/'), 0, strlen($scriptFileName)) == $scriptFileName)
+			$value = substr(trim($value, '/'), strlen($scriptFileName));
 
-		$this->setState('__returnUrl',$value);
+		$this->setState('__returnUrl', $value);
 	}
 
 	/**

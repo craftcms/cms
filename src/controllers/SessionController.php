@@ -30,7 +30,7 @@ class SessionController extends BaseController
 	public function actionLogout()
 	{
 		Blocks::app()->user->logout();
-		$this->redirect(Blocks::app()->request->scriptUrl);
+		$this->redirect('');
 	}
 }
 
