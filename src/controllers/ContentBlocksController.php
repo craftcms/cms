@@ -9,7 +9,7 @@ class ContentBlocksController extends BaseController
 	/**
 	 * All content block actions require the user to be logged in
 	 */
-	public function run()
+	public function init()
 	{
 		$this->requireLogin();
 	}

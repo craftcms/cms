@@ -11,7 +11,7 @@ class UpdateController extends BaseController
 	/**
 	 * All update actions require the user to be logged in
 	 */
-	public function run()
+	public function init()
 	{
 		$this->requireLogin();
 	}
