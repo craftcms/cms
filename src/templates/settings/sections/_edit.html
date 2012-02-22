@@ -85,7 +85,9 @@
 {% endregion %}
 
 {% region "scripts" %}
+	{% include "_includes/js_include" file="scripts/ui/EntryUrlFormatGenerator.js" %}
 	<script type="text/javascript">
 		{% if !section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if !section.url_format %}new blx.ui.EntryUrlFormatGenerator('#name', '#url_format');{% endif %}
 	</script>
 {% endregion %}
