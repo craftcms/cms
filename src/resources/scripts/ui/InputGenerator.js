@@ -18,10 +18,8 @@ blx.ui.InputGenerator = blx.Base.extend({
 		this.$source = $(source);
 		this.$target = $(target);
 
-		var events = 'keypress,keyup,change,change,blur';
-
-		this.addListener(this.$source, events, 'updateTarget');
-		this.addListener(this.$target, events, 'stopUpdatingTarget');
+		this.addListener(this.$source, 'keypress,keyup,change,change,blur', 'updateTarget');
+		this.addListener(this.$target, 'keypress,keyup,change,change', 'stopUpdatingTarget');
 	},
 
 	updateTarget: function()
