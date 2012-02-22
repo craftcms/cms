@@ -50,6 +50,16 @@ class UsersService extends BaseService
 	}
 
 	/**
+	 * Returns the currently logged-in User
+	 * @return User
+	 */
+	public function getCurrent()
+	{
+		$user = Blocks::app()->users->user;
+		return $user;
+	}
+
+	/**
 	 * @param $userName
 	 * @return mixed
 	 */
