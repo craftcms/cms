@@ -28,7 +28,10 @@ blx.ui.EntryUrlFormatGenerator = blx.ui.InputGenerator.extend({
 		// Get the "words"
 		var words = blx.utils.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
-		return words.join('-') + '/{slug}';
+		if (words.length)
+			return words.join('-') + '/{slug}';
+
+		return '';
 	}
 });
 
