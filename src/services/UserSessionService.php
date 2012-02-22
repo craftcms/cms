@@ -32,6 +32,64 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * @param null $defaultUrl
+	 * @return mixed
+	 */
+	public function getReturnUrl($defaultUrl = null)
+	{
+		return $this->getState('__returnUrl', $defaultUrl === null ? 'dashboard' : HtmlHelper::normalizeUrl($defaultUrl));
+	}
+
+	/**
+	 * @throws HttpException
+	 */
+	public function loginRequired()
+	{
+		$app = Blocks::app();
+		$request = $app->getRequest();
+
+		if (!$request->getIsAjaxRequest())
+		{
+			if ($request->pathInfo !== null)
+				$this->setReturnUrl($request->url);
+		}
+		elseif (isset($this->loginRequiredAjaxResponse))
+		{
+			echo $this->loginRequiredAjaxResponse;
+			Blocks::app()->end();
+		}
+
+		if (($url = $this->loginUrl) !== null)
+		{
+			if (is_array($url))
+			{
+				$route = isset($url[0]) ? $url[0] : $app->defaultController;
+				$url = $app->createUrl($route, array_splice($url, 1));
+			}
+
+			$request->redirect($url);
+		}
+		else
+			throw new HttpException(403, Blocks::t('blocks','Login Required'));
+	}
+
+
+	/**
+	 * @param $value
+	 */
+	public function setReturnUrl($value)
+	{
+		// strip off any rogue script file names that are prepending the return url.
+		$scriptFilePath = Blocks::app()->request->scriptFile;
+		$scriptFileName = pathinfo($scriptFilePath, PATHINFO_FILENAME).'.'.pathinfo($scriptFilePath, PATHINFO_EXTENSION);
+
+		if (substr($value, 1, strlen($scriptFileName)) == $scriptFileName)
+			$value = substr($value, strlen($scriptFileName) + 2);
+
+		$this->setState('__returnUrl',$value);
+	}
+
+	/**
 	 * Retrieves a User model from the database
 	 * @param integer $id the id of the User to be retrieved
 	 * @return User the User model
