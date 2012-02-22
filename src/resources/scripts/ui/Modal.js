@@ -21,6 +21,24 @@ blx.ui.Modal = blx.Base.extend({
 
 	init: function(container, settings)
 	{
+		// Param mapping
+		if (!settings && blx.utils.isObject(container))
+		{
+			// (settings)
+			settings = container;
+			items = null;
+		}
+
+		this.setSettings(settings, blx.ui.Modal.defaults);
+
+		if (container)
+			this.setContainer(container);
+
+		this.visible = false;
+	},
+
+	setContainer: function(container)
+	{
 		this.$container = $(container);
 
 		// Is this already a modal?
@@ -29,8 +47,6 @@ blx.ui.Modal = blx.Base.extend({
 			blx.log('Double-instantiating a modal on an element');
 			this.$container.data('modal').destroy();
 		}
-
-		this.setSettings(settings, blx.ui.Modal.defaults);
 
 		this.$head = this.$container.find('.head:first');
 		this.$body = this.$container.find('.body:first');
@@ -47,24 +63,29 @@ blx.ui.Modal = blx.Base.extend({
 				});
 			}
 		}
-
-		this.visible = false;
 	},
 
 	show: function()
 	{
-		this.$container.fadeIn('fast');
+		if (this.$container)
+			this.$container.fadeIn('fast');
+
 		this.visible = true;
 	},
 
 	hide: function()
 	{
-		this.$container.fadeOut('fast');
+		if (this.$container)
+			this.$container.fadeOut('fast');
+
 		this.visible = false;
 	},
 
 	getHeight: function()
 	{
+		if (!this.$container)
+			throw 'Attempted to get the height of a modal whose container has not been set.';
+
 		if (!this.visible)
 			this.$container.show();
 
@@ -78,6 +99,9 @@ blx.ui.Modal = blx.Base.extend({
 
 	positionRelativeTo: function(elem)
 	{
+		if (!this.$container)
+			throw 'Attempted to position a modal whose container has not been set.';
+
 		var $elem = $(elem),
 			elemOffset = $elem.offset(),
 			bodyScrollTop = blx.$body.scrollTop(),

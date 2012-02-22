@@ -26,7 +26,16 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 	init: function()
 	{
-		this.base('#blocksselect');
+		this.base();
+
+		$.get(baseUrl+'_includes/blocksselect/modal', $.proxy(this, 'onLoad'));
+	},
+
+	onLoad: function(data)
+	{
+		var $container = $(data);
+		$container.appendTo(blx.$body);
+		this.setContainer($container);
 
 		this.selector = new blx.ui.Select(this.$body, {
 			multi: true,
@@ -51,10 +60,18 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 		var $blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
 		this.addBlocks($blockItems, false);
+
+		if (this.field)
+			this.attachToField(this.field);
 	},
 
 	attachToField: function(field)
 	{
+		this.field = field;
+
+		if (!this.$container)
+			return;
+
 		if (!this.visible)
 			this.$container.show();
 
@@ -70,9 +87,9 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.selector.reset();
 		this.onSelectionChange();
 
-		for (var i = 0; i < field.$blockItems.length; i++)
+		for (var i = 0; i < this.field.$blockItems.length; i++)
 		{
-			var blockId = field.$blockItems[i].getAttribute('data-block-id');
+			var blockId = this.field.$blockItems[i].getAttribute('data-block-id');
 			selectedBlockIds.push(blockId);
 		}
 		for (var i = 0; i < this.$blockItems.length; i++)
@@ -101,7 +118,6 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		if (!this.visible)
 			this.$container.hide();
 
-		this.field = field;
 		this.positionRelativeTo(field.$container);
 		this.show();
 		this.$body.focus();
