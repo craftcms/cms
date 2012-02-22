@@ -196,7 +196,7 @@ return array(
 		'adminEmail'           => 'brad@pixelandtonic.com',
 		'dbConfig'             => $dbConfig,
 		'blocksConfig'         => $blocksConfig,
-		'requiredPhpVersion'   => '5.1.0',
+		'requiredPhpVersion'   => '5.3.0',
 		'requiredMysqlVersion' => ''
 	),
 );

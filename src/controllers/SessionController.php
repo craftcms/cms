@@ -18,6 +18,7 @@ class SessionController extends BaseController
 		// Check to see if it's a submit.
 		$loginInfo->loginName = Blocks::app()->request->getPost('loginName');
 		$loginInfo->password = Blocks::app()->request->getPost('password');
+		$loginInfo->rememberMe = (Blocks::app()->request->getPost('rememberMe') === 'y');
 
 		// validate user input and redirect to the previous page if valid
 		if ($loginInfo->validate() && $loginInfo->login())

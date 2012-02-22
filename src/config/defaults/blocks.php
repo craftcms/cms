@@ -57,13 +57,22 @@ $blocksConfig['urlFormat'] = 'auto';
 $blocksConfig['pathVar'] = 'p';
 
 /**
- * The time a user stays logged in.
+ * The time a user stays logged in by default.
  * Valid units of time are:
  * m = minute(s)
  * h = hour(s)
  * d = day(s)
  */
 $blocksConfig['sessionTimeout'] = '1h';
+
+/**
+ * The time a user stays logged if 'Remember Me' is checked.
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
+ */
+$blocksConfig['rememberMeSessionTimeout'] = '30d';
 
 /**
  * The length of time a newly generated authorization code will remain active before expiring.

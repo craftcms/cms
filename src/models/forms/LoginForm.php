@@ -10,6 +10,7 @@ class LoginForm extends \CFormModel
 {
 	public $loginName;
 	public $password;
+	public $rememberMe;
 
 	private $_identity;
 
@@ -54,8 +55,12 @@ class LoginForm extends \CFormModel
 
 		if($this->_identity->errorCode === UserIdentity::ERROR_NONE)
 		{
-			Blocks::app()->user->login($this->_identity, ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('sessionTimeout')));
-			return true;
+			$timeOut = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('sessionTimeout'));
+
+			if ($this->rememberMe)
+				$timeOut = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('rememberMeSessionTimeout'));
+
+			return Blocks::app()->user->login($this->_identity, $timeOut);
 		}
 		else
 			return false;
