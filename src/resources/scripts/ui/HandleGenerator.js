@@ -26,20 +26,12 @@ blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = blx.utils.filterArray(sourceVal.split(/[^a-z0-9]+/));
+		var words = blx.utils.filterArray(sourceVal.split(/[^a-z0-9]+/)),
+			handle = '';
 
-		if (words)
+		for (var i = 0; i < words.length; i++)
 		{
-			var handle = words[0];
-
-			for (var i = 1; i < words.length; i++)
-			{
-				handle += blx.utils.uppercaseFirst(words[i]);
-			}
-		}
-		else
-		{
-			var handle = '';
+			handle += blx.utils.uppercaseFirst(words[i]);
 		}
 
 		return handle;
