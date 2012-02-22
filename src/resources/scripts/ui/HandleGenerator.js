@@ -13,7 +13,7 @@ blx.ui.HandleGenerator = blx.Base.extend({
 	$nameField: null,
 	$handleField: null,
 
-	init: function(nameField, handleField)
+	init: function(nameField, handleField, settings)
 	{
 		this.$nameField = $(nameField);
 		this.$handleField = $(handleField);
@@ -26,26 +26,37 @@ blx.ui.HandleGenerator = blx.Base.extend({
 
 	updateHandle: function()
 	{
-		var handle = this.$nameField.val();
-
-		// Make it lowercase
-		handle = handle.toLowerCase();
+		var nameVal = this.$nameField.val();
 
 		// Remove HTML tags
-		handle = handle.replace("/<(.*?)>/g", '');
+		nameVal = nameVal.replace("/<(.*?)>/g", '');
+
+		// Make it lowercase
+		nameVal = nameVal.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		handle = blx.utils.asciiString(handle);
-
-		// Hyphenate
-		handle = handle.replace(/(\s|\/|\\|\+\-)+/, '-');
-
-		// Strip out non alphanumeric/hyphen/underscore/period characters
-		handle = handle.replace(/[^a-z0-9\-\._]/g, '');
+		nameVal = blx.utils.asciiString(nameVal);
 
 		// Handle must start with a letter and end with a letter/number
-		handle = handle.replace(/^[^a-z]+/, '');
-		handle = handle.replace(/[^a-z0-9]+$/, '');
+		nameVal = nameVal.replace(/^[^a-z]+/, '');
+		nameVal = nameVal.replace(/[^a-z0-9]+$/, '');
+
+		// Get the "words"
+		var words = blx.utils.filterArray(nameVal.split(/[^a-z0-9]+/));
+
+		if (words)
+		{
+			var handle = words[0];
+
+			for (var i = 1; i < words.length; i++)
+			{
+				handle += blx.utils.uppercaseFirst(words[i]);
+			}
+		}
+		else
+		{
+			var handle = '';
+		}
 
 		this.$handleField.val(handle);
 	},
