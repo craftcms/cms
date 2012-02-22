@@ -79,11 +79,11 @@ class AccountController extends BaseController
 				$user->authcode_issued_date = null;
 				$user->authcode_expire_date = null;
 				$user->status = UserAccountStatus::Active;
-				$user->password_reset_required = false;
 				$user->save();
 			}
 
 			$user->last_password_change_date = DateTimeHelper::currentTime();
+			$user->password_reset_required = false;
 			$user->save();
 
 			$loginInfo = new LoginForm();
