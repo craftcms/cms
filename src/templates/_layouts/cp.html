@@ -18,38 +18,21 @@
 
 	<div id="nav">
 		{% if url.segment(1) != 'setup' %}
-			<ul id="sections">
+			<ul id="nav-sections">
 				{% foreach cp.sections as section %}<li id="nav-{section.handle}">
-					<a {% if url.segment(1)==section.handle %}class="sel"{% endif %} href="{url.base}{section.handle}">
-						<div class="icon"></div>
-						<div class="label">{section.name}</div>
-					</a>
+					<a {% if url.segment(1)==section.handle %}class="sel"{% endif %} href="{url.base}{section.handle}"><div class="icon"></div>{section.name}</a>
 				</li>{% endforeach %}
 			</ul>
-			<div id="site" class="btn">
-				<span class="label">pixelandtonic.com</span>
-				<span class="arrow"></span>
+			<div id="nav-sites">
+				<a id="nav-site"><div class="icon"></div>{sites.currentSite.name}</a>
 			</div>
-			<ul id="session">
-				<li id="nav-account">
-					<a {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account">
-						<div class="icon"></div>
-						<div class="label">My Account</div>
-					</a>
-				</li><li id="nav-logout">
-					<a href="{url.base}logout">
-						<div class="icon"></div>
-						<div class="label">Logout</div>
-					</a>
-				</li>
-			</ul>
-			{!--<img src="{url.resource('images/avatar.jpg')}" alt="">{user.user.first_name}</a><a href="{url.base}logout">Logout</a>--}
+			<div id="nav-session">
+				<a id="nav-account" {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account"><div class="icon"></div>{user.user.username}</a>
+				<a id="nav-logout" href="{url.base}logout">Logout</a>
+			</div>
 		{% else %}
 			<ul id="sections"><li id="nav-setup">
-				<a class="sel">
-					<div class="icon"></div>
-					<div class="label">Setup</div>
-				</a>
+				<a class="sel"><div class="icon"></div>Setup</a>
 			</li></ul>
 		{% endif %}
 	</div>
