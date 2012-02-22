@@ -99,7 +99,7 @@ class AccountController extends BaseController
 
 			Blocks::log('Successfully changed password for user: '.$user->username.', but could not log them in.');
 			Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem logging you in.');
-			$this->redirect('/');
+			$this->redirect('dashboard');
 		}
 	}
 
