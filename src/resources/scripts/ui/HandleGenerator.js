@@ -8,41 +8,25 @@ if (typeof blx.ui == 'undefined')
 /**
  * Handle Generator
  */
-blx.ui.HandleGenerator = blx.Base.extend({
+blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
 
-	$nameField: null,
-	$handleField: null,
-
-	init: function(nameField, handleField, settings)
+	generateTargetValue: function(sourceVal)
 	{
-		this.$nameField = $(nameField);
-		this.$handleField = $(handleField);
-
-		var events = 'keypress,keyup,change,change,blur';
-
-		this.addListener(this.$nameField, events, 'updateHandle');
-		this.addListener(this.$handleField, events, 'stopUpdatingHandle');
-	},
-
-	updateHandle: function()
-	{
-		var nameVal = this.$nameField.val();
-
 		// Remove HTML tags
-		nameVal = nameVal.replace("/<(.*?)>/g", '');
+		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
 
 		// Make it lowercase
-		nameVal = nameVal.toLowerCase();
+		sourceVal = sourceVal.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		nameVal = blx.utils.asciiString(nameVal);
+		sourceVal = blx.utils.asciiString(sourceVal);
 
 		// Handle must start with a letter and end with a letter/number
-		nameVal = nameVal.replace(/^[^a-z]+/, '');
-		nameVal = nameVal.replace(/[^a-z0-9]+$/, '');
+		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
+		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = blx.utils.filterArray(nameVal.split(/[^a-z0-9]+/));
+		var words = blx.utils.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words)
 		{
@@ -58,13 +42,7 @@ blx.ui.HandleGenerator = blx.Base.extend({
 			var handle = '';
 		}
 
-		this.$handleField.val(handle);
-	},
-
-	stopUpdatingHandle: function()
-	{
-		this.removeAllListeners(this.$nameField);
-		this.removeAllListeners(this.$handleField);
+		return handle;
 	}
 });
 
