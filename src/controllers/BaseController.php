@@ -184,6 +184,17 @@ abstract class BaseController extends \CController
 	}
 
 	/**
+	 * Respond with JSON
+	 * @param array $r The array to JSON-encode and return
+	 */
+	public function returnJson($r)
+	{
+		Json::sendJsonHeaders();
+		echo Json::encode($r);
+		Blocks::app()->end();
+	}
+
+	/**
 	 * @return array
 	 */
 	public function filters()

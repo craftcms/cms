@@ -51,7 +51,6 @@ class InstallController extends BaseController
 			$r = array('error' => $e->getMessage());
 		}
 
-		Json::sendJsonHeaders();
-		echo Json::encode($r);
+		$this->returnJson($r);
 	}
 }

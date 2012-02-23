@@ -26,8 +26,8 @@ class UpdateController extends BaseController
 		$blocksUpdateInfo = Blocks::app()->updates->updateInfo;
 		if ($blocksUpdateInfo == null)
 		{
-			echo Json::encode(array('error' => 'There was a problem getting the latest update information.', 'fatal' => true));
-			return;
+			$r = array('error' => 'There was a problem getting the latest update information.', 'fatal' => true);
+			$this->returnJson($r);
 		}
 
 		$this->_blocksUpdateInfo = $blocksUpdateInfo;
@@ -64,20 +64,20 @@ class UpdateController extends BaseController
 						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo->plugins[$h]->handle, 'name' => $this->_blocksUpdateInfo->plugins[$h]->displayName, 'version' => $this->_blocksUpdateInfo->plugins[$h]->latestVersion);
 					else
 					{
-						echo Json::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
-						return;
+						$r = array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true);
+						$this->returnJson($r);
 					}
 				}
 				else
 				{
-					echo Json::encode(array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true));
-					return;
+					$r = array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true);
+					$this->returnJson($r);
 				}
 			}
 		}
 
-		echo Json::encode(array('updateInfo' => $returnUpdateInfo));
-		return;
+		$r = array('updateInfo' => $returnUpdateInfo);
+		$this->returnJson($r);
 	}
 
 	/**
@@ -86,6 +86,8 @@ class UpdateController extends BaseController
 	 */
 	public function actionUpdate($h)
 	{
+		$r = array();
+
 		switch ($h)
 		{
 			case 'Blocks':
@@ -93,14 +95,14 @@ class UpdateController extends BaseController
 				try
 				{
 					if (Blocks::app()->updates->doCoreUpdate())
-						echo Json::encode(array('success' => true));
+						$r = array('success' => true);
 				}
 				catch (Exception $ex)
 				{
-					echo Json::encode(array('error' => $ex->getMessage(), 'fatal' => true));
+					$r = array('error' => $ex->getMessage(), 'fatal' => true);
 				}
 
-				return;
+				break;
 			}
 
 			// plugin handle
@@ -109,15 +111,15 @@ class UpdateController extends BaseController
 				try
 				{
 					if (Blocks::app()->updates->doPluginUpdate($h))
-						echo Json::encode(array('success' => true));
+						$r = array('success' => true);
 				}
 				catch (Exception $ex)
 				{
-					echo Json::encode(array('error' => $ex->getMessage(), 'fatal' => false));
+					$r = array('error' => $ex->getMessage(), 'fatal' => false);
 				}
-
-				return;
 			}
 		}
+
+		$this->returnJson($r);
 	}
 }
