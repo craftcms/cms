@@ -84,6 +84,15 @@
 								<option value="locked" {% if theUser.status == 'locked' %}selected{% endif %}>Locked</option>
 							</select>
 						</div>
+						{% if theUser.status == 'pending' %}
+							<div class="field">
+								Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.changePasswordUrl}?code={theUser.authcode}
+							</div>
+							<div class="field">
+								Needs to post to: users/sendRegistrationEmail(user, site) <br />
+								<input class="btn big submit" type="submit" value="Resend Validation Email" />
+							</div>
+						{% endif %}
 					</div>
 					<div class="item field">
 						<div class="input-wrapper">
