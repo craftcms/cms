@@ -24,6 +24,7 @@ class ContentBlock extends BaseModel
 	);
 
 	protected $indexes = array(
+		array('columns' => array('name','site_id'), 'unique' => true),
 		array('columns' => array('handle','site_id'), 'unique' => true)
 	);
 
