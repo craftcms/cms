@@ -97,7 +97,7 @@ $blocksConfig['maxInvalidPasswordAttempts'] = 4;
  * If in 'lockout' mode, when a user reaches 'maxInvalidPasswordAttempts' within 'failedPasswordWindow', their account will be locked until an administrator manually removes the lock.
  * If in 'cooldown' mode, when a user reaches 'maxInvalidPasswordAttempts' within 'failedPasswordWindow', they will not be able to log in again for the 'failedPasswordCooldown' period.
  */
-$blocksConfig['failedPasswordMode'] = 'lockout';
+$blocksConfig['failedPasswordMode'] = 'cooldown';
 
 /**
  * The amount of time to track failed passwords for a user.
@@ -107,7 +107,7 @@ $blocksConfig['failedPasswordWindow'] = '1h';
 /**
  * If 'failedPasswordMode' is in cooldown mode, if 'maxInvalidPasswordAttempts' happens within 'failedPasswordWindow', then they must wait this amount of time before they are able to log in again.
  */
-$blocksConfig['failedPasswordCooldown'] = '1h';
+$blocksConfig['failedPasswordCooldown'] = '5m';
 
 /**
  * The minimum length of a user's password

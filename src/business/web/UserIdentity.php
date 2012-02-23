@@ -11,10 +11,13 @@ class UserIdentity extends \CUserIdentity
 	private $_id;
 	private $_authToken;
 
+	public $cooldownTimeRemaining;
+
 	public $loginName;
 	public $password;
 
 	const ERROR_ACCOUNT_LOCKED = 50;
+	const ERROR_ACCOUNT_COOLDOWN = 51;
 
 	/**
 	 * Constructor.
@@ -51,7 +54,9 @@ class UserIdentity extends \CUserIdentity
 		));
 
 		if ($user === null)
+		{
 			$this->errorCode = self::ERROR_USERNAME_INVALID;
+		}
 		else
 		{
 			// if the account is locked, don't even attempt to log in.
@@ -61,35 +66,45 @@ class UserIdentity extends \CUserIdentity
 			}
 			else
 			{
-				$checkPassword = Blocks::app()->security->checkPassword($this->password, $user->password, $user->enc_type);
-
-				if (!$checkPassword)
+				// if the account is in cooldown mode, don't attempt to log in.
+				if ($this->_isUserOutsideFailWindow($user, $user->failed_password_attempt_count))
 				{
-					$this->errorCode = self::ERROR_PASSWORD_INVALID;
+					$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
+				}
+				else
+				{
+					$checkPassword = Blocks::app()->security->checkPassword($this->password, $user->password, $user->enc_type);
 
-					// get the current failed password attempt count.
-					$currentFailedCount = $user->failed_password_attempt_count;
-
-					// if it's empty, this is the first failed attempt we have for the current window.
-					if (StringHelper::isNullOrEmpty($currentFailedCount))
+					// bad password
+					if (!$checkPassword)
 					{
-						// start at 1 and start the window
-						$currentFailedCount = 1;
-						$user->failed_password_attempt_window_start = DateTimeHelper::currentTime();
-						$user->failed_password_attempt_count = $currentFailedCount;
-					}
-					else
-					{
-						$currentFailedCount += 1;
-						$user->failed_password_attempt_count = $currentFailedCount;
+						$this->errorCode = self::ERROR_PASSWORD_INVALID;
 
-						// they've reached the max number of failed password entries
-						if ((int)$currentFailedCount >= (int)Blocks::app()->config->getItem('maxInvalidPasswordAttempts'))
+						$user->last_login_failed_date = DateTimeHelper::currentTime();
+
+						// get the current failed password attempt count.
+						$currentFailedCount = $user->failed_password_attempt_count;
+
+						// if it's empty, this is the first failed attempt we have for the current window.
+						if (StringHelper::isNullOrEmpty($currentFailedCount))
 						{
-							// see if they are still inside the window
-							if ($user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('failedPasswordWindow')) >= DateTimeHelper::currentTime())
+							// start at 1 and start the window
+							$currentFailedCount = 1;
+							$user->failed_password_attempt_window_start = DateTimeHelper::currentTime();
+							$user->failed_password_attempt_count = $currentFailedCount;
+						}
+						else
+						{
+							// If they have made it here, then they are outside of a previous fail window and they have mistyped their password again.  We start the counter back over at 0.
+							if ($currentFailedCount >= Blocks::app()->config->getItem('maxInvalidPasswordAttempts'))
+								$currentFailedCount = 0;
+
+							$currentFailedCount += 1;
+							$user->failed_password_attempt_count = $currentFailedCount;
+
+							if ($this->_isUserOutsideFailWindow($user, $currentFailedCount))
 							{
-								if (Blocks::app()->config->getItem('failedPasswordMode') == FailedPasswordMode::Lockout)
+								if (Blocks::app()->config->getItem('failedPasswordMode') === FailedPasswordMode::Lockout)
 								{
 									$user->status = UserAccountStatus::Locked;
 									$user->last_lockout_date = DateTimeHelper::currentTime();
@@ -98,38 +113,71 @@ class UserIdentity extends \CUserIdentity
 								}
 							}
 						}
+
+						$user->save();
 					}
-
-					$user->save();
-				}
-				else
-				{
-					$this->_id = $user->id;
-					$this->username = $user->username;
-					$this->errorCode = self::ERROR_NONE;
-
-					$authSessionToken = crypt(uniqid(rand(), true));
-					$this->_authToken = $authSessionToken;
-					$user->auth_session_token = $authSessionToken;
-					$user->last_login_date = DateTimeHelper::currentTime();
-					$user->failed_password_attempt_count = null;
-					$user->failed_password_attempt_window_start = null;
-
-					if (!$user->save())
+					else
 					{
-						$errorMsg = '';
-						foreach ($user->errors as $errorArr)
-							$errorMsg .= implode(' ', $errorArr);
+						// sucessfully authenticated
+						$this->_id = $user->id;
+						$this->username = $user->username;
+						$this->errorCode = self::ERROR_NONE;
 
-						throw new Exception('There was a problem logging you in:'.$errorMsg);
+						$authSessionToken = crypt(uniqid(rand(), true));
+						$this->_authToken = $authSessionToken;
+						$user->auth_session_token = $authSessionToken;
+						$user->last_login_date = DateTimeHelper::currentTime();
+						$user->failed_password_attempt_count = null;
+						$user->failed_password_attempt_window_start = null;
+
+						if (!$user->save())
+						{
+							$errorMsg = '';
+							foreach ($user->errors as $errorArr)
+								$errorMsg .= implode(' ', $errorArr);
+
+							throw new Exception('There was a problem logging you in:'.$errorMsg);
+						}
+
+						$this->setState('authSessionToken', $authSessionToken);
 					}
-
-					$this->setState('authSessionToken', $authSessionToken);
 				}
 			}
 		}
 
 		return !$this->errorCode;
+	}
+
+	/**
+	 * @param User $user
+	 * @param      $failedCount
+	 * @return bool
+	 */
+	private function _isUserOutsideFailWindow(User $user, $failedCount)
+	{
+		$result = false;
+
+		// check to see if the current failed count is greater than or equal to the max configured password attempt limit
+		if ((int)$failedCount >= (int)Blocks::app()->config->getItem('maxInvalidPasswordAttempts'))
+		{
+			// check to see if the failed windows start plus the configured failed password window is greater than the current time.
+			if ($user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('failedPasswordWindow')) >= DateTimeHelper::currentTime())
+			{
+				$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('failedPasswordCooldown'));
+				$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
+
+				// we have one exception for if the last time they attempted and failed to login plus the failed password cooldown is less than the current time.
+				if ($cooldownRemaining > 0)
+				{
+					$this->cooldownTimeRemaining = $cooldownRemaining;
+					$result = true;
+				}
+				else
+					$result = false;
+			}
+		}
+
+		return $result;
 	}
 
 	/**

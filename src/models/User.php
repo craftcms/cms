@@ -21,6 +21,7 @@ class User extends BaseModel
 		'status'                                => array('type' => AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active'), 'default' => 'pending'),
 		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),
 		'last_login_date'                       => AttributeType::Int,
+		'last_login_failed_date'                => AttributeType::Int,
 		'last_password_change_date'             => AttributeType::Int,
 		'last_lockout_date'                     => AttributeType::Int,
 		'failed_password_attempt_count'         => array('type' => AttributeType::TinyInt, 'unsigned' => true),

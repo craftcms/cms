@@ -40,6 +40,8 @@ class LoginForm extends \CFormModel
 			{
 				if ($this->_identity->errorCode == UserIdentity::ERROR_ACCOUNT_LOCKED)
 					$this->addError('loginName', 'This account has been locked.');
+				elseif ($this->_identity->errorCode == UserIdentity::ERROR_ACCOUNT_COOLDOWN)
+					$this->addError('loginName', 'Cooldown man.  '.$this->_identity->cooldownTimeRemaining.' seconds remaining.');
 				else
 					$this->addError('password', 'Incorrect login name or password.');
 			}
