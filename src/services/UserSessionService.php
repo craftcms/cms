@@ -103,8 +103,8 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->isLoggedIn)
 		{
-			$this->user->last_login_date = DateTimeHelper::currentTime();
-			$this->user->save();
+			Blocks::app()->users->current->last_login_date = DateTimeHelper::currentTime();
+			Blocks::app()->users->current->save();
 		}
 	}
 
