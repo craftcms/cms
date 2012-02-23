@@ -59,7 +59,7 @@
 						{% include "_includes/error_list" errors=theUser.errors.email %}
 					{% endif %}
 				</div>
-				{% if theUser.admin %}
+				{% if users.current.admin %}
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="admin">Admin</label>
@@ -95,8 +95,8 @@
 				{% if !theUser.id %}
 					<div class="item field">
 						<div class="input-wrapper">
-							<label for="require_email_validation">Require Email Validation?</label>
-							{% include "_includes/switch" name="require_email_validation" on=request.getPost('require_email_validation') default="y" %}
+							<label for="send_validation_email">Send Validation Email?</label>
+							{% include "_includes/switch" name="send_validation_email" on=request.getPost('send_validation_email') default="y" %}
 						</div>
 					</div>
 				{% endif %}

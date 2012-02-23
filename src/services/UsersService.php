@@ -51,12 +51,12 @@ class UsersService extends BaseService
 	}
 
 	/**
-	 * Returns the currently logged-in User
-	 * @return User
+	 * Returns the User model of the currently logged in user and null if is user is not logged in.
+	 * @return User The model of the logged in user.
 	 */
 	public function getCurrent()
 	{
-		$user = Blocks::app()->user->user;
+		$user = $this->getById(Blocks::app()->user->id);
 		return $user;
 	}
 

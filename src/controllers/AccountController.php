@@ -26,7 +26,7 @@ class AccountController extends BaseController
 					$changePasswordInfo->addError('currentPassword', 'Current password cannot be empty.');
 				else
 				{
-					$user = Blocks::app()->user->user;
+					$user = Blocks::app()->users->current;
 
 					// check their existing password
 					$checkPassword = Blocks::app()->security->checkPassword($currentPassword, $user->password, $user->enc_type);

@@ -29,7 +29,7 @@ class ChangePasswordFilter extends \CFilter
 
 			if (Blocks::app()->user->isLoggedIn)
 			{
-				$user = Blocks::app()->user->user;
+				$user = Blocks::app()->users->current;
 
 				if ($user !== null)
 				{

@@ -10,15 +10,6 @@ class UserSessionService extends \CWebUser
 	const FLASH_COUNTERS   = 'Blocks.UserSessionService.flashcounters';
 
 	/**
-	 * Returns the User model of the currently logged in user and null if is user is not logged in.
-	 * @return User The model of the logged in user.
-	 */
-	public function getUser()
-	{
-		return Blocks::app()->users->getById($this->id);
-	}
-
-	/**
 	 * @param null $defaultUrl
 	 * @return mixed
 	 */

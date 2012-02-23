@@ -27,7 +27,7 @@
 				<a id="nav-site"><div class="icon"></div>{sites.currentSite.name}</a>
 			</div>
 			<div id="nav-session">
-				<a id="nav-account" {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account"><div class="icon"></div>{user.user.username}</a>
+				<a id="nav-account" {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account"><div class="icon"></div>{users.current.username}</a>
 				<a id="nav-logout" href="{url.base}logout">Logout</a>
 			</div>
 		{% else %}
