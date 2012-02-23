@@ -9,7 +9,6 @@ namespace Blocks;
 class UserIdentity extends \CUserIdentity
 {
 	private $_id;
-	private $_authToken;
 
 	public $cooldownTimeRemaining;
 
@@ -123,8 +122,7 @@ class UserIdentity extends \CUserIdentity
 						$this->username = $user->username;
 						$this->errorCode = self::ERROR_NONE;
 
-						$authSessionToken = crypt(uniqid(rand(), true));
-						$this->_authToken = $authSessionToken;
+						$authSessionToken = Blocks::app()->db->createCommand()->getUUID();
 						$user->auth_session_token = $authSessionToken;
 						$user->last_login_date = DateTimeHelper::currentTime();
 						$user->failed_password_attempt_count = null;
