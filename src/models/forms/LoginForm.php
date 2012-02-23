@@ -37,7 +37,12 @@ class LoginForm extends \CFormModel
 		{
 			$this->_identity = new UserIdentity($this->loginName, $this->password);
 			if (!$this->_identity->authenticate())
-				$this->addError('password', 'Incorrect login name or password.');
+			{
+				if ($this->_identity->errorCode == UserIdentity::ERROR_ACCOUNT_LOCKED)
+					$this->addError('loginName', 'This account has been locked.');
+				else
+					$this->addError('password', 'Incorrect login name or password.');
+			}
 		}
 	}
 
@@ -62,7 +67,7 @@ class LoginForm extends \CFormModel
 
 			return Blocks::app()->user->login($this->_identity, $timeOut);
 		}
-		else
-			return false;
+
+		return false;
 	}
 }

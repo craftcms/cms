@@ -85,9 +85,29 @@ $blocksConfig['authCodeExpiration'] = '24h';
 
 
 /**
- * The number of invalid login attempts before the user account is locked.
+ * The number of invalid login attempts within the 'failedPasswordWindow' before 'failedPasswordMode' is initiated.
  */
 $blocksConfig['maxInvalidPasswordAttempts'] = 4;
+
+/**
+ * Valid choices are:
+ * lockout
+ * cooldown
+ *
+ * If in 'lockout' mode, when a user reaches 'maxInvalidPasswordAttempts' within 'failedPasswordWindow', their account will be locked until an administrator manually removes the lock.
+ * If in 'cooldown' mode, when a user reaches 'maxInvalidPasswordAttempts' within 'failedPasswordWindow', they will not be able to log in again for the 'failedPasswordCooldown' period.
+ */
+$blocksConfig['failedPasswordMode'] = 'lockout';
+
+/**
+ * The amount of time to track failed passwords for a user.
+ */
+$blocksConfig['failedPasswordWindow'] = '1h';
+
+/**
+ * If 'failedPasswordMode' is in cooldown mode, if 'maxInvalidPasswordAttempts' happens within 'failedPasswordWindow', then they must wait this amount of time before they are able to log in again.
+ */
+$blocksConfig['failedPasswordCooldown'] = '1h';
 
 /**
  * The minimum length of a user's password
