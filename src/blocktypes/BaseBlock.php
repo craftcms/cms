@@ -36,8 +36,7 @@ abstract class BaseBlock extends BaseComponent
 			return '';
 
 		$tags = array(
-			'settings' => $this->settings,
-			'errors'   => $this->errors
+			'settings' => $this->settings
 		);
 
 		$template = Blocks::app()->controller->loadTemplate($this->settingsTemplate, $tags, true);
