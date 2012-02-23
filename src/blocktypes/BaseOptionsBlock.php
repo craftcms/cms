@@ -27,16 +27,4 @@ abstract class BaseOptionsBlock extends BaseBlock
 		$this->settings['options'] = array_filter($this->settings['options']);
 	}
 
-	/**
-	 * Settings validation
-	 * @return bool Whether the settings passed validation
-	 */
-	public function validateSettings()
-	{
-		if (empty($this->settings['options']))
-			$this->errors['options'] = 'Options cannot be blank.';
-
-		return empty($this->errors);
-	}
-
 }

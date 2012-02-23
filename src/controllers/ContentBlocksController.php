@@ -32,7 +32,7 @@ class ContentBlocksController extends BaseController
 		$block = Blocks::app()->contentBlocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
 
 		// Did it save?
-		if (!$block->errors && !$block->blockType->errors)
+		if (!$block->errors)
 		{
 			if (Blocks::app()->request->isAjaxRequest)
 			{

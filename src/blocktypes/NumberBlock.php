@@ -14,18 +14,6 @@ class NumberBlock extends BaseBlock
 	protected $settingsTemplate = '_blocktypes/Number/settings';
 
 	/**
-	 * Settings validation
-	 * @return bool Whether the settings passed validation
-	 */
-	public function validateSettings()
-	{
-		if (!in_array($this->settings['type'], array('int', 'float', 'dec')))
-			$this->errors['type'] = 'Type is invalid.';
-
-		return empty($this->errors);
-	}
-
-	/**
 	 * Get the 
 	 * @return bool Whether the settings passed validation
 	 */

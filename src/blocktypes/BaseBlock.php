@@ -4,7 +4,6 @@ namespace Blocks;
 abstract class BaseBlock extends BaseComponent
 {
 	public $name;
-	public $errors = array();
 
 	protected $settings = array();
 	protected $settingsTemplate;
@@ -21,11 +20,6 @@ abstract class BaseBlock extends BaseComponent
 	public function getSettings()
 	{
 		return $this->settings;
-	}
-
-	public function validateSettings()
-	{
-		return true;
 	}
 
 	public function onBeforeSaveSettings()

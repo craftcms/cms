@@ -72,11 +72,7 @@ class ContentBlocksService extends BaseService
 		$blockType->settings = $blockTypeSettings;
 		$block->blockType = $blockType;
 
-		// Run the validation
-		$isBlockValid = $block->validate();
-		$isBlockTypeValid = $blockType->validateSettings();
-
-		if ($isBlockValid && $isBlockTypeValid)
+		if ($block->validate())
 		{
 			// Start a transaction
 			$transaction = Blocks::app()->db->beginTransaction();
