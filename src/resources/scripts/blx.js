@@ -14,6 +14,7 @@ blx.$body = $(document.body);
 // Key code constants
 blx.DELETE_KEY = 8;
 blx.SHIFT_KEY  = 16;
+blx.CTRL_KEY   = 17;
 blx.ALT_KEY    = 18;
 blx.RETURN_KEY = 13;
 blx.ESC_KEY    = 27;
@@ -22,6 +23,7 @@ blx.LEFT_KEY   = 37;
 blx.UP_KEY     = 38;
 blx.RIGHT_KEY  = 39;
 blx.DOWN_KEY   = 40;
+blx.CMD_KEY    = 91;
 
 
 blx.navHeight = 48;
@@ -185,8 +187,9 @@ blx.utils =
 			$elem.addClass('no-outline');
 			$elem.focus();
 		})
-		.on('keydown'+namespace+' blur'+namespace, function() {
-			$elem.removeClass('no-outline');
+		.on('keydown'+namespace+' blur'+namespace, function(event) {
+			if (event.keyCode != blx.SHIFT_KEY && event.keyCode != blx.CTRL_KEY && event.keyCode != blx.CMD_KEY)
+				$elem.removeClass('no-outline');
 		});
 	},
 
