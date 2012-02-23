@@ -198,10 +198,19 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .pane + .btn-group { display: block; margin-top: -12px; margin-bottom: 20px; }
 
 /* modals */
-.modal { display: none; position: absolute; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); -webkit-user-select: none; }
+.modal { display: none; position: absolute; -webkit-user-select: none; }
+.modal.focussed { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); }
+.modal .head,
+.modal .body,
+.modal .foot { -webkit-transition: opacity 50ms linear; }
+.modal:not(.focussed) .head,
+.modal:not(.focussed) .body,
+.modal:not(.focussed) .foot { opacity: 0.75; }
 
-#blocksselect { width: 300px; }
-#blocksselect .body .scrollpane { padding: 0 1px; }
+#blocksselectmodal { width: 300px; }
+#blocksselectmodal .body .scrollpane { padding: 0 1px; }
+
+#createblockmodal { width: 300px; }
 
 /* grids */
 .grid { margin-left: -20px; }
@@ -250,12 +259,12 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .search input { display: block; padding: 3px 10px 3px 20px; border: none; width:100%; font-family: HelveticaNeue, sans-serif; font-size: 12px; color: #333; background: transparent url(../images/toolbar_icons/search.png) 5px 50% no-repeat; outline: none; -webkit-appearance: none; }
 
 /* buttons */
-.btn { display: inline-block; border-radius: 3px; height: 24px; line-height: 24px; color: #505050; text-shadow: 0 1px 0 #eee; text-align: center; white-space: nowrap; background: -webkit-linear-gradient(#f5f5f5, #d5d5d5); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), inset 0 1px 0 #fff; cursor: pointer; }
+.btn { display: inline-block; border-radius: 3px; height: 24px; line-height: 24px; color: #505050; text-shadow: 0 1px 0 #eee; text-align: center; white-space: nowrap; background: -webkit-linear-gradient(#f5f5f5, #d5d5d5); -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), inset 0 1px 0 #fff; cursor: pointer; overflow: hidden; }
 .btn:hover { text-decoration: none; }
 .btn:not(.disabled):hover { background-image: -webkit-linear-gradient(#fff, #ddd); }
 .btn:not(.disabled):active,
 .btn:not(.disabled).sel { background-image: -webkit-linear-gradient(#aaa, #ccc); -webkit-box-shadow: 0 0 0 1px #808080, inset 0 1px 1px 1px rgba(0,0,0,0.05); }
-.btn.sel { z-index: 9999; }
+.btn.sel { position: relative; }
 .btn.disabled { opacity: 0.5; cursor: default; }
 
 /* button parts */
@@ -294,7 +303,10 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .btn.submit { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); background: -webkit-linear-gradient(#33abf5, #2987c2); }
 .btn.submit:not(.disabled):hover { background: -webkit-linear-gradient(#5ac5ff, #4da0de); }
 .btn.submit:not(.disabled):active,
-.btn.submit:not(.disabled).sel { text-shadow: 0 -1px 2px rgba(0,0,0,0.5); background: -webkit-linear-gradient(#077ab4, #2886c2); }
+.btn.submit:not(.disabled).sel,
+.btn.submit:not(.disabled).loading { text-shadow: 0 -1px 2px rgba(0,0,0,0.5); background: -webkit-linear-gradient(#077ab4, #2886c2); }
+.btn.submit:not(.disabled).loading { cursor: default; }
+.btn.submit:not(.disabled).loading .spinner { margin-right: 8px;width: 18px; background: url(../images/submit-btn-spinner.gif) no-repeat 50% 50%; }
 
 .btn.submit .arrow { background-image: url(../images/menu-arrow-white.png); }
 

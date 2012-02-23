@@ -34,11 +34,28 @@ class ContentBlocksController extends BaseController
 		// Did it save?
 		if (!$block->errors && !$block->blockType->errors)
 		{
+			if (Blocks::app()->request->isAjaxRequest)
+			{
+				$r = array(
+					'success' => true,
+					'id'      => $block->id,
+					'name'    => $block->name,
+					'type'    => $block->blockType->name
+				);
+				$this->returnJson($r);
+			}
+
 			Blocks::app()->user->setMessage(MessageStatus::Success, 'Content block saved successfully.');
 
 			$url = Blocks::app()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
+		}
+
+		if (Blocks::app()->request->isAjaxRequest)
+		{
+			$r = array('errors' => $block->errors);
+			$this->returnJson($r);
 		}
 
 		// Reload the original template

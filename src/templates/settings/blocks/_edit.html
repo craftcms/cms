@@ -23,38 +23,13 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 				{% endif %}
 			</div>
 			<div class="body">
-				<div class="item field">
-					<label for="name" class="required">Content Block Name</label>
-					<div class="input-wrapper"><input id="name" name="name" class="{% if block.errors.name %}error{% endif %}" type="text" value="{block.name}" /></div>
-					{% if block.errors.name %}
-						{% include "_includes/error_list" errors=block.errors.name %}
-					{% endif %}
-				</div>
-				<div class="item field">
-					<label for="handle" class="required">Block Handle</label>
-					<div class="input-wrapper"><input id="handle" name="handle" class="code {% if block.errors.handle %}error{% endif %}" type="text" value="{block.handle}" /></div>
-					{% if block.errors.handle %}
-						{% include "_includes/error_list" errors=block.errors.handle %}
-					{% endif %}
-				</div>
+				{% include "settings/blocks/_includes/blocksettings" block=block %}
+
 				<div class="item field">
 					<label for="instructions">Instructions</label>
 					<div class="input-wrapper"><textarea id="instructions" name="instructions" {% if block.errors.instructions %}class="error"{% endif %} rows="3" cols="100">{block.instructions}</textarea></div>
 					{% if block.errors.instructions %}
 						{% include "_includes/error_list" errors=block.errors.instructions %}
-					{% endif %}
-				</div>
-				<div class="item field">
-					<label for="class">Block Type</label>
-					<div>
-						<select id="class" name="class">
-							{% foreach contentBlocks.blockTypes as blockType %}
-								<option value="{blockType.class}" {% if (block && block.class == blockType.class) || (!block && blockType.class == 'PlainText') %}selected{% endif %}>{blockType.name}</option>
-							{% endforeach %}
-						</select>
-					</div>
-					{% if block.errors.class %}
-						{% include "_includes/error_list" errors=block.errors.class %}
 					{% endif %}
 				</div>
 			</div>

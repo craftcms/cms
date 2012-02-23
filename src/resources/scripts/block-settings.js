@@ -9,7 +9,7 @@ var BlockSettingsForm = blx.Base.extend({
 
 	init: function()
 	{
-		this.$blockTypeSelect = $('#class');
+		this.$blockTypeSelect = $('#block-class');
 		this.addListener(this.$blockTypeSelect, 'change', 'onBlockTypeChange');
 		this.setBlockType();
 	},

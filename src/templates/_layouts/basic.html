@@ -15,7 +15,11 @@
 
 	{% include "_includes/js_include" file="lib/jquery-1.7.min.js" %}
 	{% include "_includes/js_include" file="lib/Base.js" %}
-	<script type="text/javascript">window.baseUrl = '{url.base}';</script>
+	<script type="text/javascript">
+		window.baseUrl = '{url.base}';
+		window.actionUrl = '{url.action}/';
+		window.resourceUrl = '{url.resource}/';
+	</script>
 	{scripts}
 </body>
 </html>

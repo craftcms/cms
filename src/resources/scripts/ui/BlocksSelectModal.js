@@ -10,7 +10,6 @@ if (typeof blx.ui == 'undefined')
  */
 blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
-	$addBtn: null,
 	$cancelBtn: null,
 
 	$items: null,
@@ -44,12 +43,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
-		this.$addBtn = this.$footBtns.filter('.add:first');
 		this.$cancelBtn = this.$footBtns.filter('.cancel:first');
-
-		this.addListener(this.$addBtn, 'click', 'addSelectedBlocks');
-		this.addListener(this.$cancelBtn, 'click', 'hide');
-		this.addListener(this.$body, 'keydown', 'onKeyDown');
 
 		this.$items = this.$container.find('li');
 		this.$addItem = this.$items.filter('.add:first');
@@ -57,6 +51,11 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$blockItems = $();
 		this.$visibleBlockItems = $();
 		this.$selectedItems = $();
+
+		this.addListener(this.$addItem, 'click', 'showCreateBlockModal');
+		this.addListener(this.$submitBtn, 'click', 'addSelectedBlocks');
+		this.addListener(this.$cancelBtn, 'click', 'hide');
+		this.addListener(this.$body, 'keydown', 'onKeyDown');
 
 		var $blockItems = this.$items.not(this.$addItem).not(this.$fillerItems);
 		this.addBlocks($blockItems, false);
@@ -133,6 +132,20 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 			this.selector.addItems($blockItems);
 	},
 
+	insertNewBlock: function(id, name, type)
+	{
+		var $blockItem = $('<li class="block-item sel" data-block-id="'+id+'">'
+		                 +   '<div class="block">'
+		                 +     '<span class="icon icon137"></span>'
+		                 +     '<span class="block-name">'+name+'</span> <span class="block-type">'+type+'</span>'
+		                 +   '</div>'
+		                 + '</li>');
+
+		$blockItem.insertBefore(this.$addItem);
+		this.addBlocks($blockItem, true);
+		this.onSelectionChange();
+	},
+
 	onDblClick: function()
 	{
 		clearTimeout(this.selector.clearMouseUpTimeout());
@@ -145,9 +158,15 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		this.$selectedItems = this.selector.getSelectedItems();
 
 		if (this.$selectedItems.length)
-			this.$addBtn.removeClass('disabled');
+			this.$submitBtn.removeClass('disabled');
 		else
-			this.$addBtn.addClass('disabled');
+			this.$submitBtn.addClass('disabled');
+	},
+
+	showCreateBlockModal: function()
+	{
+		var modal = blx.getCreateBlockModal();
+		modal.show();
 	},
 
 	addSelectedBlocks: function()

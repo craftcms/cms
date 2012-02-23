@@ -15,8 +15,12 @@ blx.ui.Modal = blx.Base.extend({
 	$body: null,
 	$foot: null,
 	$footBtns: null,
+	$submitBtn: null,
 
 	visible: null,
+	focussed: null,
+	zIndex: null,
+
 	dragger: null,
 
 	init: function(container, settings)
@@ -35,6 +39,9 @@ blx.ui.Modal = blx.Base.extend({
 			this.setContainer(container);
 
 		this.visible = false;
+		this.focussed = false;
+
+		blx.ui.Modal.instances.push(this);
 	},
 
 	setContainer: function(container)
@@ -52,6 +59,7 @@ blx.ui.Modal = blx.Base.extend({
 		this.$body = this.$container.find('.body:first');
 		this.$foot = this.$container.find('.foot:first');
 		this.$footBtns = this.$foot.find('.btn');
+		this.$submitBtn = this.$footBtns.filter('.submit:first');
 
 		if (this.settings.draggable)
 		{
@@ -63,12 +71,59 @@ blx.ui.Modal = blx.Base.extend({
 				});
 			}
 		}
+
+		if (this.zIndex)
+			this.setZIndex(this.zIndex);
+
+		this.addListener(this.$container, 'mousedown', 'onMouseDown');
+		this.addListener(this.$container, 'keydown', 'onKeyDown');
+	},
+
+	setZIndex: function(zIndex)
+	{
+		this.zIndex = zIndex;
+
+		if (this.$container)
+			this.$container.css('zIndex', this.zIndex);
+	},
+
+	focus: function()
+	{
+		// Blur the currently focussed modal
+		if (blx.ui.Modal.focussedModal)
+			blx.ui.Modal.focussedModal.blur();
+
+		// Add focus to this one
+		this.$container.addClass('focussed');
+		this.focussed = true;
+		blx.ui.Modal.focussedModal = this;
+
+		// Put this at the end of the list of visible modals
+		blx.utils.removeFromArray(this, blx.ui.Modal.visibleModals);
+		blx.ui.Modal.visibleModals.push(this);
+
+		// Set z-index's appropriately
+		for (var i = 0; i < blx.ui.Modal.visibleModals.length; i++)
+		{
+			var zIndex = i + 1;
+			blx.ui.Modal.visibleModals[i].setZIndex(zIndex);
+		}
+	},
+
+	blur: function()
+	{
+		this.$container.removeClass('focussed');
+		this.focussed = false;
+		blx.ui.Modal.focussedModal = null;
 	},
 
 	show: function()
 	{
 		if (this.$container)
+		{
 			this.$container.fadeIn('fast');
+			this.focus();
+		}
 
 		this.visible = true;
 	},
@@ -76,7 +131,15 @@ blx.ui.Modal = blx.Base.extend({
 	hide: function()
 	{
 		if (this.$container)
+		{
 			this.$container.fadeOut('fast');
+			this.blur();
+			blx.utils.removeFromArray(this, blx.ui.Modal.visibleModals);
+
+			// Focus the next one up
+			if (blx.ui.Modal.visibleModals.length)
+				blx.ui.Modal.visibleModals[blx.ui.Modal.visibleModals.length-1].focus();
+		}
 
 		this.visible = false;
 	},
@@ -95,6 +158,40 @@ blx.ui.Modal = blx.Base.extend({
 			this.$container.hide();
 
 		return height;
+	},
+
+	getWidth: function()
+	{
+		if (!this.$container)
+			throw 'Attempted to get the width of a modal whose container has not been set.';
+
+		if (!this.visible)
+			this.$container.show();
+
+		var width = this.$container.width();
+
+		if (!this.visible)
+			this.$container.hide();
+
+		return width;
+	},
+
+	centerInViewport: function()
+	{
+		if (!this.$container)
+			throw 'Attempted to position a modal whose container has not been set.';
+
+		var viewportWidth = blx.$document.width(),
+			viewportHeight = blx.$document.height(),
+			modalWidth = this.getWidth(),
+			modalHeight = this.getHeight(),
+			left = (viewportWidth - modalWidth) / 2,
+			top = (viewportHeight - modalHeight) / 2;
+
+		this.$container.css({
+			top: top,
+			left: left
+		});
 	},
 
 	positionRelativeTo: function(elem)
@@ -119,6 +216,20 @@ blx.ui.Modal = blx.Base.extend({
 		});
 	},
 
+	onMouseDown: function()
+	{
+		if (!this.focussed)
+			this.focus();
+	},
+
+	onKeyDown: function(event)
+	{
+		if (event.target.nodeName != 'TEXTAREA' && event.keyCode == blx.RETURN_KEY)
+		{
+			this.$submitBtn.click();
+		}
+	},
+
 	destroy: function()
 	{
 		this.base();
@@ -131,7 +242,10 @@ blx.ui.Modal = blx.Base.extend({
 	relativeElemPadding: 8,
 	defaults: {
 		draggable: true
-	}
+	},
+	instances: [],
+	visibleModals: [],
+	focussedModal: null
 });
 
 

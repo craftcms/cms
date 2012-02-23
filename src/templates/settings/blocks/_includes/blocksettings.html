@@ -1,0 +1,27 @@
+<div class="item field">
+	<label for="block-name" class="required">Content Block Name</label>
+	<div class="input-wrapper"><input id="block-name" name="name" class="{% if block.errors.name %}error{% endif %}" type="text" value="{block.name}" /></div>
+	{% if block.errors.name %}
+		{% include "_includes/error_list" errors=block.errors.name %}
+	{% endif %}
+</div>
+<div class="item field">
+	<label for="block-handle" class="required">Block Handle</label>
+	<div class="input-wrapper"><input id="block-handle" name="handle" class="code {% if block.errors.handle %}error{% endif %}" type="text" value="{block.handle}" /></div>
+	{% if block.errors.handle %}
+		{% include "_includes/error_list" errors=block.errors.handle %}
+	{% endif %}
+</div>
+<div class="item field">
+	<label for="block-class">Block Type</label>
+	<div>
+		<select id="block-class" name="class">
+			{% foreach contentBlocks.blockTypes as blockType %}
+				<option value="{blockType.class}" {% if (block && block.class == blockType.class) || (!block && blockType.class == 'PlainText') %}selected{% endif %}>{blockType.name}</option>
+			{% endforeach %}
+		</select>
+	</div>
+	{% if block.errors.class %}
+		{% include "_includes/error_list" errors=block.errors.class %}
+	{% endif %}
+</div>

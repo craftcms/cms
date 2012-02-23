@@ -96,6 +96,16 @@ blx.utils =
 	},
 
 	/**
+	 * Removes an element from an array
+	 */
+	removeFromArray: function(elem, arr)
+	{
+		var index = $.inArray(elem, arr);
+		if (index != -1)
+			arr.splice(index, 1);
+	},
+
+	/**
 	 * Makes the first character of a string uppercase
 	 */
 	uppercaseFirst: function(str)
@@ -253,12 +263,44 @@ blx.utils =
 		return $.makeArray(elem)[0];
 	},
 
+	createErrorList: function(errors)
+	{
+		var $ul = $(document.createElement('ul')).addClass('errors');
+
+		for (var i = 0; i < errors.length; i++)
+		{
+			var $li = $(document.createElement('li'));
+			$li.appendTo($ul);
+			$li.html(errors[i]);
+		}
+
+		return $ul;
+	},
+
 	/**
 	 * Returns whether an object is not an element or a jQuery object
 	 */
 	isObject: function(obj)
 	{
 		return (typeof obj == 'object' && typeof obj.nodeType == 'undefined' && !(obj instanceof jQuery));
+	},
+
+	/**
+	 * Animate an element's width
+	 */
+	animateWidth: function(elem, callback)
+	{
+		var $elem = $(elem),
+			oldWidth = $elem.width();
+		$elem.width('auto');
+
+		callback();
+
+		var newWidth = $elem.width();
+		$elem.width(oldWidth);
+		$elem.animate({width: newWidth}, 'fast', function() {
+			$elem.width('auto');
+		});
 	}
 };
 
