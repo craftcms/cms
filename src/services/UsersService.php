@@ -24,6 +24,14 @@ class UsersService extends BaseService
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getChangePasswordUrl()
+	{
+		return 'account/password';
+	}
+
+	/**
 	 * @param $siteId
 	 * @return array
 	 */
@@ -111,8 +119,8 @@ class UsersService extends BaseService
 		if ($emailValidation)
 		{
 			$user->status = UserAccountStatus::Pending;
-
-			$user->authcode = StringHelper::randomString();
+			$authCode = Blocks::app()->db->createCommand()->getUUID();
+			$user->authcode = $authCode;
 			$date = new \DateTime();
 			$user->authcode_issued_date = $date->getTimestamp();
 			$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');

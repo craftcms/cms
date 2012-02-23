@@ -61,7 +61,7 @@ class AccountController extends BaseController
 		}
 
 		// display the password form
-		$this->loadTemplate('account/password', array('changePasswordInfo' => $changePasswordInfo));
+		$this->loadTemplate(Blocks::app()->users->changePasswordUrl, array('changePasswordInfo' => $changePasswordInfo));
 	}
 
 	/**

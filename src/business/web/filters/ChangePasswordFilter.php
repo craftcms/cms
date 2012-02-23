@@ -22,7 +22,7 @@ class ChangePasswordFilter extends \CFilter
 					return true;
 			}
 
-			$ignore = array('login', 'logout', 'account/password');
+			$ignore = array('login', 'logout', Blocks::app()->users->changePasswordUrl);
 			$url = Blocks::app()->request->getPathInfo();
 			if (in_array($url, $ignore))
 				return true;
@@ -40,7 +40,7 @@ class ChangePasswordFilter extends \CFilter
 						if (!Blocks::app()->request->getIsAjaxRequest())
 							Blocks::app()->user->setReturnUrl(Blocks::app()->request->getUrl());
 
-						Blocks::app()->request->redirect(UrlHelper::generateUrl('account/password'));
+						Blocks::app()->request->redirect(UrlHelper::generateUrl(Blocks::app()->users->changePasswordUrl));
 					}
 				}
 				else
