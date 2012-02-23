@@ -59,12 +59,14 @@
 						{% include "_includes/error_list" errors=theUser.errors.email %}
 					{% endif %}
 				</div>
-				<div class="item field">
-					<div class="input-wrapper">
-						<label for="admin">Admin</label>
-						{% include "_includes/switch" name="admin" on=theUser.admin %}
+				{% if theUser.admin %}
+					<div class="item field">
+						<div class="input-wrapper">
+							<label for="admin">Admin</label>
+							{% include "_includes/switch" name="admin" on=theUser.admin %}
+						</div>
 					</div>
-				</div>
+				{% endif %}
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="html_email">Html Emails</label>
