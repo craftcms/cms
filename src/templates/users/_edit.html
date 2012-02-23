@@ -114,6 +114,9 @@
 						Last Login Date: {% if theUser.last_login_date %}theUser.last_login_date{% else %}Never{% endif %}
 					</div>
 					<div class="item">
+						Last Failed Login Date: {% if theUser.last_login_failed_date %}theUser.last_login_failed_date{% else %}Never{% endif %}
+					</div>
+					<div class="item">
 						Last Password Changed Date: {% if theUser.last_password_changed_date %}theUser.last_password_changed_date{% else %}Never{% endif %}
 					</div>
 					<div class="item">
