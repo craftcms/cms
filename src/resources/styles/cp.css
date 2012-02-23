@@ -443,11 +443,17 @@ li.block-item { min-height: 24px; padding: 2px 0; }
 li.block-item .required { display: block; float: right; padding: 3px 8px 3px 12px; background-position: 0 50%; }
 li.block-item .icon { margin: -3px 0; }
 li.block-item .block { display: inline-block; padding: 3px 8px 3px 4px; border-radius: 12px; cursor: default; }
-li.block-item .block:hover { background: #f5f5f5; }
-li.block-item .block:active,
-li.block-item.sel .block { background: #e5e5e5; }
 li.block-item .block .block-name { font-weight: bold; font-family: sans-serif; }
 li.block-item .block .block-type { margin-left: 1px; font-size: 11px; line-height: 14px; color: #999; }
+
+li.block-item .block:hover { background: #ececec; }
+
+li.block-item .block:active,
+li.block-item.sel .block { background: -webkit-linear-gradient(#2d98db, #2782bb); color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
+li.block-item .block:active .block-type,
+li.block-item.sel .block .block-type { color: #9bcef2; }
+li.block-item .block:active .icon,
+li.block-item.sel .block .icon { background-image: url(../images/sidebar_icons_sel.png); }
 
 /* ----------------------------------------
 /*  Thumbs and filenames
