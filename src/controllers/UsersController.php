@@ -97,17 +97,17 @@ class UsersController extends BaseController
 		$user->status = Blocks::app()->request->getPost('status');
 		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
 
-		$requireEmailValidation = (Blocks::app()->request->getPost('require_email_validation') === 'y');
+		$sendValidationEmail = (Blocks::app()->request->getPost('send_validation_email') === 'y');
 
 		if ($user->validate())
 		{
 			if (!$existingUser)
 			{
-				$user = Blocks::app()->users->registerUser($user, null, $requireEmailValidation, true);
+				$user = Blocks::app()->users->registerUser($user, null, $sendValidationEmail, true);
 
 				if ($user !== null)
 				{
-					if ($requireEmailValidation)
+					if ($sendValidationEmail)
 					{
 						$site = Blocks::app()->sites->currentSite;
 						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
