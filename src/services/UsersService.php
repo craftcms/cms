@@ -16,6 +16,7 @@ class UsersService extends BaseService
 
 	/**
 	 * Returns the 50 most recent users
+	 * @return mixed
 	 */
 	public function getRecent()
 	{
@@ -55,7 +56,7 @@ class UsersService extends BaseService
 	 */
 	public function getCurrent()
 	{
-		$user = Blocks::app()->users->user;
+		$user = Blocks::app()->user->user;
 		return $user;
 	}
 
