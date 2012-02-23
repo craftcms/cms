@@ -272,4 +272,24 @@ class UserSessionService extends \CWebUser
 	{
 		return !$this->getIsGuest();
 	}
+
+	/**
+	 * @param $loginName
+	 * @param $password
+	 * @param bool $rememberMe
+	 * @return LoginForm|bool
+	 */
+	public function startLogin($loginName, $password, $rememberMe = false)
+	{
+		$loginInfo = new LoginForm();
+		$loginInfo->loginName = $loginName;
+		$loginInfo->password = $password;
+		$loginInfo->rememberMe = $rememberMe;
+
+		// validate user input and redirect to the previous page if valid
+		if ($loginInfo->validate() && $loginInfo->login())
+			return true;
+
+		return $loginInfo;
+	}
 }

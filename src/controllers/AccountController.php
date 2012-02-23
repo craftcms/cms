@@ -65,6 +65,19 @@ class AccountController extends BaseController
 	}
 
 	/**
+	 * @param $password
+	 * @return bool
+	 */
+	public function checkPassword($password)
+	{
+		$user = Blocks::app()->users->current;
+		if (Blocks::app()->security->checkPassword($password, $user->password, $user->enc_type))
+			return true;
+
+		return false;
+	}
+
+	/**
 	 * @param User $user
 	 * @param      $password
 	 * @param bool $authCodeRequest
@@ -86,27 +99,13 @@ class AccountController extends BaseController
 			$user->password_reset_required = false;
 			$user->save();
 
-			$loginInfo = new LoginForm();
-
-			$loginInfo->loginName = $user->username;
-			$loginInfo->password = $password;
-
-			// validate user input and redirect to the previous page if valid
-			if ($loginInfo->validate() && $loginInfo->login())
-			{
+			if (($loginInfo = Blocks::app()->user->startLogin($user->username, $password)))
 				$this->redirect(Blocks::app()->user->returnUrl);
-			}
 
 			Blocks::log('Successfully changed password for user: '.$user->username.', but could not log them in.');
 			Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem logging you in.');
 			$this->redirect('dashboard');
 		}
-	}
-
-	public function actionLogout()
-	{
-		Blocks::app()->user->logout();
-		$this->redirect('/');
 	}
 }
 

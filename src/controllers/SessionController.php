@@ -12,16 +12,14 @@ class SessionController extends BaseController
 	public function actionLogin()
 	{
 		$this->requirePostRequest();
+		// TODO:  uncomment when we're ready to ajaxify login
+		//$this->requireAjaxRequest();
 
-		$loginInfo = new LoginForm();
+		$loginName = Blocks::app()->request->getPost('loginName');
+		$password = Blocks::app()->request->getPost('password');
+		$rememberMe = (Blocks::app()->request->getPost('rememberMe') === 'y');
 
-		// Check to see if it's a submit.
-		$loginInfo->loginName = Blocks::app()->request->getPost('loginName');
-		$loginInfo->password = Blocks::app()->request->getPost('password');
-		$loginInfo->rememberMe = (Blocks::app()->request->getPost('rememberMe') === 'y');
-
-		// validate user input and redirect to the previous page if valid
-		if ($loginInfo->validate() && $loginInfo->login())
+		if (($loginInfo = Blocks::app()->user->startLogin($loginName, $password, $rememberMe)))
 			$this->redirect(Blocks::app()->user->returnUrl);
 
 		// display the login form
