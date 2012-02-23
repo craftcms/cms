@@ -26,6 +26,14 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getUUID()
+	{
+		return 'SELECT UUID() AS UUID;';
+	}
+
+	/**
 	 * @param $table
 	 * @param $columns
 	 * @param $vals

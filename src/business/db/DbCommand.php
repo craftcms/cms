@@ -29,4 +29,13 @@ class DbCommand extends \CDbCommand
 		$queryParams = $this->connection->schema->insertAll($table, $columns, $vals);
 		return $this->setText($queryParams['query'])->execute($queryParams['params']);
 	}
+
+	/**
+	 * @return int
+	 */
+	public function getUUID()
+	{
+		$result = $this->setText($this->connection->schema->getUUID())->queryRow();
+		return $result['UUID'];
+	}
 }
