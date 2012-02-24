@@ -277,9 +277,9 @@ class UserSessionService extends \CWebUser
 		$loginInfo->password = $password;
 		$loginInfo->rememberMe = $rememberMe;
 
-		// validate user input and redirect to the previous page if valid
-		if ($loginInfo->validate() && $loginInfo->login())
-			return true;
+		// Attempt to log in
+		if ($loginInfo->validate())
+			$loginInfo->login();
 
 		return $loginInfo;
 	}

@@ -12,18 +12,25 @@ class SessionController extends BaseController
 	public function actionLogin()
 	{
 		$this->requirePostRequest();
-		// TODO:  uncomment when we're ready to ajaxify login
-		//$this->requireAjaxRequest();
+		$this->requireAjaxRequest();
 
 		$loginName = Blocks::app()->request->getPost('loginName');
 		$password = Blocks::app()->request->getPost('password');
 		$rememberMe = (Blocks::app()->request->getPost('rememberMe') === 'y');
 
-		if (($loginInfo = Blocks::app()->user->startLogin($loginName, $password, $rememberMe)))
-			$this->redirect(Blocks::app()->user->returnUrl);
+		// Attempt to log in
+		$loginInfo = Blocks::app()->user->startLogin($loginName, $password, $rememberMe);
 
-		// display the login form
-		$this->loadTemplate('login', array('loginInfo' => $loginInfo));
+		// Did it work?
+		if (Blocks::app()->user->isLoggedIn)
+			$r = array(
+				'success' => true,
+				'redirectUrl' => Blocks::app()->user->returnUrl
+			);
+		else
+			$r = array('error' => true);
+
+		$this->returnJson($r);
 	}
 
 	public function actionLogout()
@@ -32,4 +39,3 @@ class SessionController extends BaseController
 		$this->redirect('');
 	}
 }
-
