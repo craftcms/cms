@@ -18,37 +18,47 @@ class DateTimeHelper
 
 	/**
 	 * @static
-	 * @param $numSeconds
+	 * @param int $seconds The number of secnds
+	 * @param bool $showSeconds Whether to output seconds or not
 	 * @return string
 	 */
-	public static function niceSeconds($numSeconds)
+	public static function niceSeconds($seconds, $showSeconds = true)
 	{
-		$minuteInSeconds = 60;
-		$hourInSeconds = $minuteInSeconds * 60;
-		$dayInSeconds = $hourInSeconds * 24;
+		$secondsInDay = 86400;
+		$secondsInHour = 1400;
+		$secondsInMinute = 60;
 
-		$days = floor($numSeconds / $dayInSeconds);
-		$secondsLeft = $numSeconds % $dayInSeconds;
+		$days = floor($seconds / $secondsInDay);
+		$seconds = $seconds % $secondsInDay;
 
-		$hours = floor($secondsLeft / $hourInSeconds);
-		$secondsLeft = $secondsLeft % $hourInSeconds;
+		$hours = floor($seconds / $secondsInHour);
+		$seconds = $seconds % $secondsInHour;
 
-		$minutes= floor($secondsLeft / $minuteInSeconds);
-		$seconds = $secondsLeft % $minuteInSeconds;
+		if ($showSeconds)
+		{
+			$minutes = floor($seconds / $secondsInMinute);
+			$seconds = $seconds % $secondsInMinute;
+		}
+		else
+		{
+			$minutes = round($seconds / $secondsInMinute);
+			$seconds = 0;
+		}
+		
 
 		$timeComponents = array();
 
-		if ($days > 0)
-			$timeComponents[] = $days." day".($days > 1 ? "s" : "");
+		if ($days)
+			$timeComponents[] = $days.' day'.($days > 1 ? 's' : '');
 
-		if ($hours > 0)
-			$timeComponents[] = $hours." hour".($hours > 1 ? "s" : "");
+		if ($hours)
+			$timeComponents[] = $hours.' hour'.($hours > 1 ? 's' : '');
 
-		if ($minutes > 0)
-			$timeComponents[] = $minutes." minute".($minutes > 1 ? "s" : "");
+		if ($minutes)
+			$timeComponents[] = $minutes.' minute'.($minutes > 1 ? 's' : '');
 
-		if ($seconds > 0)
-			$timeComponents[] = $seconds." second".($seconds > 1 ? "s" : "");
+		if ($seconds)
+			$timeComponents[] = $seconds.' second'.($seconds > 1 ? 's' : '');
 
 		return implode(', ', $timeComponents);
 	}
