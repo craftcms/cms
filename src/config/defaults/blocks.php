@@ -91,18 +91,18 @@ $blocksConfig['rememberUsernameTimeout'] = '365d';
 
 
 /**
- * The length of time a newly generated authorization code will remain active before expiring.
+ * The length of time a newly generated activation code will remain active before expiring.
  * Valid units of time are:
  * m = minute(s)
  * h = hour(s)
  * d = day(s)
  */
-$blocksConfig['authCodeExpiration'] = '24h';
+$blocksConfig['activationCodeExpiration'] = '24h';
 
 /**
  * The number of invalid login attempts within the 'failedPasswordWindow' before 'failedPasswordMode' is initiated.
  */
-$blocksConfig['maxInvalidPasswordAttempts'] = 4;
+$blocksConfig['maxInvalidPasswordAttempts'] = 5;
 
 /**
  * Valid choices are:

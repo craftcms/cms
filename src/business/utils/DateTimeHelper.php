@@ -6,10 +6,51 @@ namespace Blocks;
  */
 class DateTimeHelper
 {
+	/**
+	 * @static
+	 * @return int
+	 */
 	public static function currentTime()
 	{
 		$date = new \DateTime();
 		return $date->getTimestamp();
+	}
+
+	/**
+	 * @static
+	 * @param $numSeconds
+	 * @return string
+	 */
+	public static function niceSeconds($numSeconds)
+	{
+		$minuteInSeconds = 60;
+		$hourInSeconds = $minuteInSeconds * 60;
+		$dayInSeconds = $hourInSeconds * 24;
+
+		$days = floor($numSeconds / $dayInSeconds);
+		$secondsLeft = $numSeconds % $dayInSeconds;
+
+		$hours = floor($secondsLeft / $hourInSeconds);
+		$secondsLeft = $secondsLeft % $hourInSeconds;
+
+		$minutes= floor($secondsLeft / $minuteInSeconds);
+		$seconds = $secondsLeft % $minuteInSeconds;
+
+		$timeComponents = array();
+
+		if ($days > 0)
+			$timeComponents[] = $days." day".($days > 1 ? "s" : "");
+
+		if ($hours > 0)
+			$timeComponents[] = $hours." hour".($hours > 1 ? "s" : "");
+
+		if ($minutes > 0)
+			$timeComponents[] = $minutes." minute".($minutes > 1 ? "s" : "");
+
+		if ($seconds > 0)
+			$timeComponents[] = $seconds." second".($seconds > 1 ? "s" : "");
+
+		return implode(', ', $timeComponents);
 	}
 
 	/**

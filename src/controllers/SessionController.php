@@ -28,7 +28,20 @@ class SessionController extends BaseController
 				'redirectUrl' => Blocks::app()->user->returnUrl
 			);
 		else
-			$r = array('error' => true);
+		{
+			$errorMessage = '';
+
+			if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_LOCKED)
+				$errorMessage = 'This account has been locked.';
+			elseif ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
+				$errorMessage = 'Cooldown man.  '.DateTimeHelper::niceSeconds($loginInfo->identity->cooldownTimeRemaining).' remaining.';
+			elseif ($loginInfo->identity->errorCode !== UserIdentity:: ERROR_NONE)
+				$errorMessage = 'Invalid login name or password. '.$loginInfo->identity->failed_password_attempt_count.'/'.Blocks::app()->config->getItem('maxInvalidPasswordAttempts').' attempts.';
+
+			$r = array(
+				'error' => $errorMessage,
+			);
+		}
 
 		$this->returnJson($r);
 	}

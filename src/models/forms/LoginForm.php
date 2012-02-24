@@ -23,29 +23,12 @@ class LoginForm extends \CFormModel
 	{
 		return array(
 			array('loginName, password', 'required'),
-			array('password', 'authenticate'),
 		);
 	}
 
-	/**
-	 * Authenticates the password.
-	 * This is the 'authenticate' validator as declared in rules().
-	 */
-	public function authenticate()
+	public function getIdentity()
 	{
-		if (!$this->hasErrors())
-		{
-			$this->_identity = new UserIdentity($this->loginName, $this->password);
-			if (!$this->_identity->authenticate())
-			{
-				if ($this->_identity->errorCode == UserIdentity::ERROR_ACCOUNT_LOCKED)
-					$this->addError('loginName', 'This account has been locked.');
-				elseif ($this->_identity->errorCode == UserIdentity::ERROR_ACCOUNT_COOLDOWN)
-					$this->addError('loginName', 'Cooldown man.  '.$this->_identity->cooldownTimeRemaining.' seconds remaining.');
-				else
-					$this->addError('password', 'Incorrect login name or password.');
-			}
-		}
+		return $this->_identity;
 	}
 
 	/**
