@@ -11,6 +11,7 @@ class UserIdentity extends \CUserIdentity
 	private $_id;
 
 	public $cooldownTimeRemaining;
+	public $failedPasswordAttemptCount;
 
 	public $loginName;
 	public $password;
@@ -113,6 +114,7 @@ class UserIdentity extends \CUserIdentity
 							}
 						}
 
+						$this->failedPasswordAttemptCount = $currentFailedCount;
 						$user->save();
 					}
 					else

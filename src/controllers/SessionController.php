@@ -36,7 +36,7 @@ class SessionController extends BaseController
 			elseif ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
 				$errorMessage = 'Cooldown man.  '.DateTimeHelper::niceSeconds($loginInfo->identity->cooldownTimeRemaining).' remaining.';
 			elseif ($loginInfo->identity->errorCode !== UserIdentity:: ERROR_NONE)
-				$errorMessage = 'Invalid login name or password. '.$loginInfo->identity->failed_password_attempt_count.'/'.Blocks::app()->config->getItem('maxInvalidPasswordAttempts').' attempts.';
+				$errorMessage = 'Invalid login name or password. '.$loginInfo->identity->failedPasswordAttemptCount.'/'.Blocks::app()->config->getItem('maxInvalidPasswordAttempts').' attempts.';
 
 			$r = array(
 				'error' => $errorMessage,
