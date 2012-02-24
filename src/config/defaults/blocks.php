@@ -124,11 +124,6 @@ $blocksConfig['failedPasswordWindow'] = '1h';
  */
 $blocksConfig['failedPasswordCooldown'] = '5m';
 
-/**
- * The minimum length of a user's password
- */
-$blocksConfig['minimumPasswordLength'] = 6;
-
 // PHPPass Config
 /**
  * Controls the number of iterations for key stretching. A setting of 8 means the hash algorithm will be applied 2^8 = 256 times.

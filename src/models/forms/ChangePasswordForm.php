@@ -18,7 +18,7 @@ class ChangePasswordForm extends \CFormModel
 		return array(
 			array('password, confirmPassword', 'required'),
 			array('password', 'compare', 'compareAttribute' => 'confirmPassword'),
-			array('password', 'length', 'min' => Blocks::app()->config->getItem('minimumPasswordLength'))
+			array('password', 'length', 'min' => Blocks::app()->security->minimumPasswordLength)
 		);
 	}
 }

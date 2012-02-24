@@ -20,6 +20,13 @@ class SecurityService extends BaseService
 		$this->_portableHashes = Blocks::app()->config->getItem('phpPass-portableHashes');
 	}
 
+	/**
+	 * @return int
+	 */
+	public function getMinimumPasswordLength()
+	{
+		return 6;
+	}
 
 	/**
 	 * @param $userName
