@@ -13,26 +13,19 @@ blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
 	generateTargetValue: function(sourceVal)
 	{
 		// Remove HTML tags
-		sourceVal = sourceVal.replace("/<(.*?)>/g", '');
+		var handle = sourceVal.replace("/<(.*?)>/g", '');
 
 		// Make it lowercase
-		sourceVal = sourceVal.toLowerCase();
+		handle = handle.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		sourceVal = blx.utils.asciiString(sourceVal);
+		handle = blx.utils.asciiString(handle);
 
-		// Handle must start with a letter and end with a letter/number
-		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
-		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
+		// Remove any non alphanumeric characters
+		handle = handle.replace(/[^a-z0-9]+/, '');
 
-		// Get the "words"
-		var words = blx.utils.filterArray(sourceVal.split(/[^a-z0-9]+/)),
-			handle = '';
-
-		for (var i = 0; i < words.length; i++)
-		{
-			handle += blx.utils.uppercaseFirst(words[i]);
-		}
+		// Handle must start with a letter
+		handle = handle.replace(/^[^a-z]+/, '');
 
 		return handle;
 	}
