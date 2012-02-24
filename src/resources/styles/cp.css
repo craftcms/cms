@@ -410,6 +410,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 label.checkbox { font-weight: normal; }
 
+.password.capslock:focus { background: url(../images/capslock.png) no-repeat 100% 50%, -webkit-linear-gradient(#fafafa, #fdfdfd); }
+
 ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color: #8a1f11; }
 
 /* RTE */

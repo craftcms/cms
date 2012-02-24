@@ -8,24 +8,29 @@ var scripts =
 	'lib/rangy-1.2.2/rangy-core.js',
 	
 	'blx.js',
-	'ui/BlocksSelect.js',
+
+	'ui/Select.js',
 	'ui/DragCore.js',
 	'ui/Drag.js',
 	'ui/DragMove.js',
 	'ui/DragSort.js',
+
 	'ui/InputGenerator.js',
 	'ui/HandleGenerator.js',
 	'ui/EntryUrlFormatGenerator.js',
+
+	'ui/Modal.js',
+	'ui/BlocksSelectModal.js',
+	'ui/CreateBlockModal.js',
+
 	'ui/HUD.js',
 	'ui/Menu.js',
-	'ui/Modal.js',
 	'ui/Pill.js',
 	'ui/RTE.js',
-	'ui/Select.js',
 	'ui/SelectMenu.js',
 	'ui/Switch.js',
-	'ui/BlocksSelectModal.js',
-	'ui/CreateBlockModal.js'
+	'ui/BlocksSelect.js',
+	'ui/PasswordInput.js'
 ];
 
 for (var i = 0; i < scripts.length; i++)
