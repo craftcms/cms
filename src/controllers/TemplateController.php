@@ -17,7 +17,7 @@ class TemplateController extends BaseController
 			$path = Blocks::app()->request->path;
 			if ($path !== 'login')
 			{
-				if ($path !== Blocks::app()->users->changePasswordUrl || ($path == Blocks::app()->users->changePasswordUrl && Blocks::app()->request->getParam('code', null) == null))
+				if ($path !== Blocks::app()->users->verifyAccountUrl && Blocks::app()->request->getParam('code', null) == null)
 					$this->requireLogin();
 			}
 		}

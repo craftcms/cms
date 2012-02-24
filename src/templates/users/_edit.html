@@ -86,7 +86,7 @@
 						</div>
 						{% if theUser.status == 'pending' %}
 							<div class="field">
-								Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.changePasswordUrl}?code={theUser.authcode}
+								Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.verifyAccountUrl}?code={theUser.authcode}
 							</div>
 							<div class="field">
 								Needs to post to: users/sendRegistrationEmail(user, site) <br />

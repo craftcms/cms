@@ -32,6 +32,14 @@ class UsersService extends BaseService
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getVerifyAccountUrl()
+	{
+		return 'verify';
+	}
+
+	/**
 	 * @param $siteId
 	 * @return array
 	 */
@@ -100,11 +108,10 @@ class UsersService extends BaseService
 	 * @param \Blocks\User                     $user
 	 * @param                                  $password
 	 * @param bool                             $passwordReset
-	 * @param                                  $emailValidation
 	 *
 	 * @return User
 	 */
-	public function registerUser(User $user, $password, $emailValidation = true, $passwordReset = true)
+	public function registerUser(User $user, $password, $passwordReset = true)
 	{
 		// if the password is null, we know someone on the back-end wants to create the account.
 		if ($password !== null)
@@ -116,22 +123,14 @@ class UsersService extends BaseService
 
 		$user->password_reset_required = $passwordReset;
 
-		if ($emailValidation)
-		{
-			$user->status = UserAccountStatus::Pending;
-			$authCode = Blocks::app()->db->createCommand()->getUUID();
-			$user->authcode = $authCode;
-			$date = new \DateTime();
-			$user->authcode_issued_date = $date->getTimestamp();
-			$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
-			$user->authcode_expire_date = $date->add($dateInterval)->getTimestamp();
-			$user->save();
-		}
-		else
-		{
-			$user->status = UserAccountStatus::Active;
-			$user->save();
-		}
+		$user->status = UserAccountStatus::Pending;
+		$authCode = Blocks::app()->db->createCommand()->getUUID();
+		$user->authcode = $authCode;
+		$date = new \DateTime();
+		$user->authcode_issued_date = $date->getTimestamp();
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
+		$user->authcode_expire_date = $date->add($dateInterval)->getTimestamp();
+		$user->save();
 
 		return $user;
 	}

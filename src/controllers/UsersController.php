@@ -15,60 +15,21 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Displays the register template for creating a new user.
+	 * @param $user
+	 * @param $site
+	 * @return bool
 	 */
-	public function actionRegister()
+	public function actionSendRegistrationEmail($user, $site)
 	{
-		$user = new User();
+		$this->requireAjaxRequest();
+		$this->requirePostRequest();
 
-		// Check to see if it's a submit.
-		if(Blocks::app()->request->isPostRequest)
+		if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
 		{
-			$user->username = Blocks::app()->request->getPost('userName');
-			$user->email = Blocks::app()->request->getPost('email');
-			$user->first_name = Blocks::app()->request->getPost('firstName');
-			$user->last_name = Blocks::app()->request->getPost('lastName');
-
-			// validate user input and redirect to the previous page if valid
-			if ($user->validate())
-			{
-				$randomPassword = Blocks::app()->security->generatePassword();
-
-				$user = Blocks::app()->users->registerUser($user, $randomPassword, true);
-
-				if ($user !== null)
-				{
-					if (Blocks::app()->request->getPost('sendRegistrationEmail') == 'on')
-					{
-						$site = Blocks::app()->site->currentSite;
-
-						if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
-						{
-							// registered and sent email
-							Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user and sent registration email.');
-						}
-						else
-						{
-							// registered but there was a problem sending the email.
-							Blocks::app()->user->setMessage(MessageStatus::Notice, 'Successfully registered user, but there was a problem sending the email: '.$emailStatus);
-						}
-					}
-				}
-				else
-				{
-					// there was a problem registering the user.
-					Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem registering the user.  Check your log files.');
-				}
-
-				$this->redirect(UrlHelper::generateActionUrl('users/register'));
-			}
-
-			$messages = ModelHelper::flattenErrors($user);
-			Blocks::app()->user->setMessage(MessageStatus::Error, $messages);
+			return true;
 		}
 
-		// display the login form
-		$this->loadTemplate('users/register', array('user' => $user));
+		return false;
 	}
 
 	public function actionSave()
@@ -95,7 +56,7 @@ class UsersController extends BaseController
 		$user->admin = (Blocks::app()->request->getPost('admin') === 'y');
 		$user->html_email = (Blocks::app()->request->getPost('html_email') === 'y');
 		$user->status = Blocks::app()->request->getPost('status');
-		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
+		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset_required') === 'y');
 
 		$sendValidationEmail = (Blocks::app()->request->getPost('send_validation_email') === 'y');
 
@@ -103,7 +64,7 @@ class UsersController extends BaseController
 		{
 			if (!$existingUser)
 			{
-				$user = Blocks::app()->users->registerUser($user, null, $sendValidationEmail, true);
+				$user = Blocks::app()->users->registerUser($user, null, true);
 
 				if ($user !== null)
 				{

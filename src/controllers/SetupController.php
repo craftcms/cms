@@ -116,8 +116,14 @@ class SetupController extends BaseController
 				$user->enc_type = $hashAndType['encType'];
 			}
 
-			if (($user = Blocks::app()->users->registerUser($user, $password, false, false)) !== null)
+			if (($user = Blocks::app()->users->registerUser($user, $password, false)) !== null)
 			{
+				$user->status = UserAccountStatus::Active;
+				$user->authcode = null;
+				$user->authcode_issued_date = null;
+				$user->authcode_expire_date = null;
+				$user->save();
+
 				if ($newUser)
 					// Give them the default dashboard widgets
 					Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);

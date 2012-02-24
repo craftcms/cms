@@ -17,8 +17,11 @@ class AccountController extends BaseController
 
 		if ($changePasswordInfo->validate())
 		{
+			// this is a user that is verifying an auth code
+			$userToChange = Blocks::app()->users->getById(Blocks::app()->request->getPost('userId'));
+
 			// user is already logged in meaning it's not a new account auth code request
-			if (Blocks::app()->user->isLoggedIn)
+			if (Blocks::app()->user->isLoggedIn && $userToChange == null)
 			{
 				// we do manual validation of current password here.
 				$currentPassword = Blocks::app()->request->getPost('current-password');
@@ -43,25 +46,50 @@ class AccountController extends BaseController
 					}
 				}
 			}
-			else
-			{
-				// this is a user that is verifying an auth code
-				$user = Blocks::app()->users->getById(Blocks::app()->request->getPost('userId'));
-				if ($user !== null)
-				{
-					$this->_processChangePassword($user, $changePasswordInfo->password, true);
-				}
-				else
-				{
-					Blocks::log('Trying to set the password for an auth code request and could not find the associated user.');
-					Blocks::app()->user->setMessage(MessageStatus::Error, 'Could not set the password.');
-					$this->redirect('/');
-				}
-			}
 		}
 
 		// display the password form
 		$this->loadTemplate(Blocks::app()->users->changePasswordUrl, array('changePasswordInfo' => $changePasswordInfo));
+	}
+
+	public function actionVerify()
+	{
+		$this->requirePostRequest();
+
+		$verifyAccountForm = new VerifyAccountForm();
+
+		$verifyAccountForm->password = Blocks::app()->request->getPost('password');
+		$verifyAccountForm->confirmPassword = Blocks::app()->request->getPost('confirm-password');
+
+		if ($verifyAccountForm->validate())
+		{
+			$userToChange = Blocks::app()->users->getById(Blocks::app()->request->getPost('userId'));
+
+			if ($userToChange !== null)
+			{
+				if (($userToChange = Blocks::app()->users->changePassword($userToChange, $verifyAccountForm->password)) !== false)
+				{
+					$userToChange->authcode = null;
+					$userToChange->authcode_issued_date = null;
+					$userToChange->authcode_expire_date = null;
+					$userToChange->status = UserAccountStatus::Active;
+					$userToChange->last_password_change_date = DateTimeHelper::currentTime();
+					$userToChange->password_reset_required = false;
+					$userToChange->save();
+
+					if (!Blocks::app()->user->isLoggedIn)
+						Blocks::app()->user->startLogin($userToChange->username, $password)
+
+					Blocks::app()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
+					$this->redirect('dashboard');
+				}
+			}
+
+			throw new Exception('There was a problem validating this auth code.');
+		}
+
+		// display the verify account form
+		$this->loadTemplate('verify', array('verifyAccountInfo' => $verifyAccountForm));
 	}
 
 	/**
@@ -99,8 +127,16 @@ class AccountController extends BaseController
 			$user->password_reset_required = false;
 			$user->save();
 
-			if (($loginInfo = Blocks::app()->user->startLogin($user->username, $password)))
-				$this->redirect(Blocks::app()->user->returnUrl);
+			if (!Blocks::app()->user->isLoggedIn)
+			{
+				if (($loginInfo = Blocks::app()->user->startLogin($user->username, $password)))
+					$this->redirect(Blocks::app()->user->returnUrl);
+			}
+			else
+			{
+				Blocks::app()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
+				$this->redirect('dashboard');
+			}
 
 			Blocks::log('Successfully changed password for user: '.$user->username.', but could not log them in.');
 			Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem logging you in.');
