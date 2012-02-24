@@ -98,7 +98,8 @@ blx.ui.Modal = blx.Base.extend({
 		this.focussed = true;
 		blx.ui.Modal.focussedModal = this;
 
-		this.$shade.hide();
+		if (this.$shade)
+			this.$shade.hide();
 
 		// Put this at the end of the list of visible modals
 		blx.utils.removeFromArray(this, blx.ui.Modal.visibleModals);
