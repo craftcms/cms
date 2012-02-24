@@ -32,11 +32,11 @@ class SessionController extends BaseController
 			$errorMessage = '';
 
 			if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_LOCKED)
-				$errorMessage = 'This account has been locked.';
-			elseif ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
-				$errorMessage = 'Cooldown man.  '.DateTimeHelper::niceSeconds($loginInfo->identity->cooldownTimeRemaining).' remaining.';
-			elseif ($loginInfo->identity->errorCode !== UserIdentity:: ERROR_NONE)
-				$errorMessage = 'Invalid login name or password. '.$loginInfo->identity->failedPasswordAttemptCount.'/'.Blocks::app()->config->getItem('maxInvalidPasswordAttempts').' attempts.';
+				$errorMessage = 'Account locked.';
+			else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
+				$errorMessage = 'Account locked. Try again in '.DateTimeHelper::niceSeconds($loginInfo->identity->cooldownTimeRemaining).'.';
+			else if ($loginInfo->identity->errorCode !== UserIdentity:: ERROR_NONE)
+				$errorMessage = $loginInfo->identity->failedPasswordAttemptCount.' of '.Blocks::app()->config->getItem('maxInvalidPasswordAttempts').' failed password attempts.';
 
 			$r = array(
 				'error' => $errorMessage,
