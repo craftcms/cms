@@ -67,6 +67,14 @@ class LoginForm extends \CFormModel
 			if ($this->rememberMe)
 				$timeOut = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('rememberMeSessionTimeout'));
 
+			if (Blocks::app()->config->getItem('rememberUsernameEnabled') == true)
+			{
+				$cookie = new \CHttpCookie('loginName', $this->loginName);
+				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('rememberUsernameTimeout'));
+				$cookie->httpOnly = true;
+				Blocks::app()->request->cookies['loginName'] = $cookie;
+			}
+
 			return Blocks::app()->user->login($this->_identity, $timeOut);
 		}
 

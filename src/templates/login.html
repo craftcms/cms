@@ -14,9 +14,14 @@
 		<input type="hidden" name="action" value="session/login" />
 		<div class="pane">
 			<div class="body">
+				{% if user.getRememeberedLoginName %}
+					{% set loginName = user.getRememeberedLoginName %}
+				{% else %}
+					{% set loginName = loginInfo.loginName %}
+				{% endif %}
 				<div class="item field">
 					<label for="loginName">Username or Email</label>
-					<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginInfo.loginName}" /></div>
+					<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginName}" /></div>
 					{% if loginInfo.errors.loginName %}
 						{% include "_includes/error_list" errors=loginInfo.errors.loginName %}
 					{% endif %}
@@ -36,7 +41,7 @@
 
 		<label id="remember-me" class="checkbox">
 			<input name="rememberMe" type="checkbox" value="y" />
-			Remember me?
+			Keep me logged in for awhile
 		</label>
 	</form>
 {% endregion %}

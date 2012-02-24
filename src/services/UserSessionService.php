@@ -283,4 +283,12 @@ class UserSessionService extends \CWebUser
 
 		return $loginInfo;
 	}
+
+	/**
+	 * @return string
+	 */
+	public function getRememeberedLoginName()
+	{
+		return (isset(Blocks::app()->request->cookies['loginName'])) ? Blocks::app()->request->cookies['loginName']->value : null;
+	}
 }

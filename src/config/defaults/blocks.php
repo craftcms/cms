@@ -72,7 +72,23 @@ $blocksConfig['sessionTimeout'] = '1h';
  * h = hour(s)
  * d = day(s)
  */
-$blocksConfig['rememberMeSessionTimeout'] = '30d';
+$blocksConfig['rememberMeSessionTimeout'] = '14d';
+
+/**
+ * Whether to remember the username of the last successful user to login on the login page.
+ */
+$blocksConfig['rememberUsernameEnabled'] = true;
+
+/**
+ * The amount of time we'll remember the username if 'rememberUsernameEnabled' is set to true.
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
+ */
+$blocksConfig['rememberUsernameTimeout'] = '365d';
+
+
 
 /**
  * The length of time a newly generated authorization code will remain active before expiring.
@@ -82,7 +98,6 @@ $blocksConfig['rememberMeSessionTimeout'] = '30d';
  * d = day(s)
  */
 $blocksConfig['authCodeExpiration'] = '24h';
-
 
 /**
  * The number of invalid login attempts within the 'failedPasswordWindow' before 'failedPasswordMode' is initiated.
