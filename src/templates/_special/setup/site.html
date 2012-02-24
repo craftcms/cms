@@ -33,3 +33,13 @@
 	</div>
 
 {% endregion %}
+
+{% region "scripts" %}
+	<script type="text/javascript">
+		var $nameInput = $('#name'),
+			$handleInput = $('#handle');
+		if (!$nameInput.val() && !$handleInput.val())
+		new blx.ui.HandleGenerator($nameInput, $handleInput);
+	</script>
+	{scripts}
+{% endregion %}
