@@ -4,3 +4,5 @@ html, body { height: 100%; }
 #pane { position: relative; }
 #forgot-password { margin-left: 1px; font-size: 11px; }
 #remember-me-label { margin-left: 16px; font-size: 14px; color: #474a4d; text-shadow: 0 1px 2px rgba(255,255,255,0.75); }
+#error { margin: 20px 0; text-align: center; }
+#error p { display: inline-block; border: 1px solid #8a1f11; border-radius: 12px; padding: 2px 10px; font-weight: bold; text-shadow: 0 1px 2px rgba(255,255,255,0.75); -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25);}

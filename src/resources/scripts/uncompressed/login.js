@@ -9,6 +9,7 @@ var LoginForm = blx.Base.extend({
 	$passwordInput: null,
 	$rememberMeInput: null,
 	$loginBtn: null,
+	$error: null,
 
 	init: function()
 	{
@@ -64,6 +65,21 @@ var LoginForm = blx.Base.extend({
 			}
 			else
 			{
+				// Add the error message
+				if (!this.$error)
+				{
+					this.$errorContainer = $(document.createElement('div'));
+					this.$errorContainer.attr('id', 'error');
+					this.$errorContainer.appendTo(this.$form);
+					this.$error = $(document.createElement('p'));
+					this.$error.addClass('error');
+					this.$error.appendTo(this.$errorContainer);
+					this.$error.hide().fadeIn();
+				}
+
+				var error = response.error || 'An unknown error occurred.';
+				this.$error.html(error);
+
 				// Shake it like it's hot
 				for (var i = 10; i > 0; i--)
 				{
