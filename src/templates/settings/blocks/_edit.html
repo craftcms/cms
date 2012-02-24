@@ -57,7 +57,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 {% endregion %}
 
 {% region "scripts" %}
-	{% include "_includes/js_include" file="scripts/block-settings.js" %}
+	{% include "_includes/js_include" file="block-settings.js" %}
 	<script type="text/javascript">
 		{% if !block.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
 	</script>
