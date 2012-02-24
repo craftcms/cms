@@ -48,7 +48,7 @@ a.go { padding-right: 10px; background: url(../images/go.png) no-repeat 100% 50%
 code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 .code { font-family: Menlo, monospace; font-size: 12px !important; }
 
-h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child, .blocksselect ul li:first-child { margin-top: 0 !important; }
+h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child,                    .grid:first-child, .field:first-child, .blocksselect ul li:first-child { margin-top: 0 !important; }
 h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child,  .blocksselect ul li:last-child  { margin-bottom: 0 !important; }
 
 .left { float: left; }
