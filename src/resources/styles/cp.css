@@ -48,8 +48,8 @@ a.go { padding-right: 10px; background: url(../images/go.png) no-repeat 100% 50%
 code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 .code { font-family: Menlo, monospace; font-size: 12px !important; }
 
-h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .grid:first-child, .field:first-child { margin-top: 0 !important; }
-h1:last-child, h2:last-child, h3:last-child, h4:last-child, h5:last-child, h6:last-child, p:last-child, .pane:last-child, .grid:last-child, .field:last-child, .blocksselect ul li:last-child { margin-bottom: 0 !important; }
+h1:first-child, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child, .blocksselect ul li:first-child { margin-top: 0 !important; }
+h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child,  .blocksselect ul li:last-child  { margin-bottom: 0 !important; }
 
 .left { float: left; }
 .right { float: right; }
@@ -313,9 +313,6 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 /* input buttons */
 input.btn { padding: 0 8px !important; border: none; }
 input.btn.big { padding: 0 12px !important; }
-input.btn.big.submit { padding-right: 32px !important; background: url(../images/submit.png) no-repeat 100% 50%, -webkit-linear-gradient(#33abf5, #2987c2); }
-input.btn.big.submit:not(.disabled):hover { background: url(../images/submit.png) no-repeat 100% 50%, -webkit-linear-gradient(#47b8ff, #3c93cf); }
-input.btn.big.submit:not(.disabled):active { background: url(../images/submit.png) no-repeat 100% 50%, -webkit-linear-gradient(#077ab4, #2886c2); }
 
 /* button groups */
 .btn-group { display: inline-block; height: 24px; }
@@ -415,6 +412,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .input-wrapper > input:focus,
 .input-wrapper > textarea:focus,
 .input:focus { outline: none; background: -webkit-linear-gradient(#fafafa, #fdfdfd); -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1); }
+
+label.checkbox { font-weight: normal; }
 
 ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; color: #8a1f11; }
 

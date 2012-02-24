@@ -15,7 +15,7 @@
 		<div class="pane">
 			<div class="body">
 				<div class="item field">
-					<label for="loginName">Username or email</label>
+					<label for="loginName">Username or Email</label>
 					<div class="input-wrapper"><input id="loginName" name="loginName" type="text" value="{loginInfo.loginName}" /></div>
 					{% if loginInfo.errors.loginName %}
 						{% include "_includes/error_list" errors=loginInfo.errors.loginName %}
@@ -23,21 +23,20 @@
 				</div>
 				<div class="item field">
 					<label for="password">Password</label>
+					<a id="forgot-password" href="{url.base}account/forgotpassword">(Forget?)</a>
 					<div class="input-wrapper"><input id="password" name="password" type="password" /></div>
 					{% if loginInfo.errors.password %}
 						{% include "_includes/error_list" errors=loginInfo.errors.password %}
 					{% endif %}
 				</div>
-				<div class="item field">
-					<label for="rememberMe">Remember Me</label>
-					<div class="input-wrapper"><input id="rememberMe" name="rememberMe" type="checkbox" value="y" /></div>
-				</div>
-				<div class="item field">
-					<a href="{url.base}account/forgotpassword">Forgot your password?</a>
-				</div>
 			</div>
 		</div>
 
 		<input class="btn big submit" type="submit" value="Login" />
+
+		<label id="remember-me" class="checkbox">
+			<input name="rememberMe" type="checkbox" value="y" />
+			Remember me?
+		</label>
 	</form>
 {% endregion %}
