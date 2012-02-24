@@ -11,6 +11,7 @@ if (typeof blx.ui == 'undefined')
 blx.ui.Modal = blx.Base.extend({
 
 	$container: null,
+	$shade: null,
 	$head: null,
 	$body: null,
 	$foot: null,
@@ -75,7 +76,6 @@ blx.ui.Modal = blx.Base.extend({
 		if (this.zIndex)
 			this.setZIndex(this.zIndex);
 
-		this.addListener(this.$container, 'mousedown', 'onMouseDown');
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
 	},
 
@@ -98,6 +98,8 @@ blx.ui.Modal = blx.Base.extend({
 		this.focussed = true;
 		blx.ui.Modal.focussedModal = this;
 
+		this.$shade.hide();
+
 		// Put this at the end of the list of visible modals
 		blx.utils.removeFromArray(this, blx.ui.Modal.visibleModals);
 		blx.ui.Modal.visibleModals.push(this);
@@ -115,6 +117,17 @@ blx.ui.Modal = blx.Base.extend({
 		this.$container.removeClass('focussed');
 		this.focussed = false;
 		blx.ui.Modal.focussedModal = null;
+
+		if (!this.$shade)
+		{
+			this.$shade = $(document.createElement('div'));
+			this.$shade.addClass('shade');
+			this.$shade.appendTo(this.$container);
+
+			this.addListener(this.$container, 'mousedown', 'onMouseDown');
+		}
+
+		this.$shade.show();
 	},
 
 	show: function()
@@ -216,7 +229,7 @@ blx.ui.Modal = blx.Base.extend({
 		});
 	},
 
-	onMouseDown: function()
+	onMouseDown: function(event)
 	{
 		if (!this.focussed)
 			this.focus();
