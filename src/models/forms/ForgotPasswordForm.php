@@ -8,9 +8,9 @@ class ForgotPasswordForm extends \CFormModel
 {
 	public $loginName;
 
-/**
- * @return array
- */
+	/**
+	 * @return array
+	 */
 	public function rules()
 	{
 		return array(

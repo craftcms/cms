@@ -248,24 +248,17 @@ class UsersService extends BaseService
 	}
 
 	/**
-	 * @param $loginName
+	 * @param \Blocks\User $user
 	 * @return bool
 	 */
-	public function forgotPassword($loginName)
+	public function forgotPassword(User $user)
 	{
-		$user = $this->getByLoginName($loginName);
-
-		if ($user !== null)
-		{
 			$user = $this->generateActivationCodeForUser($user);
 
+			$site = Blocks::app()->sites->currentSite;
 			if (($emailStatus = Blocks::app()->email->sendForgotPasswordEmail($user, $site)) == true)
-			{
 				return true;
-			}
 
-			return false;
-
-		}
+		return false;
 	}
 }

@@ -52,6 +52,9 @@ class AccountController extends BaseController
 		$this->loadTemplate(Blocks::app()->users->changePasswordUrl, array('changePasswordInfo' => $changePasswordInfo));
 	}
 
+	/**
+	 *
+	 */
 	public function actionForgot()
 	{
 		$this->requirePostRequest();
@@ -61,7 +64,15 @@ class AccountController extends BaseController
 
 		if ($forgotPasswordInfo->validate())
 		{
+			$user = Blocks::app()->users->getByLoginName($forgotPasswordInfo->loginName);
 
+			if ($user == null)
+				$forgotPasswordInfo->addError('loginName', 'Invalid username or email.');
+			else
+			{
+				if (Blocks::app()->users->forgotPassword($user))
+					$this->redirect(Blocks::app()->users->forgotPasswordUrl.'?success=1');
+			}
 		}
 
 		$this->loadTemplate(Blocks::app()->users->forgotPasswordUrl, array('forgotPassword' => $forgotPasswordInfo));
