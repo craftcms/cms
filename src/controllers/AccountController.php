@@ -14,36 +14,28 @@ class AccountController extends BaseController
 
 		$changePasswordInfo->confirmPassword = Blocks::app()->request->getPost('confirm-password');
 		$changePasswordInfo->password = Blocks::app()->request->getPost('password');
+		$changePasswordInfo->currentPassword = Blocks::app()->request->getPost('current-password');
 
 		if ($changePasswordInfo->validate())
 		{
-			// this is a user that is verifying an activation code
-			$userToChange = Blocks::app()->users->getById(Blocks::app()->request->getPost('userId'));
+			$user = Blocks::app()->users->current;
 
-			// user is already logged in meaning it's not a new account activation code request
-			if (Blocks::app()->user->isLoggedIn && $userToChange == null)
+			// check their existing password
+			$checkPassword = Blocks::app()->security->checkPassword($changePasswordInfo->currentPassword, $user->password, $user->enc_type);
+
+			// bad password
+			if (!$checkPassword)
+				$changePasswordInfo->addError('currentPassword', 'The password you entered does not match the one we have on record.');
+			else
 			{
-				// we do manual validation of current password here.
-				$currentPassword = Blocks::app()->request->getPost('current-password');
-				if (StringHelper::isNullOrEmpty($currentPassword))
-					$changePasswordInfo->addError('currentPassword', 'Current password cannot be empty.');
-				else
+				if (($user = Blocks::app()->users->changePassword($user, $changePasswordInfo->password)) !== false)
 				{
-					$user = Blocks::app()->users->current;
+					$user->last_password_change_date = DateTimeHelper::currentTime();
+					$user->password_reset_required = false;
+					$user->save();
 
-					// check their existing password
-					$checkPassword = Blocks::app()->security->checkPassword($currentPassword, $user->password, $user->enc_type);
-
-					// bad password
-					if (!$checkPassword)
-					{
-						$changePasswordInfo->addError('currentPassword', 'The password you entered does not match the one we have on record.');
-					}
-					else
-					{
-						// everything looks good.
-						$this->_processChangePassword($user, $changePasswordInfo->password);
-					}
+					Blocks::app()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
+					$this->redirect('dashboard');
 				}
 			}
 		}
@@ -134,45 +126,6 @@ class AccountController extends BaseController
 			return true;
 
 		return false;
-	}
-
-	/**
-	 * @param User $user
-	 * @param      $password
-	 * @param bool $activationCodeRequest
-	 */
-	private function _processChangePassword(User $user, $password, $activationCodeRequest = false)
-	{
-		if (($user = Blocks::app()->users->changePassword($user, $password)) !== false)
-		{
-			if ($activationCodeRequest)
-			{
-				$user->activationcode = null;
-				$user->activationcode_issued_date = null;
-				$user->activationcode_expire_date = null;
-				$user->status = UserAccountStatus::Active;
-				$user->save();
-			}
-
-			$user->last_password_change_date = DateTimeHelper::currentTime();
-			$user->password_reset_required = false;
-			$user->save();
-
-			if (!Blocks::app()->user->isLoggedIn)
-			{
-				if (($loginInfo = Blocks::app()->user->startLogin($user->username, $password)))
-					$this->redirect(Blocks::app()->user->returnUrl);
-			}
-			else
-			{
-				Blocks::app()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
-				$this->redirect('dashboard');
-			}
-
-			Blocks::log('Successfully changed password for user: '.$user->username.', but could not log them in.');
-			Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem logging you in.');
-			$this->redirect('dashboard');
-		}
 	}
 }
 

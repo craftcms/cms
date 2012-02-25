@@ -8,7 +8,7 @@
 {% region "sidebar" %}
 	<h5>Account Management</h5>
 	<ul class="nav">
-		<li><a {% if url.segment(2) == 'password' %}class="sel"{% endif %} href="{url.base}{users.changePasswordUrl"><span class="icon icon70"></span>Password</a></li>
+		<li><a {% if url.segment(2) == 'password' %}class="sel"{% endif %} href="{url.base}account/password"><span class="icon icon70"></span>Password</a></li>
 	</ul>
 {% endregion %}
 

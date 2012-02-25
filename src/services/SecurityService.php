@@ -136,43 +136,6 @@ class SecurityService extends BaseService
 			throw new Exception('Unable to validate this activation code.');
 		}
 
-		if ($user->password !== null)
-		{
-			Blocks::log('The user account '.$user->username.' already has a password set.  Ignoring the activation code: '.$code.'.');
-			throw new Exception('Unable to validate this activation code.');
-		}
-		else
-		{
-			switch ($user->status)
-			{
-				case UserAccountStatus::Active:
-				{
-					Blocks::log('The user account '.$user->username.' is already active.');
-					throw new Exception('Unable to validate this activation code.');
-					break;
-				}
-
-				case UserAccountStatus::Suspended:
-				{
-					Blocks::log('The user account '.$user->username.' is suspended and can\'t be verified.');
-					throw new Exception('Unable to validate this activation code.');
-					break;
-				}
-
-				case UserAccountStatus::Locked:
-				{
-					Blocks::log('The user account '.$user->username.' is in locked and can\'t be verified.');
-					throw new Exception('Unable to validate this activation code.');
-					break;
-				}
-
-				case UserAccountStatus::Pending:
-				{
-					return $user;
-				}
-			}
-		}
-
-		return null;
+		return $user;
 	}
 }
