@@ -26,9 +26,9 @@ class User extends BaseModel
 		'last_lockout_date'                     => AttributeType::Int,
 		'failed_password_attempt_count'         => array('type' => AttributeType::TinyInt, 'unsigned' => true),
 		'failed_password_attempt_window_start'  => AttributeType::Int,
-		'authcode'                              => array('type' => AttributeType::Char, 'maxLength' => 36),
-		'authcode_issued_date'                  => array('type' => AttributeType::Int),
-		'authcode_expire_date'                  => array('type' => AttributeType::Int),
+		'activationcode'                        => array('type' => AttributeType::Char, 'maxLength' => 36),
+		'activationcode_issued_date'            => array('type' => AttributeType::Int),
+		'activationcode_expire_date'            => array('type' => AttributeType::Int),
 	);
 
 	protected $hasContent = array(
@@ -41,6 +41,9 @@ class User extends BaseModel
 		'widgets'   => array('model' => 'UserWidget', 'foreignKey' => 'user'),
 	);
 
+	/**
+	 * @return string
+	 */
 	public function getFullName()
 	{
 		$fullName = $this->first_name;

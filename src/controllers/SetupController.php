@@ -119,9 +119,9 @@ class SetupController extends BaseController
 			if (($user = Blocks::app()->users->registerUser($user, $password, false)) !== null)
 			{
 				$user->status = UserAccountStatus::Active;
-				$user->authcode = null;
-				$user->authcode_issued_date = null;
-				$user->authcode_expire_date = null;
+				$user->activationcode = null;
+				$user->activationcode_issued_date = null;
+				$user->activationcode_expire_date = null;
 				$user->save();
 
 				if ($newUser)

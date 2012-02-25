@@ -48,10 +48,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = User::model()->find(array(
-			'condition' => 'username=:userName OR email=:email',
-			'params' => array(':userName' => $this->loginName, ':email' => $this->loginName),
-		));
+		$user = Blocks::app()->users->getByLoginName($this->loginName);
 
 		if ($user === null)
 		{
@@ -170,6 +167,7 @@ class UserIdentity extends \CUserIdentity
 				if ($cooldownRemaining > 0)
 				{
 					$this->cooldownTimeRemaining = $cooldownRemaining;
+					$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
 					$result = true;
 				}
 				else

@@ -97,10 +97,10 @@ class SecurityService extends BaseService
 	 * @param $code
 	 * @return mixed
 	 */
-	public function getUserByAuthCode($code)
+	public function getUserByActivationCode($code)
 	{
 		return User::model()->findByAttributes(array(
-			'authcode' => $code,
+			'activationcode' => $code,
 		));
 	}
 
@@ -111,7 +111,7 @@ class SecurityService extends BaseService
 	 */
 	public function validateUserRegistration($code)
 	{
-		$user = $this->_validateAuthorizationRequest($code);
+		$user = $this->_validateActivationRequest($code);
 		return $user !== null;
 	}
 
@@ -120,26 +120,26 @@ class SecurityService extends BaseService
 	 * @return mixed
 	 * @throws Exception
 	 */
-	private function _validateAuthorizationRequest($code)
+	private function _validateActivationRequest($code)
 	{
-		$user = $this->getUserByAuthCode($code);
+		$user = $this->getUserByActivationCode($code);
 
 		if ($user == null)
 		{
-			Blocks::log('Unable to find auth code:'.$code);
-			throw new Exception('Unable to validate this authorization code.');
+			Blocks::log('Unable to find activation code:'.$code);
+			throw new Exception('Unable to validate this activation code.');
 		}
 
-		if (DateTimeHelper::currentTime() > $user->authcode_expire_date)
+		if (DateTimeHelper::currentTime() > $user->activationcode_expire_date)
 		{
-			Blocks::log('AuthCode: '.$code.' has already expired.');
-			throw new Exception('Unable to validate this authorization code.');
+			Blocks::log('Activation: '.$code.' has already expired.');
+			throw new Exception('Unable to validate this activation code.');
 		}
 
 		if ($user->password !== null)
 		{
-			Blocks::log('The user account '.$user->username.' already has a password set.  Ignoring the auth code: '.$code.'.');
-			throw new Exception('Unable to validate this authorization code.');
+			Blocks::log('The user account '.$user->username.' already has a password set.  Ignoring the activation code: '.$code.'.');
+			throw new Exception('Unable to validate this activation code.');
 		}
 		else
 		{
@@ -148,21 +148,21 @@ class SecurityService extends BaseService
 				case UserAccountStatus::Active:
 				{
 					Blocks::log('The user account '.$user->username.' is already active.');
-					throw new Exception('Unable to validate this authorization code.');
+					throw new Exception('Unable to validate this activation code.');
 					break;
 				}
 
 				case UserAccountStatus::Suspended:
 				{
 					Blocks::log('The user account '.$user->username.' is suspended and can\'t be verified.');
-					throw new Exception('Unable to validate this authorization code.');
+					throw new Exception('Unable to validate this activation code.');
 					break;
 				}
 
 				case UserAccountStatus::Locked:
 				{
 					Blocks::log('The user account '.$user->username.' is in locked and can\'t be verified.');
-					throw new Exception('Unable to validate this authorization code.');
+					throw new Exception('Unable to validate this activation code.');
 					break;
 				}
 

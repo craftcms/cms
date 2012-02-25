@@ -141,6 +141,24 @@ class EmailService extends BaseService
 	}
 
 	/**
+	 * @param User $user
+	 * @param      $site
+	 * @return bool
+	 */
+	public function sendForgotPasswordEmail(User $user, Site $site)
+	{
+		$emailSettings = $this->getEmailSettings();
+		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
+		$email->setIsHtml(true);
+		$email->setSubject('Forgot Your Password?');
+
+		if ($this->sendTemplateEmail($email, 'forgot', array('user' => $user, 'site' => $site)))
+			return true;
+
+		return false;
+	}
+
+	/**
 	 * @param $email
 	 * @param $emailSettings
 	 */

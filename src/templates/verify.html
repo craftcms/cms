@@ -1,3 +1,7 @@
+{% if user.isloggedIn %}
+	{% redirect "dashboard" %}
+{% endif %}
+
 {% layout "_layouts/basic" pageTitle="Verify Account" %}
 
 {% region "body" %}
@@ -10,9 +14,9 @@
 				<input type="hidden" name="action" value="account/verify" />
 				<input type="hidden" name="redirect" value="dashboard" />
 
-				{% set authCode = url.get('code') %}
-				{% if authCode && security.validateUserRegistration(authCode) %}
-					{% set userModel = security.getUserByAuthCode(authCode) %}
+				{% set activationCode = url.get('code') %}
+				{% if activationCode && security.validateUserRegistration(activationCode) %}
+					{% set userModel = security.getUserByActivationCode(activationCode) %}
 
 					<div class="item">Let's set a password for your account.</div>
 					<input type="hidden" name="userId" value="{userModel.id}" />
@@ -38,7 +42,7 @@
 						<input class="btn big submit" type="submit" value="Set Password" />
 					</div>
 				{% else %}
-					There was a problem validating this auth code.
+					There was a problem validating this activation code.
 				{% endif %}
 			</form>
 		</div>

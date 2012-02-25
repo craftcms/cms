@@ -11,15 +11,14 @@ class TemplateController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		// Require user to be logged in on every page but /login in the control panel and account/password with an auth code
+		// Require user to be logged in on every page but /login in the control panel and account/password with an activation code
 		if (Blocks::app()->request->mode == RequestMode::CP)
 		{
 			$path = Blocks::app()->request->path;
 			if ($path !== 'login')
-			{
 				if ($path !== Blocks::app()->users->verifyAccountUrl && Blocks::app()->request->getParam('code', null) == null)
-					$this->requireLogin();
-			}
+					if ($path !== Blocks::app()->users->forgotPasswordUrl)
+						$this->requireLogin();
 		}
 
 		$this->loadRequestedTemplate();

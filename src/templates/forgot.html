@@ -1,0 +1,33 @@
+{% if user.isloggedIn %}
+	{% redirect "dashboard" %}
+{% endif %}
+
+{% layout "_layouts/basic" pageTitle="Forgot Password" %}
+
+{% region "body" %}
+	<div class="pane">
+		<div class="head">
+			Forgot Password
+		</div>
+		<div class="body">
+			<form method="post" action="">
+				<input type="hidden" name="action" value="account/forgot" />
+				<input type="hidden" name="redirect" value="{users.forgotPasswordUrl}" />
+
+				<div class="item">Enter the username or email address for your account.</div>
+				<div class="item field">
+					<div class="input-wrapper">
+						<label for="loginName">Username or Email</label>
+						<input id="loginName" name="loginName" class="{% if forgotPassword.errors.loginName %}error{% endif %}" type="text" />
+					</div>
+					{% if forgotPassword.errors.loginName %}
+						{% include "_includes/error_list" errors=forgotPassword.errors.loginName %}
+					{% endif %}
+				</div>
+				<div class="item">
+					<input class="btn big submit" type="submit" value="Go" />
+				</div>
+			</form>
+		</div>
+	</div>
+{% endregion %}
