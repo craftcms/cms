@@ -18,11 +18,11 @@ class DateTimeHelper
 
 	/**
 	 * @static
-	 * @param int $seconds The number of secnds
+	 * @param int $seconds The number of seconds
 	 * @param bool $showSeconds Whether to output seconds or not
 	 * @return string
 	 */
-	public static function niceSeconds($seconds, $showSeconds = true)
+	public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
 	{
 		$secondsInWeek   = 604800;
 		$secondsInDay    = 86400;

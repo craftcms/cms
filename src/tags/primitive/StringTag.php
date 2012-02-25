@@ -78,6 +78,16 @@ class StringTag extends Tag
 		return array();
 	}
 
+	public function wordNumbers()
+	{
+		return preg_replace_callback('/(^|\s)(\d+)($|\s)/', array(&$this, 'replaceNumberWithWord'), $this->_val);
+	}
+
+	protected function replaceNumberWithWord($m)
+	{
+		return $m[1].NumberHelper::word($m[2]).$m[3];
+	}
+
 	/**
 	 * Split
 	 *

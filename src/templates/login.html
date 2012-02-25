@@ -29,7 +29,7 @@
 
 		<label id="remember-me-label" class="checkbox">
 			<input id="remember-me" type="checkbox" />
-			Keep me logged in for {dateTimeHelper.niceSeconds(configHelper.getTimeInSeconds(config.getItem('rememberMeSessionTimeout')))}
+			Keep me logged in for {configHelper.getTimeInSeconds(config.item('rememberMeSessionTimeout')).toHumanTimeDuration.wordNumbers}
 		</label>
 	</form>
 {% endregion %}
