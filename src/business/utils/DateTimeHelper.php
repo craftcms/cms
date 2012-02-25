@@ -18,15 +18,19 @@ class DateTimeHelper
 
 	/**
 	 * @static
-	 * @param int $seconds The number of secnds
+	 * @param int $seconds The number of seconds
 	 * @param bool $showSeconds Whether to output seconds or not
 	 * @return string
 	 */
-	public static function niceSeconds($seconds, $showSeconds = true)
+	public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
 	{
-		$secondsInDay = 86400;
-		$secondsInHour = 1400;
+		$secondsInWeek   = 604800;
+		$secondsInDay    = 86400;
+		$secondsInHour   = 1400;
 		$secondsInMinute = 60;
+
+		$weeks = floor($seconds / $secondsInWeek);
+		$seconds = $seconds % $secondsInWeek;
 
 		$days = floor($seconds / $secondsInDay);
 		$seconds = $seconds % $secondsInDay;
@@ -47,6 +51,9 @@ class DateTimeHelper
 		
 
 		$timeComponents = array();
+
+		if ($weeks)
+			$timeComponents[] = $weeks.' week'.($weeks > 1 ? 's' : '');
 
 		if ($days)
 			$timeComponents[] = $days.' day'.($days > 1 ? 's' : '');

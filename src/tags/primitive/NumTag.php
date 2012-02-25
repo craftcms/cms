@@ -45,6 +45,16 @@ class NumTag extends Tag
 		return $this->_val * $num;
 	}
 
+	public function toHumanTimeDuration()
+	{
+		return DateTimeHelper::secondsToHumanTimeDuration($this->_val);
+	}
+
+	protected function toWord()
+	{
+		return NumberHelper::word($this->_val);
+	}
+
 	public function formatDate($format = 'MM-dd-yyyy HH:mm:ss')
 	{
 		return Blocks::app()->dateFormatter->format($format, $this->_val);

@@ -10,8 +10,8 @@ class DateTimeHelperTag extends Tag
 	 * @param $seconds
 	 * @return int
 	 */
-	public function niceSeconds($seconds)
+	public function secondsToHumanTimeDuration($seconds)
 	{
-		return DateTimeHelper::niceSeconds($seconds);
+		return DateTimeHelper::secondsToHumanTimeDuration($seconds);
 	}
 }
