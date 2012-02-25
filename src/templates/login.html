@@ -19,7 +19,7 @@
 				</div>
 				<div class="item field">
 					<label for="password">Password</label>
-					<a id="forgot-password" href="{url.base}forgot">(Forget?)</a>
+					<a id="forgot-password" href="{url.base}{users.forgotPasswordUrl}">(Forget?)</a>
 					<div class="input-wrapper"><input id="password" class="password" type="password" /></div>
 				</div>
 			</div>
@@ -29,7 +29,7 @@
 
 		<label id="remember-me-label" class="checkbox">
 			<input id="remember-me" type="checkbox" />
-			Keep me logged in for awhile
+			Keep me logged in for {dateTimeHelper.niceSeconds(configHelper.getTimeInSeconds(config.getItem('rememberMeSessionTimeout')))}
 		</label>
 	</form>
 {% endregion %}

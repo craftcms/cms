@@ -40,6 +40,14 @@ class UsersService extends BaseService
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getForgotPasswordUrl()
+	{
+		return 'forgot';
+	}
+
+	/**
 	 * @param $siteId
 	 * @return array
 	 */
@@ -63,6 +71,20 @@ class UsersService extends BaseService
 	public function getById($userId)
 	{
 		$user = User::model()->findById($userId);
+		return $user;
+	}
+
+	/**
+	 * @param $loginName
+	 * @return mixed
+	 */
+	public function getByLoginName($loginName)
+	{
+		$user = User::model()->find(array(
+			'condition' => 'username=:userName OR email=:email',
+			'params' => array(':userName' => $loginName, ':email' => $loginName),
+		));
+
 		return $user;
 	}
 
@@ -124,12 +146,23 @@ class UsersService extends BaseService
 		$user->password_reset_required = $passwordReset;
 
 		$user->status = UserAccountStatus::Pending;
-		$authCode = Blocks::app()->db->createCommand()->getUUID();
-		$user->authcode = $authCode;
+		$user = $this->generateActivationCodeForUser($user);
+
+		return $user;
+	}
+
+	/**
+	 * @param User $user
+	 * @return User
+	 */
+	public function generateActivationCodeForUser(User $user)
+	{
+		$activationCode = Blocks::app()->db->createCommand()->getUUID();
+		$user->activationcode = $activationCode;
 		$date = new \DateTime();
-		$user->authcode_issued_date = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('authCodeExpiration')) .'S');
-		$user->authcode_expire_date = $date->add($dateInterval)->getTimestamp();
+		$user->activationcode_issued_date = $date->getTimestamp();
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('activationCodeExpiration')) .'S');
+		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();
 		$user->save();
 
 		return $user;
@@ -191,22 +224,9 @@ class UsersService extends BaseService
 	 */
 	public function unlockUser(User $user)
 	{
-		$user->status = UserAccountStatus::Approved;
+		$user->status = UserAccountStatus::Active;
 		$user->save();
 		return $user;
-	}
-
-	/**
-	 * @param $authCode
-	 * @return mixed
-	 */
-	public function getUserByAuthCode($authCode)
-	{
-		$authCode = AuthCode::model()->findByAttributes(array(
-				'code' => $authCode,
-		));
-
-		return $authCode->user;
 	}
 
 	/**
@@ -225,5 +245,27 @@ class UsersService extends BaseService
 			return $user;
 
 		return false;
+	}
+
+	/**
+	 * @param $loginName
+	 * @return bool
+	 */
+	public function forgotPassword($loginName)
+	{
+		$user = $this->getByLoginName($loginName);
+
+		if ($user !== null)
+		{
+			$user = $this->generateActivationCodeForUser($user);
+
+			if (($emailStatus = Blocks::app()->email->sendForgotPasswordEmail($user, $site)) == true)
+			{
+				return true;
+			}
+
+			return false;
+
+		}
 	}
 }
