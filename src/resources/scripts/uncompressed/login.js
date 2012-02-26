@@ -20,7 +20,10 @@ var LoginForm = blx.Base.extend({
 		this.$loginBtn = $('#login'),
 		this.$rememberMeInput = $('#remember-me');
 
-		this.$nameInput.focus();
+		if (!this.$nameInput.val())
+			this.$nameInput.focus();
+		else
+			this.$passwordInput.focus();
 
 		this.addListener(this.$nameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
