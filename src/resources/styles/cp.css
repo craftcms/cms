@@ -410,7 +410,10 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 label.checkbox { font-weight: normal; }
 
-.password.capslock:focus { background: url(../images/capslock.png) no-repeat 100% 50%, -webkit-linear-gradient(#fafafa, #fdfdfd); }
+.input-wrapper.password { position: relative; padding-right: 80px; }
+input.password { padding-right:70px; }
+input.password.capslock:focus { background: url(../images/capslock.png) no-repeat 100% 50%, -webkit-linear-gradient(#fafafa, #fdfdfd); }
+.input-wrapper .password-toggle { display: block; position: absolute; top: 8px; right: 0; width: 44px; text-align: center; }
 
 .error,
 ul.errors li { color: #8a1f11; }
