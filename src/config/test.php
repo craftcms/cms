@@ -22,7 +22,8 @@ return CMap::mergeArray(
 				'password'          => $dbConfig['password'],
 				'charset'           => $dbConfig['charset'],
 				'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
-				'driverMap'         => array('mysql' => 'MysqlSchema'),
+				'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
+				'class'             => 'Blocks\DbConnection'
 			),
 		),
 
