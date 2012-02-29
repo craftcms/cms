@@ -35,7 +35,7 @@ class AccountController extends BaseController
 					$user->save();
 
 					Blocks::app()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
-					$this->redirect('dashboard');
+					$this->redirect('account');
 				}
 			}
 		}
