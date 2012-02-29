@@ -16,7 +16,7 @@
 		if (cookiesEnabled)
 		{
 			document.write(
-				'<form id="login-form" class="pane-wrapper" method="post" action="">' +
+				'<form id="login-form" method="post" action="">' +
 					'<div id="login-pane" class="pane">' +
 						'<div class="body">' +
 							'<div class="item field">' +
@@ -43,32 +43,21 @@
 		else
 		{
 			document.write(
-				'<div id="no-cookies" class="pane-wrapper">' +
-					'<div class="pane notice">' +
+				'<div class="no-access">' +
+					'<div class="pane">' +
 						'<div class="body">' +
-							'<p class="item">Cookies must be enabled to access the Blocks CP.<br>' +
-								'<a class="go" href="">See how</a>' +
-							'</p>' +
+							'<div class="item notice">' +
+								'<div class="icon"></div>' +
+								'<p>Cookies must be enabled to access the Blocks CP.<br>' +
+									'<a class="go" href="">See how</a>' +
+								'</p>' +
+							'</div>' +
 						'</div>' +
-						'<div class="icon"></div>' +
 					'</div>' +
 				'</div>'
 			);
 		}
 	</script>
-
-	<noscript>
-		<div id="no-js" class="pane-wrapper">
-			<div class="pane notice">
-				<div class="body">
-					<p class="item">JavaScript must be enabled to access the Blocks CP.<br>
-						<a class="go" href="">See how</a>
-					</p>
-				</div>
-				<div class="icon"></div>
-			</div>
-		</div>
-	</noscript>	
 {% endregion %}
 
 {% region "scripts" %}

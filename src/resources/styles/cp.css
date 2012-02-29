@@ -27,7 +27,7 @@ h4 { margin: 15px 0 10px; font-weight: bold; color: #000; }
 h5 { margin: 15px 0 10px; font-weight: bold; color: #666; }
 h6 { margin: 15px 0 0; font-weight: normal; color: #666; }
 
-p { margin: 1em 0; }
+p { margin-bottom: 1em; }
 
 ol { padding-left: 40px; list-style-type: decimal; }
 
@@ -59,6 +59,10 @@ h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  
 /* ----------------------------------------
 /*  Layout
 /* ----------------------------------------*/
+
+.no-access { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; text-align: center; background: rgba(0,0,0,0.9); }
+.no-access .pane { display: inline-block; top: 50%; margin-top: -30px; text-align: left; }
+
 
 /*-- nav --*/
 #nav { position: fixed; top: 0; left: 0; z-index: 9999; width: 100%; height: 48px; padding: 0 0; background: -webkit-linear-gradient(#333, rgba(15, 15, 15, 0.9)); -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.65); }
@@ -185,6 +189,9 @@ table.pane > tbody:last-child > tr:last-child > *:last-child,
 .pane .body .item:not(:first-child),
 .pane table.body > tbody > tr:not(:first-child) > *,
 table.pane > tbody > tr:not(:first-child) > * { border-top: 1px dotted #d5d5d5; }
+
+.pane .body .item.notice { padding-left: 52px; }
+.pane .body .item.notice .icon { position: absolute; top: 16px; left: 10px; width: 32px; height: 28px; background: url(../images/notice.png) no-repeat 0 0; }
 
 .pane .body a:not(.btn) .icon { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
 
