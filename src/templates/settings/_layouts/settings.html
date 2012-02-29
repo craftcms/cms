@@ -26,10 +26,8 @@
 
 	<h5>Plugin Settings</h5>
 	<ul class="nav">
-		<li><a class="has-status" href=""><span class="status on"></span><span class="icon icon287"></span>Brilliant Retail</a></li>
-		<li><a class="has-status" href=""><span class="status on"></span><span class="icon icon287"></span>CE Image</a></li>
-		<li><a class="has-status" href=""><span class="status on"></span><span class="icon icon287"></span>Freeform</a></li>
-		<li><a class="has-status" href=""><span class="status off"></span><span class="icon icon287"></span>Tag</a></li>
-		<li><a class="has-status" href=""><span class="status disabled"></span><span class="icon icon287"></span>Wygwam</a></li>
+		{% foreach plugins as plugin %}
+			<li><a class="has-status" href=""><span class="status {% if plugin.enabled %}on{% elseif plugin.installed %}off{% endif %}"></span><span class="icon icon287"></span>{plugin.name}</a></li>
+		{% endforeach %}
 	</ul>
 {% endregion %}
