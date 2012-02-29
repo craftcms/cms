@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * @abstract
  */
-abstract class Widget
+abstract class BaseWidget
 {
 	public $id;
 	public $settings = array();

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class RecentActivityWidget extends Widget
+class RecentActivityWidget extends BaseWidget
 {
 	public $title = 'Recent Activity';
 	public $className = 'recent_activity';
