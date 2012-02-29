@@ -12,23 +12,12 @@ class App extends \CWebApplication
 	private $_isInstalled;
 	private $_isSetup;
 
+	/**
+	 * TODO: Ugly
+	 * Override this as empty because CWebApplication init() tries to preload the request object which at this point, we haven't resolved yet.
+	 */
 	public function init()
-	{
-		// Import the bare minimum to determine if what type of request this is
-		self::import('business.BaseComponent');
-		self::import('business.Blocks');
-		self::import('business.enums.UrlFormat');
-		self::import('business.enums.RequestMode');
-		self::import('business.web.HttpRequest');
-		self::import('services.BaseService');
-		self::import('services.ConfigService');
-
-		// Process resources before all else
-		$this->processResourceRequest();
-
-		// Import the rest of Blocks' classes
-		$this->importClasses();
-	}
+	{ }
 
 	/**
 	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths
@@ -121,6 +110,11 @@ class App extends \CWebApplication
 	 */
 	public function processRequest()
 	{
+		$this->processResourceRequest();
+
+		// Import the majority of Blocks' classes
+		$this->importClasses();
+
 		// Config validation
 		$this->validateConfig();
 
@@ -192,6 +186,15 @@ class App extends \CWebApplication
 	 */
 	private function processResourceRequest()
 	{
+		// Import the bare minimum to determine if what type of request this is
+		self::import('business.BaseComponent');
+		self::import('business.Blocks');
+		self::import('business.enums.UrlFormat');
+		self::import('business.enums.RequestMode');
+		self::import('business.web.HttpRequest');
+		self::import('services.BaseService');
+		self::import('services.ConfigService');
+
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
@@ -329,6 +332,14 @@ class App extends \CWebApplication
 		}
 
 		return $this->_isSetup;
+	}
+
+	/**
+	 * @param $isSetup
+	 */
+	public function setIsSetup($isSetup)
+	{
+		$this->_isSetup = $isSetup;
 	}
 
 	/**
