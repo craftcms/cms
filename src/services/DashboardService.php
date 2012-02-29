@@ -13,10 +13,8 @@ class DashboardService extends BaseService
 	 */
 	public function getWidgets()
 	{
-		$userId = 1;
-
-		$userWidgets = UserWidget::model()->with('plugin')->findAllByAttributes(array(
-			'user_id' => $userId
+		$userWidgets = UserWidget::model()->findAllByAttributes(array(
+			'user_id' => Blocks::app()->user->id
 		));
 		$widgets = array();
 
