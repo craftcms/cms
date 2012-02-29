@@ -54,6 +54,9 @@ class HttpRequest extends \CHttpRequest
 		}
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getPath()
 	{
 		if (!isset($this->_path))
@@ -67,6 +70,14 @@ class HttpRequest extends \CHttpRequest
 		return $this->_path;
 	}
 
+	/**
+	 * @param $path
+	 */
+	public function setPath($path)
+	{
+		$this->_path = $path;
+	}
+
 	public function getQueryStringPath()
 	{
 		if (!isset($this->_queryStringPath))
@@ -76,6 +87,14 @@ class HttpRequest extends \CHttpRequest
 		}
 
 		return $this->_queryStringPath;
+	}
+
+	/**
+	 * @param $path
+	 */
+	public function setQueryStringPath($path)
+	{
+		$this->_queryStringPath = $path;
 	}
 
 	/**
@@ -185,6 +204,14 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
+	 * @param $urlFormat
+	 */
+	public function setUrlFormat($urlFormat)
+	{
+		$this->_urlFormat = $urlFormat;
+	}
+
+	/**
 	 * @return string The app mode (Action, Resource, CP, or Site)
 	 */
 	public function getMode()
@@ -233,6 +260,14 @@ class HttpRequest extends \CHttpRequest
 		}
 
 		return $this->_mode;
+	}
+
+	/**
+	 * @param $mode
+	 */
+	public function setMode($mode)
+	{
+		$this->_mode = $mode;
 	}
 
 	/**
