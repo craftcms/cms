@@ -36,7 +36,7 @@
 
 /* pageviews */
 .widget.analytics-pageviews .body { background: none; -webkit-box-shadow: none; }
-.widget.analytics-pageviews table.body { border-spacing: 4px; }
+.widget.analytics-pageviews table { border-spacing: 4px; width: 100%; }
 .widget.analytics-pageviews .body tbody td { padding: 0 !important; width: 14.29% !important; vertical-align: bottom; }
 .widget.analytics-pageviews .body tbody td .wrapper { border-radius: 2px; -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.25); }
 .widget.analytics-pageviews .body tbody td .views { position: relative; text-align: center; font-size: 11px;  -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.1), inset 0 2px 0 rgba(255,255,255,0.15), inset 0 0 10px rgba(0,0,0,0.15); }

@@ -13,15 +13,22 @@ class DashboardService extends BaseService
 	 */
 	public function getWidgets()
 	{
-		$userWidgets = UserWidget::model()->findAllByAttributes(array(
+		$userWidgets = UserWidget::model()->with('plugin')->findAllByAttributes(array(
 			'user_id' => Blocks::app()->user->id
 		));
 		$widgets = array();
 
-		foreach ($userWidgets as $userWidget)
+		foreach ($userWidgets as $widget)
 		{
-			$widgetClass = __NAMESPACE__.'\\'.$userWidget->class;
-			$widgets[] = new $widgetClass($userWidget->id);
+			$widgetClass = __NAMESPACE__.'\\'.$widget->class.'Widget';
+
+			if ($widget->plugin)
+			{
+				$path = Blocks::app()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
+				require_once Blocks::app()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
+			}
+
+			$widgets[] = new $widgetClass($widget->id);
 		}
 
 		return $widgets;
@@ -38,7 +45,7 @@ class DashboardService extends BaseService
 			$userId = 1;
 
 		// Add the default dashboard widgets
-		$widgets = array('UpdatesWidget', 'RecentActivityWidget', 'SiteMapWidget', 'FeedWidget');
+		$widgets = array('Updates', 'RecentActivity', 'SiteMap', 'Feed');
 		foreach ($widgets as $i => $widgetClass)
 		{
 			$widget = new UserWidget;
