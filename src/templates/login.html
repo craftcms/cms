@@ -9,29 +9,66 @@
 {% endregion %}
 
 {% region "body" %}
-	<!-- TODO: Add JavaScript to check if cookies are enabled and display error if not -->
-	<form id="form" method="post" action="">
-		<div id="pane" class="pane">
-			<div class="body">
-				<div class="item field">
-					<label for="loginName">Username or Email</label>
-					<div class="input-wrapper"><input id="loginName" type="text" value="{user.rememeberedLoginName}" /></div>
+	<script type="text/javascript">
+		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
+		document.cookie = cookie;
+		var cookiesEnabled = document.cookie.search(cookie) != -1;
+		if (cookiesEnabled)
+		{
+			document.write(
+				'<form id="login-form" class="pane-wrapper" method="post" action="">' +
+					'<div id="login-pane" class="pane">' +
+						'<div class="body">' +
+							'<div class="item field">' +
+								'<label for="loginName">Username or Email</label>' +
+								'<div class="input-wrapper"><input id="loginName" type="text" value="{user.rememeberedLoginName}" /></div>' +
+							'</div>' +
+							'<div class="item field">' +
+								'<label for="password">Password</label>' +
+								' <a id="forgot-password" href="{url.base}{users.forgotPasswordUrl}">(Forget?)</a>' +
+								'<div class="input-wrapper password"><input id="password" class="password" type="password" /></div>' +
+							'</div>' +
+						'</div>' +
+					'</div>' +
+
+					'<input id="login-btn" class="btn big submit disabled" type="submit" value="Login" />' +
+
+					'<label id="remember-me-label" class="checkbox">' +
+						'<input id="remember-me" type="checkbox" />' +
+						' Keep me logged in for {configHelper.getTimeInSeconds(config.item("rememberMeSessionTimeout")).toHumanTimeDuration.wordNumbers}' +
+					'</label>' +
+				'</form>'
+			);
+		}
+		else
+		{
+			document.write(
+				'<div id="no-cookies" class="pane-wrapper">' +
+					'<div class="pane notice">' +
+						'<div class="body">' +
+							'<p class="item">Cookies must be enabled to access the Blocks CP.<br>' +
+								'<a class="go" href="">See how</a>' +
+							'</p>' +
+						'</div>' +
+						'<div class="icon"></div>' +
+					'</div>' +
+				'</div>'
+			);
+		}
+	</script>
+
+	<noscript>
+		<div id="no-js" class="pane-wrapper">
+			<div class="pane notice">
+				<div class="body">
+					<p class="item">JavaScript must be enabled to access the Blocks CP.<br>
+						<a class="go" href="">See how</a>
+					</p>
 				</div>
-				<div class="item field">
-					<label for="password">Password</label>
-					<a id="forgot-password" href="{url.base}{users.forgotPasswordUrl}">(Forget?)</a>
-					<div class="input-wrapper"><input id="password" class="password" type="password" /></div>
-				</div>
+				<div class="icon"></div>
 			</div>
 		</div>
-
-		<input id="login" class="btn big submit disabled" type="submit" value="Login" />
-
-		<label id="remember-me-label" class="checkbox">
-			<input id="remember-me" type="checkbox" />
-			Keep me logged in for {configHelper.getTimeInSeconds(config.item('rememberMeSessionTimeout')).toHumanTimeDuration.wordNumbers}
-		</label>
-	</form>
+	</noscript>	
 {% endregion %}
 
 {% region "scripts" %}

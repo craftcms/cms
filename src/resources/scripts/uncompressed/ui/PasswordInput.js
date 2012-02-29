@@ -7,35 +7,109 @@ if (typeof blx.ui == 'undefined')
 
 blx.ui.PasswordInput = blx.Base.extend({
 
-	$input: null,
+	$passwordInput: null,
+	$textInput: null,
+	$currentInput: null,
 
-	init: function(input)
+	$showPasswordToggle: null,
+	showingPassword: null,
+	showingCapsIcon: null,
+
+	init: function(passwordInput)
 	{
-		this.$input = $(input);
+		this.$passwordInput = $(passwordInput);
 
 		// Is this already a password input?
-		if (this.$input.data('passwordInput'))
+		if (this.$passwordInput.data('passwordInput'))
 		{
 			blx.log('Double-instantiating a password input on an element');
-			this.$input.data('passwordInput').destroy();
+			this.$passwordInput.data('passwordInput').destroy();
 		}
 
-		this.$input.data('passwordInput', this);
+		this.$passwordInput.data('passwordInput', this);
 
-		this.$input.addClass('password');
+		this.showingCapsIcon = false;
 
-		this.addListener(this.$input, 'focus', 'onFocus');
-		this.addListener(this.$input, 'keypress', 'onKeyPress');
+		this.$showPasswordToggle = $(document.createElement('a'));
+		this.$showPasswordToggle.addClass('password-toggle');
+		this.$showPasswordToggle.insertAfter(this.$passwordInput);
+		this.addListener(this.$showPasswordToggle, 'mousedown', 'onToggleMouseDown');
+		this.hidePassword();
+	},
+
+	setCurrentInput: function($input)
+	{
+		if (this.$currentInput)
+		{
+			this.$currentInput.replaceWith($input);
+			$input.focus();
+			$input.val(this.$currentInput.val());
+		}
+
+		this.$currentInput = $input;
+
+		this.addListener(this.$currentInput, 'focus', 'onFocus');
+		this.addListener(this.$currentInput, 'keypress', 'onKeyPress');
+	},
+
+	updateToggleLabel: function(label)
+	{
+		this.$showPasswordToggle.text(label);
+	},
+
+	showPassword: function()
+	{
+		if (this.showingPassword)
+			return;
+
+		this.hideCapsIcon();
+
+		if (!this.$textInput)
+		{
+			this.$textInput = this.$passwordInput.clone(true);
+			this.$textInput.attr('type', 'text');
+		}
+
+		this.setCurrentInput(this.$textInput);
+		this.updateToggleLabel('Hide');
+		this.showingPassword = true;
+	},
+
+	hidePassword: function()
+	{
+		// showingPassword could be null, which is acceptable
+		if (this.showingPassword === false)
+			return;
+
+		this.setCurrentInput(this.$passwordInput);
+		this.updateToggleLabel('Show');
+		this.showingPassword = false;
+	},
+
+	togglePassword: function()
+	{
+		if (this.showingPassword)
+			this.hidePassword();
+		else
+			this.showPassword();
 	},
 
 	showCapsIcon: function()
 	{
-		this.$input.addClass('capslock');
+		if (this.showingCapsIcon)
+			return;
+
+		this.$currentInput.addClass('capslock');
+		this.showingCapsIcon = true;
 	},
 
 	hideCapsIcon: function()
 	{
-		this.$input.removeClass('capslock');
+		if (!this.showingCapsIcon)
+			return;
+
+		this.$currentInput.removeClass('capslock');
+		this.showingCapsIcon = false;
 	},
 
 	onFocus: function()
@@ -45,6 +119,10 @@ blx.ui.PasswordInput = blx.Base.extend({
 
 	onKeyPress: function(ev)
 	{
+		// No need to show the caps lock indicator if we're showing the password
+		if (this.showingPassword)
+			return;
+
 		if (!ev.shiftKey && !ev.metaKey)
 		{
 			var str = String.fromCharCode(ev.which);
@@ -54,6 +132,21 @@ blx.ui.PasswordInput = blx.Base.extend({
 			else if (str.toLowerCase() === str && str.toUpperCase() !== str)
 				this.hideCapsIcon();
 		}
+	},
+
+	onToggleMouseDown: function(ev)
+	{
+		// Prevent focus change
+		ev.preventDefault();
+
+		if (this.$currentInput[0].setSelectionRange)
+			var selectionStart = this.$currentInput[0].selectionStart,
+				selectionEnd   = this.$currentInput[0].selectionEnd;
+
+		this.togglePassword();
+
+		if (this.$currentInput[0].setSelectionRange)
+			this.$currentInput[0].setSelectionRange(selectionStart, selectionEnd);
 	}
 
 });
