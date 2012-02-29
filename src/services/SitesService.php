@@ -65,7 +65,7 @@ class SitesService extends BaseService
 	 */
 	public function getCurrentSite()
 	{
-		if ($this->_currentSite == null)
+		if ($this->_currentSite === null)
 		{
 			// Try to find the site that matches the request URL
 			$serverName = Blocks::app()->request->serverName;
@@ -88,6 +88,14 @@ class SitesService extends BaseService
 		}
 
 		return $this->_currentSite;
+	}
+
+	/**
+	 * @param Site $site
+	 */
+	public function setCurrentSite($site)
+	{
+		$this->_currentSite = $site;
 	}
 
 	/**
