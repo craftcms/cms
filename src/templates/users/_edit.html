@@ -63,14 +63,14 @@
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="admin">Admin</label>
-							{% include "_includes/switch" name="admin" on=theUser.admin %}
+							{% include "_includes/lightswitch" name="admin" on=theUser.admin %}
 						</div>
 					</div>
 				{% endif %}
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="html_email">Html Emails</label>
-						{% include "_includes/switch" name="html_email" on=theUser.html_email default="y" %}
+						{% include "_includes/lightswitch" name="html_email" on=theUser.html_email default="y" %}
 					</div>
 				</div>
 				{% if theUser.id %}
@@ -97,7 +97,7 @@
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="password_reset">Password Reset Required</label>
-							{% include "_includes/switch" name="password_reset" on=theUser.password_reset_required %}
+							{% include "_includes/lightswitch" name="password_reset" on=theUser.password_reset_required %}
 						</div>
 					</div>
 				{% endif %}
@@ -105,7 +105,7 @@
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="send_validation_email">Send Validation Email?</label>
-							{% include "_includes/switch" name="send_validation_email" on=request.getPost('send_validation_email') default="y" %}
+							{% include "_includes/lightswitch" name="send_validation_email" on=request.getPost('send_validation_email') default="y" %}
 						</div>
 					</div>
 				{% endif %}

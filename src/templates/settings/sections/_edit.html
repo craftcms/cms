@@ -48,7 +48,7 @@
 				<div class="item field">
 					<label for="sortable">Sortable?</label>
 					<p>Do entries in this section have a sortable display order?</p>
-					{% include "_includes/switch" name="sortable" on=section.sortable %}
+					{% include "_includes/lightswitch" name="sortable" on=section.sortable %}
 					{% if section.errors.sortable %}
 						{% include "_includes/error_list" errors=section.errors.sortable %}
 					{% endif %}

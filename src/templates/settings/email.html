@@ -87,14 +87,14 @@
 
 			<div id="smtpAuth-field" class="item field">
 				<label for="smtpAuth">Use SMTP Authentication?</label>
-				{% include "_includes/switch" name="smtpAuth" on=emailSettings.smtpAuth %}
+				{% include "_includes/lightswitch" name="smtpAuth" on=emailSettings.smtpAuth %}
 				{% if emailSettings.errors.smtpAuth %}
 					{% include "_includes/error_list" errors=emailSettings.errors.smtpAuth %}
 				{% endif %}
 			</div>
 			<div id="smtpKeepAlive-field" class="item field">
 				<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
-				{% include "_includes/switch" name="smtpKeepAlive" on=emailSettings.smtpKeepAlive %}
+				{% include "_includes/lightswitch" name="smtpKeepAlive" on=emailSettings.smtpKeepAlive %}
 				{% if emailSettings.errors.smtpKeepAlive %}
 					{% include "_includes/error_list" errors=emailSettings.errors.smtpKeepAlive %}
 				{% endif %}

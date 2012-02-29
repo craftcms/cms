@@ -28,7 +28,7 @@ var scripts =
 	'ui/Pill.js',
 	'ui/RTE.js',
 	'ui/SelectMenu.js',
-	'ui/Switch.js',
+	'ui/LightSwitch.js',
 	'ui/BlocksSelect.js',
 	'ui/PasswordInput.js'
 ];

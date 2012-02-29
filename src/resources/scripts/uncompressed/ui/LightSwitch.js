@@ -6,9 +6,9 @@ if (typeof blx.ui == 'undefined')
 
 
 /**
- * Switch
+ * Light Switch
  */
-blx.ui.Switch = blx.Base.extend({
+blx.ui.LightSwitch = blx.Base.extend({
 
 	settings: null,
 	$outerContainer: null,
@@ -25,15 +25,15 @@ blx.ui.Switch = blx.Base.extend({
 		this.$outerContainer = $(outerContainer);
 
 		// Is this already a switch?
-		if (this.$outerContainer.data('switch'))
+		if (this.$outerContainer.data('lightswitch'))
 		{
 			blx.log('Double-instantiating a switch on an element');
-			this.$outerContainer.data('switch').destroy();
+			this.$outerContainer.data('lightswitch').destroy();
 		}
 
-		this.$outerContainer.data('switch', this);
+		this.$outerContainer.data('lightswitch', this);
 
-		this.setSettings(settings, blx.ui.Switch.defaults);
+		this.setSettings(settings, blx.ui.LightSwitch.defaults);
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$btn = this.$innerContainer.find('.btn:first');
@@ -157,7 +157,7 @@ blx.ui.Switch = blx.Base.extend({
 });
 
 
-$.fn.switch = function(settings, settingName, settingValue)
+$.fn.lightswitch = function(settings, settingName, settingValue)
 {
 	if (settings == 'settings')
 	{
@@ -171,7 +171,7 @@ $.fn.switch = function(settings, settingName, settingValue)
 
 		return this.each(function()
 		{
-			var obj = $.data(this, 'switch');
+			var obj = $.data(this, 'lightswitch');
 			if (obj)
 				obj.setSettings(settings);
 		});
@@ -179,14 +179,14 @@ $.fn.switch = function(settings, settingName, settingValue)
 
 	return this.each(function()
 	{
-		if (!$.data(this, 'switch'))
-			new blx.ui.Switch(this, settings);
+		if (!$.data(this, 'lightswitch'))
+			new blx.ui.LightSwitch(this, settings);
 	});
 };
 
 blx.$document.ready(function()
 {
-	$('#body .switch').switch();
+	$('#body .lightswitch').lightswitch();
 });
 
 
