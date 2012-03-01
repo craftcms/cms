@@ -56,90 +56,97 @@ class UserIdentity extends \CUserIdentity
 		}
 		else
 		{
-			// if the account is locked, don't even attempt to log in.
-			if ($user->status == UserAccountStatus::Locked)
+			if ($user->status == UserAccountStatus::Pending)
 			{
-				$this->errorCode = self::ERROR_ACCOUNT_LOCKED;
+				$this->errorCode = self::ERROR_USERNAME_INVALID;
 			}
 			else
 			{
-				// if the account is in cooldown mode, don't attempt to log in.
-				if ($this->_isUserOutsideFailWindow($user, $user->failed_password_attempt_count))
+				// if the account is locked, don't even attempt to log in.
+				if ($user->status == UserAccountStatus::Locked)
 				{
-					$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
+					$this->errorCode = self::ERROR_ACCOUNT_LOCKED;
 				}
 				else
 				{
-					$checkPassword = Blocks::app()->security->checkPassword($this->password, $user->password, $user->enc_type);
-
-					// bad password
-					if (!$checkPassword)
+					// if the account is in cooldown mode, don't attempt to log in.
+					if ($this->_isUserOutsideFailWindow($user, $user->failed_password_attempt_count))
 					{
-						$this->errorCode = self::ERROR_PASSWORD_INVALID;
-
-						$user->last_login_failed_date = DateTimeHelper::currentTime();
-
-						// get the current failed password attempt count.
-						$currentFailedCount = $user->failed_password_attempt_count;
-
-						// if it's empty, this is the first failed attempt we have for the current window.
-						if (StringHelper::isNullOrEmpty($currentFailedCount))
-						{
-							// start at 1 and start the window
-							$currentFailedCount = 1;
-							$user->failed_password_attempt_window_start = DateTimeHelper::currentTime();
-							$user->failed_password_attempt_count = $currentFailedCount;
-						}
-						else
-						{
-							// If they have made it here, then they are outside of a previous fail window and they have mistyped their password again.  We start the counter back over at 0.
-							if ($currentFailedCount >= Blocks::app()->config->getItem('maxInvalidPasswordAttempts'))
-								$currentFailedCount = 0;
-
-							$currentFailedCount += 1;
-							$user->failed_password_attempt_count = $currentFailedCount;
-
-							if ($this->_isUserOutsideFailWindow($user, $currentFailedCount))
-							{
-								if (Blocks::app()->config->getItem('failedPasswordMode') === FailedPasswordMode::Lockout)
-								{
-									$user->status = UserAccountStatus::Locked;
-									$user->last_lockout_date = DateTimeHelper::currentTime();
-									$user->failed_password_attempt_count = null;
-									$user->failed_password_attempt_window_start = null;
-								}
-							}
-						}
-
-						$this->failedPasswordAttemptCount = $currentFailedCount;
-						$user->save();
+						$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
 					}
 					else
 					{
-						// sucessfully authenticated
-						$this->_id = $user->id;
-						$this->username = $user->username;
-						$this->errorCode = self::ERROR_NONE;
+						$checkPassword = Blocks::app()->security->checkPassword($this->password, $user->password, $user->enc_type);
 
-						$authSessionToken = Blocks::app()->db->createCommand()->getUUID();
-						$user->auth_session_token = $authSessionToken;
-						$user->last_login_date = DateTimeHelper::currentTime();
-						$user->failed_password_attempt_count = null;
-						$user->failed_password_attempt_window_start = null;
-						$user->activationcode = null;
-						$user->activationcode_issued_date = null;
-						$user->activationcode_expire_date = null;
-
-						if (!$user->save())
+						// bad password
+						if (!$checkPassword)
 						{
-							$errorMsg = '';
-							foreach ($user->errors as $errorArr)
-								$errorMsg .= implode(' ', $errorArr);
+							$this->errorCode = self::ERROR_PASSWORD_INVALID;
 
-							throw new Exception('There was a problem logging you in:'.$errorMsg);
+							$user->last_login_failed_date = DateTimeHelper::currentTime();
+
+							// get the current failed password attempt count.
+							$currentFailedCount = $user->failed_password_attempt_count;
+
+							// if it's empty, this is the first failed attempt we have for the current window.
+							if (StringHelper::isNullOrEmpty($currentFailedCount))
+							{
+								// start at 1 and start the window
+								$currentFailedCount = 1;
+								$user->failed_password_attempt_window_start = DateTimeHelper::currentTime();
+								$user->failed_password_attempt_count = $currentFailedCount;
+							}
+							else
+							{
+								// If they have made it here, then they are outside of a previous fail window and they have mistyped their password again.  We start the counter back over at 0.
+								if ($currentFailedCount >= Blocks::app()->config->getItem('maxInvalidPasswordAttempts'))
+									$currentFailedCount = 0;
+
+								$currentFailedCount += 1;
+								$user->failed_password_attempt_count = $currentFailedCount;
+
+								if ($this->_isUserOutsideFailWindow($user, $currentFailedCount))
+								{
+									if (Blocks::app()->config->getItem('failedPasswordMode') === FailedPasswordMode::Lockout)
+									{
+										$user->status = UserAccountStatus::Locked;
+										$user->last_lockout_date = DateTimeHelper::currentTime();
+										$user->failed_password_attempt_count = null;
+										$user->failed_password_attempt_window_start = null;
+									}
+								}
+							}
+
+							$this->failedPasswordAttemptCount = $currentFailedCount;
+							$user->save();
 						}
+						else
+						{
+							// sucessfully authenticated
+							$this->_id = $user->id;
+							$this->username = $user->username;
+							$this->errorCode = self::ERROR_NONE;
 
-						$this->setState('authSessionToken', $authSessionToken);
+							$authSessionToken = Blocks::app()->db->createCommand()->getUUID();
+							$user->auth_session_token = $authSessionToken;
+							$user->last_login_date = DateTimeHelper::currentTime();
+							$user->failed_password_attempt_count = null;
+							$user->failed_password_attempt_window_start = null;
+							$user->activationcode = null;
+							$user->activationcode_issued_date = null;
+							$user->activationcode_expire_date = null;
+
+							if (!$user->save())
+							{
+								$errorMsg = '';
+								foreach ($user->errors as $errorArr)
+									$errorMsg .= implode(' ', $errorArr);
+
+								throw new Exception('There was a problem logging you in:'.$errorMsg);
+							}
+
+							$this->setState('authSessionToken', $authSessionToken);
+						}
 					}
 				}
 			}
