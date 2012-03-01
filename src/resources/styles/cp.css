@@ -170,7 +170,7 @@ table.pane > tfoot > tr:last-child > *:last-child { border-bottom-right-radius: 
 /* pane body items */
 .pane .body .item,
 .pane table.body > tbody > tr > *,
-table.pane > tbody > tr > * { position: relative; padding: 12px 20px; background: #fff; background: -webkit-linear-gradient(#fdfdfd, #fbfbfb) repeat-x 0 100%; -webkit-box-shadow: inset 0 1px 0 #fff; }
+table.pane > tbody > tr > * { position: relative; padding: 8px 20px; background: #fff; background: -webkit-linear-gradient(#fdfdfd, #fbfbfb) repeat-x 0 100%; -webkit-box-shadow: inset 0 1px 0 #fff; }
 
 .pane .body:first-child .item:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
 table.pane > tbody:first-child > tr:first-child > *:first-child,
