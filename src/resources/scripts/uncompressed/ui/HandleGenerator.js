@@ -22,7 +22,7 @@ blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
 		handle = blx.utils.asciiString(handle);
 
 		// Remove any non alphanumeric characters
-		handle = handle.replace(/[^a-z0-9]+/, '');
+		handle = handle.replace(/[^a-z0-9]+/g, '');
 
 		// Handle must start with a letter
 		handle = handle.replace(/^[^a-z]+/, '');
