@@ -111,19 +111,19 @@
 				{% endif %}
 				{% if theUser.id %}
 					<div class="item">
-						Last Login Date: {% if theUser.last_login_date %}theUser.last_login_date{% else %}Never{% endif %}
+						Last Login Date: {% if theUser.last_login_date %}{dateTimeHelper.nice(theUser.last_login_date)}{% else %}Never{% endif %}
 					</div>
 					<div class="item">
-						Last Failed Login Date: {% if theUser.last_login_failed_date %}theUser.last_login_failed_date{% else %}Never{% endif %}
+						Last Failed Login Date: {% if theUser.last_login_failed_date %}{dateTimeHelper.nice(theUser.last_login_failed_date)}{% else %}Never{% endif %}
 					</div>
 					<div class="item">
-						Last Password Changed Date: {% if theUser.last_password_changed_date %}theUser.last_password_changed_date{% else %}Never{% endif %}
+						Last Password Changed Date: {% if theUser.last_password_changed_date %}{dateTimeHelper.nice(theUser.last_password_changed_date)}{% else %}Never{% endif %}
 					</div>
 					<div class="item">
-						Last Lockout Date: {% if theUser.last_lockout_date %}theUser.last_lockout_date{% else %}Never{% endif %}
+						Last Lockout Date: {% if theUser.last_lockout_date %}{dateTimeHelper.nice(theUser.last_lockout_date)}{% else %}Never{% endif %}
 					</div>
 					<div class="item">
-						Failed Password Attempt Count: {% if theUser.failed_password_attempt_count %}theUser.failed_password_attempt_count{% else %}0{% endif %}
+						Failed Password Attempt Count: {% if theUser.failed_password_attempt_count %}{theUser.failed_password_attempt_count}{% else %}0{% endif %}
 					</div>
 				{% endif %}
 			</div>

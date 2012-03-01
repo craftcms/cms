@@ -14,4 +14,13 @@ class DateTimeHelperTag extends Tag
 	{
 		return DateTimeHelper::secondsToHumanTimeDuration($seconds);
 	}
+
+	/**
+	 * @param $dateString
+	 * @return string
+	 */
+	public function nice($dateString)
+	{
+		return DateTimeHelper::nice($dateString);
+	}
 }

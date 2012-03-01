@@ -71,6 +71,15 @@ class DateTimeHelper
 	}
 
 	/**
+	 * @param $timestamp
+	 * @return bool
+	 */
+	public static function isValidTimeStamp($timestamp)
+	{
+		return ((string)(int)$timestamp === $timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX);
+	}
+
+	/**
 	 * Returns a nicely formatted date string for given Datetime string.
 	 *
 	 * @param string     $dateString Datetime string
@@ -79,7 +88,16 @@ class DateTimeHelper
 	 */
 	public static function nice($dateString = null, $format = 'D, M jS Y, H:i')
 	{
-		$date = ($dateString == null) ? time() : strtotime($dateString);
+		if ($dateString == null)
+			$date = time();
+		else
+		{
+			if (self::isValidTimeStamp($dateString))
+				$date = $dateString;
+			else
+				$date = strtotime($dateString);
+		}
+
 		return date($format, $date);
 	}
 
