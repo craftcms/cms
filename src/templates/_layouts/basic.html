@@ -28,12 +28,18 @@
 		</div>
 	</noscript>
 
+	{% include "_includes/js_include" file="lib/jquery-1.7.1.js" %}
+	{% include "_includes/js_include" file="lib/rangy-1.2.3/rangy-core.js" %}
+	{% include "_includes/js_include" file="lib/Base.js" %}
+
 	<script type="text/javascript">
 		window.baseUrl = '{url.base}';
 		window.actionUrl = '{url.action}/';
 		window.resourceUrl = '{url.resource}/';
 	</script>
+
 	{% include "_includes/js_include" file="blocks.js" %}
+
 	{scripts}
 </body>
 </html>

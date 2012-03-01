@@ -7,10 +7,10 @@
  *
  * Depends on Rangy core.
  *
- * Copyright 2011, Tim Down
+ * Copyright 2012, Tim Down
  * Licensed under the MIT license.
- * Version: 1.2.2
- * Build date: 13 November 2011
+ * Version: 1.2.3
+ * Build date: 26 February 2012
  */
 rangy.createModule("SaveRestore", function(api, module) {
     api.requireModules( ["DomUtil", "DomRange", "WrappedRange"] );

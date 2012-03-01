@@ -2,10 +2,10 @@
  * @license Rangy, a cross-browser JavaScript range and selection library
  * http://code.google.com/p/rangy/
  *
- * Copyright 2011, Tim Down
+ * Copyright 2012, Tim Down
  * Licensed under the MIT license.
- * Version: 1.2.2
- * Build date: 13 November 2011
+ * Version: 1.2.3
+ * Build date: 26 February 2012
  */
 window['rangy'] = (function() {
 
@@ -65,7 +65,7 @@ window['rangy'] = (function() {
     }
 
     var api = {
-        version: "1.2.2",
+        version: "1.2.3",
         initialized: false,
         supported: true,
 
@@ -1079,11 +1079,17 @@ rangy.createModule("DomUtil", function(api, module) {
         return offset <= (dom.isCharacterDataNode(node) ? node.length : node.childNodes.length);
     }
 
+    function isRangeValid(range) {
+        return (!!range.startContainer && !!range.endContainer
+                && !isOrphan(range.startContainer)
+                && !isOrphan(range.endContainer)
+                && isValidOffset(range.startContainer, range.startOffset)
+                && isValidOffset(range.endContainer, range.endOffset));
+    }
+
     function assertRangeValid(range) {
         assertNotDetached(range);
-        if (isOrphan(range.startContainer) || isOrphan(range.endContainer) ||
-                !isValidOffset(range.startContainer, range.startOffset) ||
-                !isValidOffset(range.endContainer, range.endOffset)) {
+        if (!isRangeValid(range)) {
             throw new Error("Range error: Range is no longer valid after DOM mutation (" + range.inspect() + ")");
         }
     }
@@ -1499,6 +1505,10 @@ rangy.createModule("DomUtil", function(api, module) {
 
         equals: function(range) {
             return Range.rangesEqual(this, range);
+        },
+
+        isValid: function() {
+            return isRangeValid(this);
         },
 
         inspect: function() {
@@ -2501,6 +2511,9 @@ rangy.createModule("DomUtil", function(api, module) {
 
         (function() {
             var iframe = document.createElement("iframe");
+            iframe.frameBorder = 0;
+            iframe.style.position = "absolute";
+            iframe.style.left = "-10000px";
             body.appendChild(iframe);
 
             var iframeDoc = dom.getIframeDocument(iframe);

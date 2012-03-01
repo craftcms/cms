@@ -3,10 +3,6 @@
 
 var scripts = 
 [
-	'lib/jquery-1.7.1.js',
-	'lib/Base.js',
-	'lib/rangy-1.2.2/rangy-core.js',
-	
 	'blx.js',
 
 	'ui/Select.js',
