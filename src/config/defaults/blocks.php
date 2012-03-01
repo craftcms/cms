@@ -135,3 +135,8 @@ $blocksConfig['phpPass-iterationCount'] = 8;
  * Controls whether portable hashes should be used or not. Portable hashes are salted MD5 hashes prefixed by $P$.
  */
 $blocksConfig['phpPass-portableHashes'] = false;
+
+/**
+ * Controls whether to use the minified and merged JavaScript in the resources/scripts/uncompressed or the resources/scripts/compressed directory.
+ */
+$blocksConfig['useCompressedJs'] = true;
