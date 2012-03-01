@@ -94,7 +94,7 @@ class UsersService extends BaseService
 	 */
 	public function getCurrent()
 	{
-		$user = $this->getById(Blocks::app()->user->id);
+		$user = $this->getById(isset(Blocks::app()->user) ? Blocks::app()->user->id : null);
 		return $user;
 	}
 

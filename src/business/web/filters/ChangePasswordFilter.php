@@ -44,7 +44,7 @@ class ChangePasswordFilter extends \CFilter
 					}
 				}
 				else
-					throw new HttpException(403, 'You must change your password in order to continue.');
+					throw new Exception('Unable to find the currently logged in user.');
 			}
 		}
 
