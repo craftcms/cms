@@ -27,7 +27,8 @@ class Section extends BaseModel
 	);
 
 	protected $hasMany = array(
-		'children' => array('model' => 'Section', 'foreignKey' => 'parent')
+		'children' => array('model' => 'Section', 'foreignKey' => 'parent'),
+		'entries'  => array('model' => 'Entry', 'foreignKey' => 'section')
 	);
 
 	protected $indexes = array(

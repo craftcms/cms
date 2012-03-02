@@ -9,9 +9,9 @@
 		<h5>{section.name}</h5>
 		<ul class="nav tree">
 			{% foreach section.entries as entry %}
-				<li><a class="has-status" href="{url.base}content/edit/{entry.id}"><span class="status {% if entry.live %}on{% elseif entry.published %}off{% endif %}"></span>{entry.title}</li>
+				<li><a class="has-status {% if url.segment(3) == entry.id %}sel{% endif %}" href="{url.base}content/edit/{entry.id}"><span class="status {% if entry.live %}on{% elseif entry.published %}off{% endif %}"></span>{entry.title}</a></li>
 			{% endforeach %}
-			<li><a class="new {% if url.segment(2) == 'new' %}sel{% endif %}" href="{url.action}content/createEntry?sectionId={section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
+			<li><a class="new" href="{url.action}/content/createEntry?sectionId={section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
 		</ul>
 	{% endforeach %}
 {% endregion %}

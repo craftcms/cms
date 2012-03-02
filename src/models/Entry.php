@@ -35,4 +35,9 @@ class Entry extends BaseModel
 	protected $indexes = array(
 		array('columns' => array('section_id','slug'), 'unique' => true),
 	);
+
+	public function title()
+	{
+		return 'Untitled';
+	}
 }
