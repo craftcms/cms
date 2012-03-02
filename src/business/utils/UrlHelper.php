@@ -17,9 +17,11 @@ class UrlHelper
 	 */
 	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
 	{
+		$origPath = $path;
 		$path = Blocks::app()->config->getItem('resourceTriggerWord').'/'.trim($path, '/');
 		$path = self::_normalizePath($path, $params);
-		return  Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		$path = Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		return $origPath == '' ? $path.'/' : $path;
 	}
 
 	/**
@@ -31,9 +33,11 @@ class UrlHelper
 	 */
 	public static function generateActionUrl($path = '', $params = null, $protocol = '')
 	{
+		$origPath = $path;
 		$path = Blocks::app()->config->getItem('actionTriggerWord').'/'.trim($path, '/');
 		$path = self::_normalizePath($path, $params);
-		return Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		$path = Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		return $origPath == '' ? $path.'/' : $path;
 	}
 
 	/**
@@ -45,8 +49,10 @@ class UrlHelper
 	 */
 	public static function generateUrl($path = '', $params = null, $protocol = '')
 	{
+		$origPath = $path;
 		$path = self::_normalizePath(trim($path, '/'), $params);
-		return  Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		$path = Blocks::app()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		return $origPath == '' ? $path.'/' : $path;
 	}
 
 	/**
