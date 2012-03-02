@@ -77,7 +77,7 @@ class ContentController extends BaseController
 	 */
 	public function actionCreateEntry()
 	{
-		$sectionId = Blocks::app()->request->getPost('sectionId');
+		$sectionId = Blocks::app()->request->getParam('sectionId');
 		$authorId = Blocks::app()->user->id;
 		$entry = Blocks::app()->content->createEntry($sectionId, $authorId);
 		$this->redirect('content/edit/'.$entry->id);
