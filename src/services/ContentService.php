@@ -6,90 +6,6 @@ namespace Blocks;
  */
 class ContentService extends BaseService
 {
-	/* Entries */
-
-	/**
-	 * @param $entryId
-	 * @return mixed
-	 */
-	public function getEntryById($entryId)
-	{
-		$entry = Entry::model()->findByAttributes(array(
-			'id' => $entryId,
-		));
-
-		return $entry;
-	}
-
-	/**
-	 * @param $sectionId
-	 * @return mixed
-	 */
-	public function getEntriesBySectionId($sectionId)
-	{
-		$entries = Entry::model()->findAllByAttributes(array(
-			'section_id' => $sectionId,
-		));
-
-		return $entries;
-	}
-
-	/**
-	 * @param $siteId
-	 * @return array
-	 */
-	public function getAllEntriesBySiteId($siteId)
-	{
-		$entries = Blocks::app()->db->createCommand()
-			->select('e.*')
-			->from('{{sections}} s')
-			->join('{{entries}} e', 's.id = e.section_id')
-			->where('s.site_id=:siteId', array(':siteId' => $siteId))
-			->queryAll();
-
-		return $entries;
-	}
-
-	/**
-	 * @param $entryId
-	 * @return mixed
-	 */
-	public function doesEntryHaveSubEntries($entryId)
-	{
-		$exists = Entry::model()->exists(
-			'parent_id=:parentId',
-			array(':parentId' => $entryId)
-		);
-
-		return $exists;
-	}
-
-	/**
-	 * @param $entryId
-	 * @return mixed
-	 */
-	public function getEntryVersionsByEntryId($entryId)
-	{
-		$versions = EntryVersions::model()->findAllByAttributes(array(
-			'entry_id' => $entryId,
-		));
-
-		return $versions;
-	}
-
-	/**
-	 * @param $versionId
-	 * @return mixed
-	 */
-	public function getEntryVersionById($versionId)
-	{
-		$version = EntryVersions::model()->findByAttributes(array(
-			'id' => $versionId,
-		));
-
-		return $version;
-	}
-
 	/* Sections */
 
 	/**
@@ -238,225 +154,87 @@ class ContentService extends BaseService
 		return $section;
 	}
 
-	/**
-	 * @param $sectionHandle
-	 * @param $siteHandle
-	 * @param $label
-	 * @param null $urlFormat
-	 * @param null $maxEntries
-	 * @param null $template
-	 * @param bool $sortable
-	 * @param null $parentId
-	 * @return Section
-	 * @throws Exception
-	 */
-	public function createSection($sectionHandle, $siteHandle, $label, $urlFormat = null, $maxEntries = null, $template = null, $sortable = false, $parentId = null)
-	{
-		$connection = Blocks::app()->db;
-		$site = Blocks::app()->sites->getSiteByHandle($siteHandle);
-
-		$transaction = $connection->beginTransaction();
-		try
-		{
-			$tableName = $this->_getEntryDataTableName($site->handle, $sectionHandle);
-
-			// drop it if it exists
-			if ($connection->schema->getTable('{{'.$tableName.'}}') !== null)
-				$connection->createCommand()->dropTable('{{'.$tableName.'}}');
-
-			// create dynamic data table
-			$connection->createCommand()->createTable('{{'.$tableName.'}}',
-				array('id'              => AttributeType::PK,
-					  'entry_id'        => AttributeType::Int.' NOT NULL',
-					  'version_id'      => AttributeType::Int.' NOT NULL',
-					  'date_created'    => AttributeType::Int,
-					  'date_updated'    => AttributeType::Int,
-					  'uid'             => AttributeType::Varchar
-				));
-
-			$entriesFKName = strtolower($tableName.'_entries_fk');
-			$connection->createCommand()->addForeignKey(
-				$entriesFKName, '{{'.$tableName.'}}', 'entry_id', '{{entries}}', 'id', 'NO ACTION', 'NO ACTION'
-			);
-
-			$entryVersionsFKName = strtolower($tableName.'_entryversions_fk');
-			$connection->createCommand()->addForeignKey(
-				$entryVersionsFKName, '{{'.$tableName.'}}', 'version_id', '{{entryversions}}', 'id', 'NO ACTION', 'NO ACTION'
-			);
-
-			DatabaseHelper::createInsertAuditTrigger($tableName);
-			DatabaseHelper::createUpdateAuditTrigger($tableName);
-
-			// check result.
-			$section = new Section();
-			$section->sites->_id = $site->id;
-
-			if ($parentId !== null)
-				$section->parent_id = $parentId;
-
-			$section->label = $label;
-			$section->sortable = ($sortable == false ? 0 : 1);
-			$section->handle = $sectionHandle;
-
-			if ($urlFormat !== null)
-				$section->url_format = $urlFormat;
-
-			if ($maxEntries !== null)
-				$section->max_entries = $maxEntries;
-
-			if ($template !== null)
-				$section->template = $template;
-
-			$section->save();
-
-			$transaction->commit();
-			return $section;
-
-		}
-		catch (Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-	}
-
-	/* Blocks */
+	/* Entries */
 
 	/**
-	 * @param $blockHandle
-	 * @param $sectionHandle
-	 * @param $siteHandle
-	 * @param $label
-	 * @param $type
-	 * @param $sortOrder
-	 * @param string $blockDataType
-	 * @param null $instructions
-	 * @param bool $required
-	 * @return EntryBlocks
-	 * @throws Exception
+	 * @param $entryId
+	 * @return mixed
 	 */
-	public function createBlock($blockHandle, $sectionHandle, $siteHandle, $label, $type, $sortOrder, $blockDataType = AttributeType::Text, $instructions = null, $required = false)
+	public function getEntryById($entryId)
 	{
-		$connection = Blocks::app()->db;
-		$site = Blocks::app()->sites->getSiteByHandle($siteHandle);
-		$section = $this->getSectionBySiteIdHandle($site->id, $sectionHandle);
+		$entry = Entry::model()->findByAttributes(array(
+			'id' => $entryId,
+		));
 
-		$transaction = $connection->beginTransaction();
-		try
-		{
-			$tableName = $this->_getEntryDataTableName($site->handle, $sectionHandle);
-			$lastBlockColumnName = $this->_getLastBlockColumnName($tableName);
-			Blocks::app()->db->createCommand()->addColumnAfter(
-				'{{'.$tableName.'}}',
-				'block_'.$blockHandle,
-				$blockDataType,
-				$lastBlockColumnName
-			);
-
-			// add to entry block row to table.
-			$block = new EntryBlocks();
-			$block->section_id = $section->id;
-			$block->handle = $blockHandle;
-			$block->label = $label;
-			$block->type = $type;
-			$block->sort_order = $sortOrder;
-
-			if ($instructions !== null)
-				$block->instructions = $instructions;
-
-			$block->required = ($required == false ? 0 : 1);
-			$block->save();
-			$transaction->commit();
-
-			return $block;
-
-		}
-		catch (Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
+		return $entry;
 	}
 
 	/**
 	 * @param $sectionId
 	 * @return mixed
 	 */
-	public function getBlocksBySectionId($sectionId)
+	public function getEntriesBySectionId($sectionId)
 	{
-		$sections = SectionBlock::model()->findAllByAttributes(array(
+		$entries = Entry::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 
-		return $sections;
+		return $entries;
+	}
+
+	/**
+	 * @param $siteId
+	 * @return array
+	 */
+	public function getAllEntriesBySiteId($siteId)
+	{
+		$entries = Blocks::app()->db->createCommand()
+			->select('e.*')
+			->from('{{sections}} s')
+			->join('{{entries}} e', 's.id = e.section_id')
+			->where('s.site_id=:siteId', array(':siteId' => $siteId))
+			->queryAll();
+
+		return $entries;
 	}
 
 	/**
 	 * @param $entryId
-	 * @return array
+	 * @return mixed
 	 */
-	public function getBlocksByEntryId($entryId)
+	public function doesEntryHaveSubEntries($entryId)
 	{
-		$blocks = Blocks::app()->db->createCommand()
-			->select('eb.*')
-			->from('{{entryblocks}} eb')
-			->join('{{sections}} s', 's.id = eb.section_id')
-			->join('{{entries}} e', 's.id = e.section_id')
-			->where('e.id=:entryId', array(':entryId' => $entryId))
-			->queryAll();
+		$exists = Entry::model()->exists(
+			'parent_id=:parentId',
+			array(':parentId' => $entryId)
+		);
 
-		return $blocks;
+		return $exists;
 	}
 
 	/**
 	 * @param $entryId
-	 * @param $handle
-	 * @return array
+	 * @return mixed
 	 */
-	public function getBlockByEntryIdHandle($entryId, $handle)
+	public function getEntryVersionsByEntryId($entryId)
 	{
-		$blocks = Blocks::app()->db->createCommand()
-			->select('eb.*')
-			->from('{{entryblocks}} eb')
-			->join('{{sections}} s', 's.id = eb.section_id')
-			->join('{{entries}} e', 's.id = e.section_id')
-			->where('e.id=:entryId AND eb.handle=:handle', array(':entryId' => $entryId, ':handle' => $handle))
-			->queryAll();
+		$versions = EntryVersions::model()->findAllByAttributes(array(
+			'entry_id' => $entryId,
+		));
 
-		return $blocks;
+		return $versions;
 	}
 
 	/**
-	 * @param $siteHandle
-	 * @param $sectionHandle
-	 * @return string
+	 * @param $versionId
+	 * @return mixed
 	 */
-	private function _getEntryDataTableName($siteHandle, $sectionHandle)
+	public function getEntryVersionById($versionId)
 	{
-		return strtolower('entrydata_'.$siteHandle.'_'.$sectionHandle);
-	}
+		$version = EntryVersions::model()->findByAttributes(array(
+			'id' => $versionId,
+		));
 
-	/**
-	 * @param $table
-	 * @return null|string
-	 */
-	private function _getLastBlockColumnName($table)
-	{
-		Blocks::app()->db->schema->refresh();
-		$dataTable = Blocks::app()->db->schema->getTable('{{'.$table.'}}');
-
-		$columnNames = $dataTable->columnNames;
-
-		$lastBlockMatch = null;
-		foreach ($columnNames as $columnName)
-		{
-			if (strpos($columnName, 'block_') !== false)
-				$lastBlockMatch = $columnName;
-		}
-
-		if ($lastBlockMatch == null)
-			$lastBlockMatch = 'version_id';
-
-		return $lastBlockMatch;
+		return $version;
 	}
 }
