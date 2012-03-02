@@ -75,17 +75,31 @@
 				</div>
 				{% if theUser.id %}
 					<div class="item field">
-						Status: {theUser.Status}
+						Status: {theUser.status}
+						{% if config.item('failedPasswordMode') == 'cooldown' %}
+							{% if user.cooldownTimeRemaining %}
+								Temporarily locked.  Unlock button.  (User will be auto-unlocked in {dateTimeHelper.secondsToHumanTimeDuration(user.cooldowntimeRemaining)}
+							{% endif %}
+						{% endif %}
 					</div>
 					{% if theUser.status == 'pending' %}
 						<div class="field">
 							Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.verifyAccountUrl}?code={theUser.activationcode}
 						</div>
 						<div class="field">
-							Needs to post to: users/sendRegistrationEmail(user, site) <br />
-							<input class="btn big submit" type="submit" value="Resend Validation Email" />
+							<input class="btn big submit" type="submit" name="validationEmail" value="Resend Validation Email" />
 						</div>
 					{% endif %}
+					<div class="item">
+						{% if theUser.status == 'suspended' %}
+							<input class="btn big submit" type="submit" name="unsuspend" value="Unsuspend" />
+						{% else %}
+							<input class="btn big submit" type="submit" name="suspend" value="Suspend" />
+						{% endif %}
+						{% if theUser.status == 'locked' %}
+							<input class="btn big submit" type="submit" name="unlock" value="Unlock" />
+						{% endif %}
+					</div>
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="password_reset">Password Reset Required</label>
@@ -121,6 +135,7 @@
 			</div>
 		</div>
 
-		<input class="btn big submit" type="submit" value="Save User" />
+		<input class="btn big submit" type="submit" name="save" value="Save User" />
+		<input class="btn big submit" type="submit" name="delete" value="Delete User" />
 	</form>
 {% endregion %}
