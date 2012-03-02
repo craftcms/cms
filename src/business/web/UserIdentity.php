@@ -16,8 +16,9 @@ class UserIdentity extends \CUserIdentity
 	public $loginName;
 	public $password;
 
-	const ERROR_ACCOUNT_LOCKED = 50;
-	const ERROR_ACCOUNT_COOLDOWN = 51;
+	const ERROR_ACCOUNT_LOCKED          = 50;
+	const ERROR_ACCOUNT_COOLDOWN        = 51;
+	const ERROR_PASSWORD_RESET_REQUIRED = 52;
 
 	/**
 	 * Constructor.
@@ -122,30 +123,40 @@ class UserIdentity extends \CUserIdentity
 						}
 						else
 						{
-							// sucessfully authenticated
-							$this->_id = $user->id;
-							$this->username = $user->username;
-							$this->errorCode = self::ERROR_NONE;
-
-							$authSessionToken = Blocks::app()->db->createCommand()->getUUID();
-							$user->auth_session_token = $authSessionToken;
-							$user->last_login_date = DateTimeHelper::currentTime();
-							$user->failed_password_attempt_count = null;
-							$user->failed_password_attempt_window_start = null;
-							$user->activationcode = null;
-							$user->activationcode_issued_date = null;
-							$user->activationcode_expire_date = null;
-
-							if (!$user->save())
+							// valid creds, but they have to reset their password.
+							if ($user->password_reset_required == 1)
 							{
-								$errorMsg = '';
-								foreach ($user->errors as $errorArr)
-									$errorMsg .= implode(' ', $errorArr);
-
-								throw new Exception('There was a problem logging you in:'.$errorMsg);
+								$this->_id = $user->id;
+								$this->errorCode = self::ERROR_PASSWORD_RESET_REQUIRED;
+								Blocks::app()->users->forgotPassword($user);
 							}
+							else
+							{
+								// finally, everything is well with the world.  let's log in.
+								$this->_id = $user->id;
+								$this->username = $user->username;
+								$this->errorCode = self::ERROR_NONE;
 
-							$this->setState('authSessionToken', $authSessionToken);
+								$authSessionToken = Blocks::app()->db->createCommand()->getUUID();
+								$user->auth_session_token = $authSessionToken;
+								$user->last_login_date = DateTimeHelper::currentTime();
+								$user->failed_password_attempt_count = null;
+								$user->failed_password_attempt_window_start = null;
+								$user->activationcode = null;
+								$user->activationcode_issued_date = null;
+								$user->activationcode_expire_date = null;
+
+								if (!$user->save())
+								{
+									$errorMsg = '';
+									foreach ($user->errors as $errorArr)
+										$errorMsg .= implode(' ', $errorArr);
+
+									throw new Exception('There was a problem logging you in:'.$errorMsg);
+								}
+
+								$this->setState('authSessionToken', $authSessionToken);
+							}
 						}
 					}
 				}

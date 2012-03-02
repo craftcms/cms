@@ -56,7 +56,7 @@ class UsersController extends BaseController
 		$user->admin = (Blocks::app()->request->getPost('admin') === 'y');
 		$user->html_email = (Blocks::app()->request->getPost('html_email') === 'y');
 		$user->status = Blocks::app()->request->getPost('status');
-		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset_required') === 'y');
+		$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
 
 		$sendValidationEmail = (Blocks::app()->request->getPost('send_validation_email') === 'y');
 

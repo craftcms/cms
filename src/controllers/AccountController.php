@@ -96,6 +96,8 @@ class AccountController extends BaseController
 					$userToChange->status = UserAccountStatus::Active;
 					$userToChange->last_password_change_date = DateTimeHelper::currentTime();
 					$userToChange->password_reset_required = false;
+					$userToChange->failed_password_attempt_count = null;
+					$userToChange->failed_password_attempt_window_start = null;
 					$userToChange->save();
 
 					if (!Blocks::app()->user->isLoggedIn)
