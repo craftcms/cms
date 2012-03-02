@@ -199,16 +199,6 @@ abstract class BaseController extends \CController
 	 */
 	public function filters()
 	{
-		return array('changePassword');
-	}
 
-	/**
-	 * Runs the Password filter
-	 * @param $filterChain
-	 */
-	public function filterChangePassword($filterChain)
-	{
-		$filter = new ChangePasswordFilter();
-		$filter->filter($filterChain);
 	}
 }

@@ -75,25 +75,17 @@
 				</div>
 				{% if theUser.id %}
 					<div class="item field">
-						<div class="input-wrapper">
-							<label for="status">Status</label>
-							<select id="status" name="status">
-								<option value="active" {% if theUser.status == 'active' %}selected{% endif %}>Active</option>
-								<option value="pending" {% if theUser.status == 'pending' %}selected{% endif %}>Pending</option>
-								<option value="suspended" {% if theUser.status == 'suspended' %}selected{% endif %}>Suspended</option>
-								<option value="locked" {% if theUser.status == 'locked' %}selected{% endif %}>Locked</option>
-							</select>
-						</div>
-						{% if theUser.status == 'pending' %}
-							<div class="field">
-								Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.verifyAccountUrl}?code={theUser.activationcode}
-							</div>
-							<div class="field">
-								Needs to post to: users/sendRegistrationEmail(user, site) <br />
-								<input class="btn big submit" type="submit" value="Resend Validation Email" />
-							</div>
-						{% endif %}
+						Status: {theUser.Status}
 					</div>
+					{% if theUser.status == 'pending' %}
+						<div class="field">
+							Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.verifyAccountUrl}?code={theUser.activationcode}
+						</div>
+						<div class="field">
+							Needs to post to: users/sendRegistrationEmail(user, site) <br />
+							<input class="btn big submit" type="submit" value="Resend Validation Email" />
+						</div>
+					{% endif %}
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="password_reset">Password Reset Required</label>
