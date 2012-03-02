@@ -156,6 +156,31 @@ class ContentService extends BaseService
 
 	/* Entries */
 
+	public function createEntry($sectionId, $authorId, $parentId = null)
+	{
+		$entry = new Entry;
+		$entry->section_id = $sectionId;
+		$entry->author_id = $authorId;
+		$entry->parent_id = $parentId;
+
+		// Find a unique slug
+		$slug = 'untitled';
+
+		$i = 0;
+		do {
+			$match = Entry::model()->findByAttributes(array(
+				'slug'       => $slug.($i ? '-'.$i : ''),
+				'section_id' => $sectionId
+			));
+			$i++;
+		} while ($match);
+
+		$entry->slug = $slug;
+
+		$entry->save();
+		return $entry;
+	}
+
 	/**
 	 * @param $entryId
 	 * @return mixed

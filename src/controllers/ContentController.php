@@ -71,4 +71,15 @@ class ContentController extends BaseController
 			'sectionBlocks' => $sectionBlocks
 		));
 	}
+
+	/**
+	 * Creates a new entry and redirects to its edit page
+	 */
+	public function actionCreateEntry()
+	{
+		$sectionId = Blocks::app()->request->getPost('sectionId');
+		$authorId = Blocks::app()->user->id;
+		$entry = Blocks::app()->content->createEntry($sectionId, $authorId);
+		$this->redirect('content/edit/'.$entry->id);
+	}
 }

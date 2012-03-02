@@ -5,7 +5,15 @@
 {% endregion %}
 
 {% region "sidebar" %}
-	{% include "content/_includes/sitemap" %}
+	{% foreach content.sections as section %}
+		<h5>{section.name}</h5>
+		<ul class="nav tree">
+			{% foreach section.entries as entry %}
+				<li><a class="has-status" href="{url.base}content/edit/{entry.id}"><span class="status {% if entry.live %}on{% elseif entry.published %}off{% endif %}"></span>{entry.title}</li>
+			{% endforeach %}
+			<li><a class="new {% if url.segment(2) == 'new' %}sel{% endif %}" href="{url.action}/content/createEntry?sectionId={section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
+		</ul>
+	{% endforeach %}
 {% endregion %}
 
 {% region "main" %}

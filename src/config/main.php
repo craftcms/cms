@@ -129,6 +129,7 @@ return array(
 				array('users/edit/({number})',             'users/_edit', array('userId')),
 				array('settings/blocks/new',               'settings/blocks/_edit'),
 				array('settings/blocks/edit/({number})',   'settings/blocks/_edit', array('blockId')),
+				array('content/edit/({number})',           'content/_edit', array('entryId')),
 				array('settings/sections/new',             'settings/sections/_edit'),
 				array('settings/sections/edit/({number})', 'settings/sections/_edit', array('sectionId')),
 				array('settings/sites/new',                'settings/sites/_edit'),
