@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class ContentBlock extends BaseModel
 {
+	public $required;
+
 	protected $tableName = 'contentblocks';
 	protected $_blockType;
 

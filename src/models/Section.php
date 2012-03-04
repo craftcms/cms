@@ -22,10 +22,6 @@ class Section extends BaseModel
 		'site'   => array('model' => 'Site', 'required' => true)
 	);
 
-	protected $hasBlocks = array(
-		'blocks' => array('model' => 'SectionBlock', 'foreignKey' => 'section')
-	);
-
 	protected $hasMany = array(
 		'children' => array('model' => 'Section', 'foreignKey' => 'parent'),
 		'entries'  => array('model' => 'Entry', 'foreignKey' => 'section')
@@ -34,4 +30,32 @@ class Section extends BaseModel
 	protected $indexes = array(
 		array('columns' => array('site_id', 'handle'), 'unique' => true),
 	);
+
+	/**
+	 * Returns the content blocks assigned to this section
+	 * @return array
+	 */
+	public function getBlocks()
+	{
+		$sectionBlocks = Blocks::app()->db->createCommand()
+			->select('sb.required, b.id, b.name, b.handle, b.class, b.instructions')
+			->from('{{sectionblocks}} sb')
+			->join('{{contentblocks}} b', 'sb.block_id = b.id')
+			->where('sb.section_id = :id', array(':id' => $this->id))
+			->order('sb.sort_order')
+			->queryAll();
+
+		// Return as actual ContentBlock objects
+		$blocks = array();
+		foreach ($sectionBlocks as $attributes)
+		{
+			$block = new ContentBlock;
+			foreach ($attributes as $key => $val)
+			{
+				$block->$key = $val;
+			}
+			$blocks[] = $block;
+		}
+		return $blocks;
+	}
 }
