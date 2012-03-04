@@ -37,7 +37,7 @@ class Section extends BaseModel
 	 */
 	public function getBlocks()
 	{
-		$sectionBlocks = Blocks::app()->db->createCommand()
+		$data = Blocks::app()->db->createCommand()
 			->select('sb.required, b.id, b.name, b.handle, b.class, b.instructions')
 			->from('{{sectionblocks}} sb')
 			->join('{{contentblocks}} b', 'sb.block_id = b.id')
@@ -45,17 +45,7 @@ class Section extends BaseModel
 			->order('sb.sort_order')
 			->queryAll();
 
-		// Return as actual ContentBlock objects
-		$blocks = array();
-		foreach ($sectionBlocks as $attributes)
-		{
-			$block = new ContentBlock;
-			foreach ($attributes as $key => $val)
-			{
-				$block->$key = $val;
-			}
-			$blocks[] = $block;
-		}
+		$blocks = ContentBlock::model()->populateRecords($data);
 		return $blocks;
 	}
 }
