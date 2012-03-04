@@ -261,4 +261,20 @@ class UsersService extends BaseService
 
 		return false;
 	}
+
+	/**
+	 * @param $userId
+	 * @return null
+	 */
+	public function getRemainingCooldownTime($userId)
+	{
+		$user = $this->getById($userId);
+		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('failedPasswordCooldown'));
+		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
+
+		if ($cooldownRemaining > 0)
+			return $cooldownRemaining;
+
+		return null;
+	}
 }

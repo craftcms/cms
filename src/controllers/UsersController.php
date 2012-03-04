@@ -52,22 +52,29 @@ class UsersController extends BaseController
 		if (Blocks::app()->request->getPost('suspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Suspended;
+			$this->_processUserChange($user, 'User has been suspended.', MessageStatus::Success);
 		}
 		else if (Blocks::app()->request->getPost('validationEmail', null) !== null)
 		{
-			//Blocks::app()->users->sendRegistrationEmail(user, site);
+			if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, Blocks::app()->sites->currentSite)) == true)
+				$this->_processUserChange($user, 'Validation email has been resent.', MessageStatus::Success);
 		}
 		else if (Blocks::app()->request->getPost('unsuspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
+			$this->_processUserChange($user, 'User has been unsuspended.', MessageStatus::Success);
 		}
 		else if (Blocks::app()->request->getPost('unlock', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
+			$user->cooldown_start = null;
+			$this->_processUserChange($user, 'User has been unlocked.', MessageStatus::Success);
+
 		}
 		else if (Blocks::app()->request->getPost('delete', null) !== null)
 		{
-			// delete logic.
+			// TODO: delete logic.
+			//when we delete a user is that a hard or soft delete?  and how far down to we cascade that?  userwidgets, versions, autosaves, etc?  do we allow new people to register that username and/or email?
 		}
 		else if (Blocks::app()->request->getPost('save', null) !== null)
 		{
@@ -121,15 +128,35 @@ class UsersController extends BaseController
 
 				if ($existingUser)
 					Blocks::app()->user->setMessage(MessageStatus::Success, 'User saved successfully.');
+
+				$url = Blocks::app()->request->getPost('redirect');
+				if ($url !== null)
+					$this->redirect($url);
 			}
 		}
+
+
+
+
+		$this->loadRequestedTemplate(array('theUser' => $user));
+	}
+
+	/**
+	 * @param User $user
+	 * @param      $message
+	 * @param      $messageStatus
+	 */
+	private function _processUserChange(User $user, $message, $messageStatus)
+	{
+		if ($user->validate())
+		{
+			$user->save();
+			Blocks::app()->user->setMessage($messageStatus, $message);
 
 			$url = Blocks::app()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
-
-
-		$this->loadRequestedTemplate(array('theUser' => $user));
+		}
 	}
 }
 

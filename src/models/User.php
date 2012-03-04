@@ -26,6 +26,7 @@ class User extends BaseModel
 		'last_lockout_date'                     => AttributeType::Int,
 		'failed_password_attempt_count'         => array('type' => AttributeType::TinyInt, 'unsigned' => true),
 		'failed_password_attempt_window_start'  => AttributeType::Int,
+		'cooldown_start'                        => AttributeType::Int,
 		'activationcode'                        => array('type' => AttributeType::Char, 'maxLength' => 36),
 		'activationcode_issued_date'            => array('type' => AttributeType::Int),
 		'activationcode_expire_date'            => array('type' => AttributeType::Int),

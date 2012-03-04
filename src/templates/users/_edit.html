@@ -11,8 +11,13 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/save" />
-		<input type="hidden" name="redirect" value="users" />
-		{% if theUser.id %}<input type="hidden" name="user_id" value="{theUser.id}">{% endif %}
+
+		{% if theUser.id %}
+			<input type="hidden" name="user_id" value="{theUser.id}">
+			<input type="hidden" name="redirect" value="users/edit/{theUser.id}" />
+		{% else %}
+			<input type="hidden" name="redirect" value="users" />
+		{% endif %}
 
 		<div class="pane">
 			<div class="head">
@@ -77,8 +82,15 @@
 					<div class="item field">
 						Status: {theUser.status}
 						{% if config.item('failedPasswordMode') == 'cooldown' %}
-							{% if user.cooldownTimeRemaining %}
-								Temporarily locked.  Unlock button.  (User will be auto-unlocked in {dateTimeHelper.secondsToHumanTimeDuration(user.cooldowntimeRemaining)}
+							{% if theUser.cooldown_start %}
+								<br />
+								{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(users.getRemainingCooldownTime(theUser.id)) %}
+								Temporarily locked.  User will be auto-unlocked
+								{% if timeRemaining > 0 %}
+									in {timeRemaining}
+								{% else %}
+									the next time they log in.
+								{% endif %}
 							{% endif %}
 						{% endif %}
 					</div>
@@ -136,6 +148,8 @@
 		</div>
 
 		<input class="btn big submit" type="submit" name="save" value="Save User" />
-		<input class="btn big submit" type="submit" name="delete" value="Delete User" />
+		{% if theUser.id %}
+			<input class="btn big submit" type="submit" name="delete" value="Delete User" />
+		{% endif %}
 	</form>
 {% endregion %}

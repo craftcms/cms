@@ -98,6 +98,7 @@ class AccountController extends BaseController
 					$userToChange->password_reset_required = false;
 					$userToChange->failed_password_attempt_count = null;
 					$userToChange->failed_password_attempt_window_start = null;
+					$userToChange->cooldown_start = null;
 					$userToChange->save();
 
 					if (!Blocks::app()->user->isLoggedIn)
