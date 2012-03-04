@@ -15,7 +15,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getReturnUrl($defaultUrl = null)
 	{
-		return $this->getState('__returnUrl', $defaultUrl === null ? 'dashboard' : HtmlHelper::normalizeUrl($defaultUrl));
+		return $this->getState('__returnUrl', $defaultUrl === null ? UrlHelper::generateUrl('dashboard') : HtmlHelper::normalizeUrl($defaultUrl));
 	}
 
 	/**
@@ -49,22 +49,6 @@ class UserSessionService extends \CWebUser
 		}
 		else
 			throw new HttpException(403, Blocks::t('blocks','Login Required'));
-	}
-
-
-	/**
-	 * @param $value
-	 */
-	public function setReturnUrl($value)
-	{
-		// strip off any rogue script file names that are prepending the return url.
-		$scriptFilePath = Blocks::app()->request->scriptFile;
-		$scriptFileName = pathinfo($scriptFilePath, PATHINFO_FILENAME).'.'.pathinfo($scriptFilePath, PATHINFO_EXTENSION);
-
-		if (substr(trim($value, '/'), 0, strlen($scriptFileName)) == $scriptFileName)
-			$value = substr(trim($value, '/'), strlen($scriptFileName));
-
-		$this->setState('__returnUrl', $value);
 	}
 
 	/**
