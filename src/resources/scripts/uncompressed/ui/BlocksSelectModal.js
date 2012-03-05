@@ -110,9 +110,8 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 		this.setFillers();
 
-		// Hard-set the body's height
-		this.$body.height('auto');
-		this.$body.height(this.$body.height());
+		// Hard-set the scrollpane's height
+		this.$scrollpane.height(this.$body.height());
 
 		if (!this.visible)
 			this.$container.hide();
