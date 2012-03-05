@@ -123,9 +123,9 @@ class ContentService extends BaseService
 				// Delete the previous content block selections
 				if (!$isNewSection)
 				{
-					SectionBlock::model()->deleteAllByAttributes(array(
-						'section_id' => $section->id
-					));
+					Blocks::app()->db->createCommand()
+						->where('section_id = :id', array(':id' => $section->id))
+						->delete('{{sectionblocks}}');
 				}
 
 				// Add new content block selections

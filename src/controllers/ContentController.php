@@ -57,9 +57,8 @@ class ContentController extends BaseController
 		{
 			foreach ($sectionBlocksData['selections'] as $blockId)
 			{
-				$block = new SectionBlock;
+				$block = Blocks::app()->contentBlocks->getBlockById($blockId);
 				$block->required = (isset($sectionBlocksData['required'][$blockId]) && $sectionBlocksData['required'][$blockId] === 'y');
-				$block->block = Blocks::app()->contentBlocks->getBlockById($blockId);
 				$sectionBlocks[] = $block;
 			}
 		}
