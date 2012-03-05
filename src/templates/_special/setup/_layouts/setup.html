@@ -22,8 +22,15 @@
 				</div>
 				<div class="step-nav">
 					{% if step != 'LicenseKey' %}
+						{% if step == 'Site' %}
+							{% set backLink = url.url('setup') %}
+						{% else %}
+							{% if step == 'Account' %}
+								{% set backLink = url.url('setup/site') %}
+							{% endif %}
+						{% endif %}
 						<div class="left">
-							<input id="go-back" class="btn big" type="button" value="Back" />
+							<a href="{backLink}" class="btn big">Back</a>
 						</div>
 					{% endif %}
 					<div class="right">

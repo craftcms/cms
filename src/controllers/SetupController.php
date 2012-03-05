@@ -22,7 +22,7 @@ class SetupController extends BaseController
 	public function actionIndex()
 	{
 		// Is this a post request?
-		if (Blocks::app()->request->requestType == 'POST')
+		if (Blocks::app()->request->isPostRequest)
 		{
 			$postLicenseKeyId = Blocks::app()->request->getPost('licensekey_id');
 
@@ -52,7 +52,7 @@ class SetupController extends BaseController
 	public function actionSite()
 	{
 		// Is this a post request?
-		if (Blocks::app()->request->requestType == 'POST')
+		if (Blocks::app()->request->isPostRequest)
 		{
 			$postSiteId = Blocks::app()->request->getPost('site_id');
 
@@ -89,8 +89,10 @@ class SetupController extends BaseController
 	 */
 	public function actionAccount()
 	{
+		$passwordInfo = new VerifyPasswordForm();
+
 		// Is this a post request?
-		if (Blocks::app()->request->requestType == 'POST')
+		if (Blocks::app()->request->isPostRequest)
 		{
 			$postUserId = Blocks::app()->request->getPost('user_id');
 
@@ -106,55 +108,61 @@ class SetupController extends BaseController
 			$user->last_name = Blocks::app()->request->getPost('last_name');
 			$user->admin = true;
 
-			$newUser = $user->isNewRecord;
 			$password = Blocks::app()->request->getPost('password');
+			$confirmPassword = Blocks::app()->request->getPost('password_confirm');
 
-			if ($newUser || $password)
+			$passwordInfo->password = $password;
+			$passwordInfo->confirmPassword = $confirmPassword;
+
+			if ($user->validate())
 			{
-				$hashAndType = Blocks::app()->security->hashPassword($password);
-				$user->password = $hashAndType['hash'];
-				$user->enc_type = $hashAndType['encType'];
+				if ($passwordInfo->validate())
+				{
+					$hashAndType = Blocks::app()->security->hashPassword($password);
+					$user->password = $hashAndType['hash'];
+					$user->enc_type = $hashAndType['encType'];
+
+					if (($user = Blocks::app()->users->registerUser($user, $password, false)) !== null)
+					{
+						$user->status = UserAccountStatus::Active;
+						$user->activationcode = null;
+						$user->activationcode_issued_date = null;
+						$user->activationcode_expire_date = null;
+						$user->save(false);
+
+						// Give them the default dashboard widgets
+						Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);
+
+						$loginInfo = new LoginForm();
+						$loginInfo->loginName = $user->username;
+						$loginInfo->password = $password;
+
+						// log the user in
+						$loginInfo->login();
+
+						// setup the default email settings.
+						$settings['protocol'] = EmailerType::PhpMail;
+						$settings['emailAddress'] = $user->email;
+						$settings['senderName'] = Blocks::app()->sites->primarySite->name;
+						Blocks::app()->email->saveEmailSettings($settings);
+
+						$this->redirect('dashboard');
+					}
+				}
 			}
-
-			if (($user = Blocks::app()->users->registerUser($user, $password, false)) !== null)
+			else
 			{
-				$user->status = UserAccountStatus::Active;
-				$user->activationcode = null;
-				$user->activationcode_issued_date = null;
-				$user->activationcode_expire_date = null;
-				$user->save();
-
-				if ($newUser)
-					// Give them the default dashboard widgets
-					Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);
-
-				$loginInfo = new LoginForm();
-
-				// Check to see if it's a submit.
-				$loginInfo->loginName = $user->username;
-				$loginInfo->password = $password;
-
-				// log the user in
-				$loginInfo->login();
-
-				// setup the default email settings.
-				$settings['protocol'] = EmailerType::PhpMail;
-				$settings['emailAddress'] = $user->email;
-				$settings['senderName'] = Blocks::app()->sites->primarySite->name;
-				Blocks::app()->email->saveEmailSettings($settings);
-
-				if (Blocks::app()->request->getQuery('goback') === null)
-					$this->redirect('dashboard');
-				else
-					$this->redirect('setup/site');
+				// user validation failed, let's check password validation so we can display all the errors at once.
+				$passwordInfo->validate();
 			}
 		}
 		else
 			// Does an admin user already exist?
-			$user = User::model()->find('admin=:admin', array(':admin'=>true));
+			$user = User::model()->find('admin=:admin', array(':admin' => true));
 
 		$this->loadTemplate('_special/setup/account', array(
-			'user' => $user
+			'user' => $user,
+			'passwordInfo' => $passwordInfo
 		));
 	}
 }

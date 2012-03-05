@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class VerifyAccountForm extends \CFormModel
+class VerifyPasswordForm extends \CFormModel
 {
 	public $password;
 	public $confirmPassword;

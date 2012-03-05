@@ -77,18 +77,18 @@ class AccountController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$verifyAccountForm = new VerifyAccountForm();
+		$verifyPasswordForm = new VerifyPasswordForm();
 
-		$verifyAccountForm->password = Blocks::app()->request->getPost('password');
-		$verifyAccountForm->confirmPassword = Blocks::app()->request->getPost('confirm-password');
+		$verifyPasswordForm->password = Blocks::app()->request->getPost('password');
+		$verifyPasswordForm->confirmPassword = Blocks::app()->request->getPost('confirm-password');
 
-		if ($verifyAccountForm->validate())
+		if ($verifyPasswordForm->validate())
 		{
 			$userToChange = Blocks::app()->users->getById(Blocks::app()->request->getPost('userId'));
 
 			if ($userToChange !== null)
 			{
-				if (($userToChange = Blocks::app()->users->changePassword($userToChange, $verifyAccountForm->password)) !== false)
+				if (($userToChange = Blocks::app()->users->changePassword($userToChange, $verifyPasswordForm->password)) !== false)
 				{
 					$userToChange->activationcode = null;
 					$userToChange->activationcode_issued_date = null;
@@ -102,7 +102,7 @@ class AccountController extends BaseController
 					$userToChange->save();
 
 					if (!Blocks::app()->user->isLoggedIn)
-						Blocks::app()->user->startLogin($userToChange->username, $verifyAccountForm->password);
+						Blocks::app()->user->startLogin($userToChange->username, $verifyPasswordForm->password);
 
 					Blocks::app()->dashboard->assignDefaultUserWidgets($userToChange->id);
 
@@ -115,7 +115,7 @@ class AccountController extends BaseController
 		}
 
 		// display the verify account form
-		$this->loadTemplate('verify', array('verifyAccountInfo' => $verifyAccountForm));
+		$this->loadTemplate('verify', array('verifyAccountInfo' => $verifyPasswordForm));
 	}
 
 	/**

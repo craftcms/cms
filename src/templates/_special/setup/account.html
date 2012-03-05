@@ -49,16 +49,19 @@
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="password">Password</label>
-				<div class="input-wrapper"><input id="password" name="password" {% if user.errors.password %}class="error"{% endif %} type="password" /></div>
-				{% if user.errors.password %}
-					{% include "_includes/error_list" errors=user.errors.password %}
+				<div class="input-wrapper"><input id="password" name="password" {% if passwordInfo.errors.password %}class="error"{% endif %} type="password" /></div>
+				{% if passwordInfo.errors.password %}
+					{% include "_includes/error_list" errors=passwordInfo.errors.password %}
 				{% endif %}
 			</div>
 		</div></div>
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="password_confirm">Password (again)</label>
-				<div class="input-wrapper"><input id="password_confirm" name="password_confirm" type="password" /></div>
+				<div class="input-wrapper"><input id="password_confirm" name="password_confirm" type="password" {% if passwordInfo.errors.confirmPassword %}class="error"{% endif %} type="password" /></div>
+				{% if passwordInfo.errors.confirmPassword %}
+					{% include "_includes/error_list" errors=passwordInfo.errors.confirmPassword %}
+				{% endif %}
 			</div>
 		</div></div>
 	</div>
