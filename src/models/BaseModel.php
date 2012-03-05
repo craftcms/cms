@@ -42,7 +42,7 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Get the class name, sans namespace
 	 */
-	protected function getClass()
+	protected function getClassHandle()
 	{
 		if (!isset($this->_class))
 		{
@@ -70,7 +70,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->tableName))
 			return $this->tableName;
 		else
-			return $this->getClass();
+			return $this->getClassHandle();
 	}
 
 	/**
@@ -83,7 +83,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->contentJoinTableName))
 			return $this->contentJoinTableName;
 		else
-			return $this->getClass().'content';
+			return $this->getClassHandle().'content';
 	}
 
 	/**
@@ -96,7 +96,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->blocksJoinTableName))
 			return $this->blocksJoinTableName;
 		else
-			return $this->getClass().'blocks';
+			return $this->getClassHandle().'blocks';
 	}
 
 	/**
@@ -116,7 +116,7 @@ abstract class BaseModel extends \CActiveRecord
 					->from('{{'.$this->getContentJoinTableName().'}} j')
 					->join('{{content}} c', 'j.content_id = c.id')
 					->where(
-						array('and', 'j.'.$this->getClass().'_id = :id', 'j.active = 1'),
+						array('and', 'j.'.$this->getClassHandle().'_id = :id', 'j.active = 1'),
 						array(':id' => $this->id)
 					)
 					->order('j.num desc')
@@ -144,7 +144,7 @@ abstract class BaseModel extends \CActiveRecord
 					->select('j.required, b.*')
 					->from('{{'.$this->getBlocksJoinTableName().'}} j')
 					->join('{{contentblocks}} b', 'j.block_id = b.id')
-					->where('j.'.$this->getClass().'_id = :id', array(':id' => $this->id))
+					->where('j.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
 					->order('j.sort_order')
 					->queryAll();
 
@@ -538,7 +538,7 @@ abstract class BaseModel extends \CActiveRecord
 		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		$joinTable = $this->getContentJoinTableName();
 		$modelTable = $this->getTableName();
-		$modelFk = $this->getClass().'_id';
+		$modelFk = $this->getClassHandle().'_id';
 
 		$columns = array(
 			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
@@ -578,7 +578,7 @@ abstract class BaseModel extends \CActiveRecord
 		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		$joinTable = $this->getBlocksJoinTableName();
 		$modelTable = $this->getTableName();
-		$modelFk = $this->getClass().'_id';
+		$modelFk = $this->getClassHandle().'_id';
 
 		$columns = array(
 			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
