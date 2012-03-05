@@ -68,6 +68,7 @@ class UserIdentity extends \CUserIdentity
 		{
 			// If the account is pending, they don't exist yet.
 			case UserAccountStatus::Pending:
+			case UserAccountStatus::Archived:
 			{
 				$this->errorCode = self::ERROR_USERNAME_INVALID;
 				break;

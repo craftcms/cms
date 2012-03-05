@@ -52,29 +52,38 @@ class UsersController extends BaseController
 		if (Blocks::app()->request->getPost('suspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Suspended;
-			$this->_processUserChange($user, 'User has been suspended.', MessageStatus::Success);
+			if ($this->_processUserChange($user))
+				$this->_setMessageAndRedirect('User has been suspended.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 		}
 		else if (Blocks::app()->request->getPost('validationEmail', null) !== null)
 		{
 			if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, Blocks::app()->sites->currentSite)) == true)
-				$this->_processUserChange($user, 'Validation email has been resent.', MessageStatus::Success);
+				$this->_setMessageAndRedirect('Validation email has been resent.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 		}
 		else if (Blocks::app()->request->getPost('unsuspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
-			$this->_processUserChange($user, 'User has been unsuspended.', MessageStatus::Success);
+			if ($this->_processUserChange($user))
+				$this->_setMessageAndRedirect('User has been unsuspended.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 		}
 		else if (Blocks::app()->request->getPost('unlock', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			$user->cooldown_start = null;
-			$this->_processUserChange($user, 'User has been unlocked.', MessageStatus::Success);
-
+			if ($this->_processUserChange($user))
+				$this->_setMessageAndRedirect('User has been unlocked.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 		}
 		else if (Blocks::app()->request->getPost('delete', null) !== null)
 		{
-			// TODO: delete logic.
-			//when we delete a user is that a hard or soft delete?  and how far down to we cascade that?  userwidgets, versions, autosaves, etc?  do we allow new people to register that username and/or email?
+			if ($user->id == Blocks::app()->users->current->id)
+			{
+				$this->_setMessageAndRedirect('Trying to delete yourself?  It can\'t be that bad.', MessageStatus::Notice, Blocks::app()->request->getPost('redirect'));
+			}
+			else
+			{
+				Blocks::app()->users->delete($user);
+				$this->_setMessageAndRedirect('Sucessfully archived user.', MessageStatus::Success, 'users', Blocks::app()->request->getPost('redirect'));
+			}
 		}
 		else if (Blocks::app()->request->getPost('save', null) !== null)
 		{
@@ -103,60 +112,71 @@ class UsersController extends BaseController
 							if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
 							{
 								// registered and sent email
-								Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user and sent registration email.');
+								$this->_setMessageAndRedirect('Successfully registered user and sent registration email.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 							}
 							else
 							{
 								// registered but there was a problem sending the email.
-								Blocks::app()->user->setMessage(MessageStatus::Notice, 'Successfully registered user, but there was a problem sending the email: '.$emailStatus);
+								$this->_setMessageAndRedirect('Successfully registered user, but there was a problem sending the email: '.$emailStatus, MessageStatus::Notice, Blocks::app()->request->getPost('redirect'));
 							}
 						}
 						else
 						{
 							// registered user with no email validation
-							Blocks::app()->user->setMessage(MessageStatus::Success, 'Successfully registered user.');
+							$this->_setMessageAndRedirect('Successfully registered user.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 						}
 					}
 					else
 					{
 						// there was a problem registering the user.
-						Blocks::app()->user->setMessage(MessageStatus::Error, 'There was a problem registering the user.  Check your log files.');
+						$this->_setMessageAndRedirect('There was a problem registering the user.  Check your log files.', MessageStatus::Error, Blocks::app()->request->getPost('redirect'));
 					}
 				}
 				else
 					$user->save(false);
 
 				if ($existingUser)
-					Blocks::app()->user->setMessage(MessageStatus::Success, 'User saved successfully.');
+					$this->_setMessageAndRedirect('User saved successfully.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
 
-				$url = Blocks::app()->request->getPost('redirect');
-				if ($url !== null)
-					$this->redirect($url);
+				$this->_redirect(Blocks::app()->request->getPost('redirect'));
 			}
 		}
-
-
-
 
 		$this->loadRequestedTemplate(array('theUser' => $user));
 	}
 
 	/**
 	 * @param User $user
-	 * @param      $message
-	 * @param      $messageStatus
+	 * @return bool
 	 */
-	private function _processUserChange(User $user, $message, $messageStatus)
+	private function _processUserChange(User $user)
 	{
 		if ($user->validate())
 		{
 			$user->save();
-			Blocks::app()->user->setMessage($messageStatus, $message);
-
-			$url = Blocks::app()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+			return true;
 		}
+		else
+			return false;
+	}
+
+	/**
+	 * @param $message
+	 * @param $messageStatus
+	 */
+	private function _setMessageAndRedirect($message, $messageStatus, $url)
+	{
+		Blocks::app()->user->setMessage($messageStatus, $message);
+		$this->_redirect($url);
+	}
+
+	/**
+	 *
+	 */
+	private function _redirect($url)
+	{
+		if ($url !== null)
+			$this->redirect($url);
 	}
 }
 

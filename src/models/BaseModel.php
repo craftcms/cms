@@ -264,7 +264,7 @@ abstract class BaseModel extends \CActiveRecord
 			$rules[] = array(implode(',', $emails), 'email');
 
 		if ($urls)
-			$rules[] = array(implode(',', $urls), 'Blocks\UrlValidator');
+			$rules[] = array(implode(',', $urls), 'Blocks\UrlValidator', 'requireSchema' => false);
 
 		if ($strictLengths)
 		{
@@ -324,6 +324,7 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Get the records that were recently created
 	 * @param int limit Number of rows to get (default is 50)
+	 * @return \Blocks\BaseModel
 	 */
 	public function recentlyCreated($limit = 50)
 	{
@@ -337,6 +338,7 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Get the records that were recently modified
 	 * @param int limit Number of rows to get (default is 50)
+	 * @return \Blocks\BaseModel
 	 */
 	public function recentlyUpdated($limit = 50)
 	{
