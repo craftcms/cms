@@ -6,7 +6,7 @@ html, body { height: 100%; }
 
 .pane .body .sidebar { position: absolute; top: 0; left: 0; height: 100%; border-bottom-left-radius: 3px; }
 .pane .body .sidebar ol { list-style-type: none; }
-.pane .body .sidebar ol li a { padding-top: 16px; padding-bottom: 16px; font-size: 14px; cursor: default; }
+.pane .body .sidebar ol li a { padding-top: 16px; padding-bottom: 16px; font-size: 14px; cursor: default; text-decoration: none; }
 .pane .body .sidebar ol li a:not(.sel):hover { color: #666 !important; }
 .pane .body .sidebar ol li a .step { display: block; float: left; margin: -3px 8px -3px 0; border-radius: 12px; width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 14px; color: #fff; text-shadow: none; background: #999; }
 .pane .body .sidebar ol li a.sel .step { color: #2d98db; background: #fff; -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
@@ -14,3 +14,4 @@ html, body { height: 100%; }
 .pane .body .step-contents { position: absolute; top: 0; left: 220px; padding: 16px 20px; width: 540px; height: 360px; overflow: auto; }
 
 .pane .body .step-nav { position: absolute; bottom: 0; left: 221px; border-bottom-right-radius: 3px; width: 539px; padding: 8px 20px; background: #fcfcfc; -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.15); }
+.pane .body .step-nav .left .btn { display: block; }
