@@ -7,6 +7,7 @@ namespace Blocks;
 class Entry extends BaseModel
 {
 	protected $tableName = 'entries';
+	protected $hasContent = true;
 
 	protected $attributes = array(
 		'slug'        => AttributeType::Handle,
@@ -22,10 +23,6 @@ class Entry extends BaseModel
 		'parent'  => array('model' => 'Entry'),
 		'section' => array('model' => 'Section', 'required' => true),
 		'author'  => array('model' => 'User', 'required' => true)
-	);
-
-	protected $hasContent = array(
-		'content' => array('model' => 'EntryContent', 'foreignKey' => 'entry')
 	);
 
 	protected $hasMany = array(

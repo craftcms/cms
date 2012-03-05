@@ -7,14 +7,11 @@ namespace Blocks;
 class UserGroup extends BaseModel
 {
 	protected $tableName = 'usergroups';
+	protected $hasBlocks = true;
 
 	protected $attributes = array(
 		'name'        => AttributeType::Name,
 		'description' => AttributeType::Text
-	);
-
-	protected $hasBlocks = array(
-		'blocks' => array('model' => 'UserGroupBlock', 'foreignKey' => 'group')
 	);
 
 	protected $hasMany = array(

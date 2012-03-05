@@ -7,6 +7,7 @@ namespace Blocks;
 class User extends BaseModel
 {
 	protected $tableName = 'users';
+	protected $hasContent = true;
 
 	protected $attributes = array(
 		'username'                              => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required'  => true, 'unique' => true),
@@ -30,10 +31,6 @@ class User extends BaseModel
 		'activationcode'                        => array('type' => AttributeType::Char, 'maxLength' => 36),
 		'activationcode_issued_date'            => array('type' => AttributeType::Int),
 		'activationcode_expire_date'            => array('type' => AttributeType::Int),
-	);
-
-	protected $hasContent = array(
-		'content' => array('model' => 'UserContent', 'foreignKey' => 'user')
 	);
 
 	protected $hasMany = array(

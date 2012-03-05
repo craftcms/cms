@@ -7,6 +7,8 @@ namespace Blocks;
 class Asset extends BaseModel
 {
 	protected $tableName = 'assets';
+	protected $hasBlocks = true;
+	protected $hasContent = true;
 
 	protected $attributes = array(
 		'path'      => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'required' => true),
@@ -16,13 +18,5 @@ class Asset extends BaseModel
 
 	protected $belongsTo = array(
 		'folder' => array('model' => 'AssetFolder', 'required' => true)
-	);
-
-	protected $hasBlocks = array(
-		'blocks' => array('model' => 'AssetBlock', 'foreignKey' => 'asset')
-	);
-
-	protected $hasContent = array(
-		'content' => array('model' => 'AssetContent', 'foreignKey' => 'asset')
 	);
 }

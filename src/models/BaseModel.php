@@ -7,14 +7,19 @@ namespace Blocks;
 abstract class BaseModel extends \CActiveRecord
 {
 	protected $tableName;
+	protected $hasContent = false;
+	protected $hasBlocks = false;
+	protected $contentJoinTableName;
+	protected $blocksJoinTableName;
 	protected $attributes = array();
 	protected $belongsTo = array();
-	protected $hasBlocks = array();
-	protected $hasContent = array();
 	protected $hasMany = array();
 	protected $hasOne = array();
 	protected $indexes = array();
-	protected $_tableName;
+
+	protected $_class;
+	protected $_content;
+	protected $_blocks;
 
 	/**
 	 * Constructor
@@ -35,6 +40,19 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
+	 * Get the class name, sans namespace
+	 */
+	protected function getClass()
+	{
+		if (!isset($this->_class))
+		{
+			$this->_class = substr(strtolower(get_class($this)), strlen(__NAMESPACE__)+1);
+		}
+		return $this->_class;
+	}
+
+	/**
+	 * Used by CActiveRecord
 	 * @return string The model's table name
 	 */
 	public function tableName()
@@ -49,18 +67,104 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	protected function getTableName()
 	{
-		if (!isset($this->_tableName))
-		{
-			if (isset($this->tableName))
-				$this->_tableName = $this->tableName;
-			else
-				$this->_tableName = strtolower(get_class($this));
-		}
-
-		return $this->_tableName;
+		if (isset($this->tableName))
+			return $this->tableName;
+		else
+			return $this->getClass();
 	}
 
 	/**
+	 * Get the model's content join table name
+	 * @return string The table name
+	 * @access protected
+	 */
+	protected function getContentJoinTableName()
+	{
+		if (isset($this->contentJoinTableName))
+			return $this->contentJoinTableName;
+		else
+			return $this->getClass().'content';
+	}
+
+	/**
+	 * Get the model's content blocks join table name
+	 * @return string The table name
+	 * @access protected
+	 */
+	protected function getBlocksJoinTableName()
+	{
+		if (isset($this->blocksJoinTableName))
+			return $this->blocksJoinTableName;
+		else
+			return $this->getClass().'blocks';
+	}
+
+	/**
+	 * Returns the content assigned to this section
+	 * @return array
+	 */
+	public function getContent()
+	{
+		if (!isset($this->_content))
+		{
+			if ($this->isNewRecord || !$this->hasContent)
+				$this->_content = array();
+			else
+			{
+				$data = Blocks::app()->db->createCommand()
+					->select('c.*')
+					->from('{{'.$this->getContentJoinTableName().'}} j')
+					->join('{{content}} c', 'j.content_id = c.id')
+					->where(
+						array('and', 'j.'.$this->getClass().'_id = :id', 'j.actine = 1'),
+						array(':id' => $this->id)
+					)
+					->order('j.sort_order, j.num desc')
+					->queryRow();
+
+				$this->_content = Content::model()->populateRecord($data);
+			}
+		}
+		return $this->_content;
+	}
+
+	/**
+	 * Returns the content blocks assigned to this section
+	 * @return array
+	 */
+	public function getBlocks()
+	{
+		if (!isset($this->_blocks))
+		{
+			if ($this->isNewRecord || !$this->hasBlocks)
+				$this->_blocks = array();
+			else
+			{
+				$data = Blocks::app()->db->createCommand()
+					->select('j.required, b.*')
+					->from('{{'.$this->getBlocksJoinTableName().'}} j')
+					->join('{{contentblocks}} b', 'j.block_id = b.id')
+					->where('j.'.$this->getClass().'_id = :id', array(':id' => $this->id))
+					->order('j.sort_order')
+					->queryAll();
+
+				$this->_blocks = ContentBlock::model()->populateRecords($data);
+			}
+		}
+		return $this->_blocks;
+	}
+
+	/**
+	 * Sets the content blocks
+	 * @param array $blocks
+	 */
+	public function setBlocks($blocks)
+	{
+		$this->_blocks = $blocks;
+	}
+
+	/**
+	 * Used by CActiveRecord
 	 * @return array Validation rules for model's attributes
 	 */
 	public function rules()
@@ -192,24 +296,12 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
+	 * Used by CActiveRecord
 	 * @return array Relational rules
 	 */
 	public function relations()
 	{
 		$relations = array();
-
-		foreach ($this->hasBlocks as $key => $settings)
-		{
-			$relations[$key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['model'], $settings['foreignKey'].'_id',
-				'order' => 'sort_order',
-				'with'  => 'block'
-			);
-		}
-
-		foreach ($this->hasContent as $key => $settings)
-		{
-			$relations[$key] = array(self::HAS_MANY, __NAMESPACE__.'\\'.$settings['model'], $settings['foreignKey'].'_id', 'with' => 'content');
-		}
 
 		foreach ($this->hasMany as $key => $settings)
 		{
@@ -331,16 +423,8 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createTable()
 	{
-		$connection = Blocks::app()->db;
-		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		$tableName = $this->getTableName();
 
-		// Make sure that the table doesn't already exist
-		if ($connection->schema->getTable('{{'.$tableName.'}}') !== null)
-			throw new Exception($tableName.' already exists.');
-
-		// Begin assembling the columns and indexes
-		$columns['id'] = AttributeType::PK;
 		$indexes = array_merge($this->indexes);
 
 		// Add any Foreign Key columns
@@ -348,7 +432,7 @@ abstract class BaseModel extends \CActiveRecord
 		{
 			$required = isset($settings['required']) ? $settings['required'] : false;
 			$settings = array('type' => AttributeType::Int, 'required' => $required);
-			$columns[$name.'_id'] = DatabaseHelper::generateColumnDefinition($settings);
+			$columns[$name.'_id'] = $settings;
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
@@ -366,30 +450,44 @@ abstract class BaseModel extends \CActiveRecord
 			if ($unique || (isset($settings['indexed']) && $settings['indexed'] === true))
 				$indexes[] = array('columns' => array($name), 'unique' => $unique);
 
-			$columns[$name] = DatabaseHelper::generateColumnDefinition($settings);
+			$columns[$name] = $settings;
 		}
 
-		// Add the remaining global columns
-		$columns['date_created'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Int, 'required' => true));
-		$columns['date_updated'] = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Int, 'required' => true));
-		$columns['uid']          = DatabaseHelper::generateColumnDefinition(array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true));
-
 		// Create the table
-		$connection->createCommand()->createTable('{{'.$tableName.'}}', $columns);
+		Blocks::app()->db->createCommand()->createTable($tableName, $columns);
 
 		// Create the indexes
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
 		foreach ($this->indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);
 			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
-			$connection->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
+			Blocks::app()->db->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
 		}
 
-		// Add the INSERT and UPDATE triggers
-		DatabaseHelper::createInsertAuditTrigger($tableName);
-		DatabaseHelper::createUpdateAuditTrigger($tableName);
+		// Create the content join table if necessary
+		if ($this->hasContent)
+			$this->createContentJoinTable();
+
+		// Create the content blocks join table if necessary
+		if ($this->hasBlocks)
+			$this->createBlocksJoinTable();
+	}
+
+	/**
+	 * Drops the model's table
+	 */
+	public function dropTable()
+	{
+		$connection = Blocks::app()->db;
+		$tableName = $this->getTableName();
+
+		if ($connection->schema->getTable($tableName) !== null)
+		{
+			$connection->createCommand()->dropTable($tableName);
+		}
 	}
 
 	/**
@@ -431,16 +529,80 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
-	 * Drops the model's table
+	 * Create the model's content join table
 	 */
-	public function dropTable()
+	public function createContentJoinTable()
 	{
-		$connection = Blocks::app()->db;
-		$tableName = $this->getTableName();
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$joinTable = $this->getContentJoinTableName();
+		$modelTable = $this->getTableName();
+		$modelFk = $this->getClass().'_id';
 
-		if ($connection->schema->getTable($tableName) !== null)
+		$columns = array(
+			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
+			'content_id' => array('type' => AttributeType::Int, 'required' => true),
+			'num'        => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
+			'name'       => AttributeType::Name,
+			'active'     => AttributeType::Boolean,
+			'type'       => array('type' => AttributeType::Enum, 'values' => array('published','draft','autosave'), 'default' => 'draft', 'required' => true)
+		);
+
+		// Create the table
+		Blocks::app()->db->createCommand()->createTable($joinTable, $columns);
+
+		// Add the foreign keys
+		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,     '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
+		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_content_fk",       '{{'.$joinTable.'}}', 'content_id', '{{content}}',         'id', 'NO ACTION', 'NO ACTION');
+	}
+
+	/**
+	 * Drop the model's content join table
+	 */
+	public function dropContentJoinTable()
+	{
+		$joinTable = $this->getContentJoinTableName();
+
+		if (Blocks::app()->db->schema->getTable($joinTable) !== null)
 		{
-			$connection->createCommand()->dropTable($tableName);
+			Blocks::app()->db->createCommand()->dropTable($joinTable);
+		}
+	}
+
+	/**
+	 * Create the model's content blocks join table
+	 */
+	public function createBlocksJoinTable()
+	{
+		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$joinTable = $this->getBlocksJoinTableName();
+		$modelTable = $this->getTableName();
+		$modelFk = $this->getClass().'_id';
+
+		$columns = array(
+			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
+			'block_id'   => array('type' => AttributeType::Int, 'required' => true),
+			'required'   => AttributeType::Boolean,
+			'sort_order' => AttributeType::SortOrder
+		);
+
+		// Create the table
+		Blocks::app()->db->createCommand()->createTable($joinTable, $columns);
+
+		// Add the foreign keys
+		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,   '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
+		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_contentblocks_fk", '{{'.$joinTable.'}}', 'block_id', '{{contentblocks}}',   'id', 'NO ACTION', 'NO ACTION');
+	}
+
+	/**
+	 * Drop the model's content blocks join table
+	 */
+	public function dropBlocksJoinTable()
+	{
+		$joinTable = $this->getBlocksJoinTableName();
+
+		if (Blocks::app()->db->schema->getTable($joinTable) !== null)
+		{
+			Blocks::app()->db->createCommand()->dropTable($joinTable);
 		}
 	}
 

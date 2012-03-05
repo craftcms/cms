@@ -18,13 +18,18 @@ class InstallerService extends BaseService
 		$modelFiles = $modelsDir->getContents(false, '.php');
 		$models = array();
 
+		// Install Content and ContentBlocks models first,
+		// so we can start creating foreign keys to them right away
+		$models[] = new Content;
+		$models[] = new ContentBlock;
+
 		foreach ($modelFiles as $filePath)
 		{
 			$file = Blocks::app()->file->set($filePath);
 			$fileName = $file->fileName;
 
-			// Ignore base classes
-			if (strncmp($fileName, 'Base', 4) === 0)
+			// Ignore the models we've already installed, and base classes
+			if ($fileName == 'Content' || $fileName == 'ContentBlock' || strncmp($fileName, 'Base', 4) === 0)
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;
