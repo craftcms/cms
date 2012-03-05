@@ -2,6 +2,10 @@
 
 {% if !theUser && userId %}
 	{% set theUser = users.getById(userId) %}
+	{% if theUser.status == 'archived' %}
+		<!-- TODO: this doesn't work until we get string contact in the template parser -->
+		{% redirect 'users/view/'+userId %}
+	{% endif %}
 {% endif %}
 
 {% region "main" %}
@@ -84,7 +88,7 @@
 						{% if config.item('failedPasswordMode') == 'cooldown' %}
 							{% if theUser.cooldown_start %}
 								<br />
-								{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(users.getRemainingCooldownTime(theUser.id)) %}
+								{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime) %}
 								Temporarily locked.  User will be auto-unlocked
 								{% if timeRemaining > 0 %}
 									in {timeRemaining}

@@ -9,7 +9,7 @@
 	<h5>Recent Users</h5>
 	<ul class="nav">
 		{% foreach users.recent as theUser %}
-			<li><a href="{url.base}users/edit/{theUser.id}" {% if url.segment(3) == theUser.id %}class="sel"{% endif %}><span class="icon icon{% if theUser.admin %}247{% else %}243{% endif %}"></span>{theUser.fullName}</a></li>
+			<li><a href="{url.base}users/{% if theUser.status == 'archived' %}view{% else %}edit{% endif %}/{theUser.id}" {% if url.segment(3) == theUser.id %}class="sel"{% endif %}><span class="icon icon{% if theUser.admin %}247{% else %}243{% endif %}"></span>{theUser.fullName}</a></li>
 		{% endforeach %}
 		<li><a class="new {% if url.segment(2) == 'new' %}sel{% endif %}" href="{url.base}users/new"><span class="icon icon44"></span>Register a new user</a></li>
 	</ul>

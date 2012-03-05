@@ -12,4 +12,5 @@ class UserAccountStatus
 	const Locked                = 'locked';
 	const Suspended             = 'suspended';
 	const Pending               = 'pending';
+	const Archived              = 'archived';
 }

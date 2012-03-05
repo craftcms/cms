@@ -263,12 +263,11 @@ class UsersService extends BaseService
 	}
 
 	/**
-	 * @param $userId
+	 * @param \Blocks\User $user
 	 * @return null
 	 */
-	public function getRemainingCooldownTime($userId)
+	public function getRemainingCooldownTime(User $user)
 	{
-		$user = $this->getById($userId);
 		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('failedPasswordCooldown'));
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
 
@@ -276,5 +275,18 @@ class UsersService extends BaseService
 			return $cooldownRemaining;
 
 		return null;
+	}
+
+	/**
+	 * @param User $user
+	 */
+	public function delete(User $user)
+	{
+		$user->archived_username = $user->username;
+		$user->archived_email = $user->email;
+		$user->username = '';
+		$user->email = '';
+		$user->status = UserAccountStatus::Archived;
+		$user->save(false);
 	}
 }

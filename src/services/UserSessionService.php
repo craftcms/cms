@@ -275,4 +275,12 @@ class UserSessionService extends \CWebUser
 	{
 		return (isset(Blocks::app()->request->cookies['loginName'])) ? Blocks::app()->request->cookies['loginName']->value : null;
 	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getRemainingCooldownTime()
+	{
+		return Blocks::app()->users->getRemainingCooldownTime(Blocks::app()->users->current);
+	}
 }

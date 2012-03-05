@@ -49,7 +49,7 @@ class SessionController extends BaseController
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
 				{
 					$user = Blocks::app()->users->getByLoginName($loginName);
-					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(Blocks::app()->users->getRemainingCooldownTime($user->id), false).'.';
+					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(Blocks::app()->users->getRemainingCooldownTime($user), false).'.';
 				}
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)
 					$errorMessage = 'Invalid login name or password.';
