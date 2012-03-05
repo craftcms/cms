@@ -37,4 +37,23 @@ class Entry extends BaseModel
 	{
 		return 'Untitled';
 	}
+
+	public function getBlocks()
+	{
+		if (!isset($this->_blocks))
+		{
+			$content = $this->content;
+			$blocks = $this->section->blocks;
+
+			foreach ($blocks as $block)
+			{
+				$colName = Blocks::app()->contentBlocks->getContentColumnNameForBlock($block);
+				$block->content = $content[$colName];
+			}
+
+			$this->_blocks = $blocks;
+		}
+		
+		return $this->_blocks;
+	}
 }

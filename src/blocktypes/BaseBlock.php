@@ -51,4 +51,18 @@ abstract class BaseBlock extends BaseComponent
 	{
 		return $this->columnType;
 	}
+
+	public function displayField($block)
+	{
+		if (empty($this->fieldTemplate))
+			return '';
+
+		$tags = array(
+			'block'    => $block,
+			'settings' => $this->settings
+		);
+
+		$template = Blocks::app()->controller->loadTemplate($this->fieldTemplate, $tags, true);
+		return $template;
+	}
 }

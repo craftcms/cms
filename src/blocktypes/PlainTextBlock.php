@@ -11,4 +11,5 @@ class PlainTextBlock extends BaseBlock
 	);
 
 	protected $settingsTemplate = '_blocktypes/PlainText/settings';
+	protected $fieldTemplate = '_blocktypes/PlainText/field';
 }

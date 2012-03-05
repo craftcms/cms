@@ -116,10 +116,10 @@ abstract class BaseModel extends \CActiveRecord
 					->from('{{'.$this->getContentJoinTableName().'}} j')
 					->join('{{content}} c', 'j.content_id = c.id')
 					->where(
-						array('and', 'j.'.$this->getClass().'_id = :id', 'j.actine = 1'),
+						array('and', 'j.'.$this->getClass().'_id = :id', 'j.active = 1'),
 						array(':id' => $this->id)
 					)
-					->order('j.sort_order, j.num desc')
+					->order('j.num desc')
 					->queryRow();
 
 				$this->_content = Content::model()->populateRecord($data);

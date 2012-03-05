@@ -7,6 +7,7 @@ namespace Blocks;
 class ContentBlock extends BaseModel
 {
 	public $required;
+	public $content;
 
 	protected $tableName = 'contentblocks';
 	protected $_blockType;
@@ -61,5 +62,17 @@ class ContentBlock extends BaseModel
 	public function setBlockType($blockType)
 	{
 		$this->_blockType = $blockType;
+	}
+
+	/**
+	 * Show the block type field
+	 * @return string
+	 */
+	public function field()
+	{
+		if ($this->blockType)
+			return $this->blockType->displayField($this);
+		else
+			return '';
 	}
 }

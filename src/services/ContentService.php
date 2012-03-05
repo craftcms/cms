@@ -187,9 +187,7 @@ class ContentService extends BaseService
 	 */
 	public function getEntryById($entryId)
 	{
-		$entry = Entry::model()->findByAttributes(array(
-			'id' => $entryId,
-		));
+		$entry = Entry::model()->findById($entryId);
 
 		return $entry;
 	}

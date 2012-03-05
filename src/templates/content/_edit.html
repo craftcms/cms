@@ -1,8 +1,15 @@
-{% layout "content/_layouts/content" pageTitle="Editing “Spread”" %}
+{% layout "content/_layouts/content" %}
+
+{% if !entry && entryId %}
+	{% set entry = content.getEntryById(entryId) %}
+{% endif %}
+
+{% region "pageTitle" %}Editing “{entry.title}”{% endregion %}
 
 {% region "page" %}
 	<div class="item field page-head">
-		<h1 class="editable">Spread</h1>
+		<h1 class="editable">{entry.title}</h1>
+{!--
 		<div class="draft-btn btn">
 			<span class="label">Draft 1</span>
 			<span class="arrow"></span>
@@ -32,8 +39,17 @@
 				</tr>
 			</table>
 		</div>
+--}
 	</div>
 
+	{% foreach entry.blocks as block %}
+		<div class="item field">
+			<label for="{block.handle}" {% if block.required %}class="required"{% endif %}>{block.name}</label>
+			{block.field}
+		</div>
+	{% endforeach %}
+
+{!--
 	<div class="item field">
 		<label>Tagline</label>
 		<div class="input-wrapper"><input type="text" value="Simple spreadsheets"></div>
@@ -69,6 +85,8 @@
 			</tbody>
 		</table>
 	</div>
+--}
+
 	<div class="item field page-foot">
 		<input class="btn big submit" type="submit" value="Publish" />
 	</div>
