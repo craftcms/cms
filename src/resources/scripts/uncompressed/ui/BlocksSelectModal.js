@@ -43,7 +43,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
-		this.$cancelBtn = this.$footBtns.filter('.cancel:first');
+		this.$cancelBtn = this.$footerBtns.filter('.cancel:first');
 
 		this.$items = this.$container.find('li');
 		this.$addItem = this.$items.filter('.add:first');

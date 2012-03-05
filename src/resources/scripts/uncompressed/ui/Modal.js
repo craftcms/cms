@@ -12,11 +12,15 @@ blx.ui.Modal = blx.Base.extend({
 
 	$container: null,
 	$shade: null,
-	$head: null,
+	$header: null,
 	$body: null,
-	$foot: null,
-	$footBtns: null,
+	$scrollpane: null,
+	$footer: null,
+	$footerBtns: null,
 	$submitBtn: null,
+
+	_headerHeight: null,
+	_footerHeight: null,
 
 	visible: null,
 	focussed: null,
@@ -56,15 +60,16 @@ blx.ui.Modal = blx.Base.extend({
 			this.$container.data('modal').destroy();
 		}
 
-		this.$head = this.$container.find('.head:first');
+		this.$header = this.$container.find('.head:first');
 		this.$body = this.$container.find('.body:first');
-		this.$foot = this.$container.find('.foot:first');
-		this.$footBtns = this.$foot.find('.btn');
-		this.$submitBtn = this.$footBtns.filter('.submit:first');
+		this.$scrollpane = this.$body.children('.scrollpane:first');
+		this.$footer = this.$container.find('.foot:first');
+		this.$footerBtns = this.$footer.find('.btn');
+		this.$submitBtn = this.$footerBtns.filter('.submit:first');
 
 		if (this.settings.draggable)
 		{
-			var $dragHandles = this.$head.add(this.$foot);
+			var $dragHandles = this.$header.add(this.$footer);
 			if ($dragHandles.length)
 			{
 				this.dragger = new blx.ui.DragMove(this.$container, {

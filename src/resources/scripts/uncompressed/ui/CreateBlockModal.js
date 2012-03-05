@@ -34,7 +34,7 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 		$container.appendTo(blx.$body);
 		this.setContainer($container);
 
-		this.$cancelBtn = this.$footBtns.filter('.cancel:first');
+		this.$cancelBtn = this.$footerBtns.filter('.cancel:first');
 
 		this.$nameInput = this.$body.find('#block-name');
 		this.$handleInput = this.$body.find('#block-handle');
