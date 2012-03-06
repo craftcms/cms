@@ -85,6 +85,7 @@
 				{% if theUser.id %}
 					<div class="item field">
 						Status: {theUser.status}
+						<input type="hidden" name="status" value="{theUser.status}" />
 						{% if config.item('failedPasswordMode') == 'cooldown' %}
 							{% if theUser.cooldown_start %}
 								<br />
