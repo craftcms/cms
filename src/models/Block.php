@@ -4,12 +4,12 @@ namespace Blocks;
 /**
  *
  */
-class ContentBlock extends BaseModel
+class Block extends BaseModel
 {
 	public $required;
 	public $content;
 
-	protected $tableName = 'contentblocks';
+	protected $tableName = 'blocks';
 	protected $_blockType;
 
 	/**
@@ -32,7 +32,7 @@ class ContentBlock extends BaseModel
 	);
 
 	protected $hasMany = array(
-		'settings' => array('model' => 'ContentBlockSetting', 'foreignKey' => 'block')
+		'settings' => array('model' => 'BlockSetting', 'foreignKey' => 'block')
 	);
 
 	/**
@@ -44,7 +44,7 @@ class ContentBlock extends BaseModel
 		{
 			if ($this->class)
 			{
-				$this->_blockType = Blocks::app()->contentBlocks->getBlockType($this->class);
+				$this->_blockType = Blocks::app()->blocks->getBlockType($this->class);
 				$this->_blockType->settings = ArrayHelper::expandSettingsArray($this->settings);
 			}
 			else

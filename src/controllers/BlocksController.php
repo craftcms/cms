@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles content block management tasks
  */
-class ContentBlocksController extends BaseController
+class BlocksController extends BaseController
 {
 	/**
 	 * All content block actions require the user to be logged in
@@ -29,7 +29,7 @@ class ContentBlocksController extends BaseController
 		$blockTypeSettings = Blocks::app()->request->getPost($blockSettings['class']);
 		$blockId = Blocks::app()->request->getPost('block_id');
 
-		$block = Blocks::app()->contentBlocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
+		$block = Blocks::app()->blocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
 
 		// Did it save?
 		if (!$block->errors)

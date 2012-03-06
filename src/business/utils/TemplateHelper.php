@@ -8,9 +8,9 @@ class TemplateHelper
 {
 	public static $services = array(
 		'assets',
+		'blocks',
 		'config',
 		'content',
-		'contentBlocks',
 		'cp',
 		'dashboard',
 		'email',

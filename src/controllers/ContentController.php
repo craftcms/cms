@@ -50,14 +50,14 @@ class ContentController extends BaseController
 				$this->redirect($url);
 		}
 
-		// Get ContentBlock instances for each selected block
+		// Get Block instances for each selected block
 		$sectionBlocks = array();
 
 		if (!empty($sectionBlocksData['selections']))
 		{
 			foreach ($sectionBlocksData['selections'] as $blockId)
 			{
-				$block = Blocks::app()->contentBlocks->getBlockById($blockId);
+				$block = Blocks::app()->blocks->getBlockById($blockId);
 				$block->required = (isset($sectionBlocksData['required'][$blockId]) && $sectionBlocksData['required'][$blockId] === 'y');
 				$sectionBlocks[] = $block;
 			}

@@ -16,7 +16,7 @@
 	<label for="block-class">Block Type</label>
 	<div>
 		<select id="block-class" name="class">
-			{% foreach contentBlocks.blockTypes as blockType %}
+			{% foreach blocks.blockTypes as blockType %}
 				<option value="{blockType.class}" {% if (block && block.class == blockType.class) || (!block && blockType.class == 'PlainText') %}selected{% endif %}>{blockType.name}</option>
 			{% endforeach %}
 		</select>

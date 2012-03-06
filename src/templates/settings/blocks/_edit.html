@@ -1,7 +1,7 @@
 _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 
 {% if !block && blockId %}
-	{% set block = contentBlocks.getBlockById(blockId) %}
+	{% set block = blocks.getBlockById(blockId) %}
 {% endif %}
 
 {% region "main" %}
@@ -10,7 +10,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 	</div>
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="contentblocks/save" />
+		<input type="hidden" name="action" value="blocks/save" />
 		<input type="hidden" name="redirect" value="settings/blocks" />
 		{% if block.id %}<input type="hidden" name="block_id" value="{block.id}">{% endif %}
 
@@ -35,7 +35,7 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 			</div>
 		</div>
 
-		{% foreach contentBlocks.blockTypes as blockType %}
+		{% foreach blocks.blockTypes as blockType %}
 			{% if blockType.displaySettings %}
 				<div id="{blockType.class}-settings" class="pane" {% if (block && block.class != blockType.class) || (!block && blockType.class != 'PlainText') %}style="display: none"{% endif %}>
 					<div class="head">
