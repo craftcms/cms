@@ -105,5 +105,5 @@ class Blocks extends \Yii
  */
 function b()
 {
-	return b();
+	return Blocks::app();
 }
