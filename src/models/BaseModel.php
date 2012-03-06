@@ -15,6 +15,7 @@ abstract class BaseModel extends \CActiveRecord
 	protected $hasContent = false;
 	protected $hasBlocks = false;
 	protected $hasSettings = false;
+
 	protected $defaultSettings = array();
 	protected $attributes = array();
 	protected $belongsTo = array();
