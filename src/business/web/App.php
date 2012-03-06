@@ -13,11 +13,15 @@ class App extends \CWebApplication
 	private $_isSetup;
 
 	/**
-	 * TODO: Ugly
-	 * Override this as empty because CWebApplication init() tries to preload the request object which at this point, we haven't resolved yet.
+	 * Init
 	 */
 	public function init()
-	{ }
+	{
+		// If this is a resource request, we should respond with the resource ASAP
+		$this->processResourceRequest();
+
+		parent::init();
+	}
 
 	/**
 	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths
@@ -110,8 +114,6 @@ class App extends \CWebApplication
 	 */
 	public function processRequest()
 	{
-		$this->processResourceRequest();
-
 		// Import the majority of Blocks' classes
 		$this->importClasses();
 
@@ -191,7 +193,10 @@ class App extends \CWebApplication
 		self::import('business.BasePlugin');
 		self::import('business.enums.UrlFormat');
 		self::import('business.enums.RequestMode');
+		self::import('business.utils.HtmlHelper');
+		self::import('business.utils.UrlHelper');
 		self::import('business.web.HttpRequest');
+		self::import('business.web.UrlManager');
 		self::import('services.BaseService');
 		self::import('services.ConfigService');
 
@@ -200,11 +205,8 @@ class App extends \CWebApplication
 			// Import the bare minimum to process a resource
 			self::import('business.exceptions.HttpException');
 			self::import('business.utils.File');
-			self::import('business.utils.HtmlHelper');
-			self::import('business.utils.UrlHelper');
 			self::import('business.web.ErrorHandler');
 			self::import('business.web.ResourceProcessor');
-			self::import('business.web.UrlManager');
 			self::import('services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
