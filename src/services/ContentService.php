@@ -164,20 +164,21 @@ class ContentService extends BaseService
 		$entry->parent_id = $parentId;
 
 		// Find a unique slug
+
 		$slug = 'untitled';
 
-		$i = 0;
+		$i = 1;
 		do {
 			$match = Entry::model()->findByAttributes(array(
-				'slug'       => $slug.($i ? '-'.$i : ''),
+				'slug'       => $slug.'-'.$i,
 				'section_id' => $sectionId
 			));
 			$i++;
 		} while ($match);
 
-		$entry->slug = $slug;
-
+		$entry->slug = $slug.'-'.($i-1);
 		$entry->save();
+
 		return $entry;
 	}
 
