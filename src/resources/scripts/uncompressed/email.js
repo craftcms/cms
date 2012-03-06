@@ -26,12 +26,6 @@ var EmailSettingsForm = blx.Base.extend({
 		this.smtpAuthSwitch = new blx.ui.LightSwitch('#smtpAuth', {
 			onChange: $.proxy(this, '_onSmtpAuthChange')
 		});
-
-		if (!this.smtpAuthSwitch.on)
-		{
-			this.$authFields.css('opacity', 0.5);
-			this.$authFields.find('input').attr('disabled', 'disabled');
-		}
 	},
 
 	_buildProtocolSettingsPane: function()
@@ -73,6 +67,18 @@ var EmailSettingsForm = blx.Base.extend({
 			for (var i = 0; i < EmailSettingsForm.protocolFields[this.protocol].length; i++)
 			{
 				$('#'+EmailSettingsForm.protocolFields[this.protocol][i]+'-field').appendTo(this.$protocolSettingsPaneBody);
+			}
+
+			// Disable or enable the Username/Password fields
+			if (this.protocol == 'Smtp' && !this.smtpAuthSwitch.on)
+			{
+				this.$authFields.css('opacity', 0.5);
+				this.$authFields.find('input').attr('disabled', 'disabled');
+			}
+			else
+			{
+				this.$authFields.css('opacity', 1);
+				this.$authFields.find('input').removeAttr('disabled');
 			}
 		}
 		else
