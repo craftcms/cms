@@ -167,11 +167,6 @@ class HttpRequest extends \CHttpRequest
 				{
 					$this->_urlFormat = UrlFormat::PathInfo;
 				}
-				// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
-				else if ($this->getQuery(b()->config->getItem('pathVar')) !== null)
-				{
-					$this->_urlFormat = UrlFormat::QueryString;
-				}
 				else
 				{
 					$this->_urlFormat = UrlFormat::QueryString;
