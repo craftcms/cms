@@ -186,6 +186,16 @@ class PathService extends BaseService
 		return $path;
 	}
 
+	public function getStatePath()
+	{
+		$path = $this->runtimePath.'state/';
+
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
+
+		return $path;
+	}
+
 	/**
 	 * @param $path
 	 * @return mixed
