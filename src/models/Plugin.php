@@ -7,6 +7,7 @@ namespace Blocks;
 class Plugin extends BaseModel
 {
 	protected $tableName = 'plugins';
+	protected $hasSettings = true;
 
 	protected $attributes = array(
 		'class'   => AttributeType::ClassName,

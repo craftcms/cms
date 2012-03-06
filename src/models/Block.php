@@ -10,6 +10,8 @@ class Block extends BaseModel
 	public $content;
 
 	protected $tableName = 'blocks';
+	protected $hasSettings = true;
+
 	protected $_blockType;
 
 	/**
@@ -29,10 +31,6 @@ class Block extends BaseModel
 	protected $indexes = array(
 		array('columns' => array('name','site_id'), 'unique' => true),
 		array('columns' => array('handle','site_id'), 'unique' => true)
-	);
-
-	protected $hasMany = array(
-		'settings' => array('model' => 'BlockSetting', 'foreignKey' => 'block')
 	);
 
 	/**

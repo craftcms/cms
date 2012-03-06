@@ -9,17 +9,21 @@ abstract class BaseModel extends \CActiveRecord
 	protected $tableName;
 	protected $hasContent = false;
 	protected $hasBlocks = false;
+	protected $hasSettings = false;
 	protected $contentJoinTableName;
 	protected $blocksJoinTableName;
+	protected $settingsTableName;
+	protected $defaultSettings = array();
 	protected $attributes = array();
 	protected $belongsTo = array();
 	protected $hasMany = array();
 	protected $hasOne = array();
 	protected $indexes = array();
 
-	protected $_class;
+	protected $_classHandle;
 	protected $_content;
 	protected $_blocks;
+	protected $_settings;
 
 	/**
 	 * Constructor
@@ -44,11 +48,11 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	protected function getClassHandle()
 	{
-		if (!isset($this->_class))
+		if (!isset($this->_classHandle))
 		{
-			$this->_class = substr(strtolower(get_class($this)), strlen(__NAMESPACE__)+1);
+			$this->_classHandle = substr(strtolower(get_class($this)), strlen(__NAMESPACE__)+1);
 		}
-		return $this->_class;
+		return $this->_classHandle;
 	}
 
 	/**
@@ -100,18 +104,29 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
-	 * Returns the content assigned to this section
+	 * Get the model's settings table name
+	 * @return string The table name
+	 * @access protected
+	 */
+	protected function getSettingsTableName()
+	{
+		if (isset($this->settingsTableName))
+			return $this->settingsTableName;
+		else
+			return $this->getClassHandle().'settings';
+	}
+
+	/**
+	 * Returns the content assigned to this record
 	 * @return array
 	 */
 	public function getContent()
 	{
 		if (!isset($this->_content))
 		{
-			if ($this->isNewRecord || !$this->hasContent)
-				$this->_content = array();
-			else
+			if ($this->hasContent && !$this->isNewRecord)
 			{
-				$data = b()->db->createCommand()
+				$content = b()->db->createCommand()
 					->select('c.*')
 					->from($this->getContentJoinTableName().' j')
 					->join('content c', 'j.content_id = c.id')
@@ -122,25 +137,30 @@ abstract class BaseModel extends \CActiveRecord
 					->order('j.num desc')
 					->queryRow();
 
-				$this->_content = Content::model()->populateRecord($data);
+				if ($content)
+					$this->_content = Content::model()->populateRecord($content);
 			}
+
+			if (!isset($this->_content))
+				$this->_content = new Content;
 		}
+
 		return $this->_content;
 	}
 
 	/**
-	 * Returns the content blocks assigned to this section
+	 * Returns the content blocks assigned to this record
 	 * @return array
 	 */
 	public function getBlocks()
 	{
 		if (!isset($this->_blocks))
 		{
-			if ($this->isNewRecord || !$this->hasBlocks)
-				$this->_blocks = array();
-			else
+			$this->_blocks = array();
+
+			if ($this->hasBlocks && !$this->isNewRecord)
 			{
-				$data = b()->db->createCommand()
+				$blocks = b()->db->createCommand()
 					->select('j.required, b.*')
 					->from($this->getBlocksJoinTableName().' j')
 					->join('blocks b', 'j.block_id = b.id')
@@ -148,9 +168,14 @@ abstract class BaseModel extends \CActiveRecord
 					->order('j.sort_order')
 					->queryAll();
 
-				$this->_blocks = Block::model()->populateRecords($data);
+				foreach ($blocks as $block)
+				{
+					$class = __NAMESPACE__.'\\'.$block['class'].'Blocktype';
+					$this->_blocks[] = $class::model()->populateRecord($block);
+				}
 			}
 		}
+
 		return $this->_blocks;
 	}
 
@@ -161,6 +186,69 @@ abstract class BaseModel extends \CActiveRecord
 	public function setBlocks($blocks)
 	{
 		$this->_blocks = $blocks;
+	}
+
+	/**
+	 * Returns the current record's settings
+	 */
+	public function getSettings()
+	{
+		if (!isset($this->_settings))
+		{
+			$this->_settings = $this->defaultSettings;
+
+			if ($this->hasSettings && !$this->isNewRecord)
+			{
+				$settings = b()->db->createCommand()
+					->select('s.name, s.value')
+					->from($this->getSettingsTableName().' s')
+					->where('s.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
+					->queryAll();
+
+				if ($settings)
+				{
+					$flattened = array();
+					foreach ($settings as $setting)
+					{
+						$flattened[$setting['name']] = $setting['value'];
+					}
+					$expanded = ArrayHelper::expandArray($flattened);
+					$this->_settings = array_merge($this->_settings, $expanded);
+				}
+			}
+		}
+
+		return $this->_settings;
+	}
+
+	/**
+	 * Sets the current record's settings
+	 */
+	public function setSettings($settings)
+	{
+		$this->_settings = array_merge($this->defaultSettings, $settings);
+
+		if (!$this->isNewRecord)
+		{
+			$table = $this->getSettingsTableName();
+
+			// Delete the previous settings
+			b()->db->createCommand()
+				->where('s.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
+				->delete($table);
+
+			// Save the new ones
+			if ($this->_settings)
+			{
+				$flattened = ArrayHelper::flattenArray($this->_settings);
+				$vals = array();
+				foreach ($flattened as $name => $value)
+				{
+					$vals[] = array($name, $value);
+				}
+				b()->db->createCommand()->insertAll($table, array('name', 'value'), $vals);
+			}
+		}
 	}
 
 	/**
@@ -459,7 +547,7 @@ abstract class BaseModel extends \CActiveRecord
 		b()->db->createCommand()->createTable($tableName, $columns);
 
 		// Create the indexes
-		$tablePrefix = b()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->tablePrefix;
 		foreach ($this->indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
@@ -476,6 +564,10 @@ abstract class BaseModel extends \CActiveRecord
 		// Create the content blocks join table if necessary
 		if ($this->hasBlocks)
 			$this->createBlocksJoinTable();
+
+		// Create the settings table if necessary
+		if ($this->hasSettings)
+			$this->createSettingsTable();
 	}
 
 	/**
@@ -483,13 +575,21 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropTable()
 	{
-		$connection = b()->db;
-		$tableName = $this->getTableName();
+		$table = $this->getTableName();
+		if (b()->db->schema->getTable($table) !== null)
+			b()->db->createCommand()->dropTable($table);
 
-		if ($connection->schema->getTable($tableName) !== null)
-		{
-			$connection->createCommand()->dropTable($tableName);
-		}
+		// Drop the content join table if necessary
+		if ($this->hasContent)
+			$this->dropContentJoinTable();
+
+		// Drop the content blocks join table if necessary
+		if ($this->hasBlocks)
+			$this->dropBlocksJoinTable();
+
+		// Drop the settings table if necessary
+		if ($this->hasSettings)
+			$this->dropSettingsTable();
 	}
 
 	/**
@@ -497,8 +597,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function addForeignKeys()
 	{
-		$connection = b()->db;
-		$tablePrefix = b()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->tablePrefix;
 		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
@@ -507,7 +606,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
-			$connection->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id', 'NO ACTION', 'NO ACTION');
+			b()->db->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id', 'NO ACTION', 'NO ACTION');
 		}
 	}
 
@@ -516,8 +615,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropForeignKeys()
 	{
-		$connection = b()->db;
-		$tablePrefix = b()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->tablePrefix;
 		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
@@ -526,7 +624,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
-			$connection->createCommand()->dropForeignKey($fkName, $tableName);
+			b()->db->createCommand()->dropForeignKey($fkName, $tableName);
 		}
 	}
 
@@ -535,7 +633,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createContentJoinTable()
 	{
-		$tablePrefix = b()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->tablePrefix;
 		$joinTable = $this->getContentJoinTableName();
 		$modelTable = $this->getTableName();
 		$modelFk = $this->getClassHandle().'_id';
@@ -562,12 +660,9 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropContentJoinTable()
 	{
-		$joinTable = $this->getContentJoinTableName();
-
-		if (b()->db->schema->getTable($joinTable) !== null)
-		{
-			b()->db->createCommand()->dropTable($joinTable);
-		}
+		$table = $this->getContentJoinTableName();
+		if (b()->db->schema->getTable($table) !== null)
+			b()->db->createCommand()->dropTable($table);
 	}
 
 	/**
@@ -575,7 +670,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createBlocksJoinTable()
 	{
-		$tablePrefix = b()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->tablePrefix;
 		$joinTable = $this->getBlocksJoinTableName();
 		$modelTable = $this->getTableName();
 		$modelFk = $this->getClassHandle().'_id';
@@ -600,12 +695,39 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropBlocksJoinTable()
 	{
-		$joinTable = $this->getBlocksJoinTableName();
+		$table = $this->getBlocksJoinTableName();
+		if (b()->db->schema->getTable($table) !== null)
+			b()->db->createCommand()->dropTable($table);
+	}
 
-		if (b()->db->schema->getTable($joinTable) !== null)
-		{
-			b()->db->createCommand()->dropTable($joinTable);
-		}
+	public function createSettingsTable()
+	{
+		$tablePrefix = b()->config->tablePrefix;
+		$settingsTable = $this->getSettingsTableName();
+		$modelTable = $this->getTableName();
+		$modelFk = $this->getClassHandle().'_id';
+
+		$columns = array(
+			$modelFk => array('type' => AttributeType::Int, 'required' => true),
+			'name'   => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+			'value'  => AttributeType::Text
+		);
+
+		// Create the table
+		b()->db->createCommand()->createTable($settingsTable, $columns);
+
+		// Add the foreign key
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$settingsTable}_{$modelTable}_fk", $settingsTable, $modelFk, $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+	}
+
+	/**
+	 * Drop the model's settings table
+	 */
+	public function dropSettingsTable()
+	{
+		$table = $this->getSettingsTableName();
+		if (b()->db->schema->getTable($table) !== null)
+			b()->db->createCommand()->dropTable($table);
 	}
 
 	/**

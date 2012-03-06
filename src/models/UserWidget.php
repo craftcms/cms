@@ -7,6 +7,7 @@ namespace Blocks;
 class UserWidget extends BaseModel
 {
 	protected $tableName = 'userwidgets';
+	protected $hasSettings = true;
 
 	protected $attributes = array(
 		'class'      => AttributeType::ClassName,
@@ -16,10 +17,6 @@ class UserWidget extends BaseModel
 	protected $belongsTo = array(
 		'user' => array('model' => 'User', 'required' => true),
 		'plugin' => array('model' => 'Plugin')
-	);
-
-	protected $hasMany = array(
-		'settings' => array('model' => 'UserWidgetSetting', 'foreignKey' => 'widget')
 	);
 
 	protected $indexes = array(

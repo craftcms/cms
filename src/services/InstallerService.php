@@ -28,8 +28,8 @@ class InstallerService extends BaseService
 			$file = b()->file->set($filePath);
 			$fileName = $file->fileName;
 
-			// Ignore the models we've already installed, and base classes
-			if ($fileName == 'Content' || $fileName == 'Block' || strncmp($fileName, 'Base', 4) === 0)
+			// Ignore the models we've already installed, and the BaseModel
+			if ($fileName == 'Content' || $fileName == 'Block' || $fileName == 'BaseModel')
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;

@@ -9,6 +9,7 @@ class Site extends BaseModel
 	protected $tableName = 'sites';
 	protected $hasBlocks = true;
 	protected $hasContent = true;
+	protected $hasSettings = true;
 
 	protected $attributes = array(
 		'name'    => AttributeType::Name,
@@ -18,7 +19,6 @@ class Site extends BaseModel
 	);
 
 	protected $hasMany = array(
-		'settings'     => array('model' => 'SiteSetting', 'foreignKey' => 'site'),
 		'assetFolders' => array('model' => 'AssetFolder', 'foreignKey' => 'site'),
 		'routes'       => array('model' => 'Route', 'foreignKey' => 'site'),
 		'sections'     => array('model' => 'Section', 'foreignKey' => 'site')
