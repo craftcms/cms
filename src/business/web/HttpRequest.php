@@ -180,7 +180,7 @@ class HttpRequest extends \CHttpRequest
 					try
 					{
 						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
-						$url = b()->request->hostInfo.b()->request->url.'/testpathinfo';
+						$url = b()->request->hostInfo.b()->request->scriptUrl.'/testpathinfo';
 						if (($result = @file_get_contents($url, 0, $context)) !== false)
 						{
 							if ($result === 'success')
