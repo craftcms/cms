@@ -76,7 +76,7 @@
 {% endregion %}
 
 {% region "scripts" %}
-	{% if !cp.updateInfoCached %}
+	{% if !updates.isUpdateInfoCached %}
 		<script type="text/javascript">
 			window.getAlerts = true;
 			window.getAlertsUrl = '{url.generateActionUrl('dashboard/getalerts')}';

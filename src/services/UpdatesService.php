@@ -12,11 +12,8 @@ class UpdatesService extends BaseService
 	 * @param $forceRefresh
 	 * @return mixed
 	 */
-	public function updates($forceRefresh)
+	public function updates($forceRefresh = false)
 	{
-		// TODO: WTF
-		$forceRefresh = $forceRefresh == 'y' ? true : false;
-
 		$updates = array();
 
 		if (!$forceRefresh && !$this->isUpdateInfoCached())
@@ -102,6 +99,11 @@ class UpdatesService extends BaseService
 	public function isUpdateInfoCached()
 	{
 		return (isset($this->_updateInfo) || b()->fileCache->get('updateInfo') !== false);
+	}
+
+	public function isCriticalUpdateAvailable()
+	{
+		return $this->updateInfo->criticalUpdateAvailable;
 	}
 
 	/**
