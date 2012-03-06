@@ -200,6 +200,13 @@ class App extends \CWebApplication
 		self::import('services.BaseService');
 		self::import('services.ConfigService');
 
+		// in case of an error
+		self::import('business.exceptions.HttpException');
+		self::import('business.db.DbCommand');
+		self::import('business.db.DbConnection');
+		self::import('business.db.MysqlSchema');
+		self::import('business.web.ErrorHandler');
+
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
