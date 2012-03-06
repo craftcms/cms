@@ -1,22 +1,15 @@
 {% layout "_layouts/basic" pageTitle=pageTitle styles=styles scripts=scripts bodyClass=bodyClass %}
 
 {% region "body" %}
-
-	<?php
-		foreach (b()->user->getMessages() as $key => $message)
-		{
-			echo '<div class="message-'.$message->getStatus().'" style="text-align: center;">';
-
-			if (is_array($message->getMessage()))
-				echo implode('<br />', $message->getMessage());
-			else
-				echo $message->getMessage().'<br />';
-
-			echo '</div>';
-		}
-	?>
-
 	<div id="nav">
+		{% if user.messages %}
+			<div class="messages">
+				{% foreach user.messages as message %}
+					<div class="message {message.type}">{message.message}</div>
+				{% endforeach %}
+			</div>
+		{% endif %}
+
 		{% if url.segment(1) != 'setup' %}
 			<ul id="nav-sections">
 				{% foreach cp.sections as section %}<li id="nav-{section.handle}">
