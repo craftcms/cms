@@ -113,8 +113,8 @@ abstract class BaseModel extends \CActiveRecord
 			{
 				$data = b()->db->createCommand()
 					->select('c.*')
-					->from('{{'.$this->getContentJoinTableName().'}} j')
-					->join('{{content}} c', 'j.content_id = c.id')
+					->from($this->getContentJoinTableName().' j')
+					->join('content c', 'j.content_id = c.id')
 					->where(
 						array('and', 'j.'.$this->getClassHandle().'_id = :id', 'j.active = 1'),
 						array(':id' => $this->id)
@@ -142,8 +142,8 @@ abstract class BaseModel extends \CActiveRecord
 			{
 				$data = b()->db->createCommand()
 					->select('j.required, b.*')
-					->from('{{'.$this->getBlocksJoinTableName().'}} j')
-					->join('{{blocks}} b', 'j.block_id = b.id')
+					->from($this->getBlocksJoinTableName().' j')
+					->join('blocks b', 'j.block_id = b.id')
 					->where('j.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
 					->order('j.sort_order')
 					->queryAll();
@@ -466,7 +466,7 @@ abstract class BaseModel extends \CActiveRecord
 			$unique = (isset($index['unique']) && $index['unique'] === true);
 			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
-			b()->db->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
+			b()->db->createCommand()->createIndex($name, $tableName, implode(',', $columns), $unique);
 		}
 
 		// Create the content join table if necessary
@@ -507,7 +507,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
-			$connection->createCommand()->addForeignKey($fkName, '{{'.$tableName.'}}', $name.'_id', '{{'.$otherTableName.'}}', 'id', 'NO ACTION', 'NO ACTION');
+			$connection->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id', 'NO ACTION', 'NO ACTION');
 		}
 	}
 
@@ -526,7 +526,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
-			$connection->createCommand()->dropForeignKey($fkName, '{{'.$tableName.'}}');
+			$connection->createCommand()->dropForeignKey($fkName, $tableName);
 		}
 	}
 
@@ -553,8 +553,8 @@ abstract class BaseModel extends \CActiveRecord
 		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,     '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_content_fk",       '{{'.$joinTable.'}}', 'content_id', '{{content}}',         'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
@@ -591,8 +591,8 @@ abstract class BaseModel extends \CActiveRecord
 		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,   '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_blocks_fk", '{{'.$joinTable.'}}', 'block_id', '{{blocks}}',   'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,   $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_blocks_fk",        $joinTable, 'block_id', 'blocks',    'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
