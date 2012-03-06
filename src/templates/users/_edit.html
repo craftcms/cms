@@ -100,7 +100,11 @@
 					</div>
 					{% if theUser.status == 'pending' %}
 						<div class="field">
-							Validation Url: COPY LINK<br />{sites.currentSite.url}/admin.php/{users.verifyAccountUrl}?code={theUser.activationcode}
+							{% if request.urlFormat == 'pathinfo' %}
+								Validation Url: COPY LINK<br />{url.base}{users.verifyAccountUrl}?code={theUser.activationcode}
+							{% else %}
+								Validation Url: COPY LINK<br />{url.base}{users.verifyAccountUrl}&code={theUser.activationcode}
+							{% endif %}
 						</div>
 						<div class="field">
 							<input class="btn big submit" type="submit" name="validationEmail" value="Resend Validation Email" />
