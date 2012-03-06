@@ -45,7 +45,7 @@ class BlocksController extends BaseController
 				$this->returnJson($r);
 			}
 
-			b()->user->setMessage(MessageStatus::Success, 'Content block saved successfully.');
+			b()->user->setMessage(MessageType::Notice, 'Content block saved successfully.');
 
 			$url = b()->request->getPost('redirect');
 			if ($url !== null)

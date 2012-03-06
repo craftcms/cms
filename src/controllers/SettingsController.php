@@ -94,7 +94,7 @@ class SettingsController extends BaseController
 
 			if (b()->email->saveEmailSettings($settings))
 			{
-				b()->user->setMessage(MessageStatus::Success, 'Settings updated successfully.');
+				b()->user->setMessage(MessageType::Notice, 'Settings updated successfully.');
 
 				$url = b()->request->getPost('redirect');
 				if ($url !== null)

@@ -6,21 +6,21 @@ namespace Blocks;
  */
 class Message
 {
-	private $_status;
+	private $_type;
 	private $_key;
 	private $_message;
 	private $_persistent;
 
 	/**
-	 * @param      $status
+	 * @param      $type
 	 * @param      $key
 	 * @param      $message
 	 * @param bool $persistent
 	 */
-	function __construct($status, $key, $message, $persistent = false)
+	function __construct($type, $key, $message, $persistent = false)
 	{
 		$this->_key = $key;
-		$this->_status = $status;
+		$this->_type = $type;
 		$this->_message = $message;
 		$this->_persistent = $persistent;
 	}
@@ -36,9 +36,9 @@ class Message
 	/**
 	 * @return mixed
 	 */
-	public function getStatus()
+	public function getType()
 	{
-		return $this->_status;
+		return $this->_type;
 	}
 
 	/**

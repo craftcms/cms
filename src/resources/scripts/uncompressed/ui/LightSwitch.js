@@ -47,6 +47,7 @@ blx.ui.LightSwitch = blx.Base.extend({
 
 		this.dragger = new blx.ui.DragCore(this.$innerContainer, {
 			axis: 'x',
+			ignoreButtons: false,
 			onDragStart: $.proxy(this, '_onDragStart'),
 			onDrag:      $.proxy(this, '_onDrag'),
 			onDragStop:  $.proxy(this, '_onDragStop')
@@ -63,7 +64,7 @@ blx.ui.LightSwitch = blx.Base.extend({
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: -32}, 'fast');
+		this.$innerContainer.stop().animate({marginLeft: blx.ui.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
 		this.on = false;
 		this.settings.onChange();
@@ -126,8 +127,8 @@ blx.ui.LightSwitch = blx.Base.extend({
 	{
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
-		if (margin < -32)
-			margin = -32;
+		if (margin < blx.ui.LightSwitch.offMargin)
+			margin = blx.ui.LightSwitch.offMargin;
 		else if (margin > 0)
 			margin = 0;
 
@@ -151,6 +152,7 @@ blx.ui.LightSwitch = blx.Base.extend({
 	}
 
 }, {
+	offMargin: -31,
 	defaults: {
 		onChange: function(){}
 	}
