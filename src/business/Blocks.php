@@ -98,3 +98,12 @@ class Blocks extends \Yii
 		return \CVarDumper::dump($target, 10, true);
 	}
 }
+
+/**
+ * Returns the current b() instance
+ * @return Blocks\App
+ */
+function b()
+{
+	return b();
+}

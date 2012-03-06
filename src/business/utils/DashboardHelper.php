@@ -16,15 +16,15 @@ class DashboardHelper
 	{
 		$alerts = array();
 
-		if (Blocks::app()->updates->isUpdateInfoCached() || $fetch)
+		if (b()->updates->isUpdateInfoCached() || $fetch)
 		{
-			$blocksUpdateInfo = Blocks::app()->updates->updateInfo;
+			$blocksUpdateInfo = b()->updates->updateInfo;
 
-			if (Blocks::app()->sites->licenseKeyStatus == LicenseKeyStatus::InvalidKey)
-				$alerts[] = 'The license key you’re using isn’t authorized to run Blocks '.Blocks::getEdition().' on '.Blocks::app()->request->serverName.'. <a href="">Manage my licenses</a>';
+			if (b()->sites->licenseKeyStatus == LicenseKeyStatus::InvalidKey)
+				$alerts[] = 'The license key you’re using isn’t authorized to run Blocks '.Blocks::getEdition().' on '.b()->request->serverName.'. <a href="">Manage my licenses</a>';
 
 			if ($blocksUpdateInfo->newerReleases !== null && count($blocksUpdateInfo->newerReleases) > 0)
-				if (Blocks::app()->updates->criticalBlocksUpdateAvailable($blocksUpdateInfo->newerReleases))
+				if (b()->updates->criticalBlocksUpdateAvailable($blocksUpdateInfo->newerReleases))
 					$alerts[] = 'There is a critical update for Blocks available. <a href="'.UrlHelper::generateUrl('settings/updates').'">Update Now.</a>';
 		}
 

@@ -11,10 +11,10 @@ class InstallerService extends BaseService
 	 */
 	public function run()
 	{
-		if (Blocks::app()->isInstalled)
+		if (b()->isInstalled)
 			throw new Exception('Blocks is already installed.');
 
-		$modelsDir = Blocks::app()->file->set(Blocks::app()->path->modelsPath);
+		$modelsDir = b()->file->set(b()->path->modelsPath);
 		$modelFiles = $modelsDir->getContents(false, '.php');
 		$models = array();
 
@@ -25,7 +25,7 @@ class InstallerService extends BaseService
 
 		foreach ($modelFiles as $filePath)
 		{
-			$file = Blocks::app()->file->set($filePath);
+			$file = b()->file->set($filePath);
 			$fileName = $file->fileName;
 
 			// Ignore the models we've already installed, and base classes
@@ -37,7 +37,7 @@ class InstallerService extends BaseService
 		}
 
 		// Start the transaction
-		$transaction = Blocks::app()->db->beginTransaction();
+		$transaction = b()->db->beginTransaction();
 		try
 		{
 			// Create the tables
@@ -53,7 +53,7 @@ class InstallerService extends BaseService
 			}
 
 			// Tell Blocks that it's installed now
-			Blocks::app()->isInstalled = true;
+			b()->isInstalled = true;
 
 			// Populate the info table
 			$info = new Info;

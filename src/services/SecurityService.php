@@ -16,8 +16,8 @@ class SecurityService extends BaseService
 	{
 		parent::init();
 
-		$this->_iterationCount = Blocks::app()->config->getItem('phpPass-iterationCount');
-		$this->_portableHashes = Blocks::app()->config->getItem('phpPass-portableHashes');
+		$this->_iterationCount = b()->config->getItem('phpPass-iterationCount');
+		$this->_portableHashes = b()->config->getItem('phpPass-portableHashes');
 	}
 
 	/**

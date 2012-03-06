@@ -43,7 +43,7 @@ class EmailService extends BaseService
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], Blocks::app()->config->getItem('devMode') ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], b()->config->getItem('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -113,7 +113,7 @@ class EmailService extends BaseService
 	 */
 	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile, $data = array())
 	{
-		$renderedTemplate = Blocks::app()->controller->loadEmailTemplate($templateFile, $data);
+		$renderedTemplate = b()->controller->loadEmailTemplate($templateFile, $data);
 		$emailMessage->setBody($renderedTemplate);
 
 		if ($this->sendEmail($emailMessage))
@@ -166,7 +166,7 @@ class EmailService extends BaseService
 	{
 		$email->isSmtp();
 
-		if (Blocks::app()->config->getItem('devMode'))
+		if (b()->config->getItem('devMode'))
 			$email->smtpDebug = 2;
 
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
@@ -203,7 +203,7 @@ class EmailService extends BaseService
 	 */
 	public function getEmailSettings()
 	{
-		$emailSettings = Blocks::app()->settings->getSystemSettings('email');
+		$emailSettings = b()->settings->getSystemSettings('email');
 		$emailSettings = ArrayHelper::expandSettingsArray($emailSettings);
 		return $emailSettings;
 	}
@@ -214,7 +214,7 @@ class EmailService extends BaseService
 	 */
 	public function saveEmailSettings($settings)
 	{
-		if (Blocks::app()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
+		if (b()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
 			return true;
 
 		return false;

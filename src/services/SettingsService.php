@@ -26,9 +26,9 @@ class SettingsService extends BaseService
 			$settingsPrep[] = $category !== null ? array($key, $value, $category) : array($key, $value);
 
 		if ($category !== null)
-			$result = Blocks::app()->db->createCommand()->insertAll('{{'.$table.'}}', array('name', 'value', 'category'), $settingsPrep);
+			$result = b()->db->createCommand()->insertAll('{{'.$table.'}}', array('name', 'value', 'category'), $settingsPrep);
 		else
-			$result = Blocks::app()->db->createCommand()->insertAll('{{'.$table.'}}', array('name', 'value'), $settingsPrep);
+			$result = b()->db->createCommand()->insertAll('{{'.$table.'}}', array('name', 'value'), $settingsPrep);
 
 		if ($result === false)
 			return false;
@@ -47,11 +47,11 @@ class SettingsService extends BaseService
 		$result = false;
 
 		if (!empty($names) && $category == null)
-			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('in', 'name', $names));
+			$result = b()->db->createCommand()->delete('{{'.$table.'}}', array('in', 'name', $names));
 		elseif (empty($names) && $category !== null)
-			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', 'category = :category', array(':category' => $category));
+			$result = b()->db->createCommand()->delete('{{'.$table.'}}', 'category = :category', array(':category' => $category));
 		elseif (!empty($names) && $category !== null)
-			$result = Blocks::app()->db->createCommand()->delete('{{'.$table.'}}', array('and', array('in', 'name', $names), 'category = :category', array(':category' => $category)));
+			$result = b()->db->createCommand()->delete('{{'.$table.'}}', array('and', array('in', 'name', $names), 'category = :category', array(':category' => $category)));
 
 		if ($result === false)
 			return false;

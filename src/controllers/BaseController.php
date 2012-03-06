@@ -10,13 +10,13 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns the directory containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to Blocks::app().
+	 * We're overriding this since CController's version defaults $module to b().
 	 * @return string the directory containing the view files for this controller.
 	 */
 	public function getViewPath()
 	{
 		if (($module = $this->getModule()) === null)
-			$module = Blocks::app();
+			$module = b();
 
 		return $module->getViewPath().'/';
 	}
@@ -28,16 +28,16 @@ abstract class BaseController extends \CController
 	 */
 	public function getViewFile($viewName)
 	{
-		if (($theme = Blocks::app()->getTheme()) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
+		if (($theme = b()->getTheme()) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
 			return $viewFile;
 
-		$moduleViewPath = $basePath = Blocks::app()->getViewPath();
+		$moduleViewPath = $basePath = b()->getViewPath();
 		if (($module = $this->getModule()) !== null)
 			$moduleViewPath = $module->getViewPath();
 
 		if (strncmp($viewName,'///email', 8) === 0)
 		{
-			$viewPath = rtrim(Blocks::app()->path->emailTemplatePath, '/');
+			$viewPath = rtrim(b()->path->emailTemplatePath, '/');
 			$viewName = substr($viewName, 9);
 		}
 		else
@@ -53,14 +53,14 @@ abstract class BaseController extends \CController
 	 */
 	public function loadRequestedTemplate($tags = array())
 	{
-		Blocks::app()->urlManager->processTemplateMatching();
-		$templateMatch = Blocks::app()->urlManager->templateMatch;
+		b()->urlManager->processTemplateMatching();
+		$templateMatch = b()->urlManager->templateMatch;
 
 		// see if we can match a template on the file system.
 		if ($templateMatch !== null)
 		{
 			$template = $templateMatch->getRelativePath().'/'.$templateMatch->getFileName();
-			$tags = array_merge(Blocks::app()->urlManager->templateTags, $tags);
+			$tags = array_merge(b()->urlManager->templateTags, $tags);
 			$this->loadTemplate($template, $tags);
 
 		}
@@ -125,7 +125,7 @@ abstract class BaseController extends \CController
 		}
 		else
 		{
-			if (($renderer = Blocks::app()->getViewRenderer()) !== null && $renderer->fileExtension === '.'.\CFileHelper::getExtension($viewFile))
+			if (($renderer = b()->getViewRenderer()) !== null && $renderer->fileExtension === '.'.\CFileHelper::getExtension($viewFile))
 				$content = $renderer->renderFile($this, $viewFile, $data, $return);
 			else
 				$content = $this->renderInternal($viewFile, $data, $return);
@@ -146,8 +146,8 @@ abstract class BaseController extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (Blocks::app()->user->isGuest)
-			Blocks::app()->user->loginRequired();
+		if (b()->user->isGuest)
+			b()->user->loginRequired();
 	}
 
 	/**
@@ -155,7 +155,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (!Blocks::app()->config->getItem('devMode') && Blocks::app()->request->requestType !== 'POST')
+		if (!b()->config->getItem('devMode') && b()->request->requestType !== 'POST')
 			throw new HttpException(404);
 	}
 
@@ -164,7 +164,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!Blocks::app()->config->getItem('devMode') && !Blocks::app()->request->isAjaxRequest)
+		if (!b()->config->getItem('devMode') && !b()->request->isAjaxRequest)
 			throw new HttpException(404);
 	}
 
@@ -191,7 +191,7 @@ abstract class BaseController extends \CController
 	{
 		Json::sendJsonHeaders();
 		echo Json::encode($r);
-		Blocks::app()->end();
+		b()->end();
 	}
 
 	/**

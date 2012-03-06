@@ -17,7 +17,7 @@ class UpdateHelper
 		foreach ($manifestData as $row)
 		{
 			$rowData = explode(';', $row);
-			$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
+			$file = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
 
 			if ($file->exists)
 				$file->rename($rowData[1]);
@@ -39,8 +39,8 @@ class UpdateHelper
 			{
 				$rowData = explode(';', $row);
 
-				$destFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
-				$sourceFile = Blocks::app()->file->set($rowData[0].'/'.$rowData[1]);
+				$destFile = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
+				$sourceFile = b()->file->set($rowData[0].'/'.$rowData[1]);
 
 				switch (trim($rowData[2]))
 				{
@@ -120,7 +120,7 @@ class UpdateHelper
 	public static function getManifestData($manifestDataPath)
 	{
 		// get manifest file
-		$manifestFile = Blocks::app()->file->set($manifestDataPath.'/blocks_manifest');
+		$manifestFile = b()->file->set($manifestDataPath.'/blocks_manifest');
 		$manifestFileData = $manifestFile->contents;
 		return explode("\n", $manifestFileData);
 	}
@@ -132,8 +132,8 @@ class UpdateHelper
 	 */
 	public static function getTempDirForPackage($downloadPath)
 	{
-		$downloadPath = Blocks::app()->file->set($downloadPath);
-		return Blocks::app()->file->set($downloadPath->dirName.'/'.$downloadPath->fileName.'_temp');
+		$downloadPath = b()->file->set($downloadPath);
+		return b()->file->set($downloadPath->dirName.'/'.$downloadPath->fileName.'_temp');
 	}
 
 	/**
@@ -143,8 +143,8 @@ class UpdateHelper
 	 */
 	public static function copyMigrationFile($filePath)
 	{
-		$migrationFile = Blocks::app()->file->set($filePath);
-		$destinationFile = Blocks::app()->path->migrationsPath.$migrationFile->baseName;
+		$migrationFile = b()->file->set($filePath);
+		$destinationFile = b()->path->migrationsPath.$migrationFile->baseName;
 		$migrationFile->copy($destinationFile, true);
 		return $destinationFile;
 	}

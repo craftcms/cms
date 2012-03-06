@@ -14,10 +14,10 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function displayBody()
 	{
-		if (!Blocks::app()->updates->isUpdateInfoCached())
+		if (!b()->updates->isUpdateInfoCached())
 			return false;
 
-		$updateInfo = Blocks::app()->updates->updateInfo;
+		$updateInfo = b()->updates->updateInfo;
 		$updates = array();
 
 		// Blocks first
@@ -52,7 +52,7 @@ class UpdatesWidget extends BaseWidget
 				'updates' => $updates
 			);
 
-			return Blocks::app()->controller->loadTemplate('_widgets/UpdatesWidget/body', $tags, true);
+			return b()->controller->loadTemplate('_widgets/UpdatesWidget/body', $tags, true);
 		}
 
 		return false;

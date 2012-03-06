@@ -15,8 +15,8 @@ class ConfigService extends BaseService
 	 */
 	public function getItem($item, $default = null)
 	{
-		if (isset(Blocks::app()->params['blocksConfig'][$item]))
-			return Blocks::app()->params['blocksConfig'][$item];
+		if (isset(b()->params['blocksConfig'][$item]))
+			return b()->params['blocksConfig'][$item];
 
 		return $default;
 	}
@@ -30,8 +30,8 @@ class ConfigService extends BaseService
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		if (isset(Blocks::app()->params['dbConfig'][$item]))
-			return Blocks::app()->params['dbConfig'][$item];
+		if (isset(b()->params['dbConfig'][$item]))
+			return b()->params['dbConfig'][$item];
 
 		return $default;
 	}

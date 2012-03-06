@@ -14,7 +14,7 @@ class CoreUpdater implements IUpdater
 	 */
 	function __construct()
 	{
-		$this->_blocksUpdateInfo = Blocks::app()->updates->getUpdateInfo(true);
+		$this->_blocksUpdateInfo = b()->updates->getUpdateInfo(true);
 		$this->_migrationsToRun = null;
 		$this->_buildsToUpdate = $this->_blocksUpdateInfo->newerReleases;
 	}
@@ -23,9 +23,9 @@ class CoreUpdater implements IUpdater
 	 */
 	public function checkRequirements()
 	{
-		$installedMysqlVersion = Blocks::app()->db->serverVersion;
-		$requiredMysqlVersion = Blocks::app()->params['requiredMysqlVersion'];
-		$requiredPhpVersion = Blocks::app()->params['requiredPhpVersion'];
+		$installedMysqlVersion = b()->db->serverVersion;
+		$requiredMysqlVersion = b()->params['requiredMysqlVersion'];
+		$requiredPhpVersion = b()->params['requiredPhpVersion'];
 
 		$phpCompat = version_compare(PHP_VERSION, $requiredPhpVersion, '>=');
 		$databaseCompat = version_compare($installedMysqlVersion, $requiredMysqlVersion, '>=');
@@ -53,7 +53,7 @@ class CoreUpdater implements IUpdater
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadFilePath = Blocks::app()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
+			$downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 
 			// download the package
 			if (!$this->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
@@ -94,14 +94,14 @@ class CoreUpdater implements IUpdater
 	 */
 	public function generateMasterManifest()
 	{
-		$masterManifest = Blocks::app()->file->set(Blocks::app()->path->runtimePath.'manifest_'.uniqid());
+		$masterManifest = b()->file->set(b()->path->runtimePath.'manifest_'.uniqid());
 		$masterManifest->exists ? $masterManifest->delete() : $masterManifest->create();
 
 		$updatedFiles = array();
 
 		foreach ($this->_buildsToUpdate as $buildToUpdate)
 		{
-			$downloadedFile = Blocks::app()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
+			$downloadedFile = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
 
 			$manifestData = UpdateHelper::getManifestData($tempDir->realPath);
@@ -113,7 +113,7 @@ class CoreUpdater implements IUpdater
 					continue;
 
 				// normalize directory separators
-				$manifestData[$i] = Blocks::app()->path->normalizeDirectorySeparators($manifestData[$i]);
+				$manifestData[$i] = b()->path->normalizeDirectorySeparators($manifestData[$i]);
 				$row = explode(';', $manifestData[$i]);
 
 				// catch any rogue blank lines
@@ -162,7 +162,7 @@ class CoreUpdater implements IUpdater
 	 */
 	public function putSiteInMaintenanceMode()
 	{
-		$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../index.php', false);
+		$file = b()->file->set(BLOCKS_BASE_PATH.'../index.php', false);
 		$contents = $file->contents;
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
 		$file->setContents(null, $contents);
@@ -194,8 +194,8 @@ class CoreUpdater implements IUpdater
 		foreach ($manifestData as $row)
 		{
 			$rowData = explode(';', $row);
-			$tempDir = Blocks::app()->file->set($rowData[0]);
-			$tempFile = Blocks::app()->file->set(str_replace('_temp', '', $rowData[0]).'.zip');
+			$tempDir = b()->file->set($rowData[0]);
+			$tempFile = b()->file->set(str_replace('_temp', '', $rowData[0]).'.zip');
 
 			// delete the temp dirs
 			if ($tempDir->exists)
@@ -206,7 +206,7 @@ class CoreUpdater implements IUpdater
 				$tempFile->delete();
 
 			// delete the cms files we backed up.
-			$backupFile = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
+			$backupFile = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
 			if ($backupFile->exists)
 				$backupFile->delete();
 		}
@@ -262,7 +262,7 @@ class CoreUpdater implements IUpdater
 		if(StringHelper::isNullOrEmpty($sourceMD5))
 			throw new Exception('Error in getting the MD5 hash for the download.');
 
-		$localFile = Blocks::app()->file->set($destinationPath, false);
+		$localFile = b()->file->set($destinationPath, false);
 		$localMD5 = $localFile->generateMD5();
 
 		if($localMD5 === $sourceMD5)
@@ -280,7 +280,7 @@ class CoreUpdater implements IUpdater
 		$tempDir = UpdateHelper::getTempDirForPackage($downloadPath);
 		$tempDir->exists ? $tempDir->delete() : $tempDir->createDir(0754);
 
-		$downloadPath = Blocks::app()->file->set($downloadPath);
+		$downloadPath = b()->file->set($downloadPath);
 		if ($downloadPath->unzip($tempDir->realPath))
 			return true;
 
@@ -300,7 +300,7 @@ class CoreUpdater implements IUpdater
 			foreach ($manifestData as $row)
 			{
 				$rowData = explode(';', $row);
-				$file = Blocks::app()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
+				$file = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
 
 				// if the file doesn't exist, it's a new file
 				if ($file->exists)

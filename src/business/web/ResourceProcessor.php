@@ -61,7 +61,7 @@ class ResourceProcessor
 		if (! $this->_content)
 			throw new HttpException(404);
 
-		$file = Blocks::app()->file->set($this->_resourceFullPath);
+		$file = b()->file->set($this->_resourceFullPath);
 		$mimeType = $file->mimeType;
 
 		if (strpos($mimeType, 'css') > 0)

@@ -44,7 +44,7 @@ class Block extends BaseModel
 		{
 			if ($this->class)
 			{
-				$this->_blockType = Blocks::app()->blocks->getBlockType($this->class);
+				$this->_blockType = b()->blocks->getBlockType($this->class);
 				$this->_blockType->settings = ArrayHelper::expandSettingsArray($this->settings);
 			}
 			else

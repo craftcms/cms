@@ -15,10 +15,10 @@ class EmailTemplateRenderer extends TemplateRenderer
 	protected function setParsedTemplatePath()
 	{
 		// get the relative template path
-		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(Blocks::app()->path->emailTemplatePath));
+		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(b()->path->emailTemplatePath));
 
 		// set the parsed template path
-		$this->_parsedTemplatePath = Blocks::app()->path->emailTemplateCachePath.$relTemplatePath;
+		$this->_parsedTemplatePath = b()->path->emailTemplateCachePath.$relTemplatePath;
 
 		// set the meta path
 		$this->_destinationMetaPath = $this->_parsedTemplatePath.'.meta';

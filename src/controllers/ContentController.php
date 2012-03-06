@@ -21,31 +21,31 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$sectionSettings['name'] = Blocks::app()->request->getPost('name');
-		$sectionSettings['handle'] = Blocks::app()->request->getPost('handle');
+		$sectionSettings['name'] = b()->request->getPost('name');
+		$sectionSettings['handle'] = b()->request->getPost('handle');
 
-		$maxEntries = Blocks::app()->request->getPost('max_entries');
+		$maxEntries = b()->request->getPost('max_entries');
 		$sectionSettings['max_entries'] = ($maxEntries ? $maxEntries : null);
 
-		$sectionSettings['sortable'] = (Blocks::app()->request->getPost('sortable') === 'y');
+		$sectionSettings['sortable'] = (b()->request->getPost('sortable') === 'y');
 
-		$urlFormat = Blocks::app()->request->getPost('url_format');
+		$urlFormat = b()->request->getPost('url_format');
 		$sectionSettings['url_format'] = ($urlFormat ? $urlFormat : null);
 
-		$template = Blocks::app()->request->getPost('template');
+		$template = b()->request->getPost('template');
 		$sectionSettings['template'] = ($template ? $template : null);
 
-		$sectionBlocksData = Blocks::app()->request->getPost('blocks');
-		$sectionId = Blocks::app()->request->getPost('section_id');
+		$sectionBlocksData = b()->request->getPost('blocks');
+		$sectionId = b()->request->getPost('section_id');
 
-		$section = Blocks::app()->content->saveSection($sectionSettings, $sectionBlocksData, $sectionId);
+		$section = b()->content->saveSection($sectionSettings, $sectionBlocksData, $sectionId);
 
 		// Did it save?
 		if (!$section->errors)
 		{
-			Blocks::app()->user->setMessage(MessageStatus::Success, 'Section saved successfully.');
+			b()->user->setMessage(MessageStatus::Success, 'Section saved successfully.');
 
-			$url = Blocks::app()->request->getPost('redirect');
+			$url = b()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
 		}
@@ -57,7 +57,7 @@ class ContentController extends BaseController
 		{
 			foreach ($sectionBlocksData['selections'] as $blockId)
 			{
-				$block = Blocks::app()->blocks->getBlockById($blockId);
+				$block = b()->blocks->getBlockById($blockId);
 				$block->required = (isset($sectionBlocksData['required'][$blockId]) && $sectionBlocksData['required'][$blockId] === 'y');
 				$sectionBlocks[] = $block;
 			}
@@ -76,9 +76,9 @@ class ContentController extends BaseController
 	 */
 	public function actionCreateEntry()
 	{
-		$sectionId = Blocks::app()->request->getParam('sectionId');
-		$authorId = Blocks::app()->user->id;
-		$entry = Blocks::app()->content->createEntry($sectionId, $authorId);
+		$sectionId = b()->request->getParam('sectionId');
+		$authorId = b()->user->id;
+		$entry = b()->content->createEntry($sectionId, $authorId);
 		$this->redirect('content/edit/'.$entry->id);
 	}
 }

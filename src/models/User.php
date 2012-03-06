@@ -59,6 +59,6 @@ class User extends BaseModel
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return Blocks::app()->users->getRemainingCooldownTime($this);
+		return b()->users->getRemainingCooldownTime($this);
 	}
 }

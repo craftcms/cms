@@ -14,7 +14,7 @@ class DashboardService extends BaseService
 	public function getWidgets()
 	{
 		$userWidgets = UserWidget::model()->with('plugin')->findAllByAttributes(array(
-			'user_id' => Blocks::app()->user->id
+			'user_id' => b()->user->id
 		));
 		$widgets = array();
 
@@ -24,8 +24,8 @@ class DashboardService extends BaseService
 
 			if ($widget->plugin)
 			{
-				$path = Blocks::app()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
-				require_once Blocks::app()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
+				$path = b()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
+				require_once b()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
 			}
 
 			$widgets[] = new $widgetClass($widget->id);

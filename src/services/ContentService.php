@@ -15,7 +15,7 @@ class ContentService extends BaseService
 	public function getSections()
 	{
 		$sections = Section::model()->findAllByAttributes(array(
-			'site_id' => Blocks::app()->sites->currentSite->id,
+			'site_id' => b()->sites->currentSite->id,
 			'parent_id' => null
 		));
 
@@ -109,12 +109,12 @@ class ContentService extends BaseService
 		$section->sortable = $sectionSettings['sortable'];
 		$section->url_format = $sectionSettings['url_format'];
 		$section->template = $sectionSettings['template'];
-		$section->site_id = Blocks::app()->sites->currentSite->id;
+		$section->site_id = b()->sites->currentSite->id;
 
 		if ($section->validate())
 		{
 			// Start a transaction
-			$transaction = Blocks::app()->db->beginTransaction();
+			$transaction = b()->db->beginTransaction();
 			try
 			{
 				// Save the block
@@ -123,7 +123,7 @@ class ContentService extends BaseService
 				// Delete the previous content block selections
 				if (!$isNewSection)
 				{
-					Blocks::app()->db->createCommand()
+					b()->db->createCommand()
 						->where('section_id = :id', array(':id' => $section->id))
 						->delete('{{sectionblocks}}');
 				}
@@ -139,7 +139,7 @@ class ContentService extends BaseService
 						$sectionBlocksData[] = array($section->id, $blockId, $required, $sortOrder+1);
 					}
 
-					Blocks::app()->db->createCommand()->insertAll('{{sectionblocks}}', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
+					b()->db->createCommand()->insertAll('{{sectionblocks}}', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
 				}
 
 				$transaction->commit();
@@ -211,7 +211,7 @@ class ContentService extends BaseService
 	 */
 	public function getAllEntriesBySiteId($siteId)
 	{
-		$entries = Blocks::app()->db->createCommand()
+		$entries = b()->db->createCommand()
 			->select('e.*')
 			->from('{{sections}} s')
 			->join('{{entries}} e', 's.id = e.section_id')

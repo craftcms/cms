@@ -57,7 +57,7 @@ class NumTag extends Tag
 
 	public function formatDate($format = 'MM-dd-yyyy HH:mm:ss')
 	{
-		return Blocks::app()->dateFormatter->format($format, $this->_val);
+		return b()->dateFormatter->format($format, $this->_val);
 	}
 
 	//public function round() {}

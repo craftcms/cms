@@ -57,7 +57,7 @@ class FeedWidget extends BaseWidget
 			)
 		);
 
-		return Blocks::app()->controller->loadTemplate('_widgets/FeedWidget/body', $tags, true);
+		return b()->controller->loadTemplate('_widgets/FeedWidget/body', $tags, true);
 	}
 
 	/**
@@ -69,6 +69,6 @@ class FeedWidget extends BaseWidget
 			'settings' => $this->settings
 		);
 
-		return Blocks::app()->controller->loadTemplate('_widgets/FeedWidget/settings', $tags, true);
+		return b()->controller->loadTemplate('_widgets/FeedWidget/settings', $tags, true);
 	}
 }

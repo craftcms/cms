@@ -54,7 +54,7 @@ class UrlTag extends Tag
 	 */
 	public function segments()
 	{
-		return Blocks::app()->request->pathSegments;
+		return b()->request->pathSegments;
 	}
 
 	/**
@@ -65,7 +65,7 @@ class UrlTag extends Tag
 	 */
 	public function segment($num = null, $default = '')
 	{
-		return Blocks::app()->request->getPathSegment($num, $default);
+		return b()->request->getPathSegment($num, $default);
 	}
 
 	/**
@@ -73,7 +73,7 @@ class UrlTag extends Tag
 	 */
 	public function domain()
 	{
-		return Blocks::app()->request->serverName;
+		return b()->request->serverName;
 	}
 
 	/**
@@ -83,7 +83,7 @@ class UrlTag extends Tag
 	 */
 	public function get($var = null, $default = '')
 	{
-		return Blocks::app()->request->getQuery($var, $default);
+		return b()->request->getQuery($var, $default);
 	}
 
 	/**

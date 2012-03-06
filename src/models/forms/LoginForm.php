@@ -45,20 +45,20 @@ class LoginForm extends \CFormModel
 
 		if($this->_identity->errorCode === UserIdentity::ERROR_NONE)
 		{
-			$timeOut = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('sessionTimeout'));
+			$timeOut = ConfigHelper::getTimeInSeconds(b()->config->getItem('sessionTimeout'));
 
 			if ($this->rememberMe)
-				$timeOut = ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('rememberMeSessionTimeout'));
+				$timeOut = ConfigHelper::getTimeInSeconds(b()->config->getItem('rememberMeSessionTimeout'));
 
-			if (Blocks::app()->config->getItem('rememberUsernameEnabled') == true)
+			if (b()->config->getItem('rememberUsernameEnabled') == true)
 			{
 				$cookie = new \CHttpCookie('loginName', $this->loginName);
-				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('rememberUsernameTimeout'));
+				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(b()->config->getItem('rememberUsernameTimeout'));
 				$cookie->httpOnly = true;
-				Blocks::app()->request->cookies['loginName'] = $cookie;
+				b()->request->cookies['loginName'] = $cookie;
 			}
 
-			return Blocks::app()->user->login($this->_identity, $timeOut);
+			return b()->user->login($this->_identity, $timeOut);
 		}
 
 		return false;

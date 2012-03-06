@@ -24,17 +24,17 @@ class SettingsController extends BaseController
 		$emailSettings = new EmailSettingsForm();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->protocol                    = Blocks::app()->request->getPost('protocol');
-		$emailSettings->host                        = Blocks::app()->request->getPost('host');
-		$emailSettings->port                        = Blocks::app()->request->getPost('port');
-		$emailSettings->smtpAuth                    = (Blocks::app()->request->getPost('smtpAuth') === 'y');
-		$emailSettings->username                    = Blocks::app()->request->getPost('username');
-		$emailSettings->password                    = Blocks::app()->request->getPost('password');
-		$emailSettings->smtpKeepAlive               = (Blocks::app()->request->getPost('smtpKeepAlive') === 'y');
-		$emailSettings->smtpSecureTransportType     = Blocks::app()->request->getPost('smtpSecureTransportType');
-		$emailSettings->timeout                     = Blocks::app()->request->getPost('timeout');
-		$emailSettings->emailAddress                = Blocks::app()->request->getPost('emailAddress');
-		$emailSettings->senderName                  = Blocks::app()->request->getPost('senderName');
+		$emailSettings->protocol                    = b()->request->getPost('protocol');
+		$emailSettings->host                        = b()->request->getPost('host');
+		$emailSettings->port                        = b()->request->getPost('port');
+		$emailSettings->smtpAuth                    = (b()->request->getPost('smtpAuth') === 'y');
+		$emailSettings->username                    = b()->request->getPost('username');
+		$emailSettings->password                    = b()->request->getPost('password');
+		$emailSettings->smtpKeepAlive               = (b()->request->getPost('smtpKeepAlive') === 'y');
+		$emailSettings->smtpSecureTransportType     = b()->request->getPost('smtpSecureTransportType');
+		$emailSettings->timeout                     = b()->request->getPost('timeout');
+		$emailSettings->emailAddress                = b()->request->getPost('emailAddress');
+		$emailSettings->senderName                  = b()->request->getPost('senderName');
 
 		// validate user input
 		if($emailSettings->validate())
@@ -92,11 +92,11 @@ class SettingsController extends BaseController
 				}
 			}
 
-			if (Blocks::app()->email->saveEmailSettings($settings))
+			if (b()->email->saveEmailSettings($settings))
 			{
-				Blocks::app()->user->setMessage(MessageStatus::Success, 'Settings updated successfully.');
+				b()->user->setMessage(MessageStatus::Success, 'Settings updated successfully.');
 
-				$url = Blocks::app()->request->getPost('redirect');
+				$url = b()->request->getPost('redirect');
 				if ($url !== null)
 					$this->redirect($url);
 			}

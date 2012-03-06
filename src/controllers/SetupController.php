@@ -12,7 +12,7 @@ class SetupController extends BaseController
 	public function init()
 	{
 		// Return a 404 if Blocks is already setup
-		if (!Blocks::app()->config->getItem('devMode') && Blocks::app()->isSetup)
+		if (!b()->config->getItem('devMode') && b()->isSetup)
 			throw new HttpException(404);
 	}
 
@@ -22,9 +22,9 @@ class SetupController extends BaseController
 	public function actionIndex()
 	{
 		// Is this a post request?
-		if (Blocks::app()->request->isPostRequest)
+		if (b()->request->isPostRequest)
 		{
-			$postLicenseKeyId = Blocks::app()->request->getPost('licensekey_id');
+			$postLicenseKeyId = b()->request->getPost('licensekey_id');
 
 			if ($postLicenseKeyId)
 				$licenseKey = LicenseKey::model()->findById($postLicenseKeyId);
@@ -32,7 +32,7 @@ class SetupController extends BaseController
 			if (empty($licenseKey))
 				$licenseKey = new LicenseKey;
 
-			$licenseKey->license_key = Blocks::app()->request->getPost('licensekey');
+			$licenseKey->license_key = b()->request->getPost('licensekey');
 
 			if ($licenseKey->save())
 				$this->redirect('setup/site');
@@ -52,9 +52,9 @@ class SetupController extends BaseController
 	public function actionSite()
 	{
 		// Is this a post request?
-		if (Blocks::app()->request->isPostRequest)
+		if (b()->request->isPostRequest)
 		{
-			$postSiteId = Blocks::app()->request->getPost('site_id');
+			$postSiteId = b()->request->getPost('site_id');
 
 			if ($postSiteId)
 				$site = Site::model()->findById($postSiteId);
@@ -62,14 +62,14 @@ class SetupController extends BaseController
 			if (empty($site))
 				$site = new Site;
 
-			$site->name = Blocks::app()->request->getPost('name');
-			$site->handle = Blocks::app()->request->getPost('handle');
-			$site->url = Blocks::app()->request->getPost('url');
+			$site->name = b()->request->getPost('name');
+			$site->handle = b()->request->getPost('handle');
+			$site->url = b()->request->getPost('url');
 			$site->primary = true;
 
 			if ($site->save())
 			{
-				if (Blocks::app()->request->getQuery('goback') === null)
+				if (b()->request->getQuery('goback') === null)
 					$this->redirect('setup/account');
 				else
 					$this->redirect('setup');
@@ -92,9 +92,9 @@ class SetupController extends BaseController
 		$passwordInfo = new VerifyPasswordForm();
 
 		// Is this a post request?
-		if (Blocks::app()->request->isPostRequest)
+		if (b()->request->isPostRequest)
 		{
-			$postUserId = Blocks::app()->request->getPost('user_id');
+			$postUserId = b()->request->getPost('user_id');
 
 			if ($postUserId)
 				$user = User::model()->findById($postUserId);
@@ -102,14 +102,14 @@ class SetupController extends BaseController
 			if (empty($user))
 				$user = new User;
 
-			$user->username = Blocks::app()->request->getPost('username');
-			$user->email = Blocks::app()->request->getPost('email');
-			$user->first_name = Blocks::app()->request->getPost('first_name');
-			$user->last_name = Blocks::app()->request->getPost('last_name');
+			$user->username = b()->request->getPost('username');
+			$user->email = b()->request->getPost('email');
+			$user->first_name = b()->request->getPost('first_name');
+			$user->last_name = b()->request->getPost('last_name');
 			$user->admin = true;
 
-			$password = Blocks::app()->request->getPost('password');
-			$confirmPassword = Blocks::app()->request->getPost('password_confirm');
+			$password = b()->request->getPost('password');
+			$confirmPassword = b()->request->getPost('password_confirm');
 
 			$passwordInfo->password = $password;
 			$passwordInfo->confirmPassword = $confirmPassword;
@@ -118,11 +118,11 @@ class SetupController extends BaseController
 			{
 				if ($passwordInfo->validate())
 				{
-					$hashAndType = Blocks::app()->security->hashPassword($password);
+					$hashAndType = b()->security->hashPassword($password);
 					$user->password = $hashAndType['hash'];
 					$user->enc_type = $hashAndType['encType'];
 
-					if (($user = Blocks::app()->users->registerUser($user, $password, false)) !== null)
+					if (($user = b()->users->registerUser($user, $password, false)) !== null)
 					{
 						$user->status = UserAccountStatus::Active;
 						$user->activationcode = null;
@@ -131,7 +131,7 @@ class SetupController extends BaseController
 						$user->save(false);
 
 						// Give them the default dashboard widgets
-						Blocks::app()->dashboard->assignDefaultUserWidgets($user->id);
+						b()->dashboard->assignDefaultUserWidgets($user->id);
 
 						$loginInfo = new LoginForm();
 						$loginInfo->loginName = $user->username;
@@ -143,8 +143,8 @@ class SetupController extends BaseController
 						// setup the default email settings.
 						$settings['protocol'] = EmailerType::PhpMail;
 						$settings['emailAddress'] = $user->email;
-						$settings['senderName'] = Blocks::app()->sites->primarySite->name;
-						Blocks::app()->email->saveEmailSettings($settings);
+						$settings['senderName'] = b()->sites->primarySite->name;
+						b()->email->saveEmailSettings($settings);
 
 						$this->redirect('dashboard');
 					}

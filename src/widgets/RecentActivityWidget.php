@@ -31,6 +31,6 @@ class RecentActivityWidget extends BaseWidget
 			)
 		);
 
-		return Blocks::app()->controller->loadTemplate('_widgets/RecentActivityWidget/body', $tags, true);
+		return b()->controller->loadTemplate('_widgets/RecentActivityWidget/body', $tags, true);
 	}
 }

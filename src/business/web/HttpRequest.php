@@ -21,7 +21,7 @@ class HttpRequest extends \CHttpRequest
 	public function init()
 	{
 		parent::init();
-		Blocks::app()->attachEventHandler('onBeginRequest',array($this,'correctUrlFormat'));
+		b()->attachEventHandler('onBeginRequest',array($this,'correctUrlFormat'));
 	}
 
 	/**
@@ -36,7 +36,7 @@ class HttpRequest extends \CHttpRequest
 				if ($this->queryStringPath)
 				{
 					$params = isset($_GET) ? $_GET : array();
-					$pathVar = Blocks::app()->config->getItem('pathVar');
+					$pathVar = b()->config->getItem('pathVar');
 					unset($params[$pathVar]);
 					$url = UrlHelper::generateUrl($this->queryStringPath, $params);
 					$this->redirect($url);
@@ -82,7 +82,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = Blocks::app()->config->getItem('pathVar');
+			$pathVar = b()->config->getItem('pathVar');
 			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 
@@ -147,16 +147,16 @@ class HttpRequest extends \CHttpRequest
 		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (Blocks::app()->config->getItem('urlFormat') == UrlFormat::PathInfo)
+			if (b()->config->getItem('urlFormat') == UrlFormat::PathInfo)
 			{
 				$this->_urlFormat = UrlFormat::PathInfo;
 			}
-			else if (Blocks::app()->config->getItem('urlFormat') == UrlFormat::QueryString)
+			else if (b()->config->getItem('urlFormat') == UrlFormat::QueryString)
 			{
 				$this->_urlFormat = UrlFormat::QueryString;
 			}
 			// Check if it's cached
-			else if (($cachedUrlFormat = Blocks::app()->fileCache->get('urlFormat')) !== false)
+			else if (($cachedUrlFormat = b()->fileCache->get('urlFormat')) !== false)
 			{
 				$this->_urlFormat = $cachedUrlFormat;
 			}
@@ -168,7 +168,7 @@ class HttpRequest extends \CHttpRequest
 					$this->_urlFormat = UrlFormat::PathInfo;
 				}
 				// If there is already a routeVar=value in the current request URL, we're going to assume it's a QueryString request
-				else if ($this->getQuery(Blocks::app()->config->getItem('pathVar')) !== null)
+				else if ($this->getQuery(b()->config->getItem('pathVar')) !== null)
 				{
 					$this->_urlFormat = UrlFormat::QueryString;
 				}
@@ -180,7 +180,7 @@ class HttpRequest extends \CHttpRequest
 					try
 					{
 						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
-						$url = Blocks::app()->request->hostInfo.Blocks::app()->request->url.'/testpathinfo';
+						$url = b()->request->hostInfo.b()->request->url.'/testpathinfo';
 						if (($result = @file_get_contents($url, 0, $context)) !== false)
 						{
 							if ($result === 'success')
@@ -196,7 +196,7 @@ class HttpRequest extends \CHttpRequest
 				}
 
 				// cache it and set it to expire according to config
-				Blocks::app()->fileCache->set('urlFormat', $this->_urlFormat, Blocks::app()->config->getItem('cacheTimeSeconds'));
+				b()->fileCache->set('urlFormat', $this->_urlFormat, b()->config->getItem('cacheTimeSeconds'));
 			}
 		}
 
@@ -218,9 +218,9 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			$resourceTriggerWord = Blocks::app()->config->getItem('resourceTriggerWord');
-			$actionTriggerWord = Blocks::app()->config->getItem('actionTriggerWord');
-			$logoutTriggerWord = Blocks::app()->config->getItem('logoutTriggerWord');
+			$resourceTriggerWord = b()->config->getItem('resourceTriggerWord');
+			$actionTriggerWord = b()->config->getItem('actionTriggerWord');
+			$logoutTriggerWord = b()->config->getItem('logoutTriggerWord');
 
 			$firstPathSegment = $this->getPathSegment(1);
 

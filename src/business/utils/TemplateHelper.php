@@ -41,7 +41,7 @@ class TemplateHelper
 	public static function getGlobalTag($handle)
 	{
 		if (in_array($handle, self::$services))
-			return new ObjectTag(Blocks::app()->$handle);
+			return new ObjectTag(b()->$handle);
 
 		if (isset(self::$globalTags[$handle]))
 			return new self::$globalTags[$handle];
@@ -119,24 +119,24 @@ class TemplateHelper
 
 		if (strncmp($templatePath,'///email', 8) === 0)
 		{
-			$viewPath = Blocks::app()->path->emailTemplatePath;
+			$viewPath = b()->path->emailTemplatePath;
 			$templatePath = substr($templatePath, 9);
 		}
 		else
 		{
-			$viewPath = Blocks::app()->viewPath;
+			$viewPath = b()->viewPath;
 			$copyTemplatePath = trim($templatePath, '/');
 		}
 
 		// Check if request/path.ext exists
-		$testTemplatePath = $templatePath.Blocks::app()->viewRenderer->fileExtension;
-		if (is_file(Blocks::app()->findLocalizedFile($viewPath.$testTemplatePath)))
+		$testTemplatePath = $templatePath.b()->viewRenderer->fileExtension;
+		if (is_file(b()->findLocalizedFile($viewPath.$testTemplatePath)))
 			return $copyTemplatePath;
 
 		// Otherwise check if request/path/index.ext exists
 		$copyTemplatePath .= '/index';
-		$testTemplatePath = $copyTemplatePath.Blocks::app()->viewRenderer->fileExtension;
-		if (is_file(Blocks::app()->findLocalizedFile($viewPath.$testTemplatePath)))
+		$testTemplatePath = $copyTemplatePath.b()->viewRenderer->fileExtension;
+		if (is_file(b()->findLocalizedFile($viewPath.$testTemplatePath)))
 			return $copyTemplatePath;
 
 		return false;

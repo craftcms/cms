@@ -15,7 +15,7 @@ class WebLogRoute extends \CWebLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$app = Blocks::app();
+		$app = b();
 		$isAjax = $app->request->isAjaxRequest;
 
 		if ($this->showInFireBug)
@@ -28,7 +28,7 @@ class WebLogRoute extends \CWebLogRoute
 		else if(!($app instanceof \CWebApplication) || $isAjax)
 			return;
 
-		$viewFile = Blocks::app()->path->cpTemplatePath.'logging/'.$view.'.php';
+		$viewFile = b()->path->cpTemplatePath.'logging/'.$view.'.php';
 		include($app->findLocalizedFile($viewFile,'en'));
 	}
 }

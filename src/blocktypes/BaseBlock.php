@@ -39,7 +39,7 @@ abstract class BaseBlock extends BaseComponent
 			'settings' => $this->settings
 		);
 
-		$template = Blocks::app()->controller->loadTemplate($this->settingsTemplate, $tags, true);
+		$template = b()->controller->loadTemplate($this->settingsTemplate, $tags, true);
 		return TemplateHelper::namespaceInputs($template, $this->class);
 	}
 
@@ -62,7 +62,7 @@ abstract class BaseBlock extends BaseComponent
 			'settings' => $this->settings
 		);
 
-		$template = Blocks::app()->controller->loadTemplate($this->fieldTemplate, $tags, true);
+		$template = b()->controller->loadTemplate($this->fieldTemplate, $tags, true);
 		return $template;
 	}
 }

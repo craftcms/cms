@@ -53,7 +53,7 @@ class UsersService extends BaseService
 	 */
 	public function getAllUsersBySiteId($siteId)
 	{
-		$users = Blocks::app()->db->createCommand()
+		$users = b()->db->createCommand()
 			->select('u.*')
 			->from('{{users}} g')
 			->join('{{usergroups}} ug', 'u.id = ug.users_id')
@@ -94,7 +94,7 @@ class UsersService extends BaseService
 	 */
 	public function getCurrent()
 	{
-		$user = $this->getById(isset(Blocks::app()->user) ? Blocks::app()->user->id : null);
+		$user = $this->getById(isset(b()->user) ? b()->user->id : null);
 		return $user;
 	}
 
@@ -138,7 +138,7 @@ class UsersService extends BaseService
 		// if the password is null, we know someone on the back-end wants to create the account.
 		if ($password !== null)
 		{
-			$hashAndType = Blocks::app()->security->hashPassword($password);
+			$hashAndType = b()->security->hashPassword($password);
 			$user->password = $hashAndType['hash'];
 			$user->enc_type = $hashAndType['encType'];
 		}
@@ -157,11 +157,11 @@ class UsersService extends BaseService
 	 */
 	public function generateActivationCodeForUser(User $user)
 	{
-		$activationCode = Blocks::app()->db->createCommand()->getUUID();
+		$activationCode = b()->db->createCommand()->getUUID();
 		$user->activationcode = $activationCode;
 		$date = new \DateTime();
 		$user->activationcode_issued_date = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('activationCodeExpiration')) .'S');
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(b()->config->getItem('activationCodeExpiration')) .'S');
 		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();
 		$user->save();
 
@@ -174,7 +174,7 @@ class UsersService extends BaseService
 	 */
 	public function getGroupsByUserId($userId)
 	{
-		$groups = Blocks::app()->db->createCommand()
+		$groups = b()->db->createCommand()
 			->select('g.*')
 			->from('{{groups}} g')
 			->join('{{usergroups}} ug', 'g.id = ug.group_id')
@@ -191,7 +191,7 @@ class UsersService extends BaseService
 	 */
 	public function getUsersByGroupId($groupId)
 	{
-		$groups = Blocks::app()->db->createCommand()
+		$groups = b()->db->createCommand()
 			->select('u.*')
 			->from('{{groups}} g')
 			->join('{{usergroups}} ug', 'g.id = ug.group_id')
@@ -236,7 +236,7 @@ class UsersService extends BaseService
 	 */
 	public function changePassword(User $user, $newPassword)
 	{
-		$hashAndType = Blocks::app()->security->hashPassword($newPassword);
+		$hashAndType = b()->security->hashPassword($newPassword);
 		$user->password = $hashAndType['hash'];
 		$user->enc_type = $hashAndType['encType'];
 		$user->status = UserAccountStatus::Active;
@@ -255,8 +255,8 @@ class UsersService extends BaseService
 	{
 			$user = $this->generateActivationCodeForUser($user);
 
-			$site = Blocks::app()->sites->currentSite;
-			if (($emailStatus = Blocks::app()->email->sendForgotPasswordEmail($user, $site)) == true)
+			$site = b()->sites->currentSite;
+			if (($emailStatus = b()->email->sendForgotPasswordEmail($user, $site)) == true)
 				return true;
 
 		return false;
@@ -268,7 +268,7 @@ class UsersService extends BaseService
 	 */
 	public function getRemainingCooldownTime(User $user)
 	{
-		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(Blocks::app()->config->getItem('failedPasswordCooldown'));
+		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(b()->config->getItem('failedPasswordCooldown'));
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
 
 		if ($cooldownRemaining > 0)

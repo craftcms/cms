@@ -683,7 +683,7 @@ class File extends BaseComponent
 
 		$bytes /= pow(1024, $expo);
 
-		return Blocks::app()->numberFormatter->format($format, $bytes).' '.$units[$expo];
+		return b()->numberFormatter->format($format, $bytes).' '.$units[$expo];
 	}
 
 	/**
@@ -862,7 +862,7 @@ class File extends BaseComponent
 	{
 		if ($destination != null)
 		{
-			$newFile = Blocks::app()->file->set($destination);
+			$newFile = b()->file->set($destination);
 
 			if ($autoCreate && !$newFile->_exists)
 			{
@@ -1423,7 +1423,7 @@ class File extends BaseComponent
 			return false;
 		}
 
-		$srcDir = Blocks::app()->file->set($srcDir);
+		$srcDir = b()->file->set($srcDir);
 		$dirContents = $srcDir->getContents(true);
 
 		foreach ($dirContents as $itemToZip)
@@ -1540,7 +1540,7 @@ class File extends BaseComponent
 		// Create the destination directories.
 		foreach ($destDirectories as $destDirectory)
 		{
-			$newDir = Blocks::app()->file->set($destDirectory, false);
+			$newDir = b()->file->set($destDirectory, false);
 
 			if (!$newDir->createDir(0754) && !$newDir->getIsDir())
 			{
@@ -1561,7 +1561,7 @@ class File extends BaseComponent
 			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
 				continue;
 
-			$destFile = Blocks::app()->file->set($destination.'/'.$zipFile['filename']);
+			$destFile = b()->file->set($destination.'/'.$zipFile['filename']);
 			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
 			{
 				$this->addLog('Could not copy file during unzip: '.$destFile->getRealPath(), 'error');
@@ -1598,12 +1598,12 @@ class File extends BaseComponent
 			}
 
 			// normalize directory separators
-			$info = Blocks::app()->path->normalizeDirectorySeparators($info);
+			$info = b()->path->normalizeDirectorySeparators($info);
 
 			// found a directory
 			if (substr($info['name'], -1) === '/')
 			{
-				$dir = Blocks::app()->file->set($destination.'/');
+				$dir = b()->file->set($destination.'/');
 				$dir->createDir(0754, $destination.'/'.$info['name']);
 				continue;
 			}

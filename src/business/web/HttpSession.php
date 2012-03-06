@@ -9,7 +9,7 @@ class HttpSession extends \CHttpSession
 
 	public function init()
 	{
-		$this->setSavePath(Blocks::app()->path->sessionPath);
+		$this->setSavePath(b()->path->sessionPath);
 		parent::init();
 	}
 }

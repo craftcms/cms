@@ -22,23 +22,23 @@ class SitesController extends BaseController
 		$this->requirePostRequest();
 
 		// Are we editing an existing site?
-		$siteId = Blocks::app()->request->getPost('site_id');
+		$siteId = b()->request->getPost('site_id');
 		if ($siteId)
-			$site = Blocks::app()->sites->getSiteById($siteId);
+			$site = b()->sites->getSiteById($siteId);
 
 		// Otherwise create a new site
 		if (empty($site))
 			$site = new Site;
 
-		$site->name = Blocks::app()->request->getPost('name');
-		$site->handle = Blocks::app()->request->getPost('handle');
-		$site->url = Blocks::app()->request->getPost('url');
+		$site->name = b()->request->getPost('name');
+		$site->handle = b()->request->getPost('handle');
+		$site->url = b()->request->getPost('url');
 
 		if ($site->save())
 		{
-			Blocks::app()->user->setMessage(MessageStatus::Success, 'Site saved successfully.');
+			b()->user->setMessage(MessageStatus::Success, 'Site saved successfully.');
 
-			$url = Blocks::app()->request->getPost('redirect');
+			$url = b()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
 		}

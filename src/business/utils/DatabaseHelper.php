@@ -152,11 +152,11 @@ class DatabaseHelper
 	 */
 	public static function createInsertAuditTrigger($tableName)
 	{
-		$dbName = Blocks::app()->config->getDbItem('database');
+		$dbName = b()->config->getDbItem('database');
 
-		Blocks::app()->db->createCommand(
+		b()->db->createCommand(
 							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->config->getDbItem('tablePrefix').'_auditinfoinsert_'.$tableName.'`
+							 TRIGGER `'.$dbName.'`.`'.b()->config->getDbItem('tablePrefix').'_auditinfoinsert_'.$tableName.'`
 							 BEFORE INSERT ON `'.$dbName.'`.`{{'.$tableName.'}}`
 							 FOR EACH ROW
 							 SET NEW.date_created = UNIX_TIMESTAMP(),
@@ -173,11 +173,11 @@ class DatabaseHelper
 	 */
 	public static function createUpdateAuditTrigger($tableName)
 	{
-		$dbName = Blocks::app()->config->getDbItem('database');
+		$dbName = b()->config->getDbItem('database');
 
-		Blocks::app()->db->createCommand(
+		b()->db->createCommand(
 							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.Blocks::app()->config->getDbItem('tablePrefix').'_auditinfoupdate_'.$tableName.'`
+							 TRIGGER `'.$dbName.'`.`'.b()->config->getDbItem('tablePrefix').'_auditinfoupdate_'.$tableName.'`
 							 BEFORE UPDATE ON `'.$dbName.'`.`{{'.$tableName.'}}`
 							 FOR EACH ROW
 							 SET NEW.date_updated = UNIX_TIMESTAMP(),

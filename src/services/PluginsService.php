@@ -21,7 +21,7 @@ class PluginsService extends BaseService
 			$installedPluginsByClass[$plugin->class] = $plugin;
 		}
 
-		$pluginsPath = Blocks::app()->path->pluginsPath;
+		$pluginsPath = b()->path->pluginsPath;
 		$folders = scandir($pluginsPath);
 		foreach ($folders as $folder)
 		{

@@ -101,7 +101,7 @@ class UpdatesService extends BaseService
 	 */
 	public function isUpdateInfoCached()
 	{
-		return (isset($this->_updateInfo) || Blocks::app()->fileCache->get('updateInfo') !== false);
+		return (isset($this->_updateInfo) || b()->fileCache->get('updateInfo') !== false);
 	}
 
 	/**
@@ -118,7 +118,7 @@ class UpdatesService extends BaseService
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateInfo = Blocks::app()->fileCache->get('updateInfo');
+				$updateInfo = b()->fileCache->get('updateInfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
@@ -130,7 +130,7 @@ class UpdatesService extends BaseService
 					$updateInfo = new UpdateInfo();
 
 				// cache it and set it to expire according to config
-				Blocks::app()->fileCache->set('updateInfo', $updateInfo, Blocks::app()->config->getItem('cacheTimeSeconds'));
+				b()->fileCache->set('updateInfo', $updateInfo, b()->config->getItem('cacheTimeSeconds'));
 			}
 
 			$this->_updateInfo = $updateInfo;
@@ -173,7 +173,7 @@ class UpdatesService extends BaseService
 		$blocksUpdateInfo->localBuild = Blocks::getBuild();
 		$blocksUpdateInfo->localVersion = Blocks::getVersion();
 
-		$plugins = Blocks::app()->plugins->allInstalledPluginHandlesAndVersions;
+		$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
 		foreach ($plugins as $plugin)
 			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 

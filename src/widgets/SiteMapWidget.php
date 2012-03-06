@@ -14,6 +14,6 @@ class SiteMapWidget extends BaseWidget
 	 */
 	public function displayBody()
 	{
-		return Blocks::app()->controller->loadTemplate('_widgets/SiteMapWidget/body', null, true);
+		return b()->controller->loadTemplate('_widgets/SiteMapWidget/body', null, true);
 	}
 }

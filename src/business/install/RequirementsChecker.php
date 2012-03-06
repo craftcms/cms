@@ -17,11 +17,11 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function init()
 	{
-		$dbConfigPath = Blocks::app()->path->configPath.'db.php';
-		$blocksConfigPath = Blocks::app()->path->configPath.'blocks.php';
+		$dbConfigPath = b()->path->configPath.'db.php';
+		$blocksConfigPath = b()->path->configPath.'blocks.php';
 
-		$requiredPhpVersion = Blocks::app()->params['requiredPhpVersion'];
-		$requiredMysqlVersion = Blocks::app()->params['requiredMysqlVersion'];
+		$requiredPhpVersion = b()->params['requiredPhpVersion'];
+		$requiredMysqlVersion = b()->params['requiredMysqlVersion'];
 
 		$this->_requirements = array(
 			new Requirement(
@@ -130,7 +130,7 @@ class RequirementsChecker extends \CComponent
 			),
 			new Requirement(
 				'MySQL version',
-				version_compare(Blocks::app()->db->serverVersion, $requiredMysqlVersion, ">="),
+				version_compare(b()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'MySQL '.$requiredMysqlVersion.' or higher is required to run Blocks.'
@@ -212,8 +212,8 @@ class RequirementsChecker extends \CComponent
 	private function getWritableFolders()
 	{
 		$folders = array(
-			Blocks::app()->file->set(Blocks::app()->path->runtimePath, false),
-			//Blocks::app()->file->set(Blocks::app()->path->runtimePath.'cached/', false),
+			b()->file->set(b()->path->runtimePath, false),
+			//b()->file->set(b()->path->runtimePath.'cached/', false),
 		);
 
 		return $folders;

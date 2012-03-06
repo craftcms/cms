@@ -23,7 +23,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function loginRequired()
 	{
-		$app = Blocks::app();
+		$app = b();
 		$request = $app->getRequest();
 
 		if (!$request->getIsAjaxRequest())
@@ -34,7 +34,7 @@ class UserSessionService extends \CWebUser
 		elseif (isset($this->loginRequiredAjaxResponse))
 		{
 			echo $this->loginRequiredAjaxResponse;
-			Blocks::app()->end();
+			b()->end();
 		}
 
 		if (($url = $this->loginUrl) !== null)
@@ -63,7 +63,7 @@ class UserSessionService extends \CWebUser
 		{
 			$authSessionToken = $states['authSessionToken'];
 
-			$user = Blocks::app()->users->getById($id);
+			$user = b()->users->getById($id);
 
 			if ($user === null || $user->auth_session_token !== $authSessionToken)
 			{
@@ -87,8 +87,8 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->isLoggedIn)
 		{
-			Blocks::app()->users->current->last_login_date = DateTimeHelper::currentTime();
-			Blocks::app()->users->current->save();
+			b()->users->current->last_login_date = DateTimeHelper::currentTime();
+			b()->users->current->save();
 		}
 	}
 
@@ -103,7 +103,7 @@ class UserSessionService extends \CWebUser
 	*/
 	protected function saveToCookie($duration)
 	{
-		$app = Blocks::app();
+		$app = b();
 		$cookie = $this->createIdentityCookie($this->getStateKeyPrefix());
 		$cookie->expire = time() + $duration;
 		$cookie->httpOnly = true;
@@ -273,7 +273,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRememeberedLoginName()
 	{
-		return (isset(Blocks::app()->request->cookies['loginName'])) ? Blocks::app()->request->cookies['loginName']->value : null;
+		return (isset(b()->request->cookies['loginName'])) ? b()->request->cookies['loginName']->value : null;
 	}
 
 	/**
@@ -281,6 +281,6 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return Blocks::app()->users->getRemainingCooldownTime(Blocks::app()->users->current);
+		return b()->users->getRemainingCooldownTime(b()->users->current);
 	}
 }

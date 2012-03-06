@@ -31,8 +31,8 @@ class SitesService extends BaseService
 	 */
 	public function getSiteName()
 	{
-		if (isset(Blocks::app()->params['config']['siteName']))
-			return Blocks::app()->params['config']['siteName'];
+		if (isset(b()->params['config']['siteName']))
+			return b()->params['config']['siteName'];
 
 		return null;
 	}
@@ -42,8 +42,8 @@ class SitesService extends BaseService
 	 */
 	public function getSiteLanguage()
 	{
-		if (isset(Blocks::app()->params['config']['language']))
-			return Blocks::app()->params['config']['language'];
+		if (isset(b()->params['config']['language']))
+			return b()->params['config']['language'];
 
 		return null;
 	}
@@ -53,8 +53,8 @@ class SitesService extends BaseService
 	 */
 	public function getSiteUrl()
 	{
-		if (isset(Blocks::app()->params['config']['siteUrl']))
-			return Blocks::app()->params['config']['siteUrl'];
+		if (isset(b()->params['config']['siteUrl']))
+			return b()->params['config']['siteUrl'];
 
 		return null;
 	}
@@ -68,7 +68,7 @@ class SitesService extends BaseService
 		if ($this->_currentSite === null)
 		{
 			// Try to find the site that matches the request URL
-			$serverName = Blocks::app()->request->serverName;
+			$serverName = b()->request->serverName;
 			$httpServerName = 'http://'.$serverName;
 			$httpsServerName = 'https://'.$serverName;
 
@@ -154,7 +154,7 @@ class SitesService extends BaseService
 	 */
 	public function getLicenseKeyStatus()
 	{
-		$licenseKeyStatus = Blocks::app()->fileCache->get('licenseKeyStatus');
+		$licenseKeyStatus = b()->fileCache->get('licenseKeyStatus');
 		if ($licenseKeyStatus == false)
 			$licenseKeyStatus = $this->_getLicenseKeyStatus();
 
@@ -179,7 +179,7 @@ class SitesService extends BaseService
 	public function setLicenseKeyStatus($licenseKeyStatus)
 	{
 		// cache it and set it to expire according to config
-		Blocks::app()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, Blocks::app()->config->getItem('cacheTimeSeconds'));
+		b()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, b()->config->getItem('cacheTimeSeconds'));
 	}
 
 	/**
@@ -188,12 +188,12 @@ class SitesService extends BaseService
 	 */
 	private function _getLicenseKeyStatus()
 	{
-		$licenseKeys = Blocks::app()->sites->licenseKeys;
+		$licenseKeys = b()->sites->licenseKeys;
 
 		if (!$licenseKeys)
 			return LicenseKeyStatus::MissingKey;
 
-		$package = Blocks::app()->et->ping();
+		$package = b()->et->ping();
 		$licenseKeyStatus = isset($package->licenseKeyStatus) ? $package->licenseKeyStatus : $licenseKeyStatus = LicenseKeyStatus::InvalidKey;
 
 		$this->setLicenseKeyStatus($licenseKeyStatus);

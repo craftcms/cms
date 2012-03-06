@@ -29,7 +29,7 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
-		if (!Blocks::app()->isInstalled)
+		if (!b()->isInstalled)
 		{
 			// Just do the bare minimum of constructor-type stuff.
 			// Maybe init() is all that's necessary?
@@ -111,7 +111,7 @@ abstract class BaseModel extends \CActiveRecord
 				$this->_content = array();
 			else
 			{
-				$data = Blocks::app()->db->createCommand()
+				$data = b()->db->createCommand()
 					->select('c.*')
 					->from('{{'.$this->getContentJoinTableName().'}} j')
 					->join('{{content}} c', 'j.content_id = c.id')
@@ -140,7 +140,7 @@ abstract class BaseModel extends \CActiveRecord
 				$this->_blocks = array();
 			else
 			{
-				$data = Blocks::app()->db->createCommand()
+				$data = b()->db->createCommand()
 					->select('j.required, b.*')
 					->from('{{'.$this->getBlocksJoinTableName().'}} j')
 					->join('{{blocks}} b', 'j.block_id = b.id')
@@ -456,17 +456,17 @@ abstract class BaseModel extends \CActiveRecord
 		}
 
 		// Create the table
-		Blocks::app()->db->createCommand()->createTable($tableName, $columns);
+		b()->db->createCommand()->createTable($tableName, $columns);
 
 		// Create the indexes
-		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->getDbItem('tablePrefix');
 		foreach ($this->indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);
 			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
-			Blocks::app()->db->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
+			b()->db->createCommand()->createIndex($name, '{{'.$tableName.'}}', implode(',', $columns), $unique);
 		}
 
 		// Create the content join table if necessary
@@ -483,7 +483,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropTable()
 	{
-		$connection = Blocks::app()->db;
+		$connection = b()->db;
 		$tableName = $this->getTableName();
 
 		if ($connection->schema->getTable($tableName) !== null)
@@ -497,8 +497,8 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function addForeignKeys()
 	{
-		$connection = Blocks::app()->db;
-		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$connection = b()->db;
+		$tablePrefix = b()->config->getDbItem('tablePrefix');
 		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
@@ -516,8 +516,8 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropForeignKeys()
 	{
-		$connection = Blocks::app()->db;
-		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$connection = b()->db;
+		$tablePrefix = b()->config->getDbItem('tablePrefix');
 		$tableName = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
@@ -535,7 +535,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createContentJoinTable()
 	{
-		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->getDbItem('tablePrefix');
 		$joinTable = $this->getContentJoinTableName();
 		$modelTable = $this->getTableName();
 		$modelFk = $this->getClassHandle().'_id';
@@ -550,11 +550,11 @@ abstract class BaseModel extends \CActiveRecord
 		);
 
 		// Create the table
-		Blocks::app()->db->createCommand()->createTable($joinTable, $columns);
+		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,     '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
-		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_content_fk",       '{{'.$joinTable.'}}', 'content_id', '{{content}}',         'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,     '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_content_fk",       '{{'.$joinTable.'}}', 'content_id', '{{content}}',         'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
@@ -564,9 +564,9 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		$joinTable = $this->getContentJoinTableName();
 
-		if (Blocks::app()->db->schema->getTable($joinTable) !== null)
+		if (b()->db->schema->getTable($joinTable) !== null)
 		{
-			Blocks::app()->db->createCommand()->dropTable($joinTable);
+			b()->db->createCommand()->dropTable($joinTable);
 		}
 	}
 
@@ -575,7 +575,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createBlocksJoinTable()
 	{
-		$tablePrefix = Blocks::app()->config->getDbItem('tablePrefix');
+		$tablePrefix = b()->config->getDbItem('tablePrefix');
 		$joinTable = $this->getBlocksJoinTableName();
 		$modelTable = $this->getTableName();
 		$modelFk = $this->getClassHandle().'_id';
@@ -588,11 +588,11 @@ abstract class BaseModel extends \CActiveRecord
 		);
 
 		// Create the table
-		Blocks::app()->db->createCommand()->createTable($joinTable, $columns);
+		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,   '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
-		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_blocks_fk", '{{'.$joinTable.'}}', 'block_id', '{{blocks}}',   'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,   '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_blocks_fk", '{{'.$joinTable.'}}', 'block_id', '{{blocks}}',   'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
@@ -602,9 +602,9 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		$joinTable = $this->getBlocksJoinTableName();
 
-		if (Blocks::app()->db->schema->getTable($joinTable) !== null)
+		if (b()->db->schema->getTable($joinTable) !== null)
 		{
-			Blocks::app()->db->createCommand()->dropTable($joinTable);
+			b()->db->createCommand()->dropTable($joinTable);
 		}
 	}
 

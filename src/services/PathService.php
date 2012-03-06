@@ -109,7 +109,7 @@ class PathService extends BaseService
 	 */
 	public function getSiteTemplatePath()
 	{
-		$siteHandle = Blocks::app()->sites->currentSite;
+		$siteHandle = b()->sites->currentSite;
 		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 
 		return $this->templatesPath.'site_templates/'.$siteHandle.'/';
@@ -145,7 +145,7 @@ class PathService extends BaseService
 
 		if (BLOCKS_CP_REQUEST !== true)
 		{
-			$siteHandle = Blocks::app()->sites->currentSite;
+			$siteHandle = b()->sites->currentSite;
 			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
 			$cachePath = $this->runtimePath.'parsed_templates/custom/site_templates/'.$siteHandle.'/';
 		}

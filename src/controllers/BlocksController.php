@@ -21,20 +21,20 @@ class BlocksController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$blockSettings['name'] = Blocks::app()->request->getPost('name');
-		$blockSettings['handle'] = Blocks::app()->request->getPost('handle');
-		$blockSettings['class'] = Blocks::app()->request->getPost('class');
-		$blockSettings['instructions'] = Blocks::app()->request->getPost('instructions');
+		$blockSettings['name'] = b()->request->getPost('name');
+		$blockSettings['handle'] = b()->request->getPost('handle');
+		$blockSettings['class'] = b()->request->getPost('class');
+		$blockSettings['instructions'] = b()->request->getPost('instructions');
 
-		$blockTypeSettings = Blocks::app()->request->getPost($blockSettings['class']);
-		$blockId = Blocks::app()->request->getPost('block_id');
+		$blockTypeSettings = b()->request->getPost($blockSettings['class']);
+		$blockId = b()->request->getPost('block_id');
 
-		$block = Blocks::app()->blocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
+		$block = b()->blocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
 
 		// Did it save?
 		if (!$block->errors)
 		{
-			if (Blocks::app()->request->isAjaxRequest)
+			if (b()->request->isAjaxRequest)
 			{
 				$r = array(
 					'success' => true,
@@ -45,14 +45,14 @@ class BlocksController extends BaseController
 				$this->returnJson($r);
 			}
 
-			Blocks::app()->user->setMessage(MessageStatus::Success, 'Content block saved successfully.');
+			b()->user->setMessage(MessageStatus::Success, 'Content block saved successfully.');
 
-			$url = Blocks::app()->request->getPost('redirect');
+			$url = b()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
 		}
 
-		if (Blocks::app()->request->isAjaxRequest)
+		if (b()->request->isAjaxRequest)
 		{
 			$r = array('errors' => $block->errors);
 			$this->returnJson($r);

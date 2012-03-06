@@ -66,7 +66,7 @@ class BlocksService extends BaseService
 		$block->handle = $blockSettings['handle'];
 		$block->class = $blockSettings['class'];
 		$block->instructions = $blockSettings['instructions'];
-		$block->site_id = Blocks::app()->sites->currentSite->id;
+		$block->site_id = b()->sites->currentSite->id;
 
 		$blockType = $this->getBlockType($block->class);
 		$blockType->settings = $blockTypeSettings;
@@ -75,7 +75,7 @@ class BlocksService extends BaseService
 		if ($block->validate())
 		{
 			// Start a transaction
-			$transaction = Blocks::app()->db->beginTransaction();
+			$transaction = b()->db->beginTransaction();
 			try
 			{
 				// Delete the previous block type settings
@@ -108,16 +108,16 @@ class BlocksService extends BaseService
 				if ($isNewBlock)
 				{
 					// Add the new column
-					Blocks::app()->db->createCommand()->addColumn('{{content}}', $columnName, $columnType);
+					b()->db->createCommand()->addColumn('{{content}}', $columnName, $columnType);
 				}
 				else
 				{
 					// Rename the column if the block has a new handle
 					if ($columnName != $oldColumnName)
-						Blocks::app()->db->createCommand()->renameColumn('{{content}}', $oldColumnName, $columnName);
+						b()->db->createCommand()->renameColumn('{{content}}', $oldColumnName, $columnName);
 
 					// Update the column's type
-					Blocks::app()->db->createCommand()->alterColumn('{{content}}', $columnName, $columnType);
+					b()->db->createCommand()->alterColumn('{{content}}', $columnName, $columnType);
 				}
 
 				$transaction->commit();
@@ -147,7 +147,7 @@ class BlocksService extends BaseService
 		{
 			$this->_blockTypes = array();
 
-			if (($files = @glob(Blocks::app()->path->blockTypesPath."*Block.php")) !== false)
+			if (($files = @glob(b()->path->blockTypesPath."*Block.php")) !== false)
 			{
 				foreach ($files as $file)
 				{

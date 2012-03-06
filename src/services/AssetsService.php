@@ -51,7 +51,7 @@ class AssetsService extends BaseService
 	 */
 	public function getAllAssetsBySiteId($siteId)
 	{
-		$assets = Blocks::app()->db->createCommand()
+		$assets = b()->db->createCommand()
 			->select('a.*')
 			->from('{{assets}} a')
 			->join('{{assetfolders}} af', 'a.asset_folder_id = af.id')

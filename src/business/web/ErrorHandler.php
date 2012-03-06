@@ -15,7 +15,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function handleException($exception)
 	{
-		$app = Blocks::app();
+		$app = b();
 		if ($app instanceof \CWebApplication)
 		{
 			if (($trace = $this->getExactTrace($exception)) === null)
@@ -106,7 +106,7 @@ class ErrorHandler extends \CErrorHandler
 			unset($trace[$i]['object']);
 		}
 
-		$app = Blocks::app();
+		$app = b();
 		if ($app instanceof \CWebApplication)
 		{
 			switch ($event->code)
@@ -167,7 +167,7 @@ class ErrorHandler extends \CErrorHandler
 	protected function render($template, $data)
 	{
 		if($template === 'errors/error' && $this->errorAction !== null)
-			Blocks::app()->runController($this->errorAction);
+			b()->runController($this->errorAction);
 		else
 		{
 			// additional information to be passed to view
@@ -189,7 +189,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
-		$templateFile = Blocks::app()->findLocalizedFile($templatePath.$templateName.Blocks::app()->viewRenderer->fileExtension, $srcLanguage);
+		$templateFile = b()->findLocalizedFile($templatePath.$templateName.b()->viewRenderer->fileExtension, $srcLanguage);
 		if (is_file($templateFile))
 			$templateFile = realpath($templateFile);
 
@@ -206,16 +206,16 @@ class ErrorHandler extends \CErrorHandler
 	protected function getViewFile($view, $code)
 	{
 		$viewPaths = array(
-			Blocks::app()->theme === null ? null : Blocks::app()->theme->systemViewPath,
-			Blocks::app() instanceof \CWebApplication ? Blocks::app()->systemViewPath : null,
-			Blocks::app()->path->frameworkPath.'views/',
+			b()->theme === null ? null : b()->theme->systemViewPath,
+			b() instanceof \CWebApplication ? b()->systemViewPath : null,
+			b()->path->frameworkPath.'views/',
 		);
 
 		try
 		{
-			$connection = Blocks::app()->db;
-			if ($connection && Blocks::app()->db->schema->getTable('{{site}}' !== null))
-				$viewPaths[] = Blocks::app()->path->siteTemplatePath;
+			$connection = b()->db;
+			if ($connection && b()->db->schema->getTable('{{site}}' !== null))
+				$viewPaths[] = b()->path->siteTemplatePath;
 		}
 		catch(Exception $e)
 		{
@@ -227,7 +227,7 @@ class ErrorHandler extends \CErrorHandler
 			if ($viewPath !== null)
 			{
 				// if it's an exception on the front-end, we don't show the exception template, on the error template.
-				if ($view == 'errors/exception' && Blocks::app()->request->mode == RequestMode::Site)
+				if ($view == 'errors/exception' && b()->request->mode == RequestMode::Site)
 					$view = 'errors/error';
 
 				$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);

@@ -17,7 +17,7 @@ class VerifyPasswordForm extends \CFormModel
 		return array(
 			array('password, confirmPassword', 'required'),
 			array('password', 'compare', 'compareAttribute' => 'confirmPassword'),
-			array('password', 'length', 'min' => Blocks::app()->security->minimumPasswordLength)
+			array('password', 'length', 'min' => b()->security->minimumPasswordLength)
 		);
 	}
 }

@@ -14,19 +14,19 @@ class SessionController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$loginName = Blocks::app()->request->getPost('loginName');
-		$password = Blocks::app()->request->getPost('password');
-		$rememberMe = (Blocks::app()->request->getPost('rememberMe') === 'y');
+		$loginName = b()->request->getPost('loginName');
+		$password = b()->request->getPost('password');
+		$rememberMe = (b()->request->getPost('rememberMe') === 'y');
 
 		// Attempt to log in
-		$loginInfo = Blocks::app()->user->startLogin($loginName, $password, $rememberMe);
+		$loginInfo = b()->user->startLogin($loginName, $password, $rememberMe);
 
 		// Did it work?
-		if (Blocks::app()->user->isLoggedIn)
+		if (b()->user->isLoggedIn)
 		{
 			$r = array(
 				'success' => true,
-				'redirectUrl' => Blocks::app()->user->returnUrl
+				'redirectUrl' => b()->user->returnUrl
 			);
 		}
 		else
@@ -36,7 +36,7 @@ class SessionController extends BaseController
 			{
 				$r = array(
 					'success' => true,
-					'redirectUrl' => Blocks::app()->users->forgotPasswordUrl.'?success=1'
+					'redirectUrl' => b()->users->forgotPasswordUrl.'?success=1'
 				);
 			}
 			else
@@ -48,13 +48,13 @@ class SessionController extends BaseController
 					$errorMessage = 'Account locked.';
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
 				{
-					$user = Blocks::app()->users->getByLoginName($loginName);
-					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(Blocks::app()->users->getRemainingCooldownTime($user), false).'.';
+					$user = b()->users->getByLoginName($loginName);
+					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(b()->users->getRemainingCooldownTime($user), false).'.';
 				}
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)
 					$errorMessage = 'Invalid login name or password.';
 				else if ($loginInfo->identity->errorCode !== UserIdentity::ERROR_NONE)
-					$errorMessage = $loginInfo->identity->failedPasswordAttemptCount.' of '.Blocks::app()->config->getItem('maxInvalidPasswordAttempts').' failed password attempts.';
+					$errorMessage = $loginInfo->identity->failedPasswordAttemptCount.' of '.b()->config->getItem('maxInvalidPasswordAttempts').' failed password attempts.';
 
 				$r = array(
 					'error' => $errorMessage,
@@ -67,7 +67,7 @@ class SessionController extends BaseController
 
 	public function actionLogout()
 	{
-		Blocks::app()->user->logout();
+		b()->user->logout();
 		$this->redirect('');
 	}
 }

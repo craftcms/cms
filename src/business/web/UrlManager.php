@@ -17,7 +17,7 @@ class UrlManager extends \CUrlManager
 	 */
 	function __construct()
 	{
-		$this->routeVar = Blocks::app()->config->getItem('pathVar');
+		$this->routeVar = b()->config->getItem('pathVar');
 	}
 
 	/**
@@ -30,7 +30,7 @@ class UrlManager extends \CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
-		if (Blocks::app()->request->urlFormat == UrlFormat::PathInfo)
+		if (b()->request->urlFormat == UrlFormat::PathInfo)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
@@ -46,7 +46,7 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (!BLOCKS_CP_REQUEST)
 		{
-			if (Blocks::app()->isInstalled)
+			if (b()->isInstalled)
 				if ($this->matchEntry())
 					$matchFound = true;
 		}
@@ -79,7 +79,7 @@ class UrlManager extends \CUrlManager
 	public function matchEntry()
 	{
 		$entry = Entry::model()->findByAttributes(array(
-			'full_uri' => Blocks::app()->request->path,
+			'full_uri' => b()->request->path,
 		));
 
 		if ($entry !== null)
@@ -108,7 +108,7 @@ class UrlManager extends \CUrlManager
 				$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
 
 				// Does it match?
-				if (preg_match("/^{$pattern}$/", Blocks::app()->request->path, $match))
+				if (preg_match("/^{$pattern}$/", b()->request->path, $match))
 				{
 					$templatePath = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
 					if ($templatePath !== false)
@@ -144,9 +144,9 @@ class UrlManager extends \CUrlManager
 	public function matchTemplatePath()
 	{
 		// Make sure they're not trying to access a private template
-		if (!Blocks::app()->request->isAjaxRequest)
+		if (!b()->request->isAjaxRequest)
 		{
-			foreach (Blocks::app()->request->pathSegments as $requestPathSeg)
+			foreach (b()->request->pathSegments as $requestPathSeg)
 			{
 				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
 					return false;
@@ -154,7 +154,7 @@ class UrlManager extends \CUrlManager
 		}
 
 		// Does a request path match a template?
-		$templatePath = TemplateHelper::resolveTemplatePath(Blocks::app()->request->path);
+		$templatePath = TemplateHelper::resolveTemplatePath(b()->request->path);
 		if ($templatePath !== false)
 		{
 			$this->setTemplateMatch($templatePath, TemplateMatchType::Template);

@@ -24,7 +24,7 @@ class UsersController extends BaseController
 		$this->requireAjaxRequest();
 		$this->requirePostRequest();
 
-		if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
+		if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
 		{
 			return true;
 		}
@@ -39,106 +39,106 @@ class UsersController extends BaseController
 		$existingUser = false;
 
 		// Are we editing an existing user?
-		$postUserId = Blocks::app()->request->getPost('user_id');
+		$postUserId = b()->request->getPost('user_id');
 		if ($postUserId)
 		{
 			$existingUser = true;
-			$user = Blocks::app()->users->getById($postUserId);
+			$user = b()->users->getById($postUserId);
 		}
 
 		if (empty($user))
 			$user = new User();
 
-		if (Blocks::app()->request->getPost('suspend', null) !== null)
+		if (b()->request->getPost('suspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Suspended;
 			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User has been suspended.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User has been suspended.', MessageStatus::Success, b()->request->getPost('redirect'));
 		}
-		else if (Blocks::app()->request->getPost('validationEmail', null) !== null)
+		else if (b()->request->getPost('validationEmail', null) !== null)
 		{
-			if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, Blocks::app()->sites->currentSite)) == true)
-				$this->_setMessageAndRedirect('Validation email has been resent.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->currentSite)) == true)
+				$this->_setMessageAndRedirect('Validation email has been resent.', MessageStatus::Success, b()->request->getPost('redirect'));
 		}
-		else if (Blocks::app()->request->getPost('unsuspend', null) !== null)
+		else if (b()->request->getPost('unsuspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User has been unsuspended.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User has been unsuspended.', MessageStatus::Success, b()->request->getPost('redirect'));
 		}
-		else if (Blocks::app()->request->getPost('unlock', null) !== null)
+		else if (b()->request->getPost('unlock', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			$user->cooldown_start = null;
 			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User has been unlocked.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User has been unlocked.', MessageStatus::Success, b()->request->getPost('redirect'));
 		}
-		else if (Blocks::app()->request->getPost('delete', null) !== null)
+		else if (b()->request->getPost('delete', null) !== null)
 		{
-			if ($user->id == Blocks::app()->users->current->id)
+			if ($user->id == b()->users->current->id)
 			{
-				$this->_setMessageAndRedirect('Trying to delete yourself?  It can\'t be that bad.', MessageStatus::Notice, Blocks::app()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('Trying to delete yourself?  It can\'t be that bad.', MessageStatus::Notice, b()->request->getPost('redirect'));
 			}
 			else
 			{
-				Blocks::app()->users->delete($user);
-				$this->_setMessageAndRedirect('Sucessfully archived user.', MessageStatus::Success, 'users', Blocks::app()->request->getPost('redirect'));
+				b()->users->delete($user);
+				$this->_setMessageAndRedirect('Sucessfully archived user.', MessageStatus::Success, 'users', b()->request->getPost('redirect'));
 			}
 		}
-		else if (Blocks::app()->request->getPost('save', null) !== null)
+		else if (b()->request->getPost('save', null) !== null)
 		{
-			$user->username = Blocks::app()->request->getPost('username');
-			$user->first_name = Blocks::app()->request->getPost('first_name');
-			$user->last_name = Blocks::app()->request->getPost('last_name');
-			$user->email = Blocks::app()->request->getPost('email');
-			$user->admin = (Blocks::app()->request->getPost('admin') === 'y');
-			$user->html_email = (Blocks::app()->request->getPost('html_email') === 'y');
-			$user->status = Blocks::app()->request->getPost('status');
-			$user->password_reset_required = (Blocks::app()->request->getPost('password_reset') === 'y');
+			$user->username = b()->request->getPost('username');
+			$user->first_name = b()->request->getPost('first_name');
+			$user->last_name = b()->request->getPost('last_name');
+			$user->email = b()->request->getPost('email');
+			$user->admin = (b()->request->getPost('admin') === 'y');
+			$user->html_email = (b()->request->getPost('html_email') === 'y');
+			$user->status = b()->request->getPost('status');
+			$user->password_reset_required = (b()->request->getPost('password_reset') === 'y');
 
-			$sendValidationEmail = (Blocks::app()->request->getPost('send_validation_email') === 'y');
+			$sendValidationEmail = (b()->request->getPost('send_validation_email') === 'y');
 
 			if ($user->validate())
 			{
 				if (!$existingUser)
 				{
-					$user = Blocks::app()->users->registerUser($user, null, true);
+					$user = b()->users->registerUser($user, null, true);
 
 					if ($user !== null)
 					{
 						if ($sendValidationEmail)
 						{
-							$site = Blocks::app()->sites->currentSite;
-							if (($emailStatus = Blocks::app()->email->sendRegistrationEmail($user, $site)) == true)
+							$site = b()->sites->currentSite;
+							if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
 							{
 								// registered and sent email
-								$this->_setMessageAndRedirect('Successfully registered user and sent registration email.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+								$this->_setMessageAndRedirect('Successfully registered user and sent registration email.', MessageStatus::Success, b()->request->getPost('redirect'));
 							}
 							else
 							{
 								// registered but there was a problem sending the email.
-								$this->_setMessageAndRedirect('Successfully registered user, but there was a problem sending the email: '.$emailStatus, MessageStatus::Notice, Blocks::app()->request->getPost('redirect'));
+								$this->_setMessageAndRedirect('Successfully registered user, but there was a problem sending the email: '.$emailStatus, MessageStatus::Notice, b()->request->getPost('redirect'));
 							}
 						}
 						else
 						{
 							// registered user with no email validation
-							$this->_setMessageAndRedirect('Successfully registered user.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+							$this->_setMessageAndRedirect('Successfully registered user.', MessageStatus::Success, b()->request->getPost('redirect'));
 						}
 					}
 					else
 					{
 						// there was a problem registering the user.
-						$this->_setMessageAndRedirect('There was a problem registering the user.  Check your log files.', MessageStatus::Error, Blocks::app()->request->getPost('redirect'));
+						$this->_setMessageAndRedirect('There was a problem registering the user.  Check your log files.', MessageStatus::Error, b()->request->getPost('redirect'));
 					}
 				}
 				else
 					$user->save(false);
 
 				if ($existingUser)
-					$this->_setMessageAndRedirect('User saved successfully.', MessageStatus::Success, Blocks::app()->request->getPost('redirect'));
+					$this->_setMessageAndRedirect('User saved successfully.', MessageStatus::Success, b()->request->getPost('redirect'));
 
-				$this->_redirect(Blocks::app()->request->getPost('redirect'));
+				$this->_redirect(b()->request->getPost('redirect'));
 			}
 		}
 
@@ -166,7 +166,7 @@ class UsersController extends BaseController
 	 */
 	private function _setMessageAndRedirect($message, $messageStatus, $url)
 	{
-		Blocks::app()->user->setMessage($messageStatus, $message);
+		b()->user->setMessage($messageStatus, $message);
 		$this->_redirect($url);
 	}
 

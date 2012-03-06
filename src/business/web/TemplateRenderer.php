@@ -74,10 +74,10 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 	protected function setParsedTemplatePath()
 	{
 		// get the relative template path
-		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(Blocks::app()->path->templatePath));
+		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(b()->path->templatePath));
 
 		// set the parsed template path
-		$this->_parsedTemplatePath = Blocks::app()->path->siteTemplateCachePath.$relTemplatePath;
+		$this->_parsedTemplatePath = b()->path->siteTemplateCachePath.$relTemplatePath;
 
 		// set the meta path
 		$this->_destinationMetaPath = $this->_parsedTemplatePath.'.meta';
@@ -100,7 +100,7 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 	protected function isTemplateParsingNeeded()
 	{
 		// always re-parse templates if in dev mode
-		if (Blocks::app()->config->getItem('devMode'))
+		if (b()->config->getItem('devMode'))
 			return true;
 
 		// if last modified date or source is newer, regen
@@ -418,7 +418,7 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 			// Redirect
 			case 'redirect':
 				$this->parseVariables($params, true);
-				return "<?php Blocks::app()->request->redirect(UrlHelper::generateUrl({$params})); ?>";
+				return "<?php b()->request->redirect(UrlHelper::generateUrl({$params})); ?>";
 		}
 	}
 
