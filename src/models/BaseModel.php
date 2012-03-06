@@ -148,7 +148,7 @@ abstract class BaseModel extends \CActiveRecord
 					->order('j.sort_order')
 					->queryAll();
 
-				$this->_blocks = ContentBlock::model()->populateRecords($data);
+				$this->_blocks = Block::model()->populateRecords($data);
 			}
 		}
 		return $this->_blocks;

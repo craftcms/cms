@@ -40,16 +40,16 @@ return array(
 			'class' => 'Blocks\AssetsService',
 		),
 
+		'blocks' => array(
+			'class' => 'Blocks\BlocksService',
+		),
+
 		'config' => array(
 			'class' => 'Blocks\ConfigService',
 		),
 
 		'content' => array(
 			'class' => 'Blocks\ContentService',
-		),
-
-		'contentBlocks' => array(
-			'class' => 'Blocks\ContentBlocksService',
 		),
 
 		'cp' => array(

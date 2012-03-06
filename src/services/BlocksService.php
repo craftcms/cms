@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ContentBlocksService extends BaseService
+class BlocksService extends BaseService
 {
 	private $_blockTypes;
 
@@ -14,15 +14,15 @@ class ContentBlocksService extends BaseService
 	 */
 	public function getBlocks()
 	{
-		return ContentBlock::model()->findAll(array(
+		return Block::model()->findAll(array(
 			'order' => 'name'
 		));
 	}
 
 	/**
-	 * Returns a ContentBlock instance, whether it already exists based on an ID, or is new
-	 * @param int $blockId The ContentBlock ID if it exists
-	 * @return ContentBlock
+	 * Returns a Block instance, whether it already exists based on an ID, or is new
+	 * @param int $blockId The Block ID if it exists
+	 * @return Block
 	 */
 	public function getBlock($blockId = null)
 	{
@@ -30,7 +30,7 @@ class ContentBlocksService extends BaseService
 			$block = $this->getBlockById($blockId);
 
 		if (empty($block))
-			$block = new ContentBlock;
+			$block = new Block;
 
 		return $block;
 	}
@@ -38,11 +38,11 @@ class ContentBlocksService extends BaseService
 	/**
 	 * Returns a block by its ID
 	 * @param int $blockId
-	 * @return ContentBlock
+	 * @return Block
 	 */
 	public function getBlockById($blockId)
 	{
-		return ContentBlock::model()->findById($blockId);
+		return Block::model()->findById($blockId);
 	}
 
 	/**
@@ -51,7 +51,7 @@ class ContentBlocksService extends BaseService
 	 * @param      $blockSettings
 	 * @param null $blockTypeSettings
 	 * @param null $blockId
-	 * @return \Blocks\ContentBlock
+	 * @return \Blocks\Block
 	 */
 	public function saveBlock($blockSettings, $blockTypeSettings = null, $blockId = null)
 	{
@@ -81,7 +81,7 @@ class ContentBlocksService extends BaseService
 				// Delete the previous block type settings
 				if (!$isNewBlock)
 				{
-					ContentBlockSetting::model()->deleteAllByAttributes(array(
+					BlockSetting::model()->deleteAllByAttributes(array(
 						'block_id' => $block->id
 					));
 				}
@@ -94,7 +94,7 @@ class ContentBlocksService extends BaseService
 				$flattened = ArrayHelper::flattenArray($blockType->settings);
 				foreach ($flattened as $key => $value)
 				{
-					$setting = new ContentBlockSetting;
+					$setting = new BlockSetting;
 					$setting->block_id = $block->id;
 					$setting->name = $key;
 					$setting->value = $value;

@@ -6,9 +6,9 @@
 			<h5>Content Blocks</h5>
 		</div>
 		<div class="body">
-			{% if contentBlocks.blocks %}
+			{% if blocks.blocks %}
 				<ul>
-					{% foreach contentBlocks.blocks as block %}
+					{% foreach blocks.blocks as block %}
 						<li class="item">
 							<a href="{url.base}settings/blocks/edit/{block.id}"><span class="icon icon137"></span>{block.name}</a>
 						</li>

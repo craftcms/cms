@@ -97,7 +97,7 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 			'class': this.$classInput.val()
 		};
 
-		$.post(actionUrl+'contentblocks/save', data, $.proxy(function(response) {
+		$.post(actionUrl+'blocks/save', data, $.proxy(function(response) {
 			if (response.errors)
 				this.setErrors(response.errors);
 			else if (!response.success)
