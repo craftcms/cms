@@ -115,6 +115,10 @@ return array(
 			'class' => 'Blocks\TemplateRenderer',
 		),
 
+		'statePersister' => array(
+			'class' => 'Blocks\StatePersister'
+		),
+
 		'urlManager' => array(
 			'class' => 'Blocks\UrlManager',
 			'routePatterns' => array(

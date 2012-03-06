@@ -163,21 +163,27 @@ class ContentService extends BaseService
 		$entry->author_id = $authorId;
 		$entry->parent_id = $parentId;
 
-		// Find a unique slug
-		$slug = 'untitled';
+		//TODO: There is a race condition here between the time we execute the query to get the next num and the time we save.
+		// Need a fallback or a workaround.  Try catch doesn't work because save calls validate which catches the error and silently swallows it.
+		// {
+			// Find a unique slug
+			$slug = 'untitled';
 
-		$i = 0;
-		do {
-			$match = Entry::model()->findByAttributes(array(
-				'slug'       => $slug.($i ? '-'.$i : ''),
-				'section_id' => $sectionId
-			));
-			$i++;
-		} while ($match);
+			$result = b()->db->createCommand()
+				->select('MAX(SUBSTR(slug, LENGTH(\''.$slug.'-\') + 1)) as NextNum')
+				->from('entries')
+				->where('section_id=:sectionId', array(':sectionId' => $sectionId))
+				->queryAll();
 
-		$entry->slug = $slug;
+			if ($result[0]['NextNum'] == null)
+				$nextNum = 1;
+			else
+				$nextNum = $result[0]['NextNum'] + 1;
 
-		$entry->save();
+			$entry->slug = $slug.'-'.$nextNum;
+			$entry->save();
+		// }
+
 		return $entry;
 	}
 
