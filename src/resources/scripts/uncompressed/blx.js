@@ -390,6 +390,7 @@ var CP = blx.Base.extend({
 
 	_windowHeight: null,
 	_$sidebar: null,
+	_$messages: null,
 
 	init: function()
 	{
@@ -402,6 +403,9 @@ var CP = blx.Base.extend({
 			this.addListener(blx.$window, 'resize', 'setSidebarHeight');
 			this.addListener(blx.$window, 'scroll', 'setSidebarHeight');
 		}
+
+		this._$messages = $('#messages');
+		this._$messages.delay(2000).fadeOut();
 	},
 
 	setSidebarHeight: function()

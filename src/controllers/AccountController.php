@@ -34,7 +34,7 @@ class AccountController extends BaseController
 					$user->password_reset_required = false;
 					$user->save();
 
-					b()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
+					b()->user->setMessage(MessageType::Notice, 'Password successfully changed.');
 					$this->redirect('account');
 				}
 			}
@@ -106,7 +106,7 @@ class AccountController extends BaseController
 
 					b()->dashboard->assignDefaultUserWidgets($userToChange->id);
 
-					b()->user->setMessage(MessageStatus::Success, 'Password successfully changed.');
+					b()->user->setMessage(MessageType::Notice, 'Password successfully changed.');
 					$this->redirect('dashboard');
 				}
 			}

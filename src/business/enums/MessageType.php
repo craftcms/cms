@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class MessageStatus
+class MessageType
 {
 	const Error        = 'error';
 	const Notice       = 'notice';
