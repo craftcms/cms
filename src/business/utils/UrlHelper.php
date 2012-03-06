@@ -50,9 +50,33 @@ class UrlHelper
 	public static function generateUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
+		$routeVar = b()->urlManager->routeVar;
+
 		$path = self::_normalizePath(trim($path, '/'), $params);
 		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
-		return $origPath == '' ? $path.'/' : $path;
+
+		if (b()->request->urlFormat == UrlFormat::PathInfo && $params == null)
+			$path = $origPath == '' ? $path.'/' : $path;
+		else
+		{
+			// stupid way of checking if p doesn't have a value set in the given path.
+			if (($pos = strpos($path, $routeVar.'=')) !== false && isset($path[$pos+2]) && $path[$pos+2] == '&')
+			{
+				if ($params == null)
+					$search = $routeVar.'=';
+				else
+					$search = $routeVar.'=&';
+
+				$path = str_replace($search, '', $path);
+			}
+			else
+			{
+				if (strpos($path, $routeVar.'=') === false)
+					$path = $path.'?'.$routeVar.'=';
+			}
+		}
+
+		return $path;
 	}
 
 	/**

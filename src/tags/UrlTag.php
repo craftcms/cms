@@ -12,7 +12,7 @@ class UrlTag extends Tag
 	 */
 	public function base()
 	{
-		return $this->generateUrl('');
+		return $this->url('');
 	}
 
 	/**
@@ -45,6 +45,7 @@ class UrlTag extends Tag
 	 */
 	public function url($path = '')
 	{
+
 		return $this->generateUrl($path);
 	}
 
