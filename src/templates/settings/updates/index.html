@@ -4,6 +4,15 @@
 	<div id="checking">
 		Checking for updates…
 	</div>
+	<script type="text/javascript">
+		// Keep the spinner vertically centered
+		function centerSpinner()
+		{
+			var top = ((window.innerHeight-48) / 2) - 44;
+			document.getElementById('checking').style.top = top+'px';
+		}
+		centerSpinner();
+	</script>
 
 	<div id="updates"></div>
 {% endregion %}

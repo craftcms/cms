@@ -388,7 +388,7 @@ blx.Base = Base.extend({
  */
 var CP = blx.Base.extend({
 
-	_windowHeight: null,
+	windowHeight: null,
 	_$sidebar: null,
 	_$messages: null,
 
@@ -414,9 +414,9 @@ var CP = blx.Base.extend({
 			return false;
 
 		// has the window height changed?
-		if (this._windowHeight !== (this._windowHeight = blx.$window.height()))
+		if (this.windowHeight !== (this.windowHeight = blx.$window.height()))
 		{
-			var sidebarHeight = this._windowHeight - blx.navHeight;
+			var sidebarHeight = this.windowHeight - blx.navHeight;
 			this._$sidebar.height(sidebarHeight);
 		}
 	}

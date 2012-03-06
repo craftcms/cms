@@ -1,6 +1,11 @@
 (function($) {
 
 
+// Keep the spinner vertically centered
+blx.$window.on('resize.updates', centerSpinner);
+
+
+
 var Update = blx.Base.extend({
 
 	dom: null,
@@ -71,8 +76,11 @@ var Update = blx.Base.extend({
 });
 
 
-var updatesUrl = baseUrl+'?p=settings/updates/updates';
-$('#updates').load(updatesUrl, function() {
+var updatesUrl = baseUrl+'settings/updates/updates';
+$('#updates').load(updatesUrl, function()
+{
+	blx.$window.off('resize.updates');
+
 	var $sidebarLink = $('#sb-updates'),
 		$sidebarBadge = $sidebarLink.find('span.badge'),
 		$updatesContainer = $('#updates'),
@@ -92,6 +100,16 @@ $('#updates').load(updatesUrl, function() {
 	{
 		// delete the badge if it exists
 		$sidebarBadge.remove();
+
+		// Keep the "no updates" dialog vertically centered
+		$dialog = $('#no-updates');
+		var centerDialog = function()
+		{
+			var top = ((window.innerHeight-48) / 2) - 43;
+			$dialog.css('top', top);
+		}
+		centerDialog();
+		blx.$window.on('resize', centerDialog);
 	}
 
 	// fade in the updates
