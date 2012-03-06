@@ -59,7 +59,7 @@ blx.ui.DragCore = blx.Base.extend({
 		if (this.$targetItem) return;
 
 		// Make sure the target isn't a button (unless the button is the handle)
-		if (event.currentTarget != event.target)
+		if (this.settings.ignoreButtons && event.currentTarget != event.target)
 		{
 			var $target = $(event.target);
 			if ($target.hasClass('btn') || $target.closest('.btn').length)
@@ -241,6 +241,7 @@ blx.ui.DragCore = blx.Base.extend({
 	defaults: {
 		handle: null,
 		axis: null,
+		ignoreButtons: true,
 
 		onDragStart: function() {},
 		onDrag: function() {},
