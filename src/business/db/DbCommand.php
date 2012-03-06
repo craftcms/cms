@@ -148,7 +148,7 @@ class DbCommand extends \CDbCommand
 
 	public function alterColumn($table, $column, $type)
 	{
-		return parent::alterColumn($this->addTablePrefix($table), $columns, $type);
+		return parent::alterColumn($this->addTablePrefix($table), $column, $type);
 	}
 
 	public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete=null, $update=null)
