@@ -13,7 +13,6 @@ blx.ui.LightSwitch = blx.Base.extend({
 	settings: null,
 	$outerContainer: null,
 	$innerContainer: null,
-	$btn: null,
 	$input: null,
 	on: null,
 	dragger: null,
@@ -36,7 +35,6 @@ blx.ui.LightSwitch = blx.Base.extend({
 		this.setSettings(settings, blx.ui.LightSwitch.defaults);
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
-		this.$btn = this.$innerContainer.find('.btn:first');
 		this.$input = this.$outerContainer.find('input:first');
 
 		this.on = this.$outerContainer.hasClass('on');
@@ -80,13 +78,11 @@ blx.ui.LightSwitch = blx.Base.extend({
 
 	_onMouseDown: function()
 	{
-		this.$btn.addClass('sel');
 		this.addListener(blx.$document, 'mouseup', '_onMouseUp')
 	},
 
 	_onMouseUp: function()
 	{
-		this.$btn.removeClass('sel');
 		this.removeListener(blx.$document, 'mouseup');
 
 		// Was this a click?
