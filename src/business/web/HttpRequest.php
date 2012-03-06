@@ -21,7 +21,7 @@ class HttpRequest extends \CHttpRequest
 	public function init()
 	{
 		parent::init();
-		Blocks::app()->attachEventHandler('onBeginRequest',array($this,'correctUrlFormat'));
+		b()->attachEventHandler('onBeginRequest',array($this,'correctUrlFormat'));
 	}
 
 	/**
