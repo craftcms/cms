@@ -53,36 +53,36 @@ class UsersController extends BaseController
 		{
 			$user->status = UserAccountStatus::Suspended;
 			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User has been suspended.', MessageType::Notice, b()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User suspended.', MessageType::Notice, b()->request->getPost('redirect'));
 		}
 		else if (b()->request->getPost('validationEmail', null) !== null)
 		{
 			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->currentSite)) == true)
-				$this->_setMessageAndRedirect('Validation email has been resent.', MessageType::Notice, b()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('Validation email sent.', MessageType::Notice, b()->request->getPost('redirect'));
 		}
 		else if (b()->request->getPost('unsuspend', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User has been unsuspended.', MessageType::Notice, b()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User unsuspended.', MessageType::Notice, b()->request->getPost('redirect'));
 		}
 		else if (b()->request->getPost('unlock', null) !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			$user->cooldown_start = null;
 			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User has been unlocked.', MessageType::Notice, b()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User unlocked.', MessageType::Notice, b()->request->getPost('redirect'));
 		}
 		else if (b()->request->getPost('delete', null) !== null)
 		{
 			if ($user->id == b()->users->current->id)
 			{
-				$this->_setMessageAndRedirect('Trying to delete yourself?  It can\'t be that bad.', MessageType::Notice, b()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('Trying to delete yourself?  It can’t be that bad.', MessageType::Notice, b()->request->getPost('redirect'));
 			}
 			else
 			{
 				b()->users->delete($user);
-				$this->_setMessageAndRedirect('Sucessfully archived user.', MessageType::Notice, 'users', b()->request->getPost('redirect'));
+				$this->_setMessageAndRedirect('User archived.', MessageType::Notice, 'users', b()->request->getPost('redirect'));
 			}
 		}
 		else if (b()->request->getPost('save', null) !== null)
@@ -112,33 +112,37 @@ class UsersController extends BaseController
 							if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
 							{
 								// registered and sent email
-								$this->_setMessageAndRedirect('Successfully registered user and sent registration email.', MessageType::Notice, b()->request->getPost('redirect'));
+								$this->_setMessageAndRedirect('User registered and registration email sent.', MessageType::Notice, b()->request->getPost('redirect'));
 							}
 							else
 							{
 								// registered but there was a problem sending the email.
-								$this->_setMessageAndRedirect('Successfully registered user, but there was a problem sending the email: '.$emailStatus, MessageType::Notice, b()->request->getPost('redirect'));
+								$this->_setMessageAndRedirect('User registered, but couldn’t send the registration email: '.$emailStatus, MessageType::Notice, b()->request->getPost('redirect'));
 							}
 						}
 						else
 						{
 							// registered user with no email validation
-							$this->_setMessageAndRedirect('Successfully registered user.', MessageType::Notice, b()->request->getPost('redirect'));
+							$this->_setMessageAndRedirect('User registered.', MessageType::Notice, b()->request->getPost('redirect'));
 						}
 					}
 					else
 					{
 						// there was a problem registering the user.
-						$this->_setMessageAndRedirect('There was a problem registering the user.  Check your log files.', MessageType::Error, b()->request->getPost('redirect'));
+						$this->_setMessageAndRedirect('Couldn’t register user. See the log for details.', MessageType::Error, b()->request->getPost('redirect'));
 					}
 				}
 				else
 					$user->save(false);
 
 				if ($existingUser)
-					$this->_setMessageAndRedirect('User saved successfully.', MessageType::Notice, b()->request->getPost('redirect'));
+					$this->_setMessageAndRedirect('User saved.', MessageType::Notice, b()->request->getPost('redirect'));
 
 				$this->_redirect(b()->request->getPost('redirect'));
+			}
+			else
+			{
+				b()->user->setMessage(MessageType::Error, 'Couldn’t save user.');
 			}
 		}
 

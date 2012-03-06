@@ -43,11 +43,15 @@ class ContentController extends BaseController
 		// Did it save?
 		if (!$section->errors)
 		{
-			b()->user->setMessage(MessageType::Notice, 'Section saved successfully.');
+			b()->user->setMessage(MessageType::Notice, 'Section saved.');
 
 			$url = b()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save section.');
 		}
 
 		// Get Block instances for each selected block

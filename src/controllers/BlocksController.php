@@ -44,8 +44,10 @@ class BlocksController extends BaseController
 				);
 				$this->returnJson($r);
 			}
-
-			b()->user->setMessage(MessageType::Notice, 'Content block saved successfully.');
+			else
+			{
+				b()->user->setMessage(MessageType::Notice, 'Content block saved.');
+			}
 
 			$url = b()->request->getPost('redirect');
 			if ($url !== null)
@@ -56,6 +58,10 @@ class BlocksController extends BaseController
 		{
 			$r = array('errors' => $block->errors);
 			$this->returnJson($r);
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save content block.');
 		}
 
 		// Reload the original template

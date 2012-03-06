@@ -94,12 +94,20 @@ class SettingsController extends BaseController
 
 			if (b()->email->saveEmailSettings($settings))
 			{
-				b()->user->setMessage(MessageType::Notice, 'Settings updated successfully.');
+				b()->user->setMessage(MessageType::Notice, 'Email settings saved.');
 
 				$url = b()->request->getPost('redirect');
 				if ($url !== null)
 					$this->redirect($url);
 			}
+			else
+			{
+				b()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
+			}
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
 		}
 
 		$this->loadRequestedTemplate(array('emailSettings' => $emailSettings));

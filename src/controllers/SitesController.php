@@ -36,11 +36,15 @@ class SitesController extends BaseController
 
 		if ($site->save())
 		{
-			b()->user->setMessage(MessageType::Notice, 'Site saved successfully.');
+			b()->user->setMessage(MessageType::Notice, 'Site saved.');
 
 			$url = b()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save site.');
 		}
 
 		$this->loadRequestedTemplate(array('site' => $site));
