@@ -55,9 +55,9 @@ class UsersService extends BaseService
 	{
 		$users = b()->db->createCommand()
 			->select('u.*')
-			->from('{{users}} g')
-			->join('{{usergroups}} ug', 'u.id = ug.users_id')
-			->join('{{sites}} s', 'ug.site_id = s.id')
+			->from('users g')
+			->join('usergroups ug', 'u.id = ug.users_id')
+			->join('sites s', 'ug.site_id = s.id')
 			->where('s.id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 
@@ -176,9 +176,9 @@ class UsersService extends BaseService
 	{
 		$groups = b()->db->createCommand()
 			->select('g.*')
-			->from('{{groups}} g')
-			->join('{{usergroups}} ug', 'g.id = ug.group_id')
-			->join('{{users}} u', 'ug.user_id = u.id')
+			->from('groups g')
+			->join('usergroups ug', 'g.id = ug.group_id')
+			->join('users u', 'ug.user_id = u.id')
 			->where('u.id=:userId', array(':userId' => $userId))
 			->queryAll();
 
@@ -193,9 +193,9 @@ class UsersService extends BaseService
 	{
 		$groups = b()->db->createCommand()
 			->select('u.*')
-			->from('{{groups}} g')
-			->join('{{usergroups}} ug', 'g.id = ug.group_id')
-			->join('{{users}} u', 'ug.user_id = u.id')
+			->from('groups g')
+			->join('usergroups ug', 'g.id = ug.group_id')
+			->join('users u', 'ug.user_id = u.id')
 			->where('g.id=:groupId', array(':groupId' => $groupId))
 			->queryAll();
 

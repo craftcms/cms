@@ -108,16 +108,16 @@ class BlocksService extends BaseService
 				if ($isNewBlock)
 				{
 					// Add the new column
-					b()->db->createCommand()->addColumn('{{content}}', $columnName, $columnType);
+					b()->db->createCommand()->addColumn('content', $columnName, $columnType);
 				}
 				else
 				{
 					// Rename the column if the block has a new handle
 					if ($columnName != $oldColumnName)
-						b()->db->createCommand()->renameColumn('{{content}}', $oldColumnName, $columnName);
+						b()->db->createCommand()->renameColumn('content', $oldColumnName, $columnName);
 
 					// Update the column's type
-					b()->db->createCommand()->alterColumn('{{content}}', $columnName, $columnType);
+					b()->db->createCommand()->alterColumn('content', $columnName, $columnType);
 				}
 
 				$transaction->commit();

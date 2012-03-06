@@ -125,7 +125,7 @@ class ContentService extends BaseService
 				{
 					b()->db->createCommand()
 						->where('section_id = :id', array(':id' => $section->id))
-						->delete('{{sectionblocks}}');
+						->delete('sectionblocks');
 				}
 
 				// Add new content block selections
@@ -139,7 +139,7 @@ class ContentService extends BaseService
 						$sectionBlocksData[] = array($section->id, $blockId, $required, $sortOrder+1);
 					}
 
-					b()->db->createCommand()->insertAll('{{sectionblocks}}', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
+					b()->db->createCommand()->insertAll('sectionblocks', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
 				}
 
 				$transaction->commit();
@@ -213,8 +213,8 @@ class ContentService extends BaseService
 	{
 		$entries = b()->db->createCommand()
 			->select('e.*')
-			->from('{{sections}} s')
-			->join('{{entries}} e', 's.id = e.section_id')
+			->from('sections s')
+			->join('entries e', 's.id = e.section_id')
 			->where('s.site_id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 

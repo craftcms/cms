@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class ConfigService extends BaseService
 {
+	private $_tablePrefix;
+
 	/**
 	 * Get a config item
 	 *
@@ -34,6 +36,18 @@ class ConfigService extends BaseService
 			return b()->params['dbConfig'][$item];
 
 		return $default;
+	}
+
+	public function getTablePrefix()
+	{
+		if (!isset($this->_tablePrefix))
+		{
+			$tablePrefix = (string)$this->getDbItem('tablePrefix');
+			if ($tablePrefix)
+				$tablePrefix = rtrim($tablePrefix, '_').'_';
+			$this->_tablePrefix = $tablePrefix;
+		}
+		return $this->_tablePrefix;
 	}
 
 	/**

@@ -53,9 +53,9 @@ class AssetsService extends BaseService
 	{
 		$assets = b()->db->createCommand()
 			->select('a.*')
-			->from('{{assets}} a')
-			->join('{{assetfolders}} af', 'a.asset_folder_id = af.id')
-			->join('{{sites}} s', 'af.site_id = s.id')
+			->from('assets a')
+			->join('assetfolders af', 'a.asset_folder_id = af.id')
+			->join('sites s', 'af.site_id = s.id')
 			->where('s.id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
 
