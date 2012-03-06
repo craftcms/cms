@@ -143,7 +143,7 @@ abstract class BaseModel extends \CActiveRecord
 				$data = Blocks::app()->db->createCommand()
 					->select('j.required, b.*')
 					->from('{{'.$this->getBlocksJoinTableName().'}} j')
-					->join('{{contentblocks}} b', 'j.block_id = b.id')
+					->join('{{blocks}} b', 'j.block_id = b.id')
 					->where('j.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
 					->order('j.sort_order')
 					->queryAll();
@@ -592,7 +592,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		// Add the foreign keys
 		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", '{{'.$joinTable.'}}', $modelFk,   '{{'.$modelTable.'}}', 'id', 'NO ACTION', 'NO ACTION');
-		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_contentblocks_fk", '{{'.$joinTable.'}}', 'block_id', '{{contentblocks}}',   'id', 'NO ACTION', 'NO ACTION');
+		Blocks::app()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_blocks_fk", '{{'.$joinTable.'}}', 'block_id', '{{blocks}}',   'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**

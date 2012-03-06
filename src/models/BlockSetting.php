@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class BlockSetting extends BaseSettingsModel
 {
-	protected $tableName = 'contentblocksettings';
+	protected $tableName = 'blocksettings';
 	protected $model = 'Block';
 	protected $foreignKey = 'block';
 }

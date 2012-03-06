@@ -9,7 +9,7 @@ class Block extends BaseModel
 	public $required;
 	public $content;
 
-	protected $tableName = 'contentblocks';
+	protected $tableName = 'blocks';
 	protected $_blockType;
 
 	/**
