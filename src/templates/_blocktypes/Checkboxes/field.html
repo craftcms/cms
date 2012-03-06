@@ -1,0 +1,3 @@
+{% foreach settings.options as option %}
+	<div><input type="checkbox" name="{block.handle}[]" value="{option}" /> {option}</div>
+{% endforeach %}

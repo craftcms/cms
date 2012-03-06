@@ -6,4 +6,5 @@ class CheckboxesBlock extends BaseOptionsBlock
 	public $name = 'Checkboxes';
 
 	protected $settingsTemplate = '_blocktypes/Checkboxes/settings';
+	protected $fieldTemplate = '_blocktypes/Checkboxes/field';
 }
