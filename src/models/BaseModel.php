@@ -7,12 +7,14 @@ namespace Blocks;
 abstract class BaseModel extends \CActiveRecord
 {
 	protected $tableName;
-	protected $hasContent = false;
-	protected $hasBlocks = false;
-	protected $hasSettings = false;
 	protected $contentJoinTableName;
 	protected $blocksJoinTableName;
 	protected $settingsTableName;
+	protected $foreignKeyName;
+
+	protected $hasContent = false;
+	protected $hasBlocks = false;
+	protected $hasSettings = false;
 	protected $defaultSettings = array();
 	protected $attributes = array();
 	protected $belongsTo = array();
@@ -114,6 +116,20 @@ abstract class BaseModel extends \CActiveRecord
 			return $this->settingsTableName;
 		else
 			return $this->getClassHandle().'settings';
+	}
+
+	/**
+	 * Get the model's foreign key name
+	 * (Used when defining content block, content, and settings tables)
+	 * @return string The foreign key name
+	 * @access protected
+	 */
+	protected function getForeignKeyName()
+	{
+		if (isset($this->foreignKeyName))
+			return $this->foreignKeyName;
+		else
+			return $this->getClassHandle().'_id';
 	}
 
 	/**
@@ -636,7 +652,7 @@ abstract class BaseModel extends \CActiveRecord
 		$tablePrefix = b()->config->tablePrefix;
 		$joinTable = $this->getContentJoinTableName();
 		$modelTable = $this->getTableName();
-		$modelFk = $this->getClassHandle().'_id';
+		$modelFk = $this->getForeignKeyName();
 
 		$columns = array(
 			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
@@ -673,7 +689,7 @@ abstract class BaseModel extends \CActiveRecord
 		$tablePrefix = b()->config->tablePrefix;
 		$joinTable = $this->getBlocksJoinTableName();
 		$modelTable = $this->getTableName();
-		$modelFk = $this->getClassHandle().'_id';
+		$modelFk = $this->getForeignKeyName();
 
 		$columns = array(
 			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
@@ -705,7 +721,7 @@ abstract class BaseModel extends \CActiveRecord
 		$tablePrefix = b()->config->tablePrefix;
 		$settingsTable = $this->getSettingsTableName();
 		$modelTable = $this->getTableName();
-		$modelFk = $this->getClassHandle().'_id';
+		$modelFk = $this->getForeignKeyName();
 
 		$columns = array(
 			$modelFk => array('type' => AttributeType::Int, 'required' => true),
