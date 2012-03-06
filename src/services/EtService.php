@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EtService extends BaseService
+class EtService extends BaseComponent
 {
 	/**
 	 * @return bool|EtPackage

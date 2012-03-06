@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BlocksService extends BaseService
+class BlocksService extends BaseComponent
 {
 	private $_blockTypes;
 
@@ -90,7 +90,6 @@ class BlocksService extends BaseService
 				$block->save();
 
 				// Save the block type settings
-				$blockType->onBeforeSaveSettings();
 				$flattened = ArrayHelper::flattenArray($blockType->settings);
 				foreach ($flattened as $key => $value)
 				{

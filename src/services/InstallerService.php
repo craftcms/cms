@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallerService extends BaseService
+class InstallerService extends BaseComponent
 {
 	/**
 	 * Run the installer

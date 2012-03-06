@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PluginsService extends BaseService
+class PluginsService extends BaseComponent
 {
 	/**
 	 * Returns all plugins, including uninstalled and disabled plugins

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetsService extends BaseService
+class AssetsService extends BaseComponent
 {
 	/**
 	 * @param $siteId

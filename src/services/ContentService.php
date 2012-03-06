@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ContentService extends BaseService
+class ContentService extends BaseComponent
 {
 	/* Sections */
 

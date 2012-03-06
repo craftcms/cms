@@ -11,6 +11,8 @@ abstract class BaseModel extends \CActiveRecord
 	protected $blocksJoinTableName;
 	protected $settingsTableName;
 	protected $foreignKeyName;
+	protected $classPrefix;
+	protected $classSuffix;
 
 	protected $hasContent = false;
 	protected $hasBlocks = false;
@@ -53,8 +55,28 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		if (!isset($this->_classHandle))
 		{
-			$this->_classHandle = substr(strtolower(get_class($this)), strlen(__NAMESPACE__)+1);
+			// Chop off the namespace
+			$classHandle = substr(strtolower(get_class($this)), strlen(__NAMESPACE__)+1);
+
+			// Chop off the class prefix
+			if (isset($this->classPrefix))
+			{
+				$prefixLength = strlen($this->classPrefix);
+				if (substr($classHandle, 0, $prefixLength) == $this->classPrefix)
+					$classHandle = substr($classHandle, $prefixLength);
+			}
+
+			// Chop off the class suffix
+			if (isset($this->classSuffix))
+			{
+				$suffixLength = strlen($this->classSuffix);
+				if (substr($classHandle, -$suffixLength) == $this->classSuffix)
+					$classHandle = substr($classHandle, 0, -$suffixLength);
+			}
+
+			$this->_classHandle = $classHandle;
 		}
+
 		return $this->_classHandle;
 	}
 

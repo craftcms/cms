@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EmailService extends BaseService
+class EmailService extends BaseComponent
 {
 	private $_defaultEmailTimeout = 10;
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DashboardService extends BaseService
+class DashboardService extends BaseComponent
 {
 	/**
 	 * Returns the dashboard widgets for the current user

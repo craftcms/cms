@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UpdatesService extends BaseService
+class UpdatesService extends BaseComponent
 {
 	private $_updateInfo;
 

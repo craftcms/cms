@@ -197,7 +197,6 @@ class App extends \CWebApplication
 		self::import('business.utils.UrlHelper');
 		self::import('business.web.HttpRequest');
 		self::import('business.web.UrlManager');
-		self::import('services.BaseService');
 		self::import('services.ConfigService');
 
 		// in case of an error

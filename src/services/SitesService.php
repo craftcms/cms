@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SitesService extends BaseService
+class SitesService extends BaseComponent
 {
 	private $_currentSite = null;
 	private $_licenseKeyStatus = null;
