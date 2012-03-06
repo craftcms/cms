@@ -1248,7 +1248,7 @@ class File extends BaseComponent
 
 				header('Content-Type: '.$contentType);
 				header('Content-Transfer-Encoding: binary');
-				header('Content-Length: '.$this->getSize(false));
+				header('Content-Length: '.(\function_exists('mb_strlen') ? \mb_strlen($contents, '8bit') : \strlen($contents)));
 				header('Content-Disposition: attachment;filename="'.$filename.'"');
 
 				if ($serverHandled)
