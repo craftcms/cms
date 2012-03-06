@@ -19,34 +19,36 @@ class UrlTag extends Tag
 	 * The resource URL prefix
 	 *
 	 * @param string $path
+	 * @param null   $params
 	 * @return string
 	 */
-	public function resource($path = '')
+	public function resource($path = '', $params = null)
 	{
-		return $this->generateResourceUrl($path);
+		return $this->generateResourceUrl($path, $params);
 	}
 
 	/**
 	 * The action URL prefix
 	 *
 	 * @param string $path
+	 * @param null   $params
 	 * @return array|string
 	 */
-	public function action($path = '')
+	public function action($path = '', $params = null)
 	{
-		return $this->generateActionUrl($path);
+		return $this->generateActionUrl($path, $params);
 	}
 
 	/**
 	 * The URL prefix
 	 *
 	 * @param string $path
+	 * @param null   $params
 	 * @return array|string
 	 */
-	public function url($path = '')
+	public function url($path = '', $params = null)
 	{
-
-		return $this->generateUrl($path);
+		return $this->generateUrl($path, $params);
 	}
 
 	/**

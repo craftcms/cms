@@ -19,9 +19,9 @@ class UrlHelper
 	{
 		$origPath = $path;
 		$path = b()->config->getItem('resourceTriggerWord').'/'.trim($path, '/');
-		$path = self::_normalizePath($path, $params);
-		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
-		return $origPath == '' ? $path.'/' : $path;
+		$path = self::generateUrl($path, $params, $protocol);
+		$path = $origPath == '' ? $path.'/' : $path;
+		return $path;
 	}
 
 	/**
@@ -35,9 +35,9 @@ class UrlHelper
 	{
 		$origPath = $path;
 		$path = b()->config->getItem('actionTriggerWord').'/'.trim($path, '/');
-		$path = self::_normalizePath($path, $params);
-		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
-		return $origPath == '' ? $path.'/' : $path;
+		$path = self::generateUrl($path, $params, $protocol);
+		$path = $origPath == '' ? $path.'/' : $path;
+		return $path;
 	}
 
 	/**
@@ -50,7 +50,7 @@ class UrlHelper
 	public static function generateUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$routeVar = b()->urlManager->routeVar;
+		$pathVar = b()->config->getItem('pathVar');
 
 		$path = self::_normalizePath(trim($path, '/'), $params);
 		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
@@ -60,19 +60,19 @@ class UrlHelper
 		else
 		{
 			// stupid way of checking if p doesn't have a value set in the given path.
-			if (($pos = strpos($path, $routeVar.'=')) !== false && isset($path[$pos+2]) && $path[$pos+2] == '&')
+			if (($pos = strpos($path, $pathVar.'=')) !== false && isset($path[$pos+2]) && $path[$pos+2] == '&')
 			{
 				if ($params == null)
-					$search = $routeVar.'=';
+					$search = $pathVar.'=';
 				else
-					$search = $routeVar.'=&';
+					$search = $pathVar.'=&';
 
 				$path = str_replace($search, '', $path);
 			}
 			else
 			{
-				if (strpos($path, $routeVar.'=') === false)
-					$path = $path.'?'.$routeVar.'=';
+				if (strpos($path, $pathVar.'=') === false && b()->request->urlFormat == UrlFormat::QueryString)
+					$path = $path.'?'.$pathVar.'=';
 			}
 		}
 
