@@ -272,9 +272,7 @@ abstract class BaseModel extends \CActiveRecord
 			$table = $this->getSettingsTableName();
 
 			// Delete the previous settings
-			b()->db->createCommand()
-				->where('s.'.$this->getForeignKeyName().' = :id', array(':id' => $this->id))
-				->delete($table);
+			b()->db->createCommand()->delete($table, $this->getForeignKeyName().' = :id', array(':id' => $this->id));
 
 			// Save the new ones
 			if ($this->_settings)
