@@ -10,12 +10,35 @@ class DbCommand extends \CDbCommand
 	 * @param $table
 	 * @param $column
 	 * @param $type
+	 * @return mixed
+	 */
+	public function addColumnFirst($table, $column, $type)
+	{
+		return $this->setText($this->connection->schema->addColumnFirst($this->addTablePrefix($table), $column, $type))->execute();
+	}
+
+	/**
+	 * @param $table
+	 * @param $column
+	 * @param $type
 	 * @param $after
 	 * @return mixed
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
 		return $this->setText($this->connection->schema->addColumnAfter($this->addTablePrefix($table), $column, $type, $after))->execute();
+	}
+
+	/**
+	 * @param $table
+	 * @param $column
+	 * @param $type
+	 * @param $before
+	 * @return mixed
+	 */
+	public function addColumnBefore($table, $column, $type, $before)
+	{
+		return $this->setText($this->connection->schema->addColumnBefore($this->addTablePrefix($table), $column, $type, $before))->execute();
 	}
 
 	/**
@@ -133,7 +156,7 @@ class DbCommand extends \CDbCommand
 
 	public function addColumn($table, $column, $type)
 	{
-		return parent::addColumn($this->addTablePrefix($table), $column, $type);
+		return $this->addColumnBefore($table, $column, $type, 'date_created');
 	}
 
 	public function dropColumn($table, $column)

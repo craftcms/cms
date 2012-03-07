@@ -10,6 +10,24 @@ class MysqlSchema extends \CMysqlSchema
 	 * @param $table
 	 * @param $column
 	 * @param $type
+	 * @return string
+	 */
+	public function addColumnFirst($table, $column, $type)
+	{
+		$type = $this->getColumnType($type);
+
+		$sql = 'ALTER TABLE '.$this->quoteTableName($table)
+		       .' ADD '.$this->quoteColumnName($column).' '
+		       .$this->getColumnType($type).' '
+		       .'FIRST';
+
+		return $sql;
+	}
+
+	/**
+	 * @param $table
+	 * @param $column
+	 * @param $type
 	 * @param $after
 	 * @return string
 	 */
@@ -23,6 +41,29 @@ class MysqlSchema extends \CMysqlSchema
 		       .'AFTER '.$this->quoteTableName($after);
 
 		return $sql;
+	}
+
+	/**
+	 * @param $table
+	 * @param $column
+	 * @param $type
+	 * @param $before
+	 * @return string
+	 */
+	public function addColumnBefore($table, $column, $type, $before)
+	{
+		$tableInfo = $this->getTable($table);
+		$columns = array_keys($tableInfo->columns);
+		$beforeIndex = array_search($before, $columns);
+		if ($beforeIndex === false)
+			return $this->addColumn($table, $column, $type);
+		else if ($beforeIndex > 0)
+		{
+			$after = $columns[$beforeIndex-1];
+			return $this->addColumnAfter($table, $column, $type, $after);
+		}
+		else
+			return $this->addColumnFirst($table, $column, $type);
 	}
 
 	/**
