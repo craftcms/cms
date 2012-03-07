@@ -44,7 +44,7 @@
 
 	{% foreach entry.blocks as block %}
 		<div class="item field">
-			<label for="{block.handle}" {% if block.required %}class="required"{% endif %}>{block.name}</label>
+			<label for="{block.handle}-block" {% if block.required %}class="required"{% endif %}>{block.name}</label>
 			{% if block.instructions %}
 				<p>{block.instructions}</p>
 			{% endif %}
