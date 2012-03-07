@@ -213,7 +213,6 @@ class RequirementsChecker extends \CComponent
 	{
 		$folders = array(
 			b()->file->set(b()->path->runtimePath, false),
-			//b()->file->set(b()->path->runtimePath.'cached/', false),
 		);
 
 		return $folders;

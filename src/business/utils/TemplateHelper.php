@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class TemplateHelper
 {
+	/**
+	 * @var array
+	 */
 	public static $services = array(
 		'assets',
 		'blocks',
@@ -26,6 +29,9 @@ class TemplateHelper
 		'security',
 	);
 
+	/**
+	 * @var array
+	 */
 	public static $globalTags = array(
 		'app'               => 'Blocks\AppTag',
 		'url'               => 'Blocks\UrlTag',

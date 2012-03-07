@@ -19,6 +19,9 @@ class EmailAddress
 		$this->_name = $name;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getEmailAddress()
 	{
 		return $this->_email;

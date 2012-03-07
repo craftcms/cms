@@ -47,7 +47,7 @@ class AssetsService extends BaseComponent
 
 	/**
 	 * @param $siteId
-	 * @return Assets
+	 * @return Asset
 	 */
 	public function getAllAssetsBySiteId($siteId)
 	{
@@ -64,7 +64,7 @@ class AssetsService extends BaseComponent
 
 	/**
 	 * @param $assetId
-	 * @return Assets
+	 * @return Asset
 	 */
 	public function getAssetById($assetId)
 	{

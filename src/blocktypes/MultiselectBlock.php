@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 class MultiselectBlock extends BaseOptionsBlock
 {
 	public $blocktypeName = 'Multiselect';

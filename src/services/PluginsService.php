@@ -8,6 +8,7 @@ class PluginsService extends BaseComponent
 {
 	/**
 	 * Returns all plugins, including uninstalled and disabled plugins
+	 * @return array
 	 */
 	public function getAll()
 	{
@@ -60,7 +61,7 @@ class PluginsService extends BaseComponent
 	}
 
 	/**
-	 * @return Plugins
+	 * @return Plugin
 	 */
 	public function getAllInstalledPlugins()
 	{

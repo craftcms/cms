@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 class NumberBlock extends Block
 {
 	public $blocktypeName = 'Number';

@@ -167,6 +167,7 @@ class UsersController extends BaseController
 	/**
 	 * @param $message
 	 * @param $messageStatus
+	 * @param $url
 	 */
 	private function _setMessageAndRedirect($message, $messageStatus, $url)
 	{
@@ -175,7 +176,7 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 *
+	 * @param $url
 	 */
 	private function _redirect($url)
 	{

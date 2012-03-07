@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 class CheckboxesBlock extends BaseOptionsBlock
 {
 	public $blocktypeName = 'Checkboxes';

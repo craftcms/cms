@@ -101,7 +101,7 @@ class Blocks extends \Yii
 
 /**
  * Returns the current b() instance
- * @return Blocks\App
+ * @return App
  */
 function b()
 {

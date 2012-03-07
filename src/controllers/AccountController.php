@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class AccountController extends BaseController
 {
+	/**
+	 *
+	 */
 	public function actionChangePassword()
 	{
 		$this->requirePostRequest();

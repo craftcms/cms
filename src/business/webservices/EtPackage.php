@@ -29,13 +29,7 @@ class EtPackage
 	}
 
 	/*
-	 */
-	public function encodeAndEcho()
-	{
-		echo Json::encode($this);
-	}
-
-	/*
+	 *
 	 */
 	public function decode()
 	{

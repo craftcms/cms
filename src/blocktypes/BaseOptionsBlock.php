@@ -14,6 +14,7 @@ abstract class BaseOptionsBlock extends Block
 	 * Set the settings
 	 *
 	 * @param $settings
+	 * @return mixed
 	 */
 	public function setSettings($settings)
 	{

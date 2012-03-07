@@ -18,6 +18,9 @@ class HttpRequest extends \CHttpRequest
 	private $_mode;
 	private $_isMobileBrowser;
 
+	/**
+	 *
+	 */
 	public function init()
 	{
 		parent::init();
