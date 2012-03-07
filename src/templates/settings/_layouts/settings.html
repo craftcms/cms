@@ -8,7 +8,7 @@
 {% region "sidebar" %}
 	<h5>System Settings</h5>
 	<ul class="nav">
-		<li><a {% if url.segment(2) == 'info' %}class="sel"{% endif %} href="{url.base}settings/info"><span class="icon icon70"></span>System Info</a></li>
+		<li><a {% if url.segment(2) == 'about' %}class="sel"{% endif %} href="{url.base}settings/about"><span class="icon icon70"></span>About Blocks</a></li>
 		<li><a id="sb-updates" class="has-badge {% if url.segment(2) == 'updates' %}sel{% endif %}" href="{url.base}settings/updates"><span class="icon icon15"></span>Updates{% if updates.isUpdateInfoCached && updates.updates.length %}<span class="badge {% if updates.isCriticalUpdateAvailable %}alert{% endif %}">{updates.updates.length}</span>{% endif %}</a></li>
 		<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href="{url.base}settings/sites"><span class="icon icon100"></span>Sites</a></li>
 		<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>

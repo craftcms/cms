@@ -1,7 +1,5 @@
 /*-- System Info --*/
-body.info #logo { display: block; margin: 0 auto 10px; }
-body.info #version { margin-bottom: 20px; text-align: center; font-weight: bold; }
-body.info #license-keys li { font-family: Menlo, monospace; font-size: 12px; cursor: default; }
+body.about #about { position: absolute; margin: 0 -20px; padding-top: 188px; width: 100%; text-align: center; color: #474a4d; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: url(../images/logo.png) no-repeat 50% 0; }
 
 /*-- Sites --*/
 body.sites #sites li.primary { font-weight: bold; }

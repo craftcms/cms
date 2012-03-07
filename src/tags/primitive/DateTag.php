@@ -14,7 +14,10 @@ class DateTag extends Tag
 	 */
 	protected function init($val = null)
 	{
-		$this->_val = $this->getUnixTimestamp($val);
+		if ($val)
+			$this->_val = $this->getUnixTimestamp($val);
+		else
+			$this->_val = time();
 	}
 
 	/**

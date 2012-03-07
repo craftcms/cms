@@ -1,0 +1,25 @@
+{% layout "settings/_layouts/settings" pageTitle="About" %}
+
+{% region "main" %}
+	<div id="about">
+		<p>Version {app.fullVersion}</p>
+		<p>Copyright © {date.year} Pixel &amp; Tonic, Inc.<br>
+			All rights reserved.
+		</p>
+	</div>
+	<script type="text/javascript">
+		// Keep the spinner vertically centered
+		function centerAbout()
+		{
+			var top = ((window.innerHeight-48) / 2) - 127;
+			document.getElementById('about').style.top = top+'px';
+		}
+		centerAbout();
+	</script>
+{% endregion %}
+
+{% region "scripts" %}
+	<script type="text/javascript">
+		blx.$window.on('resize.about', centerAbout);
+	</script>
+{% /region %}

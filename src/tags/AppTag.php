@@ -35,12 +35,10 @@ class AppTag extends Tag
 	 */
 	public function fullVersion()
 	{
-		$edition = Blocks::getEdition();
-		$name = 'Blocks'.($edition != 'Standard' ? ' '.$edition : '');
 		$version = Blocks::getVersion();
 		$build = Blocks::getBuild();
 
-		return "{$name} {$version}.{$build}";
+		return $version.'.'.$build;
 	}
 
 	/**

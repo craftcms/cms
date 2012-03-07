@@ -30,6 +30,7 @@ class TemplateHelper
 		'app'               => 'Blocks\AppTag',
 		'url'               => 'Blocks\UrlTag',
 		'configHelper'      => 'Blocks\ConfigHelperTag',
+		'date'              => 'Blocks\DateTag',
 		'dateTimeHelper'    => 'Blocks\DateTimeHelperTag',
 	);
 
