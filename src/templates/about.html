@@ -1,4 +1,10 @@
-{% layout "settings/_layouts/settings" pageTitle="About" %}
+{% layout "_layouts/full" pageTitle="About" %}
+
+{% region "styles" %}
+	<style type="text/css">
+		#about \{ position: absolute; margin: 0 -20px; padding-top: 188px; width: 100%; text-align: center; color: #474a4d; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: url({url.resource}images/logo.png) no-repeat 50% 0; \}
+	</style>
+{% endregion %}
 
 {% region "main" %}
 	<div id="about">

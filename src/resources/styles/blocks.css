@@ -97,6 +97,7 @@ h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  
 #nav #nav-users .icon { background-image: url(../images/nav-icons/users.png); }
 #nav #nav-settings .icon { margin-left: 5px; background-image: url(../images/nav-icons/settings.png); }
 #nav #nav-guide .icon { background-image: url(../images/nav-icons/guide.png); }
+#nav #nav-about .icon { background-image: url(../images/nav-icons/about.png); }
 #nav #nav-setup .icon { background-image: url(../images/nav-icons/setup.png); }
 #nav #nav-site .icon { background-image: url(../images/nav-icons/site.png); }
 #nav #nav-account .icon { background-image: url(../images/nav-icons/account.png); }
