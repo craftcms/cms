@@ -101,6 +101,9 @@ class UpdatesService extends BaseComponent
 		return (isset($this->_updateInfo) || b()->fileCache->get('updateInfo') !== false);
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function isCriticalUpdateAvailable()
 	{
 		return $this->updateInfo->criticalUpdateAvailable;

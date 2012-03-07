@@ -29,26 +29,6 @@ class SecurityService extends BaseComponent
 	}
 
 	/**
-	 * @param $userName
-	 * @param $password
-	 * @param $licenseKeys
-	 * @param $edition
-	 */
-	public function validatePTUserCredentialsAndKey($userName, $password, $licenseKeys, $edition)
-	{
-		$params = array(
-			'userName' => $userName,
-			'password' => $password,
-			'licenseKeys' => $licenseKeys,
-			'edition' => $edition
-		);
-
-		$et = new Et(EtEndPoints::ValidateKeysByCredentials);
-		$et->getPackage()->data = $params;
-		$et->phoneHome();
-	}
-
-	/**
 	 * @param $password
 	 * @return string
 	 */
