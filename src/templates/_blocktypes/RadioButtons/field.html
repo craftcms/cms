@@ -1,0 +1,3 @@
+{% foreach block.settings.options as option %}
+	<div><label><input {% if index == 0 %}id="{block.handle}"{% endif %} name="{block.handle}" type="radio" value="{option}" {% if option == block.data %}checked="checked"{% endif %} /> {option}</label></div>
+{% endforeach %}

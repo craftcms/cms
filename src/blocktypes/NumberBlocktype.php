@@ -12,6 +12,7 @@ class NumberBlocktype extends BaseBlocktype
 	);
 
 	protected $settingsTemplate = '_blocktypes/Number/settings';
+	protected $fieldTemplate = '_blocktypes/Number/field';
 
 	/**
 	 * Get the 

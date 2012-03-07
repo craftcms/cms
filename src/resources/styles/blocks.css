@@ -403,9 +403,9 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .grid + .field,
 .field + .grid .field:first-child,
 .grid + .grid .field:first-child { padding-top: 0 !important; }
-.field label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
-.field label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
-.field p { margin: -3px 0 8px; color: #808080; }
+.field > label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
+.field > label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
+.field > p { margin: -3px 0 8px; color: #808080; }
 
 /* inputs */
 .input-wrapper { padding-right: 18px; }

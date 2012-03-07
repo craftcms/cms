@@ -1,7 +1,7 @@
 <div class="input-wrapper">
 	{% if block.settings.multiline %}
-		<textarea name="{block.handle}" rows="10">{block.data}</textarea>
+		<textarea id="{block.handle}" name="{block.handle}" rows="10">{block.data}</textarea>
 	{% else %}
-		<input name="{block.handle}" type="text" value="{block.content}" />
+		<input id="{block.handle}" name="{block.handle}" type="text" value="{block.content}" />
 	{% endif %}
 </div>
