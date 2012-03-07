@@ -64,7 +64,7 @@ class Block extends BaseModel
 		);
 
 		$template = b()->controller->loadTemplate($this->settingsTemplate, $tags, true);
-		return TemplateHelper::namespaceInputs($template, $this->class);
+		return TemplateHelper::namespaceInputs($template, $this->getClassHandle());
 	}
 
 	/**
