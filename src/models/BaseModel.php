@@ -11,8 +11,8 @@ abstract class BaseModel extends \CActiveRecord
 	protected $blocksJoinTableName;
 	protected $settingsTableName;
 	protected $foreignKeyName;
-	protected $classPrefix;
-	protected $classSuffix;
+	protected $classPrefix = '';
+	protected $classSuffix = '';
 
 	protected $hasContent = false;
 	protected $hasBlocks = false;
@@ -59,20 +59,14 @@ abstract class BaseModel extends \CActiveRecord
 			$classHandle = substr(get_class($this), strlen(__NAMESPACE__)+1);
 
 			// Chop off the class prefix
-			if (isset($this->classPrefix))
-			{
-				$prefixLength = strlen($this->classPrefix);
-				if (substr($classHandle, 0, $prefixLength) == $this->classPrefix)
-					$classHandle = substr($classHandle, $prefixLength);
-			}
+			$prefixLength = strlen($this->classPrefix);
+			if (substr($classHandle, 0, $prefixLength) == $this->classPrefix)
+				$classHandle = substr($classHandle, $prefixLength);
 
 			// Chop off the class suffix
-			if (isset($this->classSuffix))
-			{
-				$suffixLength = strlen($this->classSuffix);
-				if (substr($classHandle, -$suffixLength) == $this->classSuffix)
-					$classHandle = substr($classHandle, 0, -$suffixLength);
-			}
+			$suffixLength = strlen($this->classSuffix);
+			if (substr($classHandle, -$suffixLength) == $this->classSuffix)
+				$classHandle = substr($classHandle, 0, -$suffixLength);
 
 			$this->_classHandle = $classHandle;
 		}
@@ -740,6 +734,9 @@ abstract class BaseModel extends \CActiveRecord
 			b()->db->createCommand()->dropTable($table);
 	}
 
+	/**
+	 * Create the model's settings table
+	 */
 	public function createSettingsTable()
 	{
 		$tablePrefix = b()->config->tablePrefix;
@@ -779,6 +776,26 @@ abstract class BaseModel extends \CActiveRecord
 	public function findById($id, $condition = '', $params = array())
 	{
 		return $this->findByPk($id, $condition, $params);
+	}
+
+	/**
+	 * Creates an active record with the given attributes.
+	 * If one of the attributes is 'class', then the actual instance will be of that class
+	 * @param array $attributes attribute values (column name=>column value)
+	 * @param boolean $callAfterFind whether to call {@link afterFind} after the record is populated.
+	 * @return CActiveRecord the newly created active record. The class of the object is the same as the model class.
+	 * Null is returned if the input data is false.
+	 */
+	public function populateRecord($attributes, $callAfterFind=true)
+	{
+		if (!empty($attributes['class']))
+		{
+			$class = __NAMESPACE__.'\\'.$this->classPrefix.$attributes['class'].$this->classSuffix;
+			if ($class != get_class($this))
+				return $class::model()->populateRecord($attributes, $callAfterFind);
+		}
+
+		return parent::populateRecord($attributes, $callAfterFind);
 	}
 
 	/**

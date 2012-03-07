@@ -15,31 +15,7 @@ class BlocksService extends BaseComponent
 	public function getBlocks()
 	{
 		$blocks = b()->db->createCommand()->from('blocks')->queryAll();
-		return $this->populateBlocks($blocks);
-	}
-
-	/**
-	 * Returns blocks in the appropriate blocktype classes, populated with their data
-	 */
-	public function populateBlocks($data)
-	{
-		$blocks = array();
-		foreach ($data as $block)
-		{
-			$blocks[] = $this->populateBlock($block);
-		}
-		return $blocks;
-	}
-
-	/**
-	 * Returns an instance of the appropriate blocktype class, populated with the data
-	 * @param array $data
-	 * @return mixed
-	 */
-	public function populateBlock($block)
-	{
-		$class = __NAMESPACE__.'\\'.$block['class'].'Blocktype';
-		return $class::model()->populateRecord($block);
+		Block::model()->populateRecords($blocks);
 	}
 
 	/**
@@ -67,7 +43,7 @@ class BlocksService extends BaseComponent
 			->queryRow();
 
 		if ($block)
-			return $this->populateBlock($block);
+			return Block::model()->populateRecord($block);
 
 		return null;
 	}
