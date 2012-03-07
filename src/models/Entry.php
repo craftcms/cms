@@ -35,7 +35,10 @@ class Entry extends BaseModel
 
 	public function title()
 	{
-		return 'Untitled';
+		if ($this->content->title)
+			return $this->content->title;
+		else
+			return 'Untitled';
 	}
 
 	public function getBlocks()
