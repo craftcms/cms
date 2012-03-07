@@ -1,0 +1,7 @@
+<?php
+namespace Blocks;
+
+class PillSelectBlocktype extends BaseBlocktype
+{
+	public $blocktypeName = 'Pill Select';
+}

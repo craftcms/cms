@@ -1,9 +1,9 @@
 <?php
 namespace Blocks;
 
-class DropdownBlock extends BaseOptionsBlock
+class DropdownBlocktype extends BaseOptionsBlocktype
 {
-	public $name = 'Dropdown';
+	public $blocktypeName = 'Dropdown';
 
 	protected $settingsTemplate = '_blocktypes/Dropdown/settings';
 	protected $columnType = AttributeType::Varchar;

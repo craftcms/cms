@@ -6,7 +6,7 @@
 					<li class="block-item" data-block-id="{block.id}">
 						<label class="required" title="Required?"><input type="checkbox" name="{name}[required][{block.id}]" value="y" {% if block.required %}checked{% endif %}></label>
 						<div class="block"><span class="icon icon137"></span><span class="block-name">{block.name}</span>
-							<span class="block-type">{block.blockType.name}</span></div>
+							<span class="block-type">{block.blocktypeName}</span></div>
 						<input type="hidden" name="{name}[selections][]" value="{block.id}">
 					</li>
 				{% endforeach %}

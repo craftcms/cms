@@ -14,24 +14,43 @@ class BlocksService extends BaseComponent
 	 */
 	public function getBlocks()
 	{
-		return Block::model()->findAll(array(
-			'order' => 'name'
-		));
+		$blocks = b()->db->createCommand()->from('blocks')->queryAll();
+		return $this->populateBlocks($blocks);
 	}
 
 	/**
-	 * Returns a Block instance, whether it already exists based on an ID, or is new
-	 * @param int $blockId The Block ID if it exists
-	 * @return Block
+	 * Returns blocks in the appropriate blocktype classes, populated with their data
 	 */
-	public function getBlock($blockId = null)
+	public function populateBlocks($data)
 	{
-		if ($blockId)
-			$block = $this->getBlockById($blockId);
+		$blocks = array();
+		foreach ($data as $block)
+		{
+			$blocks[] = $this->populateBlock($block);
+		}
+		return $blocks;
+	}
 
-		if (empty($block))
-			$block = new Block;
+	/**
+	 * Returns an instance of the appropriate blocktype class, populated with the data
+	 * @param array $data
+	 * @return mixed
+	 */
+	public function populateBlock($block)
+	{
+		$class = __NAMESPACE__.'\\'.$block['class'].'Blocktype';
+		return $class::model()->populateRecord($block);
+	}
 
+	/**
+	 * Returns a new block by the blocktype
+	 * @param string $class The blocktype class, sans "Blocktype" suffix
+	 * @return mixed The block instance
+	 */
+	public function getBlockByType($class)
+	{
+		$class = __NAMESPACE__.'\\'.$class.'Blocktype';
+		$block = new $class;
 		return $block;
 	}
 
@@ -42,7 +61,15 @@ class BlocksService extends BaseComponent
 	 */
 	public function getBlockById($blockId)
 	{
-		return Block::model()->findById($blockId);
+		$block = b()->db->createCommand()
+			->where('id = :id', array(':id' => $blockId))
+			->from('blocks')
+			->queryRow();
+
+		if ($block)
+			return $this->populateBlock($block);
+
+		return null;
 	}
 
 	/**
@@ -55,12 +82,21 @@ class BlocksService extends BaseComponent
 	 */
 	public function saveBlock($blockSettings, $blockTypeSettings = null, $blockId = null)
 	{
-		$block = $this->getBlock($blockId);
-		$isNewBlock = $block->isNewRecord;
+		$block = $this->getBlockByType($blockSettings['class']);
+		$isNewBlock = true;
 
-		// Remember the original handle for later
-		if (!$isNewBlock)
-			$oldColumnName = $this->getContentColumnNameForBlock($block);
+		if ($blockId)
+		{
+			$originalBlock = $this->getBlockById($blockId);
+			if ($originalBlock)
+			{
+				$isNewBlock = false;
+				$block->isNewRecord = false;
+				$block->id = $blockId;
+				$block->setPrimaryKey($blockId);
+				$oldColumnName = $this->getContentColumnNameForBlock($originalBlock);
+			}
+		}
 
 		$block->name = $blockSettings['name'];
 		$block->handle = $blockSettings['handle'];
@@ -68,41 +104,21 @@ class BlocksService extends BaseComponent
 		$block->instructions = $blockSettings['instructions'];
 		$block->site_id = b()->sites->currentSite->id;
 
-		$blockType = $this->getBlockType($block->class);
-		$blockType->settings = $blockTypeSettings;
-		$block->blockType = $blockType;
-
 		if ($block->validate())
 		{
 			// Start a transaction
 			$transaction = b()->db->beginTransaction();
 			try
 			{
-				// Delete the previous block type settings
-				if (!$isNewBlock)
-				{
-					BlockSetting::model()->deleteAllByAttributes(array(
-						'block_id' => $block->id
-					));
-				}
-
 				// Save the block
 				$block->save();
 
-				// Save the block type settings
-				$flattened = ArrayHelper::flattenArray($blockType->settings);
-				foreach ($flattened as $key => $value)
-				{
-					$setting = new BlockSetting;
-					$setting->block_id = $block->id;
-					$setting->name = $key;
-					$setting->value = $value;
-					$setting->save();
-				}
+				// Save the settings
+				$block->settings = $blockTypeSettings;
 
 				// Add or modify the block's content column
 				$columnName = $this->getContentColumnNameForBlock($block);
-				$columnType = DatabaseHelper::generateColumnDefinition($blockType->columnType);
+				$columnType = DatabaseHelper::generateColumnDefinition($block->columnType);
 
 				if ($isNewBlock)
 				{
@@ -146,7 +162,7 @@ class BlocksService extends BaseComponent
 		{
 			$this->_blockTypes = array();
 
-			if (($files = @glob(b()->path->blockTypesPath."*Block.php")) !== false)
+			if (($files = @glob(b()->path->blockTypesPath."*Blocktype.php")) !== false)
 			{
 				foreach ($files as $file)
 				{
@@ -162,15 +178,4 @@ class BlocksService extends BaseComponent
 
 		return $this->_blockTypes;
 	}
-
-	/**
-	 * Returns a block type
-	 * @param string $class The block type class
-	 */
-	public function getBlockType($class)
-	{
-		$className = __NAMESPACE__.'\\'.$class.'Block';
-		return new $className;
-	}
-
 }

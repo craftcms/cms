@@ -6,13 +6,11 @@ namespace Blocks;
  */
 class Block extends BaseModel
 {
-	public $required;
-	public $content;
-
 	protected $tableName = 'blocks';
-	protected $hasSettings = true;
+	protected $settingsTableName = 'blocksettings';
+	protected $foreignKeyName = 'block_id';
 
-	protected $_blockType;
+	protected $hasSettings = true;
 
 	/**
 	 * @return array
@@ -32,45 +30,4 @@ class Block extends BaseModel
 		array('columns' => array('name','site_id'), 'unique' => true),
 		array('columns' => array('handle','site_id'), 'unique' => true)
 	);
-
-	/**
-	 * Returns the content block's block type, filled up with settings
-	 */
-	public function getBlockType()
-	{
-		if (!isset($this->_blockType))
-		{
-			if ($this->class)
-			{
-				$this->_blockType = b()->blocks->getBlockType($this->class);
-				$this->_blockType->settings = ArrayHelper::expandSettingsArray($this->settings);
-			}
-			else
-				$this->_blockType = false;
-		}
-
-		return $this->_blockType;
-	}
-
-	/**
-	 * Set the block type
-	 *
-	 * @param $blockType
-	 */
-	public function setBlockType($blockType)
-	{
-		$this->_blockType = $blockType;
-	}
-
-	/**
-	 * Show the block type field
-	 * @return string
-	 */
-	public function field()
-	{
-		if ($this->blockType)
-			return $this->blockType->displayField($this);
-		else
-			return '';
-	}
 }

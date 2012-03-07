@@ -1,9 +1,9 @@
 <?php
 namespace Blocks;
 
-class RadioButtonsBlock extends BaseOptionsBlock
+class RadioButtonsBlocktype extends BaseOptionsBlocktype
 {
-	public $name = 'Radio Buttons';
+	public $blocktypeName = 'Radio Buttons';
 
 	protected $settingsTemplate = '_blocktypes/RadioButtons/settings';
 	protected $columnType = AttributeType::Varchar;

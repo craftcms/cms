@@ -37,13 +37,13 @@ _{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
 
 		{% foreach blocks.blockTypes as blockType %}
 			{% if blockType.displaySettings %}
-				<div id="{blockType.class}-settings" class="pane" {% if (block && block.class != blockType.class) || (!block && blockType.class != 'PlainText') %}style="display: none"{% endif %}>
+				<div id="{blockType.classHandle}-settings" class="pane" {% if (block && block.class != blockType.classHandle) || (!block && blockType.classHandle != 'PlainText') %}style="display: none"{% endif %}>
 					<div class="head">
 						<h5>{blockType.name} Settings</h5>
 					</div>
 					<div class="body">
-						{% if blockType.class == block.class %}
-							{block.blockType.displaySettings}
+						{% if blockType.classHandle == block.class %}
+							{block.displaySettings}
 						{% else %}
 							{blockType.displaySettings}
 						{% endif %}

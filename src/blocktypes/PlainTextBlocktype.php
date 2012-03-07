@@ -1,11 +1,11 @@
 <?php
 namespace Blocks;
 
-class PlainTextBlock extends BaseBlock
+class PlainTextBlocktype extends BaseBlocktype
 {
-	public $name = 'Plain Text';
+	public $blocktypeName = 'Plain Text';
 
-	protected $settings = array(
+	protected $defaultSettings = array(
 		'multiline' => true,
 		'maxLength' => null
 	);

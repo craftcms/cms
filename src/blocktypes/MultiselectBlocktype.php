@@ -1,9 +1,9 @@
 <?php
 namespace Blocks;
 
-class MultiselectBlock extends BaseOptionsBlock
+class MultiselectBlocktype extends BaseOptionsBlocktype
 {
-	public $name = 'Multiselect';
+	public $blocktypeName = 'Multiselect';
 
 	protected $settingsTemplate = '_blocktypes/Multiselect/settings';
 }

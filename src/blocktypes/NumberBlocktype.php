@@ -1,11 +1,11 @@
 <?php
 namespace Blocks;
 
-class NumberBlock extends BaseBlock
+class NumberBlocktype extends BaseBlocktype
 {
-	public $name = 'Number';
+	public $blocktypeName = 'Number';
 
-	protected $settings = array(
+	protected $defaultSettings = array(
 		'type' => 'int',
 		'min' => null,
 		'max' => null

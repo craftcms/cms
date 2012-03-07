@@ -1,30 +1,20 @@
 <?php
 namespace Blocks;
 
-abstract class BaseBlock extends BaseComponent
+/**
+ * Blocktype Base class
+ */
+abstract class BaseBlocktype extends Block
 {
-	public $name;
+	public $blocktypeName;
 
-	protected $settings = array();
+	public $required;
+	public $content;
+
 	protected $settingsTemplate;
 	protected $columnType = AttributeType::Text;
 
-	protected $classSuffix = 'Block';
-
-	public function setSettings($settings)
-	{
-		if (is_array($settings))
-			$this->settings = array_merge($this->settings, $settings);
-	}
-
-	public function getSettings()
-	{
-		return $this->settings;
-	}
-
-	public function onBeforeSaveSettings()
-	{
-	}
+	protected $classSuffix = 'Blocktype';
 
 	/**
 	 * Display settings
@@ -52,14 +42,13 @@ abstract class BaseBlock extends BaseComponent
 		return $this->columnType;
 	}
 
-	public function displayField($block)
+	public function displayField()
 	{
 		if (empty($this->fieldTemplate))
 			return '';
 
 		$tags = array(
-			'block'    => $block,
-			'settings' => $this->settings
+			'block' => $this
 		);
 
 		$template = b()->controller->loadTemplate($this->fieldTemplate, $tags, true);

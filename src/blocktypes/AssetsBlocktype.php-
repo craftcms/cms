@@ -1,0 +1,7 @@
+<?php
+namespace Blocks;
+
+class AssetsBlocktype extends BaseBlocktype
+{
+	public $blocktypeName = 'Assets';
+}
