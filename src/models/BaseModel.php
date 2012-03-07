@@ -51,12 +51,12 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Get the class name, sans namespace
 	 */
-	protected function getClassHandle()
+	public function getClassHandle()
 	{
 		if (!isset($this->_classHandle))
 		{
 			// Chop off the namespace
-			$classHandle = substr(strtolower(get_class($this)), strlen(__NAMESPACE__)+1);
+			$classHandle = substr(get_class($this), strlen(__NAMESPACE__)+1);
 
 			// Chop off the class prefix
 			if (isset($this->classPrefix))
@@ -99,7 +99,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->tableName))
 			return $this->tableName;
 		else
-			return $this->getClassHandle();
+			return strtolower($this->getClassHandle());
 	}
 
 	/**
@@ -112,7 +112,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->contentJoinTableName))
 			return $this->contentJoinTableName;
 		else
-			return $this->getClassHandle().'content';
+			return strtolower($this->getClassHandle()).'content';
 	}
 
 	/**
@@ -125,7 +125,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->blocksJoinTableName))
 			return $this->blocksJoinTableName;
 		else
-			return $this->getClassHandle().'blocks';
+			return strtolower($this->getClassHandle()).'blocks';
 	}
 
 	/**
@@ -138,7 +138,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->settingsTableName))
 			return $this->settingsTableName;
 		else
-			return $this->getClassHandle().'settings';
+			return strtolower($this->getClassHandle()).'settings';
 	}
 
 	/**
@@ -152,7 +152,7 @@ abstract class BaseModel extends \CActiveRecord
 		if (isset($this->foreignKeyName))
 			return $this->foreignKeyName;
 		else
-			return $this->getClassHandle().'_id';
+			return strtolower($this->getClassHandle()).'_id';
 	}
 
 	/**
@@ -170,7 +170,7 @@ abstract class BaseModel extends \CActiveRecord
 					->from($this->getContentJoinTableName().' j')
 					->join('content c', 'j.content_id = c.id')
 					->where(
-						array('and', 'j.'.$this->getClassHandle().'_id = :id', 'j.active = 1'),
+						array('and', 'j.'.$this->getForeignKeyName().' = :id', 'j.active = 1'),
 						array(':id' => $this->id)
 					)
 					->order('j.num desc')
@@ -203,7 +203,7 @@ abstract class BaseModel extends \CActiveRecord
 					->select('j.required, b.*')
 					->from($this->getBlocksJoinTableName().' j')
 					->join('blocks b', 'j.block_id = b.id')
-					->where('j.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
+					->where('j.'.$this->getForeignKeyName().' = :id', array(':id' => $this->id))
 					->order('j.sort_order')
 					->queryAll();
 
@@ -241,7 +241,7 @@ abstract class BaseModel extends \CActiveRecord
 				$settings = b()->db->createCommand()
 					->select('s.name, s.value')
 					->from($this->getSettingsTableName().' s')
-					->where('s.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
+					->where('s.'.$this->getForeignKeyName().' = :id', array(':id' => $this->id))
 					->queryAll();
 
 				if ($settings)
@@ -265,7 +265,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function setSettings($settings)
 	{
-		$this->_settings = array_merge($this->defaultSettings, $settings);
+		$this->_settings = array_merge($this->defaultSettings, (array)$settings);
 
 		if (!$this->isNewRecord)
 		{
@@ -273,19 +273,22 @@ abstract class BaseModel extends \CActiveRecord
 
 			// Delete the previous settings
 			b()->db->createCommand()
-				->where('s.'.$this->getClassHandle().'_id = :id', array(':id' => $this->id))
+				->where('s.'.$this->getForeignKeyName().' = :id', array(':id' => $this->id))
 				->delete($table);
 
 			// Save the new ones
 			if ($this->_settings)
 			{
 				$flattened = ArrayHelper::flattenArray($this->_settings);
-				$vals = array();
-				foreach ($flattened as $name => $value)
+				if ($flattened)
 				{
-					$vals[] = array($name, $value);
+					foreach ($flattened as $name => $value)
+					{
+						$vals[] = array($this->id, $name, $value);
+					}
+					$columns = array($this->getForeignKeyName(), 'name', 'value');
+					b()->db->createCommand()->insertAll($table, $columns, $vals);
 				}
-				b()->db->createCommand()->insertAll($table, array('name', 'value'), $vals);
 			}
 		}
 	}
@@ -591,7 +594,7 @@ abstract class BaseModel extends \CActiveRecord
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);
-			$name = "{$tablePrefix}_{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
+			$name = "{$tablePrefix}{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 
 			b()->db->createCommand()->createIndex($name, $tableName, implode(',', $columns), $unique);
 		}
@@ -644,7 +647,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModelClass = __NAMESPACE__.'\\'.$settings['model'];
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
-			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
+			$fkName = "{$tablePrefix}{$tableName}_{$otherTableName}_fk";
 			b()->db->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id', 'NO ACTION', 'NO ACTION');
 		}
 	}
@@ -662,7 +665,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModelClass = __NAMESPACE__.'\\'.$settings['model'];
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
-			$fkName = "{$tablePrefix}_{$tableName}_{$otherTableName}_fk";
+			$fkName = "{$tablePrefix}{$tableName}_{$otherTableName}_fk";
 			b()->db->createCommand()->dropForeignKey($fkName, $tableName);
 		}
 	}
@@ -690,8 +693,8 @@ abstract class BaseModel extends \CActiveRecord
 		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id', 'NO ACTION', 'NO ACTION');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
@@ -725,8 +728,8 @@ abstract class BaseModel extends \CActiveRecord
 		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,   $modelTable, 'id', 'NO ACTION', 'NO ACTION');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$joinTable}_blocks_fk",        $joinTable, 'block_id', 'blocks',    'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,   $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_blocks_fk",        $joinTable, 'block_id', 'blocks',    'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
@@ -756,7 +759,7 @@ abstract class BaseModel extends \CActiveRecord
 		b()->db->createCommand()->createTable($settingsTable, $columns);
 
 		// Add the foreign key
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}_{$settingsTable}_{$modelTable}_fk", $settingsTable, $modelFk, $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$settingsTable}_{$modelTable}_fk", $settingsTable, $modelFk, $modelTable, 'id', 'NO ACTION', 'NO ACTION');
 	}
 
 	/**
