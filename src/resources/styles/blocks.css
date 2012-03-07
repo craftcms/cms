@@ -124,7 +124,7 @@ h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  
 body.sidebar-layout #main { margin-left: 220px; }
 body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: auto; }
 
-.sidebar { width: 220px; background: #ececec; -webkit-box-shadow: 1px 0 0 rgba(0,0,0,0.15); }
+.sidebar { width: 220px; background: rgba(255,255,255,0.75); -webkit-box-shadow: 1px 0 0 rgba(0,0,0,0.15); }
 .sidebar > h5 { margin: 0; border-bottom: 1px solid #bcbcbc; padding: 11px 20px 10px; line-height: 18px; text-shadow: 0 1px 0 #fff; background: -webkit-linear-gradient(#dcdcdc, #ccc); }
 .sidebar > h5:not(:first-child) { border-top: 1px solid #ccc; padding-top: 10px; }
 .sidebar .nav { padding: 8px 20px; }
