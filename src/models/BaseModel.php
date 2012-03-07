@@ -786,16 +786,39 @@ abstract class BaseModel extends \CActiveRecord
 	 * @return CActiveRecord the newly created active record. The class of the object is the same as the model class.
 	 * Null is returned if the input data is false.
 	 */
-	public function populateRecord($attributes, $callAfterFind=true)
+	public function populateSubclassRecord($attributes, $callAfterFind = true)
 	{
 		if (!empty($attributes['class']))
 		{
 			$class = __NAMESPACE__.'\\'.$this->classPrefix.$attributes['class'].$this->classSuffix;
-			if ($class != get_class($this))
-				return $class::model()->populateRecord($attributes, $callAfterFind);
+			return $class::model()->populateRecord($attributes, $callAfterFind);
 		}
+		else
+			return null;
+	}
 
-		return parent::populateRecord($attributes, $callAfterFind);
+	/**
+	 * Creates a list of active records based on the input data.
+	 * @param array $data list of attribute values for the active records.
+	 * @param boolean $callAfterFind whether to call {@link afterFind} after each record is populated.
+	 * @param string $index the name of the attribute whose value will be used as indexes of the query result array.
+	 * If null, it means the array will be indexed by zero-based integers.
+	 * @return array list of active records.
+	 */
+	public function populateSubclassRecords($data, $callAfterFind = true, $index = null)
+	{
+		$records = array();
+		foreach ($data as $attributes)
+		{
+			if (($record = $this->populateSubclassRecord($attributes, $callAfterFind)) !== null)
+			{
+				if ($index === null)
+					$records[] = $record;
+				else
+					$records[$record->$index] = $record;
+			}
+		}
+		return $records;
 	}
 
 	/**

@@ -15,7 +15,7 @@ class BlocksService extends BaseComponent
 	public function getBlocks()
 	{
 		$blocks = b()->db->createCommand()->from('blocks')->queryAll();
-		return Block::model()->populateRecords($blocks);
+		return Block::model()->populateSubclassRecords($blocks);
 	}
 
 	/**
@@ -43,7 +43,7 @@ class BlocksService extends BaseComponent
 			->queryRow();
 
 		if ($block)
-			return Block::model()->populateRecord($block);
+			return Block::model()->populateSubclassRecord($block);
 
 		return null;
 	}
