@@ -29,8 +29,8 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredEdition()
 	{
-		$info = Info::model()->findAll();
-		return !empty($info) ? $info[0]->edition : null;
+		$info = Info::model()->find();
+		return $info ? $info->edition : null;
 	}
 
 	/**
@@ -52,8 +52,8 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredVersion()
 	{
-		$info = Info::model()->findAll();
-		return !empty($info) ? $info[0]->version : null;
+		$info = Info::model()->find();
+		return $info ? $info->version : null;
 	}
 
 	/**
@@ -75,8 +75,8 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredBuild()
 	{
-		$info = Info::model()->findAll();
-		return !empty($info) ? $info[0]->build : null;
+		$info = Info::model()->find();
+		return $info ? $info->build : null;
 	}
 
 	/**
