@@ -9,7 +9,7 @@ abstract class BaseBlocktype extends Block
 	public $blocktypeName;
 
 	public $required;
-	public $content;
+	public $data;
 
 	protected $settingsTemplate;
 	protected $columnType = AttributeType::Text;

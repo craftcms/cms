@@ -48,7 +48,7 @@ class Entry extends BaseModel
 			foreach ($blocks as $block)
 			{
 				$colName = b()->blocks->getContentColumnNameForBlock($block);
-				$block->content = $content[$colName];
+				$block->data = $content->$colName;
 			}
 
 			$this->_blocks = $blocks;
