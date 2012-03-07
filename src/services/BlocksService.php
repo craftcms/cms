@@ -23,7 +23,7 @@ class BlocksService extends BaseComponent
 	 * @param string $class The blocktype class, sans "Blocktype" suffix
 	 * @return mixed The block instance
 	 */
-	public function getBlockByType($class)
+	public function getBlockByClass($class)
 	{
 		$class = __NAMESPACE__.'\\'.$class.'Blocktype';
 		$block = new $class;
@@ -58,7 +58,7 @@ class BlocksService extends BaseComponent
 	 */
 	public function saveBlock($blockSettings, $blockTypeSettings = null, $blockId = null)
 	{
-		$block = $this->getBlockByType($blockSettings['class']);
+		$block = $this->getBlockByClass($blockSettings['class']);
 		$isNewBlock = true;
 
 		if ($blockId)
