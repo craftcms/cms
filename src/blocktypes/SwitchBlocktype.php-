@@ -1,7 +1,0 @@
-<?php
-namespace Blocks;
-
-class SwitchBlocktype extends BaseBlocktype
-{
-	public $blocktypeName = 'Switch';
-}

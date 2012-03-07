@@ -1,7 +1,7 @@
 <?php
 namespace Blocks;
 
-class PlainTextBlocktype extends BaseBlocktype
+class PlainTextBlock extends Block
 {
 	public $blocktypeName = 'Plain Text';
 

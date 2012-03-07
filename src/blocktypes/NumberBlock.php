@@ -1,7 +1,7 @@
 <?php
 namespace Blocks;
 
-class NumberBlocktype extends BaseBlocktype
+class NumberBlock extends Block
 {
 	public $blocktypeName = 'Number';
 

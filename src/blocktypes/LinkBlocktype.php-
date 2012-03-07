@@ -1,7 +1,0 @@
-<?php
-namespace Blocks;
-
-class LinkBlocktype extends BaseBlocktype
-{
-	public $blocktypeName = 'Link';
-}

@@ -1,7 +1,7 @@
 <?php
 namespace Blocks;
 
-class DropdownBlocktype extends BaseOptionsBlocktype
+class DropdownBlock extends BaseOptionsBlock
 {
 	public $blocktypeName = 'Dropdown';
 

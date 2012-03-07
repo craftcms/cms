@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class BaseOptionsBlocktype extends BaseBlocktype
+abstract class BaseOptionsBlock extends Block
 {
 	protected $defaultSettings = array(
 		'options' => array()
@@ -25,5 +25,4 @@ abstract class BaseOptionsBlocktype extends BaseBlocktype
 
 		return parent::setSettings($settings);
 	}
-
 }

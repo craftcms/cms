@@ -1,7 +1,0 @@
-<?php
-namespace Blocks;
-
-class ListBlocktype extends BaseBlocktype
-{
-	public $blocktypeName = 'List';
-}

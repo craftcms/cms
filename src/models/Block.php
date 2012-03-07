@@ -6,15 +6,14 @@ namespace Blocks;
  */
 class Block extends BaseModel
 {
+	// Model properties
+
 	protected $tableName = 'blocks';
 	protected $settingsTableName = 'blocksettings';
 	protected $foreignKeyName = 'block_id';
-
+	protected $classSuffix = 'Block';
 	protected $hasSettings = true;
 
-	/**
-	 * @return array
-	 */
 	protected $attributes = array(
 		'name'         => AttributeType::Name,
 		'handle'       => AttributeType::Handle,
@@ -30,4 +29,59 @@ class Block extends BaseModel
 		array('columns' => array('name','site_id'), 'unique' => true),
 		array('columns' => array('handle','site_id'), 'unique' => true)
 	);
+
+	// Block subclass properties
+
+	public $blocktypeName;
+
+	public $required;
+	public $data;
+
+	protected $settingsTemplate;
+	protected $columnType = AttributeType::Text;
+
+
+	/**
+	 * Get the content column type
+	 * @return string
+	 */
+	public function getColumnType()
+	{
+		return $this->columnType;
+	}
+
+	/**
+	 * Display the blocktype's settings
+	 * @return string
+	 */
+	public function displaySettings()
+	{
+		if (empty($this->settingsTemplate))
+			return '';
+
+		$tags = array(
+			'settings' => $this->settings
+		);
+
+		$template = b()->controller->loadTemplate($this->settingsTemplate, $tags, true);
+		return TemplateHelper::namespaceInputs($template, $this->class);
+	}
+
+	/**
+	 * Display the field
+	 * @return string
+	 */
+	public function displayField()
+	{
+		if (empty($this->fieldTemplate))
+			return '';
+
+		$tags = array(
+			'block' => $this
+		);
+
+		$template = b()->controller->loadTemplate($this->fieldTemplate, $tags, true);
+		return $template;
+	}
+
 }

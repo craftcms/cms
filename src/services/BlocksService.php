@@ -20,12 +20,12 @@ class BlocksService extends BaseComponent
 
 	/**
 	 * Returns a new block by the blocktype
-	 * @param string $class The blocktype class, sans "Blocktype" suffix
+	 * @param string $class The blocktype class, sans "Block" suffix
 	 * @return mixed The block instance
 	 */
 	public function getBlockByClass($class)
 	{
-		$class = __NAMESPACE__.'\\'.$class.'Blocktype';
+		$class = __NAMESPACE__.'\\'.$class.'Block';
 		$block = new $class;
 		return $block;
 	}
@@ -138,7 +138,7 @@ class BlocksService extends BaseComponent
 		{
 			$this->_blockTypes = array();
 
-			if (($files = @glob(b()->path->blockTypesPath."*Blocktype.php")) !== false)
+			if (($files = @glob(b()->path->blockTypesPath."*Block.php")) !== false)
 			{
 				foreach ($files as $file)
 				{

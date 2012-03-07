@@ -203,7 +203,7 @@ abstract class BaseModel extends \CActiveRecord
 
 				foreach ($blocks as $block)
 				{
-					$class = __NAMESPACE__.'\\'.$block['class'].'Blocktype';
+					$class = __NAMESPACE__.'\\'.$block['class'].'Block';
 					$this->_blocks[] = $class::model()->populateRecord($block);
 				}
 			}

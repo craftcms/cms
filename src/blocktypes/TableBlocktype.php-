@@ -1,7 +1,0 @@
-<?php
-namespace Blocks;
-
-class TableBlocktype extends BaseBlocktype
-{
-	public $blocktypeName = 'Table';
-}

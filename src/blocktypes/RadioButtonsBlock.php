@@ -1,7 +1,7 @@
 <?php
 namespace Blocks;
 
-class RadioButtonsBlocktype extends BaseOptionsBlocktype
+class RadioButtonsBlock extends BaseOptionsBlock
 {
 	public $blocktypeName = 'Radio Buttons';
 
