@@ -10,7 +10,9 @@
 	<ul class="nav">
 		<li><a id="sb-updates" class="has-badge {% if url.segment(2) == 'updates' %}sel{% endif %}" href="{url.base}settings/updates"><span class="icon icon15"></span>Updates{% if updates.isUpdateInfoCached && updates.updates.length %}<span class="badge {% if updates.isCriticalUpdateAvailable %}alert{% endif %}">{updates.updates.length}</span>{% endif %}</a></li>
 		<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href="{url.base}settings/sites"><span class="icon icon100"></span>Sites</a></li>
+{!--
 		<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>
+--}
 		<li><a id="sb-email" {% if url.segment(2) == 'email' %}class="sel"{% endif %} href="{url.base}settings/email"><span class="icon icon76"></span>Email</a></li>
 	</ul>
 
@@ -18,8 +20,10 @@
 	<ul class="nav">
 		<li><a {% if url.segment(2) == 'blocks' %}class="sel"{% endif %} href="{url.base}settings/blocks"><span class="icon icon137"></span>Content Blocks</a></li>
 		<li><a {% if url.segment(2) == 'sections' %}class="sel"{% endif %} href="{url.base}settings/sections"><span class="icon icon111"></span>Content Sections</a></li>
+{!--
 		<li><a {% if url.segment(2) == 'workflows' %}class="sel"{% endif %} href=""><span class="icon icon61"></span>Publishing Workflows</a></li>
 		<li><a {% if url.segment(2) == 'folders' %}class="sel"{% endif %} href=""><span class="icon icon133"></span>Asset Folders</a></li>
+--}
 		<li><a {% if url.segment(2) == 'routing' %}class="sel"{% endif %} href="{url.base}settings/routing"><span class="icon icon14"></span>URL Routing</a></li>
 	</ul>
 
