@@ -11,27 +11,14 @@ class DashboardService extends BaseComponent
 	 *
 	 * @return array
 	 */
-	public function getWidgets()
+	public function getUserWidgets()
 	{
-		$userWidgets = UserWidget::model()->with('plugin')->findAllByAttributes(array(
-			'user_id' => b()->user->id
-		));
-		$widgets = array();
-
-		foreach ($userWidgets as $widget)
-		{
-			$widgetClass = __NAMESPACE__.'\\'.$widget->class.'Widget';
-
-			if ($widget->plugin)
-			{
-				$path = b()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
-				require_once b()->path->pluginsPath.$widget->plugin->class.'/widgets'.'/'.$widget->class.'Widget.php';
-			}
-
-			$widgets[] = new $widgetClass($widget->id);
-		}
-
-		return $widgets;
+		$widgets = b()->db->createCommand()
+			->from('widgets')
+			->where('user_id = :id', array(':id' => b()->user->id))
+			->order('sort_order')
+			->queryAll();
+		return Widget::model()->populateSubclassRecords($widgets);
 	}
 
 	/**
@@ -48,7 +35,7 @@ class DashboardService extends BaseComponent
 		$widgets = array('Updates', 'RecentActivity', 'SiteMap', 'Feed');
 		foreach ($widgets as $i => $widgetClass)
 		{
-			$widget = new UserWidget;
+			$widget = new Widget;
 			$widget->user_id = $userId;
 			$widget->class = $widgetClass;
 			$widget->sort_order = ($i+1);

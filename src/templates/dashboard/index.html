@@ -29,9 +29,9 @@
 
 	<div id="dashboard">
 		<div id="widgets">
-			{% foreach dashboard.widgets as widget %}
+			{% foreach dashboard.userWidgets as widget %}
 				{% if widget.displayBody %}
-					<div id="widget{widget.id}" class="pane widget {widget.className}">
+					<div id="widget{widget.id}" class="pane widget {widget.classHandle}">
 						<div class="head">
 							{% if widget.displaySettings %}
 								<a class="settings-btn" title="Settings"></a>
@@ -63,7 +63,7 @@
 				</div>
 				<div class="body">
 					<ul class="widget-handles">
-						{% foreach dashboard.widgets as widget %}
+						{% foreach dashboard.userWidgets as widget %}
 						<li class="item {% if !widget.displayBody %}hidden{% endif %}" data-widget-id="widget{widget.id}">
 							<span class="grab"></span><span class="title">{widget.title}</span><a class="remove" title="Remove"></a>
 						</li>

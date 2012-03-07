@@ -4,7 +4,7 @@
 
 <table class="body">
 	<tbody>
-		{% foreach updates as update %}
+		{% foreach widget.updates as update %}
 		<tr>
 			<td>{update.name} {update.version}</td>
 			<td><a href="{url.base}settings/updates#{update.handle}">Notes</a></td>

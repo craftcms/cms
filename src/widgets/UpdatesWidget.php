@@ -4,10 +4,14 @@ namespace Blocks;
 /**
  *
  */
-class UpdatesWidget extends BaseWidget
+class UpdatesWidget extends Widget
 {
+	public $widgetName = 'Updates';
 	public $title = 'Updates Available';
-	public $className = 'updates';
+
+	public $updates = array();
+
+	protected $bodyTemplate = '_widgets/UpdatesWidget/body';
 
 	/**
 	 * @return bool
@@ -18,12 +22,11 @@ class UpdatesWidget extends BaseWidget
 			return false;
 
 		$updateInfo = b()->updates->updateInfo;
-		$updates = array();
 
 		// Blocks first
 		if ($updateInfo->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 		{
-			$updates[] = array(
+			$this->updates[] = array(
 				'name' => 'Blocks',
 				'handle' => 'Blocks',
 				'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild
@@ -37,7 +40,7 @@ class UpdatesWidget extends BaseWidget
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
-					$updates[] = array(
+					$this->updates[] = array(
 						'name' => $plugin->displayName,
 						'handle' => $plugin->class,
 						'version' => $plugin->latestVersion
@@ -46,13 +49,9 @@ class UpdatesWidget extends BaseWidget
 			}
 		}
 
-		if ($updates)
+		if ($this->updates)
 		{
-			$tags = array(
-				'updates' => $updates
-			);
-
-			return b()->controller->loadTemplate('_widgets/UpdatesWidget/body', $tags, true);
+			return parent::displayBody();
 		}
 
 		return false;
