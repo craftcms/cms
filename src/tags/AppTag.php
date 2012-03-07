@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BlocksTag extends Tag
+class AppTag extends Tag
 {
 	/**
 	 * @return string

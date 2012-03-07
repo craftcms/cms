@@ -27,7 +27,7 @@ class TemplateHelper
 	);
 
 	public static $globalTags = array(
-		'blocks'            => 'Blocks\BlocksTag',
+		'app'               => 'Blocks\AppTag',
 		'url'               => 'Blocks\UrlTag',
 		'configHelper'      => 'Blocks\ConfigHelperTag',
 		'dateTimeHelper'    => 'Blocks\DateTimeHelperTag',
