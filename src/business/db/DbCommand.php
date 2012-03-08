@@ -171,9 +171,9 @@ class DbCommand extends \CDbCommand
 			array('id' => AttributeType::PK),
 			$columns,
 			array(
-				'date_created' => array('type' => AttributeType::Int, 'required' => true),
-				'date_updated' => array('type' => AttributeType::Int, 'required' => true),
-				'uid'          => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true)
+				'date_created' => array('type' => AttributeType::Int, 'required' => true, 'default' => 0),
+				'date_updated' => array('type' => AttributeType::Int, 'required' => true, 'default' => 0),
+				'uid'          => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
 			)
 		);
 
