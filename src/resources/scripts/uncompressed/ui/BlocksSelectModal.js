@@ -1,10 +1,6 @@
 (function($) {
 
 
-if (typeof blx.ui == 'undefined')
-	blx.ui = {};
-
-
 /**
  * Blocks Select Modal
  */

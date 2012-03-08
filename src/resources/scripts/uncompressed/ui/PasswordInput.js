@@ -1,10 +1,9 @@
 (function($) {
 
 
-if (typeof blx.ui == 'undefined')
-	blx.ui = {};
-
-
+/**
+ * Password Input
+ */
 blx.ui.PasswordInput = blx.Base.extend({
 
 	$passwordInput: null,

@@ -1,10 +1,6 @@
 (function($) {
 
 
-if (typeof blx.ui == 'undefined')
-	blx.ui = {};
-
-
 /**
  * Drag
  * Used as a base class for DragDrop and DragSort

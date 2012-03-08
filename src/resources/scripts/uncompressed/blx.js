@@ -1,8 +1,8 @@
 (function($) {
 
 
-if (typeof blx == 'undefined')
-	blx = {};
+blx = {};
+blx.ui = {};
 
 
 // jQuery objects for common elements
