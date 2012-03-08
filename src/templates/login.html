@@ -37,6 +37,10 @@
 						'<input id="remember-me" type="checkbox" />' +
 						' Keep me logged in for {configHelper.getTimeInSeconds(config.item("rememberMeSessionTimeout")).toHumanTimeDuration.wordNumbers}' +
 					'</label>' +
+
+					{% if !request.isSecureConnection %}
+						'<a id="insecure" title="This is an insecure connection."></a>' +
+					{% endif %}
 				'</form>'
 			);
 		}
