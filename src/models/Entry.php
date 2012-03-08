@@ -33,6 +33,9 @@ class Entry extends BaseModel
 		array('columns' => array('section_id','slug'), 'unique' => true),
 	);
 
+	/**
+	 * @return string
+	 */
 	public function title()
 	{
 		if ($this->content->title)
@@ -41,6 +44,9 @@ class Entry extends BaseModel
 			return 'Untitled';
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getBlocks()
 	{
 		if (!isset($this->_blocks))

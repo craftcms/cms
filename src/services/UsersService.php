@@ -232,7 +232,7 @@ class UsersService extends BaseComponent
 	/**
 	 * @param User $user
 	 * @param $newPassword
-	 * @return \Blocks\User|bool
+	 * @return User|bool
 	 */
 	public function changePassword(User $user, $newPassword)
 	{
@@ -248,7 +248,7 @@ class UsersService extends BaseComponent
 	}
 
 	/**
-	 * @param \Blocks\User $user
+	 * @param User $user
 	 * @return bool
 	 */
 	public function forgotPassword(User $user)
@@ -263,7 +263,7 @@ class UsersService extends BaseComponent
 	}
 
 	/**
-	 * @param \Blocks\User $user
+	 * @param User $user
 	 * @return null
 	 */
 	public function getRemainingCooldownTime(User $user)

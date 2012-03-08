@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 class PlainTextBlock extends Block
 {
 	public $blocktypeName = 'Plain Text';

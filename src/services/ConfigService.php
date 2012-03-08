@@ -38,6 +38,9 @@ class ConfigService extends BaseComponent
 		return $default;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getTablePrefix()
 	{
 		if (!isset($this->_tablePrefix))

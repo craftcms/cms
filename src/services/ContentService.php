@@ -156,6 +156,12 @@ class ContentService extends BaseComponent
 
 	/* Entries */
 
+	/**
+	 * @param $sectionId
+	 * @param $authorId
+	 * @param null $parentId
+	 * @return Entry
+	 */
 	public function createEntry($sectionId, $authorId, $parentId = null)
 	{
 		$entry = new Entry;

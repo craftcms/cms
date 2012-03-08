@@ -65,6 +65,9 @@ class SessionController extends BaseController
 		$this->returnJson($r);
 	}
 
+	/**
+	 *
+	 */
 	public function actionLogout()
 	{
 		b()->user->logout();

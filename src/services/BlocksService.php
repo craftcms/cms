@@ -54,7 +54,7 @@ class BlocksService extends BaseComponent
 	 * @param      $blockSettings
 	 * @param null $blockTypeSettings
 	 * @param null $blockId
-	 * @return \Blocks\Block
+	 * @return Block
 	 */
 	public function saveBlock($blockSettings, $blockTypeSettings = null, $blockId = null)
 	{
@@ -123,6 +123,10 @@ class BlocksService extends BaseComponent
 		return $block;
 	}
 
+	/**
+	 * @param $block
+	 * @return string
+	 */
 	public function getContentColumnNameForBlock($block)
 	{
 		return strtolower($block->handle).'_'.$block->id;

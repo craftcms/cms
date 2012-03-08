@@ -6,7 +6,9 @@ namespace Blocks;
  */
 class HttpSession extends \CHttpSession
 {
-
+	/**
+	 *
+	 */
 	public function init()
 	{
 		$this->setSavePath(b()->path->sessionPath);
