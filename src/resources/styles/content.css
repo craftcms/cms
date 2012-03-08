@@ -10,6 +10,7 @@
 
 #main .page .page-head { padding: 40px 80px 20px; border-radius: 4px 4px 0 0; }
 #main .page .page-head h1 { margin: 0; }
+#main .page .page-head .url { color: #808080; }
 
 #main .page .page-head .draft-btn { display: none; position: relative; margin-left: 10px; border: 1px solid #36b2ff; background: transparent; }
 #main .page .page-head .draft-btn .label { color: #2d98db; }

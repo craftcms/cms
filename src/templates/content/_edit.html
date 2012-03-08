@@ -9,6 +9,7 @@
 {% region "page" %}
 	<div class="item field page-head">
 		<h1 class="editable">{entry.title}</h1>
+		{% if entry.url %}<div class="url">{entry.url}</div>{% endif %}
 {!--
 		<div class="draft-btn btn">
 			<span class="label">Draft 1</span>

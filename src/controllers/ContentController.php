@@ -28,6 +28,7 @@ class ContentController extends BaseController
 		$sectionSettings['max_entries'] = ($maxEntries ? $maxEntries : null);
 
 		$sectionSettings['sortable'] = (b()->request->getPost('sortable') === 'y');
+		$sectionSettings['has_urls'] = (b()->request->getPost('has_urls') === 'y');
 
 		$urlFormat = b()->request->getPost('url_format');
 		$sectionSettings['url_format'] = ($urlFormat ? $urlFormat : null);

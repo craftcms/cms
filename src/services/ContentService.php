@@ -107,6 +107,7 @@ class ContentService extends BaseComponent
 		$section->handle = $sectionSettings['handle'];
 		$section->max_entries = $sectionSettings['max_entries'];
 		$section->sortable = $sectionSettings['sortable'];
+		$section->has_urls = $sectionSettings['has_urls'];
 		$section->url_format = $sectionSettings['url_format'];
 		$section->template = $sectionSettings['template'];
 		$section->site_id = b()->sites->currentSite->id;

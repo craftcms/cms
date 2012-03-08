@@ -1,7 +1,7 @@
 {% if !id %}
 	{% set id = name %}
 {% endif %}
-<div id="{id}" class="lightswitch {% if on || (default == 'y' && !request.isPostRequest) %}on{% endif %}" tabindex="0">
+<div id="{id}" class="lightswitch {% if on || (default == 'y' && !request.isPostRequest) %}on{% endif %}" {% if toggle %}data-toggle="{toggle}"{% endif %} tabindex="0">
 	<div class="container">
 		<div class="label on">Yes</div>
 		<div class="label off">No</div>

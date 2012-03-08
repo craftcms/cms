@@ -46,28 +46,37 @@
 					{% endif %}
 				</div>
 				<div class="item field">
-					<label for="sortable">Sortable?</label>
+					<label for="sortable">Are entries sortable?</label>
 					<p>Do entries in this section have a sortable display order?</p>
 					{% include "_includes/lightswitch" name="sortable" on=section.sortable %}
 					{% if section.errors.sortable %}
 						{% include "_includes/error_list" errors=section.errors.sortable %}
 					{% endif %}
 				</div>
-				<div class="item field">
-					<label for="url_format">Entry URL Format</label>
-					<p>If entries in this section get their own URLs on your website, define the format of their URLs here.</p>
-					<div class="input-wrapper"><input id="url_format" name="url_format" class="code {% if section.errors.url_format %}error{% endif %}" type="text" value="{section.url_format}" /></div>
-					{% if section.errors.url_format %}
-						{% include "_includes/error_list" errors=section.errors.url_format %}
-					{% endif %}
-				</div>
-				<div class="item field">
-					<label for="template">Entry Template</label>
-					<p>Which template should be used to display entries in this section?</p>
-					<div class="input-wrapper"><input id="template" name="template" class="{% if section.errors.template %}error{% endif %}" type="text" value="{section.template}" /></div>
-					{% if section.errors.template %}
-						{% include "_includes/error_list" errors=section.errors.template %}
-					{% endif %}
+				<div class="item">
+					<div class="field">
+						<label for="has_urls">Do entries have URLs?</label>
+						<p>Can you access entries in this section directly via unique URLs?</p>
+						{% if section %}
+							{% set has_urls = section.has_urls %}
+						{% else %}
+							{% set has_urls = "y" %}
+						{% endif %}
+						{% include "_includes/lightswitch" name="has_urls" on=has_urls toggle="#has-urls-setting" %}
+
+						<div id="has-urls-setting" class="nested" {% if section && !section.has_urls %}style="display: none"{% endif %}>
+							<div class="field">
+								<label for="url_format">Entry URL Format</label>
+								<p>If entries in this section get their own URLs on your website, define the format of their URLs here.</p>
+								<div class="input-wrapper"><input id="url_format" name="url_format" class="code {% if section.errors.url_format %}error{% endif %}" type="text" value="{section.url_format}" /></div>
+							</div>
+							<div class="field">
+								<label for="template">Entry Template</label>
+								<p>Which template should be used to display entries in this section?</p>
+								<div class="input-wrapper"><input id="template" name="template" class="{% if section.errors.template %}error{% endif %}" type="text" value="{section.template}" /></div>
+							</div>
+						</div>
+					</div>
 				</div>
 				<div class="item field">
 					<label for="blocks">Content Blocks</label>

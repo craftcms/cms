@@ -12,8 +12,9 @@ class Section extends BaseModel
 	protected $attributes = array(
 		'name'        => AttributeType::Name,
 		'handle'      => AttributeType::Handle,
-		'url_format'  => AttributeType::Varchar,
 		'max_entries' => array('type' => AttributeType::TinyInt, 'unsigned' => true),
+		'has_urls'    => array('type' => AttributeType::Boolean, 'default' => true),
+		'url_format'  => AttributeType::Varchar,
 		'template'    => AttributeType::Template,
 		'sortable'    => AttributeType::Boolean
 	);

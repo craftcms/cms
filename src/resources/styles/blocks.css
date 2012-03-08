@@ -214,6 +214,9 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 
 .pane + .btn-group { display: block; margin-top: -12px; margin-bottom: 20px; }
 
+.pane .item.grid { padding-top: 0; padding-bottom: 0; }
+.pane .item.grid .field { padding-top: 16px !important; }
+
 /* modals */
 .modal { display: none; position: absolute; -webkit-user-select: none; }
 .modal.focussed { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); }
@@ -399,13 +402,13 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /* ----------------------------------------*/
 
 .field { padding-top: 16px !important; padding-bottom: 20px !important; position: relative; }
-.field + .field:not(.item),
-.grid + .field,
-.field + .grid .field:first-child,
-.grid + .grid .field:first-child { padding-top: 0 !important; }
 .field > label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
 .field > label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
 .field > p { margin: -3px 0 8px; color: #808080; }
+.field .nested { margin: 10px 0 0 25px; padding: 0 0 0 25px; border-left: 1px dotted #ccc; overflow: hidden; }
+.field .nested .field { padding-top: 0 !important; padding-bottom: 0 !important; }
+.field .nested .field:first-child { padding-top: 10px !important; }
+.field .nested .field + .field { padding-top: 20px !important; }
 
 /* inputs */
 .input-wrapper { padding-right: 18px; }
