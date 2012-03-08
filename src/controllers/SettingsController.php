@@ -28,8 +28,18 @@ class SettingsController extends BaseController
 		$emailSettings->host                        = b()->request->getPost('host');
 		$emailSettings->port                        = b()->request->getPost('port');
 		$emailSettings->smtpAuth                    = (b()->request->getPost('smtpAuth') === 'y');
-		$emailSettings->username                    = b()->request->getPost('username');
-		$emailSettings->password                    = b()->request->getPost('password');
+
+		if ($emailSettings->smtpAuth)
+		{
+			$emailSettings->username                = b()->request->getPost('smtp_username');
+			$emailSettings->password                = b()->request->getPost('smtp_password');
+		}
+		else
+		{
+			$emailSettings->username                = b()->request->getPost('username');
+			$emailSettings->password                = b()->request->getPost('password');
+		}
+
 		$emailSettings->smtpKeepAlive               = (b()->request->getPost('smtpKeepAlive') === 'y');
 		$emailSettings->smtpSecureTransportType     = b()->request->getPost('smtpSecureTransportType');
 		$emailSettings->timeout                     = b()->request->getPost('timeout');

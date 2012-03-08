@@ -6,7 +6,6 @@ var EmailSettingsForm = blx.Base.extend({
 	$emailSettingsPane: null,
 	$protocolSelect: null,
 	$hiddenFields: null,
-	$authFields: null,
 	$protocolSettingsPane: null,
 	$protocolSettingsPaneHead: null,
 	$protocolSettingsPaneBody: null,
@@ -17,7 +16,6 @@ var EmailSettingsForm = blx.Base.extend({
 		this.$emailSettingsPane = $('#email-settings');
 		this.$protocolSelect = $('#protocol');
 		this.$hiddenFields = $('#hidden-fields');
-		this.$authFields = $('#username-field, #password-field');
 
 		this._onEmailTypeChange();
 		this.addListener(this.$protocolSelect, 'change', '_onEmailTypeChange');
@@ -68,45 +66,17 @@ var EmailSettingsForm = blx.Base.extend({
 			{
 				$('#'+EmailSettingsForm.protocolFields[this.protocol][i]+'-field').appendTo(this.$protocolSettingsPaneBody);
 			}
-
-			// Disable or enable the Username/Password fields
-			if (this.protocol == 'Smtp' && !this.smtpAuthSwitch.on)
-			{
-				this.$authFields.css('opacity', 0.5);
-				this.$authFields.find('input').attr('disabled', 'disabled');
-			}
-			else
-			{
-				this.$authFields.css('opacity', 1);
-				this.$authFields.find('input').removeAttr('disabled');
-			}
 		}
 		else
 		{
 			if (this.$protocolSettingsPane)
 				this.$protocolSettingsPane.hide();
 		}
-	},
-
-	_onSmtpAuthChange: function()
-	{
-		if (this.smtpAuthSwitch.on)
-		{
-			var opacity = 1;
-			this.$authFields.find('input').removeAttr('disabled');
-		}
-		else
-		{
-			var opacity = 0.5;
-			this.$authFields.find('input').attr('disabled', 'disabled');
-		}
-
-		this.$authFields.stop().animate({opacity: opacity}, 'fast');
 	}
 
 }, {
 	protocolFields: {
-		Smtp:      ['smtpAuth', 'username', 'password', 'smtpKeepAlive', 'smtpSecureTransportType', 'port', 'host', 'timeout'],
+		Smtp:      ['smtpAuth', 'smtpKeepAlive', 'smtpSecureTransportType', 'port', 'host', 'timeout'],
 		Pop:       ['username', 'password', 'port', 'host', 'timeout'],
 		GmailSmtp: ['username', 'password']
 	}
