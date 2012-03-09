@@ -14,12 +14,12 @@ class SessionController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$loginName = b()->request->getPost('loginName');
+		$username = b()->request->getPost('username');
 		$password = b()->request->getPost('password');
 		$rememberMe = (b()->request->getPost('rememberMe') === 'y');
 
 		// Attempt to log in
-		$loginInfo = b()->user->startLogin($loginName, $password, $rememberMe);
+		$loginInfo = b()->user->startLogin($username, $password, $rememberMe);
 
 		// Did it work?
 		if (b()->user->isLoggedIn)
@@ -48,7 +48,7 @@ class SessionController extends BaseController
 					$errorMessage = 'Account locked.';
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
 				{
-					$user = b()->users->getByLoginName($loginName);
+					$user = b()->users->getByLoginName($username);
 					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(b()->users->getRemainingCooldownTime($user), false).'.';
 				}
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)

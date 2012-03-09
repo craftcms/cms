@@ -5,7 +5,7 @@ var LoginForm = blx.Base.extend({
 
 	$form: null,
 	$pane: null,
-	$nameInput: null,
+	$usernameInput: null,
 	$passwordInput: null,
 	$rememberMeInput: null,
 	$loginBtn: null,
@@ -15,24 +15,19 @@ var LoginForm = blx.Base.extend({
 	{
 		this.$form = $('#login-form'),
 		this.$pane = $('#login-pane'),
-		this.$nameInput = $('#loginName'),
+		this.$usernameInput = $('#username'),
 		this.$passwordInput = $('#password'),
 		this.$loginBtn = $('#login-btn'),
 		this.$rememberMeInput = $('#remember-me');
 
-		if (!this.$nameInput.val())
-			this.$nameInput.focus();
-		else
-			this.$passwordInput.focus();
-
-		this.addListener(this.$nameInput, 'keypress,keyup,change,blur', 'onInputChange');
+		this.addListener(this.$usernameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 	},
 
 	validate: function()
 	{
-		if (this.$nameInput.val() && this.$passwordInput.val().length >= 6)
+		if (this.$usernameInput.val() && this.$passwordInput.val().length >= 6)
 		{
 			this.$loginBtn.removeClass('disabled');
 			return true;
@@ -56,7 +51,7 @@ var LoginForm = blx.Base.extend({
 			return;
 
 		var data = {
-			loginName: this.$nameInput.val(),
+			username: this.$usernameInput.val(),
 			password: this.$passwordInput.val(),
 			rememberMe: (this.$rememberMeInput.attr('checked') ? 'y' : '')
 		};
