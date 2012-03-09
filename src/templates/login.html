@@ -43,6 +43,9 @@
 					{% endif %}
 				'</form>'
 			);
+
+			var id = {% if user.rememeberedLoginName %}'password'{% else %}'username'{% endif %};
+			document.getElementById(id).focus();
 		}
 		else
 		{
