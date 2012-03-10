@@ -29,16 +29,12 @@ class ObjectTag extends Tag
 			return call_user_func_array(array($this->_obj, $name), $args);
 		}
 
-		// getter?
-		$getter = 'get'.ucfirst($name);
-		if (method_exists($this->_obj, $getter))
-		{
-			return call_user_func_array(array($this->_obj, $getter), $args);
-		}
-
-		if (isset($this->_obj->$name))
+		try
 		{
 			return $this->_obj->$name;
+		}
+		catch (\Exception $e)
+		{
 		}
 
 		return parent::__call($name, $args);

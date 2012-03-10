@@ -86,7 +86,7 @@
 					<div class="item field">
 						Status: {theUser.status}
 						<input type="hidden" name="status" value="{theUser.status}" />
-						{% if config.item('failedPasswordMode') == 'cooldown' %}
+						{% if config.getItem('failedPasswordMode') == 'cooldown' %}
 							{% if theUser.cooldown_start %}
 								<br />
 								{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime) %}
