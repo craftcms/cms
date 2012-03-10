@@ -34,14 +34,31 @@ class Entry extends BaseModel
 	);
 
 	/**
-	 * @return string
+	 * Returns the entry's title
 	 */
-	public function title()
+	public function getTitle()
 	{
-		if ($this->content->title)
-			return $this->content->title;
-		else
-			return 'Untitled';
+		return $this->content->title;
+	}
+
+	/**
+	 * Adds content block handles to the mix of possible magic getter properties
+	 */
+	public function __get($name)
+	{
+		try
+		{
+			return parent::__get($name);
+		}
+		catch (\Exception $e)
+		{
+			// Maybe it's a block?
+			if (isset($this->blocks[$name]))
+			{
+				return $this->blocks[$name];
+			}
+			throw $e;
+		}
 	}
 
 	/**

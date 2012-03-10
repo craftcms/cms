@@ -8,8 +8,13 @@
 
 #main .page .field { margin: 0; padding: 20px 80px; }
 
-#main .page .page-head { padding: 40px 80px 20px; border-radius: 4px 4px 0 0; }
-#main .page .page-head h1 { margin: 0; }
+#main .page .page-head { padding: 60px 80px 20px !important; border-radius: 4px 4px 0 0; }
+#main .page .page-head .title { display: inline-block; cursor: pointer; }
+#main .page .page-head .title h1 { float: left; margin: 0; color: #000; }
+#main .page .page-head .title h1.untitled { color: #d5d5d5; }
+#main .page .page-head .title a { display: none; float: left; margin: 16px 0 0 8px; }
+#main .page .page-head .title:hover a { display: block; text-decoration: none; }
+#main .page .page-head .title-input { display: block; margin: 1px 0 1px 0; padding: 0; border: none; padding: 0; width: 100%; font-size: 36px; font-family: HelveticaNeue, sans-serif; color: #555; background: transparent; outline: none; }
 #main .page .page-head .url { color: #808080; }
 
 #main .page .page-head .draft-btn { display: none; position: relative; margin-left: 10px; border: 1px solid #36b2ff; background: transparent; }
