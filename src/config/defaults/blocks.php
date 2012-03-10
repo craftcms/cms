@@ -57,7 +57,7 @@ $blocksConfig['urlFormat'] = 'auto';
 $blocksConfig['pathVar'] = 'p';
 
 /**
- * The time a user stays logged in by default.
+ * The time a user stays logged in by default.  If set to 0, the session will expire when the browser is closed.
  * Valid units of time are:
  * m = minute(s)
  * h = hour(s)
