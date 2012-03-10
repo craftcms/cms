@@ -84,4 +84,12 @@ class Block extends BaseModel
 		return $template;
 	}
 
+	/**
+	 * String representation of the block
+	 */
+	public function __toString()
+	{
+		return $this->data;
+	}
+
 }
