@@ -31,8 +31,8 @@ blx.ui.Pill = blx.Base.extend({
 		this.$input = this.$outerContainer.find('input:first');
 
 		blx.utils.preventOutlineOnMouseFocus(this.$innerContainer);
-		this.addListener(this.$btns, 'click', '_onClick');
-		this.addListener(this.$innerContainer, 'keydown', '_onKeyDown');
+		this.addListener(this.$btns, 'mousedown', 'onMouseDown');
+		this.addListener(this.$innerContainer, 'keydown', 'onKeyDown');
 	},
 
 	select: function(btn)
@@ -44,7 +44,7 @@ blx.ui.Pill = blx.Base.extend({
 		this.$selectedBtn = $btn;
 	},
 
-	_onClick: function(event)
+	onMouseDown: function(event)
 	{
 		this.select(event.currentTarget);
 	},
@@ -57,7 +57,7 @@ blx.ui.Pill = blx.Base.extend({
 			return -1;
 	},
 
-	_onKeyDown: function(event)
+	onKeyDown: function(event)
 	{
 		switch (event.keyCode)
 		{
