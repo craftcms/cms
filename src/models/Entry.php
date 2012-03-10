@@ -10,7 +10,7 @@ class Entry extends BaseModel
 	protected $hasContent = true;
 
 	protected $attributes = array(
-		'slug'        => AttributeType::Handle,
+		'slug'        => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'full_uri'    => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
 		'post_date'   => AttributeType::Int,
 		'expiry_date' => AttributeType::Int,
