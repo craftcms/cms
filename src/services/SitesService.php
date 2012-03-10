@@ -179,7 +179,7 @@ class SitesService extends BaseComponent
 	public function setLicenseKeyStatus($licenseKeyStatus)
 	{
 		// cache it and set it to expire according to config
-		b()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, b()->config->getItem('cacheTimeSeconds'));
+		b()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, b()->config->cacheTimeSeconds);
 	}
 
 	/**

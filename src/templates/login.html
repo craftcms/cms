@@ -35,7 +35,7 @@
 
 					'<label id="remember-me-label" class="checkbox">' +
 						'<input id="remember-me" type="checkbox" />' +
-						' Keep me logged in for {configHelper.getTimeInSeconds(config.item("rememberMeSessionTimeout")).toHumanTimeDuration.wordNumbers}' +
+						' Keep me logged in for {configHelper.getTimeInSeconds(config.rememberMeSessionTimeout).toHumanTimeDuration.wordNumbers}' +
 					'</label>' +
 
 					{% if !request.isSecureConnection %}

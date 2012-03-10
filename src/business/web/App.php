@@ -227,12 +227,12 @@ class App extends \CWebApplication
 
 				$segs = array_splice($segs, 2);
 
-				$rootFolderUrl = UrlHelper::generateUrl($this->config->getItem('resourceTriggerWord')."/plugin/{$plugin}/");
+				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord."/plugin/{$plugin}/");
 				$rootFolderPath = $this->path->pluginsPath."{$plugin}/resources/";
 			}
 			else
 			{
-				$rootFolderUrl = UrlHelper::generateUrl($this->config->getItem('resourceTriggerWord').'/');
+				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.'/');
 				$rootFolderPath = $this->path->resourcesPath;
 			}
 

@@ -34,7 +34,7 @@
 				</div>
 				<div class="item">
 					Status: {theUser.status}
-					{% if config.item('failedPasswordMode') == 'cooldown' %}
+					{% if config.failedPasswordMode == 'cooldown' %}
 						{% if theUser.cooldown_start %}
 							<br />
 							{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime) %}

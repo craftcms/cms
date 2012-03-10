@@ -135,7 +135,7 @@ class UpdatesService extends BaseComponent
 					$updateInfo = new UpdateInfo();
 
 				// cache it and set it to expire according to config
-				b()->fileCache->set('updateInfo', $updateInfo, b()->config->getItem('cacheTimeSeconds'));
+				b()->fileCache->set('updateInfo', $updateInfo, b()->config->cacheTimeSeconds);
 			}
 
 			$this->_updateInfo = $updateInfo;

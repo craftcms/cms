@@ -39,7 +39,7 @@ class HttpRequest extends \CHttpRequest
 				if ($this->queryStringPath)
 				{
 					$params = isset($_GET) ? $_GET : array();
-					$pathVar = b()->config->getItem('pathVar');
+					$pathVar = b()->config->pathVar;
 					unset($params[$pathVar]);
 					$url = UrlHelper::generateUrl($this->queryStringPath, $params);
 					$this->redirect($url);
@@ -85,7 +85,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = b()->config->getItem('pathVar');
+			$pathVar = b()->config->pathVar;
 			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 
@@ -150,11 +150,11 @@ class HttpRequest extends \CHttpRequest
 		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (b()->config->getItem('urlFormat') == UrlFormat::PathInfo)
+			if (b()->config->urlFormat == UrlFormat::PathInfo)
 			{
 				$this->_urlFormat = UrlFormat::PathInfo;
 			}
-			else if (b()->config->getItem('urlFormat') == UrlFormat::QueryString)
+			else if (b()->config->urlFormat == UrlFormat::QueryString)
 			{
 				$this->_urlFormat = UrlFormat::QueryString;
 			}
@@ -194,7 +194,7 @@ class HttpRequest extends \CHttpRequest
 				}
 
 				// cache it and set it to expire according to config
-				b()->fileCache->set('urlFormat', $this->_urlFormat, b()->config->getItem('cacheTimeSeconds'));
+				b()->fileCache->set('urlFormat', $this->_urlFormat, b()->config->cacheTimeSeconds);
 			}
 		}
 
@@ -216,9 +216,9 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			$resourceTriggerWord = b()->config->getItem('resourceTriggerWord');
-			$actionTriggerWord = b()->config->getItem('actionTriggerWord');
-			$logoutTriggerWord = b()->config->getItem('logoutTriggerWord');
+			$resourceTriggerWord = b()->config->resourceTriggerWord;
+			$actionTriggerWord = b()->config->actionTriggerWord;
+			$logoutTriggerWord = b()->config->logoutTriggerWord;
 
 			$firstPathSegment = $this->getPathSegment(1);
 

@@ -18,7 +18,7 @@ class UrlHelper
 	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$path = b()->config->getItem('resourceTriggerWord').'/'.trim($path, '/');
+		$path = b()->config->resourceTriggerWord.'/'.trim($path, '/');
 		$path = self::generateUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
@@ -34,7 +34,7 @@ class UrlHelper
 	public static function generateActionUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$path = b()->config->getItem('actionTriggerWord').'/'.trim($path, '/');
+		$path = b()->config->actionTriggerWord.'/'.trim($path, '/');
 		$path = self::generateUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
@@ -50,7 +50,7 @@ class UrlHelper
 	public static function generateUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$pathVar = b()->config->getItem('pathVar');
+		$pathVar = b()->config->pathVar;
 
 		$path = self::_normalizePath(trim($path, '/'), $params);
 		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);

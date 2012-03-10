@@ -155,7 +155,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (!b()->config->getItem('devMode') && b()->request->requestType !== 'POST')
+		if (!b()->config->devMode && b()->request->requestType !== 'POST')
 			throw new HttpException(404);
 	}
 
@@ -164,7 +164,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!b()->config->getItem('devMode') && !b()->request->isAjaxRequest)
+		if (!b()->config->devMode && !b()->request->isAjaxRequest)
 			throw new HttpException(404);
 	}
 
