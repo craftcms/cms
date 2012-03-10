@@ -45,7 +45,10 @@ abstract class BaseModel extends \CActiveRecord
 			$this->init();
 		}
 		else
+		{
 			parent::__construct($scenario);
+			$this->populateAttributeDefaults();
+		}
 	}
 
 	/**
@@ -256,6 +259,8 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Sets the current record's settings
+	 *
+	 * @param $settings
 	 */
 	public function setSettings($settings)
 	{
@@ -548,8 +553,8 @@ abstract class BaseModel extends \CActiveRecord
 	public function createTable()
 	{
 		$tableName = $this->getTableName();
-
 		$indexes = array_merge($this->indexes);
+		$columns = array();
 
 		// Add any Foreign Key columns
 		foreach ($this->belongsTo as $name => $settings)
@@ -783,7 +788,7 @@ abstract class BaseModel extends \CActiveRecord
 	 * If one of the attributes is 'class', then the actual instance will be of that class
 	 * @param array $attributes attribute values (column name=>column value)
 	 * @param boolean $callAfterFind whether to call {@link afterFind} after the record is populated.
-	 * @return CActiveRecord the newly created active record. The class of the object is the same as the model class.
+	 * @return \CActiveRecord the newly created active record. The class of the object is the same as the model class.
 	 * Null is returned if the input data is false.
 	 */
 	public function populateSubclassRecord($attributes, $callAfterFind = true)
@@ -819,6 +824,19 @@ abstract class BaseModel extends \CActiveRecord
 			}
 		}
 		return $records;
+	}
+
+	/**
+	 * Populates any default values that are set on the model's attributes.
+	 */
+	public function populateAttributeDefaults()
+	{
+		foreach ($this->attributes as $attributeName => $settings)
+		{
+			$column = DatabaseHelper::normalizeAttributeSettings($settings);
+			if (isset($column['default']))
+				$this->_attributes[$attributeName] = $column['default'];
+		}
 	}
 
 	/**
