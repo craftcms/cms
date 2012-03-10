@@ -70,11 +70,11 @@ h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  
 /*-- nav --*/
 #nav { position: relative; z-index: 1; height: 48px; background: -webkit-linear-gradient(#333, rgba(15, 15, 15, 0.9)); -webkit-box-shadow: 0 0 5px rgba(0,0,0,0.65); }
 
-#nav a { text-decoration: none; color: #666; -webkit-transition: color 150ms linear; }
+#nav a { text-decoration: none; color: #666; -webkit-transition: color 100ms linear; }
 #nav a:hover { color: #999; }
 #nav a.sel { color: #ccc !important; }
 
-#nav a .icon { height: 24px; background: no-repeat 50% 0; opacity: 0.35; -webkit-transition: opacity 150ms linear; }
+#nav a .icon { height: 24px; background: no-repeat 50% 0; opacity: 0.35; -webkit-transition: opacity 100ms linear; }
 #nav a:hover .icon { opacity: 0.75; }
 #nav a.sel .icon { opacity: 1 !important; }
 
@@ -405,10 +405,13 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .field > label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
 .field > label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
 .field > p { margin: -3px 0 8px; color: #808080; }
-.field .nested { margin: 10px 0 0 25px; padding: 0 0 0 25px; border-left: 1px dotted #ccc; overflow: hidden; }
-.field .nested .field { padding-top: 0 !important; padding-bottom: 0 !important; }
+
+/* nested fields */
+.field .nested-toggle-wrapper { float: left; margin: -7px 0 -6px -6px; padding: 5px; border-radius: 18px; border: 1px dotted transparent; -webkit-transition: border-color 200ms linear, margin-bottom 200ms linear; }
+.field .nested-toggle-wrapper.showing { margin-bottom: 1px; border-color: #bbb; }
+.field .nested { clear: left; margin: 1px 0 0 25px; padding-left: 25px; border-left: 1px dotted #bbb; overflow: hidden; }
+.field .nested .field { padding-top: 20px !important; padding-bottom: 0 !important; }
 .field .nested .field:first-child { padding-top: 10px !important; }
-.field .nested .field + .field { padding-top: 20px !important; }
 
 /* inputs */
 .input-wrapper { padding-right: 18px; }
