@@ -22,7 +22,7 @@ class BoolTag extends Tag
 	 */
 	public function __toString()
 	{
-		return $this->_val ? 'y': '';
+		return $this->_val ? '1': '';
 	}
 
 }
