@@ -76,10 +76,7 @@
 				<div class="item field">
 					<label for="blocks">Content Blocks</label>
 					<p>Which content blocks should be present when editing an entry in this section?</p>
-					{% if !sectionBlocks %}
-						{% set sectionBlocks = section.blocks %}
-					{% endif %}
-					{% include "_includes/blocksselect/field" selectedBlocks=sectionBlocks name="blocks" %}
+					{% include "_includes/blocksselect/field" selectedBlocks=section.blocks name="blocks" %}
 				</div>
 			</div>
 		</div>
