@@ -1,7 +1,7 @@
 {% layout "content/_layouts/content" %}
 
-{% if !entry && entryId %}
-	{% set entry = content.getEntryById(entryId) %}
+{% if !entry %}
+	{% set entry = content.getEntry(entryId) %}
 {% endif %}
 
 {% region "pageTitle" %}Editing “{entry.title}”{% endregion %}

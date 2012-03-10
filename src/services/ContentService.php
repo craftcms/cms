@@ -195,6 +195,22 @@ class ContentService extends BaseComponent
 	}
 
 	/**
+	 * Returns an Entry instance, whether it already exists based on an ID, or is new
+	 * @param int $entryId The Entry ID if it exists
+	 * @return Section
+	 */
+	public function getEntry($entryId = null)
+	{
+		if ($entryId)
+			$entry = $this->getEntryById($entryId);
+
+		if (empty($entry))
+			$entry = new Entry;
+
+		return $entry;
+	}
+
+	/**
 	 * @param $entryId
 	 * @return mixed
 	 */
