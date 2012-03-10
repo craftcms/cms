@@ -100,7 +100,7 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 	protected function isTemplateParsingNeeded()
 	{
 		// always re-parse templates if in dev mode
-		if (b()->config->getItem('devMode'))
+		if (b()->config->devMode)
 			return true;
 
 		// if last modified date or source is newer, regen

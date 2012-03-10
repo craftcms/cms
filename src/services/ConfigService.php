@@ -24,6 +24,21 @@ class ConfigService extends BaseComponent
 	}
 
 	/**
+	 * Adds config items to the mix of possible magic getter properties
+	 */
+	public function __get($name)
+	{
+		try
+		{
+			return parent::__get($name);
+		}
+		catch (\Exception $e)
+		{
+			return $this->getItem($name);
+		}
+	}
+
+	/**
 	 * Get a DB config item
 	 *
 	 * @param      $item

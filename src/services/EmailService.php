@@ -43,7 +43,7 @@ class EmailService extends BaseComponent
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], b()->config->getItem('devMode') ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], b()->config->devMode ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -166,7 +166,7 @@ class EmailService extends BaseComponent
 	{
 		$email->isSmtp();
 
-		if (b()->config->getItem('devMode'))
+		if (b()->config->devMode)
 			$email->smtpDebug = 2;
 
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)

@@ -1,14 +1,18 @@
 {% layout "content/_layouts/content" %}
 
-{% if !entry && entryId %}
-	{% set entry = content.getEntryById(entryId) %}
+{% if !entry %}
+	{% set entry = content.getEntry(entryId) %}
 {% endif %}
 
-{% region "pageTitle" %}Editing “{entry.title}”{% endregion %}
+{% region "pageTitle" %}Editing “{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}”{% endregion %}
 
 {% region "page" %}
 	<div class="item field page-head">
-		<h1 class="editable">{entry.title}</h1>
+		<div class="title" tabindex="0">
+			<h1 {% if !entry.title %}class="untitled"{% endif %}>{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}</h1>
+			<a>Edit</a>
+			<input type="hidden" name="title" value="{entry.title}" />
+		</div>
 		{% if entry.url %}<div class="url">{entry.url}</div>{% endif %}
 {!--
 		<div class="draft-btn btn">
@@ -96,4 +100,30 @@
 	<div class="item field page-foot">
 		<input class="btn big submit" type="submit" value="Publish" />
 	</div>
+{% endregion %}
+
+{% region "scripts" %}
+	<script type="text/javascript">
+		var titleInput,
+			$sidebarLabel;
+
+		function onTitleChange()
+		{
+			if (!$sidebarLabel)
+				$sidebarLabel = $('#sidebar a.sel span.label');
+
+			var val = titleInput.$input.val();
+			if (val)
+				$sidebarLabel.text(val);
+			else
+				$sidebarLabel.text('Untitled');
+		}
+
+		titleInput = new blx.ui.TitleInput('.page-head .title', {
+			onKeydown: function() {
+				setTimeout(onTitleChange, 1);
+			},
+			onChange: onTitleChange
+		});
+	</script>
 {% endregion %}

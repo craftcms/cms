@@ -54,7 +54,7 @@ class SessionController extends BaseController
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)
 					$errorMessage = 'Invalid login name or password.';
 				else if ($loginInfo->identity->errorCode !== UserIdentity::ERROR_NONE)
-					$errorMessage = $loginInfo->identity->failedPasswordAttemptCount.' of '.b()->config->getItem('maxInvalidPasswordAttempts').' failed password attempts.';
+					$errorMessage = $loginInfo->identity->failedPasswordAttemptCount.' of '.b()->config->maxInvalidPasswordAttempts.' failed password attempts.';
 
 				$r = array(
 					'error' => $errorMessage,

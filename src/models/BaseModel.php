@@ -204,11 +204,7 @@ abstract class BaseModel extends \CActiveRecord
 					->order('j.sort_order')
 					->queryAll();
 
-				foreach ($blocks as $block)
-				{
-					$class = __NAMESPACE__.'\\'.$block['class'].'Block';
-					$this->_blocks[] = $class::model()->populateRecord($block);
-				}
+				$this->_blocks = Block::model()->populateSubclassRecords($blocks, true, 'handle');
 			}
 		}
 

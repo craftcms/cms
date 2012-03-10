@@ -161,7 +161,7 @@ class UsersService extends BaseComponent
 		$user->activationcode = $activationCode;
 		$date = new \DateTime();
 		$user->activationcode_issued_date = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(b()->config->getItem('activationCodeExpiration')) .'S');
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(b()->config->activationCodeExpiration) .'S');
 		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();
 		$user->save();
 
@@ -268,7 +268,7 @@ class UsersService extends BaseComponent
 	 */
 	public function getRemainingCooldownTime(User $user)
 	{
-		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(b()->config->getItem('failedPasswordCooldown'));
+		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(b()->config->failedPasswordCooldown);
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
 
 		if ($cooldownRemaining > 0)

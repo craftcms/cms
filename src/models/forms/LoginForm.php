@@ -45,15 +45,15 @@ class LoginForm extends \CFormModel
 
 		if($this->_identity->errorCode === UserIdentity::ERROR_NONE)
 		{
-			$timeOut = ConfigHelper::getTimeInSeconds(b()->config->getItem('sessionTimeout'));
+			$timeOut = ConfigHelper::getTimeInSeconds(b()->config->sessionTimeout);
 
 			if ($this->rememberMe)
-				$timeOut = ConfigHelper::getTimeInSeconds(b()->config->getItem('rememberMeSessionTimeout'));
+				$timeOut = ConfigHelper::getTimeInSeconds(b()->config->rememberMeSessionTimeout);
 
-			if (b()->config->getItem('rememberUsernameEnabled') == true)
+			if (b()->config->rememberUsernameEnabled == true)
 			{
 				$cookie = new \CHttpCookie('loginName', $this->loginName);
-				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(b()->config->getItem('rememberUsernameTimeout'));
+				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(b()->config->rememberUsernameTimeout);
 				$cookie->httpOnly = true;
 				b()->request->cookies['loginName'] = $cookie;
 			}

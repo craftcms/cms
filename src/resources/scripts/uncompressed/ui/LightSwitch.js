@@ -10,6 +10,7 @@ blx.ui.LightSwitch = blx.Base.extend({
 	$outerContainer: null,
 	$innerContainer: null,
 	$input: null,
+	$wrapper: null,
 	$toggleTarget: null,
 	on: null,
 	dragger: null,
@@ -33,14 +34,10 @@ blx.ui.LightSwitch = blx.Base.extend({
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$input = this.$outerContainer.find('input:first');
+		this.$wrapper = this.$outerContainer.parent('.nested-toggle-wrapper');
 		this.$toggleTarget = $(this.$outerContainer.attr('data-toggle'));
 
 		this.on = this.$outerContainer.hasClass('on');
-
-		if (this.on)
-			this.$toggleTarget.show();
-		else
-			this.$toggleTarget.hide();
 
 		blx.utils.preventOutlineOnMouseFocus(this.$outerContainer);
 		this.addListener(this.$innerContainer, 'mousedown', '_onMouseDown');
@@ -59,6 +56,7 @@ blx.ui.LightSwitch = blx.Base.extend({
 	{
 		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
 		this.$input.val('y');
+		this.$wrapper.addClass('showing');
 		this.on = true;
 		this.settings.onChange();
 
@@ -75,12 +73,11 @@ blx.ui.LightSwitch = blx.Base.extend({
 	{
 		this.$innerContainer.stop().animate({marginLeft: blx.ui.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
+		this.$wrapper.removeClass('showing');
 		this.on = false;
 		this.settings.onChange();
 
-		this.$toggleTarget.stop().animate({height: 0}, 'fast', $.proxy(function() {
-			this.$toggleTarget.hide();
-		}, this));
+		this.$toggleTarget.stop().animate({height: 0}, 'fast');
 	},
 
 	toggle: function(event)

@@ -57,7 +57,6 @@ class ContentController extends BaseController
 
 		// Get Block instances for each selected block
 		$sectionBlocks = array();
-
 		if (!empty($sectionBlocksData['selections']))
 		{
 			foreach ($sectionBlocksData['selections'] as $blockId)
@@ -67,12 +66,12 @@ class ContentController extends BaseController
 				$sectionBlocks[] = $block;
 			}
 		}
+		$section->blocks = $sectionBlocks;
 		
 
 		// Reload the original template
 		$this->loadRequestedTemplate(array(
-			'section'       => $section,
-			'sectionBlocks' => $sectionBlocks
+			'section' => $section
 		));
 	}
 

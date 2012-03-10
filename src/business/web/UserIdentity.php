@@ -80,7 +80,7 @@ class UserIdentity extends \CUserIdentity
 				if ($user->cooldown_start !== null)
 				{
 					// they are still in the cooldown window.
-					if ($user->cooldown_start + ConfigHelper::getTimeInSeconds(b()->config->getItem('failedPasswordCooldown')) > DateTimeHelper::currentTime())
+					if ($user->cooldown_start + ConfigHelper::getTimeInSeconds(b()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
 						$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
 					else
 					{
@@ -195,10 +195,10 @@ class UserIdentity extends \CUserIdentity
 		if ($this->_isUserInsideFailWindow($user, $currentFailedCount))
 		{
 			// check to see if they hit the max attempts to login.
-			if ($currentFailedCount >= b()->config->getItem('maxInvalidPasswordAttempts'))
+			if ($currentFailedCount >= b()->config->maxInvalidPasswordAttempts)
 			{
 				// time to slow things down a bit.
-				if (b()->config->getItem('failedPasswordMode') === FailedPasswordMode::Cooldown)
+				if (b()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
 				{
 					$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
 					$user->cooldown_start = DateTimeHelper::currentTime();
@@ -234,7 +234,7 @@ class UserIdentity extends \CUserIdentity
 		$result = false;
 
 		// check to see if the failed window start plus the configured failed password window is greater than the current time.
-		$totalWindowTime = $user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(b()->config->getItem('failedPasswordWindow'));
+		$totalWindowTime = $user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(b()->config->failedPasswordWindow);
 		$currentTime = DateTimeHelper::currentTime();
 		if ($currentTime < $totalWindowTime)
 			$result = true;

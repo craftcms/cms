@@ -87,7 +87,7 @@
 
 			<div id="smtpAuth-field" class="item field">
 				<label for="smtpAuth">Use SMTP Authentication?</label>
-				{% include "_includes/lightswitch" name="smtpAuth" on=emailSettings.smtpAuth toggle="#smtp-auth-credentials" %}
+				<div>{% include "_includes/lightswitch" name="smtpAuth" on=emailSettings.smtpAuth toggle="#smtp-auth-credentials" %}</div>
 				{% if emailSettings.errors.smtpAuth %}
 					{% include "_includes/error_list" errors=emailSettings.errors.smtpAuth %}
 				{% endif %}

@@ -24,7 +24,7 @@ class ConfigHelper
 		if (!preg_match('/(\d+)(m|h|d)/', $time, $match))
 		{
 			// maybe it's a config key?
-			$time = b()->config->getItem($time);
+			$time = b()->config->$time;
 			if ($time !== null)
 				return ConfigHelper::getTimeInSeconds($time);
 			else

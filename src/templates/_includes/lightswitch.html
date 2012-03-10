@@ -1,11 +1,11 @@
 {% if !id %}
 	{% set id = name %}
 {% endif %}
-<div id="{id}" class="lightswitch {% if on || (default == 'y' && !request.isPostRequest) %}on{% endif %}" {% if toggle %}data-toggle="{toggle}"{% endif %} tabindex="0">
+{% if toggle %}<div class="nested-toggle-wrapper {% if on %}showing{% endif %}">{% endif %}<div id="{id}" class="lightswitch {% if on %}on{% endif %}" {% if toggle %}data-toggle="{toggle}"{% endif %} tabindex="0">
 	<div class="container">
 		<div class="label on">Yes</div>
 		<div class="label off">No</div>
 		<div class="handle"></div>
 	</div>
-	<input type="hidden" name="{name}" value="{% if on || (default == 'y' && !request.isPostRequest) %}y{% endif %}">
-</div>
+	<input type="hidden" name="{name}" value="{% if on %}y{% endif %}">
+</div>{% if toggle %}</div>{% endif %}
