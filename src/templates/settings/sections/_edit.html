@@ -1,7 +1,7 @@
 {% layout "settings/_layouts/settings" pageTitle="Edit Section" %}
 
-{% if !section && sectionId %}
-	{% set section = content.getSectionById(sectionId) %}
+{% if !section %}
+	{% set section = content.getSection(sectionId) %}
 {% endif %}
 
 {% region "main" %}
@@ -57,14 +57,9 @@
 					<div class="field">
 						<label for="has_urls">Do entries have URLs?</label>
 						<p>Can you access entries in this section directly via unique URLs?</p>
-						{% if section %}
-							{% set has_urls = section.has_urls %}
-						{% else %}
-							{% set has_urls = "y" %}
-						{% endif %}
-						{% include "_includes/lightswitch" name="has_urls" on=has_urls toggle="#has-urls-setting" %}
+						{% include "_includes/lightswitch" name="has_urls" on=section.has_urls toggle="#has-urls-setting" %}
 
-						<div id="has-urls-setting" class="nested" {% if section && !section.has_urls %}style="display: none"{% endif %}>
+						<div id="has-urls-setting" class="nested" {% if !section.has_urls %}style="display: none"{% endif %}>
 							<div class="field">
 								<label for="url_format">Entry URL Format</label>
 								<p>If entries in this section get their own URLs on your website, define the format of their URLs here.</p>
