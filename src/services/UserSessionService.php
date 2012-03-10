@@ -85,7 +85,7 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function afterLogin($fromCookie)
 	{
-		if ($this->isLoggedIn)
+		if ($this->isLoggedIn && !$fromCookie)
 		{
 			b()->users->current->last_login_date = DateTimeHelper::currentTime();
 			b()->users->current->save();
