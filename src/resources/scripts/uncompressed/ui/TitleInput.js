@@ -67,13 +67,13 @@ blx.ui.TitleInput = blx.Base.extend({
 		{
 			if (this.val)
 			{
-				this.$heading.removeClass('untitled');
+				this.$heading.removeClass('empty');
 				this.$heading.text(this.val);
 			}
 			else
 			{
-				this.$heading.addClass('untitled');
-				this.$heading.text(this.settings.untitledText);
+				this.$heading.addClass('empty');
+				this.$heading.text(this.settings.emptyText);
 			}
 			this.settings.onChange();
 		}
@@ -98,7 +98,7 @@ blx.ui.TitleInput = blx.Base.extend({
 		onCreateInput: function(){},
 		onKeydown: function(){},
 		onChange: function(){},
-		untitledText: 'Untitled'
+		emptyText: 'Untitled'
 	}
 });
 

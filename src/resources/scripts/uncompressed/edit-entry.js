@@ -18,7 +18,7 @@ var UrlInput = blx.ui.TitleInput.extend({
 		this.$hiddenInput = this.$container.find('input');
 
 		this.settings = $.extend({}, blx.ui.TitleInput.defaults);
-		this.settings.untitledText = '…';
+		this.settings.emptyText = '…';
 
 		this.val = this.$hiddenInput.val();
 

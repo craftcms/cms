@@ -9,7 +9,7 @@
 {% region "page" %}
 	<div class="item field page-head">
 		<div class="title editable" tabindex="0">
-			<h1 {% if !entry.title %}class="untitled"{% endif %}>{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}</h1>
+			<h1 {% if !entry.title %}class="empty"{% endif %}>{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}</h1>
 			<a>Edit</a>
 			<input type="hidden" name="title" value="{entry.title}" />
 		</div>
@@ -17,7 +17,7 @@
 		{% if entry.section.has_urls %}
 			<div class="url">
 				<div class="editable" tabindex="0">
-					<div><span class="prefix">{sites.currentSite.url}/</span><span class="slug">{% if entry.slug %}{entry.slug}{% else %}…{% endif %}</span></div>
+					<div><span class="prefix">{sites.currentSite.url}/</span><span class="slug {% if !entry.slug %}empty{% endif %}">{% if entry.slug %}{entry.slug}{% else %}…{% endif %}</span></div>
 					<a>Edit</a>
 					<input type="hidden" name="slug" value="{entry.slug}" />
 				</div>

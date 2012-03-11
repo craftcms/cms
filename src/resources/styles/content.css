@@ -9,9 +9,9 @@
 #main .page .page-head .editable { display: inline-block; cursor: pointer; }
 #main .page .page-head .editable a { display: none; float: left; margin-left: 8px; }
 #main .page .page-head .editable:hover a { display: block; text-decoration: none; }
+#main .page .page-head .empty { color: #d5d5d5 !important; }
 
 #main .page .page-head .title h1 { float: left; margin: 0; color: #555; }
-#main .page .page-head .title h1.untitled { color: #d5d5d5; }
 #main .page .page-head .title a { margin-top: 16px; }
 #main .page .page-head .title-input { display: block; margin: -1px 0 3px -1px; border: none; padding: 0; width: 100%; font-size: 36px; font-family: HelveticaNeue, sans-serif; color: #000; background: transparent; outline: none; }
 
