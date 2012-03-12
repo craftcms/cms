@@ -14,6 +14,7 @@ class UrlManager extends \CUrlManager
 	public $routeVar;
 
 	/**
+	 *
 	 */
 	function __construct()
 	{
@@ -21,6 +22,7 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
+	 *
 	 */
 	public function init()
 	{

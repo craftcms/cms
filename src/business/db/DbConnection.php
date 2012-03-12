@@ -18,7 +18,7 @@ class DbConnection extends \CDbConnection
 
 	/**
 	 * Returns the current transaction if it exists, or starts a new one
-	 * @return CDbTransaction The transaction
+	 * @return \CDbTransaction The transaction
 	 */
 	public function beginTransaction()
 	{

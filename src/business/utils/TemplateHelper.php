@@ -76,7 +76,7 @@ class TemplateHelper
 	 * Returns the appropriate tag for a variable
 	 * @param mixed $var The variable
 	 * @param object A tag instance for the variable
-	 * @return \ArrayTag|\BoolTag|mixed|\NumTag|\ObjectTag|string|\StringTag
+	 * @return ArrayTag|BoolTag|mixed|NumTag|ObjectTag|string|StringTag
 	 */
 	public static function getTag($var = '')
 	{
