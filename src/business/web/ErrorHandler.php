@@ -74,7 +74,7 @@ class ErrorHandler extends \CErrorHandler
 
 	/**
 	 * Handles the PHP error.
-	 * @param CErrorEvent $event the PHP error event
+	 * @param \CErrorEvent $event the PHP error event
 	 */
 	protected function handleError($event)
 	{
@@ -247,7 +247,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if(YII_DEBUG)
 		{
-			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition(false).'.</a> v'.Blocks::getVersion(false).'.'.Blocks::getBuild(false);
+			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition(false).'.</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 			if(isset($_SERVER['SERVER_SOFTWARE']))
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
 		}

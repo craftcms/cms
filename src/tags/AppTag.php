@@ -40,12 +40,4 @@ class AppTag extends Tag
 
 		return $version.'.'.$build;
 	}
-
-	/**
-	 * @return ConfigTag
-	 */
-	public function config()
-	{
-		return new ConfigTag;
-	}
 }

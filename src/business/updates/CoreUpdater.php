@@ -11,6 +11,7 @@ class CoreUpdater implements IUpdater
 	private $_blocksUpdateInfo = null;
 
 	/**
+	 *
 	 */
 	function __construct()
 	{
@@ -20,6 +21,7 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
+	 *
 	 */
 	public function checkRequirements()
 	{
