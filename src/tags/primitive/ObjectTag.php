@@ -61,12 +61,4 @@ class ObjectTag extends Tag
 
 		return array();
 	}
-
-	/**
-	 * @return int
-	 */
-	public function length()
-	{
-		return count($this->_obj);
-	}
 }
