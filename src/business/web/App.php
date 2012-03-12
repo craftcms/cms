@@ -19,7 +19,6 @@ class App extends \CWebApplication
 	{
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->processResourceRequest();
-
 		parent::init();
 	}
 
