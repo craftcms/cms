@@ -330,9 +330,11 @@ input.btn.big { padding: 0 12px !important; }
 
 /* button groups */
 .btn-group { display: inline-block; height: 24px; }
-.btn-group .btn { float: left; }
-.btn-group .btn:not(:first-child) { border-left-color: rgba(0,0,0,0.25); border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.btn-group .btn:not(:last-child) { border-right: none; border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.btn-group .btn { float: left; border-radius: 0; }
+.btn-group .btn:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+.btn-group .btn:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+.btn-group .btn:not(:first-child) { border-left-color: rgba(0,0,0,0.25); }
+.btn-group .btn:not(:last-child) { border-right: none; }
 .btn-group .btn:not(:last-child) .arrow { margin-right: 4px; }
 
 /* switch */
