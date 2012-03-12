@@ -7,7 +7,7 @@ namespace Blocks;
 class Blocks extends \Yii
 {
 	private static $_edition = '@@@edition@@@';
-	private static $_version = '0.14';
+	private static $_version = '0.01';
 	private static $_build = '@@@build@@@';
 
 	/**
