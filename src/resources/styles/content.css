@@ -2,20 +2,23 @@
 #main .page .body .item:first-child { border-radius: 5px 5px 0 0; }
 #main .page .body .item:last-child { border-radius: 0 0 5px 5px; }
 
-#main .page .editable { display: inline-block; cursor: pointer; }
-#main .page .editable:hover { padding-right: 18px; background: url(../images/edit-icon.png) no-repeat 100% 50%; }
-#main .page .null { color: #aaa; }
-
 #main .page .field { margin: 0; padding: 20px 80px; }
 
 #main .page .page-head { padding: 60px 80px 20px !important; border-radius: 4px 4px 0 0; }
-#main .page .page-head .title { display: inline-block; cursor: pointer; }
-#main .page .page-head .title h1 { float: left; margin: 0; color: #000; }
-#main .page .page-head .title h1.untitled { color: #d5d5d5; }
-#main .page .page-head .title a { display: none; float: left; margin: 16px 0 0 8px; }
-#main .page .page-head .title:hover a { display: block; text-decoration: none; }
-#main .page .page-head .title-input { display: block; margin: 1px 0 1px 0; padding: 0; border: none; padding: 0; width: 100%; font-size: 36px; font-family: HelveticaNeue, sans-serif; color: #555; background: transparent; outline: none; }
-#main .page .page-head .url { color: #808080; }
+
+#main .page .page-head .editable { display: inline-block; cursor: pointer; }
+#main .page .page-head .editable a { display: none; float: left; margin-left: 8px; }
+#main .page .page-head .editable:hover a { display: block; text-decoration: none; }
+#main .page .page-head .empty { color: #d5d5d5 !important; }
+
+#main .page .page-head .title h1 { float: left; margin: 0; color: #555; }
+#main .page .page-head .title a { margin-top: 16px; }
+#main .page .page-head .title-input { display: block; margin: -1px 0 3px -1px; border: none; padding: 0; width: 100%; font-size: 36px; font-family: HelveticaNeue, sans-serif; color: #000; background: transparent; outline: none; }
+
+#main .page .page-head .url { color: #666; height: 18px; }
+#main .page .page-head .url .editable div { float: left; }
+#main .page .page-head .url .prefix { display: inline-block; }
+#main .page .page-head .url-input { display: inline-block; margin-left: -1px; border: none; padding: 0; font-size: 13px; font-family: HelveticaNeue, sans-serif; color: #000; background: transparent; outline: none; }
 
 #main .page .page-head .draft-btn { display: none; position: relative; margin-left: 10px; border: 1px solid #36b2ff; background: transparent; }
 #main .page .page-head .draft-btn .label { color: #2d98db; }

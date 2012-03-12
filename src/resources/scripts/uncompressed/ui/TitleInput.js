@@ -28,21 +28,26 @@ blx.ui.TitleInput = blx.Base.extend({
 
 		this.$heading = this.$container.find('h1');
 		this.$hiddenInput = this.$container.find('input');
-		this.val = this.$hiddenInput.val();
 
 		this.addListener(this.$container, 'focus,click', 'showInput');
+	},
+
+	createInput: function()
+	{
+		this.$input = $('<input class="title-input" type="text"/>').insertAfter(this.$container);
+		this.$input.attr('name', this.$hiddenInput.attr('name'));
+		this.val = this.$hiddenInput.val();
+		this.$input.val(this.val);
+		this.$hiddenInput.remove();
+		this.addListener(this.$input, 'keydown', 'onKeydown');
+		this.addListener(this.$input, 'blur', 'hideInput');
+		this.settings.onCreateInput();
 	},
 
 	showInput: function()
 	{
 		if (!this.$input)
-		{
-			this.$input = $('<input class="title-input" type="text"/>').insertAfter(this.$container);
-			this.$input.attr('name', this.$hiddenInput.attr('name'));
-			this.$hiddenInput.remove();
-			this.addListener(this.$input, 'keydown', 'onKeydown');
-			this.addListener(this.$input, 'blur', 'hideInput');
-		}
+			this.createInput();
 
 		this.$input.show();
 		this.$container.hide();
@@ -62,17 +67,16 @@ blx.ui.TitleInput = blx.Base.extend({
 		{
 			if (this.val)
 			{
-				this.$heading.removeClass('untitled');
+				this.$heading.removeClass('empty');
 				this.$heading.text(this.val);
 			}
 			else
 			{
-				this.$heading.addClass('untitled');
-				this.$heading.text('Untitled');
+				this.$heading.addClass('empty');
+				this.$heading.text(this.settings.emptyText);
 			}
 			this.settings.onChange();
 		}
-		
 	},
 
 	onKeydown: function(event)
@@ -91,8 +95,10 @@ blx.ui.TitleInput = blx.Base.extend({
 
 }, {
 	defaults: {
+		onCreateInput: function(){},
 		onKeydown: function(){},
-		onChange: function(){}
+		onChange: function(){},
+		emptyText: 'Untitled'
 	}
 });
 

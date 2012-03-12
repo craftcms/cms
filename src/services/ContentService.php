@@ -169,28 +169,7 @@ class ContentService extends BaseComponent
 		$entry->section_id = $sectionId;
 		$entry->author_id = $authorId;
 		$entry->parent_id = $parentId;
-
-		//TODO: There is a race condition here between the time we execute the query to get the next num and the time we save.
-		// Need a fallback or a workaround.  Try catch doesn't work because save calls validate which catches the error and silently swallows it.
-		// {
-			// Find a unique slug
-			$slug = 'untitled';
-
-			$result = b()->db->createCommand()
-				->select('MAX(SUBSTR(slug, LENGTH(\''.$slug.'-\') + 1)) as NextNum')
-				->from('entries')
-				->where('section_id=:sectionId', array(':sectionId' => $sectionId))
-				->queryAll();
-
-			if ($result[0]['NextNum'] == null)
-				$nextNum = 1;
-			else
-				$nextNum = $result[0]['NextNum'] + 1;
-
-			$entry->slug = $slug.'-'.$nextNum;
-			$entry->save();
-		// }
-
+		$entry->save();
 		return $entry;
 	}
 
