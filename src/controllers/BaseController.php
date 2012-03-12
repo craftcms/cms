@@ -77,17 +77,19 @@ abstract class BaseController extends \CController
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $tags = array(), $return = false)
+	public function loadTemplate($templatePath, $vars = array(), $return = false)
 	{
 		$templatePath = TemplateHelper::resolveTemplatePath($templatePath);
 		if ($templatePath !== false)
 		{
-			if (!is_array($tags))
-				$tags = array();
+			$tags = array();
 
-			foreach ($tags as &$tag)
+			if (is_array($vars))
 			{
-				$tag = TemplateHelper::getVarTag($tag);
+				foreach ($vars as $name => $var)
+				{
+					$tags[$name] = new Tag($var);
+				}
 			}
 
 			return $this->renderPartial($templatePath, $tags, $return);

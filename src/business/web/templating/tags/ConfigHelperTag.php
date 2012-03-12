@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ConfigHelperTag extends Tag
+class ConfigHelperTag
 {
 	/**
 	 * @param $time

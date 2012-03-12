@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UrlTag extends Tag
+class UrlTag
 {
 	/**
 	 * The base URL for the site.

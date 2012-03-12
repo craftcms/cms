@@ -43,6 +43,9 @@ class App extends \CWebApplication
 			'business.web.*',
 			'business.web.filters.*',
 			'business.web.templatewidgets.*',
+			'business.web.templating.Tag',
+			'business.web.templating.tags.*',
+			'business.web.templating.variables.*',
 			'business.webservices.*',
 			'commands.*',
 			'controllers.*',
@@ -50,13 +53,6 @@ class App extends \CWebApplication
 			'models.*',
 			'models.forms.*',
 			'services.*',
-			'tags.*',
-			'tags.assets.*',
-			'tags.content.*',
-			'tags.cp.*',
-			'tags.primitive.*',
-			'tags.security.*',
-			'tags.users.*',
 			'widgets.*',
 		);
 

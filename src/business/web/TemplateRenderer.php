@@ -380,8 +380,8 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 					$subvar = '$'.$match[3];
 
 					return "<?php foreach ({$match[1]}->__toArray() as {$index} => {$subvar}):" . PHP_EOL .
-						"{$index} = TemplateHelper::getVarTag({$index});" . PHP_EOL .
-						"{$subvar} = TemplateHelper::getVarTag({$subvar}); ?>";
+						"{$index} = TemplateHelper::getTag({$index});" . PHP_EOL .
+						"{$subvar} = TemplateHelper::getTag({$subvar}); ?>";
 				}
 				return '';
 
@@ -411,7 +411,7 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 				if (preg_match('/^([A-Za-z]\w*)\s*=\s*(.*)$/m', $params, $match))
 				{
 					$this->parseVariables($match[2]);
-					return "<?php \${$match[1]} = TemplateHelper::getVarTag({$match[2]}); ?>";
+					return "<?php \${$match[1]} = TemplateHelper::getTag({$match[2]}); ?>";
 				}
 				return '';
 
@@ -528,12 +528,12 @@ class TemplateRenderer extends BaseComponent implements \IViewRenderer
 
 			while (preg_match('/^'.self::subtagPattern.'/x', $substr, $subtagMatch))
 			{
-				$parsedTag .= '->_subtag(\''.$subtagMatch['func'].'\'';
+				$parsedTag .= '->'.$subtagMatch['func'].'(';
 
 				if (isset($subtagMatch['params']))
 				{
 					$this->parseVariables($subtagMatch['params'], true);
-					$parsedTag .= ', array('.$subtagMatch['params'].')';
+					$parsedTag .= $subtagMatch['params'];
 				}
 
 				$parsedTag .= ')';

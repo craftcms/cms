@@ -4,33 +4,14 @@ namespace Blocks;
 /**
  *
  */
-class StringTag extends Tag
+class StringTag extends VarTag
 {
-	protected $_val;
-
-	/**
-	 * @access protected
-	 * @param string $val
-	 */
-	protected function init($val = '')
-	{
-		$this->_val = (string)$val;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function __toString()
-	{
-		return (string)$this->_val;
-	}
-
 	/**
 	 * @return int
 	 */
 	public function length()
 	{
-		return strlen($this->_val);
+		return strlen($this->_var);
 	}
 
 	/**
@@ -38,7 +19,7 @@ class StringTag extends Tag
 	 */
 	public function uppercase()
 	{
-		return strtoupper($this->_val);
+		return strtoupper($this->_var);
 	}
 
 	/**
@@ -46,7 +27,7 @@ class StringTag extends Tag
 	 */
 	public function lowercase()
 	{
-		return strtolower($this->_val);
+		return strtolower($this->_var);
 	}
 
 	/**
@@ -54,7 +35,7 @@ class StringTag extends Tag
 	 */
 	public function encode()
 	{
-		return HtmlHelper::encode($this->_val);
+		return HtmlHelper::encode($this->_var);
 	}
 
 	/**
@@ -62,7 +43,7 @@ class StringTag extends Tag
 	 */
 	public function decode()
 	{
-		return HtmlHelper::decode($this->_val);
+		return HtmlHelper::decode($this->_var);
 	}
 
 	/**
@@ -70,9 +51,9 @@ class StringTag extends Tag
 	 */
 	public function chars()
 	{
-		if (strlen($this->_val))
+		if (strlen($this->_var))
 		{
-			return str_split($this->_val);
+			return str_split($this->_var);
 		}
 
 		return array();
@@ -83,7 +64,7 @@ class StringTag extends Tag
 	 */
 	public function wordNumbers()
 	{
-		return preg_replace_callback('/(^|\s)(\d+)($|\s)/', array(&$this, 'replaceNumberWithWord'), $this->_val);
+		return preg_replace_callback('/(^|\s)(\d+)($|\s)/', array(&$this, 'replaceNumberWithWord'), $this->_var);
 	}
 
 	/**
@@ -103,7 +84,7 @@ class StringTag extends Tag
 	 */
 	public function split($delimiter = ',')
 	{
-		return array_map('trim', explode($delimiter, $this->_val));
+		return array_map('trim', explode($delimiter, $this->_var));
 	}
 
 }

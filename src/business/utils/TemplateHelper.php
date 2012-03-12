@@ -48,12 +48,16 @@ class TemplateHelper
 	public static function getGlobalTag($handle)
 	{
 		if (in_array($handle, self::$services))
-			return new ObjectTag(b()->$handle);
-
-		if (isset(self::$globalTags[$handle]))
-			return new self::$globalTags[$handle];
-
-		return new Tag;
+		{
+			return new Tag(b()->$handle);
+		}
+		else if (isset(self::$globalTags[$handle]))
+		{
+			$obj = new self::$globalTags[$handle];
+			return new Tag($obj);
+		}
+		else
+			return new Tag;
 	}
 
 	/**
@@ -63,7 +67,9 @@ class TemplateHelper
 	 */
 	public static function isTag($var)
 	{
-		return (is_object($var) && isset($var->__tag__));
+		$isTag = (is_object($var) && get_class($var) == 'Blocks\Tag');
+		if ($isTag) die(get_class($var));
+		return $isTag;
 	}
 
 	/**
@@ -72,46 +78,13 @@ class TemplateHelper
 	 * @param object A tag instance for the variable
 	 * @return \ArrayTag|\BoolTag|mixed|\NumTag|\ObjectTag|string|\StringTag
 	 */
-	public static function getVarTag($var = '')
+	public static function getTag($var = '')
 	{
-		// if $var is a tag, just return it
+		// If $var is already a tag, just return it
 		if (self::isTag($var))
 			return $var;
-
-		// is it a number?
-		if (is_numeric($var))
-			return new NumTag($var);
-
-		// is it an array?
-		if (is_array($var))
-			return new ArrayTag($var);
-
-		// is it a bool?
-		if (is_bool($var))
-			return new BoolTag($var);
-
-		// is it an object?
-		if (is_object($var))
-		{
-			return new ObjectTag($var);
-		}
-
-		// default to a string
-		return new StringTag($var);
-	}
-
-	/**
-	 * Combines and serializes the subtag name and arguments into a unique key
-	 * @param string $tag The subtag name
-	 * @param array $args The arguments passed to the subtag
-	 * @return string The subtag's cache key
-	 */
-	public static function generateTagCacheKey($tag, $args)
-	{
-		$cacheKey = $tag;
-		if ($args) $cacheKey .= '('.serialize($args).')';
-
-		return $cacheKey;
+		else
+			return new Tag($var);
 	}
 
 	/**
