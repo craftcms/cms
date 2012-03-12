@@ -9,8 +9,10 @@ class PlainTextBlock extends Block
 	public $blocktypeName = 'Plain Text';
 
 	protected $defaultSettings = array(
-		'multiline' => true,
-		'maxLength' => null
+		'multiline'     => true,
+		'hint'          => 'Enter text…',
+		'maxLength'     => null,
+		'maxLengthUnit' => 'words'
 	);
 
 	protected $settingsTemplate = '_blocktypes/PlainText/settings';

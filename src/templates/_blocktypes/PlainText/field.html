@@ -1,7 +1,5 @@
-<div class="input-wrapper">
-	{% if block.settings.multiline %}
-		<textarea id="{block.handle}-block" name="{block.handle}" rows="10">{block.data}</textarea>
-	{% else %}
-		<input id="{block.handle}-block" name="{block.handle}" type="text" value="{block.content}" />
-	{% endif %}
-</div>
+{% if block.settings.multiline %}
+	<textarea id="{block.handle}-block" name="{block.handle}" class="nicetext" data-hint="{block.settings.hint}" rows="4">{block.data}</textarea>
+{% else %}
+	<input id="{block.handle}-block" name="{block.handle}" class="nicetext" data-hint="{block.settings.hint}" type="text" value="{block.content}" />
+{% endif %}
