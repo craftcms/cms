@@ -132,7 +132,9 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		var $blockItem = $('<li class="block-item sel" data-block-id="'+id+'">'
 		                 +   '<div class="block">'
 		                 +     '<span class="icon icon137"></span>'
-		                 +     '<span class="block-name">'+name+'</span> <span class="block-type">'+type+'</span>'
+		                 +     '<span class="block-name">'+name+'</span> '
+		                 +     '<span class="block-type">'+type+'</span> '
+		                 +     '<a class="goto" href="'+baseUrl+'settings/blocks/edit/'+id+'" title="Go to block" target="_blank"></a>'
 		                 +   '</div>'
 		                 + '</li>');
 

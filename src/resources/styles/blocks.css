@@ -44,6 +44,8 @@ a:hover { text-decoration: underline; }
 a.sel:hover { text-decoration: none; }
 
 a.go { padding-right: 10px; background: url(../images/go.png) no-repeat 100% 50%; }
+a.goto { display: inline-block; vertical-align: middle; width: 12px; height: 12px; background: url(../images/goto.png) no-repeat; opacity: 0.5; }
+a.goto:hover { opacity: 1; }
 
 code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 .code { font-family: Menlo, monospace; font-size: 12px !important; }
@@ -476,6 +478,7 @@ li.block-item .icon { margin: -3px 0; }
 li.block-item .block { display: inline-block; padding: 3px 8px 3px 4px; border-radius: 12px; cursor: default; }
 li.block-item .block .block-name { font-weight: bold; font-family: sans-serif; }
 li.block-item .block .block-type { margin-left: 1px; font-size: 11px; line-height: 14px; color: #999; }
+li.block-item .block .goto { margin-bottom: 2px; }
 
 li.block-item .block:hover { background: #ececec; }
 
