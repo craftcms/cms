@@ -6,32 +6,21 @@ namespace Blocks;
  */
 class EmailTemplateRenderer extends TemplateRenderer
 {
-	public $fileExtension = '.html';
-
 	/**
-	 * Sets the path to the parsed template
+	 * Returns the template path, relative to the template root directory
 	 * @access protected
 	 */
-	protected function setParsedTemplatePath()
+	protected function getRelativePath()
 	{
-		// get the relative template path
-		$relTemplatePath = substr($this->_sourceTemplatePath, strlen(b()->path->emailTemplatePath));
-
-		// set the parsed template path
-		$this->_parsedTemplatePath = b()->path->emailTemplateCachePath.$relTemplatePath;
-
-		// set the meta path
-		$this->_destinationMetaPath = $this->_parsedTemplatePath.'.meta';
-
-		// if the template doesn't already end with '.php', append it to the parsed template path
-		if (strtolower(substr($relTemplatePath, -4)) != '.php')
-		{
-			$this->_parsedTemplatePath .= '.php';
-		}
-
-		if(!is_file($this->_parsedTemplatePath))
-			@mkdir(dirname($this->_parsedTemplatePath), self::$_filePermission, true);
+		return substr($this->_sourceTemplatePath, strlen(b()->path->emailTemplatePath));	
 	}
 
-
+	/**
+	 * Returns the full path to the duplicate template in the parsed_templates directory
+	 * @access protected
+	 */
+	protected function getDuplicatePath()
+	{
+		return b()->path->emailTemplateCachePath.$relTemplatePath;
+	}
 }
