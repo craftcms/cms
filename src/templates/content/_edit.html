@@ -1,48 +1,48 @@
-{% layout "content/_layouts/content" %}
+{layout "content/_layouts/content"}
 
-{% if !entry %}
-	{% set entry = content.getEntry(entryId) %}
-{% endif %}
+{if !entry}
+	{set entry = content.getEntry(entryId)}
+{/if}
 
-{% region "pageTitle" %}Editing “{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}”{% endregion %}
+{region "pageTitle"}Editing “{if entry.title}{:entry.title}{else}Untitled{/if}”{/region}
 
-{% region "page" %}
+{region "page"}
 	<div class="item field page-head">
 		<div class="title editable" tabindex="0">
-			<h1 {% if !entry.title %}class="empty"{% endif %}>{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}</h1>
+			<h1 {if !entry.title}class="empty"{/if}>{if entry.title}{:entry.title}{else}Untitled{/if}</h1>
 			<a>Edit</a>
-			<input type="hidden" name="title" value="{entry.title}" />
+			<input type="hidden" name="title" value="{:entry.title}" />
 		</div>
 		<div class="clear"></div>
-		{% if entry.section.has_urls %}
+		{if entry.section.has_urls}
 			<div class="url">
 				<div class="editable" tabindex="0">
-					<div><span class="prefix">{sites.currentSite.url}/</span><span class="slug {% if !entry.slug %}empty{% endif %}">{% if entry.slug %}{entry.slug}{% else %}…{% endif %}</span></div>
+					<div><span class="prefix">{:sites.currentSite.url}/</span><span class="slug {if !entry.slug}empty{/if}">{if entry.slug}{:entry.slug}{else}…{/if}</span></div>
 					<a>Edit</a>
-					<input type="hidden" name="slug" value="{entry.slug}" />
+					<input type="hidden" name="slug" value="{:entry.slug}" />
 				</div>
 				<div class="clear"></div>
 			</div>
-		{% endif %}
+		{/if}
 	</div>
 
-	{% foreach entry.blocks as block %}
+	{foreach entry.blocks as block}
 		<div class="item field">
-			<label for="{block.handle}-block" {% if block.required %}class="required"{% endif %}>{block.name}</label>
-			{% if block.instructions %}
-				<p>{block.instructions}</p>
-			{% endif %}
-			<div class="{block.classHandle}">
-				{block.displayField}
+			<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
+			{if block.instructions}
+				<p>{:block.instructions}</p>
+			{/if}
+			<div class="{:block.classHandle}">
+				{:block.displayField}
 			</div>
 		</div>
-	{% endforeach %}
+	{/foreach}
 
 	<div class="item field page-foot">
 		<input class="btn big submit" type="submit" value="Publish" />
 	</div>
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
-	{% include "_includes/js_include" file="edit-entry.js" %}
-{% endregion %}
+{region "scripts"}
+	{include "_includes/js_include" file="edit-entry.js"}
+{/region}

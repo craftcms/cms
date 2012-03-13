@@ -1,5 +1,5 @@
-{% if config.useCompressedJs %}
-	<script type="text/javascript" src="{url.resource}scripts/compressed/{file}"></script>
-{% else %}
-	<script type="text/javascript" src="{url.resource}scripts/uncompressed/{file}"></script>
-{% endif %}
+{if config.useCompressedJs}
+	<script type="text/javascript" src="{:url.resource}scripts/compressed/{:file}"></script>
+{else}
+	<script type="text/javascript" src="{:url.resource}scripts/uncompressed/{:file}"></script>
+{/if}

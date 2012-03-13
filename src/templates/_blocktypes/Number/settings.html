@@ -1,12 +1,12 @@
 <div class="item field">
 	<label for="type">Number Type</label>
-	{% include "_includes/pill" name="type" options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type %}
+	{include "_includes/pill" name="type" options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
 </div>
 <div class="item field">
 	<label for="min">Min Value</label>
-	<input id="min" name="min" class="input" type="number" value="{settings.min}" size="5">
+	<input id="min" name="min" class="input" type="number" value="{:settings.min}" size="5">
 </div>
 <div class="item field">
 	<label for="max">Max Value</label>
-	<input id="max" name="max" class="input" type="number" value="{settings.max}" size="5">
+	<input id="max" name="max" class="input" type="number" value="{:settings.max}" size="5">
 </div>

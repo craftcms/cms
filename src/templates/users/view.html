@@ -1,72 +1,72 @@
-{% layout "users/_layouts/users" %}
-{% set theUser = users.getById(userId) %}
+{layout "users/_layouts/users"}
+{set theUser = users.getById(userId)}
 
-{% region "main" %}
+{region "main"}
 	<div class="toolbar">
-		{% include "_includes/back_btn" label="Users" uri="users" %}
+		{include "_includes/back_btn" label="Users" uri="users"}
 	</div>
 
-	{% if !theUser.id %}
+	{if !theUser.id}
 		Could not find user.
-	{% else %}
+	{else}
 		<div class="pane">
 			<div class="head">
-				<h5>View User {% if theUser.user_name %}“{theUser.user_name}”{% endif %}</h5>
+				<h5>View User {if theUser.user_name}“{:theUser.user_name}”{/if}</h5>
 			</div>
 			<div class="body">
 				<div class="item">
-					Username: {theUser.username}
+					Username: {:theUser.username}
 				</div>
 				<div class="item">
-					First Name: {theUser.first_name}
+					First Name: {:theUser.first_name}
 				</div>
 				<div class="item">
-					Last Name: {theUser.last_name}
+					Last Name: {:theUser.last_name}
 				</div>
 				<div class="item">
-					Email: {theUser.email}
+					Email: {:theUser.email}
 				</div>
 				<div class="item">
-					Admin: {theUser.admin}
+					Admin: {:theUser.admin}
 				</div>
 				<div class="item">
-					Html Emails: {theUser.html_email}
+					Html Emails: {:theUser.html_email}
 				</div>
 				<div class="item">
-					Status: {theUser.status}
-					{% if config.failedPasswordMode == 'cooldown' %}
-						{% if theUser.cooldown_start %}
+					Status: {:theUser.status}
+					{if config.failedPasswordMode == 'cooldown'}
+						{if theUser.cooldown_start}
 							<br />
-							{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime) %}
+							{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime)}
 							Temporarily locked.  User will be auto-unlocked
-							{% if timeRemaining > 0 %}
-								in {timeRemaining}
-							{% else %}
+							{if timeRemaining > 0}
+								in {:timeRemaining}
+							{else}
 								the next time they log in.
-							{% endif %}
-						{% endif %}
-					{% endif %}
+							{/if}
+						{/if}
+					{/if}
 				</div>
 				<div class="item">
-					Password Reset Required: {theUser.password_reset_required}
+					Password Reset Required: {:theUser.password_reset_required}
 				</div>
 				<div class="item">
-					Last Login Date: {% if theUser.last_login_date %}{dateTimeHelper.nice(theUser.last_login_date)}{% else %}Never{% endif %}
+					Last Login Date: {if theUser.last_login_date}{:dateTimeHelper.nice(theUser.last_login_date)}{else}Never{/if}
 				</div>
 				<div class="item">
-					Last Failed Login Date: {% if theUser.last_login_failed_date %}{dateTimeHelper.nice(theUser.last_login_failed_date)}{% else %}Never{% endif %}
+					Last Failed Login Date: {if theUser.last_login_failed_date}{:dateTimeHelper.nice(theUser.last_login_failed_date)}{else}Never{/if}
 				</div>
 				<div class="item">
-					Last Password Changed Date: {% if theUser.last_password_changed_date %}{dateTimeHelper.nice(theUser.last_password_changed_date)}{% else %}Never{% endif %}
+					Last Password Changed Date: {if theUser.last_password_changed_date}{:dateTimeHelper.nice(theUser.last_password_changed_date)}{else}Never{/if}
 				</div>
 				<div class="item">
-					Last Lockout Date: {% if theUser.last_lockout_date %}{dateTimeHelper.nice(theUser.last_lockout_date)}{% else %}Never{% endif %}
+					Last Lockout Date: {if theUser.last_lockout_date}{:dateTimeHelper.nice(theUser.last_lockout_date)}{else}Never{/if}
 				</div>
 				<div class="item">
-					Failed Password Attempt Count: {% if theUser.failed_password_attempt_count %}{theUser.failed_password_attempt_count}{% else %}0{% endif %}
+					Failed Password Attempt Count: {if theUser.failed_password_attempt_count}{:theUser.failed_password_attempt_count}{else}0{/if}
 				</div>
 			</div>
 		</div>
-	{% endif %}
+	{/if}
 
-{% endregion %}
+{/region}

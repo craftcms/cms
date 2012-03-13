@@ -1,11 +1,11 @@
 <div class="toolbar page-toolbar">
 	<div class="center">
 		<div class="status">
-			{% if !url.get('published') %}
+			{if !url.get('published')}
 				<span class="status draft"></span>Never published
-			{% else %}
+			{else}
 				<span class="status on"></span>Live
-			{% endif %}
+			{/if}
 		</div>
 	</div>
 

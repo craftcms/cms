@@ -301,7 +301,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	 */
 	protected function parseActions()
 	{
-		$this->_template = preg_replace_callback('/\{\%\s*(\/?\w+)(\s+(.+))?\s*\%\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/\{(\/?\w+)(\s+(.+)\s*)?\}/Um', array(&$this, 'parseActionMatch'), $this->_template);
 	}
 
 	/**
@@ -430,7 +430,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	protected function parseVariableTags()
 	{
 		// find any {{variable-tags}} on the page
-		$this->_template = preg_replace_callback('/(?<!\\\)\{[\t ]*(.+)[\t ]*(?<!\\\)\}/U', array(&$this, 'parseVariableTagMatch'), $this->_template);
+		$this->_template = preg_replace_callback('/(?<!\\\)\{:\s*(.+)\s*(?<!\\\)\}/Um', array(&$this, 'parseVariableTagMatch'), $this->_template);
 	}
 
 	/**

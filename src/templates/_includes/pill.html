@@ -1,20 +1,20 @@
-{% if !id %}
-	{% set id = name %}
-{% endif %}
-<div id="{id}" class="pill">
+{if !id}
+	{set id = name}
+{/if}
+<div id="{:id}" class="pill">
 	<div class="btn-group" tabindex="0">
-		{% foreach options.split as option %}
-			{% set option = option.split(':') %}
-			<div class="btn {% if (value && option.get(0) == value) || (!value && option.get(0) == default) %}sel{% endif %}" data-value="{option.get(0)}">
+		{foreach options.split as option}
+			{set option = option.split(':')}
+			<div class="btn {if (value && option.get(0) == value) || (!value && option.get(0) == default)}sel{/if}" data-value="{:option.get(0)}">
 				<span class="label">
-					{% if option.get(1) %}
-						{option.get(1)}
-					{% else %}
-						{option.get(0)}
-					{% endif %}
+					{if option.get(1)}
+						{:option.get(1)}
+					{else}
+						{:option.get(0)}
+					{/if}
 				</span>
 			</div>
-		{% endforeach %}
+		{/foreach}
 	</div>
-	<input type="hidden" name="{name}" value="{value}" />
+	<input type="hidden" name="{:name}" value="{:value}" />
 </div>

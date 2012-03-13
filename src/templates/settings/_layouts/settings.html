@@ -1,36 +1,36 @@
-{% layout "_layouts/sidebar" bodyClass=url.segment(2) scripts=scripts main=main %}
-{% region "pageTitle" %}Settings{% if pageTitle %} – {pageTitle}{% endif %}{% endregion %}
+{layout "_layouts/sidebar" bodyClass=url.segment(2) scripts=scripts main=main}
+{region "pageTitle"}Settings{if pageTitle} – {:pageTitle}{/if}{/region}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/settings.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/settings.css"}
+{/region}
 
-{% region "sidebar" %}
+{region "sidebar"}
 	<h5>System Settings</h5>
 	<ul class="nav">
-		<li><a id="sb-updates" class="has-badge {% if url.segment(2) == 'updates' %}sel{% endif %}" href="{url.base}settings/updates"><span class="icon icon15"></span>Updates{% if updates.isUpdateInfoCached && updates.updates.length %}<span class="badge {% if updates.isCriticalUpdateAvailable %}alert{% endif %}">{updates.updates.length}</span>{% endif %}</a></li>
-		<li><a {% if url.segment(2) == 'sites' %}class="sel"{% endif %} href="{url.base}settings/sites"><span class="icon icon100"></span>Sites</a></li>
+		<li><a id="sb-updates" class="has-badge {if url.segment(2) == 'updates'}sel{/if}" href="{:url.base}settings/updates"><span class="icon icon15"></span>Updates{if updates.isUpdateInfoCached && updates.updates.length}<span class="badge {if updates.isCriticalUpdateAvailable}alert{/if}">{:updates.updates.length}</span>{/if}</a></li>
+		<li><a {if url.segment(2) == 'sites'}class="sel"{/if} href="{:url.base}settings/sites"><span class="icon icon100"></span>Sites</a></li>
 {!--
-		<li><a {% if url.segment(2) == 'user_groups' %}class="sel"{% endif %} href=""><span class="icon icon244"></span>User Groups</a></li>
+		<li><a {if url.segment(2) == 'user_groups'}class="sel"{/if} href=""><span class="icon icon244"></span>User Groups</a></li>
 --}
-		<li><a id="sb-email" {% if url.segment(2) == 'email' %}class="sel"{% endif %} href="{url.base}settings/email"><span class="icon icon76"></span>Email</a></li>
+		<li><a id="sb-email" {if url.segment(2) == 'email'}class="sel"{/if} href="{:url.base}settings/email"><span class="icon icon76"></span>Email</a></li>
 	</ul>
 
 	<h5>Site Settings</h5>
 	<ul class="nav">
-		<li><a {% if url.segment(2) == 'blocks' %}class="sel"{% endif %} href="{url.base}settings/blocks"><span class="icon icon137"></span>Content Blocks</a></li>
-		<li><a {% if url.segment(2) == 'sections' %}class="sel"{% endif %} href="{url.base}settings/sections"><span class="icon icon111"></span>Content Sections</a></li>
+		<li><a {if url.segment(2) == 'blocks'}class="sel"{/if} href="{:url.base}settings/blocks"><span class="icon icon137"></span>Content Blocks</a></li>
+		<li><a {if url.segment(2) == 'sections'}class="sel"{/if} href="{:url.base}settings/sections"><span class="icon icon111"></span>Content Sections</a></li>
 {!--
-		<li><a {% if url.segment(2) == 'workflows' %}class="sel"{% endif %} href=""><span class="icon icon61"></span>Publishing Workflows</a></li>
-		<li><a {% if url.segment(2) == 'folders' %}class="sel"{% endif %} href=""><span class="icon icon133"></span>Asset Folders</a></li>
+		<li><a {if url.segment(2) == 'workflows'}class="sel"{/if} href=""><span class="icon icon61"></span>Publishing Workflows</a></li>
+		<li><a {if url.segment(2) == 'folders'}class="sel"{/if} href=""><span class="icon icon133"></span>Asset Folders</a></li>
 --}
-		<li><a {% if url.segment(2) == 'routing' %}class="sel"{% endif %} href="{url.base}settings/routing"><span class="icon icon14"></span>URL Routing</a></li>
+		<li><a {if url.segment(2) == 'routing'}class="sel"{/if} href="{:url.base}settings/routing"><span class="icon icon14"></span>URL Routing</a></li>
 	</ul>
 
 	<h5>Plugin Settings</h5>
 	<ul class="nav">
-		{% foreach plugins as plugin %}
-			<li><a class="has-status" href=""><span class="status {% if plugin.enabled %}on{% elseif plugin.installed %}off{% endif %}"></span><span class="icon icon287"></span>{plugin.name}</a></li>
-		{% endforeach %}
+		{foreach plugins as plugin}
+			<li><a class="has-status" href=""><span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span><span class="icon icon287"></span>{:plugin.name}</a></li>
+		{/foreach}
 	</ul>
-{% endregion %}
+{/region}

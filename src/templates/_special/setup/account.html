@@ -1,69 +1,69 @@
-{% layout "_special/setup/_layouts/setup" step="Account" %}
+{layout "_special/setup/_layouts/setup" step="Account"}
 
-{% region "stepContents" %}
+{region "stepContents"}
 
 	<h2>Create your account</h2>
 
-	{% if user.id %}
-		<input type="hidden" name="user_id" value="{user.id}" />
-	{% endif %}
+	{if user.id}
+		<input type="hidden" name="user_id" value="{:user.id}" />
+	{/if}
 
 	<div class="grid grid-2col">
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="first_name">First Name</label>
-				<div class="input-wrapper"><input id="first_name" name="first_name" {% if user.errors.first_name %}class="error"{% endif %} type="text" maxlength="100%" value="{user.first_name}" /></div>
-				{% if user.errors.first_name %}
-					{% include "_includes/error_list" errors=user.errors.first_name %}
-				{% endif %}
+				<div class="input-wrapper"><input id="first_name" name="first_name" {if user.errors.first_name}class="error"{/if} type="text" maxlength="100%" value="{:user.first_name}" /></div>
+				{if user.errors.first_name}
+					{include "_includes/error_list" errors=user.errors.first_name}
+				{/if}
 			</div>
 		</div></div>
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="last_name">Last Name</label>
-				<div class="input-wrapper"><input id="last_name" name="last_name" {% if user.errors.last_name %}class="error"{% endif %} type="text" maxlength="100" value="{user.last_name}" /></div>
-				{% if user.errors.last_name %}
-					{% include "_includes/error_list" errors=user.errors.last_name %}
-				{% endif %}
+				<div class="input-wrapper"><input id="last_name" name="last_name" {if user.errors.last_name}class="error"{/if} type="text" maxlength="100" value="{:user.last_name}" /></div>
+				{if user.errors.last_name}
+					{include "_includes/error_list" errors=user.errors.last_name}
+				{/if}
 			</div>
 		</div></div>
 	</div>
 
 	<div class="field">
 		<label for="username">Username</label>
-		<div class="input-wrapper"><input id="username" name="username" {% if user.errors.username %}class="error"{% endif %} type="text" maxlength="255" value="{user.username}"></div>
-		{% if user.errors.username %}
-			{% include "_includes/error_list" errors=user.errors.username %}
-		{% endif %}
+		<div class="input-wrapper"><input id="username" name="username" {if user.errors.username}class="error"{/if} type="text" maxlength="255" value="{:user.username}"></div>
+		{if user.errors.username}
+			{include "_includes/error_list" errors=user.errors.username}
+		{/if}
 	</div>
 
 	<div class="field">
 		<label for="email">Email</label>
-		<div class="input-wrapper"><input id="email" name="email" {% if user.errors.email %}class="error"{% endif %} type="text" maxlength="255" value="{user.email}"></div>
-		{% if user.errors.email %}
-			{% include "_includes/error_list" errors=user.errors.email %}
-		{% endif %}
+		<div class="input-wrapper"><input id="email" name="email" {if user.errors.email}class="error"{/if} type="text" maxlength="255" value="{:user.email}"></div>
+		{if user.errors.email}
+			{include "_includes/error_list" errors=user.errors.email}
+		{/if}
 	</div>
 
 	<div class="grid grid-2col">
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="password">Password</label>
-				<div class="input-wrapper"><input id="password" name="password" {% if passwordInfo.errors.password %}class="error"{% endif %} type="password" /></div>
-				{% if passwordInfo.errors.password %}
-					{% include "_includes/error_list" errors=passwordInfo.errors.password %}
-				{% endif %}
+				<div class="input-wrapper"><input id="password" name="password" {if passwordInfo.errors.password}class="error"{/if} type="password" /></div>
+				{if passwordInfo.errors.password}
+					{include "_includes/error_list" errors=passwordInfo.errors.password}
+				{/if}
 			</div>
 		</div></div>
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="password_confirm">Password (again)</label>
-				<div class="input-wrapper"><input id="password_confirm" name="password_confirm" type="password" {% if passwordInfo.errors.confirmPassword %}class="error"{% endif %} type="password" /></div>
-				{% if passwordInfo.errors.confirmPassword %}
-					{% include "_includes/error_list" errors=passwordInfo.errors.confirmPassword %}
-				{% endif %}
+				<div class="input-wrapper"><input id="password_confirm" name="password_confirm" type="password" {if passwordInfo.errors.confirmPassword}class="error"{/if} type="password" /></div>
+				{if passwordInfo.errors.confirmPassword}
+					{include "_includes/error_list" errors=passwordInfo.errors.confirmPassword}
+				{/if}
 			</div>
 		</div></div>
 	</div>
 
-{% endregion %}
+{/region}

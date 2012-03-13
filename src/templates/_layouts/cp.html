@@ -1,38 +1,38 @@
-{% layout "_layouts/basic" pageTitle=pageTitle styles=styles scripts=scripts bodyClass=bodyClass %}
+{layout "_layouts/basic" pageTitle=pageTitle styles=styles scripts=scripts bodyClass=bodyClass}
 
-{% region "body" %}
+{region "body"}
 	<div id="header">
 		<div id="nav">
-			{% if url.segment(1) != 'setup' %}
+			{if url.segment(1) != 'setup'}
 				<ul id="nav-sections">
-					{% foreach cp.sections as section %}<li id="nav-{section.handle}">
-						<a {% if url.segment(1)==section.handle %}class="sel"{% endif %} href="{url.base}{section.handle}"><div class="icon"></div>{section.name}</a>
-					</li>{% endforeach %}
+					{foreach cp.sections as section}<li id="nav-{:section.handle}">
+						<a {if url.segment(1)==section.handle}class="sel"{/if} href="{:url.base}{:section.handle}"><div class="icon"></div>{:section.name}</a>
+					</li>{/foreach}
 				</ul>
 				<div id="nav-sites">
-					<a id="nav-site"><div class="icon"></div>{sites.currentSite.name}</a>
+					<a id="nav-site"><div class="icon"></div>{:sites.currentSite.name}</a>
 				</div>
 				<div id="nav-session">
-					<a id="nav-account" {% if url.segment(1)=='account' %}class="sel"{% endif %} href="{url.base}account"><div class="icon"></div>{users.current.username}</a>
-					<a id="nav-logout" href="{url.base}logout">Logout</a>
+					<a id="nav-account" {if url.segment(1)=='account'}class="sel"{/if} href="{:url.base}account"><div class="icon"></div>{:users.current.username}</a>
+					<a id="nav-logout" href="{:url.base}logout">Logout</a>
 				</div>
-			{% else %}
+			{else}
 				<ul id="nav-sections"><li id="nav-setup">
 					<a class="sel"><div class="icon"></div>Setup</a>
 				</li></ul>
-			{% endif %}
+			{/if}
 		</div>
 
-		{% if user.messages %}
+		{if user.messages}
 			<div id="messages">
-				{% foreach user.messages as message %}
-					<div class="message {message.type}">{message.message}</div>
-				{% endforeach %}
+				{foreach user.messages as message}
+					<div class="message {:message.type}">{:message.message}</div>
+				{/foreach}
 			</div>
-		{% endif %}
+		{/if}
 	</div>
 
 	<div id="body">
-		{body}
+		{:body}
 	</div>
-{% endregion %}
+{/region}

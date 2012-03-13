@@ -1,6 +1,6 @@
-{% layout "settings/_layouts/settings" pageTitle="Updates" %}
+{layout "settings/_layouts/settings" pageTitle="Updates"}
 
-{% region "main" %}
+{region "main"}
 	<div id="checking">
 		Checking for updates…
 	</div>
@@ -15,8 +15,8 @@
 	</script>
 
 	<div id="updates"></div>
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
-	{% include "_includes/js_include" file="updates.js" %}
-{% endregion %}
+{region "scripts"}
+	{include "_includes/js_include" file="updates.js"}
+{/region}

@@ -1,10 +1,10 @@
-{% layout "_layouts/full" pageTitle="Blocks Setup" %}
+{layout "_layouts/full" pageTitle="Blocks Setup"}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/setup.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/setup.css"}
+{/region}
 
-{% region "main" %}
+{region "main"}
 
 	<form id="form" method="post" action="">
 		<div class="pane">
@@ -12,38 +12,38 @@
 			<div class="body">
 				<div class="sidebar">
 					<ol class="nav">
-						<li><a class="{% if step == 'LicenseKey' %}sel{% endif %}"><span class="step">1</span>Introduction</a></li>
-						<li><a class="{% if step == 'Site' %}sel{% endif %}"><span class="step">2</span>Setup your site</a></li>
-						<li><a class="{% if step == 'Account' %}sel{% endif %}"><span class="step">3</span>Create your account</a></li>
+						<li><a class="{if step == 'LicenseKey'}sel{/if}"><span class="step">1</span>Introduction</a></li>
+						<li><a class="{if step == 'Site'}sel{/if}"><span class="step">2</span>Setup your site</a></li>
+						<li><a class="{if step == 'Account'}sel{/if}"><span class="step">3</span>Create your account</a></li>
 					</ol>
 				</div>
 				<div class="step-contents">
-					{stepContents}
+					{:stepContents}
 				</div>
 				<div class="step-nav">
-					{% if step != 'LicenseKey' %}
-						{% if step == 'Site' %}
-							{% set backLink = url.url('setup') %}
-						{% else %}
-							{% if step == 'Account' %}
-								{% set backLink = url.url('setup/site') %}
-							{% endif %}
-						{% endif %}
+					{if step != 'LicenseKey'}
+						{if step == 'Site'}
+							{set backLink = url.url('setup')}
+						{else}
+							{if step == 'Account'}
+								{set backLink = url.url('setup/site')}
+							{/if}
+						{/if}
 						<div class="left">
-							<a href="{backLink}" class="btn big"><span class="label">Back</span></a>
+							<a href="{:backLink}" class="btn big"><span class="label">Back</span></a>
 						</div>
-					{% endif %}
+					{/if}
 					<div class="right">
-						<input class="btn big submit" type="submit" value="{% if step != 'Account' %}Next{% else %}Finish setup{% endif %}" />
+						<input class="btn big submit" type="submit" value="{if step != 'Account'}Next{else}Finish setup{/if}" />
 					</div>
 				</div>
 			</div>
 		</div>
 	</form>
 
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
+{region "scripts"}
 	<script type="text/javascript">
 		var form = document.forms['form'],
 			$errorInputs = $(form.elements).filter('.error:first');
@@ -57,5 +57,5 @@
 			form.submit();
 		});
 	</script>
-	{scripts}
-{% endregion %}
+	{:scripts}
+{/region}

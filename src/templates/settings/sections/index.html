@@ -1,19 +1,19 @@
-{% layout "settings/_layouts/settings" pageTitle="Content Sections" %}
+{layout "settings/_layouts/settings" pageTitle="Content Sections"}
 
-{% region "main" %}
+{region "main"}
 	<div class="pane">
 		<div class="head">
 			<h5>Content Sections</h5>
 		</div>
 		<div class="body">
-			{% if content.sections %}
+			{if content.sections}
 				<ul>
-					{% include "settings/sections/_includes/sections_list" sections=content.sections indent=1 %}
+					{include "settings/sections/_includes/sections_list" sections=content.sections indent=1}
 				</ul>
-			{% else %}
-				<p class="item no-items">No sections exist yet. <a class="go" href="{url.base}settings/sections/new">Create the first one</a></p>
-			{% endif %}
+			{else}
+				<p class="item no-items">No sections exist yet. <a class="go" href="{:url.base}settings/sections/new">Create the first one</a></p>
+			{/if}
 		</div>
 	</div>
-	<a class="btn" href="{url.base}settings/sections/new" title="Create a new section"><span class="icon icon44"></span></a>
-{% endregion %}
+	<a class="btn" href="{:url.base}settings/sections/new" title="Create a new section"><span class="icon icon44"></span></a>
+{/region}

@@ -1,10 +1,10 @@
-{% layout "_layouts/full" pageTitle="Dashboard" %}
+{layout "_layouts/full" pageTitle="Dashboard"}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/dashboard.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/dashboard.css"}
+{/region}
 
-{% region "main" %}
+{region "main"}
 	<div class="toolbar">
 		<div class="right">
 			<div id="sidebar-btn" class="btn">
@@ -14,46 +14,46 @@
 	</div>
 
 	<div id="alerts">
-		{% if !config.licenseKeys %}
+		{if !config.licenseKeys}
 			<div class="alert">
-				<p>You need to enter your license key into your <a href="{url.base}settings/info">System Info</a> page.</p>
+				<p>You need to enter your license key into your <a href="{:url.base}settings/info">System Info</a> page.</p>
 			</div>
-		{% endif %}
+		{/if}
 
-		{% foreach dashboard.alerts as alert %}
+		{foreach dashboard.alerts as alert}
 			<div class="alert">
-				<p>{alert}</p>
+				<p>{:alert}</p>
 			</div>
-		{% endforeach %}
+		{/foreach}
 	</div>
 
 	<div id="dashboard">
 		<div id="widgets">
-			{% foreach dashboard.userWidgets as widget %}
-				{% if widget.displayBody %}
-					<div id="widget{widget.id}" class="pane widget {widget.classHandle}">
+			{foreach dashboard.userWidgets as widget}
+				{if widget.displayBody}
+					<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
 						<div class="head">
-							{% if widget.displaySettings %}
+							{if widget.displaySettings}
 								<a class="settings-btn" title="Settings"></a>
-							{% endif %}
-							<h5>{widget.title}</h5>
+							{/if}
+							<h5>{:widget.title}</h5>
 						</div>
-						{% if widget.displaySettings %}
+						{if widget.displaySettings}
 							<div class="settings-outer-container"><div class="settings-inner-container">
 								<div class="settings">
-									{widget.displaySettings}
+									{:widget.displaySettings}
 									<div class="buttons">
 										<a class="btn submit"><span class="label">Save</span></a>
 										<a class="btn cancel"><span class="label">Cancel</span></a>
 									</div>
 								</div>
 							</div></div>
-						{% endif %}
+						{/if}
 
-						{widget.displayBody}
+						{:widget.displayBody}
 					</div>
-				{% endif %}
-			{% endforeach %}
+				{/if}
+			{/foreach}
 		</div>
 
 		<div id="dashboard-sidebar" class="sidebar">
@@ -63,25 +63,25 @@
 				</div>
 				<div class="body">
 					<ul class="widget-handles">
-						{% foreach dashboard.userWidgets as widget %}
-						<li class="item {% if !widget.displayBody %}hidden{% endif %}" data-widget-id="widget{widget.id}">
-							<span class="grab"></span><span class="title">{widget.title}</span><a class="remove" title="Remove"></a>
+						{foreach dashboard.userWidgets as widget}
+						<li class="item {if !widget.displayBody}hidden{/if}" data-widget-id="widget{:widget.id}">
+							<span class="grab"></span><span class="title">{:widget.title}</span><a class="remove" title="Remove"></a>
 						</li>
-						{% endforeach %}
+						{/foreach}
 					</ul>
 				</div>
 			</div>
 		</div>
 	</div>
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
-	{% if !updates.isUpdateInfoCached %}
+{region "scripts"}
+	{if !updates.isUpdateInfoCached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{url.generateActionUrl('dashboard/getalerts')}';
+			window.getAlertsUrl = '{:url.generateActionUrl('dashboard/getalerts')}';
 		</script>
-	{% endif %}
+	{/if}
 
-	{% include "_includes/js_include" file="dashboard.js" %}
-{% endregion %}
+	{include "_includes/js_include" file="dashboard.js"}
+{/region}

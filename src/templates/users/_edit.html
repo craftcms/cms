@@ -1,160 +1,160 @@
-{% layout "users/_layouts/users" %}
+{layout "users/_layouts/users"}
 
-{% if !theUser && userId %}
-	{% set theUser = users.getById(userId) %}
-	{% if theUser.status == 'archived' %}
+{if !theUser && userId}
+	{set theUser = users.getById(userId)}
+	{if theUser.status == 'archived'}
 		<!-- TODO: this doesn't work until we get string contact in the template parser -->
-		{% redirect 'users/view/'+userId %}
-	{% endif %}
-{% endif %}
+		{redirect 'users/view/'+userId}
+	{/if}
+{/if}
 
-{% region "main" %}
+{region "main"}
 	<div class="toolbar">
-		{% include "_includes/back_btn" label="Users" uri="users" %}
+		{include "_includes/back_btn" label="Users" uri="users"}
 	</div>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/save" />
 
-		{% if theUser.id %}
-			<input type="hidden" name="user_id" value="{theUser.id}">
-			<input type="hidden" name="redirect" value="users/edit/{theUser.id}" />
-		{% else %}
+		{if theUser.id}
+			<input type="hidden" name="user_id" value="{:theUser.id}">
+			<input type="hidden" name="redirect" value="users/edit/{:theUser.id}" />
+		{else}
 			<input type="hidden" name="redirect" value="users" />
-		{% endif %}
+		{/if}
 
 		<div class="pane">
 			<div class="head">
-				{% if theUser.id %}
-					<h5>Edit User {% if theUser.user_name %}“{theUser.user_name}”{% endif %}</h5>
-				{% else %}
+				{if theUser.id}
+					<h5>Edit User {if theUser.user_name}“{:theUser.user_name}”{/if}</h5>
+				{else}
 					<h5>Register a new user</h5>
-				{% endif %}
+				{/if}
 			</div>
 			<div class="body">
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="username">Username</label>
-						<input id="username" name="username" class="{% if theUser.errors.username %}error{% endif %}" type="text" value="{theUser.username}" />
+						<input id="username" name="username" class="{if theUser.errors.username}error{/if}" type="text" value="{:theUser.username}" />
 					</div>
-					{% if theUser.errors.username %}
-						{% include "_includes/error_list" errors=theUser.errors.username %}
-					{% endif %}
+					{if theUser.errors.username}
+						{include "_includes/error_list" errors=theUser.errors.username}
+					{/if}
 				</div>
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="first_name">First Name</label>
-						<input id="first_name" name="first_name" class="{% if theUser.errors.first_name %}error{% endif %}" type="text" value="{theUser.first_name}" />
+						<input id="first_name" name="first_name" class="{if theUser.errors.first_name}error{/if}" type="text" value="{:theUser.first_name}" />
 					</div>
-					{% if theUser.errors.first_name %}
-						{% include "_includes/error_list" errors=theUser.errors.first_name %}
-					{% endif %}
+					{if theUser.errors.first_name}
+						{include "_includes/error_list" errors=theUser.errors.first_name}
+					{/if}
 				</div>
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="last_name">Last Name</label>
-						<input id="last_name" name="last_name" class="{% if theUser.errors.last_name %}error{% endif %}" type="text" value="{theUser.last_name}" />
+						<input id="last_name" name="last_name" class="{if theUser.errors.last_name}error{/if}" type="text" value="{:theUser.last_name}" />
 					</div>
-					{% if theUser.errors.last_name %}
-						{% include "_includes/error_list" errors=theUser.errors.last_name %}
-					{% endif %}
+					{if theUser.errors.last_name}
+						{include "_includes/error_list" errors=theUser.errors.last_name}
+					{/if}
 				</div>
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="email">Email</label>
-						<input id="email" name="email" class="{% if theUser.errors.email %}error{% endif %}" type="text" value="{theUser.email}" />
+						<input id="email" name="email" class="{if theUser.errors.email}error{/if}" type="text" value="{:theUser.email}" />
 					</div>
-					{% if theUser.errors.email %}
-						{% include "_includes/error_list" errors=theUser.errors.email %}
-					{% endif %}
+					{if theUser.errors.email}
+						{include "_includes/error_list" errors=theUser.errors.email}
+					{/if}
 				</div>
-				{% if users.current.admin %}
+				{if users.current.admin}
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="admin">Admin</label>
-							{% include "_includes/lightswitch" name="admin" on=theUser.admin %}
+							{include "_includes/lightswitch" name="admin" on=theUser.admin}
 						</div>
 					</div>
-				{% endif %}
+				{/if}
 				<div class="item field">
 					<div class="input-wrapper">
 						<label for="html_email">Html Emails</label>
-						{% include "_includes/lightswitch" name="html_email" on=theUser.html_email default="y" %}
+						{include "_includes/lightswitch" name="html_email" on=theUser.html_email default="y"}
 					</div>
 				</div>
-				{% if theUser.id %}
+				{if theUser.id}
 					<div class="item field">
-						Status: {theUser.status}
-						<input type="hidden" name="status" value="{theUser.status}" />
-						{% if config.failedPasswordMode == 'cooldown' %}
-							{% if theUser.cooldown_start %}
+						Status: {:theUser.status}
+						<input type="hidden" name="status" value="{:theUser.status}" />
+						{if config.failedPasswordMode == 'cooldown'}
+							{if theUser.cooldown_start}
 								<br />
-								{% set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime) %}
+								{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime)}
 								Temporarily locked.  User will be auto-unlocked
-								{% if timeRemaining > 0 %}
-									in {timeRemaining}
-								{% else %}
+								{if timeRemaining > 0}
+									in {:timeRemaining}
+								{else}
 									the next time they log in.
-								{% endif %}
-							{% endif %}
-						{% endif %}
+								{/if}
+							{/if}
+						{/if}
 					</div>
-					{% if theUser.status == 'pending' %}
+					{if theUser.status == 'pending'}
 						<div class="field">
-								Validation Url: COPY LINK<br />{url.url(users.verifyAccountUrl, 'code=')}{theUser.activationcode}
+								Validation Url: COPY LINK<br />{:url.url(users.verifyAccountUrl, 'code=')}{:theUser.activationcode}
 						</div>
 						<div class="field">
 							<input class="btn big submit" type="submit" name="validationEmail" value="Resend Validation Email" />
 						</div>
-					{% endif %}
+					{/if}
 					<div class="item">
-						{% if theUser.status == 'suspended' %}
+						{if theUser.status == 'suspended'}
 							<input class="btn big submit" type="submit" name="unsuspend" value="Unsuspend" />
-						{% else %}
+						{else}
 							<input class="btn big submit" type="submit" name="suspend" value="Suspend" />
-						{% endif %}
-						{% if theUser.status == 'locked' %}
+						{/if}
+						{if theUser.status == 'locked'}
 							<input class="btn big submit" type="submit" name="unlock" value="Unlock" />
-						{% endif %}
+						{/if}
 					</div>
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="password_reset">Password Reset Required</label>
-							{% include "_includes/lightswitch" name="password_reset" on=theUser.password_reset_required %}
+							{include "_includes/lightswitch" name="password_reset" on=theUser.password_reset_required}
 						</div>
 					</div>
-				{% endif %}
-				{% if !theUser.id %}
+				{/if}
+				{if !theUser.id}
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="send_validation_email">Send Validation Email?</label>
-							{% include "_includes/lightswitch" name="send_validation_email" on=request.getPost('send_validation_email') default="y" %}
+							{include "_includes/lightswitch" name="send_validation_email" on=request.getPost('send_validation_email') default="y"}
 						</div>
 					</div>
-				{% endif %}
-				{% if theUser.id %}
+				{/if}
+				{if theUser.id}
 					<div class="item">
-						Last Login Date: {% if theUser.last_login_date %}{dateTimeHelper.nice(theUser.last_login_date)}{% else %}Never{% endif %}
+						Last Login Date: {if theUser.last_login_date}{:dateTimeHelper.nice(theUser.last_login_date)}{else}Never{/if}
 					</div>
 					<div class="item">
-						Last Failed Login Date: {% if theUser.last_login_failed_date %}{dateTimeHelper.nice(theUser.last_login_failed_date)}{% else %}Never{% endif %}
+						Last Failed Login Date: {if theUser.last_login_failed_date}{:dateTimeHelper.nice(theUser.last_login_failed_date)}{else}Never{/if}
 					</div>
 					<div class="item">
-						Last Password Changed Date: {% if theUser.last_password_changed_date %}{dateTimeHelper.nice(theUser.last_password_changed_date)}{% else %}Never{% endif %}
+						Last Password Changed Date: {if theUser.last_password_changed_date}{:dateTimeHelper.nice(theUser.last_password_changed_date)}{else}Never{/if}
 					</div>
 					<div class="item">
-						Last Lockout Date: {% if theUser.last_lockout_date %}{dateTimeHelper.nice(theUser.last_lockout_date)}{% else %}Never{% endif %}
+						Last Lockout Date: {if theUser.last_lockout_date}{:dateTimeHelper.nice(theUser.last_lockout_date)}{else}Never{/if}
 					</div>
 					<div class="item">
-						Failed Password Attempt Count: {% if theUser.failed_password_attempt_count %}{theUser.failed_password_attempt_count}{% else %}0{% endif %}
+						Failed Password Attempt Count: {if theUser.failed_password_attempt_count}{:theUser.failed_password_attempt_count}{else}0{/if}
 					</div>
-				{% endif %}
+				{/if}
 			</div>
 		</div>
 
 		<input class="btn big submit" type="submit" name="save" value="Save User" />
-		{% if theUser.id %}
+		{if theUser.id}
 			<input class="btn big submit" type="submit" name="delete" value="Delete User" />
-		{% endif %}
+		{/if}
 	</form>
-{% endregion %}
+{/region}

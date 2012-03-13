@@ -1,39 +1,39 @@
-{% if user.isloggedIn %}
-	{% redirect "dashboard" %}
-{% endif %}
+{if user.isloggedIn}
+	{redirect "dashboard"}
+{/if}
 
-{% layout "_layouts/basic" pageTitle="Forgot Password" %}
+{layout "_layouts/basic" pageTitle="Forgot Password"}
 
-{% region "body" %}
+{region "body"}
 	<div class="pane">
 		<div class="head">
 			Forgot Password
 		</div>
 		<div class="body">
-			{% if url.get('success') == 1 %}
+			{if url.get('success') == 1}
 				<div class="item">
 					An email has been sent to email address we have on file.  Follow the instructions in the email to reset your password.
 				</div>
-			{% else %}
+			{else}
 				<form method="post" action="">
 					<input type="hidden" name="action" value="account/forgot" />
-					<input type="hidden" name="redirect" value="{users.forgotPasswordUrl}" />
+					<input type="hidden" name="redirect" value="{:users.forgotPasswordUrl}" />
 
 					<div class="item">Enter the username or email address for your account.</div>
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="loginName">Username or Email</label>
-							<input id="loginName" name="loginName" class="{% if forgotPassword.errors.loginName %}error{% endif %}" type="text" />
+							<input id="loginName" name="loginName" class="{if forgotPassword.errors.loginName}error{/if}" type="text" />
 						</div>
-						{% if forgotPassword.errors.loginName %}
-							{% include "_includes/error_list" errors=forgotPassword.errors.loginName %}
-						{% endif %}
+						{if forgotPassword.errors.loginName}
+							{include "_includes/error_list" errors=forgotPassword.errors.loginName}
+						{/if}
 					</div>
 					<div class="item">
 						<input class="btn big submit" type="submit" value="Go" />
 					</div>
 				</form>
-			{% endif %}
+			{/if}
 		</div>
 	</div>
-{% endregion %}
+{/region}

@@ -1,10 +1,10 @@
-{% layout "_layouts/sidebar" pageTitle="Assets" %}
+{layout "_layouts/sidebar" pageTitle="Assets"}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/assets.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/assets.css"}
+{/region}
 
-{% region "sidebar" %}
+{region "sidebar"}
 	<h5>Local Files</h5>
 	<ul class="nav tree">
 		<li><span class="toggle expanded"></span><a href=""><span class="icon icon133"></span>shared</a>
@@ -33,13 +33,13 @@
 			</ul>
 		</li>
 	</ul>
-{% endregion %}
+{/region}
 
-{% region "main" %}
+{region "main"}
 	<div class="toolbar">
 		<div class="btn-group">
-			<a class="btn {% if viewMode=='thumbs' %}sel{% endif %}" href="{url.base}assets" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
-			<a class="btn {% if viewMode=='list' %}sel{% endif %}" href="{url.base}assets/list" title="Display files in a list"><span class="icon icon276"></span></a></li>
+			<a class="btn {if viewMode=='thumbs'}sel{/if}" href="{:url.base}assets" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
+			<a class="btn {if viewMode=='list'}sel{/if}" href="{:url.base}assets/list" title="Display files in a list"><span class="icon icon276"></span></a></li>
 		</div>
 
 		<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>
@@ -47,5 +47,5 @@
 		<div class="search"><input type="text" /></div>
 	</div>
 
-	{files}
-{% endregion %}
+	{:files}
+{/region}

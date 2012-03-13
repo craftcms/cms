@@ -1,11 +1,11 @@
-{% if !id %}
-	{% set id = name %}
-{% endif %}
-{% if toggle %}<div class="nested-toggle-wrapper {% if on %}showing{% endif %}">{% endif %}<div id="{id}" class="lightswitch {% if on %}on{% endif %}" {% if toggle %}data-toggle="{toggle}"{% endif %} tabindex="0">
+{if !id}
+	{set id = name}
+{/if}
+{if toggle}<div class="nested-toggle-wrapper {if on}showing{/if}">{/if}<div id="{:id}" class="lightswitch {if on}on{/if}" {if toggle}data-toggle="{:toggle}"{/if} tabindex="0">
 	<div class="container">
 		<div class="label on">Yes</div>
 		<div class="label off">No</div>
 		<div class="handle"></div>
 	</div>
-	<input type="hidden" name="{name}" value="{% if on %}y{% endif %}">
-</div>{% if toggle %}</div>{% endif %}
+	<input type="hidden" name="{:name}" value="{if on}y{/if}">
+</div>{if toggle}</div>{/if}

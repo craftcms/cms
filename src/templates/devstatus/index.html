@@ -1,14 +1,14 @@
-{% layout "_layouts/full" %}
-{% region "pageTitle" %}Dev Status{% endregion %}
+{layout "_layouts/full"}
+{region "pageTitle"}Dev Status{/region}
 
-{% region "styles" %}
+{region "styles"}
 <style type="text/css">
 	.status \{ margin: 3px 3px 0 0; \}
 	h3 .status \{ margin: 7px 5px 0 0; \}
 </style>
-{% endregion %}
+{/region}
 
-{% region "main" %}
+{region "main"}
 
 	<table class="pane">
 		<thead>
@@ -41,7 +41,7 @@
 								<td colspan="2"><span class="status on"></span>Check if the first URL segment matches the <code>resourceTriggerWord</code></td>
 							</tr>
 							<tr>
-								<td><span class="status"></span>Check CP routing array (matches “content/edit/{entry_id}”, etc)</td>
+								<td><span class="status"></span>Check CP routing array (matches “content/edit/{:entry_id}”, etc)</td>
 								<td><span class="status"></span>Check routes defined in <code>blx_siteroutes</code></td>
 							</tr>
 							<tr>
@@ -277,4 +277,4 @@
 	</table>
 
 
-{% endregion %}
+{/region}

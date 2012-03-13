@@ -1,18 +1,18 @@
-{% layout "_layouts/basic" title="Install Blocks" %}
+{layout "_layouts/basic" title="Install Blocks"}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/install.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/install.css"}
+{/region}
 
-{% region "body" %}
+{region "body"}
 	<div class="install-container">
 		<div id="install-btn" class="btn big submit">
 			<span class="label">Install Blocks</span>
 		</div>
 	</div>
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
+{region "scripts"}
 	<script type="text/javascript">
 
 		var $btn = $('#install-btn'),
@@ -41,7 +41,7 @@
 		function runInstaller()
 		{
 			// Run the ajax request
-			$.post('{url.base}install/install', function(data, textStatus, jqXHR) {
+			$.post('{:url.base}install/install', function(data, textStatus, jqXHR) {
 				if (textStatus != 'success' || !(data.error || data.success))
 					displayError('An unknown error occurred.');
 				else if (data.error)
@@ -52,7 +52,7 @@
 					updateBtnLabel($newBtnLabel, function() {
 						// Redirect to the dashboard
 						setTimeout(function() {
-							window.location = '{url.base}setup'
+							window.location = '{:url.base}setup'
 						}, 1000);
 					});
 				}
@@ -70,4 +70,4 @@
 		});
 
 	</script>
-{% endregion %}
+{/region}

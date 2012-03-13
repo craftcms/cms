@@ -1,64 +1,64 @@
-_{% layout "settings/_layouts/settings" pageTitle="Edit Content Block" %}
+_{layout "settings/_layouts/settings" pageTitle="Edit Content Block"}
 
-{% if !block && blockId %}
-	{% set block = blocks.getBlockById(blockId) %}
-{% endif %}
+{if !block && blockId}
+	{set block = blocks.getBlockById(blockId)}
+{/if}
 
-{% region "main" %}
+{region "main"}
 	<div class="toolbar">
-		{% include "_includes/back_btn" label="Content Blocks" uri="settings/blocks" %}
+		{include "_includes/back_btn" label="Content Blocks" uri="settings/blocks"}
 	</div>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="blocks/save" />
 		<input type="hidden" name="redirect" value="settings/blocks" />
-		{% if block.id %}<input type="hidden" name="block_id" value="{block.id}">{% endif %}
+		{if block.id}<input type="hidden" name="block_id" value="{:block.id}">{/if}
 
 		<div class="pane">
 			<div class="head">
-				{% if block.id %}
-					<h5>Edit Content Block {% if block.name %}“{block.name}”{% endif %}</h5>
-				{% else %}
+				{if block.id}
+					<h5>Edit Content Block {if block.name}“{:block.name}”{/if}</h5>
+				{else}
 					<h5>Create a new content block</h5>
-				{% endif %}
+				{/if}
 			</div>
 			<div class="body">
-				{% include "settings/blocks/_includes/blocksettings" block=block %}
+				{include "settings/blocks/_includes/blocksettings" block=block}
 
 				<div class="item field">
 					<label for="instructions">Instructions</label>
-					<div class="input-wrapper"><textarea id="instructions" name="instructions" {% if block.errors.instructions %}class="error"{% endif %} rows="3" cols="100">{block.instructions}</textarea></div>
-					{% if block.errors.instructions %}
-						{% include "_includes/error_list" errors=block.errors.instructions %}
-					{% endif %}
+					<div class="input-wrapper"><textarea id="instructions" name="instructions" {if block.errors.instructions}class="error"{/if} rows="3" cols="100">{:block.instructions}</textarea></div>
+					{if block.errors.instructions}
+						{include "_includes/error_list" errors=block.errors.instructions}
+					{/if}
 				</div>
 			</div>
 		</div>
 
-		{% foreach blocks.blockTypes as blockType %}
-			{% if blockType.displaySettings %}
-				<div id="{blockType.classHandle}-settings" class="pane" {% if (block && block.class != blockType.classHandle) || (!block && blockType.classHandle != 'PlainText') %}style="display: none"{% endif %}>
+		{foreach blocks.blockTypes as blockType}
+			{if blockType.displaySettings}
+				<div id="{:blockType.classHandle}-settings" class="pane" {if (block && block.class != blockType.classHandle) || (!block && blockType.classHandle != 'PlainText')}style="display: none"{/if}>
 					<div class="head">
-						<h5>{blockType.name} Settings</h5>
+						<h5>{:blockType.name} Settings</h5>
 					</div>
 					<div class="body">
-						{% if blockType.classHandle == block.class %}
-							{block.displaySettings}
-						{% else %}
-							{blockType.displaySettings}
-						{% endif %}
+						{if blockType.classHandle == block.class}
+							{:block.displaySettings}
+						{else}
+							{:blockType.displaySettings}
+						{/if}
 					</div>
 				</div>
-			{% endif %}
-		{% endforeach %}
+			{/if}
+		{/foreach}
 
 		<input class="btn big submit" type="submit" value="Save Content Block" />
 	</form>
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
-	{% include "_includes/js_include" file="block-settings.js" %}
+{region "scripts"}
+	{include "_includes/js_include" file="block-settings.js"}
 	<script type="text/javascript">
-		{% if !block.handle %}new blx.ui.HandleGenerator('#block-name', '#block-handle');{% endif %}
+		{if !block.handle}new blx.ui.HandleGenerator('#block-name', '#block-handle');{/if}
 	</script>
-{% endregion %}
+{/region}

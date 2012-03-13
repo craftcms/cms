@@ -1,15 +1,15 @@
-{% layout "_layouts/basic" title="Unable to install Blocks" %}
+{layout "_layouts/basic" title="Unable to install Blocks"}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/install.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/install.css"}
+{/region}
 
-{% region "body" %}
+{region "body"}
 	<p>Your server doesn’t meet the minimum requirements to install Blocks. Please talk to your host/IT guy about these deficiencies:</p>
 
 	<ul>
-		{% foreach requirements as req %}
-		<li>{req.name}</li>
-		{% endforeach %}
+		{foreach requirements as req}
+		<li>{:req.name}</li>
+		{/foreach}
 	</ul>
-{% endregion %}
+{/region}

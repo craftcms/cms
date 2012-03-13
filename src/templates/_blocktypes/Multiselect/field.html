@@ -1,5 +1,5 @@
-<select id="{block.handle}-block" name="{block.handle}" multiple="multiple">
-	{% foreach block.settings.options as option %}
-		<option>{option}</option>
-	{% endforeach %}
+<select id="{:block.handle}-block" name="{:block.handle}" multiple="multiple">
+	{foreach block.settings.options as option}
+		<option>{:option}</option>
+	{/foreach}
 </select>

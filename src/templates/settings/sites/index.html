@@ -1,19 +1,19 @@
-{% layout "settings/_layouts/settings" pageTitle="Sites" %}
+{layout "settings/_layouts/settings" pageTitle="Sites"}
 
-{% region "main" %}
+{region "main"}
 	<div id="sites" class="pane">
 		<div class="head">
 			<h5>Sites</h5>
 		</div>
 		<div class="body">
 			<ul>
-				{% foreach sites as site %}
-					<li class="item {% if site.primary %}primary{% endif %}">
-						<a href="{url.base}settings/sites/edit/{site.id}"><span class="icon icon100"></span>{site.name}</a>
+				{foreach sites as site}
+					<li class="item {if site.primary}primary{/if}">
+						<a href="{:url.base}settings/sites/edit/{:site.id}"><span class="icon icon100"></span>{:site.name}</a>
 					</li>
-				{% endforeach %}
+				{/foreach}
 			</ul>
 		</div>
 	</div>
-	<a class="btn" href="{url.base}settings/sites/new" title="Create a new site"><span class="icon icon44"></span></a>
-{% endregion %}
+	<a class="btn" href="{:url.base}settings/sites/new" title="Create a new site"><span class="icon icon44"></span></a>
+{/region}

@@ -1,10 +1,10 @@
-{% if user.isloggedIn %}
-	{% redirect "dashboard" %}
-{% endif %}
+{if user.isloggedIn}
+	{redirect "dashboard"}
+{/if}
 
-{% layout "_layouts/basic" pageTitle="Verify Account" %}
+{layout "_layouts/basic" pageTitle="Verify Account"}
 
-{% region "body" %}
+{region "body"}
 	<div class="pane">
 		<div class="head">
 			Set Password
@@ -14,37 +14,37 @@
 				<input type="hidden" name="action" value="account/verify" />
 				<input type="hidden" name="redirect" value="dashboard" />
 
-				{% set activationCode = url.get('code') %}
-				{% if activationCode && security.validateUserRegistration(activationCode) %}
-					{% set userModel = security.getUserByActivationCode(activationCode) %}
+				{set activationCode = url.get('code')}
+				{if activationCode && security.validateUserRegistration(activationCode)}
+					{set userModel = security.getUserByActivationCode(activationCode)}
 
 					<div class="item">Let's set a password for your account.</div>
-					<input type="hidden" name="userId" value="{userModel.id}" />
+					<input type="hidden" name="userId" value="{:userModel.id}" />
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="password">Password</label>
-							<input id="password" name="password" class="{% if verifyAccountInfo.errors.password %}error{% endif %}" type="password" />
+							<input id="password" name="password" class="{if verifyAccountInfo.errors.password}error{/if}" type="password" />
 						</div>
-						{% if verifyAccountInfo.errors.password %}
-							{% include "_includes/error_list" errors=verifyAccountInfo.errors.password %}
-						{% endif %}
+						{if verifyAccountInfo.errors.password}
+							{include "_includes/error_list" errors=verifyAccountInfo.errors.password}
+						{/if}
 					</div>
 					<div class="item field">
 						<div class="input-wrapper">
 							<label for="confirm-password">Confirm Password</label>
-							<input id="confirm-password" name="confirm-password" class="{% if verifyAccountInfo.errors.confirmPassword %}error{% endif %}" type="password" />
+							<input id="confirm-password" name="confirm-password" class="{if verifyAccountInfo.errors.confirmPassword}error{/if}" type="password" />
 						</div>
-						{% if verifyAccountInfo.errors.confirmPassword %}
-							{% include "_includes/error_list" errors=verifyAccountInfo.errors.confirmPassword %}
-						{% endif %}
+						{if verifyAccountInfo.errors.confirmPassword}
+							{include "_includes/error_list" errors=verifyAccountInfo.errors.confirmPassword}
+						{/if}
 					</div>
 					<div class="item">
 						<input class="btn big submit" type="submit" value="Set Password" />
 					</div>
-				{% else %}
+				{else}
 					There was a problem validating this activation code.
-				{% endif %}
+				{/if}
 			</form>
 		</div>
 	</div>
-{% endregion %}
+{/region}

@@ -5,14 +5,14 @@
 	<div class="body" tabindex="0">
 		<div class="scrollpane">
 			<ul>
-				{% foreach blocks.blocks as block %}
-					<li class="block-item" data-block-id="{block.id}"><div class="block"><span class="icon icon137"></span><span class="block-name">{block.name}</span>
-						<span class="block-type">{block.blocktypeName}</span></div>
+				{foreach blocks.blocks as block}
+					<li class="block-item" data-block-id="{:block.id}"><div class="block"><span class="icon icon137"></span><span class="block-name">{:block.name}</span>
+						<span class="block-type">{:block.blocktypeName}</span></div>
 					</li>
-				{% endforeach %}
+				{/foreach}
 				<li class="add"><a><span class="icon icon44"></span>Create a new content block</a></li>
-				{% if blocks.blocks.length < 1 %}<li class="filler"></li>{% endif %}
-				{% if blocks.blocks.length < 2 %}<li class="filler"></li>{% endif %}
+				{if blocks.blocks.length < 1}<li class="filler"></li>{/if}
+				{if blocks.blocks.length < 2}<li class="filler"></li>{/if}
 			</ul>
 		</div>
 	</div>

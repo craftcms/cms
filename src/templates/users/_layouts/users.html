@@ -1,16 +1,16 @@
-{% layout "_layouts/sidebar" bodyClass=bodyClass main=main scripts=scripts %}
-{% region "pageTitle" %}Users – {pageTitle}{% endregion %}
+{layout "_layouts/sidebar" bodyClass=bodyClass main=main scripts=scripts}
+{region "pageTitle"}Users – {:pageTitle}{/region}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/settings.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/settings.css"}
+{/region}
 
-{% region "sidebar" %}
+{region "sidebar"}
 	<h5>Recent Users</h5>
 	<ul class="nav">
-		{% foreach users.recent as theUser %}
-			<li><a href="{url.base}users/{% if theUser.status == 'archived' %}view{% else %}edit{% endif %}/{theUser.id}" {% if url.segment(3) == theUser.id %}class="sel"{% endif %}><span class="icon icon{% if theUser.admin %}247{% else %}243{% endif %}"></span>{theUser.fullName}</a></li>
-		{% endforeach %}
-		<li><a class="new {% if url.segment(2) == 'new' %}sel{% endif %}" href="{url.base}users/new"><span class="icon icon44"></span>Register a new user</a></li>
+		{foreach users.recent as theUser}
+			<li><a href="{:url.base}users/{if theUser.status == 'archived'}view{else}edit{/if}/{:theUser.id}" {if url.segment(3) == theUser.id}class="sel"{/if}><span class="icon icon{if theUser.admin}247{else}243{/if}"></span>{:theUser.fullName}</a></li>
+		{/foreach}
+		<li><a class="new {if url.segment(2) == 'new'}sel{/if}" href="{:url.base}users/new"><span class="icon icon44"></span>Register a new user</a></li>
 	</ul>
-{% endregion %}
+{/region}

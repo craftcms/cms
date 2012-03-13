@@ -1,33 +1,33 @@
-{% layout "_layouts/sidebar" pageTitle=pageTitle %}
+{layout "_layouts/sidebar" pageTitle=pageTitle}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/content.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/content.css"}
+{/region}
 
-{% region "sidebar" %}
-	{% foreach content.sections as section %}
-		<h5>{section.name}</h5>
+{region "sidebar"}
+	{foreach content.sections as section}
+		<h5>{:section.name}</h5>
 		<ul class="nav tree">
-			{% foreach section.entries as entry %}
-				<li><a class="has-status {% if url.segment(3) == entry.id %}sel{% endif %}" href="{url.base}content/edit/{entry.id}"><span class="status {% if entry.live %}on{% elseif entry.published %}off{% endif %}"></span><span class="label">{% if entry.title %}{entry.title}{% else %}Untitled{% endif %}</span></a></li>
-			{% endforeach %}
-			<li><a class="new" href="{url.action('content/createEntry', 'sectionId=')}{section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
+			{foreach section.entries as entry}
+				<li><a class="has-status {if url.segment(3) == entry.id}sel{/if}" href="{:url.base}content/edit/{:entry.id}"><span class="status {if entry.live}on{elseif entry.published}off{/if}"></span><span class="label">{if entry.title}{:entry.title}{else}Untitled{/if}</span></a></li>
+			{/foreach}
+			<li><a class="new" href="{:url.action('content/createEntry', 'sectionId=')}{:section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
 		</ul>
-	{% endforeach %}
-{% endregion %}
+	{/foreach}
+{/region}
 
-{% region "main" %}
-	{% if page %}
-		{% include "content/_includes/toolbar" %}
+{region "main"}
+	{if page}
+		{include "content/_includes/toolbar"}
 		<div class="pane page">
 			<div class="body">
-				{page}
+				{:page}
 			</div>
 		</div>
-	{% endif %}
-{% endregion %}
+	{/if}
+{/region}
 
-{% region "scripts" %}
+{region "scripts"}
 	<script type="text/javascript">
 
 		var $settings = $('.page-settings'),
@@ -50,10 +50,10 @@
 		});
 
 		new blx.ui.RTE('content', {
-			css: "{url.resource('styles/rte.css')}"
+			css: "{:url.resource('styles/rte.css')}"
 		});
 
 	</script>
 
-	{scripts}
-{% endregion %}
+	{:scripts}
+{/region}

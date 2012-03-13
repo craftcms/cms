@@ -1,8 +1,8 @@
 <table class="body">
-	{% foreach widget.actions as action %}
+	{foreach widget.actions as action}
 	<tr>
-		<td>{action.action}</td>
-		<td class="date">{action.date}</td>
+		<td>{:action.action}</td>
+		<td class="date">{:action.date}</td>
 	</tr>
-	{% endforeach %}
+	{/foreach}
 </table>

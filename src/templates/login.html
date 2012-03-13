@@ -1,14 +1,14 @@
-{% if user.isloggedIn %}
-	{% redirect "dashboard" %}
-{% endif %}
+{if user.isloggedIn}
+	{redirect "dashboard"}
+{/if}
 
-{% layout "_layouts/basic" pageTitle="Login" %}
+{layout "_layouts/basic" pageTitle="Login"}
 
-{% region "styles" %}
-	{% include "_includes/css_include" file="styles/login.css" %}
-{% endregion %}
+{region "styles"}
+	{include "_includes/css_include" file="styles/login.css"}
+{/region}
 
-{% region "body" %}
+{region "body"}
 	<script type="text/javascript">
 		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookie;
@@ -21,11 +21,11 @@
 						'<div class="body">' +
 							'<div class="item field">' +
 								'<label for="username">Username or Email</label>' +
-								'<div class="input-wrapper"><input id="username" type="text" value="{user.rememeberedLoginName}" /></div>' +
+								'<div class="input-wrapper"><input id="username" type="text" value="{:user.rememeberedLoginName}" /></div>' +
 							'</div>' +
 							'<div class="item field">' +
 								'<label for="password">Password</label>' +
-								' <a id="forgot-password" href="{url.base}{users.forgotPasswordUrl}">(Forget?)</a>' +
+								' <a id="forgot-password" href="{:url.base}{:users.forgotPasswordUrl}">(Forget?)</a>' +
 								'<div class="input-wrapper password"><input id="password" class="password" type="password" /></div>' +
 							'</div>' +
 						'</div>' +
@@ -35,16 +35,16 @@
 
 					'<label id="remember-me-label" class="checkbox">' +
 						'<input id="remember-me" type="checkbox" />' +
-						' Keep me logged in for {configHelper.getTimeInSeconds(config.rememberMeSessionTimeout).toHumanTimeDuration.wordNumbers}' +
+						' Keep me logged in for {:configHelper.getTimeInSeconds(config.rememberMeSessionTimeout).toHumanTimeDuration.wordNumbers}' +
 					'</label>' +
 
-					{% if !request.isSecureConnection %}
+					{if !request.isSecureConnection}
 						'<a id="insecure" title="This is an insecure connection."></a>' +
-					{% endif %}
+					{/if}
 				'</form>'
 			);
 
-			var id = {% if user.rememeberedLoginName %}'password'{% else %}'username'{% endif %};
+			var id = {if user.rememeberedLoginName}'password'{else}'username'{/if};
 			document.getElementById(id).focus();
 		}
 		else
@@ -65,8 +65,8 @@
 			);
 		}
 	</script>
-{% endregion %}
+{/region}
 
-{% region "scripts" %}
-	{% include "_includes/js_include" file="login.js" %}
-{% endregion %}
+{region "scripts"}
+	{include "_includes/js_include" file="login.js"}
+{/region}

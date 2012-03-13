@@ -1,20 +1,20 @@
-{% layout "_special/setup/_layouts/setup" step="LicenseKey" %}
+{layout "_special/setup/_layouts/setup" step="LicenseKey"}
 
-{% region "stepContents" %}
+{region "stepContents"}
 
 	<h2>Welcome to Blocks!</h2>
 	<p>Before we get started, please enter your license key below. Entering a valid license key will enable features like update notifications and one-click installing.</p>
 
-	{% if licenseKey.id %}
-		<input type="hidden" name="licensekey_id" value="{licenseKey.id}" />
-	{% endif %}
+	{if licenseKey.id}
+		<input type="hidden" name="licensekey_id" value="{:licenseKey.id}" />
+	{/if}
 
 	<div class="field">
 		<label for="license-key">Your license key</label>
-		<div class="input-wrapper"><input id="license-key" class="code {% if licenseKey.errors.license_key %}error{% endif %}" name="licensekey" type="text" maxlength="73" value="{licenseKey.license_key}" /></div>
-		{% if licenseKey.errors.license_key %}
-			{% include "_includes/error_list" errors=licenseKey.errors.license_key %}
-		{% endif %}
+		<div class="input-wrapper"><input id="license-key" class="code {if licenseKey.errors.license_key}error{/if}" name="licensekey" type="text" maxlength="73" value="{:licenseKey.license_key}" /></div>
+		{if licenseKey.errors.license_key}
+			{include "_includes/error_list" errors=licenseKey.errors.license_key}
+		{/if}
 	</div>
 
-{% endregion %}
+{/region}

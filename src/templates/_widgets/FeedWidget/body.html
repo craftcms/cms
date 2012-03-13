@@ -1,8 +1,8 @@
 <table class="body">
-	{% foreach widget.items as item %}
+	{foreach widget.items as item}
 	<tr class="item">
-		<td><a href="{item.url}">{item.title}</a></td>
-		<td class="date">{item.date}</td>
+		<td><a href="{:item.url}">{:item.title}</a></td>
+		<td class="date">{:item.date}</td>
 	</tr>
-	{% endforeach %}
+	{/foreach}
 </table>
