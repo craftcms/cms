@@ -320,7 +320,7 @@ class TemplateParser
 	protected function parseIncludeTag($body)
 	{
 		if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s+.*)?$/x', $body, $match))
-			$this->throwParseException("Invalid include tag “{$tag}”");
+			throw new Exception('Invalid include tag');
 
 		$template = $match[1];
 		$body = isset($match[7]) ? trim($match[7]) : '';
@@ -476,26 +476,22 @@ class TemplateParser
 		while ($template) {
 			$nextEq = strpos($template, '=');
 
-			if ($nextEq === false)
-				$this->throwParseException("Invalid parameter “{$template}”");
-
-			if ($nextEq === 0)
-				$this->throwParseException('Invalid parameter “”');
+			if (!$nextEq)
+				throw new Exception('Invalid parameter');
 
 			$paramName = rtrim(substr($template, 0, $nextEq));
 
 			if (!preg_match('/^'.self::tagPattern.'$/', $paramName))
-				$this->throwParseException('Invalid parameter “'.$paramName.'”');
+				throw new Exception('Invalid parameter');
 
 			$remainingTemplate = ltrim(substr($template, $nextEq+1));
 
 			if (!$remainingTemplate)
-				$this->throwParseException("No value set for the parameter “{$paramName}”");
+				throw new Exception('No parameter value set');
 
 			$recurringSubtagPattern = substr(self::subtagPattern, 0, -1).'(?P>subtag)?)';
 			if (!preg_match('/^('.self::stringPattern.'|\d*\.?\d+|'.self::tagPattern.$recurringSubtagPattern.'?)(\s+|$)/x', $remainingTemplate, $match))
-				{
-					$this->throwParseException("Invalid value set for the parameter “{$paramName}”");}
+				throw new Exception('Invalid parameter value');
 
 			$paramValueLength = strlen($match[0]);
 			$paramValue = rtrim(substr($remainingTemplate, 0, $paramValueLength));
