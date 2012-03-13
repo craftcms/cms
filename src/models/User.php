@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class User extends BaseModel
+class User extends Model
 {
 	protected $tableName = 'users';
 	protected $hasContent = true;

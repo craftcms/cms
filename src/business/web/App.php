@@ -184,8 +184,8 @@ class App extends \CWebApplication
 	private function processResourceRequest()
 	{
 		// Import the bare minimum to determine if what type of request this is
-		self::import('business.BaseComponent');
-		self::import('business.BasePlugin');
+		self::import('business.Component');
+		self::import('business.Plugin');
 		self::import('business.enums.UrlFormat');
 		self::import('business.enums.RequestMode');
 		self::import('business.utils.HtmlHelper');

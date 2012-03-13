@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class LicenseKey extends BaseModel
+class LicenseKey extends Model
 {
 	protected $tableName = 'licensekeys';
 

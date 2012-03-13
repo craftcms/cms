@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class CpService extends BaseComponent
+class CpService extends Component
 {
 	/**
 	 * Get the sections of the CP

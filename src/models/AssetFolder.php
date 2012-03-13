@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetFolder extends BaseModel
+class AssetFolder extends Model
 {
 	protected $tableName = 'assetfolders';
 

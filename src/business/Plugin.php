@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class BasePlugin extends BaseComponent
+abstract class Plugin extends Component
 {
 	public $name;
 	public $version;

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallController extends BaseController
+class InstallController extends Controller
 {
 	/**
 	 * Init

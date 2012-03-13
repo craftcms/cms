@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles account related tasks including updating profiles, changing passwords, etc.
  */
-class AccountController extends BaseController
+class AccountController extends Controller
 {
 	/**
 	 *

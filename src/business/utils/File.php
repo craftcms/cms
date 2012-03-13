@@ -12,7 +12,7 @@ namespace Blocks;
  * Heavily modified for Blocks.
  */
 
-class File extends BaseComponent
+class File extends Component
 {
 	/**
 	 * @var array object instances array with key set to $_filepath

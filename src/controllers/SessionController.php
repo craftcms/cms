@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles session related tasks including logging in and out.
  */
-class SessionController extends BaseController
+class SessionController extends Controller
 {
 	/**
 	 * Displays the login template. If valid login information, redirects to previous template.

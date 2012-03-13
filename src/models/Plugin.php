@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Plugin extends BaseModel
+class Plugin extends Model
 {
 	protected $tableName = 'plugins';
 	protected $hasSettings = true;

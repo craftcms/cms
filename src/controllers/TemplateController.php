@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class TemplateController extends BaseController
+class TemplateController extends Controller
 {
 	/**
 	 * Required

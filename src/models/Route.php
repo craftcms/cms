@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Route extends BaseModel
+class Route extends Model
 {
 	protected $tableName = 'routes';
 

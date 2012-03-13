@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * @todo Authenticate requests to this.
  */
-class UpdateController extends BaseController
+class UpdateController extends Controller
 {
 	private $_blocksUpdateInfo;
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles site management tasks
  */
-class SitesController extends BaseController
+class SitesController extends Controller
 {
 	/**
 	 * All site actions require the user to be logged in

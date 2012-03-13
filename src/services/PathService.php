@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PathService extends BaseComponent
+class PathService extends Component
 {
 	/* Paths */
 

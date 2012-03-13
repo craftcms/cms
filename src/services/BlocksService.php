@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BlocksService extends BaseComponent
+class BlocksService extends Component
 {
 	private $_blockTypes;
 

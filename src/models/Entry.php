@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Entry extends BaseModel
+class Entry extends Model
 {
 	protected $tableName = 'entries';
 	protected $hasContent = true;

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UsersService extends BaseComponent
+class UsersService extends Component
 {
 	/**
 	 * @return User

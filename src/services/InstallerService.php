@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallerService extends BaseComponent
+class InstallerService extends Component
 {
 	/**
 	 * Run the installer
@@ -28,8 +28,8 @@ class InstallerService extends BaseComponent
 			$file = b()->file->set($filePath);
 			$fileName = $file->fileName;
 
-			// Ignore the models we've already installed, and the BaseModel
-			if ($fileName == 'Content' || $fileName == 'Block' || $fileName == 'BaseModel')
+			// Ignore the models we've already installed, and the Model
+			if ($fileName == 'Content' || $fileName == 'Block' || $fileName == 'Model')
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;

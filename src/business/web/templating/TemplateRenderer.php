@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class TemplateRenderer extends BaseComponent implements \IViewRenderer
+class TemplateRenderer extends Component implements \IViewRenderer
 {
 	public $fileExtension = '.html';
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * @abstract
  */
-abstract class BaseModel extends \CActiveRecord
+abstract class Model extends \CActiveRecord
 {
 	protected $tableName;
 	protected $contentJoinTableName;
@@ -447,7 +447,7 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Get the records that were recently created
 	 * @param int limit Number of rows to get (default is 50)
-	 * @return \Blocks\BaseModel
+	 * @return Model
 	 */
 	public function recentlyCreated($limit = 50)
 	{
@@ -461,7 +461,7 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Get the records that were recently modified
 	 * @param int limit Number of rows to get (default is 50)
-	 * @return \Blocks\BaseModel
+	 * @return Model
 	 */
 	public function recentlyUpdated($limit = 50)
 	{

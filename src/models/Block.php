@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Block extends BaseModel
+class Block extends Model
 {
 	// Model properties
 

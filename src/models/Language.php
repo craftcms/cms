@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Language extends BaseModel
+class Language extends Model
 {
 	protected $tableName = 'languages';
 

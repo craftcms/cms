@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Message extends BaseComponent
+class Message extends Component
 {
 	private $_type;
 	private $_key;

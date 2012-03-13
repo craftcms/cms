@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SettingsService extends BaseComponent
+class SettingsService extends Component
 {
 	/**
 	 * @param        $table

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class BaseController extends \CController
+abstract class Controller extends \CController
 {
 	private $_widgetStack = array();
 

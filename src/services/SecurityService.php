@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SecurityService extends BaseComponent
+class SecurityService extends Component
 {
 	private $_iterationCount;
 	private $_portableHashes;

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles user management tasks including registering, etc., etc.
  */
-class UsersController extends BaseController
+class UsersController extends Controller
 {
 	/**
 	 * All user actions require the user to be logged in

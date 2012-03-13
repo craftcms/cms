@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Widget extends BaseModel
+class Widget extends Model
 {
 	// Model properties
 

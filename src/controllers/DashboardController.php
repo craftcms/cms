@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DashboardController extends BaseController
+class DashboardController extends Controller
 {
 	/**
 	 * All dashboard actions require the user to be logged in
