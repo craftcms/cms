@@ -29,15 +29,4 @@ class AppTag
 	{
 		return Blocks::getBuild();
 	}
-
-	/**
-	 * @return string
-	 */
-	public function fullVersion()
-	{
-		$version = Blocks::getVersion();
-		$build = Blocks::getBuild();
-
-		return $version.'.'.$build;
-	}
 }
