@@ -641,7 +641,7 @@ abstract class Model extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTableName = $otherModel->getTableName();
 			$fkName = "{$tablePrefix}{$tableName}_{$otherTableName}_fk";
-			b()->db->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id', 'NO ACTION', 'NO ACTION');
+			b()->db->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id');
 		}
 	}
 
@@ -676,18 +676,20 @@ abstract class Model extends \CActiveRecord
 		$columns = array(
 			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
 			'content_id' => array('type' => AttributeType::Int, 'required' => true),
+			'language'   => AttributeType::LanguageCode,
 			'num'        => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
 			'name'       => AttributeType::Name,
 			'active'     => AttributeType::Boolean,
-			'type'       => array('type' => AttributeType::Enum, 'values' => array('published','draft','autosave'), 'default' => 'draft', 'required' => true)
+			'draft'      => array('type' => AttributeType::Boolean)
 		);
 
 		// Create the table
 		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id', 'NO ACTION', 'NO ACTION');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_languages_fk",     $joinTable, 'language',   'languages', 'language');
 	}
 
 	/**
@@ -721,8 +723,8 @@ abstract class Model extends \CActiveRecord
 		b()->db->createCommand()->createTable($joinTable, $columns);
 
 		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,   $modelTable, 'id', 'NO ACTION', 'NO ACTION');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_blocks_fk",        $joinTable, 'block_id', 'blocks',    'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,   $modelTable, 'id');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_blocks_fk",        $joinTable, 'block_id', 'blocks',    'id');
 	}
 
 	/**
@@ -755,7 +757,7 @@ abstract class Model extends \CActiveRecord
 		b()->db->createCommand()->createTable($settingsTable, $columns);
 
 		// Add the foreign key
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$settingsTable}_{$modelTable}_fk", $settingsTable, $modelFk, $modelTable, 'id', 'NO ACTION', 'NO ACTION');
+		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$settingsTable}_{$modelTable}_fk", $settingsTable, $modelFk, $modelTable, 'id');
 	}
 
 	/**

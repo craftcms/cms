@@ -9,7 +9,6 @@ class Content extends Model
 	protected $tableName = 'content';
 
 	protected $attributes = array(
-		'language_code' => AttributeType::LanguageCode,
-		'title'         => array('type' => AttributeType::Varchar, 'maxLength' => 255)
+		'title' => array('type' => AttributeType::Varchar, 'maxLength' => 255)
 	);
 }

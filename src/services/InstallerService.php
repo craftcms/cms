@@ -14,22 +14,28 @@ class InstallerService extends Component
 		if (b()->isInstalled)
 			throw new Exception('Blocks is already installed.');
 
-		$modelsDir = b()->file->set(b()->path->modelsPath);
-		$modelFiles = $modelsDir->getContents(false, '.php');
-		$models = array();
+		// Create the languages table first
+		// This is a special case: So that other tables' language columns
+		// can be restricted to supported languages without making them enums
+		$table = b()->config->tablePrefix.'languages';
+		$columns = array('language' => 'CHAR(5) NOT NULL PRIMARY KEY');
+		b()->db->createCommand()->setText(b()->db->schema->createTable($table, $columns))->execute();
 
-		// Install Content and Blocks models first,
+		// Then install Content and Blocks models
 		// so we can start creating foreign keys to them right away
 		$models[] = new Content;
 		$models[] = new Block;
+
+		$modelsDir = b()->file->set(b()->path->modelsPath);
+		$modelFiles = $modelsDir->getContents(false, '.php');
 
 		foreach ($modelFiles as $filePath)
 		{
 			$file = b()->file->set($filePath);
 			$fileName = $file->fileName;
 
-			// Ignore the models we've already installed, and the Model
-			if ($fileName == 'Content' || $fileName == 'Block' || $fileName == 'Model')
+			// Ignore the models already set to install
+			if (in_array($fileName, array('Content', 'Block', 'Model')))
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;
