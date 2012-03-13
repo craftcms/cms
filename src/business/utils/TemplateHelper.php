@@ -49,12 +49,13 @@ class TemplateHelper
 	{
 		if (in_array($handle, self::$services))
 		{
-			return new Tag(b()->$handle);
+			$obj = b()->$handle;
+			return self::getTag($obj);
 		}
 		else if (isset(self::$globalTags[$handle]))
 		{
 			$obj = new self::$globalTags[$handle];
-			return new Tag($obj);
+			return self::getTag($obj);
 		}
 		else
 			return new Tag;

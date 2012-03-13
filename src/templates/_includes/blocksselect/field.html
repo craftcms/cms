@@ -6,7 +6,8 @@
 					<li class="block-item" data-block-id="{:block.id}">
 						<label class="required" title="Required?"><input type="checkbox" name="{:name}[required][{:block.id}]" value="y" {if block.required}checked{/if}></label>
 						<div class="block"><span class="icon icon137"></span><span class="block-name">{:block.name}</span>
-							<span class="block-type">{:block.blocktypeName}</span></div>
+							<span class="block-type">{:block.blocktypeName}</span>
+							<a class="goto" href="{:url.base}settings/blocks/edit/{:block.id}" title="Go to block" target="_blank"></a></div>
 						<input type="hidden" name="{:name}[selections][]" value="{:block.id}">
 					</li>
 				{/foreach}

@@ -90,7 +90,7 @@ abstract class Controller extends \CController
 			{
 				foreach ($vars as $name => $var)
 				{
-					$tags[$name] = new Tag($var);
+					$tags[$name] = TemplateHelper::getTag($var);
 				}
 			}
 
