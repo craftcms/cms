@@ -68,7 +68,6 @@ class TemplateHelper
 	public static function isTag($var)
 	{
 		$isTag = (is_object($var) && get_class($var) == 'Blocks\Tag');
-		if ($isTag) die(get_class($var));
 		return $isTag;
 	}
 
