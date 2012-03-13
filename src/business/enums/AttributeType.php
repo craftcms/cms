@@ -44,7 +44,7 @@ class AttributeType
 	const ClassName    = 'classname';
 	const Email        = 'email';
 	const Handle       = 'handle';
-	const LanguageCode = 'languagecode';
+	const Language     = 'language';
 	const Name         = 'name';
 	const SortOrder    = 'sortorder';
 	const Template     = 'template';

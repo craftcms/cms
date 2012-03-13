@@ -30,9 +30,10 @@ class SitesController extends Controller
 		if (empty($site))
 			$site = new Site;
 
-		$site->name = b()->request->getPost('name');
-		$site->handle = b()->request->getPost('handle');
-		$site->url = b()->request->getPost('url');
+		$site->name     = b()->request->getPost('name');
+		$site->handle   = b()->request->getPost('handle');
+		$site->url      = b()->request->getPost('url');
+		$site->language = b()->request->getPost('language');
 
 		if ($site->save())
 		{

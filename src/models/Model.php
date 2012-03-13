@@ -676,11 +676,11 @@ abstract class Model extends \CActiveRecord
 		$columns = array(
 			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
 			'content_id' => array('type' => AttributeType::Int, 'required' => true),
-			'language'   => AttributeType::LanguageCode,
+			'language'   => AttributeType::Language,
 			'num'        => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
 			'name'       => AttributeType::Name,
 			'active'     => AttributeType::Boolean,
-			'draft'      => array('type' => AttributeType::Boolean)
+			'draft'      => AttributeType::Boolean
 		);
 
 		// Create the table
@@ -689,7 +689,6 @@ abstract class Model extends \CActiveRecord
 		// Add the foreign keys
 		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id');
 		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_languages_fk",     $joinTable, 'language',   'languages', 'language');
 	}
 
 	/**

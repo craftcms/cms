@@ -183,7 +183,12 @@ class DbCommand extends \CDbCommand
 		}
 
 		// Create the table
-		$return = parent::createTable($this->addTablePrefix($table), $columns, $options);
+		$tableName = $this->addTablePrefix($table);
+		$return = parent::createTable($tableName, $columns, $options);
+
+		// Add the language FK
+		if (array_key_exists('language', $columns))
+			$this->addForeignKey("{$tableName}_languages_fk", $table, 'language', 'languages', 'language');
 
 		// Add the INSERT and UPDATE triggers
 		DatabaseHelper::createInsertAuditTrigger($table);
