@@ -167,50 +167,52 @@
 		<?php echo $this->renderSourceCode($data['file'],$data['line'],$this->maxSourceLines); ?>
 	</div>
 
-	<div class="traces">
-		<h2>Stack Trace</h2>
-		<?php $count=0; ?>
-		<table style="width:100%;">
-			<?php foreach($data['traces'] as $n => $trace): ?>
-			<?php
-				if ($this->isCoreCode($trace))
-					$cssClass='core collapsed';
-				else if(++$count > 3)
-					$cssClass = 'app collapsed';
-				else
-					$cssClass = 'app expanded';
+	<?php if (count($data['traces']) > 0): ?>
+		<div class="traces">
+			<h2>Stack Trace</h2>
+			<?php $count=0; ?>
+			<table style="width:100%;">
+				<?php foreach($data['traces'] as $n => $trace): ?>
+				<?php
+					if ($this->isCoreCode($trace))
+						$cssClass='core collapsed';
+					else if(++$count > 3)
+						$cssClass = 'app collapsed';
+					else
+						$cssClass = 'app expanded';
 
-				$hasCode = $trace['file'] !== 'unknown' && is_file($trace['file']);
-			?>
-			<tr class="trace <?php echo $cssClass; ?>">
-			<td class="number">
-				#<?php echo $n; ?>
-			</td>
-			<td class="content">
-				<div class="trace-file">
-					<?php if($hasCode): ?>
-						<div class="plus">+</div>
-						<div class="minus">–</div>
-					<?php endif; ?>
-					<?php
-						echo '&nbsp;';
-						echo htmlspecialchars($trace['file'], ENT_QUOTES, Blocks\b()->charset)."(".$trace['line'].")";
-						echo ': ';
-						if (!empty($trace['class']))
-							echo "<strong>{$trace['class']}</strong>{$trace['type']}";
-						echo "<strong>{$trace['function']}</strong>(";
-						if(!empty($trace['args']))
-							echo htmlspecialchars($this->argumentsToString($trace['args']), ENT_QUOTES, Blocks\b()->charset);
-						echo ')';
-					?>
-				</div>
+					$hasCode = $trace['file'] !== 'unknown' && is_file($trace['file']);
+				?>
+				<tr class="trace <?php echo $cssClass; ?>">
+				<td class="number">
+					#<?php echo $n; ?>
+				</td>
+				<td class="content">
+					<div class="trace-file">
+						<?php if($hasCode): ?>
+							<div class="plus">+</div>
+							<div class="minus">–</div>
+						<?php endif; ?>
+						<?php
+							echo '&nbsp;';
+							echo htmlspecialchars($trace['file'], ENT_QUOTES, Blocks\b()->charset)."(".$trace['line'].")";
+							echo ': ';
+							if (!empty($trace['class']))
+								echo "<strong>{$trace['class']}</strong>{$trace['type']}";
+							echo "<strong>{$trace['function']}</strong>(";
+							if(!empty($trace['args']))
+								echo htmlspecialchars($this->argumentsToString($trace['args']), ENT_QUOTES, Blocks\b()->charset);
+							echo ')';
+						?>
+					</div>
 
-				<?php if ($hasCode) echo $this->renderSourceCode($trace['file'],$trace['line'],$this->maxTraceSourceLines); ?>
-			</td>
-		</tr>
-		<?php endforeach; ?>
-		</table>
-	</div>
+					<?php if ($hasCode) echo $this->renderSourceCode($trace['file'],$trace['line'],$this->maxTraceSourceLines); ?>
+				</td>
+			</tr>
+			<?php endforeach; ?>
+			</table>
+		</div>
+	<?php endif; ?>
 
 	<div class="version">
 		<?php echo date('Y-m-d H:i:s',$data['time']) .' '. $data['version']; ?>

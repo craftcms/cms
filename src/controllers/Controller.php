@@ -43,6 +43,8 @@ abstract class Controller extends \CController
 		else
 			$viewPath = $this->getViewPath();
 
+		$viewPath = str_replace('//', '/', $viewPath);
+
 		return $this->resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath);
 	}
 
@@ -72,9 +74,9 @@ abstract class Controller extends \CController
 	 * Loads a template
 	 *
 	 * @param       $templatePath
-	 * @param array $tags Any variables that should be available to the template
-	 * @param bool  $return
+	 * @param array $vars
 	 * @param bool  $return Whether to return the results, rather than output them
+	 * @internal param array $tags Any variables that should be available to the template
 	 * @return mixed
 	 */
 	public function loadTemplate($templatePath, $vars = array(), $return = false)
@@ -118,6 +120,9 @@ abstract class Controller extends \CController
 	 */
 	public function renderFile($viewFile, $data = null, $return = false)
 	{
+		$viewFile = str_replace('\\', '/', $viewFile);
+		$viewFile = str_replace('//', '/', $viewFile);
+
 		$widgetCount = count($this->_widgetStack);
 
 		if (strpos($viewFile, 'email_templates') !== false)

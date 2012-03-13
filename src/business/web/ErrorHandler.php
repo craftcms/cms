@@ -29,20 +29,27 @@ class ErrorHandler extends \CErrorHandler
 				$errorLine = $trace['line'];
 			}
 
-			$trace = $exception->getTrace();
-
-			foreach ($trace as $i => $t)
+			if ($exception instanceof TemplateRendererException)
 			{
-				if (!isset($t['file']))
-					$trace[$i]['file'] = 'unknown';
+				$trace = array();
+			}
+			else
+			{
+				$trace = $exception->getTrace();
 
-				if (!isset($t['line']))
-					$trace[$i]['line'] = 0;
+				foreach ($trace as $i => $t)
+				{
+					if (!isset($t['file']))
+						$trace[$i]['file'] = 'unknown';
 
-				if (!isset($t['function']))
-					$trace[$i]['function'] = 'unknown';
+					if (!isset($t['line']))
+						$trace[$i]['line'] = 0;
 
-				unset($trace[$i]['object']);
+					if (!isset($t['function']))
+						$trace[$i]['function'] = 'unknown';
+
+					unset($trace[$i]['object']);
+				}
 			}
 
 			$this->_error = $data = array(

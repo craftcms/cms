@@ -223,18 +223,19 @@ class TemplateParser
 				// Tack on the full tag and rethrow
 				$message = $e->getMessage().' “'.$tag.'”';
 
+				$numMatch = 0;
 				// Try to find the line that this is occurring
 				$lines = preg_split('/[\r\n]/', $this->_template);
 				foreach ($lines as $num => $line)
 				{
 					if (strpos($line, $tag) !== false)
 					{
-						$message .= ' (line '.($num+1).')';
+						$numMatch = $num + 1;
 						break;
 					}
 				}
 
-				throw new Exception($message);
+				throw new TemplateParserException($message, $numMatch);
 			}
 		}
 		else

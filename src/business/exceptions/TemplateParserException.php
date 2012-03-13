@@ -8,11 +8,13 @@ class TemplateParserException extends Exception
 {
 	/**
 	 * @param $message
-	 * @param $templateFileName
+	 * @param $lineNumber
 	 */
-	public function __construct($message, $templateFileName)
+	public function __construct($message, $lineNumber)
 	{
-		Blocks::log($message);
-		parent::__construct("Invalid template: {$templateFileName}. {$message}", null, null);
+		$this->line = (int)$lineNumber;
+
+		Blocks::log($message.' on line '.$lineNumber);
+		parent::__construct($message, null, null);
 	}
 }

@@ -57,6 +57,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	/**
 	 * Returns the template path, relative to the template root directory
 	 * @access protected
+	 * @return string
 	 */
 	protected function getRelativePath()
 	{
@@ -66,6 +67,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	/**
 	 * Returns the full path to the duplicate template in the parsed_templates directory
 	 * @access protected
+	 * @return string
 	 */
 	protected function getDuplicatePath()
 	{
@@ -75,6 +77,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	/**
 	 * Returns the full path to the parsed template
 	 * @access protected
+	 * @return string
 	 */
 	protected function getParsedPath()
 	{
@@ -140,9 +143,9 @@ class TemplateRenderer extends Component implements \IViewRenderer
 		{
 			$parsedTemplate = $parser->parseTemplate($template);
 		}
-		catch (Exception $e)
+		catch (TemplateParserException $e)
 		{
-			throw new TemplateParserException($e->getMessage(), $this->_sourcePath);
+			throw new TemplateRendererException($e->getMessage(), $this->_sourcePath, $e->getLine());
 		}
 
 		// Save the parsed template to the parsed path
