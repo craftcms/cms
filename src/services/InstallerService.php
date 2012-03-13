@@ -21,6 +21,9 @@ class InstallerService extends Component
 		$columns = array('language' => 'CHAR(5) NOT NULL PRIMARY KEY');
 		b()->db->createCommand()->setText(b()->db->schema->createTable($table, $columns))->execute();
 
+		// Add the languages
+		b()->db->createCommand()->insert('languages', array('language' => 'en_us'));
+
 		// Then install Content and Blocks models
 		// so we can start creating foreign keys to them right away
 		$models[] = new Content;
