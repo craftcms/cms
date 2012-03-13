@@ -128,7 +128,7 @@ blx.ui.NiceText = blx.Base.extend({
 			val += '<br/>&nbsp;';
 		}
 
-		this.$stage.html(html);
+		this.$stage.html(val);
 		this.stageHeight = this.$stage.height();
 		return this.stageHeight;
 	},
