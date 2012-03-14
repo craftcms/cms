@@ -678,9 +678,8 @@ abstract class Model extends \CActiveRecord
 			'content_id' => array('type' => AttributeType::Int, 'required' => true),
 			'language'   => AttributeType::Language,
 			'num'        => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
-			'name'       => AttributeType::Name,
-			'active'     => AttributeType::Boolean,
-			'draft'      => AttributeType::Boolean
+			'notes'      => AttributeType::Text,
+			'active'     => AttributeType::Boolean
 		);
 
 		// Create the table

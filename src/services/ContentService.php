@@ -165,11 +165,31 @@ class ContentService extends Component
 	 */
 	public function createEntry($sectionId, $authorId, $parentId = null)
 	{
-		$entry = new Entry;
-		$entry->section_id = $sectionId;
-		$entry->author_id = $authorId;
-		$entry->parent_id = $parentId;
-		$entry->save();
+		// Start a transaction
+		$transaction = b()->db->beginTransaction();
+		try
+		{
+			// Create the new entry
+			$entry = new Entry;
+			$entry->section_id = $sectionId;
+			$entry->author_id = $authorId;
+			$entry->parent_id = $parentId;
+			$entry->save();
+
+			// Now create a draft
+			b()->db->createCommand()->insert('drafts', array(
+				'entry_id'   => $entry->id,
+				'author_id'  => b()->users->current->id,
+				'language'   => b()->sites->currentSite->language,
+				'name'       => 'Draft 1'
+			));
+		}
+		catch (Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+
 		return $entry;
 	}
 

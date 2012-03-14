@@ -26,6 +26,7 @@ class Entry extends Model
 	);
 
 	protected $hasMany = array(
+		'drafts'   => array('model' => 'Draft', 'foreignKey' => 'entry'),
 		'children' => array('model' => 'Entry', 'foreignKey' => 'parent')
 	);
 
