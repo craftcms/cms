@@ -1,4 +1,6 @@
-#main .page { margin: 0 auto; max-width: 800px; border-radius: 5px; }
+#main .centered { margin: 0 auto; max-width: 800px; }
+
+#main .page { border-radius: 5px; }
 #main .page .body .item:first-child { border-radius: 5px 5px 0 0; }
 #main .page .body .item:last-child { border-radius: 0 0 5px 5px; }
 
@@ -31,5 +33,5 @@
 #main .page .page-head .page-settings table td { padding-top: 2px; }
 #main .page .page-head .page-settings table th { padding-right: 20px; color: #666; }
 
-#main .page .page-foot { padding: 40px 80px; border-bottom: none; border-radius: 0 0 4px 4px; }
-#main .page .page-foot .btn.big { display: inline-block; float: none; margin-left: 0; }
+#main .btn.big.submit { margin-top: 0; height: 40px; border: none; font-size: 18px; line-height: 40px; }
+#main .btn.big.submit .label { margin: 0 16px; }

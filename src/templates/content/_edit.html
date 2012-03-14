@@ -6,39 +6,44 @@
 
 {region "pageTitle"}Editing “{if entry.title}{:entry.title}{else}Untitled{/if}”{/region}
 
-{region "page"}
-	<div class="item field page-head">
-		<div class="title editable" tabindex="0">
-			<h1 {if !entry.title}class="empty"{/if}>{if entry.title}{:entry.title}{else}Untitled{/if}</h1>
-			<a>Edit</a>
-			<input type="hidden" name="title" value="{:entry.title}" />
-		</div>
-		<div class="clear"></div>
-		{if entry.section.has_urls}
-			<div class="url">
-				<div class="editable" tabindex="0">
-					<div><span class="prefix">{:sites.currentSite.url}/</span><span class="slug {if !entry.slug}empty{/if}">{if entry.slug}{:entry.slug}{else}…{/if}</span></div>
-					<a>Edit</a>
-					<input type="hidden" name="slug" value="{:entry.slug}" />
+{region "main"}
+	{include "content/_includes/toolbar"}
+	<div class="centered">
+		<div class="pane page">
+			<div class="body">
+				<div class="item field page-head">
+					<div class="title editable" tabindex="0">
+						<h1 {if !entry.title}class="empty"{/if}>{if entry.title}{:entry.title}{else}Untitled{/if}</h1>
+						<a>Edit</a>
+						<input type="hidden" name="title" value="{:entry.title}" />
+					</div>
+					<div class="clear"></div>
+					{if entry.section.has_urls}
+						<div class="url">
+							<div class="editable" tabindex="0">
+								<div><span class="prefix">{:sites.currentSite.url}/</span><span class="slug {if !entry.slug}empty{/if}">{if entry.slug}{:entry.slug}{else}…{/if}</span></div>
+								<a>Edit</a>
+								<input type="hidden" name="slug" value="{:entry.slug}" />
+							</div>
+							<div class="clear"></div>
+						</div>
+					{/if}
 				</div>
-				<div class="clear"></div>
-			</div>
-		{/if}
-	</div>
 
-	{foreach entry.blocks as block}
-		<div class="item field">
-			<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
-			{if block.instructions}
-				<p>{:block.instructions}</p>
-			{/if}
-			<div class="{:block.classHandle}">
-				{:block.displayField}
+				{foreach entry.blocks as block}
+					<div class="item field">
+						<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
+						{if block.instructions}
+							<p>{:block.instructions}</p>
+						{/if}
+						<div class="{:block.classHandle}">
+							{:block.displayField}
+						</div>
+					</div>
+				{/foreach}
 			</div>
 		</div>
-	{/foreach}
 
-	<div class="item field page-foot">
 		<input class="btn big submit" type="submit" value="Publish" />
 	</div>
 {/region}

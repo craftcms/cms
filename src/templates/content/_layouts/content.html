@@ -1,4 +1,4 @@
-{layout "_layouts/sidebar" pageTitle=pageTitle}
+{layout "_layouts/sidebar" pageTitle=pageTitle main=main}
 
 {region "styles"}
 	{include "_includes/css_include" file="styles/content.css"}
@@ -14,17 +14,6 @@
 			<li><a class="new" href="{:url.action('content/createEntry', 'sectionId=')}{:section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
 		</ul>
 	{/foreach}
-{/region}
-
-{region "main"}
-	{if page}
-		{include "content/_includes/toolbar"}
-		<div class="pane page">
-			<div class="body">
-				{:page}
-			</div>
-		</div>
-	{/if}
 {/region}
 
 {region "scripts"}
