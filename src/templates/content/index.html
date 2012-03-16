@@ -1,1 +1,26 @@
-{layout "content/_layouts/content" pageTitle="Content"}
+{layout "_layouts/sidebar" pageTitle="Content"}
+
+
+{region "styles"}
+	{include "_includes/css_include" file="styles/content.css"}
+{/region}
+
+
+{region "sidebar"}
+	{foreach content.sections as section}
+		<h5>{:section.name}</h5>
+		<ul class="nav tree">
+			{foreach section.entries as entry}
+				<li><a class="has-status {if entry.id == entryId}sel{/if}" href="{:url.base}content/edit/{:entry.id}" data-entry-id="{:entry.id}"><span class="status {if entry.live}on{elseif entry.published}off{/if}"></span><span class="label">{if entry.title}{:entry.title}{else}Untitled{/if}</span></a></li>
+			{/foreach}
+			<li><a class="new" href="{:url.action('content/createEntry', 'sectionId=')}{:section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
+		</ul>
+	{/foreach}
+{/region}
+
+
+{region "scripts"}
+	{include "_includes/js_include" file="content/Entry.js"}
+	{include "_includes/js_include" file="content/content.js"}
+	{if entryId}<script type="text/javascript">blx.content.loadEntry(entryId);</script>{/if}
+{/region}

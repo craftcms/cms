@@ -64,7 +64,6 @@ abstract class Controller extends \CController
 			$template = $templateMatch->getRelativePath().'/'.$templateMatch->getFileName();
 			$tags = array_merge(b()->urlManager->templateTags, $tags);
 			$this->loadTemplate($template, $tags);
-
 		}
 		else
 			throw new HttpException(404);

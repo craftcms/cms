@@ -183,6 +183,8 @@ class ContentService extends Component
 				'language'   => b()->sites->currentSite->language,
 				'name'       => 'Draft 1'
 			));
+
+			$transaction->commit();
 		}
 		catch (Exception $e)
 		{

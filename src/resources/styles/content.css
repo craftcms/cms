@@ -35,3 +35,5 @@
 
 #main .btn.big.submit { margin-top: 0; height: 40px; border: none; font-size: 18px; line-height: 40px; }
 #main .btn.big.submit .label { margin: 0 16px; }
+
+#main .autosave-status { display: inline-block; margin-left: 16px; color: #474a4d; text-shadow: 0 1px 0 rgba(255,255,255,0.5); }

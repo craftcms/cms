@@ -41,7 +41,7 @@ i em { font-weight: bold; font-family: sans-serif; }
 
 a { color: #2d98db; cursor: pointer; }
 a:hover { text-decoration: underline; }
-a.sel:hover { text-decoration: none; }
+a.sel { text-decoration: none; }
 
 a.go { padding-right: 10px; background: url(../images/go.png) no-repeat 100% 50%; }
 a.goto { display: inline-block; vertical-align: middle; width: 12px; height: 12px; background: url(../images/goto.png) no-repeat; opacity: 0.5; }
