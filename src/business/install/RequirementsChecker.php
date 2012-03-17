@@ -123,7 +123,7 @@ class RequirementsChecker extends \CComponent
 			),
 			new Requirement(
 				'GD extension w/ FreeType support',
-				($message = $this->checkGD()) === '',
+				($message = $this->_checkGD()) === '',
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CCaptchaAction">CCaptchaAction</a>, Assets',
 				$message
@@ -176,7 +176,7 @@ class RequirementsChecker extends \CComponent
 	 * @access private
 	 * @return string
 	 */
-	private function checkGD()
+	private function _checkGD()
 	{
 		if (extension_loaded('gd'))
 		{
@@ -195,7 +195,7 @@ class RequirementsChecker extends \CComponent
 	 * @access private
 	 * @return string
 	 */
-	private function calculateServerInfo()
+	private function _calculateServerInfo()
 	{
 		$info[] = '<a href="http://www.blockscms.com/">Blocks</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
@@ -209,7 +209,7 @@ class RequirementsChecker extends \CComponent
 	 * @access private
 	 * @return array
 	 */
-	private function getWritableFolders()
+	private function _getWritableFolders()
 	{
 		$folders = array(
 			b()->file->set(b()->path->runtimePath, false),
@@ -236,7 +236,7 @@ class RequirementsChecker extends \CComponent
 				$installResult = InstallStatus::Warning;
 		}
 
-		$writableFolders = $this->getWritableFolders();
+		$writableFolders = $this->_getWritableFolders();
 		$errorFolders = null;
 		foreach($writableFolders as $writableFolder)
 		{
@@ -248,7 +248,7 @@ class RequirementsChecker extends \CComponent
 		}
 
 		$this->_result = $installResult;
-		$this->_serverInfo = $this->calculateServerInfo();
+		$this->_serverInfo = $this->_calculateServerInfo();
 		$this->_errorFolders = $errorFolders;
 	}
 

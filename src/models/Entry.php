@@ -36,6 +36,7 @@ class Entry extends Model
 
 	/**
 	 * Returns the entry's title
+	 * @return mixed
 	 */
 	public function getTitle()
 	{
@@ -44,6 +45,9 @@ class Entry extends Model
 
 	/**
 	 * Adds content block handles to the mix of possible magic getter properties
+	 *
+	 * @param $name
+	 * @return mixed
 	 */
 	public function __get($name)
 	{

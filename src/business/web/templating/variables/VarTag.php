@@ -10,7 +10,8 @@ abstract class VarTag
 
 	/**
 	 * Constructor
-	 * @param mixed $val
+	 *
+	 * @param null $var
 	 */
 	public function __construct($var = null)
 	{

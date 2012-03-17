@@ -25,6 +25,9 @@ class ConfigService extends Component
 
 	/**
 	 * Adds config items to the mix of possible magic getter properties
+	 *
+	 * @param $name
+	 * @return mixed|null
 	 */
 	public function __get($name)
 	{

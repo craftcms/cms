@@ -12,7 +12,7 @@ class Migration
 	 */
 	public static function runToTop()
 	{
-		$runner = self::getRunner();
+		$runner = self::_getRunner();
 		$args = array('yiic', 'migrate', '--migrationTable='.b()->config->getDbItem('tablePrefix').'_migrations', '--interactive=0');
 
 		ob_start();
@@ -31,7 +31,7 @@ class Migration
 		// migration names always start with timestamp m'yymmdd_hhmmss'
 		$migrationShortName = substr(b()->file->set($migrationName, false)->fileName, 1, 13);
 
-		$runner = self::getRunner();
+		$runner = self::_getRunner();
 		$args = array('yiic', 'migrate', 'to', $migrationShortName, '--migrationTable='.b()->config->getDbItem('tablePrefix').'_migrations', '--interactive=0');
 
 		ob_start();
@@ -50,7 +50,7 @@ class Migration
 		if (!isset($number))
 			$number = 1;
 
-		$runner = self::getRunner();
+		$runner = self::_getRunner();
 		$args = array('yiic', 'migrate', '--migrationTable='.b()->config->getDbItem('tablePrefix').'migrations', 'down', $number, '--interactive=0');
 
 		ob_start();
@@ -67,7 +67,7 @@ class Migration
 	public static function create($migrationName)
 	{
 		$migrationName = str_replace(' ', '_', $migrationName);
-		$runner = self::getRunner();
+		$runner = self::_getRunner();
 		$args = array('yiic', 'migrate', 'create', $migrationName, '--interactive=0');
 
 		ob_start();
@@ -81,7 +81,7 @@ class Migration
 	 * @static
 	 * @return \CConsoleCommandRunner
 	 */
-	private static function getRunner()
+	private static function _getRunner()
 	{
 		$commandPath = b()->path->commandsPath;
 		$runner = new \CConsoleCommandRunner();

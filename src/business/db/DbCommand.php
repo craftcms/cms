@@ -14,7 +14,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
-		return $this->setText($this->connection->schema->addColumnFirst($this->addTablePrefix($table), $column, $type))->execute();
+		return $this->setText($this->connection->schema->addColumnFirst($this->_addTablePrefix($table), $column, $type))->execute();
 	}
 
 	/**
@@ -26,7 +26,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
-		return $this->setText($this->connection->schema->addColumnAfter($this->addTablePrefix($table), $column, $type, $after))->execute();
+		return $this->setText($this->connection->schema->addColumnAfter($this->_addTablePrefix($table), $column, $type, $after))->execute();
 	}
 
 	/**
@@ -38,7 +38,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		return $this->setText($this->connection->schema->addColumnBefore($this->addTablePrefix($table), $column, $type, $before))->execute();
+		return $this->setText($this->connection->schema->addColumnBefore($this->_addTablePrefix($table), $column, $type, $before))->execute();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
-		$queryParams = $this->connection->schema->insertAll($this->addTablePrefix($table), $columns, $vals);
+		$queryParams = $this->connection->schema->insertAll($this->_addTablePrefix($table), $columns, $vals);
 		return $this->setText($queryParams['query'])->execute($queryParams['params']);
 	}
 
@@ -68,7 +68,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function from($tables)
 	{
-		return parent::from($this->addTablePrefix($tables));
+		return parent::from($this->_addTablePrefix($tables));
 	}
 
 	/**
@@ -79,7 +79,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function join($table, $conditions, $params=array())
 	{
-		return parent::join($this->addTablePrefix($table), $conditions, $params);
+		return parent::join($this->_addTablePrefix($table), $conditions, $params);
 	}
 
 	/**
@@ -90,7 +90,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function leftJoin($table, $conditions, $params=array())
 	{
-		return parent::leftJoin($this->addTablePrefix($table), $conditions, $params);
+		return parent::leftJoin($this->_addTablePrefix($table), $conditions, $params);
 	}
 
 	/**
@@ -101,7 +101,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function rightJoin($table, $conditions, $params=array())
 	{
-		return parent::rightJoin($this->addTablePrefix($table), $conditions, $params);
+		return parent::rightJoin($this->_addTablePrefix($table), $conditions, $params);
 	}
 
 	/**
@@ -119,7 +119,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function naturalJoin($table)
 	{
-		return parent::naturalJoin($this->addTablePrefix($table));
+		return parent::naturalJoin($this->_addTablePrefix($table));
 	}
 
 	/**
@@ -129,7 +129,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insert($table, $columns)
 	{
-		return parent::insert($this->addTablePrefix($table), $columns);
+		return parent::insert($this->_addTablePrefix($table), $columns);
 	}
 
 	/**
@@ -141,7 +141,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function update($table, $columns, $conditions='', $params=array())
 	{
-		return parent::update($this->addTablePrefix($table), $columns, $conditions, $params);
+		return parent::update($this->_addTablePrefix($table), $columns, $conditions, $params);
 	}
 
 	/**
@@ -152,7 +152,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function delete($table, $conditions='', $params=array())
 	{
-		return parent::delete($this->addTablePrefix($table), $conditions, $params);
+		return parent::delete($this->_addTablePrefix($table), $conditions, $params);
 	}
 
 	/**
@@ -183,7 +183,7 @@ class DbCommand extends \CDbCommand
 		}
 
 		// Create the table
-		$tableName = $this->addTablePrefix($table);
+		$tableName = $this->_addTablePrefix($table);
 		$return = parent::createTable($tableName, $columns, $options);
 
 		// Add the language FK
@@ -204,7 +204,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function renameTable($table, $newName)
 	{
-		return parent::renameTable($this->addTablePrefix($table), $newName);
+		return parent::renameTable($this->_addTablePrefix($table), $newName);
 	}
 
 	/**
@@ -213,7 +213,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropTable($table)
 	{
-		return parent::dropTable($this->addTablePrefix($table));
+		return parent::dropTable($this->_addTablePrefix($table));
 	}
 
 	/**
@@ -222,7 +222,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function truncateTable($table)
 	{
-		return parent::truncateTable($this->addTablePrefix($table));
+		return parent::truncateTable($this->_addTablePrefix($table));
 	}
 
 	/**
@@ -243,7 +243,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropColumn($table, $column)
 	{
-		return parent::dropColumn($this->addTablePrefix($table), $column);
+		return parent::dropColumn($this->_addTablePrefix($table), $column);
 	}
 
 	/**
@@ -254,7 +254,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function renameColumn($table, $name, $newName)
 	{
-		return parent::renameColumn($this->addTablePrefix($table), $name, $newName);
+		return parent::renameColumn($this->_addTablePrefix($table), $name, $newName);
 	}
 
 	/**
@@ -265,7 +265,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function alterColumn($table, $column, $type)
 	{
-		return parent::alterColumn($this->addTablePrefix($table), $column, $type);
+		return parent::alterColumn($this->_addTablePrefix($table), $column, $type);
 	}
 
 	/**
@@ -280,7 +280,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete=null, $update=null)
 	{
-		return parent::addForeignKey($name, $this->addTablePrefix($table), $columns, $this->addTablePrefix($refTable), $refColumns, $delete, $update);
+		return parent::addForeignKey($name, $this->_addTablePrefix($table), $columns, $this->_addTablePrefix($refTable), $refColumns, $delete, $update);
 	}
 
 	/**
@@ -290,7 +290,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropForeignKey($name, $table)
 	{
-		return parent::dropForeignKey($name, $this->addTablePrefix($table));
+		return parent::dropForeignKey($name, $this->_addTablePrefix($table));
 	}
 
 	/**
@@ -302,7 +302,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function createIndex($name, $table, $column, $unique=false)
 	{
-		return parent::createIndex($name, $this->addTablePrefix($table), $column, $unique);
+		return parent::createIndex($name, $this->_addTablePrefix($table), $column, $unique);
 	}
 
 	/**
@@ -320,13 +320,13 @@ class DbCommand extends \CDbCommand
 	 * @param mixed $table The table name or an array of table names
 	 * @return mixed The modified table name(s)
 	 */
-	private function addTablePrefix($table)
+	private function _addTablePrefix($table)
 	{
 		if (is_array($table))
 		{
 			foreach ($table as &$t)
 			{
-				$t = $this->addTablePrefix($t);
+				$t = $this->_addTablePrefix($t);
 			}
 		}
 		else

@@ -20,6 +20,7 @@ class ArrayTag extends VarTag
 	/**
 	 * @param $name
 	 * return mixed
+	 * @return string
 	 */
 	public function __get($name)
 	{
@@ -42,6 +43,10 @@ class ArrayTag extends VarTag
 		return $this->_var;
 	}
 
+	/**
+	 * @param $index
+	 * @return string
+	 */
 	public function get($index)
 	{
 		if (isset($this->_var[$index]))

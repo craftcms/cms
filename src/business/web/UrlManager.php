@@ -86,7 +86,7 @@ class UrlManager extends \CUrlManager
 
 		if ($entry !== null)
 		{
-			$this->setTemplateMatch($entry->section->template, TemplateMatchType::Entry);
+			$this->_setTemplateMatch($entry->section->template, TemplateMatchType::Entry);
 			$this->_templateTags['entry'] = new ContentEntryTag($entry);
 			return true;
 		}
@@ -114,7 +114,7 @@ class UrlManager extends \CUrlManager
 				{
 					$templatePath = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
 					if ($templatePath !== false)
-						$this->setTemplateMatch($templatePath, TemplateMatchType::Route);
+						$this->_setTemplateMatch($templatePath, TemplateMatchType::Route);
 
 					// Set any capture tags
 					if (!empty($route[2]))
@@ -159,7 +159,7 @@ class UrlManager extends \CUrlManager
 		$templatePath = TemplateHelper::resolveTemplatePath(b()->request->path);
 		if ($templatePath !== false)
 		{
-			$this->setTemplateMatch($templatePath, TemplateMatchType::Template);
+			$this->_setTemplateMatch($templatePath, TemplateMatchType::Template);
 			return true;
 		}
 
@@ -171,7 +171,7 @@ class UrlManager extends \CUrlManager
 	 * @param $path
 	 * @param $matchType
 	 */
-	private function setTemplateMatch($path, $matchType)
+	private function _setTemplateMatch($path, $matchType)
 	{
 		$templateMatch = new TemplateMatch($path);
 		$templateMatch->setMatchType($matchType);

@@ -147,7 +147,7 @@ class File extends Component
 	 * @param string $level Level of the message (e.g. 'trace', 'warning', 'error', 'info', see CLogger constants definitions)
 	 * @access private
 	 */
-	private function addLog($message, $level = 'info')
+	private function _addLog($message, $level = 'info')
 	{
 		Blocks::log($message.' (obj: '.$this->_realpath.')', $level, 'File');
 	}
@@ -200,16 +200,16 @@ class File extends Component
 			}
 
 			clearstatcache();
-			$realPath = self::realPath($filePath);
+			$realPath = self::_realPath($filePath);
 			$instance = self::getInstance($realPath);
 			$instance->_filepath = $filePath;
 			$instance->_realpath = $realPath;
 
-			if ($instance->exists())
+			if ($instance->_exists())
 			{
 				$instance->_uploadedInstance = $uploaded;
 
-				$instance->pathInfo();
+				$instance->_pathInfo();
 				$instance->readable;
 				$instance->writeable;
 
@@ -236,7 +236,7 @@ class File extends Component
 	 * resolved by pathinfo() php function. Detects filesystem object type (file, directory).
 	 * @access private
 	 */
-	private function pathInfo()
+	private function _pathInfo()
 	{
 		if (is_file($this->_realpath))
 		{
@@ -279,7 +279,7 @@ class File extends Component
 	public function getRealPath($dir_separator = '/')
 	{
 		if (!isset($this->_realpath))
-			$this->_realpath = $this->realPath($this->_filepath, $dir_separator);
+			$this->_realpath = $this->_realPath($this->_filepath, $dir_separator);
 
 		return $this->_realpath;
 	}
@@ -291,7 +291,7 @@ class File extends Component
 	 * @return string Real file path
 	 * @access private
 	 */
-	private function realPath($suppliedPath, $dir_separator = '/')
+	private function _realPath($suppliedPath, $dir_separator = '/')
 	{
 		$currentPath = $suppliedPath;
 
@@ -356,7 +356,7 @@ class File extends Component
 	public function getExists()
 	{
 		if (!isset($this->_exists))
-			$this->exists();
+			$this->_exists();
 
 		return $this->_exists;
 	}
@@ -399,7 +399,7 @@ class File extends Component
 	{
 		if (!isset($this->_isEmpty))
 		{
-			if (($this->_isFile && $this->getSize(false)==0) || (!$this->_isFile && count($this->dirContents($this->_realpath)) == 0))
+			if (($this->_isFile && $this->getSize(false)==0) || (!$this->_isFile && count($this->_dirContents($this->_realpath)) == 0))
 				$this->_isEmpty = true;
 			else
 				$this->_isEmpty = false;
@@ -429,7 +429,7 @@ class File extends Component
 	public function getWriteable()
 	{
 		if (!isset($this->_writeable))
-			$this->_writeable = $this->isReallyWritable($this->_filepath);
+			$this->_writeable = $this->_isReallyWritable($this->_filepath);
 
 		return $this->_writeable;
 	}
@@ -442,13 +442,13 @@ class File extends Component
 	 * @return boolean 'True' if filesystem object is writeable, otherwise 'false'
 	 * @access private
 	 */
-	private function isReallyWritable($path)
+	private function _isReallyWritable($path)
 	{
 		$lastChar = $path{strlen($path) - 1};
 		if ($lastChar == '/' || $lastChar == '\\')
-			return $this->isReallyWritable($path.uniqid(mt_rand()).'.tmp');
+			return $this->_isReallyWritable($path.uniqid(mt_rand()).'.tmp');
 		else if (is_dir($path))
-			return $this->isReallyWritable($path.'/'.uniqid(mt_rand()).'.tmp');
+			return $this->_isReallyWritable($path.'/'.uniqid(mt_rand()).'.tmp');
 
 		// check tmp file for read/write capabilities
 		$rm = file_exists($path);
@@ -470,7 +470,7 @@ class File extends Component
 	 * @return boolean 'True' if filesystem object exists, otherwise 'false'
 	 * @access private
 	 */
-	private function exists()
+	private function _exists()
 	{
 		Blocks::trace('Filesystem object availability test: '.$this->_realpath, 'ext.file');
 
@@ -486,7 +486,7 @@ class File extends Component
 		if ($this->_exists)
 			return true;
 
-		$this->addLog('Filesystem object not found');
+		$this->_addLog('Filesystem object not found');
 		return false;
 	}
 
@@ -498,17 +498,17 @@ class File extends Component
 	{
 		if (!$this->_exists)
 		{
-			if ($this->open('w'))
+			if ($this->_open('w'))
 			{
-				$this->close();
+				$this->_close();
 				return $this->set($this->_realpath);
 			}
 
-			$this->addLog('Unable to create empty file: '.$this->_realpath, 'warning');
+			$this->_addLog('Unable to create empty file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog('File creation failed. File already exists: '.$this->_realpath, 'warning');
+		$this->_addLog('File creation failed. File already exists: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -535,7 +535,7 @@ class File extends Component
 				return true;
 		}
 
-		$this->addLog('Unable to create empty directory: '.$dir, 'warning');
+		$this->_addLog('Unable to create empty directory: '.$dir, 'warning');
 		return false;
 	}
 
@@ -546,14 +546,14 @@ class File extends Component
 	 * @return mixed Current File object on success, 'false' on fail.
 	 * @access private
 	 */
-	private function open($mode)
+	private function _open($mode)
 	{
 		if (is_null($this->_handle))
 		{
 			if ($this->_handle = fopen($this->_realpath, $mode))
 				return $this;
 
-			$this->addLog('Unable to open file: '.$this->_realpath.' using mode "'.$mode.'"', 'warning');
+			$this->_addLog('Unable to open file: '.$this->_realpath.' using mode "'.$mode.'"', 'warning');
 			return false;
 		}
 	}
@@ -563,7 +563,7 @@ class File extends Component
 	 * For now used only internally.
 	 * @access private
 	 */
-	private function close()
+	private function _close()
 	{
 		if (!is_null($this->_handle))
 		{
@@ -637,13 +637,13 @@ class File extends Component
 			if ($this->_isFile)
 				$this->_size = $this->_exists ? sprintf("%u", filesize($this->_realpath)) : null;
 			else
-				$this->_size = $this->_exists ? sprintf("%u", $this->dirSize()) : null;
+				$this->_size = $this->_exists ? sprintf("%u", $this->_dirSize()) : null;
 		}
 
 		$size = $this->_size;
 
 		if ($format !== false)
-			$size = $this->formatFileSize($this->_size, $format);
+			$size = $this->_formatFileSize($this->_size, $format);
 
 		return $size;
 	}
@@ -654,10 +654,10 @@ class File extends Component
 	 * @return integer $size
 	 * @access private
 	 */
-	private function dirSize()
+	private function _dirSize()
 	{
 		$size = 0;
-		foreach ($this->dirContents($this->_realpath, true) as $item)
+		foreach ($this->_dirContents($this->_realpath, true) as $item)
 		{
 			if (is_file($item))
 				$size += sprintf("%u", filesize($item));
@@ -673,7 +673,7 @@ class File extends Component
 	 * @return string Filesystem object size in human readable format
 	 * @access private
 	 */
-	private function formatFileSize($bytes, $format)
+	private function _formatFileSize($bytes, $format)
 	{
 		$units = array('B', 'KB', 'MB', 'GB', 'TB', 'PB');
 
@@ -754,13 +754,13 @@ class File extends Component
 			}
 			else
 			{
-				if ($contents = $this->dirContents($this->_realpath, $recursive, $filter))
+				if ($contents = $this->_dirContents($this->_realpath, $recursive, $filter))
 					return $contents;
 
 			}
 		}
 
-		$this->addLog('Unable to get filesystem object contents for '.$this->_realpath.' '.($filter !== null?' *using supplied filter*':''), 'warning');
+		$this->_addLog('Unable to get filesystem object contents for '.$this->_realpath.' '.($filter !== null?' *using supplied filter*':''), 'warning');
 		return false;
 	}
 
@@ -773,7 +773,7 @@ class File extends Component
 	 * @return array Array of descendants filepaths
 	 * @access private
 	 */
-	private function dirContents($directory = false, $recursive = false, $filter = null)
+	private function _dirContents($directory = false, $recursive = false, $filter = null)
 	{
 		$descendants = array();
 		if (!$directory)
@@ -798,11 +798,11 @@ class File extends Component
 				$contents[$key] = $directory.'/'.$item;
 				if (!in_array($item, array(".", "..")))
 				{
-					if ($this->filterPassed($contents[$key], $filter))
+					if ($this->_filterPassed($contents[$key], $filter))
 						$descendants[] = $contents[$key];
 
 					if (is_dir($contents[$key]) && $recursive)
-						$descendants = array_merge($descendants, $this->dirContents($contents[$key], $recursive, $filter));
+						$descendants = array_merge($descendants, $this->_dirContents($contents[$key], $recursive, $filter));
 				}
 			}
 		}
@@ -822,7 +822,7 @@ class File extends Component
 	 * @return boolean Returns 'true' if the supplied string matched one of the filter rules.
 	 * @access private
 	 */
-	private function filterPassed($str, $filter)
+	private function _filterPassed($str, $filter)
 	{
 		$passed = false;
 
@@ -876,7 +876,7 @@ class File extends Component
 			if ($newFile->_writeable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
 				return $this;
 
-			$this->addLog('Unable to set file contents of '.$newFile->_realPath, 'warning');
+			$this->_addLog('Unable to set file contents of '.$newFile->_realPath, 'warning');
 			return false;
 
 		}
@@ -890,12 +890,12 @@ class File extends Component
 				if ($this->writeable && file_put_contents($this->_realpath, $contents, $flags) !== false)
 					return $this;
 
-				$this->addLog('Unable to set file contents of '.$this->_realpath, 'warning');
+				$this->_addLog('Unable to set file contents of '.$this->_realpath, 'warning');
 				return false;
 			}
 			else
 			{
-				$this->addLog(__METHOD__.' method is available only for files', 'warning');
+				$this->_addLog(__METHOD__.' method is available only for files', 'warning');
 				return false;
 			}
 		}
@@ -912,18 +912,18 @@ class File extends Component
 		{
 			if ($this->_isUploaded)
 			{
-				$this->addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
+				$this->_addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
 				return false;
 			}
 
 			if($this->_writeable && $basename !== false && $this->rename($basename))
 				return $this;
 
-			$this->addLog('Unable to set file basename "'.$basename.'" for file: '.$this->_realpath, 'warning');
+			$this->_addLog('Unable to set file basename "'.$basename.'" for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog(__METHOD__.' method is available only for files.', 'warning');
+		$this->_addLog(__METHOD__.' method is available only for files.', 'warning');
 		return false;
 	}
 
@@ -938,18 +938,18 @@ class File extends Component
 		{
 			if ($this->_isUploaded)
 			{
-				$this->addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
+				$this->_addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
 				return false;
 			}
 
 			if ($this->_writeable && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
 				return $this;
 
-			$this->addLog('Unable to set file name "'.$filename.'" for file: '.$this->_realpath, 'warning');
+			$this->_addLog('Unable to set file name "'.$filename.'" for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog(__METHOD__.' method is available only for files.', 'warning');
+		$this->_addLog(__METHOD__.' method is available only for files.', 'warning');
 		return false;
 	}
 
@@ -965,7 +965,7 @@ class File extends Component
 		{
 			if ($this->_isUploaded)
 			{
-				$this->addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
+				$this->_addLog(__METHOD__.' method is unavailable for uploaded files. Please copy/move uploaded file from temporary directory', 'warning');
 				return false;
 			}
 
@@ -993,11 +993,11 @@ class File extends Component
 					return $this;
 			}
 
-			$this->addLog('Unable to set file extension "'.$extension.'" for file: '.$this->_realpath, 'warning');
+			$this->_addLog('Unable to set file extension "'.$extension.'" for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 
-		$this->addLog(__METHOD__.' method is available only for files.', 'warning');
+		$this->_addLog(__METHOD__.' method is available only for files.', 'warning');
 		return false;
 	}
 
@@ -1014,7 +1014,7 @@ class File extends Component
 			return $this;
 		}
 
-		$this->addLog('Unable to set owner for filesystem object to "'.$owner.'" for file: '.$this->_realpath, 'warning');
+		$this->_addLog('Unable to set owner for filesystem object to "'.$owner.'" for file: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1031,7 +1031,7 @@ class File extends Component
 			return $this;
 		}
 
-		$this->addLog('Unable to set group for filesystem object to "'.$group.'" for file: '.$this->_realpath, 'warning');
+		$this->_addLog('Unable to set group for filesystem object to "'.$group.'" for file: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1054,7 +1054,7 @@ class File extends Component
 			}
 		}
 
-		$this->addLog('Unable to change permissions for filesystem object to "'.$permissions.'" for file: '.$this->_realpath, 'warning');
+		$this->_addLog('Unable to change permissions for filesystem object to "'.$permissions.'" for file: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1065,12 +1065,12 @@ class File extends Component
 	 * @return string Resolved real destination path for the current filesystem object
 	 * @access private
 	 */
-	private function resolveDestPath($fileDest)
+	private function _resolveDestPath($fileDest)
 	{
 		if (strpos($fileDest, '/') === false)
 			return $this->_dirname.'/'.$fileDest;
 
-		return $this->realPath($fileDest);
+		return $this->_realPath($fileDest);
 	}
 
 	/**
@@ -1081,7 +1081,7 @@ class File extends Component
 	 */
 	public function copy($fileDest, $recursive = false)
 	{
-		$destRealPath = $this->resolveDestPath($fileDest);
+		$destRealPath = $this->_resolveDestPath($fileDest);
 
 		if ($this->_isFile)
 		{
@@ -1099,7 +1099,7 @@ class File extends Component
 		{
 			Blocks::trace('Copying directory "'.$this->_realpath.'" to "'.$destRealPath.'"', 'File');
 
-			$dirContents = $this->dirContents($this->_realpath, true);
+			$dirContents = $this->_dirContents($this->_realpath, true);
 			foreach ($dirContents as $item)
 			{
 				$itemDest = $destRealPath.str_replace($this->_realpath, '', $item);
@@ -1116,7 +1116,7 @@ class File extends Component
 			return $this->set($destRealPath);
 		}
 
-		$this->addLog('Unable to copy filesystem object into "'.$destRealPath.'".', 'warning');
+		$this->_addLog('Unable to copy filesystem object into "'.$destRealPath.'".', 'warning');
 		return false;
 	}
 
@@ -1127,7 +1127,7 @@ class File extends Component
 	 */
 	public function rename($fileDest)
 	{
-		$destRealPath = $this->resolveDestPath($fileDest);
+		$destRealPath = $this->_resolveDestPath($fileDest);
 
 		if ($this->_writeable && @rename($this->_realpath, $destRealPath))
 		{
@@ -1135,11 +1135,11 @@ class File extends Component
 			$this->_realpath = $destRealPath;
 
 			// update pathinfo properties
-			$this->pathInfo();
+			$this->_pathInfo();
 			return $this;
 		}
 
-		$this->addLog('Unable to rename/move filesystem object into "'.$destRealPath.'"', 'warning');
+		$this->_addLog('Unable to rename/move filesystem object into "'.$destRealPath.'"', 'warning');
 		return false;
 	}
 
@@ -1175,7 +1175,7 @@ class File extends Component
 			if (!realpath($path))
 				return true;
 
-			$dirContents = $this->dirContents($path, true);
+			$dirContents = $this->_dirContents($path, true);
 
 			foreach ($dirContents as $item)
 			{
@@ -1211,7 +1211,7 @@ class File extends Component
 			}
 		}
 
-		$this->addLog('Unable to delete filesystem object: '.$this->_realpath, 'warning');
+		$this->_addLog('Unable to delete filesystem object: '.$this->_realpath, 'warning');
 		return false;
 	}
 
@@ -1268,12 +1268,12 @@ class File extends Component
 				exit(0);
 			}
 
-			$this->addLog('Unable to prepare file for download. Headers already sent or file doesn\'t not exist: '.$this->_realpath, 'warning');
+			$this->_addLog('Unable to prepare file for download. Headers already sent or file doesn\'t not exist: '.$this->_realpath, 'warning');
 			return false;
 		}
 		else
 		{
-			$this->addLog('send() and download() methods are available only for files: '.$this->_realpath, 'warning');
+			$this->_addLog('send() and download() methods are available only for files: '.$this->_realpath, 'warning');
 			return false;
 		}
 	}
@@ -1310,12 +1310,12 @@ class File extends Component
 				return $this->_mimeType = $this->getMimeTypeByExtension($this->_realpath);
 			}
 
-			$this->addLog('Unable to get mime type for file: '.$this->_realpath, 'warning');
+			$this->_addLog('Unable to get mime type for file: '.$this->_realpath, 'warning');
 			return false;
 		}
 		else
 		{
-			$this->addLog('getMimeType() method is available only for files: '.$this->_realpath, 'warning');
+			$this->_addLog('getMimeType() method is available only for files: '.$this->_realpath, 'warning');
 			return false;
 		}
 	}
@@ -1343,7 +1343,7 @@ class File extends Component
 		}
 		else
 		{
-			$this->addLog(__METHOD__.' method is available only for files.', 'warning');
+			$this->_addLog(__METHOD__.' method is available only for files.', 'warning');
 			return false;
 		}
 	}
@@ -1359,7 +1359,7 @@ class File extends Component
 		}
 		else
 		{
-			$this->addLog(__METHOD__.' method is available only for files.', 'warning');
+			$this->_addLog(__METHOD__.' method is available only for files.', 'warning');
 			return false;
 		}
 	}
@@ -1381,10 +1381,10 @@ class File extends Component
 
 		if (@class_exists('ZipArchive', false))
 		{
-			return $this->zipZipArchive($srcDir);
+			return $this->_zipZipArchive($srcDir);
 		}
 
-		return $this->zipPclZip($srcDir);
+		return $this->_zipPclZip($srcDir);
 	}
 
 	/**
@@ -1392,7 +1392,7 @@ class File extends Component
 	 * @return bool
 	 * @access private
 	 */
-	private function zipPclZip($srcDir)
+	private function _zipPclZip($srcDir)
 	{
 		$zip = new \PclZip($this->getRealPath());
 
@@ -1400,7 +1400,7 @@ class File extends Component
 
 		if ($result == 0)
 		{
-			$this->addLog('Unable to create zip file: '.$this->_realpath, 'error');
+			$this->_addLog('Unable to create zip file: '.$this->_realpath, 'error');
 			return false;
 		}
 
@@ -1412,14 +1412,14 @@ class File extends Component
 	 * @return bool
 	 * @access private
 	 */
-	private function zipZipArchive($srcDir)
+	private function _zipZipArchive($srcDir)
 	{
 		$zip = new \ZipArchive;
 		$zipContents = $zip->open($this->getRealPath(), \ZipArchive::CREATE);
 
 		if ($zipContents !== TRUE)
 		{
-			$this->addLog('Unable to create zip file: '.$this->_realpath, 'error');
+			$this->_addLog('Unable to create zip file: '.$this->_realpath, 'error');
 			return false;
 		}
 
@@ -1434,7 +1434,7 @@ class File extends Component
 				$fileContents = file_get_contents($itemToZip);
 				$relFilePath = substr($itemToZip, strlen($srcDir->getRealPath()) + 1);
 				if (!$zip->addFromString($relFilePath, $fileContents))
-					$this->addLog('There was an error adding the file at this path to the zip: '.$itemToZip, 'error');
+					$this->_addLog('There was an error adding the file at this path to the zip: '.$itemToZip, 'error');
 			}
 
 		}
@@ -1456,7 +1456,7 @@ class File extends Component
 
 				if (@class_exists('ZipArchive', false))
 				{
-					$result = $this->unzipZipArchive($destination);
+					$result = $this->_unzipZipArchive($destination);
 
 					if ($result === true)
 					{
@@ -1464,22 +1464,22 @@ class File extends Component
 					}
 					else
 					{
-						$this->addLog('There was an error unzipping the file: '.$this->_realpath, 'error');
+						$this->_addLog('There was an error unzipping the file: '.$this->_realpath, 'error');
 					}
 				}
 			}
 			else
 			{
-				$this->addLog(__METHOD__.' method is available only for zip files.', 'warning');
+				$this->_addLog(__METHOD__.' method is available only for zip files.', 'warning');
 			}
 		}
 		else
 		{
-			$this->addLog(__METHOD__.' method is available only for files.', 'warning');
+			$this->_addLog(__METHOD__.' method is available only for files.', 'warning');
 		}
 
 		// last chance, try pclzip
-		return $this->unzipPclZip($destination);
+		return $this->_unzipPclZip($destination);
 	}
 
 	/**
@@ -1487,7 +1487,7 @@ class File extends Component
 	 * @return bool
 	 * @access private
 	 */
-	private function unzipPclZip($destination)
+	private function _unzipPclZip($destination)
 	{
 		$zip = new \PclZip($this->getRealPath());
 		$destDirectories = null;
@@ -1495,13 +1495,13 @@ class File extends Component
 		// check to see if it's a valid archive.
 		if (($zipFiles = $zip->extract(PCLZIP_OPT_EXTRACT_AS_STRING)) == false)
 		{
-			$this->addLog('Not a valid zip archive: '.$this->_realpath, 'error');
+			$this->_addLog('Not a valid zip archive: '.$this->_realpath, 'error');
 			return false;
 		}
 
 		if (count($zipFiles) == 0)
 		{
-			$this->addLog('Empty zip archive: '.$this->_realpath, 'error');
+			$this->_addLog('Empty zip archive: '.$this->_realpath, 'error');
 			return false;
 		}
 
@@ -1544,7 +1544,7 @@ class File extends Component
 
 			if (!$newDir->createDir(0754) && !$newDir->getIsDir())
 			{
-				$this->addLog('Could not create directory during unzip: '.$newDir->getRealPath(), 'error');
+				$this->_addLog('Could not create directory during unzip: '.$newDir->getRealPath(), 'error');
 				return false;
 			}
 		}
@@ -1564,7 +1564,7 @@ class File extends Component
 			$destFile = b()->file->set($destination.'/'.$zipFile['filename']);
 			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
 			{
-				$this->addLog('Could not copy file during unzip: '.$destFile->getRealPath(), 'error');
+				$this->_addLog('Could not copy file during unzip: '.$destFile->getRealPath(), 'error');
 				return false;
 			}
 		}
@@ -1577,7 +1577,7 @@ class File extends Component
 	 * @return bool
 	 * @access private
 	 */
-	private function unzipZipArchive($destination)
+	private function _unzipZipArchive($destination)
 	{
 		$zipArchive = new \ZipArchive();
 
@@ -1585,7 +1585,7 @@ class File extends Component
 
 		if ($zipContents !== true)
 		{
-			$this->addLog('Could not open the zip file: '.$this->getRealPath(), 'error');
+			$this->_addLog('Could not open the zip file: '.$this->getRealPath(), 'error');
 			return false;
 		}
 
@@ -1593,7 +1593,7 @@ class File extends Component
 		{
 			if (!$info = $zipArchive->statIndex($i))
 			{
-				$this->addLog('Could not retrieve file from archive.', 'error');
+				$this->_addLog('Could not retrieve file from archive.', 'error');
 				return false;
 			}
 
@@ -1616,13 +1616,13 @@ class File extends Component
 
 			if ($contents === false)
 			{
-				$this->addLog('Could not extract file from archive.', 'error');
+				$this->_addLog('Could not extract file from archive.', 'error');
 				return false;
 			}
 
 			if (!$this->setContents($destination.'/'.$info['name'], $contents, true, FILE_APPEND))
 			{
-				$this->addLog('Could not copy file: '.$info['filename'], 'error');
+				$this->_addLog('Could not copy file: '.$info['filename'], 'error');
 				return false;
 			}
 		}

@@ -11,6 +11,8 @@ class Tag
 
 	/**
 	 * Constructor
+	 *
+	 * @param null $var
 	 */
 	public function __construct($var = null)
 	{

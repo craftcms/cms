@@ -18,14 +18,14 @@ class App extends \CWebApplication
 	public function init()
 	{
 		// If this is a resource request, we should respond with the resource ASAP
-		$this->processResourceRequest();
+		$this->_processResourceRequest();
 		parent::init();
 	}
 
 	/**
 	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths
 	 */
-	private function importClasses()
+	private function _importClasses()
 	{
 		$aliases = array(
 			'blocktypes.*',
@@ -80,14 +80,14 @@ class App extends \CWebApplication
 			{
 				foreach ($files as $file)
 				{
-					self::importFile(realpath($file));
+					self::_importFile(realpath($file));
 				}
 			}
 		}
 		else
 		{
 			$file = $path.'.php';
-			self::importFile($file);
+			self::_importFile($file);
 
 			if ($forceInclude)
 				require_once $file;
@@ -98,7 +98,7 @@ class App extends \CWebApplication
 	 * @static
 	 * @param $file
 	 */
-	private static function importFile($file)
+	private static function _importFile($file)
 	{
 		$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);
 		\Yii::$classMap[$class] = $file;
@@ -110,17 +110,17 @@ class App extends \CWebApplication
 	public function processRequest()
 	{
 		// Import the majority of Blocks' classes
-		$this->importClasses();
+		$this->_importClasses();
 
 		// Config validation
-		$this->validateConfig();
+		$this->_validateConfig();
 
 		// Process install and setup requests?
-		$this->processInstallAndSetupRequest('install', !$this->isInstalled);
-		$this->processInstallAndSetupRequest('setup', !$this->isSetup);
+		$this->_processInstallAndSetupRequest('install', !$this->isInstalled);
+		$this->_processInstallAndSetupRequest('setup', !$this->isSetup);
 
 		// Otherwise maybe it's an action request?
-		$this->processActionRequest();
+		$this->_processActionRequest();
 
 		// Otherwise run the template controller
 		$this->runController('Template');
@@ -132,7 +132,7 @@ class App extends \CWebApplication
 	 * @param $what
 	 * @param $force
 	 */
-	private function processInstallAndSetupRequest($what, $force)
+	private function _processInstallAndSetupRequest($what, $force)
 	{
 		// Are they requesting this specifically?
 		if ($this->request->mode == RequestMode::CP && $this->request->getPathSegment(1) === $what)
@@ -160,7 +160,7 @@ class App extends \CWebApplication
 	/**
 	 * Process action requests
 	 */
-	private function processActionRequest()
+	private function _processActionRequest()
 	{
 		if ($this->request->mode == RequestMode::Action)
 		{
@@ -181,7 +181,7 @@ class App extends \CWebApplication
 	/**
 	 * Process a resource request
 	 */
-	private function processResourceRequest()
+	private function _processResourceRequest()
 	{
 		// Import the bare minimum to determine if what type of request this is
 		self::import('business.Component');
@@ -244,7 +244,7 @@ class App extends \CWebApplication
 	 * @return mixed
 	 * @throws Exception|HttpException
 	 */
-	private function validateConfig()
+	private function _validateConfig()
 	{
 		$messages = array();
 

@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class NumberHelper
 {
-	private static $numberWordMap = array(
+	private static $_numberWordMap = array(
 		1 => 'one',
 		2 => 'two',
 		3 => 'three',
@@ -25,8 +25,8 @@ class NumberHelper
 	 */
 	public static function word($num)
 	{
-		if (isset(self::$numberWordMap[$num]))
-			return self::$numberWordMap[$num];
+		if (isset(self::$_numberWordMap[$num]))
+			return self::$_numberWordMap[$num];
 
 		return (string)$num;
 	}

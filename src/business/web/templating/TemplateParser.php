@@ -268,6 +268,7 @@ class TemplateParser
 	/**
 	 * Parses a 'layout' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseLayoutTag($body)
@@ -294,6 +295,7 @@ class TemplateParser
 	/**
 	 * Parses a 'region' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseRegionTag($body)
@@ -306,6 +308,7 @@ class TemplateParser
 	/**
 	 * Parses an 'endregion' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseEndregionTag($body)
@@ -316,6 +319,7 @@ class TemplateParser
 	/**
 	 * Parses an 'include' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseIncludeTag($body)
@@ -344,6 +348,7 @@ class TemplateParser
 	/**
 	 * Parses a 'foreach' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseForeachTag($body)
@@ -364,6 +369,7 @@ class TemplateParser
 	/**
 	 * Parses an 'endforeach' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseEndforeachTag($body)
@@ -374,6 +380,7 @@ class TemplateParser
 	/**
 	 * Parses an 'if' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseIfTag($body)
@@ -385,6 +392,7 @@ class TemplateParser
 	/**
 	 * Parses an 'elseif' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseElseifTag($body)
@@ -396,6 +404,7 @@ class TemplateParser
 	/**
 	 * Parses an 'else' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseElseTag($body)
@@ -406,6 +415,7 @@ class TemplateParser
 	/**
 	 * Parses an 'endif' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseEndifTag($body)
@@ -416,6 +426,7 @@ class TemplateParser
 	/**
 	 * Parses a 'set' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseSetTag($body)
@@ -431,6 +442,7 @@ class TemplateParser
 	/**
 	 * Parses a 'redirect' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseRedirectTag($body)
@@ -442,6 +454,7 @@ class TemplateParser
 	/**
 	 * Parses an 'echo' tag
 	 * @param string $body
+	 * @return string
 	 * @access protected
 	 */
 	protected function parseEchoTag($body)
