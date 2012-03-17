@@ -83,26 +83,67 @@ class ContentController extends Controller
 		$sectionId = b()->request->getParam('sectionId');
 		$authorId = b()->user->id;
 		$entry = b()->content->createEntry($sectionId, $authorId);
-		$this->redirect('content/edit/'.$entry->id);
+		$draft = b()->content->createDraft($entry->id, 'Draft 1');
+		$this->redirect("content/edit/{$entry->id}/draft{$draft->id}");
 	}
 
 	/**
 	 * Loads an entry
 	 */
-	public function actionLoadEntry()
+	public function actionLoadEntryEditPage()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		// Try and find the entry
 		$entryId = b()->request->getPost('entryId');
-		$draftId = b()->request->getPost('draftId');
-
-		$entry = b()->content->getEntryById($entryId);
-
-		if ($entry)
+		if ($entryId)
 		{
-			$entryHtml = $this->loadTemplate('content/_includes/entry', array('entry' => $entry), true);
-			$this->returnJson(array('success' => true, 'entryHtml' => $entryHtml, 'draftId' => 1));
+			$entry = b()->content->getEntryById($entryId);
+			if ($entry)
+			{
+				// Is there a requested draft?
+				$draftId = b()->request->getPost('draftId');
+				if ($draftId)
+					$draft = b()->content->getDraftById($draftId);
+
+				// We must fetch a draft if the entry hasn't been published
+				if (empty($draft) && !$entry->published)
+				{
+					$draft = b()->content->getLatestDraft($entry->id);
+					if (!$draft)
+						$draft = b()->content->createDraft($entry->id);
+				}
+
+				// Mix in any draft changes
+				if (!empty($draft))
+				{
+					// Index draft content by block ID
+					$draftContent = $draft->content;
+					$draftContentByBlockId = array();
+					foreach ($draftContent as $block)
+					{
+						if ($block->title)
+							$entry->title = $block->value;
+						else
+							$draftContentByBlockId[$block->block_id] = $block->value;
+					}
+
+					// Save draft data onto blocks
+					foreach ($entry->blocks as $block)
+					{
+						if (isset($draftContentByBlockId[$block->id]))
+							$block->data = $draftContentByBlockId[$block->id];
+					}
+
+					$return['draftId'] = (int)$draft->id;
+				}
+
+				$return['success'] = true;
+				$return['entryHtml'] = $this->loadTemplate('content/_includes/entry', array('entry' => $entry), true);
+
+				$this->returnJson($return);
+			}
 		}
 		else
 			throw new HttpException(404);
@@ -120,68 +161,96 @@ class ContentController extends Controller
 		$draftId = b()->request->getPost('draftId');
 		$changedInputs = b()->request->getPost('changedInputs');
 
-		$blocks = b()->db->createCommand()
-			->select('id, handle')
-			->from('blocks')
-			->where(array('in', 'handle', $changedInputs))
-			->queryAll();
-
-		if ($blocks)
+		if (is_array($changedInputs))
 		{
-			$blockIds = array();
-			foreach ($blocks as $block)
+			// Handle titles separately
+			if (isset($changedInputs['title']))
 			{
-				$blockIds[] = $block['id'];
-			}
+				$title = $changedInputs['title'];
+				unset($changedInputs['title']);
 
-			// Start a transaction
-			$transaction = b()->db->beginTransaction();
-			try
-			{
-				$insertVals = array();
-
-				// Check for previous data on this draft
-				$draftContent = b()->db->createCommand()
-					->select('id, block_id')
+				// Already a title on the draft?
+				$draftTitle = b()->db->createCommand()
+					->select('id')
 					->from('draftcontent')
-					->where(array('and', 'draft_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
-					->queryAll();
-				$draftContentIds = array();
-				foreach ($draftContent as $row)
-				{
-					$draftContentIds[$row['block_id']] = $row['id'];
-				}
+					->where(array('and', 'draft_id=:draftId', 'title=:title'), array(':draftId' => $draftId, ':title' => true))
+					->queryRow();
 
-				// Update existing rows and get ready to insert new ones
-				foreach ($blocks as $block)
-				{
-					$val = b()->request->getPost($block['handle']);
-					if (isset($draftContentIds[$block['id']]))
-						b()->db->createCommand()->update('draftcontent',
-							array('value' => $val),
-							'id=:id',
-							array(':id' => $draftContentIds[$block['id']]));
-					else
-						$insertVals[] = array($draftId, $block['id'], $val);
-				}
-
-				// Insert new rows
-				if ($insertVals)
-				{
-					$columns = array('draft_id', 'block_id', 'value');
-					b()->db->createCommand()->insertAll('draftcontent', $columns, $insertVals);
-				}
-
-				$transaction->commit();
+				if ($draftTitle)
+					b()->db->createCommand()->update('draftcontent', array('value' => $title), 'id=:id', array(':id' => $draftTitle['id']));
+				else
+					b()->db->createCommand()->insert('draftcontent', array('draft_id' => $draftId, 'title' => true, 'value' => $title));
 			}
-			catch (Exception $e)
+
+			// Any other inputs?
+			if ($changedInputs)
 			{
-				$transaction->rollBack();
-				$this->returnJson(array('error' => $e->getMessage()));
+				$blocks = b()->db->createCommand()
+					->select('id, handle')
+					->from('blocks')
+					->where(array('in', 'handle', array_keys($changedInputs)))
+					->queryAll();
+
+				if ($blocks)
+				{
+					$blockIds = array();
+					foreach ($blocks as $block)
+					{
+						$blockIds[] = $block['id'];
+					}
+
+					// Start a transaction
+					$transaction = b()->db->beginTransaction();
+					try
+					{
+						$insertVals = array();
+
+						// Check for previous data on this draft
+						$draftContent = b()->db->createCommand()
+							->select('id, block_id')
+							->from('draftcontent')
+							->where(array('and', 'draft_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
+							->queryAll();
+
+						$draftContentIds = array();
+						foreach ($draftContent as $row)
+						{
+							$draftContentIds[$row['block_id']] = $row['id'];
+						}
+
+						// Update existing rows and get ready to insert new ones
+						foreach ($blocks as $block)
+						{
+							$val = $changedInputs[$block['handle']];
+							if (isset($draftContentIds[$block['id']]))
+								b()->db->createCommand()->update('draftcontent',
+									array('value' => $val),
+									'id=:id',
+									array(':id' => $draftContentIds[$block['id']]));
+							else
+								$insertVals[] = array($draftId, $block['id'], $val);
+						}
+
+						// Insert new rows
+						if ($insertVals)
+						{
+							$columns = array('draft_id', 'block_id', 'value');
+							b()->db->createCommand()->insertAll('draftcontent', $columns, $insertVals);
+						}
+
+						$transaction->commit();
+					}
+					catch (Exception $e)
+					{
+						$transaction->rollBack();
+						$this->returnJson(array('error' => $e->getMessage()));
+					}
+				}
 			}
 
 			$this->returnJson(array('success' => true));
 		}
+		else
+			$this->returnJson(array('error' => 'No changed inputs sent.'));
 	}
-
 }

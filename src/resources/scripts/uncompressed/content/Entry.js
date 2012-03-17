@@ -20,7 +20,7 @@ blx.Entry = blx.Base.extend({
 	urlInput: null,
 	autoUpdateSlug: false,
 
-	changedVals: null,
+	changedInputs: null,
 	autosaveTimeout: null,
 
 	init: function(container, entryId, draftId)
@@ -34,10 +34,10 @@ blx.Entry = blx.Base.extend({
 
 		this.$slug = this.$page.find('.page-head .slug');
 		this.$slugInput = this.$page.find('.page-head .url input');
-		this.$autosaveStatus = this.$page.find('p.autosave-status:first');
+		this.$autosaveStatus = this.$container.find('p.autosave-status:first');
 
 		this.$inputs = $();
-		this.changedVals = {};
+		this.changedInputs = {};
 
 		this.$page.find('.nicetext').nicetext();
 
@@ -149,30 +149,26 @@ blx.Entry = blx.Base.extend({
 			clearTimeout(this.autosaveTimeout);
 			$input.data('savedval', val);
 			var inputName = $input.attr('name');
-			this.changedVals[inputName] = val;
+			this.changedInputs[inputName] = val;
 			this.autosaveTimeout = setTimeout($.proxy(this, 'autosave'), blx.Entry.autosaveDelay);
 		}
 	},
 
 	autosave: function()
 	{
-		var data = $.extend({}, this.changedVals, {
+		var data = $.extend({}, this.changedInputs, {
 			entryId: this.entryId,
 			draftId: this.draftId
 		});
 
-		// Pass the input names
+		// Pass the changed inputs
 		var inputNames = [];
-		for (var inputName in this.changedVals)
+		for (var inputName in this.changedInputs)
 		{
-			inputNames.push(inputName);
-		}
-		for (var i = 0; i < inputNames.length; i++)
-		{
-			data['changedInputs['+i+']'] = inputNames[i];
+			data['changedInputs['+inputName+']'] = this.changedInputs[inputName];
 		}
 
-		this.changedVals = {};
+		this.changedInputs = {};
 
 		$.post(actionUrl+'content/autosaveDraft', data, $.proxy(function(response) {
 			if (response.success)

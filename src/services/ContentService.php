@@ -158,6 +158,7 @@ class ContentService extends Component
 	/* Entries */
 
 	/**
+	 * Creates a new entry
 	 * @param $sectionId
 	 * @param $authorId
 	 * @param null $parentId
@@ -165,33 +166,11 @@ class ContentService extends Component
 	 */
 	public function createEntry($sectionId, $authorId, $parentId = null)
 	{
-		// Start a transaction
-		$transaction = b()->db->beginTransaction();
-		try
-		{
-			// Create the new entry
-			$entry = new Entry;
-			$entry->section_id = $sectionId;
-			$entry->author_id = $authorId;
-			$entry->parent_id = $parentId;
-			$entry->save();
-
-			// Now create a draft
-			b()->db->createCommand()->insert('drafts', array(
-				'entry_id'   => $entry->id,
-				'author_id'  => b()->users->current->id,
-				'language'   => b()->sites->currentSite->language,
-				'name'       => 'Draft 1'
-			));
-
-			$transaction->commit();
-		}
-		catch (Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		$entry = new Entry;
+		$entry->section_id = $sectionId;
+		$entry->author_id = $authorId;
+		$entry->parent_id = $parentId;
+		$entry->save();
 		return $entry;
 	}
 
@@ -218,7 +197,6 @@ class ContentService extends Component
 	public function getEntryById($entryId)
 	{
 		$entry = Entry::model()->findById($entryId);
-
 		return $entry;
 	}
 
@@ -231,7 +209,6 @@ class ContentService extends Component
 		$entries = Entry::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
-
 		return $entries;
 	}
 
@@ -247,7 +224,6 @@ class ContentService extends Component
 			->join('entries e', 's.id = e.section_id')
 			->where('s.site_id=:siteId', array(':siteId' => $siteId))
 			->queryAll();
-
 		return $entries;
 	}
 
@@ -261,7 +237,6 @@ class ContentService extends Component
 			'parent_id=:parentId',
 			array(':parentId' => $entryId)
 		);
-
 		return $exists;
 	}
 
@@ -274,7 +249,6 @@ class ContentService extends Component
 		$versions = EntryVersions::model()->findAllByAttributes(array(
 			'entry_id' => $entryId,
 		));
-
 		return $versions;
 	}
 
@@ -287,7 +261,48 @@ class ContentService extends Component
 		$version = EntryVersions::model()->findByAttributes(array(
 			'id' => $versionId,
 		));
-
 		return $version;
+	}
+
+	/**
+	 * Creates a new draft
+	 * @param int $entryId
+	 * @param string $name
+	 * @return Draft
+	 */
+	public function createDraft($entryId, $name = 'Untitled')
+	{
+		$draft = new Draft;
+		$draft->entry_id = $entryId;
+		$draft->author_id = b()->users->current->id;
+		$draft->language = b()->sites->currentSite->language;
+		$draft->name = $name;
+		$draft->save();
+		return $draft;
+	}
+	
+	/**
+	 * @param $entryId
+	 * @return mixed
+	 */
+	public function getDraftById($draftId)
+	{
+		$draft = Draft::model()->findById($draftId);
+		return $draft;
+	}
+
+	/**
+	 * Returns the latest draft for an entry, if one exists
+	 * @param int $entryId
+	 * @return mixed The latest draft or null
+	 */
+	public function getLatestDraft($entryId)
+	{
+		$draft = Draft::model()->find(array(
+			'condition' => 'entry_id = :entryId',
+			'params' => array(':entryId' => $entryId),
+			'order' => 'date_created DESC'
+		));
+		return $draft;
 	}
 }

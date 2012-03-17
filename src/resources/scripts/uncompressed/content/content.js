@@ -44,10 +44,9 @@ var Content = blx.Base.extend({
 			draftId: draftId
 		};
 
-		$.post(actionUrl+'content/loadEntry', data, $.proxy(function(response) {
+		$.post(actionUrl+'content/loadEntryEditPage', data, $.proxy(function(response) {
 			if (response.success)
 			{
-
 				this.$main.html(response.entryHtml);
 
 				// Remember the draft id

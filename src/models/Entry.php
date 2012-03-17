@@ -6,8 +6,12 @@ namespace Blocks;
  */
 class Entry extends Model
 {
+	public $draft;
+
 	protected $tableName = 'entries';
 	protected $hasContent = true;
+
+	protected $_title;
 
 	protected $attributes = array(
 		'slug'        => array('type' => AttributeType::Char, 'maxLength' => 100),
@@ -35,12 +39,31 @@ class Entry extends Model
 	);
 
 	/**
+	 * Returns whether the entry is published
+	 */
+	public function getPublished()
+	{
+		return !$this->content->isNewRecord;
+	}
+
+	/**
 	 * Returns the entry's title
 	 * @return mixed
 	 */
 	public function getTitle()
 	{
-		return $this->content->title;
+		if (isset($this->_title))
+			return $this->_title;
+		else
+			return $this->content->title;
+	}
+
+	/**
+	 * Sets the entry's title
+	 */
+	public function setTitle($title)
+	{
+		$this->_title = $title;
 	}
 
 	/**
