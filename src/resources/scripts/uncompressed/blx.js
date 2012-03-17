@@ -1,38 +1,38 @@
 (function($) {
 
 
-blx = {};
-blx.ui = {};
+if (typeof b == 'undefined') b = {};
+if (typeof b.ui == 'undefined') b.ui = {};
 
 
 // jQuery objects for common elements
-blx.$window = $(window);
-blx.$document = $(document);
-blx.$body = $(document.body);
+b.$window = $(window);
+b.$document = $(document);
+b.$body = $(document.body);
 
 
 // Key code constants
-blx.DELETE_KEY = 8;
-blx.SHIFT_KEY  = 16;
-blx.CTRL_KEY   = 17;
-blx.ALT_KEY    = 18;
-blx.RETURN_KEY = 13;
-blx.ESC_KEY    = 27;
-blx.SPACE_KEY  = 32;
-blx.LEFT_KEY   = 37;
-blx.UP_KEY     = 38;
-blx.RIGHT_KEY  = 39;
-blx.DOWN_KEY   = 40;
-blx.CMD_KEY    = 91;
+b.DELETE_KEY = 8;
+b.SHIFT_KEY  = 16;
+b.CTRL_KEY   = 17;
+b.ALT_KEY    = 18;
+b.RETURN_KEY = 13;
+b.ESC_KEY    = 27;
+b.SPACE_KEY  = 32;
+b.LEFT_KEY   = 37;
+b.UP_KEY     = 38;
+b.RIGHT_KEY  = 39;
+b.DOWN_KEY   = 40;
+b.CMD_KEY    = 91;
 
 
-blx.navHeight = 48;
+b.navHeight = 48;
 
 
 /**
  * Log
  */
-blx.log = function(msg)
+b.log = function(msg)
 {
 	if (typeof console != 'undefined' && typeof console.log == 'function')
 		console.log(msg);
@@ -42,7 +42,7 @@ blx.log = function(msg)
 /**
  * Utility functions
  */
-blx.utils =
+b.utils =
 {
 	/**
 	 * Format a number with commas
@@ -172,7 +172,7 @@ blx.utils =
 	 */
 	isCursorOver: function(event, elem)
 	{
-		return blx.utils.hitTest(event.pageX, event.pageY, elem);
+		return b.utils.hitTest(event.pageX, event.pageY, elem);
 	},
 
 	/**
@@ -188,7 +188,7 @@ blx.utils =
 			$elem.focus();
 		})
 		.on('keydown'+namespace+' blur'+namespace, function(event) {
-			if (event.keyCode != blx.SHIFT_KEY && event.keyCode != blx.CTRL_KEY && event.keyCode != blx.CMD_KEY)
+			if (event.keyCode != b.SHIFT_KEY && event.keyCode != b.CTRL_KEY && event.keyCode != b.CMD_KEY)
 				$elem.removeClass('no-outline');
 		});
 	},
@@ -222,7 +222,7 @@ blx.utils =
 			scrollTop = 0;
 		else
 		{
-			var maxScrollTop = blx.$body.outerHeight() - blx.$window.height();
+			var maxScrollTop = b.$body.outerHeight() - b.$window.height();
 			if (scrollTop > maxScrollTop)
 				scrollTop = maxScrollTop;
 		}
@@ -308,7 +308,7 @@ blx.utils =
 };
 
 
-blx.fx = {
+b.fx = {
 	duration: 400,
 	delay: 100
 };
@@ -317,7 +317,7 @@ blx.fx = {
 /**
  * Base class
  */
-blx.Base = Base.extend({
+b.Base = Base.extend({
 
 	settings: null,
 
@@ -341,7 +341,7 @@ blx.Base = Base.extend({
 
 	_formatEvents: function(events)
 	{
-		events = blx.utils.stringToArray(events);
+		events = b.utils.stringToArray(events);
 		for (var i = 0; i < events.length; i++)
 		{
 			events[i] += this._namespace;
@@ -386,7 +386,7 @@ blx.Base = Base.extend({
 /**
  * Blocks class
  */
-var CP = blx.Base.extend({
+var CP = b.Base.extend({
 
 	windowHeight: null,
 	_$sidebar: null,
@@ -400,8 +400,8 @@ var CP = blx.Base.extend({
 			this._$sidebar = $sidebar;
 
 			this.setSidebarHeight();
-			this.addListener(blx.$window, 'resize', 'setSidebarHeight');
-			this.addListener(blx.$window, 'scroll', 'setSidebarHeight');
+			this.addListener(b.$window, 'resize', 'setSidebarHeight');
+			this.addListener(b.$window, 'scroll', 'setSidebarHeight');
 		}
 
 		this._$messages = $('#messages');
@@ -414,9 +414,9 @@ var CP = blx.Base.extend({
 			return false;
 
 		// has the window height changed?
-		if (this.windowHeight !== (this.windowHeight = blx.$window.height()))
+		if (this.windowHeight !== (this.windowHeight = b.$window.height()))
 		{
-			var sidebarHeight = this.windowHeight - blx.navHeight;
+			var sidebarHeight = this.windowHeight - b.navHeight;
 			this._$sidebar.height(sidebarHeight);
 		}
 	}
@@ -424,7 +424,7 @@ var CP = blx.Base.extend({
 });
 
 
-blx.cp = new CP();
+b.cp = new CP();
 
 
 })(jQuery);

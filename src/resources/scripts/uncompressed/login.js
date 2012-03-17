@@ -1,7 +1,7 @@
 (function($) {
 
 
-var LoginForm = blx.Base.extend({
+var LoginForm = b.Base.extend({
 
 	$form: null,
 	$pane: null,
@@ -56,7 +56,7 @@ var LoginForm = blx.Base.extend({
 			rememberMe: (this.$rememberMeInput.attr('checked') ? 'y' : '')
 		};
 
-		$.post(actionUrl+'session/login', data, $.proxy(function(response) {
+		$.post(b.actionUrl+'session/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				window.location = response.redirectUrl;

@@ -1,7 +1,7 @@
 (function($) {
 
 
-var BlockSettingsForm = blx.Base.extend({
+var BlockSettingsForm = b.Base.extend({
 
 	$blockTypeSelect: null,
 	$blockTypeSettings: null,
@@ -32,7 +32,7 @@ var BlockSettingsForm = blx.Base.extend({
 });
 
 
-blx.blockSettingsForm = new BlockSettingsForm();
+b.blockSettingsForm = new BlockSettingsForm();
 
 
 })(jQuery);

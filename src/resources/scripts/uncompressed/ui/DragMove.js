@@ -4,7 +4,7 @@
 /**
  * Drag Move
  */
-blx.ui.DragMove = blx.ui.DragCore.extend({
+b.ui.DragMove = b.ui.DragCore.extend({
 
 	onDrag: function(items, settings)
 	{

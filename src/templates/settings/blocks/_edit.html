@@ -59,6 +59,6 @@ _{layout "settings/_layouts/settings" pageTitle="Edit Content Block"}
 {region "scripts"}
 	{include "_includes/js_include" file="block-settings.js"}
 	<script type="text/javascript">
-		{if !block.handle}new blx.ui.HandleGenerator('#block-name', '#block-handle');{/if}
+		{if !block.handle}new b.ui.HandleGenerator('#block-name', '#block-handle');{/if}
 	</script>
 {/region}

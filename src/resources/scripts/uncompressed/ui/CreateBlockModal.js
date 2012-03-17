@@ -4,7 +4,7 @@
 /**
  * Create Block Modal
  */
-blx.ui.CreateBlockModal = blx.ui.Modal.extend({
+b.ui.CreateBlockModal = b.ui.Modal.extend({
 
 	$cancelBtn: null,
 
@@ -21,13 +21,13 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 	{
 		this.base();
 
-		$.get(baseUrl+'_includes/blocksselect/createblockmodal', $.proxy(this, 'onLoad'));
+		$.get(b.baseUrl+'_includes/blocksselect/createblockmodal', $.proxy(this, 'onLoad'));
 	},
 
 	onLoad: function(data)
 	{
 		var $container = $(data);
-		$container.appendTo(blx.$body);
+		$container.appendTo(b.$body);
 		this.setContainer($container);
 
 		this.$cancelBtn = this.$footerBtns.filter('.cancel:first');
@@ -38,7 +38,7 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 
 		this.saving = false;
 
-		this.handleGenerator = new blx.ui.HandleGenerator(this.$nameInput, this.$handleInput);
+		this.handleGenerator = new b.ui.HandleGenerator(this.$nameInput, this.$handleInput);
 
 		this.addListener(this.$submitBtn, 'click', 'save');
 		this.addListener(this.$cancelBtn, 'click', 'hide');
@@ -83,7 +83,7 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 
 		this.clearErrors();
 
-		blx.utils.animateWidth(this.$submitBtn, $.proxy(function() {
+		b.utils.animateWidth(this.$submitBtn, $.proxy(function() {
 			this.$submitBtn.addClass('loading');
 		}, this));
 	
@@ -93,19 +93,19 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 			'class': this.$classInput.val()
 		};
 
-		$.post(actionUrl+'blocks/save', data, $.proxy(function(response) {
+		$.post(b.actionUrl+'blocks/save', data, $.proxy(function(response) {
 			if (response.errors)
 				this.setErrors(response.errors);
 			else if (!response.success)
 				alert('An unknown error occurred.');
 			else
 			{
-				var modal = blx.getBlocksSelectModal();
+				var modal = b.getBlocksSelectModal();
 				modal.insertNewBlock(response.id, response.name, response.type);
 				this.hide();
 			}
 
-			blx.utils.animateWidth(this.$submitBtn, $.proxy(function() {
+			b.utils.animateWidth(this.$submitBtn, $.proxy(function() {
 				this.$submitBtn.removeClass('loading');
 			}, this));
 
@@ -118,14 +118,14 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 		if (errors.name)
 		{
 			this.$nameInput.addClass('error');
-			this.$nameErrors = blx.utils.createErrorList(errors.name);
+			this.$nameErrors = b.utils.createErrorList(errors.name);
 			this.$nameErrors.insertAfter(this.$nameInput.parent());
 		}
 
 		if (errors.handle)
 		{
 			this.$handleInput.addClass('error');
-			this.$handleErrors = blx.utils.createErrorList(errors.handle);
+			this.$handleErrors = b.utils.createErrorList(errors.handle);
 			this.$handleErrors.insertAfter(this.$handleInput.parent());
 		}
 	},
@@ -175,10 +175,10 @@ blx.ui.CreateBlockModal = blx.ui.Modal.extend({
 
 var _modal;
 
-blx.getCreateBlockModal = function()
+b.getCreateBlockModal = function()
 {
 	if (typeof _modal == 'undefined')
-		_modal = new blx.ui.CreateBlockModal();
+		_modal = new b.ui.CreateBlockModal();
 
 	return _modal;
 }

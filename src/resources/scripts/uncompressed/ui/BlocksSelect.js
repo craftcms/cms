@@ -4,7 +4,7 @@
 /**
  * Blocks Select
  */
-blx.ui.BlocksSelect = blx.Base.extend({
+b.ui.BlocksSelect = b.Base.extend({
 
 	$container: null,
 	$items: null,
@@ -25,7 +25,7 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		// Is this already a blocks select?
 		if (this.$container.data('blocksselect'))
 		{
-			blx.log('Double-instantiating a blocks select on an element');
+			b.log('Double-instantiating a blocks select on an element');
 			this.$container.data('blocksselect').destroy();
 		}
 
@@ -33,13 +33,13 @@ blx.ui.BlocksSelect = blx.Base.extend({
 
 		this.inputName = this.$container.attr('data-input-name');
 
-		this.selector = new blx.ui.Select(this.$container, {
+		this.selector = new b.ui.Select(this.$container, {
 			multi: true,
 			handle: 'div.block',
 			onSelectionChange: $.proxy(this, 'onSelectionChange')
 		});
 
-		this.sorter = new blx.ui.DragSort({
+		this.sorter = new b.ui.DragSort({
 			axis: 'y',
 			handle: 'div.block',
 			helper: '<ul />',
@@ -64,7 +64,7 @@ blx.ui.BlocksSelect = blx.Base.extend({
 
 	showModal: function()
 	{
-		var modal = blx.getBlocksSelectModal();
+		var modal = b.getBlocksSelectModal();
 		modal.attachToField(this);
 	},
 
@@ -175,7 +175,7 @@ blx.ui.BlocksSelect = blx.Base.extend({
 		// Ignore if there are no selected items
 		if (! this.$selectedItems.length) return;
 
-		if (event.keyCode == blx.DELETE_KEY)
+		if (event.keyCode == b.DELETE_KEY)
 		{
 			event.preventDefault();
 			this.removeSelectedBlocks();
@@ -190,11 +190,11 @@ $.fn.blocksselect = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'blocksselect'))
-			new blx.ui.BlocksSelect(this);
+			new b.ui.BlocksSelect(this);
 	});
 };
 
-blx.$document.ready(function()
+b.$document.ready(function()
 {
 	$('#body .blocksselect').blocksselect();
 });

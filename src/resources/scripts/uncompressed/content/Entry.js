@@ -1,7 +1,7 @@
 (function($) {
 
 
-blx.Entry = blx.Base.extend({
+b.Entry = b.Base.extend({
 
 	$container: null,
 	entryId: null,
@@ -45,7 +45,7 @@ blx.Entry = blx.Base.extend({
 		var $inputs = this.$page.find('input,textarea,select,button').filter(':input').not(this.$slugInput);
 		this.initInput($inputs);
 
-		this.titleInput = new blx.ui.TitleInput('.page-head .title', {
+		this.titleInput = new b.ui.TitleInput('.page-head .title', {
 			onCreateInput: $.proxy(function(){
 				this.initInput(this.titleInput.$input);
 			}, this),
@@ -60,7 +60,7 @@ blx.Entry = blx.Base.extend({
 			if (!this.$slugInput.val())
 				this.autoUpdateSlug = true;
 
-			this.urlInput = new blx.Entry.UrlInput(this, {
+			this.urlInput = new b.Entry.UrlInput(this, {
 				onCreateInput: $.proxy(function() {
 					this.autoUpdateSlug = false;
 				}, this)
@@ -79,14 +79,14 @@ blx.Entry = blx.Base.extend({
 		val = val.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		val = blx.utils.asciiString(val);
+		val = b.utils.asciiString(val);
 
 		// Handle must start with a letter and end with a letter/number
 		val = val.replace(/^[^a-z]+/, '');
 		val = val.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = blx.utils.filterArray(val.split(/[^a-z0-9]+/));
+		var words = b.utils.filterArray(val.split(/[^a-z0-9]+/));
 		val = words.join('-');
 
 		this.$slug.html(val);
@@ -150,7 +150,7 @@ blx.Entry = blx.Base.extend({
 			$input.data('savedval', val);
 			var inputName = $input.attr('name');
 			this.changedInputs[inputName] = val;
-			this.autosaveTimeout = setTimeout($.proxy(this, 'autosave'), blx.Entry.autosaveDelay);
+			this.autosaveTimeout = setTimeout($.proxy(this, 'autosave'), b.Entry.autosaveDelay);
 		}
 	},
 
@@ -170,7 +170,7 @@ blx.Entry = blx.Base.extend({
 
 		this.changedInputs = {};
 
-		$.post(actionUrl+'content/autosaveDraft', data, $.proxy(function(response) {
+		$.post(b.actionUrl+'content/autosaveDraft', data, $.proxy(function(response) {
 			if (response.success)
 				this.$autosaveStatus.removeClass('error').text('Draft 1 autosaved a moment ago.');
 			else
@@ -189,7 +189,7 @@ blx.Entry = blx.Base.extend({
 });
 
 
-blx.Entry.UrlInput = blx.ui.TitleInput.extend({
+b.Entry.UrlInput = b.ui.TitleInput.extend({
 
 	entry: null,
 	$div: null,
@@ -198,7 +198,7 @@ blx.Entry.UrlInput = blx.ui.TitleInput.extend({
 	init: function(entry, settings)
 	{
 		this.entry = entry;
-		this.settings = $.extend({}, blx.ui.TitleInput.defaults, blx.Entry.UrlInput.defaults, settings);
+		this.settings = $.extend({}, b.ui.TitleInput.defaults, b.Entry.UrlInput.defaults, settings);
 
 		this.$container = this.entry.$page.find('.page-head .url .editable');
 		this.$div = this.$container.find('div');

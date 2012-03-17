@@ -4,7 +4,7 @@
 /**
  * Rich Text Editor
  */
-blx.ui.RTE = blx.Base.extend({
+b.ui.RTE = b.Base.extend({
 
 	/**
 	 * Constructor
@@ -12,7 +12,7 @@ blx.ui.RTE = blx.Base.extend({
 	init: function(id, settings)
 	{
 		this.id = id;
-		this.settings = $.extend({}, blx.ui.RTE.defaults, settings);
+		this.settings = $.extend({}, b.ui.RTE.defaults, settings);
 
 		this.focussed = false;
 
@@ -84,7 +84,7 @@ blx.ui.RTE = blx.Base.extend({
 		//	italic: this.addFormattingButton('italic', '<i>I</i>')
 		//};
 
-		blx.ui.RTE.instances.push(this);
+		b.ui.RTE.instances.push(this);
 	},
 
 	/**
@@ -118,7 +118,7 @@ blx.ui.RTE = blx.Base.extend({
 			options.push({ label: $label[0].outerHTML });
 		}
 
-		this.styleSelect = new blx.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
+		this.styleSelect = new b.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
 
 		this.styleSelect.select(0);
 	},
@@ -356,7 +356,7 @@ blx.ui.RTE = blx.Base.extend({
 });
 
 
-blx.ui.RTE.defaults = {
+b.ui.RTE.defaults = {
 	bold: true,
 	italic: true,
 
@@ -377,7 +377,7 @@ blx.ui.RTE.defaults = {
 /**
  * Formatting Button
  */
-var FormattingButton = blx.Base.extend({
+var FormattingButton = b.Base.extend({
 	/**
 	 * Constructor
 	 */

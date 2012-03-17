@@ -4,7 +4,7 @@
 /**
  * Blocks Select Modal
  */
-blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
+b.ui.BlocksSelectModal = b.ui.Modal.extend({
 
 	$cancelBtn: null,
 
@@ -23,16 +23,16 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 	{
 		this.base();
 
-		$.get(baseUrl+'_includes/blocksselect/modal', $.proxy(this, 'onLoad'));
+		$.get(b.baseUrl+'_includes/blocksselect/modal', $.proxy(this, 'onLoad'));
 	},
 
 	onLoad: function(data)
 	{
 		var $container = $(data);
-		$container.appendTo(blx.$body);
+		$container.appendTo(b.$body);
 		this.setContainer($container);
 
-		this.selector = new blx.ui.Select(this.$body, {
+		this.selector = new b.ui.Select(this.$body, {
 			multi: true,
 			waitForDblClick: true,
 			handle: 'div.block',
@@ -134,7 +134,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 		                 +     '<span class="icon icon137"></span>'
 		                 +     '<span class="block-name">'+name+'</span> '
 		                 +     '<span class="block-type">'+type+'</span> '
-		                 +     '<a class="goto" href="'+baseUrl+'settings/blocks/edit/'+id+'" title="Go to block" target="_blank"></a>'
+		                 +     '<a class="goto" href="'+b.baseUrl+'settings/blocks/edit/'+id+'" title="Go to block" target="_blank"></a>'
 		                 +   '</div>'
 		                 + '</li>');
 
@@ -162,7 +162,7 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 	showCreateBlockModal: function()
 	{
-		var modal = blx.getCreateBlockModal();
+		var modal = b.getCreateBlockModal();
 		modal.show();
 	},
 
@@ -213,13 +213,13 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 		switch (event.keyCode)
 		{
-			case blx.SPACE_KEY:
-			case blx.RETURN_KEY:
+			case b.SPACE_KEY:
+			case b.RETURN_KEY:
 				event.preventDefault();
 				if (this.$selectedItems.length)
 					this.addSelectedBlocks();
 				break;
-			case blx.ESC_KEY:
+			case b.ESC_KEY:
 				event.preventDefault();
 				this.hide();
 		}
@@ -231,10 +231,10 @@ blx.ui.BlocksSelectModal = blx.ui.Modal.extend({
 
 var _modal;
 
-blx.getBlocksSelectModal = function()
+b.getBlocksSelectModal = function()
 {
 	if (typeof _modal == 'undefined')
-		_modal = new blx.ui.BlocksSelectModal();
+		_modal = new b.ui.BlocksSelectModal();
 
 	return _modal;
 }

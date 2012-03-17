@@ -9,6 +9,12 @@
 		{:styles}
 	{/region}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+	<script type="text/javascript">
+		if (typeof b == 'undefined') b = {};
+		b.baseUrl = '{:url.base}';
+		b.actionUrl = '{:url.action}';
+		b.resourceUrl = '{:url.resource}';
+	</script>
 </head>
 <body class="{:bodyClass}">
 	{:body}
@@ -32,11 +38,6 @@
 	{include "_includes/js_include" file="lib/rangy-1.2.3/rangy-core.js"}
 	{include "_includes/js_include" file="lib/Base.js"}
 
-	<script type="text/javascript">
-		window.baseUrl = '{:url.base}';
-		window.actionUrl = '{:url.action}';
-		window.resourceUrl = '{:url.resource}';
-	</script>
 
 	{include "_includes/js_include" file="blocks.js"}
 

@@ -1,7 +1,7 @@
 (function($) {
 
 
-var Dashboard = blx.Base.extend({
+var Dashboard = b.Base.extend({
 
 	dom: {},
 	widgets: {},
@@ -30,7 +30,7 @@ var Dashboard = blx.Base.extend({
 			}
 		}
 
-		this.widgetSort = new blx.ui.DragSort(this.dom.$widgetHandles, {
+		this.widgetSort = new b.ui.DragSort(this.dom.$widgetHandles, {
 			axis: 'y',
 			helper: '<ul class="widget-handles dragging" />',
 			onSortChange: $.proxy(this, 'onWidgetMove')
@@ -39,7 +39,7 @@ var Dashboard = blx.Base.extend({
 		// setup events
 		this.addListener($('a.remove', this.dom.$widgetHandles), 'click', 'onWidgetRemove');
 		this.addListener(this.dom.$sidebarBtn, 'click', 'toggleSidebar');
-		this.addListener(blx.$window, 'resize', 'onWindowResize');
+		this.addListener(b.$window, 'resize', 'onWindowResize');
 
 		// set the columns
 		this.setCols();
@@ -310,7 +310,7 @@ var Dashboard = blx.Base.extend({
 				var $alert = $('<div class="alert"><p>'+data.alerts[i]+'</p></div>');
 				this.dom.$alerts.append($alert);
 				$alert.css({opacity: 0});
-				$alert.delay((i+1)*blx.fx.delay).animate({opacity: 1});
+				$alert.delay((i+1)*b.fx.delay).animate({opacity: 1});
 			}
 
 			// make room for them
@@ -329,7 +329,7 @@ var Dashboard = blx.Base.extend({
 });
 
 
-var Col = blx.Base.extend({
+var Col = b.Base.extend({
 
 	init: function(dashboard, index)
 	{
@@ -363,7 +363,7 @@ var Col = blx.Base.extend({
 });
 
 
-var Widget = blx.Base.extend({
+var Widget = b.Base.extend({
 
 	elem: null,
 	$elem: null,
@@ -438,7 +438,7 @@ var Widget = blx.Base.extend({
 });
 
 
-blx.dashboard = new Dashboard();
+b.dashboard = new Dashboard();
 
 
 })(jQuery);

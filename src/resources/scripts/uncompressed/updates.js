@@ -2,11 +2,11 @@
 
 
 // Keep the spinner vertically centered
-blx.$window.on('resize.updates', centerSpinner);
+b.$window.on('resize.updates', centerSpinner);
 
 
 
-var Update = blx.Base.extend({
+var Update = b.Base.extend({
 
 	dom: null,
 	expanded: false,
@@ -30,7 +30,7 @@ var Update = blx.Base.extend({
 			$('html, body').animate({scrollTop: scrollTo});
 		}
 
-		this.dom.$update.delay(i*blx.fx.delay).animate({opacity: 1});
+		this.dom.$update.delay(i*b.fx.delay).animate({opacity: 1});
 	},
 
 	toggle: function()
@@ -76,10 +76,10 @@ var Update = blx.Base.extend({
 });
 
 
-var updatesUrl = baseUrl+'settings/updates/updates';
+var updatesUrl = b.baseUrl+'settings/updates/updates';
 $('#updates').load(updatesUrl, function()
 {
-	blx.$window.off('resize.updates');
+	b.$window.off('resize.updates');
 
 	var $sidebarLink = $('#sb-updates'),
 		$sidebarBadge = $sidebarLink.find('span.badge'),
@@ -109,7 +109,7 @@ $('#updates').load(updatesUrl, function()
 			$dialog.css('top', top);
 		}
 		centerDialog();
-		blx.$window.on('resize', centerDialog);
+		b.$window.on('resize', centerDialog);
 	}
 
 	// fade in the updates

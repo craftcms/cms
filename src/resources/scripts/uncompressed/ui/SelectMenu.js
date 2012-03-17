@@ -4,7 +4,7 @@
 /**
  * Select Menu
  */
-blx.ui.SelectMenu = blx.ui.Menu.extend({
+b.ui.SelectMenu = b.ui.Menu.extend({
 
 	/** 
 	 * Constructor
@@ -19,7 +19,7 @@ blx.ui.SelectMenu = blx.ui.Menu.extend({
 			settings = {};
 		}
 
-		settings = $.extend({}, blx.ui.SelectMenu.defaults, settings);
+		settings = $.extend({}, b.ui.SelectMenu.defaults, settings);
 
 		this.base(btn, options, settings, callback);
 
@@ -78,7 +78,7 @@ blx.ui.SelectMenu = blx.ui.Menu.extend({
 
 });
 
-blx.ui.SelectMenu.defaults = {
+b.ui.SelectMenu.defaults = {
 	ulClass: 'menu select'
 };
 

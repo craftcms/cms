@@ -4,7 +4,7 @@
 /**
  * Drag Core
  */
-blx.ui.DragCore = blx.Base.extend({
+b.ui.DragCore = b.Base.extend({
 
 	$items: null,
 
@@ -29,14 +29,14 @@ blx.ui.DragCore = blx.Base.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && blx.utils.isObject(items))
+		if (!settings && b.utils.isObject(items))
 		{
 			// (settings)
 			settings = items;
 			items = null;
 		}
 
-		this.settings = $.extend({}, blx.ui.DragCore.defaults, settings);
+		this.settings = $.extend({}, b.ui.DragCore.defaults, settings);
 
 		this.$items = $();
 
@@ -77,8 +77,8 @@ blx.ui.DragCore = blx.Base.extend({
 		this.targetItemMouseDiffY = event.pageY - offset.top  + parseInt(this.$targetItem.css('marginTop'));
 
 		// listen for mousemove, mouseup
-		this.addListener(blx.$document, 'mousemove', 'onMouseMove');
-		this.addListener(blx.$document, 'mouseup', 'onMouseUp');
+		this.addListener(b.$document, 'mousemove', 'onMouseMove');
+		this.addListener(b.$document, 'mouseup', 'onMouseUp');
 	},
 
 	/**
@@ -97,9 +97,9 @@ blx.ui.DragCore = blx.Base.extend({
 		if (!this.dragging)
 		{
 			// has the mouse moved far enough to initiate dragging yet?
-			var mouseDist = blx.utils.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
+			var mouseDist = b.utils.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
 
-			if (mouseDist >= blx.ui.DragCore.minMouseDist)
+			if (mouseDist >= b.ui.DragCore.minMouseDist)
 				this.startDragging();
 			else
 				return;
@@ -114,7 +114,7 @@ blx.ui.DragCore = blx.Base.extend({
 	onMouseUp: function(event)
 	{
 		// unbind the document events
-		this.removeAllListeners(blx.$document);
+		this.removeAllListeners(b.$document);
 
 		if (this.dragging)
 			this.stopDragging();
@@ -179,7 +179,7 @@ blx.ui.DragCore = blx.Base.extend({
 			// Make sure this element doesn't belong to another dragger
 			if ($.data(item, 'drag'))
 			{
-				blx.log('Element was added to more than one dragger');
+				b.log('Element was added to more than one dragger');
 				$.data(item, 'drag').removeItems(item);
 			}
 

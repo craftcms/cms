@@ -4,7 +4,7 @@
 /**
  * Menu
  */
-blx.ui.Menu = blx.Base.extend({
+b.ui.Menu = b.Base.extend({
 
 	/**
 	 * Constructor
@@ -29,7 +29,7 @@ blx.ui.Menu = blx.Base.extend({
 		this.dom.$btnLabel = $('span.label', this.dom.$btn);
 
 		this.options = options;
-		this.settings = $.extend({}, blx.ui.Menu.defaults, settings);
+		this.settings = $.extend({}, b.ui.Menu.defaults, settings);
 		this.callback = callback;
 
 		this.showing = false;
@@ -83,7 +83,7 @@ blx.ui.Menu = blx.Base.extend({
 		this.dom.ul.style.top = (btnOffset.top + btnHeight) + 'px';
 		this.dom.ul.style.minWidth = (btnWidth - 2) + 'px';
 
-		if (this.settings.align == blx.ui.Menu.ALIGN_LEFT)
+		if (this.settings.align == b.ui.Menu.ALIGN_LEFT)
 		{
 			this.dom.ul.style.left = (btnOffset.left + 1) + 'px';
 		}
@@ -99,7 +99,7 @@ blx.ui.Menu = blx.Base.extend({
 
 		// wait for this event to finish propagating, and then listen for new clicks
 		setTimeout($.proxy(function() {
-			this.addListener(blx.$body, 'click', 'hide');
+			this.addListener(b.$body, 'click', 'hide');
 		}, this), 1);
 	},
 
@@ -114,7 +114,7 @@ blx.ui.Menu = blx.Base.extend({
 		this.dom.$btn.removeClass('sel');
 		this.dom.ul.style.display = 'none';
 
-		this.removeListener(blx.$body, 'click');
+		this.removeListener(b.$body, 'click');
 
 		this.showing = false;
 	},

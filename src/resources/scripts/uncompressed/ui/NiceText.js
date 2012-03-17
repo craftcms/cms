@@ -3,7 +3,7 @@
 /**
  * Nice Text
  */
-blx.ui.NiceText = blx.Base.extend({
+b.ui.NiceText = b.Base.extend({
 
 	$input: null,
 	$hint: null,
@@ -19,12 +19,12 @@ blx.ui.NiceText = blx.Base.extend({
 	init: function(input, settings)
 	{
 		this.$input = $(input);
-		this.settings = $.extend({}, blx.ui.NiceText.defaults, settings);
+		this.settings = $.extend({}, b.ui.NiceText.defaults, settings);
 
 		// Is this already a transparent text input?
 		if (this.$input.data('nicetext'))
 		{
-			blx.log('Double-instantiating a transparent text input on an element');
+			b.log('Double-instantiating a transparent text input on an element');
 			this.$input.data('nicetext').destroy();
 		}
 
@@ -61,13 +61,13 @@ blx.ui.NiceText = blx.Base.extend({
 
 	showHint: function()
 	{
-		this.$hint.fadeIn(blx.ui.NiceText.hintFadeDuration);
+		this.$hint.fadeIn(b.ui.NiceText.hintFadeDuration);
 		this.showingHint = true;
 	},
 
 	hideHint: function()
 	{
-		this.$hint.fadeOut(blx.ui.NiceText.hintFadeDuration);
+		this.$hint.fadeOut(b.ui.NiceText.hintFadeDuration);
 		this.showingHint = false;
 	},
 
@@ -149,7 +149,7 @@ blx.ui.NiceText = blx.Base.extend({
 	onFocus: function()
 	{
 		this.focussed = true;
-		this.interval = setInterval($.proxy(this, 'checkInput'), blx.ui.NiceText.interval);
+		this.interval = setInterval($.proxy(this, 'checkInput'), b.ui.NiceText.interval);
 		this.checkInput();
 	},
 
@@ -182,11 +182,11 @@ $.fn.nicetext = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'text'))
-			new blx.ui.NiceText(this);
+			new b.ui.NiceText(this);
 	});
 };
 
-blx.$document.ready(function()
+b.$document.ready(function()
 {
 	$('#body .nicetext').nicetext();
 });

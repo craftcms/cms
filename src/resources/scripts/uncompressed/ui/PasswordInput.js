@@ -4,7 +4,7 @@
 /**
  * Password Input
  */
-blx.ui.PasswordInput = blx.Base.extend({
+b.ui.PasswordInput = b.Base.extend({
 
 	$passwordInput: null,
 	$textInput: null,
@@ -21,7 +21,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 		// Is this already a password input?
 		if (this.$passwordInput.data('passwordInput'))
 		{
-			blx.log('Double-instantiating a password input on an element');
+			b.log('Double-instantiating a password input on an element');
 			this.$passwordInput.data('passwordInput').destroy();
 		}
 
@@ -156,11 +156,11 @@ $.fn.passwordInput = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'passwordInput'))
-			new blx.ui.PasswordInput(this);
+			new b.ui.PasswordInput(this);
 	});
 };
 
-blx.$document.ready(function()
+b.$document.ready(function()
 {
 	$('input.password').passwordInput();
 });

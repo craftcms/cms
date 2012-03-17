@@ -4,7 +4,7 @@
 /**
  * Title Input
  */
-blx.ui.TitleInput = blx.Base.extend({
+b.ui.TitleInput = b.Base.extend({
 
 	$container: null,
 	$heading: null,
@@ -19,12 +19,12 @@ blx.ui.TitleInput = blx.Base.extend({
 		// Is this already a title input?
 		if (this.$container.data('titleinput'))
 		{
-			blx.log('Double-instantiating a title input on an element');
+			b.log('Double-instantiating a title input on an element');
 			this.$container.data('titleinput').destroy();
 		}
 		this.$container.data('titleinput', this);
 
-		this.settings = $.extend({}, blx.ui.TitleInput.defaults, settings);
+		this.settings = $.extend({}, b.ui.TitleInput.defaults, settings);
 
 		this.$heading = this.$container.find('h1');
 		this.$hiddenInput = this.$container.find('input');
@@ -84,7 +84,7 @@ blx.ui.TitleInput = blx.Base.extend({
 		// Ignore if meta key is down
 		if (event.metaKey) return;
 
-		if (event.keyCode == blx.RETURN_KEY)
+		if (event.keyCode == b.RETURN_KEY)
 		{
 			event.preventDefault();
 			this.hideInput();

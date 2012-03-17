@@ -4,7 +4,7 @@
 /**
  * Modal
  */
-blx.ui.Modal = blx.Base.extend({
+b.ui.Modal = b.Base.extend({
 
 	$container: null,
 	$shade: null,
@@ -27,14 +27,14 @@ blx.ui.Modal = blx.Base.extend({
 	init: function(container, settings)
 	{
 		// Param mapping
-		if (!settings && blx.utils.isObject(container))
+		if (!settings && b.utils.isObject(container))
 		{
 			// (settings)
 			settings = container;
 			items = null;
 		}
 
-		this.setSettings(settings, blx.ui.Modal.defaults);
+		this.setSettings(settings, b.ui.Modal.defaults);
 
 		if (container)
 			this.setContainer(container);
@@ -42,7 +42,7 @@ blx.ui.Modal = blx.Base.extend({
 		this.visible = false;
 		this.focussed = false;
 
-		blx.ui.Modal.instances.push(this);
+		b.ui.Modal.instances.push(this);
 	},
 
 	setContainer: function(container)
@@ -52,7 +52,7 @@ blx.ui.Modal = blx.Base.extend({
 		// Is this already a modal?
 		if (this.$container.data('modal'))
 		{
-			blx.log('Double-instantiating a modal on an element');
+			b.log('Double-instantiating a modal on an element');
 			this.$container.data('modal').destroy();
 		}
 
@@ -68,7 +68,7 @@ blx.ui.Modal = blx.Base.extend({
 			var $dragHandles = this.$header.add(this.$footer);
 			if ($dragHandles.length)
 			{
-				this.dragger = new blx.ui.DragMove(this.$container, {
+				this.dragger = new b.ui.DragMove(this.$container, {
 					handle: $dragHandles
 				});
 			}
@@ -91,26 +91,26 @@ blx.ui.Modal = blx.Base.extend({
 	focus: function()
 	{
 		// Blur the currently focussed modal
-		if (blx.ui.Modal.focussedModal)
-			blx.ui.Modal.focussedModal.blur();
+		if (b.ui.Modal.focussedModal)
+			b.ui.Modal.focussedModal.blur();
 
 		// Add focus to this one
 		this.$container.addClass('focussed');
 		this.focussed = true;
-		blx.ui.Modal.focussedModal = this;
+		b.ui.Modal.focussedModal = this;
 
 		if (this.$shade)
 			this.$shade.hide();
 
 		// Put this at the end of the list of visible modals
-		blx.utils.removeFromArray(this, blx.ui.Modal.visibleModals);
-		blx.ui.Modal.visibleModals.push(this);
+		b.utils.removeFromArray(this, b.ui.Modal.visibleModals);
+		b.ui.Modal.visibleModals.push(this);
 
 		// Set z-index's appropriately
-		for (var i = 0; i < blx.ui.Modal.visibleModals.length; i++)
+		for (var i = 0; i < b.ui.Modal.visibleModals.length; i++)
 		{
 			var zIndex = i + 1;
-			blx.ui.Modal.visibleModals[i].setZIndex(zIndex);
+			b.ui.Modal.visibleModals[i].setZIndex(zIndex);
 		}
 	},
 
@@ -118,7 +118,7 @@ blx.ui.Modal = blx.Base.extend({
 	{
 		this.$container.removeClass('focussed');
 		this.focussed = false;
-		blx.ui.Modal.focussedModal = null;
+		b.ui.Modal.focussedModal = null;
 
 		if (!this.$shade)
 		{
@@ -149,11 +149,11 @@ blx.ui.Modal = blx.Base.extend({
 		{
 			this.$container.fadeOut('fast');
 			this.blur();
-			blx.utils.removeFromArray(this, blx.ui.Modal.visibleModals);
+			b.utils.removeFromArray(this, b.ui.Modal.visibleModals);
 
 			// Focus the next one up
-			if (blx.ui.Modal.visibleModals.length)
-				blx.ui.Modal.visibleModals[blx.ui.Modal.visibleModals.length-1].focus();
+			if (b.ui.Modal.visibleModals.length)
+				b.ui.Modal.visibleModals[b.ui.Modal.visibleModals.length-1].focus();
 		}
 
 		this.visible = false;
@@ -196,8 +196,8 @@ blx.ui.Modal = blx.Base.extend({
 		if (!this.$container)
 			throw 'Attempted to position a modal whose container has not been set.';
 
-		var viewportWidth = blx.$document.width(),
-			viewportHeight = blx.$document.height(),
+		var viewportWidth = b.$document.width(),
+			viewportHeight = b.$document.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
 			left = (viewportWidth - modalWidth) / 2,
@@ -216,14 +216,14 @@ blx.ui.Modal = blx.Base.extend({
 
 		var $elem = $(elem),
 			elemOffset = $elem.offset(),
-			bodyScrollTop = blx.$body.scrollTop(),
+			bodyScrollTop = b.$body.scrollTop(),
 			topClearance = elemOffset.top - bodyScrollTop,
 			modalHeight = this.getHeight();
 
-		if (modalHeight < topClearance + blx.navHeight + blx.ui.Modal.relativeElemPadding*2)
-			var top = elemOffset.top - modalHeight - blx.ui.Modal.relativeElemPadding;
+		if (modalHeight < topClearance + b.navHeight + b.ui.Modal.relativeElemPadding*2)
+			var top = elemOffset.top - modalHeight - b.ui.Modal.relativeElemPadding;
 		else
-			var top = elemOffset.top + $elem.height() + blx.ui.Modal.relativeElemPadding;
+			var top = elemOffset.top + $elem.height() + b.ui.Modal.relativeElemPadding;
 
 		this.$container.css({
 			top: top,
@@ -239,7 +239,7 @@ blx.ui.Modal = blx.Base.extend({
 
 	onKeyDown: function(event)
 	{
-		if (event.target.nodeName != 'TEXTAREA' && event.keyCode == blx.RETURN_KEY)
+		if (event.target.nodeName != 'TEXTAREA' && event.keyCode == b.RETURN_KEY)
 		{
 			this.$submitBtn.click();
 		}

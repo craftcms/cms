@@ -1,7 +1,7 @@
 (function($) {
 
 
-var EmailSettingsForm = blx.Base.extend({
+var EmailSettingsForm = b.Base.extend({
 
 	$emailSettingsPane: null,
 	$protocolSelect: null,
@@ -21,7 +21,7 @@ var EmailSettingsForm = blx.Base.extend({
 		this.addListener(this.$protocolSelect, 'change', '_onEmailTypeChange');
 
 		// Initialize Switch and Pill fields
-		this.smtpAuthSwitch = new blx.ui.LightSwitch('#smtpAuth', {
+		this.smtpAuthSwitch = new b.ui.LightSwitch('#smtpAuth', {
 			onChange: $.proxy(this, '_onSmtpAuthChange')
 		});
 	},
@@ -83,7 +83,7 @@ var EmailSettingsForm = blx.Base.extend({
 });
 
 
-blx.emailSettingsForm = new EmailSettingsForm();
+b.emailSettingsForm = new EmailSettingsForm();
 
 
 })(jQuery);

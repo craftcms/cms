@@ -1,7 +1,7 @@
 (function($) {
 
 
-var Content = blx.Base.extend({
+var Content = b.Base.extend({
 
 	$sidebarLinks: null,
 	$selSidebarLink: null,
@@ -44,7 +44,7 @@ var Content = blx.Base.extend({
 			draftId: draftId
 		};
 
-		$.post(actionUrl+'content/loadEntryEditPage', data, $.proxy(function(response) {
+		$.post(b.actionUrl+'content/loadEntryEditPage', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				this.$main.html(response.entryHtml);
@@ -58,7 +58,7 @@ var Content = blx.Base.extend({
 						localStorage.removeItem('lastDraftId:'+entryId);
 				}
 
-				this.entry = new blx.Entry(this.$main, entryId, response.draftId);
+				this.entry = new b.Entry(this.$main, entryId, response.draftId);
 			}
 			else
 			{
@@ -71,7 +71,7 @@ var Content = blx.Base.extend({
 });
 
 
-blx.content = new Content();
+b.content = new Content();
 
 
 })(jQuery);
