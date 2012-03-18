@@ -136,10 +136,12 @@ class ContentController extends Controller
 							$block->data = $draftContentByBlockId[$block->id];
 					}
 
-					$return['draftId'] = (int)$draft->id;
+					$return['draftId']   = (int)$draft->id;
+					$return['draftName'] = $draft->name;
 				}
 
 				$return['success'] = true;
+				$return['entryTitle'] = $entry->title;
 				$return['entryHtml'] = $this->loadTemplate('content/_includes/entry', array('entry' => $entry), true);
 
 				$this->returnJson($return);

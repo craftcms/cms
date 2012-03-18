@@ -54,8 +54,10 @@ class Entry extends Model
 	{
 		if (isset($this->_title))
 			return $this->_title;
-		else
+		else if ($this->content->title)
 			return $this->content->title;
+		else
+			return 'Untitled';
 	}
 
 	/**
