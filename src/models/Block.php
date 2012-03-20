@@ -89,7 +89,7 @@ class Block extends Model
 	 */
 	public function __toString()
 	{
-		return $this->data;
+		return (string)$this->data;
 	}
 
 }
