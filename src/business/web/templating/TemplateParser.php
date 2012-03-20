@@ -465,9 +465,7 @@ class TemplateParser
 	 */
 	protected function parseEchoTag($body)
 	{
-		// PHP calls __toString() internally for 'echo' statements,
-		// so there's no need to typecast the variables ourselves
-		$this->parseVariables($body);
+		$this->parseVariables($body, true);
 		return "<?php echo {$body} ?>";
 	}
 
