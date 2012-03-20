@@ -143,21 +143,27 @@ class TemplateParser
 	protected function prependHead()
 	{
 		$head = '<?php'.PHP_EOL
-		      . 'namespace Blocks;'.PHP_EOL;
+		      . 'namespace Blocks;'.PHP_EOL.PHP_EOL;
 
-		foreach ($this->_variables as $var)
+		if ($this->_variables)
 		{
-			$head .= "if (!isset(\${$var})) \${$var} = TemplateHelper::getGlobalTag('{$var}');".PHP_EOL;
+			$head .= '// Predefine all vars used in this template to avoid "Undefined variable" errors.'.PHP_EOL;
+			foreach ($this->_variables as $var)
+			{
+				$head .= "if (!isset(\${$var})) \${$var} = TemplateHelper::getGlobalTag('{$var}');".PHP_EOL;
+			}
+			$head .= PHP_EOL;
 		}
-		
-		$head .= '$this->layout = null;'.PHP_EOL;
+
+		$head .= '// We\'re not using traditional Yii layouts, since there can only be one of those.'.PHP_EOL
+		       . '$this->layout = null;'.PHP_EOL;
 
 		if ($this->_hasLayout)
 		{
 			$head .= '$_layout = $this->beginWidget(\'Blocks\\LayoutTemplateWidget\');'.PHP_EOL;
 		}
 
-		$head .= '?>';
+		$head .= PHP_EOL.'?>';
 
 		$this->_template = $head . $this->_template;
 	}
