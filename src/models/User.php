@@ -36,8 +36,8 @@ class User extends Model
 	);
 
 	protected $hasMany = array(
-		'members'   => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
-		'groups'    => array('model' => 'UserGroup', 'through' => 'UserGroupMembers', 'foreignKey' => array('user' => 'group')),
+		//'members'   => array('model' => 'UserGroupMembers', 'foreignKey' => 'user'),
+		//'groups'    => array('model' => 'UserGroup', 'through' => 'UserGroupMember', 'foreignKey' => array('user' => 'group')),
 		'widgets'   => array('model' => 'Widget', 'foreignKey' => 'user'),
 	);
 

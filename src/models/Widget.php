@@ -21,7 +21,7 @@ class Widget extends Model
 
 	protected $belongsTo = array(
 		'user'   => array('model' => 'User', 'required' => true),
-		'plugin' => array('model' => 'Plugin')
+		//'plugin' => array('model' => 'Plugin')
 	);
 
 	// Widget subclass properties
