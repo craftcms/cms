@@ -1,40 +1,85 @@
 <?php
 namespace Blocks;
 
-/**
- *
- */
-class Et
+	/**
+	 * The `$options` parameter takes an associative array with the following
+	 * options:
+	 *
+	 * - `timeout`: How long should we wait for a response? (integer, seconds, default: 10)
+	 * - `useragent`: Useragent to send to the server (string, default: php-requests/$version)
+	 * - `follow_redirects`: Should we follow 3xx redirects? (boolean, default: true)
+	 * - `redirects`: How many times should we redirect before erroring? (integer, default: 10)
+	 * - `blocking`: Should we block processing on this request? (boolean, default: true)
+	 * - `filename`: File to stream the body to instead. (string|boolean, default: false)
+	 * - `auth`: Authentication handler or array of user/password details to use for Basic authentication (RequestsAuth|array|boolean, default: false)
+	 * - `idn`: Enable IDN parsing (boolean, default: true)
+	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
+	 *
+	 */
+class Et extends \CApplicationComponent
 {
 	private $_endpoint;
 	private $_timeout;
-	private $_maxRedirects;
-	private $_streamPath = null;
 	private $_package;
+	private $_followRedirects;
+	private $_options = array();
+
+	/**
+	 * @return int
+	 */
+	public function getTimeout()
+	{
+		return $this->_timeout;
+	}
+
+	/**
+	 * @param $followRedirects
+	 */
+	public function setFollowRedirects($followRedirects)
+	{
+		$this->_options['follow_redirects'] = $followRedirects;
+	}
+
+	/**
+	 * @param $maxRedirects
+	 */
+	public function setMaxRedirects($maxRedirects)
+	{
+		$this->_options['redirects'] = $maxRedirects;
+	}
+
+	/**
+	 * @param $blocking
+	 */
+	public function setBlocking($blocking)
+	{
+		$this->_options['blocking'] = $blocking;
+	}
+
+	/**
+	 * @param $destinationFileName
+	 */
+	public function setDestinationFileName($destinationFileName)
+	{
+		$this->_options['filename'] = $destinationFileName;
+	}
 
 	/**
 	 * @param     $endPoint
 	 * @param int $timeout
-	 * @param int $maxRedirects
 	 */
-	function __construct($endPoint, $timeout = 6, $maxRedirects = 0)
+	function __construct($endPoint, $timeout = 6)
 	{
 		$this->_endpoint = $endPoint;
 		$this->_timeout = $timeout;
-		$this->_maxRedirects = $maxRedirects;
 
 		$this->_package = new EtPackage();
 		$this->_package->licenseKeys = b()->sites->licenseKeys;
 		$this->_package->domain = b()->request->serverName;
 		$this->_package->edition = Blocks::getEdition();
-	}
 
-	/**
-	 * @param $path
-	 */
-	public function setStreamPath($path)
-	{
-		$this->_streamPath = $path;
+		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
+		$this->_options['timeout'] = $this->_timeout;
 	}
 
 	/**
@@ -52,37 +97,25 @@ class Et
 	{
 		try
 		{
-			$client = new \HttpClient($this->_endpoint, array(
-				'timeout'       =>  $this->_timeout,
-				'maxredirects'  =>  $this->_maxRedirects
-			));
+			$data = $this->_package;
+			$response = \Requests::post($this->_endpoint, array(), Json::encode($data), $this->_options);
 
-			$client->setRawData(Json::encode($this->_package), 'json');
-
-			if ($this->_streamPath !== null)
-				$client->setStream($this->_streamPath);
-
-			$response = $client->request('POST');
-
-			if ($response->isSuccessful())
+			if ($response->success)
 			{
-				if ($this->_streamPath !== null)
+				if (isset($this->_options['filename']))
 					return true;
 
-				$packageData = Json::decode($response->getBody());
+				$packageData = Json::decode($response->body);
 				$package = new EtPackage($packageData);
 
 				// we set the license key status on every request
-				b()->sites->setLicenseKeyStatus($package->licenseKeyStatus);
+				b()->sites->licenseKeyStatus = $package->licenseKeyStatus;
 
 				return $package;
 			}
 			else
 			{
-				if ($this->_streamPath == null)
-					Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->getBody(), 'warning');
-				else
-					Blocks::log('Error in calling '.$this->_endpoint.'.', 'warning');
+				Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, 'warning');
 			}
 		}
 		catch(Exception $e)
