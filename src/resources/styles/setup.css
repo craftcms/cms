@@ -1,7 +1,7 @@
 html, body { height: 100%; }
 #body, #main { position: static; padding: 0; }
 
-.pane { position: absolute; top: 50%; left: 50%; margin: -220px 0 0 -400px; width: 800px; }
+.pane { position: absolute; top: 50%; left: 50%; margin: -220px 0 0 -400px; width: 800px; background: #fff; }
 .pane .body { position: relative; height: 440px; }
 
 .pane .body .sidebar { position: absolute; top: 0; left: 0; height: 100%; border-bottom-left-radius: 3px; }
