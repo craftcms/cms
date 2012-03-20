@@ -10,14 +10,9 @@ b.Entry = b.Base.extend({
 	$toolbar: null,
 	$page: null,
 
-	$slug: null,
-	$slugInput: null,
-	$sidebarLabel: null,
 	$autosaveStatus: null,
 	$inputs: null,
 
-	titleInput: null,
-	urlInput: null,
 	autoUpdateSlug: false,
 
 	changedInputs: null,
@@ -32,8 +27,6 @@ b.Entry = b.Base.extend({
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$page = this.$container.find('.page:first');
 
-		this.$slug = this.$page.find('.page-head .slug');
-		this.$slugInput = this.$page.find('.page-head .url input');
 		this.$autosaveStatus = this.$container.find('p.autosave-status:first');
 
 		this.$inputs = $();
@@ -42,71 +35,8 @@ b.Entry = b.Base.extend({
 		this.$page.find('.nicetext').nicetext();
 
 		// Find all of the form elements in the entry
-		var $inputs = this.$page.find('input,textarea,select,button').filter(':input').not(this.$slugInput);
+		var $inputs = this.$page.find('input,textarea,select,button').filter(':input');
 		this.initInput($inputs);
-
-		this.titleInput = new b.ui.TitleInput('.page-head .title', {
-			onCreateInput: $.proxy(function(){
-				this.initInput(this.titleInput.$input);
-			}, this),
-			onKeydown: $.proxy(function() {
-				setTimeout($.proxy(this, 'onTitleChange'), 1);
-			}, this),
-			onChange: $.proxy(this, 'onTitleChange')
-		});
-
-		if (this.$slug.length)
-		{
-			if (!this.$slugInput.val())
-				this.autoUpdateSlug = true;
-
-			this.urlInput = new b.Entry.UrlInput(this, {
-				onCreateInput: $.proxy(function() {
-					this.autoUpdateSlug = false;
-				}, this)
-			});
-		}
-
-		
-	},
-
-	updateSlug: function(val)
-	{
-		// Remove HTML tags
-		val = val.replace("/<(.*?)>/g", '');
-
-		// Make it lowercase
-		val = val.toLowerCase();
-
-		// Convert extended ASCII characters to basic ASCII
-		val = b.utils.asciiString(val);
-
-		// Handle must start with a letter and end with a letter/number
-		val = val.replace(/^[^a-z]+/, '');
-		val = val.replace(/[^a-z0-9]+$/, '');
-
-		// Get the "words"
-		var words = b.utils.filterArray(val.split(/[^a-z0-9]+/));
-		val = words.join('-');
-
-		this.$slug.html(val);
-		this.$slugInput.val(val);
-	},
-
-	onTitleChange: function()
-	{
-		if (!this.$sidebarLabel)
-			this.$sidebarLabel = $('#sidebar a.sel span.label');
-
-		var val = this.titleInput.$input.val();
-		if (val)
-			this.$sidebarLabel.text(val);
-		else
-			this.$sidebarLabel.text('Untitled');
-
-		// Update the slug
-		if (this.autoUpdateSlug)
-			this.updateSlug(val);
 	},
 
 	initInput: function(input)
@@ -186,54 +116,6 @@ b.Entry = b.Base.extend({
 
 }, {
 	autosaveDelay: 2000
-});
-
-
-b.Entry.UrlInput = b.ui.TitleInput.extend({
-
-	entry: null,
-	$div: null,
-	$prefix: null,
-
-	init: function(entry, settings)
-	{
-		this.entry = entry;
-		this.settings = $.extend({}, b.ui.TitleInput.defaults, b.Entry.UrlInput.defaults, settings);
-
-		this.$container = this.entry.$page.find('.page-head .url .editable');
-		this.$div = this.$container.find('div');
-		this.$prefix = this.$div.find('.prefix');
-		this.$heading = this.$div.find('.slug');
-		this.$hiddenInput = this.$container.find('input');
-
-
-		this.val = this.$hiddenInput.val();
-
-		this.addListener(this.$container, 'focus,click', 'showInput');
-	},
-
-	createInput: function()
-	{
-		this.base();
-		this.$input.removeClass('title-input').addClass('url-input');
-	},
-
-	showInput: function()
-	{
-		this.base();
-		this.$prefix.insertBefore(this.$input);
-	},
-
-	hideInput: function()
-	{
-		this.base();
-		this.$prefix.prependTo(this.$div);
-	}
-
-}, {
-	defaults: {
-		emptyText: '…'
-	}
 });
 
 

@@ -11,8 +11,6 @@ class Entry extends Model
 	protected $tableName = 'entries';
 	protected $hasContent = true;
 
-	protected $_title;
-
 	protected $attributes = array(
 		'slug'        => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'full_uri'    => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
@@ -52,20 +50,62 @@ class Entry extends Model
 	 */
 	public function getTitle()
 	{
-		if (isset($this->_title))
-			return $this->_title;
-		else if ($this->content->title)
-			return $this->content->title;
-		else
-			return 'Untitled';
+		return $this->content->title;
 	}
 
 	/**
-	 * Sets the entry's title
+	 * Returns the entry's URI
+	 * @return mixed
 	 */
-	public function setTitle($title)
+	public function getUri()
 	{
-		$this->_title = $title;
+		if ($this->slug)
+		{
+			$urlFormat = $this->section->url_format;
+			$uri = str_replace('{slug}', $this->slug, $urlFormat);
+			return $uri;
+		}
+		else
+			return null;
+	}
+
+	/**
+	 * Returns the entry's full URL
+	 * @return mixed
+	 */
+	public function getUrl()
+	{
+		$uri = $this->uri;
+		if ($uri)
+		{
+			$url = b()->sites->currentSite->url.'/'.$uri;
+			$url = str_replace('http://', '', $url);
+			return $url;
+		}
+		else
+			return null;
+	}
+
+	/**
+	 * Mix-in draft content
+	 * @param Draft $draft
+	 */
+	public function mixInDraftContent($draft)
+	{
+		// Index draft content by block ID
+		$draftContent = $draft->content;
+		$draftContentByBlockId = array();
+		foreach ($draftContent as $block)
+		{
+			$draftContentByBlockId[$block->block_id] = $block->value;
+		}
+
+		// Save draft data onto blocks
+		foreach ($this->blocks as $block)
+		{
+			if (isset($draftContentByBlockId[$block->id]))
+				$block->data = $draftContentByBlockId[$block->id];
+		}
 	}
 
 	/**

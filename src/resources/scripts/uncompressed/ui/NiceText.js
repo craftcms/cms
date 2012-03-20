@@ -8,7 +8,7 @@ b.ui.NiceText = b.Base.extend({
 	$input: null,
 	$hint: null,
 	$stage: null,
-	isTextarea: null,
+	autoHeight: null,
 	focussed: false,
 	showingHint: false,
 	val: null,
@@ -29,23 +29,34 @@ b.ui.NiceText = b.Base.extend({
 		}
 
 		this.$input.data('nicetext', this);
-		this.isTextarea = (this.$input[0].nodeName == 'TEXTAREA');
 
-		if (this.isTextarea)
+		this.autoHeight = (this.settings.autoHeight && this.$input[0].nodeName == 'TEXTAREA');
+
+		if (this.autoHeight)
 			this.minHeight = this.getStageHeight('');
 
 		this.getVal();
 
-		var hintText = this.$input.attr('data-hint');
-		if (hintText)
+		if (this.settings.hint)
 		{
-			this.$hint = $('<div class="nicetext-hint-container"><div class="nicetext-hint">'+hintText+'</div></div>');
+			this.$hint = $('<div class="nicetext-hint-container"><div class="nicetext-hint">'+this.settings.hint+'</div></div>');
 			this.$hint.insertBefore(this.$input);
+			this.$hint.css({
+				top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
+				left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')))
+			});
+			b.utils.copyTextStyles(this.$input, this.$hint);
 
 			if (this.val)
 				this.$hint.hide();
 			else
 				this.showingHint = true;
+
+			// Focus the input when clicking on the hint
+			this.addListener(this.$hint, 'mousedown', function(event) {
+				event.preventDefault();
+				this.$input.focus()
+			});
 		}
 
 		this.addListener(this.$input, 'focus', 'onFocus');
@@ -80,7 +91,7 @@ b.ui.NiceText = b.Base.extend({
 			if (this.showingHint && this.val)
 				this.hideHint();
 
-			if (this.isTextarea)
+			if (this.autoHeight)
 				this.setHeight();
 		}
 
@@ -97,13 +108,10 @@ b.ui.NiceText = b.Base.extend({
 			top: -9999,
 			left: -9999,
 			width: this.$input.width(),
-			lineHeight: this.$input.css('lineHeight'),
-			fontSize: this.$input.css('fontSize'),
-			fontFamily: this.$input.css('fontFamily'),
-			fontWeight: this.$input.css('fontWeight'),
-			letterSpacing: this.$input.css('letterSpacing'),
 			wordWrap: 'break-word'
 		});
+
+		b.utils.copyTextStyles(this.$input, this.$stage);
 	},
 
 	getStageHeight: function(val)
@@ -167,12 +175,20 @@ b.ui.NiceText = b.Base.extend({
 	onKeydown: function()
 	{
 		setTimeout($.proxy(this, 'checkInput'), 1);
+	},
+
+	destroy: function()
+	{
+		this.base();
+		this.$hint.remove();
+		this.$stage.remove();
 	}
 
 }, {
 	interval: 100,
 	hintFadeDuration: 50,
 	defaults: {
+		autoHeight: true
 	}
 });
 
@@ -182,7 +198,7 @@ $.fn.nicetext = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'text'))
-			new b.ui.NiceText(this);
+			new b.ui.NiceText(this, {hint: this.getAttribute('data-hint')});
 	});
 };
 

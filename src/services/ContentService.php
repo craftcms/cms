@@ -164,7 +164,7 @@ class ContentService extends Component
 	 * @param null $parentId
 	 * @return Entry
 	 */
-	public function createEntry($sectionId, $authorId, $parentId = null)
+	public function createEntry($sectionId, $authorId, $parentId = null, $title = null)
 	{
 		$entry = new Entry;
 		$entry->section_id = $sectionId;
@@ -172,6 +172,40 @@ class ContentService extends Component
 		$entry->parent_id = $parentId;
 		$entry->save();
 		return $entry;
+	}
+
+	/**
+	 * Saves an entry's slug
+	 */
+	public function saveEntrySlug($entry, $slug)
+	{
+		// Clean it up
+		$slug = implode('-', preg_split('/[^a-z0-9]+/', preg_replace('/^[^a-z]+/', '', preg_replace('/[^a-z0-9]+$/', '', $slug))));
+
+		// Make it unique and save it
+		for ($i = 0; true; $i++)
+		{
+			try
+			{
+				$testSlug = $slug;
+				if ($i != 0)
+					$testSlug .= '-'.$i;
+
+				b()->db->createCommand()->update('entries', array('slug' => $testSlug), 'id=:id', array(':id' => $entry->id));
+
+				break;
+			}
+			catch (\CDbException $e)
+			{
+				if (isset($e->errorInfo[0]) && $e->errorInfo[0] == 23000)
+					continue;
+				else
+					throw $e;
+			}
+		}
+
+		// Save it on the entry
+		$entry->slug = $testSlug;
 	}
 
 	/**

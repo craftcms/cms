@@ -212,6 +212,23 @@ b.utils =
 	},
 
 	/**
+	 * Copies text styles from one element to another
+	 */
+	copyTextStyles: function(from, to)
+	{
+		var $from = $(from),
+			$to = $(to);
+
+		$to.css({
+			lineHeight:    $from.css('lineHeight'),
+			fontSize:      $from.css('fontSize'),
+			fontFamily:    $from.css('fontFamily'),
+			fontWeight:    $from.css('fontWeight'),
+			letterSpacing: $from.css('letterSpacing')
+		});
+	},
+
+	/**
 	 * Returns the body's proper scrollTop, discarding any document banding in Safari
 	 */
 	getBodyScrollTop: function()

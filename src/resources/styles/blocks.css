@@ -423,6 +423,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .input-wrapper > input,
 .input-wrapper > textarea,
 .input { display: block; border: 1px solid #ccc; border-radius: 2px; padding: 8px; font-size: 13px; color: #555; background: #fff; -webkit-box-shadow: inset 0 1px 0 #eee; }
+.input-wrapper > .small,
+.input.small { padding: 3px; }
 .input-wrapper > input.error,
 .input-wrapper > textarea.error,
 .input.error { border-color: #8a1f11; }
@@ -439,7 +441,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .nicetext-hint { font-size: 14px; }
 .nicetext { position: relative; border: none; padding: 0; width: 100%; color: #444; background: transparent; outline: none; }
 .nicetext-hint-container { position: relative; height: 0; }
-.nicetext-hint { position: absolute; top: -1px; width: 100%; font-family: 'Lucida Grande', sans-serif; color: #bbb; }
+.nicetext-hint { position: absolute; top: -1px; width: 100%; color: #bbb; }
 
 label.checkbox { font-weight: normal; }
 

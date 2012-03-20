@@ -13,14 +13,10 @@
 #main .page .page-head .editable:hover a { display: block; text-decoration: none; }
 #main .page .page-head .empty { color: #d5d5d5 !important; }
 
-#main .page .page-head .title h1 { float: left; margin: 0; color: #555; }
-#main .page .page-head .title a { margin-top: 16px; }
-#main .page .page-head .title-input { display: block; margin: -1px 0 3px -1px; border: none; padding: 0; width: 100%; font-size: 36px; font-family: HelveticaNeue, sans-serif; color: #000; background: transparent; outline: none; }
-
-#main .page .page-head .url { color: #666; height: 18px; }
-#main .page .page-head .url .editable div { float: left; }
-#main .page .page-head .url .prefix { display: inline-block; }
-#main .page .page-head .url-input { display: inline-block; margin-left: -1px; border: none; padding: 0; font-size: 13px; font-family: HelveticaNeue, sans-serif; color: #000; background: transparent; outline: none; }
+#main .page .page-head { color: #777; }
+#main .page .page-head h1 { margin-bottom: 4px; }
+#main .page .page-head .btn { margin-top: 16px; background: #fff; text-shadow: none; }
+#main .page .page-head .btn .label { color: #777; }
 
 #main .page .page-head .draft-btn { display: none; position: relative; margin-left: 10px; border: 1px solid #36b2ff; background: transparent; }
 #main .page .page-head .draft-btn .label { color: #2d98db; }

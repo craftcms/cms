@@ -10,19 +10,12 @@
 	</div>
 
 	<div class="left">
-		{!--<div class="btn">
-			<span class="label">Draft 1</span>
-			<span class="arrow"></span>
-		</div>
+		{!--
 		<div class="btn-group">
 			<a class="btn sel"><span class="icon icon136"></span></a>
 			<a class="btn"><span class="icon icon274"></span></a>
 		</div>--}
-		<select>
-			{foreach entry.drafts as draft}
-				<option value="{:draft.id}">{:draft.name}</option>
-			{/foreach}
-		</select>
+		
 	</div>
 
 	<div class="right">
@@ -37,13 +30,18 @@
 	<div class="pane page">
 		<div class="body">
 			<div class="item field page-head">
-				<div class="title editable" tabindex="0">
-					<h1 {if !entry.title}class="empty"{/if}>{if entry.title}{:entry.title}{else}Untitled{/if}</h1>
-					<a>Edit</a>
-					<input type="hidden" name="title" value="{:entry.title}" />
+				<h1>{:entry.title}</h1>
+				{if entry.url}<div class="url">{:entry.url}</div>{/if}
+				<div class="btn">
+					<span class="label">Draft 1</span>
+					<span class="arrow"></span>
 				</div>
-				<div class="clear"></div>
-				{if entry.section.has_urls}
+				{!--<select>
+					{foreach entry.drafts as draft}
+						<option value="{:draft.id}">{:draft.name}</option>
+					{/foreach}
+				</select>--}
+				{!--if entry.section.has_urls}
 					<div class="url">
 						<div class="editable" tabindex="0">
 							<div><span class="prefix">{:sites.currentSite.url}/</span><span class="slug {if !entry.slug}empty{/if}">{if entry.slug}{:entry.slug}{else}…{/if}</span></div>
@@ -52,7 +50,7 @@
 						</div>
 						<div class="clear"></div>
 					</div>
-				{/if}
+				{/if--}
 			</div>
 
 			{foreach entry.blocks as block}

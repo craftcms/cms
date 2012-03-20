@@ -3,43 +3,138 @@
 
 var Content = b.Base.extend({
 
-	$sidebarLinks: null,
-	$selSidebarLink: null,
+	$addLinks: null,
+	$entryLinks: null,
 	$main: null,
 
-	entry: null,
-	ignoreStateChange: false,
+	selEntry: null,
+	$selEntryLink: null,
+
+	ignoreNextStateChange: false,
 
 	init: function()
 	{
-		this.$sidebarLinks = $('#sidebar a:not(.new)');
-		this.$selSidebarLink = this.$sidebarLinks.filter('.sel:first');
+		this.$addLinks = $('#sidebar a.new');
+		this.$entryLinks = $('#sidebar a:not(.new)');
+		this.$selEntryLink = this.$entryLinks.filter('.sel:first');
 		this.$main = $('#main');
+
+		this.addListener(this.$addLinks, 'click', 'onNewEntryLinkClick');
 
 		// If the browser supports history.pushState, load the pages over Ajax
 		if (History.enabled)
 		{
 			this.addListener(b.$window, 'statechange', 'onStateChange');
-			this.addListener(this.$sidebarLinks, 'click', 'onSidebarLinkClick');
+			this.addListener(this.$entryLinks, 'click', 'onSidebarLinkClick');
 		}
+	},
+
+	getEntryEditUrl: function(entryId, draftId)
+	{
+		var url = b.baseUrl+'content/edit/'+entryId;
+		if (draftId)
+			url += '/draft'+draftId;
+		return url;
+	},
+
+	onNewEntryLinkClick: function(event)
+	{
+		var $addLink = $(event.currentTarget),
+			$li = $('<li/>').insertBefore($addLink.parent()),
+			$inputWrapper = $('<div class="input-wrapper"/>').appendTo($li),
+			$input = $('<input class="small" type="text" />').appendTo($inputWrapper);
+
+		$addLink.hide();
+
+		new b.ui.NiceText($input, {
+			hint: 'Enter a title…'
+		});
+
+		this.addListener($input, 'keydown', function(event)
+		{
+			switch (event.keyCode)
+			{
+				case b.RETURN_KEY:
+
+					event.preventDefault();
+					var title = $input.val();
+					if (title)
+					{
+						var $a = $('<a class="has-status sel"/>'),
+							$status = $('<span class="status"/>').appendTo($a),
+							$label = $('<span class="label">'+title+'</span>').appendTo($a);
+
+						$inputWrapper.replaceWith($a);
+
+						this.$selEntryLink.removeClass('sel');
+						this.$selEntryLink = $a;
+
+						if (History.enabled)
+							this.addListener($a, 'click', 'onSidebarLinkClick');
+
+						$addLink.show();
+
+						var data = {
+							sectionId: $addLink.attr('data-section-id'),
+							title: title
+						};
+
+						$.post(b.actionUrl+'content/createEntry', data, $.proxy(function(response)
+						{
+							if (response.success)
+							{
+								var url = this.getEntryEditUrl(response.entryId, response.draftId);
+
+								if (History.enabled)
+								{
+									// Update the link
+									$a.attr('href', url);
+									$a.attr('data-entry-id', response.entryId);
+									$label.text(response.entryTitle);
+
+									// Load the entry's edit page
+									this.loadEntry(response.entryId, response.draftId, true);
+								}
+								else
+									// Redirect to it
+									window.location = url;
+							}
+							else
+							{
+								var error = (response.error || 'An unknown error occurred.');
+								// show the error...
+							}
+						}, this));
+					}
+
+					break;
+
+				case b.ESC_KEY:
+
+					$li.remove();
+					$addLink.show();
+			}
+		});
+
+		$input.focus();
 	},
 
 	onStateChange: function()
 	{
-		if (this.ignoreStateChange)
+		if (this.ignoreNextStateChange)
 		{
-			this.ignoreStateChange = false;
+			this.ignoreNextStateChange = false;
 			return;
 		}
 
 		var state = History.getState();
 
 		// Update the selected link
-		if (state.data.entryId != this.entry.entryId)
+		if (state.data.entryId != this.selEntry.entryId)
 		{
-			this.$selSidebarLink.removeClass('sel');
-			this.$selSidebarLink = this.$sidebarLinks.filter('[data-entry-id='+state.data.entryId+']:first');
-			this.$selSidebarLink.addClass('sel');
+			this.$selEntryLink.removeClass('sel');
+			this.$selEntryLink = this.$entryLinks.filter('[data-entry-id='+state.data.entryId+']:first');
+			this.$selEntryLink.addClass('sel');
 		}
 
 		this.loadEntry(state.data.entryId, state.data.draftId);
@@ -62,8 +157,8 @@ var Content = b.Base.extend({
 		var $link = $(event.currentTarget),
 			entryId = $link.attr('data-entry-id');
 
-		this.$selSidebarLink.removeClass('sel');
-		this.$selSidebarLink = $link.addClass('sel');
+		this.$selEntryLink.removeClass('sel');
+		this.$selEntryLink = $link.addClass('sel');
 
 		this.loadEntry(entryId, null, true);
 	},
@@ -89,15 +184,13 @@ var Content = b.Base.extend({
 				if (pushState && History.enabled)
 				{
 					// Ignore the next state change event
-					this.ignoreStateChange = true;
+					this.ignoreNextStateChange = true;
 
 					var title = 'Editing “'+(response.entryTitle || 'Untitled')+'”';
 					if (response.draftName)
 						title += ' ('+response.draftName+')';
 
-					var url = b.baseUrl+'content/edit/'+entryId;
-					if (response.draftId)
-						url += '/draft'+draftId;
+					var url = this.getEntryEditUrl(entryId, draftId);
 					History.pushState({entryId: entryId, draftId: response.draftId}, title, url);
 				}
 
@@ -111,7 +204,7 @@ var Content = b.Base.extend({
 				}
 
 				// Initialize the entry
-				this.entry = new b.Entry(this.$main, entryId, response.draftId);
+				this.selEntry = new b.Entry(this.$main, entryId, response.draftId);
 			}
 			else
 			{
@@ -120,7 +213,6 @@ var Content = b.Base.extend({
 			}
 		}, this));
 	}
-
 });
 
 

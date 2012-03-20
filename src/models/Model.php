@@ -185,6 +185,15 @@ abstract class Model extends \CActiveRecord
 	}
 
 	/**
+	 * Sets the content
+	 * @param Content $content
+	 */
+	public function setContent($content)
+	{
+		$this->_content = $content;
+	}
+
+	/**
 	 * Returns the content blocks assigned to this record
 	 * @return array
 	 */

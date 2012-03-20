@@ -11,9 +11,9 @@
 		<h5>{:section.name}</h5>
 		<ul class="nav tree">
 			{foreach section.entries as entry}
-				<li><a class="has-status {if entry.id == entryId}sel{/if}" href="{:url.base}content/edit/{:entry.id}" data-entry-id="{:entry.id}"><span class="status {if entry.live}on{elseif entry.published}off{/if}"></span><span class="label">{if entry.title}{:entry.title}{else}Untitled{/if}</span></a></li>
+				<li><a class="has-status {if entry.id == entryId}sel{/if}" href="{:url.base}content/edit/{:entry.id}" data-entry-id="{:entry.id}"><span class="status {if entry.live}on{elseif entry.published}off{/if}"></span><span class="label">{:entry.title}</span></a></li>
 			{/foreach}
-			<li><a class="new" href="{:url.action('content/createEntry', 'sectionId=')}{:section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
+			<li><a class="new" data-section-id="{:section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
 		</ul>
 	{/foreach}
 {/region}
