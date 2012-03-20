@@ -58,7 +58,7 @@ class CoreUpdater implements IUpdater
 			$downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
 
 			// download the package
-			if (!$this->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
+			if (!b()->et->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
 				throw new Exception('There was a problem downloading the package.');
 
 			// validate
@@ -222,44 +222,11 @@ class CoreUpdater implements IUpdater
 	 * @param $build
 	 * @param $destinationPath
 	 * @return bool
-	 */
-	public function downloadPackage($version, $build, $destinationPath)
-	{
-		$params = array(
-			'versionNumber' => $version,
-			'buildNumber' => $build,
-			'type' => CoreReleaseFileType::Patch
-		);
-
-		$et = new Et(EtEndPoints::DownloadPackage, 60);
-		$et->setStreamPath($destinationPath);
-		$et->getPackage()->data = $params;
-		if ($et->phoneHome())
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * @param $version
-	 * @param $build
-	 * @param $destinationPath
-	 * @return bool
 	 * @throws Exception
 	 */
 	public function validatePackage($version, $build, $destinationPath)
 	{
-		$params = array(
-			'versionNumber' => $version,
-			'buildNumber' => $build,
-			'type' => CoreReleaseFileType::Patch
-		);
-
-		$et = new Et(EtEndPoints::GetCoreReleaseFileMD5);
-		$et->getPackage()->data = $params;
-		$package = $et->phoneHome();
-
-		$sourceMD5 = $package->data;
+		$sourceMD5 = b()->et->getReleaseMD5($version, $build);
 
 		if(StringHelper::isNullOrEmpty($sourceMD5))
 			throw new Exception('Error in getting the MD5 hash for the download.');

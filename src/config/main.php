@@ -25,9 +25,10 @@ return array(
 	// autoloading model and component classes
 	'import' => array(
 		'application.business.lib.*',
-		'application.business.lib.httpclient.*',
-		'application.business.lib.httpclient.adapter.*',
-		'application.business.lib.httpclient.hostnames.*',
+		'application.business.lib.Requests.*',
+		'application.business.lib.Requests.Auth.*',
+		'application.business.lib.Requests.Response.*',
+		'application.business.lib.Requests.Transport.*',
 	),
 
 	'modules' => array(

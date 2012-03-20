@@ -65,7 +65,7 @@ class UpdatesService extends Component
 	{
 		foreach ($blocksReleases as $blocksRelease)
 		{
-			if ($blocksRelease->critical !== null)
+			if ($blocksRelease->critical)
 				return true;
 		}
 
@@ -106,7 +106,10 @@ class UpdatesService extends Component
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		return $this->updateInfo->criticalUpdateAvailable;
+		if ((isset($this->_updateInfo) && $this->_updateInfo->criticalUpdateAvailable))
+			return true;
+
+		return false;
 	}
 
 	/**
@@ -182,9 +185,7 @@ class UpdatesService extends Component
 		foreach ($plugins as $plugin)
 			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 
-		$et = new Et(EtEndPoints::Check);
-		$et->getPackage()->data = $blocksUpdateInfo;
-		$response = $et->phoneHome();
+		$response = b()->et->check($blocksUpdateInfo);
 
 		$blocksUpdateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
 		return $blocksUpdateInfo;
