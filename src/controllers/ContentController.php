@@ -83,37 +83,33 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		// Create the entry
 		$sectionId = b()->request->getPost('sectionId');
-		$title = b()->request->getPost('title');
+		$section = Section::model()->findById($sectionId);
+		$language = $section->site->language;
 		$authorId = b()->user->id;
+		$title = b()->request->getPost('title');
+
+		// Create the entry
 		$entry = b()->content->createEntry($sectionId, $authorId);
 
+		// Save its title
+		$entry->title = new EntryTitle;
+		$entry->title->entry_id = $entry->id;
+		$entry->title->language = $language;
+		$entry->title->title = $title;
+		$entry->title->save();
+
 		// Save its slug
-		if ($entry->section->has_urls)
+		if ($section->has_urls)
 			b()->content->saveEntrySlug($entry, strtolower($title));
 
 		// Create the first draft
 		$draft = b()->content->createDraft($entry->id, 'Draft 1');
 
-		// Create a new Content row with the title
-		$entry->content = new Content;
-		$entry->content->title = $title;
-		$entry->content->save();
-
-		// Attach it to the entry
-		b()->db->createCommand()->insert('entrycontent', array(
-			'entry_id'   => $entry->id,
-			'content_id' => $entry->content->id,
-			'language'   => $entry->section->site->language,
-			'num'        => 1,
-			'active'     => true
-		));
-
 		$this->returnJson(array(
 			'success'    => true,
 			'entryId'    => $entry->id,
-			'entryTitle' => $entry->title,
+			'entryTitle' => $entry->title->title,
 			'draftId'    => $draft->id
 		));
 	}
@@ -135,7 +131,7 @@ class ContentController extends Controller
 			{
 				$return['success']    = true;
 				$return['entryId']    = $entry->id;
-				$return['entryTitle'] = $entry->title;
+				$return['entryTitle'] = $entry->title->title;
 
 				// Is there a requested draft?
 				$draftId = b()->request->getPost('draftId');

@@ -27,6 +27,10 @@ class Entry extends Model
 		'author'  => array('model' => 'User', 'required' => true)
 	);
 
+	protected $hasOne = array(
+		'title' => array('model' => 'EntryTitle', 'foreignKey' => 'entry')
+	);
+
 	protected $hasMany = array(
 		'drafts'   => array('model' => 'Draft', 'foreignKey' => 'entry'),
 		'children' => array('model' => 'Entry', 'foreignKey' => 'parent')

@@ -219,7 +219,10 @@ class ContentService extends Component
 			$entry = $this->getEntryById($entryId);
 
 		if (empty($entry))
+		{
 			$entry = new Entry;
+			$entry->title = new EntryTitle;
+		}
 
 		return $entry;
 	}
@@ -230,7 +233,7 @@ class ContentService extends Component
 	 */
 	public function getEntryById($entryId)
 	{
-		$entry = Entry::model()->findById($entryId);
+		$entry = Entry::model()->with('title')->findById($entryId);
 		return $entry;
 	}
 
@@ -240,7 +243,7 @@ class ContentService extends Component
 	 */
 	public function getEntriesBySectionId($sectionId)
 	{
-		$entries = Entry::model()->findAllByAttributes(array(
+		$entries = Entry::model()->with('title')->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 		return $entries;
