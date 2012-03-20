@@ -459,14 +459,16 @@ class TemplateParser
 	 */
 	protected function parseEchoTag($body)
 	{
-		$this->parseVariables($body, true);
+		// PHP calls __toString() internally for 'echo' statements,
+		// so there's no need to typecast the variables ourselves
+		$this->parseVariables($body);
 		return "<?php echo {$body} ?>";
 	}
 
 	/**
 	 * Parse variables
 	 * @param string $template The template to parse for variables
-	 * @param bool $toString Whether to include "->__toString()" at the end of the parsed variables
+	 * @param bool $toString Whether to cast the variables as strings
 	 * @access protected
 	 */
 	protected function parseVariables(&$template, $toString = false)
@@ -524,7 +526,7 @@ class TemplateParser
 	 * Parse variable
 	 * @param string $template The template to be parsed
 	 * @param int $offset The offset to start searching for a variable
-	 * @param bool $toString Whether to include "->__toString()" at the end of the parsed variable
+	 * @param bool $toString Whether to cast the variable as a string
 	 * @return bool Whether a variable was found and parsed
 	 * @access protected
 	 */
@@ -533,7 +535,7 @@ class TemplateParser
 		if (preg_match('/'.self::tagPattern.'/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
-			$parsedTag = '$'.$tag;
+			$parsedTag = ($toString ? '(string)' : '').'$'.$tag;
 			$tagLength = strlen($tagMatch[0][0]);
 			$tagOffset = $tagMatch[0][1];
 
@@ -558,11 +560,6 @@ class TemplateParser
 
 				// update the total tag length
 				$tagLength += $subtagLength;
-			}
-
-			if ($toString)
-			{
-				$parsedTag .= '->__toString()';
 			}
 
 			// replace the tag with the parsed version
