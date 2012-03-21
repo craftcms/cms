@@ -1,26 +1,27 @@
 {layout "settings/_layouts/settings" pageTitle="Edit Section"}
 
+
 {if !section}
 	{set section = content.getSection(sectionId)}
 {/if}
+
 
 {region "main"}
 	<div class="toolbar">
 		{include "_includes/back_btn" label="Content Sections" uri="settings/sections"}
 	</div>
 
+	{if section.id}
+		<h2>{if section.name}<strong>{:section.name}</strong>{else}Untitled{/if} section settings</h2>
+	{else}
+		<h2>Create a new section</h2>
+	{/if}
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="content/saveSection" />
 		<input type="hidden" name="redirect" value="settings/sections" />
 		{if section.id}<input type="hidden" name="section_id" value="{:section.id}">{/if}
 		<div class="pane">
-			<div class="head">
-				{if section.id}
-					<h5>Edit Section {if section.name}“{:section.name}”{/if}</h5>
-				{else}
-					<h5>Create a new section</h5>
-				{/if}
-			</div>
 			<div class="body">
 				<div class="item field">
 					<label class="required" for="name">Section Name</label>

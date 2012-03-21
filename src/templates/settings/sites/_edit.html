@@ -9,19 +9,18 @@
 		{include "_includes/back_btn" label="Sites" uri="settings/sites"}
 	</div>
 
+	{if site.id}
+		<h2>{if site.name}<strong>{:site.name}</strong>{else}Untitled{/if} site settings</h2>
+	{else}
+		<h2>Create a new site</h2>
+	{/if}
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="sites/save" />
 		<input type="hidden" name="redirect" value="settings/sites" />
 		{if site.id}<input type="hidden" name="site_id" value="{:site.id}">{/if}
 
 		<div class="pane">
-			<div class="head">
-				{if site.id}
-					<h5>Edit Site {if site.name}“{:site.name}”{/if}</h5>
-				{else}
-					<h5>Create a new site</h5>
-				{/if}
-			</div>
 			<div class="body">
 				<div class="item field">
 					<label for="name">Site Name</label>

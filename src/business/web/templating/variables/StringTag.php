@@ -68,6 +68,17 @@ class StringTag extends VarTag
 	}
 
 	/**
+	 * Adds an 's to the end of a string
+	 */
+	public function possessive()
+	{
+		if (substr($this->_var, -1) == 's')
+			return $this->_var.'&rsquo;';
+		else
+			return $this->_var.'&rsquo;s';
+	}
+
+	/**
 	 * @param $m
 	 * @return string
 	 */

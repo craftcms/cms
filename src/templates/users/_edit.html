@@ -13,6 +13,12 @@
 		{include "_includes/back_btn" label="Users" uri="users"}
 	</div>
 
+	{if theUser.id}
+		<h2>{if theUser.fullname}<strong>{:theUser.fullname.possessive}</strong>{elseif theUser.username}<strong>{:theUser.username.possessive}</strong>{else}Untitled’s{/if} account settings</h2>
+	{else}
+		<h2>Register a new user</h2>
+	{/if}
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/save" />
 
@@ -24,13 +30,6 @@
 		{/if}
 
 		<div class="pane">
-			<div class="head">
-				{if theUser.id}
-					<h5>Edit User {if theUser.user_name}“{:theUser.user_name}”{/if}</h5>
-				{else}
-					<h5>Register a new user</h5>
-				{/if}
-			</div>
 			<div class="body">
 				<div class="item field">
 					<div class="input-wrapper">
