@@ -179,7 +179,10 @@ return array(
 				array(
 					'class' => 'Blocks\WebLogRoute',
 					'filter' => 'CLogFilter',
-
+				),
+				array(
+					'class' => 'CProfileLogRoute',
+					'filter' => 'CLogFilter'
 				)
 			),
 		),
