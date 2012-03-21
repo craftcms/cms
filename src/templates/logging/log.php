@@ -7,7 +7,6 @@
 	</tr>
 	<tr style="background-color: #ccc;">
 		<th width="120">Timestamp</th>
-		<th>Duration</th>
 		<th>Level</th>
 		<th>Category</th>
 		<th>Message</th>
@@ -34,19 +33,10 @@ foreach ($data as $index => $log)
 
 	$message = '<pre>'.Blocks\HtmlHelper::encode(wordwrap($log[0])).'</pre>';
 	$time = date('H:i:s.', $log[3]).sprintf('%06d',(int)(($log[3] - (int)$log[3]) * 1000000));
-	if ($counter == 0)
-		$duration = 0;
-	else
-	{
-		$duration = $log[3] - $data[$counter - 1][3];
-		$duration = number_format($duration, 6).' sec';
-
-	}
 
 	echo <<<EOD
 	<tr style="background:{$color}">
 		<td align="center">{$time}</td>
-		<td>{$duration}</td>
 		<td>{$log[1]}</td>
 		<td>{$log[2]}</td>
 		<td>{$message}</td>

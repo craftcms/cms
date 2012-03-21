@@ -70,13 +70,4 @@ class ConfigService extends Component
 		}
 		return $this->_tablePrefix;
 	}
-
-	/**
-	 * Get all license keys
-	 * @return mixed
-	 */
-	public function getLicenseKeys()
-	{
-		return LicenseKey::model()->findAll();
-	}
 }

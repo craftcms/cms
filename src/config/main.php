@@ -20,8 +20,6 @@ return array(
 	'runtimePath' => BLOCKS_RUNTIME_PATH,
 	'name'        => 'Blocks',
 
-	'preload'     => array('log'),
-
 	// autoloading model and component classes
 	'import' => array(
 		'application.business.lib.*',
@@ -146,14 +144,13 @@ return array(
 
 		'db' => array(
 			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
-			// emulatePrepare => true recommended if using PHP 5.1.3 or higher
 			'emulatePrepare'    => true,
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
 			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
 			'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
-			'class'             => 'Blocks\DbConnection'
+			'class'             => 'Blocks\DbConnection',
 		),
 
 		'assetManager' => array(
@@ -177,10 +174,13 @@ return array(
 				array(
 					'class'  => 'CFileLogRoute',
 					'levels' => 'error, warning',
+					'filter' => 'CLogFilter',
 				),
-				//array(
-				//	'class' => 'application.business.logging.WebLogRoute',
-				//),
+				array(
+					'class' => 'Blocks\WebLogRoute',
+					'filter' => 'CLogFilter',
+
+				)
 			),
 		),
 

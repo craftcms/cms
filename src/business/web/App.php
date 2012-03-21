@@ -19,6 +19,11 @@ class App extends \CWebApplication
 	{
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
+
+		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
+		self::import('business.logging.WebLogRoute');
+		b()->getComponent('log');
+
 		parent::init();
 	}
 
@@ -29,8 +34,6 @@ class App extends \CWebApplication
 	{
 		$aliases = array(
 			'blocktypes.*',
-			'business.EmailAddress',
-			'business.WebLogRoute',
 			'business.db.*',
 			'business.email.*',
 			'business.enums.*',

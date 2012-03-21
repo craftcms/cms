@@ -6,6 +6,16 @@ namespace Blocks;
  */
 class DbConnection extends \CDbConnection
 {
+	public function init()
+	{
+		parent::init();
+		if (b()->config->devMode)
+		{
+			$this->enableProfiling = true;
+			$this->enableParamLogging = true;
+		}
+	}
+
 	/**
 	 * @param null $query
 	 * @return DbCommand
