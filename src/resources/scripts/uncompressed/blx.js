@@ -444,4 +444,24 @@ var CP = b.Base.extend({
 b.cp = new CP();
 
 
+b.$document.ready(function()
+{
+
+	var $log = $('#yiiLog'),
+		$showLogLink,
+		logWindow;
+
+	if ($log.length)
+	{
+		$showLogLink = $('<a id="showLog">Show log</a>').appendTo(b.$body);
+		$showLogLink.click(function()
+		{
+			logWindow = window.open('', 'log', 'width=1200,hegiht=400');
+			logWindow.document.write('<html><head><title>Blocks Log</title></head><body>'+$log[0].outerHTML+'</body></html>');
+			logWindow.document.close();
+		})
+	}
+});
+
+
 })(jQuery);
