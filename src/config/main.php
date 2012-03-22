@@ -183,7 +183,6 @@ return array(
 				),
 				array(
 					'class'         => 'Blocks\ProfileLogRoute',
-					'filter'        => 'CLogFilter',
 					'showInFireBug' => true,
 				)
 			),

@@ -10,13 +10,21 @@ if (typeof(console) == 'object')
 
 	$cookiePos = strpos($environmentData[0], '$_COOKIE');
 	$serverPos = strpos($environmentData[0], '$_SERVER');
+	$sessionPos = strpos($environmentData[0], '$_SESSION');
 
 	$getInfo = substr($environmentData[0], 0, $cookiePos);
-	$cookieInfo = substr($environmentData[0], $cookiePos, $serverPos - $cookiePos);
+	$nextPos = !$sessionPos ? $serverPos : $sessionPos;
+	$cookieInfo = substr($environmentData[0], $cookiePos, $nextPos - $cookiePos);
+
+	if ($sessionPos)
+		$sessionInfo = substr($environmentData[0], $sessionPos, $serverPos - $sessionPos);
+
 	$serverInfo = substr($environmentData[0], $serverPos);
 
 	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, 'GET Info');
 	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, 'COOKIE Info');
+	if ($sessionPos)
+		Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, 'SESSION Info');
 	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, 'SERVER Info');
 
 	echo "\tconsole.groupCollapsed(\"Logs\");\n";
