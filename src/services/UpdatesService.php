@@ -181,9 +181,9 @@ class UpdatesService extends Component
 		$blocksUpdateInfo->localBuild = Blocks::getBuild();
 		$blocksUpdateInfo->localVersion = Blocks::getVersion();
 
-		$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
-		foreach ($plugins as $plugin)
-			$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
+		//$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
+		//foreach ($plugins as $plugin)
+		//	$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
 
 		$response = b()->et->check($blocksUpdateInfo);
 
