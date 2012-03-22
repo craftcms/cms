@@ -77,6 +77,8 @@ class Et extends \CApplicationComponent
 		$this->_package->licenseKeys = b()->sites->licenseKeys;
 		$this->_package->domain = b()->request->serverName;
 		$this->_package->edition = Blocks::getEdition();
+		$this->_package->requestIp = b()->request->userHostAddress;
+		$this->_package->requestTime = DateTimeHelper::currentTime();
 
 		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;

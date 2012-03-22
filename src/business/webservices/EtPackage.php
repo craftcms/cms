@@ -8,6 +8,8 @@ class EtPackage
 {
 	public $licenseKeyStatus;
 	public $licenseKeys;
+	public $requestIp;
+	public $requestTime;
 	public $domain;
 	public $edition;
 	public $data;
@@ -26,6 +28,8 @@ class EtPackage
 		$this->data = isset($properties['data']) ? $properties['data'] : null;
 		$this->domain = isset($properties['domain']) ? $properties['domain'] : null;
 		$this->edition = isset($properties['edition']) ? $properties['edition'] : null;
+		$this->requestIp = isset($properties['requestIp']) ? $properties['requestIp'] : null;
+		$this->requestTime = isset($properties['requestTime']) ? $properties['requestTime'] : null;
 	}
 
 	/*
