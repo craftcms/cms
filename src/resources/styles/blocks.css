@@ -113,10 +113,6 @@ h1:last-child,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  
 #messages .message.notice { border-color: #1F6794; background: #2782bb; }
 #messages .message.error { border-color: #992f2f; background: #e14545; }
 
-/*-- log --*/
-#yiiLog { display: none; }
-#showLog { position: fixed; bottom: 0; left: 0; }
-
 /*-- body --*/
 #body { position: absolute; top: 48px; width: 100%; }
 
