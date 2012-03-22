@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class WebLogRoute extends \CWebLogRoute
 {
-
 	/**
 	 * @access protected
 	 * @param $view

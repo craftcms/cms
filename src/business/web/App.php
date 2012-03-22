@@ -20,8 +20,17 @@ class App extends \CWebApplication
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
+		// in case of an error, import everything we need
+		self::import('business.exceptions.HttpException');
+		self::import('business.db.DbCommand');
+		self::import('business.db.DbConnection');
+		self::import('business.db.MysqlSchema');
+		self::import('business.web.ErrorHandler');
+		self::import('business.web.templating.TemplateRenderer');
+
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
 		self::import('business.logging.WebLogRoute');
+		self::import('business.logging.ProfileLogRoute');
 		b()->getComponent('log');
 
 		parent::init();
@@ -197,19 +206,10 @@ class App extends \CWebApplication
 		self::import('business.web.UrlManager');
 		self::import('services.ConfigService');
 
-		// in case of an error
-		self::import('business.exceptions.HttpException');
-		self::import('business.db.DbCommand');
-		self::import('business.db.DbConnection');
-		self::import('business.db.MysqlSchema');
-		self::import('business.web.ErrorHandler');
-
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
-			self::import('business.exceptions.HttpException');
 			self::import('business.utils.File');
-			self::import('business.web.ErrorHandler');
 			self::import('business.web.ResourceProcessor');
 			self::import('services.PathService');
 

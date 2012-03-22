@@ -177,12 +177,14 @@ return array(
 					'filter' => 'CLogFilter',
 				),
 				array(
-					'class' => 'Blocks\WebLogRoute',
-					'filter' => 'CLogFilter',
+					'class'         => 'Blocks\WebLogRoute',
+					'filter'        => 'CLogFilter',
+					'showInFireBug' => true,
 				),
 				array(
-					'class' => 'CProfileLogRoute',
-					'filter' => 'CLogFilter'
+					'class'         => 'Blocks\ProfileLogRoute',
+					'filter'        => 'CLogFilter',
+					'showInFireBug' => true,
 				)
 			),
 		),
