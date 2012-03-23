@@ -44,30 +44,31 @@ class ContentController extends Controller
 		// Did it save?
 		if (!$section->errors)
 		{
-			b()->user->setMessage(MessageType::Notice, 'Section saved.');
+			// Did all of the blocks save?
+			$blocksSaved = true;
+			foreach ($section->blocks as $block)
+			{
+				if ($block->errors)
+				{
+					$blocksSaved = false;
+					break;
+				}
+			}
 
-			$url = b()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+			if ($blocksSaved)
+			{
+				b()->user->setMessage(MessageType::Notice, 'Section saved.');
+
+				$url = b()->request->getPost('redirect');
+				if ($url !== null)
+					$this->redirect($url);
+			}
+			else
+				b()->user->setMessage(MessageType::Error, 'Section saved, but couldn’t save all the content blocks.');
 		}
 		else
-		{
 			b()->user->setMessage(MessageType::Error, 'Couldn’t save section.');
-		}
 
-		// Get Block instances for each selected block
-		$sectionBlocks = array();
-		if (!empty($sectionBlocksData['selections']))
-		{
-			foreach ($sectionBlocksData['selections'] as $blockId)
-			{
-				$block = b()->blocks->getBlockById($blockId);
-				$block->required = (isset($sectionBlocksData['required'][$blockId]) && $sectionBlocksData['required'][$blockId] === 'y');
-				$sectionBlocks[] = $block;
-			}
-		}
-		$section->blocks = $sectionBlocks;
-		
 
 		// Reload the original template
 		$this->loadRequestedTemplate(array(

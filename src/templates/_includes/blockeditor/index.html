@@ -1,0 +1,42 @@
+<div class="input blockeditor" data-input-name="{:name}">
+	<div class="sidebar">
+		<ul>
+			{foreach currentBlocks as block}
+				<li><a class="block-item {if block.errors}error{/if}" data-block-id="{:block.id}"><span class="icon icon137"></span><div class="block-name">{if block.name}{:block.name}{else}Untitled{/if}</div><div class="block-type">{:block.blocktypeName}</div><input type="hidden" name="{:name}[order][]" value="{:block.id}"/></a></li>
+			{/foreach}
+			<li><a class="new"><span class="icon icon44"></span>Create a content block</a></li>
+		</ul>
+	</div>
+	<div class="blocksettings">
+		{foreach currentBlocks as block}
+			<?php $idPrefix = new Tag($name.'-'.$block->id().'-') ?>
+			<?php $namePrefix = new Tag($name.'['.$block->id().']') ?>
+			<div data-block-id="{:block.id}" style="display:none">
+				{include "_includes/blockeditor/blocksettings" idPrefix=idPrefix namePrefix=namePrefix block=block}
+			</div>
+		{/foreach}
+	</div>
+
+	<?php $newIdPrefix = new Tag($name.'-BLOCK_ID-') ?>
+	<?php $newNamePrefix = new Tag($name.'[BLOCK_ID]') ?>
+
+	<div class="freshblocksettings" style="display:none">
+		<div data-block-id="BLOCK_ID">
+			{include "_includes/blockeditor/blocksettings" idPrefix=newIdPrefix namePrefix=newNamePrefix}
+		</div>
+	</div>
+	<div class="freshblocktypesettings" style="display:none">
+		<?php $newNamePrefix = new Tag($newNamePrefix.'[settings]') ?>
+		{foreach blocks.blocktypes as blocktype}
+			{set settings = blocktype.displaySettings(newIdPrefix, newNamePrefix)}
+			{if settings}
+				<div data-blocktype-class="{:blocktype.classHandle}">
+					<div class="{:blocktype.classHandle}">
+						<div></div>
+						{:settings}
+					</div>
+				</div>
+			{/if}
+		{/foreach}
+	</div>
+</div>

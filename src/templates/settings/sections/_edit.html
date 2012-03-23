@@ -74,8 +74,8 @@
 				</div>
 				<div class="item field">
 					<label for="blocks">Content Blocks</label>
-					<p>Which content blocks should be present when editing an entry in this section?</p>
-					{include "_includes/blocksselect/field" selectedBlocks=section.blocks name="blocks"}
+					<p>Create the content blocks used by entries in this section.</p>
+					{include "_includes/blockeditor" name="blocks" currentBlocks=section.blocks}
 				</div>
 			</div>
 		</div>

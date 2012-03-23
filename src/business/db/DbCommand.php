@@ -183,18 +183,95 @@ class DbCommand extends \CDbCommand
 		}
 
 		// Create the table
-		$tableName = $this->_addTablePrefix($table);
-		$return = parent::createTable($tableName, $columns, $options);
+		$return = parent::createTable($this->_addTablePrefix($table), $columns, $options);
 
 		// Add the language FK
 		if (array_key_exists('language', $columns))
-			$this->addForeignKey("{$tableName}_languages_fk", $table, 'language', 'languages', 'language');
+			$this->addForeignKey("{$table}_languages_fk", $table, 'language', 'languages', 'language');
 
 		// Add the INSERT and UPDATE triggers
 		DatabaseHelper::createInsertAuditTrigger($table);
 		DatabaseHelper::createUpdateAuditTrigger($table);
 
 		return $return;
+	}
+
+	/**
+	 * Creates a content table
+	 * @param string $table The content table name
+	 * @param string $refTable The reference table name
+	 * @param string $fk The foreign key column name to the reference table
+	 */
+	public function createContentTable($table, $refTable, $fk)
+	{
+		$columns = array(
+			$fk        => array('type' => AttributeType::Int, 'required' => true),
+			'language' => AttributeType::Language,
+			'num'      => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
+			'notes'    => AttributeType::Text,
+			'active'   => AttributeType::Boolean
+		);
+
+		// Create the table
+		$return = $this->createTable($table, $columns);
+
+		// Create the unique constraint
+		$this->createIndex("{$table}_{$fk}_language_num_unique_idx", $table, "{$fk},language,num", true);
+
+		// Add the foreign key
+		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk, $refTable, 'id');
+
+		return $return;
+	}
+
+	/**
+	 * Creates a blocks join table
+	 * @param string $table The blocks join table name
+	 * @param string $refTable The reference table name
+	 * @param string $fk The foreign key column name to the reference table
+	 */
+	public function createBlocksJoinTable($table, $refTable, $fk)
+	{
+		$columns = array(
+			$fk          => array('type' => AttributeType::Int, 'required' => true),
+			'block_id'   => array('type' => AttributeType::Int, 'required' => true)
+		);
+
+		// Create the table
+		$return = $this->createTable($table, $columns);
+
+		// Create the unique constraint
+		$this->createIndex("{$table}_{$fk}_block_id_unique_idx", $table, "{$fk},block_id", true);
+
+		// Add the foreign keys
+		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk,        $refTable, 'id');
+		$this->addForeignKey("{$table}_blocks_fk",      $table, 'block_id', 'blocks',  'id');
+
+		return $return;
+	}
+
+	/**
+	 * Creates a settings table
+	 * @param string $table The settings table name
+	 * @param string $refTable The reference table name
+	 * @param string $fk The foreign key column name to the reference table
+	 */
+	public function createSettingsTable($table, $refTable, $fk)
+	{
+		$columns = array(
+			$fk     => array('type' => AttributeType::Int, 'required' => true),
+			'name'  => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+			'value' => AttributeType::Text
+		);
+
+		// Create the table
+		$this->createTable($table, $columns);
+
+		// Create the unique constraint
+		$this->createIndex("{$table}_{$fk}_name_unique_idx", $table, "{$fk},name", true);
+
+		// Add the foreign key
+		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk, $refTable, 'id');
 	}
 
 	/**
@@ -280,7 +357,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete=null, $update=null)
 	{
-		return parent::addForeignKey($name, $this->_addTablePrefix($table), $columns, $this->_addTablePrefix($refTable), $refColumns, $delete, $update);
+		return parent::addForeignKey($this->_addTablePrefix($name), $this->_addTablePrefix($table), $columns, $this->_addTablePrefix($refTable), $refColumns, $delete, $update);
 	}
 
 	/**
@@ -302,7 +379,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function createIndex($name, $table, $column, $unique=false)
 	{
-		return parent::createIndex($name, $this->_addTablePrefix($table), $column, $unique);
+		return parent::createIndex($this->_addTablePrefix($name), $this->_addTablePrefix($table), $column, $unique);
 	}
 
 	/**

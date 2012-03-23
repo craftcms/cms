@@ -24,9 +24,7 @@ class InstallerService extends Component
 		// Add the languages
 		b()->db->createCommand()->insert('languages', array('language' => 'en_us'));
 
-		// Then install Content and Blocks models
-		// so we can start creating foreign keys to them right away
-		$models[] = new Content;
+		// Install the Block model first so the other models can create FK's to it
 		$models[] = new Block;
 
 		$modelsDir = b()->file->set(b()->path->modelsPath);
@@ -38,7 +36,7 @@ class InstallerService extends Component
 			$fileName = $file->fileName;
 
 			// Ignore the models already set to install
-			if (in_array($fileName, array('Content', 'Block', 'Model')))
+			if (in_array($fileName, array('Block', 'Model')))
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;

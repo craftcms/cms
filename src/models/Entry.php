@@ -9,7 +9,6 @@ class Entry extends Model
 	public $draft;
 
 	protected $tableName = 'entries';
-	protected $hasContent = true;
 
 	protected $attributes = array(
 		'slug'        => array('type' => AttributeType::Char, 'maxLength' => 100),
@@ -39,6 +38,14 @@ class Entry extends Model
 	protected $indexes = array(
 		array('columns' => array('section_id','slug'), 'unique' => true),
 	);
+
+	/**
+	 * Use the section's content table name
+	 */
+	public function getContentTableName()
+	{
+		return $this->section->getContentTableName();
+	}
 
 	/**
 	 * Returns whether the entry is published
@@ -147,8 +154,8 @@ class Entry extends Model
 
 			foreach ($blocks as $block)
 			{
-				$colName = b()->blocks->getContentColumnNameForBlock($block);
-				$block->data = $content->$colName;
+				if (isset($content[$block->handle]))
+					$block->data = $content[$block->handle];
 			}
 
 			$this->_blocks = $blocks;

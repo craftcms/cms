@@ -18,16 +18,9 @@ class Block extends Model
 		'name'         => AttributeType::Name,
 		'handle'       => AttributeType::Handle,
 		'class'        => AttributeType::ClassName,
-		'instructions' => AttributeType::Text
-	);
-
-	protected $belongsTo = array(
-		'site' => array('model' => 'Site', 'required' => true)
-	);
-
-	protected $indexes = array(
-		array('columns' => array('name','site_id'), 'unique' => true),
-		array('columns' => array('handle','site_id'), 'unique' => true)
+		'instructions' => AttributeType::Text,
+		'required'     => AttributeType::Boolean,
+		'sort_order'   => AttributeType::SortOrder
 	);
 
 	// Block subclass properties
@@ -54,17 +47,19 @@ class Block extends Model
 	 * Display the blocktype's settings
 	 * @return string
 	 */
-	public function displaySettings()
+	public function displaySettings($idPrefix, $namePrefix)
 	{
 		if (empty($this->settingsTemplate))
 			return '';
 
 		$tags = array(
-			'settings' => $this->settings
+			'idPrefix'   => $idPrefix,
+			'namePrefix' => $namePrefix,
+			'settings'   => $this->settings
 		);
 
 		$template = b()->controller->loadTemplate($this->settingsTemplate, $tags, true);
-		return TemplateHelper::namespaceInputs($template, $this->getClassHandle());
+		return $template;
 	}
 
 	/**

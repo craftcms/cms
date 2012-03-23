@@ -18,16 +18,13 @@ var scripts =
 	'ui/TitleInput.js',
 
 	'ui/Modal.js',
-	'ui/BlocksSelectModal.js',
-	'ui/CreateBlockModal.js',
-
 	'ui/HUD.js',
 	'ui/Menu.js',
 	'ui/Pill.js',
 	'ui/RTE.js',
 	'ui/SelectMenu.js',
 	'ui/LightSwitch.js',
-	'ui/BlocksSelect.js',
+	'ui/BlockEditor.js',
 	'ui/PasswordInput.js'
 ];
 

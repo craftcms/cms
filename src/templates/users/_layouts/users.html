@@ -7,7 +7,7 @@
 
 {region "sidebar"}
 	<h5>Recent Users</h5>
-	<ul class="nav">
+	<ul>
 		{foreach users.recent as theUser}
 			<li><a href="{:url.base}users/{if theUser.status == 'archived'}view{else}edit{/if}/{:theUser.id}" {if url.segment(3) == theUser.id}class="sel"{/if}><span class="icon icon{if theUser.admin}247{else}243{/if}"></span>{:theUser.fullName}</a></li>
 		{/foreach}

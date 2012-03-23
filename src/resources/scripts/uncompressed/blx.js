@@ -321,6 +321,16 @@ b.utils =
 		$elem.animate({width: newWidth}, 'fast', function() {
 			$elem.width('auto');
 		});
+	},
+
+	findInputs: function(container)
+	{
+		return $(container).find('input,text,textarea,select,button');
+	},
+
+	namespaceInputName: function(inputName, namespace)
+	{
+		return inputName.replace(/^([^\[\]]+)(.*)$/, namespace+'[$1]$2');
 	}
 };
 

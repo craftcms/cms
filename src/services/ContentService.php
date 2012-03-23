@@ -94,11 +94,11 @@ class ContentService extends Component
 	 * Saves a section
 	 *
 	 * @param            $sectionSettings
-	 * @param array|null $sectionBlocks
+	 * @param array|null $blocksData
 	 * @param null       $sectionId
 	 * @return \Blocks\Section
 	 */
-	public function saveSection($sectionSettings, $sectionBlocks = null, $sectionId = null)
+	public function saveSection($sectionSettings, $blocksData = null, $sectionId = null)
 	{
 		$section = $this->getSection($sectionId);
 		$isNewSection = $section->isNewRecord;
@@ -112,45 +112,95 @@ class ContentService extends Component
 		$section->template = $sectionSettings['template'];
 		$section->site_id = b()->sites->currentSite->id;
 
-		if ($section->validate())
+		// Try saving the section
+		$sectionSaved = $section->save();
+
+		// Create the blocks
+		$blocks = array();
+
+		if (isset($blocksData['order']))
 		{
-			// Start a transaction
-			$transaction = b()->db->beginTransaction();
-			try
+			foreach ($blocksData['order'] as $order => $blockId)
 			{
-				// Save the block
-				$section->save();
+				$blockData = $blocksData[$blockId];
 
-				// Delete the previous content block selections
-				if (!$isNewSection)
+				$block = b()->blocks->getBlockByClass($blockData['class']);
+				$isNewBlock = true;
+
+				if (strncmp($blockId, 'new', 3) != 0)
 				{
-					b()->db->createCommand()
-						->where('section_id = :id', array(':id' => $section->id))
-						->delete('sectionblocks');
-				}
-
-				// Add new content block selections
-				if (!empty($sectionBlocks['selections']))
-				{
-					$sectionBlocksData = array();
-
-					foreach ($sectionBlocks['selections'] as $sortOrder => $blockId)
+					$originalBlock = b()->blocks->getBlockById($blockId);
+					if ($originalBlock)
 					{
-						$required = (isset($sectionBlocks['required'][$blockId]) && $sectionBlocks['required'][$blockId] === 'y');
-						$sectionBlocksData[] = array($section->id, $blockId, $required, $sortOrder+1);
+						$isNewBlock = false;
+						$block->isNewRecord = false;
+						$block->id = $blockId;
+						$block->setPrimaryKey($blockId);
 					}
-
-					b()->db->createCommand()->insertAll('sectionblocks', array('section_id','block_id','required','sort_order'), $sectionBlocksData);
 				}
 
-				$transaction->commit();
-			}
-			catch (Exception $e)
-			{
-				$transaction->rollBack();
-				throw $e;
+				$block->name = $blockData['name'];
+				$block->handle = $blockData['handle'];
+				$block->class = $blockData['class'];
+				$block->instructions = $blockData['instructions'];
+				$block->required = false;
+				$block->sort_order = ($order+1);
+
+				// Only save it if the section saved
+				if ($sectionSaved)
+				{
+					if ($block->save())
+					{
+						// Attach it to the section
+						try
+						{
+							b()->db->createCommand()->insert('sectionblocks', array(
+								'section_id' => $section->id,
+								'block_id'   => $block->id,
+							));
+						}
+						catch (\CDbException $e)
+						{
+							// Only allow a Duplicate Key exception (the section is already tied to the block)
+							if (!isset($e->errorInfo[0]) || $e->errorInfo[0] != 23000)
+								throw $e;
+						}
+
+						// Save the settings
+						if (!isset($blockData['settings']))
+							$blockData['settings'] = array();
+						$block->settings = $blockData['settings'];
+
+						// Add or modify the block's content column
+						$table = $section->getContentTableName();
+						$columnType = DatabaseHelper::generateColumnDefinition($block->columnType);
+
+						if ($isNewBlock)
+						{
+							// Add the new column
+							b()->db->createCommand()->addColumn($table, $block->handle, $columnType);
+						}
+						else
+						{
+							// Rename the column if the block has a new handle
+							if ($block->handle != $originalBlock->handle)
+								b()->db->createCommand()->renameColumn($table, $originalBlock->handle, $block->handle);
+
+							// Update the column's type
+							b()->db->createCommand()->alterColumn($table, $block->handle, $columnType);
+						}
+					}
+				}
+
+				// Keep the "newX" ID around for the templates
+				if ($block->isNewRecord)
+					$block->id = $blockId;
+
+				$blocks[] = $block;
 			}
 		}
+
+		$section->blocks = $blocks;
 
 		return $section;
 	}

@@ -33,4 +33,35 @@ class Section extends Model
 		array('columns' => array('site_id', 'handle'), 'unique' => true),
 	);
 
+	/**
+	 * Content table names are based on the site and section handles
+	 */
+	public function getContentTableName()
+	{
+		return 'entrycontent_'.$this->site->handle.'_'.$this->handle;
+	}
+
+	/**
+	 * Section content tables reference entries, not sections
+	 */
+	public function createContentTable()
+	{
+		b()->db->createCommand()->createContentTable($this->getContentTableName(), 'entries', 'entry_id');
+	}
+
+	/**
+	 * Create a corresponding content table each time a new section is created
+	 */
+	public function save($runValidation = true, $attributes = null)
+	{
+		$isNewRecord = $this->isNewRecord;
+		$return = parent::save($runValidation, $attributes);
+
+		// Create the content if the save was successful
+		if ($isNewRecord && $return)
+			$this->createContentTable();
+
+		return $return;
+	}
+
 }

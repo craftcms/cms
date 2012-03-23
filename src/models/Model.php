@@ -7,7 +7,7 @@ namespace Blocks;
 abstract class Model extends \CActiveRecord
 {
 	protected $tableName;
-	protected $contentJoinTableName;
+	protected $contentTableName;
 	protected $blocksJoinTableName;
 	protected $settingsTableName;
 	protected $foreignKeyName;
@@ -100,14 +100,14 @@ abstract class Model extends \CActiveRecord
 	}
 
 	/**
-	 * Get the model's content join table name
+	 * Get the model's content table name
 	 * @return string The table name
 	 * @access protected
 	 */
-	protected function getContentJoinTableName()
+	protected function getContentTableName()
 	{
-		if (isset($this->contentJoinTableName))
-			return $this->contentJoinTableName;
+		if (isset($this->contentTableName))
+			return $this->contentTableName;
 		else
 			return strtolower($this->getClassHandle()).'content';
 	}
@@ -162,23 +162,16 @@ abstract class Model extends \CActiveRecord
 		{
 			if ($this->hasContent && !$this->isNewRecord)
 			{
-				$content = b()->db->createCommand()
+				$this->_content = b()->db->createCommand()
 					->select('c.*')
-					->from($this->getContentJoinTableName().' j')
-					->join('content c', 'j.content_id = c.id')
-					->where(
-						array('and', 'j.'.$this->getForeignKeyName().' = :id', 'j.active = 1'),
-						array(':id' => $this->id)
-					)
-					->order('j.num desc')
+					->from($this->getContentTableName())
+					->where(array('and', $this->getForeignKeyName().' = :id', 'active = :active'), array(':id' => $this->id, ':active' => true))
+					->order('num desc')
 					->queryRow();
-
-				if ($content)
-					$this->_content = Content::model()->populateRecord($content);
 			}
 
-			if (!isset($this->_content))
-				$this->_content = new Content;
+			if (empty($this->_content))
+				$this->_content = array();
 		}
 
 		return $this->_content;
@@ -206,11 +199,11 @@ abstract class Model extends \CActiveRecord
 			if ($this->hasBlocks && !$this->isNewRecord)
 			{
 				$blocks = b()->db->createCommand()
-					->select('j.required, b.*')
+					->select('b.*')
 					->from($this->getBlocksJoinTableName().' j')
 					->join('blocks b', 'j.block_id = b.id')
 					->where('j.'.$this->getForeignKeyName().' = :id', array(':id' => $this->id))
-					->order('j.sort_order')
+					->order('b.sort_order')
 					->queryAll();
 
 				$this->_blocks = Block::model()->populateSubclassRecords($blocks, true, 'handle');
@@ -539,7 +532,7 @@ abstract class Model extends \CActiveRecord
 	 * @param null $attributes
 	 * @return bool
 	 */
-	function save($runValidation = true, $attributes = null)
+	public function save($runValidation = true, $attributes = null)
 	{
 		if ($this->isNewRecord)
 		   return parent::save($runValidation, $attributes);
@@ -557,7 +550,7 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function createTable()
 	{
-		$tableName = $this->getTableName();
+		$table = $this->getTableName();
 		$indexes = array_merge($this->indexes);
 		$columns = array();
 
@@ -588,22 +581,20 @@ abstract class Model extends \CActiveRecord
 		}
 
 		// Create the table
-		b()->db->createCommand()->createTable($tableName, $columns);
+		b()->db->createCommand()->createTable($table, $columns);
 
 		// Create the indexes
-		$tablePrefix = b()->config->tablePrefix;
 		foreach ($this->indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);
-			$name = "{$tablePrefix}{$tableName}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
-
-			b()->db->createCommand()->createIndex($name, $tableName, implode(',', $columns), $unique);
+			$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
+			b()->db->createCommand()->createIndex($name, $table, implode(',', $columns), $unique);
 		}
 
-		// Create the content join table if necessary
+		// Create the content table if necessary
 		if ($this->hasContent)
-			$this->createContentJoinTable();
+			$this->createContentTable();
 
 		// Create the content blocks join table if necessary
 		if ($this->hasBlocks)
@@ -623,9 +614,9 @@ abstract class Model extends \CActiveRecord
 		if (b()->db->schema->getTable($table) !== null)
 			b()->db->createCommand()->dropTable($table);
 
-		// Drop the content join table if necessary
+		// Drop the content table if necessary
 		if ($this->hasContent)
-			$this->dropContentJoinTable();
+			$this->dropContentTable();
 
 		// Drop the content blocks join table if necessary
 		if ($this->hasBlocks)
@@ -641,16 +632,15 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function addForeignKeys()
 	{
-		$tablePrefix = b()->config->tablePrefix;
-		$tableName = $this->getTableName();
+		$table = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$otherModelClass = __NAMESPACE__.'\\'.$settings['model'];
 			$otherModel = new $otherModelClass;
-			$otherTableName = $otherModel->getTableName();
-			$fkName = "{$tablePrefix}{$tableName}_{$otherTableName}_fk";
-			b()->db->createCommand()->addForeignKey($fkName, $tableName, $name.'_id', $otherTableName, 'id');
+			$otherTable = $otherModel->getTableName();
+			$fkName = "{$table}_{$otherTable}_fk";
+			b()->db->createCommand()->addForeignKey($fkName, $table, $name.'_id', $otherTable, 'id');
 		}
 	}
 
@@ -659,54 +649,32 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function dropForeignKeys()
 	{
-		$tablePrefix = b()->config->tablePrefix;
-		$tableName = $this->getTableName();
+		$table = $this->getTableName();
 
 		foreach ($this->belongsTo as $name => $settings)
 		{
 			$otherModelClass = __NAMESPACE__.'\\'.$settings['model'];
 			$otherModel = new $otherModelClass;
-			$otherTableName = $otherModel->getTableName();
-			$fkName = "{$tablePrefix}{$tableName}_{$otherTableName}_fk";
-			b()->db->createCommand()->dropForeignKey($fkName, $tableName);
+			$otherTable = $otherModel->getTableName();
+			$fkName = "{$table}_{$otherTable}_fk";
+			b()->db->createCommand()->dropForeignKey($fkName, $table);
 		}
 	}
 
 	/**
-	 * Create the model's content join table
+	 * Create the model's content table
 	 */
-	public function createContentJoinTable()
+	public function createContentTable()
 	{
-		$tablePrefix = b()->config->tablePrefix;
-		$joinTable = $this->getContentJoinTableName();
-		$modelTable = $this->getTableName();
-		$modelFk = $this->getForeignKeyName();
-
-		$columns = array(
-			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
-			'content_id' => array('type' => AttributeType::Int, 'required' => true),
-			'language'   => AttributeType::Language,
-			'num'        => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
-			'notes'      => AttributeType::Text,
-			'active'     => AttributeType::Boolean
-		);
-
-		// Create the table
-		b()->db->createCommand()->createTable($joinTable, $columns);
-
-		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,     $modelTable, 'id');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_content_fk",       $joinTable, 'content_id', 'content',   'id');
+		b()->db->createCommand()->createContentTable($this->getContentTableName(), $this->getTableName(), $this->getForeignKeyName());
 	}
 
 	/**
-	 * Drop the model's content join table
+	 * Drop the model's content table
 	 */
-	public function dropContentJoinTable()
+	public function dropContentTable()
 	{
-		$table = $this->getContentJoinTableName();
-		if (b()->db->schema->getTable($table) !== null)
-			b()->db->createCommand()->dropTable($table);
+		b()->db->createCommand()->dropTable($this->getContentTableName());
 	}
 
 	/**
@@ -714,24 +682,7 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function createBlocksJoinTable()
 	{
-		$tablePrefix = b()->config->tablePrefix;
-		$joinTable = $this->getBlocksJoinTableName();
-		$modelTable = $this->getTableName();
-		$modelFk = $this->getForeignKeyName();
-
-		$columns = array(
-			$modelFk     => array('type' => AttributeType::Int, 'required' => true),
-			'block_id'   => array('type' => AttributeType::Int, 'required' => true),
-			'required'   => AttributeType::Boolean,
-			'sort_order' => AttributeType::SortOrder
-		);
-
-		// Create the table
-		b()->db->createCommand()->createTable($joinTable, $columns);
-
-		// Add the foreign keys
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_{$modelTable}_fk", $joinTable, $modelFk,   $modelTable, 'id');
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$joinTable}_blocks_fk",        $joinTable, 'block_id', 'blocks',    'id');
+		b()->db->createCommand()->createBlocksJoinTable($this->getBlocksJoinTableName(), $this->getTableName(), $this->getForeignKeyName());
 	}
 
 	/**
@@ -739,9 +690,7 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function dropBlocksJoinTable()
 	{
-		$table = $this->getBlocksJoinTableName();
-		if (b()->db->schema->getTable($table) !== null)
-			b()->db->createCommand()->dropTable($table);
+		b()->db->createCommand()->dropTable($this->getBlocksJoinTableName());
 	}
 
 	/**
@@ -749,22 +698,7 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function createSettingsTable()
 	{
-		$tablePrefix = b()->config->tablePrefix;
-		$settingsTable = $this->getSettingsTableName();
-		$modelTable = $this->getTableName();
-		$modelFk = $this->getForeignKeyName();
-
-		$columns = array(
-			$modelFk => array('type' => AttributeType::Int, 'required' => true),
-			'name'   => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
-			'value'  => AttributeType::Text
-		);
-
-		// Create the table
-		b()->db->createCommand()->createTable($settingsTable, $columns);
-
-		// Add the foreign key
-		b()->db->createCommand()->addForeignKey("{$tablePrefix}{$settingsTable}_{$modelTable}_fk", $settingsTable, $modelFk, $modelTable, 'id');
+		b()->db->createCommand()->createSettingsTable($this->getSettingsTableName(), $this->getTableName(), $this->getForeignKeyName());
 	}
 
 	/**
@@ -772,9 +706,7 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function dropSettingsTable()
 	{
-		$table = $this->getSettingsTableName();
-		if (b()->db->schema->getTable($table) !== null)
-			b()->db->createCommand()->dropTable($table);
+		b()->db->createCommand()->dropTable($this->getSettingsTableName());
 	}
 
 	/**
