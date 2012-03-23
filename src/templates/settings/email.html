@@ -85,39 +85,55 @@
 			</div>
 
 			<div id="smtpAuth-field" class="item field">
-				<label for="smtpAuth">Use SMTP Authentication?</label>
-				<div>{include "_includes/lightswitch" name="smtpAuth" on=emailSettings.smtpAuth toggle="#smtp-auth-credentials"}</div>
+				<div class="left">
+					<label for="smtpAuth">Use SMTP Authentication?</label>
+				</div>
+				<div class="right">
+					<div>{include "_includes/lightswitch" name="smtpAuth" on=emailSettings.smtpAuth toggle="#smtpAuthCredentials-field"}</div>
+				</div>
+				<div class="clear"></div>
 				{if emailSettings.errors.smtpAuth}
 					{include "_includes/error_list" errors=emailSettings.errors.smtpAuth}
 				{/if}
+			</div>
 
-				<div id="smtp-auth-credentials" class="nested">
-					<div id="smtp-username-field" class="field">
-						<label for="smtp-username">Username</label>
-						<div class="input-wrapper"><input id="smtp-username" name="smtp_username" type="text" value="{:emailSettings.username}" /></div>
-						{if emailSettings.protocol == 'Smtp' && emailSettings.errors.username}
-							{include "_includes/error_list" errors=emailSettings.errors.username}
-						{/if}
-					</div>
-					<div id="smtp-password-field" class="field">
-						<label for="smtp-password">Password</label>
-						<div class="input-wrapper password"><input id="smtp-password" class="password" name="smtp_password" type="password" value="{:emailSettings.password}" /></div>
-						{if emailSettings.protocol == 'Smtp' && emailSettings.errors.password}
-							{include "_includes/error_list" errors=emailSettings.errors.password}
-						{/if}
-					</div>
+			<div id="smtpAuthCredentials-field" class="nested-items" {if !emailSettings.smtpAuth}style="height:0"{/if}>
+				<div id="smtp-username-field" class="item field">
+					<label for="smtp-username">Username</label>
+					<div class="input-wrapper"><input id="smtp-username" name="smtp_username" type="text" value="{:emailSettings.username}" /></div>
+					{if emailSettings.protocol == 'Smtp' && emailSettings.errors.username}
+						{include "_includes/error_list" errors=emailSettings.errors.username}
+					{/if}
+				</div>
+				<div id="smtp-password-field" class="item field">
+					<label for="smtp-password">Password</label>
+					<div class="input-wrapper password"><input id="smtp-password" class="password" name="smtp_password" type="password" value="{:emailSettings.password}" /></div>
+					{if emailSettings.protocol == 'Smtp' && emailSettings.errors.password}
+						{include "_includes/error_list" errors=emailSettings.errors.password}
+					{/if}
 				</div>
 			</div>
+
 			<div id="smtpKeepAlive-field" class="item field">
-				<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
-				{include "_includes/lightswitch" name="smtpKeepAlive" on=emailSettings.smtpKeepAlive}
+				<div class="left">
+					<label for="smtpKeepAlive">Use SMTP Keep Alive?</label>
+				</div>
+				<div class="right">
+					{include "_includes/lightswitch" name="smtpKeepAlive" on=emailSettings.smtpKeepAlive}
+				</div>
+				<div class="clear"></div>
 				{if emailSettings.errors.smtpKeepAlive}
 					{include "_includes/error_list" errors=emailSettings.errors.smtpKeepAlive}
 				{/if}
 			</div>
 			<div id="smtpSecureTransportType-field" class="item field">
-				<label for="smtpSecureTransportType">SMTP Secure Transport Type</label>
-				{include "_includes/pill" name="smtpSecureTransportType" options="none:None,ssl:SSL,tls:TLS" default="none" value=emailSettings.smtpSecureTransportType}
+				<div class="left">
+					<label for="smtpSecureTransportType" style="margin-top:2px">SMTP Secure Transport Type</label>
+				</div>
+				<div class="right">
+					{include "_includes/pill" name="smtpSecureTransportType" options="none:None,ssl:SSL,tls:TLS" default="none" value=emailSettings.smtpSecureTransportType}
+				</div>
+				<div class="clear"></div>
 				{if emailSettings.errors.smtpSecureTransportType}
 					{include "_includes/error_list" errors=emailSettings.errors.smtpSecureTransportType}
 				{/if}

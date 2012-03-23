@@ -10,7 +10,6 @@ b.ui.LightSwitch = b.Base.extend({
 	$outerContainer: null,
 	$innerContainer: null,
 	$input: null,
-	$wrapper: null,
 	$toggleTarget: null,
 	on: null,
 	dragger: null,
@@ -34,7 +33,6 @@ b.ui.LightSwitch = b.Base.extend({
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$input = this.$outerContainer.find('input:first');
-		this.$wrapper = this.$outerContainer.parent('.nested-toggle-wrapper');
 		this.$toggleTarget = $(this.$outerContainer.attr('data-toggle'));
 
 		this.on = this.$outerContainer.hasClass('on');
@@ -56,7 +54,6 @@ b.ui.LightSwitch = b.Base.extend({
 	{
 		this.$innerContainer.stop().animate({marginLeft: 0}, 'fast');
 		this.$input.val('y');
-		this.$wrapper.addClass('showing');
 		this.on = true;
 		this.settings.onChange();
 
@@ -73,7 +70,6 @@ b.ui.LightSwitch = b.Base.extend({
 	{
 		this.$innerContainer.stop().animate({marginLeft: b.ui.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
-		this.$wrapper.removeClass('showing');
 		this.on = false;
 		this.settings.onChange();
 

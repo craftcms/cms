@@ -1,14 +1,25 @@
 <div class="item field">
-	<label for="{:idPrefix}type">Number Type</label>
-	<?php $id = new Tag($idPrefix.'type') ?>
-	<?php $name = new Tag($namePrefix.'[type]') ?>
-	{include "_includes/pill" id=id name=name options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
+	<div class="left">
+		<label for="{:idPrefix}type" style="margin-top:2px">Number Type</label>
+	</div>
+	<div class="right">
+		<?php $id = new Tag($idPrefix.'type') ?>
+		<?php $name = new Tag($namePrefix.'[type]') ?>
+		{include "_includes/pill" id=id name=name options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
+	</div>
+	<div class="clear"></div>
 </div>
 <div class="item field">
 	<label for="{:idPrefix}min">Min Value</label>
-	<input id="{:idPrefix}min" name="{:namePrefix}[min]" class="input" type="number" value="{:settings.min}" size="5">
+	<div>
+		<input id="{:idPrefix}min" name="{:namePrefix}[min]" class="input" type="number" value="{:settings.min}" size="5">
+	</div>
+	<div class="clear"></div>
 </div>
 <div class="item field">
 	<label for="{:idPrefix}max">Max Value</label>
-	<input id="{:idPrefix}max" name="{:namePrefix}[max]" class="input" type="number" value="{:settings.max}" size="5">
+	<div>
+		<input id="{:idPrefix}max" name="{:namePrefix}[max]" class="input" type="number" value="{:settings.max}" size="5">
+	</div>
+	<div class="clear"></div>
 </div>

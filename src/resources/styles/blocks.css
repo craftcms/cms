@@ -196,13 +196,15 @@ table.pane > tfoot > tr:last-child > *:last-child { border-bottom-right-radius: 
 .pane table.body > tbody > tr > *,
 table.pane > tbody > tr > * { position: relative; padding: 8px 20px; color: #333; background: #fff; background: -webkit-linear-gradient(#fff, #fff, #fafafa) repeat-x 0 100%; }
 
-.pane .body:first-child .item:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
+.pane .body:first-child > .item:first-child,
+.pane .body:first-child > .nested-items:first-child > .item:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
 table.pane > tbody:first-child > tr:first-child > *:first-child,
 .pane table.body:first-child > tbody > tr:first-child > *:first-child { border-top-left-radius: 3px; }
 table.pane > tbody:first-child > tr:first-child > *:last-child,
 .pane table.body:first-child > tbody > tr:first-child > *:last-child { border-top-right-radius: 3px; }
 
-.pane .body:last-child .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
+.pane .body:last-child > .item:last-child,
+.pane .body:last-child > .nested-items:last-child > .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
 table.pane > tbody:last-child > tr:last-child > *:first-child,
 .pane table.body:last-child > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
 table.pane > tbody:last-child > tr:last-child > *:last-child,
@@ -211,6 +213,7 @@ table.pane > tbody:last-child > tr:last-child > *:last-child,
 .pane .body .no-items { color: #999; text-align: center; }
 .pane .body a.item { display: block; }
 .pane .body .item:not(:first-child),
+.pane .body .nested-items .item:first-child,
 .pane table.body > tbody > tr:not(:first-child) > *,
 table.pane > tbody > tr:not(:first-child) > * { border-top: 1px solid #eee; }
 
@@ -338,7 +341,7 @@ input.btn { padding: 0 8px !important; border: none; }
 input.btn.big { padding: 0 12px !important; }
 
 /* button groups */
-.btn-group { display: inline-block; height: 24px; }
+.btn-group { display: block; height: 24px; }
 .btn-group .btn { float: left; border-radius: 0; }
 .btn-group .btn:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
 .btn-group .btn:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
@@ -347,7 +350,7 @@ input.btn.big { padding: 0 12px !important; }
 .btn-group .btn:not(:last-child) .arrow { margin-right: 4px; }
 
 /* switch */
-.lightswitch { margin: 1px; border-radius: 10px; width: 51px; height: 20px; background: #999; overflow: hidden; -webkit-box-shadow: 0 0 0 1px #999; cursor: pointer; -webkit-user-select: none; }
+.lightswitch { border-radius: 10px; width: 51px; height: 20px; background: #999; overflow: hidden; -webkit-box-shadow: 0 0 0 1px #999; cursor: pointer; -webkit-user-select: none; }
 .lightswitch .container { margin-left: -31px; width: 90px; }
 .lightswitch.on .container { margin-left: 0; }
 .lightswitch .label { float: left; width: 29px; height: 20px; font-size: 11px; line-height: 20px; text-align: center; text-transform: uppercase; -webkit-box-shadow: inset 0 0 3px rgba(0,0,0,0.25); }
@@ -403,17 +406,13 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Fields
 /* ----------------------------------------*/
 
-.field { padding-top: 16px !important; padding-bottom: 20px !important; position: relative; }
-.field > label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
+.field { padding-top: 16px !important; padding-bottom: 16px !important; position: relative; }
+.field > label,
+.field > .left > label { display: inline-block; line-height: 20px; font-weight: bold; font-family: sans-serif; color: #666; }
+.field > label { margin-bottom: 2px; }
 .field > label.required { padding-right: 14px; background: url(../images/required.png) no-repeat 100% 50%; }
-.field > p { margin: -3px 0 8px; color: #888; }
-
-/* nested fields */
-.field .nested-toggle-wrapper { float: left; margin: -7px 0 -6px -6px; padding: 5px; border-radius: 18px; border: 1px dotted transparent; -webkit-transition: border-color 200ms linear, margin-bottom 200ms linear; }
-.field .nested-toggle-wrapper.showing { margin-bottom: 1px; border-color: #bbb; }
-.field .nested { clear: left; margin: 1px 0 0 25px; padding-left: 25px; border-left: 1px dotted #bbb; overflow: hidden; }
-.field .nested .field { padding-top: 20px !important; padding-bottom: 0 !important; }
-.field .nested .field:first-child { padding-top: 10px !important; }
+.field > label + p,
+.field > .left > label + p { margin: -2px 0 8px; color: #888; }
 
 /* inputs */
 .input-wrapper { padding-right: 18px; }

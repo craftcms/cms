@@ -29,10 +29,15 @@
 	</div>
 
 	<div class="item field">
-		<label for="{:idPrefix}required">Required?</label>
-		<?php $id = new Tag($idPrefix.'required') ?>
-		<?php $name = new Tag($namePrefix.'[required]') ?>
-		{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
+		<div class="left">
+			<label for="{:idPrefix}required">Required?</label>
+		</div>
+		<div class="right">
+			<?php $id = new Tag($idPrefix.'required') ?>
+			<?php $name = new Tag($namePrefix.'[required]') ?>
+			{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
+		</div>
+		<div class="clear"></div>
 	</div>
 
 	<div class="item field">
@@ -49,12 +54,11 @@
 
 <?php $namePrefix = new Tag($namePrefix.'[settings]') ?>
 <div class="blocktypesettings">
-	<div class="{:block.class}">
-		<div></div>
+	<div class="{:block.class} nested-items">
 		{:block.displaySettings(idPrefix, namePrefix)}
 	</div>
 </div>
 
-<div class="item">
+<div class="item field">
 	<a class="delete">Delete content block</a>
 </div>

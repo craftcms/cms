@@ -1,8 +1,13 @@
 <div class="item field">
-	<label for="{:idPrefix}multiline">Multiline?</label>
-	<?php $id = new Tag($idPrefix.'multiline') ?>
-	<?php $name = new Tag($namePrefix.'[multiline]') ?>
-	{include "_includes/lightswitch" id=id name=name on=settings.multiline}
+	<div class="left">
+		<label for="{:idPrefix}multiline">Multiline?</label>
+	</div>
+	<div class="right">
+		<?php $id = new Tag($idPrefix.'multiline') ?>
+		<?php $name = new Tag($namePrefix.'[multiline]') ?>
+		{include "_includes/lightswitch" id=id name=name on=settings.multiline}
+	</div>
+	<div class="clear"></div>
 </div>
 <div class="item field">
 	<label for="{:idPrefix}hint">Hint Text</label>

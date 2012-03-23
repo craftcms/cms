@@ -47,29 +47,36 @@
 					{/if}
 				</div>
 				<div class="item field">
-					<label for="sortable">Are entries sortable?</label>
-					<p>Do entries in this section have a sortable display order?</p>
-					{include "_includes/lightswitch" name="sortable" on=section.sortable}
+					<div class="left">
+						<label for="sortable">Are entries sortable?</label>
+					</div>
+					<div class="right">
+						{include "_includes/lightswitch" name="sortable" on=section.sortable}
+					</div>
+					<div class="clear"></div>
 					{if section.errors.sortable}
 						{include "_includes/error_list" errors=section.errors.sortable}
 					{/if}
 				</div>
 				<div class="item field">
-					<label for="has_urls">Do entries have URLs?</label>
-					<p>Can you access entries in this section directly via unique URLs?</p>
-					{include "_includes/lightswitch" name="has_urls" on=section.has_urls toggle="#has-urls-setting"}
-
-					<div id="has-urls-setting" class="nested" {if !section.has_urls}style="height: 0"{/if}>
-						<div class="field">
-							<label for="url_format">Entry URL Format</label>
-							<p>If entries in this section get their own URLs on your website, define the format of their URLs here.</p>
-							<div class="input-wrapper"><input id="url_format" name="url_format" class="code {if section.errors.url_format}error{/if}" type="text" value="{:section.url_format}" /></div>
-						</div>
-						<div class="field">
-							<label for="template">Entry Template</label>
-							<p>Which template should be used to display entries in this section?</p>
-							<div class="input-wrapper"><input id="template" name="template" class="{if section.errors.template}error{/if}" type="text" value="{:section.template}" /></div>
-						</div>
+					<div class="left">
+						<label for="has_urls">Do entries have their own URLs?</label>
+					</div>
+					<div class="right">
+						{include "_includes/lightswitch" name="has_urls" on=section.has_urls toggle="#has-urls-setting"}
+					</div>
+					<div class="clear"></div>
+				</div>
+				<div id="has-urls-setting" class="nested-items" {if !section.has_urls}style="height: 0"{/if}>
+					<div class="item field">
+						<label for="url_format">Entry URL Format</label>
+						<p>If entries in this section get their own URLs on your website, define the format of their URLs here.</p>
+						<div class="input-wrapper"><input id="url_format" name="url_format" class="code {if section.errors.url_format}error{/if}" type="text" value="{:section.url_format}" /></div>
+					</div>
+					<div class="item field">
+						<label for="template">Entry Template</label>
+						<p>Which template should be used to display entries in this section?</p>
+						<div class="input-wrapper"><input id="template" name="template" class="{if section.errors.template}error{/if}" type="text" value="{:section.template}" /></div>
 					</div>
 				</div>
 				<div class="item field">

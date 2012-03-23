@@ -76,7 +76,7 @@ var EmailSettingsForm = b.Base.extend({
 
 }, {
 	protocolFields: {
-		Smtp:      ['smtpAuth', 'smtpKeepAlive', 'smtpSecureTransportType', 'port', 'host', 'timeout'],
+		Smtp:      ['smtpAuth', 'smtpAuthCredentials', 'smtpKeepAlive', 'smtpSecureTransportType', 'port', 'host', 'timeout'],
 		Pop:       ['username', 'password', 'port', 'host', 'timeout'],
 		GmailSmtp: ['username', 'password']
 	}
