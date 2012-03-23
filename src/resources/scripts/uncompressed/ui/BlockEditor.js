@@ -115,6 +115,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 
 	editor: null,
 	blockId: null,
+	isNew: null,
 
 	$link: null,
 	$linkNameLabel: null,
@@ -142,6 +143,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 	{
 		this.editor = editor;
 		this.blockId = blockId;
+		this.isNew = (this.blockId.substr(0, 3) == 'new');
 
 		this.$link = $link;
 		this.$linkNameLabel = this.$link.find('.block-name:first');
@@ -277,8 +279,10 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		{
 			this.$link.remove();
 			this.$settings.remove();
-			$('<input type="hidden" name="'+this.editor.inputName+'[delete][]" value="'+this.blockId+'"/>').appendTo(this.editor.$container);
-			this.editor.container.
+
+			if (!this.isNew)
+				$('<input type="hidden" name="'+this.editor.inputName+'[delete][]" value="'+this.blockId+'"/>').appendTo(this.editor.$container);
+
 			this.destroy();
 		}
 	},
