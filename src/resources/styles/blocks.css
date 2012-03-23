@@ -405,7 +405,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .field { padding-top: 16px !important; padding-bottom: 20px !important; position: relative; }
 .field > label { display: inline-block; margin-bottom: 5px; font-weight: bold; font-family: sans-serif; color: #666; }
-.field > label.required { padding-right: 12px; background: url(../images/field-required.png) no-repeat 100% 50%; }
+.field > label.required { padding-right: 14px; background: url(../images/required.png) no-repeat 100% 50%; }
 .field > p { margin: -3px 0 8px; color: #888; }
 
 /* nested fields */
@@ -471,7 +471,9 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
 .blockeditor .sidebar { position: absolute; top: 0; left: 0; }
 .blockeditor .blocksettings { position: relative; border-radius: 0 1px 1px 0; min-height: 260px; background: #fff; -webkit-box-shadow: -1px 0 0 rgba(0,0,0,0.1), -1px 0 1px rgba(0,0,0,0.1); overflow: hidden; }
 
-.block-item .block-name { font-weight: bold; font-family: sans-serif; }
+.block-item .block-name { font-weight: bold; }
+.block-item .block-name.required { padding-right: 14px; background: url(../images/required.png) no-repeat 100% 50%; }
+.block-item.sel .block-name.required { background-image: url(../images/required-sel.png); }
 .block-item .block-type { margin-left: 20px; font-size: 11px; line-height: 14px; }
 .block-item:not(.sel) .block-type { color: #999; }
 .block-item:not(.sel):hover .block-type { text-decoration: none !important; }

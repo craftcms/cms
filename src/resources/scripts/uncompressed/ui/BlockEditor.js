@@ -74,7 +74,6 @@ b.ui.BlockEditor = b.Base.extend({
 			if (blockId.substr(0, 3) == 'new')
 				this.totalNewBlocks++;
 		}
-		console.log(this.blocks);
 
 		this.addListener(this.$addLink, 'click', 'addBlock');
 	},
@@ -92,7 +91,7 @@ b.ui.BlockEditor = b.Base.extend({
 			$li = $('<li/>').insertBefore(this.$addLink.parent()),
 			$link = $('<a class="block-item" data-block-id="'+blockId+'">' +
 					'<span class="icon icon137"/>' +
-					'<div class="block-name">Untitled</div>' +
+					'<span class="block-name">Untitled</span>' +
 					'<div class="block-type"></div>' +
 					'<input type="hidden" name="'+this.inputName+'[order][]" value="'+blockId+'"/>' +
 					'</a>'
@@ -127,6 +126,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 
 	$nameInput: null,
 	$handleInput: null,
+	$instructionsInput: null,
+	$requiredInput: null,
 	$blocktypeSelect: null,
 	$blocktypeSelectOptions: null,
 
@@ -152,6 +153,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.$nameInput = this.$blockSettingsContainer.find('input.name:first');
 		this.$handleInput = this.$blockSettingsContainer.find('input.handle:first');
 		this.$instructionsInput = this.$blockSettingsContainer.find('textarea.instructions:first');
+		this.$requiredInput = this.$blockSettingsContainer.find('.required:first');
 		this.$blocktypeSelect = this.$blockSettingsContainer.find('select.blocktype:first');
 		this.$blocktypeSelectOptions = this.$blocktypeSelect.children();
 		this.updateLinkBlocktypeLabel();
@@ -159,6 +161,14 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		if (!this.$nameInput.val() && !this.$handleInput.val())
 			this.handleGenerator = new b.ui.HandleGenerator(this.$nameInput, this.$handleInput);
 		this.niceInstructions = new b.ui.NiceText(this.$instructionsInput);
+		this.requiredSwitch = new b.ui.LightSwitch(this.$requiredInput, {
+			onChange: $.proxy(function() {
+				if (this.requiredSwitch.on)
+					this.$linkNameLabel.addClass('required');
+				else
+					this.$linkNameLabel.removeClass('required');
+			}, this)
+		});
 
 		// Get the current blocktype
 		this.blocktype = this.$blocktypeSelect.val();

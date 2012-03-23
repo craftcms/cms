@@ -2,7 +2,7 @@
 	<div class="sidebar">
 		<ul>
 			{foreach currentBlocks as block}
-				<li><a class="block-item {if block.errors}error{/if}" data-block-id="{:block.id}"><span class="icon icon137"></span><div class="block-name">{if block.name}{:block.name}{else}Untitled{/if}</div><div class="block-type">{:block.blocktypeName}</div><input type="hidden" name="{:name}[order][]" value="{:block.id}"/></a></li>
+				<li><a class="block-item {if block.errors}error{/if}" data-block-id="{:block.id}"><span class="icon icon137"></span><span class="block-name {if block.required}required{/if}">{if block.name}{:block.name}{else}Untitled{/if}</span><div class="block-type">{:block.blocktypeName}</div><input type="hidden" name="{:name}[order][]" value="{:block.id}"/></a></li>
 			{/foreach}
 			<li><a class="new"><span class="icon icon44"></span>Create a content block</a></li>
 		</ul>

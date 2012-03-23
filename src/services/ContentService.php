@@ -143,7 +143,7 @@ class ContentService extends Component
 				$block->handle = $blockData['handle'];
 				$block->class = $blockData['class'];
 				$block->instructions = $blockData['instructions'];
-				$block->required = false;
+				$block->required = (isset($blockData['required']) && $blockData['required'] == 'y');
 				$block->sort_order = ($order+1);
 
 				// Only save it if the section saved

@@ -38,6 +38,13 @@
 			</select>
 		</div>
 	</div>
+
+	<div class="item field">
+		<label for="{:idPrefix}required">Required?</label>
+		<?php $id = new Tag($idPrefix.'required') ?>
+		<?php $name = new Tag($namePrefix.'[required]') ?>
+		{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
+	</div>
 </div>
 
 <?php $namePrefix = new Tag($namePrefix.'[settings]') ?>
