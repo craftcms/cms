@@ -7,7 +7,6 @@ namespace Blocks;
 class SecurityService extends Component
 {
 	private $_iterationCount;
-	private $_portableHashes;
 
 	/**
 	 *
@@ -15,9 +14,7 @@ class SecurityService extends Component
 	public function __construct()
 	{
 		parent::init();
-
 		$this->_iterationCount = b()->config->getItem('phpPass-iterationCount');
-		$this->_portableHashes = b()->config->getItem('phpPass-portableHashes');
 	}
 
 	/**
@@ -34,13 +31,13 @@ class SecurityService extends Component
 	 */
 	public function hashPassword($password)
 	{
-		$passwordHasher = new \PasswordHash($this->_iterationCount, $this->_portableHashes);
+		$passwordHasher = new \PasswordHash($this->_iterationCount, false);
 		$hashAndType = $passwordHasher->hashPassword($password);
 		$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 
 		if (!$check)
 		{
-			$passwordHasher = new \PasswordHash($this->_iterationCount, !$this->_portableHashes);
+			$passwordHasher = new \PasswordHash($this->_iterationCount, false);
 			$hashAndType = $passwordHasher->hashPassword($password);
 			$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 		}
@@ -54,23 +51,14 @@ class SecurityService extends Component
 	/**
 	 * @param $password
 	 * @param $storedHash
-	 * @param $storedEncType
 	 * @return bool
 	 */
-	public function checkPassword($password, $storedHash, $storedEncType)
+	public function checkPassword($password, $storedHash)
 	{
-		$passwordHasher = new \PasswordHash($this->_iterationCount, $this->_portableHashes);
+		$passwordHasher = new \PasswordHash($this->_iterationCount, false);
 		$check = $passwordHasher->checkPassword($password, $storedHash);
 
-		if (!$check)
-		{
-			if (($storedEncType == 'blowfish' && CRYPT_BLOWFISH !== 1) || ($storedEncType == 'extdes' && CRYPT_EXT_DES !== 1))
-				throw new Exception('This password was encrypted with .'.$storedEncType.', but it appears the server does not support it.  It could have been disabled or was created on a different server.');
-
-			return false;
-		}
-
-		return true;
+		return $check;
 	}
 
 	/**
