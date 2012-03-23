@@ -130,6 +130,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 	$requiredInput: null,
 	$blocktypeSelect: null,
 	$blocktypeSelectOptions: null,
+	$deleteBlockBtn: null,
 
 	handleGenerator: null,
 	niceInstructions: null,
@@ -156,6 +157,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.$requiredInput = this.$blockSettingsContainer.find('.required:first');
 		this.$blocktypeSelect = this.$blockSettingsContainer.find('select.blocktype:first');
 		this.$blocktypeSelectOptions = this.$blocktypeSelect.children();
+		this.$deleteBlockBtn = this.$settings.children(':last').children('a.delete');
+
 		this.updateLinkBlocktypeLabel();
 
 		if (!this.$nameInput.val() && !this.$handleInput.val())
@@ -177,6 +180,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.blocktypeSettings = {};
 		this.blocktypeSettings[this.blocktype] = this.$blocktypeSettingsContainer.children(':first');
 		this.initBlocktypeSettings(this.blocktypeSettings[this.blocktype]);
+
+		this.addListener(this.$deleteBlockBtn, 'click', 'delete');
 
 		this.addListener(this.$link, 'click', 'select');
 		this.addListener(this.$nameInput, 'keypress,keyup,change', 'updateLinkNameLabel');
@@ -264,6 +269,18 @@ b.ui.BlockEditor.Block = b.Base.extend({
 			blocktypeLabel = $(this.$blocktypeSelectOptions[selectedIndex]).text();
 
 		this.$linkBlocktypeLabel.text(blocktypeLabel);
+	},
+
+	delete: function()
+	{
+		if (confirm('Are you sure you want to delete this content block?'))
+		{
+			this.$link.remove();
+			this.$settings.remove();
+			$('<input type="hidden" name="'+this.editor.inputName+'[delete][]" value="'+this.blockId+'"/>').appendTo(this.editor.$container);
+			this.editor.container.
+			this.destroy();
+		}
 	},
 
 	destroy: function()

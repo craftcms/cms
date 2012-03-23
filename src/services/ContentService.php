@@ -115,6 +115,9 @@ class ContentService extends Component
 		// Try saving the section
 		$sectionSaved = $section->save();
 
+		// Get the section's content table name
+		$table = $section->getContentTableName();
+
 		// Create the blocks
 		$blocks = array();
 
@@ -172,7 +175,6 @@ class ContentService extends Component
 						$block->settings = $blockData['settings'];
 
 						// Add or modify the block's content column
-						$table = $section->getContentTableName();
 						$columnType = DatabaseHelper::generateColumnDefinition($block->columnType);
 
 						if ($isNewBlock)
@@ -197,6 +199,30 @@ class ContentService extends Component
 					$block->id = $blockId;
 
 				$blocks[] = $block;
+			}
+		}
+
+		// Any deleted blocks?
+		if (isset($blocksData['delete']))
+		{
+			foreach ($blocksData['delete'] as $blockId)
+			{
+				// Start a transaction
+				$transaction = b()->db->beginTransaction();
+				try
+				{
+					$block = b()->blocks->getBlockById($blockId);
+					b()->db->createCommand()->delete('sectionblocks', 'block_id=:id', array(':id' => $blockId));
+					b()->db->createCommand()->delete('blocksettings', 'block_id=:id', array(':id' => $blockId));
+					b()->db->createCommand()->delete('blocks',        'id=:id',       array(':id' => $blockId));
+					b()->db->createCommand()->dropColumn($table, $block->handle);
+					$transaction->commit();
+				}
+				catch (\Exception $e)
+				{
+					$transaction->rollBack();
+					throw $e;
+				}
 			}
 		}
 
