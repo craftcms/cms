@@ -67,7 +67,6 @@ class StringHelper
 			$randomString .= $randomChar;
 		}
 
-		// return our randomly generated hashed password and type.
 		return $randomString;
 	}
 }
