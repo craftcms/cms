@@ -5,7 +5,6 @@ if (typeof(console) == 'object')
 	console.groupCollapsed("Application Log");
 
 	<?php
-
 	$environmentData = array_shift($data);
 
 	$cookiePos = strpos($environmentData[0], '$_COOKIE');
