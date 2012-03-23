@@ -156,7 +156,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.$blocktypeSelectOptions = this.$blocktypeSelect.children();
 		this.updateLinkBlocktypeLabel();
 
-		this.handleGenerator = new b.ui.HandleGenerator(this.$nameInput, this.$handleInput);
+		if (!this.$nameInput.val() && !this.$handleInput.val())
+			this.handleGenerator = new b.ui.HandleGenerator(this.$nameInput, this.$handleInput);
 		this.niceInstructions = new b.ui.NiceText(this.$instructionsInput);
 
 		// Get the current blocktype

@@ -132,8 +132,9 @@ body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: au
 .sidebar > h5:not(:first-child) { border-top: 1px solid #ccc; padding-top: 10px; }
 .sidebar > ul { padding: 8px 20px; }
 .sidebar > ul li a { display: block; margin: 0 -20px 0 -9999px; padding: 3px 10px 3px 9999px; font-weight: normal; color: #666; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; text-decoration: none; }
-.sidebar > ul li a:not(.sel):hover { color: #333; }
 .sidebar > ul li a .icon { margin: -3px 0 -3px -4px; }
+.sidebar > ul li a:not(.sel):hover { color: #2d98db; }
+.sidebar > ul li a:not(.sel):hover .icon { background-image: url(../images/sidebar_icons_hover.png); }
 
 .sidebar > ul li a.sel { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); background: -webkit-linear-gradient(#2d98db, #2782bb); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .sidebar > ul li a.sel .icon { background-image: url(../images/sidebar_icons_sel.png); }
