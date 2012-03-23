@@ -29,6 +29,13 @@
 	</div>
 
 	<div class="item field">
+		<label for="{:idPrefix}required">Required?</label>
+		<?php $id = new Tag($idPrefix.'required') ?>
+		<?php $name = new Tag($namePrefix.'[required]') ?>
+		{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
+	</div>
+
+	<div class="item field">
 		<label for="{:idPrefix}class">Block Type</label>
 		<div>
 			<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
@@ -37,13 +44,6 @@
 				{/foreach}
 			</select>
 		</div>
-	</div>
-
-	<div class="item field">
-		<label for="{:idPrefix}required">Required?</label>
-		<?php $id = new Tag($idPrefix.'required') ?>
-		<?php $name = new Tag($namePrefix.'[required]') ?>
-		{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
 	</div>
 </div>
 
