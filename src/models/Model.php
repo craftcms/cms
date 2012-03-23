@@ -310,10 +310,12 @@ abstract class Model extends \CActiveRecord
 		foreach ($this->attributes as $name => $settings)
 		{
 			// Catch email addresses and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
-			if (isset($settings['type']) && $settings['type'] == AttributeType::Email)
+			$type = is_string($settings) ? $settings : (isset($settings['type']) ? $settings['type'] : null);
+
+			if ($type == AttributeType::Email)
 				$emails[] = $name;
 
-			if (isset($settings['type']) && $settings['type'] == AttributeType::Url)
+			if ($type == AttributeType::Url)
 				$urls[] = $name;
 
 			$settings = DatabaseHelper::normalizeAttributeSettings($settings);
