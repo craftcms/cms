@@ -30,7 +30,6 @@ var scripts =
 	'ui/HandleGenerator.js',
 	'ui/EntryUrlFormatGenerator.js',
 	'ui/NiceText.js',
-	'ui/TitleInput.js',
 
 	'ui/Modal.js',
 	'ui/HUD.js',
