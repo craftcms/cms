@@ -92,7 +92,7 @@ class UsersController extends Controller
 			$user->last_name = b()->request->getPost('last_name');
 			$user->email = b()->request->getPost('email');
 			$user->admin = (b()->request->getPost('admin') === 'y');
-			$user->html_email = (b()->request->getPost('html_email') === 'y');
+			$user->html_email = (b()->request->getPost('email_format') == 'html');
 			$user->status = b()->request->getPost('status');
 			$user->password_reset_required = (b()->request->getPost('password_reset') === 'y');
 

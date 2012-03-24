@@ -31,6 +31,14 @@ class StringTag extends VarTag
 	}
 
 	/**
+	 * @return string
+	 */
+	public function uppercaseFirst()
+	{
+		return ucfirst($this->_var);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function encode()
