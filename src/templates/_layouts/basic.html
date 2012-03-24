@@ -34,16 +34,13 @@
 		</div>
 	</noscript>
 
-{include "_includes/js_include" file="lib/jquery-1.7.1.js"}
-{include "_includes/js_include" file="lib/rangy-1.2.3/rangy-core.js"}
-{include "_includes/js_include" file="lib/Base.js"}
 {if !config.useCompressedJs}
-	{include "_includes/js_include" file="lib/history.js-1.7.1/history.js"}
-	{include "_includes/js_include" file="lib/history.js-1.7.1/history.adapter.jquery.js"}
+	{include "_includes/js_include" file="bootstrap.js"}
 {else}
-	{include "_includes/js_include" file="lib/history.js-1.7.1/jquery.history.js"}
+	{include "_includes/js_include" file="blocks.js"}
 {/if}
-{include "_includes/js_include" file="blocks.js"}
+
 {:scripts}
+
 </body>
 </html>
