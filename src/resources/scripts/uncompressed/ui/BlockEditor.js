@@ -16,6 +16,7 @@ b.ui.BlockEditor = b.Base.extend({
 
 	inputName: null,
 
+	blockSort: null,
 	blocks: null,
 	selectedBlock: null,
 	totalNewBlocks: 0,
@@ -56,7 +57,20 @@ b.ui.BlockEditor = b.Base.extend({
 			this.freshBlocktypeSettingsHtml[blocktype] = settingsHtml;
 		}
 
+		// Initialize the sorter
+		this.blockSort = new b.ui.DragSort({
+			axis: 'y',
+			helper: function($li) {
+				var $div = $('<div class="sidebar"/>'),
+					$ul = $('<ul style="padding:0"/>').appendTo($div);
+				$li.appendTo($ul);
+				$li.children('a').removeClass('sel');
+				return $div;
+			}
+		});
+
 		// Initialize the blocks
+		this.dragSort = 
 		this.blocks = {};
 		var $blockLinks = this.$sidebar.find('a.block-item'),
 			$blockSettings = this.$settingsContainer.children();
@@ -73,6 +87,9 @@ b.ui.BlockEditor = b.Base.extend({
 			// Is this a new block? (Could be if there were validation errors)
 			if (blockId.substr(0, 3) == 'new')
 				this.totalNewBlocks++;
+
+			// Add its parent LI to the sorter
+			this.blockSort.addItems($link.parent());
 		}
 
 		this.addListener(this.$addLink, 'click', 'addBlock');
@@ -106,6 +123,8 @@ b.ui.BlockEditor = b.Base.extend({
 		var block = new b.ui.BlockEditor.Block(this, blockId, $link, $settings);
 		this.blocks[blockId] = block;
 		block.select();
+
+		this.blockSort.addItems($li);
 	}
 
 });
