@@ -201,7 +201,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.blocktypeSettings[this.blocktype] = this.$blocktypeSettingsContainer.children(':first');
 		this.initBlocktypeSettings(this.blocktypeSettings[this.blocktype]);
 
-		this.addListener(this.$deleteBlockBtn, 'click', 'delete');
+		this.addListener(this.$deleteBlockBtn, 'click', 'deleteBlock');
 
 		this.addListener(this.$link, 'click', 'select');
 		this.addListener(this.$nameInput, 'keypress,keyup,change', 'updateLinkNameLabel');
@@ -291,7 +291,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.$linkBlocktypeLabel.text(blocktypeLabel);
 	},
 
-	delete: function()
+	deleteBlock: function()
 	{
 		if (confirm('Are you sure you want to delete this content block?'))
 		{
