@@ -70,7 +70,6 @@ b.ui.BlockEditor = b.Base.extend({
 		});
 
 		// Initialize the blocks
-		this.dragSort = 
 		this.blocks = {};
 		var $blockLinks = this.$sidebar.find('a.block-item'),
 			$blockSettings = this.$settingsContainer.children();
