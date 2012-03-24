@@ -56,10 +56,10 @@ b.ui.Modal = b.Base.extend({
 			this.$container.data('modal').destroy();
 		}
 
-		this.$header = this.$container.find('.head:first');
-		this.$body = this.$container.find('.body:first');
+		this.$header = this.$container.find('.pane-head:first');
+		this.$body = this.$container.find('.pane-body:first');
 		this.$scrollpane = this.$body.children('.scrollpane:first');
-		this.$footer = this.$container.find('.foot:first');
+		this.$footer = this.$container.find('.pane-foot:first');
 		this.$footerBtns = this.$footer.find('.btn');
 		this.$submitBtn = this.$footerBtns.filter('.submit:first');
 

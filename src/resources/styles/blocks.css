@@ -169,75 +169,34 @@ body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { position: relative; margin-bottom: 20px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25); }
+.pane { position: relative; margin-bottom: 20px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25); }
 
-/* pane head */
-.pane .head,
-table.pane > thead > tr > * { position: relative; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); cursor: default; }
-.pane .head { border-top-left-radius: 3px; border-top-right-radius: 3px; }
-table.pane > thead > tr:first-child > *:first-child { border-top-left-radius: 3px; }
-table.pane > thead > tr:first-child > *:last-child { border-top-right-radius: 3px; }
-.pane .head:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
-.pane .head h5,
-table.pane > thead { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
-.pane .head .buttons { margin: -3px 0; height: 24px; }
-.pane .head .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
+.pane-head { position: relative; border-radius: 3px 3px 0 0; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); cursor: default; }
+.pane-head,
+.pane-head > h5 { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
+.pane-head > .buttons { margin: -3px 0; height: 24px; }
+.pane-head > .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
 
-/* pane foot */
-.pane .foot,
-table.pane > tfoot > tr > * { position: relative; border-top: 1px solid #b5b5b5; padding: 4px 20px; background: -webkit-linear-gradient(#f5f5f5, #e5e5e5); }
-.pane .foot { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
-table.pane > tfoot > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > tfoot > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
-.pane .foot:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.pane-item { position: relative; padding: 8px 20px; color: #333; background: -webkit-linear-gradient(transparent, transparent, rgba(0,0,0,0.02)); }
+a.pane-item { display: block; }
+.no-items { color: #999; text-align: center; }
 
-/* pane body items */
-.pane .body .item,
-.pane table.body > tbody > tr > *,
-table.pane > tbody > tr > * { position: relative; padding: 8px 20px; color: #333; background: #fff; background: -webkit-linear-gradient(#fff, #fff, #fafafa) repeat-x 0 100%; }
+.pane-item:not(:first-child),
+.nested-pane-items > .pane-item:first-child { border-top: 1px solid #eee; }
 
-.pane .body:first-child > .item:first-child,
-.pane .body:first-child > .nested-items:first-child > .item:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
-table.pane > tbody:first-child > tr:first-child > *:first-child,
-.pane table.body:first-child > tbody > tr:first-child > *:first-child { border-top-left-radius: 3px; }
-table.pane > tbody:first-child > tr:first-child > *:last-child,
-.pane table.body:first-child > tbody > tr:first-child > *:last-child { border-top-right-radius: 3px; }
+.nested-pane-items { overflow: hidden; }
 
-.pane .body:last-child > .item:last-child,
-.pane .body:last-child > .nested-items:last-child > .item:last-child { border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; }
-table.pane > tbody:last-child > tr:last-child > *:first-child,
-.pane table.body:last-child > tbody > tr:last-child > *:first-child { border-bottom-left-radius: 3px; }
-table.pane > tbody:last-child > tr:last-child > *:last-child,
-.pane table.body:last-child > tbody > tr:last-child > *:last-child { border-bottom-right-radius: 3px; }
-
-.pane .body .no-items { color: #999; text-align: center; }
-.pane .body a.item { display: block; }
-.pane .body .item:not(:first-child),
-.pane .body .nested-items .item:first-child,
-.pane table.body > tbody > tr:not(:first-child) > *,
-table.pane > tbody > tr:not(:first-child) > * { border-top: 1px solid #eee; }
-
-.pane .body .item.notice { padding-left: 52px; }
-.pane .body .item.notice .icon { position: absolute; top: 16px; left: 10px; width: 32px; height: 28px; background: url(../images/notice.png) no-repeat 0 0; }
+.pane-item.notice { padding-left: 52px; }
+.pane-item.notice .icon { position: absolute; top: 16px; left: 10px; width: 32px; height: 28px; background: url(../images/notice.png) no-repeat 0 0; }
 
 .icon.blue { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
 
-/* table-only styles */
+/* table + pane */
 table.pane,
-.pane table.body { width: 100%; }
-table.pane > thead > tr > *:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
-table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea; }
-.pane table.body > * > tr > *:not(:first-child) { padding-left: 0; }
-
-.pane + .btn { margin-top: -12px; margin-bottom: 20px; }
-
-.pane .item.grid { padding-top: 0; padding-bottom: 0; }
-.pane .item.grid .field { padding-top: 16px !important; }
-
-/* modals */
-.modal { display: none; position: absolute; -webkit-user-select: none; }
-.modal.focussed { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); }
-.modal .shade { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 3px; background: #fff; opacity: 0.5; }
+table.pane-body { width: 100%; }
+table.pane > thead > tr > .pane-item:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
+table.pane > tbody > tr > .pane-item:not(:first-child) { border-left: 1px dotted #eaeaea; }
+table.pane-body > tbody > tr > .pane-item:not(:first-child) { padding-left: 0; }
 
 /* grids */
 .grid { margin-left: -20px; }
@@ -252,6 +211,15 @@ table.pane > tbody > tr > *:not(:first-child) { border-left: 1px dotted #eaeaea;
 .grid-5col .col { width: 20%; }
 .grid-6col .col { width: 16.67%; }
 .grid-6col .col:last-child { width: 16.65%; }
+
+/* pane item + grid */
+.pane-item.grid { padding-top: 0; padding-bottom: 0; }
+.pane-item.grid .field { padding-top: 16px !important; }
+
+/* modals */
+.modal { display: none; position: absolute; -webkit-user-select: none; }
+.modal.focussed { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); }
+.modal .shade { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 3px; background: #fff; opacity: 0.5; }
 
 /* ----------------------------------------
 /*  Toolbar / buttons

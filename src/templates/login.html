@@ -18,12 +18,12 @@
 			document.write(
 				'<form id="login-form" method="post" action="">' +
 					'<div id="login-pane" class="pane">' +
-						'<div class="body">' +
-							'<div class="item field">' +
+						'<div class="pane-body">' +
+							'<div class="pane-item field">' +
 								'<label for="username">Username or Email</label>' +
 								'<div class="input-wrapper"><input id="username" type="text" value="{:user.rememeberedLoginName}" /></div>' +
 							'</div>' +
-							'<div class="item field">' +
+							'<div class="pane-item field">' +
 								'<label for="password">Password</label>' +
 								' <a id="forgot-password" href="{:url.base}{:users.forgotPasswordUrl}">(Forget?)</a>' +
 								'<div class="input-wrapper password"><input id="password" class="password" type="password" /></div>' +
@@ -52,8 +52,8 @@
 			document.write(
 				'<div class="no-access">' +
 					'<div class="pane">' +
-						'<div class="body">' +
-							'<div class="item notice">' +
+						'<div class="pane-body">' +
+							'<div class="pane-item notice">' +
 								'<div class="icon"></div>' +
 								'<p>Cookies must be enabled to access the Blocks CP.<br>' +
 									'<a class="go" href="">See how</a>' +

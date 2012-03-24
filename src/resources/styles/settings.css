@@ -17,11 +17,11 @@ body.updates #checking { position: absolute; margin: 0 -20px; padding-top: 68px;
 body.updates #updates { display: none; }
 body.updates #updates #update-all { float: right; margin-top: -4px; }
 body.updates #updates .update { margin-bottom: 10px; opacity: 0; }
-body.updates #updates .update .head .name { float: left; }
-body.updates #updates .update .head .badge { float: left; margin-left: 5px; }
-body.updates #updates .update .head .btn { float: right; margin: 0; }
-body.updates #updates .update .head a.notes-toggle { display: block; float: right; margin: 0 10px; }
+body.updates #updates .update .pane-head .name { float: left; }
+body.updates #updates .update .pane-head .badge { float: left; margin-left: 5px; }
+body.updates #updates .update .pane-head .btn { float: right; margin: 0; }
+body.updates #updates .update .pane-head a.notes-toggle { display: block; float: right; margin: 0 10px; }
 body.updates #updates .update .notes-container { height: 0; overflow: hidden; }
-body.updates #updates .update .body { max-height: 380px; overflow: auto; }
-body.updates #updates .update .body ul { list-style-type: square; margin-left: 2em; }
+body.updates #updates .update .pane-body { max-height: 380px; overflow: auto; }
+body.updates #updates .update .pane-body ul { list-style-type: square; margin-left: 2em; }
 body.updates #no-updates { position: absolute; left: 50%; margin-left: -12em; width: 24em; }

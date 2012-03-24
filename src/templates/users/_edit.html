@@ -34,9 +34,9 @@
 			<div class="col"><div class="col-inner">
 
 				<div class="pane">
-					<div class="body">
+					<div class="pane-body">
 
-						<div class="item grid grid-2col">
+						<div class="pane-item grid grid-2col">
 							<div class="col"><div class="col-inner">
 								<div class="field">
 									<label for="first_name">First Name</label>
@@ -57,7 +57,7 @@
 							</div></div>
 						</div>
 
-						<div class="item field">
+						<div class="pane-item field">
 							<label for="username">Username</label>
 							<div class="input-wrapper"><input id="username" name="username" class="{if theUser.errors.username}error{/if}" type="text" value="{:theUser.username}" /></div>
 							{if theUser.errors.username}
@@ -65,7 +65,7 @@
 							{/if}
 						</div>
 
-						<div class="item field">
+						<div class="pane-item field">
 							<label for="email">Email</label>
 							<div class="input-wrapper"><input id="email" name="email" class="{if theUser.errors.email}error{/if}" type="text" value="{:theUser.email}" /></div>
 							{if theUser.errors.email}
@@ -74,7 +74,7 @@
 						</div>
 
 						{if users.current.admin}
-							<div class="item field">
+							<div class="pane-item field">
 								<div class="left">
 									<label for="admin">Admin account?</label>
 								</div>
@@ -85,7 +85,7 @@
 							</div>
 						{/if}
 
-						<div class="item field">
+						<div class="pane-item field">
 							<div class="left">
 								<label for="html_email" style="margin-top:2px">Email Format</label>
 							</div>
@@ -101,7 +101,7 @@
 						</div>
 
 						{if theUser.id}
-							<div class="item field">
+							<div class="pane-item field">
 								<div class="left">
 									<label for="password_reset">Require a password reset?</label>
 								</div>
@@ -112,7 +112,7 @@
 							</div>
 						{/if}
 						{if !theUser.id}
-							<div class="item field">
+							<div class="pane-item field">
 								<div class="left">
 									<label for="send_validation_email">Send validation email?</label>
 								</div>
@@ -129,11 +129,11 @@
 			{if theUser.id}
 				<div class="col"><div class="col-inner">
 					<div id="info" class="pane">
-						<div class="head">
+						<div class="pane-head">
 							<h5>User Info</h5>
 						</div>
-						<div class="body">
-							<div class="item">
+						<div class="pane-body">
+							<div class="pane-item">
 								<div class="left">
 									<strong>Status</strong>
 								</div>
@@ -163,7 +163,7 @@
 									{/if}
 								{/if}
 							</div>
-							<div class="item">
+							<div class="pane-item">
 								<div class="left">
 									<strong>Last Login Date</strong>
 								</div>
@@ -172,7 +172,7 @@
 								</div>
 								<div class="clear"></div>
 							</div>
-							<div class="item">
+							<div class="pane-item">
 								<div class="left">
 									<strong>Last Failed Login Date</strong>
 								</div>
@@ -181,7 +181,7 @@
 								</div>
 								<div class="clear"></div>
 							</div>
-							<div class="item">
+							<div class="pane-item">
 								<div class="left">
 									<strong>Last Password Changed Date</strong>
 								</div>
@@ -190,7 +190,7 @@
 								</div>
 								<div class="clear"></div>
 							</div>
-							<div class="item">
+							<div class="pane-item">
 								<div class="left">
 									<strong>Last Lockout Date</strong>
 								</div>
@@ -199,7 +199,7 @@
 								</div>
 								<div class="clear"></div>
 							</div>
-							<div class="item">
+							<div class="pane-item">
 								<div class="left">
 									<strong>Failed Password Attempt Count</strong>
 								</div>

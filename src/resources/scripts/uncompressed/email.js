@@ -31,9 +31,9 @@ var EmailSettingsForm = b.Base.extend({
 		if (!this.$protocolSettingsPane)
 		{
 			this.$protocolSettingsPane = $('<div class="pane" />').insertAfter(this.$emailSettingsPane);
-			var $head = $('<div class="head" />').appendTo(this.$protocolSettingsPane);
+			var $head = $('<div class="pane-head" />').appendTo(this.$protocolSettingsPane);
 			this.$protocolSettingsPaneHead = $('<h5 />').appendTo($head);
-			this.$protocolSettingsPaneBody = $('<div class="body" />').appendTo(this.$protocolSettingsPane);
+			this.$protocolSettingsPaneBody = $('<div class="pane-body" />').appendTo(this.$protocolSettingsPane);
 		}
 	},
 

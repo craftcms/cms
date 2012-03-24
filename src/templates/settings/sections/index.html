@@ -2,16 +2,16 @@
 
 {region "main"}
 	<div class="pane">
-		<div class="head">
+		<div class="pane-head">
 			<h5>Sections</h5>
 		</div>
-		<div class="body">
+		<div class="pane-body">
 			{if content.sections}
 				<ul>
 					{include "settings/sections/_includes/sections_list" sections=content.sections indent=1}
 				</ul>
 			{else}
-				<p class="item no-items">No sections exist yet. <a class="go" href="{:url.base}settings/sections/new">Create the first one</a></p>
+				<p class="pane-item no-items">No sections exist yet. <a class="go" href="{:url.base}settings/sections/new">Create the first one</a></p>
 			{/if}
 		</div>
 	</div>

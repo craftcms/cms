@@ -6,10 +6,10 @@
 
 {region "body"}
 	<div class="pane">
-		<div class="head">
+		<div class="pane-head">
 			Set Password
 		</div>
-		<div class="body">
+		<div class="pane-body">
 			<form method="post" action="">
 				<input type="hidden" name="action" value="account/verify" />
 				<input type="hidden" name="redirect" value="dashboard" />
@@ -18,9 +18,9 @@
 				{if activationCode && security.validateUserRegistration(activationCode)}
 					{set userModel = security.getUserByActivationCode(activationCode)}
 
-					<div class="item">Let's set a password for your account.</div>
+					<div class="pane-item">Let's set a password for your account.</div>
 					<input type="hidden" name="userId" value="{:userModel.id}" />
-					<div class="item field">
+					<div class="pane-item field">
 						<div class="input-wrapper">
 							<label for="password">Password</label>
 							<input id="password" name="password" class="{if verifyAccountInfo.errors.password}error{/if}" type="password" />
@@ -29,7 +29,7 @@
 							{include "_includes/error_list" errors=verifyAccountInfo.errors.password}
 						{/if}
 					</div>
-					<div class="item field">
+					<div class="pane-item field">
 						<div class="input-wrapper">
 							<label for="confirm-password">Confirm Password</label>
 							<input id="confirm-password" name="confirm-password" class="{if verifyAccountInfo.errors.confirmPassword}error{/if}" type="password" />
@@ -38,7 +38,7 @@
 							{include "_includes/error_list" errors=verifyAccountInfo.errors.confirmPassword}
 						{/if}
 					</div>
-					<div class="item">
+					<div class="pane-item">
 						<input class="btn big submit" type="submit" value="Set Password" />
 					</div>
 				{else}

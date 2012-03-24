@@ -1,5 +1,5 @@
 {foreach sections as section}
-	<li class="item" style="padding-left: {:indent*20}px">
+	<li class="pane-item" style="padding-left: {:indent*20}px">
 		<a href="{:url.base}settings/sections/edit/{:section.id}"><span class="icon icon111 blue"></span>{:section.name}</a>
 	</li>
 	{set subSections = content.getSubSections(section.id)}

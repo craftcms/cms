@@ -380,7 +380,7 @@ var Widget = b.Base.extend({
 		this.$elem.css('zIndex', i+1);
 
 		this.dom = {};
-		this.dom.$settingsBtn = $('.head .settings-btn', this.$elem);
+		this.dom.$settingsBtn = $('.pane-head .settings-btn', this.$elem);
 
 		if (this.dom.$settingsBtn.length)
 		{

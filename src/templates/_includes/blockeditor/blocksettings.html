@@ -1,5 +1,5 @@
 <div class="blocksettings">
-	<div class="item grid grid-2col">
+	<div class="pane-item grid grid-2col">
 		<div class="col"><div class="col-inner">
 			<div class="field">
 				<label for="{:idPrefix}name">Block Name</label>
@@ -20,7 +20,7 @@
 		</div></div>
 	</div>
 
-	<div class="item field">
+	<div class="pane-item field">
 		<label for="{:idPrefix}instructions">Instructions</label>
 		<div class="input-wrapper"><textarea id="{:idPrefix}instructions" name="{:namePrefix}[instructions]" class="instructions" rows="2" cols="100">{:block.instructions}</textarea></div>
 		{if block.errors.instructions}
@@ -28,7 +28,7 @@
 		{/if}
 	</div>
 
-	<div class="item field">
+	<div class="pane-item field">
 		<div class="left">
 			<label for="{:idPrefix}required">Required?</label>
 		</div>
@@ -40,7 +40,7 @@
 		<div class="clear"></div>
 	</div>
 
-	<div class="item field">
+	<div class="pane-item field">
 		<label for="{:idPrefix}class">Block Type</label>
 		<div>
 			<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
@@ -54,11 +54,11 @@
 
 <?php $namePrefix = new Tag($namePrefix.'[settings]') ?>
 <div class="blocktypesettings">
-	<div class="{:block.class} nested-items">
+	<div class="{:block.class} nested-pane-items">
 		{:block.displaySettings(idPrefix, namePrefix)}
 	</div>
 </div>
 
-<div class="item field">
+<div class="pane-item field">
 	<a class="delete">Delete content block</a>
 </div>

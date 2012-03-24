@@ -5,7 +5,7 @@
 
 	{foreach updates.updates('y') as update}
 	<div id="{:update.handle}" class="update pane">
-		<div class="head">
+		<div class="pane-head">
 			<div class="name">{:update.name} <strong>{:update.version}</strong></div>
 			{if update.critical}<div class="badge alert">Critical</div>{/if}
 			<form method="post" action="{:url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
@@ -13,7 +13,7 @@
 		</div>
 		<div class="notes-container">
 			<div class="notes body">
-				<div class="item">
+				<div class="pane-item">
 					{:update.notes}
 				</div>
 			</div>
@@ -24,11 +24,11 @@
 {else}
 
 	<div id="no-updates" class="pane">
-		<div class="head">
+		<div class="pane-head">
 			<h5>No updates available</h5>
 		</div>
-		<div class="body">
-			<p class="item">Congrats! Everything’s up-to-date already.</p>
+		<div class="pane-body">
+			<p class="pane-item">Congrats! Everything’s up-to-date already.</p>
 		</div>
 	</div>
 

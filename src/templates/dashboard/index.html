@@ -32,7 +32,7 @@
 			{foreach dashboard.userWidgets as widget}
 				{if widget.displayBody}
 					<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
-						<div class="head">
+						<div class="pane-head">
 							{if widget.displaySettings}
 								<a class="settings-btn" title="Settings"></a>
 							{/if}
@@ -58,13 +58,13 @@
 
 		<div id="dashboard-sidebar" class="sidebar">
 			<div class="pane">
-				<div class="head">
+				<div class="pane-head">
 					<h6>Widget Order</h6>
 				</div>
-				<div class="body">
+				<div class="pane-body">
 					<ul class="widget-handles">
 						{foreach dashboard.userWidgets as widget}
-						<li class="item {if !widget.displayBody}hidden{/if}" data-widget-id="widget{:widget.id}">
+						<li class="pane-item {if !widget.displayBody}hidden{/if}" data-widget-id="widget{:widget.id}">
 							<span class="grab"></span><span class="title">{:widget.title}</span><a class="remove" title="Remove"></a>
 						</li>
 						{/foreach}

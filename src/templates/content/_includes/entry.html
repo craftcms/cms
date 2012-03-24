@@ -28,8 +28,8 @@
 
 <div class="centered">
 	<div class="pane page">
-		<div class="body">
-			<div class="item field page-head">
+		<div class="pane-body">
+			<div class="pane-item field page-head">
 				<h1>{:entry.title}</h1>
 				{if entry.url}<div class="url">{:entry.url}</div>{/if}
 				<div class="btn">
@@ -54,7 +54,7 @@
 			</div>
 
 			{foreach entry.blocks as block}
-				<div class="item field">
+				<div class="pane-item field">
 					<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
 					{if block.instructions}
 						<p>{:block.instructions}</p>
