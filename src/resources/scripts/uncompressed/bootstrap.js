@@ -9,7 +9,7 @@ var scripts =
 	'lib/history.js-1.7.1/history.js',
 	'lib/history.js-1.7.1/history.adapter.jquery.js',
 
-	'blx.js',
+	'blocks.js',
 
 	'ui/Select.js',
 	'ui/DragCore.js',
