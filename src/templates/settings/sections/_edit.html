@@ -23,28 +23,25 @@
 		{if section.id}<input type="hidden" name="section_id" value="{:section.id}">{/if}
 		<div class="pane">
 			<div class="pane-body">
-				<div class="pane-item field">
-					<label class="required" for="name">Section Name</label>
-					<div class="input-wrapper"><input id="name" name="name" class="{if section.errors.name}error{/if}" type="text" value="{:section.name}" /></div>
-					{if section.errors.name}
-						{include "_includes/error_list" errors=section.errors.name}
-					{/if}
-				</div>
-				<div class="pane-item field">
-					<label class="required" for="handle">Section Handle</label>
-					<p>This is how you’ll refer to your section from your templates.</p>
-					<div class="input-wrapper"><input id="handle" name="handle" class="code {if section.errors.handle}error{/if}" type="text" value="{:section.handle}" /></div>
-					{if section.errors.handle}
-						{include "_includes/error_list" errors=section.errors.handle}
-					{/if}
-				</div>
-				<div class="pane-item field">
-					<label for="max_entries">Max Entries</label>
-					<p>If you want to limit the number of entries this section can have, enter it here.</p>
-					<input id="max_entries" name="max_entries" class="input {if section.errors.max_entries}error{/if}" type="number" value="{:section.max_entries}" size="5" />
-					{if section.errors.max_entries}
-						{include "_includes/error_list" errors=section.errors.max_entries}
-					{/if}
+				<div class="pane-item grid grid-2col">
+					<div class="col"><div class="col-inner">
+						<div class="field">
+							<label class="required" for="name">Section Name</label>
+							<div class="input-wrapper"><input id="name" name="name" class="{if section.errors.name}error{/if}" type="text" value="{:section.name}" /></div>
+							{if section.errors.name}
+								{include "_includes/error_list" errors=section.errors.name}
+							{/if}
+						</div>
+					</div></div>
+					<div class="col"><div class="col-inner">
+						<div class="field">
+							<label class="required" for="handle">Section Handle</label>
+							<div class="input-wrapper"><input id="handle" name="handle" class="code {if section.errors.handle}error{/if}" type="text" value="{:section.handle}" /></div>
+							{if section.errors.handle}
+								{include "_includes/error_list" errors=section.errors.handle}
+							{/if}
+						</div>
+					</div></div>
 				</div>
 				<div class="pane-item field">
 					<div class="left">
@@ -70,21 +67,28 @@
 				<div id="has-urls-setting" class="nested-pane-items" {if !section.has_urls}style="height: 0"{/if}>
 					<div class="pane-item field">
 						<label for="url_format">Entry URL Format</label>
-						<p>If entries in this section get their own URLs on your website, define the format of their URLs here.</p>
 						<div class="input-wrapper"><input id="url_format" name="url_format" class="code {if section.errors.url_format}error{/if}" type="text" value="{:section.url_format}" /></div>
 					</div>
 					<div class="pane-item field">
 						<label for="template">Entry Template</label>
-						<p>Which template should be used to display entries in this section?</p>
 						<div class="input-wrapper"><input id="template" name="template" class="{if section.errors.template}error{/if}" type="text" value="{:section.template}" /></div>
 					</div>
 				</div>
 				<div class="pane-item field">
-					<label for="blocks">Content Blocks</label>
-					<p>Create the content blocks used by entries in this section.</p>
-					{include "_includes/blockeditor" name="blocks" currentBlocks=section.blocks}
+					<label for="max_entries">Max Entries</label>
+					<input id="max_entries" name="max_entries" class="input {if section.errors.max_entries}error{/if}" type="number" value="{:section.max_entries}" size="5" />
+					{if section.errors.max_entries}
+						{include "_includes/error_list" errors=section.errors.max_entries}
+					{/if}
 				</div>
 			</div>
+		</div>
+
+		<div class="pane">
+			<div class="pane-head">
+				<h5>Section Content Blocks</h5>
+			</div>
+			{include "_includes/blockeditor" name="blocks" currentBlocks=section.blocks}
 		</div>
 
 		<div><input class="btn big submit" type="submit" value="Save Section" /></div>

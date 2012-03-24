@@ -1,4 +1,4 @@
-/**
+/*!
  * History.js Core
  * @author Benjamin Arthur Lupton <contact@balupton.com>
  * @copyright 2010-2011 Benjamin Arthur Lupton <contact@balupton.com>

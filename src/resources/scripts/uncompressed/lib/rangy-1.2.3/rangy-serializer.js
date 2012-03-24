@@ -1,4 +1,4 @@
-/**
+/*!
  * @license Serializer module for Rangy.
  * Serializes Ranges and Selections. An example use would be to store a user's selection on a particular page in a
  * cookie or local storage and restore it on the user's next visit to the same page.

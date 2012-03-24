@@ -1,4 +1,4 @@
-/**
+/*!
  * @license Rangy, a cross-browser JavaScript range and selection library
  * http://code.google.com/p/rangy/
  *

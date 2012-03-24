@@ -1,4 +1,4 @@
-/*
+/*!
 	Base.js, version 1.1a
 	Copyright 2006-2010, Dean Edwards
 	License: http://www.opensource.org/licenses/mit-license.php

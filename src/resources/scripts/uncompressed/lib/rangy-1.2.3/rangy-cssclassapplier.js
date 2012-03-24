@@ -1,4 +1,4 @@
-/**
+/*!
  * @license CSS Class Applier module for Rangy.
  * Adds, removes and toggles CSS classes on Ranges and Selections
  *
