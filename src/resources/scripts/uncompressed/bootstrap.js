@@ -1,3 +1,12 @@
+/**
+ * Uncompressed JS bootstrap
+ *
+ * The scripts loaded by this file all get compressed into resources/scripts/compressed/blocks.js
+ *
+ * To use the uncompressed scripts, add this to your config/blocks.php file:
+ * $blocksConfig['useCompressedJs'] = false;
+ */
+
 (function(){
 
 
