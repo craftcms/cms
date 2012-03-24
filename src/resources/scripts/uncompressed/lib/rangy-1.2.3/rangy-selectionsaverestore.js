@@ -1,4 +1,4 @@
-/**
+/*!
  * @license Selection save and restore module for Rangy.
  * Saves and restores user selections using marker invisible elements in the DOM.
  *
