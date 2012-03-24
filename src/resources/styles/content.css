@@ -1,12 +1,9 @@
 #main .centered { margin: 0 auto; max-width: 800px; }
 
-#main .page { border-radius: 5px; }
-#main .page .pane-item:first-child { border-radius: 5px 5px 0 0; }
-#main .page .pane-item:last-child { border-radius: 0 0 5px 5px; }
+#main .page,
+#main .page .pane-body { border-radius: 5px; }
 
 #main .page .field { margin: 0; padding: 20px 80px; }
-
-#main .page .page-head { padding: 60px 80px 20px !important; border-radius: 4px 4px 0 0; }
 
 #main .page .page-head .editable { display: inline-block; cursor: pointer; }
 #main .page .page-head .editable a { display: none; float: left; margin-left: 8px; }

@@ -169,13 +169,16 @@ body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: au
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { position: relative; margin-bottom: 20px; border-radius: 3px; overflow: hidden; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25); }
+.pane { position: relative; margin-bottom: 20px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25); }
 
 .pane-head { position: relative; border-radius: 3px 3px 0 0; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); cursor: default; }
 .pane-head,
 .pane-head > h5 { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
 .pane-head > .buttons { margin: -3px 0; height: 24px; }
 .pane-head > .settings-btn { position: absolute; top: 50%; right: 10px; margin-top: -8px; }
+
+.pane-body { border-radius: 0 0 3px 3px; background: #fff; }
+.pane-body:first-child { border-radius: 3px; }
 
 .pane-item { position: relative; padding: 8px 20px; color: #333; background: -webkit-linear-gradient(transparent, transparent, rgba(0,0,0,0.02)); }
 a.pane-item { display: block; }
