@@ -14,6 +14,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
+		$type = DatabaseHelper::generateColumnDefinition($type);
 		return $this->setText($this->connection->schema->addColumnFirst($this->_addTablePrefix($table), $column, $type))->execute();
 	}
 
@@ -26,6 +27,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
+		$type = DatabaseHelper::generateColumnDefinition($type);
 		return $this->setText($this->connection->schema->addColumnAfter($this->_addTablePrefix($table), $column, $type, $after))->execute();
 	}
 
@@ -38,6 +40,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
+		$type = DatabaseHelper::generateColumnDefinition($type);
 		return $this->setText($this->connection->schema->addColumnBefore($this->_addTablePrefix($table), $column, $type, $before))->execute();
 	}
 
@@ -310,6 +313,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumn($table, $column, $type)
 	{
+		$type = DatabaseHelper::generateColumnDefinition($type);
 		return $this->addColumnBefore($table, $column, $type, 'date_created');
 	}
 
@@ -342,6 +346,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function alterColumn($table, $column, $type)
 	{
+		$type = DatabaseHelper::generateColumnDefinition($type);
 		return parent::alterColumn($this->_addTablePrefix($table), $column, $type);
 	}
 
