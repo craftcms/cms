@@ -85,23 +85,13 @@ class ContentController extends Controller
 		$this->requireAjaxRequest();
 
 		$sectionId = b()->request->getPost('sectionId');
-		$section = Section::model()->findById($sectionId);
-		$language = $section->site->language;
-		$authorId = b()->user->id;
 		$title = b()->request->getPost('title');
 
 		// Create the entry
-		$entry = b()->content->createEntry($sectionId, $authorId);
-
-		// Save its title
-		$entry->title = new EntryTitle;
-		$entry->title->entry_id = $entry->id;
-		$entry->title->language = $language;
-		$entry->title->title = $title;
-		$entry->title->save();
+		$entry = b()->content->createEntry($sectionId, null, null, $title);
 
 		// Save its slug
-		if ($section->has_urls)
+		if ($entry->section->has_urls)
 			b()->content->saveEntrySlug($entry, strtolower($title));
 
 		// Create the first draft
@@ -110,7 +100,7 @@ class ContentController extends Controller
 		$this->returnJson(array(
 			'success'    => true,
 			'entryId'    => $entry->id,
-			'entryTitle' => $entry->title->title,
+			'entryTitle' => $entry->title,
 			'draftId'    => $draft->id
 		));
 	}
@@ -132,7 +122,7 @@ class ContentController extends Controller
 			{
 				$return['success']    = true;
 				$return['entryId']    = $entry->id;
-				$return['entryTitle'] = $entry->title->title;
+				$return['entryTitle'] = $entry->title;
 
 				// Is there a requested draft?
 				$draftId = b()->request->getPost('draftId');
@@ -201,8 +191,8 @@ class ContentController extends Controller
 					// Check for previous data on this draft
 					$draftContent = b()->db->createCommand()
 						->select('id, block_id')
-						->from('draftcontent')
-						->where(array('and', 'draft_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
+						->from('entryversioncontent')
+						->where(array('and', 'version_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
 						->queryAll();
 
 					$draftContentIds = array();
@@ -216,7 +206,7 @@ class ContentController extends Controller
 					{
 						$val = $changedInputs[$block['handle']];
 						if (isset($draftContentIds[$block['id']]))
-							b()->db->createCommand()->update('draftcontent',
+							b()->db->createCommand()->update('entryversioncontent',
 								array('value' => $val),
 								'id=:id',
 								array(':id' => $draftContentIds[$block['id']]));
@@ -227,8 +217,8 @@ class ContentController extends Controller
 					// Insert new rows
 					if ($insertVals)
 					{
-						$columns = array('draft_id', 'block_id', 'value');
-						b()->db->createCommand()->insertAll('draftcontent', $columns, $insertVals);
+						$columns = array('version_id', 'block_id', 'value');
+						b()->db->createCommand()->insertAll('entryversioncontent', $columns, $insertVals);
 					}
 
 					$transaction->commit();

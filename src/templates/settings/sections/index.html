@@ -1,3 +1,7 @@
+{if !content.sections}
+	{redirect "settings/sections/new"}
+{/if}
+
 {layout "settings/_layouts/settings" pageTitle="Sections"}
 
 {region "main"}
@@ -6,13 +10,9 @@
 			<h5>Sections</h5>
 		</div>
 		<div class="pane-body">
-			{if content.sections}
-				<ul>
-					{include "settings/sections/_includes/sections_list" sections=content.sections indent=1}
-				</ul>
-			{else}
-				<p class="pane-item no-items">No sections exist yet. <a class="go" href="{:url.base}settings/sections/new">Create the first one</a></p>
-			{/if}
+			<ul>
+				{include "settings/sections/_includes/sections_list" sections=content.sections indent=1}
+			</ul>
 		</div>
 	</div>
 	<a class="btn" href="{:url.base}settings/sections/new" title="Create a new section"><span class="icon icon44"></span></a>

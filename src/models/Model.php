@@ -163,10 +163,8 @@ abstract class Model extends \CActiveRecord
 			if ($this->hasContent && !$this->isNewRecord)
 			{
 				$this->_content = b()->db->createCommand()
-					->select('c.*')
 					->from($this->getContentTableName())
-					->where(array('and', $this->getForeignKeyName().' = :id', 'active = :active'), array(':id' => $this->id, ':active' => true))
-					->order('num desc')
+					->where($this->getForeignKeyName().' = :id', array(':id' => $this->id))
 					->queryRow();
 			}
 
@@ -285,6 +283,33 @@ abstract class Model extends \CActiveRecord
 					b()->db->createCommand()->insertAll($table, $columns, $vals);
 				}
 			}
+		}
+	}
+
+	/**
+	 * Adds content block handles to the mix of possible magic getter properties
+	 *
+	 * @param $name
+	 * @return mixed
+	 */
+	public function __get($name)
+	{
+		try
+		{
+			return parent::__get($name);
+		}
+		catch (\Exception $e)
+		{
+			// Maybe it's a block?
+			if ($this->hasContent && isset($this->blocks[$name]))
+			{
+				if (isset($this->content[$name]))
+					return $this->content[$name];
+				else
+					return '';
+			}
+			else
+				throw $e;
 		}
 	}
 

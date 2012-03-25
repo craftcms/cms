@@ -7,14 +7,18 @@
 
 
 {region "main"}
-	<div class="toolbar">
-		{include "_includes/back_btn" label="Sections" uri="settings/sections"}
-	</div>
+	{if content.sections}
+		<div class="toolbar">
+			{include "_includes/back_btn" label="Sections" uri="settings/sections"}
+		</div>
 
-	{if section.id}
-		<h2>{if section.name}<strong>{:section.name}</strong>{else}Untitled{/if} section settings</h2>
+		{if section.id}
+			<h2>{if section.name}<strong>{:section.name}</strong>{else}Untitled{/if} section settings</h2>
+		{else}
+			<h2>Create a new section</h2>
+		{/if}
 	{else}
-		<h2>Create a new section</h2>
+		<h2>Create the first section</h2>
 	{/if}
 
 	<form method="post" action="">

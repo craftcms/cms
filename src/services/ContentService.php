@@ -235,23 +235,48 @@ class ContentService extends Component
 
 	/**
 	 * Creates a new entry
-	 * @param $sectionId
-	 * @param $authorId
-	 * @param null $parentId
+	 * @param int $sectionId
+	 * @param mixed $parentId
+	 * @param mixed $authorId
+	 * @param mixed $title
 	 * @return Entry
 	 */
-	public function createEntry($sectionId, $authorId, $parentId = null, $title = null)
+	public function createEntry($sectionId, $parentId = null, $authorId = null, $title = null)
 	{
-		$entry = new Entry;
-		$entry->section_id = $sectionId;
-		$entry->author_id = $authorId;
-		$entry->parent_id = $parentId;
-		$entry->save();
-		return $entry;
+		// Start a transaction
+		$transaction = b()->db->beginTransaction();
+		try
+		{
+			// Create the entry
+			$entry = new Entry;
+			$entry->section_id = $sectionId;
+			$entry->author_id = ($authorId ? $authorId : b()->users->current->id);
+			$entry->parent_id = $parentId;
+			$entry->save();
+
+			// Create a conent row for it
+			$table = $entry->section->getContentTableName();
+			b()->db->createCommand()->insert($table, array(
+				'entry_id' => $entry->id,
+				'language' => $entry->section->site->language,
+				'title'    => ($title ? $title : 'Untitled')
+			));
+
+			// Commit the transaction and return the entry
+			$transaction->commit();
+			return $entry;
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 	}
 
 	/**
 	 * Saves an entry's slug
+	 * @param Entry $entry
+	 * @param string $slug
 	 */
 	public function saveEntrySlug($entry, $slug)
 	{
@@ -295,10 +320,7 @@ class ContentService extends Component
 			$entry = $this->getEntryById($entryId);
 
 		if (empty($entry))
-		{
 			$entry = new Entry;
-			$entry->title = new EntryTitle;
-		}
 
 		return $entry;
 	}
@@ -309,7 +331,7 @@ class ContentService extends Component
 	 */
 	public function getEntryById($entryId)
 	{
-		$entry = Entry::model()->with('title')->findById($entryId);
+		$entry = Entry::model()->findById($entryId);
 		return $entry;
 	}
 
@@ -319,7 +341,7 @@ class ContentService extends Component
 	 */
 	public function getEntriesBySectionId($sectionId)
 	{
-		$entries = Entry::model()->with('title')->findAllByAttributes(array(
+		$entries = Entry::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
 		return $entries;
@@ -371,25 +393,24 @@ class ContentService extends Component
 	 */
 	public function getEntryVersionById($versionId)
 	{
-		$version = EntryVersions::model()->findByAttributes(array(
-			'id' => $versionId,
-		));
+		$version = EntryVersions::model()->findById($versionId);
 		return $version;
 	}
 
 	/**
 	 * Creates a new draft
 	 * @param int $entryId
-	 * @param string $name
-	 * @return Draft
+	 * @param mixed $name
+	 * @return EntryVersion The new draft record
 	 */
-	public function createDraft($entryId, $name = 'Untitled')
+	public function createDraft($entryId, $name = null)
 	{
-		$draft = new Draft;
+		$draft = new EntryVersion;
 		$draft->entry_id = $entryId;
 		$draft->author_id = b()->users->current->id;
 		$draft->language = b()->sites->currentSite->language;
-		$draft->name = $name;
+		$draft->draft = true;
+		$draft->name = ($name ? $name : 'Untitled');
 		$draft->save();
 		return $draft;
 	}
@@ -400,7 +421,7 @@ class ContentService extends Component
 	 */
 	public function getDraftById($draftId)
 	{
-		$draft = Draft::model()->findById($draftId);
+		$draft = EntryVersion::model()->findById($draftId);
 		return $draft;
 	}
 

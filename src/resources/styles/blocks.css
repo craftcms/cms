@@ -377,7 +377,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Fields
 /* ----------------------------------------*/
 
-.field { padding-top: 16px !important; padding-bottom: 16px !important; position: relative; }
+.field { padding-top: 16px; padding-bottom: 16px; position: relative; }
 .field > label,
 .field > .left > label { display: inline-block; line-height: 20px; font-weight: bold; font-family: sans-serif; color: #666; }
 .field > label { margin-bottom: 2px; }

@@ -209,17 +209,14 @@ class DbCommand extends \CDbCommand
 	{
 		$columns = array(
 			$fk        => array('type' => AttributeType::Int, 'required' => true),
-			'language' => AttributeType::Language,
-			'num'      => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
-			'notes'    => AttributeType::Text,
-			'active'   => AttributeType::Boolean
+			'language' => AttributeType::Language
 		);
 
 		// Create the table
 		$return = $this->createTable($table, $columns);
 
 		// Create the unique constraint
-		$this->createIndex("{$table}_{$fk}_language_num_unique_idx", $table, "{$fk},language,num", true);
+		$this->createIndex("{$table}_{$fk}_language_unique_idx", $table, "{$fk},language", true);
 
 		// Add the foreign key
 		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk, $refTable, 'id');

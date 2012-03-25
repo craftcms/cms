@@ -9,14 +9,15 @@ class Entry extends Model
 	public $draft;
 
 	protected $tableName = 'entries';
+	protected $hasContent = true;
 
 	protected $attributes = array(
 		'slug'        => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'full_uri'    => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
+		'published'   => AttributeType::Boolean,
 		'post_date'   => AttributeType::Int,
 		'expiry_date' => AttributeType::Int,
 		'sort_order'  => array('type' => AttributeType::Int, 'unsigned' => true),
-		'enabled'     => array('type' => AttributeType::Boolean, 'default' => true),
 		'archived'    => AttributeType::Boolean
 	);
 
@@ -26,17 +27,13 @@ class Entry extends Model
 		'author'  => array('model' => 'User', 'required' => true)
 	);
 
-	protected $hasOne = array(
-		'title' => array('model' => 'EntryTitle', 'foreignKey' => 'entry')
-	);
-
 	protected $hasMany = array(
-		'drafts'   => array('model' => 'Draft', 'foreignKey' => 'entry'),
+		'versions' => array('model' => 'EntryVersion', 'foreignKey' => 'entry'),
 		'children' => array('model' => 'Entry', 'foreignKey' => 'parent')
 	);
 
 	protected $indexes = array(
-		array('columns' => array('section_id','slug'), 'unique' => true),
+		array('columns' => array('slug','section_id','parent_id'), 'unique' => true),
 	);
 
 	/**
@@ -48,20 +45,10 @@ class Entry extends Model
 	}
 
 	/**
-	 * Returns whether the entry is published
+	 * There is no single "entrycontent" table
 	 */
-	public function getPublished()
+	public function createContentTable()
 	{
-		return !$this->content->isNewRecord;
-	}
-
-	/**
-	 * Returns the entry's title
-	 * @return mixed
-	 */
-	public function getTitle()
-	{
-		return $this->content->title;
 	}
 
 	/**
@@ -99,7 +86,7 @@ class Entry extends Model
 
 	/**
 	 * Mix-in draft content
-	 * @param Draft $draft
+	 * @param EntryVersion $draft
 	 */
 	public function mixInDraftContent($draft)
 	{
@@ -119,27 +106,12 @@ class Entry extends Model
 		}
 	}
 
-	/**
-	 * Adds content block handles to the mix of possible magic getter properties
-	 *
-	 * @param $name
-	 * @return mixed
-	 */
-	public function __get($name)
+	public function getTitle()
 	{
-		try
-		{
-			return parent::__get($name);
-		}
-		catch (\Exception $e)
-		{
-			// Maybe it's a block?
-			if (isset($this->blocks[$name]))
-			{
-				return $this->blocks[$name];
-			}
-			throw $e;
-		}
+		if (isset($this->content['title']))
+			return $this->content['title'];
+		else
+			return '';
 	}
 
 	/**

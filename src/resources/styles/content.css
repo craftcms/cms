@@ -5,6 +5,7 @@
 
 #main .page .field { margin: 0; padding: 20px 80px; }
 
+#main .page .page-head { padding-top: 60px; }
 #main .page .page-head .editable { display: inline-block; cursor: pointer; }
 #main .page .page-head .editable a { display: none; float: left; margin-left: 8px; }
 #main .page .page-head .editable:hover a { display: block; text-decoration: none; }
@@ -20,7 +21,6 @@
 #main .page .page-head .draft-btn .arrow { background-image: url(../images/draft-btn-arrow.png); opacity: 1; }
 #main .page .page-head .draft-btn ul { display: none; position: absolute; z-index: 1; top: 23px; left: 0; border-radius: 2px; width: 200px; height: 100px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 1px 2px rgba(0,0,0,0.1), 0 5px 10px rgba(0,0,0,0.1); }
 
-#main .page .page-head { padding-bottom: 0; }
 #main .page .page-head .page-settings { margin-top: 18px; height: 0; overflow: hidden; padding-left: 68px; background: url(../images/settings-bg.png) no-repeat 0 5px; }
 #main .page .page-head .page-settings table th,
 #main .page .page-head .page-settings table td { padding-top: 2px; }
