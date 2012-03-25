@@ -180,12 +180,12 @@ body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: au
 .pane-body { border-radius: 0 0 3px 3px; background: #fff; }
 .pane-body:first-child { border-radius: 3px; }
 
-.pane-item { position: relative; padding: 8px 20px; color: #333; background: -webkit-linear-gradient(transparent, transparent, rgba(0,0,0,0.02)); }
+.pane-item { position: relative; border-top: 1px solid #eee; padding: 8px 20px; color: #333; background: -webkit-linear-gradient(transparent, transparent, rgba(0,0,0,0.02)); }
 a.pane-item { display: block; }
 .no-items { color: #999; text-align: center; }
 
-.pane-item:not(:first-child),
-.nested-pane-items > .pane-item:first-child { border-top: 1px solid #eee; }
+.pane-body:first-child > .pane-item:first-child,
+.pane-body:first-child > .nested-pane-items:first-child > .pane-item:first-child { border-top: none }
 
 .nested-pane-items { overflow: hidden; }
 
