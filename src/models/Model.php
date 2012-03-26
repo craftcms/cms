@@ -323,7 +323,6 @@ abstract class Model extends \CActiveRecord
 
 		$uniques = array();
 		$required = array();
-		$handles = array();
 		$emails = array();
 		$urls = array();
 		$strictLengths = array();
@@ -339,7 +338,10 @@ abstract class Model extends \CActiveRecord
 
 			// Catch handles, email addresses and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
 			if ($type == AttributeType::Handle)
-				$handles[] = $name;
+			{
+				$reservedWords = isset($settings['reservedWords']) ? ArrayHelper::stringToArray($settings['reservedWords']) : array();
+				$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => $reservedWords);
+			}
 
 			if ($type == AttributeType::Email)
 				$emails[] = $name;
@@ -415,9 +417,6 @@ abstract class Model extends \CActiveRecord
 
 		if ($required)
 			$rules[] = array(implode(',', $required), 'required');
-
-		if ($handles)
-			$rules[] = array(implode(',', $handles), 'Blocks\HandleValidator');
 
 		if ($emails)
 			$rules[] = array(implode(',', $emails), 'email');
