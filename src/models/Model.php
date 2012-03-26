@@ -422,7 +422,7 @@ abstract class Model extends \CActiveRecord
 			$rules[] = array(implode(',', $emails), 'email');
 
 		if ($urls)
-			$rules[] = array(implode(',', $urls), 'Blocks\UrlValidator', 'requireSchema' => false);
+			$rules[] = array(implode(',', $urls), 'url', 'defaultScheme' => 'http');
 
 		if ($strictLengths)
 		{
