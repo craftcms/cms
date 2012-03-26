@@ -123,6 +123,8 @@ class ContentService extends Component
 
 		if (isset($blocksData['order']))
 		{
+			$lastColumn = 'title';
+
 			foreach ($blocksData['order'] as $order => $blockId)
 			{
 				$blockData = $blocksData[$blockId];
@@ -180,17 +182,16 @@ class ContentService extends Component
 						if ($isNewBlock)
 						{
 							// Add the new column
-							b()->db->createCommand()->addColumn($table, $block->handle, $columnType);
+							b()->db->createCommand()->addColumnAfter($table, $block->handle, $columnType, $lastColumn);
 						}
 						else
 						{
-							// Rename the column if the block has a new handle
-							if ($block->handle != $originalBlock->handle)
-								b()->db->createCommand()->renameColumn($table, $originalBlock->handle, $block->handle);
-
-							// Update the column's type
-							b()->db->createCommand()->alterColumn($table, $block->handle, $columnType);
+							// Alter the column
+							b()->db->createCommand()->alterColumn($table, $originalBlock->handle, $columnType, $block->handle, $lastColumn);
 						}
+
+						// Remember this column name for the next block
+						$lastColumn = $block->handle;
 					}
 				}
 
