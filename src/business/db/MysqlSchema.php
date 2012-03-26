@@ -52,7 +52,7 @@ class MysqlSchema extends \CMysqlSchema
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		$tableInfo = $this->getTable($table);
+		$tableInfo = $this->getTable($table, true);
 		$columns = array_keys($tableInfo->columns);
 		$beforeIndex = array_search($before, $columns);
 		if ($beforeIndex === false)
