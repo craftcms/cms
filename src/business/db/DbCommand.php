@@ -339,12 +339,15 @@ class DbCommand extends \CDbCommand
 	 * @param $table
 	 * @param $column
 	 * @param $type
+	 * @param $newColumn
+	 * @param $after
 	 * @return int
 	 */
-	public function alterColumn($table, $column, $type)
+	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
+		$table = $this->_addTablePrefix($table);
 		$type = DatabaseHelper::generateColumnDefinition($type);
-		return parent::alterColumn($this->_addTablePrefix($table), $column, $type);
+		return $this->setText($this->connection->schema->alterColumn($table, $column, $type, $newName, $after))->execute();
 	}
 
 	/**

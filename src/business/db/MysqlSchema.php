@@ -67,6 +67,23 @@ class MysqlSchema extends \CMysqlSchema
 	}
 
 	/**
+	 * @param string $table
+	 * @param string $column
+	 * @param string $type
+	 * @param mixed $newName
+	 * @param mixed $after
+	 * @return string
+	 */
+	public function alterColumn($table, $column, $type, $newName = null, $after = null)
+	{
+		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' CHANGE '
+			. $this->quoteColumnName($column) . ' '
+			. $this->quoteColumnName($newName ? $newName : $column) . ' '
+			. $this->getColumnType($type)
+			. ($after ? ' AFTER '.$this->quoteColumnName($after) : '');
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getUUID()
