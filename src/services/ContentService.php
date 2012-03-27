@@ -419,6 +419,11 @@ class ContentService extends Component
 	 */
 	public function createDraft($entryId, $language = null, $name = null)
 	{
+		$entry = $this->getEntryById($entryId);
+
+		if (!$entry)
+			throw new Exception('No entry exists with the id '.$entryId);
+
 		$draft = new EntryVersion;
 		$draft->entry_id = $entryId;
 		$draft->author_id = b()->users->current->id;
@@ -426,26 +431,38 @@ class ContentService extends Component
 		$draft->draft = true;
 		$draft->name = ($name ? $name : 'Untitled');
 
-		$largestNum = $this->getLargestNum($entryId, true);
-		for ($num = $largestNum+1; true; $num++)
+		// Start a transaction
+		$transaction = b()->db->beginTransaction();
+		try
 		{
-			try
+			for ($num = $entry->latest_draft+1; true; $num++)
 			{
-				$draft->num = $num;
-				$draft->save();
-				break;
+				try
+				{
+					$draft->num = $num;
+					$draft->save();
+					break;
+				}
+				catch (\CDbException $e)
+				{
+					if (isset($e->errorInfo[0]) && $e->errorInfo[0] == 23000)
+						continue;
+					else
+						throw $e;
+				}
 			}
-			catch (\CDbException $e)
-			{
-				if (isset($e->errorInfo[0]) && $e->errorInfo[0] == 23000)
-					continue;
-				else
-					throw $e;
-			}
-		}
 
-		// Update the entry's latest_draft record
-		b()->db->createCommand()->update('entries', array('latest_draft' => $draft->num), array('id'=>$entryId));
+			// Update the entry
+			$entry->latest_draft = $draft->num;
+			$entry->save();
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 
 		return $draft;
 	}
@@ -565,6 +582,11 @@ class ContentService extends Component
 	{
 		$draft = EntryVersion::model()->with('entry.section', 'content.block')->findById($draftId);
 
+		if (!$draft)
+			throw new Exception('No draft exists with the id '.$draftId);
+
+		$entry = $draft->entry;
+
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
 		try
@@ -590,20 +612,20 @@ class ContentService extends Component
 			// Update the entry content
 			if ($content)
 			{
-				$table = $draft->entry->section->getContentTableName();
+				$table = $entry->section->getContentTableName();
 
 				// Does a content row already exist for this entry & language?
 				$contentId = b()->db->createCommand()
 					->select('id')
 					->from($table)
-					->where(array('and', 'entry_id'=>$draft->entry_id, 'language'=>$draft->language))
+					->where(array('and', 'entry_id'=>$entry->id, 'language'=>$draft->language))
 					->queryRow();
 
 				if ($contentId)
 					b()->db->createCommand()->update($table, $content, array('id'=>$contentId['id']));
 				else
 				{
-					$content['entry_id'] = $draft->entry_id;
+					$content['entry_id'] = $entry->id;
 					$content['langugae'] = $draft->language;
 
 					if (empty($content['title']))
@@ -615,8 +637,7 @@ class ContentService extends Component
 
 			// Transform the draft into a version, with the next highest num
 			$draft->draft = false;
-			$largestNum = $this->getLargestNum($draft->entry_id);
-			for ($num = $largestNum+1; true; $num++)
+			for ($num = $entry->latest_version+1; true; $num++)
 			{
 				try
 				{
@@ -633,8 +654,9 @@ class ContentService extends Component
 				}
 			}
 
-			// Update the entry's latest_version record
-			b()->db->createCommand()->update('entries', array('latest_version' => $draft->num), array('id'=>$draft->entry_id));
+			// Update the entry
+			$entry->latest_version = $draft->num;
+			$entry->save();
 
 			$transaction->commit();
 		}
@@ -644,24 +666,4 @@ class ContentService extends Component
 			throw $e;
 		}
 	}
-
-	/**
-	 * Returns the largest version/draft num for an entry
-	 * @return int
-	 */
-	public function getLargestNum($entryId, $draft = false)
-	{
-		$col = 'latest_'.($draft ? 'draft' : 'version');
-		$num = b()->db->createCommand()
-			->select($col)
-			->from('entries')
-			->where(array('id'=>$entryId))
-			->queryRow();
-
-		if (!empty($num[$col]))
-			return $num[$col];
-		else
-			return 0;
-	}
-
 }
