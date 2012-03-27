@@ -201,6 +201,15 @@ abstract class Controller extends \CController
 	}
 
 	/**
+	 * Respond with a JSON error message
+	 * @param string $error The error message
+	 */
+	public function returnJsonError($error)
+	{
+		$this->returnJson(array('error' => $error));
+	}
+
+	/**
 	 * @return array
 	 */
 	public function filters()
