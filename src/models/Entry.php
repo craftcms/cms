@@ -14,7 +14,6 @@ class Entry extends Model
 	protected $attributes = array(
 		'slug'           => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'full_uri'       => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
-		'published'      => AttributeType::Boolean,
 		'post_date'      => AttributeType::Int,
 		'expiry_date'    => AttributeType::Int,
 		'sort_order'     => array('type' => AttributeType::Int, 'unsigned' => true),
@@ -51,6 +50,14 @@ class Entry extends Model
 	 */
 	public function createContentTable()
 	{
+	}
+
+	/**
+	 * Returns whether the entry has been published
+	 */
+	public function getPublished()
+	{
+		return (bool)$this->latest_version;
 	}
 
 	/**
