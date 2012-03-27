@@ -96,7 +96,7 @@ class ContentService extends Component
 	 * @param            $sectionSettings
 	 * @param array|null $blocksData
 	 * @param null       $sectionId
-	 * @return \Blocks\Section
+	 * @return Section
 	 */
 	public function saveSection($sectionSettings, $blocksData = null, $sectionId = null)
 	{
@@ -285,6 +285,8 @@ class ContentService extends Component
 		// Clean it up
 		$slug = implode('-', preg_split('/[^a-z0-9]+/', preg_replace('/^[^a-z]+/', '', preg_replace('/[^a-z0-9]+$/', '', $slug))));
 
+		$testSlug = '';
+
 		// Make it unique and save it
 		for ($i = 0; true; $i++)
 		{
@@ -427,7 +429,7 @@ class ContentService extends Component
 		$draft = new EntryVersion;
 		$draft->entry_id = $entryId;
 		$draft->author_id = b()->users->current->id;
-		$draft->language = ($language ? $langugae : b()->sites->currentSite->language);
+		$draft->language = ($language ? $language : b()->sites->currentSite->language);
 		$draft->draft = true;
 		$draft->name = ($name ? $name : 'Untitled');
 
@@ -468,7 +470,7 @@ class ContentService extends Component
 	}
 
 	/**
-	 * @param $entryId
+	 * @param $draftId
 	 * @return mixed
 	 */
 	public function getDraftById($draftId)
@@ -577,6 +579,7 @@ class ContentService extends Component
 	/**
 	 * Publishes a draft
 	 * @param int $draftId
+	 * @return
 	 */
 	public function publishDraft($draftId)
 	{
