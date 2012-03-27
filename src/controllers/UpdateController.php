@@ -40,10 +40,13 @@ class UpdateController extends Controller
 				$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo->latestVersion.'.'.$this->_blocksUpdateInfo->latestBuild);
 
 				// Plugins
-				foreach ($this->_blocksUpdateInfo->plugins as $plugin)
+				if ($this->_blocksUpdateInfo->plugins !== null)
 				{
-					if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
-						$returnUpdateInfo[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+					foreach ($this->_blocksUpdateInfo->plugins as $plugin)
+					{
+						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+							$returnUpdateInfo[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+					}
 				}
 
 				break;
