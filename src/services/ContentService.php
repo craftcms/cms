@@ -255,7 +255,7 @@ class ContentService extends Component
 			$entry->parent_id = $parentId;
 			$entry->save();
 
-			// Create a conent row for it
+			// Create a content row for it
 			$table = $entry->section->getContentTableName();
 			b()->db->createCommand()->insert($table, array(
 				'entry_id' => $entry->id,
@@ -376,6 +376,17 @@ class ContentService extends Component
 		return $exists;
 	}
 
+	public function getEntryDrafts($entryId)
+	{
+		$drafts = b()->db->createCommand()
+			->from('entryversions')
+			->where(array('and', 'entry_id=:entryId', 'draft=:draft'), array(':entryId' => $entryId, ':draft' => true))
+			->order('date_created DESC')
+			->queryAll();
+
+		return EntryVersion::model()->populateRecords($drafts);
+	}
+
 	/**
 	 * @param $entryId
 	 * @return mixed
@@ -401,21 +412,40 @@ class ContentService extends Component
 	/**
 	 * Creates a new draft
 	 * @param int $entryId
+	 * @param string $language
 	 * @param mixed $name
 	 * @return EntryVersion The new draft record
 	 */
-	public function createDraft($entryId, $name = null)
+	public function createDraft($entryId, $language = null, $name = null)
 	{
 		$draft = new EntryVersion;
 		$draft->entry_id = $entryId;
 		$draft->author_id = b()->users->current->id;
-		$draft->language = b()->sites->currentSite->language;
+		$draft->language = ($language ? $langugae : b()->sites->currentSite->language);
 		$draft->draft = true;
 		$draft->name = ($name ? $name : 'Untitled');
-		$draft->save();
+
+		$largestNum = $this->getLargestNum($entryId, true);
+		for ($num = $largestNum+1; true; $num++)
+		{
+			try
+			{
+				$draft->num = $num;
+				$draft->save();
+				break;
+			}
+			catch (\CDbException $e)
+			{
+				if (isset($e->errorInfo[0]) && $e->errorInfo[0] == 23000)
+					continue;
+				else
+					throw $e;
+			}
+		}
+
 		return $draft;
 	}
-	
+
 	/**
 	 * @param $entryId
 	 * @return mixed
@@ -427,17 +457,205 @@ class ContentService extends Component
 	}
 
 	/**
-	 * Returns the latest draft for an entry, if one exists
 	 * @param int $entryId
-	 * @return mixed The latest draft or null
+	 * @param int $draftNum
+	 * @return mixed
 	 */
-	public function getLatestDraft($entryId)
+	public function getDraftByNum($entryId, $draftNum)
 	{
-		$draft = Draft::model()->find(array(
-			'condition' => 'entry_id = :entryId',
-			'params' => array(':entryId' => $entryId),
-			'order' => 'date_created DESC'
+		$draft = EntryVersion::model()->findByAttributes(array(
+			'entry_id' => $entryId,
+			'draft'    => true,
+			'num'      => $draftNum
 		));
 		return $draft;
 	}
+
+	/**
+	 * @param int $entryId
+	 * @return mixed
+	 */
+	public function getLatestDraft($entryId)
+	{
+		$draft = b()->db->createCommand()
+			->from('entryversions')
+			->where(array('and', 'entry_id=:entryId', 'draft=1'), array(':entryId' => $entryId))
+			->order('num DESC')
+			->queryRow();
+		return EntryVersion::model()->populateRecord($draft);
+	}
+
+	/**
+	 * Saves draft content
+	 * @param int $draftId
+	 * @param array $content
+	 */
+	public function saveDraftContent($draftId, $content)
+	{
+		$blocks = b()->db->createCommand()
+			->select('id, handle')
+			->from('blocks')
+			->where(array('in', 'handle', array_keys($content)))
+			->queryAll();
+
+		if ($blocks)
+		{
+			$blockIds = array();
+			foreach ($blocks as $block)
+			{
+				$blockIds[] = $block['id'];
+			}
+
+			// Start a transaction
+			$transaction = b()->db->beginTransaction();
+			try
+			{
+				$insertVals = array();
+
+				// Check for previous data on this draft
+				$draftContent = b()->db->createCommand()
+					->select('id, block_id')
+					->from('entryversioncontent')
+					->where(array('and', 'version_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
+					->queryAll();
+
+				$draftContentIds = array();
+				foreach ($draftContent as $row)
+				{
+					$draftContentIds[$row['block_id']] = $row['id'];
+				}
+
+				// Update existing rows and get ready to insert new ones
+				foreach ($blocks as $block)
+				{
+					$val = $content[$block['handle']];
+
+					if (isset($draftContentIds[$block['id']]))
+						b()->db->createCommand()->update('entryversioncontent', array('value' => $val), 'id=:id', array(':id' => $draftContentIds[$block['id']]));
+					else
+						$insertVals[] = array($draftId, $block['id'], $val);
+				}
+
+				// Insert new rows
+				if ($insertVals)
+				{
+					$columns = array('version_id', 'block_id', 'value');
+					b()->db->createCommand()->insertAll('entryversioncontent', $columns, $insertVals);
+				}
+
+				$transaction->commit();
+			}
+			catch (\Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
+			}
+		}
+	}
+
+	/**
+	 * Publishes a draft
+	 * @param int $draftId
+	 */
+	public function publishDraft($draftId)
+	{
+		$draft = EntryVersion::model()->with('entry.section', 'content.block')->findById($draftId);
+
+		// Start a transaction
+		$transaction = b()->db->beginTransaction();
+		try
+		{
+			// Figure out what's changed
+			$content = array();
+
+			$draftContent = b()->db->createCommand()
+				->select('c.title, b.handle, c.value')
+				->from('entryversioncontent c')
+				->leftJoin('blocks b', 'b.id=c.block_id')
+				->where('c.version_id=:draftId', array(':draftId' => $draftId))
+				->queryAll();
+
+			foreach ($draftContent as $row)
+			{
+				if ($row['title'])
+					$content['title'] = $row['value'];
+				else if ($row['handle'])
+					$content[$row['handle']] = $row['value'];
+			}
+
+			// Update the entry content
+			if ($content)
+			{
+				$table = $draft->entry->section->getContentTableName();
+
+				// Does a content row already exist for this entry & language?
+				$contentId = b()->db->createCommand()
+					->select('id')
+					->from($table)
+					->where(array('and', 'entry_id=:entryId', 'language=:language'), array(':entryId' => $draft->entry_id, ':language' => $draft->language))
+					->queryRow();
+
+				if ($contentId)
+					b()->db->createCommand()->update($table, $content, 'id=:id', array(':id' => $contentId['id']));
+				else
+				{
+					$content['entry_id'] = $draft->entry_id;
+					$content['langugae'] = $draft->language;
+
+					if (empty($content['title']))
+						$content['title'] = 'Untitled';
+
+					b()->db->createCommand()->insert($table, $content);
+				}
+			}
+
+			// Transform the draft into a version, with the next highest num
+			$draft->draft = false;
+			$largestNum = $this->getLargestNum($draft->entry_id);
+			for ($num = $largestNum+1; true; $num++)
+			{
+				try
+				{
+					$draft->num = $num;
+					$draft->save();
+					break;
+				}
+				catch (\CDbException $e)
+				{
+					if (isset($e->errorInfo[0]) && $e->errorInfo[0] == 23000)
+						continue;
+					else
+						throw $e;
+				}
+			}
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
+	 * Returns the largest version/draft num for an entry
+	 * @return int
+	 */
+	public function getLargestNum($entryId, $draft = false)
+	{
+		$num = b()->db->createCommand()
+			->select('num')
+			->from('entryversions')
+			->where(array('and', 'entry_id=:entryId', 'draft=:draft'), array(':entryId' => $entryId, ':draft' => $draft))
+			->order('num DESC')
+			->limit(1)
+			->queryRow();
+
+		if (isset($num['num']))
+			return $num['num'];
+		else
+			return 0;
+	}
+
 }

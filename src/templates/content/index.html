@@ -22,5 +22,5 @@
 {region "scripts"}
 	{include "_includes/js_include" file="content/Entry.js"}
 	{include "_includes/js_include" file="content/content.js"}
-	{if entryId}<script type="text/javascript">b.content.loadEntry({:entryId}{if draftId}, {:draftId}{/if});</script>{/if}
+	{if entryId}<script type="text/javascript">b.content.loadEntry({:entryId}{if draftNum}, {:draftNum}{/if});</script>{/if}
 {/region}

@@ -4,6 +4,7 @@
 b.Entry = b.Base.extend({
 
 	$container: null,
+	$form: null,
 	entryId: null,
 	draftId: null,
 
@@ -13,21 +14,23 @@ b.Entry = b.Base.extend({
 	$autosaveStatus: null,
 	$inputs: null,
 
-	autoUpdateSlug: false,
-
 	changedInputs: null,
+	waiting: false,
+	onAjaxResponse: null,
+
 	autosaveTimeout: null,
 
 	init: function(container, entryId, draftId)
 	{
 		this.$container = $(container);
+		this.$form = this.$container.find('form:first');
 		this.entryId = entryId;
 		this.draftId = draftId;
 
-		this.$toolbar = this.$container.find('.toolbar:first');
-		this.$page = this.$container.find('.page:first');
+		this.$toolbar = this.$form.find('.toolbar:first');
+		this.$page = this.$form.find('.page:first');
 
-		this.$autosaveStatus = this.$container.find('p.autosave-status:first');
+		this.$autosaveStatus = this.$form.find('p.autosave-status:first');
 
 		this.$inputs = $();
 		this.changedInputs = {};
@@ -37,6 +40,12 @@ b.Entry = b.Base.extend({
 		// Find all of the form elements in the entry
 		var $inputs = this.$page.find('input,textarea,select,button').filter(':input');
 		this.initInput($inputs);
+
+		// Listen for submits
+		this.addListener(this.$form, 'submit', function(event) {
+			event.preventDefault();
+			this.publishDraft();;
+		});
 	},
 
 	initInput: function(input)
@@ -80,29 +89,64 @@ b.Entry = b.Base.extend({
 			$input.data('savedval', val);
 			var inputName = $input.attr('name');
 			this.changedInputs[inputName] = val;
-			this.autosaveTimeout = setTimeout($.proxy(this, 'autosave'), b.Entry.autosaveDelay);
+			this.autosaveTimeout = setTimeout($.proxy(this, 'autosaveDraft'), b.Entry.autosaveDelay);
+		}
+		else if (typeof this.changedInputs[inputName] != 'undefined')
+		{
+			delete this.changedInputs[inputName];
 		}
 	},
 
-	autosave: function()
+	getSaveData: function()
 	{
-		var data = $.extend({}, this.changedInputs, {
+		var data = {
 			entryId: this.entryId,
 			draftId: this.draftId
-		});
+		};
 
 		// Pass the changed inputs
-		var inputNames = [];
 		for (var inputName in this.changedInputs)
 		{
-			data['changedInputs['+inputName+']'] = this.changedInputs[inputName];
+			data['content['+inputName+']'] = this.changedInputs[inputName];
 		}
 
 		this.changedInputs = {};
 
-		$.post(b.actionUrl+'content/autosaveDraft', data, $.proxy(function(response) {
+		return data;
+	},
+
+	autosaveDraft: function()
+	{
+		// Make sure there's actually something to save
+		var autosave = false;
+		for (var i in this.changedInputs)
+		{
+			autosave = true;
+			break;
+		}
+		if (!autosave)
+			return;
+
+		// Only autosave once at a time
+		if (this.waiting)
+		{
+			this.onAjaxResponse = 'autosaveDraft';
+			return;
+		}
+
+		this.waiting = true;
+
+		$.post(b.actionUrl+'content/autosaveDraft', this.getSaveData(), $.proxy(function(response) {
 			if (response.success)
+			{
 				this.$autosaveStatus.removeClass('error').text('Draft 1 autosaved a moment ago.');
+
+				if (this.onAjaxResponse)
+				{
+					this[this.onAjaxResponse]();
+					this.onAjaxResponse = null;
+				}
+			}
 			else
 			{
 				this.$autosaveStatus.addClass('error');
@@ -111,6 +155,45 @@ b.Entry = b.Base.extend({
 				else
 					this.$autosaveStatus.text('An unknown error occurred.');
 			}
+
+			this.waiting = false;
+		}, this));
+	},
+
+	publishDraft: function()
+	{
+		// Prevent autosaves
+		clearTimeout(this.autosaveTimeout);
+
+		// Only autosave once at a time
+		if (this.waiting)
+		{
+			this.onAjaxResponse = 'publishDraft';
+			return;
+		}
+
+		this.waiting = true;
+
+		$.post(b.actionUrl+'content/publishDraft', this.getSaveData(), $.proxy(function(response) {
+			if (response.success)
+			{
+				this.$autosaveStatus.removeClass('error').text('Draft 1 autosaved a moment ago.');
+
+				if (this.onAjaxResponse)
+				{
+					this[this.onAjaxResponse]();
+					this.onAjaxResponse = null;
+				}
+			}
+			else
+			{
+				if (response.error)
+					alert(response.error);
+				else
+					alert('An unknown error occurred.');
+			}
+
+			this.waiting = false;
 		}, this));
 	}
 

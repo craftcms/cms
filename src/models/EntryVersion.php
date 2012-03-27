@@ -10,8 +10,8 @@ class EntryVersion extends Model
 
 	protected $attributes = array(
 		'language' => AttributeType::Language,
-		'draft'    => array(AttributeType::Boolean, 'indexed' => true),
-		'num'      => array('type' => AttributeType::Int, 'unsigned' => true, 'indexed' => true),
+		'draft'    => AttributeType::Boolean,
+		'num'      => array('type' => AttributeType::Int, 'unsigned' => true, 'required' => true),
 		'name'     => AttributeType::Name,
 		'notes'    => AttributeType::Text
 	);
@@ -23,5 +23,9 @@ class EntryVersion extends Model
 
 	protected $hasMany = array(
 		'content' => array('model' => 'EntryVersionContent', 'foreignKey' => 'version')
+	);
+
+	protected $indexes = array(
+		array('columns' => array('num','draft','entry_id'), 'unique' => true)
 	);
 }
