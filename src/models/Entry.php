@@ -12,13 +12,15 @@ class Entry extends Model
 	protected $hasContent = true;
 
 	protected $attributes = array(
-		'slug'        => array('type' => AttributeType::Char, 'maxLength' => 100),
-		'full_uri'    => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
-		'published'   => AttributeType::Boolean,
-		'post_date'   => AttributeType::Int,
-		'expiry_date' => AttributeType::Int,
-		'sort_order'  => array('type' => AttributeType::Int, 'unsigned' => true),
-		'archived'    => AttributeType::Boolean
+		'slug'           => array('type' => AttributeType::Char, 'maxLength' => 100),
+		'full_uri'       => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
+		'published'      => AttributeType::Boolean,
+		'post_date'      => AttributeType::Int,
+		'expiry_date'    => AttributeType::Int,
+		'sort_order'     => array('type' => AttributeType::Int, 'unsigned' => true),
+		'latest_draft'   => AttributeType::Int,
+		'latest_version' => AttributeType::Int,
+		'archived'       => AttributeType::Boolean
 	);
 
 	protected $belongsTo = array(

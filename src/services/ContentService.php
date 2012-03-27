@@ -443,6 +443,9 @@ class ContentService extends Component
 			}
 		}
 
+		// Update the entry's latest_draft record
+		b()->db->createCommand()->update('entries', array('latest_draft' => $draft->num), 'id=:entryId', array(':entryId' => $entryId));
+
 		return $draft;
 	}
 
@@ -629,6 +632,9 @@ class ContentService extends Component
 				}
 			}
 
+			// Update the entry's latest_version record
+			b()->db->createCommand()->update('entries', array('latest_version' => $draft->num), 'id=:entryId', array(':entryId' => $draft->entry_id));
+
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -644,16 +650,15 @@ class ContentService extends Component
 	 */
 	public function getLargestNum($entryId, $draft = false)
 	{
+		$col = 'latest_'.($draft ? 'draft' : 'version');
 		$num = b()->db->createCommand()
-			->select('num')
-			->from('entryversions')
-			->where(array('and', 'entry_id=:entryId', 'draft=:draft'), array(':entryId' => $entryId, ':draft' => $draft))
-			->order('num DESC')
-			->limit(1)
+			->select($col)
+			->from('entries')
+			->where('id=:entryId', array(':entryId' => $entryId))
 			->queryRow();
 
-		if (isset($num['num']))
-			return $num['num'];
+		if (!empty($num[$col]))
+			return $num[$col];
 		else
 			return 0;
 	}
