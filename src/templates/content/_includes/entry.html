@@ -1,10 +1,14 @@
 <div class="toolbar page-toolbar">
 	<div class="center">
 		<div class="status">
-			{if !url.get('published')}
-				<span class="status draft"></span>Never published
-			{else}
+			{if entry.live}
 				<span class="status on"></span>Live
+			{elseif entry.pending}
+				<span class="status pending"></span>Pending
+			{elseif entry.expired}
+				<span class="status off"></span>Expired
+			{else}
+				<span class="status"></span>Never published
 			{/if}
 		</div>
 	</div>

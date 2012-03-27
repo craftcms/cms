@@ -14,7 +14,7 @@ class Entry extends Model
 	protected $attributes = array(
 		'slug'           => array('type' => AttributeType::Char, 'maxLength' => 100),
 		'full_uri'       => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
-		'post_date'      => AttributeType::Int,
+		'publish_date'   => AttributeType::Int,
 		'expiry_date'    => AttributeType::Int,
 		'sort_order'     => array('type' => AttributeType::Int, 'unsigned' => true),
 		'latest_draft'   => AttributeType::Int,
@@ -53,11 +53,35 @@ class Entry extends Model
 	}
 
 	/**
+	 * Returns whether the entry is live
+	 */
+	public function getLive()
+	{
+		return ($this->published && !$this->pending && !$this->expired);
+	}
+
+	/**
 	 * Returns whether the entry has been published
 	 */
 	public function getPublished()
 	{
 		return (bool)$this->latest_version;
+	}
+
+	/**
+	 * Returns whether the entry is pending
+	 */
+	public function getPending()
+	{
+		return ($this->published && $this->publish_date && $this->publish_date > DateTimeHelper::currentTime());
+	}
+
+	/**
+	 * Returns whether the entry has expired
+	 */
+	public function getExpired()
+	{
+		return ($this->published && $this->expiry_date && $this->expiry_date < DateTimeHelper::currentTime());
 	}
 
 	/**

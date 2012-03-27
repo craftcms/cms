@@ -656,6 +656,8 @@ class ContentService extends Component
 
 			// Update the entry
 			$entry->latest_version = $draft->num;
+			if (!$entry->publish_date)
+				$entry->publish_date = DateTimeHelper::currentTime();
 			$entry->save();
 
 			$transaction->commit();
@@ -665,5 +667,7 @@ class ContentService extends Component
 			$transaction->rollBack();
 			throw $e;
 		}
+
+		return $draft;
 	}
 }
