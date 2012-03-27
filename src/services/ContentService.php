@@ -213,9 +213,10 @@ class ContentService extends Component
 				try
 				{
 					$block = b()->blocks->getBlockById($blockId);
-					b()->db->createCommand()->delete('sectionblocks', 'block_id=:id', array(':id' => $blockId));
-					b()->db->createCommand()->delete('blocksettings', 'block_id=:id', array(':id' => $blockId));
-					b()->db->createCommand()->delete('blocks',        'id=:id',       array(':id' => $blockId));
+					b()->db->createCommand()->delete('sectionblocks',       array('block_id'=>$blockId));
+					b()->db->createCommand()->delete('blocksettings',       array('block_id'=>$blockId));
+					b()->db->createCommand()->delete('entryversioncontent', array('block_id'=>$blockId));
+					b()->db->createCommand()->delete('blocks',              array('id'=>$blockId));
 					b()->db->createCommand()->dropColumn($table, $block->handle);
 					$transaction->commit();
 				}
@@ -293,7 +294,7 @@ class ContentService extends Component
 				if ($i != 0)
 					$testSlug .= '-'.$i;
 
-				b()->db->createCommand()->update('entries', array('slug' => $testSlug), 'id=:id', array(':id' => $entry->id));
+				b()->db->createCommand()->update('entries', array('slug' => $testSlug), array('id'=>$entry->id));
 
 				break;
 			}
@@ -358,7 +359,7 @@ class ContentService extends Component
 			->select('e.*')
 			->from('sections s')
 			->join('entries e', 's.id = e.section_id')
-			->where('s.site_id=:siteId', array(':siteId' => $siteId))
+			->where(array('s.site_id' => $siteId))
 			->queryAll();
 		return $entries;
 	}
@@ -380,7 +381,7 @@ class ContentService extends Component
 	{
 		$drafts = b()->db->createCommand()
 			->from('entryversions')
-			->where(array('and', 'entry_id=:entryId', 'draft=:draft'), array(':entryId' => $entryId, ':draft' => true))
+			->where(array('and', 'entry_id'=>$entryId, 'draft=1'))
 			->order('date_created DESC')
 			->queryAll();
 
@@ -444,7 +445,7 @@ class ContentService extends Component
 		}
 
 		// Update the entry's latest_draft record
-		b()->db->createCommand()->update('entries', array('latest_draft' => $draft->num), 'id=:entryId', array(':entryId' => $entryId));
+		b()->db->createCommand()->update('entries', array('latest_draft' => $draft->num), array('id'=>$entryId));
 
 		return $draft;
 	}
@@ -482,7 +483,7 @@ class ContentService extends Component
 	{
 		$draft = b()->db->createCommand()
 			->from('entryversions')
-			->where(array('and', 'entry_id=:entryId', 'draft=1'), array(':entryId' => $entryId))
+			->where(array('and', 'entry_id'=>$entryId, 'draft=1'))
 			->order('num DESC')
 			->queryRow();
 		return EntryVersion::model()->populateRecord($draft);
@@ -519,7 +520,7 @@ class ContentService extends Component
 				$draftContent = b()->db->createCommand()
 					->select('id, block_id')
 					->from('entryversioncontent')
-					->where(array('and', 'version_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
+					->where(array('and', 'version_id'=>$draftId, array('in', 'block_id', $blockIds)))
 					->queryAll();
 
 				$draftContentIds = array();
@@ -534,7 +535,7 @@ class ContentService extends Component
 					$val = $content[$block['handle']];
 
 					if (isset($draftContentIds[$block['id']]))
-						b()->db->createCommand()->update('entryversioncontent', array('value' => $val), 'id=:id', array(':id' => $draftContentIds[$block['id']]));
+						b()->db->createCommand()->update('entryversioncontent', array('value' => $val), array('id'=>$draftContentIds[$block['id']]));
 					else
 						$insertVals[] = array($draftId, $block['id'], $val);
 				}
@@ -575,7 +576,7 @@ class ContentService extends Component
 				->select('c.title, b.handle, c.value')
 				->from('entryversioncontent c')
 				->leftJoin('blocks b', 'b.id=c.block_id')
-				->where('c.version_id=:draftId', array(':draftId' => $draftId))
+				->where(array('c.version_id'=>$draftId))
 				->queryAll();
 
 			foreach ($draftContent as $row)
@@ -595,11 +596,11 @@ class ContentService extends Component
 				$contentId = b()->db->createCommand()
 					->select('id')
 					->from($table)
-					->where(array('and', 'entry_id=:entryId', 'language=:language'), array(':entryId' => $draft->entry_id, ':language' => $draft->language))
+					->where(array('and', 'entry_id'=>$draft->entry_id, 'language'=>$draft->language))
 					->queryRow();
 
 				if ($contentId)
-					b()->db->createCommand()->update($table, $content, 'id=:id', array(':id' => $contentId['id']));
+					b()->db->createCommand()->update($table, $content, array('id'=>$contentId['id']));
 				else
 				{
 					$content['entry_id'] = $draft->entry_id;
@@ -633,7 +634,7 @@ class ContentService extends Component
 			}
 
 			// Update the entry's latest_version record
-			b()->db->createCommand()->update('entries', array('latest_version' => $draft->num), 'id=:entryId', array(':entryId' => $draft->entry_id));
+			b()->db->createCommand()->update('entries', array('latest_version' => $draft->num), array('id'=>$draft->entry_id));
 
 			$transaction->commit();
 		}
@@ -654,7 +655,7 @@ class ContentService extends Component
 		$num = b()->db->createCommand()
 			->select($col)
 			->from('entries')
-			->where('id=:entryId', array(':entryId' => $entryId))
+			->where(array('id'=>$entryId))
 			->queryRow();
 
 		if (!empty($num[$col]))
