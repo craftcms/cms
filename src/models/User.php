@@ -42,16 +42,27 @@ class User extends Model
 	);
 
 	/**
+	 * Returns the user's full name (first name + last name)
 	 * @return string
 	 */
 	public function getFullName()
 	{
 		$fullName = $this->first_name;
-
 		if ($this->last_name)
 		 	$fullName .= ' '.$this->last_name;
-
 		return $fullName;
+	}
+
+	/**
+	 * Returns the user's first name and last initial
+	 * @return string
+	 */
+	public function getFirstNameLastInitial()
+	{
+		$name = $this->first_name;
+		if ($this->last_name)
+			$name .= ' '.substr($this->last_name, 0, 1);
+		return $name;
 	}
 
 	/**
