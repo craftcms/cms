@@ -177,7 +177,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJson(array('error' => $e->getMessage()));
+			$this->returnJsonError($e->getMessage());
 		}
 	}
 
@@ -205,7 +205,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJson(array('error' => $e->getMessage()));
+			$this->returnJsonError($e->getMessage());
 		}
 
 	}
