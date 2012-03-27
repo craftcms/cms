@@ -282,6 +282,39 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
+	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 */
+	public function getRequiredParam($name)
+	{
+		$value = $this->getParam($name);
+		if ($value === null)
+			throw new Exception("Param “{$name}” doesn’t exist.");
+		return $value;
+	}
+
+	/**
+	 * Returns the named GET parameter value, or throws an exception if it's not set
+	 */
+	public function getRequiredQuery($name)
+	{
+		$value = $this->getQuery($name);
+		if ($value === null)
+			throw new Exception("GET param “{$name}” doesn’t exist.");
+		return $value;
+	}
+
+	/**
+	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 */
+	public function getRequiredPost($name)
+	{
+		$value = $this->getPost($name);
+		if ($value === null)
+			throw new Exception("POST Param “{$name}” doesn’t exist.");
+		return $value;
+	}
+
+	/**
 	 * Returns whether the request is coming from a mobile browser
 	 * Detection script courtesy of http://detectmobilebrowsers.com
 	 * @return bool Whether the request is coming from a mobile browser
