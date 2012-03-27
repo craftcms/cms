@@ -47,6 +47,7 @@ class Section extends Model
 	public function createContentTable()
 	{
 		$table = $this->getContentTableName();
+
 		// Create the content table
 		b()->db->createCommand()->createContentTable($table, 'entries', 'entry_id');
 

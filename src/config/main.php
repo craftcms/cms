@@ -134,7 +134,7 @@ return array(
 				array('settings/blocks/new',                     'settings/blocks/_edit'),
 				array('settings/blocks/edit/({number})',         'settings/blocks/_edit', array('blockId')),
 				array('content/edit/({number})',                 'content', array('entryId')),
-				array('content/edit/({number})/draft({number})', 'content', array('entryId', 'draftId')),
+				array('content/edit/({number})/draft({number})', 'content', array('entryId', 'draftNum')),
 				array('settings/sections/new',                   'settings/sections/_edit'),
 				array('settings/sections/edit/({number})',       'settings/sections/_edit', array('sectionId')),
 				array('settings/sites/new',                      'settings/sites/_edit'),

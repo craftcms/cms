@@ -85,6 +85,17 @@ class Entry extends Model
 	}
 
 	/**
+	 * Get all drafts
+	 */
+	public function getDrafts()
+	{
+		if (!$this->isNewRecord)
+			return b()->content->getEntryDrafts($this->id);
+		else
+			return array();
+	}
+
+	/**
 	 * Mix-in draft content
 	 * @param EntryVersion $draft
 	 */

@@ -16,7 +16,7 @@ class Block extends Model
 
 	protected $attributes = array(
 		'name'         => AttributeType::Name,
-		'handle'       => AttributeType::Handle,
+		'handle'       => array('type' => AttributeType::Handle, 'reservedWords' => 'id,date_created,date_updated,uid,title'),
 		'class'        => AttributeType::ClassName,
 		'instructions' => AttributeType::Text,
 		'required'     => AttributeType::Boolean,

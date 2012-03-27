@@ -15,6 +15,11 @@
 			<a class="btn sel"><span class="icon icon136"></span></a>
 			<a class="btn"><span class="icon icon274"></span></a>
 		</div>--}
+		<select>
+			{foreach entry.drafts as draft}
+				<option value="{:draft.id}">{:draft.name}</option>
+			{/foreach}
+		</select>
 		
 	</div>
 
@@ -26,47 +31,34 @@
 	</div>
 </div>
 
-<div class="centered">
-	<div class="pane page">
-		<div class="pane-body">
-			<div class="pane-item field page-head">
-				<h1>{:entry.title}</h1>
-				{if entry.url}<div class="url">{:entry.url}</div>{/if}
-				<div class="btn">
-					<span class="label">Draft 1</span>
-					<span class="arrow"></span>
+<form action="" method="post">
+	<div class="centered">
+		<div class="pane page">
+			<div class="pane-body">
+				<div class="pane-item field page-head">
+					<h1>{:entry.title}</h1>
+					{if entry.url}<div class="url">{:entry.url}</div>{/if}
+					{!--<div class="btn">
+						<span class="label">Draft 1</span>
+						<span class="arrow"></span>
+					</div>--}
 				</div>
-				{!--<select>
-					{foreach entry.drafts as draft}
-						<option value="{:draft.id}">{:draft.name}</option>
-					{/foreach}
-				</select>--}
-				{!--if entry.section.has_urls}
-					<div class="url">
-						<div class="editable" tabindex="0">
-							<div><span class="prefix">{:sites.currentSite.url}/</span><span class="slug {if !entry.slug}empty{/if}">{if entry.slug}{:entry.slug}{else}…{/if}</span></div>
-							<a>Edit</a>
-							<input type="hidden" name="slug" value="{:entry.slug}" />
+
+				{foreach entry.blocks as block}
+					<div class="pane-item field">
+						<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
+						{if block.instructions}
+							<p>{:block.instructions}</p>
+						{/if}
+						<div class="{:block.classHandle}">
+							{:block.displayField}
 						</div>
-						<div class="clear"></div>
 					</div>
-				{/if--}
+				{/foreach}
 			</div>
-
-			{foreach entry.blocks as block}
-				<div class="pane-item field">
-					<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
-					{if block.instructions}
-						<p>{:block.instructions}</p>
-					{/if}
-					<div class="{:block.classHandle}">
-						{:block.displayField}
-					</div>
-				</div>
-			{/foreach}
 		</div>
-	</div>
 
-	<input class="btn big submit" type="submit" value="Publish" />
-	<p class="autosave-status"></p>
+		<input class="btn big submit" type="submit" value="Publish" />
+		<p class="autosave-status"></p>
+	</div>
 </div>

@@ -29,11 +29,11 @@ var Content = b.Base.extend({
 		}
 	},
 
-	getEntryEditUrl: function(entryId, draftId)
+	getEntryEditUrl: function(entryId, draftNum)
 	{
 		var url = b.baseUrl+'content/edit/'+entryId;
-		if (draftId)
-			url += '/draft'+draftId;
+		if (draftNum)
+			url += '/draft'+draftNum;
 		return url;
 	},
 
@@ -83,7 +83,7 @@ var Content = b.Base.extend({
 						{
 							if (response.success)
 							{
-								var url = this.getEntryEditUrl(response.entryId, response.draftId);
+								var url = this.getEntryEditUrl(response.entryId, response.draftNum);
 
 								if (History.enabled)
 								{
@@ -93,7 +93,7 @@ var Content = b.Base.extend({
 									$label.text(response.entryTitle);
 
 									// Load the entry's edit page
-									this.loadEntry(response.entryId, response.draftId, true);
+									this.loadEntry(response.entryId, response.draftNum, true);
 								}
 								else
 									// Redirect to it
@@ -137,13 +137,13 @@ var Content = b.Base.extend({
 			this.$selEntryLink.addClass('sel');
 		}
 
-		this.loadEntry(state.data.entryId, state.data.draftId);
+		this.loadEntry(state.data.entryId, state.data.draftNum);
 	},
 
-	getLastDraft: function(entryId)
+	getLastDraftNum: function(entryId)
 	{
 		if (typeof localStorage != 'undefined')
-			return localStorage.getItem('lastDraftId:'+entryId);
+			return localStorage.getItem('lastDraftNum:'+entryId);
 	},
 
 	onSidebarLinkClick: function(event)
@@ -163,15 +163,15 @@ var Content = b.Base.extend({
 		this.loadEntry(entryId, null, true);
 	},
 
-	loadEntry: function(entryId, draftId, pushState)
+	loadEntry: function(entryId, draftNum, pushState)
 	{
 		// Figure out which draft to show
-		if (draftId === null)
-			draftId = this.getLastDraft(entryId);
+		if (draftNum === null)
+			draftNum = this.getLastDraftNum(entryId);
 
 		var data = {
-			entryId: entryId,
-			draftId: draftId
+			entryId:  entryId,
+			draftNum: draftNum
 		};
 
 		$.post(b.actionUrl+'content/loadEntryEditPage', data, $.proxy(function(response) {
@@ -190,17 +190,17 @@ var Content = b.Base.extend({
 					if (response.draftName)
 						title += ' ('+response.draftName+')';
 
-					var url = this.getEntryEditUrl(entryId, draftId);
-					History.pushState({entryId: entryId, draftId: response.draftId}, title, url);
+					var url = this.getEntryEditUrl(entryId, draftNum);
+					History.pushState({entryId: entryId, draftNum: response.draftNum}, title, url);
 				}
 
 				// Remember the draft id
 				if (typeof localStorage != 'undefined')
 				{
-					if (response.draftId)
-						localStorage.setItem('lastDraftId:'+entryId, response.draftId);
+					if (response.draftNum)
+						localStorage.setItem('lastDraftNum:'+entryId, response.draftNum);
 					else
-						localStorage.removeItem('lastDraftId:'+entryId);
+						localStorage.removeItem('lastDraftNum:'+entryId);
 				}
 
 				// Initialize the entry

@@ -95,13 +95,14 @@ class ContentController extends Controller
 			b()->content->saveEntrySlug($entry, strtolower($title));
 
 		// Create the first draft
-		$draft = b()->content->createDraft($entry->id, 'Draft 1');
+		$draft = b()->content->createDraft($entry->id, null, 'Draft 1');
 
 		$this->returnJson(array(
 			'success'    => true,
 			'entryId'    => $entry->id,
 			'entryTitle' => $entry->title,
-			'draftId'    => $draft->id
+			'draftId'    => $draft->id,
+			'draftNum'   => $draft->num
 		));
 	}
 
@@ -125,9 +126,9 @@ class ContentController extends Controller
 				$return['entryTitle'] = $entry->title;
 
 				// Is there a requested draft?
-				$draftId = b()->request->getPost('draftId');
-				if ($draftId)
-					$draft = b()->content->getDraftById($draftId);
+				$draftNum = b()->request->getPost('draftNum');
+				if ($draftNum)
+					$draft = b()->content->getDraftByNum($entryId, $draftNum);
 
 				// We must fetch a draft if the entry hasn't been published
 				if (empty($draft) && !$entry->published)
@@ -141,7 +142,9 @@ class ContentController extends Controller
 				if (!empty($draft))
 				{
 					$entry->mixInDraftContent($draft);	
-					$return['draftId']   = (int)$draft->id;
+
+					$return['draftId']   = $draft->id;
+					$return['draftNum']  = $draft->num;
 					$return['draftName'] = $draft->name;
 				}
 
@@ -162,77 +165,48 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$entryId = b()->request->getPost('entryId');
 		$draftId = b()->request->getPost('draftId');
-		$changedInputs = b()->request->getPost('changedInputs');
+		$content = b()->request->getPost('content');
 
-		if (is_array($changedInputs))
+		try
 		{
-			$blocks = b()->db->createCommand()
-				->select('id, handle')
-				->from('blocks')
-				->where(array('in', 'handle', array_keys($changedInputs)))
-				->queryAll();
-
-			if ($blocks)
-			{
-				$blockIds = array();
-				foreach ($blocks as $block)
-				{
-					$blockIds[] = $block['id'];
-				}
-
-				// Start a transaction
-				$transaction = b()->db->beginTransaction();
-				try
-				{
-					$insertVals = array();
-
-					// Check for previous data on this draft
-					$draftContent = b()->db->createCommand()
-						->select('id, block_id')
-						->from('entryversioncontent')
-						->where(array('and', 'version_id=:draftId', array('in', 'block_id', $blockIds)), array(':draftId' => $draftId))
-						->queryAll();
-
-					$draftContentIds = array();
-					foreach ($draftContent as $row)
-					{
-						$draftContentIds[$row['block_id']] = $row['id'];
-					}
-
-					// Update existing rows and get ready to insert new ones
-					foreach ($blocks as $block)
-					{
-						$val = $changedInputs[$block['handle']];
-						if (isset($draftContentIds[$block['id']]))
-							b()->db->createCommand()->update('entryversioncontent',
-								array('value' => $val),
-								'id=:id',
-								array(':id' => $draftContentIds[$block['id']]));
-						else
-							$insertVals[] = array($draftId, $block['id'], $val);
-					}
-
-					// Insert new rows
-					if ($insertVals)
-					{
-						$columns = array('version_id', 'block_id', 'value');
-						b()->db->createCommand()->insertAll('entryversioncontent', $columns, $insertVals);
-					}
-
-					$transaction->commit();
-				}
-				catch (Exception $e)
-				{
-					$transaction->rollBack();
-					$this->returnJson(array('error' => $e->getMessage()));
-				}
-			}
+			// Save the new draft content
+			b()->content->saveDraftContent($draftId, $content);
 
 			$this->returnJson(array('success' => true));
 		}
-		else
-			$this->returnJson(array('error' => 'No changed inputs sent.'));
+		catch (\Exception $e)
+		{
+			$this->returnJson(array('error' => $e->getMessage()));
+		}
+	}
+
+	/**
+	 * Publishes a draft
+	 */
+	public function actionPublishDraft()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$draftId = b()->request->getPost('draftId');
+		$content = b()->request->getPost('content');
+
+		try
+		{
+			// Any last-minute content changes?
+			if ($content)
+				b()->content->saveDraftContent($draftId, $content);
+
+			// Publish it
+			b()->content->publishDraft($draftId);
+
+			$this->returnJson(array('success' => true));
+		}
+		catch (\Exception $e)
+		{
+			$this->returnJson(array('error' => $e->getMessage()));
+		}
+
 	}
 }
