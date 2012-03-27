@@ -38,11 +38,12 @@ class EtService extends Component
 	{
 		$params = array(
 			'versionNumber' => $version,
-			'buildNumber' => $build
+			'buildNumber' => $build,
+			'type' => CoreReleaseFileType::Patch
 		);
 
 		$et = new Et(EtEndPoints::DownloadPackage, 60);
-		$et->destinationFilePath = $downloadPath;
+		$et->destinationFileName = $downloadPath;
 		$et->package->data = $params;
 		if ($et->phoneHome())
 			return true;
@@ -59,7 +60,8 @@ class EtService extends Component
 	{
 		$params = array(
 			'versionNumber' => $version,
-			'buildNumber' => $build
+			'buildNumber' => $build,
+			'type' => CoreReleaseFileType::Patch
 		);
 
 		$et = new Et(EtEndPoints::GetCoreReleaseFileMD5);

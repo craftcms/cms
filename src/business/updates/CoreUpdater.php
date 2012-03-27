@@ -53,22 +53,20 @@ class CoreUpdater implements IUpdater
 		if ($this->_buildsToUpdate == null)
 			throw new Exception('Blocks is already up to date.');
 
-		foreach ($this->_buildsToUpdate as $buildToUpdate)
-		{
-			$downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
+		$latestBuild = $this->_buildsToUpdate[0];
+		$downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getEdition());
 
-			// download the package
-			if (!b()->et->downloadPackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
-				throw new Exception('There was a problem downloading the package.');
+		// download the package
+		if (!b()->et->downloadPackage($latestBuild->version, $latestBuild->build, $downloadFilePath))
+			throw new Exception('There was a problem downloading the package.');
 
-			// validate
-			if (!$this->validatePackage($buildToUpdate->version, $buildToUpdate->build, $downloadFilePath))
-				throw new Exception('There was a problem validating the downloaded package.');
+		// validate
+		if (!$this->validatePackage($latestBuild->version, $latestBuild->build, $latestBuild))
+			throw new Exception('There was a problem validating the downloaded package.');
 
-			// unpack
-			if (!$this->unpackPackage($downloadFilePath))
-				throw new Exception('There was a problem unpacking the downloaded package.');
-		}
+		// unpack
+		if (!$this->unpackPackage($downloadFilePath))
+			throw new Exception('There was a problem unpacking the downloaded package.');
 
 		$manifest = $this->generateMasterManifest();
 

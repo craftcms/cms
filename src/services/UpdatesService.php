@@ -153,7 +153,7 @@ class UpdatesService extends Component
 	public function doCoreUpdate()
 	{
 		$coreUpdater = new CoreUpdater();
-		//if ($coreUpdater->start())
+		if ($coreUpdater->start())
 			return true;
 
 		return false;
@@ -184,6 +184,7 @@ class UpdatesService extends Component
 		//$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
 		//foreach ($plugins as $plugin)
 		//	$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
+		$blocksUpdateInfo->plugins = null;
 
 		$response = b()->et->check($blocksUpdateInfo);
 
