@@ -125,6 +125,8 @@ class SetupController extends Controller
 
 					if (($user = b()->users->registerUser($user, $password, false)) !== null)
 					{
+						$isNewUser = $user->isNewRecord;
+
 						$user->status = UserAccountStatus::Active;
 						$user->activationcode = null;
 						$user->activationcode_issued_date = null;
@@ -132,7 +134,8 @@ class SetupController extends Controller
 						$user->save(false);
 
 						// Give them the default dashboard widgets
-						b()->dashboard->assignDefaultUserWidgets($user->id);
+						if ($isNewUser)
+							b()->dashboard->assignDefaultUserWidgets($user->id);
 
 						$loginInfo = new LoginForm();
 						$loginInfo->loginName = $user->username;
