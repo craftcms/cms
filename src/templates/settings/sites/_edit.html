@@ -22,25 +22,20 @@
 
 		<div class="pane">
 			<div class="pane-body">
-				<div class="pane-item grid grid-2col">
-					<div class="col"><div class="col-inner">
-						<div class="field">
-							<label for="name">Site Name</label>
-							<div class="input-wrapper"><input id="name" name="name" class="{if site.errors.name}error{/if}" type="text" value="{:site.name}" /></div>
-							{if site.errors.name}
-								{include "_includes/error_list" errors=site.errors.name}
-							{/if}
-						</div>
-					</div></div>
-					<div class="col"><div class="col-inner">
-						<div class="field">
-							<label for="handle">Site Handle</label>
-							<div class="input-wrapper"><input id="handle" name="handle" class="code {if site.errors.handle}error{/if}" type="text" value="{:site.handle}" /></div>
-							{if site.errors.handle}
-								{include "_includes/error_list" errors=site.errors.handle}
-							{/if}
-						</div>
-					</div></div>
+				<div class="pane-item field">
+					<label for="name">Site Name</label>
+					<div class="input-wrapper"><input id="name" name="name" class="{if site.errors.name}error{/if}" type="text" value="{:site.name}" /></div>
+					{if site.errors.name}
+						{include "_includes/error_list" errors=site.errors.name}
+					{/if}
+				</div>
+				<div class="pane-item field">
+					<label for="handle">Site Handle</label>
+					<p>If you change this, you’ll need to rename your site’s template folder to match it.</p>
+					<div class="input-wrapper"><input id="handle" name="handle" class="code {if site.errors.handle}error{/if}" type="text" value="{:site.handle}" /></div>
+					{if site.errors.handle}
+						{include "_includes/error_list" errors=site.errors.handle}
+					{/if}
 				</div>
 				<div class="pane-item field">
 					<label for="url">Site URL</label>
