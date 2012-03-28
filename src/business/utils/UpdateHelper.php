@@ -123,7 +123,7 @@ class UpdateHelper
 		// get manifest file
 		$manifestFile = b()->file->set($manifestDataPath.'/blocks_manifest');
 		$manifestFileData = $manifestFile->contents;
-		$manifestFileData = explode("\r\n", $manifestFileData);
+		$manifestFileData = explode("\n", $manifestFileData);
 
 		// Remove any trailing empty newlines
 		if ($manifestFileData[count($manifestFileData) - 1] == '')
@@ -139,8 +139,7 @@ class UpdateHelper
 	 */
 	public static function getTempDirForPackage($downloadPath)
 	{
-		$downloadPath = b()->file->set($downloadPath);
-		return b()->file->set($downloadPath->dirName.'/'.$downloadPath->fileName.'_temp');
+		return b()->file->set(pathinfo($downloadPath, PATHINFO_DIRNAME).'/'.pathinfo($downloadPath, PATHINFO_FILENAME).'_temp');
 	}
 
 	/**
