@@ -26,6 +26,7 @@ class DbUpdateController extends Controller
 
 		if (b()->updates->setNewVersionAndBuild(Blocks::getVersion(false), Blocks::getBuild(false)))
 		{
+			b()->updates->flushUpdateInfoFromCache();
 			b()->user->setMessage(MessageType::Success, 'Database successfully updated.');
 
 			$url = b()->request->getPost('redirect');
