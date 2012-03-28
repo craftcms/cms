@@ -103,6 +103,8 @@ class SetupController extends Controller
 			if (empty($user))
 				$user = new User;
 
+			$isNewUser = $user->isNewRecord;
+
 			$user->username = b()->request->getPost('username');
 			$user->email = b()->request->getPost('email');
 			$user->first_name = b()->request->getPost('first_name');
@@ -125,32 +127,22 @@ class SetupController extends Controller
 
 					if (($user = b()->users->registerUser($user, $password, false)) !== null)
 					{
-						$isNewUser = $user->isNewRecord;
-
 						$user->status = UserAccountStatus::Active;
 						$user->activationcode = null;
 						$user->activationcode_issued_date = null;
 						$user->activationcode_expire_date = null;
 						$user->save(false);
 
-						// Give them the default dashboard widgets
-						if ($isNewUser)
-							b()->dashboard->assignDefaultUserWidgets($user->id);
-
+						// Log the user in
 						$loginInfo = new LoginForm();
 						$loginInfo->loginName = $user->username;
 						$loginInfo->password = $password;
-
-						// log the user in
 						$loginInfo->login();
 
-						// setup the default email settings.
-						$settings['protocol'] = EmailerType::PhpMail;
-						$settings['emailAddress'] = $user->email;
-						$settings['senderName'] = b()->sites->primarySite->name;
-						b()->email->saveEmailSettings($settings);
-
-						$this->redirect('dashboard');
+						// The only way they wouldn't be a new user is if devMode is on
+						// and they're going through the Setup Wizard a second time
+						if ($isNewUser)
+							$this->completeSetup($user);
 					}
 				}
 			}
@@ -168,5 +160,70 @@ class SetupController extends Controller
 			'user' => $user,
 			'passwordInfo' => $passwordInfo
 		));
+	}
+
+	/**
+	 * Completes the Setup process
+	 * @param User $user The first user
+	 * @access private
+	 */
+	private function completeSetup($user)
+	{
+		// Save the default email settings
+		b()->email->saveEmailSettings(array(
+			'protocol' => EmailerType::PhpMail,
+			'emailAddress' => $user->email,
+			'senderName' => b()->sites->primarySite->name
+		));
+
+		// Give them the default dashboard widgets
+		b()->dashboard->assignDefaultUserWidgets($user->id);
+
+		// Create a Blog section
+		$section = b()->content->saveSection(array(
+			'name'       => 'Blog',
+			'handle'     => 'blog',
+			'url_format' => 'blog/{slug}',
+			'template'   => 'blog/_entry',
+			'blocks'     => array(
+				'new1' => array(
+					'class'    => 'PlainText',
+					'name'     => 'Summary',
+					'handle'   => 'summary',
+					'settings' => array(
+						'hint'          => 'Enter a summary…',
+						'maxLength'     => 100,
+						'maxLengthUnit' => 'words'
+					)
+				),
+				'new2' => array(
+					'class'    => 'PlainText',
+					'name'     => 'Body',
+					'handle'   => 'body',
+					'required' => true,
+					'settings' => array(
+						'hint' => 'Enter the body copy…'
+					)
+				)
+			)
+		));
+
+		// Add a Welcome entry to the Blog
+		$entry = b()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 1');
+		b()->content->saveEntrySlug($entry, 'welcome');
+		$draft = b()->content->createDraft($entry->id);
+		b()->content->saveDraftContent($draft->id, array(
+			'summary' => 'It’s here.',
+			'body'    => "Hey {$user->first_name},\n\n" .
+			             "It’s been over a year since we started Blocks, and it’s finally starting to look like a CMS!\n\n" .
+			             "You will find that it’s missing a lot of key features (like the ability to delete this entry). But the groundwork has been laid, so progress comes much quicker now. And the one-click updater is in place, so keeping Blocks up-to-date will be quick and painless.\n\n" .
+			             "We couldn’t be more thrilled to be handing out Alpha 1 to our closest friends in the business. We hope you like it, but please don’t hold back any criticism. We only have one chance to make this right.\n\n" .
+			             "Thanks for participating!\n" .
+			             '-Brandon'
+		));
+		b()->content->publishDraft($draft->id);
+
+		// Redirect to the Welcome entry
+		$this->redirect('content/edit/'.$entry->id);
 	}
 }
