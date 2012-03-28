@@ -87,7 +87,7 @@ class UrlManager extends \CUrlManager
 		if ($entry !== null)
 		{
 			$this->_setTemplateMatch($entry->section->template, TemplateMatchType::Entry);
-			$this->_templateTags['entry'] = new ContentEntryTag($entry);
+			$this->_templateTags['entry'] = $entry;
 			return true;
 		}
 
