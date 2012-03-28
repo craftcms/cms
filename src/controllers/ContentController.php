@@ -21,25 +21,18 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$sectionSettings['name'] = b()->request->getPost('name');
-		$sectionSettings['handle'] = b()->request->getPost('handle');
+		$sectionSettings['name']        = b()->request->getPost('name');
+		$sectionSettings['handle']      = b()->request->getPost('handle');
+		$sectionSettings['max_entries'] = b()->request->getPost('max_entries');
+		$sectionSettings['sortable']    = b()->request->getPost('sortable');
+		$sectionSettings['has_urls']    = b()->request->getPost('has_urls');
+		$sectionSettings['url_format']  = b()->request->getPost('url_format');
+		$sectionSettings['template']    = b()->request->getPost('template');
+		$sectionSettings['blocks']      = b()->request->getPost('blocks');
 
-		$maxEntries = b()->request->getPost('max_entries');
-		$sectionSettings['max_entries'] = ($maxEntries ? $maxEntries : null);
-
-		$sectionSettings['sortable'] = (b()->request->getPost('sortable') === 'y');
-		$sectionSettings['has_urls'] = (b()->request->getPost('has_urls') === 'y');
-
-		$urlFormat = b()->request->getPost('url_format');
-		$sectionSettings['url_format'] = ($urlFormat ? $urlFormat : null);
-
-		$template = b()->request->getPost('template');
-		$sectionSettings['template'] = ($template ? $template : null);
-
-		$sectionBlocksData = b()->request->getPost('blocks');
 		$sectionId = b()->request->getPost('section_id');
 
-		$section = b()->content->saveSection($sectionSettings, $sectionBlocksData, $sectionId);
+		$section = b()->content->saveSection($sectionSettings, $sectionId);
 
 		// Did it save?
 		if (!$section->errors)

@@ -94,23 +94,22 @@ class ContentService extends Component
 	 * Saves a section
 	 *
 	 * @param            $sectionSettings
-	 * @param array|null $blocksData
 	 * @param null       $sectionId
 	 * @return Section
 	 */
-	public function saveSection($sectionSettings, $blocksData = null, $sectionId = null)
+	public function saveSection($sectionSettings, $sectionId = null)
 	{
 		$section = $this->getSection($sectionId);
 		$isNewSection = $section->isNewRecord;
 
-		$section->name = $sectionSettings['name'];
-		$section->handle = $sectionSettings['handle'];
-		$section->max_entries = $sectionSettings['max_entries'];
-		$section->sortable = $sectionSettings['sortable'];
-		$section->has_urls = $sectionSettings['has_urls'];
-		$section->url_format = $sectionSettings['url_format'];
-		$section->template = $sectionSettings['template'];
-		$section->site_id = b()->sites->currentSite->id;
+		$section->name        = $sectionSettings['name'];
+		$section->handle      = $sectionSettings['handle'];
+		$section->max_entries = (isset($sectionSettings['max_entries']) ? (int)$sectionSettings['max_entries'] : null);
+		$section->sortable    = (isset($sectionSettings['sortable']) ? (bool)$sectionSettings['sortable'] : false);
+		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
+		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
+		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
+		$section->site_id     = b()->sites->currentSite->id;
 
 		// Try saving the section
 		$sectionSaved = $section->save();
@@ -121,13 +120,22 @@ class ContentService extends Component
 		// Create the blocks
 		$blocks = array();
 
-		if (isset($blocksData['order']))
+		if (isset($sectionSettings['blocks']))
 		{
+			if (isset($sectionSettings['blocks']['order']))
+				$blockIds = $sectionSettings['blocks']['order'];
+			else
+			{
+				$blockIds = array_keys($sectionSettings['blocks']);
+				if (($deleteIndex = array_search('delete', $blockIds)) !== false)
+					array_splice($blockIds, $deleteIndex, 1);
+			}
+
 			$lastColumn = 'title';
 
-			foreach ($blocksData['order'] as $order => $blockId)
+			foreach ($blockIds as $order => $blockId)
 			{
-				$blockData = $blocksData[$blockId];
+				$blockData = $sectionSettings['blocks'][$blockId];
 
 				$block = b()->blocks->getBlockByClass($blockData['class']);
 				$isNewBlock = true;
@@ -144,12 +152,12 @@ class ContentService extends Component
 					}
 				}
 
-				$block->name = $blockData['name'];
-				$block->handle = $blockData['handle'];
-				$block->class = $blockData['class'];
-				$block->instructions = $blockData['instructions'];
-				$block->required = (isset($blockData['required']) && $blockData['required'] == 'y');
-				$block->sort_order = ($order+1);
+				$block->name         = $blockData['name'];
+				$block->handle       = $blockData['handle'];
+				$block->class        = $blockData['class'];
+				$block->instructions = (isset($blockData['instructions']) ? $blockData['instructions'] : null);
+				$block->required     = (isset($blockData['required']) ? (bool)$blockData['required'] : false);
+				$block->sort_order   = ($order+1);
 
 				// Only save it if the section saved
 				if ($sectionSaved)
@@ -204,9 +212,9 @@ class ContentService extends Component
 		}
 
 		// Any deleted blocks?
-		if (isset($blocksData['delete']))
+		if (isset($sectionSettings['blocks']['delete']))
 		{
-			foreach ($blocksData['delete'] as $blockId)
+			foreach ($sectionSettings['blocks']['delete'] as $blockId)
 			{
 				// Start a transaction
 				$transaction = b()->db->beginTransaction();
