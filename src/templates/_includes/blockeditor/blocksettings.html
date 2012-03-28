@@ -1,23 +1,19 @@
 <div class="blocksettings">
-	<div class="pane-item grid grid-2col">
-		<div class="col"><div class="col-inner">
-			<div class="field">
-				<label for="{:idPrefix}name">Block Name</label>
-				<div class="input-wrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="name" type="text" maxlength="100%" value="{:block.name}" /></div>
-				{if block.errors.name}
-					{include "_includes/error_list" errors=block.errors.name}
-				{/if}
-			</div>
-		</div></div>
-		<div class="col"><div class="col-inner">
-			<div class="field">
-				<label for="{:idPrefix}handle">Block Handle</label>
-				<div class="input-wrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="handle code" type="text" maxlength="100" value="{:block.handle}" /></div>
-				{if block.errors.handle}
-					{include "_includes/error_list" errors=block.errors.handle}
-				{/if}
-			</div>
-		</div></div>
+	<div class="pane-item field">
+		<label for="{:idPrefix}name">Block Name</label>
+		<div class="input-wrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="name" type="text" maxlength="100%" value="{:block.name}" /></div>
+		{if block.errors.name}
+			{include "_includes/error_list" errors=block.errors.name}
+		{/if}
+	</div>
+
+	<div class="pane-item field">
+		<label for="{:idPrefix}handle">Block Handle</label>
+		<p>This is how you’ll refer to your block in the templates.</p>
+		<div class="input-wrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="handle code" type="text" maxlength="100" value="{:block.handle}" /></div>
+		{if block.errors.handle}
+			{include "_includes/error_list" errors=block.errors.handle}
+		{/if}
 	</div>
 
 	<div class="pane-item field">
@@ -26,6 +22,17 @@
 		{if block.errors.instructions}
 			{include "_includes/error_list" errors=block.errors.instructions}
 		{/if}
+	</div>
+
+	<div class="pane-item field">
+		<label for="{:idPrefix}class">Block Type</label>
+		<div>
+			<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
+				{foreach blocks.blocktypes as blocktype}
+					<option value="{:blocktype.classHandle}" {if (block && block.class == blocktype.classHandle) || (!block && blocktype.classHandle == 'PlainText')}selected{/if}>{:blocktype.blocktypeName}</option>
+				{/foreach}
+			</select>
+		</div>
 	</div>
 
 	<div class="pane-item field">
@@ -38,17 +45,6 @@
 			{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
 		</div>
 		<div class="clear"></div>
-	</div>
-
-	<div class="pane-item field">
-		<label for="{:idPrefix}class">Block Type</label>
-		<div>
-			<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
-				{foreach blocks.blocktypes as blocktype}
-					<option value="{:blocktype.classHandle}" {if (block && block.class == blocktype.classHandle) || (!block && blocktype.classHandle == 'PlainText')}selected{/if}>{:blocktype.blocktypeName}</option>
-				{/foreach}
-			</select>
-		</div>
 	</div>
 </div>
 

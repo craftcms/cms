@@ -27,29 +27,24 @@
 		{if section.id}<input type="hidden" name="section_id" value="{:section.id}">{/if}
 		<div class="pane">
 			<div class="pane-body">
-				<div class="pane-item grid grid-2col">
-					<div class="col"><div class="col-inner">
-						<div class="field">
-							<label class="required" for="name">Section Name</label>
-							<div class="input-wrapper"><input id="name" name="name" class="{if section.errors.name}error{/if}" type="text" value="{:section.name}" /></div>
-							{if section.errors.name}
-								{include "_includes/error_list" errors=section.errors.name}
-							{/if}
-						</div>
-					</div></div>
-					<div class="col"><div class="col-inner">
-						<div class="field">
-							<label class="required" for="handle">Section Handle</label>
-							<div class="input-wrapper"><input id="handle" name="handle" class="code {if section.errors.handle}error{/if}" type="text" value="{:section.handle}" /></div>
-							{if section.errors.handle}
-								{include "_includes/error_list" errors=section.errors.handle}
-							{/if}
-						</div>
-					</div></div>
+				<div class="pane-item field">
+					<label class="required" for="name">Section Name</label>
+					<div class="input-wrapper"><input id="name" name="name" class="{if section.errors.name}error{/if}" type="text" value="{:section.name}" /></div>
+					{if section.errors.name}
+						{include "_includes/error_list" errors=section.errors.name}
+					{/if}
+				</div>
+				<div class="pane-item field">
+					<label class="required" for="handle">Section Handle</label>
+					<p>This is how you’ll refer to your section in the templates.</p>
+					<div class="input-wrapper"><input id="handle" name="handle" class="code {if section.errors.handle}error{/if}" type="text" value="{:section.handle}" /></div>
+					{if section.errors.handle}
+						{include "_includes/error_list" errors=section.errors.handle}
+					{/if}
 				</div>
 				<div class="pane-item field">
 					<div class="left">
-						<label for="sortable">Are entries sortable?</label>
+						<label for="sortable">Can entries be manually sorted?</label>
 					</div>
 					<div class="right">
 						{include "_includes/lightswitch" name="sortable" on=section.sortable}
