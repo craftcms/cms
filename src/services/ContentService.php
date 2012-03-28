@@ -311,6 +311,8 @@ class ContentService extends Component
 
 		// Save it on the entry
 		$entry->slug = $testSlug;
+		$entry->full_uri = $entry->uri;
+		$entry->save();
 	}
 
 	/**
