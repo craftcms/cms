@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * @todo Authenticate requests to this.
+ *
  */
 class UpdateController extends Controller
 {
