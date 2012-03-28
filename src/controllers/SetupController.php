@@ -216,7 +216,7 @@ class SetupController extends Controller
 			'summary' => 'It’s here.',
 			'body'    => "Hey {$user->first_name},\n\n" .
 			             "It’s been over a year since we started Blocks, and it’s finally starting to look like a CMS!\n\n" .
-			             "You will find that it’s missing a lot of key features (like the ability to delete this entry). But the groundwork has been laid, so progress comes much quicker now. And the one-click updater is in place, so keeping Blocks up-to-date will be quick and painless.\n\n" .
+			             "You will find that it’s missing a lot of key features (like the ability to delete this entry). But the groundwork has been laid, so progress comes much quicker now. And we’ve got one-click updating in place, so keeping Blocks up-to-date will be quick and painless.\n\n" .
 			             "We couldn’t be more thrilled to be handing out Alpha 1 to our closest friends in the business. We hope you like it, but please don’t hold back any criticism. We only have one chance to make this right.\n\n" .
 			             "Thanks for participating!\n" .
 			             '-Brandon & Brad'
