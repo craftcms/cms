@@ -35,7 +35,7 @@ b.ui.NiceText = b.Base.extend({
 		this.autoHeight = (this.settings.autoHeight && this.$input[0].nodeName == 'TEXTAREA');
 		if (this.autoHeight)
 		{
-			this.minHeight = this.$input.height();
+			this.minHeight = this.getStageHeight('');
 			this.setHeight();
 		}
 
@@ -102,7 +102,7 @@ b.ui.NiceText = b.Base.extend({
 
 	buildStage: function()
 	{
-		this.$stage = $('<stage/>').insertAfter(this.$input);
+		this.$stage = $('<stage/>').appendTo(b.$body);
 
 		// replicate the textarea's text styles
 		this.$stage.css({
