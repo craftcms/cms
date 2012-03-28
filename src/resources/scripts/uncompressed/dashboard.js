@@ -299,7 +299,7 @@ var Dashboard = b.Base.extend({
 
 	displayAlerts: function(data, textStatus)
 	{
-		if (data && textStatus == 'success')
+		if (data && textStatus == 'success' && data.alerts.length)
 		{
 			var startHeight = this.dom.$alerts.height(),
 				alerts = [];
