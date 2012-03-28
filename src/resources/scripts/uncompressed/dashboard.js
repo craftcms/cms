@@ -45,7 +45,7 @@ var Dashboard = b.Base.extend({
 		this.setCols();
 
 		// do the version check
-		if (getAlerts)
+		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
 			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
 	},
 
