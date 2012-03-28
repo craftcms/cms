@@ -39,6 +39,14 @@ class StringTag extends VarTag
 	}
 
 	/**
+	 * @return string
+	 */
+	public function nl2br()
+	{
+		return nl2br($this->_var);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function encode()
