@@ -9,6 +9,8 @@ class CoreUpdater implements IUpdater
 	private $_buildsToUpdate = null;
 	private $_migrationsToRun = null;
 	private $_blocksUpdateInfo = null;
+	private $_downloadFilePath = null;
+	private $_tempPackageDir = null;
 
 	/**
 	 *
@@ -53,118 +55,108 @@ class CoreUpdater implements IUpdater
 		if ($this->_buildsToUpdate == null)
 			throw new Exception('Blocks is already up to date.');
 
+		Blocks::log('Starting the CoreUpdater.', \CLogger::LEVEL_INFO);
+
+		// get the most up-to-date build.
 		$latestBuild = $this->_buildsToUpdate[0];
-		$downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getEdition());
+		$this->_downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getEdition());
+		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
 
 		// download the package
-		if (!b()->et->downloadPackage($latestBuild->version, $latestBuild->build, $downloadFilePath))
+		Blocks::log('Downlading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
+		if (!b()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
 			throw new Exception('There was a problem downloading the package.');
 
 		// validate
-		if (!$this->validatePackage($latestBuild->version, $latestBuild->build, $latestBuild))
+		if (!$this->validatePackage($latestBuild->version, $latestBuild->build))
 			throw new Exception('There was a problem validating the downloaded package.');
 
 		// unpack
-		if (!$this->unpackPackage($downloadFilePath))
+		if (!$this->unpackPackage())
 			throw new Exception('There was a problem unpacking the downloaded package.');
 
-		$manifest = $this->generateMasterManifest();
+		// check to see if there any migrations to run.
+		$this->gatherMigrations();
 
-		if (!empty($this->_migrationsToRun))
+		// put site in maintenance mode.
+		$this->putSiteInMaintenanceMode();
+
+		// if there are migrations, run them.
+		if (!empty($this->_migrationsToRun) && $this->_migrationsToRun != null)
 		{
-			if ($this->_migrationsToRun != null)
-			{
-				if (!$this->doDatabaseUpdate())
-					throw new Exception('There was a problem updating your database.');
-			}
+			if (!$this->doDatabaseUpdate())
+				throw new Exception('There was a problem updating your database.');
 		}
 
-		if (!$this->backupFiles($manifest))
+		// backup files.
+		if (!$this->backupFiles())
 			throw new Exception('There was a problem backing up your files for the update.');
 
-		if (!UpdateHelper::doFileUpdate($manifest))
+		// update files.
+		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_tempPackageDir))
 			throw new Exception('There was a problem updating your files.');
 
-		$this->cleanTempFiles($manifest);
+		// take site out of maintenance mode.
+		$this->takeSiteOutOfMaintenanceMode();
+
+		// clean-up leftover files.
+		$this->cleanTempFiles();
+
+		if (!b()->updates->flushUpdateInfoFromCache())
+			throw new Exception('The update was performed sucessfully, but there was a problem invalidating the update cache.');
+
+		if (!b()->updates->setNewVersionAndBuild($latestBuild->version, $latestBuild->build))
+			throw new Exception('The update was performed sucessfully, but there was a problem setting the new version and build number in the database.');
+
 		return true;
 	}
 
-	/**
-	 * @return
-	 */
-	public function generateMasterManifest()
+	private function _getManifestData()
 	{
-		$masterManifest = b()->file->set(b()->path->runtimePath.'manifest_'.uniqid());
-		$masterManifest->exists ? $masterManifest->delete() : $masterManifest->create();
-
-		$updatedFiles = array();
-
-		foreach ($this->_buildsToUpdate as $buildToUpdate)
-		{
-			$downloadedFile = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($buildToUpdate->version, $buildToUpdate->build, Blocks::getEdition());
-			$tempDir = UpdateHelper::getTempDirForPackage($downloadedFile);
-
-			$manifestData = UpdateHelper::getManifestData($tempDir->realPath);
-
-			for ($i = 0; $i < count($manifestData); $i++)
-			{
-				// first line is version information
-				if ($i == 0)
-					continue;
-
-				// normalize directory separators
-				$manifestData[$i] = b()->path->normalizeDirectorySeparators($manifestData[$i]);
-				$row = explode(';', $manifestData[$i]);
-
-				// catch any rogue blank lines
-				if (count($row) > 1)
-				{
-					$counter = 0;
-					$found = UpdateHelper::inManifestList($counter, $manifestData[$i], $updatedFiles);
-
-					if ($found)
-						$updatedFiles[$counter] = $tempDir->realPath.';'.$manifestData[$i];
-					else
-						$updatedFiles[] = $tempDir->realPath.';'.$manifestData[$i];
-				}
-			}
-		}
-
-		if (count($updatedFiles) > 0)
-		{
-			// write the updated files out
-			$uniqueUpdatedFiles = array_unique($updatedFiles, SORT_STRING);
-
-			for ($counter = 0; $counter < count($uniqueUpdatedFiles); $counter++)
-			{
-				$row = explode(';', $uniqueUpdatedFiles[$counter]);
-
-				// we found a migration
-				if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
-					$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($row[0].'/'.$row[1]);
-
-				$manifestContent = $uniqueUpdatedFiles[$counter].PHP_EOL;
-
-				// if we're on the last one don't write the last newline.
-				if ($counter == count($uniqueUpdatedFiles) - 1)
-					$manifestContent = $uniqueUpdatedFiles[$counter];
-
-				$masterManifest->setContents(null, $manifestContent, true, FILE_APPEND);
-			}
-		}
-
-		return $masterManifest;
+		$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->realPath);
+		return $manifestData;
 	}
 
 	/**
-	 * @todo Fix
+	 * @return mixed
+	 */
+	public function gatherMigrations()
+	{
+		$manifestData = $this->_getManifestData();
+
+		for ($i = 0; $i < count($manifestData); $i++)
+		{
+			$row = explode(';', $manifestData[$i]);
+
+			// we found a migration
+			if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
+			{
+				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
+				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile(b()->path->appPath.'/'.$row[0]);
+			}
+		}
+	}
+
+	/**
 	 * @return bool
 	 */
 	public function putSiteInMaintenanceMode()
 	{
-		$file = b()->file->set(BLOCKS_BASE_PATH.'../index.php', false);
+		$file = b()->file->set(b()->path->appPath.'../../index.php', false);
 		$contents = $file->contents;
 		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
+		$file->setContents(null, $contents);
+		return true;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function takeSiteOutOfMaintenanceMode()
+	{
+		$file = b()->file->set(b()->path->appPath.'../../index.php', false);
+		$contents = $file->contents;
+		$contents = str_replace('header(\'location:offline.php\');', '//header(\'location:offline.php\');', $contents);
 		$file->setContents(null, $contents);
 		return true;
 	}
@@ -176,6 +168,7 @@ class CoreUpdater implements IUpdater
 	{
 		foreach ($this->_migrationsToRun as $migrationName)
 		{
+			Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
 			$response = Migration::run($migrationName);
 			if (strpos($response, 'Migrated up successfully.') !== false || strpos($response, 'No new migration found.') !== false)
 				return false;
@@ -185,51 +178,52 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @param $manifestFile
+	 *
 	 */
-	public function cleanTempFiles($manifestFile)
+	public function cleanTempFiles()
 	{
-		$manifestData = explode("\n", $manifestFile->contents);
+		$manifestData = $this->_getManifestData();
 
 		foreach ($manifestData as $row)
 		{
+			if (UpdateHelper::isManifestVersionInfoLine($row))
+				continue;
+
 			$rowData = explode(';', $row);
-			$tempDir = b()->file->set($rowData[0]);
-			$tempFile = b()->file->set(str_replace('_temp', '', $rowData[0]).'.zip');
 
-			// delete the temp dirs
-			if ($tempDir->exists)
-				$tempDir->delete();
-
-			// delete the downloaded zip file
-			if ($tempFile->exists)
-				$tempFile->delete();
-
-			// delete the cms files we backed up.
-			$backupFile = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
+			// delete any files we backed up.
+			$backupFile = b()->file->set(b()->path->appPath.'../../'.$rowData[0].'.bak');
 			if ($backupFile->exists)
+			{
+				Blocks::log('Deleting backup file: '.$backupFile->realPath);
 				$backupFile->delete();
+			}
 		}
 
-		// delete the manifest file.
-		$manifestFile->delete();
+		// delete the temp patch dir
+		$tempPatchDir = $this->_tempPackageDir;
+		$tempPatchDir->delete();
+
+		// delete the downloaded patch file.
+		$downloadPatchFile = b()->file->set($this->_downloadFilePath);
+		$downloadPatchFile->delete();
 	}
 
 	/**
 	 * @param $version
 	 * @param $build
-	 * @param $destinationPath
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function validatePackage($version, $build, $destinationPath)
+	public function validatePackage($version, $build)
 	{
+		Blocks::log('Validating MD5 for '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
 		$sourceMD5 = b()->et->getReleaseMD5($version, $build);
 
 		if(StringHelper::isNullOrEmpty($sourceMD5))
 			throw new Exception('Error in getting the MD5 hash for the download.');
 
-		$localFile = b()->file->set($destinationPath, false);
+		$localFile = b()->file->set($this->_downloadFilePath, false);
 		$localMD5 = $localFile->generateMD5();
 
 		if($localMD5 === $sourceMD5)
@@ -239,45 +233,52 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * @param $downloadPath
 	 * @return bool
 	 */
-	public function unpackPackage($downloadPath)
+	public function unpackPackage()
 	{
-		$tempDir = UpdateHelper::getTempDirForPackage($downloadPath);
-		$tempDir->exists ? $tempDir->delete() : $tempDir->createDir(0754);
+		Blocks::log('Unzipping package to '.$this->_tempPackageDir->realPath, \CLogger::LEVEL_INFO);
+		if ($this->_tempPackageDir->exists)
+			$this->_tempPackageDir->delete();
 
-		$downloadPath = b()->file->set($downloadPath);
-		if ($downloadPath->unzip($tempDir->realPath))
+		$this->_tempPackageDir->createDir(0754);
+
+		$downloadPath = b()->file->set($this->_downloadFilePath);
+		if ($downloadPath->unzip($this->_tempPackageDir->realPath))
 			return true;
 
 		return false;
 	}
 
 	/**
-	 * @param $masterManifest
 	 * @return bool
 	 */
-	public function backupFiles($masterManifest)
+	public function backupFiles()
 	{
-		$manifestData = explode("\r\n", $masterManifest->contents);
+		$manifestData = $this->_getManifestData();
 
 		try
 		{
 			foreach ($manifestData as $row)
 			{
+				if (UpdateHelper::isManifestVersionInfoLine($row))
+					continue;
+
 				$rowData = explode(';', $row);
-				$file = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
+				$file = b()->file->set(b()->path->appPath.'../../'.$rowData[0]);
 
 				// if the file doesn't exist, it's a new file
 				if ($file->exists)
+				{
+					Blocks::log('Backing up file '.$file->realPath);
 					$file->copy($file->realPath.'.bak');
+				}
 			}
 		}
 		catch (Exception $e)
 		{
 			Blocks::log('Error updating files: '.$e->getMessage());
-			UpdateHelper::rollBackFileChanges($masterManifest);
+			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
 

@@ -150,6 +150,35 @@ class UpdatesService extends Component
 	/**
 	 * @return bool
 	 */
+	public function flushUpdateInfoFromCache()
+	{
+		Blocks::log('Flushing update info from cache.');
+		if (b()->fileCache->delete('updateInfo'))
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * @param $version
+	 * @param $build
+	 * @return bool
+	 */
+	public function setNewVersionAndBuild($version, $build)
+	{
+		$info = Info::model()->find();
+		$info->version = $version;
+		$info->build = $build;
+
+		if ($info->save())
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
 	public function doCoreUpdate()
 	{
 		$coreUpdater = new CoreUpdater();

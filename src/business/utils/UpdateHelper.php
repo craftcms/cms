@@ -8,49 +8,55 @@ class UpdateHelper
 {
 	/**
 	 * @static
-	 * @param $manifestFile
+	 * @param $manifestData
 	 */
-	public static function rollBackFileChanges($manifestFile)
+	public static function rollBackFileChanges($manifestData)
 	{
-		$manifestData = explode("\n", $manifestFile->contents);
-
 		foreach ($manifestData as $row)
 		{
+			if (self::isManifestVersionInfoLine($row))
+				continue;
+
 			$rowData = explode(';', $row);
-			$file = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1].'.bak');
+			$file = b()->file->set(b()->path->appPath.'../../'.$rowData[0].'.bak');
 
 			if ($file->exists)
-				$file->rename($rowData[1]);
+				$file->rename(b()->path->appPath.'../../'.$rowData[0]);
 		}
 	}
 
 	/**
 	 * @static
-	 * @param $masterManifest
+	 *
+	 * @param $manifestData
+	 * @param $sourceTempDir
 	 * @return bool
 	 */
-	public static function doFileUpdate($masterManifest)
+	public static function doFileUpdate($manifestData, $sourceTempDir)
 	{
-		$manifestData = explode("\n", $masterManifest->contents);
-
 		try
 		{
 			foreach ($manifestData as $row)
 			{
+				if (self::isManifestVersionInfoLine($row))
+					continue;
+
 				$rowData = explode(';', $row);
 
-				$destFile = b()->file->set(BLOCKS_BASE_PATH.'../'.$rowData[1]);
-				$sourceFile = b()->file->set($rowData[0].'/'.$rowData[1]);
+				$destFile = b()->file->set(b()->path->appPath.'../../'.$rowData[0]);
+				$sourceFile = b()->file->set($sourceTempDir->realPath.'/'.$rowData[0]);
 
-				switch (trim($rowData[2]))
+				switch (trim($rowData[1]))
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
+						Blocks::log('Updating file: '.$destFile->realPath);
 						$sourceFile->copy($destFile->realPath, true);
 						break;
 
 					case PatchManifestFileAction::Remove:
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
+						Blocks::log('Renaming file for delete: '.$destFile->realPath);
 						$destFile->rename($destFile->realPath.'.bak');
 						break;
 
@@ -64,7 +70,7 @@ class UpdateHelper
 		catch (Exception $e)
 		{
 			Blocks::log('Error updating files: '.$e->getMessage());
-			UpdateHelper::rollBackFileChanges($masterManifest);
+			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
 
@@ -99,17 +105,12 @@ class UpdateHelper
 		throw new Exception('Unknown Blocks Edition: '.$edition);
 	}
 
-	/**
-	 * @static
-	 * @param $path
-	 * @return string
-	 */
-	public static function stripRootBlocksPath($path)
+	public static function isManifestVersionInfoLine($line)
 	{
-		if (strpos($path, 'blocks') == 0)
-			$path = substr($path, 7);
+		if ($line[0] == '#' && $line[1] == '#')
+			return true;
 
-		return $path;
+		return false;
 	}
 
 	/**
@@ -122,7 +123,13 @@ class UpdateHelper
 		// get manifest file
 		$manifestFile = b()->file->set($manifestDataPath.'/blocks_manifest');
 		$manifestFileData = $manifestFile->contents;
-		return explode("\n", $manifestFileData);
+		$manifestFileData = explode("\r\n", $manifestFileData);
+
+		// Remove any trailing empty newlines
+		if ($manifestFileData[count($manifestFileData) - 1] == '')
+			array_pop($manifestFileData);
+
+		return $manifestFileData;
 	}
 
 	/**
@@ -148,28 +155,4 @@ class UpdateHelper
 		$migrationFile->copy($destinationFile, true);
 		return $destinationFile;
 	}
-
-	/**
-	 * @static
-	 * @param $counter
-	 * @param $manifestDataRow
-	 * @param $fileList
-	 * @return bool
-	 */
-	public static function inManifestList(&$counter, $manifestDataRow, $fileList)
-	{
-		$found = false;
-		for ($counter; $counter < count($fileList); $counter++)
-		{
-			$pieces = explode(';', $fileList[$counter]);
-			if ($manifestDataRow === $pieces[1].';'.$pieces[2])
-			{
-				$found = true;
-				break;
-			}
-		}
-
-		return $found;
-	}
-
 }
