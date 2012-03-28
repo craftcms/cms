@@ -25,8 +25,9 @@ class UpdatesService extends Component
 		if ($blocksUpdateInfo->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo->newerReleases) > 0)
 		{
 			$notes = $this->_generateUpdateNotes($blocksUpdateInfo->newerReleases, 'Blocks');
+			$edition = Blocks::getEdition();
 			$updates[] = array(
-				'name' => 'Blocks '.Blocks::getEdition(),
+				'name' => 'Blocks'.($edition == 'Standard' ? '' : ' '.$edition),
 				'handle' => 'Blocks',
 				'version' => $blocksUpdateInfo->latestVersion.' Build '.$blocksUpdateInfo->latestBuild,
 				'critical' => $blocksUpdateInfo->criticalUpdateAvailable,

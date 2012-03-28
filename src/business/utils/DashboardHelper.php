@@ -25,7 +25,7 @@ class DashboardHelper
 
 			if ($blocksUpdateInfo->newerReleases !== null && count($blocksUpdateInfo->newerReleases) > 0)
 				if (b()->updates->criticalBlocksUpdateAvailable($blocksUpdateInfo->newerReleases))
-					$alerts[] = 'There is a critical update for Blocks available. <a href="'.UrlHelper::generateUrl('settings/updates').'">Update Now.</a>';
+					$alerts[] = 'There is a critical update for Blocks available. <a class="go" href="'.UrlHelper::generateUrl('settings/updates').'">Go to Updates</a>';
 		}
 
 		return $alerts;

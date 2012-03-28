@@ -5,77 +5,6 @@
 b.$window.on('resize.updates', centerSpinner);
 
 
-
-var Update = b.Base.extend({
-
-	dom: null,
-	expanded: false,
-
-	init: function(div, i)
-	{
-		this.dom = {};
-		this.dom.$update = $(div);
-		this.dom.$toggle = $('.notes-toggle', this.dom.$update);
-		this.dom.$notesContainer = $('.notes-container', this.dom.$update);
-		this.dom.$notes = $('.notes', this.dom.$notesContainer);
-
-		this.addListener(this.dom.$toggle, 'click', 'toggle');
-
-		if (location.hash && location.hash == '#'+this.dom.$update.attr('id'))
-		{
-			this.expand(false);
-
-			// scroll to this update
-			var scrollTo = this.dom.$update.offset().top - 54;
-			$('html, body').animate({scrollTop: scrollTo});
-		}
-
-		this.dom.$update.delay(i*b.fx.delay).animate({opacity: 1});
-	},
-
-	toggle: function()
-	{
-		if (!this.expanded)
-			this.expand(true);
-		else
-			this.collapse(true);
-	},
-
-	expand: function(animate)
-	{
-		if (animate)
-		{
-			var height = this.dom.$notes.outerHeight();
-			this.dom.$notesContainer.stop().animate({height: height}, $.proxy(function() {
-				this.dom.$notesContainer.height('auto');
-			}, this));
-		}
-		else
-		{
-			this.dom.$notesContainer.stop().height('auto');
-		}
-
-		this.dom.$toggle.html('Hide release notes');
-		this.expanded = true;
-	},
-
-	collapse: function(animate)
-	{
-		if (animate)
-		{
-			this.dom.$notesContainer.stop().animate({height: 0});
-		}
-		else
-		{
-			this.dom.$notesContainer.stop().height(0);
-		}
-
-		this.dom.$toggle.html('Show release notes');
-		this.expanded = false;
-	}
-});
-
-
 var updatesUrl = b.baseUrl+'settings/updates/updates';
 $('#updates').load(updatesUrl, function()
 {
@@ -84,17 +13,37 @@ $('#updates').load(updatesUrl, function()
 	var $sidebarLink = $('#sb-updates'),
 		$sidebarBadge = $sidebarLink.find('span.badge'),
 		$updatesContainer = $('#updates'),
-		$updates = $updatesContainer.find('.update'),
-		totalUpdates = $updates.length;
+		totalUpdates = $updatesContainer.find('tr').length;
 
-	// update the sidebar badge
 	if (totalUpdates)
 	{
-		// create the badge if it doesn't exist
+		// create the sidebar badge if it doesn't exist
 		if (!$sidebarBadge.length)
 			$sidebarBadge = $('<span />').addClass('badge').appendTo($sidebarLink);
 
 		$sidebarBadge.html(totalUpdates);
+
+		// initialize the modals
+		var $noteLinks = $updatesContainer.find('a.notes');
+		if ($noteLinks.length)
+		{
+			var $pane = $('<div class="pane modal"/>').appendTo(b.$body),
+				$head = $('<div class="pane-head"><h5>Release Notes</h5></div>').appendTo($pane),
+				$body = $('<div class="pane-body scrollpane"/>').appendTo($pane),
+				$item = $('<div class="pane-item"/>').appendTo($body),
+				$foot = $('<div class="pane-foot"/>').appendTo($pane),
+				$btn  = $('<div class="btn close"><span class="label">Close</span></div>').appendTo($foot);
+
+			var noteModal = new b.ui.Modal($pane);
+
+			$noteLinks.click(function() {
+				var $link = $(this),
+					$notes = $link.next();
+				$item.html($notes.html());
+				noteModal.show();
+				noteModal.centerInViewport();
+			});
+		}
 	}
 	else
 	{
@@ -114,11 +63,7 @@ $('#updates').load(updatesUrl, function()
 
 	// fade in the updates
 	$('#checking').fadeOut();
-	$updatesContainer.fadeIn(function() {
-		$updates.each(function(i) {
-			var update = new Update(this, i);
-		});
-	});
+	$updatesContainer.fadeIn();
 });
 
 

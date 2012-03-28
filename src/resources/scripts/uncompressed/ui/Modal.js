@@ -62,6 +62,7 @@ b.ui.Modal = b.Base.extend({
 		this.$footer = this.$container.find('.pane-foot:first');
 		this.$footerBtns = this.$footer.find('.btn');
 		this.$submitBtn = this.$footerBtns.filter('.submit:first');
+		this.$closeBtn = this.$footerBtns.filter('.close:first');
 
 		if (this.settings.draggable)
 		{
@@ -78,6 +79,7 @@ b.ui.Modal = b.Base.extend({
 			this.setZIndex(this.zIndex);
 
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
+		this.addListener(this.$closeBtn, 'click', 'hide');
 	},
 
 	setZIndex: function(zIndex)

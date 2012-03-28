@@ -27,9 +27,11 @@ class UpdatesWidget extends Widget
 		if ($updateInfo->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 		{
 			$this->updates[] = array(
-				'name' => 'Blocks',
-				'handle' => 'Blocks',
-				'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild
+				'name'     => 'Blocks',
+				'handle'   => 'Blocks',
+				'version'  => $updateInfo->latestVersion.' Build '.$updateInfo->latestBuild,
+				'date'     => new DateTime('@'.$updateInfo->latestDate),
+				'critical' => $updateInfo->criticalUpdateAvailable
 			);
 		}
 
@@ -41,9 +43,10 @@ class UpdatesWidget extends Widget
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
 					$this->updates[] = array(
-						'name' => $plugin->displayName,
-						'handle' => $plugin->class,
-						'version' => $plugin->latestVersion
+						'name'    => $plugin->displayName,
+						'handle'  => $plugin->class,
+						'version' => $plugin->latestVersion,
+						'date'    => new DateTime('@'.$plugin->latestDate)
 					);
 				}
 			}

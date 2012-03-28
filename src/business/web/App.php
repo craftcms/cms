@@ -43,6 +43,7 @@ class App extends \CWebApplication
 	{
 		$aliases = array(
 			'blocktypes.*',
+			'business.datetime.*',
 			'business.db.*',
 			'business.email.*',
 			'business.enums.*',
