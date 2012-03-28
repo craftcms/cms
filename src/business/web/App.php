@@ -11,6 +11,7 @@ class App extends \CWebApplication
 	private $_layoutPath;
 	private $_isInstalled;
 	private $_isSetup;
+	private $_isDbUpdateNeeded;
 
 	/**
 	 * Init
@@ -128,8 +129,9 @@ class App extends \CWebApplication
 		$this->_validateConfig();
 
 		// Process install and setup requests?
-		$this->_processInstallAndSetupRequest('install', !$this->isInstalled);
-		$this->_processInstallAndSetupRequest('setup', !$this->isSetup);
+		$this->_processSpecialRequests('install', !$this->isInstalled);
+		$this->_processSpecialRequests('setup', !$this->isSetup);
+		$this->_processSpecialRequests('dbupdate', $this->isDbUpdateNeeded);
 
 		// Otherwise maybe it's an action request?
 		$this->_processActionRequest();
@@ -144,12 +146,13 @@ class App extends \CWebApplication
 	 * @param $what
 	 * @param $force
 	 */
-	private function _processInstallAndSetupRequest($what, $force)
+	private function _processSpecialRequests($what, $force)
 	{
 		// Are they requesting this specifically?
 		if ($this->request->mode == RequestMode::CP && $this->request->getPathSegment(1) === $what)
 		{
-			$action = $this->request->getPathSegment(2, 'index');
+			$defaultAction = $what == 'dbupdate' ? 'dbUpdateRequired' : 'index';
+			$action = $this->request->getPathSegment(2, $defaultAction);
 			$this->runController("{$what}/{$action}");
 			$this->end();
 		}
@@ -157,11 +160,15 @@ class App extends \CWebApplication
 		// Should they be?
 		else if ($force)
 		{
-			// Give it to them if accessing the CP
-			if ($this->request->mode == RequestMode::CP)
+			// Give it to them if accessing the CP or it's an action request for logging in.
+			if ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && $this->request->path = 'action/session/login'))
 			{
-				$url = UrlHelper::generateUrl($what);
-				$this->request->redirect($url);
+				// so we don't get an infinite redirect loop.
+				if ($this->request->path !== 'login' && $this->request->path !== 'action/session/login')
+				{
+					$url = UrlHelper::generateUrl($what);
+					$this->request->redirect($url);
+				}
 			}
 			// Otherwise return a 404
 			else
@@ -296,6 +303,36 @@ class App extends \CWebApplication
 
 		if (!empty($messages))
 			throw new Exception(implode(PHP_EOL, $messages));
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function getIsDbUpdateNeeded()
+	{
+		if (!isset($this->_isDbUpdateNeeded))
+		{
+			if (Blocks::getBuild(false) !== Blocks::getStoredBuild() || Blocks::getVersion(false) !== Blocks::getStoredVersion())
+			{
+				if (strpos(Blocks::getEdition(false), '@@@') !== false)
+					$this->_isDbUpdateNeeded = false;
+				else
+					$this->_isDbUpdateNeeded = true;
+			}
+			else
+				$this->_isDbUpdateNeeded = false;
+		}
+
+		return $this->_isDbUpdateNeeded;
+	}
+
+	/**
+	 * Updates isDbUpdateNeeded
+	 * @param $isDbUpdateNeeded
+	 */
+	public function setIsDbUpdateNeeded($isDbUpdateNeeded)
+	{
+		$this->_isDbUpdateNeeded = (bool)$isDbUpdateNeeded;
 	}
 
 	/**
