@@ -13,7 +13,6 @@ b.Entry = b.Base.extend({
 
 	entryId: null,
 	draftId: null,
-	viewing: null,
 
 	changedInputs: null,
 	waiting: false,
@@ -33,8 +32,6 @@ b.Entry = b.Base.extend({
 		this.$page = this.$form.find('.page:first');
 		this.$autosaveStatus = this.$form.find('p.autosave-status:first');
 
-		this.viewing = this.$versionSelect.val();
-
 		this.$inputs = $();
 		this.changedInputs = {};
 
@@ -47,7 +44,7 @@ b.Entry = b.Base.extend({
 		// Listen for version changes
 		this.addListener(this.$versionSelect, 'change', function(event) {
 			var val = this.$versionSelect.val();
-			if (val != this.viewing)
+			if (val != this.draftId && !(val == 'published' && !this.draftId))
 			{
 				switch (val)
 				{
@@ -59,7 +56,7 @@ b.Entry = b.Base.extend({
 						if (draftName)
 							b.content.createDraft(this.entryId, draftName);
 						else
-							this.$versionSelect.val(this.viewing);
+							this.$versionSelect.val(this.draftId ? this.draftId : 'published');
 						break;
 					default:
 						b.content.loadEntry(this.entryId, val);
@@ -173,6 +170,7 @@ b.Entry = b.Base.extend({
 					this.draftId = response.draftId;
 					var $newDraftOption = this.$versionSelect.find('[value=new]')
 						$option = $('<option value="'+response.draftId+'">“'+response.draftName+'” by '+response.draftAuthor+'</option>').insertBefore($newDraftOption);
+
 					this.$versionSelect.val(response.draftId);
 
 					b.content.pushHistoryState(response.entryId, response.entryTitle, response.draftNum, response.draftName);
