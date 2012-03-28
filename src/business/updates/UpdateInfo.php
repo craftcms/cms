@@ -10,7 +10,9 @@ class UpdateInfo
 	public $localVersion = null;
 	public $latestVersion = null;
 	public $latestBuild = null;
+	public $latestDate = null;
 	public $criticalUpdateAvailable = null;
+	public $manualUpdateRequired = null;
 	public $versionUpdateStatus = null;
 	public $plugins = null;
 	public $newerReleases = null;
@@ -28,7 +30,9 @@ class UpdateInfo
 		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
 		$this->latestBuild = isset($properties['latestBuild']) ? $properties['latestBuild'] : null;
 		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
+		$this->manualUpdateRequired = isset($properties['manualUpdateRequired']) ? $properties['manualUpdateRequired'] : null;
 		$this->versionUpdateStatus = isset($properties['versionUpdateStatus']) ? $properties['versionUpdateStatus'] : null;
+		$this->latestDate = isset($properties['latestDate']) ? $properties['latestDate'] : null;
 
 		if (isset($properties['newerReleases']) && count($properties['newerReleases']) > 0)
 			foreach ($properties['newerReleases'] as $blocksReleaseData)

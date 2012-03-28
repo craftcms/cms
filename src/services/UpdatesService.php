@@ -28,8 +28,9 @@ class UpdatesService extends Component
 			$updates[] = array(
 				'name' => 'Blocks '.Blocks::getEdition(),
 				'handle' => 'Blocks',
-				'version' => $blocksUpdateInfo->latestVersion.'.'.$blocksUpdateInfo->latestBuild,
+				'version' => $blocksUpdateInfo->latestVersion.' Build '.$blocksUpdateInfo->latestBuild,
 				'critical' => $blocksUpdateInfo->criticalUpdateAvailable,
+				'manualUpdateRequired' => $blocksUpdateInfo->manualUpdateRequired,
 				'notes' => $notes,
 			);
 
@@ -73,6 +74,21 @@ class UpdatesService extends Component
 	}
 
 	/**
+	 * @param $blocksReleases
+	 * @return bool
+	 */
+	public function manualUpdateRequired($blocksReleases)
+	{
+		foreach ($blocksReleases as $blocksRelease)
+		{
+			if ($blocksRelease->manual_update_required)
+				return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param $plugins
 	 * @return bool
 	 */
@@ -107,6 +123,17 @@ class UpdatesService extends Component
 	public function isCriticalUpdateAvailable()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->criticalUpdateAvailable))
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function isManualUpdateRequired()
+	{
+		if ((isset($this->_updateInfo) && $this->_updateInfo->manualUpdateRequired))
 			return true;
 
 		return false;
@@ -232,7 +259,7 @@ class UpdatesService extends Component
 		foreach ($updates as $update)
 		{
 			$notes .= '<h5>'.$name.' '.$update->version.($name == 'Blocks' ? '.'.$update->build : '').'</h5>';
-			$notes .= '<ul><li>'.$update->releaseNotes.'</li></ul>';
+			$notes .= '<ul><li>'.$update->notes.'</li></ul>';
 		}
 
 		return $notes;

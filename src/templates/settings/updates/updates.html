@@ -8,7 +8,8 @@
 		<div class="pane-head">
 			<div class="name">{:update.name} <strong>{:update.version}</strong></div>
 			{if update.critical}<div class="badge alert">Critical</div>{/if}
-			<form method="post" action="{:url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
+			{if update.manualUpdateRequired}<div class="badge alert">Manual Update Required</div>{/if}
+			<form method="post" action="{:url.base}update/{:update.handle}">{if !update.manualUpdateRequired}<input class="btn" type="submit" value="Update">{/if}</form>
 			<a class="notes-toggle">Show release notes</a>
 		</div>
 		<div class="notes-container">

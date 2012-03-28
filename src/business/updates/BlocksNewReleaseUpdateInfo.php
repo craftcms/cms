@@ -8,10 +8,11 @@ class BlocksNewReleaseUpdateInfo
 {
 	public $version = null;
 	public $build = null;
-	public $releaseDate = null;
-	public $releaseNotes = null;
+	public $date = null;
+	public $notes = null;
 	public $type = null;
 	public $critical = null;
+	public $manualUpdateRequired = null;
 
 	/**
 	 * @param null $properties
@@ -24,8 +25,9 @@ class BlocksNewReleaseUpdateInfo
 		$this->version = isset($properties['version']) ? $properties['version'] : null;
 		$this->build = isset($properties['build']) ? $properties['build'] : null;
 		$this->critical = isset($properties['critical']) ? $properties['critical'] : null;
-		$this->releaseDate = isset($properties['releaseDate']) ? $properties['releaseDate'] : null;
-		$this->releaseNotes = isset($properties['releaseNotes']) ? $properties['releaseNotes'] : null;
+		$this->date = isset($properties['date']) ? $properties['date'] : null;
+		$this->notes = isset($properties['notes']) ? $properties['notes'] : null;
 		$this->type = isset($properties['type']) ? $properties['type'] : null;
+		$this->manualUpdateRequired = isset($properties['manualUpdateRequired']) ? $properties['manualUpdateRequired'] : null;
 	}
 }
