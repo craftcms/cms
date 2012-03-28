@@ -217,7 +217,6 @@ table.pane-body > tbody > tr > .pane-item:not(:first-child) { padding-left: 0; }
 
 /* pane item + grid */
 .pane-item.grid { padding-top: 0; padding-bottom: 0; }
-.pane-item.grid .field { padding-top: 16px !important; }
 
 /* modals */
 .modal { display: none; position: absolute; -webkit-user-select: none; }
@@ -377,13 +376,16 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Fields
 /* ----------------------------------------*/
 
-.field { padding-top: 16px; padding-bottom: 16px; position: relative; }
+.field { margin-top: 16px; margin-bottom: 16px; position: relative; }
 .field > label,
 .field > .left > label { display: inline-block; line-height: 20px; font-weight: bold; font-family: sans-serif; color: #666; }
 .field > label { margin-bottom: 2px; }
 .field > label.required { padding-right: 14px; background: url(../images/required.png) no-repeat 100% 50%; }
 .field > label + p,
 .field > .left > label + p { margin: -2px 0 8px; color: #888; }
+
+.pane-item.field,
+.pane-item.grid .field { margin-top: 0; margin-bottom: 0; padding-top: 16px; padding-bottom: 16px; }
 
 /* inputs */
 .input-wrapper { padding-right: 18px; }
