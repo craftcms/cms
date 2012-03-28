@@ -431,7 +431,10 @@ class ContentService extends Component
 		$draft->author_id = b()->users->current->id;
 		$draft->language = ($language ? $language : b()->sites->currentSite->language);
 		$draft->draft = true;
-		$draft->name = ($name ? $name : 'Untitled');
+
+		$untitled = !$name;
+		if (!$untitled)
+			$draft->name = $name;
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
@@ -442,6 +445,8 @@ class ContentService extends Component
 				try
 				{
 					$draft->num = $num;
+					if ($untitled)
+						$draft->name = 'Draft '.$num;
 					$draft->save();
 					break;
 				}
@@ -475,7 +480,10 @@ class ContentService extends Component
 	 */
 	public function getDraftById($draftId)
 	{
-		$draft = EntryVersion::model()->findById($draftId);
+		$draft = EntryVersion::model()->findByAttributes(array(
+			'id'    => $draftId,
+			'draft' => true
+		));
 		return $draft;
 	}
 

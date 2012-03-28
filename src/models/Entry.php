@@ -6,8 +6,6 @@ namespace Blocks;
  */
 class Entry extends Model
 {
-	public $draft;
-
 	protected $tableName = 'entries';
 	protected $hasContent = true;
 
@@ -37,6 +35,8 @@ class Entry extends Model
 		array('columns' => array('slug','section_id','parent_id'), 'unique' => true),
 	);
 
+	protected $_draft;
+
 	/**
 	 * Use the section's content table name
 	 */
@@ -50,6 +50,22 @@ class Entry extends Model
 	 */
 	public function createContentTable()
 	{
+	}
+
+	/**
+	 * Returns the status of the entry
+	 * @return string The entry status (live, pending, expired, offline)
+	 */
+	public function getStatus()
+	{
+		if ($this->live)
+			return 'live';
+		else if ($this->pending)
+			return 'pending';
+		else if ($this->expired)
+			return 'expired';
+		else
+			return 'offline';
 	}
 
 	/**
@@ -129,17 +145,29 @@ class Entry extends Model
 	}
 
 	/**
-	 * Mix-in draft content
+	 * Returns the draft
+	 */
+	public function getDraft()
+	{
+		return $this->_draft;
+	}
+
+	/**
+	 * Sets a draft
 	 * @param EntryVersion $draft
 	 */
-	public function mixInDraftContent($draft)
+	public function setDraft($draft)
 	{
+		$this->_draft = $draft;
+
 		// Index draft content by block ID
-		$draftContent = $draft->content;
 		$draftContentByBlockId = array();
-		foreach ($draftContent as $block)
+		foreach ($draft->content as $content)
 		{
-			$draftContentByBlockId[$block->block_id] = $block->value;
+			if ($content->title)
+				$this->title = $content->value;
+			else
+				$draftContentByBlockId[$content->block_id] = $content->value;
 		}
 
 		// Save draft data onto blocks

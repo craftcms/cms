@@ -30,12 +30,14 @@ b.ui.NiceText = b.Base.extend({
 
 		this.$input.data('nicetext', this);
 
-		this.autoHeight = (this.settings.autoHeight && this.$input[0].nodeName == 'TEXTAREA');
-
-		if (this.autoHeight)
-			this.minHeight = this.getStageHeight('');
-
 		this.getVal();
+
+		this.autoHeight = (this.settings.autoHeight && this.$input[0].nodeName == 'TEXTAREA');
+		if (this.autoHeight)
+		{
+			this.minHeight = this.$input.height();
+			this.setHeight();
+		}
 
 		if (this.settings.hint)
 		{

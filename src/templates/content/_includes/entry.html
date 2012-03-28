@@ -14,17 +14,15 @@
 	</div>
 
 	<div class="left">
-		{!--
-		<div class="btn-group">
-			<a class="btn sel"><span class="icon icon136"></span></a>
-			<a class="btn"><span class="icon icon274"></span></a>
-		</div>--}
-		<select>
+		<select class="versionselect">
+			{if entry.published}
+				<option value="published" {if !entry.draft}selected="selected"{/if}>Published</option>
+			{/if}
 			{foreach entry.drafts as draft}
-				<option value="{:draft.id}">{:draft.name}</option>
+				<option value="{:draft.num}" {if entry.draft.num == draft.num}selected="selected"{/if}>“{:draft.name}” by {:draft.author.firstNameLastInitial}</option>
 			{/foreach}
+			<option value="new">New draft…</option>
 		</select>
-		
 	</div>
 
 	<div class="right">
@@ -42,10 +40,6 @@
 				<div class="pane-item field page-head">
 					<h1>{:entry.title}</h1>
 					{if entry.url}<div class="url">{:entry.url}</div>{/if}
-					{!--<div class="btn">
-						<span class="label">Draft 1</span>
-						<span class="arrow"></span>
-					</div>--}
 				</div>
 
 				{foreach entry.blocks as block}

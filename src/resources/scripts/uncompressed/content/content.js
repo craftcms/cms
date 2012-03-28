@@ -119,6 +119,32 @@ var Content = b.Base.extend({
 		$input.focus();
 	},
 
+	pushHistoryState: function(entryId, entryTitle, draftNum, draftName)
+	{
+		// Push the new history state
+		if (History.enabled)
+		{
+			// Ignore the next state change event
+			this.ignoreNextStateChange = true;
+
+			var title = 'Editing “'+(entryTitle || 'Untitled')+'”';
+			if (draftName)
+				title += ' ('+draftName+')';
+
+			var url = this.getEntryEditUrl(entryId, draftNum);
+			History.pushState({entryId: entryId, draftNum: draftNum}, title, url);
+		}
+
+		// Remember which draft we're looking at
+		if (typeof localStorage != 'undefined')
+		{
+			if (draftNum)
+				localStorage.setItem('lastDraftNum:'+entryId, draftNum);
+			else
+				localStorage.removeItem('lastDraftNum:'+entryId);
+		}
+	},
+
 	onStateChange: function()
 	{
 		if (this.ignoreNextStateChange)
@@ -163,7 +189,7 @@ var Content = b.Base.extend({
 		this.loadEntry(entryId, null, true);
 	},
 
-	loadEntry: function(entryId, draftNum, pushState)
+	loadEntry: function(entryId, draftNum)
 	{
 		// Figure out which draft to show
 		if (draftNum === null)
@@ -174,44 +200,36 @@ var Content = b.Base.extend({
 			draftNum: draftNum
 		};
 
-		$.post(b.actionUrl+'content/loadEntryEditPage', data, $.proxy(function(response) {
-			if (response.success)
-			{
-				// Load up the entry HTML
-				this.$main.html(response.entryHtml);
+		$.post(b.actionUrl+'content/loadEntryEditPage', data, $.proxy(this, 'initEntry'));
+	},
 
-				// Change the History state
-				if (pushState && History.enabled)
-				{
-					// Ignore the next state change event
-					this.ignoreNextStateChange = true;
+	createDraft: function(entryId, draftName)
+	{
+		var data = {
+			entryId: entryId,
+			draftName: draftName
+		};
 
-					var title = 'Editing “'+(response.entryTitle || 'Untitled')+'”';
-					if (response.draftName)
-						title += ' ('+response.draftName+')';
+		$.post(b.actionUrl+'content/createDraft', data, $.proxy(this, 'initEntry'));
+	},
 
-					var url = this.getEntryEditUrl(entryId, draftNum);
-					History.pushState({entryId: entryId, draftNum: response.draftNum}, title, url);
-				}
+	initEntry: function(response)
+	{
+		if (response.success)
+		{
+			// Load up the entry HTML
+			this.$main.html(response.entryHtml);
 
-				// Remember the draft id
-				if (typeof localStorage != 'undefined')
-				{
-					if (response.draftNum)
-						localStorage.setItem('lastDraftNum:'+entryId, response.draftNum);
-					else
-						localStorage.removeItem('lastDraftNum:'+entryId);
-				}
+			this.pushHistoryState(response.entryId, response.entryTitle, response.draftNum, response.draftName);
 
-				// Initialize the entry
-				this.selEntry = new b.Entry(this.$main, entryId, response.draftId);
-			}
-			else
-			{
-				var error = (response.error || 'An unknown error occurred.');
-				// show the error...
-			}
-		}, this));
+			// Initialize the entry
+			this.selEntry = new b.Entry(this.$main, response.entryId, response.draftId);
+		}
+		else
+		{
+			var error = (response.error || 'An unknown error occurred.');
+			alert(error);
+		}
 	}
 });
 
