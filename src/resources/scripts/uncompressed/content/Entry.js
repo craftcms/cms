@@ -20,6 +20,9 @@ b.Entry = b.Base.extend({
 
 	autosaveTimeout: null,
 
+	/**
+	 * Initilaizes the entry.
+	 */
 	init: function(container, entryId, draftId)
 	{
 		this.$container = $(container);
@@ -71,6 +74,10 @@ b.Entry = b.Base.extend({
 		});
 	},
 
+	/**
+	 * Initializes an input (stores its current value, listens for changes).
+	 * @param mixed input Either an actual element or a jQuery collection.
+	 */
 	initInput: function(input)
 	{
 		var $inputs = $(input);
@@ -94,6 +101,12 @@ b.Entry = b.Base.extend({
 		}
 	},
 
+	/**
+	 * Determines whether an input's value has changed since the last autosave,
+	 * adding or removing it from the changedInputs array if necessary.
+	 * @param object event The input's event object
+	 * @param bool secondCall Keydown events will use this param to signify that it's being called for the second time, after a 1ms delay.
+	 */
 	onInputChange: function(event, secondCall)
 	{
 		// Check again in 1ms if this was a keydown event
@@ -131,6 +144,10 @@ b.Entry = b.Base.extend({
 		}
 	},
 
+	/**
+	 * Returns all of the data necessary for saving changes to the entry
+	 * @return array
+	 */
 	getSaveData: function()
 	{
 		var data = {entryId: this.entryId};
@@ -212,6 +229,9 @@ b.Entry = b.Base.extend({
 		return data;
 	},
 
+	/**
+	 * Autosaves the current draft
+	 */
 	autosaveDraft: function()
 	{
 		// Make sure there's actually something to save
@@ -264,6 +284,9 @@ b.Entry = b.Base.extend({
 		}, this));
 	},
 
+	/**
+	 * Publishes the current draft
+	 */
 	publishDraft: function()
 	{
 		// Prevent autosaves
