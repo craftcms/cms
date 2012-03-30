@@ -28,10 +28,10 @@ class Block extends Model
 	public $blocktypeName;
 
 	public $required;
-	public $data;
 
 	protected $settingsTemplate;
 	protected $columnType = AttributeType::Text;
+	protected $_data;
 
 
 	/**
@@ -91,11 +91,29 @@ class Block extends Model
 	}
 
 	/**
+	 * Provides an opportunity to modify the saved data as it's getting attached to the block
+	 * @param string $data
+	 */
+	public function setData($data)
+	{
+		$this->_data = $data;
+	}
+
+	/**
+	 * Retuns the data
+	 * @return mixed
+	 */
+	public function getData()
+	{
+		return $this->_data;
+	}
+
+	/**
 	 * String representation of the block
 	 */
 	public function __toString()
 	{
-		return (string)$this->data;
+		return (string)$this->_data;
 	}
 
 }

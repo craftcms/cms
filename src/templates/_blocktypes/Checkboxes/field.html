@@ -1,3 +1,3 @@
 {foreach block.settings.options as option}
-	<div><label><input {if index == 0}id="{:block.handle}-block"{/if} name="{:block.handle}[]" type="checkbox" value="{:option}" /> {:option}</label></div>
+	<div><label><input {if index == 0}id="{:block.handle}-block"{/if} name="{:block.handle}[]" type="checkbox" value="{:option}" {if block.data.includes(option)}checked="checked"{/if} /> {:option}</label></div>
 {/foreach}

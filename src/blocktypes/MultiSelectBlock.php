@@ -18,4 +18,14 @@ class MultiSelectBlock extends BaseOptionsBlock
 	{
 		return implode("\n", $data);
 	}
+
+	/**
+	 * Converts the newline-separated data into an array
+	 */
+	public function setData($data)
+	{
+		if (!is_array($data))
+			$data = preg_split('/[\r\n]/', $data);
+		parent::setData($data);
+	}
 }
