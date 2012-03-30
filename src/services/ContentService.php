@@ -255,6 +255,7 @@ class ContentService extends Component
 	{
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
+
 		try
 		{
 			// Create the entry
@@ -389,6 +390,10 @@ class ContentService extends Component
 		return $exists;
 	}
 
+	/**
+	 * @param $entryId
+	 * @return mixed
+	 */
 	public function getEntryDrafts($entryId)
 	{
 		$drafts = b()->db->createCommand()
@@ -406,7 +411,7 @@ class ContentService extends Component
 	 */
 	public function getEntryVersionsByEntryId($entryId)
 	{
-		$versions = EntryVersions::model()->findAllByAttributes(array(
+		$versions = EntryVersion::model()->findAllByAttributes(array(
 			'entry_id' => $entryId,
 		));
 		return $versions;
@@ -418,7 +423,7 @@ class ContentService extends Component
 	 */
 	public function getEntryVersionById($versionId)
 	{
-		$version = EntryVersions::model()->findById($versionId);
+		$version = EntryVersion::model()->findById($versionId);
 		return $version;
 	}
 
@@ -448,6 +453,7 @@ class ContentService extends Component
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
+
 		try
 		{
 			for ($num = $entry->latest_draft+1; true; $num++)
