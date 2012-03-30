@@ -4,15 +4,15 @@ namespace Blocks;
 /**
  *
  */
-class CheckboxesBlock extends BaseOptionsBlock
+class MultiSelectBlock extends BaseOptionsBlock
 {
-	public $blocktypeName = 'Checkboxes';
+	public $blocktypeName = 'Multi-select';
 
-	protected $settingsTemplate = '_blocktypes/Checkboxes/settings';
-	protected $fieldTemplate = '_blocktypes/Checkboxes/field';
+	protected $settingsTemplate = '_blocktypes/MultiSelect/settings';
+	protected $fieldTemplate = '_blocktypes/MultiSelect/field';
 
 	/**
-	 * Combines the checkbox selections into a flat string
+	 * Combines the multi-select selections into a flat string
 	 */
 	public function modifyPostData($data)
 	{

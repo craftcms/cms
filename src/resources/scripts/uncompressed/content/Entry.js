@@ -9,11 +9,11 @@ b.Entry = b.Base.extend({
 	$form: null,
 	$page: null,
 	$autosaveStatus: null,
-	$inputs: null,
 
 	entryId: null,
 	draftId: null,
 
+	inputs: null,
 	changedInputs: null,
 	waiting: false,
 	onAjaxResponse: null,
@@ -32,8 +32,8 @@ b.Entry = b.Base.extend({
 		this.$page = this.$form.find('.page:first');
 		this.$autosaveStatus = this.$form.find('p.autosave-status:first');
 
-		this.$inputs = $();
-		this.changedInputs = {};
+		this.inputs = {};
+		this.changedInputs = [];
 
 		this.$page.find('.nicetext').nicetext();
 
@@ -77,46 +77,57 @@ b.Entry = b.Base.extend({
 
 		for (var i = 0; i < $inputs.length; i++)
 		{
-			var $input = $($inputs[i]);
+			var $input   = $($inputs[i]),
+				basename = b.utils.getInputBasename($input),
+				val      = b.utils.getInputPostVal($input);
 
 			// Store the saved value
-			$input.data('savedval', $input.val());
+			$input.data('savedval', val);
 
 			// Listen for input changes
 			this.addListener($input, 'change,keydown,keypress,click,blur', 'onInputChange');
 
-			this.$inputs = this.$inputs.add($input);
+			// Keep track of this input
+			if (typeof this.inputs[basename] == 'undefined')
+				this.inputs[basename] = [];
+			this.inputs[basename].push($input);
 		}
 	},
 
-	onInputChange: function(event)
+	onInputChange: function(event, secondCall)
 	{
-		// check again in 1ms if this was a keydown event
-		if (event.type == 'keydown' && !event.dup)
+		// Check again in 1ms if this was a keydown event
+		if (event.type == 'keydown' && !secondCall)
 		{
 			setTimeout($.proxy(function() {
-				var dupEvent = $.extend({}, event, {dup: true});
-				this.onInputChange(dupEvent);
+				this.onInputChange(event, true);
 			}, this), 1);
 			return;
 		}
 
-		// Has the value changed?
-		var $input = $(event.currentTarget),
+		// Has the value changed since the last time we saved?
+		var $input   = $(event.currentTarget),
+			val      = b.utils.getInputPostVal($input),
 			savedVal = $input.data('savedval'),
-			val = $input.val();
+			changedInputsIndex  = $.inArray($input, this.changedInputs),
+			changedInputsLength = this.changedInputs.length;
 
-		if (val != savedVal)
+		if (val != savedVal && (!val || !savedVal || val.toString() != savedVal.toString()))
+		{
+			if (changedInputsIndex == -1)
+				this.changedInputs.push($input);
+		}
+		else if (changedInputsIndex != -1)
+		{
+			// Remove it from the autosave queue
+			this.changedInputs.splice(changedInputsIndex, 1);
+		}
+
+		// Push back the autosave timeout if something changed
+		if (this.changedInputs.length != changedInputsLength)
 		{
 			clearTimeout(this.autosaveTimeout);
-			$input.data('savedval', val);
-			var inputName = $input.attr('name');
-			this.changedInputs[inputName] = val;
 			this.autosaveTimeout = setTimeout($.proxy(this, 'autosaveDraft'), b.Entry.autosaveDelay);
-		}
-		else if (typeof this.changedInputs[inputName] != 'undefined')
-		{
-			delete this.changedInputs[inputName];
 		}
 	},
 
@@ -127,13 +138,76 @@ b.Entry = b.Base.extend({
 		if (this.draftId)
 			data.draftId = this.draftId;
 
+		var includedBasenames = [],
+			sameArrayNameCount = {};
+
 		// Pass the changed inputs
-		for (var inputName in this.changedInputs)
+		for (var i = 0; i < this.changedInputs.length; i++)
 		{
-			data['content['+inputName+']'] = this.changedInputs[inputName];
+			var $input   = this.changedInputs[i],
+				basename = b.utils.getInputBasename($input);
+
+			// Have we already included this input? (Possible if it shares the same basename with a previous input)
+			if (b.utils.inArray(basename, includedBasenames))
+				continue;
+
+			// Loop through all inputs that share the same basename, disregarding the original $input
+			for (var j = 0; j < this.inputs[basename].length; j++)
+			{
+				var $input = this.inputs[basename][j],
+					val    = b.utils.getInputPostVal($input);
+
+				// Update the input's savedval record
+				$input.data('savedval', $input.val());
+
+				// Skip this input if its value is null
+				if (val === null)
+					continue;
+
+				var inputName = b.utils.namespaceInputName($input.attr('name'), 'content[blocks]'),
+					arrayName = (inputName.substr(-2) == '[]');
+
+				if (arrayName)
+				{
+					// Chop off the brackets at the end
+					inputName = inputName.replace(/\[\]$/, '');
+
+					// Keep track of all like-named inputs
+					if (typeof sameArrayNameCount[inputName] == 'undefined')
+						sameArrayNameCount[inputName] = 0;
+				}
+
+				if (b.utils.isArray(val))
+				{
+					for (var k = 0; k < val.length; k++)
+					{
+						if (arrayName)
+						{
+							sameArrayNameCount[inputName]++;
+							data[inputName+'['+sameArrayNameCount[inputName]+']'] = val[k];
+						}
+						else
+							data[inputName] = val[k];
+					}
+				}
+				else
+				{
+					if (arrayName)
+					{
+						sameArrayNameCount[inputName]++;
+						data[inputName+'['+sameArrayNameCount[inputName]+']'] = val;
+					}
+					else
+						data[inputName] = val;
+				}
+			}
+
+			// Remember that we've already included all inputs with this basename
+			includedBasenames.push(basename);
 		}
 
-		this.changedInputs = {};
+		// Reset the changed inputs record
+		this.changedInputs = [];
 
 		return data;
 	},
@@ -141,13 +215,7 @@ b.Entry = b.Base.extend({
 	autosaveDraft: function()
 	{
 		// Make sure there's actually something to save
-		var autosave = false;
-		for (var i in this.changedInputs)
-		{
-			autosave = true;
-			break;
-		}
-		if (!autosave)
+		if (!this.changedInputs.length)
 			return;
 
 		// Only autosave once at a time
@@ -228,7 +296,7 @@ b.Entry = b.Base.extend({
 	}
 
 }, {
-	autosaveDelay: 2000
+	autosaveDelay: 1000
 });
 
 

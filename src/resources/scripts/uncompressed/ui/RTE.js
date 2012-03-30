@@ -115,7 +115,7 @@ b.ui.RTE = b.Base.extend({
 			// remove the sample element
 			$sample.remove();
 
-			options.push({ label: $label[0].outerHTML });
+			options.push({ label: $label.prop('outerHTML') });
 		}
 
 		this.styleSelect = new b.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));

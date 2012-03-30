@@ -212,7 +212,7 @@ class SetupController extends Controller
 		$entry = b()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 1');
 		b()->content->saveEntrySlug($entry, 'welcome');
 		$draft = b()->content->createDraft($entry->id);
-		b()->content->saveDraftContent($draft->id, array(
+		b()->content->saveDraftChanges($draft->id, array('blocks'=>array(
 			'summary' => 'It’s here.',
 			'body'    => "Hey {$user->first_name},\n\n" .
 			             "It’s been over a year since we started Blocks, and it’s finally starting to look like a CMS!\n\n" .
@@ -220,7 +220,7 @@ class SetupController extends Controller
 			             "We couldn’t be more thrilled to be handing out Alpha 1 to our closest friends in the business. We hope you like it, but please don’t hold back any criticism. We only have one chance to make this right.\n\n" .
 			             "Thanks for participating!\n" .
 			             '-Brandon & Brad'
-		));
+		)));
 		b()->content->publishDraft($draft->id);
 
 		// Redirect to the Welcome entry

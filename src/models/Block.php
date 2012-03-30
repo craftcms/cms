@@ -28,10 +28,10 @@ class Block extends Model
 	public $blocktypeName;
 
 	public $required;
-	public $data;
 
 	protected $settingsTemplate;
 	protected $columnType = AttributeType::Text;
+	protected $_data;
 
 
 	/**
@@ -80,11 +80,40 @@ class Block extends Model
 	}
 
 	/**
+	 * Provides an opportunity to modify the post data before it gets saved to the database.
+	 * This function is required for blocktypes that post array data that can't be converted to a string.
+	 * @param mixed $data
+	 * @return string
+	 */
+	public function modifyPostData($data)
+	{
+		return (string)$data;
+	}
+
+	/**
+	 * Provides an opportunity to modify the saved data as it's getting attached to the block
+	 * @param string $data
+	 */
+	public function setData($data)
+	{
+		$this->_data = $data;
+	}
+
+	/**
+	 * Retuns the data
+	 * @return mixed
+	 */
+	public function getData()
+	{
+		return $this->_data;
+	}
+
+	/**
 	 * String representation of the block
 	 */
 	public function __toString()
 	{
-		return (string)$this->data;
+		return (string)$this->_data;
 	}
 
 }

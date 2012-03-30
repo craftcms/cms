@@ -44,6 +44,16 @@ class ArrayTag extends VarTag
 	}
 
 	/**
+	 * Returns whether an element is in the array
+	 * @param mixed $elem
+	 * @return bool
+	 */
+	public function includes($elem)
+	{
+		return in_array($elem, $this->_var);
+	}
+
+	/**
 	 * @param $index
 	 * @return string
 	 */

@@ -32,7 +32,7 @@ b.ui.NiceText = b.Base.extend({
 
 		this.getVal();
 
-		this.autoHeight = (this.settings.autoHeight && this.$input[0].nodeName == 'TEXTAREA');
+		this.autoHeight = (this.settings.autoHeight && this.$input.prop('nodeName') == 'TEXTAREA');
 		if (this.autoHeight)
 		{
 			this.minHeight = this.getStageHeight('');
@@ -124,7 +124,7 @@ b.ui.NiceText = b.Base.extend({
 		if (!val)
 		{
 			val = '&nbsp;';
-			for (var i = 1; i < this.$input[0].rows; i++)
+			for (var i = 1; i < this.$input.prop('rows'); i++)
 			{
 				val += '<br/>&nbsp;';
 			}

@@ -149,6 +149,7 @@ class {ClassName} extends \CDbMigration
 
 	}
 }
+
 EOD;
 	}
 }
