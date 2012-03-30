@@ -15,6 +15,15 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function handleException($exception)
 	{
+		// extra logic to log any mysql deadlocks.
+		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
+		{
+			$data = b()->db->createCommand('SHOW ENGINE INNODB STATUS')->query();
+			$info = $data->read();
+			$info = serialize($info);
+			Blocks::log('Deadlock error, innodb status: '.$info, \CLogger::LEVEL_ERROR, 'system.db.CDbCommand');
+		}
+
 		$app = b();
 		if ($app instanceof \CWebApplication)
 		{
