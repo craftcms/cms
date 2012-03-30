@@ -16,7 +16,7 @@ b.ui.DragSort = b.ui.Drag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && b.utils.isObject(items))
+		if (!settings && b.isObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -81,7 +81,7 @@ b.ui.DragSort = b.ui.Drag.extend({
 	onDrag: function()
 	{
 		// if there's a container set, make sure that we're hovering over it
-		if (this.settings.container && !b.utils.hitTest(this.mouseX, this.mouseY, $(this.settings.container)))
+		if (this.settings.container && !b.hitTest(this.mouseX, this.mouseY, $(this.settings.container)))
 		{
 			if (this.closestItemIndex != -1)
 			{
@@ -112,7 +112,7 @@ b.ui.DragSort = b.ui.Drag.extend({
 
 		for (var i = 0; i < this.$items.length; i++)
 		{
-			var mouseDiff = b.utils.getDist(this.midpoints[i].left, this.midpoints[i].top, this.mouseX, this.mouseY);
+			var mouseDiff = b.getDist(this.midpoints[i].left, this.midpoints[i].top, this.mouseX, this.mouseY);
 
 			if (closestItemIndex == -1 || mouseDiff < closestItemMouseDiff)
 			{

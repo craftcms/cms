@@ -15,14 +15,14 @@ b.ui.EntryUrlFormatGenerator = b.ui.InputGenerator.extend({
 		sourceVal = sourceVal.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		sourceVal = b.utils.asciiString(sourceVal);
+		sourceVal = b.asciiString(sourceVal);
 
 		// Handle must start with a letter and end with a letter/number
 		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = b.utils.filterArray(sourceVal.split(/[^a-z0-9]+/));
+		var words = b.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words.length)
 			return words.join('-') + '/{slug}';

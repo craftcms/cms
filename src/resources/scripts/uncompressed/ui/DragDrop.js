@@ -54,7 +54,7 @@ b.ui.DragDrop = b.ui.Drag.extend({
 			{
 				var elem = this.$dropTargets[i];
 
-				if (b.utils.hitTest(this.mouseX, this.mouseY, elem))
+				if (b.hitTest(this.mouseX, this.mouseY, elem))
 				{
 					_activeDropTarget = elem;
 					break;
