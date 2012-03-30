@@ -111,6 +111,20 @@ EOD;
 	}
 
 	/**
+	 * @param $class
+	 * @return mixed
+	 */
+	protected function instantiateMigration($class)
+	{
+		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$class.'.php';
+		require_once($file);
+		$class = __NAMESPACE__.'\\'.$class;
+		$migration = new $class;
+		$migration->setDbConnection($this->getDbConnection());
+		return $migration;
+	}
+
+	/**
 	 * @return string
 	 */
 	protected function getTemplate()

@@ -1,5 +1,5 @@
 <?php
-use Blocks\Blocks;
+namespace Blocks;
 
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
@@ -11,7 +11,7 @@ class m120330_031201_remove_test_column_from_info extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$tablePrefix = Blocks::app()->config->tablePrefix;
+		$tablePrefix = b()->config->tablePrefix;
 		$this->dropColumn($tablePrefix.'info', 'test');
 	}
 }
