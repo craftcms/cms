@@ -111,6 +111,9 @@ class CoreUpdater implements IUpdater
 		return true;
 	}
 
+	/**
+	 * @return array
+	 */
 	private function _getManifestData()
 	{
 		$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->realPath);
@@ -129,7 +132,7 @@ class CoreUpdater implements IUpdater
 			$row = explode(';', $manifestData[$i]);
 
 			// we found a migration
-			if (strpos($row[1], '/migrations/') !== false && $row[2] == PatchManifestFileAction::Add)
+			if (strpos($row[0], '/migrations/') !== false && $row[1] == PatchManifestFileAction::Add)
 			{
 				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
 				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile(b()->path->appPath.'/'.$row[0]);
