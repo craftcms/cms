@@ -14,6 +14,7 @@ defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
 defined('YII_DEBUG') or define('YII_DEBUG', true);
 
 require_once(dirname(__FILE__).'/../../framework/yii.php');
+require_once(BLOCKS_APP_PATH.'business/Blocks.php');
 require_once(dirname(__FILE__).'/ConsoleApplication.php');
 
 $app = Yii::createApplication('Blocks\ConsoleApplication', $config);
