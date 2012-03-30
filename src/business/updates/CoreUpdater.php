@@ -117,6 +117,15 @@ class CoreUpdater implements IUpdater
 	private function _getManifestData()
 	{
 		$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->realPath);
+
+		// only use the manifest data starting from the local version
+		for ($counter = 0; $counter < count($manifestData); $counter++)
+		{
+			if (strpos($manifestData[$counter], '##'.$this->_blocksUpdateInfo->localVersion.'.'.$this->_blocksUpdateInfo->localBuild) !== false)
+				break;
+		}
+
+		$manifestData = array_slice($manifestData, $counter);
 		return $manifestData;
 	}
 

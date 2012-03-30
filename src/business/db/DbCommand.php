@@ -204,6 +204,7 @@ class DbCommand extends \CDbCommand
 	 * @param string $table The content table name
 	 * @param string $refTable The reference table name
 	 * @param string $fk The foreign key column name to the reference table
+	 * @return int
 	 */
 	public function createContentTable($table, $refTable, $fk)
 	{
@@ -229,6 +230,7 @@ class DbCommand extends \CDbCommand
 	 * @param string $table The blocks join table name
 	 * @param string $refTable The reference table name
 	 * @param string $fk The foreign key column name to the reference table
+	 * @return int
 	 */
 	public function createBlocksJoinTable($table, $refTable, $fk)
 	{
