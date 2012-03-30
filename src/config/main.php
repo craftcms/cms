@@ -27,6 +27,8 @@ return array(
 		'application.business.lib.Requests.Auth.*',
 		'application.business.lib.Requests.Response.*',
 		'application.business.lib.Requests.Transport.*',
+		'application.framework.cli.commands.*',
+		'application.framework.console.*',
 	),
 
 	'modules' => array(

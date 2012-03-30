@@ -13,7 +13,7 @@ class Migration
 	public static function runToTop()
 	{
 		$runner = self::_getRunner();
-		$args = array('yiic', 'migrate', '--migrationTable='.b()->config->getDbItem('tablePrefix').'_migrations', '--interactive=0');
+		$args = array(b()->path->consolePath.'yiic', 'migrate', '--migrationTable=migrations', '--interactive=0');
 
 		ob_start();
 		$runner->run($args);
@@ -32,7 +32,7 @@ class Migration
 		$migrationShortName = substr(b()->file->set($migrationName, false)->fileName, 1, 13);
 
 		$runner = self::_getRunner();
-		$args = array('yiic', 'migrate', 'to', $migrationShortName, '--migrationTable='.b()->config->getDbItem('tablePrefix').'_migrations', '--interactive=0');
+		$args = array(b()->path->consolePath.'yiic', 'migrate', 'to', $migrationShortName, '--migrationTable=migrations', '--interactive=0');
 
 		ob_start();
 		$runner->run($args);
@@ -51,7 +51,7 @@ class Migration
 			$number = 1;
 
 		$runner = self::_getRunner();
-		$args = array('yiic', 'migrate', '--migrationTable='.b()->config->getDbItem('tablePrefix').'migrations', 'down', $number, '--interactive=0');
+		$args = array(b()->path->consolePath.'yiic', 'migrate', '--migrationTable=migrations', 'down', $number, '--interactive=0');
 
 		ob_start();
 		$runner->run($args);
@@ -68,7 +68,7 @@ class Migration
 	{
 		$migrationName = str_replace(' ', '_', $migrationName);
 		$runner = self::_getRunner();
-		$args = array('yiic', 'migrate', 'create', $migrationName, '--interactive=0');
+		$args = array(b()->path->consolePath.'yiic', 'migrate', 'create', $migrationName, '--interactive=0');
 
 		ob_start();
 		$runner->run($args);
@@ -79,15 +79,12 @@ class Migration
 	/**
 	 * @access private
 	 * @static
-	 * @return \CConsoleCommandRunner
+	 * @return ConsoleCommandRunner
 	 */
 	private static function _getRunner()
 	{
-		$commandPath = b()->path->commandsPath;
-		$runner = new \CConsoleCommandRunner();
-		$runner->addCommands($commandPath);
-
-		$commandPath = b()->path->frameworkPath.'cli/commands';
+		$commandPath = rtrim(b()->path->commandsPath, '/');
+		$runner = new ConsoleCommandRunner();
 		$runner->addCommands($commandPath);
 
 		return $runner;

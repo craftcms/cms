@@ -144,7 +144,7 @@ class CoreUpdater implements IUpdater
 			if (strpos($row[0], '/migrations/') !== false && $row[1] == PatchManifestFileAction::Add)
 			{
 				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
-				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile(b()->path->appPath.'/'.$row[0]);
+				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($this->_tempPackageDir->realPath.'/'.$row[0]);
 			}
 		}
 	}
@@ -156,7 +156,7 @@ class CoreUpdater implements IUpdater
 	{
 		$file = b()->file->set(b()->path->appPath.'../../index.php', false);
 		$contents = $file->contents;
-		$contents = str_replace('//header(\'location:offline.php\');', 'header(\'location:offline.php\');', $contents);
+		$contents = str_replace('//include(\'offline.php\');', 'include(\'offline.php\');', $contents);
 		$file->setContents(null, $contents);
 		return true;
 	}
@@ -168,7 +168,7 @@ class CoreUpdater implements IUpdater
 	{
 		$file = b()->file->set(b()->path->appPath.'../../index.php', false);
 		$contents = $file->contents;
-		$contents = str_replace('header(\'location:offline.php\');', '//header(\'location:offline.php\');', $contents);
+		$contents = str_replace('include(\'offline.php\');', '//include(\'offline.php\');', $contents);
 		$file->setContents(null, $contents);
 		return true;
 	}
@@ -183,10 +183,10 @@ class CoreUpdater implements IUpdater
 			Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
 			$response = Migration::run($migrationName);
 			if (strpos($response, 'Migrated up successfully.') !== false || strpos($response, 'No new migration found.') !== false)
-				return false;
+				return true;
 		}
 
-		return true;
+		return false;
 	}
 
 	/**

@@ -101,7 +101,12 @@ class PathService extends Component
 	 */
 	public function getCommandsPath()
 	{
-		return $this->appPath.'commands/';
+		return $this->consolePath.'commands/';
+	}
+
+	public function getConsolePath()
+	{
+		return $this->appPath.'business/console/';
 	}
 
 	/**

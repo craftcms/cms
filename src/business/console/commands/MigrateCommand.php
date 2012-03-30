@@ -104,10 +104,31 @@ EOD;
 
 	/**
 	 * @param $args
+	 * @return void
 	 */
 	public function actionDown($args)
 	{
 		die("Down migrations are not supported\n");
+	}
+
+	/**
+	 * @param $limit
+	 * @return mixed
+	 */
+	protected function getMigrationHistory($limit)
+	{
+		$db = $this->getDbConnection();
+		if ($db->schema->getTable('{{'.$this->migrationTable.'}}') === null)
+		{
+			$this->createMigrationHistoryTable();
+		}
+
+		return \CHtml::listData($db->createCommand()
+			->select('version, apply_time')
+			->from($this->migrationTable)
+			->order('version DESC')
+			->limit($limit)
+			->queryAll(), 'version', 'apply_time');
 	}
 
 	/**
@@ -122,6 +143,23 @@ EOD;
 		$migration = new $class;
 		$migration->setDbConnection($this->getDbConnection());
 		return $migration;
+	}
+
+	protected function createMigrationHistoryTable()
+	{
+		$db = $this->getDbConnection();
+		echo 'Creating migration history table "'.$this->migrationTable.'"...';
+		$db->createCommand()->createTable($this->migrationTable, array(
+			'version' => 'string NOT NULL',
+			'apply_time' => 'integer',
+		));
+
+		$db->createCommand()->insert($this->migrationTable, array(
+			'version' => self::BASE_MIGRATION,
+			'apply_time' => time(),
+		));
+
+		echo "done.\n";
 	}
 
 	/**
