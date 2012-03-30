@@ -285,7 +285,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 
 	updateLinkBlocktypeLabel: function()
 	{
-		var selectedIndex = this.$blocktypeSelect[0].selectedIndex,
+		var selectedIndex = this.$blocktypeSelect.prop('selectedIndex'),
 			blocktypeLabel = $(this.$blocktypeSelectOptions[selectedIndex]).text();
 
 		this.$linkBlocktypeLabel.text(blocktypeLabel);
