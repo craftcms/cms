@@ -25,7 +25,10 @@ class AttributeType
 	const PK           = 'pk';
 	const Char         = 'char';
 	const Varchar      = 'varchar';
+	const TinyText     = 'tinytext';
 	const Text         = 'text';
+	const MediumText   = 'mediumtext';
+	const LongText     = 'longtext';
 	const TinyInt      = 'tinyint';
 	const SmallInt     = 'smallint';
 	const MediumInt    = 'mediumint';
