@@ -11,7 +11,7 @@ class MigrateCommand extends \MigrateCommand
 	 */
 	public function init()
 	{
-		$this->migrationTable = Blocks::app()->config->tablePrefix.'_migrations';
+		$this->migrationTable = Blocks::app()->config->tablePrefix.'migrations';
 	}
 
 	/**
@@ -115,23 +115,24 @@ EOD;
 	 */
 	protected function getTemplate()
 	{
-		if($this->templateFile!==null)
+		if($this->templateFile !== null)
 			return file_get_contents(Blocks::getPathOfAlias($this->templateFile).'.php');
 		else
 			return <<<EOD
 <?php
-namespace Blocks;
+use Blocks\Blocks;
 
 /**
- * The class name is the UTC timestamp in the format of yymmdd_hhmmss_migrationName
+ * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class {ClassName} extends \CDbMigration
+class {ClassName} extends CDbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
 	 */
 	public function safeUp()
 	{
+		\$tablePrefix = Blocks::app()->config->tablePrefix;
 	}
 }
 EOD;
