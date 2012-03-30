@@ -127,7 +127,7 @@ class UsersService extends Component
 	}
 
 	/**
-	 * @param \Blocks\User                     $user
+	 * @param User                             $user
 	 * @param                                  $password
 	 * @param bool                             $passwordReset
 	 *
