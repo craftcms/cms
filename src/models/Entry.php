@@ -208,7 +208,7 @@ class Entry extends Model
 
 			$this->_blocks = $blocks;
 		}
-		
+
 		return $this->_blocks;
 	}
 }
