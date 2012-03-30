@@ -17,6 +17,9 @@ class UpdateHelper
 			if (self::isManifestVersionInfoLine($row))
 				continue;
 
+			if (self::isManifestMigrationLine($row))
+				continue;
+
 			$rowData = explode(';', $row);
 			$file = b()->file->set(b()->path->appPath.'../../'.$rowData[0].'.bak');
 
@@ -31,6 +34,7 @@ class UpdateHelper
 	 * @param $manifestData
 	 * @param $sourceTempDir
 	 * @return bool
+	 * @return bool
 	 */
 	public static function doFileUpdate($manifestData, $sourceTempDir)
 	{
@@ -39,6 +43,9 @@ class UpdateHelper
 			foreach ($manifestData as $row)
 			{
 				if (self::isManifestVersionInfoLine($row))
+					continue;
+
+				if (self::isManifestMigrationLine($row))
 					continue;
 
 				$rowData = explode(';', $row);
@@ -105,9 +112,27 @@ class UpdateHelper
 		throw new Exception('Unknown Blocks Edition: '.$edition);
 	}
 
+	/**
+	 * @static
+	 * @param $line
+	 * @return bool
+	 */
 	public static function isManifestVersionInfoLine($line)
 	{
 		if ($line[0] == '#' && $line[1] == '#')
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * @static
+	 * @param $line
+	 * @return bool
+	 */
+	public static function isManifestMigrationLine($line)
+	{
+		if (strpos($line, '/migrations/') !== false)
 			return true;
 
 		return false;

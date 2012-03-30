@@ -11,6 +11,7 @@ class CoreUpdater implements IUpdater
 	private $_blocksUpdateInfo = null;
 	private $_downloadFilePath = null;
 	private $_tempPackageDir = null;
+	private $_manifestData = null;
 
 	/**
 	 *
@@ -116,17 +117,22 @@ class CoreUpdater implements IUpdater
 	 */
 	private function _getManifestData()
 	{
-		$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->realPath);
-
-		// only use the manifest data starting from the local version
-		for ($counter = 0; $counter < count($manifestData); $counter++)
+		if ($this->_manifestData !== null)
 		{
-			if (strpos($manifestData[$counter], '##'.$this->_blocksUpdateInfo->localVersion.'.'.$this->_blocksUpdateInfo->localBuild) !== false)
-				break;
+			$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->realPath);
+
+			// only use the manifest data starting from the local version
+			for ($counter = 0; $counter < count($manifestData); $counter++)
+			{
+				if (strpos($manifestData[$counter], '##'.$this->_blocksUpdateInfo->localVersion.'.'.$this->_blocksUpdateInfo->localBuild) !== false)
+					break;
+			}
+
+			$manifestData = array_slice($manifestData, $counter);
+			$this->_manifestData = $manifestData;
 		}
 
-		$manifestData = array_slice($manifestData, $counter);
-		return $manifestData;
+		return $this->_manifestData;
 	}
 
 	/**
@@ -141,7 +147,7 @@ class CoreUpdater implements IUpdater
 			$row = explode(';', $manifestData[$i]);
 
 			// we found a migration
-			if (strpos($row[0], '/migrations/') !== false && $row[1] == PatchManifestFileAction::Add)
+			if (UpdateHelper::isManifestMigrationLine($row[0]) && $row[1] == PatchManifestFileAction::Add)
 			{
 				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
 				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($this->_tempPackageDir->realPath.'/'.$row[0]);
@@ -274,6 +280,10 @@ class CoreUpdater implements IUpdater
 			foreach ($manifestData as $row)
 			{
 				if (UpdateHelper::isManifestVersionInfoLine($row))
+					continue;
+
+				// No need to back up migration files.
+				if (UpdateHelper::isManifestMigrationLine($row))
 					continue;
 
 				$rowData = explode(';', $row);
