@@ -104,7 +104,7 @@ class ContentService extends Component
 
 		$section->name        = $sectionSettings['name'];
 		$section->handle      = $sectionSettings['handle'];
-		$section->max_entries = (isset($sectionSettings['max_entries']) ? (int)$sectionSettings['max_entries'] : null);
+		$section->max_entries = (isset($sectionSettings['max_entries']) && $sectionSettings['max_entries'] > 0 ? (int)$sectionSettings['max_entries'] : null);
 		$section->sortable    = (isset($sectionSettings['sortable']) ? (bool)$sectionSettings['sortable'] : false);
 		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
 		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
