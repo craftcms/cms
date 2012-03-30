@@ -149,6 +149,7 @@ class {ClassName} extends CDbMigration
 		\$tablePrefix = Blocks::app()->config->tablePrefix;
 	}
 }
+
 EOD;
 	}
 }
