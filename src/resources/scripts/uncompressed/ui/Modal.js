@@ -27,7 +27,7 @@ b.ui.Modal = b.Base.extend({
 	init: function(container, settings)
 	{
 		// Param mapping
-		if (!settings && b.utils.isObject(container))
+		if (!settings && b.isObject(container))
 		{
 			// (settings)
 			settings = container;
@@ -105,7 +105,7 @@ b.ui.Modal = b.Base.extend({
 			this.$shade.hide();
 
 		// Put this at the end of the list of visible modals
-		b.utils.removeFromArray(this, b.ui.Modal.visibleModals);
+		b.removeFromArray(this, b.ui.Modal.visibleModals);
 		b.ui.Modal.visibleModals.push(this);
 
 		// Set z-index's appropriately
@@ -151,7 +151,7 @@ b.ui.Modal = b.Base.extend({
 		{
 			this.$container.fadeOut('fast');
 			this.blur();
-			b.utils.removeFromArray(this, b.ui.Modal.visibleModals);
+			b.removeFromArray(this, b.ui.Modal.visibleModals);
 
 			// Focus the next one up
 			if (b.ui.Modal.visibleModals.length)

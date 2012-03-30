@@ -30,7 +30,7 @@ b.ui.Pill = b.Base.extend({
 		this.$selectedBtn = this.$btns.filter('.sel:first');
 		this.$input = this.$outerContainer.find('input:first');
 
-		b.utils.preventOutlineOnMouseFocus(this.$innerContainer);
+		b.preventOutlineOnMouseFocus(this.$innerContainer);
 		this.addListener(this.$btns, 'mousedown', 'onMouseDown');
 		this.addListener(this.$innerContainer, 'keydown', 'onKeyDown');
 	},

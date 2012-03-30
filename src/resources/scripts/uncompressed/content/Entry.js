@@ -78,8 +78,8 @@ b.Entry = b.Base.extend({
 		for (var i = 0; i < $inputs.length; i++)
 		{
 			var $input   = $($inputs[i]),
-				basename = b.utils.getInputBasename($input),
-				val      = b.utils.getInputPostVal($input);
+				basename = b.getInputBasename($input),
+				val      = b.getInputPostVal($input);
 
 			// Store the saved value
 			$input.data('savedval', val);
@@ -107,7 +107,7 @@ b.Entry = b.Base.extend({
 
 		// Has the value changed since the last time we saved?
 		var $input   = $(event.currentTarget),
-			val      = b.utils.getInputPostVal($input),
+			val      = b.getInputPostVal($input),
 			savedVal = $input.data('savedval'),
 			changedInputsIndex  = $.inArray($input, this.changedInputs),
 			changedInputsLength = this.changedInputs.length;
@@ -145,17 +145,17 @@ b.Entry = b.Base.extend({
 		for (var i = 0; i < this.changedInputs.length; i++)
 		{
 			var $input   = this.changedInputs[i],
-				basename = b.utils.getInputBasename($input);
+				basename = b.getInputBasename($input);
 
 			// Have we already included this input? (Possible if it shares the same basename with a previous input)
-			if (b.utils.inArray(basename, includedBasenames))
+			if (b.inArray(basename, includedBasenames))
 				continue;
 
 			// Loop through all inputs that share the same basename, disregarding the original $input
 			for (var j = 0; j < this.inputs[basename].length; j++)
 			{
 				var $input = this.inputs[basename][j],
-					val    = b.utils.getInputPostVal($input);
+					val    = b.getInputPostVal($input);
 
 				// Update the input's savedval record
 				$input.data('savedval', $input.val());
@@ -164,7 +164,7 @@ b.Entry = b.Base.extend({
 				if (val === null)
 					continue;
 
-				var inputName = b.utils.namespaceInputName($input.attr('name'), 'content[blocks]'),
+				var inputName = b.namespaceInputName($input.attr('name'), 'content[blocks]'),
 					arrayName = (inputName.substr(-2) == '[]');
 
 				if (arrayName)
@@ -177,7 +177,7 @@ b.Entry = b.Base.extend({
 						sameArrayNameCount[inputName] = 0;
 				}
 
-				if (b.utils.isArray(val))
+				if (b.isArray(val))
 				{
 					for (var k = 0; k < val.length; k++)
 					{

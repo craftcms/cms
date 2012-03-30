@@ -29,7 +29,7 @@ b.ui.DragCore = b.Base.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && b.utils.isObject(items))
+		if (!settings && b.isObject(items))
 		{
 			// (settings)
 			settings = items;
@@ -97,7 +97,7 @@ b.ui.DragCore = b.Base.extend({
 		if (!this.dragging)
 		{
 			// has the mouse moved far enough to initiate dragging yet?
-			var mouseDist = b.utils.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
+			var mouseDist = b.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
 
 			if (mouseDist >= b.ui.DragCore.minMouseDist)
 				this.startDragging();

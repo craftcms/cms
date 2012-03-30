@@ -47,7 +47,7 @@ b.ui.NiceText = b.Base.extend({
 				top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
 				left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')))
 			});
-			b.utils.copyTextStyles(this.$input, this.$hint);
+			b.copyTextStyles(this.$input, this.$hint);
 
 			if (this.val)
 				this.$hint.hide();
@@ -113,7 +113,7 @@ b.ui.NiceText = b.Base.extend({
 			wordWrap: 'break-word'
 		});
 
-		b.utils.copyTextStyles(this.$input, this.$stage);
+		b.copyTextStyles(this.$input, this.$stage);
 	},
 
 	getStageHeight: function(val)

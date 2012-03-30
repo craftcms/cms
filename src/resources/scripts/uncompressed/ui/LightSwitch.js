@@ -37,7 +37,7 @@ b.ui.LightSwitch = b.Base.extend({
 
 		this.on = this.$outerContainer.hasClass('on');
 
-		b.utils.preventOutlineOnMouseFocus(this.$outerContainer);
+		b.preventOutlineOnMouseFocus(this.$outerContainer);
 		this.addListener(this.$innerContainer, 'mousedown', '_onMouseDown');
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 

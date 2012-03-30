@@ -31,7 +31,7 @@ b.ui.Select = b.Base.extend({
 		this.$container = $(container);
 
 		// Param mapping
-		if (!settings && b.utils.isObject(items))
+		if (!settings && b.isObject(items))
 		{
 			// (container, settings)
 			settings = items;
@@ -67,7 +67,7 @@ b.ui.Select = b.Base.extend({
 
 		// --------------------------------------------------------------------
 
-		b.utils.preventOutlineOnMouseFocus(this.$container);
+		b.preventOutlineOnMouseFocus(this.$container);
 
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
 
@@ -236,7 +236,7 @@ b.ui.Select = b.Base.extend({
 		var $item = $($.data(event.currentTarget, 'select-item'));
 
 		// was this a click?
-		if (! event.metaKey && ! event.shiftKey && b.utils.getDist(this.mousedownX, this.mousedownY, event.pageX, event.pageY) < 1)
+		if (! event.metaKey && ! event.shiftKey && b.getDist(this.mousedownX, this.mousedownY, event.pageX, event.pageY) < 1)
 		{
 			this.selectItem($item);
 
@@ -305,7 +305,7 @@ b.ui.Select = b.Base.extend({
 		//  Scroll to the item
 		// -------------------------------------------
 
-		b.utils.scrollContainerToElement(this.$scrollpane, $item);
+		b.scrollContainerToElement(this.$scrollpane, $item);
 
 		// -------------------------------------------
 		//  Select the item

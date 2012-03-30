@@ -20,7 +20,7 @@ b.ui.Drag = b.ui.DragCore.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && b.utils.isObject(items))
+		if (!settings && b.isObject(items))
 		{
 			// (settings)
 			settings = items;

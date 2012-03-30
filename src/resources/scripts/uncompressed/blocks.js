@@ -28,6 +28,11 @@ b.CMD_KEY    = 91;
 
 b.navHeight = 48;
 
+b.fx = {
+	duration: 400,
+	delay: 100
+};
+
 
 /**
  * Log
@@ -42,447 +47,436 @@ b.log = function(msg)
 var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae','230':'ae','228':'ae','231':'c','232':'e','233':'e','234':'e','235':'e','236':'i','237':'i','238':'i','239':'i','241':'n','242':'o','243':'o','244':'o','245':'o','246':'oe','249':'u','250':'u','251':'u','252':'ue','255':'y','257':'aa','269':'ch','275':'ee','291':'gj','299':'ii','311':'kj','316':'lj','326':'nj','353':'sh','363':'uu','382':'zh','256':'aa','268':'ch','274':'ee','290':'gj','298':'ii','310':'kj','315':'lj','325':'nj','352':'sh','362':'uu','381':'zh'};
 
 
+
 /**
- * Utility functions
+ * Format a number with commas.
+ * @param mixed num
+ * @return string
  */
-b.utils =
+b.numCommas = function(num)
 {
-	/**
-	 * Format a number with commas.
-	 * @param mixed num
-	 * @return string
-	 */
-	numCommas: function(num)
+	num = num.toString();
+
+	var regex = /(\d+)(\d{3})/;
+	while (regex.test(num)) {
+		num = num.replace(regex, '$1'+','+'$2');
+	}
+
+	return num;
+};
+
+/**
+ * Converts a comma-delimited string into an array.
+ * @param string str
+ * @return array
+ */
+b.stringToArray = function(str)
+{
+	if (typeof str != 'string')
+		return str;
+
+	var arr = str.split(',');
+	for (var i = 0; i < arr.length; i++)
 	{
-		num = num.toString();
+		arr[i] = $.trim(arr[i]);
+	}
+	return arr;
+};
 
-		var regex = /(\d+)(\d{3})/;
-		while (regex.test(num)) {
-			num = num.replace(regex, '$1'+','+'$2');
-		}
+/**
+ * Filters an array.
+ * @param array    arr
+ * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
+ * @return array
+ */
+b.filterArray = function(arr, callback)
+{
+	var filtered = [];
 
-		return num;
-	},
-
-	/**
-	 * Converts a comma-delimited string into an array.
-	 * @param string str
-	 * @return array
-	 */
-	stringToArray: function(str)
+	for (var i = 0; i < arr.length; i++)
 	{
-		if (typeof str != 'string')
-			return str;
-
-		var arr = str.split(',');
-		for (var i = 0; i < arr.length; i++)
-		{
-			arr[i] = $.trim(arr[i]);
-		}
-		return arr;
-	},
-
-	/**
-	 * Filters an array.
-	 * @param array    arr
-	 * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
-	 * @return array
-	 */
-	filterArray: function(arr, callback)
-	{
-		var filtered = [];
-
-		for (var i = 0; i < arr.length; i++)
-		{
-			if (typeof callback == 'function')
-				var include = callback(arr[i], i);
-			else
-				var include = arr[i];
-
-			if (include)
-				filtered.push(arr[i]);
-		}
-
-		return filtered;
-	},
-
-	/**
-	 * Returns whether an element is in an array (unline jQuery.inArray(), which returns the element's index, or -1).
-	 * @param mixed elem
-	 * @param mixed arr
-	 * @return bool
-	 */
-	inArray: function(elem, arr)
-	{
-		return ($.inArray(elem, arr) != -1);
-	},
-
-	/**
-	 * Removes an element from an array.
-	 * @param mixed elem
-	 * @param array arr
-	 * @return bool Whether the element could be found or not.
-	 */
-	removeFromArray: function(elem, arr)
-	{
-		var index = $.inArray(elem, arr);
-		if (index != -1)
-		{
-			arr.splice(index, 1);
-			return true;
-		}
+		if (typeof callback == 'function')
+			var include = callback(arr[i], i);
 		else
-			return false;
-	},
+			var include = arr[i];
 
-	/**
-	 * Makes the first character of a string uppercase.
-	 * @param string str
-	 * @return string
-	 */
-	uppercaseFirst: function(str)
+		if (include)
+			filtered.push(arr[i]);
+	}
+
+	return filtered;
+};
+
+/**
+ * Returns whether an element is in an array (unline jQuery.inArray(), which returns the element's index, or -1).
+ * @param mixed elem
+ * @param mixed arr
+ * @return bool
+ */
+b.inArray = function(elem, arr)
+{
+	return ($.inArray(elem, arr) != -1);
+};
+
+/**
+ * Removes an element from an array.
+ * @param mixed elem
+ * @param array arr
+ * @return bool Whether the element could be found or not.
+ */
+b.removeFromArray = function(elem, arr)
+{
+	var index = $.inArray(elem, arr);
+	if (index != -1)
 	{
-		return str.charAt(0).toUpperCase() + str.slice(1);
-	},
+		arr.splice(index, 1);
+		return true;
+	}
+	else
+		return false;
+};
 
-	/**
-	 * Makes the first character of a string lowerscase.
-	 * @param string str
-	 * @return string
-	 */
-	lowercaseFirst: function(str)
+/**
+ * Makes the first character of a string uppercase.
+ * @param string str
+ * @return string
+ */
+b.uppercaseFirst = function(str)
+{
+	return str.charAt(0).toUpperCase() + str.slice(1);
+};
+
+/**
+ * Makes the first character of a string lowerscase.
+ * @param string str
+ * @return string
+ */
+b.lowercaseFirst = function(str)
+{
+	return str.charAt(0).toLowerCase() + str.slice(1);
+};
+
+/**
+ * Converts extended ASCII characters to ASCII.
+ * @param string str
+ * @return string
+ */
+b.asciiString = function(str)
+{
+	var asciiStr = '';
+
+	for (c = 0; c < str.length; c++) {
+		charCode = str.charCodeAt(c);
+
+		if (charCode >= 32 && charCode < 128)
+			asciiStr += str.charAt(c);
+		else if (typeof asciiCharMap[charCode] != 'undefined')
+			asciiStr += asciiCharMap[charCode];
+	}
+
+	return asciiStr;
+};
+
+/**
+ * Get the distance between two coordinates.
+ * @param int x1 The first coordinate's position on the X axis.
+ * @param int y1 The first coordinate's position on the Y axis.
+ * @param int x2 The second coordinate's position on the X axis.
+ * @param int y2 The second coordinate's position on the Y axis.
+ * @return float
+ */
+b.getDist = function(x1, y1, x2, y2)
+{
+	return Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2));
+};
+
+/**
+ * Check if an element is touching an x/y coordinate.
+ * @param int x0 The coordinate's position on the X axis.
+ * @param int y0 The coordinate's position on the Y axis.
+ * @param mixed elem Either an actual element or a jQuery collection.
+ * @return bool
+ */
+b.hitTest = function(x0, y0, elem)
+{
+	var $elem = $(elem),
+		offset = $elem.offset(),
+		x1 = offset.left,
+		y1 = offset.top,
+		x2 = x1 + $elem.width(),
+		y2 = y1 + $elem.height();
+
+	return (x0 >= x1 && x0 < x2 && y0 >= y1 && y0 < y2);
+};
+
+/**
+ * Check if the cursor is over an element.
+ * @param object event The mouse event object containing pageX and pageY properties.
+ * @param mixed  elem  Either an actual element or a jQuery collection.
+ * @return bool
+ */
+b.isCursorOver = function(event, elem)
+{
+	return b.hitTest(event.pageX, event.pageY, elem);
+};
+
+/**
+ * Prevents the outline when an element is focussed by the mouse.
+ * @param mixed elem Either an actual element or a jQuery collection.
+ */
+b.preventOutlineOnMouseFocus = function(elem)
+{
+	var $elem = $(elem),
+		namespace = '.preventOutlineOnMouseFocus';
+
+	$elem.on('mousedown'+namespace, function() {
+		$elem.addClass('no-outline');
+		$elem.focus();
+	})
+	.on('keydown'+namespace+' blur'+namespace, function(event) {
+		if (event.keyCode != b.SHIFT_KEY && event.keyCode != b.CTRL_KEY && event.keyCode != b.CMD_KEY)
+			$elem.removeClass('no-outline');
+	});
+};
+
+/**
+ * Performs a case-insensative sort on an array of strings.
+ * @param array arr
+ * @return array
+ */
+b.caseInsensativeSort = function(arr)
+{
+	return arr.sort(this.caseInsensativeCompare)
+};
+
+/**
+ * Performs a case-insensative string comparison.
+ * Returns -1 if a is less than b, 1 if a is greater than b, or 0 if they are equal.
+ * @param string a
+ * @param string b
+ * @return int
+ */
+b.caseInsensativeCompare = function(a, b)
+{
+	a = a.toLowerCase();
+	b = b.toLowerCase();
+	return a < b ? -1 : (a > b ? 1 : 0);
+};
+
+/**
+ * Copies text styles from one element to another, including line-height, font-size, font-family, font-weight, and letter-spacing.
+ * @param mixed from The source element. Can be either an actual element or a jQuery collection.
+ * @param mixed to   The target element. Can be either an actual element or a jQuery collection.
+ */
+b.copyTextStyles = function(from, to)
+{
+	var $from = $(from),
+		$to = $(to);
+
+	$to.css({
+		lineHeight:    $from.css('lineHeight'),
+		fontSize:      $from.css('fontSize'),
+		fontFamily:    $from.css('fontFamily'),
+		fontWeight:    $from.css('fontWeight'),
+		letterSpacing: $from.css('letterSpacing')
+	});
+};
+
+/**
+ * Returns the body's proper scrollTop, discarding any document banding in Safari.
+ * @return int
+ */
+b.getBodyScrollTop = function()
+{
+	var scrollTop = document.body.scrollTop;
+
+	if (scrollTop < 0)
+		scrollTop = 0;
+	else
 	{
-		return str.charAt(0).toLowerCase() + str.slice(1);
-	},
+		var maxScrollTop = b.$body.outerHeight() - b.$window.height();
+		if (scrollTop > maxScrollTop)
+			scrollTop = maxScrollTop;
+	}
 
-	/**
-	 * Converts extended ASCII characters to ASCII.
-	 * @param string str
-	 * @return string
-	 */
-	asciiString: function(str)
-	{
-		var asciiStr = '';
+	return scrollTop;
+};
 
-		for (c = 0; c < str.length; c++) {
-			charCode = str.charCodeAt(c);
+/**
+ * Scrolls a container to an element within it.
+ * @param mixed container Either an actual element or a jQuery collection.
+ * @param mixed elem      Either an actual element or a jQuery collection.
+ */
+b.scrollContainerToElement = function(container, elem) {
+	var $container = $(container),
+		$elem = $(elem);
 
-			if (charCode >= 32 && charCode < 128)
-				asciiStr += str.charAt(c);
-			else if (typeof asciiCharMap[charCode] != 'undefined')
-				asciiStr += asciiCharMap[charCode];
+	if (! $container.length || ! $elem.length)
+		return;
+
+	var scrollTop = $container.scrollTop(),
+		elemOffset = $elem.offset().top,
+		containerOffset = $container.offset().top,
+		offsetDiff = elemOffset - containerOffset;
+
+	if (offsetDiff < 0) {
+		$container.scrollTop(scrollTop + offsetDiff);
+	}
+	else {
+		var elemHeight = $elem.outerHeight(),
+			containerHeight = $container[0].clientHeight;
+
+		if (offsetDiff + elemHeight > containerHeight) {
+			$container.scrollTop(scrollTop + (offsetDiff - (containerHeight - elemHeight)));
 		}
-
-		return asciiStr;
-	},
-
-	/**
-	 * Get the distance between two coordinates.
-	 * @param int x1 The first coordinate's position on the X axis.
-	 * @param int y1 The first coordinate's position on the Y axis.
-	 * @param int x2 The second coordinate's position on the X axis.
-	 * @param int y2 The second coordinate's position on the Y axis.
-	 * @return float
-	 */
-	getDist: function(x1, y1, x2, y2)
-	{
-		return Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2));
-	},
-
-	/**
-	 * Check if an element is touching an x/y coordinate.
-	 * @param int x0 The coordinate's position on the X axis.
-	 * @param int y0 The coordinate's position on the Y axis.
-	 * @param mixed elem Either an actual element or a jQuery collection.
-	 * @return bool
-	 */
-	hitTest: function(x0, y0, elem)
-	{
-		var $elem = $(elem),
-			offset = $elem.offset(),
-			x1 = offset.left,
-			y1 = offset.top,
-			x2 = x1 + $elem.width(),
-			y2 = y1 + $elem.height();
-
-		return (x0 >= x1 && x0 < x2 && y0 >= y1 && y0 < y2);
-	},
-
-	/**
-	 * Check if the cursor is over an element.
-	 * @param object event The mouse event object containing pageX and pageY properties.
-	 * @param mixed  elem  Either an actual element or a jQuery collection.
-	 * @return bool
-	 */
-	isCursorOver: function(event, elem)
-	{
-		return b.utils.hitTest(event.pageX, event.pageY, elem);
-	},
-
-	/**
-	 * Prevents the outline when an element is focussed by the mouse.
-	 * @param mixed elem Either an actual element or a jQuery collection.
-	 */
-	preventOutlineOnMouseFocus: function(elem)
-	{
-		var $elem = $(elem),
-			namespace = '.preventOutlineOnMouseFocus';
-
-		$elem.on('mousedown'+namespace, function() {
-			$elem.addClass('no-outline');
-			$elem.focus();
-		})
-		.on('keydown'+namespace+' blur'+namespace, function(event) {
-			if (event.keyCode != b.SHIFT_KEY && event.keyCode != b.CTRL_KEY && event.keyCode != b.CMD_KEY)
-				$elem.removeClass('no-outline');
-		});
-	},
-
-	/**
-	 * Performs a case-insensative sort on an array of strings.
-	 * @param array arr
-	 * @return array
-	 */
-	caseInsensativeSort: function(arr)
-	{
-		return arr.sort(this.caseInsensativeCompare)
-	},
-
-	/**
-	 * Performs a case-insensative string comparison.
-	 * Returns -1 if a is less than b, 1 if a is greater than b, or 0 if they are equal.
-	 * @param string a
-	 * @param string b
-	 * @return int
-	 */
-	caseInsensativeCompare: function(a, b)
-	{
-		a = a.toLowerCase();
-		b = b.toLowerCase();
-		return a < b ? -1 : (a > b ? 1 : 0);
-	},
-
-	/**
-	 * Copies text styles from one element to another, including line-height, font-size, font-family, font-weight, and letter-spacing.
-	 * @param mixed from The source element. Can be either an actual element or a jQuery collection.
-	 * @param mixed to   The target element. Can be either an actual element or a jQuery collection.
-	 */
-	copyTextStyles: function(from, to)
-	{
-		var $from = $(from),
-			$to = $(to);
-
-		$to.css({
-			lineHeight:    $from.css('lineHeight'),
-			fontSize:      $from.css('fontSize'),
-			fontFamily:    $from.css('fontFamily'),
-			fontWeight:    $from.css('fontWeight'),
-			letterSpacing: $from.css('letterSpacing')
-		});
-	},
-
-	/**
-	 * Returns the body's proper scrollTop, discarding any document banding in Safari.
-	 * @return int
-	 */
-	getBodyScrollTop: function()
-	{
-		var scrollTop = document.body.scrollTop;
-
-		if (scrollTop < 0)
-			scrollTop = 0;
-		else
-		{
-			var maxScrollTop = b.$body.outerHeight() - b.$window.height();
-			if (scrollTop > maxScrollTop)
-				scrollTop = maxScrollTop;
-		}
-
-		return scrollTop;
-	},
-
-	/**
-	 * Scrolls a container to an element within it.
-	 * @param mixed container Either an actual element or a jQuery collection.
-	 * @param mixed elem      Either an actual element or a jQuery collection.
-	 */
-	scrollContainerToElement: function(container, elem) {
-		var $container = $(container),
-			$elem = $(elem);
-
-		if (! $container.length || ! $elem.length)
-			return;
-
-		var scrollTop = $container.scrollTop(),
-			elemOffset = $elem.offset().top,
-			containerOffset = $container.offset().top,
-			offsetDiff = elemOffset - containerOffset;
-
-		if (offsetDiff < 0) {
-			$container.scrollTop(scrollTop + offsetDiff);
-		}
-		else {
-			var elemHeight = $elem.outerHeight(),
-				containerHeight = $container[0].clientHeight;
-
-			if (offsetDiff + elemHeight > containerHeight) {
-				$container.scrollTop(scrollTop + (offsetDiff - (containerHeight - elemHeight)));
-			}
-		}
-	},
-
-	/**
-	 * Returns the first element in an array or jQuery collection.
-	 * @param mixed elem
-	 * @return mixed
-	 */
-	getElement: function(elem)
-	{
-		return $.makeArray(elem)[0];
-	},
-
-	/**
-	 * Creates a validation error list.
-	 * @param array errors
-	 * @return jQuery
-	 */
-	createErrorList: function(errors)
-	{
-		var $ul = $(document.createElement('ul')).addClass('errors');
-
-		for (var i = 0; i < errors.length; i++)
-		{
-			var $li = $(document.createElement('li'));
-			$li.appendTo($ul);
-			$li.html(errors[i]);
-		}
-
-		return $ul;
-	},
-
-	/**
-	 * Returns whether a variable is an array.
-	 * @param mixed val
-	 * @return bool
-	 */
-	isArray: function(val)
-	{
-		return (val instanceof Array);
-	},
-
-	/**
-	 * Returns whether a variable is a jQuery collection.
-	 * @param mixed val
-	 * @return bool
-	 */
-	isJquery: function(val)
-	{
-		return (val instanceof jQuery);
-	},
-
-	/**
-	 * Returns whether a variable is a plain object (not an array, element, or jQuery collection).
-	 * @param mixed val
-	 * @return bool
-	 */
-	isObject: function(val)
-	{
-		return (typeof val == 'object' && !b.utils.isArray(val) && !b.utils.isJquery(val) && typeof val.nodeType == 'undefined');
-	},
-
-	/**
-	 * Animate an element's width.
-	 * @param mixed    elem     Either an acutal element or a jQuery collection.
-	 * @param function callback A callback function to call while the element is temporarily set to the target width before the animation begins.
-	 */
-	animateWidth: function(elem, callback)
-	{
-		var $elem = $(elem),
-			oldWidth = $elem.width();
-		$elem.width('auto');
-
-		callback();
-
-		var newWidth = $elem.width();
-		$elem.width(oldWidth);
-		$elem.animate({width: newWidth}, 'fast', function() {
-			$elem.width('auto');
-		});
-	},
-
-	/**
-	 * Returns the inputs within a container
-	 * @param mixed container The container element. Can be either an actual element or a jQuery collection.
-	 * @return jQuery
-	 */
-	findInputs: function(container)
-	{
-		return $(container).find('input,text,textarea,select,button');
-	},
-
-	/**
-	 * Returns an inputs's name, "namespaced" into a basename.
-	 * So if name="gin" and you pass the namespace "drinks", this will return "drinks[gin]".
-	 * More useful in the event that the name already has its own brackets, e.g. "gin[tonic]" => "drinks[gin][tonic]".
-	 * @param string inputName
-	 * @param string namespace
-	 * @return string
-	 */
-	namespaceInputName: function(inputName, namespace)
-	{
-		return inputName.replace(/^([^\[\]]+)(.*)$/, namespace+'[$1]$2');
-	},
-
-	/**
-	 * Returns the beginning of an input's name= attribute value with any [bracktes] stripped out.
-	 * @param jQuery $input
-	 * @return string
-	 */
-	getInputBasename: function($input)
-	{
-		return $input.attr('name').replace(/\[.*/, '');
-	},
-
-	/**
-	 * Returns an input's value as it would be POSTed.
-	 * So unchecked checkboxes and radio buttons return null,
-	 * and multi-selects whose name don't end in "[]" only return the last selection
-	 * @param jQuery $input
-	 * @return mixed
-	 */
-	getInputPostVal: function($input)
-	{
-		var type = $input.attr('type'),
-			val  = $input.val();
-
-		// Is this an unchecked checkbox or radio button?
-		if ((type == 'checkbox' || type == 'radio'))
-		{
-			if ($input.prop('checked'))
-				return val;
-			else
-				return null;
-		}
-
-		// How bout a multi-select missing its "[]" at the end of its name?
-		else if ($input.prop('nodeName') == 'SELECT' && $input.attr('multiple') && $input.attr('name').substr(-2) != '[]')
-		{
-			if (val.length)
-				return val[val.length-1];
-			else
-				return null;
-		}
-
-		// Just return the value
-		else
-			return val;
 	}
 };
 
+/**
+ * Returns the first element in an array or jQuery collection.
+ * @param mixed elem
+ * @return mixed
+ */
+b.getElement = function(elem)
+{
+	return $.makeArray(elem)[0];
+};
 
-b.fx = {
-	duration: 400,
-	delay: 100
+/**
+ * Creates a validation error list.
+ * @param array errors
+ * @return jQuery
+ */
+b.createErrorList = function(errors)
+{
+	var $ul = $(document.createElement('ul')).addClass('errors');
+
+	for (var i = 0; i < errors.length; i++)
+	{
+		var $li = $(document.createElement('li'));
+		$li.appendTo($ul);
+		$li.html(errors[i]);
+	}
+
+	return $ul;
+};
+
+/**
+ * Returns whether a variable is an array.
+ * @param mixed val
+ * @return bool
+ */
+b.isArray = function(val)
+{
+	return (val instanceof Array);
+};
+
+/**
+ * Returns whether a variable is a jQuery collection.
+ * @param mixed val
+ * @return bool
+ */
+b.isJquery = function(val)
+{
+	return (val instanceof jQuery);
+};
+
+/**
+ * Returns whether a variable is a plain object (not an array, element, or jQuery collection).
+ * @param mixed val
+ * @return bool
+ */
+b.isObject = function(val)
+{
+	return (typeof val == 'object' && !b.isArray(val) && !b.isJquery(val) && typeof val.nodeType == 'undefined');
+};
+
+/**
+ * Animate an element's width.
+ * @param mixed    elem     Either an acutal element or a jQuery collection.
+ * @param function callback A callback function to call while the element is temporarily set to the target width before the animation begins.
+ */
+b.animateWidth = function(elem, callback)
+{
+	var $elem = $(elem),
+		oldWidth = $elem.width();
+	$elem.width('auto');
+
+	callback();
+
+	var newWidth = $elem.width();
+	$elem.width(oldWidth);
+	$elem.animate({width: newWidth}, 'fast', function() {
+		$elem.width('auto');
+	});
+};
+
+/**
+ * Returns the inputs within a container
+ * @param mixed container The container element. Can be either an actual element or a jQuery collection.
+ * @return jQuery
+ */
+b.findInputs = function(container)
+{
+	return $(container).find('input,text,textarea,select,button');
+};
+
+/**
+ * Returns an inputs's name, "namespaced" into a basename.
+ * So if name="gin" and you pass the namespace "drinks", this will return "drinks[gin]".
+ * More useful in the event that the name already has its own brackets, e.g. "gin[tonic]" => "drinks[gin][tonic]".
+ * @param string inputName
+ * @param string namespace
+ * @return string
+ */
+b.namespaceInputName = function(inputName, namespace)
+{
+	return inputName.replace(/^([^\[\]]+)(.*)$/, namespace+'[$1]$2');
+};
+
+/**
+ * Returns the beginning of an input's name= attribute value with any [bracktes] stripped out.
+ * @param jQuery $input
+ * @return string
+ */
+b.getInputBasename = function($input)
+{
+	return $input.attr('name').replace(/\[.*/, '');
+};
+
+/**
+ * Returns an input's value as it would be POSTed.
+ * So unchecked checkboxes and radio buttons return null,
+ * and multi-selects whose name don't end in "[]" only return the last selection
+ * @param jQuery $input
+ * @return mixed
+ */
+b.getInputPostVal = function($input)
+{
+	var type = $input.attr('type'),
+		val  = $input.val();
+
+	// Is this an unchecked checkbox or radio button?
+	if ((type == 'checkbox' || type == 'radio'))
+	{
+		if ($input.prop('checked'))
+			return val;
+		else
+			return null;
+	}
+
+	// How bout a multi-select missing its "[]" at the end of its name?
+	else if ($input.prop('nodeName') == 'SELECT' && $input.attr('multiple') && $input.attr('name').substr(-2) != '[]')
+	{
+		if (val.length)
+			return val[val.length-1];
+		else
+			return null;
+	}
+
+	// Just return the value
+	else
+		return val;
 };
 
 
@@ -513,7 +507,7 @@ b.Base = Base.extend({
 
 	_formatEvents: function(events)
 	{
-		events = b.utils.stringToArray(events);
+		events = b.stringToArray(events);
 		for (var i = 0; i < events.length; i++)
 		{
 			events[i] += this._namespace;
