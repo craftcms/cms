@@ -15,7 +15,7 @@
 				<div class="pane-item field">
 					<label for="emailAddress">System Email Address</label>
 					<p>This is the email address Blocks will use when sending email.</p>
-					<div class="input-wrapper"><input id="emailAddress" name="emailAddress" type="text" value="{:emailSettings.emailAddress}" /></div>
+					<div class="input-wrapper"><input id="emailAddress" name="emailAddress" {if emailSettings.errors.emailAddress}class="error"{/if} type="text" value="{:emailSettings.emailAddress}" /></div>
 					{if emailSettings.errors.emailAddress}
 						{include "_includes/error_list" errors=emailSettings.errors.emailAddress}
 					{/if}
@@ -23,7 +23,7 @@
 				<div class="pane-item field">
 					<label for="senderName">Sender Name</label>
 					<p>This is the “From” name Blocks will use when sending email.</p>
-					<div class="input-wrapper"><input id="senderName" name="senderName" type="text" value="{:emailSettings.senderName}" /></div>
+					<div class="input-wrapper"><input id="senderName" name="senderName" {if emailSettings.errors.senderName}class="error"{/if} type="text" value="{:emailSettings.senderName}" /></div>
 					{if emailSettings.errors.senderName}
 						{include "_includes/error_list" errors=emailSettings.errors.senderName}
 					{/if}
@@ -47,14 +47,14 @@
 		<div id="hidden-fields" style="display: none">
 			<div id="username-field" class="pane-item field">
 				<label for="username">Username</label>
-				<div class="input-wrapper"><input id="username" name="username" type="text" value="{:emailSettings.username}" /></div>
+				<div class="input-wrapper"><input id="username" name="username" {if emailSettings.protocol != 'Smtp' && emailSettings.errors.username}class="error"{/if} type="text" value="{:emailSettings.username}" /></div>
 				{if emailSettings.protocol != 'Smtp' && emailSettings.errors.username}
 					{include "_includes/error_list" errors=emailSettings.errors.username}
 				{/if}
 			</div>
 			<div id="password-field" class="pane-item field">
 				<label for="password">Password</label>
-				<div class="input-wrapper password"><input id="password" class="password" name="password" type="password" value="{:emailSettings.password}" /></div>
+				<div class="input-wrapper password"><input id="password" name="password" class="password {if emailSettings.protocol != 'Smtp' && emailSettings.errors.password}error{/if}" type="password" value="{:emailSettings.password}" /></div>
 				{if emailSettings.protocol != 'Smtp' && emailSettings.errors.password}
 					{include "_includes/error_list" errors=emailSettings.errors.password}
 				{/if}
@@ -62,7 +62,7 @@
 			
 			<div id="port-field" class="pane-item field">
 				<label for="port">Port</label>
-				<input id="port" name="port" class="input" type="text" value="{if emailSettings.port}{:emailSettings.port}{else}25{/if}" size="5" />
+				<input id="port" name="port" class="input" {if emailSettings.errors.port}class="error"{/if} type="text" value="{if emailSettings.port}{:emailSettings.port}{else}25{/if}" size="5" />
 				{if emailSettings.errors.port}
 					{include "_includes/error_list" errors=emailSettings.errors.port}
 				{/if}
@@ -70,7 +70,7 @@
 
 			<div id="host-field" class="pane-item field">
 				<label for="host">Host Name</label>
-				<div class="input-wrapper"><input id="host" name="host" type="text" value="{:emailSettings.host}" /></div>
+				<div class="input-wrapper"><input id="host" name="host" {if emailSettings.errors.host}class="error"{/if} type="text" value="{:emailSettings.host}" /></div>
 				{if emailSettings.errors.host}
 					{include "_includes/error_list" errors=emailSettings.errors.host}
 				{/if}
@@ -78,7 +78,7 @@
 
 			<div id="timeout-field" class="pane-item field">
 				<label for="timeout">Timeout</label>
-				<input id="timeout" name="timeout" class="input" type="text" value="{if emailSettings.timeout}{:emailSettings.timeout}{else}30{/if}" size="5" />
+				<input id="timeout" name="timeout" class="input" {if emailSettings.errors.timeout}class="error"{/if} type="text" value="{if emailSettings.timeout}{:emailSettings.timeout}{else}30{/if}" size="5" />
 				{if emailSettings.errors.timeout}
 					{include "_includes/error_list" errors=emailSettings.errors.timeout}
 				{/if}
@@ -92,22 +92,19 @@
 					<div>{include "_includes/lightswitch" name="smtpAuth" on=emailSettings.smtpAuth toggle="#smtpAuthCredentials-field"}</div>
 				</div>
 				<div class="clear"></div>
-				{if emailSettings.errors.smtpAuth}
-					{include "_includes/error_list" errors=emailSettings.errors.smtpAuth}
-				{/if}
 			</div>
 
 			<div id="smtpAuthCredentials-field" class="nested-pane-items" {if !emailSettings.smtpAuth}style="height:0"{/if}>
 				<div id="smtp-username-field" class="pane-item field">
 					<label for="smtp-username">Username</label>
-					<div class="input-wrapper"><input id="smtp-username" name="smtp_username" type="text" value="{:emailSettings.username}" /></div>
+					<div class="input-wrapper"><input id="smtp-username" name="smtp_username" {if emailSettings.protocol == 'Smtp' && emailSettings.errors.username}class="error"{/if} type="text" value="{:emailSettings.username}" /></div>
 					{if emailSettings.protocol == 'Smtp' && emailSettings.errors.username}
 						{include "_includes/error_list" errors=emailSettings.errors.username}
 					{/if}
 				</div>
 				<div id="smtp-password-field" class="pane-item field">
 					<label for="smtp-password">Password</label>
-					<div class="input-wrapper password"><input id="smtp-password" class="password" name="smtp_password" type="password" value="{:emailSettings.password}" /></div>
+					<div class="input-wrapper password"><input id="smtp-password" class="password" name="smtp_password" {if emailSettings.protocol == 'Smtp' && emailSettings.errors.password}class="error"{/if} type="password" value="{:emailSettings.password}" /></div>
 					{if emailSettings.protocol == 'Smtp' && emailSettings.errors.password}
 						{include "_includes/error_list" errors=emailSettings.errors.password}
 					{/if}
@@ -122,9 +119,6 @@
 					{include "_includes/lightswitch" name="smtpKeepAlive" on=emailSettings.smtpKeepAlive}
 				</div>
 				<div class="clear"></div>
-				{if emailSettings.errors.smtpKeepAlive}
-					{include "_includes/error_list" errors=emailSettings.errors.smtpKeepAlive}
-				{/if}
 			</div>
 			<div id="smtpSecureTransportType-field" class="pane-item field">
 				<div class="left">
@@ -134,9 +128,6 @@
 					{include "_includes/pill" name="smtpSecureTransportType" options="none:None,ssl:SSL,tls:TLS" default="none" value=emailSettings.smtpSecureTransportType}
 				</div>
 				<div class="clear"></div>
-				{if emailSettings.errors.smtpSecureTransportType}
-					{include "_includes/error_list" errors=emailSettings.errors.smtpSecureTransportType}
-				{/if}
 			</div>
 		</div>
 
