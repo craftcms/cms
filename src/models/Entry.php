@@ -160,21 +160,25 @@ class Entry extends Model
 	{
 		$this->_draft = $draft;
 
-		// Index draft content by block ID
-		$draftContentByBlockId = array();
-		foreach ($draft->content as $content)
-		{
-			if ($content->title)
-				$this->title = $content->value;
-			else
-				$draftContentByBlockId[$content->block_id] = $content->value;
-		}
+		$changes = json_decode($draft->changes, true);
 
-		// Save draft data onto blocks
-		foreach ($this->blocks as $block)
+		if (isset($changes['title']))
+			$this->title = $changes['title'];
+
+		if (isset($changes['blocks']))
 		{
-			if (isset($draftContentByBlockId[$block->id]))
-				$block->data = $draftContentByBlockId[$block->id];
+			// Get all of the entry's blocks, indexed by their IDs
+			$blocksById = array();
+			foreach ($this->blocks as $block)
+			{
+				$blocksById[$block->id] = $block;
+			}
+
+			foreach ($changes['blocks'] as $blockId => $blockData)
+			{
+				if (isset($blocksById[$blockId]))
+					$blocksById[$blockId]->data = $blockData;
+			}
 		}
 	}
 

@@ -188,7 +188,7 @@ abstract class Model extends \CActiveRecord
 	 * Returns the content blocks assigned to this record
 	 * @return array
 	 */
-	public function getBlocks()
+	public function getBlocks($index = 'handle')
 	{
 		if (!isset($this->_blocks))
 		{

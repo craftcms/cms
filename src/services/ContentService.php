@@ -223,7 +223,6 @@ class ContentService extends Component
 					$block = b()->blocks->getBlockById($blockId);
 					b()->db->createCommand()->delete('sectionblocks',       array('block_id'=>$blockId));
 					b()->db->createCommand()->delete('blocksettings',       array('block_id'=>$blockId));
-					b()->db->createCommand()->delete('entryversioncontent', array('block_id'=>$blockId));
 					b()->db->createCommand()->delete('blocks',              array('id'=>$blockId));
 					b()->db->createCommand()->dropColumn($table, $block->handle);
 					$transaction->commit();
@@ -527,71 +526,43 @@ class ContentService extends Component
 	}
 
 	/**
-	 * Saves draft content
+	 * Saves draft changes
 	 * @param int $draftId
-	 * @param array $content
+	 * @param array $newChanges
 	 */
-	public function saveDraftContent($draftId, $content)
+	public function saveDraftChanges($draftId, $newChanges)
 	{
-		$blocks = b()->db->createCommand()
-			->select('id, handle')
-			->from('blocks')
-			->where(array('in', 'handle', array_keys($content)))
-			->queryAll();
+		$draft = $this->getDraftById($draftId);
+		if (empty($draft))
+			throw new Exception('No draft exists with the ID '.$draftId);
 
-		if ($blocks)
+		$changes = json_decode($draft->changes, true);
+
+		// Save the new title if it has changed
+		if (isset($newChanges['title']))
+			$changes['title'] = $newChanges['title'];
+
+		// Save any changed content blocks
+		if (isset($newChanges['blocks']))
 		{
-			$blockIds = array();
+			// $newChanges['blocks'] is indexed by block handles,
+			// but in the DB we want to index blocks by their IDs so we don't
+			// have to update draft/version content if a handle ever changes
+			$blocks = b()->db->createCommand()
+				->select('id, handle')
+				->from('blocks')
+				->where(array('in', 'handle', array_keys($newChanges['blocks'])))
+				->queryAll();
+
 			foreach ($blocks as $block)
 			{
-				$blockIds[] = $block['id'];
-			}
-
-			// Start a transaction
-			$transaction = b()->db->beginTransaction();
-			try
-			{
-				$insertVals = array();
-
-				// Check for previous data on this draft
-				$draftContent = b()->db->createCommand()
-					->select('id, block_id')
-					->from('entryversioncontent')
-					->where(array('and', 'version_id'=>$draftId, array('in', 'block_id', $blockIds)))
-					->queryAll();
-
-				$draftContentIds = array();
-				foreach ($draftContent as $row)
-				{
-					$draftContentIds[$row['block_id']] = $row['id'];
-				}
-
-				// Update existing rows and get ready to insert new ones
-				foreach ($blocks as $block)
-				{
-					$val = $content[$block['handle']];
-
-					if (isset($draftContentIds[$block['id']]))
-						b()->db->createCommand()->update('entryversioncontent', array('value' => $val), array('id'=>$draftContentIds[$block['id']]));
-					else
-						$insertVals[] = array($draftId, $block['id'], $val);
-				}
-
-				// Insert new rows
-				if ($insertVals)
-				{
-					$columns = array('version_id', 'block_id', 'value');
-					b()->db->createCommand()->insertAll('entryversioncontent', $columns, $insertVals);
-				}
-
-				$transaction->commit();
-			}
-			catch (\Exception $e)
-			{
-				$transaction->rollBack();
-				throw $e;
+				$changes['blocks'][$block['id']] = $newChanges['blocks'][$block['handle']];
 			}
 		}
+
+		// Save the changes
+		$draft->changes = json_encode($changes);
+		$draft->save();
 	}
 
 	/**
@@ -601,38 +572,46 @@ class ContentService extends Component
 	 */
 	public function publishDraft($draftId)
 	{
-		$draft = EntryVersion::model()->with('entry.section', 'content.block')->findById($draftId);
-
+		$draft = EntryVersion::model()->with('entry.section')->findById($draftId);
 		if (!$draft)
 			throw new Exception('No draft exists with the id '.$draftId);
 
-		$entry = $draft->entry;
+		$changes = json_decode($draft->changes, true);
+		$entry   = $draft->entry;
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
 		try
 		{
-			// Figure out what's changed
-			$content = array();
+			if (isset($changes['blocks']) && empty($changes['blocks']))
+				unset($changes['blocks']);
 
-			$draftContent = b()->db->createCommand()
-				->select('c.title, b.handle, c.value')
-				->from('entryversioncontent c')
-				->leftJoin('blocks b', 'b.id=c.block_id')
-				->where(array('c.version_id'=>$draftId))
-				->queryAll();
-
-			foreach ($draftContent as $row)
+			if ($changes)
 			{
-				if ($row['title'])
-					$content['title'] = $row['value'];
-				else if ($row['handle'])
-					$content[$row['handle']] = $row['value'];
-			}
+				$content = array();
 
-			// Update the entry content
-			if ($content)
-			{
+				// Has the title changed?
+				if (isset($changes['title']))
+					$content['title'] = $changes['title'];
+
+				// Have any content blocks changed?
+				if (isset($changes['blocks']))
+				{
+					// Get all of the entry's blocks, indexed by their IDs
+					$blocksById = array();
+					foreach ($entry->blocks as $block)
+					{
+						$blocksById[$block->id] = $block;
+					}
+
+					foreach ($changes['blocks'] as $blockId => $blockData)
+					{
+						$block = $blocksById[$blockId];
+						$content[$block->handle] = $block->modifyPostData($blockData);
+					}
+				}
+
+				// Save the new content
 				$table = $entry->section->getContentTableName();
 
 				// Does a content row already exist for this entry & language?
@@ -642,7 +621,7 @@ class ContentService extends Component
 					->where(array('and', 'entry_id'=>$entry->id, 'language'=>$draft->language))
 					->queryRow();
 
-				if ($contentId)
+				if (!empty($contentId['id']))
 					b()->db->createCommand()->update($table, $content, array('id'=>$contentId['id']));
 				else
 				{
@@ -681,6 +660,7 @@ class ContentService extends Component
 				$entry->publish_date = DateTimeHelper::currentTime();
 			$entry->save();
 
+			// Commit the transaction
 			$transaction->commit();
 		}
 		catch (\Exception $e)
