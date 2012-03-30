@@ -63,9 +63,9 @@ class SetupController extends Controller
 				$site = new Site;
 
 			$site->name     = b()->request->getPost('name');
-			$site->handle   = b()->request->getPost('handle');
 			$site->url      = b()->request->getPost('url');
 			$site->language = b()->request->getPost('language');
+			$site->handle   = 'primary';
 			$site->primary  = true;
 
 			if ($site->save())
