@@ -8,6 +8,7 @@ return array(
 	// autoloading model and component classes
 	'import' => array(
 		'application.business.*',
+		'application.business.Blocks',
 		'application.business.services.*',
 		'application.migrations.*',
 		'application.framework.cli.commands.*',
@@ -23,7 +24,9 @@ return array(
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
-			'tablePrefix'       => $dbConfig['tablePrefix'],
+			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
+			'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
+			'class'             => 'Blocks\DbConnection',
 		),
 
 		'config' => array(
