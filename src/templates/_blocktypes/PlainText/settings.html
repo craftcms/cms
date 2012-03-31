@@ -14,11 +14,11 @@
 	<p>This is the text that will be shown if the field doesn’t have a value.</p>
 	<div class="input-wrapper"><input id="{:idPrefix}hint" name="{:namePrefix}[hint]" type="text" value="{:settings.hint}" /></div>
 </div>
-<div class="pane-item field">
+{!--<div class="pane-item field">
 	<label for="{:idPrefix}maxLength">Max Length</label>
 	<div>
 		<input id="{:idPrefix}maxLength" name="{:namePrefix}[maxLength]" class="input" type="text" value="{:settings.maxLength}" size="4" style="display: inline-block" />
 		<?php $name = new Tag($namePrefix.'[maxLengthUnit]') ?>
 		<div style="display: inline-block; margin-left: 4px; vertical-align: middle;">{include "_includes/pill" name=name options="words,chars:characters" value=settings.maxLengthUnit}</div>
 	</div>
-</div>
+</div>--}
