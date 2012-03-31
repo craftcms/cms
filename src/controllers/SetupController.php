@@ -77,8 +77,23 @@ class SetupController extends Controller
 			}
 		}
 		else
+		{
 			// Does a site already exist?
 			$site = Site::model()->find();
+
+			if (!$site)
+			{
+				$site = new Site;
+				$host = $_SERVER['HTTP_HOST'];
+
+				// Guess the site name based on the host name
+				$hostWords = preg_split('/\W+/', $host);
+				array_pop($hostWords);
+				$site->name = implode(' ', array_map('ucfirst', $hostWords));
+
+				$site->url  = 'http://'.$host;
+			}
+		}
 
 		$this->loadTemplate('_special/setup/site', array(
 			'site' => $site
