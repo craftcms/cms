@@ -12,14 +12,17 @@ class CpService extends Component
 	 */
 	public function getSections()
 	{
-		return array(
-			array('handle' => 'dashboard', 'name' => 'Dashboard'),
-			array('handle' => 'content', 'name' => 'Content'),
-			//array('handle' => 'assets', 'name' => 'Assets'),
-			array('handle' => 'users', 'name' => 'Users'),
-			array('handle' => 'settings', 'name' => 'Settings'),
-			//array('handle' => 'guide', 'name' => 'Guide'),
-			array('handle' => 'about', 'name' => 'About'),
-		);
+		$sections[] = array('handle' => 'dashboard', 'name' => 'Dashboard');
+		$sections[] = array('handle' => 'content', 'name' => 'Content');
+		//$sections[] = array('handle' => 'assets', 'name' => 'Assets');
+		$sections[] = array('handle' => 'users', 'name' => 'Users');
+
+		if (b()->users->current->admin)
+			$sections[] = array('handle' => 'settings', 'name' => 'Settings');
+
+		//$sections[] = array('handle' => 'guide', 'name' => 'Guide');
+		$sections[] = array('handle' => 'about', 'name' => 'About');
+
+		return $sections;
 	}
 }
