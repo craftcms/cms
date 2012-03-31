@@ -27,9 +27,14 @@
 	<div class="pane-item field">
 		<label for="{:idPrefix}class">Block Type</label>
 		<div>
+			{if block.class}
+				{set blockClass = block.class}
+			{else}
+				{set blockClass = "PlainText"}
+			{/if}
 			<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
 				{foreach blocks.blocktypes as blocktype}
-					<option value="{:blocktype.classHandle}" {if (block && block.class == blocktype.classHandle) || (!block && blocktype.classHandle == 'PlainText')}selected{/if}>{:blocktype.blocktypeName}</option>
+					<option value="{:blocktype.classHandle}" {if blocktype.classHandle == blockClass}selected="selected"{/if}>{:blocktype.blocktypeName}</option>
 				{/foreach}
 			</select>
 		</div>
