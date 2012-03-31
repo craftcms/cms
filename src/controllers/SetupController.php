@@ -203,32 +203,21 @@ class SetupController extends Controller
 			'blocks'     => array(
 				'new1' => array(
 					'class'    => 'PlainText',
-					'name'     => 'Summary',
-					'handle'   => 'summary',
-					'settings' => array(
-						'hint'          => 'Enter a summary…',
-						'maxLength'     => 100,
-						'maxLengthUnit' => 'words'
-					)
-				),
-				'new2' => array(
-					'class'    => 'PlainText',
 					'name'     => 'Body',
 					'handle'   => 'body',
 					'required' => true,
 					'settings' => array(
-						'hint' => 'Enter the body copy…'
+						'hint' => 'Enter your blog post’s body…'
 					)
 				)
 			)
 		));
 
 		// Add a Welcome entry to the Blog
-		$entry = b()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 1');
+		$entry = b()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha');
 		b()->content->saveEntrySlug($entry, 'welcome');
 		$draft = b()->content->createDraft($entry->id);
 		b()->content->saveDraftChanges($draft->id, array('blocks'=>array(
-			'summary' => 'It’s here.',
 			'body'    => "Hey {$user->first_name},\n\n" .
 			             "It’s been over a year since we started Blocks, and it’s finally starting to look like a CMS!\n\n" .
 			             "You will find that it’s missing a lot of key features (like the ability to delete this entry). But the groundwork has been laid, so progress comes much quicker now. And we’ve got one-click updating in place, so keeping Blocks up-to-date will be quick and painless.\n\n" .
