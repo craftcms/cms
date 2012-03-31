@@ -7,7 +7,6 @@ namespace Blocks;
 class User extends Model
 {
 	protected $tableName = 'users';
-	protected $hasContent = true;
 
 	protected $attributes = array(
 		'username'                              => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),

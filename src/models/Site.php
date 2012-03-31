@@ -7,9 +7,6 @@ namespace Blocks;
 class Site extends Model
 {
 	protected $tableName = 'sites';
-	protected $hasBlocks = true;
-	protected $hasContent = true;
-	protected $hasSettings = true;
 
 	protected $attributes = array(
 		'language' => AttributeType::Language,
