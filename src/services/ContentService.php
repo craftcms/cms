@@ -533,15 +533,11 @@ class ContentService extends Component
 
 	/**
 	 * Saves draft changes
-	 * @param int $draftId
+	 * @param EntryVersion $draft
 	 * @param array $newChanges
 	 */
-	public function saveDraftChanges($draftId, $newChanges)
+	public function saveDraftChanges($draft, $newChanges)
 	{
-		$draft = $this->getDraftById($draftId);
-		if (empty($draft))
-			throw new Exception('No draft exists with the ID '.$draftId);
-
 		$changes = json_decode($draft->changes, true);
 
 		// Save the new title if it has changed

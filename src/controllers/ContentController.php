@@ -234,7 +234,7 @@ class ContentController extends Controller
 				$draft = b()->content->createDraft($entryId);
 
 			// Save the new draft content
-			b()->content->saveDraftChanges($draft->id, $content);
+			b()->content->saveDraftChanges($draft, $content);
 
 			$return['success']     = true;
 			$return['entryId']     = $entry->id;
@@ -281,7 +281,7 @@ class ContentController extends Controller
 			// Save any last-minute content changes
 			$content = b()->request->getPost('content');
 			if ($content)
-				b()->content->saveDraftChanges($draft->id, $content);
+				b()->content->saveDraftChanges($draft, $content);
 
 			// Publish it
 			b()->content->publishDraft($draft->id);

@@ -217,7 +217,7 @@ class SetupController extends Controller
 		$entry = b()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha');
 		b()->content->saveEntrySlug($entry, 'welcome');
 		$draft = b()->content->createDraft($entry->id);
-		b()->content->saveDraftChanges($draft->id, array('blocks'=>array(
+		b()->content->saveDraftChanges($draft, array('blocks'=>array(
 			'body'    => "Hey {$user->first_name},\n\n" .
 			             "It’s been over a year since we started Blocks, and it’s finally starting to look like a CMS!\n\n" .
 			             "You will find that it’s missing a lot of key features (like the ability to delete this entry). But the groundwork has been laid, so progress comes much quicker now. And we’ve got one-click updating in place, so keeping Blocks up-to-date will be quick and painless.\n\n" .
