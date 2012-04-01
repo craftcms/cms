@@ -250,6 +250,33 @@ class UpdatesService extends Component
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function runMigrationsToTop()
+	{
+		Blocks::log('Running migrations to top.', \CLogger::LEVEL_INFO);
+		$response = Migration::runToTop();
+		if ($this->_wasMigrationSuccessful($response))
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * @param $migrationName
+	 * @return bool
+	 */
+	public function runMigration($migrationName)
+	{
+		Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
+		$response = Migration::run($migrationName);
+		if ($this->_wasMigrationSuccessful($response))
+			return true;
+
+		return false;
+	}
+
+	/**
 	 * @param $updates
 	 * @param $name
 	 * @return string
@@ -265,4 +292,17 @@ class UpdatesService extends Component
 
 		return $notes;
 	}
+
+	/**
+	 * @param $response
+	 * @return bool
+	 */
+	private function _wasMigrationSuccessful($response)
+	{
+		if (strpos($response, 'Migrated up successfully.') !== false || strpos($response, 'No new migration found.') !== false)
+			return true;
+
+		return false;
+	}
+
 }

@@ -7,7 +7,7 @@ namespace Blocks;
 class DbUpdateController extends Controller
 {
 	/**
-	 * All update actions require the user to be logged in
+	 * All db update actions require the user to be logged in
 	 */
 	public function init()
 	{
@@ -20,22 +20,30 @@ class DbUpdateController extends Controller
 		$this->loadTemplate('update/db', array('dbUpdate' => $update));
 	}
 
+	/**
+	 *
+	 */
 	public function actionUpdate()
 	{
 		$this->requirePostRequest();
 
-		if (b()->updates->setNewVersionAndBuild(Blocks::getVersion(false), Blocks::getBuild(false)))
+		// run migrations to top
+		if (b()->updates->runMigrationsToTop())
 		{
-			b()->updates->flushUpdateInfoFromCache();
-			b()->user->setMessage(MessageType::Success, 'Database successfully updated.');
+			// update db with version info.
+			if (b()->updates->setNewVersionAndBuild(Blocks::getVersion(false), Blocks::getBuild(false)))
+			{
+				// flush update cache.
+				b()->updates->flushUpdateInfoFromCache();
+				b()->user->setMessage(MessageType::Success, 'Database successfully updated.');
 
-			$url = b()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+				$url = b()->request->getPost('redirect');
+				if ($url !== null)
+					$this->redirect($url);
+			}
 		}
-		else
-			b()->user->setMessage(MessageType::Error, 'There was a problem updating the database.');
 
+		b()->user->setMessage(MessageType::Error, 'There was a problem updating the database.');
 		$this->loadTemplate('update/db');
 	}
 }

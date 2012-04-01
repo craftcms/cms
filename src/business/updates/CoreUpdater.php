@@ -186,9 +186,7 @@ class CoreUpdater implements IUpdater
 	{
 		foreach ($this->_migrationsToRun as $migrationName)
 		{
-			Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
-			$response = Migration::run($migrationName);
-			if (strpos($response, 'Migrated up successfully.') !== false || strpos($response, 'No new migration found.') !== false)
+			if (b()->updates->runMigration($migrationName))
 				return true;
 		}
 
