@@ -90,16 +90,9 @@ class ContentController extends Controller
 				b()->content->saveEntrySlug($entry, strtolower($title));
 
 			// Create the first draft
-			$draft = b()->content->createDraft($entry->id, null, 'Draft 1');
+			$entry->draft = b()->content->createDraft($entry->id, null, 'Draft 1');
 
-			$this->returnJson(array(
-				'success'     => true,
-				'entryId'     => $entry->id,
-				'entryTitle'  => $entry->title,
-				'entryStatus' => $entry->status,
-				'draftId'     => $draft->id,
-				'draftNum'    => $draft->num
-			));
+			$this->returnEntryJson($entry);
 		}
 		catch (\Exception $e)
 		{
@@ -176,36 +169,6 @@ class ContentController extends Controller
 	}
 
 	/**
-	 * Returns an entry edit page
-	 * @param Entry $entry
-	 * @access private
-	 */
-	private function returnEntryEditPage($entry)
-	{
-		$return['success']     = true;
-		$return['entryId']     = $entry->id;
-		$return['entryTitle']  = $entry->title;
-		$return['entryStatus'] = $entry->status;
-
-		if ($entry->draft)
-		{
-			$return['draftId']     = $entry->draft->id;
-			$return['draftNum']    = $entry->draft->num;
-			$return['draftName']   = $entry->draft->name;
-			$return['draftAuthor'] = $entry->draft->author->firstNameLastInitial;
-		}
-		else
-		{
-			$return['draftId']  = false;
-			$return['draftNum'] = false;
-		}
-
-		$return['entryHtml']  = $this->loadTemplate('content/_includes/entry', array('entry' => $entry), true);
-
-		$this->returnJson($return);
-	}
-
-	/**
 	 * Autosaves a draft
 	 */
 	public function actionAutosaveDraft()
@@ -236,16 +199,8 @@ class ContentController extends Controller
 			// Save the new draft content
 			b()->content->saveDraftChanges($draft, $content);
 
-			$return['success']     = true;
-			$return['entryId']     = $entry->id;
-			$return['entryTitle']  = $entry->title;
-			$return['entryStatus'] = $entry->status;
-			$return['draftId']     = $draft->id;
-			$return['draftNum']    = $draft->num;
-			$return['draftName']   = $draft->name;
-			$return['draftAuthor'] = $draft->author->firstNameLastInitial;
-
-			$this->returnJson($return);
+			$entry->draft = $draft;
+			$this->returnEntryJson($entry);
 		}
 		catch (\Exception $e)
 		{
@@ -286,11 +241,53 @@ class ContentController extends Controller
 			// Publish it
 			b()->content->publishDraft($draft->id);
 
-			$this->returnJson(array('success' => true));
+			$this->returnEntryJson($entry);
 		}
 		catch (\Exception $e)
 		{
 			$this->returnJsonError($e->getMessage());
 		}
+	}
+
+	/**
+	 * Returns entry data used by Entry.js.
+	 * @access private
+	 * @param Entry $entry
+	 * @param array $return Any additional values to return.
+	 */
+	private function returnEntryJson($entry, $return = array())
+	{
+		$return['entryId']     = $entry->id;
+		$return['entryTitle']  = $entry->title;
+		$return['entryStatus'] = $entry->status;
+
+		if ($entry->draft)
+		{
+			$return['draftId']     = $entry->draft->id;
+			$return['draftNum']    = $entry->draft->num;
+			$return['draftName']   = $entry->draft->name;
+			$return['draftAuthor'] = $entry->draft->author->firstNameLastInitial;
+		}
+		else
+		{
+			$return['draftId']     = null;
+			$return['draftNum']    = null;
+			$return['draftName']   = null;
+			$return['draftAuthor'] = null;
+		}
+
+		$return['success'] = true;
+		$this->returnJson($return);
+	}
+
+	/**
+	 * Returns an entry edit page.
+	 * @access private
+	 * @param Entry $entry
+	 */
+	private function returnEntryEditPage($entry)
+	{
+		$return['entryHtml']  = $this->loadTemplate('content/_includes/entry', array('entry' => $entry), true);
+		$this->returnEntryJson($entry, $return);
 	}
 }
