@@ -99,7 +99,7 @@ class TemplateHelper
 
 		if (strncmp($templatePath,'///email', 8) === 0)
 		{
-			$viewPath = b()->path->emailTemplatePath;
+			$viewPath = b()->path->emailTemplatesPath;
 			$templatePath = substr($templatePath, 9);
 		}
 		else

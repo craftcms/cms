@@ -231,7 +231,7 @@ class ErrorHandler extends \CErrorHandler
 		{
 			$connection = b()->db;
 			if ($connection && b()->db->schema->getTable('{{site}}' !== null))
-				$viewPaths[] = b()->path->siteTemplatePath;
+				$viewPaths[] = b()->path->siteTemplatesPath;
 		}
 		catch(\CDbException $e)
 		{

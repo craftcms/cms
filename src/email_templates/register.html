@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
+	<head>
+		<meta charset="utf-8" />
+		<title>Blocks - Registration</title>
+	</head>
+
+	<body>
+		Hi, {:user.first_name}.
+
+		You have an account created on {:site.name}.
+
+		You must go <a href="{:url.url(users.verifyAccountUrl, 'code=')}{:user.activationcode}">here</a> to complete registration</a>.
+
+		If you didn't request this, just ignore this and everything will be fine.
+	</body>
+</html>

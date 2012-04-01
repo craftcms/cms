@@ -7,8 +7,6 @@ namespace Blocks;
 class App extends \CWebApplication
 {
 	private $_templatePath;
-	private $_cpTemplatePath;
-	private $_layoutPath;
 	private $_isInstalled;
 	private $_isSetup;
 	private $_isDbUpdateNeeded;
@@ -413,22 +411,8 @@ class App extends \CWebApplication
 	/**
 	 * @return string
 	 */
-	public function getLayoutPath()
-	{
-		if (!isset($this->_layoutPath))
-			$this->_layoutPath = $this->viewPath.'layouts';
-
-		return $this->_layoutPath;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getSystemViewPath()
 	{
-		if (!isset($this->_cpTemplatePath))
-			$this->_cpTemplatePath = BLOCKS_BASE_PATH.'app/templates/';
-
-		return $this->_cpTemplatePath;
+		return $this->path->cpTemplatesPath;
 	}
 }

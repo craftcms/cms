@@ -43,14 +43,6 @@ class PathService extends Component
 	/**
 	 * @return string
 	 */
-	public function getTemplatesPath()
-	{
-		return BLOCKS_TEMPLATES_PATH;
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getBlockTypesPath()
 	{
 		return $this->appPath.'blocktypes/';
@@ -70,14 +62,6 @@ class PathService extends Component
 	public function getFrameworkPath()
 	{
 		return $this->appPath.'framework/';
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getCpTemplatePath()
-	{
-		return $this->appPath.'templates/';
 	}
 
 	/**
@@ -104,78 +88,115 @@ class PathService extends Component
 		return $this->consolePath.'commands/';
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getConsolePath()
 	{
 		return $this->appPath.'business/console/';
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getSiteTemplatePath()
-	{
-		$siteHandle = b()->sites->currentSite;
-		$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-
-		return $this->templatesPath.'site_templates/'.$siteHandle.'/';
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getEmailTemplatePath()
-	{
-		return $this->templatesPath.'email_templates/';
-	}
-
-	/**
-	 * @return string
+	 * Returns the current templates path, taking into account whether this is a CP or Site request.
+	 * @return mixed
 	 */
 	public function getTemplatePath()
 	{
-		// site request
-		if (BLOCKS_CP_REQUEST !== true)
-			return $this->siteTemplatePath;
-
-		// CP request
-		return $this->cpTemplatePath;
+		if (BLOCKS_CP_REQUEST)
+			return $this->cpTemplatesPath;
+		else
+			return $this->siteTemplatesPath;
 	}
 
 	/**
+	 * Returns the CP templates path.
 	 * @return string
 	 */
-	public function getSiteTemplateCachePath()
+	public function getCpTemplatesPath()
 	{
-		$cachePath = null;
+		return $this->appPath.'templates/';
+	}
 
-		if (BLOCKS_CP_REQUEST !== true)
+	/**
+	 * Returns the current site's templates path, or null if there is no current site.
+	 * @return mixed
+	 */
+	public function getSiteTemplatesPath()
+	{
+		$site = b()->sites->currentSite;
+		if ($site)
+			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
+		else
+			return null;
+	}
+
+	/**
+	 * Returns 
+	 * @return string
+	 */
+	public function getEmailTemplatesPath()
+	{
+		return $this->appPath.'email_templates/';
+	}
+
+	/**
+	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
+	 * @return mixed
+	 */
+	public function getParsedTemplatesPath()
+	{
+		if (BLOCKS_CP_REQUEST)
+			return $this->parsedCpTemplatesPath;
+		else
+			return $this->parsedSiteTemplatesPath;
+	}
+
+	/**
+	 * Returns the parsed CP templates path.
+	 * @return string
+	 */
+	public function getParsedCpTemplatesPath()
+	{
+		$path = $this->runtimePath.'parsed_templates/cp/';
+
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
+
+		return $path;
+	}
+
+	/**
+	 * Returns the current site's parsed templates path, or null if there is no current site.
+	 * @return mixed
+	 */
+	public function getParsedSiteTemplatesPath()
+	{
+		$site = b()->sites->currentSite;
+		if ($site)
 		{
-			$siteHandle = b()->sites->currentSite;
-			$siteHandle = $siteHandle == null ? 'default' : $siteHandle->handle;
-			$cachePath = $this->runtimePath.'parsed_templates/custom/site_templates/'.$siteHandle.'/';
+			$path = $this->runtimePath.'parsed_templates/sites/'.$site->handle.'/';
+
+			if (!is_dir($path))
+				mkdir($path, 0777, true);
+
+			return $path;
 		}
 		else
-		{
-			$cachePath = $this->runtimePath.'parsed_templates/cp/';
-		}
-
-		if (!is_dir($cachePath))
-			mkdir($cachePath, 0777, true);
-
-		return $cachePath;
+			return null;
 	}
 
 	/**
+	 * Returns the parsed email templates path.
 	 * @return string
 	 */
-	public function getEmailTemplateCachePath()
+	public function getParsedEmailTemplatesPath()
 	{
-		$cachePath = $this->runtimePath.'parsed_templates/custom/email_templates/';
+		$path = $this->runtimePath.'parsed_templates/email/';
 
-		if (!is_dir($cachePath))
-			mkdir($cachePath, 0777, true);
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
 
-		return $cachePath;
+		return $path;
 	}
 
 	/**

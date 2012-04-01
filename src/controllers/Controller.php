@@ -37,7 +37,7 @@ abstract class Controller extends \CController
 
 		if (strncmp($viewName,'///email', 8) === 0)
 		{
-			$viewPath = rtrim(b()->path->emailTemplatePath, '/');
+			$viewPath = rtrim(b()->path->emailTemplatesPath, '/');
 			$viewName = substr($viewName, 9);
 		}
 		else

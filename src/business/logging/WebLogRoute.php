@@ -27,7 +27,7 @@ class WebLogRoute extends \CWebLogRoute
 		else if(!($app instanceof \CWebApplication) || $isAjax)
 			return;
 
-		$viewFile = b()->path->cpTemplatePath.'logging/'.$view.'.php';
+		$viewFile = b()->path->cpTemplatesPath.'logging/'.$view.'.php';
 		include($app->findLocalizedFile($viewFile,'en'));
 	}
 }

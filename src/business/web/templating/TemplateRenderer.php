@@ -71,7 +71,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	 */
 	protected function getDuplicatePath()
 	{
-		return b()->path->siteTemplateCachePath.$this->_relativePath;
+		return b()->path->parsedTemplatesPath.$this->_relativePath;
 	}
 
 	/**

@@ -13,7 +13,7 @@ class EmailTemplateRenderer extends TemplateRenderer
 	 */
 	protected function getRelativePath()
 	{
-		return substr($this->_sourceTemplatePath, strlen(b()->path->emailTemplatePath));
+		return substr($this->_sourceTemplatePath, strlen(b()->path->emailTemplatesPath));
 	}
 
 	/**
@@ -23,6 +23,6 @@ class EmailTemplateRenderer extends TemplateRenderer
 	 */
 	protected function getDuplicatePath()
 	{
-		return b()->path->emailTemplateCachePath.$this->relativePath;
+		return b()->path->parsedEmailTemplatesPath.$this->relativePath;
 	}
 }
