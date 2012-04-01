@@ -10,7 +10,7 @@
 					</li>{/foreach}
 				</ul>
 				<div id="nav-sites">
-					<a id="nav-site"><div class="icon"></div>{:sites.currentSite.name}</a>
+					<a id="nav-site"><div class="icon"></div>{:sites.current.name}</a>
 				</div>
 				<div id="nav-session">
 					<a id="nav-account" {if url.segment(1)=='account'}class="sel"{/if} href="{:url.base}users/edit/{:users.current.id}"><div class="icon"></div>{:users.current.username}</a>

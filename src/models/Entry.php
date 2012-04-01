@@ -125,7 +125,7 @@ class Entry extends Model
 		$uri = $this->uri;
 		if ($uri)
 		{
-			$url = b()->sites->currentSite->url.'/'.$uri;
+			$url = b()->sites->current->url.'/'.$uri;
 			$url = str_replace('http://', '', $url);
 			return $url;
 		}

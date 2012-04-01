@@ -57,7 +57,7 @@ class UsersController extends Controller
 		}
 		else if (b()->request->getPost('validationEmail', null) !== null)
 		{
-			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->currentSite)) == true)
+			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->current)) == true)
 				$this->_setMessageAndRedirect('Validation email sent.', MessageType::Notice, b()->request->getPost('redirect'));
 		}
 		else if (b()->request->getPost('unsuspend', null) !== null)
@@ -108,7 +108,7 @@ class UsersController extends Controller
 					{
 						if ($sendValidationEmail)
 						{
-							$site = b()->sites->currentSite;
+							$site = b()->sites->current;
 							if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
 							{
 								// registered and sent email

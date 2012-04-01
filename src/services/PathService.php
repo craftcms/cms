@@ -123,7 +123,7 @@ class PathService extends Component
 	 */
 	public function getSiteTemplatesPath()
 	{
-		$site = b()->sites->currentSite;
+		$site = b()->sites->current;
 		if ($site)
 			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
 		else
@@ -171,7 +171,7 @@ class PathService extends Component
 	 */
 	public function getParsedSiteTemplatesPath()
 	{
-		$site = b()->sites->currentSite;
+		$site = b()->sites->current;
 		if ($site)
 		{
 			$path = $this->runtimePath.'parsed_templates/sites/'.$site->handle.'/';

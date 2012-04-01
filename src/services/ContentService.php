@@ -15,7 +15,7 @@ class ContentService extends Component
 	public function getSections()
 	{
 		$sections = Section::model()->findAllByAttributes(array(
-			'site_id' => b()->sites->currentSite->id,
+			'site_id' => b()->sites->current->id,
 			'parent_id' => null
 		));
 
@@ -109,7 +109,7 @@ class ContentService extends Component
 		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
 		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
 		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
-		$section->site_id     = b()->sites->currentSite->id;
+		$section->site_id     = b()->sites->current->id;
 
 		// Try saving the section
 		$sectionSaved = $section->save();
@@ -443,7 +443,7 @@ class ContentService extends Component
 		$draft = new EntryVersion;
 		$draft->entry_id = $entryId;
 		$draft->author_id = b()->users->current->id;
-		$draft->language = ($language ? $language : b()->sites->currentSite->language);
+		$draft->language = ($language ? $language : b()->sites->current->language);
 		$draft->draft = true;
 
 		$untitled = !$name;

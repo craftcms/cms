@@ -255,7 +255,7 @@ class UsersService extends Component
 	{
 			$user = $this->generateActivationCodeForUser($user);
 
-			$site = b()->sites->currentSite;
+			$site = b()->sites->current;
 			if (($emailStatus = b()->email->sendForgotPasswordEmail($user, $site)) == true)
 				return true;
 

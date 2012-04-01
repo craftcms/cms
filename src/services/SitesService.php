@@ -63,7 +63,7 @@ class SitesService extends Component
 	 * Gets the current site model by Url
 	 * @return Site
 	 */
-	public function getCurrentSite()
+	public function getCurrent()
 	{
 		if ($this->_currentSite === null)
 		{
