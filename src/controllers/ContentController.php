@@ -239,7 +239,7 @@ class ContentController extends Controller
 				b()->content->saveDraftChanges($draft, $content);
 
 			// Publish it
-			b()->content->publishDraft($draft->id);
+			b()->content->publishDraft($entry, $draft);
 
 			$this->returnEntryJson($entry);
 		}

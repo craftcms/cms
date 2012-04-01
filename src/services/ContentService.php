@@ -569,17 +569,12 @@ class ContentService extends Component
 
 	/**
 	 * Publishes a draft
-	 * @param int $draftId
-	 * @return
+	 * @param Entry $entry
+	 * @param EntryVersion $draft
 	 */
-	public function publishDraft($draftId)
+	public function publishDraft($entry, $draft)
 	{
-		$draft = EntryVersion::model()->with('entry.section')->findById($draftId);
-		if (!$draft)
-			throw new Exception('No draft exists with the id '.$draftId);
-
 		$changes = json_decode($draft->changes, true);
-		$entry   = $draft->entry;
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
@@ -670,7 +665,5 @@ class ContentService extends Component
 			$transaction->rollBack();
 			throw $e;
 		}
-
-		return $draft;
 	}
 }

@@ -225,7 +225,7 @@ class SetupController extends Controller
 			             "Thanks for participating!\n" .
 			             '-Brandon & Brad'
 		)));
-		b()->content->publishDraft($draft->id);
+		b()->content->publishDraft($entry, $draft);
 
 		// Redirect to the Welcome entry
 		$this->redirect('content/edit/'.$entry->id);
