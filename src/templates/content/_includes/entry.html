@@ -2,13 +2,13 @@
 	<div class="center">
 		<div class="status">
 			{if entry.live}
-				<span class="status on"></span>Live
+				<span class="status on"></span><span class="label">Live</span>
 			{elseif entry.pending}
-				<span class="status pending"></span>Pending
+				<span class="status pending"></span><span class="label">Pending</span>
 			{elseif entry.expired}
-				<span class="status off"></span>Expired
+				<span class="status off"></span><span class="label">Expired</span>
 			{else}
-				<span class="status"></span>Never published
+				<span class="status"></span><span class="label">Never published</span>
 			{/if}
 		</div>
 	</div>

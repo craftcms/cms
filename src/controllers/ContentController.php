@@ -257,23 +257,23 @@ class ContentController extends Controller
 	 */
 	private function returnEntryJson($entry, $return = array())
 	{
-		$return['entryId']     = $entry->id;
-		$return['entryTitle']  = $entry->title;
-		$return['entryStatus'] = $entry->status;
+		$return['entryData']['entryId']     = $entry->id;
+		$return['entryData']['entryTitle']  = $entry->title;
+		$return['entryData']['entryStatus'] = $entry->status;
 
 		if ($entry->draft)
 		{
-			$return['draftId']     = $entry->draft->id;
-			$return['draftNum']    = $entry->draft->num;
-			$return['draftName']   = $entry->draft->name;
-			$return['draftAuthor'] = $entry->draft->author->firstNameLastInitial;
+			$return['entryData']['draftId']     = $entry->draft->id;
+			$return['entryData']['draftNum']    = $entry->draft->num;
+			$return['entryData']['draftName']   = $entry->draft->name;
+			$return['entryData']['draftAuthor'] = $entry->draft->author->firstNameLastInitial;
 		}
 		else
 		{
-			$return['draftId']     = null;
-			$return['draftNum']    = null;
-			$return['draftName']   = null;
-			$return['draftAuthor'] = null;
+			$return['entryData']['draftId']     = null;
+			$return['entryData']['draftNum']    = null;
+			$return['entryData']['draftName']   = null;
+			$return['entryData']['draftAuthor'] = null;
 		}
 
 		$return['success'] = true;

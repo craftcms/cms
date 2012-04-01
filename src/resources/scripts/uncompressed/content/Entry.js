@@ -6,12 +6,13 @@ b.Entry = b.Base.extend({
 	$container: null,
 	$toolbar: null,
 	$versionSelect: null,
+	$statusIcon: null,
+	$statusLabel: null,
 	$form: null,
 	$page: null,
 	$autosaveStatus: null,
 
-	entryId: null,
-	draftId: null,
+	data: null,
 
 	inputs: null,
 	changedInputs: null,
@@ -23,15 +24,19 @@ b.Entry = b.Base.extend({
 	/**
 	 * Initilaizes the entry.
 	 */
-	init: function(container, entryId, draftId)
+	init: function(container, data)
 	{
 		this.$container = $(container);
 		this.$form = this.$container.find('form:first');
-		this.entryId = entryId;
-		this.draftId = draftId;
+		this.data = data;
 
 		this.$toolbar = this.$container.find('.toolbar:first');
 		this.$versionSelect = this.$toolbar.find('.versionselect:first');
+
+		var $statusContainer = this.$toolbar.find('div.status:first');
+		this.$statusIcon = $statusContainer.children('.status:first');
+		this.$statusLabel = $statusContainer.children('.label:first');
+
 		this.$page = this.$form.find('.page:first');
 		this.$autosaveStatus = this.$form.find('p.autosave-status:first');
 
@@ -46,23 +51,24 @@ b.Entry = b.Base.extend({
 
 		// Listen for version changes
 		this.addListener(this.$versionSelect, 'change', function(event) {
+			// Has it actually changed to something we didn't expect?
 			var val = this.$versionSelect.val();
-			if (val != this.draftId && !(val == 'published' && !this.draftId))
+			if (val != this.data.draftId && !(val == 'published' && !this.data.draftId))
 			{
 				switch (val)
 				{
 					case 'published':
-						b.content.loadEntry(this.entryId, false);
+						b.content.loadEntry(this.data.entryId, false);
 						break;
 					case 'new':
 						var draftName = prompt('Give your new draft a name.')
 						if (draftName)
-							b.content.createDraft(this.entryId, draftName);
+							b.content.createDraft(this.data.entryId, draftName);
 						else
-							this.$versionSelect.val(this.draftId ? this.draftId : 'published');
+							this.$versionSelect.val(this.data.draftId ? this.data.draftId : 'published');
 						break;
 					default:
-						b.content.loadEntry(this.entryId, val);
+						b.content.loadEntry(this.data.entryId, val);
 				}
 			}
 		});
@@ -150,10 +156,10 @@ b.Entry = b.Base.extend({
 	 */
 	getSaveData: function()
 	{
-		var data = {entryId: this.entryId};
+		var data = {entryId: this.data.entryId};
 
-		if (this.draftId)
-			data.draftId = this.draftId;
+		if (this.data.draftId)
+			data.draftId = this.data.draftId;
 
 		var includedBasenames = [],
 			sameArrayNameCount = {};
@@ -250,18 +256,20 @@ b.Entry = b.Base.extend({
 		$.post(b.actionUrl+'content/autosaveDraft', this.getSaveData(), $.proxy(function(response) {
 			if (response.success)
 			{
-				this.$autosaveStatus.removeClass('error').text(response.draftName+' autosaved a moment ago.');
+				// Was a new draft just created?
+				var isNewDraft = (response.entryData.draftId != this.data.draftId);
 
-				// New draft?
-				if (!this.draftId)
+				this.data = response.entryData;
+
+				if (isNewDraft)
 				{
-					this.draftId = response.draftId;
-					var $newDraftOption = this.$versionSelect.find('[value=new]')
-						$option = $('<option value="'+response.draftId+'">“'+response.draftName+'” by '+response.draftAuthor+'</option>').insertBefore($newDraftOption);
+					// Add the new draft's option at the end of the version select
+					var $newDraftOption = this.$versionSelect.find('[value=new]:first')
+						$option = $('<option value="'+this.data.draftId+'">“'+this.data.draftName+'” by '+this.data.draftAuthor+'</option>').insertBefore($newDraftOption);
 
-					this.$versionSelect.val(response.draftId);
+					this.$versionSelect.val(this.data.draftId);
 
-					b.content.pushHistoryState(response.entryId, response.entryTitle, response.draftNum, response.draftName);
+					b.content.pushHistoryState(this.data.entryId, this.data.entryTitle, this.data.draftNum, this.data.draftName);
 				}
 
 				// Is something queued up?
@@ -270,6 +278,8 @@ b.Entry = b.Base.extend({
 					this[this.onAjaxResponse]();
 					this.onAjaxResponse = null;
 				}
+
+				this.$autosaveStatus.removeClass('error').text(this.data.draftName+' autosaved a moment ago.');
 			}
 			else
 			{
@@ -304,7 +314,22 @@ b.Entry = b.Base.extend({
 		$.post(b.actionUrl+'content/publishDraft', this.getSaveData(), $.proxy(function(response) {
 			if (response.success)
 			{
-				b.content.loadEntry(this.entryId, false);
+				// If we were editing a draft, remove it from the version select
+				if (this.data.draftNum)
+					this.$versionSelect.find('[value='+this.data.draftNum+']:first').remove();
+
+				this.data = response.entryData;
+
+				// Try to find the Published version option
+				var $publishedVersionOption = this.$versionSelect.find('[value=published]:first');
+
+				// Create it if this is the first time the entry has been published
+				if (!$publishedVersionOption.length)
+					$publishedVersionOption = $('<option value="published">Published</option>').prependTo(this.$versionSelect);
+
+				this.$versionSelect.val('published');
+
+				this.updateEntryStatus();
 			}
 			else
 			{
@@ -316,6 +341,38 @@ b.Entry = b.Base.extend({
 
 			this.waiting = false;
 		}, this));
+	},
+
+	/**
+	 * Updates the entry's status indicator
+	 */
+	updateEntryStatus: function()
+	{
+		switch (this.data.entryStatus)
+		{
+			case 'live':
+				var statusClass = 'on',
+					statusText = 'Live';
+				break;
+
+			case 'pending':
+				var statusClass = 'pending',
+					statusText = 'Pending';
+				break;
+
+			case 'expired':
+				var statusClass = 'off',
+					statusText = 'Expired';
+				break;
+
+			default:
+				var statusClass = '',
+					statusText = 'Never Published';
+		}
+
+		b.content.$selEntryLink.find('.status:first').prop('className', 'status '+statusClass);
+		this.$statusIcon.prop('className', 'status '+statusClass);
+		this.$statusLabel.text(statusText);
 	}
 
 }, {

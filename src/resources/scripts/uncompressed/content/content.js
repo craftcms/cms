@@ -83,17 +83,17 @@ var Content = b.Base.extend({
 						{
 							if (response.success)
 							{
-								var url = this.getEntryEditUrl(response.entryId, response.draftNum);
+								var url = this.getEntryEditUrl(response.entryData.entryId, response.entryData.draftNum);
 
 								if (History.enabled)
 								{
 									// Update the link
 									$a.attr('href', url);
-									$a.attr('data-entry-id', response.entryId);
-									$label.text(response.entryTitle);
+									$a.attr('data-entry-id', response.entryData.entryId);
+									$label.text(response.entryData.entryTitle);
 
 									// Load the entry's edit page
-									this.loadEntry(response.entryId, response.draftNum, true);
+									this.loadEntry(response.entryData.entryId, response.entryData.draftNum, true);
 								}
 								else
 									// Redirect to it
@@ -156,7 +156,7 @@ var Content = b.Base.extend({
 		var state = History.getState();
 
 		// Update the selected link
-		if (state.data.entryId != this.selEntry.entryId)
+		if (state.data.entryId != this.selEntry.data.entryId)
 		{
 			this.$selEntryLink.removeClass('sel');
 			this.$selEntryLink = this.$entryLinks.filter('[data-entry-id='+state.data.entryId+']:first');
@@ -220,10 +220,10 @@ var Content = b.Base.extend({
 			// Load up the entry HTML
 			this.$main.html(response.entryHtml);
 
-			this.pushHistoryState(response.entryId, response.entryTitle, response.draftNum, response.draftName);
+			this.pushHistoryState(response.entryData.entryId, response.entryData.entryTitle, response.entryData.draftNum, response.entryData.draftName);
 
 			// Initialize the entry
-			this.selEntry = new b.Entry(this.$main, response.entryId, response.draftId);
+			this.selEntry = new b.Entry(this.$main, response.entryData);
 		}
 		else
 		{
