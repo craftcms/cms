@@ -96,7 +96,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJsonError($e->getMessage());
+			$this->returnErrorJson($e->getMessage());
 		}
 	}
 
@@ -114,7 +114,7 @@ class ContentController extends Controller
 
 			$entry = b()->content->getEntryById($entryId);
 			if (!$entry)
-				$this->returnJsonError('No entry exists with the ID '.$entryId);
+				$this->returnErrorJson('No entry exists with the ID '.$entryId);
 
 			// Is there a requested draft?
 			$draftNum = b()->request->getPost('draftNum');
@@ -136,7 +136,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJsonError($e->getMessage());
+			$this->returnErrorJson($e->getMessage());
 		}
 	}
 
@@ -154,7 +154,7 @@ class ContentController extends Controller
 
 			$entry = b()->content->getEntryById($entryId);
 			if (!$entry)
-				$this->returnJsonError('No entry exists with the ID '.$entryId);
+				$this->returnErrorJson('No entry exists with the ID '.$entryId);
 
 			$draftName = b()->request->getPost('draftName');
 			$draft = b()->content->createDraft($entryId, null, $draftName);
@@ -164,7 +164,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJsonError($e->getMessage());
+			$this->returnErrorJson($e->getMessage());
 		}
 	}
 
@@ -181,7 +181,7 @@ class ContentController extends Controller
 			$entryId = b()->request->getRequiredPost('entryId');
 			$entry = b()->content->getEntryById($entryId);
 			if (!$entryId)
-				$this->returnJsonError('No entry exists with the ID '.$entryId);
+				$this->returnErrorJson('No entry exists with the ID '.$entryId);
 
 			$content = b()->request->getRequiredPost('content');
 
@@ -191,7 +191,7 @@ class ContentController extends Controller
 			{
 				$draft = b()->content->getDraftById($draftId);
 				if (!$draft)
-					$this->returnJsonError('No draft exists with the ID '.$draftId);
+					$this->returnErrorJson('No draft exists with the ID '.$draftId);
 			}
 			else
 				$draft = b()->content->createDraft($entryId);
@@ -204,7 +204,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJsonError($e->getMessage());
+			$this->returnErrorJson($e->getMessage());
 		}
 	}
 
@@ -221,14 +221,14 @@ class ContentController extends Controller
 			$entryId = b()->request->getRequiredPost('entryId');
 			$entry = b()->content->getEntryById($entryId);
 			if (!$entryId)
-				$this->returnJsonError('No entry exists with the ID '.$entryId);
+				$this->returnErrorJson('No entry exists with the ID '.$entryId);
 
 			$draftId = b()->request->getPost('draftId');
 			if ($draftId)
 			{
 				$draft = b()->content->getDraftById($draftId);
 				if (!$draft)
-					$this->returnJsonError('No draft exists with the ID '.$draftId);
+					$this->returnErrorJson('No draft exists with the ID '.$draftId);
 			}
 			else
 				$draft = b()->content->createDraft($entryId);
@@ -245,7 +245,7 @@ class ContentController extends Controller
 		}
 		catch (\Exception $e)
 		{
-			$this->returnJsonError($e->getMessage());
+			$this->returnErrorJson($e->getMessage());
 		}
 	}
 
