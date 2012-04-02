@@ -71,50 +71,8 @@ class App extends \CWebApplication
 
 		foreach ($aliases as $alias)
 		{
-			self::import($alias);
+			Blocks::import($alias);
 		}
-	}
-
-	/**
-	 * @static
-	 * @param      $alias
-	 * @param bool $forceInclude
-	 */
-	public static function import($alias, $forceInclude = false)
-	{
-		$path = BLOCKS_APP_PATH.str_replace('.', '/', $alias);
-
-		$directory = (substr($path, -2) == '/*');
-		if ($directory)
-		{
-			$path = substr($path, 0, -1);
-
-			if (($files = @glob($path."*.php")) !== false)
-			{
-				foreach ($files as $file)
-				{
-					self::_importFile(realpath($file));
-				}
-			}
-		}
-		else
-		{
-			$file = $path.'.php';
-			self::_importFile($file);
-
-			if ($forceInclude)
-				require_once $file;
-		}
-	}
-
-	/**
-	 * @static
-	 * @param $file
-	 */
-	private static function _importFile($file)
-	{
-		$class = __NAMESPACE__.'\\'.pathinfo($file, PATHINFO_FILENAME);
-		\Yii::$classMap[$class] = $file;
 	}
 
 	/**
