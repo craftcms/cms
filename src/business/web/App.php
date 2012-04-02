@@ -20,16 +20,16 @@ class App extends \CWebApplication
 		$this->_processResourceRequest();
 
 		// in case of an error, import everything we need
-		self::import('business.exceptions.HttpException');
-		self::import('business.db.DbCommand');
-		self::import('business.db.DbConnection');
-		self::import('business.db.MysqlSchema');
-		self::import('business.web.ErrorHandler');
-		self::import('business.web.templating.TemplateRenderer');
+		Blocks::import('business.exceptions.HttpException');
+		Blocks::import('business.db.DbCommand');
+		Blocks::import('business.db.DbConnection');
+		Blocks::import('business.db.MysqlSchema');
+		Blocks::import('business.web.ErrorHandler');
+		Blocks::import('business.web.templating.TemplateRenderer');
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
-		self::import('business.logging.WebLogRoute');
-		self::import('business.logging.ProfileLogRoute');
+		Blocks::import('business.logging.WebLogRoute');
+		Blocks::import('business.logging.ProfileLogRoute');
 		b()->getComponent('log');
 
 		parent::init();
@@ -176,22 +176,22 @@ class App extends \CWebApplication
 	private function _processResourceRequest()
 	{
 		// Import the bare minimum to determine if what type of request this is
-		self::import('business.Component');
-		self::import('business.Plugin');
-		self::import('business.enums.UrlFormat');
-		self::import('business.enums.RequestMode');
-		self::import('business.utils.HtmlHelper');
-		self::import('business.utils.UrlHelper');
-		self::import('business.web.HttpRequest');
-		self::import('business.web.UrlManager');
-		self::import('services.ConfigService');
+		Blocks::import('business.Component');
+		Blocks::import('business.Plugin');
+		Blocks::import('business.enums.UrlFormat');
+		Blocks::import('business.enums.RequestMode');
+		Blocks::import('business.utils.HtmlHelper');
+		Blocks::import('business.utils.UrlHelper');
+		Blocks::import('business.web.HttpRequest');
+		Blocks::import('business.web.UrlManager');
+		Blocks::import('services.ConfigService');
 
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
-			self::import('business.utils.File');
-			self::import('business.web.ResourceProcessor');
-			self::import('services.PathService');
+			Blocks::import('business.utils.File');
+			Blocks::import('business.web.ResourceProcessor');
+			Blocks::import('services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->pathSegments), 1);
