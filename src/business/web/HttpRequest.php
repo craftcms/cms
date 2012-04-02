@@ -283,28 +283,39 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 *
+	 * @param $name
+	 * @return mixed
 	 */
 	public function getRequiredParam($name)
 	{
 		$value = $this->getParam($name);
 		if ($value === null)
 			throw new Exception("Param “{$name}” doesn’t exist.");
+
 		return $value;
 	}
 
 	/**
 	 * Returns the named GET parameter value, or throws an exception if it's not set
+	 *
+	 * @param $name
+	 * @return mixed
 	 */
 	public function getRequiredQuery($name)
 	{
 		$value = $this->getQuery($name);
 		if ($value === null)
 			throw new Exception("GET param “{$name}” doesn’t exist.");
+
 		return $value;
 	}
 
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 *
+	 * @param $name
+	 * @return mixed
 	 */
 	public function getRequiredPost($name)
 	{

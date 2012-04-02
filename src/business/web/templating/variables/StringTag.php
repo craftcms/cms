@@ -85,6 +85,7 @@ class StringTag extends VarTag
 
 	/**
 	 * Adds an 's to the end of a string
+	 * @return string
 	 */
 	public function possessive()
 	{

@@ -13,6 +13,9 @@ class CheckboxesBlock extends BaseOptionsBlock
 
 	/**
 	 * Combines the checkbox selections into a flat string
+	 *
+	 * @param $data
+	 * @return string
 	 */
 	public function modifyPostData($data)
 	{
@@ -21,6 +24,7 @@ class CheckboxesBlock extends BaseOptionsBlock
 
 	/**
 	 * Converts the newline-separated data into an array
+	 * @param $data
 	 */
 	public function setData($data)
 	{

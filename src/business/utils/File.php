@@ -120,7 +120,7 @@ class File extends Component
 	private $_handle = null;
 
 	/**
-	 * @var CUploadedFile object instance
+	 * @var \CUploadedFile object instance
 	 */
 	private $_uploadedInstance = null;
 

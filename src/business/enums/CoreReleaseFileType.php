@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 class CoreReleaseFileType
 {
 	const Full      = 'full';

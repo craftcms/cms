@@ -45,6 +45,9 @@ class Block extends Model
 
 	/**
 	 * Display the blocktype's settings
+	 *
+	 * @param $idPrefix
+	 * @param $namePrefix
 	 * @return string
 	 */
 	public function displaySettings($idPrefix, $namePrefix)
@@ -110,6 +113,7 @@ class Block extends Model
 
 	/**
 	 * String representation of the block
+	 * @return string
 	 */
 	public function __toString()
 	{

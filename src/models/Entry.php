@@ -39,6 +39,7 @@ class Entry extends Model
 
 	/**
 	 * Use the section's content table name
+	 * @return mixed
 	 */
 	public function getContentTableName()
 	{
@@ -70,6 +71,7 @@ class Entry extends Model
 
 	/**
 	 * Returns whether the entry is live
+	 * @return bool
 	 */
 	public function getLive()
 	{
@@ -78,6 +80,7 @@ class Entry extends Model
 
 	/**
 	 * Returns whether the entry has been published
+	 * @return bool
 	 */
 	public function getPublished()
 	{
@@ -86,6 +89,7 @@ class Entry extends Model
 
 	/**
 	 * Returns whether the entry is pending
+	 * @return bool
 	 */
 	public function getPending()
 	{
@@ -94,6 +98,7 @@ class Entry extends Model
 
 	/**
 	 * Returns whether the entry has expired
+	 * @return bool
 	 */
 	public function getExpired()
 	{
@@ -135,6 +140,7 @@ class Entry extends Model
 
 	/**
 	 * Get all drafts
+	 * @return array
 	 */
 	public function getDrafts()
 	{
@@ -182,6 +188,9 @@ class Entry extends Model
 		}
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getTitle()
 	{
 		if (isset($this->content['title']))

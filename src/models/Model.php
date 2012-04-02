@@ -177,7 +177,7 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Sets the content
-	 * @param Content $content
+	 * @param $content
 	 */
 	public function setContent($content)
 	{

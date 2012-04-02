@@ -212,6 +212,9 @@ class PathService extends Component
 		return $path;
 	}
 
+	/**
+	 * @return string
+	 */
 	public function getStatePath()
 	{
 		$path = $this->runtimePath.'state/';

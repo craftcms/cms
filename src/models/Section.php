@@ -35,6 +35,7 @@ class Section extends Model
 
 	/**
 	 * Content table names are based on the site and section handles
+	 * @return string
 	 */
 	public function getContentTableName()
 	{
@@ -58,6 +59,10 @@ class Section extends Model
 
 	/**
 	 * Create a corresponding content table each time a new section is created
+	 *
+	 * @param bool $runValidation
+	 * @param null $attributes
+	 * @return bool
 	 */
 	public function save($runValidation = true, $attributes = null)
 	{
