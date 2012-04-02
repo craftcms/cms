@@ -117,7 +117,7 @@ class CoreUpdater implements IUpdater
 	 */
 	private function _getManifestData()
 	{
-		if ($this->_manifestData !== null)
+		if ($this->_manifestData == null)
 		{
 			$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->realPath);
 
