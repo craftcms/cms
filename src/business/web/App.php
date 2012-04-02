@@ -131,7 +131,23 @@ class App extends \CWebApplication
 		// Process install and setup requests?
 		$this->_processSpecialRequests('install', !$this->isInstalled);
 		$this->_processSpecialRequests('setup', !$this->isSetup);
-		$this->_processSpecialRequests('dbupdate', $this->isDbUpdateNeeded);
+
+		// Are we in the middle of a manual update?
+		if ($this->isDbUpdateNeeded)
+		{
+			if ($this->request->mode == RequestMode::CP)
+			{
+				$this->runController('dbupdate');
+				$this->end();
+			}
+			else if ($this->request->mode == RequestMode::Action && $this->request->actionController == 'dbupdate')
+			{
+				$this->runController($this->request->actionController.'/'.$this->request->actionAction);
+				$this->end();
+			}
+			else
+				throw new HttpException(404);
+		}
 
 		// Otherwise maybe it's an action request?
 		$this->_processActionRequest();
@@ -151,8 +167,7 @@ class App extends \CWebApplication
 		// Are they requesting this specifically?
 		if ($this->request->mode == RequestMode::CP && $this->request->getPathSegment(1) === $what)
 		{
-			$defaultAction = $what == 'dbupdate' ? 'dbUpdateRequired' : 'index';
-			$action = $this->request->getPathSegment(2, $defaultAction);
+			$action = $this->request->getPathSegment(2, 'index');
 			$this->runController("{$what}/{$action}");
 			$this->end();
 		}

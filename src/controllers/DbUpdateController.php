@@ -7,17 +7,11 @@ namespace Blocks;
 class DbUpdateController extends Controller
 {
 	/**
-	 * All db update actions require the user to be logged in
+	 * Index
 	 */
-	public function init()
+	public function actionIndex()
 	{
-		$this->requireLogin();
-	}
-
-	public function actionDbUpdateRequired()
-	{
-		$update = !b()->isDbUpdateNeeded ? false : true;
-		$this->loadTemplate('update/db', array('dbUpdate' => $update));
+		$this->loadTemplate('_special/dbupdate');
 	}
 
 	/**
@@ -26,6 +20,7 @@ class DbUpdateController extends Controller
 	public function actionUpdate()
 	{
 		$this->requirePostRequest();
+		$this->requireAjaxRequest();
 
 		// run migrations to top
 		if (b()->updates->runMigrationsToTop())
@@ -37,13 +32,10 @@ class DbUpdateController extends Controller
 				b()->updates->flushUpdateInfoFromCache();
 				b()->user->setMessage(MessageType::Success, 'Database successfully updated.');
 
-				$url = b()->request->getPost('redirect');
-				if ($url !== null)
-					$this->redirect($url);
+				$this->returnJson(array('success' => true));
 			}
 		}
 
-		b()->user->setMessage(MessageType::Error, 'There was a problem updating the database.');
-		$this->loadTemplate('update/db');
+		$this->returnJson(array('error' => 'There was a problem updating the database.'));
 	}
 }
