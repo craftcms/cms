@@ -251,6 +251,8 @@ class ErrorHandler extends \CErrorHandler
 					return $viewFile;
 			}
 		}
+
+		return null;
 	}
 
 	/**
