@@ -9,7 +9,7 @@ class ErrorHandler extends \CErrorHandler
 	private $_error;
 
 	/**
-	 * Handles the exception.
+	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
 	 * @access protected
 	 * @param Exception $exception the exception captured
 	 */
@@ -38,12 +38,14 @@ class ErrorHandler extends \CErrorHandler
 				$errorLine = $trace['line'];
 			}
 
+			// If this is a template renderer exception, we don't want to show any stack track information.
 			if ($exception instanceof TemplateRendererException)
 			{
 				$trace = array();
 			}
 			else
 			{
+				// Build the full stack trace.
 				$trace = $exception->getTrace();
 
 				foreach ($trace as $i => $t)
@@ -74,22 +76,51 @@ class ErrorHandler extends \CErrorHandler
 
 			if (!headers_sent())
 				header("HTTP/1.0 {$data['code']} ".get_class($exception));
-			if($exception instanceof CHttpException || !YII_DEBUG)
-				$this->render('errors/error',$data);
+
+			// If this is an HttpException or we're not in dev mode, render the error template.
+			if ($exception instanceof \CHttpException || !b()->config->devMode)
+				$this->render('errors/error', $data);
 			else
 			{
+				// If this is an ajax request, we want to prep the exception a bit before we return it.
 				if($this->isAjaxRequest())
-					$app->displayException($exception);
+					$app->displayAjaxException($exception);
 				else
-					$this->render('errors/exception',$data);
+					// If we've made it this far, render the exception template.
+					$this->render('errors/exception', $data);
 			}
 		}
 		else
 			$app->displayException($exception);
 	}
 
+
 	/**
-	 * Handles the PHP error.
+	 * Formats the exception into JSON before it passes it along.
+	 * @param $exception
+	 */
+	protected function displayAjaxException($exception)
+	{
+		if (b()->config->devMode)
+		{
+			$exceptionArr = array(
+				'error' => $exception->getMessage(),
+				'trace' => $exception->getTraceAsString(),
+				'file'  => $exception->getFile(),
+				'line'  => $exception->getLine(),
+			);
+		}
+		else
+		{
+			$exceptionArr = array('error' => $exception->getMessage());
+		}
+
+		Json::sendJsonHeaders();
+		echo Json::encode($exceptionArr);
+	}
+
+	/**
+	 * Handles a PHP error event.
 	 * @param \CErrorEvent $event the PHP error event
 	 */
 	protected function handleError($event)

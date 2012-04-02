@@ -10,7 +10,12 @@ Yii::setPathOfAlias('runtime', BLOCKS_RUNTIME_PATH);
 Yii::setPathOfAlias('templates', BLOCKS_TEMPLATES_PATH);
 
 if ($blocksConfig['devMode'] == true)
+{
+	defined('YII_DEBUG') || define('YII_DEBUG', true);
+	error_reporting(E_ALL);
+
 	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
+}
 
 return CMap::mergeArray(
 	$common,
