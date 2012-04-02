@@ -416,7 +416,7 @@ class DateTimeHelper
 	 * @param mixed $timeInterval the numeric value with space then time type. Example of valid types: 6 hours, 2 days, 1 minute.
 	 * @param mixed $dateString the datestring or unix timestamp to compare
 	 * @param int $userOffset User's offset from GMT (in hours)
-	 * @return bool whether the $dateString was withing the specified $timeInterval
+	 * @return bool whether the $dateString was within the specified $timeInterval
 	 */
 	public static function wasWithinLast($timeInterval, $dateString, $userOffset = null)
 	{

@@ -64,7 +64,7 @@ class CoreUpdater implements IUpdater
 		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
 
 		// download the package
-		Blocks::log('Downlading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
+		Blocks::log('Downloading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
 		if (!b()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
 			throw new Exception('There was a problem downloading the package.');
 
@@ -104,10 +104,10 @@ class CoreUpdater implements IUpdater
 		$this->cleanTempFiles();
 
 		if (!b()->updates->flushUpdateInfoFromCache())
-			throw new Exception('The update was performed sucessfully, but there was a problem invalidating the update cache.');
+			throw new Exception('The update was performed successfully, but there was a problem invalidating the update cache.');
 
 		if (!b()->updates->setNewVersionAndBuild($latestBuild->version, $latestBuild->build))
-			throw new Exception('The update was performed sucessfully, but there was a problem setting the new version and build number in the database.');
+			throw new Exception('The update was performed successfully, but there was a problem setting the new version and build number in the database.');
 
 		return true;
 	}

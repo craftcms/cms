@@ -349,7 +349,7 @@ class File extends Component
 	}
 
 	/**
-	 * Tests current filesystem object existance and returns boolean (see {@link exists}).
+	 * Tests current filesystem object existence and returns boolean (see {@link exists}).
 	 * If $_exists property is set, returned value is read from that property.
 	 * @return boolean 'True' if file exists, otherwise 'false'
 	 */
@@ -364,7 +364,7 @@ class File extends Component
 	/**
 	 * Returns filesystem object type for the current file (see {@link pathInfo}).
 	 * Tells whether filesystem object is a regular file.
-	 * @return boolean 'True' if filesystem object is a regular file, overwise 'false'
+	 * @return boolean 'True' if filesystem object is a regular file, otherwise 'false'
 	 */
 	public function getIsFile()
 	{
@@ -373,7 +373,7 @@ class File extends Component
 
 	/**
 	 * Returns filesystem object type for the current file (see {@link pathInfo}). Tells whether filesystem object is a directory.
-	 * @return boolean 'True' if filesystem object is a directory, overwise 'false'
+	 * @return boolean 'True' if filesystem object is a directory, otherwise 'false'
 	 */
 	public function getIsDir()
 	{
@@ -411,7 +411,7 @@ class File extends Component
 	/**
 	 * Tests whether the current filesystem object is readable and returns boolean.
 	 * If $_readable property is set, returned value is read from that property.
-	 * @return boolean 'True' if filesystem object is readable, overwise 'false'
+	 * @return boolean 'True' if filesystem object is readable, otherwise 'false'
 	 */
 	public function getReadable()
 	{
@@ -437,7 +437,7 @@ class File extends Component
 	/**
 	 * PHP's is_writable has problems (especially on Windows).
 	 * See: https://bugs.php.net/bug.php?id=27609 and https://bugs.php.net/bug.php?id=30931.
-	 * This function tests writeability by creating a temp file on the filesystem.
+	 * This function tests write-ability by creating a temp file on the filesystem.
 	 * @param $path = the path to test.
 	 * @return boolean 'True' if filesystem object is writeable, otherwise 'false'
 	 * @access private
@@ -1198,7 +1198,7 @@ class File extends Component
 	/**
 	 * Deletes the current filesystem object. For folders purge parameter can be supplied.
 	 * @param boolean $purge If 'true' folder would be deleted with all the descendants
-	 * @return boolean 'True' if sucessfully deleted, 'false' on fail
+	 * @return boolean 'True' if successfully deleted, 'false' on fail
 	 */
 	public function delete($purge = true)
 	{
