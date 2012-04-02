@@ -1,7 +1,7 @@
 <?php
 namespace Blocks;
 
-
+require_once dirname(__FILE__).'/enums/Edition.php';
 require_once dirname(__FILE__).'/../blocks_info.php';
 
 
