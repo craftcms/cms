@@ -56,7 +56,7 @@ class UpdateController extends Controller
 				break;
 			}
 
-			// we assume it's a plugin handle.
+			// We assume it's a plugin handle.
 			default:
 			{
 				if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
@@ -109,7 +109,7 @@ class UpdateController extends Controller
 				break;
 			}
 
-			// plugin handle
+			// Plugin handle
 			default:
 			{
 				try
