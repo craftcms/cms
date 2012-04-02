@@ -50,6 +50,17 @@ var Content = b.Base.extend({
 			hint: 'Enter a title…'
 		});
 
+		// Hide the input on blur if there's no value
+		this.addListener($input, 'blur', function()
+		{
+			if (!$input.val())
+			{
+				$li.remove();
+				$addLink.show();
+			}
+		});
+
+		// Listen for Return and ESC keys
 		this.addListener($input, 'keydown', function(event)
 		{
 			switch (event.keyCode)
