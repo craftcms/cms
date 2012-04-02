@@ -168,7 +168,7 @@ b.ui.NiceText = b.Base.extend({
 		this.focussed = false;
 		clearInterval(this.interval);
 
-		this.checkInput()
+		this.checkInput();
 
 		if (this.$hint && !this.showingHint && !this.val)
 			this.showHint();

@@ -51,12 +51,12 @@ $('#updates').load(updatesUrl, function()
 		$sidebarBadge.remove();
 
 		// Keep the "no updates" dialog vertically centered
-		$dialog = $('#no-updates');
+		var $dialog = $('#no-updates');
 		var centerDialog = function()
 		{
 			var top = ((window.innerHeight-48) / 2) - 43;
 			$dialog.css('top', top);
-		}
+		};
 		centerDialog();
 		b.$window.on('resize', centerDialog);
 	}

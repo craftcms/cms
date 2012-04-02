@@ -61,7 +61,7 @@ b.Entry = b.Base.extend({
 						b.content.loadEntry(this.data.entryId, false);
 						break;
 					case 'new':
-						var draftName = prompt('Give your new draft a name.')
+						var draftName = prompt('Give your new draft a name.');
 						if (draftName)
 							b.content.createDraft(this.data.entryId, draftName);
 						else
@@ -264,7 +264,7 @@ b.Entry = b.Base.extend({
 				if (isNewDraft)
 				{
 					// Add the new draft's option at the end of the version select
-					var $newDraftOption = this.$versionSelect.find('[value=new]:first')
+					var $newDraftOption = this.$versionSelect.find('[value=new]:first'),
 						$option = $('<option value="'+this.data.draftId+'">“'+this.data.draftName+'” by '+this.data.draftAuthor+'</option>').insertBefore($newDraftOption);
 
 					this.$versionSelect.val(this.data.draftId);
