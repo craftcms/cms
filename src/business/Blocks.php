@@ -1,15 +1,15 @@
 <?php
 namespace Blocks;
 
+
+require_once dirname(__FILE__).'/../blocks_info.php';
+
+
 /**
  *
 */
 class Blocks extends \Yii
 {
-	private static $_edition = '@@@edition@@@';
-	private static $_version = '0.1';
-	private static $_build = '@@@build@@@';
-
 	/**
 	 * @static
 	 * @param bool $checkStoredEdition If true, will check the db for the edition if we can't get it locally.
@@ -17,10 +17,10 @@ class Blocks extends \Yii
 	 */
 	public static function getEdition($checkStoredEdition = true)
 	{
-		if (strpos(self::$_edition, '@@@') !== false && $checkStoredEdition)
-			self::$_edition = self::getStoredEdition();
-
-		return self::$_edition;
+		if (strpos(BLOCKS_EDITION, '@@@') !== false && $checkStoredEdition)
+			return self::getStoredEdition();
+		else
+			return BLOCKS_EDITION;
 	}
 
 	/**
@@ -40,10 +40,10 @@ class Blocks extends \Yii
 	 */
 	public static function getVersion($checkStoredVersion = true)
 	{
-		if (strpos(self::$_version, '@@@') !== false && $checkStoredVersion)
-			self::$_version = self::getStoredVersion();
-
-		return self::$_version;
+		if (strpos(BLOCKS_VERSION, '@@@') !== false && $checkStoredVersion)
+			return self::getStoredVersion();
+		else
+			return BLOCKS_VERSION;
 	}
 
 	/**
@@ -63,10 +63,10 @@ class Blocks extends \Yii
 	 */
 	public static function getBuild($checkStoredBuild = true)
 	{
-		if (strpos(self::$_build, '@@@') !== false && $checkStoredBuild)
-			self::$_build = self::getStoredBuild();
-
-		return self::$_build;
+		if (strpos(BLOCKS_BUILD, '@@@') !== false && $checkStoredBuild)
+			return self::getStoredBuild();
+		else
+			return BLOCKS_BUILD;
 	}
 
 	/**
