@@ -63,7 +63,7 @@ function updateNext()
 
 	$status.html('Updating '+updateInfo[updating].name+' to version '+updateInfo[updating].version+' ('+updating+' of '+totalUpdates+')');
 
-	$.getJSON(updateUrl + updateInfo[updating].handle, function(data, textStatus) {
+	$.post(updateUrl + updateInfo[updating].handle, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
 			showError('An unknown error occurred while updating '+updateInfo[updating].name+'.');

@@ -6,8 +6,6 @@ namespace Blocks;
  */
 class UpdateController extends Controller
 {
-	private $_blocksUpdateInfo;
-
 	/**
 	 * All update actions require the user to be logged in
 	 */
@@ -17,35 +15,35 @@ class UpdateController extends Controller
 	}
 
 	/**
-	 * @param $h
-	 * @return mixed
+	 * Returns the update info JSON.
+	 * @param string $h The handle of which update to retrieve info for.
 	 */
 	public function actionGetUpdateInfo($h)
 	{
-		$returnUpdateInfo = array();
-		$blocksUpdateInfo = b()->updates->updateInfo;
-		if ($blocksUpdateInfo == null)
+		$this->requireAjaxRequest();
+
+		$return = array();
+		$updateInfo = b()->updates->updateInfo;
+		if ($updateInfo == null)
 		{
 			$r = array('error' => 'There was a problem getting the latest update information.', 'fatal' => true);
 			$this->returnJson($r);
 		}
-
-		$this->_blocksUpdateInfo = $blocksUpdateInfo;
 
 		switch ($h)
 		{
 			case 'all':
 			{
 				// Blocks first.
-				$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo->latestVersion.'.'.$this->_blocksUpdateInfo->latestBuild);
+				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild);
 
 				// Plugins
-				if ($this->_blocksUpdateInfo->plugins !== null)
+				if ($updateInfo->plugins !== null)
 				{
-					foreach ($this->_blocksUpdateInfo->plugins as $plugin)
+					foreach ($updateInfo->plugins as $plugin)
 					{
 						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
-							$returnUpdateInfo[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+							$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
 					}
 				}
 
@@ -54,17 +52,17 @@ class UpdateController extends Controller
 
 			case 'Blocks':
 			{
-			$returnUpdateInfo[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $this->_blocksUpdateInfo->latestVersion.'.'.$this->_blocksUpdateInfo->latestBuild);
+				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild);
 				break;
 			}
 
 			// we assume it's a plugin handle.
 			default:
 			{
-				if ($this->_blocksUpdateInfo->plugins !== null && count($this->_blocksUpdateInfo->plugins) > 0)
+				if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
 				{
-					if (isset($this->_blocksUpdateInfo->plugins[$h]) && $this->_blocksUpdateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($this->_blocksUpdateInfo->plugins[$h]->newerReleases) > 0)
-						$returnUpdateInfo[] = array('handle' => $this->_blocksUpdateInfo->plugins[$h]->handle, 'name' => $this->_blocksUpdateInfo->plugins[$h]->displayName, 'version' => $this->_blocksUpdateInfo->plugins[$h]->latestVersion);
+					if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->newerReleases) > 0)
+						$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
 					else
 					{
 						$r = array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true);
@@ -79,16 +77,19 @@ class UpdateController extends Controller
 			}
 		}
 
-		$r = array('updateInfo' => $returnUpdateInfo);
+		$r = array('updateInfo' => $return);
 		$this->returnJson($r);
 	}
 
 	/**
-	 * @param $h
-	 * @return mixed
+	 * Runs an update.
+	 * @param string $h The handle of what to update.
 	 */
 	public function actionUpdate($h)
 	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
 		$r = array();
 
 		switch ($h)
