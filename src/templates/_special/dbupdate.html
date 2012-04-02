@@ -1,0 +1,51 @@
+{layout "_layouts/basic" pageTitle="Update Blocks"}
+
+
+{region "styles"}
+	<style type="text/css">
+		#dbupdate .icon { background-image: url({:url.resource}images/notice-dbupdate.png); }
+	</style>
+{/region}
+
+
+{region "body"}
+
+	<div class="no-access" id="dbupdate">
+		<div class="pane">
+			<div class="pane-body">
+				<div class="pane-item notice">
+					<div class="icon"></div>
+					<p>To complete the Blocks update, some changes must be made to your database.<br/>
+						<a id="go" class="go">Finish up</a></p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+		{!--<div id="status">Your database needs to be updated.  Make a backup, then press this button.
+		<form method="post" action="">
+			<input type="hidden" name="action" value="dbUpdate/update" />
+			<input type="hidden" name="redirect" value="dashboard" />
+			<div><input class="btn big submit" type="submit" value="Do It." /></div>
+		</form></div>--}
+
+{/region}
+
+
+{region "scripts"}
+	<script type="text/javascript">
+		var waiting = false;
+		$('#go').click(function() {
+			$.post('{:url.action}dbupdate/update', function(response) {
+				if (response.success)
+					window.location.reload()
+				else
+				{
+					var error = (response.error || 'An unknown error occurred.');
+					alert(error);
+				}
+			});
+		});
+	</script>
+{/region}

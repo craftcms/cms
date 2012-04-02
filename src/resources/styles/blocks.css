@@ -213,7 +213,7 @@ tbody:first-child > tr:first-child > .pane-item { border-top: none }
 .nested-pane-items { overflow: hidden; }
 
 .pane-item.notice { padding-left: 52px; }
-.pane-item.notice .icon { position: absolute; top: 16px; left: 10px; width: 32px; height: 28px; background: url(../images/notice.png) no-repeat 0 0; }
+.pane-item.notice .icon { position: absolute; top: 12px; left: 10px; width: 32px; height: 28px; background: url(../images/notice.png) no-repeat 0 0; }
 
 .icon.blue { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
 
