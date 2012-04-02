@@ -154,6 +154,22 @@ body.sidebar-layout #sidebar { position: fixed; top: 48px; left: 0; overflow: au
 .sidebar > ul li a:not(.sel).new .icon { background-image: url(../images/sidebar_icons_hover.png); }
 
 
+/* ----------------------------------------
+/*  Nav
+/* ----------------------------------------*/
+
+.nav li a { display: block; padding: 3px 10px 3px 0; white-space: pre; overflow: hidden; text-overflow: ellipsis; text-transform: none; }
+.nav li a.etc { width: 24px; height: 24px; padding: 0; background: url(../images/etc.png) no-repeat 50% 50%; }
+.nav li a .icon { margin: -3px 0 -3px -4px; }
+
+.nav li a.has-badge { padding-right: 35px; }
+.nav li a.has-badge .badge { float: right; margin: 2px -25px 0 0; }
+.nav li a.has-status { padding-right: 25px; }
+.nav li a.has-status .status { float: right; margin: 4px -15px 0 0; }
+
+ul.tree,
+.tree ul { margin-left: 20px; }
+.tree li .toggle { margin: 7px 0 0 -15px; }
 
 /* ----------------------------------------
 /*  Basic stuff
