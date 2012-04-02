@@ -113,7 +113,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function crossJoin($table)
 	{
-		return parent::crossJoin($this>addTablePrefix($table));
+		return parent::crossJoin($this->_addTablePrefix($table));
 	}
 
 	/**
@@ -338,11 +338,11 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * @param $table
-	 * @param $column
-	 * @param $type
-	 * @param $newColumn
-	 * @param $after
+	 * @param      $table
+	 * @param      $column
+	 * @param      $type
+	 * @param null $newName
+	 * @param      $after
 	 * @return int
 	 */
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
