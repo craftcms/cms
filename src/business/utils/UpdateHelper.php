@@ -148,7 +148,7 @@ class UpdateHelper
 		// get manifest file
 		$manifestFile = b()->file->set($manifestDataPath.'/blocks_manifest');
 		$manifestFileData = $manifestFile->contents;
-		$manifestFileData = explode("\n", $manifestFileData);
+		$manifestFileData = preg_split('/[\r\n]/', $manifestFileData);
 
 		// Remove any trailing empty newlines
 		if ($manifestFileData[count($manifestFileData) - 1] == '')
