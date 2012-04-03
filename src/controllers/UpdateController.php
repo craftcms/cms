@@ -35,14 +35,14 @@ class UpdateController extends Controller
 			case 'all':
 			{
 				// Blocks first.
-				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild);
+				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
 
 				// Plugins
 				if ($updateInfo->plugins !== null)
 				{
 					foreach ($updateInfo->plugins as $plugin)
 					{
-						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 							$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
 					}
 				}
@@ -52,7 +52,7 @@ class UpdateController extends Controller
 
 			case 'Blocks':
 			{
-				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->latestVersion.'.'.$updateInfo->latestBuild);
+				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
 				break;
 			}
 
@@ -61,7 +61,7 @@ class UpdateController extends Controller
 			{
 				if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
 				{
-					if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->newerReleases) > 0)
+					if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
 						$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
 					else
 					{

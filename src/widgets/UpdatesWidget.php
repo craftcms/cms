@@ -24,14 +24,14 @@ class UpdatesWidget extends Widget
 		$updateInfo = b()->updates->updateInfo;
 
 		// Blocks first
-		if ($updateInfo->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
+		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 		{
 			$this->updates[] = array(
 				'name'     => 'Blocks',
 				'handle'   => 'Blocks',
-				'version'  => $updateInfo->latestVersion.' Build '.$updateInfo->latestBuild,
-				'date'     => new DateTime('@'.$updateInfo->latestDate),
-				'critical' => $updateInfo->criticalUpdateAvailable
+				'version'  => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
+				'date'     => new DateTime('@'.$updateInfo->blocks->latestDate),
+				'critical' => $updateInfo->blocks->criticalUpdateAvailable
 			);
 		}
 

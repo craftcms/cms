@@ -19,32 +19,32 @@ class UpdatesService extends Component
 		if (!$forceRefresh && !$this->isUpdateInfoCached())
 			return null;
 
-		$blocksUpdateInfo = $this->getUpdateInfo($forceRefresh);
+		$updateInfo = $this->getUpdateInfo($forceRefresh);
 
 		// blocks first.
-		if ($blocksUpdateInfo->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($blocksUpdateInfo->newerReleases) > 0)
+		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateInfo->blocks->releases) > 0)
 		{
-			$notes = $this->_generateUpdateNotes($blocksUpdateInfo->newerReleases, 'Blocks');
+			$notes = $this->_generateUpdateNotes($updateInfo->blocks->releases, 'Blocks');
 			$edition = Blocks::getEdition();
 			$updates[] = array(
-				'name' => 'Blocks'.($edition == 'Standard' ? '' : ' '.$edition),
+				'name' => 'Blocks'.($edition == Edition::Standard ? '' : ' '.$edition),
 				'handle' => 'Blocks',
-				'version' => $blocksUpdateInfo->latestVersion.' Build '.$blocksUpdateInfo->latestBuild,
-				'critical' => $blocksUpdateInfo->criticalUpdateAvailable,
-				'manualUpdateRequired' => $blocksUpdateInfo->manualUpdateRequired,
+				'version' => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
+				'critical' => $updateInfo->blocks->criticalUpdateAvailable,
+				'manualUpdateRequired' => $updateInfo->blocks->manualUpdateRequired,
 				'notes' => $notes,
 			);
 
 		}
 
 		// plugins second.
-		if ($blocksUpdateInfo->plugins !== null && count($blocksUpdateInfo->plugins) > 0)
+		if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
 		{
-			foreach ($blocksUpdateInfo->plugins as $plugin)
+			foreach ($updateInfo->plugins as $plugin)
 			{
-				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 				{
-					$notes = $this->_generateUpdateNotes($plugin->newerReleases, $plugin->displayName);
+					$notes = $this->_generateUpdateNotes($plugin->releases, $plugin->displayName);
 					$updates[] = array(
 						'name' => $plugin->displayName,
 						'handle' => $plugin->class,
@@ -97,9 +97,9 @@ class UpdatesService extends Component
 	{
 		foreach ($plugins as $plugin)
 		{
-			if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->newerReleases) > 0)
+			if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 			{
-				foreach ($plugin->newerReleases as $release)
+				foreach ($plugin->releases as $release)
 				{
 					if ($release->critical)
 						return true;
@@ -123,7 +123,7 @@ class UpdatesService extends Component
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		if ((isset($this->_updateInfo) && $this->_updateInfo->criticalUpdateAvailable))
+		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->criticalUpdateAvailable))
 			return true;
 
 		return false;
@@ -134,7 +134,7 @@ class UpdatesService extends Component
 	 */
 	public function isManualUpdateRequired()
 	{
-		if ((isset($this->_updateInfo) && $this->_updateInfo->manualUpdateRequired))
+		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->manualUpdateRequired))
 			return true;
 
 		return false;
@@ -148,9 +148,6 @@ class UpdatesService extends Component
 	{
 		if (!isset($this->_updateInfo) || $forceRefresh)
 		{
-			$updateInfo = new UpdateInfo();
-			// no update info if we can't find the license keys.
-
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
@@ -234,19 +231,19 @@ class UpdatesService extends Component
 	 */
 	public function check()
 	{
-		$blocksUpdateInfo = new UpdateInfo();
-		$blocksUpdateInfo->localBuild = Blocks::getBuild();
-		$blocksUpdateInfo->localVersion = Blocks::getVersion();
+		$updateInfo = new UpdateInfo();
+		$updateInfo->blocks->localBuild = Blocks::getBuild();
+		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
 		//$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
 		//foreach ($plugins as $plugin)
-		//	$blocksUpdateInfo->plugins[$plugin['handle']] = new PluginUpdateData($plugin);
-		$blocksUpdateInfo->plugins = null;
+		//	$updateInfo->plugins[$plugin['handle']] = new PluginUpdateInfo($plugin);
+		$updateInfo->plugins = null;
 
-		$response = b()->et->check($blocksUpdateInfo);
+		$response = b()->et->check($updateInfo);
 
-		$blocksUpdateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
-		return $blocksUpdateInfo;
+		$updateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
+		return $updateInfo;
 	}
 
 	/**

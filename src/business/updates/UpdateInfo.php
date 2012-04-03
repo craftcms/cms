@@ -6,16 +6,9 @@ namespace Blocks;
  */
 class UpdateInfo
 {
-	public $localBuild = null;
-	public $localVersion = null;
-	public $latestVersion = null;
-	public $latestBuild = null;
-	public $latestDate = null;
-	public $criticalUpdateAvailable = null;
-	public $manualUpdateRequired = null;
-	public $versionUpdateStatus = null;
+
 	public $plugins = null;
-	public $newerReleases = null;
+	public $blocks = null;
 
 	/**
 	 * @param null $properties
@@ -23,23 +16,15 @@ class UpdateInfo
 	function __construct($properties = null)
 	{
 		if ($properties == null)
+		{
+			$this->blocks = new BlocksUpdateInfo();
 			return;
+		}
 
-		$this->localBuild = isset($properties['localBuild']) ? $properties['localBuild'] : null;
-		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
-		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
-		$this->latestBuild = isset($properties['latestBuild']) ? $properties['latestBuild'] : null;
-		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
-		$this->manualUpdateRequired = isset($properties['manualUpdateRequired']) ? $properties['manualUpdateRequired'] : null;
-		$this->versionUpdateStatus = isset($properties['versionUpdateStatus']) ? $properties['versionUpdateStatus'] : null;
-		$this->latestDate = isset($properties['latestDate']) ? $properties['latestDate'] : null;
-
-		if (isset($properties['newerReleases']) && count($properties['newerReleases']) > 0)
-			foreach ($properties['newerReleases'] as $blocksReleaseData)
-				$this->newerReleases[] = new BlocksNewReleaseUpdateInfo($blocksReleaseData);;
+		$this->blocks = isset($properties['blocks']) ? new BlocksUpdateInfo($properties['blocks']) : null;
 
 		if (isset($properties['plugins']) && count($properties['plugins']) > 0)
 			foreach ($properties['plugins'] as $pluginData)
-				$this->plugins[$pluginData['handle']] = new PluginUpdateData($pluginData);
+				$this->plugins[$pluginData['handle']] = new PluginUpdateInfo($pluginData);
 	}
 }

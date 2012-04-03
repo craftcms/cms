@@ -20,10 +20,6 @@ defined('BLOCKS_CP_REQUEST') || define('BLOCKS_CP_REQUEST', false);
 $framework = BLOCKS_APP_PATH.'framework/yii.php';
 $config    = BLOCKS_APP_PATH.'config/main.php';
 
-// remove the following lines when in production mode
-defined('YII_DEBUG') || define('YII_DEBUG', true);
-error_reporting(E_ALL);
-
 // specify how many levels of call stack should be shown in each log message
 defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 

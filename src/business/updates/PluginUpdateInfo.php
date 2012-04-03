@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PluginUpdateData
+class PluginUpdateInfo
 {
 	public $class = null;
 	public $localVersion = null;
@@ -13,7 +13,7 @@ class PluginUpdateData
 	public $displayName = null;
 	public $notes = null;
 	public $criticalUpdateAvailable = null;
-	public $newerReleases = null;
+	public $releases = null;
 
 	/**
 	 * @param null $properties
@@ -31,8 +31,8 @@ class PluginUpdateData
 		$this->notes = isset($properties['notes']) ? $properties['notes'] : null;
 		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
 
-		if (isset($properties['newerReleases']))
-			foreach ($properties['newerReleases'] as $pluginReleaseData)
-				$this->newerReleases[] = new PluginNewReleaseUpdateData($pluginReleaseData);
+		if (isset($properties['pluginReleases']))
+			foreach ($properties['pluginReleases'] as $pluginReleaseData)
+				$this->pluginReleases[] = new PluginNewReleaseInfo($pluginReleaseData);
 	}
 }

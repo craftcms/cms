@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PluginNewReleaseUpdateData
+class PluginNewReleaseInfo
 {
 	public $version = null;
 	public $date = null;

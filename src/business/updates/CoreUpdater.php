@@ -8,7 +8,7 @@ class CoreUpdater implements IUpdater
 {
 	private $_buildsToUpdate = null;
 	private $_migrationsToRun = null;
-	private $_blocksUpdateInfo = null;
+	private $_updateInfo = null;
 	private $_downloadFilePath = null;
 	private $_tempPackageDir = null;
 	private $_manifestData = null;
@@ -18,9 +18,9 @@ class CoreUpdater implements IUpdater
 	 */
 	function __construct()
 	{
-		$this->_blocksUpdateInfo = b()->updates->getUpdateInfo(true);
+		$this->_updateInfo = b()->updates->getUpdateInfo(true);
 		$this->_migrationsToRun = null;
-		$this->_buildsToUpdate = $this->_blocksUpdateInfo->newerReleases;
+		$this->_buildsToUpdate = $this->_updateInfo->blocks->releases;
 	}
 
 	/**
@@ -124,7 +124,7 @@ class CoreUpdater implements IUpdater
 			// only use the manifest data starting from the local version
 			for ($counter = 0; $counter < count($manifestData); $counter++)
 			{
-				if (strpos($manifestData[$counter], '##'.$this->_blocksUpdateInfo->localVersion.'.'.$this->_blocksUpdateInfo->localBuild) !== false)
+				if (strpos($manifestData[$counter], '##'.$this->_updateInfo->blocks->localVersion.'.'.$this->_updateInfo->blocks->localBuild) !== false)
 					break;
 			}
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BlocksNewReleaseUpdateInfo
+class BlocksNewReleaseInfo
 {
 	public $version = null;
 	public $build = null;

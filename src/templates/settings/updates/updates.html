@@ -1,6 +1,6 @@
 {if updates.updates('y')}
 
-	{if !updates.updateInfo.manualUpdateRequired}
+	{if !updates.updateInfo.blocks.manualUpdateRequired}
 		<form method="post" action="{:url.base}update/all">
 			<input id="update-all" class="btn big submit" type="submit" value="Update All">
 		</form>
