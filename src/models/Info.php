@@ -11,6 +11,7 @@ class Info extends Model
 	protected $attributes = array(
 		'edition' => AttributeType::Edition,
 		'version' => AttributeType::Version,
-		'build'   => AttributeType::Build
+		'build'   => AttributeType::Build,
+		'online'  => AttributeType::Boolean
 	);
 }
