@@ -27,6 +27,35 @@ class SitesService extends Component
 	}
 
 	/**
+	 * Saves a site.
+	 * @param array $siteSettings
+	 * @param int   $siteId The site ID, if saving an existing site.
+	 */
+	public function saveSite($siteSettings, $siteId)
+	{
+		if ($siteId)
+		{
+			$site = $this->getSiteById($siteId);
+			if (!$site)
+				throw new Exception('No site exists with the ID '.$siteId);
+		}
+		else
+		{
+			$site = new Site;
+		}
+
+		$site->name     = (isset($siteSettings['name']) ? $siteSettings['name'] : null);
+		$site->handle   = (isset($siteSettings['handle']) ? $siteSettings['handle'] : null);
+		$site->url      = (isset($siteSettings['url']) ? $siteSettings['url'] : null);
+		$site->language = (isset($siteSettings['language']) ? $siteSettings['language'] : null);
+
+		// Attempt to save the site
+		$site->save();
+
+		return $site;
+	}
+
+	/**
 	 * @return string|null
 	 */
 	public function getSiteName()

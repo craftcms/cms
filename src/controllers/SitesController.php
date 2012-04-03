@@ -21,21 +21,16 @@ class SitesController extends Controller
 	{
 		$this->requirePostRequest();
 
-		// Are we editing an existing site?
 		$siteId = b()->request->getPost('site_id');
-		if ($siteId)
-			$site = b()->sites->getSiteById($siteId);
 
-		// Otherwise create a new site
-		if (empty($site))
-			$site = new Site;
+		$siteSettings['name']     = b()->request->getPost('name');
+		$siteSettings['handle']   = b()->request->getPost('handle');
+		$siteSettings['url']      = b()->request->getPost('url');
+		$siteSettings['language'] = b()->request->getPost('language');
 
-		$site->name     = b()->request->getPost('name');
-		$site->handle   = b()->request->getPost('handle');
-		$site->url      = b()->request->getPost('url');
-		$site->language = b()->request->getPost('language');
+		$site = b()->sites->saveSite($siteSettings, $siteId);
 
-		if ($site->save())
+		if (!$site->errors)
 		{
 			b()->user->setMessage(MessageType::Notice, 'Site saved.');
 
