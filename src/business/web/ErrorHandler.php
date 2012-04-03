@@ -306,7 +306,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getVersionInfo()
 	{
-		if(YII_DEBUG)
+		if(b()->config->devMode)
 		{
 			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition(false).'.</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 			if(isset($_SERVER['SERVER_SOFTWARE']))
