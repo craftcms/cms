@@ -6,24 +6,20 @@ namespace Blocks;
  */
 class UpdateInfo
 {
-
-	public $plugins;
 	public $blocks;
+	public $plugins = array();
 
 	/**
-	 * @param null $properties
+	 * @param array $properties
 	 */
-	function __construct($properties = null)
+	function __construct($properties = array())
 	{
-		if ($properties == null)
-		{
-			$this->blocks = new BlocksUpdateInfo();
-			return;
-		}
+		if (isset($properties['blocks']))
+			$this->blocks = new BlocksUpdateInfo($properties['blocks']);
+		else
+			$this->blocks = new BlocksUpdateInfo;
 
-		$this->blocks = isset($properties['blocks']) ? new BlocksUpdateInfo($properties['blocks']) : null;
-
-		if (isset($properties['plugins']) && count($properties['plugins']) > 0)
+		if (isset($properties['plugins']))
 			foreach ($properties['plugins'] as $pluginData)
 				$this->plugins[$pluginData['handle']] = new PluginUpdateInfo($pluginData);
 	}
