@@ -109,8 +109,8 @@ class App extends \CWebApplication
 				throw new HttpException(404);
 		}
 
-		// If it's not a CP request OR the site is online, let's continue processing.
-		if (Blocks::isBlocksOnline() || (!Blocks::isBlocksOnline() && ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && BLOCKS_CP_REQUEST))))
+		// If it's not a CP request OR the system is on, let's continue processing.
+		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && BLOCKS_CP_REQUEST))))
 		{
 			// Otherwise maybe it's an action request?
 			$this->_processActionRequest();

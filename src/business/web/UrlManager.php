@@ -81,7 +81,7 @@ class UrlManager extends \CUrlManager
 	public function matchEntry()
 	{
 		$entry = Entry::model()->findByAttributes(array(
-			'full_uri' => b()->request->path,
+			'uri' => b()->request->path,
 		));
 
 		if ($entry !== null)

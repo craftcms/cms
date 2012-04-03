@@ -11,7 +11,7 @@ class Entry extends Model
 
 	protected $attributes = array(
 		'slug'           => array('type' => AttributeType::Char, 'maxLength' => 100),
-		'full_uri'       => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
+		'uri'            => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
 		'publish_date'   => AttributeType::Int,
 		'expiry_date'    => AttributeType::Int,
 		'sort_order'     => array('type' => AttributeType::Int, 'unsigned' => true),
@@ -111,9 +111,9 @@ class Entry extends Model
 	 */
 	public function getUrl()
 	{
-		if ($this->full_uri)
+		if ($this->uri)
 		{
-			$url = b()->sites->current->url.'/'.$this->full_uri;
+			$url = b()->sites->current->url.'/'.$this->uri;
 			$url = str_replace('http://', '', $url);
 			return $url;
 		}

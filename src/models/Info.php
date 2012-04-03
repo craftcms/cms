@@ -12,6 +12,6 @@ class Info extends Model
 		'edition' => AttributeType::Edition,
 		'version' => AttributeType::Version,
 		'build'   => AttributeType::Build,
-		'online'  => AttributeType::Boolean
+		'on'      => AttributeType::Boolean
 	);
 }

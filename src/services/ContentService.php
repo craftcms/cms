@@ -150,7 +150,7 @@ class ContentService extends Component
 					{
 						foreach ($section->entries as $entry)
 						{
-							$entry->full_uri = $this->getEntryUri($entry);
+							$entry->uri = $this->getEntryUri($entry);
 							$entry->save();
 						}
 					}
@@ -358,7 +358,7 @@ class ContentService extends Component
 
 		// Save it on the entry
 		$entry->slug = $testSlug;
-		$entry->full_uri = $this->getEntryUri($entry);
+		$entry->uri = $this->getEntryUri($entry);
 		$entry->save();
 	}
 

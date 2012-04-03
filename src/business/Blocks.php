@@ -85,22 +85,22 @@ class Blocks extends \Yii
 	 * @static
 	 * @return bool
 	 */
-	public static function isBlocksOnline()
+	public static function isSystemOn()
 	{
 		$storedBlocksInfo = self::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->online == 1 : false;
+		return $storedBlocksInfo ? $storedBlocksInfo->on == 1 : false;
 	}
 
 	/**
 	 * @static
 	 * @return bool
 	 */
-	public static function putBlocksOnline()
+	public static function turnSystemOn()
 	{
 		$storedBlocksInfo = self::_getStoredInfo();
 		if ($storedBlocksInfo)
 		{
-			$storedBlocksInfo->online = 1;
+			$storedBlocksInfo->on = true;
 			if ($storedBlocksInfo->save())
 				return true;
 		}
@@ -112,13 +112,13 @@ class Blocks extends \Yii
 	 * @static
 	 * @return bool
 	 */
-	public static function takeBlocksOffline()
+	public static function turnSystemOff()
 	{
 		$storedBlocksInfo = self::_getStoredInfo();
 
 		if ($storedBlocksInfo)
 		{
-			$storedBlocksInfo->online = 0;
+			$storedBlocksInfo->on = false;
 			if ($storedBlocksInfo->save())
 				return true;
 		}
