@@ -283,7 +283,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function renameTable($table, $newName)
 	{
-		return parent::renameTable($this->_addTablePrefix($table), $newName);
+		return parent::renameTable($this->_addTablePrefix($table), $this->_addTablePrefix($newName));
 	}
 
 	/**

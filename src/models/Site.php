@@ -15,4 +15,8 @@ class Site extends Model
 		'url'      => array('type' => AttributeType::Url, 'required' => true),
 		'primary'  => array('type' => AttributeType::Boolean, 'required' => false, 'default' => null, 'unique' => true)
 	);
+
+	protected $hasMany = array(
+		'sections' => array('model' => 'Section', 'foreignKey' => 'site')
+	);
 }

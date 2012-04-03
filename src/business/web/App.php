@@ -9,10 +9,9 @@ class App extends \CWebApplication
 	private $_templatePath;
 	private $_isInstalled;
 	private $_isSetup;
-	private $_isDbUpdateNeeded;
 
 	/**
-	 * Init
+	 * Processes resource requests before anything else has a chance to initialize.
 	 */
 	public function init()
 	{
@@ -36,7 +35,8 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths
+	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths.
+	 * @access private
 	 */
 	private function _importClasses()
 	{
@@ -76,7 +76,7 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Process the request
+	 * Processes the request.
 	 */
 	public function processRequest()
 	{
@@ -126,10 +126,10 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Process install and setup requests
-	 *
-	 * @param $what
-	 * @param $force
+	 * Processes install and setup requests.
+	 * @access private
+	 * @param string $what  The controller and possible first URL segment value.
+	 * @param bool   $force Whether to redirect to that controller if we're not already there.
 	 */
 	private function _processSpecialRequests($what, $force)
 	{
@@ -157,7 +157,8 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Process action requests
+	 * Processes action requests.
+	 * @access private
 	 */
 	private function _processActionRequest()
 	{
@@ -178,7 +179,8 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Process a resource request
+	 * Processes resource requests.
+	 * @access private
 	 */
 	private function _processResourceRequest()
 	{
@@ -231,6 +233,8 @@ class App extends \CWebApplication
 	}
 
 	/**
+	 * Validates the system config.
+	 * @access private
 	 * @return mixed
 	 * @throws Exception|HttpException
 	 */
@@ -286,54 +290,40 @@ class App extends \CWebApplication
 	}
 
 	/**
+	 * Determines if we're in the middle of a manual update, and a DB update is needed.
 	 * @return bool
 	 */
 	public function getIsDbUpdateNeeded()
 	{
-		if (!isset($this->_isDbUpdateNeeded))
+		if (Blocks::getBuild(false) !== Blocks::getStoredBuild() || Blocks::getVersion(false) !== Blocks::getStoredVersion())
 		{
-			if (Blocks::getBuild(false) !== Blocks::getStoredBuild() || Blocks::getVersion(false) !== Blocks::getStoredVersion())
-			{
-				if (strpos(Blocks::getEdition(false), '@@@') !== false)
-					$this->_isDbUpdateNeeded = false;
-				else
-					$this->_isDbUpdateNeeded = true;
-			}
+			// Make sure we're not running from source
+			if (strpos(Blocks::getEdition(false), '@@@') !== false)
+				return false;
 			else
-				$this->_isDbUpdateNeeded = false;
+				return true;
 		}
-
-		return $this->_isDbUpdateNeeded;
+		else
+			return false;
 	}
 
 	/**
-	 * Updates isDbUpdateNeeded
-	 * @param $isDbUpdateNeeded
-	 */
-	public function setIsDbUpdateNeeded($isDbUpdateNeeded)
-	{
-		$this->_isDbUpdateNeeded = (bool)$isDbUpdateNeeded;
-	}
-
-	/**
+	 * Determines if Blocks is installed by checking if the info table exists.
 	 * @return bool
 	 */
 	public function getIsInstalled()
 	{
 		if (!isset($this->_isInstalled))
 		{
-			// Check to see if the prefix_info table exists.  If not, we assume it's a fresh installation.
 			$infoTable = $this->db->schema->getTable('{{info}}');
-
-			$this->_isInstalled = ($infoTable !== null);
+			$this->_isInstalled = (bool)$infoTable;
 		}
-
 		return $this->_isInstalled;
 	}
 
 	/**
-	 * Updates isInstalled
-	 * @param $isInstalled
+	 * Sets the isInstalled state.
+	 * @param bool $isInstalled
 	 */
 	public function setIsInstalled($isInstalled)
 	{
@@ -341,13 +331,13 @@ class App extends \CWebApplication
 	}
 
 	/**
+	 * Determines if Blocks has been setup yet, by checking to see if a license key has been entered, a site has been created, and an admin user exists.
 	 * @return bool
 	 */
 	public function getIsSetup()
 	{
 		if (!isset($this->_isSetup))
 		{
-			// For Blocks to be considered "set up", there must be at least one license key, site, and admin user.
 			$this->_isSetup = (
 				LicenseKey::model()->exists()
 				&& Site::model()->exists()
@@ -358,6 +348,7 @@ class App extends \CWebApplication
 	}
 
 	/**
+	 * Sets the isSetup state.
 	 * @param $isSetup
 	 */
 	public function setIsSetup($isSetup)
@@ -398,6 +389,7 @@ class App extends \CWebApplication
 	}
 
 	/**
+	 * Returns the CP templates path.
 	 * @return string
 	 */
 	public function getSystemViewPath()
@@ -406,39 +398,35 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Formats the exception into JSON before it passes it along.
-	 * @param $data
+	 * Formats an exception into JSON before returning it to the client.
+	 * @param array $data
 	 */
-	public function displayAjaxException($data)
+	public function returnAjaxException($data)
 	{
+		$exceptionArr['error'] = $data['message'];
+
 		if (b()->config->devMode)
 		{
-			$exceptionArr = array(
-				'error'  => $data['message'],
-				'trace'  => $data['trace'],
-				'traces' => $data['traces'],
-				'file'   => $data['file'],
-				'line'   => $data['line'],
-				'type'   => $data['type'],
-			);
-		}
-		else
-		{
-			$exceptionArr = array('error' => $data['message']);
+			$exceptionArr['trace']  = $data['trace'];
+			$exceptionArr['traces'] = $data['traces'];
+			$exceptionArr['file']   = $data['file'];
+			$exceptionArr['line']   = $data['line'];
+			$exceptionArr['type']   = $data['type'];
 		}
 
 		Json::sendJsonHeaders();
 		echo Json::encode($exceptionArr);
+		$this->end();
 	}
 
 	/**
-	 * Formats the error into JSON before passing it along.
+	 * Formats a PHP error into JSON before returning it to the client.
 	 * @param integer $code error code
 	 * @param string $message error message
 	 * @param string $file error file
 	 * @param string $line error line
 	 */
-	public function displayAjaxError($code, $message, $file, $line)
+	public function returnAjaxError($code, $message, $file, $line)
 	{
 		if(b()->config->devMode == true)
 		{
@@ -482,5 +470,6 @@ class App extends \CWebApplication
 
 		Json::sendJsonHeaders();
 		echo Json::encode($errorArr);
+		$this->end();
 	}
 }

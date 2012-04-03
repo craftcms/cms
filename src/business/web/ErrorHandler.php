@@ -121,7 +121,7 @@ class ErrorHandler extends \CErrorHandler
 			{
 				// If this is an ajax request, we want to prep the exception a bit before we return it.
 				if($this->isAjaxRequest())
-					$app->displayAjaxException($data);
+					$app->returnAjaxException($data);
 				else
 					// If we've made it this far, just render the exception template.
 					$this->render('errors/exception', $data);
@@ -206,7 +206,7 @@ class ErrorHandler extends \CErrorHandler
 				header("HTTP/1.0 500 PHP Error");
 
 			if ($this->isAjaxRequest())
-				$app->displayAjaxError($event->code, $event->message, $event->file, $event->line);
+				$app->returnAjaxError($event->code, $event->message, $event->file, $event->line);
 			else if(b()->config->devMode == true)
 				$this->render('errors/exception', $data);
 			else

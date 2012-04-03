@@ -56,24 +56,4 @@ class Section extends Model
 		b()->db->createCommand()->addColumn($table, 'title', array('type' => AttributeType::Varchar, 'required' => true));
 		b()->db->createCommand()->createIndex("{$table}_title_idx", $table, 'title');
 	}
-
-	/**
-	 * Create a corresponding content table each time a new section is created
-	 *
-	 * @param bool $runValidation
-	 * @param null $attributes
-	 * @return bool
-	 */
-	public function save($runValidation = true, $attributes = null)
-	{
-		$isNewRecord = $this->isNewRecord;
-		$return = parent::save($runValidation, $attributes);
-
-		// Create the content if the save was successful
-		if ($isNewRecord && $return)
-			$this->createContentTable();
-
-		return $return;
-	}
-
 }
