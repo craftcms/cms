@@ -227,6 +227,9 @@ class SetupController extends Controller
 		)));
 		b()->content->publishDraft($entry, $draft);
 
+		// Turn the system on
+		Blocks::turnSystemOn();
+
 		// Redirect to the Welcome entry
 		$this->redirect('content/edit/'.$entry->id);
 	}
