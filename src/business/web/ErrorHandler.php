@@ -2,6 +2,43 @@
 namespace Blocks;
 
 /**
+ * ErrorHandler handles uncaught PHP errors and exceptions.
+ *
+ * It displays these errors using appropriate views based on the
+ * nature of the error and the mode the application runs at.
+ * It also chooses the most preferred language for displaying the error.
+ *
+ * ErrorHandler uses two sets of views:
+ * <ul>
+ * <li>development templates, named as <code>exception.php</code>;
+ * <li>production templates, named as <code>error&lt;StatusCode&gt;.php</code>;
+ * </ul>
+ * where &lt;StatusCode&gt; stands for the HTTP error code (e.g. error500.php).
+ * Localized templates are named similarly but located under a subdirectory
+ * whose name is the language code (e.g. zh_cn/error500.php).
+ *
+ * Development templates are displayed when the application is in dev mode
+ * (i.e. b()->config->devMode = true). Detailed error information with source code
+ * are displayed in these templates. Production templates are meant to be shown
+ * to end-users and are used when the application is in production mode.
+ * For security reasons, they only display the error message without any
+ * sensitive information.
+ *
+ * ErrorHandler looks for the templates from the following locations in order:
+ * <ol>
+ * <li><code>blocks/templates/{siteHandle}/errors</code>: when a theme is active.</li>
+ * <li><code>blocks/app/templates/errors</code></li>
+ * <li><code>blocks/app/framework/views</code></li>
+ * </ol>
+ * If the template is not found in a directory, it will be looked for in the next directory.
+ *
+ * The property {@link maxSourceLines} can be changed to specify the number
+ * of source code lines to be displayed in development views.
+ *
+ * ErrorHandler is a core application component that can be accessed via
+ * {@link CApplication::getErrorHandler()}.
+ *
+ * @property array $error The error details. Null if there is no error.
  *
  */
 class ErrorHandler extends \CErrorHandler
@@ -84,39 +121,14 @@ class ErrorHandler extends \CErrorHandler
 			{
 				// If this is an ajax request, we want to prep the exception a bit before we return it.
 				if($this->isAjaxRequest())
-					$app->displayAjaxException($exception);
+					$app->displayAjaxException($data);
 				else
-					// If we've made it this far, render the exception template.
+					// If we've made it this far, just render the exception template.
 					$this->render('errors/exception', $data);
 			}
 		}
 		else
 			$app->displayException($exception);
-	}
-
-
-	/**
-	 * Formats the exception into JSON before it passes it along.
-	 * @param $exception
-	 */
-	protected function displayAjaxException($exception)
-	{
-		if (b()->config->devMode)
-		{
-			$exceptionArr = array(
-				'error' => $exception->getMessage(),
-				'trace' => $exception->getTraceAsString(),
-				'file'  => $exception->getFile(),
-				'line'  => $exception->getLine(),
-			);
-		}
-		else
-		{
-			$exceptionArr = array('error' => $exception->getMessage());
-		}
-
-		Json::sendJsonHeaders();
-		echo Json::encode($exceptionArr);
 	}
 
 	/**
@@ -194,11 +206,11 @@ class ErrorHandler extends \CErrorHandler
 				header("HTTP/1.0 500 PHP Error");
 
 			if ($this->isAjaxRequest())
-				$app->displayError($event->code, $event->message, $event->file, $event->line);
-			else if(YII_DEBUG)
-				$this->render('errors/exception',$data);
+				$app->displayAjaxError($event->code, $event->message, $event->file, $event->line);
+			else if(b()->config->devMode == true)
+				$this->render('errors/exception', $data);
 			else
-				$this->render('errors/error',$data);
+				$this->render('errors/error', $data);
 		}
 		else
 			$app->displayError($event->code, $event->message, $event->file, $event->line);

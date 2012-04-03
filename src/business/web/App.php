@@ -388,4 +388,83 @@ class App extends \CWebApplication
 	{
 		return $this->path->cpTemplatesPath;
 	}
+
+	/**
+	 * Formats the exception into JSON before it passes it along.
+	 * @param $data
+	 */
+	public function displayAjaxException($data)
+	{
+		if (b()->config->devMode)
+		{
+			$exceptionArr = array(
+				'error'  => $data['message'],
+				'trace'  => $data['trace'],
+				'traces' => $data['traces'],
+				'file'   => $data['file'],
+				'line'   => $data['line'],
+				'type'   => $data['type'],
+			);
+		}
+		else
+		{
+			$exceptionArr = array('error' => $data['message']);
+		}
+
+		Json::sendJsonHeaders();
+		echo Json::encode($exceptionArr);
+	}
+
+	/**
+	 * Formats the error into JSON before passing it along.
+	 * @param integer $code error code
+	 * @param string $message error message
+	 * @param string $file error file
+	 * @param string $line error line
+	 */
+	public function displayAjaxError($code, $message, $file, $line)
+	{
+		if(b()->config->devMode == true)
+		{
+			$outputTrace = '';
+			$trace = debug_backtrace();
+
+			// skip the first 3 stacks as they do not tell the error position
+			if(count($trace) > 3)
+				$trace = array_slice($trace, 3);
+
+			foreach($trace as $i => $t)
+			{
+				if (!isset($t['file']))
+					$t['file'] = 'unknown';
+
+				if (!isset($t['line']))
+					$t['line'] = 0;
+
+				if (!isset($t['function']))
+					$t['function'] = 'unknown';
+
+				$outputTrace .= "#$i {$t['file']}({$t['line']}): ";
+
+				if (isset($t['object']) && is_object($t['object']))
+					$outputTrace .= get_class($t['object']).'->';
+
+				$outputTrace .= "{$t['function']}()\n";
+			}
+
+			$errorArr = array(
+				'error' => $code.' : '.$message,
+				'trace' => $outputTrace,
+				'file'  => $file,
+				'line'  => $line,
+			);
+		}
+		else
+		{
+			$errorArr = array('error' => $message);
+		}
+
+		Json::sendJsonHeaders();
+		echo Json::encode($errorArr);
+	}
 }

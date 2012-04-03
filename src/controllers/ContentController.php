@@ -77,27 +77,20 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		try
-		{
-			$sectionId = b()->request->getRequiredPost('sectionId');
-			$title     = b()->request->getPost('title');
+		$sectionId = b()->request->getRequiredPost('sectionId');
+		$title     = b()->request->getPost('title');
 
-			// Create the entry
-			$entry = b()->content->createEntry($sectionId, null, null, $title);
+		// Create the entry
+		$entry = b()->content->createEntry($sectionId, null, null, $title);
 
-			// Save its slug
-			if ($entry->section->has_urls)
-				b()->content->saveEntrySlug($entry, strtolower($title));
+		// Save its slug
+		if ($entry->section->has_urls)
+			b()->content->saveEntrySlug($entry, strtolower($title));
 
-			// Create the first draft
-			$entry->draft = b()->content->createDraft($entry->id, null, 'Draft 1');
+		// Create the first draft
+		$entry->draft = b()->content->createDraft($entry->id, null, 'Draft 1');
 
-			$this->returnEntryJson($entry);
-		}
-		catch (\Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
-		}
+		$this->returnEntryJson($entry);
 	}
 
 	/**
@@ -108,36 +101,29 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		try
+		$entryId = b()->request->getRequiredPost('entryId');
+
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entry)
+			$this->returnErrorJson('No entry exists with the ID '.$entryId);
+
+		// Is there a requested draft?
+		$draftNum = b()->request->getPost('draftNum');
+		if ($draftNum)
+			$draft = b()->content->getDraftByNum($entryId, $draftNum);
+
+		// We must fetch a draft if the entry hasn't been published
+		if (empty($draft) && !$entry->published)
 		{
-			$entryId = b()->request->getRequiredPost('entryId');
-
-			$entry = b()->content->getEntryById($entryId);
-			if (!$entry)
-				$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-			// Is there a requested draft?
-			$draftNum = b()->request->getPost('draftNum');
-			if ($draftNum)
-				$draft = b()->content->getDraftByNum($entryId, $draftNum);
-
-			// We must fetch a draft if the entry hasn't been published
-			if (empty($draft) && !$entry->published)
-			{
-				$draft = b()->content->getLatestDraft($entry->id);
-				if (!$draft)
-					$draft = b()->content->createDraft($entry->id);
-			}
-
-			if (!empty($draft))
-				$entry->draft = $draft;
-
-			$this->returnEntryEditPage($entry);
+			$draft = b()->content->getLatestDraft($entry->id);
+			if (!$draft)
+				$draft = b()->content->createDraft($entry->id);
 		}
-		catch (\Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
-		}
+
+		if (!empty($draft))
+			$entry->draft = $draft;
+
+		$this->returnEntryEditPage($entry);
 	}
 
 	/**
@@ -148,24 +134,17 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		try
-		{
-			$entryId = b()->request->getRequiredPost('entryId');
+		$entryId = b()->request->getRequiredPost('entryId');
 
-			$entry = b()->content->getEntryById($entryId);
-			if (!$entry)
-				$this->returnErrorJson('No entry exists with the ID '.$entryId);
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entry)
+			$this->returnErrorJson('No entry exists with the ID '.$entryId);
 
-			$draftName = b()->request->getPost('draftName');
-			$draft = b()->content->createDraft($entryId, null, $draftName);
-			$entry->draft = $draft;
+		$draftName = b()->request->getPost('draftName');
+		$draft = b()->content->createDraft($entryId, null, $draftName);
+		$entry->draft = $draft;
 
-			$this->returnEntryEditPage($entry);
-		}
-		catch (\Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
-		}
+		$this->returnEntryEditPage($entry);
 	}
 
 	/**
@@ -176,36 +155,29 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		try
+		$entryId = b()->request->getRequiredPost('entryId');
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entryId)
+			$this->returnErrorJson('No entry exists with the ID '.$entryId);
+
+		$content = b()->request->getRequiredPost('content');
+
+		// Get the draft, or create a new one
+		$draftId = b()->request->getPost('draftId');
+		if ($draftId)
 		{
-			$entryId = b()->request->getRequiredPost('entryId');
-			$entry = b()->content->getEntryById($entryId);
-			if (!$entryId)
-				$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-			$content = b()->request->getRequiredPost('content');
-
-			// Get the draft, or create a new one
-			$draftId = b()->request->getPost('draftId');
-			if ($draftId)
-			{
-				$draft = b()->content->getDraftById($draftId);
-				if (!$draft)
-					$this->returnErrorJson('No draft exists with the ID '.$draftId);
-			}
-			else
-				$draft = b()->content->createDraft($entryId);
-
-			// Save the new draft content
-			b()->content->saveDraftChanges($draft, $content);
-
-			$entry->draft = $draft;
-			$this->returnEntryJson($entry);
+			$draft = b()->content->getDraftById($draftId);
+			if (!$draft)
+				$this->returnErrorJson('No draft exists with the ID '.$draftId);
 		}
-		catch (\Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
-		}
+		else
+			$draft = b()->content->createDraft($entryId);
+
+		// Save the new draft content
+		b()->content->saveDraftChanges($draft, $content);
+
+		$entry->draft = $draft;
+		$this->returnEntryJson($entry);
 	}
 
 	/**
@@ -216,37 +188,30 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		try
+		$entryId = b()->request->getRequiredPost('entryId');
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entryId)
+			$this->returnErrorJson('No entry exists with the ID '.$entryId);
+
+		$draftId = b()->request->getPost('draftId');
+		if ($draftId)
 		{
-			$entryId = b()->request->getRequiredPost('entryId');
-			$entry = b()->content->getEntryById($entryId);
-			if (!$entryId)
-				$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-			$draftId = b()->request->getPost('draftId');
-			if ($draftId)
-			{
-				$draft = b()->content->getDraftById($draftId);
-				if (!$draft)
-					$this->returnErrorJson('No draft exists with the ID '.$draftId);
-			}
-			else
-				$draft = b()->content->createDraft($entryId);
-
-			// Save any last-minute content changes
-			$content = b()->request->getPost('content');
-			if ($content)
-				b()->content->saveDraftChanges($draft, $content);
-
-			// Publish it
-			b()->content->publishDraft($entry, $draft);
-
-			$this->returnEntryJson($entry);
+			$draft = b()->content->getDraftById($draftId);
+			if (!$draft)
+				$this->returnErrorJson('No draft exists with the ID '.$draftId);
 		}
-		catch (\Exception $e)
-		{
-			$this->returnErrorJson($e->getMessage());
-		}
+		else
+			$draft = b()->content->createDraft($entryId);
+
+		// Save any last-minute content changes
+		$content = b()->request->getPost('content');
+		if ($content)
+			b()->content->saveDraftChanges($draft, $content);
+
+		// Publish it
+		b()->content->publishDraft($entry, $draft);
+
+		$this->returnEntryJson($entry);
 	}
 
 	/**
