@@ -389,6 +389,15 @@ class App extends \CWebApplication
 	}
 
 	/**
+	 * Sets the template path for the app.
+	 * @param $path
+	 */
+	public function setViewPath($path)
+	{
+		$this->_templatePath = $path;
+	}
+
+	/**
 	 * @return string
 	 */
 	public function getSystemViewPath()

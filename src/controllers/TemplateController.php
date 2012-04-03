@@ -23,4 +23,14 @@ class TemplateController extends Controller
 
 		$this->loadRequestedTemplate();
 	}
+
+	/**
+	 * Display the offline template.
+	 */
+	public function actionOffline()
+	{
+		b()->setViewPath(b()->path->offlineTemplatePath);
+		$this->loadTemplate('_offline', array(), false);
+		b()->setViewPath(null);
+	}
 }

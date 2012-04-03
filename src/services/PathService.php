@@ -131,6 +131,21 @@ class PathService extends Component
 	}
 
 	/**
+	 * Returns the path to the offline template by searching the front-end site template path first, then falling back
+	 * to the default offline control panel template.
+	 * @return mixed
+	 */
+	public function getOfflineTemplatePath()
+	{
+		$path = $this->cpTemplatesPath;
+
+		if (is_file($this->siteTemplatesPath.'_offline.html'))
+			$path = $this->siteTemplatesPath;
+
+		return $path;
+	}
+
+	/**
 	 * Returns 
 	 * @return string
 	 */
