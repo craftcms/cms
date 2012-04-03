@@ -18,11 +18,8 @@ class PluginUpdateInfo
 	/**
 	 * @param null $properties
 	 */
-	function __construct($properties = null)
+	function __construct($properties = array())
 	{
-		if ($properties == null)
-			return;
-
 		$this->handle = isset($properties['class']) ? $properties['class'] : null;
 		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
 		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;

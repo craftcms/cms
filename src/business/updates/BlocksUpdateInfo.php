@@ -19,11 +19,8 @@ class BlocksUpdateInfo
 	/**
 	 * @param null $properties
 	 */
-	function __construct($properties = null)
+	function __construct($properties = array())
 	{
-		if ($properties == null)
-			return;
-
 		$this->localBuild = isset($properties['localBuild']) ? $properties['localBuild'] : null;
 		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
 		$this->latestBuild = isset($properties['latestBuild']) ? $properties['latestBuild'] : null;
