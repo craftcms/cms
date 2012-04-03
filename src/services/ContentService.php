@@ -99,8 +99,18 @@ class ContentService extends Component
 	 */
 	public function saveSection($sectionSettings, $sectionId = null)
 	{
-		$section = $this->getSection($sectionId);
-		$isNewSection = $section->isNewRecord;
+		if ($sectionId)
+		{
+			$section = $this->getSectionById($sectionId);
+			if (!$section)
+				throw new Exception('No section exists with the ID '.$sectionId);
+			$isNewSection = false;
+		}
+		else
+		{
+			$section = new Section;
+			$isNewSection = true;
+		}
 
 		$section->name        = $sectionSettings['name'];
 		$section->handle      = $sectionSettings['handle'];
