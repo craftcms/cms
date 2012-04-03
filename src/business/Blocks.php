@@ -82,6 +82,51 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * @static
+	 * @return bool
+	 */
+	public static function isBlocksOnline()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->online == 1 : false;
+	}
+
+	/**
+	 * @static
+	 * @return bool
+	 */
+	public static function putBlocksOnline()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		if ($storedBlocksInfo)
+		{
+			$storedBlocksInfo->online = 1;
+			if ($storedBlocksInfo->save())
+				return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @static
+	 * @return bool
+	 */
+	public static function takeBlocksOffline()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+
+		if ($storedBlocksInfo)
+		{
+			$storedBlocksInfo->online = 0;
+			if ($storedBlocksInfo->save())
+				return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Return the saved stored blocks info.  If it's not set, get it from the database and return it.
 	 * @static
 	 * @return mixed

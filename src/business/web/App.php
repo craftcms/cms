@@ -93,11 +93,13 @@ class App extends \CWebApplication
 		// Are we in the middle of a manual update?
 		if ($this->isDbUpdateNeeded)
 		{
+			// Let's let all CP requests through.
 			if ($this->request->mode == RequestMode::CP)
 			{
 				$this->runController('dbupdate');
 				$this->end();
 			}
+			// We'll also let action requests to dbupdate through as well.
 			else if ($this->request->mode == RequestMode::Action && $this->request->actionController == 'dbupdate')
 			{
 				$this->runController($this->request->actionController.'/'.$this->request->actionAction);
@@ -107,11 +109,20 @@ class App extends \CWebApplication
 				throw new HttpException(404);
 		}
 
-		// Otherwise maybe it's an action request?
-		$this->_processActionRequest();
+		// If it's not a CP request OR the site is online, let's continue processing.
+		if (Blocks::isBlocksOnline() || (!Blocks::isBlocksOnline() && ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && BLOCKS_CP_REQUEST))))
+		{
+			// Otherwise maybe it's an action request?
+			$this->_processActionRequest();
 
-		// Otherwise run the template controller
-		$this->runController('Template');
+			// Otherwise run the template controller
+			$this->runController('template');
+		}
+		else
+		{
+			// Display the offline template for the front-end.
+			$this->runController('template/offline');
+		}
 	}
 
 	/**
@@ -134,14 +145,10 @@ class App extends \CWebApplication
 		else if ($force)
 		{
 			// Give it to them if accessing the CP or it's an action request for logging in.
-			if ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && $this->request->path = 'action/session/login'))
+			if ($this->request->mode == RequestMode::CP)
 			{
-				// so we don't get an infinite redirect loop.
-				if ($this->request->path !== 'login' && $this->request->path !== 'action/session/login')
-				{
-					$url = UrlHelper::generateUrl($what);
-					$this->request->redirect($url);
-				}
+				$url = UrlHelper::generateUrl($what);
+				$this->request->redirect($url);
 			}
 			// Otherwise return a 404
 			else
