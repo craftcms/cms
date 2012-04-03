@@ -17,11 +17,8 @@ class BlocksNewReleaseInfo
 	/**
 	 * @param null $properties
 	 */
-	function __construct($properties = null)
+	function __construct($properties = array())
 	{
-		if ($properties == null)
-			return;
-
 		$this->version = isset($properties['version']) ? $properties['version'] : null;
 		$this->build = isset($properties['build']) ? $properties['build'] : null;
 		$this->critical = isset($properties['critical']) ? $properties['critical'] : null;
