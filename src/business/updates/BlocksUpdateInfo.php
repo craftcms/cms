@@ -24,10 +24,10 @@ class BlocksUpdateInfo
 		if ($properties == null)
 			return;
 
-		$this->localBuild = isset($properties['class']) ? $properties['class'] : null;
+		$this->localBuild = isset($properties['localBuild']) ? $properties['localBuild'] : null;
 		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
-		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
 		$this->latestBuild = isset($properties['latestBuild']) ? $properties['latestBuild'] : null;
+		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
 		$this->latestDate = isset($properties['latestDate']) ? $properties['latestDate'] : null;
 		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
 		$this->manualUpdateRequired = isset($properties['manualUpdateRequired']) ? $properties['manualUpdateRequired'] : null;
