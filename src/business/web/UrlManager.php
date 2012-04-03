@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class UrlManager extends \CUrlManager
 {
-	private $_templateMatch = null;
+	private $_templateMatch;
 	private $_templateTags = array();
 
 	public $routePatterns;

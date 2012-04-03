@@ -6,14 +6,14 @@ namespace Blocks;
  */
 class PluginUpdateInfo
 {
-	public $class = null;
-	public $localVersion = null;
-	public $latestVersion = null;
-	public $status = null;
-	public $displayName = null;
-	public $notes = null;
-	public $criticalUpdateAvailable = null;
-	public $releases = null;
+	public $class;
+	public $localVersion;
+	public $latestVersion;
+	public $status;
+	public $displayName;
+	public $notes;
+	public $criticalUpdateAvailable;
+	public $releases;
 
 	/**
 	 * @param null $properties

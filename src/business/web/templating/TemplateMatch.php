@@ -6,11 +6,11 @@ namespace Blocks;
  */
 class TemplateMatch
 {
-	private $_relativePath = null;
-	private $_fileName = null;
-	private $_fullTemplatePath = null;
-	private $_matchType = null;
-	private $_matchExtension = null;
+	private $_relativePath;
+	private $_fileName;
+	private $_fullTemplatePath;
+	private $_matchType;
+	private $_matchExtension;
 
 	/**
 	 * @param $path

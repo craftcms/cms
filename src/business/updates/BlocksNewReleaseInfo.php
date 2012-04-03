@@ -6,13 +6,13 @@ namespace Blocks;
  */
 class BlocksNewReleaseInfo
 {
-	public $version = null;
-	public $build = null;
-	public $date = null;
-	public $notes = null;
-	public $type = null;
-	public $critical = null;
-	public $manualUpdateRequired = null;
+	public $version;
+	public $build;
+	public $date;
+	public $notes;
+	public $type;
+	public $critical;
+	public $manualUpdateRequired;
 
 	/**
 	 * @param null $properties

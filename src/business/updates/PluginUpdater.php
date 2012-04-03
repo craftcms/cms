@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class PluginUpdater implements IUpdater
 {
-	private $_pluginHandle = null;
+	private $_pluginHandle;
 
 	/**
 	 * @param $pluginHandle

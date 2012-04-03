@@ -9,7 +9,7 @@ class RequirementsChecker extends \CComponent
 	private $_requirements;
 	private $_result;
 	private $_serverInfo;
-	private $_errorFolders = null;
+	private $_errorFolders;
 
 	/**
 	 * @access private
@@ -237,8 +237,10 @@ class RequirementsChecker extends \CComponent
 		}
 
 		$writableFolders = $this->_getWritableFolders();
+
 		$errorFolders = null;
-		foreach($writableFolders as $writableFolder)
+
+		foreach ($writableFolders as $writableFolder)
 		{
 			if (!$writableFolder->writeable)
 			{

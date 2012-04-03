@@ -7,8 +7,8 @@ namespace Blocks;
 class UpdateInfo
 {
 
-	public $plugins = null;
-	public $blocks = null;
+	public $plugins;
+	public $blocks;
 
 	/**
 	 * @param null $properties

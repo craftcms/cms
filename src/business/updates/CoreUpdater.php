@@ -6,12 +6,12 @@ namespace Blocks;
  */
 class CoreUpdater implements IUpdater
 {
-	private $_buildsToUpdate = null;
-	private $_migrationsToRun = null;
-	private $_updateInfo = null;
-	private $_downloadFilePath = null;
-	private $_tempPackageDir = null;
-	private $_manifestData = null;
+	private $_buildsToUpdate;
+	private $_migrationsToRun;
+	private $_updateInfo;
+	private $_downloadFilePath;
+	private $_tempPackageDir;
+	private $_manifestData;
 
 	/**
 	 *
@@ -19,7 +19,6 @@ class CoreUpdater implements IUpdater
 	function __construct()
 	{
 		$this->_updateInfo = b()->updates->getUpdateInfo(true);
-		$this->_migrationsToRun = null;
 		$this->_buildsToUpdate = $this->_updateInfo->blocks->releases;
 	}
 

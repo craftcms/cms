@@ -6,8 +6,8 @@ namespace Blocks;
  */
 class SitesService extends Component
 {
-	private $_currentSite = null;
-	private $_licenseKeyStatus = null;
+	private $_currentSite;
+	private $_licenseKeyStatus;
 
 	/**
 	 * @return array|null

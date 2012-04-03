@@ -6,10 +6,10 @@ namespace Blocks;
  */
 class PluginNewReleaseInfo
 {
-	public $version = null;
-	public $date = null;
-	public $notes = null;
-	public $critical = null;
+	public $version;
+	public $date;
+	public $notes;
+	public $critical;
 
 	/**
 	 * @param null $properties

@@ -6,14 +6,14 @@ namespace Blocks;
  */
 class BlocksUpdateInfo
 {
-	public $localBuild = null;
-	public $localVersion = null;
-	public $latestVersion = null;
-	public $latestBuild = null;
-	public $latestDate = null;
-	public $criticalUpdateAvailable = null;
-	public $manualUpdateRequired = null;
-	public $versionUpdateStatus = null;
+	public $localBuild;
+	public $localVersion;
+	public $latestVersion;
+	public $latestBuild;
+	public $latestDate;
+	public $criticalUpdateAvailable;
+	public $manualUpdateRequired;
+	public $versionUpdateStatus;
 	public $releases;
 
 	/**
