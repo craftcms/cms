@@ -13,7 +13,7 @@ class PluginUpdateInfo
 	public $displayName;
 	public $notes;
 	public $criticalUpdateAvailable;
-	public $releases;
+	public $releases = array();
 
 	/**
 	 * @param null $properties

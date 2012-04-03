@@ -14,7 +14,7 @@ class BlocksUpdateInfo
 	public $criticalUpdateAvailable;
 	public $manualUpdateRequired;
 	public $versionUpdateStatus;
-	public $releases;
+	public $releases = array();
 
 	/**
 	 * @param null $properties
