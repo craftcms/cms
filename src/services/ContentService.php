@@ -91,10 +91,9 @@ class ContentService extends Component
 	}
 
 	/**
-	 * Saves a section
-	 *
-	 * @param            $sectionSettings
-	 * @param null       $sectionId
+	 * Saves a section.
+	 * @param array $sectionSettings
+	 * @param int   $sectionId The site ID, if saving an existing site.
 	 * @return Section
 	 */
 	public function saveSection($sectionSettings, $sectionId = null)
@@ -105,6 +104,7 @@ class ContentService extends Component
 			if (!$section)
 				throw new Exception('No section exists with the ID '.$sectionId);
 			$isNewSection = false;
+			$oldContentTable = $section->getContentTableName();
 		}
 		else
 		{
@@ -121,131 +121,147 @@ class ContentService extends Component
 		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
 		$section->site_id     = b()->sites->current->id;
 
-		// Try saving the section
-		$sectionSaved = $section->save();
-
-		// Get the section's content table name
-		$table = $section->getContentTableName();
-
-		// Create the blocks
-		$blocks = array();
-
-		if (isset($sectionSettings['blocks']))
+		// Start a transaction
+		$transaction = b()->db->beginTransaction();
+		try
 		{
-			if (isset($sectionSettings['blocks']['order']))
-				$blockIds = $sectionSettings['blocks']['order'];
-			else
+			// Try saving the section
+			$sectionSaved = $section->save();
+
+			// Get the section's content table name
+			$contentTable = $section->getContentTableName();
+
+			if ($sectionSaved)
 			{
-				$blockIds = array_keys($sectionSettings['blocks']);
-				if (($deleteIndex = array_search('delete', $blockIds)) !== false)
-					array_splice($blockIds, $deleteIndex, 1);
+				// Create or possibly rename the section's content table
+				if ($isNewSection)
+				{
+					$section->createContentTable();
+				}
+				else if ($contentTable != $oldContentTable)
+				{
+					b()->db->createCommand()->renameTable($oldContentTable, $contentTable);
+				}
 			}
 
-			$lastColumn = 'title';
+			// Create the blocks
+			$blocks = array();
 
-			foreach ($blockIds as $order => $blockId)
+			if (isset($sectionSettings['blocks']))
 			{
-				$blockData = $sectionSettings['blocks'][$blockId];
-
-				$block = b()->blocks->getBlockByClass($blockData['class']);
-				$isNewBlock = true;
-
-				if (strncmp($blockId, 'new', 3) != 0)
+				if (isset($sectionSettings['blocks']['order']))
+					$blockIds = $sectionSettings['blocks']['order'];
+				else
 				{
-					$originalBlock = b()->blocks->getBlockById($blockId);
-					if ($originalBlock)
+					$blockIds = array_keys($sectionSettings['blocks']);
+					if (($deleteIndex = array_search('delete', $blockIds)) !== false)
+						array_splice($blockIds, $deleteIndex, 1);
+					if (($tempIndex = array_search('BLOCK_ID', $blockIds)) !== false)
+						array_splice($blockIds, $tempIndex, 1);
+				}
+
+				$lastColumn = 'title';
+
+				foreach ($blockIds as $order => $blockId)
+				{
+					$blockData = $sectionSettings['blocks'][$blockId];
+
+					$block = b()->blocks->getBlockByClass($blockData['class']);
+					$isNewBlock = true;
+
+					if (strncmp($blockId, 'new', 3) != 0)
 					{
-						$isNewBlock = false;
-						$block->isNewRecord = false;
+						$originalBlock = b()->blocks->getBlockById($blockId);
+						if ($originalBlock)
+						{
+							$isNewBlock = false;
+							$block->isNewRecord = false;
+							$block->id = $blockId;
+							$block->setPrimaryKey($blockId);
+						}
+					}
+
+					$block->name         = $blockData['name'];
+					$block->handle       = $blockData['handle'];
+					$block->class        = $blockData['class'];
+					$block->instructions = (isset($blockData['instructions']) ? $blockData['instructions'] : null);
+					$block->required     = (isset($blockData['required']) ? (bool)$blockData['required'] : false);
+					$block->sort_order   = ($order+1);
+
+					// Only save it if the section saved
+					if ($sectionSaved)
+					{
+						if ($block->save())
+						{
+							// Attach it to the section
+							try
+							{
+								b()->db->createCommand()->insert('sectionblocks', array(
+									'section_id' => $section->id,
+									'block_id'   => $block->id,
+								));
+							}
+							catch (\CDbException $e)
+							{
+								// Only allow a Duplicate Key exception (the section is already tied to the block)
+								if (!isset($e->errorInfo[0]) || $e->errorInfo[0] != 23000)
+									throw $e;
+							}
+
+							// Save the settings
+							if (!isset($blockData['settings']))
+								$blockData['settings'] = array();
+							$block->settings = $blockData['settings'];
+
+							// Add or modify the block's content column
+							$columnType = DatabaseHelper::generateColumnDefinition($block->columnType);
+
+							if ($isNewBlock)
+							{
+								// Add the new column
+								b()->db->createCommand()->addColumnAfter($contentTable, $block->handle, $columnType, $lastColumn);
+							}
+							else
+							{
+								// Alter the column
+								b()->db->createCommand()->alterColumn($contentTable, $originalBlock->handle, $columnType, $block->handle, $lastColumn);
+							}
+
+							// Remember this column name for the next block
+							$lastColumn = $block->handle;
+						}
+					}
+
+					// Keep the "newX" ID around for the templates
+					if ($block->isNewRecord)
 						$block->id = $blockId;
-						$block->setPrimaryKey($blockId);
-					}
+
+					$blocks[] = $block;
 				}
-
-				$block->name         = $blockData['name'];
-				$block->handle       = $blockData['handle'];
-				$block->class        = $blockData['class'];
-				$block->instructions = (isset($blockData['instructions']) ? $blockData['instructions'] : null);
-				$block->required     = (isset($blockData['required']) ? (bool)$blockData['required'] : false);
-				$block->sort_order   = ($order+1);
-
-				// Only save it if the section saved
-				if ($sectionSaved)
-				{
-					if ($block->save())
-					{
-						// Attach it to the section
-						try
-						{
-							b()->db->createCommand()->insert('sectionblocks', array(
-								'section_id' => $section->id,
-								'block_id'   => $block->id,
-							));
-						}
-						catch (\CDbException $e)
-						{
-							// Only allow a Duplicate Key exception (the section is already tied to the block)
-							if (!isset($e->errorInfo[0]) || $e->errorInfo[0] != 23000)
-								throw $e;
-						}
-
-						// Save the settings
-						if (!isset($blockData['settings']))
-							$blockData['settings'] = array();
-						$block->settings = $blockData['settings'];
-
-						// Add or modify the block's content column
-						$columnType = DatabaseHelper::generateColumnDefinition($block->columnType);
-
-						if ($isNewBlock)
-						{
-							// Add the new column
-							b()->db->createCommand()->addColumnAfter($table, $block->handle, $columnType, $lastColumn);
-						}
-						else
-						{
-							// Alter the column
-							b()->db->createCommand()->alterColumn($table, $originalBlock->handle, $columnType, $block->handle, $lastColumn);
-						}
-
-						// Remember this column name for the next block
-						$lastColumn = $block->handle;
-					}
-				}
-
-				// Keep the "newX" ID around for the templates
-				if ($block->isNewRecord)
-					$block->id = $blockId;
-
-				$blocks[] = $block;
 			}
-		}
 
-		// Any deleted blocks?
-		if (isset($sectionSettings['blocks']['delete']))
-		{
-			foreach ($sectionSettings['blocks']['delete'] as $blockId)
+			// Any deleted blocks?
+			if (isset($sectionSettings['blocks']['delete']))
 			{
-				// Start a transaction
-				$transaction = b()->db->beginTransaction();
-				try
+				foreach ($sectionSettings['blocks']['delete'] as $blockId)
 				{
 					$block = b()->blocks->getBlockById($blockId);
 					b()->db->createCommand()->delete('sectionblocks',       array('block_id'=>$blockId));
 					b()->db->createCommand()->delete('blocksettings',       array('block_id'=>$blockId));
 					b()->db->createCommand()->delete('blocks',              array('id'=>$blockId));
-					b()->db->createCommand()->dropColumn($table, $block->handle);
-					$transaction->commit();
-				}
-				catch (\Exception $e)
-				{
-					$transaction->rollBack();
-					throw $e;
+					b()->db->createCommand()->dropColumn($contentTable, $block->handle);
 				}
 			}
-		}
 
-		$section->blocks = $blocks;
+			$section->blocks = $blocks;
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 
 		return $section;
 	}
