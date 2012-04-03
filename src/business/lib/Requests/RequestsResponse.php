@@ -16,7 +16,7 @@ class RequestsResponse {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	function __construct() {
 		$this->headers = new RequestsResponseHeaders();
 	}
 

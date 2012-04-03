@@ -115,7 +115,7 @@ class Block extends Model
 	 * String representation of the block
 	 * @return string
 	 */
-	public function __toString()
+	function __toString()
 	{
 		return (string)$this->_data;
 	}

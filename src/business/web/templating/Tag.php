@@ -14,7 +14,7 @@ class Tag
 	 *
 	 * @param null $var
 	 */
-	public function __construct($var = null)
+	function __construct($var = null)
 	{
 		// Set the var object
 		if (is_object($var))
@@ -34,7 +34,7 @@ class Tag
 	 * @param array $args
 	 * @return Tag
 	 */
-	public function __call($name, $args = array())
+	function __call($name, $args = array())
 	{
 		$cacheKey = $name;
 		if ($args)
@@ -70,7 +70,7 @@ class Tag
 	/**
 	 * @return string
 	 */
-	public function __toString()
+	function __toString()
 	{
 		if (method_exists($this->_obj, '__toString'))
 			return $this->_obj->__toString();
@@ -81,7 +81,7 @@ class Tag
 	/**
 	 * @return array
 	 */
-	public function __toArray()
+	function __toArray()
 	{
 		if (method_exists($this->_obj, '__toArray'))
 			return $this->_obj->__toArray();

@@ -29,7 +29,7 @@ class ConfigService extends Component
 	 * @param $name
 	 * @return mixed|null
 	 */
-	public function __get($name)
+	function __get($name)
 	{
 		try
 		{

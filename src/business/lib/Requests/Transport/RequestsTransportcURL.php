@@ -51,7 +51,7 @@ class RequestsTransportcURL implements RequestsTransport {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	function __construct() {
 		$curl = curl_version();
 		$this->version = $curl['version'];
 		$this->fp = curl_init();

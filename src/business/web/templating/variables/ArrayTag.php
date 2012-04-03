@@ -11,7 +11,7 @@ class ArrayTag extends VarTag
 	 * @param $args
 	 * @return mixed
 	 */
-	public function __call($name, $args)
+	function __call($name, $args)
 	{
 		if (isset($this->_var[$name]))
 			return $this->_var[$name];
@@ -22,7 +22,7 @@ class ArrayTag extends VarTag
 	 * return mixed
 	 * @return string
 	 */
-	public function __get($name)
+	function __get($name)
 	{
 		return $this->get($name);
 	}
@@ -30,7 +30,7 @@ class ArrayTag extends VarTag
 	/**
 	 * @return string
 	 */
-	public function __toString()
+	function __toString()
 	{
 		return empty($this->_var) ? '' : '1';
 	}
@@ -38,7 +38,7 @@ class ArrayTag extends VarTag
 	/**
 	 * @return mixed
 	 */
-	public function __toArray()
+	function __toArray()
 	{
 		return $this->_var;
 	}

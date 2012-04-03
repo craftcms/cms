@@ -350,7 +350,7 @@ class PhpMailer
 	 * Constructor
 	 * @param boolean $exceptions Should we throw external exceptions?
 	 */
-	public function __construct($exceptions = false)
+	function __construct($exceptions = false)
 	{
 		$this->exceptions = ($exceptions == true);
 	}

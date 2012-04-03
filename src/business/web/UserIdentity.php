@@ -25,7 +25,7 @@ class UserIdentity extends \CUserIdentity
 	 * @param string $loginName
 	 * @param string $password
 	 */
-	public function __construct($loginName, $password)
+	function __construct($loginName, $password)
 	{
 		$this->loginName = $loginName;
 		$this->password = $password;

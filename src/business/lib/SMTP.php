@@ -82,7 +82,7 @@ class Smtp
 	 * @access public
 	 * @return \Smtp
 	 */
-	public function __construct()
+	function __construct()
 	{
 		$this->smtpConn = 0;
 		$this->error = null;

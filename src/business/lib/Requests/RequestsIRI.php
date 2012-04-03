@@ -128,7 +128,7 @@ class RequestsIRI
      *
      * @return string
      */
-    public function __toString()
+    function __toString()
     {
         return $this->get_iri();
     }
@@ -139,7 +139,7 @@ class RequestsIRI
      * @param string $name Property name
      * @param mixed $value Property value
      */
-    public function __set($name, $value)
+    function __set($name, $value)
     {
         if (method_exists($this, 'set_' . $name))
         {
@@ -164,7 +164,7 @@ class RequestsIRI
      * @param string $name Property name
      * @return mixed
      */
-    public function __get($name)
+    function __get($name)
     {
         // isset() returns false for null, we don't want to do that
         // Also why we use array_key_exists below instead of isset()
@@ -215,7 +215,7 @@ class RequestsIRI
      * @param string $name Property name
      * @return bool
      */
-    public function __isset($name)
+    function __isset($name)
     {
         if (method_exists($this, 'get_' . $name) || isset($this->$name))
         {
@@ -232,7 +232,7 @@ class RequestsIRI
      *
      * @param string $name Property name
      */
-    public function __unset($name)
+    function __unset($name)
     {
         if (method_exists($this, 'set_' . $name))
         {
@@ -245,7 +245,7 @@ class RequestsIRI
      *
      * @param string $iri
      */
-    public function __construct($iri = null)
+    function __construct($iri = null)
     {
         $this->set_iri($iri);
     }

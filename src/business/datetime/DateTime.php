@@ -97,7 +97,7 @@ class DateTime extends \DateTime
 	/**
 	 * @return string
 	 */
-	public function __toString()
+	function __toString()
 	{
 		return $this->format('M j, Y');
 	}

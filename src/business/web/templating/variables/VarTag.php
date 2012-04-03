@@ -13,7 +13,7 @@ abstract class VarTag
 	 *
 	 * @param null $var
 	 */
-	public function __construct($var = null)
+	function __construct($var = null)
 	{
 		$this->_var = $var;
 	}
@@ -21,7 +21,7 @@ abstract class VarTag
 	/**
 	 * @return string
 	 */
-	public function __toString()
+	function __toString()
 	{
 		return (string)$this->_var;
 	}

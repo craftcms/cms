@@ -15,7 +15,7 @@ class TemplateMatch
 	/**
 	 * @param $path
 	 */
-	public function __construct($path)
+	function __construct($path)
 	{
 		$this->_fullTemplatePath = $path;
 		$this->init($path);
