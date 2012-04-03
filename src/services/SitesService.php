@@ -35,13 +35,16 @@ class SitesService extends Component
 	{
 		if ($siteId)
 		{
-			$site = $this->getSiteById($siteId);
+			$site = Site::model()->with('sections')->findById($siteId);
 			if (!$site)
 				throw new Exception('No site exists with the ID '.$siteId);
+			$isNewSite = false;
+			$oldSiteHandle = $site->handle;
 		}
 		else
 		{
 			$site = new Site;
+			$isNewSite = true;
 		}
 
 		$site->name     = (isset($siteSettings['name']) ? $siteSettings['name'] : null);
@@ -49,8 +52,46 @@ class SitesService extends Component
 		$site->url      = (isset($siteSettings['url']) ? $siteSettings['url'] : null);
 		$site->language = (isset($siteSettings['language']) ? $siteSettings['language'] : null);
 
-		// Attempt to save the site
-		$site->save();
+		if ($site->validate())
+		{
+			// Start a transaction
+			$transaction = b()->db->beginTransaction();
+			try
+			{
+				// Did the site handle change?
+				$siteHandleChanged = (!$isNewSite && $site->handle != $oldSiteHandle);
+				if ($siteHandleChanged)
+				{
+					// Remember the old section table names
+					foreach ($site->sections as $section)
+					{
+						$oldTableNames[] = $section->getContentTableName();
+					}
+				}
+
+				// Attempt to save the site
+				$siteSaved = $site->save(false);
+
+				if ($siteSaved && $siteHandleChanged)
+				{
+					// Rename section tables
+					foreach ($site->sections as $i => $section)
+					{
+						// Update the section's site reference so it knows the new site handle
+						$section->site = $site;
+						$newTableName = $section->getContentTableName();
+						b()->db->createCommand()->renameTable($oldTableNames[$i], $newTableName);
+					}
+				}
+
+				$transaction->commit();
+			}
+			catch (\Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
+			}
+		}
 
 		return $site;
 	}
