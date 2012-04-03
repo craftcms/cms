@@ -12,7 +12,6 @@ defined('BLOCKS_CONFIG_PATH')    || define('BLOCKS_CONFIG_PATH', BLOCKS_BASE_PAT
 
 // fix for fcgi
 defined('STDIN') or define('STDIN', fopen('php://stdin', 'r'));
-defined('YII_DEBUG') or define('YII_DEBUG', true);
 
 require_once(dirname(__FILE__).'/../../framework/yii.php');
 require_once(BLOCKS_APP_PATH.'business/Blocks.php');

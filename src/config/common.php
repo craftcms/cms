@@ -5,6 +5,14 @@ require_once(BLOCKS_APP_PATH.'config/defaults/db.php');
 require_once(BLOCKS_CONFIG_PATH.'blocks.php');
 require_once(BLOCKS_CONFIG_PATH.'db.php');
 
+if ($blocksConfig['devMode'] == true)
+{
+	defined('YII_DEBUG') || define('YII_DEBUG', true);
+	error_reporting(E_ALL);
+
+	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
+}
+
 /**
  * @param $dbHostname
  * @return string
