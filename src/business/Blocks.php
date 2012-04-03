@@ -10,6 +10,8 @@ require_once dirname(__FILE__).'/../blocks_info.php';
 */
 class Blocks extends \Yii
 {
+	private static $_storedBlocksInfo;
+
 	/**
 	 * @static
 	 * @param bool $checkStoredEdition If true, will check the db for the edition if we can't get it locally.
@@ -29,8 +31,8 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredEdition()
 	{
-		$info = Info::model()->find();
-		return $info ? $info->edition : null;
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->edition : null;
 	}
 
 	/**
@@ -52,8 +54,8 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredVersion()
 	{
-		$info = Info::model()->find();
-		return $info ? $info->version : null;
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->version : null;
 	}
 
 	/**
@@ -75,11 +77,27 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredBuild()
 	{
-		$info = Info::model()->find();
-		return $info ? $info->build : null;
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->build : null;
 	}
 
 	/**
+	 * Return the saved stored blocks info.  If it's not set, get it from the database and return it.
+	 * @static
+	 * @return mixed
+	 */
+	private static function _getStoredInfo()
+	{
+		if ((static::$_storedBlocksInfo) == null)
+		{
+			self::$_storedBlocksInfo = Info::model()->find();
+		}
+
+		return self::$_storedBlocksInfo;
+	}
+
+	/**
+	 * Returns the Yii framework version.
 	 * @static
 	 * @return mixed
 	 */
@@ -142,7 +160,7 @@ class Blocks extends \Yii
 }
 
 /**
- * Returns the current b() instance
+ * Returns the current b() instance.  This is a wrapper function for the Blocks::app() instance.
  * @return App
  */
 function b()
