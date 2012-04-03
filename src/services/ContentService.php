@@ -105,6 +105,7 @@ class ContentService extends Component
 				throw new Exception('No section exists with the ID '.$sectionId);
 			$isNewSection = false;
 			$oldContentTable = $section->getContentTableName();
+			$oldUrlFormat = $section->url_format;
 		}
 		else
 		{
@@ -133,14 +134,26 @@ class ContentService extends Component
 
 			if ($sectionSaved)
 			{
-				// Create or possibly rename the section's content table
 				if ($isNewSection)
 				{
+					// Create the content table
 					$section->createContentTable();
 				}
-				else if ($contentTable != $oldContentTable)
+				else
 				{
-					b()->db->createCommand()->renameTable($oldContentTable, $contentTable);
+					// Rename the content table if the handle changed
+					if ($contentTable != $oldContentTable)
+						b()->db->createCommand()->renameTable($oldContentTable, $contentTable);
+
+					// Update the entry URIs if the URL format changed
+					if ($section->url_format != $oldUrlFormat)
+					{
+						foreach ($section->entries as $entry)
+						{
+							$entry->full_uri = $this->getEntryUri($entry);
+							$entry->save();
+						}
+					}
 				}
 			}
 
@@ -345,8 +358,24 @@ class ContentService extends Component
 
 		// Save it on the entry
 		$entry->slug = $testSlug;
-		$entry->full_uri = $entry->uri;
+		$entry->full_uri = $this->getEntryUri($entry);
 		$entry->save();
+	}
+
+	/**
+	 * Returns the full URI for an entry
+	 * @return mixed
+	 */
+	public function getEntryUri($entry)
+	{
+		if ($entry->slug)
+		{
+			$urlFormat = $entry->section->url_format;
+			$uri = str_replace('{slug}', $entry->slug, $urlFormat);
+			return $uri;
+		}
+		else
+			return null;
 	}
 
 	/**

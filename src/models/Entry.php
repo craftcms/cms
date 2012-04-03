@@ -106,31 +106,14 @@ class Entry extends Model
 	}
 
 	/**
-	 * Returns the entry's URI
-	 * @return mixed
-	 */
-	public function getUri()
-	{
-		if ($this->slug)
-		{
-			$urlFormat = $this->section->url_format;
-			$uri = str_replace('{slug}', $this->slug, $urlFormat);
-			return $uri;
-		}
-		else
-			return null;
-	}
-
-	/**
 	 * Returns the entry's full URL
 	 * @return mixed
 	 */
 	public function getUrl()
 	{
-		$uri = $this->uri;
-		if ($uri)
+		if ($this->full_uri)
 		{
-			$url = b()->sites->current->url.'/'.$uri;
+			$url = b()->sites->current->url.'/'.$this->full_uri;
 			$url = str_replace('http://', '', $url);
 			return $url;
 		}
