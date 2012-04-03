@@ -16,7 +16,7 @@ class RequestsHooks {
 	/**
 	 * Constructor
 	 */
-	public function __construct() {
+	function __construct() {
 		// pass
 	}
 

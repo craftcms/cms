@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- *
+ * Stores all of the available update info.
  */
 class UpdateInfo
 {

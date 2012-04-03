@@ -10,7 +10,7 @@ class Exception extends \CException
 	 * @param     $message
 	 * @param int $code
 	 */
-	public function __construct($message, $code = 0)
+	function __construct($message, $code = 0)
 	{
 		Blocks::log($message);
 		parent::__construct($message, $code);

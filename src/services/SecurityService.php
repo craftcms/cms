@@ -11,7 +11,7 @@ class SecurityService extends Component
 	/**
 	 *
 	 */
-	public function __construct()
+	function __construct()
 	{
 		parent::init();
 		$this->_iterationCount = b()->config->getItem('phpPass-iterationCount');

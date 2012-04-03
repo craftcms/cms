@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- *
+ * Stores the info for a plugin release.
  */
 class PluginNewReleaseInfo
 {
@@ -12,7 +12,7 @@ class PluginNewReleaseInfo
 	public $critical;
 
 	/**
-	 * @param null $properties
+	 * @param array $properties
 	 */
 	function __construct($properties = array())
 	{

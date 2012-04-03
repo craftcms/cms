@@ -11,7 +11,7 @@ class TemplateRendererException extends Exception
 	 * @param $templateFileName
 	 * @param $lineNumber
 	 */
-	public function __construct($message, $templateFileName, $lineNumber)
+	function __construct($message, $templateFileName, $lineNumber)
 	{
 		$this->file = $templateFileName;
 		$this->line = (int)$lineNumber;

@@ -11,7 +11,7 @@ class HttpException extends \CHttpException
 	 * @param null $message
 	 * @param int  $code
 	 */
-	public function __construct($status, $message = null, $code = 0)
+	function __construct($status, $message = null, $code = 0)
 	{
 		Blocks::log($status.' - '.$message);
 		parent::__construct($status, $message, $code);

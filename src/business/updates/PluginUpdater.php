@@ -16,6 +16,9 @@ class PluginUpdater implements IUpdater
 		$this->_pluginHandle = $pluginHandle;
 	}
 
+	/**
+	 *
+	 */
 	public function checkRequirements()
 	{
 

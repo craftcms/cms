@@ -36,7 +36,7 @@ class RequestsAuthBasic implements RequestsAuth {
 	 * @throws RequestsException On incorrect number of arguments (`authbasicbadargs`)
 	 * @param array|null $args Array of user and password. Must have exactly two elements
 	 */
-	public function __construct($args = null) {
+	function __construct($args = null) {
 		if (is_array($args)) {
 			if (count($args) !== 2) {
 				throw new RequestsException('Invalid number of arguments', 'authbasicbadargs');

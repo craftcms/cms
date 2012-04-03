@@ -10,7 +10,7 @@ class DateTag extends VarTag
 	 * Constructor
 	 * @param mixed $var
 	 */
-	public function __construct($var = null)
+	function __construct($var = null)
 	{
 		$this->_var = $this->getUnixTimestamp($var);
 	}

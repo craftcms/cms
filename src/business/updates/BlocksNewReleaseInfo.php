@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- *
+ * Stores the info for a Blocks release.
  */
 class BlocksNewReleaseInfo
 {
@@ -15,7 +15,7 @@ class BlocksNewReleaseInfo
 	public $manualUpdateRequired;
 
 	/**
-	 * @param null $properties
+	 * @param array $properties
 	 */
 	function __construct($properties = array())
 	{

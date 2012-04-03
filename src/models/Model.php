@@ -34,7 +34,7 @@ abstract class Model extends \CActiveRecord
 	 * Constructor
 	 * @param string $scenario
 	 */
-	public function __construct($scenario = 'insert')
+	function __construct($scenario = 'insert')
 	{
 		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
@@ -292,7 +292,7 @@ abstract class Model extends \CActiveRecord
 	 * @param $name
 	 * @return mixed
 	 */
-	public function __get($name)
+	function __get($name)
 	{
 		try
 		{

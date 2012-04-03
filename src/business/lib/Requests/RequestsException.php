@@ -32,7 +32,7 @@ class RequestsException extends Exception {
 	 * @param string $type Exception type
 	 * @param mixed $data Associated data
 	 */
-	public function __construct($message, $type, $data = null) {
+	function __construct($message, $type, $data = null) {
 		parent::__construct($message, 0);
 
 		$this->type = $type;

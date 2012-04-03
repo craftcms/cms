@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- *
+ * Stores the available plugin update info.
  */
 class PluginUpdateInfo
 {
@@ -16,7 +16,7 @@ class PluginUpdateInfo
 	public $releases = array();
 
 	/**
-	 * @param null $properties
+	 * @param array $properties
 	 */
 	function __construct($properties = array())
 	{

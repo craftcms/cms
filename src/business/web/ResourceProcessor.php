@@ -21,7 +21,7 @@ class ResourceProcessor
 	 * @param        $relResourcePath
 	 * @internal param string $relativeResourcePath The path to the resource, relative from the root folder
 	 */
-	public function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
+	function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
 	{
 		$this->_rootFolderPath = rtrim($rootFolderPath, '/').'/';
 		$this->_rootFolderUrl = rtrim($rootFolderUrl, '/').'/';

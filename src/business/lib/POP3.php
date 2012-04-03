@@ -127,7 +127,7 @@ class Pop3
 	* @access public
 	* @return Pop3
 	*/
-	public function __construct()
+	function __construct()
 	{
 		$this->popConn = 0;
 		$this->connected = false;

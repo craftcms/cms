@@ -10,7 +10,7 @@ class TemplateParserException extends Exception
 	 * @param $message
 	 * @param $lineNumber
 	 */
-	public function __construct($message, $lineNumber)
+	function __construct($message, $lineNumber)
 	{
 		$this->line = (int)$lineNumber;
 
