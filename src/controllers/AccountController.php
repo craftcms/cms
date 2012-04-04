@@ -62,7 +62,12 @@ class AccountController extends Controller
 		{
 			$user = b()->users->getByLoginName($forgotPasswordInfo->loginName);
 			if ($user)
-				$this->returnJson(array('success' => true));
+			{
+				if (b()->email->sendForgotPasswordEmail($user, b()->sites->current))
+					$this->returnJson(array('success' => true));
+
+				$this->returnErrorJson('There was a problem sending the forgot password email.');
+			}
 		}
 
 		$this->returnErrorJson('Invalid username or email.');
