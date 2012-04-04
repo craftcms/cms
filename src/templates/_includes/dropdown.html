@@ -1,0 +1,16 @@
+{if !id}
+	{set id = name}
+{endif}
+<select id="{:id}" name="{:id}">
+	{foreach options.split as option}
+		{set option = option.split(':')}
+		<option value="{:option.get(0)}" {if (value && option.get(0) == value) || (!value && option.get(0) == default)}selected{/if}>
+			{if option.get(1)}
+				{:option.get(1)}
+			{else}
+				{:option.get(0)}
+			{/if}
+		</option>
+	{/foreach}
+</select>
+

@@ -262,6 +262,7 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * @param $mode
+	 * @return void
 	 */
 	public function setMode($mode)
 	{
@@ -342,5 +343,19 @@ class HttpRequest extends \CHttpRequest
 		}
 
 		return $this->_isMobileBrowser;
+	}
+
+	/**
+	 * If the request is not on a SSL connection, redirect to the https version of the page.
+	 */
+	public function requireSecureConnection()
+	{
+		if (!$this->isSecureConnection)
+		{
+
+			// Redirect to the secure version of the page.
+			$url = 'https://'.$this->serverName.$this->requestUri;
+			$this->redirect($url);
+		}
 	}
 }
