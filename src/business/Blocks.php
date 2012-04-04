@@ -94,25 +94,17 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @param bool $force
 	 * @return bool
 	 */
-	public static function turnSystemOn($force = false)
+	public static function turnSystemOn()
 	{
 		$storedBlocksInfo = self::_getStoredInfo();
+
 		if ($storedBlocksInfo)
 		{
-			// if the system wasn't on before, we're don't turn it on now unless $force == true
-			if (!self::$_isSystemOn && !$force)
+			$storedBlocksInfo->on = true;
+			if ($storedBlocksInfo->save())
 				return true;
-			else
-			{
-				$storedBlocksInfo->on = true;
-				if (!$storedBlocksInfo->save())
-					return false;
-
-				return true;
-			}
 		}
 
 		return false;

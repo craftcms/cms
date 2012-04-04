@@ -7,6 +7,7 @@ namespace Blocks;
 class UpdatesService extends Component
 {
 	private $_updateInfo;
+	private $_isSystemOn;
 
 	/**
 	 * @param $forceRefresh
@@ -269,6 +270,42 @@ class UpdatesService extends Component
 		$response = Migration::run($migrationName);
 		if ($this->_wasMigrationSuccessful($response))
 			return true;
+
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function turnSystemOnAfterUpdate()
+	{
+		// if the system wasn't on before, we're leave it in an off state
+		if (!$this->_isSystemOn)
+			return true;
+		else
+		{
+			if (Blocks::turnSystemOn())
+				return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @static
+	 * @return bool
+	 */
+	public function turnSystemOffBeforeUpdate()
+	{
+		// save the current state of the system for possible use later in the request.
+		$this->_isSystemOn = Blocks::isSystemOn();
+
+		// if it's not on, don't even bother.
+		if ($this->_isSystemOn)
+		{
+			if (Blocks::turnSystemOff())
+				return true;
+		}
 
 		return false;
 	}

@@ -79,7 +79,7 @@ class CoreUpdater implements IUpdater
 		$this->gatherMigrations();
 
 		// Take the site offline.
-		Blocks::turnSystemOff();
+		b()->updates->turnSystemOffBeforeUpdate();
 
 		// if there are migrations, run them.
 		if (!empty($this->_migrationsToRun) && $this->_migrationsToRun != null)
@@ -97,7 +97,7 @@ class CoreUpdater implements IUpdater
 			throw new Exception('There was a problem updating your files.');
 
 		// Bring the system online.
-		Blocks::turnSystemOn();
+		b()->updates->turnSystemOnAfterUpdate();
 
 		// clean-up leftover files.
 		$this->cleanTempFiles();
