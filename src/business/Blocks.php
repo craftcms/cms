@@ -11,7 +11,6 @@ require_once dirname(__FILE__).'/../blocks_info.php';
 class Blocks extends \Yii
 {
 	private static $_storedBlocksInfo;
-	private static $_isSystemOn;
 
 	/**
 	 * @static
