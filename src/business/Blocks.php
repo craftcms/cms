@@ -11,6 +11,7 @@ require_once dirname(__FILE__).'/../blocks_info.php';
 class Blocks extends \Yii
 {
 	private static $_storedBlocksInfo;
+	private static $_isSystemOn;
 
 	/**
 	 * @static
@@ -93,16 +94,25 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
+	 * @param bool $force
 	 * @return bool
 	 */
-	public static function turnSystemOn()
+	public static function turnSystemOn($force = false)
 	{
 		$storedBlocksInfo = self::_getStoredInfo();
 		if ($storedBlocksInfo)
 		{
-			$storedBlocksInfo->on = true;
-			if ($storedBlocksInfo->save())
+			// if the system wasn't on before, we're don't turn it on now unless $force == true
+			if (!self::$_isSystemOn && !$force)
 				return true;
+			else
+			{
+				$storedBlocksInfo->on = true;
+				if (!$storedBlocksInfo->save())
+					return false;
+
+				return true;
+			}
 		}
 
 		return false;
@@ -118,9 +128,18 @@ class Blocks extends \Yii
 
 		if ($storedBlocksInfo)
 		{
-			$storedBlocksInfo->on = false;
-			if ($storedBlocksInfo->save())
-				return true;
+			// save the current state of the system for possible use later in the request.
+			self::$_isSystemOn = self::isSystemOn();
+
+			// if it's not on, don't even bother.
+			if (self::$_isSystemOn)
+			{
+				$storedBlocksInfo->on = false;
+				if (!$storedBlocksInfo->save())
+					return false;
+			}
+
+			return true;
 		}
 
 		return false;

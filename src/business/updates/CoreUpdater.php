@@ -78,8 +78,8 @@ class CoreUpdater implements IUpdater
 		// check to see if there any migrations to run.
 		$this->gatherMigrations();
 
-		// put site in maintenance mode.
-		$this->putSiteInMaintenanceMode();
+		// Take the site offline.
+		Blocks::turnSystemOff();
 
 		// if there are migrations, run them.
 		if (!empty($this->_migrationsToRun) && $this->_migrationsToRun != null)
@@ -96,8 +96,8 @@ class CoreUpdater implements IUpdater
 		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_tempPackageDir))
 			throw new Exception('There was a problem updating your files.');
 
-		// take site out of maintenance mode.
-		$this->takeSiteOutOfMaintenanceMode();
+		// Bring the system online.
+		Blocks::turnSystemOn();
 
 		// clean-up leftover files.
 		$this->cleanTempFiles();
@@ -152,30 +152,6 @@ class CoreUpdater implements IUpdater
 				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($this->_tempPackageDir->realPath.'/'.$row[0]);
 			}
 		}
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function putSiteInMaintenanceMode()
-	{
-		$file = b()->file->set(b()->path->appPath.'../../index.php', false);
-		$contents = $file->contents;
-		$contents = str_replace('//include(\'offline.php\');', 'include(\'offline.php\');', $contents);
-		$file->setContents(null, $contents);
-		return true;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function takeSiteOutOfMaintenanceMode()
-	{
-		$file = b()->file->set(b()->path->appPath.'../../index.php', false);
-		$contents = $file->contents;
-		$contents = str_replace('include(\'offline.php\');', '//include(\'offline.php\');', $contents);
-		$file->setContents(null, $contents);
-		return true;
 	}
 
 	/**

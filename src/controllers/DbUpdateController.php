@@ -22,6 +22,9 @@ class DbUpdateController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		// Take the system offline.
+		Blocks::turnSystemOff();
+
 		// run migrations to top
 		if (b()->updates->runMigrationsToTop())
 		{
@@ -32,6 +35,8 @@ class DbUpdateController extends Controller
 				b()->updates->flushUpdateInfoFromCache();
 				b()->user->setMessage(MessageType::Success, 'Database successfully updated.');
 
+				// Bring the system back online.
+				Blocks::turnSystemOn();
 				$this->returnJson(array('success' => true));
 			}
 		}
