@@ -28,6 +28,8 @@
 .widget .settings label:first-child { margin-top: 0; }
 .widget .settings .buttons { margin-top: 15px; border-top: 1px solid #e0e0e0; padding-top: 15px; -webkit-box-shadow: inset 0 1px #fcfcfc; }
 
+.widget .sample { position: absolute; z-index: 1; top: 50%; left: 50%; margin: -40px 0 0 -92px; width: 185px; height: 121px; background: url(../images/sample.png) no-repeat; }
+
 /*-- sidebar --*/
 .sidebar { position: absolute; top: 36px; right: -240px; padding-top: 0; }
 ul.widget-handles li { position: relative; padding: 7px 25px 7px 35px !important; cursor: move; cursor: -webkit-grab; }

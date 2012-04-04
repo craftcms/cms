@@ -149,7 +149,6 @@ var Dashboard = b.Base.extend({
 
 					// put it back where it was
 					widget.$elem.css({
-						position: 'relative',
 						top: widgetOffsets[i].top - settledOffset.top,
 						left: widgetOffsets[i].left - settledOffset.left,
 						width: widgetOffsets[i].width
@@ -167,7 +166,7 @@ var Dashboard = b.Base.extend({
 	{
 		for (var i in this.widgets)
 		{
-			this.widgets[i].$elem.css({position: 'static', width: 'auto'});
+			this.widgets[i].$elem.css({top: 0, left: 0, width: 'auto'});
 		}
 	},
 
