@@ -135,3 +135,19 @@ $blocksConfig['phpPass-iterationCount'] = 8;
  * Controls whether to use the minified and merged JavaScript in the resources/scripts/uncompressed or the resources/scripts/compressed directory.
  */
 $blocksConfig['useCompressedJs'] = true;
+
+/**
+ * Error Path Keys
+ * 'errorPath'      => blocks.app.templates.errors.error
+ * 'error400Path'   => blocks.app.templates.errors.error400
+ * 'error403Path'   => blocks.app.templates.errors.error403
+ * 'error404Path'   => blocks.app.templates.errors.error404
+ * 'error500Path'   => blocks.app.templates.errors.error500
+ * 'error503Path'   => blocks.app.templates.errors.error503
+ * 'exceptionPath'  => blocks.app.templates.errors.errorPath
+ */
+
+/**
+ * Offline Path Key
+ * 'offlinePath'    => blocks.app.templates._offline
+ */

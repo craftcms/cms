@@ -29,8 +29,13 @@ class TemplateController extends Controller
 	 */
 	public function actionOffline()
 	{
+		if (($path = b()->config->offlinePath) !== null)
+			$templateName = pathinfo($path, PATHINFO_FILENAME);
+		else
+			$templateName = '_offline';
+
 		b()->setViewPath(b()->path->offlineTemplatePath);
-		$this->loadTemplate('_offline', array(), false);
+		$this->loadTemplate($templateName, array(), false);
 		b()->setViewPath(null);
 	}
 }
