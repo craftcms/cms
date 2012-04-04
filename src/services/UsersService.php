@@ -40,14 +40,6 @@ class UsersService extends Component
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getForgotPasswordUrl()
-	{
-		return 'forgot';
-	}
-
-	/**
 	 * @param $siteId
 	 * @return array
 	 */

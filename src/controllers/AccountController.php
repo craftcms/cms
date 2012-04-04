@@ -53,24 +53,19 @@ class AccountController extends Controller
 	public function actionForgot()
 	{
 		$this->requirePostRequest();
+		$this->requireAjaxRequest();
 
 		$forgotPasswordInfo = new ForgotPasswordForm();
-		$forgotPasswordInfo->loginName = b()->request->getPost('loginName');
+		$forgotPasswordInfo->loginName = b()->request->getPost('username');
 
 		if ($forgotPasswordInfo->validate())
 		{
 			$user = b()->users->getByLoginName($forgotPasswordInfo->loginName);
-
-			if ($user == null)
-				$forgotPasswordInfo->addError('loginName', 'Invalid username or email.');
-			else
-			{
-				if (b()->users->forgotPassword($user))
-					$this->redirect(b()->users->forgotPasswordUrl.'?success=1');
-			}
+			if ($user)
+				$this->returnJson(array('success' => true));
 		}
 
-		$this->loadTemplate(b()->users->forgotPasswordUrl, array('forgotPassword' => $forgotPasswordInfo));
+		$this->returnErrorJson('Invalid username or email.');
 	}
 
 	/**

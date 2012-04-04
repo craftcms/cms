@@ -23,10 +23,12 @@
 								'<label for="username">Username or Email</label>' +
 								'<div class="input-wrapper"><input id="username" type="text" value="{:user.rememeberedLoginName}" /></div>' +
 							'</div>' +
-							'<div class="pane-item field">' +
-								'<label for="password">Password</label>' +
-								' <a id="forgot-password" href="{:url.base}{:users.forgotPasswordUrl}">(Forget?)</a>' +
-								'<div class="input-wrapper password"><input id="password" class="password" type="password" /></div>' +
+							'<div id="password-container" class="nested-pane-items">' +
+								'<div class="pane-item field">' +
+									'<label for="password">Password</label>' +
+									' <a id="forgot-password">(Forget?)</a>' +
+									'<div class="input-wrapper password"><input id="password" class="password" type="password" /></div>' +
+								'</div>' +
 							'</div>' +
 						'</div>' +
 					'</div>' +

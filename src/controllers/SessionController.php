@@ -36,7 +36,7 @@ class SessionController extends Controller
 			{
 				$r = array(
 					'success' => true,
-					'redirectUrl' => b()->users->forgotPasswordUrl.'?success=1'
+					'redirectUrl' => 'passwordresetrequired'
 				);
 			}
 			else
