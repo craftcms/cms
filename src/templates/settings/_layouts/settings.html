@@ -8,7 +8,7 @@
 {region "sidebar"}
 	<h5>System Settings</h5>
 	<ul>
-		<li><a id="sb-updates" class="has-badge {if url.segment(2) == 'updates'}sel{/if}" href="{:url.base}settings/updates"><span class="icon icon15"></span>Updates{if updates.isUpdateInfoCached && updates.updates.length}<span class="badge {if updates.isCriticalUpdateAvailable}warning{/if}">{:updates.updates.length}</span>{/if}</a></li>
+		<li><a id="sb-updates" class="has-badge {if url.segment(2) == 'updates'}sel{/if}" href="{:url.base}settings/updates"><span class="icon icon15"></span>Updates{if updates.isUpdateInfoCached && updates.allAvailableUpdates.length}<span class="badge {if updates.isCriticalUpdateAvailable}warning{/if}">{:updates.allAvailableUpdates.length}</span>{/if}</a></li>
 		<li><a {if url.segment(2) == 'sites'}class="sel"{/if} href="{:url.base}settings/sites"><span class="icon icon100"></span>Sites</a></li>
 		{!--<li><a {if url.segment(2) == 'user_groups'}class="sel"{/if} href=""><span class="icon icon244"></span>User Groups</a></li>--}
 		<li><a id="sb-email" {if url.segment(2) == 'email'}class="sel"{/if} href="{:url.base}settings/email"><span class="icon icon76"></span>Email</a></li>

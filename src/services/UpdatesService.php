@@ -12,7 +12,7 @@ class UpdatesService extends Component
 	 * @param $forceRefresh
 	 * @return mixed
 	 */
-	public function updates($forceRefresh = false)
+	public function getAllAvailableUpdates($forceRefresh = false)
 	{
 		$updates = array();
 

@@ -1,4 +1,4 @@
-{if updates.updates('y')}
+{if updates.allAvailableUpdates('y')}
 
 	{if !updates.updateInfo.blocks.manualUpdateRequired}
 		<form method="post" action="{:url.base}update/all">
@@ -12,7 +12,7 @@
 		<div class="pane-body">
 			<table>
 				<tbody>
-					{foreach updates.updates('y') as update}
+					{foreach updates.allAvailableUpdates('y') as update}
 					<tr id="{:update.handle}">
 						<td class="pane-item">
 							<strong>{:update.name}</strong> {:update.version}
