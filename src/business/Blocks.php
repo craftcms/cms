@@ -120,18 +120,9 @@ class Blocks extends \Yii
 
 		if ($storedBlocksInfo)
 		{
-			// save the current state of the system for possible use later in the request.
-			self::$_isSystemOn = self::isSystemOn();
-
-			// if it's not on, don't even bother.
-			if (self::$_isSystemOn)
-			{
-				$storedBlocksInfo->on = false;
-				if (!$storedBlocksInfo->save())
-					return false;
-			}
-
-			return true;
+			$storedBlocksInfo->on = false;
+			if ($storedBlocksInfo->save())
+				return true;
 		}
 
 		return false;
