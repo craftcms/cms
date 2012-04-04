@@ -352,7 +352,6 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!$this->isSecureConnection)
 		{
-
 			// Redirect to the secure version of the page.
 			$url = 'https://'.$this->serverName.$this->requestUri;
 			$this->redirect($url);
