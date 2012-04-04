@@ -30,6 +30,7 @@ class SitesService extends Component
 	 * Saves a site.
 	 * @param array $siteSettings
 	 * @param int   $siteId The site ID, if saving an existing site.
+	 * @return Site
 	 */
 	public function saveSite($siteSettings, $siteId)
 	{
