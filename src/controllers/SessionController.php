@@ -34,10 +34,7 @@ class SessionController extends Controller
 			// they are not logged in, but they need to reset their password.
 			if ($loginInfo->identity->errorCode === UserIdentity::ERROR_PASSWORD_RESET_REQUIRED)
 			{
-				$r = array(
-					'success' => true,
-					'redirectUrl' => 'passwordresetrequired'
-				);
+				$r = array('error' => 'You need to reset your password. Check your email for instructions.');
 			}
 			else
 			{
