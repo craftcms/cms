@@ -87,7 +87,7 @@ class SetupController extends Controller
 				$host = $_SERVER['HTTP_HOST'];
 
 				// Guess the site name based on the host name
-				$hostWords = preg_split('/\W+/', $host);
+				$hostWords = preg_split('/[^a-zA-Z]+/', $host);
 				array_pop($hostWords);
 				$site->name = implode(' ', array_map('ucfirst', $hostWords));
 
