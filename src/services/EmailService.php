@@ -166,9 +166,6 @@ class EmailService extends Component
 	{
 		$email->isSmtp();
 
-		if (b()->config->devMode)
-			$email->smtpDebug = 2;
-
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
 		{
 			$email->smtpAuth = true;

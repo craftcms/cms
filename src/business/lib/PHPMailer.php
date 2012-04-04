@@ -853,7 +853,7 @@ class PhpMailer
 	 */
 	protected function smtpSend($header, $body)
 	{
-		require_once $this->pluginDir . 'SMTP.php';
+		require_once $this->pluginDir . 'Smtp.php';
 		$badRcpt = array();
 
 		if (!$this->smtpConnect())
