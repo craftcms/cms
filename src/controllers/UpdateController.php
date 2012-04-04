@@ -7,7 +7,7 @@ namespace Blocks;
 class UpdateController extends Controller
 {
 	/**
-	 * All update actions require the user to be logged in
+	 * All update actions require the user to be logged in.
 	 */
 	public function init()
 	{
@@ -24,11 +24,8 @@ class UpdateController extends Controller
 
 		$return = array();
 		$updateInfo = b()->updates->updateInfo;
-		if ($updateInfo == null)
-		{
-			$r = array('error' => 'There was a problem getting the latest update information.', 'fatal' => true);
-			$this->returnJson($r);
-		}
+		if (!$updateInfo)
+			$this->returnErrorJson('There was a problem getting the latest update information.');
 
 		switch ($h)
 		{
@@ -59,21 +56,15 @@ class UpdateController extends Controller
 			// We assume it's a plugin handle.
 			default:
 			{
-				if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
+				if (!empty($updateInfo->plugins))
 				{
 					if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
 						$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
 					else
-					{
-						$r = array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true);
-						$this->returnJson($r);
-					}
+						$this->returnErrorJson("Could not find any update information for the plugin with handle “{$h)”.");
 				}
 				else
-				{
-					$r = array('error' => 'Could not find any update information for the plugin with handle: '.$h.'.', 'fatal' => true);
-					$this->returnJson($r);
-				}
+					$this->returnErrorJson("Could not find any update information for the plugin with handle “{$h}”.");
 			}
 		}
 
@@ -96,34 +87,17 @@ class UpdateController extends Controller
 		{
 			case 'Blocks':
 			{
-				try
-				{
-					if (b()->updates->doCoreUpdate())
-						$r = array('success' => true);
-				}
-				catch (Exception $ex)
-				{
-					$r = array('error' => $ex->getMessage(), 'fatal' => true);
-				}
-
+				b()->updates->doCoreUpdate();
 				break;
 			}
 
 			// Plugin handle
 			default:
 			{
-				try
-				{
-					if (b()->updates->doPluginUpdate($h))
-						$r = array('success' => true);
-				}
-				catch (Exception $ex)
-				{
-					$r = array('error' => $ex->getMessage(), 'fatal' => false);
-				}
+				b()->updates->doPluginUpdate($h);
 			}
 		}
 
-		$this->returnJson($r);
+		$this->returnJson(array('success' => true));
 	}
 }
