@@ -15,7 +15,10 @@ class App extends \CWebApplication
 	 */
 	public function init()
 	{
-		// in case of an error, import everything we need
+		// Set default timezone to UTC
+		date_default_timezone_set('UTC');
+
+		// In case of an error, import everything we need.
 		Blocks::import('business.exceptions.HttpException');
 		Blocks::import('business.db.DbCommand');
 		Blocks::import('business.db.DbConnection');
