@@ -79,6 +79,12 @@ function updateNext()
 		if (updating == totalUpdates-1)
 		{
 			showSuccess('All done!');
+
+			// Redirect to the Dashboard in half a second
+			setTimeout(function() {
+				window.location = b.baseUrl+'dashboard';
+			}, 500);
+
 			return;
 		}
 
