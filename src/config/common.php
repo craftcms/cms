@@ -13,19 +13,6 @@ if ($blocksConfig['devMode'] == true)
 	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
 }
 
-/**
- * @param $dbHostname
- * @return string
- */
-function normalizeDbHostname($dbHostname)
-{
-	// *nix command line db connections want this in numeric format.
-	if (strcasecmp($dbHostname, 'localhost') == 0)
-		$dbHostname = '127.0.0.1';
-
-	return $dbHostname;
-}
-
 return array(
 
 	// autoloading model and component classes
@@ -38,7 +25,7 @@ return array(
 	'components' => array(
 
 		'db' => array(
-			'connectionString'  => strtolower('mysql:host='.normalizeDbHostname($dbConfig['server']).';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
+			'connectionString'  => strtolower('mysql:host='.$dbConfig['server'].';dbname='.$dbConfig['database'].';port='.$dbConfig['port'].';'),
 			'emulatePrepare'    => true,
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],
