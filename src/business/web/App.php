@@ -15,9 +15,6 @@ class App extends \CWebApplication
 	 */
 	public function init()
 	{
-		// If this is a resource request, we should respond with the resource ASAP
-		$this->_processResourceRequest();
-
 		// in case of an error, import everything we need
 		Blocks::import('business.exceptions.HttpException');
 		Blocks::import('business.db.DbCommand');
@@ -25,6 +22,9 @@ class App extends \CWebApplication
 		Blocks::import('business.db.MysqlSchema');
 		Blocks::import('business.web.ErrorHandler');
 		Blocks::import('business.web.templating.TemplateRenderer');
+
+		// If this is a resource request, we should respond with the resource ASAP
+		$this->_processResourceRequest();
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
 		Blocks::import('business.logging.WebLogRoute');
