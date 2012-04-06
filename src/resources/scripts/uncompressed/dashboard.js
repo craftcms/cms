@@ -26,6 +26,7 @@ var Dashboard = b.Base.extend({
 			if (elem)
 			{
 				this.widgets[widgetId] = new Widget(elem);
+				this.widgets[widgetId].$elem.css('zIndex', i+1);
 				this.totalWidgets++;
 			}
 		}
@@ -252,6 +253,15 @@ var Dashboard = b.Base.extend({
 		// update $widgetHandles
 		this.getWidgetHandles();
 
+		// Update the z-index's
+		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
+		{
+			// add it to the shortest column
+			var widget = this.getWidget(i);
+			if (widget)
+				widget.elem.css('zIndex', i+1);
+		}
+
 		var widget = this.getWidget(this.widgetSort.draggeeIndex);
 		if (widget)
 		{
@@ -375,8 +385,6 @@ var Widget = b.Base.extend({
 		this.elem = elem;
 		this.$elem = $(elem);
 		this.id = this.$elem.attr('id');
-
-		this.$elem.css('zIndex', i+1);
 
 		this.dom = {};
 		this.dom.$settingsBtn = $('.pane-head .settings-btn', this.$elem);
