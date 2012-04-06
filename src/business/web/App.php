@@ -25,12 +25,23 @@ class App extends \CWebApplication
 		Blocks::import('business.db.MysqlSchema');
 		Blocks::import('business.web.ErrorHandler');
 		Blocks::import('business.web.templating.TemplateRenderer');
-		Blocks::import('business.web.HttpRequest');
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
 		Blocks::import('business.logging.WebLogRoute');
 		Blocks::import('business.logging.ProfileLogRoute');
 		b()->getComponent('log');
+
+		// Manually load the request object as early as possible.
+		Blocks::import('business.Component');
+		Blocks::import('business.Plugin');
+		Blocks::import('business.enums.UrlFormat');
+		Blocks::import('business.enums.RequestMode');
+		Blocks::import('business.utils.HtmlHelper');
+		Blocks::import('business.utils.UrlHelper');
+		Blocks::import('business.web.HttpRequest');
+		Blocks::import('business.web.UrlManager');
+		Blocks::import('services.ConfigService');
+		b()->getComponent('request');
 
 		parent::init();
 	}
@@ -188,17 +199,6 @@ class App extends \CWebApplication
 	 */
 	private function _processResourceRequest()
 	{
-		// Import the bare minimum to determine if what type of request this is
-		Blocks::import('business.Component');
-		Blocks::import('business.Plugin');
-		Blocks::import('business.enums.UrlFormat');
-		Blocks::import('business.enums.RequestMode');
-		Blocks::import('business.utils.HtmlHelper');
-		Blocks::import('business.utils.UrlHelper');
-		Blocks::import('business.web.HttpRequest');
-		Blocks::import('business.web.UrlManager');
-		Blocks::import('services.ConfigService');
-
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
