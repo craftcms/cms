@@ -25,9 +25,7 @@ class App extends \CWebApplication
 		Blocks::import('business.db.MysqlSchema');
 		Blocks::import('business.web.ErrorHandler');
 		Blocks::import('business.web.templating.TemplateRenderer');
-
-		// If this is a resource request, we should respond with the resource ASAP
-		$this->_processResourceRequest();
+		Blocks::import('business.web.HttpRequest');
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
 		Blocks::import('business.logging.WebLogRoute');
@@ -83,6 +81,9 @@ class App extends \CWebApplication
 	 */
 	public function processRequest()
 	{
+		// If this is a resource request, we should respond with the resource ASAP
+		$this->_processResourceRequest();
+
 		// Import the majority of Blocks' classes
 		$this->_importClasses();
 
