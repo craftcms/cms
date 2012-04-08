@@ -1,7 +1,7 @@
-<div class="input-wrapper">
+<div class="textwrapper">
 	{if block.settings.multiline}
-		<textarea id="{:block.handle}-block" name="{:block.handle}" class="nicetext" data-hint="{:block.settings.hint}" rows="4">{:block.data}</textarea>
+		<textarea id="{:block.handle}-block" name="{:block.handle}" class="text nicetext" data-hint="{:block.settings.hint}" rows="4">{:block.data}</textarea>
 	{else}
-		<input id="{:block.handle}-block" name="{:block.handle}" class="nicetext" data-hint="{:block.settings.hint}" type="text" value="{:block.content}" />
+		<input id="{:block.handle}-block" name="{:block.handle}" class="text nicetext" data-hint="{:block.settings.hint}" type="text" value="{:block.content}" />
 	{/if}
 </div>
