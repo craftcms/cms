@@ -410,42 +410,30 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .pane-item.field,
 .pane-item.grid .field { margin-top: 0; margin-bottom: 0; padding-top: 16px; padding-bottom: 16px; }
 
-/* inputs */
-.input-wrapper { padding-right: 18px; }
+/* text */
+.textwrapper { padding-right: 18px; }
+.textwrapper > .text { width: 100%; }
 
-.input-wrapper > input,
-.input-wrapper > textarea,
-.input { display: block; border: 1px solid #ccc; border-radius: 2px; padding: 8px; font-size: 13px; color: #555; background: #fff; -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1); }
-.input-wrapper > .small,
-.input.small { padding: 3px; }
-.input-wrapper > input.error,
-.input-wrapper > textarea.error,
-.input.error { border-color: #8a1f11; }
+.text { display: block; border: 1px solid #d5d5d5; border-radius: 2px; padding: 8px; font-size: 13px; color: #555; background: #fff; -webkit-box-shadow: 0 1px 0 #fff; }
+.text:focus { border-color: #ccc; outline: none; background: #fcfcfc; -webkit-box-shadow: 0 1px 0 #fff, inset 0 1px 1px rgba(0,0,0,0.1); }
+.text.small { padding: 3px; }
+.text.error { border-color: #8a1f11; }
 
-.input-wrapper > input,
-.input-wrapper > textarea { width: 100%; }
+.texthint-container { position: relative; height: 0; }
+.texthint { position: absolute; top: -1px; width: 100%; color: #bbb; }
 
-.input-wrapper > input:focus,
-.input-wrapper > textarea:focus,
-.input:focus { outline: none; background: -webkit-linear-gradient(#fafafa, #fdfdfd); }
+.passwordwrapper { position: relative; padding-right: 80px; }
+.passwordwrapper .password { width: 100%; }
+.passwordwrapper .password-toggle { display: block; position: absolute; top: 8px; right: 0; width: 44px; text-align: center; }
+.password { padding-right: 70px; }
+.password.capslock:focus { background: url(../images/capslock.png) no-repeat 100% 50%, -webkit-linear-gradient(#fafafa, #fdfdfd); }
 
-
-.nicetext,
-.nicetext-hint { font-size: 14px; }
-.nicetext { position: relative; border: none; padding: 0; width: 100%; color: #444; background: transparent; outline: none; }
-.nicetext-hint-container { position: relative; height: 0; }
-.nicetext-hint { position: absolute; top: -1px; width: 100%; color: #bbb; }
-
-label.checkbox { font-weight: normal; }
-
-.input-wrapper.password { position: relative; padding-right: 80px; }
-input.password { padding-right:70px; }
-input.password.capslock:focus { background: url(../images/capslock.png) no-repeat 100% 50%, -webkit-linear-gradient(#fafafa, #fdfdfd); }
-.input-wrapper .password-toggle { display: block; position: absolute; top: 8px; right: 0; width: 44px; text-align: center; }
-
+/* errors */
 .error:not(.sel),
 ul.errors li { color: #8a1f11 !important; }
 ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
+
+label.checkbox { font-weight: normal; }
 
 /* RTE */
 .rte { padding: 0; }
