@@ -415,7 +415,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .input-wrapper > input,
 .input-wrapper > textarea,
-.input { display: block; border: 1px solid #ccc; border-radius: 2px; padding: 8px; font-size: 13px; color: #555; background: #fff; -webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,0.1); }
+.input { display: block; border: 1px solid #d5d5d5; border-radius: 2px; padding: 8px; font-size: 13px; color: #555; background: #fff; -webkit-box-shadow: 0 1px 0 #fff; }
 .input-wrapper > .small,
 .input.small { padding: 3px; }
 .input-wrapper > input.error,
@@ -427,14 +427,11 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .input-wrapper > input:focus,
 .input-wrapper > textarea:focus,
-.input:focus { outline: none; background: -webkit-linear-gradient(#fafafa, #fdfdfd); }
+.input:focus { border-color: #ccc; outline: none; background: #fcfcfc; -webkit-box-shadow: 0 1px 0 #fff, inset 0 1px 1px rgba(0,0,0,0.1); }
 
-
-.nicetext,
-.nicetext-hint { font-size: 14px; }
-.nicetext { position: relative; border: none; padding: 0; width: 100%; color: #444; background: transparent; outline: none; }
-.nicetext-hint-container { position: relative; height: 0; }
-.nicetext-hint { position: absolute; top: -1px; width: 100%; color: #bbb; }
+/* text hints */
+.texthint-container { position: relative; height: 0; }
+.texthint { position: absolute; top: -1px; width: 100%; color: #bbb; }
 
 label.checkbox { font-weight: normal; }
 
