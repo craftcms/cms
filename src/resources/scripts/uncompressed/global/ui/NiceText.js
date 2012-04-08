@@ -41,7 +41,7 @@ b.ui.NiceText = b.Base.extend({
 
 		if (this.settings.hint)
 		{
-			this.$hint = $('<div class="nicetext-hint-container"><div class="nicetext-hint">'+this.settings.hint+'</div></div>');
+			this.$hint = $('<div class="texthint-container"><div class="texthint">'+this.settings.hint+'</div></div>');
 			this.$hint.insertBefore(this.$input);
 			this.$hint.css({
 				top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
