@@ -7,7 +7,6 @@ namespace Blocks;
 class Widget extends Model
 {
 	// Model properties
-
 	protected $tableName = 'widgets';
 	protected $settingsTableName = 'widgetsettings';
 	protected $foreignKeyName = 'widget_id';
@@ -21,11 +20,10 @@ class Widget extends Model
 
 	protected $belongsTo = array(
 		'user'   => array('model' => 'User', 'required' => true),
-		//'plugin' => array('model' => 'Plugin')
+		'plugin' => array('model' => 'Plugin')
 	);
 
 	// Widget subclass properties
-
 	public $widgetName;
 	public $title = '';
 
