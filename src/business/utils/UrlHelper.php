@@ -49,6 +49,10 @@ class UrlHelper
 	 */
 	public static function generateUrl($path = '', $params = null, $protocol = '')
 	{
+		// Return $path if it appears to be an absolute URL.
+		if (strpos($path, '://') !== false)
+			return $path;
+
 		$origPath = $path;
 		$pathVar = b()->config->pathVar;
 
