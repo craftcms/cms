@@ -40,23 +40,6 @@ class UsersService extends Component
 	}
 
 	/**
-	 * @param $siteId
-	 * @return array
-	 */
-	public function getAllUsersBySiteId($siteId)
-	{
-		$users = b()->db->createCommand()
-			->select('u.*')
-			->from('users g')
-			->join('usergroups ug', 'u.id = ug.users_id')
-			->join('sites s', 'ug.site_id = s.id')
-			->where('s.id=:siteId', array(':siteId' => $siteId))
-			->queryAll();
-
-		return $users;
-	}
-
-	/**
 	 * @param $userId
 	 * @return mixed
 	 */

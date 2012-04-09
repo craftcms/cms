@@ -37,8 +37,10 @@ class SitesService extends Component
 		if ($siteId)
 		{
 			$site = Site::model()->with('sections')->findById($siteId);
+
 			if (!$site)
 				throw new Exception('No site exists with the ID '.$siteId);
+
 			$isNewSite = false;
 			$oldSiteHandle = $site->handle;
 		}
@@ -46,6 +48,7 @@ class SitesService extends Component
 		{
 			$site = new Site;
 			$isNewSite = true;
+			$oldSiteHandle = null;
 		}
 
 		$site->name     = (isset($siteSettings['name']) ? $siteSettings['name'] : null);
@@ -60,7 +63,7 @@ class SitesService extends Component
 			try
 			{
 				// Did the site handle change?
-				$siteHandleChanged = (!$isNewSite && $site->handle != $oldSiteHandle);
+				$siteHandleChanged = (!$isNewSite && $site->handle !== $oldSiteHandle);
 				if ($siteHandleChanged)
 				{
 					// Remember the old section table names
