@@ -40,7 +40,7 @@
 							<div class="col"><div class="col-inner">
 								<div class="field">
 									<label for="first_name">First Name</label>
-									<div class="input-wrapper"><input id="first_name" name="first_name" class="{if theUser.errors.first_name}error{/if}" type="text" value="{:theUser.first_name}" /></div>
+									<div class="textwrapper"><input id="first_name" name="text first_name" class="{if theUser.errors.first_name}error{/if}" type="text" value="{:theUser.first_name}" /></div>
 									{if theUser.errors.first_name}
 										{include "_includes/error_list" errors=theUser.errors.first_name}
 									{/if}
@@ -49,7 +49,7 @@
 							<div class="col"><div class="col-inner">
 								<div class="field">
 									<label for="last_name">Last Name</label>
-									<div class="input-wrapper"><input id="last_name" name="last_name" class="{if theUser.errors.last_name}error{/if}" type="text" value="{:theUser.last_name}" /></div>
+									<div class="textwrapper"><input id="last_name" name="text last_name" class="{if theUser.errors.last_name}error{/if}" type="text" value="{:theUser.last_name}" /></div>
 									{if theUser.errors.last_name}
 										{include "_includes/error_list" errors=theUser.errors.last_name}
 									{/if}
@@ -59,7 +59,7 @@
 
 						<div class="pane-item field">
 							<label for="username">Username</label>
-							<div class="input-wrapper"><input id="username" name="username" class="{if theUser.errors.username}error{/if}" type="text" value="{:theUser.username}" /></div>
+							<div class="textwrapper"><input id="username" name="username" class="text {if theUser.errors.username}error{/if}" type="text" value="{:theUser.username}" /></div>
 							{if theUser.errors.username}
 								{include "_includes/error_list" errors=theUser.errors.username}
 							{/if}
@@ -67,7 +67,7 @@
 
 						<div class="pane-item field">
 							<label for="email">Email</label>
-							<div class="input-wrapper"><input id="email" name="email" class="{if theUser.errors.email}error{/if}" type="text" value="{:theUser.email}" /></div>
+							<div class="textwrapper"><input id="email" name="email" class="text {if theUser.errors.email}error{/if}" type="text" value="{:theUser.email}" /></div>
 							{if theUser.errors.email}
 								{include "_includes/error_list" errors=theUser.errors.email}
 							{/if}

@@ -41,8 +41,8 @@ var Content = b.Base.extend({
 	{
 		var $addLink = $(event.currentTarget),
 			$li = $('<li/>').insertBefore($addLink.parent()),
-			$inputWrapper = $('<div class="input-wrapper"/>').appendTo($li),
-			$input = $('<input class="small" type="text" />').appendTo($inputWrapper);
+			$inputWrapper = $('<div class="textwrapper"/>').appendTo($li),
+			$input = $('<input class="text small" type="text" />').appendTo($inputWrapper);
 
 		$addLink.hide();
 

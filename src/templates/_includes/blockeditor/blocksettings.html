@@ -1,7 +1,7 @@
 <div class="blocksettings">
 	<div class="pane-item field">
 		<label for="{:idPrefix}name">Block Name</label>
-		<div class="input-wrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="name {if block.errors.name}error{/if}" type="text" maxlength="100%" value="{:block.name}" /></div>
+		<div class="textwrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="text name {if block.errors.name}error{/if}" type="text" maxlength="100%" value="{:block.name}" /></div>
 		{if block.errors.name}
 			{include "_includes/error_list" errors=block.errors.name}
 		{/if}
@@ -10,7 +10,7 @@
 	<div class="pane-item field">
 		<label for="{:idPrefix}handle">Block Handle</label>
 		<p>This is how you’ll refer to your block in the templates.</p>
-		<div class="input-wrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="handle code {if block.errors.name}error{/if}" type="text" maxlength="100" value="{:block.handle}" /></div>
+		<div class="textwrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="text handle code {if block.errors.name}error{/if}" type="text" maxlength="100" value="{:block.handle}" /></div>
 		{if block.errors.handle}
 			{include "_includes/error_list" errors=block.errors.handle}
 		{/if}
@@ -18,7 +18,7 @@
 
 	<div class="pane-item field">
 		<label for="{:idPrefix}instructions">Instructions</label>
-		<div class="input-wrapper"><textarea id="{:idPrefix}instructions" name="{:namePrefix}[instructions]" class="instructions" rows="2" cols="100">{:block.instructions}</textarea></div>
+		<div class="textwrapper"><textarea id="{:idPrefix}instructions" name="{:namePrefix}[instructions]" class="text instructions" rows="2" cols="100">{:block.instructions}</textarea></div>
 	</div>
 
 	<div class="pane-item field">
