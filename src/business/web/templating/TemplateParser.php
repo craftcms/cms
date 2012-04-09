@@ -454,7 +454,7 @@ class TemplateParser
 	protected function parseRedirectTag($body)
 	{
 		$this->parseVariables($body, true);
-		return "<?php b()->request->redirect(UrlHelper::generateUrl({$body})); ?>";
+		return "<?php b()->request->redirect(UrlHelper::generateUrl({$body}), true, 301); ?>";
 	}
 
 	/**

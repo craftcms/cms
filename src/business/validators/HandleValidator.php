@@ -7,7 +7,7 @@ namespace Blocks;
 class HandleValidator extends \CValidator
 {
 	public $reservedWords = array();
-	protected static $baseReservedWords = array('this', 'true', 'false');
+	protected static $baseReservedWords = array('this', 'true', 'false', 'y', 'n', 'yes', 'no');
 
 
 	/**
