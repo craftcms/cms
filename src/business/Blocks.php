@@ -83,6 +83,29 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
+	 * @param bool $checkStoredBuild If true, will check the db for the release date if we can't get it locally.
+	 * @return string
+	 */
+	public static function getReleaseDate($checkStoredBuild = true)
+	{
+		if (strpos(BLOCKS_RELEASE_DATE, '@@@') !== false && $checkStoredBuild)
+			return self::getStoredReleaseDate();
+		else
+			return BLOCKS_RELEASE_DATE;
+	}
+
+	/**
+	 * @static
+	 * @return null
+	 */
+	public static function getStoredReleaseDate()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->release_date : null;
+	}
+
+	/**
+	 * @static
 	 * @return bool
 	 */
 	public static function isSystemOn()
