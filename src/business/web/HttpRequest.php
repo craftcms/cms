@@ -39,7 +39,7 @@ class HttpRequest extends \CHttpRequest
 				if ($this->queryStringPath)
 				{
 					$params = isset($_GET) ? $_GET : array();
-					$pathVar = b()->config->pathVar;
+					$pathVar = b()->urlManager->routeVar;
 					unset($params[$pathVar]);
 					$url = UrlHelper::generateUrl($this->queryStringPath, $params);
 					$this->redirect($url);
@@ -85,7 +85,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = b()->config->pathVar;
+			$pathVar = b()->urlManager->routeVar;
 			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 

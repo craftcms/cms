@@ -52,11 +52,6 @@ $blocksConfig['devCacheTimeSeconds'] = 5;
 $blocksConfig['urlFormat'] = 'auto';
 
 /**
- * The variable to use when specifying paths in the query string (see 'urlFormat')
- */
-$blocksConfig['pathVar'] = 'p';
-
-/**
  * The time a user stays logged in by default.  If set to 0, the session will expire when the browser is closed.
  * Valid units of time are:
  * m = minute(s)
