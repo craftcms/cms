@@ -120,12 +120,13 @@ class Blocks extends \Yii
 	 */
 	public static function turnSystemOn()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
+		$blocksInfo = Info::model()->find();
 
-		if ($storedBlocksInfo)
+		if ($blocksInfo)
 		{
-			$storedBlocksInfo->on = true;
-			if ($storedBlocksInfo->save())
+			$blocksInfo->on = true;
+			if ($blocksInfo->save())
 				return true;
 		}
 
@@ -138,12 +139,13 @@ class Blocks extends \Yii
 	 */
 	public static function turnSystemOff()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
+		$blocksInfo = Info::model()->find();
 
-		if ($storedBlocksInfo)
+		if ($blocksInfo)
 		{
-			$storedBlocksInfo->on = false;
-			if ($storedBlocksInfo->save())
+			$blocksInfo->on = false;
+			if ($blocksInfo->save())
 				return true;
 		}
 
