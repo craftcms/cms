@@ -11,6 +11,12 @@ class m120410_213619_add_release_date_column_to_info extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$this->addColumn('info', 'release_date', array(AttributeType::Int, 'required' => true));
+		$infoTable = $this->dbConnection->schema->getTable('{{info}}');
+		$releaseDateExists = $infoTable->getColumn('release_date') !== null ? true : false;
+
+		if (!$releaseDateExists)
+		{
+			$this->addColumnAfter('info', 'release_date', array(AttributeType::Int, 'required' => true), 'build');
+		}
 	}
 }

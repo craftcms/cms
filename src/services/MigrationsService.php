@@ -111,6 +111,10 @@ class MigrationsService extends Component
 		return $migrations;
 	}
 
+	/**
+	 * @param $migrationName
+	 * @return bool
+	 */
 	public function create($migrationName)
 	{
 		if (!preg_match('/^\w+$/', $migrationName))
@@ -257,7 +261,8 @@ class MigrationsService extends Component
 			if (preg_match('/^(m(\d{6}_\d{6})_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($applied[$matches[2]]))
 			{
 				$time = strtotime('20'.substr($matches[2], 0, 2).'-'.substr($matches[2], 2, 2).'-'.substr($matches[2], 4, 2).' '.substr($matches[2], 7, 2).':'.substr($matches[2], 9, 2).':'.substr($matches[2], 11, 2));
-				if ($time > Blocks::getReleaseDate())
+				// Check the migration timestamp against the Blocks release date
+				if ($time > Blocks::getStoredReleaseDate())
 					$migrations[] = $matches[1];
 			}
 		}
@@ -267,6 +272,9 @@ class MigrationsService extends Component
 		return $migrations;
 	}
 
+	/**
+	 * @return string
+	 */
 	protected function getTemplate()
 	{
 			return <<<EOD

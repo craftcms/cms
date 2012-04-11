@@ -248,20 +248,6 @@ class UpdatesService extends Component
 	}
 
 	/**
-	 * @param $migrationName
-	 * @return bool
-	 */
-	public function runMigration($migrationName)
-	{
-		Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
-		$response = Migration::run($migrationName);
-		if ($this->_wasMigrationSuccessful($response))
-			return true;
-
-		return false;
-	}
-
-	/**
 	 * @return bool
 	 */
 	public function turnSystemOnAfterUpdate()
