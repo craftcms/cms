@@ -153,9 +153,7 @@ return CMap::mergeArray(
 				'class' => 'CLogRouter',
 				'routes' => array(
 					array(
-						'class'  => 'CFileLogRoute',
-						'levels' => 'error, warning',
-						'filter' => 'CLogFilter',
+						'class'  => 'Blocks\FileLogRoute',
 					),
 					array(
 						'class'         => 'Blocks\WebLogRoute',
