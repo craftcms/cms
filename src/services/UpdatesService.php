@@ -188,13 +188,15 @@ class UpdatesService extends Component
 	/**
 	 * @param $version
 	 * @param $build
+	 * @param $releaseDate
 	 * @return bool
 	 */
-	public function setNewVersionAndBuild($version, $build)
+	public function setNewBlocksInfo($version, $build, $releaseDate)
 	{
 		$info = Info::model()->find();
 		$info->version = $version;
 		$info->build = $build;
+		$info->release_date = $releaseDate;
 
 		if ($info->save())
 			return true;

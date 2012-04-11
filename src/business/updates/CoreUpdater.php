@@ -105,7 +105,7 @@ class CoreUpdater implements IUpdater
 		if (!b()->updates->flushUpdateInfoFromCache())
 			throw new Exception('The update was performed successfully, but there was a problem invalidating the update cache.');
 
-		if (!b()->updates->setNewVersionAndBuild($latestBuild->version, $latestBuild->build))
+		if (!b()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
 			throw new Exception('The update was performed successfully, but there was a problem setting the new version and build number in the database.');
 
 		return true;
