@@ -26,7 +26,7 @@ class DbUpdateController extends Controller
 		b()->updates->turnSystemOffBeforeUpdate();
 
 		// run migrations to top
-		if (b()->updates->runMigrationsToTop())
+		if (b()->migrations->runToTop())
 		{
 			// update db with version info.
 			if (b()->updates->setNewVersionAndBuild(Blocks::getVersion(false), Blocks::getBuild(false)))

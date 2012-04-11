@@ -61,6 +61,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\InstallerService',
 			),
 
+			'migrations' => array(
+				'class' => 'Blocks\MigrationsService',
+			),
+
 			'path' => array(
 				'class' => 'Blocks\PathService',
 			),

@@ -67,6 +67,7 @@ class InstallerService extends Component
 			$info->edition = Blocks::getEdition(false);
 			$info->version = Blocks::getVersion(false);
 			$info->build = Blocks::getBuild(false);
+			$info->release_date = Blocks::getReleaseDate(false);
 			$info->save();
 
 			$transaction->commit();

@@ -7,7 +7,7 @@ namespace Blocks;
 class CoreUpdater implements IUpdater
 {
 	private $_buildsToUpdate;
-	private $_migrationsToRun;
+	private $_migrationsToRun = false;
 	private $_updateInfo;
 	private $_downloadFilePath;
 	private $_tempPackageDir;
@@ -82,7 +82,7 @@ class CoreUpdater implements IUpdater
 		b()->updates->turnSystemOffBeforeUpdate();
 
 		// if there are migrations, run them.
-		if (!empty($this->_migrationsToRun) && $this->_migrationsToRun != null)
+		if ($this->_migrationsToRun === true)
 		{
 			if (!$this->doDatabaseUpdate())
 				throw new Exception('There was a problem updating your database.');
@@ -149,7 +149,8 @@ class CoreUpdater implements IUpdater
 			if (UpdateHelper::isManifestMigrationLine($row[0]) && $row[1] == PatchManifestFileAction::Add)
 			{
 				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
-				$this->_migrationsToRun[] = UpdateHelper::copyMigrationFile($this->_tempPackageDir->realPath.'/'.$row[0]);
+				UpdateHelper::copyMigrationFile($this->_tempPackageDir->realPath.'/'.$row[0]);
+				$this->_migrationsToRun = true;
 			}
 		}
 	}
@@ -159,11 +160,8 @@ class CoreUpdater implements IUpdater
 	 */
 	public function doDatabaseUpdate()
 	{
-		foreach ($this->_migrationsToRun as $migrationName)
-		{
-			if (b()->updates->runMigration($migrationName))
-				return true;
-		}
+		if (b()->migrations->runToTop())
+			return true;
 
 		return false;
 	}
