@@ -149,7 +149,7 @@ class UsersService extends Component
 	 */
 	public function generateActivationCodeForUser(User $user)
 	{
-		$activationCode = b()->db->createCommand()->getUUID();
+		$activationCode = StringHelper::UUID();
 		$user->activationcode = $activationCode;
 		$date = new DateTime;
 		$user->activationcode_issued_date = $date->getTimestamp();

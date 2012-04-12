@@ -147,43 +147,15 @@ class DatabaseHelper
 	}
 
 	/**
-	 * @param $tableName
 	 * @static
+	 * @return array
 	 */
-	public static function createInsertAuditTrigger($tableName)
+	public static function getAuditColumnDefinition()
 	{
-		$dbName = b()->config->getDbItem('database');
-
-		b()->db->createCommand(
-							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.b()->config->getDbItem('tablePrefix').'_auditinfoinsert_'.$tableName.'`
-							 BEFORE INSERT ON `'.$dbName.'`.`{{'.$tableName.'}}`
-							 FOR EACH ROW
-							 SET NEW.date_created = UNIX_TIMESTAMP(),
-								 NEW.date_updated = UNIX_TIMESTAMP(),
-								 NEW.uid = UUID();
-							END;
-							SQL;'
-					)->execute();
-		}
-
-	/**
-	 * @param $tableName
-	 * @static
-	 */
-	public static function createUpdateAuditTrigger($tableName)
-	{
-		$dbName = b()->config->getDbItem('database');
-
-		b()->db->createCommand(
-							'CREATE
-							 TRIGGER `'.$dbName.'`.`'.b()->config->getDbItem('tablePrefix').'_auditinfoupdate_'.$tableName.'`
-							 BEFORE UPDATE ON `'.$dbName.'`.`{{'.$tableName.'}}`
-							 FOR EACH ROW
-							 SET NEW.date_updated = UNIX_TIMESTAMP(),
-								 NEW.date_created = OLD.date_created;
-							 END;
-							 SQL;'
-					)->execute();
+		return array(
+			'date_created' => array('type' => AttributeType::Int, 'required' => true, 'default' => 0),
+			'date_updated' => array('type' => AttributeType::Int, 'required' => true, 'default' => 0),
+			'uid'          => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
+		);
 	}
 }

@@ -36,6 +36,8 @@ abstract class Model extends \CActiveRecord
 	 */
 	function __construct($scenario = 'insert')
 	{
+		$this->attachEventHandler('onBeforeSave', array($this, 'populateAuditAttributes'));
+
 		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
 		if (!b()->isInstalled)
@@ -47,6 +49,7 @@ abstract class Model extends \CActiveRecord
 		else
 		{
 			parent::__construct($scenario);
+			$this->addAuditAttributes();
 			$this->populateAttributeDefaults();
 		}
 	}
@@ -490,6 +493,7 @@ abstract class Model extends \CActiveRecord
 			'order' => 'date_created DESC',
 			'limit' => $limit,
 		));
+
 		return $this;
 	}
 
@@ -504,6 +508,7 @@ abstract class Model extends \CActiveRecord
 			'order' => 'date_modified DESC',
 			'limit' => $limit,
 		));
+
 		return $this;
 	}
 
@@ -568,7 +573,7 @@ abstract class Model extends \CActiveRecord
 	public function save($runValidation = true, $attributes = null)
 	{
 		if ($this->isNewRecord)
-		   return parent::save($runValidation, $attributes);
+			return parent::save($runValidation, $attributes);
 
 		if (!$runValidation || $this->validate())
 		{
@@ -807,6 +812,28 @@ abstract class Model extends \CActiveRecord
 			if (isset($column['default']))
 				$this->_attributes[$attributeName] = $column['default'];
 		}
+	}
+
+	/**
+	 * All models get these audit columns.
+	 */
+	public function addAuditAttributes()
+	{
+		$this->attributes = array_merge(
+			$this->attributes,
+			DatabaseHelper::getAuditColumnDefinition()
+		);
+	}
+
+	public function populateAuditAttributes()
+	{
+		if ($this->isNewRecord)
+		{
+			$this->date_created = DateTimeHelper::currentTime();
+			$this->uid = StringHelper::UUID();
+		}
+
+		$this->date_updated = DateTimeHelper::currentTime();
 	}
 
 	/**

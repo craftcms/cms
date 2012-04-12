@@ -52,17 +52,19 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
+		$columns[] = 'date_updated';
+		$columns[] = 'date_created';
+		$columns[] = 'uid';
+
+		foreach ($vals as &$val)
+		{
+			$val[] = DateTimeHelper::currentTime();
+			$val[] = DateTimeHelper::currentTime();
+			$val[] = StringHelper::UUID();
+		}
+
 		$queryParams = $this->connection->schema->insertAll($this->_addTablePrefix($table), $columns, $vals);
 		return $this->setText($queryParams['query'])->execute($queryParams['params']);
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getUUID()
-	{
-		$result = $this->setText($this->connection->schema->getUUID())->queryRow();
-		return $result['UUID'];
 	}
 
 	/**
@@ -132,6 +134,9 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insert($table, $columns)
 	{
+		$columns['date_created'] = DateTimeHelper::currentTime();
+		$columns['date_updated'] = DateTimeHelper::currentTime();
+		$columns['uid'] = StringHelper::UUID();
 		return parent::insert($this->_addTablePrefix($table), $columns);
 	}
 
@@ -142,8 +147,9 @@ class DbCommand extends \CDbCommand
 	 * @param array $params
 	 * @return int
 	 */
-	public function update($table, $columns, $conditions='', $params=array())
+	public function update($table, $columns, $conditions='', $params = array())
 	{
+		$columns['date_updated'] = DateTimeHelper::currentTime();
 		return parent::update($this->_addTablePrefix($table), $columns, $conditions, $params);
 	}
 
@@ -153,7 +159,7 @@ class DbCommand extends \CDbCommand
 	 * @param array $params
 	 * @return int
 	 */
-	public function delete($table, $conditions='', $params=array())
+	public function delete($table, $conditions='', $params = array())
 	{
 		return parent::delete($this->_addTablePrefix($table), $conditions, $params);
 	}
@@ -173,11 +179,7 @@ class DbCommand extends \CDbCommand
 		$columns = array_merge(
 			array('id' => AttributeType::PK),
 			$columns,
-			array(
-				'date_created' => array('type' => AttributeType::Int, 'required' => true, 'default' => 0),
-				'date_updated' => array('type' => AttributeType::Int, 'required' => true, 'default' => 0),
-				'uid'          => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
-			)
+			DatabaseHelper::getAuditColumnDefinition()
 		);
 
 		foreach ($columns as $col => $settings)
@@ -191,10 +193,6 @@ class DbCommand extends \CDbCommand
 		// Add the language FK
 		if (array_key_exists('language', $columns))
 			$this->addForeignKey("{$table}_languages_fk", $table, 'language', 'languages', 'language');
-
-		// Add the INSERT and UPDATE triggers
-		DatabaseHelper::createInsertAuditTrigger($table);
-		DatabaseHelper::createUpdateAuditTrigger($table);
 
 		return $return;
 	}

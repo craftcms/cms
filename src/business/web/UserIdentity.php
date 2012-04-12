@@ -147,7 +147,7 @@ class UserIdentity extends \CUserIdentity
 		$this->username = $user->username;
 		$this->errorCode = self::ERROR_NONE;
 
-		$authSessionToken = b()->db->createCommand()->getUUID();
+		$authSessionToken = StringHelper::UUID();
 		$user->auth_session_token = $authSessionToken;
 		$user->last_login_date = DateTimeHelper::currentTime();
 		$user->failed_password_attempt_count = null;
@@ -162,7 +162,7 @@ class UserIdentity extends \CUserIdentity
 			foreach ($user->errors as $errorArr)
 				$errorMsg .= implode(' ', $errorArr);
 
-			throw new Exception('There was a problem logging you in:'.$errorMsg);
+			throw new Exception('There was a problem logging you in: '.$errorMsg);
 		}
 
 		$this->setState('authSessionToken', $authSessionToken);
