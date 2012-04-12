@@ -74,7 +74,7 @@ class UpdateHelper
 				}
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			Blocks::log('Error updating files: '.$e->getMessage());
 			UpdateHelper::rollBackFileChanges($manifestData);

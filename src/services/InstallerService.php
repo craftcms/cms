@@ -72,7 +72,7 @@ class InstallerService extends Component
 
 			$transaction->commit();
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$transaction->rollBack();
 			throw $e;

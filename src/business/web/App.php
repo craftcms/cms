@@ -285,7 +285,7 @@ class App extends \CWebApplication
 			if (!$connection)
 				$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
 		}
-		catch(Exception $e)
+		catch (\Exception $e)
 		{
 			$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
 		}

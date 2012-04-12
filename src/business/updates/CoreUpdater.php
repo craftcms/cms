@@ -268,7 +268,7 @@ class CoreUpdater implements IUpdater
 				}
 			}
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			Blocks::log('Error updating files: '.$e->getMessage());
 			UpdateHelper::rollBackFileChanges($manifestData);
