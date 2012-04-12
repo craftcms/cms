@@ -52,15 +52,18 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
-		$columns[] = 'date_updated';
-		$columns[] = 'date_created';
-		$columns[] = 'uid';
-
-		foreach ($vals as &$val)
+		if ($table !== 'languages')
 		{
-			$val[] = DateTimeHelper::currentTime();
-			$val[] = DateTimeHelper::currentTime();
-			$val[] = StringHelper::UUID();
+			$columns[] = 'date_updated';
+			$columns[] = 'date_created';
+			$columns[] = 'uid';
+
+			foreach ($vals as &$val)
+			{
+				$val[] = DateTimeHelper::currentTime();
+				$val[] = DateTimeHelper::currentTime();
+				$val[] = StringHelper::UUID();
+			}
 		}
 
 		$queryParams = $this->connection->schema->insertAll($this->_addTablePrefix($table), $columns, $vals);
@@ -134,9 +137,13 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insert($table, $columns)
 	{
-		$columns['date_created'] = DateTimeHelper::currentTime();
-		$columns['date_updated'] = DateTimeHelper::currentTime();
-		$columns['uid'] = StringHelper::UUID();
+		if ($table !== 'languages')
+		{
+			$columns['date_created'] = DateTimeHelper::currentTime();
+			$columns['date_updated'] = DateTimeHelper::currentTime();
+			$columns['uid'] = StringHelper::UUID();
+		}
+
 		return parent::insert($this->_addTablePrefix($table), $columns);
 	}
 
@@ -149,7 +156,9 @@ class DbCommand extends \CDbCommand
 	 */
 	public function update($table, $columns, $conditions='', $params = array())
 	{
-		$columns['date_updated'] = DateTimeHelper::currentTime();
+		if ($table !== 'languages')
+			$columns['date_updated'] = DateTimeHelper::currentTime();
+
 		return parent::update($this->_addTablePrefix($table), $columns, $conditions, $params);
 	}
 
