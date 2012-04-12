@@ -54,7 +54,7 @@ class UrlHelper
 			return $path;
 
 		$origPath = $path;
-		$pathVar = b()->config->pathVar;
+		$pathVar = b()->urlManager->routeVar;
 
 		$path = self::_normalizePath(trim($path, '/'), $params);
 		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);

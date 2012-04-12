@@ -224,7 +224,7 @@ class TemplateParser
 			{
 				return $this->$func($body);
 			}
-			catch(Exception $e)
+			catch (\Exception $e)
 			{
 				// Tack on the full tag and rethrow
 				$message = $e->getMessage().' “'.$tag.'”';

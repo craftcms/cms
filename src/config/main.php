@@ -61,6 +61,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\InstallerService',
 			),
 
+			'migrations' => array(
+				'class' => 'Blocks\MigrationsService',
+			),
+
 			'path' => array(
 				'class' => 'Blocks\PathService',
 			),
@@ -149,9 +153,7 @@ return CMap::mergeArray(
 				'class' => 'CLogRouter',
 				'routes' => array(
 					array(
-						'class'  => 'CFileLogRoute',
-						'levels' => 'error, warning',
-						'filter' => 'CLogFilter',
+						'class'  => 'Blocks\FileLogRoute',
 					),
 					array(
 						'class'         => 'Blocks\WebLogRoute',

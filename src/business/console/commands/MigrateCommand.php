@@ -65,6 +65,7 @@ EOD;
 
 	/**
 	 * @param $class
+	 * @return void
 	 */
 	protected function migrateDown($class)
 	{
@@ -145,6 +146,9 @@ EOD;
 		return $migration;
 	}
 
+	/**
+	 *
+	 */
 	protected function createMigrationHistoryTable()
 	{
 		$db = $this->getDbConnection();

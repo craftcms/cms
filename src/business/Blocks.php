@@ -83,6 +83,29 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
+	 * @param bool $checkStoredBuild If true, will check the db for the release date if we can't get it locally.
+	 * @return string
+	 */
+	public static function getReleaseDate($checkStoredBuild = true)
+	{
+		if (strpos(BLOCKS_RELEASE_DATE, '@@@') !== false && $checkStoredBuild)
+			return self::getStoredReleaseDate();
+		else
+			return BLOCKS_RELEASE_DATE;
+	}
+
+	/**
+	 * @static
+	 * @return null
+	 */
+	public static function getStoredReleaseDate()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->release_date : null;
+	}
+
+	/**
+	 * @static
 	 * @return bool
 	 */
 	public static function isSystemOn()
@@ -97,12 +120,13 @@ class Blocks extends \Yii
 	 */
 	public static function turnSystemOn()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
+		$blocksInfo = Info::model()->find();
 
-		if ($storedBlocksInfo)
+		if ($blocksInfo)
 		{
-			$storedBlocksInfo->on = true;
-			if ($storedBlocksInfo->save())
+			$blocksInfo->on = true;
+			if ($blocksInfo->save())
 				return true;
 		}
 
@@ -115,12 +139,13 @@ class Blocks extends \Yii
 	 */
 	public static function turnSystemOff()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
+		$blocksInfo = Info::model()->find();
 
-		if ($storedBlocksInfo)
+		if ($blocksInfo)
 		{
-			$storedBlocksInfo->on = false;
-			if ($storedBlocksInfo->save())
+			$blocksInfo->on = false;
+			if ($blocksInfo->save())
 				return true;
 		}
 

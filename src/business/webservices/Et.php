@@ -120,7 +120,7 @@ class Et extends \CApplicationComponent
 				Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, 'warning');
 			}
 		}
-		catch(Exception $e)
+		catch (\Exception $e)
 		{
 			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
 		}

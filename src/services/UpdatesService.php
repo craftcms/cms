@@ -188,13 +188,15 @@ class UpdatesService extends Component
 	/**
 	 * @param $version
 	 * @param $build
+	 * @param $releaseDate
 	 * @return bool
 	 */
-	public function setNewVersionAndBuild($version, $build)
+	public function setNewBlocksInfo($version, $build, $releaseDate)
 	{
 		$info = Info::model()->find();
 		$info->version = $version;
 		$info->build = $build;
+		$info->release_date = $releaseDate;
 
 		if ($info->save())
 			return true;
@@ -249,33 +251,6 @@ class UpdatesService extends Component
 	/**
 	 * @return bool
 	 */
-	public function runMigrationsToTop()
-	{
-		Blocks::log('Running migrations to top.', \CLogger::LEVEL_INFO);
-		$response = Migration::runToTop();
-		if ($this->_wasMigrationSuccessful($response))
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * @param $migrationName
-	 * @return bool
-	 */
-	public function runMigration($migrationName)
-	{
-		Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
-		$response = Migration::run($migrationName);
-		if ($this->_wasMigrationSuccessful($response))
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * @return bool
-	 */
 	public function turnSystemOnAfterUpdate()
 	{
 		// if the system wasn't on before, we're leave it in an off state
@@ -325,17 +300,4 @@ class UpdatesService extends Component
 
 		return $notes;
 	}
-
-	/**
-	 * @param $response
-	 * @return bool
-	 */
-	private function _wasMigrationSuccessful($response)
-	{
-		if (strpos($response, 'Migrated up successfully.') !== false || strpos($response, 'No new migration found.') !== false)
-			return true;
-
-		return false;
-	}
-
 }

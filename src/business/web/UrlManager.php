@@ -13,12 +13,14 @@ class UrlManager extends \CUrlManager
 	public $cpRoutes;
 	public $routeVar;
 
+	const RouteVar = 'p';
+
 	/**
 	 *
 	 */
 	function __construct()
 	{
-		$this->routeVar = b()->config->pathVar;
+		$this->routeVar = self::RouteVar;
 	}
 
 	/**
