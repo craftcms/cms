@@ -62,7 +62,7 @@ abstract class Model extends \CActiveRecord
 		if (!isset($this->_classHandle))
 		{
 			// Chop off the namespace
-			$classHandle = substr(get_class($this), strlen(__NAMESPACE__)+1);
+			$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
 
 			// Chop off the class prefix
 			$prefixLength = strlen($this->classPrefix);
