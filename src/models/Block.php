@@ -55,13 +55,13 @@ class Block extends Model
 		if (empty($this->settingsTemplate))
 			return '';
 
-		$tags = array(
+		$variables = array(
 			'idPrefix'   => $idPrefix,
 			'namePrefix' => $namePrefix,
 			'settings'   => $this->settings
 		);
 
-		$template = b()->controller->loadTemplate($this->settingsTemplate, $tags, true);
+		$template = b()->controller->loadTemplate($this->settingsTemplate, $variables, true);
 		return $template;
 	}
 
@@ -74,11 +74,11 @@ class Block extends Model
 		if (empty($this->fieldTemplate))
 			return '';
 
-		$tags = array(
+		$variables = array(
 			'block' => $this
 		);
 
-		$template = b()->controller->loadTemplate($this->fieldTemplate, $tags, true);
+		$template = b()->controller->loadTemplate($this->fieldTemplate, $variables, true);
 		return $template;
 	}
 

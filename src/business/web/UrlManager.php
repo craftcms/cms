@@ -7,7 +7,7 @@ namespace Blocks;
 class UrlManager extends \CUrlManager
 {
 	private $_templateMatch;
-	private $_templateTags = array();
+	private $_templateVariables = array();
 
 	public $routePatterns;
 	public $cpRoutes;
@@ -69,11 +69,11 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * @return array Any tags that should be passed into the matched template
+	 * @return array Any variables that should be passed into the matched template
 	 */
-	public function getTemplateTags()
+	public function getTemplateVariables()
 	{
-		return $this->_templateTags;
+		return $this->_templateVariables;
 	}
 
 	/**
@@ -89,7 +89,7 @@ class UrlManager extends \CUrlManager
 		if ($entry !== null)
 		{
 			$this->_setTemplateMatch($entry->section->template, TemplateMatchType::Entry);
-			$this->_templateTags['entry'] = $entry;
+			$this->_templateVariables['entry'] = $entry;
 			return true;
 		}
 
@@ -118,13 +118,13 @@ class UrlManager extends \CUrlManager
 					if ($templatePath !== false)
 						$this->_setTemplateMatch($templatePath, TemplateMatchType::Route);
 
-					// Set any capture tags
+					// Set any capture variables
 					if (!empty($route[2]))
 					{
-						foreach ($route[2] as $i => $tagName)
+						foreach ($route[2] as $i => $variableName)
 						{
 							if (isset($match[$i+1]))
-								$this->_templateTags[$tagName] = $match[$i+1];
+								$this->_templateVariables[$variableName] = $match[$i+1];
 							else
 								break;
 						}

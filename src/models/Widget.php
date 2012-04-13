@@ -41,11 +41,11 @@ class Widget extends Model
 		if (empty($this->bodyTemplate))
 			return '';
 
-		$tags = array(
+		$variables = array(
 			'widget' => $this
 		);
 
-		$template = b()->controller->loadTemplate($this->bodyTemplate, $tags, true);
+		$template = b()->controller->loadTemplate($this->bodyTemplate, $variables, true);
 		return $template;
 	}
 
@@ -58,11 +58,11 @@ class Widget extends Model
 		if (empty($this->settingsTemplate))
 			return '';
 
-		$tags = array(
+		$variables = array(
 			'settings' => $this->settings
 		);
 
-		$template = b()->controller->loadTemplate($this->settingsTemplate, $tags, true);
+		$template = b()->controller->loadTemplate($this->settingsTemplate, $variables, true);
 		return $template;
 	}
 }

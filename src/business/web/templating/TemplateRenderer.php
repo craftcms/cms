@@ -19,18 +19,18 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	 * Renders a template
 	 * @param object $context The controller or widget who is rendering the template
 	 * @param string $sourcePath Path to the source template
-	 * @param array  $tags The tags to be passed to the template
+	 * @param array  $variables The variables to be passed to the template
 	 * @param bool   $return Whether the rendering result should be returned
 	 * @return mixed
 	 */
-	public function renderFile($context, $sourcePath, $tags, $return)
+	public function renderFile($context, $sourcePath, $variables, $return)
 	{
 		$this->setPaths($sourcePath);
 
 		if ($this->isTemplateParsingNeeded())
 			$this->parseTemplate();
 
-		return $context->renderInternal($this->_parsedPath, $tags, $return);
+		return $context->renderInternal($this->_parsedPath, $variables, $return);
 	}
 
 	/**

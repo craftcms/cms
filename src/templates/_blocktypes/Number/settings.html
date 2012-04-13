@@ -3,8 +3,8 @@
 		<label for="{:idPrefix}type" style="margin-top:2px">Number Type</label>
 	</div>
 	<div class="right">
-		<?php $id = new Tag($idPrefix.'type') ?>
-		<?php $name = new Tag($namePrefix.'[type]') ?>
+		<?php $id = new TemplateVariable($idPrefix.'type') ?>
+		<?php $name = new TemplateVariable($namePrefix.'[type]') ?>
 		{include "_includes/pill" id=id name=name options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
 	</div>
 	<div class="clear"></div>

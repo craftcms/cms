@@ -70,7 +70,7 @@ class App extends \CWebApplication
 			'business.web.*',
 			'business.web.filters.*',
 			'business.web.templating.*',
-			'business.web.templating.tags.*',
+			'business.web.templating.adapters.*',
 			'business.web.templating.templatewidgets.*',
 			'business.web.templating.variables.*',
 			'business.webservices.*',

@@ -51,9 +51,9 @@ abstract class Controller extends \CController
 	/**
 	 * Loads the requested template
 	 *
-	 * @param array $tags
+	 * @param array $variables
 	 */
-	public function loadRequestedTemplate($tags = array())
+	public function loadRequestedTemplate($variables = array())
 	{
 		b()->urlManager->processTemplateMatching();
 		$templateMatch = b()->urlManager->templateMatch;
@@ -62,8 +62,8 @@ abstract class Controller extends \CController
 		if ($templateMatch !== null)
 		{
 			$template = $templateMatch->getRelativePath().'/'.$templateMatch->getFileName();
-			$tags = array_merge(b()->urlManager->templateTags, $tags);
-			$this->loadTemplate($template, $tags);
+			$variables = array_merge(b()->urlManager->templateVariables, $variables);
+			$this->loadTemplate($template, $variables);
 		}
 		else
 			throw new HttpException(404);
@@ -75,7 +75,7 @@ abstract class Controller extends \CController
 	 * @param       $templatePath
 	 * @param array $vars
 	 * @param bool  $return Whether to return the results, rather than output them
-	 * @internal param array $tags Any variables that should be available to the template
+	 * @internal param array $variables Any template variables that should be available to the template
 	 * @return mixed
 	 */
 	public function loadTemplate($templatePath, $vars = array(), $return = false)
@@ -83,17 +83,17 @@ abstract class Controller extends \CController
 		$templatePath = TemplateHelper::resolveTemplatePath($templatePath);
 		if ($templatePath !== false)
 		{
-			$tags = array();
+			$variables = array();
 
 			if (is_array($vars))
 			{
 				foreach ($vars as $name => $var)
 				{
-					$tags[$name] = TemplateHelper::getTag($var);
+					$variables[$name] = TemplateHelper::getVariable($var);
 				}
 			}
 
-			return $this->renderPartial($templatePath, $tags, $return);
+			return $this->renderPartial($templatePath, $variables, $return);
 		}
 
 		throw new HttpException(404);
@@ -142,7 +142,7 @@ abstract class Controller extends \CController
 		else
 		{
 			$widget = end($this->_widgetStack);
-			throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget tags in its view "{view}". A {widget} widget does not have an endWidget() call.',
+			throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget variables in its view "{view}". A {widget} widget does not have an endWidget() call.',
 				array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
 		}
 	}
