@@ -81,8 +81,6 @@ class UpdateController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$r = array();
-
 		switch ($h)
 		{
 			case 'Blocks':
