@@ -211,10 +211,10 @@ class File extends Component
 
 				$instance->_pathInfo();
 				$instance->readable;
-				$instance->writeable;
 
 				if ($greedy)
 				{
+					$instance->writeable;
 					$instance->isempty;
 					$instance->size;
 					$instance->owner;
@@ -444,11 +444,11 @@ class File extends Component
 	 */
 	private function _isReallyWritable($path)
 	{
-		$lastChar = $path{strlen($path) - 1};
-		if ($lastChar == '/' || $lastChar == '\\')
+		if (is_dir($path))
+		{
+			$path = rtrim(str_replace('\\', '/', $path), '/').'/';
 			return $this->_isReallyWritable($path.uniqid(mt_rand()).'.tmp');
-		else if (is_dir($path))
-			return $this->_isReallyWritable($path.'/'.uniqid(mt_rand()).'.tmp');
+		}
 
 		// check tmp file for read/write capabilities
 		$rm = file_exists($path);
