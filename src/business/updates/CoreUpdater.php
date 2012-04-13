@@ -12,7 +12,7 @@ class CoreUpdater implements IUpdater
 	private $_downloadFilePath;
 	private $_tempPackageDir;
 	private $_manifestData;
-	private $_writableErrors = null;
+	private $_writeableErrors = null;
 
 	/**
 	 *
@@ -81,10 +81,10 @@ class CoreUpdater implements IUpdater
 		if (!$this->unpackPackage())
 			throw new Exception('There was a problem unpacking the downloaded package.');
 
-		// Validate that the paths in the update manifest file are all writable by Blocks
-		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
-		if (!$this->validateManifestPathsWritable())
-			throw new Exception('Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writableErrors));
+		// Validate that the paths in the update manifest file are all writeable by Blocks
+		Blocks::log('Validating update manifest file paths are writeable.', \CLogger::LEVEL_INFO);
+		if (!$this->validateManifestPathsWriteable())
+			throw new Exception('Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writeableErrors));
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
@@ -269,10 +269,10 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * Checks to see if the files that we are about to update are writable by Blocks.
+	 * Checks to see if the files that we are about to update are writeable by Blocks.
 	 * @return bool
 	 */
-	public function validateManifestPathsWritable()
+	public function validateManifestPathsWriteable()
 	{
 		$manifestData = $this->_getManifestData();
 
@@ -284,13 +284,15 @@ class CoreUpdater implements IUpdater
 			$rowData = explode(';', $row);
 			$file = b()->file->set(b()->path->appPath.'../../'.$rowData[0]);
 
-			// Check to see if the file we need to update is writable.
-			if (!$file->writable)
-				$this->_writableErrors[] = $file->realPath;
-
+			// Check to see if the file we need to update is writeable.
+			if ($file->exists)
+			{
+				if (!$file->writeable)
+					$this->_writeableErrors[] = $file->realPath;
+			}
 		}
 
-		return $this->_writableErrors === null;
+		return $this->_writeableErrors === null;
 	}
 
 	/**

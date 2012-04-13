@@ -27,49 +27,56 @@ class UpdateController extends Controller
 		if (!$updateInfo)
 			$this->returnErrorJson('There was a problem getting the latest update information.');
 
-		switch ($h)
+		try
 		{
-			case 'all':
+			switch ($h)
 			{
-				// Blocks first.
-				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
-
-				// Plugins
-				if ($updateInfo->plugins !== null)
+				case 'all':
 				{
-					foreach ($updateInfo->plugins as $plugin)
+					// Blocks first.
+					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
+
+					// Plugins
+					if ($updateInfo->plugins !== null)
 					{
-						if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
-							$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+						foreach ($updateInfo->plugins as $plugin)
+						{
+							if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
+								$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+						}
 					}
+
+					break;
 				}
 
-				break;
-			}
-
-			case 'Blocks':
-			{
-				$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
-				break;
-			}
-
-			// We assume it's a plugin handle.
-			default:
-			{
-				if (!empty($updateInfo->plugins))
+				case 'Blocks':
 				{
-					if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
-						$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
+					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
+					break;
+				}
+
+				// We assume it's a plugin handle.
+				default:
+				{
+					if (!empty($updateInfo->plugins))
+					{
+						if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
+							$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
+						else
+							$this->returnErrorJson("Could not find any update information for the plugin with handle “{$h}”.");
+					}
 					else
 						$this->returnErrorJson("Could not find any update information for the plugin with handle “{$h}”.");
 				}
-				else
-					$this->returnErrorJson("Could not find any update information for the plugin with handle “{$h}”.");
 			}
-		}
 
-		$r = array('updateInfo' => $return);
-		$this->returnJson($r);
+			$r = array('updateInfo' => $return);
+			$this->returnJson($r);
+		}
+		catch (\Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
 	}
 
 	/**
@@ -81,21 +88,28 @@ class UpdateController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		switch ($h)
+		try
 		{
-			case 'Blocks':
+			switch ($h)
 			{
-				b()->updates->doCoreUpdate();
-				break;
+				case 'Blocks':
+				{
+					b()->updates->doCoreUpdate();
+					break;
+				}
+
+				// Plugin handle
+				default:
+				{
+					b()->updates->doPluginUpdate($h);
+				}
 			}
 
-			// Plugin handle
-			default:
-			{
-				b()->updates->doPluginUpdate($h);
-			}
+			$this->returnJson(array('success' => true));
 		}
-
-		$this->returnJson(array('success' => true));
+		catch (\Exception $e)
+		{
+			$this->returnErrorJson($e->getMessage());
+		}
 	}
 }
