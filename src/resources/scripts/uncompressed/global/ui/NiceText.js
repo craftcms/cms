@@ -41,11 +41,11 @@ b.ui.NiceText = b.Base.extend({
 
 		if (this.settings.hint)
 		{
-			this.$hint = $('<div class="texthint-container"><div class="texthint">'+this.settings.hint+'</div></div>');
-			this.$hint.insertBefore(this.$input);
+			this.$hintContainer = $('<div class="texthint-container"/>').insertBefore(this.$input);
+			this.$hint = $('<div class="texthint">'+this.settings.hint+'</div>').appendTo(this.$hintContainer);
 			this.$hint.css({
 				top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
-				left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')))
+				left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')) + 1)
 			});
 			b.copyTextStyles(this.$input, this.$hint);
 
@@ -90,8 +90,13 @@ b.ui.NiceText = b.Base.extend({
 		var changed = (this.val !== this.getVal());
 		if (changed)
 		{
-			if (this.showingHint && this.val)
-				this.hideHint();
+			if (this.$hint)
+			{
+				if (this.showingHint && this.val)
+					this.hideHint();
+				else if (!this.showingHint && !this.val)
+					this.showHint();
+			}
 
 			if (this.autoHeight)
 				this.setHeight();
@@ -161,6 +166,9 @@ b.ui.NiceText = b.Base.extend({
 		this.focussed = true;
 		this.interval = setInterval($.proxy(this, 'checkInput'), b.ui.NiceText.interval);
 		this.checkInput();
+
+		if (this.$hint)
+			this.$hint.addClass('focussed');
 	},
 
 	onBlur: function()
@@ -170,8 +178,8 @@ b.ui.NiceText = b.Base.extend({
 
 		this.checkInput();
 
-		if (this.$hint && !this.showingHint && !this.val)
-			this.showHint();
+		if (this.$hint)
+			this.$hint.removeClass('focussed');
 	},
 
 	onKeydown: function()
@@ -206,7 +214,7 @@ $.fn.nicetext = function()
 
 b.$document.ready(function()
 {
-	$('#body .nicetext').nicetext();
+	$('.nicetext').nicetext();
 });
 
 
