@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class VarTag
+abstract class Adapter
 {
 	protected $_var;
 

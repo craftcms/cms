@@ -285,6 +285,29 @@ class UpdatesService extends Component
 	}
 
 	/**
+	 * Checks to see if Blocks can write to a defined set of folders/files that are needed for auto-update to work.
+	 * @return array|null
+	 */
+	public function checkWritableRequirements()
+	{
+		$checkPaths = array(
+			b()->file->set(b()->path->appPath, false),
+			b()->file->set(b()->path->pluginsPath, false),
+		);
+
+		$errorPath = null;
+		foreach ($checkPaths as $writablePath)
+		{
+			if (!$writablePath->writeable)
+			{
+				$errorPath[] = $writablePath->realPath;
+			}
+		}
+
+		return $errorPath;
+	}
+
+	/**
 	 * @param $updates
 	 * @param $name
 	 * @return string

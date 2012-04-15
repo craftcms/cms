@@ -17,9 +17,6 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function init()
 	{
-		$dbConfigPath = b()->path->configPath.'db.php';
-		$blocksConfigPath = b()->path->configPath.'blocks.php';
-
 		$requiredPhpVersion = b()->params['requiredPhpVersion'];
 		$requiredMysqlVersion = b()->params['requiredMysqlVersion'];
 

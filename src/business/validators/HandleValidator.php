@@ -25,7 +25,7 @@ class HandleValidator extends \CValidator
 			$message = "“{$value}” is a reserved word.";
 			$this->addError($object, $attribute, $message);
 		}
-		else if (!preg_match('/^'.TemplateParser::tagPattern.'$/', $value))
+		else if (!preg_match('/^'.TemplateParser::varPattern.'$/', $value))
 		{
 			$message = $this->message !== null ? $this->message : '{attribute} is not a valid handle.';
 			$this->addError($object, $attribute, $message);

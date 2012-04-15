@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DateTimeHelperTag
+class DateTimeHelperVariable
 {
 	/**
 	 * @param $seconds

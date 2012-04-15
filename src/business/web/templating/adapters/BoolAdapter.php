@@ -4,6 +4,6 @@ namespace Blocks;
 /**
  *
  */
-class BoolTag extends VarTag
+class BoolAdapter extends Adapter
 {
 }

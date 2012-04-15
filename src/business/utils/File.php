@@ -211,10 +211,10 @@ class File extends Component
 
 				$instance->_pathInfo();
 				$instance->readable;
-				$instance->writeable;
 
 				if ($greedy)
 				{
+					$instance->writeable;
 					$instance->isempty;
 					$instance->size;
 					$instance->owner;
@@ -444,11 +444,11 @@ class File extends Component
 	 */
 	private function _isReallyWritable($path)
 	{
-		$lastChar = $path{strlen($path) - 1};
-		if ($lastChar == '/' || $lastChar == '\\')
+		if (is_dir($path))
+		{
+			$path = rtrim(str_replace('\\', '/', $path), '/').'/';
 			return $this->_isReallyWritable($path.uniqid(mt_rand()).'.tmp');
-		else if (is_dir($path))
-			return $this->_isReallyWritable($path.'/'.uniqid(mt_rand()).'.tmp');
+		}
 
 		// check tmp file for read/write capabilities
 		$rm = file_exists($path);
@@ -873,7 +873,7 @@ class File extends Component
 				$newFile->create();
 			}
 
-			if ($newFile->_writeable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
+			if ($newFile->writeable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
 				return $this;
 
 			$this->_addLog('Unable to set file contents of '.$newFile->_realPath, 'warning');
@@ -916,7 +916,7 @@ class File extends Component
 				return false;
 			}
 
-			if($this->_writeable && $basename !== false && $this->rename($basename))
+			if ($this->writeable && $basename !== false && $this->rename($basename))
 				return $this;
 
 			$this->_addLog('Unable to set file basename "'.$basename.'" for file: '.$this->_realpath, 'warning');
@@ -942,7 +942,7 @@ class File extends Component
 				return false;
 			}
 
-			if ($this->_writeable && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
+			if ($this->writeable && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
 				return $this;
 
 			$this->_addLog('Unable to set file name "'.$filename.'" for file: '.$this->_realpath, 'warning');
@@ -969,7 +969,7 @@ class File extends Component
 				return false;
 			}
 
-			if($this->_writeable && $extension !== false)
+			if ($this->writeable && $extension !== false)
 			{
 				$extension = trim($extension);
 
@@ -1129,7 +1129,7 @@ class File extends Component
 	{
 		$destRealPath = $this->_resolveDestPath($fileDest);
 
-		if ($this->_writeable && @rename($this->_realpath, $destRealPath))
+		if ($this->writeable && @rename($this->_realpath, $destRealPath))
 		{
 			$this->_filepath = $fileDest;
 			$this->_realpath = $destRealPath;
@@ -1165,7 +1165,7 @@ class File extends Component
 
 		if ($this->_isFile)
 		{
-			if ($this->_writeable)
+			if ($this->writeable)
 				return $this->_contents = '';
 		}
 		else
@@ -1202,7 +1202,7 @@ class File extends Component
 	 */
 	public function delete($purge = true)
 	{
-		if ($this->_writeable)
+		if ($this->writeable)
 		{
 			if (($this->_isFile && @unlink($this->_realpath) ) || (!$this->_isFile && ($purge ? $this->purge() : true) && rmdir($this->_realpath)))
 			{
