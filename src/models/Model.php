@@ -825,6 +825,9 @@ abstract class Model extends \CActiveRecord
 		);
 	}
 
+	/**
+	 *
+	 */
 	public function populateAuditAttributes()
 	{
 		if ($this->isNewRecord)
