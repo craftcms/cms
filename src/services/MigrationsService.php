@@ -64,7 +64,7 @@ class MigrationsService extends Component
 		Blocks::log("Total $total new ".($total === 1 ? 'migration':'migrations')." to be applied:".PHP_EOL, \CLogger::LEVEL_INFO);
 
 		foreach ($migrations as $migration)
-			Blocks::log("$migration".PHP_EOL, \CLogger::LEVEL_INFO);
+			Blocks::log($migration.PHP_EOL, \CLogger::LEVEL_INFO);
 
 		foreach ($migrations as $migration)
 		{

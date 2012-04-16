@@ -181,6 +181,7 @@ abstract class Model extends \CActiveRecord
 	/**
 	 * Sets the content
 	 * @param $content
+	 * @return void
 	 */
 	public function setContent($content)
 	{
@@ -216,6 +217,7 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Sets the content blocks
+	 * @param       $blocks
 	 * @param array $blocks
 	 */
 	public function setBlocks($blocks)
@@ -291,9 +293,9 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Adds content block handles to the mix of possible magic getter properties
-	 *
 	 * @param $name
 	 * @return mixed
+	 * @return mixed|string
 	 */
 	function __get($name)
 	{
@@ -516,7 +518,8 @@ abstract class Model extends \CActiveRecord
 	 * Generates HAS_MANY and HAS_ONE relations
 	 * @access protected
 	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)
-	 * @param array $settings The relation settings
+	 * @param        $settings
+	 * @param array  $settings The relation settings
 	 * @return array The CActiveRecord relation
 	 */
 	protected function generateHasXRelation($relationType, $settings)
@@ -548,9 +551,7 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function search()
 	{
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
-
+		// Warning: Please modify the following code to remove attributes that should not be searched.
 		$criteria = new \CDbCriteria;
 
 		foreach (array_keys($this->attributes) as $attributeName)
