@@ -239,7 +239,7 @@ class RequirementsChecker extends \CComponent
 
 		foreach ($writableFolders as $writableFolder)
 		{
-			if (!$writableFolder->writeable)
+			if (!$writableFolder->writable)
 			{
 				$errorFolders[] = $writableFolder->realPath;
 				$installResult = InstallStatus::Failure;

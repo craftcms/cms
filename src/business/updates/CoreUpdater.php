@@ -12,7 +12,7 @@ class CoreUpdater implements IUpdater
 	private $_downloadFilePath;
 	private $_tempPackageDir;
 	private $_manifestData;
-	private $_writeableErrors = null;
+	private $_writableErrors = null;
 
 	/**
 	 *
@@ -81,10 +81,10 @@ class CoreUpdater implements IUpdater
 		if (!$this->unpackPackage())
 			throw new Exception('There was a problem unpacking the downloaded package.');
 
-		// Validate that the paths in the update manifest file are all writeable by Blocks
-		Blocks::log('Validating update manifest file paths are writeable.', \CLogger::LEVEL_INFO);
-		if (!$this->validateManifestPathsWriteable())
-			throw new Exception('Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writeableErrors));
+		// Validate that the paths in the update manifest file are all writable by Blocks
+		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
+		if (!$this->validateManifestPathsWritable())
+			throw new Exception('Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writableErrors));
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
@@ -269,10 +269,10 @@ class CoreUpdater implements IUpdater
 	}
 
 	/**
-	 * Checks to see if the files that we are about to update are writeable by Blocks.
+	 * Checks to see if the files that we are about to update are writable by Blocks.
 	 * @return bool
 	 */
-	public function validateManifestPathsWriteable()
+	public function validateManifestPathsWritable()
 	{
 		$manifestData = $this->_getManifestData();
 
@@ -284,15 +284,15 @@ class CoreUpdater implements IUpdater
 			$rowData = explode(';', $row);
 			$file = b()->file->set(b()->path->appPath.'../../'.$rowData[0]);
 
-			// Check to see if the file we need to update is writeable.
+			// Check to see if the file we need to update is writable.
 			if ($file->exists)
 			{
-				if (!$file->writeable)
-					$this->_writeableErrors[] = $file->realPath;
+				if (!$file->writable)
+					$this->_writableErrors[] = $file->realPath;
 			}
 		}
 
-		return $this->_writeableErrors === null;
+		return $this->_writableErrors === null;
 	}
 
 	/**

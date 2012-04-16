@@ -298,7 +298,7 @@ class UpdatesService extends Component
 		$errorPath = null;
 		foreach ($checkPaths as $writablePath)
 		{
-			if (!$writablePath->writeable)
+			if (!$writablePath->writable)
 			{
 				$errorPath[] = $writablePath->realPath;
 			}
