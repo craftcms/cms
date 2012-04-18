@@ -9,36 +9,67 @@ class PluginsService extends Component
 	private $_fileSystemPlugins = array();
 
 	/**
-	 * Returns all plugins, including uninstalled and disabled plugins
+	 * Returns all plugins with flags to include plugins on the filesystem, but not yet installed and including plugins that
+	 * are installed, but disabled.
+	 * @param bool $includeNotInstalled
+	 * @param bool $includeDisabled
 	 * @return array
 	 */
-	public function getAll()
+	public function getAll($includeNotInstalled = false, $includeDisabled = false)
 	{
 		$plugins = array();
 
-		// Get the installed plugins indexed by class name
+		// Get all of the plugins from the database.
 		$installedPlugins = Plugin::model()->findAll();
-		$installedPluginsByClass = array();
 
-		foreach ($installedPlugins as $plugin)
+		// Match all of the plugins registered in the database against the file system to make sure they still exist.
+		foreach ($this->_getFileSystemPlugins() as $fileSystemPluginClass => $fileSystemPluginInfo)
 		{
-			$installedPluginsByClass[$plugin->class] = $plugin;
+			foreach ($installedPlugins as $installedPlugin)
+			{
+				if ($installedPlugin->class === $fileSystemPluginInfo[0])
+				{
+					// Instantiate the plugin instance from the active record.
+					$installedPluginInstance = new $fileSystemPluginClass;
+					$installedPluginInstance->name = $installedPlugin->name;
+					$installedPluginInstance->class = $installedPlugin->classHandle;
+					$installedPluginInstance->enabled = $installedPlugin->enabled;
+					$installedPluginInstance->installed = true;
+
+					$plugins[$installedPlugin->class] = $installedPluginInstance;
+				}
+			}
 		}
 
-		foreach ($this->_getFileSystemPlugins() as $plugin)
+		// Include plugins not installed yet?
+		if ($includeNotInstalled)
 		{
-			if (isset($installedPluginsByClass[$plugin->classHandle]))
+			// Loop through entries in the plugins folder
+			foreach ($this->_getFileSystemPlugins() as $fileSystemPluginClass => $fileSystemPluginInfo)
 			{
-				$plugin->installed = true;
-				$plugin->enabled = $installedPluginsByClass[$plugin->classHandle]->enabled;
-			}
-			else
-			{
-				$plugin->installed = false;
-				$plugin->enabled = false;
-			}
+				// Make sure it's not already in our plugins list.
+				if (!isset($plugins[$fileSystemPluginInfo[0]]))
+				{
+					// Instantiate it and set a few default values.
+					$notInstalledPlugin = new $fileSystemPluginClass;
+					$notInstalledPlugin->installed = false;
+					$notInstalledPlugin->enabled = false;
+					$notInstalledPlugin->class = $notInstalledPlugin->classHandle;
 
-			$plugins[] = $plugin;
+					// Add to our plugins list.
+					$plugins[$notInstalledPlugin->classHandle] = $notInstalledPlugin;
+				}
+			}
+		}
+
+		// If they don't want disabled plugins included, we filter them out here.
+		if (!$includeDisabled)
+		{
+			foreach ($plugins as $plugin)
+			{
+				if (!$plugin->enabled)
+					unset($plugins[$plugin->class]);
+			}
 		}
 
 		return $plugins;
@@ -93,11 +124,11 @@ class PluginsService extends Component
 
 				$shortClass = $folder;
 				$fullClass = __NAMESPACE__.'\\'.$shortClass.'Plugin';
+				$path = $pluginsPath.$folder.'/'.$shortClass.'Plugin.php';
 
 				// Import the plugin class file if it exists
 				if (!class_exists($fullClass))
 				{
-					$path = $pluginsPath.$folder.'/'.$shortClass.'Plugin.php';
 					if (!file_exists($path))
 						continue;
 
@@ -108,8 +139,7 @@ class PluginsService extends Component
 				if (!class_exists($fullClass))
 					continue;
 
-				$plugin = new $fullClass;
-				$this->_fileSystemPlugins[] = $plugin;
+				$this->_fileSystemPlugins[$fullClass] = array($shortClass, $path);
 			}
 		}
 

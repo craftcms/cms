@@ -24,7 +24,8 @@
 
 	<h5>Plugin Settings</h5>
 	<ul>
-		{foreach plugins as plugin}
+		{set allPlugins = plugins.getAll(1, 1)}
+		{foreach allPlugins as plugin}
 			<li><a class="has-status" href="{:url.base}settings/plugins/{:plugin.classHandle.lowercase}"><span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span><span class="icon icon287"></span>{:plugin.name}</a></li>
 		{/foreach}
 	</ul>
