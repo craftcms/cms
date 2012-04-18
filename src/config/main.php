@@ -127,6 +127,7 @@ return CMap::mergeArray(
 					array('users/view/({number})',                   'users/view', array('userId')),
 					array('settings/blocks/new',                     'settings/blocks/_edit'),
 					array('settings/blocks/edit/({number})',         'settings/blocks/_edit', array('blockId')),
+					array('settings/plugins/({word})',               'settings/plugins/_edit', array('pluginShortName')),
 					array('content/edit/({number})',                 'content', array('entryId')),
 					array('content/edit/({number})/draft({number})', 'content', array('entryId', 'draftNum')),
 					array('settings/sections/new',                   'settings/sections/_edit'),

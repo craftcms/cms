@@ -22,10 +22,10 @@
 		<li><a {if url.segment(2) == 'routing'}class="sel"{/if} href="{:url.base}settings/routing"><span class="icon icon14"></span>URL Routing</a></li>--}
 	</ul>
 
-	{!--<h5>Plugin Settings</h5>
+	<h5>Plugin Settings</h5>
 	<ul>
 		{foreach plugins as plugin}
-			<li><a class="has-status" href=""><span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span><span class="icon icon287"></span>{:plugin.name}</a></li>
+			<li><a class="has-status" href="{:url.base}settings/plugins/{:plugin.classHandle.lowercase}"><span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span><span class="icon icon287"></span>{:plugin.name}</a></li>
 		{/foreach}
-	</ul>--}
+	</ul>
 {/region}

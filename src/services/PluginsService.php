@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class PluginsService extends Component
 {
+	private $_fileSystemPlugins = array();
+
 	/**
 	 * Returns all plugins, including uninstalled and disabled plugins
 	 * @return array
@@ -17,41 +19,23 @@ class PluginsService extends Component
 		// Get the installed plugins indexed by class name
 		$installedPlugins = Plugin::model()->findAll();
 		$installedPluginsByClass = array();
+
 		foreach ($installedPlugins as $plugin)
 		{
 			$installedPluginsByClass[$plugin->class] = $plugin;
 		}
 
-		$pluginsPath = b()->path->pluginsPath;
-		$folders = scandir($pluginsPath);
-		foreach ($folders as $folder)
+		foreach ($this->_getFileSystemPlugins() as $plugin)
 		{
-			// Ignore files and relative directories
-			if (strncmp($folder, '.', 1) === 0 || !is_dir($pluginsPath.$folder))
-				continue;
-
-			$shortClass = $folder;
-			$fullClass = __NAMESPACE__.'\\'.$shortClass.'Plugin';
-
-			// Import the plugin class file if it exists
-			if (!class_exists($fullClass))
-			{
-				$path = $pluginsPath.$folder.'/'.$shortClass.'Plugin.php';
-				if (!file_exists($path))
-					continue;
-				require_once $path;
-			}
-
-			// Ignore if we couldn't find the plugin class
-			if (!class_exists($fullClass))
-				continue;
-
-			$plugin = new $fullClass;
-
-			if (isset($installedPluginsByClass[$shortClass]))
+			if (isset($installedPluginsByClass[$plugin->classHandle]))
 			{
 				$plugin->installed = true;
-				$plugin->enabled = $installedPluginsByClass[$shortClass]->enabled;
+				$plugin->enabled = $installedPluginsByClass[$plugin->classHandle]->enabled;
+			}
+			else
+			{
+				$plugin->installed = false;
+				$plugin->enabled = false;
 			}
 
 			$plugins[] = $plugin;
@@ -89,5 +73,46 @@ class PluginsService extends Component
 		}
 
 		return $pluginNamesAndVersions;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _getFileSystemPlugins()
+	{
+		if (!$this->_fileSystemPlugins)
+		{
+			$pluginsPath = b()->path->pluginsPath;
+			$folders = scandir($pluginsPath);
+
+			foreach ($folders as $folder)
+			{
+				// Ignore files and relative directories
+				if (strncmp($folder, '.', 1) === 0 || !is_dir($pluginsPath.$folder))
+					continue;
+
+				$shortClass = $folder;
+				$fullClass = __NAMESPACE__.'\\'.$shortClass.'Plugin';
+
+				// Import the plugin class file if it exists
+				if (!class_exists($fullClass))
+				{
+					$path = $pluginsPath.$folder.'/'.$shortClass.'Plugin.php';
+					if (!file_exists($path))
+						continue;
+
+					require_once $path;
+				}
+
+				// Ignore if we couldn't find the plugin class
+				if (!class_exists($fullClass))
+					continue;
+
+				$plugin = new $fullClass;
+				$this->_fileSystemPlugins[] = $plugin;
+			}
+		}
+
+		return $this->_fileSystemPlugins;
 	}
 }

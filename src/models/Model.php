@@ -827,7 +827,8 @@ abstract class Model extends \CActiveRecord
 	}
 
 	/**
-	 *
+	 * If it is a new actice record instance, will populate date_created with the current UTC unix timestamp and a new GUID
+	 * for uid. If it is an existing record, will populate date_updated with the current UTC unix timestamp.
 	 */
 	public function populateAuditAttributes()
 	{
