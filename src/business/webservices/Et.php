@@ -99,8 +99,8 @@ class Et extends \CApplicationComponent
 	{
 		try
 		{
-			$data = $this->_package;
-			$response = \Requests::post($this->_endpoint, array(), Json::encode($data), $this->_options);
+			$data = Json::encode($this->_package);
+			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
 			if ($response->success)
 			{

@@ -34,6 +34,8 @@ class UpdatesService extends Component
 				'critical' => $updateInfo->blocks->criticalUpdateAvailable,
 				'manualUpdateRequired' => $updateInfo->blocks->manualUpdateRequired,
 				'notes' => $notes,
+				'latestVersion' => $updateInfo->blocks->latestVersion,
+				'latestBuild' => $updateInfo->blocks->latestBuild,
 			);
 
 		}
@@ -238,9 +240,15 @@ class UpdatesService extends Component
 		$updateInfo->blocks->localBuild = Blocks::getBuild();
 		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
-		$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
-		foreach ($plugins as $plugin)
-			$updateInfo->plugins[$plugin['handle']] = new PluginUpdateInfo($plugin);
+		$plugins = b()->plugins->enabledPluginClassNamesAndVersions;
+		foreach ($plugins as $className => $localversion)
+		{
+			$pluginUpdateInfo = new PluginUpdateInfo();
+			$pluginUpdateInfo->class = $className;
+			$pluginUpdateInfo->localVersion = $localversion;
+
+			$updateInfo->plugins[$className] = $pluginUpdateInfo;
+		}
 
 		$response = b()->et->check($updateInfo);
 
