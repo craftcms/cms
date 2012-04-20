@@ -28,6 +28,7 @@ class ConsoleApplication extends \CConsoleApplication
 			'business.enums.*',
 			'business.exceptions.*',
 			'business.logging.*',
+			'business.services.*',
 			'business.updates.*',
 			'business.utils.*',
 			'business.validators.*',
@@ -35,7 +36,6 @@ class ConsoleApplication extends \CConsoleApplication
 			'migrations.*',
 			'models.*',
 			'models.forms.*',
-			'services.*',
 		);
 
 		foreach ($aliases as $alias)

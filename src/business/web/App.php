@@ -27,7 +27,7 @@ class App extends \CWebApplication
 		Blocks::import('business.web.templating.TemplateRenderer');
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
-		Blocks::import('services.ConfigService');
+		Blocks::import('business.services.ConfigService');
 		Blocks::import('business.Component');
 		Blocks::import('business.Plugin');
 		Blocks::import('business.logging.FileLogRoute');
@@ -64,6 +64,7 @@ class App extends \CWebApplication
 			'business.exceptions.*',
 			'business.install.*',
 			'business.logging.*',
+			'business.services.*',
 			'business.updates.*',
 			'business.utils.*',
 			'business.validators.*',
@@ -78,7 +79,6 @@ class App extends \CWebApplication
 			'migrations.*',
 			'models.*',
 			'models.forms.*',
-			'services.*',
 			'widgets.*',
 		);
 
@@ -205,7 +205,7 @@ class App extends \CWebApplication
 			// Import the bare minimum to process a resource
 			Blocks::import('business.utils.File');
 			Blocks::import('business.web.ResourceProcessor');
-			Blocks::import('services.PathService');
+			Blocks::import('business.services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->pathSegments), 1);
