@@ -559,26 +559,6 @@ abstract class Model extends \CActiveRecord
 	}
 
 	/**
-	 * Saves the record, whether it's new or existing
-	 *
-	 * @param bool $runValidation
-	 * @param null $attributes
-	 * @return bool
-	 */
-	public function save($runValidation = true, $attributes = null)
-	{
-		if ($this->isNewRecord)
-		   return parent::save($runValidation, $attributes);
-
-		if (!$runValidation || $this->validate())
-		{
-			return $this->update($attributes);
-		}
-
-		return false;
-	}
-
-	/**
 	 * Creates the model's table
 	 */
 	public function createTable()
