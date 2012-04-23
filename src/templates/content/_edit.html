@@ -1,0 +1,90 @@
+{if !entry}
+	{set entry = content.getEntryById(entryId)}
+	{if draftNum}
+		{:entry.setDraft(draftNum)}
+	{/if}
+{/if}
+
+<?php $pageTitle = new Tag('Editing “'.$entry->title().'”'); ?>
+{if entry.draft}
+	<?php $pageTitle = new Tag($pageTitle.' ('.$entry->draft()->name().')'); ?>
+{/if}
+{layout "_layouts/cp" pageTitle=pageTitle crumbs="content:Content"}
+
+
+{region "styles"}
+	{include "_includes/css_include" file="styles/content-entry.css"}
+{/region}
+
+
+{region "main"}
+	<div id="versions">
+		<ul>
+			{if entry.published}
+				<li><a href="{:url.base}content/edit/{:entry.id}" class="live {if !entry.draft}sel{/if}">
+					<div class="status on"></div>
+					<div class="name">Published</div>
+				</a></li>
+			{/if}
+			{foreach entry.drafts as draft}
+				<li><a href="{:url.base}content/edit/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}">
+					<div class="icon"></div>
+					<div class="name">{:draft.name}</div>
+					<div class="author">{:draft.author.firstNameLastInitial}</div>
+				</a></li>
+			{/foreach}
+		</ul>
+		<a id="new-draft">new draft…</a>
+	</div>
+
+	<form id="content" method="post" action="">
+		<h1 class="textwrapper"><input type="text" name="title" value="{:entry.title}" class="text"></h1>
+
+		{foreach entry.blocks as block}
+			<div class="field">
+				<div class="heading">
+					<h4><label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label></h4>
+					{if block.instructions}
+						<p>{:block.instructions}</p>
+					{/if}
+				</div>
+				<div class="{:block.classHandle}">
+					{:block.displayField}
+				</div>
+				{if entry.content.getError(block.handle)}
+					{include "_includes/error_list" errors=entry.content.getError(block.handle)}
+				{/if}
+			</div>
+		{/foreach}
+		{include "_includes/error_list" errors=entry.content.errors.body}
+
+		<input type="hidden" name="entryId" value="{:entry.id}"/>
+		{if entry.draft}
+			<input type="hidden" name="draftId" value="{:entry.draft.id}"/>
+			<input type="hidden" name="action" id="action" value="content/saveDraft"/>
+			<input type="submit" value="save draft" class="btn big submit"/>
+			<input type="button" value="pubish draft" id="publishDraftBtn" class="btn big"/>
+		{else}
+			<input type="hidden" name="action" id="action" value="content/saveEntry"/>
+			<input type="submit" value="save entry" class="btn big submit"/>
+			<input type="button" value="save as draft" id="saveAsDraftBtn" class="btn big"/>
+		{/if}
+	</form>
+{/region}
+
+
+{region "scripts"}
+	<script type="text/javascript">
+		{if entry.draft}
+			$('#publishDraftBtn').click(function() {
+				$('#action').val('content/publishDraft');
+				$('#content').submit();
+			});
+		{else}
+			$('#saveAsDraftBtn').click(function() {
+				$('#action').val('content/createDraft');
+				$('#content').submit();
+			});
+		{/if}
+	</script>
+{/region}

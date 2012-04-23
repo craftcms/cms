@@ -7,7 +7,7 @@ namespace Blocks;
 class Entry extends Model
 {
 	protected $tableName = 'entries';
-	protected $hasContent = true;
+	public $hasContent = true;
 
 	protected $attributes = array(
 		'slug'           => array('type' => AttributeType::Char, 'maxLength' => 100),
@@ -147,6 +147,12 @@ class Entry extends Model
 	 */
 	public function setDraft($draft)
 	{
+		if (is_numeric($draft))
+			$draft = b()->content->getDraftByNum($this->id, $draft);
+
+		if (!$draft)
+			return;
+
 		$this->_draft = $draft;
 
 		$changes = json_decode($draft->changes, true);
@@ -176,10 +182,7 @@ class Entry extends Model
 	 */
 	public function getTitle()
 	{
-		if (isset($this->content['title']))
-			return $this->content['title'];
-		else
-			return '';
+		return $this->content->title;
 	}
 
 	/**
@@ -194,8 +197,8 @@ class Entry extends Model
 
 			foreach ($blocks as $block)
 			{
-				if (isset($content[$block->handle]))
-					$block->data = $content[$block->handle];
+				$blockHandle = $block->handle;
+				$block->data = $content->$blockHandle;
 			}
 
 			$this->_blocks = $blocks;

@@ -1,3 +1,5 @@
+@import "colors";
+
 html, body { height: 100%; }
 #body, #main { position: static; padding: 0; }
 
@@ -8,7 +10,7 @@ html, body { height: 100%; }
 .pane-body .sidebar ul li a { padding-top: 16px; padding-bottom: 16px; font-size: 14px; cursor: default; text-decoration: none; }
 .pane-body .sidebar ul li a:not(.sel):hover { color: #666 !important; }
 .pane-body .sidebar ul li a .step { display: block; float: left; margin: -3px 8px -3px 0; border-radius: 12px; width: 24px; height: 24px; line-height: 24px; text-align: center; font-size: 14px; color: #fff; text-shadow: none; background: #999; }
-.pane-body .sidebar ul li a.sel .step { color: #2d98db; background: #fff; -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.pane-body .sidebar ul li a.sel .step { color: $linkcolor; background: #fff; -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
 
 .pane-body .field + .field:not(.pane-item),
 .pane-body .grid + .field,

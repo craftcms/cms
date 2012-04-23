@@ -7,7 +7,7 @@ namespace Blocks;
 class Section extends Model
 {
 	protected $tableName = 'sections';
-	protected $hasBlocks = true;
+	public $hasBlocks = true;
 
 	protected $attributes = array(
 		'name'        => AttributeType::Name,

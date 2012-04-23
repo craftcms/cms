@@ -554,38 +554,34 @@ b.Base = Base.extend({
  */
 var CP = b.Base.extend({
 
-	windowHeight: null,
-	_$sidebar: null,
-	_$messages: null,
+	$nav: null,
+	$notification: null,
+	fixedNav: false,
 
 	init: function()
 	{
-		var $sidebar = $('#sidebar');
-		if ($sidebar.length)
+		this.$nav = $('#nav');
+		this.$notification = $('#notification');
+		this.$notification.delay(2000).fadeOut();
+
+		// Don't let the nav scroll out of view
+		this.addListener(b.$window, 'scroll', function()
 		{
-			this._$sidebar = $sidebar;
-
-			this.setSidebarHeight();
-			this.addListener(b.$window, 'resize', 'setSidebarHeight');
-			this.addListener(b.$window, 'scroll', 'setSidebarHeight');
-		}
-
-		this._$messages = $('#messages');
-		this._$messages.delay(2000).fadeOut();
+			if (document.body.scrollTop > 50)
+			{
+				if (!this.fixedNav)
+				{
+					this.$nav.addClass('fixed');
+					this.fixedNav = true;
+				}
+			}
+			else if (this.fixedNav)
+			{
+				this.$nav.removeClass('fixed');
+				this.fixedNav = false;
+			}
+		});
 	},
-
-	setSidebarHeight: function()
-	{
-		if (! this._$sidebar)
-			return false;
-
-		// has the window height changed?
-		if (this.windowHeight !== (this.windowHeight = b.$window.height()))
-		{
-			var sidebarHeight = this.windowHeight - b.navHeight;
-			this._$sidebar.height(sidebarHeight);
-		}
-	}
 
 });
 

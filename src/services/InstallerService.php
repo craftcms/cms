@@ -35,12 +35,16 @@ class InstallerService extends Component
 			$file = b()->file->set($filePath);
 			$fileName = $file->fileName;
 
-			// Ignore the models already set to install
-			if (in_array($fileName, array('Block', 'Model')))
+			// Ignore Block since that's already queued up,
+			// and the abstract models
+			if (in_array($fileName, array('Block', 'ActiveRecord', 'Model')))
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;
-			$models[] = new $class;
+			$obj = new $class;
+
+			if (method_exists($obj, 'createTable'))
+				$models[] = $obj;
 		}
 
 		// Start the transaction

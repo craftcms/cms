@@ -359,7 +359,60 @@ class ContentService extends Component
 		// Save it on the entry
 		$entry->slug = $testSlug;
 		$entry->uri = $this->getEntryUri($entry);
-		$entry->save();
+	}
+
+	/**
+	 * Saves changes to an entry's content.
+	 * @param mixed  $entry      An Entry record or an entry ID.
+	 * @param array  $newContent The new entry content.
+	 * @param string $langugae   The language of the content.
+	 * @return bool Whether it was a success.
+	 */
+	public function saveEntryContent($entry, $newContent, $language = null)
+	{
+		if (is_numeric($entry))
+		{
+			$entry = $this->getEntryById($entry);
+			if (!$entry)
+				throw new Exception('No entry exists with the ID '.$entry->id);
+		}
+
+		if (!$language)
+			$language = b()->sites->current->language;
+
+		$content = $entry->getContent($language);
+
+		foreach ($newContent as $handle => $value)
+		{
+			$content->$handle = $value;
+		}
+
+		// Start a transaction
+		$transaction = b()->db->beginTransaction();
+		try
+		{
+			// Validate the content
+			if (!$content->validate())
+			{
+				var_dump($content->errors); die();
+				return false;
+			}
+
+			// Save it
+			$content->save(false);
+
+			// Create a new entry version
+			$this->createEntryVersion($entry, false, $newContent, null, $language);
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+
+		return true;
 	}
 
 	/**
@@ -376,22 +429,6 @@ class ContentService extends Component
 		}
 		else
 			return null;
-	}
-
-	/**
-	 * Returns an Entry instance, whether it already exists based on an ID, or is new
-	 * @param int $entryId The Entry ID if it exists
-	 * @return Section
-	 */
-	public function getEntry($entryId = null)
-	{
-		if ($entryId)
-			$entry = $this->getEntryById($entryId);
-
-		if (empty($entry))
-			$entry = new Entry;
-
-		return $entry;
 	}
 
 	/**
@@ -475,49 +512,56 @@ class ContentService extends Component
 	 * @param $versionId
 	 * @return mixed
 	 */
-	public function getEntryVersionById($versionId)
+	public function getVersionById($versionId)
 	{
 		$version = EntryVersion::model()->findById($versionId);
 		return $version;
 	}
 
 	/**
-	 * Creates a new draft
-	 * @param int $entryId
-	 * @param string $language
-	 * @param mixed $name
+	 * Creates a new entry version
+	 * @param mixed  $entry    The Entry record, or an entry ID.
+	 * @param bool   $isDraft  Whether this is a draft. Defaults to false.
+	 * @param array  $changes  The changes to be saved with the version.
+	 * @param string $name     The name of the version.
+	 * @param string $language The language the content is in
 	 * @return EntryVersion The new draft record
 	 */
-	public function createDraft($entryId, $language = null, $name = null)
+	public function createEntryVersion($entry, $draft = false, $changes = null, $name = null, $language = null)
 	{
-		$entry = $this->getEntryById($entryId);
+		if (is_numeric($entry))
+		{
+			$entry = $this->getEntryById($entry);
+			if (!$entry)
+				throw new Exception('No entry exists with the ID '.$entry->id);
+		}
 
-		if (!$entry)
-			throw new Exception('No entry exists with the id '.$entryId);
+		$version = new EntryVersion;
+		$version->entry_id  = $entry->id;
+		$version->author_id = b()->users->current->id;
+		$version->language  = ($language ? $language : b()->sites->current->language);
+		$version->draft = $draft;
+		$version->name = $name;
 
-		$draft = new EntryVersion;
-		$draft->entry_id = $entryId;
-		$draft->author_id = b()->users->current->id;
-		$draft->language = ($language ? $language : b()->sites->current->language);
-		$draft->draft = true;
-
-		$untitled = !$name;
-		if (!$untitled)
-			$draft->name = $name;
+		if ($changes)
+			$version->changes = json_encode($changes);
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
 
 		try
 		{
-			for ($num = $entry->latest_draft+1; true; $num++)
+			if ($version->draft)
+				$num = $entry->latest_draft + 1;
+			else
+				$num = $entry->latest_version + 1;
+
+			for ($num; true; $num++)
 			{
 				try
 				{
-					$draft->num = $num;
-					if ($untitled)
-						$draft->name = 'Draft '.$num;
-					$draft->save();
+					$version->num = $num;
+					$version->save();
 					break;
 				}
 				catch (\CDbException $e)
@@ -530,7 +574,10 @@ class ContentService extends Component
 			}
 
 			// Update the entry
-			$entry->latest_draft = $draft->num;
+			if ($version->draft)
+				$entry->latest_draft = $version->num;
+			else
+				$entry->latest_version = $version->num;
 			$entry->save();
 
 			$transaction->commit();
@@ -541,7 +588,7 @@ class ContentService extends Component
 			throw $e;
 		}
 
-		return $draft;
+		return $version;
 	}
 
 	/**

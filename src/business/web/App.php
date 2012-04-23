@@ -22,6 +22,7 @@ class App extends \CWebApplication
 		Blocks::import('business.exceptions.HttpException');
 		Blocks::import('business.db.DbCommand');
 		Blocks::import('business.db.DbConnection');
+		Blocks::import('business.db.PDO');
 		Blocks::import('business.db.MysqlSchema');
 		Blocks::import('business.web.ErrorHandler');
 		Blocks::import('business.web.templating.TemplateRenderer');

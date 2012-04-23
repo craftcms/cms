@@ -1,35 +1,24 @@
-{layout "_layouts/sidebar" pageTitle="Content"}
+{layout "_layouts/cp" pageTitle="Content"}
 
 
 {region "styles"}
-	{include "_includes/css_include" file="styles/content.css"}
+	{include "_includes/css_include" file="styles/content-index.css"}
 {/region}
 
 
-{region "sidebar"}
-	{foreach content.sections as section}
-		<h5>{:section.name}</h5>
-		<ul class="nav tree">
-			{foreach section.entries as entry}
-				{if entry.live}
-					{set status = "on"}
-				{elseif entry.pending}
-					{set status = "pending"}
-				{elseif entry.expired}
-					{set status = "off"}
-				{else}
-					{set status = ""}
-				{/if}
-				<li><a class="has-status {if entry.id == entryId}sel{/if}" href="{:url.base}content/edit/{:entry.id}" data-entry-id="{:entry.id}"><span class="status {:status}"></span><span class="label">{:entry.title}</span></a></li>
+{region "main"}
+	<h1>Content</h1>
+
+	<table id="entries">
+		<tbody>
+			{foreach content.sections as section}
+				<h3>{:section.name}</h3>
+				<ul>
+					{foreach section.entries as entry}
+						<li><a href="{:url.base}content/edit/{:entry.id}">{:entry.title}</a></li>
+					{/foreach}
+				</ul>
 			{/foreach}
-			<li><a class="new" data-section-id="{:section.id}"><span class="icon icon44"></span>Create a new entry</a></li>
-		</ul>
-	{/foreach}
-{/region}
-
-
-{region "scripts"}
-	{include "_includes/js_include" file="content/Entry.js"}
-	{include "_includes/js_include" file="content/content.js"}
-	{if entryId}<script type="text/javascript">b.content.loadEntry({:entryId}{if draftNum}, {:draftNum}{/if});</script>{/if}
+		</tbody>
+	</table>
 {/region}

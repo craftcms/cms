@@ -1,0 +1,23 @@
+@import "colors";
+
+#versions { float: right; width: 150px; }
+#versions li { border-top: 1px solid #f5f3f0; }
+#versions li:last-child { border-bottom: 1px solid #f5f3f0; }
+#versions li a { display: block; position: relative; margin: -1px -2px -1px -20px; padding: 4px 31px 4px 25px; background: url(../images/draft-option-bg.png) no-repeat 0 -120px; }
+#versions li a .name,
+#versions li a .author { height: 16px; line-height: 16px; overflow: hidden; white-space: pre; text-overflow: ellipsis; text-shadow: 0 1px 0 #fff; }
+#versions li a .name { font-weight: bold; color: $medium; }
+#versions li a .author { color: $light; }
+#versions li a:hover { position: relative; text-decoration: none; background-position: 0 0; }
+#versions li a:not(.sel):active { position: relative; padding-top: 5px; padding-bottom: 3px; background-position: 0 -40px; }
+#versions li a.sel { position: relative; z-index: 1; background-position: 0 -80px; }
+
+#versions li a.live .name { height: 32px; line-height: 32px; }
+#versions li a.live .status { position: absolute; top: 15px; right: 15px; }
+#versions li a.live:not(.sel):active .status { top: 16px; }
+#versions li a.draft .icon { position: absolute; top: 13px; right: 10px; width: 16px; height: 14px; background: url(../images/draft-icon.png) no-repeat; }
+#versions li a.draft:not(.sel):active .icon { top: 14px; }
+
+#new-draft { display: block; padding: 4px 5px; }
+
+#content { margin-right: 200px; }

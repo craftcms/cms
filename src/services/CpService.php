@@ -21,7 +21,6 @@ class CpService extends Component
 			$sections[] = array('handle' => 'settings', 'name' => 'Settings');
 
 		//$sections[] = array('handle' => 'guide', 'name' => 'Guide');
-		$sections[] = array('handle' => 'about', 'name' => 'About');
 
 		return $sections;
 	}

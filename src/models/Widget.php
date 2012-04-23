@@ -11,7 +11,7 @@ class Widget extends Model
 	protected $settingsTableName = 'widgetsettings';
 	protected $foreignKeyName = 'widget_id';
 	protected $classSuffix = 'Widget';
-	protected $hasSettings = true;
+	public $hasSettings = true;
 
 	protected $attributes = array(
 		'class'      => AttributeType::ClassName,

@@ -94,6 +94,49 @@ class ContentController extends Controller
 	}
 
 	/**
+	 * Saves an entry.
+	 */
+	public function actionSaveEntry()
+	{
+		$this->requirePostRequest();
+
+		// Get the entry
+		$entryId = b()->request->getRequiredPost('entryId');
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entryId)
+			throw new Exception('No entry exists with the ID '.$entryId);
+
+		// Get the changes
+		$changes = array();
+
+		if (($title = b()->request->getPost('title')) !== null)
+			$changes['title'] = $title;
+
+		foreach ($entry->blocks as $block)
+			if (($val = b()->request->getPost($block->handle)) !== null)
+				$changes[$block->handle] = $val;
+
+		// Save the new content
+		if (b()->content->saveEntryContent($entry, $changes))
+		{
+			b()->user->setMessage(MessageType::Notice, 'Entry saved.');
+
+			$url = b()->request->getPost('redirect');
+			if ($url !== null)
+				$this->redirect($url);
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save entry.');
+		}
+
+		$this->loadRequestedTemplate(array('entry' => $entry));
+	}
+
+
+
+
+	/**
 	 * Loads an entry
 	 */
 	public function actionLoadEntryEditPage()

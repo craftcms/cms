@@ -1,38 +1,49 @@
 {layout "_layouts/basic" pageTitle=pageTitle styles=styles scripts=scripts bodyClass=bodyClass}
 
 {region "body"}
-	<div id="header">
-		<div id="nav">
-			{if url.segment(1) != 'setup'}
-				<ul id="nav-sections">
-					{foreach cp.sections as section}<li id="nav-{:section.handle}">
-						<a {if url.segment(1)==section.handle}class="sel"{/if} href="{:url.base}{:section.handle}"><div class="icon"></div>{:section.name}</a>
-					</li>{/foreach}
-				</ul>
-				<div id="nav-sites">
-					<a id="nav-site"><div class="icon"></div>{:sites.current.name}</a>
-				</div>
-				<div id="nav-session">
-					<a id="nav-account" {if url.segment(1)=='account'}class="sel"{/if} href="{:url.base}users/edit/{:users.current.id}"><div class="icon"></div>{:users.current.username}</a>
-					<a id="nav-logout" href="{:url.base}logout">Logout</a>
-				</div>
-			{else}
-				<ul id="nav-sections"><li id="nav-setup">
-					<a class="sel"><div class="icon"></div>Setup</a>
-				</li></ul>
-			{/if}
-		</div>
+	<div id="header-left" class="header">
+		<div id="site"><h3>Pixel & Tonic</h3></div>
 
-		{if user.messages}
-			<div id="messages">
-				{foreach user.messages as message}
-					<div class="message {:message.type}">{:message.message}</div>
-				{/foreach}
+		{if crumbs}
+			<div id="crumbs">
+				<ul>
+					{foreach crumbs.split as crumb}
+						{set crumb = crumb.split(":")}
+						<li><a href="{:url.base}{:crumb.get(0)}">{:crumb.get(1)}</a></li>
+					{/foreach}
+				</ul>
 			</div>
 		{/if}
 	</div>
 
-	<div id="body">
-		{:body}
+	<div id="header-right" class="header">
+		<div id="search"><span class="icon"></span><input class="nicetext" data-hint="search entries and users" type="text" /></div>
+		<div id="me"><a href="{:url.base}users/edit/{:users.current.id}">{:users.current.username}</a></div>
+		<div id="logout"><a href="{:url.base}logout">logout</a></div>
+	</div>
+
+	{if user.messages}
+		<div id="notification">
+			{foreach user.messages as notification}
+				<div class="notification {:notification.type}">{:notification.message}</div>
+			{/foreach}
+		</div>
+	{/if}
+
+	<div id="nav">
+		<ul>
+			{foreach cp.sections as section}
+				<li id="nav-{:section.handle}"><a {if url.segment(1)==section.handle}class="sel"{/if} href="{:url.base}{:section.handle}"><span class="icon"></span>{:section.name}</a></li>
+			{/foreach}
+		</ul>
+	</div>
+
+	<div id="main">
+		{:main}
+	</div>
+
+	<div id="footer">
+		<p id="version">Blocks {:app.version}.{:app.build}</p>
+		<p id="copyright">© {:date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
 	</div>
 {/region}

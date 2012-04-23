@@ -4,8 +4,12 @@ namespace Blocks;
 /**
  * @abstract
  */
-abstract class Model extends \CActiveRecord
+abstract class Model extends ActiveRecord
 {
+	public $hasContent = false;
+	public $hasBlocks = false;
+	public $hasSettings = false;
+
 	protected $tableName;
 	protected $contentTableName;
 	protected $blocksJoinTableName;
@@ -13,10 +17,6 @@ abstract class Model extends \CActiveRecord
 	protected $foreignKeyName;
 	protected $classPrefix = '';
 	protected $classSuffix = '';
-
-	protected $hasContent = false;
-	protected $hasBlocks = false;
-	protected $hasSettings = false;
 
 	protected $defaultSettings = array();
 	protected $attributes = array();
@@ -102,9 +102,8 @@ abstract class Model extends \CActiveRecord
 	/**
 	 * Get the model's content table name
 	 * @return string The table name
-	 * @access protected
 	 */
-	protected function getContentTableName()
+	public function getContentTableName()
 	{
 		if (isset($this->contentTableName))
 			return $this->contentTableName;
@@ -115,9 +114,8 @@ abstract class Model extends \CActiveRecord
 	/**
 	 * Get the model's content blocks join table name
 	 * @return string The table name
-	 * @access protected
 	 */
-	protected function getBlocksJoinTableName()
+	public function getBlocksJoinTableName()
 	{
 		if (isset($this->blocksJoinTableName))
 			return $this->blocksJoinTableName;
@@ -128,9 +126,8 @@ abstract class Model extends \CActiveRecord
 	/**
 	 * Get the model's settings table name
 	 * @return string The table name
-	 * @access protected
 	 */
-	protected function getSettingsTableName()
+	public function getSettingsTableName()
 	{
 		if (isset($this->settingsTableName))
 			return $this->settingsTableName;
@@ -142,9 +139,8 @@ abstract class Model extends \CActiveRecord
 	 * Get the model's foreign key name
 	 * (Used when defining content block, content, and settings tables)
 	 * @return string The foreign key name
-	 * @access protected
 	 */
-	protected function getForeignKeyName()
+	public function getForeignKeyName()
 	{
 		if (isset($this->foreignKeyName))
 			return $this->foreignKeyName;
@@ -154,34 +150,18 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Returns the content assigned to this record
+	 * @param string $language
 	 * @return array
 	 */
-	public function getContent()
+	public function getContent($language = null)
 	{
-		if (!isset($this->_content))
-		{
-			if ($this->hasContent && !$this->isNewRecord)
-			{
-				$this->_content = b()->db->createCommand()
-					->from($this->getContentTableName())
-					->where($this->getForeignKeyName().' = :id', array(':id' => $this->id))
-					->queryRow();
-			}
+		if (!$language)
+			$language = b()->sites->current->language;
 
-			if (empty($this->_content))
-				$this->_content = array();
-		}
+		if (!isset($this->_content[$language]))
+			$this->_content[$language] = new Content($this, $language);
 
-		return $this->_content;
-	}
-
-	/**
-	 * Sets the content
-	 * @param $content
-	 */
-	public function setContent($content)
-	{
-		$this->_content = $content;
+		return $this->_content[$language];
 	}
 
 	/**
@@ -787,17 +767,5 @@ abstract class Model extends \CActiveRecord
 			if (isset($column['default']))
 				$this->_attributes[$attributeName] = $column['default'];
 		}
-	}
-
-	/**
-	 * Returns an instance of the specified model
-	 *
-	 * @static
-	 * @param string $class
-	 * @return object The model instance
-	 */
-	public static function model($class = __CLASS__)
-	{
-		return parent::model(get_called_class());
 	}
 }

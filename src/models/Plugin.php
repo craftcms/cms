@@ -11,7 +11,7 @@ class Plugin extends Model
 	protected $settingsTableName = 'pluginsettings';
 	protected $foreignKeyName = 'plugin_id';
 	protected $classSuffix = 'Plugin';
-	protected $hasSettings = true;
+	public $hasSettings = true;
 
 	protected $attributes = array(
 		'class'      => AttributeType::ClassName,

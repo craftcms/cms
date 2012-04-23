@@ -8,3 +8,5 @@ Thumbs.db
 Source/webgrind/
 Source/blocks/config/blocks.php
 Source/blocks/config/db.php
+
+.sass-cache/*

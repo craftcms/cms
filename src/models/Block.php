@@ -12,7 +12,7 @@ class Block extends Model
 	protected $settingsTableName = 'blocksettings';
 	protected $foreignKeyName = 'block_id';
 	protected $classSuffix = 'Block';
-	protected $hasSettings = true;
+	public $hasSettings = true;
 
 	protected $attributes = array(
 		'name'         => AttributeType::Name,
