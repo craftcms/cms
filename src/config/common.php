@@ -33,6 +33,7 @@ return array(
 			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
 			'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
 			'class'             => 'Blocks\DbConnection',
+			'pdoClass'          => 'Blocks\PDO',
 		),
 
 		'config' => array(
