@@ -10,7 +10,7 @@ class PluginsService extends Component
 	private $_fileSystemPlugins = array();
 
 	// A list of all of the plugins in the database.
-	private $_installedPlugins = array();
+	private $_dbPlugins = array();
 
 	// Holds the list of instantiated plugins for the current request.
 	private $_pluginInstances = array();
@@ -50,7 +50,21 @@ class PluginsService extends Component
 			}
 		}
 
+		// Sort by plugin name.
+		usort($pluginInstanceCopy, array($this, '_pluginNameSort'));
+
 		return $pluginInstanceCopy;
+	}
+
+	/**
+	 * Used for sorting the pluginInstances by plugin name.
+	 * @param $a
+	 * @param $b
+	 * @return bool
+	 */
+	private function _pluginNameSort($a, $b)
+	{
+		return $a['name'] > $b['name'];
 	}
 
 	/**
@@ -72,19 +86,21 @@ class PluginsService extends Component
 	}
 
 	/**
-	 * Accepts a plugin class short name (minus the namespace and 'Plugin' suffix) and returns an instantiated plugin either
-	 * from a previously created saved instance or a new instance.
+	 * Accepts a plugin case insensitive class short name (minus the namespace and 'Plugin' suffix) and returns an
+	 * instantiated plugin either from a previously created saved instance or a new instance.
 	 * @param $className
 	 * @return mixed
 	 */
 	public function getPlugin($className)
 	{
-		if (!isset($this->_pluginInstances[$className]))
+		$normalizedClassName = $this->_normalizeClassName($className);
+
+		if (!isset($this->_pluginInstances[$normalizedClassName]))
 		{
-			$this->_getPluginInternal($className);
+			$this->_getPluginInternal($normalizedClassName);
 		}
 
-		return $this->_pluginInstances[$className];
+		return $this->_pluginInstances[$normalizedClassName];
 	}
 
 	/**
@@ -109,54 +125,105 @@ class PluginsService extends Component
 	}
 
 	/**
-	 * Attempts to find a plugin by classname by first looking in the db and validating against the file system (for installed plugins)
-	 * and then looking on the file system and making sure it doesn't exist in the db (for non-installed plugins).
+	 * Enables a plugin.
+	 * @param $className
+	 * @return bool
+	 */
+	public function enable($className)
+	{
+		$plugin = $this->getPlugin($className);
+
+		$plugin->enabled = true;
+		if ($plugin->save())
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Disables a plugin.
+	 * @param $className
+	 * @return bool
+	 */
+	public function disable($className)
+	{
+		$plugin = $this->getPlugin($className);
+
+		$plugin->enabled = false;
+		if ($plugin->save())
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Installs a plugin.
+	 * @param $className
+	 * @return bool
+	 */
+	public function install($className)
+	{
+		$plugin = $this->getPlugin($className);
+		$plugin->installed = true;
+
+		if ($plugin->save())
+			return true;
+
+		return false;
+	}
+
+	/**
+	 * Uninstalls a plugin by removing it's record from the database.
+	 * @param $className
+	 * @return bool
+	 */
+	public function uninstall($className)
+	{
+		$plugin = $this->getPlugin($className);
+
+		if ($plugin->delete())
+		{
+			unset($this->_pluginInstances[$className]);
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Attempts to find a plugin by classname by first looking in the db and validating against the file system
+	 * (for installed plugins) and then looking on the file system and making sure it doesn't exist in the db (for non-installed plugins).
 	 * @param $className
 	 * @return mixed
 	 */
 	private function _getPluginInternal($className)
 	{
-		$plugin = Plugin::model()->findByAttributes(array(
+		// See if we can find the plugin class name in the database.
+		$dbPlugin = Plugin::model()->findByAttributes(array(
 			'class' => $className
 		));
 
-		if ($this->_validatePluginClassAgainstFileSystem($plugin))
+		// Plugin was found in the database so we at the very least know it has been installed before.
+		if ($dbPlugin)
 		{
-			$this->_instantiatePlugin($className, $plugin->name, $plugin->enabled, $plugin->installed);
-			return;
+			// Check and see if it still exists on the file system.
+			if ($this->_validatePluginClassAgainstFileSystem($dbPlugin->class))
+			{
+				// Instantiate it and add it to the plugin instance list.
+				$this->_instantiatePlugin($dbPlugin);
+				return;
+			}
 		}
-
-		if ($this->_validatePluginClassAgainstDatabases($className))
+		else
 		{
-			$this->_instantiatePlugin($className, $plugin->name, $plugin->enabled, $plugin->installed);
-			return;
+			// Plugin was not found in the database, see if it exists on the file system.
+			if ($this->_validatePluginClassAgainstFileSystem($className))
+			{
+				// On the file system, instantiate and add to the plugin instance list.
+				$this->_instantiatePlugin(null, $className);
+				return;
+			}
 		}
-	}
-
-	/**
-	 * Will instantiate the given class name, populate some default values and add it to our internal list $this->_pluginInstances.
-	 * @param $className
-	 * @param $pluginName
-	 * @param $enabled
-	 * @param $installed
-	 */
-	private function _instantiatePlugin($className, $pluginName, $enabled, $installed)
-	{
-		// Get plugins from the file system.
-		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
-
-		// Instantiate the plugin instance from the active record object.
-		$pluginInstance = new $fileSystemPlugins[$className][0];
-
-		if ($pluginName)
-			$pluginInstance->name = $pluginName;
-
-		$pluginInstance->class = $className;
-		$pluginInstance->enabled = $enabled;
-		$pluginInstance->installed = $installed;
-
-		// Add to our list.
-		$this->_pluginInstances[$className] = $pluginInstance;
 	}
 
 	/**
@@ -166,25 +233,60 @@ class PluginsService extends Component
 	private function _getAllPluginsInternal()
 	{
 		// Get all of the plugins from the database.
-		$installedPlugins = $this->_getInstalledPluginsInternal();
+		$dbPlugins = $this->_getDbPluginsInternal();
 
 		// Get all of the plugins on the file system
 		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
 
 		// Match all of the plugins registered in the database against the file system to make sure they still exist.
-		foreach ($installedPlugins as $installedPlugin)
+		foreach ($dbPlugins as $dbPlugin)
 		{
-			if ($this->_validatePluginClassAgainstFileSystem($installedPlugin->class))
-				$this->_instantiatePlugin($installedPlugin->class, $installedPlugin->name, $installedPlugin->enabled, true);
+			if ($this->_validatePluginClassAgainstFileSystem($dbPlugin->class))
+			{
+				$this->_instantiatePlugin($dbPlugin);
+			}
 		}
 
 		// Let's find any plugins that are on the file system, but not installed yet.
 		foreach ($fileSystemPlugins as $fileSystemPluginClass => $fileSystemPluginInfo)
 		{
 			// Found it, instantiate it and set a few default values.
-			if ($this->_validatePluginClassAgainstDatabases($fileSystemPluginClass))
-				$this->_instantiatePlugin($fileSystemPluginClass, null, false, false);
+			if (!$this->_validatePluginClassAgainstDatabase($fileSystemPluginClass))
+				$this->_instantiatePlugin(null, $fileSystemPluginClass);
 		}
+	}
+
+	/**
+	 * Will instantiate the given plugin. If the plugin already exists in the datbase, (installed) the instance will be of type
+	 * $plugin->class.  Otherwise, (not installed) $plugin should be null and $className will be the type of the plugin instance created.
+	 * The created plugin is added to the internal plugin instance list.
+	 * @param $plugin
+	 * @param $className
+	 */
+	private function _instantiatePlugin($plugin, $className = null)
+	{
+		$existing = $plugin && !$className;
+
+		// Get plugins from the file system.
+		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
+
+		if ($existing)
+		{
+			$pluginInstance = Plugin::model()->populateSubclassRecord($plugin);
+			$pluginInstance->installed = true;
+			$className = $pluginInstance->class;
+		}
+		else
+		{
+			// Instantiate the plugin instance from the active record object.
+			$pluginInstance = new $fileSystemPlugins[$className][0];
+			$pluginInstance->installed = false;
+			$pluginInstance->enabled = false;
+			$pluginInstance->class = $className;
+		}
+
+		// Add to our list.
+		$this->_pluginInstances[$className] = $pluginInstance;
 	}
 
 	/**
@@ -192,21 +294,21 @@ class PluginsService extends Component
 	 * @param $className
 	 * @return bool
 	 */
-	private function _validatePluginClassAgainstDatabases($className)
+	private function _validatePluginClassAgainstDatabase($className)
 	{
-		$installedPlugins = $this->_getInstalledPluginsInternal();
-		$notInstalled = true;
+		$dbPlugins = $this->_getDbPluginsInternal();
+		$installed = false;
 
-		foreach ($installedPlugins as $installedPlugin)
+		foreach ($dbPlugins as $dbPlugin)
 		{
-			if ($installedPlugin->class === $className)
+			if ($dbPlugin->class === $className)
 			{
-				$notInstalled = false;
+				$installed = true;
 				break;
 			}
 		}
 
-		return $notInstalled;
+		return $installed;
 	}
 
 	/**
@@ -218,24 +320,43 @@ class PluginsService extends Component
 	{
 		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
 
-		if (array_key_exists($className, $fileSystemPlugins))
+		if (array_key_exists(strtolower($className), array_change_key_case($fileSystemPlugins, CASE_LOWER)))
 			return true;
 
 		return false;
 	}
 
 	/**
+	 * Will take a plugin class name (presumably lower cased), match it to the plugins on the file system and return
+	 * the correct casing for the class name.
+	 * @param $className
+	 * @return null
+	 */
+	private function _normalizeClassName($className)
+	{
+		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
+
+		$index = array_search(strtolower($className), array_keys(array_change_key_case($fileSystemPlugins, CASE_LOWER)));
+
+		if ($index === false)
+			return null;
+
+		$keys = array_keys($fileSystemPlugins);
+		return $keys[$index];
+	}
+
+	/**
 	 * Gets all plugins recorded in the db.
 	 * @return array
 	 */
-	private function _getInstalledPluginsInternal()
+	private function _getDbPluginsInternal()
 	{
-		if (!$this->_installedPlugins)
+		if (!$this->_dbPlugins)
 		{
-			$this->_installedPlugins = Plugin::model()->findAll();
+			$this->_dbPlugins = Plugin::model()->findAll();
 		}
 
-		return $this->_installedPlugins;
+		return $this->_dbPlugins;
 	}
 
 	/**

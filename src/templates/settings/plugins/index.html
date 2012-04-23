@@ -1,0 +1,41 @@
+{layout "settings/_layouts/settings" pageTitle="Plugins"}
+
+{region "main"}
+	<div id="sites" class="pane">
+		<div class="pane-head">
+			<h5>Plugins</h5>
+		</div>
+		<div class="pane-body">
+			<table class="pane-body" width="95%">
+				{set allPlugins = plugins.getAll(1, 1)}
+				{foreach allPlugins as plugin}
+				<tr>
+					<form method="post" action="">
+						<input type="hidden" name="action" value="settings/savePlugin" />
+						<input type="hidden" name="redirect" value="settings/plugins" />
+						<input type="hidden" name="pluginClass" value="{:plugin.class}" />
+						<td width="80%"><a class="pane-item" href="{:url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a></td>
+						<td width="10%">{:plugin.version}</td>
+						<td>
+							{if plugin.installed}
+								<table>
+									<tr>
+										{if plugin.enabled}
+											<td><input class="btn big submit" type="submit" name="disable" value="Disable" /></td>
+										{else}
+										<td><input class="btn big submit" type="submit" name="enable" value="Enable" /></td>
+										{/if}
+										<td><input class="btn big submit" type="submit" name="uninstall" value="Uninstall" /></td>
+									</tr>
+								</table>
+							{else}
+								<input class="btn big submit" type="submit" name="install" value="Install" />
+							{/if}
+						</td>
+					</form>
+				</tr>
+				{/foreach}
+			</table>
+		</div>
+	</div>
+{/region}
