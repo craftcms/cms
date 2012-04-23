@@ -12,7 +12,7 @@ class EntryVersion extends Model
 		'language' => AttributeType::Language,
 		'draft'    => AttributeType::Boolean,
 		'num'      => array('type' => AttributeType::Int, 'unsigned' => true, 'required' => true),
-		'name'     => array('type' => AttributeType::Name, 'required' => true),
+		'name'     => AttributeType::Name,
 		'notes'    => AttributeType::TinyText,
 		'changes'  => AttributeType::MediumText
 	);
