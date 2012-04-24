@@ -51,12 +51,11 @@
 				<div class="{:block.classHandle}">
 					{:block.displayField}
 				</div>
-				{if entry.content.getError(block.handle)}
-					{include "_includes/error_list" errors=entry.content.getError(block.handle)}
+				{if entry.content.getErrors(block.handle)}
+					{include "_includes/error_list" errors=entry.content.getErrors(block.handle)}
 				{/if}
 			</div>
 		{/foreach}
-		{include "_includes/error_list" errors=entry.content.errors.body}
 
 		<input type="hidden" name="entryId" value="{:entry.id}"/>
 		{if entry.draft}

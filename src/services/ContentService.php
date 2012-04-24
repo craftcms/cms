@@ -393,10 +393,7 @@ class ContentService extends Component
 		{
 			// Validate the content
 			if (!$content->validate())
-			{
-				var_dump($content->errors); die();
 				return false;
-			}
 
 			// Save it
 			$content->save(false);
@@ -489,7 +486,7 @@ class ContentService extends Component
 	{
 		$drafts = b()->db->createCommand()
 			->from('entryversions')
-			->where(array('and', 'entry_id'=>$entryId, 'draft=1'))
+			->where(array('entry_id' => $entryId, 'draft' => true))
 			->order('date_created DESC')
 			->queryAll();
 
