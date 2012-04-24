@@ -51,10 +51,6 @@ class Tag
 				{
 					$var = @$this->_obj->$name;
 				}
-				catch (Exception $e)
-				{
-					$var = null;
-				}
 				catch (\Exception $e)
 				{
 					$var = null;
