@@ -25,4 +25,12 @@ class EntryVersion extends Model
 	protected $indexes = array(
 		array('columns' => array('num','draft','entry_id'), 'unique' => true)
 	);
+
+	public function name()
+	{
+		if ($this->draft)
+			return 'Draft '.$this->num;
+		else
+			return 'Version '.$this->num;
+	}
 }
