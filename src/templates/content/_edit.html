@@ -49,7 +49,8 @@
 					{/if}
 				</div>
 				<div class="{:block.classHandle}">
-					{:block.displayField}
+					{set data = entry.content.getValue(block.handle)}
+					{:block.displayField(data)}
 				</div>
 				{if entry.content.getErrors(block.handle)}
 					{include "_includes/error_list" errors=entry.content.getErrors(block.handle)}

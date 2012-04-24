@@ -182,7 +182,7 @@ class Entry extends Model
 	 */
 	public function getTitle()
 	{
-		return $this->content->title;
+		return $this->getContent()->getValue('title');
 	}
 
 	/**
@@ -190,20 +190,6 @@ class Entry extends Model
 	 */
 	public function getBlocks()
 	{
-		if (!isset($this->_blocks))
-		{
-			$content = $this->content;
-			$blocks = $this->section->blocks;
-
-			foreach ($blocks as $block)
-			{
-				$blockHandle = $block->handle;
-				$block->data = $content->$blockHandle;
-			}
-
-			$this->_blocks = $blocks;
-		}
-
-		return $this->_blocks;
+		return $this->section->getBlocks();
 	}
 }

@@ -45,13 +45,24 @@ class Content extends \CModel
 		if (isset($this->content[$name]))
 			return $this->content[$name];
 		else
+			return parent::__get($name);
+	}
+
+	/**
+	 * Gets the value of a content block
+	 */
+	public function getValue($name)
+	{
+		if (isset($this->content[$name]))
+			return $this->content[$name];
+		else
 			return null;
 	}
 
 	/**
-	 * Setter
+	 * Sets the value of a content block
 	 */
-	function __set($name, $value)
+	function setValue($name, $value)
 	{
 		$this->content[$name] = $value;
 	}
@@ -79,7 +90,7 @@ class Content extends \CModel
 		foreach ($this->record->blocks as $block)
 		{
 			if ($block->required)
-				$required[] = $block->handle;
+				$required[] = $block->name;
 		}
 
 		if (!empty($required))

@@ -384,7 +384,7 @@ class ContentService extends Component
 
 		foreach ($newContent as $handle => $value)
 		{
-			$content->$handle = $value;
+			$content->setValue($handle, $value);
 		}
 
 		// Start a transaction
