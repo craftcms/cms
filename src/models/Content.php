@@ -90,7 +90,7 @@ class Content extends \CModel
 		foreach ($this->record->blocks as $block)
 		{
 			if ($block->required)
-				$required[] = $block->name;
+				$required[] = $block->handle;
 		}
 
 		if (!empty($required))
