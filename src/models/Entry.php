@@ -153,28 +153,12 @@ class Entry extends Model
 		if (!$draft)
 			return;
 
+		// Keep a reference of the draft for getDraft()
 		$this->_draft = $draft;
 
-		$changes = json_decode($draft->changes, true);
-
-		if (isset($changes['title']))
-			$this->title = $changes['title'];
-
-		if (isset($changes['blocks']))
-		{
-			// Get all of the entry's blocks, indexed by their IDs
-			$blocksById = array();
-			foreach ($this->blocks as $block)
-			{
-				$blocksById[$block->id] = $block;
-			}
-
-			foreach ($changes['blocks'] as $blockId => $blockData)
-			{
-				if (isset($blocksById[$blockId]))
-					$blocksById[$blockId]->data = $blockData;
-			}
-		}
+		// Apply any content changes
+		$changes = $draft->getChanges();
+		$this->getContent()->setValues($changes);
 	}
 
 	/**

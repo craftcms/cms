@@ -49,7 +49,7 @@ class Content extends \CModel
 	}
 
 	/**
-	 * Gets the value of a content block
+	 * Gets the value of a content block.
 	 */
 	public function getValue($name)
 	{
@@ -60,11 +60,22 @@ class Content extends \CModel
 	}
 
 	/**
-	 * Sets the value of a content block
+	 * Sets the value of a content block.
+	 * @param string $name
+	 * @param string $value
 	 */
-	function setValue($name, $value)
+	public function setValue($name, $value)
 	{
 		$this->content[$name] = $value;
+	}
+
+	/**
+	 * Sets the values of multiple content blocks at once.
+	 * @param array $values
+	 */
+	public function setValues($values)
+	{
+		$this->content = array_merge($this->content, $values);
 	}
 
 	/**

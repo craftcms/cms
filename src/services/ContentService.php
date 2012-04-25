@@ -541,7 +541,7 @@ class ContentService extends Component
 		$version->name = $name;
 
 		if ($changes)
-			$version->changes = json_encode($changes);
+			$version->setChanges($changes);
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
@@ -637,7 +637,7 @@ class ContentService extends Component
 	 */
 	public function saveDraftChanges($draft, $newChanges)
 	{
-		$changes = json_decode($draft->changes, true);
+		$changes = $draft->getChanges();
 
 		// Save the new title if it has changed
 		if (isset($newChanges['title']))
@@ -662,7 +662,7 @@ class ContentService extends Component
 		}
 
 		// Save the changes
-		$draft->changes = json_encode($changes);
+		$draft->setChanges($changes);
 		$draft->save();
 	}
 
@@ -673,7 +673,7 @@ class ContentService extends Component
 	 */
 	public function publishDraft($entry, $draft)
 	{
-		$changes = json_decode($draft->changes, true);
+		$changes = $draft->getChanges();
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
