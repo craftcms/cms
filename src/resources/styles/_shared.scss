@@ -10,4 +10,5 @@ $linkcolor: #2d98db;
 $blurglowcolor: rgba(55,156,219,0);
 $focusglowcolor: #6eb1db;
 
-@mixin icon { display: inline-block; font-family: 'Pictos Custom'; text-align: center; vertical-align: middle; -webkit-font-smoothing: antialiased; }
+@mixin unselectable { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
+@mixin icon { display: inline-block; font-family: 'Pictos Custom'; text-align: center; vertical-align: middle; -webkit-font-smoothing: antialiased; @include unselectable; }
