@@ -1,4 +1,4 @@
-@import "colors";
+@import "shared";
 
 body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; }
 
@@ -27,8 +27,8 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 
 /* search */
 #header-right #search { position: relative; margin-right: 10px; }
-#header-right #search .icon { position: absolute; top: 4px; left: 6px; width: 16px; height: 16px; background: url(../images/search.png) no-repeat 0 0; }
-#header-right #search input { border: none; border-radius: 12px; padding: 5px 10px 5px 25px; width: 165px; height: 14px; font-size: 12px; background: -webkit-linear-gradient(#f5f3f0, #fff); -webkit-box-shadow: 0 0 0 $blurglowcolor, inset 0 0 0 1px rgba(153,151,150,0.5); -webkit-transition: -webkit-box-shadow linear 100ms; }
+#header-right #search:after { @include icon; content: 's'; display: block; position: absolute; top: 5px; left: 6px; font-size: 20px; color: $mediumlight; }
+#header-right #search input { border: none; border-radius: 12px; padding: 5px 10px 5px 24px; width: 165px; height: 14px; font-size: 12px; background: -webkit-linear-gradient(#f5f3f0, #fff); -webkit-box-shadow: 0 0 0 $blurglowcolor, inset 0 0 0 1px rgba(153,151,150,0.5); -webkit-transition: -webkit-box-shadow linear 100ms; }
 #header-right #search input:focus { outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor, inset 0 0 0 1px $focusglowcolor; }
 
 /* nav */
@@ -36,18 +36,9 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 #nav.fixed { position: fixed; top: 0; }
 #nav ul li { margin-bottom: 25px; }
 #nav ul li a { display: block; color: $mediumlight; text-align: center; -webkit-transition: color linear 100ms; }
-#nav ul li a .icon { display: block; height: 32px; margin-bottom: 5px; background: no-repeat 50% 50%; opacity: 0.2; -webkit-transition: opacity linear 100ms; }
-
+#nav ul li a:before { display: block; font-size: 40px; line-height: 32px; }
 #nav ul li a:hover { color: $medium; }
-#nav ul li a:hover .icon { opacity: 0.5; }
-
 #nav ul li a.sel { color: $dark; cursor: default; background: url(../images/nav-arrow.png) no-repeat 100% 50%; }
-#nav ul li a.sel .icon { opacity: 0.7; }
-
-#nav #nav-dashboard .icon { background-image: url(../images/navicons/195-dashboard.png); }
-#nav #nav-content .icon { background-image: url(../images/navicons/113-content.png); }
-#nav #nav-users .icon { background-image: url(../images/navicons/244-users.png); }
-#nav #nav-settings .icon { background-image: url(../images/navicons/266-settings.png); }
 
 /* main */
 #main { margin: 49px 25px 0 99px; border-radius: 3px; border: 1px solid $light; padding: 30px; min-height: 500px; color: $dark; background: #fff; -webkit-box-shadow: 0 1px 2px $light; }

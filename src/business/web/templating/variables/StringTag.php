@@ -17,6 +17,17 @@ class StringTag extends VarTag
 	/**
 	 * @return string
 	 */
+	public function charAt($index)
+	{
+		if ($this->_var)
+			return $this->_var[0];
+		else
+			return '';
+	}
+
+	/**
+	 * @return string
+	 */
 	public function uppercase()
 	{
 		return strtoupper($this->_var);

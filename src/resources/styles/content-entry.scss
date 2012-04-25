@@ -1,4 +1,4 @@
-@import "colors";
+@import "shared";
 
 #versions { float: right; width: 150px; }
 #versions li { border-top: 1px solid #f5f3f0; }
@@ -13,9 +13,9 @@
 #versions li a.sel { position: relative; z-index: 1; background-position: 0 -80px; }
 
 #versions li a.live .name { height: 32px; line-height: 32px; }
-#versions li a.live .status { position: absolute; top: 15px; right: 15px; }
+#versions li a.live .status { position: absolute; top: 15px; right: 13px; }
 #versions li a.live:not(.sel):active .status { top: 16px; }
-#versions li a.draft .icon { position: absolute; top: 13px; right: 10px; width: 16px; height: 14px; background: url(../images/draft-icon.png) no-repeat; }
+#versions li a.draft:after { display: block; position: absolute; top: 13px; right: 1px; font-size: 20px; width: 30px; color: $light; }
 #versions li a.draft:not(.sel):active .icon { top: 14px; }
 
 #new-draft { display: block; padding: 4px 5px; }

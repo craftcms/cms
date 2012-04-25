@@ -12,7 +12,7 @@
 	<table id="entries">
 		<tbody>
 			{foreach content.sections as section}
-				<h3>{:section.name}</h3>
+				<h3 data-icon="C">{:section.name}</h3>
 				<ul>
 					{foreach section.entries as entry}
 						<li><a href="{:url.base}content/edit/{:entry.id}">{:entry.title}</a></li>

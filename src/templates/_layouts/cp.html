@@ -17,7 +17,7 @@
 	</div>
 
 	<div id="header-right" class="header">
-		<div id="search"><span class="icon"></span><input class="nicetext" data-hint="search entries and users" type="text" /></div>
+		<div id="search"><input class="nicetext" data-hint="search entries and users" type="text" /></div>
 		<div id="me"><a href="{:url.base}users/edit/{:users.current.id}">{:users.current.username}</a></div>
 		<div id="logout"><a href="{:url.base}logout">logout</a></div>
 	</div>
@@ -33,7 +33,7 @@
 	<div id="nav">
 		<ul>
 			{foreach cp.sections as section}
-				<li id="nav-{:section.handle}"><a {if url.segment(1)==section.handle}class="sel"{/if} href="{:url.base}{:section.handle}"><span class="icon"></span>{:section.name}</a></li>
+				<li id="nav-{:section.handle}"><a {if url.segment(1)==section.handle}class="sel"{/if} href="{:url.base}{:section.handle}" data-icon="{:section.handle.charAt(0).uppercase}">{:section.name}</a></li>
 			{/foreach}
 		</ul>
 	</div>

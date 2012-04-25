@@ -1,4 +1,5 @@
-@import "colors";
+@import "shared";
 
-#main h3 { margin: 30px 0 10px; padding-left: 30px; background: url(../images/section-icon.png) no-repeat 3px 0; }
+#main h3 { margin: 30px 0 10px; }
+#main h3:before { width: 30px; color: $light; font-size: 32px; }
 #main ul li { margin: 5px 0 0 30px; }

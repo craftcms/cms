@@ -1,10 +1,13 @@
-@import "colors";
+@import "shared";
 @import "reset";
 @import "layout";
 
 /* ----------------------------------------
 /*  Basic stuff
 /* ----------------------------------------*/
+
+[data-icon]:before { @include icon; content: attr(data-icon); }
+[data-icon-after]:after { @include icon; content: attr(data-icon-after); }
 
 h1,
 h1 > .text { font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 36px; line-height: 40px; color: $dark; }
@@ -282,7 +285,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .field { margin: 25px 0; position: relative; }
 .field .heading { margin-bottom: 5px; }
 .field .heading h4 { display: inline-block; }
-.field .heading label.required { padding-right: 14px; background: url(../images/required.png) no-repeat 100% 50%; }
+.field .heading label.required:after { @include icon; content: '*'; padding-left: 5px; font-size: 9px; color: #8a1f11; }
 .field .heading p { display: inline-block; margin-left: 3px; border-left: 1px solid $ultralight; padding-left: 7px; color: $mediumlight; }
 
 .pane-item.field,

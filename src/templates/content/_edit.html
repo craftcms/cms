@@ -27,8 +27,7 @@
 				</a></li>
 			{/if}
 			{foreach entry.drafts as draft}
-				<li><a href="{:url.base}content/edit/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}">
-					<div class="icon"></div>
+				<li><a href="{:url.base}content/edit/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}" data-icon-after="d">
 					<div class="name">{:draft.name}</div>
 					<div class="author">{:draft.author.firstNameLastInitial}</div>
 				</a></li>
