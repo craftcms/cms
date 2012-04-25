@@ -18,6 +18,6 @@
 #versions li a.draft:after { display: block; position: absolute; top: 13px; right: 1px; font-size: 20px; width: 30px; color: $light; }
 #versions li a.draft:not(.sel):active .icon { top: 14px; }
 
-#new-draft { display: block; padding: 4px 5px; }
+#new-draft a { display: block; padding: 4px 5px; }
 
 #content { margin-right: 200px; }

@@ -33,7 +33,12 @@
 				</a></li>
 			{/foreach}
 		</ul>
-		<a id="new-draft">new draft…</a>
+
+		<form id="new-draft" method="post" action="">
+			<input type="hidden" name="action" value="content/createDraft" />
+			<input type="hidden" name="entryId" value="{:entry.id}" />
+			<a>new draft…</a>
+		</form>
 	</div>
 
 	<form id="content" method="post" action="">
@@ -74,6 +79,10 @@
 
 {region "scripts"}
 	<script type="text/javascript">
+		$('#new-draft a').click(function() {
+			$('#new-draft').submit();
+		});
+
 		{if entry.draft}
 			$('#publishDraftBtn').click(function() {
 				$('#action').val('content/publishDraft');

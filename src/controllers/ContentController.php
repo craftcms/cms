@@ -106,17 +106,8 @@ class ContentController extends Controller
 		if (!$entryId)
 			throw new Exception('No entry exists with the ID '.$entryId);
 
-		// Get the changes
-		$changes = array();
-
-		if (($title = b()->request->getPost('title')) !== null)
-			$changes['title'] = $title;
-
-		foreach ($entry->blocks as $block)
-			if (($val = b()->request->getPost($block->handle)) !== null)
-				$changes[$block->handle] = $val;
-
 		// Save the new content
+		$changes = $this->getEntryChangesFromPost($entry);
 		if (b()->content->saveEntryContent($entry, $changes))
 		{
 			b()->user->setMessage(MessageType::Notice, 'Entry saved.');
@@ -131,6 +122,46 @@ class ContentController extends Controller
 		}
 
 		$this->loadRequestedTemplate(array('entry' => $entry));
+	}
+
+	/**
+	 * Creates a new draft.
+	 */
+	public function actionCreateDraft()
+	{
+		$this->requirePostRequest();
+
+		$entryId = b()->request->getRequiredPost('entryId');
+
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entry)
+			throw new Exception('No entry exists with the ID '.$entryId);
+
+		$changes = $this->getEntryChangesFromPost($entry);
+		$draftName = b()->request->getPost('draftName');
+		$draft = b()->content->createEntryVersion($entry, true, $changes, $draftName);
+
+		$this->redirect("content/edit/{$entry->id}/draft{$draft->num}");
+	}
+
+	/**
+	 * Returns any entry changes in the post data
+	 * @access private
+	 * @param  Entry $entry
+	 * @return array
+	 */
+	private function getEntryChangesFromPost($entry)
+	{
+		$changes = array();
+
+		if (($title = b()->request->getPost('title')) !== null)
+			$changes['title'] = $title;
+
+		foreach ($entry->blocks as $block)
+			if (($val = b()->request->getPost($block->handle)) !== null)
+				$changes[$block->handle] = $val;
+
+		return $changes;
 	}
 
 
@@ -165,27 +196,6 @@ class ContentController extends Controller
 
 		if (!empty($draft))
 			$entry->draft = $draft;
-
-		$this->returnEntryEditPage($entry);
-	}
-
-	/**
-	 * Creates a new draft
-	 */
-	public function actionCreateDraft()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$entryId = b()->request->getRequiredPost('entryId');
-
-		$entry = b()->content->getEntryById($entryId);
-		if (!$entry)
-			$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-		$draftName = b()->request->getPost('draftName');
-		$draft = b()->content->createDraft($entryId, null, $draftName);
-		$entry->draft = $draft;
 
 		$this->returnEntryEditPage($entry);
 	}
