@@ -3,9 +3,9 @@
 #versions { float: right; width: 150px; }
 #versions li { border-top: 1px solid #f5f3f0; }
 #versions li:last-child { border-bottom: 1px solid #f5f3f0; }
-#versions li a { display: block; position: relative; margin: -1px -2px -1px -20px; padding: 4px 31px 4px 25px; background: url(../images/draft-option-bg.png) no-repeat 0 -120px; }
+#versions li a { display: block; position: relative; margin: -1px -2px -1px -20px; padding: 4px 31px 4px 25px; text-shadow: 0 1px 0 #fff; background: url(../images/draft-option-bg.png) no-repeat 0 -120px; }
 #versions li a .name,
-#versions li a .author { height: 16px; line-height: 16px; overflow: hidden; white-space: pre; text-overflow: ellipsis; text-shadow: 0 1px 0 #fff; }
+#versions li a .author { height: 16px; line-height: 16px; overflow: hidden; white-space: pre; text-overflow: ellipsis; }
 #versions li a .name { font-weight: bold; color: $medium; }
 #versions li a .author { color: $light; }
 #versions li a:hover { position: relative; text-decoration: none; background-position: 0 0; }
