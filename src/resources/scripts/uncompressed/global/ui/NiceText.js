@@ -37,6 +37,8 @@ b.ui.NiceText = b.Base.extend({
 		{
 			this.minHeight = this.getStageHeight('');
 			this.setHeight();
+
+			this.addListener(b.$window, 'resize', 'setHeight');
 		}
 
 		if (this.settings.hint)
@@ -114,7 +116,6 @@ b.ui.NiceText = b.Base.extend({
 			position: 'absolute',
 			top: -9999,
 			left: -9999,
-			width: this.$input.width(),
 			wordWrap: 'break-word'
 		});
 
@@ -125,6 +126,8 @@ b.ui.NiceText = b.Base.extend({
 	{
 		if (!this.$stage)
 			this.buildStage();
+
+		this.$stage.css('width', this.$input.width());
 
 		if (!val)
 		{
