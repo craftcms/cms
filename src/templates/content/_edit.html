@@ -18,26 +18,32 @@
 
 
 {region "main"}
-	<div id="versions">
-		<ul>
-			{if entry.published}
-				<li><a href="{:url.base}content/edit/{:entry.id}" class="live {if !entry.draft}sel{/if}">
+	<div id="sidebar">
+		{if entry.published}
+			<ul>
+				<li><a href="{:url.base}content/edit/{:entry.id}" class="published {if !entry.draft}sel{/if}">
 					<div class="status on"></div>
 					<div class="name">Published</div>
 				</a></li>
-			{/if}
-			{foreach entry.drafts as draft}
-				<li><a href="{:url.base}content/edit/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}" data-icon-after="d">
-					<div class="name">{:draft.name}</div>
-					<div class="author">{:draft.author.firstNameLastInitial}</div>
-				</a></li>
-			{/foreach}
-		</ul>
+			</ul>
+		{/if}
+
+		{if entry.drafts}
+			<h6>Drafts</h6>
+			<ul>
+				{foreach entry.drafts as draft}
+					<li><a href="{:url.base}content/edit/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}" data-icon-after="d">
+						<div class="name">{:draft.name}</div>
+						<div class="author">{:draft.author.firstNameLastInitial}</div>
+					</a></li>
+				{/foreach}
+			</ul>
+		{/if}
 
 		<form id="new-draft" method="post" action="">
 			<input type="hidden" name="action" value="content/createDraft" />
 			<input type="hidden" name="entryId" value="{:entry.id}" />
-			<a>new draft…</a>
+			<input type="submit" value="New draft" class="btn light" />
 		</form>
 	</div>
 
@@ -66,12 +72,12 @@
 		{if entry.draft}
 			<input type="hidden" name="draftId" value="{:entry.draft.id}"/>
 			<input type="hidden" name="action" id="action" value="content/saveDraft"/>
-			<input type="submit" value="save draft" class="btn big submit"/>
-			<input type="button" value="pubish draft" id="publishDraftBtn" class="btn big"/>
+			<input type="submit" value="Save draft" class="btn big submit"/>
+			<input type="button" value="Pubish" id="publishDraftBtn" class="btn big"/>
 		{else}
 			<input type="hidden" name="action" id="action" value="content/saveEntry"/>
-			<input type="submit" value="save entry" class="btn big submit"/>
-			<input type="button" value="save as draft" id="saveAsDraftBtn" class="btn big"/>
+			<input type="submit" value="Publish" class="btn big submit"/>
+			<input type="button" value="Save as a draft" id="saveAsDraftBtn" class="btn big"/>
 		{/if}
 	</form>
 {/region}
@@ -79,10 +85,6 @@
 
 {region "scripts"}
 	<script type="text/javascript">
-		$('#new-draft a').click(function() {
-			$('#new-draft').submit();
-		});
-
 		{if entry.draft}
 			$('#publishDraftBtn').click(function() {
 				$('#action').val('content/publishDraft');

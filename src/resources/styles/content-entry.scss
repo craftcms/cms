@@ -1,23 +1,26 @@
 @import "shared";
 
-#versions { float: right; width: 150px; }
-#versions li { border-top: 1px solid #f5f3f0; }
-#versions li:last-child { border-bottom: 1px solid #f5f3f0; }
-#versions li a { display: block; position: relative; margin: -1px -2px -1px -20px; padding: 4px 31px 4px 25px; text-shadow: 0 1px 0 #fff; background: url(../images/draft-option-bg.png) no-repeat 0 -120px; }
-#versions li a .name,
-#versions li a .author { height: 16px; line-height: 16px; overflow: hidden; white-space: pre; text-overflow: ellipsis; }
-#versions li a .name { font-weight: bold; color: $medium; }
-#versions li a .author { color: $light; }
-#versions li a:hover { position: relative; text-decoration: none; background-position: 0 0; }
-#versions li a:not(.sel):active { position: relative; padding-top: 5px; padding-bottom: 3px; background-position: 0 -40px; }
-#versions li a.sel { position: relative; z-index: 1; background-position: 0 -80px; }
+#main { background: #fff url(../images/sidebar-bg.gif) repeat-y 100% 0; }
 
-#versions li a.live .name { height: 32px; line-height: 32px; }
-#versions li a.live .status { position: absolute; top: 15px; right: 13px; }
-#versions li a.live:not(.sel):active .status { top: 16px; }
-#versions li a.draft:after { display: block; position: absolute; top: 13px; right: 1px; font-size: 20px; width: 30px; color: $light; }
-#versions li a.draft:not(.sel):active .icon { top: 14px; }
+#sidebar { float: right; border-radius: 0 3px 3px 0; margin: -30px; padding: 30px 15px; width: 169px; }
 
-#new-draft a { display: block; padding: 4px 5px; }
+#sidebar ul { margin-bottom: 25px; }
+#sidebar ul li { border-top: 1px solid $bgcolor; }
+#sidebar ul li:last-child { border-bottom: 1px solid $bgcolor; }
+#sidebar ul li a { display: block; position: relative; margin: -1px -15px; border: solid transparent; border-width: 1px 0; padding: 4px 30px 4px 15px; color: $light; text-shadow: 0 1px 0 #fff; }
+#sidebar ul li a .name,
+#sidebar ul li a .author { overflow: hidden; white-space: pre; text-overflow: ellipsis; }
+#sidebar ul li a .name { height: 16px; line-height: 16px; }
+#sidebar ul li a .author { height: 14px; line-height: 14px; font-size: 11px; }
+#sidebar ul li a:hover { color: $mediumlight; text-decoration: none; }
+#sidebar ul li a.sel { z-index: 1; border-color: $ultralight; color: $medium; background: $bgcolor; }
+
+#sidebar ul li a.published .name { height: 30px; line-height: 30px; }
+#sidebar ul li a.published .status { position: absolute; top: 15px; right: 15px; }
+#sidebar ul li a.published:not(.sel):active .status { top: 16px; }
+#sidebar ul li a.draft:after { display: block; position: absolute; top: 13px; right: 3px; font-size: 20px; width: 30px; }
+#sidebar ul li a.draft:not(.sel):active .icon { top: 14px; }
+
+#sidebar h6 { margin-bottom: 3px; }
 
 #content { margin-right: 200px; }
