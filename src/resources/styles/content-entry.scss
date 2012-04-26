@@ -16,9 +16,9 @@
 #sidebar ul li a.sel { z-index: 1; border-color: $ultralight; color: $medium; background: $bgcolor; }
 
 #sidebar ul li a.published .name { height: 30px; line-height: 30px; }
-#sidebar ul li a.published .status { position: absolute; top: 15px; right: 15px; }
+#sidebar ul li a.published .status { position: absolute; top: 14px; right: 15px; }
 #sidebar ul li a.published:not(.sel):active .status { top: 16px; }
-#sidebar ul li a.draft:after { display: block; position: absolute; top: 13px; right: 3px; font-size: 20px; width: 30px; }
+#sidebar ul li a.draft:after { display: block; position: absolute; top: 12px; right: 3px; font-size: 20px; width: 30px; }
 #sidebar ul li a.draft:not(.sel):active .icon { top: 14px; }
 
 #sidebar h6 { margin-bottom: 3px; }
