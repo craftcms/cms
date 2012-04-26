@@ -124,7 +124,6 @@ return CMap::mergeArray(
 					array('update/({segment})',                      'update', array('handle')),
 					array('users/new',                               'users/_edit'),
 					array('users/edit/({number})',                   'users/_edit', array('userId')),
-					array('users/view/({number})',                   'users/view', array('userId')),
 					array('settings/blocks/new',                     'settings/blocks/_edit'),
 					array('settings/blocks/edit/({number})',         'settings/blocks/_edit', array('blockId')),
 					array('content/edit/({number})',                 'content/_edit', array('entryId')),
