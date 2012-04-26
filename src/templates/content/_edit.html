@@ -5,9 +5,9 @@
 	{/if}
 {/if}
 
-<?php $pageTitle = new Tag('Editing “'.$entry->title().'”'); ?>
+<?php $pageTitle = new TemplateVariable('Editing “'.$entry->title().'”'); ?>
 {if entry.draft}
-	<?php $pageTitle = new Tag($pageTitle.' ('.$entry->draft()->name().')'); ?>
+	<?php $pageTitle = new TemplateVariable($pageTitle.' ('.$entry->draft()->name().')'); ?>
 {/if}
 {layout "_layouts/cp" pageTitle=pageTitle crumbs="content:Content"}
 
