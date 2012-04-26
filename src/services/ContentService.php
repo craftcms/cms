@@ -308,7 +308,7 @@ class ContentService extends Component
 			b()->db->createCommand()->insert($table, array(
 				'entry_id' => $entry->id,
 				'language' => $entry->section->site->language,
-				'title'    => ($title ? $title : 'Untitled')
+				'title'    => $title
 			));
 
 			// Commit the transaction and return the entry

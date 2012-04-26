@@ -15,8 +15,15 @@
 				<h3 data-icon="C">{:section.name}</h3>
 				<ul>
 					{foreach section.entries as entry}
-						<li><a href="{:url.base}content/edit/{:entry.id}">{:entry.title}</a></li>
+						<li><a href="{:url.base}content/edit/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a></li>
 					{/foreach}
+					<li>
+						<form method="post" action="">
+							<input type="hidden" name="action" value="content/createEntry" />
+							<input type="hidden" name="sectionId" value="{:section.id}" />
+							<input type="submit" value="New entry" class="btn light" />
+						</form>
+					</li>
 				</ul>
 			{/foreach}
 		</tbody>

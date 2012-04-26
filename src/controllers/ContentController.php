@@ -75,22 +75,17 @@ class ContentController extends Controller
 	public function actionCreateEntry()
 	{
 		$this->requirePostRequest();
-		$this->requireAjaxRequest();
 
 		$sectionId = b()->request->getRequiredPost('sectionId');
-		$title     = b()->request->getPost('title');
 
 		// Create the entry
-		$entry = b()->content->createEntry($sectionId, null, null, $title);
-
-		// Save its slug
-		if ($entry->section->has_urls)
-			b()->content->saveEntrySlug($entry, strtolower($title));
+		$entry = b()->content->createEntry($sectionId);
 
 		// Create the first draft
-		$entry->draft = b()->content->createDraft($entry->id, null, 'Draft 1');
+		$draft = b()->content->createEntryDraft($entry);
 
-		$this->returnEntryJson($entry);
+		b()->user->setMessage(MessageType::Notice, 'Entry created.');
+		$this->redirect("content/edit/{$entry->id}/draft{$draft->num}");
 	}
 
 	/**
