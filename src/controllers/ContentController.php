@@ -133,7 +133,7 @@ class ContentController extends Controller
 		$draftName = b()->request->getPost('draftName');
 
 		// Create the new draft
-		$draft = b()->content->createEntryVersion($entry, true, $changes, $draftName);
+		$draft = b()->content->createEntryDraft($entry, $changes, $draftName);
 
 		b()->user->setMessage(MessageType::Notice, 'Draft created.');
 		$this->redirect("content/edit/{$entry->id}/draft{$draft->num}");

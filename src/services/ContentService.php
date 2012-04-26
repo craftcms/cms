@@ -399,7 +399,7 @@ class ContentService extends Component
 			$content->save(false);
 
 			// Create a new entry version
-			$this->createEntryVersion($entry, false, $newContent, null, $language);
+			$this->createEntryVersion($entry, $newContent, null, $language);
 
 			$transaction->commit();
 		}
@@ -518,13 +518,13 @@ class ContentService extends Component
 	/**
 	 * Creates a new entry version
 	 * @param mixed  $entry    The Entry record, or an entry ID.
-	 * @param bool   $isDraft  Whether this is a draft. Defaults to false.
 	 * @param array  $changes  The changes to be saved with the version.
 	 * @param string $name     The name of the version.
-	 * @param string $language The language the content is in
-	 * @return EntryVersion The new draft record
+	 * @param string $language The language the content is in.
+	 * @param bool   $draft    Whether this is a draft. Defaults to false.
+	 * @return EntryVersion The new version record.
 	 */
-	public function createEntryVersion($entry, $draft = false, $changes = null, $name = null, $language = null)
+	public function createEntryVersion($entry, $changes = null, $name = null, $language = null, $draft = false)
 	{
 		if (is_numeric($entry))
 		{
@@ -586,6 +586,19 @@ class ContentService extends Component
 		}
 
 		return $version;
+	}
+
+	/**
+	 * Creates a new entry draft
+	 * @param mixed  $entry    The Entry record, or an entry ID.
+	 * @param array  $changes  The changes to be saved with the version.
+	 * @param string $name     The name of the version.
+	 * @param string $language The language the content is in.
+	 * @return EntryVersion The new draft record.
+	 */
+	public function createEntryDraft($entry, $changes = null, $name = null, $language = null)
+	{
+		return $this->createEntryVersion($entry, $changes, $name, $language, true);
 	}
 
 	/**
