@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AppTag
+class AppVariable
 {
 	/**
 	 * @return string

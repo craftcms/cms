@@ -19,55 +19,17 @@ class HttpRequest extends \CHttpRequest
 	private $_isMobileBrowser;
 
 	/**
-	 *
-	 */
-	public function init()
-	{
-		parent::init();
-		b()->attachEventHandler('onBeginRequest',array($this,'correctUrlFormat'));
-	}
-
-	/**
-	 * If there is no URL path, check for a path against the "other" URL format, and redirect to the correct URL format if we find one
-	 */
-	public function correctUrlFormat()
-	{
-		if (!$this->path)
-		{
-			if ($this->urlFormat == UrlFormat::PathInfo)
-			{
-				if ($this->queryStringPath)
-				{
-					$params = isset($_GET) ? $_GET : array();
-					$pathVar = b()->config->pathVar;
-					unset($params[$pathVar]);
-					$url = UrlHelper::generateUrl($this->queryStringPath, $params);
-					$this->redirect($url);
-				}
-			}
-			else
-			{
-				if ($this->pathInfo)
-				{
-					$params = isset($_GET) ? $_GET : array();
-					$url = UrlHelper::generateUrl($this->pathInfo, $params);
-					$this->redirect($url);
-				}
-			}
-		}
-	}
-
-	/**
 	 * @return mixed
 	 */
 	public function getPath()
 	{
 		if (!isset($this->_path))
 		{
+			// urlFormat determines where to look for a path first
 			if ($this->urlFormat == UrlFormat::PathInfo)
-				$this->_path = $this->pathInfo;
+				$this->_path = $this->pathInfo ? $this->pathInfo : $this->queryStringPath;
 			else
-				$this->_path = $this->queryStringPath;
+				$this->_path = $this->$this->queryStringPath ? $this->queryStringPath : $this->pathInfo;
 		}
 
 		return $this->_path;
@@ -85,7 +47,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = b()->config->pathVar;
+			$pathVar = b()->urlManager->routeVar;
 			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 
@@ -187,7 +149,7 @@ class HttpRequest extends \CHttpRequest
 							}
 						}
 					}
-					catch (Exception $e)
+					catch (\Exception $e)
 					{
 						Blocks::log('Unable to determine if server PATH_INFO is enabled: '.$e->getMessage());
 					}

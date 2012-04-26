@@ -23,6 +23,16 @@ class ContentService extends Component
 	}
 
 	/**
+	 * Returns all sections across all sites.
+	 * @return mixed
+	 */
+	public function getAllSections()
+	{
+		$sections = Section::model()->findAll();
+		return $sections;
+	}
+
+	/**
 	 * Get the sub sections of another section
 	 * @param int $parentId The ID of the parent section
 	 * @return array
@@ -414,6 +424,7 @@ class ContentService extends Component
 
 	/**
 	 * Returns the full URI for an entry
+	 * @param $entry
 	 * @return mixed
 	 */
 	public function getEntryUri($entry)

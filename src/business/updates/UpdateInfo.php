@@ -21,6 +21,6 @@ class UpdateInfo
 
 		if (isset($properties['plugins']))
 			foreach ($properties['plugins'] as $pluginData)
-				$this->plugins[$pluginData['handle']] = new PluginUpdateInfo($pluginData);
+				$this->plugins[$pluginData['class']] = new PluginUpdateInfo($pluginData);
 	}
 }

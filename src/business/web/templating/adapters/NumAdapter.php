@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class NumTag extends VarTag
+class NumAdapter extends Adapter
 {
 	/**
 	 * @param $num

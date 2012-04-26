@@ -42,15 +42,15 @@
 			<label for="{:idPrefix}required">Required?</label>
 		</div>
 		<div class="right">
-			<?php $id = new Tag($idPrefix.'required') ?>
-			<?php $name = new Tag($namePrefix.'[required]') ?>
+			<?php $id = new TemplateVariable($idPrefix.'required') ?>
+			<?php $name = new TemplateVariable($namePrefix.'[required]') ?>
 			{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
 		</div>
 		<div class="clear"></div>
 	</div>
 </div>
 
-<?php $namePrefix = new Tag($namePrefix.'[settings]') ?>
+<?php $namePrefix = new TemplateVariable($namePrefix.'[settings]') ?>
 <div class="blocktypesettings">
 	<div class="{:block.class} nested-pane-items">
 		{:block.displaySettings(idPrefix, namePrefix)}

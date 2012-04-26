@@ -34,6 +34,8 @@ class UpdatesService extends Component
 				'critical' => $updateInfo->blocks->criticalUpdateAvailable,
 				'manualUpdateRequired' => $updateInfo->blocks->manualUpdateRequired,
 				'notes' => $notes,
+				'latestVersion' => $updateInfo->blocks->latestVersion,
+				'latestBuild' => $updateInfo->blocks->latestBuild,
 			);
 
 		}
@@ -188,13 +190,15 @@ class UpdatesService extends Component
 	/**
 	 * @param $version
 	 * @param $build
+	 * @param $releaseDate
 	 * @return bool
 	 */
-	public function setNewVersionAndBuild($version, $build)
+	public function setNewBlocksInfo($version, $build, $releaseDate)
 	{
 		$info = Info::model()->find();
 		$info->version = $version;
 		$info->build = $build;
+		$info->release_date = $releaseDate;
 
 		if ($info->save())
 			return true;
@@ -236,41 +240,20 @@ class UpdatesService extends Component
 		$updateInfo->blocks->localBuild = Blocks::getBuild();
 		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
-		$plugins = b()->plugins->allInstalledPluginHandlesAndVersions;
-		foreach ($plugins as $plugin)
-			$updateInfo->plugins[$plugin['handle']] = new PluginUpdateInfo($plugin);
+		$plugins = b()->plugins->enabledPluginClassNamesAndVersions;
+		foreach ($plugins as $className => $localversion)
+		{
+			$pluginUpdateInfo = new PluginUpdateInfo();
+			$pluginUpdateInfo->class = $className;
+			$pluginUpdateInfo->localVersion = $localversion;
+
+			$updateInfo->plugins[$className] = $pluginUpdateInfo;
+		}
 
 		$response = b()->et->check($updateInfo);
 
 		$updateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
 		return $updateInfo;
-	}
-
-	/**
-	 * @return bool
-	 */
-	public function runMigrationsToTop()
-	{
-		Blocks::log('Running migrations to top.', \CLogger::LEVEL_INFO);
-		$response = Migration::runToTop();
-		if ($this->_wasMigrationSuccessful($response))
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * @param $migrationName
-	 * @return bool
-	 */
-	public function runMigration($migrationName)
-	{
-		Blocks::log('Running migration '.$migrationName, \CLogger::LEVEL_INFO);
-		$response = Migration::run($migrationName);
-		if ($this->_wasMigrationSuccessful($response))
-			return true;
-
-		return false;
 	}
 
 	/**
@@ -310,6 +293,29 @@ class UpdatesService extends Component
 	}
 
 	/**
+	 * Checks to see if Blocks can write to a defined set of folders/files that are needed for auto-update to work.
+	 * @return array|null
+	 */
+	public function checkWritableRequirements()
+	{
+		$checkPaths = array(
+			b()->file->set(b()->path->appPath, false),
+			b()->file->set(b()->path->pluginsPath, false),
+		);
+
+		$errorPath = null;
+		foreach ($checkPaths as $writablePath)
+		{
+			if (!$writablePath->writable)
+			{
+				$errorPath[] = $writablePath->realPath;
+			}
+		}
+
+		return $errorPath;
+	}
+
+	/**
 	 * @param $updates
 	 * @param $name
 	 * @return string
@@ -325,17 +331,4 @@ class UpdatesService extends Component
 
 		return $notes;
 	}
-
-	/**
-	 * @param $response
-	 * @return bool
-	 */
-	private function _wasMigrationSuccessful($response)
-	{
-		if (strpos($response, 'Migrated up successfully.') !== false || strpos($response, 'No new migration found.') !== false)
-			return true;
-
-		return false;
-	}
-
 }

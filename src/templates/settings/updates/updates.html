@@ -17,7 +17,6 @@
 						<td class="pane-item">
 							<strong>{:update.name}</strong> {:update.version}
 							{if update.critical}<div class="badge warning">Critical</div>{/if}
-							
 						</td>
 						<td class="pane-item">
 							{if update.notes}
@@ -27,18 +26,11 @@
 								</div>
 							{/if}
 						</td>
-						{!--<td>
-							<div class="notes body">
-								<div class="pane-item">
-									{:update.notes}
-								</div>
-							</div>
-						</div>--}
 						<td class="pane-item">
 							{if update.manualUpdateRequired}
-								<span class="manual">Manual update required</span>
+								<span class="manual"><a href="http://blockscms.com/alpha/blocks_standard_{:update.latestVersion}.{:update.latestBuild}.zip">Manual update required</a></span>
 							{else}
-								<form method="post" action="{:url.base}update/{:update.handle}">{if !update.manualUpdateRequired}<input class="btn" type="submit" value="Update">{/if}</form>
+								<form method="post" action="{:url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
 							{/if}
 						</td>
 					</tr>
@@ -47,6 +39,36 @@
 			</table>
 		</div>
 	</div>
+
+	{if updates.plugins}
+		<div class="pane">
+			<div class="pane-body">
+				<table>
+					<tbody>
+						{foreach updates.plugins as plugin}
+						<tr id="{:plugin.handle}">
+							<td class="pane-item">
+								<strong>{:plugin.name}</strong> {:plugin.version}
+								{if plugin.critical}<div class="badge warning">Critical</div>{/if}
+							</td>
+							<td class="pane-item">
+								{if plugin.notes}
+									<a class="notes">Show release notes</a>
+									<div style="display:none">
+										{:plugin.notes.nl2br}
+									</div>
+								{/if}
+							</td>
+							<td class="pane-item">
+								<form method="post" action="{:url.base}update/{:plugin.handle}"><input class="btn" type="submit" value="Update"></form>
+							</td>
+						</tr>
+						{/foreach}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	{/if}
 
 {else}
 

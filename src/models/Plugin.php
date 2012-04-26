@@ -14,6 +14,7 @@ class Plugin extends Model
 	public $hasSettings = true;
 
 	protected $attributes = array(
+		'name'       => AttributeType::Name,
 		'class'      => AttributeType::ClassName,
 		'version'    => AttributeType::Version,
 		'enabled'    => array('type' => AttributeType::Boolean, 'default' => true)
@@ -22,4 +23,7 @@ class Plugin extends Model
 	protected $hasMany = array(
 		'settings' => array('model' => 'PluginSetting', 'foreignKey' => 'plugin')
 	);
+
+	// Plugins subclass properties.
+	public $installed = false;
 }

@@ -12,8 +12,8 @@ class TemplateParser
 	protected $_variables;
 
 	const stringPattern = '\[MARKER:\d+\]';
-	const tagPattern = '(?<![-\.\'"\w\/\[])[A-Za-z]\w*';
-	const subtagPattern = '(?P<subtag>
+	const varPattern = '(?<![-\.\'"\w\/\[])[A-Za-z]\w*';
+	const subVarPattern = '(?P<subtag>
 		\.
 		(?P<func>[A-Za-z]\w*)        # <func>
 		(?:\(                           # parentheses (optional)
@@ -150,7 +150,7 @@ class TemplateParser
 			$head .= '// Predefine all vars used in this template to avoid "Undefined variable" errors.'.PHP_EOL;
 			foreach ($this->_variables as $var)
 			{
-				$head .= "if (!isset(\${$var})) \${$var} = TemplateHelper::getGlobalTag('{$var}');".PHP_EOL;
+				$head .= "if (!isset(\${$var})) \${$var} = TemplateHelper::getGlobalVariable('{$var}');".PHP_EOL;
 			}
 			$head .= PHP_EOL;
 		}
@@ -224,7 +224,7 @@ class TemplateParser
 			{
 				return $this->$func($body);
 			}
-			catch(Exception $e)
+			catch (\Exception $e)
 			{
 				// Tack on the full tag and rethrow
 				$message = $e->getMessage().' “'.$tag.'”';
@@ -279,7 +279,7 @@ class TemplateParser
 	 */
 	protected function parseLayoutTag($body)
 	{
-		if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s+.*)?$/x', $body, $match))
+		if (!preg_match('/^('.self::stringPattern.'|'.self::varPattern.self::subVarPattern.'?)(\s+.*)?$/x', $body, $match))
 			throw new Exception('Invalid layout tag');
 
 		$template = $match[1];
@@ -291,7 +291,7 @@ class TemplateParser
 		$params = $this->parseParams($body);
 		foreach ($params as $paramName => $paramValue)
 		{
-			$r .= "\$_layout->tags['{$paramName}'] = {$paramValue};".PHP_EOL;
+			$r .= "\$_layout->variables['{$paramName}'] = {$paramValue};".PHP_EOL;
 		}
 
 		$r .= '?>';
@@ -330,7 +330,7 @@ class TemplateParser
 	 */
 	protected function parseIncludeTag($body)
 	{
-		if (!preg_match('/^('.self::stringPattern.'|'.self::tagPattern.self::subtagPattern.'?)(\s+.*)?$/x', $body, $match))
+		if (!preg_match('/^('.self::stringPattern.'|'.self::varPattern.self::subVarPattern.'?)(\s+.*)?$/x', $body, $match))
 			throw new Exception('Invalid include tag');
 
 		$template = $match[1];
@@ -366,8 +366,8 @@ class TemplateParser
 			$subvar = '$'.$match[3];
 
 			return "<?php foreach ({$match[1]}->__toArray() as {$index} => {$subvar}):" . PHP_EOL .
-				"{$index} = TemplateHelper::getTag({$index});" . PHP_EOL .
-				"{$subvar} = TemplateHelper::getTag({$subvar}); ?>";
+				"{$index} = TemplateHelper::getVariable({$index});" . PHP_EOL .
+				"{$subvar} = TemplateHelper::getVariable({$subvar}); ?>";
 		}
 		return '';
 	}
@@ -440,7 +440,7 @@ class TemplateParser
 		if (preg_match('/^([A-Za-z]\w*)\s*=\s*(.*)$/m', $body, $match))
 		{
 			$this->parseVariables($match[2]);
-			return "<?php \${$match[1]} = TemplateHelper::getTag({$match[2]}); ?>";
+			return "<?php \${$match[1]} = TemplateHelper::getVariable({$match[2]}); ?>";
 		}
 		return '';
 	}
@@ -501,7 +501,7 @@ class TemplateParser
 
 			$paramName = rtrim(substr($template, 0, $nextEq));
 
-			if (!preg_match('/^'.self::tagPattern.'$/', $paramName))
+			if (!preg_match('/^'.self::varPattern.'$/', $paramName))
 				throw new Exception('Invalid parameter');
 
 			$remainingTemplate = ltrim(substr($template, $nextEq+1));
@@ -509,8 +509,8 @@ class TemplateParser
 			if (!$remainingTemplate)
 				throw new Exception('No parameter value set');
 
-			$recurringSubtagPattern = substr(self::subtagPattern, 0, -1).'(?P>subtag)?)';
-			if (!preg_match('/^('.self::stringPattern.'|\d*\.?\d+|'.self::tagPattern.$recurringSubtagPattern.'?)(\s+|$)/x', $remainingTemplate, $match))
+			$recurringSubVarPattern = substr(self::subVarPattern, 0, -1).'(?P>subtag)?)';
+			if (!preg_match('/^('.self::stringPattern.'|\d*\.?\d+|'.self::varPattern.$recurringSubVarPattern.'?)(\s+|$)/x', $remainingTemplate, $match))
 				throw new Exception('Invalid parameter value');
 
 			$paramValueLength = strlen($match[0]);
@@ -536,7 +536,7 @@ class TemplateParser
 	 */
 	protected function parseVariable(&$template, &$offset = 0, $toString = false)
 	{
-		if (preg_match('/'.self::tagPattern.'/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
+		if (preg_match('/'.self::varPattern.'/', $template, $tagMatch, PREG_OFFSET_CAPTURE, $offset))
 		{
 			$tag = $tagMatch[0][0];
 			$parsedTag = ($toString ? '(string)' : '').'$'.$tag;
@@ -546,7 +546,7 @@ class TemplateParser
 			// search for immediately following subtags
 			$substr = substr($template, $tagOffset + $tagLength);
 
-			while (preg_match('/^'.self::subtagPattern.'/x', $substr, $subtagMatch))
+			while (preg_match('/^'.self::subVarPattern.'/x', $substr, $subtagMatch))
 			{
 				$parsedTag .= '->'.$subtagMatch['func'].'(';
 

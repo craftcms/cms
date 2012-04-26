@@ -7,7 +7,7 @@ namespace Blocks;
 class LayoutTemplateWidget extends \COutputProcessor
 {
 	public $template;
-	public $tags = array();
+	public $variables = array();
 	public $regions = array();
 
 	/**
@@ -19,14 +19,14 @@ class LayoutTemplateWidget extends \COutputProcessor
 		{
 			$owner = $this->owner;
 
-			$this->tags['subtemplate'] = new StringTag($output);
+			$this->variables['subtemplate'] = new StringAdapter($output);
 
 			foreach ($this->regions as $region)
 			{
-				$this->tags[$region->name] = $region->content;
+				$this->variables[$region->name] = $region->content;
 			}
 
-			$output = $owner->loadTemplate($this->template, $this->tags, true);
+			$output = $owner->loadTemplate($this->template, $this->variables, true);
 		}
 
 		parent::processOutput($output);

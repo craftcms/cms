@@ -36,6 +36,8 @@ abstract class Model extends ActiveRecord
 	 */
 	function __construct($scenario = 'insert')
 	{
+		$this->attachEventHandler('onBeforeSave', array($this, 'populateAuditAttributes'));
+
 		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
 		if (!b()->isInstalled)
@@ -47,6 +49,7 @@ abstract class Model extends ActiveRecord
 		else
 		{
 			parent::__construct($scenario);
+			$this->addAuditAttributes();
 			$this->populateAttributeDefaults();
 		}
 	}
@@ -59,7 +62,7 @@ abstract class Model extends ActiveRecord
 		if (!isset($this->_classHandle))
 		{
 			// Chop off the namespace
-			$classHandle = substr(get_class($this), strlen(__NAMESPACE__)+1);
+			$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
 
 			// Chop off the class prefix
 			$prefixLength = strlen($this->classPrefix);
@@ -193,6 +196,7 @@ abstract class Model extends ActiveRecord
 
 	/**
 	 * Sets the content blocks
+	 * @param       $blocks
 	 * @param array $blocks
 	 */
 	public function setBlocks($blocks)
@@ -268,9 +272,9 @@ abstract class Model extends ActiveRecord
 
 	/**
 	 * Adds content block handles to the mix of possible magic getter properties
-	 *
 	 * @param $name
 	 * @return mixed
+	 * @return mixed|string
 	 */
 	function __get($name)
 	{
@@ -470,6 +474,7 @@ abstract class Model extends ActiveRecord
 			'order' => 'date_created DESC',
 			'limit' => $limit,
 		));
+
 		return $this;
 	}
 
@@ -484,6 +489,7 @@ abstract class Model extends ActiveRecord
 			'order' => 'date_modified DESC',
 			'limit' => $limit,
 		));
+
 		return $this;
 	}
 
@@ -491,7 +497,8 @@ abstract class Model extends ActiveRecord
 	 * Generates HAS_MANY and HAS_ONE relations
 	 * @access protected
 	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)
-	 * @param array $settings The relation settings
+	 * @param        $settings
+	 * @param array  $settings The relation settings
 	 * @return array The CActiveRecord relation
 	 */
 	protected function generateHasXRelation($relationType, $settings)
@@ -523,9 +530,7 @@ abstract class Model extends ActiveRecord
 	 */
 	public function search()
 	{
-		// Warning: Please modify the following code to remove attributes that
-		// should not be searched.
-
+		// Warning: Please modify the following code to remove attributes that should not be searched.
 		$criteria = new \CDbCriteria;
 
 		foreach (array_keys($this->attributes) as $attributeName)
@@ -767,5 +772,43 @@ abstract class Model extends ActiveRecord
 			if (isset($column['default']))
 				$this->_attributes[$attributeName] = $column['default'];
 		}
+	}
+
+	/**
+	 * All models get these audit columns.
+	 */
+	public function addAuditAttributes()
+	{
+		$this->attributes = array_merge(
+			$this->attributes,
+			DatabaseHelper::getAuditColumnDefinition()
+		);
+	}
+
+	/**
+	 * If it is a new actice record instance, will populate date_created with the current UTC unix timestamp and a new GUID
+	 * for uid. If it is an existing record, will populate date_updated with the current UTC unix timestamp.
+	 */
+	public function populateAuditAttributes()
+	{
+		if ($this->isNewRecord)
+		{
+			$this->date_created = DateTimeHelper::currentTime();
+			$this->uid = StringHelper::UUID();
+		}
+
+		$this->date_updated = DateTimeHelper::currentTime();
+	}
+
+	/**
+	 * Returns an instance of the specified model
+	 *
+	 * @static
+	 * @param string $class
+	 * @return object The model instance
+	 */
+	public static function model($class = __CLASS__)
+	{
+		return parent::model(get_called_class());
 	}
 }

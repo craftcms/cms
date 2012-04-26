@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UrlTag
+class UrlVariable
 {
 	/**
 	 * The base URL for the site.

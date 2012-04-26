@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DateTag extends VarTag
+class DateAdapter extends Adapter
 {
 	/**
 	 * Constructor

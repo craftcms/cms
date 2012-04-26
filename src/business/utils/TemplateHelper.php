@@ -32,59 +32,59 @@ class TemplateHelper
 	/**
 	 * @var array
 	 */
-	public static $globalTags = array(
-		'app'               => 'Blocks\AppTag',
-		'url'               => 'Blocks\UrlTag',
-		'configHelper'      => 'Blocks\ConfigHelperTag',
-		'date'              => 'Blocks\DateTag',
-		'dateTimeHelper'    => 'Blocks\DateTimeHelperTag',
+	public static $globalVariables = array(
+		'app'               => 'Blocks\AppVariable',
+		'url'               => 'Blocks\UrlVariable',
+		'configHelper'      => 'Blocks\ConfigHelperVariable',
+		'date'              => 'Blocks\DateAdapter',
+		'dateTimeHelper'    => 'Blocks\DateTimeHelperVariable',
 	);
 
 	/**
-	 * Returns a new tag instance, which will either be one of the globals, or a generic tag, depending on the handle passed in
-	 * @param string $handle The tag handle being used in the template
-	 * @return object The tag instance
+	 * Returns a new template variable instance, which will either be one of the globals, or a generic template variable, depending on the handle passed in.
+	 * @param string $handle The variable handle being used in the template.
+	 * @return object The variable instance.
 	 */
-	public static function getGlobalTag($handle)
+	public static function getGlobalVariable($handle)
 	{
 		if (in_array($handle, self::$services))
 		{
 			$obj = b()->$handle;
-			return self::getTag($obj);
+			return self::getVariable($obj);
 		}
-		else if (isset(self::$globalTags[$handle]))
+		else if (isset(self::$globalVariables[$handle]))
 		{
-			$obj = new self::$globalTags[$handle];
-			return self::getTag($obj);
+			$obj = new self::$globalVariables[$handle];
+			return self::getVariable($obj);
 		}
 		else
-			return new Tag;
+			return new TemplateVariable();
 	}
 
 	/**
-	 * Returns whether a variable is a tag or not
+	 * Returns whether a variable is a template variable or not
 	 * @param mixed $var The variable
-	 * @return bool Whether it's a tag or not
+	 * @return bool Whether it's a template variable or not
 	 */
-	public static function isTag($var)
+	public static function isVariable($var)
 	{
-		$isTag = (is_object($var) && get_class($var) == 'Blocks\Tag');
-		return $isTag;
+		$isTemplateVariable = (is_object($var) && get_class($var) == 'Blocks\TemplateVariable');
+		return $isTemplateVariable;
 	}
 
 	/**
-	 * Returns the appropriate tag for a variable
+	 * Returns the appropriate template variable for a given variable
 	 * @param mixed $var The variable
-	 * @param object A tag instance for the variable
-	 * @return ArrayTag|BoolTag|mixed|NumTag|string|StringTag
+	 * @param object A template variable instance for the variable
+	 * @return ArrayAdapter|BoolAdapter|mixed|DateAdapter|string|NumAdapter|StringAdapter
 	 */
-	public static function getTag($var = '')
+	public static function getVariable($var = '')
 	{
-		// If $var is already a tag, just return it
-		if (self::isTag($var))
+		// If $var is already a template variable, just return it
+		if (self::isVariable($var))
 			return $var;
 		else
-			return new Tag($var);
+			return new TemplateVariable($var);
 	}
 
 	/**

@@ -99,8 +99,8 @@ class Et extends \CApplicationComponent
 	{
 		try
 		{
-			$data = $this->_package;
-			$response = \Requests::post($this->_endpoint, array(), Json::encode($data), $this->_options);
+			$data = Json::encode($this->_package);
+			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
 			if ($response->success)
 			{
@@ -120,7 +120,7 @@ class Et extends \CApplicationComponent
 				Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, 'warning');
 			}
 		}
-		catch(Exception $e)
+		catch (\Exception $e)
 		{
 			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
 		}

@@ -61,6 +61,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\InstallerService',
 			),
 
+			'migrations' => array(
+				'class' => 'Blocks\MigrationsService',
+			),
+
 			'path' => array(
 				'class' => 'Blocks\PathService',
 			),
@@ -123,6 +127,7 @@ return CMap::mergeArray(
 					array('users/view/({number})',                   'users/view', array('userId')),
 					array('settings/blocks/new',                     'settings/blocks/_edit'),
 					array('settings/blocks/edit/({number})',         'settings/blocks/_edit', array('blockId')),
+					array('settings/plugins/({word})',               'settings/plugins/_edit', array('pluginShortName')),
 					array('content/edit/({number})',                 'content/_edit', array('entryId')),
 					array('content/edit/({number})/draft({number})', 'content/_edit', array('entryId', 'draftNum')),
 					array('settings/sections/new',                   'settings/sections/_edit'),
@@ -149,9 +154,7 @@ return CMap::mergeArray(
 				'class' => 'CLogRouter',
 				'routes' => array(
 					array(
-						'class'  => 'CFileLogRoute',
-						'levels' => 'error, warning',
-						'filter' => 'CLogFilter',
+						'class'  => 'Blocks\FileLogRoute',
 					),
 					array(
 						'class'         => 'Blocks\WebLogRoute',

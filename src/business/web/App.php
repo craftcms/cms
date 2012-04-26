@@ -28,20 +28,21 @@ class App extends \CWebApplication
 		Blocks::import('business.web.templating.TemplateRenderer');
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
+		Blocks::import('business.services.ConfigService');
+		Blocks::import('business.Component');
+		Blocks::import('business.Plugin');
+		Blocks::import('business.logging.FileLogRoute');
 		Blocks::import('business.logging.WebLogRoute');
 		Blocks::import('business.logging.ProfileLogRoute');
 		b()->getComponent('log');
 
 		// Manually load the request object as early as possible.
-		Blocks::import('business.Component');
-		Blocks::import('business.Plugin');
 		Blocks::import('business.enums.UrlFormat');
 		Blocks::import('business.enums.RequestMode');
 		Blocks::import('business.utils.HtmlHelper');
 		Blocks::import('business.utils.UrlHelper');
 		Blocks::import('business.web.HttpRequest');
 		Blocks::import('business.web.UrlManager');
-		Blocks::import('services.ConfigService');
 		b()->getComponent('request');
 
 		parent::init();
@@ -64,13 +65,14 @@ class App extends \CWebApplication
 			'business.exceptions.*',
 			'business.install.*',
 			'business.logging.*',
+			'business.services.*',
 			'business.updates.*',
 			'business.utils.*',
 			'business.validators.*',
 			'business.web.*',
 			'business.web.filters.*',
 			'business.web.templating.*',
-			'business.web.templating.tags.*',
+			'business.web.templating.adapters.*',
 			'business.web.templating.templatewidgets.*',
 			'business.web.templating.variables.*',
 			'business.webservices.*',
@@ -78,7 +80,6 @@ class App extends \CWebApplication
 			'migrations.*',
 			'models.*',
 			'models.forms.*',
-			'services.*',
 			'widgets.*',
 		);
 
@@ -205,7 +206,7 @@ class App extends \CWebApplication
 			// Import the bare minimum to process a resource
 			Blocks::import('business.utils.File');
 			Blocks::import('business.web.ResourceProcessor');
-			Blocks::import('services.PathService');
+			Blocks::import('business.services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->pathSegments), 1);
@@ -285,7 +286,7 @@ class App extends \CWebApplication
 			if (!$connection)
 				$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
 		}
-		catch(Exception $e)
+		catch (\Exception $e)
 		{
 			$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
 		}

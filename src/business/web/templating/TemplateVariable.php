@@ -4,10 +4,10 @@ namespace Blocks;
 /**
  *
  */
-class Tag
+class TemplateVariable
 {
 	private $_obj;
-	private $_subtagCache = array();
+	private $_subVariableCache = array();
 
 	/**
 	 * Constructor
@@ -20,19 +20,19 @@ class Tag
 		if (is_object($var))
 			$this->_obj = $var;
 		else if (is_numeric($var))
-			$this->_obj = new NumTag($var);
+			$this->_obj = new NumAdapter($var);
 		else if (is_array($var))
-			$this->_obj = new ArrayTag($var);
+			$this->_obj = new ArrayAdapter($var);
 		else if (is_bool($var))
-			$this->_obj = new BoolTag($var);
+			$this->_obj = new BoolAdapter($var);
 		else
-			$this->_obj = new StringTag($var);
+			$this->_obj = new StringAdapter($var);
 	}
 
 	/**
 	 * @param $name
 	 * @param array $args
-	 * @return Tag
+	 * @return TemplateVariable
 	 */
 	function __call($name, $args = array())
 	{
@@ -40,8 +40,8 @@ class Tag
 		if ($args)
 			$cacheKey .= '('.serialize($args).')';
 
-		// Make sure we haven't called this exact subtag already
-		if (!isset($this->_subtagCache[$cacheKey]))
+		// Make sure we haven't called this exact variable already
+		if (!isset($this->_subVariableCache[$cacheKey]))
 		{
 			if (method_exists($this->_obj, $name))
 				$var = call_user_func_array(array($this->_obj, $name), $args);
@@ -57,10 +57,10 @@ class Tag
 				}
 			}
 
-			$this->_subtagCache[$cacheKey] = TemplateHelper::getTag($var);
+			$this->_subVariableCache[$cacheKey] = TemplateHelper::getVariable($var);
 		}
 
-		return $this->_subtagCache[$cacheKey];
+		return $this->_subVariableCache[$cacheKey];
 	}
 
 	/**

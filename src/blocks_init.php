@@ -16,13 +16,16 @@ defined('BLOCKS_TEMPLATES_PATH') || define('BLOCKS_TEMPLATES_PATH', BLOCKS_BASE_
 
 defined('BLOCKS_CP_REQUEST') || define('BLOCKS_CP_REQUEST', false);
 
+// Check early if runtime is a valid directory and writable.
+if (($runtimePath = realpath(BLOCKS_RUNTIME_PATH)) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
+	exit('Blocks runtime path "'.$runtimePath.'" is not valid. Please make sure it is a directory writable by your web server process.');
+
 // change the following paths if necessary
 $framework = BLOCKS_APP_PATH.'framework/yii.php';
 $config    = BLOCKS_APP_PATH.'config/main.php';
 
 // specify how many levels of call stack should be shown in each log message
 defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
-
 
 // In case yiic is running
 if(!class_exists('Yii'))

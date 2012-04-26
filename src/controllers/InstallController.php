@@ -46,7 +46,7 @@ class InstallController extends Controller
 
 			$r = array('success' => true);
 		}
-		catch (Exception $e)
+		catch (\Exception $e)
 		{
 			$r = array('error' => $e->getMessage());
 		}

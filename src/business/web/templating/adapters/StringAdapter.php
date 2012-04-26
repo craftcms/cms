@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class StringTag extends VarTag
+class StringAdapter extends Adapter
 {
 	/**
 	 * @return int

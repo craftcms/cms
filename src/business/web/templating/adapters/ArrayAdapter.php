@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ArrayTag extends VarTag
+class ArrayAdapter extends Adapter
 {
 	/**
 	 * @param $name
