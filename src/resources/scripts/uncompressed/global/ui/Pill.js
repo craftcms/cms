@@ -100,7 +100,7 @@ $.fn.pill = function()
 
 b.$document.ready(function()
 {
-	$('#body .pill').pill();
+	$('.pill').pill();
 });
 
 

@@ -192,7 +192,7 @@ $.fn.lightswitch = function(settings, settingName, settingValue)
 
 b.$document.ready(function()
 {
-	$('#body .lightswitch').lightswitch();
+	$('.lightswitch').lightswitch();
 });
 
 

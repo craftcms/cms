@@ -327,7 +327,7 @@ $.fn.blockeditor = function()
 
 b.$document.ready(function()
 {
-	$('#body .blockeditor').blockeditor();
+	$('.blockeditor').blockeditor();
 });
 
 
