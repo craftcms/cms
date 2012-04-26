@@ -6,13 +6,11 @@
 		{foreach options.split as option}
 			{set option = option.split(':')}
 			<div class="btn {if (value && option.get(0) == value) || (!value && option.get(0) == default)}sel{/if}" data-value="{:option.get(0)}">
-				<span class="label">
-					{if option.get(1)}
-						{:option.get(1)}
-					{else}
-						{:option.get(0)}
-					{/if}
-				</span>
+				{if option.get(1)}
+					{:option.get(1)}
+				{else}
+					{:option.get(0)}
+				{/if}
 			</div>
 		{/foreach}
 	</div>

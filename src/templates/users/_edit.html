@@ -1,5 +1,3 @@
-{layout "users/_layouts/users"}
-
 {if !theUser && userId}
 	{set theUser = users.getById(userId)}
 	{if theUser.status == 'archived'}
@@ -8,6 +6,21 @@
 	{/if}
 {/if}
 
+{if theUser}
+	{if theUser.fullName}
+		{set displayName = theUser.fullName}
+	{elseif theUser.username}
+		{set displayName = theUser.username}
+	{else}
+		{set displayName = "Untitled"}
+	{/if}
+	<?php $pageTitle = new TemplateVariable($displayName->possessive().' account settings'); ?>
+{else}
+	{set pageTitle = "Register a new user"}
+{/if}
+
+{layout "_layouts/cp" pageTitle=pageTitle crumbs="users:Users"}
+
 
 {region "styles"}
 	{include "_includes/css_include" file="styles/user.css"}
@@ -15,206 +28,91 @@
 
 
 {region "main"}
-	<div class="toolbar">
-		{include "_includes/back_btn" label="Users" uri="users"}
-	</div>
-
-	{if theUser.id}
-		<h2>{if theUser.fullname}<strong>{:theUser.fullname.possessive}</strong>{elseif theUser.username}<strong>{:theUser.username.possessive}</strong>{else}Untitled’s{/if} account settings</h2>
-	{else}
-		<h2>Register a new user</h2>
-	{/if}
+	<h1>{:pageTitle}</h1>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/save" />
 		<input type="hidden" name="redirect" value="users" />
 		{if theUser.id}<input type="hidden" name="user_id" value="{:theUser.id}">{/if}
 
-		<div class="{if theUser.id}grid grid-2col{/if}">
-			<div class="col"><div class="col-inner">
-
-				<div class="pane">
-					<div class="pane-body">
-
-						<div class="pane-item grid grid-2col">
-							<div class="col"><div class="col-inner">
-								<div class="field">
-									<label for="first_name">First Name</label>
-									<div class="textwrapper"><input id="first_name" name="text first_name" class="{if theUser.errors.first_name}error{/if}" type="text" value="{:theUser.first_name}" /></div>
-									{if theUser.errors.first_name}
-										{include "_includes/error_list" errors=theUser.errors.first_name}
-									{/if}
-								</div>
-							</div></div>
-							<div class="col"><div class="col-inner">
-								<div class="field">
-									<label for="last_name">Last Name</label>
-									<div class="textwrapper"><input id="last_name" name="text last_name" class="{if theUser.errors.last_name}error{/if}" type="text" value="{:theUser.last_name}" /></div>
-									{if theUser.errors.last_name}
-										{include "_includes/error_list" errors=theUser.errors.last_name}
-									{/if}
-								</div>
-							</div></div>
-						</div>
-
-						<div class="pane-item field">
-							<label for="username">Username</label>
-							<div class="textwrapper"><input id="username" name="username" class="text {if theUser.errors.username}error{/if}" type="text" value="{:theUser.username}" /></div>
-							{if theUser.errors.username}
-								{include "_includes/error_list" errors=theUser.errors.username}
-							{/if}
-						</div>
-
-						<div class="pane-item field">
-							<label for="email">Email</label>
-							<div class="textwrapper"><input id="email" name="email" class="text {if theUser.errors.email}error{/if}" type="text" value="{:theUser.email}" /></div>
-							{if theUser.errors.email}
-								{include "_includes/error_list" errors=theUser.errors.email}
-							{/if}
-						</div>
-
-						{if users.current.admin}
-							<div class="pane-item field">
-								<div class="left">
-									<label for="admin">Admin account?</label>
-								</div>
-								<div class="right">
-									{include "_includes/lightswitch" name="admin" on=theUser.admin}
-								</div>
-								<div class="clear"></div>
-							</div>
-						{/if}
-
-						<div class="pane-item field">
-							<div class="left">
-								<label for="html_email" style="margin-top:2px">Email Format</label>
-							</div>
-							<div class="right">
-								{if theUser.html_email}
-									{set emailFormat = "html"}
-								{else}
-									{set emailFormat = "text"}
-								{/if}
-								{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
-							</div>
-							<div class="clear"></div>
-						</div>
-
-						{if theUser.id}
-							<div class="pane-item field">
-								<div class="left">
-									<label for="password_reset">Require a password reset?</label>
-								</div>
-								<div class="right">
-									{include "_includes/lightswitch" name="password_reset" on=theUser.password_reset_required}
-								</div>
-								<div class="clear"></div>
-							</div>
-						{/if}
-						{if !theUser.id}
-							<div class="pane-item field">
-								<div class="left">
-									<label for="send_validation_email">Send validation email?</label>
-								</div>
-								<div class="right">
-									{include "_includes/lightswitch" name="send_validation_email" on=request.getPost('send_validation_email') default="y"}
-								</div>
-								<div class="clear"></div>
-							</div>
-						{/if}
-					</div>
-				</div>
-			</div></div>
-
-			{if theUser.id}
-				<div class="col"><div class="col-inner">
-					<div id="info" class="pane">
-						<div class="pane-head">
-							<h5>User Info</h5>
-						</div>
-						<div class="pane-body">
-							<div class="pane-item">
-								<div class="left">
-									<strong>Status</strong>
-								</div>
-								<div class="right">
-									{:theUser.status.uppercaseFirst}
-								</div>
-								<div class="clear"></div>
-								<input type="hidden" name="status" value="{:theUser.status}" />
-								{if theUser.status == 'pending'}
-									<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
-									<p><strong>Validation URL</strong> {:url.url(users.verifyAccountUrl, 'code=')}{:theUser.activationcode}</p>
-								{elseif theUser.status == 'locked'}
-									<input class="btn" type="submit" name="unlock" value="Unlock" />
-								{elseif theUser.status == 'suspended'}
-									<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
-								{/if}
-								{if config.failedPasswordMode == 'cooldown'}
-									{if theUser.cooldown_start}
-										<br />
-										{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime)}
-										Temporarily locked.  User will be auto-unlocked
-										{if timeRemaining > 0}
-											in {:timeRemaining}
-										{else}
-											the next time they log in.
-										{/if}
-									{/if}
-								{/if}
-							</div>
-							<div class="pane-item">
-								<div class="left">
-									<strong>Last Login Date</strong>
-								</div>
-								<div class="right">
-									{if theUser.last_login_date}{:dateTimeHelper.nice(theUser.last_login_date)}{else}Never{/if}
-								</div>
-								<div class="clear"></div>
-							</div>
-							<div class="pane-item">
-								<div class="left">
-									<strong>Last Failed Login Date</strong>
-								</div>
-								<div class="right">
-									{if theUser.last_login_failed_date}{:dateTimeHelper.nice(theUser.last_login_failed_date)}{else}Never{/if}
-								</div>
-								<div class="clear"></div>
-							</div>
-							<div class="pane-item">
-								<div class="left">
-									<strong>Last Password Changed Date</strong>
-								</div>
-								<div class="right">
-									{if theUser.last_password_changed_date}{:dateTimeHelper.nice(theUser.last_password_changed_date)}{else}Never{/if}
-								</div>
-								<div class="clear"></div>
-							</div>
-							<div class="pane-item">
-								<div class="left">
-									<strong>Last Lockout Date</strong>
-								</div>
-								<div class="right">
-									{if theUser.last_lockout_date}{:dateTimeHelper.nice(theUser.last_lockout_date)}{else}Never{/if}
-								</div>
-								<div class="clear"></div>
-							</div>
-							<div class="pane-item">
-								<div class="left">
-									<strong>Failed Password Attempt Count</strong>
-								</div>
-								<div class="right">
-									{if theUser.failed_password_attempt_count}{:theUser.failed_password_attempt_count}{else}0{/if}
-								</div>
-								<div class="clear"></div>
-							</div>
-						</div>
-					</div>
-				</div></div>
+		<div class="field">
+			<div class="heading">
+				<h4><label for="first_name">First Name</label></h4>
+			</div>
+			<div class="textwrapper"><input id="first_name" name="first_name" class="text" type="text" value="{:theUser.first_name}" /></div>
+			{if theUser.errors.first_name}
+				{include "_includes/error_list" errors=theUser.errors.first_name}
+			{/if}
+		</div>
+		<div class="field">
+			<div class="heading">
+				<h4><label for="last_name">Last Name</label></h4>
+			</div>
+			<div class="textwrapper"><input id="last_name" name="last_name" class="text" type="text" value="{:theUser.last_name}" /></div>
+			{if theUser.errors.last_name}
+				{include "_includes/error_list" errors=theUser.errors.last_name}
 			{/if}
 		</div>
 
-		<div class="clear" style="margin-top:20px"></div>
+		<div class="field">
+			<div class="heading">
+				<h4><label for="username">Username</label></h4>
+			</div>
+			<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{:theUser.username}" /></div>
+			{if theUser.errors.username}
+				{include "_includes/error_list" errors=theUser.errors.username}
+			{/if}
+		</div>
+
+		<div class="field">
+			<div class="heading">
+				<h4><label for="email">Email</label></h4>
+			</div>
+			<div class="textwrapper"><input id="email" name="email" class="text" type="text" value="{:theUser.email}" /></div>
+			{if theUser.errors.email}
+				{include "_includes/error_list" errors=theUser.errors.email}
+			{/if}
+		</div>
+
+		{if users.current.admin}
+			<div class="field">
+				<div class="heading">
+					<h4><label for="admin">Admin account?</label></h4>
+				</div>
+				{include "_includes/lightswitch" name="admin" on=theUser.admin}
+			</div>
+		{/if}
+
+		<div class="field">
+			<div class="heading">
+				<h4><label for="html_email">Email Format</label></h4>
+			</div>
+			
+			{if theUser.html_email}
+				{set emailFormat = "html"}
+			{else}
+				{set emailFormat = "text"}
+			{/if}
+			{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
+		</div>
+
+		{if theUser.id}
+			<div class="field">
+				<div class="heading">
+					<h4><label for="password_reset">Require a password reset?</label></h4>
+				</div>
+				{include "_includes/lightswitch" name="password_reset" on=theUser.password_reset_required}
+			</div>
+		{/if}
+		{if !theUser.id}
+			<div class="field">
+				<div class="heading">
+					<h4><label for="send_validation_email">Send validation email?</label></h4>
+				</div>
+				{include "_includes/lightswitch" name="send_validation_email" on=request.getPost('send_validation_email') default="y"}
+			</div>
+		{/if}
+
 		<input class="btn big submit" type="submit" name="save" value="Save User" />
 		{if theUser.id}
 			{if theUser.status != 'suspended'}
@@ -223,4 +121,80 @@
 			<input class="btn big" type="submit" name="delete" value="Delete User" />
 		{/if}
 	</form>
+
+	{if theUser.id}
+		<div id="info" class="pane">
+			<h3>User Info</h3>
+
+			<div class="left">
+				<strong>Status</strong>
+			</div>
+			<div class="right">
+				{:theUser.status.uppercaseFirst}
+			</div>
+			<div class="clear"></div>
+			<input type="hidden" name="status" value="{:theUser.status}" />
+			{if theUser.status == 'pending'}
+				<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
+				<p><strong>Validation URL</strong> {:url.url(users.verifyAccountUrl, 'code=')}{:theUser.activationcode}</p>
+			{elseif theUser.status == 'locked'}
+				<input class="btn" type="submit" name="unlock" value="Unlock" />
+			{elseif theUser.status == 'suspended'}
+				<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
+			{/if}
+			{if config.failedPasswordMode == 'cooldown'}
+				{if theUser.cooldown_start}
+					<br />
+					{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime)}
+					Temporarily locked.  User will be auto-unlocked
+					{if timeRemaining > 0}
+						in {:timeRemaining}
+					{else}
+						the next time they log in.
+					{/if}
+				{/if}
+			{/if}
+
+			<div class="left">
+				<strong>Last Login Date</strong>
+			</div>
+			<div class="right">
+				{if theUser.last_login_date}{:dateTimeHelper.nice(theUser.last_login_date)}{else}Never{/if}
+			</div>
+			<div class="clear"></div>
+
+			<div class="left">
+				<strong>Last Failed Login Date</strong>
+			</div>
+			<div class="right">
+				{if theUser.last_login_failed_date}{:dateTimeHelper.nice(theUser.last_login_failed_date)}{else}Never{/if}
+			</div>
+			<div class="clear"></div>
+
+			<div class="left">
+				<strong>Last Password Changed Date</strong>
+			</div>
+			<div class="right">
+				{if theUser.last_password_changed_date}{:dateTimeHelper.nice(theUser.last_password_changed_date)}{else}Never{/if}
+			</div>
+			<div class="clear"></div>
+
+			<div class="left">
+				<strong>Last Lockout Date</strong>
+			</div>
+			<div class="right">
+				{if theUser.last_lockout_date}{:dateTimeHelper.nice(theUser.last_lockout_date)}{else}Never{/if}
+			</div>
+			<div class="clear"></div>
+
+			<div class="left">
+				<strong>Failed Password Attempt Count</strong>
+			</div>
+			<div class="right">
+				{if theUser.failed_password_attempt_count}{:theUser.failed_password_attempt_count}{else}0{/if}
+			</div>
+			<div class="clear"></div>
+		</div>
+	{/if}
+
 {/region}

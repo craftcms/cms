@@ -1,1 +1,11 @@
-{layout "users/_layouts/users" pageTitle="Users"}
+{layout "_layouts/cp" pageTitle="Users"}
+
+{region "main"}
+	<h1>Users</h1>
+	<ul>
+		{foreach users.recent as theUser}
+			<li><a href="{:url.base}users/{if theUser.status == 'archived'}view{else}edit{/if}/{:theUser.id}" {if url.segment(3) == theUser.id}class="sel"{/if}><span class="icon icon{if theUser.admin}247{else}243{/if}"></span>{:theUser.fullName}</a></li>
+		{/foreach}
+		<li><a class="btn light" href="{:url.base}users/new">New user</a></li>
+	</ul>
+{/region}

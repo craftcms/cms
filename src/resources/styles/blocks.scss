@@ -46,7 +46,7 @@ code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 
 .scrollpane { overflow: auto; }
 
-h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child,                    .grid:first-child, .field:first-child { margin-top: 0 !important; }
+h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child { margin-top: 0 !important; }
 h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child  { margin-bottom: 0 !important; }
 
 .left { float: left; }
@@ -65,9 +65,9 @@ h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  
 .settings-btn.sel { background-position: 0 100%; }
 
 /* panes */
-.pane { position: relative; margin-bottom: 20px; border-radius: 3px; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.25); }
+.pane { position: relative; margin: 20px 0; border-radius: 3px; padding: 15px; background: #f8f6f2; overflow: hidden; -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
 
-.pane-head { position: relative; border-radius: 3px 3px 0 0; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); cursor: default; }
+/*.pane-head { position: relative; border-radius: 3px 3px 0 0; border-bottom: 1px solid #b5b5b5; padding: 11px 20px 10px; background: -webkit-linear-gradient(#e5e5e5, #d5d5d5); cursor: default; }
 .pane-head,
 .pane-head > h5 { margin: 0; line-height: 18px; text-shadow: 0 1px 0 #fff; }
 .pane-head > .buttons { margin: -3px 0; height: 24px; }
@@ -95,17 +95,17 @@ tbody:first-child > tr:first-child > .pane-item { border-top: none }
 
 .icon.blue { margin: -3px 0; background-image: url(../images/sidebar_icons_hover.png); }
 
-/* table + pane */
+/* table + pane *
 table.pane,
 table.pane-body { width: 100%; }
 table.pane > thead > tr > .pane-item:not(:first-child) { border-left: 1px dotted rgba(0,0,0,0.15); }
 table.pane > tbody > tr > .pane-item:not(:first-child) { border-left: 1px dotted #eaeaea; }
 table.pane-body > tbody > tr > .pane-item:not(:first-child) { padding-left: 0; }
 
-/* modals */
+/* modals *
 .modal { display: none; position: absolute; @include unselectable; }
 .modal.focussed { -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.25), 0 10px 50px rgba(0,0,0,0.5); }
-.modal .shade { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 3px; background: #fff; opacity: 0.5; }
+.modal .shade { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 3px; background: #fff; opacity: 0.5; }*/
 
 /* ----------------------------------------
 /*  Grids
@@ -217,11 +217,9 @@ input.btn.big { height: 32px; }
 /* button groups */
 .btn-group { display: block; height: 24px; }
 .btn-group .btn { float: left; border-radius: 0; }
-.btn-group .btn:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-.btn-group .btn:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-.btn-group .btn:not(:first-child) { border-left-color: rgba(0,0,0,0.25); }
-.btn-group .btn:not(:last-child) { border-right: none; }
-.btn-group .btn:not(:last-child) .arrow { margin-right: 4px; }
+.btn-group .btn:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; padding-left: 12px; }
+.btn-group .btn:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; padding-right: 12px; }
+.btn-group .btn + .btn { margin-left: 0; }
 
 /* switch */
 .lightswitch { border-radius: 10px; width: 51px; height: 20px; background: #999; overflow: hidden; -webkit-box-shadow: 0 0 0 1px #999; cursor: pointer; @include unselectable; }

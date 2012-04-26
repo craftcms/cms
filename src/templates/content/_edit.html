@@ -9,6 +9,7 @@
 {if entry.draft}
 	<?php $pageTitle = new TemplateVariable($pageTitle.' ('.$entry->draft()->name().')'); ?>
 {/if}
+
 {layout "_layouts/cp" pageTitle=pageTitle crumbs="content:Content"}
 
 
