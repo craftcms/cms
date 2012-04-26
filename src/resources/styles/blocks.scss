@@ -12,10 +12,10 @@
 h1,
 h1 > .text { font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 36px; line-height: 40px; color: $dark; }
 h1 { margin-bottom: 25px; }
-h2 { font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1.2; color: $dark; }
-h3 { font-family: HelveticaNeue-Light, sans-serif; font-weight: normal; font-size: 18px; line-height: 24px; color: $medium; }
-h4 { font-weight: bold; color: $dark; }
-h5 { font-weight: bold; color: $medium; }
+h2 { margin-bottom: 20px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 1.2; color: $dark; }
+h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-weight: normal; font-size: 18px; line-height: 24px; color: $medium; }
+h4 { font-weight: bold; color: $medium; }
+h5 { font-weight: normal; color: $medium; }
 h6 { font-weight: bold; color: $mediumlight; font-size: 11px; line-height: 15px; }
 
 p { margin-bottom: 10px; }
