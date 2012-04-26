@@ -631,133 +631,42 @@ class ContentService extends Component
 	}
 
 	/**
-	 * Saves draft changes
+	 * Saves draft content
 	 * @param EntryVersion $draft
 	 * @param array $newChanges
+	 * @return bool
 	 */
-	public function saveDraftChanges($draft, $newChanges)
+	public function saveDraftContent($draft, $newChanges)
 	{
-		$changes = $draft->getChanges();
-
-		// Save the new title if it has changed
-		if (isset($newChanges['title']))
-			$changes['title'] = $newChanges['title'];
-
-		// Save any changed content blocks
-		if (isset($newChanges['blocks']))
-		{
-			// $newChanges['blocks'] is indexed by block handles,
-			// but in the DB we want to index blocks by their IDs so we don't
-			// have to update draft/version content if a handle ever changes
-			$blocks = b()->db->createCommand()
-				->select('id, handle')
-				->from('blocks')
-				->where(array('in', 'handle', array_keys($newChanges['blocks'])))
-				->queryAll();
-
-			foreach ($blocks as $block)
-			{
-				$changes['blocks'][$block['id']] = $newChanges['blocks'][$block['handle']];
-			}
-		}
-
-		// Save the changes
+		$oldChanges = $draft->getChanges();
+		$changes = array_merge($oldChanges, $newChanges);
 		$draft->setChanges($changes);
 		$draft->save();
+		return true;
 	}
 
 	/**
-	 * Publishes a draft
-	 * @param Entry $entry
+	 * Publishes an entry draft
 	 * @param EntryVersion $draft
+	 * @return bool
 	 */
-	public function publishDraft($entry, $draft)
+	public function publishEntryDraft($draft)
 	{
-		$changes = $draft->getChanges();
-
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
 		try
 		{
-			if (isset($changes['blocks']) && empty($changes['blocks']))
-				unset($changes['blocks']);
-
-			if ($changes)
+			// Save the entry content
+			if ($this->saveEntryContent($draft->entry, $draft->getChanges()))
 			{
-				$content = array();
+				// Delete the draft
+				b()->content->deleteEntryDraft($draft->id);
 
-				// Has the title changed?
-				if (isset($changes['title']))
-					$content['title'] = $changes['title'];
-
-				// Have any content blocks changed?
-				if (isset($changes['blocks']))
-				{
-					// Get all of the entry's blocks, indexed by their IDs
-					$blocksById = array();
-					foreach ($entry->blocks as $block)
-					{
-						$blocksById[$block->id] = $block;
-					}
-
-					foreach ($changes['blocks'] as $blockId => $blockData)
-					{
-						$block = $blocksById[$blockId];
-						$content[$block->handle] = $block->modifyPostData($blockData);
-					}
-				}
-
-				// Save the new content
-				$table = $entry->section->getContentTableName();
-
-				// Does a content row already exist for this entry & language?
-				$contentId = b()->db->createCommand()
-					->select('id')
-					->from($table)
-					->where(array('and', 'entry_id'=>$entry->id, 'language'=>$draft->language))
-					->queryRow();
-
-				if (!empty($contentId['id']))
-					b()->db->createCommand()->update($table, $content, array('id'=>$contentId['id']));
-				else
-				{
-					$content['entry_id'] = $entry->id;
-					$content['langugae'] = $draft->language;
-
-					if (empty($content['title']))
-						$content['title'] = 'Untitled';
-
-					b()->db->createCommand()->insert($table, $content);
-				}
+				$transaction->commit();
+				return true;
 			}
-
-			// Transform the draft into a version, with the next highest num
-			$draft->draft = false;
-			for ($num = $entry->latest_version+1; true; $num++)
-			{
-				try
-				{
-					$draft->num = $num;
-					$draft->save();
-					break;
-				}
-				catch (\CDbException $e)
-				{
-					if (isset($e->errorInfo[0]) && $e->errorInfo[0] == 23000)
-						continue;
-					else
-						throw $e;
-				}
-			}
-
-			// Update the entry
-			$entry->latest_version = $draft->num;
-			if (!$entry->publish_date)
-				$entry->publish_date = DateTimeHelper::currentTime();
-			$entry->save();
-
-			// Commit the transaction
-			$transaction->commit();
+			else
+				return false;
 		}
 		catch (\Exception $e)
 		{
@@ -765,4 +674,17 @@ class ContentService extends Component
 			throw $e;
 		}
 	}
+
+	/**
+	 * Deletes an entry draft
+	 * @param int $draftId
+	 */
+	public function deleteEntryDraft($draftId)
+	{
+		b()->db->createCommand()->delete('entryversions', array(
+			'id'    => $draftId,
+			'draft' => true
+		));
+	}
+
 }

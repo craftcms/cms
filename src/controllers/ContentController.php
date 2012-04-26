@@ -100,18 +100,15 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		// Get the entry
-		$entryId = b()->request->getRequiredPost('entryId');
-		$entry = b()->content->getEntryById($entryId);
-		if (!$entryId)
-			throw new Exception('No entry exists with the ID '.$entryId);
+		$entry = $this->getEntry();
+		$changes = $this->getChangesFromPost($entry);
 
-		// Save the new content
-		$changes = $this->getEntryChangesFromPost($entry);
+		// Save the new entry content
 		if (b()->content->saveEntryContent($entry, $changes))
 		{
 			b()->user->setMessage(MessageType::Notice, 'Entry saved.');
 
+			// Redirect?
 			$url = b()->request->getPost('redirect');
 			if ($url !== null)
 				$this->redirect($url);
@@ -131,26 +128,112 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$entryId = b()->request->getRequiredPost('entryId');
-
-		$entry = b()->content->getEntryById($entryId);
-		if (!$entry)
-			throw new Exception('No entry exists with the ID '.$entryId);
-
-		$changes = $this->getEntryChangesFromPost($entry);
+		$entry = $this->getEntry();
+		$changes = $this->getChangesFromPost($entry);
 		$draftName = b()->request->getPost('draftName');
+
+		// Create the new draft
 		$draft = b()->content->createEntryVersion($entry, true, $changes, $draftName);
 
+		b()->user->setMessage(MessageType::Notice, 'Draft created.');
 		$this->redirect("content/edit/{$entry->id}/draft{$draft->num}");
 	}
 
 	/**
-	 * Returns any entry changes in the post data
+	 * Saves a draft
+	 */
+	public function actionSaveDraft()
+	{
+		$this->requirePostRequest();
+
+		$entry = $this->getEntry();
+		$draft = $this->getDraft();
+		$changes = $this->getChangesFromPost($entry);
+
+		// Save the new draft content
+		if (b()->content->saveDraftContent($draft, $changes))
+		{
+			b()->user->setMessage(MessageType::Notice, 'Draft saved.');
+
+			// Redirect?
+			$url = b()->request->getPost('redirect');
+			if ($url !== null)
+				$this->redirect($url);
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save draft.');
+		}
+
+		$entry->setDraft($draft);
+		$this->loadRequestedTemplate(array('entry' => $entry));
+	}
+
+	/**
+	 * Publishes a draft
+	 */
+	public function actionPublishDraft()
+	{
+		$this->requirePostRequest();
+
+		$entry = $this->getEntry();
+		$draft = $this->getDraft();
+		$changes = $this->getChangesFromPost($entry);
+
+		// Save the new changes
+		if ($changes)
+			b()->content->saveDraftContent($draft, $changes);
+
+		// Publish the draft
+		$draft->entry = $entry;
+		if (b()->content->publishEntryDraft($draft))
+		{
+			b()->user->setMessage(MessageType::Notice, 'Draft published.');
+			$this->redirect('content/edit/'.$entry->id);
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t publish draft.');
+			$entry->setDraft($draft);
+			$this->loadRequestedTemplate(array('entry' => $entry));
+		}
+	}
+
+	/**
+	 * Returns an entry based on the entryId in the post data
+	 * @access private
+	 * @return Entry
+	 */
+	private function getEntry()
+	{
+		$entryId = b()->request->getRequiredPost('entryId');
+		$entry = b()->content->getEntryById($entryId);
+		if (!$entry)
+			throw new Exception('No entry exists with the ID '.$entryId);
+		return $entry;
+	}
+
+	/**
+	 * Returns a draft based on the draftId in the post data
+	 * @access private
+	 * @return EntryVersion
+	 */
+	private function getDraft()
+	{
+		$draftId = b()->request->getRequiredPost('draftId');
+		$draft = b()->content->getDraftById($draftId);
+		if (!$draft)
+			throw new Exception('No draft exists with the ID '.$draftId);
+		return $draft;
+	}
+
+	/**
+	 * Returns any content changes in the post data
 	 * @access private
 	 * @param  Entry $entry
 	 * @return array
 	 */
-	private function getEntryChangesFromPost($entry)
+	private function getChangesFromPost($entry)
 	{
 		$changes = array();
 
@@ -162,150 +245,5 @@ class ContentController extends Controller
 				$changes[$block->handle] = $val;
 
 		return $changes;
-	}
-
-
-
-
-	/**
-	 * Loads an entry
-	 */
-	public function actionLoadEntryEditPage()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$entryId = b()->request->getRequiredPost('entryId');
-
-		$entry = b()->content->getEntryById($entryId);
-		if (!$entry)
-			$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-		// Is there a requested draft?
-		$draftNum = b()->request->getPost('draftNum');
-		if ($draftNum)
-			$draft = b()->content->getDraftByNum($entryId, $draftNum);
-
-		// We must fetch a draft if the entry hasn't been published
-		if (empty($draft) && !$entry->published)
-		{
-			$draft = b()->content->getLatestDraft($entry->id);
-			if (!$draft)
-				$draft = b()->content->createDraft($entry->id);
-		}
-
-		if (!empty($draft))
-			$entry->draft = $draft;
-
-		$this->returnEntryEditPage($entry);
-	}
-
-	/**
-	 * Autosaves a draft
-	 */
-	public function actionAutosaveDraft()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$entryId = b()->request->getRequiredPost('entryId');
-		$entry = b()->content->getEntryById($entryId);
-		if (!$entryId)
-			$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-		$content = b()->request->getRequiredPost('content');
-
-		// Get the draft, or create a new one
-		$draftId = b()->request->getPost('draftId');
-		if ($draftId)
-		{
-			$draft = b()->content->getDraftById($draftId);
-			if (!$draft)
-				$this->returnErrorJson('No draft exists with the ID '.$draftId);
-		}
-		else
-			$draft = b()->content->createDraft($entryId);
-
-		// Save the new draft content
-		b()->content->saveDraftChanges($draft, $content);
-
-		$entry->draft = $draft;
-		$this->returnEntryJson($entry);
-	}
-
-	/**
-	 * Publishes a draft
-	 */
-	public function actionPublishDraft()
-	{
-		$this->requirePostRequest();
-		$this->requireAjaxRequest();
-
-		$entryId = b()->request->getRequiredPost('entryId');
-		$entry = b()->content->getEntryById($entryId);
-		if (!$entryId)
-			$this->returnErrorJson('No entry exists with the ID '.$entryId);
-
-		$draftId = b()->request->getPost('draftId');
-		if ($draftId)
-		{
-			$draft = b()->content->getDraftById($draftId);
-			if (!$draft)
-				$this->returnErrorJson('No draft exists with the ID '.$draftId);
-		}
-		else
-			$draft = b()->content->createDraft($entryId);
-
-		// Save any last-minute content changes
-		$content = b()->request->getPost('content');
-		if ($content)
-			b()->content->saveDraftChanges($draft, $content);
-
-		// Publish it
-		b()->content->publishDraft($entry, $draft);
-
-		$this->returnEntryJson($entry);
-	}
-
-	/**
-	 * Returns entry data used by Entry.js.
-	 * @access private
-	 * @param Entry $entry
-	 * @param array $return Any additional values to return.
-	 */
-	private function returnEntryJson($entry, $return = array())
-	{
-		$return['entryData']['entryId']     = $entry->id;
-		$return['entryData']['entryTitle']  = $entry->title;
-		$return['entryData']['entryStatus'] = $entry->status;
-
-		if ($entry->draft)
-		{
-			$return['entryData']['draftId']     = $entry->draft->id;
-			$return['entryData']['draftNum']    = $entry->draft->num;
-			$return['entryData']['draftName']   = $entry->draft->name;
-			$return['entryData']['draftAuthor'] = $entry->draft->author->firstNameLastInitial;
-		}
-		else
-		{
-			$return['entryData']['draftId']     = null;
-			$return['entryData']['draftNum']    = null;
-			$return['entryData']['draftName']   = null;
-			$return['entryData']['draftAuthor'] = null;
-		}
-
-		$return['success'] = true;
-		$this->returnJson($return);
-	}
-
-	/**
-	 * Returns an entry edit page.
-	 * @access private
-	 * @param Entry $entry
-	 */
-	private function returnEntryEditPage($entry)
-	{
-		$return['entryHtml']  = $this->loadTemplate('content/_includes/entry', array('entry' => $entry), true);
-		$this->returnEntryJson($entry, $return);
 	}
 }
