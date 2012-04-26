@@ -6,6 +6,7 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 .header { position: absolute; top: 13px; }
 .header > div { float: left; }
 .header a { display: block; padding: 4px 10px; line-height: 16px; }
+.header a:hover { text-decoration: none; }
 
 #header-left { left: 15px; }
 #header-right { right: 15px; }
@@ -37,7 +38,7 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 #nav ul li { margin-bottom: 25px; }
 #nav ul li a { display: block; color: $mediumlight; text-align: center; -webkit-transition: color linear 100ms; }
 #nav ul li a:before { display: block; font-size: 40px; line-height: 32px; }
-#nav ul li a:hover { color: $medium; }
+#nav ul li a:hover { color: $medium; text-decoration: none; }
 #nav ul li a.sel { color: $dark; cursor: default; background: url(../images/nav-arrow.png) no-repeat 100% 50%; }
 
 /* main */
