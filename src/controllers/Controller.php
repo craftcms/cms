@@ -186,7 +186,8 @@ abstract class Controller extends \CController
 		if (is_string($url))
 			$url = UrlHelper::generateUrl($url);
 
-		parent::redirect($url, $terminate, $statusCode);
+		if ($url !== null)
+			parent::redirect($url, $terminate, $statusCode);
 	}
 
 	/**
