@@ -245,9 +245,9 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .passwordwrapper { position: relative; padding-right: 80px; }
 .passwordwrapper .password { width: 100%; }
-.passwordwrapper .password-toggle { display: block; position: absolute; top: 8px; right: 0; width: 44px; text-align: center; }
+.passwordwrapper .password-toggle { display: block; position: absolute; top: 9px; right: 0; width: 44px; text-align: center; }
 .password { padding-right: 70px; }
-.password.capslock:focus { background: url(../images/capslock.png) no-repeat 100% 50%, -webkit-linear-gradient(#fafafa, #fdfdfd); }
+.password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 /* errors */
 .error:not(.sel),
