@@ -7,8 +7,9 @@
 b.ui.BlockEditor = b.Base.extend({
 
 	$container: null,
-	$sidebar: null,
-	$addLink: null,
+	$listContainer: null,
+	$list: null,
+	$newBlockBtn: null,
 	$settingsContainer: null,
 
 	freshBlockSettingsHtml: null,
@@ -21,9 +22,9 @@ b.ui.BlockEditor = b.Base.extend({
 	selectedBlock: null,
 	totalNewBlocks: 0,
 
-	init: function(container)
+	init: function(pane)
 	{
-		this.$container = $(container);
+		this.$container = $(pane);
 
 		// Is this already a block editor?
 		if (this.$container.data('blockeditor'))
@@ -37,9 +38,10 @@ b.ui.BlockEditor = b.Base.extend({
 		this.inputName = this.$container.attr('data-input-name');
 
 		// Find the DOM nodes
-		this.$sidebar = this.$container.children('.sidebar:first');
-		this.$addLink = this.$sidebar.children('ul').children('li:last-child').children('a');
-		this.$settingsContainer = this.$container.children('.blocksettings:first');
+		this.$listContainer = this.$container.children('.list:first');
+		this.$list = this.$listContainer.children('ul:first');
+		this.$newBlockBtn = this.$listContainer.children('.new-block:first');
+		this.$settingsContainer = this.$container.children('.settings:first');
 
 		// Get the fresh block settings HTML
 		var $freshBlockSettings = this.$container.children('.freshblocksettings:first').remove().removeClass('freshblocksettings');
@@ -71,7 +73,7 @@ b.ui.BlockEditor = b.Base.extend({
 
 		// Initialize the blocks
 		this.blocks = {};
-		var $blockLinks = this.$sidebar.find('a.block-item'),
+		var $blockLinks = this.$list.children('li').children('a'),
 			$blockSettings = this.$settingsContainer.children();
 
 		for (var i = 0; i < $blockLinks.length; i++)
@@ -91,7 +93,7 @@ b.ui.BlockEditor = b.Base.extend({
 			this.blockSort.addItems($link.parent());
 		}
 
-		this.addListener(this.$addLink, 'click', 'addBlock');
+		this.addListener(this.$newBlockBtn, 'click', 'addBlock');
 	},
 
 	selectBlock: function(blockId)
@@ -99,16 +101,21 @@ b.ui.BlockEditor = b.Base.extend({
 		this.blocks[blockId].select();
 	},
 
+	setHeight: function()
+	{
+		var height = Math.max(this.$listContainer.height(), this.$settingsContainer.height()) + 60;
+		this.$container.height(height);
+	},
+
 	addBlock: function()
 	{
 		this.totalNewBlocks++;
 
 		var blockId = 'new'+(this.totalNewBlocks),
-			$li = $('<li/>').insertBefore(this.$addLink.parent()),
+			$li = $('<li/>').appendTo(this.$list),
 			$link = $('<a class="block-item" data-block-id="'+blockId+'">' +
-					'<span class="icon icon137"/>' +
-					'<span class="block-name">Untitled</span>' +
-					'<div class="block-type"></div>' +
+					'<div class="name">Untitled</div>' +
+					'<div class="type"></div>' +
 					'<input type="hidden" name="'+this.inputName+'[order][]" value="'+blockId+'"/>' +
 					'</a>'
 				).appendTo($li),
@@ -164,8 +171,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.isNew = (this.blockId.substr(0, 3) == 'new');
 
 		this.$link = $link;
-		this.$linkNameLabel = this.$link.find('.block-name:first');
-		this.$linkBlocktypeLabel = this.$link.find('.block-type:first');
+		this.$linkNameLabel = this.$link.find('.name:first');
+		this.$linkBlocktypeLabel = this.$link.find('.type:first');
 
 		this.$settings = $settings;
 		this.$blockSettingsContainer = this.$settings.children('.blocksettings:first');
@@ -174,24 +181,17 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.$nameInput = this.$blockSettingsContainer.find('input.name:first');
 		this.$handleInput = this.$blockSettingsContainer.find('input.handle:first');
 		this.$instructionsInput = this.$blockSettingsContainer.find('textarea.instructions:first');
-		this.$requiredInput = this.$blockSettingsContainer.find('.required:first');
+		this.$requiredInput = this.$blockSettingsContainer.find('.blockrequired:first');
 		this.$blocktypeSelect = this.$blockSettingsContainer.find('select.blocktype:first');
 		this.$blocktypeSelectOptions = this.$blocktypeSelect.children();
-		this.$deleteBlockBtn = this.$settings.children(':last').children('a.delete');
+		this.$doneBtn = this.$settings.children('.done:first');
+		this.$deleteBlockBtn = this.$settings.children('.delete:first');
 
 		this.updateLinkBlocktypeLabel();
 
 		if (!this.$nameInput.val() && !this.$handleInput.val())
 			this.handleGenerator = new b.ui.HandleGenerator(this.$nameInput, this.$handleInput);
 		this.niceInstructions = new b.ui.NiceText(this.$instructionsInput);
-		this.requiredSwitch = new b.ui.LightSwitch(this.$requiredInput, {
-			onChange: $.proxy(function() {
-				if (this.requiredSwitch.on)
-					this.$linkNameLabel.addClass('required');
-				else
-					this.$linkNameLabel.removeClass('required');
-			}, this)
-		});
 
 		// Get the current blocktype
 		this.blocktype = this.$blocktypeSelect.val();
@@ -201,11 +201,22 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.blocktypeSettings[this.blocktype] = this.$blocktypeSettingsContainer.children(':first');
 		this.initBlocktypeSettings(this.blocktypeSettings[this.blocktype]);
 
+		this.addListener(this.$doneBtn, 'click', function() {
+			this.deselect();
+			this.editor.setHeight();
+		});
 		this.addListener(this.$deleteBlockBtn, 'click', 'deleteBlock');
 
 		this.addListener(this.$link, 'click', 'select');
-		this.addListener(this.$nameInput, 'keypress,keyup,change', 'updateLinkNameLabel');
+		this.addListener(this.$nameInput, 'keypress,keyup,change,blur', 'updateLinkNameLabel');
 		this.addListener(this.$blocktypeSelect, 'change', 'changeBlocktype');
+
+		this.addListener(this.$requiredInput, 'change', function() {
+			if (b.getInputPostVal(this.$requiredInput) == 'y')
+				this.$linkNameLabel.addClass('required');
+			else
+				this.$linkNameLabel.removeClass('required');
+		});
 	},
 
 	select: function()
@@ -218,6 +229,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.$link.addClass('sel');
 		this.$settings.show();
 
+		this.editor.setHeight();
+
 		this.$nameInput.focus();
 	},
 
@@ -225,6 +238,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 	{
 		this.$link.removeClass('sel');
 		this.$settings.hide();
+		this.editor.selectedBlock = null;
 	},
 
 	initBlocktypeSettings: function($settings)
@@ -279,6 +293,9 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		// Show the new blocktype's settings
 		this.blocktypeSettings[this.blocktype].appendTo(this.$blocktypeSettingsContainer);
 
+		// Update the container height
+		this.editor.setHeight();
+
 		// Update the link blocktype label
 		this.updateLinkBlocktypeLabel();
 	},
@@ -297,6 +314,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		{
 			this.$link.remove();
 			this.$settings.remove();
+
+			this.editor.setHeight();
 
 			if (!this.isNew)
 				$('<input type="hidden" name="'+this.editor.inputName+'[delete][]" value="'+this.blockId+'"/>').appendTo(this.editor.$container);

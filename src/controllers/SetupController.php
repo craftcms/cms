@@ -231,6 +231,6 @@ class SetupController extends Controller
 		Blocks::turnSystemOn();
 
 		// Redirect to the Welcome entry
-		$this->redirect('content/edit/'.$entry->id);
+		$this->redirect('content/'.$entry->id);
 	}
 }

@@ -47,7 +47,7 @@ b.ui.Modal = b.Base.extend({
 
 	setContainer: function(container)
 	{
-		this.$container = $(container);
+		this.$container = $(container).addClass('modal');
 
 		// Is this already a modal?
 		if (this.$container.data('modal'))
@@ -55,6 +55,8 @@ b.ui.Modal = b.Base.extend({
 			b.log('Double-instantiating a modal on an element');
 			this.$container.data('modal').destroy();
 		}
+
+		this.$container.data('modal', this);
 
 		this.$header = this.$container.find('.pane-head:first');
 		this.$body = this.$container.find('.pane-body:first');
@@ -70,7 +72,7 @@ b.ui.Modal = b.Base.extend({
 			if ($dragHandles.length)
 			{
 				this.dragger = new b.ui.DragMove(this.$container, {
-					handle: $dragHandles
+					handle: this.$container
 				});
 			}
 		}

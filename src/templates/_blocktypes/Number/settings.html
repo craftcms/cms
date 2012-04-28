@@ -1,25 +1,20 @@
-<div class="pane-item field">
-	<div class="left">
+<div class="field">
+	<div class="heading">
 		<label for="{:idPrefix}type" style="margin-top:2px">Number Type</label>
 	</div>
-	<div class="right">
-		<?php $id = new TemplateVariable($idPrefix.'type') ?>
-		<?php $name = new TemplateVariable($namePrefix.'[type]') ?>
-		{include "_includes/pill" id=id name=name options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
-	</div>
-	<div class="clear"></div>
+	<?php $id = new TemplateVariable($idPrefix.'type') ?>
+	<?php $name = new TemplateVariable($namePrefix.'[type]') ?>
+	{include "_includes/pill" id=id name=name options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
 </div>
-<div class="pane-item field">
-	<label for="{:idPrefix}min">Min Value</label>
-	<div>
-		<input id="{:idPrefix}min" name="{:namePrefix}[min]" class="text" type="number" value="{:settings.min}" size="5">
+<div class="field">
+	<div class="heading">
+		<label for="{:idPrefix}min">Min Value</label>
 	</div>
-	<div class="clear"></div>
+	<input id="{:idPrefix}min" name="{:namePrefix}[min]" class="text" type="number" value="{:settings.min}" size="5">
 </div>
-<div class="pane-item field">
-	<label for="{:idPrefix}max">Max Value</label>
-	<div>
-		<input id="{:idPrefix}max" name="{:namePrefix}[max]" class="text" type="number" value="{:settings.max}" size="5">
+<div class="field">
+	<div class="heading">
+		<label for="{:idPrefix}max">Max Value</label>
 	</div>
-	<div class="clear"></div>
+	<input id="{:idPrefix}max" name="{:namePrefix}[max]" class="text" type="number" value="{:settings.max}" size="5">
 </div>

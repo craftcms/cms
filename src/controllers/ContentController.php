@@ -77,15 +77,16 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 
 		$sectionId = b()->request->getRequiredPost('sectionId');
+		$title = b()->request->getPost('title');
 
 		// Create the entry
-		$entry = b()->content->createEntry($sectionId);
+		$entry = b()->content->createEntry($sectionId, null, null, $title);
 
 		// Create the first draft
 		$draft = b()->content->createEntryDraft($entry);
 
 		b()->user->setMessage(MessageType::Notice, 'Entry created.');
-		$this->redirect("content/edit/{$entry->id}/draft{$draft->num}");
+		$this->redirect("content/{$entry->id}/draft{$draft->num}");
 	}
 
 	/**
@@ -96,7 +97,7 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 
 		$entry = $this->getEntry();
-		$changes = $this->getChangesFromPost($entry);
+		$changes = $this->getContentFromPost($entry);
 
 		// Save the new entry content
 		if (b()->content->saveEntryContent($entry, $changes))
@@ -124,14 +125,14 @@ class ContentController extends Controller
 		$this->requirePostRequest();
 
 		$entry = $this->getEntry();
-		$changes = $this->getChangesFromPost($entry);
+		$changes = $this->getContentFromPost($entry);
 		$draftName = b()->request->getPost('draftName');
 
 		// Create the new draft
 		$draft = b()->content->createEntryDraft($entry, $changes, $draftName);
 
 		b()->user->setMessage(MessageType::Notice, 'Draft created.');
-		$this->redirect("content/edit/{$entry->id}/draft{$draft->num}");
+		$this->redirect("content/{$entry->id}/draft{$draft->num}");
 	}
 
 	/**
@@ -143,7 +144,7 @@ class ContentController extends Controller
 
 		$entry = $this->getEntry();
 		$draft = $this->getDraft();
-		$changes = $this->getChangesFromPost($entry);
+		$changes = $this->getContentFromPost($entry);
 
 		// Save the new draft content
 		if (b()->content->saveDraftContent($draft, $changes))
@@ -173,7 +174,7 @@ class ContentController extends Controller
 
 		$entry = $this->getEntry();
 		$draft = $this->getDraft();
-		$changes = $this->getChangesFromPost($entry);
+		$changes = $this->getContentFromPost($entry);
 
 		// Save the new changes
 		if ($changes)
@@ -184,7 +185,7 @@ class ContentController extends Controller
 		if (b()->content->publishEntryDraft($draft))
 		{
 			b()->user->setMessage(MessageType::Notice, 'Draft published.');
-			$this->redirect('content/edit/'.$entry->id);
+			$this->redirect('content/'.$entry->id);
 		}
 		else
 		{
@@ -228,7 +229,7 @@ class ContentController extends Controller
 	 * @param  Entry $entry
 	 * @return array
 	 */
-	private function getChangesFromPost($entry)
+	private function getContentFromPost($entry)
 	{
 		$changes = array();
 

@@ -1,24 +1,20 @@
-<div class="pane-item field">
-	<div class="left">
-		<label for="{:idPrefix}multiline">Multiline?</label>
+<div class="field">
+	<div class="heading">
+		<label for="{:idPrefix}hint">Hint Text</label>
+		<p>The text that will be shown if the field doesn’t have a value.</p>
 	</div>
-	<div class="right">
-		<?php $id = new TemplateVariable($idPrefix.'multiline') ?>
-		<?php $name = new TemplateVariable($namePrefix.'[multiline]') ?>
-		{include "_includes/lightswitch" id=id name=name on=settings.multiline}
-	</div>
-	<div class="clear"></div>
-</div>
-<div class="pane-item field">
-	<label for="{:idPrefix}hint">Hint Text</label>
-	<p>This is the text that will be shown if the field doesn’t have a value.</p>
 	<div class="textwrapper"><input id="{:idPrefix}hint" name="{:namePrefix}[hint]" class="text" type="text" value="{:settings.hint}" /></div>
 </div>
-{!--<div class="pane-item field">
-	<label for="{:idPrefix}maxLength">Max Length</label>
-	<div>
-		<input id="{:idPrefix}maxLength" name="{:namePrefix}[maxLength]" class="text" type="text" value="{:settings.maxLength}" size="4" style="display: inline-block" />
-		<?php $name = new TemplateVariable($namePrefix.'[maxLengthUnit]') ?>
-		<div style="display: inline-block; margin-left: 4px; vertical-align: middle;">{include "_includes/pill" name=name options="words,chars:characters" value=settings.maxLengthUnit}</div>
+<div class="field checkbox">
+	<label>Allow line breaks
+		<div class="cbwrapper"><input type="checkbox" name="{:namePrefix}[multiline]" value="y" {if settings.multiline}checked="checked"{/if} /></div>
+	</label>
+</div>
+{!--<div class="field">
+	<div class="heading">
+		<label for="{:idPrefix}maxLength">Max Length</label>
 	</div>
+	<input id="{:idPrefix}maxLength" name="{:namePrefix}[maxLength]" class="text" type="text" value="{:settings.maxLength}" size="4" style="display: inline-block" />
+	<?php $name = new TemplateVariable($namePrefix.'[maxLengthUnit]') ?>
+	<div style="display: inline-block; margin-left: 4px; vertical-align: middle;">{include "_includes/pill" name=name options="words,chars:characters" value=settings.maxLengthUnit}</div>
 </div>--}

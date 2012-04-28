@@ -588,4 +588,31 @@ var CP = b.Base.extend({
 
 b.cp = new CP();
 
+
+$('.formsubmit').click(function() {
+	var $btn = $(this),
+		$form = $btn.closest('form');
+	if ($btn.attr('data-action'))
+		$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
+	$form.submit();
+});
+
+$('.togglefields').change(function() {
+	var $toggle = $(this),
+		$target = $('#'+$toggle.attr('data-target'));
+
+	if (b.getInputPostVal($toggle) == 'y')
+	{
+		$target.height('auto');
+		var height = $target.height();
+		$target.height(0);
+		$target.stop().animate({height: height}, 'fast', $.proxy(function() {
+			$target.height('auto');
+		}, this));
+	}
+	else
+		$target.stop().animate({height: 0}, 'fast');
+});
+
+
 })(jQuery);

@@ -71,6 +71,19 @@ class ContentService extends Component
 	}
 
 	/**
+	 * Get a specific section by its handle
+	 * @param int $sectionId The ID of the section to get
+	 * @return Section
+	 */
+	public function getSectionByHandle($handle)
+	{
+		return Section::model()->findByAttributes(array(
+			'handle' => $handle,
+			'site_id' => b()->sites->getCurrent()->id
+		));
+	}
+
+	/**
 	 * @param $siteId
 	 * @param $handle
 	 * @return mixed
@@ -529,13 +542,13 @@ class ContentService extends Component
 	/**
 	 * Creates a new entry version
 	 * @param mixed  $entry    The Entry record, or an entry ID.
-	 * @param array  $changes  The changes to be saved with the version.
+	 * @param array  $content  The content to be saved with the version.
 	 * @param string $name     The name of the version.
 	 * @param string $language The language the content is in.
 	 * @param bool   $draft    Whether this is a draft. Defaults to false.
 	 * @return EntryVersion The new version record.
 	 */
-	public function createEntryVersion($entry, $changes = null, $name = null, $language = null, $draft = false)
+	public function createEntryVersion($entry, $content = null, $name = null, $language = null, $draft = false)
 	{
 		if (is_numeric($entry))
 		{
@@ -551,8 +564,8 @@ class ContentService extends Component
 		$version->draft = $draft;
 		$version->name = $name;
 
-		if ($changes)
-			$version->setChanges($changes);
+		if ($content)
+			$version->setChanges($content);
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
@@ -602,14 +615,14 @@ class ContentService extends Component
 	/**
 	 * Creates a new entry draft
 	 * @param mixed  $entry    The Entry record, or an entry ID.
-	 * @param array  $changes  The changes to be saved with the version.
-	 * @param string $name     The name of the version.
+	 * @param array  $content  The content to be saved with the draft.
+	 * @param string $name     The name of the draft.
 	 * @param string $language The language the content is in.
 	 * @return EntryVersion The new draft record.
 	 */
-	public function createEntryDraft($entry, $changes = null, $name = null, $language = null)
+	public function createEntryDraft($entry, $content = null, $name = null, $language = null)
 	{
-		return $this->createEntryVersion($entry, $changes, $name, $language, true);
+		return $this->createEntryVersion($entry, $content, $name, $language, true);
 	}
 
 	/**

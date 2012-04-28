@@ -9,23 +9,28 @@
 {region "main"}
 	<h1>Content</h1>
 
-	<table id="entries">
-		<tbody>
-			{foreach content.sections as section}
-				<h3 data-icon="C">{:section.name}</h3>
-				<ul>
-					{foreach section.entries as entry}
-						<li><a href="{:url.base}content/edit/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a></li>
-					{/foreach}
-					<li>
-						<form method="post" action="">
-							<input type="hidden" name="action" value="content/createEntry" />
-							<input type="hidden" name="sectionId" value="{:section.id}" />
-							<input type="submit" value="New entry" class="btn light" />
-						</form>
-					</li>
-				</ul>
+	{foreach content.sections as section}
+		<h2 data-icon="C">{:section.name}</h2>
+
+		<ul class="actions">
+			<li>
+				<form method="post" action="">
+					<input type="hidden" name="action" value="content/createEntry" />
+					<input type="hidden" name="sectionId" value="{:section.id}" />
+					<a class="btn light formsubmit" data-icon="n">New entry</a>
+				</form>
+			</li>
+			<li>
+				<a href="{:url.base}content/sections/{:section.id}" class="btn light" data-icon="e">Edit section</a>
+			</li>
+		</ul>
+
+		<ul class="entries">
+			{foreach section.entries as entry}
+				<li><a href="{:url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a></li>
 			{/foreach}
-		</tbody>
-	</table>
+		</ul>
+	{/foreach}
+
+	<a href="{:url.base}content/sections/new" class="btn light" data-icon="n">New section</a>
 {/region}

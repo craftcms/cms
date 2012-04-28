@@ -1,62 +1,68 @@
 <div class="blocksettings">
-	<div class="pane-item field">
-		<label for="{:idPrefix}name">Block Name</label>
-		<div class="textwrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="text name {if block.errors.name}error{/if}" type="text" maxlength="100%" value="{:block.name}" /></div>
+	<div class="field">
+		<div class="heading">
+			<label for="{:idPrefix}name">Block Name</label>
+			<p>What this block will be called in the CP.</p>
+		</div>
+		<div class="textwrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="text name" type="text" maxlength="100%" value="{:block.name}" /></div>
 		{if block.errors.name}
 			{include "_includes/error_list" errors=block.errors.name}
 		{/if}
 	</div>
 
-	<div class="pane-item field">
-		<label for="{:idPrefix}handle">Block Handle</label>
-		<p>This is how you’ll refer to your block in the templates.</p>
-		<div class="textwrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="text handle code {if block.errors.name}error{/if}" type="text" maxlength="100" value="{:block.handle}" /></div>
+	<div class="field">
+		<div class="heading">
+			<label for="{:idPrefix}handle">Block Handle</label>
+			<p>How you’ll refer to this block in the templates.</p>
+		</div>
+		<div class="textwrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="text handle code" type="text" maxlength="100" value="{:block.handle}" /></div>
 		{if block.errors.handle}
 			{include "_includes/error_list" errors=block.errors.handle}
 		{/if}
 	</div>
 
-	<div class="pane-item field">
-		<label for="{:idPrefix}instructions">Instructions</label>
+	<div class="field">
+		<div class="heading">
+			<label for="{:idPrefix}instructions">Instructions</label>
+			<p>The text to be displayed beside the Block Name on the entry’s publish page.</p>
+		</div>
 		<div class="textwrapper"><textarea id="{:idPrefix}instructions" name="{:namePrefix}[instructions]" class="text instructions" rows="2" cols="100">{:block.instructions}</textarea></div>
 	</div>
 
-	<div class="pane-item field">
-		<label for="{:idPrefix}class">Block Type</label>
-		<div>
-			{if block.class}
-				{set blockClass = block.class}
-			{else}
-				{set blockClass = "PlainText"}
-			{/if}
-			<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
-				{foreach blocks.blocktypes as blocktype}
-					<option value="{:blocktype.classHandle}" {if blocktype.classHandle == blockClass}selected="selected"{/if}>{:blocktype.blocktypeName}</option>
-				{/foreach}
-			</select>
-		</div>
+	<div class="field checkbox">
+		<label>This block is required
+			<div class="cbwrapper"><input type="checkbox" name="{:namePrefix}[required]" value="y" {if block.required}checked="checked"{/if} class="blockrequired" /></div>
+		</label>
 	</div>
 
-	<div class="pane-item field">
-		<div class="left">
-			<label for="{:idPrefix}required">Required?</label>
+	<div class="field">
+		<div class="heading">
+			<label for="{:idPrefix}class">Block Type</label>
 		</div>
-		<div class="right">
-			<?php $id = new TemplateVariable($idPrefix.'required') ?>
-			<?php $name = new TemplateVariable($namePrefix.'[required]') ?>
-			{include "_includes/lightswitch" id=id name=name on=block.required class="required"}
-		</div>
-		<div class="clear"></div>
+		{if block.class}
+			{set blockClass = block.class}
+		{else}
+			{set blockClass = "PlainText"}
+		{/if}
+		<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
+			{foreach blocks.blocktypes as blocktype}
+				<option value="{:blocktype.classHandle}" {if blocktype.classHandle == blockClass}selected="selected"{/if}>{:blocktype.blocktypeName}</option>
+			{/foreach}
+		</select>
 	</div>
 </div>
 
 <?php $namePrefix = new TemplateVariable($namePrefix.'[settings]') ?>
 <div class="blocktypesettings">
-	<div class="{:block.class} nested-pane-items">
+	<div class="{:block.class}">
 		{:block.displaySettings(idPrefix, namePrefix)}
 	</div>
 </div>
 
-<div class="pane-item field">
+
+<input type="button" value="Done" class="btn done" />
+<input type="button" value="Delete block" class="btn red delete" />
+
+{!--<div class="field">
 	<a class="delete">Delete content block</a>
-</div>
+</div>--}

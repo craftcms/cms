@@ -4,20 +4,23 @@
 
 #sidebar { float: right; border-radius: 0 3px 3px 0; margin: -30px; padding: 30px 15px; width: 169px; }
 
-#sidebar ul { margin-bottom: 25px; }
+#sidebar ul { margin-bottom: 15px; }
 #sidebar ul li { border-top: 1px solid $bgcolor; }
 #sidebar ul li:last-child { border-bottom: 1px solid $bgcolor; }
-#sidebar ul li a { display: block; position: relative; margin: -1px -15px; border: solid transparent; border-width: 1px 0; padding: 4px 30px 4px 15px; color: $light; text-shadow: 0 1px 0 #fff; }
+#sidebar ul li a { display: block; position: relative; margin: -1px -15px; border: solid transparent; border-width: 1px 0; padding: 4px 15px; text-shadow: 0 1px 0 #fff; }
 #sidebar ul li a .name,
 #sidebar ul li a .author { overflow: hidden; white-space: pre; text-overflow: ellipsis; }
-#sidebar ul li a .name { height: 16px; line-height: 16px; }
-#sidebar ul li a .author { height: 14px; line-height: 14px; font-size: 11px; }
-#sidebar ul li a:hover { color: $mediumlight; text-decoration: none; }
+#sidebar ul li a .name { height: 16px; line-height: 16px; color: $mediumlight; }
+#sidebar ul li a .author { height: 14px; line-height: 14px; font-size: 11px; font-style: italic; color: $light; }
+#sidebar ul li a:hover { text-decoration: none; }
+#sidebar ul li a:not(.sel):hover .name { color: $linkcolor; }
 #sidebar ul li a.sel { z-index: 1; border-color: $ultralight; color: $medium; background: $bgcolor; }
+#sidebar ul li a.sel .name { color: $medium; }
+#sidebar ul li a.sel .author { color: $mediumlight; }
 
+#sidebar ul li a.published { padding-right: 40px; }
 #sidebar ul li a.published .name { height: 30px; line-height: 30px; }
 #sidebar ul li a.published .status { position: absolute; top: 14px; right: 15px; }
-#sidebar ul li a.draft:after { display: block; position: absolute; top: 11px; right: 3px; font-size: 20px; width: 30px; }
 
 #sidebar h6 { margin-bottom: 3px; }
 
