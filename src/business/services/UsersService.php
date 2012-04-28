@@ -207,19 +207,21 @@ class UsersService extends Component
 	/**
 	 * @param User $user
 	 * @param $newPassword
-	 * @return User|bool
+	 * @return bool
 	 */
-	public function changePassword(User $user, $newPassword)
+	public function changePassword(User $user, $newPassword, $save = true)
 	{
 		$hashAndType = b()->security->hashPassword($newPassword);
 		$user->password = $hashAndType['hash'];
 		$user->enc_type = $hashAndType['encType'];
 		$user->status = UserAccountStatus::Active;
+		$user->last_password_change_date = DateTimeHelper::currentTime();
+		$user->password_reset_required = false;
 
-		if ($user->save())
-			return $user;
-
-		return false;
+		if (!$save || $user->save())
+			return true;
+		else
+			return false;
 	}
 
 	/**

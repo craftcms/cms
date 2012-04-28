@@ -76,6 +76,25 @@
 					{/if}
 				</div>
 
+				{if theUser.isCurrent}
+					<div class="field">
+						<div class="heading">
+							<label for="password">New Password</label>
+						</div>
+						<div class="passwordwrapper"><input id="password" name="password" class="text password {if changePasswordInfo.errors.password}error{/if}" type="password" /></div>
+						{if changePasswordForm.errors.password}
+							{include "_includes/error_list" errors=changePasswordForm.errors.password}
+						{/if}
+					</div>
+
+					<div class="pane-item field">
+						<div class="heading">
+							<label for="confirm-password">Confirm New Password</label>
+						</div>
+						<div class="passwordwrapper"><input id="confirm-password" name="confirm-password" class="text password {if changePasswordInfo.errors.confirmPassword}error{/if}" type="password" /></div>
+					</div>
+				{/if}
+
 				<div class="field">
 					<div class="heading">
 						<label for="html_email">Email Format</label>

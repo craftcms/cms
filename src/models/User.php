@@ -65,6 +65,15 @@ class User extends Model
 	}
 
 	/**
+	 * Returns whether this is the current logged-in user
+	 * @return bool
+	 */
+	public function getIsCurrent()
+	{
+		return (!$this->isNewRecord && $this->id == b()->users->current->id);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function getRemainingCooldownTime()

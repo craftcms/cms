@@ -9,47 +9,6 @@ class AccountController extends Controller
 	/**
 	 *
 	 */
-	public function actionChangePassword()
-	{
-		$this->requirePostRequest();
-
-		$changePasswordInfo = new ChangePasswordForm();
-
-		$changePasswordInfo->confirmPassword = b()->request->getPost('confirm-password');
-		$changePasswordInfo->password = b()->request->getPost('password');
-		$changePasswordInfo->currentPassword = b()->request->getPost('current-password');
-
-		if ($changePasswordInfo->validate())
-		{
-			$user = b()->users->current;
-
-			// check their existing password
-			$checkPassword = b()->security->checkPassword($changePasswordInfo->currentPassword, $user->password, $user->enc_type);
-
-			// bad password
-			if (!$checkPassword)
-				$changePasswordInfo->addError('currentPassword', 'The password you entered does not match the one we have on record.');
-			else
-			{
-				if (($user = b()->users->changePassword($user, $changePasswordInfo->password)) !== false)
-				{
-					$user->last_password_change_date = DateTimeHelper::currentTime();
-					$user->password_reset_required = false;
-					$user->save();
-
-					b()->user->setMessage(MessageType::Notice, 'Password updated.');
-					$this->redirect('account');
-				}
-			}
-		}
-
-		// display the password form
-		$this->loadTemplate(b()->users->changePasswordUrl, array('changePasswordInfo' => $changePasswordInfo));
-	}
-
-	/**
-	 *
-	 */
 	public function actionForgot()
 	{
 		$this->requirePostRequest();

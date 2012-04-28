@@ -98,9 +98,34 @@ class UsersController extends Controller
 
 			$sendValidationEmail = (b()->request->getPost('send_validation_email') === 'y');
 
-			if ($user->validate())
+			$userValidates = $user->validate();
+
+			// Is this the current user?
+			if ($user->isCurrent)
 			{
-				if (!$existingUser)
+				// Are they changing their password?
+				if (($password = b()->request->getPost('password')))
+				{
+					// Make sure the passwords match and are at least the minimum length
+					$changePasswordForm = new ChangePasswordForm();
+					$changePasswordForm->password = $password;
+					$changePasswordForm->confirmPassword = b()->request->getPost('confirm-password');
+					$passwordValidates = $changePasswordForm->validate();
+
+					// Store the new hashed password on the User record, but don't save it yet
+					if ($passwordValidates)
+						b()->users->changePassword($user, $password, false);
+				}
+			}
+
+			if ($userValidates && (!isset($passwordValidates) || $passwordValidates))
+			{
+				if ($existingUser)
+				{
+					$user->save(false);
+					$this->_setMessageAndRedirect('User saved.', MessageType::Notice);
+				}
+				else
 				{
 					$user = b()->users->registerUser($user, null, true);
 
@@ -132,13 +157,6 @@ class UsersController extends Controller
 						$this->_setMessageAndRedirect('Couldn’t register user. See the log for details.', MessageType::Error);
 					}
 				}
-				else
-					$user->save(false);
-
-				if ($existingUser)
-					$this->_setMessageAndRedirect('User saved.', MessageType::Notice);
-
-				$this->redirect(b()->request->getPost('redirect'));
 			}
 			else
 			{
@@ -146,7 +164,10 @@ class UsersController extends Controller
 			}
 		}
 
-		$this->loadRequestedTemplate(array('theUser' => $user));
+		$this->loadRequestedTemplate(array(
+			'theUser' => $user,
+			'changePasswordForm' => (isset($changePasswordForm) ? $changePasswordForm : null)
+		));
 	}
 
 	/**
