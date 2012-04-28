@@ -6,15 +6,15 @@
 	{/if}
 {/if}
 
-{if theUser}
-	{if theUser.fullName}
-		{set displayName = theUser.fullName}
-	{elseif theUser.username}
-		{set displayName = theUser.username}
+{if theUser.id}
+	{if theUser.id == users.current.id}
+		{set displayName = "My"}
+	{elseif theUser.fullName}
+		{set displayName = theUser.fullName.possessive}
 	{else}
-		{set displayName = "Untitled"}
+		{set displayName = "Anonymous’"}
 	{/if}
-	<?php $pageTitle = new TemplateVariable($displayName->possessive().' account settings'); ?>
+	<?php $pageTitle = new TemplateVariable($displayName.' account settings'); ?>
 {else}
 	{set pageTitle = "Register a new user"}
 {/if}
@@ -39,7 +39,7 @@
 
 				<div class="field first">
 					<div class="heading">
-						<label for="first_name">First Name</label>
+						<label for="first_name" class="required">First Name</label>
 					</div>
 					<div class="textwrapper"><input id="first_name" name="first_name" class="text" type="text" value="{:theUser.first_name}" /></div>
 					{if theUser.errors.first_name}
@@ -58,7 +58,7 @@
 
 				<div class="field">
 					<div class="heading">
-						<label for="username">Username</label>
+						<label for="username" class="required">Username</label>
 					</div>
 					<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{:theUser.username}" /></div>
 					{if theUser.errors.username}
@@ -68,7 +68,7 @@
 
 				<div class="field">
 					<div class="heading">
-						<label for="email">Email</label>
+						<label for="email" class="required">Email</label>
 					</div>
 					<div class="textwrapper"><input id="email" name="email" class="text" type="text" value="{:theUser.email}" /></div>
 					{if theUser.errors.email}
@@ -97,7 +97,7 @@
 					</div>
 				{/if}
 
-				{if theUser.id}
+				{if theUser.id && theUser.id != users.current.id}
 					<div class="field checkbox">
 						<label>A password reset is required
 							<div class="cbwrapper"><input type="checkbox" name="password_reset" value="y" {if theUser.password_reset_required}checked="checked"{/if} /></div>
@@ -114,6 +114,7 @@
 				{/if}
 
 				<input class="btn big submit" type="submit" name="save" value="Save User" />
+
 				{if theUser.id}
 					{if theUser.status != 'suspended'}
 						<input class="btn big" type="submit" name="suspend" value="Suspend User" />
