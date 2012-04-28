@@ -271,7 +271,7 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
 
 /* block editor */
 .blockeditor { position: relative; margin: 30px -30px; background: #f8f6f2; overflow: hidden; }
-.blockeditor .list { padding: 30px 15px 30px 30px; width: 155px; border-right: 1px solid $light; }
+.blockeditor .list { padding: 30px 15px 30px 30px; width: 155px; border-right: 1px solid #d9d7d4; }
 .blockeditor .list ul { margin-bottom: 15px; }
 .blockeditor .list ul li { border-top: 1px solid $bgcolor; }
 .blockeditor .list ul li:last-child { border-bottom: 1px solid $bgcolor; }
@@ -286,7 +286,7 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
 .blockeditor .list ul li a.sel .name { color: $medium; }
 .blockeditor .list ul li a.sel .type { color: $mediumlight; }
 
-.blockeditor .settings { position: absolute; top: 0; left: 200px; border-left: 1px solid $light; padding: 30px; }
+.blockeditor .settings { position: absolute; top: 0; left: 200px; border-left: 1px solid #d9d7d4; padding: 30px; }
 .blockeditor .settings .blocksettings,
 .blockeditor .settings .blocktypesettings { margin-bottom: 25px; }
 
