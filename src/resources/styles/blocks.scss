@@ -234,7 +234,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .textwrapper { padding-right: 20px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border: 1px solid $light; padding: 9px; font-size: 13px; color: $dark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border: 1px solid $ultralight; padding: 9px; font-size: 13px; color: $dark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text:hover { border-color: $light; }
 .text:focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
 .text.error { border-color: #8a1f11; }
