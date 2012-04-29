@@ -29,7 +29,7 @@ b.ui.PasswordInput = b.Base.extend({
 
 		this.showingCapsIcon = false;
 
-		this.$showPasswordToggle = $(document.createElement('a'));
+		this.$showPasswordToggle = $('<a/>').hide();
 		this.$showPasswordToggle.addClass('password-toggle');
 		this.$showPasswordToggle.insertAfter(this.$passwordInput);
 		this.addListener(this.$showPasswordToggle, 'mousedown', 'onToggleMouseDown');
@@ -49,6 +49,7 @@ b.ui.PasswordInput = b.Base.extend({
 
 		this.addListener(this.$currentInput, 'focus', 'onFocus');
 		this.addListener(this.$currentInput, 'keypress', 'onKeyPress');
+		this.addListener(this.$currentInput, 'keypress,keyup,change,blur', 'onInputChange');
 	},
 
 	updateToggleLabel: function(label)
@@ -131,6 +132,14 @@ b.ui.PasswordInput = b.Base.extend({
 			else if (str.toLowerCase() === str && str.toUpperCase() !== str)
 				this.hideCapsIcon();
 		}
+	},
+
+	onInputChange: function()
+	{
+		if (this.$currentInput.val())
+			this.$showPasswordToggle.show();
+		else
+			this.$showPasswordToggle.hide();
 	},
 
 	onToggleMouseDown: function(ev)
