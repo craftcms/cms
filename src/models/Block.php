@@ -93,5 +93,4 @@ class Block extends Model
 	{
 		return (string)$data;
 	}
-
 }
