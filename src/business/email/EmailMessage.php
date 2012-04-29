@@ -17,8 +17,10 @@ class EmailMessage
 	private $_isHtml;
 
 	/**
-	 * @param       $from
-	 * @param array $to
+	 * @param EmailAddress $from
+	 * @param array                $to
+	 *
+	 * @throws Exception
 	 */
 	function __construct(EmailAddress $from, array $to)
 	{

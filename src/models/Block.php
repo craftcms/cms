@@ -103,7 +103,7 @@ class Block extends Model
 	}
 
 	/**
-	 * Retuns the data
+	 * Returns the data
 	 * @return mixed
 	 */
 	public function getData()

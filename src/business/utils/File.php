@@ -169,8 +169,10 @@ class File extends Component
 	 * Uploaded files are supported through {@link CUploadedFile} Yii class.
 	 * Path aliases are supported through {@link getPathOfAlias} Yii method.
 	 *
-	 * @param string $filePath Path to the file specified by user, if not set exception is raised
+	 * @param string  $filePath Path to the file specified by user, if not set exception is raised
 	 * @param boolean $greedy If true file properties (such as 'Size', 'Owner', 'Permission', etc.) would be autoloaded
+	 *
+	 * @throws Exception
 	 * @return object File instance for the specified filesystem object
 	 */
 	public function set($filePath, $greedy=false)

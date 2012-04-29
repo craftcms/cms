@@ -90,6 +90,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Processes the request.
+	 * @throws HttpException
 	 */
 	public function processRequest()
 	{
@@ -144,8 +145,10 @@ class App extends \CWebApplication
 	/**
 	 * Processes install and setup requests.
 	 * @access private
+	 *
 	 * @param string $what  The controller and possible first URL segment value.
 	 * @param bool   $force Whether to redirect to that controller if we're not already there.
+	 * @throws HttpException
 	 */
 	private function _processSpecialRequests($what, $force)
 	{
