@@ -41,6 +41,15 @@ class User extends Model
 	);
 
 	/**
+	 * String representation of a user
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->getFullName();
+	}
+
+	/**
 	 * Returns the user's full name (first name + last name)
 	 * @return string
 	 */

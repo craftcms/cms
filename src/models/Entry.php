@@ -106,6 +106,22 @@ class Entry extends Model
 	}
 
 	/**
+	 * Returns the publish date
+	 * @return DateTime
+	 */
+	public function getPublishDate()
+	{
+		if ($this->publish_date)
+		{
+			$dt = new DateTime;
+			$dt->setTimestamp($this->publish_date);
+			return $dt;
+		}
+		else
+			return null;
+	}
+
+	/**
 	 * Returns the entry's full URL
 	 * @return mixed
 	 */
@@ -114,7 +130,6 @@ class Entry extends Model
 		if ($this->uri)
 		{
 			$url = b()->sites->current->url.'/'.$this->uri;
-			$url = str_replace('http://', '', $url);
 			return $url;
 		}
 		else

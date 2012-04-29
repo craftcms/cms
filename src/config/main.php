@@ -130,9 +130,9 @@ return CMap::mergeArray(
 					array('content/({number})/draft({number})',      'content/_entry', array('entryId', 'draftNum')),
 					array('content/sections/new',                    'content/_section'),
 					array('content/sections/({number})',             'content/_section', array('sectionId')),
-					array('settings/plugins/({handle})',             'settings/plugins/_edit', array('pluginShortName')),
-					array('settings/sites/new',                      'settings/sites/_edit'),
-					array('settings/sites/edit/({number})',          'settings/sites/_edit', array('siteId')),
+					array('settings/plugins/({handle})',             'settings/_plugin', array('pluginClass')),
+					array('settings/sites/new',                      'settings/_site'),
+					array('settings/sites/({number})',               'settings/_site', array('siteId')),
 				),
 			),
 

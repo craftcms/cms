@@ -1,35 +1,41 @@
 {layout "_layouts/cp" pageTitle="Content"}
 
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/content-index.css"}
-{/region}
-
-
 {region "main"}
 	<h1>Content</h1>
 
 	{foreach content.sections as section}
-		<h2 data-icon="C">{:section.name}</h2>
+		<section>
+			<h2 data-icon="C">{:section.name}</h2>
 
-		<ul class="actions">
-			<li>
-				<form method="post" action="">
-					<input type="hidden" name="action" value="content/createEntry" />
-					<input type="hidden" name="sectionId" value="{:section.id}" />
-					<a class="btn light formsubmit" data-icon="n">New entry</a>
-				</form>
-			</li>
-			<li>
-				<a href="{:url.base}content/sections/{:section.id}" class="btn light" data-icon="e">Edit section</a>
-			</li>
-		</ul>
+			<ul class="actions">
+				<li>
+					<form method="post" action="">
+						<input type="hidden" name="action" value="content/createEntry" />
+						<input type="hidden" name="sectionId" value="{:section.id}" />
+						<a class="btn light formsubmit" data-icon="n">New entry</a>
+					</form>
+				</li>
+				<li>
+					<a href="{:url.base}content/sections/{:section.id}" class="btn light" data-icon="e">Edit section</a>
+				</li>
+			</ul>
 
-		<ul class="entries">
-			{foreach section.entries as entry}
-				<li><a href="{:url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a></li>
-			{/foreach}
-		</ul>
+			<table class="data">
+				<tbody>
+					{foreach section.entries as entry}
+						<tr>
+							<td width="25%"><span class="status {if entry.live}on{elseif entry.published}pending{elseif entry.expired}off{/if}"></span>
+								<a href="{:url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a>
+							</td>
+							<td width="25%">{:entry.author.firstNameLastInitial}</td>
+							<td width="25%">{:entry.getPublishDate}</td>
+							<td width="25%">{if section.has_urls && entry.url}<a href="{:entry.url}" target="_blank">{:entry.uri}</a>{/if}</td>
+						</tr>
+					{/foreach}
+				</tbody>
+			</table>
+		</section>
 	{/foreach}
 
 	<a href="{:url.base}content/sections/new" class="btn light" data-icon="n">New section</a>

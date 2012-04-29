@@ -1,16 +1,9 @@
 {layout "_layouts/cp" pageTitle=pageTitle styles=styles scripts=scripts}
 {region "bodyClass"}sidebar-layout {:bodyClass}{/region}
 
-{region "body"}
+{region "main"}
 	<div id="sidebar" class="sidebar">
 		{:sidebar}
 	</div>
-	<script type="text/javascript">
-		// Set the sidebar height right away so it doesn't "jump" on page load
-		document.getElementById('sidebar').style.height = (window.innerHeight-48)+'px';
-	</script>
-
-	<div id="main">
-		{:main}
-	</div>
+	{:main}
 {/region}

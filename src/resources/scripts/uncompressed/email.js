@@ -3,7 +3,7 @@
 
 var EmailSettingsForm = b.Base.extend({
 
-	$emailSettingsPane: null,
+	$protocolField: null,
 	$protocolSelect: null,
 	$hiddenFields: null,
 	$protocolSettingsPane: null,
@@ -13,7 +13,7 @@ var EmailSettingsForm = b.Base.extend({
 
 	init: function()
 	{
-		this.$emailSettingsPane = $('#email-settings');
+		this.$protocolField = $('#protocol-field');
 		this.$protocolSelect = $('#protocol');
 		this.$hiddenFields = $('#hidden-fields');
 
@@ -26,15 +26,9 @@ var EmailSettingsForm = b.Base.extend({
 		});
 	},
 
-	_buildProtocolSettingsPane: function()
+	getField: function(fieldIndex)
 	{
-		if (!this.$protocolSettingsPane)
-		{
-			this.$protocolSettingsPane = $('<div class="pane" />').insertAfter(this.$emailSettingsPane);
-			var $head = $('<div class="pane-head" />').appendTo(this.$protocolSettingsPane);
-			this.$protocolSettingsPaneHead = $('<h5 />').appendTo($head);
-			this.$protocolSettingsPaneBody = $('<div class="pane-body" />').appendTo(this.$protocolSettingsPane);
-		}
+		return $('#'+EmailSettingsForm.protocolFields[this.protocol][fieldIndex]+'-field');
 	},
 
 	_onEmailTypeChange: function()
@@ -44,7 +38,7 @@ var EmailSettingsForm = b.Base.extend({
 			// Detach the old fields
 			for (var i = 0; i < EmailSettingsForm.protocolFields[this.protocol].length; i++)
 			{
-				$('#'+EmailSettingsForm.protocolFields[this.protocol][i]+'-field').appendTo(this.$hiddenFields)
+				this.getField(i).appendTo(this.$hiddenFields);
 			}
 		}
 
@@ -52,32 +46,21 @@ var EmailSettingsForm = b.Base.extend({
 
 		if (this.protocol in EmailSettingsForm.protocolFields)
 		{
-			this._buildProtocolSettingsPane();
-			this.$protocolSettingsPane.show();
-
-			// Update the heading
-			var selectedIndex = this.$protocolSelect[0].selectedIndex,
-				$selectedOption = $(this.$protocolSelect[0][selectedIndex]),
-				label = $selectedOption.html();
-			this.$protocolSettingsPaneHead.html(label+' Settings');
-
 			// Attach the new fields
+			var $lastField = this.$protocolField;
 			for (var i = 0; i < EmailSettingsForm.protocolFields[this.protocol].length; i++)
 			{
-				$('#'+EmailSettingsForm.protocolFields[this.protocol][i]+'-field').appendTo(this.$protocolSettingsPaneBody);
+				var $field = this.getField(i);
+				$field.insertAfter($lastField);
+				$lastField = $field;
 			}
-		}
-		else
-		{
-			if (this.$protocolSettingsPane)
-				this.$protocolSettingsPane.hide();
 		}
 	}
 
 }, {
 	protocolFields: {
-		Smtp:      ['smtpAuth', 'smtpAuthCredentials', 'smtpKeepAlive', 'smtpSecureTransportType', 'port', 'host', 'timeout'],
-		Pop:       ['username', 'password', 'port', 'host', 'timeout'],
+		Smtp:      ['host', 'port', 'smtpAuth', 'smtpAuthCredentials', 'smtpKeepAlive', 'smtpSecureTransportType', 'timeout'],
+		Pop:       ['username', 'password', 'host', 'port', 'timeout'],
 		GmailSmtp: ['username', 'password']
 	}
 });

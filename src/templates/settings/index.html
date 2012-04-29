@@ -1,1 +1,116 @@
-{layout "settings/_layouts/settings"}
+{layout "_layouts/cp" pageTitle="Settings"}
+
+
+{region "main"}
+	<h1>Settings</h1>
+
+	<section>
+		<h2>Updates</h2>
+
+		<table class="info">
+			<tr>
+				<th>Status</th>
+				<td>
+					{if updates.isUpdateInfoCached}
+						{if updates.allAvailableUpdates.length}
+							{:updates.allAvailableUpdates.length} available update{if updates.allAvailableUpdates.length > 1}s{/if}
+						{else}
+							No updates available
+						{/if}
+					{else}
+						Checking…
+					{/if}
+				</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<h2>Email</h2>
+		<ul class="actions">
+			<li><a href="{:url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
+		</ul>
+
+		<table class="info">
+			<tr>
+				<th>Email Address</th>
+				<td>{:email.emailSettings.emailAddress}</td>
+			</tr>
+			<tr>
+				<th>Sender Name</th>
+				<td>{:email.emailSettings.senderName}</td>
+			</tr>
+			<tr>
+				<th>Protocol</th>
+				<td>{:email.emailSettings.protocol}</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<h2>Sites</h2>
+		<ul class="actions">
+			<li><a href="{:url.base}settings/sites/new" class="btn light" data-icon="n">New site</a></li>
+		</ul>
+
+		<table class="data">
+			<tbody>
+				{foreach sites as site}
+					<tr>
+						<td width="25%"><a href="{:url.base}settings/sites/{:site.id}">{:site.name}</td>
+						<td width="25%">{:site.url}</td>
+						<td><code>{:site.handle}</code></td>
+					</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</section>
+
+	<section>
+		<h2>Plugins</h2>
+
+		<table class="data">
+			<tbody>
+				{foreach plugins.getAll(1, 1) as plugin}
+					<tr>
+						<td width="25%">
+							<span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span>
+							{if plugin.hasSettings}
+								<a href="{:url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a>
+							{else}
+								{:plugin.name}
+							{/if}
+						</td>
+						<td width="25%">
+							{:plugin.version}
+						</td>
+						<td>
+							{if plugin.developerUrl}
+								<a href="{:plugin.developerUrl}" target="_blank">{if plugin.developer}{:plugin.developer}{else}{:plugin.developerUrl}{/if}</a>
+							{else}
+								{:plugin.developer}
+							{/if}
+						</td>
+						<td class="rightalign">
+							<form method="post" action="">
+								<input type="hidden" name="pluginClass" value="{:plugin.class}" />
+								<input type="hidden" name="redirect" value="settings" />
+								{if plugin.installed}
+									{if plugin.enabled}
+										<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin" />
+									{else}
+										<input type="button" value="Enable" class="btn small light formsubmit" data-action="plugins/enablePlugin" />
+									{/if}
+									<input type="button" value="Uninstall" class="btn small light formsubmit" data-action="plugins/uninstallPlugin" />
+								{else}
+									<input type="button" value="Install" class="btn small light formsubmit" data-action="plugins/installPlugin" />
+								{/if}
+							</form>
+						</td>
+					</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</section>
+
+{/region}

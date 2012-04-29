@@ -1,0 +1,10 @@
+{set plugin = plugins.getPlugin(pluginClass)}
+
+<?php $pageTitle = new TemplateVariable($plugin->name().' plugin settings'); ?>
+
+{layout "_layouts/cp" pageTitle=pageTitle crumbs="settings:Settings"}
+
+
+{region "main"}
+	<h1>{:pageTitle}</h1>
+{/region}
