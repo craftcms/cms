@@ -137,14 +137,8 @@ var LoginForm = b.Base.extend({
 	{
 		var passwordContainerHeight = this.$passwordContainer.height();
 		this.$pane.animate({marginTop: (passwordContainerHeight/2)}, 'fast');
-
-		this.$passwordContainer.height(passwordContainerHeight);
-		this.$passwordContainer.css('position', 'relative');
-
-		this.$passwordPaneItem.width(this.$passwordPaneItem.width());
-		this.$passwordPaneItem.css({position: 'absolute', bottom: 0, left: 0});
 		this.$passwordContainer.animate({height: 0}, 'fast', $.proxy(function() {
-			this.$passwordContainer.hide();
+			this.$usernameInput.focus();
 		}, this));
 
 		this.$loginBtn.attr('value', 'Reset Password');

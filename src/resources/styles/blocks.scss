@@ -82,7 +82,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /* ----------------------------------------*/
 
 .grid { margin: 30px 0 30px -30px; }
-.grid:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+.grid:after { @include clearafter; }
 .grid .col { float: left; }
 .grid .col .col-inner { margin-left: 30px; }
 
@@ -106,6 +106,8 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /* ----------------------------------------
 /*  Buttons
 /* ----------------------------------------*/
+
+.buttons { margin-top: 30px; }
 
 .btn { display: inline-block; border-radius: 3px; padding: 0 10px; height: 24px; line-height: 24px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); text-align: center; white-space: nowrap; background: -webkit-linear-gradient(#807e7c, #4d4c4a); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.15), 0 1px 1px rgba(0,0,0,0.15); cursor: pointer; overflow: hidden; @include unselectable; }
 .btn:hover { text-decoration: none; }
@@ -242,13 +244,12 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .field label + p { display: inline; margin-left: 5px; color: $mediumlight; font-size: 12px; font-style: italic; }
 
 
-.nested-fields { margin: -30px; padding: 30px 30px 0 50px; overflow: hidden; }
-.nested-fields > .field:last-child { padding-bottom: 30px; }
+.nested-fields { margin: -25px -30px; padding: 25px 30px 0 48px; overflow: hidden; }
+.nested-fields > .field:last-child { padding-bottom: 25px; }
 
 /* checkbox */
-.cbwrapper { margin: -1px 0; line-height: 20px; } /* see: http://davidwalsh.name/webkit-checkbox-overflow */
+.cbwrapper { margin: -1px 0; float: left; width: 18px; line-height: 20px; } /* see: http://davidwalsh.name/webkit-checkbox-overflow */
 .field.checkbox + .field.checkbox { margin-top: -20px; }
-.field.checkbox .cbwrapper { float: left; width: 20px; }
 
 /* text */
 .textwrapper { padding-right: 20px; }
@@ -258,7 +259,6 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .text:hover { border-color: $light; }
 .text:focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
-.text.error { border-color: #8a1f11; }
 
 .texthint-container { position: relative; height: 0; }
 .texthint { position: absolute; top: -1px; width: 100%; color: $mediumlight; -webkit-transition: color linear 100ms; }
