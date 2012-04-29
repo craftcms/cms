@@ -136,8 +136,8 @@ class PluginsService extends Component
 		$plugin->enabled = true;
 		if ($plugin->save())
 			return true;
-
-		return false;
+		else
+			return false;
 	}
 
 	/**
@@ -152,8 +152,8 @@ class PluginsService extends Component
 		$plugin->enabled = false;
 		if ($plugin->save())
 			return true;
-
-		return false;
+		else
+			return false;
 	}
 
 	/**
@@ -164,12 +164,15 @@ class PluginsService extends Component
 	public function install($className)
 	{
 		$plugin = $this->getPlugin($className);
-		$plugin->installed = true;
+		$plugin->enabled = true;
 
 		if ($plugin->save())
+		{
+			$plugin->installed = true;
 			return true;
-
-		return false;
+		}
+		else
+			return false;
 	}
 
 	/**
@@ -186,8 +189,8 @@ class PluginsService extends Component
 			unset($this->_pluginInstances[$className]);
 			return true;
 		}
-
-		return false;
+		else
+			return false;
 	}
 
 	/**
