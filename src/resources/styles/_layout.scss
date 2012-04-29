@@ -33,7 +33,7 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 #header-right #search input:focus { outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor, inset 0 0 0 1px $focusglowcolor; }
 
 /* nav */
-#nav { position: absolute; top: 50px; left: 0; padding-top: 10px; width: 100px; }
+#nav { position: absolute; z-index: 1; top: 50px; left: 0; padding-top: 10px; width: 100px; }
 #nav.fixed { position: fixed; top: 0; }
 #nav ul li { margin-bottom: 25px; }
 #nav ul li a { display: block; color: $mediumlight; text-align: center; -webkit-transition: color linear 100ms; }
