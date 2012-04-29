@@ -192,7 +192,7 @@ class UsersController extends Controller
 	private function _setMessageAndRedirect($message, $messageStatus)
 	{
 		b()->user->setMessage($messageStatus, $message);
-		$this->redirect(b()->request->getPost('redirect'));
+		$this->redirectToPostedUrl();
 	}
 }
 

@@ -105,10 +105,7 @@ class SettingsController extends Controller
 			if (b()->email->saveEmailSettings($settings))
 			{
 				b()->user->setMessage(MessageType::Notice, 'Email settings saved.');
-
-				$url = b()->request->getPost('redirect');
-				if ($url !== null)
-					$this->redirect($url);
+				$this->redirectToPostedUrl();
 			}
 			else
 			{

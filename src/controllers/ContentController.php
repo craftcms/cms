@@ -51,10 +51,7 @@ class ContentController extends Controller
 			if ($blocksSaved)
 			{
 				b()->user->setMessage(MessageType::Notice, 'Section saved.');
-
-				$url = b()->request->getPost('redirect');
-				if ($url !== null)
-					$this->redirect($url);
+				$this->redirectToPostedUrl();
 			}
 			else
 				b()->user->setMessage(MessageType::Error, 'Section saved, but couldn’t save all the content blocks.');
@@ -103,11 +100,7 @@ class ContentController extends Controller
 		if (b()->content->saveEntryContent($entry, $changes))
 		{
 			b()->user->setMessage(MessageType::Notice, 'Entry saved.');
-
-			// Redirect?
-			$url = b()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+			$this->redirectToPostedUrl();
 		}
 		else
 		{
@@ -150,11 +143,7 @@ class ContentController extends Controller
 		if (b()->content->saveDraftContent($draft, $changes))
 		{
 			b()->user->setMessage(MessageType::Notice, 'Draft saved.');
-
-			// Redirect?
-			$url = b()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+			$this->redirectToPostedUrl();
 		}
 		else
 		{

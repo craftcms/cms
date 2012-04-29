@@ -49,9 +49,7 @@ class BlocksController extends Controller
 				b()->user->setMessage(MessageType::Notice, 'Content block saved.');
 			}
 
-			$url = b()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+			$this->redirectToPostedUrl();
 		}
 
 		if (b()->request->isAjaxRequest)

@@ -33,10 +33,7 @@ class SitesController extends Controller
 		if (!$site->errors)
 		{
 			b()->user->setMessage(MessageType::Notice, 'Site saved.');
-
-			$url = b()->request->getPost('redirect');
-			if ($url !== null)
-				$this->redirect($url);
+			$this->redirectToPostedUrl();
 		}
 		else
 		{

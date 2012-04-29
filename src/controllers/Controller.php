@@ -191,6 +191,15 @@ abstract class Controller extends \CController
 	}
 
 	/**
+	 * Redirects to the URI specified in the POST
+	 */
+	public function redirectToPostedUrl()
+	{
+		$url = b()->request->getPost('redirect');
+		$this->redirect($url);
+	}
+
+	/**
 	 * Respond with JSON
 	 * @param array $r The array to JSON-encode and return
 	 */
