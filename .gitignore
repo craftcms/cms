@@ -10,3 +10,13 @@ Source/blocks/config/blocks.php
 Source/blocks/config/db.php
 
 .sass-cache/*
+Source/blocks/app/resources/styles/.sass-cache/
+Source/blocks/app/resources/styles.css
+Source/blocks/app/resources/styles/blocks.css
+Source/blocks/app/resources/styles/content-entry.css
+Source/blocks/app/resources/styles/login.css
+Source/blocks/app/resources/styles/settings.css
+Source/blocks/app/resources/styles/settings.css
+Source/blocks/app/resources/styles/settings.css
+Source/blocks/app/resources/styles/settings.css
+Source/blocks/app/resources/styles/setup.css
