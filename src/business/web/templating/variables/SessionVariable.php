@@ -17,7 +17,7 @@ class SessionVariable
 	/**
 	 * Returns the remembered username from cookie
 	 */
-	public function rememberedusername($siteId)
+	public function rememberedusername()
 	{
 		return b()->user->getRememeberedUsername();
 	}
