@@ -7,7 +7,9 @@ namespace Blocks;
 class PluginsVariable
 {
 	/**
-	 * Returns a plugin
+	 * Returns a plugin.
+	 * @param string $class
+	 * @return Plugin
 	 */
 	public function get($class)
 	{
@@ -15,7 +17,8 @@ class PluginsVariable
 	}
 
 	/**
-	 * Returns all plugins
+	 * Returns all plugins.
+	 * @return array
 	 */
 	public function all()
 	{

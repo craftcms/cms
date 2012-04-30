@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Namespace for all internal tag variables.
+ * Contains all global variables.
  */
 class BVariable
 {

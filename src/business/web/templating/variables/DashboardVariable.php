@@ -7,7 +7,7 @@ namespace Blocks;
 class DashboardVariable
 {
 	/**
-	 * Returns dashboard alerts
+	 * Returns dashboard alerts.
 	 * @return array
 	 */
 	public function alerts()
@@ -16,7 +16,7 @@ class DashboardVariable
 	}
 
 	/**
-	 * Returns the user's widgets
+	 * Returns the user's widgets.
 	 * @return array
 	 */
 	public function widgets()

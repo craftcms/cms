@@ -7,7 +7,8 @@ namespace Blocks;
 class SessionVariable
 {
 	/**
-	 * Returns whether the user is logged in
+	 * Returns whether the user is logged in.
+	 * @return bool
 	 */
 	public function loggedin()
 	{
@@ -15,7 +16,8 @@ class SessionVariable
 	}
 
 	/**
-	 * Returns the remembered username from cookie
+	 * Returns the remembered username from cookie.
+	 * @return string
 	 */
 	public function rememberedusername()
 	{
@@ -23,7 +25,8 @@ class SessionVariable
 	}
 
 	/**
-	 * Returns any active notifications for the user
+	 * Returns any active notifications for the user.
+	 * @return array
 	 */
 	public function notifications()
 	{

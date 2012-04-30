@@ -7,7 +7,7 @@ namespace Blocks;
 class UrlVariable
 {
 	/**
-	 * The base URL for the site.
+	 * Returns the current base URL (either for the CP or site, depending on the request mode).
 	 * @return string
 	 */
 	public function base()
@@ -16,10 +16,9 @@ class UrlVariable
 	}
 
 	/**
-	 * The resource URL prefix
-	 *
+	 * Returns a resource URL.
 	 * @param string $path
-	 * @param null   $params
+	 * @param mixed $params
 	 * @return string
 	 */
 	public function resource($path = '', $params = null)
@@ -28,11 +27,10 @@ class UrlVariable
 	}
 
 	/**
-	 * The action URL prefix
-	 *
+	 * Returns an action URL.
 	 * @param string $path
-	 * @param null   $params
-	 * @return array|string
+	 * @param mixed  $params
+	 * @return string
 	 */
 	public function action($path = '', $params = null)
 	{
@@ -40,11 +38,10 @@ class UrlVariable
 	}
 
 	/**
-	 * The URL prefix
-	 *
+	 * Returns a URL.
 	 * @param string $path
-	 * @param null   $params
-	 * @return array|string
+	 * @param mixed $params
+	 * @return string
 	 */
 	public function url($path = '', $params = null)
 	{
@@ -52,7 +49,7 @@ class UrlVariable
 	}
 
 	/**
-	 * Segments
+	 * Returns all URL segments.
 	 * @return array
 	 */
 	public function segments()
@@ -61,7 +58,7 @@ class UrlVariable
 	}
 
 	/**
-	 * Segment
+	 * Returns a specific URL segment.
 	 * @param int    $num Which segment to retrieve
 	 * @param string $default
 	 * @return bool
@@ -72,6 +69,7 @@ class UrlVariable
 	}
 
 	/**
+	 * @returns the request domain.
 	 * @return string
 	 */
 	public function domain()
@@ -80,42 +78,13 @@ class UrlVariable
 	}
 
 	/**
-	 * @param        $var
+	 * @returns a GET variable.
+	 * @param string $var
 	 * @param string $default
 	 * @return bool
 	 */
 	public function get($var = null, $default = '')
 	{
 		return b()->request->getQuery($var, $default);
-	}
-
-	/**
-	 * @param $path
-	 * @param null $params
-	 * @return string
-	 */
-	public function generateResourceUrl($path, $params = null)
-	{
-		return UrlHelper::generateResourceUrl($path, $params);
-	}
-
-	/**
-	 * @param $path
-	 * @param null $params
-	 * @return array|string
-	 */
-	public function generateActionUrl($path, $params = null)
-	{
-		return UrlHelper::generateActionUrl($path, $params);
-	}
-
-	/**
-	 * @param $path
-	 * @param null $params
-	 * @return array|string
-	 */
-	public function generateUrl($path, $params = null)
-	{
-		return UrlHelper::generateUrl($path, $params);
 	}
 }

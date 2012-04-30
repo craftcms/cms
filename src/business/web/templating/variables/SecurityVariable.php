@@ -7,7 +7,9 @@ namespace Blocks;
 class SecurityVariable
 {
 	/**
-	 * Validates a user activation code
+	 * Validates a user activation code.
+	 * @param string $code
+	 * @return bool
 	 */
 	public function validateUserActivationCode($code)
 	{
@@ -16,6 +18,8 @@ class SecurityVariable
 
 	/**
 	 * Returns a user by its activation code
+	 * @param string $code
+	 * @return User
 	 */
 	public function getUserByActivationCode($code)
 	{

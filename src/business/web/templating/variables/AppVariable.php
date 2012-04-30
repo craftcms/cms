@@ -7,7 +7,7 @@ namespace Blocks;
 class AppVariable
 {
 	/**
-	 * Returns the current Blocks build
+	 * Returns the current Blocks build.
 	 * @return string
 	 */
 	public function build()
@@ -16,7 +16,7 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the current Blocks version
+	 * Returns the current Blocks version.
 	 * @return string
 	 */
 	public function version()
@@ -25,7 +25,7 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the current Blocks edition
+	 * Returns the current Blocks edition.
 	 * @return string
 	 */
 	public function edition()

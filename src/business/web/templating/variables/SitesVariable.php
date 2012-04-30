@@ -7,7 +7,8 @@ namespace Blocks;
 class SitesVariable
 {
 	/**
-	 * Returns the license keys
+	 * Returns the license keys.
+	 * @return array
 	 */
 	public function licensekeys()
 	{
@@ -15,7 +16,9 @@ class SitesVariable
 	}
 
 	/**
-	 * Returns a site by its ID
+	 * Returns a site by its ID.
+	 * @param int $siteId
+	 * @return Site
 	 */
 	public function getSiteById($siteId)
 	{
@@ -23,7 +26,8 @@ class SitesVariable
 	}
 
 	/**
-	 * Returns all sites
+	 * Returns all sites.
+	 * @return array
 	 */
 	public function all()
 	{

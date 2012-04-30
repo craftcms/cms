@@ -7,7 +7,8 @@ namespace Blocks;
 class RequestVariable
 {
 	/**
-	 * Returns whether this is a secure connection
+	 * Returns whether this is a secure connection.
+	 * @return bool
 	 */
 	public function secure()
 	{
@@ -15,7 +16,8 @@ class RequestVariable
 	}
 
 	/**
-	 * Returns a value from POST data
+	 * Returns a value from POST data.
+	 * @return mixed
 	 */
 	public function post($name)
 	{

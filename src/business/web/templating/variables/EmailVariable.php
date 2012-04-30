@@ -7,7 +7,8 @@ namespace Blocks;
 class EmailVariable
 {
 	/**
-	 * Returns the email settings
+	 * Returns the email settings.
+	 * @return array
 	 */
 	public function settings()
 	{

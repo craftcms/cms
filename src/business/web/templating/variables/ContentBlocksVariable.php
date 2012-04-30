@@ -7,7 +7,8 @@ namespace Blocks;
 class ContentBlocksVariable
 {
 	/**
-	 * Returns all blocktypes
+	 * Returns all blocktypes.
+	 * @return array
 	 */
 	public function blocktypes()
 	{

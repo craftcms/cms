@@ -7,7 +7,7 @@ namespace Blocks;
 class CpVariable extends Component
 {
 	/**
-	 * Get the sections of the CP
+	 * Get the sections of the CP.
 	 * @return array
 	 */
 	public function sections()

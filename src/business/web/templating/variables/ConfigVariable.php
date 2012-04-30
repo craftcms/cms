@@ -7,19 +7,12 @@ namespace Blocks;
 class ConfigVariable
 {
 	/**
-	 * Returns a config item
+	 * Returns a config item.
+	 * @param string $name
+	 * @return string
 	 */
 	function __get($name)
 	{
-		return b()->config->getItem($name);
-	}
-
-	/**
-	 * @param $time
-	 * @return int
-	 */
-	public function getTimeInSeconds($time)
-	{
-		return ConfigHelper::getTimeInSeconds($time);
+		return (string)b()->config->getItem($name);
 	}
 }

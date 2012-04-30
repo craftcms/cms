@@ -7,7 +7,7 @@ namespace Blocks;
 class UsersVariable
 {
 	/**
-	 * Returns the current logged-in user
+	 * Returns the current logged-in user.
 	 * @return User
 	 */
 	public function current()
@@ -16,7 +16,8 @@ class UsersVariable
 	}
 
 	/**
-	 * Returns the user by its ID
+	 * Returns a user by its ID.
+	 * @return User
 	 */
 	public function getById($userId)
 	{
@@ -24,7 +25,8 @@ class UsersVariable
 	}
 
 	/**
-	 * Returns the recent users
+	 * Returns the recent users.
+	 * @return array
 	 */
 	public function recent()
 	{
@@ -32,7 +34,8 @@ class UsersVariable
 	}
 
 	/**
-	 * Returns any active notifications for the user
+	 * Returns the URL segment for account verification.
+	 * @return string
 	 */
 	public function verifyAccountUrl()
 	{

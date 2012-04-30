@@ -7,8 +7,9 @@ namespace Blocks;
 class ContentVariable
 {
 	/**
-	 * Returns an entry by its ID
+	 * Returns an entry by its ID.
 	 * @param int $entryId
+	 * @return Entry
 	 */
 	public function getEntryById($entryId)
 	{
@@ -16,8 +17,9 @@ class ContentVariable
 	}
 
 	/**
-	 * Returns a section by its ID
+	 * Returns a section by its ID.
 	 * @param int $sectionId
+	 * @return Section
 	 */
 	public function getSectionById($sectionId)
 	{
@@ -25,7 +27,8 @@ class ContentVariable
 	}
 
 	/**
-	 * Returns all sections
+	 * Returns all sections.
+	 * @return array
 	 */
 	public function sections()
 	{

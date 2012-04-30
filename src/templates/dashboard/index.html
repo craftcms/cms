@@ -80,7 +80,7 @@
 	{if !b.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{:b.url.generateActionUrl('dashboard/getalerts')}';
+			window.getAlertsUrl = '{:b.url.action('dashboard/getalerts')}';
 		</script>
 	{/if}
 
