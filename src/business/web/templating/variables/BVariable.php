@@ -7,20 +7,19 @@ namespace Blocks;
 class BVariable
 {
 	/**
+	 * @return AppVariable
+	 */
+	public function app()
+	{
+		return new AppVariable;
+	}
+
+	/**
 	 * @return AssetsVariable
 	 */
 	public function assets()
 	{
 		return new AssetsVariable;
-	}
-
-	/**
-	 * Returns the current Blocks build
-	 * @return string
-	 */
-	public function build()
-	{
-		return Blocks::getBuild();
 	}
 
 	/**
@@ -69,15 +68,6 @@ class BVariable
 	public function date()
 	{
 		return new DateVariable;
-	}
-
-	/**
-	 * Returns the current Blocks edition
-	 * @return string
-	 */
-	public function edition()
-	{
-		return Blocks::getEdition();
 	}
 
 	/**
@@ -150,14 +140,5 @@ class BVariable
 	public function session()
 	{
 		return new SessionVariable;
-	}
-
-	/**
-	 * Returns the current Blocks version
-	 * @return string
-	 */
-	public function version()
-	{
-		return Blocks::getVersion();
 	}
 }
