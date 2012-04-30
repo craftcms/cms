@@ -271,7 +271,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * @return string
 	 */
-	public function getRememeberedLoginName()
+	public function getRememeberedUsername()
 	{
 		return (isset(b()->request->cookies['loginName'])) ? b()->request->cookies['loginName']->value : null;
 	}

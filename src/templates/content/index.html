@@ -4,7 +4,7 @@
 {region "main"}
 	<h1>Content</h1>
 
-	{foreach content.sections as section}
+	{foreach b.content.sections as section}
 		<section>
 			<h2 data-icon="C">{:section.name}</h2>
 
@@ -17,7 +17,7 @@
 					</form>
 				</li>
 				<li>
-					<a href="{:url.base}content/sections/{:section.id}" class="btn light" data-icon="e">Edit section</a>
+					<a href="{:b.url.base}content/sections/{:section.id}" class="btn light" data-icon="e">Edit section</a>
 				</li>
 			</ul>
 
@@ -26,7 +26,7 @@
 					{foreach section.entries as entry}
 						<tr>
 							<td width="25%"><span class="status {if entry.live}on{elseif entry.published}pending{elseif entry.expired}off{/if}"></span>
-								<a href="{:url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a>
+								<a href="{:b.url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a>
 							</td>
 							<td width="25%">{:entry.author.firstNameLastInitial}</td>
 							<td width="25%">{:entry.getPublishDate}</td>
@@ -38,5 +38,5 @@
 		</section>
 	{/foreach}
 
-	<a href="{:url.base}content/sections/new" class="btn light" data-icon="n">New section</a>
+	<a href="{:b.url.base}content/sections/new" class="btn light" data-icon="n">New section</a>
 {/region}

@@ -15,13 +15,13 @@
 	</div>
 
 	<div id="alerts">
-		{if !sites.licenseKeys}
+		{if !b.sites.licensekeys}
 			<div class="alert">
-				<p>You need to enter your license key into your <a href="{:url.base}settings/info">System Info</a> page.</p>
+				<p>You need to enter your license key into your <a href="{:b.url.base}settings/info">System Info</a> page.</p>
 			</div>
 		{/if}
 
-		{foreach dashboard.alerts as alert}
+		{foreach b.dashboard.alerts as alert}
 			<div class="alert">
 				<p>{:alert}</p>
 			</div>
@@ -30,7 +30,7 @@
 
 	<div id="dashboard">
 		<div id="widgets">
-			{foreach dashboard.userWidgets as widget}
+			{foreach b.dashboard.widgets as widget}
 				{if widget.displayBody}
 					<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
 						<div class="pane-head">
@@ -64,7 +64,7 @@
 				</div>
 				<div class="pane-body">
 					<ul class="widget-handles">
-						{foreach dashboard.userWidgets as widget}
+						{foreach b.dashboard.widgets as widget}
 						<li class="pane-item {if !widget.displayBody}hidden{/if}" data-widget-id="widget{:widget.id}">
 							<span class="grab"></span><span class="title">{:widget.title}</span><a class="remove" title="Remove"></a>
 						</li>
@@ -77,10 +77,10 @@
 {/region}
 
 {region "scripts"}
-	{if !updates.isUpdateInfoCached}
+	{if !b.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{:url.generateActionUrl('dashboard/getalerts')}';
+			window.getAlertsUrl = '{:b.url.generateActionUrl('dashboard/getalerts')}';
 		</script>
 	{/if}
 

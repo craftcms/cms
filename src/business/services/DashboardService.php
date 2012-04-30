@@ -42,13 +42,4 @@ class DashboardService extends Component
 			$widget->save();
 		}
 	}
-
-	/**
-	 * TEMPORARY -- this will be replaced by the global notification service
-	 * @return array
-	 */
-	public function getAlerts()
-	{
-		return DashboardHelper::getAlerts();
-	}
 }

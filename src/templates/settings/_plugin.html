@@ -1,6 +1,6 @@
-{set plugin = plugins.getPlugin(pluginClass)}
+{set plugin = b.plugins.get(pluginClass)}
 
-<?php $pageTitle = new TemplateVariable($plugin->name().' plugin settings'); ?>
+<?php $pageTitle = new Variable($plugin->name().' plugin settings'); ?>
 
 {layout "_layouts/cp" pageTitle=pageTitle crumbs="settings:Settings"}
 

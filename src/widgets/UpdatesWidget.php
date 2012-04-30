@@ -18,7 +18,7 @@ class UpdatesWidget extends Widget
 	 */
 	public function displayBody()
 	{
-		if (!b()->updates->isUpdateInfoCached())
+		if (!b()->updates->getIsUpdateInfoCached())
 			return false;
 
 		$updateInfo = b()->updates->updateInfo;

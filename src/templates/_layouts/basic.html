@@ -9,9 +9,9 @@
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 	<script type="text/javascript">
 		if (typeof b == 'undefined') b = {};
-		b.baseUrl = '{:url.base}';
-		b.actionUrl = '{:url.action}';
-		b.resourceUrl = '{:url.resource}';
+		b.baseUrl = '{:b.url.base}';
+		b.actionUrl = '{:b.url.action}';
+		b.resourceUrl = '{:b.url.resource}';
 	</script>
 </head>
 <body class="{:bodyClass}">
@@ -32,7 +32,7 @@
 		</div>
 	</noscript>
 
-{if !config.useCompressedJs}
+{if !b.config.useCompressedJs}
 	{include "_includes/js_include" file="global_bootstrap.js"}
 {else}
 	{include "_includes/js_include" file="blocks.js"}

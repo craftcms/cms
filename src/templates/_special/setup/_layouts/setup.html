@@ -23,10 +23,10 @@
 				<div class="step-nav">
 					{if step != 'LicenseKey'}
 						{if step == 'Site'}
-							{set backLink = url.url('setup')}
+							{set backLink = b.url.url('setup')}
 						{else}
 							{if step == 'Account'}
-								{set backLink = url.url('setup/site')}
+								{set backLink = b.url.url('setup/site')}
 							{/if}
 						{/if}
 						<div class="left">

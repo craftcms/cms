@@ -77,7 +77,7 @@ class SecurityService extends Component
 	 * @return mixed
 	 * @throws Exception
 	 */
-	public function validateUserRegistration($code)
+	public function validateUserActivationCode($code)
 	{
 		$user = $this->_validateActivationRequest($code);
 		return $user !== null;

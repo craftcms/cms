@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class TemplateVariable
+class Variable
 {
 	private $_obj;
 	private $_subVariableCache = array();
@@ -32,7 +32,7 @@ class TemplateVariable
 	/**
 	 * @param $name
 	 * @param array $args
-	 * @return TemplateVariable
+	 * @return Variable
 	 */
 	function __call($name, $args = array())
 	{

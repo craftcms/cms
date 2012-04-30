@@ -150,7 +150,7 @@ class TemplateParser
 			$head .= '// Predefine all vars used in this template to avoid "Undefined variable" errors.'.PHP_EOL;
 			foreach ($this->_variables as $var)
 			{
-				$head .= "if (!isset(\${$var})) \${$var} = TemplateHelper::getGlobalVariable('{$var}');".PHP_EOL;
+				$head .= "if (!isset(\${$var})) \${$var} = new Variable();".PHP_EOL;
 			}
 			$head .= PHP_EOL;
 		}

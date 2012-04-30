@@ -1,13 +1,13 @@
 {if !entry && entryId}
-	{set entry = content.getEntryById(entryId)}
+	{set entry = b.content.getEntryById(entryId)}
 	{if draftNum}
 		{:entry.setDraft(draftNum)}
 	{/if}
 {/if}
 
-<?php $pageTitle = new TemplateVariable('Editing “'.$entry->title().'”'); ?>
+<?php $pageTitle = new Variable('Editing “'.$entry->title().'”'); ?>
 {if entry.draft}
-	<?php $pageTitle = new TemplateVariable($pageTitle.' ('.$entry->draft()->name().')'); ?>
+	<?php $pageTitle = new Variable($pageTitle.' ('.$entry->draft()->name().')'); ?>
 {/if}
 
 {layout "_layouts/cp" pageTitle=pageTitle crumbs="content:Content"}
@@ -23,7 +23,7 @@
 		{if entry}
 			{if entry.published}
 				<ul>
-					<li><a href="{:url.base}content/{:entry.id}" class="published {if !entry.draft}sel{/if}">
+					<li><a href="{:b.url.base}content/{:entry.id}" class="published {if !entry.draft}sel{/if}">
 						<div class="status on"></div>
 						<div class="name">Published</div>
 					</a></li>
@@ -34,7 +34,7 @@
 				<h6>Drafts</h6>
 				<ul>
 					{foreach entry.drafts as draft}
-						<li><a href="{:url.base}content/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}">
+						<li><a href="{:b.url.base}content/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}">
 							<div class="name">{:draft.name}</div>
 							<div class="author">{:draft.author.firstNameLastInitial}</div>
 						</a></li>

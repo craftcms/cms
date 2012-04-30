@@ -2,15 +2,15 @@
 namespace Blocks;
 
 /**
- *
+ * CP functions
  */
-class CpService extends Component
+class CpVariable extends Component
 {
 	/**
 	 * Get the sections of the CP
 	 * @return array
 	 */
-	public function getSections()
+	public function sections()
 	{
 		$sections[] = array('handle' => 'dashboard', 'name' => 'Dashboard');
 		$sections[] = array('handle' => 'content', 'name' => 'Content');

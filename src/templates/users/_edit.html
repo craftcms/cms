@@ -1,20 +1,20 @@
-{if !theUser && userId}
-	{set theUser = users.getById(userId)}
-	{if theUser.status == 'archived'}
+{if !user && userId}
+	{set user = b.users.getById(userId)}
+	{if user.status == 'archived'}
 		<!-- TODO: this doesn't work until we get string contact in the template parser -->
 		{redirect 'users/view/'+userId}
 	{/if}
 {/if}
 
-{if theUser.id}
-	{if theUser.id == users.current.id}
+{if user.id}
+	{if user.id == b.users.current.id}
 		{set displayName = "My"}
-	{elseif theUser.fullName}
-		{set displayName = theUser.fullName.possessive}
+	{elseif user.fullName}
+		{set displayName = user.fullName.possessive}
 	{else}
 		{set displayName = "Anonymous’"}
 	{/if}
-	<?php $pageTitle = new TemplateVariable($displayName.' account settings'); ?>
+	<?php $pageTitle = new Variable($displayName.' account settings'); ?>
 {else}
 	{set pageTitle = "Register a new user"}
 {/if}
@@ -35,24 +35,24 @@
 			<form method="post" action="">
 				<input type="hidden" name="action" value="users/save" />
 				<input type="hidden" name="redirect" value="users" />
-				{if theUser.id}<input type="hidden" name="user_id" value="{:theUser.id}">{/if}
+				{if user.id}<input type="hidden" name="user_id" value="{:user.id}">{/if}
 
 				<div class="field first">
 					<div class="heading">
 						<label for="first_name" class="required">First Name</label>
 					</div>
-					<div class="textwrapper"><input id="first_name" name="first_name" class="text" type="text" value="{:theUser.first_name}" /></div>
-					{if theUser.errors.first_name}
-						{include "_includes/error_list" errors=theUser.errors.first_name}
+					<div class="textwrapper"><input id="first_name" name="first_name" class="text" type="text" value="{:user.first_name}" /></div>
+					{if user.errors.first_name}
+						{include "_includes/error_list" errors=user.errors.first_name}
 					{/if}
 				</div>
 				<div class="field">
 					<div class="heading">
 						<label for="last_name">Last Name</label>
 					</div>
-					<div class="textwrapper"><input id="last_name" name="last_name" class="text" type="text" value="{:theUser.last_name}" /></div>
-					{if theUser.errors.last_name}
-						{include "_includes/error_list" errors=theUser.errors.last_name}
+					<div class="textwrapper"><input id="last_name" name="last_name" class="text" type="text" value="{:user.last_name}" /></div>
+					{if user.errors.last_name}
+						{include "_includes/error_list" errors=user.errors.last_name}
 					{/if}
 				</div>
 
@@ -60,9 +60,9 @@
 					<div class="heading">
 						<label for="username" class="required">Username</label>
 					</div>
-					<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{:theUser.username}" /></div>
-					{if theUser.errors.username}
-						{include "_includes/error_list" errors=theUser.errors.username}
+					<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{:user.username}" /></div>
+					{if user.errors.username}
+						{include "_includes/error_list" errors=user.errors.username}
 					{/if}
 				</div>
 
@@ -70,13 +70,13 @@
 					<div class="heading">
 						<label for="email" class="required">Email</label>
 					</div>
-					<div class="textwrapper"><input id="email" name="email" class="text" type="text" value="{:theUser.email}" /></div>
-					{if theUser.errors.email}
-						{include "_includes/error_list" errors=theUser.errors.email}
+					<div class="textwrapper"><input id="email" name="email" class="text" type="text" value="{:user.email}" /></div>
+					{if user.errors.email}
+						{include "_includes/error_list" errors=user.errors.email}
 					{/if}
 				</div>
 
-				{if theUser.isCurrent}
+				{if user.isCurrent}
 					<div class="field">
 						<div class="heading">
 							<label for="password">New Password</label>
@@ -100,7 +100,7 @@
 						<label for="html_email">Email Format</label>
 					</div>
 					
-					{if theUser.html_email}
+					{if user.html_email}
 						{set emailFormat = "html"}
 					{else}
 						{set emailFormat = "text"}
@@ -108,34 +108,34 @@
 					{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
 				</div>
 
-				{if users.current.admin}
+				{if b.users.current.admin}
 					<div class="field checkbox">
 						<label>This is an admin account
-							<div class="cbwrapper"><input type="checkbox" name="admin" value="y" {if theUser.admin}checked="checked"{/if} /></div>
+							<div class="cbwrapper"><input type="checkbox" name="admin" value="y" {if user.admin}checked="checked"{/if} /></div>
 						</label>
 					</div>
 				{/if}
 
-				{if theUser.id && theUser.id != users.current.id}
+				{if user.id && user.id != b.users.current.id}
 					<div class="field checkbox">
 						<label>A password reset is required
-							<div class="cbwrapper"><input type="checkbox" name="password_reset" value="y" {if theUser.password_reset_required}checked="checked"{/if} /></div>
+							<div class="cbwrapper"><input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked="checked"{/if} /></div>
 						</label>
 					</div>
 				{/if}
 
-				{if !theUser.id}
+				{if !user.id}
 					<div class="field checkbox">
 						<label>Send an account activation email
-							<div class="cbwrapper"><input type="checkbox" name="send_validation_email" value="y" {if request.getPost('send_validation_email')}checked="checked"{/if} /></div>
+							<div class="cbwrapper"><input type="checkbox" name="send_validation_email" value="y" {if b.request.post('send_validation_email')}checked="checked"{/if} /></div>
 						</label>
 					</div>
 				{/if}
 
 				<input class="btn big submit" type="submit" name="save" value="Save User" />
 
-				{if theUser.id}
-					{if theUser.status != 'suspended'}
+				{if user.id}
+					{if user.status != 'suspended'}
 						<input class="btn big" type="submit" name="suspend" value="Suspend User" />
 					{/if}
 					<input class="btn big" type="submit" name="delete" value="Delete User" />
@@ -143,7 +143,7 @@
 			</form>
 		</div></div>
 
-		{if theUser.id}
+		{if user.id}
 			<div class="col col50"><div class="col-inner">
 				<div id="info" class="pane">
 					<h3>User Info</h3>
@@ -152,22 +152,22 @@
 						<strong>Status</strong>
 					</div>
 					<div class="right">
-						{:theUser.status.uppercaseFirst}
+						{:user.status.uppercaseFirst}
 					</div>
 					<div class="clear"></div>
-					<input type="hidden" name="status" value="{:theUser.status}" />
-					{if theUser.status == 'pending'}
+					<input type="hidden" name="status" value="{:user.status}" />
+					{if user.status == 'pending'}
 						<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
-						<p><strong>Validation URL</strong> {:url.url(users.verifyAccountUrl, 'code=')}{:theUser.activationcode}</p>
-					{elseif theUser.status == 'locked'}
+						<p><strong>Validation URL</strong> {:b.url.url(b.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
+					{elseif user.status == 'locked'}
 						<input class="btn" type="submit" name="unlock" value="Unlock" />
-					{elseif theUser.status == 'suspended'}
+					{elseif user.status == 'suspended'}
 						<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
 					{/if}
-					{if config.failedPasswordMode == 'cooldown'}
-						{if theUser.cooldown_start}
+					{if b.config.failedPasswordMode == 'cooldown'}
+						{if user.cooldown_start}
 							<br />
-							{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(theUser.remainingCooldownTime)}
+							{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(user.remainingCooldownTime)}
 							Temporarily locked.  User will be auto-unlocked
 							{if timeRemaining > 0}
 								in {:timeRemaining}
@@ -181,7 +181,7 @@
 						<strong>Last Login Date</strong>
 					</div>
 					<div class="right">
-						{if theUser.last_login_date}{:dateTimeHelper.nice(theUser.last_login_date)}{else}Never{/if}
+						{if user.last_login_date}{:dateTimeHelper.nice(user.last_login_date)}{else}Never{/if}
 					</div>
 					<div class="clear"></div>
 
@@ -189,7 +189,7 @@
 						<strong>Last Failed Login Date</strong>
 					</div>
 					<div class="right">
-						{if theUser.last_login_failed_date}{:dateTimeHelper.nice(theUser.last_login_failed_date)}{else}Never{/if}
+						{if user.last_login_failed_date}{:dateTimeHelper.nice(user.last_login_failed_date)}{else}Never{/if}
 					</div>
 					<div class="clear"></div>
 
@@ -197,7 +197,7 @@
 						<strong>Last Password Changed Date</strong>
 					</div>
 					<div class="right">
-						{if theUser.last_password_changed_date}{:dateTimeHelper.nice(theUser.last_password_changed_date)}{else}Never{/if}
+						{if user.last_password_changed_date}{:dateTimeHelper.nice(user.last_password_changed_date)}{else}Never{/if}
 					</div>
 					<div class="clear"></div>
 
@@ -205,7 +205,7 @@
 						<strong>Last Lockout Date</strong>
 					</div>
 					<div class="right">
-						{if theUser.last_lockout_date}{:dateTimeHelper.nice(theUser.last_lockout_date)}{else}Never{/if}
+						{if user.last_lockout_date}{:dateTimeHelper.nice(user.last_lockout_date)}{else}Never{/if}
 					</div>
 					<div class="clear"></div>
 
@@ -213,7 +213,7 @@
 						<strong>Failed Password Attempt Count</strong>
 					</div>
 					<div class="right">
-						{if theUser.failed_password_attempt_count}{:theUser.failed_password_attempt_count}{else}0{/if}
+						{if user.failed_password_attempt_count}{:user.failed_password_attempt_count}{else}0{/if}
 					</div>
 					<div class="clear"></div>
 				</div>

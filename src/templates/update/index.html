@@ -11,8 +11,8 @@
 {region "scripts"}
 	<script type="text/javascript">
 		window.updateHandle = '{:handle}';
-		window.updateInfoUrl = '{:url.generateActionUrl('update/getupdateinfo', 'h=')}';
-		window.updateUrl = '{:url.generateActionUrl('update/update', 'h=')}';
+		window.updateInfoUrl = '{:b.url.generateActionUrl('update/getupdateinfo', 'h=')}';
+		window.updateUrl = '{:b.url.generateActionUrl('update/update', 'h=')}';
 	</script>
 	{include "_includes/js_include" file="update.js"}
 {/region}

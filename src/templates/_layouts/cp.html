@@ -9,7 +9,7 @@
 				<ul>
 					{foreach crumbs.split as crumb}
 						{set crumb = crumb.split(":")}
-						<li><a href="{:url.base}{:crumb.get(0)}">{:crumb.get(1)}</a></li>
+						<li><a href="{:b.url.base}{:crumb.get(0)}">{:crumb.get(1)}</a></li>
 					{/foreach}
 				</ul>
 			</div>
@@ -18,13 +18,13 @@
 
 	<div id="header-right" class="header">
 		<div id="search"><input class="nicetext" data-hint="Search entries and users" type="text" /></div>
-		<div id="me"><a href="{:url.base}users/edit/{:users.current.id}">{:users.current.username}</a></div>
-		<div id="logout"><a href="{:url.base}logout">Sign out</a></div>
+		<div id="me"><a href="{:b.url.base}users/edit/{:b.users.current.id}">{:b.users.current.username}</a></div>
+		<div id="logout"><a href="{:b.url.base}logout">Sign out</a></div>
 	</div>
 
-	{if user.messages}
+	{if b.session.notifications}
 		<div id="notification">
-			{foreach user.messages as notification}
+			{foreach b.session.notifications as notification}
 				<div class="notification {:notification.type}">{:notification.message}</div>
 			{/foreach}
 		</div>
@@ -32,8 +32,8 @@
 
 	<div id="nav">
 		<ul>
-			{foreach cp.sections as section}
-				<li id="nav-{:section.handle}"><a {if url.segment(1)==section.handle}class="sel"{/if} href="{:url.base}{:section.handle}" data-icon="{:section.handle.charAt(0).uppercase}">{:section.name}</a></li>
+			{foreach b.cp.sections as section}
+				<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}" data-icon="{:section.handle.charAt(0).uppercase}">{:section.name}</a></li>
 			{/foreach}
 		</ul>
 	</div>
@@ -43,7 +43,7 @@
 	</div>
 
 	<div id="footer">
-		<p id="version">Blocks {:app.version}.{:app.build}</p>
-		<p id="copyright">© {:date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
+		<p id="version">Blocks {:b.version}.{:b.build}</p>
+		<p id="copyright">© {:b.date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
 	</div>
 {/region}

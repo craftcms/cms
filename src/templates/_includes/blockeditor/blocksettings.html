@@ -45,14 +45,14 @@
 			{set blockClass = "PlainText"}
 		{/if}
 		<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
-			{foreach blocks.blocktypes as blocktype}
+			{foreach b.contentblocks.blocktypes as blocktype}
 				<option value="{:blocktype.classHandle}" {if blocktype.classHandle == blockClass}selected="selected"{/if}>{:blocktype.blocktypeName}</option>
 			{/foreach}
 		</select>
 	</div>
 </div>
 
-<?php $namePrefix = new TemplateVariable($namePrefix.'[settings]') ?>
+<?php $namePrefix = new Variable($namePrefix.'[settings]') ?>
 <div class="blocktypesettings">
 	<div class="{:block.class}">
 		{:block.displaySettings(idPrefix, namePrefix)}

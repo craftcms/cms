@@ -16,16 +16,16 @@
 
 	<div class="settings">
 		{foreach currentBlocks as block}
-			<?php $idPrefix = new TemplateVariable($name.'-'.$block->id().'-') ?>
-			<?php $namePrefix = new TemplateVariable($name.'['.$block->id().']') ?>
+			<?php $idPrefix = new Variable($name.'-'.$block->id().'-') ?>
+			<?php $namePrefix = new Variable($name.'['.$block->id().']') ?>
 			<div data-block-id="{:block.id}" style="display:none">
 				{include "_includes/blockeditor/blocksettings" idPrefix=idPrefix namePrefix=namePrefix block=block}
 			</div>
 		{/foreach}
 	</div>
 
-	<?php $newIdPrefix = new TemplateVariable($name.'-BLOCK_ID-') ?>
-	<?php $newNamePrefix = new TemplateVariable($name.'[BLOCK_ID]') ?>
+	<?php $newIdPrefix = new Variable($name.'-BLOCK_ID-') ?>
+	<?php $newNamePrefix = new Variable($name.'[BLOCK_ID]') ?>
 
 	<div class="freshblocksettings" style="display:none">
 		<div class="blockeditor-settings" data-block-id="BLOCK_ID">
@@ -34,8 +34,8 @@
 	</div>
 
 	<div class="freshblocktypesettings" style="display:none">
-		<?php $newNamePrefix = new TemplateVariable($newNamePrefix.'[settings]') ?>
-		{foreach blocks.blocktypes as blocktype}
+		<?php $newNamePrefix = new Variable($newNamePrefix.'[settings]') ?>
+		{foreach b.contentblocks.blocktypes as blocktype}
 			{set settings = blocktype.displaySettings(newIdPrefix, newNamePrefix)}
 			{if settings}
 				<div data-blocktype-class="{:blocktype.classHandle}">

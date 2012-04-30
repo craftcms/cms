@@ -97,6 +97,30 @@ class DateTime extends \DateTime
 	/**
 	 * @return string
 	 */
+	public function year()
+	{
+		return $this->format('Y');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function month()
+	{
+		return $this->format('n');
+	}
+
+	/**
+	 * @return string
+	 */
+	public function day()
+	{
+		return $this->format('j');
+	}
+
+	/**
+	 * @return string
+	 */
 	function __toString()
 	{
 		return $this->format('M j, Y');

@@ -1,9 +1,9 @@
 {if !section && sectionId}
-	{set section = content.getSectionById(sectionId)}
+	{set section = b.content.getSectionById(sectionId)}
 {/if}
 
 {if section}
-	<?php $pageTitle = new TemplateVariable($section->name().' section settings'); ?>
+	<?php $pageTitle = new Variable($section->name().' section settings'); ?>
 {else}
 	{set pageTitle = "Create a new section"}
 {/if}

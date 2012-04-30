@@ -11,9 +11,9 @@
 			<tr>
 				<th>Status</th>
 				<td>
-					{if updates.isUpdateInfoCached}
-						{if updates.allAvailableUpdates.length}
-							{:updates.allAvailableUpdates.length} available update{if updates.allAvailableUpdates.length > 1}s{/if}
+					{if b.updates.cached}
+						{if b.updates.all.length}
+							{:b.updates.all.length} available update{if b.updates.all.length > 1}s{/if}
 						{else}
 							No updates available
 						{/if}
@@ -28,21 +28,21 @@
 	<section>
 		<h2>Email</h2>
 		<ul class="actions">
-			<li><a href="{:url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
+			<li><a href="{:b.url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
 		</ul>
 
 		<table class="info">
 			<tr>
 				<th>Email Address</th>
-				<td>{:email.emailSettings.emailAddress}</td>
+				<td>{:b.email.settings.emailAddress}</td>
 			</tr>
 			<tr>
 				<th>Sender Name</th>
-				<td>{:email.emailSettings.senderName}</td>
+				<td>{:b.email.settings.senderName}</td>
 			</tr>
 			<tr>
 				<th>Protocol</th>
-				<td>{:email.emailSettings.protocol}</td>
+				<td>{:b.email.settings.protocol}</td>
 			</tr>
 		</table>
 	</section>
@@ -50,14 +50,14 @@
 	<section>
 		<h2>Sites</h2>
 		<ul class="actions">
-			<li><a href="{:url.base}settings/sites/new" class="btn light" data-icon="n">New site</a></li>
+			<li><a href="{:b.url.base}settings/sites/new" class="btn light" data-icon="n">New site</a></li>
 		</ul>
 
 		<table class="data">
 			<tbody>
 				{foreach sites as site}
 					<tr>
-						<td width="25%"><a href="{:url.base}settings/sites/{:site.id}">{:site.name}</td>
+						<td width="25%"><a href="{:b.url.base}settings/sites/{:site.id}">{:site.name}</td>
 						<td width="25%">{:site.url}</td>
 						<td><code>{:site.handle}</code></td>
 					</tr>
@@ -71,12 +71,12 @@
 
 		<table class="data">
 			<tbody>
-				{foreach plugins.getAll(1, 1) as plugin}
+				{foreach b.plugins.all as plugin}
 					<tr>
 						<td width="25%">
 							<span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span>
 							{if plugin.hasSettings}
-								<a href="{:url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a>
+								<a href="{:b.url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a>
 							{else}
 								{:plugin.name}
 							{/if}

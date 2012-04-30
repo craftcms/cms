@@ -7,76 +7,21 @@ namespace Blocks;
 class TemplateHelper
 {
 	/**
-	 * @var array
-	 */
-	public static $services = array(
-		'assets',
-		'blocks',
-		'config',
-		'content',
-		'cp',
-		'dashboard',
-		'email',
-		'plugins',
-		'request',
-		'session',
-		'settings',
-		'sites',
-		'updates',
-		'user',
-		'users',
-		'request',
-		'security',
-	);
-
-	/**
-	 * @var array
-	 */
-	public static $globalVariables = array(
-		'app'               => 'Blocks\AppVariable',
-		'url'               => 'Blocks\UrlVariable',
-		'configHelper'      => 'Blocks\ConfigHelperVariable',
-		'date'              => 'Blocks\DateAdapter',
-		'dateTimeHelper'    => 'Blocks\DateTimeHelperVariable',
-	);
-
-	/**
-	 * Returns a new template variable instance, which will either be one of the globals, or a generic template variable, depending on the handle passed in.
-	 * @param string $handle The variable handle being used in the template.
-	 * @return object The variable instance.
-	 */
-	public static function getGlobalVariable($handle)
-	{
-		if (in_array($handle, self::$services))
-		{
-			$obj = b()->$handle;
-			return self::getVariable($obj);
-		}
-		else if (isset(self::$globalVariables[$handle]))
-		{
-			$obj = new self::$globalVariables[$handle];
-			return self::getVariable($obj);
-		}
-		else
-			return new TemplateVariable();
-	}
-
-	/**
 	 * Returns whether a variable is a template variable or not
 	 * @param mixed $var The variable
 	 * @return bool Whether it's a template variable or not
 	 */
 	public static function isVariable($var)
 	{
-		$isTemplateVariable = (is_object($var) && get_class($var) == 'Blocks\TemplateVariable');
-		return $isTemplateVariable;
+		$isVariable = (is_object($var) && get_class($var) == 'Blocks\Variable');
+		return $isVariable;
 	}
 
 	/**
 	 * Returns the appropriate template variable for a given variable
 	 * @param mixed $var The variable
 	 * @param object A template variable instance for the variable
-	 * @return ArrayAdapter|BoolAdapter|mixed|DateAdapter|string|NumAdapter|StringAdapter
+	 * @return mixed
 	 */
 	public static function getVariable($var = '')
 	{
@@ -84,7 +29,7 @@ class TemplateHelper
 		if (self::isVariable($var))
 			return $var;
 		else
-			return new TemplateVariable($var);
+			return new Variable($var);
 	}
 
 	/**

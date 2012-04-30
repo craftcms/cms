@@ -83,7 +83,7 @@ abstract class Controller extends \CController
 		$templatePath = TemplateHelper::resolveTemplatePath($templatePath);
 		if ($templatePath !== false)
 		{
-			$variables = array();
+			$vars['b'] = new BVariable;
 
 			if (is_array($vars))
 			{

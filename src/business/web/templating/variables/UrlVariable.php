@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- *
+ * URL functions
  */
 class UrlVariable
 {

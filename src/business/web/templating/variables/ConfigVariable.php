@@ -2,10 +2,18 @@
 namespace Blocks;
 
 /**
- *
+ * Config functions
  */
-class ConfigHelperVariable
+class ConfigVariable
 {
+	/**
+	 * Returns a config item
+	 */
+	function __get($name)
+	{
+		return b()->config->getItem($name);
+	}
+
 	/**
 	 * @param $time
 	 * @return int

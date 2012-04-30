@@ -1,4 +1,4 @@
-{if user.isloggedIn}
+{if b.session.loggedin}
 	{redirect "dashboard"}
 {/if}
 
@@ -14,12 +14,12 @@
 				<input type="hidden" name="action" value="account/verify" />
 				<input type="hidden" name="redirect" value="dashboard" />
 
-				{set activationCode = url.get('code')}
-				{if activationCode && security.validateUserRegistration(activationCode)}
-					{set userModel = security.getUserByActivationCode(activationCode)}
+				{set activationCode = b.url.get('code')}
+				{if activationCode && b.security.validateUserActivationCode(activationCode)}
+					{set user = b.security.getUserByActivationCode(activationCode)}
 
 					<div class="pane-item">Let's set a password for your account.</div>
-					<input type="hidden" name="userId" value="{:userModel.id}" />
+					<input type="hidden" name="userId" value="{:user.id}" />
 					<div class="pane-item field">
 						<label for="password">Password</label>
 						<div class="passwordwrapper"><input id="password" name="password" class="text password {if verifyAccountInfo.errors.password}error{/if}" type="password" /></div>

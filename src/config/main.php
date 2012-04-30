@@ -41,10 +41,6 @@ return CMap::mergeArray(
 				'class' => 'Blocks\ContentService',
 			),
 
-			'cp' => array(
-				'class' => 'Blocks\CpService',
-			),
-
 			'dashboard' => array(
 				'class' => 'Blocks\DashboardService',
 			),

@@ -13,11 +13,11 @@ class UpdatesService extends Component
 	 * @param $forceRefresh
 	 * @return mixed
 	 */
-	public function allAvailableUpdates($forceRefresh = false)
+	public function getAllAvailableUpdates($forceRefresh = false)
 	{
 		$updates = array();
 
-		if (!$forceRefresh && !$this->isUpdateInfoCached())
+		if (!$forceRefresh && !$this->getIsUpdateInfoCached())
 			return null;
 
 		$updateInfo = $this->getUpdateInfo($forceRefresh);
@@ -116,7 +116,7 @@ class UpdatesService extends Component
 	/**
 	 * @return bool
 	 */
-	public function isUpdateInfoCached()
+	public function getIsUpdateInfoCached()
 	{
 		return (isset($this->_updateInfo) || b()->fileCache->get('updateInfo') !== false);
 	}
@@ -124,7 +124,7 @@ class UpdatesService extends Component
 	/**
 	 * @return mixed
 	 */
-	public function isCriticalUpdateAvailable()
+	public function getIsCriticalUpdateAvailable()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->criticalUpdateAvailable))
 			return true;
@@ -135,7 +135,7 @@ class UpdatesService extends Component
 	/**
 	 * @return mixed
 	 */
-	public function isManualUpdateRequired()
+	public function getIsManualUpdateRequired()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->manualUpdateRequired))
 			return true;
@@ -296,7 +296,7 @@ class UpdatesService extends Component
 	 * Checks to see if Blocks can write to a defined set of folders/files that are needed for auto-update to work.
 	 * @return array|null
 	 */
-	public function checkWritableRequirements()
+	public function getUnwritableDirectories()
 	{
 		$checkPaths = array(
 			b()->file->set(b()->path->appPath, false),

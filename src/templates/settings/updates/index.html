@@ -1,7 +1,7 @@
 {layout "settings/_layouts/settings" pageTitle="Updates"}
 
 {region "main"}
-	{set problems = updates.checkWritableRequirements}
+	{set problems = b.updates.unwritabledirectories}
 	{if !problems}
 		<div id="checking">
 			Checking for updates…

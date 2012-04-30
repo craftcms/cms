@@ -1,7 +1,7 @@
 {layout "settings/_layouts/settings" pageTitle="Plugin"}
 
 {if pluginShortName}
-	{set plugin = plugins.getPlugin(pluginShortName)}
+	{set plugin = b.plugins.get(pluginShortName)}
 {/if}
 
 {region "main"}

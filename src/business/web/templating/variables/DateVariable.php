@@ -1,0 +1,46 @@
+<?php
+namespace Blocks;
+
+/**
+ * Date functions
+ */
+class DateVariable
+{
+	private $dateTimeVariable;
+
+	/**
+	 * Constructor
+	 */
+	function __construct()
+	{
+		$dtObj = new DateTime;
+		$this->dateTimeVariable = new Variable($dtObj);
+	}
+
+	/**
+	 * Forward any unknown requests to the DateTime variable
+	 */
+	function __get($name)
+	{
+		return $this->dateTimeVariable->$name();
+	}
+
+	/**
+	 * Returns a given number of seconds in a more meaningful format
+	 * @param int $seconds
+	 * @return string
+	 */
+	public function secondsToHumanTimeDuration($seconds)
+	{
+		return DateTimeHelper::secondsToHumanTimeDuration($seconds);
+	}
+
+	/**
+	 * @param $dateString
+	 * @return string
+	 */
+	public function nice($dateString)
+	{
+		return DateTimeHelper::nice($dateString);
+	}
+}

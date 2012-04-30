@@ -1,10 +1,10 @@
 {if !site && siteId}
-	{set site = sites.getSiteById(siteId)}
+	{set site = b.sites.getSiteById(siteId)}
 {/if}
 
 {if site.id}
 	{if site.name}
-		<?php $pageTitle = new TemplateVariable($site->name().' site settings'); ?>
+		<?php $pageTitle = new Variable($site->name().' site settings'); ?>
 	{else}
 		{set pageTitle = "Untitled site settings"}
 	{/if}

@@ -1,7 +1,7 @@
-{if updates.allAvailableUpdates('y')}
+{if b.updates.all('y')}
 
-	{if !updates.updateInfo.blocks.manualUpdateRequired}
-		<form method="post" action="{:url.base}update/all">
+	{if !b.updates.updateInfo.blocks.manualUpdateRequired}
+		<form method="post" action="{:b.url.base}update/all">
 			<input id="update-all" class="btn big submit" type="submit" value="Update All">
 		</form>
 	{/if}
@@ -12,7 +12,7 @@
 		<div class="pane-body">
 			<table>
 				<tbody>
-					{foreach updates.allAvailableUpdates('y') as update}
+					{foreach b.updates.all('y') as update}
 					<tr id="{:update.handle}">
 						<td class="pane-item">
 							<strong>{:update.name}</strong> {:update.version}
@@ -30,7 +30,7 @@
 							{if update.manualUpdateRequired}
 								<span class="manual"><a href="http://blockscms.com/alpha/blocks_standard_{:update.latestVersion}.{:update.latestBuild}.zip">Manual update required</a></span>
 							{else}
-								<form method="post" action="{:url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:b.url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
 							{/if}
 						</td>
 					</tr>
@@ -40,12 +40,12 @@
 		</div>
 	</div>
 
-	{if updates.plugins}
+	{if b.updates.plugins}
 		<div class="pane">
 			<div class="pane-body">
 				<table>
 					<tbody>
-						{foreach updates.plugins as plugin}
+						{foreach b.updates.plugins as plugin}
 						<tr id="{:plugin.handle}">
 							<td class="pane-item">
 								<strong>{:plugin.name}</strong> {:plugin.version}
@@ -60,7 +60,7 @@
 								{/if}
 							</td>
 							<td class="pane-item">
-								<form method="post" action="{:url.base}update/{:plugin.handle}"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:b.url.base}update/{:plugin.handle}"><input class="btn" type="submit" value="Update"></form>
 							</td>
 						</tr>
 						{/foreach}
