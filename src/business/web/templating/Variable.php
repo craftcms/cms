@@ -83,6 +83,8 @@ class Variable
 			return $this->_obj->__toArray();
 		else if (method_exists($this->_obj, 'getAll'))
 			return $this->_obj->getAll();
+		else if (method_exists($this->_obj, 'all'))
+			return $this->_obj->all();
 		else
 			return array();
 	}

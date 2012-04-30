@@ -21,4 +21,12 @@ class SitesVariable
 	{
 		return b()->sites->getSiteById($siteId);
 	}
+
+	/**
+	 * Returns all sites
+	 */
+	public function all()
+	{
+		return b()->sites->getAll();
+	}
 }
