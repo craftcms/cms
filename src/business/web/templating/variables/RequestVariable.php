@@ -9,7 +9,7 @@ class RequestVariable
 	/**
 	 * Returns whether this is a secure connection
 	 */
-	public function secure($class)
+	public function secure()
 	{
 		return b()->request->getIsSecureConnection();
 	}
