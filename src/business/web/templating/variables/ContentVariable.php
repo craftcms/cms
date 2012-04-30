@@ -21,7 +21,7 @@ class ContentVariable
 	 */
 	public function getSectionById($sectionId)
 	{
-		return b()->content->getSectionById($entryId);
+		return b()->content->getSectionById($sectionId);
 	}
 
 	/**
