@@ -38,6 +38,7 @@ class ResourceProcessor
 
 	/**
 	 * Process the request
+	 * @throws HttpException
 	 */
 	public function processResourceRequest()
 	{
@@ -52,7 +53,8 @@ class ResourceProcessor
 	}
 
 	/**
-	 * Send the file back to the browser
+	 * Send the file back to the browser.
+	 * @throws HttpException
 	 */
 	public function sendResource()
 	{
