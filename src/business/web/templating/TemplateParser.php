@@ -23,7 +23,7 @@ class TemplateParser
 					|
 					\[MARKER:\d+\]
 					|
-					[A-Za-z]\w*(?P>subtag)?
+					[A-Za-z]\w*(?P>subtag)*
 				)
 				(?P<moreParams>         # <moreParams> (optional)
 					[\t ]*\,[\t ]*
