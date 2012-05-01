@@ -30,6 +30,7 @@ class Variable
 	}
 
 	/**
+	 * Call magic method.
 	 * @param $name
 	 * @param array $args
 	 * @return Variable
@@ -61,6 +62,16 @@ class Variable
 		}
 
 		return $this->_subVariableCache[$cacheKey];
+	}
+
+	/**
+	 * Get magic method.
+	 * @param $name
+	 * @return Variable
+	 */
+	function __get($name)
+	{
+		return $this->__call($name);
 	}
 
 	/**

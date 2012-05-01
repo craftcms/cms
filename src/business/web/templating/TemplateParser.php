@@ -548,15 +548,13 @@ class TemplateParser
 
 			while (preg_match('/^'.self::subVarPattern.'/x', $substr, $subtagMatch))
 			{
-				$parsedTag .= '->'.$subtagMatch['func'].'(';
+				$parsedTag .= '->'.$subtagMatch['func'];
 
 				if (isset($subtagMatch['params']))
 				{
 					$this->parseVariables($subtagMatch['params'], true);
-					$parsedTag .= $subtagMatch['params'];
+					$parsedTag .= '('.$subtagMatch['params'].')';
 				}
-
-				$parsedTag .= ')';
 
 				// chop the subtag match from the substring
 				$subtagLength = strlen($subtagMatch[0]);
