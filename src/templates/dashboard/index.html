@@ -4,15 +4,9 @@
 	{include "_includes/css_include" file="styles/dashboard.css"}
 {/region}
 
-{!--
+
 {region "main"}
-	<div class="toolbar">
-		<div class="right">
-			<div id="sidebar-btn" class="btn">
-				<span class="icon icon265"></span>
-			</div>
-		</div>
-	</div>
+	<h1>Dashboard</h1>
 
 	<div id="alerts">
 		{if !b.sites.licensekeys}
@@ -28,59 +22,63 @@
 		{/foreach}
 	</div>
 
-	<div id="dashboard">
-		<div id="widgets">
-			{foreach b.dashboard.widgets as widget}
-				{if widget.displayBody}
-					<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
-						<div class="pane-head">
-							{if widget.displaySettings}
-								<a class="settings-btn" title="Settings"></a>
-							{/if}
-							<h5>{:widget.title}</h5>
-						</div>
-						{if widget.displaySettings}
-							<div class="settings-outer-container"><div class="settings-inner-container">
-								<div class="settings">
-									{:widget.displaySettings}
-									<div class="buttons">
-										<a class="btn submit"><span class="label">Save</span></a>
-										<a class="btn cancel"><span class="label">Cancel</span></a>
+	<?php
+		// Divvy the widgets up between the columns
+		$colWidgets = array();
+		$totalColumns = 2;
+		$column = -1;
+		foreach ($b->dashboard->widgets->__toArray() as $widget)
+		{
+			if ($column < $totalColumns-1)
+				$column++;
+			else
+				$column = 0;
+			$colWidgets[$column][] = $widget;
+		}
+		$colWidgets = new Variable($colWidgets);
+	?>
+
+		<div id="widgets" class="grid">
+			{foreach colWidgets as widgets}
+				<div class="col col50"><div class="col-inner">
+
+					{foreach b.dashboard.widgets as widget}
+						{if widget.displayBody}
+							<section id="widget{:widget.id}" class="{:widget.classHandle}">
+								<h2>{:widget.title}</h2>
+								{if widget.displaySettings}
+									<div class="actions">
+										<a class="btn light">Settings</a>
 									</div>
-								</div>
-							</div></div>
+								{/if}
+								{!--if widget.displaySettings}
+									<div class="settings-outer-container"><div class="settings-inner-container">
+										<div class="settings">
+											{:widget.displaySettings}
+											<div class="buttons">
+												<a class="btn submit"><span class="label">Save</span></a>
+												<a class="btn cancel"><span class="label">Cancel</span></a>
+											</div>
+										</div>
+									</div></div>
+								{/if--}
+
+								{:widget.displayBody}
+							</div>
 						{/if}
-
-						{:widget.displayBody}
-					</div>
-				{/if}
+					{/foreach}
+				</div></div>
 			{/foreach}
-		</div>
-
-		<div id="dashboard-sidebar" class="sidebar">
-			<div class="pane">
-				<div class="pane-head">
-					<h6>Widget Order</h6>
-				</div>
-				<div class="pane-body">
-					<ul class="widget-handles">
-						{foreach b.dashboard.widgets as widget}
-						<li class="pane-item {if !widget.displayBody}hidden{/if}" data-widget-id="widget{:widget.id}">
-							<span class="grab"></span><span class="title">{:widget.title}</span><a class="remove" title="Remove"></a>
-						</li>
-						{/foreach}
-					</ul>
-				</div>
-			</div>
 		</div>
 	</div>
 {/region}
 
+{!--
 {region "scripts"}
 	{if !b.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{:b.url.action('dashboard/getalerts')}';
+			window.getAlertsUrl = '{:b.url.action("dashboard/getalerts")}';
 		</script>
 	{/if}
 

@@ -51,6 +51,10 @@ a.goto:hover { opacity: 1; }
 em, i { font-style: italic; }
 strong, i em { font-weight: bold; font-family: sans-serif; }
 
+/* text styles */
+.rightalign { text-align: right; }
+.nowrap { white-space: nowrap; }
+
 .sel { cursor: default !important; }
 .required:after { @include icon; content: 'r'; padding-left: 5px; font-size: 9px; color: #8a1f11; }
 
@@ -171,7 +175,7 @@ input.btn.big { height: 32px; }
 .actions { float: right; }
 .actions > li { float: left; }
 .actions > li + li { margin-left: 10px; }
-h2 + .actions { margin-top: -44px; }
+h2 + .actions { margin-top: -59px; }
 
 /* ----------------------------------------
 /*  Tables
@@ -188,7 +192,6 @@ table.data > tbody > tr > th,
 table.data > tbody > tr > td {  padding: 3px 5px; background: #fff; -webkit-transition: background-color linear 100ms; }
 table.data > tbody > tr:hover > th,
 table.data > tbody > tr:hover > td { background: #f8f6f2; }
-table.data  >tbody > tr > td.rightalign { text-align: right; }
 
 /* ----------------------------------------
 /*  Nav

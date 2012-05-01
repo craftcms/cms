@@ -1,9 +1,8 @@
-<div class="sample"></div>
-<table class="pane-body">
+<table class="data">
 	{foreach widget.items as item}
-	<tr>
-		<td class="pane-item"><a href="{:item.url}">{:item.title}</a></td>
-		<td class="pane-item date">{:item.date}</td>
-	</tr>
+		<tr>
+			<td><a href="{:item.url}">{:item.title}</a></td>
+			<td class="rightalign nowrap">{:item.date}</td>
+		</tr>
 	{/foreach}
 </table>
