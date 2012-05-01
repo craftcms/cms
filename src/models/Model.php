@@ -106,7 +106,7 @@ abstract class Model extends ActiveRecord
 	 * Get the model's content table name
 	 * @return string The table name
 	 */
-	public function getContentTableName()
+	protected function getContentTableName()
 	{
 		if (isset($this->contentTableName))
 			return $this->contentTableName;
@@ -118,7 +118,7 @@ abstract class Model extends ActiveRecord
 	 * Get the model's content blocks join table name
 	 * @return string The table name
 	 */
-	public function getBlocksJoinTableName()
+	protected function getBlocksJoinTableName()
 	{
 		if (isset($this->blocksJoinTableName))
 			return $this->blocksJoinTableName;
@@ -130,7 +130,7 @@ abstract class Model extends ActiveRecord
 	 * Get the model's settings table name
 	 * @return string The table name
 	 */
-	public function getSettingsTableName()
+	protected function getSettingsTableName()
 	{
 		if (isset($this->settingsTableName))
 			return $this->settingsTableName;
@@ -143,7 +143,7 @@ abstract class Model extends ActiveRecord
 	 * (Used when defining content block, content, and settings tables)
 	 * @return string The foreign key name
 	 */
-	public function getForeignKeyName()
+	protected function getForeignKeyName()
 	{
 		if (isset($this->foreignKeyName))
 			return $this->foreignKeyName;
@@ -162,7 +162,15 @@ abstract class Model extends ActiveRecord
 			$language = b()->sites->current->language;
 
 		if (!isset($this->_content[$language]))
-			$this->_content[$language] = new Content($this, $language);
+		{
+			$content = new Content;
+			$content->record = $this;
+			$content->language = $language;
+			$content->table = $this->getContentTableName();
+			$content->foreignKey = $this->getForeignKeyName();
+
+			$this->_content = $content;
+		}
 
 		return $this->_content[$language];
 	}

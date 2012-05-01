@@ -6,35 +6,45 @@ namespace Blocks;
  */
 class Content extends \CModel
 {
-	private $record;
-	private $table;
-	private $foreignKey;
-	private $content;
+	public $record;
+	public $language;
+	public $table;
+	public $foreignKey;
+	private $_content;
 
 	/**
-	 * Constructor
-	 * @param Model  $record
-	 * @param string $language
+	 * Returns the content row
+	 * @access private
+	 * @return array
 	 */
-	function __construct($record, $language)
+	private function getContent()
 	{
-		$this->record     = $record;
-		$this->table      = $this->record->getContentTableName();
-		$this->foreignKey = $this->record->getForeignKeyName();
-
-		// Get the current content
-		if ($this->record->hasContent && !$this->record->isNewRecord)
+		if (!isset($this->_content))
 		{
-			$this->content = b()->db->createCommand()
-				->from($this->table)
-				->where(array($this->foreignKey => $this->record->id, 'language' => $language))
-				->queryRow();
-		}
+			// Get the current content
+			if (isset($this->record) && isset($this->language) && $this->record->hasContent && !$this->record->isNewRecord)
+			{
+				$this->_content = b()->db->createCommand()
+					->from($this->table)
+					->where(array($this->foreignKey => $this->record->id, 'language' => $this->language))
+					->queryRow();
+			}
 
-		if (!$this->content)
-		{
-			$this->content = array('language' => $language);
+			if (!$this->_content)
+			{
+				$this->_content = array('language' => $this->language);
+			}
 		}
+	}
+
+	/**
+	 * Sets new content
+	 * @access private
+	 * @param array $content
+	 */
+	private function setContent($content)
+	{
+		$this->_content = $content;
 	}
 
 	/**
@@ -42,8 +52,9 @@ class Content extends \CModel
 	 */
 	function __get($name)
 	{
-		if (isset($this->content[$name]))
-			return $this->content[$name];
+		$content = $this->getContent();
+		if (isset($content[$name]))
+			return $content[$name];
 		else
 			return parent::__get($name);
 	}
@@ -53,8 +64,9 @@ class Content extends \CModel
 	 */
 	public function getValue($name)
 	{
-		if (isset($this->content[$name]))
-			return $this->content[$name];
+		$content = $this->getContent();
+		if (isset($content[$name]))
+			return $content[$name];
 		else
 			return null;
 	}
@@ -66,7 +78,9 @@ class Content extends \CModel
 	 */
 	public function setValue($name, $value)
 	{
-		$this->content[$name] = $value;
+		$content = $this->getContent();
+		$content[$name] = $value;
+		$this->setContent($content);
 	}
 
 	/**
@@ -75,7 +89,9 @@ class Content extends \CModel
 	 */
 	public function setValues($values)
 	{
-		$this->content = array_merge($this->content, $values);
+		$content = $this->getContent();
+		$content = array_merge($content, $values);
+		$this->setContent($content);
 	}
 
 	/**
@@ -84,7 +100,8 @@ class Content extends \CModel
 	 */
 	public function attributeNames()
 	{
-		return array_keys($this->content);
+		$content = $this->getContent();
+		return array_keys($content);
 	}
 
 	/**
@@ -116,7 +133,8 @@ class Content extends \CModel
 	 */
 	public function getIsNew()
 	{
-		return empty($this->content['id']);
+		$content = $this->getContent();
+		return empty($content['id']);
 	}
 
 	/**
@@ -145,10 +163,11 @@ class Content extends \CModel
 			throw new Exception('The content row cannot be inserted into the database before its record has been saved.');
 
 		// Save the foreign key 
-		$this->content[$this->foreignKey] = $this->record->id;
+		$this->setValue($this->foreignKey, $this->record->id);
 
 		// Insert the row
-		b()->db->createCommand()->insert($this->table, $this->content);
+		$content = $this->getContent();
+		b()->db->createCommand()->insert($this->table, $content);
 
 		return true;
 	}
@@ -162,7 +181,9 @@ class Content extends \CModel
 		if ($this->isNew)
 			throw new Exception('The content row cannot be updated because it is new.');
 
-		b()->db->createCommand()->update($this->table, $this->content, array('id' => $this->content['id']));
+		$content = $this->getContent();
+		$id = $this->getValue('id');
+		b()->db->createCommand()->update($this->table, $content, array('id' => $id));
 
 		return true;
 	}
