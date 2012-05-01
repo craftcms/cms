@@ -69,7 +69,7 @@ class UrlVariable
 	}
 
 	/**
-	 * @returns the request domain.
+	 * @returns The request domain.
 	 * @return string
 	 */
 	public function domain()
@@ -78,7 +78,7 @@ class UrlVariable
 	}
 
 	/**
-	 * @returns a GET variable.
+	 * @returns A GET variable.
 	 * @param string $var
 	 * @param string $default
 	 * @return bool
