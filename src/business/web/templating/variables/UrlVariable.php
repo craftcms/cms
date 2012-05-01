@@ -23,7 +23,7 @@ class UrlVariable
 	 */
 	public function resource($path = '', $params = null)
 	{
-		return $this->generateResourceUrl($path, $params);
+		return UrlHelper::generateResourceUrl($path, $params);
 	}
 
 	/**
@@ -34,7 +34,7 @@ class UrlVariable
 	 */
 	public function action($path = '', $params = null)
 	{
-		return $this->generateActionUrl($path, $params);
+		return UrlHelper::generateActionUrl($path, $params);
 	}
 
 	/**
@@ -45,7 +45,7 @@ class UrlVariable
 	 */
 	public function url($path = '', $params = null)
 	{
-		return $this->generateUrl($path, $params);
+		return UrlHelper::generateUrl($path, $params);
 	}
 
 	/**
@@ -69,7 +69,7 @@ class UrlVariable
 	}
 
 	/**
-	 * @returns the request domain.
+	 * @returns The request domain.
 	 * @return string
 	 */
 	public function domain()
@@ -78,7 +78,7 @@ class UrlVariable
 	}
 
 	/**
-	 * @returns a GET variable.
+	 * @returns A GET variable.
 	 * @param string $var
 	 * @param string $default
 	 * @return bool
