@@ -16,6 +16,17 @@ class UrlVariable
 	}
 
 	/**
+	 * Returns a URL.
+	 * @param string $path
+	 * @param mixed $params
+	 * @return string
+	 */
+	public function url($path = '', $params = null)
+	{
+		return UrlHelper::generateUrl($path, $params);
+	}
+
+	/**
 	 * Returns a resource URL.
 	 * @param string $path
 	 * @param mixed $params
@@ -23,7 +34,7 @@ class UrlVariable
 	 */
 	public function resource($path = '', $params = null)
 	{
-		return $this->generateResourceUrl($path, $params);
+		return UrlHelper::generateResourceUrl($path, $params);
 	}
 
 	/**
@@ -34,18 +45,7 @@ class UrlVariable
 	 */
 	public function action($path = '', $params = null)
 	{
-		return $this->generateActionUrl($path, $params);
-	}
-
-	/**
-	 * Returns a URL.
-	 * @param string $path
-	 * @param mixed $params
-	 * @return string
-	 */
-	public function url($path = '', $params = null)
-	{
-		return $this->generateUrl($path, $params);
+		return UrlHelper::generateActionUrl($path, $params);
 	}
 
 	/**
