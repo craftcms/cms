@@ -38,7 +38,9 @@ class FeedWidget extends Widget
 		$feed->init();
 		$feed->handle_content_type();
 
-		foreach ($feed->get_items() as $item)
+		$limit = $this->settings['limit'];
+		$items = $feed->get_items(0, $limit);
+		foreach ($items as $item)
 		{
 			$date = new DateTime;
 			$date->setTimestamp($item->get_date('U'));
