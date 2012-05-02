@@ -240,6 +240,19 @@ class PathService extends Component
 	}
 
 	/**
+	 * @return string
+	 */
+	public function getCachePath()
+	{
+		$path = $this->runtimePath.'cache/';
+
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
+
+		return $path;
+	}
+
+	/**
 	 * @param $path
 	 * @return mixed
 	 */
