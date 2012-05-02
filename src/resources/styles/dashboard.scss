@@ -15,7 +15,7 @@
 /* widgets */
 #widgets { position: relative; }
 
-.widget { margin-bottom: 30px; border-radius: 3px; border: 1px solid $ultralight; padding: 15px; -webkit-box-shadow: 0 1px 2px $ultralight; }
+.widget { margin-bottom: 30px; border-radius: 3px; border: 1px solid $ultralight; padding: 15px; -webkit-box-shadow: 1px 1px 2px $ultralight; }
 .widget h2 { margin-bottom: 15px; }
 .widget h2 + .actions { margin-top: -44px; }
 
