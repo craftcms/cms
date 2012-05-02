@@ -42,7 +42,7 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 #nav ul li a.sel { color: $dark; cursor: default; background: url(../images/nav-arrow.png) no-repeat 100% 50%; }
 
 /* main */
-.main { position: relative; border-radius: 3px; border: 1px solid $light; padding: 30px; color: $dark; background: #fff; -webkit-box-shadow: 0 1px 2px $light; }
+.main { position: relative; border-radius: 3px; border: 1px solid $light; padding: 30px; color: $dark; background: #fff; -webkit-box-shadow: 1px 1px 2px $light; }
 #main { margin: 49px 24px 0 99px; min-height: 500px; }
 
 /* footer */

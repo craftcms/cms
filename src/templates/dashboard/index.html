@@ -43,7 +43,7 @@
 				<div class="col col50"><div class="col-inner">
 					{foreach widgets as widget}
 						{if widget.displayBody}
-							<div id="widget{:widget.id}" class="widget {:widget.classHandle}">
+							<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
 								<h2>{:widget.title}</h2>
 								{if widget.getActionButtons || widget.displaySettings}
 									<div class="actions">
