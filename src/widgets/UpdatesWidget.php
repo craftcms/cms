@@ -7,20 +7,27 @@ namespace Blocks;
 class UpdatesWidget extends Widget
 {
 	public $widgetName = 'Updates';
-	public $title = 'Updates Available';
+	public $title = 'Updates';
 
 	public $updates = array();
 
 	protected $bodyTemplate = '_widgets/UpdatesWidget/body';
 
 	/**
+	 * Add a link to Updates.
+	 * @return array
+	 */
+	public function getActionButtons()
+	{
+		return array('Updates' => 'updates');
+	}
+
+
+	/**
 	 * @return bool
 	 */
 	public function displayBody()
 	{
-		if (!b()->updates->getIsUpdateInfoCached())
-			return false;
-
 		$updateInfo = b()->updates->updateInfo;
 
 		// Blocks first

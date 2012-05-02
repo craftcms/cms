@@ -54,6 +54,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /* text styles */
 .rightalign { text-align: right; }
 .nowrap { white-space: nowrap; }
+.light { color: $mediumlight; }
 
 .sel { cursor: default !important; }
 .required:after { @include icon; content: 'r'; padding-left: 5px; font-size: 9px; color: #8a1f11; }

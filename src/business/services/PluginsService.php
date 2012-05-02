@@ -105,14 +105,11 @@ class PluginsService extends Component
 
 	/**
 	 * Returns a list of enabled plugins indexed by their class name along with their version.
-	 * @return array|null
+	 * @return array
 	 */
 	public function getEnabledPluginClassNamesAndVersions()
 	{
 		$plugins = $this->enabled;
-
-		if (!$plugins)
-			return null;
 
 		$pluginClassNamesAndVersions = array();
 
