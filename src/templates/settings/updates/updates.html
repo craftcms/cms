@@ -28,7 +28,7 @@
 						</td>
 						<td class="pane-item">
 							{if update.manualUpdateRequired}
-								<span class="manual"><a href="http://blockscms.com/alpha/blocks_standard_{:update.latestVersion}.{:update.latestBuild}.zip">Manual update required</a></span>
+								<span class="manual"><a href="http://blockscms.com/alpha/blocks_{:update.latestVersion}.{:update.latestBuild}.zip">Manual update required</a></span>
 							{else}
 								<form method="post" action="{:b.url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
 							{/if}
