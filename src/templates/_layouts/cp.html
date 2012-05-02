@@ -33,7 +33,7 @@
 	<div id="nav">
 		<ul>
 			{foreach b.cp.sections as section}
-				<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}" data-icon="{:section.handle.charAt(0).uppercase}">{:section.name}</a></li>
+				<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}" data-icon="{:section.icon}">{:section.name}</a></li>
 			{/foreach}
 		</ul>
 	</div>
