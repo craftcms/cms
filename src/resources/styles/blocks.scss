@@ -80,7 +80,9 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { position: relative; margin: 20px 0; border-radius: 3px; padding: 15px; background: #f8f6f2; overflow: hidden; -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
+.pane { position: relative; margin: 20px 0; border-radius: 3px; border: 1px solid $ultralight; padding: 15px; background: -webkit-linear-gradient(#fffdfa, $panebgcolor 30px); overflow: hidden; -webkit-box-shadow: 1px 1px 2px $ultralight; }
+.pane h2 { margin-bottom: 15px; }
+.pane h2 + .actions { margin-top: -44px; }
 
 /* ----------------------------------------
 /*  Grids
@@ -132,7 +134,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 
 /* light buttons */
 .btn.light { color: $medium; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: -webkit-linear-gradient(#fff, #f5f3f0); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.15), 0 1px 1px rgba(0,0,0,0.075); }
-.btn.light:not(.disabled):hover { color: $mediumdark; background: -webkit-linear-gradient(#fff, #f8f6f2); }
+.btn.light:not(.disabled):hover { color: $mediumdark; background: -webkit-linear-gradient(#fff, $panebgcolor); }
 .btn.light:not(.disabled):active,
 .btn.light:not(.disabled).sel,
 .btn.light:not(.disabled).loading { background: -webkit-linear-gradient(#fffdfa, #edebe8); }
@@ -190,9 +192,9 @@ table.info > tbody > tr > td { padding: 0 0 2px 0; }
 table.data { width: 100%; }
 table.data > thead > tr > th { padding: 0 5px 3px 5px; color: $medium; font-weight: bold; }
 table.data > tbody > tr > th,
-table.data > tbody > tr > td {  padding: 3px 5px; background: #fff; -webkit-transition: background-color linear 100ms; }
+table.data > tbody > tr > td {  padding: 3px 5px; background: rgba(0,0,0,0); -webkit-transition: background-color linear 100ms; }
 table.data > tbody > tr:hover > th,
-table.data > tbody > tr:hover > td { background: #f8f6f2; }
+table.data > tbody > tr:hover > td { background: rgba(0,0,0,0.05); }
 
 /* ----------------------------------------
 /*  Nav
@@ -294,7 +296,7 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
 .colorpicker .sample { display: inline-block; margin: 0 4px -1px 0; width: 12px; height: 12px; border-radius: 6px; }
 
 /* block editor */
-.blockeditor { position: relative; margin: 30px -30px; background: #f8f6f2; overflow: hidden; }
+.blockeditor { position: relative; margin: 30px -30px; background: $panebgcolor; overflow: hidden; }
 .blockeditor .list { padding: 30px 15px 30px 30px; width: 155px; border-right: 1px solid #d9d7d4; }
 .blockeditor .list ul { margin-bottom: 15px; }
 .blockeditor .list ul li { border-top: 1px solid $bgcolor; }
