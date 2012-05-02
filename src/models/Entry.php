@@ -113,8 +113,7 @@ class Entry extends Model
 	{
 		if ($this->publish_date)
 		{
-			$dt = new DateTime;
-			$dt->setTimestamp($this->publish_date);
+			$dt = new DateTime('@'.$this->publish_date);
 			return $dt;
 		}
 		else

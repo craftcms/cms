@@ -31,6 +31,15 @@ class Widget extends Model
 	protected $settingsTemplate;
 
 	/**
+	 * Adds action buttons to the widget.
+	 * @return array
+	 */
+	public function getActionButtons()
+	{
+		return array();
+	}
+
+	/**
 	 * Display the widget's body
 	 * @return bool
 	 */

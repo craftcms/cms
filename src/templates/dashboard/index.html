@@ -33,7 +33,7 @@
 				$column++;
 			else
 				$column = 0;
-			$colWidgets[$column][] = $widget;
+			$colWidgets[$column][] = new Variable($widget);
 		}
 		$colWidgets = new Variable($colWidgets);
 	?>
@@ -41,13 +41,15 @@
 		<div id="widgets" class="grid">
 			{foreach colWidgets as widgets}
 				<div class="col col50"><div class="col-inner">
-
-					{foreach b.dashboard.widgets as widget}
+					{foreach widgets as widget}
 						{if widget.displayBody}
-							<section id="widget{:widget.id}" class="{:widget.classHandle}">
+							<div id="widget{:widget.id}" class="widget {:widget.classHandle}">
 								<h2>{:widget.title}</h2>
-								{if widget.displaySettings}
+								{if widget.getActionButtons || widget.displaySettings}
 									<div class="actions">
+										{foreach widget.getActionButtons as label => url}
+											<a href="{:b.url.url(url)}" class="btn light">{:label}</a>
+										{/foreach}
 										<a class="btn light">Settings</a>
 									</div>
 								{/if}

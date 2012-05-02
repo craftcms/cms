@@ -1,15 +1,10 @@
-<table class="pane-body">
+<table class="data">
 	<tbody>
 		{foreach widget.updates as update}
-		<tr>
-			<td class="pane-item"><strong>{:update.name}</strong> {:update.version} {if update.critical}<div class="badge warning">Critical</div>{/if}</td>
-			<td class="pane-item">{:update.date}</td>
-		</tr>
+			<tr>
+				<td><strong>{:update.name}</strong> {:update.version} {if update.critical}<div class="badge warning">Critical</div>{/if}</td>
+				<td class="rightalign nowrap light">{:update.date}</td>
+			</tr>
 		{/foreach}
 	</tbody>
-	<tfoot>
-		<tr>
-			<td class="pane-foot" colspan="2"><a class="go" href="{:b.url.base}settings/updates">Go to Updates</a></td>
-		</tr>
-	</tfoot>
 </table>

@@ -21,6 +21,8 @@ class DashboardVariable
 	 */
 	public function widgets()
 	{
-		return b()->dashboard->getUserWidgets();
+		$widgets = b()->dashboard->getUserWidgets();
+		array_unshift($widgets, new UpdatesWidget);
+		return $widgets;
 	}
 }

@@ -13,9 +13,9 @@
 /* widgets */
 #widgets { position: relative; }
 
-.widget { display: none; position: relative; margin-bottom: 20px; }
-.col .widget { display: block; }
-.widget:last-child { margin-bottom: 0; }
+.widget { margin-bottom: 30px; border-radius: 3px; border: 1px solid #e3e2df; padding: 15px; -webkit-box-shadow: 0 1px 2px #e3e2df; }
+.widget h2 { margin-bottom: 15px; }
+.widget h2 + .actions { margin-top: -44px; }
 
 .widget table tr td.pane-item:last-child { width: 0.01%; text-align: right; color: #999; white-space: nowrap; }
 .widget table .btn { float: left; }

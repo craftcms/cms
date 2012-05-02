@@ -28,9 +28,9 @@
 							<td width="25%"><span class="status {if entry.live}on{elseif entry.published}pending{elseif entry.expired}off{/if}"></span>
 								<a href="{:b.url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a>
 							</td>
-							<td width="25%">{:entry.author.firstNameLastInitial}</td>
-							<td width="25%">{:entry.getPublishDate}</td>
-							<td width="25%">{if section.has_urls && entry.url}<a href="{:entry.url}" target="_blank">{:entry.uri}</a>{/if}</td>
+							<td class="light" width="25%">{:entry.author.firstNameLastInitial}</td>
+							<td class="light" width="25%">{:entry.getPublishDate}</td>
+							<td class="light" width="25%">{if section.has_urls && entry.url}<a href="{:entry.url}" target="_blank">{:entry.uri}</a>{/if}</td>
 						</tr>
 					{/foreach}
 				</tbody>

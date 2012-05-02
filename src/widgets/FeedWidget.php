@@ -42,13 +42,10 @@ class FeedWidget extends Widget
 		$items = $feed->get_items(0, $limit);
 		foreach ($items as $item)
 		{
-			$date = new DateTime;
-			$date->setTimestamp($item->get_date('U'));
-
 			$this->items[] = array(
-				'url' => $item->get_permalink(),
+				'url'   => $item->get_permalink(),
 				'title' => $item->get_title(),
-				'date' => $date
+				'date'  => new DateTime('@'.$item->get_date('U'))
 			);
 		}
 
