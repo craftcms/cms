@@ -3,7 +3,7 @@
 // Keep the spinner vertically centered
 b.$window.on('resize.updates', centerSpinner);
 
-var updatesUrl = b.baseUrl+'settings/updates/updates';
+var updatesUrl = b.baseUrl+'updates/updates';
 $('#updates').load(updatesUrl, function()
 {
 	b.$window.off('resize.updates');
