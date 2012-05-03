@@ -380,17 +380,12 @@ class PluginsService extends Component
 				$fullClass = __NAMESPACE__.'\\'.$shortClass.'Plugin';
 				$path = $pluginsPath.$folder.'/'.$shortClass.'Plugin.php';
 
-				// Import the plugin class file if it exists
-				if (!class_exists($fullClass))
-				{
-					if (!file_exists($path))
-						continue;
-
+				// Skip the autoloader
+				if (!class_exists($fullClass, false))
 					require_once $path;
-				}
 
 				// Ignore if we couldn't find the plugin class
-				if (!class_exists($fullClass))
+				if (!class_exists($fullClass, false))
 					continue;
 
 				$this->_fileSystemPlugins[$shortClass] = array($fullClass, $path);
