@@ -33,7 +33,7 @@ class FeedWidget extends Widget
 	public function displayBody()
 	{
 		$url = $this->settings['url'];
-		$cachePath = b()->path->getRuntimePath().'cache/';
+		$cachePath = b()->path->getCachePath();
 		$feed = new \SimplePie($url, $cachePath);
 		$feed->init();
 		$feed->handle_content_type();

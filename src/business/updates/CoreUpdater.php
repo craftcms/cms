@@ -63,7 +63,7 @@ class CoreUpdater implements IUpdater
 
 		// Get the most up-to-date build.
 		$latestBuild = $this->_buildsToUpdate[0];
-		$this->_downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getEdition());
+		$this->_downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getProduct());
 		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
 
 		// Download the package from ET.
@@ -76,7 +76,7 @@ class CoreUpdater implements IUpdater
 		if (!$this->validatePackage($latestBuild->version, $latestBuild->build))
 			throw new Exception('There was a problem validating the downloaded package.');
 
-		// Unpack the downloded package.
+		// Unpack the downloaded package.
 		Blocks::log('Unpacking the downloaded package.', \CLogger::LEVEL_INFO);
 		if (!$this->unpackPackage())
 			throw new Exception('There was a problem unpacking the downloaded package.');

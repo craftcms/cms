@@ -273,7 +273,7 @@ class ErrorHandler extends \CErrorHandler
 		try
 		{
 			$connection = b()->db;
-			if ($connection && b()->db->schema->getTable('{{site}}' !== null))
+			if ($connection && b()->db->schema->getTable('{{sites}}') !== null)
 				$viewPaths[] = b()->path->siteTemplatesPath;
 		}
 		catch(\CDbException $e)
@@ -308,7 +308,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if(b()->config->devMode)
 		{
-			$version = '<a href="http://blockscms.com/">Blocks '.Blocks::getEdition(false).'.</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
+			$version = '<a href="http://blockscms.com/">'.Product::display(Blocks::getProduct()).'.</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 			if(isset($_SERVER['SERVER_SOFTWARE']))
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
 		}

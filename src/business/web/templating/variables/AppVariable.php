@@ -25,11 +25,11 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the current Blocks edition.
+	 * Returns the current Blocks product.
 	 * @return string
 	 */
-	public function edition()
+	public function product()
 	{
-		return Blocks::getEdition();
+		return Blocks::getProduct();
 	}
 }

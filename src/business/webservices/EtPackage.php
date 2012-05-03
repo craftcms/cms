@@ -11,7 +11,7 @@ class EtPackage
 	public $requestIp;
 	public $requestTime;
 	public $domain;
-	public $edition;
+	public $product;
 	public $data;
 	public $errors = array();
 
@@ -27,7 +27,7 @@ class EtPackage
 		$this->licenseKeyStatus = isset($properties['licenseKeyStatus']) ? $properties['licenseKeyStatus'] : null;
 		$this->data = isset($properties['data']) ? $properties['data'] : null;
 		$this->domain = isset($properties['domain']) ? $properties['domain'] : null;
-		$this->edition = isset($properties['edition']) ? $properties['edition'] : null;
+		$this->product = isset($properties['product']) ? $properties['product'] : null;
 		$this->requestIp = isset($properties['requestIp']) ? $properties['requestIp'] : null;
 		$this->requestTime = isset($properties['requestTime']) ? $properties['requestTime'] : null;
 	}
