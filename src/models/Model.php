@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * @abstract
  */
-abstract class Model extends ActiveRecord
+abstract class Model extends \CActiveRecord
 {
 	public $hasContent = false;
 	public $hasBlocks = false;

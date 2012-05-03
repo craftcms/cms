@@ -1,7 +1,7 @@
 <?php
 namespace Blocks;
 
-require_once dirname(__FILE__).'/enums/Edition.php';
+require_once dirname(__FILE__).'/enums/Product.php';
 require_once dirname(__FILE__).'/../blocks_info.php';
 
 
@@ -14,25 +14,14 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @param bool $checkStoredEdition If true, will check the db for the edition if we can't get it locally.
 	 * @return string
 	 */
-	public static function getEdition($checkStoredEdition = true)
+	public static function getProduct()
 	{
-		if (strpos(BLOCKS_EDITION, '@@@') !== false && $checkStoredEdition)
-			return self::getStoredEdition();
+		if (strpos(BLOCKS_PRODUCT, '@@@') !== false)
+			return '';
 		else
-			return BLOCKS_EDITION;
-	}
-
-	/**
-	 * @static
-	 * @return null
-	 */
-	public static function getStoredEdition()
-	{
-		$storedBlocksInfo = self::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->edition : null;
+			return BLOCKS_PRODUCT;
 	}
 
 	/**

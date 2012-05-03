@@ -32,7 +32,6 @@ class Block extends Model
 	protected $settingsTemplate;
 	protected $columnType = AttributeType::Text;
 
-
 	/**
 	 * Get the content column type
 	 * @return string

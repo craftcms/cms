@@ -20,7 +20,7 @@ class DashboardHelper
 			$updateInfo = b()->updates->updateInfo;
 
 			if (b()->sites->licenseKeyStatus == LicenseKeyStatus::InvalidKey)
-				$alerts[] = 'The license key you’re using isn’t authorized to run Blocks '.Blocks::getEdition().' on '.b()->request->serverName.'. <a href="">Manage my licenses</a>';
+				$alerts[] = 'The license key you’re using isn’t authorized to run '.Product::display(Blocks::getProduct()).' on '.b()->request->serverName.'. <a href="">Manage my licenses</a>';
 
 			if ($updateInfo->blocks->releases !== null && count($updateInfo->blocks->releases) > 0)
 				if (b()->updates->criticalBlocksUpdateAvailable($updateInfo->blocks->releases))

@@ -69,9 +69,9 @@ class InstallerService extends Component
 			b()->isInstalled = true;
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
+
 			// Populate the info table
 			$info = new Info;
-			$info->edition = Blocks::getEdition(false);
 			$info->version = Blocks::getVersion(false);
 			$info->build = Blocks::getBuild(false);
 			$info->release_date = Blocks::getReleaseDate(false);

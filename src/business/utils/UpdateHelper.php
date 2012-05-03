@@ -88,28 +88,25 @@ class UpdateHelper
 	 * @static
 	 * @param $version
 	 * @param $build
-	 * @param $edition
+	 * @param $product
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function constructCoreReleasePatchFileName($version, $build, $edition)
+	public static function constructCoreReleasePatchFileName($version, $build, $product)
 	{
-		if(StringHelper::isNullOrEmpty($version) || StringHelper::isNullOrEmpty($build) || StringHelper::isNullOrEmpty($edition))
-			throw new Exception('Missing version, build or edition.');
+		if(StringHelper::isNullOrEmpty($version) || StringHelper::isNullOrEmpty($build) || StringHelper::isNullOrEmpty($product))
+			throw new Exception('Missing version, build or product.');
 
-		switch ($edition)
+		switch ($product)
 		{
-			case Edition::Personal:
-				return "blocks_personal_v{$version}.{$build}_patch.zip";
+			case Product::Blocks:
+				return "Blocks{$version}.{$build}_patch.zip";
 
-			case Edition::Pro:
-				return "blocks_pro_v{$version}.{$build}_patch.zip";
-
-			case Edition::Standard:
-				return "blocks_standard_v{$version}.{$build}_patch.zip";
+			case Product::BlocksPro:
+				return "BlocksPro{$version}.{$build}_patch.zip";
 		}
 
-		throw new Exception('Unknown Blocks Edition: '.$edition);
+		throw new Exception('Unknown Blocks Product: '.$product);
 	}
 
 	/**

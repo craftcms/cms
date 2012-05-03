@@ -307,7 +307,7 @@ class App extends \CWebApplication
 		if (Blocks::getBuild(false) !== Blocks::getStoredBuild() || Blocks::getVersion(false) !== Blocks::getStoredVersion())
 		{
 			// Make sure we're not running from source
-			if (strpos(Blocks::getEdition(false), '@@@') !== false)
+			if (Blocks::getProduct() == '')
 				return false;
 			else
 				return true;

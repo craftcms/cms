@@ -35,7 +35,7 @@ class UpdatesVariable
 	}
 
 	/**
-	 * Retuns the directories that need to be set to writable.
+	 * Returns the directories that need to be set to writable.
 	 * @return array
 	 */
 	public function unwritabledirectories()

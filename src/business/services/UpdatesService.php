@@ -26,9 +26,9 @@ class UpdatesService extends Component
 		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateInfo->blocks->releases) > 0)
 		{
 			$notes = $this->_generateUpdateNotes($updateInfo->blocks->releases, 'Blocks');
-			$edition = Blocks::getEdition();
+			$product = Blocks::getProduct();
 			$updates[] = array(
-				'name' => 'Blocks'.($edition == Edition::Standard ? '' : ' '.$edition),
+				'name' => Product::display($product),
 				'handle' => 'Blocks',
 				'version' => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
 				'critical' => $updateInfo->blocks->criticalUpdateAvailable,
@@ -241,13 +241,17 @@ class UpdatesService extends Component
 		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
 		$plugins = b()->plugins->enabledPluginClassNamesAndVersions;
-		foreach ($plugins as $className => $localversion)
-		{
-			$pluginUpdateInfo = new PluginUpdateInfo();
-			$pluginUpdateInfo->class = $className;
-			$pluginUpdateInfo->localVersion = $localversion;
 
-			$updateInfo->plugins[$className] = $pluginUpdateInfo;
+		if ($plugins)
+		{
+			foreach ($plugins as $className => $localVersion)
+			{
+				$pluginUpdateInfo = new PluginUpdateInfo();
+				$pluginUpdateInfo->class = $className;
+				$pluginUpdateInfo->localVersion = $localVersion;
+
+				$updateInfo->plugins[$className] = $pluginUpdateInfo;
+			}
 		}
 
 		$response = b()->et->check($updateInfo);
