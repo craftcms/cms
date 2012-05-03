@@ -5,27 +5,6 @@
 	<h1>Settings</h1>
 
 	<section>
-		<h2>Updates</h2>
-
-		<table class="info">
-			<tr>
-				<th>Status</th>
-				<td>
-					{if b.updates.cached}
-						{if b.updates.all.length}
-							{:b.updates.all.length} available update{if b.updates.all.length > 1}s{/if}
-						{else}
-							No updates available
-						{/if}
-					{else}
-						Checking…
-					{/if}
-				</td>
-			</tr>
-		</table>
-	</section>
-
-	<section>
 		<h2>Email</h2>
 		<ul class="actions">
 			<li><a href="{:b.url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
