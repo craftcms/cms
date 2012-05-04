@@ -35,6 +35,8 @@ class Content extends \CModel
 				$this->_content = array('language' => $this->language);
 			}
 		}
+
+		return $this->_content;
 	}
 
 	/**
@@ -52,9 +54,11 @@ class Content extends \CModel
 	 */
 	function __get($name)
 	{
-		$content = $this->getContent();
-		if (isset($content[$name]))
-			return $content[$name];
+		$blocks = $this->record->getBlocks();
+		if (isset($blocks[$name]))
+		{
+			return $this->getValue($name);
+		}
 		else
 			return parent::__get($name);
 	}

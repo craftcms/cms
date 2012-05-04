@@ -169,7 +169,7 @@ abstract class Model extends \CActiveRecord
 			$content->table = $this->getContentTableName();
 			$content->foreignKey = $this->getForeignKeyName();
 
-			$this->_content = $content;
+			$this->_content[$language] = $content;
 		}
 
 		return $this->_content[$language];
