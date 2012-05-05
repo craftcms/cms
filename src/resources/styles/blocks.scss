@@ -14,14 +14,12 @@
 [data-icon-after]:after { @include icon; content: attr(data-icon-after); }
 
 /* headings */
-h1,
-h1 > .text { font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 36px; line-height: 40px; color: $ultradark; }
-h1 { margin-bottom: 30px; }
-h2 { margin-bottom: 30px; border-bottom: 1px solid $ultralight; padding-bottom: 3px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 20px; line-height: 1.2; color: #b30240; }
+h1 { margin-bottom: 50px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 50px; line-height: 60px; color: $xxdark; }
+h2 { margin-bottom: 30px; border-bottom: 1px solid $xlight; padding-bottom: 3px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 20px; line-height: 1.2; color: #b30240; }
 h2[data-icon]:before { float: left; margin: -3px 0; width: 30px; font-size: 30px; }
-h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-weight: normal; font-size: 18px; line-height: 24px; color: $medium; }
-h4 { font-weight: bold; color: $medium; }
-h5 { font-weight: normal; color: $medium; }
+h3 { margin-bottom: 15px; font-family: HelveticaNeue-Light, sans-serif; font-weight: normal; font-size: 18px; line-height: 24px; color: $dark; }
+h4 { font-weight: bold; color: $mediumdark; }
+h5 { font-weight: normal; color: $mediumdark; }
 h6 { font-weight: bold; color: $mediumlight; font-size: 11px; line-height: 15px; }
 
 /* sections */
@@ -80,7 +78,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { position: relative; margin: 20px 0; border-radius: 3px; border: 1px solid $ultralight; padding: 15px; background: -webkit-linear-gradient(#fffdfa, $panebgcolor 30px); overflow: hidden; -webkit-box-shadow: 1px 1px 2px $ultralight; }
+.pane { position: relative; margin: 30px 0; border-radius: 4px; border: 1px solid $xlight; padding: 25px; background: $panebgcolor; -webkit-box-shadow: inset 0 1px 0 $xxlight; overflow: hidden; }
 .pane h2 { margin-bottom: 15px; }
 .pane h2 + .actions { margin-top: -44px; }
 
@@ -88,10 +86,10 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /*  Grids
 /* ----------------------------------------*/
 
-.grid { margin: 30px 0 30px -30px; }
+.grid { margin: 50px 0 50px -50px; }
 .grid:after { @include clearafter; }
 .grid .col { float: left; }
-.grid .col .col-inner { margin-left: 30px; }
+.grid .col .col-inner { margin-left: 50px; }
 
 .grid .col75 { width: 75%; }
 .grid .col66 { width: 66.66%; }
@@ -114,7 +112,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /*  Buttons
 /* ----------------------------------------*/
 
-.buttons { margin-top: 30px; }
+.buttons { margin-top: 50px; }
 
 .btn { display: inline-block; border-radius: 3px; padding: 0 10px; height: 24px; line-height: 24px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); text-align: center; white-space: nowrap; background: -webkit-linear-gradient(#807e7c, #4d4c4a); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.15), 0 1px 1px rgba(0,0,0,0.15); cursor: pointer; overflow: hidden; @include unselectable; }
 .btn:hover { text-decoration: none; }
@@ -124,17 +122,18 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 .btn.sel { position: relative; cursor: default; }
 .btn.disabled { opacity: 0.5; cursor: default; text-shadow: none; }
 .btn + .btn { margin-left: 6px; }
-.btn[data-icon]:before { margin-right: 4px; }
+.btn[data-icon]:before { margin-right: 5px; }
 
 /* small buttons */
 .btn.small { padding: 0 7px; height: 17px; font-size: 11px; line-height: 17px; }
 
 /* big buttons */
 .btn.big { padding: 0 15px; height: 32px; font-size: 14px; line-height: 32px; }
+.btn.big[data-icon]:before { margin-left: -2px; }
 
 /* light buttons */
-.btn.light { color: $medium; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: -webkit-linear-gradient(#fff, #f5f3f0); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.15), 0 1px 1px rgba(0,0,0,0.075); }
-.btn.light:not(.disabled):hover { color: $mediumdark; background: -webkit-linear-gradient(#fff, $panebgcolor); }
+.btn.light { color: $mediumdark; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: -webkit-linear-gradient(#fff, #f5f3f0); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.15), 0 1px 1px rgba(0,0,0,0.075); }
+.btn.light:not(.disabled):hover { color: $dark; background: -webkit-linear-gradient(#fff, $panebgcolor); }
 .btn.light:not(.disabled):active,
 .btn.light:not(.disabled).sel,
 .btn.light:not(.disabled).loading { background: -webkit-linear-gradient(#fffdfa, #edebe8); }
@@ -178,6 +177,7 @@ input.btn.big { height: 32px; }
 .actions { float: right; }
 .actions > li { float: left; }
 .actions > li + li { margin-left: 10px; }
+h1 + .actions { margin-top: -95px; }
 h2 + .actions { margin-top: -59px; }
 
 /* ----------------------------------------
@@ -185,12 +185,13 @@ h2 + .actions { margin-top: -59px; }
 /* ----------------------------------------*/
 
 /* info */
-table.info > tbody > tr > th { padding: 0 10px 2px 0; width: 150px; text-align: right; color: $medium; }
+table.info > tbody > tr > th { padding: 0 10px 2px 0; width: 150px; text-align: right; color: $mediumdark; }
 table.info > tbody > tr > td { padding: 0 0 2px 0; }
 
 /* data */
+.datawrapper { margin: 0 -5px; }
 table.data { width: 100%; }
-table.data > thead > tr > th { padding: 0 5px 3px 5px; color: $medium; font-weight: bold; }
+table.data > thead > tr > th { padding: 0 5px 3px 5px; color: $mediumdark; font-weight: bold; }
 table.data > tbody > tr > th,
 table.data > tbody > tr > td {  padding: 3px 5px; background: rgba(0,0,0,0); -webkit-transition: background-color linear 100ms; }
 table.data > tbody > tr:hover > th,
@@ -246,7 +247,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .field { margin: 25px 0; position: relative; }
 .field .heading { margin-bottom: 5px; }
-.field label { font-weight: bold; color: $medium; }
+.field label { font-weight: bold; color: $mediumdark; }
 .field label + p { display: inline; margin-left: 5px; color: $mediumlight; font-size: 12px; font-style: italic; }
 
 
@@ -261,7 +262,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .textwrapper { padding-right: 20px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border: 1px solid $ultralight; padding: 9px; font-size: 13px; color: $dark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border: 1px solid $xlight; padding: 9px; font-size: 13px; color: $xdark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 .text:hover { border-color: $light; }
 .text:focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
@@ -296,20 +297,20 @@ ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
 .colorpicker .sample { display: inline-block; margin: 0 4px -1px 0; width: 12px; height: 12px; border-radius: 6px; }
 
 /* block editor */
-.blockeditor { position: relative; margin: 30px -30px; background: $panebgcolor; overflow: hidden; }
-.blockeditor .list { padding: 30px 15px 30px 30px; width: 155px; border-right: 1px solid #d9d7d4; }
+.blockeditor { position: relative; margin: 50px 0; background: $panebgcolor; overflow: hidden; }
+.blockeditor .list { padding: 25px; width: 150px; border-right: 1px solid #d9d7d4; }
 .blockeditor .list ul { margin-bottom: 15px; }
-.blockeditor .list ul li { border-top: 1px solid $bgcolor; }
-.blockeditor .list ul li:last-child { border-bottom: 1px solid $bgcolor; }
-.blockeditor .list ul li a { display: block; position: relative; margin: -1px -15px -1px -30px; border: solid transparent; border-width: 1px 0; padding: 4px 15px 4px 30px; text-shadow: 0 1px 0 #fff; }
+.blockeditor .list ul li { border-top: 1px solid $xxlight; }
+.blockeditor .list ul li:last-child { border-bottom: 1px solid $xxlight; }
+.blockeditor .list ul li a { display: block; position: relative; margin: -1px -25px; border: solid transparent; border-width: 1px 0; padding: 4px 15px 4px 30px; text-shadow: 0 1px 0 #fff; }
 .blockeditor .list ul li a .name,
 .blockeditor .list ul li a .type { overflow: hidden; white-space: pre; text-overflow: ellipsis; }
 .blockeditor .list ul li a .name { display: inline-block; height: 16px; line-height: 16px; color: $mediumlight; }
 .blockeditor .list ul li a .type { height: 14px; line-height: 14px; font-size: 11px; font-style: italic; color: $light; }
 .blockeditor .list ul li a:hover { text-decoration: none; }
 .blockeditor .list ul li a:not(.sel):hover .name { color: $linkcolor; }
-.blockeditor .list ul li a.sel { z-index: 1; border-color: $ultralight; color: $medium; background: $bgcolor; }
-.blockeditor .list ul li a.sel .name { color: $medium; }
+.blockeditor .list ul li a.sel { z-index: 1; border-color: $xlight; color: $mediumdark; background: $xxlight; }
+.blockeditor .list ul li a.sel .name { color: $mediumdark; }
 .blockeditor .list ul li a.sel .type { color: $mediumlight; }
 
 .blockeditor .settings { position: absolute; top: 0; left: 200px; border-left: 1px solid #d9d7d4; padding: 30px; }

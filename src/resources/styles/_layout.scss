@@ -1,6 +1,6 @@
 @import "shared";
 
-body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; }
+body { background: #d9d5ce -webkit-linear-gradient(#bfbcb6, #d9d5ce 100px) repeat-x; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; }
 
 /* headers */
 .header { position: absolute; top: 13px; }
@@ -8,11 +8,12 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 .header a { display: block; padding: 4px 10px; line-height: 16px; }
 .header a:hover { text-decoration: none; }
 
-#header-left { left: 15px; }
+#header-left { left: 25px; }
+#header-left h3 { color: $xdark; }
 #header-right { right: 15px; }
 
 /* crumbs */
-#header-left #crumbs { margin-left: 12px; }
+#header-left #crumbs { display: none; margin-left: 12px; }
 #header-left #crumbs li { float: left; margin-left: -1px; background: url(../images/crumb-left.png) no-repeat 0 0; }
 #header-left #crumbs li a { margin-right: -11px; padding-left: 18px; padding-right: 18px; color: $mediumlight; text-shadow: 0 1px 0 #fff; background: url(../images/crumb-right.png) no-repeat 100% 0; }
 #header-left #crumbs li:hover { position: relative; background-position: 0 -24px; }
@@ -22,30 +23,31 @@ body { background: $bgcolor; font-size: 13px; line-height: 18px; font-family: He
 
 /* account links */
 #header-right a:hover { color: $linkcolor !important; }
-#header-right #me a { font-weight: bold; color: $dark; }
-#header-right #logout { border-left: 1px solid $light; }
-#header-right #logout a { color: $mediumlight; }
+#header-right #me a { font-weight: bold; color: $xdark; }
+#header-right #logout { border-left: 1px solid $mediumlight; }
+#header-right #logout a { color: $medium; }
 
 /* search */
 #header-right #search { position: relative; margin-right: 10px; }
-#header-right #search:after { @include icon; content: 's'; display: block; position: absolute; top: 5px; left: 6px; font-size: 20px; color: $mediumlight; }
-#header-right #search input { border: none; border-radius: 12px; padding: 5px 10px 5px 24px; width: 165px; height: 14px; font-size: 12px; background: -webkit-linear-gradient(#f5f3f0, #fff); -webkit-box-shadow: 0 0 0 $blurglowcolor, inset 0 0 0 1px rgba(153,151,150,0.5); -webkit-transition: -webkit-box-shadow linear 100ms; }
+#header-right #search:after { @include icon; content: 'm'; display: block; position: absolute; top: 5px; left: 6px; font-size: 20px; color: $mediumlight; }
+#header-right #search input { border: none; border-radius: 12px; padding: 5px 10px 5px 24px; width: 165px; height: 14px; font-size: 12px; background: -webkit-linear-gradient(#f5f3f0, #fff); -webkit-box-shadow: 0 0 0 $blurglowcolor, inset 0 0 0 1px rgba(153,151,150,0.75); -webkit-transition: -webkit-box-shadow linear 100ms; }
 #header-right #search input:focus { outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor, inset 0 0 0 1px $focusglowcolor; }
 
+/* main */
+.main { position: relative; border-radius: 4px; padding: 50px; color: $xdark; background: #fff; -webkit-box-shadow: 0 1px 5px rgba(0,0,0,0.25); }
+#main { margin: 50px 25px 0; padding-left: 150px; min-height: 500px; }
+#main > h1 { margin-top: -25px; }
+
 /* nav */
-#nav { position: absolute; z-index: 1; top: 50px; left: 0; padding-top: 10px; width: 100px; }
+#nav { position: absolute; z-index: 1; top: 25px; left: 15px; padding-top: 10px; width: 100px; }
 #nav.fixed { position: fixed; top: 0; }
 #nav ul li { margin-bottom: 25px; }
-#nav ul li a { display: block; color: $mediumlight; text-align: center; -webkit-transition: color linear 100ms; }
+#nav ul li a { display: block; color: $xlight; text-align: center; -webkit-transition: color linear 100ms; }
 #nav ul li a:before { display: block; font-size: 40px; line-height: 32px; }
 #nav ul li a:hover { color: $medium; text-decoration: none; }
-#nav ul li a.sel { color: $dark; cursor: default; background: url(../images/nav-arrow.png) no-repeat 100% 50%; }
-
-/* main */
-.main { position: relative; border-radius: 3px; border: 1px solid $light; padding: 30px; color: $dark; background: #fff; -webkit-box-shadow: 1px 1px 2px $light; }
-#main { margin: 49px 24px 0 99px; min-height: 500px; }
+#nav ul li a.sel { color: $dark; cursor: default; }
 
 /* footer */
-#footer { margin: 10px 25px 10px 100px; text-align: center; font-weight: 11px; color: $mediumlight; text-shadow: 0 1px 0 #fff; }
+#footer { margin: 10px 25px 10px 100px; text-align: center; font-size: 11px; color: $medium; }
 #footer p { display: inline-block; }
 #footer p#copyright { margin-left: 10px; }

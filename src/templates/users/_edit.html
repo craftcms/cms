@@ -30,9 +30,9 @@
 {region "main"}
 	<h1>{:pageTitle}</h1>
 
-	<div class="grid">
-		<div class="col col50"><div class="col-inner">
-			<form method="post" action="">
+	<form method="post" action="">
+		<div class="grid">
+			<div class="col col50"><div class="col-inner">
 				<input type="hidden" name="action" value="users/save" />
 				<input type="hidden" name="redirect" value="users" />
 				{if user.id}<input type="hidden" name="user_id" value="{:user.id}">{/if}
@@ -131,94 +131,96 @@
 						</label>
 					</div>
 				{/if}
+			</div></div>
 
-				<input class="btn big submit" type="submit" name="save" value="Save User" />
+			{if user.id}
+				<div class="col col50"><div class="col-inner">
+					<div id="info" class="pane">
+						<h2>User Info</h2>
 
-				{if user.id}
-					{if user.status != 'suspended'}
-						<input class="btn big" type="submit" name="suspend" value="Suspend User" />
-					{/if}
-					<input class="btn big" type="submit" name="delete" value="Delete User" />
-				{/if}
-			</form>
-		</div></div>
-
-		{if user.id}
-			<div class="col col50"><div class="col-inner">
-				<div id="info" class="pane">
-					<h2>User Info</h2>
-
-					<div class="left">
-						<strong>Status</strong>
-					</div>
-					<div class="right">
-						{:user.status.uppercaseFirst}
-					</div>
-					<div class="clear"></div>
-					<input type="hidden" name="status" value="{:user.status}" />
-					{if user.status == 'pending'}
-						<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
-						<p><strong>Validation URL</strong> {:b.url.url(b.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
-					{elseif user.status == 'locked'}
-						<input class="btn" type="submit" name="unlock" value="Unlock" />
-					{elseif user.status == 'suspended'}
-						<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
-					{/if}
-					{if b.config.failedPasswordMode == 'cooldown'}
-						{if user.cooldown_start}
-							<br />
-							{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(user.remainingCooldownTime)}
-							Temporarily locked.  User will be auto-unlocked
-							{if timeRemaining > 0}
-								in {:timeRemaining}
-							{else}
-								the next time they log in.
+						<div class="left">
+							<strong>Status</strong>
+						</div>
+						<div class="right">
+							{:user.status.uppercaseFirst}
+						</div>
+						<div class="clear"></div>
+						<input type="hidden" name="status" value="{:user.status}" />
+						{if user.status == 'pending'}
+							<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
+							<p><strong>Validation URL</strong> {:b.url.url(b.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
+						{elseif user.status == 'locked'}
+							<input class="btn" type="submit" name="unlock" value="Unlock" />
+						{elseif user.status == 'suspended'}
+							<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
+						{/if}
+						{if b.config.failedPasswordMode == 'cooldown'}
+							{if user.cooldown_start}
+								<br />
+								{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(user.remainingCooldownTime)}
+								Temporarily locked.  User will be auto-unlocked
+								{if timeRemaining > 0}
+									in {:timeRemaining}
+								{else}
+									the next time they log in.
+								{/if}
 							{/if}
 						{/if}
-					{/if}
 
-					<div class="left">
-						<strong>Last Login Date</strong>
-					</div>
-					<div class="right">
-						{if user.last_login_date}{:dateTimeHelper.nice(user.last_login_date)}{else}Never{/if}
-					</div>
-					<div class="clear"></div>
+						<div class="left">
+							<strong>Last Login Date</strong>
+						</div>
+						<div class="right">
+							{if user.last_login_date}{:dateTimeHelper.nice(user.last_login_date)}{else}Never{/if}
+						</div>
+						<div class="clear"></div>
 
-					<div class="left">
-						<strong>Last Failed Login Date</strong>
-					</div>
-					<div class="right">
-						{if user.last_login_failed_date}{:dateTimeHelper.nice(user.last_login_failed_date)}{else}Never{/if}
-					</div>
-					<div class="clear"></div>
+						<div class="left">
+							<strong>Last Failed Login Date</strong>
+						</div>
+						<div class="right">
+							{if user.last_login_failed_date}{:dateTimeHelper.nice(user.last_login_failed_date)}{else}Never{/if}
+						</div>
+						<div class="clear"></div>
 
-					<div class="left">
-						<strong>Last Password Changed Date</strong>
-					</div>
-					<div class="right">
-						{if user.last_password_changed_date}{:dateTimeHelper.nice(user.last_password_changed_date)}{else}Never{/if}
-					</div>
-					<div class="clear"></div>
+						<div class="left">
+							<strong>Last Password Changed Date</strong>
+						</div>
+						<div class="right">
+							{if user.last_password_changed_date}{:dateTimeHelper.nice(user.last_password_changed_date)}{else}Never{/if}
+						</div>
+						<div class="clear"></div>
 
-					<div class="left">
-						<strong>Last Lockout Date</strong>
-					</div>
-					<div class="right">
-						{if user.last_lockout_date}{:dateTimeHelper.nice(user.last_lockout_date)}{else}Never{/if}
-					</div>
-					<div class="clear"></div>
+						<div class="left">
+							<strong>Last Lockout Date</strong>
+						</div>
+						<div class="right">
+							{if user.last_lockout_date}{:dateTimeHelper.nice(user.last_lockout_date)}{else}Never{/if}
+						</div>
+						<div class="clear"></div>
 
-					<div class="left">
-						<strong>Failed Password Attempt Count</strong>
+						<div class="left">
+							<strong>Failed Password Attempt Count</strong>
+						</div>
+						<div class="right">
+							{if user.failed_password_attempt_count}{:user.failed_password_attempt_count}{else}0{/if}
+						</div>
+						<div class="clear"></div>
 					</div>
-					<div class="right">
-						{if user.failed_password_attempt_count}{:user.failed_password_attempt_count}{else}0{/if}
-					</div>
-					<div class="clear"></div>
-				</div>
-			</div></div>
-		{/if}
-	</div>
+				</div></div>
+			{/if}
+		</div>
+
+		<div class="buttons">
+			<input class="btn big submit" type="submit" name="save" value="Save User" />
+
+			{if user.id}
+				{if user.status != 'suspended'}
+					<input class="btn big" type="submit" name="suspend" value="Suspend User" />
+				{/if}
+				<input class="btn big" type="submit" name="delete" value="Delete User" />
+			{/if}
+		</div>
+	</form>
 
 {/region}

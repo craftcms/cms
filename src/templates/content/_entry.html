@@ -19,69 +19,77 @@
 
 
 {region "main"}
-	<div id="sidebar">
-		{if entry}
-			{if entry.published}
-				<ul>
-					<li><a href="{:b.url.base}content/{:entry.id}" class="published {if !entry.draft}sel{/if}">
-						<div class="status on"></div>
-						<div class="name">Published</div>
-					</a></li>
-				</ul>
-			{/if}
+	<div class="grid">
+		<div class="col col66"><div class="col-inner">
+			<form id="content" method="post" action="">
+				<div class="textwrapper"><input id="title" type="text" name="title" value="{:entry.title}" class="text nicetext" data-hint="Enter a title…"></div>
 
-			{if entry.drafts}
-				<h6>Drafts</h6>
-				<ul>
-					{foreach entry.drafts as draft}
-						<li><a href="{:b.url.base}content/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}">
-							<div class="name">{:draft.name}</div>
-							<div class="author">{:draft.author.firstNameLastInitial}</div>
-						</a></li>
-					{/foreach}
-				</ul>
-			{/if}
+				{foreach entry.blocks as block}
+					<div class="field">
+						<div class="heading">
+							<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
+							{if block.instructions}
+								<p>{:block.instructions}</p>
+							{/if}
+						</div>
+						<div class="{:block.classHandle}">
+							{set data = entry.content.getValue(block.handle)}
+							{:block.displayField(data)}
+						</div>
+						{if entry.content.getErrors(block.handle)}
+							{include "_includes/error_list" errors=entry.content.getErrors(block.handle)}
+						{/if}
+					</div>
+				{/foreach}
 
-			<form method="post" action="">
-				<input type="hidden" name="action" value="content/createDraft" />
-				<input type="hidden" name="entryId" value="{:entry.id}" />
-				{!--<input type="submit" value="New draft" class="btn light" data-icon="n" />--}
-				<a class="btn light formsubmit" data-icon="n">New draft</a>
-			</form>
-		{/if}
-	</div>
-
-	<form id="content" method="post" action="">
-		<h1 class="textwrapper"><input type="text" name="title" value="{:entry.title}" class="text nicetext" data-hint="Enter a title…"></h1>
-
-		{foreach entry.blocks as block}
-			<div class="field">
-				<div class="heading">
-					<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
-					{if block.instructions}
-						<p>{:block.instructions}</p>
+				<div class="buttons">
+					<input type="hidden" name="entryId" value="{:entry.id}"/>
+					{if entry.draft}
+						<input type="hidden" name="draftId" value="{:entry.draft.id}" />
+						<input type="hidden" name="action" value="content/saveDraft" />
+						<input type="submit" value="Save draft" class="btn big submit" />
+						<input type="button" value="Pubish" class="btn big formsubmit" data-action="content/publishDraft" />
+					{else}
+						<input type="hidden" name="action" value="content/saveEntry" />
+						<input type="submit" value="Save entry" class="btn big submit" />
+						<input type="button" value="Save as a draft" class="btn big formsubmit" data-action="content/createDraft" />
 					{/if}
 				</div>
-				<div class="{:block.classHandle}">
-					{set data = entry.content.getValue(block.handle)}
-					{:block.displayField(data)}
-				</div>
-				{if entry.content.getErrors(block.handle)}
-					{include "_includes/error_list" errors=entry.content.getErrors(block.handle)}
+			</form>
+		</div></div>
+		<div class="col col33"><div class="col-inner">
+			<div id="sidebar" class="pane">
+				{if entry}
+					{if entry.published}
+						<ul>
+							<li><a href="{:b.url.base}content/{:entry.id}" class="published {if !entry.draft}sel{/if}">
+								<div class="status on"></div>
+								<div class="name">Published</div>
+							</a></li>
+						</ul>
+					{/if}
+
+					{if entry.drafts}
+						<h6>Drafts</h6>
+						<ul>
+							{foreach entry.drafts as draft}
+								<li><a href="{:b.url.base}content/{:entry.id}/draft{:draft.num}" class="draft {if entry.draft.num == draft.num}sel{/if}">
+									<div class="name">{:draft.name}</div>
+									<div class="author">{:draft.author.firstNameLastInitial}</div>
+								</a></li>
+							{/foreach}
+						</ul>
+					{/if}
+
+					<form method="post" action="">
+						<input type="hidden" name="action" value="content/createDraft" />
+						<input type="hidden" name="entryId" value="{:entry.id}" />
+						{!--<input type="submit" value="New draft" class="btn light" data-icon="n" />--}
+						<a class="btn light formsubmit" data-icon="n">New draft</a>
+					</form>
 				{/if}
 			</div>
-		{/foreach}
+		</div></div>
+	</div>
 
-		<input type="hidden" name="entryId" value="{:entry.id}"/>
-		{if entry.draft}
-			<input type="hidden" name="draftId" value="{:entry.draft.id}" />
-			<input type="hidden" name="action" value="content/saveDraft" />
-			<input type="submit" value="Save draft" class="btn big submit" />
-			<input type="button" value="Pubish" class="btn big formsubmit" data-action="content/publishDraft" />
-		{else}
-			<input type="hidden" name="action" value="content/saveEntry" />
-			<input type="submit" value="Save entry" class="btn big submit" />
-			<input type="button" value="Save as a draft" class="btn big formsubmit" data-action="content/createDraft" />
-		{/if}
-	</form>
 {/region}

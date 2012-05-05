@@ -549,44 +549,8 @@ b.Base = Base.extend({
 });
 
 
-/**
- * Blocks class
- */
-var CP = b.Base.extend({
-
-	$nav: null,
-	$notification: null,
-	fixedNav: false,
-
-	init: function()
-	{
-		this.$nav = $('#nav');
-		this.$notification = $('#notification');
-		this.$notification.delay(2000).fadeOut();
-
-		// Don't let the nav scroll out of view
-		this.addListener(b.$window, 'scroll', function()
-		{
-			if (document.body.scrollTop > 50)
-			{
-				if (!this.fixedNav)
-				{
-					this.$nav.addClass('fixed');
-					this.fixedNav = true;
-				}
-			}
-			else if (this.fixedNav)
-			{
-				this.$nav.removeClass('fixed');
-				this.fixedNav = false;
-			}
-		});
-	},
-
-});
-
-
-b.cp = new CP();
+// Fade the notification out in two seconds
+$('#notification').delay(2000).fadeOut();
 
 
 $('.formsubmit').click(function() {
