@@ -17,6 +17,7 @@ class UsersVariable
 
 	/**
 	 * Returns a user by its ID.
+	 * @param $userId
 	 * @return User
 	 */
 	public function getById($userId)

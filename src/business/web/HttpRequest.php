@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class HttpRequest extends \CHttpRequest
 {
-	public $actionPlugin;
+	public $pluginHandle;
 	public $actionController;
 	public $actionAction;
 
@@ -69,7 +69,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_pathSegments))
 		{
-			$this->_pathSegments = array_filter(explode('/', $this->path));
+			$this->_pathSegments = array_filter(explode('/', $this->getPath()));
 		}
 
 		return $this->_pathSegments;
@@ -184,6 +184,8 @@ class HttpRequest extends \CHttpRequest
 
 			$firstPathSegment = $this->getPathSegment(1);
 
+			$this->_processPluginHandleRequest($this->getPathSegments());
+
 			if ($firstPathSegment === $resourceTriggerWord)
 				$this->_mode = RequestMode::Resource;
 
@@ -200,7 +202,7 @@ class HttpRequest extends \CHttpRequest
 				else
 				{
 					// get the URL segments without the "action" segment
-					$segs = array_slice(array_merge($this->pathSegments), 1);
+					$segs = array_slice(array_merge($this->getPathSegments()), 1);
 				}
 
 				$this->setActionVars($segs);
@@ -223,6 +225,14 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
+	 * @param $segs
+	 */
+	private function _processPluginHandleRequest($segs)
+	{
+		$this->pluginHandle = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
+	}
+
+	/**
 	 * @param $mode
 	 * @return void
 	 */
@@ -238,16 +248,15 @@ class HttpRequest extends \CHttpRequest
 	 */
 	protected function setActionVars($segs)
 	{
-		$this->actionPlugin = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
-		$i = ($this->actionPlugin === false ? 0 : 2);
+		$i = ($this->pluginHandle === false ? 0 : 2);
 		$this->actionController = (isset($segs[$i]) ? $segs[$i] : 'default');
 		$this->actionAction     = (isset($segs[$i + 1]) ? $segs[$i + 1] : 'index');
 	}
 
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
-	 *
 	 * @param $name
+	 * @throws Exception
 	 * @return mixed
 	 */
 	public function getRequiredParam($name)
@@ -261,8 +270,8 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns the named GET parameter value, or throws an exception if it's not set
-	 *
 	 * @param $name
+	 * @throws Exception
 	 * @return mixed
 	 */
 	public function getRequiredQuery($name)
@@ -276,8 +285,8 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
-	 *
 	 * @param $name
+	 * @throws Exception
 	 * @return mixed
 	 */
 	public function getRequiredPost($name)

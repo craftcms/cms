@@ -45,7 +45,7 @@ class PathService extends Component
 	 */
 	public function getBlockTypesPath()
 	{
-		return $this->appPath.'blocktypes/';
+		return $this->getAppPath().'blocktypes/';
 	}
 
 	/**
@@ -53,7 +53,7 @@ class PathService extends Component
 	 */
 	public function getResourcesPath()
 	{
-		return $this->appPath.'resources/';
+		return $this->getAppPath().'resources/';
 	}
 
 	/**
@@ -61,7 +61,7 @@ class PathService extends Component
 	 */
 	public function getFrameworkPath()
 	{
-		return $this->appPath.'framework/';
+		return $this->getAppPath().'framework/';
 	}
 
 	/**
@@ -69,7 +69,7 @@ class PathService extends Component
 	 */
 	public function getMigrationsPath()
 	{
-		return $this->appPath.'migrations/';
+		return $this->getAppPath().'migrations/';
 	}
 
 	/**
@@ -77,7 +77,7 @@ class PathService extends Component
 	 */
 	public function getModelsPath()
 	{
-		return $this->appPath.'models/';
+		return $this->getAppPath().'models/';
 	}
 
 	/**
@@ -85,7 +85,7 @@ class PathService extends Component
 	 */
 	public function getCommandsPath()
 	{
-		return $this->consolePath.'commands/';
+		return $this->getConsolePath().'commands/';
 	}
 
 	/**
@@ -93,7 +93,7 @@ class PathService extends Component
 	 */
 	public function getConsolePath()
 	{
-		return $this->appPath.'business/console/';
+		return $this->getAppPath().'business/console/';
 	}
 
 	/**
@@ -103,9 +103,9 @@ class PathService extends Component
 	public function getTemplatePath()
 	{
 		if (BLOCKS_CP_REQUEST)
-			return $this->cpTemplatesPath;
+			return $this->getCpTemplatesPath();
 		else
-			return $this->siteTemplatesPath;
+			return $this->getSiteTemplatesPath();
 	}
 
 	/**
@@ -114,7 +114,7 @@ class PathService extends Component
 	 */
 	public function getCpTemplatesPath()
 	{
-		return $this->appPath.'templates/';
+		return $this->getAppPath().'templates/';
 	}
 
 	/**
@@ -141,7 +141,7 @@ class PathService extends Component
 		if (($path = b()->config->offlinePath) !== null)
 			return substr($path, 0, strlen($path) - strlen(pathinfo($path, PATHINFO_BASENAME)));
 
-		return $this->cpTemplatesPath;
+		return $this->getCpTemplatesPath();
 	}
 
 	/**
@@ -150,7 +150,7 @@ class PathService extends Component
 	 */
 	public function getEmailTemplatesPath()
 	{
-		return $this->appPath.'email_templates/';
+		return $this->getAppPath().'email_templates/';
 	}
 
 	/**
@@ -160,9 +160,9 @@ class PathService extends Component
 	public function getParsedTemplatesPath()
 	{
 		if (BLOCKS_CP_REQUEST)
-			return $this->parsedCpTemplatesPath;
+			return $this->getParsedCpTemplatesPath();
 		else
-			return $this->parsedSiteTemplatesPath;
+			return $this->getParsedSiteTemplatesPath();
 	}
 
 	/**
@@ -171,7 +171,7 @@ class PathService extends Component
 	 */
 	public function getParsedCpTemplatesPath()
 	{
-		$path = $this->runtimePath.'parsed_templates/cp/';
+		$path = $this->getRuntimePath().'parsed_templates/cp/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
@@ -188,7 +188,7 @@ class PathService extends Component
 		$site = b()->sites->current;
 		if ($site)
 		{
-			$path = $this->runtimePath.'parsed_templates/sites/'.$site->handle.'/';
+			$path = $this->getRuntimePath().'parsed_templates/sites/'.$site->handle.'/';
 
 			if (!is_dir($path))
 				mkdir($path, 0777, true);
@@ -205,7 +205,7 @@ class PathService extends Component
 	 */
 	public function getParsedEmailTemplatesPath()
 	{
-		$path = $this->runtimePath.'parsed_templates/email/';
+		$path = $this->getRuntimePath().'parsed_templates/email/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
@@ -218,7 +218,7 @@ class PathService extends Component
 	 */
 	public function getSessionPath()
 	{
-		$path = $this->runtimePath.'sessions/';
+		$path = $this->getRuntimePath().'sessions/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
@@ -231,7 +231,7 @@ class PathService extends Component
 	 */
 	public function getStatePath()
 	{
-		$path = $this->runtimePath.'state/';
+		$path = $this->getRuntimePath().'state/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
@@ -244,7 +244,7 @@ class PathService extends Component
 	 */
 	public function getCachePath()
 	{
-		$path = $this->runtimePath.'cache/';
+		$path = $this->getRuntimePath().'cache/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);

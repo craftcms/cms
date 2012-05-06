@@ -36,6 +36,7 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	/**
 	 * Set the template paths
 	 * @param string $sourcePath
+	 * @throws Exception
 	 * @access protected
 	 */
 	protected function setPaths($sourcePath)
@@ -129,13 +130,14 @@ class TemplateRenderer extends Component implements \IViewRenderer
 	/**
 	 * Parses a template
 	 * @access protected
+	 * @throws TemplateRendererException
 	 */
 	protected function parseTemplate()
 	{
 		// Copy the source template to the meta file for comparison on future requests.
 		copy($this->_sourcePath, $this->_duplicatePath);
 
-		// Initilaize a new template parser and have it parse the template
+		// Initialize a new template parser and have it parse the template
 		$parser = new TemplateParser;
 		$template = file_get_contents($this->_sourcePath);
 

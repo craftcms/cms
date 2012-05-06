@@ -179,6 +179,7 @@ class App extends \CWebApplication
 	/**
 	 * Processes action requests.
 	 * @access private
+	 * @throws HttpException
 	 */
 	private function _processActionRequest()
 	{
@@ -201,6 +202,7 @@ class App extends \CWebApplication
 	/**
 	 * Processes resource requests.
 	 * @access private
+	 * @throws HttpException
 	 */
 	private function _processResourceRequest()
 	{
@@ -376,7 +378,7 @@ class App extends \CWebApplication
 		{
 			if (strpos(get_class($this->request), 'HttpRequest') !== false)
 			{
-				$this->_templatePath = $this->path->templatePath;
+				$this->_templatePath = $this->path->getTemplatePath();
 			}
 			else
 			{

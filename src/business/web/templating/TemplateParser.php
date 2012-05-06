@@ -273,7 +273,8 @@ class TemplateParser
 
 	/**
 	 * Parses a 'layout' tag
-	 * @param string $body
+	 * @param  string $body
+	 * @throws Exception
 	 * @return string
 	 * @access protected
 	 */
