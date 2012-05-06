@@ -37,7 +37,7 @@ abstract class Controller extends \CController
 
 		if (strncmp($viewName,'///email', 8) === 0)
 		{
-			$viewPath = rtrim(b()->path->emailTemplatesPath, '/');
+			$viewPath = rtrim(b()->path->getEmailTemplatesPath(), '/');
 			$viewName = substr($viewName, 9);
 		}
 		else
@@ -50,20 +50,20 @@ abstract class Controller extends \CController
 
 	/**
 	 * Loads the requested template
-	 *
 	 * @param array $variables
+	 * @throws HttpException
 	 */
 	public function loadRequestedTemplate($variables = array())
 	{
 		b()->urlManager->processTemplateMatching();
-		$templateMatch = b()->urlManager->templateMatch;
+		$templateMatch = b()->urlManager->getTemplateMatch();
 
 		// see if we can match a template on the file system.
 		if ($templateMatch !== null)
 		{
-			$template = $templateMatch->getRelativePath().'/'.$templateMatch->getFileName();
-			$variables = array_merge(b()->urlManager->templateVariables, $variables);
-			$this->loadTemplate($template, $variables);
+			$template = ($templateMatch->getRelativePath() == '' ? '' : $templateMatch->getRelativePath().'/').$templateMatch->getFileName();
+			$variables = array_merge(b()->urlManager->getTemplateVariables(), $variables);
+			$this->loadTemplate($template, $variables, false, false);
 		}
 		else
 			throw new HttpException(404);
@@ -75,23 +75,31 @@ abstract class Controller extends \CController
 	 * @param       $templatePath
 	 * @param array $vars
 	 * @param bool  $return Whether to return the results, rather than output them
+	 * @param bool  $resolveTemplatePath
+	 * @throws HttpException
 	 * @internal param array $variables Any template variables that should be available to the template
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $vars = array(), $return = false)
+	public function loadTemplate($templatePath, $vars = array(), $return = false, $resolveTemplatePath = true)
 	{
-		$templatePath = TemplateHelper::resolveTemplatePath($templatePath);
-		if ($templatePath !== false)
+		if ($resolveTemplatePath)
 		{
-			$vars['b'] = new BVariable;
+			$templateMatch = TemplateHelper::resolveTemplatePath($templatePath);
 
-			if (is_array($vars))
+			if ($templateMatch !== false)
 			{
-				foreach ($vars as $name => $var)
-				{
-					$variables[$name] = TemplateHelper::getVariable($var);
-				}
+				$templatePath = $templateMatch['templatePath'];
 			}
+		}
+
+		$vars['b'] = new BVariable;
+
+		if (is_array($vars))
+		{
+			foreach ($vars as $name => $var)
+			{
+				$variables[$name] = TemplateHelper::getVariable($var);
+		}
 
 			return $this->renderPartial($templatePath, $variables, $return);
 		}
@@ -158,19 +166,21 @@ abstract class Controller extends \CController
 
 	/**
 	 * Returns a 404 if this isn't a POST request
+	 * @throws HttpException
 	 */
 	public function requirePostRequest()
 	{
-		if (!b()->config->devMode && b()->request->requestType !== 'POST')
+		if (!b()->config->devMode && b()->request->getRequestType() !== 'POST')
 			throw new HttpException(404);
 	}
 
 	/**
 	 * Returns a 404 if this isn't an Ajax request
+	 * @throws HttpException
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!b()->config->devMode && !b()->request->isAjaxRequest)
+		if (!b()->config->devMode && !b()->request->getIsAjaxRequest())
 			throw new HttpException(404);
 	}
 
