@@ -41,6 +41,11 @@ class ComponentHelper
 				if (!class_exists($class, false))
 					continue;
 
+				// Ignore if it's an abstract class
+				$ref = new \ReflectionClass($class);
+				if ($ref->isAbstract())
+					continue;
+
 				// Save an instance of it
 				$components[] = new $class;
 			}
