@@ -12,9 +12,12 @@ class TemplateController extends Controller
 	public function actionIndex()
 	{
 		// Require user to be logged in on every page but /login in the control panel and account/password with an activation code
-		if (b()->request->mode == RequestMode::CP)
+		if (b()->request->getMode() == RequestMode::CP)
 		{
-			$path = b()->request->path;
+			// Can't use this here until we get SSL working with multiple domains.
+			//b()->request->requireSecureConnection();
+
+			$path = b()->request->getPath();
 			if ($path !== 'login')
 				if ($path !== b()->users->verifyAccountUrl && b()->request->getParam('code', null) == null)
 					$this->requireLogin();
@@ -33,7 +36,7 @@ class TemplateController extends Controller
 		else
 			$templateName = '_offline';
 
-		b()->setViewPath(b()->path->offlineTemplatePath);
+		b()->setViewPath(b()->path->getOfflineTemplatePath());
 		$this->loadTemplate($templateName, array(), false);
 		b()->setViewPath(null);
 	}

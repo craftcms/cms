@@ -17,6 +17,7 @@ class RequestVariable
 
 	/**
 	 * Returns a value from POST data.
+	 * @param $name
 	 * @return mixed
 	 */
 	public function post($name)

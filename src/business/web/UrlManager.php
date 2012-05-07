@@ -103,36 +103,60 @@ class UrlManager extends \CUrlManager
 	{
 		if (BLOCKS_CP_REQUEST)
 		{
+			// Check the Blocks predefined routes.
 			foreach ($this->cpRoutes as $route)
 			{
-				// Escape special regex characters from the pattern
-				$pattern = str_replace(array('.','/'), array('\.','\/'), $route[0]);
-
-				// Mix in the predefined subpatterns
-				$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
-
-				// Does it match?
-				if (preg_match("/^{$pattern}$/", b()->request->path, $match))
-				{
-					$templatePath = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
-					if ($templatePath !== false)
-						$this->_setTemplateMatch($templatePath, TemplateMatchType::Route);
-
-					// Set any capture variables
-					if (!empty($route[2]))
-					{
-						foreach ($route[2] as $i => $variableName)
-						{
-							if (isset($match[$i+1]))
-								$this->_templateVariables[$variableName] = $match[$i+1];
-							else
-								break;
-						}
-					}
-
+				if ($this->_matchRouteInternal($route))
 					return true;
+			}
+
+			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
+			$pluginCpRoutes = b()->plugins->callHook('registerCpRoutes');
+			foreach ($pluginCpRoutes as $pluginRoutes)
+			{
+				foreach ($pluginRoutes as $route)
+				{
+					if ($this->_matchRouteInternal($route))
+						return true;
 				}
 			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $route
+	 * @return bool
+	 */
+	private function _matchRouteInternal($route)
+	{
+		// Escape special regex characters from the pattern
+		$pattern = str_replace(array('.','/'), array('\.','\/'), $route[0]);
+
+		// Mix in the predefined subpatterns
+		$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
+
+		// Does it match?
+		if (preg_match("/^{$pattern}$/", b()->request->path, $match))
+		{
+			$templateMatch = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
+			if ($templateMatch !== false)
+				$this->_setTemplateMatch($templateMatch['templatePath'], TemplateMatchType::Route, $templateMatch['fileSystemPath']);
+
+			// Set any capture variables
+			if (!empty($route[2]))
+			{
+				foreach ($route[2] as $i => $variableName)
+				{
+					if (isset($match[$i+1]))
+						$this->_templateVariables[$variableName] = $match[$i + 1];
+					else
+						break;
+				}
+			}
+
+			return true;
 		}
 
 		return false;
@@ -150,7 +174,7 @@ class UrlManager extends \CUrlManager
 		// Make sure they're not trying to access a private template
 		if (!b()->request->isAjaxRequest)
 		{
-			foreach (b()->request->pathSegments as $requestPathSeg)
+			foreach (b()->request->getPathSegments() as $requestPathSeg)
 			{
 				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
 					return false;
@@ -158,10 +182,10 @@ class UrlManager extends \CUrlManager
 		}
 
 		// Does a request path match a template?
-		$templatePath = TemplateHelper::resolveTemplatePath(b()->request->path);
-		if ($templatePath !== false)
+		$templateMatch = TemplateHelper::resolveTemplatePath(b()->request->getPath());
+		if ($templateMatch !== false)
 		{
-			$this->_setTemplateMatch($templatePath, TemplateMatchType::Template);
+			$this->_setTemplateMatch($templateMatch['templatePath'], TemplateMatchType::Template, $templateMatch['fileSystemPath']);
 			return true;
 		}
 
@@ -170,12 +194,13 @@ class UrlManager extends \CUrlManager
 
 	/**
 	 * @access private
-	 * @param $path
+	 * @param $templatePath
 	 * @param $matchType
+	 * @param $fileSystemPath
 	 */
-	private function _setTemplateMatch($path, $matchType)
+	private function _setTemplateMatch($templatePath, $matchType, $fileSystemPath)
 	{
-		$templateMatch = new TemplateMatch($path);
+		$templateMatch = new TemplateMatch($templatePath, $fileSystemPath);
 		$templateMatch->setMatchType($matchType);
 		$this->_templateMatch = $templateMatch;
 	}

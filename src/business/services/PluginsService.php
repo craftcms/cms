@@ -93,7 +93,7 @@ class PluginsService extends Component
 	 */
 	public function getPlugin($className)
 	{
-		$normalizedClassName = $this->_normalizeClassName($className);
+		$normalizedClassName = $this->normalizePluginClassName($className);
 
 		if (!isset($this->_pluginInstances[$normalizedClassName]))
 		{
@@ -109,7 +109,7 @@ class PluginsService extends Component
 	 */
 	public function getEnabledPluginClassNamesAndVersions()
 	{
-		$plugins = $this->enabled;
+		$plugins = $this->getEnabled();
 
 		$pluginClassNamesAndVersions = array();
 
@@ -188,6 +188,21 @@ class PluginsService extends Component
 		}
 		else
 			return false;
+	}
+
+	public function callHook($methodName, $args = array())
+	{
+		$result = array();
+
+		foreach ($this->getEnabled() as $plugin)
+		{
+			if (method_exists($plugin, $methodName))
+			{
+				$result[] = call_user_func_array(array($plugin, $methodName), $args);
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -332,7 +347,7 @@ class PluginsService extends Component
 	 * @param $className
 	 * @return null
 	 */
-	private function _normalizeClassName($className)
+	public function normalizePluginClassName($className)
 	{
 		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
 
@@ -380,12 +395,17 @@ class PluginsService extends Component
 				$fullClass = __NAMESPACE__.'\\'.$shortClass.'Plugin';
 				$path = $pluginsPath.$folder.'/'.$shortClass.'Plugin.php';
 
-				// Skip the autoloader
-				if (!class_exists($fullClass, false))
+				// Import the plugin class file if it exists
+				if (!class_exists($fullClass))
+				{
+					if (!file_exists($path))
+						continue;
+
 					require_once $path;
+				}
 
 				// Ignore if we couldn't find the plugin class
-				if (!class_exists($fullClass, false))
+				if (!class_exists($fullClass))
 					continue;
 
 				$this->_fileSystemPlugins[$shortClass] = array($fullClass, $path);

@@ -11,13 +11,16 @@ class TemplateMatch
 	private $_fullTemplatePath;
 	private $_matchType;
 	private $_matchExtension;
+	private $_fullFileSystemPath;
 
 	/**
 	 * @param $path
+	 * @param $fullFileSystemPath
 	 */
-	function __construct($path)
+	function __construct($path, $fullFileSystemPath)
 	{
 		$this->_fullTemplatePath = $path;
+		$this->_fullFileSystemPath = $fullFileSystemPath;
 		$this->init($path);
 	}
 
