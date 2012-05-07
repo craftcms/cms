@@ -43,14 +43,6 @@ class PathService extends Component
 	/**
 	 * @return string
 	 */
-	public function getBlockTypesPath()
-	{
-		return $this->appPath.'blocktypes/';
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getResourcesPath()
 	{
 		return $this->appPath.'resources/';

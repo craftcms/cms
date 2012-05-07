@@ -55,22 +55,7 @@ class BlocksService extends Component
 	public function getBlockTypes()
 	{
 		if (!isset($this->_blockTypes))
-		{
-			$this->_blockTypes = array();
-
-			if (($files = @glob(b()->path->blockTypesPath."*Block.php")) !== false)
-			{
-				foreach ($files as $file)
-				{
-					$className = pathinfo($file, PATHINFO_FILENAME);
-					if (substr($className, 0, 4) !== 'Base')
-					{
-						$className = __NAMESPACE__.'\\'.$className;
-						$this->_blockTypes[] = new $className;
-					}
-				}
-			}
-		}
+			$this->_blockTypes = ComponentHelper::getComponents('blocktypes', 'Block');
 
 		return $this->_blockTypes;
 	}
