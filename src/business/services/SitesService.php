@@ -134,28 +134,42 @@ class SitesService extends Component
 	}
 
 	/**
-	 * Gets the current site model by Url
+	 * Returns the current site.
 	 * @return Site
 	 */
 	public function getCurrent()
 	{
 		if ($this->_currentSite === null)
 		{
-			// Try to find the site that matches the request URL
-			$serverName = b()->request->serverName;
-			$httpServerName = 'http://'.$serverName;
-			$httpsServerName = 'https://'.$serverName;
-
-			$site = Site::model()->find(
-				'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
-			);
-
-			// Get the primary site if we can't find a site with a URL match
-			if (!$site)
+			// Is a site being requested index.php?
+			if (defined('BLOCKS_SITE'))
 			{
 				$site = Site::model()->findByAttributes(array(
-					'primary' => true
+					'handle' => BLOCKS_SITE
 				));
+			}
+
+			if (empty($site))
+			{
+				// Try to find the site that matches the request URL
+				$serverName = b()->request->serverName;
+				$httpServerName = 'http://'.$serverName;
+				$httpsServerName = 'https://'.$serverName;
+
+				$site = Site::model()->find(
+					'url=:url OR url=:httpUrl OR url=:httpsUrl', array(':url' => $serverName, ':httpUrl' => $httpServerName, ':httpsUrl' => $httpsServerName)
+				);
+
+				if (empty($site))
+				{
+					// Just get the primary site
+					$site = Site::model()->findByAttributes(array(
+						'primary' => true
+					));
+
+					if (empty($site))
+						throw new Exception('There is no primary site.');
+				}
 			}
 
 			$this->_currentSite = $site;
