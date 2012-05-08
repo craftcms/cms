@@ -185,7 +185,7 @@ class App extends \CWebApplication
 	{
 		if ($this->request->mode == RequestMode::Action)
 		{
-			$plugin = $this->request->actionPlugin;
+			$plugin = $this->request->pluginHandle;
 			if ($plugin !== false)
 			{
 				if ($plugin === null)
