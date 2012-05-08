@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * CP functions
  */
-class CpVariable extends Component
+class CpVariable
 {
 	/**
 	 * Get the sections of the CP.
