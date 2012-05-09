@@ -31,7 +31,23 @@ class DashboardVariable
 	 */
 	public function userwidgets()
 	{
+		$widgetIds = array();
 		$widgets = b()->dashboard->getUserWidgets();
 		return $widgets;
+	}
+
+	/**
+	 * Returns the user's widget IDs.
+	 * @return array
+	 */
+	public function userwidgetids()
+	{
+		$widgetIds = array();
+		$widgets = b()->dashboard->getUserWidgets();
+		foreach ($widgets as $widget)
+		{
+			$widgetIds[] = $widget->id;
+		}
+		return $widgetIds;
 	}
 }

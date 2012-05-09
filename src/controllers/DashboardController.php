@@ -44,4 +44,17 @@ class DashboardController extends Controller
 
 		$this->loadRequestedTemplate();
 	}
+
+	/**
+	 * Returns 
+	 */
+	public function actionGetWidgetHtml()
+	{
+		$widgetId = b()->request->getRequiredParam('widgetId');
+		$widget = b()->dashboard->getWidgetById($widgetId);
+		if (!$widget)
+			throw new Exception('No widget exists with the ID '.$widgetId);
+
+		$this->loadTemplate('dashboard/_widget', array('widget' => $widget));
+	}
 }

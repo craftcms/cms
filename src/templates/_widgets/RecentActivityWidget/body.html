@@ -1,9 +1,8 @@
-<div class="sample"></div>
-<table class="pane-body">
+<table class="data">
 	{foreach widget.actions as action}
 	<tr>
-		<td class="pane-item">{:action.action}</td>
-		<td class="pane-item date">{:action.date}</td>
+		<td>{:action.action}</td>
+		<td class="timestamp">{:action.date}</td>
 	</tr>
 	{/foreach}
 </table>

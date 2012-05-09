@@ -27,7 +27,11 @@ class DashboardService extends Component
 	 */
 	public function getWidgetById($widgetId)
 	{
-		return Widget::model()->findById($widgetId);
+		$widget = b()->db->createCommand()
+			->from('widgets')
+			->where(array('id' => $widgetId, 'user_id' => b()->users->current->id))
+			->queryRow();
+		return Widget::model()->populateSubclassRecord($widget);
 	}
 
 	/**
@@ -109,6 +113,15 @@ class DashboardService extends Component
 
 				if (!empty($widgetData['settings']))
 					$widget->setSettings($widgetData['settings']);
+			}
+
+			if (isset($settings['delete']))
+			{
+				foreach ($settings['delete'] as $widgetId)
+				{
+					b()->db->createCommand()->delete('widgetsettings', array('widget_id'=>$widgetId));
+					b()->db->createCommand()->delete('widgets',        array('id'=>$widgetId));
+				}
 			}
 
 			$transaction->commit();

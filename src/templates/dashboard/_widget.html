@@ -1,0 +1,11 @@
+<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
+	<h2>{:widget.title}</h2>
+	{if widget.getActionButtons}
+		<div class="actions">
+			{foreach widget.getActionButtons as label => url}
+				<a href="{:b.url.url(url)}" class="btn light">{:label}</a>
+			{/foreach}
+		</div>
+	{/if}
+	{:widget.displayBody}
+</div>
