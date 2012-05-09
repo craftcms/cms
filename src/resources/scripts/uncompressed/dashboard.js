@@ -1,110 +1,80 @@
 (function($) {
 
 
-var Dashboard = b.Base.extend({
+b.Dashboard = b.Base.extend({
 
-	dom: {},
-	widgets: {},
-	cols: [],
-	totalWidgets: 0,
-	showingSidebar: false,
+	$alerts: null,
+	$container: null,
+	$widgets: null,
 
-	init: function()
+	cols: null,
+	colWidth: null,
+	widgetIds: null,
+	loadingWidget: -1,
+
+	init: function(widgetIds)
 	{
-		this.dom.$alerts = $('#alerts');
-		this.dom.$container = $('#widgets');
-		this.dom.$sidebarBtn = $('#sidebar-btn');
-		this.dom.$sidebar = $('#dashboard-sidebar');
+		this.$alerts = $('#alerts');
+		this.$container = $('#widgets');
+		this.$widgets = $();
 
-		this.getWidgetHandles();
+		// Set the columns
+		this.setCols();
 
-		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
-		{
-			var widgetId = $(this.dom.$widgetHandles[i]).attr('data-widget-id'),
-				elem = document.getElementById(widgetId);
-
-			if (elem)
-			{
-				this.widgets[widgetId] = new Widget(elem);
-				this.widgets[widgetId].$elem.css('zIndex', i+1);
-				this.totalWidgets++;
-			}
-		}
-
-		this.widgetSort = new b.ui.DragSort(this.dom.$widgetHandles, {
-			axis: 'y',
-			helper: '<ul class="widget-handles dragging" />',
-			onSortChange: $.proxy(this, 'onWidgetMove')
-		});
+		// Start loading the widgets
+		this.widgetIds = widgetIds;
+		this.loadNextWidget();
 
 		// setup events
-		this.addListener($('a.remove', this.dom.$widgetHandles), 'click', 'onWidgetRemove');
-		this.addListener(this.dom.$sidebarBtn, 'click', 'toggleSidebar');
-		this.addListener(b.$window, 'resize', 'onWindowResize');
-
-		// set the columns
-		this.setCols();
+		this.addListener(b.$window, 'resize', 'setCols');
 
 		// do the version check
 		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
 			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
 	},
 
-	getWidgetHandles: function()
+	loadNextWidget: function()
 	{
-		this.dom.$widgetHandles = $('ul.widget-handles > li', this.dom.$sidebar);
-	},
-
-	getWidget: function(i)
-	{
-		return typeof this.dom.$widgetHandles[i] != 'undefined' ? this.getWidgetFromHandle(this.dom.$widgetHandles[i]) : false;
-	},
-
-	getWidgetFromHandle: function(handle)
-	{
-		var widgetId = $(handle).attr('data-widget-id');
-		return typeof this.widgets[widgetId] != 'undefined' ? this.widgets[widgetId] : false;
-	},
-
-	onWindowResize: function()
-	{
-		this.setCols(true);
-	},
-
-	setCols: function(animate, widgetOffsets)
-	{
-		var totalCols = Math.floor((this.dom.$container.width() + Dashboard.gutterWidth) / (Dashboard.minColWidth + Dashboard.gutterWidth));
-
-		//if (totalCols > this.totalWidgets)
-		//	totalCols = this.totalWidgets;
-
-		if (this.totalCols !== (this.totalCols = totalCols))
+		this.loadingWidget++;
+		if (typeof this.widgetIds[this.loadingWidget] != 'undefined')
 		{
-			this.refreshCols(animate, widgetOffsets);
+			var widgetId = this.widgetIds[this.loadingWidget];
+			$.get(b.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
+				var $widget = $(response).css('opacity', 0);
+				this.placeWidget($widget);
+				$widget.animate({opacity: 1}, 'fast');
+				this.$widgets = this.$widgets.add($widget);
+				this.loadNextWidget();
+			}, this));
+		}
+	},
+
+	setCols: function()
+	{
+		var totalCols = Math.floor(this.$container.width() / b.Dashboard.minColWidth);
+
+		if (totalCols !== this.totalCols)
+		{
+			this.totalCols = totalCols;
+			this.refreshCols();
 			return true;
 		}
 
 		return false;
 	},
 
-	refreshCols: function(animate, widgetOffsets)
+	refreshCols: function()
 	{
-		// Record the old widget offsets and widths
-		if (animate && typeof widgetOffsets == 'undefined')
-		{
-			widgetOffsets = this.getWidgetOffsets();
-		}
-
 		// Detach the widgets before we remove the columns so they keep their events
-		for (var i in this.widgets)
-		{
-			this.widgets[i].$elem.detach();
-		}
+		this.$widgets.detach();
 
 		// Remove the old columns
-		for (var i = 0; i < this.cols.length; i++)
+		if (this.cols)
 		{
-			this.cols[i].remove();
+			for (var i = 0; i < this.cols.length; i++)
+			{
+				this.cols[i].remove();
+			}
 		}
 
 		// Create the new columns
@@ -116,136 +86,36 @@ var Dashboard = b.Base.extend({
 			this.cols[i] = new Col(this, i);
 		}
 
-		// Place the widgets in the order of the handles
-		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
+		// Place the widgets
+		for (var i = 0; i < this.$widgets.length; i++)
 		{
-			// add it to the shortest column
-			var widget = this.getWidget(i);
-			if (widget)
-			{
-				var shortestCol = this.getShortestCol();
-				shortestCol.addWidget(widget.elem);
-			}
-		}
-
-		this.relaxWidgets();
-
-		// animate the widgets into place
-		if (animate)
-		{
-			var $lastVisibleHandle = this.dom.$widgetHandles.not('.hidden').last(),
-				lastIndex = $.inArray($lastVisibleHandle[0], this.dom.$widgetHandles);
-
-			for (var i = 0; i <= lastIndex; i++)
-			{
-				var widget = this.getWidget(i);
-				if (widget)
-				{
-					// clear any current animations
-					widget.$elem.stop();
-
-					// get the new settled offset and width
-					var settledOffset = widget.$elem.offset(),
-						settledWidth = widget.$elem.width();
-
-					// put it back where it was
-					widget.$elem.css({
-						top: widgetOffsets[i].top - settledOffset.top,
-						left: widgetOffsets[i].left - settledOffset.left,
-						width: widgetOffsets[i].width
-					});
-
-					var onComplete = (i == lastIndex) ? $.proxy(this, 'relaxWidgets') : null;
-
-					widget.$elem.animate({top: 0, left: 0, width: settledWidth}, onComplete);
-				}
-			}
+			this.placeWidget(this.$widgets[i]);
 		}
 	},
 
-	relaxWidgets: function()
+	placeWidget: function(widget)
 	{
-		for (var i in this.widgets)
-		{
-			this.widgets[i].$elem.css({top: 0, left: 0, width: 'auto'});
-		}
-	},
-
-	getWidgetOffsets: function()
-	{
-		this.relaxWidgets();
-
-		var widgetOffsets = [];
-
-		for (var i = 0; i < this.dom.$widgetHandles.length; i++)
-		{
-			var widget = this.getWidget(i);
-			if (widget)
-			{
-				widgetOffsets[i] = widget.$elem.offset();
-				widgetOffsets[i].width = widget.$elem.width();
-			}
-		}
-
-		return widgetOffsets;
+		var shortestCol = this.getShortestCol();
+		shortestCol.addWidget(widget);
 	},
 
 	getShortestCol: function()
 	{
-		var shortestCol;
+		var shortestCol, shortestColHeight;
 
-		for (c in this.cols)
+		for (var i = 0; i < this.cols.length; i++)
 		{
-			if (typeof shortestCol == 'undefined' || this.cols[c].height < shortestCol.height)
+			var col = this.cols[i],
+				colHeight = this.cols[i].getHeight();
+
+			if (typeof shortestCol == 'undefined' || colHeight < shortestColHeight)
 			{
-				shortestCol = this.cols[c];
+				shortestCol = col;
+				shortestColHeight = colHeight;
 			}
 		}
 
 		return shortestCol;
-	},
-
-	toggleSidebar: function()
-	{
-		// stop any current animations
-		this.dom.$container.stop();
-		this.dom.$sidebar.stop();
-
-		if (!this.showingSidebar)
-		{
-			var targetContainerMargin = Dashboard.sidebarWidth,
-				targetSidebarPos = -10;
-
-			this.dom.$sidebarBtn.addClass('sel');
-		}
-		else
-		{
-			var targetContainerMargin = 0,
-				targetSidebarPos = -(Dashboard.sidebarWidth);
-
-			this.dom.$sidebarBtn.removeClass('sel');
-		}
-
-		// get the current widget offsets
-		var widgetOffsets = this.getWidgetOffsets();
-
-		// record the current container margin, and stage the target one
-		var currentContainerMargin = this.dom.$container.css('marginRight');
-		this.dom.$container.css('marginRight', targetContainerMargin);
-
-		// set the new cols if necessary, otherwise just animate the margin
-		if (!this.setCols(true, widgetOffsets))
-		{
-			// restore the current margin, and animate to the target
-			this.dom.$container.css('marginRight', currentContainerMargin);
-			this.dom.$container.animate({marginRight: targetContainerMargin});
-		}
-
-		// slide the sidebar
-		this.dom.$sidebar.stop().animate({right: targetSidebarPos});
-
-		// invert the showingSidebar state
-		this.showingSidebar = !this.showingSidebar;
 	},
 
 	onWidgetMove: function()
@@ -283,10 +153,10 @@ var Dashboard = b.Base.extend({
 		var widget = this.getWidgetFromHandle($handle);
 		if (widget)
 		{
-			var containerOffset = this.dom.$container.offset(),
+			var containerOffset = this.$container.offset(),
 				widgetOffset = widget.$elem.offset(),
 				width = widget.$elem.width();
-			widget.$elem.appendTo(this.dom.$container);
+			widget.$elem.appendTo(this.$container);
 			widget.$elem.css({
 				position: 'absolute',
 				display: 'block',
@@ -310,142 +180,66 @@ var Dashboard = b.Base.extend({
 	{
 		if (data && textStatus == 'success' && data.alerts.length)
 		{
-			var startHeight = this.dom.$alerts.height(),
+			var startHeight = this.$alerts.height(),
 				alerts = [];
 
 			// add the alerts w/ opacity:0
 			for (var i = 0; i < data.alerts.length; i++)
 			{
 				var $alert = $('<div class="alert"><p>'+data.alerts[i]+'</p></div>');
-				this.dom.$alerts.append($alert);
+				this.$alerts.append($alert);
 				$alert.css({opacity: 0});
 				$alert.delay((i+1)*b.fx.delay).animate({opacity: 1});
 			}
 
 			// make room for them
-			var endHeight = this.dom.$alerts.height() + 20;
-			this.dom.$alerts.height(startHeight);
-			this.dom.$alerts.animate({height: endHeight}, $.proxy(function() {
-				this.dom.$alerts.height('auto');
+			var endHeight = this.$alerts.height() + 20;
+			this.$alerts.height(startHeight);
+			this.$alerts.animate({height: endHeight}, $.proxy(function() {
+				this.$alerts.height('auto');
 			}, this));
 		}
 	}
 },
 {
-	gutterWidth: 20,
-	minColWidth: 300,
+	minColWidth: 325,
 	sidebarWidth: 240
 });
 
 
 var Col = b.Base.extend({
 
+	dashboard: null,
+	index: null,
+
+	$outerContainer: null,
+	$innerContainer: null,
+
 	init: function(dashboard, index)
 	{
 		this.dashboard = dashboard;
 		this.index = index;
-		this.dom = {};
 
-		this.dom.outerDiv = document.createElement('div');
-		this.dom.outerDiv.className = 'col';
-		this.dom.outerDiv.style.width = this.dashboard.colWidth+'%';
-		this.dashboard.dom.$container.append(this.dom.outerDiv);
+		this.$outerContainer = $('<div class="col" style="width: '+this.dashboard.colWidth+'%"/>').appendTo(this.dashboard.$container);
+		this.$innerContainer = $('<div class="col-inner">').appendTo(this.$outerContainer);
+	},
 
-		this.dom.innerDiv = document.createElement('div');
-		this.dom.innerDiv.className = 'col-inner';
-		this.dom.outerDiv.appendChild(this.dom.innerDiv);
-
-		this.height = 0;
+	getHeight: function()
+	{
+		return this.$outerContainer.height();
 	},
 
 	addWidget: function(widget)
 	{
-		this.dom.innerDiv.appendChild(widget);
-		this.height += $(widget).outerHeight();
+		this.$innerContainer.append(widget);
 	},
 
 	remove: function()
 	{
-		$(this.dom.outerDiv).remove();
+		this.$outerContainer.remove();
 	}
 
 });
-
-
-var Widget = b.Base.extend({
-
-	elem: null,
-	$elem: null,
-	id: null,
-	dom: null,
-	expanded: false,
-
-	init: function(elem, i)
-	{
-		this.elem = elem;
-		this.$elem = $(elem);
-		this.id = this.$elem.attr('id');
-
-		this.dom = {};
-		this.dom.$settingsBtn = $('.pane-head .settings-btn', this.$elem);
-
-		if (this.dom.$settingsBtn.length)
-		{
-			this.dom.$settingsOuterContainer = $('.settings-outer-container', this.$elem);
-			this.dom.$settingsInnerContainer = this.dom.$settingsOuterContainer.children();
-			this.dom.$settings = this.dom.$settingsInnerContainer.children();
-			this.dom.$saveBtn = $('.btn.submit', this.dom.$settings);
-			this.dom.$cancelBtn = $('.btn.cancel', this.dom.$settings);
-
-			this.addListener(this.dom.$settingsBtn, 'click', 'toggleSettings');
-			this.addListener(this.dom.$saveBtn, 'click', 'saveSettings');
-			this.addListener(this.dom.$cancelBtn, 'click', 'hideSettings');
-		}
-	},
-
-	toggleSettings: function()
-	{
-		if (!this.expanded)
-			this.showSettings();
-		else
-			this.hideSettings();
-	},
-
-	showSettings: function()
-	{
-		this.dom.$settingsOuterContainer.addClass('expanded');
-		var height = this.dom.$settingsInnerContainer.height();
-		this.dom.$settingsInnerContainer.css('position', 'absolute');
-		this.dom.$settingsOuterContainer.stop().animate({height: height}, $.proxy(function() {
-			this.dom.$settingsInnerContainer.css('position', 'static');
-			this.dom.$settingsOuterContainer.height('auto');
-		}, this));
-
-		this.dom.$settingsBtn.addClass('sel');
-		this.expanded = true;
-	},
-
-	hideSettings: function()
-	{
-		var height = this.dom.$settingsInnerContainer.height();
-		this.dom.$settingsOuterContainer.height(height);
-		this.dom.$settingsInnerContainer.css('position', 'absolute');
-		this.dom.$settingsOuterContainer.stop().animate({height: 0}, $.proxy(function() {
-			this.dom.$settingsOuterContainer.removeClass('expanded');
-		}, this));
-		this.dom.$settingsBtn.removeClass('sel');
-		this.expanded = false;
-	},
-
-	saveSettings: function()
-	{
-		this.hideSettings();
-	}
-
-});
-
-
-b.dashboard = new Dashboard();
 
 
 })(jQuery);

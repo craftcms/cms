@@ -27,7 +27,11 @@ class DashboardService extends Component
 	 */
 	public function getWidgetById($widgetId)
 	{
-		return Widget::model()->findById($widgetId);
+		$widget = b()->db->createCommand()
+			->from('widgets')
+			->where(array('id' => $widgetId, 'user_id' => b()->users->current->id))
+			->queryRow();
+		return Widget::model()->populateSubclassRecord($widget);
 	}
 
 	/**

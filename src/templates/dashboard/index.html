@@ -26,50 +26,8 @@
 		{/foreach}
 	</div>--}
 
-	<div id="widgets" class="grid">
-		{foreach b.dashboard.userwidgets as widget}
-			<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
-				<h2>{:widget.title}</h2>
-				{if widget.getActionButtons}
-					<div class="actions">
-						{foreach widget.getActionButtons as label => url}
-							<a href="{:b.url.url(url)}" class="btn light">{:label}</a>
-						{/foreach}
-					</div>
-				{/if}
-				{!--if widget.displaySettings}
-					<div class="settings-outer-container"><div class="settings-inner-container">
-						<div class="settings">
-							{:widget.displaySettings}
-							<div class="buttons">
-								<a class="btn submit"><span class="label">Save</span></a>
-								<a class="btn cancel"><span class="label">Cancel</span></a>
-							</div>
-						</div>
-					</div></div>
-				{/if--}
+	<div id="widgets" class="grid"></div>
 
-				{:widget.displayBody}
-			</div>
-		{/foreach}
-	</div>
-
-	<div id="dashboard-sidebar" class="sidebar">
-		<div class="pane">
-			<div class="pane-head">
-				<h6>Widget Order</h6>
-			</div>
-			<div class="pane-body">
-				<ul class="widget-handles">
-					{foreach b.dashboard.userwidgets as widget}
-					<li class="pane-item {if !widget.displayBody}hidden{/if}" data-widget-id="widget{:widget.id}">
-						<span class="grab"></span><span class="title">{:widget.title}</span><a class="remove" title="Remove"></a>
-					</li>
-					{/foreach}
-				</ul>
-			</div>
-		</div>
-	</div>
 {/region}
 
 {region "scripts"}
@@ -81,4 +39,8 @@
 	{/if--}
 
 	{include "_includes/js_include" file="dashboard.js"}
+
+	<script type="text/javascript">
+		b.dashboard = new b.Dashboard([{:b.dashboard.userwidgetids.join}]);
+	</script>
 {/region}
