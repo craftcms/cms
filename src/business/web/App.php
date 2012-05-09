@@ -34,6 +34,7 @@ class App extends \CWebApplication
 		Blocks::import('business.logging.FileLogRoute');
 		Blocks::import('business.logging.WebLogRoute');
 		Blocks::import('business.logging.ProfileLogRoute');
+		Blocks::import('business.logging.DbLogRoute');
 		b()->getComponent('log');
 
 		// Manually load the request object as early as possible.

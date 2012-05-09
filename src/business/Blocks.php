@@ -210,6 +210,17 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
+	 * @param $msg
+	 * @param string $category
+	 */
+	public static function logActivity($msg, $category = 'blocks')
+	{
+		$logger = self::getLogger();
+		$logger->log($msg, 'activity', $category);
+	}
+
+	/**
+	 * @static
 	 * @param $file
 	 */
 	private static function _importFile($file)

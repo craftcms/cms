@@ -159,6 +159,10 @@ return CMap::mergeArray(
 					array(
 						'class'         => 'Blocks\ProfileLogRoute',
 						'showInFireBug' => true,
+					),
+					array(
+						'class'         => 'Blocks\DbLogRoute',
+
 					)
 				),
 			),
