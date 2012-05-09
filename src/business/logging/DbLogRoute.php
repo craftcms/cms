@@ -36,7 +36,7 @@ class DbLogRoute extends \CDbLogRoute
 	{
 		$db = $this->getDbConnection();
 			$db->createCommand()->createTable($tableName, array(
-					'user_id'       => array('type' => AttributeType::Int, 'required' => true),
+					'user_id'       => array('type' => AttributeType::Int),
 					'category'      => array('type' => AttributeType::Varchar, 'maxLength' => 200, 'required' => true),
 					'activity_key'  => array('type' => AttributeType::Varchar, 'maxLength' => 400, 'required' => true),
 					'activity_data' => AttributeType::Text,
