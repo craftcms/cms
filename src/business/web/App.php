@@ -29,6 +29,9 @@ class App extends \CWebApplication
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
 		Blocks::import('business.services.ConfigService');
+		Blocks::import('business.enums.AttributeType');
+		Blocks::import('business.utils.DatabaseHelper');
+		Blocks::import('business.utils.Json');
 		Blocks::import('business.Component');
 		Blocks::import('business.Plugin');
 		Blocks::import('business.logging.FileLogRoute');

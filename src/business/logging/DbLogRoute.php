@@ -6,14 +6,25 @@ namespace Blocks;
  */
 class DbLogRoute extends \CDbLogRoute
 {
+	/**
+	 *
+	 */
 	public function init()
 	{
+		// Purposefully not calling parent::init() here because it's stupid.
 		$this->autoCreateLogTable = true;
 		$this->levels = 'activity';
 		$this->connectionID = 'db';
-		$this->logTableName = b()->config->getTablePrefix().'activity';
+		$this->logTableName = 'activity';
 
-		parent::init();
+		if($this->autoCreateLogTable)
+		{
+			$activityTable = $this->getDbConnection()->schema->getTable('{{activity}}');
+			if (!(bool)$activityTable)
+			{
+				$this->createLogTable($this->getDbConnection(), $this->logTableName);
+			}
+		}
 	}
 
 	/**
@@ -23,23 +34,19 @@ class DbLogRoute extends \CDbLogRoute
 	 */
 	protected function createLogTable($db, $tableName)
 	{
-		$driver = $db->getDriverName();
+		$db = $this->getDbConnection();
+			$db->createCommand()->createTable($tableName, array(
+					'user_id'       => array('type' => AttributeType::Int, 'required' => true),
+					'category'      => array('type' => AttributeType::Varchar, 'maxLength' => 200, 'required' => true),
+					'activity_key'  => array('type' => AttributeType::Varchar, 'maxLength' => 400, 'required' => true),
+					'activity_data' => AttributeType::Text,
+					'logtime'       => array('type' => AttributeType::Int, 'required' => true)
+				));
 
-		if($driver === 'mysql')
-			$logID = '`id` INTEGER NOT NULL AUTO_INCREMENT PRIMARY KEY';
-		else if ($driver === 'pgsql')
-			$logID = '`id` SERIAL PRIMARY KEY';
-		else
-			$logID = '`id` INTEGER NOT NULL PRIMARY KEY';
 
-		$sql = "CREATE TABLE `{$tableName}`
-				 ({$logID},
-					`category` VARCHAR(128),
-					`message` TEXT,
-					`logtime` INTEGER,
-					INDEX `category_idx` (`category`),
-					INDEX `logtime_idx` (`logtime`));";
-		$db->createCommand($sql)->execute();
+		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
+		$db->createCommand()->createIndex('logtime_idx', $tableName, 'logtime', false);
+		$db->createCommand()->addForeignKey('activity_users_fk', $tableName, 'user_id', 'users', 'id');
 	}
 
 	/**
@@ -49,18 +56,21 @@ class DbLogRoute extends \CDbLogRoute
 	protected function processLogs($logs)
 	{
 		$sql="
-			INSERT INTO {$this->logTableName}
-			(category, message, logtime) VALUES
-			(:category, :message, :logtime)
+			INSERT INTO blx_{$this->logTableName}
+			(user_id, category, activity_key, activity_data, logtime) VALUES
+			(:userId, :category, :activityKey, :activityData, :logtime)
 		";
 
 		$command = $this->getDbConnection()->createCommand($sql);
 
 		foreach($logs as $log)
 		{
-			$command->bindValue(':category',$log[2]);
-			$command->bindValue(':message',$log[0]);
-			$command->bindValue(':logtime',(int)$log[3]);
+			$messageParts = explode('///', $log[0]);
+			$command->bindValue(':userId', (int)$messageParts[0]);
+			$command->bindValue(':category', $log[2]);
+			$command->bindValue(':activityKey', $messageParts[1]);
+			$command->bindValue(':activityData', $messageParts[2]);
+			$command->bindValue(':logtime', (int)$log[3]);
 			$command->execute();
 		}
 	}

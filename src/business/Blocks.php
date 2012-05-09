@@ -210,13 +210,17 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @param $msg
+	 * @param        $userId
+	 * @param        $msgKey
 	 * @param string $category
+	 * @param array  $data
 	 */
-	public static function logActivity($msg, $category = 'blocks')
+	public static function logActivity($userId, $msgKey, $category, $data = array())
 	{
+		$encodedData = Json::encode($data);
+
 		$logger = self::getLogger();
-		$logger->log($msg, 'activity', $category);
+		$logger->log($userId.'///'.$msgKey.'///'.$encodedData, 'activity', $category);
 	}
 
 	/**

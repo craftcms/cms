@@ -188,7 +188,7 @@ class DbCommand extends \CDbCommand
 		$columns = array_merge(
 			array('id' => AttributeType::PK),
 			$columns,
-			DatabaseHelper::getAuditColumnDefinition()
+			($table !== 'activity' ? DatabaseHelper::getAuditColumnDefinition() : array())
 		);
 
 		foreach ($columns as $col => $settings)
