@@ -115,6 +115,15 @@ class DashboardService extends Component
 					$widget->setSettings($widgetData['settings']);
 			}
 
+			if (isset($settings['delete']))
+			{
+				foreach ($settings['delete'] as $widgetId)
+				{
+					b()->db->createCommand()->delete('widgetsettings', array('widget_id'=>$widgetId));
+					b()->db->createCommand()->delete('widgets',        array('id'=>$widgetId));
+				}
+			}
+
 			$transaction->commit();
 		}
 		catch (\Exception $e)
