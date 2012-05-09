@@ -5,8 +5,8 @@ b.Dashboard = b.Base.extend({
 
 	$alerts: null,
 	$container: null,
-	$widgets: null,
 
+	widgets: null,
 	cols: null,
 	colWidth: null,
 	widgetIds: null,
@@ -16,7 +16,7 @@ b.Dashboard = b.Base.extend({
 	{
 		this.$alerts = $('#alerts');
 		this.$container = $('#widgets');
-		this.$widgets = $();
+		this.widgets = [];
 
 		// Set the columns
 		this.setCols();
@@ -43,7 +43,7 @@ b.Dashboard = b.Base.extend({
 				var $widget = $(response).css('opacity', 0);
 				this.placeWidget($widget);
 				$widget.animate({opacity: 1}, 'fast');
-				this.$widgets = this.$widgets.add($widget);
+				this.widgets.push($widget);
 				this.loadNextWidget();
 			}, this));
 		}
@@ -66,7 +66,10 @@ b.Dashboard = b.Base.extend({
 	refreshCols: function()
 	{
 		// Detach the widgets before we remove the columns so they keep their events
-		this.$widgets.detach();
+		for (var i = 0; i < this.widgets.length; i++)
+		{
+			this.widgets[i].detach();
+		}
 
 		// Remove the old columns
 		if (this.cols)
@@ -87,9 +90,9 @@ b.Dashboard = b.Base.extend({
 		}
 
 		// Place the widgets
-		for (var i = 0; i < this.$widgets.length; i++)
+		for (var i = 0; i < this.widgets.length; i++)
 		{
-			this.placeWidget(this.$widgets[i]);
+			this.placeWidget(this.widgets[i]);
 		}
 	},
 
