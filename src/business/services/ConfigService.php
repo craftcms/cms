@@ -68,6 +68,7 @@ class ConfigService extends Component
 				$tablePrefix = rtrim($tablePrefix, '_').'_';
 			$this->_tablePrefix = $tablePrefix;
 		}
+
 		return $this->_tablePrefix;
 	}
 }
