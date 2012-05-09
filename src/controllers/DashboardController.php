@@ -22,4 +22,26 @@ class DashboardController extends Controller
 		$r = array('alerts' => $alerts);
 		$this->returnJson($r);
 	}
+
+	/**
+	 * Saves the user's dashboard settings
+	 */
+	public function actionSaveSettings()
+	{
+		$this->requirePostRequest();
+
+		$widgetsPost = b()->request->getPost('widgets');
+
+		if (b()->dashboard->saveSettings($widgetsPost))
+		{
+			b()->user->setMessage(MessageType::Notice, 'Dashboard settings saved.');
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			b()->user->setMessage(MessageType::Error, 'Couldn’t save dashboard settings.');
+		}
+
+		$this->loadRequestedTemplate();
+	}
 }

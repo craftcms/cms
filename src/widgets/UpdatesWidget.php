@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class UpdatesWidget extends Widget
 {
-	public $widgetName = 'Updates';
+	public $name = 'Updates';
 	public $title = 'Updates';
 
 	public $updates = array();
@@ -59,11 +59,6 @@ class UpdatesWidget extends Widget
 			}
 		}
 
-		if ($this->updates)
-		{
-			return parent::displayBody();
-		}
-
-		return false;
+		return parent::displayBody();
 	}
 }

@@ -13,7 +13,7 @@
 					<form method="post" action="">
 						<input type="hidden" name="action" value="content/createEntry" />
 						<input type="hidden" name="sectionId" value="{:section.id}" />
-						<a class="btn light formsubmit" data-icon="n">New entry</a>
+						<a class="btn light addbtn formsubmit">New entry</a>
 					</form>
 				</li>
 				<li>
@@ -39,6 +39,6 @@
 	{/foreach}
 
 	<div class="buttons">
-		<a href="{:b.url.base}content/sections/new" class="btn light" data-icon="n">New section</a>
+		<a href="{:b.url.base}content/sections/new" class="btn light addbtn">New section</a>
 	</div>
 {/region}

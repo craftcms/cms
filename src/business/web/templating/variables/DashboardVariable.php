@@ -16,10 +16,20 @@ class DashboardVariable
 	}
 
 	/**
+	 * Returns all installed widgets.
+	 * @return array
+	 */
+	public function allwidgets()
+	{
+		$widgets = b()->dashboard->getAllWidgets();
+		return $widgets;
+	}
+
+	/**
 	 * Returns the user's widgets.
 	 * @return array
 	 */
-	public function widgets()
+	public function userwidgets()
 	{
 		$widgets = b()->dashboard->getUserWidgets();
 		return $widgets;

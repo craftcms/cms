@@ -6,7 +6,8 @@ namespace Blocks;
  */
 class FeedWidget extends Widget
 {
-	public $widgetName = 'Feed';
+	public $name = 'Feed';
+	public $multipleInstances = true;
 
 	public $items = array();
 
@@ -20,11 +21,12 @@ class FeedWidget extends Widget
 	);
 
 	/**
-	 * @access protected
+	 * Returns the widget title.
+	 * @return string
 	 */
-	public function init()
+	public function title()
 	{
-		$this->title = $this->settings['title'];
+		return $this->settings['title'];
 	}
 
 	/**

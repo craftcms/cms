@@ -6,25 +6,47 @@ namespace Blocks;
  */
 class DashboardService extends Component
 {
+	private $_allWidgets;
+
 	/**
-	 * Returns the dashboard widgets for the current user
-	 *
+	 * Returns all installed widgets.
+	 * @return array
+	 */
+	public function getAllWidgets()
+	{
+		if (!isset($this->_allWidgets))
+			$this->_allWidgets = ComponentHelper::getComponents('widgets', 'Widget');
+
+		return $this->_allWidgets;
+	}
+
+	/** 
+	 * Returns a widget by its ID.
+	 * @param int $widgetId
+	 * @return Widget
+	 */
+	public function getWidgetById($widgetId)
+	{
+		return Widget::model()->findById($widgetId);
+	}
+
+	/**
+	 * Returns the dashboard widgets for the current user.
 	 * @return array
 	 */
 	public function getUserWidgets()
 	{
 		$widgets = b()->db->createCommand()
 			->from('widgets')
-			->where('user_id = :id', array(':id' => b()->user->id))
+			->where(array('user_id' => b()->users->current->id))
 			->order('sort_order')
 			->queryAll();
 		return Widget::model()->populateSubclassRecords($widgets);
 	}
 
 	/**
-	 * Assign the default widgets to a user
-	 *
-	 * @param null $userId
+	 * Assign the default widgets to a user.
+	 * @param int $userId
 	 */
 	public function assignDefaultUserWidgets($userId = null)
 	{
@@ -41,5 +63,62 @@ class DashboardService extends Component
 			$widget->sort_order = ($i+1);
 			$widget->save();
 		}
+	}
+
+	/**
+	 * Saves the user's dashboard settings
+	 * @param array $settings
+	 * @return bool
+	 */
+	public function saveSettings($settings)
+	{
+		// Get the current user
+		$user = b()->users->getCurrent();
+		if (!$user)
+			throw new Exception('There is no current user.');
+
+		$transaction = b()->db->beginTransaction();
+		try
+		{
+			if (isset($settings['order']))
+				$widgetIds = $settings['order'];
+			else
+			{
+				$widgetIds = array_keys($settings);
+				if (($deleteIndex = array_search('delete', $widgetIds)) !== false)
+					array_splice($widgetIds, $deleteIndex, 1);
+			}
+
+			foreach ($widgetIds as $order => $widgetId)
+			{
+				$widgetData = $settings[$widgetId];
+
+				$widget = new Widget;
+				$isNewWidget = true;
+
+				if (strncmp($widgetId, 'new', 3) != 0)
+					$widget = $this->getWidgetById($widgetId);
+
+				if (empty($widget))
+					$widget = new Widget;
+
+				$widget->user_id = $user->id;
+				$widget->class = $widgetData['class'];
+				$widget->sort_order = $order+1;
+				$widget->save();
+
+				if (!empty($widgetData['settings']))
+					$widget->setSettings($widgetData['settings']);
+			}
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+
+		return true;
 	}
 }

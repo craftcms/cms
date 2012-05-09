@@ -1,10 +1,14 @@
-<table class="data">
-	<tbody>
-		{foreach widget.updates as update}
-			<tr>
-				<td><strong>{:update.name}</strong> {:update.version} {if update.critical}<div class="badge warning">Critical</div>{/if}</td>
-				<td class="rightalign nowrap light">{:update.date}</td>
-			</tr>
-		{/foreach}
-	</tbody>
-</table>
+{if widget.updates}
+	<table class="data">
+		<tbody>
+			{foreach widget.updates as update}
+				<tr>
+					<td><strong>{:update.name}</strong> {:update.version} {if update.critical}<div class="badge warning">Critical</div>{/if}</td>
+					<td class="rightalign nowrap light">{:update.date}</td>
+				</tr>
+			{/foreach}
+		</tbody>
+	</table>
+{else}
+	<p>No updates available.</p>
+{/if}

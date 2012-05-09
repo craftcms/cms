@@ -54,8 +54,9 @@ class ArrayAdapter extends Adapter
 	}
 
 	/**
-	 * @param $index
-	 * @return string
+	 * Returns the element at a specific index.
+	 * @param mixed $index
+	 * @return mixed
 	 */
 	public function get($index)
 	{
@@ -71,6 +72,15 @@ class ArrayAdapter extends Adapter
 	public function length()
 	{
 		return count($this->_var);
+	}
+
+	/**
+	 * Adds an element(s) to the end of the array
+	 */
+	public function push()
+	{
+		$args = func_get_args();
+		$this->_var = array_merge($this->_var, $args);
 	}
 
 	/**

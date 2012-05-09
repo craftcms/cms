@@ -39,7 +39,8 @@ var scripts =
 	'ui/SelectMenu.js',
 	'ui/LightSwitch.js',
 	'ui/BlockEditor.js',
-	'ui/PasswordInput.js'
+	'ui/PasswordInput.js',
+	'ui/AdminPane.js'
 ];
 
 for (var i = 0; i < scripts.length; i++)

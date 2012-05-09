@@ -1,0 +1,83 @@
+{layout "_layouts/cp" pageTitle="Dashboard Settings" crumbs="dashboard:Dashboard"}
+
+{region "styles"}
+	{!--include "_includes/css_include" file="styles/dashboard-settings.css"--}
+{/region}
+
+{region "main"}
+	<h1>Dashboard Settings</h1>
+
+	<form method="post" action="">
+		<input type="hidden" name="action" value="dashboard/saveSettings" />
+		<input type="hidden" name="redirect" value="dashboard" />
+
+		<h3>My Widgets</h3>
+		<div id="widgetadmin" class="pane inset adminpane" data-input-name="widgets">
+			<div class="list">
+				<ul>
+					{foreach b.dashboard.userwidgets as widget}
+						<li class="item" data-item-id="{:widget.id}">
+							<div class="name">{:widget.title}</div>
+							<div class="type">{:widget.name}</div>
+							<input type="hidden" name="widgets[order][]" value="{:widget.id}" />
+							<input type="hidden" name="widgets[{:widget.id}][class]" value="{:widget.classHandle}" />
+						</li>
+					{/foreach}
+				</ul>
+
+				<div class="btn light menubtn">Add a widget</div>
+				<div class="menu" style="display:none">
+					<ul>
+						{foreach b.dashboard.allwidgets as widget}
+							<li data-widget-class="{:widget.classHandle}" data-widget-title="{:widget.title}">{:widget.name}</li>
+						{/foreach}
+					</ul>
+				</div>
+			</div>
+
+			<div class="settings">
+				{foreach b.dashboard.userwidgets as widget}
+					<?php $idPrefix = new Variable('widgets-'.$widget->id.'-') ?>
+					<?php $namePrefix = new Variable('widgets['.$widget->id.'][settings]') ?>
+					<div data-item-id="{:widget.id}" style="display:none">
+						{:widget.displaySettings(idPrefix, namePrefix)}
+
+						<div class="buttons">
+							<div class="btn done">Done</div>
+							<div class="btn red delete">Delete this widget</div>
+						</div>
+					</div>
+				{/foreach}
+			</div>
+
+			<div class="freshsettings" style="display:none">
+				<div class="buttons">
+					<div class="btn done">Done</div>
+					<div class="btn red delete">Delete this widget</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="buttons">
+			<input type="submit" value="Save settings" class="btn big submit" />
+		</div>
+
+	</form>
+
+	{set newIdPrefix = "widgets-ITEM_ID-"}
+	{set newNamePrefix = "widgets[ITEM_ID][settings]"}
+	{foreach b.dashboard.allwidgets as widget}
+		{set settings = widget.displaySettings(newIdPrefix, newNamePrefix)}
+		{if settings}
+			<div id="freshwidgetsettings-{:widget.classHandle}" style="display:none">
+				{:settings}
+			</div>
+		{/if}
+	{/foreach}
+
+{/region}
+
+
+{region "scripts"}
+	{include "_includes/js_include" file="dashboard-settings.js"}	
+{/region}

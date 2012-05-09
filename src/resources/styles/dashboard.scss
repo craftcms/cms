@@ -1,39 +1,11 @@
 @import "shared";
 
-#body { width: 100%; overflow: hidden; }
-
 /* alerts */
-.alert { margin: 0 -1px 20px; padding: 8px 10px; border: 2px solid #e14545; border-radius: 4px; color: #e14545; background: -webkit-linear-gradient(#fff, #fff5f2); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+#alerts { margin: 30px -30px 0; }
+#alerts .alert { border-top: 1px solid $light; padding: 10px 30px; color: #e14545; background: #fff5f2; }
 
 /* dashboard */
-#dashboard { position: relative; margin: -10px; }
-
-/* cols */
-.col { float: left; }
-.col .col-padding { padding: 10px; }
-
-/* widgets */
 #widgets { position: relative; }
+#widgets .pane { margin: 50px 0; }
 
-.widget table tr td.pane-item:last-child { width: 0.01%; text-align: right; color: #999; white-space: nowrap; }
-.widget table .btn { float: left; }
-
-.widget .settings-outer-container { position: relative; height: 0; overflow: hidden; }
-.widget .settings-outer-container.expanded { border-top: 1px solid #ccc; background: #f3f3f3 url(../images/stripes.gif); }
-.widget .settings-inner-container { bottom: 0; width: 100%; }
-.widget .settings { margin: 10px; padding: 5px 10px; background: rgba(244,244,244,0.85); -webkit-box-shadow: 0 0 5px 5px rgba(244,244,244,0.85); }
-.widget .settings label { display: block; margin: 10px 0 2px; font-weight: bold; color: #666; text-shadow: 0 1px 0 #fff; }
-.widget .settings label:first-child { margin-top: 0; }
-.widget .settings .buttons { margin-top: 15px; border-top: 1px solid #e0e0e0; padding-top: 15px; -webkit-box-shadow: inset 0 1px #fcfcfc; }
-
-.widget .sample { position: absolute; z-index: 1; top: 50%; left: 50%; margin: -40px 0 0 -92px; width: 185px; height: 121px; background: url(../images/sample.png) no-repeat; }
-
-/*-- sidebar --*/
-.sidebar { position: absolute; top: 36px; right: -240px; padding-top: 0; }
-ul.widget-handles li { position: relative; padding: 7px 25px 7px 35px !important; cursor: move; cursor: -webkit-grab; }
-ul.widget-handles li.hidden .title { color: #ccc; }
-ul.widget-handles.dragging li { cursor: -webkit-grabbing; border: solid #eee; border-width: 1px 0; background: #fff; }
-ul.widget-handles li span.grab { display: block; position: absolute; left: 10px; top: 50%; margin-top: -9px; width: 15px; height: 18px; background: url(../images/grab-handle.png) no-repeat 50% 50%; }
-ul.widget-handles li a.remove { display: block; position: absolute; right: 5px; top: 50%; margin-top: -7px; width: 12px; height: 14px; background: url(../images/close.png) no-repeat 50% 50%; opacity: 0; -webkit-transition: opacity 150ms linear; }
-ul.widget-handles li:hover a.remove { opacity: 0.5; }
-ul.widget-handles li a.remove:hover { opacity: 1; }
+#dashboard-sidebar { visibility: hidden; }

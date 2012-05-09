@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class RecentActivityWidget extends Widget
 {
-	public $widgetName = 'Recent Activity';
+	public $name = 'Recent Activity';
 	public $title = 'Recent Activity';
 
 	public $actions = array();

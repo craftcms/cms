@@ -2,147 +2,137 @@
 
 
 /**
- * Menu
+ * Menu Button
  */
-b.ui.Menu = b.Base.extend({
+b.ui.MenuBtn = b.Base.extend({
+
+	$btn: null,
+	menu: null,
+	showingMenu: false,
 
 	/**
 	 * Constructor
 	 */
-	init: function(btn, options, settings, callback)
+	init: function(btn, settings)
 	{
-		// argument mapping
-		if (typeof settings == 'function')
+		this.$btn = $(btn);
+
+		// Is this already a menu button?
+		if (this.$btn.data('menubtn'))
 		{
-			// (btn, options, callback)
-			callback = settings;
-			settings = {};
+			b.log('Double-instantiating a menu button on an element');
+			this.$btn.data('menubtn').destroy();
 		}
 
-		if (typeof callback != 'function') {
-			callback = function(){};
-		}
+		this.$btn.data('menubtn', this);
 
-		this.dom = {};
-		this.dom.btn = btn;
-		this.dom.$btn = $(btn);
-		this.dom.$btnLabel = $('span.label', this.dom.$btn);
+		this.setSettings(settings, b.ui.MenuBtn.defaults);
 
-		this.options = options;
-		this.settings = $.extend({}, b.ui.Menu.defaults, settings);
-		this.callback = callback;
+		var $menu = this.$btn.next('.menu');
+		this.menu = new b.ui.Menu($menu, {
+			onOptionSelect: $.proxy(this, 'onOptionSelect')
+		});
 
-		this.showing = false;
-
-		this.addListener(this.dom.$btn, 'click', 'toggle');
+		this.addListener(this.$btn, 'mousedown', 'onMouseDown');
 	},
 
-	/**
-	 * Build
-	 */
-	build: function()
+	onMouseDown: function(event)
 	{
-		this.dom.ul = document.createElement('ul');
-		this.dom.ul.className = this.settings.ulClass;
-		document.body.appendChild(this.dom.ul);
+		if (event.button != 0 || event.metaKey)
+			return;
 
-		this.dom.options = [];
+		event.preventDefault();
 
-		for (var i = 0; i < this.options.length; i++)
-		{
-			var li = document.createElement('li');
-			li.innerHTML = this.options[i].label;
-			this.dom.ul.appendChild(li);
-
-			$(li).on('click.menu', { option: i }, $.proxy(function(event) {
-				this.select(event.data.option);
-			}, this));
-
-			this.dom.options[i] = li;
-		}
-
-	},
-
-	/**
-	 * Show
-	 */
-	show: function()
-	{
-		// ignore if already showing
-		if (this.showing) return;
-
-		this.dom.$btn.addClass('sel');
-
-		if (!this.dom.ul)
-			this.build();
-
-		var btnOffset = this.dom.$btn.offset(),
-			btnHeight = this.dom.$btn.outerHeight(),
-			btnWidth = this.dom.$btn.outerWidth();
-
-		this.dom.ul.style.top = (btnOffset.top + btnHeight) + 'px';
-		this.dom.ul.style.minWidth = (btnWidth - 2) + 'px';
-
-		if (this.settings.align == b.ui.Menu.ALIGN_LEFT)
-		{
-			this.dom.ul.style.left = (btnOffset.left + 1) + 'px';
-		}
+		if (this.showingMenu)
+			this.hideMenu();
 		else
-		{
-			this.dom.ul.style.right = (btnOffset.right + btnWidth + 1) + 'px';
-		}
+			this.showMenu();
+	},
 
-		this.dom.ul.style.left = (btnOffset.left + 1) + 'px';
-		this.dom.ul.style.display = 'block';
+	showMenu: function()
+	{
+		this.menu.setPosition(this.$btn);
+		this.menu.show();
+		this.$btn.addClass('sel');
+		this.showingMenu = true;
 
-		this.showing = true;
-
-		// wait for this event to finish propagating, and then listen for new clicks
 		setTimeout($.proxy(function() {
-			this.addListener(b.$body, 'click', 'hide');
+			this.addListener(b.$document, 'mousedown', 'onMouseDown');
 		}, this), 1);
 	},
 
-	/**
-	 * Hide
-	 */
-	hide: function()
+	hideMenu: function()
 	{
-		// ignore if not showing
-		if (!this.showing) return;
+		this.menu.hide();
+		this.$btn.removeClass('sel');
+		this.showingMenu = false;
 
-		this.dom.$btn.removeClass('sel');
-		this.dom.ul.style.display = 'none';
-
-		this.removeListener(b.$body, 'click');
-
-		this.showing = false;
+		this.removeListener(b.$document, 'mousedown');
 	},
 
-	/**
-	 * Toggle
-	 */
-	toggle: function()
+	onOptionSelect: function(option)
 	{
-		if (this.showing)
-			this.hide();
-		else
-			this.show();
-	},
-
-	/**
-	 * Select
-	 */
-	select: function(option)
-	{
-		this.callback(option);
+		this.settings.onOptionSelect(option);
 	}
 
-},
-{
-	defaults: { 
-		align: 'left',
-		ulClass: 'menu'
+}, {
+	defaults: {
+		onOptionSelect: function() {}
+	}
+});
+
+
+/**
+ * Menu
+ */
+b.ui.Menu = b.Base.extend({
+
+	settings: null,
+
+	$container: null,
+	$options: null,
+
+	/**
+	 * Constructor
+	 */
+	init: function(container, settings)
+	{
+		this.setSettings(settings, b.ui.Menu.defaults);
+
+		this.$container = $(container).appendTo(b.$body);
+		this.$options = this.$container.find('li');
+
+		this.addListener(this.$options, 'mousedown', 'selectOption');
+	},
+
+	setPosition: function($btn)
+	{
+		var offset = $btn.offset();
+		this.$container.css({
+			top: offset.top + $btn.outerHeight(),
+			left: offset.left,
+			minWidth: $btn.outerWidth()
+		});
+	},
+
+	show: function()
+	{
+		this.$container.show();
+	},
+
+	hide: function()
+	{
+		this.$container.hide();
+	},
+
+	selectOption: function(event)
+	{
+		this.settings.onOptionSelect(event.currentTarget);
+	}
+
+}, {
+	defaults: {
+		onOptionSelect: function() {}
 	}
 });
 

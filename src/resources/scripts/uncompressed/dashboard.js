@@ -75,8 +75,8 @@ var Dashboard = b.Base.extend({
 	{
 		var totalCols = Math.floor((this.dom.$container.width() + Dashboard.gutterWidth) / (Dashboard.minColWidth + Dashboard.gutterWidth));
 
-		if (totalCols > this.totalWidgets)
-			totalCols = this.totalWidgets;
+		//if (totalCols > this.totalWidgets)
+		//	totalCols = this.totalWidgets;
 
 		if (this.totalCols !== (this.totalCols = totalCols))
 		{
@@ -352,7 +352,7 @@ var Col = b.Base.extend({
 		this.dashboard.dom.$container.append(this.dom.outerDiv);
 
 		this.dom.innerDiv = document.createElement('div');
-		this.dom.innerDiv.className = 'col-padding';
+		this.dom.innerDiv.className = 'col-inner';
 		this.dom.outerDiv.appendChild(this.dom.innerDiv);
 
 		this.height = 0;

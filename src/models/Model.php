@@ -215,7 +215,7 @@ abstract class Model extends \CActiveRecord
 	/**
 	 * Returns the current record's settings
 	 */
-	public function getSettings()
+	public function getSettings($test = false)
 	{
 		if (!isset($this->_settings))
 		{
@@ -224,9 +224,9 @@ abstract class Model extends \CActiveRecord
 			if ($this->hasSettings && !$this->isNewRecord)
 			{
 				$settings = b()->db->createCommand()
-					->select('s.name, s.value')
-					->from($this->getSettingsTableName().' s')
-					->where('s.'.$this->getForeignKeyName().' = :id', array(':id' => $this->id))
+					->select('name, value')
+					->from($this->getSettingsTableName())
+					->where(array($this->getForeignKeyName() => $this->id))
 					->queryAll();
 
 				if ($settings)

@@ -24,7 +24,7 @@ class Widget extends Model
 	);
 
 	// Widget subclass properties
-	public $widgetName;
+	public $name;
 	public $title = '';
 
 	protected $bodyTemplate;
@@ -60,13 +60,15 @@ class Widget extends Model
 	 * Display the settings form
 	 * @return bool
 	 */
-	public function displaySettings()
+	public function displaySettings($idPrefix, $namePrefix)
 	{
 		if (empty($this->settingsTemplate))
 			return '';
 
 		$variables = array(
-			'settings' => $this->settings
+			'idPrefix'   => $idPrefix,
+			'namePrefix' => $namePrefix,
+			'settings'   => $this->settings
 		);
 
 		$template = b()->controller->loadTemplate($this->settingsTemplate, $variables, true);
