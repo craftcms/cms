@@ -11,7 +11,7 @@ class EtService extends Component
 	 */
 	public function ping()
 	{
-		$et = new Et(EtEndPoints::Ping);
+		$et = new Et(ElliotEndPoints::Ping);
 		$response = $et->phoneHome();
 		return $response;
 	}
@@ -22,7 +22,7 @@ class EtService extends Component
 	 */
 	public function check($updateInfo)
 	{
-		$et = new Et(EtEndPoints::Check);
+		$et = new Et(ElliotEndPoints::Check);
 		$et->package->data = $updateInfo;
 		$response = $et->phoneHome();
 		return $response;
@@ -42,7 +42,7 @@ class EtService extends Component
 			'type' => CoreReleaseFileType::Patch
 		);
 
-		$et = new Et(EtEndPoints::DownloadPackage, 60);
+		$et = new Et(ElliotEndPoints::DownloadPackage, 60);
 		$et->destinationFileName = $downloadPath;
 		$et->package->data = $params;
 		if ($et->phoneHome())
@@ -64,7 +64,7 @@ class EtService extends Component
 			'type' => CoreReleaseFileType::Patch
 		);
 
-		$et = new Et(EtEndPoints::GetCoreReleaseFileMD5);
+		$et = new Et(ElliotEndPoints::GetCoreReleaseFileMD5);
 		$et->package->data = $params;
 		$package = $et->phoneHome();
 
