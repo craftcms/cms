@@ -19,34 +19,34 @@ class App extends \CWebApplication
 		date_default_timezone_set('UTC');
 
 		// In case of an error, import everything we need.
-		Blocks::import('business.exceptions.HttpException');
-		Blocks::import('business.db.DbCommand');
-		Blocks::import('business.db.DbConnection');
-		Blocks::import('business.db.PDO');
-		Blocks::import('business.db.MysqlSchema');
-		Blocks::import('business.web.ErrorHandler');
-		Blocks::import('business.web.templating.TemplateRenderer');
+		Blocks::import('app.business.exceptions.HttpException');
+		Blocks::import('app.business.db.DbCommand');
+		Blocks::import('app.business.db.DbConnection');
+		Blocks::import('app.business.db.PDO');
+		Blocks::import('app.business.db.MysqlSchema');
+		Blocks::import('app.business.web.ErrorHandler');
+		Blocks::import('app.business.web.templating.TemplateRenderer');
 
 		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
-		Blocks::import('business.services.ConfigService');
-		Blocks::import('business.enums.AttributeType');
-		Blocks::import('business.utils.DatabaseHelper');
-		Blocks::import('business.utils.Json');
-		Blocks::import('business.Component');
-		Blocks::import('business.Plugin');
-		Blocks::import('business.logging.FileLogRoute');
-		Blocks::import('business.logging.WebLogRoute');
-		Blocks::import('business.logging.ProfileLogRoute');
-		Blocks::import('business.logging.DbLogRoute');
+		Blocks::import('app.business.services.ConfigService');
+		Blocks::import('app.business.enums.AttributeType');
+		Blocks::import('app.business.utils.DatabaseHelper');
+		Blocks::import('app.business.utils.Json');
+		Blocks::import('app.business.Component');
+		Blocks::import('app.business.Plugin');
+		Blocks::import('app.business.logging.FileLogRoute');
+		Blocks::import('app.business.logging.WebLogRoute');
+		Blocks::import('app.business.logging.ProfileLogRoute');
+		Blocks::import('app.business.logging.DbLogRoute');
 		b()->getComponent('log');
 
 		// Manually load the request object as early as possible.
-		Blocks::import('business.enums.UrlFormat');
-		Blocks::import('business.enums.RequestMode');
-		Blocks::import('business.utils.HtmlHelper');
-		Blocks::import('business.utils.UrlHelper');
-		Blocks::import('business.web.HttpRequest');
-		Blocks::import('business.web.UrlManager');
+		Blocks::import('app.business.enums.UrlFormat');
+		Blocks::import('app.business.enums.RequestMode');
+		Blocks::import('app.business.utils.HtmlHelper');
+		Blocks::import('app.business.utils.UrlHelper');
+		Blocks::import('app.business.web.HttpRequest');
+		Blocks::import('app.business.web.UrlManager');
 		b()->getComponent('request');
 
 		parent::init();
@@ -59,32 +59,32 @@ class App extends \CWebApplication
 	private function _importClasses()
 	{
 		$aliases = array(
-			'blocktypes.*',
-			'business.console.*',
-			'business.console.commands.*',
-			'business.datetime.*',
-			'business.db.*',
-			'business.email.*',
-			'business.enums.*',
-			'business.exceptions.*',
-			'business.install.*',
-			'business.logging.*',
-			'business.services.*',
-			'business.updates.*',
-			'business.utils.*',
-			'business.validators.*',
-			'business.web.*',
-			'business.web.filters.*',
-			'business.web.templating.*',
-			'business.web.templating.adapters.*',
-			'business.web.templating.templatewidgets.*',
-			'business.web.templating.variables.*',
-			'business.webservices.*',
-			'controllers.*',
-			'migrations.*',
-			'models.*',
-			'models.forms.*',
-			'widgets.*',
+			'app.blocktypes.*',
+			'app.business.console.*',
+			'app.business.console.commands.*',
+			'app.business.datetime.*',
+			'app.business.db.*',
+			'app.business.email.*',
+			'app.business.enums.*',
+			'app.business.exceptions.*',
+			'app.business.install.*',
+			'app.business.logging.*',
+			'app.business.services.*',
+			'app.business.updates.*',
+			'app.business.utils.*',
+			'app.business.validators.*',
+			'app.business.web.*',
+			'app.business.web.filters.*',
+			'app.business.web.templating.*',
+			'app.business.web.templating.adapters.*',
+			'app.business.web.templating.templatewidgets.*',
+			'app.business.web.templating.variables.*',
+			'app.business.webservices.*',
+			'app.controllers.*',
+			'app.migrations.*',
+			'app.models.*',
+			'app.models.forms.*',
+			'app.widgets.*',
 		);
 
 		foreach ($aliases as $alias)
@@ -109,11 +109,11 @@ class App extends \CWebApplication
 		$this->_validateConfig();
 
 		// Process install and setup requests?
-		$this->_processSpecialRequests('install', !$this->isInstalled);
-		$this->_processSpecialRequests('setup', !$this->isSetup);
+		$this->_processSpecialRequests('install', !$this->getIsInstalled());
+		$this->_processSpecialRequests('setup', !$this->getIsSetup());
 
 		// Are we in the middle of a manual update?
-		if ($this->isDbUpdateNeeded)
+		if ($this->getIsDbUpdateNeeded())
 		{
 			// Let's let all CP requests through.
 			if ($this->request->mode == RequestMode::CP)
@@ -122,9 +122,9 @@ class App extends \CWebApplication
 				$this->end();
 			}
 			// We'll also let action requests to dbupdate through as well.
-			else if ($this->request->mode == RequestMode::Action && $this->request->actionController == 'dbupdate')
+			else if ($this->request->getMode() == RequestMode::Action && $this->request->getActionController() == 'dbupdate')
 			{
-				$this->runController($this->request->actionController.'/'.$this->request->actionAction);
+				$this->runController($this->request->getActionController().'/'.$this->request->getActionAction());
 				$this->end();
 			}
 			else
@@ -132,7 +132,7 @@ class App extends \CWebApplication
 		}
 
 		// If it's not a CP request OR the system is on, let's continue processing.
-		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->mode == RequestMode::CP || ($this->request->mode == RequestMode::Action && BLOCKS_CP_REQUEST))))
+		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->getMode() == RequestMode::CP || ($this->request->getMode() == RequestMode::Action && BLOCKS_CP_REQUEST))))
 		{
 			// Otherwise maybe it's an action request?
 			$this->_processActionRequest();
@@ -158,7 +158,7 @@ class App extends \CWebApplication
 	private function _processSpecialRequests($what, $force)
 	{
 		// Are they requesting this specifically?
-		if ($this->request->mode == RequestMode::CP && $this->request->getPathSegment(1) === $what)
+		if ($this->request->getMode() == RequestMode::CP && $this->request->getPathSegment(1) === $what)
 		{
 			$action = $this->request->getPathSegment(2, 'index');
 			$this->runController("{$what}/{$action}");
@@ -169,7 +169,7 @@ class App extends \CWebApplication
 		else if ($force)
 		{
 			// Give it to them if accessing the CP or it's an action request for logging in.
-			if ($this->request->mode == RequestMode::CP)
+			if ($this->request->getMode() == RequestMode::CP)
 			{
 				$url = UrlHelper::generateUrl($what);
 				$this->request->redirect($url);
@@ -187,18 +187,14 @@ class App extends \CWebApplication
 	 */
 	private function _processActionRequest()
 	{
-		if ($this->request->mode == RequestMode::Action)
+		if ($this->request->getMode() == RequestMode::Action)
 		{
-			$plugin = $this->request->pluginHandle;
-			if ($plugin !== false)
-			{
-				if ($plugin === null)
-					throw new HttpException(404);
+			$plugin = $this->request->getPluginHandle();
 
+			if ($plugin !== null)
 				Blocks::import("plugins.{$plugin}.controllers.*");
-			}
 
-			$this->runController($this->request->actionController.'/'.$this->request->actionAction);
+			$this->runController($this->request->getActionController().'/'.$this->request->getActionAction());
 			$this->end();
 		}
 	}
@@ -213,15 +209,15 @@ class App extends \CWebApplication
 		if ($this->request->mode == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
-			Blocks::import('business.utils.File');
-			Blocks::import('business.web.ResourceProcessor');
-			Blocks::import('business.services.PathService');
+			Blocks::import('app.business.utils.File');
+			Blocks::import('app.business.web.ResourceProcessor');
+			Blocks::import('app.business.services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
-			$segs = array_slice(array_merge($this->request->pathSegments), 1);
+			$segs = array_slice(array_merge($this->request->getPathSegments()), 1);
 
 			// Is this a plugin resource?
-			$plugin = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
+			$plugin = (isset($segs[0]) && $segs[0] == 'plugins' ? (isset($segs[1]) ? $segs[1] : null) : false);
 			if ($plugin !== false)
 			{
 				if ($plugin === null)
@@ -409,7 +405,7 @@ class App extends \CWebApplication
 	 */
 	public function getSystemViewPath()
 	{
-		return $this->path->cpTemplatesPath;
+		return $this->path->getCpTemplatesPath();
 	}
 
 	/**

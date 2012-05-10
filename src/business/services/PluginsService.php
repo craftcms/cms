@@ -97,7 +97,7 @@ class PluginsService extends Component
 
 		if (!isset($this->_pluginInstances[$normalizedClassName]))
 		{
-			$this->_getPluginInternal($normalizedClassName);
+			$this->_getAllPluginsInternal();
 		}
 
 		return $this->_pluginInstances[$normalizedClassName];
@@ -206,42 +206,6 @@ class PluginsService extends Component
 	}
 
 	/**
-	 * Attempts to find a plugin by classname by first looking in the db and validating against the file system
-	 * (for installed plugins) and then looking on the file system and making sure it doesn't exist in the db (for non-installed plugins).
-	 * @param $className
-	 * @return mixed
-	 */
-	private function _getPluginInternal($className)
-	{
-		// See if we can find the plugin class name in the database.
-		$dbPlugin = Plugin::model()->findByAttributes(array(
-			'class' => $className
-		));
-
-		// Plugin was found in the database so we at the very least know it has been installed before.
-		if ($dbPlugin)
-		{
-			// Check and see if it still exists on the file system.
-			if ($this->_validatePluginClassAgainstFileSystem($dbPlugin->class))
-			{
-				// Instantiate it and add it to the plugin instance list.
-				$this->_instantiatePlugin($dbPlugin);
-				return;
-			}
-		}
-		else
-		{
-			// Plugin was not found in the database, see if it exists on the file system.
-			if ($this->_validatePluginClassAgainstFileSystem($className))
-			{
-				// On the file system, instantiate and add to the plugin instance list.
-				$this->_instantiatePlugin(null, $className);
-				return;
-			}
-		}
-	}
-
-	/**
 	 * Gets all plugins in db and filesystem regardless of their status.
 	 * @return array
 	 */
@@ -280,28 +244,43 @@ class PluginsService extends Component
 	 */
 	private function _instantiatePlugin($plugin, $className = null)
 	{
-		$existing = $plugin && !$className;
-
-		// Get plugins from the file system.
-		$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
-
-		if ($existing)
+		// If the plugin has been instantiated before, don't do it again.
+		if (!isset($this->_pluginInstances[$className]))
 		{
-			$pluginInstance = Plugin::model()->populateSubclassRecord($plugin);
-			$pluginInstance->installed = true;
-			$className = $pluginInstance->class;
-		}
-		else
-		{
-			// Instantiate the plugin instance from the active record object.
-			$pluginInstance = new $fileSystemPlugins[$className][0];
-			$pluginInstance->installed = false;
-			$pluginInstance->enabled = false;
-			$pluginInstance->class = $className;
-		}
+			$existing = $plugin && !$className;
 
-		// Add to our list.
-		$this->_pluginInstances[$className] = $pluginInstance;
+			// Get plugins from the file system.
+			$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
+
+			if ($existing)
+			{
+				$pluginInstance = Plugin::model()->populateSubclassRecord($plugin);
+				$pluginInstance->installed = true;
+				$className = $pluginInstance->class;
+
+				if ($pluginInstance->enabled)
+				{
+					// Check to see if the plugin wants to register a service.
+					$serviceFile = b()->path->getPluginsPath().$className.'/'.$className.'Service.php';
+					if (file_exists($serviceFile))
+					{
+						Blocks::import('plugins.'.$className.'.'.$className.'Service');
+						b()->setComponents(array(strtolower($className) => array('class' => __NAMESPACE__.'\\'.$className.'Service')), false);
+					}
+				}
+			}
+			else
+			{
+				// Instantiate the plugin instance from the active record object.
+				$pluginInstance = new $fileSystemPlugins[$className][0];
+				$pluginInstance->installed = false;
+				$pluginInstance->enabled = false;
+				$pluginInstance->class = $className;
+			}
+
+			// Add to our list.
+			$this->_pluginInstances[$className] = $pluginInstance;
+		}
 	}
 
 	/**

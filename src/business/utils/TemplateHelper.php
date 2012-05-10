@@ -83,7 +83,7 @@ class TemplateHelper
 			return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath.'/index');
 
 		// Check to see if this request has a plugin handle in the URL
-		if (($pluginHandle = b()->request->pluginHandle) !== false)
+		if (($pluginHandle = b()->request->getPluginHandle()) !== false)
 		{
 			// Take the URL's lowercase plugin handle and get the proper case from the file system.
 			$pluginHandle = b()->plugins->normalizePluginClassName($pluginHandle);

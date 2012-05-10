@@ -6,10 +6,9 @@ namespace Blocks;
  */
 class HttpRequest extends \CHttpRequest
 {
-	public $pluginHandle;
-	public $actionController;
-	public $actionAction;
-
+	private $_pluginHandle;
+	private $_actionController;
+	private $_actionAction;
 	private $_urlFormat;
 	private $_path;
 	private $_queryStringPath;
@@ -26,10 +25,10 @@ class HttpRequest extends \CHttpRequest
 		if (!isset($this->_path))
 		{
 			// urlFormat determines where to look for a path first
-			if ($this->urlFormat == UrlFormat::PathInfo)
-				$this->_path = $this->pathInfo ? $this->pathInfo : $this->queryStringPath;
+			if ($this->getUrlFormat() == UrlFormat::PathInfo)
+				$this->_path = $this->getPathInfo() ? $this->getPathInfo() : $this->getQueryStringPath();
 			else
-				$this->_path = $this->$this->queryStringPath ? $this->queryStringPath : $this->pathInfo;
+				$this->_path = $this->getQueryStringPath() ? $this->getQueryStringPath() : $this->getPathInfo();
 		}
 
 		return $this->_path;
@@ -37,12 +36,105 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * @param $path
+	 * @return void
 	 */
 	public function setPath($path)
 	{
 		$this->_path = $path;
 	}
 
+	/**
+	 * @return mixed
+	 */
+	public function getPluginHandle()
+	{
+		if (!$this->_pluginHandle)
+		{
+			$segs = $this->getPathSegments();
+
+			if ((isset($segs[0]) && $segs[0] == 'plugin'))
+			{
+				$this->_pluginHandle = (isset($segs[1]) ? $segs[1] : null);
+			}
+			else
+			{
+				if (isset($segs[0]))
+				{
+					$testPluginHandle = $segs[0];
+
+					$enabledPlugins = b()->plugins->getEnabled();
+					foreach ($enabledPlugins as $enabledPlugin)
+					{
+						if (strtolower($enabledPlugin->class) == strtolower($testPluginHandle))
+						{
+							$this->_pluginHandle = $enabledPlugin->class;
+						}
+					}
+				}
+			}
+		}
+
+		return $this->_pluginHandle;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function _parseActionSegs()
+	{
+		$firstPathSegment = $this->getPathSegment(1);
+		$logoutTriggerWord = b()->config->logoutTriggerWord;
+
+		// if we see a request with $logoutTriggerWord come in (/logout), we are going to treat it like an action request
+		if ($firstPathSegment === $logoutTriggerWord)
+		{
+			$segs[0] = 'session';
+			$segs[1] = 'logout';
+		}
+		else
+		{
+			// get the URL segments without the "action" segment
+			$segs = array_slice(array_merge($this->getPathSegments()), 1);
+		}
+
+		return $segs;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getActionController()
+	{
+		if (!$this->_actionController)
+		{
+			$segs = $this->_parseActionSegs();
+
+			$i = (!$this->getPluginHandle() ? 0 : 2);
+			$this->_actionController = (isset($segs[$i]) ? $segs[$i] : 'default');
+		}
+
+		return $this->_actionController;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getActionAction()
+	{
+		if (!$this->_actionAction)
+		{
+			$segs = $this->_parseActionSegs();
+
+			$i = (!$this->getPluginHandle() ? 0 : 2);
+			$this->_actionAction = (isset($segs[$i + 1]) ? $segs[$i + 1] : 'index');
+		}
+
+		return $this->_actionAction;
+	}
+
+	/**
+	 * @return mixed
+	 */
 	public function getQueryStringPath()
 	{
 		if (!isset($this->_queryStringPath))
@@ -83,8 +175,9 @@ class HttpRequest extends \CHttpRequest
 	 */
 	public function getPathSegment($num, $default = null)
 	{
-		if (isset($this->pathSegments[$num - 1]))
-			return $this->pathSegments[$num - 1];
+		$pathSegments = $this->getPathSegments();
+		if (isset($pathSegments[$num - 1]))
+			return $pathSegments[$num - 1];
 
 		return $default;
 	}
@@ -96,7 +189,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_pathExtension))
 		{
-			$ext = pathinfo($this->path, PATHINFO_EXTENSION);
+			$ext = pathinfo($this->getPath(), PATHINFO_EXTENSION);
 			$this->_pathExtension = strtolower($ext);
 		}
 
@@ -184,34 +277,17 @@ class HttpRequest extends \CHttpRequest
 
 			$firstPathSegment = $this->getPathSegment(1);
 
-			$this->_processPluginHandleRequest($this->getPathSegments());
-
 			if ($firstPathSegment === $resourceTriggerWord)
 				$this->_mode = RequestMode::Resource;
 
 			else if ($firstPathSegment === $actionTriggerWord || $firstPathSegment === $logoutTriggerWord)
 			{
 				$this->_mode = RequestMode::Action;
-
-				// if we see a request with $logoutTriggerWord come in (/logout), we are going to treat it like an action request
-				if ($firstPathSegment === $logoutTriggerWord)
-				{
-					$segs[0] = 'session';
-					$segs[1] = 'logout';
-				}
-				else
-				{
-					// get the URL segments without the "action" segment
-					$segs = array_slice(array_merge($this->getPathSegments()), 1);
-				}
-
-				$this->setActionVars($segs);
 			}
-
+			// Check post for action request
 			else if (($action = $this->getPost($actionTriggerWord)) !== null && ($segs = array_filter(explode('/', $action))))
 			{
 				$this->_mode = RequestMode::Action;
-				$this->setActionVars($segs);
 			}
 
 			else if (BLOCKS_CP_REQUEST === true)
@@ -225,32 +301,12 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * @param $segs
-	 */
-	private function _processPluginHandleRequest($segs)
-	{
-		$this->pluginHandle = (isset($segs[0]) && $segs[0] == 'plugin' ? (isset($segs[1]) ? $segs[1] : null) : false);
-	}
-
-	/**
 	 * @param $mode
 	 * @return void
 	 */
 	public function setMode($mode)
 	{
 		$this->_mode = $mode;
-	}
-
-	/**
-	 * Set action request variables
-	 *
-	 * @param $segs
-	 */
-	protected function setActionVars($segs)
-	{
-		$i = ($this->pluginHandle === false ? 0 : 2);
-		$this->actionController = (isset($segs[$i]) ? $segs[$i] : 'default');
-		$this->actionAction     = (isset($segs[$i + 1]) ? $segs[$i + 1] : 'index');
 	}
 
 	/**

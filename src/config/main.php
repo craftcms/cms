@@ -2,7 +2,6 @@
 
 $common = require_once(BLOCKS_APP_PATH.'config/common.php');
 
-Yii::setPathOfAlias('base', BLOCKS_BASE_PATH);
 Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
 Yii::setPathOfAlias('config', BLOCKS_CONFIG_PATH);
 Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
