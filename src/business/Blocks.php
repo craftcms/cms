@@ -183,7 +183,48 @@ class Blocks extends \Yii
 	 */
 	public static function import($alias, $forceInclude = false)
 	{
-		$path = BLOCKS_APP_PATH.str_replace('.', '/', $alias);
+		$segs = explode('.', $alias);
+		if (isset($segs[0]))
+		{
+			switch ($segs[0])
+			{
+				case 'app':
+				{
+					$rootPath = BLOCKS_APP_PATH;
+					break;
+				}
+				case 'config':
+				{
+					$rootPath = BLOCKS_CONFIG_PATH;
+					break;
+				}
+				case 'plugins':
+				{
+					$rootPath = BLOCKS_PLUGINS_PATH;
+					break;
+				}
+				case 'runtime':
+				{
+					$rootPath = BLOCKS_RUNTIME_PATH;
+					break;
+				}
+				case 'templates':
+				{
+					$rootPath = BLOCKS_TEMPLATES_PATH;
+					break;
+				}
+				default:
+				{
+					$rootPath = BLOCKS_APP_PATH;
+				}
+			}
+		}
+		else
+		{
+			$rootPath = BLOCKS_APP_PATH;
+		}
+
+		$path = $rootPath.implode('/', array_slice($segs, 1));
 
 		$directory = (substr($path, -2) == '/*');
 		if ($directory)
