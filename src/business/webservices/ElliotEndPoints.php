@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EtEndPoints
+class ElliotEndPoints
 {
 	const Check                         = 'https://elliot.blockscms.com/admin.php/action/core/check';
 	const DownloadPackage               = 'https://elliot.blockscms.com/admin.php/action/core/downloadpackage';
