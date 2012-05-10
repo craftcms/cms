@@ -52,23 +52,17 @@ class HttpRequest extends \CHttpRequest
 		{
 			$segs = $this->getPathSegments();
 
-			if ((isset($segs[0]) && $segs[0] == 'plugin'))
+			if (isset($segs[0]))
 			{
-				$this->_pluginHandle = (isset($segs[1]) ? $segs[1] : null);
-			}
-			else
-			{
-				if (isset($segs[0]))
-				{
-					$testPluginHandle = $segs[0];
+				$testPluginHandle = $segs[0];
 
-					$enabledPlugins = b()->plugins->getEnabled();
-					foreach ($enabledPlugins as $enabledPlugin)
+				$enabledPlugins = b()->plugins->getEnabled();
+				foreach ($enabledPlugins as $enabledPlugin)
+				{
+					if (strtolower($enabledPlugin->class) == strtolower($testPluginHandle))
 					{
-						if (strtolower($enabledPlugin->class) == strtolower($testPluginHandle))
-						{
-							$this->_pluginHandle = $enabledPlugin->class;
-						}
+						$this->_pluginHandle = $enabledPlugin->class;
+						break;
 					}
 				}
 			}

@@ -206,7 +206,7 @@ class App extends \CWebApplication
 	 */
 	private function _processResourceRequest()
 	{
-		if ($this->request->mode == RequestMode::Resource)
+		if ($this->request->getMode() == RequestMode::Resource)
 		{
 			// Import the bare minimum to process a resource
 			Blocks::import('app.business.utils.File');
@@ -216,25 +216,34 @@ class App extends \CWebApplication
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getPathSegments()), 1);
 
-			// Is this a plugin resource?
-			$plugin = (isset($segs[0]) && $segs[0] == 'plugins' ? (isset($segs[1]) ? $segs[1] : null) : false);
-			if ($plugin !== false)
+			$rootFolderUrl = null;
+			$rootFolderPath = $this->path->getResourcesPath();
+			$relativeResourcePath = implode('/', $segs);
+
+			// Check app/resources folder first.
+			if (file_exists($rootFolderPath.$relativeResourcePath))
 			{
-				if ($plugin === null)
-					throw new HttpException(404);
-
-				$segs = array_splice($segs, 2);
-
-				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord."/plugin/{$plugin}/");
-				$rootFolderPath = $this->path->pluginsPath."{$plugin}/resources/";
+				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.'/');
 			}
 			else
 			{
-				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.'/');
-				$rootFolderPath = $this->path->resourcesPath;
+				// See if the first segment is a plugin handle.
+				if (isset($segs[0]))
+				{
+					$rootFolderPath = $this->path->getPluginsPath().$segs[0].'/resources/';
+					$relativeResourcePath = implode('/', array_splice($segs, 2));
+
+					// Looks like it belongs to a plugin.
+					if (file_exists($rootFolderPath.$relativeResourcePath))
+					{
+						$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.$segs[0]);
+					}
+				}
 			}
 
-			$relativeResourcePath = implode('/', $segs);
+			// Couldn't find a match, so 404
+			if (!$rootFolderUrl)
+				throw new HttpException(404);
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
 			$resourceProcessor->processResourceRequest();

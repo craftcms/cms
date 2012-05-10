@@ -98,7 +98,7 @@ class TemplateHelper
 				b()->setViewPath($viewPath);
 				b()->setLayoutPath($viewPath.'_layouts/');
 
-				$copyTemplatePath = substr($copyTemplatePath, strlen('plugin/'.$pluginHandle));
+				$copyTemplatePath = substr($copyTemplatePath, strlen($pluginHandle) + 1);
 				$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
 
 				// Check for plugin/request/path.ext
