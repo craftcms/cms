@@ -1,10 +1,10 @@
 {set plugin = b.plugins.get(pluginClass)}
 
-<?php $pageTitle = new Variable($plugin->name().' plugin settings'); ?>
+<?php $title = new Variable($plugin->name().' plugin settings'); ?>
 
-{layout "_layouts/cp" pageTitle=pageTitle crumbs="settings:Settings"}
+{layout "_layouts/cp" title=title crumbs="settings:Settings"}
 
 
 {region "main"}
-	<h1>{:pageTitle}</h1>
+	<h1>{:title}</h1>
 {/region}

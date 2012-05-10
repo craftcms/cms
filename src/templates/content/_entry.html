@@ -5,12 +5,12 @@
 	{/if}
 {/if}
 
-<?php $pageTitle = new Variable('Editing “'.$entry->title().'”'); ?>
+<?php $title = new Variable('Editing “'.$entry->title().'”'); ?>
 {if entry.draft}
-	<?php $pageTitle = new Variable($pageTitle.' ('.$entry->draft()->name().')'); ?>
+	<?php $title = new Variable($title.' ('.$entry->draft()->name().')'); ?>
 {/if}
 
-{layout "_layouts/cp" pageTitle=pageTitle crumbs="content:Content"}
+{layout "_layouts/cp" title=title crumbs="content:Content"}
 
 
 {region "styles"}

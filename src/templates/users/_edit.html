@@ -14,12 +14,12 @@
 	{else}
 		{set displayName = "Anonymous’"}
 	{/if}
-	<?php $pageTitle = new Variable($displayName.' account settings'); ?>
+	<?php $title = new Variable($displayName.' account settings'); ?>
 {else}
-	{set pageTitle = "Register a new user"}
+	{set title = "Register a new user"}
 {/if}
 
-{layout "_layouts/cp" pageTitle=pageTitle crumbs="users:Users"}
+{layout "_layouts/cp" title=title crumbs="users:Users"}
 
 
 {region "styles"}
@@ -28,7 +28,7 @@
 
 
 {region "main"}
-	<h1>{:pageTitle}</h1>
+	<h1>{:title}</h1>
 
 	<form method="post" action="">
 		<div class="grid">

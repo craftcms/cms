@@ -3,16 +3,16 @@
 {/if}
 
 {if section}
-	<?php $pageTitle = new Variable($section->name().' section settings'); ?>
+	<?php $title = new Variable($section->name().' section settings'); ?>
 {else}
-	{set pageTitle = "Create a new section"}
+	{set title = "Create a new section"}
 {/if}
 
-{layout "_layouts/cp" pageTitle=pageTitle crumbs="content:Content"}
+{layout "_layouts/cp" title=title crumbs="content:Content"}
 
 
 {region "main"}
-	<h1>{:pageTitle}</h1>
+	<h1>{:title}</h1>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="content/saveSection" />
