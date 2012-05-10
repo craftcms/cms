@@ -260,13 +260,8 @@ class PluginsService extends Component
 
 				if ($pluginInstance->enabled)
 				{
-					// Check to see if the plugin wants to register a service.
-					$serviceFile = b()->path->getPluginsPath().$className.'/'.$className.'Service.php';
-					if (file_exists($serviceFile))
-					{
-						Blocks::import('plugins.'.$className.'.'.$className.'Service');
-						b()->setComponents(array(strtolower($className) => array('class' => __NAMESPACE__.'\\'.$className.'Service')), false);
-					}
+					// Check to see if the plugin wants to register any service.
+					$this->_registerPluginServices($className);
 				}
 			}
 			else
@@ -280,6 +275,32 @@ class PluginsService extends Component
 
 			// Add to our list.
 			$this->_pluginInstances[$className] = $pluginInstance;
+		}
+	}
+
+	private function _registerPluginServices($className)
+	{
+		// Get the services directory for the plugin.
+		$serviceDirectory = b()->path->getPluginsPath().$className.'/services/';
+
+		// Make sure it exists.
+		if (is_dir($serviceDirectory))
+		{
+			// See if it has any files in ClassName*Service.php format.
+			if (($files = @glob($serviceDirectory.$className."*Service.php")) !== false)
+			{
+				foreach ($files as $file)
+				{
+					// Get the file name minus the extension.
+					$fileName = pathinfo($file, PATHINFO_FILENAME);
+
+					// Import the class.
+					Blocks::import('plugins.'.$className.'.services.'.$fileName);
+
+					// Register the component with the handle as (ClassName or ClassName_*) minus "Service" if multiple.
+					b()->setComponents(array(strtolower(substr($fileName, 0, strpos($fileName, 'Service')) ) => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
+				}
+			}
 		}
 	}
 
