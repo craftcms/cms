@@ -23,8 +23,8 @@ return CMap::mergeArray(
 		'import' => array(
 			'application.business.*',
 			'application.business.Blocks',
-			'application.business.services.*',
 			'application.migrations.*',
+			'application.services.*',
 		),
 
 		'components' => array(
