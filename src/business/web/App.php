@@ -258,6 +258,8 @@ class App extends \CWebApplication
 					}
 				}
 			}
+
+			throw new HttpException(404);
 		}
 	}
 
