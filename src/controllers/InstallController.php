@@ -8,11 +8,12 @@ class InstallController extends Controller
 {
 	/**
 	 * Init
+	 * @throws HttpException
 	 */
 	public function init()
 	{
 		// Return a 404 if Blocks is already installed
-		if (!b()->config->devMode && b()->isInstalled)
+		if (!b()->config->devMode && b()->getIsInstalled())
 			throw new HttpException(404);
 	}
 

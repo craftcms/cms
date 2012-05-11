@@ -82,14 +82,12 @@ class TemplateHelper
 		if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.'/index'.$templateExtension)) !== false)
 			return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath.'/index');
 
-		// Check to see if this request has a plugin handle in the URL
-		if (($pluginHandle = b()->request->getPluginHandle()) !== false)
+		// Check to see if the template path might be referring to a plugin template
+		$templateSegs = explode('/', $copyTemplatePath);
+		if (($plugin = b()->plugins->getPlugin($templateSegs[0])) !== null)
 		{
-			// Take the URL's lowercase plugin handle and get the proper case from the file system.
-			$pluginHandle = b()->plugins->normalizePluginClassName($pluginHandle);
-
 			// Get the template path for the plugin.
-			$viewPath = b()->path->getPluginsPath().$pluginHandle.'/templates/';
+			$viewPath = b()->path->getPluginsPath().$plugin->class.'/templates/';
 
 			// If the plugin's templates directory exists, set the request's viewpath to it.
 			if (is_dir($viewPath))
@@ -98,7 +96,7 @@ class TemplateHelper
 				b()->setViewPath($viewPath);
 				b()->setLayoutPath($viewPath.'_layouts/');
 
-				$copyTemplatePath = substr($copyTemplatePath, strlen($pluginHandle) + 1);
+				$copyTemplatePath = substr($copyTemplatePath, strlen($plugin->class) + 1);
 				$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
 
 				// Check for plugin/request/path.ext

@@ -122,9 +122,11 @@ class App extends \CWebApplication
 				$this->end();
 			}
 			// We'll also let action requests to dbupdate through as well.
-			else if ($this->request->getMode() == RequestMode::Action && $this->request->getActionController() == 'dbupdate')
+			else if ($this->request->getMode() == RequestMode::Action && (($actionPath = $this->request->getActionPath()) !== null) && isset($actionPath[0]) && $actionPath[0] == 'dbupdate')
 			{
-				$this->runController($this->request->getActionController().'/'.$this->request->getActionAction());
+				$controller = $actionPath[0];
+				$action = isset($actionPath[1]) ? $actionPath[1] : 'index';
+				$this->runController($controller.'/'.$action);
 				$this->end();
 			}
 			else
@@ -189,13 +191,73 @@ class App extends \CWebApplication
 	{
 		if ($this->request->getMode() == RequestMode::Action)
 		{
-			$plugin = $this->request->getPluginHandle();
+			$actionPath = $this->request->getActionPath();
 
-			if ($plugin !== null)
-				Blocks::import("plugins.{$plugin}.controllers.*");
+			// See if there is a first segment.
+			if (isset($actionPath[0]))
+			{
+				$controller = $actionPath[0];
+				$action = $actionPath[1];
 
-			$this->runController($this->request->getActionController().'/'.$this->request->getActionAction());
-			$this->end();
+				// Check for a valid controller in app/controllers.
+				$controllerPath = b()->path->getAppPath().'controllers/'.$controller.'Controller.php';
+				if (file_exists($controllerPath))
+				{
+					// Run the controller and action.
+					$this->runController($controller.'/'.$action);
+					$this->end();
+				}
+
+				// If there are 2 segments, we're going to check to see if it's a plugin's default controller action request.
+				// i.e. plugin/controllers/PluginController.php
+				if (count($actionPath) == 2)
+				{
+					$plugin = $actionPath[0];
+					$controller = $actionPath[0];
+					$action = $actionPath[1];
+
+					// Check for a valid controller in the plugins directories.
+					$controllerPath = b()->path->getPluginsPath().$plugin.'/controllers/'.$plugin.'Controller.php';
+
+					if (file_exists($controllerPath))
+					{
+						// Check to see if the plugin exists and is enabled.
+						$pluginInstance = b()->plugins->getPlugin($plugin);
+						if ($pluginInstance->enabled)
+						{
+							Blocks::import("plugins.$plugin.controllers.".$plugin.'Controller');
+							$this->setControllerPath(b()->path->getPluginsPath().$plugin.'/controllers/');
+							$this->runController($controller.'/'.$action);
+							$this->end();
+						}
+					}
+
+				}
+				// If there are 3 segments, we're going to check to see if it's a plugin registered a non-default controller
+				// for an action request.  i.e. plugin/controllers/Plugin_*Controller.php
+				elseif (count($actionPath) == 3)
+				{
+					$plugin = $actionPath[0];
+					$controller = $actionPath[1];
+					$action = $actionPath[2];
+
+					// Check for a valid controller in the plugins directory.
+					$controllerPath = b()->path->getPluginsPath().$plugin.'/controllers/'.$plugin.'_'.$controller.'Controller.php';
+
+					if (file_exists($controllerPath))
+					{
+						// Check to see if the plugin exists and is enabled.
+						$pluginInstance = b()->plugins->getPlugin($plugin);
+						if ($pluginInstance->enabled)
+						{
+							Blocks::import("plugins.$action.controllers.".$plugin.'Controller');
+							$this->setControllerPath(b()->path->getPluginsPath().$plugin.'/controllers/');
+							$this->runController($plugin.'_'.$controller.'/'.$action);
+							$this->end();
+						}
+					}
+				}
+			}
 		}
 	}
 
