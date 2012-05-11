@@ -294,7 +294,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .text { display: block; border-radius: 3px; border: 1px solid $xlight; padding: 9px; font-size: 13px; color: $xdark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 .text:hover { border-color: $light; }
-.text:focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
+.text:focus,
+.text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
 
 .texthint-container { position: relative; height: 0; }

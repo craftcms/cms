@@ -40,8 +40,13 @@ b.ui.PasswordInput = b.Base.extend({
 	{
 		if (this.$currentInput)
 		{
+			// Swap the inputs, while preventing the focus animation
+			$input.addClass('focus');
 			this.$currentInput.replaceWith($input);
 			$input.focus();
+			this.$currentInput.removeClass('focus');
+
+			// Restore the input value
 			$input.val(this.$currentInput.val());
 		}
 
@@ -84,6 +89,9 @@ b.ui.PasswordInput = b.Base.extend({
 		this.setCurrentInput(this.$passwordInput);
 		this.updateToggleLabel('Show');
 		this.showingPassword = false;
+
+		// Alt key temporarily shows the password
+		this.addListener(this.$passwordInput, 'keydown', 'onKeyDown');
 	},
 
 	togglePassword: function()
@@ -115,6 +123,27 @@ b.ui.PasswordInput = b.Base.extend({
 	onFocus: function()
 	{
 		this.hideCapsIcon();
+	},
+
+	onKeyDown: function(event)
+	{
+		if (event.keyCode == b.ALT_KEY && this.$currentInput.val())
+		{
+			this.showPassword();
+			this.$showPasswordToggle.hide();
+			this.addListener(this.$textInput, 'keyup', 'onKeyUp');
+		}
+	},
+
+	onKeyUp: function(event)
+	{
+		event.preventDefault();
+
+		if (event.keyCode == b.ALT_KEY)
+		{
+			this.hidePassword();
+			this.$showPasswordToggle.show();
+		}
 	},
 
 	onKeyPress: function(ev)
