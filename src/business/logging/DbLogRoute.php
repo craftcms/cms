@@ -12,15 +12,14 @@ class DbLogRoute extends \CDbLogRoute
 	public function init()
 	{
 		// Purposefully not calling parent::init() here because it's stupid.
-		$this->autoCreateLogTable = true;
 		$this->levels = 'activity';
 		$this->connectionID = 'db';
 		$this->logTableName = 'activity';
 
-		if($this->autoCreateLogTable)
+		if (b()->getIsInstalled())
 		{
 			$activityTable = $this->getDbConnection()->schema->getTable('{{activity}}');
-			if (!(bool)$activityTable)
+			if (!$activityTable)
 			{
 				$this->createLogTable($this->getDbConnection(), $this->logTableName);
 			}
@@ -55,23 +54,26 @@ class DbLogRoute extends \CDbLogRoute
 	 */
 	protected function processLogs($logs)
 	{
-		$sql="
-			INSERT INTO blx_{$this->logTableName}
-			(user_id, category, activity_key, activity_data, logtime) VALUES
-			(:userId, :category, :activityKey, :activityData, :logtime)
-		";
-
-		$command = $this->getDbConnection()->createCommand($sql);
-
-		foreach($logs as $log)
+		if (b()->getIsInstalled() && ($activityTable = $this->getDbConnection()->schema->getTable('{{activity}}')))
 		{
-			$messageParts = explode('///', $log[0]);
-			$command->bindValue(':userId', (int)$messageParts[0]);
-			$command->bindValue(':category', $log[2]);
-			$command->bindValue(':activityKey', $messageParts[1]);
-			$command->bindValue(':activityData', $messageParts[2]);
-			$command->bindValue(':logtime', (int)$log[3]);
-			$command->execute();
+			$sql="
+				INSERT INTO blx_{$this->logTableName}
+				(user_id, category, activity_key, activity_data, logtime) VALUES
+				(:userId, :category, :activityKey, :activityData, :logtime)
+			";
+
+			$command = $this->getDbConnection()->createCommand($sql);
+
+			foreach($logs as $log)
+			{
+				$messageParts = explode('///', $log[0]);
+				$command->bindValue(':userId', (int)$messageParts[0]);
+				$command->bindValue(':category', $log[2]);
+				$command->bindValue(':activityKey', $messageParts[1]);
+				$command->bindValue(':activityData', $messageParts[2]);
+				$command->bindValue(':logtime', (int)$log[3]);
+				$command->execute();
+			}
 		}
 	}
 }
