@@ -44,7 +44,7 @@ b.ui.PasswordInput = b.Base.extend({
 			$input.addClass('focus');
 			this.$currentInput.replaceWith($input);
 			$input.focus();
-			this.$currentInput.removeClass('focus');
+			$input.removeClass('focus');
 
 			// Restore the input value
 			$input.val(this.$currentInput.val());
