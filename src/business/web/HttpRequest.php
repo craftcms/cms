@@ -6,9 +6,7 @@ namespace Blocks;
  */
 class HttpRequest extends \CHttpRequest
 {
-	private $_pluginHandle;
-	private $_actionController;
-	private $_actionAction;
+	private $_actionPath;
 	private $_urlFormat;
 	private $_path;
 	private $_queryStringPath;
@@ -46,84 +44,15 @@ class HttpRequest extends \CHttpRequest
 	/**
 	 * @return mixed
 	 */
-	public function getPluginHandle()
+	public function getActionPath()
 	{
-		if (!$this->_pluginHandle)
+		if (!$this->_actionPath)
 		{
-			$segs = $this->getPathSegments();
-
-			if (isset($segs[0]))
-			{
-				$testPluginHandle = $segs[0];
-
-				$enabledPlugins = b()->plugins->getEnabled();
-				foreach ($enabledPlugins as $enabledPlugin)
-				{
-					if (strtolower($enabledPlugin->class) == strtolower($testPluginHandle))
-					{
-						$this->_pluginHandle = $enabledPlugin->class;
-						break;
-					}
-				}
-			}
+			// Ugly.
+			$this->getMode();
 		}
 
-		return $this->_pluginHandle;
-	}
-
-	/**
-	 * @return array
-	 */
-	private function _parseActionSegs()
-	{
-		$firstPathSegment = $this->getPathSegment(1);
-		$logoutTriggerWord = b()->config->logoutTriggerWord;
-
-		// if we see a request with $logoutTriggerWord come in (/logout), we are going to treat it like an action request
-		if ($firstPathSegment === $logoutTriggerWord)
-		{
-			$segs[0] = 'session';
-			$segs[1] = 'logout';
-		}
-		else
-		{
-			// get the URL segments without the "action" segment
-			$segs = array_slice(array_merge($this->getPathSegments()), 1);
-		}
-
-		return $segs;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getActionController()
-	{
-		if (!$this->_actionController)
-		{
-			$segs = $this->_parseActionSegs();
-
-			$i = (!$this->getPluginHandle() ? 0 : 2);
-			$this->_actionController = (isset($segs[$i]) ? $segs[$i] : 'default');
-		}
-
-		return $this->_actionController;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getActionAction()
-	{
-		if (!$this->_actionAction)
-		{
-			$segs = $this->_parseActionSegs();
-
-			$i = (!$this->getPluginHandle() ? 0 : 2);
-			$this->_actionAction = (isset($segs[$i + 1]) ? $segs[$i + 1] : 'index');
-		}
-
-		return $this->_actionAction;
+		return $this->_actionPath;
 	}
 
 	/**
@@ -271,22 +200,42 @@ class HttpRequest extends \CHttpRequest
 
 			$firstPathSegment = $this->getPathSegment(1);
 
+			// If the first path segment is the resource trigger word, it's a resource request.
 			if ($firstPathSegment === $resourceTriggerWord)
 				$this->_mode = RequestMode::Resource;
 
+			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request.
 			else if ($firstPathSegment === $actionTriggerWord || $firstPathSegment === $logoutTriggerWord)
 			{
 				$this->_mode = RequestMode::Action;
+
+				// If it's an action request, we set the actionPath for the given request.
+
+				// Special case for logging out.
+				if ($firstPathSegment === $logoutTriggerWord)
+				{
+					$segs[0] = 'session';
+					$segs[1] = 'logout';
+				}
+				else
+				{
+					$segs = array_slice(array_merge($this->getPathSegments()), 1);
+				}
+
+				$this->_actionPath = $segs;
 			}
-			// Check post for action request
-			else if (($action = $this->getPost($actionTriggerWord)) !== null && ($segs = array_filter(explode('/', $action))))
+			// Check post for action request.  If so, it's an action request and set action path.
+			else if (($action = $this->getParam($actionTriggerWord)) !== null && ($segs = array_filter(explode('/', $action))))
 			{
 				$this->_mode = RequestMode::Action;
+				$this->_actionPath = $segs;
 			}
 
+			// If we made it here and BLOCKS_CP_REQUEST is set, it's a CP request.
 			else if (BLOCKS_CP_REQUEST === true)
 				$this->_mode = RequestMode::CP;
 
+			// If we made it here, it's a front-end site request.
 			else
 				$this->_mode = RequestMode::Site;
 		}
