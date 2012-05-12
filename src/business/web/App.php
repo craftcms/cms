@@ -226,7 +226,7 @@ class App extends \CWebApplication
 						$pluginInstance = b()->plugins->getPlugin($plugin);
 						if ($pluginInstance->enabled)
 						{
-							Blocks::import("plugins.$plugin.controllers.".$plugin.'Controller');
+							Blocks::import('plugins.'.$plugin.'.controllers.*');
 							$this->setControllerPath(b()->path->getPluginsPath().$plugin.'/controllers/');
 							$this->runController($controller.'/'.$action);
 							$this->end();
@@ -251,7 +251,7 @@ class App extends \CWebApplication
 						$pluginInstance = b()->plugins->getPlugin($plugin);
 						if ($pluginInstance->enabled)
 						{
-							Blocks::import("plugins.$action.controllers.".$plugin.'Controller');
+							Blocks::import('plugins.'.$plugin.'.controllers.*');
 							$this->setControllerPath(b()->path->getPluginsPath().$plugin.'/controllers/');
 							$this->runController($plugin.'_'.$controller.'/'.$action);
 							$this->end();
@@ -259,6 +259,8 @@ class App extends \CWebApplication
 					}
 				}
 			}
+
+			throw new HttpException(404);
 		}
 	}
 
