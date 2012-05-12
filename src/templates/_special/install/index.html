@@ -4,70 +4,24 @@
 	{include "_includes/css_include" file="styles/install.css"}
 {/region}
 
-{region "body"}
-	<div class="install-container">
-		<div id="install-btn" class="btn big submit">
-			<span class="label">Install Blocks</span>
-		</div>
-	</div>
-{/region}
 
-{region "scripts"}
-	<script type="text/javascript">
+{if reqcheck.result != 'failure'}
 
-		var $btn = $('#install-btn'),
-			$btnLabel = $btn.find('.label');
+	{region "body"}
+		{include "_special/install/_welcome"}
+		{include "_special/install/_account"}
+		{include "_special/install/_site" sitename=sitename url=url}
+		{include "_special/install/_installing"}
+	{/region}
 
-		function updateBtnLabel($newBtnLabel, callback)
-		{
-			$btn.width($btn.width());
-			$newBtnLabel.appendTo($btn);
-			$btnLabel.show().fadeOut('fast');
-			$newBtnLabel.hide().delay('fast').fadeIn('fast');
-			$btn.animate(\{ width: $newBtnLabel.outerWidth() + 24 \}, function() {
-				$btnLabel.remove();
-				$btnLabel = $newBtnLabel;
-				if (typeof callback == 'function')
-					callback();
-			});
-		}
+	{region "scripts"}
+		{include "_includes/js_include" file="install.js"}
+	{/region}
 
-		function displayError(error)
-		{
-			var $newBtnLabel = $('<span class="label iconlabel error">'+error+'</span>');
-			updateBtnLabel($newBtnLabel);
-		}
+{else}
 
-		function runInstaller()
-		{
-			// Run the ajax request
-			$.post('{:b.url.base}install/install', function(data, textStatus, jqXHR) {
-				if (textStatus != 'success' || !(data.error || data.success))
-					displayError('An unknown error occurred.');
-				else if (data.error)
-					displayError(data.error);
-				else
-				{
-					var $newBtnLabel = $('<span class="label iconlabel success">Installed!</span>');
-					updateBtnLabel($newBtnLabel, function() {
-						// Redirect to the dashboard
-						setTimeout(function() {
-							window.location = '{:b.url.base}setup'
-						}, 1000);
-					});
-				}
-			});
-		}
+	{region "body"}
+		{include "_special/install/_cantinstall"}
+	{/region}
 
-		$btn.on('click.install', function() {
-			// Prevent double-clicks
-			$btn.off('click.install');
-
-			$btn.removeClass('submit').addClass('sel');
-
-			var $newBtnLabel = $('<span class="label iconlabel installing">Installing Blocks…</span>');
-			updateBtnLabel($newBtnLabel, runInstaller)
-		});
-
-	</script>
-{/region}
+{/if}

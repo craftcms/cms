@@ -53,7 +53,7 @@ return CMap::mergeArray(
 			),
 
 			'installer' => array(
-				'class' => 'Blocks\InstallerService',
+				'class' => 'Blocks\InstallService',
 			),
 
 			'migrations' => array(

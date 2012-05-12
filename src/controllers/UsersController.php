@@ -107,7 +107,7 @@ class UsersController extends Controller
 				if (($password = b()->request->getPost('password')))
 				{
 					// Make sure the passwords match and are at least the minimum length
-					$changePasswordForm = new ChangePasswordForm();
+					$changePasswordForm = new PasswordForm();
 					$changePasswordForm->password = $password;
 					$changePasswordForm->confirmPassword = b()->request->getPost('confirm-password');
 					$passwordValidates = $changePasswordForm->validate();

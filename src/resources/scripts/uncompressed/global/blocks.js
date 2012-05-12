@@ -278,7 +278,8 @@ b.copyTextStyles = function(from, to)
 		fontSize:      $from.css('fontSize'),
 		fontFamily:    $from.css('fontFamily'),
 		fontWeight:    $from.css('fontWeight'),
-		letterSpacing: $from.css('letterSpacing')
+		letterSpacing: $from.css('letterSpacing'),
+		textAlign:     $from.css('textAlign')
 	});
 };
 
@@ -409,6 +410,25 @@ b.animateWidth = function(elem, callback)
 	$elem.animate({width: newWidth}, 'fast', function() {
 		$elem.width('auto');
 	});
+};
+
+/**
+ * Shakes an element.
+ * @param mixed elem Either an actual element or a jQuery collection.
+ */
+b.shake = function(elem)
+{
+	var $elem = $(elem),
+		startingMargin = parseInt($elem.css('marginLeft'));
+
+	for (var i = 10; i > 0; i--)
+	{
+		var margin = startingMargin + (i % 2 ? -1 : 1) * i;
+		$elem.animate({marginLeft: margin}, {
+			duration: 50,
+			queue: true
+		});
+	}
 };
 
 /**

@@ -1,0 +1,12 @@
+<div id="cantinstall" class="main">
+	<h1>Can’t install Blocks :(</h1>
+	<p>Your server doesn’t meet the following requirements to install Blocks:</p>
+
+	<ul class="list">
+		{foreach reqcheck.requirements as req}
+			{if req.result == 'failed'}
+				<li>{:req.notes}</li>
+			{/if}
+		{/foreach}
+	</ul>
+</div>

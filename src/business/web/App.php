@@ -8,7 +8,6 @@ class App extends \CWebApplication
 {
 	private $_templatePath;
 	private $_isInstalled;
-	private $_isSetup;
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -108,9 +107,8 @@ class App extends \CWebApplication
 		// Config validation
 		$this->_validateConfig();
 
-		// Process install and setup requests?
-		$this->_processSpecialRequests('install', !$this->getIsInstalled());
-		$this->_processSpecialRequests('setup', !$this->getIsSetup());
+		// Process install requests
+		$this->_processInstallRequest();
 
 		// Are we in the middle of a manual update?
 		if ($this->getIsDbUpdateNeeded())
@@ -150,30 +148,33 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Processes install and setup requests.
+	 * Processes install requests.
 	 * @access private
-	 *
-	 * @param string $what  The controller and possible first URL segment value.
-	 * @param bool   $force Whether to redirect to that controller if we're not already there.
 	 * @throws HttpException
 	 */
-	private function _processSpecialRequests($what, $force)
+	private function _processInstallRequest()
 	{
-		// Are they requesting this specifically?
-		if ($this->request->getMode() == RequestMode::CP && $this->request->getPathSegment(1) === $what)
+		// Are they requesting an installer template/action specifically?
+		if ($this->request->getMode() == RequestMode::CP && $this->request->getPathSegment(1) === 'install')
 		{
 			$action = $this->request->getPathSegment(2, 'index');
-			$this->runController("{$what}/{$action}");
+			$this->runController('install/'.$action);
 			$this->end();
+		}
+		else if (BLOCKS_CP_REQUEST && $this->request->getMode() == RequestMode::Action)
+		{
+			$actionPath = $this->request->getActionPath();
+			if (isset($actionPath[0]) && $actionPath[0] == 'install')
+				$this->_processActionRequest();
 		}
 
 		// Should they be?
-		else if ($force)
+		else if (!$this->getIsInstalled())
 		{
-			// Give it to them if accessing the CP or it's an action request for logging in.
+			// Give it to them if accessing the CP
 			if ($this->request->getMode() == RequestMode::CP)
 			{
-				$url = UrlHelper::generateUrl($what);
+				$url = UrlHelper::generateUrl('install');
 				$this->request->redirect($url);
 			}
 			// Otherwise return a 404
@@ -410,32 +411,6 @@ class App extends \CWebApplication
 	public function setIsInstalled($isInstalled)
 	{
 		$this->_isInstalled = (bool)$isInstalled;
-	}
-
-	/**
-	 * Determines if Blocks has been setup yet, by checking to see if a license key has been entered, a site has been created, and an admin user exists.
-	 * @return bool
-	 */
-	public function getIsSetup()
-	{
-		if (!isset($this->_isSetup))
-		{
-			$this->_isSetup = (
-				LicenseKey::model()->exists()
-				&& Site::model()->exists()
-				&& User::model()->exists('admin=:admin', array(':admin'=>true)));
-		}
-
-		return $this->_isSetup;
-	}
-
-	/**
-	 * Sets the isSetup state.
-	 * @param $isSetup
-	 */
-	public function setIsSetup($isSetup)
-	{
-		$this->_isSetup = $isSetup;
 	}
 
 	/**

@@ -10,7 +10,7 @@ class User extends Model
 
 	protected $attributes = array(
 		'username'                              => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),
-		'first_name'                            => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+		'first_name'                            => array('type' => AttributeType::Varchar, 'maxLength' => 100),
 		'last_name'                             => array('type' => AttributeType::Varchar, 'maxLength' => 100),
 		'email'                                 => array('type' => AttributeType::Email, 'required' => true, 'unique' => true),
 		'password'                              => array('type' => AttributeType::Char),
@@ -55,9 +55,15 @@ class User extends Model
 	 */
 	public function getFullName()
 	{
-		$fullName = $this->first_name;
-		if ($this->last_name)
-		 	$fullName .= ' '.$this->last_name;
+		if ($this->first_name)
+		{
+			$fullName = $this->first_name;
+			if ($this->last_name)
+			 	$fullName .= ' '.$this->last_name;
+		}
+		else
+			$fullName = $this->username;
+
 		return $fullName;
 	}
 

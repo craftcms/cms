@@ -30,6 +30,7 @@ section > h2 { margin-left: -30px; }
 p { margin-bottom: 10px; }
 
 /* lists */
+.list { padding-left: 40px; list-style-type: square; }
 ol { padding-left: 40px; list-style-type: decimal; }
 
 /* code */
@@ -55,7 +56,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 .light { color: $mediumlight; }
 
 .sel { cursor: default !important; }
-.required:after { @include icon; content: '*'; padding-left: 5px; font-size: 9px; color: #8a1f11; }
+.required:after { @include icon; content: '*'; padding-left: 5px; font-size: 9px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -144,7 +145,7 @@ h3 + .pane { margin-top: 15px; }
 .menubtn:after { margin-left: 5px; }
 
 /* add buttons */
-.addbtn:before { @include icon; content: 'n'; }
+.addbtn:before { @include icon; content: '+'; }
 
 /* menu buttons */
 .menubtn { cursor: default; @include unselectable; }
@@ -154,7 +155,7 @@ h3 + .pane { margin-top: 15px; }
 .btn.small { padding: 0 7px; height: 17px; font-size: 11px; line-height: 17px; }
 
 /* big buttons */
-.btn.big { padding: 0 15px; height: 32px; font-size: 14px; line-height: 32px; }
+.btn.big { padding: 0 15px; height: 36px; font-size: 14px; line-height: 36px; }
 .btn.big[data-icon]:before { margin-left: -2px; }
 
 /* light buttons */
@@ -292,15 +293,16 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .textwrapper { padding-right: 20px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border-radius: 3px; border: 1px solid $xlight; padding: 9px; font-size: 13px; color: $xdark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border-radius: 3px; border: 1px solid #c6cacc; padding: 9px; font-size: 13px; color: $xdark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 .text:hover { border-color: $light; }
 .text:focus,
 .text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
+.text.error { border-color: $errorcolor; }
 
 .texthint-container { position: relative; height: 0; }
-.texthint { position: absolute; top: -1px; width: 100%; color: $mediumlight; -webkit-transition: color linear 100ms; }
-.texthint.focussed { color: $light; }
+.texthint { position: absolute; top: -1px; width: 100%; color: #a1a4a6; -webkit-transition: color linear 100ms; }
+.texthint.focussed { color: #c6cacc; }
 
 .passwordwrapper { position: relative; padding-right: 80px; }
 .passwordwrapper .password { width: 100%; }
@@ -309,9 +311,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 /* errors */
-.error:not(.sel),
-ul.errors li { color: #8a1f11 !important; }
-ul.errors { margin-top: 4px; list-style-type: square; padding-left: 20px; }
+ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }
+ul.errors li { color: $errorcolor; }
 
 /* RTE */
 .rte { padding: 0; }

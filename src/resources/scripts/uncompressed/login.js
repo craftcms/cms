@@ -118,15 +118,7 @@ var LoginForm = b.Base.extend({
 				var error = response.error || 'An unknown error occurred.';
 				this.$notice.html(error);
 
-				// Shake it like it's hot
-				for (var i = 10; i > 0; i--)
-				{
-					var left = (i % 2 ? -1 : 1) * i;
-					this.$pane.animate({left: left}, {
-						duration: 50,
-						queue: true
-					});
-				}
+				b.shake(this.$pane);
 			}
 		}, this));
 
