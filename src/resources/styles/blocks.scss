@@ -301,7 +301,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .text.error { border-color: $errorcolor; }
 
 .texthint-container { position: relative; height: 0; }
-.texthint { position: absolute; top: -1px; width: 100%; color: #a1a4a6; -webkit-transition: color linear 100ms; }
+.texthint { position: absolute; top: -1px; width: 100%; color: #a1a4a6; -webkit-transition: color linear 100ms; cursor: text; }
 .texthint.focussed { color: #c6cacc; }
 
 .passwordwrapper { position: relative; padding-right: 80px; }
