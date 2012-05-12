@@ -76,6 +76,7 @@ class InstallService extends Component
 			$info->version = Blocks::getVersion(false);
 			$info->build = Blocks::getBuild(false);
 			$info->release_date = Blocks::getReleaseDate(false);
+			$info->on = true;
 			$info->save();
 
 			// Add the site
@@ -138,9 +139,6 @@ class InstallService extends Component
 				          "Welcome to Blocks Alpha 2!\n\n" .
 				          '-Brandon & Brad'
 			));
-
-			// Turn the system on
-			Blocks::turnSystemOn();
 
 			$transaction->commit();
 		}
