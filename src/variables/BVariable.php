@@ -7,6 +7,23 @@ namespace Blocks;
 class BVariable
 {
 	/**
+	 * @param $name
+	 * @return mixed
+	 */
+	public function __get($name)
+	{
+		$pluginName = b()->plugins->normalizePluginClassName($name);
+		$path = b()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
+
+		if (File::fileExists($path))
+		{
+			Blocks::import('plugins.'.$pluginName.'.'.$pluginName.'Variable');
+			$variableName = __NAMESPACE__.'\\'.$pluginName.'Variable';
+			return new $variableName;
+		}
+	}
+
+	/**
 	 * @return AppVariable
 	 */
 	public function app()
