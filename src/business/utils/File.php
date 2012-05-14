@@ -266,7 +266,7 @@ class File extends Component
 		{
 			$this->_filename = $pathinfo['filename'];
 		}
-		if (key_exists('extension', $pathinfo))
+		if (array_key_exists('extension', $pathinfo))
 			$this->_extension = $pathinfo['extension'];
 		else
 			$this->_extension = null;
@@ -476,19 +476,14 @@ class File extends Component
 	{
 		Blocks::trace('Filesystem object availability test: '.$this->_realpath, 'ext.file');
 
-		if (file_exists($this->_realpath))
+		if (File::fileExists($this->_realpath))
 		{
 			$this->_exists = true;
-		}
-		else
-		{
-			$this->_exists = false;
-		}
-
-		if ($this->_exists)
 			return true;
+		}
 
 		$this->_addLog('Filesystem object not found');
+		$this->_exists = false;
 		return false;
 	}
 
@@ -1631,5 +1626,34 @@ class File extends Component
 
 		$zipArchive->close();
 		return true;
+	}
+
+	/**
+	 * @static
+	 * @param $fileName
+	 * @param bool $caseInsensitive
+	 * @return bool
+	 */
+	public static function fileExists($fileName, $caseInsensitive = true)
+	{
+		if (file_exists($fileName))
+		{
+			return true;
+		}
+
+		if ($caseInsensitive)
+		{
+			$dir = dirname($fileName);
+			$files = glob($dir.'/*');
+			$lcaseFileName = strtolower($fileName);
+
+			foreach ($files as $file)
+			{
+				if (strtolower($file) == $lcaseFileName)
+					return true;
+			}
+		}
+
+		return false;
 	}
 }
