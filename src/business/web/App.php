@@ -213,8 +213,8 @@ class App extends \CWebApplication
 				// i.e. plugin/controllers/PluginController.php
 				if (count($actionPath) == 2)
 				{
-					$plugin = $actionPath[0];
-					$controller = $actionPath[0];
+					$plugin = b()->plugins->normalizePluginClassName($actionPath[0]);
+					$controller = $plugin;
 					$action = $actionPath[1];
 
 					// Check for a valid controller in the plugins directories.
@@ -238,7 +238,7 @@ class App extends \CWebApplication
 				// for an action request.  i.e. plugin/controllers/Plugin_*Controller.php
 				elseif (count($actionPath) == 3)
 				{
-					$plugin = $actionPath[0];
+					$plugin = b()->plugins->normalizePluginClassName($actionPath[0]);
 					$controller = $actionPath[1];
 					$action = $actionPath[2];
 
