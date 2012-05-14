@@ -95,6 +95,9 @@ class PluginsService extends Component
 	{
 		$normalizedClassName = $this->normalizePluginClassName($className);
 
+		if (!$normalizedClassName)
+			return null;
+
 		if (!isset($this->_pluginInstances[$normalizedClassName]))
 		{
 			$this->_getAllPluginsInternal();
