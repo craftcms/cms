@@ -225,7 +225,7 @@ class HttpRequest extends \CHttpRequest
 				$this->_actionPath = $segs;
 			}
 			// Check post for action request.  If so, it's an action request and set action path.
-			else if (($action = $this->getParam($actionTriggerWord)) !== null && ($segs = array_filter(explode('/', $action))))
+			else if (($action = $this->getParam($actionTriggerWord)) !== null && ($segs = array_slice(array_filter(explode('/', $action)), 1)))
 			{
 				$this->_mode = RequestMode::Action;
 				$this->_actionPath = $segs;
