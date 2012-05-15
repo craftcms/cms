@@ -58,7 +58,7 @@ class DashboardService extends Component
 			$userId = 1;
 
 		// Add the default dashboard widgets
-		$widgets = array('Updates', 'RecentActivity', 'SiteMap', 'Feed');
+		$widgets = array('RecentActivity', 'Feed');
 		foreach ($widgets as $i => $widgetClass)
 		{
 			$widget = new Widget;
