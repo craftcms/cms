@@ -76,13 +76,13 @@ class App extends \CWebApplication
 			'app.business.web.templating.*',
 			'app.business.web.templating.adapters.*',
 			'app.business.web.templating.templatewidgets.*',
-			'app.business.web.templating.variables.*',
 			'app.business.webservices.*',
 			'app.controllers.*',
 			'app.migrations.*',
 			'app.models.*',
 			'app.models.forms.*',
 			'app.services.*',
+			'app.variables.*',
 			'app.widgets.*',
 		);
 
@@ -202,7 +202,7 @@ class App extends \CWebApplication
 
 				// Check for a valid controller in app/controllers.
 				$controllerPath = b()->path->getAppPath().'controllers/'.$controller.'Controller.php';
-				if (file_exists($controllerPath))
+				if (File::fileExists($controllerPath))
 				{
 					// Run the controller and action.
 					$this->runController($controller.'/'.$action);
@@ -220,7 +220,7 @@ class App extends \CWebApplication
 					// Check for a valid controller in the plugins directories.
 					$controllerPath = b()->path->getPluginsPath().$plugin.'/controllers/'.$plugin.'Controller.php';
 
-					if (file_exists($controllerPath))
+					if (File::fileExists($controllerPath))
 					{
 						// Check to see if the plugin exists and is enabled.
 						$pluginInstance = b()->plugins->getPlugin($plugin);
@@ -245,7 +245,7 @@ class App extends \CWebApplication
 					// Check for a valid controller in the plugins directory.
 					$controllerPath = b()->path->getPluginsPath().$plugin.'/controllers/'.$plugin.'_'.$controller.'Controller.php';
 
-					if (file_exists($controllerPath))
+					if (File::fileExists($controllerPath))
 					{
 						// Check to see if the plugin exists and is enabled.
 						$pluginInstance = b()->plugins->getPlugin($plugin);
@@ -286,7 +286,7 @@ class App extends \CWebApplication
 			$relativeResourcePath = implode('/', $segs);
 
 			// Check app/resources folder first.
-			if (file_exists($rootFolderPath.$relativeResourcePath))
+			if (File::fileExists($rootFolderPath.$relativeResourcePath))
 			{
 				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.'/');
 			}
@@ -299,7 +299,7 @@ class App extends \CWebApplication
 					$relativeResourcePath = implode('/', array_splice($segs, 2));
 
 					// Looks like it belongs to a plugin.
-					if (file_exists($rootFolderPath.$relativeResourcePath))
+					if (File::fileExists($rootFolderPath.$relativeResourcePath))
 					{
 						$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.$segs[0]);
 					}

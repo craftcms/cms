@@ -95,6 +95,10 @@ class PluginsService extends Component
 	{
 		$normalizedClassName = $this->normalizePluginClassName($className);
 
+		// Couldn't find the plugin.
+		if (!$normalizedClassName)
+			return null;
+
 		if (!isset($this->_pluginInstances[$normalizedClassName]))
 		{
 			$this->_getAllPluginsInternal();
@@ -262,6 +266,7 @@ class PluginsService extends Component
 				{
 					// Check to see if the plugin wants to register any service.
 					$this->_registerPluginServices($className);
+					$this->_importPluginModels($className);
 				}
 			}
 			else
@@ -278,6 +283,31 @@ class PluginsService extends Component
 		}
 	}
 
+	private function _importPluginModels($className)
+	{
+		$modelsDirectory = b()->path->getPluginsPath().$className.'/models/';
+
+		// Make sure it exists.
+		if (is_dir($modelsDirectory))
+		{
+			// See if it has any files in ClassName*Service.php format.
+			if (($files = @glob($modelsDirectory.$className."_*.php")) !== false)
+			{
+				foreach ($files as $file)
+				{
+					// Get the file name minus the extension.
+					$fileName = pathinfo($file, PATHINFO_FILENAME);
+
+					// Import the class.
+					Blocks::import('plugins.'.$className.'.models.'.$fileName);
+				}
+			}
+		}
+	}
+
+	/**
+	 * @param $className
+	 */
 	private function _registerPluginServices($className)
 	{
 		// Get the services directory for the plugin.

@@ -30,6 +30,8 @@ class SitesService extends Component
 	 * Saves a site.
 	 * @param array $siteSettings
 	 * @param int   $siteId The site ID, if saving an existing site.
+	 * @throws \Exception
+	 * @throws Exception
 	 * @return Site
 	 */
 	public function saveSite($siteSettings, $siteId)
@@ -135,6 +137,7 @@ class SitesService extends Component
 
 	/**
 	 * Returns the current site.
+	 * @throws Exception
 	 * @return Site
 	 */
 	public function getCurrent()
