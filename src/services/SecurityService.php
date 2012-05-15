@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SecurityService extends Component
+class SecurityService extends \CApplicationComponent
 {
 	private $_iterationCount;
 

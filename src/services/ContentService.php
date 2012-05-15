@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ContentService extends Component
+class ContentService extends \CApplicationComponent
 {
 	/* Sections */
 

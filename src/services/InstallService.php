@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallService extends Component
+class InstallService extends \CApplicationComponent
 {
 	/**
 	 * Installs Blocks!

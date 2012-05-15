@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SitesService extends Component
+class SitesService extends \CApplicationComponent
 {
 	private $_currentSite;
 	private $_licenseKeyStatus;

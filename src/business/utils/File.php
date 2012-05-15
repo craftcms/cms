@@ -12,7 +12,7 @@ namespace Blocks;
  * Heavily modified for Blocks.
  */
 
-class File extends Component
+class File extends \CApplicationComponent
 {
 	/**
 	 * @var array object instances array with key set to $_filepath

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PathService extends Component
+class PathService extends \CApplicationComponent
 {
 	/* Paths */
 

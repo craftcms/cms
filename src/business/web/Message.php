@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Message extends Component
+class Message extends \CApplicationComponent
 {
 	private $_type;
 	private $_key;

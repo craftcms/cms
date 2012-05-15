@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class MigrationsService extends Component
+class MigrationsService extends \CApplicationComponent
 {
 	private $_db;
 

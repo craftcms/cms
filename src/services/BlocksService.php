@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BlocksService extends Component
+class BlocksService extends \CApplicationComponent
 {
 	private $_blockTypes;
 

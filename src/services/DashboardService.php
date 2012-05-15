@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DashboardService extends Component
+class DashboardService extends \CApplicationComponent
 {
 	private $_allWidgets;
 

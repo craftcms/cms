@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Config service
  */
-class ConfigService extends Component
+class ConfigService extends \CApplicationComponent
 {
 	private $_tablePrefix;
 

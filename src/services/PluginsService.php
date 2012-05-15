@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PluginsService extends Component
+class PluginsService extends \CApplicationComponent
 {
 	// A list of all all of the plugins in plugin directory.
 	private $_fileSystemPlugins = array();
