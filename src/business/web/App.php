@@ -26,7 +26,7 @@ class App extends \CWebApplication
 		Blocks::import('app.business.web.ErrorHandler');
 		Blocks::import('app.business.web.templating.TemplateRenderer');
 
-		// We would normally use the 'preload' config option for logging, but because of PHP namespace hackery, we'll manually load it here.
+		// We would normally use the 'preload' config option for logging and request, but because of PHP namespace hackery, we'll manually load them here.
 		Blocks::import('app.services.ConfigService');
 		Blocks::import('app.business.enums.AttributeType');
 		Blocks::import('app.business.utils.DatabaseHelper');
@@ -37,9 +37,8 @@ class App extends \CWebApplication
 		Blocks::import('app.business.logging.WebLogRoute');
 		Blocks::import('app.business.logging.ProfileLogRoute');
 		Blocks::import('app.business.logging.DbLogRoute');
-		b()->getComponent('log');
-
-		// Manually load the request object as early as possible.
+		Blocks::import('app.business.logging.LogRouter');
+		Blocks::import('app.services.PathService');
 		Blocks::import('app.business.enums.UrlFormat');
 		Blocks::import('app.business.enums.RequestMode');
 		Blocks::import('app.business.utils.HtmlHelper');
@@ -47,6 +46,7 @@ class App extends \CWebApplication
 		Blocks::import('app.business.web.HttpRequest');
 		Blocks::import('app.business.web.UrlManager');
 		b()->getComponent('request');
+		b()->getComponent('log');
 
 		parent::init();
 	}
@@ -106,6 +106,9 @@ class App extends \CWebApplication
 
 		// Config validation
 		$this->_validateConfig();
+
+		// We add the DbLogRoute *after* we have validated the config.
+		$this->_addDbLogRoute();
 
 		// Process install requests
 		$this->_processInstallRequest();
@@ -276,7 +279,6 @@ class App extends \CWebApplication
 			// Import the bare minimum to process a resource
 			Blocks::import('app.business.utils.File');
 			Blocks::import('app.business.web.ResourceProcessor');
-			Blocks::import('app.services.PathService');
 
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getPathSegments()), 1);
@@ -372,6 +374,15 @@ class App extends \CWebApplication
 
 		if (!empty($messages))
 			throw new Exception(implode(PHP_EOL, $messages));
+	}
+
+	/**
+	 * Adds the DbLogRoute class to the log router.
+	 */
+	public function _addDbLogRoute()
+	{
+		$route = array('class' => 'Blocks\\DbLogRoute');
+		$this->log->addRoute($route);
 	}
 
 	/**

@@ -145,7 +145,7 @@ return CMap::mergeArray(
 			),
 
 			'log' => array(
-				'class' => 'CLogRouter',
+				'class' => 'Blocks\LogRouter',
 				'routes' => array(
 					array(
 						'class'  => 'Blocks\FileLogRoute',
@@ -159,10 +159,6 @@ return CMap::mergeArray(
 						'class'         => 'Blocks\ProfileLogRoute',
 						'showInFireBug' => true,
 					),
-					array(
-						'class'         => 'Blocks\DbLogRoute',
-
-					)
 				),
 			),
 
@@ -188,4 +184,3 @@ return CMap::mergeArray(
 		),
 	)
 );
-
