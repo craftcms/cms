@@ -66,6 +66,8 @@ abstract class BaseComponent extends \CApplicationComponent
 
 	/**
 	 * Getter
+	 * @param string $name
+	 * @return mixed
 	 */
 	function __get($name)
 	{
