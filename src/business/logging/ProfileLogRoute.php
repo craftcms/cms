@@ -27,7 +27,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 		else if(!($app instanceof \CWebApplication) || $isAjax)
 			return;
 
-		$viewFile = b()->path->cpTemplatesPath.'logging/'.$view.'.php';
+		$viewFile = b()->path->getAppTemplatesPath().'logging/'.$view.'.php';
 		include($app->findLocalizedFile($viewFile,'en'));
 	}
 }

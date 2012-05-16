@@ -117,7 +117,7 @@ class App extends \CWebApplication
 		if ($this->getIsDbUpdateNeeded())
 		{
 			// Let's let all CP requests through.
-			if ($this->request->mode == RequestMode::CP)
+			if ($this->request->getMode() == RequestMode::CP)
 			{
 				$this->runController('dbupdate');
 				$this->end();
@@ -464,7 +464,7 @@ class App extends \CWebApplication
 	 */
 	public function getSystemViewPath()
 	{
-		return $this->path->getCpTemplatesPath();
+		return $this->path->getAppTemplatesPath();
 	}
 
 	/**

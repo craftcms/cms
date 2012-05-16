@@ -95,16 +95,16 @@ class PathService extends \CApplicationComponent
 	public function getTemplatePath()
 	{
 		if (BLOCKS_CP_REQUEST)
-			return $this->getCpTemplatesPath();
+			return $this->getAppTemplatesPath();
 		else
 			return $this->getSiteTemplatesPath();
 	}
 
 	/**
-	 * Returns the CP templates path.
+	 * Returns the Blocks app templates path.
 	 * @return string
 	 */
-	public function getCpTemplatesPath()
+	public function getAppTemplatesPath()
 	{
 		return $this->getAppPath().'templates/';
 	}
@@ -133,7 +133,7 @@ class PathService extends \CApplicationComponent
 		if (($path = b()->config->offlinePath) !== null)
 			return substr($path, 0, strlen($path) - strlen(pathinfo($path, PATHINFO_BASENAME)));
 
-		return $this->getCpTemplatesPath();
+		return $this->getAppTemplatesPath();
 	}
 
 	/**
@@ -152,18 +152,18 @@ class PathService extends \CApplicationComponent
 	public function getParsedTemplatesPath()
 	{
 		if (BLOCKS_CP_REQUEST)
-			return $this->getParsedCpTemplatesPath();
+			return $this->getParsedAppTemplatesPath();
 		else
 			return $this->getParsedSiteTemplatesPath();
 	}
 
 	/**
-	 * Returns the parsed CP templates path.
+	 * Returns the parsed Blocks app templates path.
 	 * @return string
 	 */
-	public function getParsedCpTemplatesPath()
+	public function getParsedAppTemplatesPath()
 	{
-		$path = $this->getRuntimePath().'parsed_templates/cp/';
+		$path = $this->getRuntimePath().'parsed_templates/app/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
@@ -189,6 +189,19 @@ class PathService extends \CApplicationComponent
 		}
 		else
 			return null;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getParsedPluginTemplatesPath()
+	{
+		$path = $this->getRuntimePath().'parsed_templates/plugins/';
+
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
+
+		return $path;
 	}
 
 	/**

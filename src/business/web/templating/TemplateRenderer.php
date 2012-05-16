@@ -14,6 +14,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	protected $_relativePath;
 	protected $_duplicatePath;
 	protected $_parsedPath;
+	protected $_plugin;
 
 	/**
 	 * Renders a template
@@ -62,7 +63,18 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	 */
 	protected function getRelativePath()
 	{
-		return substr($this->_sourcePath, strlen(b()->path->templatePath));
+		if (strpos($this->_sourcePath, '/plugins/') !== false)
+		{
+			$pathSegs = explode('/', $this->_sourcePath);
+			$keyMatch = array_search('plugins', $pathSegs);
+			$this->_plugin = $pathSegs[$keyMatch + 1];
+			$pathSegs = array_slice($pathSegs, $keyMatch + 3);
+			return implode('/', $pathSegs);
+		}
+		else
+		{
+			return substr($this->_sourcePath, strlen(b()->path->getTemplatePath()));
+		}
 	}
 
 	/**
@@ -72,7 +84,14 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	 */
 	protected function getDuplicatePath()
 	{
-		return b()->path->parsedTemplatesPath.$this->_relativePath;
+		if ($this->_plugin)
+		{
+			return b()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath;
+		}
+		else
+		{
+			return b()->path->getParsedTemplatesPath().$this->_relativePath;
+		}
 	}
 
 	/**
