@@ -15,8 +15,6 @@ abstract class Model extends \CActiveRecord
 	protected $blocksJoinTableName;
 	protected $settingsTableName;
 	protected $foreignKeyName;
-	protected $classPrefix = '';
-	protected $classSuffix = '';
 
 	protected $defaultSettings = array();
 	protected $attributes = array();
@@ -25,10 +23,9 @@ abstract class Model extends \CActiveRecord
 	protected $hasOne = array();
 	protected $indexes = array();
 
-	protected $_classHandle;
-	protected $_content;
-	protected $_blocks;
-	protected $_settings;
+	private $_content;
+	private $_blocks;
+	private $_settings;
 
 	/**
 	 * Constructor
@@ -59,25 +56,8 @@ abstract class Model extends \CActiveRecord
 	 */
 	public function getClassHandle()
 	{
-		if (!isset($this->_classHandle))
-		{
-			// Chop off the namespace
-			$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
-
-			// Chop off the class prefix
-			$prefixLength = strlen($this->classPrefix);
-			if (substr($classHandle, 0, $prefixLength) == $this->classPrefix)
-				$classHandle = substr($classHandle, $prefixLength);
-
-			// Chop off the class suffix
-			$suffixLength = strlen($this->classSuffix);
-			if (substr($classHandle, -$suffixLength) == $this->classSuffix)
-				$classHandle = substr($classHandle, 0, -$suffixLength);
-
-			$this->_classHandle = $classHandle;
-		}
-
-		return $this->_classHandle;
+		$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
+		return $classHandle;
 	}
 
 	/**

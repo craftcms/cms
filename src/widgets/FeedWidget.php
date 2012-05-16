@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class FeedWidget extends Widget
+class FeedWidget extends BaseWidget
 {
 	public $name = 'Feed';
 	public $multipleInstances = true;

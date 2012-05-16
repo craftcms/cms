@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UpdatesWidget extends Widget
+class UpdatesWidget extends BaseWidget
 {
 	public $name = 'Updates';
 	public $title = 'Updates';

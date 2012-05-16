@@ -31,8 +31,6 @@ class App extends \CWebApplication
 		Blocks::import('app.business.enums.AttributeType');
 		Blocks::import('app.business.utils.DatabaseHelper');
 		Blocks::import('app.business.utils.Json');
-		Blocks::import('app.business.Component');
-		Blocks::import('app.business.Plugin');
 		Blocks::import('app.business.logging.FileLogRoute');
 		Blocks::import('app.business.logging.WebLogRoute');
 		Blocks::import('app.business.logging.ProfileLogRoute');
@@ -59,6 +57,7 @@ class App extends \CWebApplication
 	{
 		$aliases = array(
 			'app.blocktypes.*',
+			'app.business.BaseComponent',
 			'app.business.console.*',
 			'app.business.console.commands.*',
 			'app.business.datetime.*',
@@ -68,6 +67,7 @@ class App extends \CWebApplication
 			'app.business.exceptions.*',
 			'app.business.install.*',
 			'app.business.logging.*',
+			'app.business.plugins.*',
 			'app.business.updates.*',
 			'app.business.utils.*',
 			'app.business.validators.*',

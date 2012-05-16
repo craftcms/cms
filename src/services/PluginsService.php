@@ -28,7 +28,7 @@ class PluginsService extends \CApplicationComponent
 		$this->_getAllPluginsInternal();
 
 		// Don't want to alter the original.
-		$pluginInstanceCopy = $this->_pluginInstances;
+		$pluginInstanceCopy = array_merge($this->_pluginInstances);
 
 		// Should we move plugins that are not installed?
 		if (!$includeNotInstalled)
@@ -133,9 +133,10 @@ class PluginsService extends \CApplicationComponent
 	public function enable($className)
 	{
 		$plugin = $this->getPlugin($className);
+		$record = $plugin->getRecord();
 
-		$plugin->enabled = true;
-		if ($plugin->save())
+		$record->enabled = true;
+		if ($record->save())
 			return true;
 		else
 			return false;
@@ -149,9 +150,10 @@ class PluginsService extends \CApplicationComponent
 	public function disable($className)
 	{
 		$plugin = $this->getPlugin($className);
+		$record = $plugin->getRecord();
 
-		$plugin->enabled = false;
-		if ($plugin->save())
+		$record->enabled = false;
+		if ($record->save())
 			return true;
 		else
 			return false;
@@ -165,9 +167,10 @@ class PluginsService extends \CApplicationComponent
 	public function install($className)
 	{
 		$plugin = $this->getPlugin($className);
-		$plugin->enabled = true;
+		$record = $plugin->getRecord();
+		$record->enabled = true;
 
-		if ($plugin->save())
+		if ($record->save())
 		{
 			$plugin->installed = true;
 			return true;
@@ -184,8 +187,9 @@ class PluginsService extends \CApplicationComponent
 	public function uninstall($className)
 	{
 		$plugin = $this->getPlugin($className);
+		$record = $plugin->getRecord();
 
-		if ($plugin->delete())
+		if ($record->delete())
 		{
 			unset($this->_pluginInstances[$className]);
 			return true;
@@ -240,29 +244,32 @@ class PluginsService extends \CApplicationComponent
 	}
 
 	/**
-	 * Will instantiate the given plugin. If the plugin already exists in the datbase, (installed) the instance will be of type
-	 * $plugin->class.  Otherwise, (not installed) $plugin should be null and $className will be the type of the plugin instance created.
+	 * Will instantiate the given plugin. If the plugin already exists in the database, (installed) the instance will be of type
+	 * $record->class.  Otherwise, (not installed) $record should be null and $className will be the type of the plugin instance created.
 	 * The created plugin is added to the internal plugin instance list.
-	 * @param $plugin
-	 * @param $className
+	 * @param Plugin $record
+	 * @param string $className
+	 * @return mixed
 	 */
-	private function _instantiatePlugin($plugin, $className = null)
+	private function _instantiatePlugin($record, $className = null)
 	{
 		// If the plugin has been instantiated before, don't do it again.
 		if (!isset($this->_pluginInstances[$className]))
 		{
-			$existing = $plugin && !$className;
+			$existing = $record && !$className;
 
 			// Get plugins from the file system.
 			$fileSystemPlugins = $this->_getFileSystemPluginsInternal();
 
 			if ($existing)
 			{
-				$pluginInstance = Plugin::model()->populateSubclassRecord($plugin);
-				$pluginInstance->installed = true;
-				$className = $pluginInstance->class;
+				$class = __NAMESPACE__.'\\'.$record->class.'Plugin';
+				$plugin = new $class;
+				$plugin->setRecord($record);
+				$plugin->installed = true;
+				$className = $plugin->class;
 
-				if ($pluginInstance->enabled)
+				if ($plugin->enabled)
 				{
 					// Check to see if the plugin wants to register any service.
 					$this->_registerPluginServices($className);
@@ -270,16 +277,10 @@ class PluginsService extends \CApplicationComponent
 				}
 			}
 			else
-			{
-				// Instantiate the plugin instance from the active record object.
-				$pluginInstance = new $fileSystemPlugins[$className][0];
-				$pluginInstance->installed = false;
-				$pluginInstance->enabled = false;
-				$pluginInstance->class = $className;
-			}
+				$plugin = new $fileSystemPlugins[$className][0];
 
 			// Add to our list.
-			$this->_pluginInstances[$className] = $pluginInstance;
+			$this->_pluginInstances[$className] = $plugin;
 		}
 	}
 
