@@ -15,12 +15,13 @@ class StringAdapter extends Adapter
 	}
 
 	/**
+	 * @param $index
 	 * @return string
 	 */
 	public function charAt($index)
 	{
 		if ($this->_var)
-			return $this->_var[0];
+			return $this->_var[$index];
 		else
 			return '';
 	}
@@ -117,7 +118,6 @@ class StringAdapter extends Adapter
 
 	/**
 	 * Split
-	 *
 	 * @param string $delimiter
 	 * @return array
 	 */
@@ -126,4 +126,21 @@ class StringAdapter extends Adapter
 		return array_map('trim', explode($delimiter, $this->_var));
 	}
 
+	/**
+	 * @param $search
+	 * @return bool
+	 */
+	public function contains($search)
+	{
+		return strpos($this->_var, $search) !== false;
+	}
+
+	/**
+	 * @param $search
+	 * @return bool
+	 */
+	public function doesnotcontain($search)
+	{
+		return !$this->contains($search);
+	}
 }
