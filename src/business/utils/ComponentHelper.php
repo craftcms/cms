@@ -8,17 +8,17 @@ class ComponentHelper
 {
 	/**
 	 * Returns instances of a component type.
-	 * @param string $subfolder   The subfolder to look in within app/ and each plugin's folder.
-	 * @param string $classSuffix The suffix each class name must have.
+	 * @param string $subfolder     The subfolder to look in within app/ and each plugin's folder.
+	 * @param string $componentType The type of components to load.
 	 * @return array
 	 */
-	public static function getComponents($subfolder, $classSuffix)
+	public static function getComponents($subfolder, $componentType)
 	{
 		$components = array();
 
 		$appPath = b()->path->getAppPath();
 		$folderPath = $appPath.$subfolder.'/';
-		$files = @glob($folderPath.'/*'.$classSuffix.'.php');
+		$files = @glob($folderPath.'/*'.$componentType.'.php');
 
 		if ($files !== false)
 		{
@@ -27,7 +27,7 @@ class ComponentHelper
 				$class = basename($file, '.php');
 
 				// Ignore if the name is just the suffix
-				if ($class == $classSuffix)
+				if ($class == $componentType)
 					continue;
 
 				// Add the namespace

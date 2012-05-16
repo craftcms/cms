@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SiteMapWidget extends Widget
+class SiteMapWidget extends BaseWidget
 {
 	public $name = 'Site Map';
 	public $title = 'Site Map';

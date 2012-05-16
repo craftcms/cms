@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class BaseOptionsBlock extends Block
+abstract class BaseOptionsBlock extends BaseBlock
 {
 	protected $defaultSettings = array(
 		'options' => array()

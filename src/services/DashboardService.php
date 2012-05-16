@@ -20,6 +20,20 @@ class DashboardService extends \CApplicationComponent
 		return $this->_allWidgets;
 	}
 
+	/**
+	 * Returns a widget by its class.
+	 * @param string $class
+	 * @return mixed
+	 */
+	public function getWidgetByClass($class)
+	{
+		$class = __NAMESPACE__.'\\'.$class.'Widget';
+		if (class_exists($class))
+			return new $class;
+		else
+			return null;
+	}
+
 	/** 
 	 * Returns a widget by its ID.
 	 * @param int $widgetId
@@ -27,11 +41,22 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getWidgetById($widgetId)
 	{
-		$widget = b()->db->createCommand()
-			->from('widgets')
-			->where(array('id' => $widgetId, 'user_id' => b()->users->current->id))
-			->queryRow();
-		return Widget::model()->populateSubclassRecord($widget);
+		$record = Widget::model()->findByAttributes(array(
+			'id' => $widgetId,
+			'user_id' => b()->users->getCurrent()->id
+		));
+
+		if ($record)
+		{
+			$widget = $this->getWidgetByClass($record->class);
+			if ($widget)
+			{
+				$widget->setRecord($record);
+				return $widget;
+			}
+		}
+
+		return null;
 	}
 
 	/**
@@ -40,12 +65,25 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getUserWidgets()
 	{
-		$widgets = b()->db->createCommand()
-			->from('widgets')
-			->where(array('user_id' => b()->users->current->id))
-			->order('sort_order')
-			->queryAll();
-		return Widget::model()->populateSubclassRecords($widgets);
+		$records = Widget::model()->findAllByAttributes(array(
+			'user_id' => b()->users->getCurrent()->id
+		), array(
+			'order' => 'sort_order'
+		));
+
+		$widgets = array();
+
+		foreach ($records as $record)
+		{
+			$widget = $this->getWidgetByClass($record->class);
+			if ($widget)
+			{
+				$widget->setRecord($record);
+				$widgets[] = $widget;
+			}
+		}
+
+		return $widgets;
 	}
 
 	/**

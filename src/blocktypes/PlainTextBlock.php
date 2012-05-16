@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PlainTextBlock extends Block
+class PlainTextBlock extends BaseBlock
 {
 	public $blocktypeName = 'Plain Text';
 

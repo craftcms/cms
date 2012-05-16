@@ -44,6 +44,7 @@ class DashboardVariable
 	{
 		$widgetIds = array();
 		$widgets = b()->dashboard->getUserWidgets();
+
 		foreach ($widgets as $widget)
 		{
 			$widgetIds[] = $widget->id;

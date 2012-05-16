@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class NumberBlock extends Block
+class NumberBlock extends BaseBlock
 {
 	public $blocktypeName = 'Number';
 
