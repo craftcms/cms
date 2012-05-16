@@ -92,7 +92,7 @@ class UpdateHelper
 	 * @return string
 	 * @throws Exception
 	 */
-	public static function constructCoreReleasePatchFileName($version, $build, $product)
+	public static function constructAppReleasePatchFileName($version, $build, $product)
 	{
 		if(StringHelper::isNullOrEmpty($version) || StringHelper::isNullOrEmpty($build) || StringHelper::isNullOrEmpty($product))
 			throw new Exception('Missing version, build or product.');

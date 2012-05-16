@@ -39,7 +39,7 @@ class EtService extends \CApplicationComponent
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'type' => CoreReleaseFileType::Patch
+			'type' => AppReleaseFileType::Patch
 		);
 
 		$et = new Et(ElliotEndPoints::DownloadPackage, 60);
@@ -61,10 +61,10 @@ class EtService extends \CApplicationComponent
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'type' => CoreReleaseFileType::Patch
+			'type' => AppReleaseFileType::Patch
 		);
 
-		$et = new Et(ElliotEndPoints::GetCoreReleaseFileMD5);
+		$et = new Et(ElliotEndPoints::GetAppReleaseFileMD5);
 		$et->package->data = $params;
 		$package = $et->phoneHome();
 
