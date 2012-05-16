@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class CoreUpdater implements IUpdater
+class AppUpdater implements IUpdater
 {
 	private $_buildsToUpdate;
 	private $_migrationsToRun = false;
@@ -25,6 +25,7 @@ class CoreUpdater implements IUpdater
 
 	/**
 	 * Performs environmental requirement checks before running an update.
+	 * @throws Exception
 	 */
 	public function checkRequirements()
 	{
@@ -59,11 +60,11 @@ class CoreUpdater implements IUpdater
 		if ($this->_buildsToUpdate == null)
 			throw new Exception('Blocks is already up to date.');
 
-		Blocks::log('Starting the CoreUpdater.', \CLogger::LEVEL_INFO);
+		Blocks::log('Starting the AppUpdater.', \CLogger::LEVEL_INFO);
 
 		// Get the most up-to-date build.
 		$latestBuild = $this->_buildsToUpdate[0];
-		$this->_downloadFilePath = b()->path->runtimePath.UpdateHelper::constructCoreReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getProduct());
+		$this->_downloadFilePath = b()->path->runtimePath.UpdateHelper::constructAppReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getProduct());
 		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
 
 		// Download the package from ET.
@@ -130,7 +131,7 @@ class CoreUpdater implements IUpdater
 		if (!b()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
 			throw new Exception('The update was performed successfully, but there was a problem setting the new version and build number in the database.');
 
-		Blocks::log('Finished CoreUpdater.', \CLogger::LEVEL_INFO);
+		Blocks::log('Finished AppUpdater.', \CLogger::LEVEL_INFO);
 		return true;
 	}
 

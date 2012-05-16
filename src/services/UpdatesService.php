@@ -209,10 +209,10 @@ class UpdatesService extends \CApplicationComponent
 	/**
 	 * @return bool
 	 */
-	public function doCoreUpdate()
+	public function doAppUpdate()
 	{
-		$coreUpdater = new CoreUpdater();
-		if ($coreUpdater->start())
+		$appUpdater = new AppUpdater();
+		if ($appUpdater->start())
 			return true;
 
 		return false;

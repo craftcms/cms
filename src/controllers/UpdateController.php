@@ -94,7 +94,7 @@ class UpdateController extends Controller
 			{
 				case 'Blocks':
 				{
-					b()->updates->doCoreUpdate();
+					b()->updates->doAppUpdate();
 					break;
 				}
 

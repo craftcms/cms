@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class CoreReleaseFileType
+class AppReleaseFileType
 {
 	const Full      = 'full';
 	const Patch     = 'patch';
