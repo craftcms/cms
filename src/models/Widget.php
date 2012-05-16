@@ -20,6 +20,4 @@ class Widget extends Model
 		'user'   => array('model' => 'User', 'required' => true),
 		'plugin' => array('model' => 'Plugin')
 	);
-	 * @param $idPrefix
-	 * @param $namePrefix
 }
