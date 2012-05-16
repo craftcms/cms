@@ -72,6 +72,8 @@ class DashboardService extends \CApplicationComponent
 	/**
 	 * Saves the user's dashboard settings
 	 * @param array $settings
+	 * @throws \Exception
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function saveSettings($settings)

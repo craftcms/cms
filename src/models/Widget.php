@@ -58,6 +58,8 @@ class Widget extends Model
 
 	/**
 	 * Display the settings form
+	 * @param $idPrefix
+	 * @param $namePrefix
 	 * @return bool
 	 */
 	public function displaySettings($idPrefix, $namePrefix)

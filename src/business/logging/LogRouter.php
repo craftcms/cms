@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class LogRouter extends \CLogRouter
 {
+	/**
+	 * @param $route
+	 */
 	public function addRoute($route)
 	{
 		$counter = count($this->_routes);
