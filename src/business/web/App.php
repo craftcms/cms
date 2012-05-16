@@ -201,7 +201,7 @@ class App extends \CWebApplication
 			if (isset($actionPath[0]))
 			{
 				$controller = $actionPath[0];
-				$action = $actionPath[1];
+				$action = isset($actionPath[1]) ? $actionPath[1] : '';
 
 				// Check for a valid controller in app/controllers.
 				$controllerPath = b()->path->getAppPath().'controllers/'.$controller.'Controller.php';
