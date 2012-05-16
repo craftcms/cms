@@ -28,7 +28,7 @@ class PluginsService extends \CApplicationComponent
 		$this->_getAllPluginsInternal();
 
 		// Don't want to alter the original.
-		$pluginInstanceCopy = $this->_pluginInstances;
+		$pluginInstanceCopy = array_merge($this->_pluginInstances);
 
 		// Should we move plugins that are not installed?
 		if (!$includeNotInstalled)
