@@ -64,7 +64,8 @@ class TemplateHelper
 				// Set the template path depending on the type of request mode we're in (path->getTemplatePath() takes care of that.
 				$templatePath = b()->path->getTemplatePath();
 				b()->setViewPath($templatePath);
-				b()->setLayoutPath($templatePath.'_layouts/');
+				if (is_dir($templatePath.'_layouts/'))
+					b()->setLayoutPath($templatePath.'_layouts/');
 			}
 
 			// This view path will either be the CP template path or the front-end template path.
@@ -96,7 +97,8 @@ class TemplateHelper
 				{
 					// Set the template path and layout path to the plugin's
 					b()->setViewPath($viewPath);
-					b()->setLayoutPath($viewPath.'_layouts/');
+					if (is_dir($viewPath.'_layouts/'))
+						b()->setLayoutPath($viewPath.'_layouts/');
 
 					$copyTemplatePath = substr($copyTemplatePath, strlen($plugin->class) + 1);
 					$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
