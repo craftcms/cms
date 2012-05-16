@@ -240,18 +240,14 @@ class UpdatesService extends \CApplicationComponent
 		$updateInfo->blocks->localBuild = Blocks::getBuild();
 		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
-		$plugins = b()->plugins->enabledPluginClassNamesAndVersions;
-
-		if ($plugins)
+		$plugins = b()->plugins->getEnabledPlugins();
+		foreach ($plugins as $plugin)
 		{
-			foreach ($plugins as $className => $localVersion)
-			{
-				$pluginUpdateInfo = new PluginUpdateInfo();
-				$pluginUpdateInfo->class = $className;
-				$pluginUpdateInfo->localVersion = $localVersion;
+			$pluginUpdateInfo = new PluginUpdateInfo();
+			$pluginUpdateInfo->class = $plugin->getClassHandle();
+			$pluginUpdateInfo->localVersion = $plugin->version;
 
-				$updateInfo->plugins[$className] = $pluginUpdateInfo;
-			}
+			$updateInfo->plugins[$plugin->getClassHandle()] = $pluginUpdateInfo;
 		}
 
 		$response = b()->et->check($updateInfo);

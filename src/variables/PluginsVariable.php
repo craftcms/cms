@@ -22,6 +22,6 @@ class PluginsVariable
 	 */
 	public function all()
 	{
-		return b()->plugins->getAll(true, true);
+		return b()->plugins->getAllPlugins(true, true);
 	}
 }

@@ -8,6 +8,12 @@ namespace Blocks;
 abstract class BaseComponent extends \CApplicationComponent
 {
 	/**
+	 * The AR record associated with this instance.
+	 * @var Model
+	 */
+	public $record;
+
+	/**
 	 * The type of component, e.g. "Plugin", "Widget", or "Block"
 	 * Defined by the component type's base class.
 	 * @access protected
@@ -16,7 +22,6 @@ abstract class BaseComponent extends \CApplicationComponent
 	protected $componentType;
 
 	private $_classHandle;
-	private $_record;
 
 	/**
 	 * Get the class name, sans namespace.
@@ -41,38 +46,14 @@ abstract class BaseComponent extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the component's AR record.
-	 * @return Model
-	 */
-	public function getRecord()
-	{
-		if (!isset($this->_record))
-		{
-			$class = __NAMESPACE__.'\\'.$this->componentType;
-			$this->_record = new $class;
-			$this->_record->class = $this->getClassHandle();
-		}
-		return $this->_record;
-	}
-
-	/**
-	 * Sets the component's AR record.
-	 * @param Model $record
-	 */
-	public function setRecord($record)
-	{
-		$this->_record = $record;
-	}
-
-	/**
 	 * Getter
 	 * @param string $name
 	 * @return mixed
 	 */
 	function __get($name)
 	{
-		if (isset($this->getRecord()->$name))
-			return $this->getRecord()->$name;
+		if (isset($this->record->$name))
+			return $this->record->$name;
 		else
 			return parent::__get($name);
 	}
