@@ -13,7 +13,7 @@ class PluginsController extends Controller
 	{
 		$this->requirePostRequest();
 		$className = b()->request->getRequiredPost('pluginClass');
-		if (b()->plugins->install($className))
+		if (b()->plugins->installPlugin($className))
 			b()->user->setMessage(MessageType::Notice, 'Plugin installed.');
 		else
 			b()->user->setMessage(MessageType::Error, 'Couldn’t install plugin.');
@@ -27,7 +27,7 @@ class PluginsController extends Controller
 	{
 		$this->requirePostRequest();
 		$className = b()->request->getRequiredPost('pluginClass');
-		if (b()->plugins->uninstall($className))
+		if (b()->plugins->uninstallPlugin($className))
 			b()->user->setMessage(MessageType::Notice, 'Plugin uninstalled.');
 		else
 			b()->user->setMessage(MessageType::Error, 'Couldn’t uninstall plugin.');
@@ -41,7 +41,7 @@ class PluginsController extends Controller
 	{
 		$this->requirePostRequest();
 		$className = b()->request->getRequiredPost('pluginClass');
-		if (b()->plugins->enable($className))
+		if (b()->plugins->enablePlugin($className))
 			b()->user->setMessage(MessageType::Notice, 'Plugin enabled.');
 		else
 			b()->user->setMessage(MessageType::Error, 'Couldn’t enable plugin.');
@@ -55,7 +55,7 @@ class PluginsController extends Controller
 	{
 		$this->requirePostRequest();
 		$className = b()->request->getRequiredPost('pluginClass');
-		if (b()->plugins->disable($className))
+		if (b()->plugins->disablePlugin($className))
 			b()->user->setMessage(MessageType::Notice, 'Plugin disabled.');
 		else
 			b()->user->setMessage(MessageType::Error, 'Couldn’t disable plugin.');

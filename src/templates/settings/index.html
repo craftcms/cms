@@ -53,9 +53,9 @@
 				{foreach b.plugins.all as plugin}
 					<tr>
 						<td width="25%">
-							<span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span>
+							<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
 							{if plugin.hasSettings}
-								<a href="{:b.url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a>
+								<a href="{:b.url.base}settings/plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
 							{else}
 								{:plugin.name}
 							{/if}
@@ -72,9 +72,9 @@
 						</td>
 						<td class="rightalign">
 							<form method="post" action="">
-								<input type="hidden" name="pluginClass" value="{:plugin.class}" />
+								<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}" />
 								<input type="hidden" name="redirect" value="settings" />
-								{if plugin.installed}
+								{if plugin.getIsInstalled}
 									{if plugin.enabled}
 										<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin" />
 									{else}

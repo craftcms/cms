@@ -51,7 +51,7 @@ class DashboardService extends \CApplicationComponent
 			$widget = $this->getWidgetByClass($record->class);
 			if ($widget)
 			{
-				$widget->setRecord($record);
+				$widget->record = $record;
 				return $widget;
 			}
 		}
@@ -78,7 +78,7 @@ class DashboardService extends \CApplicationComponent
 			$widget = $this->getWidgetByClass($record->class);
 			if ($widget)
 			{
-				$widget->setRecord($record);
+				$widget->record = $record;
 				$widgets[] = $widget;
 			}
 		}
