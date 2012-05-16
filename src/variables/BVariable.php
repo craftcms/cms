@@ -158,4 +158,12 @@ class BVariable
 	{
 		return new SessionVariable;
 	}
+
+	/**
+	 * @return HttpStatusVariable
+	 */
+	public function httpstatus()
+	{
+		return new HttpStatusVariable;
+	}
 }

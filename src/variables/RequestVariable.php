@@ -24,4 +24,12 @@ class RequestVariable
 	{
 		return b()->request->getPost($name);
 	}
+
+	/**
+	 * @return string
+	 */
+	public function servername()
+	{
+		return b()->request->getServerName();
+	}
 }
