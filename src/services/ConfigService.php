@@ -31,14 +31,10 @@ class ConfigService extends \CApplicationComponent
 	 */
 	function __get($name)
 	{
-		try
-		{
+		if (parent::__isset($name))
 			return parent::__get($name);
-		}
-		catch (\Exception $e)
-		{
+		else
 			return $this->getItem($name);
-		}
 	}
 
 	/**
