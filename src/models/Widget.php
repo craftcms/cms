@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Widget extends Model
+class Widget extends BaseModel
 {
 	protected $tableName = 'widgets';
 	protected $settingsTableName = 'widgetsettings';

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Validates the required User attributes for the installer.
  */
-class InstallUserForm extends FormModel
+class InstallUserForm extends BaseForm
 {
 	protected $attributes = array(
 		'username' => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),

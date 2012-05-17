@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Site extends Model
+class Site extends BaseModel
 {
 	protected $tableName = 'sites';
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * @abstract
  */
-abstract class Model extends \CActiveRecord
+abstract class BaseModel extends \CActiveRecord
 {
 	public $hasContent = false;
 	public $hasBlocks = false;
@@ -198,7 +198,7 @@ abstract class Model extends \CActiveRecord
 	 * @param bool $test
 	 * @return
 	 */
-	public function getSettings($test = false)
+	public function getSettings()
 	{
 		if (!isset($this->_settings))
 		{

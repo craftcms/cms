@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Section extends Model
+class Section extends BaseModel
 {
 	protected $tableName = 'sections';
 	public $hasBlocks = true;

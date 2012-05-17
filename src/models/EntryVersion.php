@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EntryVersion extends Model
+class EntryVersion extends BaseModel
 {
 	protected $tableName = 'entryversions';
 
