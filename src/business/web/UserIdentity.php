@@ -12,35 +12,10 @@ class UserIdentity extends \CUserIdentity
 
 	public $failedPasswordAttemptCount;
 
-	public $loginName;
-	public $password;
-
 	const ERROR_ACCOUNT_LOCKED          = 50;
 	const ERROR_ACCOUNT_COOLDOWN        = 51;
 	const ERROR_PASSWORD_RESET_REQUIRED = 52;
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
-
-	/**
-	 * Constructor.
-	 * @param string $loginName
-	 * @param string $password
-	 */
-	function __construct($loginName, $password)
-	{
-		$this->loginName = $loginName;
-		$this->password = $password;
-	}
-
-	/**
-	 * Returns the display name for the identity.
-	 * The default implementation simply returns {@link loginName}.
-	 * This method is required by {@link IUserIdentity}.
-	 * @return string the display name for the identity.
-	 */
-	public function getName()
-	{
-		return $this->loginName;
-	}
 
 	/**
 	 * Authenticates a user against the database.
@@ -49,7 +24,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = b()->users->getByLoginName($this->loginName);
+		$user = b()->users->getUserByUsernameOrEmail($this->username);
 
 		if ($user === null)
 			$this->errorCode = self::ERROR_USERNAME_INVALID;

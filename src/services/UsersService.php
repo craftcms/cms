@@ -50,16 +50,16 @@ class UsersService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param $loginName
-	 * @return mixed
+	 * Returns a user by its username or email
+	 * @param string $usernameOrEmail
+	 * @return User
 	 */
-	public function getByLoginName($loginName)
+	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
 		$user = User::model()->find(array(
-			'condition' => 'username=:userName OR email=:email',
-			'params' => array(':userName' => $loginName, ':email' => $loginName),
+			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
+			'params' => array(':usernameOrEmail' => $usernameOrEmail),
 		));
-
 		return $user;
 	}
 

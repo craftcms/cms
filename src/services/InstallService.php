@@ -103,10 +103,10 @@ class InstallService extends \CApplicationComponent
 			$user->save();
 
 			// Log them in
-			$loginInfo = new LoginForm;
-			$loginInfo->loginName = $user->username;
-			$loginInfo->password = $inputs['password'];
-			$loginInfo->login();
+			$loginForm = new LoginForm;
+			$loginForm->username = $user->username;
+			$loginForm->password = $inputs['password'];
+			$loginForm->login();
 
 			// Give them the default dashboard widgets
 			b()->dashboard->assignDefaultUserWidgets($user->id);

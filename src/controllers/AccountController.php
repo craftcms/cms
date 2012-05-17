@@ -14,12 +14,12 @@ class AccountController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$forgotPasswordInfo = new ForgotPasswordForm();
-		$forgotPasswordInfo->loginName = b()->request->getPost('username');
+		$forgotPasswordForm = new ForgotPasswordForm();
+		$forgotPasswordForm->username = b()->request->getPost('username');
 
-		if ($forgotPasswordInfo->validate())
+		if ($forgotPasswordForm->validate())
 		{
-			$user = b()->users->getByLoginName($forgotPasswordInfo->loginName);
+			$user = b()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
 			if ($user)
 			{
 				if (b()->email->sendForgotPasswordEmail($user, b()->sites->current))

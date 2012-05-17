@@ -45,7 +45,7 @@ class SessionController extends Controller
 					$errorMessage = 'Account locked.';
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
 				{
-					$user = b()->users->getByLoginName($username);
+					$user = b()->users->getUserByUsernameOrEmail($username);
 					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(b()->users->getRemainingCooldownTime($user), false).'.';
 				}
 				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)

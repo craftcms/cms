@@ -6,26 +6,25 @@ namespace Blocks;
  * LoginForm is the data structure for keeping user login form data.
  * It is used by the 'login' action of 'sessionController'.
  */
-class LoginForm extends \CFormModel
+class LoginForm extends BaseForm
 {
-	public $loginName;
-	public $password;
-	public $rememberMe;
+	protected $attributes = array(
+		'username'   => array('required' => true),
+		'password'   => array('required' => true),
+		'rememberMe' => AttributeType::Boolean
+	);
 
+	/**
+	 * Stores the user identity.
+	 * @access private
+	 * @var UserIdentity
+	 */
 	private $_identity;
 
 	/**
-	 * Declares the validation rules.
-	 * The rules state that username and password are required and the password needs to be authenticated.
-	 * @return array of validation rules.
+	 * Returns the user identity.
+	 * @return UserIdentity
 	 */
-	public function rules()
-	{
-		return array(
-			array('loginName, password', 'required'),
-		);
-	}
-
 	public function getIdentity()
 	{
 		return $this->_identity;
@@ -37,30 +36,30 @@ class LoginForm extends \CFormModel
 	 */
 	public function login()
 	{
-		if ($this->_identity === null)
+		if (!isset($this->_identity))
 		{
-			$this->_identity = new UserIdentity($this->loginName, $this->password);
+			$this->_identity = new UserIdentity($this->username, $this->password);
 			$this->_identity->authenticate();
 		}
 
-		if($this->_identity->errorCode === UserIdentity::ERROR_NONE)
+		if ($this->_identity->errorCode === UserIdentity::ERROR_NONE)
 		{
 			$timeOut = ConfigHelper::getTimeInSeconds(b()->config->sessionTimeout);
 
 			if ($this->rememberMe)
 				$timeOut = ConfigHelper::getTimeInSeconds(b()->config->rememberMeSessionTimeout);
 
-			if (b()->config->rememberUsernameEnabled == true)
+			if (b()->config->rememberUsernameEnabled === true)
 			{
-				$cookie = new \CHttpCookie('loginName', $this->loginName);
+				$cookie = new \CHttpCookie('username', $this->username);
 				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(b()->config->rememberUsernameTimeout);
 				$cookie->httpOnly = true;
-				b()->request->cookies['loginName'] = $cookie;
+				b()->request->cookies['username'] = $cookie;
 			}
 
 			return b()->user->login($this->_identity, $timeOut);
 		}
-
-		return false;
+		else
+			return false;
 	}
 }
