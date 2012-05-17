@@ -2,6 +2,7 @@
 namespace Blocks;
 
 /**
+ * Model base class
  * @abstract
  */
 abstract class BaseModel extends \CActiveRecord

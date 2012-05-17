@@ -249,23 +249,23 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $loginName
+	 * @param $username
 	 * @param $password
 	 * @param bool $rememberMe
-	 * @return LoginForm|bool
+	 * @return LoginForm
 	 */
-	public function startLogin($loginName, $password, $rememberMe = false)
+	public function startLogin($username, $password, $rememberMe = false)
 	{
-		$loginInfo = new LoginForm();
-		$loginInfo->loginName = $loginName;
-		$loginInfo->password = $password;
-		$loginInfo->rememberMe = $rememberMe;
+		$loginForm = new LoginForm();
+		$loginForm->username = $username;
+		$loginForm->password = $password;
+		$loginForm->rememberMe = $rememberMe;
 
 		// Attempt to log in
-		if ($loginInfo->validate())
-			$loginInfo->login();
+		if ($loginForm->validate())
+			$loginForm->login();
 
-		return $loginInfo;
+		return $loginForm;
 	}
 
 	/**
@@ -273,7 +273,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRememeberedUsername()
 	{
-		return (isset(b()->request->cookies['loginName'])) ? b()->request->cookies['loginName']->value : null;
+		return (isset(b()->request->cookies['username'])) ? b()->request->cookies['username']->value : null;
 	}
 
 	/**

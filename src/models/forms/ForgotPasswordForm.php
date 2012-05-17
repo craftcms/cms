@@ -2,19 +2,11 @@
 namespace Blocks;
 
 /**
- *
+ * Forgot Password form
  */
-class ForgotPasswordForm extends \CFormModel
+class ForgotPasswordForm extends BaseForm
 {
-	public $loginName;
-
-	/**
-	 * @return array
-	 */
-	public function rules()
-	{
-		return array(
-			array('loginName', 'required'),
-		);
-	}
+	protected $attributes = array(
+		'username' => array('required' => true)
+	);
 }
