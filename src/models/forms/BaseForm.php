@@ -2,7 +2,8 @@
 namespace Blocks;
 
 /**
- *
+ * Form base class
+ * @abstract
  */
 abstract class BaseForm extends \CFormModel
 {
