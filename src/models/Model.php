@@ -37,7 +37,7 @@ abstract class Model extends \CActiveRecord
 
 		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
-		if (!b()->isInstalled)
+		if (!b()->getIsInstalled())
 		{
 			// Just do the bare minimum of constructor-type stuff.
 			// Maybe init() is all that's necessary?
@@ -53,6 +53,7 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Get the class name, sans namespace
+	 * @return string
 	 */
 	public function getClassHandle()
 	{
@@ -139,7 +140,7 @@ abstract class Model extends \CActiveRecord
 	public function getContent($language = null)
 	{
 		if (!$language)
-			$language = b()->sites->current->language;
+			$language = b()->sites->getCurrent()->language;
 
 		if (!isset($this->_content[$language]))
 		{
@@ -165,7 +166,7 @@ abstract class Model extends \CActiveRecord
 		{
 			$this->_blocks = array();
 
-			if ($this->hasBlocks && !$this->isNewRecord)
+			if ($this->hasBlocks && !$this->getIsNewRecord())
 			{
 				$blocks = b()->db->createCommand()
 					->select('b.*')
@@ -194,6 +195,8 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Returns the current record's settings
+	 * @param bool $test
+	 * @return
 	 */
 	public function getSettings($test = false)
 	{
@@ -201,7 +204,7 @@ abstract class Model extends \CActiveRecord
 		{
 			$this->_settings = $this->defaultSettings;
 
-			if ($this->hasSettings && !$this->isNewRecord)
+			if ($this->hasSettings && !$this->getIsNewRecord())
 			{
 				$settings = b()->db->createCommand()
 					->select('name, value')
@@ -234,7 +237,7 @@ abstract class Model extends \CActiveRecord
 	{
 		$this->_settings = array_merge($this->defaultSettings, (array)$settings);
 
-		if (!$this->isNewRecord)
+		if (!$this->getIsNewRecord())
 		{
 			$table = $this->getSettingsTableName();
 
@@ -260,7 +263,8 @@ abstract class Model extends \CActiveRecord
 
 	/**
 	 * Adds content block handles to the mix of possible magic getter properties
-	 * @param $name
+	 * @param string $name
+	 * @throws \Exception
 	 * @return mixed
 	 * @return mixed|string
 	 */
@@ -466,7 +470,7 @@ abstract class Model extends \CActiveRecord
 	public function dropTable()
 	{
 		$table = $this->getTableName();
-		if (b()->db->schema->getTable($table) !== null)
+		if (b()->db->getSchema()->getTable($table) !== null)
 			b()->db->createCommand()->dropTable($table);
 
 		// Drop the content table if necessary
@@ -643,12 +647,12 @@ abstract class Model extends \CActiveRecord
 	}
 
 	/**
-	 * If it is a new actice record instance, will populate date_created with the current UTC unix timestamp and a new GUID
+	 * If it is a new active record instance, will populate date_created with the current UTC unix timestamp and a new GUID
 	 * for uid. If it is an existing record, will populate date_updated with the current UTC unix timestamp.
 	 */
 	public function populateAuditAttributes()
 	{
-		if ($this->isNewRecord)
+		if ($this->getIsNewRecord())
 		{
 			$this->date_created = DateTimeHelper::currentTime();
 			$this->uid = StringHelper::UUID();

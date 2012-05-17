@@ -22,7 +22,7 @@ class AccountController extends Controller
 			$user = b()->users->getByLoginName($forgotPasswordInfo->loginName);
 			if ($user)
 			{
-				if (b()->email->sendForgotPasswordEmail($user, b()->sites->current))
+				if (b()->email->sendForgotPasswordEmail($user, b()->sites->getCurrent()))
 					$this->returnJson(array('success' => true));
 
 				$this->returnErrorJson('There was a problem sending the forgot password email.');
@@ -63,7 +63,7 @@ class AccountController extends Controller
 					$userToChange->cooldown_start = null;
 					$userToChange->save();
 
-					if (!b()->user->isLoggedIn)
+					if (!b()->user->getIsLoggedIn())
 						b()->user->startLogin($userToChange->username, $verifyPasswordForm->password);
 
 					b()->dashboard->assignDefaultUserWidgets($userToChange->id);
@@ -86,7 +86,7 @@ class AccountController extends Controller
 	 */
 	public function checkPassword($password)
 	{
-		$user = b()->users->current;
+		$user = b()->users->getCurrent();
 		if (b()->security->checkPassword($password, $user->password, $user->enc_type))
 			return true;
 

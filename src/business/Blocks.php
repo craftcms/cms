@@ -173,7 +173,7 @@ class Blocks extends \Yii
 	 */
 	public static function dump($target)
 	{
-		return \CVarDumper::dump($target, 10, true);
+		\CVarDumper::dump($target, 10, true);
 	}
 
 	/**
@@ -259,7 +259,7 @@ class Blocks extends \Yii
 	{
 		$encodedData = Json::encode($data);
 
-		if (($currentUser = b()->users->current) !== null)
+		if (($currentUser = b()->users->getCurrent()) !== null)
 			$userId = $currentUser->id;
 		else
 			$userId = null;

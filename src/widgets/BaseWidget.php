@@ -41,6 +41,8 @@ abstract class BaseWidget extends BaseComponent
 
 	/**
 	 * Display the settings form
+	 * @param $idPrefix
+	 * @param $namePrefix
 	 * @return bool
 	 */
 	public function displaySettings($idPrefix, $namePrefix)

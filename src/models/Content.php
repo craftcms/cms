@@ -22,7 +22,7 @@ class Content extends \CModel
 		if (!isset($this->_content))
 		{
 			// Get the current content
-			if (isset($this->record) && isset($this->language) && $this->record->hasContent && !$this->record->isNewRecord)
+			if (isset($this->record) && isset($this->language) && $this->record->hasContent && !$this->record->getIsNewRecord())
 			{
 				$this->_content = b()->db->createCommand()
 					->from($this->table)
@@ -51,6 +51,8 @@ class Content extends \CModel
 
 	/**
 	 * Getter
+	 * @param string $name
+	 * @return mixed|null
 	 */
 	function __get($name)
 	{
@@ -65,10 +67,13 @@ class Content extends \CModel
 
 	/**
 	 * Gets the value of a content block.
+	 * @param $name
+	 * @return null
 	 */
 	public function getValue($name)
 	{
 		$content = $this->getContent();
+
 		if (isset($content[$name]))
 			return $content[$name];
 		else
@@ -149,21 +154,22 @@ class Content extends \CModel
 	public function save($runValidation = true)
 	{
 		if (!$runValidation || $this->validate())
-			return $this->isNew ? $this->insert() : $this->update();
+			return $this->getIsNew() ? $this->insert() : $this->update();
 		else
 			return false;
 	}
 
 	/**
 	 * Inserts a row into the database.
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function insert()
 	{
-		if (!$this->isNew)
+		if (!$this->getIsNew())
 			throw new Exception('The content row cannot be inserted into the database because it is not new.');
 
-		if ($this->record->isNewRecord)
+		if ($this->record->getIsNewRecord())
 			throw new Exception('The content row cannot be inserted into the database before its record has been saved.');
 
 		// Save the foreign key 
@@ -178,11 +184,12 @@ class Content extends \CModel
 
 	/**
 	 * Updates the row in the database.
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function update()
 	{
-		if ($this->isNew)
+		if ($this->getIsNew())
 			throw new Exception('The content row cannot be updated because it is new.');
 
 		$content = $this->getContent();

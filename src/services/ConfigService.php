@@ -10,7 +10,6 @@ class ConfigService extends \CApplicationComponent
 
 	/**
 	 * Get a config item
-	 *
 	 * @param      $item
 	 * @param null $default
 	 * @return null
@@ -25,7 +24,6 @@ class ConfigService extends \CApplicationComponent
 
 	/**
 	 * Adds config items to the mix of possible magic getter properties
-	 *
 	 * @param $name
 	 * @return mixed|null
 	 */
@@ -39,7 +37,6 @@ class ConfigService extends \CApplicationComponent
 
 	/**
 	 * Get a DB config item
-	 *
 	 * @param      $item
 	 * @param null $default
 	 * @return null

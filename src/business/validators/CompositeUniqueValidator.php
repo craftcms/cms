@@ -9,8 +9,9 @@ class CompositeUniqueValidator extends \CValidator
 	public $with;
 
 	/**
-	 * @param $object
-	 * @param $attribute
+	 * @param \CModel $object
+	 * @param string  $attribute
+	 * @throws Exception
 	 */
 	protected function validateAttribute($object, $attribute)
 	{

@@ -31,7 +31,6 @@ class DashboardVariable
 	 */
 	public function userwidgets()
 	{
-		$widgetIds = array();
 		$widgets = b()->dashboard->getUserWidgets();
 		return $widgets;
 	}

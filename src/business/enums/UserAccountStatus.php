@@ -3,9 +3,7 @@ namespace Blocks;
 
 /**
  *
- *
-*/
-
+ */
 class UserAccountStatus
 {
 	const Active                = 'active';

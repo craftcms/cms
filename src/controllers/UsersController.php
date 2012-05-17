@@ -32,6 +32,9 @@ class UsersController extends Controller
 		return false;
 	}
 
+	/**
+	 *
+	 */
 	public function actionSave()
 	{
 		$this->requirePostRequest();
@@ -57,7 +60,7 @@ class UsersController extends Controller
 		}
 		else if (b()->request->getPost('validationEmail') !== null)
 		{
-			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->current)) == true)
+			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->getCurrent())) == true)
 				$this->_setMessageAndRedirect('Validation email sent.', MessageType::Notice);
 		}
 		else if (b()->request->getPost('unsuspend') !== null)

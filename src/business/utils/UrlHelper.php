@@ -59,7 +59,7 @@ class UrlHelper
 		$path = self::_normalizePath(trim($path, '/'), $params);
 		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 
-		if (b()->request->urlFormat == UrlFormat::PathInfo && $params == null)
+		if (b()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
 			$path = $origPath == '' ? $path.'/' : $path;
 		else
 		{
@@ -75,7 +75,7 @@ class UrlHelper
 			}
 			else
 			{
-				if (strpos($path, $pathVar.'=') === false && b()->request->urlFormat == UrlFormat::QueryString)
+				if (strpos($path, $pathVar.'=') === false && b()->request->getUrlFormat() == UrlFormat::QueryString)
 					$path = $path.'?'.$pathVar.'=';
 			}
 		}
@@ -100,7 +100,7 @@ class UrlHelper
 		{
 			$params = ltrim($params, '?&');
 
-			if (b()->request->urlFormat == UrlFormat::PathInfo)
+			if (b()->request->getUrlFormat() == UrlFormat::PathInfo)
 				return array($path.'?'.$params);
 
 			return array($path.'&'.$params);

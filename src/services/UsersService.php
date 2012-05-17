@@ -69,7 +69,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getCurrent()
 	{
-		$user = $this->getById(isset(b()->user) ? b()->user->id : null);
+		$user = $this->getById(isset(b()->user) ? b()->user->getId() : null);
 		return $user;
 	}
 
@@ -206,7 +206,8 @@ class UsersService extends \CApplicationComponent
 
 	/**
 	 * @param User $user
-	 * @param $newPassword
+	 * @param      $newPassword
+	 * @param bool $save
 	 * @return bool
 	 */
 	public function changePassword(User $user, $newPassword, $save = true)
@@ -232,7 +233,7 @@ class UsersService extends \CApplicationComponent
 	{
 			$user = $this->generateActivationCodeForUser($user);
 
-			$site = b()->sites->current;
+			$site = b()->sites->getCurrent();
 			if (($emailStatus = b()->email->sendForgotPasswordEmail($user, $site)) == true)
 				return true;
 

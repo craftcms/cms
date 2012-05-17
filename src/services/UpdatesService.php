@@ -299,16 +299,16 @@ class UpdatesService extends \CApplicationComponent
 	public function getUnwritableDirectories()
 	{
 		$checkPaths = array(
-			b()->file->set(b()->path->appPath, false),
-			b()->file->set(b()->path->pluginsPath, false),
+			b()->file->set(b()->path->getAppPath(), false),
+			b()->file->set(b()->path->getPluginsPath(), false),
 		);
 
 		$errorPath = null;
 		foreach ($checkPaths as $writablePath)
 		{
-			if (!$writablePath->writable)
+			if (!$writablePath->getWritable())
 			{
-				$errorPath[] = $writablePath->realPath;
+				$errorPath[] = $writablePath->getRealPath();
 			}
 		}
 

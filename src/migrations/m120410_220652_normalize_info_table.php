@@ -11,7 +11,7 @@ class m120410_220652_normalize_info_table extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$infoTable = $this->dbConnection->schema->getTable('{{info}}');
+		$infoTable = $this->getDbConnection()->getSchema()->getTable('{{info}}');
 
 		$onlineExists = $infoTable->getColumn('online') !== null ? true : false;
 		$onExists = $infoTable->getColumn('on') !== null ? true : false;

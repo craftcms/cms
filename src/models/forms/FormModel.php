@@ -12,7 +12,8 @@ abstract class FormModel extends \CFormModel
 	/**
 	 * Attribute Setter
 	 * @param string $name
-	 * @param mixed $value
+	 * @param mixed  $value
+	 * @throws Exception
 	 */
 	function __set($name, $value)
 	{
@@ -25,7 +26,8 @@ abstract class FormModel extends \CFormModel
 	/**
 	 * Attribute Setter
 	 * @param string $name
-	 * @param mixed $value
+	 * @throws Exception
+	 * @return null
 	 */
 	function __get($name)
 	{

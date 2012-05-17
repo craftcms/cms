@@ -11,7 +11,7 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$pluginsTable = b()->db->schema->getTable('{{plugins}}');
+		$pluginsTable = b()->db->getSchema()->getTable('{{plugins}}');
 
 		// If plugins doesn't exist, create it
 		if (!$pluginsTable)
@@ -23,7 +23,7 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 			));
 		}
 
-		$pluginSettingsTable = b()->db->schema->getTable('{{pluginsettings}}');
+		$pluginSettingsTable = b()->db->getSchema()->getTable('{{pluginsettings}}');
 
 		// Check for the plugin settings table.
 		if (!$pluginSettingsTable)
@@ -31,7 +31,7 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 			b()->db->createCommand()->createSettingsTable('pluginsettings', 'plugins', 'pluginsettings_plugins');
 		}
 
-		$widgetsTable = b()->db->schema->getTable('{{widgets}}');
+		$widgetsTable = b()->db->getSchema()->getTable('{{widgets}}');
 		$pluginIdColumn = $widgetsTable->getColumn('plugin_id') !== null ? true : false;
 
 		if (!$pluginIdColumn)

@@ -38,10 +38,13 @@ class ConfigHelper
 		{
 			case 'd':
 				$seconds *= 24;
+				break;
 			case 'h':
 				$seconds *= 60;
+				break;
 			case 'm':
 				$seconds *= 60;
+				break;
 		}
 
 		return $seconds;

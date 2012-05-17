@@ -15,7 +15,7 @@ class ContentService extends \CApplicationComponent
 	public function getSections()
 	{
 		$sections = Section::model()->findAllByAttributes(array(
-			'site_id' => b()->sites->current->id,
+			'site_id' => b()->sites->getCurrent()->id,
 			'parent_id' => null
 		));
 
@@ -72,7 +72,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Get a specific section by its handle
-	 * @param int $sectionId The ID of the section to get
+	 * @param $handle
 	 * @return Section
 	 */
 	public function getSectionByHandle($handle)
@@ -117,6 +117,8 @@ class ContentService extends \CApplicationComponent
 	 * Saves a section.
 	 * @param array $sectionSettings
 	 * @param int   $sectionId The site ID, if saving an existing site.
+	 * @throws \CDbException|\Exception
+	 * @throws Exception
 	 * @return Section
 	 */
 	public function saveSection($sectionSettings, $sectionId = null)
@@ -269,7 +271,7 @@ class ContentService extends \CApplicationComponent
 					}
 
 					// Keep the "newX" ID around for the templates
-					if ($block->isNewRecord)
+					if ($block->getIsNewRecord())
 						$block->id = $blockId;
 
 					$blocks[] = $block;
@@ -306,10 +308,11 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Creates a new entry
-	 * @param int $sectionId
+	 * @param int   $sectionId
 	 * @param mixed $parentId
 	 * @param mixed $authorId
 	 * @param mixed $title
+	 * @throws \Exception
 	 * @return Entry
 	 */
 	public function createEntry($sectionId, $parentId = null, $authorId = null, $title = null)
@@ -322,7 +325,7 @@ class ContentService extends \CApplicationComponent
 			// Create the entry
 			$entry = new Entry;
 			$entry->section_id = $sectionId;
-			$entry->author_id = ($authorId ? $authorId : b()->users->current->id);
+			$entry->author_id = ($authorId ? $authorId : b()->users->getCurrent()->id);
 			$entry->parent_id = $parentId;
 			$entry->save();
 
@@ -347,8 +350,9 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Saves an entry's slug
-	 * @param Entry $entry
+	 * @param Entry  $entry
 	 * @param string $slug
+	 * @throws \CDbException
 	 */
 	public function saveEntrySlug($entry, $slug)
 	{
@@ -388,7 +392,9 @@ class ContentService extends \CApplicationComponent
 	 * Saves changes to an entry's content.
 	 * @param mixed  $entry      An Entry record or an entry ID.
 	 * @param array  $newContent The new entry content.
-	 * @param string $langugae   The language of the content.
+	 * @param null   $language
+	 * @throws \Exception
+	 * @throws Exception
 	 * @return bool Whether it was a success.
 	 */
 	public function saveEntryContent($entry, $newContent, $language = null)
@@ -401,7 +407,7 @@ class ContentService extends \CApplicationComponent
 		}
 
 		if (!$language)
-			$language = b()->sites->current->language;
+			$language = b()->sites->getCurrent()->language;
 
 		$content = $entry->getContent($language);
 
@@ -546,6 +552,8 @@ class ContentService extends \CApplicationComponent
 	 * @param string $name     The name of the version.
 	 * @param string $language The language the content is in.
 	 * @param bool   $draft    Whether this is a draft. Defaults to false.
+	 * @throws \CDbException|\Exception
+	 * @throws Exception
 	 * @return EntryVersion The new version record.
 	 */
 	public function createEntryVersion($entry, $content = null, $name = null, $language = null, $draft = false)
@@ -559,8 +567,8 @@ class ContentService extends \CApplicationComponent
 
 		$version = new EntryVersion;
 		$version->entry_id  = $entry->id;
-		$version->author_id = b()->users->current->id;
-		$version->language  = ($language ? $language : b()->sites->current->language);
+		$version->author_id = b()->users->getCurrent()->id;
+		$version->language  = ($language ? $language : b()->sites->getCurrent()->language);
 		$version->draft = $draft;
 		$version->name = $name;
 
@@ -635,6 +643,7 @@ class ContentService extends \CApplicationComponent
 			'id'    => $draftId,
 			'draft' => true
 		));
+
 		return $draft;
 	}
 
@@ -650,6 +659,7 @@ class ContentService extends \CApplicationComponent
 			'draft'    => true,
 			'num'      => $draftNum
 		));
+
 		return $draft;
 	}
 
@@ -664,6 +674,7 @@ class ContentService extends \CApplicationComponent
 			->where(array('and', 'entry_id'=>$entryId, 'draft=1'))
 			->order('num DESC')
 			->queryRow();
+
 		return EntryVersion::model()->populateRecord($draft);
 	}
 
@@ -685,6 +696,7 @@ class ContentService extends \CApplicationComponent
 	/**
 	 * Publishes an entry draft
 	 * @param EntryVersion $draft
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function publishEntryDraft($draft)

@@ -59,11 +59,11 @@ class Entry extends Model
 	 */
 	public function getStatus()
 	{
-		if ($this->live)
+		if ($this->getLive())
 			return 'live';
-		else if ($this->pending)
+		else if ($this->getPending())
 			return 'pending';
-		else if ($this->expired)
+		else if ($this->getExpired())
 			return 'expired';
 		else
 			return 'offline';
@@ -75,7 +75,7 @@ class Entry extends Model
 	 */
 	public function getLive()
 	{
-		return ($this->published && !$this->pending && !$this->expired);
+		return ($this->getPublished() && !$this->getPending() && !$this->getExpired());
 	}
 
 	/**
@@ -93,7 +93,7 @@ class Entry extends Model
 	 */
 	public function getPending()
 	{
-		return ($this->published && $this->publish_date && $this->publish_date > DateTimeHelper::currentTime());
+		return ($this->getPublished() && $this->publish_date && $this->publish_date > DateTimeHelper::currentTime());
 	}
 
 	/**
@@ -102,7 +102,7 @@ class Entry extends Model
 	 */
 	public function getExpired()
 	{
-		return ($this->published && $this->expiry_date && $this->expiry_date < DateTimeHelper::currentTime());
+		return ($this->getPublished() && $this->expiry_date && $this->expiry_date < DateTimeHelper::currentTime());
 	}
 
 	/**
@@ -128,7 +128,7 @@ class Entry extends Model
 	{
 		if ($this->uri)
 		{
-			$url = b()->sites->current->url.'/'.$this->uri;
+			$url = b()->sites->getCurrent()->url.'/'.$this->uri;
 			return $url;
 		}
 		else
@@ -141,7 +141,7 @@ class Entry extends Model
 	 */
 	public function getDrafts()
 	{
-		if (!$this->isNewRecord)
+		if (!$this->getIsNewRecord())
 			return b()->content->getEntryDrafts($this->id);
 		else
 			return array();

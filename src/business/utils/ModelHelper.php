@@ -12,7 +12,7 @@ class ModelHelper
 	 * @param array $indexes
 	 * @return array
 	 */
-	public function createRules($attributes, $indexes = array())
+	public static function createRules($attributes, $indexes = array())
 	{
 		$rules = array();
 

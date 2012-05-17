@@ -209,7 +209,7 @@ class RequirementsChecker extends \CComponent
 	private function _getWritableFolders()
 	{
 		$folders = array(
-			b()->file->set(b()->path->runtimePath, false),
+			b()->file->set(b()->path->getRuntimePath(), false),
 		);
 
 		return $folders;
@@ -224,12 +224,12 @@ class RequirementsChecker extends \CComponent
 
 		foreach ($this->_requirements as $requirement)
 		{
-			if ($requirement->result == RequirementResult::Failed)
+			if ($requirement->getResult() == RequirementResult::Failed)
 			{
 				$installResult = InstallStatus::Failure;
 				break;
 			}
-			else if ($requirement->result == RequirementResult::Warning)
+			else if ($requirement->getResult() == RequirementResult::Warning)
 				$installResult = InstallStatus::Warning;
 		}
 
@@ -239,9 +239,9 @@ class RequirementsChecker extends \CComponent
 
 		foreach ($writableFolders as $writableFolder)
 		{
-			if (!$writableFolder->writable)
+			if (!$writableFolder->getWritable())
 			{
-				$errorFolders[] = $writableFolder->realPath;
+				$errorFolders[] = $writableFolder->getRealPath();
 				$installResult = InstallStatus::Failure;
 			}
 		}

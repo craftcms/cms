@@ -93,8 +93,8 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->getEntry();
-		$changes = $this->getContentFromPost($entry);
+		$entry = $this->_getEntry();
+		$changes = $this->_getContentFromPost($entry);
 
 		// Save the new entry content
 		if (b()->content->saveEntryContent($entry, $changes))
@@ -117,8 +117,8 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->getEntry();
-		$changes = $this->getContentFromPost($entry);
+		$entry = $this->_getEntry();
+		$changes = $this->_getContentFromPost($entry);
 		$draftName = b()->request->getPost('draftName');
 
 		// Create the new draft
@@ -135,9 +135,9 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->getEntry();
-		$draft = $this->getDraft();
-		$changes = $this->getContentFromPost($entry);
+		$entry = $this->_getEntry();
+		$draft = $this->_getDraft();
+		$changes = $this->_getContentFromPost($entry);
 
 		// Save the new draft content
 		if (b()->content->saveDraftContent($draft, $changes))
@@ -161,9 +161,9 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->getEntry();
-		$draft = $this->getDraft();
-		$changes = $this->getContentFromPost($entry);
+		$entry = $this->_getEntry();
+		$draft = $this->_getDraft();
+		$changes = $this->_getContentFromPost($entry);
 
 		// Save the new changes
 		if ($changes)
@@ -187,28 +187,34 @@ class ContentController extends Controller
 	/**
 	 * Returns an entry based on the entryId in the post data
 	 * @access private
+	 * @throws Exception
 	 * @return Entry
 	 */
-	private function getEntry()
+	private function _getEntry()
 	{
 		$entryId = b()->request->getRequiredPost('entryId');
 		$entry = b()->content->getEntryById($entryId);
+
 		if (!$entry)
 			throw new Exception('No entry exists with the ID '.$entryId);
+
 		return $entry;
 	}
 
 	/**
 	 * Returns a draft based on the draftId in the post data
 	 * @access private
+	 * @throws Exception
 	 * @return EntryVersion
 	 */
-	private function getDraft()
+	private function _getDraft()
 	{
 		$draftId = b()->request->getRequiredPost('draftId');
 		$draft = b()->content->getDraftById($draftId);
+
 		if (!$draft)
 			throw new Exception('No draft exists with the ID '.$draftId);
+
 		return $draft;
 	}
 
@@ -218,7 +224,7 @@ class ContentController extends Controller
 	 * @param  Entry $entry
 	 * @return array
 	 */
-	private function getContentFromPost($entry)
+	private function _getContentFromPost($entry)
 	{
 		$changes = array();
 

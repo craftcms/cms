@@ -22,11 +22,11 @@ class SessionController extends Controller
 		$loginInfo = b()->user->startLogin($username, $password, $rememberMe);
 
 		// Did it work?
-		if (b()->user->isLoggedIn)
+		if (b()->user->getIsLoggedIn())
 		{
 			$r = array(
 				'success' => true,
-				'redirectUrl' => b()->user->returnUrl
+				'redirectUrl' => b()->user->getReturnUrl()
 			);
 		}
 		else

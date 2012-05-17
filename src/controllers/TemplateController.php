@@ -19,7 +19,7 @@ class TemplateController extends Controller
 
 			$path = b()->request->getPath();
 			if ($path !== 'login')
-				if ($path !== b()->users->verifyAccountUrl && b()->request->getParam('code', null) == null)
+				if ($path !== b()->users->getVerifyAccountUrl() && b()->request->getParam('code', null) == null)
 					$this->requireLogin();
 		}
 

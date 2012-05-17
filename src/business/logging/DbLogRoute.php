@@ -18,7 +18,7 @@ class DbLogRoute extends \CDbLogRoute
 
 		if (b()->getIsInstalled())
 		{
-			$activityTable = $this->getDbConnection()->schema->getTable('{{activity}}');
+			$activityTable = $this->getDbConnection()->getSchema()->getTable('{{activity}}');
 			if (!$activityTable)
 			{
 				$this->createLogTable($this->getDbConnection(), $this->logTableName);
@@ -54,7 +54,7 @@ class DbLogRoute extends \CDbLogRoute
 	 */
 	protected function processLogs($logs)
 	{
-		if (b()->getIsInstalled() && ($activityTable = $this->getDbConnection()->schema->getTable('{{activity}}')))
+		if (b()->getIsInstalled() && ($activityTable = $this->getDbConnection()->getSchema()->getTable('{{activity}}')))
 		{
 			$sql="
 				INSERT INTO blx_{$this->logTableName}

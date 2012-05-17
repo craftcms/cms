@@ -15,7 +15,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function sendEmail(EmailMessage $emailMessage)
 	{
-		$emailSettings = $this->emailSettings;
+		$emailSettings = $this->getEmailSettings();
 
 		if (!isset($emailSettings['protocol']))
 			throw new Exception('Could not determine how to send the email.  Check your email settings.');
@@ -161,6 +161,7 @@ class EmailService extends \CApplicationComponent
 	/**
 	 * @param $email
 	 * @param $emailSettings
+	 * @throws Exception
 	 */
 	private function _setSmtpSettings(&$email, $emailSettings)
 	{

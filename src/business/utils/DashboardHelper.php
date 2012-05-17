@@ -17,9 +17,9 @@ class DashboardHelper
 
 		if (b()->updates->getIsUpdateInfoCached() || $fetch)
 		{
-			$updateInfo = b()->updates->updateInfo;
+			$updateInfo = b()->updates->getUpdateInfo();
 
-			if (b()->sites->licenseKeyStatus == LicenseKeyStatus::InvalidKey)
+			if (b()->sites->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
 				$alerts[] = 'The license key you’re using isn’t authorized to run '.Product::display(Blocks::getProduct()).' on '.b()->request->serverName.'. <a href="">Manage my licenses</a>';
 
 			if ($updateInfo->blocks->releases !== null && count($updateInfo->blocks->releases) > 0)

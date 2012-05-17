@@ -46,12 +46,14 @@ class DashboardController extends Controller
 	}
 
 	/**
-	 * Returns 
+	 * Returns
+	 * @throws Exception
 	 */
 	public function actionGetWidgetHtml()
 	{
 		$widgetId = b()->request->getRequiredParam('widgetId');
 		$widget = b()->dashboard->getWidgetById($widgetId);
+
 		if (!$widget)
 			throw new Exception('No widget exists with the ID '.$widgetId);
 

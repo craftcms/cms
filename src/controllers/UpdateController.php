@@ -23,7 +23,8 @@ class UpdateController extends Controller
 		$this->requireAjaxRequest();
 
 		$return = array();
-		$updateInfo = b()->updates->updateInfo;
+		$updateInfo = b()->updates->getUpdateInfo();
+
 		if (!$updateInfo)
 			$this->returnErrorJson('There was a problem getting the latest update information.');
 

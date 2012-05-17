@@ -85,7 +85,7 @@ class User extends Model
 	 */
 	public function getIsCurrent()
 	{
-		return (!$this->isNewRecord && $this->id == b()->users->current->id);
+		return (!$this->getIsNewRecord() && $this->id == b()->users->getCurrent()->id);
 	}
 
 	/**

@@ -3,8 +3,8 @@
 if (typeof(console) == 'object')
 {
 	console.groupCollapsed("Profiling Summary Report");
-	console.log("Time:   <?php echo sprintf('%0.5f', Blocks\Blocks::getLogger()->executionTime); ?>s\n");
-	console.log("Memory: <?php echo number_format(Blocks\Blocks::getLogger()->memoryUsage/1024); ?>Kb\n");
+	console.log("Time:   <?php echo sprintf('%0.5f', Blocks\Blocks::getLogger()->getExecutionTime()); ?>s\n");
+	console.log("Memory: <?php echo number_format(Blocks\Blocks::getLogger()->getMemoryUsage() / 1024); ?>Kb\n");
 	console.log(" count   total   average    min      max   ");
 
 	<?php
