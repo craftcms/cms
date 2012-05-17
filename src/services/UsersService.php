@@ -69,7 +69,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getCurrentUser()
 	{
-		$user = $this->getById(isset(b()->user) ? b()->user->getId() : null);
+		$user = $this->getUserById(isset(b()->user) ? b()->user->getId() : null);
 		return $user;
 	}
 
