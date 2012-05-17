@@ -26,7 +26,9 @@ class FeedWidget extends BaseWidget
 	 */
 	public function title()
 	{
-		return $this->settings['title'];
+		if (isset($this->record))
+		$settings = $this->record->getSettings();
+		return $settings['title'];
 	}
 
 	/**

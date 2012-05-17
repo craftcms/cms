@@ -195,7 +195,7 @@ abstract class Model extends \CActiveRecord
 	/**
 	 * Returns the current record's settings
 	 */
-	public function getSettings($test = false)
+	public function getSettings()
 	{
 		if (!isset($this->_settings))
 		{

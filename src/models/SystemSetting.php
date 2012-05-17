@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SystemSetting extends Model
+class SystemSetting extends BaseModel
 {
 	protected $tableName = 'systemsettings';
 
