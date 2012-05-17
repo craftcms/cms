@@ -46,7 +46,7 @@ class UsersController extends Controller
 		if ($postUserId)
 		{
 			$existingUser = true;
-			$user = b()->users->getById($postUserId);
+			$user = b()->users->getUserById($postUserId);
 		}
 
 		if (empty($user))
@@ -60,7 +60,7 @@ class UsersController extends Controller
 		}
 		else if (b()->request->getPost('validationEmail') !== null)
 		{
-			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->getCurrent())) == true)
+			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->getCurrentSite())) == true)
 				$this->_setMessageAndRedirect('Validation email sent.', MessageType::Notice);
 		}
 		else if (b()->request->getPost('unsuspend') !== null)
@@ -78,13 +78,13 @@ class UsersController extends Controller
 		}
 		else if (b()->request->getPost('delete') !== null)
 		{
-			if ($user->id == b()->users->current->id)
+			if ($user->id == b()->users->getCurrentUser()->id)
 			{
 				$this->_setMessageAndRedirect('Trying to delete yourself?  It can’t be that bad.', MessageType::Notice);
 			}
 			else
 			{
-				b()->users->delete($user);
+				b()->users->deleteUser($user);
 				$this->_setMessageAndRedirect('User archived.', MessageType::Notice, 'users');
 			}
 		}
@@ -136,7 +136,7 @@ class UsersController extends Controller
 					{
 						if ($sendValidationEmail)
 						{
-							$site = b()->sites->current;
+							$site = b()->sites->getCurrentSite();
 							if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
 							{
 								// registered and sent email

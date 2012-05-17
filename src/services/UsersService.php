@@ -9,7 +9,7 @@ class UsersService extends \CApplicationComponent
 	/**
 	 * @return User
 	 */
-	public function getAll()
+	public function getAllUsers()
 	{
 		return User::model()->findAll();
 	}
@@ -18,7 +18,7 @@ class UsersService extends \CApplicationComponent
 	 * Returns the 50 most recent users
 	 * @return mixed
 	 */
-	public function getRecent()
+	public function getRecentUsers()
 	{
 		return User::model()->recentlyCreated()->findAll();
 	}
@@ -43,7 +43,7 @@ class UsersService extends \CApplicationComponent
 	 * @param $userId
 	 * @return mixed
 	 */
-	public function getById($userId)
+	public function getUserById($userId)
 	{
 		$user = User::model()->findById($userId);
 		return $user;
@@ -53,7 +53,7 @@ class UsersService extends \CApplicationComponent
 	 * @param $loginName
 	 * @return mixed
 	 */
-	public function getByLoginName($loginName)
+	public function getUserByLoginName($loginName)
 	{
 		$user = User::model()->find(array(
 			'condition' => 'username=:userName OR email=:email',
@@ -67,7 +67,7 @@ class UsersService extends \CApplicationComponent
 	 * Returns the User model of the currently logged in user and null if is user is not logged in.
 	 * @return User The model of the logged in user.
 	 */
-	public function getCurrent()
+	public function getCurrentUser()
 	{
 		$user = $this->getById(isset(b()->user) ? b()->user->getId() : null);
 		return $user;
@@ -233,7 +233,7 @@ class UsersService extends \CApplicationComponent
 	{
 			$user = $this->generateActivationCodeForUser($user);
 
-			$site = b()->sites->getCurrent();
+			$site = b()->sites->getCurrentSite();
 			if (($emailStatus = b()->email->sendForgotPasswordEmail($user, $site)) == true)
 				return true;
 
@@ -258,7 +258,7 @@ class UsersService extends \CApplicationComponent
 	/**
 	 * @param User $user
 	 */
-	public function delete(User $user)
+	public function deleteUser(User $user)
 	{
 		$user->archived_username = $user->username;
 		$user->archived_email = $user->email;

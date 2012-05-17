@@ -63,7 +63,7 @@ class UserSessionService extends \CWebUser
 		{
 			$authSessionToken = $states['authSessionToken'];
 
-			$user = b()->users->getById($id);
+			$user = b()->users->getUserById($id);
 
 			if ($user === null || $user->auth_session_token !== $authSessionToken)
 			{
@@ -87,8 +87,8 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->getIsLoggedIn() && !$fromCookie)
 		{
-			b()->users->getCurrent()->last_login_date = DateTimeHelper::currentTime();
-			b()->users->getCurrent()->save();
+			b()->users->getCurrentUser()->last_login_date = DateTimeHelper::currentTime();
+			b()->users->getCurrentUser()->save();
 		}
 	}
 
@@ -281,6 +281,6 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return b()->users->getRemainingCooldownTime(b()->users->getCurrent());
+		return b()->users->getRemainingCooldownTime(b()->users->getCurrentUser());
 	}
 }

@@ -49,7 +49,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = b()->users->getByLoginName($this->loginName);
+		$user = b()->users->getUserByLoginName($this->loginName);
 
 		if ($user === null)
 			$this->errorCode = self::ERROR_USERNAME_INVALID;

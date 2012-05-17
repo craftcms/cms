@@ -140,7 +140,7 @@ class SitesService extends \CApplicationComponent
 	 * @throws Exception
 	 * @return Site
 	 */
-	public function getCurrent()
+	public function getCurrentSite()
 	{
 		if ($this->_currentSite === null)
 		{
@@ -193,7 +193,7 @@ class SitesService extends \CApplicationComponent
 	 * Returns all sites
 	 * @return mixed
 	 */
-	public function getAll()
+	public function getAllSites()
 	{
 		return Site::model()->findAll();
 	}

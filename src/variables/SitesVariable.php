@@ -31,6 +31,6 @@ class SitesVariable
 	 */
 	public function all()
 	{
-		return b()->sites->getAll();
+		return b()->sites->getAllSites();
 	}
 }

@@ -19,10 +19,10 @@ class AccountController extends Controller
 
 		if ($forgotPasswordInfo->validate())
 		{
-			$user = b()->users->getByLoginName($forgotPasswordInfo->loginName);
+			$user = b()->users->getUserByLoginName($forgotPasswordInfo->loginName);
 			if ($user)
 			{
-				if (b()->email->sendForgotPasswordEmail($user, b()->sites->getCurrent()))
+				if (b()->email->sendForgotPasswordEmail($user, b()->sites->getCurrentSite()))
 					$this->returnJson(array('success' => true));
 
 				$this->returnErrorJson('There was a problem sending the forgot password email.');
@@ -46,7 +46,7 @@ class AccountController extends Controller
 
 		if ($verifyPasswordForm->validate())
 		{
-			$userToChange = b()->users->getById(b()->request->getPost('userId'));
+			$userToChange = b()->users->getUserById(b()->request->getPost('userId'));
 
 			if ($userToChange !== null)
 			{
@@ -86,7 +86,7 @@ class AccountController extends Controller
 	 */
 	public function checkPassword($password)
 	{
-		$user = b()->users->getCurrent();
+		$user = b()->users->getCurrentUser();
 		if (b()->security->checkPassword($password, $user->password, $user->enc_type))
 			return true;
 

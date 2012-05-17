@@ -12,7 +12,7 @@ class UsersVariable
 	 */
 	public function current()
 	{
-		return b()->users->getCurrent();
+		return b()->users->getCurrentUser();
 	}
 
 	/**
@@ -22,7 +22,7 @@ class UsersVariable
 	 */
 	public function getById($userId)
 	{
-		return b()->users->getById($userId);
+		return b()->users->getUserById($userId);
 	}
 
 	/**
@@ -31,7 +31,7 @@ class UsersVariable
 	 */
 	public function recent()
 	{
-		return b()->users->getRecent();
+		return b()->users->getRecentUsers();
 	}
 
 	/**

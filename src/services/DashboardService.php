@@ -43,7 +43,7 @@ class DashboardService extends \CApplicationComponent
 	{
 		$record = Widget::model()->findByAttributes(array(
 			'id' => $widgetId,
-			'user_id' => b()->users->getCurrent()->id
+			'user_id' => b()->users->getCurrentUser()->id
 		));
 
 		if ($record)
@@ -66,7 +66,7 @@ class DashboardService extends \CApplicationComponent
 	public function getUserWidgets()
 	{
 		$records = Widget::model()->findAllByAttributes(array(
-			'user_id' => b()->users->getCurrent()->id
+			'user_id' => b()->users->getCurrentUser()->id
 		), array(
 			'order' => 'sort_order'
 		));
@@ -117,7 +117,7 @@ class DashboardService extends \CApplicationComponent
 	public function saveSettings($settings)
 	{
 		// Get the current user
-		$user = b()->users->getCurrent();
+		$user = b()->users->getCurrentUser();
 		if (!$user)
 			throw new Exception('There is no current user.');
 

@@ -140,7 +140,7 @@ abstract class BaseModel extends \CActiveRecord
 	public function getContent($language = null)
 	{
 		if (!$language)
-			$language = b()->sites->getCurrent()->language;
+			$language = b()->sites->getCurrentSite()->language;
 
 		if (!isset($this->_content[$language]))
 		{

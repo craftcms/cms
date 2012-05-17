@@ -115,7 +115,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getSiteTemplatesPath()
 	{
-		$site = b()->sites->getCurrent();
+		$site = b()->sites->getCurrentSite();
 		if ($site)
 			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
 		else
@@ -177,7 +177,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getParsedSiteTemplatesPath()
 	{
-		$site = b()->sites->getCurrent();
+		$site = b()->sites->getCurrentSite();
 		if ($site)
 		{
 			$path = $this->getRuntimePath().'parsed_templates/sites/'.$site->handle.'/';

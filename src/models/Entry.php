@@ -128,7 +128,7 @@ class Entry extends BaseModel
 	{
 		if ($this->uri)
 		{
-			$url = b()->sites->getCurrent()->url.'/'.$this->uri;
+			$url = b()->sites->getCurrentSite()->url.'/'.$this->uri;
 			return $url;
 		}
 		else

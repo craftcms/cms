@@ -15,7 +15,7 @@ class ContentService extends \CApplicationComponent
 	public function getSections()
 	{
 		$sections = Section::model()->findAllByAttributes(array(
-			'site_id' => b()->sites->getCurrent()->id,
+			'site_id' => b()->sites->getCurrentSite()->id,
 			'parent_id' => null
 		));
 
@@ -79,7 +79,7 @@ class ContentService extends \CApplicationComponent
 	{
 		return Section::model()->findByAttributes(array(
 			'handle' => $handle,
-			'site_id' => b()->sites->getCurrent()->id
+			'site_id' => b()->sites->getCurrentSite()->id
 		));
 	}
 
@@ -145,7 +145,7 @@ class ContentService extends \CApplicationComponent
 		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
 		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
 		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
-		$section->site_id     = b()->sites->current->id;
+		$section->site_id     = b()->sites->getCurrentSite()->id;
 
 		// Start a transaction
 		$transaction = b()->db->beginTransaction();
@@ -325,7 +325,7 @@ class ContentService extends \CApplicationComponent
 			// Create the entry
 			$entry = new Entry;
 			$entry->section_id = $sectionId;
-			$entry->author_id = ($authorId ? $authorId : b()->users->getCurrent()->id);
+			$entry->author_id = ($authorId ? $authorId : b()->users->getCurrentUser()->id);
 			$entry->parent_id = $parentId;
 			$entry->save();
 
@@ -407,7 +407,7 @@ class ContentService extends \CApplicationComponent
 		}
 
 		if (!$language)
-			$language = b()->sites->getCurrent()->language;
+			$language = b()->sites->getCurrentSite()->language;
 
 		$content = $entry->getContent($language);
 
@@ -567,8 +567,8 @@ class ContentService extends \CApplicationComponent
 
 		$version = new EntryVersion;
 		$version->entry_id  = $entry->id;
-		$version->author_id = b()->users->getCurrent()->id;
-		$version->language  = ($language ? $language : b()->sites->getCurrent()->language);
+		$version->author_id = b()->users->getCurrentUser()->id;
+		$version->language  = ($language ? $language : b()->sites->getCurrentSite()->language);
 		$version->draft = $draft;
 		$version->name = $name;
 
