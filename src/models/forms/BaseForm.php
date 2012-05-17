@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class FormModel extends \CFormModel
+abstract class BaseForm extends \CFormModel
 {
 	protected $attributes = array();
 	private $_attributes = array();
