@@ -26,12 +26,17 @@ class InstallService extends \CApplicationComponent
 			$file = b()->file->set($filePath);
 			$fileName = $file->fileName;
 
-			// Ignore Block since that's already queued up,
-			// and the abstract models
-			if (in_array($fileName, array('Block', 'ActiveRecord', 'Model')))
+			// Ignore Block since that's already queued up
+			if ($fileName == 'Block')
 				continue;
 
 			$class = __NAMESPACE__.'\\'.$fileName;
+
+			// Ignore abstract classes
+			$ref = new \ReflectionClass($class);
+			if ($ref->isAbstract())
+				continue;
+
 			$obj = new $class;
 
 			if (method_exists($obj, 'createTable'))
