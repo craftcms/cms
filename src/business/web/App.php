@@ -216,47 +216,46 @@ class App extends \CWebApplication
 				// i.e. plugin/controllers/PluginController.php
 				if (count($actionPath) == 2)
 				{
-					$plugin = b()->plugins->normalizePluginClassName($actionPath[0]);
-					$controller = $plugin;
-					$action = $actionPath[1];
-
-					// Check for a valid controller in the plugins directories.
-					$controllerPath = b()->path->getPluginsPath().$plugin.'/controllers/'.$plugin.'Controller.php';
-
-					if (File::fileExists($controllerPath))
+					// Check to see if the plugin exists and is enabled.
+					$plugin = b()->plugins->getPlugin($actionPath[0]);
+					if ($plugin && $plugin->enabled)
 					{
-						// Check to see if the plugin exists and is enabled.
-						$pluginInstance = b()->plugins->getPlugin($plugin);
-						if ($pluginInstance->enabled)
+						$pluginName = $plugin->getClassHandle();
+						$controller = $pluginName;
+						$action = $actionPath[1];
+
+						// Check for a valid controller in the plugins directories.
+						$controllerPath = b()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'Controller.php';
+
+						if (File::fileExists($controllerPath))
 						{
-							Blocks::import('plugins.'.$plugin.'.controllers.*');
-							$this->setControllerPath(b()->path->getPluginsPath().$plugin.'/controllers/');
+							Blocks::import('plugins.'.$pluginName.'.controllers.*');
+							$this->setControllerPath(b()->path->getPluginsPath().$pluginName.'/controllers/');
 							$this->runController($controller.'/'.$action);
 							$this->end();
 						}
 					}
-
 				}
 				// If there are 3 segments, we're going to check to see if it's a plugin registered a non-default controller
 				// for an action request.  i.e. plugin/controllers/Plugin_*Controller.php
 				elseif (count($actionPath) == 3)
 				{
-					$plugin = b()->plugins->normalizePluginClassName($actionPath[0]);
-					$controller = $actionPath[1];
-					$action = $actionPath[2];
-
-					// Check for a valid controller in the plugins directory.
-					$controllerPath = b()->path->getPluginsPath().$plugin.'/controllers/'.$plugin.'_'.$controller.'Controller.php';
-
-					if (File::fileExists($controllerPath))
+					// Check to see if the plugin exists and is enabled.
+					$plugin = b()->plugins->getPlugin($actionPath[0]);
+					if ($plugin && $plugin->enabled)
 					{
-						// Check to see if the plugin exists and is enabled.
-						$pluginInstance = b()->plugins->getPlugin($plugin);
-						if ($pluginInstance->enabled)
+						$pluginName = $plugin->getClassHandle();
+						$controller = $actionPath[1];
+						$action = $actionPath[2];
+
+						// Check for a valid controller in the plugins directory.
+						$controllerPath = b()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'_'.$controller.'Controller.php';
+
+						if (File::fileExists($controllerPath))
 						{
-							Blocks::import('plugins.'.$plugin.'.controllers.*');
-							$this->setControllerPath(b()->path->getPluginsPath().$plugin.'/controllers/');
-							$this->runController($plugin.'_'.$controller.'/'.$action);
+							Blocks::import('plugins.'.$pluginName.'.controllers.*');
+							$this->setControllerPath(b()->path->getPluginsPath().$pluginName.'/controllers/');
+							$this->runController($pluginName.'_'.$controller.'/'.$action);
 							$this->end();
 						}
 					}

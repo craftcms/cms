@@ -12,14 +12,19 @@ class BVariable
 	 */
 	public function __get($name)
 	{
-		$pluginName = b()->plugins->normalizePluginClassName($name);
-		$path = b()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
+		$plugin = b()->plugins->getPlugin($name);
 
-		if (File::fileExists($path))
+		if ($plugin && $plugin->enabled)
 		{
-			Blocks::import('plugins.'.$pluginName.'.'.$pluginName.'Variable');
-			$variableName = __NAMESPACE__.'\\'.$pluginName.'Variable';
-			return new $variableName;
+			$pluginName = $plugin->getClassHandle();
+			$path = b()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
+
+			if (File::fileExists($path))
+			{
+				Blocks::import('plugins.'.$pluginName.'.'.$pluginName.'Variable');
+				$variableName = __NAMESPACE__.'\\'.$pluginName.'Variable';
+				return new $variableName;
+			}
 		}
 	}
 
