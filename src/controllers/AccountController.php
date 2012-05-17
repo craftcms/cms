@@ -39,18 +39,16 @@ class AccountController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$verifyPasswordForm = new VerifyPasswordForm();
+		$passwordForm = new PasswordForm();
+		$passwordForm->password = b()->request->getPost('password');
 
-		$verifyPasswordForm->password = b()->request->getPost('password');
-		$verifyPasswordForm->confirmPassword = b()->request->getPost('confirm-password');
-
-		if ($verifyPasswordForm->validate())
+		if ($passwordForm->validate())
 		{
 			$userToChange = b()->users->getById(b()->request->getPost('userId'));
 
 			if ($userToChange !== null)
 			{
-				if (($userToChange = b()->users->changePassword($userToChange, $verifyPasswordForm->password)) !== false)
+				if (($userToChange = b()->users->changePassword($userToChange, $passwordForm->password)) !== false)
 				{
 					$userToChange->activationcode = null;
 					$userToChange->activationcode_issued_date = null;
@@ -64,7 +62,7 @@ class AccountController extends Controller
 					$userToChange->save();
 
 					if (!b()->user->getIsLoggedIn())
-						b()->user->startLogin($userToChange->username, $verifyPasswordForm->password);
+						b()->user->startLogin($userToChange->username, $passwordForm->password);
 
 					b()->dashboard->assignDefaultUserWidgets($userToChange->id);
 
@@ -77,7 +75,7 @@ class AccountController extends Controller
 		}
 
 		// display the verify account form
-		$this->loadTemplate('verify', array('verifyAccountInfo' => $verifyPasswordForm));
+		$this->loadTemplate('verify', array('verifyAccountInfo' => $passwordForm));
 	}
 
 	/**

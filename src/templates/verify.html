@@ -27,13 +27,6 @@
 							{include "_includes/error_list" errors=verifyAccountInfo.errors.password}
 						{/if}
 					</div>
-					<div class="pane-item field">
-						<label for="confirm-password">Confirm Password</label>
-						<div class="passwordwrapper"><input id="confirm-password" name="confirm-password" class="text password {if verifyAccountInfo.errors.confirmPassword}error{/if}" type="password" /></div>
-						{if verifyAccountInfo.errors.confirmPassword}
-							{include "_includes/error_list" errors=verifyAccountInfo.errors.confirmPassword}
-						{/if}
-					</div>
 					<div class="pane-item">
 						<input class="btn big submit" type="submit" value="Set Password" />
 					</div>
