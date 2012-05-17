@@ -32,7 +32,7 @@ class m120411_233620_remove_triggers extends \CDbMigration
 		);
 
 		// Get the ones that may have been created through content.
-		$contentSections = b()->content->allSections;
+		$contentSections = b()->content->getAllSections();
 		foreach ($contentSections as $contentSection)
 			$tables[] = $contentSection->getContentTableName();
 

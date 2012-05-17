@@ -265,16 +265,16 @@ class ErrorHandler extends \CErrorHandler
 	protected function getViewFile($view, $code)
 	{
 		$viewPaths = array(
-			b()->theme === null ? null : b()->theme->systemViewPath,
-			b() instanceof \CWebApplication ? b()->systemViewPath : null,
-			b()->path->frameworkPath.'views/',
+			b()->theme === null ? null : b()->theme->getSystemViewPath(),
+			b() instanceof \CWebApplication ? b()->getSystemViewPath() : null,
+			b()->path->getFrameworkPath().'views/',
 		);
 
 		try
 		{
 			$connection = b()->db;
-			if ($connection && b()->db->schema->getTable('{{sites}}') !== null)
-				$viewPaths[] = b()->path->siteTemplatesPath;
+			if ($connection && b()->db->getSchema()->getTable('{{sites}}') !== null)
+				$viewPaths[] = b()->path->getSiteTemplatesPath();
 		}
 		catch(\CDbException $e)
 		{
@@ -286,7 +286,7 @@ class ErrorHandler extends \CErrorHandler
 			if ($viewPath !== null)
 			{
 				// if it's an exception on the front-end, we don't show the exception template, on the error template.
-				if ($view == 'errors/exception' && b()->request->mode == RequestMode::Site)
+				if ($view == 'errors/exception' && b()->request->getMode() == RequestMode::Site)
 					$view = 'errors/error';
 
 				$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);

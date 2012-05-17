@@ -155,7 +155,7 @@ class SitesService extends \CApplicationComponent
 			if (empty($site))
 			{
 				// Try to find the site that matches the request URL
-				$serverName = b()->request->serverName;
+				$serverName = b()->request->getServerName();
 				$httpServerName = 'http://'.$serverName;
 				$httpsServerName = 'https://'.$serverName;
 

@@ -17,7 +17,7 @@ class LayoutTemplateWidget extends \COutputProcessor
 	{
 		if ($this->template)
 		{
-			$owner = $this->owner;
+			$owner = $this->getOwner();
 
 			$this->variables['subtemplate'] = new StringAdapter($output);
 

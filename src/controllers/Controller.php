@@ -160,7 +160,7 @@ abstract class Controller extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (b()->user->isGuest)
+		if (b()->user->getIsGuest())
 			b()->user->loginRequired();
 	}
 

@@ -36,6 +36,7 @@ class MigrationsService extends \CApplicationComponent
 	public $defaultAction = 'up';
 
 	/**
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function init()
@@ -179,6 +180,7 @@ class MigrationsService extends \CApplicationComponent
 	}
 
 	/**
+	 * @throws Exception
 	 * @return mixed
 	 */
 	protected function getDbConnection()
@@ -261,6 +263,7 @@ class MigrationsService extends \CApplicationComponent
 			if (preg_match('/^(m(\d{6}_\d{6})_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($applied[$matches[2]]))
 			{
 				$time = strtotime('20'.substr($matches[2], 0, 2).'-'.substr($matches[2], 2, 2).'-'.substr($matches[2], 4, 2).' '.substr($matches[2], 7, 2).':'.substr($matches[2], 9, 2).':'.substr($matches[2], 11, 2));
+
 				// Check the migration timestamp against the Blocks release date
 				if ($time > Blocks::getStoredReleaseDate())
 					$migrations[] = $matches[1];

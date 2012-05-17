@@ -95,7 +95,7 @@ class PluginsService extends \CApplicationComponent
 			$this->_allPlugins = array();
 
 			// Find all of the plugins in the plugins folder
-			$pluginsPath = b()->path->pluginsPath;
+			$pluginsPath = b()->path->getPluginsPath();
 			$folders = scandir($pluginsPath);
 			foreach ($folders as $folder)
 			{
@@ -117,9 +117,11 @@ class PluginsService extends \CApplicationComponent
 
 			// Now figure out which of these are installed
 			$records = Plugin::model()->findAll();
+
 			foreach ($records as $record)
 			{
 				$plugin = $this->getPlugin($record->class);
+
 				if ($plugin && !isset($plugin->record))
 					$plugin->record = $record;
 			}
@@ -146,6 +148,7 @@ class PluginsService extends \CApplicationComponent
 	/**
 	 * Enables a plugin.
 	 * @param $className
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function enablePlugin($className)
@@ -169,6 +172,7 @@ class PluginsService extends \CApplicationComponent
 	/**
 	 * Disables a plugin.
 	 * @param $className
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function disablePlugin($className)
@@ -191,6 +195,7 @@ class PluginsService extends \CApplicationComponent
 	/**
 	 * Installs a plugin.
 	 * @param $className
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function installPlugin($className)
@@ -217,6 +222,7 @@ class PluginsService extends \CApplicationComponent
 	/**
 	 * Uninstalls a plugin by removing it's record from the database.
 	 * @param $className
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function uninstallPlugin($className)

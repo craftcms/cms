@@ -15,7 +15,7 @@ class DbCommand extends \CDbCommand
 	public function addColumnFirst($table, $column, $type)
 	{
 		$type = DatabaseHelper::generateColumnDefinition($type);
-		return $this->setText($this->connection->schema->addColumnFirst($this->_addTablePrefix($table), $column, $type))->execute();
+		return $this->setText($this->getConnection()->getSchema()->addColumnFirst($this->_addTablePrefix($table), $column, $type))->execute();
 	}
 
 	/**
@@ -28,7 +28,7 @@ class DbCommand extends \CDbCommand
 	public function addColumnAfter($table, $column, $type, $after)
 	{
 		$type = DatabaseHelper::generateColumnDefinition($type);
-		return $this->setText($this->connection->schema->addColumnAfter($this->_addTablePrefix($table), $column, $type, $after))->execute();
+		return $this->setText($this->getConnection()->getSchema()->addColumnAfter($this->_addTablePrefix($table), $column, $type, $after))->execute();
 	}
 
 	/**
@@ -41,7 +41,7 @@ class DbCommand extends \CDbCommand
 	public function addColumnBefore($table, $column, $type, $before)
 	{
 		$type = DatabaseHelper::generateColumnDefinition($type);
-		return $this->setText($this->connection->schema->addColumnBefore($this->_addTablePrefix($table), $column, $type, $before))->execute();
+		return $this->setText($this->getConnection()->getSchema()->addColumnBefore($this->_addTablePrefix($table), $column, $type, $before))->execute();
 	}
 
 	/**
@@ -66,7 +66,7 @@ class DbCommand extends \CDbCommand
 			}
 		}
 
-		$queryParams = $this->connection->schema->insertAll($this->_addTablePrefix($table), $columns, $vals);
+		$queryParams = $this->getConnection()->getSchema()->insertAll($this->_addTablePrefix($table), $columns, $vals);
 		return $this->setText($queryParams['query'])->execute($queryParams['params']);
 	}
 
@@ -356,7 +356,7 @@ class DbCommand extends \CDbCommand
 	{
 		$table = $this->_addTablePrefix($table);
 		$type = DatabaseHelper::generateColumnDefinition($type);
-		return $this->setText($this->connection->schema->alterColumn($table, $column, $type, $newName, $after))->execute();
+		return $this->setText($this->getConnection()->getSchema()->alterColumn($table, $column, $type, $newName, $after))->execute();
 	}
 
 	/**

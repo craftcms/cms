@@ -28,8 +28,8 @@ class UserSessionService extends \CWebUser
 
 		if (!$request->getIsAjaxRequest())
 		{
-			if ($request->pathInfo !== '')
-				$this->setReturnUrl($request->url);
+			if ($request->getPathInfo() !== '')
+				$this->setReturnUrl($request->getUrl());
 		}
 		elseif (isset($this->loginRequiredAjaxResponse))
 		{
@@ -85,10 +85,10 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function afterLogin($fromCookie)
 	{
-		if ($this->isLoggedIn && !$fromCookie)
+		if ($this->getIsLoggedIn() && !$fromCookie)
 		{
-			b()->users->current->last_login_date = DateTimeHelper::currentTime();
-			b()->users->current->save();
+			b()->users->getCurrent()->last_login_date = DateTimeHelper::currentTime();
+			b()->users->getCurrent()->save();
 		}
 	}
 
@@ -181,7 +181,7 @@ class UserSessionService extends \CWebUser
 	{
 		$message = $this->getState(self::FLASH_KEY_PREFIX.$key, $defaultValue);
 
-		if (!$message->isPersistent())
+		if (!$message->getIsPersistent())
 			$this->setFlash($key, null);
 
 		return $message;
@@ -281,6 +281,6 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return b()->users->getRemainingCooldownTime(b()->users->current);
+		return b()->users->getRemainingCooldownTime(b()->users->getCurrent());
 	}
 }

@@ -11,7 +11,7 @@ class m120417_212359_add_name_column_to_plugins extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$pluginsTable = b()->db->schema->getTable('{{plugins}}');
+		$pluginsTable = b()->db->getSchema()->getTable('{{plugins}}');
 		$pluginNameColumn = $pluginsTable->getColumn('name') !== null ? true : false;
 
 		if (!$pluginNameColumn)

@@ -212,19 +212,19 @@ class File extends \CApplicationComponent
 				$instance->_uploadedInstance = $uploaded;
 
 				$instance->_pathInfo();
-				$instance->readable;
+				$instance->getReadable();
 
 				if ($greedy)
 				{
-					$instance->writable;
-					$instance->isempty;
-					$instance->size;
-					$instance->owner;
-					$instance->group;
-					$instance->permissions;
-					$instance->timeModified;
+					$instance->getWritable();
+					$instance->getIsempty();
+					$instance->getSize();
+					$instance->getOwner();
+					$instance->getGroup();
+					$instance->getPermissions();
+					$instance->getTimeModified();
 					if ($instance->_isFile)
-						$instance->mimeType;
+						$instance->getMimeType();
 				}
 			}
 			return $instance;
@@ -764,9 +764,11 @@ class File extends \CApplicationComponent
 	/**
 	 * Gets directory contents (descendant files and folders).
 	 * @param bool|string $directory Initial directory to get descendants for
-	 * @param boolean $recursive If 'true' method would return all descendants recursively, otherwise just immediate descendants
-	 * @param string $filter Filter to be applied to all directory descendants.
-	 * Could be a string, or an array of strings (perl regexp supported). See {@link filterPassed} method for further information on filters.
+	 * @param boolean     $recursive If 'true' method would return all descendants recursively, otherwise just immediate descendants
+	 * @param string      $filter Filter to be applied to all directory descendants.
+	 * Could be a string, or an array of strings (perl regexp supported). See {
+	 * @throws Exception
+	 * @link filterPassed} method for further information on filters.
 	 * @return array Array of descendants filepaths
 	 * @access private
 	 */
@@ -870,7 +872,7 @@ class File extends \CApplicationComponent
 				$newFile->create();
 			}
 
-			if ($newFile->writable && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
+			if ($newFile->getWritable() && file_put_contents($newFile->_realpath, $contents, $flags) !== false)
 				return $this;
 
 			$this->_addLog('Unable to set file contents of '.$newFile->_realPath, 'warning');
@@ -884,7 +886,7 @@ class File extends \CApplicationComponent
 				if ($autoCreate && !$this->_exists)
 					$this->create();
 
-				if ($this->writable && file_put_contents($this->_realpath, $contents, $flags) !== false)
+				if ($this->getWritable() && file_put_contents($this->_realpath, $contents, $flags) !== false)
 					return $this;
 
 				$this->_addLog('Unable to set file contents of '.$this->_realpath, 'warning');
@@ -913,7 +915,7 @@ class File extends \CApplicationComponent
 				return false;
 			}
 
-			if ($this->writable && $basename !== false && $this->rename($basename))
+			if ($this->getWritable() && $basename !== false && $this->rename($basename))
 				return $this;
 
 			$this->_addLog('Unable to set file basename "'.$basename.'" for file: '.$this->_realpath, 'warning');
@@ -939,7 +941,7 @@ class File extends \CApplicationComponent
 				return false;
 			}
 
-			if ($this->writable && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
+			if ($this->getWritable() && $filename!==false && $this->rename(str_replace($this->_filename, $filename, $this->_basename)))
 				return $this;
 
 			$this->_addLog('Unable to set file name "'.$filename.'" for file: '.$this->_realpath, 'warning');
@@ -966,7 +968,7 @@ class File extends \CApplicationComponent
 				return false;
 			}
 
-			if ($this->writable && $extension !== false)
+			if ($this->getWritable() && $extension !== false)
 			{
 				$extension = trim($extension);
 
@@ -1126,7 +1128,7 @@ class File extends \CApplicationComponent
 	{
 		$destRealPath = $this->_resolveDestPath($fileDest);
 
-		if ($this->writable && @rename($this->_realpath, $destRealPath))
+		if ($this->getWritable() && @rename($this->_realpath, $destRealPath))
 		{
 			$this->_filepath = $fileDest;
 			$this->_realpath = $destRealPath;
@@ -1162,7 +1164,7 @@ class File extends \CApplicationComponent
 
 		if ($this->_isFile)
 		{
-			if ($this->writable)
+			if ($this->getWritable())
 				return $this->_contents = '';
 		}
 		else
@@ -1199,7 +1201,7 @@ class File extends \CApplicationComponent
 	 */
 	public function delete($purge = true)
 	{
-		if ($this->writable)
+		if ($this->getWritable())
 		{
 			if (($this->_isFile && @unlink($this->_realpath) ) || (!$this->_isFile && ($purge ? $this->purge() : true) && rmdir($this->_realpath)))
 			{

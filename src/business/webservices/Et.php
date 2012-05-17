@@ -74,10 +74,10 @@ class Et extends \CApplicationComponent
 		$this->_timeout = $timeout;
 
 		$this->_package = new EtPackage();
-		$this->_package->licenseKeys = b()->sites->licenseKeys;
-		$this->_package->domain = b()->request->serverName;
+		$this->_package->licenseKeys = b()->sites->getLicenseKeys();
+		$this->_package->domain = b()->request->getServerName();
 		$this->_package->product = Blocks::getProduct();
-		$this->_package->requestIp = b()->request->userHostAddress;
+		$this->_package->requestIp = b()->request->getUserHostAddress();
 		$this->_package->requestTime = DateTimeHelper::currentTime();
 
 		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
@@ -111,7 +111,7 @@ class Et extends \CApplicationComponent
 				$package = new EtPackage($packageData);
 
 				// we set the license key status on every request
-				b()->sites->licenseKeyStatus = $package->licenseKeyStatus;
+				b()->sites->setLicenseKeyStatus($package->licenseKeyStatus);
 
 				return $package;
 			}

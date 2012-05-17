@@ -27,6 +27,7 @@ class SecurityService extends \CApplicationComponent
 
 	/**
 	 * @param $password
+	 * @throws Exception
 	 * @return string
 	 */
 	public function hashPassword($password)

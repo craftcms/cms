@@ -34,7 +34,7 @@ class UrlManager extends \CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
-		if (b()->request->urlFormat == UrlFormat::PathInfo)
+		if (b()->request->getUrlFormat() == UrlFormat::PathInfo)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
@@ -50,7 +50,7 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (!BLOCKS_CP_REQUEST)
 		{
-			if (b()->isInstalled)
+			if (b()->getIsInstalled())
 				if ($this->matchEntry())
 					$matchFound = true;
 		}
@@ -83,7 +83,7 @@ class UrlManager extends \CUrlManager
 	public function matchEntry()
 	{
 		$entry = Entry::model()->findByAttributes(array(
-			'uri' => b()->request->path,
+			'uri' => b()->request->getPath(),
 		));
 
 		if ($entry !== null)
@@ -138,7 +138,7 @@ class UrlManager extends \CUrlManager
 		$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
 
 		// Does it match?
-		if (preg_match("/^{$pattern}$/", b()->request->path, $match))
+		if (preg_match("/^{$pattern}$/", b()->request->getPath(), $match))
 		{
 			$templateMatch = TemplateHelper::resolveTemplatePath(trim($route[1], '/'));
 			if ($templateMatch !== false)
@@ -172,7 +172,7 @@ class UrlManager extends \CUrlManager
 	public function matchTemplatePath()
 	{
 		// Make sure they're not trying to access a private template
-		if (!b()->request->isAjaxRequest)
+		if (!b()->request->getIsAjaxRequest())
 		{
 			foreach (b()->request->getPathSegments() as $requestPathSeg)
 			{

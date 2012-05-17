@@ -202,6 +202,7 @@ class TemplateParser
 	/**
 	 * Parse an action match
 	 * @param array $match The preg_replace_callback match
+	 * @throws TemplateParserException
 	 * @return string The parsed tag
 	 * @access protected
 	 */
@@ -326,6 +327,7 @@ class TemplateParser
 	/**
 	 * Parses an 'include' tag
 	 * @param string $body
+	 * @throws Exception
 	 * @return string
 	 * @access protected
 	 */
@@ -486,6 +488,7 @@ class TemplateParser
 	/**
 	 * Parse parameters
 	 * @param string $template The parameter template chunk
+	 * @throws Exception
 	 * @return string The parsed parameters as PHP array code
 	 * @access protected
 	 */

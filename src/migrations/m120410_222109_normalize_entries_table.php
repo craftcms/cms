@@ -11,7 +11,7 @@ class m120410_222109_normalize_entries_table extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$entriesTable = $this->dbConnection->schema->getTable('{{entries}}');
+		$entriesTable = $this->getDbConnection()->getSchema()->getTable('{{entries}}');
 		$fullUriExists = $entriesTable->getColumn('full_uri') !== null ? true : false;
 
 		// If full_uri exists, rename to 'uri'

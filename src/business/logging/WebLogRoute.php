@@ -15,7 +15,7 @@ class WebLogRoute extends \CWebLogRoute
 	protected function render($view, $data)
 	{
 		$app = b();
-		$isAjax = $app->request->isAjaxRequest;
+		$isAjax = $app->request->getIsAjaxRequest();
 
 		if ($this->showInFireBug)
 		{

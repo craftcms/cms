@@ -64,7 +64,7 @@ class ResourceProcessor
 			throw new HttpException(404);
 
 		$file = b()->file->set($this->_resourceFullPath);
-		$mimeType = $file->mimeType;
+		$mimeType = $file->getMimeType();
 
 		if (strpos($mimeType, 'css') > 0)
 			$this->_convertRelativeUrls();

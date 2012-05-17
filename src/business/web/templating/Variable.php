@@ -11,7 +11,6 @@ class Variable
 
 	/**
 	 * Constructor
-	 *
 	 * @param null $var
 	 */
 	function __construct($var = null)

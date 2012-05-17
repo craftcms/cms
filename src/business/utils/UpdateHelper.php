@@ -21,10 +21,10 @@ class UpdateHelper
 				continue;
 
 			$rowData = explode(';', $row);
-			$file = b()->file->set(b()->path->appPath.'../../'.$rowData[0].'.bak');
+			$file = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0].'.bak');
 
-			if ($file->exists)
-				$file->rename(b()->path->appPath.'../../'.$rowData[0]);
+			if ($file->getExists())
+				$file->rename(b()->path->getAppPath().'../../'.$rowData[0]);
 		}
 	}
 
@@ -50,21 +50,21 @@ class UpdateHelper
 
 				$rowData = explode(';', $row);
 
-				$destFile = b()->file->set(b()->path->appPath.'../../'.$rowData[0]);
-				$sourceFile = b()->file->set($sourceTempDir->realPath.'/'.$rowData[0]);
+				$destFile = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0]);
+				$sourceFile = b()->file->set($sourceTempDir->getRealPath().'/'.$rowData[0]);
 
 				switch (trim($rowData[1]))
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
-						Blocks::log('Updating file: '.$destFile->realPath);
-						$sourceFile->copy($destFile->realPath, true);
+						Blocks::log('Updating file: '.$destFile->getRealPath());
+						$sourceFile->copy($destFile->getRealPath(), true);
 						break;
 
 					case PatchManifestFileAction::Remove:
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
-						Blocks::log('Renaming file for delete: '.$destFile->realPath);
-						$destFile->rename($destFile->realPath.'.bak');
+						Blocks::log('Renaming file for delete: '.$destFile->getRealPath());
+						$destFile->rename($destFile->getRealPath().'.bak');
 						break;
 
 					default:
@@ -172,7 +172,7 @@ class UpdateHelper
 	public static function copyMigrationFile($filePath)
 	{
 		$migrationFile = b()->file->set($filePath);
-		$destinationFile = b()->path->migrationsPath.$migrationFile->baseName;
+		$destinationFile = b()->path->getMigrationsPath().$migrationFile->baseName;
 		$migrationFile->copy($destinationFile, true);
 		return $destinationFile;
 	}

@@ -411,7 +411,7 @@ class App extends \CWebApplication
 	{
 		if (!isset($this->_isInstalled))
 		{
-			$infoTable = $this->db->schema->getTable('{{info}}');
+			$infoTable = $this->db->getSchema()->getTable('{{info}}');
 			$this->_isInstalled = (bool)$infoTable;
 		}
 		return $this->_isInstalled;

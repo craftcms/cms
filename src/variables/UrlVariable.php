@@ -54,7 +54,7 @@ class UrlVariable
 	 */
 	public function segments()
 	{
-		return b()->request->pathSegments;
+		return b()->request->getPathSegments();
 	}
 
 	/**
@@ -74,7 +74,7 @@ class UrlVariable
 	 */
 	public function domain()
 	{
-		return b()->request->serverName;
+		return b()->request->getServerName();
 	}
 
 	/**

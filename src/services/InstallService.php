@@ -9,16 +9,18 @@ class InstallService extends \CApplicationComponent
 	/**
 	 * Installs Blocks!
 	 * @param array $inputs
+	 * @throws \Exception
+	 * @throws Exception
 	 */
 	public function run($inputs)
 	{
-		if (b()->isInstalled)
+		if (b()->getIsInstalled())
 			throw new Exception('Blocks is already installed.');
 
 		// Install the Block model first so the other models can create FK's to it
 		$models[] = new Block;
 
-		$modelsDir = b()->file->set(b()->path->modelsPath);
+		$modelsDir = b()->file->set(b()->path->getModelsPath());
 		$modelFiles = $modelsDir->getContents(false, '.php');
 
 		foreach ($modelFiles as $filePath)
@@ -48,11 +50,10 @@ class InstallService extends \CApplicationComponent
 		try
 		{
 			// Create the languages table first
-			// This is a special case: So that other tables' language columns
-			// can be restricted to supported languages without making them enums
+			// This is a special case: So that other tables' language columns can be restricted to supported languages without making them enums
 			$table = b()->config->tablePrefix.'languages';
 			$columns = array('language' => 'CHAR(5) NOT NULL PRIMARY KEY');
-			b()->db->createCommand()->setText(b()->db->schema->createTable($table, $columns))->execute();
+			b()->db->createCommand()->setText(b()->db->getSchema()->createTable($table, $columns))->execute();
 
 			// Add the languages
 			b()->db->createCommand()->insert('languages', array('language' => 'en_us'));
@@ -72,7 +73,7 @@ class InstallService extends \CApplicationComponent
 			}
 
 			// Tell Blocks that it's installed now
-			b()->isInstalled = true;
+			b()->setIsInstalled(true);
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 

@@ -34,7 +34,7 @@ class BlocksController extends Controller
 		// Did it save?
 		if (!$block->errors)
 		{
-			if (b()->request->isAjaxRequest)
+			if (b()->request->getIsAjaxRequest())
 			{
 				$r = array(
 					'success' => true,
@@ -52,7 +52,7 @@ class BlocksController extends Controller
 			$this->redirectToPostedUrl();
 		}
 
-		if (b()->request->isAjaxRequest)
+		if (b()->request->getIsAjaxRequest())
 		{
 			$r = array('errors' => $block->errors);
 			$this->returnJson($r);
