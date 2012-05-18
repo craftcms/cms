@@ -83,34 +83,38 @@ class TemplateHelper
 		if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.'/index'.$templateExtension)) !== false)
 			return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath.'/index');
 
-		// Check to see if the template path might be referring to a plugin template
-		$templateSegs = explode('/', $copyTemplatePath);
-		if (isset($templateSegs[0]) && $templateSegs[0] !== '')
+		// Only attempt to match against a plugin's templates if this is a CP request.
+		if (b()->request->getMode() == RequestMode::CP)
 		{
-			if (($plugin = b()->plugins->getPlugin($templateSegs[0])) !== null)
+			// Check to see if the template path might be referring to a plugin template
+			$templateSegs = explode('/', $copyTemplatePath);
+			if (isset($templateSegs[0]) && $templateSegs[0] !== '')
 			{
-				// Get the template path for the plugin.
-				$viewPath = b()->path->getPluginsPath().$plugin->class.'/templates/';
-
-				// If the plugin's templates directory exists, set the request's viewpath to it.
-				if (is_dir($viewPath))
+				if (($plugin = b()->plugins->getPlugin($templateSegs[0])) !== false)
 				{
-					// Set the template path and layout path to the plugin's
-					b()->setViewPath($viewPath);
-					if (is_dir($viewPath.'_layouts/'))
-						b()->setLayoutPath($viewPath.'_layouts/');
+					// Get the template path for the plugin.
+					$viewPath = b()->path->getPluginsPath().$plugin->class.'/templates/';
 
-					$copyTemplatePath = substr($copyTemplatePath, strlen($plugin->class) + 1);
-					$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
+					// If the plugin's templates directory exists, set the request's viewpath to it.
+					if (is_dir($viewPath))
+					{
+						// Set the template path and layout path to the plugin's
+						b()->setViewPath($viewPath);
+						if (is_dir($viewPath.'_layouts/'))
+							b()->setLayoutPath($viewPath.'_layouts/');
 
-					// Check for plugin/request/path.ext
-					if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.$templateExtension)) !== false)
-						return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath);
+						$copyTemplatePath = substr($copyTemplatePath, strlen($plugin->class) + 1);
+						$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
 
-					// Check for plugin/request/path/index.ext
-					$copyTemplatePath = $copyTemplatePath == '' ? 'index' : $copyTemplatePath.'/index';
-					if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.$templateExtension)) !== false)
-						return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath);
+						// Check for plugin/request/path.ext
+						if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.$templateExtension)) !== false)
+							return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath);
+
+						// Check for plugin/request/path/index.ext
+						$copyTemplatePath = $copyTemplatePath == '' ? 'index' : $copyTemplatePath.'/index';
+						if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.$templateExtension)) !== false)
+							return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath);
+					}
 				}
 			}
 		}
