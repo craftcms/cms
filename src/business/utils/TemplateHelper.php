@@ -83,8 +83,8 @@ class TemplateHelper
 		if (($matchPath = self::_matchTemplatePathToFileSystem($viewPath.$copyTemplatePath.'/index'.$templateExtension)) !== false)
 			return array('fileSystemPath' => $matchPath, 'templatePath' => $copyTemplatePath.'/index');
 
-		// Only attempt to match against a plugin's templates if this is a CP request.
-		if (b()->request->getMode() == RequestMode::CP)
+		// Only attempt to match against a plugin's templates if this is a CP or action request.
+		if (($mode = b()->request->getMode()) == RequestMode::CP || $mode == RequestMode::Action)
 		{
 			// Check to see if the template path might be referring to a plugin template
 			$templateSegs = explode('/', $copyTemplatePath);
