@@ -196,8 +196,7 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Returns the current record's settings
-	 * @param bool $test
-	 * @return
+	 * @return mixed
 	 */
 	public function getSettings()
 	{

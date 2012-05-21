@@ -103,14 +103,17 @@ class ModelHelper
 				$rules[] = array($name, 'match', 'pattern' => $settings['matchPattern']);
 		}
 
-		// Catch any unique indexes
+		// Catch any composite unique indexes
 		foreach ($indexes as $index)
 		{
 			if (isset($index['unique']) && $index['unique'] === true)
 			{
-				$columns = ArrayHelper::stringToArray($index['columns']);
-				$initialColumn = array_shift($columns);
-				$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
+				if (count($index['columns']) > 1)
+				{
+					$columns = ArrayHelper::stringToArray($index['columns']);
+					$initialColumn = array_shift($columns);
+					$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
+				}
 			}
 		}
 
