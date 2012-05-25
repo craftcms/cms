@@ -10,7 +10,7 @@ class PluginsService extends \CApplicationComponent
 	 * Stores all enabled plugins. Populated on init.
 	 * @var array
 	 */
-	public $enabledPlugins = array();
+	private $_enabledPlugins = array();
 
 	/**
 	 * Stores all initialized plugins for the current request.
@@ -41,7 +41,7 @@ class PluginsService extends \CApplicationComponent
 			if ($plugin)
 			{
 				$key = strtolower($plugin->getClassHandle());
-				$this->enabledPlugins[$key] = $plugin;
+				$this->_enabledPlugins[$key] = $plugin;
 
 				$plugin->record = $record;
 
@@ -49,6 +49,14 @@ class PluginsService extends \CApplicationComponent
 				$this->_importPluginModels($plugin->getClassHandle());
 			}
 		}
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getEnabledPlugins()
+	{
+		return $this->_enabledPlugins;
 	}
 
 	/**
@@ -78,7 +86,10 @@ class PluginsService extends \CApplicationComponent
 			if (!class_exists($nsClass, false))
 				$this->_plugins[$key] = false;
 			else
+			{
 				$this->_plugins[$key] = new $nsClass;
+				$this->_plugins[$key]->init();
+			}
 		}
 
 		return $this->_plugins[$key];
@@ -254,7 +265,7 @@ class PluginsService extends \CApplicationComponent
 	{
 		$result = array();
 
-		foreach ($this->enabledPlugins as $plugin)
+		foreach ($this->_enabledPlugins as $plugin)
 		{
 			if (method_exists($plugin, $methodName))
 			{
