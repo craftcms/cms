@@ -30,6 +30,8 @@ class AppVariable
 	 */
 	public function product()
 	{
-		return Blocks::getProduct();
+		return Product::display(Blocks::getProduct());
 	}
+
+
 }
