@@ -1639,9 +1639,7 @@ class File extends \CApplicationComponent
 	public static function fileExists($fileName, $caseInsensitive = true)
 	{
 		if (file_exists($fileName))
-		{
-			return true;
-		}
+			return $fileName;
 
 		if ($caseInsensitive)
 		{
@@ -1652,7 +1650,7 @@ class File extends \CApplicationComponent
 			foreach ($files as $file)
 			{
 				if (strtolower($file) == $lcaseFileName)
-					return true;
+					return $file;
 			}
 		}
 
