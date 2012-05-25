@@ -14,8 +14,7 @@ class WebLogRoute extends \CWebLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$app = b();
-		$isAjax = $app->request->getIsAjaxRequest();
+		$isAjax = b()->request->getIsAjaxRequest();
 
 		if ($this->showInFireBug)
 		{
@@ -24,10 +23,10 @@ class WebLogRoute extends \CWebLogRoute
 
 			$view .= '-firebug';
 		}
-		else if(!($app instanceof \CWebApplication) || $isAjax)
+		else if(!(b() instanceof \CWebApplication) || $isAjax)
 			return;
 
 		$viewFile = b()->path->getAppTemplatesPath().'logging/'.$view.'.php';
-		include($app->findLocalizedFile($viewFile,'en'));
+		include(b()->findLocalizedFile($viewFile,'en'));
 	}
 }
