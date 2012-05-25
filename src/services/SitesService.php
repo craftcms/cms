@@ -8,22 +8,45 @@ class SitesService extends \CApplicationComponent
 {
 	private $_currentSite;
 	private $_licenseKeyStatus;
+	private $_allSites;
+	private $_enabledSites;
 
 	/**
 	 * @return array|null
 	 */
-	public function getLicenseKeys()
+	public function getAllLicenseKeys()
 	{
-		$keysArr = array();
-		$licenseKeys = LicenseKey::model()->findAll();
+		$sites = $this->getAllSites();
 
-		foreach ($licenseKeys as $licenseKey)
-			$keysArr[] = $licenseKey->license_key;
+		$keysArr = array();
+
+		foreach ($sites as $site)
+			$keysArr[] = $site->license_key;
 
 		if (count($keysArr) > 0)
 			return $keysArr;
 
 		return null;
+	}
+
+	/**
+	 * @return array
+	 */
+	public function getEnabledSitesAndKeys()
+	{
+		$resultArr = array();
+		$sites = $this->getEnabledSites();
+
+		foreach ($sites as $site)
+		{
+			$domain = $site->url;
+			$domain = str_replace('https://', '', $domain);
+			$domain = str_replace('http://', '', $domain);
+
+			$resultArr[$domain] = array('key' => $site->license_key, 'status' => '');
+		}
+
+		return $resultArr;
 	}
 
 	/**
@@ -195,7 +218,20 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getAllSites()
 	{
-		return Site::model()->findAll();
+		if (!$this->_allSites)
+			$this->_allSites = Site::model()->findAll();
+
+		return $this->_allSites;
+	}
+
+	public function getEnabledSites()
+	{
+		if (!$this->_enabledSites)
+			$this->_enabledSites = Site::model()->findAllByAttributes(array(
+				'enabled' => true
+			));
+
+		return $this->_enabledSites;
 	}
 
 	/**
@@ -204,8 +240,8 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getSiteByUrl($url)
 	{
-		$url = ltrim('http://', $url);
-		$url = ltrim('https://', $url);
+		$url = ltrim($url, 'http://');
+		$url = ltrim($url, 'https://');
 
 		$httpServerName = 'http://'.$url;
 		$httpsServerName = 'https://'.$url;
@@ -241,15 +277,17 @@ class SitesService extends \CApplicationComponent
 	}
 
 	/**
+	 * @param $siteHandle
 	 * @return string
 	 */
-	public function getLicenseKeyStatus()
+	public function getLicenseKeyStatusForSite($siteHandle)
 	{
-		$licenseKeyStatus = b()->fileCache->get('licenseKeyStatus');
-		if ($licenseKeyStatus == false)
-			$licenseKeyStatus = $this->_getLicenseKeyStatus();
+		$licenseKeyStatus = b()->fileCache->get($siteHandle.'licenseKeyStatus');
 
-		return $licenseKeyStatus;
+		if ($licenseKeyStatus == false)
+			$this->_getAllLicenseKeyStatuses();
+
+		return b()->fileCache->get($siteHandle.'licenseKeyStatus');
 	}
 
 	/**
@@ -265,29 +303,26 @@ class SitesService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param $licenseKeyStatus
+	 * @param $siteUrl
+	 * @param $status
 	 */
-	public function setLicenseKeyStatus($licenseKeyStatus)
+	public function setLicenseKeyStatusForSite($siteUrl, $status)
 	{
+		$site = $this->getSiteByUrl($siteUrl);
 		// cache it and set it to expire according to config
-		b()->fileCache->set('licenseKeyStatus', $licenseKeyStatus, b()->config->cacheTimeSeconds);
+		b()->fileCache->set($site->handle.'licenseKeyStatus', $status, b()->config->cacheTimeSeconds);
 	}
 
 	/**
 	 * @access private
 	 * @return string
 	 */
-	private function _getLicenseKeyStatus()
+	private function _getAllLicenseKeyStatuses()
 	{
-		$licenseKeys = b()->sites->licenseKeys;
-
-		if (!$licenseKeys)
-			return LicenseKeyStatus::MissingKey;
-
 		$package = b()->et->ping();
-		$licenseKeyStatus = isset($package->licenseKeyStatus) ? $package->licenseKeyStatus : $licenseKeyStatus = LicenseKeyStatus::InvalidKey;
-
-		$this->setLicenseKeyStatus($licenseKeyStatus);
-		return $licenseKeyStatus;
+		foreach ($package->sitesAndKeys as $site => $keyInfo)
+		{
+			$this->setLicenseKeyStatusForSite($site, $keyInfo['status']);
+		}
 	}
 }
