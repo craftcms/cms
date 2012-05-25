@@ -1,6 +1,7 @@
-{if b.updates.all('y')}
+{set updateInfo = b.updates.updateinfo('y')}
+{if updateInfo.blocks.releases.length > 0 || updateInfo.plugins.releases.length > 0}
 
-	{if !b.updates.updateInfo.blocks.manualUpdateRequired}
+	{if !updateInfo.blocks.manualUpdateRequired}
 		<form method="post" action="{:b.url.base}update/all">
 			<input id="update-all" class="btn big submit" type="submit" value="Update All">
 		</form>
@@ -12,55 +13,59 @@
 		<div class="pane-body">
 			<table>
 				<tbody>
-					{foreach b.updates.all('y') as update}
-					<tr id="{:update.handle}">
+					<tr id="Blocks">
 						<td class="pane-item">
-							<strong>{:update.name}</strong> {:update.version}
-							{if update.critical}<div class="badge warning">Critical</div>{/if}
+							<strong>{:b.app.product}</strong> {:updateInfo.blocks.latestVersion} Build {:updateInfo.blocks.latestBuild}
+							{if updateInfo.blocks.criticalUpdateAvailable}<div class="badge warning">Critical</div>{/if}
 						</td>
 						<td class="pane-item">
-							{if update.notes}
-								<a class="notes">Show release notes</a>
-								<div style="display:none">
-									{:update.notes.nl2br}
-								</div>
-							{/if}
+							<a class="notes">Show release notes</a>
+							<div style="display:none">
+								{foreach updateInfo.blocks.releases as release}
+									<h5>{:b.app.product} {:release.version} Build {:release.build}</h5>
+									<ul>
+										<li>{:release.notes.nl2br}</li>
+									</ul>
+								{/foreach}
+							</div>
 						</td>
 						<td class="pane-item">
-							{if update.manualUpdateRequired}
-								<span class="manual"><a href="http://blockscms.com/alpha/blocks_{:update.latestVersion}.{:update.latestBuild}.zip">Manual update required</a></span>
+							{if updateInfo.blocks.manualUpdateRequired}
+								<span class="manual"><a href="http://blockscms.com/alpha/blocks_{:updateInfo.blocks.latestVersion}.{:updateInfo.blocks.latestBuild}.zip">Manual update required</a></span>
 							{else}
-								<form method="post" action="{:b.url.base}update/{:update.handle}"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:b.url.base}update/Blocks"><input class="btn" type="submit" value="Update"></form>
 							{/if}
 						</td>
 					</tr>
-					{/foreach}
 				</tbody>
 			</table>
 		</div>
 	</div>
 
-	{if b.updates.plugins}
+	{if updateInfo.plugins}
 		<div class="pane">
 			<div class="pane-body">
 				<table>
 					<tbody>
-						{foreach b.updates.plugins as plugin}
-						<tr id="{:plugin.handle}">
+						{foreach updateInfo.plugins as pluginInfo}
+						<tr id="{:pluginInfo.class}">
 							<td class="pane-item">
-								<strong>{:plugin.name}</strong> {:plugin.version}
-								{if plugin.critical}<div class="badge warning">Critical</div>{/if}
+								<strong>{:pluginInfo.name}</strong> {:pluginInfo.version}
+								{if pluginInfo.criticalUpdateAvailable}<div class="badge warning">Critical</div>{/if}
 							</td>
 							<td class="pane-item">
-								{if plugin.notes}
-									<a class="notes">Show release notes</a>
-									<div style="display:none">
-										{:plugin.notes.nl2br}
-									</div>
-								{/if}
+								<a class="notes">Show release notes</a>
+								<div style="display:none">
+									{foreach pluginInfo.releases as release}
+										<h5>{:pluginInfo.name} {:release.version}</h5>
+										<ul>
+											<li>{:release.notes.nl2br}</li>
+										</ul>
+									{/foreach}
+								</div>
 							</td>
 							<td class="pane-item">
-								<form method="post" action="{:b.url.base}update/{:plugin.handle}"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:b.url.base}update/{:plugin.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
 							</td>
 						</tr>
 						{/foreach}

@@ -16,16 +16,6 @@ class UpdatesVariable
 	}
 
 	/**
-	 * Returns all available updates.
-	 * @param bool $forceRefresh
-	 * @return array
-	 */
-	public function all($forceRefresh = false)
-	{
-		return b()->updates->getAllAvailableUpdates($forceRefresh);
-	}
-
-	/**
 	 * Returns whether a critical update is available.
 	 * @return bool
 	 */
@@ -41,5 +31,14 @@ class UpdatesVariable
 	public function unwritabledirectories()
 	{
 		return b()->updates->getUnwritableDirectories();
+	}
+
+	/**
+	 * @param bool $forceRefresh
+	 * @return mixed
+	 */
+	public function updateinfo($forceRefresh = false)
+	{
+		return b()->updates->getUpdateInfo($forceRefresh);
 	}
 }
