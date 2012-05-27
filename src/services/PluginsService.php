@@ -79,7 +79,7 @@ class PluginsService extends \CApplicationComponent
 			if (!class_exists($nsClass, false))
 			{
 				$path = b()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
-				if (file_exists($path))
+				if ($path = File::fileExists($path))
 					require_once $path;
 			}
 

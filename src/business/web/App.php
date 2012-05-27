@@ -255,7 +255,7 @@ class App extends \CWebApplication
 						{
 							Blocks::import('plugins.'.$pluginName.'.controllers.*');
 							$this->setControllerPath(b()->path->getPluginsPath().$pluginName.'/controllers/');
-							$this->runController($pluginName.'_'.$controller.'/'.$action);
+							$this->runController($pluginName.'_'.ucfirst($controller).'/'.$action);
 							$this->end();
 						}
 					}

@@ -12,7 +12,6 @@ class UrlManager extends \CUrlManager
 	public $routePatterns;
 	public $cpRoutes;
 	public $routeVar;
-	public $caseSensitive = false;
 
 	const RouteVar = 'p';
 

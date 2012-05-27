@@ -1645,11 +1645,12 @@ class File extends \CApplicationComponent
 		{
 			$dir = dirname($fileName);
 			$files = glob($dir.'/*');
-			$lcaseFileName = strtolower($fileName);
+			$lcaseFileName = str_replace('\\', '/', strtolower($fileName));
 
 			foreach ($files as $file)
 			{
-				if (strtolower($file) == $lcaseFileName)
+				$file = str_replace('\\', '/', $file);
+				if (strtolower($file) === $lcaseFileName)
 					return $file;
 			}
 		}
