@@ -14,8 +14,8 @@ class ProfileLogRoute extends \CProfileLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$app = b();
-		$isAjax = $app->request->getIsAjaxRequest();
+		$isAjax = b()->request->getIsAjaxRequest();
+		$mimeType = b()->request->getMimeType();
 
 		if ($this->showInFireBug)
 		{
@@ -24,10 +24,13 @@ class ProfileLogRoute extends \CProfileLogRoute
 
 			$view .= '-firebug';
 		}
-		else if(!($app instanceof \CWebApplication) || $isAjax)
+		else if(!(b() instanceof \CWebApplication) || $isAjax)
+			return;
+
+		if ($mimeType !== 'text/html')
 			return;
 
 		$viewFile = b()->path->getAppTemplatesPath().'logging/'.$view.'.php';
-		include($app->findLocalizedFile($viewFile,'en'));
+		include(b()->findLocalizedFile($viewFile,'en'));
 	}
 }

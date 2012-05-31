@@ -15,6 +15,7 @@ class WebLogRoute extends \CWebLogRoute
 	protected function render($view, $data)
 	{
 		$isAjax = b()->request->getIsAjaxRequest();
+		$mimeType = b()->request->getMimeType();
 
 		if ($this->showInFireBug)
 		{
@@ -24,6 +25,9 @@ class WebLogRoute extends \CWebLogRoute
 			$view .= '-firebug';
 		}
 		else if(!(b() instanceof \CWebApplication) || $isAjax)
+			return;
+
+		if ($mimeType !== 'text/html')
 			return;
 
 		$viewFile = b()->path->getAppTemplatesPath().'logging/'.$view.'.php';
