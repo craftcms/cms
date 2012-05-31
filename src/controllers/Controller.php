@@ -55,15 +55,9 @@ abstract class Controller extends \CController
 	 */
 	public function loadRequestedTemplate($variables = array())
 	{
-		b()->urlManager->processTemplateMatching();
-		$templateMatch = b()->urlManager->getTemplateMatch();
-
-		// see if we can match a template on the file system.
-		if ($templateMatch !== null)
+		if (($path = b()->urlManager->processTemplateMatching()) !== false)
 		{
-			$template = ($templateMatch->getRelativePath() == '' ? '' : $templateMatch->getRelativePath().'/').$templateMatch->getFileName();
-			$variables = array_merge(b()->urlManager->getTemplateVariables(), $variables);
-			$this->loadTemplate($template, $variables, false, false);
+			$this->loadTemplate($path, $variables);
 		}
 		else
 			throw new HttpException(404);
@@ -71,40 +65,29 @@ abstract class Controller extends \CController
 
 	/**
 	 * Loads a template
-	 *
 	 * @param       $templatePath
 	 * @param array $vars
 	 * @param bool  $return Whether to return the results, rather than output them
-	 * @param bool  $resolveTemplatePath
+	 * @param bool  $processOutput
 	 * @throws HttpException
-	 * @internal param array $variables Any template variables that should be available to the template
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $vars = array(), $return = false, $resolveTemplatePath = true)
+	public function loadTemplate($templatePath, $vars = array(), $return = false, $processOutput = false)
 	{
-		if ($resolveTemplatePath)
+		$variables = $this->processTemplateVariables($vars);
+
+		if (($output = $this->processTemplatePath($templatePath, $variables, true)) !== false)
 		{
-			$templateMatch = TemplateHelper::resolveTemplatePath($templatePath);
+			if($processOutput)
+				$output = $this->processOutput($output);
 
-			if ($templateMatch !== false)
-			{
-				$templatePath = $templateMatch['templatePath'];
-			}
+			if($return)
+				return $output;
+			else
+				echo $output;
 		}
-
-		$vars['b'] = new BVariable;
-
-		if (is_array($vars))
-		{
-			foreach ($vars as $name => $var)
-			{
-				$variables[$name] = TemplateHelper::getVariable($var);
-		}
-
-			return $this->renderPartial($templatePath, $variables, $return);
-		}
-
-		throw new HttpException(404);
+		else
+			throw new HttpException(404);
 	}
 
 	/**
@@ -119,40 +102,72 @@ abstract class Controller extends \CController
 	}
 
 	/**
-	 * @param $viewFile
+	 * @param      $templatePath
 	 * @param null $data
 	 * @param bool $return
-	 * @return mixed|string
 	 * @throws Exception
+	 * @return mixed|string
 	 */
-	public function renderFile($viewFile, $data = null, $return = false)
+	public function processTemplatePath($templatePath, $data = null, $return = false)
 	{
-		$viewFile = str_replace('\\', '/', $viewFile);
-		$viewFile = str_replace('//', '/', $viewFile);
-
 		$widgetCount = count($this->_widgetStack);
 
-		if (strpos($viewFile, 'email_templates') !== false)
+		//if (strpos($viewFile, 'email_templates') !== false)
+		//{
+		//	$emailRenderer = new EmailTemplateRenderer();
+		//	$content = $emailRenderer->renderFile($this, $viewFile, $data, $return);
+		//}
+	//	else
+	//	{
+		if (($renderer = b()->getViewRenderer()) !== null)
 		{
-			$emailRenderer = new EmailTemplateRenderer();
-			$content = $emailRenderer->renderFile($this, $viewFile, $data, $return);
-		}
-		else
-		{
-			if (($renderer = b()->getViewRenderer()) !== null && $renderer->fileExtension === '.'.\CFileHelper::getExtension($viewFile))
-				$content = $renderer->renderFile($this, $viewFile, $data, $return);
-			else
-				$content = $this->renderInternal($viewFile, $data, $return);
+			// Process the template.
+			if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
+			{
+				if (count($this->_widgetStack) === $widgetCount)
+				{
+					// Get the extension so we can set the correct mime type in the response.
+					$extension = TemplateHelper::getExtension($templatePath);
+					if (($mimeType = \CFileHelper::getMimeTypeByExtension($extension)) === null)
+						$mimeType = 'text/html';
+
+					b()->request->setMimeType($mimeType);
+					header('Content-Type: '.$mimeType);
+
+					return $content;
+				}
+				else
+				{
+					$widget = end($this->_widgetStack);
+					throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget variables in its view "{view}". A {widget} widget does not have an endWidget() call.',
+						array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
+				}
+			}
 		}
 
-		if (count($this->_widgetStack) === $widgetCount)
-			return $content;
-		else
+		return false;
+	}
+
+	/**
+	 * @param $vars
+	 * @return array
+	 */
+	public function processTemplateVariables($vars)
+	{
+		$variables = array();
+
+		$vars = array_merge(b()->urlManager->getTemplateVariables(), $vars);
+		$vars['b'] = new BVariable;
+
+		if (is_array($vars))
 		{
-			$widget = end($this->_widgetStack);
-			throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget variables in its view "{view}". A {widget} widget does not have an endWidget() call.',
-				array('{controller}' => get_class($this), '{view}' => $viewFile, '{widget}' => get_class($widget))));
+			foreach ($vars as $name => $var)
+			{
+				$variables[$name] = TemplateHelper::getVariable($var);
+			}
 		}
+
+		return $variables;
 	}
 
 	/**
@@ -234,6 +249,5 @@ abstract class Controller extends \CController
 	 */
 	public function filters()
 	{
-
 	}
 }
