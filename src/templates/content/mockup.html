@@ -1,0 +1,58 @@
+{layout "_layouts/cp" title="Content"}
+
+
+{region "styles"}
+	<style type="text/css">
+		#content { margin: 0 -25px; padding-right: 25px; }
+		.page,
+		.section { float: left; position: relative; display: block; margin: 0 0 50px 25px; width: 150px; height: 220px; text-align: center; }
+		#content a:not(:hover) { color: #666; }
+		#content a:hover { text-decoration: none; }
+		.screenshot { display: block; margin: 0 0 10px; width: 150px; height: 195px; border-radius: 2px; -webkit-box-shadow: 0 1px 5px -2px rgba(0,0,0,0.5); }
+
+		.section .screenshot:first-child { position: relative; z-index: 3; }
+		.section .screenshot:nth-child(2) { position: absolute; top: -5px; left: 5px; z-index: 2; width: 140px; opacity: 0.66; }
+		.section .screenshot:nth-child(3) { position: absolute; top: -10px; left: 10px; z-index: 1; width: 130px; opacity: 0.33; }
+	</style>
+{/region}
+
+
+{region "main"}
+	<h1>Content</h1>
+
+	<div id="content">
+		<a class="page">
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/Home.png"/>
+			<div class="title">Home</div>
+		</a>
+
+		<a class="section">
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/CaseStudies/Agency.png"/>
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/CaseStudies/Navy.png"/>
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/CaseStudies/REDI.png"/>
+			<div class="title">Case Studies</div>
+		</a>
+
+		<a class="section">
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/UI/Chimaeric.png"/>
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/UI/Pure.png"/>
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/UI/MessageMarker.png"/>
+			<div class="title">Design &amp; User Interface</div>
+		</a>
+
+		<a class="page">
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/About.png"/>
+			<div class="title">About</div>
+		</a>
+
+		<a class="section">
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/Blog/Usability.png"/>
+			<img class="screenshot" src="{:b.url.resource}images/screenshots/Blog/HelloWorld.png"/>
+			<div class="title">Blog</div>
+		</a>
+
+		<div class="clear"></div>
+	</div>
+
+	<div class="clear"></div>
+{/region}

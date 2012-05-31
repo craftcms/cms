@@ -1,25 +1,19 @@
 {layout "_layouts/basic" title=title styles=styles scripts=scripts bodyClass=bodyClass}
 
 {region "body"}
-	<div id="header-left" class="header">
-		<div id="site"><h3>Pixel & Tonic</h3></div>
+	<div id="header">
+		<div id="site" class="left">Pixel & Tonic</div>
+		<div id="me" class="right">{:b.users.current.username}</div>
 
-		{if crumbs}
-			<div id="crumbs">
-				<ul>
-					{foreach crumbs.split as crumb}
-						{set crumb = crumb.split(":")}
-						<li><a href="{:b.url.base}{:crumb.get(0)}">{:crumb.get(1)}</a></li>
-					{/foreach}
-				</ul>
-			</div>
-		{/if}
-	</div>
+		<div id="nav" class="left">
+			<ul>
+				{foreach b.cp.sections as section}
+					<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}">{:section.name}</a></li>
+				{/foreach}
+			</ul>
+		</div>
 
-	<div id="header-right" class="header">
-		<div id="search"><input class="nicetext" data-hint="Search entries and users" type="text" /></div>
-		<div id="me"><a href="{:b.url.base}users/edit/{:b.users.current.id}">{:b.users.current.username}</a></div>
-		<div id="logout"><a href="{:b.url.base}logout">Sign out</a></div>
+		<div class="clear"></div>
 	</div>
 
 	{if b.session.notifications}
@@ -31,17 +25,7 @@
 	{/if}
 
 	<div id="main" class="main">
-		<div id="nav">
-			<ul>
-				{foreach b.cp.sections as section}
-					<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}" data-icon="{:section.icon}">{:section.name}</a></li>
-				{/foreach}
-			</ul>
-		</div>
-
-		<div>
-			{:main}
-		</div>
+		{:main}
 	</div>
 
 	<div id="footer">
