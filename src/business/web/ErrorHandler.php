@@ -76,7 +76,7 @@ class ErrorHandler extends \CErrorHandler
 			}
 
 			// If this is a template renderer exception, we don't want to show any stack track information.
-			if ($exception instanceof TemplateRendererException)
+			if ($exception instanceof TemplateProcessorException)
 			{
 				$trace = array();
 			}
@@ -248,7 +248,8 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
-		$templateFile = b()->findLocalizedFile($templatePath.$templateName.b()->viewRenderer->fileExtension, $srcLanguage);
+		$extension = TemplateHelper::getExtension($templatePath.$templateName);
+		$templateFile = b()->findLocalizedFile($templatePath.$templateName.$extension, $srcLanguage);
 		if (is_file($templateFile))
 			$templateFile = realpath($templateFile);
 
