@@ -18,7 +18,9 @@ b.Tier = b.Base.extend({
 		var $elements = this.$container.children();
 		this.totalElements = $elements.length;
 
-		this.$trailContainer = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="trails" viewBox="0 0 100 100" preserveAspectRatio="none"/>').prependTo(this.$container);
+		this.$trailContainer = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="trails" viewBox="0 0 100 100" preserveAspectRatio="none">'
+			+   '<line class="trail" x1="50" y1="0" x2="50" y2="50" vector-effect="non-scaling-stroke"/>'
+			+ '</svg>').prependTo(this.$container);
 
 		this.elements = [];
 		this.trails = [];
@@ -29,6 +31,7 @@ b.Tier = b.Base.extend({
 				$dot = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="dot"><circle cx="2" cy="2" r="2"/></svg>').prependTo($element),
 				path = document.createElementNS(b.Tier.svgNS, 'path');
 
+			path.setAttributeNS(null, 'class', 'trail');
 			path.setAttributeNS(null, 'vector-effect', 'non-scaling-stroke');
 			this.$trailContainer[0].appendChild(path);
 
@@ -202,7 +205,7 @@ b.Tier = b.Base.extend({
 	 */
 	setTrailPosition: function(trail, coords)
 	{
-		var d = 'M 50,0 C 50,50 '+coords.midX+','+coords.midY1+' '+coords.midX+','+coords.midY2+' S '+coords.x+','+(coords.y-50)+' '+coords.x+','+coords.y;
+		var d = 'M 50,50 H '+coords.x+' V '+coords.y;
 		trail.path.setAttributeNS(null, 'd', d);
 
 		// Save the coordinates for later
