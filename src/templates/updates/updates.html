@@ -50,14 +50,14 @@
 						{foreach updateInfo.plugins as pluginInfo}
 						<tr id="{:pluginInfo.class}">
 							<td class="pane-item">
-								<strong>{:pluginInfo.name}</strong> {:pluginInfo.version}
+								<strong>{:pluginInfo.displayName}</strong> {:pluginInfo.latestVersion}
 								{if pluginInfo.criticalUpdateAvailable}<div class="badge warning">Critical</div>{/if}
 							</td>
 							<td class="pane-item">
 								<a class="notes">Show release notes</a>
 								<div style="display:none">
 									{foreach pluginInfo.releases as release}
-										<h5>{:pluginInfo.name} {:release.version}</h5>
+										<h5>{:pluginInfo.displayName} {:release.version}</h5>
 										<ul>
 											<li>{:release.notes.nl2br}</li>
 										</ul>
@@ -65,7 +65,7 @@
 								</div>
 							</td>
 							<td class="pane-item">
-								<form method="post" action="{:b.url.base}update/{:plugin.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:b.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
 							</td>
 						</tr>
 						{/foreach}

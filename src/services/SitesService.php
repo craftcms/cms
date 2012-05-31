@@ -224,6 +224,9 @@ class SitesService extends \CApplicationComponent
 		return $this->_allSites;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getEnabledSites()
 	{
 		if (!$this->_enabledSites)
