@@ -82,7 +82,7 @@ class TemplateParser
 	{
 		$this->_template = preg_replace_callback('/\<\?php(.*)\?\>/Ums', array(&$this, 'createPhpMarker'), $this->_template);
 		$this->_template = preg_replace_callback('/\<\?=(.*)\?\>/Ums', array(&$this, 'createPhpShortTagMarker'), $this->_template);
-		$this->_template = preg_replace_callback('/\<\?(.*)\?\>/Ums', array(&$this, 'createPhpMarker'), $this->_template);
+		$this->_template = preg_replace_callback('/\<\?\s+(.*)\?\>/Ums', array(&$this, 'createPhpMarker'), $this->_template);
 	}
 
 	/**

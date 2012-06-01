@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class TemplateRendererException extends Exception
+class TemplateProcessorException extends Exception
 {
 	/**
 	 * @param $message

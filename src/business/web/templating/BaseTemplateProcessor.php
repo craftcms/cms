@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
+class BaseTemplateProcessor extends \CApplicationComponent
 {
 	public $fileExtension = '.html';
 
@@ -16,17 +16,23 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	protected $_parsedPath;
 	protected $_plugin;
 
+	private $_sourceExtension = '.source';
+	private $_parsedExtension = '.parsed';
+
 	/**
 	 * Renders a template
 	 * @param object $context The controller or widget who is rendering the template
-	 * @param string $sourcePath Path to the source template
+	 * @param        $fileSystemPath
 	 * @param array  $variables The variables to be passed to the template
 	 * @param bool   $return Whether the rendering result should be returned
 	 * @return mixed
 	 */
-	public function renderFile($context, $sourcePath, $variables, $return)
+	public function run($context, $fileSystemPath, $variables, $return)
 	{
-		$this->setPaths($sourcePath);
+		$fileSystemPath = str_replace('\\', '/', $fileSystemPath);
+		$fileSystemPath = str_replace('//', '/', $fileSystemPath);
+
+		$this->setPaths($fileSystemPath);
 
 		if ($this->isTemplateParsingNeeded())
 			$this->parseTemplate();
@@ -86,11 +92,11 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	{
 		if ($this->_plugin)
 		{
-			return b()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath;
+			return b()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath.$this->_sourceExtension;
 		}
 		else
 		{
-			return b()->path->getParsedTemplatesPath().$this->_relativePath;
+			return b()->path->getParsedTemplatesPath().$this->_relativePath.$this->_sourceExtension;
 		}
 	}
 
@@ -101,7 +107,8 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	 */
 	protected function getParsedPath()
 	{
-		return $this->_duplicatePath.'.php';
+		$tempPath = substr($this->_duplicatePath, 0, strpos($this->_duplicatePath, $this->_sourceExtension));
+		return $tempPath.$this->_parsedExtension.'.php';
 	}
 
 	/**
@@ -149,7 +156,7 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 	/**
 	 * Parses a template
 	 * @access protected
-	 * @throws TemplateRendererException
+	 * @throws TemplateProcessorException
 	 */
 	protected function parseTemplate()
 	{
@@ -164,9 +171,9 @@ class TemplateRenderer extends \CApplicationComponent implements \IViewRenderer
 		{
 			$parsedTemplate = $parser->parseTemplate($template);
 		}
-		catch (TemplateParserException $e)
+		catch (TemplateProcessorException $e)
 		{
-			throw new TemplateRendererException($e->getMessage(), $this->_sourcePath, $e->getLine());
+			throw new TemplateProcessorException($e->getMessage(), $this->_sourcePath, $e->getLine());
 		}
 
 		// Save the parsed template to the parsed path

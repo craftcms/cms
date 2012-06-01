@@ -1639,20 +1639,19 @@ class File extends \CApplicationComponent
 	public static function fileExists($fileName, $caseInsensitive = true)
 	{
 		if (file_exists($fileName))
-		{
-			return true;
-		}
+			return $fileName;
 
 		if ($caseInsensitive)
 		{
 			$dir = dirname($fileName);
 			$files = glob($dir.'/*');
-			$lcaseFileName = strtolower($fileName);
+			$lcaseFileName = str_replace('\\', '/', strtolower($fileName));
 
 			foreach ($files as $file)
 			{
-				if (strtolower($file) == $lcaseFileName)
-					return true;
+				$file = str_replace('\\', '/', $file);
+				if (strtolower($file) === $lcaseFileName)
+					return $file;
 			}
 		}
 

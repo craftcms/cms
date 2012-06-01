@@ -6,11 +6,11 @@ namespace Blocks;
  */
 class EtPackage
 {
-	public $licenseKeyStatus;
-	public $licenseKeys;
+	public $sitesAndKeys;
 	public $requestIp;
 	public $requestTime;
-	public $domain;
+	public $requestDomain;
+	public $requestPort;
 	public $product;
 	public $data;
 	public $errors = array();
@@ -23,13 +23,13 @@ class EtPackage
 		if ($properties == null)
 			return;
 
-		$this->licenseKeys = isset($properties['licenseKeys']) ? $properties['licenseKeys'] : null;
-		$this->licenseKeyStatus = isset($properties['licenseKeyStatus']) ? $properties['licenseKeyStatus'] : null;
+		$this->sitesAndKeys = isset($properties['sitesAndKeys']) ? $properties['sitesAndKeys'] : null;
 		$this->data = isset($properties['data']) ? $properties['data'] : null;
-		$this->domain = isset($properties['domain']) ? $properties['domain'] : null;
 		$this->product = isset($properties['product']) ? $properties['product'] : null;
+		$this->requestDomain = isset($properties['requestDomain']) ? $properties['requestDomain'] : null;
 		$this->requestIp = isset($properties['requestIp']) ? $properties['requestIp'] : null;
 		$this->requestTime = isset($properties['requestTime']) ? $properties['requestTime'] : null;
+		$this->requestPort = isset($properties['requestPort']) ? $properties['requestPort'] : null;
 	}
 
 	/*

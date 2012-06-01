@@ -24,7 +24,7 @@ class App extends \CWebApplication
 		Blocks::import('app.business.db.PDO');
 		Blocks::import('app.business.db.MysqlSchema');
 		Blocks::import('app.business.web.ErrorHandler');
-		Blocks::import('app.business.web.templating.TemplateRenderer');
+		Blocks::import('app.business.web.templating.FileTemplateProcessor');
 
 		// We would normally use the 'preload' config option for logging and request, but because of PHP namespace hackery, we'll manually load them here.
 		Blocks::import('app.services.ConfigService');
@@ -255,7 +255,7 @@ class App extends \CWebApplication
 						{
 							Blocks::import('plugins.'.$pluginName.'.controllers.*');
 							$this->setControllerPath(b()->path->getPluginsPath().$pluginName.'/controllers/');
-							$this->runController($pluginName.'_'.$controller.'/'.$action);
+							$this->runController($pluginName.'_'.ucfirst($controller).'/'.$action);
 							$this->end();
 						}
 					}
@@ -413,6 +413,7 @@ class App extends \CWebApplication
 			$infoTable = $this->db->getSchema()->getTable('{{info}}');
 			$this->_isInstalled = (bool)$infoTable;
 		}
+
 		return $this->_isInstalled;
 	}
 

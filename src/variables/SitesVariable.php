@@ -12,7 +12,7 @@ class SitesVariable
 	 */
 	public function licensekeys()
 	{
-		return b()->sites->getLicenseKeys();
+		return b()->sites->getAllLicenseKeys();
 	}
 
 	/**
