@@ -32,7 +32,7 @@ class SessionController extends Controller
 		else
 		{
 			// they are not logged in, but they need to reset their password.
-			if ($loginInfo->identity->errorCode === UserIdentity::ERROR_PASSWORD_RESET_REQUIRED)
+			if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_PASSWORD_RESET_REQUIRED)
 			{
 				$r = array('error' => 'You need to reset your password. Check your email for instructions.');
 			}
@@ -41,17 +41,17 @@ class SessionController extends Controller
 				// error logging in.
 				$errorMessage = '';
 
-				if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_LOCKED)
+				if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_ACCOUNT_LOCKED)
 					$errorMessage = 'Account locked.';
-				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
+				else if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
 				{
 					$user = b()->users->getUserByUsernameOrEmail($username);
 					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(b()->users->getRemainingCooldownTime($user), false).'.';
 				}
-				else if ($loginInfo->identity->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->identity->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)
+				else if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)
 					$errorMessage = 'Invalid login name or password.';
-				else if ($loginInfo->identity->errorCode !== UserIdentity::ERROR_NONE)
-					$errorMessage = $loginInfo->identity->failedPasswordAttemptCount.' of '.b()->config->maxInvalidPasswordAttempts.' failed password attempts.';
+				else if ($loginInfo->getIdentity()->errorCode !== UserIdentity::ERROR_NONE)
+					$errorMessage = $loginInfo->getIdentity()->failedPasswordAttemptCount.' of '.b()->config->maxInvalidPasswordAttempts.' failed password attempts.';
 
 				$r = array(
 					'error' => $errorMessage,
