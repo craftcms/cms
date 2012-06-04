@@ -256,24 +256,4 @@ class PathService extends \CApplicationComponent
 
 		return $path;
 	}
-
-	/**
-	 * @param $path
-	 * @return mixed
-	 */
-	public function normalizeDirectorySeparators($path)
-	{
-		return str_replace('\\', '/', $path);
-	}
-
-	/**
-	 * Adds a trailing slash to the end of a path if one does not exist
-	 * @param $path The path to normalize.
-	 * @return string The normalized path.
-	 */
-	public function normalizeTrailingSlash($path)
-	{
-		$path = rtrim($path, '\\/').'/';
-		return $path;
-	}
 }

@@ -1597,7 +1597,7 @@ class File extends \CApplicationComponent
 			}
 
 			// normalize directory separators
-			$info = b()->path->normalizeDirectorySeparators($info);
+			$info = str_replace('\\', '/', $info);
 
 			// found a directory
 			if (substr($info['name'], -1) === '/')
