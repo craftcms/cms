@@ -19,7 +19,7 @@ b.Tier = b.Base.extend({
 		this.totalElements = $elements.length;
 
 		this.$trailContainer = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="trails" viewBox="0 0 100 100" preserveAspectRatio="none">'
-			+   '<line class="trail" x1="50" y1="0" x2="50" y2="50" vector-effect="non-scaling-stroke"/>'
+			+   '<line class="trail" x1="50" y1="28" x2="50" y2="'+(50-b.Tier.pathCurveRadius)+'" vector-effect="non-scaling-stroke"/>'
 			+ '</svg>').prependTo(this.$container);
 
 		this.elements = [];
@@ -28,7 +28,7 @@ b.Tier = b.Base.extend({
 		for (var i = 0; i < this.totalElements; i++)
 		{
 			var $element = $($elements[i]),
-				$dot = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="dot"><circle cx="2" cy="2" r="2"/></svg>').prependTo($element),
+				//$dot = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="dot"><circle cx="2" cy="2" r="2"/></svg>').prependTo($element),
 				path = document.createElementNS(b.Tier.svgNS, 'path');
 
 			path.setAttributeNS(null, 'class', 'trail');
@@ -205,7 +205,15 @@ b.Tier = b.Base.extend({
 	 */
 	setTrailPosition: function(trail, coords)
 	{
-		var d = 'M 50,50 H '+coords.x+' V '+coords.y;
+		var curveWidth = (coords.x == 50 ? 0 : ((coords.x < 50 ? -1 : 1) * (this.$container.width()/100)/(100/b.Tier.pathCurveRadius))),
+			x2 = 50 + curveWidth,
+			x3 = coords.x - curveWidth,
+			y0 = 50 - b.Tier.pathCurveRadius,
+			y2 = 28 + Math.round((coords.y - 38)/2),
+			y1 = y2 - b.Tier.pathCurveRadius,
+			y3 = y2 + b.Tier.pathCurveRadius,
+			y4 = coords.y - 10,
+			d = 'M 50,'+y0+' V '+y1+' Q 50,'+y2+' '+x2+','+y2+' H '+x3+' Q '+coords.x+','+y2+' '+coords.x+','+y3+' V '+y4;
 		trail.path.setAttributeNS(null, 'd', d);
 
 		// Save the coordinates for later
@@ -216,7 +224,8 @@ b.Tier = b.Base.extend({
 {
 	svgNS: 'http://www.w3.org/2000/svg',
 	elementWidth: 158,
-	minElementMargin: 25
+	minElementMargin: 25,
+	pathCurveRadius: 6
 });
 
 
