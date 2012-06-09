@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BaseTemplateProcessor extends \CApplicationComponent
+abstract class BaseTemplateProcessor extends \CApplicationComponent
 {
 	public $fileExtension = '.html';
 
@@ -16,8 +16,8 @@ class BaseTemplateProcessor extends \CApplicationComponent
 	protected $_parsedPath;
 	protected $_plugin;
 
-	private $_sourceExtension = '.source';
-	private $_parsedExtension = '.parsed';
+	protected $sourceExtension = '.source';
+	protected $parsedExtension = '.parsed';
 
 	/**
 	 * Renders a template
@@ -42,14 +42,21 @@ class BaseTemplateProcessor extends \CApplicationComponent
 
 	/**
 	 * Set the template paths
+	 *
 	 * @param string $sourcePath
+	 * @param bool   $checkSourcePath
+	 *
 	 * @throws Exception
+	 * @return void
 	 * @access protected
 	 */
-	protected function setPaths($sourcePath)
+	protected function setPaths($sourcePath, $checkSourcePath = true)
 	{
-		if (!is_file($sourcePath) || realpath($sourcePath) === false)
-			throw new Exception(Blocks::t('blocks', 'The template "{path}" does not exist.', array('{path}' => $sourcePath)));
+		if ($checkSourcePath)
+		{
+			if (!is_file($sourcePath) || realpath($sourcePath) === false)
+				throw new Exception(Blocks::t('blocks', 'The template "{path}" does not exist.', array('{path}' => $sourcePath)));
+		}
 
 		$this->_sourcePath    = $sourcePath;
 		$this->_relativePath  = $this->getRelativePath();
@@ -61,6 +68,7 @@ class BaseTemplateProcessor extends \CApplicationComponent
 		if (!file_exists($dir))
 			@mkdir($dir, self::$_filePermission, true);
 	}
+
 
 	/**
 	 * Returns the template path, relative to the template root directory
@@ -92,11 +100,11 @@ class BaseTemplateProcessor extends \CApplicationComponent
 	{
 		if ($this->_plugin)
 		{
-			return b()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath.$this->_sourceExtension;
+			return b()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath.$this->sourceExtension;
 		}
 		else
 		{
-			return b()->path->getParsedTemplatesPath().$this->_relativePath.$this->_sourceExtension;
+			return b()->path->getParsedTemplatesPath().$this->_relativePath.$this->sourceExtension;
 		}
 	}
 
@@ -107,8 +115,8 @@ class BaseTemplateProcessor extends \CApplicationComponent
 	 */
 	protected function getParsedPath()
 	{
-		$tempPath = substr($this->_duplicatePath, 0, strpos($this->_duplicatePath, $this->_sourceExtension));
-		return $tempPath.$this->_parsedExtension.'.php';
+		$tempPath = substr($this->_duplicatePath, 0, strpos($this->_duplicatePath, $this->sourceExtension));
+		return $tempPath.$this->parsedExtension.'.php';
 	}
 
 	/**
@@ -164,7 +172,7 @@ class BaseTemplateProcessor extends \CApplicationComponent
 		copy($this->_sourcePath, $this->_duplicatePath);
 
 		// Initialize a new template parser and have it parse the template
-		$parser = new TemplateParser;
+		$parser = new TemplateParser();
 		$template = file_get_contents($this->_sourcePath);
 
 		try

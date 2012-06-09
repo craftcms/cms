@@ -82,27 +82,18 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 		// Make a copy of the original.
 		$copyTemplatePath = $templatePath;
 
-		// Check to see if it's an email template.
-		if (strncmp($templatePath, '///email', 8) === 0)
+		// Check to see if they want an absolute template path.
+		if (strncmp($templatePath, '//', 2) === 0)
 		{
-			$viewPath = b()->path->getEmailTemplatesPath();
-			$copyTemplatePath = substr($copyTemplatePath, 9);
+			// Set the template path depending on the type of request mode we're in (path->getTemplatePath() takes care of that.
+			$templatePath = b()->path->getTemplatePath();
+			b()->setViewPath($templatePath);
+			if (is_dir($templatePath.'_layouts/'))
+				b()->setLayoutPath($templatePath.'_layouts/');
 		}
-		else
-		{
-			// If they want an absolute template path.
-			if (strncmp($templatePath, '//', 2) === 0)
-			{
-				// Set the template path depending on the type of request mode we're in (path->getTemplatePath() takes care of that.
-				$templatePath = b()->path->getTemplatePath();
-				b()->setViewPath($templatePath);
-				if (is_dir($templatePath.'_layouts/'))
-					b()->setLayoutPath($templatePath.'_layouts/');
-			}
 
-			// This view path will either be the CP template path or the front-end template path.
-			$viewPath = b()->getViewPath();
-		}
+		// This view path will either be the CP template path or the front-end template path.
+		$viewPath = b()->getViewPath();
 
 		// Set the file extension on the instance.
 		$this->fileExtension = $extension;
