@@ -126,15 +126,17 @@ class ContentService extends \CApplicationComponent
 		if ($sectionId)
 		{
 			$section = $this->getSectionById($sectionId);
+
 			if (!$section)
 				throw new Exception('No section exists with the ID '.$sectionId);
+
 			$isNewSection = false;
 			$oldContentTable = $section->getContentTableName();
 			$oldUrlFormat = $section->url_format;
 		}
 		else
 		{
-			$section = new Section;
+			$section = new Section();
 			$isNewSection = true;
 		}
 
@@ -249,6 +251,7 @@ class ContentService extends \CApplicationComponent
 							// Save the settings
 							if (!isset($blockData['settings']))
 								$blockData['settings'] = array();
+
 							$block->settings = $blockData['settings'];
 
 							// Add or modify the block's content column

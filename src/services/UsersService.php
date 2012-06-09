@@ -60,6 +60,7 @@ class UsersService extends \CApplicationComponent
 			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
 			'params' => array(':usernameOrEmail' => $usernameOrEmail),
 		));
+
 		return $user;
 	}
 
@@ -69,8 +70,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getCurrentUser()
 	{
-		$user = $this->getUserById(isset(b()->user) ? b()->user->getId() : null);
-		return $user;
+		return $this->getUserById(isset(b()->user) ? b()->user->getId() : null);
 	}
 
 	/**
