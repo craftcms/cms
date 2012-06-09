@@ -37,6 +37,9 @@
 
 if (version_compare(PHP_VERSION, '5.0.0', '<') ) exit("Sorry, this version of PHPMailer will only run on PHP version 5 or greater!\n");
 
+/**
+ *
+ */
 class PhpMailer
 {
 	/**
@@ -462,6 +465,7 @@ class PhpMailer
 	 * @param string $kind One of 'to', 'cc', 'bcc', 'ReplyTo'
 	 * @param string $address The email address to send to
 	 * @param string $name
+	 * @throws phpMailerException
 	 * @return boolean true on success, false if address already used or invalid in some way
 	 * @access protected
 	 */
@@ -520,7 +524,8 @@ class PhpMailer
 	 * Set the From and FromName properties
 	 * @param string $address
 	 * @param string $name
-	 * @param int $auto
+	 * @param int    $auto
+	 * @throws phpMailerException
 	 * @return boolean
 	 */
 	public function setFrom($address, $name = '', $auto = 1)
@@ -584,6 +589,7 @@ class PhpMailer
 	/**
 	 * Creates message and assigns Mailer. If the message is not sent successfully then it returns false.
 	 * Use the ErrorInfo variable to view description of the error.
+	 * @throws phpMailerException
 	 * @return bool
 	 */
 	public function send()
@@ -711,6 +717,7 @@ class PhpMailer
 	 * Sends mail using the sendmail program.
 	 * @param string $header The message headers
 	 * @param string $body The message body
+	 * @throws phpMailerException
 	 * @access protected
 	 * @return bool
 	 */
@@ -766,6 +773,7 @@ class PhpMailer
 	 * Sends mail using the PHP mail() function.
 	 * @param string $header The message headers
 	 * @param string $body The message body
+	 * @throws phpMailerException
 	 * @access protected
 	 * @return bool
 	 */
@@ -847,7 +855,8 @@ class PhpMailer
 	 * Returns false if there is a bad MAIL FROM, RCPT, or DATA input.
 	 * @param string $header The message headers
 	 * @param string $body The message body
-	 * @uses SMTP
+	 * @throws phpMailerException
+	 * @uses Smtp
 	 * @access protected
 	 * @return bool
 	 */
@@ -936,11 +945,12 @@ class PhpMailer
 	}
 
 	/**
-	* Initiates a connection to an SMTP server. Returns false if the operation failed.
-	* @uses SMTP
-	* @access public
-	* @return bool
-	*/
+	 * Initiates a connection to an SMTP server. Returns false if the operation failed.
+	 * @uses Smtp
+	 * @access public
+	 * @throws phpMailerException
+	 * @return bool
+	 */
 	public function smtpConnect()
 	{
 		if (is_null($this->smtp))
@@ -1465,6 +1475,7 @@ class PhpMailer
 	/**
 	 * Assembles the message body. Returns an empty string on failure.
 	 * @access public
+	 * @throws phpMailerException
 	 * @return string The assembled message body
 	 */
 	public function createBody()
@@ -1708,6 +1719,7 @@ class PhpMailer
 	 * @param string $name Overrides the attachment name.
 	 * @param string $encoding File encoding (see $Encoding).
 	 * @param string $type File extension (MIME) type.
+	 * @throws phpMailerException
 	 * @return bool
 	 */
 	public function addAttachment($path, $name = '', $encoding = 'base64', $type = 'application/octet-stream')
@@ -1847,6 +1859,7 @@ class PhpMailer
 	 * Returns an empty string on failure.
 	 * @param string $path The full path to the file
 	 * @param string $encoding The encoding to use; one of 'base64', '7bit', '8bit', 'binary', 'quoted-printable'
+	 * @throws phpMailerException
 	 * @see EncodeFile()
 	 * @access protected
 	 * @return string
@@ -2553,7 +2566,7 @@ class PhpMailer
 	 * @access public
 	 * @param        $message
 	 * @param string $basedir
-	 * @return mixed $message
+ 	 * @return mixed $message
 	 */
 	public function msgHtml($message, $basedir = '')
 	{
