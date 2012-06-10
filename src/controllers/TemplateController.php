@@ -14,9 +14,6 @@ class TemplateController extends Controller
 		// Require user to be logged in on every page but /login in the control panel and account/password with an activation code
 		if (b()->request->getMode() == RequestMode::CP)
 		{
-			// Can't use this here until we get SSL working with multiple domains.
-			//b()->request->requireSecureConnection();
-
 			$path = b()->request->getPath();
 			if ($path !== 'login')
 				if ($path !== b()->users->getVerifyAccountUrl() && b()->request->getParam('code', null) == null)
