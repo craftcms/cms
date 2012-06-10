@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles settings from the control panel.
  */
-class SettingsController extends Controller
+class SettingsController extends BaseController
 {
 	/**
 	 * All settings actions require the user to be logged in

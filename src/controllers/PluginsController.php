@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles plugin administration tasks
  */
-class PluginsController extends Controller
+class PluginsController extends BaseController
 {
 	/**
 	 * Installs a plugin

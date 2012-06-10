@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles content management tasks
  */
-class ContentController extends Controller
+class ContentController extends BaseController
 {
 	/**
 	 * All content actions require the user to be logged in

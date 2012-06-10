@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UpdateController extends Controller
+class UpdateController extends BaseController
 {
 	/**
 	 * All update actions require the user to be logged in.

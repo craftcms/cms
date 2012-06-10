@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DbUpdateController extends Controller
+class DbUpdateController extends BaseController
 {
 	/**
 	 * Index
