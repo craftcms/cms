@@ -45,7 +45,7 @@
 			{set blockClass = "PlainText"}
 		{/if}
 		<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
-			{foreach b.contentblocks.blocktypes as blocktype}
+			{foreach blx.contentblocks.blocktypes as blocktype}
 				<option value="{:blocktype.classHandle}" {if blocktype.classHandle == blockClass}selected="selected"{/if}>{:blocktype.blocktypeName}</option>
 			{/foreach}
 		</select>

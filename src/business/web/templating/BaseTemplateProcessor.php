@@ -87,7 +87,7 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 		}
 		else
 		{
-			return substr($this->_sourcePath, strlen(b()->path->getTemplatePath()));
+			return substr($this->_sourcePath, strlen(blx()->path->getTemplatePath()));
 		}
 	}
 
@@ -100,11 +100,11 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 	{
 		if ($this->_plugin)
 		{
-			return b()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath.$this->sourceExtension;
+			return blx()->path->getParsedPluginTemplatesPath().$this->_plugin.'/'.$this->_relativePath.$this->sourceExtension;
 		}
 		else
 		{
-			return b()->path->getParsedTemplatesPath().$this->_relativePath.$this->sourceExtension;
+			return blx()->path->getParsedTemplatesPath().$this->_relativePath.$this->sourceExtension;
 		}
 	}
 
@@ -127,7 +127,7 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 	protected function isTemplateParsingNeeded()
 	{
 		// always re-parse templates if in dev mode
-		if (b()->config->devMode)
+		if (blx()->config->devMode)
 			return true;
 
 		// if last modified date or source is newer, regen

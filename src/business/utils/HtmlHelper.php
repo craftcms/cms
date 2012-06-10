@@ -13,6 +13,6 @@ class HtmlHelper extends \CHtml
 	 */
 	public static function unixTimeToPrettyDate($unixTime)
 	{
-		return b()->dateFormatter->format('MM-dd-yyyy HH:mm:ss', $unixTime);
+		return blx()->dateFormatter->format('MM-dd-yyyy HH:mm:ss', $unixTime);
 	}
 }

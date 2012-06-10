@@ -7,14 +7,14 @@
 		</div>
 		<div class="pane-body">
 			<table class="pane-body" width="95%">
-				{set allPlugins = b.plugins.all}
+				{set allPlugins = blx.plugins.all}
 				{foreach allPlugins as plugin}
 				<tr>
 					<form method="post" action="">
 						<input type="hidden" name="action" value="settings/savePlugin" />
 						<input type="hidden" name="redirect" value="settings/plugins" />
 						<input type="hidden" name="pluginClass" value="{:plugin.class}" />
-						<td width="80%"><a class="pane-item" href="{:b.url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a></td>
+						<td width="80%"><a class="pane-item" href="{:blx.url.base}settings/plugins/{:plugin.classHandle.lowercase}">{:plugin.name}</a></td>
 						<td width="10%">{:plugin.version}</td>
 						<td>
 							{if plugin.installed}

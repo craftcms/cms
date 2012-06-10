@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Select
  */
-b.ui.Select = b.Base.extend({
+blx.ui.Select = blx.Base.extend({
 
 	$container: null,
 	$scrollpane: null,
@@ -31,7 +30,7 @@ b.ui.Select = b.Base.extend({
 		this.$container = $(container);
 
 		// Param mapping
-		if (!settings && b.isObject(items))
+		if (!settings && blx.isObject(items))
 		{
 			// (container, settings)
 			settings = items;
@@ -41,13 +40,13 @@ b.ui.Select = b.Base.extend({
 		// Is this already a select?
 		if (this.$container.data('select'))
 		{
-			b.log('Double-instantiating a select on an element');
+			blx.log('Double-instantiating a select on an element');
 			this.$container.data('select').destroy();
 		}
 
 		this.$container.data('select', this);
 
-		this.setSettings(settings, b.ui.Select.defaults);
+		this.setSettings(settings, blx.ui.Select.defaults);
 		this.mouseUpTimeoutDuration = (this.settings.waitForDblClick ? 300 : 0);
 
 		this.$scrollpane = $('.scrollpane:first', this.$container);
@@ -67,7 +66,7 @@ b.ui.Select = b.Base.extend({
 
 		// --------------------------------------------------------------------
 
-		b.preventOutlineOnMouseFocus(this.$container);
+		blx.preventOutlineOnMouseFocus(this.$container);
 
 		this.addListener(this.$container, 'keydown', 'onKeyDown');
 
@@ -96,7 +95,7 @@ b.ui.Select = b.Base.extend({
 	 */
 	selectItem: function($item)
 	{
-		if (! this.settings.multi)
+		if (!this.settings.multi)
 			this.deselectAll();
 
 		$item.addClass('sel');
@@ -114,7 +113,7 @@ b.ui.Select = b.Base.extend({
 	 */
 	selectRange: function($item)
 	{
-		if (! this.settings.multi)
+		if (!this.settings.multi)
 			return this.selectItem($item);
 
 		this.deselectAll();
@@ -236,7 +235,7 @@ b.ui.Select = b.Base.extend({
 		var $item = $($.data(event.currentTarget, 'select-item'));
 
 		// was this a click?
-		if (! event.metaKey && ! event.shiftKey && b.getDist(this.mousedownX, this.mousedownY, event.pageX, event.pageY) < 1)
+		if (! event.metaKey && ! event.shiftKey && blx.getDist(this.mousedownX, this.mousedownY, event.pageX, event.pageY) < 1)
 		{
 			this.selectItem($item);
 
@@ -269,30 +268,30 @@ b.ui.Select = b.Base.extend({
 
 		switch (event.keyCode)
 		{
-			case b.DOWN_KEY:
+			case blx.DOWN_KEY:
 				event.preventDefault();
 
 				if (this.first === null)
 					// select the first item
-					$item = $(this.$items[0]);
+					var $item = $(this.$items[0]);
 				else if (this.$items.length >= anchor + 2)
 					// select the item after the last selected item
-					$item = $(this.$items[anchor+1]);
+					var $item = $(this.$items[anchor+1]);
 
 				break;
 
-			case b.UP_KEY:
+			case blx.UP_KEY:
 				event.preventDefault();
 
 				if (this.first === null)
 					// select the last item
-					$item = $(this.$items[this.$items.length-1]);
+					var $item = $(this.$items[this.$items.length-1]);
 				else if (anchor > 0)
-					$item = $(this.$items[anchor-1]);
+					var $item = $(this.$items[anchor-1]);
 
 				break;
 
-			case b.ESC_KEY:
+			case blx.ESC_KEY:
 				this.deselectAll(true);
 				break;
 
@@ -305,7 +304,7 @@ b.ui.Select = b.Base.extend({
 		//  Scroll to the item
 		// -------------------------------------------
 
-		b.scrollContainerToElement(this.$scrollpane, $item);
+		blx.scrollContainerToElement(this.$scrollpane, $item);
 
 		// -------------------------------------------
 		//  Select the item
@@ -344,7 +343,7 @@ b.ui.Select = b.Base.extend({
 			// Make sure this element doesn't belong to another selector
 			if ($.data(item, 'select'))
 			{
-				b.log('Element was added to more than one selector');
+				blx.log('Element was added to more than one selector');
 				$.data(item, 'select').removeItems(item);
 			}
 
@@ -487,6 +486,5 @@ b.ui.Select = b.Base.extend({
 		onSelectionChange: function(){}
 	}
 });
-
 
 })(jQuery);

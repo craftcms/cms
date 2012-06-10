@@ -18,7 +18,7 @@ class UrlHelper
 	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$path = b()->config->resourceTriggerWord.'/'.trim($path, '/');
+		$path = blx()->config->resourceTriggerWord.'/'.trim($path, '/');
 		$path = self::generateUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
@@ -34,7 +34,7 @@ class UrlHelper
 	public static function generateActionUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$path = b()->config->actionTriggerWord.'/'.trim($path, '/');
+		$path = blx()->config->actionTriggerWord.'/'.trim($path, '/');
 		$path = self::generateUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
@@ -54,12 +54,12 @@ class UrlHelper
 			return $path;
 
 		$origPath = $path;
-		$pathVar = b()->urlManager->routeVar;
+		$pathVar = blx()->urlManager->routeVar;
 
 		$path = self::_normalizePath(trim($path, '/'), $params);
-		$path = b()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		$path = blx()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 
-		if (b()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
+		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
 			$path = $origPath == '' ? $path.'/' : $path;
 		else
 		{
@@ -75,7 +75,7 @@ class UrlHelper
 			}
 			else
 			{
-				if (strpos($path, $pathVar.'=') === false && b()->request->getUrlFormat() == UrlFormat::QueryString)
+				if (strpos($path, $pathVar.'=') === false && blx()->request->getUrlFormat() == UrlFormat::QueryString)
 					$path = $path.'?'.$pathVar.'=';
 			}
 		}
@@ -100,7 +100,7 @@ class UrlHelper
 		{
 			$params = ltrim($params, '?&');
 
-			if (b()->request->getUrlFormat() == UrlFormat::PathInfo)
+			if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
 				return array($path.'?'.$params);
 
 			return array($path.'&'.$params);

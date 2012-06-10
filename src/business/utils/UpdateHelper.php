@@ -21,10 +21,10 @@ class UpdateHelper
 				continue;
 
 			$rowData = explode(';', $row);
-			$file = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0].'.bak');
+			$file = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
 
 			if ($file->getExists())
-				$file->rename(b()->path->getAppPath().'../../'.$rowData[0]);
+				$file->rename(blx()->path->getAppPath().'../../'.$rowData[0]);
 		}
 	}
 
@@ -50,8 +50,8 @@ class UpdateHelper
 
 				$rowData = explode(';', $row);
 
-				$destFile = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0]);
-				$sourceFile = b()->file->set($sourceTempDir->getRealPath().'/'.$rowData[0]);
+				$destFile = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0]);
+				$sourceFile = blx()->file->set($sourceTempDir->getRealPath().'/'.$rowData[0]);
 
 				switch (trim($rowData[1]))
 				{
@@ -143,7 +143,7 @@ class UpdateHelper
 	public static function getManifestData($manifestDataPath)
 	{
 		// get manifest file
-		$manifestFile = b()->file->set($manifestDataPath.'/blocks_manifest');
+		$manifestFile = blx()->file->set($manifestDataPath.'/blocks_manifest');
 		$manifestFileData = $manifestFile->contents;
 		$manifestFileData = preg_split('/[\r\n]/', $manifestFileData);
 
@@ -161,7 +161,7 @@ class UpdateHelper
 	 */
 	public static function getTempDirForPackage($downloadPath)
 	{
-		return b()->file->set(pathinfo($downloadPath, PATHINFO_DIRNAME).'/'.pathinfo($downloadPath, PATHINFO_FILENAME).'_temp');
+		return blx()->file->set(pathinfo($downloadPath, PATHINFO_DIRNAME).'/'.pathinfo($downloadPath, PATHINFO_FILENAME).'_temp');
 	}
 
 	/**
@@ -171,8 +171,8 @@ class UpdateHelper
 	 */
 	public static function copyMigrationFile($filePath)
 	{
-		$migrationFile = b()->file->set($filePath);
-		$destinationFile = b()->path->getMigrationsPath().$migrationFile->baseName;
+		$migrationFile = blx()->file->set($filePath);
+		$destinationFile = blx()->path->getMigrationsPath().$migrationFile->baseName;
 		$migrationFile->copy($destinationFile, true);
 		return $destinationFile;
 	}

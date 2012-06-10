@@ -259,7 +259,7 @@ class Blocks extends \Yii
 	{
 		$encodedData = Json::encode($data);
 
-		if (($currentUser = b()->users->getCurrentUser()) !== null)
+		if (($currentUser = blx()->users->getCurrentUser()) !== null)
 			$userId = $currentUser->id;
 		else
 			$userId = null;
@@ -280,10 +280,10 @@ class Blocks extends \Yii
 }
 
 /**
- * Returns the current b() instance.  This is a wrapper function for the Blocks::app() instance.
+ * Returns the current blx() instance.  This is a wrapper function for the Blocks::app() instance.
  * @return App
  */
-function b()
+function blx()
 {
 	return Blocks::app();
 }

@@ -12,7 +12,7 @@ class RequestVariable
 	 */
 	public function secure()
 	{
-		return b()->request->getIsSecureConnection();
+		return blx()->request->getIsSecureConnection();
 	}
 
 	/**
@@ -22,7 +22,7 @@ class RequestVariable
 	 */
 	public function post($name)
 	{
-		return b()->request->getPost($name);
+		return blx()->request->getPost($name);
 	}
 
 	/**
@@ -30,6 +30,6 @@ class RequestVariable
 	 */
 	public function servername()
 	{
-		return b()->request->getServerName();
+		return blx()->request->getServerName();
 	}
 }

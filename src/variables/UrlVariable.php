@@ -54,7 +54,7 @@ class UrlVariable
 	 */
 	public function segments()
 	{
-		return b()->request->getPathSegments();
+		return blx()->request->getPathSegments();
 	}
 
 	/**
@@ -65,7 +65,7 @@ class UrlVariable
 	 */
 	public function segment($num = null, $default = '')
 	{
-		return b()->request->getPathSegment($num, $default);
+		return blx()->request->getPathSegment($num, $default);
 	}
 
 	/**
@@ -74,7 +74,7 @@ class UrlVariable
 	 */
 	public function domain()
 	{
-		return b()->request->getServerName();
+		return blx()->request->getServerName();
 	}
 
 	/**
@@ -85,6 +85,6 @@ class UrlVariable
 	 */
 	public function get($var = null, $default = '')
 	{
-		return b()->request->getQuery($var, $default);
+		return blx()->request->getQuery($var, $default);
 	}
 }

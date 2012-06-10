@@ -9,7 +9,7 @@
 				<ul>
 					{foreach crumbs.split as crumb}
 						{set crumb = crumb.split(":")}
-						<li><a href="{:b.url.base}{:crumb.get(0)}">{:crumb.get(1)}</a></li>
+						<li><a href="{:blx.url.base}{:crumb.get(0)}">{:crumb.get(1)}</a></li>
 					{/foreach}
 				</ul>
 			</div>
@@ -18,13 +18,13 @@
 
 	<div id="header-right" class="header">
 		<div id="search"><input class="nicetext" data-hint="Search entries and users" type="text" /></div>
-		<div id="me"><a href="{:b.url.base}users/edit/{:b.users.current.id}">{:b.users.current.username}</a></div>
-		<div id="logout"><a href="{:b.url.base}logout">Sign out</a></div>
+		<div id="me"><a href="{:blx.url.base}users/edit/{:blx.users.current.id}">{:blx.users.current.username}</a></div>
+		<div id="logout"><a href="{:blx.url.base}logout">Sign out</a></div>
 	</div>
 
-	{if b.session.notifications}
+	{if blx.session.notifications}
 		<div id="notification">
-			{foreach b.session.notifications as notification}
+			{foreach blx.session.notifications as notification}
 				<div class="notification {:notification.type}">{:notification.message}</div>
 			{/foreach}
 		</div>
@@ -33,8 +33,8 @@
 	<div id="main" class="main">
 		<div id="nav">
 			<ul>
-				{foreach b.cp.sections as section}
-					<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}" data-icon="{:section.icon}">{:section.name}</a></li>
+				{foreach blx.cp.sections as section}
+					<li id="nav-{:section.handle}"><a {if blx.url.segment(1)==section.handle}class="sel"{/if} href="{:blx.url.base}{:section.handle}" data-icon="{:section.icon}">{:section.name}</a></li>
 				{/foreach}
 			</ul>
 		</div>
@@ -45,7 +45,7 @@
 	</div>
 
 	<div id="footer">
-		<p id="version">Blocks {:b.app.version}.{:b.app.build}</p>
-		<p id="copyright">© {:b.date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
+		<p id="version">Blocks {:blx.app.version}.{:blx.app.build}</p>
+		<p id="copyright">© {:blx.date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
 	</div>
 {/region}

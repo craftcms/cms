@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Handle Generator
  */
-b.ui.EntryUrlFormatGenerator = b.ui.InputGenerator.extend({
+blx.ui.EntryUrlFormatGenerator = blx.ui.InputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -15,14 +14,14 @@ b.ui.EntryUrlFormatGenerator = b.ui.InputGenerator.extend({
 		sourceVal = sourceVal.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		sourceVal = b.asciiString(sourceVal);
+		sourceVal = blx.asciiString(sourceVal);
 
 		// Handle must start with a letter and end with a letter/number
 		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = b.filterArray(sourceVal.split(/[^a-z0-9]+/));
+		var words = blx.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words.length)
 			return words.join('-') + '/{slug}';
@@ -30,6 +29,5 @@ b.ui.EntryUrlFormatGenerator = b.ui.InputGenerator.extend({
 		return '';
 	}
 });
-
 
 })(jQuery);

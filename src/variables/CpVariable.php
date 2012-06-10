@@ -17,7 +17,7 @@ class CpVariable
 		//$sections[] = array('handle' => 'assets', 'name' => 'Assets', 'icon' => 'A');
 		$sections[] = array('handle' => 'users', 'name' => 'Users', 'icon' => 'U');
 
-		if (b()->users->getCurrentUser() && b()->users->getCurrentUser()->admin)
+		if (blx()->users->getCurrentUser() && blx()->users->getCurrentUser()->admin)
 		{
 			$sections[] = array('handle' => 'settings', 'name' => 'Settings', 'icon' => 'S');
 			$sections[] = array('handle' => 'updates', 'name' => 'Updates', 'icon' => 'V');

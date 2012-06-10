@@ -128,7 +128,7 @@ class Entry extends BaseModel
 	{
 		if ($this->uri)
 		{
-			$url = b()->sites->getCurrentSite()->url.'/'.$this->uri;
+			$url = blx()->sites->getCurrentSite()->url.'/'.$this->uri;
 			return $url;
 		}
 		else
@@ -142,7 +142,7 @@ class Entry extends BaseModel
 	public function getDrafts()
 	{
 		if (!$this->getIsNewRecord())
-			return b()->content->getEntryDrafts($this->id);
+			return blx()->content->getEntryDrafts($this->id);
 		else
 			return array();
 	}
@@ -162,7 +162,7 @@ class Entry extends BaseModel
 	public function setDraft($draft)
 	{
 		if (is_numeric($draft))
-			$draft = b()->content->getDraftByNum($this->id, $draft);
+			$draft = blx()->content->getDraftByNum($this->id, $draft);
 
 		if (!$draft)
 			return;

@@ -11,7 +11,7 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$pluginsTable = b()->db->getSchema()->getTable('{{plugins}}');
+		$pluginsTable = blx()->db->getSchema()->getTable('{{plugins}}');
 
 		// If plugins doesn't exist, create it
 		if (!$pluginsTable)
@@ -23,20 +23,20 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 			));
 		}
 
-		$pluginSettingsTable = b()->db->getSchema()->getTable('{{pluginsettings}}');
+		$pluginSettingsTable = blx()->db->getSchema()->getTable('{{pluginsettings}}');
 
 		// Check for the plugin settings table.
 		if (!$pluginSettingsTable)
 		{
-			b()->db->createCommand()->createSettingsTable('pluginsettings', 'plugins', 'pluginsettings_plugins');
+			blx()->db->createCommand()->createSettingsTable('pluginsettings', 'plugins', 'pluginsettings_plugins');
 		}
 
-		$widgetsTable = b()->db->getSchema()->getTable('{{widgets}}');
+		$widgetsTable = blx()->db->getSchema()->getTable('{{widgets}}');
 		$pluginIdColumn = $widgetsTable->getColumn('plugin_id') !== null ? true : false;
 
 		if (!$pluginIdColumn)
 		{
-			b()->db->createCommand()->addColumnAfter('widgets', 'plugin_id', array('type' => AttributeType::Int, 'required' => false), 'user_id');
+			blx()->db->createCommand()->addColumnAfter('widgets', 'plugin_id', array('type' => AttributeType::Int, 'required' => false), 'user_id');
 			$this->createIndex('widgets_plugins_fk', 'widgets', 'plugin_id');
 			$this->addForeignKey('widgets_plugins_fk', 'widgets', 'plugin_id', 'plugins', 'id');
 		}

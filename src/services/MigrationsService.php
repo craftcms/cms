@@ -201,7 +201,7 @@ class MigrationsService extends \CApplicationComponent
 		$db = $this->getDbConnection();
 		$historyArr = array();
 
-		if ($db->schema->getTable(b()->config->getDbItem('tablePrefix').'_'.$this->migrationTable) === null)
+		if ($db->schema->getTable(blx()->config->getDbItem('tablePrefix').'_'.$this->migrationTable) === null)
 			$this->createMigrationHistoryTable();
 
 		$migrationHistory = $db->createCommand()

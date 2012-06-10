@@ -67,9 +67,9 @@ class EmailTemplateProcessor extends BaseTemplateProcessor
 		else
 			$subPath = 'app/';
 
- 		$path = b()->path->getParsedEmailTemplatesPath().$subPath.$fileName.'.html';
+ 		$path = blx()->path->getParsedEmailTemplatesPath().$subPath.$fileName.'.html';
 
-		$sourceFile = b()->file->set($path);
+		$sourceFile = blx()->file->set($path);
 		$dir = dirname($sourceFile->getRealPath());
 
 		if (!is_dir($dir))

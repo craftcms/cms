@@ -8,10 +8,10 @@
 	{:styles}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0" />
 	<script type="text/javascript">
-		if (typeof b == 'undefined') b = {};
-		b.baseUrl = '{:b.url.base}';
-		b.actionUrl = '{:b.url.action}';
-		b.resourceUrl = '{:b.url.resource}';
+		if (typeof blx == 'undefined') blx = {};
+		blx.baseUrl = '{:blx.url.base}';
+		blx.actionUrl = '{:blx.url.action}';
+		blx.resourceUrl = '{:blx.url.resource}';
 	</script>
 </head>
 <body class="{:bodyClass}">
@@ -32,7 +32,7 @@
 		</div>
 	</noscript>
 
-{if !b.config.useCompressedJs}
+{if !blx.config.useCompressedJs}
 	{include "_includes/js_include" file="global_bootstrap.js"}
 {else}
 	{include "_includes/js_include" file="blocks.js"}

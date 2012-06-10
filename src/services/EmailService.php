@@ -50,7 +50,7 @@ class EmailService extends \CApplicationComponent
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], b()->config->devMode ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], blx()->config->devMode ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -153,7 +153,7 @@ class EmailService extends \CApplicationComponent
 			throw new Exception('Either the email Html body or text body is required when sending an email.');
 
 		// Render the email templates
-		$emailContent = b()->controller->loadEmailTemplate($email, $variables);
+		$emailContent = blx()->controller->loadEmailTemplate($email, $variables);
 
 		$textExists = StringHelper::isNotNullOrEmpty($emailContent['text']);
 		$htmlExists = StringHelper::isNotNullOrEmpty($emailContent['html']);
@@ -217,7 +217,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getEmailByKey($key, $pluginClass = null)
 	{
-		$email = b()->db->createCommand()
+		$email = blx()->db->createCommand()
 			->select('et.*')
 			->from('email_templates et')
 			->join('plugins p', 'p.id = et.plugin_id')
@@ -315,7 +315,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getEmailSettings()
 	{
-		$emailSettings = b()->settings->getSystemSettings('email');
+		$emailSettings = blx()->settings->getSystemSettings('email');
 		$emailSettings = ArrayHelper::expandSettingsArray($emailSettings);
 		return $emailSettings;
 	}
@@ -326,7 +326,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function saveEmailSettings($settings)
 	{
-		if (b()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
+		if (blx()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
 			return true;
 
 		return false;

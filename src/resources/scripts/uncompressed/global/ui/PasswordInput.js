@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Password Input
  */
-b.ui.PasswordInput = b.Base.extend({
+blx.ui.PasswordInput = blx.Base.extend({
 
 	$passwordInput: null,
 	$textInput: null,
@@ -21,7 +20,7 @@ b.ui.PasswordInput = b.Base.extend({
 		// Is this already a password input?
 		if (this.$passwordInput.data('passwordInput'))
 		{
-			b.log('Double-instantiating a password input on an element');
+			blx.log('Double-instantiating a password input on an element');
 			this.$passwordInput.data('passwordInput').destroy();
 		}
 
@@ -127,7 +126,7 @@ b.ui.PasswordInput = b.Base.extend({
 
 	onKeyDown: function(event)
 	{
-		if (event.keyCode == b.ALT_KEY && this.$currentInput.val())
+		if (event.keyCode == blx.ALT_KEY && this.$currentInput.val())
 		{
 			this.showPassword();
 			this.$showPasswordToggle.hide();
@@ -139,7 +138,7 @@ b.ui.PasswordInput = b.Base.extend({
 	{
 		event.preventDefault();
 
-		if (event.keyCode == b.ALT_KEY)
+		if (event.keyCode == blx.ALT_KEY)
 		{
 			this.hidePassword();
 			this.$showPasswordToggle.show();
@@ -188,20 +187,18 @@ b.ui.PasswordInput = b.Base.extend({
 
 });
 
-
 $.fn.passwordInput = function()
 {
 	return this.each(function()
 	{
 		if (!$.data(this, 'passwordInput'))
-			new b.ui.PasswordInput(this);
+			new blx.ui.PasswordInput(this);
 	});
 };
 
-b.$document.ready(function()
+blx.$document.ready(function()
 {
 	$('input.password').passwordInput();
 });
-
 
 })(jQuery);

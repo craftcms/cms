@@ -680,7 +680,7 @@ class File extends \CApplicationComponent
 
 		$bytes /= pow(1024, $expo);
 
-		return b()->numberFormatter->format($format, $bytes).' '.$units[$expo];
+		return blx()->numberFormatter->format($format, $bytes).' '.$units[$expo];
 	}
 
 	/**
@@ -861,7 +861,7 @@ class File extends \CApplicationComponent
 	{
 		if ($destination != null)
 		{
-			$newFile = b()->file->set($destination);
+			$newFile = blx()->file->set($destination);
 
 			if ($autoCreate && !$newFile->_exists)
 			{
@@ -1422,7 +1422,7 @@ class File extends \CApplicationComponent
 			return false;
 		}
 
-		$srcDir = b()->file->set($srcDir);
+		$srcDir = blx()->file->set($srcDir);
 		$dirContents = $srcDir->getContents(true);
 
 		foreach ($dirContents as $itemToZip)
@@ -1539,7 +1539,7 @@ class File extends \CApplicationComponent
 		// Create the destination directories.
 		foreach ($destDirectories as $destDirectory)
 		{
-			$newDir = b()->file->set($destDirectory, false);
+			$newDir = blx()->file->set($destDirectory, false);
 
 			if (!$newDir->createDir(0754) && !$newDir->getIsDir())
 			{
@@ -1560,7 +1560,7 @@ class File extends \CApplicationComponent
 			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
 				continue;
 
-			$destFile = b()->file->set($destination.'/'.$zipFile['filename']);
+			$destFile = blx()->file->set($destination.'/'.$zipFile['filename']);
 			if (!$destFile->setContents($destFile->getRealPath(), $zipFile['content'], true, FILE_APPEND))
 			{
 				$this->_addLog('Could not copy file during unzip: '.$destFile->getRealPath(), 'error');
@@ -1602,7 +1602,7 @@ class File extends \CApplicationComponent
 			// found a directory
 			if (substr($info['name'], -1) === '/')
 			{
-				$dir = b()->file->set($destination.'/');
+				$dir = blx()->file->set($destination.'/');
 				$dir->createDir(0754, $destination.'/'.$info['name']);
 				continue;
 			}

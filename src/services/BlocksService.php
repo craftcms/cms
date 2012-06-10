@@ -14,7 +14,7 @@ class BlocksService extends \CApplicationComponent
 	 */
 	public function getBlocks()
 	{
-		$blocks = b()->db->createCommand()->from('blocks')->queryAll();
+		$blocks = blx()->db->createCommand()->from('blocks')->queryAll();
 		return Block::model()->populateSubclassRecords($blocks);
 	}
 
@@ -37,7 +37,7 @@ class BlocksService extends \CApplicationComponent
 	 */
 	public function getBlockById($blockId)
 	{
-		$block = b()->db->createCommand()
+		$block = blx()->db->createCommand()
 			->where('id = :id', array(':id' => $blockId))
 			->from('blocks')
 			->queryRow();

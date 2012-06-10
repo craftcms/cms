@@ -13,7 +13,7 @@ class SecurityVariable
 	 */
 	public function validateUserActivationCode($code)
 	{
-		return b()->security->validateUserActivationCode($code);
+		return blx()->security->validateUserActivationCode($code);
 	}
 
 	/**
@@ -23,6 +23,6 @@ class SecurityVariable
 	 */
 	public function getUserByActivationCode($code)
 	{
-		return b()->security->getUserByActivationCode($code);
+		return blx()->security->getUserByActivationCode($code);
 	}
 }

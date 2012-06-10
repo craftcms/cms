@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Contains all global variables.
  */
-class BVariable
+class BlxVariable
 {
 	/**
 	 * @param $name
@@ -12,12 +12,12 @@ class BVariable
 	 */
 	public function __get($name)
 	{
-		$plugin = b()->plugins->getPlugin($name);
+		$plugin = blx()->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->enabled)
 		{
 			$pluginName = $plugin->getClassHandle();
-			$path = b()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
+			$path = blx()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
 
 			if (File::fileExists($path))
 			{

@@ -1,10 +1,9 @@
 (function($){
 
-
 /**
  * Rich Text Editor
  */
-b.ui.RTE = b.Base.extend({
+blx.ui.RTE = blx.Base.extend({
 
 	/**
 	 * Constructor
@@ -12,7 +11,7 @@ b.ui.RTE = b.Base.extend({
 	init: function(id, settings)
 	{
 		this.id = id;
-		this.settings = $.extend({}, b.ui.RTE.defaults, settings);
+		this.settings = $.extend({}, blx.ui.RTE.defaults, settings);
 
 		this.focussed = false;
 
@@ -84,7 +83,7 @@ b.ui.RTE = b.Base.extend({
 		//	italic: this.addFormattingButton('italic', '<i>I</i>')
 		//};
 
-		b.ui.RTE.instances.push(this);
+		blx.ui.RTE.instances.push(this);
 	},
 
 	/**
@@ -118,7 +117,7 @@ b.ui.RTE = b.Base.extend({
 			options.push({ label: $label.prop('outerHTML') });
 		}
 
-		this.styleSelect = new b.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
+		this.styleSelect = new blx.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
 
 		this.styleSelect.select(0);
 	},
@@ -211,8 +210,7 @@ b.ui.RTE = b.Base.extend({
 	_getSelectedElement: function()
 	{
 		var range = this._getRange();
-
-		elem = range.commonAncestorContainer;
+		var elem = range.commonAncestorContainer;
 
 		if (!range.collapsed)
 		{
@@ -355,8 +353,7 @@ b.ui.RTE = b.Base.extend({
 	instances: []
 });
 
-
-b.ui.RTE.defaults = {
+blx.ui.RTE.defaults = {
 	bold: true,
 	italic: true,
 
@@ -373,11 +370,10 @@ b.ui.RTE.defaults = {
 	css: null
 };
 
-
 /**
  * Formatting Button
  */
-var FormattingButton = b.Base.extend({
+var FormattingButton = blx.Base.extend({
 	/**
 	 * Constructor
 	 */
@@ -464,6 +460,5 @@ var FormattingButton = b.Base.extend({
 			this.execCommand();
 	}
 });
-
 
 })(jQuery);

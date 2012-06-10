@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Block Editor
  */
-b.ui.BlockEditor = b.Base.extend({
+blx.ui.BlockEditor = blx.Base.extend({
 
 	$container: null,
 	$listContainer: null,
@@ -29,7 +28,7 @@ b.ui.BlockEditor = b.Base.extend({
 		// Is this already a block editor?
 		if (this.$container.data('blockeditor'))
 		{
-			b.log('Double-instantiating a blocks select on an element');
+			blx.log('Double-instantiating a blocks select on an element');
 			this.$container.data('blockeditor').destroy();
 		}
 
@@ -60,7 +59,7 @@ b.ui.BlockEditor = b.Base.extend({
 		}
 
 		// Initialize the sorter
-		this.blockSort = new b.ui.DragSort({
+		this.blockSort = new blx.ui.DragSort({
 			axis: 'y',
 			helper: function($li) {
 				var $div = $('<div class="sidebar"/>'),
@@ -76,13 +75,13 @@ b.ui.BlockEditor = b.Base.extend({
 		var $blockLinks = this.$list.children('li').children('a'),
 			$blockSettings = this.$settingsContainer.children();
 
-		for (var i = 0; i < $blockLinks.length; i++)
+		for (var j = 0; j < $blockLinks.length; j++)
 		{
-			var $link = $($blockLinks[i]),
+			var $link = $($blockLinks[j]),
 				blockId = $link.attr('data-block-id'),
 				$settings = $blockSettings.filter('[data-block-id='+blockId+']:first');
 
-			var block = new b.ui.BlockEditor.Block(this, blockId, $link, $settings);
+			var block = new blx.ui.BlockEditor.Block(this, blockId, $link, $settings);
 			this.blocks[blockId] = block;
 
 			// Is this a new block? (Could be if there were validation errors)
@@ -121,12 +120,12 @@ b.ui.BlockEditor = b.Base.extend({
 				).appendTo($li),
 			settingsHtml = this.freshBlockSettingsHtml.replace(/BLOCK_ID/g, blockId),
 			$settings = $(settingsHtml).appendTo(this.$settingsContainer),
-			$blocktypeSettings = $settings.children('.blocktypesettings:first');
+			$blocktypeSettings = $settings.children('.blocktypesettings:first'),
 			blocktypeSettingsHtml = this.freshBlocktypeSettingsHtml.PlainText.replace(/BLOCK_ID/g, blockId);
 
 		$blocktypeSettings.html(blocktypeSettingsHtml);
 
-		var block = new b.ui.BlockEditor.Block(this, blockId, $link, $settings);
+		var block = new blx.ui.BlockEditor.Block(this, blockId, $link, $settings);
 		this.blocks[blockId] = block;
 		block.select();
 
@@ -135,8 +134,7 @@ b.ui.BlockEditor = b.Base.extend({
 
 });
 
-
-b.ui.BlockEditor.Block = b.Base.extend({
+blx.ui.BlockEditor.Block = blx.Base.extend({
 
 	editor: null,
 	blockId: null,
@@ -190,8 +188,8 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.updateLinkBlocktypeLabel();
 
 		if (!this.$nameInput.val() && !this.$handleInput.val())
-			this.handleGenerator = new b.ui.HandleGenerator(this.$nameInput, this.$handleInput);
-		this.niceInstructions = new b.ui.NiceText(this.$instructionsInput);
+			this.handleGenerator = new blx.ui.HandleGenerator(this.$nameInput, this.$handleInput);
+		this.niceInstructions = new blx.ui.NiceText(this.$instructionsInput);
 
 		// Get the current blocktype
 		this.blocktype = this.$blocktypeSelect.val();
@@ -212,7 +210,7 @@ b.ui.BlockEditor.Block = b.Base.extend({
 		this.addListener(this.$blocktypeSelect, 'change', 'changeBlocktype');
 
 		this.addListener(this.$requiredInput, 'change', function() {
-			if (b.getInputPostVal(this.$requiredInput) == 'y')
+			if (blx.getInputPostVal(this.$requiredInput) == 'y')
 				this.$linkNameLabel.addClass('required');
 			else
 				this.$linkNameLabel.removeClass('required');
@@ -333,21 +331,18 @@ b.ui.BlockEditor.Block = b.Base.extend({
 
 });
 
-
-
 $.fn.blockeditor = function()
 {
 	return this.each(function()
 	{
 		if (!$.data(this, 'blockeditor'))
-			new b.ui.BlockEditor(this);
+			new blx.ui.BlockEditor(this);
 	});
 };
 
-b.$document.ready(function()
+	blx.$document.ready(function()
 {
 	$('.blockeditor').blockeditor();
 });
-
 
 })(jQuery);

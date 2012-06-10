@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Admin Pane
  */
-b.ui.AdminPane = b.Base.extend({
+blx.ui.AdminPane = blx.Base.extend({
 
 	$container: null,
 	$listContainer: null,
@@ -26,7 +25,7 @@ b.ui.AdminPane = b.Base.extend({
 		// Is this already a item adminPane?
 		if (this.$container.data('adminpane'))
 		{
-			b.log('Double-instantiating an admin pane on an element');
+			blx.log('Double-instantiating an admin pane on an element');
 			this.$container.data('adminpane').destroy();
 		}
 
@@ -45,7 +44,7 @@ b.ui.AdminPane = b.Base.extend({
 		this.freshSettingsHtml = $freshSettings.html();
 
 		// Initialize the sorter
-		this.itemSort = new b.ui.DragSort({
+		this.itemSort = new blx.ui.DragSort({
 			axis: 'y',
 			helper: function($li) {
 				var $ul = $('<ul/>');
@@ -66,7 +65,7 @@ b.ui.AdminPane = b.Base.extend({
 				itemId = $item.attr('data-item-id'),
 				$itemSettings = $settings.filter('[data-item-id='+itemId+']:first');
 
-			var item = new b.ui.AdminPane.Item(this, itemId, $item, $itemSettings);
+			var item = new blx.ui.AdminPane.Item(this, itemId, $item, $itemSettings);
 			this.items[itemId] = item;
 
 			// Is this a new item? (Could be if there were validation errors)
@@ -107,7 +106,7 @@ b.ui.AdminPane = b.Base.extend({
 			settingsHtml = this.freshSettingsHtml.replace(/ITEM_ID/g, itemId),
 			$settings = $('<div data-item-id="'+itemId+'"/>').html(settingsHtml).appendTo(this.$settingsContainer);
 
-		var item = new b.ui.AdminPane.Item(this, itemId, $item, $settings);
+		var item = new blx.ui.AdminPane.Item(this, itemId, $item, $settings);
 		this.items[itemId] = item;
 		item.select();
 
@@ -118,8 +117,7 @@ b.ui.AdminPane = b.Base.extend({
 
 });
 
-
-b.ui.AdminPane.Item = b.Base.extend({
+blx.ui.AdminPane.Item = blx.Base.extend({
 
 	adminPane: null,
 	id: null,
@@ -207,6 +205,5 @@ b.ui.AdminPane.Item = b.Base.extend({
 	}
 
 });
-
 
 })(jQuery);

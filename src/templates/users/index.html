@@ -5,12 +5,12 @@
 	<section>
 		<h2>Recent Users</h2>
 		<ul class="actions">
-			<li><a href="{:b.url.base}users/new" class="btn light addbtn">New user</a></li>
+			<li><a href="{:blx.url.base}users/new" class="btn light addbtn">New user</a></li>
 		</ul>
 
 		<ul>
-			{foreach b.users.recent as user}
-				<li><a href="{:b.url.base}users/{if user.status == 'archived'}view{else}edit{/if}/{:user.id}" {if b.url.segment(3) == user.id}class="sel"{/if}><span class="icon icon{if user.admin}247{else}243{/if}"></span>{:user.fullName}</a></li>
+			{foreach blx.users.recent as user}
+				<li><a href="{:blx.url.base}users/{if user.status == 'archived'}view{else}edit{/if}/{:user.id}" {if blx.url.segment(3) == user.id}class="sel"{/if}><span class="icon icon{if user.admin}247{else}243{/if}"></span>{:user.fullName}</a></li>
 			{/foreach}
 		</ul>
 	</section>

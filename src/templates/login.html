@@ -1,4 +1,4 @@
-{if b.session.loggedin}
+{if blx.session.loggedin}
 	{redirect "dashboard"}
 {/if}
 
@@ -22,7 +22,7 @@
 							'<div class="heading">' +
 								'<label for="username">Username or email</label>' +
 							'</div>' +
-							'<div class="textwrapper"><input id="username" class="text" type="text" value="{:b.session.rememberedusername}" /></div>' +
+							'<div class="textwrapper"><input id="username" class="text" type="text" value="{:blx.session.rememberedusername}" /></div>' +
 						'</div>' +
 						'<div id="password-container" class="nested-fields">' +
 							'<div class="field">' +
@@ -43,7 +43,7 @@
 							'</label>' +
 						'</div>' +
 
-						{if !b.request.secure}
+						{if !blx.request.secure}
 							'<a id="insecure" title="This is an insecure connection." data-icon="i"></a>' +
 						{/if}
 
@@ -51,7 +51,7 @@
 				'</form>'
 			);
 
-			var id = {if b.session.rememberedusername}'password'{else}'username'{/if};
+			var id = {if blx.session.rememberedusername}'password'{else}'username'{/if};
 			document.getElementById(id).focus();
 		}
 		else

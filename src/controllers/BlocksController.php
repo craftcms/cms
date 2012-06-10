@@ -21,20 +21,20 @@ class BlocksController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$blockSettings['name'] = b()->request->getPost('name');
-		$blockSettings['handle'] = b()->request->getPost('handle');
-		$blockSettings['class'] = b()->request->getPost('class');
-		$blockSettings['instructions'] = b()->request->getPost('instructions');
+		$blockSettings['name'] = blx()->request->getPost('name');
+		$blockSettings['handle'] = blx()->request->getPost('handle');
+		$blockSettings['class'] = blx()->request->getPost('class');
+		$blockSettings['instructions'] = blx()->request->getPost('instructions');
 
-		$blockTypeSettings = b()->request->getPost($blockSettings['class']);
-		$blockId = b()->request->getPost('block_id');
+		$blockTypeSettings = blx()->request->getPost($blockSettings['class']);
+		$blockId = blx()->request->getPost('block_id');
 
-		$block = b()->blocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
+		$block = blx()->blocks->saveBlock($blockSettings, $blockTypeSettings, $blockId);
 
 		// Did it save?
 		if (!$block->errors)
 		{
-			if (b()->request->getIsAjaxRequest())
+			if (blx()->request->getIsAjaxRequest())
 			{
 				$r = array(
 					'success' => true,
@@ -46,20 +46,20 @@ class BlocksController extends BaseController
 			}
 			else
 			{
-				b()->user->setMessage(MessageType::Notice, 'Content block saved.');
+				blx()->user->setMessage(MessageType::Notice, 'Content block saved.');
 			}
 
 			$this->redirectToPostedUrl();
 		}
 
-		if (b()->request->getIsAjaxRequest())
+		if (blx()->request->getIsAjaxRequest())
 		{
 			$r = array('errors' => $block->errors);
 			$this->returnJson($r);
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save content block.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save content block.');
 		}
 
 		// Reload the original template

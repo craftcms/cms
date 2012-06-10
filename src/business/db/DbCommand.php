@@ -421,7 +421,7 @@ class DbCommand extends \CDbCommand
 			}
 		}
 		else
-			$table = preg_replace('/^\w+/', b()->config->tablePrefix.'\0', $table);
+			$table = preg_replace('/^\w+/', blx()->config->tablePrefix.'\0', $table);
 
 		return $table;
 	}

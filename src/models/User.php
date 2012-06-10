@@ -85,7 +85,7 @@ class User extends BaseModel
 	 */
 	public function getIsCurrent()
 	{
-		return (!$this->getIsNewRecord() && $this->id == b()->users->getCurrentUser()->id);
+		return (!$this->getIsNewRecord() && $this->id == blx()->users->getCurrentUser()->id);
 	}
 
 	/**
@@ -93,6 +93,6 @@ class User extends BaseModel
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return b()->users->getRemainingCooldownTime($this);
+		return blx()->users->getRemainingCooldownTime($this);
 	}
 }

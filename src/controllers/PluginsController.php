@@ -12,12 +12,12 @@ class PluginsController extends BaseController
 	public function actionInstallPlugin()
 	{
 		$this->requirePostRequest();
-		$className = b()->request->getRequiredPost('pluginClass');
+		$className = blx()->request->getRequiredPost('pluginClass');
 
-		if (b()->plugins->installPlugin($className))
-			b()->user->setMessage(MessageType::Notice, 'Plugin installed.');
+		if (blx()->plugins->installPlugin($className))
+			blx()->user->setMessage(MessageType::Notice, 'Plugin installed.');
 		else
-			b()->user->setMessage(MessageType::Error, 'Couldn’t install plugin.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t install plugin.');
 
 		$this->redirectToPostedUrl();
 	}
@@ -28,12 +28,12 @@ class PluginsController extends BaseController
 	public function actionUninstallPlugin()
 	{
 		$this->requirePostRequest();
-		$className = b()->request->getRequiredPost('pluginClass');
+		$className = blx()->request->getRequiredPost('pluginClass');
 
-		if (b()->plugins->uninstallPlugin($className))
-			b()->user->setMessage(MessageType::Notice, 'Plugin uninstalled.');
+		if (blx()->plugins->uninstallPlugin($className))
+			blx()->user->setMessage(MessageType::Notice, 'Plugin uninstalled.');
 		else
-			b()->user->setMessage(MessageType::Error, 'Couldn’t uninstall plugin.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t uninstall plugin.');
 
 		$this->redirectToPostedUrl();
 	}
@@ -44,12 +44,12 @@ class PluginsController extends BaseController
 	public function actionEnablePlugin()
 	{
 		$this->requirePostRequest();
-		$className = b()->request->getRequiredPost('pluginClass');
+		$className = blx()->request->getRequiredPost('pluginClass');
 
-		if (b()->plugins->enablePlugin($className))
-			b()->user->setMessage(MessageType::Notice, 'Plugin enabled.');
+		if (blx()->plugins->enablePlugin($className))
+			blx()->user->setMessage(MessageType::Notice, 'Plugin enabled.');
 		else
-			b()->user->setMessage(MessageType::Error, 'Couldn’t enable plugin.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t enable plugin.');
 
 		$this->redirectToPostedUrl();
 	}
@@ -60,12 +60,12 @@ class PluginsController extends BaseController
 	public function actionDisablePlugin()
 	{
 		$this->requirePostRequest();
-		$className = b()->request->getRequiredPost('pluginClass');
+		$className = blx()->request->getRequiredPost('pluginClass');
 
-		if (b()->plugins->disablePlugin($className))
-			b()->user->setMessage(MessageType::Notice, 'Plugin disabled.');
+		if (blx()->plugins->disablePlugin($className))
+			blx()->user->setMessage(MessageType::Notice, 'Plugin disabled.');
 		else
-			b()->user->setMessage(MessageType::Error, 'Couldn’t disable plugin.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t disable plugin.');
 
 		$this->redirectToPostedUrl();
 	}

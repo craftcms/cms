@@ -115,7 +115,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getSiteTemplatesPath()
 	{
-		$site = b()->sites->getCurrentSite();
+		$site = blx()->sites->getCurrentSite();
 		if ($site)
 			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
 		else
@@ -130,7 +130,7 @@ class PathService extends \CApplicationComponent
 	public function getOfflineTemplatePath()
 	{
 		// If the user has set offlinePath config item, let's use it.
-		if (($path = b()->config->offlinePath) !== null)
+		if (($path = blx()->config->offlinePath) !== null)
 			return substr($path, 0, strlen($path) - strlen(pathinfo($path, PATHINFO_BASENAME)));
 
 		return $this->getAppTemplatesPath();
@@ -177,7 +177,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getParsedSiteTemplatesPath()
 	{
-		$site = b()->sites->getCurrentSite();
+		$site = blx()->sites->getCurrentSite();
 		if ($site)
 		{
 			$path = $this->getRuntimePath().'parsed_templates/sites/'.$site->handle.'/';

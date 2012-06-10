@@ -10,13 +10,13 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Returns the directory containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to b().
+	 * We're overriding this since CController's version defaults $module to blx().
 	 * @return string the directory containing the view files for this controller.
 	 */
 	public function getViewPath()
 	{
 		if (($module = $this->getModule()) === null)
-			$module = b();
+			$module = blx();
 
 		return $module->getViewPath().'/';
 	}
@@ -28,7 +28,7 @@ abstract class BaseController extends \CController
 	 */
 	public function loadRequestedTemplate($variables = array())
 	{
-		if (($path = b()->urlManager->processTemplateMatching()) !== false)
+		if (($path = blx()->urlManager->processTemplateMatching()) !== false)
 		{
 			$this->loadTemplate($path, $variables);
 		}
@@ -94,7 +94,7 @@ abstract class BaseController extends \CController
 	{
 		$widgetCount = count($this->_widgetStack);
 
-		if (($renderer = b()->getViewRenderer()) !== null)
+		if (($renderer = blx()->getViewRenderer()) !== null)
 		{
 			// Process the template.
 			if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
@@ -106,7 +106,7 @@ abstract class BaseController extends \CController
 					if (($mimeType = \CFileHelper::getMimeTypeByExtension($extension)) === null)
 						$mimeType = 'text/html';
 
-					b()->request->setMimeType($mimeType);
+					blx()->request->setMimeType($mimeType);
 					header('Content-Type: '.$mimeType);
 
 					return $content;
@@ -133,9 +133,9 @@ abstract class BaseController extends \CController
 		$variables = array();
 
 		if ($getRequestVars)
-			$vars = array_merge(b()->urlManager->getTemplateVariables(), $vars);
+			$vars = array_merge(blx()->urlManager->getTemplateVariables(), $vars);
 
-		$vars['b'] = new BVariable;
+		$vars['blx'] = new BlxVariable;
 
 		if (is_array($vars))
 		{
@@ -153,8 +153,8 @@ abstract class BaseController extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (b()->user->getIsGuest())
-			b()->user->loginRequired();
+		if (blx()->user->getIsGuest())
+			blx()->user->loginRequired();
 	}
 
 	/**
@@ -163,7 +163,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (!b()->config->devMode && b()->request->getRequestType() !== 'POST')
+		if (!blx()->config->devMode && blx()->request->getRequestType() !== 'POST')
 			throw new HttpException(404);
 	}
 
@@ -173,7 +173,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!b()->config->devMode && !b()->request->getIsAjaxRequest())
+		if (!blx()->config->devMode && !blx()->request->getIsAjaxRequest())
 			throw new HttpException(404);
 	}
 
@@ -198,7 +198,7 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl()
 	{
-		$url = b()->request->getPost('redirect');
+		$url = blx()->request->getPost('redirect');
 		$this->redirect($url);
 	}
 
@@ -210,7 +210,7 @@ abstract class BaseController extends \CController
 	{
 		Json::sendJsonHeaders();
 		echo Json::encode($r);
-		b()->end();
+		blx()->end();
 	}
 
 	/**

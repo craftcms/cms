@@ -14,7 +14,7 @@ class SecurityService extends \CApplicationComponent
 	function __construct()
 	{
 		parent::init();
-		$this->_iterationCount = b()->config->getItem('phpPass-iterationCount');
+		$this->_iterationCount = blx()->config->getItem('phpPass-iterationCount');
 	}
 
 	/**

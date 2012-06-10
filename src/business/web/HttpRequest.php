@@ -86,7 +86,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = b()->urlManager->routeVar;
+			$pathVar = blx()->urlManager->routeVar;
 			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 
@@ -152,16 +152,16 @@ class HttpRequest extends \CHttpRequest
 		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (b()->config->urlFormat == UrlFormat::PathInfo)
+			if (blx()->config->urlFormat == UrlFormat::PathInfo)
 			{
 				$this->_urlFormat = UrlFormat::PathInfo;
 			}
-			else if (b()->config->urlFormat == UrlFormat::QueryString)
+			else if (blx()->config->urlFormat == UrlFormat::QueryString)
 			{
 				$this->_urlFormat = UrlFormat::QueryString;
 			}
 			// Check if it's cached
-			else if (($cachedUrlFormat = b()->fileCache->get('urlFormat')) !== false)
+			else if (($cachedUrlFormat = blx()->fileCache->get('urlFormat')) !== false)
 			{
 				$this->_urlFormat = $cachedUrlFormat;
 			}
@@ -180,7 +180,7 @@ class HttpRequest extends \CHttpRequest
 					try
 					{
 						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
-						$url = b()->request->getHostInfo().b()->request->getScriptUrl().'/testpathinfo';
+						$url = blx()->request->getHostInfo().blx()->request->getScriptUrl().'/testpathinfo';
 						if (($result = @file_get_contents($url, 0, $context)) !== false)
 						{
 							if ($result === 'success')
@@ -196,7 +196,7 @@ class HttpRequest extends \CHttpRequest
 				}
 
 				// cache it and set it to expire according to config
-				b()->fileCache->set('urlFormat', $this->_urlFormat, b()->config->cacheTimeSeconds);
+				blx()->fileCache->set('urlFormat', $this->_urlFormat, blx()->config->cacheTimeSeconds);
 			}
 		}
 
@@ -218,9 +218,9 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			$resourceTriggerWord = b()->config->resourceTriggerWord;
-			$actionTriggerWord = b()->config->actionTriggerWord;
-			$logoutTriggerWord = b()->config->logoutTriggerWord;
+			$resourceTriggerWord = blx()->config->resourceTriggerWord;
+			$actionTriggerWord = blx()->config->actionTriggerWord;
+			$logoutTriggerWord = blx()->config->logoutTriggerWord;
 
 			$firstPathSegment = $this->getPathSegment(1);
 

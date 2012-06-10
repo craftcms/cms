@@ -25,20 +25,20 @@ class DbUpdateController extends BaseController
 		try
 		{
 			// Take the system offline.
-			b()->updates->turnSystemOffBeforeUpdate();
+			blx()->updates->turnSystemOffBeforeUpdate();
 
 			// run migrations to top
-			if (b()->migrations->runToTop())
+			if (blx()->migrations->runToTop())
 			{
 				// update db with version info.
-				if (b()->updates->setNewBlocksInfo(Blocks::getVersion(false), Blocks::getBuild(false), Blocks::getReleaseDate(false)))
+				if (blx()->updates->setNewBlocksInfo(Blocks::getVersion(false), Blocks::getBuild(false), Blocks::getReleaseDate(false)))
 				{
 					// flush update cache.
-					b()->updates->flushUpdateInfoFromCache();
-					b()->user->setMessage(MessageType::Notice, 'Database successfully updated.');
+					blx()->updates->flushUpdateInfoFromCache();
+					blx()->user->setMessage(MessageType::Notice, 'Database successfully updated.');
 
 					// Bring the system back online.
-					b()->updates->turnSystemOnAfterUpdate();
+					blx()->updates->turnSystemOnAfterUpdate();
 
 					$this->returnJson(array('success' => true));
 				}

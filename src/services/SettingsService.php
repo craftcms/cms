@@ -26,9 +26,9 @@ class SettingsService extends \CApplicationComponent
 			$settingsPrep[] = $category !== null ? array($key, $value, $category) : array($key, $value);
 
 		if ($category !== null)
-			$result = b()->db->createCommand()->insertAll($table, array('name', 'value', 'category'), $settingsPrep);
+			$result = blx()->db->createCommand()->insertAll($table, array('name', 'value', 'category'), $settingsPrep);
 		else
-			$result = b()->db->createCommand()->insertAll($table, array('name', 'value'), $settingsPrep);
+			$result = blx()->db->createCommand()->insertAll($table, array('name', 'value'), $settingsPrep);
 
 		if ($result === false)
 			return false;
@@ -47,11 +47,11 @@ class SettingsService extends \CApplicationComponent
 		$result = false;
 
 		if (!empty($names) && $category == null)
-			$result = b()->db->createCommand()->delete($table, array('in', 'name', $names));
+			$result = blx()->db->createCommand()->delete($table, array('in', 'name', $names));
 		elseif (empty($names) && $category !== null)
-			$result = b()->db->createCommand()->delete($table, 'category = :category', array(':category' => $category));
+			$result = blx()->db->createCommand()->delete($table, 'category = :category', array(':category' => $category));
 		elseif (!empty($names) && $category !== null)
-			$result = b()->db->createCommand()->delete($table, array('and', array('in', 'name', $names), 'category = :category', array(':category' => $category)));
+			$result = blx()->db->createCommand()->delete($table, array('and', array('in', 'name', $names), 'category = :category', array(':category' => $category)));
 
 		if ($result === false)
 			return false;

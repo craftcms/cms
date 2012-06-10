@@ -84,7 +84,7 @@ class SitesService extends \CApplicationComponent
 		if ($site->validate())
 		{
 			// Start a transaction
-			$transaction = b()->db->beginTransaction();
+			$transaction = blx()->db->beginTransaction();
 			try
 			{
 				// Did the site handle change?
@@ -109,7 +109,7 @@ class SitesService extends \CApplicationComponent
 						// Update the section's site reference so it knows the new site handle
 						$section->site = $site;
 						$newTableName = $section->getContentTableName();
-						b()->db->createCommand()->renameTable($oldTableNames[$i], $newTableName);
+						blx()->db->createCommand()->renameTable($oldTableNames[$i], $newTableName);
 					}
 				}
 
@@ -130,8 +130,8 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getSiteName()
 	{
-		if (isset(b()->params['config']['siteName']))
-			return b()->params['config']['siteName'];
+		if (isset(blx()->params['config']['siteName']))
+			return blx()->params['config']['siteName'];
 
 		return null;
 	}
@@ -141,8 +141,8 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getSiteLanguage()
 	{
-		if (isset(b()->params['config']['language']))
-			return b()->params['config']['language'];
+		if (isset(blx()->params['config']['language']))
+			return blx()->params['config']['language'];
 
 		return null;
 	}
@@ -152,8 +152,8 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getSiteUrl()
 	{
-		if (isset(b()->params['config']['siteUrl']))
-			return b()->params['config']['siteUrl'];
+		if (isset(blx()->params['config']['siteUrl']))
+			return blx()->params['config']['siteUrl'];
 
 		return null;
 	}
@@ -178,7 +178,7 @@ class SitesService extends \CApplicationComponent
 			if (empty($site))
 			{
 				// Try to find the site that matches the request URL
-				$serverName = b()->request->getServerName();
+				$serverName = blx()->request->getServerName();
 				$httpServerName = 'http://'.$serverName;
 				$httpsServerName = 'https://'.$serverName;
 
@@ -285,12 +285,12 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getLicenseKeyStatusForSite($siteHandle)
 	{
-		$licenseKeyStatus = b()->fileCache->get($siteHandle.'licenseKeyStatus');
+		$licenseKeyStatus = blx()->fileCache->get($siteHandle.'licenseKeyStatus');
 
 		if ($licenseKeyStatus == false)
 			$this->_getAllLicenseKeyStatuses();
 
-		return b()->fileCache->get($siteHandle.'licenseKeyStatus');
+		return blx()->fileCache->get($siteHandle.'licenseKeyStatus');
 	}
 
 	/**
@@ -313,7 +313,7 @@ class SitesService extends \CApplicationComponent
 	{
 		$site = $this->getSiteByUrl($siteUrl);
 		// cache it and set it to expire according to config
-		b()->fileCache->set($site->handle.'licenseKeyStatus', $status, b()->config->cacheTimeSeconds);
+		blx()->fileCache->set($site->handle.'licenseKeyStatus', $status, blx()->config->cacheTimeSeconds);
 	}
 
 	/**
@@ -322,7 +322,7 @@ class SitesService extends \CApplicationComponent
 	 */
 	private function _getAllLicenseKeyStatuses()
 	{
-		$package = b()->et->ping();
+		$package = blx()->et->ping();
 		foreach ($package->sitesAndKeys as $site => $keyInfo)
 		{
 			$this->setLicenseKeyStatusForSite($site, $keyInfo['status']);

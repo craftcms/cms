@@ -33,7 +33,7 @@ class UrlManager extends \CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
-		if (b()->request->getUrlFormat() == UrlFormat::PathInfo)
+		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
 			$this->setUrlFormat(self::PATH_FORMAT);
 		else
 			$this->setUrlFormat(self::GET_FORMAT);
@@ -47,7 +47,7 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (!BLOCKS_CP_REQUEST)
 		{
-			if (b()->getIsInstalled())
+			if (blx()->getIsInstalled())
 				if (($path = $this->matchEntry()) !== false)
 					return $path;
 		}
@@ -77,7 +77,7 @@ class UrlManager extends \CUrlManager
 	public function matchEntry()
 	{
 		$entry = Entry::model()->findByAttributes(array(
-			'uri' => b()->request->getPath(),
+			'uri' => blx()->request->getPath(),
 		));
 
 		if ($entry !== null)
@@ -104,7 +104,7 @@ class UrlManager extends \CUrlManager
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
-			$pluginCpRoutes = b()->plugins->callHook('registerCpRoutes');
+			$pluginCpRoutes = blx()->plugins->callHook('registerCpRoutes');
 			foreach ($pluginCpRoutes as $pluginRoutes)
 			{
 				foreach ($pluginRoutes as $route)
@@ -131,14 +131,14 @@ class UrlManager extends \CUrlManager
 		$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
 
 		// Does it match?
-		if (preg_match("/^{$pattern}$/", b()->request->getPath(), $match))
+		if (preg_match("/^{$pattern}$/", blx()->request->getPath(), $match))
 		{
 			// Set any capture variables
 			if (!empty($route[2]))
 			{
 				foreach ($route[2] as $i => $variableName)
 				{
-					if (isset($match[$i+1]))
+					if (isset($match[$i + 1]))
 						$this->_templateVariables[$variableName] = $match[$i + 1];
 					else
 						break;
@@ -161,15 +161,15 @@ class UrlManager extends \CUrlManager
 	public function matchTemplatePath()
 	{
 		// Make sure they're not trying to access a private template
-		if (!b()->request->getIsAjaxRequest())
+		if (!blx()->request->getIsAjaxRequest())
 		{
-			foreach (b()->request->getPathSegments() as $requestPathSeg)
+			foreach (blx()->request->getPathSegments() as $requestPathSeg)
 			{
 				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
 					return false;
 			}
 		}
 
-		return b()->request->getPath();
+		return blx()->request->getPath();
 	}
 }

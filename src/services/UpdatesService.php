@@ -118,7 +118,7 @@ class UpdatesService extends \CApplicationComponent
 	 */
 	public function getIsUpdateInfoCached()
 	{
-		return (isset($this->_updateInfo) || b()->fileCache->get('updateInfo') !== false);
+		return (isset($this->_updateInfo) || blx()->fileCache->get('updateInfo') !== false);
 	}
 
 	/**
@@ -154,7 +154,7 @@ class UpdatesService extends \CApplicationComponent
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateInfo = b()->fileCache->get('updateInfo');
+				$updateInfo = blx()->fileCache->get('updateInfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
@@ -166,7 +166,7 @@ class UpdatesService extends \CApplicationComponent
 					$updateInfo = new UpdateInfo();
 
 				// cache it and set it to expire according to config
-				b()->fileCache->set('updateInfo', $updateInfo, b()->config->cacheTimeSeconds);
+				blx()->fileCache->set('updateInfo', $updateInfo, blx()->config->cacheTimeSeconds);
 			}
 
 			$this->_updateInfo = $updateInfo;
@@ -181,7 +181,7 @@ class UpdatesService extends \CApplicationComponent
 	public function flushUpdateInfoFromCache()
 	{
 		Blocks::log('Flushing update info from cache.');
-		if (b()->fileCache->delete('updateInfo'))
+		if (blx()->fileCache->delete('updateInfo'))
 			return true;
 
 		return false;
@@ -240,7 +240,7 @@ class UpdatesService extends \CApplicationComponent
 		$updateInfo->blocks->localBuild = Blocks::getBuild();
 		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
-		$plugins = b()->plugins->getEnabledPlugins();
+		$plugins = blx()->plugins->getEnabledPlugins();
 		foreach ($plugins as $plugin)
 		{
 			$pluginUpdateInfo = new PluginUpdateInfo();
@@ -250,7 +250,7 @@ class UpdatesService extends \CApplicationComponent
 			$updateInfo->plugins[$plugin->getClassHandle()] = $pluginUpdateInfo;
 		}
 
-		$response = b()->et->check($updateInfo);
+		$response = blx()->et->check($updateInfo);
 
 		$updateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
 		return $updateInfo;
@@ -299,8 +299,8 @@ class UpdatesService extends \CApplicationComponent
 	public function getUnwritableDirectories()
 	{
 		$checkPaths = array(
-			b()->file->set(b()->path->getAppPath(), false),
-			b()->file->set(b()->path->getPluginsPath(), false),
+			blx()->file->set(blx()->path->getAppPath(), false),
+			blx()->file->set(blx()->path->getPluginsPath(), false),
 		);
 
 		$errorPath = null;

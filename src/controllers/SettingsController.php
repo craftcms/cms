@@ -24,27 +24,27 @@ class SettingsController extends BaseController
 		$emailSettings = new EmailSettingsForm();
 		$gMailSmtp = 'smtp.gmail.com';
 
-		$emailSettings->protocol                    = b()->request->getPost('protocol');
-		$emailSettings->host                        = b()->request->getPost('host');
-		$emailSettings->port                        = b()->request->getPost('port');
-		$emailSettings->smtpAuth                    = (b()->request->getPost('smtpAuth') === 'y');
+		$emailSettings->protocol                    = blx()->request->getPost('protocol');
+		$emailSettings->host                        = blx()->request->getPost('host');
+		$emailSettings->port                        = blx()->request->getPost('port');
+		$emailSettings->smtpAuth                    = (blx()->request->getPost('smtpAuth') === 'y');
 
 		if ($emailSettings->smtpAuth)
 		{
-			$emailSettings->username                = b()->request->getPost('smtp_username');
-			$emailSettings->password                = b()->request->getPost('smtp_password');
+			$emailSettings->username                = blx()->request->getPost('smtp_username');
+			$emailSettings->password                = blx()->request->getPost('smtp_password');
 		}
 		else
 		{
-			$emailSettings->username                = b()->request->getPost('username');
-			$emailSettings->password                = b()->request->getPost('password');
+			$emailSettings->username                = blx()->request->getPost('username');
+			$emailSettings->password                = blx()->request->getPost('password');
 		}
 
-		$emailSettings->smtpKeepAlive               = (b()->request->getPost('smtpKeepAlive') === 'y');
-		$emailSettings->smtpSecureTransportType     = b()->request->getPost('smtpSecureTransportType');
-		$emailSettings->timeout                     = b()->request->getPost('timeout');
-		$emailSettings->emailAddress                = b()->request->getPost('emailAddress');
-		$emailSettings->senderName                  = b()->request->getPost('senderName');
+		$emailSettings->smtpKeepAlive               = (blx()->request->getPost('smtpKeepAlive') === 'y');
+		$emailSettings->smtpSecureTransportType     = blx()->request->getPost('smtpSecureTransportType');
+		$emailSettings->timeout                     = blx()->request->getPost('timeout');
+		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
+		$emailSettings->senderName                  = blx()->request->getPost('senderName');
 
 		// validate user input
 		if($emailSettings->validate())
@@ -102,19 +102,19 @@ class SettingsController extends BaseController
 				}
 			}
 
-			if (b()->email->saveEmailSettings($settings))
+			if (blx()->email->saveEmailSettings($settings))
 			{
-				b()->user->setMessage(MessageType::Notice, 'Email settings saved.');
+				blx()->user->setMessage(MessageType::Notice, 'Email settings saved.');
 				$this->redirectToPostedUrl();
 			}
 			else
 			{
-				b()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
+				blx()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
 			}
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
 		}
 
 		$this->loadRequestedTemplate(array('emailSettings' => $emailSettings));

@@ -1,7 +1,6 @@
 (function($) {
 
-
-b.Installer = b.Base.extend({
+blx.Installer = blx.Base.extend({
 
 	$screens: null,
 	$currentScreen: null,
@@ -17,13 +16,13 @@ b.Installer = b.Base.extend({
 	*/
 	init: function()
 	{
-		this.$screens = b.$body.children('.main');
+		this.$screens = blx.$body.children('.main');
 
 		setTimeout($.proxy(this, 'showWelcomeScreen'), 500);
 
 		// Preload the spinner image
 		var spinner = new Image;
-		spinner.src = b.resourceUrl+'images/submit-spinner.gif';
+		spinner.src = blx.resourceUrl+'images/submit-spinner.gif';
 	},
 
 	showWelcomeScreen: function()
@@ -95,12 +94,12 @@ b.Installer = b.Base.extend({
 				var input = inputs[i],
 					$input = $('#'+input);
 
-				data[input] = b.getInputPostVal($input);
+				data[input] = blx.getInputPostVal($input);
 			}
 
-			$.post(b.actionUrl+'install/install', data, $.proxy(function() {
-				this.$currentScreen.find('h1:first').text('All done!')
-				var $buttons = $('<div class="buttons"><a href="'+b.baseUrl+'dashboard" class="btn big submit">Go to Blocks</a></div>');
+			$.post(blx.actionUrl+'install/install', data, $.proxy(function() {
+				this.$currentScreen.find('h1:first').text('All done!');
+				var $buttons = $('<div class="buttons"><a href="'+blx.baseUrl+'dashboard" class="btn big submit">Go to Blocks</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 
@@ -110,7 +109,7 @@ b.Installer = b.Base.extend({
 	showScreen: function(i, callback)
 	{
 		// Slide out the old screen
-		var windowWidth = b.$window.width(),
+		var windowWidth = blx.$window.width(),
 			centeredLeftPos = Math.floor(windowWidth / 2);
 
 		this.$currentScreen
@@ -152,14 +151,14 @@ b.Installer = b.Base.extend({
 		var $submitBtn = this['$'+what+'SubmitBtn'];
 		$submitBtn.addClass('sel loading');
 
-		var url = b.actionUrl+'install/validate'+b.uppercaseFirst(what);
+		var url = blx.actionUrl+'install/validate'+blx.uppercaseFirst(what);
 
 		var data = {};
 		for (var i = 0; i < inputs.length; i++)
 		{
 			var input = inputs[i],
 				$input = $('#'+input);
-			data[input] = b.getInputPostVal($input);
+			data[input] = blx.getInputPostVal($input);
 		}
 
 		$.post(url, data, $.proxy(function(response) {
@@ -192,7 +191,7 @@ b.Installer = b.Base.extend({
 					}
 				}
 
-				b.shake(this.$currentScreen);
+				blx.shake(this.$currentScreen);
 			}
 
 			this.loading = false;
@@ -209,10 +208,8 @@ b.Installer = b.Base.extend({
 
 });
 
-
-b.$window.on('load', function() {
-	b.installer = new b.Installer();
+blx.$window.on('load', function() {
+	blx.installer = new blx.Installer();
 });
-
 
 })(jQuery);

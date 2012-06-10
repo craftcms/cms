@@ -1,5 +1,5 @@
 {if !user && userId}
-	{set user = b.users.getById(userId)}
+	{set user = blx.users.getById(userId)}
 	{if user.status == 'archived'}
 		<!-- TODO: this doesn't work until we get string contact in the template parser -->
 		{redirect 'users/view/'+userId}
@@ -7,7 +7,7 @@
 {/if}
 
 {if user.id}
-	{if user.id == b.users.current.id}
+	{if user.id == blx.users.current.id}
 		{set displayName = "My"}
 	{elseif user.fullName}
 		{set displayName = user.fullName.possessive}
@@ -108,7 +108,7 @@
 					{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
 				</div>
 
-				{if b.users.current.admin}
+				{if blx.users.current.admin}
 					<div class="field checkbox">
 						<label>This is an admin account
 							<div class="cbwrapper"><input type="checkbox" name="admin" value="y" {if user.admin}checked="checked"{/if} /></div>
@@ -116,7 +116,7 @@
 					</div>
 				{/if}
 
-				{if user.id && user.id != b.users.current.id}
+				{if user.id && user.id != blx.users.current.id}
 					<div class="field checkbox">
 						<label>A password reset is required
 							<div class="cbwrapper"><input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked="checked"{/if} /></div>
@@ -127,7 +127,7 @@
 				{if !user.id}
 					<div class="field checkbox">
 						<label>Send an account activation email
-							<div class="cbwrapper"><input type="checkbox" name="send_validation_email" value="y" {if b.request.post('send_validation_email')}checked="checked"{/if} /></div>
+							<div class="cbwrapper"><input type="checkbox" name="send_validation_email" value="y" {if blx.request.post('send_validation_email')}checked="checked"{/if} /></div>
 						</label>
 					</div>
 				{/if}
@@ -148,13 +148,13 @@
 						<input type="hidden" name="status" value="{:user.status}" />
 						{if user.status == 'pending'}
 							<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
-							<p><strong>Validation URL</strong> {:b.url.url(b.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
+							<p><strong>Validation URL</strong> {:blx.url.url(blx.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
 						{elseif user.status == 'locked'}
 							<input class="btn" type="submit" name="unlock" value="Unlock" />
 						{elseif user.status == 'suspended'}
 							<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
 						{/if}
-						{if b.config.failedPasswordMode == 'cooldown'}
+						{if blx.config.failedPasswordMode == 'cooldown'}
 							{if user.cooldown_start}
 								<br />
 								{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(user.remainingCooldownTime)}

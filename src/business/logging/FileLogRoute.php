@@ -10,8 +10,8 @@ class FileLogRoute extends \CFileLogRoute
 	{
 		$this->setLogFile('blocks.log');
 
-		$this->levels = b()->config->devMode ? '' : 'error, warning';
-		$this->filter = b()->config->devMode ? 'CLogFilter' : null;
+		$this->levels = blx()->config->devMode ? '' : 'error, warning';
+		$this->filter = blx()->config->devMode ? 'CLogFilter' : null;
 
 		parent::init();
 	}

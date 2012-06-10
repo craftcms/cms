@@ -11,7 +11,7 @@ class StatePersister extends \CStatePersister
 	 */
 	public function init()
 	{
-		$this->stateFile = b()->path->getStatePath().'state.bin';
+		$this->stateFile = blx()->path->getStatePath().'state.bin';
 		parent::init();
 	}
 }

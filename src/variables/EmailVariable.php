@@ -12,6 +12,6 @@ class EmailVariable
 	 */
 	public function settings()
 	{
-		return b()->email->getEmailSettings();
+		return blx()->email->getEmailSettings();
 	}
 }

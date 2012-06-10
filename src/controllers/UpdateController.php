@@ -23,7 +23,7 @@ class UpdateController extends BaseController
 		$this->requireAjaxRequest();
 
 		$return = array();
-		$updateInfo = b()->updates->getUpdateInfo();
+		$updateInfo = blx()->updates->getUpdateInfo();
 
 		if (!$updateInfo)
 			$this->returnErrorJson('There was a problem getting the latest update information.');
@@ -95,14 +95,14 @@ class UpdateController extends BaseController
 			{
 				case 'Blocks':
 				{
-					b()->updates->doAppUpdate();
+					blx()->updates->doAppUpdate();
 					break;
 				}
 
 				// Plugin handle
 				default:
 				{
-					b()->updates->doPluginUpdate($h);
+					blx()->updates->doPluginUpdate($h);
 				}
 			}
 

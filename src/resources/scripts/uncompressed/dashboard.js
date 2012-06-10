@@ -1,7 +1,6 @@
 (function($) {
 
-
-b.Dashboard = b.Base.extend({
+blx.Dashboard = blx.Base.extend({
 
 	$alerts: null,
 	$container: null,
@@ -26,7 +25,7 @@ b.Dashboard = b.Base.extend({
 		this.loadNextWidget();
 
 		// setup events
-		this.addListener(b.$window, 'resize', 'setCols');
+		this.addListener(blx.$window, 'resize', 'setCols');
 
 		// do the version check
 		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
@@ -39,7 +38,7 @@ b.Dashboard = b.Base.extend({
 		if (typeof this.widgetIds[this.loadingWidget] != 'undefined')
 		{
 			var widgetId = this.widgetIds[this.loadingWidget];
-			$.get(b.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
+			$.get(blx.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
 				var $widget = $(response).css('opacity', 0);
 				this.placeWidget($widget);
 				$widget.animate({opacity: 1}, 'fast');
@@ -51,7 +50,7 @@ b.Dashboard = b.Base.extend({
 
 	setCols: function()
 	{
-		var totalCols = Math.floor(this.$container.width() / b.Dashboard.minColWidth);
+		var totalCols = Math.floor(this.$container.width() / blx.Dashboard.minColWidth);
 
 		if (totalCols !== this.totalCols)
 		{
@@ -74,9 +73,9 @@ b.Dashboard = b.Base.extend({
 		// Remove the old columns
 		if (this.cols)
 		{
-			for (var i = 0; i < this.cols.length; i++)
+			for (var j = 0; j < this.cols.length; j++)
 			{
-				this.cols[i].remove();
+				this.cols[j].remove();
 			}
 		}
 
@@ -84,15 +83,15 @@ b.Dashboard = b.Base.extend({
 		this.cols = [];
 		this.colWidth = Math.floor(10000 / this.totalCols) / 100;
 
-		for (var i = 0; i < this.totalCols; i++)
+		for (var k = 0; k < this.totalCols; k++)
 		{
-			this.cols[i] = new Col(this, i);
+			this.cols[k] = new Col(this, k);
 		}
 
 		// Place the widgets
-		for (var i = 0; i < this.widgets.length; i++)
+		for (var l = 0; l < this.widgets.length; l++)
 		{
-			this.placeWidget(this.widgets[i]);
+			this.placeWidget(this.widgets[l]);
 		}
 	},
 
@@ -192,7 +191,7 @@ b.Dashboard = b.Base.extend({
 				var $alert = $('<div class="alert"><p>'+data.alerts[i]+'</p></div>');
 				this.$alerts.append($alert);
 				$alert.css({opacity: 0});
-				$alert.delay((i+1)*b.fx.delay).animate({opacity: 1});
+				$alert.delay((i+1)*blx.fx.delay).animate({opacity: 1});
 			}
 
 			// make room for them
@@ -209,8 +208,7 @@ b.Dashboard = b.Base.extend({
 	sidebarWidth: 240
 });
 
-
-var Col = b.Base.extend({
+var Col = blx.Base.extend({
 
 	dashboard: null,
 	index: null,
@@ -243,6 +241,5 @@ var Col = b.Base.extend({
 	}
 
 });
-
 
 })(jQuery);

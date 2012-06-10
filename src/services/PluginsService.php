@@ -78,7 +78,7 @@ class PluginsService extends \CApplicationComponent
 			// Skip the autoloader
 			if (!class_exists($nsClass, false))
 			{
-				$path = b()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
+				$path = blx()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
 				if ($path = File::fileExists($path))
 					require_once $path;
 			}
@@ -106,7 +106,7 @@ class PluginsService extends \CApplicationComponent
 			$this->_allPlugins = array();
 
 			// Find all of the plugins in the plugins folder
-			$pluginsPath = b()->path->getPluginsPath();
+			$pluginsPath = blx()->path->getPluginsPath();
 			$folders = scandir($pluginsPath);
 			foreach ($folders as $folder)
 			{
@@ -283,7 +283,7 @@ class PluginsService extends \CApplicationComponent
 	 */
 	private function _importPluginModels($className)
 	{
-		$modelsDirectory = b()->path->getPluginsPath().$className.'/models/';
+		$modelsDirectory = blx()->path->getPluginsPath().$className.'/models/';
 
 		// Make sure it exists.
 		if (is_dir($modelsDirectory))
@@ -311,7 +311,7 @@ class PluginsService extends \CApplicationComponent
 	private function _registerPluginServices($className)
 	{
 		// Get the services directory for the plugin.
-		$serviceDirectory = b()->path->getPluginsPath().$className.'/services/';
+		$serviceDirectory = blx()->path->getPluginsPath().$className.'/services/';
 
 		// Make sure it exists.
 		if (is_dir($serviceDirectory))
@@ -328,7 +328,7 @@ class PluginsService extends \CApplicationComponent
 					Blocks::import('plugins.'.$className.'.services.'.$fileName);
 
 					// Register the component with the handle as (ClassName or ClassName_*) minus "Service" if multiple.
-					b()->setComponents(array(strtolower(substr($fileName, 0, strpos($fileName, 'Service')) ) => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
+					blx()->setComponents(array(strtolower(substr($fileName, 0, strpos($fileName, 'Service')) ) => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
 				}
 			}
 		}

@@ -1,7 +1,6 @@
 (function($) {
 
-
-var WidgetAdmin = b.ui.AdminPane.extend({
+var WidgetAdmin = blx.ui.AdminPane.extend({
 
 	menuBtn: null,
 
@@ -11,7 +10,7 @@ var WidgetAdmin = b.ui.AdminPane.extend({
 		this.base($container);
 
 		this.removeListener(this.$addBtn, 'click');
-		this.menuBtn = new b.ui.MenuBtn(this.$addBtn, {
+		this.menuBtn = new blx.ui.MenuBtn(this.$addBtn, {
 			onOptionSelect: $.proxy(this, 'addItem')
 		});
 	},
@@ -27,7 +26,7 @@ var WidgetAdmin = b.ui.AdminPane.extend({
 			$freshWidgetSettings = $('#freshwidgetsettings-'+widgetClass);
 
 		if ($freshWidgetSettings.length)
-			var freshWidgetSettingsHtml = $freshWidgetSettings.html().replace(/ITEM_ID/g, item.id)
+			var freshWidgetSettingsHtml = $freshWidgetSettings.html().replace(/ITEM_ID/g, item.id);
 		else
 			var freshWidgetSettingsHtml = '';
 
@@ -41,8 +40,6 @@ var WidgetAdmin = b.ui.AdminPane.extend({
 
 });
 
-
 var widgetAdmin = new WidgetAdmin();
-
 
 })(jQuery);

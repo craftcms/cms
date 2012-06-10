@@ -7,21 +7,21 @@
 	<section>
 		<h2>Email</h2>
 		<ul class="actions">
-			<li><a href="{:b.url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
+			<li><a href="{:blx.url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
 		</ul>
 
 		<table class="info">
 			<tr>
 				<th>Email Address</th>
-				<td>{:b.email.settings.emailAddress}</td>
+				<td>{:blx.email.settings.emailAddress}</td>
 			</tr>
 			<tr>
 				<th>Sender Name</th>
-				<td>{:b.email.settings.senderName}</td>
+				<td>{:blx.email.settings.senderName}</td>
 			</tr>
 			<tr>
 				<th>Protocol</th>
-				<td>{:b.email.settings.protocol}</td>
+				<td>{:blx.email.settings.protocol}</td>
 			</tr>
 		</table>
 	</section>
@@ -29,14 +29,14 @@
 	<section>
 		<h2>Sites</h2>
 		<ul class="actions">
-			<li><a href="{:b.url.base}settings/sites/new" class="btn light addbtn">New site</a></li>
+			<li><a href="{:blx.url.base}settings/sites/new" class="btn light addbtn">New site</a></li>
 		</ul>
 
 		<table class="data">
 			<tbody>
-				{foreach b.sites as site}
+				{foreach blx.sites as site}
 					<tr>
-						<td width="25%"><a href="{:b.url.base}settings/sites/{:site.id}">{:site.name}</td>
+						<td width="25%"><a href="{:blx.url.base}settings/sites/{:site.id}">{:site.name}</td>
 						<td width="25%">{:site.url}</td>
 						<td><code>{:site.handle}</code></td>
 					</tr>
@@ -50,12 +50,12 @@
 
 		<table class="data">
 			<tbody>
-				{foreach b.plugins.all as plugin}
+				{foreach blx.plugins.all as plugin}
 					<tr>
 						<td width="25%">
 							<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
 							{if plugin.hasSettings}
-								<a href="{:b.url.base}settings/plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
+								<a href="{:blx.url.base}settings/plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
 							{else}
 								{:plugin.name}
 							{/if}

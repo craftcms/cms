@@ -1,5 +1,5 @@
 {if !site && siteId}
-	{set site = b.sites.getSiteById(siteId)}
+	{set site = blx.sites.getSiteById(siteId)}
 {/if}
 
 {if site.id}
@@ -64,11 +64,10 @@
 	</form>
 {/region}
 
-
 {if !site}
 	{region "scripts"}
 		<script type="text/javascript">
-			new b.ui.HandleGenerator('#name', '#handle');
+			new blx.ui.HandleGenerator('#name', '#handle');
 		</script>
 	{/region}
 {/if}
