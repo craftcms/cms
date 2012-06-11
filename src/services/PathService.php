@@ -137,15 +137,6 @@ class PathService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns 
-	 * @return string
-	 */
-	public function getEmailTemplatesPath()
-	{
-		return $this->getAppPath().'email_templates/';
-	}
-
-	/**
 	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
 	 * @return mixed
 	 */
