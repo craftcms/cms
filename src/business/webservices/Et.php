@@ -21,7 +21,6 @@ class Et extends \CApplicationComponent
 	private $_endpoint;
 	private $_timeout;
 	private $_package;
-	private $_followRedirects;
 	private $_options = array();
 
 	/**
@@ -81,7 +80,7 @@ class Et extends \CApplicationComponent
 		$this->_package->requestTime = DateTimeHelper::currentTime();
 		$this->_package->requestPort = blx()->request->getPort();
 
-		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
+		$this->_options['useragent'] = 'blocks-requests/'.Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
 	}
 
@@ -101,7 +100,7 @@ class Et extends \CApplicationComponent
 		try
 		{
 			$data = Json::encode($this->_package);
-			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
+			$response = Requests::post($this->_endpoint, array(), $data, $this->_options);
 
 			if ($response->success)
 			{

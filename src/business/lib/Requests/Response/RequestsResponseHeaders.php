@@ -12,7 +12,7 @@ namespace Blocks;
  *
  * @package Requests
  */
-class RequestsResponseHeaders implements ArrayAccess, IteratorAggregate {
+class RequestsResponseHeaders implements \ArrayAccess, \IteratorAggregate {
 	/**
 	 * Actual header data
 	 *
@@ -33,9 +33,8 @@ class RequestsResponseHeaders implements ArrayAccess, IteratorAggregate {
 
 	/**
 	 * Get the given header
-	 *
 	 * @param string $key
-	 * @return string Header value
+	 * @return mixed|string Header value
 	 */
 	public function offsetGet($key) {
 		$key = strtolower($key);
@@ -77,11 +76,11 @@ class RequestsResponseHeaders implements ArrayAccess, IteratorAggregate {
 	}
 
 	/**
-	 * Get an interator for the data
+	 * Get an iterator for the data
 	 *
-	 * @return ArrayIterator
+	 * @return \ArrayIterator|\Traversable
 	 */
 	public function getIterator() {
-		return new ArrayIterator($this->data);
+		return new \ArrayIterator($this->data);
 	}
 }

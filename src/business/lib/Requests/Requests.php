@@ -166,6 +166,7 @@ class Requests {
 
 		// Find us a working transport
 		foreach (self::$transports as $class) {
+			$class = __NAMESPACE__.'\\'.$class;
 			if (!class_exists($class))
 				continue;
 
@@ -321,6 +322,7 @@ class Requests {
 
 		if ($options['idn'] !== false) {
 			$iri = new RequestsIRI($url);
+			// Uses get magic method.
 			$iri->host = RequestsIDNAEncoder::encode($iri->ihost);
 			$url = $iri->uri;
 		}
