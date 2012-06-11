@@ -1,4 +1,6 @@
 <?php
+namespace Blocks;
+
 /**
  * fsockopen HTTP transport
  *

@@ -1,4 +1,6 @@
 <?php
+namespace Blocks;
+
 /**
  * Class to validate and to work with IPv6 addresses
  *

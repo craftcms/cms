@@ -1,4 +1,6 @@
 <?php
+namespace Blocks;
+
 /*
 .---------------------------------------------------------------------------.
 |   Software: PhpMailer - PHP email class                                   |
@@ -23,7 +25,7 @@
 */
 
 /**
- * PHPMailer - PHP email transport class
+ * PhpMailer - PHP email transport class
  * NOTE: Requires PHP version 5 or later
  * @package PhpMailer
  * @author Andy Prevost
@@ -31,11 +33,11 @@
  * @author Jim Jagielski
  * @copyright 2010 - 2012 Jim Jagielski
  * @copyright 2004 - 2009 Andy Prevost
- * @version $Id: PHPMailer.php 450 2010-06-23 16:46:33Z coolbru $
+ * @version $Id: PhpMailer.php 450 2010-06-23 16:46:33Z coolbru $
  * @license http://www.gnu.org/copyleft/lesser.html GNU Lesser General Public License
  */
 
-if (version_compare(PHP_VERSION, '5.0.0', '<') ) exit("Sorry, this version of PHPMailer will only run on PHP version 5 or greater!\n");
+if (version_compare(PHP_VERSION, '5.0.0', '<') ) exit("Sorry, this version of PhpMailer will only run on PHP version 5 or greater!\n");
 
 /**
  *
@@ -151,7 +153,7 @@ class PhpMailer
 	public $sendMail = '/usr/sbin/sendmail';
 
 	/**
-	 * Path to PHPMailer plugins.  Useful if the SMTP class is in a different directory than the PHP include path.
+	 * Path to PhpMailer plugins.  Useful if the Smtp class is in a different directory than the PHP include path.
 	 * @var string
 	 */
 	public $pluginDir = '';
@@ -177,11 +179,11 @@ class PhpMailer
 	public $messageID = '';
 
 	/////////////////////////////////////////////////
-	// Properties for SMTP
+	// Properties for Smtp
 	/////////////////////////////////////////////////
 
 	/**
-	 * Sets the SMTP hosts.  All hosts must be separated by a semicolon.  You can also specify a different port
+	 * Sets the Smtp hosts.  All hosts must be separated by a semicolon.  You can also specify a different port
 	 * for each host by using this format: [hostname:port] (e.g. "smtp1.example.com:25;smtp2.example.com").
 	 * Hosts will be tried in order.
 	 * @var string
@@ -189,7 +191,7 @@ class PhpMailer
 	public $host = 'localhost';
 
 	/**
-	 * Sets the default SMTP server port.
+	 * Sets the default Smtp server port.
 	 * @var int
 	 */
 	public $port = 25;
@@ -207,37 +209,37 @@ class PhpMailer
 	public $smtpSecure = '';
 
 	/**
-	 * Sets SMTP authentication. Utilizes the userName and password variables.
+	 * Sets Smtp authentication. Utilizes the userName and password variables.
 	 * @var bool
 	 */
 	public $smtpAuth = false;
 
 	/**
-	 * Sets SMTP username.
+	 * Sets Smtp username.
 	 * @var string
 	 */
 	public $userName = '';
 
 	/**
-	 * Sets SMTP password.
+	 * Sets Smtp password.
 	 * @var string
 	 */
 	public $password = '';
 
 	/**
-	 * Sets the SMTP server timeout in seconds.  This function will not work with the win32 version.
+	 * Sets the Smtp server timeout in seconds.  This function will not work with the win32 version.
 	 * @var int
 	 */
 	public $timeout = 10;
 
 	/**
-	 * Sets SMTP class debugging on or off.
+	 * Sets Smtp class debugging on or off.
 	 * @var bool
 	 */
 	public $smtpDebug = false;
 
 	/**
-	 * Prevents the SMTP connection from being closed after each mail
+	 * Prevents the Smtp connection from being closed after each mail
 	 * sending.	If this is set to true then to close the connection
 	 * requires an explicit call to SmtpClose().
 	 * @var bool
@@ -309,7 +311,7 @@ class PhpMailer
 	public $actionFunction = ''; //'callbackAction';
 
 	/**
-	 * Sets the PHPMailer Version number
+	 * Sets the PhpMailer Version number
 	 * @var string
 	 */
 	public $version = '5.2.1';
@@ -372,7 +374,7 @@ class PhpMailer
 	}
 
 	/**
-	 * Sets Mailer to send message using SMTP.
+	 * Sets Mailer to send message using Smtp.
 	 * @return void
 	 */
 	public function isSmtp()
@@ -426,7 +428,7 @@ class PhpMailer
 
 	/**
 	 * Adds a "Cc" address.
-	 * Note: this function works with the SMTP mailer on win32, not with the "mail" mailer.
+	 * Note: this function works with the Smtp mailer on win32, not with the "mail" mailer.
 	 * @param string $address
 	 * @param string $name
 	 * @return boolean true on success, false if address already used
@@ -438,7 +440,7 @@ class PhpMailer
 
 	/**
 	 * Adds a "Bcc" address.
-	 * Note: this function works with the SMTP mailer on win32, not with the "mail" mailer.
+	 * Note: this function works with the Smtp mailer on win32, not with the "mail" mailer.
 	 * @param string $address
 	 * @param string $name
 	 * @return boolean true on success, false if address already used
@@ -851,7 +853,7 @@ class PhpMailer
 	}
 
 	/**
-	 * Sends mail via SMTP using PhpSMTP
+	 * Sends mail via Smtp using PhpSmtp
 	 * Returns false if there is a bad MAIL FROM, RCPT, or DATA input.
 	 * @param string $header The message headers
 	 * @param string $body The message body
@@ -868,10 +870,10 @@ class PhpMailer
 		if (!$this->smtpConnect())
 			throw new phpMailerException($this->lang('smtp_connect_failed'), self::STOP_CRITICAL);
 
-		$SMTPFrom = ($this->sender == '') ? $this->from : $this->sender;
+		$SmtpFrom = ($this->sender == '') ? $this->from : $this->sender;
 
-		if (!$this->smtp->mail($SMTPFrom))
-			throw new phpMailerException($this->lang('from_failed') . $SMTPFrom, self::STOP_CRITICAL);
+		if (!$this->smtp->mail($SmtpFrom))
+			throw new phpMailerException($this->lang('from_failed') . $SmtpFrom, self::STOP_CRITICAL);
 
 		// Attempt to send attach all recipients
 		foreach ($this->to as $to)
@@ -945,7 +947,7 @@ class PhpMailer
 	}
 
 	/**
-	 * Initiates a connection to an SMTP server. Returns false if the operation failed.
+	 * Initiates a connection to an Smtp server. Returns false if the operation failed.
 	 * @uses Smtp
 	 * @access public
 	 * @throws phpMailerException
@@ -1023,7 +1025,7 @@ class PhpMailer
 	}
 
 	/**
-	 * Closes the active SMTP session if one exists.
+	 * Closes the active Smtp session if one exists.
 	 * @return void
 	 */
 	public function smtpClose()
@@ -1054,16 +1056,16 @@ class PhpMailer
 		    'mailer_not_supported' => ' mailer is not supported.',
 		    'execute'              => 'Could not execute: ',
 		    'instantiate'          => 'Could not instantiate mail function.',
-		    'authenticate'         => 'SMTP Error: Could not authenticate.',
+		    'authenticate'         => 'Smtp Error: Could not authenticate.',
 		    'from_failed'          => 'The following From address failed: ',
-		    'recipients_failed'    => 'SMTP Error: The following recipients failed: ',
-		    'data_not_accepted'    => 'SMTP Error: Data not accepted.',
-		    'connect_host'         => 'SMTP Error: Could not connect to SMTP host.',
+		    'recipients_failed'    => 'Smtp Error: The following recipients failed: ',
+		    'data_not_accepted'    => 'Smtp Error: Data not accepted.',
+		    'connect_host'         => 'Smtp Error: Could not connect to Smtp host.',
 		    'file_access'          => 'Could not access file: ',
 		    'file_open'            => 'File Error: Could not open file: ',
 		    'encoding'             => 'Unknown encoding: ',
 		    'signing'              => 'Signing Error: ',
-		    'smtp_error'           => 'SMTP server error: ',
+		    'smtp_error'           => 'Smtp server error: ',
 		    'empty_message'        => 'Message body empty',
 		    'invalid_address'      => 'Invalid address',
 		    'variable_set'         => 'Cannot set or reset variable: '
@@ -1401,7 +1403,7 @@ class PhpMailer
 		if ($this->xMailer)
 			$result .= $this->headerLine('X-Mailer', $this->xMailer);
 		else
-			$result .= $this->headerLine('X-Mailer', 'PHPMailer '.$this->version.' (http://code.google.com/a/apache-extras.org/p/phpmailer/)');
+			$result .= $this->headerLine('X-Mailer', 'PhpMailer '.$this->version.' (http://code.google.com/a/apache-extras.org/p/phpmailer/)');
 
 		if ($this->confirmReadingTo != '')
 			$result .= $this->headerLine('Disposition-Notification-To', '<' . trim($this->confirmReadingTo) . '>');

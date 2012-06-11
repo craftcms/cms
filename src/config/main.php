@@ -16,15 +16,6 @@ return CMap::mergeArray(
 		'runtimePath' => BLOCKS_RUNTIME_PATH,
 		'name'        => 'Blocks',
 
-		// autoloading model and component classes
-		'import' => array(
-			'application.business.lib.*',
-			'application.business.lib.Requests.*',
-			'application.business.lib.Requests.Auth.*',
-			'application.business.lib.Requests.Response.*',
-			'application.business.lib.Requests.Transport.*',
-		),
-
 		// application components
 		'components' => array(
 			// services

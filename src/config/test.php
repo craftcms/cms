@@ -12,6 +12,7 @@ return CMap::mergeArray(
 			'fixture' => array(
 				'class' => 'system.test.CDbFixtureManager',
 			),
+			'request'
 		),
 	)
 );

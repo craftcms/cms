@@ -1,4 +1,6 @@
 <?php
+namespace Blocks;
+
 /**
  * Basic Authentication provider
  *
