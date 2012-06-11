@@ -28,7 +28,7 @@ class InstallController extends BaseController
 		$vars['reqcheck'] = $reqCheck;
 
 		// Guess the site name based on the host name
-		$host = $_SERVER['HTTP_HOST'];
+		$host = blx()->request->getHostInfo();
 		$hostWords = preg_split('/[\-_\.]+/', $host);
 		array_pop($hostWords);
 		$vars['sitename'] = implode(' ', array_map('ucfirst', $hostWords));
