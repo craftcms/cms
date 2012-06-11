@@ -2724,9 +2724,12 @@ class PhpMailer
 	 * $page->set('X-Priority', '3');
 	 *
 	 * @access public
+	 *
 	 * @param string $name Parameter Name
-	 * @param mixed $value Parameter Value
+	 * @param mixed  $value Parameter Value
 	 * NOTE: will not work with arrays, there are no arrays to set/reset
+	 *
+	 * @throws phpMailerException
 	 * @todo Should this not be using __set() magic function?
 	 * @return bool
 	 */

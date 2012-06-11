@@ -15,6 +15,9 @@ abstract class BasePlugin extends BaseComponent
 
 	protected $componentType = 'Plugin';
 
+	/**
+	 * @return bool
+	 */
 	public function getIsInstalled()
 	{
 		return isset($this->record);

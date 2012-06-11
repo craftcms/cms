@@ -326,7 +326,7 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Get the records that were recently created
-	 * @param int limit Number of rows to get (default is 50)
+	 * @param int Limit Number of rows to get (default is 50)
 	 * @return Model
 	 */
 	public function recentlyCreated($limit = 50)
@@ -341,7 +341,7 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Get the records that were recently modified
-	 * @param int limit Number of rows to get (default is 50)
+	 * @param int Limit Number of rows to get (default is 50)
 	 * @return Model
 	 */
 	public function recentlyUpdated($limit = 50)
@@ -663,10 +663,9 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Returns an instance of the specified model
-	 *
 	 * @static
 	 * @param string $class
-	 * @return object The model instance
+	 * @return \CActiveRecord|object The model instance
 	 */
 	public static function model($class = __CLASS__)
 	{

@@ -71,8 +71,8 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Attempts to match a request with an entry in the database.  If one is found, we set the template match property.
-	 * @return bool True if a match was found, false otherwise.
+	 * Attempts to match a request with an entry in the database.
+	 * @return bool The URI if a match was found, false otherwise.
 	 */
 	public function matchEntry()
 	{
@@ -152,11 +152,7 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * Attempts to match a request to a file on the file system.
-	 * Will return false for any directory that has a "_" as the first character.
-	 * Will attempt to match "path/to/folder/file.{allowedFileExtensions}" first, "path/to/folder/file/index.{allowedFileExtensions}" second.
-	 * Sets the template match property if a match is found.
-	 * @return bool True is a match is found, false otherwise.
+	 * @return bool
 	 */
 	public function matchTemplatePath()
 	{

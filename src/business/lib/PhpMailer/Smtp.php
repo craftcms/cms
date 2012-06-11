@@ -82,7 +82,7 @@ class Smtp
 	/**
 	 * Initialize the class so that the data is in a known state.
 	 * @access public
-	 * @return \Smtp
+	 * @return Smtp
 	 */
 	function __construct()
 	{

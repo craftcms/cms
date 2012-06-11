@@ -7,7 +7,6 @@ namespace Blocks;
 class SitesService extends \CApplicationComponent
 {
 	private $_currentSite;
-	private $_licenseKeyStatus;
 	private $_allSites;
 	private $_enabledSites;
 

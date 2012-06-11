@@ -18,7 +18,7 @@ abstract class BaseBlock extends BaseComponent
 	 */
 	public function __get($name)
 	{
-		if (in_array($name, array('name', 'handle', 'class'))
+		//if (in_array($name, array('name', 'handle', 'class'))
 	}
 
 	/**

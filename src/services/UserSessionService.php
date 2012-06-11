@@ -271,7 +271,7 @@ class UserSessionService extends \CWebUser
 	/**
 	 * @return string
 	 */
-	public function getRememeberedUsername()
+	public function getRememberedUsername()
 	{
 		return (isset(blx()->request->cookies['username'])) ? blx()->request->cookies['username']->value : null;
 	}

@@ -37,7 +37,7 @@ class MigrationsService extends \CApplicationComponent
 
 	/**
 	 * @throws Exception
-	 * @return bool
+	 * @return bool|void
 	 */
 	public function init()
 	{

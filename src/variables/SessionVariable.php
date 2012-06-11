@@ -21,7 +21,7 @@ class SessionVariable
 	 */
 	public function rememberedusername()
 	{
-		return blx()->user->getRememeberedUsername();
+		return blx()->user->getRememberedUsername();
 	}
 
 	/**

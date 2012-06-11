@@ -180,6 +180,7 @@ class Blocks extends \Yii
 	 * @static
 	 * @param      $alias
 	 * @param bool $forceInclude
+	 * @return string|void
 	 */
 	public static function import($alias, $forceInclude = false)
 	{

@@ -44,7 +44,7 @@ class RequestsTransportcURL implements RequestsTransport {
 	protected $fp;
 
 	/**
-	 * Have we finished the heades yet?
+	 * Have we finished the headers yet?
 	 *
 	 * @var boolean
 	 */
