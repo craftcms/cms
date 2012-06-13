@@ -33,7 +33,7 @@ class BlxVariable
 	 */
 	public function app()
 	{
-		return new AppVariable;
+		return new AppVariable();
 	}
 
 	/**
@@ -41,7 +41,7 @@ class BlxVariable
 	 */
 	public function assets()
 	{
-		return new AssetsVariable;
+		return new AssetsVariable();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class BlxVariable
 	 */
 	public function config()
 	{
-		return new ConfigVariable;
+		return new ConfigVariable();
 	}
 
 	/**
@@ -57,7 +57,7 @@ class BlxVariable
 	 */
 	public function content()
 	{
-		return new ContentVariable;
+		return new ContentVariable();
 	}
 
 	/**
@@ -65,7 +65,7 @@ class BlxVariable
 	 */
 	public function contentblocks()
 	{
-		return new ContentBlocksVariable;
+		return new ContentBlocksVariable();
 	}
 
 	/**
@@ -73,7 +73,7 @@ class BlxVariable
 	 */
 	public function cp()
 	{
-		return new CpVariable;
+		return new CpVariable();
 	}
 
 	/**
@@ -81,7 +81,7 @@ class BlxVariable
 	 */
 	public function dashboard()
 	{
-		return new DashboardVariable;
+		return new DashboardVariable();
 	}
 
 	/**
@@ -89,7 +89,7 @@ class BlxVariable
 	 */
 	public function date()
 	{
-		return new DateVariable;
+		return new DateVariable();
 	}
 
 	/**
@@ -97,7 +97,7 @@ class BlxVariable
 	 */
 	public function email()
 	{
-		return new EmailVariable;
+		return new EmailVariable();
 	}
 
 	/**
@@ -105,7 +105,7 @@ class BlxVariable
 	 */
 	public function plugins()
 	{
-		return new PluginsVariable;
+		return new PluginsVariable();
 	}
 
 	/**
@@ -113,7 +113,7 @@ class BlxVariable
 	 */
 	public function request()
 	{
-		return new RequestVariable;
+		return new RequestVariable();
 	}
 
 	/**
@@ -121,7 +121,7 @@ class BlxVariable
 	 */
 	public function sites()
 	{
-		return new SitesVariable;
+		return new SitesVariable();
 	}
 
 	/**
@@ -129,7 +129,7 @@ class BlxVariable
 	 */
 	public function updates()
 	{
-		return new UpdatesVariable;
+		return new UpdatesVariable();
 	}
 
 	/**
@@ -137,7 +137,7 @@ class BlxVariable
 	 */
 	public function url()
 	{
-		return new UrlVariable;
+		return new UrlVariable();
 	}
 
 	/**
@@ -145,7 +145,7 @@ class BlxVariable
 	 */
 	public function users()
 	{
-		return new UsersVariable;
+		return new UsersVariable();
 	}
 
 	/**
@@ -153,7 +153,7 @@ class BlxVariable
 	 */
 	public function security()
 	{
-		return new SecurityVariable;
+		return new SecurityVariable();
 	}
 
 	/**
@@ -161,7 +161,7 @@ class BlxVariable
 	 */
 	public function session()
 	{
-		return new SessionVariable;
+		return new SessionVariable();
 	}
 
 	/**
@@ -169,6 +169,6 @@ class BlxVariable
 	 */
 	public function httpstatus()
 	{
-		return new HttpStatusVariable;
+		return new HttpStatusVariable();
 	}
 }

@@ -134,7 +134,7 @@ class UsersService extends \CApplicationComponent
 	{
 		$activationCode = StringHelper::UUID();
 		$user->activationcode = $activationCode;
-		$date = new DateTime;
+		$date = new DateTime();
 		$user->activationcode_issued_date = $date->getTimestamp();
 		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->activationCodeExpiration) .'S');
 		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();

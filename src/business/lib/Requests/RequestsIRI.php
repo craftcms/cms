@@ -292,7 +292,7 @@ class RequestsIRI
 					}
 					else
 					{
-						$target = new RequestsIRI;
+						$target = new RequestsIRI();
 						$target->scheme = $base->scheme;
 						$target->iuserinfo = $base->iuserinfo;
 						$target->ihost = $base->ihost;

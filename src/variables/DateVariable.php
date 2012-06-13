@@ -13,7 +13,7 @@ class DateVariable
 	 */
 	function __construct()
 	{
-		$dtObj = new DateTime;
+		$dtObj = new DateTime();
 		$this->dateTimeVariable = new Variable($dtObj);
 	}
 

@@ -55,7 +55,7 @@ class ContentService extends \CApplicationComponent
 			$section = $this->getSectionById($sectionId);
 
 		if (empty($section))
-			$section = new Section;
+			$section = new Section();
 
 		return $section;
 	}
@@ -326,7 +326,7 @@ class ContentService extends \CApplicationComponent
 		try
 		{
 			// Create the entry
-			$entry = new Entry;
+			$entry = new Entry();
 			$entry->section_id = $sectionId;
 			$entry->author_id = ($authorId ? $authorId : blx()->users->getCurrentUser()->id);
 			$entry->parent_id = $parentId;
@@ -568,7 +568,7 @@ class ContentService extends \CApplicationComponent
 				throw new Exception('No entry exists with the ID '.$entry->id);
 		}
 
-		$version = new EntryVersion;
+		$version = new EntryVersion();
 		$version->entry_id  = $entry->id;
 		$version->author_id = blx()->users->getCurrentUser()->id;
 		$version->language  = ($language ? $language : blx()->sites->getCurrentSite()->language);

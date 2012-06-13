@@ -45,7 +45,7 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$licenseKey = new InstallLicenseKeyForm;
+		$licenseKey = new InstallLicenseKeyForm();
 		$licenseKey->licensekey = blx()->request->getPost('licensekey');
 
 		if ($licenseKey->validate())
@@ -64,7 +64,7 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$user = new InstallUserForm;
+		$user = new InstallUserForm();
 		$user->username = blx()->request->getPost('username');
 		$user->email = blx()->request->getPost('email');
 		$user->password = blx()->request->getPost('password');
@@ -85,7 +85,7 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$site = new InstallSiteForm;
+		$site = new InstallSiteForm();
 		$site->sitename = blx()->request->getPost('sitename');
 		$site->url = blx()->request->getPost('url');
 		$site->language = blx()->request->getPost('language');

@@ -70,7 +70,7 @@ class SitesService extends \CApplicationComponent
 		}
 		else
 		{
-			$site = new Site;
+			$site = new Site();
 			$isNewSite = true;
 			$oldSiteHandle = null;
 		}

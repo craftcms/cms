@@ -145,7 +145,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		if (!isset($this->_content[$language]))
 		{
-			$content = new Content;
+			$content = new Content();
 			$content->record = $this;
 			$content->language = $language;
 			$content->table = $this->getContentTableName();

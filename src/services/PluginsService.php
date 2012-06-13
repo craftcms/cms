@@ -219,7 +219,7 @@ class PluginsService extends \CApplicationComponent
 		if ($plugin->getIsInstalled())
 			throw new Exception($plugin->name.' is already installed.');
 
-		$record = new Plugin;
+		$record = new Plugin();
 		$record->class = $plugin->getClassHandle();
 		$record->version = $plugin->version;
 		$record->enabled = true;
