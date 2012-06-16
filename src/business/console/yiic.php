@@ -18,9 +18,6 @@ require_once(BLOCKS_APP_PATH.'business/Blocks.php');
 require_once(dirname(__FILE__).'/ConsoleApplication.php');
 
 $app = Yii::createApplication('Blocks\ConsoleApplication', $config);
-$env = @getenv('YII_CONSOLE_COMMANDS');
-
-if (!empty($env))
-	$app->commandRunner->addCommands($env);
+$app->commandRunner->addCommands(Blocks\Blocks::getPathOfAlias('application.business.console.commands.*'));
 
 $app->run();

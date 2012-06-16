@@ -17,7 +17,7 @@ return CMap::mergeArray(
 	require(BLOCKS_APP_PATH.'config/common.php'),
 
 	array(
-		'basePath' => dirname(__FILE__).'/..',
+		'basePath' => dirname(__FILE__).'/../',
 
 		// autoloading model and component classes
 		'import' => array(
@@ -41,6 +41,6 @@ return CMap::mergeArray(
 			),
 		),
 
-		'commandPath' => dirname(__FILE__).'/../business/console/commands',
+		'commandPath' => Blocks\Blocks::getPathOfAlias('system.cli.commands.*'),
 	)
 );
