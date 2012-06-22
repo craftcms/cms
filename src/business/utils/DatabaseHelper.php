@@ -26,7 +26,7 @@ class DatabaseHelper
 		AttributeType::ClassName    => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
 		AttributeType::Email        => array('type' => AttributeType::Varchar, 'minLength' => 5),
 		AttributeType::Handle       => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
-		AttributeType::Language     => array('type' => AttributeType::Char, 'maxLength' => 5, 'required' => true),
+		AttributeType::Language     => array('type' => AttributeType::Char, 'maxLength' => 12, 'required' => true),
 		AttributeType::Name         => array('type' => AttributeType::Varchar, 'maxLength' => 100),
 		AttributeType::SortOrder    => array('type' => AttributeType::SmallInt, 'required' => true, 'unsigned' => true),
 		AttributeType::Template     => array('type' => AttributeType::Varchar, 'maxLength' => 500),
