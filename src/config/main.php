@@ -78,11 +78,14 @@ return CMap::mergeArray(
 			'users' => array(
 				'class' => 'Blocks\UsersService',
 			),
-
 			// end services
 
 			'file' => array(
 				'class' => 'Blocks\File',
+			),
+
+			'messages' => array(
+				'class' => 'Blocks\PhpMessageSource',
 			),
 
 			'request' => array(
