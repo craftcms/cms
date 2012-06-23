@@ -21,11 +21,9 @@
 
 {layout "_layouts/cp" title=title crumbs="users:Users"}
 
-
 {region "styles"}
 	{include "_includes/css_include" file="styles/user.css"}
 {/region}
-
 
 {region "main"}
 	<h1>{:title}</h1>
@@ -81,9 +79,9 @@
 						<div class="heading">
 							<label for="password">New Password</label>
 						</div>
-						<div class="passwordwrapper"><input id="password" name="password" class="text password {if changePasswordInfo.errors.password}error{/if}" type="password" /></div>
-						{if changePasswordForm.errors.password}
-							{include "_includes/error_list" errors=changePasswordForm.errors.password}
+						<div class="passwordwrapper"><input id="password" name="password" class="text password {if passwordForm && passwordForm.errors.password}error{/if}" type="password" /></div>
+						{if passwordForm && passwordForm.errors.password}
+							{include "_includes/error_list" errors=passwordForm.errors.password}
 						{/if}
 					</div>
 
@@ -91,7 +89,7 @@
 						<div class="heading">
 							<label for="confirm-password">Confirm New Password</label>
 						</div>
-						<div class="passwordwrapper"><input id="confirm-password" name="confirm-password" class="text password {if changePasswordInfo.errors.confirmPassword}error{/if}" type="password" /></div>
+						<div class="passwordwrapper"><input id="confirm-password" name="confirm-password" class="text password {if passwordForm && passwordForm.errors.confirmPassword}error{/if}" type="password" /></div>
 					</div>
 				{/if}
 
@@ -106,6 +104,14 @@
 						{set emailFormat = "text"}
 					{/if}
 					{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
+				</div>
+
+				<div class="field">
+					<div class="heading">
+						<label for="preferred_language">Preferred Language</label>
+					</div>
+
+					{include "_includes/dropdown" name="preferred_language" options="en_us:English (US),en_gb:English (GB)" value=user.preferred_language}
 				</div>
 
 				{if blx.users.current.admin}
@@ -157,7 +163,7 @@
 						{if blx.config.failedPasswordMode == 'cooldown'}
 							{if user.cooldown_start}
 								<br />
-								{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(user.remainingCooldownTime)}
+								{set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime)}
 								Temporarily locked.  User will be auto-unlocked
 								{if timeRemaining > 0}
 									in {:timeRemaining}
@@ -171,7 +177,7 @@
 							<strong>Last Login Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_login_date}{:dateTimeHelper.nice(user.last_login_date)}{else}Never{/if}
+							{if user.last_login_date}{:blx.date.nice(user.last_login_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 
@@ -179,7 +185,7 @@
 							<strong>Last Failed Login Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_login_failed_date}{:dateTimeHelper.nice(user.last_login_failed_date)}{else}Never{/if}
+							{if user.last_login_failed_date}{:blx.date.nice(user.last_login_failed_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 
@@ -187,7 +193,7 @@
 							<strong>Last Password Changed Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_password_changed_date}{:dateTimeHelper.nice(user.last_password_changed_date)}{else}Never{/if}
+							{if user.last_password_changed_date}{:blx.date.nice(user.last_password_changed_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 
@@ -195,7 +201,7 @@
 							<strong>Last Lockout Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_lockout_date}{:dateTimeHelper.nice(user.last_lockout_date)}{else}Never{/if}
+							{if user.last_lockout_date}{:blx.date.nice(user.last_lockout_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 

@@ -110,10 +110,10 @@ class UsersController extends BaseController
 				if (($password = blx()->request->getPost('password')))
 				{
 					// Make sure the passwords match and are at least the minimum length
-					$changePasswordForm = new PasswordForm();
-					$changePasswordForm->password = $password;
-					$changePasswordForm->confirmPassword = blx()->request->getPost('confirm-password');
-					$passwordValidates = $changePasswordForm->validate();
+					$passwordForm = new PasswordForm();
+					$passwordForm->password = $password;
+					$passwordForm->confirmPassword = blx()->request->getPost('confirm-password');
+					$passwordValidates = $passwordForm->validate();
 
 					// Store the new hashed password on the User record, but don't save it yet
 					if ($passwordValidates)
@@ -169,7 +169,7 @@ class UsersController extends BaseController
 
 		$this->loadRequestedTemplate(array(
 			'theUser' => $user,
-			'changePasswordForm' => (isset($changePasswordForm) ? $changePasswordForm : null)
+			'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
 		));
 	}
 
