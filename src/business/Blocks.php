@@ -4,13 +4,13 @@ namespace Blocks;
 require_once dirname(__FILE__).'/enums/Product.php';
 require_once dirname(__FILE__).'/../blocks_info.php';
 
-
 /**
  *
 */
 class Blocks extends \Yii
 {
 	private static $_storedBlocksInfo;
+	private static $_translatedLanguages;
 
 	/**
 	 * @static
@@ -287,4 +287,19 @@ class Blocks extends \Yii
 function blx()
 {
 	return Blocks::app();
+}
+
+/**
+ * Shortcut wrapper for Blocks::t();
+ *
+ * @param       $category
+ * @param       $message
+ * @param array $params
+ * @param null  $source
+ * @param null  $language
+ * @return string
+ */
+function t($category, $message, $params = array(), $source = null, $language = null)
+{
+	return Blocks::t($category, $message, $params, $source, $language);
 }
