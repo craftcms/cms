@@ -5,26 +5,35 @@
 	<style type="text/css">
 		#sitemap { overflow: hidden; margin: 0 -25px; }
 
-		#sitemap .tier { position: relative; margin: 0 -79px; padding-bottom: 223px; }
+		#sitemap .tier { margin: 0 -79px; }
 
-		#sitemap .page,
-		#sitemap .section { display: none; position: absolute; z-index: 1; margin: 0 -79px; width: 158px; }
-		#sitemap .tier .dot { position: absolute; top: 0; left: 50%; margin: -2px 0 0 -2px; width: 4px; height: 3px; fill: #999; }
-		#sitemap .title { position: absolute; top: 200px; left: -5px; width: 168px; text-align: center; }
-		#sitemap .title span { display: inline-block; margin-top: 5px; padding: 0 5px; max-width: 158px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: hsla(0, 0%, 90%, 0.5); }
-		#sitemap .page:not(:hover) .title,
-		#sitemap .section:not(:hover) .title { color: #666; }
-		#sitemap .page:hover,
-		#sitemap .section:hover { color: #2d98db; text-decoration: none; cursor: pointer; }
+		#sitemap .tier .trails { margin: 15px 0; width: 100%; }
+		#sitemap .tier .trails .trail { fill: none; stroke: #ddd; stroke-width: 4; stroke-linecap: round; -webkit-transition: stroke linear 150ms; }
+		#sitemap .tier .trails .trail.hover { stroke: #6eb1db; }
 
-		#sitemap .page.home { display: block; position: relative; margin: 0 auto; }
-		#sitemap .page img { display: block; position: relative; margin: 0 4px; border-radius: 3px; width: 150px; height: 200px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 5px 8px -5px rgba(0,0,0,0.5); }
+		#sitemap .tier .nodes { position: relative; height: 178px; }
+		#sitemap .tier .nodes .node { position: absolute; z-index: 1; top: 0; margin: 0 -75px; width: 150px; height: 178px; }
+		#sitemap .tier .nodes .node .title { margin-top: 10px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-transition: color 150ms linear; }
+		#sitemap .tier .nodes .node:not(:hover):not(.sel) .title { color: #666; }
+		#sitemap .tier .nodes .node:hover,
+		#sitemap .tier .nodes .node.sel { color: #2d98db; text-decoration: none; cursor: pointer; }
 
-		#sitemap .section .pages { border: 2px solid #ccc; border-radius: 5px; height: 196px; background: rgba(219,219,219,0.66); }
-		#sitemap .section .pages img { display: block; float: left; margin: 10px 0 0 10px; width: 62px; height: 83px; -webkit-box-shadow: 0 1px 2px 0 rgba(0,0,0,0.25); }
+		#sitemap .tier .nodes .node .page,
+		#sitemap .tier .nodes .node .section {  -webkit-transition: -webkit-box-shadow 150ms linear; }
+		#sitemap .tier .nodes .node:hover .page,
+		#sitemap .tier .nodes .node.sel .page,
+		#sitemap .tier .nodes .node:hover .section,
+		#sitemap .tier .nodes .node.sel .section { -webkit-box-shadow: 0 0 0 1px #6eb1db, 0 0 10px rgba(55,156,219,0.5); }
 
-		#sitemap .trails { width: 100%; }
-		#sitemap .trails .trail { fill: none; stroke: #ccc; stroke-width: 2; }
+		#sitemap .tier .nodes .node .page { display: block; margin: 0 auto; border-radius: 3px; width: 115px; height: 150px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -5px rgba(0,0,0,0.5); }
+
+		#sitemap .tier .nodes .node .section { border-radius: 75px; border: 5px solid #fff; width: 140px; height: 140px; background: #ccc; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15); }
+		#sitemap .tier .nodes .node .section .pages { border-radius: 70px; padding: 25px 0; width: 140px; height: 90px; overflow: hidden; }
+		#sitemap .tier .nodes .node .section .effects { display: block; position: absolute; top: 5px; left: 5px; border-radius: 70px; width: 140px; height: 140px; content: '.'; text-indent: -100%; background: -webkit-linear-gradient(transparent, rgba(0,0,0,0.25)); overflow: hidden; -webkit-box-shadow: inset 0 1px 5px rgba(0,0,0,0.5); }
+		/*#sitemap .tier .nodes .node .section .effects:after { position: absolute; top: -10px; left: 20px; display: block; border-radius: 50px; width: 100px; height: 100px; content: '.'; text-indent: -100%; overflow: hidden; background: -webkit-linear-gradient(#fff, rgba(255,255,255,0)); -webkit-transform: scaleY(0.75); }*/
+		#sitemap .tier .nodes .node .section img { display: block; float: left; margin-left: 5px; width: 69px; height: 90px; -webkit-box-shadow: 0 1px 2px 0 rgba(0,0,0,0.25); }
+
+		#sitemap .tier .nodes #home { position: static; margin: 0 auto 15px; }
 	</style>
 {/region}
 
@@ -34,46 +43,61 @@
 
 	<div id="sitemap">
 
-		<a class="page home">
-			<img src="{:b.url.resource}images/screenshots/Home.png" />
-			<div class="title"><span>Home</span></div>
-		</a>
+		<div class="tier">
+			<div class="nodes">
+				<a id="home" class="node">
+					<img class="page" src="{:b.url.resource}images/screenshots/Home.png" />
+					<div class="title">Home</div>
+				</a>
+			</div>
+		</div>
 
 		<div class="tier" id="tier">
-			<div class="section">
-				<div class="pages">
-					<img src="{:b.url.resource}images/screenshots/CaseStudies/Agency.png" />
-					<img src="{:b.url.resource}images/screenshots/CaseStudies/Navy.png" />
-					<img src="{:b.url.resource}images/screenshots/CaseStudies/REDI.png" />
+			<div class="nodes">
+				<div class="node">
+					<div class="section">
+						<div class="pages">
+							<img src="{:b.url.resource}images/screenshots/CaseStudies/Agency.png" style="margin-left: -39px" />
+							<img src="{:b.url.resource}images/screenshots/CaseStudies/Navy.png" />
+							<img src="{:b.url.resource}images/screenshots/CaseStudies/REDI.png" style="margin-right: -39px" />
+						</div>
+						<div class="effects"></div>
+					</div>
+					<div class="title">Case Studies</div>
 				</div>
-				<div class="title"><span>Case Studies</span></div>
-			</div>
 
-			<div class="section">
-				<div class="pages">
-					<img src="{:b.url.resource}images/screenshots/UI/Chimaeric.png" />
-					<img src="{:b.url.resource}images/screenshots/UI/Pure.png" />
-					<img src="{:b.url.resource}images/screenshots/UI/MessageMarker.png" />
+				<div class="node">
+					<div class="section">
+						<div class="pages">
+							<img src="{:b.url.resource}images/screenshots/UI/Chimaeric.png" style="margin-left: -39px" />
+							<img src="{:b.url.resource}images/screenshots/UI/Pure.png" />
+							<img src="{:b.url.resource}images/screenshots/UI/MessageMarker.png" style="margin-right: -39px" />
+						</div>
+						<div class="effects"></div>
+					</div>
+					<div class="title">Design &amp; User Interface</div>
 				</div>
-				<div class="title"><span>Design &amp; User Interface</span></div>
-			</div>
 
-			<a class="page">
-				<img src="{:b.url.resource}images/screenshots/Services.png" />
-				<div class="title"><span>Services</span></div>
-			</a>
+				<a class="node">
+					<img class="page" src="{:b.url.resource}images/screenshots/Services.png" />
+					<div class="title">Services</div>
+				</a>
 
-			<a class="page">
-				<img src="{:b.url.resource}images/screenshots/About.png" />
-				<div class="title"><span>About</span></div>
-			</a>
+				<a class="node">
+					<img class="page" src="{:b.url.resource}images/screenshots/About.png" />
+					<div class="title">About</div>
+				</a>
 
-			<div class="section">
-				<div class="pages">
-					<img src="{:b.url.resource}images/screenshots/Blog/Usability.png" />
-					<img src="{:b.url.resource}images/screenshots/Blog/HelloWorld.png" />
+				<div class="node">
+					<div class="section">
+						<div class="pages">
+							<img src="{:b.url.resource}images/screenshots/Blog/Usability.png" style="margin-left: -2px" />
+							<img src="{:b.url.resource}images/screenshots/Blog/HelloWorld.png" style="margin-right: -2px" />
+						</div>
+						<div class="effects"></div>
+					</div>
+					<div class="title">Blog</div>
 				</div>
-				<div class="title"><span>Blog</span></div>
 			</div>
 		</div>
 	</div>

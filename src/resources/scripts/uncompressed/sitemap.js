@@ -1,232 +1,293 @@
 (function($) {
 
 
+var SiteMap = b.Base.extend({
+
+	tiers: null,
+	windowWidth: null,
+	trailCurveWidth: null,
+	maxVisibleNodes: null,
+
+	init: function()
+	{
+		this.tiers = [];
+		this.onWindowResize();
+		this.addListener(b.$window, 'resize', 'onWindowResize');
+	},
+
+	getMaxVisibleNodes: function()
+	{
+		var maxVisibleNodes = Math.floor((b.$window.width()-SiteMap.minElementMargin) / (SiteMap.elementWidth+SiteMap.minElementMargin));
+		if (maxVisibleNodes < 1)
+			maxVisibleNodes = 1;
+		return maxVisibleNodes;
+	},
+
+	onWindowResize: function()
+	{
+		if (this.windowWidth !== (this.windowWidth = b.$window.width()))
+		{
+			// Update the trail curve width based on the new window width
+			this.trailCurveWidth = 100 * SiteMap.trailCurveRadius / this.windowWidth;
+
+			// Check to see if the max visible nodes has changed
+			if (this.maxVisibleNodes !== (this.maxVisibleNodes = this.getMaxVisibleNodes()))
+			{
+				for (var i = 0; i < this.tiers.length; i++)
+					this.tiers[i].positionNodes();
+			}
+		}
+	}
+
+}, {
+	tierHeight: 293,
+	elementWidth: 150,
+	minElementMargin: 25,
+	svgNS: 'http://www.w3.org/2000/svg',
+	svgMidpoint: 45,
+	svgHeight: 80,
+	trailCurveRadius: 20
+});
+
+
+var siteMap = new SiteMap();
+
+
+
 b.Tier = b.Base.extend({
 
 	$container: null,
-	$trailContainer: $(),
-	totalElements: null,
-	elements: null,
-	trails: null,
-	elementsPerRow: null,
-	totalRows: null,
+	$trailContainer: null,
+	$nodeContainer: null,
+	trailHead: null,
+	totalNodes: null,
+	totalVisibleNodes: null,
+	nodes: null,
 
-	init: function(container)
+	init: function(container, animate)
 	{
+		siteMap.tiers.push(this);
+
 		this.$container = $(container);
+		this.$nodeContainer = this.$container.children('.nodes:first');
+		this.$trailContainer = $('<svg xmlns="'+SiteMap.svgNS+'" version="1.1" class="trails" viewBox="0 0 100 '+SiteMap.svgHeight+'" style="height: '+SiteMap.svgHeight+'px" preserveAspectRatio="none"/>').prependTo(this.$container);
 
-		var $elements = this.$container.children();
-		this.totalElements = $elements.length;
+		// Create the trail head
+		this.trailHead = document.createElementNS(SiteMap.svgNS, 'path');
+		this.trailHead.setAttributeNS(null, 'class', 'trail');
+		this.trailHead.setAttributeNS(null, 'vector-effect', 'non-scaling-stroke');
+		this.$trailContainer[0].appendChild(this.trailHead);
 
-		this.$trailContainer = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="trails" viewBox="0 0 100 100" preserveAspectRatio="none">'
-			+   '<line class="trail" x1="50" y1="28" x2="50" y2="'+(50-b.Tier.pathCurveRadius)+'" vector-effect="non-scaling-stroke"/>'
-			+ '</svg>').prependTo(this.$container);
+		// Find the nodes
+		var $nodes = this.$nodeContainer.children();
+		this.totalNodes = $nodes.length;
 
-		this.elements = [];
-		this.trails = [];
-
-		for (var i = 0; i < this.totalElements; i++)
+		// Initialize the nodes
+		this.nodes = [];
+		for (var i = 0; i < this.totalNodes; i++)
 		{
-			var $element = $($elements[i]),
-				//$dot = $('<svg xmlns="'+b.Tier.svgNS+'" version="1.1" class="dot"><circle cx="2" cy="2" r="2"/></svg>').prependTo($element),
-				path = document.createElementNS(b.Tier.svgNS, 'path');
-
-			path.setAttributeNS(null, 'class', 'trail');
-			path.setAttributeNS(null, 'vector-effect', 'non-scaling-stroke');
-			this.$trailContainer[0].appendChild(path);
-
-			this.elements.push($element);
-			this.trails.push({ path: path });
+			var node = new b.Node(this, $nodes[i], i);
+			this.nodes.push(node);
 		}
 
-		this.positionElements();
-		this.addListener(b.$window, 'resize', 'positionElements');
+		this.positionNodes(animate);
 	},
 
-	positionElements: function()
+	positionNodes: function(animate)
 	{
-		var animate = (this.elementsPerRow !== null);
+		this.trailHead.setAttributeNS(null, 'd', 'M 50,2 V '+(SiteMap.svgMidpoint - SiteMap.trailCurveRadius));
 
-		var elementsPerRow = Math.floor((b.$window.width()-b.Tier.minElementMargin) / (b.Tier.elementWidth+b.Tier.minElementMargin));
+		this.totalVisibleNodes = Math.min(siteMap.maxVisibleNodes, this.totalNodes);
+		this.gap = 100 / (this.totalVisibleNodes+1);
 
-		if (elementsPerRow < 1)
-			elementsPerRow = 1;
-		else if (elementsPerRow > this.totalElements)
-			elementsPerRow = this.totalElements;
-
-		var totalRows = Math.ceil(this.totalElements / elementsPerRow);
-		if (totalRows !== this.totalRows)
+		for (var i = 0; i < this.totalVisibleNodes; i++)
 		{
-			this.totalRows = totalRows;
+			var x = this.gap + this.gap * i;
+			this.nodes[i].setPosition(x, animate);
+		}
 
-			// Reset the height of the svg
-			var height = 100 + ((this.totalRows-1) * 250);
+		for (var i = this.totalVisibleNodes; i < this.totalNodes; i++)
+		{
+			this.nodes[i].hide();
+		}
+	}
 
-			if (animate)
+});
+
+
+b.Node = b.Base.extend({
+
+	tier: null,
+	$elem: null,
+	$trail: null,
+	index: null,
+	pos: null,
+	type: null,
+
+	init: function(tier, elem, index)
+	{
+		this.tier = tier;
+		this.$elem = $(elem);
+		this.index = index;
+
+		var trail = document.createElementNS(SiteMap.svgNS, 'path');
+		trail.setAttributeNS(null, 'class', 'trail');
+		trail.setAttributeNS(null, 'vector-effect', 'non-scaling-stroke');
+		this.tier.$trailContainer[0].appendChild(trail);
+		this.$trail = $(trail);
+
+		this.addListener(this.$elem, 'click', 'onClick');
+	},
+
+	getSiblings: function()
+	{
+		var siblings = [];
+		for (var i = 0; i < this.tier.totalNodes; i++)
+		{
+			var node = this.tier.nodes[i];
+			if (node != this)
+				siblings.push(node);
+		}
+		return siblings;
+	},
+
+	onClick: function()
+	{
+		//this.tier.$trailContainer[0].appendChild(this.$trail[0]);
+		//this.tier.$trailContainer[0].appendChild(this.tier.trailHead);
+		//this.$trail[0].setAttributeNS(null, 'class', 'trail hover');
+		//this.tier.trailHead.setAttributeNS(null, 'class', 'trail hover');
+		//this.$elem.addClass('sel');
+
+		
+
+		// Animate the element to the center
+		var posDiff = 50-this.pos,
+			siblings = this.getSiblings();
+
+		this.$elem.animate({
+			left: '50%'
+		}, {
+			duration: 'fast',
+
+			step: $.proxy(function(now, fx) {
+				this.setTrailPosition(now);
+
+				var nowPosDiff = posDiff * fx.pos,
+					//opacity = 0.15 + 0.85*(1 - fx.pos);
+					opacity = 1 - fx.pos;
+
+				for (var i = 0; i < siblings.length; i++)
+				{
+					var sibling = siblings[i],
+						siblingPos = sibling.pos + nowPosDiff;
+					sibling.$elem.css({
+						opacity: opacity,
+						left: siblingPos+'%'
+					});
+					sibling.$trail.css({
+						opacity: opacity
+					});
+					sibling.setTrailPosition(siblingPos);
+				}
+			}, this),
+
+			complete: $.proxy(function()
 			{
-				this.$trailContainer.animate({ height: height }, {
+				// Scroll the new tier into the middle of the screen
+				var heightDiff = b.$window.height() - b.$body.outerHeight(),
+					padding = heightDiff + SiteMap.tierHeight,
+					scrollTop = b.$body.scrollTop();
+				b.$body.css('padding-bottom', padding);
+				b.$body.animate({
+					scrollTop: (scrollTop + SiteMap.tierHeight)
+				}, {
 					duration: 'fast',
-					step: $.proxy(function(now)
-					{
-						this.$trailContainer[0].setAttributeNS(null, 'viewBox', '0 0 100 '+now);
+					complete: $.proxy(function() {
+						var $newTier = $('<div class="tier"/>').insertAfter(this.tier.$container),
+							$newNodes = $('<div class="nodes"/>').appendTo($newTier);
+
+						var newPages = [
+							{ title: 'Chimaeric', image: 'Chimaeric.png' },
+							{ title: 'Pure', image: 'Pure.png' },
+							{ title: 'Message Marker Application', image: 'MessageMarker.png' }
+							//{ title: 'Concrete5 Custom Admin', image: 'Concrete5.png' },
+							//{ title: 'Absolute Restoration', image: 'AbsoluteRestoration.png' }
+						];
+
+						for (var i = 0; i < newPages.length; i++)
+						{
+							var $newNode = $('<div class="node"/>').appendTo($newNodes);
+							$('<img class="page" src="'+b.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
+							$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
+						}
+
+						new b.Tier($newTier, true);
 					}, this)
 				});
-			}
-			else
-			{
-				this.$trailContainer.css('height', height);
-				this.$trailContainer[0].setAttributeNS(null, 'viewBox', '0 0 100 '+height);
-			}
-		}
-
-		// Prevent an orphan when there are 4 elements and 2 rows
-		elementsPerRow = Math.ceil(this.totalElements / totalRows);
-
-		if (elementsPerRow !== this.elementsPerRow)
-		{
-			this.elementsPerRow = elementsPerRow;
-			this.gap = 100 / (elementsPerRow+1);
-
-			var row = 0,
-				elementsInRow = 0,
-				gap = this.gap;
-				console.log(gap);
-
-			for (var i = 0; i < this.totalElements; i++)
-			{
-				if (elementsInRow < this.elementsPerRow)
-					elementsInRow++;
-				else
-				{
-					row++;
-					elementsInRow = 1;
-
-					if (row == totalRows-1)
-					{
-						// Keep elements on the last row centered
-						var remainingElements = this.totalElements - i;
-						if (remainingElements < this.elementsPerRow)
-							gap = 100 / (remainingElements+1);
-					}
-				}
-
-				var $element = this.elements[i],
-					trail = this.trails[i],
-					x = gap * elementsInRow,
-					y = 100 + (250*row);
-
-				if (animate)
-					this.animateElementPosition($element, trail, x, y);
-				else
-				{
-					$element.css({ left: x+'%', top: y });
-					$element.show();
-
-					var coords = this.getTrailCoordinates(x, y);
-					this.setTrailPosition(trail, coords);
-				}
-			}
-		}
-	},
-
-	/**
-	 * Returns the path's point coordinates based on a target position.
-	 * @param int x
-	 * @param int y
-	 */
-	getTrailCoordinates: function(x, y)
-	{
-		var coords = { x: x, y: y };
-
-		// Is the element in the middle, and would a straght line would intersect other elements?
-		if (x == 50 && y != 100 && this.elementsPerRow % 2 == 1)
-		{
-			// Should we bend it to the left or the right?
-			var dir = (((y-100)/250 % 2 == 0) ? -1 : 1);
-
-			coords.midX = 50 + ((this.gap/2)*dir);
-			coords.midY1 = 50;
-			coords.midY2 = y/2;
-		}
-		else
-		{
-			coords.midX = 50 + ((x-50)/2);
-			coords.midY1 = coords.midY2 = y/2;
-		}
-
-		return coords;
-	},
-
-	/**
-	 * Animate an element and its trail path to a position.
-	 * @param jQuery $element
-	 * @param object trail
-	 * @param int targetX
-	 * @param int targetY
-	 */
-	animateElementPosition: function($element, trail, targetX, targetY)
-	{
-		var oldCoords = $.extend({}, trail.coords),
-			targetCoords = this.getTrailCoordinates(targetX, targetY),
-			coordDiffs = {};
-
-		for (var i in targetCoords)
-		{
-			coordDiffs[i] = targetCoords[i] - trail.coords[i];
-		}
-
-		var lastPos = 0;
-		$element.animate({ left: targetX+'%', top: targetY }, {
-			duration: 'fast',
-			step: $.proxy(function(now, fx)
-			{
-				// step() gets called once for each property being animated
-				// so make sure we're only updating the path once per step
-				if (fx.pos !== lastPos)
-				{
-					var coords = {};
-					for (var i in targetCoords)
-					{
-						coords[i] = oldCoords[i] + (coordDiffs[i] * fx.pos);
-					}
-
-					this.setTrailPosition(trail, coords);
-
-					lastPos = fx.pos;
-				}
 			}, this)
 		});
 	},
 
-	/**
-	 * Sets a trail path's position.
-	 * @param object trail
-	 * @param object coords
-	 */
-	setTrailPosition: function(trail, coords)
+	setPosition: function(pos, animate)
 	{
-		var curveWidth = (coords.x == 50 ? 0 : ((coords.x < 50 ? -1 : 1) * (this.$container.width()/100)/(100/b.Tier.pathCurveRadius))),
-			x2 = 50 + curveWidth,
-			x3 = coords.x - curveWidth,
-			y0 = 50 - b.Tier.pathCurveRadius,
-			y2 = 28 + Math.round((coords.y - 38)/2),
-			y1 = y2 - b.Tier.pathCurveRadius,
-			y3 = y2 + b.Tier.pathCurveRadius,
-			y4 = coords.y - 10,
-			d = 'M 50,'+y0+' V '+y1+' Q 50,'+y2+' '+x2+','+y2+' H '+x3+' Q '+coords.x+','+y2+' '+coords.x+','+y3+' V '+y4;
-		trail.path.setAttributeNS(null, 'd', d);
+		this.pos = pos;
 
-		// Save the coordinates for later
-		trail.coords = coords;
+		this.$elem.show();
+
+		if (animate)
+		{
+			this.$elem.css({
+				opacity: 0,
+				top: -100,
+				left: '50%'
+			});
+			this.$trail.css('opacity', 0);
+			this.setTrailPosition(50);
+
+			this.$elem.animate({
+				top: 0,
+				left: this.pos+'%'
+			}, {
+				duration: 'fast',
+
+				step: $.proxy(function(now, fx)
+				{
+					this.$elem.css('opacity', fx.pos);
+					this.$trail.css('opacity', fx.pos);
+					this.setTrailPosition(now);
+				}, this)
+			});
+		}
+		else
+		{
+			this.$elem.css('left', this.pos+'%');
+			this.setTrailPosition(this.pos);
+		}
+	},
+
+	setTrailPosition: function(x)
+	{
+		// Set the trail position
+		var xDiff = Math.abs(x - 50),
+			curveWidth = (x < 50 ? -1 : 1) * ((xDiff < siteMap.trailCurveWidth * 2) ? (xDiff / 2) : siteMap.trailCurveWidth),
+			x2 = 50 + curveWidth,
+			x3 = x - curveWidth,
+			y0 = 50 - SiteMap.trailCurveRadius,
+			y1 = SiteMap.svgMidpoint - SiteMap.trailCurveRadius,
+			y3 = SiteMap.svgMidpoint + SiteMap.trailCurveRadius,
+			d = 'M 50,'+y1+' Q 50,'+SiteMap.svgMidpoint+' '+x2+','+SiteMap.svgMidpoint+' H '+x3+' Q '+x+','+SiteMap.svgMidpoint+' '+x+','+y3+' V '+(SiteMap.svgHeight-2);
+		this.$trail[0].setAttributeNS(null, 'd', d);
+	},
+
+	hide: function()
+	{
+		this.$elem.hide();
+		this.$trail.hide();
 	}
 
-},
-{
-	svgNS: 'http://www.w3.org/2000/svg',
-	elementWidth: 158,
-	minElementMargin: 25,
-	pathCurveRadius: 6
 });
+
 
 
 })(jQuery);
