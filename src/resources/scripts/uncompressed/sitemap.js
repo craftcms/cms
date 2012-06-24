@@ -159,8 +159,6 @@ blx.Node = blx.Base.extend({
 		//this.tier.trailHead.setAttributeNS(null, 'class', 'trail hover');
 		//this.$elem.addClass('sel');
 
-		
-
 		// Animate the element to the center
 		var posDiff = 50-this.pos,
 			siblings = this.getSiblings();
@@ -194,37 +192,36 @@ blx.Node = blx.Base.extend({
 
 			complete: $.proxy(function()
 			{
-				// Scroll the new tier into the middle of the screen
-				var heightDiff = blx.$window.height() - blx.$body.outerHeight(),
-					padding = heightDiff + SiteMap.tierHeight,
-					scrollTop = blx.$body.scrollTop();
-				blx.$body.css('padding-bottom', padding);
-				blx.$body.animate({
-					scrollTop: (scrollTop + SiteMap.tierHeight)
-				}, {
-					duration: 'fast',
-					complete: $.proxy(function() {
-						var $newTier = $('<div class="tier"/>').insertAfter(this.tier.$container),
-							$newNodes = $('<div class="nodes"/>').appendTo($newTier);
+				setTimeout($.proxy(function() {
+					// Scroll the new tier into the middle of the screen
+					var heightDiff = blx.$window.height() - blx.$body.outerHeight(),
+						padding = heightDiff + SiteMap.tierHeight,
+						scrollTop = blx.$body.scrollTop();
+					blx.$body.css('padding-bottom', padding);
+					blx.$body.animate({
+						scrollTop: (scrollTop + SiteMap.tierHeight)
+					}, 'fast');
 
-						var newPages = [
-							{ title: 'Chimaeric', image: 'Chimaeric.png' },
-							{ title: 'Pure', image: 'Pure.png' },
-							{ title: 'Message Marker Application', image: 'MessageMarker.png' }
-							//{ title: 'Concrete5 Custom Admin', image: 'Concrete5.png' },
-							//{ title: 'Absolute Restoration', image: 'AbsoluteRestoration.png' }
-						];
+					var $newTier = $('<div class="tier"/>').insertAfter(this.tier.$container),
+						$newNodes = $('<div class="nodes"/>').appendTo($newTier);
 
-						for (var i = 0; i < newPages.length; i++)
-						{
-							var $newNode = $('<div class="node"/>').appendTo($newNodes);
-							$('<img class="page" src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
-							$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
-						}
+					var newPages = [
+						{ title: 'Chimaeric', image: 'Chimaeric.png' },
+						{ title: 'Pure', image: 'Pure.png' },
+						{ title: 'Message Marker Application', image: 'MessageMarker.png' }
+						//{ title: 'Concrete5 Custom Admin', image: 'Concrete5.png' },
+						//{ title: 'Absolute Restoration', image: 'AbsoluteRestoration.png' }
+					];
 
-						new blx.Tier($newTier, true);
-					}, this)
-				});
+					for (var i = 0; i < newPages.length; i++)
+					{
+						var $newNode = $('<div class="node"/>').appendTo($newNodes);
+						$('<img class="page" src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
+						$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
+					}
+
+					new blx.Tier($newTier, true);
+				}, this), 250);
 			}, this)
 		});
 	},
@@ -239,21 +236,20 @@ blx.Node = blx.Base.extend({
 		{
 			this.$elem.css({
 				opacity: 0,
-				top: -100,
 				left: '50%'
 			});
 			this.$trail.css('opacity', 0);
 			this.setTrailPosition(50);
 
 			this.$elem.animate({
-				top: 0,
+				opacity: 1,
 				left: this.pos+'%'
 			}, {
 				duration: 'fast',
 
 				step: $.proxy(function(now, fx)
 				{
-					this.$elem.css('opacity', fx.pos);
+					//this.$elem.css('opacity', fx.pos);
 					this.$trail.css('opacity', fx.pos);
 					this.setTrailPosition(now);
 				}, this)
