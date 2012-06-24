@@ -32,6 +32,4 @@ class AppVariable
 	{
 		return Product::display(Blocks::getProduct());
 	}
-
-
 }

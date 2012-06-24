@@ -14,6 +14,7 @@ abstract class BaseForm extends \CFormModel
 	 * Attribute Setter
 	 * @param string $name
 	 * @param mixed  $value
+	 * @return mixed|void
 	 * @throws Exception
 	 */
 	function __set($name, $value)
@@ -28,7 +29,7 @@ abstract class BaseForm extends \CFormModel
 	 * Attribute Setter
 	 * @param string $name
 	 * @throws Exception
-	 * @return null
+	 * @return mixed|null
 	 */
 	function __get($name)
 	{

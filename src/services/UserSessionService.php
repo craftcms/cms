@@ -23,7 +23,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function loginRequired()
 	{
-		$app = b();
+		$app = blx();
 		$request = $app->getRequest();
 
 		if (!$request->getIsAjaxRequest())
@@ -34,7 +34,7 @@ class UserSessionService extends \CWebUser
 		elseif (isset($this->loginRequiredAjaxResponse))
 		{
 			echo $this->loginRequiredAjaxResponse;
-			b()->end();
+			blx()->end();
 		}
 
 		if (($url = $this->loginUrl) !== null)
@@ -63,7 +63,7 @@ class UserSessionService extends \CWebUser
 		{
 			$authSessionToken = $states['authSessionToken'];
 
-			$user = b()->users->getUserById($id);
+			$user = blx()->users->getUserById($id);
 
 			if ($user === null || $user->auth_session_token !== $authSessionToken)
 			{
@@ -87,8 +87,8 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->getIsLoggedIn() && !$fromCookie)
 		{
-			b()->users->getCurrentUser()->last_login_date = DateTimeHelper::currentTime();
-			b()->users->getCurrentUser()->save();
+			blx()->users->getCurrentUser()->last_login_date = DateTimeHelper::currentTime();
+			blx()->users->getCurrentUser()->save();
 		}
 	}
 
@@ -103,7 +103,7 @@ class UserSessionService extends \CWebUser
 	*/
 	protected function saveToCookie($duration)
 	{
-		$app = b();
+		$app = blx();
 		$cookie = $this->createIdentityCookie($this->getStateKeyPrefix());
 		$cookie->expire = time() + $duration;
 		$cookie->httpOnly = true;
@@ -271,9 +271,9 @@ class UserSessionService extends \CWebUser
 	/**
 	 * @return string
 	 */
-	public function getRememeberedUsername()
+	public function getRememberedUsername()
 	{
-		return (isset(b()->request->cookies['username'])) ? b()->request->cookies['username']->value : null;
+		return (isset(blx()->request->cookies['username'])) ? blx()->request->cookies['username']->value : null;
 	}
 
 	/**
@@ -281,6 +281,6 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return b()->users->getRemainingCooldownTime(b()->users->getCurrentUser());
+		return blx()->users->getRemainingCooldownTime(blx()->users->getCurrentUser());
 	}
 }

@@ -1,4 +1,5 @@
 <?php
+namespace Blocks;
 
 /**
  * IDNA URL encoder

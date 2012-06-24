@@ -1,4 +1,6 @@
 <?php
+namespace Blocks;
+
 /**
  * HTTP response class
  *

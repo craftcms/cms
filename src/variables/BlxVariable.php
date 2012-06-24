@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Contains all global variables.
  */
-class BVariable
+class BlxVariable
 {
 	/**
 	 * @param $name
@@ -12,12 +12,12 @@ class BVariable
 	 */
 	public function __get($name)
 	{
-		$plugin = b()->plugins->getPlugin($name);
+		$plugin = blx()->plugins->getPlugin($name);
 
 		if ($plugin && $plugin->enabled)
 		{
 			$pluginName = $plugin->getClassHandle();
-			$path = b()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
+			$path = blx()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
 
 			if (File::fileExists($path))
 			{
@@ -33,7 +33,7 @@ class BVariable
 	 */
 	public function app()
 	{
-		return new AppVariable;
+		return new AppVariable();
 	}
 
 	/**
@@ -41,7 +41,7 @@ class BVariable
 	 */
 	public function assets()
 	{
-		return new AssetsVariable;
+		return new AssetsVariable();
 	}
 
 	/**
@@ -49,7 +49,7 @@ class BVariable
 	 */
 	public function config()
 	{
-		return new ConfigVariable;
+		return new ConfigVariable();
 	}
 
 	/**
@@ -57,7 +57,7 @@ class BVariable
 	 */
 	public function content()
 	{
-		return new ContentVariable;
+		return new ContentVariable();
 	}
 
 	/**
@@ -65,7 +65,7 @@ class BVariable
 	 */
 	public function contentblocks()
 	{
-		return new ContentBlocksVariable;
+		return new ContentBlocksVariable();
 	}
 
 	/**
@@ -73,7 +73,7 @@ class BVariable
 	 */
 	public function cp()
 	{
-		return new CpVariable;
+		return new CpVariable();
 	}
 
 	/**
@@ -81,7 +81,7 @@ class BVariable
 	 */
 	public function dashboard()
 	{
-		return new DashboardVariable;
+		return new DashboardVariable();
 	}
 
 	/**
@@ -89,7 +89,7 @@ class BVariable
 	 */
 	public function date()
 	{
-		return new DateVariable;
+		return new DateVariable();
 	}
 
 	/**
@@ -97,7 +97,7 @@ class BVariable
 	 */
 	public function email()
 	{
-		return new EmailVariable;
+		return new EmailVariable();
 	}
 
 	/**
@@ -105,7 +105,7 @@ class BVariable
 	 */
 	public function plugins()
 	{
-		return new PluginsVariable;
+		return new PluginsVariable();
 	}
 
 	/**
@@ -113,7 +113,7 @@ class BVariable
 	 */
 	public function request()
 	{
-		return new RequestVariable;
+		return new RequestVariable();
 	}
 
 	/**
@@ -121,7 +121,7 @@ class BVariable
 	 */
 	public function sites()
 	{
-		return new SitesVariable;
+		return new SitesVariable();
 	}
 
 	/**
@@ -129,7 +129,7 @@ class BVariable
 	 */
 	public function updates()
 	{
-		return new UpdatesVariable;
+		return new UpdatesVariable();
 	}
 
 	/**
@@ -137,7 +137,7 @@ class BVariable
 	 */
 	public function url()
 	{
-		return new UrlVariable;
+		return new UrlVariable();
 	}
 
 	/**
@@ -145,7 +145,7 @@ class BVariable
 	 */
 	public function users()
 	{
-		return new UsersVariable;
+		return new UsersVariable();
 	}
 
 	/**
@@ -153,7 +153,7 @@ class BVariable
 	 */
 	public function security()
 	{
-		return new SecurityVariable;
+		return new SecurityVariable();
 	}
 
 	/**
@@ -161,7 +161,7 @@ class BVariable
 	 */
 	public function session()
 	{
-		return new SessionVariable;
+		return new SessionVariable();
 	}
 
 	/**
@@ -169,6 +169,6 @@ class BVariable
 	 */
 	public function httpstatus()
 	{
-		return new HttpStatusVariable;
+		return new HttpStatusVariable();
 	}
 }

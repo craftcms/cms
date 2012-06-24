@@ -31,12 +31,15 @@ class ModelHelper
 		{
 			$type = is_string($settings) ? $settings : (isset($settings['type']) ? $settings['type'] : null);
 
-			// Catch handles, email addresses and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
+			// Catch handles, email addresses, languages and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
 			if ($type == AttributeType::Handle)
 			{
 				$reservedWords = isset($settings['reservedWords']) ? ArrayHelper::stringToArray($settings['reservedWords']) : array();
 				$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => $reservedWords);
 			}
+
+			if ($type == AttributeType::Language)
+				$rules[] = array($name, 'Blocks\LanguageValidator');
 
 			if ($type == AttributeType::Email)
 				$emails[] = $name;

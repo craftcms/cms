@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Handle Generator
  */
-b.ui.HandleGenerator = b.ui.InputGenerator.extend({
+blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -15,7 +14,7 @@ b.ui.HandleGenerator = b.ui.InputGenerator.extend({
 		handle = handle.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		handle = b.asciiString(handle);
+		handle = blx.asciiString(handle);
 
 		// Remove any non alphanumeric characters
 		handle = handle.replace(/[^a-z0-9]+/g, '');
@@ -26,6 +25,5 @@ b.ui.HandleGenerator = b.ui.InputGenerator.extend({
 		return handle;
 	}
 });
-
 
 })(jQuery);

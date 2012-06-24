@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Light Switch
  */
-b.ui.LightSwitch = b.Base.extend({
+blx.ui.LightSwitch = blx.Base.extend({
 
 	settings: null,
 	$outerContainer: null,
@@ -23,13 +22,13 @@ b.ui.LightSwitch = b.Base.extend({
 		// Is this already a switch?
 		if (this.$outerContainer.data('lightswitch'))
 		{
-			b.log('Double-instantiating a switch on an element');
+			blx.log('Double-instantiating a switch on an element');
 			this.$outerContainer.data('lightswitch').destroy();
 		}
 
 		this.$outerContainer.data('lightswitch', this);
 
-		this.setSettings(settings, b.ui.LightSwitch.defaults);
+		this.setSettings(settings, blx.ui.LightSwitch.defaults);
 
 		this.$innerContainer = this.$outerContainer.find('.container:first');
 		this.$input = this.$outerContainer.find('input:first');
@@ -37,11 +36,11 @@ b.ui.LightSwitch = b.Base.extend({
 
 		this.on = this.$outerContainer.hasClass('on');
 
-		b.preventOutlineOnMouseFocus(this.$outerContainer);
+		blx.preventOutlineOnMouseFocus(this.$outerContainer);
 		this.addListener(this.$innerContainer, 'mousedown', '_onMouseDown');
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
-		this.dragger = new b.ui.DragCore(this.$innerContainer, {
+		this.dragger = new blx.ui.DragCore(this.$innerContainer, {
 			axis: 'x',
 			ignoreButtons: false,
 			onDragStart: $.proxy(this, '_onDragStart'),
@@ -68,7 +67,7 @@ b.ui.LightSwitch = b.Base.extend({
 
 	turnOff: function()
 	{
-		this.$innerContainer.stop().animate({marginLeft: b.ui.LightSwitch.offMargin}, 'fast');
+		this.$innerContainer.stop().animate({marginLeft: blx.ui.LightSwitch.offMargin}, 'fast');
 		this.$input.val('');
 		this.on = false;
 		this.settings.onChange();
@@ -86,12 +85,12 @@ b.ui.LightSwitch = b.Base.extend({
 
 	_onMouseDown: function()
 	{
-		this.addListener(b.$document, 'mouseup', '_onMouseUp')
+		this.addListener(blx.$document, 'mouseup', '_onMouseUp')
 	},
 
 	_onMouseUp: function()
 	{
-		this.removeListener(b.$document, 'mouseup');
+		this.removeListener(blx.$document, 'mouseup');
 
 		// Was this a click?
 		if (!this.dragger.dragging)
@@ -102,15 +101,15 @@ b.ui.LightSwitch = b.Base.extend({
 	{
 		switch (event.keyCode)
 		{
-			case b.SPACE_KEY:
+			case blx.SPACE_KEY:
 				this.toggle();
 				event.preventDefault();
 				break;
-			case b.RIGHT_KEY:
+			case blx.RIGHT_KEY:
 				this.turnOn();
 				event.preventDefault();
 				break;
-			case b.LEFT_KEY:
+			case blx.LEFT_KEY:
 				this.turnOff();
 				event.preventDefault();
 				break;
@@ -131,8 +130,8 @@ b.ui.LightSwitch = b.Base.extend({
 	{
 		var margin = this.dragStartMargin + this.dragger.mouseDistX;
 
-		if (margin < b.ui.LightSwitch.offMargin)
-			margin = b.ui.LightSwitch.offMargin;
+		if (margin < blx.ui.LightSwitch.offMargin)
+			margin = blx.ui.LightSwitch.offMargin;
 		else if (margin > 0)
 			margin = 0;
 
@@ -162,7 +161,6 @@ b.ui.LightSwitch = b.Base.extend({
 	}
 });
 
-
 $.fn.lightswitch = function(settings, settingName, settingValue)
 {
 	if (settings == 'settings')
@@ -186,14 +184,13 @@ $.fn.lightswitch = function(settings, settingName, settingValue)
 	return this.each(function()
 	{
 		if (!$.data(this, 'lightswitch'))
-			new b.ui.LightSwitch(this, settings);
+			new blx.ui.LightSwitch(this, settings);
 	});
 };
 
-b.$document.ready(function()
+blx.$document.ready(function()
 {
 	$('.lightswitch').lightswitch();
 });
-
 
 })(jQuery);

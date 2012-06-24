@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * HUD
  */
-b.ui.HUD = b.Base.extend({
+blx.ui.HUD = blx.Base.extend({
 
 	/**
 	 * Constructor
@@ -13,7 +12,7 @@ b.ui.HUD = b.Base.extend({
 
 		this.$trigger = $(trigger);
 		this.$contents = $(contents);
-		this.settings = $.extend({}, b.ui.HUD.defaults, settings);
+		this.settings = $.extend({}, blx.ui.HUD.defaults, settings);
 
 		this.showing = false;
 
@@ -32,8 +31,8 @@ b.ui.HUD = b.Base.extend({
 
 		if (this.showing) return;
 
-		if (b.ui.HUD.active)
-			b.ui.HUD.active.hide();
+		if (blx.ui.HUD.active)
+			blx.ui.HUD.active.hide();
 
 		this.$hud.show();
 
@@ -62,7 +61,7 @@ b.ui.HUD = b.Base.extend({
 		this.width = this.$hud.width();
 		this.height = this.$hud.height();
 
-		// get the minumum horizontal/vertical clearance needed to fit the HUD
+		// get the minimum horizontal/vertical clearance needed to fit the HUD
 		this.minHorizontalClearance = this.width + this.settings.triggerSpacing + this.settings.windowSpacing;
 		this.minVerticalClearance = this.height + this.settings.triggerSpacing + this.settings.windowSpacing;
 
@@ -109,9 +108,9 @@ b.ui.HUD = b.Base.extend({
 		// ok, which one comes the closest -- right or bottom?
 		else {
 			var rightClearanceDiff = this.minHorizontalClearance - this.rightClearance,
-				bottomCleananceDiff = this.minVerticalClearance - this.bottomClearance;
+				bottomClearanceDiff = this.minVerticalClearance - this.bottomClearance;
 
-			if (rightClearanceDiff >= bottomCleananceDiff) {
+			if (rightClearanceDiff >= bottomClearanceDiff) {
 				var left = this.windowWidth - (this.width + this.settings.windowSpacing),
 					minLeft = this.triggerOffsetLeft + this.settings.triggerSpacing;
 				if (left < minLeft) left = minLeft;
@@ -132,10 +131,10 @@ b.ui.HUD = b.Base.extend({
 		if (event.stopPropagation)
 			event.stopPropagation();
 
-		this.addListener(b.$body, 'click', 'hide');
+		this.addListener(blx.$body, 'click', 'hide');
 
 		this.showing = true;
-		b.ui.HUD.active = this;
+		blx.ui.HUD.active = this;
 
 		// onShow callback
 		this.settings.onShow();
@@ -201,23 +200,19 @@ b.ui.HUD = b.Base.extend({
 		this.$hud.hide();
 		this.showing = false;
 
-		b.ui.HUD.active = null;
+		blx.ui.HUD.active = null;
 
 		// onHide callback
 		this.settings.onHide();
 	}
-
 });
 
-
-
-b.ui.HUD.defaults = {
+blx.ui.HUD.defaults = {
 	triggerSpacing: 7,
 	windowSpacing: 20,
 	tipWidth: 8,
 	onShow: function(){},
 	onHide: function(){}
 };
-
 
 })(jQuery);

@@ -13,7 +13,7 @@ class PluginsVariable
 	 */
 	public function get($class)
 	{
-		return b()->plugins->getPlugin($class);
+		return blx()->plugins->getPlugin($class);
 	}
 
 	/**
@@ -22,6 +22,6 @@ class PluginsVariable
 	 */
 	public function all()
 	{
-		return b()->plugins->getAllPlugins(true, true);
+		return blx()->plugins->getAllPlugins(true, true);
 	}
 }

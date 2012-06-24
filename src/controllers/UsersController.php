@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles user management tasks including registering, etc., etc.
  */
-class UsersController extends Controller
+class UsersController extends BaseController
 {
 	/**
 	 * All user actions require the user to be logged in
@@ -24,7 +24,7 @@ class UsersController extends Controller
 		$this->requireAjaxRequest();
 		$this->requirePostRequest();
 
-		if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
+		if (($emailStatus = blx()->email->sendRegistrationEmail($user, $site)) == true)
 		{
 			return true;
 		}
@@ -42,64 +42,64 @@ class UsersController extends Controller
 		$existingUser = false;
 
 		// Are we editing an existing user?
-		$postUserId = b()->request->getPost('user_id');
+		$postUserId = blx()->request->getPost('user_id');
 		if ($postUserId)
 		{
 			$existingUser = true;
-			$user = b()->users->getUserById($postUserId);
+			$user = blx()->users->getUserById($postUserId);
 		}
 
 		if (empty($user))
 			$user = new User();
 
-		if (b()->request->getPost('suspend') !== null)
+		if (blx()->request->getPost('suspend') !== null)
 		{
 			$user->status = UserAccountStatus::Suspended;
 			if ($this->_processUserChange($user))
 				$this->_setMessageAndRedirect('User suspended.', MessageType::Notice);
 		}
-		else if (b()->request->getPost('validationEmail') !== null)
+		else if (blx()->request->getPost('validationEmail') !== null)
 		{
-			if (($emailStatus = b()->email->sendRegistrationEmail($user, b()->sites->getCurrentSite())) == true)
+			if (($emailStatus = blx()->email->sendRegistrationEmail($user, blx()->sites->getCurrentSite())) == true)
 				$this->_setMessageAndRedirect('Validation email sent.', MessageType::Notice);
 		}
-		else if (b()->request->getPost('unsuspend') !== null)
+		else if (blx()->request->getPost('unsuspend') !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			if ($this->_processUserChange($user))
 				$this->_setMessageAndRedirect('User unsuspended.', MessageType::Notice);
 		}
-		else if (b()->request->getPost('unlock') !== null)
+		else if (blx()->request->getPost('unlock') !== null)
 		{
 			$user->status = UserAccountStatus::Active;
 			$user->cooldown_start = null;
 			if ($this->_processUserChange($user))
 				$this->_setMessageAndRedirect('User unlocked.', MessageType::Notice);
 		}
-		else if (b()->request->getPost('delete') !== null)
+		else if (blx()->request->getPost('delete') !== null)
 		{
-			if ($user->id == b()->users->getCurrentUser()->id)
+			if ($user->id == blx()->users->getCurrentUser()->id)
 			{
 				$this->_setMessageAndRedirect('Trying to delete yourself?  It can’t be that bad.', MessageType::Notice);
 			}
 			else
 			{
-				b()->users->deleteUser($user);
+				blx()->users->deleteUser($user);
 				$this->_setMessageAndRedirect('User archived.', MessageType::Notice, 'users');
 			}
 		}
-		else if (b()->request->getPost('save') !== null)
+		else if (blx()->request->getPost('save') !== null)
 		{
-			$user->username = b()->request->getPost('username');
-			$user->first_name = b()->request->getPost('first_name');
-			$user->last_name = b()->request->getPost('last_name');
-			$user->email = b()->request->getPost('email');
-			$user->admin = (b()->request->getPost('admin') === 'y');
-			$user->html_email = (b()->request->getPost('email_format') == 'html');
-			$user->status = b()->request->getPost('status');
-			$user->password_reset_required = (b()->request->getPost('password_reset') === 'y');
+			$user->username = blx()->request->getPost('username');
+			$user->first_name = blx()->request->getPost('first_name');
+			$user->last_name = blx()->request->getPost('last_name');
+			$user->email = blx()->request->getPost('email');
+			$user->admin = (blx()->request->getPost('admin') === 'y');
+			$user->html_email = (blx()->request->getPost('email_format') == 'html');
+			$user->status = blx()->request->getPost('status');
+			$user->password_reset_required = (blx()->request->getPost('password_reset') === 'y');
 
-			$sendValidationEmail = (b()->request->getPost('send_validation_email') === 'y');
+			$sendValidationEmail = (blx()->request->getPost('send_validation_email') === 'y');
 
 			$userValidates = $user->validate();
 
@@ -107,17 +107,17 @@ class UsersController extends Controller
 			if ($user->isCurrent)
 			{
 				// Are they changing their password?
-				if (($password = b()->request->getPost('password')))
+				if (($password = blx()->request->getPost('password')))
 				{
 					// Make sure the passwords match and are at least the minimum length
-					$changePasswordForm = new PasswordForm();
-					$changePasswordForm->password = $password;
-					$changePasswordForm->confirmPassword = b()->request->getPost('confirm-password');
-					$passwordValidates = $changePasswordForm->validate();
+					$passwordForm = new PasswordForm();
+					$passwordForm->password = $password;
+					$passwordForm->confirmPassword = blx()->request->getPost('confirm-password');
+					$passwordValidates = $passwordForm->validate();
 
 					// Store the new hashed password on the User record, but don't save it yet
 					if ($passwordValidates)
-						b()->users->changePassword($user, $password, false);
+						blx()->users->changePassword($user, $password, false);
 				}
 			}
 
@@ -130,14 +130,14 @@ class UsersController extends Controller
 				}
 				else
 				{
-					$user = b()->users->registerUser($user, null, true);
+					$user = blx()->users->registerUser($user, null, true);
 
 					if ($user !== null)
 					{
 						if ($sendValidationEmail)
 						{
-							$site = b()->sites->getCurrentSite();
-							if (($emailStatus = b()->email->sendRegistrationEmail($user, $site)) == true)
+							$site = blx()->sites->getCurrentSite();
+							if (($emailStatus = blx()->email->sendRegistrationEmail($user, $site)) == true)
 							{
 								// registered and sent email
 								$this->_setMessageAndRedirect('User registered and registration email sent.', MessageType::Notice);
@@ -163,13 +163,13 @@ class UsersController extends Controller
 			}
 			else
 			{
-				b()->user->setMessage(MessageType::Error, 'Couldn’t save user.');
+				blx()->user->setMessage(MessageType::Error, 'Couldn’t save user.');
 			}
 		}
 
 		$this->loadRequestedTemplate(array(
 			'theUser' => $user,
-			'changePasswordForm' => (isset($changePasswordForm) ? $changePasswordForm : null)
+			'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
 		));
 	}
 
@@ -194,7 +194,7 @@ class UsersController extends Controller
 	 */
 	private function _setMessageAndRedirect($message, $messageStatus)
 	{
-		b()->user->setMessage($messageStatus, $message);
+		blx()->user->setMessage($messageStatus, $message);
 		$this->redirectToPostedUrl();
 	}
 }

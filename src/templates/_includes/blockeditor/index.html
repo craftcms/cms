@@ -35,7 +35,7 @@
 
 	<div class="freshblocktypesettings" style="display:none">
 		<?php $newNamePrefix = new Variable($newNamePrefix.'[settings]') ?>
-		{foreach b.contentblocks.blocktypes as blocktype}
+		{foreach blx.contentblocks.blocktypes as blocktype}
 			{set settings = blocktype.displaySettings(newIdPrefix, newNamePrefix)}
 			{if settings}
 				<div data-blocktype-class="{:blocktype.classHandle}">

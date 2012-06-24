@@ -18,7 +18,7 @@ namespace Blocks;
  * whose name is the language code (e.g. zh_cn/error500.php).
  *
  * Development templates are displayed when the application is in dev mode
- * (i.e. b()->config->devMode = true). Detailed error information with source code
+ * (i.e. blx()->config->devMode = true). Detailed error information with source code
  * are displayed in these templates. Production templates are meant to be shown
  * to end-users and are used when the application is in production mode.
  * For security reasons, they only display the error message without any
@@ -55,13 +55,13 @@ class ErrorHandler extends \CErrorHandler
 		// extra logic to log any mysql deadlocks.
 		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
 		{
-			$data = b()->db->createCommand('SHOW ENGINE INNODB STATUS')->query();
+			$data = blx()->db->createCommand('SHOW ENGINE INNODB STATUS')->query();
 			$info = $data->read();
 			$info = serialize($info);
 			Blocks::log('Deadlock error, innodb status: '.$info, \CLogger::LEVEL_ERROR, 'system.db.CDbCommand');
 		}
 
-		$app = b();
+		$app = blx();
 		if ($app instanceof \CWebApplication)
 		{
 			if (($trace = $this->getExactTrace($exception)) === null)
@@ -115,7 +115,7 @@ class ErrorHandler extends \CErrorHandler
 				header("HTTP/1.0 {$data['code']} ".get_class($exception));
 
 			// If this is an HttpException or we're not in dev mode, render the error template.
-			if ($exception instanceof \CHttpException || !b()->config->devMode)
+			if ($exception instanceof \CHttpException || !blx()->config->devMode)
 				$this->render('errors/error', $data);
 			else
 			{
@@ -165,7 +165,7 @@ class ErrorHandler extends \CErrorHandler
 			unset($trace[$i]['object']);
 		}
 
-		$app = b();
+		$app = blx();
 		if ($app instanceof \CWebApplication)
 		{
 			switch ($event->code)
@@ -207,7 +207,7 @@ class ErrorHandler extends \CErrorHandler
 
 			if ($this->isAjaxRequest())
 				$app->returnAjaxError($event->code, $event->message, $event->file, $event->line);
-			else if(b()->config->devMode == true)
+			else if(blx()->config->devMode == true)
 				$this->render('errors/exception', $data);
 			else
 				$this->render('errors/error', $data);
@@ -226,7 +226,7 @@ class ErrorHandler extends \CErrorHandler
 	protected function render($template, $data)
 	{
 		if($template === 'errors/error' && $this->errorAction !== null)
-			b()->runController($this->errorAction);
+			blx()->runController($this->errorAction);
 		else
 		{
 			// additional information to be passed to view
@@ -249,7 +249,7 @@ class ErrorHandler extends \CErrorHandler
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
 		$extension = TemplateHelper::getExtension($templatePath.$templateName);
-		$templateFile = b()->findLocalizedFile($templatePath.$templateName.$extension, $srcLanguage);
+		$templateFile = blx()->findLocalizedFile($templatePath.$templateName.$extension, $srcLanguage);
 		if (is_file($templateFile))
 			$templateFile = realpath($templateFile);
 
@@ -266,16 +266,16 @@ class ErrorHandler extends \CErrorHandler
 	protected function getViewFile($view, $code)
 	{
 		$viewPaths = array(
-			b()->theme === null ? null : b()->theme->getSystemViewPath(),
-			b() instanceof \CWebApplication ? b()->getSystemViewPath() : null,
-			b()->path->getFrameworkPath().'views/',
+			blx()->theme === null ? null : blx()->theme->getSystemViewPath(),
+			blx() instanceof \CWebApplication ? blx()->getSystemViewPath() : null,
+			blx()->path->getFrameworkPath().'views/',
 		);
 
 		try
 		{
-			$connection = b()->db;
-			if ($connection && b()->db->getSchema()->getTable('{{sites}}') !== null)
-				$viewPaths[] = b()->path->getSiteTemplatesPath();
+			$connection = blx()->db;
+			if ($connection && blx()->db->getSchema()->getTable('{{sites}}') !== null)
+				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 		}
 		catch(\CDbException $e)
 		{
@@ -287,7 +287,7 @@ class ErrorHandler extends \CErrorHandler
 			if ($viewPath !== null)
 			{
 				// if it's an exception on the front-end, we don't show the exception template, on the error template.
-				if ($view == 'errors/exception' && b()->request->getMode() == RequestMode::Site)
+				if ($view == 'errors/exception' && blx()->request->getMode() == RequestMode::Site)
 					$view = 'errors/error';
 
 				$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);
@@ -307,7 +307,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getVersionInfo()
 	{
-		if(b()->config->devMode)
+		if(blx()->config->devMode)
 		{
 			$version = '<a href="http://blockscms.com/">'.Product::display(Blocks::getProduct()).'.</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 			if(isset($_SERVER['SERVER_SOFTWARE']))

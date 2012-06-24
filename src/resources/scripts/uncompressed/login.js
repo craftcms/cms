@@ -1,7 +1,6 @@
 (function($) {
 
-
-var LoginForm = b.Base.extend({
+var LoginForm = blx.Base.extend({
 
 	$form: null,
 	$pane: null,
@@ -72,7 +71,7 @@ var LoginForm = b.Base.extend({
 			username: this.$usernameInput.val()
 		};
 
-		$.post(b.actionUrl+'account/forgot', data, $.proxy(function(response) {
+		$.post(blx.actionUrl+'account/forgot', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				// Add the notice
@@ -104,7 +103,7 @@ var LoginForm = b.Base.extend({
 			rememberMe: (this.$rememberMeInput.attr('checked') ? 'y' : '')
 		};
 
-		$.post(b.actionUrl+'session/login', data, $.proxy(function(response) {
+		$.post(blx.actionUrl+'session/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				window.location = response.redirectUrl;
@@ -118,7 +117,7 @@ var LoginForm = b.Base.extend({
 				var error = response.error || 'An unknown error occurred.';
 				this.$notice.html(error);
 
-				b.shake(this.$pane);
+				blx.shake(this.$pane);
 			}
 		}, this));
 
@@ -150,8 +149,6 @@ var LoginForm = b.Base.extend({
 
 });
 
-
 var loginForm = new LoginForm();
-
 
 })(jQuery);

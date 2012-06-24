@@ -41,8 +41,8 @@ class FeedWidget extends BaseWidget
 	public function displayBody()
 	{
 		$url = $this->settings['url'];
-		$cachePath = b()->path->getCachePath();
-		$feed = new \SimplePie($url, $cachePath);
+		$cachePath = blx()->path->getCachePath();
+		$feed = new SimplePie($url, $cachePath);
 		$feed->init();
 		$feed->handle_content_type();
 

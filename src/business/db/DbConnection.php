@@ -6,10 +6,13 @@ namespace Blocks;
  */
 class DbConnection extends \CDbConnection
 {
+	/**
+	 *
+	 */
 	public function init()
 	{
 		parent::init();
-		if (b()->config->devMode)
+		if (blx()->config->devMode)
 		{
 			$this->enableProfiling = true;
 			$this->enableParamLogging = true;
@@ -18,7 +21,7 @@ class DbConnection extends \CDbConnection
 
 	/**
 	 * @param null $query
-	 * @return DbCommand
+	 * @return \Blocks\DbCommand|\CDbCommand
 	 */
 	public function createCommand($query = null)
 	{

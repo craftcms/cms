@@ -17,7 +17,7 @@ class UpdateInfo
 		if (isset($properties['blocks']))
 			$this->blocks = new BlocksUpdateInfo($properties['blocks']);
 		else
-			$this->blocks = new BlocksUpdateInfo;
+			$this->blocks = new BlocksUpdateInfo();
 
 		if (isset($properties['plugins']))
 			foreach ($properties['plugins'] as $pluginData)

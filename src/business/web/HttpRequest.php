@@ -15,6 +15,7 @@ class HttpRequest extends \CHttpRequest
 	private $_mode;
 	private $_isMobileBrowser;
 	private $_mimeType;
+	private $_browserLanguages;
 
 	/**
 	 * @return mixed
@@ -86,7 +87,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = b()->urlManager->routeVar;
+			$pathVar = blx()->urlManager->routeVar;
 			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
 		}
 
@@ -152,16 +153,16 @@ class HttpRequest extends \CHttpRequest
 		if (!isset($this->_urlFormat))
 		{
 			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (b()->config->urlFormat == UrlFormat::PathInfo)
+			if (blx()->config->urlFormat == UrlFormat::PathInfo)
 			{
 				$this->_urlFormat = UrlFormat::PathInfo;
 			}
-			else if (b()->config->urlFormat == UrlFormat::QueryString)
+			else if (blx()->config->urlFormat == UrlFormat::QueryString)
 			{
 				$this->_urlFormat = UrlFormat::QueryString;
 			}
 			// Check if it's cached
-			else if (($cachedUrlFormat = b()->fileCache->get('urlFormat')) !== false)
+			else if (($cachedUrlFormat = blx()->fileCache->get('urlFormat')) !== false)
 			{
 				$this->_urlFormat = $cachedUrlFormat;
 			}
@@ -180,7 +181,7 @@ class HttpRequest extends \CHttpRequest
 					try
 					{
 						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
-						$url = b()->request->getHostInfo().b()->request->getScriptUrl().'/testpathinfo';
+						$url = blx()->request->getHostInfo().blx()->request->getScriptUrl().'/testpathinfo';
 						if (($result = @file_get_contents($url, 0, $context)) !== false)
 						{
 							if ($result === 'success')
@@ -196,7 +197,7 @@ class HttpRequest extends \CHttpRequest
 				}
 
 				// cache it and set it to expire according to config
-				b()->fileCache->set('urlFormat', $this->_urlFormat, b()->config->cacheTimeSeconds);
+				blx()->fileCache->set('urlFormat', $this->_urlFormat, blx()->config->cacheTimeSeconds);
 			}
 		}
 
@@ -218,9 +219,9 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			$resourceTriggerWord = b()->config->resourceTriggerWord;
-			$actionTriggerWord = b()->config->actionTriggerWord;
-			$logoutTriggerWord = b()->config->logoutTriggerWord;
+			$resourceTriggerWord = blx()->config->resourceTriggerWord;
+			$actionTriggerWord = blx()->config->actionTriggerWord;
+			$logoutTriggerWord = blx()->config->logoutTriggerWord;
 
 			$firstPathSegment = $this->getPathSegment(1);
 
@@ -355,5 +356,36 @@ class HttpRequest extends \CHttpRequest
 			$url = 'https://'.$this->getServerName().$this->getRequestUri();
 			$this->redirect($url);
 		}
+	}
+
+	/**
+	 * Returns the user preferred languages sorted by preference.
+	 * The returned language IDs will be canonicalized using {@link Locale::getCanonicalID}.
+	 * This method returns false if the user does not have language preferences.
+	 * @return array the user preferred languages.
+	 */
+	public function getBrowserLanguages()
+	{
+		if ($this->_browserLanguages === null)
+		{
+			if (isset($_SERVER['HTTP_ACCEPT_LANGUAGE']) && ($n = preg_match_all('/([\w\-_]+)\s*(;\s*q\s*=\s*(\d*\.\d*))?/', $_SERVER['HTTP_ACCEPT_LANGUAGE'], $matches)) > 0)
+			{
+				$languages = array();
+
+				for ($i = 0; $i < $n; ++$i)
+					$languages[$matches[1][$i]] = empty($matches[3][$i]) ? 1.0 : floatval($matches[3][$i]);
+
+				// Sort by it's weight.
+				arsort($languages);
+
+				foreach ($languages as $language => $pref)
+					$this->_browserLanguages[] = Locale::getCanonicalID($language);
+			}
+
+			if ($this->_browserLanguages === null)
+				return false;
+		}
+
+		return $this->_browserLanguages;
 	}
 }

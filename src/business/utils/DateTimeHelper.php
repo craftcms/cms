@@ -12,7 +12,7 @@ class DateTimeHelper
 	 */
 	public static function currentTime()
 	{
-		$date = new DateTime;
+		$date = new DateTime();
 		return $date->getTimestamp();
 	}
 

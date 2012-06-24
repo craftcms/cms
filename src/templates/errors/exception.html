@@ -159,11 +159,11 @@
 	<h1><?php echo $data['type']?></h1>
 
 	<p class="message">
-		<?php echo nl2br(htmlspecialchars($data['message'], ENT_QUOTES, Blocks\b()->charset))?>
+		<?php echo nl2br(htmlspecialchars($data['message'], ENT_QUOTES, Blocks\blx()->charset))?>
 	</p>
 
 	<div class="source">
-		<p class="file"><?php echo htmlspecialchars($data['file'], ENT_QUOTES, Blocks\b()->charset)."({$data['line']})"?></p>
+		<p class="file"><?php echo htmlspecialchars($data['file'], ENT_QUOTES, Blocks\blx()->charset)."({$data['line']})"?></p>
 		<?php echo $this->renderSourceCode($data['file'],$data['line'],$this->maxSourceLines); ?>
 	</div>
 
@@ -195,13 +195,13 @@
 						<?php endif; ?>
 						<?php
 							echo '&nbsp;';
-							echo htmlspecialchars($trace['file'], ENT_QUOTES, Blocks\b()->charset)."(".$trace['line'].")";
+							echo htmlspecialchars($trace['file'], ENT_QUOTES, Blocks\blx()->charset)."(".$trace['line'].")";
 							echo ': ';
 							if (!empty($trace['class']))
 								echo "<strong>{$trace['class']}</strong>{$trace['type']}";
 							echo "<strong>{$trace['function']}</strong>(";
 							if(!empty($trace['args']))
-								echo htmlspecialchars($this->argumentsToString($trace['args']), ENT_QUOTES, Blocks\b()->charset);
+								echo htmlspecialchars($this->argumentsToString($trace['args']), ENT_QUOTES, Blocks\blx()->charset);
 							echo ')';
 						?>
 					</div>

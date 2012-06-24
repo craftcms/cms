@@ -11,7 +11,7 @@ class m120411_233620_remove_triggers extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$dbPrefix = b()->config->getDbItem('tablePrefix');
+		$dbPrefix = blx()->config->getDbItem('tablePrefix');
 
 		// We know these tables exists.
 		$tables = array(
@@ -32,7 +32,7 @@ class m120411_233620_remove_triggers extends \CDbMigration
 		);
 
 		// Get the ones that may have been created through content.
-		$contentSections = b()->content->getAllSections();
+		$contentSections = blx()->content->getAllSections();
 		foreach ($contentSections as $contentSection)
 			$tables[] = $contentSection->getContentTableName();
 

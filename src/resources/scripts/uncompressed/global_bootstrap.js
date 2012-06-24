@@ -9,8 +9,7 @@
 
 (function(){
 
-
-var scripts = 
+var scripts =
 [
 	'lib/jquery-1.7.1.js',
 	'lib/rangy-1.2.3/rangy-core.js',
@@ -45,7 +44,7 @@ var scripts =
 
 for (var i = 0; i < scripts.length; i++)
 {
-	document.write('<script type="text/javascript" src="'+b.resourceUrl+'scripts/uncompressed/global/'+scripts[i]+'"></script>');
+	document.write('<script type="text/javascript" src="'+blx.resourceUrl+'scripts/uncompressed/global/'+scripts[i]+'"></script>');
 }
 
 

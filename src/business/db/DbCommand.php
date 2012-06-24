@@ -52,18 +52,15 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
-		if ($table !== 'languages')
-		{
-			$columns[] = 'date_updated';
-			$columns[] = 'date_created';
-			$columns[] = 'uid';
+		$columns[] = 'date_updated';
+		$columns[] = 'date_created';
+		$columns[] = 'uid';
 
-			foreach ($vals as &$val)
-			{
-				$val[] = DateTimeHelper::currentTime();
-				$val[] = DateTimeHelper::currentTime();
-				$val[] = StringHelper::UUID();
-			}
+		foreach ($vals as &$val)
+		{
+			$val[] = DateTimeHelper::currentTime();
+			$val[] = DateTimeHelper::currentTime();
+			$val[] = StringHelper::UUID();
 		}
 
 		$queryParams = $this->getConnection()->getSchema()->insertAll($this->_addTablePrefix($table), $columns, $vals);
@@ -156,9 +153,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function update($table, $columns, $conditions='', $params = array())
 	{
-		if ($table !== 'languages')
-			$columns['date_updated'] = DateTimeHelper::currentTime();
-
+		$columns['date_updated'] = DateTimeHelper::currentTime();
 		return parent::update($this->_addTablePrefix($table), $columns, $conditions, $params);
 	}
 
@@ -198,10 +193,6 @@ class DbCommand extends \CDbCommand
 
 		// Create the table
 		$return = parent::createTable($this->_addTablePrefix($table), $columns, $options);
-
-		// Add the language FK
-		if (array_key_exists('language', $columns))
-			$this->addForeignKey("{$table}_languages_fk", $table, 'language', 'languages', 'language');
 
 		return $return;
 	}
@@ -421,7 +412,7 @@ class DbCommand extends \CDbCommand
 			}
 		}
 		else
-			$table = preg_replace('/^\w+/', b()->config->tablePrefix.'\0', $table);
+			$table = preg_replace('/^\w+/', blx()->config->tablePrefix.'\0', $table);
 
 		return $table;
 	}

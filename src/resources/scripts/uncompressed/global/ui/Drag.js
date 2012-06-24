@@ -1,11 +1,10 @@
 (function($) {
 
-
 /**
  * Drag
  * Used as a base class for DragDrop and DragSort
  */
-b.ui.Drag = b.ui.DragCore.extend({
+blx.ui.Drag = blx.ui.DragCore.extend({
 
 	$draggee: null,
 	helpers: null,
@@ -20,14 +19,14 @@ b.ui.Drag = b.ui.DragCore.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && b.isObject(items))
+		if (!settings && blx.isObject(items))
 		{
 			// (settings)
 			settings = items;
 			items = null;
 		}
 
-		settings = $.extend({}, b.ui.Drag.defaults, settings);
+		settings = $.extend({}, blx.ui.Drag.defaults, settings);
 		this.base(items, settings);
 	},
 
@@ -57,8 +56,8 @@ b.ui.Drag = b.ui.DragCore.extend({
 		this.lastMouseX = this.lastMouseY = null;
 
 		// keep the helpers following the cursor, with a little lag to smooth it out
-		this.helperLagIncrement = this.helpers.length == 1 ? 0 : b.ui.Drag.helperLagIncrementDividend / (this.helpers.length-1);
-		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), b.ui.Drag.updateHelperPosInterval);
+		this.helperLagIncrement = this.helpers.length == 1 ? 0 : blx.ui.Drag.helperLagIncrementDividend / (this.helpers.length-1);
+		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), blx.ui.Drag.updateHelperPosInterval);
 
 		this.base();
 	},
@@ -125,7 +124,7 @@ b.ui.Drag = b.ui.DragCore.extend({
 				position: 'absolute',
 				top: helperPos.top,
 				left: helperPos.left,
-				zIndex: b.ui.Drag.helperZindex, // + this.$draggee.length - i,
+				zIndex: blx.ui.Drag.helperZindex, // + this.$draggee.length - i,
 				opacity: this.settings.helperOpacity
 			});
 
@@ -144,8 +143,8 @@ b.ui.Drag = b.ui.DragCore.extend({
 	getHelperTarget: function(i)
 	{
 		return {
-			left: this.mouseX - this.targetItemMouseDiffX + (i * b.ui.Drag.helperSpacingX),
-			top:  this.mouseY - this.targetItemMouseDiffY + (i * b.ui.Drag.helperSpacingY)
+			left: this.mouseX - this.targetItemMouseDiffX + (i * blx.ui.Drag.helperSpacingX),
+			top:  this.mouseY - this.targetItemMouseDiffY + (i * blx.ui.Drag.helperSpacingY)
 		};
 	},
 
@@ -168,16 +167,16 @@ b.ui.Drag = b.ui.DragCore.extend({
 		}
 
 		// gravitate helpers toward their target positions
-		for (var i = 0; i < this.helpers.length; i++)
+		for (var j = 0; j < this.helpers.length; j++)
 		{
-			var lag = b.ui.Drag.helperLagBase + (this.helperLagIncrement * i);
+			var lag = blx.ui.Drag.helperLagBase + (this.helperLagIncrement * j);
 
-			this.helperPositions[i] = {
-				left: this.helperPositions[i].left + ((this.helperTargets[i].left - this.helperPositions[i].left) / lag),
-				top:  this.helperPositions[i].top  + ((this.helperTargets[i].top  - this.helperPositions[i].top) / lag)
+			this.helperPositions[j] = {
+				left: this.helperPositions[j].left + ((this.helperTargets[j].left - this.helperPositions[j].left) / lag),
+				top:  this.helperPositions[j].top  + ((this.helperTargets[j].top  - this.helperPositions[j].top) / lag)
 			};
 
-			this.helpers[i].css(this.helperPositions[i]);
+			this.helpers[j].css(this.helperPositions[j]);
 		}
 	},
 
@@ -219,6 +218,5 @@ b.ui.Drag = b.ui.DragCore.extend({
 		helper: null
 	}
 });
-
 
 })(jQuery);

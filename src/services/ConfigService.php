@@ -16,8 +16,8 @@ class ConfigService extends \CApplicationComponent
 	 */
 	public function getItem($item, $default = null)
 	{
-		if (isset(b()->params['blocksConfig'][$item]))
-			return b()->params['blocksConfig'][$item];
+		if (isset(blx()->params['blocksConfig'][$item]))
+			return blx()->params['blocksConfig'][$item];
 
 		return $default;
 	}
@@ -43,8 +43,8 @@ class ConfigService extends \CApplicationComponent
 	 */
 	public function getDbItem($item, $default = null)
 	{
-		if (isset(b()->params['dbConfig'][$item]))
-			return b()->params['dbConfig'][$item];
+		if (isset(blx()->params['dbConfig'][$item]))
+			return blx()->params['dbConfig'][$item];
 
 		return $default;
 	}
@@ -57,8 +57,10 @@ class ConfigService extends \CApplicationComponent
 		if (!isset($this->_tablePrefix))
 		{
 			$tablePrefix = (string)$this->getDbItem('tablePrefix');
+
 			if ($tablePrefix)
 				$tablePrefix = rtrim($tablePrefix, '_').'_';
+
 			$this->_tablePrefix = $tablePrefix;
 		}
 

@@ -16,7 +16,7 @@ class ComponentHelper
 	{
 		$components = array();
 
-		$appPath = b()->path->getAppPath();
+		$appPath = blx()->path->getAppPath();
 		$folderPath = $appPath.$subfolder.'/';
 		$files = @glob($folderPath.'/*'.$componentType.'.php');
 

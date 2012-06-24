@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Handle Generator
  */
-b.ui.InputGenerator = b.Base.extend({
+blx.ui.InputGenerator = blx.Base.extend({
 
 	$source: null,
 	$target: null,
@@ -54,6 +53,5 @@ b.ui.InputGenerator = b.Base.extend({
 		return sourceVal;
 	}
 });
-
 
 })(jQuery);

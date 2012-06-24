@@ -43,7 +43,7 @@ class DashboardService extends \CApplicationComponent
 	{
 		$record = Widget::model()->findByAttributes(array(
 			'id' => $widgetId,
-			'user_id' => b()->users->getCurrentUser()->id
+			'user_id' => blx()->users->getCurrentUser()->id
 		));
 
 		if ($record)
@@ -66,7 +66,7 @@ class DashboardService extends \CApplicationComponent
 	public function getUserWidgets()
 	{
 		$records = Widget::model()->findAllByAttributes(array(
-			'user_id' => b()->users->getCurrentUser()->id
+			'user_id' => blx()->users->getCurrentUser()->id
 		), array(
 			'order' => 'sort_order'
 		));
@@ -99,10 +99,10 @@ class DashboardService extends \CApplicationComponent
 		$widgets = array('RecentActivity', 'Feed');
 		foreach ($widgets as $i => $widgetClass)
 		{
-			$widget = new Widget;
+			$widget = new Widget();
 			$widget->user_id = $userId;
 			$widget->class = $widgetClass;
-			$widget->sort_order = ($i+1);
+			$widget->sort_order = ($i + 1);
 			$widget->save();
 		}
 	}
@@ -117,11 +117,11 @@ class DashboardService extends \CApplicationComponent
 	public function saveSettings($settings)
 	{
 		// Get the current user
-		$user = b()->users->getCurrentUser();
+		$user = blx()->users->getCurrentUser();
 		if (!$user)
 			throw new Exception('There is no current user.');
 
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			if (isset($settings['order']))
@@ -137,18 +137,18 @@ class DashboardService extends \CApplicationComponent
 			{
 				$widgetData = $settings[$widgetId];
 
-				$widget = new Widget;
+				$widget = new Widget();
 				$isNewWidget = true;
 
 				if (strncmp($widgetId, 'new', 3) != 0)
 					$widget = $this->getWidgetById($widgetId);
 
 				if (empty($widget))
-					$widget = new Widget;
+					$widget = new Widget();
 
 				$widget->user_id = $user->id;
 				$widget->class = $widgetData['class'];
-				$widget->sort_order = $order+1;
+				$widget->sort_order = $order + 1;
 				$widget->save();
 
 				if (!empty($widgetData['settings']))
@@ -159,8 +159,8 @@ class DashboardService extends \CApplicationComponent
 			{
 				foreach ($settings['delete'] as $widgetId)
 				{
-					b()->db->createCommand()->delete('widgetsettings', array('widget_id'=>$widgetId));
-					b()->db->createCommand()->delete('widgets',        array('id'=>$widgetId));
+					blx()->db->createCommand()->delete('widgetsettings', array('widget_id'=>$widgetId));
+					blx()->db->createCommand()->delete('widgets',        array('id'=>$widgetId));
 				}
 			}
 

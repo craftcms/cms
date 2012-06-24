@@ -82,27 +82,18 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 		// Make a copy of the original.
 		$copyTemplatePath = $templatePath;
 
-		// Check to see if it's an email template.
-		if (strncmp($templatePath, '///email', 8) === 0)
+		// Check to see if they want an absolute template path.
+		if (strncmp($templatePath, '//', 2) === 0)
 		{
-			$viewPath = b()->path->getEmailTemplatesPath();
-			$copyTemplatePath = substr($copyTemplatePath, 9);
+			// Set the template path depending on the type of request mode we're in (path->getTemplatePath() takes care of that.
+			$templatePath = blx()->path->getTemplatePath();
+			blx()->setViewPath($templatePath);
+			if (is_dir($templatePath.'_layouts/'))
+				blx()->setLayoutPath($templatePath.'_layouts/');
 		}
-		else
-		{
-			// If they want an absolute template path.
-			if (strncmp($templatePath, '//', 2) === 0)
-			{
-				// Set the template path depending on the type of request mode we're in (path->getTemplatePath() takes care of that.
-				$templatePath = b()->path->getTemplatePath();
-				b()->setViewPath($templatePath);
-				if (is_dir($templatePath.'_layouts/'))
-					b()->setLayoutPath($templatePath.'_layouts/');
-			}
 
-			// This view path will either be the CP template path or the front-end template path.
-			$viewPath = b()->getViewPath();
-		}
+		// This view path will either be the CP template path or the front-end template path.
+		$viewPath = blx()->getViewPath();
 
 		// Set the file extension on the instance.
 		$this->fileExtension = $extension;
@@ -116,24 +107,24 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 			return $matchPath;
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (($mode = b()->request->getMode()) == RequestMode::CP || $mode == RequestMode::Action)
+		if (($mode = blx()->request->getMode()) == RequestMode::CP || $mode == RequestMode::Action)
 		{
 			// Check to see if the template path might be referring to a plugin template
 			$templateSegs = explode('/', $copyTemplatePath);
 			if (isset($templateSegs[0]) && $templateSegs[0] !== '')
 			{
-				if (($plugin = b()->plugins->getPlugin($templateSegs[0])) !== false)
+				if (($plugin = blx()->plugins->getPlugin($templateSegs[0])) !== false)
 				{
 					// Get the template path for the plugin.
-					$viewPath = b()->path->getPluginsPath().$plugin->class.'/templates/';
+					$viewPath = blx()->path->getPluginsPath().$plugin->class.'/templates/';
 
 					// If the plugin's templates directory exists, set the request's viewpath to it.
 					if (is_dir($viewPath))
 					{
 						// Set the template path and layout path to the plugin's
-						b()->setViewPath($viewPath);
+						blx()->setViewPath($viewPath);
 						if (is_dir($viewPath.'_layouts/'))
-							b()->setLayoutPath($viewPath.'_layouts/');
+							blx()->setLayoutPath($viewPath.'_layouts/');
 
 						$copyTemplatePath = substr($copyTemplatePath, strlen($plugin->class) + 1);
 						$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
@@ -161,7 +152,7 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 	 */
 	private function _doesLocalizedTemplateFileExist($path)
 	{
-		if (is_file(b()->findLocalizedFile($path)))
+		if (is_file(blx()->findLocalizedFile($path)))
 			return $path;
 		else
 			return false;

@@ -4,48 +4,21 @@ namespace Blocks;
 /**
  *
  */
-abstract class Controller extends \CController
+abstract class BaseController extends \CController
 {
 	private $_widgetStack = array();
 
 	/**
 	 * Returns the directory containing view files for this controller.
-	 * We're overriding this since CController's version defaults $module to b().
+	 * We're overriding this since CController's version defaults $module to blx().
 	 * @return string the directory containing the view files for this controller.
 	 */
 	public function getViewPath()
 	{
 		if (($module = $this->getModule()) === null)
-			$module = b();
+			$module = blx();
 
 		return $module->getViewPath().'/';
-	}
-
-	/**
-	 * Overriding so we can check if the viewName is a request for an email template vs. a site template.
-	 * @param $viewName
-	 * @return mixed
-	 */
-	public function getViewFile($viewName)
-	{
-		if (($theme = b()->getTheme()) !== null && ($viewFile = $theme->getViewFile($this, $viewName)) !== false)
-			return $viewFile;
-
-		$moduleViewPath = $basePath = b()->getViewPath();
-		if (($module = $this->getModule()) !== null)
-			$moduleViewPath = $module->getViewPath();
-
-		if (strncmp($viewName,'///email', 8) === 0)
-		{
-			$viewPath = rtrim(b()->path->getEmailTemplatesPath(), '/');
-			$viewName = substr($viewName, 9);
-		}
-		else
-			$viewPath = $this->getViewPath();
-
-		$viewPath = str_replace('//', '/', $viewPath);
-
-		return $this->resolveViewFile($viewName, $viewPath, $basePath, $moduleViewPath);
 	}
 
 	/**
@@ -55,7 +28,7 @@ abstract class Controller extends \CController
 	 */
 	public function loadRequestedTemplate($variables = array())
 	{
-		if (($path = b()->urlManager->processTemplateMatching()) !== false)
+		if (($path = blx()->urlManager->processTemplateMatching()) !== false)
 		{
 			$this->loadTemplate($path, $variables);
 		}
@@ -76,7 +49,7 @@ abstract class Controller extends \CController
 	{
 		$variables = $this->processTemplateVariables($vars);
 
-		if (($output = $this->processTemplatePath($templatePath, $variables, true)) !== false)
+		if (($output = $this->processFileTemplate($templatePath, $variables, true)) !== false)
 		{
 			if($processOutput)
 				$output = $this->processOutput($output);
@@ -91,14 +64,23 @@ abstract class Controller extends \CController
 	}
 
 	/**
-	 * @param $relativeTemplatePath
-	 * @param array $data
+	 * @param EmailTemplate $email
+	 * @param array         $vars
+	 * @throws Exception
 	 * @return mixed
 	 */
-	public function loadEmailTemplate($relativeTemplatePath, $data = array())
+	public function loadEmailTemplate(EmailTemplate $email, $vars = array())
 	{
-		$relativeTemplatePath = '///email/'.$relativeTemplatePath;
-		return $this->loadTemplate($relativeTemplatePath, $data, true);
+		$variables = $this->processTemplateVariables($vars, false);
+
+		$renderer = new EmailTemplateProcessor();
+
+		if (($content = $renderer->process($this, $email, $variables)) !== false)
+		{
+			return $content;
+		}
+		else
+			throw new Exception('Could not find the requested email template.');
 	}
 
 	/**
@@ -108,18 +90,11 @@ abstract class Controller extends \CController
 	 * @throws Exception
 	 * @return mixed|string
 	 */
-	public function processTemplatePath($templatePath, $data = null, $return = false)
+	public function processFileTemplate($templatePath, $data = null, $return = false)
 	{
 		$widgetCount = count($this->_widgetStack);
 
-		//if (strpos($viewFile, 'email_templates') !== false)
-		//{
-		//	$emailRenderer = new EmailTemplateRenderer();
-		//	$content = $emailRenderer->renderFile($this, $viewFile, $data, $return);
-		//}
-	//	else
-	//	{
-		if (($renderer = b()->getViewRenderer()) !== null)
+		if (($renderer = blx()->getViewRenderer()) !== null)
 		{
 			// Process the template.
 			if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
@@ -131,7 +106,7 @@ abstract class Controller extends \CController
 					if (($mimeType = \CFileHelper::getMimeTypeByExtension($extension)) === null)
 						$mimeType = 'text/html';
 
-					b()->request->setMimeType($mimeType);
+					blx()->request->setMimeType($mimeType);
 					header('Content-Type: '.$mimeType);
 
 					return $content;
@@ -139,7 +114,7 @@ abstract class Controller extends \CController
 				else
 				{
 					$widget = end($this->_widgetStack);
-					throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget variables in its view "{view}". A {widget} widget does not have an endWidget() call.',
+					throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget variables in it’s view "{view}". A {widget} widget does not have an endWidget() call.',
 						array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
 				}
 			}
@@ -149,15 +124,18 @@ abstract class Controller extends \CController
 	}
 
 	/**
-	 * @param $vars
+	 * @param      $vars
+	 * @param bool $getRequestVars
 	 * @return array
 	 */
-	public function processTemplateVariables($vars)
+	public function processTemplateVariables($vars, $getRequestVars = true)
 	{
 		$variables = array();
 
-		$vars = array_merge(b()->urlManager->getTemplateVariables(), $vars);
-		$vars['b'] = new BVariable;
+		if ($getRequestVars)
+			$vars = array_merge(blx()->urlManager->getTemplateVariables(), $vars);
+
+		$vars['blx'] = new BlxVariable;
 
 		if (is_array($vars))
 		{
@@ -175,8 +153,8 @@ abstract class Controller extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (b()->user->getIsGuest())
-			b()->user->loginRequired();
+		if (blx()->user->getIsGuest())
+			blx()->user->loginRequired();
 	}
 
 	/**
@@ -185,7 +163,7 @@ abstract class Controller extends \CController
 	 */
 	public function requirePostRequest()
 	{
-		if (!b()->config->devMode && b()->request->getRequestType() !== 'POST')
+		if (!blx()->config->devMode && blx()->request->getRequestType() !== 'POST')
 			throw new HttpException(404);
 	}
 
@@ -195,7 +173,7 @@ abstract class Controller extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!b()->config->devMode && !b()->request->getIsAjaxRequest())
+		if (!blx()->config->devMode && !blx()->request->getIsAjaxRequest())
 			throw new HttpException(404);
 	}
 
@@ -220,7 +198,7 @@ abstract class Controller extends \CController
 	 */
 	public function redirectToPostedUrl()
 	{
-		$url = b()->request->getPost('redirect');
+		$url = blx()->request->getPost('redirect');
 		$this->redirect($url);
 	}
 
@@ -232,7 +210,7 @@ abstract class Controller extends \CController
 	{
 		Json::sendJsonHeaders();
 		echo Json::encode($r);
-		b()->end();
+		blx()->end();
 	}
 
 	/**

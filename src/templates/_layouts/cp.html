@@ -3,12 +3,12 @@
 {region "body"}
 	<div id="header">
 		<div id="site" class="left">Pixel & Tonic</div>
-		<div id="me" class="right">{:b.users.current.username}</div>
+		<div id="me" class="right">{:blx.users.current.username}</div>
 
 		<div id="nav" class="left">
 			<ul>
-				{foreach b.cp.sections as section}
-					<li id="nav-{:section.handle}"><a {if b.url.segment(1)==section.handle}class="sel"{/if} href="{:b.url.base}{:section.handle}">{:section.name}</a></li>
+				{foreach blx.cp.sections as section}
+					<li id="nav-{:section.handle}"><a {if blx.url.segment(1)==section.handle}class="sel"{/if} href="{:blx.url.base}{:section.handle}">{:section.name}</a></li>
 				{/foreach}
 			</ul>
 		</div>
@@ -16,9 +16,9 @@
 		<div class="clear"></div>
 	</div>
 
-	{if b.session.notifications}
+	{if blx.session.notifications}
 		<div id="notification">
-			{foreach b.session.notifications as notification}
+			{foreach blx.session.notifications as notification}
 				<div class="notification {:notification.type}">{:notification.message}</div>
 			{/foreach}
 		</div>
@@ -29,7 +29,7 @@
 	</div>
 
 	<!--div id="footer">
-		<p id="version">Blocks {:b.app.version}.{:b.app.build}</p>
-		<p id="copyright">© {:b.date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
+		<p id="version">Blocks {:blx.app.version}.{:blx.app.build}</p>
+		<p id="copyright">© {:blx.date.year} Pixel &amp; Tonic, Inc. All rights reserved.</p>
 	</div-->
 {/region}

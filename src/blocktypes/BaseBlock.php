@@ -18,7 +18,7 @@ abstract class BaseBlock extends BaseComponent
 	 */
 	public function __get($name)
 	{
-		if (in_array($name), array('name', 'handle', 'class'))
+		//if (in_array($name, array('name', 'handle', 'class'))
 	}
 
 	/**
@@ -48,12 +48,13 @@ abstract class BaseBlock extends BaseComponent
 			'settings'   => $this->settings
 		);
 
-		$template = b()->controller->loadTemplate($this->settingsTemplate, $variables, true);
+		$template = blx()->controller->loadTemplate($this->settingsTemplate, $variables, true);
 		return $template;
 	}
 
 	/**
 	 * Display the field
+	 * @param $data
 	 * @return string
 	 */
 	public function displayField($data)
@@ -67,7 +68,7 @@ abstract class BaseBlock extends BaseComponent
 			'data'     => $data
 		);
 
-		$template = b()->controller->loadTemplate($this->fieldTemplate, $variables, true);
+		$template = blx()->controller->loadTemplate($this->fieldTemplate, $variables, true);
 		return $template;
 	}
 

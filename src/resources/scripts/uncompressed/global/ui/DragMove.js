@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Drag Move
  */
-b.ui.DragMove = b.ui.DragCore.extend({
+blx.ui.DragMove = blx.ui.DragCore.extend({
 
 	onDrag: function(items, settings)
 	{
@@ -15,6 +14,5 @@ b.ui.DragMove = b.ui.DragCore.extend({
 	}
 
 });
-
 
 })(jQuery);

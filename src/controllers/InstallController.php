@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallController extends Controller
+class InstallController extends BaseController
 {
 	/**
 	 * Init
@@ -13,7 +13,7 @@ class InstallController extends Controller
 	public function init()
 	{
 		// Return a 404 if Blocks is already installed
-		if (!b()->config->devMode && b()->getIsInstalled())
+		if (!blx()->config->devMode && blx()->getIsInstalled())
 			throw new HttpException(404);
 	}
 
@@ -28,7 +28,7 @@ class InstallController extends Controller
 		$vars['reqcheck'] = $reqCheck;
 
 		// Guess the site name based on the host name
-		$host = $_SERVER['HTTP_HOST'];
+		$host = blx()->request->getHostInfo();
 		$hostWords = preg_split('/[\-_\.]+/', $host);
 		array_pop($hostWords);
 		$vars['sitename'] = implode(' ', array_map('ucfirst', $hostWords));
@@ -45,8 +45,8 @@ class InstallController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$licenseKey = new InstallLicenseKeyForm;
-		$licenseKey->licensekey = b()->request->getPost('licensekey');
+		$licenseKey = new InstallLicenseKeyForm();
+		$licenseKey->licensekey = blx()->request->getPost('licensekey');
 
 		if ($licenseKey->validate())
 			$return['validates'] = true;
@@ -64,10 +64,10 @@ class InstallController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$user = new InstallUserForm;
-		$user->username = b()->request->getPost('username');
-		$user->email = b()->request->getPost('email');
-		$user->password = b()->request->getPost('password');
+		$user = new InstallUserForm();
+		$user->username = blx()->request->getPost('username');
+		$user->email = blx()->request->getPost('email');
+		$user->password = blx()->request->getPost('password');
 
 		if ($user->validate())
 			$return['validates'] = true;
@@ -85,10 +85,10 @@ class InstallController extends Controller
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$site = new InstallSiteForm;
-		$site->sitename = b()->request->getPost('sitename');
-		$site->url = b()->request->getPost('url');
-		$site->language = b()->request->getPost('language');
+		$site = new InstallSiteForm();
+		$site->sitename = blx()->request->getPost('sitename');
+		$site->url = blx()->request->getPost('url');
+		$site->language = blx()->request->getPost('language');
 
 		if ($site->validate())
 			$return['validates'] = true;
@@ -107,15 +107,15 @@ class InstallController extends Controller
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		$inputs['licensekey'] = b()->request->getPost('licensekey');
-		$inputs['username']   = b()->request->getPost('username');
-		$inputs['email']      = b()->request->getPost('email');
-		$inputs['password']   = b()->request->getPost('password');
-		$inputs['sitename']   = b()->request->getPost('sitename');
-		$inputs['url']        = b()->request->getPost('url');
-		$inputs['language']   = b()->request->getPost('language');
+		$inputs['licensekey'] = blx()->request->getPost('licensekey');
+		$inputs['username']   = blx()->request->getPost('username');
+		$inputs['email']      = blx()->request->getPost('email');
+		$inputs['password']   = blx()->request->getPost('password');
+		$inputs['sitename']   = blx()->request->getPost('sitename');
+		$inputs['url']        = blx()->request->getPost('url');
+		$inputs['language']   = blx()->request->getPost('language');
 
-		b()->installer->run($inputs);
+		blx()->installer->run($inputs);
 
 		$return = array('success' => true);
 		$this->returnJson($return);

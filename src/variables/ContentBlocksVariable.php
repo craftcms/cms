@@ -12,6 +12,6 @@ class ContentBlocksVariable
 	 */
 	public function blocktypes()
 	{
-		return b()->blocks->getBlockTypes();
+		return blx()->blocks->getBlockTypes();
 	}
 }

@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Drag Core
  */
-b.ui.DragCore = b.Base.extend({
+blx.ui.DragCore = blx.Base.extend({
 
 	$items: null,
 
@@ -22,21 +21,20 @@ b.ui.DragCore = b.Base.extend({
 	lastMouseX: null,
 	lastMouseY: null,
 
-
 	/**
 	 * Init
 	 */
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && b.isObject(items))
+		if (!settings && blx.isObject(items))
 		{
 			// (settings)
 			settings = items;
 			items = null;
 		}
 
-		this.settings = $.extend({}, b.ui.DragCore.defaults, settings);
+		this.settings = $.extend({}, blx.ui.DragCore.defaults, settings);
 
 		this.$items = $();
 
@@ -77,8 +75,8 @@ b.ui.DragCore = b.Base.extend({
 		this.targetItemMouseDiffY = event.pageY - offset.top  + parseInt(this.$targetItem.css('marginTop'));
 
 		// listen for mousemove, mouseup
-		this.addListener(b.$document, 'mousemove', 'onMouseMove');
-		this.addListener(b.$document, 'mouseup', 'onMouseUp');
+		this.addListener(blx.$document, 'mousemove', 'onMouseMove');
+		this.addListener(blx.$document, 'mouseup', 'onMouseUp');
 	},
 
 	/**
@@ -97,9 +95,9 @@ b.ui.DragCore = b.Base.extend({
 		if (!this.dragging)
 		{
 			// has the mouse moved far enough to initiate dragging yet?
-			var mouseDist = b.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
+			var mouseDist = blx.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
 
-			if (mouseDist >= b.ui.DragCore.minMouseDist)
+			if (mouseDist >= blx.ui.DragCore.minMouseDist)
 				this.startDragging();
 			else
 				return;
@@ -114,7 +112,7 @@ b.ui.DragCore = b.Base.extend({
 	onMouseUp: function(event)
 	{
 		// unbind the document events
-		this.removeAllListeners(b.$document);
+		this.removeAllListeners(blx.$document);
 
 		if (this.dragging)
 			this.stopDragging();
@@ -179,7 +177,7 @@ b.ui.DragCore = b.Base.extend({
 			// Make sure this element doesn't belong to another dragger
 			if ($.data(item, 'drag'))
 			{
-				b.log('Element was added to more than one dragger');
+				blx.log('Element was added to more than one dragger');
 				$.data(item, 'drag').removeItems(item);
 			}
 
@@ -244,6 +242,5 @@ b.ui.DragCore = b.Base.extend({
 		onDragStop: function() {}
 	}
 });
-
 
 })(jQuery);

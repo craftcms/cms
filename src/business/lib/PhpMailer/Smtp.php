@@ -1,4 +1,6 @@
 <?php
+namespace Blocks;
+
 /*
 .---------------------------------------------------------------------------.
 |  Software: PhpMailer - PHP email class                                    |
@@ -23,7 +25,7 @@
 */
 
 /**
- * PhpMailer - PHP SMTP email transport class
+ * PhpMailer - Php Smtp email transport class
  * NOTE: Designed for use with PHP version 5 and up
  * @package PhpMailer
  * @author Andy Prevost
@@ -36,21 +38,21 @@
  */
 
 /**
- * SMTP is rfc 821 compliant and implements all the rfc 821 SMTP commands except TURN which will always return a not implemented
- * error. SMTP also provides some utility methods for sending mail to an SMTP server.
+ * Smtp is rfc 821 compliant and implements all the rfc 821 Smtp commands except TURN which will always return a not implemented
+ * error. Smtp also provides some utility methods for sending mail to an Smtp server.
  * original author: Chris Ryan
  */
 
 class Smtp
 {
 	/**
-	 * SMTP server port
+	 * Smtp server port
 	 * @var int
 	 */
 	public $smtpPort = 25;
 
 	/**
-	 * SMTP reply line ending
+	 * Smtp reply line ending
 	 * @var string
 	 */
 	public $crlf = "\r\n";
@@ -68,7 +70,7 @@ class Smtp
 	public $doVerp = false;
 
 	/**
-	 * Sets the SMTP PHPMailer Version number
+	 * Sets the Smtp PhpMailer Version number
 	 * @var string
 	 */
 	public $version = '5.2.1';
@@ -80,7 +82,7 @@ class Smtp
 	/**
 	 * Initialize the class so that the data is in a known state.
 	 * @access public
-	 * @return \Smtp
+	 * @return Smtp
 	 */
 	function __construct()
 	{
@@ -91,7 +93,7 @@ class Smtp
 	}
 
 	/**
-	 * Connect to the server specified on the port specified. If the port is not specified use the default SMTPPort.
+	 * Connect to the server specified on the port specified. If the port is not specified use the default SmtpPort.
 	 * If tval is specified then a connection will try and be established with the server for that number of seconds.
 	 * If tval is not specified the default is 30 seconds to try on the connection.
 	 *
@@ -120,7 +122,7 @@ class Smtp
 		if (empty($port))
 			$port = $this->smtpPort;
 
-		// connect to the SMTP server
+		// connect to the Smtp server
 		$this->smtpConn = @fsockopen($host,    // the host of the server
 									 $port,    // the port to use
 									 $errNo,   // error number if any
@@ -140,7 +142,7 @@ class Smtp
 			return false;
 		}
 
-		// SMTP server can take longer to respond, give longer timeout for first read Windows does not have support for this timeout function
+		// Smtp server can take longer to respond, give longer timeout for first read Windows does not have support for this timeout function
 		if (substr(PHP_OS, 0, 3) != "WIN")
 			socket_set_timeout($this->smtpConn, $tVal, 0);
 
@@ -197,7 +199,7 @@ class Smtp
 	}
 
 	/**
-	 * Performs SMTP authentication.  Must be run after running the
+	 * Performs Smtp authentication.  Must be run after running the
 	 * Hello() method.  Returns true if successfully authenticated.
 	 * @param $username
 	 * @param $password
@@ -592,7 +594,7 @@ class Smtp
 		if ($code != 221)
 		{
 			// use e as a tmp var cause Close will overwrite $this->error
-			$e = array("error" => "SMTP server rejected quit command", "smtp_code" => $code, "smtp_rply" => substr($byeMsg,4));
+			$e = array("error" => "Smtp server rejected quit command", "smtp_code" => $code, "smtp_rply" => substr($byeMsg,4));
 			$rVal = false;
 
 			if ($this->doDebug >= 1)
@@ -606,7 +608,7 @@ class Smtp
 	}
 
 	/**
-	 * Sends the command RCPT to the SMTP server with the TO: argument of $to. Returns true if the recipient was accepted false if it was rejected.
+	 * Sends the command RCPT to the Smtp server with the TO: argument of $to. Returns true if the recipient was accepted false if it was rejected.
 	 * Implements from rfc 821: RCPT <SP> TO:<forward-path> <CRLF>
 	 *
 	 * SMTP CODE SUCCESS: 250,251
@@ -734,7 +736,7 @@ class Smtp
 	}
 
 	/**
-	 * This is an optional command for SMTP that this class does not support. This method is here to make the RFC821 Definition
+	 * This is an optional command for Smtp that this class does not support. This method is here to make the RFC821 Definition
 	 * complete for this class and __may__ be implimented in the future
 	 *
 	 * Implements from rfc 821: TURN <CRLF>
@@ -746,7 +748,7 @@ class Smtp
 	 */
 	public function turn()
 	{
-		$this->error = array("error" => "This method, TURN, of the SMTP is not implemented");
+		$this->error = array("error" => "This method, TURN, of the Smtp is not implemented");
 
 		if ($this->doDebug >= 1)
 			echo "SMTP -> NOTICE: ".$this->error["error"].$this->crlf.'<br />';
@@ -765,7 +767,7 @@ class Smtp
 
 	/**
 	 * Read in as many lines as possible either before eof or socket timeout occurs on the operation.
-	 * With SMTP we can tell if we have more lines to read if the 4th character is '-' symbol. If it is a space then we don't
+	 * With Smtp we can tell if we have more lines to read if the 4th character is '-' symbol. If it is a space then we don't
 	 * need to read anything else.
 	 * @access private
 	 * @return string

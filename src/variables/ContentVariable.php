@@ -13,7 +13,7 @@ class ContentVariable
 	 */
 	public function getEntryById($entryId)
 	{
-		return b()->content->getEntryById($entryId);
+		return blx()->content->getEntryById($entryId);
 	}
 
 	/**
@@ -23,7 +23,7 @@ class ContentVariable
 	 */
 	public function getSectionById($sectionId)
 	{
-		return b()->content->getSectionById($sectionId);
+		return blx()->content->getSectionById($sectionId);
 	}
 
 	/**
@@ -32,6 +32,6 @@ class ContentVariable
 	 */
 	public function sections()
 	{
-		return b()->content->getSections();
+		return blx()->content->getSections();
 	}
 }

@@ -17,8 +17,8 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function init()
 	{
-		$requiredPhpVersion = b()->params['requiredPhpVersion'];
-		$requiredMysqlVersion = b()->params['requiredMysqlVersion'];
+		$requiredPhpVersion = blx()->params['requiredPhpVersion'];
+		$requiredMysqlVersion = blx()->params['requiredMysqlVersion'];
 
 		$this->_requirements = array(
 			new Requirement(
@@ -127,7 +127,7 @@ class RequirementsChecker extends \CComponent
 			),
 			new Requirement(
 				'MySQL version',
-				version_compare(b()->db->serverVersion, $requiredMysqlVersion, ">="),
+				version_compare(blx()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">Blocks</a>',
 				'MySQL '.$requiredMysqlVersion.' or higher is required to run Blocks.'
@@ -209,7 +209,7 @@ class RequirementsChecker extends \CComponent
 	private function _getWritableFolders()
 	{
 		$folders = array(
-			b()->file->set(b()->path->getRuntimePath(), false),
+			blx()->file->set(blx()->path->getRuntimePath(), false),
 		);
 
 		return $folders;

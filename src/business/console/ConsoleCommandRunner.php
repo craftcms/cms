@@ -19,7 +19,12 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 			{
 				if (strpos($this->commands[$name], '/') !== false || strpos($this->commands[$name], '\\') !== false)
 				{
-					$className = __NAMESPACE__.'\\'.substr(basename($this->commands[$name]), 0, -4);
+					$className = substr(basename($this->commands[$name]), 0, -4);
+
+					// If it's a default framework command, don't namespace it.
+					if (strpos($this->commands[$name], 'framework') === false)
+						$className = __NAMESPACE__.'\\'.$className;
+
 					if (!class_exists($className, false))
 						require_once($this->commands[$name]);
 				}
@@ -35,5 +40,21 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 			return new \CHelpCommand('help', $this);
 		else
 			return null;
+	}
+
+	/**
+	 * Adds commands from the specified command path.
+	 * If a command already exists, the new one will overwrite it.
+	 * @param string $path the alias of the directory containing the command class files.
+	 */
+	public function addCommands($path)
+	{
+		if(($commands=$this->findCommands($path))!==array())
+		{
+			foreach($commands as $name=>$file)
+			{
+				$this->commands[$name]=$file;
+			}
+		}
 	}
 }

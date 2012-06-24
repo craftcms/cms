@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * DragDrop
  */
-b.ui.DragDrop = b.ui.Drag.extend({
+blx.ui.DragDrop = blx.ui.Drag.extend({
 
 	$dropTargets: null,
 	$activeDropTarget: null,
@@ -14,7 +13,7 @@ b.ui.DragDrop = b.ui.Drag.extend({
 	 */
 	init: function(settings)
 	{
-		settings = $.extend({}, b.ui.DragDrop.defaults, settings);
+		settings = $.extend({}, blx.ui.DragDrop.defaults, settings);
 		this.base(settings);
 	},
 
@@ -54,7 +53,7 @@ b.ui.DragDrop = b.ui.Drag.extend({
 			{
 				var elem = this.$dropTargets[i];
 
-				if (b.hitTest(this.mouseX, this.mouseY, elem))
+				if (blx.hitTest(this.mouseX, this.mouseY, elem))
 				{
 					_activeDropTarget = elem;
 					break;
@@ -118,6 +117,5 @@ b.ui.DragDrop = b.ui.Drag.extend({
 		onDropTargetChange: function() {}
 	}
 });
-
 
 })(jQuery);

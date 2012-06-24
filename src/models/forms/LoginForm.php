@@ -44,20 +44,20 @@ class LoginForm extends BaseForm
 
 		if ($this->_identity->errorCode === UserIdentity::ERROR_NONE)
 		{
-			$timeOut = ConfigHelper::getTimeInSeconds(b()->config->sessionTimeout);
+			$timeOut = ConfigHelper::getTimeInSeconds(blx()->config->sessionTimeout);
 
 			if ($this->rememberMe)
-				$timeOut = ConfigHelper::getTimeInSeconds(b()->config->rememberMeSessionTimeout);
+				$timeOut = ConfigHelper::getTimeInSeconds(blx()->config->rememberMeSessionTimeout);
 
-			if (b()->config->rememberUsernameEnabled === true)
+			if (blx()->config->rememberUsernameEnabled === true)
 			{
 				$cookie = new \CHttpCookie('username', $this->username);
-				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(b()->config->rememberUsernameTimeout);
+				$cookie->expire = DateTimeHelper::currentTime() + ConfigHelper::getTimeInSeconds(blx()->config->rememberUsernameTimeout);
 				$cookie->httpOnly = true;
-				b()->request->cookies['username'] = $cookie;
+				blx()->request->cookies['username'] = $cookie;
 			}
 
-			return b()->user->login($this->_identity, $timeOut);
+			return blx()->user->login($this->_identity, $timeOut);
 		}
 		else
 			return false;

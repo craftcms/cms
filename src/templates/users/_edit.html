@@ -1,5 +1,5 @@
 {if !user && userId}
-	{set user = b.users.getById(userId)}
+	{set user = blx.users.getById(userId)}
 	{if user.status == 'archived'}
 		<!-- TODO: this doesn't work until we get string contact in the template parser -->
 		{redirect 'users/view/'+userId}
@@ -7,7 +7,7 @@
 {/if}
 
 {if user.id}
-	{if user.id == b.users.current.id}
+	{if user.id == blx.users.current.id}
 		{set displayName = "My"}
 	{elseif user.fullName}
 		{set displayName = user.fullName.possessive}
@@ -21,11 +21,9 @@
 
 {layout "_layouts/cp" title=title crumbs="users:Users"}
 
-
 {region "styles"}
 	{include "_includes/css_include" file="styles/user.css"}
 {/region}
-
 
 {region "main"}
 	<h1>{:title}</h1>
@@ -81,9 +79,9 @@
 						<div class="heading">
 							<label for="password">New Password</label>
 						</div>
-						<div class="passwordwrapper"><input id="password" name="password" class="text password {if changePasswordInfo.errors.password}error{/if}" type="password" /></div>
-						{if changePasswordForm.errors.password}
-							{include "_includes/error_list" errors=changePasswordForm.errors.password}
+						<div class="passwordwrapper"><input id="password" name="password" class="text password {if passwordForm && passwordForm.errors.password}error{/if}" type="password" /></div>
+						{if passwordForm && passwordForm.errors.password}
+							{include "_includes/error_list" errors=passwordForm.errors.password}
 						{/if}
 					</div>
 
@@ -91,7 +89,7 @@
 						<div class="heading">
 							<label for="confirm-password">Confirm New Password</label>
 						</div>
-						<div class="passwordwrapper"><input id="confirm-password" name="confirm-password" class="text password {if changePasswordInfo.errors.confirmPassword}error{/if}" type="password" /></div>
+						<div class="passwordwrapper"><input id="confirm-password" name="confirm-password" class="text password {if passwordForm && passwordForm.errors.confirmPassword}error{/if}" type="password" /></div>
 					</div>
 				{/if}
 
@@ -108,7 +106,15 @@
 					{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
 				</div>
 
-				{if b.users.current.admin}
+				<div class="field">
+					<div class="heading">
+						<label for="preferred_language">Preferred Language</label>
+					</div>
+
+					{include "_includes/dropdown" name="preferred_language" options="en_us:English (US),en_gb:English (GB)" value=user.preferred_language}
+				</div>
+
+				{if blx.users.current.admin}
 					<div class="field checkbox">
 						<label>This is an admin account
 							<div class="cbwrapper"><input type="checkbox" name="admin" value="y" {if user.admin}checked="checked"{/if} /></div>
@@ -116,7 +122,7 @@
 					</div>
 				{/if}
 
-				{if user.id && user.id != b.users.current.id}
+				{if user.id && user.id != blx.users.current.id}
 					<div class="field checkbox">
 						<label>A password reset is required
 							<div class="cbwrapper"><input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked="checked"{/if} /></div>
@@ -127,7 +133,7 @@
 				{if !user.id}
 					<div class="field checkbox">
 						<label>Send an account activation email
-							<div class="cbwrapper"><input type="checkbox" name="send_validation_email" value="y" {if b.request.post('send_validation_email')}checked="checked"{/if} /></div>
+							<div class="cbwrapper"><input type="checkbox" name="send_validation_email" value="y" {if blx.request.post('send_validation_email')}checked="checked"{/if} /></div>
 						</label>
 					</div>
 				{/if}
@@ -148,16 +154,16 @@
 						<input type="hidden" name="status" value="{:user.status}" />
 						{if user.status == 'pending'}
 							<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
-							<p><strong>Validation URL</strong> {:b.url.url(b.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
+							<p><strong>Validation URL</strong> {:blx.url.url(blx.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
 						{elseif user.status == 'locked'}
 							<input class="btn" type="submit" name="unlock" value="Unlock" />
 						{elseif user.status == 'suspended'}
 							<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
 						{/if}
-						{if b.config.failedPasswordMode == 'cooldown'}
+						{if blx.config.failedPasswordMode == 'cooldown'}
 							{if user.cooldown_start}
 								<br />
-								{set timeRemaining = dateTimeHelper.secondsToHumanTimeDuration(user.remainingCooldownTime)}
+								{set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime)}
 								Temporarily locked.  User will be auto-unlocked
 								{if timeRemaining > 0}
 									in {:timeRemaining}
@@ -171,7 +177,7 @@
 							<strong>Last Login Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_login_date}{:dateTimeHelper.nice(user.last_login_date)}{else}Never{/if}
+							{if user.last_login_date}{:blx.date.nice(user.last_login_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 
@@ -179,7 +185,7 @@
 							<strong>Last Failed Login Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_login_failed_date}{:dateTimeHelper.nice(user.last_login_failed_date)}{else}Never{/if}
+							{if user.last_login_failed_date}{:blx.date.nice(user.last_login_failed_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 
@@ -187,7 +193,7 @@
 							<strong>Last Password Changed Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_password_changed_date}{:dateTimeHelper.nice(user.last_password_changed_date)}{else}Never{/if}
+							{if user.last_password_changed_date}{:blx.date.nice(user.last_password_changed_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 
@@ -195,7 +201,7 @@
 							<strong>Last Lockout Date</strong>
 						</div>
 						<div class="right">
-							{if user.last_lockout_date}{:dateTimeHelper.nice(user.last_lockout_date)}{else}Never{/if}
+							{if user.last_lockout_date}{:blx.date.nice(user.last_lockout_date)}{else}Never{/if}
 						</div>
 						<div class="clear"></div>
 

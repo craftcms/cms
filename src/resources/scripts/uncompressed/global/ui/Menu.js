@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Menu Button
  */
-b.ui.MenuBtn = b.Base.extend({
+blx.ui.MenuBtn = blx.Base.extend({
 
 	$btn: null,
 	menu: null,
@@ -20,16 +19,16 @@ b.ui.MenuBtn = b.Base.extend({
 		// Is this already a menu button?
 		if (this.$btn.data('menubtn'))
 		{
-			b.log('Double-instantiating a menu button on an element');
+			blx.log('Double-instantiating a menu button on an element');
 			this.$btn.data('menubtn').destroy();
 		}
 
 		this.$btn.data('menubtn', this);
 
-		this.setSettings(settings, b.ui.MenuBtn.defaults);
+		this.setSettings(settings, blx.ui.MenuBtn.defaults);
 
 		var $menu = this.$btn.next('.menu');
-		this.menu = new b.ui.Menu($menu, {
+		this.menu = new blx.ui.Menu($menu, {
 			onOptionSelect: $.proxy(this, 'onOptionSelect')
 		});
 
@@ -57,7 +56,7 @@ b.ui.MenuBtn = b.Base.extend({
 		this.showingMenu = true;
 
 		setTimeout($.proxy(function() {
-			this.addListener(b.$document, 'mousedown', 'onMouseDown');
+			this.addListener(blx.$document, 'mousedown', 'onMouseDown');
 		}, this), 1);
 	},
 
@@ -67,7 +66,7 @@ b.ui.MenuBtn = b.Base.extend({
 		this.$btn.removeClass('sel');
 		this.showingMenu = false;
 
-		this.removeListener(b.$document, 'mousedown');
+		this.removeListener(blx.$document, 'mousedown');
 	},
 
 	onOptionSelect: function(option)
@@ -81,11 +80,10 @@ b.ui.MenuBtn = b.Base.extend({
 	}
 });
 
-
 /**
  * Menu
  */
-b.ui.Menu = b.Base.extend({
+blx.ui.Menu = blx.Base.extend({
 
 	settings: null,
 
@@ -97,9 +95,9 @@ b.ui.Menu = b.Base.extend({
 	 */
 	init: function(container, settings)
 	{
-		this.setSettings(settings, b.ui.Menu.defaults);
+		this.setSettings(settings, blx.ui.Menu.defaults);
 
-		this.$container = $(container).appendTo(b.$body);
+		this.$container = $(container).appendTo(blx.$body);
 		this.$options = this.$container.find('li');
 
 		this.addListener(this.$options, 'mousedown', 'selectOption');
@@ -135,6 +133,5 @@ b.ui.Menu = b.Base.extend({
 		onOptionSelect: function() {}
 	}
 });
-
 
 })(jQuery);

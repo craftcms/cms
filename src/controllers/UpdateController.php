@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UpdateController extends Controller
+class UpdateController extends BaseController
 {
 	/**
 	 * All update actions require the user to be logged in.
@@ -23,7 +23,7 @@ class UpdateController extends Controller
 		$this->requireAjaxRequest();
 
 		$return = array();
-		$updateInfo = b()->updates->getUpdateInfo();
+		$updateInfo = blx()->updates->getUpdateInfo();
 
 		if (!$updateInfo)
 			$this->returnErrorJson('There was a problem getting the latest update information.');
@@ -95,14 +95,14 @@ class UpdateController extends Controller
 			{
 				case 'Blocks':
 				{
-					b()->updates->doAppUpdate();
+					blx()->updates->doAppUpdate();
 					break;
 				}
 
 				// Plugin handle
 				default:
 				{
-					b()->updates->doPluginUpdate($h);
+					blx()->updates->doPluginUpdate($h);
 				}
 			}
 

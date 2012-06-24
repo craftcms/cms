@@ -1,10 +1,9 @@
 (function($) {
 
-
 /**
  * Pill
  */
-b.ui.Pill = b.Base.extend({
+blx.ui.Pill = blx.Base.extend({
 
 	$outerContainer: null,
 	$innerContainer: null,
@@ -19,7 +18,7 @@ b.ui.Pill = b.Base.extend({
 		// Is this already a pill?
 		if (this.$outerContainer.data('pill'))
 		{
-			b.log('Double-instantiating a pill on an element');
+			blx.log('Double-instantiating a pill on an element');
 			this.$outerContainer.data('pill').destroy();
 		}
 
@@ -30,7 +29,7 @@ b.ui.Pill = b.Base.extend({
 		this.$selectedBtn = this.$btns.filter('.sel:first');
 		this.$input = this.$outerContainer.find('input:first');
 
-		b.preventOutlineOnMouseFocus(this.$innerContainer);
+		blx.preventOutlineOnMouseFocus(this.$innerContainer);
 		this.addListener(this.$btns, 'mousedown', 'onMouseDown');
 		this.addListener(this.$innerContainer, 'keydown', 'onKeyDown');
 	},
@@ -61,7 +60,7 @@ b.ui.Pill = b.Base.extend({
 	{
 		switch (event.keyCode)
 		{
-			case b.RIGHT_KEY:
+			case blx.RIGHT_KEY:
 				if (!this.$selectedBtn.length)
 					this.select(this.$btns[this.$btns.length-1]);
 				else
@@ -72,7 +71,7 @@ b.ui.Pill = b.Base.extend({
 				}
 				event.preventDefault();
 				break;
-			case b.LEFT_KEY:
+			case blx.LEFT_KEY:
 				if (!this.$selectedBtn.length)
 					this.select(this.$btns[0]);
 				else
@@ -88,20 +87,18 @@ b.ui.Pill = b.Base.extend({
 
 });
 
-
 $.fn.pill = function()
 {
 	return this.each(function()
 	{
 		if (!$.data(this, 'pill'))
-			new b.ui.Pill(this);
+			new blx.ui.Pill(this);
 	});
 };
 
-b.$document.ready(function()
+blx.$document.ready(function()
 {
 	$('.pill').pill();
 });
-
 
 })(jQuery);

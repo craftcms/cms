@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles site management tasks
  */
-class SitesController extends Controller
+class SitesController extends BaseController
 {
 	/**
 	 * All site actions require the user to be logged in
@@ -21,23 +21,23 @@ class SitesController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$siteId = b()->request->getPost('site_id');
+		$siteId = blx()->request->getPost('site_id');
 
-		$siteSettings['name']     = b()->request->getPost('name');
-		$siteSettings['handle']   = b()->request->getPost('handle');
-		$siteSettings['url']      = b()->request->getPost('url');
-		$siteSettings['language'] = b()->request->getPost('language');
+		$siteSettings['name']     = blx()->request->getPost('name');
+		$siteSettings['handle']   = blx()->request->getPost('handle');
+		$siteSettings['url']      = blx()->request->getPost('url');
+		$siteSettings['language'] = blx()->request->getPost('language');
 
-		$site = b()->sites->saveSite($siteSettings, $siteId);
+		$site = blx()->sites->saveSite($siteSettings, $siteId);
 
 		if (!$site->errors)
 		{
-			b()->user->setMessage(MessageType::Notice, 'Site saved.');
+			blx()->user->setMessage(MessageType::Notice, 'Site saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save site.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save site.');
 		}
 
 		$this->loadRequestedTemplate(array('site' => $site));

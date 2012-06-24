@@ -50,10 +50,10 @@ class Section extends BaseModel
 		$table = $this->getContentTableName();
 
 		// Create the content table
-		b()->db->createCommand()->createContentTable($table, 'entries', 'entry_id');
+		blx()->db->createCommand()->createContentTable($table, 'entries', 'entry_id');
 
 		// Add the title column and index it
-		b()->db->createCommand()->addColumn($table, 'title', array('type' => AttributeType::Varchar, 'required' => true));
-		b()->db->createCommand()->createIndex("{$table}_title_idx", $table, 'title');
+		blx()->db->createCommand()->addColumn($table, 'title', array('type' => AttributeType::Varchar, 'required' => true));
+		blx()->db->createCommand()->createIndex("{$table}_title_idx", $table, 'title');
 	}
 }

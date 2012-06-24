@@ -9,17 +9,17 @@
 	<h1>Dashboard</h1>
 
 	<div class="actions">
-		<a href="{:b.url.base}dashboard/settings" class="btn big light" data-icon="s">Settings</a>
+		<a href="{:blx.url.base}dashboard/settings" class="btn big light" data-icon="s">Settings</a>
 	</div>
 
 	{!--<div id="alerts">
-		{if !b.sites.licensekeys}
+		{if !blx.sites.licensekeys}
 			<div class="alert">
-				<p>You need to enter your license key into your <a href="{:b.url.base}settings/info">System Info</a> page.</p>
+				<p>You need to enter your license key into your <a href="{:blx.url.base}settings/info">System Info</a> page.</p>
 			</div>
 		{/if}
 
-		{foreach b.dashboard.alerts as alert}
+		{foreach blx.dashboard.alerts as alert}
 			<div class="alert">
 				<p>{:alert}</p>
 			</div>
@@ -31,16 +31,16 @@
 {/region}
 
 {region "scripts"}
-	{!--if !b.updates.cached}
+	{!--if !blx.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{:b.url.action("dashboard/getalerts")}';
+			window.getAlertsUrl = '{:blx.url.action("dashboard/getalerts")}';
 		</script>
 	{/if--}
 
 	{include "_includes/js_include" file="dashboard.js"}
 
 	<script type="text/javascript">
-		b.dashboard = new b.Dashboard([{:b.dashboard.userwidgetids.join}]);
+		blx.dashboard = new blx.Dashboard([{:blx.dashboard.userwidgetids.join}]);
 	</script>
 {/region}

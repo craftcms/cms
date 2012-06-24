@@ -24,7 +24,7 @@ class Content extends \CModel
 			// Get the current content
 			if (isset($this->record) && isset($this->language) && $this->record->hasContent && !$this->record->getIsNewRecord())
 			{
-				$this->_content = b()->db->createCommand()
+				$this->_content = blx()->db->createCommand()
 					->from($this->table)
 					->where(array($this->foreignKey => $this->record->id, 'language' => $this->language))
 					->queryRow();
@@ -177,7 +177,7 @@ class Content extends \CModel
 
 		// Insert the row
 		$content = $this->getContent();
-		b()->db->createCommand()->insert($this->table, $content);
+		blx()->db->createCommand()->insert($this->table, $content);
 
 		return true;
 	}
@@ -194,7 +194,7 @@ class Content extends \CModel
 
 		$content = $this->getContent();
 		$id = $this->getValue('id');
-		b()->db->createCommand()->update($this->table, $content, array('id' => $id));
+		blx()->db->createCommand()->update($this->table, $content, array('id' => $id));
 
 		return true;
 	}

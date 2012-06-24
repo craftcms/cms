@@ -12,7 +12,7 @@ class SitesVariable
 	 */
 	public function licensekeys()
 	{
-		return b()->sites->getAllLicenseKeys();
+		return blx()->sites->getAllLicenseKeys();
 	}
 
 	/**
@@ -22,7 +22,7 @@ class SitesVariable
 	 */
 	public function getSiteById($siteId)
 	{
-		return b()->sites->getSiteById($siteId);
+		return blx()->sites->getSiteById($siteId);
 	}
 
 	/**
@@ -31,6 +31,6 @@ class SitesVariable
 	 */
 	public function all()
 	{
-		return b()->sites->getAllSites();
+		return blx()->sites->getAllSites();
 	}
 }

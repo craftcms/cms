@@ -38,7 +38,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
-		if (!b()->getIsInstalled())
+		if (!blx()->getIsInstalled())
 		{
 			// Just do the bare minimum of constructor-type stuff.
 			// Maybe init() is all that's necessary?
@@ -141,11 +141,11 @@ abstract class BaseModel extends \CActiveRecord
 	public function getContent($language = null)
 	{
 		if (!$language)
-			$language = b()->sites->getCurrentSite()->language;
+			$language = blx()->sites->getCurrentSite()->language;
 
 		if (!isset($this->_content[$language]))
 		{
-			$content = new Content;
+			$content = new Content();
 			$content->record = $this;
 			$content->language = $language;
 			$content->table = $this->getContentTableName();
@@ -169,7 +169,7 @@ abstract class BaseModel extends \CActiveRecord
 
 			if ($this->hasBlocks && !$this->getIsNewRecord())
 			{
-				$blocks = b()->db->createCommand()
+				$blocks = blx()->db->createCommand()
 					->select('b.*')
 					->from($this->getBlocksJoinTableName().' j')
 					->join('blocks b', 'j.block_id = b.id')
@@ -206,7 +206,7 @@ abstract class BaseModel extends \CActiveRecord
 
 			if ($this->hasSettings && !$this->getIsNewRecord())
 			{
-				$settings = b()->db->createCommand()
+				$settings = blx()->db->createCommand()
 					->select('name, value')
 					->from($this->getSettingsTableName())
 					->where(array($this->getForeignKeyName() => $this->id))
@@ -242,7 +242,7 @@ abstract class BaseModel extends \CActiveRecord
 			$table = $this->getSettingsTableName();
 
 			// Delete the previous settings
-			b()->db->createCommand()->delete($table, $this->getForeignKeyName().' = :id', array(':id' => $this->id));
+			blx()->db->createCommand()->delete($table, $this->getForeignKeyName().' = :id', array(':id' => $this->id));
 
 			// Save the new ones
 			if ($this->_settings)
@@ -255,7 +255,7 @@ abstract class BaseModel extends \CActiveRecord
 						$vals[] = array($this->id, $name, $value);
 					}
 					$columns = array($this->getForeignKeyName(), 'name', 'value');
-					b()->db->createCommand()->insertAll($table, $columns, $vals);
+					blx()->db->createCommand()->insertAll($table, $columns, $vals);
 				}
 			}
 		}
@@ -326,7 +326,7 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Get the records that were recently created
-	 * @param int limit Number of rows to get (default is 50)
+	 * @param int Limit Number of rows to get (default is 50)
 	 * @return Model
 	 */
 	public function recentlyCreated($limit = 50)
@@ -341,7 +341,7 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Get the records that were recently modified
-	 * @param int limit Number of rows to get (default is 50)
+	 * @param int Limit Number of rows to get (default is 50)
 	 * @return Model
 	 */
 	public function recentlyUpdated($limit = 50)
@@ -440,7 +440,7 @@ abstract class BaseModel extends \CActiveRecord
 		}
 
 		// Create the table
-		b()->db->createCommand()->createTable($table, $columns);
+		blx()->db->createCommand()->createTable($table, $columns);
 
 		// Create the indexes
 		foreach ($this->indexes as $index)
@@ -448,7 +448,7 @@ abstract class BaseModel extends \CActiveRecord
 			$columns = ArrayHelper::stringToArray($index['columns']);
 			$unique = (isset($index['unique']) && $index['unique'] === true);
 			$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
-			b()->db->createCommand()->createIndex($name, $table, implode(',', $columns), $unique);
+			blx()->db->createCommand()->createIndex($name, $table, implode(',', $columns), $unique);
 		}
 
 		// Create the content table if necessary
@@ -470,8 +470,8 @@ abstract class BaseModel extends \CActiveRecord
 	public function dropTable()
 	{
 		$table = $this->getTableName();
-		if (b()->db->getSchema()->getTable($table) !== null)
-			b()->db->createCommand()->dropTable($table);
+		if (blx()->db->getSchema()->getTable($table) !== null)
+			blx()->db->createCommand()->dropTable($table);
 
 		// Drop the content table if necessary
 		if ($this->hasContent)
@@ -499,7 +499,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTable = $otherModel->getTableName();
 			$fkName = "{$table}_{$otherTable}_fk";
-			b()->db->createCommand()->addForeignKey($fkName, $table, $name.'_id', $otherTable, 'id');
+			blx()->db->createCommand()->addForeignKey($fkName, $table, $name.'_id', $otherTable, 'id');
 		}
 	}
 
@@ -516,7 +516,7 @@ abstract class BaseModel extends \CActiveRecord
 			$otherModel = new $otherModelClass;
 			$otherTable = $otherModel->getTableName();
 			$fkName = "{$table}_{$otherTable}_fk";
-			b()->db->createCommand()->dropForeignKey($fkName, $table);
+			blx()->db->createCommand()->dropForeignKey($fkName, $table);
 		}
 	}
 
@@ -525,7 +525,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createContentTable()
 	{
-		b()->db->createCommand()->createContentTable($this->getContentTableName(), $this->getTableName(), $this->getForeignKeyName());
+		blx()->db->createCommand()->createContentTable($this->getContentTableName(), $this->getTableName(), $this->getForeignKeyName());
 	}
 
 	/**
@@ -533,7 +533,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropContentTable()
 	{
-		b()->db->createCommand()->dropTable($this->getContentTableName());
+		blx()->db->createCommand()->dropTable($this->getContentTableName());
 	}
 
 	/**
@@ -541,7 +541,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createBlocksJoinTable()
 	{
-		b()->db->createCommand()->createBlocksJoinTable($this->getBlocksJoinTableName(), $this->getTableName(), $this->getForeignKeyName());
+		blx()->db->createCommand()->createBlocksJoinTable($this->getBlocksJoinTableName(), $this->getTableName(), $this->getForeignKeyName());
 	}
 
 	/**
@@ -549,7 +549,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropBlocksJoinTable()
 	{
-		b()->db->createCommand()->dropTable($this->getBlocksJoinTableName());
+		blx()->db->createCommand()->dropTable($this->getBlocksJoinTableName());
 	}
 
 	/**
@@ -557,7 +557,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function createSettingsTable()
 	{
-		b()->db->createCommand()->createSettingsTable($this->getSettingsTableName(), $this->getTableName(), $this->getForeignKeyName());
+		blx()->db->createCommand()->createSettingsTable($this->getSettingsTableName(), $this->getTableName(), $this->getForeignKeyName());
 	}
 
 	/**
@@ -565,7 +565,7 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function dropSettingsTable()
 	{
-		b()->db->createCommand()->dropTable($this->getSettingsTableName());
+		blx()->db->createCommand()->dropTable($this->getSettingsTableName());
 	}
 
 	/**
@@ -663,10 +663,9 @@ abstract class BaseModel extends \CActiveRecord
 
 	/**
 	 * Returns an instance of the specified model
-	 *
 	 * @static
 	 * @param string $class
-	 * @return object The model instance
+	 * @return \CActiveRecord|object The model instance
 	 */
 	public static function model($class = __CLASS__)
 	{

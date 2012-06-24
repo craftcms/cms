@@ -1,9 +1,8 @@
-{set plugin = b.plugins.get(pluginClass)}
+{set plugin = blx.plugins.get(pluginClass)}
 
 <?php $title = new Variable($plugin->name().' plugin settings'); ?>
 
 {layout "_layouts/cp" title=title crumbs="settings:Settings"}
-
 
 {region "main"}
 	<h1>{:title}</h1>

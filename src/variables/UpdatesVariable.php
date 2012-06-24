@@ -12,7 +12,7 @@ class UpdatesVariable
 	 */
 	public function cached()
 	{
-		return b()->updates->getIsUpdateInfoCached();
+		return blx()->updates->getIsUpdateInfoCached();
 	}
 
 	/**
@@ -21,7 +21,7 @@ class UpdatesVariable
 	 */
 	public function critical()
 	{
-		return b()->updates->getIsCriticalUpdateAvailable();
+		return blx()->updates->getIsCriticalUpdateAvailable();
 	}
 
 	/**
@@ -30,7 +30,7 @@ class UpdatesVariable
 	 */
 	public function unwritabledirectories()
 	{
-		return b()->updates->getUnwritableDirectories();
+		return blx()->updates->getUnwritableDirectories();
 	}
 
 	/**
@@ -39,6 +39,6 @@ class UpdatesVariable
 	 */
 	public function updateinfo($forceRefresh = false)
 	{
-		return b()->updates->getUpdateInfo($forceRefresh);
+		return blx()->updates->getUpdateInfo($forceRefresh);
 	}
 }

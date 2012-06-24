@@ -3,7 +3,7 @@
 
 {region "styles"}
 	<style type="text/css">
-		#dbupdate .icon { background-image: url({:b.url.resource}images/notice-dbupdate.png); }
+		#dbupdate .icon { background-image: url({:blx.url.resource}images/notice-dbupdate.png); }
 	</style>
 {/region}
 
@@ -37,7 +37,7 @@
 	<script type="text/javascript">
 		var waiting = false;
 		$('#go').click(function() {
-			$.post('{:b.url.action}dbupdate/update', function(response) {
+			$.post('{:blx.url.action}dbupdate/update', function(response) {
 				if (response.success)
 					window.location.reload()
 				else

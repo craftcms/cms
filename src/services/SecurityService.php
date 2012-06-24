@@ -14,7 +14,7 @@ class SecurityService extends \CApplicationComponent
 	function __construct()
 	{
 		parent::init();
-		$this->_iterationCount = b()->config->getItem('phpPass-iterationCount');
+		$this->_iterationCount = blx()->config->getItem('phpPass-iterationCount');
 	}
 
 	/**
@@ -32,13 +32,13 @@ class SecurityService extends \CApplicationComponent
 	 */
 	public function hashPassword($password)
 	{
-		$passwordHasher = new \PasswordHash($this->_iterationCount, false);
+		$passwordHasher = new PasswordHash($this->_iterationCount, false);
 		$hashAndType = $passwordHasher->hashPassword($password);
 		$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 
 		if (!$check)
 		{
-			$passwordHasher = new \PasswordHash($this->_iterationCount, false);
+			$passwordHasher = new PasswordHash($this->_iterationCount, false);
 			$hashAndType = $passwordHasher->hashPassword($password);
 			$check = $passwordHasher->checkPassword($password, $hashAndType['hash']);
 		}
@@ -56,7 +56,7 @@ class SecurityService extends \CApplicationComponent
 	 */
 	public function checkPassword($password, $storedHash)
 	{
-		$passwordHasher = new \PasswordHash($this->_iterationCount, false);
+		$passwordHasher = new PasswordHash($this->_iterationCount, false);
 		$check = $passwordHasher->checkPassword($password, $storedHash);
 
 		return $check;

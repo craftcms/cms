@@ -15,7 +15,7 @@ class ContentService extends \CApplicationComponent
 	public function getSections()
 	{
 		$sections = Section::model()->findAllByAttributes(array(
-			'site_id' => b()->sites->getCurrentSite()->id,
+			'site_id' => blx()->sites->getCurrentSite()->id,
 			'parent_id' => null
 		));
 
@@ -55,7 +55,7 @@ class ContentService extends \CApplicationComponent
 			$section = $this->getSectionById($sectionId);
 
 		if (empty($section))
-			$section = new Section;
+			$section = new Section();
 
 		return $section;
 	}
@@ -79,7 +79,7 @@ class ContentService extends \CApplicationComponent
 	{
 		return Section::model()->findByAttributes(array(
 			'handle' => $handle,
-			'site_id' => b()->sites->getCurrentSite()->id
+			'site_id' => blx()->sites->getCurrentSite()->id
 		));
 	}
 
@@ -126,15 +126,17 @@ class ContentService extends \CApplicationComponent
 		if ($sectionId)
 		{
 			$section = $this->getSectionById($sectionId);
+
 			if (!$section)
 				throw new Exception('No section exists with the ID '.$sectionId);
+
 			$isNewSection = false;
 			$oldContentTable = $section->getContentTableName();
 			$oldUrlFormat = $section->url_format;
 		}
 		else
 		{
-			$section = new Section;
+			$section = new Section();
 			$isNewSection = true;
 		}
 
@@ -145,10 +147,10 @@ class ContentService extends \CApplicationComponent
 		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
 		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
 		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
-		$section->site_id     = b()->sites->getCurrentSite()->id;
+		$section->site_id     = blx()->sites->getCurrentSite()->id;
 
 		// Start a transaction
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Try saving the section
@@ -168,7 +170,7 @@ class ContentService extends \CApplicationComponent
 				{
 					// Rename the content table if the handle changed
 					if ($contentTable != $oldContentTable)
-						b()->db->createCommand()->renameTable($oldContentTable, $contentTable);
+						blx()->db->createCommand()->renameTable($oldContentTable, $contentTable);
 
 					// Update the entry URIs if the URL format changed
 					if ($section->url_format != $oldUrlFormat)
@@ -204,12 +206,12 @@ class ContentService extends \CApplicationComponent
 				{
 					$blockData = $sectionSettings['blocks'][$blockId];
 
-					$block = b()->blocks->getBlockByClass($blockData['class']);
+					$block = blx()->blocks->getBlockByClass($blockData['class']);
 					$isNewBlock = true;
 
 					if (strncmp($blockId, 'new', 3) != 0)
 					{
-						$originalBlock = b()->blocks->getBlockById($blockId);
+						$originalBlock = blx()->blocks->getBlockById($blockId);
 						if ($originalBlock)
 						{
 							$isNewBlock = false;
@@ -234,7 +236,7 @@ class ContentService extends \CApplicationComponent
 							// Attach it to the section
 							try
 							{
-								b()->db->createCommand()->insert('sectionblocks', array(
+								blx()->db->createCommand()->insert('sectionblocks', array(
 									'section_id' => $section->id,
 									'block_id'   => $block->id,
 								));
@@ -249,6 +251,7 @@ class ContentService extends \CApplicationComponent
 							// Save the settings
 							if (!isset($blockData['settings']))
 								$blockData['settings'] = array();
+
 							$block->settings = $blockData['settings'];
 
 							// Add or modify the block's content column
@@ -257,12 +260,12 @@ class ContentService extends \CApplicationComponent
 							if ($isNewBlock)
 							{
 								// Add the new column
-								b()->db->createCommand()->addColumnAfter($contentTable, $block->handle, $columnType, $lastColumn);
+								blx()->db->createCommand()->addColumnAfter($contentTable, $block->handle, $columnType, $lastColumn);
 							}
 							else
 							{
 								// Alter the column
-								b()->db->createCommand()->alterColumn($contentTable, $originalBlock->handle, $columnType, $block->handle, $lastColumn);
+								blx()->db->createCommand()->alterColumn($contentTable, $originalBlock->handle, $columnType, $block->handle, $lastColumn);
 							}
 
 							// Remember this column name for the next block
@@ -283,11 +286,11 @@ class ContentService extends \CApplicationComponent
 			{
 				foreach ($sectionSettings['blocks']['delete'] as $blockId)
 				{
-					$block = b()->blocks->getBlockById($blockId);
-					b()->db->createCommand()->delete('sectionblocks',       array('block_id'=>$blockId));
-					b()->db->createCommand()->delete('blocksettings',       array('block_id'=>$blockId));
-					b()->db->createCommand()->delete('blocks',              array('id'=>$blockId));
-					b()->db->createCommand()->dropColumn($contentTable, $block->handle);
+					$block = blx()->blocks->getBlockById($blockId);
+					blx()->db->createCommand()->delete('sectionblocks',       array('block_id'=>$blockId));
+					blx()->db->createCommand()->delete('blocksettings',       array('block_id'=>$blockId));
+					blx()->db->createCommand()->delete('blocks',              array('id'=>$blockId));
+					blx()->db->createCommand()->dropColumn($contentTable, $block->handle);
 				}
 			}
 
@@ -318,20 +321,20 @@ class ContentService extends \CApplicationComponent
 	public function createEntry($sectionId, $parentId = null, $authorId = null, $title = null)
 	{
 		// Start a transaction
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 
 		try
 		{
 			// Create the entry
-			$entry = new Entry;
+			$entry = new Entry();
 			$entry->section_id = $sectionId;
-			$entry->author_id = ($authorId ? $authorId : b()->users->getCurrentUser()->id);
+			$entry->author_id = ($authorId ? $authorId : blx()->users->getCurrentUser()->id);
 			$entry->parent_id = $parentId;
 			$entry->save();
 
 			// Create a content row for it
 			$table = $entry->section->getContentTableName();
-			b()->db->createCommand()->insert($table, array(
+			blx()->db->createCommand()->insert($table, array(
 				'entry_id' => $entry->id,
 				'language' => $entry->section->site->language,
 				'title'    => $title
@@ -370,7 +373,7 @@ class ContentService extends \CApplicationComponent
 				if ($i != 0)
 					$testSlug .= '-'.$i;
 
-				b()->db->createCommand()->update('entries', array('slug' => $testSlug), array('id'=>$entry->id));
+				blx()->db->createCommand()->update('entries', array('slug' => $testSlug), array('id'=>$entry->id));
 
 				break;
 			}
@@ -407,7 +410,7 @@ class ContentService extends \CApplicationComponent
 		}
 
 		if (!$language)
-			$language = b()->sites->getCurrentSite()->language;
+			$language = blx()->sites->getCurrentSite()->language;
 
 		$content = $entry->getContent($language);
 
@@ -417,7 +420,7 @@ class ContentService extends \CApplicationComponent
 		}
 
 		// Start a transaction
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Validate the content
@@ -486,7 +489,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getAllEntriesBySiteId($siteId)
 	{
-		$entries = b()->db->createCommand()
+		$entries = blx()->db->createCommand()
 			->select('e.*')
 			->from('sections s')
 			->join('entries e', 's.id = e.section_id')
@@ -514,7 +517,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getEntryDrafts($entryId)
 	{
-		$drafts = b()->db->createCommand()
+		$drafts = blx()->db->createCommand()
 			->from('entryversions')
 			->where(array('entry_id' => $entryId, 'draft' => true))
 			->order('date_created DESC')
@@ -565,10 +568,10 @@ class ContentService extends \CApplicationComponent
 				throw new Exception('No entry exists with the ID '.$entry->id);
 		}
 
-		$version = new EntryVersion;
+		$version = new EntryVersion();
 		$version->entry_id  = $entry->id;
-		$version->author_id = b()->users->getCurrentUser()->id;
-		$version->language  = ($language ? $language : b()->sites->getCurrentSite()->language);
+		$version->author_id = blx()->users->getCurrentUser()->id;
+		$version->language  = ($language ? $language : blx()->sites->getCurrentSite()->language);
 		$version->draft = $draft;
 		$version->name = $name;
 
@@ -576,7 +579,7 @@ class ContentService extends \CApplicationComponent
 			$version->setChanges($content);
 
 		// Start a transaction
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 
 		try
 		{
@@ -669,7 +672,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getLatestDraft($entryId)
 	{
-		$draft = b()->db->createCommand()
+		$draft = blx()->db->createCommand()
 			->from('entryversions')
 			->where(array('and', 'entry_id'=>$entryId, 'draft=1'))
 			->order('num DESC')
@@ -702,14 +705,14 @@ class ContentService extends \CApplicationComponent
 	public function publishEntryDraft($draft)
 	{
 		// Start a transaction
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Save the entry content
 			if ($this->saveEntryContent($draft->entry, $draft->getChanges()))
 			{
 				// Delete the draft
-				b()->content->deleteEntryDraft($draft->id);
+				blx()->content->deleteEntryDraft($draft->id);
 
 				$transaction->commit();
 				return true;
@@ -730,7 +733,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function deleteEntryDraft($draftId)
 	{
-		b()->db->createCommand()->delete('entryversions', array(
+		blx()->db->createCommand()->delete('entryversions', array(
 			'id'    => $draftId,
 			'draft' => true
 		));

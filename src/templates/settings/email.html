@@ -1,7 +1,7 @@
 {layout "_layouts/cp" title="Email settings" crumbs="settings:Settings"}
 
 {if !emailSettings}
-	{set emailSettings = b.email.settings}
+	{set emailSettings = blx.email.settings}
 {/if}
 
 {region "main"}
@@ -36,11 +36,11 @@
 				<p>The protocol Blocks will use to send email.</p>
 			</div>
 			<select id="protocol" name="protocol">
-				<option value="PhpMail" {if emailSettings.protocol == 'PhpMail'}selected{/if}>PHP Mail</option>
+				<option value="PhpMail" {if emailSettings.protocol == 'PhpMail'}selected{/if}>Php Mail</option>
 				<option value="Sendmail" {if emailSettings.protocol == 'Sendmail'}selected{/if}>Sendmail</option>
-				<option value="Smtp" {if emailSettings.protocol == 'Smtp'}selected{/if}>SMTP</option>
-				<option value="GmailSmtp" {if emailSettings.protocol == 'GmailSmtp'}selected{/if}>Gmail SMTP</option>
-				<option value="Pop" {if emailSettings.protocol == 'Pop'}selected{/if}>POP before SMTP</option>
+				<option value="Smtp" {if emailSettings.protocol == 'Smtp'}selected{/if}>Smtp</option>
+				<option value="GmailSmtp" {if emailSettings.protocol == 'GmailSmtp'}selected{/if}>Gmail Smtp</option>
+				<option value="Pop" {if emailSettings.protocol == 'Pop'}selected{/if}>Pop before Smtp</option>
 			</select>
 		</div>
 
@@ -95,7 +95,7 @@
 			</div>
 
 			<div id="smtpAuth-field" class="field checkbox">
-				<label>Use SMTP Authentication
+				<label>Use Smtp Authentication
 					<div class="cbwrapper"><input type="checkbox" name="smptAuth" value="y" {if emailSettings.smtpAuth}checked="checked"{/if} class="togglefields" data-target="smtpAuthCredentials-field" /></div>
 				</label>
 			</div>
@@ -122,13 +122,13 @@
 			</div>
 
 			<div id="smtpKeepAlive-field" class="field checkbox">
-				<label>Use SMTP Keep Alive
+				<label>Use Smtp Keep Alive
 					<div class="cbwrapper"><input type="checkbox" name="smtpKeepAlive" value="y" {if emailSettings.smtpKeepAlive}checked="checked"{/if} /></div>
 				</label>
 			</div>
 			<div id="smtpSecureTransportType-field" class="field">
 				<div class="heading">
-					<label for="smtpSecureTransportType">SMTP Secure Transport Type</label>
+					<label for="smtpSecureTransportType">Smtp Secure Transport Type</label>
 				</div>
 				{include "_includes/pill" name="smtpSecureTransportType" options="none:None,ssl:SSL,tls:TLS" default="none" value=emailSettings.smtpSecureTransportType}
 			</div>

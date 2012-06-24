@@ -21,7 +21,7 @@ class DashboardVariable
 	 */
 	public function allwidgets()
 	{
-		$widgets = b()->dashboard->getAllWidgets();
+		$widgets = blx()->dashboard->getAllWidgets();
 		return $widgets;
 	}
 
@@ -31,7 +31,7 @@ class DashboardVariable
 	 */
 	public function userwidgets()
 	{
-		$widgets = b()->dashboard->getUserWidgets();
+		$widgets = blx()->dashboard->getUserWidgets();
 		return $widgets;
 	}
 
@@ -42,7 +42,7 @@ class DashboardVariable
 	public function userwidgetids()
 	{
 		$widgetIds = array();
-		$widgets = b()->dashboard->getUserWidgets();
+		$widgets = blx()->dashboard->getUserWidgets();
 
 		foreach ($widgets as $widget)
 		{

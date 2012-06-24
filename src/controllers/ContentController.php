@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles content management tasks
  */
-class ContentController extends Controller
+class ContentController extends BaseController
 {
 	/**
 	 * All content actions require the user to be logged in
@@ -21,18 +21,18 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$sectionSettings['name']        = b()->request->getPost('name');
-		$sectionSettings['handle']      = b()->request->getPost('handle');
-		$sectionSettings['max_entries'] = b()->request->getPost('max_entries');
-		$sectionSettings['sortable']    = b()->request->getPost('sortable');
-		$sectionSettings['has_urls']    = b()->request->getPost('has_urls');
-		$sectionSettings['url_format']  = b()->request->getPost('url_format');
-		$sectionSettings['template']    = b()->request->getPost('template');
-		$sectionSettings['blocks']      = b()->request->getPost('blocks');
+		$sectionSettings['name']        = blx()->request->getPost('name');
+		$sectionSettings['handle']      = blx()->request->getPost('handle');
+		$sectionSettings['max_entries'] = blx()->request->getPost('max_entries');
+		$sectionSettings['sortable']    = blx()->request->getPost('sortable');
+		$sectionSettings['has_urls']    = blx()->request->getPost('has_urls');
+		$sectionSettings['url_format']  = blx()->request->getPost('url_format');
+		$sectionSettings['template']    = blx()->request->getPost('template');
+		$sectionSettings['blocks']      = blx()->request->getPost('blocks');
 
-		$sectionId = b()->request->getPost('section_id');
+		$sectionId = blx()->request->getPost('section_id');
 
-		$section = b()->content->saveSection($sectionSettings, $sectionId);
+		$section = blx()->content->saveSection($sectionSettings, $sectionId);
 
 		// Did it save?
 		if (!$section->errors)
@@ -50,14 +50,14 @@ class ContentController extends Controller
 
 			if ($blocksSaved)
 			{
-				b()->user->setMessage(MessageType::Notice, 'Section saved.');
+				blx()->user->setMessage(MessageType::Notice, 'Section saved.');
 				$this->redirectToPostedUrl();
 			}
 			else
-				b()->user->setMessage(MessageType::Error, 'Section saved, but couldn’t save all the content blocks.');
+				blx()->user->setMessage(MessageType::Error, 'Section saved, but couldn’t save all the content blocks.');
 		}
 		else
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save section.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save section.');
 
 
 		// Reload the original template
@@ -73,16 +73,16 @@ class ContentController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$sectionId = b()->request->getRequiredPost('sectionId');
-		$title = b()->request->getPost('title');
+		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$title = blx()->request->getPost('title');
 
 		// Create the entry
-		$entry = b()->content->createEntry($sectionId, null, null, $title);
+		$entry = blx()->content->createEntry($sectionId, null, null, $title);
 
 		// Create the first draft
-		$draft = b()->content->createEntryDraft($entry);
+		$draft = blx()->content->createEntryDraft($entry);
 
-		b()->user->setMessage(MessageType::Notice, 'Entry created.');
+		blx()->user->setMessage(MessageType::Notice, 'Entry created.');
 		$this->redirect("content/{$entry->id}/draft{$draft->num}");
 	}
 
@@ -97,14 +97,14 @@ class ContentController extends Controller
 		$changes = $this->_getContentFromPost($entry);
 
 		// Save the new entry content
-		if (b()->content->saveEntryContent($entry, $changes))
+		if (blx()->content->saveEntryContent($entry, $changes))
 		{
-			b()->user->setMessage(MessageType::Notice, 'Entry saved.');
+			blx()->user->setMessage(MessageType::Notice, 'Entry saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save entry.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save entry.');
 		}
 
 		$this->loadRequestedTemplate(array('entry' => $entry));
@@ -119,12 +119,12 @@ class ContentController extends Controller
 
 		$entry = $this->_getEntry();
 		$changes = $this->_getContentFromPost($entry);
-		$draftName = b()->request->getPost('draftName');
+		$draftName = blx()->request->getPost('draftName');
 
 		// Create the new draft
-		$draft = b()->content->createEntryDraft($entry, $changes, $draftName);
+		$draft = blx()->content->createEntryDraft($entry, $changes, $draftName);
 
-		b()->user->setMessage(MessageType::Notice, 'Draft created.');
+		blx()->user->setMessage(MessageType::Notice, 'Draft created.');
 		$this->redirect("content/{$entry->id}/draft{$draft->num}");
 	}
 
@@ -140,14 +140,14 @@ class ContentController extends Controller
 		$changes = $this->_getContentFromPost($entry);
 
 		// Save the new draft content
-		if (b()->content->saveDraftContent($draft, $changes))
+		if (blx()->content->saveDraftContent($draft, $changes))
 		{
-			b()->user->setMessage(MessageType::Notice, 'Draft saved.');
+			blx()->user->setMessage(MessageType::Notice, 'Draft saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save draft.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save draft.');
 		}
 
 		$entry->setDraft($draft);
@@ -167,18 +167,18 @@ class ContentController extends Controller
 
 		// Save the new changes
 		if ($changes)
-			b()->content->saveDraftContent($draft, $changes);
+			blx()->content->saveDraftContent($draft, $changes);
 
 		// Publish the draft
 		$draft->entry = $entry;
-		if (b()->content->publishEntryDraft($draft))
+		if (blx()->content->publishEntryDraft($draft))
 		{
-			b()->user->setMessage(MessageType::Notice, 'Draft published.');
+			blx()->user->setMessage(MessageType::Notice, 'Draft published.');
 			$this->redirect('content/'.$entry->id);
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t publish draft.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t publish draft.');
 			$entry->setDraft($draft);
 			$this->loadRequestedTemplate(array('entry' => $entry));
 		}
@@ -192,8 +192,8 @@ class ContentController extends Controller
 	 */
 	private function _getEntry()
 	{
-		$entryId = b()->request->getRequiredPost('entryId');
-		$entry = b()->content->getEntryById($entryId);
+		$entryId = blx()->request->getRequiredPost('entryId');
+		$entry = blx()->content->getEntryById($entryId);
 
 		if (!$entry)
 			throw new Exception('No entry exists with the ID '.$entryId);
@@ -209,8 +209,8 @@ class ContentController extends Controller
 	 */
 	private function _getDraft()
 	{
-		$draftId = b()->request->getRequiredPost('draftId');
-		$draft = b()->content->getDraftById($draftId);
+		$draftId = blx()->request->getRequiredPost('draftId');
+		$draft = blx()->content->getDraftById($draftId);
 
 		if (!$draft)
 			throw new Exception('No draft exists with the ID '.$draftId);
@@ -228,11 +228,11 @@ class ContentController extends Controller
 	{
 		$changes = array();
 
-		if (($title = b()->request->getPost('title')) !== null)
+		if (($title = blx()->request->getPost('title')) !== null)
 			$changes['title'] = $title;
 
 		foreach ($entry->blocks as $block)
-			if (($val = b()->request->getPost($block->handle)) !== null)
+			if (($val = blx()->request->getPost($block->handle)) !== null)
 				$changes[$block->handle] = $val;
 
 		return $changes;

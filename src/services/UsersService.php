@@ -60,6 +60,7 @@ class UsersService extends \CApplicationComponent
 			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
 			'params' => array(':usernameOrEmail' => $usernameOrEmail),
 		));
+
 		return $user;
 	}
 
@@ -69,8 +70,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getCurrentUser()
 	{
-		$user = $this->getUserById(isset(b()->user) ? b()->user->getId() : null);
-		return $user;
+		return $this->getUserById(isset(blx()->user) ? blx()->user->getId() : null);
 	}
 
 	/**
@@ -113,7 +113,7 @@ class UsersService extends \CApplicationComponent
 		// if the password is null, we know someone on the back-end wants to create the account.
 		if ($password !== null)
 		{
-			$hashAndType = b()->security->hashPassword($password);
+			$hashAndType = blx()->security->hashPassword($password);
 			$user->password = $hashAndType['hash'];
 			$user->enc_type = $hashAndType['encType'];
 		}
@@ -134,9 +134,9 @@ class UsersService extends \CApplicationComponent
 	{
 		$activationCode = StringHelper::UUID();
 		$user->activationcode = $activationCode;
-		$date = new DateTime;
+		$date = new DateTime();
 		$user->activationcode_issued_date = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(b()->config->activationCodeExpiration) .'S');
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->activationCodeExpiration) .'S');
 		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();
 		$user->save();
 
@@ -149,7 +149,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getGroupsByUserId($userId)
 	{
-		$groups = b()->db->createCommand()
+		$groups = blx()->db->createCommand()
 			->select('g.*')
 			->from('groups g')
 			->join('usergroups ug', 'g.id = ug.group_id')
@@ -166,7 +166,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getUsersByGroupId($groupId)
 	{
-		$groups = b()->db->createCommand()
+		$groups = blx()->db->createCommand()
 			->select('u.*')
 			->from('groups g')
 			->join('usergroups ug', 'g.id = ug.group_id')
@@ -212,7 +212,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function changePassword(User $user, $newPassword, $save = true)
 	{
-		$hashAndType = b()->security->hashPassword($newPassword);
+		$hashAndType = blx()->security->hashPassword($newPassword);
 		$user->password = $hashAndType['hash'];
 		$user->enc_type = $hashAndType['encType'];
 		$user->status = UserAccountStatus::Active;
@@ -233,8 +233,8 @@ class UsersService extends \CApplicationComponent
 	{
 			$user = $this->generateActivationCodeForUser($user);
 
-			$site = b()->sites->getCurrentSite();
-			if (($emailStatus = b()->email->sendForgotPasswordEmail($user, $site)) == true)
+			$site = blx()->sites->getCurrentSite();
+			if (($emailStatus = blx()->email->sendForgotPasswordEmail($user, $site)) == true)
 				return true;
 
 		return false;
@@ -246,7 +246,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function getRemainingCooldownTime(User $user)
 	{
-		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(b()->config->failedPasswordCooldown);
+		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown);
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
 
 		if ($cooldownRemaining > 0)

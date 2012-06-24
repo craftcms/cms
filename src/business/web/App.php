@@ -43,8 +43,8 @@ class App extends \CWebApplication
 		Blocks::import('app.business.utils.UrlHelper');
 		Blocks::import('app.business.web.HttpRequest');
 		Blocks::import('app.business.web.UrlManager');
-		b()->getComponent('request');
-		b()->getComponent('log');
+		blx()->getComponent('request');
+		blx()->getComponent('log');
 
 		parent::init();
 	}
@@ -66,6 +66,12 @@ class App extends \CWebApplication
 			'app.business.enums.*',
 			'app.business.exceptions.*',
 			'app.business.install.*',
+			'app.business.lib.*',
+			'app.business.lib.PhpMailer.*',
+			'app.business.lib.Requests.*',
+			'app.business.lib.Requests.Auth.*',
+			'app.business.lib.Requests.Response.*',
+			'app.business.lib.Requests.Transport.*',
 			'app.business.logging.*',
 			'app.business.plugins.*',
 			'app.business.updates.*',
@@ -204,7 +210,7 @@ class App extends \CWebApplication
 				$action = isset($actionPath[1]) ? $actionPath[1] : '';
 
 				// Check for a valid controller in app/controllers.
-				$controllerPath = b()->path->getAppPath().'controllers/'.$controller.'Controller.php';
+				$controllerPath = blx()->path->getAppPath().'controllers/'.$controller.'Controller.php';
 				if (File::fileExists($controllerPath))
 				{
 					// Run the controller and action.
@@ -217,7 +223,7 @@ class App extends \CWebApplication
 				if (count($actionPath) == 2)
 				{
 					// Check to see if the plugin exists and is enabled.
-					$plugin = b()->plugins->getPlugin($actionPath[0]);
+					$plugin = blx()->plugins->getPlugin($actionPath[0]);
 					if ($plugin && $plugin->enabled)
 					{
 						$pluginName = $plugin->getClassHandle();
@@ -225,12 +231,12 @@ class App extends \CWebApplication
 						$action = $actionPath[1];
 
 						// Check for a valid controller in the plugins directories.
-						$controllerPath = b()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'Controller.php';
+						$controllerPath = blx()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'Controller.php';
 
 						if (File::fileExists($controllerPath))
 						{
 							Blocks::import('plugins.'.$pluginName.'.controllers.*');
-							$this->setControllerPath(b()->path->getPluginsPath().$pluginName.'/controllers/');
+							$this->setControllerPath(blx()->path->getPluginsPath().$pluginName.'/controllers/');
 							$this->runController($controller.'/'.$action);
 							$this->end();
 						}
@@ -241,7 +247,7 @@ class App extends \CWebApplication
 				elseif (count($actionPath) == 3)
 				{
 					// Check to see if the plugin exists and is enabled.
-					$plugin = b()->plugins->getPlugin($actionPath[0]);
+					$plugin = blx()->plugins->getPlugin($actionPath[0]);
 					if ($plugin && $plugin->enabled)
 					{
 						$pluginName = $plugin->getClassHandle();
@@ -249,12 +255,12 @@ class App extends \CWebApplication
 						$action = $actionPath[2];
 
 						// Check for a valid controller in the plugins directory.
-						$controllerPath = b()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'_'.$controller.'Controller.php';
+						$controllerPath = blx()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'_'.$controller.'Controller.php';
 
 						if (File::fileExists($controllerPath))
 						{
 							Blocks::import('plugins.'.$pluginName.'.controllers.*');
-							$this->setControllerPath(b()->path->getPluginsPath().$pluginName.'/controllers/');
+							$this->setControllerPath(blx()->path->getPluginsPath().$pluginName.'/controllers/');
 							$this->runController($pluginName.'_'.ucfirst($controller).'/'.$action);
 							$this->end();
 						}
@@ -475,7 +481,7 @@ class App extends \CWebApplication
 	{
 		$exceptionArr['error'] = $data['message'];
 
-		if (b()->config->devMode)
+		if (blx()->config->devMode)
 		{
 			$exceptionArr['trace']  = $data['trace'];
 			$exceptionArr['traces'] = $data['traces'];
@@ -498,7 +504,7 @@ class App extends \CWebApplication
 	 */
 	public function returnAjaxError($code, $message, $file, $line)
 	{
-		if(b()->config->devMode == true)
+		if(blx()->config->devMode == true)
 		{
 			$outputTrace = '';
 			$trace = debug_backtrace();

@@ -1,6 +1,5 @@
 (function($) {
 
-
 var $status = $('#status'),
 	updateInfo,
 	totalUpdates,
@@ -25,7 +24,6 @@ if (!updateHandle)
 	showError('Unable to determine what to update.');
 	return;
 }
-
 
 function getUpdateInfo()
 {
@@ -56,7 +54,6 @@ function getUpdateInfo()
 	});
 }
 
-
 function updateNext()
 {
 	updating++;
@@ -82,7 +79,7 @@ function updateNext()
 
 			// Redirect to the Dashboard in half a second
 			setTimeout(function() {
-				window.location = b.baseUrl+'dashboard';
+				window.location = blx.baseUrl+'dashboard';
 			}, 500);
 
 			return;
@@ -92,8 +89,6 @@ function updateNext()
 	});
 }
 
-
 getUpdateInfo();
-
 
 })(jQuery);

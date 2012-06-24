@@ -1,4 +1,4 @@
-{if b.session.loggedin}
+{if blx.session.loggedin}
 	{redirect "dashboard"}
 {/if}
 
@@ -14,9 +14,9 @@
 				<input type="hidden" name="action" value="account/verify" />
 				<input type="hidden" name="redirect" value="dashboard" />
 
-				{set activationCode = b.url.get('code')}
-				{if activationCode && b.security.validateUserActivationCode(activationCode)}
-					{set user = b.security.getUserByActivationCode(activationCode)}
+				{set activationCode = blx.url.get('code')}
+				{if activationCode && blx.security.validateUserActivationCode(activationCode)}
+					{set user = blx.security.getUserByActivationCode(activationCode)}
 
 					<div class="pane-item">Let's set a password for your account.</div>
 					<input type="hidden" name="userId" value="{:user.id}" />

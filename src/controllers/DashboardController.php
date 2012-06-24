@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DashboardController extends Controller
+class DashboardController extends BaseController
 {
 	/**
 	 * All dashboard actions require the user to be logged in
@@ -30,16 +30,16 @@ class DashboardController extends Controller
 	{
 		$this->requirePostRequest();
 
-		$widgetsPost = b()->request->getPost('widgets');
+		$widgetsPost = blx()->request->getPost('widgets');
 
-		if (b()->dashboard->saveSettings($widgetsPost))
+		if (blx()->dashboard->saveSettings($widgetsPost))
 		{
-			b()->user->setMessage(MessageType::Notice, 'Dashboard settings saved.');
+			blx()->user->setMessage(MessageType::Notice, 'Dashboard settings saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			b()->user->setMessage(MessageType::Error, 'Couldn’t save dashboard settings.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save dashboard settings.');
 		}
 
 		$this->loadRequestedTemplate();
@@ -51,8 +51,8 @@ class DashboardController extends Controller
 	 */
 	public function actionGetWidgetHtml()
 	{
-		$widgetId = b()->request->getRequiredParam('widgetId');
-		$widget = b()->dashboard->getWidgetById($widgetId);
+		$widgetId = blx()->request->getRequiredParam('widgetId');
+		$widget = blx()->dashboard->getWidgetById($widgetId);
 
 		if (!$widget)
 			throw new Exception('No widget exists with the ID '.$widgetId);

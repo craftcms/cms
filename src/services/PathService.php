@@ -75,6 +75,14 @@ class PathService extends \CApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getLanguagesPath()
+	{
+		return $this->getAppPath().'languages/';
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getCommandsPath()
 	{
 		return $this->getConsolePath().'commands/';
@@ -115,7 +123,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getSiteTemplatesPath()
 	{
-		$site = b()->sites->getCurrentSite();
+		$site = blx()->sites->getCurrentSite();
 		if ($site)
 			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
 		else
@@ -130,19 +138,10 @@ class PathService extends \CApplicationComponent
 	public function getOfflineTemplatePath()
 	{
 		// If the user has set offlinePath config item, let's use it.
-		if (($path = b()->config->offlinePath) !== null)
+		if (($path = blx()->config->offlinePath) !== null)
 			return substr($path, 0, strlen($path) - strlen(pathinfo($path, PATHINFO_BASENAME)));
 
 		return $this->getAppTemplatesPath();
-	}
-
-	/**
-	 * Returns 
-	 * @return string
-	 */
-	public function getEmailTemplatesPath()
-	{
-		return $this->getAppPath().'email_templates/';
 	}
 
 	/**
@@ -177,7 +176,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getParsedSiteTemplatesPath()
 	{
-		$site = b()->sites->getCurrentSite();
+		$site = blx()->sites->getCurrentSite();
 		if ($site)
 		{
 			$path = $this->getRuntimePath().'parsed_templates/sites/'.$site->handle.'/';
@@ -254,26 +253,6 @@ class PathService extends \CApplicationComponent
 		if (!is_dir($path))
 			mkdir($path, 0777, true);
 
-		return $path;
-	}
-
-	/**
-	 * @param $path
-	 * @return mixed
-	 */
-	public function normalizeDirectorySeparators($path)
-	{
-		return str_replace('\\', '/', $path);
-	}
-
-	/**
-	 * Adds a trailing slash to the end of a path if one does not exist
-	 * @param $path The path to normalize.
-	 * @return string The normalized path.
-	 */
-	public function normalizeTrailingSlash($path)
-	{
-		$path = rtrim($path, '\\/').'/';
 		return $path;
 	}
 }

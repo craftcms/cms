@@ -12,7 +12,7 @@ class SessionVariable
 	 */
 	public function loggedin()
 	{
-		return b()->user->getIsLoggedIn();
+		return blx()->user->getIsLoggedIn();
 	}
 
 	/**
@@ -21,7 +21,7 @@ class SessionVariable
 	 */
 	public function rememberedusername()
 	{
-		return b()->user->getRememeberedUsername();
+		return blx()->user->getRememberedUsername();
 	}
 
 	/**
@@ -30,6 +30,6 @@ class SessionVariable
 	 */
 	public function notifications()
 	{
-		return b()->user->getMessages();
+		return blx()->user->getMessages();
 	}
 }

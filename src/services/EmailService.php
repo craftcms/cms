@@ -8,6 +8,11 @@ class EmailService extends \CApplicationComponent
 {
 	private $_defaultEmailTimeout = 10;
 
+	public function registerEmailTemplate()
+	{
+
+	}
+
 	/**
 	 * @param EmailMessage $emailMessage
 	 * @return bool
@@ -15,13 +20,15 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function sendEmail(EmailMessage $emailMessage)
 	{
+		// Get the saved email settings.
 		$emailSettings = $this->getEmailSettings();
 
 		if (!isset($emailSettings['protocol']))
 			throw new Exception('Could not determine how to send the email.  Check your email settings.');
 
-		$email = new \PhpMailer(true);
+		$email = new PhpMailer(true);
 
+		// Check which protocol we need to use.
 		switch ($emailSettings['protocol'])
 		{
 			case EmailerType::GmailSmtp:
@@ -33,7 +40,7 @@ class EmailService extends \CApplicationComponent
 
 			case EmailerType::Pop:
 			{
-				$pop = new \Pop3();
+				$pop = new Pop3();
 				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
 				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{
@@ -43,7 +50,7 @@ class EmailService extends \CApplicationComponent
 				if (!isset($emailSettings['timeout']))
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], b()->config->devMode ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], blx()->config->devMode ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;
@@ -67,7 +74,6 @@ class EmailService extends \CApplicationComponent
 			}
 		}
 
-		$email->body = $emailMessage->getBody();
 		$email->from = $emailMessage->getFrom()->getEmailAddress();
 		$email->fromName = $emailMessage->getFrom()->getName();
 		$email->addReplyTo($emailMessage->getReplyTo()->getEmailAddress(), $emailMessage->getReplyTo()->getName());
@@ -88,14 +94,23 @@ class EmailService extends \CApplicationComponent
 		}
 
 		$email->subject = $emailMessage->getSubject();
-		$email->body = $emailMessage->getBody();
 
-		if ($email->altBody !== null)
-			$email->altBody = $emailMessage->getAltBody();
-
+		// See if it's an HTML email.
 		if ($emailMessage->getIsHtml())
 		{
+			// They already supplied an alt body (text), use it.
+			if ($emailMessage->getAltBody())
+			{
+				$email->altBody = $emailMessage->getAltBody();
+			}
+
+			// msgHtml will attempt to set a alt body from the html string if alt body was not supplied earlier.
 			$email->msgHtml($emailMessage->getBody());
+		}
+		else
+		{
+			// This is a text email.
+			$email->body = $emailMessage->getBody();
 		}
 
 		if (!$email->send())
@@ -106,18 +121,111 @@ class EmailService extends \CApplicationComponent
 
 	/**
 	 * @param EmailMessage $emailMessage
-	 * @param              $templateFile
-	 * @param array        $data
-	 *
+	 * @param              $emailKey
+	 * @param array        $variables
+	 * @param null         $pluginClass
+	 * @throws Exception
 	 * @return bool
 	 */
-	public function sendTemplateEmail(EmailMessage $emailMessage, $templateFile, $data = array())
+	public function sendTemplateEmail(EmailMessage $emailMessage, $emailKey, $variables = array(), $pluginClass = null)
 	{
-		$renderedTemplate = b()->controller->loadEmailTemplate($templateFile, $data);
-		$emailMessage->setBody($renderedTemplate);
+		// Get the email by key and plugin from the database.
+		$email = $this->getEmailByKey($emailKey, $pluginClass);
 
+		if (!$email)
+		{
+			$message = 'Could not find an email template with the key: '.$emailKey;
+
+			if ($pluginClass !== null)
+				$message .= ' and plugin class: '.$pluginClass;
+
+			$message .= '.';
+
+			throw new Exception($message);
+		}
+
+		// Subject is required.
+		if (StringHelper::isNullOrEmpty($email->subject))
+			throw new Exception('The subject is required when attempting to send an email.');
+
+		// HTML OR Text body is required.
+		if (StringHelper::isNullOrEmpty($email->html) && StringHelper::isNullOrEmpty($email->text))
+			throw new Exception('Either the email Html body or text body is required when sending an email.');
+
+		// Render the email templates
+		$emailContent = blx()->controller->loadEmailTemplate($email, $variables);
+
+		$textExists = StringHelper::isNotNullOrEmpty($emailContent['text']);
+		$htmlExists = StringHelper::isNotNullOrEmpty($emailContent['html']);
+		$subjectExists = StringHelper::isNotNullOrEmpty($emailContent['subject']);
+
+		// Check to see if the subject rendered.
+		if (!$subjectExists)
+			throw new Exception('Could not render the subject email template for the requested email.');
+
+		// Check to see if the HTML or Text body rendered.
+		if (!$htmlExists && !$textExists)
+			throw new Exception('Could not render the html email template or the text email template body for the requested email.');
+
+		// Set the subject.
+		$emailMessage->setSubject($emailContent['subject']);
+
+		// Check if this is an HTML email.
+		if ($emailMessage->getIsHtml())
+		{
+			// We were able to render an HTML and Text email template.
+			if ($htmlExists && $textExists)
+			{
+				$emailMessage->setAltBody($emailContent['text']);
+				$emailMessage->setBody($emailContent['html']);
+			}
+
+			// We found an HTML template, but not a text one.
+			elseif ($htmlExists && !$textExists)
+			{
+				$emailMessage->setBody($emailContent['html']);
+			}
+
+			// Found a text template, but not an HTML one, so use the text as the primary body.
+			elseif (!$htmlExists && $textExists)
+			{
+				$emailMessage->setBody($emailContent['text']);
+			}
+		}
+		else
+		{
+			// This is a text only email, so we ignore anything that was an HTML template.
+			if ($textExists)
+			{
+				$emailMessage->setBody($emailContent['text']);
+			}
+			else
+				throw new Exception('A non-HTML email was specified, but could not render the text template.');
+		}
+
+		// Send it!
 		if ($this->sendEmail($emailMessage))
 			return true;
+
+		return false;
+	}
+
+	/**
+	 * @param      $key
+	 * @param null $pluginClass
+	 * @return mixed
+	 */
+	public function getEmailByKey($key, $pluginClass = null)
+	{
+		$email = blx()->db->createCommand()
+			->select('et.*')
+			->from('email_templates et')
+			->join('plugins p', 'p.id = et.plugin_id')
+			->where('et.key = :key AND p.class = :pluginClass', array(':key' => $key, ':pluginClass' => $pluginClass))
+			->queryRow();
+
+		if ($email)
+			return EmailTemplate::model()->populateRecord($email);
 
 		return false;
 	}
@@ -131,10 +239,13 @@ class EmailService extends \CApplicationComponent
 	{
 		$emailSettings = $this->getEmailSettings();
 		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
-		$email->setIsHtml(true);
-		$email->setSubject('Confirm Your Registration');
 
-		if ($this->sendTemplateEmail($email, 'register', array('user' => $user, 'site' => $site)))
+		if ($user->html_email)
+			$email->setIsHtml(true);
+		else
+			$email->setIsHtml(false);
+
+		if ($this->sendTemplateEmail($email, 'registeruser', array('user' => $user, 'site' => $site)))
 			return true;
 
 		return false;
@@ -149,10 +260,13 @@ class EmailService extends \CApplicationComponent
 	{
 		$emailSettings = $this->getEmailSettings();
 		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
-		$email->setIsHtml(true);
-		$email->setSubject('Forgot Your Password?');
 
-		if ($this->sendTemplateEmail($email, 'forgot', array('user' => $user, 'site' => $site)))
+		if ($user->html_email)
+			$email->setIsHtml(true);
+		else
+			$email->setIsHtml(false);
+
+		if ($this->sendTemplateEmail($email, 'forgotpassword', array('user' => $user, 'site' => $site)))
 			return true;
 
 		return false;
@@ -201,7 +315,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getEmailSettings()
 	{
-		$emailSettings = b()->settings->getSystemSettings('email');
+		$emailSettings = blx()->settings->getSystemSettings('email');
 		$emailSettings = ArrayHelper::expandSettingsArray($emailSettings);
 		return $emailSettings;
 	}
@@ -212,7 +326,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function saveEmailSettings($settings)
 	{
-		if (b()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
+		if (blx()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
 			return true;
 
 		return false;

@@ -14,18 +14,18 @@ class InstallService extends \CApplicationComponent
 	 */
 	public function run($inputs)
 	{
-		if (b()->getIsInstalled())
+		if (blx()->getIsInstalled())
 			throw new Exception('Blocks is already installed.');
 
 		// Install the Block model first so the other models can create FK's to it
 		$models[] = new Block;
 
-		$modelsDir = b()->file->set(b()->path->getModelsPath());
+		$modelsDir = blx()->file->set(blx()->path->getModelsPath());
 		$modelFiles = $modelsDir->getContents(false, '.php');
 
 		foreach ($modelFiles as $filePath)
 		{
-			$file = b()->file->set($filePath);
+			$file = blx()->file->set($filePath);
 			$fileName = $file->fileName;
 
 			// Ignore Block since that's already queued up
@@ -46,17 +46,17 @@ class InstallService extends \CApplicationComponent
 		}
 
 		// Start the transaction
-		$transaction = b()->db->beginTransaction();
+		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Create the languages table first
 			// This is a special case: So that other tables' language columns can be restricted to supported languages without making them enums
-			$table = b()->config->tablePrefix.'languages';
+			$table = blx()->config->tablePrefix.'languages';
 			$columns = array('language' => 'CHAR(5) NOT NULL PRIMARY KEY');
-			b()->db->createCommand()->setText(b()->db->getSchema()->createTable($table, $columns))->execute();
+			blx()->db->createCommand()->setText(blx()->db->getSchema()->createTable($table, $columns))->execute();
 
 			// Add the languages
-			b()->db->createCommand()->insert('languages', array('language' => 'en_us'));
+			blx()->db->createCommand()->insert('languages', array('language' => 'en_us'));
 
 			// Create the tables
 			foreach ($models as $model)
@@ -73,7 +73,7 @@ class InstallService extends \CApplicationComponent
 			}
 
 			// Tell Blocks that it's installed now
-			b()->setIsInstalled(true);
+			blx()->setIsInstalled(true);
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 
@@ -100,7 +100,7 @@ class InstallService extends \CApplicationComponent
 			$user->username   = $inputs['username'];
 			$user->email      = $inputs['email'];
 			$user->admin = true;
-			b()->users->changePassword($user, $inputs['password'], false);
+			blx()->users->changePassword($user, $inputs['password'], false);
 			$user->save();
 
 			// Log them in
@@ -110,17 +110,17 @@ class InstallService extends \CApplicationComponent
 			$loginForm->login();
 
 			// Give them the default dashboard widgets
-			b()->dashboard->assignDefaultUserWidgets($user->id);
+			blx()->dashboard->assignDefaultUserWidgets($user->id);
 
 			// Save the default email settings
-			b()->email->saveEmailSettings(array(
+			blx()->email->saveEmailSettings(array(
 				'protocol'     => EmailerType::PhpMail,
 				'emailAddress' => $user->email,
 				'senderName'   => $site->name
 			));
 
 			// Create a Blog section
-			$section = b()->content->saveSection(array(
+			$section = blx()->content->saveSection(array(
 				'name'       => 'Blog',
 				'handle'     => 'blog',
 				'url_format' => 'blog/{slug}',
@@ -139,8 +139,8 @@ class InstallService extends \CApplicationComponent
 			));
 
 			// Add a Welcome entry to the Blog
-			$entry = b()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
-			b()->content->saveEntryContent($entry, array(
+			$entry = blx()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
+			blx()->content->saveEntryContent($entry, array(
 				'body' => "Hey {$user->username},\n\n" .
 				          "Welcome to Blocks Alpha 2!\n\n" .
 				          '-Brandon & Brad'

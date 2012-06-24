@@ -18,8 +18,8 @@ class NumberBlock extends BaseBlock
 	protected $fieldTemplate = '_blocktypes/Number/field';
 
 	/**
-	 * Get the 
-	 * @return bool Whether the settings passed validation
+	 * Get the
+	 * @return bool|string Whether the settings passed validation
 	 */
 	public function getColumnType()
 	{

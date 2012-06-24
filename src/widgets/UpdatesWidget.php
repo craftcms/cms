@@ -28,7 +28,7 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function displayBody()
 	{
-		$updateInfo = b()->updates->getUpdateInfo();
+		$updateInfo = blx()->updates->getUpdateInfo();
 
 		// Blocks first
 		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)

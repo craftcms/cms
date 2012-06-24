@@ -19,7 +19,7 @@ class AppUpdater implements IUpdater
 	 */
 	function __construct()
 	{
-		$this->_updateInfo = b()->updates->getUpdateInfo(true);
+		$this->_updateInfo = blx()->updates->getUpdateInfo(true);
 		$this->_buildsToUpdate = $this->_updateInfo->blocks->releases;
 	}
 
@@ -29,9 +29,9 @@ class AppUpdater implements IUpdater
 	 */
 	public function checkRequirements()
 	{
-		$installedMysqlVersion = b()->db->serverVersion;
-		$requiredMysqlVersion = b()->params['requiredMysqlVersion'];
-		$requiredPhpVersion = b()->params['requiredPhpVersion'];
+		$installedMysqlVersion = blx()->db->serverVersion;
+		$requiredMysqlVersion = blx()->params['requiredMysqlVersion'];
+		$requiredPhpVersion = blx()->params['requiredPhpVersion'];
 
 		$phpCompat = version_compare(PHP_VERSION, $requiredPhpVersion, '>=');
 		$databaseCompat = version_compare($installedMysqlVersion, $requiredMysqlVersion, '>=');
@@ -64,12 +64,12 @@ class AppUpdater implements IUpdater
 
 		// Get the most up-to-date build.
 		$latestBuild = $this->_buildsToUpdate[0];
-		$this->_downloadFilePath = b()->path->getRuntimePath().UpdateHelper::constructAppReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getProduct());
+		$this->_downloadFilePath = blx()->path->getRuntimePath().UpdateHelper::constructAppReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getProduct());
 		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
 
 		// Download the package from ET.
 		Blocks::log('Downloading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
-		if (!b()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
+		if (!blx()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
 			throw new Exception('There was a problem downloading the package.');
 
 		// Validate the downloaded package against ET.
@@ -93,7 +93,7 @@ class AppUpdater implements IUpdater
 
 		// Take the site offline.
 		Blocks::log('Taking the site offline for update.', \CLogger::LEVEL_INFO);
-		b()->updates->turnSystemOffBeforeUpdate();
+		blx()->updates->turnSystemOffBeforeUpdate();
 
 		// If there are migrations to run, run them.
 		if ($this->_migrationsToRun === true)
@@ -115,7 +115,7 @@ class AppUpdater implements IUpdater
 
 		// Bring the system back online.
 		Blocks::log('Turning system back on after update.', \CLogger::LEVEL_INFO);
-		b()->updates->turnSystemOnAfterUpdate();
+		blx()->updates->turnSystemOnAfterUpdate();
 
 		// Clean-up any leftover files.
 		Blocks::log('Cleaning up temp files after update.', \CLogger::LEVEL_INFO);
@@ -123,12 +123,12 @@ class AppUpdater implements IUpdater
 
 		// Clear the updates cache.
 		Blocks::log('Clearing the update cache.', \CLogger::LEVEL_INFO);
-		if (!b()->updates->flushUpdateInfoFromCache())
+		if (!blx()->updates->flushUpdateInfoFromCache())
 			throw new Exception('The update was performed successfully, but there was a problem invalidating the update cache.');
 
 		// Update the db with the new Blocks info.
 		Blocks::log('Setting new Blocks info in the database after update.', \CLogger::LEVEL_INFO);
-		if (!b()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
+		if (!blx()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
 			throw new Exception('The update was performed successfully, but there was a problem setting the new version and build number in the database.');
 
 		Blocks::log('Finished AppUpdater.', \CLogger::LEVEL_INFO);
@@ -188,7 +188,7 @@ class AppUpdater implements IUpdater
 	 */
 	public function doDatabaseUpdate()
 	{
-		if (b()->migrations->runToTop())
+		if (blx()->migrations->runToTop())
 			return true;
 
 		return false;
@@ -209,7 +209,7 @@ class AppUpdater implements IUpdater
 			$rowData = explode(';', $row);
 
 			// Delete any files we backed up.
-			$backupFile = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0].'.bak');
+			$backupFile = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
 			if ($backupFile->getExists())
 			{
 				Blocks::log('Deleting backup file: '.$backupFile->getRealPath());
@@ -222,7 +222,7 @@ class AppUpdater implements IUpdater
 		$tempPatchDir->delete();
 
 		// Delete the downloaded patch file.
-		$downloadPatchFile = b()->file->set($this->_downloadFilePath);
+		$downloadPatchFile = blx()->file->set($this->_downloadFilePath);
 		$downloadPatchFile->delete();
 	}
 
@@ -236,12 +236,12 @@ class AppUpdater implements IUpdater
 	public function validatePackage($version, $build)
 	{
 		Blocks::log('Validating MD5 for '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
-		$sourceMD5 = b()->et->getReleaseMD5($version, $build);
+		$sourceMD5 = blx()->et->getReleaseMD5($version, $build);
 
 		if(StringHelper::isNullOrEmpty($sourceMD5))
 			throw new Exception('Error in getting the MD5 hash for the download.');
 
-		$localFile = b()->file->set($this->_downloadFilePath, false);
+		$localFile = blx()->file->set($this->_downloadFilePath, false);
 		$localMD5 = $localFile->generateMD5();
 
 		if($localMD5 === $sourceMD5)
@@ -262,7 +262,7 @@ class AppUpdater implements IUpdater
 
 		$this->_tempPackageDir->createDir(0754);
 
-		$downloadPath = b()->file->set($this->_downloadFilePath);
+		$downloadPath = blx()->file->set($this->_downloadFilePath);
 		if ($downloadPath->unzip($this->_tempPackageDir->getRealPath()))
 			return true;
 
@@ -283,7 +283,7 @@ class AppUpdater implements IUpdater
 				continue;
 
 			$rowData = explode(';', $row);
-			$file = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0]);
+			$file = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0]);
 
 			// Check to see if the file we need to update is writable.
 			if ($file->getExists())
@@ -317,7 +317,7 @@ class AppUpdater implements IUpdater
 					continue;
 
 				$rowData = explode(';', $row);
-				$file = b()->file->set(b()->path->getAppPath().'../../'.$rowData[0]);
+				$file = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0]);
 
 				// If the file doesn't exist, it's a new file.
 				if ($file->getExists())

@@ -1,59 +1,51 @@
 (function($) {
 
-
-if (typeof b == 'undefined') b = {};
-if (typeof b.ui == 'undefined') b.ui = {};
-
+if (typeof blx == 'undefined') blx = {};
+if (typeof blx.ui == 'undefined') blx.ui = {};
 
 // jQuery objects for common elements
-b.$window = $(window);
-b.$document = $(document);
-b.$body = $(document.body);
-
+blx.$window = $(window);
+blx.$document = $(document);
+blx.$body = $(document.body);
 
 // Key code constants
-b.DELETE_KEY = 8;
-b.SHIFT_KEY  = 16;
-b.CTRL_KEY   = 17;
-b.ALT_KEY    = 18;
-b.RETURN_KEY = 13;
-b.ESC_KEY    = 27;
-b.SPACE_KEY  = 32;
-b.LEFT_KEY   = 37;
-b.UP_KEY     = 38;
-b.RIGHT_KEY  = 39;
-b.DOWN_KEY   = 40;
-b.CMD_KEY    = 91;
+blx.DELETE_KEY = 8;
+blx.SHIFT_KEY  = 16;
+blx.CTRL_KEY   = 17;
+blx.ALT_KEY    = 18;
+blx.RETURN_KEY = 13;
+blx.ESC_KEY    = 27;
+blx.SPACE_KEY  = 32;
+blx.LEFT_KEY   = 37;
+blx.UP_KEY     = 38;
+blx.RIGHT_KEY  = 39;
+blx.DOWN_KEY   = 40;
+blx.CMD_KEY    = 91;
 
+blx.navHeight = 48;
 
-b.navHeight = 48;
-
-b.fx = {
+blx.fx = {
 	duration: 400,
 	delay: 100
 };
 
-
 /**
  * Log
  */
-b.log = function(msg)
+blx.log = function(msg)
 {
 	if (typeof console != 'undefined' && typeof console.log == 'function')
 		console.log(msg);
 };
 
-
 var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae','230':'ae','228':'ae','231':'c','232':'e','233':'e','234':'e','235':'e','236':'i','237':'i','238':'i','239':'i','241':'n','242':'o','243':'o','244':'o','245':'o','246':'oe','249':'u','250':'u','251':'u','252':'ue','255':'y','257':'aa','269':'ch','275':'ee','291':'gj','299':'ii','311':'kj','316':'lj','326':'nj','353':'sh','363':'uu','382':'zh','256':'aa','268':'ch','274':'ee','290':'gj','298':'ii','310':'kj','315':'lj','325':'nj','352':'sh','362':'uu','381':'zh'};
-
-
 
 /**
  * Format a number with commas.
  * @param mixed num
  * @return string
  */
-b.numCommas = function(num)
+blx.numCommas = function(num)
 {
 	num = num.toString();
 
@@ -70,7 +62,7 @@ b.numCommas = function(num)
  * @param string str
  * @return array
  */
-b.stringToArray = function(str)
+blx.stringToArray = function(str)
 {
 	if (typeof str != 'string')
 		return str;
@@ -89,7 +81,7 @@ b.stringToArray = function(str)
  * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
  * @return array
  */
-b.filterArray = function(arr, callback)
+blx.filterArray = function(arr, callback)
 {
 	var filtered = [];
 
@@ -108,12 +100,12 @@ b.filterArray = function(arr, callback)
 };
 
 /**
- * Returns whether an element is in an array (unline jQuery.inArray(), which returns the element's index, or -1).
+ * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
  * @param mixed elem
  * @param mixed arr
  * @return bool
  */
-b.inArray = function(elem, arr)
+blx.inArray = function(elem, arr)
 {
 	return ($.inArray(elem, arr) != -1);
 };
@@ -124,7 +116,7 @@ b.inArray = function(elem, arr)
  * @param array arr
  * @return bool Whether the element could be found or not.
  */
-b.removeFromArray = function(elem, arr)
+blx.removeFromArray = function(elem, arr)
 {
 	var index = $.inArray(elem, arr);
 	if (index != -1)
@@ -141,17 +133,17 @@ b.removeFromArray = function(elem, arr)
  * @param string str
  * @return string
  */
-b.uppercaseFirst = function(str)
+blx.uppercaseFirst = function(str)
 {
 	return str.charAt(0).toUpperCase() + str.slice(1);
 };
 
 /**
- * Makes the first character of a string lowerscase.
+ * Makes the first character of a string lowercase.
  * @param string str
  * @return string
  */
-b.lowercaseFirst = function(str)
+blx.lowercaseFirst = function(str)
 {
 	return str.charAt(0).toLowerCase() + str.slice(1);
 };
@@ -161,12 +153,12 @@ b.lowercaseFirst = function(str)
  * @param string str
  * @return string
  */
-b.asciiString = function(str)
+blx.asciiString = function(str)
 {
 	var asciiStr = '';
 
-	for (c = 0; c < str.length; c++) {
-		charCode = str.charCodeAt(c);
+	for (var c = 0; c < str.length; c++) {
+		var charCode = str.charCodeAt(c);
 
 		if (charCode >= 32 && charCode < 128)
 			asciiStr += str.charAt(c);
@@ -185,7 +177,7 @@ b.asciiString = function(str)
  * @param int y2 The second coordinate's position on the Y axis.
  * @return float
  */
-b.getDist = function(x1, y1, x2, y2)
+blx.getDist = function(x1, y1, x2, y2)
 {
 	return Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2));
 };
@@ -197,7 +189,7 @@ b.getDist = function(x1, y1, x2, y2)
  * @param mixed elem Either an actual element or a jQuery collection.
  * @return bool
  */
-b.hitTest = function(x0, y0, elem)
+blx.hitTest = function(x0, y0, elem)
 {
 	var $elem = $(elem),
 		offset = $elem.offset(),
@@ -215,16 +207,16 @@ b.hitTest = function(x0, y0, elem)
  * @param mixed  elem  Either an actual element or a jQuery collection.
  * @return bool
  */
-b.isCursorOver = function(event, elem)
+blx.isCursorOver = function(event, elem)
 {
-	return b.hitTest(event.pageX, event.pageY, elem);
+	return blx.hitTest(event.pageX, event.pageY, elem);
 };
 
 /**
- * Prevents the outline when an element is focussed by the mouse.
+ * Prevents the outline when an element is focused by the mouse.
  * @param mixed elem Either an actual element or a jQuery collection.
  */
-b.preventOutlineOnMouseFocus = function(elem)
+blx.preventOutlineOnMouseFocus = function(elem)
 {
 	var $elem = $(elem),
 		namespace = '.preventOutlineOnMouseFocus';
@@ -234,29 +226,29 @@ b.preventOutlineOnMouseFocus = function(elem)
 		$elem.focus();
 	})
 	.on('keydown'+namespace+' blur'+namespace, function(event) {
-		if (event.keyCode != b.SHIFT_KEY && event.keyCode != b.CTRL_KEY && event.keyCode != b.CMD_KEY)
+		if (event.keyCode != blx.SHIFT_KEY && event.keyCode != blx.CTRL_KEY && event.keyCode != blx.CMD_KEY)
 			$elem.removeClass('no-outline');
 	});
 };
 
 /**
- * Performs a case-insensative sort on an array of strings.
+ * Performs a case-insensitive sort on an array of strings.
  * @param array arr
  * @return array
  */
-b.caseInsensativeSort = function(arr)
+blx.caseInsensitiveSort = function(arr)
 {
-	return arr.sort(this.caseInsensativeCompare)
+	return arr.sort(this.caseInsensitiveCompare)
 };
 
 /**
- * Performs a case-insensative string comparison.
+ * Performs a case-insensitive string comparison.
  * Returns -1 if a is less than b, 1 if a is greater than b, or 0 if they are equal.
  * @param string a
  * @param string b
  * @return int
  */
-b.caseInsensativeCompare = function(a, b)
+blx.caseInsensitiveCompare = function(a, b)
 {
 	a = a.toLowerCase();
 	b = b.toLowerCase();
@@ -268,7 +260,7 @@ b.caseInsensativeCompare = function(a, b)
  * @param mixed from The source element. Can be either an actual element or a jQuery collection.
  * @param mixed to   The target element. Can be either an actual element or a jQuery collection.
  */
-b.copyTextStyles = function(from, to)
+blx.copyTextStyles = function(from, to)
 {
 	var $from = $(from),
 		$to = $(to);
@@ -287,7 +279,7 @@ b.copyTextStyles = function(from, to)
  * Returns the body's proper scrollTop, discarding any document banding in Safari.
  * @return int
  */
-b.getBodyScrollTop = function()
+blx.getBodyScrollTop = function()
 {
 	var scrollTop = document.body.scrollTop;
 
@@ -295,7 +287,7 @@ b.getBodyScrollTop = function()
 		scrollTop = 0;
 	else
 	{
-		var maxScrollTop = b.$body.outerHeight() - b.$window.height();
+		var maxScrollTop = blx.$body.outerHeight() - blx.$window.height();
 		if (scrollTop > maxScrollTop)
 			scrollTop = maxScrollTop;
 	}
@@ -308,7 +300,7 @@ b.getBodyScrollTop = function()
  * @param mixed container Either an actual element or a jQuery collection.
  * @param mixed elem      Either an actual element or a jQuery collection.
  */
-b.scrollContainerToElement = function(container, elem) {
+blx.scrollContainerToElement = function(container, elem) {
 	var $container = $(container),
 		$elem = $(elem);
 
@@ -338,7 +330,7 @@ b.scrollContainerToElement = function(container, elem) {
  * @param mixed elem
  * @return mixed
  */
-b.getElement = function(elem)
+blx.getElement = function(elem)
 {
 	return $.makeArray(elem)[0];
 };
@@ -348,7 +340,7 @@ b.getElement = function(elem)
  * @param array errors
  * @return jQuery
  */
-b.createErrorList = function(errors)
+blx.createErrorList = function(errors)
 {
 	var $ul = $(document.createElement('ul')).addClass('errors');
 
@@ -367,7 +359,7 @@ b.createErrorList = function(errors)
  * @param mixed val
  * @return bool
  */
-b.isArray = function(val)
+blx.isArray = function(val)
 {
 	return (val instanceof Array);
 };
@@ -377,7 +369,7 @@ b.isArray = function(val)
  * @param mixed val
  * @return bool
  */
-b.isJquery = function(val)
+blx.isJquery = function(val)
 {
 	return (val instanceof jQuery);
 };
@@ -387,17 +379,17 @@ b.isJquery = function(val)
  * @param mixed val
  * @return bool
  */
-b.isObject = function(val)
+blx.isObject = function(val)
 {
-	return (typeof val == 'object' && !b.isArray(val) && !b.isJquery(val) && typeof val.nodeType == 'undefined');
+	return (typeof val == 'object' && !blx.isArray(val) && !blx.isJquery(val) && typeof val.nodeType == 'undefined');
 };
 
 /**
  * Animate an element's width.
- * @param mixed    elem     Either an acutal element or a jQuery collection.
+ * @param mixed    elem     Either an actual element or a jQuery collection.
  * @param function callback A callback function to call while the element is temporarily set to the target width before the animation begins.
  */
-b.animateWidth = function(elem, callback)
+blx.animateWidth = function(elem, callback)
 {
 	var $elem = $(elem),
 		oldWidth = $elem.width();
@@ -416,7 +408,7 @@ b.animateWidth = function(elem, callback)
  * Shakes an element.
  * @param mixed elem Either an actual element or a jQuery collection.
  */
-b.shake = function(elem)
+blx.shake = function(elem)
 {
 	var $elem = $(elem),
 		startingMargin = parseInt($elem.css('marginLeft'));
@@ -436,7 +428,7 @@ b.shake = function(elem)
  * @param mixed container The container element. Can be either an actual element or a jQuery collection.
  * @return jQuery
  */
-b.findInputs = function(container)
+blx.findInputs = function(container)
 {
 	return $(container).find('input,text,textarea,select,button');
 };
@@ -449,7 +441,7 @@ b.findInputs = function(container)
  * @param string namespace
  * @return string
  */
-b.namespaceInputName = function(inputName, namespace)
+blx.namespaceInputName = function(inputName, namespace)
 {
 	return inputName.replace(/^([^\[\]]+)(.*)$/, namespace+'[$1]$2');
 };
@@ -459,7 +451,7 @@ b.namespaceInputName = function(inputName, namespace)
  * @param jQuery $input
  * @return string
  */
-b.getInputBasename = function($input)
+blx.getInputBasename = function($input)
 {
 	return $input.attr('name').replace(/\[.*/, '');
 };
@@ -471,7 +463,7 @@ b.getInputBasename = function($input)
  * @param jQuery $input
  * @return mixed
  */
-b.getInputPostVal = function($input)
+blx.getInputPostVal = function($input)
 {
 	var type = $input.attr('type'),
 		val  = $input.val();
@@ -503,7 +495,7 @@ b.getInputPostVal = function($input)
 /**
  * Base class
  */
-b.Base = Base.extend({
+blx.Base = Base.extend({
 
 	settings: null,
 
@@ -527,7 +519,7 @@ b.Base = Base.extend({
 
 	_formatEvents: function(events)
 	{
-		events = b.stringToArray(events);
+		events = blx.stringToArray(events);
 		for (var i = 0; i < events.length; i++)
 		{
 			events[i] += this._namespace;
@@ -568,10 +560,8 @@ b.Base = Base.extend({
 
 });
 
-
 // Fade the notification out in two seconds
 $('#notification').delay(2000).fadeOut();
-
 
 $('.formsubmit').click(function() {
 	var $btn = $(this),
@@ -585,7 +575,7 @@ $('.togglefields').change(function() {
 	var $toggle = $(this),
 		$target = $('#'+$toggle.attr('data-target'));
 
-	if (b.getInputPostVal($toggle) == 'y')
+	if (blx.getInputPostVal($toggle) == 'y')
 	{
 		$target.height('auto');
 		var height = $target.height();
@@ -597,6 +587,5 @@ $('.togglefields').change(function() {
 	else
 		$target.stop().animate({height: 0}, 'fast');
 });
-
 
 })(jQuery);

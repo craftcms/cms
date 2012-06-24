@@ -64,7 +64,7 @@ class NumAdapter extends Adapter
 	 */
 	public function formatDate($format = 'MM-dd-yyyy HH:mm:ss')
 	{
-		return b()->dateFormatter->format($format, $this->_var);
+		return blx()->dateFormatter->format($format, $this->_var);
 	}
 
 	//public function round() {}

@@ -12,7 +12,7 @@ class UsersVariable
 	 */
 	public function current()
 	{
-		return b()->users->getCurrentUser();
+		return blx()->users->getCurrentUser();
 	}
 
 	/**
@@ -22,7 +22,7 @@ class UsersVariable
 	 */
 	public function getById($userId)
 	{
-		return b()->users->getUserById($userId);
+		return blx()->users->getUserById($userId);
 	}
 
 	/**
@@ -31,7 +31,7 @@ class UsersVariable
 	 */
 	public function recent()
 	{
-		return b()->users->getRecentUsers();
+		return blx()->users->getRecentUsers();
 	}
 
 	/**
@@ -40,6 +40,6 @@ class UsersVariable
 	 */
 	public function verifyAccountUrl()
 	{
-		return b()->users->getVerifyAccountUrl();
+		return blx()->users->getVerifyAccountUrl();
 	}
 }

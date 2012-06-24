@@ -3,8 +3,7 @@ namespace Blocks;
 
 /**
  * UserIdentity represents the data needed to identify a user.
- * It contains the authentication method that checks if the provided
- * data can identity the user.
+ * It contains the authentication method that checks if the provided data can identity the user.
  */
 class UserIdentity extends \CUserIdentity
 {
@@ -24,7 +23,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = b()->users->getUserByUsernameOrEmail($this->username);
+		$user = blx()->users->getUserByUsernameOrEmail($this->username);
 
 		if ($user === null)
 			$this->errorCode = self::ERROR_USERNAME_INVALID;
@@ -55,7 +54,7 @@ class UserIdentity extends \CUserIdentity
 				if ($user->cooldown_start !== null)
 				{
 					// they are still in the cooldown window.
-					if ($user->cooldown_start + ConfigHelper::getTimeInSeconds(b()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
+					if ($user->cooldown_start + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
 						$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
 					else
 					{
@@ -85,7 +84,7 @@ class UserIdentity extends \CUserIdentity
 			case UserAccountStatus::Active:
 			{
 				// check the password
-				$checkPassword = b()->security->checkPassword($this->password, $user->password, $user->enc_type);
+				$checkPassword = blx()->security->checkPassword($this->password, $user->password, $user->enc_type);
 
 				// bad password
 				if (!$checkPassword)
@@ -99,7 +98,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = self::ERROR_PASSWORD_RESET_REQUIRED;
-						b()->users->forgotPassword($user);
+						blx()->users->forgotPassword($user);
 					}
 					else
 					{
@@ -170,10 +169,10 @@ class UserIdentity extends \CUserIdentity
 		if ($this->_isUserInsideFailWindow($user, $currentFailedCount))
 		{
 			// check to see if they hit the max attempts to login.
-			if ($currentFailedCount >= b()->config->maxInvalidPasswordAttempts)
+			if ($currentFailedCount >= blx()->config->maxInvalidPasswordAttempts)
 			{
 				// time to slow things down a bit.
-				if (b()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
+				if (blx()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
 				{
 					$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
 					$user->cooldown_start = DateTimeHelper::currentTime();
@@ -209,7 +208,7 @@ class UserIdentity extends \CUserIdentity
 		$result = false;
 
 		// check to see if the failed window start plus the configured failed password window is greater than the current time.
-		$totalWindowTime = $user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(b()->config->failedPasswordWindow);
+		$totalWindowTime = $user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordWindow);
 		$currentTime = DateTimeHelper::currentTime();
 		if ($currentTime < $totalWindowTime)
 			$result = true;

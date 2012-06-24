@@ -21,7 +21,6 @@ class Et extends \CApplicationComponent
 	private $_endpoint;
 	private $_timeout;
 	private $_package;
-	private $_followRedirects;
 	private $_options = array();
 
 	/**
@@ -74,14 +73,14 @@ class Et extends \CApplicationComponent
 		$this->_timeout = $timeout;
 
 		$this->_package = new EtPackage();
-		$this->_package->sitesAndKeys = b()->sites->getEnabledSitesAndKeys();
+		$this->_package->sitesAndKeys = blx()->sites->getEnabledSitesAndKeys();
 		$this->_package->product = Blocks::getProduct() == '' ? Product::BlocksPro : Blocks::getProduct();
-		$this->_package->requestDomain = b()->request->getServerName();
-		$this->_package->requestIp = b()->request->getUserHostAddress();
+		$this->_package->requestDomain = blx()->request->getServerName();
+		$this->_package->requestIp = blx()->request->getUserHostAddress();
 		$this->_package->requestTime = DateTimeHelper::currentTime();
-		$this->_package->requestPort = b()->request->getPort();
+		$this->_package->requestPort = blx()->request->getPort();
 
-		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
+		$this->_options['useragent'] = 'blocks-requests/'.Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
 	}
 
@@ -101,7 +100,7 @@ class Et extends \CApplicationComponent
 		try
 		{
 			$data = Json::encode($this->_package);
-			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
+			$response = Requests::post($this->_endpoint, array(), $data, $this->_options);
 
 			if ($response->success)
 			{
@@ -114,7 +113,7 @@ class Et extends \CApplicationComponent
 				// we set the license key status on every request
 				foreach ($package->sitesAndKeys as $site => $keyInfo)
 				{
-					b()->sites->setLicenseKeyStatusForSite($site, $keyInfo['status']);
+					blx()->sites->setLicenseKeyStatusForSite($site, $keyInfo['status']);
 				}
 
 				return $package;

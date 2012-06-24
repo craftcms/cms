@@ -51,7 +51,7 @@ class AssetsService extends \CApplicationComponent
 	 */
 	public function getAllAssetsBySiteId($siteId)
 	{
-		$assets = b()->db->createCommand()
+		$assets = blx()->db->createCommand()
 			->select('a.*')
 			->from('assets a')
 			->join('assetfolders af', 'a.asset_folder_id = af.id')

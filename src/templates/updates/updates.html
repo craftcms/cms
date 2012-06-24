@@ -1,8 +1,8 @@
-{set updateInfo = b.updates.updateinfo('y')}
+{set updateInfo = blx.updates.updateinfo('y')}
 {if updateInfo.blocks.releases.length > 0 || updateInfo.plugins.releases.length > 0}
 
 	{if !updateInfo.blocks.manualUpdateRequired}
-		<form method="post" action="{:b.url.base}update/all">
+		<form method="post" action="{:blx.url.base}update/all">
 			<input id="update-all" class="btn big submit" type="submit" value="Update All">
 		</form>
 	{/if}
@@ -15,14 +15,14 @@
 				<tbody>
 					<tr id="Blocks">
 						<td class="pane-item">
-							<strong>{:b.app.product}</strong> {:updateInfo.blocks.latestVersion} Build {:updateInfo.blocks.latestBuild}
+							<strong>{:blx.app.product}</strong> {:updateInfo.blocks.latestVersion} Build {:updateInfo.blocks.latestBuild}
 							{if updateInfo.blocks.criticalUpdateAvailable}<div class="badge warning">Critical</div>{/if}
 						</td>
 						<td class="pane-item">
 							<a class="notes">Show release notes</a>
 							<div style="display:none">
 								{foreach updateInfo.blocks.releases as release}
-									<h5>{:b.app.product} {:release.version} Build {:release.build}</h5>
+									<h5>{:blx.app.product} {:release.version} Build {:release.build}</h5>
 									<ul>
 										<li>{:release.notes.nl2br}</li>
 									</ul>
@@ -33,7 +33,7 @@
 							{if updateInfo.blocks.manualUpdateRequired}
 								<span class="manual"><a href="http://blockscms.com/alpha/blocks_{:updateInfo.blocks.latestVersion}.{:updateInfo.blocks.latestBuild}.zip">Manual update required</a></span>
 							{else}
-								<form method="post" action="{:b.url.base}update/Blocks"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:blx.url.base}update/Blocks"><input class="btn" type="submit" value="Update"></form>
 							{/if}
 						</td>
 					</tr>
@@ -65,7 +65,7 @@
 								</div>
 							</td>
 							<td class="pane-item">
-								<form method="post" action="{:b.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
+								<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
 							</td>
 						</tr>
 						{/foreach}

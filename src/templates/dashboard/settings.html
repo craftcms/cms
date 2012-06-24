@@ -15,7 +15,7 @@
 		<div id="widgetadmin" class="pane inset adminpane" data-input-name="widgets">
 			<div class="list">
 				<ul>
-					{foreach b.dashboard.userwidgets as widget}
+					{foreach blx.dashboard.userwidgets as widget}
 						<li class="item" data-item-id="{:widget.id}">
 							<div class="name">{:widget.title}</div>
 							<div class="type">{:widget.name}</div>
@@ -28,7 +28,7 @@
 				<div class="btn light menubtn">Add a widget</div>
 				<div class="menu" style="display:none">
 					<ul>
-						{foreach b.dashboard.allwidgets as widget}
+						{foreach blx.dashboard.allwidgets as widget}
 							<li data-widget-class="{:widget.classHandle}" data-widget-title="{:widget.title}">{:widget.name}</li>
 						{/foreach}
 					</ul>
@@ -36,7 +36,7 @@
 			</div>
 
 			<div class="settings">
-				{foreach b.dashboard.userwidgets as widget}
+				{foreach blx.dashboard.userwidgets as widget}
 					<?php $idPrefix = new Variable('widgets-'.$widget->id.'-') ?>
 					<?php $namePrefix = new Variable('widgets['.$widget->id.'][settings]') ?>
 					<div data-item-id="{:widget.id}" style="display:none">
@@ -66,7 +66,7 @@
 
 	{set newIdPrefix = "widgets-ITEM_ID-"}
 	{set newNamePrefix = "widgets[ITEM_ID][settings]"}
-	{foreach b.dashboard.allwidgets as widget}
+	{foreach blx.dashboard.allwidgets as widget}
 		{set settings = widget.displaySettings(newIdPrefix, newNamePrefix)}
 		{if settings}
 			<div id="freshwidgetsettings-{:widget.classHandle}" style="display:none">
@@ -74,9 +74,7 @@
 			</div>
 		{/if}
 	{/foreach}
-
 {/region}
-
 
 {region "scripts"}
 	{include "_includes/js_include" file="dashboard-settings.js"}	

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Handles account related tasks including updating profiles, changing passwords, etc.
  */
-class AccountController extends Controller
+class AccountController extends BaseController
 {
 	/**
 	 *
@@ -15,14 +15,14 @@ class AccountController extends Controller
 		$this->requireAjaxRequest();
 
 		$forgotPasswordForm = new ForgotPasswordForm();
-		$forgotPasswordForm->username = b()->request->getPost('username');
+		$forgotPasswordForm->username = blx()->request->getPost('username');
 
 		if ($forgotPasswordForm->validate())
 		{
-			$user = b()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
+			$user = blx()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
 			if ($user)
 			{
-				if (b()->email->sendForgotPasswordEmail($user, b()->sites->getCurrentSite()))
+				if (blx()->email->sendForgotPasswordEmail($user, blx()->sites->getCurrentSite()))
 					$this->returnJson(array('success' => true));
 
 				$this->returnErrorJson('There was a problem sending the forgot password email.');
@@ -40,15 +40,15 @@ class AccountController extends Controller
 		$this->requirePostRequest();
 
 		$passwordForm = new PasswordForm();
-		$passwordForm->password = b()->request->getPost('password');
+		$passwordForm->password = blx()->request->getPost('password');
 
 		if ($passwordForm->validate())
 		{
-			$userToChange = b()->users->getUserById(b()->request->getPost('userId'));
+			$userToChange = blx()->users->getUserById(blx()->request->getPost('userId'));
 
 			if ($userToChange !== null)
 			{
-				if (($userToChange = b()->users->changePassword($userToChange, $passwordForm->password)) !== false)
+				if (($userToChange = blx()->users->changePassword($userToChange, $passwordForm->password)) !== false)
 				{
 					$userToChange->activationcode = null;
 					$userToChange->activationcode_issued_date = null;
@@ -61,12 +61,12 @@ class AccountController extends Controller
 					$userToChange->cooldown_start = null;
 					$userToChange->save();
 
-					if (!b()->user->getIsLoggedIn())
-						b()->user->startLogin($userToChange->username, $passwordForm->password);
+					if (!blx()->user->getIsLoggedIn())
+						blx()->user->startLogin($userToChange->username, $passwordForm->password);
 
-					b()->dashboard->assignDefaultUserWidgets($userToChange->id);
+					blx()->dashboard->assignDefaultUserWidgets($userToChange->id);
 
-					b()->user->setMessage(MessageType::Notice, 'Password updated.');
+					blx()->user->setMessage(MessageType::Notice, 'Password updated.');
 					$this->redirect('dashboard');
 				}
 			}
@@ -84,8 +84,8 @@ class AccountController extends Controller
 	 */
 	public function checkPassword($password)
 	{
-		$user = b()->users->getCurrentUser();
-		if (b()->security->checkPassword($password, $user->password, $user->enc_type))
+		$user = blx()->users->getCurrentUser();
+		if (blx()->security->checkPassword($password, $user->password, $user->enc_type))
 			return true;
 
 		return false;
