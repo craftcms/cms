@@ -64,9 +64,8 @@ blx.Tier = blx.Base.extend({
 	totalVisibleNodes: null,
 	nodes: null,
 
-	init: function(container, animate)
+	init: function(container)
 	{
-		animate = true;
 		siteMap.tiers.push(this);
 
 		this.$container = $(container);
@@ -91,10 +90,10 @@ blx.Tier = blx.Base.extend({
 			this.nodes.push(node);
 		}
 
-		this.positionNodes(animate);
+		this.positionNodes();
 	},
 
-	positionNodes: function(animate)
+	positionNodes: function()
 	{
 		this.trailHead.setAttributeNS(null, 'd', 'M 50,2 V '+(SiteMap.svgMidpoint - SiteMap.trailCurveRadius));
 
@@ -104,7 +103,7 @@ blx.Tier = blx.Base.extend({
 		for (var i = 0; i < this.totalVisibleNodes; i++)
 		{
 			var x = this.gap + this.gap * i;
-			this.nodes[i].setPosition(x, animate);
+			this.nodes[i].setPosition(x);
 		}
 
 		for (var i = this.totalVisibleNodes; i < this.totalNodes; i++)
@@ -232,7 +231,7 @@ blx.Node = blx.Base.extend({
 
 	},
 
-	setPosition: function(pos, animate)
+	setPosition: function(pos)
 	{
 		this.pos = pos;
 
@@ -241,33 +240,26 @@ blx.Node = blx.Base.extend({
 		this.$elem.css('left', this.pos+'%');
 		this.setTrailPosition(this.pos);
 
-		if (animate)
-		{
-			this.$elem.css({
-				opacity: 0,
-				//left: '50%'
-			});
-			this.$trail.css('opacity', 0);
-			//this.setTrailPosition(50);
+		this.$elem.css({
+			opacity: 0,
+			//left: '50%'
+		});
+		this.$trail.css('opacity', 0);
+		//this.setTrailPosition(50);
 
-			this.$elem.animate({
-				opacity: 1
-				//left: this.pos+'%'
-			}, {
-				//duration: 'fast',
+		this.$elem.animate({
+			opacity: 1
+			//left: this.pos+'%'
+		}, {
+			//duration: 'fast',
 
-				step: $.proxy(function(now, fx)
-				{
-					//this.$elem.css('opacity', fx.pos);
-					this.$trail.css('opacity', fx.pos);
-					//this.setTrailPosition(now);
-				}, this)
-			});
-		}
-		else
-		{
-			
-		}
+			step: $.proxy(function(now, fx)
+			{
+				//this.$elem.css('opacity', fx.pos);
+				this.$trail.css('opacity', fx.pos);
+				//this.setTrailPosition(now);
+			}, this)
+		});
 	},
 
 	setTrailPosition: function(x)
