@@ -1,9 +1,9 @@
 @import "shared";
 
-body { background: #fff -webkit-linear-gradient(#eee, #fff 200px) repeat-x; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; }
+body { padding-top: 35px; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; background: #fafafa; }
 
 /* header */
-#header { padding: 0 15px; border-bottom: 1px solid hsl(0,0%,85%); }
+#header { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 34px; background: #fafafa; -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1); }
 
 #site,
 #me { margin: 0 10px; color: hsl(0,0%,50%); line-height: 34px; font-weight: bold; }
