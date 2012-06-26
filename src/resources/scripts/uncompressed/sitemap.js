@@ -66,6 +66,7 @@ blx.Tier = blx.Base.extend({
 
 	init: function(container, animate)
 	{
+		animate = true;
 		siteMap.tiers.push(this);
 
 		this.$container = $(container);
@@ -157,7 +158,18 @@ blx.Node = blx.Base.extend({
 		//this.tier.$trailContainer[0].appendChild(this.tier.trailHead);
 		//this.$trail[0].setAttributeNS(null, 'class', 'trail hover');
 		//this.tier.trailHead.setAttributeNS(null, 'class', 'trail hover');
-		//this.$elem.addClass('sel');
+		this.$elem.addClass('sel');
+
+		// Scroll the new tier into the middle of the screen
+		var heightDiff = blx.$window.height() - blx.$body.outerHeight(),
+			padding = heightDiff,// + SiteMap.tierHeight,
+			scrollTop = blx.$body.scrollTop();
+		blx.$body.css('padding-bottom', padding);
+		blx.$body.animate({
+			scrollTop: (scrollTop + SiteMap.tierHeight)
+		}, $.proxy(function() {
+			blx.$body.css('padding-bottom', heightDiff)
+		}, this));
 
 		// Animate the element to the center
 		var posDiff = 50-this.pos,
@@ -166,13 +178,13 @@ blx.Node = blx.Base.extend({
 		this.$elem.animate({
 			left: '50%'
 		}, {
-			duration: 'fast',
+			//duration: 'fast',
 
 			step: $.proxy(function(now, fx) {
 				this.setTrailPosition(now);
 
 				var nowPosDiff = posDiff * fx.pos,
-					//opacity = 0.15 + 0.85*(1 - fx.pos);
+					//opacity = 0.25 + 0.75*(1 - fx.pos);
 					opacity = 1 - fx.pos;
 
 				for (var i = 0; i < siblings.length; i++)
@@ -192,38 +204,32 @@ blx.Node = blx.Base.extend({
 
 			complete: $.proxy(function()
 			{
-				setTimeout($.proxy(function() {
-					// Scroll the new tier into the middle of the screen
-					var heightDiff = blx.$window.height() - blx.$body.outerHeight(),
-						padding = heightDiff + SiteMap.tierHeight,
-						scrollTop = blx.$body.scrollTop();
-					blx.$body.css('padding-bottom', padding);
-					blx.$body.animate({
-						scrollTop: (scrollTop + SiteMap.tierHeight)
-					}, 'fast');
-
-					var $newTier = $('<div class="tier"/>').insertAfter(this.tier.$container),
-						$newNodes = $('<div class="nodes"/>').appendTo($newTier);
-
-					var newPages = [
-						{ title: 'Chimaeric', image: 'Chimaeric.png' },
-						{ title: 'Pure', image: 'Pure.png' },
-						{ title: 'Message Marker Application', image: 'MessageMarker.png' }
-						//{ title: 'Concrete5 Custom Admin', image: 'Concrete5.png' },
-						//{ title: 'Absolute Restoration', image: 'AbsoluteRestoration.png' }
-					];
-
-					for (var i = 0; i < newPages.length; i++)
-					{
-						var $newNode = $('<div class="node"/>').appendTo($newNodes);
-						$('<img class="page" src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
-						$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
-					}
-
-					new blx.Tier($newTier, true);
-				}, this), 250);
+				//setTimeout($.proxy(function() {
+					
+				//}, this), 1);
 			}, this)
 		});
+
+		var $newTier = $('<div class="tier"/>').insertAfter(this.tier.$container),
+			$newNodes = $('<div class="nodes"/>').appendTo($newTier);
+
+		var newPages = [
+			{ title: 'Chimaeric', image: 'Chimaeric.png' },
+			{ title: 'Pure', image: 'Pure.png' },
+			{ title: 'Message Marker Application', image: 'MessageMarker.png' }
+			//{ title: 'Concrete5 Custom Admin', image: 'Concrete5.png' },
+			//{ title: 'Absolute Restoration', image: 'AbsoluteRestoration.png' }
+		];
+
+		for (var i = 0; i < newPages.length; i++)
+		{
+			var $newNode = $('<div class="node"/>').appendTo($newNodes);
+			$('<img class="page" src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
+			$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
+		}
+
+		new blx.Tier($newTier, true);
+
 	},
 
 	setPosition: function(pos, animate)
@@ -232,33 +238,35 @@ blx.Node = blx.Base.extend({
 
 		this.$elem.show();
 
+		this.$elem.css('left', this.pos+'%');
+		this.setTrailPosition(this.pos);
+
 		if (animate)
 		{
 			this.$elem.css({
 				opacity: 0,
-				left: '50%'
+				//left: '50%'
 			});
 			this.$trail.css('opacity', 0);
-			this.setTrailPosition(50);
+			//this.setTrailPosition(50);
 
 			this.$elem.animate({
-				opacity: 1,
-				left: this.pos+'%'
+				opacity: 1
+				//left: this.pos+'%'
 			}, {
-				duration: 'fast',
+				//duration: 'fast',
 
 				step: $.proxy(function(now, fx)
 				{
 					//this.$elem.css('opacity', fx.pos);
 					this.$trail.css('opacity', fx.pos);
-					this.setTrailPosition(now);
+					//this.setTrailPosition(now);
 				}, this)
 			});
 		}
 		else
 		{
-			this.$elem.css('left', this.pos+'%');
-			this.setTrailPosition(this.pos);
+			
 		}
 	},
 
