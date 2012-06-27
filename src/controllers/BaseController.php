@@ -64,12 +64,12 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * @param EmailTemplate $email
+	 * @param Email $email
 	 * @param array         $vars
 	 * @throws Exception
 	 * @return mixed
 	 */
-	public function loadEmailTemplate(EmailTemplate $email, $vars = array())
+	public function loadEmailTemplate(Email $email, $vars = array())
 	{
 		$variables = $this->processTemplateVariables($vars, false);
 
@@ -114,7 +114,7 @@ abstract class BaseController extends \CController
 				else
 				{
 					$widget = end($this->_widgetStack);
-					throw new Exception(Blocks::t('blocks','{controller} contains improperly nested widget variables in it’s view "{view}". A {widget} widget does not have an endWidget() call.',
+					throw new Exception('app', Blocks::t('{controller} contains improperly nested widget variables in it’s view "{view}". A {widget} widget does not have an endWidget() call.',
 						array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
 				}
 			}
@@ -135,7 +135,7 @@ abstract class BaseController extends \CController
 		if ($getRequestVars)
 			$vars = array_merge(blx()->urlManager->getTemplateVariables(), $vars);
 
-		$vars['blx'] = new BlxVariable;
+		$vars['blx'] = new BlxVariable();
 
 		if (is_array($vars))
 		{
