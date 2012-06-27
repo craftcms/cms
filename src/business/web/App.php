@@ -17,6 +17,11 @@ class App extends \CWebApplication
 		// Set default timezone to UTC
 		date_default_timezone_set('UTC');
 
+		// Import internationalization stuff.
+		Blocks::import('app.services.PathService');
+		Blocks::import('app.business.i18n.PhpMessageSource');
+		Blocks::import('app.business.i18n.Locale');
+
 		// In case of an error, import everything we need.
 		Blocks::import('app.business.exceptions.HttpException');
 		Blocks::import('app.business.db.DbCommand');
@@ -36,7 +41,7 @@ class App extends \CWebApplication
 		Blocks::import('app.business.logging.ProfileLogRoute');
 		Blocks::import('app.business.logging.DbLogRoute');
 		Blocks::import('app.business.logging.LogRouter');
-		Blocks::import('app.services.PathService');
+
 		Blocks::import('app.business.enums.UrlFormat');
 		Blocks::import('app.business.enums.RequestMode');
 		Blocks::import('app.business.utils.HtmlHelper');
@@ -65,6 +70,7 @@ class App extends \CWebApplication
 			'app.business.email.*',
 			'app.business.enums.*',
 			'app.business.exceptions.*',
+			'app.business.i18n.*',
 			'app.business.install.*',
 			'app.business.lib.*',
 			'app.business.lib.PhpMailer.*',
@@ -104,6 +110,9 @@ class App extends \CWebApplication
 	 */
 	public function processRequest()
 	{
+		// Let's set the target language from the browser's language preferences.
+		$this->_processBrowserLanguage();
+
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
@@ -143,6 +152,9 @@ class App extends \CWebApplication
 		// If it's not a CP request OR the system is on, let's continue processing.
 		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->getMode() == RequestMode::CP || ($this->request->getMode() == RequestMode::Action && BLOCKS_CP_REQUEST))))
 		{
+			// Attempt to set the target language from user preferences.
+			$this->_processUserPreferredLanguage();
+
 			// Otherwise maybe it's an action request?
 			$this->_processActionRequest();
 
@@ -189,6 +201,40 @@ class App extends \CWebApplication
 			// Otherwise return a 404
 			else
 				throw new HttpException(404);
+		}
+	}
+
+	/**
+	 * Get's the browser's preferred languages, checks to see if we have translation data for it and set the target language.
+	 */
+	private function _processBrowserLanguage()
+	{
+		$browserLanguages = blx()->request->getBrowserLanguages();
+		foreach ($browserLanguages as $language)
+		{
+			// Check to see if we have translation data for the language.
+			if (Locale::exists($language))
+			{
+				$this->setLanguage($language);
+				break;
+			}
+		}
+	}
+
+	/**
+	 * See if the user is logged in and they have a preferred language.  If so, use it.
+	 */
+	private function _processUserPreferredLanguage()
+	{
+		// See if the user is logged in.
+		if (blx()->user->getIsLoggedIn())
+		{
+			$user = blx()->users->getCurrentUser();
+			$userLanguage = Locale::getCanonicalID($user->preferred_language);
+
+			// If the user has a preferred language saved and we have translation data for it, set the target language.
+			if (($userLanguage !== $this->getLanguage()) && Locale::exists($userLanguage))
+				$this->setLanguage($userLanguage);
 		}
 	}
 
