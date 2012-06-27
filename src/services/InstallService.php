@@ -18,7 +18,7 @@ class InstallService extends \CApplicationComponent
 			throw new Exception('Blocks is already installed.');
 
 		// Install the Block model first so the other models can create FK's to it
-		$models[] = new Block;
+		$models[] = new Block();
 
 		$modelsDir = blx()->file->set(blx()->path->getModelsPath());
 		$modelFiles = $modelsDir->getContents(false, '.php');
@@ -49,15 +49,6 @@ class InstallService extends \CApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			// Create the languages table first
-			// This is a special case: So that other tables' language columns can be restricted to supported languages without making them enums
-			$table = blx()->config->tablePrefix.'languages';
-			$columns = array('language' => 'CHAR(5) NOT NULL PRIMARY KEY');
-			blx()->db->createCommand()->setText(blx()->db->getSchema()->createTable($table, $columns))->execute();
-
-			// Add the languages
-			blx()->db->createCommand()->insert('languages', array('language' => 'en_us'));
-
 			// Create the tables
 			foreach ($models as $model)
 			{
@@ -78,7 +69,7 @@ class InstallService extends \CApplicationComponent
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 
 			// Populate the info table
-			$info = new Info;
+			$info = new Info();
 			$info->version = Blocks::getVersion(false);
 			$info->build = Blocks::getBuild(false);
 			$info->release_date = Blocks::getReleaseDate(false);
@@ -86,7 +77,7 @@ class InstallService extends \CApplicationComponent
 			$info->save();
 
 			// Add the site
-			$site = new Site;
+			$site = new Site();
 			$site->name        = $inputs['sitename'];
 			$site->url         = $inputs['url'];
 			$site->language    = $inputs['language'];
@@ -96,15 +87,16 @@ class InstallService extends \CApplicationComponent
 			$site->save();
 
 			// Add the user
-			$user = new User;
+			$user = new User();
 			$user->username   = $inputs['username'];
 			$user->email      = $inputs['email'];
 			$user->admin = true;
+			$user->preferred_language = blx()->language;
 			blx()->users->changePassword($user, $inputs['password'], false);
 			$user->save();
 
 			// Log them in
-			$loginForm = new LoginForm;
+			$loginForm = new LoginForm();
 			$loginForm->username = $user->username;
 			$loginForm->password = $inputs['password'];
 			$loginForm->login();
