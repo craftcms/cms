@@ -19,5 +19,6 @@
  * @version $Id: $
  */
 return array (
-  'test' => 'testo',
+  'Login Required' => 'Grr',
+  'The template "{path}" does not exist.' => '',
 );
