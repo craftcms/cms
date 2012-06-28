@@ -52,6 +52,7 @@ class DashboardService extends \CApplicationComponent
 			if ($widget)
 			{
 				$widget->record = $record;
+				$widget->init();
 				return $widget;
 			}
 		}
@@ -79,6 +80,7 @@ class DashboardService extends \CApplicationComponent
 			if ($widget)
 			{
 				$widget->record = $record;
+				$widget->init();
 				$widgets[] = $widget;
 			}
 		}

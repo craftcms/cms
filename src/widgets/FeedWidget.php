@@ -14,7 +14,7 @@ class FeedWidget extends BaseWidget
 	protected $bodyTemplate = '_widgets/FeedWidget/body';
 	protected $settingsTemplate = '_widgets/FeedWidget/settings';
 
-	protected $defaultSettings = array(
+	protected $settings = array(
 		'url'   => 'http://feeds.feedburner.com/blogandtonic',
 		'title' => 'Blog &amp; Tonic',
 		'limit' => 5
@@ -26,13 +26,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function title()
 	{
-		if (isset($this->record))
-		{
-			$settings = $this->record->getSettings();
-			return $settings['title'];
-		}
-
-		return '';
+		return $this->settings['title'];
 	}
 
 	/**

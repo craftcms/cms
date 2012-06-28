@@ -12,6 +12,20 @@ abstract class BaseWidget extends BaseComponent
 	protected $componentType = 'Widget';
 	protected $bodyTemplate;
 	protected $settingsTemplate;
+	protected $settings = array();
+
+	/**
+	 *
+	 */
+	public function init()
+	{
+		if (isset($this->record))
+		{
+			$this->settings = array_merge($this->settings, $this->record->getSettings());
+		}
+
+		parent::init();
+	}
 
 	/**
 	 * Adds action buttons to the widget.
