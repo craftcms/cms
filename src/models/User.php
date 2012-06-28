@@ -19,6 +19,7 @@ class User extends BaseModel
 		'admin'                                 => AttributeType::Boolean,
 		'password_reset_required'               => AttributeType::Boolean,
 		'status'                                => array('type' => AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
+		'preferred_language'                    => AttributeType::Language,
 		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),
 		'last_login_date'                       => AttributeType::Int,
 		'last_login_failed_date'                => AttributeType::Int,

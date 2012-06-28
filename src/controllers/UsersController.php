@@ -98,6 +98,7 @@ class UsersController extends BaseController
 			$user->html_email = (blx()->request->getPost('email_format') == 'html');
 			$user->status = blx()->request->getPost('status');
 			$user->password_reset_required = (blx()->request->getPost('password_reset') === 'y');
+			$user->preferred_language = blx()->request->getPost('preferred_language');
 
 			$sendValidationEmail = (blx()->request->getPost('send_validation_email') === 'y');
 

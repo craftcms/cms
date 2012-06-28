@@ -110,8 +110,8 @@
 					<div class="heading">
 						<label for="preferred_language">Preferred Language</label>
 					</div>
-
-					{include "_includes/dropdown" name="preferred_language" options="en_us:English (US),en_gb:English (GB)" value=user.preferred_language}
+					{set languages = blx.localization.alllanguagesanddisplaynames}
+					{include "_includes/dropdown" name="preferred_language" options=languages value=user.preferred_language}
 				</div>
 
 				{if blx.users.current.admin}

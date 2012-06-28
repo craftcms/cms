@@ -21,5 +21,4 @@
 return array (
   'Login Required' => '',
   'The template "{path}" does not exist.' => '',
-  '{controller} contains improperly nested widget variables in it’s view "{view}". A {widget} widget does not have an endWidget() call.' => '',
 );

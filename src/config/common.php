@@ -39,6 +39,10 @@ return array(
 		'config' => array(
 			'class' => 'Blocks\ConfigService',
 		),
+
+		'localization' => array(
+			'class' => 'Blocks\LocalizationService',
+		)
 	),
 
 	'params' => array(

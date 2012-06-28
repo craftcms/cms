@@ -171,4 +171,12 @@ class BlxVariable
 	{
 		return new HttpStatusVariable();
 	}
+
+	/**
+	 * @return LocalizationVariable
+	 */
+	public function localization()
+	{
+		return new LocalizationVariable();
+	}
 }
