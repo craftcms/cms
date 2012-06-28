@@ -1,12 +1,12 @@
 @import "shared";
 
-body { padding-top: 35px; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; background: #fafafa; }
+body { padding-top: 35px; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; background: #f8f8f8; }
 
 /* header */
-#header { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 34px; background: #fafafa; -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.1); }
+#header { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; height: 34px; background: #fff; -webkit-box-shadow: 0 0 2px rgba(0,0,0,0.5); }
 
 #site,
-#me { margin: 0 10px; color: hsl(0,0%,50%); line-height: 34px; font-weight: bold; }
+#me { margin: 0 10px; color: #808080; line-height: 34px; font-weight: bold; }
 
 #site:after,
 #me:after { @include icon; margin-left: 4px; content: '▼'; font-size: 0.8em; line-height: 1; }
@@ -16,7 +16,7 @@ body { padding-top: 35px; font-size: 13px; line-height: 18px; font-family: Helve
 
 /* account links */
 #header .right a:hover { color: $linkcolor !important; }
-#header .right #me a { font-weight: bold; color: hsl(0,0%,50%); }
+#header .right #me a { font-weight: bold; color: #808080; }
 
 /* search */
 /*#header .right #search { position: relative; margin: 5px 10px 0 0; }
@@ -29,6 +29,6 @@ body { padding-top: 35px; font-size: 13px; line-height: 18px; font-family: Helve
 #main { padding: 15px 25px; }
 
 /* footer */
-#footer { margin: 25px; text-align: center; font-size: 11px; color: hsl(0,0%,65%); }
+/*#footer { margin: 25px; text-align: center; font-size: 11px; color: hsl(0,0%,65%); }
 #footer p { display: inline-block; }
-#footer p#copyright { margin-left: 10px; }
+#footer p#copyright { margin-left: 10px; }*/
