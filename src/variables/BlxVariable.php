@@ -179,4 +179,17 @@ class BlxVariable
 	{
 		return new LocalizationVariable();
 	}
+
+	/**
+	 * @param string $category
+	 * @param        $message
+	 * @param array  $params
+	 * @param null   $source
+	 * @param null   $language
+	 * @return string|void
+	 */
+	public function t($category = 'app', $message, $params = array(), $source = null, $language = null)
+	{
+		return Blocks::t($category, $message, $params, $source, $language);
+	}
 }
