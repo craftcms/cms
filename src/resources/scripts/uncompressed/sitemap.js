@@ -222,8 +222,8 @@ blx.Node = blx.Base.extend({
 
 		for (var i = 0; i < newPages.length; i++)
 		{
-			var $newNode = $('<div class="node"/>').appendTo($newNodes);
-			$('<img class="page" src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
+			var $newNode = $('<div class="node page"/>').appendTo($newNodes);
+			$('<img src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
 			$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
 		}
 

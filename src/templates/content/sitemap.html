@@ -9,16 +9,22 @@
 {region "main"}
 	<h1>Content</h1>
 
-	<div class="actions">
-		<a href="{:blx.url.base}content/structure" class="btn big light" data-icon="s">Structure</a>
-	</div>
+	<ul class="actions">
+		<li class="btn-group big">
+			<a href="" class="btn big light sel" data-icon="t" title="Tree view"></a>
+			<a href="" class="btn big light" data-icon="l" title="List view"></a>
+		</li>
+		<li>
+			<a href="{:blx.url.base}content/structure" class="btn big light" data-icon="s">Structure</a>
+		</li>
+	</ul>
 
 	<div id="sitemap">
 
 		<div id="home" class="tier">
 			<div class="nodes">
-				<a class="node">
-					<img class="page" src="{:blx.url.resource}images/screenshots/Home.png" />
+				<a class="node page">
+					<img src="{:blx.url.resource}images/screenshots/Home.png" />
 					<div class="title">Home</div>
 				</a>
 			</div>
@@ -26,47 +32,38 @@
 
 		<div class="tier" id="tier">
 			<div class="nodes">
-				<div class="node">
-					<div class="section">
-						<div class="pages">
-							<img src="{:blx.url.resource}images/screenshots/CaseStudies/Agency.png" style="margin-left: -39px" />
-							<img src="{:blx.url.resource}images/screenshots/CaseStudies/Navy.png" />
-							<img src="{:blx.url.resource}images/screenshots/CaseStudies/REDI.png" style="margin-right: -39px" />
-						</div>
-						<div class="effects"></div>
+				<div class="node section">
+					<div class="peephole">
+						<img src="{:blx.url.resource}images/screenshots/CaseStudies/Agency.png" style="margin-left: -39px" />
+						<img src="{:blx.url.resource}images/screenshots/CaseStudies/Navy.png" />
+						<img src="{:blx.url.resource}images/screenshots/CaseStudies/REDI.png" style="margin-right: -39px" />
 					</div>
 					<div class="title">Case Studies</div>
 				</div>
 
-				<div class="node">
-					<div class="section">
-						<div class="pages">
-							<img src="{:blx.url.resource}images/screenshots/UI/Chimaeric.png" style="margin-left: -39px" />
-							<img src="{:blx.url.resource}images/screenshots/UI/Pure.png" />
-							<img src="{:blx.url.resource}images/screenshots/UI/MessageMarker.png" style="margin-right: -39px" />
-						</div>
-						<div class="effects"></div>
+				<div class="node section">
+					<div class="peephole">
+						<img src="{:blx.url.resource}images/screenshots/UI/Chimaeric.png" style="margin-left: -39px" />
+						<img src="{:blx.url.resource}images/screenshots/UI/Pure.png" />
+						<img src="{:blx.url.resource}images/screenshots/UI/MessageMarker.png" style="margin-right: -39px" />
 					</div>
 					<div class="title">Design &amp; User Interface</div>
 				</div>
 
-				<a class="node">
-					<img class="page" src="{:blx.url.resource}images/screenshots/Services.png" />
+				<a class="node page">
+					<img src="{:blx.url.resource}images/screenshots/Services.png" />
 					<div class="title">Services</div>
 				</a>
 
-				<a class="node">
-					<img class="page" src="{:blx.url.resource}images/screenshots/About.png" />
+				<a class="node page">
+					<img src="{:blx.url.resource}images/screenshots/About.png" />
 					<div class="title">About</div>
 				</a>
 
-				<div class="node">
-					<div class="section">
-						<div class="pages">
-							<img src="{:blx.url.resource}images/screenshots/Blog/Usability.png" style="margin-left: -2px" />
-							<img src="{:blx.url.resource}images/screenshots/Blog/HelloWorld.png" style="margin-right: -2px" />
-						</div>
-						<div class="effects"></div>
+				<div class="node section">
+					<div class="peephole">
+						<img src="{:blx.url.resource}images/screenshots/Blog/Usability.png" style="margin-left: -2px" />
+						<img src="{:blx.url.resource}images/screenshots/Blog/HelloWorld.png" style="margin-right: -2px" />
 					</div>
 					<div class="title">Blog</div>
 				</div>
