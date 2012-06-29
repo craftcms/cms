@@ -1,5 +1,4 @@
 <?php
-namespace Blocks;
 
 /**
  * Case-insensitive dictionary, suitable for HTTP headers
@@ -12,7 +11,7 @@ namespace Blocks;
  *
  * @package Requests
  */
-class RequestsResponseHeaders implements \ArrayAccess, \IteratorAggregate {
+class RequestsResponseHeaders implements ArrayAccess, IteratorAggregate {
 	/**
 	 * Actual header data
 	 *
@@ -78,9 +77,9 @@ class RequestsResponseHeaders implements \ArrayAccess, \IteratorAggregate {
 	/**
 	 * Get an iterator for the data
 	 *
-	 * @return \ArrayIterator|\Traversable
+	 * @return ArrayIterator|Traversable
 	 */
 	public function getIterator() {
-		return new \ArrayIterator($this->data);
+		return new ArrayIterator($this->data);
 	}
 }

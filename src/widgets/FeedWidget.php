@@ -36,7 +36,7 @@ class FeedWidget extends BaseWidget
 	{
 		$url = $this->settings['url'];
 		$cachePath = blx()->path->getCachePath();
-		$feed = new SimplePie($url, $cachePath);
+		$feed = new \SimplePie($url, $cachePath);
 		$feed->init();
 		$feed->handle_content_type();
 

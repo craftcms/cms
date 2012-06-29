@@ -1,5 +1,4 @@
 <?php
-namespace Blocks;
 
 /**
  * Requests for PHP
@@ -166,7 +165,6 @@ class Requests {
 
 		// Find us a working transport
 		foreach (self::$transports as $class) {
-			$class = __NAMESPACE__.'\\'.$class;
 			if (!class_exists($class))
 				continue;
 

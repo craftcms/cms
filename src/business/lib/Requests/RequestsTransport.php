@@ -1,5 +1,4 @@
 <?php
-namespace Blocks;
 
 /**
  * Base HTTP transport

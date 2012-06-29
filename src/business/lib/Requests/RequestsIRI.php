@@ -1,5 +1,4 @@
 <?php
-namespace Blocks;
 
 /**
  * IRI parser/serialiser/normaliser

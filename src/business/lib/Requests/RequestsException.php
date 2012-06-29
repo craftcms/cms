@@ -1,5 +1,4 @@
 <?php
-namespace Blocks;
 
 /**
  * Exception for HTTP requests

@@ -1,5 +1,4 @@
 <?php
-namespace Blocks;
 
 /**
  * Handles adding and dispatching events
