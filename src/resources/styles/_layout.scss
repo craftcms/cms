@@ -11,6 +11,9 @@ body { padding-top: 35px; font-size: 13px; line-height: 18px; font-family: Helve
 #site:after,
 #me:after { @include icon; margin-left: 4px; content: '▼'; font-size: 0.8em; line-height: 1; }
 
+#site { margin-left: 25px; }
+#me { margin-right: 25px; }
+
 #nav li { float: left; }
 #nav li a { display: block; padding: 0 10px; line-height: 34px; }
 
