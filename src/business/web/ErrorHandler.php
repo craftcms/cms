@@ -52,6 +52,9 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function handleException($exception)
 	{
+		// Since the exception could have been thrown at any point, let's double check to make sure all of our classes are loaded.
+		blx()->importClasses();
+
 		// extra logic to log any mysql deadlocks.
 		if ($exception instanceof \CDbException && strpos($exception->getMessage(), 'Deadlock') !== false)
 		{
@@ -276,6 +279,7 @@ class ErrorHandler extends \CErrorHandler
 			$connection = blx()->db;
 			if ($connection && blx()->db->getSchema()->getTable('{{sites}}') !== null)
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
+
 		}
 		catch(\CDbException $e)
 		{
@@ -286,7 +290,7 @@ class ErrorHandler extends \CErrorHandler
 		{
 			if ($viewPath !== null)
 			{
-				// if it's an exception on the front-end, we don't show the exception template, on the error template.
+				// if it's an exception on the front-end, we don't show the exception template, only the error template.
 				if ($view == 'errors/exception' && blx()->request->getMode() == RequestMode::Site)
 					$view = 'errors/error';
 
