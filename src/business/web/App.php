@@ -8,6 +8,7 @@ class App extends \CWebApplication
 {
 	private $_templatePath;
 	private $_isInstalled;
+	private $_classesImported = false;
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -23,31 +24,20 @@ class App extends \CWebApplication
 		Blocks::import('app.business.i18n.Locale');
 
 		// In case of an error, import everything we need.
-		Blocks::import('app.business.exceptions.HttpException');
-		Blocks::import('app.business.db.DbCommand');
-		Blocks::import('app.business.db.DbConnection');
-		Blocks::import('app.business.db.PDO');
-		Blocks::import('app.business.db.MysqlSchema');
+		Blocks::import('app.business.exceptions.*');
 		Blocks::import('app.business.web.ErrorHandler');
-		Blocks::import('app.business.web.templating.FileTemplateProcessor');
 
 		// We would normally use the 'preload' config option for logging and request, but because of PHP namespace hackery, we'll manually load them here.
+		Blocks::import('app.business.web.HttpRequest');
+		Blocks::import('app.business.logging.*');
 		Blocks::import('app.services.ConfigService');
-		Blocks::import('app.business.enums.AttributeType');
-		Blocks::import('app.business.utils.DatabaseHelper');
-		Blocks::import('app.business.utils.Json');
-		Blocks::import('app.business.logging.FileLogRoute');
-		Blocks::import('app.business.logging.WebLogRoute');
-		Blocks::import('app.business.logging.ProfileLogRoute');
-		Blocks::import('app.business.logging.DbLogRoute');
-		Blocks::import('app.business.logging.LogRouter');
-
 		Blocks::import('app.business.enums.UrlFormat');
 		Blocks::import('app.business.enums.RequestMode');
-		Blocks::import('app.business.utils.HtmlHelper');
-		Blocks::import('app.business.utils.UrlHelper');
-		Blocks::import('app.business.web.HttpRequest');
 		Blocks::import('app.business.web.UrlManager');
+		Blocks::import('app.business.utils.Json');
+		Blocks::import('app.business.utils.UrlHelper');
+		Blocks::import('app.business.utils.HtmlHelper');
+
 		blx()->getComponent('request');
 		blx()->getComponent('log');
 
@@ -56,45 +46,49 @@ class App extends \CWebApplication
 
 	/**
 	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths.
-	 * @access private
 	 */
-	private function _importClasses()
+	public function importClasses()
 	{
-		$aliases = array(
-			'app.blocktypes.*',
-			'app.business.BaseComponent',
-			'app.business.console.*',
-			'app.business.console.commands.*',
-			'app.business.datetime.*',
-			'app.business.db.*',
-			'app.business.email.*',
-			'app.business.enums.*',
-			'app.business.exceptions.*',
-			'app.business.i18n.*',
-			'app.business.install.*',
-			'app.business.logging.*',
-			'app.business.plugins.*',
-			'app.business.updates.*',
-			'app.business.utils.*',
-			'app.business.validators.*',
-			'app.business.web.*',
-			'app.business.web.filters.*',
-			'app.business.web.templating.*',
-			'app.business.web.templating.adapters.*',
-			'app.business.web.templating.templatewidgets.*',
-			'app.business.webservices.*',
-			'app.controllers.*',
-			'app.migrations.*',
-			'app.models.*',
-			'app.models.forms.*',
-			'app.services.*',
-			'app.variables.*',
-			'app.widgets.*',
-		);
-
-		foreach ($aliases as $alias)
+		if (!$this->_classesImported)
 		{
-			Blocks::import($alias);
+			$aliases = array(
+				'app.blocktypes.*',
+				'app.business.*',
+				'app.business.console.*',
+				'app.business.console.commands.*',
+				'app.business.datetime.*',
+				'app.business.db.*',
+				'app.business.email.*',
+				'app.business.enums.*',
+				'app.business.exceptions.*',
+				'app.business.i18n.*',
+				'app.business.install.*',
+				'app.business.logging.*',
+				'app.business.plugins.*',
+				'app.business.updates.*',
+				'app.business.utils.*',
+				'app.business.validators.*',
+				'app.business.web.*',
+				'app.business.web.filters.*',
+				'app.business.web.templating.*',
+				'app.business.web.templating.adapters.*',
+				'app.business.web.templating.templatewidgets.*',
+				'app.business.webservices.*',
+				'app.controllers.*',
+				'app.migrations.*',
+				'app.models.*',
+				'app.models.forms.*',
+				'app.services.*',
+				'app.variables.*',
+				'app.widgets.*',
+			);
+
+			foreach ($aliases as $alias)
+			{
+				Blocks::import($alias);
+			}
+
+			$this->_classesImported = true;
 		}
 	}
 
@@ -111,7 +105,7 @@ class App extends \CWebApplication
 		$this->_processResourceRequest();
 
 		// Import the majority of Blocks' classes
-		$this->_importClasses();
+		$this->importClasses();
 
 		// Config validation
 		$this->_validateConfig();
