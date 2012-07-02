@@ -128,7 +128,7 @@ return CMap::mergeArray(
 					array('content/({number})/draft({number})',      'content/_entry', array('entryId', 'draftNum')),
 					array('content/sections/new',                    'content/_section'),
 					array('content/sections/({number})',             'content/_section', array('sectionId')),
-					array('settings/plugins/({handle})',             'settings/_plugin', array('pluginClass')),
+					array('plugins/({handle})',                      'plugins/_settings', array('pluginClass')),
 					array('settings/sites/new',                      'settings/_site'),
 					array('settings/sites/({number})',               'settings/_site', array('siteId')),
 				),

@@ -2,9 +2,18 @@
 
 
 {region "main"}
-	<h1>Settings</h1>
+	<header class="titlebar">
+		<h1>Settings</h1>
+	</header>
 
-	<section>
+	<ul class="biglist">
+		<li><h3><a href="">General Settings</a></h3></li>
+		<li><h3><a href="">Sites</a></h3></li>
+		<li><h3><a href="">Asset Sources</a></h3></li>
+		<li><h3><a href="{:blx.url.base}settings/email">Email Settings</a></h3></li>
+	</ul>
+
+	{!--<section>
 		<h2>Email</h2>
 		<ul class="actions">
 			<li><a href="{:blx.url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
@@ -90,6 +99,6 @@
 				{/foreach}
 			</tbody>
 		</table>
-	</section>
+	</section>--}
 
 {/region}

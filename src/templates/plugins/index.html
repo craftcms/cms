@@ -1,0 +1,64 @@
+{layout "_layouts/cp" title="Plugins"}
+
+
+{region "styles"}
+	<style type="text/css">
+		.biglist h3,
+		.biglist .dev { margin-left: 20px; }
+		.biglist .dev { margin-top: 4px; }
+		.biglist .status { position: absolute; top: 15px; left: 10px; }
+	</style>
+{/region}
+
+
+{region "main"}
+
+	<header class="titlebar">
+		<h1>Plugins</h1>
+		<ul class="right">
+			<li><a class="btn light">Disable all plugins</a></li>
+		</ul>
+	</header>
+
+	<ul class="biglist">
+		{foreach blx.plugins.all as plugin}
+			<li>
+				<h3>
+					{if plugin.hasSettings}
+						<a href="{:blx.url.base}plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
+					{else}
+						{:plugin.name}
+					{/if}
+					<span class="version">{:plugin.version}</span>
+				</h3>
+				<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
+				{if plugin.developer}
+					<div class="dev">
+						{if plugin.developerUrl}
+							<a href="{:plugin.developerUrl}" target="_blank">{if plugin.developer}{:plugin.developer}{else}{:plugin.developerUrl}{/if}</a>
+						{else}
+							{:plugin.developer}
+						{/if}
+					</div>
+				{/if}
+				{!--<td class="rightalign">
+					<form method="post" action="">
+						<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}" />
+						<input type="hidden" name="redirect" value="settings" />
+						{if plugin.getIsInstalled}
+							{if plugin.enabled}
+								<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin" />
+							{else}
+								<input type="button" value="Enable" class="btn small light formsubmit" data-action="plugins/enablePlugin" />
+							{/if}
+							<input type="button" value="Uninstall" class="btn small light formsubmit" data-action="plugins/uninstallPlugin" />
+						{else}
+							<input type="button" value="Install" class="btn small light formsubmit" data-action="plugins/installPlugin" />
+						{/if}
+					</form>
+				</td>--}
+			</li>
+		{/foreach}
+	</ul>
+
+{/region}

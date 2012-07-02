@@ -1,54 +1,44 @@
 @import "shared";
 
-body { background: $lightbgcolor -webkit-linear-gradient($darkbgcolor, $lightbgcolor 500px) repeat-x; font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; }
+body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; background: #fff; }
 
-/* headers */
-.header { position: absolute; top: 13px; }
-.header > div { float: left; }
-.header a { display: block; padding: 4px 10px; line-height: 16px; }
-.header a:hover { text-decoration: none; }
+/* sidebar */
+#sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100%; background: -webkit-linear-gradient(left, #c9c9c9 198px, #999); overflow: auto; }
 
-#header-left { left: 25px; }
-#header-left h3 { color: #fff; }
-#header-right { right: 15px; }
+#sidebar #header { background: -webkit-linear-gradient(#5b5b5b, #2c2c2c); -webkit-box-shadow: inset 0 -1px 0 #000, 0 1px 4px rgba(0,0,0,0.25); }
+#sidebar #header:after {@include clearafter; }
+#sidebar #header #branding { float: left; padding: 10px; }
+#sidebar #header #branding img { display: block; width: 120px; }
+#sidebar #header #account { float: right; padding: 15px 0 15px 15px; width: 35px; color: #fff; text-shadow: 0 1px 1px #000; -webkit-box-shadow: -1px 0 0 rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.05); }
+#sidebar #header #account:after { margin-right: -5px; color: rgba(255,255,255,0.5); text-shadow: none; }
 
-/* crumbs */
-#header-left #crumbs { display: none; margin-left: 12px; }
-#header-left #crumbs li { float: left; margin-left: -1px; background: url(../images/crumb-left.png) no-repeat 0 0; }
-#header-left #crumbs li a { margin-right: -11px; padding-left: 18px; padding-right: 18px; color: $mediumlight; text-shadow: 0 1px 0 #fff; background: url(../images/crumb-right.png) no-repeat 100% 0; }
-#header-left #crumbs li:hover { position: relative; background-position: 0 -24px; }
-#header-left #crumbs li:hover a { background-position: 100% -24px; }
-#header-left #crumbs li:active { position: relative; background-position: 0 -48px; }
-#header-left #crumbs li:active a { padding-top: 5px; padding-bottom: 3px; background-position: 100% -48px; }
+#sidebar nav { display: block; padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.25); border-bottom: 1px solid rgba(0,0,0,0.1); font-size: 12px; line-height: 26px; background: -webkit-linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0) 25px); -webkit-background-clip: padding-box; }
+#sidebar nav:nth-of-type(1) { -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1); }
+#sidebar nav:last-child { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
+#sidebar nav ul li + li { margin-top: 4px; }
+#sidebar nav ul li a { display: block; padding: 0 20px; color: #5b5b5b; text-shadow: 0 1px 1px rgba(255,255,255,0.5); -webkit-transition: color 150ms linear; }
+#sidebar nav ul li a:hover { color: #2c2c2c; text-decoration: none; background: rgba(0,0,0,0.05); }
+#sidebar nav ul li a:before { margin: 2px 5px -2px 0; width: 22px; font-size: 21px; text-align: center; }
+#sidebar nav ul li a .badge { display: block; float: right; margin: 4px 0; padding: 0 8px; border-radius: 9px; line-height: 18px; background: #fff; -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
+#sidebar nav ul li.sel { background: -webkit-linear-gradient(white, #dbdbdb); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
+#sidebar nav ul li.sel a { color: #2c2c2c; background: -webkit-linear-gradient(left, rgba(255,255,255,0) 50%, white); cursor: default; }
+#sidebar nav ul li.sel a .badge { background: #ddd; -webkit-box-shadow: inset 0 0 0 1px #c1c1c1; }
 
 /* account links */
-#header-right a:hover { color: $linkcolor !important; }
-#header-right #me a { font-weight: bold; color: #fff; }
-#header-right #logout { border-left: 1px solid $lightbgcolor; }
-#header-right #logout a { color: $lightbgcolor; }
+#header .right a:hover { color: $linkcolor !important; }
+#header .right #me a { font-weight: bold; color: #808080; }
 
 /* search */
-#header-right #search { position: relative; margin-right: 10px; }
-#header-right #search .texthint { color: $lightbgcolor; }
-#header-right #search:after { @include icon; content: 'm'; display: block; position: absolute; top: 5px; left: 6px; font-size: 20px; color: $lightbgcolor; }
-#header-right #search input { border: 1px solid $lightbgcolor; border-radius: 12px; padding: 3px 10px 4px 24px; width: 165px; font-size: 12px; color: #fff; background: none; -webkit-box-shadow: 0 0 5px rgba(255,255,255,0); -webkit-transition: border-color linear 100ms, -webkit-box-shadow linear 100ms; }
-#header-right #search input:focus { outline: none; -webkit-box-shadow: 0 0 5px rgba(255,255,255,0.75); }
+/*#header .right #search { position: relative; margin: 5px 10px 0 0; }
+#header .right #search .texthint { color: hsl(0,0%,65%); }
+#header .right #search:after { @include icon; content: 'm'; display: block; position: absolute; top: 5px; left: 6px; font-size: 20px; color: hsl(0,0%,65%); }
+#header .right #search input { border: 1px solid hsl(0,0%,80%); border-radius: 12px; padding: 3px 10px 4px 24px; width: 165px; font-size: 12px; color: #fff; background: none; -webkit-box-shadow: 0 0 5px rgba(255,255,255,0); -webkit-transition: border-color linear 100ms, -webkit-box-shadow linear 100ms; }
+#header .right #search input:focus { outline: none; -webkit-box-shadow: 0 0 5px rgba(255,255,255,0.75); }*/
 
 /* main */
-.main { position: relative; border-radius: 4px; padding: 35px 50px; color: $xdark; background: #fff; -webkit-box-shadow: 0 2px 5px -1px rgba(0,0,0,0.5); }
-#main { margin: 50px 25px 0; padding-left: 150px; min-height: 500px; }
-#main > h1 { margin-top: -25px; }
-
-/* nav */
-#nav { position: absolute; z-index: 1; top: 35px; left: 35px; width: 65px; }
-#nav.fixed { position: fixed; top: 0; }
-#nav ul li { margin-bottom: 25px; }
-#nav ul li a { display: block; color: $xlight; text-align: center; -webkit-transition: color linear 100ms; }
-#nav ul li a:before { display: block; margin-bottom: -5px; font-size: 40px; line-height: 1; }
-#nav ul li a:hover { color: $medium; text-decoration: none; }
-#nav ul li a.sel { color: $dark; cursor: default; }
+#main { position: relative; margin-left: 200px; padding: 25px; overflow: hidden; }
 
 /* footer */
-#footer { margin: 10px 25px; text-align: center; font-size: 11px; color: #fff; }
+/*#footer { margin: 25px; text-align: center; font-size: 11px; color: hsl(0,0%,65%); }
 #footer p { display: inline-block; }
-#footer p#copyright { margin-left: 10px; }
+#footer p#copyright { margin-left: 10px; }*/
