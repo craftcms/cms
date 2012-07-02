@@ -1,19 +1,32 @@
 {layout "_layouts/basic" title=title styles=styles scripts=scripts bodyClass=bodyClass}
 
 {region "body"}
-	<div id="header">
-		<div id="site" class="left">Pixel & Tonic</div>
-		<div id="me" class="right">{:blx.users.current.username}</div>
+	<div id="sidebar">
+		{!--<div id="site" class="left">Pixel & Tonic</div>--}
 
-		<div id="nav" class="left">
-			<ul>
-				{foreach blx.cp.sections as section}
-					<li id="nav-{:section.handle}"><a {if blx.url.segment(1)==section.handle}class="sel"{/if} href="{:blx.url.base}{:section.handle}">{:section.name}</a></li>
-				{/foreach}
-			</ul>
+		<div id="header">
+			<div id="branding">
+				<img src="{:blx.url.resource}images/pt.png" />
+			</div>
+			<div id="account" data-icon="u" class="menubtn"></div>
 		</div>
 
-		<div class="clear"></div>
+		{!--<div id="me" class="right">{:blx.users.current.username}</div>--}
+		
+
+		{foreach blx.cp.nav as group}
+			<nav>
+				<ul>
+					{foreach group as item}
+						<li id="nav-{:item.handle}" {if blx.url.segment(1)==item.handle}class="sel"{/if}>
+							<a href="{:blx.url.base}{:item.handle}" data-icon="{:item.icon}">{:item.name}
+								{if item.badge}<span class="badge">{:item.badge}</span>{/if}
+							</a>
+						</li>
+					{/foreach}
+				</ul>
+			</nav>
+		{/foreach}
 	</div>
 
 	{if blx.session.notifications}
