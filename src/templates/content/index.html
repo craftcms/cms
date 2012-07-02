@@ -1,44 +1,85 @@
 {layout "_layouts/cp" title="Content"}
 
 
+{region "styles"}
+	{include "_includes/css_include" file="styles/sitemap.css"}
+{/region}
+
+
 {region "main"}
-	<h1>Content</h1>
 
-	{foreach blx.content.sections as section}
-		<section>
-			<h2 data-icon="C">{:section.name}</h2>
+	<header class="titlebar">
+		<h1>Content</h1>
+		<ul class="right">
+			<li class="btn-group">
+				<a href="" class="btn light sel" data-icon="t" title="Tree view"></a>
+				<a href="" class="btn light" data-icon="l" title="List view"></a>
+			</li>
+		</ul>
+	</header>
 
-			<ul class="actions">
-				<li>
-					<form method="post" action="">
-						<input type="hidden" name="action" value="content/createEntry" />
-						<input type="hidden" name="sectionId" value="{:section.id}" />
-						<a class="btn light addbtn formsubmit">New entry</a>
-					</form>
-				</li>
-				<li>
-					<a href="{:blx.url.base}content/sections/{:section.id}" class="btn light" data-icon="e">Edit section</a>
-				</li>
-			</ul>
+	<div id="sitemap">
 
-			<table class="data">
-				<tbody>
-					{foreach section.entries as entry}
-						<tr>
-							<td width="25%"><span class="status {if entry.live}on{elseif entry.published}pending{elseif entry.expired}off{/if}"></span>
-								<a href="{:blx.url.base}content/{:entry.id}">{if entry.title}{:entry.title}{else}Untitled{/if}</a>
-							</td>
-							<td class="light" width="25%">{:entry.author.firstNameLastInitial}</td>
-							<td class="light" width="25%">{:entry.getPublishDate}</td>
-							<td class="light" width="25%">{if section.has_urls && entry.url}<a href="{:entry.url}" target="_blank">{:entry.uri}</a>{/if}</td>
-						</tr>
-					{/foreach}
-				</tbody>
-			</table>
-		</section>
-	{/foreach}
+		<div id="home" class="tier">
+			<div class="nodes">
+				<a class="node page">
+					<img src="{:blx.url.resource}images/screenshots/Home.png" />
+					<div class="title">Home</div>
+				</a>
+			</div>
+		</div>
 
-	<div class="buttons">
-		<a href="{:blx.url.base}content/sections/new" class="btn light addbtn">New section</a>
+		<div class="tier" id="tier">
+			<div class="nodes">
+				<div class="node section">
+					<div class="peephole">
+						<img src="{:blx.url.resource}images/screenshots/CaseStudies/Agency.png" style="margin-left: -39px" />
+						<img src="{:blx.url.resource}images/screenshots/CaseStudies/Navy.png" />
+						<img src="{:blx.url.resource}images/screenshots/CaseStudies/REDI.png" style="margin-right: -39px" />
+					</div>
+					<div class="title">Case Studies</div>
+				</div>
+
+				<div class="node section">
+					<div class="peephole">
+						<img src="{:blx.url.resource}images/screenshots/UI/Chimaeric.png" style="margin-left: -39px" />
+						<img src="{:blx.url.resource}images/screenshots/UI/Pure.png" />
+						<img src="{:blx.url.resource}images/screenshots/UI/MessageMarker.png" style="margin-right: -39px" />
+					</div>
+					<div class="title">Design &amp; User Interface</div>
+				</div>
+
+				<a class="node page">
+					<img src="{:blx.url.resource}images/screenshots/Services.png" />
+					<div class="title">Services</div>
+				</a>
+
+				<a class="node page">
+					<img src="{:blx.url.resource}images/screenshots/About.png" />
+					<div class="title">About</div>
+				</a>
+
+				<div class="node section">
+					<div class="peephole">
+						<img src="{:blx.url.resource}images/screenshots/Blog/Usability.png" style="margin-left: -2px" />
+						<img src="{:blx.url.resource}images/screenshots/Blog/HelloWorld.png" style="margin-right: -2px" />
+					</div>
+					<div class="title">Blog</div>
+				</div>
+			</div>
+		</div>
 	</div>
+{/region}
+
+
+{region "scripts"}
+	{include "_includes/js_include" file="sitemap.js"}
+	<script type="text/javascript">
+
+		new blx.Tier('#tier');
+
+		//var home = new blx.SiteMapPage('Home.png', 'Home');
+		//home.addSubpage('About.png', 'About');
+
+	</script>
 {/region}

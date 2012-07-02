@@ -6,11 +6,12 @@
 
 
 {region "main"}
-	<h1>Dashboard</h1>
-
-	<div class="actions">
-		<a href="{:blx.url.base}dashboard/settings" class="btn big light" data-icon="s">Settings</a>
-	</div>
+	<header class="titlebar">
+		<h1>Dashboard</h1>
+		<ul class="right">
+			<li><a href="{:blx.url.base}dashboard/settings" class="btn light" data-icon="s">Settings</a></li>
+		</ul>
+	</header>
 
 	{!--<div id="alerts">
 		{if !blx.sites.licensekeys}
