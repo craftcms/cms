@@ -17,6 +17,10 @@ $blurglowcolor: rgba(55,156,219,0);
 $focusglowcolor: #6eb1db;
 $errorcolor: #8a1f11;
 
+@mixin linear-gradient($from, $to) { background: -webkit-linear-gradient($from, $to); }
+@mixin left-linear-gradient($from, $to) { background: -webkit-linear-gradient(left, $from, $to); }
+@mixin right-linear-gradient($from, $to) { background: -webkit-linear-gradient(right, $from, $to); }
+
 @mixin unselectable { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
 @mixin icon { display: inline-block; font-family: 'Pictos Custom'; font-size: 1.2em; text-align: center; vertical-align: middle; -webkit-font-smoothing: antialiased; @include unselectable; }
 @mixin clearafter { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
