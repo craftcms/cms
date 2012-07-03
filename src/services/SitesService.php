@@ -305,6 +305,24 @@ class SitesService extends \CApplicationComponent
 	}
 
 	/**
+	 * Sets the primary site.
+	 *
+	 * @param int $siteId
+	 */
+	public function setPrimarySite($siteId)
+	{
+		// Set primary=false on the current primary site
+		$oldSite = $this->getPrimarySite();
+		$oldSite->primary = 0;
+		$oldSite->save();
+
+		// Set the new primary site
+		$newSite = $this->getSiteById($siteId);
+		$newSite->primary = 1;
+		$newSite->save();
+	}
+
+	/**
 	 * @param $siteUrl
 	 * @param $status
 	 */
