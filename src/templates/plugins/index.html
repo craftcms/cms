@@ -5,7 +5,7 @@
 	<style type="text/css">
 		.biglist h3,
 		.biglist .dev { margin-left: 20px; }
-		.biglist .dev { margin-top: 4px; }
+		.biglist .dev { margin-top: 2px; font-size: 12px; }
 		.biglist .status { position: absolute; top: 15px; left: 10px; }
 	</style>
 {/region}
@@ -22,24 +22,14 @@
 
 	<ul class="biglist">
 		{foreach blx.plugins.all as plugin}
-			<li>
+			<li><a class="go" href="{:blx.url.base}plugins/{:plugin.getClassHandle.lowercase}">
 				<h3>
-					{if plugin.hasSettings}
-						<a href="{:blx.url.base}plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
-					{else}
-						{:plugin.name}
-					{/if}
+					{:plugin.name}
 					<span class="version">{:plugin.version}</span>
 				</h3>
 				<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
 				{if plugin.developer}
-					<div class="dev">
-						{if plugin.developerUrl}
-							<a href="{:plugin.developerUrl}" target="_blank">{if plugin.developer}{:plugin.developer}{else}{:plugin.developerUrl}{/if}</a>
-						{else}
-							{:plugin.developer}
-						{/if}
-					</div>
+					<div class="dev">{:plugin.developer}</div>
 				{/if}
 				{!--<td class="rightalign">
 					<form method="post" action="">
@@ -57,7 +47,7 @@
 						{/if}
 					</form>
 				</td>--}
-			</li>
+			</a></li>
 		{/foreach}
 	</ul>
 
