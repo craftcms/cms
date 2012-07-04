@@ -4,8 +4,7 @@
 {region "styles"}
 	<style type="text/css">
 		.biglist h3,
-		.biglist .dev { margin-left: 20px; }
-		.biglist .dev { margin-top: 2px; font-size: 12px; }
+		.biglist h4 { margin-left: 20px; }
 		.biglist .status { position: absolute; top: 15px; left: 15px; }
 	</style>
 {/region}
@@ -29,7 +28,7 @@
 				</h3>
 				<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
 				{if plugin.developer}
-					<div class="dev">{:plugin.developer}</div>
+					<h4>{:plugin.developer}</h4>
 				{/if}
 				{!--<td class="rightalign">
 					<form method="post" action="">

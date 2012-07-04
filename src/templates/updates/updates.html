@@ -1,5 +1,5 @@
 {set updateInfo = blx.updates.updateinfo('y')}
-{if updateInfo.blocks.releases.length > 0 || updateInfo.plugins.releases.length > 0}
+{if updateInfo.blocks.releases || updateInfo.plugins}
 
 	{if !updateInfo.blocks.manualUpdateRequired}
 		<form method="post" action="{:blx.url.base}update/all">
@@ -7,83 +7,63 @@
 		</form>
 	{/if}
 
-	<h2>The following updates are available:</h2>
+	<h2>You’ve got updates!</h2>
 
-	<div class="pane">
-		<div class="pane-body">
-			<table>
-				<tbody>
-					<tr id="Blocks">
-						<td class="pane-item">
-							<strong>{:blx.app.product}</strong> {:updateInfo.blocks.latestVersion} Build {:updateInfo.blocks.latestBuild}
-							{if updateInfo.blocks.criticalUpdateAvailable}<div class="badge warning">Critical</div>{/if}
-						</td>
-						<td class="pane-item">
-							<a class="notes">Show release notes</a>
-							<div style="display:none">
-								{foreach updateInfo.blocks.releases as release}
-									<h5>{:blx.app.product} {:release.version} Build {:release.build}</h5>
-									<ul>
-										<li>{:release.notes.nl2br}</li>
-									</ul>
-								{/foreach}
-							</div>
-						</td>
-						<td class="pane-item">
-							{if updateInfo.blocks.manualUpdateRequired}
-								<span class="manual"><a href="http://blockscms.com/alpha/blocks_{:updateInfo.blocks.latestVersion}.{:updateInfo.blocks.latestBuild}.zip">Manual update required</a></span>
-							{else}
-								<form method="post" action="{:blx.url.base}update/Blocks"><input class="btn" type="submit" value="Update"></form>
-							{/if}
-						</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-	</div>
+	<?php print_r($updateInfo->plugins()); die(); ?>
 
-	{if updateInfo.plugins}
-		<div class="pane">
-			<div class="pane-body">
-				<table>
-					<tbody>
-						{foreach updateInfo.plugins as pluginInfo}
-						<tr id="{:pluginInfo.class}">
-							<td class="pane-item">
-								<strong>{:pluginInfo.displayName}</strong> {:pluginInfo.latestVersion}
-								{if pluginInfo.criticalUpdateAvailable}<div class="badge warning">Critical</div>{/if}
-							</td>
-							<td class="pane-item">
-								<a class="notes">Show release notes</a>
-								<div style="display:none">
-									{foreach pluginInfo.releases as release}
-										<h5>{:pluginInfo.displayName} {:release.version}</h5>
-										<ul>
-											<li>{:release.notes.nl2br}</li>
-										</ul>
-									{/foreach}
-								</div>
-							</td>
-							<td class="pane-item">
-								<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
-							</td>
-						</tr>
-						{/foreach}
-					</tbody>
-				</table>
-			</div>
-		</div>
-	{/if}
+	<ul class="biglist">
+
+		{if updateInfo.blocks.releases}
+			<li>
+				<h3 {if updateInfo.blocks.criticalUpdateAvailable}class="critical"{/if}>
+					{:blx.app.product} {:updateInfo.blocks.latestVersion} build {:updateInfo.blocks.latestBuild}
+				</h3>
+				<h4><a href="">release notes</a></h4>
+
+				<div class="cta">
+					{if updateInfo.blocks.manualUpdateRequired}
+						<div class="manual"><a href="http://blockscms.com/alpha/blocks_{:updateInfo.blocks.latestVersion}.{:updateInfo.blocks.latestBuild}.zip">manual update required</a></div>
+					{else}
+						<form method="post" action="{:blx.url.base}update/Blocks"><input class="btn light" type="submit" value="Update"></form>
+					{/if}
+				</div>
+
+				<div class="notes">
+					{foreach updateInfo.blocks.releases as release}
+						<h5>{:blx.app.product} {:release.version} Build {:release.build}</h5>
+						<ul>
+							<li>{:release.notes.nl2br}</li>
+						</ul>
+					{/foreach}
+				</div>
+			</li>
+		{/if}
+
+		{foreach updateInfo.plugins as pluginInfo}
+			<li>
+				<h3 {if pluginInfo.criticalUpdateAvailable}class="critical"{/if}>
+					{:pluginInfo.displayName} {:pluginInfo.latestVersion}
+				</h3>
+				<h4><a>Show release notes</a></h4>
+
+				<div class="cta">
+					<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn light" type="submit" value="Update"></form>
+				</div>
+
+				<div class="notes">
+					{foreach pluginInfo.releases as release}
+						<h5>{:pluginInfo.displayName} {:release.version}</h5>
+						<ul>
+							<li>{:release.notes.nl2br}</li>
+						</ul>
+					{/foreach}
+				</div>
+			</li>
+		{/foreach}
+	</ul>
 
 {else}
 
-	<div id="no-updates" class="pane">
-		<div class="pane-head">
-			<h5>No updates available</h5>
-		</div>
-		<div class="pane-body">
-			<p class="pane-item">Congrats! Everything’s up-to-date already.</p>
-		</div>
-	</div>
+	<h3>You’re up to date!</h3>
 
 {/if}
