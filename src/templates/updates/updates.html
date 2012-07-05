@@ -9,8 +9,6 @@
 
 	<h2>You’ve got updates!</h2>
 
-	<?php print_r($updateInfo->plugins()); die(); ?>
-
 	<ul class="biglist">
 
 		{if updateInfo.blocks.releases}
@@ -40,25 +38,27 @@
 		{/if}
 
 		{foreach updateInfo.plugins as pluginInfo}
-			<li>
-				<h3 {if pluginInfo.criticalUpdateAvailable}class="critical"{/if}>
-					{:pluginInfo.displayName} {:pluginInfo.latestVersion}
-				</h3>
-				<h4><a>release notes</a></h4>
+			{if pluginInfo.status !== 'Unknown'}
+				<li>
+					<h3 {if pluginInfo.criticalUpdateAvailable}class="critical"{/if}>
+						{:pluginInfo.displayName} {:pluginInfo.latestVersion}
+					</h3>
+					<h4><a>release notes</a></h4>
 
-				<div class="cta">
-					<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn light" type="submit" value="Update"></form>
-				</div>
+					<div class="cta">
+						<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn light" type="submit" value="Update"></form>
+					</div>
 
-				<div class="notes">
-					{foreach pluginInfo.releases as release}
-						<h5>{:pluginInfo.displayName} {:release.version}</h5>
-						<ul>
-							<li>{:release.notes.nl2br}</li>
-						</ul>
-					{/foreach}
-				</div>
-			</li>
+					<div class="notes">
+						{foreach pluginInfo.releases as release}
+							<h5>{:pluginInfo.displayName} {:release.version}</h5>
+							<ul>
+								<li>{:release.notes.nl2br}</li>
+							</ul>
+						{/foreach}
+					</div>
+				</li>
+			{/if}
 		{/foreach}
 	</ul>
 
