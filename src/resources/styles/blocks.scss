@@ -164,8 +164,8 @@ h3 + .pane { margin-top: 15px; }
 .btn.big[data-icon]:before { margin-left: -2px; }
 
 /* submit buttons */
-.btn.submit { @include linear-gradient(#33abf5, #2885bf); }
-.btn.submit:not(.disabled):hover { @include linear-gradient(#309ee3, #2479ad); }
+.btn.submit { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); @include linear-gradient(#33abf5, #2885bf); }
+.btn:not(.disabled):not(:active):not(.sel):hover { color: #fff; @include linear-gradient(#309ee3, #2479ad); }
 .btn.submit:not(.disabled):active,
 .btn.submit:not(.disabled).sel,
 .btn.submit:not(.disabled).loading { @include linear-gradient(#2c92d1, #216c9c); }
