@@ -22,5 +22,5 @@ $errorcolor: #8a1f11;
 @mixin right-linear-gradient($from, $to) { background: -webkit-linear-gradient(right, $from, $to); }
 
 @mixin unselectable { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
-@mixin icon { display: inline-block; font-family: 'Pictos Custom'; font-size: 1.2em; text-align: center; vertical-align: middle; -webkit-font-smoothing: antialiased; @include unselectable; }
+@mixin icon { display: inline-block; font-family: 'Pictos Custom'; font-size: 20px; text-align: center; vertical-align: middle; -webkit-font-smoothing: antialiased; @include unselectable; }
 @mixin clearafter { content: "."; display: block; height: 0; clear: both; visibility: hidden; }

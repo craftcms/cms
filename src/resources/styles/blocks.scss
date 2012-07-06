@@ -13,6 +13,15 @@
 [data-icon]:before { @include icon; content: attr(data-icon); }
 [data-icon-after]:after { @include icon; content: attr(data-icon-after); }
 
+/* nav */
+nav { display: block; }
+nav ul li + li { margin-top: 4px; }
+nav ul li a { display: block; padding: 1px 0; font-size: 12px; line-height: 20px; color: #b3b3b3; -webkit-transition: color .1s linear; }
+nav ul li a:hover { color: $linkcolor; text-decoration: none; }
+nav ul li a:before { margin: -4px 5px -5px 0; width: 22px; text-align: center; }
+nav ul li a .badge { display: block; float: right; margin: 1px 0; padding: 0 8px; border-radius: 9px; line-height: 18px; background: #ddd; }
+nav ul li.sel a { color: #2c2c2c; }
+
 /* headings */
 h1 { margin-bottom: 50px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 30px; color: #000; }
 h2 { margin-bottom: 25px; font-family: HelveticaNeue, sans-serif; font-size: 15px; line-height: 1.2; color: #252525; }
@@ -38,7 +47,9 @@ code { font-family: Menlo, fixed-width; font-size: 0.9em; }
 /* links */
 a { color: $linkcolor; cursor: pointer; }
 a:hover { text-decoration: underline; }
-a.sel { text-decoration: none; }
+
+a.sel,
+li.sel a { cursor: default !important; text-decoration: none; }
 
 a.go { padding-right: 10px; background: url(../images/go.png) no-repeat 100% 50%; }
 a.goto { display: inline-block; vertical-align: middle; width: 12px; height: 12px; background: url(../images/goto.png) no-repeat; opacity: 0.5; }
@@ -53,7 +64,6 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumlight; }
 
-.sel { cursor: default !important; }
 .required:after { @include icon; content: '*'; padding-left: 5px; font-size: 9px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }

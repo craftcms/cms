@@ -4,13 +4,7 @@
 
 {region "styles"}
 	<style type="text/css">
-		.settings-nav { float: left; width: 150px; }
-		.settings-nav li { margin-bottom: 8px; }
-		.settings-nav li a { display: block; font-size: 12px; color: #b3b3b3; -webkit-transition: color .1s linear; }
-		.settings-nav li a:hover { color: #2d98db; text-decoration: none; }
-		.settings-nav li a.sel { color: #2c2c2c; }
-		.settings-nav li a:before { margin-right: 5px; width: 22px; font-size: 21px; text-align: center; }
-
+		#settings-nav { float: left; width: 150px; }
 		#settings { margin-left: 175px; }
 	</style>
 {/region}
@@ -21,15 +15,17 @@
 		<h1>Settings</h1>
 	</header>
 
-	<ul class="settings-nav">
-		<li><a href="{:blx.url.base}settings" data-icon="g" {if blx.url.segment(2) == ''}class="sel"{/if}>General</a></li>
-		<li><a href="{:blx.url.base}settings/languages" data-icon="L" {if blx.url.segment(2) == 'languages'}class="sel"{/if}>Languages</a></li>
-		<li><a href="{:blx.url.base}settings/content" data-icon="C" {if blx.url.segment(2) == 'content'}class="sel"{/if}>Content</a></li>
-		<li><a href="{:blx.url.base}settings/routes" data-icon="R" {if blx.url.segment(2) == 'routes'}class="sel"{/if}>Routes</a></li>
-		<li><a href="{:blx.url.base}settings/assets" data-icon="A" {if blx.url.segment(2) == 'assets'}class="sel"{/if}>Assets</a></li>
-		<li><a href="{:blx.url.base}settings/email" data-icon="E" {if blx.url.segment(2) == 'email'}class="sel"{/if}>Email</a></li>
-		<li><a href="{:blx.url.base}settings/advanced" data-icon="a" {if blx.url.segment(2) == 'advanced'}class="sel"{/if}>Advanced</a></li>
-	</ul>
+	<nav id="settings-nav">
+		<ul>
+			<li {if blx.url.segment(2) == ''}class="sel"{/if}><a href="{:blx.url.base}settings" data-icon="g">General</a></li>
+			<li {if blx.url.segment(2) == 'languages'}class="sel"{/if}><a href="{:blx.url.base}settings/languages" data-icon="L" >Languages</a></li>
+			<li {if blx.url.segment(2) == 'content'}class="sel"{/if}><a href="{:blx.url.base}settings/content" data-icon="C" >Content</a></li>
+			<li {if blx.url.segment(2) == 'routes'}class="sel"{/if}><a href="{:blx.url.base}settings/routes" data-icon="R" >Routes</a></li>
+			<li {if blx.url.segment(2) == 'assets'}class="sel"{/if}><a href="{:blx.url.base}settings/assets" data-icon="A" >Assets</a></li>
+			<li {if blx.url.segment(2) == 'email'}class="sel"{/if}><a href="{:blx.url.base}settings/email" data-icon="E" >Email</a></li>
+			<li {if blx.url.segment(2) == 'advanced'}class="sel"{/if}><a href="{:blx.url.base}settings/advanced" data-icon="a" >Advanced</a></li>
+		</ul>
+	</nav>
 
 	<div id="settings">
 		{:settings}
