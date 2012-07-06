@@ -36,6 +36,12 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 /* main */
 #main { position: relative; margin-left: 200px; padding: 25px; overflow: hidden; }
 
+#main nav { float: left; width: 150px; }
+#main nav ul li a:after { @include icon; display: none; margin: 0 0 -2px 8px; font-size: 13px; content: '>'; color: $linkcolor; }
+#main nav ul li a:hover:after { display: inline-block; }
+#main nav ul li.sel a:after { display: inline-block; color: #2c2c2c; }
+#main nav + div { margin-left: 175px; }
+
 /* footer */
 /*#footer { margin: 25px; text-align: center; font-size: 11px; color: hsl(0,0%,65%); }
 #footer p { display: inline-block; }

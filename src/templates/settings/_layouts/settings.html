@@ -2,20 +2,12 @@
 {layout "_layouts/cp" title="Settings" scripts=scripts}
 
 
-{region "styles"}
-	<style type="text/css">
-		#settings-nav { float: left; width: 150px; }
-		#settings { margin-left: 175px; }
-	</style>
-{/region}
-
-
 {region "main"}
 	<header class="titlebar">
 		<h1>Settings</h1>
 	</header>
 
-	<nav id="settings-nav">
+	<nav>
 		<ul>
 			<li {if blx.url.segment(2) == ''}class="sel"{/if}><a href="{:blx.url.base}settings" data-icon="g">General</a></li>
 			<li {if blx.url.segment(2) == 'languages'}class="sel"{/if}><a href="{:blx.url.base}settings/languages" data-icon="L" >Languages</a></li>
@@ -27,7 +19,8 @@
 		</ul>
 	</nav>
 
-	<div id="settings">
+	<div>
+		<h2>{:title}</h2>
 		{:settings}
 	</div>
 
@@ -80,7 +73,7 @@
 				{foreach blx.plugins.all as plugin}
 					<tr>
 						<td width="25%">
-							<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
+							<span class="status {if plugin.enabled}on{elseif plugin.installed}off{/if}"></span>
 							{if plugin.hasSettings}
 								<a href="{:blx.url.base}settings/plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
 							{else}
@@ -101,7 +94,7 @@
 							<form method="post" action="">
 								<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}" />
 								<input type="hidden" name="redirect" value="settings" />
-								{if plugin.getIsInstalled}
+								{if plugin.installed}
 									{if plugin.enabled}
 										<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin" />
 									{else}

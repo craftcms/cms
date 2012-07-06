@@ -13,6 +13,12 @@ class PluginsService extends \CApplicationComponent
 	private $_enabledPlugins = array();
 
 	/**
+	 * Stores all installed plugins, whether they're enabled or not.
+	 * @var array
+	 */
+	private $_installedPlugins;
+
+	/**
 	 * Stores all initialized plugins for the current request.
 	 * @access private
 	 * @var array
@@ -52,6 +58,8 @@ class PluginsService extends \CApplicationComponent
 	}
 
 	/**
+	 * Returns the enabled plugins.
+	 *
 	 * @return array
 	 */
 	public function getEnabledPlugins()
@@ -60,7 +68,34 @@ class PluginsService extends \CApplicationComponent
 	}
 
 	/**
+	 * Returns whether a plugin is installed.
+	 *
+	 * @param string $class
+	 * @return bool
+	 */
+	public function isPluginInstalled($class)
+	{
+		if (!isset($this->_installedPlugins))
+		{
+			$this->_installedPlugins = array();
+
+			$records = blx()->db->createCommand()
+				->select('class')
+				->from('plugins')
+				->queryAll();
+
+			foreach ($records as $record)
+			{
+				$this->_installedPlugins[] = strtolower($record['class']);
+			}
+		}
+
+		return in_array($class, $this->_installedPlugins);
+	}
+
+	/**
 	 * Returns a plugin by its class handle, regardless of whether it's installed or not.
+	 *
 	 * @param string $classHandle
 	 * @return BasePlugin
 	 */
@@ -84,12 +119,15 @@ class PluginsService extends \CApplicationComponent
 			}
 
 			if (!class_exists($nsClass, false))
-				$this->_plugins[$key] = false;
+				$plugin = false;
 			else
 			{
-				$this->_plugins[$key] = new $nsClass;
-				$this->_plugins[$key]->init();
+				$plugin = new $nsClass;
+				$plugin->installed = $this->isPluginInstalled($key);
+				$plugin->init();
 			}
+
+			$this->_plugins[$key] = $plugin;
 		}
 
 		return $this->_plugins[$key];
@@ -97,6 +135,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Returns all plugins, whether they're installed or not.
+	 *
 	 * @return array
 	 */
 	public function getAllPlugins()
@@ -143,6 +182,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Compares two plugins' names.
+	 *
 	 * @access private
 	 * @param $a BasePlugin
 	 * @param $b BasePlugin
@@ -158,6 +198,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Enables a plugin.
+	 *
 	 * @param $className
 	 * @throws Exception
 	 * @return bool
@@ -182,6 +223,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Disables a plugin.
+	 *
 	 * @param $className
 	 * @throws Exception
 	 * @return bool
@@ -205,6 +247,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Installs a plugin.
+	 *
 	 * @param $className
 	 * @throws Exception
 	 * @return bool
@@ -232,6 +275,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Uninstalls a plugin by removing it's record from the database.
+	 *
 	 * @param $className
 	 * @throws Exception
 	 * @return bool
@@ -257,6 +301,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Calls a hook in any plugin that has it.
+	 *
 	 * @param string $methodName
 	 * @param array $args
 	 * @return array
@@ -278,6 +323,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Imports any models provided by a plugin.
+	 *
 	 * @access private
 	 * @param string $className
 	 */
@@ -305,6 +351,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Registers any services provided by a plugin.
+	 *
 	 * @access private
 	 * @param string $className
 	 */
