@@ -318,10 +318,10 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .field.checkbox + .field.checkbox { margin-top: -20px; }
 
 /* text */
-.textwrapper { padding-right: 20px; }
+.textwrapper { padding-right: 16px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border-radius: 3px; border: 1px solid #c6cacc; width: 330px; padding: 9px; font-size: 13px; color: #5b5b5b; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border: 1px solid #c9c9c9; width: 334px; padding: 7px; font-size: 13px; color: #5b5b5b; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 .text:hover { border-color: $light; }
 .text:focus,
 .text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
