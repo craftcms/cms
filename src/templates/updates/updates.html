@@ -22,7 +22,7 @@
 					{if updateInfo.blocks.manualUpdateRequired}
 						<div class="manual"><a href="http://blockscms.com/alpha/blocks_{:updateInfo.blocks.latestVersion}.{:updateInfo.blocks.latestBuild}.zip">manual update required</a></div>
 					{else}
-						<form method="post" action="{:blx.url.base}update/Blocks"><input class="btn light" type="submit" value="Update"></form>
+						<form method="post" action="{:blx.url.base}update/Blocks"><input class="btn" type="submit" value="Update"></form>
 					{/if}
 				</div>
 
@@ -46,7 +46,7 @@
 					<h4><a>release notes</a></h4>
 
 					<div class="cta">
-						<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn light" type="submit" value="Update"></form>
+						<form method="post" action="{:blx.url.base}update/{:pluginInfo.class.lowercase}"><input class="btn" type="submit" value="Update"></form>
 					</div>
 
 					<div class="notes">

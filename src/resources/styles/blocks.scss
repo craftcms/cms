@@ -136,11 +136,11 @@ h3 + .pane { margin-top: 15px; }
 
 .buttons { margin-top: 50px; }
 
-.btn { display: inline-block; border-radius: 2px; padding: 0 12px; height: 30px; line-height: 30px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); text-align: center; white-space: nowrap; @include linear-gradient(#797d80, #3d3f40); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 0 rgba(255,255,255,0.15), 0 1px 1px rgba(0,0,0,0.15); cursor: pointer; overflow: hidden; @include unselectable; }
+.btn { display: inline-block; border-radius: 2px; padding: 0 12px; height: 30px; line-height: 30px; color: #808080; text-shadow: 0 1px 0 rgba(255,255,255,0.5); text-align: center; white-space: nowrap; @include linear-gradient(#fff, #f3f3f3); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05); cursor: pointer; overflow: hidden; @include unselectable; }
 .btn:hover { text-decoration: none; }
-.btn:not(.disabled):hover { @include linear-gradient(#6e6d6a, #3b3a39); }
-.btn:not(.disabled):active { @include linear-gradient(#5c5b59, #292928); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 2px rgba(0,0,0,0.25); }
-.btn.sel { position: relative; cursor: default; }
+.btn:not(.disabled):not(:active):not(.sel):hover { color: #666; @include linear-gradient(#fff, #f7f7f7); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.1); }
+.btn:not(.sel):active { -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 2px rgba(0,0,0,0.25); }
+.btn.sel { position: relative; @include linear-gradient(#ccc, #999); cursor: default; }
 .btn.disabled { opacity: 0.5; cursor: default; text-shadow: none; }
 .btn + .btn { margin-left: 6px; }
 .btn[data-icon]:before,
@@ -161,11 +161,6 @@ h3 + .pane { margin-top: 15px; }
 /* big buttons */
 .btn.big { padding: 0 15px; height: 36px; font-size: 14px; line-height: 36px; }
 .btn.big[data-icon]:before { margin-left: -2px; }
-
-/* light buttons */
-.btn.light { color: #808080; text-shadow: 0 1px 0 rgba(255,255,255,0.5); @include linear-gradient(#fff, #f3f3f3); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05); }
-.btn.light:not(.disabled):not(:active):not(.sel):hover { color: #666; @include linear-gradient(#fff, #f7f7f7); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.1); }
-.btn.light.sel { @include linear-gradient(#ccc, #999); }
 
 /* submit buttons */
 .btn.submit { @include linear-gradient(#33abf5, #2885bf); }
