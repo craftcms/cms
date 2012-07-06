@@ -15,11 +15,10 @@
 
 	<nav>
 		<ul>
-			<li {if blx.url.segment(2) == ''}class="sel"{/if}><a href="{:blx.url.base}plugins" data-icon="g">General Settings</a></li>
 			{foreach blx.plugins.all as plugin}
 				<?php $seg = new Variable(strtolower($plugin->getClassHandle()->__toString())); ?>
 				<li {if blx.url.segment(2) == seg}class="sel"{/if}><a href="{:blx.url.base}plugins/{:seg}">
-					<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
+					<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}" title="{if plugin.enabled}Enabled{elseif plugin.getIsInstalled}Disabled{else}Not installed{/if}"></span>
 					{:plugin.name}
 				</a></li>
 			{/foreach}
