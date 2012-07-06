@@ -1,0 +1,19 @@
+{layout "settings/_layouts/settings" title="Advanced"}
+
+
+{region "settings"}
+
+	<form method="post" action="">
+		<input type="hidden" name="action" value="settings/saveAdvancedSettings" />
+
+		<div class="field">
+			<div class="heading">
+				<h3>Debugging</h3>
+			</div>
+
+			<label><input type="checkbox"> Use uncompressed CP JavaScript files?
+		</div>
+
+		<input class="btn submit" type="submit" value="Save" />
+	</form>
+{/region}

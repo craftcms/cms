@@ -1,0 +1,126 @@
+{region "title"}Settings - {:title}{/region}
+{layout "_layouts/cp" title="Settings" scripts=scripts}
+
+
+{region "styles"}
+	<style type="text/css">
+		.settings-nav { float: left; width: 150px; }
+		.settings-nav li { margin-bottom: 8px; }
+		.settings-nav li a { display: block; font-size: 12px; color: #b3b3b3; -webkit-transition: color .1s linear; }
+		.settings-nav li a:hover { color: #2d98db; text-decoration: none; }
+		.settings-nav li a.sel { color: #2c2c2c; }
+		.settings-nav li a:before { margin-right: 5px; width: 22px; font-size: 21px; text-align: center; }
+
+		#settings { margin-left: 175px; }
+	</style>
+{/region}
+
+
+{region "main"}
+	<header class="titlebar">
+		<h1>Settings</h1>
+	</header>
+
+	<ul class="settings-nav">
+		<li><a href="{:blx.url.base}settings" data-icon="g" {if blx.url.segment(2) == ''}class="sel"{/if}>General</a></li>
+		<li><a href="{:blx.url.base}settings/languages" data-icon="L" {if blx.url.segment(2) == 'languages'}class="sel"{/if}>Languages</a></li>
+		<li><a href="{:blx.url.base}settings/content" data-icon="C" {if blx.url.segment(2) == 'content'}class="sel"{/if}>Content</a></li>
+		<li><a href="{:blx.url.base}settings/routes" data-icon="R" {if blx.url.segment(2) == 'routes'}class="sel"{/if}>Routes</a></li>
+		<li><a href="{:blx.url.base}settings/assets" data-icon="A" {if blx.url.segment(2) == 'assets'}class="sel"{/if}>Assets</a></li>
+		<li><a href="{:blx.url.base}settings/email" data-icon="E" {if blx.url.segment(2) == 'email'}class="sel"{/if}>Email</a></li>
+		<li><a href="{:blx.url.base}settings/advanced" data-icon="a" {if blx.url.segment(2) == 'advanced'}class="sel"{/if}>Advanced</a></li>
+	</ul>
+
+	<div id="settings">
+		{:settings}
+	</div>
+
+	{!--<section>
+		<h2>Email</h2>
+		<ul class="actions">
+			<li><a href="{:blx.url.base}settings/email" class="btn light" data-icon="e">Edit</a></li>
+		</ul>
+
+		<table class="info">
+			<tr>
+				<th>Email Address</th>
+				<td>{:blx.email.settings.emailAddress}</td>
+			</tr>
+			<tr>
+				<th>Sender Name</th>
+				<td>{:blx.email.settings.senderName}</td>
+			</tr>
+			<tr>
+				<th>Protocol</th>
+				<td>{:blx.email.settings.protocol}</td>
+			</tr>
+		</table>
+	</section>
+
+	<section>
+		<h2>Sites</h2>
+		<ul class="actions">
+			<li><a href="{:blx.url.base}settings/sites/new" class="btn light addbtn">New site</a></li>
+		</ul>
+
+		<table class="data">
+			<tbody>
+				{foreach blx.sites as site}
+					<tr>
+						<td width="25%"><a href="{:blx.url.base}settings/sites/{:site.id}">{:site.name}</td>
+						<td width="25%">{:site.url}</td>
+						<td><code>{:site.handle}</code></td>
+					</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</section>
+
+	<section>
+		<h2>Plugins</h2>
+
+		<table class="data">
+			<tbody>
+				{foreach blx.plugins.all as plugin}
+					<tr>
+						<td width="25%">
+							<span class="status {if plugin.enabled}on{elseif plugin.getIsInstalled}off{/if}"></span>
+							{if plugin.hasSettings}
+								<a href="{:blx.url.base}settings/plugins/{:plugin.getClassHandle.lowercase}">{:plugin.name}</a>
+							{else}
+								{:plugin.name}
+							{/if}
+						</td>
+						<td width="25%">
+							{:plugin.version}
+						</td>
+						<td>
+							{if plugin.developerUrl}
+								<a href="{:plugin.developerUrl}" target="_blank">{if plugin.developer}{:plugin.developer}{else}{:plugin.developerUrl}{/if}</a>
+							{else}
+								{:plugin.developer}
+							{/if}
+						</td>
+						<td class="rightalign">
+							<form method="post" action="">
+								<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}" />
+								<input type="hidden" name="redirect" value="settings" />
+								{if plugin.getIsInstalled}
+									{if plugin.enabled}
+										<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin" />
+									{else}
+										<input type="button" value="Enable" class="btn small light formsubmit" data-action="plugins/enablePlugin" />
+									{/if}
+									<input type="button" value="Uninstall" class="btn small light formsubmit" data-action="plugins/uninstallPlugin" />
+								{else}
+									<input type="button" value="Install" class="btn small light formsubmit" data-action="plugins/installPlugin" />
+								{/if}
+							</form>
+						</td>
+					</tr>
+				{/foreach}
+			</tbody>
+		</table>
+	</section>--}
+
+{/region}

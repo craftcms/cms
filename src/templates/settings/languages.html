@@ -1,0 +1,19 @@
+{layout "settings/_layouts/settings" title="Languages"}
+
+
+{region "settings"}
+
+	<form method="post" action="">
+		<input type="hidden" name="action" value="settings/saveLanguages" />
+
+		<div class="field">
+			<div class="heading">
+				<h3><label for="languages">Content Languages</label></h3>
+				<p>These are the languages that your content can be translated into.</p>
+			</div>
+			
+		</div>
+
+		<input class="btn submit" type="submit" value="Save" />
+	</form>
+{/region}

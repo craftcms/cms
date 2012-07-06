@@ -6,18 +6,18 @@
 /*  Basic stuff
 /* ----------------------------------------*/
 
-.first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child, .buttons:first-child { margin-top: 0 !important; }
-.last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child                        { margin-bottom: 0 !important; }
+.first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child, .buttons:first-child { margin-top: 0; }
+.last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child                        { margin-bottom: 0; }
 
 /* icons */
 [data-icon]:before { @include icon; content: attr(data-icon); }
 [data-icon-after]:after { @include icon; content: attr(data-icon-after); }
 
 /* headings */
-h1 { margin-bottom: 50px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 50px; line-height: 60px; color: #252525; }
+h1 { margin-bottom: 50px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 30px; color: #000; }
 h2 { margin-bottom: 25px; font-family: HelveticaNeue, sans-serif; font-size: 15px; line-height: 1.2; color: #252525; }
 h2[data-icon]:before { float: left; margin: -3px 0; width: 30px; font-size: 30px; }
-h3 { margin-bottom: 15px; font-family: HelveticaNeue, sans-serif; font-weight: normal; font-size: 15px; line-height: 20px; color: $dark; }
+h3 { margin-bottom: 15px; font-family: HelveticaNeue, sans-serif; font-weight: normal; font-size: 15px; line-height: 20px; color: #2c2c2c; }
 h4 { font-family: HelveticaNeue, sans-serif; font-weight: normal; color: #999; }
 
 /* sections */
@@ -193,7 +193,7 @@ input.btn.big { height: 36px; }
 .titlebar { margin: -25px -25px 25px; padding: 10px 25px 9px; border: 1px solid #dadada; border-top: none; border-radius: 0 0 3px 3px; height: 30px; @include linear-gradient(white, #f3f3f3); }
 .titlebar:before { position: absolute; top: 0; left: 0; width: 50%; height: 50px; @include left-linear-gradient(white, rgba(255,255,255,0)); content: '.'; text-indent: -100%; }
 .titlebar:after { position: absolute; top: 0; right: 0; width: 50%; height: 50px; @include right-linear-gradient(white, rgba(255,255,255,0)); content: '.'; text-indent: -100%; }
-.titlebar h1 { position: relative; z-index: 1; margin-bottom: -30px; font-size: 24px; line-height: 30px; color: #5b5b5b; text-shadow: 0 1px 1px #fff; }
+.titlebar h1 { position: relative; z-index: 1; margin-bottom: -30px; text-shadow: 0 1px 1px #fff; }
 .titlebar h1 span { display: block; float: left; margin: 12px 5px 0 0; font-family: HelveticaNeue, sans-serif; font-size: 11px; line-height: 1; color: #999; }
 .titlebar ul li { position: relative; z-index: 1; float: left; }
 .titlebar ul li + li { margin-left: 10px; }
@@ -299,10 +299,9 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 /*  Fields
 /* ----------------------------------------*/
 
-.field { margin: 25px 0; position: relative; }
-.field .heading { margin-bottom: 5px; }
-.field label { font-weight: bold; color: $mediumdark; }
-.field label + p { display: inline; margin-left: 5px; color: $mediumlight; font-size: 12px; font-style: italic; }
+.field { position: relative; margin: 25px 0; padding-left: 15px; }
+.field .heading { margin-bottom: 10px; }
+.field h3 { margin: 0 0 10px -15px; }
 
 
 .nested-fields { margin: -25px -30px; padding: 25px 30px 0 48px; overflow: hidden; }
@@ -316,7 +315,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .textwrapper { padding-right: 20px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border-radius: 3px; border: 1px solid #c6cacc; padding: 9px; font-size: 13px; color: $xdark; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border-radius: 3px; border: 1px solid #c6cacc; width: 330px; padding: 9px; font-size: 13px; color: #5b5b5b; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 .text:hover { border-color: $light; }
 .text:focus,
 .text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
