@@ -15,22 +15,24 @@ class SettingsService extends \CApplicationComponent
 	 */
 	public function saveSettings($table, $settings, $category = null, $deletePrevious = false)
 	{
-		$flattened = ArrayHelper::flattenArray($settings);
-
 		if ($deletePrevious)
 			$this->deleteSettings($table, $category);
 
-		$settingsPrep = array();
-		foreach ($flattened as $key => $value)
-			$settingsPrep[] = $category !== null ? array($key, $value, $category) : array($key, $value);
+		if ($settings)
+		{
+			$flattened = ArrayHelper::flattenArray($settings);
 
-		if ($category !== null)
-			$result = blx()->db->createCommand()->insertAll($table, array('name', 'value', 'category'), $settingsPrep);
+			$settingsPrep = array();
+			foreach ($flattened as $key => $value)
+				$settingsPrep[] = $category !== null ? array($key, $value, $category) : array($key, $value);
+
+			if ($category !== null)
+				$result = blx()->db->createCommand()->insertAll($table, array('name', 'value', 'category'), $settingsPrep);
+			else
+				$result = blx()->db->createCommand()->insertAll($table, array('name', 'value'), $settingsPrep);
+		}
 		else
-			$result = blx()->db->createCommand()->insertAll($table, array('name', 'value'), $settingsPrep);
-
-		if ($result === false)
-			return false;
+			$result = true;
 
 		return $result;
 	}

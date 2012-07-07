@@ -1,0 +1,82 @@
+{if !user && userId}
+	{set user = blx.users.getById(userId)}
+{/if}
+
+
+{layout "users/_layouts/edit" title="Account Settings" user=user}
+
+
+{region "settings"}
+
+	<h2>Account Settings</h2>
+
+	<form method="post" action="">
+
+		<div class="field">
+			<div class="heading">
+				<h3><label for="username" class="required">Username</label></h3>
+			</div>
+			<input id="username" name="username" class="text" type="text" value="{:user.username}" />
+			{if user.errors.username}
+				{include "_includes/error_list" errors=user.errors.username}
+			{/if}
+		</div>
+
+		<div class="field">
+			<div class="heading">
+				<h3><label for="email" class="required">Email</label></h3>
+			</div>
+			<input id="email" name="email" class="text" type="text" value="{:user.email}" />
+			{if user.errors.email}
+				{include "_includes/error_list" errors=user.errors.email}
+			{/if}
+		</div>
+
+		{if user.isCurrent}
+			<div class="field">
+				<div class="heading">
+					<h3><label for="password">New Password</label></h3>
+					<p>Leave blank to keep your password unchanged.</p>
+				</div>
+				<input id="password" name="password" class="text password {if passwordForm && passwordForm.errors.password}error{/if}" type="password" />
+				{if passwordForm && passwordForm.errors.password}
+					{include "_includes/error_list" errors=passwordForm.errors.password}
+				{/if}
+			</div>
+		{/if}
+
+		<div class="field">
+			<div class="heading">
+				<h3><label for="html_email">Email Format</label></h3>
+			</div>
+			
+			{if user.html_email}
+				{set emailFormat = "html"}
+			{else}
+				{set emailFormat = "text"}
+			{/if}
+			{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
+		</div>
+
+		<div class="field">
+			<div class="heading">
+				<h3><label for="preferred_language">Preferred Language</label></h3>
+			</div>
+			{set languages = blx.localization.alllanguagesanddisplaynames}
+			{include "_includes/dropdown" name="preferred_language" options=languages value=user.preferred_language}
+		</div>
+
+		{if !user.id}
+			<div class="field">
+				<div class="checkbox"><label>
+					<input type="checkbox" name="send_validation_email" value="y" {if blx.request.post('send_validation_email')}checked{/if}>
+					Send an account activation email
+				</label></div>
+			</div>
+		{/if}
+
+		<input type="submit" class="btn submit" value="Save">
+
+	</form>
+
+{/region}

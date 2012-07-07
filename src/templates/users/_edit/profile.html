@@ -1,0 +1,39 @@
+{if !user && userId}
+	{set user = blx.users.getById(userId)}
+{/if}
+
+
+{layout "users/_layouts/edit" title="Profile" user=user}
+
+
+{region "settings"}
+
+	<h2>Profile</h2>
+
+	<form method="post" action="">
+
+		<div class="field first">
+			<div class="heading">
+				<h3><label for="first_name" class="required">First Name</label></h3>
+			</div>
+			<input id="first_name" name="first_name" class="text" type="text" value="{:user.first_name}" />
+			{if user.errors.first_name}
+				{include "_includes/error_list" errors=user.errors.first_name}
+			{/if}
+		</div>
+
+		<div class="field">
+			<div class="heading">
+				<h3><label for="last_name">Last Name</label></h3>
+			</div>
+			<input id="last_name" name="last_name" class="text" type="text" value="{:user.last_name}" />
+			{if user.errors.last_name}
+				{include "_includes/error_list" errors=user.errors.last_name}
+			{/if}
+		</div>
+
+		<input type="submit" class="btn submit" value="Save">
+
+	</form>
+
+{/region}

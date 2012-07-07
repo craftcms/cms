@@ -120,8 +120,10 @@ return CMap::mergeArray(
 				),
 				'cpRoutes' => array(
 					array('update/({segment})',                      'update', array('handle')),
-					array('users/new',                               'users/_edit'),
-					array('users/edit/({number})',                   'users/_edit', array('userId')),
+					array('users/new',                               'users/_edit/account'),
+					array('users/({number})',                        'users/_edit/account', array('userId')),
+					array('users/({number})/profile',                'users/_edit/profile', array('userId')),
+					array('users/({number})/admin',                  'users/_edit/admin', array('userId')),
 					array('settings/blocks/new',                     'settings/blocks/_edit'),
 					array('settings/blocks/edit/({number})',         'settings/blocks/_edit', array('blockId')),
 					array('content/({number})',                      'content/_entry', array('entryId')),
