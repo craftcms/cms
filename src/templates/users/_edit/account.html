@@ -13,6 +13,8 @@
 	{/if}
 
 	<form method="post" action="">
+		<input type="hidden" name="action" value="users/saveAccountSettings">
+		{if user.id}<input type="hidden" name="user_id" value="{:user.id}">{/if}
 
 		<div class="field">
 			<div class="heading">
@@ -54,6 +56,7 @@
 
 				{if !user.isCurrent}
 					<div class="checkbox"><label>
+						<input type="hidden" name="require_password_reset" value="n">
 						<input type="checkbox" name="require_password_reset" value="y" {if !user || blx.request.post('require_password_reset')}checked{/if}>
 						Require a password reset on next login
 					</label></div>

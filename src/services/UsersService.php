@@ -102,35 +102,11 @@ class UsersService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param User                             $user
-	 * @param                                  $password
-	 * @param bool                             $passwordReset
-	 *
-	 * @return User
-	 */
-	public function registerUser(User $user, $password, $passwordReset = true)
-	{
-		// if the password is null, we know someone on the back-end wants to create the account.
-		if ($password !== null)
-		{
-			$hashAndType = blx()->security->hashPassword($password);
-			$user->password = $hashAndType['hash'];
-			$user->enc_type = $hashAndType['encType'];
-		}
-
-		$user->password_reset_required = $passwordReset;
-
-		$user->status = UserAccountStatus::Pending;
-		$user = $this->generateActivationCodeForUser($user);
-
-		return $user;
-	}
-
-	/**
+	 * Generates a new verification code for a user.
 	 * @param User $user
-	 * @return User
+	 * @param bool $save
 	 */
-	public function generateActivationCodeForUser(User $user)
+	public function generateVerificationCodeForUser(User $user, $save = true)
 	{
 		$activationCode = StringHelper::UUID();
 		$user->activationcode = $activationCode;
@@ -138,9 +114,9 @@ class UsersService extends \CApplicationComponent
 		$user->activationcode_issued_date = $date->getTimestamp();
 		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->activationCodeExpiration) .'S');
 		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();
-		$user->save();
 
-		return $user;
+		if ($save)
+			$user->save();
 	}
 
 	/**
@@ -194,14 +170,53 @@ class UsersService extends \CApplicationComponent
 	}
 
 	/**
+	 * Activates a user, bypassing account verification.
+	 *
+	  * @param User $user
+	 */
+	public function activateUser(User $user)
+	{
+		$user->status = UserAccountStatus::Active;
+		$user->activationcode = null;
+		$user->activationcode_issued_date = null;
+		$user->activationcode_expire_date = null;
+		$user->save();
+	}
+
+	/**
+	 * Unlocks a user, bypassing the cooldown phase.
+	 *
 	 * @param User $user
-	 * @return User
 	 */
 	public function unlockUser(User $user)
 	{
 		$user->status = UserAccountStatus::Active;
+		$user->failed_password_attempt_count = null;
+		$user->failed_password_attempt_window_start = null;
+		$user->cooldown_start = null;
 		$user->save();
-		return $user;
+	}
+
+	/**
+	 * Suspends a user.
+	 *
+	 * @param User $user
+	 */
+	public function suspendUser(User $user)
+	{
+		$user->status = UserAccountStatus::Suspended;
+		$user->save();
+	}
+
+	/**
+	 * Unsuspends a user.
+	 *
+	 * @param User $user
+	 */
+	public function unsuspendUser(User $user)
+	{
+		$user->status = UserAccountStatus::Active;
+		$user->save();
 	}
 
 	/**
@@ -231,7 +246,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function forgotPassword(User $user)
 	{
-			$user = $this->generateActivationCodeForUser($user);
+			$user = $this->generateVerificationCodeForUser($user);
 
 			$site = blx()->sites->getCurrentSite();
 			if (($emailStatus = blx()->email->sendForgotPasswordEmail($user, $site)) == true)
