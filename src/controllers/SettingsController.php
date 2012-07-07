@@ -15,6 +15,28 @@ class SettingsController extends BaseController
 	}
 
 	/**
+	 * Saves the general settings.
+	 */
+	public function actionSaveGeneralSettings()
+	{
+		$this->requirePostRequest();
+
+		$settings['url'] = blx()->request->getPost('url');
+		$settings['licenseKey'] = blx()->request->getPost('licenseKey');
+
+		if (blx()->settings->saveSettings('systemsettings', $settings, 'general', true))
+		{
+			blx()->user->setMessage(MessageType::Notice, 'Settings saved.');
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save settings.');
+			$this->loadRequestedTemplate(array('settings' => $settings));
+		}
+	}
+
+	/**
 	 * Saves the email settings.
 	 */
 	public function actionSaveEmailSettings()
