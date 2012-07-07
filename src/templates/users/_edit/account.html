@@ -8,7 +8,9 @@
 
 {region "settings"}
 
-	<h2>Account Settings</h2>
+	{if user.id}
+		<h2>Account Settings</h2>
+	{/if}
 
 	<form method="post" action="">
 
@@ -30,17 +32,31 @@
 			{if user.errors.email}
 				{include "_includes/error_list" errors=user.errors.email}
 			{/if}
+
+			{if !user.id && blx.users.current.admin}
+				<div class="checkbox"><label>
+					<input type="checkbox" name="require_verification" value="y" {if blx.request.post('require_verification')}checked{/if}>
+					Require verification
+				</label></div>
+			{/if}
 		</div>
 
-		{if user.isCurrent}
+		{if user.isCurrent || blx.users.current.admin}
 			<div class="field">
 				<div class="heading">
-					<h3><label for="password">New Password</label></h3>
-					<p>Leave blank to keep your password unchanged.</p>
+					<h3><label for="password">Password</label></h3>
+					{if user.id}<p>Leave blank to keep password unchanged.</p>{/if}
 				</div>
 				<input id="password" name="password" class="text {if passwordForm && passwordForm.errors.password}error{/if}" type="password">
 				{if passwordForm && passwordForm.errors.password}
 					{include "_includes/error_list" errors=passwordForm.errors.password}
+				{/if}
+
+				{if !user.isCurrent}
+					<div class="checkbox"><label>
+						<input type="checkbox" name="require_password_reset" value="y" {if !user || blx.request.post('require_password_reset')}checked{/if}>
+						Require a password reset on next login
+					</label></div>
 				{/if}
 			</div>
 		{/if}
@@ -65,15 +81,6 @@
 			{set languages = blx.localization.alllanguagesanddisplaynames}
 			{include "_includes/dropdown" name="preferred_language" options=languages value=user.preferred_language}
 		</div>
-
-		{if !user.id}
-			<div class="field">
-				<div class="checkbox"><label>
-					<input type="checkbox" name="send_validation_email" value="y" {if blx.request.post('send_validation_email')}checked{/if}>
-					Send an account activation email
-				</label></div>
-			</div>
-		{/if}
 
 		<input type="submit" class="btn submit" value="Save">
 

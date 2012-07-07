@@ -1,0 +1,57 @@
+{if !user && userId}
+	{set user = blx.users.getById(userId)}
+{/if}
+
+
+{layout "users/_layouts/edit" title="User Info" user=user}
+
+
+{region "settings"}
+
+	<h2>User Info</h2>
+
+	{if blx.config.failedPasswordMode == 'cooldown' && user.cooldown_start}
+		<div class="field">
+			<div class="heading">
+				<h3>Cooldown Time Remaining</h3>
+			</div>
+			<p>{set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime)}</p>
+		</div>
+	{/if}
+
+	<div class="field">
+		<div class="heading">
+			<h3>Last Login Date</h3>
+		</div>
+		<p>{if user.last_login_date}{:blx.date.nice(user.last_login_date)}{else}Never{/if}</p>
+	</div>
+
+	<div class="field">
+		<div class="heading">
+			<h3>Last Failed Login Date</h3>
+		</div>
+		<p>{if user.last_login_failed_date}{:blx.date.nice(user.last_login_failed_date)}{else}Never{/if}</p>
+	</div>
+
+	<div class="field">
+		<div class="heading">
+			<h3>Last Password Change Date</h3>
+		</div>
+		<p>{if user.last_password_changed_date}{:blx.date.nice(user.last_password_changed_date)}{else}Never{/if}</p>
+	</div>
+
+	<div class="field">
+		<div class="heading">
+			<h3>Last Lockout Date</h3>
+		</div>
+		<p>{if user.last_lockout_date}{:blx.date.nice(user.last_lockout_date)}{else}Never{/if}</p>
+	</div>
+
+	<div class="field">
+		<div class="heading">
+			<h3>Failed Password Attempt Count</h3>
+		</div>
+		<p>{if user.failed_password_attempt_count}{:user.failed_password_attempt_count}{else}0{/if}</p>
+	</div>
+
+{/region}
