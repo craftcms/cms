@@ -9,7 +9,7 @@
 	<form method="post" action="">
 		<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}" />
 
-		{if plugin.installed}
+		{if plugin.isInstalled}
 			{if plugin.enabled}
 				<input type="button" value="Disable" class="btn formsubmit" data-action="plugins/disablePlugin" />
 			{else}
