@@ -93,14 +93,6 @@ class BlxVariable
 	}
 
 	/**
-	 * @return EmailVariable
-	 */
-	public function email()
-	{
-		return new EmailVariable();
-	}
-
-	/**
 	 * @return PluginsVariable
 	 */
 	public function plugins()
@@ -114,6 +106,14 @@ class BlxVariable
 	public function request()
 	{
 		return new RequestVariable();
+	}
+
+	/**
+	 * @return SettingsVariable
+	 */
+	public function settings()
+	{
+		return new SettingsVariable();
 	}
 
 	/**
