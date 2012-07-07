@@ -26,7 +26,7 @@ class EmailService extends \CApplicationComponent
 		if (!isset($emailSettings['protocol']))
 			throw new Exception('Could not determine how to send the email.  Check your email settings.');
 
-		$email = new PhpMailer(true);
+		$email = new \PhpMailer(true);
 
 		// Check which protocol we need to use.
 		switch ($emailSettings['protocol'])
@@ -40,7 +40,7 @@ class EmailService extends \CApplicationComponent
 
 			case EmailerType::Pop:
 			{
-				$pop = new Pop3();
+				$pop = new \Pop3();
 				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
 				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{
@@ -122,12 +122,13 @@ class EmailService extends \CApplicationComponent
 	/**
 	 * @param EmailMessage $emailMessage
 	 * @param              $emailKey
+	 * @param string       $languageCode
 	 * @param array        $variables
 	 * @param null         $pluginClass
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function sendTemplateEmail(EmailMessage $emailMessage, $emailKey, $variables = array(), $pluginClass = null)
+	public function sendTemplateEmail(EmailMessage $emailMessage, $emailKey, $languageCode = 'en_us', $variables = array(), $pluginClass = null)
 	{
 		// Get the email by key and plugin from the database.
 		$email = $this->getEmailByKey($emailKey, $pluginClass);
@@ -218,14 +219,14 @@ class EmailService extends \CApplicationComponent
 	public function getEmailByKey($key, $pluginClass = null)
 	{
 		$email = blx()->db->createCommand()
-			->select('et.*')
-			->from('email_templates et')
-			->join('plugins p', 'p.id = et.plugin_id')
-			->where('et.key = :key AND p.class = :pluginClass', array(':key' => $key, ':pluginClass' => $pluginClass))
+			->select('e.*')
+			->from('emails e')
+			->join('plugins p', 'p.id = e.plugin_id')
+			->where('e.key = :key AND p.class = :pluginClass', array(':key' => $key, ':pluginClass' => $pluginClass))
 			->queryRow();
 
 		if ($email)
-			return EmailTemplate::model()->populateRecord($email);
+			return Email::model()->populateRecord($email);
 
 		return false;
 	}
