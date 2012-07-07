@@ -126,7 +126,7 @@ h3 + .pane { margin-top: 15px; }
 /*  Notifications
 /* ----------------------------------------*/
 
-#notification { position: fixed; top: 0; left: 0; width: 100%; text-align: center; }
+#notification { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; text-align: center; }
 #notification .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
 #notification .notification.notice { border-color: #1F6794; background: #2782bb; }
 #notification .notification.error { border-color: #992f2f; background: #e14545; }
@@ -318,10 +318,10 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .field.checkbox + .field.checkbox { margin-top: -20px; }
 
 /* text */
-.textwrapper { padding-right: 20px; }
+.textwrapper { padding-right: 16px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border-radius: 3px; border: 1px solid #c6cacc; width: 330px; padding: 9px; font-size: 13px; color: #5b5b5b; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border: 1px solid #c9c9c9; width: 334px; padding: 7px; font-size: 13px; color: #5b5b5b; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 .text:hover { border-color: $light; }
 .text:focus,
 .text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
@@ -399,9 +399,10 @@ ul.errors li { color: $errorcolor; }
 /*  Menus
 /* ----------------------------------------*/
 
-.menu { display: none; position: absolute; z-index: 9999; padding: 5px 0; border-radius: 4px; background: rgba(255,255,255,0.9); -webkit-box-shadow: 0 1px 1px 1px rgba(0,0,0,0.1), 0 5px 25px 0 rgba(0,0,0,0.5); @include unselectable; }
+.menu { display: none; position: absolute; z-index: 9999; -webkit-box-shadow: 0 5px 25px 0 rgba(0,0,0,0.5); @include unselectable; }
+.menu ul { padding: 5px 0; background: rgba(255,255,255,0.85); }
 .menu ul li { padding: 2px 10px; cursor: default; }
-.menu ul li:hover { color: #fff; @include linear-gradient(#33abf5, #2885bf); }
+.menu ul li:hover { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); @include linear-gradient(#33abf5, #2885bf); }
 
 /* ----------------------------------------
 /*  Retina graphics

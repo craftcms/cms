@@ -11,15 +11,20 @@ abstract class BasePlugin extends BaseComponent
 	public $developer;
 	public $developerUrl;
 
-	public $installed = false;
-
 	protected $componentType = 'Plugin';
 
 	/**
+	 * Returns whether the plugin is installed.
+	 *
 	 * @return bool
 	 */
 	public function getIsInstalled()
 	{
-		return isset($this->record);
+		if (isset($this->record))
+			return true;
+
+		$class = $this->getClassHandle();
+		$installed = blx()->plugins->isPluginInstalled($class);
+		return $installed;
 	}
 }

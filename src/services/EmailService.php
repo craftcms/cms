@@ -327,7 +327,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function saveEmailSettings($settings)
 	{
-		if (blx()->settings->saveSettings('systemsettings', $settings, null, 'email', true))
+		if (blx()->settings->saveSettings('systemsettings', $settings, 'email', true))
 			return true;
 
 		return false;

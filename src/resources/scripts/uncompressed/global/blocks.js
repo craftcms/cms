@@ -560,32 +560,43 @@ blx.Base = Base.extend({
 
 });
 
-// Fade the notification out in two seconds
-$('#notification').delay(2000).fadeOut();
+blx.$document.ready(function() {
+	// Fade the notification out in two seconds
+	$('#notification').delay(2000).fadeOut();
 
-$('.formsubmit').click(function() {
-	var $btn = $(this),
-		$form = $btn.closest('form');
-	if ($btn.attr('data-action'))
-		$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
-	$form.submit();
-});
+	// Initialize the account menu button
+	new blx.ui.MenuBtn('#account', {
+		onOptionSelect: function(option) {
+			var url = $(option).attr('data-url');
+			document.location.href = blx.baseUrl + url;
+		}
+	});
 
-$('.togglefields').change(function() {
-	var $toggle = $(this),
-		$target = $('#'+$toggle.attr('data-target'));
+	$('.formsubmit').click(function() {
+		var $btn = $(this),
+			$form = $btn.closest('form');
+		if ($btn.attr('data-action'))
+			$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
+		$form.submit();
+	});
 
-	if (blx.getInputPostVal($toggle) == 'y')
-	{
-		$target.height('auto');
-		var height = $target.height();
-		$target.height(0);
-		$target.stop().animate({height: height}, 'fast', $.proxy(function() {
+	$('.togglefields').change(function() {
+		var $toggle = $(this),
+			$target = $('#'+$toggle.attr('data-target'));
+
+		if (blx.getInputPostVal($toggle) == 'y')
+		{
 			$target.height('auto');
-		}, this));
-	}
-	else
-		$target.stop().animate({height: 0}, 'fast');
+			var height = $target.height();
+			$target.height(0);
+			$target.stop().animate({height: height}, 'fast', $.proxy(function() {
+				$target.height('auto');
+			}, this));
+		}
+		else
+			$target.stop().animate({height: 0}, 'fast');
+	});
 });
+
 
 })(jQuery);

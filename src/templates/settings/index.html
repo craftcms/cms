@@ -1,6 +1,11 @@
 {layout "settings/_layouts/settings" title="General"}
 
 
+{if !settings}
+	{set settings = blx.settings.general}
+{/if}
+
+
 {region "settings"}
 
 	<form method="post" action="">
@@ -18,14 +23,17 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="license_key">License Key</label></h3>
+				<h3><label for="licenseKey">License Key</label></h3>
 			</div>
-			<input id="license_key" name="license_key" class="text code" type="text" value="{:settings.key}" />
+			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{:settings.licenseKey}" />
+			{if settings.errors.licenseKey}
+				{include "_includes/error_list" errors=settings.errors.licenseKey}
+			{/if}
 		</div>
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="logo">Logo Image</label></h3>
+				<h3><label for="logo">Logo</label></h3>
 				<p>Use a 300 × 100px transparent PNG for best results.</p>
 			</div>
 			<input id="logo" name="logo" type="file" />

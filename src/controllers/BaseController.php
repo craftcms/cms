@@ -194,11 +194,13 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Redirects to the URI specified in the POST
+	 * Redirects to the URI specified in the POST. If no URL is specified, redirects to the current requ
 	 */
 	public function redirectToPostedUrl()
 	{
 		$url = blx()->request->getPost('redirect');
+		if ($url === null)
+			$url = blx()->request->getPath();
 		$this->redirect($url);
 	}
 

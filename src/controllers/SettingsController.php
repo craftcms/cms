@@ -15,7 +15,29 @@ class SettingsController extends BaseController
 	}
 
 	/**
-	 *
+	 * Saves the general settings.
+	 */
+	public function actionSaveGeneralSettings()
+	{
+		$this->requirePostRequest();
+
+		$settings['url'] = blx()->request->getPost('url');
+		$settings['licenseKey'] = blx()->request->getPost('licenseKey');
+
+		if (blx()->settings->saveSettings('systemsettings', $settings, 'general', true))
+		{
+			blx()->user->setMessage(MessageType::Notice, 'Settings saved.');
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save settings.');
+			$this->loadRequestedTemplate(array('settings' => $settings));
+		}
+	}
+
+	/**
+	 * Saves the email settings.
 	 */
 	public function actionSaveEmailSettings()
 	{
@@ -46,8 +68,8 @@ class SettingsController extends BaseController
 		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
 		$emailSettings->senderName                  = blx()->request->getPost('senderName');
 
-		// validate user input
-		if($emailSettings->validate())
+		// Validate user input
+		if ($emailSettings->validate())
 		{
 			$settings = array('protocol' => $emailSettings->protocol);
 			$settings['emailAddress'] = $emailSettings->emailAddress;
@@ -104,20 +126,47 @@ class SettingsController extends BaseController
 
 			if (blx()->email->saveEmailSettings($settings))
 			{
-				blx()->user->setMessage(MessageType::Notice, 'Email settings saved.');
+				blx()->user->setMessage(MessageType::Notice, 'Settings saved.');
 				$this->redirectToPostedUrl();
 			}
 			else
 			{
-				blx()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
+				blx()->user->setMessage(MessageType::Error, 'Couldn’t save settings.');
 			}
 		}
 		else
 		{
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t save email settings.');
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save settings.');
 		}
 
-		$this->loadRequestedTemplate(array('emailSettings' => $emailSettings));
+		$this->loadRequestedTemplate(array('settings' => $emailSettings));
+	}
+
+	/**
+	 * Saves the advanced settings.
+	 */
+	public function actionSaveAdvancedSettings()
+	{
+		$this->requirePostRequest();
+
+		$settings = array();
+
+		$checkboxes = array('showDebugInfo', 'useUncompressedJs', 'disablePlugins');
+		foreach ($checkboxes as $key)
+		{
+			if (blx()->request->getPost($key))
+				$settings[$key] = true;
+		}
+
+		if (blx()->settings->saveSettings('systemsettings', $settings, 'advanced', true))
+		{
+			blx()->user->setMessage(MessageType::Notice, 'Settings saved.');
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save settings.');
+			$this->loadRequestedTemplate(array('settings' => $settings));
+		}
 	}
 }
-

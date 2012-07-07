@@ -90,7 +90,7 @@ class PluginsService extends \CApplicationComponent
 			}
 		}
 
-		return in_array($class, $this->_installedPlugins);
+		return in_array(strtolower($class), $this->_installedPlugins);
 	}
 
 	/**
@@ -123,7 +123,6 @@ class PluginsService extends \CApplicationComponent
 			else
 			{
 				$plugin = new $nsClass;
-				$plugin->installed = $this->isPluginInstalled($key);
 				$plugin->init();
 			}
 
@@ -290,13 +289,8 @@ class PluginsService extends \CApplicationComponent
 		if (!$plugin->getIsInstalled())
 			throw new Exception($plugin->name.' is already uninstalled.');
 
-		if ($plugin->record->delete())
-		{
-			unset($plugin->record);
-			return true;
-		}
-		else
-			return false;
+		blx()->db->createCommand()->delete('plugins', array('class' => $className));
+		return true;
 	}
 
 	/**
