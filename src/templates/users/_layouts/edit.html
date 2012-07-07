@@ -27,7 +27,7 @@
 	</header>
 
 	{if user.id}
-		<nav>
+		<nav class="nav">
 			<ul>
 				<li {if blx.url.segment(3) == ''}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}" data-icon="s">Account Settings</a></li>
 				<li {if blx.url.segment(3) == 'profile'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/profile" data-icon="p">Profile</a></li>

@@ -17,13 +17,13 @@
 				</div>
 				<ul>
 					<li data-url="users/{:blx.users.current.id}">My Account</li>
-					<li data-url="logout">Log Out</li>
+					<li data-url="logout">Sign out</li>
 				</ul>
 			</div>
 		</div>
 
 		{foreach blx.cp.nav as group}
-			<nav>
+			<nav class="nav">
 				<ul>
 					{foreach group as item}
 						<li id="nav-{:item.handle}" {if blx.url.segment(1)==item.handle}class="sel"{/if}>

@@ -7,7 +7,7 @@
 		<h1>Settings</h1>
 	</header>
 
-	<nav>
+	<nav class="nav">
 		<ul>
 			<li {if blx.url.segment(2) == ''}class="sel"{/if}><a href="{:blx.url.base}settings" data-icon="g">General</a></li>
 			<li {if blx.url.segment(2) == 'languages'}class="sel"{/if}><a href="{:blx.url.base}settings/languages" data-icon="L" >Languages</a></li>

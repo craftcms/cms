@@ -13,7 +13,7 @@
 		<h1>Plugins</h1>
 	</header>
 
-	<nav>
+	<nav class="nav">
 		<ul>
 			{foreach blx.plugins.all as plugin}
 				<?php $seg = new Variable(strtolower($plugin->getClassHandle()->__toString())); ?>
