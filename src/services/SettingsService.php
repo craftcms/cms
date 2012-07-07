@@ -9,14 +9,13 @@ class SettingsService extends \CApplicationComponent
 	/**
 	 * @param        $table
 	 * @param        $settings
-	 * @param string $prefix
 	 * @param string $category
 	 * @param bool   $deletePrevious
 	 * @return bool
 	 */
-	public function saveSettings($table, $settings, $prefix = null, $category = null, $deletePrevious = false)
+	public function saveSettings($table, $settings, $category = null, $deletePrevious = false)
 	{
-		$flattened = ArrayHelper::flattenArray($settings, $prefix);
+		$flattened = ArrayHelper::flattenArray($settings);
 
 		if ($deletePrevious)
 			$this->deleteSettings($table, $category);

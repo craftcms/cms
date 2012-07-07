@@ -136,7 +136,7 @@ class SettingsController extends BaseController
 				$settings[$key] = true;
 		}
 
-		if (blx()->settings->saveSettings('systemsettings', $settings, null, 'advanced', true))
+		if (blx()->settings->saveSettings('systemsettings', $settings, 'advanced', true))
 		{
 			blx()->user->setMessage(MessageType::Notice, 'Settings saved.');
 			$this->redirectToPostedUrl();
