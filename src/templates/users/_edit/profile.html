@@ -16,7 +16,7 @@
 			<div class="heading">
 				<h3><label for="first_name">First Name</label></h3>
 			</div>
-			<input id="first_name" name="first_name" class="text" type="text" value="{:user.first_name}" />
+			<input id="first_name" name="first_name" class="text" type="text" value="{:user.first_name}">
 			{if user.errors.first_name}
 				{include "_includes/error_list" errors=user.errors.first_name}
 			{/if}
@@ -26,7 +26,7 @@
 			<div class="heading">
 				<h3><label for="last_name">Last Name</label></h3>
 			</div>
-			<input id="last_name" name="last_name" class="text" type="text" value="{:user.last_name}" />
+			<input id="last_name" name="last_name" class="text" type="text" value="{:user.last_name}">
 			{if user.errors.last_name}
 				{include "_includes/error_list" errors=user.errors.last_name}
 			{/if}
@@ -36,7 +36,7 @@
 			<div class="heading">
 				<h3><label for="avatar">Avatar</label></h3>
 			</div>
-			<input id="avatar" name="avatar" type="file" />
+			<input id="avatar" name="avatar" type="file">
 			{if settings.errors.avatar}
 				{include "_includes/error_list" errors=settings.errors.avatar}
 			{/if}

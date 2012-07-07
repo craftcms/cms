@@ -20,7 +20,7 @@
 
 			{if user.id != blx.users.current.id}
 				<div class="checkbox"><label>
-					<input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked="checked"{/if} />
+					<input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked{/if}>
 					Require a password reset on next login
 				</label></div>
 			{/if}
@@ -41,18 +41,18 @@
 			{:user.status.uppercaseFirst}
 		</div>
 		<div class="clear"></div>
-		<input type="hidden" name="status" value="{:user.status}" />
+		<input type="hidden" name="status" value="{:user.status}">
 		{if user.status == 'pending'}
-			<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email" />
+			<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email">
 			<p><strong>Validation URL</strong> {:blx.url.url(blx.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
 		{elseif user.status == 'locked'}
-			<input class="btn" type="submit" name="unlock" value="Unlock" />
+			<input class="btn" type="submit" name="unlock" value="Unlock">
 		{elseif user.status == 'suspended'}
-			<input class="btn" type="submit" name="unsuspend" value="Unsuspend" />
+			<input class="btn" type="submit" name="unsuspend" value="Unsuspend">
 		{/if}
 		{if blx.config.failedPasswordMode == 'cooldown'}
 			{if user.cooldown_start}
-				<br />
+				<br>
 				{set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime)}
 				Temporarily locked.  User will be auto-unlocked
 				{if timeRemaining > 0}
@@ -106,9 +106,9 @@
 
 
 	{if user.status != 'suspended'}
-		<input class="btn" type="submit" name="suspend" value="Suspend" />
+		<input class="btn" type="submit" name="suspend" value="Suspend">
 	{/if}
 
-	<input class="btn" type="submit" name="delete" value="Delete" />
+	<input class="btn" type="submit" name="delete" value="Delete">
 
 {/region}

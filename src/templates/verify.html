@@ -11,24 +11,24 @@
 		</div>
 		<div class="pane-body">
 			<form method="post" action="">
-				<input type="hidden" name="action" value="account/verify" />
-				<input type="hidden" name="redirect" value="dashboard" />
+				<input type="hidden" name="action" value="account/verify">
+				<input type="hidden" name="redirect" value="dashboard">
 
 				{set activationCode = blx.url.get('code')}
 				{if activationCode && blx.security.validateUserActivationCode(activationCode)}
 					{set user = blx.security.getUserByActivationCode(activationCode)}
 
 					<div class="pane-item">Let's set a password for your account.</div>
-					<input type="hidden" name="userId" value="{:user.id}" />
+					<input type="hidden" name="userId" value="{:user.id}">
 					<div class="pane-item field">
 						<label for="password">Password</label>
-						<div class="passwordwrapper"><input id="password" name="password" class="text password {if verifyAccountInfo.errors.password}error{/if}" type="password" /></div>
+						<div class="passwordwrapper"><input id="password" name="password" class="text password {if verifyAccountInfo.errors.password}error{/if}" type="password"></div>
 						{if verifyAccountInfo.errors.password}
 							{include "_includes/error_list" errors=verifyAccountInfo.errors.password}
 						{/if}
 					</div>
 					<div class="pane-item">
-						<input class="btn big submit" type="submit" value="Set Password" />
+						<input class="btn big submit" type="submit" value="Set Password">
 					</div>
 				{else}
 					There was a problem validating this activation code.

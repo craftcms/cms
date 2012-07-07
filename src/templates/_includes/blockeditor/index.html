@@ -7,7 +7,7 @@
 				<li><a class="block-item {if block.errors}error{/if}" data-block-id="{:block.id}">
 					<div class="name {if block.required}required{/if}">{if block.name}{:block.name}{else}Untitled{/if}</div>
 					<div class="type">{:block.blocktypeName}</div>
-					<input type="hidden" name="{:name}[order][]" value="{:block.id}"/>
+					<input type="hidden" name="{:name}[order][]" value="{:block.id}">
 				</a></li>
 			{/foreach}
 		</ul>

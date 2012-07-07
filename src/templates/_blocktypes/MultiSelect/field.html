@@ -1,5 +1,5 @@
-<select id="{:handle}-block" name="{:handle}[]" multiple="multiple">
+<select id="{:handle}-block" name="{:handle}[]" multiple>
 	{foreach settings.options as option}
-		<option {if data.includes(option)}selected="selected"{/if} >{:option}</option>
+		<option {if data.includes(option)}selected{/if} >{:option}</option>
 	{/foreach}
 </select>

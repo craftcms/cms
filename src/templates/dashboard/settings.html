@@ -8,8 +8,8 @@
 	<h1>Dashboard Settings</h1>
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="dashboard/saveSettings" />
-		<input type="hidden" name="redirect" value="dashboard" />
+		<input type="hidden" name="action" value="dashboard/saveSettings">
+		<input type="hidden" name="redirect" value="dashboard">
 
 		<h3>My Widgets</h3>
 		<div id="widgetadmin" class="pane inset adminpane" data-input-name="widgets">
@@ -19,8 +19,8 @@
 						<li class="item" data-item-id="{:widget.id}">
 							<div class="name">{:widget.title}</div>
 							<div class="type">{:widget.name}</div>
-							<input type="hidden" name="widgets[order][]" value="{:widget.id}" />
-							<input type="hidden" name="widgets[{:widget.id}][class]" value="{:widget.classHandle}" />
+							<input type="hidden" name="widgets[order][]" value="{:widget.id}">
+							<input type="hidden" name="widgets[{:widget.id}][class]" value="{:widget.classHandle}">
 						</li>
 					{/foreach}
 				</ul>
@@ -59,7 +59,7 @@
 		</div>
 
 		<div class="buttons">
-			<input type="submit" value="Save settings" class="btn big submit" />
+			<input type="submit" value="Save settings" class="btn big submit">
 		</div>
 
 	</form>

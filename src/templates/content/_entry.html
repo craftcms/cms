@@ -43,16 +43,16 @@
 				{/foreach}
 
 				<div class="buttons">
-					<input type="hidden" name="entryId" value="{:entry.id}"/>
+					<input type="hidden" name="entryId" value="{:entry.id}">
 					{if entry.draft}
-						<input type="hidden" name="draftId" value="{:entry.draft.id}" />
-						<input type="hidden" name="action" value="content/saveDraft" />
-						<input type="submit" value="Save draft" class="btn big submit" />
-						<input type="button" value="Pubish" class="btn big formsubmit" data-action="content/publishDraft" />
+						<input type="hidden" name="draftId" value="{:entry.draft.id}">
+						<input type="hidden" name="action" value="content/saveDraft">
+						<input type="submit" value="Save draft" class="btn big submit">
+						<input type="button" value="Pubish" class="btn big formsubmit" data-action="content/publishDraft">
 					{else}
-						<input type="hidden" name="action" value="content/saveEntry" />
-						<input type="submit" value="Save entry" class="btn big submit" />
-						<input type="button" value="Save as a draft" class="btn big formsubmit" data-action="content/createDraft" />
+						<input type="hidden" name="action" value="content/saveEntry">
+						<input type="submit" value="Save entry" class="btn big submit">
+						<input type="button" value="Save as a draft" class="btn big formsubmit" data-action="content/createDraft">
 					{/if}
 				</div>
 			</form>
@@ -82,9 +82,9 @@
 					{/if}
 
 					<form method="post" action="">
-						<input type="hidden" name="action" value="content/createDraft" />
-						<input type="hidden" name="entryId" value="{:entry.id}" />
-						{!--<input type="submit" value="New draft" class="btn addbtn" />--}
+						<input type="hidden" name="action" value="content/createDraft">
+						<input type="hidden" name="entryId" value="{:entry.id}">
+						{!--<input type="submit" value="New draft" class="btn addbtn">--}
 						<a class="btn addbtn formsubmit">New draft</a>
 					</form>
 				{/if}

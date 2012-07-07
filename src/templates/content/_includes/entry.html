@@ -16,10 +16,10 @@
 	<div class="left">
 		<select class="versionselect">
 			{if entry.published}
-				<option value="published" {if !entry.draft}selected="selected"{/if}>Published</option>
+				<option value="published" {if !entry.draft}selected{/if}>Published</option>
 			{/if}
 			{foreach entry.drafts as draft}
-				<option value="{:draft.num}" {if entry.draft.num == draft.num}selected="selected"{/if}>“{:draft.name}” by {:draft.author.firstNameLastInitial}</option>
+				<option value="{:draft.num}" {if entry.draft.num == draft.num}selected{/if}>“{:draft.name}” by {:draft.author.firstNameLastInitial}</option>
 			{/foreach}
 			<option value="new">New draft…</option>
 		</select>
@@ -56,7 +56,7 @@
 			</div>
 		</div>
 
-		<input class="btn big submit" type="submit" value="Publish" />
+		<input class="btn big submit" type="submit" value="Publish">
 		<p class="autosave-status"></p>
 	</div>
 </div>

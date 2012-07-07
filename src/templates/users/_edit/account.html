@@ -16,7 +16,7 @@
 			<div class="heading">
 				<h3><label for="username" class="required">Username</label></h3>
 			</div>
-			<input id="username" name="username" class="text" type="text" value="{:user.username}" />
+			<input id="username" name="username" class="text" type="text" value="{:user.username}">
 			{if user.errors.username}
 				{include "_includes/error_list" errors=user.errors.username}
 			{/if}
@@ -26,7 +26,7 @@
 			<div class="heading">
 				<h3><label for="email" class="required">Email</label></h3>
 			</div>
-			<input id="email" name="email" class="text" type="text" value="{:user.email}" />
+			<input id="email" name="email" class="text" type="text" value="{:user.email}">
 			{if user.errors.email}
 				{include "_includes/error_list" errors=user.errors.email}
 			{/if}
@@ -38,7 +38,7 @@
 					<h3><label for="password">New Password</label></h3>
 					<p>Leave blank to keep your password unchanged.</p>
 				</div>
-				<input id="password" name="password" class="text {if passwordForm && passwordForm.errors.password}error{/if}" type="password" />
+				<input id="password" name="password" class="text {if passwordForm && passwordForm.errors.password}error{/if}" type="password">
 				{if passwordForm && passwordForm.errors.password}
 					{include "_includes/error_list" errors=passwordForm.errors.password}
 				{/if}
