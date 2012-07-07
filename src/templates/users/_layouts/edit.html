@@ -31,6 +31,7 @@
 			<ul>
 				<li {if blx.url.segment(3) == ''}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}" data-icon="s">Account Settings</a></li>
 				<li {if blx.url.segment(3) == 'profile'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/profile" data-icon="p">Profile</a></li>
+				<li {if blx.url.segment(3) == 'info'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/info" data-icon="I">User Info</a></li>
 
 				{if blx.users.current.admin}
 					<li {if blx.url.segment(3) == 'admin'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/admin" data-icon="v">Administration</a></li>
