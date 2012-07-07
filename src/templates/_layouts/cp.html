@@ -6,7 +6,7 @@
 
 		<div id="header">
 			<div id="branding">
-				<img src="{:blx.url.resource}images/pt.png" />
+				<img src="{:blx.url.resource}images/pt.png">
 			</div>
 			<a id="account" data-icon="u" class="menubtn" title="My account"></a>
 			<div id="account-menu" class="menu">
@@ -16,14 +16,14 @@
 					<div class="username">{:blx.users.current.username}</div>
 				</div>
 				<ul>
-					<li data-url="users/edit/{:blx.users.current.id}">Account Settings</li>
-					<li data-url="logout">Log Out</li>
+					<li data-url="users/{:blx.users.current.id}">My Account</li>
+					<li data-url="logout">Sign out</li>
 				</ul>
 			</div>
 		</div>
 
 		{foreach blx.cp.nav as group}
-			<nav>
+			<nav class="nav">
 				<ul>
 					{foreach group as item}
 						<li id="nav-{:item.handle}" {if blx.url.segment(1)==item.handle}class="sel"{/if}>

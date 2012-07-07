@@ -7,7 +7,7 @@
 		<h1>Settings</h1>
 	</header>
 
-	<nav>
+	<nav class="nav">
 		<ul>
 			<li {if blx.url.segment(2) == ''}class="sel"{/if}><a href="{:blx.url.base}settings" data-icon="g">General</a></li>
 			<li {if blx.url.segment(2) == 'languages'}class="sel"{/if}><a href="{:blx.url.base}settings/languages" data-icon="L" >Languages</a></li>
@@ -92,17 +92,17 @@
 						</td>
 						<td class="rightalign">
 							<form method="post" action="">
-								<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}" />
-								<input type="hidden" name="redirect" value="settings" />
+								<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}">
+								<input type="hidden" name="redirect" value="settings">
 								{if plugin.isInstalled}
 									{if plugin.enabled}
-										<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin" />
+										<input type="button" value="Disable" class="btn small light formsubmit" data-action="plugins/disablePlugin">
 									{else}
-										<input type="button" value="Enable" class="btn small light formsubmit" data-action="plugins/enablePlugin" />
+										<input type="button" value="Enable" class="btn small light formsubmit" data-action="plugins/enablePlugin">
 									{/if}
-									<input type="button" value="Uninstall" class="btn small light formsubmit" data-action="plugins/uninstallPlugin" />
+									<input type="button" value="Uninstall" class="btn small light formsubmit" data-action="plugins/uninstallPlugin">
 								{else}
-									<input type="button" value="Install" class="btn small light formsubmit" data-action="plugins/installPlugin" />
+									<input type="button" value="Install" class="btn small light formsubmit" data-action="plugins/installPlugin">
 								{/if}
 							</form>
 						</td>

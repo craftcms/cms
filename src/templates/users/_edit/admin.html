@@ -1,0 +1,114 @@
+{if !user && userId}
+	{set user = blx.users.getById(userId)}
+{/if}
+
+
+{layout "users/_layouts/edit" title="Administration" user=user}
+
+
+{region "settings"}
+
+	<h2>Administration</h2>
+
+	<form method="post" action="">
+
+		<div class="field">
+			<div class="checkbox"><label>
+				<input type="checkbox" name="admin" value="y" {if user.admin}checked{/if}>
+				This is an admin account
+			</label></div>
+
+			{if user.id != blx.users.current.id}
+				<div class="checkbox"><label>
+					<input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked{/if}>
+					Require a password reset on next login
+				</label></div>
+			{/if}
+		</div>
+
+		<input type="submit" class="btn submit" value="Save">
+
+	</form>
+
+
+	<div id="info" class="pane">
+		<h3>User Info</h3>
+
+		<div class="left">
+			<strong>Status</strong>
+		</div>
+		<div class="right">
+			{:user.status.uppercaseFirst}
+		</div>
+		<div class="clear"></div>
+		<input type="hidden" name="status" value="{:user.status}">
+		{if user.status == 'pending'}
+			<input class="btn" type="submit" name="validationEmail" value="Resend Validation Email">
+			<p><strong>Validation URL</strong> {:blx.url.url(blx.users.verifyAccountUrl, 'code=')}{:user.activationcode}</p>
+		{elseif user.status == 'locked'}
+			<input class="btn" type="submit" name="unlock" value="Unlock">
+		{elseif user.status == 'suspended'}
+			<input class="btn" type="submit" name="unsuspend" value="Unsuspend">
+		{/if}
+		{if blx.config.failedPasswordMode == 'cooldown'}
+			{if user.cooldown_start}
+				<br>
+				{set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime)}
+				Temporarily locked.  User will be auto-unlocked
+				{if timeRemaining > 0}
+					in {:timeRemaining}
+				{else}
+					the next time they log in.
+				{/if}
+			{/if}
+		{/if}
+
+		<div class="left">
+			<strong>Last Login Date</strong>
+		</div>
+		<div class="right">
+			{if user.last_login_date}{:blx.date.nice(user.last_login_date)}{else}Never{/if}
+		</div>
+		<div class="clear"></div>
+
+		<div class="left">
+			<strong>Last Failed Login Date</strong>
+		</div>
+		<div class="right">
+			{if user.last_login_failed_date}{:blx.date.nice(user.last_login_failed_date)}{else}Never{/if}
+		</div>
+		<div class="clear"></div>
+
+		<div class="left">
+			<strong>Last Password Changed Date</strong>
+		</div>
+		<div class="right">
+			{if user.last_password_changed_date}{:blx.date.nice(user.last_password_changed_date)}{else}Never{/if}
+		</div>
+		<div class="clear"></div>
+
+		<div class="left">
+			<strong>Last Lockout Date</strong>
+		</div>
+		<div class="right">
+			{if user.last_lockout_date}{:blx.date.nice(user.last_lockout_date)}{else}Never{/if}
+		</div>
+		<div class="clear"></div>
+
+		<div class="left">
+			<strong>Failed Password Attempt Count</strong>
+		</div>
+		<div class="right">
+			{if user.failed_password_attempt_count}{:user.failed_password_attempt_count}{else}0{/if}
+		</div>
+		<div class="clear"></div>
+	</div>
+
+
+	{if user.status != 'suspended'}
+		<input class="btn" type="submit" name="suspend" value="Suspend">
+	{/if}
+
+	<input class="btn" type="submit" name="delete" value="Delete">
+
+{/region}

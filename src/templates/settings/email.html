@@ -9,14 +9,14 @@
 {region "settings"}
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="settings/saveemailsettings" />
+		<input type="hidden" name="action" value="settings/saveemailsettings">
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="emailAddress">System Email Address</label></h3>
 				<p>The email address Blocks will use when sending email.</p>
 			</div>
-			<input id="emailAddress" name="emailAddress" class="text" type="text" value="{:settings.emailAddress}" />
+			<input id="emailAddress" name="emailAddress" class="text" type="text" value="{:settings.emailAddress}">
 			{if settings.errors.emailAddress}
 				{include "_includes/error_list" errors=settings.errors.emailAddress}
 			{/if}
@@ -26,7 +26,7 @@
 				<h3><label for="senderName">Sender Name</label></h3>
 				<p>The “From” name Blocks will use when sending email.</p>
 			</div>
-			<input id="senderName" name="senderName" class="text" type="text" value="{:settings.senderName}" />
+			<input id="senderName" name="senderName" class="text" type="text" value="{:settings.senderName}">
 			{if settings.errors.senderName}
 				{include "_includes/error_list" errors=settings.errors.senderName}
 			{/if}
@@ -50,7 +50,7 @@
 				<div class="heading">
 					<h3><label for="username">Username</label></h3>
 				</div>
-				<input id="username" name="username" class="text" type="text" value="{:settings.username}" />
+				<input id="username" name="username" class="text" type="text" value="{:settings.username}">
 				{if settings.protocol != 'Smtp' && settings.errors.username}
 					{include "_includes/error_list" errors=settings.errors.username}
 				{/if}
@@ -59,7 +59,7 @@
 				<div class="heading">
 					<h3><label for="password">Password</label></h3>
 				</div>
-				<input id="password" name="password" class="text" type="password" value="{:settings.password}" />
+				<input id="password" name="password" class="text" type="password" value="{:settings.password}">
 				{if settings.protocol != 'Smtp' && settings.errors.password}
 					{include "_includes/error_list" errors=settings.errors.password}
 				{/if}
@@ -69,7 +69,7 @@
 				<div class="heading">
 					<h3><label for="port">Port</label></h3>
 				</div>
-				<input id="port" name="port" class="text" type="text" value="{if settings.port}{:settings.port}{else}25{/if}" size="5" />
+				<input id="port" name="port" class="text" type="text" value="{if settings.port}{:settings.port}{else}25{/if}" size="5">
 				{if settings.errors.port}
 					{include "_includes/error_list" errors=settings.errors.port}
 				{/if}
@@ -79,7 +79,7 @@
 				<div class="heading">
 					<h3><label for="host">Host Name</label></h3>
 				</div>
-				<input id="host" name="host" class="text" type="text" value="{:settings.host}" />
+				<input id="host" name="host" class="text" type="text" value="{:settings.host}">
 				{if settings.errors.host}
 					{include "_includes/error_list" errors=settings.errors.host}
 				{/if}
@@ -89,7 +89,7 @@
 				<div class="heading">
 					<h3><label for="timeout">Timeout</label></h3>
 				</div>
-				<input id="timeout" name="timeout" class="text" type="text" value="{if settings.timeout}{:settings.timeout}{else}30{/if}" size="5" />
+				<input id="timeout" name="timeout" class="text" type="text" value="{if settings.timeout}{:settings.timeout}{else}30{/if}" size="5">
 				{if settings.errors.timeout}
 					{include "_includes/error_list" errors=settings.errors.timeout}
 				{/if}
@@ -97,7 +97,7 @@
 
 			<div id="smtpAuth-field" class="field checkbox">
 				<h3><label>Use Smtp Authentication</h3>
-					<div class="cbwrapper"><input type="checkbox" name="smptAuth" value="y" {if settings.smtpAuth}checked="checked"{/if} class="togglefields" data-target="smtpAuthCredentials-field" /></div>
+					<div class="cbwrapper"><input type="checkbox" name="smptAuth" value="y" {if settings.smtpAuth}checked{/if} class="togglefields" data-target="smtpAuthCredentials-field"></div>
 				</label>
 			</div>
 
@@ -106,7 +106,7 @@
 					<div class="heading">
 						<h3><label for="smtp-username">Username</label></h3>
 					</div>
-					<input id="smtp-username" name="smtp_username" class="text" type="text" value="{:settings.username}" />
+					<input id="smtp-username" name="smtp_username" class="text" type="text" value="{:settings.username}">
 					{if settings.protocol == 'Smtp' && settings.errors.username}
 						{include "_includes/error_list" errors=settings.errors.username}
 					{/if}
@@ -115,7 +115,7 @@
 					<div class="heading">
 						<h3><label for="smtp-password">Password</label></h3>
 					</div>
-					<input id="smtp-password" name="smtp_password" class="text" type="password" value="{:settings.password}" />
+					<input id="smtp-password" name="smtp_password" class="text" type="password" value="{:settings.password}">
 					{if settings.protocol == 'Smtp' && settings.errors.password}
 						{include "_includes/error_list" errors=settings.errors.password}
 					{/if}
@@ -124,7 +124,7 @@
 
 			<div id="smtpKeepAlive-field" class="field checkbox">
 				<h3><label>Use Smtp Keep Alive</h3>
-					<div class="cbwrapper"><input type="checkbox" name="smtpKeepAlive" value="y" {if settings.smtpKeepAlive}checked="checked"{/if} /></div>
+					<div class="cbwrapper"><input type="checkbox" name="smtpKeepAlive" value="y" {if settings.smtpKeepAlive}checked{/if}></div>
 				</label>
 			</div>
 			<div id="smtpSecureTransportType-field" class="field">
@@ -135,7 +135,7 @@
 			</div>
 		</div>
 
-		<input class="btn submit" type="submit" value="Save" />
+		<input class="btn submit" type="submit" value="Save">
 	</form>
 {/region}
 

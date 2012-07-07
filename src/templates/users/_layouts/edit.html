@@ -1,0 +1,43 @@
+{region "title"}Users - {:user.username} - {:title}{/region}
+{layout "_layouts/cp"}
+
+
+{region "styles"}
+	{include "_includes/css_include" file="styles/user.css"}
+{/region}
+
+
+{if user.id}
+	{if user.id == blx.users.current.id}
+		{set displayName = "My"}
+	{elseif user.fullName}
+		{set displayName = user.fullName.possessive}
+	{else}
+		{set displayName = "Anonymous’"}
+	{/if}
+	<?php $heading = new Variable($displayName.' Account'); ?>
+{else}
+	{set heading = "Register a new user"}
+{/if}
+
+
+{region "main"}
+	<header class="titlebar">
+		<h1>{:heading}</h1>
+	</header>
+
+	{if user.id}
+		<nav class="nav">
+			<ul>
+				<li {if blx.url.segment(3) == ''}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}" data-icon="s">Account Settings</a></li>
+				<li {if blx.url.segment(3) == 'profile'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/profile" data-icon="p">Profile</a></li>
+
+				{if blx.users.current.admin}
+					<li {if blx.url.segment(3) == 'admin'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/admin" data-icon="v">Administration</a></li>
+				{/if}
+			</ul>
+		</nav>
+	{/if}
+
+	<div>{:settings}</div>
+{/region}
