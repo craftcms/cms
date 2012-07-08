@@ -236,7 +236,7 @@ class EmailService extends \CApplicationComponent
 	 * @param      $site
 	 * @return bool
 	 */
-	public function sendRegistrationEmail(User $user, Site $site)
+	public function sendVerificationEmail(User $user, Site $site)
 	{
 		$emailSettings = $this->getEmailSettings();
 		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));

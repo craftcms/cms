@@ -11,6 +11,8 @@
 	<h2>Administration</h2>
 
 	<form method="post" action="">
+		<input type="hidden" name="action" value="users/saveAdminSettings">
+		<input type="hidden" name="user_id" value="{:user.id}">
 
 		<div class="field">
 			<div class="heading">
@@ -20,13 +22,6 @@
 				<input type="checkbox" name="admin" value="y" {if user.admin}checked{/if}>
 				This is an admin account
 			</label></div>
-
-			{if user.id != blx.users.current.id}
-				<div class="checkbox"><label>
-					<input type="checkbox" name="password_reset" value="y" {if user.password_reset_required}checked{/if}>
-					Require a password reset on next login
-				</label></div>
-			{/if}
 		</div>
 
 		<input type="submit" class="btn submit" value="Save">
@@ -34,43 +29,48 @@
 
 	<hr>
 
-	<div class="field">
-		<div class="heading">
-			<h3>Account Status</h3>
+	<form method="post" action="">
+		<input type="hidden" name="user_id" value="{:user.id}">
+
+		<div class="field">
+			<div class="heading">
+				<h3>Account Status</h3>
+			</div>
+
+			{if user.status == 'pending'}
+
+				<div class="status"></div> Pending Verification  
+				<input type="button" class="btn formsubmit" value="Send Verification Email" data-action="users/sendVerificationEmail">
+				<input type="button" class="btn formsubmit" value="Activate" data-action="users/activateUser">
+
+			{elseif user.status == 'locked'}
+
+				<div class="status pending"></div> {if blx.config.failedPasswordMode == 'cooldown'}Temporarily{/if} Locked  
+				<input type="button" class="btn formsubmit" value="Unlock" data-action="users/unlockUser">
+
+			{elseif user.status == 'suspended'}
+
+				<div class="status off"></div> Suspended  
+				<input type="submit" class="btn formsubmit" value="Unsuspend" data-action="users/unsuspendUser">
+
+			{else}
+
+				<div class="status on"></div> Active
+
+			{/if}
 		</div>
 
-		{if user.status == 'pending'}
+		{if !user.isCurrent}
+			<div class="field">
+				<h3>Account Actions</h3>
 
-			<div class="status"></div> Pending Verification  
-			<input class="btn" type="submit" name="validationEmail" value="Send Verification Email">
-			<input class="btn" type="submit" name="activate" value="Activate">
+				{if user.status != 'suspended'}
+					<input type="button" class="btn formsubmit" value="Suspend" data-action="users/suspendUser">
+				{/if}
 
-		{elseif user.status == 'locked'}
-
-			<div class="status pending"></div> {if blx.config.failedPasswordMode == 'cooldown'}Temporarily{/if} Locked  
-			<input class="btn" type="submit" name="unlock" value="Unlock">
-
-		{elseif user.status == 'suspended'}
-
-			<div class="status off"></div> Suspended
-			<input class="btn" type="submit" name="unsuspend" value="Unsuspend">
-
-		{else}
-
-			<div class="status on"></div> Active
-
+				<input class="btn" type="submit" name="delete" value="Delete" data-action="users/deleteUser">
+			</div>
 		{/if}
-	</div>
-
-
-	<div class="field">
-		<h3>Account Actions</h3>
-
-		{if user.status != 'suspended'}
-			<input class="btn" type="submit" name="suspend" value="Suspend">
-		{/if}
-
-		<input class="btn" type="submit" name="delete" value="Delete">
-	</div>
+	</form>
 
 {/region}

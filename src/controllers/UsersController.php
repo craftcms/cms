@@ -15,187 +15,255 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * @param $user
-	 * @param $site
-	 * @return bool
+	 * Registers a new user, or saves an existing user's account settings.
 	 */
-	public function actionSendRegistrationEmail($user, $site)
-	{
-		$this->requireAjaxRequest();
-		$this->requirePostRequest();
-
-		if (($emailStatus = blx()->email->sendRegistrationEmail($user, $site)) == true)
-		{
-			return true;
-		}
-
-		return false;
-	}
-
-	/**
-	 *
-	 */
-	public function actionSave()
+	public function actionSaveAccountSettings()
 	{
 		$this->requirePostRequest();
 
-		$existingUser = false;
-
-		// Are we editing an existing user?
-		$postUserId = blx()->request->getPost('user_id');
-		if ($postUserId)
+		$userId = blx()->request->getPost('user_id');
+		if ($userId !== null)
 		{
-			$existingUser = true;
-			$user = blx()->users->getUserById($postUserId);
-		}
-
-		if (empty($user))
-			$user = new User();
-
-		if (blx()->request->getPost('suspend') !== null)
-		{
-			$user->status = UserAccountStatus::Suspended;
-			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User suspended.', MessageType::Notice);
-		}
-		else if (blx()->request->getPost('validationEmail') !== null)
-		{
-			if (($emailStatus = blx()->email->sendRegistrationEmail($user, blx()->sites->getCurrentSite())) == true)
-				$this->_setMessageAndRedirect('Validation email sent.', MessageType::Notice);
-		}
-		else if (blx()->request->getPost('unsuspend') !== null)
-		{
-			$user->status = UserAccountStatus::Active;
-			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User unsuspended.', MessageType::Notice);
-		}
-		else if (blx()->request->getPost('unlock') !== null)
-		{
-			$user->status = UserAccountStatus::Active;
-			$user->cooldown_start = null;
-			if ($this->_processUserChange($user))
-				$this->_setMessageAndRedirect('User unlocked.', MessageType::Notice);
-		}
-		else if (blx()->request->getPost('delete') !== null)
-		{
-			if ($user->id == blx()->users->getCurrentUser()->id)
-			{
-				$this->_setMessageAndRedirect('Trying to delete yourself?  It can’t be that bad.', MessageType::Notice);
-			}
-			else
-			{
-				blx()->users->deleteUser($user);
-				$this->_setMessageAndRedirect('User archived.', MessageType::Notice, 'users');
-			}
-		}
-		else if (blx()->request->getPost('save') !== null)
-		{
-			$user->username = blx()->request->getPost('username');
-			$user->first_name = blx()->request->getPost('first_name');
-			$user->last_name = blx()->request->getPost('last_name');
-			$user->email = blx()->request->getPost('email');
-			$user->admin = (blx()->request->getPost('admin') === 'y');
-			$user->html_email = (blx()->request->getPost('email_format') == 'html');
-			$user->status = blx()->request->getPost('status');
-			$user->password_reset_required = (blx()->request->getPost('password_reset') === 'y');
-			$user->preferred_language = blx()->request->getPost('preferred_language');
-
-			$sendValidationEmail = (blx()->request->getPost('send_validation_email') === 'y');
-
-			$userValidates = $user->validate();
-
-			// Is this the current user?
-			if ($user->isCurrent)
-			{
-				// Are they changing their password?
-				if (($password = blx()->request->getPost('password')))
-				{
-					// Make sure the passwords match and are at least the minimum length
-					$passwordForm = new PasswordForm();
-					$passwordForm->password = $password;
-					$passwordForm->confirmPassword = blx()->request->getPost('confirm-password');
-					$passwordValidates = $passwordForm->validate();
-
-					// Store the new hashed password on the User record, but don't save it yet
-					if ($passwordValidates)
-						blx()->users->changePassword($user, $password, false);
-				}
-			}
-
-			if ($userValidates && (!isset($passwordValidates) || $passwordValidates))
-			{
-				if ($existingUser)
-				{
-					$user->save(false);
-					$this->_setMessageAndRedirect('User saved.', MessageType::Notice);
-				}
-				else
-				{
-					$user = blx()->users->registerUser($user, null, true);
-
-					if ($user !== null)
-					{
-						if ($sendValidationEmail)
-						{
-							$site = blx()->sites->getCurrentSite();
-							if (($emailStatus = blx()->email->sendRegistrationEmail($user, $site)) == true)
-							{
-								// registered and sent email
-								$this->_setMessageAndRedirect('User registered and registration email sent.', MessageType::Notice);
-							}
-							else
-							{
-								// registered but there was a problem sending the email.
-								$this->_setMessageAndRedirect('User registered, but couldn’t send the registration email: '.$emailStatus, MessageType::Notice);
-							}
-						}
-						else
-						{
-							// registered user with no email validation
-							$this->_setMessageAndRedirect('User registered.', MessageType::Notice);
-						}
-					}
-					else
-					{
-						// there was a problem registering the user.
-						$this->_setMessageAndRedirect('Couldn’t register user. See the log for details.', MessageType::Error);
-					}
-				}
-			}
-			else
-			{
-				blx()->user->setMessage(MessageType::Error, 'Couldn’t save user.');
-			}
-		}
-
-		$this->loadRequestedTemplate(array(
-			'theUser' => $user,
-			'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
-		));
-	}
-
-	/**
-	 * @param User $user
-	 * @return bool
-	 */
-	private function _processUserChange(User $user)
-	{
-		if ($user->validate())
-		{
-			$user->save();
-			return true;
+			$user = blx()->users->getUserById($userId);
+			if (!$user)
+				throw new Exception('No user exists with the ID '.$userId);
 		}
 		else
-			return false;
+			$user = new User();
+
+		$isNewUser = $user->getIsNewRecord();
+
+		// Set all the standard stuff
+		$user->username = blx()->request->getPost('username');
+		$user->email = blx()->request->getPost('email');
+		$user->html_email = (blx()->request->getPost('email_format') == 'html');
+		$user->preferred_language = blx()->request->getPost('preferred_language');
+
+		// New password?
+		//  - Only admins can change other members' passwords, and even then, they're encouraged to require a password reset.
+		if ($user->getIsCurrent() || blx()->users->getCurrentUser()->admin)
+		{
+			$password = blx()->request->getPost('password');
+			if ($password)
+			{
+				// Make sure the passwords match and are at least the minimum length
+				$passwordForm = new PasswordForm();
+				$passwordForm->password = $password;
+
+				$passwordValidates = $passwordForm->validate();
+				if ($passwordValidates)
+				{
+					// Store the new hashed password on the User record, but don't save it yet
+					blx()->users->changePassword($user, $password, false);
+				}
+			}
+		}
+
+		// Require a password reset?
+		//  - Only set this if it's actually in the post
+		$passwordResetRequired = blx()->request->getPost('require_password_reset');
+		if ($passwordResetRequired !== null)
+			$user->password_reset_required = ($passwordResetRequired === 'y');
+
+		// Run user validation
+		$userValidates = $user->validate();
+
+		if ($userValidates && (!isset($passwordValidates) || $passwordValidates))
+		{
+			// Send a verification email?
+			//  - Only an option when registering a new user
+			//  - Only admins have a choince in the matter. Verification emails _must_ be sent when a non-admin registers a user.
+			if ($isNewUser && (!blx()->users->getCurrentUser()->admin || blx()->request->getPost('require_verification')))
+			{
+				$user->status = UserAccountStatus::Pending;
+				blx()->users->generateVerificationCodeForUser($user, false);
+				blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
+			}
+
+			$user->save();
+
+			if ($isNewUser)
+				blx()->user->setMessage(MessageType::Notice, 'User registered.');
+			else
+				blx()->user->setMessage(MessageType::Notice, 'Account settings saved.');
+		
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			if ($isNewUser)
+				blx()->user->setMessage(MessageType::Error, 'Couldn’t register user.');
+			else
+				blx()->user->setMessage(MessageType::Error, 'Couldn’t save account settings.');
+
+			$this->loadRequestedTemplate(array(
+				'user' => $user,
+				'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
+			));
+		}
 	}
 
 	/**
-	 * @param $message
-	 * @param $messageStatus
+	 * Saves a user's profile.
 	 */
-	private function _setMessageAndRedirect($message, $messageStatus)
+	public function actionSaveProfile()
 	{
-		blx()->user->setMessage($messageStatus, $message);
+		$this->requirePostRequest();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		$user->first_name = blx()->request->getPost('first_name');
+		$user->last_name = blx()->request->getPost('last_name');
+
+		if ($user->save())
+		{
+			blx()->user->setMessage(MessageType::Notice, 'Profile saved.');
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save profile.');
+			$this->loadRequestedTemplate(array('user' => $user));
+		}
+	}
+
+	/**
+	 * Saves a user's admin settings.
+	 */
+	public function actionSaveAdminSettings()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		$user->admin = (blx()->request->getPost('admin') === 'y');
+		$user->save();
+
+		blx()->user->setMessage(MessageType::Notice, 'Admin settings saved.');
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Sends a new verification email to a user.
+	 */
+	public function actionSendVerificationEmail()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		$user->status = UserAccountStatus::Pending;
+		blx()->users->generateVerificationCodeForUser($user, false);
+		blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
+		$user->save();
+
+		blx()->user->setMessage(MessageType::Notice, 'Verification email sent.');
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Activates a user, bypassing verification.
+	 */
+	public function actionActivateUser()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		blx()->users->activateUser($user);
+
+		blx()->user->setMessage(MessageType::Notice, 'User activated.');
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Unlocks a user, bypassing the cooldown phase.
+	 */
+	public function actionUnlockUser()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		blx()->users->unlockUser($user);
+
+		blx()->user->setMessage(MessageType::Notice, 'User activated.');
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Suspends a user.
+	 */
+	public function actionSuspendUser()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		blx()->users->suspendUser($user);
+
+		blx()->user->setMessage(MessageType::Notice, 'User suspended.');
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Unsuspends a user.
+	 */
+	public function actionUnsuspendUser()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		blx()->users->unsuspendUser($user);
+
+		blx()->user->setMessage(MessageType::Notice, 'User unsuspended.');
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Deletes a user.
+	 */
+	public function actionDeleteUser()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$userId = blx()->request->getRequiredPost('user_id');
+		$user = blx()->users->getUserById($userId);
+		if (!$user)
+			throw new Exception('No user exists with the ID '.$userId);
+
+		blx()->users->deleteUser($user);
+
+		blx()->user->setMessage(MessageType::Notice, 'User deleted.');
 		$this->redirectToPostedUrl();
 	}
 }

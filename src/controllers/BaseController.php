@@ -158,6 +158,15 @@ abstract class BaseController extends \CController
 	}
 
 	/**
+	 * Requires the current user to be logged in as an admin
+	 */
+	public function requireAdmin()
+	{
+		if (!blx()->users->getCurrentUser()->admin)
+			throw new Exception('This action may only be performed by admins.');
+	}
+
+	/**
 	 * Returns a 404 if this isn't a POST request
 	 * @throws HttpException
 	 */
