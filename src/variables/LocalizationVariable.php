@@ -16,19 +16,19 @@ class LocalizationVariable
 	}
 
 	/**
-	 * @return string
+	 * Returns a locale's display name in the language the user is currently using.
+	 * @param string $locale   The locale to get the display name of
+	 * @param string $language The language to translate the locale name into
+	 * @return string The locale display name
 	 */
-	public function alllanguagesanddisplaynames()
+	public function localeName($locale, $language = null)
 	{
-		$languages = $this->languages();
-		// The app is written in English, so we add it manually.
-		$languageData = 'en_us:English (US),';
+		// If no language is specified, default to the user's language
+		if (!$language)
+			$language = blx()->language;
 
-		// Get the language the user is currently using.
-		$userLangage = blx()->localization->getLanguageData(blx()->language);
-		foreach ($languages as $language)
-			$languageData .= $language.':'.$userLangage->getLocaleDisplayName($language).',';
-
-		return rtrim($languageData, ',');
+		$languageData = blx()->localization->getLanguageData($language);
+		$localeName = $languageData->getLocaleDisplayName($locale);
+		return $localeName;
 	}
 }
