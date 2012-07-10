@@ -81,7 +81,7 @@
 			<div class="heading">
 				<h3><label for="preferred_language">Preferred Language</label></h3>
 			</div>
-			<select id="{:id}" name="{:id}">
+			<select id="preferred_language" name="preferred_language">
 				{foreach blx.localization.languages as language}
 					<option value="{:language}" {if language == user.preferred_language}selected{/if}>{:blx.localization.localeName(language, language)}</option>
 				{/foreach}
