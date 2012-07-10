@@ -6,43 +6,29 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveRoutes">
 
-		<div class="field">
-			<div class="heading">
-				<h3><label for="languages">URL Routes</label></h3>
-			</div>
+		<ul class="biglist">
+			<li>
+				<h3>blog/archive/ <span class="var">year</span></h3>
+				<p>Template: blog/archive/_year</p>
+			</li>
+			<li>
+				<h3>blog/archive/ <span class="var">year</span> / <span class="var">month</span></h3>
+				<p>Template: blog/archive/_month</p>
+			</li>
+			<li>
+				<h3>blog/tag/ <span class="var">tag</span></h3>
+				<p>Template: blog/_tag</p>
+			</li>
+			<li>
+				<h3>blog/p <span class="var">pp</span></h3>
+				<p>Template: blog/index</p>
+			</li>
+			<li>
+				<h3>gallery/ <span class="var">offset</span></h3>
+				<p>Template: gallery/index</p>
+			</li>
+		</ul>
 
-			<table>
-				<thead>
-					<tr>
-						<th class="pane-head" scope="col">URL Pattern</th>
-						<th class="pane-head" scope="col">Template</th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><span class="site">http://pixelandtonic.com/</span>blog/archive/<span class="var">year</span></td>
-						<td>blog/archive/_year</td>
-					</tr>
-					<tr>
-						<td><span class="site">http://pixelandtonic.com/</span>blog/archive/<span class="var">year</span>/<span class="var">month</span></td>
-						<td>blog/archive/_month</td>
-					</tr>
-					<tr>
-						<td><span class="site">http://pixelandtonic.com/</span>blog/tag/<span class="var">tag</span></td>
-						<td>blog/_tag</td>
-					</tr>
-					<tr>
-						<td><span class="site">http://pixelandtonic.com/</span>blog/p<span class="var">pp</span></td>
-						<td>blog/index</td>
-					</tr>
-					<tr>
-						<td><span class="site">http://pixelandtonic.com/</span>gallery/<span class="var">offset</span></td>
-						<td>gallery/index</td>
-					</tr>
-				</tbody>
-			</table>
-		</div>
-
-		<input class="btn submit" type="submit" value="Save">
+		<div class="btn">Add Route</div>
 	</form>
 {/region}
