@@ -4,12 +4,34 @@
 {region "settings"}
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="settings/saveLanguages">
+		<input type="hidden" name="action" value="settings/saveLanguageSettings">
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="languages">Content Languages</label></h3>
 				<p>These are the languages that your content can be translated into.</p>
+
+				{if !selectedLanguages}
+					{set selectedLanguages = blx.settings.languages}
+				{/if}
+
+				{if selectedLanguages.length}
+					{foreach selectedLanguages as language}
+						<div class="checkbox"><label>
+							<input type="checkbox" name="languages[]" value="{:language}" checked>
+							{:blx.localization.localeName(language)}
+						</label></div>
+					{/foreach}
+				{/if}
+
+				{foreach blx.localization.languages as language}
+					{if !selectedLanguages.includes(language)}
+						<div class="checkbox"><label>
+							<input type="checkbox" name="languages[]" value="{:language}">
+							{:blx.localization.localeName(language)}
+						</label></div>
+					{/if}
+				{/foreach}
 			</div>
 			
 		</div>

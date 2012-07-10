@@ -143,6 +143,28 @@ class SettingsController extends BaseController
 	}
 
 	/**
+	 * Saves the language settings.
+	 */
+	public function actionSaveLanguageSettings()
+	{
+		$this->requirePostRequest();
+
+		$languages = blx()->request->getPost('languages');
+		sort($languages);
+
+		if (blx()->settings->saveSettings('systemsettings', $languages, 'languages', true))
+		{
+			blx()->user->setMessage(MessageType::Notice, 'Language settings saved.');
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setMessage(MessageType::Error, 'Couldn’t save language settings.');
+			$this->loadRequestedTemplate(array('selectedLanguages' => $languages));
+		}
+	}
+
+	/**
 	 * Saves the advanced settings.
 	 */
 	public function actionSaveAdvancedSettings()

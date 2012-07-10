@@ -81,8 +81,11 @@
 			<div class="heading">
 				<h3><label for="preferred_language">Preferred Language</label></h3>
 			</div>
-			{set languages = blx.localization.alllanguagesanddisplaynames}
-			{include "_includes/dropdown" name="preferred_language" options=languages value=user.preferred_language}
+			<select id="{:id}" name="{:id}">
+				{foreach blx.localization.languages as language}
+					<option value="{:language}" {if language == user.preferred_language}selected{/if}>{:blx.localization.localeName(language, language)}</option>
+				{/foreach}
+			</select>
 		</div>
 
 		<input type="submit" class="btn submit" value="Save">
