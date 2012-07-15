@@ -15,6 +15,7 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #sidebar #header #account.sel { background: #000; }
 #sidebar #header #account:after { margin-right: -5px; color: rgba(255,255,255,0.5); text-shadow: none; }
 
+#account-menu { margin-top: -1px; }
 #account-menu .userinfo { padding: 33px 15px 5px 111px; height: 64px; background: rgba(0,0,0,0.9); }
 #account-menu .userinfo img { display: block; float: left; margin: -32px 0 0 -110px; }
 #account-menu .userinfo .fullname { color: #fff; font-weight: bold; }
