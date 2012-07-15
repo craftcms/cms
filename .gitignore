@@ -2,6 +2,7 @@
 *.log
 *.bak
 *.DS_Store
+.sass-cache/
 Thumbs.db
 /aspnet_client/*
 
