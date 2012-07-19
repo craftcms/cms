@@ -19,3 +19,5 @@ Source/blocks/app/resources/styles/content-entry.css
 Source/blocks/app/resources/styles/login.css
 Source/blocks/app/resources/styles/settings.css
 Source/blocks/app/resources/styles/setup.css
+
+Source/blocks/app/tests/artifacts/*
