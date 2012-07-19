@@ -525,6 +525,8 @@ class File extends \CApplicationComponent
 		$oldumask = umask(0);
 		if (@mkdir($dir, $permissions, true))
 		{
+			// Because setting permission with mkdir is a crapshoot.
+			@chmod($dir, $permissions);
 			@umask($oldumask);
 			if (!$directory)
 				return $this->set($dir);
