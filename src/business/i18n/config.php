@@ -6,9 +6,9 @@ return array(
 	'sourcePath'    => dirname(__FILE__).'/../../../../',
 	'messagePath'   => dirname(__FILE__).'/../../languages',
 	'languages'     => array('en_gb','nl','de','fr','ru','es','it'),
-	'fileTypes'     => array('php'),
+	'fileTypes'     => array('php', 'html'),
 	'overwrite'     => true,
-	'translator'    => 'Blocks::t',
+	'translator'    => 'Blocks::t,blx.t',
 	'exclude'       => array(
 		'yiilite.php',
 		'yiit.php',
