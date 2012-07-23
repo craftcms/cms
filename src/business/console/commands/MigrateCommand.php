@@ -65,7 +65,7 @@ EOD;
 
 	/**
 	 * @param $class
-	 * @return void
+	 * @return bool|void
 	 */
 	protected function migrateDown($class)
 	{
