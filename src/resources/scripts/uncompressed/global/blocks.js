@@ -134,7 +134,22 @@ blx.removeFromArray = function(elem, arr)
 };
 
 /**
+ * Returns the last element in an array.
+ *
+ * @param array
+ * @return mixed
+ */
+blx.getLast = function(arr)
+{
+	if (!arr.length)
+		return null;
+	else
+		return arr[arr.length-1];
+}
+
+/**
  * Makes the first character of a string uppercase.
+ *
  * @param string str
  * @return string
  */
