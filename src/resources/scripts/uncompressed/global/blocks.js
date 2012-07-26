@@ -42,6 +42,7 @@ var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae
 
 /**
  * Format a number with commas.
+ *
  * @param mixed num
  * @return string
  */
@@ -59,6 +60,7 @@ blx.numCommas = function(num)
 
 /**
  * Converts a comma-delimited string into an array.
+ *
  * @param string str
  * @return array
  */
@@ -77,6 +79,7 @@ blx.stringToArray = function(str)
 
 /**
  * Filters an array.
+ *
  * @param array    arr
  * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
  * @return array
@@ -101,6 +104,7 @@ blx.filterArray = function(arr, callback)
 
 /**
  * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
+ *
  * @param mixed elem
  * @param mixed arr
  * @return bool
@@ -112,6 +116,7 @@ blx.inArray = function(elem, arr)
 
 /**
  * Removes an element from an array.
+ *
  * @param mixed elem
  * @param array arr
  * @return bool Whether the element could be found or not.
@@ -140,6 +145,7 @@ blx.uppercaseFirst = function(str)
 
 /**
  * Makes the first character of a string lowercase.
+ *
  * @param string str
  * @return string
  */
@@ -150,6 +156,7 @@ blx.lowercaseFirst = function(str)
 
 /**
  * Converts extended ASCII characters to ASCII.
+ *
  * @param string str
  * @return string
  */
@@ -171,6 +178,7 @@ blx.asciiString = function(str)
 
 /**
  * Get the distance between two coordinates.
+ *
  * @param int x1 The first coordinate's position on the X axis.
  * @param int y1 The first coordinate's position on the Y axis.
  * @param int x2 The second coordinate's position on the X axis.
@@ -184,6 +192,7 @@ blx.getDist = function(x1, y1, x2, y2)
 
 /**
  * Check if an element is touching an x/y coordinate.
+ *
  * @param int x0 The coordinate's position on the X axis.
  * @param int y0 The coordinate's position on the Y axis.
  * @param mixed elem Either an actual element or a jQuery collection.
@@ -203,6 +212,7 @@ blx.hitTest = function(x0, y0, elem)
 
 /**
  * Check if the cursor is over an element.
+ *
  * @param object event The mouse event object containing pageX and pageY properties.
  * @param mixed  elem  Either an actual element or a jQuery collection.
  * @return bool
@@ -214,6 +224,7 @@ blx.isCursorOver = function(event, elem)
 
 /**
  * Prevents the outline when an element is focused by the mouse.
+ *
  * @param mixed elem Either an actual element or a jQuery collection.
  */
 blx.preventOutlineOnMouseFocus = function(elem)
@@ -233,6 +244,7 @@ blx.preventOutlineOnMouseFocus = function(elem)
 
 /**
  * Performs a case-insensitive sort on an array of strings.
+ *
  * @param array arr
  * @return array
  */
@@ -244,6 +256,7 @@ blx.caseInsensitiveSort = function(arr)
 /**
  * Performs a case-insensitive string comparison.
  * Returns -1 if a is less than b, 1 if a is greater than b, or 0 if they are equal.
+ *
  * @param string a
  * @param string b
  * @return int
@@ -257,6 +270,7 @@ blx.caseInsensitiveCompare = function(a, b)
 
 /**
  * Copies text styles from one element to another, including line-height, font-size, font-family, font-weight, and letter-spacing.
+ *
  * @param mixed from The source element. Can be either an actual element or a jQuery collection.
  * @param mixed to   The target element. Can be either an actual element or a jQuery collection.
  */
@@ -277,6 +291,7 @@ blx.copyTextStyles = function(from, to)
 
 /**
  * Returns the body's proper scrollTop, discarding any document banding in Safari.
+ *
  * @return int
  */
 blx.getBodyScrollTop = function()
@@ -297,6 +312,7 @@ blx.getBodyScrollTop = function()
 
 /**
  * Scrolls a container to an element within it.
+ *
  * @param mixed container Either an actual element or a jQuery collection.
  * @param mixed elem      Either an actual element or a jQuery collection.
  */
@@ -327,6 +343,7 @@ blx.scrollContainerToElement = function(container, elem) {
 
 /**
  * Returns the first element in an array or jQuery collection.
+ *
  * @param mixed elem
  * @return mixed
  */
@@ -337,6 +354,7 @@ blx.getElement = function(elem)
 
 /**
  * Creates a validation error list.
+ *
  * @param array errors
  * @return jQuery
  */
@@ -356,6 +374,7 @@ blx.createErrorList = function(errors)
 
 /**
  * Returns whether a variable is an array.
+ *
  * @param mixed val
  * @return bool
  */
@@ -366,6 +385,7 @@ blx.isArray = function(val)
 
 /**
  * Returns whether a variable is a jQuery collection.
+ *
  * @param mixed val
  * @return bool
  */
@@ -376,6 +396,7 @@ blx.isJquery = function(val)
 
 /**
  * Returns whether a variable is a plain object (not an array, element, or jQuery collection).
+ *
  * @param mixed val
  * @return bool
  */
@@ -386,6 +407,7 @@ blx.isObject = function(val)
 
 /**
  * Animate an element's width.
+ *
  * @param mixed    elem     Either an actual element or a jQuery collection.
  * @param function callback A callback function to call while the element is temporarily set to the target width before the animation begins.
  */
@@ -406,6 +428,7 @@ blx.animateWidth = function(elem, callback)
 
 /**
  * Shakes an element.
+ *
  * @param mixed elem Either an actual element or a jQuery collection.
  */
 blx.shake = function(elem)
@@ -425,6 +448,7 @@ blx.shake = function(elem)
 
 /**
  * Returns the inputs within a container
+ *
  * @param mixed container The container element. Can be either an actual element or a jQuery collection.
  * @return jQuery
  */
@@ -437,6 +461,7 @@ blx.findInputs = function(container)
  * Returns an inputs's name, "namespaced" into a basename.
  * So if name="gin" and you pass the namespace "drinks", this will return "drinks[gin]".
  * More useful in the event that the name already has its own brackets, e.g. "gin[tonic]" => "drinks[gin][tonic]".
+ *
  * @param string inputName
  * @param string namespace
  * @return string
@@ -448,6 +473,7 @@ blx.namespaceInputName = function(inputName, namespace)
 
 /**
  * Returns the beginning of an input's name= attribute value with any [bracktes] stripped out.
+ *
  * @param jQuery $input
  * @return string
  */
@@ -460,6 +486,7 @@ blx.getInputBasename = function($input)
  * Returns an input's value as it would be POSTed.
  * So unchecked checkboxes and radio buttons return null,
  * and multi-selects whose name don't end in "[]" only return the last selection
+ *
  * @param jQuery $input
  * @return mixed
  */
