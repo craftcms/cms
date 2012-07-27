@@ -1283,7 +1283,7 @@ class File extends \CApplicationComponent
 	 * Alias for {@link send}
 	 * @param bool $fakeName
 	 * @param bool $serverHandled
-	 * @return \file
+	 * @return File
 	 */
 	function download($fakeName = false, $serverHandled = false)
 	{
@@ -1649,11 +1649,14 @@ class File extends \CApplicationComponent
 			$files = glob($dir.'/*');
 			$lcaseFileName = str_replace('\\', '/', strtolower($fileName));
 
-			foreach ($files as $file)
+			if (is_array($files) && count($files) > 0)
 			{
-				$file = str_replace('\\', '/', $file);
-				if (strtolower($file) === $lcaseFileName)
-					return $file;
+				foreach ($files as $file)
+				{
+					$file = str_replace('\\', '/', $file);
+					if (strtolower($file) === $lcaseFileName)
+						return $file;
+				}
 			}
 		}
 

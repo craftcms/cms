@@ -329,7 +329,8 @@ class PluginsService extends \CApplicationComponent
 		if (is_dir($modelsDirectory))
 		{
 			// See if it has any files in ClassName*Service.php format.
-			if (($files = @glob($modelsDirectory.$className."_*.php")) !== false)
+			$files = glob($modelsDirectory.$className."_*.php");
+			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
 				{
@@ -358,7 +359,8 @@ class PluginsService extends \CApplicationComponent
 		if (is_dir($serviceDirectory))
 		{
 			// See if it has any files in ClassName*Service.php format.
-			if (($files = @glob($serviceDirectory.$className."*Service.php")) !== false)
+			$files = glob($serviceDirectory.$className."*Service.php");
+			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
 				{

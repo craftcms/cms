@@ -18,9 +18,9 @@ class ComponentHelper
 
 		$appPath = blx()->path->getAppPath();
 		$folderPath = $appPath.$subfolder.'/';
-		$files = @glob($folderPath.'/*'.$componentType.'.php');
+		$files = glob($folderPath.'/*'.$componentType.'.php');
 
-		if ($files !== false)
+		if (is_array($files) && count($files) > 0)
 		{
 			foreach ($files as $file)
 			{

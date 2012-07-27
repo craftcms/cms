@@ -20,13 +20,17 @@ class LocalizationService extends \CApplicationComponent
 			$dirs = glob($path.'*', GLOB_ONLYDIR);
 			$languages = array();
 
-			foreach ($dirs as $dir)
+			if (is_array($dirs) && count($dirs) > 0)
 			{
-				$segs = explode('/', $dir);
-				$languages[] = $segs[count($segs) - 1];
-			}
+				foreach ($dirs as $dir)
+				{
+					$segs = explode('/', $dir);
+					$languages[] = $segs[count($segs) - 1];
+				}
 
-			$this->_translatedLanguages = $languages;
+				$this->_translatedLanguages = $languages;
+			}
+				$this->_translatedLanguages = null;
 		}
 
 		return $this->_translatedLanguages;

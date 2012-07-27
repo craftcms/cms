@@ -230,8 +230,8 @@ class Blocks extends \Yii
 		if ($directory)
 		{
 			$path = substr($path, 0, -1);
-
-			if (($files = @glob($path."*.php")) !== false)
+			$files = glob($path."*.php");
+			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
 				{
