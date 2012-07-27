@@ -6,18 +6,18 @@
 Thumbs.db
 /aspnet_client/*
 
-Source/webgrind/
-Source/blocks/config/blocks.php
-Source/blocks/config/db.php
+Core/Source/webgrind/
+Core/Source/blocks/config/blocks.php
+Core/Source/blocks/config/db.php
 
 .sass-cache/*
-Source/blocks/app/resources/styles/.sass-cache/
-Source/blocks/app/resources/styles.css
-Source/blocks/app/resources/styles/blocks.css
-Source/blocks/app/resources/styles/dashboard.css
-Source/blocks/app/resources/styles/content-entry.css
-Source/blocks/app/resources/styles/login.css
-Source/blocks/app/resources/styles/settings.css
-Source/blocks/app/resources/styles/setup.css
+Core/Source/blocks/app/resources/styles/.sass-cache/
+Core/Source/blocks/app/resources/styles.css
+Core/Source/blocks/app/resources/styles/blocks.css
+Core/Source/blocks/app/resources/styles/dashboard.css
+Core/Source/blocks/app/resources/styles/content-entry.css
+Core/Source/blocks/app/resources/styles/login.css
+Core/Source/blocks/app/resources/styles/settings.css
+Core/Source/blocks/app/resources/styles/setup.css
 
-Source/blocks/app/tests/artifacts/*
+Core/Source/blocks/app/tests/artifacts/*
