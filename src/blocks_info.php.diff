@@ -1,0 +1,13 @@
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/blocks_info.php	2012-07-27 16:49:01.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Builds/BlocksPro/Blocks/blocks/app/blocks_info.php	2012-07-27 15:43:06.000000000 -0700
+@@ -1,7 +1,7 @@
+ <?php
+ namespace Blocks;
+ 
+-define('BLOCKS_PRODUCT', '');
++define('BLOCKS_PRODUCT', 'Product::BlocksPro');
+ define('BLOCKS_VERSION', '0.1');
+-define('BLOCKS_BUILD',   '@@@build@@@');
+-define('BLOCKS_RELEASE_DATE', '@@@releaseDate@@@');
++define('BLOCKS_BUILD',   '1');
++define('BLOCKS_RELEASE_DATE', '1343428986');
