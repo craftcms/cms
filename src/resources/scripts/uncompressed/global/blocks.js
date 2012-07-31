@@ -388,6 +388,17 @@ blx.createErrorList = function(errors)
 };
 
 /**
+ * Returns whether something is a text node.
+ *
+ * @param mixed elem
+ * @return bool
+ */
+blx.isTextNode = function(elem)
+{
+	return (elem.nodeType == 3);
+};
+
+/**
  * Returns whether a variable is an array.
  *
  * @param mixed val
