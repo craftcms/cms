@@ -109,6 +109,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @return RoutesVariable
+	 */
+	public function routes()
+	{
+		return new RoutesVariable();
+	}
+
+	/**
 	 * @return SettingsVariable
 	 */
 	public function settings()

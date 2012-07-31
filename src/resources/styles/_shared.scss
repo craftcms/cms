@@ -15,7 +15,7 @@ $xxdark: #333230;
 $linkcolor: #2d98db;
 $blurglowcolor: rgba(55,156,219,0);
 $focusglowcolor: #6eb1db;
-$errorcolor: #8a1f11;
+$errorcolor: #d6301a;
 
 @mixin linear-gradient($from, $to) { background: -webkit-linear-gradient($from, $to); }
 @mixin left-linear-gradient($from, $to) { background: -webkit-linear-gradient(left, $from, $to); }

@@ -8,7 +8,6 @@ class UrlManager extends \CUrlManager
 {
 	private $_templateVariables = array();
 
-	public $routePatterns;
 	public $cpRoutes;
 	public $routeVar;
 
@@ -127,21 +126,15 @@ class UrlManager extends \CUrlManager
 		// Escape special regex characters from the pattern
 		$pattern = str_replace(array('.','/'), array('\.','\/'), $route[0]);
 
-		// Mix in the predefined subpatterns
-		$pattern = str_replace(array_keys($this->routePatterns), $this->routePatterns, $pattern);
-
 		// Does it match?
 		if (preg_match("/^{$pattern}$/", blx()->request->getPath(), $match))
 		{
 			// Set any capture variables
-			if (!empty($route[2]))
+			foreach ($match as $key => $value)
 			{
-				foreach ($route[2] as $i => $variableName)
+				if (!is_numeric($key))
 				{
-					if (isset($match[$i + 1]))
-						$this->_templateVariables[$variableName] = $match[$i + 1];
-					else
-						break;
+					$this->_templateVariables[$key] = $value;
 				}
 			}
 

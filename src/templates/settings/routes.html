@@ -2,9 +2,7 @@
 
 
 {region "styles"}
-	<style type="text/css">
-		.biglist p { margin-top: 2px; font-size: 12px; color: #b3b3b3; }
-	</style>
+	{include "_includes/css_include" file="styles/routes.css"}
 {/region}
 
 
@@ -13,29 +11,20 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveRoutes">
 
-		<ul class="biglist">
-			<li>
-				<h3>blog/archive/ <span class="var">year</span></h3>
-				<p>Template: blog/archive/_year</p>
-			</li>
-			<li>
-				<h3>blog/archive/ <span class="var">year</span> / <span class="var">month</span></h3>
-				<p>Template: blog/archive/_month</p>
-			</li>
-			<li>
-				<h3>blog/tag/ <span class="var">tag</span></h3>
-				<p>Template: blog/_tag</p>
-			</li>
-			<li>
-				<h3>blog/p <span class="var">pp</span></h3>
-				<p>Template: blog/index</p>
-			</li>
-			<li>
-				<h3>gallery/ <span class="var">offset</span></h3>
-				<p>Template: gallery/index</p>
-			</li>
-		</ul>
+		<div id="routes">
+			{foreach blx.routes.all as route}
+				<div class="pane route" data-id="{:route.id}">
+					<div class="url">{:route.urlDisplayHtml}</div>
+					<div class="template">{:route.template}</div>
+				</div>
+			{/foreach}
+		</div>
 
-		<div class="btn">Add Route</div>
+		<div id="add-route-btn" class="btn addbtn">New Route</div>
 	</form>
+{/region}
+
+
+{region "scripts"}
+	{include "_includes/js_include" file="routes.js"}
 {/region}

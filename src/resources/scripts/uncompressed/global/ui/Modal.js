@@ -36,10 +36,16 @@ blx.ui.Modal = blx.Base.extend({
 		this.setSettings(settings, blx.ui.Modal.defaults);
 
 		if (container)
+		{
 			this.setContainer(container);
-
-		this.visible = false;
-		this.focussed = false;
+			this.visible = true;
+			this.focussed = true;
+		}
+		else
+		{
+			this.visible = false;
+			this.focussed = false;
+		}
 
 		blx.ui.Modal.instances.push(this);
 	},
@@ -170,7 +176,7 @@ blx.ui.Modal = blx.Base.extend({
 		if (!this.visible)
 			this.$container.show();
 
-		var height = this.$container.height();
+		var height = this.$container.outerHeight();
 
 		if (!this.visible)
 			this.$container.hide();
@@ -186,7 +192,7 @@ blx.ui.Modal = blx.Base.extend({
 		if (!this.visible)
 			this.$container.show();
 
-		var width = this.$container.width();
+		var width = this.$container.outerWidth();
 
 		if (!this.visible)
 			this.$container.hide();
@@ -203,7 +209,7 @@ blx.ui.Modal = blx.Base.extend({
 			viewportHeight = blx.$document.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
-			left = (viewportWidth - modalWidth) / 2,
+			left = 200 + (viewportWidth - modalWidth - 200) / 2,
 			top = (viewportHeight - modalHeight) / 2;
 
 		this.$container.css({
