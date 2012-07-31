@@ -46,7 +46,7 @@ blx.ui.HUD = blx.Base.extend({
 		this.windowScrollLeft = $(window).scrollLeft();
 		this.windowScrollTop = $(window).scrollTop();
 
-			// get the trigger element's dimensions
+		// get the trigger element's dimensions
 		this.triggerWidth = this.$trigger.width() + parseInt(this.$trigger.css('paddingLeft')) + parseInt(this.$trigger.css('borderLeftWidth')) + parseInt(this.$trigger.css('paddingRight')) + parseInt(this.$trigger.css('borderRightWidth'));
 		this.triggerHeight = this.$trigger.height() + parseInt(this.$trigger.css('paddingTop')) + parseInt(this.$trigger.css('borderTopWidth')) + parseInt(this.$trigger.css('paddingBottom')) + parseInt(this.$trigger.css('borderBottomWidth'));
 

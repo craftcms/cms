@@ -65,7 +65,7 @@ blx.ui.NiceText = blx.Base.extend({
 
 		this.addListener(this.$input, 'focus', 'onFocus');
 		this.addListener(this.$input, 'blur', 'onBlur');
-		this.addListener(this.$input, 'keydown', 'onKeydown');
+		this.addListener(this.$input, 'keydown', 'onKeyDown');
 	},
 
 	getVal: function()
@@ -139,8 +139,19 @@ blx.ui.NiceText = blx.Base.extend({
 		}
 		else
 		{
-			// HTML entities
-			val = val.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/[\n\r]$/g, '<br/>&nbsp;').replace(/[\n\r]/g, '<br/>');
+			// Ampersand entities
+			val = val.replace(/&/g, '&amp;');
+
+			// < and >
+			val = val.replace(/</g, '&lt;');
+			val = val.replace(/>/g, '&gt;');
+
+			// Spaces
+			val = val.replace(/ /g, '&nbsp;');
+
+			// Line breaks
+			val = val.replace(/[\n\r]$/g, '<br/>&nbsp;');
+			val = val.replace(/[\n\r]/g, '<br/>');
 
 			// One extra line for fun
 			val += '<br/>&nbsp;';
@@ -185,7 +196,7 @@ blx.ui.NiceText = blx.Base.extend({
 			this.$hint.removeClass('focussed');
 	},
 
-	onKeydown: function()
+	onKeyDown: function()
 	{
 		setTimeout($.proxy(this, 'checkInput'), 1);
 	},
