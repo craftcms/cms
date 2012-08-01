@@ -60,14 +60,25 @@ class RoutesService extends \CApplicationComponent
 		// Compile the URL parts into a regex pattern
 		$urlPattern = '';
 
+		$charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
+		$escapedChars = array();
+		foreach ($charsToEscape as $char)
+			$escapedChars[] = "\\".$char;
+
 		$urlParts = array_filter($urlParts);
 
 		foreach ($urlParts as $part)
 		{
 			if (is_string($part))
-				$urlPattern .= addslashes($part);
+			{
+				// Escape any special regex characters
+				$urlPattern .= str_replace($charsToEscape, $escapedChars, $part);
+			}
 			else if (is_array($part))
+			{
+				// Add the var as a named subpattern
 				$urlPattern .= '(?<'.$part[0].'>'.$part[1].')';
+			}
 		}
 
 		$route->url_parts = Json::encode($urlParts);

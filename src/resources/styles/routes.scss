@@ -11,16 +11,16 @@
 .route .url { position: relative; margin-right: 20px; padding-right: 10px; float: left; color: $linkcolor; background: #fff; }
 .route .url:before { @include icon; margin: 0 5px -2px 0; content: 'w'; }
 .route .url:after { display: block; content: '.'; text-indent: -100%; overflow: hidden; position: absolute; top: 0; right: -15px; width: 15px; height: 32px; background: url(../images/route-bg.png) no-repeat right; }
-.route .url .var { margin: 0 2px; }
+.route .url .token { margin: 0 2px; }
 .route .template { color: #999; text-shadow: 0 1px 0 #fff; }
 .route .template:before { @include icon; margin: 0 5px -2px 0; content: 'T'; }
 
 .route-settings .url { width: auto; height: 16px; cursor: text; }
-.route-settings .url .var { position: relative; top: -1px; cursor: default; }
+.route-settings .url .token { position: relative; top: -1px; cursor: default; }
 
-.route-settings .url-vars { margin-top: 10px; border-radius: 5px; padding: 15px 25px; background: #fafafa; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 2px rgba(0,0,0,0.1); }
-.route-settings .url-vars h4 { margin-bottom: 5px; text-align: center; }
-.route-settings .url-vars .var { margin: 5px 5px 0 0; cursor: pointer; }
+.route-settings .url-tokens { margin-top: 10px; border-radius: 5px; padding: 15px 25px; background: #fafafa; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 2px rgba(0,0,0,0.1); }
+.route-settings .url-tokens h4 { margin-bottom: 5px; text-align: center; }
+.route-settings .url-tokens .token { margin: 5px 5px 0 0; cursor: pointer; }
 
 .route-settings .delete { display: block; float: right; margin-top: 4px; color: $errorcolor; }
 

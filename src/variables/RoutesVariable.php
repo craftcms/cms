@@ -23,7 +23,7 @@ class RoutesVariable
 				if (is_string($part))
 					$urlDisplayHtml .= $part;
 				else
-					$urlDisplayHtml .= '<span class="var" data-name="'.$part[0].'" data-value="'.$part[1].'">'.$part[0].'</span>';
+					$urlDisplayHtml .= '<span class="token" data-name="'.$part[0].'" data-value="'.$part[1].'">'.$part[0].'</span>';
 			}
 
 			$return[] = array(

@@ -127,13 +127,13 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 					'<h3><label for="url">If the URL looks like this:</label></h3>' +
 				'</div>' +
 				'<div id="url" class="text url"></div>' +
-				'<div class="url-vars">' +
-					'<h4>Add a variable</h4>' +
-					'<div class="var" data-name="year" data-value="\d{4}">year</div>' +
-					'<div class="var" data-name="month" data-value="1?\d">month</div>' +
-					'<div class="var" data-name="day" data-value="[1-3]?\d">day</div>' +
-					'<div class="var" data-name="number" data-value="\d+">number</div>' +
-					'<div class="var" data-name="page" data-value="\d+">page</div>' +
+				'<div class="url-tokens">' +
+					'<h4>Add a token</h4>' +
+					'<div class="token" data-name="year" data-value="\\d{4}">year</div>' +
+					'<div class="token" data-name="month" data-value="1?\\d">month</div>' +
+					'<div class="token" data-name="day" data-value="[1-3]?\\d">day</div>' +
+					'<div class="token" data-name="number" data-value="\\d+">number</div>' +
+					'<div class="token" data-name="page" data-value="\\d+">page</div>' +
 				'</div>' +
 			'</div>' +
 			'<div class="field">' +
@@ -145,8 +145,8 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			'<div class="buttons">' +
 				'<input type="submit" class="btn submit" value="Save">' +
 				'<input type="button" class="btn cancel" value="Cancel">' +
-				'<a class="delete">Delete</a>' +
 				'<div class="spinner" style="display: none;"></div>' +
+				'<a class="delete">Delete</a>' +
 			'</div>' +
 		'</div>');
 
@@ -213,7 +213,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 
 		// We must add vars on mousedown, so that text elements don't have a chance
 		// to lose focus, thus losing the carot position.
-		var $urlVars = this.$container.find('.url-vars').children('div');
+		var $urlVars = this.$container.find('.url-tokens').children('div');
 		this.addListener($urlVars, 'mousedown', function(event) {
 			this.addUrlVar(event.currentTarget);
 		});

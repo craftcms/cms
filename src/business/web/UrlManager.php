@@ -98,8 +98,8 @@ class UrlManager extends \CUrlManager
 			// Check the Blocks predefined routes.
 			foreach ($this->cpRoutes as $route)
 			{
-				if (($path = $this->_matchRouteInternal($route)) !== false)
-					return $path;
+				if ($this->_matchRouteInternal($route[0]))
+					return $route[1];
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
@@ -108,9 +108,19 @@ class UrlManager extends \CUrlManager
 			{
 				foreach ($pluginRoutes as $route)
 				{
-					if (($path = $this->_matchRouteInternal($route)) !== false)
-						return $path;
+					if ($this->_matchRouteInternal($route[0]))
+						return $route[1];
 				}
+			}
+		}
+		else
+		{
+			// Check the user-defined routes
+			$siteRoutes = blx()->routes->getAllRoutes();
+			foreach ($siteRoutes as $route)
+			{
+				if ($this->_matchRouteInternal($route->url_pattern))
+					return $route->template;
 			}
 		}
 
@@ -121,13 +131,10 @@ class UrlManager extends \CUrlManager
 	 * @param $route
 	 * @return bool
 	 */
-	private function _matchRouteInternal($route)
+	private function _matchRouteInternal($urlPattern)
 	{
-		// Escape special regex characters from the pattern
-		$pattern = str_replace(array('.','/'), array('\.','\/'), $route[0]);
-
 		// Does it match?
-		if (preg_match("/^{$pattern}$/", blx()->request->getPath(), $match))
+		if (preg_match('/^'.$urlPattern.'$/', blx()->request->getPath(), $match))
 		{
 			// Set any capture variables
 			foreach ($match as $key => $value)
@@ -138,7 +145,7 @@ class UrlManager extends \CUrlManager
 				}
 			}
 
-			return $route[1];
+			return true;
 		}
 
 		return false;
