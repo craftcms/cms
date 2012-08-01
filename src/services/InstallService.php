@@ -112,7 +112,7 @@ class InstallService extends \CApplicationComponent
 			));
 
 			// Create a Blog section
-			$section = blx()->content->saveSection(array(
+			/*$section = blx()->content->saveSection(array(
 				'name'       => 'Blog',
 				'handle'     => 'blog',
 				'url_format' => 'blog/{slug}',
@@ -136,7 +136,7 @@ class InstallService extends \CApplicationComponent
 				'body' => "Hey {$user->username},\n\n" .
 				          "Welcome to Blocks Alpha 2!\n\n" .
 				          '-Brandon & Brad'
-			));
+			));*/
 
 			$transaction->commit();
 		}

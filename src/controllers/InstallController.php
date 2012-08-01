@@ -27,12 +27,12 @@ class InstallController extends BaseController
 		$reqCheck->run();
 		$vars['reqcheck'] = $reqCheck;
 
-		// Guess the site name based on the host name
-		$host = blx()->request->getHostInfo();
-		$hostWords = preg_split('/[\-_\.]+/', $host);
-		array_pop($hostWords);
-		$vars['sitename'] = implode(' ', array_map('ucfirst', $hostWords));
-		$vars['url'] = 'http://'.$host;
+		// Guess the site name based on the server name
+		$server = blx()->request->getServerName();
+		$words = preg_split('/[\-_\.]+/', $server);
+		array_pop($words);
+		$vars['sitename'] = implode(' ', array_map('ucfirst', $words));
+		$vars['url'] = 'http://'.$server;
 
 		$this->loadTemplate('_special/install', $vars);
 	}

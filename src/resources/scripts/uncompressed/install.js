@@ -16,7 +16,7 @@ blx.Installer = blx.Base.extend({
 	*/
 	init: function()
 	{
-		this.$screens = blx.$body.children('.main');
+		this.$screens = blx.$body.children('.modal');
 
 		setTimeout($.proxy(this, 'showWelcomeScreen'), 500);
 
