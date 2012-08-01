@@ -37,13 +37,11 @@
 		{/foreach}
 	</div>
 
-	{if blx.session.messages}
-		<div id="notification">
-			{foreach blx.session.messages as type => message}
-				<div class="notification {:type}">{:message}</div>
-			{/foreach}
-		</div>
-	{/if}
+	<div id="notifications">
+		{foreach blx.session.messages as type => message}
+			<div class="notification {:type}">{:message}</div>
+		{/foreach}
+	</div>
 
 	<div id="main" class="main">
 		{:main}

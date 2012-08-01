@@ -46,7 +46,10 @@ var Routes = blx.Base.extend({
 		}
 
 		$.post(blx.actionUrl+'routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
-			console.log(response);
+			if (response.success)
+				blx.displayNotice('New route order saved.');
+			else
+				blx.displayError('Couldn’t save new route order.');
 		}, this));
 	},
 
@@ -327,7 +330,11 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 
 				this.route.updateHtmlFromModal();
 				this.hide();
+
+				blx.displayNotice('Route saved.')
 			}
+			else
+				blx.displayError('Couldn’t save route.')
 
 			this.$submitBtn.removeClass('active');
 			this.$spinner.hide();
@@ -348,7 +355,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 	{
 		if (confirm('Are you sure you want to delete this route?'))
 		{
-			$.post(blx.actionUrl+'routes/deleteRoute', { routeId: this.route.id });
+			$.post(blx.actionUrl+'routes/deleteRoute', { routeId: this.route.id }, function() {
+				blx.displayNotice('Route deleted.')
+			});
+
 			this.route.$container.remove();
 			this.hide();
 		}

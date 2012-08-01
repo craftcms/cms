@@ -128,10 +128,10 @@ h3 + .pane { margin-top: 15px; }
 /*  Notifications
 /* ----------------------------------------*/
 
-#notification { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; text-align: center; }
-#notification .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
-#notification .notification.notice { border-color: #1F6794; background: #2782bb; }
-#notification .notification.error { border-color: #992f2f; background: #e14545; }
+#notifications { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; text-align: center; }
+#notifications .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+#notifications .notification.notice { border-color: #1F6794; background: #2782bb; }
+#notifications .notification.error { border-color: #992f2f; background: #e14545; }
 
 /* ----------------------------------------
 /*  Buttons

@@ -40,6 +40,9 @@ blx.log = function(msg)
 
 var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae','230':'ae','228':'ae','231':'c','232':'e','233':'e','234':'e','235':'e','236':'i','237':'i','238':'i','239':'i','241':'n','242':'o','243':'o','244':'o','245':'o','246':'oe','249':'u','250':'u','251':'u','252':'ue','255':'y','257':'aa','269':'ch','275':'ee','291':'gj','299':'ii','311':'kj','316':'lj','326':'nj','353':'sh','363':'uu','382':'zh','256':'aa','268':'ch','274':'ee','290':'gj','298':'ii','310':'kj','315':'lj','325':'nj','352':'sh','362':'uu','381':'zh'};
 
+var $notificationContainer = $('#notifications'),
+	notificationDuration = 2000;
+
 /**
  * Format a number with commas.
  *
@@ -544,6 +547,42 @@ blx.getInputPostVal = function($input)
 		return val;
 };
 
+/**
+ * Dispays a notification.
+ *
+ * @param string type
+ * @param string message
+ */
+blx.displayNotification = function(type, message)
+{
+	$('<div class="notification '+type+'">'+message+'</div>')
+		.appendTo($notificationContainer)
+		.fadeIn('fast')
+		.delay(notificationDuration)
+		.fadeOut();
+};
+
+/**
+ * Dispays a notice.
+ *
+ * @param string message
+ */
+blx.displayNotice = function(message)
+{
+	blx.displayNotification('notice', message);
+};
+
+/**
+ * Displays an error.
+ *
+ * @param string message
+ */
+blx.displayError = function(message)
+{
+	blx.displayNotification('error', message);
+};
+
+
 
 /**
  * Base class
@@ -615,7 +654,8 @@ blx.Base = Base.extend({
 
 blx.$document.ready(function() {
 	// Fade the notification out in two seconds
-	$('#notification').delay(2000).fadeOut();
+	var $notifications = $notificationContainer.children();
+	$notifications.delay(notificationDuration).fadeOut();
 
 	// Initialize the account menu button
 	new blx.ui.MenuBtn('#account', {
