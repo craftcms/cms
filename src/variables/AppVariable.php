@@ -23,13 +23,4 @@ class AppVariable
 	{
 		return Blocks::getVersion();
 	}
-
-	/**
-	 * Returns the current Blocks product.
-	 * @return string
-	 */
-	public function product()
-	{
-		return Product::display(Blocks::getProduct());
-	}
 }

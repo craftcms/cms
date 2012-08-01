@@ -26,9 +26,9 @@ class UpdatesService extends \CApplicationComponent
 		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateInfo->blocks->releases) > 0)
 		{
 			$notes = $this->_generateUpdateNotes($updateInfo->blocks->releases, 'Blocks');
-			$product = Blocks::getProduct();
+			$product = '@@@product@@@';
 			$updates[] = array(
-				'name' => Product::display($product),
+				'name' => '@@@productDisplay@@@',
 				'handle' => 'Blocks',
 				'version' => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
 				'critical' => $updateInfo->blocks->criticalUpdateAvailable,

@@ -313,7 +313,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if(blx()->config->devMode)
 		{
-			$version = '<a href="http://blockscms.com/">'.Product::display(Blocks::getProduct()).'.</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
+			$version = '<a href="http://blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 			if(isset($_SERVER['SERVER_SOFTWARE']))
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
 		}

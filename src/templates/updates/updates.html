@@ -14,7 +14,7 @@
 		{if updateInfo.blocks.releases}
 			<li>
 				<h3 {if updateInfo.blocks.criticalUpdateAvailable}class="critical"{/if}>
-					{:blx.app.product} {:updateInfo.blocks.latestVersion} build {:updateInfo.blocks.latestBuild}
+					@@@productDisplay@@@ {:updateInfo.blocks.latestVersion} build {:updateInfo.blocks.latestBuild}
 				</h3>
 				<h4><a href="">release notes</a></h4>
 
@@ -28,7 +28,7 @@
 
 				<div class="notes">
 					{foreach updateInfo.blocks.releases as release}
-						<h5>{:blx.app.product} {:release.version} Build {:release.build}</h5>
+						<h5>@@@productDisplay@@@ {:release.version} Build {:release.build}</h5>
 						<ul>
 							<li>{:release.notes.nl2br}</li>
 						</ul>

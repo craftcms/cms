@@ -10,6 +10,7 @@ class RequirementsChecker extends \CComponent
 	private $_result;
 	private $_serverInfo;
 	private $_errorFolders;
+	private $_product;
 
 	/**
 	 * @access private
@@ -19,41 +20,42 @@ class RequirementsChecker extends \CComponent
 	{
 		$requiredPhpVersion = blx()->params['requiredPhpVersion'];
 		$requiredMysqlVersion = blx()->params['requiredMysqlVersion'];
+		$this->_product = '@@@productDisplay@@@';
 
 		$this->_requirements = array(
 			new Requirement(
 				'PHP Version',
 				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
 				'PHP '.$requiredPhpVersion.' or higher is required.'
 			),
 			new Requirement(
 				'$_SERVER Variable',
 				($message = $this->checkServerVar()) === '',
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
 				$message
 			),
 			new Requirement(
 				'Reflection extension',
 				class_exists('Reflection', false),
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
 				''
 			),
 			new Requirement(
 				'PCRE extension',
 				extension_loaded("pcre"),
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
 				''
 			),
 			new Requirement(
 				'SPL extension',
 				extension_loaded("SPL"),
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
 				''
 			),
 			new Requirement(
@@ -129,14 +131,14 @@ class RequirementsChecker extends \CComponent
 				'MySQL version',
 				version_compare(blx()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
-				'MySQL '.$requiredMysqlVersion.' or higher is required to run Blocks.'
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
+				'MySQL '.$requiredMysqlVersion.' or higher is required to run '.$this->_product.'.'
 			),
 			new Requirement(
 				'Glob',
 				function_exists('glob'),
 				true,
-				'<a href="http://www.blockscms.com">Blocks</a>',
+				'<a href="http://www.blockscms.com">'.$this->_product.'</a>',
 				'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.'
 			),
 		);
@@ -194,7 +196,7 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://www.blockscms.com/">Blocks</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
+		$info[] = '<a href="http://www.blockscms.com/">'.$this->_product.'</a> v'.Blocks::getVersion(false).' build '.Blocks::getBuild(false);
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Blocks::getYiiVersion();
 		$info[] = @strftime('%Y-%m-%d %H:%M', time());

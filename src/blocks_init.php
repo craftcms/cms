@@ -18,7 +18,7 @@ defined('BLOCKS_CP_REQUEST') || define('BLOCKS_CP_REQUEST', false);
 
 // Check early if runtime is a valid directory and writable.
 if (($runtimePath = realpath(BLOCKS_RUNTIME_PATH)) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
-	exit('Blocks runtime path "'.$runtimePath.'" is not valid. Please make sure it is a directory writable by your web server process.');
+	exit('@@@productDisplay@@@ runtime path "'.$runtimePath.'" is not valid. Please make sure it is a directory writable by your web server process.');
 
 // change the following paths if necessary
 $framework = BLOCKS_APP_PATH.'framework/yii.php';
