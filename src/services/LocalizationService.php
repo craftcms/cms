@@ -16,21 +16,19 @@ class LocalizationService extends \CApplicationComponent
 	{
 		if (!$this->_translatedLanguages)
 		{
+			$this->_translatedLanguages = array();
+
 			$path = blx()->path->getLanguagesPath();
 			$dirs = glob($path.'*', GLOB_ONLYDIR);
-			$languages = array();
 
 			if (is_array($dirs) && count($dirs) > 0)
 			{
 				foreach ($dirs as $dir)
 				{
 					$segs = explode('/', $dir);
-					$languages[] = $segs[count($segs) - 1];
+					$this->_translatedLanguages[] = $segs[count($segs) - 1];
 				}
-
-				$this->_translatedLanguages = $languages;
 			}
-				$this->_translatedLanguages = null;
 		}
 
 		return $this->_translatedLanguages;
