@@ -266,7 +266,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 	show: function()
 	{
 		if (this.route)
+		{
+			this.$heading.html('Edit Route');
 			this.$deleteBtn.show();
+		}
 
 		this.base();
 	},
