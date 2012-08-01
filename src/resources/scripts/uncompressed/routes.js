@@ -318,6 +318,8 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 
 					this.route = new Route($route);
 					this.route.modal = this;
+
+					blx.routes.sorter.addItems($route);
 				}
 
 				this.route.updateHtmlFromModal();
