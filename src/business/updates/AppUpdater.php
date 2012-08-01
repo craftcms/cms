@@ -64,7 +64,7 @@ class AppUpdater implements IUpdater
 
 		// Get the most up-to-date build.
 		$latestBuild = $this->_buildsToUpdate[0];
-		$this->_downloadFilePath = blx()->path->getRuntimePath().UpdateHelper::constructAppReleasePatchFileName($latestBuild->version, $latestBuild->build, Blocks::getProduct());
+		$this->_downloadFilePath = blx()->path->getRuntimePath().UpdateHelper::constructAppReleasePatchFileName($latestBuild->version, $latestBuild->build, '@@@product@@@');
 		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
 
 		// Download the package from ET.

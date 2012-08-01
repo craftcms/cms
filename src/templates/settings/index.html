@@ -21,27 +21,6 @@
 			{/if}
 		</div>
 
-		<div class="field">
-			<div class="heading">
-				<h3><label for="licenseKey">License Key</label></h3>
-			</div>
-			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{:settings.licenseKey}">
-			{if settings.errors.licenseKey}
-				{include "_includes/error_list" errors=settings.errors.licenseKey}
-			{/if}
-		</div>
-
-		<div class="field">
-			<div class="heading">
-				<h3><label for="logo">Logo</label></h3>
-				<p>Use a 300 × 100px transparent PNG for best results.</p>
-			</div>
-			<input id="logo" name="logo" type="file">
-			{if settings.errors.logo}
-				{include "_includes/error_list" errors=settings.errors.logo}
-			{/if}
-		</div>
-
 		<input class="btn submit" type="submit" value="Save">
 	</form>
 {/region}

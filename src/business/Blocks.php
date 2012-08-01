@@ -13,18 +13,6 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @return string
-	 */
-	public static function getProduct()
-	{
-		if (strpos(BLOCKS_PRODUCT, '@@@') !== false)
-			return '';
-		else
-			return BLOCKS_PRODUCT;
-	}
-
-	/**
-	 * @static
 	 * @param bool $checkStoredVersion If true, will check the db for the version if we can't get it locally.
 	 * @return string
 	 */

@@ -74,7 +74,7 @@ class Et extends \CApplicationComponent
 
 		$this->_package = new EtPackage();
 		$this->_package->sitesAndKeys = blx()->sites->getEnabledSitesAndKeys();
-		$this->_package->product = Blocks::getProduct() == '' ? Product::BlocksPro : Blocks::getProduct();
+		$this->_package->product = '@@@product@@@';
 		$this->_package->requestDomain = blx()->request->getServerName();
 		$this->_package->requestIp = blx()->request->getUserHostAddress();
 		$this->_package->requestTime = DateTimeHelper::currentTime();
