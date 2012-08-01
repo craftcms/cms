@@ -5,7 +5,7 @@
 	<div class="btn-group" tabindex="0">
 		{foreach options.split as option}
 			{set option = option.split(':')}
-			<div class="btn {if (value && option.get(0) == value) || (!value && option.get(0) == default)}sel{/if}" data-value="{:option.get(0)}">
+			<div class="btn {if (value && option.get(0) == value) || (!value && option.get(0) == default)}active{/if}" data-value="{:option.get(0)}">
 				{if option.get(1)}
 					{:option.get(1)}
 				{else}

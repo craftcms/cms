@@ -26,7 +26,7 @@ blx.ui.Pill = blx.Base.extend({
 
 		this.$innerContainer = this.$outerContainer.find('.btn-group:first');
 		this.$btns = this.$innerContainer.find('.btn');
-		this.$selectedBtn = this.$btns.filter('.sel:first');
+		this.$selectedBtn = this.$btns.filter('.active:first');
 		this.$input = this.$outerContainer.find('input:first');
 
 		blx.preventOutlineOnMouseFocus(this.$innerContainer);
@@ -36,9 +36,9 @@ blx.ui.Pill = blx.Base.extend({
 
 	select: function(btn)
 	{
-		this.$selectedBtn.removeClass('sel');
+		this.$selectedBtn.removeClass('active');
 		var $btn = $(btn);
-		$btn.addClass('sel');
+		$btn.addClass('active');
 		this.$input.val($btn.attr('data-value'));
 		this.$selectedBtn = $btn;
 	},
