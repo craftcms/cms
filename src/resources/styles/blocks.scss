@@ -307,6 +307,8 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .field.checkbox + .field.checkbox { margin-top: -20px; }
 
 /* text */
+input, textarea { font-family: 'Helvetica Neue', sans-serif; }
+
 .textwrapper { padding-right: 16px; }
 .textwrapper > .text { width: 100%; }
 
