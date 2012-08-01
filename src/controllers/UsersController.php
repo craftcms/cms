@@ -83,18 +83,18 @@ class UsersController extends BaseController
 			$user->save();
 
 			if ($isNewUser)
-				blx()->user->setMessage(MessageType::Notice, 'User registered.');
+				blx()->user->setNotice('User registered.');
 			else
-				blx()->user->setMessage(MessageType::Notice, 'Account settings saved.');
+				blx()->user->setNotice('Account settings saved.');
 		
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
 			if ($isNewUser)
-				blx()->user->setMessage(MessageType::Error, 'Couldn’t register user.');
+				blx()->user->setError('Couldn’t register user.');
 			else
-				blx()->user->setMessage(MessageType::Error, 'Couldn’t save account settings.');
+				blx()->user->setError('Couldn’t save account settings.');
 
 			$this->loadRequestedTemplate(array(
 				'user' => $user,
@@ -120,12 +120,12 @@ class UsersController extends BaseController
 
 		if ($user->save())
 		{
-			blx()->user->setMessage(MessageType::Notice, 'Profile saved.');
+			blx()->user->setNotice('Profile saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t save profile.');
+			blx()->user->setError('Couldn’t save profile.');
 			$this->loadRequestedTemplate(array('user' => $user));
 		}
 	}
@@ -146,7 +146,7 @@ class UsersController extends BaseController
 		$user->admin = (blx()->request->getPost('admin') === 'y');
 		$user->save();
 
-		blx()->user->setMessage(MessageType::Notice, 'Admin settings saved.');
+		blx()->user->setNotice('Admin settings saved.');
 		$this->redirectToPostedUrl();
 	}
 
@@ -168,7 +168,7 @@ class UsersController extends BaseController
 		blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
 		$user->save();
 
-		blx()->user->setMessage(MessageType::Notice, 'Verification email sent.');
+		blx()->user->setNotice('Verification email sent.');
 		$this->redirectToPostedUrl();
 	}
 
@@ -187,7 +187,7 @@ class UsersController extends BaseController
 
 		blx()->users->activateUser($user);
 
-		blx()->user->setMessage(MessageType::Notice, 'User activated.');
+		blx()->user->setNotice('User activated.');
 		$this->redirectToPostedUrl();
 	}
 
@@ -206,7 +206,7 @@ class UsersController extends BaseController
 
 		blx()->users->unlockUser($user);
 
-		blx()->user->setMessage(MessageType::Notice, 'User activated.');
+		blx()->user->setNotice('User activated.');
 		$this->redirectToPostedUrl();
 	}
 
@@ -225,7 +225,7 @@ class UsersController extends BaseController
 
 		blx()->users->suspendUser($user);
 
-		blx()->user->setMessage(MessageType::Notice, 'User suspended.');
+		blx()->user->setNotice('User suspended.');
 		$this->redirectToPostedUrl();
 	}
 
@@ -244,7 +244,7 @@ class UsersController extends BaseController
 
 		blx()->users->unsuspendUser($user);
 
-		blx()->user->setMessage(MessageType::Notice, 'User unsuspended.');
+		blx()->user->setNotice('User unsuspended.');
 		$this->redirectToPostedUrl();
 	}
 
@@ -263,7 +263,7 @@ class UsersController extends BaseController
 
 		blx()->users->deleteUser($user);
 
-		blx()->user->setMessage(MessageType::Notice, 'User deleted.');
+		blx()->user->setNotice('User deleted.');
 		$this->redirectToPostedUrl();
 	}
 }

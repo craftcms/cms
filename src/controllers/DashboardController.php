@@ -34,12 +34,12 @@ class DashboardController extends BaseController
 
 		if (blx()->dashboard->saveSettings($widgetsPost))
 		{
-			blx()->user->setMessage(MessageType::Notice, 'Dashboard settings saved.');
+			blx()->user->setNotice('Dashboard settings saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t save dashboard settings.');
+			blx()->user->setError('Couldn’t save dashboard settings.');
 		}
 
 		$this->loadRequestedTemplate();

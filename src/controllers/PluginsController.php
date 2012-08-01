@@ -15,9 +15,9 @@ class PluginsController extends BaseController
 		$className = blx()->request->getRequiredPost('pluginClass');
 
 		if (blx()->plugins->installPlugin($className))
-			blx()->user->setMessage(MessageType::Notice, 'Plugin installed.');
+			blx()->user->setNotice('Plugin installed.');
 		else
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t install plugin.');
+			blx()->user->setError('Couldn’t install plugin.');
 
 		$this->redirectToPostedUrl();
 	}
@@ -31,9 +31,9 @@ class PluginsController extends BaseController
 		$className = blx()->request->getRequiredPost('pluginClass');
 
 		if (blx()->plugins->uninstallPlugin($className))
-			blx()->user->setMessage(MessageType::Notice, 'Plugin uninstalled.');
+			blx()->user->setNotice('Plugin uninstalled.');
 		else
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t uninstall plugin.');
+			blx()->user->setError('Couldn’t uninstall plugin.');
 
 		$this->redirectToPostedUrl();
 	}
@@ -47,9 +47,9 @@ class PluginsController extends BaseController
 		$className = blx()->request->getRequiredPost('pluginClass');
 
 		if (blx()->plugins->enablePlugin($className))
-			blx()->user->setMessage(MessageType::Notice, 'Plugin enabled.');
+			blx()->user->setNotice('Plugin enabled.');
 		else
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t enable plugin.');
+			blx()->user->setError('Couldn’t enable plugin.');
 
 		$this->redirectToPostedUrl();
 	}
@@ -63,9 +63,9 @@ class PluginsController extends BaseController
 		$className = blx()->request->getRequiredPost('pluginClass');
 
 		if (blx()->plugins->disablePlugin($className))
-			blx()->user->setMessage(MessageType::Notice, 'Plugin disabled.');
+			blx()->user->setNotice('Plugin disabled.');
 		else
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t disable plugin.');
+			blx()->user->setError('Couldn’t disable plugin.');
 
 		$this->redirectToPostedUrl();
 	}

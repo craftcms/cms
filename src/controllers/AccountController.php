@@ -66,7 +66,7 @@ class AccountController extends BaseController
 
 					blx()->dashboard->assignDefaultUserWidgets($userToChange->id);
 
-					blx()->user->setMessage(MessageType::Notice, 'Password updated.');
+					blx()->user->setNotice('Password updated.');
 					$this->redirect('dashboard');
 				}
 			}

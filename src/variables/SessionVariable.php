@@ -28,8 +28,8 @@ class SessionVariable
 	 * Returns any active notifications for the user.
 	 * @return array
 	 */
-	public function notifications()
+	public function messages()
 	{
-		return blx()->user->getMessages();
+		return blx()->user->getFlashes();
 	}
 }

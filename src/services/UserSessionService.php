@@ -120,123 +120,23 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * Sets a message for the current user.
-	 * @param      $status
-	 * @param      $value
-	 * @param bool $persistent
-	 * @param      $key
-	 * @param null $defaultValue
+	 * Sets a notice to the user.
+	 *
+	 * @param string $message
 	 */
-	public function setMessage($status, $value, $persistent = false, $key = null, $defaultValue = null)
+	public function setNotice($message)
 	{
-		if ($key == null)
-			$key = $status;
-
-		$message = new Message($status, $key, $value, $persistent);
-		$this->setState(self::FLASH_KEY_PREFIX.$key, $message, $defaultValue);
-		$counters = $this->getState(self::FLASH_COUNTERS, array());
-
-		if ($value === $defaultValue)
-			unset($counters[$key]);
-		else
-			$counters[$key] = 0;
-
-		$this->setState(self::FLASH_COUNTERS, $counters, array());
+		$this->setFlash('notice', $message);
 	}
 
 	/**
-	 * Gets all messages for the user and will remove the non-persistent ones.
-	 * @return array
+	 * Sets an error notification.
+	 *
+	 * @param string $message
 	 */
-	public function getMessages()
+	public function setError($message)
 	{
-		$flashes = array();
-		$prefix = $this->getStateKeyPrefix().self::FLASH_KEY_PREFIX;
-		$keys = array_keys($_SESSION);
-		$n = strlen($prefix);
-
-		foreach ($keys as $key)
-		{
-			if (!strncmp($key, $prefix, $n))
-			{
-				$flashes[substr($key, $n)] = $_SESSION[$key];
-				if (!$flashes[substr($key, $n)]->isPersistent())
-				{
-					unset($_SESSION[$key]);
-					$this->setFlash($key, null);
-				}
-			}
-		}
-
-		return $flashes;
-	}
-
-	/**
-	 * Gets a message with the given key.  If it is not persistent will also remove the message.
-	 * @param $key
-	 * @param null $defaultValue
-	 * @return mixed
-	 */
-	public function getMessage($key, $defaultValue = null)
-	{
-		$message = $this->getState(self::FLASH_KEY_PREFIX.$key, $defaultValue);
-
-		if (!$message->getIsPersistent())
-			$this->setFlash($key, null);
-
-		return $message;
-	}
-
-	/**
-	 * Removes a message with the given key.
-	 * @param $key
-	 */
-	public function removeMessage($key)
-	{
-		$this->setFlash($key, null);
-	}
-
-	/**
-	 * Removes all messages (persistent and non-persistent) for the user.
-	 */
-	public function removeMessages()
-	{
-		$prefix = $this->getStateKeyPrefix().self::FLASH_KEY_PREFIX;
-		$keys = array_keys($_SESSION);
-		$n = strlen($prefix);
-
-		foreach ($keys as $key)
-		{
-			if (!strncmp($key, $prefix, $n))
-			{
-				unset($_SESSION[$key]);
-				$this->setFlash($key, null);
-			}
-		}
-	}
-
-	/**
-	 * Gets whether the current user has a message with the given key.
-	 * @param $key
-	 * @return mixed
-	 */
-	public function hasMessage($key)
-	{
-		return $this->hasFlash($key);
-	}
-
-	/**
-	 * Returns all the messages keys for the current user.
-	 * @return array
-	 */
-	public function getMessageKeys()
-	{
-		$counters = $this->getState(self::FLASH_COUNTERS);
-
-		if (!is_array($counters))
-			return array();
-
-		return array_keys($counters);
+		$this->setFlash('error', $message);
 	}
 
 	/**

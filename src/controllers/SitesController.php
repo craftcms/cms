@@ -32,12 +32,12 @@ class SitesController extends BaseController
 
 		if (!$site->errors)
 		{
-			blx()->user->setMessage(MessageType::Notice, 'Site saved.');
+			blx()->user->setNotice('Site saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setMessage(MessageType::Error, 'Couldn’t save site.');
+			blx()->user->setError('Couldn’t save site.');
 		}
 
 		$this->loadRequestedTemplate(array('site' => $site));

@@ -35,7 +35,7 @@ class DbUpdateController extends BaseController
 				{
 					// flush update cache.
 					blx()->updates->flushUpdateInfoFromCache();
-					blx()->user->setMessage(MessageType::Notice, 'Database successfully updated.');
+					blx()->user->setNotice('Database successfully updated.');
 
 					// Bring the system back online.
 					blx()->updates->turnSystemOnAfterUpdate();
