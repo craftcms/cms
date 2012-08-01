@@ -108,7 +108,8 @@ blx.ui.Drag = blx.ui.DragCore.extend({
 
 			$draggeeHelper.css({
 				width: $draggee.width(),
-				height: $draggee.height()
+				height: $draggee.height(),
+				margin: 0
 			});
 
 			if (typeof this.settings.helper == 'function')

@@ -71,8 +71,8 @@ blx.ui.DragCore = blx.Base.extend({
 
 		// capture the difference between the mouse position and the target item's offset
 		var offset = this.$targetItem.offset();
-		this.targetItemMouseDiffX = event.pageX - offset.left + parseInt(this.$targetItem.css('marginLeft'));
-		this.targetItemMouseDiffY = event.pageY - offset.top  + parseInt(this.$targetItem.css('marginTop'));
+		this.targetItemMouseDiffX = event.pageX - offset.left;
+		this.targetItemMouseDiffY = event.pageY - offset.top;
 
 		// listen for mousemove, mouseup
 		this.addListener(blx.$document, 'mousemove', 'onMouseMove');
