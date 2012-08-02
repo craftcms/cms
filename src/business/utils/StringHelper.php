@@ -6,8 +6,6 @@ namespace Blocks;
  */
 class StringHelper
 {
-	private static $_escapedRegexChars;
-
 	/**
 	 * @static
 	 * @param $value
@@ -110,8 +108,6 @@ class StringHelper
 
 		foreach ($charsToEscape as $char)
 			$escapedChars[] = "\\".$char;
-
-		self::$_escapedRegexChars = $escapedChars;
 
 		return  str_replace($charsToEscape, $escapedChars, $string);
 	}
