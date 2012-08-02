@@ -1,0 +1,10 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-02 16:28:40.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-02 16:28:44.000000000 -0700
+@@ -79,6 +79,7 @@
+ 			// Save the general system settings
+ 			$generalSettings['name'] = $inputs['sitename'];
+ 			$generalSettings['url'] = $inputs['url'];
++			$generalSettings['licenseKey'] = $inputs['licensekey'];
+ 			blx()->settings->saveSettings('systemsettings', $generalSettings, 'general');
+ 
+ 			// Set the default language

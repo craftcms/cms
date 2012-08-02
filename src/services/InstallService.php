@@ -77,11 +77,8 @@ class InstallService extends \CApplicationComponent
 			$info->save();
 
 			// Save the general system settings
-			$generalSettings = array(
-				'name'       => blx()->request->getPost('sitename'),
-				'url'        => blx()->request->getPost('url'),
-				'licenseKey' => blx()->request->getPost('licensekey'),
-			);
+			$generalSettings['name'] = $inputs['sitename'];
+			$generalSettings['url'] = $inputs['url'];
 			blx()->settings->saveSettings('systemsettings', $generalSettings, 'general');
 
 			// Set the default language
@@ -110,7 +107,7 @@ class InstallService extends \CApplicationComponent
 			blx()->email->saveEmailSettings(array(
 				'protocol'     => EmailerType::PhpMail,
 				'emailAddress' => $user->email,
-				'senderName'   => $generalSettings['name']
+				'senderName'   => $inputs['sitename']
 			));
 
 			// Create a Blog section
