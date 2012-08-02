@@ -317,7 +317,6 @@ class EmailService extends \CApplicationComponent
 	public function getEmailSettings()
 	{
 		$emailSettings = blx()->settings->getSystemSettings('email');
-		$emailSettings = ArrayHelper::expandSettingsArray($emailSettings);
 		return $emailSettings;
 	}
 

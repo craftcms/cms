@@ -13,7 +13,6 @@ class SettingsVariable
 	public function __get($category)
 	{
 		$settings = blx()->settings->getSystemSettings($category);
-		$settings = ArrayHelper::expandSettingsArray($settings);
 		return $settings;
 	}
 }

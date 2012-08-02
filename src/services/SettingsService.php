@@ -62,17 +62,16 @@ class SettingsService extends \CApplicationComponent
 
 	/**
 	 * @param string $category
-	 * @return mixed
+	 * @return array
 	 */
-	public function getSystemSettings($category = null)
+	public function getSystemSettings($category)
 	{
-		if ($category == null)
-			$systemSettings = SystemSetting::model()->findAll();
-		else
-			$systemSettings = SystemSetting::model()->findAllByAttributes(array(
-				'category' => $category
-			));
+		$settings = SystemSetting::model()->findAllByAttributes(array(
+			'category' => $category
+		));
 
-		return $systemSettings;
+		$settings = ArrayHelper::expandSettingsArray($settings);
+
+		return $settings;
 	}
 }
