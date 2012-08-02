@@ -8,10 +8,10 @@
 {if reqcheck.result != 'failure'}
 
 	{region "body"}
-		{include "_special/install/_welcome"}
-		{include "_special/install/_account"}
-		{include "_special/install/_site" sitename=sitename url=url}
-		{include "_special/install/_installing"}
+		{include "_special/install/welcome"}
+		{include "_special/install/account"}
+		{include "_special/install/site" sitename=sitename url=url}
+		{include "_special/install/installing"}
 	{/region}
 
 	{region "scripts"}
@@ -21,7 +21,7 @@
 {else}
 
 	{region "body"}
-		{include "_special/install/_cantinstall"}
+		{include "_special/install/cantinstall"}
 	{/region}
 
 {/if}
