@@ -6,7 +6,8 @@ namespace Blocks;
  */
 class EtPackage
 {
-	public $sitesAndKeys;
+	public $url;
+	public $licenseKey;
 	public $requestIp;
 	public $requestTime;
 	public $requestDomain;
@@ -23,7 +24,8 @@ class EtPackage
 		if ($properties == null)
 			return;
 
-		$this->sitesAndKeys = isset($properties['sitesAndKeys']) ? $properties['sitesAndKeys'] : null;
+		$this->url = isset($properties['url']) ? $properties['url'] : null;
+		$this->licenseKey = isset($properties['licenseKey']) ? $properties['licenseKey'] : null;
 		$this->data = isset($properties['data']) ? $properties['data'] : null;
 		$this->product = isset($properties['product']) ? $properties['product'] : null;
 		$this->requestDomain = isset($properties['requestDomain']) ? $properties['requestDomain'] : null;
