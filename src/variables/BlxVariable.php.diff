@@ -1,0 +1,17 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/variables/BlxVariable.php	2012-08-02 14:11:10.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/variables/BlxVariable.php	2012-08-02 14:12:04.000000000 -0700
+@@ -109,6 +109,14 @@
+ 	}
+ 
+ 	/**
++	 * @return RoutesVariable
++	 */
++	public function routes()
++	{
++		return new RoutesVariable();
++	}
++
++	/**
+ 	 * @return SettingsVariable
+ 	 */
+ 	public function settings()
