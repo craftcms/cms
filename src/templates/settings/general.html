@@ -20,7 +20,7 @@
 			<div class="heading">
 				<h3><label for="name">Site Name</label></h3>
 			</div>
-			<input id="name" name="name" class="text" type="text" value="{:settings.name}">
+			<input id="name" name="name" class="text {if settings.errors.name}error{/if}" type="text" value="{:settings.name}">
 			{if settings.errors.name}
 				{include "_includes/error_list" errors=settings.errors.name}
 			{/if}
@@ -30,7 +30,7 @@
 			<div class="heading">
 				<h3><label for="url">Site URL</label></h3>
 			</div>
-			<input id="url" name="url" class="text" type="text" value="{:settings.url}">
+			<input id="url" name="url" class="text {if settings.errors.url}error{/if}" type="text" value="{:settings.url}">
 			{if settings.errors.url}
 				{include "_includes/error_list" errors=settings.errors.url}
 			{/if}

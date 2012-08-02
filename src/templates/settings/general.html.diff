@@ -8,7 +8,7 @@
 +			<div class="heading">
 +				<h3><label for="licenseKey">License Key</label></h3>
 +			</div>
-+			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{:settings.licenseKey}">
++			<input id="licenseKey" name="licenseKey" class="text code {if settings.errors.licenseKey}error{/if}" type="text" value="{:settings.licenseKey}">
 +			{if settings.errors.licenseKey}
 +				{include "_includes/error_list" errors=settings.errors.licenseKey}
 +			{/if}
