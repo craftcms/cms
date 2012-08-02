@@ -78,7 +78,7 @@ blx.Installer = blx.Base.extend({
 	{
 		event.preventDefault();
 
-		var inputs = ['sitename', 'url', 'language'];
+		var inputs = ['sitename', 'url'];
 		this.validate('site', inputs, $.proxy(this, 'showInstallScreen'));
 	},
 
@@ -86,7 +86,7 @@ blx.Installer = blx.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			var inputs = ['licensekey', 'username', 'email', 'password', 'sitename', 'url', 'language'],
+			var inputs = ['licensekey', 'username', 'email', 'password', 'sitename', 'url'],
 				data = {};
 
 			for (var i = 0; i < inputs.length; i++)

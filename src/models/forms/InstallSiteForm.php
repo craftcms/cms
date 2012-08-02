@@ -7,7 +7,6 @@ namespace Blocks;
 class InstallSiteForm extends BaseForm
 {
 	protected $attributes = array(
-		'language' => AttributeType::Language,
 		'sitename' => AttributeType::Name,
 		'url'      => array('type' => AttributeType::Url, 'required' => true)
 	);

@@ -88,7 +88,6 @@ class InstallController extends BaseController
 		$site = new InstallSiteForm();
 		$site->sitename = blx()->request->getPost('sitename');
 		$site->url = blx()->request->getPost('url');
-		$site->language = blx()->request->getPost('language');
 
 		if ($site->validate())
 			$return['validates'] = true;

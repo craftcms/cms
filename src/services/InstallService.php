@@ -76,15 +76,17 @@ class InstallService extends \CApplicationComponent
 			$info->on = true;
 			$info->save();
 
-			// Add the site
-			$site = new Site();
-			$site->name        = $inputs['sitename'];
-			$site->url         = $inputs['url'];
-			$site->language    = $inputs['language'];
-			$site->handle      = 'primary';
-			$site->license_key = $inputs['licensekey'];
-			$site->primary     = true;
-			$site->save();
+			// Save the general system settings
+			$generalSettings = array(
+				'name'       => blx()->request->getPost('sitename'),
+				'url'        => blx()->request->getPost('url'),
+				'licenseKey' => blx()->request->getPost('licensekey'),
+			);
+			blx()->settings->saveSettings('systemsettings', $generalSettings, 'general');
+
+			// Set the default language
+			$languages = array(blx()->language);
+			blx()->settings->saveSettings('systemsettings', $languages, 'languages');
 
 			// Add the user
 			$user = new User();
@@ -108,7 +110,7 @@ class InstallService extends \CApplicationComponent
 			blx()->email->saveEmailSettings(array(
 				'protocol'     => EmailerType::PhpMail,
 				'emailAddress' => $user->email,
-				'senderName'   => $site->name
+				'senderName'   => $generalSettings['name']
 			));
 
 			// Create a Blog section
