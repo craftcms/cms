@@ -113,16 +113,6 @@ class UrlManager extends \CUrlManager
 				}
 			}
 		}
-		else
-		{
-			// Check the user-defined routes
-			$siteRoutes = blx()->routes->getAllRoutes();
-			foreach ($siteRoutes as $route)
-			{
-				if ($this->_matchRouteInternal($route->url_pattern))
-					return $route->template;
-			}
-		}
 
 		return false;
 	}
