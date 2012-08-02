@@ -1,6 +1,6 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/templates/settings/index.html	2012-07-31 16:04:36.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/templates/settings/index.html	2012-07-31 16:05:27.000000000 -0700
-@@ -21,6 +21,27 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/general.html	2012-08-02 04:26:49.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/general.html	2012-08-02 04:27:41.000000000 -0700
+@@ -35,6 +35,27 @@
  			{/if}
  		</div>
  
@@ -25,6 +25,6 @@
 +			{/if}
 +		</div>
 +
- 		<input class="btn submit" type="submit" value="Save">
- 	</form>
- {/region}
+ 		<div class="buttons">
+			<input class="btn submit" type="submit" value="Save">
+			<a class="btn" href="{blx.url.base}settings">Cancel</a>

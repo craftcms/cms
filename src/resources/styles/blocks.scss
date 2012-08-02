@@ -125,6 +125,17 @@ h3 + .pane { margin-top: 15px; }
 .grid .col25 { width: 25%; }
 
 /* ----------------------------------------
+/*  Icon lists
+/* ----------------------------------------*/
+
+ul.icons:after { @include clearafter; }
+ul.icons li { float: left; margin: 0 25px 25px 0; }
+ul.icons li.break { clear: left; }
+ul.icons li a { display: block; position: relative; padding-top: 50px; width: 100px; text-align: center; color: #808080; }
+ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
+ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 50px; line-height: 50px; }
+
+/* ----------------------------------------
 /*  Notifications
 /* ----------------------------------------*/
 
@@ -138,7 +149,7 @@ h3 + .pane { margin-top: 15px; }
 /* ----------------------------------------*/
 
 .buttons { margin-top: 25px; }
-.buttons .btn + .btn { margin-left: 7px; }
+.buttons .btn + .btn { margin-left: 4px; }
 
 .btn { display: inline-block; border-radius: 2px; padding: 0 8px; height: 26px; line-height: 26px; color: #808080; text-shadow: 0 1px 0 rgba(255,255,255,0.5); text-align: center; white-space: nowrap; @include linear-gradient(#fff, #f3f3f3); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05); cursor: pointer; overflow: hidden; @include unselectable; }
 .btn:hover { text-decoration: none; }

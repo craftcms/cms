@@ -1,11 +1,15 @@
-{layout "settings/_layouts/settings" title="Content"}
+{layout "_layouts/cp" title="Pages &amp; Sections"}
 
 
-{region "settings"}
+{region "main"}
+
+	<header class="titlebar">
+		<h1>Pages &amp; Sections</h1>
+	</header>
 
 	<div class="field">
 		<div class="heading">
-			<h3><label for="languages">Static Pages</label></h3>
+			<h3><label for="languages">Pages</label></h3>
 		</div>
 		
 	</div>
@@ -14,7 +18,10 @@
 		<div class="heading">
 			<h3><label for="languages">Sections</label></h3>
 		</div>
-		
+	</div>
+
+	<div class="buttons">
+		<a class="btn" href="{:blx.url.base}settings">Done</a>
 	</div>
 
 {/region}

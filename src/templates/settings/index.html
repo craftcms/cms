@@ -1,26 +1,25 @@
-{layout "settings/_layouts/settings" title="General"}
+{layout "_layouts/cp" title="Settings"}
 
 
-{if !settings}
-	{set settings = blx.settings.general}
-{/if}
+{region "main"}
 
+	<header class="titlebar">
+		<h1>Settings</h1>
+	</header>
 
-{region "settings"}
+	<h2>System</h2>
+	<ul class="icons">
+		<li><a href="{:blx.url.base}settings/general" data-icon="g">General</a></li>
+		<li><a href="{:blx.url.base}settings/routes" data-icon="R">Routes</a></li>
+		<li><a href="{:blx.url.base}settings/email" data-icon="E">Email</a></li>
+		<li><a href="{:blx.url.base}settings/advanced" data-icon="a">Advanced</a></li>
+	</ul>
 
-	<form method="post" action="">
-		<input type="hidden" name="action" value="settings/saveGeneralSettings">
+	<h2>Content</h2>
+	<ul class="icons">
+		<li><a href="{:blx.url.base}settings/content" data-icon="C">Pages &amp; Sections</a></li>
+		<li><a href="{:blx.url.base}settings/assets" data-icon="A">Assets</a></li>
+		<li><a href="{:blx.url.base}settings/languages" data-icon="L">Languages</a></li>
+	</ul>
 
-		<div class="field">
-			<div class="heading">
-				<h3><label for="url">Site URL</label></h3>
-			</div>
-			<input id="url" name="url" class="text" type="text" value="{:settings.url}">
-			{if settings.errors.url}
-				{include "_includes/error_list" errors=settings.errors.url}
-			{/if}
-		</div>
-
-		<input class="btn submit" type="submit" value="Save">
-	</form>
 {/region}

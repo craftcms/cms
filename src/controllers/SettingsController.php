@@ -21,17 +21,18 @@ class SettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$settings['name'] = blx()->request->getPost('name');
 		$settings['url'] = blx()->request->getPost('url');
 		$settings['licenseKey'] = blx()->request->getPost('licenseKey');
 
 		if (blx()->settings->saveSettings('systemsettings', $settings, 'general', true))
 		{
-			blx()->user->setNotice('Settings saved.');
+			blx()->user->setNotice('General settings saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save settings.');
+			blx()->user->setError('Couldn’t save general settings.');
 			$this->loadRequestedTemplate(array('settings' => $settings));
 		}
 	}
@@ -126,17 +127,17 @@ class SettingsController extends BaseController
 
 			if (blx()->email->saveEmailSettings($settings))
 			{
-				blx()->user->setNotice('Settings saved.');
+				blx()->user->setNotice('Email settings saved.');
 				$this->redirectToPostedUrl();
 			}
 			else
 			{
-				blx()->user->setError('Couldn’t save settings.');
+				blx()->user->setError('Couldn’t save email settings.');
 			}
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save settings.');
+			blx()->user->setError('Couldn’t save email settings.');
 		}
 
 		$this->loadRequestedTemplate(array('settings' => $emailSettings));
@@ -182,12 +183,12 @@ class SettingsController extends BaseController
 
 		if (blx()->settings->saveSettings('systemsettings', $settings, 'advanced', true))
 		{
-			blx()->user->setNotice('Settings saved.');
+			blx()->user->setNotice('Advanced settings saved.');
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save settings.');
+			blx()->user->setError('Couldn’t save advanced settings.');
 			$this->loadRequestedTemplate(array('settings' => $settings));
 		}
 	}

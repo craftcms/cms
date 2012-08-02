@@ -146,7 +146,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 				'<div class="textwrapper"><input id="template" type="text" class="text template"></div>' +
 			'</div>' +
 			'<div class="buttons">' +
-				'<input type="submit" class="btn submit" value="Save">' +
+				'<input type="submit" class="btn submit" value="Save"> ' +
 				'<input type="button" class="btn cancel" value="Cancel">' +
 				'<div class="spinner" style="display: none;"></div>' +
 				'<a class="delete">Delete</a>' +

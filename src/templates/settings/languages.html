@@ -1,10 +1,15 @@
-{layout "settings/_layouts/settings" title="Languages"}
+{layout "_layouts/cp" title="Content Languages"}
 
 
-{region "settings"}
+{region "main"}
+
+	<header class="titlebar">
+		<h1>Content Languages</h1>
+	</header>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveLanguageSettings">
+		<input type="hidden" name="redirect" value="settings">
 
 		<div class="field">
 			<div class="heading">
@@ -36,6 +41,10 @@
 			
 		</div>
 
-		<input class="btn submit" type="submit" value="Save">
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="Save">
+			<a class="btn" href="{:blx.url.base}settings">Cancel</a>
+		</div>
 	</form>
+
 {/region}

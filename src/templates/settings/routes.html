@@ -1,4 +1,4 @@
-{layout "settings/_layouts/settings" title="Routes"}
+{layout "_layouts/cp" title="Routes"}
 
 
 {region "styles"}
@@ -6,22 +6,28 @@
 {/region}
 
 
-{region "settings"}
+{region "main"}
 
-	<form method="post" action="">
-		<input type="hidden" name="action" value="settings/saveRoutes">
+	<header class="titlebar">
+		<h1>Routes</h1>
+		<ul class="right">
+			<li><div id="add-route-btn" class="btn addbtn">New Route</div></li>
+		</ul>
+	</header>
 
-		<div id="routes">
-			{foreach blx.routes.all as route}
-				<div class="pane route" data-id="{:route.id}">
-					<div class="url">{:route.urlDisplayHtml}</div>
-					<div class="template">{:route.template}</div>
-				</div>
-			{/foreach}
-		</div>
+	<div id="routes">
+		{foreach blx.routes.all as route}
+			<div class="pane route" data-id="{:route.id}">
+				<div class="url">{:route.urlDisplayHtml}</div>
+				<div class="template">{:route.template}</div>
+			</div>
+		{/foreach}
+	</div>
 
-		<div id="add-route-btn" class="btn addbtn">New Route</div>
-	</form>
+	<div class="buttons">
+		<a class="btn" href="{:blx.url.base}settings">Done</a>
+	</div>
+
 {/region}
 
 
