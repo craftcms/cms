@@ -28,11 +28,13 @@ class RoutesService extends \CApplicationComponent
 	/**
 	 * Saves a new or existing route.
 	 *
-	 * @param array $urlParts The URL as defined by the user.
+	 * @param array  $urlParts The URL as defined by the user.
 	 * This is an array where each element is either a string
 	 * or an array containing the name of a subpattern and the subpattern.
 	 * @param string $template The template to route matching URLs to.
-	 * @param int $routeId The route ID, if editing an existing route.
+	 * @param int    $routeId The route ID, if editing an existing route.
+	 *
+	 * @throws Exception
 	 * @return Route
 	 */
 	public function saveRoute($urlParts, $template, $routeId = null)
@@ -59,12 +61,6 @@ class RoutesService extends \CApplicationComponent
 
 		// Compile the URL parts into a regex pattern
 		$urlPattern = '';
-
-		$charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
-		$escapedChars = array();
-		foreach ($charsToEscape as $char)
-			$escapedChars[] = "\\".$char;
-
 		$urlParts = array_filter($urlParts);
 
 		foreach ($urlParts as $part)
@@ -72,7 +68,7 @@ class RoutesService extends \CApplicationComponent
 			if (is_string($part))
 			{
 				// Escape any special regex characters
-				$urlPattern .= str_replace($charsToEscape, $escapedChars, $part);
+				$urlPattern .= StringHelper::escapeRegexChars($part);
 			}
 			else if (is_array($part))
 			{
@@ -93,6 +89,8 @@ class RoutesService extends \CApplicationComponent
 	 * Deletes a route.
 	 *
 	 * @param int $routeId The route ID
+	 * @throws Exception
+	 * @return void
 	 */
 	public function deleteRoute($routeId)
 	{

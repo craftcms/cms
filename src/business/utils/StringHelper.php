@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class StringHelper
 {
+	private static $_escapedRegexChars;
+
 	/**
 	 * @static
 	 * @param $value
@@ -94,5 +96,23 @@ class StringHelper
 			// 48 bits for "node"
 			mt_rand(0, 0xffff), mt_rand(0, 0xffff), mt_rand(0, 0xffff)
 		);
+	}
+
+	/**
+	 * @static
+	 * @param $string
+	 * @return mixed
+	 */
+	public static function escapeRegexChars($string)
+	{
+		$charsToEscape = str_split("\\/^$.,{}[]()|<>:*+-=");
+		$escapedChars = array();
+
+		foreach ($charsToEscape as $char)
+			$escapedChars[] = "\\".$char;
+
+		self::$_escapedRegexChars = $escapedChars;
+
+		return  str_replace($charsToEscape, $escapedChars, $string);
 	}
 }
