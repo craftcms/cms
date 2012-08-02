@@ -40,6 +40,8 @@ abstract class BaseForm extends \CFormModel
 			else
 				return null;
 		}
+		else if ($name == 'errors')
+			return $this->getErrors();
 		else
 			throw new Exception(get_class($this).' doesn’t have an attribute “'.$name.'”.');
 	}
