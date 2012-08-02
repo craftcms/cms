@@ -10,7 +10,6 @@ Core/Source/webgrind/
 Core/Source/blocks/config/blocks.php
 Core/Source/blocks/config/db.php
 
-.sass-cache/*
 Core/Source/blocks/app/resources/styles.css
 Core/Source/blocks/app/resources/styles/blocks.css
 Core/Source/blocks/app/resources/styles/dashboard.css
