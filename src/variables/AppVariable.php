@@ -7,7 +7,18 @@ namespace Blocks;
 class AppVariable
 {
 	/**
+	 * Returns the current Blocks version.
+	 *
+	 * @return string
+	 */
+	public function version()
+	{
+		return Blocks::getVersion();
+	}
+
+	/**
 	 * Returns the current Blocks build.
+	 *
 	 * @return string
 	 */
 	public function build()
@@ -16,11 +27,32 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the current Blocks version.
+	 * Returns the site name.
+	 *
 	 * @return string
 	 */
-	public function version()
+	public function siteName()
 	{
-		return Blocks::getVersion();
+		return Blocks::getSiteName();
+	}
+
+	/**
+	 * Returns the site URL.
+	 *
+	 * @return string
+	 */
+	public function siteUrl()
+	{
+		return Blocks::getSiteUrl();
+	}
+
+	/**
+	 * Returns the license key.
+	 *
+	 * @return string
+	 */
+	public function licenseKey()
+	{
+		return Blocks::getLicenseKey();
 	}
 }

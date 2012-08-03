@@ -70,16 +70,13 @@ class InstallService extends \CApplicationComponent
 
 			// Populate the info table
 			$info = new Info();
-			$info->version = Blocks::getVersion(false);
-			$info->build = Blocks::getBuild(false);
-			$info->release_date = Blocks::getReleaseDate(false);
+			$info->version = Blocks::getVersion();
+			$info->build = Blocks::getBuild();
+			$info->release_date = Blocks::getReleaseDate();
+			$info->site_name = $inputs['sitename'];
+			$info->site_url = $inputs['url'];
 			$info->on = true;
 			$info->save();
-
-			// Save the general system settings
-			$generalSettings['name'] = $inputs['sitename'];
-			$generalSettings['url'] = $inputs['url'];
-			blx()->settings->saveSettings('systemsettings', $generalSettings, 'general');
 
 			// Set the default language
 			$languages = array(blx()->language);

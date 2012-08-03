@@ -11,21 +11,20 @@ class Blocks extends \Yii
 	private static $_storedBlocksInfo;
 
 	/**
+	 * Returns the Blocks version number, as defined by the BLOCKS_VERSION constant.
+	 *
 	 * @static
-	 * @param bool $checkStoredVersion If true, will check the db for the version if we can't get it locally.
 	 * @return string
 	 */
-	public static function getVersion($checkStoredVersion = true)
+	public static function getVersion()
 	{
-		if (strpos(BLOCKS_VERSION, '@@@') !== false && $checkStoredVersion)
-			return self::getStoredVersion();
-		else
-			return BLOCKS_VERSION;
+		return BLOCKS_VERSION;
 	}
 
 	/**
+	 * Returns the Blocks version number, as defined in the blx_info table.
 	 * @static
-	 * @return null
+	 * @return string
 	 */
 	public static function getStoredVersion()
 	{
@@ -34,21 +33,22 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns the Blocks build number, as defined by the BLOCKS_BUILD constant.
+	 *
 	 * @static
-	 * @param bool $checkStoredBuild If true, will check the db for the build if we can't get it locally.
 	 * @return string
 	 */
-	public static function getBuild($checkStoredBuild = true)
+	public static function getBuild()
 	{
-		if (strpos(BLOCKS_BUILD, '@@@') !== false && $checkStoredBuild)
-			return self::getStoredBuild();
-		else
-			return BLOCKS_BUILD;
+		return BLOCKS_BUILD;
 	}
 
 	/**
+	 *
+	 * Returns the Blocks build number, as defined in the blx_info table.
+	 *
 	 * @static
-	 * @return null
+	 * @return string
 	 */
 	public static function getStoredBuild()
 	{
@@ -57,21 +57,21 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns the Blocks release date, as defined by the BLOCKS_RELEASE_DATE constant.
+	 *
 	 * @static
-	 * @param bool $checkStoredBuild If true, will check the db for the release date if we can't get it locally.
 	 * @return string
 	 */
-	public static function getReleaseDate($checkStoredBuild = true)
+	public static function getReleaseDate()
 	{
-		if (strpos(BLOCKS_RELEASE_DATE, '@@@') !== false && $checkStoredBuild)
-			return self::getStoredReleaseDate();
-		else
-			return BLOCKS_RELEASE_DATE;
+		return BLOCKS_RELEASE_DATE;
 	}
 
 	/**
+	 * Returns the Blocks relesae date, as defined in the blx_info table.
+	 *
 	 * @static
-	 * @return null
+	 * @return string
 	 */
 	public static function getStoredReleaseDate()
 	{
@@ -80,6 +80,44 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns the site name.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getSiteName()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->site_name : null;
+	}
+
+	/**
+	 * Returns the site URL.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getSiteUrl()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->site_url : null;
+	}
+
+	/**
+	 * Returns the license key.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getLicenseKey()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->license_key : null;
+	}
+
+	/**
+	 * Returns whether the system is on.
+	 *
 	 * @static
 	 * @return bool
 	 */
@@ -90,6 +128,8 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Turns the system on.
+	 *
 	 * @static
 	 * @return bool
 	 */
@@ -109,6 +149,8 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Turns the system off.
+	 *
 	 * @static
 	 * @return bool
 	 */
@@ -129,14 +171,18 @@ class Blocks extends \Yii
 
 	/**
 	 * Return the saved stored blocks info.  If it's not set, get it from the database and return it.
+	 *
 	 * @static
-	 * @return mixed
+	 * @return Info
 	 */
 	private static function _getStoredInfo()
 	{
-		if ((static::$_storedBlocksInfo) == null)
+		if (!isset(static::$_storedBlocksInfo))
 		{
-			self::$_storedBlocksInfo = Info::model()->find();
+			if (blx()->getIsInstalled())
+				self::$_storedBlocksInfo = Info::model()->find();
+			else
+				self::$_storedBlocksInfo = false;
 		}
 
 		return self::$_storedBlocksInfo;
@@ -144,6 +190,7 @@ class Blocks extends \Yii
 
 	/**
 	 * Returns the Yii framework version.
+	 *
 	 * @static
 	 * @return mixed
 	 */
