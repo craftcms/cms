@@ -95,7 +95,7 @@ class UpdateHelper
 	public static function constructAppReleasePatchFileName($version, $build, $product)
 	{
 		if(StringHelper::isNullOrEmpty($version) || StringHelper::isNullOrEmpty($build) || StringHelper::isNullOrEmpty($product))
-			throw new Exception('Missing version, build or product.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'Missing version, build or product.'));
 
 		switch ($product)
 		{

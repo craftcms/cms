@@ -188,7 +188,7 @@ class BlxVariable
 	 * @param null   $language
 	 * @return string|void
 	 */
-	public function t($category = 'app', $message, $params = array(), $source = null, $language = null)
+	public function t($category = 'App', $message, $params = array(), $source = null, $language = null)
 	{
 		return Blocks::t($category, $message, $params, $source, $language);
 	}

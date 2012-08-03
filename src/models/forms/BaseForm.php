@@ -22,7 +22,7 @@ abstract class BaseForm extends \CFormModel
 		if (array_key_exists($name, $this->attributes))
 			$this->_attributes[$name] = $value;
 		else
-			throw new Exception(get_class($this).' doesn’t have an attribute “'.$name.'”.');
+			throw new Exception(Blocks::t(TranslationCategory::App, get_class($this).' doesn’t have an attribute “'.$name.'”.'));
 	}
 
 	/**
@@ -43,7 +43,7 @@ abstract class BaseForm extends \CFormModel
 		else if ($name == 'errors')
 			return $this->getErrors();
 		else
-			throw new Exception(get_class($this).' doesn’t have an attribute “'.$name.'”.');
+			throw new Exception(Blocks::t(TranslationCategory::App, get_class($this).' doesn’t have an attribute “'.$name.'”.'));
 	}
 
 	/**

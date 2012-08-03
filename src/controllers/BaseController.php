@@ -80,7 +80,7 @@ abstract class BaseController extends \CController
 			return $content;
 		}
 		else
-			throw new Exception('Could not find the requested email template.');
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not find the requested email template.'));
 	}
 
 	/**
@@ -114,7 +114,7 @@ abstract class BaseController extends \CController
 				else
 				{
 					$widget = end($this->_widgetStack);
-					throw new Exception('app', Blocks::t('{controller} contains improperly nested widget variables in it’s view "{view}". A {widget} widget does not have an endWidget() call.',
+					throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, '{controller} contains improperly nested widget variables in it’s view "{view}". A {widget} widget does not have an endWidget() call.',
 						array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
 				}
 			}
@@ -163,7 +163,7 @@ abstract class BaseController extends \CController
 	public function requireAdmin()
 	{
 		if (!blx()->users->getCurrentUser()->admin)
-			throw new Exception('This action may only be performed by admins.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'This action may only be performed by admins.'));
 	}
 
 	/**

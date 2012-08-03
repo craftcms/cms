@@ -398,7 +398,7 @@ class App extends \CWebApplication
 			$messages[] = 'The database collation is not set in your db config file.';
 
 		if (!empty($messages))
-			throw new Exception(implode(PHP_EOL, $messages));
+			throw new Exception(Blocks::t(TranslationCategory::Configuration, implode(PHP_EOL, $messages)));
 
 		try
 		{
@@ -412,7 +412,7 @@ class App extends \CWebApplication
 		}
 
 		if (!empty($messages))
-			throw new Exception(implode(PHP_EOL, $messages));
+			throw new Exception(Blocks::t(TranslationCategory::Configuration, implode(PHP_EOL, $messages)));
 	}
 
 	/**

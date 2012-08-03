@@ -46,7 +46,7 @@ class SecurityService extends \CApplicationComponent
 		if ($check)
 			return $hashAndType;
 
-		throw new Exception('Could not hash the given password.');
+		throw new Exception(Blocks::t(TranslationCategory::App, 'Could not hash the given password.'));
 	}
 
 	/**
@@ -96,13 +96,13 @@ class SecurityService extends \CApplicationComponent
 		if ($user == null)
 		{
 			Blocks::log('Unable to find activation code:'.$code);
-			throw new Exception('Unable to validate this activation code.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'Unable to validate this activation code.'));
 		}
 
 		if (DateTimeHelper::currentTime() > $user->activationcode_expire_date)
 		{
 			Blocks::log('Activation: '.$code.' has already expired.');
-			throw new Exception('Unable to validate this activation code.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'Unable to validate this activation code.'));
 		}
 
 		return $user;

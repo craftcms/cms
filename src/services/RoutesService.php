@@ -44,7 +44,7 @@ class RoutesService extends \CApplicationComponent
 			$route = $this->getRouteById($routeId);
 
 			if (!$route)
-				throw new Exception('No route exists with the ID '.$routeId);
+				throw new Exception(Blocks::t(TranslationCategory::Routing, 'No route exists with the ID '.$routeId));
 		}
 		else
 		{
@@ -97,7 +97,7 @@ class RoutesService extends \CApplicationComponent
 		$route = $this->getRouteById($routeId);
 
 		if (!$route)
-			throw new Exception('No route exists with the ID '.$routeId);
+			throw new Exception(Blocks::t(TranslationCategory::Routing, 'No route exists with the ID '.$routeId));
 
 		$route->delete();
 	}

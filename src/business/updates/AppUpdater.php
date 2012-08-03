@@ -37,13 +37,13 @@ class AppUpdater implements IUpdater
 		$databaseCompat = version_compare($installedMysqlVersion, $requiredMysqlVersion, '>=');
 
 		if (!$phpCompat && !$databaseCompat)
-			throw new Exception('The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and MySQL version '.$requiredMysqlVersion.' or higher.  You have PHP version '.PHP_VERSION.' and MySQL version '.$installedMysqlVersion.' installed.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and MySQL version '.$requiredMysqlVersion.' or higher.  You have PHP version '.PHP_VERSION.' and MySQL version '.$installedMysqlVersion.' installed.'));
 		else
 			if (!$phpCompat)
-				throw new Exception('The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and you have PHP version '.PHP_VERSION.' installed.');
+				throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and you have PHP version '.PHP_VERSION.' installed.'));
 			else
 				if (!$databaseCompat)
-					throw new Exception('The update cannot be installed because Blocks requires MySQL version '.$requiredMysqlVersion.' or higher and you have MySQL version '.PHP_VERSION.' installed.');
+					throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update cannot be installed because Blocks requires MySQL version '.$requiredMysqlVersion.' or higher and you have MySQL version '.PHP_VERSION.' installed.'));
 
 
 	}
@@ -58,7 +58,7 @@ class AppUpdater implements IUpdater
 		$this->checkRequirements();
 
 		if ($this->_buildsToUpdate == null)
-			throw new Exception('Blocks is already up to date.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'Blocks is already up to date.'));
 
 		Blocks::log('Starting the AppUpdater.', \CLogger::LEVEL_INFO);
 
@@ -70,22 +70,22 @@ class AppUpdater implements IUpdater
 		// Download the package from ET.
 		Blocks::log('Downloading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
 		if (!blx()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
-			throw new Exception('There was a problem downloading the package.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'There was a problem downloading the package.'));
 
 		// Validate the downloaded package against ET.
 		Blocks::log('Validating downloaded package.', \CLogger::LEVEL_INFO);
 		if (!$this->validatePackage($latestBuild->version, $latestBuild->build))
-			throw new Exception('There was a problem validating the downloaded package.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'There was a problem validating the downloaded package.'));
 
 		// Unpack the downloaded package.
 		Blocks::log('Unpacking the downloaded package.', \CLogger::LEVEL_INFO);
 		if (!$this->unpackPackage())
-			throw new Exception('There was a problem unpacking the downloaded package.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'There was a problem unpacking the downloaded package.'));
 
 		// Validate that the paths in the update manifest file are all writable by Blocks
 		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
 		if (!$this->validateManifestPathsWritable())
-			throw new Exception('Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writableErrors));
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writableErrors)));
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
@@ -100,18 +100,18 @@ class AppUpdater implements IUpdater
 		{
 			Blocks::log('Starting to run update migrations.', \CLogger::LEVEL_INFO);
 			if (!$this->doDatabaseUpdate())
-				throw new Exception('There was a problem updating your database.');
+				throw new Exception(Blocks::t(TranslationCategory::Updating, 'There was a problem updating your database.'));
 		}
 
 		// Backup any files about to be updated.
 		Blocks::log('Backing up files that are about to be updated.', \CLogger::LEVEL_INFO);
 		if (!$this->backupFiles())
-			throw new Exception('There was a problem backing up your files for the update.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'There was a problem backing up your files for the update.'));
 
 		// Update the files.
 		Blocks::log('Performing file udpate.', \CLogger::LEVEL_INFO);
 		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_tempPackageDir))
-			throw new Exception('There was a problem updating your files.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'There was a problem updating your files.'));
 
 		// Bring the system back online.
 		Blocks::log('Turning system back on after update.', \CLogger::LEVEL_INFO);
@@ -124,12 +124,12 @@ class AppUpdater implements IUpdater
 		// Clear the updates cache.
 		Blocks::log('Clearing the update cache.', \CLogger::LEVEL_INFO);
 		if (!blx()->updates->flushUpdateInfoFromCache())
-			throw new Exception('The update was performed successfully, but there was a problem invalidating the update cache.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update was performed successfully, but there was a problem invalidating the update cache.'));
 
 		// Update the db with the new Blocks info.
 		Blocks::log('Setting new Blocks info in the database after update.', \CLogger::LEVEL_INFO);
 		if (!blx()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
-			throw new Exception('The update was performed successfully, but there was a problem setting the new version and build number in the database.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update was performed successfully, but there was a problem setting the new version and build number in the database.'));
 
 		Blocks::log('Finished AppUpdater.', \CLogger::LEVEL_INFO);
 		return true;
@@ -239,7 +239,7 @@ class AppUpdater implements IUpdater
 		$sourceMD5 = blx()->et->getReleaseMD5($version, $build);
 
 		if(StringHelper::isNullOrEmpty($sourceMD5))
-			throw new Exception('Error in getting the MD5 hash for the download.');
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'Error in validating the download.'));
 
 		$localFile = blx()->file->set($this->_downloadFilePath, false);
 		$localMD5 = $localFile->generateMD5();

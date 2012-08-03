@@ -1,7 +1,6 @@
 <?php
 namespace Blocks;
 
-require_once dirname(__FILE__).'/enums/Product.php';
 require_once dirname(__FILE__).'/../blocks_info.php';
 
 /**
@@ -314,7 +313,7 @@ class Blocks extends \Yii
 	 *
 	 * @return string|void
 	 */
-	public static function t($category = 'app', $message, $params = array(), $source = null, $language = null)
+	public static function t($category = 'App', $message, $params = array(), $source = null, $language = null)
 	{
 		return parent::t($category, $message, $params, $source, $language);
 	}
