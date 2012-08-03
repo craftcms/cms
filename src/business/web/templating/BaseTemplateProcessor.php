@@ -55,7 +55,7 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 		if ($checkSourcePath)
 		{
 			if (!is_file($sourcePath) || realpath($sourcePath) === false)
-				throw new Exception(Blocks::t('app', 'The template "{path}" does not exist.', array('{path}' => $sourcePath)));
+				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'The template "{path}" does not exist.', array('{path}' => $sourcePath)));
 		}
 
 		$this->_sourcePath    = $sourcePath;

@@ -18,7 +18,7 @@ class StringHelper
 			return true;
 
 		if (!is_string($value))
-			throw new Exception('IsNullOrEmpty requires a string.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'IsNullOrEmpty requires a string.'));
 
 		return false;
 	}
