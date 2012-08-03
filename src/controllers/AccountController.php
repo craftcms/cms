@@ -71,7 +71,7 @@ class AccountController extends BaseController
 				}
 			}
 
-			throw new Exception('There was a problem validating this activation code.');
+			throw new Exception(Blocks::t(TranslationCategory::Session, 'There was a problem validating this activation code.'));
 		}
 
 		// display the verify account form

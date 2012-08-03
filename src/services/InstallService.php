@@ -15,7 +15,7 @@ class InstallService extends \CApplicationComponent
 	public function run($inputs)
 	{
 		if (blx()->getIsInstalled())
-			throw new Exception('Blocks is already installed.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'Blocks is already installed.'));
 
 		// Install the Block model first so the other models can create FK's to it
 		$models[] = new Block();

@@ -12,7 +12,7 @@ class HttpStatusVariable
 	 */
 	public function status404($message = null)
 	{
-		throw new HttpException(404, $message);
+		throw new HttpException(404, Blocks::t(TranslationCategory::App, $message));
 	}
 
 	/**
@@ -21,7 +21,7 @@ class HttpStatusVariable
 	 */
 	public function status403($message = null)
 	{
-		throw new HttpException(403, $message);
+		throw new HttpException(403, Blocks::t(TranslationCategory::App, $message));
 	}
 
 	/**
@@ -30,6 +30,6 @@ class HttpStatusVariable
 	 */
 	public function status500($message = null)
 	{
-		throw new HttpException(500, $message);
+		throw new HttpException(500, Blocks::t(TranslationCategory::App, $message));
 	}
 }

@@ -13,4 +13,7 @@ class TranslationCategory
 	const TemplateProcessing    = 'TemplateProcessing';
 	const Routing               = 'Routing';
 	const Updating              = 'Updating';
+	const Configuration         = 'Configuration';
+	const Content               = 'Content';
+	const Plugin                = 'Plugin';
 }

@@ -181,7 +181,7 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 		}
 		catch (TemplateProcessorException $e)
 		{
-			throw new TemplateProcessorException($e->getMessage(), $this->_sourcePath, $e->getLine());
+			throw new TemplateProcessorException(Blocks::t(TranslationCategory::TemplateProcessing, $e->getMessage()), $this->_sourcePath, $e->getLine());
 		}
 
 		// Save the parsed template to the parsed path

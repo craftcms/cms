@@ -44,7 +44,7 @@ class MigrationsService extends \CApplicationComponent
 		$path= Blocks::getPathOfAlias($this->migrationPath);
 
 		if ($path === false || !is_dir($path))
-			throw new Exception('Error: The migration directory does not exist: '.$this->migrationPath);
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'Error: The migration directory does not exist: '.$this->migrationPath));
 
 		$this->migrationPath = $path;
 	}
@@ -190,7 +190,7 @@ class MigrationsService extends \CApplicationComponent
 		else if (($this->_db = Blocks::app()->getComponent($this->connectionID)) instanceof \CDbConnection)
 			return $this->_db;
 		else
-			throw new Exception("Error: CMigrationCommand.connectionID '{$this->connectionID}' is invalid. Please make sure it refers to the ID of a CDbConnection application component.");
+			throw new Exception(Blocks::t(TranslationCategory::Updating, "MigrationCommand.connectionID '{$this->connectionID}' is invalid. Please make sure it refers to the ID of a DbConnection application component."));
 	}
 
 	/**

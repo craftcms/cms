@@ -80,7 +80,7 @@ abstract class BaseController extends \CController
 			return $content;
 		}
 		else
-			throw new Exception('Could not find the requested email template.');
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not find the requested email template.'));
 	}
 
 	/**
@@ -163,7 +163,7 @@ abstract class BaseController extends \CController
 	public function requireAdmin()
 	{
 		if (!blx()->users->getCurrentUser()->admin)
-			throw new Exception('This action may only be performed by admins.');
+			throw new Exception(Blocks::t(TranslationCategory::App, 'This action may only be performed by admins.'));
 	}
 
 	/**

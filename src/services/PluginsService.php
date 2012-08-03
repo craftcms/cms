@@ -208,10 +208,10 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception('No plugin exists with the class “'.$className.'”');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, 'No plugin exists with the class “'.$className.'”'));
 
 		if (!$plugin->getIsInstalled())
-			throw new Exception($plugin->name.' can’t be enabled because it isn’t installed yet.');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, $plugin->name.' can’t be enabled because it isn’t installed yet.'));
 
 		$plugin->record->enabled = true;
 		if ($plugin->record->save())
@@ -232,10 +232,10 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception('No plugin exists with the class “'.$className.'”');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, 'No plugin exists with the class “'.$className.'”'));
 
 		if (!$plugin->getIsInstalled())
-			throw new Exception($plugin->name.' can’t be disabled because it isn’t installed yet.');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, $plugin->name.' can’t be disabled because it isn’t installed yet.'));
 
 		$plugin->record->enabled = false;
 		if ($plugin->record->save())
@@ -256,10 +256,10 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception('No plugin exists with the class “'.$className.'”');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, 'No plugin exists with the class “'.$className.'”'));
 
 		if ($plugin->getIsInstalled())
-			throw new Exception($plugin->name.' is already installed.');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, $plugin->name.' is already installed.'));
 
 		$record = new Plugin();
 		$record->class = $plugin->getClassHandle();
@@ -284,10 +284,10 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception('No plugin exists with the class “'.$className.'”');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, 'No plugin exists with the class “'.$className.'”'));
 
 		if (!$plugin->getIsInstalled())
-			throw new Exception($plugin->name.' is already uninstalled.');
+			throw new Exception(Blocks::t(TranslationCategory::Plugin, $plugin->name.' is already uninstalled.'));
 
 		blx()->db->createCommand()->delete('plugins', array('class' => $className));
 		return true;
