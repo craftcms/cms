@@ -1,5 +1,5 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-03 05:39:36.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-03 05:40:56.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-03 07:06:16.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-03 16:24:53.000000000 -0700
 @@ -75,6 +75,7 @@
  			$info->release_date = Blocks::getReleaseDate();
  			$info->site_name = $inputs['sitename'];
@@ -8,3 +8,20 @@
  			$info->on = true;
  			$info->save();
  
+@@ -82,6 +83,16 @@
+ 			$languages = array(blx()->language);
+ 			blx()->settings->saveSettings('systemsettings', $languages, 'languages');
+ 
++			// Register the email messages
++			$messageKeys = array('verify_email', 'verify_new_email', 'forgot_password');
++			foreach ($messageKeys as $key)
++			{
++				$message = blx()->email->registerMessage($key);
++				blx()->email->saveMessageContent($message->id,
++					Blocks::t(TranslationCategory::Email, $key.'_default_subject'),
++					Blocks::t(TranslationCategory::Email, $key.'_default_body'));
++			}
++
+ 			// Add the user
+ 			$user = new User();
+ 			$user->username   = $inputs['username'];

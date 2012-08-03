@@ -8,9 +8,106 @@ class EmailService extends \CApplicationComponent
 {
 	private $_defaultEmailTimeout = 10;
 
-	public function registerEmailTemplate()
+	/**
+	 * Returns all of the system email messages.
+	 *
+	 * @return array
+	 */
+	public function getAllMessages()
 	{
+		$messages = EmailMessage::model()->findAll();
+		return $messages;
+	}
 
+	/**
+	 * Returns a system email message by its ID.
+	 *
+	 * @param int $messageId
+	 * @return EmailMessage
+	 */
+	public function getMessageById($messageId)
+	{
+		$message = EmailMessage::model()->findById($messageId);
+		return $message;
+	}
+
+	/**
+	 * Returns a system email message by its key.
+	 *
+	 * @param string $key
+	 * @return EmailMessage
+	 */
+	public function getMessageByKey($key)
+	{
+		$message = EmailMessage::model()->findByAttributes(array('key' => $key));
+		return $message;
+	}
+
+	/**
+	 * Registers a new system email message.
+	 *
+	 * @param string $key
+	 * @param int $pluginId
+	 * @return EmailMessage
+	 */
+	public function registerMessage($key, $pluginId = null)
+	{
+		$message = new EmailMessage();
+		$message->key = $key;
+		$message->plugin_id = $pluginId;
+		$message->save();
+		return $message;
+	}
+
+	/**
+	 * Returns the localized content for a system email message.
+	 *
+	 * @param int $messageId
+	 * @param string $language
+	 * @return string
+	 */
+	public function getMessageContent($messageId, $language = null)
+	{
+		if (!$language)
+			$language = blx()->language;
+
+		$content = EmailMessageContent::model()->findByAttributes(array(
+			'id' => $messageId,
+			'language' => $language
+		));
+
+		return $content;
+	}
+
+	/**
+	 * Saves the localized content for a system email message.
+	 *
+	 * @param int $messageId
+	 * @param string $subject
+	 * @param string $body
+	 * @param string $htmlBody
+	 * @param string $language
+	 */
+	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
+	{
+		if (!$language)
+			$language = blx()->language;
+
+		// Has this message already been translated into this language?
+		$content = $this->getMessageContent($messageId, $language);
+
+		if (!$content)
+		{
+			$content = new EmailMessageContent();
+			$content->language = $language;
+		}
+
+		$content->subject = $subject;
+		$content->body = $body;
+		$content->html_body = $htmlBody;
+		$content->save();
+
+		return $content;
 	}
 
 	/**
