@@ -1,4 +1,4 @@
-{layout "_layouts/cp" title="Email Settings"}
+{layout "settings/email/_layout" title="Account Settings"}
 
 
 {if !settings}
@@ -6,11 +6,7 @@
 {/if}
 
 
-{region "main"}
-
-	<header class="titlebar">
-		<h1>Email Settings</h1>
-	</header>
+{region "settings"}
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveemailsettings">
