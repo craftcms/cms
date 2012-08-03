@@ -59,4 +59,88 @@ class MessageCommand extends \MessageCommand
 
 		return $messages;
 	}
+
+	/**
+	 * @param $messages
+	 * @param $fileName
+	 * @param $overwrite
+	 * @param $removeOld
+	 * @param $sort
+	 */
+	protected function generateMessageFile($messages, $fileName, $overwrite, $removeOld, $sort)
+	{
+		echo "Saving messages to $fileName...";
+
+		if (is_file($fileName))
+		{
+			$translated = require($fileName);
+			sort($messages);
+			ksort($translated);
+
+			if (array_keys($translated) == $messages)
+			{
+				echo "nothing new...skipped.\n";
+				return;
+			}
+
+			$merged = array();
+			$untranslated = array();
+
+			foreach ($messages as $message)
+			{
+				if (!empty($translated[$message]))
+					$merged[$message] = $translated[$message];
+				else
+					$untranslated[] = $message;
+			}
+
+			ksort($merged);
+			sort($untranslated);
+
+			$todo = array();
+			foreach ($untranslated as $message)
+				$todo[$message] = '';
+
+			ksort($translated);
+
+			foreach ($translated as $message => $translation)
+			{
+				if (!isset($merged[$message]) && !isset($todo[$message]) && !$removeOld)
+				{
+					if (substr($translation, 0, 2) === '@@' && substr($translation, -2) === '@@')
+						$todo[$message] = $translation;
+					else
+						$todo[$message] = '@@'.$translation.'@@';
+				}
+			}
+
+			$merged = array_merge($todo, $merged);
+
+			if ($sort)
+				ksort($merged);
+
+			if ($overwrite === false)
+				$fileName .= '.merged';
+
+			echo "translation merged.\n";
+		}
+		else
+		{
+			$merged = array();
+			foreach ($messages as $message)
+				$merged[$message] = '';
+
+			ksort($merged);
+			echo "saved.\n";
+		}
+
+		$array = str_replace("\r", '', var_export($merged, true));
+		$content=<<<EOD
+<?php
+
+return $array;
+
+EOD;
+		file_put_contents($fileName, $content);
+	}
 }
