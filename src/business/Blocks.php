@@ -81,6 +81,42 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns the site name.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getSiteName()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->site_name : null;
+	}
+
+	/**
+	 * Returns the site URL.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getSiteUrl()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->site_url : null;
+	}
+
+	/**
+	 * Returns the license key.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getLicenseKey()
+	{
+		$storedBlocksInfo = self::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->license_key : null;
+	}
+
+	/**
 	 * Returns whether the system is on.
 	 *
 	 * @static
@@ -142,9 +178,12 @@ class Blocks extends \Yii
 	 */
 	private static function _getStoredInfo()
 	{
-		if ((static::$_storedBlocksInfo) == null)
+		if (!isset(static::$_storedBlocksInfo))
 		{
-			self::$_storedBlocksInfo = Info::model()->find();
+			if (blx()->getIsInstalled())
+				self::$_storedBlocksInfo = Info::model()->find();
+			else
+				self::$_storedBlocksInfo = false;
 		}
 
 		return self::$_storedBlocksInfo;

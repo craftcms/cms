@@ -22,19 +22,15 @@ class SettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$generalSettingsForm = new GeneralSettingsForm();
-		$generalSettingsForm->name = blx()->request->getPost('name');
-		$generalSettingsForm->url = blx()->request->getPost('url');
-		$generalSettingsForm->licenseKey = blx()->request->getPost('licenseKey');
+		$generalSettingsForm->siteName = blx()->request->getPost('siteName');
+		$generalSettingsForm->siteUrl = blx()->request->getPost('siteUrl');
 
 		if ($generalSettingsForm->validate())
 		{
-			$generalSettings = array(
-				'name'       => $generalSettingsForm->name,
-				'url'        => $generalSettingsForm->url,
-				'licenseKey' => $generalSettingsForm->licenseKey
-			);
-
-			blx()->settings->saveSettings('systemsettings', $generalSettings, 'general', true);
+			$info = Info::model()->find();
+			$info->site_name = $generalSettingsForm->siteName;
+			$info->site_url = $generalSettingsForm->siteUrl;
+			$info->save();
 
 			blx()->user->setNotice('General settings saved.');
 			$this->redirectToPostedUrl();
@@ -42,7 +38,7 @@ class SettingsController extends BaseController
 		else
 		{
 			blx()->user->setError('Couldn’t save general settings.');
-			$this->loadRequestedTemplate(array('settings' => $generalSettingsForm));
+			$this->loadRequestedTemplate(array('post' => $generalSettingsForm));
 		}
 	}
 

@@ -1,0 +1,17 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/controllers/SettingsController.php	2012-08-03 07:01:31.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/controllers/SettingsController.php	2012-08-03 07:01:34.000000000 -0700
+@@ -24,12 +24,14 @@
+ 		$generalSettingsForm = new GeneralSettingsForm();
+ 		$generalSettingsForm->siteName = blx()->request->getPost('siteName');
+ 		$generalSettingsForm->siteUrl = blx()->request->getPost('siteUrl');
++		$generalSettingsForm->licenseKey = blx()->request->getPost('licenseKey');
+ 
+ 		if ($generalSettingsForm->validate())
+ 		{
+ 			$info = Info::model()->find();
+ 			$info->site_name = $generalSettingsForm->siteName;
+ 			$info->site_url = $generalSettingsForm->siteUrl;
++			$info->license_key = $generalSettingsForm->licenseKey;
+ 			$info->save();
+ 
+ 			blx()->user->setNotice('General settings saved.');

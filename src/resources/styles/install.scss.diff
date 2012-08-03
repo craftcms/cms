@@ -1,11 +1,12 @@
 --- /Users/brandon/git/Blocks/Source/Core/blocks/app/resources/styles/install.scss	2012-08-02 15:17:07.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/resources/styles/install.scss	2012-08-02 15:18:15.000000000 -0700
-@@ -23,6 +23,10 @@
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/resources/styles/install.scss	2012-08-03 06:32:38.000000000 -0700
+@@ -23,6 +23,11 @@
  
  #welcome { display: block; opacity: 0; }
  #welcome h1 { margin-top: 140px; }
-+#welcome #licensekeyform { position: relative; margin: 0 auto; padding-right: 42px; width: 25em; }
-+#welcome #licensekeyform .btn { position: absolute; top: 0; right: 0; padding: 0 10px 0 12px; width: 15px; height: 31px; line-height: 31px; }
++#welcome #licensekeyform { position: relative; margin: 0 auto; padding-right: 42px; width: 22em; }
++#welcome #licensekeyform .text { padding: 8px; font-size: 15px !important; }
++#welcome #licensekeyform .btn { position: absolute; top: 0; right: 0; padding: 0 10px 0 12px; width: 15px; }
 +#welcome #licensekeyform .btn span { display: inline-block; width: 0; overflow: hidden; }
 +#welcome #licensekeyform .btn:before { margin: 0; }
  

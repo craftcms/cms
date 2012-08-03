@@ -12,6 +12,9 @@ class Info extends BaseModel
 		'version'       => AttributeType::Version,
 		'build'         => AttributeType::Build,
 		'release_date'  => array(AttributeType::Int, 'required' => true),
+		'site_name'     => array(AttributeType::Name, 'required' => true),
+		'site_url'      => array(AttributeType::Url, 'required' => true),
+		'license_key'   => AttributeType::LicenseKey,
 		'on'            => AttributeType::Boolean,
 	);
 }

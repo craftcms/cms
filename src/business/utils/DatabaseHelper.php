@@ -34,7 +34,7 @@ class DatabaseHelper
 		AttributeType::Url          => array('type' => AttributeType::Varchar, 'maxLength' => 255),
 		AttributeType::Build        => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
 		AttributeType::Product      => array('type' => AttributeType::Enum, 'values' => array('Blocks', 'BlocksPro'), 'required' => true),
-		AttributeType::LicenseKey   => array('type' => AttributeType::Char, 'length' => 36, 'matchPattern' => '/[\w0-9]{8}-[\w0-9]{4}-[\w0-9]{4}-[\w0-9]{4}-[\w0-9]{12}/', 'required' => true),
+		AttributeType::LicenseKey   => array('type' => AttributeType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
 	);
 
 	/**

@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8">
-	<title>{if title}{:title} – {/if}Blocks</title>
+	<title>{:title}{if title && blx.app.siteName} - {/if}{:blx.app.siteName}</title>
 	{include "_includes/css_include" file="styles/blocks.css"}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
 	{:styles}
