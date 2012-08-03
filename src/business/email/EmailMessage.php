@@ -28,7 +28,7 @@ class EmailMessage
 			throw new Exception(Blocks::t(TranslationCategory::Email, 'You must specify an email address to send to.'));
 
 		if (StringHelper::isNullOrEmpty($from->getEmailAddress()))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'You must specify a "from" email address.'));
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'You must specify a “from” email address.'));
 
 		$this->_from = $from;
 		$this->_replyTo = $from;

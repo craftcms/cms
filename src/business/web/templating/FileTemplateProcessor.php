@@ -53,7 +53,7 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 		}
 		catch (TemplateProcessorException $e)
 		{
-			throw new TemplateProcessorException(Blocks::t(TranslationCategory::TemplateProcessing, $e->getMessage()), $this->_sourcePath, $e->getLine());
+			throw new TemplateProcessorException(Blocks::t(TranslationCategory::TemplateProcessing, 'Template Processing Error: {errorMessage}', array('{errorMessage}' => $e->getMessage())), $this->_sourcePath, $e->getLine());
 		}
 
 		// Save the parsed template to the parsed path

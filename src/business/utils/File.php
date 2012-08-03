@@ -230,7 +230,7 @@ class File extends \CApplicationComponent
 			return $instance;
 		}
 
-		throw new Exception(Blocks::t(TranslationCategory::App, 'Path to filesystem object is not specified within '.__METHOD__.' method'));
+		throw new Exception(Blocks::t(TranslationCategory::App, 'Path to filesystem object isn’t specified within “{methodName}” method.', array('{methodName}' => __METHOD__)));
 	}
 
 	/**
@@ -809,7 +809,7 @@ class File extends \CApplicationComponent
 		}
 		else
 		{
-			throw new Exception(Blocks::t(TranslationCategory::App, 'Unable to get directory contents for "'.$directory.'/'.'"'));
+			throw new Exception(Blocks::t(TranslationCategory::App, 'Unable to get directory contents for “{directory}”.', array('{directory}' => $directory)));
 		}
 
 		return $descendants;

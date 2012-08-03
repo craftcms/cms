@@ -26,7 +26,7 @@ class HandleValidator extends \CValidator
 		}
 		else if (!preg_match('/^'.TemplateParser::varPattern.'$/', $value))
 		{
-			$message = $this->message !== null ? $this->message : '{attribute} is not a valid handle.';
+			$message = $this->message !== null ? $this->message : '{attribute} isn’t a valid handle.';
 			$this->addError($object, $attribute, $message);
 		}
 	}

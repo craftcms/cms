@@ -128,7 +128,7 @@ class ContentService extends \CApplicationComponent
 			$section = $this->getSectionById($sectionId);
 
 			if (!$section)
-				throw new Exception(Blocks::t(TranslationCategory::Content, 'No section exists with the ID '.$sectionId));
+				throw new Exception(Blocks::t(TranslationCategory::Content, 'No section exists with the Id “{sectionId}”', array('{sectionId}' => $sectionId)));
 
 			$isNewSection = false;
 			$oldContentTable = $section->getContentTableName();
@@ -406,7 +406,7 @@ class ContentService extends \CApplicationComponent
 		{
 			$entry = $this->getEntryById($entry);
 			if (!$entry)
-				throw new Exception(Blocks::t(TranslationCategory::Content, 'No entry exists with the ID '.$entry->id));
+				throw new Exception(Blocks::t(TranslationCategory::Content, 'No entry exists with the Id “{entryId}”.', array('{entryId}' => $entry->id)));
 		}
 
 		if (!$language)
@@ -565,7 +565,7 @@ class ContentService extends \CApplicationComponent
 		{
 			$entry = $this->getEntryById($entry);
 			if (!$entry)
-				throw new Exception(Blocks::t(TranslationCategory::Content, 'No entry exists with the ID '.$entry->id));
+				throw new Exception(Blocks::t(TranslationCategory::Content, 'No entry exists with the Id “{entryId}”.', array('{entryId}' => $entry->id)));
 		}
 
 		$version = new EntryVersion();

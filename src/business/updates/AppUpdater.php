@@ -29,21 +29,32 @@ class AppUpdater implements IUpdater
 	 */
 	public function checkRequirements()
 	{
-		$installedMysqlVersion = blx()->db->serverVersion;
-		$requiredMysqlVersion = blx()->params['requiredMysqlVersion'];
+		$installedMySqlVersion = blx()->db->serverVersion;
+		$requiredMySqlVersion = blx()->params['requiredMysqlVersion'];
 		$requiredPhpVersion = blx()->params['requiredPhpVersion'];
 
 		$phpCompat = version_compare(PHP_VERSION, $requiredPhpVersion, '>=');
-		$databaseCompat = version_compare($installedMysqlVersion, $requiredMysqlVersion, '>=');
+		$databaseCompat = version_compare($installedMySqlVersion, $requiredMySqlVersion, '>=');
 
 		if (!$phpCompat && !$databaseCompat)
-			throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and MySQL version '.$requiredMysqlVersion.' or higher.  You have PHP version '.PHP_VERSION.' and MySQL version '.$installedMysqlVersion.' installed.'));
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and MySQL version "{requiredMySqlVersion}" or higher.  You have PHP version "{installedPhpVersion}" and MySQL version "{installedMySqlVersion}" installed.'),
+				array('{requiredPhpVersion}' => $requiredMySqlVersion,
+				      '{installedPhpVersion}' => PHP_VERSION,
+				      '{requiredMySqlVersion}' => $requiredMySqlVersion,
+				      '{installedMySqlVersion}' => $installedMySqlVersion
+				));
 		else
 			if (!$phpCompat)
-				throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update cannot be installed because Blocks requires PHP version '.$requiredPhpVersion.' or higher and you have PHP version '.PHP_VERSION.' installed.'));
+				throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.'),
+					array('{requiredPhpVersion}' => $requiredMySqlVersion,
+					      '{installedPhpVersion}' => PHP_VERSION
+					));
 			else
 				if (!$databaseCompat)
-					throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update cannot be installed because Blocks requires MySQL version '.$requiredMysqlVersion.' or higher and you have MySQL version '.PHP_VERSION.' installed.'));
+					throw new Exception(Blocks::t(TranslationCategory::Updating, 'The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.'),
+						array('{requiredMySqlVersion}' => $requiredMySqlVersion,
+						      '{installedMySqlVersion}' => $installedMySqlVersion
+						));
 
 
 	}
@@ -85,7 +96,7 @@ class AppUpdater implements IUpdater
 		// Validate that the paths in the update manifest file are all writable by Blocks
 		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
 		if (!$this->validateManifestPathsWritable())
-			throw new Exception(Blocks::t(TranslationCategory::Updating, 'Blocks needs to be able to write to the follow files, but can\'t: '.implode(',', $this->_writableErrors)));
+			throw new Exception(Blocks::t(TranslationCategory::Updating, 'Blocks needs to be able to write to the follow files, but can’t: {fileList}', array('{fileList}' => implode(',', $this->_writableErrors))));
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);

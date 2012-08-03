@@ -377,28 +377,28 @@ class App extends \CWebApplication
 		$databaseCollation = $this->config->getDbItem('collation');
 
 		if (StringHelper::isNullOrEmpty($databaseServerName))
-			$messages[] = 'The database server name is not set in your db config file.';
+			$messages[] = 'The database server name isn’t set in your db config file.';
 
 		if (StringHelper::isNullOrEmpty($databaseAuthName))
-			$messages[] = 'The database user name is not set in your db config file.';
+			$messages[] = 'The database user name isn’t set in your db config file.';
 
 		if (StringHelper::isNullOrEmpty($databaseName))
-			$messages[] = 'The database name is not set in your db config file.';
+			$messages[] = 'The database name isn’t set in your db config file.';
 
 		if (StringHelper::isNullOrEmpty($databasePort))
-			$messages[] = 'The database port is not set in your db config file.';
+			$messages[] = 'The database port isn’t set in your db config file.';
 
 		if (StringHelper::isNullOrEmpty($databaseTablePrefix))
-			$messages[] = 'The database table prefix is not set in your db config file.';
+			$messages[] = 'The database table prefix isn’t set in your db config file.';
 
 		if (StringHelper::isNullOrEmpty($databaseCharset))
-			$messages[] = 'The database charset is not set in your db config file.';
+			$messages[] = 'The database charset isn’t set in your db config file.';
 
 		if (StringHelper::isNullOrEmpty($databaseCollation))
-			$messages[] = 'The database collation is not set in your db config file.';
+			$messages[] = 'The database collation isn’t set in your db config file.';
 
 		if (!empty($messages))
-			throw new Exception(Blocks::t(TranslationCategory::Configuration, implode(PHP_EOL, $messages)));
+			throw new Exception(Blocks::t(TranslationCategory::Configuration, 'Database configuration errors: {errorList}', array('{errorList}' => implode(PHP_EOL, $messages))));
 
 		try
 		{
@@ -412,7 +412,7 @@ class App extends \CWebApplication
 		}
 
 		if (!empty($messages))
-			throw new Exception(Blocks::t(TranslationCategory::Configuration, implode(PHP_EOL, $messages)));
+			throw new Exception(Blocks::t(TranslationCategory::Configuration, 'Database configuration errors: {errorList}', array('{errorList}' => implode(PHP_EOL, $messages))));
 	}
 
 	/**

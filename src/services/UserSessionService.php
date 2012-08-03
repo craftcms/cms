@@ -48,7 +48,7 @@ class UserSessionService extends \CWebUser
 			$request->redirect($url);
 		}
 		else
-			throw new HttpException(403, Blocks::t(TranslationCategory::Session, 'Login Required'));
+			throw new HttpException(403, Blocks::t(TranslationCategory::Session, 'Login is required.'));
 	}
 
 	/**

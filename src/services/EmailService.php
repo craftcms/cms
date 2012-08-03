@@ -114,7 +114,7 @@ class EmailService extends \CApplicationComponent
 		}
 
 		if (!$email->send())
-			throw new Exception(Blocks::t(TranslationCategory::Email, $email->errorInfo));
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $email->errorInfo)));
 
 		return true;
 	}
@@ -142,7 +142,7 @@ class EmailService extends \CApplicationComponent
 
 			$message .= '.';
 
-			throw new Exception(Blocks::t(TranslationCategory::Email, $message));
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $message)));
 		}
 
 		// Subject is required.
