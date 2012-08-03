@@ -70,9 +70,9 @@ class InstallService extends \CApplicationComponent
 
 			// Populate the info table
 			$info = new Info();
-			$info->version = Blocks::getVersion(false);
-			$info->build = Blocks::getBuild(false);
-			$info->release_date = Blocks::getReleaseDate(false);
+			$info->version = Blocks::getVersion();
+			$info->build = Blocks::getBuild();
+			$info->release_date = Blocks::getReleaseDate();
 			$info->on = true;
 			$info->save();
 

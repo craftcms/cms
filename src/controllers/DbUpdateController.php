@@ -31,7 +31,7 @@ class DbUpdateController extends BaseController
 			if (blx()->migrations->runToTop())
 			{
 				// update db with version info.
-				if (blx()->updates->setNewBlocksInfo(Blocks::getVersion(false), Blocks::getBuild(false), Blocks::getReleaseDate(false)))
+				if (blx()->updates->setNewBlocksInfo(Blocks::getVersion(), Blocks::getBuild(), Blocks::getReleaseDate()))
 				{
 					// flush update cache.
 					blx()->updates->flushUpdateInfoFromCache();
