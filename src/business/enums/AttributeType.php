@@ -54,6 +54,5 @@ class AttributeType
 	const Version      = 'version';
 	const Url          = 'url';
 	const Build        = 'build';
-	const Product      = 'product';
 	const LicenseKey   = 'licensekey';
 }
