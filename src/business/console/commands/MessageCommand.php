@@ -23,6 +23,7 @@ class MessageCommand extends \MessageCommand
 
 		foreach ($translators as $translator)
 		{
+			$translator = str_replace('.', '\.', $translator);
 			$n = preg_match_all('/\b'.$translator.'\s*\(\s*(\'.*?(?<!\\\\)\'|".*?(?<!\\\\)")\s*,\s*(\'.*?(?<!\\\\)\'|".*?(?<!\\\\)")\s*[,\)]/s', $subject, $matches, PREG_SET_ORDER);
 
 			for ($i = 0; $i < $n; ++$i)
