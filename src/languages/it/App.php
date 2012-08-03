@@ -24,7 +24,6 @@ return array (
   'Could not hash the given password.' => '',
   'GET param “{name}” doesn’t exist.' => '',
   'IsNullOrEmpty requires a string.' => '',
-  'Missing version, build or product.' => '',
   'No site exists with the Id “{siteId}”.' => '',
   'No user exists with the Id “{userId}”.' => '',
   'No widget exists with the Id “{widgetId}”.' => '',

@@ -86,31 +86,6 @@ class UpdateHelper
 
 	/**
 	 * @static
-	 * @param $version
-	 * @param $build
-	 * @param $product
-	 * @return string
-	 * @throws Exception
-	 */
-	public static function constructAppReleasePatchFileName($version, $build, $product)
-	{
-		if(StringHelper::isNullOrEmpty($version) || StringHelper::isNullOrEmpty($build) || StringHelper::isNullOrEmpty($product))
-			throw new Exception(Blocks::t(TranslationCategory::App, 'Missing version, build or product.'));
-
-		switch ($product)
-		{
-			case Product::Blocks:
-				return "Blocks{$version}.{$build}_patch.zip";
-
-			case Product::BlocksPro:
-				return "BlocksPro{$version}.{$build}_patch.zip";
-		}
-
-		throw new Exception('Unknown Blocks Product: '.$product);
-	}
-
-	/**
-	 * @static
 	 * @param $line
 	 * @return bool
 	 */
