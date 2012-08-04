@@ -164,6 +164,7 @@ class SitesService extends \CApplicationComponent
 	 */
 	public function getCurrentSite()
 	{
+		return new Site();
 		if ($this->_currentSite === null)
 		{
 			// Is a site being requested index.php?
