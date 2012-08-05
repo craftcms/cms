@@ -10,7 +10,6 @@ return array(
 	'removeOld'     => true,
 	'translator'    => 'Blocks::t,blx.t',
 	'exclude'       => array(
-		'yiilite.php',
 		'yiit.php',
 		'/blocks/app/framework',
 		'/blocks/app/languages',

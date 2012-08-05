@@ -21,7 +21,7 @@ class DbConnection extends \CDbConnection
 
 	/**
 	 * @param null $query
-	 * @return \Blocks\DbCommand|\CDbCommand
+	 * @return DbCommand
 	 */
 	public function createCommand($query = null)
 	{

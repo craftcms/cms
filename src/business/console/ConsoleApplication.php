@@ -45,7 +45,7 @@ class ConsoleApplication extends \CConsoleApplication
 	}
 
 	/**
-	 * @return \Blocks\ConsoleCommandRunner|\CConsoleCommandRunner
+	 * @return ConsoleCommandRunner
 	 */
 	protected function createCommandRunner()
 	{
