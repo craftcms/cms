@@ -70,7 +70,7 @@ blx.Dashboard = blx.Base.extend({
 			this.widgets[i].detach();
 		}
 
-		// Remove the old columns
+		// Delete the old columns
 		if (this.cols)
 		{
 			for (var j = 0; j < this.cols.length; j++)
