@@ -93,6 +93,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @return EmailVariable
+	 */
+	public function email()
+	{
+		return new EmailVariable();
+	}
+
+	/**
 	 * @return PluginsVariable
 	 */
 	public function plugins()
