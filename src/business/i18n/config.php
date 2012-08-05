@@ -1,7 +1,5 @@
 <?php
-/**
- * This is the configuration for generating language translations for Blocks. It is used by the 'yiic message' command.
- */
+
 return array(
 	'sourcePath'    => dirname(__FILE__).'/../../../../',
 	'messagePath'   => dirname(__FILE__).'/../../languages',
