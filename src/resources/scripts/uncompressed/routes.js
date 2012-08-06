@@ -283,7 +283,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			return;
 
 		this.loading = true;
-		this.$submitBtn.addClass('active')
+		this.$submitBtn.addClass('active');
 		this.$spinner.show();
 
 		var data = {};
@@ -331,10 +331,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 				this.route.updateHtmlFromModal();
 				this.hide();
 
-				blx.displayNotice('Route saved.')
+				blx.displayNotice('Route saved.');
 			}
 			else
-				blx.displayError('Couldn’t save route.')
+				blx.displayError('Couldn’t save route.');
 
 			this.$submitBtn.removeClass('active');
 			this.$spinner.hide();
