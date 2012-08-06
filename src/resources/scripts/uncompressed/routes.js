@@ -115,7 +115,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 	$urlInput: null,
 	urlElements: null,
 	$templateInput: null,
-	$submitBtn: null,
+	$saveBtn: null,
 	$spinner: null,
 	loading: false,
 
@@ -162,7 +162,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		this.$heading = this.$container.find('h1:first');
 		this.$urlInput = this.$container.find('.url:first');
 		this.$templateInput = this.$container.find('.template:first');
-		this.$submitBtn = this.$container.find('.submit:first');
+		this.$saveBtn = this.$container.find('.submit:first');
 		this.$cancelBtn = this.$container.find('.cancel:first');
 		this.$spinner = this.$container.find('.spinner:first');
 		this.$deleteBtn = this.$container.find('.delete:first');
@@ -221,10 +221,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			this.addUrlVar(event.currentTarget);
 		});
 
-		// Submit/Cancel/Delete
-		this.addListener(this.$submitBtn, 'click', 'submit');
+		// Save/Cancel/Delete
+		this.addListener(this.$saveBtn, 'click', 'saveRoute');
 		this.addListener(this.$cancelBtn, 'click', 'cancel');
-		this.addListener(this.$deleteBtn, 'click', 'delete');
+		this.addListener(this.$deleteBtn, 'click', 'deleteRoute');
 	},
 
 	addUrlVar: function(elem)
@@ -277,13 +277,13 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		this.base();
 	},
 
-	submit: function()
+	saveRoute: function()
 	{
 		if (this.loading)
 			return;
 
 		this.loading = true;
-		this.$submitBtn.addClass('active');
+		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
 		var data = {};
@@ -336,7 +336,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			else
 				blx.displayError('Couldn’t save route.');
 
-			this.$submitBtn.removeClass('active');
+			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
 			this.loading = false;
 
@@ -351,7 +351,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			this.route.modal = null;
 	},
 
-	delete: function()
+	deleteRoute: function()
 	{
 		if (confirm('Are you sure you want to delete this route?'))
 		{
