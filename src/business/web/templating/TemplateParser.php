@@ -62,15 +62,15 @@ class TemplateParser
 
 	/**
 	 * Creates a marker
-	 * @param array $match The preg_replace_callback match
+	 * @param string $value The value that the marker stands for
 	 * @return string The new marker
 	 * @access protected
 	 */
-	protected function createMarker($match)
+	protected function createMarker($value)
 	{
 		$num = count($this->_markers) + 1;
 		$marker = '[MARKER:'.$num.']';
-		$this->_markers[$marker] = $match[0];
+		$this->_markers[$marker] = $value;
 		return $marker;
 	}
 
@@ -101,8 +101,9 @@ class TemplateParser
 			$code = ' '.$code;
 		}
 
-		$match[0] = '<?php'.$code.'?>';
-		return $this->createMarker($match);
+		$value = '<?php'.$code.'?>';
+		$marker = $this->createMarker($value);
+		return $marker;
 	}
 
 	/**
@@ -114,7 +115,8 @@ class TemplateParser
 	protected function createPhpShortTagMarker($match)
 	{
 		$match[1] = 'echo '.$match[1];
-		return $this->createPhpMarker($match);
+		$marker = $this->createPhpMarker($match);
+		return $marker;
 	}
 
 	/**
@@ -124,7 +126,20 @@ class TemplateParser
 	 */
 	protected function extractStrings(&$template)
 	{
-		$template = preg_replace_callback('/([\'"]).*\1/Ums', array(&$this, 'createMarker'), $template);
+		$template = preg_replace_callback('/([\'"]).*\1/Ums', array(&$this, 'createStringMarker'), $template);
+	}
+
+	/**
+	 * Creates a string marker.
+	 *
+	 * @param array $match The preg_replace_callback match
+	 * @return string The new string marker
+	 */
+	protected function createStringMarker($match)
+	{
+		$value = 'Blocks::t(TranslationCategory::General, '.$match[0].')';
+		$marker = $this->createMarker($value);
+		return $marker;
 	}
 
 	/**
