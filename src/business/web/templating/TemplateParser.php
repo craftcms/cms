@@ -242,7 +242,7 @@ class TemplateParser
 					}
 				}
 
-				throw new TemplateParserException(Blocks::t(TranslationCategory::TemplateProcessing, 'Template Processing Error: {errorMessage}', array('{errorMessage}' => $message)), $numMatch);
+				throw new TemplateParserException(Blocks::t('Template Processing Error: {errorMessage}', array('{errorMessage}' => $message)), $numMatch);
 			}
 		}
 		else
@@ -282,7 +282,7 @@ class TemplateParser
 	protected function parseLayoutTag($body)
 	{
 		if (!preg_match('/^('.self::stringPattern.'|'.self::varPattern.self::subVarPattern.'?)(\s+.*)?$/x', $body, $match))
-			throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'Invalid layout tag.'));
+			throw new Exception(Blocks::t('Invalid layout tag.'));
 
 		$template = $match[1];
 		$body = isset($match[7]) ? trim($match[7]) : '';
@@ -334,7 +334,7 @@ class TemplateParser
 	protected function parseIncludeTag($body)
 	{
 		if (!preg_match('/^('.self::stringPattern.'|'.self::varPattern.self::subVarPattern.'?)(\s+.*)?$/x', $body, $match))
-			throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'Invalid include tag.'));
+			throw new Exception(Blocks::t('Invalid include tag.'));
 
 		$template = $match[1];
 		$body = isset($match[7]) ? trim($match[7]) : '';
@@ -501,21 +501,21 @@ class TemplateParser
 			$nextEq = strpos($template, '=');
 
 			if (!$nextEq)
-				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'Invalid parameter.'));
+				throw new Exception(Blocks::t('Invalid parameter.'));
 
 			$paramName = rtrim(substr($template, 0, $nextEq));
 
 			if (!preg_match('/^'.self::varPattern.'$/', $paramName))
-				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'Invalid parameter.'));
+				throw new Exception(Blocks::t('Invalid parameter.'));
 
 			$remainingTemplate = ltrim(substr($template, $nextEq+1));
 
 			if (!$remainingTemplate)
-				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'No parameter value set.'));
+				throw new Exception(Blocks::t('No parameter value set.'));
 
 			$recurringSubVarPattern = substr(self::subVarPattern, 0, -1).'(?P>subtag)?)';
 			if (!preg_match('/^('.self::stringPattern.'|\d*\.?\d+|'.self::varPattern.$recurringSubVarPattern.'?)(\s+|$)/x', $remainingTemplate, $match))
-				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'Invalid parameter value.'));
+				throw new Exception(Blocks::t('Invalid parameter value.'));
 
 			$paramValueLength = strlen($match[0]);
 			$paramValue = rtrim(substr($remainingTemplate, 0, $paramValueLength));
