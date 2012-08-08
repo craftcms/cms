@@ -121,7 +121,7 @@ class DashboardService extends \CApplicationComponent
 		// Get the current user
 		$user = blx()->users->getCurrentUser();
 		if (!$user)
-			throw new Exception(Blocks::t(TranslationCategory::Session, 'There is no current user.'));
+			throw new Exception(Blocks::t('There is no current user.'));
 
 		$transaction = blx()->db->beginTransaction();
 		try

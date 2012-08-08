@@ -18,7 +18,7 @@ class CompositeUniqueValidator extends \CValidator
 		$with = explode(',', $this->with);
 
 		if (count($with) < 1)
-			throw new Exception(Blocks::t(TranslationCategory::App, "Attribute “with” not set."));
+			throw new Exception(Blocks::t('Attribute “with” not set.'));
 
 		$uniqueValidator = new \CUniqueValidator();
 		$uniqueValidator->attributes = array($attribute);

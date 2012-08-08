@@ -167,10 +167,10 @@ class Content extends \CModel
 	public function insert()
 	{
 		if (!$this->getIsNew())
-			throw new Exception(Blocks::t(TranslationCategory::Content, 'The content row can’t be inserted into the database because it’s not new.'));
+			throw new Exception(Blocks::t('The content row can’t be inserted into the database because it’s not new.'));
 
 		if ($this->record->getIsNewRecord())
-			throw new Exception(Blocks::t(TranslationCategory::Content, 'The content row can’t be inserted into the database before it’s record has been saved.'));
+			throw new Exception(Blocks::t('The content row can’t be inserted into the database before it’s record has been saved.'));
 
 		// Save the foreign key 
 		$this->setValue($this->foreignKey, $this->record->id);
@@ -190,7 +190,7 @@ class Content extends \CModel
 	public function update()
 	{
 		if ($this->getIsNew())
-			throw new Exception(Blocks::t(TranslationCategory::Content, 'The content row can’t be updated because it’s new.'));
+			throw new Exception(Blocks::t('The content row can’t be updated because it’s new.'));
 
 		$content = $this->getContent();
 		$id = $this->getValue('id');

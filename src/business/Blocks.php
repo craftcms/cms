@@ -313,7 +313,7 @@ class Blocks extends \Yii
 	 *
 	 * @return string|void
 	 */
-	public static function t($category = 'App', $message, $params = array(), $source = null, $language = null)
+	public static function t($message, $params = array(), $category = 'blocks', $source = null, $language = null)
 	{
 		return parent::t($category, $message, $params, $source, $language);
 	}

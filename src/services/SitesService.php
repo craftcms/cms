@@ -63,7 +63,7 @@ class SitesService extends \CApplicationComponent
 			$site = Site::model()->with('sections')->findById($siteId);
 
 			if (!$site)
-				throw new Exception(Blocks::t(TranslationCategory::App, 'No site exists with the Id “{siteId}”.', array('{siteId}' => $siteId)));
+				throw new Exception(Blocks::t('No site exists with the Id “{siteId}”.', array('{siteId}' => $siteId)));
 
 			$isNewSite = false;
 			$oldSiteHandle = $site->handle;
@@ -194,7 +194,7 @@ class SitesService extends \CApplicationComponent
 					));
 
 					if (empty($site))
-						throw new Exception(Blocks::t(TranslationCategory::App, 'There is no primary site.'));
+						throw new Exception(Blocks::t('There is no primary site.'));
 				}
 			}
 

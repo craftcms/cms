@@ -20,7 +20,7 @@ class EmailVariable
 		{
 			$content = blx()->email->getMessageContent($message->id);
 			$return[] = array(
-				'heading'     => Blocks::t(TranslationCategory::Email, $message->key.'_heading'),
+				'heading'     => Blocks::t($message->key.'_heading'),
 				'id'          => $message->id,
 				'subject'     => $content->subject,
 				'bodyPreview' => preg_replace('/\s+/', ' ', $content->body)

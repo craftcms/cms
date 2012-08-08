@@ -22,28 +22,28 @@ class RequirementsChecker extends \CComponent
 
 		$this->_requirements = array(
 			new Requirement(
-				'PHP Version',
+				Blocks::t('PHP Version'),
 				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
-				'PHP '.$requiredPhpVersion.' or higher is required.'
+				Blocks::t('PHP {requiredPhpVersion} or higher is required.', array('{requiredPhpVersion}' => $requiredPhpVersion))
 			),
 			new Requirement(
-				'$_SERVER Variable',
+				Blocks::t('$_SERVER Variable'),
 				($message = $this->checkServerVar()) === '',
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
 				$message
 			),
 			new Requirement(
-				'Reflection extension',
+				Blocks::t('Reflection extension'),
 				class_exists('Reflection', false),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
 				''
 			),
 			new Requirement(
-				'PCRE extension',
+				Blocks::t('PCRE extension'),
 				extension_loaded("pcre"),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
@@ -57,87 +57,87 @@ class RequirementsChecker extends \CComponent
 				''
 			),
 			new Requirement(
-				'DOM extension',
+				Blocks::t('DOM extension'),
 				class_exists("DOMDocument",false),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CHtmlPurifier">CHtmlPurifier</a>, <a href="http://www.yiiframework.com/doc/api/CWsdlGenerator">CWsdlGenerator</a>',
 				''
 			),
 			new Requirement(
-				'PDO extension',
+				Blocks::t('PDO extension'),
 				extension_loaded('pdo'),
 				false,
-				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
+				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
 				''
 			),
 			new Requirement(
-				'PDO SQLite extension',
+				Blocks::t('PDO SQLite extension'),
 				extension_loaded('pdo_sqlite'),
 				false,
-				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
-				'This is required if you are using SQLite database.'
+				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
+				Blocks::t('This is required if you are using SQLite database.')
 			),
 			new Requirement(
-				'PDO MySQL extension',
+				Blocks::t('PDO MySQL extension'),
 				extension_loaded('pdo_mysql'),
 				false,
-				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
-				'This is required if you are using MySQL database.'
+				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
+				Blocks::t('This is required if you are using MySQL database.')
 			),
 			new Requirement(
-				'PDO PostgreSQL extension',
+				Blocks::t('PDO PostgreSQL extension'),
 				extension_loaded('pdo_pgsql'),
 				false,
-				'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>',
-				'This is required if you are using PostgreSQL database.'),
+				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
+				Blocks::t('This is required if you are using PostgreSQL database.')),
 			new Requirement(
-				'Memcache extension',
+				Blocks::t('Memcache extension'),
 				extension_loaded("memcache") || extension_loaded("memcached"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CMemCache">CMemCache</a>',
-				extension_loaded("memcached") ? 'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' : 'Only required if you plan on using Memcache.'
+				extension_loaded("memcached") ? Blocks::t('To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.') : Blocks::t('Only required if you plan on using Memcache.')
 			),
 			new Requirement(
-				'APC extension',
+				Blocks::t('APC extension'),
 				extension_loaded("apc"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CApcCache">CApcCache</a>',
-				'Only required if you plan on APC for caching.'
+				Blocks::t('Only required if you plan on APC for caching.')
 			),
 			new Requirement(
-				'Mcrypt extension',
+				Blocks::t('Mcrypt extension'),
 				extension_loaded("mcrypt"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
-				'This is required by encrypt and decrypt methods.'
+				Blocks::t('This is required by encrypt and decrypt methods.')
 			),
 			new Requirement(
-				'SOAP extension',
+				Blocks::t('SOAP extension'),
 				extension_loaded("soap"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CWebService">CWebService</a>, <a href="http://www.yiiframework.com/doc/api/CWebServiceAction">CWebServiceAction</a>',
 				''
 			),
 			new Requirement(
-				'GD extension w/ FreeType support',
+				Blocks::t('GD extension w/ FreeType support'),
 				($message = $this->_checkGD()) === '',
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CCaptchaAction">CCaptchaAction</a>, Assets',
 				$message
 			),
 			new Requirement(
-				'MySQL version',
+				Blocks::t('MySQL version'),
 				version_compare(blx()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
-				'MySQL '.$requiredMysqlVersion.' or higher is required to run @@@productDisplay@@@.'
+				Blocks::t('MySQL {requiredMySqlVersion} or higher is required to run @@@productDisplay@@@.', array('requiredMySqlVersion' => $requiredMysqlVersion))
 			),
 			new Requirement(
-				'Glob',
+				Blocks::t('Glob'),
 				function_exists('glob'),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
-				'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.'
+				Blocks::t('Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.')
 			),
 		);
 	}
@@ -158,13 +158,13 @@ class RequirementsChecker extends \CComponent
 		}
 
 		if (!empty($missing))
-			return '$_SERVER does not have '.implode(', ', $missing);
+			return Blocks::t('$_SERVER does not have {messages}.', array('{messages}' => implode(', ', $missing)));
 
 		if (!isset($_SERVER["REQUEST_URI"]) && isset($_SERVER["QUERY_STRING"]))
-			return 'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.';
+			return Blocks::t('Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.');
 
 		if (!isset($_SERVER["PATH_INFO"]) && strpos($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"]) !== 0)
-			return 'Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.';
+			return Blocks::t('Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.');
 
 		return '';
 	}
@@ -182,10 +182,10 @@ class RequirementsChecker extends \CComponent
 			if ($gdInfo['FreeType Support'])
 				return '';
 
-			return 'GD installed<br />FreeType support not installed';
+			return Blocks::t('GD installed').'<br />'.Blocks::t('FreeType support not installed.');
 		}
 
-		return 'GD not installed';
+		return Blocks::t('GD not installed');
 	}
 
 	/**
@@ -194,11 +194,10 @@ class RequirementsChecker extends \CComponent
 	 */
 	private function _calculateServerInfo()
 	{
-		$info[] = '<a href="http://www.blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion().' build '.Blocks::getBuild(false);
+		$info[] = '<a href="http://www.blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion().' '.Blocks::t('build').' '.Blocks::getBuild(false);
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Blocks::getYiiVersion();
-		$info[] = @strftime('%Y-%m-%d %H:%M', time());
-
+		$info[] =  \CTimestamp::formatDate(blx()->locale->getTimeFormat());;
 		return implode(' | ', $info);
 	}
 

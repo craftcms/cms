@@ -288,7 +288,7 @@ class HttpRequest extends \CHttpRequest
 		$value = $this->getParam($name);
 
 		if ($value === null)
-			throw new Exception(Blocks::t(TranslationCategory::App, 'Param “{name}” doesn’t exist.', array('{name}' => $name)));
+			throw new Exception(Blocks::t('Param “{name}” doesn’t exist.', array('{name}' => $name)));
 
 		return $value;
 	}
@@ -304,7 +304,7 @@ class HttpRequest extends \CHttpRequest
 		$value = $this->getQuery($name);
 
 		if ($value === null)
-			throw new Exception(Blocks::t(TranslationCategory::App, 'GET param “{name}” doesn’t exist.', array('{name}' => $name)));
+			throw new Exception(Blocks::t('GET param “{name}” doesn’t exist.', array('{name}' => $name)));
 
 		return $value;
 	}
@@ -320,7 +320,7 @@ class HttpRequest extends \CHttpRequest
 		$value = $this->getPost($name);
 
 		if ($value === null)
-			throw new Exception(Blocks::t(TranslationCategory::App, 'POST param “{name}” doesn’t exist.', array('{name}' => $name)));
+			throw new Exception(Blocks::t('POST param “{name}” doesn’t exist.', array('{name}' => $name)));
 
 		return $value;
 	}

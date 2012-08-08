@@ -55,7 +55,7 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 		if ($checkSourcePath)
 		{
 			if (!is_file($sourcePath) || realpath($sourcePath) === false)
-				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, 'The template “{path}” does not exist.', array('{path}' => $sourcePath)));
+				throw new Exception(Blocks::t('The template “{path}” does not exist.', array('{path}' => $sourcePath)));
 		}
 
 		$this->_sourcePath    = $sourcePath;
@@ -181,7 +181,7 @@ abstract class BaseTemplateProcessor extends \CApplicationComponent
 		}
 		catch (TemplateProcessorException $e)
 		{
-			throw new TemplateProcessorException(Blocks::t(TranslationCategory::TemplateProcessing, 'Template Processing Error: {errorMessage}', array('{errorMessage}' => $e->getMessage())), $this->_sourcePath, $e->getLine());
+			throw new TemplateProcessorException(Blocks::t('Template Processing Error: {errorMessage}', array('{errorMessage}' => $e->getMessage())), $this->_sourcePath, $e->getLine());
 		}
 
 		// Save the parsed template to the parsed path

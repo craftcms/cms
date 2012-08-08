@@ -121,7 +121,7 @@ class EmailService extends \CApplicationComponent
 		$emailSettings = $this->getEmailSettings();
 
 		if (!isset($emailSettings['protocol']))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not determine how to send the email.  Check your email settings.'));
+			throw new Exception(Blocks::t('Could not determine how to send the email.  Check your email settings.'));
 
 		$email = new \PhpMailer(true);
 
@@ -141,7 +141,7 @@ class EmailService extends \CApplicationComponent
 				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
 				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{
-					throw new Exception(Blocks::t(TranslationCategory::Email, 'Host, port, username and password must be configured under your email settings.'));
+					throw new Exception(Blocks::t('Host, port, username and password must be configured under your email settings.'));
 				}
 
 				if (!isset($emailSettings['timeout']))
@@ -211,7 +211,7 @@ class EmailService extends \CApplicationComponent
 		}
 
 		if (!$email->send())
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $email->errorInfo)));
+			throw new Exception(Blocks::t('Email error: {errorMessage}', array('{errorMessage}' => $email->errorInfo)));
 
 		return true;
 	}
@@ -239,16 +239,16 @@ class EmailService extends \CApplicationComponent
 
 			$message .= '.';
 
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $message)));
+			throw new Exception(Blocks::t('Email error: {errorMessage}', array('{errorMessage}' => $message)));
 		}
 
 		// Subject is required.
 		if (StringHelper::isNullOrEmpty($email->subject))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'The subject is required when attempting to send an email.'));
+			throw new Exception(Blocks::t('The subject is required when attempting to send an email.'));
 
 		// HTML OR Text body is required.
 		if (StringHelper::isNullOrEmpty($email->html) && StringHelper::isNullOrEmpty($email->text))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Either the email Html body or text body is required when sending an email.'));
+			throw new Exception(Blocks::t('Either the email Html body or text body is required when sending an email.'));
 
 		// Render the email templates
 		$emailContent = blx()->controller->loadEmailTemplate($email, $variables);
@@ -259,11 +259,11 @@ class EmailService extends \CApplicationComponent
 
 		// Check to see if the subject rendered.
 		if (!$subjectExists)
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not render the subject email template for the requested email.'));
+			throw new Exception(Blocks::t('Could not render the subject email template for the requested email.'));
 
 		// Check to see if the HTML or Text body rendered.
 		if (!$htmlExists && !$textExists)
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not render the html email template or the text email template body for the requested email.'));
+			throw new Exception(Blocks::t('Could not render the html email template or the text email template body for the requested email.'));
 
 		// Set the subject.
 		$emailMessage->setSubject($emailContent['subject']);
@@ -298,7 +298,7 @@ class EmailService extends \CApplicationComponent
 				$emailMessage->setBody($emailContent['text']);
 			}
 			else
-				throw new Exception(Blocks::t(TranslationCategory::Email, 'A non-HTML email was specified, but could not render the text template.'));
+				throw new Exception(Blocks::t('A non-HTML email was specified, but could not render the text template.'));
 		}
 
 		// Send it!
@@ -383,7 +383,7 @@ class EmailService extends \CApplicationComponent
 		{
 			$email->smtpAuth = true;
 			if ((!isset($emailSettings['username']) && StringHelper::isNullOrEmpty($emailSettings['username'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
-				throw new Exception(Blocks::t(TranslationCategory::Email, 'Username and password are required.  Check your email settings.'));
+				throw new Exception(Blocks::t('Username and password are required.  Check your email settings.'));
 
 			$email->userName = $emailSettings['username'];
 			$email->password = $emailSettings['password'];
@@ -395,10 +395,10 @@ class EmailService extends \CApplicationComponent
 		$email->smtpSecure = $emailSettings['smtpSecureTransportType'] != 'none' ? $emailSettings['smtpSecureTransportType'] : null;
 
 		if (!isset($emailSettings['host']))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'You must specify a host name in your email settings.'));
+			throw new Exception(Blocks::t('You must specify a host name in your email settings.'));
 
 		if (!isset($emailSettings['port']))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'You must specify a port in your email settings.'));
+			throw new Exception(Blocks::t('You must specify a port in your email settings.'));
 
 		if (!isset($emailSettings['timeout']))
 			$emailSettings['timeout'] = $this->_defaultEmailTimeout;
