@@ -1,6 +1,11 @@
 {layout "settings/email/_layout" title="Messages"}
 
 
+{region "styles"}
+	{include "_includes/css_include" file="styles/email_messages.css"}
+{/region}
+
+
 {region "settings"}
 
 	<div id="messages">
@@ -9,7 +14,7 @@
 				<div class="heading">
 					<h3>{:message.heading}</h3>
 				</div>
-				<div class="pane message">
+				<div class="pane message" data-id="{:message.id}">
 					<div class="subject">{:message.subject}</div>
 					<div class="body">{:message.bodyPreview}</div>
 				</div>
@@ -20,6 +25,6 @@
 {/region}
 
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/email_messages.css"}
+{region "scripts"}
+	{include "_includes/js_include" file="email_messages.js"}
 {/region}

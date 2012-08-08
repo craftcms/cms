@@ -32,7 +32,7 @@ var Routes = blx.Base.extend({
 
 	getRoutes: function()
 	{
-		return $('#routes').children();
+		return this.$container.children();
 	},
 
 	updateRouteOrder: function()
@@ -116,14 +116,16 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 	urlElements: null,
 	$templateInput: null,
 	$saveBtn: null,
+	$cancelBtn: null,
 	$spinner: null,
+	$deleteBtn: null,
 	loading: false,
 
 	init: function(route)
 	{
 		this.route = route;
 
-		var $container = $('<div class="modal route-settings">' +
+		var $container = $('<form class="modal route-settings">' +
 			'<h1></h1>' +
 			'<div class="field">' +
 				'<div class="heading">' +
@@ -151,21 +153,18 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 				'<div class="spinner" style="display: none;"></div>' +
 				'<a class="delete">Delete</a>' +
 			'</div>' +
-		'</div>');
+		'</form>');
 
 		$container.appendTo(blx.$body);
 
-		this.base($container);
-		this.centerInViewport();
-
 		// Find the other elements
-		this.$heading = this.$container.find('h1:first');
-		this.$urlInput = this.$container.find('.url:first');
-		this.$templateInput = this.$container.find('.template:first');
-		this.$saveBtn = this.$container.find('.submit:first');
-		this.$cancelBtn = this.$container.find('.cancel:first');
-		this.$spinner = this.$container.find('.spinner:first');
-		this.$deleteBtn = this.$container.find('.delete:first');
+		this.$heading = $container.find('h1:first');
+		this.$urlInput = $container.find('.url:first');
+		this.$templateInput = $container.find('.template:first');
+		this.$saveBtn = $container.find('.submit:first');
+		this.$cancelBtn = $container.find('.cancel:first');
+		this.$spinner = $container.find('.spinner:first');
+		this.$deleteBtn = $container.find('.delete:first');
 
 		// Hide the Delete button for new routes
 		if (!this.route)
@@ -214,6 +213,8 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			this.$urlInput.focus();
 		}
 
+		this.base($container);
+
 		// We must add vars on mousedown, so that text elements don't have a chance
 		// to lose focus, thus losing the carot position.
 		var $urlVars = this.$container.find('.url-tokens').children('div');
@@ -222,7 +223,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		});
 
 		// Save/Cancel/Delete
-		this.addListener(this.$saveBtn, 'click', 'saveRoute');
+		this.addListener(this.$container, 'submit', 'saveRoute');
 		this.addListener(this.$cancelBtn, 'click', 'cancel');
 		this.addListener(this.$deleteBtn, 'click', 'deleteRoute');
 	},
@@ -277,14 +278,12 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		this.base();
 	},
 
-	saveRoute: function()
+	saveRoute: function(event)
 	{
+		event.preventDefault();
+
 		if (this.loading)
 			return;
-
-		this.loading = true;
-		this.$saveBtn.addClass('active');
-		this.$spinner.show();
 
 		var data = {};
 
@@ -307,6 +306,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		}
 
 		data['template'] = this.$templateInput.val();
+
+		this.loading = true;
+		this.$saveBtn.addClass('active');
+		this.$spinner.show();
 	
 		$.post(blx.actionUrl+'routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
 
