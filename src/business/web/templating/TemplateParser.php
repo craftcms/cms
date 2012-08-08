@@ -137,7 +137,7 @@ class TemplateParser
 	 */
 	protected function createStringMarker($match)
 	{
-		$value = 'Blocks::t(\''.$match[0].'\')';
+		$value = 'Blocks::t('.$match[0].')';
 		$marker = $this->createMarker($value);
 		return $marker;
 	}
