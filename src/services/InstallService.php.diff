@@ -1,6 +1,6 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-03 07:06:16.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-03 16:24:53.000000000 -0700
-@@ -75,6 +75,7 @@
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-06 12:07:04.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-06 12:33:59.000000000 -0700
+@@ -74,6 +74,7 @@
  			$info->release_date = Blocks::getReleaseDate();
  			$info->site_name = $inputs['sitename'];
  			$info->site_url = $inputs['url'];
@@ -8,19 +8,26 @@
  			$info->on = true;
  			$info->save();
  
-@@ -82,6 +83,16 @@
+@@ -81,6 +82,23 @@
  			$languages = array(blx()->language);
  			blx()->settings->saveSettings('systemsettings', $languages, 'languages');
  
 +			// Register the email messages
-+			$messageKeys = array('verify_email', 'verify_new_email', 'forgot_password');
-+			foreach ($messageKeys as $key)
-+			{
-+				$message = blx()->email->registerMessage($key);
-+				blx()->email->saveMessageContent($message->id,
-+					Blocks::t(TranslationCategory::Email, $key.'_default_subject'),
-+					Blocks::t(TranslationCategory::Email, $key.'_default_body'));
-+			}
++			// No for loop here, so the language tool doesn't wig out.
++			$message = blx()->email->registerMessage('verify_email');
++			blx()->email->saveMessageContent($message->id,
++				Blocks::t('verify_email_default_subject'),
++				Blocks::t('verify_email_default_body'));
++
++			$message = blx()->email->registerMessage('verify_new_email');
++			blx()->email->saveMessageContent($message->id,
++				Blocks::t('verify_new_email_default_subject'),
++				Blocks::t('verify_new_email_default_body'));
++
++			$message = blx()->email->registerMessage('forgot_password');
++			blx()->email->saveMessageContent($message->id,
++				Blocks::t('forgot_password_default_subject'),
++				Blocks::t('forgot_password_default_body'));
 +
  			// Add the user
  			$user = new User();
