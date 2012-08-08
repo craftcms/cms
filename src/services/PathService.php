@@ -75,9 +75,9 @@ class PathService extends \CApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getLanguagesPath()
+	public function getTranslationsPath()
 	{
-		return $this->getAppPath().'languages/';
+		return $this->getAppPath().'translations/';
 	}
 
 	/**

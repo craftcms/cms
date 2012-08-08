@@ -18,7 +18,7 @@ class LocalizationService extends \CApplicationComponent
 		{
 			$this->_translatedLanguages = array();
 
-			$path = blx()->path->getLanguagesPath();
+			$path = blx()->path->getTranslationsPath();
 			$dirs = glob($path.'*', GLOB_ONLYDIR);
 
 			if (is_array($dirs) && count($dirs) > 0)
