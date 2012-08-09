@@ -35,11 +35,15 @@ class EmailService extends \CApplicationComponent
 	 * Returns a system email message by its key.
 	 *
 	 * @param string $key
+	 * @param int $pluginId
 	 * @return EmailMessage
 	 */
-	public function getMessageByKey($key)
+	public function getMessageByKey($key, $pluginId = null)
 	{
-		$message = EmailMessage::model()->findByAttributes(array('key' => $key));
+		$message = EmailMessage::model()->findByAttributes(array(
+			'plugin_id' => $pluginId,
+			'key' => $key
+		));
 		return $message;
 	}
 
