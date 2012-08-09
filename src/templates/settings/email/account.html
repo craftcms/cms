@@ -96,9 +96,10 @@
 				{/if}
 			</div>
 
-			<div id="smtpAuth-field" class="field checkbox">
-				<h3><label>Use Smtp Authentication</h3>
-					<div class="cbwrapper"><input type="checkbox" name="smptAuth" value="y" {if settings.smtpAuth}checked{/if} class="togglefields" data-target="smtpAuthCredentials-field"></div>
+			<div id="smtpAuth-field" class="field">
+				<label>
+					<input type="checkbox" name="smtpAuth" value="y" {if settings.smtpAuth}checked{/if} class="togglefields" data-target="smtpAuthCredentials-field">
+					Use Smtp Authentication
 				</label>
 			</div>
 
@@ -123,9 +124,10 @@
 				</div>
 			</div>
 
-			<div id="smtpKeepAlive-field" class="field checkbox">
-				<h3><label>Use Smtp Keep Alive</h3>
-					<div class="cbwrapper"><input type="checkbox" name="smtpKeepAlive" value="y" {if settings.smtpKeepAlive}checked{/if}></div>
+			<div id="smtpKeepAlive-field" class="field">
+				<label>
+					<input type="checkbox" name="smtpKeepAlive" value="y" {if settings.smtpKeepAlive}checked{/if}>
+					Use Smtp Keep Alive
 				</label>
 			</div>
 			<div id="smtpSecureTransportType-field" class="field">
