@@ -75,8 +75,8 @@ class Et extends \CApplicationComponent
 		$generalSettings = blx()->settings->getSystemSettings('general');
 
 		$this->_package = new EtPackage();
-		$this->_package->url = $generalSettings['url'];
-		$this->_package->licenseKey = $generalSettings['licenseKey'];
+		$this->_package->url = Blocks::getSiteUrl();
+		$this->_package->licenseKey = Blocks::getLicenseKey();
 		$this->_package->product = '@@@product@@@';
 		$this->_package->requestDomain = blx()->request->getServerName();
 		$this->_package->requestIp = blx()->request->getUserHostAddress();
