@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EmailMessage
+class EmailData
 {
 	private $_from;
 	private $_replyTo;

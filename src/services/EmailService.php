@@ -111,11 +111,11 @@ class EmailService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param EmailMessage $emailMessage
+	 * @param EmailData $emailData
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmail(EmailMessage $emailMessage)
+	public function sendEmail(EmailData $emailData)
 	{
 		// Get the saved email settings.
 		$emailSettings = $this->getEmailSettings();
@@ -171,43 +171,43 @@ class EmailService extends \CApplicationComponent
 			}
 		}
 
-		$email->from = $emailMessage->getFrom()->getEmailAddress();
-		$email->fromName = $emailMessage->getFrom()->getName();
-		$email->addReplyTo($emailMessage->getReplyTo()->getEmailAddress(), $emailMessage->getReplyTo()->getName());
+		$email->from = $emailData->getFrom()->getEmailAddress();
+		$email->fromName = $emailData->getFrom()->getName();
+		$email->addReplyTo($emailData->getReplyTo()->getEmailAddress(), $emailData->getReplyTo()->getName());
 
-		foreach ($emailMessage->getTo() as $toAddress)
+		foreach ($emailData->getTo() as $toAddress)
 		{
 			$email->addAddress($toAddress->getEmailAddress(), $toAddress->getName());
 		}
 
-		foreach ($emailMessage->getCc() as $toCcAddress)
+		foreach ($emailData->getCc() as $toCcAddress)
 		{
 			$email->addCc($toCcAddress->getEmailAddress(), $toCcAddress->getName());
 		}
 
-		foreach ($emailMessage->getBcc() as $toBccAddress)
+		foreach ($emailData->getBcc() as $toBccAddress)
 		{
 			$email->addBcc($toBccAddress->getEmailAddress(), $toBccAddress->getName());
 		}
 
-		$email->subject = $emailMessage->getSubject();
+		$email->subject = $emailData->getSubject();
 
 		// See if it's an HTML email.
-		if ($emailMessage->getIsHtml())
+		if ($emailData->getIsHtml())
 		{
 			// They already supplied an alt body (text), use it.
-			if ($emailMessage->getAltBody())
+			if ($emailData->getAltBody())
 			{
-				$email->altBody = $emailMessage->getAltBody();
+				$email->altBody = $emailData->getAltBody();
 			}
 
 			// msgHtml will attempt to set a alt body from the html string if alt body was not supplied earlier.
-			$email->msgHtml($emailMessage->getBody());
+			$email->msgHtml($emailData->getBody());
 		}
 		else
 		{
 			// This is a text email.
-			$email->body = $emailMessage->getBody();
+			$email->body = $emailData->getBody();
 		}
 
 		if (!$email->send())
@@ -217,7 +217,7 @@ class EmailService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param EmailMessage $emailMessage
+	 * @param EmailData    $emailData
 	 * @param              $emailKey
 	 * @param string       $languageCode
 	 * @param array        $variables
@@ -225,7 +225,7 @@ class EmailService extends \CApplicationComponent
 	 * @throws Exception
 	 * @return bool
 	 */
-	public function sendTemplateEmail(EmailMessage $emailMessage, $emailKey, $languageCode = 'en_us', $variables = array(), $pluginClass = null)
+	public function sendTemplateEmail(EmailData $emailData, $emailKey, $languageCode = 'en_us', $variables = array(), $pluginClass = null)
 	{
 		// Get the email by key and plugin from the database.
 		$email = $this->getEmailByKey($emailKey, $pluginClass);
@@ -266,28 +266,28 @@ class EmailService extends \CApplicationComponent
 			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not render the html email template or the text email template body for the requested email.'));
 
 		// Set the subject.
-		$emailMessage->setSubject($emailContent['subject']);
+		$emailData->setSubject($emailContent['subject']);
 
 		// Check if this is an HTML email.
-		if ($emailMessage->getIsHtml())
+		if ($emailData->getIsHtml())
 		{
 			// We were able to render an HTML and Text email template.
 			if ($htmlExists && $textExists)
 			{
-				$emailMessage->setAltBody($emailContent['text']);
-				$emailMessage->setBody($emailContent['html']);
+				$emailData->setAltBody($emailContent['text']);
+				$emailData->setBody($emailContent['html']);
 			}
 
 			// We found an HTML template, but not a text one.
 			elseif ($htmlExists && !$textExists)
 			{
-				$emailMessage->setBody($emailContent['html']);
+				$emailData->setBody($emailContent['html']);
 			}
 
 			// Found a text template, but not an HTML one, so use the text as the primary body.
 			elseif (!$htmlExists && $textExists)
 			{
-				$emailMessage->setBody($emailContent['text']);
+				$emailData->setBody($emailContent['text']);
 			}
 		}
 		else
@@ -295,14 +295,14 @@ class EmailService extends \CApplicationComponent
 			// This is a text only email, so we ignore anything that was an HTML template.
 			if ($textExists)
 			{
-				$emailMessage->setBody($emailContent['text']);
+				$emailData->setBody($emailContent['text']);
 			}
 			else
 				throw new Exception(Blocks::t(TranslationCategory::Email, 'A non-HTML email was specified, but could not render the text template.'));
 		}
 
 		// Send it!
-		if ($this->sendEmail($emailMessage))
+		if ($this->sendEmail($emailData))
 			return true;
 
 		return false;
@@ -336,7 +336,7 @@ class EmailService extends \CApplicationComponent
 	public function sendVerificationEmail(User $user, Site $site)
 	{
 		$emailSettings = $this->getEmailSettings();
-		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
+		$email = new EmailData(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
 
 		if ($user->html_email)
 			$email->setIsHtml(true);
@@ -357,7 +357,7 @@ class EmailService extends \CApplicationComponent
 	public function sendForgotPasswordEmail(User $user, Site $site)
 	{
 		$emailSettings = $this->getEmailSettings();
-		$email = new EmailMessage(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
+		$email = new EmailData(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
 
 		if ($user->html_email)
 			$email->setIsHtml(true);
