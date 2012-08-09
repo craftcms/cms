@@ -25,4 +25,10 @@ class EmailController extends BaseController
 		else
 			$this->returnJson(array('success' => true));
 	}
+
+	public function actionSendTestEmail()
+	{
+		$user = blx()->users->getCurrentUser();
+		blx()->email->sendEmail($user, 'forgot_password');
+	}
 }
