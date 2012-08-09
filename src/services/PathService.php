@@ -118,16 +118,12 @@ class PathService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the current site's templates path, or null if there is no current site.
-	 * @return mixed
+	 * Returns the site templates path.
+	 * @return string
 	 */
 	public function getSiteTemplatesPath()
 	{
-		$site = blx()->sites->getCurrentSite();
-		if ($site)
-			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
-		else
-			return null;
+		return BLOCKS_TEMPLATES_PATH;
 	}
 
 	/**
@@ -171,23 +167,17 @@ class PathService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the current site's parsed templates path, or null if there is no current site.
-	 * @return mixed
+	 * Returns the site's parsed templates path.
+	 * @return string
 	 */
 	public function getParsedSiteTemplatesPath()
 	{
-		$site = blx()->sites->getCurrentSite();
-		if ($site)
-		{
-			$path = $this->getRuntimePath().'parsed_templates/sites/'.$site->handle.'/';
+		$path = $this->getRuntimePath().'parsed_templates/site/';
 
-			if (!is_dir($path))
-				mkdir($path, 0777, true);
+		if (!is_dir($path))
+			mkdir($path, 0777, true);
 
-			return $path;
-		}
-		else
-			return null;
+		return $path;
 	}
 
 	/**

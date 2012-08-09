@@ -114,10 +114,7 @@ class Et extends \CApplicationComponent
 				$package = new EtPackage($packageData);
 
 				// we set the license key status on every request
-				foreach ($package->sitesAndKeys as $site => $keyInfo)
-				{
-					blx()->sites->setLicenseKeyStatusForSite($site, $keyInfo['status']);
-				}
+				blx()->et->setLicenseKeyStatus($site, $package->licenseKeyStatus);
 
 				return $package;
 			}

@@ -71,4 +71,21 @@ class EtService extends \CApplicationComponent
 		$sourceMD5 = $package->data;
 		return $sourceMD5;
 	}
+
+	/**
+	 * Returns the license key status.
+	 */
+	public function getLicenseKeyStatus()
+	{
+		$status = blx()->fileCache->get('licenseKeyStatus');
+		return $status;
+	}
+
+	/**
+	 * Sets the license key status.
+	 */
+	public function setLicenseKeyStatus($status)
+	{
+		blx()->fileCache->set('licenseKeyStatus', $status, blx()->config->cacheTimeSeconds);
+	}
 }

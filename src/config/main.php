@@ -77,10 +77,6 @@ return CMap::mergeArray(
 				'class' => 'Blocks\SettingsService',
 			),
 
-			'sites' => array(
-				'class' => 'Blocks\SitesService',
-			),
-
 			'updates' => array(
 				'class' => 'Blocks\UpdatesService',
 			),
@@ -127,8 +123,6 @@ return CMap::mergeArray(
 					array('content\/sections\/new',                          'content/_section'),
 					array('content\/sections\/(?<sectionId>\d+)',            'content/_section'),
 					array('plugins\/(?<pluginClass>[A-Za-z]\w*)',            'plugins/_settings'),
-					array('settings\/sites\/new',                            'settings/_site'),
-					array('settings\/sites\/(?<siteId>\d+)',                 'settings/_site'),
 				),
 			),
 
