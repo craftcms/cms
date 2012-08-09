@@ -221,157 +221,57 @@ class EmailService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param EmailData    $emailData
-	 * @param              $emailKey
-	 * @param string       $languageCode
-	 * @param array        $variables
-	 * @param null         $pluginClass
+	 * Sends an email by its message key.
+	 *
+	 * @param User   $user
+	 * @param string $key
+	 * @param int    $pluginId
+	 * @param array  $variables
 	 * @throws Exception
-	 * @return bool
+	 * @return boolMessage
 	 */
-	public function sendTemplateEmail(EmailData $emailData, $emailKey, $languageCode = 'en_us', $variables = array(), $pluginClass = null)
+	public function sendUserEmailByKey(User $user, $key, $pluginId = null, $variables = array())
 	{
+		$emailSettings = $this->getEmailSettings();
+		$emailData = new EmailData(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
+		$emailData->setIsHtml($user->html_email);
+
 		// Get the email by key and plugin from the database.
-		$email = $this->getEmailByKey($emailKey, $pluginClass);
+		$message = $this->getMessageByKey($key, $pluginId);
 
-		if (!$email)
+		if (!$message)
 		{
-			$message = 'Could not find an email template with the key: '.$emailKey;
+			$error = 'Could not find an email template with the key: '.$key;
 
-			if ($pluginClass !== null)
-				$message .= ' and plugin class: '.$pluginClass;
+			if ($pluginId !== null)
+				$error .= ' and plugin ID: '.$pluginId;
 
-			$message .= '.';
+			$error .= '.';
 
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $message)));
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $error)));
 		}
 
-		// Subject is required.
-		if (StringHelper::isNullOrEmpty($email->subject))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'The subject is required when attempting to send an email.'));
-
-		// HTML OR Text body is required.
-		if (StringHelper::isNullOrEmpty($email->html) && StringHelper::isNullOrEmpty($email->text))
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Either the email Html body or text body is required when sending an email.'));
+		$content = $this->getMessageContent($message->id, $language);
 
 		// Render the email templates
-		$emailContent = blx()->controller->loadEmailTemplate($email, $variables);
-
-		$textExists = StringHelper::isNotNullOrEmpty($emailContent['text']);
-		$htmlExists = StringHelper::isNotNullOrEmpty($emailContent['html']);
-		$subjectExists = StringHelper::isNotNullOrEmpty($emailContent['subject']);
-
-		// Check to see if the subject rendered.
-		if (!$subjectExists)
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not render the subject email template for the requested email.'));
-
-		// Check to see if the HTML or Text body rendered.
-		if (!$htmlExists && !$textExists)
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not render the html email template or the text email template body for the requested email.'));
+		//$variables['user'] => $user;
+		//$emailContent = blx()->controller->loadEmailTemplate($email, $variables);
 
 		// Set the subject.
-		$emailData->setSubject($emailContent['subject']);
+		$emailData->setSubject($content->subject);
 
-		// Check if this is an HTML email.
-		if ($emailData->getIsHtml())
+		if ($emailData->getIsHtml() && $content->html_body)
 		{
-			// We were able to render an HTML and Text email template.
-			if ($htmlExists && $textExists)
-			{
-				$emailData->setAltBody($emailContent['text']);
-				$emailData->setBody($emailContent['html']);
-			}
-
-			// We found an HTML template, but not a text one.
-			elseif ($htmlExists && !$textExists)
-			{
-				$emailData->setBody($emailContent['html']);
-			}
-
-			// Found a text template, but not an HTML one, so use the text as the primary body.
-			elseif (!$htmlExists && $textExists)
-			{
-				$emailData->setBody($emailContent['text']);
-			}
+			$emailData->setBody($content->html_body);
+			$emailData->setAltBody($content->body);
 		}
 		else
 		{
-			// This is a text only email, so we ignore anything that was an HTML template.
-			if ($textExists)
-			{
-				$emailData->setBody($emailContent['text']);
-			}
-			else
-				throw new Exception(Blocks::t(TranslationCategory::Email, 'A non-HTML email was specified, but could not render the text template.'));
+			$emailData->setBody($content->body);
 		}
 
 		// Send it!
-		if ($this->sendEmail($emailData))
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * @param      $key
-	 * @param null $pluginClass
-	 * @return mixed
-	 */
-	public function getEmailByKey($key, $pluginClass = null)
-	{
-		$email = blx()->db->createCommand()
-			->select('e.*')
-			->from('emails e')
-			->join('plugins p', 'p.id = e.plugin_id')
-			->where('e.key = :key AND p.class = :pluginClass', array(':key' => $key, ':pluginClass' => $pluginClass))
-			->queryRow();
-
-		if ($email)
-			return Email::model()->populateRecord($email);
-
-		return false;
-	}
-
-	/**
-	 * @param User $user
-	 * @param      $site
-	 * @return bool
-	 */
-	public function sendVerificationEmail(User $user, Site $site)
-	{
-		$emailSettings = $this->getEmailSettings();
-		$email = new EmailData(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
-
-		if ($user->html_email)
-			$email->setIsHtml(true);
-		else
-			$email->setIsHtml(false);
-
-		if ($this->sendTemplateEmail($email, 'registeruser', array('user' => $user, 'site' => $site)))
-			return true;
-
-		return false;
-	}
-
-	/**
-	 * @param User $user
-	 * @param      $site
-	 * @return bool
-	 */
-	public function sendForgotPasswordEmail(User $user, Site $site)
-	{
-		$emailSettings = $this->getEmailSettings();
-		$email = new EmailData(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
-
-		if ($user->html_email)
-			$email->setIsHtml(true);
-		else
-			$email->setIsHtml(false);
-
-		if ($this->sendTemplateEmail($email, 'forgotpassword', array('user' => $user, 'site' => $site)))
-			return true;
-
-		return false;
+		return $this->sendEmail($emailData);
 	}
 
 	/**

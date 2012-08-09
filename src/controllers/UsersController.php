@@ -77,7 +77,7 @@ class UsersController extends BaseController
 			{
 				$user->status = UserAccountStatus::Pending;
 				blx()->users->generateVerificationCodeForUser($user, false);
-				blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
+				blx()->email->sendUserEmailByKey($user, 'verify_email');
 			}
 
 			$user->save();
@@ -165,7 +165,7 @@ class UsersController extends BaseController
 
 		$user->status = UserAccountStatus::Pending;
 		blx()->users->generateVerificationCodeForUser($user, false);
-		blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
+		blx()->email->sendUserEmailByKey($user, 'verify_email');
 		$user->save();
 
 		blx()->user->setNotice('Verification email sent.');

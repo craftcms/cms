@@ -248,8 +248,7 @@ class UsersService extends \CApplicationComponent
 	{
 			$user = $this->generateVerificationCodeForUser($user);
 
-			$site = blx()->sites->getCurrentSite();
-			if (($emailStatus = blx()->email->sendForgotPasswordEmail($user, $site)) == true)
+			if (($emailStatus = blx()->email->sendUserEmailByKey($user, 'forgot_password')) == true)
 				return true;
 
 		return false;
