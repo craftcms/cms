@@ -115,12 +115,32 @@ class EmailService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param EmailData $emailData
+	 * @param User $user
+	 * @param string $key
+	 * @param int $pluginId
+	 * @param array $variables
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmail(EmailData $emailData)
+	public function sendEmail(User $user, $key, $pluginId = null, $variables = array(), $language = null)
 	{
+		$emailSettings = $this->getEmailSettings();
+
+		// Get the email by key and plugin from the database.
+		$message = $this->getMessageByKey($key, $pluginId);
+
+		if (!$message)
+		{
+			$error = 'Could not find an email template with the key: '.$key;
+
+			if ($pluginId !== null)
+				$error .= ' and plugin ID: '.$pluginId;
+
+			$error .= '.';
+
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $error)));
+		}
+
 		// Get the saved email settings.
 		$emailSettings = $this->getEmailSettings();
 
@@ -175,103 +195,31 @@ class EmailService extends \CApplicationComponent
 			}
 		}
 
-		$email->from = $emailData->getFrom()->getEmailAddress();
-		$email->fromName = $emailData->getFrom()->getName();
-		$email->addReplyTo($emailData->getReplyTo()->getEmailAddress(), $emailData->getReplyTo()->getName());
+		// Set the From/To fields
+		$email->from = $emailSettings['emailAddress'];
+		$email->fromName = $emailSettings['senderName'];
+		$email->addAddress($user->email, $user->getFullName());
 
-		foreach ($emailData->getTo() as $toAddress)
+		// Set the content
+		// TODO: run the content through the email template processor
+		$content = $this->getMessageContent($message->id, $language);
+
+		$email->subject = $content->subject;
+
+		if ($user->html_email && $content->html_body)
 		{
-			$email->addAddress($toAddress->getEmailAddress(), $toAddress->getName());
-		}
-
-		foreach ($emailData->getCc() as $toCcAddress)
-		{
-			$email->addCc($toCcAddress->getEmailAddress(), $toCcAddress->getName());
-		}
-
-		foreach ($emailData->getBcc() as $toBccAddress)
-		{
-			$email->addBcc($toBccAddress->getEmailAddress(), $toBccAddress->getName());
-		}
-
-		$email->subject = $emailData->getSubject();
-
-		// See if it's an HTML email.
-		if ($emailData->getIsHtml())
-		{
-			// They already supplied an alt body (text), use it.
-			if ($emailData->getAltBody())
-			{
-				$email->altBody = $emailData->getAltBody();
-			}
-
-			// msgHtml will attempt to set a alt body from the html string if alt body was not supplied earlier.
-			$email->msgHtml($emailData->getBody());
+			$email->msgHtml($content->html_body);
+			$email->altBody = $content->body;
 		}
 		else
 		{
-			// This is a text email.
-			$email->body = $emailData->getBody();
+			$email->body = $content->body;
 		}
 
 		if (!$email->send())
 			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $email->errorInfo)));
 
 		return true;
-	}
-
-	/**
-	 * Sends an email by its message key.
-	 *
-	 * @param User   $user
-	 * @param string $key
-	 * @param int    $pluginId
-	 * @param array  $variables
-	 * @throws Exception
-	 * @return boolMessage
-	 */
-	public function sendUserEmailByKey(User $user, $key, $pluginId = null, $variables = array())
-	{
-		$emailSettings = $this->getEmailSettings();
-		$emailData = new EmailData(new EmailAddress($emailSettings['emailAddress'], $emailSettings['senderName']), array(new EmailAddress($user->email, $user->first_name.' '.$user->last_name)));
-		$emailData->setIsHtml($user->html_email);
-
-		// Get the email by key and plugin from the database.
-		$message = $this->getMessageByKey($key, $pluginId);
-
-		if (!$message)
-		{
-			$error = 'Could not find an email template with the key: '.$key;
-
-			if ($pluginId !== null)
-				$error .= ' and plugin ID: '.$pluginId;
-
-			$error .= '.';
-
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Email error: {errorMessage}', array('{errorMessage}' => $error)));
-		}
-
-		$content = $this->getMessageContent($message->id, $language);
-
-		// Render the email templates
-		//$variables['user'] => $user;
-		//$emailContent = blx()->controller->loadEmailTemplate($email, $variables);
-
-		// Set the subject.
-		$emailData->setSubject($content->subject);
-
-		if ($emailData->getIsHtml() && $content->html_body)
-		{
-			$emailData->setBody($content->html_body);
-			$emailData->setAltBody($content->body);
-		}
-		else
-		{
-			$emailData->setBody($content->body);
-		}
-
-		// Send it!
-		return $this->sendEmail($emailData);
 	}
 
 	/**
