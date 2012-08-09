@@ -19,6 +19,7 @@ return CMap::mergeArray(
 		// autoloading model and component classes
 		'import' => array(
 			'application.business.lib.*',
+			'application.business.lib.PhpMailer.*',
 			'application.business.lib.Requests.*',
 			'application.business.lib.Requests.Auth.*',
 			'application.business.lib.Requests.Response.*',
