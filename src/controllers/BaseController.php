@@ -61,7 +61,7 @@ abstract class BaseController extends \CController
 		$variables['blx'] = new BlxVariable();
 		$variables = TemplateHelper::prepTemplateVariables($variables);
 
-		// Share the same FileTemplateProcessor instance for the whole request.
+		// Share the same TemplateProcessor instance for the whole request.
 		$renderer = blx()->getViewRenderer();
 
 		if (($output = $renderer->process($this, $templatePath, $variables, true)) !== false)

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class FileTemplateProcessor extends BaseTemplateProcessor
+class TemplateProcessor extends BaseTemplateProcessor
 {
 	public $fileExtension = '.html';
 

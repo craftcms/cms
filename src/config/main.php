@@ -100,7 +100,7 @@ return CMap::mergeArray(
 			),
 
 			'viewRenderer' => array(
-				'class' => 'Blocks\FileTemplateProcessor',
+				'class' => 'Blocks\TemplateProcessor',
 			),
 
 			'statePersister' => array(
