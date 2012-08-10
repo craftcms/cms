@@ -59,8 +59,8 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!$this->_mimeType)
 		{
-			$extension = TemplateHelper::getExtension($this->getPath());
-			$this->_mimeType = \CFileHelper::getMimeTypeByExtension($extension);
+			$extension = FileHelper::getExtension($this->getPath(), 'html');
+			$this->_mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
 		}
 
 		return $this->_mimeType;

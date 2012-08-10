@@ -30,7 +30,10 @@ abstract class BaseController extends \CController
 	{
 		if (($path = blx()->urlManager->processTemplateMatching()) !== false)
 		{
+			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
 			$this->loadTemplate($path, $variables);
+
+
 		}
 		else
 			throw new HttpException(404);
@@ -39,15 +42,16 @@ abstract class BaseController extends \CController
 	/**
 	 * Loads a template
 	 * @param       $templatePath
-	 * @param array $vars
+	 * @param array $variables
 	 * @param bool  $return Whether to return the results, rather than output them
 	 * @param bool  $processOutput
 	 * @throws HttpException
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $vars = array(), $return = false, $processOutput = false)
+	public function loadTemplate($templatePath, $variables = array(), $return = false, $processOutput = false)
 	{
-		$variables = $this->processTemplateVariables($vars);
+		$variables['blx'] = new BlxVariable();
+		$variables = TemplateHelper::prepTemplateVariables($variables);
 
 		if (($output = $this->processFileTemplate($templatePath, $variables, true)) !== false)
 		{
@@ -64,26 +68,6 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * @param Email $email
-	 * @param array         $vars
-	 * @throws Exception
-	 * @return mixed
-	 */
-	public function loadEmailTemplate(Email $email, $vars = array())
-	{
-		$variables = $this->processTemplateVariables($vars, false);
-
-		$renderer = new EmailTemplateProcessor();
-
-		if (($content = $renderer->process($this, $email, $variables)) !== false)
-		{
-			return $content;
-		}
-		else
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not find the requested email template.'));
-	}
-
-	/**
 	 * @param      $templatePath
 	 * @param null $data
 	 * @param bool $return
@@ -94,29 +78,28 @@ abstract class BaseController extends \CController
 	{
 		$widgetCount = count($this->_widgetStack);
 
-		if (($renderer = blx()->getViewRenderer()) !== null)
+		$renderer = blx()->getViewRenderer();
+
+		// Process the template.
+		if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
 		{
-			// Process the template.
-			if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
+			if (count($this->_widgetStack) === $widgetCount)
 			{
-				if (count($this->_widgetStack) === $widgetCount)
-				{
-					// Get the extension so we can set the correct mime type in the response.
-					$extension = TemplateHelper::getExtension($templatePath);
-					if (($mimeType = \CFileHelper::getMimeTypeByExtension($extension)) === null)
-						$mimeType = 'text/html';
+				// Get the extension so we can set the correct mime type in the response.
+				$extension = FileHelper::getExtension($templatePath, 'html');
+				if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null)
+					$mimeType = 'text/html';
 
-					blx()->request->setMimeType($mimeType);
-					header('Content-Type: '.$mimeType);
+				blx()->request->setMimeType($mimeType);
+				header('Content-Type: '.$mimeType);
 
-					return $content;
-				}
-				else
-				{
-					$widget = end($this->_widgetStack);
-					throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, '“{controller}” contains improperly nested widget variables in it’s view “{view}”. A “{widget}” widget does not have an endWidget() call.',
-						array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
-				}
+				return $content;
+			}
+			else
+			{
+				$widget = end($this->_widgetStack);
+				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, '“{controller}” contains improperly nested widget variables in it’s view “{view}”. A “{widget}” widget does not have an endWidget() call.',
+					array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
 			}
 		}
 
@@ -124,28 +107,23 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * @param      $vars
-	 * @param bool $getRequestVars
-	 * @return array
+	 * @param Email $email
+	 * @param array $variables
+	 * @throws Exception
+	 * @return mixed
 	 */
-	public function processTemplateVariables($vars, $getRequestVars = true)
+	public function loadEmailTemplate(Email $email, $variables = array())
 	{
-		$variables = array();
+		$variables = TemplateHelper::prepTemplateVariables($variables);
 
-		if ($getRequestVars)
-			$vars = array_merge(blx()->urlManager->getTemplateVariables(), $vars);
+		$renderer = new EmailTemplateProcessor();
 
-		$vars['blx'] = new BlxVariable();
-
-		if (is_array($vars))
+		if (($content = $renderer->process($this, $email, $variables)) !== false)
 		{
-			foreach ($vars as $name => $var)
-			{
-				$variables[$name] = TemplateHelper::getVariable($var);
-			}
+			return $content;
 		}
-
-		return $variables;
+		else
+			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not find the requested email template.'));
 	}
 
 	/**

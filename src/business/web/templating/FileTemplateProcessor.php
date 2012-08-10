@@ -69,75 +69,53 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 	 */
 	public function matchTemplateToFileSystem($templatePath)
 	{
-		// Remove any trailing slashes.
-		$templatePath = rtrim($templatePath, '/');
+		// Remove any leading/trailing slashes.
+		$templatePath = trim($templatePath, '/');
 
-		// Get an extension for the path.  Default to .html if it can't find one.
-		$extension = TemplateHelper::getExtension($templatePath);
+		// Get the extension on the path, if there is one
+		$extension = FileHelper::getExtension($templatePath);
+		$this->fileExtension = ($extension ? $extension : 'html');
 
-		// If there was an extension supplied in the templatePath, strip it.
-		if (pathinfo($templatePath, PATHINFO_EXTENSION) !== '')
-			$templatePath = substr($templatePath, 0, strlen($templatePath) - strlen($extension));
+		// Check if the template exists in the main templates path
 
-		// Make a copy of the original.
-		$copyTemplatePath = $templatePath;
+		// Set the view path
+		//  - We need to set this for each template request, in case it was changed to a plugin's template path
+		$viewPath = blx()->path->getTemplatePath();
+		blx()->setViewPath($viewPath);
 
-		// Check to see if they want an absolute template path.
-		if (strncmp($templatePath, '//', 2) === 0)
-		{
-			// Set the template path depending on the type of request mode we're in (path->getTemplatePath() takes care of that.
-			$templatePath = blx()->path->getTemplatePath();
-			blx()->setViewPath($templatePath);
-			if (is_dir($templatePath.'_layouts/'))
-				blx()->setLayoutPath($templatePath.'_layouts/');
-		}
+		if ($extension)
+			$testPaths = array($viewPath.$templatePath);
+		else
+			$testPaths = array($viewPath.$templatePath.'.html', $viewPath.$templatePath.'/index.html');
 
-		// This view path will either be the CP template path or the front-end template path.
-		$viewPath = blx()->getViewPath();
-
-		// Set the file extension on the instance.
-		$this->fileExtension = $extension;
-
-		// Check if request/path.ext exists
-		if (($matchPath = self::_doesLocalizedTemplateFileExist($viewPath.$copyTemplatePath.$extension)) !== false)
+		if ($matchPath = $this->_lookForLocalizedTemplateFile($testPaths))
 			return $matchPath;
 
-		// Otherwise check if request/path/index.ext exists
-		if (($matchPath = self::_doesLocalizedTemplateFileExist($viewPath.$copyTemplatePath.'/index'.$extension)) !== false)
-			return $matchPath;
+		// Otherwise maybe it's a plugin template?
 
-		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (($mode = blx()->request->getMode()) == RequestMode::CP || $mode == RequestMode::Action)
+		//  Only attempt to match against a plugin's templates if this is a CP or action request.
+		$mode = blx()->request->getMode();
+		if ($mode == RequestMode::CP || $mode == RequestMode::Action)
 		{
-			// Check to see if the template path might be referring to a plugin template
-			$templateSegs = explode('/', $copyTemplatePath);
-			if (isset($templateSegs[0]) && $templateSegs[0] !== '')
+			$templateSegs = explode('/', $templatePath);
+			if (!empty($templateSegs[0]))
 			{
-				if (($plugin = blx()->plugins->getPlugin($templateSegs[0])) !== false)
+				if ($plugin = blx()->plugins->getPlugin($templateSegs[0]))
 				{
 					// Get the template path for the plugin.
 					$viewPath = blx()->path->getPluginsPath().$plugin->class.'/templates/';
+					blx()->setViewPath($viewPath);
 
-					// If the plugin's templates directory exists, set the request's viewpath to it.
-					if (is_dir($viewPath))
-					{
-						// Set the template path and layout path to the plugin's
-						blx()->setViewPath($viewPath);
-						if (is_dir($viewPath.'_layouts/'))
-							blx()->setLayoutPath($viewPath.'_layouts/');
+					// Chop off the plugin class, since that's already covered by $viewPath
+					$templatePath = substr($templatePath, strlen($plugin->class) + 1);
 
-						$copyTemplatePath = substr($copyTemplatePath, strlen($plugin->class) + 1);
-						$copyTemplatePath = !$copyTemplatePath ? '' : $copyTemplatePath;
+					if ($extension)
+						$testPaths = array($viewPath.$templatePath);
+					else
+						$testPaths = array($viewPath.$templatePath.'.html', $viewPath.$templatePath.'/index.html');
 
-						// Check for plugin/request/path.ext
-						if (($matchPath = self::_doesLocalizedTemplateFileExist($viewPath.$copyTemplatePath.$extension)) !== false)
-							return $matchPath;
-
-						// Check for plugin/request/path/index.ext
-						$copyTemplatePath = $copyTemplatePath == '' ? 'index' : $copyTemplatePath.'/index';
-						if (($matchPath = self::_doesLocalizedTemplateFileExist($viewPath.$copyTemplatePath.$extension)) !== false)
-							return $matchPath;
-					}
+					if ($matchPath = $this->_lookForLocalizedTemplateFile($testPaths))
+						return $matchPath;
 				}
 			}
 		}
@@ -147,15 +125,20 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 	}
 
 	/**
-	 * @param $path
-	 * @return bool
+	 * Searches for localized template files, and returns the first match if there is one.
+	 *
+	 * @param array $paths
+	 * @return mixed
 	 */
-	private function _doesLocalizedTemplateFileExist($path)
+	private function _lookForLocalizedTemplateFile($paths)
 	{
-		if (is_file(blx()->findLocalizedFile($path)))
-			return $path;
-		else
-			return false;
+		foreach ($paths as $path)
+		{
+			if (is_file(blx()->findLocalizedFile($path)))
+				return $path;
+		}	
+
+		return null;
 	}
 
 }

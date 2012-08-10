@@ -251,8 +251,8 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
-		$extension = TemplateHelper::getExtension($templatePath.$templateName);
-		$templateFile = blx()->findLocalizedFile($templatePath.$templateName.$extension, $srcLanguage);
+		$extension = FileHelper::getExtension($templatePath.$templateName, 'html');
+		$templateFile = blx()->findLocalizedFile($templatePath.$templateName.'.'.$extension, $srcLanguage);
 		if (is_file($templateFile))
 			$templateFile = realpath($templateFile);
 

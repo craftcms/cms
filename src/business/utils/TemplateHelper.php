@@ -7,7 +7,9 @@ namespace Blocks;
 class TemplateHelper
 {
 	/**
-	 * Returns whether a variable is a template variable or not
+	 * Returns whether a variable is a template variable or not.
+	 *
+	 * @static
 	 * @param mixed $var The variable
 	 * @return bool Whether it's a template variable or not
 	 */
@@ -18,7 +20,9 @@ class TemplateHelper
 	}
 
 	/**
-	 * Returns the appropriate template variable for a given variable
+	 * Returns the appropriate template variable for a given variable.
+	 *
+	 * @static
 	 * @param mixed $var The variable
 	 * @param object A template variable instance for the variable
 	 * @return mixed
@@ -33,7 +37,26 @@ class TemplateHelper
 	}
 
 	/**
-	 * Renames input names so they belong to a namespace
+	 * Preps all variables that will be available to the template.
+	 *
+	 * @static
+	 * @param array $variables
+	 * @return array
+	 */
+	public function prepTemplateVariables($variables)
+	{
+		foreach ($variables as $name => $var)
+		{
+			$variables[$name] = self::getVariable($var);
+		}
+
+		return $variables;
+	}
+
+	/**
+	 * Renames input names so they belong to a namespace.
+	 *
+	 * @static
 	 * @param string $template The template with the inputs
 	 * @param string $namespace The namespace to make inputs belong to
 	 * @return string The template with namespaced inputs
@@ -47,18 +70,5 @@ class TemplateHelper
 		$template = preg_replace('/((id=|for=)(\'|"))([^\'"]+)\3/', '$1'.$namespace.'-$4$3', $template);
 
 		return $template;
-	}
-
-	/**
-	 * @param        $path
-	 * @param string $default
-	 * @return mixed|string
-	 */
-	public static function getExtension($path, $default = 'html')
-	{
-		if (($extension = pathinfo($path, PATHINFO_EXTENSION)) == '')
-			$extension = $default;
-
-		return '.'.$extension;
 	}
 }
