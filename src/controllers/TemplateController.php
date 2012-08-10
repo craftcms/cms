@@ -20,7 +20,7 @@ class TemplateController extends BaseController
 					$this->requireLogin();
 		}
 
-		$this->loadRequestedTemplate();
+		$this->renderRequestedTemplate();
 	}
 
 	/**
@@ -34,7 +34,7 @@ class TemplateController extends BaseController
 			$templateName = '_offline';
 
 		blx()->setViewPath(blx()->path->getOfflineTemplatePath());
-		$this->loadTemplate($templateName, array(), false);
+		$this->renderTemplate($templateName, array(), false);
 		blx()->setViewPath(null);
 	}
 }

@@ -96,7 +96,7 @@ class UsersController extends BaseController
 			else
 				blx()->user->setError('Couldn’t save account settings.');
 
-			$this->loadRequestedTemplate(array(
+			$this->renderRequestedTemplate(array(
 				'user' => $user,
 				'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
 			));
@@ -126,7 +126,7 @@ class UsersController extends BaseController
 		else
 		{
 			blx()->user->setError('Couldn’t save profile.');
-			$this->loadRequestedTemplate(array('user' => $user));
+			$this->renderRequestedTemplate(array('user' => $user));
 		}
 	}
 

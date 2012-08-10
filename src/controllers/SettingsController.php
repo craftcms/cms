@@ -38,7 +38,7 @@ class SettingsController extends BaseController
 		else
 		{
 			blx()->user->setError('Couldn’t save general settings.');
-			$this->loadRequestedTemplate(array('post' => $generalSettingsForm));
+			$this->renderRequestedTemplate(array('post' => $generalSettingsForm));
 		}
 	}
 
@@ -145,7 +145,7 @@ class SettingsController extends BaseController
 			blx()->user->setError('Couldn’t save email settings.');
 		}
 
-		$this->loadRequestedTemplate(array('settings' => $emailSettings));
+		$this->renderRequestedTemplate(array('settings' => $emailSettings));
 	}
 
 	/**
@@ -166,7 +166,7 @@ class SettingsController extends BaseController
 		else
 		{
 			blx()->user->setError('Couldn’t save language settings.');
-			$this->loadRequestedTemplate(array('selectedLanguages' => $languages));
+			$this->renderRequestedTemplate(array('selectedLanguages' => $languages));
 		}
 	}
 
@@ -194,7 +194,7 @@ class SettingsController extends BaseController
 		else
 		{
 			blx()->user->setError('Couldn’t save advanced settings.');
-			$this->loadRequestedTemplate(array('settings' => $settings));
+			$this->renderRequestedTemplate(array('settings' => $settings));
 		}
 	}
 }

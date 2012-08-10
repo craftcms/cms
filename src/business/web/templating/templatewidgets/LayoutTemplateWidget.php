@@ -26,7 +26,7 @@ class LayoutTemplateWidget extends \COutputProcessor
 				$this->variables[$region->name] = $region->content;
 			}
 
-			$output = $owner->loadTemplate($this->template, $this->variables, true);
+			$output = $owner->renderTemplate($this->template, $this->variables, true);
 		}
 
 		parent::processOutput($output);

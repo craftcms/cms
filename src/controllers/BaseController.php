@@ -28,12 +28,12 @@ abstract class BaseController extends \CController
 	 * @param array $variables
 	 * @throws HttpException
 	 */
-	public function loadRequestedTemplate($variables = array())
+	public function renderRequestedTemplate($variables = array())
 	{
 		if (($templatePath = blx()->urlManager->processTemplateMatching()) !== false)
 		{
 			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
-			$output = $this->loadTemplate($templatePath, $variables, true);
+			$output = $this->renderTemplate($templatePath, $variables, true);
 
 			// Set the Content-Type header
 			$mimeType = blx()->request->getMimeType();
@@ -56,7 +56,7 @@ abstract class BaseController extends \CController
 	 * @throws HttpException
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $variables = array(), $return = false, $processOutput = false)
+	public function renderTemplate($templatePath, $variables = array(), $return = false, $processOutput = false)
 	{
 		$variables['blx'] = new BlxVariable();
 		$variables = TemplateHelper::prepTemplateVariables($variables);

@@ -75,7 +75,7 @@ class AccountController extends BaseController
 		}
 
 		// display the verify account form
-		$this->loadTemplate('verify', array('verifyAccountInfo' => $passwordForm));
+		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordForm));
 	}
 
 	/**

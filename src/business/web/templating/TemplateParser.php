@@ -354,7 +354,7 @@ class TemplateParser
 		$template = $match[1];
 		$body = isset($match[7]) ? trim($match[7]) : '';
 		$this->parseVariable($template, $offset, true);
-		$r = "<?php \$this->loadTemplate({$template}";
+		$r = "<?php \$this->renderTemplate({$template}";
 		$params = $this->parseParams($body);
 		if ($params)
 		{
