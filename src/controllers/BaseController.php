@@ -22,28 +22,36 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Loads the requested template
+	 * Renders and outputs the template requested by the URL
+	 * and sets the Content-Type header based on the URL extension.
+	 *
 	 * @param array $variables
 	 * @throws HttpException
 	 */
 	public function loadRequestedTemplate($variables = array())
 	{
-		if (($path = blx()->urlManager->processTemplateMatching()) !== false)
+		if (($templatePath = blx()->urlManager->processTemplateMatching()) !== false)
 		{
 			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
-			$this->loadTemplate($path, $variables);
+			$output = $this->loadTemplate($templatePath, $variables, true);
 
+			// Set the Content-Type header
+			$mimeType = blx()->request->getMimeType();
+			header('Content-Type: '.$mimeType);
 
+			// Output to the browser!
+			echo $output;
 		}
 		else
 			throw new HttpException(404);
 	}
 
 	/**
-	 * Loads a template
-	 * @param       $templatePath
-	 * @param array $variables
-	 * @param bool  $return Whether to return the results, rather than output them
+	 * Renders a template, and either outputs or returns it.
+	 *
+	 * @param string $templatePath
+	 * @param array $variables Variables to be passed to the template
+	 * @param bool $return Whether to return the results, rather than output them
 	 * @param bool  $processOutput
 	 * @throws HttpException
 	 * @return mixed
@@ -53,57 +61,21 @@ abstract class BaseController extends \CController
 		$variables['blx'] = new BlxVariable();
 		$variables = TemplateHelper::prepTemplateVariables($variables);
 
-		if (($output = $this->processFileTemplate($templatePath, $variables, true)) !== false)
+		// Share the same FileTemplateProcessor instance for the whole request.
+		$renderer = blx()->getViewRenderer();
+
+		if (($output = $renderer->process($this, $templatePath, $variables, true)) !== false)
 		{
-			if($processOutput)
+			if ($processOutput)
 				$output = $this->processOutput($output);
 
-			if($return)
+			if ($return)
 				return $output;
 			else
 				echo $output;
 		}
 		else
 			throw new HttpException(404);
-	}
-
-	/**
-	 * @param      $templatePath
-	 * @param null $data
-	 * @param bool $return
-	 * @throws Exception
-	 * @return mixed|string
-	 */
-	public function processFileTemplate($templatePath, $data = null, $return = false)
-	{
-		$widgetCount = count($this->_widgetStack);
-
-		$renderer = blx()->getViewRenderer();
-
-		// Process the template.
-		if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
-		{
-			if (count($this->_widgetStack) === $widgetCount)
-			{
-				// Get the extension so we can set the correct mime type in the response.
-				$extension = FileHelper::getExtension($templatePath, 'html');
-				if (($mimeType = FileHelper::getMimeTypeByExtension('.'.$extension)) === null)
-					$mimeType = 'text/html';
-
-				blx()->request->setMimeType($mimeType);
-				header('Content-Type: '.$mimeType);
-
-				return $content;
-			}
-			else
-			{
-				$widget = end($this->_widgetStack);
-				throw new Exception(Blocks::t(TranslationCategory::TemplateProcessing, '“{controller}” contains improperly nested widget variables in it’s view “{view}”. A “{widget}” widget does not have an endWidget() call.',
-					array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
-			}
-		}
-
-		return false;
 	}
 
 	/**
