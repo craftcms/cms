@@ -72,10 +72,6 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 		// Remove any leading/trailing slashes.
 		$templatePath = trim($templatePath, '/');
 
-		// Get the extension on the path, if there is one
-		$extension = FileHelper::getExtension($templatePath);
-		$this->fileExtension = ($extension ? $extension : 'html');
-
 		// Check if the template exists in the main templates path
 
 		// Set the view path
@@ -83,12 +79,7 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 		$viewPath = blx()->path->getTemplatePath();
 		blx()->setViewPath($viewPath);
 
-		if ($extension)
-			$testPaths = array($viewPath.$templatePath);
-		else
-			$testPaths = array($viewPath.$templatePath.'.html', $viewPath.$templatePath.'/index.html');
-
-		if ($matchPath = $this->_lookForLocalizedTemplateFile($testPaths))
+		if ($matchPath = $this->_lookForLocalizedTemplateFile($templatePath))
 			return $matchPath;
 
 		// Otherwise maybe it's a plugin template?
@@ -109,12 +100,7 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 					// Chop off the plugin class, since that's already covered by $viewPath
 					$templatePath = substr($templatePath, strlen($plugin->class) + 1);
 
-					if ($extension)
-						$testPaths = array($viewPath.$templatePath);
-					else
-						$testPaths = array($viewPath.$templatePath.'.html', $viewPath.$templatePath.'/index.html');
-
-					if ($matchPath = $this->_lookForLocalizedTemplateFile($testPaths))
+					if ($matchPath = $this->_lookForLocalizedTemplateFile($templatePath))
 						return $matchPath;
 				}
 			}
@@ -127,15 +113,28 @@ class FileTemplateProcessor extends BaseTemplateProcessor
 	/**
 	 * Searches for localized template files, and returns the first match if there is one.
 	 *
-	 * @param array $paths
+	 * @param string $templatePath
 	 * @return mixed
 	 */
-	private function _lookForLocalizedTemplateFile($paths)
+	private function _lookForLocalizedTemplateFile($templatePath)
 	{
-		foreach ($paths as $path)
+		$testPath = blx()->getViewPath().$templatePath;
+
+		// Get the extension on the path, if there is one
+		$extension = FileHelper::getExtension($testPath);
+
+		if ($extension)
+			$testPaths = array($testPath);
+		else
+			$testPaths = array($testPath.'.html', $testPath.'/index.html');
+
+		foreach ($testPaths as $path)
 		{
 			if (is_file(blx()->findLocalizedFile($path)))
+			{
+				$this->fileExtension = ($extension ? $extension : 'html');
 				return $path;
+			}
 		}	
 
 		return null;
