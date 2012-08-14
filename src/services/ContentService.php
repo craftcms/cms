@@ -82,36 +82,6 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param $siteId
-	 * @param $handle
-	 * @return mixed
-	 */
-	public function getSectionBySiteIdHandle($siteId, $handle)
-	{
-		$section = Section::model()->findByAttributes(array(
-			'handle' => $handle,
-			'site_id' => $siteId,
-		));
-
-		return $section;
-	}
-
-	/**
-	 * @param $siteId
-	 * @param $handles
-	 * @return mixed
-	 */
-	public function getSectionsBySiteIdHandles($siteId, $handles)
-	{
-		$sections = Section::model()->findAllByAttributes(array(
-			'handle' => $handles,
-			'site_id' => $siteId,
-		));
-
-		return $sections;
-	}
-
-	/**
 	 * Saves a section.
 	 * @param array $sectionSettings
 	 * @param int   $sectionId The site ID, if saving an existing site.
@@ -477,21 +447,6 @@ class ContentService extends \CApplicationComponent
 		$entries = Entry::model()->findAllByAttributes(array(
 			'section_id' => $sectionId,
 		));
-		return $entries;
-	}
-
-	/**
-	 * @param $siteId
-	 * @return array
-	 */
-	public function getAllEntriesBySiteId($siteId)
-	{
-		$entries = blx()->db->createCommand()
-			->select('e.*')
-			->from('sections s')
-			->join('entries e', 's.id = e.section_id')
-			->where(array('s.site_id' => $siteId))
-			->queryAll();
 		return $entries;
 	}
 

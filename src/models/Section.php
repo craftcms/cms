@@ -29,7 +29,7 @@ class Section extends BaseModel
 	);
 
 	protected $indexes = array(
-		array('columns' => array('site_id', 'handle'), 'unique' => true),
+		array('columns' => array('handle'), 'unique' => true),
 	);
 
 	/**
