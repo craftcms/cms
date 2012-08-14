@@ -1,5 +1,9 @@
 <div id="widget{{ widget.id }}" class="pane widget {{ widget.classHandle }}">
-	<h3>{{ widget.title }}</h3>
+	<h3>
+		{%- autoescape false -%}
+			{{ widget.title }}
+		{%- endautoescape -%}
+	</h3>
 	{% if widget.getActionButtons %}
 		<div class="actions">
 			{% for button in widget.getActionButtons %}

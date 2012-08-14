@@ -7,7 +7,6 @@ namespace Blocks;
 class UpdatesWidget extends BaseWidget
 {
 	public $name = 'Updates';
-	public $title = 'Updates';
 
 	public $updates = array();
 
@@ -27,6 +26,15 @@ class UpdatesWidget extends BaseWidget
 		);
 	}
 
+	/**
+	 * Gets the widget title.
+	 *
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		return 'Updates';
+	}
 
 	/**
 	 * @return bool

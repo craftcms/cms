@@ -21,10 +21,11 @@ class FeedWidget extends BaseWidget
 	);
 
 	/**
-	 * Returns the widget title.
+	 * Gets the widget title.
+	 *
 	 * @return string
 	 */
-	public function title()
+	public function getTitle()
 	{
 		return $this->settings['title'];
 	}

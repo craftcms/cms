@@ -7,7 +7,6 @@ namespace Blocks;
 abstract class BaseWidget extends BaseComponent
 {
 	public $name;
-	public $title = '';
 
 	protected $componentType = 'Widget';
 	protected $bodyTemplate;
@@ -34,6 +33,16 @@ abstract class BaseWidget extends BaseComponent
 	public function getActionButtons()
 	{
 		return array();
+	}
+
+	/**
+	 * Gets the widget title.
+	 *
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		return '';
 	}
 
 	/**
