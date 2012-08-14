@@ -1,7 +1,7 @@
 <div id="widget{{ widget.id }}" class="pane widget {{ widget.classHandle }}">
 	<h3>
 		{%- autoescape false -%}
-			{{ widget.title }}
+			{{ widget.getTitle }}
 		{%- endautoescape -%}
 	</h3>
 	{% if widget.getActionButtons %}
@@ -12,6 +12,6 @@
 		</div>
 	{% endif %}
 	{% autoescape false %}
-		{{ widget.displayBody }}
+		{{ widget.getBody }}
 	{% endautoescape %}
 </div>

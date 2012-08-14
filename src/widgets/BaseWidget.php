@@ -46,10 +46,11 @@ abstract class BaseWidget extends BaseComponent
 	}
 
 	/**
-	 * Display the widget's body
-	 * @return bool
+	 * Gets the widget body.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getBody()
 	{
 		if (empty($this->bodyTemplate))
 			return '';

@@ -37,9 +37,11 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
-	 * @return bool
+	 * Gets the widget body.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getBody()
 	{
 		$updateInfo = blx()->updates->getUpdateInfo();
 
@@ -72,6 +74,6 @@ class UpdatesWidget extends BaseWidget
 			}
 		}
 
-		return parent::displayBody();
+		return parent::getBody();
 	}
 }

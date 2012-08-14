@@ -23,9 +23,11 @@ class RecentActivityWidget extends BaseWidget
 	}
 
 	/**
-	 * @return mixed
+	 * Gets the widget body.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getBody()
 	{
 		$this->actions = array(
 			array(
@@ -42,6 +44,6 @@ class RecentActivityWidget extends BaseWidget
 			)
 		);
 
-		return parent::displayBody();
+		return parent::getBody();
 	}
 }
