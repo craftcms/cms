@@ -3,27 +3,24 @@
 
 
 {% block styles %}
-	{% include "_includes/css_include" file="styles/install.css" %}
+	{% include "_includes/css_include" with {'file': "styles/install.css"} %}
 {% endblock %}
 
 
-{% if reqcheck.result != 'failure' %}
-
-	{% block body %}
+{% block body %}
+	{% if reqcheck.result != 'failure' %}
 		{% include "_special/install/welcome" %}
 		{% include "_special/install/account" %}
 		{% include "_special/install/site" with {'sitename': sitename, 'url': url} %}
 		{% include "_special/install/installing" %}
-	{% endblock %}
-
-	{% block scripts %}
-		{% include "_includes/js_include" file="install.js" %}
-	{% endblock %}
-
-{% else %}
-
-	{% block body %}
+	{% else %}
 		{% include "_special/install/cantinstall" %}
-	{% endblock %}
+	{% endif %}
+{% endblock %}
 
-{% endif %}
+
+{% block scripts %}
+	{% if reqcheck.result != 'failure' %}
+		{% include "_includes/js_include" with {'file': "install.js"} %}
+	{% endif %}
+{% endblock %}
