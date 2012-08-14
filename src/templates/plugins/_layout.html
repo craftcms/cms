@@ -1,0 +1,23 @@
+{% set title = "Plugins" ~ (title ? " - "~title : "") %}
+{% extends "_layouts/cp" %}
+
+
+{% block main %}
+	<header class="titlebar">
+		<h1>Plugins</h1>
+	</header>
+
+	<nav class="nav">
+		<ul>
+			{% for plugin in blx.plugins.all %}
+				{% set seg = plugin.getClassHandle|lower %}
+				<li {% if blx.url.segment(2) == seg %}class="sel"{% endif %}><a href="{{ blx.url.base }}plugins/{{ seg }}">
+					<span class="status {% if plugin.enabled %}on{% elseif plugin.getIsInstalled %}off{% endif %}" title="{% if plugin.enabled %}Enabled{% elseif plugin.getIsInstalled %}Disabled{% else %}Not installed{% endif %}"></span>
+					{{ plugin.name }}
+				</a></li>
+			{% endfor %}
+		</ul>
+	</nav>
+
+	<div>{{ block('settings') }}</div>
+{% endblock %}

@@ -1,37 +1,38 @@
-{if !user && userId}
-	{set user = blx.users.getById(userId)}
-{/if}
+{% set title = "Profile" %}
+{% extends "users/_layouts/edit" %}
 
 
-{layout "users/_layouts/edit" title="Profile" user=user}
+{% if not user and userId %}
+	{% set user = blx.users.getById(userId) %}
+{% endif %}
 
 
-{region "settings"}
+{% block settings %}
 
 	<h2>Profile</h2>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/saveProfile">
-		<input type="hidden" name="user_id" value="{:user.id}">
+		<input type="hidden" name="user_id" value="{{ user.id }}">
 
 		<div class="field first">
 			<div class="heading">
 				<h3><label for="first_name">First Name</label></h3>
 			</div>
-			<input id="first_name" name="first_name" class="text" type="text" value="{:user.first_name}">
-			{if user.errors.first_name}
-				{include "_includes/error_list" errors=user.errors.first_name}
-			{/if}
+			<input id="first_name" name="first_name" class="text" type="text" value="{{ user.first_name }}">
+			{% if user.errors.first_name %}
+				{% include "_includes/error_list" with {'errors': user.errors.first_name} %}
+			{% endif %}
 		</div>
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="last_name">Last Name</label></h3>
 			</div>
-			<input id="last_name" name="last_name" class="text" type="text" value="{:user.last_name}">
-			{if user.errors.last_name}
-				{include "_includes/error_list" errors=user.errors.last_name}
-			{/if}
+			<input id="last_name" name="last_name" class="text" type="text" value="{{ user.last_name }}">
+			{% if user.errors.last_name %}
+				{% include "_includes/error_list" with {'errors': user.errors.last_name} %}
+			{% endif %}
 		</div>
 
 		<div class="field">
@@ -39,13 +40,13 @@
 				<h3><label for="avatar">Avatar</label></h3>
 			</div>
 			<input id="avatar" name="avatar" type="file">
-			{if settings.errors.avatar}
-				{include "_includes/error_list" errors=settings.errors.avatar}
-			{/if}
+			{% if settings.errors.avatar %}
+				{% include "_includes/error_list" with {'errors': settings.errors.avatar} %}
+			{% endif %}
 		</div>
 
 		<input type="submit" class="btn submit" value="Save">
 
 	</form>
 
-{/region}
+{% endblock %}

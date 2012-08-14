@@ -1,24 +1,23 @@
-{set plugin = blx.plugins.get(pluginClass)}
+{% set plugin = blx.plugins.get(pluginClass) %}
+{% set title = plugin.name %}
+{% extends "plugins/_layout" %}
 
-{layout "plugins/_layouts/plugins" title=plugin.name}
 
-{region "main"}
-
-	<h2>{:plugin.name}</h2>	
+{% block settings %}
+	<h2>{{ plugin.name }}</h2>
 
 	<form method="post" action="">
-		<input type="hidden" name="pluginClass" value="{:plugin.getClassHandle}">
+		<input type="hidden" name="pluginClass" value="{{ plugin.getClassHandle }}">
 
-		{if plugin.isInstalled}
-			{if plugin.enabled}
+		{% if plugin.isInstalled %}
+			{% if plugin.enabled %}
 				<input type="button" value="Disable" class="btn formsubmit" data-action="plugins/disablePlugin">
-			{else}
+			{% else %}
 				<input type="button" value="Enable" class="btn formsubmit" data-action="plugins/enablePlugin">
-			{/if}
+			{% endif %}
 			<input type="button" value="Uninstall" class="btn formsubmit" data-action="plugins/uninstallPlugin">
-		{else}
+		{% else %}
 			<input type="button" value="Install" class="btn formsubmit" data-action="plugins/installPlugin">
-		{/if}
+		{% endif %}
 	</form>
-
-{/region}
+{% endblock %}

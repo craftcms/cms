@@ -1,6 +1,8 @@
-{layout "_layouts/cp" title="Users"}
+{% set title = "Users" %}
+{% extends "_layouts/cp" %}
 
-{region "main"}
+
+{% block main %}
 	<header class="titlebar">
 		<h1>Users</h1>
 	</header>
@@ -8,13 +10,13 @@
 	<section>
 		<h2>Recent Users</h2>
 		<ul class="actions">
-			<li><a href="{:blx.url.base}users/new" class="btn addbtn">New user</a></li>
+			<li><a href="{{ blx.url.base }}users/new" class="btn addbtn">New user</a></li>
 		</ul>
 
 		<ul>
-			{foreach blx.users.recent as user}
-				<li><a href="{:blx.url.base}users/{:user.id}" {if blx.url.segment(3) == user.id}class="sel"{/if}><span class="icon icon{if user.admin}247{else}243{/if}"></span>{:user.fullName}</a></li>
-			{/foreach}
+			{% for user in blx.users.recent %}
+				<li><a href="{{ blx.url.base }}users/{{ user.id }}" {% if blx.url.segment(3) == user.id %}class="sel"{% endif %}><span class="icon icon{% if user.admin %}247{% else %}243{% endif %}"></span>{{ user.fullName }}</a></li>
+			{% endfor %}
 		</ul>
 	</section>
-{/region}
+{% endblock %}

@@ -1,14 +1,14 @@
-{if widget.updates}
+{% if widget.updates %}
 	<table class="data">
 		<tbody>
-			{foreach widget.updates as update}
+			{% for update in widget.updates %}
 				<tr>
-					<td><strong>{:update.name}</strong> {:update.version} {if update.critical}<div class="badge warning">Critical</div>{/if}</td>
-					<td class="timestamp">{:update.date}</td>
+					<td><strong>{{ update.name }}</strong> {{ update.version }} {% if update.critical %}<div class="badge warning">Critical</div>{% endif %}</td>
+					<td class="timestamp">{{ update.date }}</td>
 				</tr>
-			{/foreach}
+			{% endfor %}
 		</tbody>
 	</table>
-{else}
+{% else %}
 	<p>No updates available.</p>
-{/if}
+{% endif %}

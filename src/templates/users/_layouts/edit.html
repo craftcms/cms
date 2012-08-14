@@ -1,44 +1,45 @@
-{region "title"}Users - {:user.username} - {:title}{/region}
-{layout "_layouts/cp"}
+{% set title = "Users - " ~ user.username ~ " - " ~ title %}
+{% extends "_layouts/cp" %}
 
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/user.css"}
-{/region}
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/user.css"} %}
+{% endblock %}
 
 
-{if user.id}
-	{if user.id == blx.users.current.id}
-		{set displayName = "My"}
-	{elseif user.fullName}
-		{set displayName = user.fullName.possessive}
-	{else}
-		{set displayName = "Anonymous’"}
-	{/if}
-	<?php $heading = new Variable($displayName.' Account'); ?>
-{else}
-	{set heading = "Register a new user"}
-{/if}
+{% if user.id %}
+	{% if user.id == blx.users.current.id %}
+		{% set displayName = "My" %}
+	{% elseif user.fullName %}
+		{% set lastChar = user.fullName|slice(user.fullName|length-1) %}
+		{% set displayName = user.fullName ~ (lastChar|lower == "s" ? "’" : "’s") %}
+	{% else %}
+		{% set displayName = "Anonymous’" %}
+	{% endif %}
+	{% set heading = displayName ~ " Account" %}
+{% else %}
+	{% set heading = "Register a new user" %}
+{% endif %}
 
 
-{region "main"}
+{% block main %}
 	<header class="titlebar">
-		<h1>{:heading}</h1>
+		<h1>{{ heading }}</h1>
 	</header>
 
-	{if user.id}
+	{% if user.id %}
 		<nav class="nav">
 			<ul>
-				<li {if blx.url.segment(3) == ''}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}" data-icon="s">Account Settings</a></li>
-				<li {if blx.url.segment(3) == 'profile'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/profile" data-icon="p">Profile</a></li>
-				<li {if blx.url.segment(3) == 'info'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/info" data-icon="I">User Info</a></li>
+				<li {% if blx.url.segment(3) == '' %}class="sel"{% endif %}><a href="{{ blx.url.base }}users/{{ user.id }}" data-icon="s">Account Settings</a></li>
+				<li {% if blx.url.segment(3) == 'profile' %}class="sel"{% endif %}><a href="{{ blx.url.base }}users/{{ user.id }}/profile" data-icon="p">Profile</a></li>
+				<li {% if blx.url.segment(3) == 'info' %}class="sel"{% endif %}><a href="{{ blx.url.base }}users/{{ user.id }}/info" data-icon="I">User Info</a></li>
 
-				{if blx.users.current.admin}
-					<li {if blx.url.segment(3) == 'admin'}class="sel"{/if}><a href="{:blx.url.base}users/{:user.id}/admin" data-icon="v">Administration</a></li>
-				{/if}
+				{% if blx.users.current.admin %}
+					<li {% if blx.url.segment(3) == 'admin' %}class="sel"{% endif %}><a href="{{ blx.url.base }}users/{{ user.id }}/admin" data-icon="v">Administration</a></li>
+				{% endif %}
 			</ul>
 		</nav>
-	{/if}
+	{% endif %}
 
-	<div>{:settings}</div>
-{/region}
+	<div>{{ block('settings') }}</div>
+{% endblock %}

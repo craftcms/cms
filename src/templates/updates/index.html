@@ -1,24 +1,24 @@
-{layout "_layouts/cp" title="Updates"}
+{% set title = "Updates" %}
+{% extends "_layouts/cp" %}
 
 
-{region "styles"}
+{% block styles %}
 	<style type="text/css">
 		h3.critical { color: #8a1f11; }
 		.notes { display: none; }
 		.cta { position: absolute; top: 15px; right: 15px; }
 		.cta .manual { margin-top: 5px; }
 	</style>
-{/region}
+{% endblock %}
 
 
-{region "main"}
+{% block main %}
 	<header class="titlebar">
 		<h1>Updates</h1>
 	</header>
 
-
-	{set problems = blx.updates.unwritabledirectories}
-	{if !problems}
+	{% set problems = blx.updates.unwritabledirectories %}
+	{% if not problems %}
 		<div id="checking">
 			Checking for updates…
 		</div>
@@ -33,12 +33,12 @@
 		</script>
 
 		<div id="updates"></div>
-	{else}
-		<p>Blocks will have a problem writing to the following {if problems.length == 1}directory{else}directories{/if}:</p>
+	{% else %}
+		<p>Blocks will have a problem writing to the following {% if problems|length == 1 %}directory{% else %}directories{% endif %}:</p>
 		<ul>
-			{foreach problems as problem}
-				<li>{:problem}<li>
-			{/foreach}
+			{% for problem in problems %}
+				<li>{{ problem }}<li>
+			{% endfor %}
 		</ul>
 
 		<br>
@@ -49,9 +49,9 @@
 			<p><strong>(b) File permissions:</strong> All of your Blocks files must be either owner writable by, or group writable by, the user under which your Apache server executes.</p>
 			<p>On shared hosts, Blocks files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment.</p>
 		</div>
-	{/if}
-{/region}
+	{% endif %}
+{% endblock %}
 
-{region "scripts"}
-	{include "_includes/js_include" file="updates.js"}
-{/region}
+{% block scripts %}
+	{% include "_includes/js_include" with {'file': "updates.js"} %}
+{% endblock %}

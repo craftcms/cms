@@ -13,8 +13,7 @@ class DateVariable
 	 */
 	function __construct()
 	{
-		$dtObj = new DateTime();
-		$this->dateTimeVariable = new Variable($dtObj);
+		$this->dateTimeVariable = new DateTime();
 	}
 
 	/**
@@ -24,7 +23,7 @@ class DateVariable
 	 */
 	function __get($name)
 	{
-		return (string)$this->dateTimeVariable->$name();
+		return (string)$this->dateTimeVariable->$name;
 	}
 
 	/**

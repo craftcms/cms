@@ -1,51 +1,52 @@
-<div class="blockeditor" data-input-name="{:name}">
+<div class="blockeditor" data-input-name="{{ name }}">
 
 	<div class="list">
 		<h3>Content Blocks</h3>
 		<ul>
-			{foreach currentBlocks as block}
-				<li><a class="block-item {if block.errors}error{/if}" data-block-id="{:block.id}">
-					<div class="name {if block.required}required{/if}">{if block.name}{:block.name}{else}Untitled{/if}</div>
-					<div class="type">{:block.blocktypeName}</div>
-					<input type="hidden" name="{:name}[order][]" value="{:block.id}">
+			{% for block in currentBlocks %}
+				<li><a class="block-item {% if block.errors %}error{% endif %}" data-block-id="{{ block.id }}">
+					<div class="name {% if block.required %}required{% endif %}">{% if block.name %}{{ block.name }}{% else %}Untitled{% endif %}</div>
+					<div class="type">{{ block.blocktypeName }}</div>
+					<input type="hidden" name="{{ name }}[order][]" value="{{ block.id }}">
 				</a></li>
-			{/foreach}
+			{% endfor %}
 		</ul>
 		<a class="btn addbtn new-block">New content block</a>
 	</div>
 
 	<div class="settings">
-		{foreach currentBlocks as block}
-			<?php $idPrefix = new Variable($name.'-'.$block->id().'-') ?>
-			<?php $namePrefix = new Variable($name.'['.$block->id().']') ?>
-			<div data-block-id="{:block.id}" style="display:none">
-				{include "_includes/blockeditor/blocksettings" idPrefix=idPrefix namePrefix=namePrefix block=block}
+		{% for block in currentBlocks %}
+			<div data-block-id="{{ block.id }}" style="display:none">
+				{% include "_includes/blockeditor/blocksettings" with {
+					'idPrefix': name ~ "-" ~ block.id ~ "-",
+					'namePrefix': name ~ "[" ~ block.id ~ "]",
+					'block': block
+				} %}
 			</div>
-		{/foreach}
+		{% endfor %}
 	</div>
 
-	<?php $newIdPrefix = new Variable($name.'-BLOCK_ID-') ?>
-	<?php $newNamePrefix = new Variable($name.'[BLOCK_ID]') ?>
+	{% set newIdPrefix = name ~ "-BLOCK-ID-" %}
+	{% set newNamePrefix = name ~ "[BLOCK_ID]" %}
 
 	<div class="freshblocksettings" style="display:none">
 		<div class="blockeditor-settings" data-block-id="BLOCK_ID">
-			{include "_includes/blockeditor/blocksettings" idPrefix=newIdPrefix namePrefix=newNamePrefix}
+			{% include "_includes/blockeditor/blocksettings" with {'idPrefix': newIdPrefix, 'namePrefix': newNamePrefix} %}
 		</div>
 	</div>
 
 	<div class="freshblocktypesettings" style="display:none">
-		<?php $newNamePrefix = new Variable($newNamePrefix.'[settings]') ?>
-		{foreach blx.contentblocks.blocktypes as blocktype}
-			{set settings = blocktype.displaySettings(newIdPrefix, newNamePrefix)}
-			{if settings}
-				<div data-blocktype-class="{:blocktype.classHandle}">
-					<div class="{:blocktype.classHandle} nested-pane-items">
+		{% for blocktype in blx.contentblocks.blocktypes %}
+			{% set settings = blocktype.displaySettings(newIdPrefix, newNamePrefix ~ "[settings]") %}
+			{% if settings %}
+				<div data-blocktype-class="{{ blocktype.classHandle }}">
+					<div class="{{ blocktype.classHandle }} nested-pane-items">
 						<div></div>
-						{:settings}
+						{{ settings }}
 					</div>
 				</div>
-			{/if}
-		{/foreach}
+			{% endif %}
+		{% endfor %}
 	</div>
 
 </div>

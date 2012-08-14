@@ -19,7 +19,12 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getActionButtons()
 	{
-		return array('Updates' => 'updates');
+		return array(
+			array(
+				'label' => 'Updates',
+				'url' => 'updates'
+			)
+		);
 	}
 
 

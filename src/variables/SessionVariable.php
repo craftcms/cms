@@ -30,6 +30,15 @@ class SessionVariable
 	 */
 	public function messages()
 	{
-		return blx()->user->getFlashes();
+		$flashes = blx()->user->getFlashes();
+		$messages = array();
+		foreach ($flashes as $type => $value)
+		{
+			$messages[] = array(
+				'type' => $type,
+				'value' => $value
+			);
+		}
+		return $messages;
 	}
 }

@@ -30,10 +30,10 @@ abstract class BaseController extends \CController
 	 */
 	public function renderRequestedTemplate($variables = array())
 	{
-		if (($templatePath = blx()->urlManager->processTemplateMatching()) !== false)
+		if (($template = blx()->urlManager->processTemplateMatching()) !== false)
 		{
 			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
-			$output = $this->renderTemplate($templatePath, $variables, true);
+			$output = $this->renderTemplate($template, $variables, true);
 
 			// Set the Content-Type header
 			$mimeType = blx()->request->getMimeType();
@@ -49,22 +49,16 @@ abstract class BaseController extends \CController
 	/**
 	 * Renders a template, and either outputs or returns it.
 	 *
-	 * @param string $templatePath
-	 * @param array $variables Variables to be passed to the template
+	 * @param mixed $template The name of the template to load, or a StringTemplate object
+	 * @param array $variables The variables that should be available to the template
 	 * @param bool $return Whether to return the results, rather than output them
 	 * @param bool  $processOutput
 	 * @throws HttpException
 	 * @return mixed
 	 */
-	public function renderTemplate($templatePath, $variables = array(), $return = false, $processOutput = false)
+	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
 	{
-		$variables['blx'] = new BlxVariable();
-		$variables = TemplateHelper::prepTemplateVariables($variables);
-
-		// Share the same TemplateProcessor instance for the whole request.
-		$renderer = blx()->getViewRenderer();
-
-		if (($output = $renderer->process($this, $templatePath, $variables, true)) !== false)
+		if (($output = TemplateHelper::render($template, $variables)) !== false)
 		{
 			if ($processOutput)
 				$output = $this->processOutput($output);
@@ -76,26 +70,6 @@ abstract class BaseController extends \CController
 		}
 		else
 			throw new HttpException(404);
-	}
-
-	/**
-	 * @param Email $email
-	 * @param array $variables
-	 * @throws Exception
-	 * @return mixed
-	 */
-	public function loadEmailTemplate(Email $email, $variables = array())
-	{
-		$variables = TemplateHelper::prepTemplateVariables($variables);
-
-		$renderer = new EmailTemplateProcessor();
-
-		if (($content = $renderer->process($this, $email, $variables)) !== false)
-		{
-			return $content;
-		}
-		else
-			throw new Exception(Blocks::t(TranslationCategory::Email, 'Could not find the requested email template.'));
 	}
 
 	/**

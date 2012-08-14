@@ -1,8 +1,8 @@
-{layout "_layouts/cp" title="Content Languages"}
+{% set title = "Content Languages" %}
+{% extends "_layouts/cp" %}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>Content Languages</h1>
 	</header>
@@ -15,35 +15,32 @@
 			<div class="heading">
 				<h3><label for="languages">Which languages will your content be available in?</label></h3>
 
-				{if !selectedLanguages}
-					{set selectedLanguages = blx.settings.languages}
-				{/if}
+				{% if not selectedLanguages %}
+					{% set selectedLanguages = blx.settings.languages %}
+				{% endif %}
 
-				{if selectedLanguages.length}
-					{foreach selectedLanguages as language}
-						<div class="checkbox"><label>
-							<input type="checkbox" name="languages[]" value="{:language}" checked>
-							{:blx.localization.localeName(language)}
-						</label></div>
-					{/foreach}
-				{/if}
+				{% for language in selectedLanguages %}
+					<div class="checkbox"><label>
+						<input type="checkbox" name="languages[]" value="{{ language }}" checked>
+						{{ blx.localization.localeName(language) }}
+					</label></div>
+				{% endfor %}
 
-				{foreach blx.localization.languages as language}
-					{if !selectedLanguages.includes(language)}
+				{% for language in blx.localization.languages %}
+					{% if language not in selectedLanguages %}
 						<div class="checkbox"><label>
-							<input type="checkbox" name="languages[]" value="{:language}">
-							{:blx.localization.localeName(language)}
+							<input type="checkbox" name="languages[]" value="{{ language }}">
+							{{ blx.localization.localeName(language) }}
 						</label></div>
-					{/if}
-				{/foreach}
+					{% endif %}
+				{% endfor %}
 			</div>
-			
+
 		</div>
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="Save">
-			<a class="btn" href="{:blx.url.base}settings">Cancel</a>
+			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-
-{/region}
+{% endblock %}

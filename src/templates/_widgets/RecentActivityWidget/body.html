@@ -1,8 +1,11 @@
 <table class="data">
-	{foreach widget.actions as action}
+	{% for action in widget.actions %}
 	<tr>
-		<td>{:action.action}</td>
-		<td class="timestamp">{:action.date}</td>
+		<td>{%- autoescape false -%}
+				{{ action.action }}
+			{%- endautoescape -%}
+		</td>
+		<td class="timestamp">{{ action.date }}</td>
 	</tr>
-	{/foreach}
+	{% endfor %}
 </table>

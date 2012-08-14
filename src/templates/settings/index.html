@@ -1,24 +1,23 @@
-{layout "_layouts/cp" title="Settings"}
+{% set title = "Settings" %}
+{% extends "_layouts/cp" %}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>Settings</h1>
 	</header>
 
 	<h2>System</h2>
 	<ul class="icons">
-		<li><a href="{:blx.url.base}settings/general" data-icon="g">General</a></li>
-		<li><a href="{:blx.url.base}settings/email" data-icon="E">Email</a></li>
-		<li><a href="{:blx.url.base}settings/advanced" data-icon="a">Advanced</a></li>
+		<li><a href="{{ blx.url.base }}settings/general" data-icon="g">General</a></li>
+		<li><a href="{{ blx.url.base }}settings/email" data-icon="E">Email</a></li>
+		<li><a href="{{ blx.url.base }}settings/advanced" data-icon="a">Advanced</a></li>
 	</ul>
 
 	<h2>Content</h2>
 	<ul class="icons">
-		<li><a href="{:blx.url.base}settings/content" data-icon="C">Pages &amp; Sections</a></li>
-		<li><a href="{:blx.url.base}settings/assets" data-icon="A">Assets</a></li>
-		<li><a href="{:blx.url.base}settings/languages" data-icon="L">Languages</a></li>
+		<li><a href="{{ blx.url.base }}settings/content" data-icon="C">Pages &amp; Sections</a></li>
+		<li><a href="{{ blx.url.base }}settings/assets" data-icon="A">Assets</a></li>
+		<li><a href="{{ blx.url.base }}settings/languages" data-icon="L">Languages</a></li>
 	</ul>
-
-{/region}
+{% endblock %}

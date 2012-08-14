@@ -1,212 +1,216 @@
-{layout "assets/_layouts/assets" viewMode="thumbs"}
+{% extends "assets/_layouts/assets" %}
 
-{region "files"}
+
+{% block viewMode %}thumbs{% endblock %}
+
+
+{% block files %}
 	<div class="files thumbs">
 		<ul>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/beer-bottle.png')}" alt="beer-bottle.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/beer-bottle.png') }}" alt="beer-bottle.png"></div>
 				<div class="filename">beer-bottle.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/beer-pint.png')}" alt="beer-pint.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/beer-pint.png') }}" alt="beer-pint.png"></div>
 				<div class="filename">beer-pint.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/blue-curacao.png')}" alt="blue-curacao.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/blue-curacao.png') }}" alt="blue-curacao.png"></div>
 				<div class="filename">blue-curacao.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/blue-lagoon.png')}" alt="blue-lagoon.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/blue-lagoon.png') }}" alt="blue-lagoon.png"></div>
 				<div class="filename">blue-lagoon.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/blue-velvet.png')}" alt="blue-velvet.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/blue-velvet.png') }}" alt="blue-velvet.png"></div>
 				<div class="filename">blue-velvet.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/bluenat-hawayan.png')}" alt="bluenat-hawayan.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/bluenat-hawayan.png') }}" alt="bluenat-hawayan.png"></div>
 				<div class="filename">bluenat-hawayan.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/chambord.png')}" alt="chambord.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/chambord.png') }}" alt="chambord.png"></div>
 				<div class="filename">chambord.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/champagne-bottle.png')}" alt="champagne-bottle.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/champagne-bottle.png') }}" alt="champagne-bottle.png"></div>
 				<div class="filename">champagne-bottle.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/champagne.png')}" alt="champagne.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/champagne.png') }}" alt="champagne.png"></div>
 				<div class="filename">champagne.png
 			</li></div>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/chardonnay.png')}" alt="chardonnay.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/chardonnay.png') }}" alt="chardonnay.png"></div>
 				<div class="filename">chardonnay.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/chilada.png')}" alt="chilada.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/chilada.png') }}" alt="chilada.png"></div>
 				<div class="filename">chilada.png
 			</li></div>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/cosmo.png')}" alt="cosmo.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/cosmo.png') }}" alt="cosmo.png"></div>
 				<div class="filename">cosmo.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/cranberry-mimosa.png')}" alt="cranberry-mimosa.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/cranberry-mimosa.png') }}" alt="cranberry-mimosa.png"></div>
 				<div class="filename">cranberry-mimosa.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/cream-soda.png')}" alt="cream-soda.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/cream-soda.png') }}" alt="cream-soda.png"></div>
 				<div class="filename">cream-soda.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/creme-de-menthe.png')}" alt="creme-de-menthe.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/creme-de-menthe.png') }}" alt="creme-de-menthe.png"></div>
 				<div class="filename">creme-de-menthe.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/daiquiri.png')}" alt="daiquiri.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/daiquiri.png') }}" alt="daiquiri.png"></div>
 				<div class="filename">daiquiri.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/gelato.png')}" alt="gelato.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/gelato.png') }}" alt="gelato.png"></div>
 				<div class="filename">gelato.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/gin-and-tonic.png')}" alt="gin-and-tonic.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/gin-and-tonic.png') }}" alt="gin-and-tonic.png"></div>
 				<div class="filename">gin-and-tonic.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/into-the-blue.png')}" alt="into-the-blue.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/into-the-blue.png') }}" alt="into-the-blue.png"></div>
 				<div class="filename">into-the-blue.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/irish-coffee.png')}" alt="irish-coffee.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/irish-coffee.png') }}" alt="irish-coffee.png"></div>
 				<div class="filename">irish-coffee.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/jack-and-coke.png')}" alt="jack-and-coke.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/jack-and-coke.png') }}" alt="jack-and-coke.png"></div>
 				<div class="filename">jack-and-coke.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/keg.png')}" alt="keg.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/keg.png') }}" alt="keg.png"></div>
 				<div class="filename">keg.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/long-island-ice-tea.png')}" alt="long-island-ice-tea.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/long-island-ice-tea.png') }}" alt="long-island-ice-tea.png"></div>
 				<div class="filename">long-island-ice-tea.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/mai-tai.png')}" alt="mai-tai.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/mai-tai.png') }}" alt="mai-tai.png"></div>
 				<div class="filename">mai-tai.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/manhattan.png')}" alt="manhattan.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/manhattan.png') }}" alt="manhattan.png"></div>
 				<div class="filename">manhattan.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/margarita.png')}" alt="margarita.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/margarita.png') }}" alt="margarita.png"></div>
 				<div class="filename">margarita.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/martini.png')}" alt="martini.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/martini.png') }}" alt="martini.png"></div>
 				<div class="filename">martini.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/merlot.png')}" alt="merlot.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/merlot.png') }}" alt="merlot.png"></div>
 				<div class="filename">merlot.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/mojito-1.png')}" alt="mojito-1.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/mojito-1.png') }}" alt="mojito-1.png"></div>
 				<div class="filename">mojito-1.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/mojito-2.png')}" alt="mojito-2.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/mojito-2.png') }}" alt="mojito-2.png"></div>
 				<div class="filename">mojito-2.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/mousse.png')}" alt="mousse.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/mousse.png') }}" alt="mousse.png"></div>
 				<div class="filename">mousse.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/pina-colada.png')}" alt="pina-colada.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/pina-colada.png') }}" alt="pina-colada.png"></div>
 				<div class="filename">pina-colada.png
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/pink-chablis.png')}" alt="pink-chablis.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/pink-chablis.png') }}" alt="pink-chablis.png"></div>
 				<div class="filename">pink-chablis.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/pink-lemonade.png')}" alt="pink-lemonade.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/pink-lemonade.png') }}" alt="pink-lemonade.png"></div>
 				<div class="filename">pink-lemonade.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/punch.png')}" alt="punch.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/punch.png') }}" alt="punch.png"></div>
 				<div class="filename">punch.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/rainbow-sherbet.png')}" alt="rainbow-sherbet.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/rainbow-sherbet.png') }}" alt="rainbow-sherbet.png"></div>
 				<div class="filename">rainbow-sherbet.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/root-beer.png')}" alt="root-beer.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/root-beer.png') }}" alt="root-beer.png"></div>
 				<div class="filename">root-beer.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/sangria.png')}" alt="sangria.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/sangria.png') }}" alt="sangria.png"></div>
 				<div class="filename">sangria.png
 			</li></div>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/sherry.png')}" alt="sherry.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/sherry.png') }}" alt="sherry.png"></div>
 				<div class="filename">sherry.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/shiraz.png')}" alt="shiraz.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/shiraz.png') }}" alt="shiraz.png"></div>
 				<div class="filename">shiraz.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/singapore-sling.png')}" alt="singapore-sling.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/singapore-sling.png') }}" alt="singapore-sling.png"></div>
 				<div class="filename">singapore-sling.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/sorbet.png')}" alt="sorbet.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/sorbet.png') }}" alt="sorbet.png"></div>
 				<div class="filename">sorbet.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/Sundae-1.png')}" alt="Sundae-1.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/Sundae-1.png') }}" alt="Sundae-1.png"></div>
 				<div class="filename">Sundae-1.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/sundae-2.png')}" alt="sundae-2.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/sundae-2.png') }}" alt="sundae-2.png"></div>
 				<div class="filename">sundae-2.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/sundae-3.png')}" alt="sundae-3.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/sundae-3.png') }}" alt="sundae-3.png"></div>
 				<div class="filename">sundae-3.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/tequila-sunrise-1.png')}" alt="tequila-sunrise-1.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/tequila-sunrise-1.png') }}" alt="tequila-sunrise-1.png"></div>
 				<div class="filename">tequila-sunrise-1.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/tequila-sunrise-2.png')}" alt="tequila-sunrise-2.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/tequila-sunrise-2.png') }}" alt="tequila-sunrise-2.png"></div>
 				<div class="filename">tequila-sunrise-2.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/v8.png')}" alt="v8.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/v8.png') }}" alt="v8.png"></div>
 				<div class="filename">v8.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/wine-1.png')}" alt="wine-1.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/wine-1.png') }}" alt="wine-1.png"></div>
 				<div class="filename">wine-1.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/wine-bottle.png')}" alt="wine-bottle.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/wine-bottle.png') }}" alt="wine-bottle.png"></div>
 				<div class="filename">wine-bottle.png</div>
 			</li>
 			<li>
-				<div class="thumb"><img src="{:blx.url.resource('images/drinks/zinfandel.png')}" alt="zinfandel.png"></div>
+				<div class="thumb"><img src="{{ blx.url.resource('images/drinks/zinfandel.png') }}" alt="zinfandel.png"></div>
 				<div class="filename">zinfandel.png</div>
 			</li>
 		</ul>
 	</div>
-{/region}
+{% endblock %}

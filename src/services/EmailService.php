@@ -204,16 +204,19 @@ class EmailService extends \CApplicationComponent
 		// TODO: run the content through the email template processor
 		$content = $this->getMessageContent($message->id, $language);
 
-		$email->subject = $content->subject;
+		$keyPrefix = 'email:'.$key.':'.$pluginId.':';
+		$variables['user'] = $user;
+
+		$email->subject = TemplateHelper::renderString($keyPrefix.'subject', $content->subject, $variables);
 
 		if ($user->html_email && $content->html_body)
 		{
-			$email->msgHtml($content->html_body);
-			$email->altBody = $content->body;
+			$email->msgHtml(TemplateHelper::renderString($keyPrefix.'html_body', $content->html_body, $variables));
+			$email->altBody = TemplateHelper::renderString($keyPrefix.'body', $content->body, $variables);
 		}
 		else
 		{
-			$email->body = $content->body;
+			$email->body = TemplateHelper::renderString($keyPrefix.'body', $content->body, $variables);
 		}
 
 		if (!$email->send())

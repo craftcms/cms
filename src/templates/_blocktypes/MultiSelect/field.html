@@ -1,5 +1,5 @@
-<select id="{:handle}-block" name="{:handle}[]" multiple>
-	{foreach settings.options as option}
-		<option {if data.includes(option)}selected{/if} >{:option}</option>
-	{/foreach}
+<select id="{{ handle }}-block" name="{{ handle }}[]" multiple>
+	{% for option in settings.options %}
+		<option {% if option in data %}selected{% endif %} >{{ option }}</option>
+	{% endfor %}
 </select>

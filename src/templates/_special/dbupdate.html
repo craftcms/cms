@@ -1,14 +1,15 @@
-{layout "_layouts/basic" title="Update Blocks"}
+{% set title = "Update Blocks" %}
+{% extends "_layouts/basic" %}
 
 
-{region "styles"}
+{% block styles %}
 	<style type="text/css">
-		#dbupdate .icon { background-image: url({:blx.url.resource}images/notice-dbupdate.png); }
+		#dbupdate .icon { background-image: url({{ blx.url.resource }}images/notice-dbupdate.png); }
 	</style>
-{/region}
+{% endblock %}
 
 
-{region "body"}
+{% block body %}
 
 	<div class="no-access" id="dbupdate">
 		<div class="pane">
@@ -23,29 +24,29 @@
 	</div>
 
 
-		{!--<div id="status">Your database needs to be updated.  Make a backup, then press this button.
+		{#<div id="status">Your database needs to be updated.  Make a backup, then press this button.
 		<form method="post" action="">
 			<input type="hidden" name="action" value="dbUpdate/update">
 			<input type="hidden" name="redirect" value="dashboard">
 			<div><input class="btn big submit" type="submit" value="Do It."></div>
-		</form></div>--}
+		</form></div>#}
 
-{/region}
+{% endblock %}
 
 
-{region "scripts"}
+{% block scripts %}
 	<script type="text/javascript">
 		var waiting = false;
 		$('#go').click(function() {
-			$.post('{:blx.url.action}dbupdate/update', function(response) {
+			$.post('{{ blx.url.action }}dbupdate/update', function(response) {
 				if (response.success)
 					window.location.reload()
 				else
 				{
-					var error = (response.error || 'An unknown error occurred.');
+					var error = (response.error or 'An unknown error occurred.');
 					alert(error);
 				}
 			});
 		});
 	</script>
-{/region}
+{% endblock %}

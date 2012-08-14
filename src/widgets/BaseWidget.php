@@ -49,7 +49,7 @@ abstract class BaseWidget extends BaseComponent
 			'widget' => $this
 		);
 
-		$template = blx()->controller->renderTemplate($this->bodyTemplate, $variables, true);
+		$template = TemplateHelper::render($this->bodyTemplate, $variables);
 		return $template;
 	}
 
@@ -70,7 +70,7 @@ abstract class BaseWidget extends BaseComponent
 			'settings'   => $this->settings
 		);
 
-		$template = blx()->controller->renderTemplate($this->settingsTemplate, $variables, true);
+		$template = TemplateHelper::render($this->settingsTemplate, $variables);
 		return $template;
 	}
 }

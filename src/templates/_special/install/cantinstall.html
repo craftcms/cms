@@ -3,10 +3,10 @@
 	<p>Your server doesn’t meet the following requirements to install Blocks:</p>
 
 	<ul class="list">
-		{foreach reqcheck.requirements as req}
-			{if req.result == 'failed'}
-				<li>{:req.notes}</li>
-			{/if}
-		{/foreach}
+		{% for req in reqcheck.requirements %}
+			{% if req.result == 'failed' %}
+				<li>{{ req.notes }}</li>
+			{% endif %}
+		{% endfor %}
 	</ul>
 </div>

@@ -1,6 +1,6 @@
-{if !id}
-	{set id = name}
-{/if}
-<select id="{:id}" name="{:name}">
-	<option value="en_us" {if value == 'en_us'}selected{/if}>English (US)</option>
+{% if not id %}
+	{% set id = name %}
+{% endif %}
+<select id="{{ id }}" name="{{ name }}">
+	<option value="en_us" {% if value == 'en_us' %}selected{% endif %}>English (US)</option>
 </select>

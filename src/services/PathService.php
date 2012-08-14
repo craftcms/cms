@@ -144,62 +144,9 @@ class PathService extends \CApplicationComponent
 	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
 	 * @return mixed
 	 */
-	public function getParsedTemplatesPath()
+	public function getCompiledTemplatesPath()
 	{
-		if (BLOCKS_CP_REQUEST)
-			return $this->getParsedAppTemplatesPath();
-		else
-			return $this->getParsedSiteTemplatesPath();
-	}
-
-	/**
-	 * Returns the parsed Blocks app templates path.
-	 * @return string
-	 */
-	public function getParsedAppTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/app/';
-
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
-
-		return $path;
-	}
-
-	/**
-	 * Returns the site's parsed templates path.
-	 * @return string
-	 */
-	public function getParsedSiteTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/site/';
-
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
-
-		return $path;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getParsedPluginTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/plugins/';
-
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
-
-		return $path;
-	}
-
-	/**
-	 * Returns the parsed email templates path.
-	 * @return string
-	 */
-	public function getParsedEmailTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/email/';
+		$path = $this->getRuntimePath().'compiled_templates/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);

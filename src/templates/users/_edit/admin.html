@@ -1,25 +1,25 @@
-{if !user && userId}
-	{set user = blx.users.getById(userId)}
-{/if}
+{% set title = "Administration" %}
+{% extends "users/_layouts/edit" %}
 
 
-{layout "users/_layouts/edit" title="Administration" user=user}
+{% if not user and userId %}
+	{% set user = blx.users.getById(userId) %}
+{% endif %}
 
 
-{region "settings"}
-
+{% block settings %}
 	<h2>Administration</h2>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/saveAdminSettings">
-		<input type="hidden" name="user_id" value="{:user.id}">
+		<input type="hidden" name="user_id" value="{{ user.id }}">
 
 		<div class="field">
 			<div class="heading">
 				<h3>Admin Account</h3>
 			</div>
 			<div class="checkbox"><label>
-				<input type="checkbox" name="admin" value="y" {if user.admin}checked{/if}>
+				<input type="checkbox" name="admin" value="y" {% if user.admin %}checked{% endif %}>
 				This is an admin account
 			</label></div>
 		</div>
@@ -30,47 +30,46 @@
 	<hr>
 
 	<form method="post" action="">
-		<input type="hidden" name="user_id" value="{:user.id}">
+		<input type="hidden" name="user_id" value="{{ user.id }}">
 
 		<div class="field">
 			<div class="heading">
 				<h3>Account Status</h3>
 			</div>
 
-			{if user.status == 'pending'}
+			{% if user.status == 'pending' %}
 
 				<div class="status"></div> Pending Verification  
 				<input type="button" class="btn formsubmit" value="Send Verification Email" data-action="users/sendVerificationEmail">
 				<input type="button" class="btn formsubmit" value="Activate" data-action="users/activateUser">
 
-			{elseif user.status == 'locked'}
+			{% elseif user.status == 'locked' %}
 
-				<div class="status pending"></div> {if blx.config.failedPasswordMode == 'cooldown'}Temporarily{/if} Locked  
+				<div class="status pending"></div> {% if blx.config.failedPasswordMode == 'cooldown' %}Temporarily{% endif %} Locked  
 				<input type="button" class="btn formsubmit" value="Unlock" data-action="users/unlockUser">
 
-			{elseif user.status == 'suspended'}
+			{% elseif user.status == 'suspended' %}
 
 				<div class="status off"></div> Suspended  
 				<input type="submit" class="btn formsubmit" value="Unsuspend" data-action="users/unsuspendUser">
 
-			{else}
+			{% else %}
 
 				<div class="status on"></div> Active
 
-			{/if}
+			{% endif %}
 		</div>
 
-		{if !user.isCurrent}
+		{% if not user.isCurrent %}
 			<div class="field">
 				<h3>Account Actions</h3>
 
-				{if user.status != 'suspended'}
+				{% if user.status != 'suspended' %}
 					<input type="button" class="btn formsubmit" value="Suspend" data-action="users/suspendUser">
-				{/if}
+				{% endif %}
 
 				<input class="btn" type="submit" name="delete" value="Delete" data-action="users/deleteUser">
 			</div>
-		{/if}
+		{% endif %}
 	</form>
-
-{/region}
+{% endblock %}
