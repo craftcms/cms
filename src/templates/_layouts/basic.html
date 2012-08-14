@@ -2,20 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8">
-	<title>{:title}{if title && blx.app.siteName} - {/if}{:blx.app.siteName}</title>
-	{include "_includes/css_include" file="styles/blocks.css"}
+	<title>{{ title }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
+	{% include "_includes/css_include.html" with {'file': 'styles/blocks.css'} %}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
-	{:styles}
+	{{ block('styles') }}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0">
 	<script type="text/javascript">
 		if (typeof blx == 'undefined') blx = {};
-		blx.baseUrl = '{:blx.url.base}';
-		blx.actionUrl = '{:blx.url.action}';
-		blx.resourceUrl = '{:blx.url.resource}';
+		blx.baseUrl = '{{ blx.url.base }}';
+		blx.actionUrl = '{{ blx.url.action }}';
+		blx.resourceUrl = '{{ blx.url.resource }}';
 	</script>
 </head>
-<body class="{:bodyClass}">
-	{:body}
+<body class="{{ block('bodyClass') }}">
+	{{ block('body') }}
 
 	<noscript>
 		<div class="no-access">
@@ -32,13 +32,10 @@
 		</div>
 	</noscript>
 
-{if !blx.config.useCompressedJs}
-	{include "_includes/js_include" file="global_bootstrap.js"}
-{else}
-	{include "_includes/js_include" file="blocks.js"}
-{/if}
+{% set file = blx.config.useCompressedJs ? 'blocks.js' : 'global_bootstrap.js' %}
+{% include "_includes/js_include.html" with {'file': file} %}
 
-{:scripts}
+{{ block('scripts') }}
 
 </body>
 </html>

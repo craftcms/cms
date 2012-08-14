@@ -118,16 +118,12 @@ class PathService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the current site's templates path, or null if there is no current site.
-	 * @return mixed
+	 * Returns the site templates path.
+	 * @return string
 	 */
 	public function getSiteTemplatesPath()
 	{
-		$site = blx()->sites->getCurrentSite();
-		if ($site)
-			return BLOCKS_TEMPLATES_PATH.$site->handle.'/';
-		else
-			return null;
+		return BLOCKS_TEMPLATES_PATH;
 	}
 
 	/**
@@ -148,68 +144,9 @@ class PathService extends \CApplicationComponent
 	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
 	 * @return mixed
 	 */
-	public function getParsedTemplatesPath()
+	public function getCompiledTemplatesPath()
 	{
-		if (BLOCKS_CP_REQUEST)
-			return $this->getParsedAppTemplatesPath();
-		else
-			return $this->getParsedSiteTemplatesPath();
-	}
-
-	/**
-	 * Returns the parsed Blocks app templates path.
-	 * @return string
-	 */
-	public function getParsedAppTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/app/';
-
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
-
-		return $path;
-	}
-
-	/**
-	 * Returns the current site's parsed templates path, or null if there is no current site.
-	 * @return mixed
-	 */
-	public function getParsedSiteTemplatesPath()
-	{
-		$site = blx()->sites->getCurrentSite();
-		if ($site)
-		{
-			$path = $this->getRuntimePath().'parsed_templates/sites/'.$site->handle.'/';
-
-			if (!is_dir($path))
-				mkdir($path, 0777, true);
-
-			return $path;
-		}
-		else
-			return null;
-	}
-
-	/**
-	 * @return string
-	 */
-	public function getParsedPluginTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/plugins/';
-
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
-
-		return $path;
-	}
-
-	/**
-	 * Returns the parsed email templates path.
-	 * @return string
-	 */
-	public function getParsedEmailTemplatesPath()
-	{
-		$path = $this->getRuntimePath().'parsed_templates/email/';
+		$path = $this->getRuntimePath().'compiled_templates/';
 
 		if (!is_dir($path))
 			mkdir($path, 0777, true);

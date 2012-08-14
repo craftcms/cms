@@ -325,7 +325,9 @@ input, textarea { font-family: 'Helvetica Neue', sans-serif; }
 
 .text { display: block; border: 1px solid #c9c9c9; width: 334px; padding: 7px; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 input.text,
-.text input { font-size: 13px; color: #5b5b5b; }
+textarea.text,
+.text input,
+.text textarea { font-size: 13px; color: #5b5b5b; }
 .text input { margin: 0; padding: 0; border: none; outline: none; }
 .text:focus,
 .text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor; }
@@ -403,7 +405,7 @@ ul.errors li { color: $errorcolor; }
 /*  Modals
 /* ----------------------------------------*/
 
-.modal { position: absolute; width: 400px; padding: 25px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px rgba(0,0,0,0.5); }
+.modal { position: absolute; z-index: 1; width: 400px; padding: 25px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px rgba(0,0,0,0.5); }
 
 /* ----------------------------------------
 /*  Menus

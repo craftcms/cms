@@ -7,7 +7,6 @@ namespace Blocks;
 abstract class BaseWidget extends BaseComponent
 {
 	public $name;
-	public $title = '';
 
 	protected $componentType = 'Widget';
 	protected $bodyTemplate;
@@ -37,10 +36,21 @@ abstract class BaseWidget extends BaseComponent
 	}
 
 	/**
-	 * Display the widget's body
-	 * @return bool
+	 * Gets the widget title.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getTitle()
+	{
+		return '';
+	}
+
+	/**
+	 * Gets the widget body.
+	 *
+	 * @return string
+	 */
+	public function getBody()
 	{
 		if (empty($this->bodyTemplate))
 			return '';
@@ -49,7 +59,7 @@ abstract class BaseWidget extends BaseComponent
 			'widget' => $this
 		);
 
-		$template = blx()->controller->loadTemplate($this->bodyTemplate, $variables, true);
+		$template = TemplateHelper::render($this->bodyTemplate, $variables);
 		return $template;
 	}
 
@@ -70,7 +80,7 @@ abstract class BaseWidget extends BaseComponent
 			'settings'   => $this->settings
 		);
 
-		$template = blx()->controller->loadTemplate($this->settingsTemplate, $variables, true);
+		$template = TemplateHelper::render($this->settingsTemplate, $variables);
 		return $template;
 	}
 }

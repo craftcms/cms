@@ -17,8 +17,8 @@ blx.ui.Modal = blx.Base.extend({
 	_headerHeight: null,
 	_footerHeight: null,
 
-	visible: null,
-	focussed: null,
+	visible: false,
+	focussed: false,
 	zIndex: null,
 
 	dragger: null,
@@ -38,13 +38,7 @@ blx.ui.Modal = blx.Base.extend({
 		if (container)
 		{
 			this.setContainer(container);
-			this.visible = true;
-			this.focussed = true;
-		}
-		else
-		{
-			this.visible = false;
-			this.focussed = false;
+			this.show();
 		}
 
 		blx.ui.Modal.instances.push(this);
@@ -145,8 +139,12 @@ blx.ui.Modal = blx.Base.extend({
 	{
 		if (this.$container)
 		{
+			this.$container.show();
+			this.centerInViewport();
 			this.$container.fadeIn('fast');
 			this.focus();
+
+			this.addListener(blx.$window, 'resize', 'centerInViewport');
 		}
 
 		this.visible = true;
@@ -163,6 +161,8 @@ blx.ui.Modal = blx.Base.extend({
 			// Focus the next one up
 			if (blx.ui.Modal.visibleModals.length)
 				blx.ui.Modal.visibleModals[blx.ui.Modal.visibleModals.length-1].focus();
+
+			this.removeListener(blx.$window, 'resize');
 		}
 
 		this.visible = false;
@@ -205,8 +205,8 @@ blx.ui.Modal = blx.Base.extend({
 		if (!this.$container)
 			throw 'Attempted to position a modal whose container has not been set.';
 
-		var viewportWidth = blx.$document.width(),
-			viewportHeight = blx.$document.height(),
+		var viewportWidth = blx.$window.width(),
+			viewportHeight = blx.$window.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
 			left = 200 + (viewportWidth - modalWidth - 200) / 2,

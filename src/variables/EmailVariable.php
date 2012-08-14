@@ -29,4 +29,15 @@ class EmailVariable
 
 		return $return;
 	}
+
+	/**
+	 * Returns a message by its ID.
+	 *
+	 * @param $messageId
+	 */
+	public function getMessageContent($messageId)
+	{
+		$content = blx()->email->getMessageContent($messageId);
+		return $content;
+	}
 }

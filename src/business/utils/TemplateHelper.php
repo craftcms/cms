@@ -6,34 +6,80 @@ namespace Blocks;
  */
 class TemplateHelper
 {
+	private static $_twig;
+
 	/**
-	 * Returns whether a variable is a template variable or not
-	 * @param mixed $var The variable
-	 * @return bool Whether it's a template variable or not
+	 * Gets the Twig instance
+	 *
+	 * @return \Twig_Environment
 	 */
-	public static function isVariable($var)
+	public static function getTwig()
 	{
-		$isVariable = (is_object($var) && get_class($var) == 'Blocks\Variable');
-		return $isVariable;
+		if (!isset(static::$_twig))
+		{
+			// Register Twig's autoloader
+			require_once blx()->path->getAppPath().'business/lib/Twig/Autoloader.php';
+			Blocks::registerAutoloader(array(new \Twig_Autoloader, 'autoload'), true);
+
+			$loader = new TemplateLoader();
+
+			static::$_twig = new \Twig_Environment($loader, array(
+				'debug'               => blx()->config->devMode,
+				//'base_template_class' => '\Blocks\BaseTemplate',
+				'cache'               => blx()->path->getCompiledTemplatesPath(),
+				'auto_reload'         => true,
+				//'strict_variables'  => true,
+			));
+
+			if (blx()->config->devMode)
+				static::$_twig->addExtension(new \Twig_Extension_Debug());
+		}
+
+		return static::$_twig;
 	}
 
 	/**
-	 * Returns the appropriate template variable for a given variable
-	 * @param mixed $var The variable
-	 * @param object A template variable instance for the variable
-	 * @return mixed
+	 * Renders a template.
+	 *
+	 * @param mixed $template The name of the template to load, or a StringTemplate object
+	 * @param array $variables The variables that should be available to the template
+	 * @return string The rendered template
 	 */
-	public static function getVariable($var = '')
+	public static function render($template, $variables)
 	{
-		// If $var is already a template variable, just return it
-		if (self::isVariable($var))
-			return $var;
-		else
-			return new Variable($var);
+		// Add the global blx object
+		$variables['blx'] = new BlxVariable();
+
+		$twig = static::getTwig();
+
+		//try
+		//{
+			return $twig->render($template, $variables);
+		//}
+		//catch (\Twig_Error_Syntax $e)
+		//{
+		//
+		//}
 	}
 
 	/**
-	 * Renames input names so they belong to a namespace
+	 * Renders a template string
+	 *
+	 * @param string $cacheKey A unique key for the template
+	 * @param string $template The source template string
+	 * @param array $variables The variables that should be available to the template
+	 * @return string The rendered template
+	 */
+	public static function renderString($cacheKey, $template, $variables)
+	{
+		$stringTemplate = new StringTemplate($cacheKey, $template);
+		return static::render($stringTemplate, $variables);
+	}
+
+	/**
+	 * Renames input names so they belong to a namespace.
+	 *
+	 * @static
 	 * @param string $template The template with the inputs
 	 * @param string $namespace The namespace to make inputs belong to
 	 * @return string The template with namespaced inputs
@@ -47,18 +93,5 @@ class TemplateHelper
 		$template = preg_replace('/((id=|for=)(\'|"))([^\'"]+)\3/', '$1'.$namespace.'-$4$3', $template);
 
 		return $template;
-	}
-
-	/**
-	 * @param        $path
-	 * @param string $default
-	 * @return mixed|string
-	 */
-	public static function getExtension($path, $default = 'html')
-	{
-		if (($extension = pathinfo($path, PATHINFO_EXTENSION)) == '')
-			$extension = $default;
-
-		return '.'.$extension;
 	}
 }

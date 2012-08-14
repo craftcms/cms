@@ -42,7 +42,7 @@ class DashboardController extends BaseController
 			blx()->user->setError('Couldn’t save dashboard settings.');
 		}
 
-		$this->loadRequestedTemplate();
+		$this->renderRequestedTemplate();
 	}
 
 	/**
@@ -57,6 +57,6 @@ class DashboardController extends BaseController
 		if (!$widget)
 			throw new Exception(Blocks::t('No widget exists with the Id “{widgetId}”.', array('{widgetId}' => $widgetId)));
 
-		$this->loadTemplate('dashboard/_widget', array('widget' => $widget));
+		$this->renderTemplate('dashboard/_widget', array('widget' => $widget));
 	}
 }

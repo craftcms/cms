@@ -1,47 +1,49 @@
-{layout "_layouts/cp" title="Dashboard"}
-
-{region "styles"}
-	{include "_includes/css_include" file="styles/dashboard.css"}
-{/region}
+{% set title = "Dashboard" %}
+{% extends "_layouts/cp" %}
 
 
-{region "main"}
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/dashboard.css"} %}
+{% endblock %}
+
+
+{% block main %}
 	<header class="titlebar">
 		<h1>Dashboard</h1>
 		<ul class="right">
-			<li><a href="{:blx.url.base}dashboard/settings" class="btn" data-icon="s">Settings</a></li>
+			<li><a href="{{ blx.url.base }}dashboard/settings" class="btn" data-icon="s">Settings</a></li>
 		</ul>
 	</header>
 
-	{!--<div id="alerts">
-		{if !blx.sites.licensekeys}
+	{#<div id="alerts">
+		{% if not blx.sites.licensekeys %}
 			<div class="alert">
-				<p>You need to enter your license key into your <a href="{:blx.url.base}settings/info">System Info</a> page.</p>
+				<p>You need to enter your license key into your <a href="{{ blx.url.base }}settings/info">System Info</a> page.</p>
 			</div>
-		{/if}
+		{% endif %}
 
-		{foreach blx.dashboard.alerts as alert}
+		{% for alert in blx.dashboard.alerts %}
 			<div class="alert">
-				<p>{:alert}</p>
+				<p>{{ alert }}</p>
 			</div>
-		{/foreach}
-	</div>--}
+		{% endfor %}
+	</div>#}
 
 	<div id="widgets" class="grid"></div>
 
-{/region}
+{% endblock %}
 
-{region "scripts"}
-	{!--if !blx.updates.cached}
+{% block scripts %}
+	{#if !blx.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{:blx.url.action("dashboard/getalerts")}';
+			window.getAlertsUrl = '{{ blx.url.action("dashboard/getalerts") }}';
 		</script>
-	{/if--}
+	{/if#}
 
-	{include "_includes/js_include" file="dashboard.js"}
+	{% include "_includes/js_include" with {'file': "dashboard.js"} %}
 
 	<script type="text/javascript">
-		blx.dashboard = new blx.Dashboard([{:blx.dashboard.userwidgetids.join}]);
+		blx.dashboard = new blx.Dashboard([{{ blx.dashboard.userwidgetids|join(',') }}]);
 	</script>
-{/region}
+{% endblock %}

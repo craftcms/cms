@@ -19,7 +19,7 @@ class DashboardHelper
 		{
 			$updateInfo = blx()->updates->getUpdateInfo();
 
-			if (blx()->sites->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
+			if (blx()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
 				$alerts[] = 'The license key you’re using isn’t authorized to run @@@productDisplay@@@ on '.blx()->request->serverName.'. <a href="">Manage my licenses</a>';
 
 			if ($updateInfo->blocks->releases !== null && count($updateInfo->blocks->releases) > 0)

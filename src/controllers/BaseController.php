@@ -22,130 +22,54 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Loads the requested template
+	 * Renders and outputs the template requested by the URL
+	 * and sets the Content-Type header based on the URL extension.
+	 *
 	 * @param array $variables
 	 * @throws HttpException
 	 */
-	public function loadRequestedTemplate($variables = array())
+	public function renderRequestedTemplate($variables = array())
 	{
-		if (($path = blx()->urlManager->processTemplateMatching()) !== false)
+		if (($template = blx()->urlManager->processTemplateMatching()) !== false)
 		{
-			$this->loadTemplate($path, $variables);
+			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
+			$output = $this->renderTemplate($template, $variables, true);
+
+			// Set the Content-Type header
+			$mimeType = blx()->request->getMimeType();
+			header('Content-Type: '.$mimeType);
+
+			// Output to the browser!
+			echo $output;
 		}
 		else
 			throw new HttpException(404);
 	}
 
 	/**
-	 * Loads a template
-	 * @param       $templatePath
-	 * @param array $vars
-	 * @param bool  $return Whether to return the results, rather than output them
+	 * Renders a template, and either outputs or returns it.
+	 *
+	 * @param mixed $template The name of the template to load, or a StringTemplate object
+	 * @param array $variables The variables that should be available to the template
+	 * @param bool $return Whether to return the results, rather than output them
 	 * @param bool  $processOutput
 	 * @throws HttpException
 	 * @return mixed
 	 */
-	public function loadTemplate($templatePath, $vars = array(), $return = false, $processOutput = false)
+	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
 	{
-		$variables = $this->processTemplateVariables($vars);
-
-		if (($output = $this->processFileTemplate($templatePath, $variables, true)) !== false)
+		if (($output = TemplateHelper::render($template, $variables)) !== false)
 		{
-			if($processOutput)
+			if ($processOutput)
 				$output = $this->processOutput($output);
 
-			if($return)
+			if ($return)
 				return $output;
 			else
 				echo $output;
 		}
 		else
 			throw new HttpException(404);
-	}
-
-	/**
-	 * @param Email $email
-	 * @param array         $vars
-	 * @throws Exception
-	 * @return mixed
-	 */
-	public function loadEmailTemplate(Email $email, $vars = array())
-	{
-		$variables = $this->processTemplateVariables($vars, false);
-
-		$renderer = new EmailTemplateProcessor();
-
-		if (($content = $renderer->process($this, $email, $variables)) !== false)
-		{
-			return $content;
-		}
-		else
-			throw new Exception(Blocks::t('Could not find the requested email template.'));
-	}
-
-	/**
-	 * @param      $templatePath
-	 * @param null $data
-	 * @param bool $return
-	 * @throws Exception
-	 * @return mixed|string
-	 */
-	public function processFileTemplate($templatePath, $data = null, $return = false)
-	{
-		$widgetCount = count($this->_widgetStack);
-
-		if (($renderer = blx()->getViewRenderer()) !== null)
-		{
-			// Process the template.
-			if (($content = $renderer->process($this, $templatePath, $data, $return)) !== false)
-			{
-				if (count($this->_widgetStack) === $widgetCount)
-				{
-					// Get the extension so we can set the correct mime type in the response.
-					$extension = TemplateHelper::getExtension($templatePath);
-					if (($mimeType = \CFileHelper::getMimeTypeByExtension($extension)) === null)
-						$mimeType = 'text/html';
-
-					blx()->request->setMimeType($mimeType);
-					header('Content-Type: '.$mimeType);
-
-					return $content;
-				}
-				else
-				{
-					$widget = end($this->_widgetStack);
-					throw new Exception(Blocks::t('“{controller}” contains improperly nested widget variables in it’s view “{view}”. A “{widget}” widget does not have an endWidget() call.',
-						array('{controller}' => get_class($this), '{view}' => $templatePath, '{widget}' => get_class($widget))));
-				}
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * @param      $vars
-	 * @param bool $getRequestVars
-	 * @return array
-	 */
-	public function processTemplateVariables($vars, $getRequestVars = true)
-	{
-		$variables = array();
-
-		if ($getRequestVars)
-			$vars = array_merge(blx()->urlManager->getTemplateVariables(), $vars);
-
-		$vars['blx'] = new BlxVariable();
-
-		if (is_array($vars))
-		{
-			foreach ($vars as $name => $var)
-			{
-				$variables[$name] = TemplateHelper::getVariable($var);
-			}
-		}
-
-		return $variables;
 	}
 
 	/**
@@ -163,7 +87,7 @@ abstract class BaseController extends \CController
 	public function requireAdmin()
 	{
 		if (!blx()->users->getCurrentUser()->admin)
-			throw new Exception(Blocks::t('This action may only be performed by admins.'));
+			throw new Exception(Blocks::t(TranslationCategory::App, 'This action may only be performed by admins.'));
 	}
 
 	/**

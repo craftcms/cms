@@ -1,80 +1,82 @@
-{if !user && userId}
-	{set user = blx.users.getById(userId)}
-{/if}
+{% set title = "Account Settings" %}
+{% extends "users/_layouts/edit" %}
 
 
-{layout "users/_layouts/edit" title="Account Settings" user=user}
+{% if not user and userId %}
+	{% set user = blx.users.getById(userId) %}
+{% endif %}
 
 
-{region "settings"}
-
-	{if user.id}
+{% block settings %}
+	{% if user.id %}
 		<h2>Account Settings</h2>
-	{/if}
+	{% endif %}
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/saveAccountSettings">
-		{if user.id}<input type="hidden" name="user_id" value="{:user.id}">{/if}
+		{% if user.id %}<input type="hidden" name="user_id" value="{{ user.id }}">{% endif %}
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="username" class="required">Username</label></h3>
 			</div>
-			<input id="username" name="username" class="text" type="text" value="{:user.username}">
-			{if user.errors.username}
-				{include "_includes/error_list" errors=user.errors.username}
-			{/if}
+			<input id="username" name="username" class="text" type="text" value="{{ user.username }}">
+			{% if user.errors.username %}
+				{% include "_includes/error_list" with {'errors': user.errors.username} %}
+			{% endif %}
 		</div>
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="email" class="required">Email</label></h3>
 			</div>
-			<input id="email" name="email" class="text" type="text" value="{:user.email}">
-			{if user.errors.email}
-				{include "_includes/error_list" errors=user.errors.email}
-			{/if}
+			<input id="email" name="email" class="text" type="text" value="{{ user.email }}">
+			{% if user.errors.email %}
+				{% include "_includes/error_list" with {'errors': user.errors.email} %}
+			{% endif %}
 
-			{if !user.id && blx.users.current.admin}
+			{% if not user.id and blx.users.current.admin %}
 				<div class="checkbox"><label>
-					<input type="checkbox" name="require_verification" value="y" {if blx.request.post('require_verification')}checked{/if}>
+					<input type="checkbox" name="require_verification" value="y" {% if blx.request.post('require_verification') %}checked{% endif %}>
 					Require verification
 				</label></div>
-			{/if}
+			{% endif %}
 		</div>
 
-		{if user.isCurrent || blx.users.current.admin}
+		{% if user.isCurrent or blx.users.current.admin %}
 			<div class="field">
 				<div class="heading">
 					<h3><label for="password">Password</label></h3>
-					{if user.id}<p>Leave blank to keep password unchanged.</p>{/if}
+					{% if user.id %}<p>Leave blank to keep password unchanged.</p>{% endif %}
 				</div>
-				<input id="password" name="password" class="text {if passwordForm && passwordForm.errors.password}error{/if}" type="password">
-				{if passwordForm && passwordForm.errors.password}
-					{include "_includes/error_list" errors=passwordForm.errors.password}
-				{/if}
+				<input id="password" name="password" class="text {% if passwordForm and passwordForm.errors.password %}error{% endif %}" type="password">
+				{% if passwordForm and passwordForm.errors.password %}
+					{% include "_includes/error_list" with {'errors': passwordForm.errors.password} %}
+				{% endif %}
 
-				{if !user.isCurrent}
+				{% if not user.isCurrent %}
 					<div class="checkbox"><label>
 						<input type="hidden" name="require_password_reset" value="n">
-						<input type="checkbox" name="require_password_reset" value="y" {if !user || blx.request.post('require_password_reset')}checked{/if}>
+						<input type="checkbox" name="require_password_reset" value="y" {% if not user or blx.request.post('require_password_reset') %}checked{% endif %}>
 						Require a password reset on next login
 					</label></div>
-				{/if}
+				{% endif %}
 			</div>
-		{/if}
+		{% endif %}
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="html_email">Email Format</label></h3>
 			</div>
-			
-			{if user.html_email}
-				{set emailFormat = "html"}
-			{else}
-				{set emailFormat = "text"}
-			{/if}
-			{include "_includes/pill" name="email_format" options="text:Plain Text,html:HTML" value=emailFormat}
+
+			{% include "_includes/pill" with {
+				'name': "email_format",
+				'options': [
+					{'value': "text", 'label': "Plain Text"},
+					{'value': "html", 'label': 'HTML'}
+				],
+				'value': (not user or user.html_email ? "html" : "text")
+			} %}
 		</div>
 
 		<div class="field">
@@ -82,14 +84,13 @@
 				<h3><label for="preferred_language">Preferred Language</label></h3>
 			</div>
 			<select id="preferred_language" name="preferred_language">
-				{foreach blx.localization.languages as language}
-					<option value="{:language}" {if language == user.preferred_language}selected{/if}>{:blx.localization.localeName(language, language)}</option>
-				{/foreach}
+				{% for language in blx.localization.languages %}
+					<option value="{{ language }}" {% if language == user.preferred_language %}selected{% endif %}>{{ blx.localization.localeName(language, language) }}</option>
+				{% endfor %}
 			</select>
 		</div>
 
 		<input type="submit" class="btn submit" value="Save">
 
 	</form>
-
-{/region}
+{% endblock %}

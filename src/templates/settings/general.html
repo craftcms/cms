@@ -1,8 +1,8 @@
-{layout "_layouts/cp" title="General Settings"}
+{% set title = "General Settings" %}
+{% extends "_layouts/cp" %}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>General Settings</h1>
 	</header>
@@ -15,25 +15,25 @@
 			<div class="heading">
 				<h3><label for="siteName">Site Name</label></h3>
 			</div>
-			<input id="siteName" name="siteName" class="text {if post.errors.siteName}error{/if}" type="text" value="{if post}{:post.siteName}{else}{:blx.app.siteName}{/if}">
-			{if post.errors.siteName}
-				{include "_includes/error_list" errors=post.errors.siteName}
-			{/if}
+			<input id="siteName" name="siteName" class="text {% if post.errors.siteName %}error{% endif %}" type="text" value="{% if post %}{{ post.siteName }}{% else %}{{ blx.app.siteName }}{% endif %}">
+			{% if post.errors.siteName %}
+				{% include "_includes/error_list" with {'errors': post.errors.siteName} %}
+			{% endif %}
 		</div>
 
 		<div class="field">
 			<div class="heading">
 				<h3><label for="siteUrl">Site URL</label></h3>
 			</div>
-			<input id="siteUrl" name="siteUrl" class="text {if post.errors.siteUrl}error{/if}" type="text" value="{if post}{:post.siteUrl}{else}{:blx.app.siteUrl}{/if}">
-			{if post.errors.siteUrl}
-				{include "_includes/error_list" errors=post.errors.siteUrl}
-			{/if}
+			<input id="siteUrl" name="siteUrl" class="text {% if post.errors.siteUrl %}error{% endif %}" type="text" value="{% if post %}{{ post.siteUrl }}{% else %}{{ blx.app.siteUrl }}{% endif %}">
+			{% if post.errors.siteUrl %}
+				{% include "_includes/error_list" with {'errors': post.errors.siteUrl} %}
+			{% endif %}
 		</div>
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="Save">
-			<a class="btn" href="{:blx.url.base}settings">Cancel</a>
+			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-{/region}
+{% endblock %}

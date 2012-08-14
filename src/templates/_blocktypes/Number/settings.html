@@ -1,20 +1,28 @@
 <div class="field">
 	<div class="heading">
-		<label for="{:idPrefix}type" style="margin-top:2px">Number Type</label>
+		<label for="{{ idPrefix }}type" style="margin-top:2px">Number Type</label>
 	</div>
-	<?php $id = new Variable($idPrefix.'type') ?>
-	<?php $name = new Variable($namePrefix.'[type]') ?>
-	{include "_includes/pill" id=id name=name options="int:Integer,float:Float,dec:Decimal" default="int" value=settings.type}
+	{% include "_includes/pill" with {
+		'id': idPrefix ~ "type",
+		'name': namePrefix ~ "[type]",
+		'options': [
+			{'value': "int", 'label': "Integer"},
+			{'value': "float", 'label': "Float"},
+			{'value': "dec", 'label': "Decimal"}
+		],
+		'default': "int",
+		'value': settings.type
+	} %}
 </div>
 <div class="field">
 	<div class="heading">
-		<label for="{:idPrefix}min">Min Value</label>
+		<label for="{{ idPrefix }}min">Min Value</label>
 	</div>
-	<input id="{:idPrefix}min" name="{:namePrefix}[min]" class="text" type="number" value="{:settings.min}" size="5">
+	<input id="{{ idPrefix }}min" name="{{ namePrefix }}[min]" class="text" type="number" value="{{ settings.min }}" size="5">
 </div>
 <div class="field">
 	<div class="heading">
-		<label for="{:idPrefix}max">Max Value</label>
+		<label for="{{ idPrefix }}max">Max Value</label>
 	</div>
-	<input id="{:idPrefix}max" name="{:namePrefix}[max]" class="text" type="number" value="{:settings.max}" size="5">
+	<input id="{{ idPrefix }}max" name="{{ namePrefix }}[max]" class="text" type="number" value="{{ settings.max }}" size="5">
 </div>

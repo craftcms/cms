@@ -20,8 +20,7 @@ class Section extends BaseModel
 	);
 
 	protected $belongsTo = array(
-		'parent' => array('model' => 'Section'),
-		'site'   => array('model' => 'Site', 'required' => true)
+		'parent' => array('model' => 'Section')
 	);
 
 	protected $hasMany = array(
@@ -30,7 +29,7 @@ class Section extends BaseModel
 	);
 
 	protected $indexes = array(
-		array('columns' => array('site_id', 'handle'), 'unique' => true),
+		array('columns' => array('handle'), 'unique' => true),
 	);
 
 	/**
@@ -39,7 +38,7 @@ class Section extends BaseModel
 	 */
 	public function getContentTableName()
 	{
-		return 'entrycontent_'.$this->site->handle.'_'.$this->handle;
+		return 'entrycontent_'.$this->handle;
 	}
 
 	/**

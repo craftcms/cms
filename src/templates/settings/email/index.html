@@ -1,25 +1,29 @@
-{layout "settings/email/_layout" title="Messages"}
+{% set title = "Messages" %}
+{% extends "settings/email/_layout" %}
 
 
-{region "settings"}
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/email_messages.css"} %}
+{% endblock %}
 
+
+{% block settings %}
 	<div id="messages">
-		{foreach blx.email.messages as message}
+		{% for message in blx.email.messages %}
 			<div class="field">
 				<div class="heading">
-					<h3>{:message.heading}</h3>
+					<h3>{{ message.heading }}</h3>
 				</div>
-				<div class="pane message">
-					<div class="subject">{:message.subject}</div>
-					<div class="body">{:message.bodyPreview}</div>
+				<div class="pane message" data-id="{{ message.id }}">
+					<div class="subject">{{ message.subject }}</div>
+					<div class="body">{{ message.bodyPreview }}</div>
 				</div>
 			</div>
-		{/foreach}
+		{% endfor %}
 	</div>
+{% endblock %}
 
-{/region}
 
-
-{region "styles"}
-	{include "_includes/css_include" file="styles/email_messages.css"}
-{/region}
+{% block scripts %}
+	{% include "_includes/js_include" with {'file': "email_messages.js"} %}
+{% endblock %}

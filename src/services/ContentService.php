@@ -15,7 +15,6 @@ class ContentService extends \CApplicationComponent
 	public function getSections()
 	{
 		$sections = Section::model()->findAllByAttributes(array(
-			'site_id' => blx()->sites->getCurrentSite()->id,
 			'parent_id' => null
 		));
 
@@ -78,39 +77,8 @@ class ContentService extends \CApplicationComponent
 	public function getSectionByHandle($handle)
 	{
 		return Section::model()->findByAttributes(array(
-			'handle' => $handle,
-			'site_id' => blx()->sites->getCurrentSite()->id
+			'handle' => $handle
 		));
-	}
-
-	/**
-	 * @param $siteId
-	 * @param $handle
-	 * @return mixed
-	 */
-	public function getSectionBySiteIdHandle($siteId, $handle)
-	{
-		$section = Section::model()->findByAttributes(array(
-			'handle' => $handle,
-			'site_id' => $siteId,
-		));
-
-		return $section;
-	}
-
-	/**
-	 * @param $siteId
-	 * @param $handles
-	 * @return mixed
-	 */
-	public function getSectionsBySiteIdHandles($siteId, $handles)
-	{
-		$sections = Section::model()->findAllByAttributes(array(
-			'handle' => $handles,
-			'site_id' => $siteId,
-		));
-
-		return $sections;
 	}
 
 	/**
@@ -147,7 +115,6 @@ class ContentService extends \CApplicationComponent
 		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
 		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
 		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
-		$section->site_id     = blx()->sites->getCurrentSite()->id;
 
 		// Start a transaction
 		$transaction = blx()->db->beginTransaction();
@@ -410,7 +377,7 @@ class ContentService extends \CApplicationComponent
 		}
 
 		if (!$language)
-			$language = blx()->sites->getCurrentSite()->language;
+			$language = blx()->language;
 
 		$content = $entry->getContent($language);
 
@@ -484,21 +451,6 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param $siteId
-	 * @return array
-	 */
-	public function getAllEntriesBySiteId($siteId)
-	{
-		$entries = blx()->db->createCommand()
-			->select('e.*')
-			->from('sections s')
-			->join('entries e', 's.id = e.section_id')
-			->where(array('s.site_id' => $siteId))
-			->queryAll();
-		return $entries;
-	}
-
-	/**
 	 * @param $entryId
 	 * @return mixed
 	 */
@@ -568,10 +520,13 @@ class ContentService extends \CApplicationComponent
 				throw new Exception(Blocks::t('No entry exists with the Id “{entryId}”.', array('{entryId}' => $entry->id)));
 		}
 
+		if (!$language)
+			$language = blx()->language;
+
 		$version = new EntryVersion();
 		$version->entry_id  = $entry->id;
 		$version->author_id = blx()->users->getCurrentUser()->id;
-		$version->language  = ($language ? $language : blx()->sites->getCurrentSite()->language);
+		$version->language  = $language;
 		$version->draft = $draft;
 		$version->name = $name;
 

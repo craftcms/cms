@@ -1,10 +1,13 @@
-{if blx.session.loggedin}
-	{redirect "dashboard"}
-{/if}
+{% set title = "Verify Account" %}
+{% extends "_layouts/basic" %}
 
-{layout "_layouts/basic" title="Verify Account"}
 
-{region "body"}
+{% if blx.session.loggedin %}
+	{% redirect "dashboard" %}
+{% endif %}
+
+
+{% block body %}
 	<div class="pane">
 		<div class="pane-head">
 			Set Password
@@ -14,26 +17,26 @@
 				<input type="hidden" name="action" value="account/verify">
 				<input type="hidden" name="redirect" value="dashboard">
 
-				{set activationCode = blx.url.get('code')}
-				{if activationCode && blx.security.validateUserActivationCode(activationCode)}
-					{set user = blx.security.getUserByActivationCode(activationCode)}
+				{% set activationCode = blx.url.get('code') %}
+				{% if activationCode and blx.security.validateUserActivationCode(activationCode) %}
+					{% set user = blx.security.getUserByActivationCode(activationCode) %}
 
 					<div class="pane-item">Let's set a password for your account.</div>
-					<input type="hidden" name="userId" value="{:user.id}">
+					<input type="hidden" name="userId" value="{{ user.id }}">
 					<div class="pane-item field">
 						<label for="password">Password</label>
-						<div class="passwordwrapper"><input id="password" name="password" class="text password {if verifyAccountInfo.errors.password}error{/if}" type="password"></div>
-						{if verifyAccountInfo.errors.password}
-							{include "_includes/error_list" errors=verifyAccountInfo.errors.password}
-						{/if}
+						<div class="passwordwrapper"><input id="password" name="password" class="text password {% if verifyAccountInfo.errors.password %}error{% endif %}" type="password"></div>
+						{% if verifyAccountInfo.errors.password %}
+							{% include "_includes/error_list" with {'errors': verifyAccountInfo.errors.password} %}
+						{% endif %}
 					</div>
 					<div class="pane-item">
 						<input class="btn big submit" type="submit" value="Set Password">
 					</div>
-				{else}
+				{% else %}
 					There was a problem validating this activation code.
-				{/if}
+				{% endif %}
 			</form>
 		</div>
 	</div>
-{/region}
+{% endblock %}

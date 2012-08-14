@@ -9,7 +9,7 @@ class FeedWidget extends BaseWidget
 	public $name = 'Feed';
 	public $multipleInstances = true;
 
-	public $items = array();
+	public $items;
 
 	protected $bodyTemplate = '_widgets/FeedWidget/body';
 	protected $settingsTemplate = '_widgets/FeedWidget/settings';
@@ -21,18 +21,21 @@ class FeedWidget extends BaseWidget
 	);
 
 	/**
-	 * Returns the widget title.
+	 * Gets the widget title.
+	 *
 	 * @return string
 	 */
-	public function title()
+	public function getTitle()
 	{
 		return $this->settings['title'];
 	}
 
 	/**
-	 * @return mixed
+	 * Gets the widget body.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getBody()
 	{
 		$url = $this->settings['url'];
 		$cachePath = blx()->path->getCachePath();
@@ -42,6 +45,8 @@ class FeedWidget extends BaseWidget
 
 		$limit = $this->settings['limit'];
 		$items = $feed->get_items(0, $limit);
+
+		$this->items = array();
 		foreach ($items as $item)
 		{
 			$this->items[] = array(
@@ -51,6 +56,6 @@ class FeedWidget extends BaseWidget
 			);
 		}
 
-		return parent::displayBody();
+		return parent::getBody();
 	}
 }

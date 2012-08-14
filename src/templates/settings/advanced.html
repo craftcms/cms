@@ -1,13 +1,13 @@
-{layout "_layouts/cp" title="Advanced Settings"}
+{% set title = "Advanced Settings" %}
+{% extends "_layouts/cp" %}
 
 
-{if !settings}
-	{set settings = blx.settings.advanced}
-{/if}
+{% if not settings %}
+	{% set settings = blx.settings.advanced %}
+{% endif %}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>Advanced Settings</h1>
 	</header>
@@ -20,15 +20,14 @@
 				<h3>Debugging</h3>
 			</div>
 
-			<div class="checkbox"><label><input type="checkbox" name="showDebugInfo" value="y" {if settings.showDebugInfo}checked{/if}> Show debugging info in the browser console</label></div>
-			<div class="checkbox"><label><input type="checkbox" name="useUncompressedJs" value="y" {if settings.useUncompressedJs}checked{/if}> Use uncompressed CP JavaScript files</label></div>
-			<div class="checkbox"><label><input type="checkbox" name="disablePlugins" value="y" {if settings.disablePlugins}checked{/if}> Disable plugins</label></div>
+			<div class="checkbox"><label><input type="checkbox" name="showDebugInfo" value="y" {% if settings.showDebugInfo %}checked{% endif %}> Show debugging info in the browser console</label></div>
+			<div class="checkbox"><label><input type="checkbox" name="useUncompressedJs" value="y" {% if settings.useUncompressedJs %}checked{% endif %}> Use uncompressed CP JavaScript files</label></div>
+			<div class="checkbox"><label><input type="checkbox" name="disablePlugins" value="y" {% if settings.disablePlugins %}checked{% endif %}> Disable plugins</label></div>
 		</div>
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="Save">
-			<a class="btn" href="{:blx.url.base}settings">Cancel</a>
+			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-
-{/region}
+{% endblock %}

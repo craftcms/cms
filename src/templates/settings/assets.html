@@ -1,8 +1,8 @@
-{layout "_layouts/cp" title="Asset Settings"}
+{% set title = "Asset Settings" %}
+{% extends "_layouts/cp" %}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>Asset Settings</h1>
 	</header>
@@ -19,8 +19,7 @@
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="Save">
-			<a class="btn" href="{:blx.url.base}settings">Cancel</a>
+			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-
-{/region}
+{% endblock %}

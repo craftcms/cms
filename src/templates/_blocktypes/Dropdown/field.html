@@ -1,5 +1,5 @@
-<select id="{:handle}-block" name="{:handle}">
-	{foreach settings.options as option}
-		<option {if option == data}selected{/if}>{:option}</option>
-	{/foreach}
+<select id="{{ handle }}-block" name="{{ handle }}">
+	{% for option in settings.options %}
+		<option {% if option == data %}selected{% endif %}>{{ option }}</option>
+	{% endfor %}
 </select>

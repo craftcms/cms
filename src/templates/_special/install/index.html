@@ -1,27 +1,26 @@
-{layout "_layouts/basic" title="Install Blocks"}
-
-{region "styles"}
-	{include "_includes/css_include" file="styles/install.css"}
-{/region}
+{% set title = "Install Blocks" %}
+{% extends "_layouts/basic" %}
 
 
-{if reqcheck.result != 'failure'}
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/install.css"} %}
+{% endblock %}
 
-	{region "body"}
-		{include "_special/install/welcome"}
-		{include "_special/install/account"}
-		{include "_special/install/site" sitename=sitename url=url}
-		{include "_special/install/installing"}
-	{/region}
 
-	{region "scripts"}
-		{include "_includes/js_include" file="install.js"}
-	{/region}
+{% block body %}
+	{% if reqcheck.result != 'failure' %}
+		{% include "_special/install/welcome" %}
+		{% include "_special/install/account" %}
+		{% include "_special/install/site" with {'sitename': sitename, 'url': url} %}
+		{% include "_special/install/installing" %}
+	{% else %}
+		{% include "_special/install/cantinstall" %}
+	{% endif %}
+{% endblock %}
 
-{else}
 
-	{region "body"}
-		{include "_special/install/cantinstall"}
-	{/region}
-
-{/if}
+{% block scripts %}
+	{% if reqcheck.result != 'failure' %}
+		{% include "_includes/js_include" with {'file': "install.js"} %}
+	{% endif %}
+{% endblock %}

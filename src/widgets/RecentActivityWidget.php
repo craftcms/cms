@@ -7,16 +7,27 @@ namespace Blocks;
 class RecentActivityWidget extends BaseWidget
 {
 	public $name = 'Recent Activity';
-	public $title = 'Recent Activity';
 
 	public $actions = array();
 
 	protected $bodyTemplate = '_widgets/RecentActivityWidget/body';
 
 	/**
-	 * @return mixed
+	 * Gets the widget title.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getTitle()
+	{
+		return 'Recent Activity';
+	}
+
+	/**
+	 * Gets the widget body.
+	 *
+	 * @return string
+	 */
+	public function getBody()
 	{
 		$this->actions = array(
 			array(
@@ -33,6 +44,6 @@ class RecentActivityWidget extends BaseWidget
 			)
 		);
 
-		return parent::displayBody();
+		return parent::getBody();
 	}
 }

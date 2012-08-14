@@ -181,7 +181,7 @@
 					else
 						$cssClass = 'app expanded';
 
-					$hasCode = $trace['file'] !== 'unknown' && is_file($trace['file']);
+					$hasCode = $trace['file'] !== 'unknown' and is_file($trace['file']);
 				?>
 				<tr class="trace <?php echo $cssClass; ?>">
 				<td class="number">

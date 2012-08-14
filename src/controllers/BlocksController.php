@@ -63,6 +63,6 @@ class BlocksController extends BaseController
 		}
 
 		// Reload the original template
-		$this->loadRequestedTemplate(array('block' => $block));
+		$this->renderRequestedTemplate(array('block' => $block));
 	}
 }

@@ -1,0 +1,23 @@
+{% set messageId = blx.request.post('messageId') %}
+{% set content = blx.email.getMessageContent(messageId) %}
+
+<h1>Edit Message</h1>
+
+<div class="field">
+	<div class="heading">
+		<h3><label for="subject">Subject</label></h3>
+	</div>
+	<div class="textwrapper"><input id="subject" type="text" class="text subject" value="{{ content.subject }}"></div>
+</div>
+
+<div class="field">
+	<div class="heading">
+		<h3><label for="body">Body</label></h3>
+	</div>
+	<div class="textwrapper"><textarea id="body" class="text body" rows="15">{{ content.body }}</textarea></div>
+</div>
+
+<div class="buttons">
+	<input type="submit" class="btn submit" value="{{ 'Save' }}">
+	<input type="button" class="btn cancel" value="{{ 'Cancel' }}">
+</div>

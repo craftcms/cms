@@ -1,30 +1,38 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/general.html	2012-08-03 06:52:36.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/general.html	2012-08-03 07:03:10.000000000 -0700
-@@ -31,6 +31,27 @@
- 			{/if}
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/general.html	2012-08-14 14:03:21.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/general.html	2012-08-14 14:03:20.000000000 -0700
+@@ -3,6 +3,7 @@
+ 
+ 
+ {% block main %}
++
+ 	<header class="titlebar">
+ 		<h1>General Settings</h1>
+ 	</header>
+@@ -31,6 +32,27 @@
+ 			{% endif %}
  		</div>
  
 +		<div class="field">
 +			<div class="heading">
 +				<h3><label for="licenseKey">License Key</label></h3>
 +			</div>
-+			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{if post}{:post.licenseKey}{else}{:blx.app.licenseKey}{/if}">
-+			{if post.errors.licenseKey}
-+				{include "_includes/error_list" errors=post.errors.licenseKey}
-+			{/if}
++			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{% if post %}{{ post.licenseKey }}{% else %}{{ blx.app.licenseKey }}{% endif %}">
++			{% if post.errors.licenseKey %}
++				{% include "_includes/error_list" with {'errors': post.errors.licenseKey} %}
++			{% endif %}
 +		</div>
-+		
++
 +		<div class="field">
 +			<div class="heading">
 +				<h3><label for="logo">Logo</label></h3>
 +				<p>Use a 300 × 100px transparent PNG for best results.</p>
 +			</div>
 +			<input id="logo" name="logo" type="file">
-+			{if post.errors.logo}
-+				{include "_includes/error_list" errors=post.errors.logo}
-+			{/if}
++			{% if post.errors.logo %}
++				{% include "_includes/error_list" with {'errors': post.errors.logo} %}
++			{% endif %}
 +		</div>
 +
  		<div class="buttons">
  			<input class="btn submit" type="submit" value="Save">
- 			<a class="btn" href="{:blx.url.base}settings">Cancel</a>
+ 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>

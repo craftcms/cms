@@ -1,36 +1,36 @@
 <div class="toolbar page-toolbar">
 	<div class="center">
 		<div class="status">
-			{if entry.live}
+			{% if entry.live %}
 				<span class="status on"></span><span class="label">Live</span>
-			{elseif entry.pending}
+			{% elseif entry.pending %}
 				<span class="status pending"></span><span class="label">Pending</span>
-			{elseif entry.expired}
+			{% elseif entry.expired %}
 				<span class="status off"></span><span class="label">Expired</span>
-			{else}
+			{% else %}
 				<span class="status"></span><span class="label">Never published</span>
-			{/if}
+			{% endif %}
 		</div>
 	</div>
 
 	<div class="left">
 		<select class="versionselect">
-			{if entry.published}
-				<option value="published" {if !entry.draft}selected{/if}>Published</option>
-			{/if}
-			{foreach entry.drafts as draft}
-				<option value="{:draft.num}" {if entry.draft.num == draft.num}selected{/if}>“{:draft.name}” by {:draft.author.firstNameLastInitial}</option>
-			{/foreach}
+			{% if entry.published %}
+				<option value="published" {% if not entry.draft %}selected{% endif %}>Published</option>
+			{% endif %}
+			{% for draft in entry.drafts %}
+				<option value="{{ draft.num }}" {% if entry.draft.num == draft.num %}selected{% endif %}>“{{ draft.name }}” by {{ draft.author.firstNameLastInitial }}</option>
+			{% endfor %}
 			<option value="new">New draft…</option>
 		</select>
 	</div>
 
-	{!--<div class="right">
+	{#<div class="right">
 		<div class="btn">
 			<span class="icon icon265"></span>
 			<span class="arrow"></span>
 		</div>
-	</div>--}
+	</div>#}
 </div>
 
 <form action="" method="post">
@@ -38,21 +38,21 @@
 		<div class="pane page">
 			<div class="pane-body">
 				<div class="pane-item field page-head">
-					<h1>{:entry.title}</h1>
-					{if entry.url}<div class="url">{:entry.url}</div>{/if}
+					<h1>{{ entry.title }}</h1>
+					{% if entry.url %}<div class="url">{{ entry.url }}</div>{% endif %}
 				</div>
 
-				{foreach entry.blocks as block}
+				{% for block in entry.blocks %}
 					<div class="pane-item field">
-						<label for="{:block.handle}-block" {if block.required}class="required"{/if}>{:block.name}</label>
-						{if block.instructions}
-							<p>{:block.instructions}</p>
-						{/if}
-						<div class="{:block.classHandle}">
-							{:block.displayField}
+						<label for="{{ block.handle }}-block" {% if block.required %}class="required"{% endif %}>{{ block.name }}</label>
+						{% if block.instructions %}
+							<p>{{ block.instructions }}</p>
+						{% endif %}
+						<div class="{{ block.classHandle }}">
+							{{ block.displayField }}
 						</div>
 					</div>
-				{/foreach}
+				{% endfor %}
 			</div>
 		</div>
 

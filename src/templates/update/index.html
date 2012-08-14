@@ -1,18 +1,22 @@
-{layout "_layouts/basic" title="Blocks Update"}
+{% set title = "Blocks Update" %}
+{% extends "_layouts/basic" %}
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/update.css"}
-{/region}
 
-{region "body"}
+{% block styles %}
+	{% include "_includes/css_include" file="styles/update.css" %}
+{% endblock %}
+
+
+{% block body %}
 	<div id="status">Preparing to update…</div>
-{/region}
+{% endblock %}
 
-{region "scripts"}
+
+{% block scripts %}
 	<script type="text/javascript">
-		window.updateHandle = '{:handle}';
-		window.updateInfoUrl = '{:blx.url.action('update/getupdateinfo', 'h=')}';
-		window.updateUrl = '{:blx.url.action('update/update', 'h=')}';
+		window.updateHandle = '{{ handle }}';
+		window.updateInfoUrl = '{{ blx.url.action('update/getupdateinfo', 'h=') }}';
+		window.updateUrl = '{{ blx.url.action('update/update', 'h=') }}';
 	</script>
-	{include "_includes/js_include" file="update.js"}
-{/region}
+	{% include "_includes/js_include" file="update.js" %}
+{% endblock %}

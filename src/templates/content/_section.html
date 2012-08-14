@@ -1,90 +1,90 @@
-{if !section && sectionId}
-	{set section = blx.content.getSectionById(sectionId)}
-{/if}
+{% if not section and sectionId %}
+	{% set section = blx.content.getSectionById(sectionId) %}
+{% endif %}
 
-{if section}
-	<?php $title = new Variable($section->name().' section settings'); ?>
-{else}
-	{set title = "Create a new section"}
-{/if}
+{% if section %}
+	{% set title = section.name ~ " section settings" %}
+{% else %}
+	{% set title = "Create a new section" %}
+{% endif %}
 
-{layout "_layouts/cp" title=title crumbs="content:Content"}
+{% extends "_layouts/cp" title=title crumbs="content:Content" %}
 
 
-{region "main"}
-	<h1>{:title}</h1>
+{% block main %}
+	<h1>{{ title }}</h1>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="content/saveSection">
 		<input type="hidden" name="redirect" value="content">
-		{if section.id}<input type="hidden" name="section_id" value="{:section.id}">{/if}
+		{% if section.id %}<input type="hidden" name="section_id" value="{{ section.id }}">{% endif %}
 
 		<div class="field">
 			<div class="heading">
 				<label class="required" for="name">Section Name</label>
 				<p>What this section will be called in the CP.</p>
 			</div>
-			<div class="textwrapper"><input id="name" name="name" class="text" type="text" value="{:section.name}"></div>
-			{if section.errors.name}
-				{include "_includes/error_list" errors=section.errors.name}
-			{/if}
+			<div class="textwrapper"><input id="name" name="name" class="text" type="text" value="{{ section.name }}"></div>
+			{% if section.errors.name %}
+				{% include "_includes/error_list" with {'errors': section.errors.name} %}
+			{% endif %}
 		</div>
 		<div class="field">
 			<div class="heading">
 				<label class="required" for="handle">Section Handle</label>
 				<p>How you’ll refer to this section in the templates.</p>
 			</div>
-			<div class="textwrapper"><input id="handle" name="handle" class="text code" type="text" value="{:section.handle}"></div>
-			{if section.errors.handle}
-				{include "_includes/error_list" errors=section.errors.handle}
-			{/if}
+			<div class="textwrapper"><input id="handle" name="handle" class="text code" type="text" value="{{ section.handle }}"></div>
+			{% if section.errors.handle %}
+				{% include "_includes/error_list" with {'errors': section.errors.handle} %}
+			{% endif %}
 		</div>
-		{!--<div class="field">
+		{#<div class="field">
 			<div class="heading">
 				<label for="sortable">Entries in this section can be manually sorted</label>
 			</div>
-				{include "_includes/lightswitch" name="sortable" on=section.sortable}
-		</div>--}
+				{% include "_includes/lightswitch" with {'name': "sortable", 'on': section.sortable} %}
+		</div>#}
 		<div class="field checkbox">
 			<label>Entries in this section have their own URLs
-				<div class="cbwrapper"><input type="checkbox" name="has_urls" value="y" {if section.has_urls}checked{/if} class="togglefields" data-target="has-urls-setting"></div>
+				<div class="cbwrapper"><input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="togglefields" data-target="has-urls-setting"></div>
 			</label>
 		</div>
-		<div id="has-urls-setting" class="nested-fields" {if !section.has_urls}style="height: 0"{/if}>
+		<div id="has-urls-setting" class="nested-fields" {% if not section.has_urls %}style="height: 0"{% endif %}>
 			<div class="field">
 				<div class="heading">
 					<label for="url_format">Entry URL Format</label>
 					<p>What the entry URLs should look like.</p>
 				</div>
-				<div class="textwrapper"><input id="url_format" name="url_format" class="text code" type="text" value="{:section.url_format}"></div>
+				<div class="textwrapper"><input id="url_format" name="url_format" class="text code" type="text" value="{{ section.url_format }}"></div>
 			</div>
 			<div class="field">
 				<div class="heading">
 					<label for="template">Entry Template</label>
 					<p>Which template to use when an entry’s URL is requested.</p>
 				</div>
-				<div class="textwrapper"><input id="template" name="template" class="text" type="text" value="{:section.template}"></div>
+				<div class="textwrapper"><input id="template" name="template" class="text" type="text" value="{{ section.template }}"></div>
 			</div>
 		</div>
-		{!--<div class="field">
+		{#<div class="field">
 			<div class="heading">
 				<label for="max_entries">Max Entries</label>
 			</div>
-			<input id="max_entries" name="max_entries" class="text" type="number" value="{:section.max_entries}" size="5">
-			{if section.errors.max_entries}
-				{include "_includes/error_list" errors=section.errors.max_entries}
-			{/if}
-		</div>--}
+			<input id="max_entries" name="max_entries" class="text" type="number" value="{{ section.max_entries }}" size="5">
+			{% if section.errors.max_entries %}
+				{% include "_includes/error_list" with {'errors': section.errors.max_entries} %}
+			{% endif %}
+		</div>#}
 
-		{include "_includes/blockeditor" name="blocks" currentBlocks=section.blocks}
+		{% include "_includes/blockeditor" with {'name': "blocks", 'currentBlocks': section.blocks} %}
 
 		<input class="btn big submit" type="submit" value="Save section">
 	</form>
-{/region}
+{% endblock %}
 
-{region "scripts"}
+{% block scripts %}
 	<script type="text/javascript">
-		{if !section.handle}new blx.ui.HandleGenerator('#name', '#handle');{/if}
-		{if !section.url_format}new blx.ui.EntryUrlFormatGenerator('#name', '#url_format');{/if}
+		{% if not section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if not section.url_format %}new blx.ui.EntryUrlFormatGenerator('#name', '#url_format');{% endif %}
 	</script>
-{/region}
+{% endblock %}

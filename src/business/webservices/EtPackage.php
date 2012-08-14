@@ -8,6 +8,7 @@ class EtPackage
 {
 	public $url;
 	public $licenseKey;
+	public $licenseKeyStatus;
 	public $requestIp;
 	public $requestTime;
 	public $requestDomain;
@@ -25,6 +26,7 @@ class EtPackage
 
 		$this->url = isset($properties['url']) ? $properties['url'] : null;
 		$this->licenseKey = isset($properties['licenseKey']) ? $properties['licenseKey'] : null;
+		$this->licenseKeyStatus = isset($properties['licenseKeyStatus']) ? $properties['licenseKeyStatus'] : null;
 		$this->data = isset($properties['data']) ? $properties['data'] : null;
 		$this->requestDomain = isset($properties['requestDomain']) ? $properties['requestDomain'] : null;
 		$this->requestIp = isset($properties['requestIp']) ? $properties['requestIp'] : null;

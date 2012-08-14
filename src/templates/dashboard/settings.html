@@ -1,10 +1,13 @@
-{layout "_layouts/cp" title="Dashboard Settings" crumbs="dashboard:Dashboard"}
+{% set title = "Dashboard Settings" %}
+{% extends "_layouts/cp" %}
 
-{region "styles"}
-	{!--include "_includes/css_include" file="styles/dashboard-settings.css"--}
-{/region}
 
-{region "main"}
+{% block styles %}
+	{#include "_includes/css_include" file="styles/dashboard-settings.css"#}
+{% endblock %}
+
+
+{% block main %}
 	<h1>Dashboard Settings</h1>
 
 	<form method="post" action="">
@@ -15,39 +18,39 @@
 		<div id="widgetadmin" class="pane inset adminpane" data-input-name="widgets">
 			<div class="list">
 				<ul>
-					{foreach blx.dashboard.userwidgets as widget}
-						<li class="item" data-item-id="{:widget.id}">
-							<div class="name">{:widget.title}</div>
-							<div class="type">{:widget.name}</div>
-							<input type="hidden" name="widgets[order][]" value="{:widget.id}">
-							<input type="hidden" name="widgets[{:widget.id}][class]" value="{:widget.classHandle}">
+					{% for widget in blx.dashboard.userwidgets %}
+						<li class="item" data-item-id="{{ widget.id }}">
+							<div class="name">{{ widget.title }}</div>
+							<div class="type">{{ widget.name }}</div>
+							<input type="hidden" name="widgets[order][]" value="{{ widget.id }}">
+							<input type="hidden" name="widgets[{{ widget.id }}][class]" value="{{ widget.classHandle }}">
 						</li>
-					{/foreach}
+					{% endfor %}
 				</ul>
 
 				<div class="btn menubtn">Add a widget</div>
 				<div class="menu" style="display:none">
 					<ul>
-						{foreach blx.dashboard.allwidgets as widget}
-							<li data-widget-class="{:widget.classHandle}" data-widget-title="{:widget.title}">{:widget.name}</li>
-						{/foreach}
+						{% for widget in blx.dashboard.allwidgets %}
+							<li data-widget-class="{{ widget.classHandle }}" data-widget-title="{{ widget.title }}">{{ widget.name }}</li>
+						{% endfor %}
 					</ul>
 				</div>
 			</div>
 
 			<div class="settings">
-				{foreach blx.dashboard.userwidgets as widget}
-					<?php $idPrefix = new Variable('widgets-'.$widget->id.'-') ?>
-					<?php $namePrefix = new Variable('widgets['.$widget->id.'][settings]') ?>
-					<div data-item-id="{:widget.id}" style="display:none">
-						{:widget.displaySettings(idPrefix, namePrefix)}
+				{% for widget in blx.dashboard.userwidgets %}
+					{% set idPrefix = "widgets-" ~ widget.id %}
+					{% set namePrefix = "widgets[" ~ widget.id ~ "][settings" %}
+					<div data-item-id="{{ widget.id }}" style="display:none">
+						{{ widget.displaySettings(idPrefix, namePrefix) }}
 
 						<div class="buttons">
 							<div class="btn done">Done</div>
 							<div class="btn red delete">Delete this widget</div>
 						</div>
 					</div>
-				{/foreach}
+				{% endfor %}
 			</div>
 
 			<div class="freshsettings" style="display:none">
@@ -64,18 +67,19 @@
 
 	</form>
 
-	{set newIdPrefix = "widgets-ITEM_ID-"}
-	{set newNamePrefix = "widgets[ITEM_ID][settings]"}
-	{foreach blx.dashboard.allwidgets as widget}
-		{set settings = widget.displaySettings(newIdPrefix, newNamePrefix)}
-		{if settings}
-			<div id="freshwidgetsettings-{:widget.classHandle}" style="display:none">
-				{:settings}
+	{% set newIdPrefix = "widgets-ITEM_ID-" %}
+	{% set newNamePrefix = "widgets[ITEM_ID][settings]" %}
+	{% for widget in blx.dashboard.allwidgets %}
+		{% set settings = widget.displaySettings(newIdPrefix, newNamePrefix) %}
+		{% if settings %}
+			<div id="freshwidgetsettings-{{ widget.classHandle }}" style="display:none">
+				{{ settings }}
 			</div>
-		{/if}
-	{/foreach}
-{/region}
+		{% endif %}
+	{% endfor %}
+{% endblock %}
 
-{region "scripts"}
-	{include "_includes/js_include" file="dashboard-settings.js"}	
-{/region}
+
+{% block scripts %}
+	{% include "_includes/js_include" with {'file': "dashboard-settings.js"} %}
+{% endblock %}

@@ -128,7 +128,7 @@ class Entry extends BaseModel
 	{
 		if ($this->uri)
 		{
-			$url = blx()->sites->getCurrentSite()->url.'/'.$this->uri;
+			$url = Blocks::getSiteUrl().$this->uri;
 			return $url;
 		}
 		else

@@ -46,7 +46,22 @@ abstract class BaseComponent extends \CApplicationComponent
 	}
 
 	/**
+	 * Is Set?
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	function __isset($name)
+	{
+		if (isset($this->record->$name))
+			return true;
+		else
+			return parent::__isset($name);
+	}
+
+	/**
 	 * Getter
+	 *
 	 * @param string $name
 	 * @return mixed
 	 */

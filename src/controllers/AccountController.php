@@ -22,7 +22,7 @@ class AccountController extends BaseController
 			$user = blx()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
 			if ($user)
 			{
-				if (blx()->email->sendForgotPasswordEmail($user, blx()->sites->getCurrentSite()))
+				if (blx()->email->sendEmail($user, 'forgot_password'))
 					$this->returnJson(array('success' => true));
 
 				$this->returnErrorJson('There was a problem sending the forgot password email.');
@@ -75,7 +75,7 @@ class AccountController extends BaseController
 		}
 
 		// display the verify account form
-		$this->loadTemplate('verify', array('verifyAccountInfo' => $passwordForm));
+		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordForm));
 	}
 
 	/**

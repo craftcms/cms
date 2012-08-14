@@ -1,11 +1,11 @@
-{if !id}
-	{set id = name}
-{/if}
-<div id="{:id}" class="lightswitch {if on}on{/if} {:class}" {if toggle}data-toggle="{:toggle}"{/if} tabindex="0">
+{% if not id %}
+	{% set id = name %}
+{% endif %}
+<div id="{{ id }}" class="lightswitch {% if on %}on{% endif %} {{ class }}" {% if toggle %}data-toggle="{{ toggle }}"{% endif %} tabindex="0">
 	<div class="container">
 		<div class="label on">Yes</div>
 		<div class="label off">No</div>
 		<div class="handle"></div>
 	</div>
-	<input type="hidden" name="{:name}" value="{if on}y{/if}">
+	<input type="hidden" name="{{ name }}" value="{% if on %}y{% endif %}">
 </div>

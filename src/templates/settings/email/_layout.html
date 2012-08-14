@@ -1,21 +1,20 @@
-{layout "_layouts/cp" title=title styles=styles scripts=scripts}
+{% extends "_layouts/cp" %}
+{# title=title styles=styles scripts=scripts #}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>Email Settings</h1>
 	</header>
 
 	<nav class="nav">
 		<ul>
-			<li {if blx.url.segment(3) == ''}class="sel"{/if}><a href="{:blx.url.base}settings/email" data-icon="E">Messages</a></li>
-			<li {if blx.url.segment(3) == 'account'}class="sel"{/if}><a href="{:blx.url.base}settings/email/account" data-icon="u">Account</a></li>
+			<li {% if blx.url.segment(3) == '' %}class="sel"{% endif %}><a href="{{ blx.url.base }}settings/email" data-icon="E">Messages</a></li>
+			<li {% if blx.url.segment(3) == 'account' %}class="sel"{% endif %}><a href="{{ blx.url.base }}settings/email/account" data-icon="u">Account</a></li>
 		</ul>
 	</nav>
 
 	<div>
-		{:settings}
+		{{ block('settings') }}
 	</div>
-
-{/region}
+{% endblock %}

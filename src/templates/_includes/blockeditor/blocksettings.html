@@ -1,61 +1,60 @@
 <div class="blocksettings">
 	<div class="field">
 		<div class="heading">
-			<label for="{:idPrefix}name">Block Name</label>
+			<label for="{{ idPrefix }}name">Block Name</label>
 			<p>What this block will be called in the CP.</p>
 		</div>
-		<div class="textwrapper"><input id="{:idPrefix}name" name="{:namePrefix}[name]" class="text name" type="text" maxlength="100%" value="{:block.name}"></div>
-		{if block.errors.name}
-			{include "_includes/error_list" errors=block.errors.name}
-		{/if}
+		<div class="textwrapper"><input id="{{ idPrefix }}name" name="{{ namePrefix }}[name]" class="text name" type="text" maxlength="100%" value="{{ block.name }}"></div>
+		{% if block.errors.name %}
+			{% include "_includes/error_list" with {'errors': block.errors.name} %}
+		{% endif %}
 	</div>
 
 	<div class="field">
 		<div class="heading">
-			<label for="{:idPrefix}handle">Block Handle</label>
+			<label for="{{ idPrefix }}handle">Block Handle</label>
 			<p>How you’ll refer to this block in the templates.</p>
 		</div>
-		<div class="textwrapper"><input id="{:idPrefix}handle" name="{:namePrefix}[handle]" class="text handle code" type="text" maxlength="100" value="{:block.handle}"></div>
-		{if block.errors.handle}
-			{include "_includes/error_list" errors=block.errors.handle}
-		{/if}
+		<div class="textwrapper"><input id="{{ idPrefix }}handle" name="{{ namePrefix }}[handle]" class="text handle code" type="text" maxlength="100" value="{{ block.handle }}"></div>
+		{% if block.errors.handle %}
+			{% include "_includes/error_list" with {'errors': block.errors.handle} %}
+		{% endif %}
 	</div>
 
 	<div class="field">
 		<div class="heading">
-			<label for="{:idPrefix}instructions">Instructions</label>
+			<label for="{{ idPrefix }}instructions">Instructions</label>
 			<p>The text to be displayed beside the Block Name on the entry’s publish page.</p>
 		</div>
-		<div class="textwrapper"><textarea id="{:idPrefix}instructions" name="{:namePrefix}[instructions]" class="text instructions" rows="2" cols="100">{:block.instructions}</textarea></div>
+		<div class="textwrapper"><textarea id="{{ idPrefix }}instructions" name="{{ namePrefix }}[instructions]" class="text instructions" rows="2" cols="100">{{ block.instructions }}</textarea></div>
 	</div>
 
 	<div class="field checkbox">
 		<label>This block is required
-			<div class="cbwrapper"><input type="checkbox" name="{:namePrefix}[required]" value="y" {if block.required}checked{/if} class="blockrequired"></div>
+			<div class="cbwrapper"><input type="checkbox" name="{{ namePrefix }}[required]" value="y" {% if block.required %}checked{% endif %} class="blockrequired"></div>
 		</label>
 	</div>
 
 	<div class="field">
 		<div class="heading">
-			<label for="{:idPrefix}class">Block Type</label>
+			<label for="{{ idPrefix }}class">Block Type</label>
 		</div>
-		{if block.class}
-			{set blockClass = block.class}
-		{else}
-			{set blockClass = "PlainText"}
-		{/if}
-		<select id="{:idPrefix}class" name="{:namePrefix}[class]" class="blocktype">
-			{foreach blx.contentblocks.blocktypes as blocktype}
-				<option value="{:blocktype.classHandle}" {if blocktype.classHandle == blockClass}selected{/if}>{:blocktype.blocktypeName}</option>
-			{/foreach}
+		{% if block.class %}
+			{% set blockClass = block.class %}
+		{% else %}
+			{% set blockClass = "PlainText" %}
+		{% endif %}
+		<select id="{{ idPrefix }}class" name="{{ namePrefix }}[class]" class="blocktype">
+			{% for blocktype in blx.contentblocks.blocktypes %}
+				<option value="{{ blocktype.classHandle }}" {% if blocktype.classHandle == blockClass %}selected{% endif %}>{{ blocktype.blocktypeName }}</option>
+			{% endfor %}
 		</select>
 	</div>
 </div>
 
-<?php $namePrefix = new Variable($namePrefix.'[settings]') ?>
 <div class="blocktypesettings">
-	<div class="{:block.class}">
-		{:block.displaySettings(idPrefix, namePrefix)}
+	<div class="{{ block.class }}">
+		{{ block.displaySettings(idPrefix, namePrefix ~ "[settings]") }}
 	</div>
 </div>
 
@@ -63,6 +62,6 @@
 <input type="button" value="Done" class="btn done">
 <input type="button" value="Delete block" class="btn red delete">
 
-{!--<div class="field">
+{#<div class="field">
 	<a class="delete">Delete content block</a>
-</div>--}
+</div>#}

@@ -19,6 +19,7 @@ return CMap::mergeArray(
 		// autoloading model and component classes
 		'import' => array(
 			'application.business.lib.*',
+			'application.business.lib.PhpMailer.*',
 			'application.business.lib.Requests.*',
 			'application.business.lib.Requests.Auth.*',
 			'application.business.lib.Requests.Response.*',
@@ -76,10 +77,6 @@ return CMap::mergeArray(
 				'class' => 'Blocks\SettingsService',
 			),
 
-			'sites' => array(
-				'class' => 'Blocks\SitesService',
-			),
-
 			'updates' => array(
 				'class' => 'Blocks\UpdatesService',
 			),
@@ -103,7 +100,7 @@ return CMap::mergeArray(
 			),
 
 			'viewRenderer' => array(
-				'class' => 'Blocks\FileTemplateProcessor',
+				'class' => 'Blocks\TemplateProcessor',
 			),
 
 			'statePersister' => array(
@@ -126,8 +123,6 @@ return CMap::mergeArray(
 					array('content\/sections\/new',                          'content/_section'),
 					array('content\/sections\/(?<sectionId>\d+)',            'content/_section'),
 					array('plugins\/(?<pluginClass>[A-Za-z]\w*)',            'plugins/_settings'),
-					array('settings\/sites\/new',                            'settings/_site'),
-					array('settings\/sites\/(?<siteId>\d+)',                 'settings/_site'),
 				),
 			),
 

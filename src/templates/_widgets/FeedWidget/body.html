@@ -1,8 +1,8 @@
 <table class="data">
-	{foreach widget.items as item}
+	{% for item in widget.items %}
 		<tr>
-			<td><a href="{:item.url}">{:item.title}</a></td>
-			<td class="timestamp">{:item.date}</td>
+			<td><a href="{{ item.url }}">{{ item.title }}</a></td>
+			<td class="timestamp">{{ item.date }}</td>
 		</tr>
-	{/foreach}
+	{% endfor %}
 </table>

@@ -11,7 +11,7 @@ class DbUpdateController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		$this->loadTemplate('_special/dbupdate');
+		$this->renderTemplate('_special/dbupdate');
 	}
 
 	/**

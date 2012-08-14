@@ -77,7 +77,7 @@ class UsersController extends BaseController
 			{
 				$user->status = UserAccountStatus::Pending;
 				blx()->users->generateVerificationCodeForUser($user, false);
-				blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
+				blx()->email->sendEmail($user, 'verify_email');
 			}
 
 			$user->save();
@@ -96,7 +96,7 @@ class UsersController extends BaseController
 			else
 				blx()->user->setError('Couldn’t save account settings.');
 
-			$this->loadRequestedTemplate(array(
+			$this->renderRequestedTemplate(array(
 				'user' => $user,
 				'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
 			));
@@ -126,7 +126,7 @@ class UsersController extends BaseController
 		else
 		{
 			blx()->user->setError('Couldn’t save profile.');
-			$this->loadRequestedTemplate(array('user' => $user));
+			$this->renderRequestedTemplate(array('user' => $user));
 		}
 	}
 
@@ -165,7 +165,7 @@ class UsersController extends BaseController
 
 		$user->status = UserAccountStatus::Pending;
 		blx()->users->generateVerificationCodeForUser($user, false);
-		blx()->email->sendVerificationEmail($user, blx()->sites->getCurrentSite());
+		blx()->email->sendEmail($user, 'verify_email');
 		$user->save();
 
 		blx()->user->setNotice('Verification email sent.');

@@ -34,7 +34,7 @@ class InstallController extends BaseController
 		$vars['sitename'] = implode(' ', array_map('ucfirst', $words));
 		$vars['url'] = 'http://'.$server;
 
-		$this->loadTemplate('_special/install', $vars);
+		$this->renderTemplate('_special/install', $vars);
 	}
 
 	/**

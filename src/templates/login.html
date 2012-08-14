@@ -1,14 +1,18 @@
-{if blx.session.loggedin}
-	{redirect "dashboard"}
-{/if}
+{% if blx.session.loggedin %}
+	{# redirect "dashboard" #}
+{% endif %}
 
-{layout "_layouts/basic" title="Login"}
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/login.css"}
-{/region}
+{% set title = "Login" %}
+{% extends "_layouts/basic" %}
 
-{region "body"}
+
+{% block styles %}
+	{% include "_includes/css_include" with {'file': 'styles/login.css'} %}
+{% endblock %}
+
+
+{% block body %}
 	<script type="text/javascript">
 		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookie;
@@ -22,7 +26,7 @@
 							'<div class="heading">' +
 								'<label for="username">Username or email</label>' +
 							'</div>' +
-							'<div class="textwrapper"><input id="username" class="text" type="text" value="{:blx.session.rememberedusername}"></div>' +
+							'<div class="textwrapper"><input id="username" class="text" type="text" value="{{ blx.session.rememberedusername }}"></div>' +
 						'</div>' +
 						'<div id="password-container" class="nested-fields">' +
 							'<div class="field">' +
@@ -43,15 +47,15 @@
 							'</label>' +
 						'</div>' +
 
-						{if !blx.request.secure}
+						{% if not blx.request.secure %}
 							'<a id="insecure" title="This is an insecure connection." data-icon="i"></a>' +
-						{/if}
+						{% endif %}
 
 					'</div>' +
 				'</form>'
 			);
 
-			var id = {if blx.session.rememberedusername}'password'{else}'username'{/if};
+			var id = {% if blx.session.rememberedusername %}'password'{% else %}'username'{% endif %};
 			document.getElementById(id).focus();
 		}
 		else
@@ -72,8 +76,9 @@
 			);
 		}
 	</script>
-{/region}
+{% endblock %}
 
-{region "scripts"}
-	{include "_includes/js_include" file="login.js"}
-{/region}
+
+{% block scripts %}
+	{% include "_includes/js_include" with {'file': 'login.js'} %}
+{% endblock %}

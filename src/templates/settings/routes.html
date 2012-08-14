@@ -1,13 +1,13 @@
-{layout "_layouts/cp" title="Routes"}
+{% set title = "Routes" %}
+{% extends "_layouts/cp" %}
 
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/routes.css"}
-{/region}
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/routes.css"} %}
+{% endblock %}
 
 
-{region "main"}
-
+{% block main %}
 	<header class="titlebar">
 		<h1>Routes</h1>
 		<ul class="right">
@@ -16,21 +16,24 @@
 	</header>
 
 	<div id="routes">
-		{foreach blx.routes.all as route}
-			<div class="pane route" data-id="{:route.id}">
-				<div class="url">{:route.urlDisplayHtml}</div>
-				<div class="template">{:route.template}</div>
+		{% for route in blx.routes.all %}
+			<div class="pane route" data-id="{{ route.id }}">
+				<div class="url">
+					{%- autoescape false -%}
+						{{ route.urlDisplayHtml }}
+					{%- endautoescape -%}
+				</div>
+				<div class="template">{{ route.template }}</div>
 			</div>
-		{/foreach}
+		{% endfor %}
 	</div>
 
 	<div class="buttons">
-		<a class="btn" href="{:blx.url.base}settings">Done</a>
+		<a class="btn" href="{{ blx.url.base }}settings">Done</a>
 	</div>
+{% endblock %}
 
-{/region}
 
-
-{region "scripts"}
-	{include "_includes/js_include" file="routes.js"}
-{/region}
+{% block scripts %}
+	{% include "_includes/js_include" with {'file': "routes.js"} %}
+{% endblock %}

@@ -1,10 +1,13 @@
-{layout "_layouts/sidebar" title="Assets"}
+{% set title = "Assets" %}
+{% extends "_layouts/cp" %}
 
-{region "styles"}
-	{include "_includes/css_include" file="styles/assets.css"}
-{/region}
 
-{region "sidebar"}
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/assets.css"} %}
+{% endblock %}
+
+
+{% block sidebar %}
 	<h5>Local Files</h5>
 	<ul class="nav tree">
 		<li><span class="toggle expanded"></span><a href=""><span class="icon icon133"></span>shared</a>
@@ -33,20 +36,21 @@
 			</ul>
 		</li>
 	</ul>
-{/region}
+{% endblock %}
 
-{region "main"}
+
+{% block main %}
 	<header class="titlebar">
 		<h1>Assets</h1>
-		{!--<div class="btn-group">
-			<a class="btn {if viewMode=='thumbs'}sel{/if}" href="{:blx.url.base}assets" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
-			<a class="btn {if viewMode=='list'}sel{/if}" href="{:blx.url.base}assets/list" title="Display files in a list"><span class="icon icon276"></span></a></li>
-		</div>
+		{#<div class="btn-group">
+			<a class="btn {% if viewMode=='thumbs' %}sel{% endif %}" href="{{ blx.url.base }}assets" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
+			<a class="btn {% if viewMode=='list' %}sel{% endif %}" href="{{ blx.url.base }}assets/list" title="Display files in a list"><span class="icon icon276"></span></a></li>
+		</div>#}
 
 		<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>
 
 		<div class="search"><input type="text"></div>
 	</header>
 
-	{:files}
-{/region}
+	{{ block('files') }}
+{% endblock %}

@@ -7,7 +7,6 @@ namespace Blocks;
 class UpdatesWidget extends BaseWidget
 {
 	public $name = 'Updates';
-	public $title = 'Updates';
 
 	public $updates = array();
 
@@ -19,14 +18,30 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getActionButtons()
 	{
-		return array('Updates' => 'updates');
+		return array(
+			array(
+				'label' => 'Updates',
+				'url' => 'updates'
+			)
+		);
 	}
 
+	/**
+	 * Gets the widget title.
+	 *
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		return 'Updates';
+	}
 
 	/**
-	 * @return bool
+	 * Gets the widget body.
+	 *
+	 * @return string
 	 */
-	public function displayBody()
+	public function getBody()
 	{
 		$updateInfo = blx()->updates->getUpdateInfo();
 
@@ -59,6 +74,6 @@ class UpdatesWidget extends BaseWidget
 			}
 		}
 
-		return parent::displayBody();
+		return parent::getBody();
 	}
 }

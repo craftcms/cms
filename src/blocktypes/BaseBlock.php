@@ -48,7 +48,7 @@ abstract class BaseBlock extends BaseComponent
 			'settings'   => $this->settings
 		);
 
-		$template = blx()->controller->loadTemplate($this->settingsTemplate, $variables, true);
+		$template = TemplateHelper::render($this->settingsTemplate, $variables);
 		return $template;
 	}
 
@@ -68,7 +68,7 @@ abstract class BaseBlock extends BaseComponent
 			'data'     => $data
 		);
 
-		$template = blx()->controller->loadTemplate($this->fieldTemplate, $variables, true);
+		$template = TemplateHelper::render($this->fieldTemplate, $variables);
 		return $template;
 	}
 

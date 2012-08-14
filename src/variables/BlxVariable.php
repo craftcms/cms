@@ -125,14 +125,6 @@ class BlxVariable
 	}
 
 	/**
-	 * @return SitesVariable
-	 */
-	public function sites()
-	{
-		return new SitesVariable();
-	}
-
-	/**
 	 * @return UpdatesVariable
 	 */
 	public function updates()

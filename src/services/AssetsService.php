@@ -7,19 +7,6 @@ namespace Blocks;
 class AssetsService extends \CApplicationComponent
 {
 	/**
-	 * @param $siteId
-	 * @return AssetFolder
-	 */
-	public function getAssetFoldersBySiteId($siteId)
-	{
-		$asssetFolders = AssetFolder::model()->findAllByAttributes(array(
-			'site_id' => $siteId,
-		));
-
-		return $asssetFolders;
-	}
-
-	/**
 	 * @param $assetFolderId
 	 * @return Asset
 	 */
@@ -43,23 +30,6 @@ class AssetsService extends \CApplicationComponent
 		));
 
 		return $folder;
-	}
-
-	/**
-	 * @param $siteId
-	 * @return Asset
-	 */
-	public function getAllAssetsBySiteId($siteId)
-	{
-		$assets = blx()->db->createCommand()
-			->select('a.*')
-			->from('assets a')
-			->join('assetfolders af', 'a.asset_folder_id = af.id')
-			->join('sites s', 'af.site_id = s.id')
-			->where('s.id=:siteId', array(':siteId' => $siteId))
-			->queryAll();
-
-		return $assets;
 	}
 
 	/**

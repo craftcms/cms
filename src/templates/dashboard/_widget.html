@@ -1,11 +1,17 @@
-<div id="widget{:widget.id}" class="pane widget {:widget.classHandle}">
-	<h3>{:widget.title}</h3>
-	{if widget.getActionButtons}
+<div id="widget{{ widget.id }}" class="pane widget {{ widget.classHandle }}">
+	<h3>
+		{%- autoescape false -%}
+			{{ widget.getTitle }}
+		{%- endautoescape -%}
+	</h3>
+	{% if widget.getActionButtons %}
 		<div class="actions">
-			{foreach widget.getActionButtons as label => url}
-				<a href="{:blx.url.url(url)}" class="btn">{:label}</a>
-			{/foreach}
+			{% for button in widget.getActionButtons %}
+				<a href="{{ blx.url.url(button.url) }}" class="btn">{{ button.label }}</a>
+			{% endfor %}
 		</div>
-	{/if}
-	{:widget.displayBody}
+	{% endif %}
+	{% autoescape false %}
+		{{ widget.getBody }}
+	{% endautoescape %}
 </div>
