@@ -9,138 +9,18 @@ class EmailService extends \CApplicationComponent
 	private $_defaultEmailTimeout = 10;
 
 	/**
-	 * Returns all of the system email messages.
+	 * Sends an email.
 	 *
-	 * @return array
-	 */
-	public function getAllMessages()
-	{
-		$messages = EmailMessage::model()->findAll();
-		return $messages;
-	}
-
-	/**
-	 * Returns a system email message by its ID.
-	 *
-	 * @param int $messageId
-	 * @return EmailMessage
-	 */
-	public function getMessageById($messageId)
-	{
-		$message = EmailMessage::model()->findById($messageId);
-		return $message;
-	}
-
-	/**
-	 * Returns a system email message by its key.
-	 *
-	 * @param string $key
-	 * @param int $pluginId
-	 * @return EmailMessage
-	 */
-	public function getMessageByKey($key, $pluginId = null)
-	{
-		$message = EmailMessage::model()->findByAttributes(array(
-			'plugin_id' => $pluginId,
-			'key' => $key
-		));
-		return $message;
-	}
-
-	/**
-	 * Registers a new system email message.
-	 *
-	 * @param string $key
-	 * @param int $pluginId
-	 * @return EmailMessage
-	 */
-	public function registerMessage($key, $pluginId = null)
-	{
-		$message = new EmailMessage();
-		$message->key = $key;
-		$message->plugin_id = $pluginId;
-		$message->save();
-		return $message;
-	}
-
-	/**
-	 * Returns the localized content for a system email message.
-	 *
-	 * @param int $messageId
-	 * @param string $language
-	 * @return string
-	 */
-	public function getMessageContent($messageId, $language = null)
-	{
-		if (!$language)
-			$language = blx()->language;
-
-		$content = EmailMessageContent::model()->findByAttributes(array(
-			'id' => $messageId,
-			'language' => $language
-		));
-
-		return $content;
-	}
-
-	/**
-	 * Saves the localized content for a system email message.
-	 *
-	 * @param int $messageId
+	 * @param User $user
 	 * @param string $subject
 	 * @param string $body
 	 * @param string $htmlBody
-	 * @param string $language
-	 */
-	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
-	{
-		if (!$language)
-			$language = blx()->language;
-
-		// Has this message already been translated into this language?
-		$content = $this->getMessageContent($messageId, $language);
-
-		if (!$content)
-		{
-			$content = new EmailMessageContent();
-			$content->language = $language;
-		}
-
-		$content->subject = $subject;
-		$content->body = $body;
-		$content->html_body = $htmlBody;
-		$content->save();
-
-		return $content;
-	}
-
-	/**
-	 * @param User $user
-	 * @param string $key
-	 * @param int $pluginId
 	 * @param array $variables
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmail(User $user, $key, $pluginId = null, $variables = array(), $language = null)
+	public function sendEmail(User $user, $subject, $body, $htmlBody = null, $variables = array())
 	{
-		$emailSettings = $this->getEmailSettings();
-
-		// Get the email by key and plugin from the database.
-		$message = $this->getMessageByKey($key, $pluginId);
-
-		if (!$message)
-		{
-			$error = 'Could not find an email template with the key: '.$key;
-
-			if ($pluginId !== null)
-				$error .= ' and plugin ID: '.$pluginId;
-
-			$error .= '.';
-
-			throw new Exception(Blocks::t('Email error: {errorMessage}', array('{errorMessage}' => $error)));
-		}
-
 		// Get the saved email settings.
 		$emailSettings = $this->getEmailSettings();
 
@@ -200,29 +80,40 @@ class EmailService extends \CApplicationComponent
 		$email->fromName = $emailSettings['senderName'];
 		$email->addAddress($user->email, $user->getFullName());
 
-		// Set the content
-		// TODO: run the content through the email template processor
-		$content = $this->getMessageContent($message->id, $language);
-
-		$keyPrefix = 'email:'.$key.':'.$pluginId.':';
 		$variables['user'] = $user;
 
-		$email->subject = TemplateHelper::renderString($keyPrefix.'subject', $content->subject, $variables);
+		$email->subject = TemplateHelper::renderString($subject.' subject', $subject, $variables);
+		$renderedBody = TemplateHelper::renderString($subject.' body', $body, $variables);
 
-		if ($user->email_format == 'html' && $content->html_body)
+		if ($user->email_format == 'html' && $htmlBody)
 		{
-			$email->msgHtml(TemplateHelper::renderString($keyPrefix.'html_body', $content->html_body, $variables));
-			$email->altBody = TemplateHelper::renderString($keyPrefix.'body', $content->body, $variables);
+			$renderedHtmlBody = TemplateHelper::renderString($subject.' HTML body', $htmlBody, $variables);
+			$email->msgHtml($renderedHtmlBody);
+			$email->altBody = $renderedBody;
 		}
 		else
 		{
-			$email->body = TemplateHelper::renderString($keyPrefix.'body', $content->body, $variables);
+			$email->body = $renderedBody;
 		}
 
 		if (!$email->send())
 			throw new Exception(Blocks::t('Email error: {errorMessage}', array('{errorMessage}' => $email->errorInfo)));
 
 		return true;
+	}
+
+	/**
+	 * Sends an email by its key.
+	 *
+	 * @param User $user
+	 * @param string $key
+	 * @param int $pluginId
+	 * @param array $variables
+	 * @return bool
+	 * @throws Exception
+	 */
+	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
+	{
 	}
 
 	/**

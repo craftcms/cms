@@ -1,0 +1,29 @@
+{% set title = "Messages"|t %}
+{% extends "settings/email/_layout" %}
+
+
+{% block styles %}
+	{% include "_includes/css_include" with {'file': "styles/email_messages.css"} %}
+{% endblock %}
+
+
+{% block settings %}
+	<div id="messages">
+		{% for message in blx.email.messages %}
+			<div class="field">
+				<div class="heading">
+					<h3>{{ message.heading }}</h3>
+				</div>
+				<div class="pane message" data-id="{{ message.id }}">
+					<div class="subject">{{ message.subject }}</div>
+					<div class="body">{{ message.bodyPreview }}</div>
+				</div>
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}
+
+
+{% block scripts %}
+	{% include "_includes/js_include" with {'file': "email_messages.js"} %}
+{% endblock %}

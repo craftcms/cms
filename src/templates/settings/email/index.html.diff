@@ -1,0 +1,16 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/email/index.html	2012-08-15 12:17:52.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/email/index.html	2012-08-15 12:15:59.000000000 -0700
+@@ -1,3 +1,13 @@
++{% set title = "Email Settings"|t %}
++{% extends "settings/email/_layout" %}
++
++
++{% if not settings %}
++	{% set settings = blx.settings.email %}
++{% endif %}
++
++
++{% block settings %}
+ 	<form method="post" action="">
+ 		<input type="hidden" name="action" value="settings/saveemailsettings">
+ 		<input type="hidden" name="redirect" value="settings">

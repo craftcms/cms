@@ -1,0 +1,129 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-15 11:55:22.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-15 12:18:10.000000000 -0700
+@@ -9,6 +9,108 @@
+ 	private $_defaultEmailTimeout = 10;
+ 
+ 	/**
++	 * Returns all of the system email messages.
++	 *
++	 * @return array
++	 */
++	public function getAllMessages()
++	{
++		$messages = EmailMessage::model()->findAll();
++		return $messages;
++	}
++
++	/**
++	 * Returns a system email message by its ID.
++	 *
++	 * @param int $messageId
++	 * @return EmailMessage
++	 */
++	public function getMessageById($messageId)
++	{
++		$message = EmailMessage::model()->findById($messageId);
++		return $message;
++	}
++
++	/**
++	 * Returns a system email message by its key.
++	 *
++	 * @param string $key
++	 * @return EmailMessage
++	 */
++	public function getMessageByKey($key)
++	{
++		$message = EmailMessage::model()->findByAttributes(array(
++			'key' => $key
++		));
++		return $message;
++	}
++
++	/**
++	 * Registers a new system email message.
++	 *
++	 * @param string $key
++	 * @return EmailMessage
++	 */
++	public function registerMessage($key)
++	{
++		$message = new EmailMessage();
++		$message->key = $key;
++		$message->save();
++		return $message;
++	}
++
++	/**
++	 * Returns the localized content for a system email message.
++	 *
++	 * @param int $messageId
++	 * @param string $language
++	 * @return string
++	 */
++	public function getMessageContent($messageId, $language = null)
++	{
++		if (!$language)
++			$language = blx()->language;
++
++		$content = EmailMessageContent::model()->findByAttributes(array(
++			'id' => $messageId,
++			'language' => $language
++		));
++
++		return $content;
++	}
++
++	/**
++	 * Saves the localized content for a system email message.
++	 *
++	 * @param int $messageId
++	 * @param string $subject
++	 * @param string $body
++	 * @param string $htmlBody
++	 * @param string $language
++	 */
++	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
++	{
++		if (!$language)
++			$language = blx()->language;
++
++		// Has this message already been translated into this language?
++		$content = $this->getMessageContent($messageId, $language);
++
++		if (!$content)
++		{
++			$content = new EmailMessageContent();
++			$content->language = $language;
++		}
++
++		$content->subject = $subject;
++		$content->body = $body;
++		$content->html_body = $htmlBody;
++		$content->save();
++
++		return $content;
++	}
++
++	/**
+ 	 * Sends an email.
+ 	 *
+ 	 * @param User $user
+@@ -114,6 +216,17 @@
+ 	 */
+ 	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
+ 	{
++		// Get the email by key from the database.
++		$message = $this->getMessageByKey($key);
++
++		if (!$message)
++			throw new Exception(Blocks::t('Could not find an email template with the key “{key}”', array('{key}' => $key)));
++
++		// Get the content
++		$content = $this->getMessageContent($message->id, $user->preferred_language);
++
++		// Send the email
++		return $this->sendEmail($user, $content->subject, $content->body, $content->html_body, $variables);
+ 	}
+ 
+ 	/**

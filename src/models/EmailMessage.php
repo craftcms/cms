@@ -13,10 +13,6 @@ class EmailMessage extends BaseModel
 		'html_template' => array('type' => AttributeType::Varchar, 'maxLength' => 500),
 	);
 
-	protected $belongsTo = array(
-		'plugin' => array('model' => 'Plugin')
-	);
-
 	protected $hasMany = array(
 		'content' => array('model' => 'EmailMessageContent', 'foreignKey' => 'message'),
 	);

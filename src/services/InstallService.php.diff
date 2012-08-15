@@ -1,5 +1,5 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-06 12:07:04.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-06 12:33:59.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-15 11:16:29.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-15 11:17:19.000000000 -0700
 @@ -74,6 +74,7 @@
  			$info->release_date = Blocks::getReleaseDate();
  			$info->site_name = $inputs['sitename'];
@@ -7,27 +7,26 @@
 +			$info->license_key = $inputs['licensekey'];
  			$info->on = true;
  			$info->save();
- 
-@@ -81,6 +82,23 @@
+
+@@ -81,6 +82,22 @@
  			$languages = array(blx()->language);
  			blx()->settings->saveSettings('systemsettings', $languages, 'languages');
- 
+
 +			// Register the email messages
-+			// No for loop here, so the language tool doesn't wig out.
 +			$message = blx()->email->registerMessage('verify_email');
 +			blx()->email->saveMessageContent($message->id,
-+				Blocks::t('verify_email_default_subject'),
-+				Blocks::t('verify_email_default_body'));
++				Blocks::t('verify_email_subject'),
++				Blocks::t('verify_email_body'));
 +
 +			$message = blx()->email->registerMessage('verify_new_email');
 +			blx()->email->saveMessageContent($message->id,
-+				Blocks::t('verify_new_email_default_subject'),
-+				Blocks::t('verify_new_email_default_body'));
++				Blocks::t('verify_new_email_subject'),
++				Blocks::t('verify_new_email_body'));
 +
 +			$message = blx()->email->registerMessage('forgot_password');
 +			blx()->email->saveMessageContent($message->id,
-+				Blocks::t('forgot_password_default_subject'),
-+				Blocks::t('forgot_password_default_body'));
++				Blocks::t('forgot_password_subject'),
++				Blocks::t('forgot_password_body'));
 +
  			// Add the user
  			$user = new User();

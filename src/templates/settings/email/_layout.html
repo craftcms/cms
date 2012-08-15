@@ -8,8 +8,8 @@
 
 	<nav class="nav">
 		<ul>
-			<li {% if blx.url.segment(3) == '' %}class="sel"{% endif %}><a href="{{ blx.url.base }}settings/email" data-icon="E">Messages</a></li>
-			<li {% if blx.url.segment(3) == 'account' %}class="sel"{% endif %}><a href="{{ blx.url.base }}settings/email/account" data-icon="u">Account</a></li>
+			<li {% if blx.url.segment(3) == '' %}class="sel"{% endif %}><a href="{{ blx.url.base }}settings/email" data-icon="s">Settings</a></li>
+			<li {% if blx.url.segment(3) == 'messages' %}class="sel"{% endif %}><a href="{{ blx.url.base }}settings/email/messages" data-icon="E">Messages</a></li>
 		</ul>
 	</nav>
 
