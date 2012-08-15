@@ -20,7 +20,7 @@ class User extends BaseModel
 		'password_reset_required'               => AttributeType::Boolean,
 		'status'                                => array('type' => AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
 		'preferred_language'                    => AttributeType::Language,
-		'html_email'                            => array('type' => AttributeType::Boolean, 'default' => true),
+		'email_format'                          => array('type' => AttributeType::Enum, 'values' => array('text', 'html'), 'default' => 'html', 'required' => true),
 		'last_login_date'                       => AttributeType::Int,
 		'last_login_failed_date'                => AttributeType::Int,
 		'last_password_change_date'             => AttributeType::Int,

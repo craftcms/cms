@@ -36,7 +36,7 @@ class UsersController extends BaseController
 		// Set all the standard stuff
 		$user->username = blx()->request->getPost('username');
 		$user->email = blx()->request->getPost('email');
-		$user->html_email = (blx()->request->getPost('email_format') == 'html');
+		$user->email_format = blx()->request->getPost('email_format');
 		$user->preferred_language = blx()->request->getPost('preferred_language');
 
 		// New password?
@@ -86,11 +86,13 @@ class UsersController extends BaseController
 				blx()->user->setNotice('User registered.');
 			else
 				blx()->user->setNotice('Account settings saved.');
-		
+
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
+			print_r($user->getErrors()); die();
+
 			if ($isNewUser)
 				blx()->user->setError('Couldn’t register user.');
 			else

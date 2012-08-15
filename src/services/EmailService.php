@@ -209,7 +209,7 @@ class EmailService extends \CApplicationComponent
 
 		$email->subject = TemplateHelper::renderString($keyPrefix.'subject', $content->subject, $variables);
 
-		if ($user->html_email && $content->html_body)
+		if ($user->email_format == 'html' && $content->html_body)
 		{
 			$email->msgHtml(TemplateHelper::renderString($keyPrefix.'html_body', $content->html_body, $variables));
 			$email->altBody = TemplateHelper::renderString($keyPrefix.'body', $content->body, $variables);

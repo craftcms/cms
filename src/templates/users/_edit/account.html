@@ -66,7 +66,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="html_email">Email Format</label></h3>
+				<h3><label for="email_format">Email Format</label></h3>
 			</div>
 
 			{% include "_includes/pill" with {
@@ -75,7 +75,8 @@
 					{'value': "text", 'label': "Plain Text"},
 					{'value': "html", 'label': 'HTML'}
 				],
-				'value': (not user or user.html_email ? "html" : "text")
+				'value': user.email_format,
+				'default': 'html'
 			} %}
 		</div>
 
