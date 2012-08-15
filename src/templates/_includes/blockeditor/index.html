@@ -1,7 +1,7 @@
 <div class="blockeditor" data-input-name="{{ name }}">
 
 	<div class="list">
-		<h3>Content Blocks</h3>
+		<h3>{{ "Content Blocks"|t }}</h3>
 		<ul>
 			{% for block in currentBlocks %}
 				<li><a class="block-item {% if block.errors %}error{% endif %}" data-block-id="{{ block.id }}">
@@ -11,7 +11,7 @@
 				</a></li>
 			{% endfor %}
 		</ul>
-		<a class="btn addbtn new-block">New content block</a>
+		<a class="btn addbtn new-block">{{ "New content block"|t }}</a>
 	</div>
 
 	<div class="settings">

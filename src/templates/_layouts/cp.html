@@ -3,13 +3,11 @@
 
 {% block body %}
 	<div id="sidebar">
-		{#<div id="site" class="left">Pixel & Tonic</div>#}
-
 		<div id="header">
 			<div id="branding">
 				<img src="{{ blx.url.resource }}images/pt.png">
 			</div>
-			<a id="account" data-icon="u" class="menubtn" title="My account"></a>
+			<a id="account" data-icon="u" class="menubtn" title="{{ 'My Account'|t }}"></a>
 			<div id="account-menu" class="menu">
 				<div class="userinfo">
 					<img src="{{ blx.url.resource }}images/avatar.jpg" width="100" height="100">
@@ -17,8 +15,8 @@
 					<div class="username">{{ blx.users.current.username }}</div>
 				</div>
 				<ul>
-					<li data-url="users/{{ blx.users.current.id }}">My Account</li>
-					<li data-url="logout">Sign out</li>
+					<li data-url="users/{{ blx.users.current.id }}">{{ "My Account"|t }}</li>
+					<li data-url="logout">{{ "Sign out"|t }}</li>
 				</ul>
 			</div>
 		</div>

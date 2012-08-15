@@ -1,4 +1,4 @@
-{% set title = "Assets" %}
+{% set title = "Assets"|t %}
 {% extends "_layouts/cp" %}
 
 
@@ -41,10 +41,10 @@
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Assets</h1>
+		<h1>{{ title }}</h1>
 		{#<div class="btn-group">
-			<a class="btn {% if viewMode=='thumbs' %}sel{% endif %}" href="{{ blx.url.base }}assets" title="Display files as thumbnails"><span class="icon icon278"></span></a></li>
-			<a class="btn {% if viewMode=='list' %}sel{% endif %}" href="{{ blx.url.base }}assets/list" title="Display files in a list"><span class="icon icon276"></span></a></li>
+			<a class="btn {% if viewMode=='thumbs' %}sel{% endif %}" href="{{ blx.url.base }}assets" title="{{ 'Display files as thumbnails'|t }}"><span class="icon icon278"></span></a></li>
+			<a class="btn {% if viewMode=='list' %}sel{% endif %}" href="{{ blx.url.base }}assets/list" title="{{ 'Display files in a list'|t }}"><span class="icon icon276"></span></a></li>
 		</div>#}
 
 		<a class="btn" href=""><span class="icon icon174"></span><span class="label">Upload files</span></a>

@@ -1,8 +1,8 @@
 <div class="blocksettings">
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}name">Block Name</label>
-			<p>What this block will be called in the CP.</p>
+			<label for="{{ idPrefix }}name">{{ "Block Name"|t }}</label>
+			<p>{{ "What this block will be called in the CP."|t }}</p>
 		</div>
 		<div class="textwrapper"><input id="{{ idPrefix }}name" name="{{ namePrefix }}[name]" class="text name" type="text" maxlength="100%" value="{{ block.name }}"></div>
 		{% if block.errors.name %}
@@ -12,8 +12,8 @@
 
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}handle">Block Handle</label>
-			<p>How you’ll refer to this block in the templates.</p>
+			<label for="{{ idPrefix }}handle">{{ "Block Handle"|t }}</label>
+			<p>{{ "How you’ll refer to this block in the templates."|t }}</p>
 		</div>
 		<div class="textwrapper"><input id="{{ idPrefix }}handle" name="{{ namePrefix }}[handle]" class="text handle code" type="text" maxlength="100" value="{{ block.handle }}"></div>
 		{% if block.errors.handle %}
@@ -23,8 +23,8 @@
 
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}instructions">Instructions</label>
-			<p>The text to be displayed beside the Block Name on the entry’s publish page.</p>
+			<label for="{{ idPrefix }}instructions">{{ "Instructions"|t }}</label>
+			<p>{{ "The text to be displayed beside the Block Name on the entry’s publish page."|t }}</p>
 		</div>
 		<div class="textwrapper"><textarea id="{{ idPrefix }}instructions" name="{{ namePrefix }}[instructions]" class="text instructions" rows="2" cols="100">{{ block.instructions }}</textarea></div>
 	</div>
@@ -37,7 +37,7 @@
 
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}class">Block Type</label>
+			<label for="{{ idPrefix }}class">{{ "Block Type"|t }}</label>
 		</div>
 		{% if block.class %}
 			{% set blockClass = block.class %}
@@ -59,8 +59,8 @@
 </div>
 
 
-<input type="button" value="Done" class="btn done">
-<input type="button" value="Delete block" class="btn red delete">
+<input type="button" value="{{ 'Done'|t }}" class="btn done">
+<input type="button" value="{{ 'Delete block'|t }}" class="btn red delete">
 
 {#<div class="field">
 	<a class="delete">Delete content block</a>

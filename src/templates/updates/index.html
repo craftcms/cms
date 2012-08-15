@@ -1,4 +1,4 @@
-{% set title = "Updates" %}
+{% set title = "Updates"|t %}
 {% extends "_layouts/cp" %}
 
 
@@ -14,13 +14,13 @@
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Updates</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
 	{% set problems = blx.updates.unwritabledirectories %}
 	{% if not problems %}
 		<div id="checking">
-			Checking for updates…
+			{{ "Checking for updates…"|t }}
 		</div>
 		<script type="text/javascript">
 			// Keep the spinner vertically centered

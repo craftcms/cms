@@ -1,4 +1,4 @@
-{% set title = "Account Settings" %}
+{% set pageTitle = "Account Settings"|t %}
 {% extends "users/_layouts/edit" %}
 
 
@@ -9,7 +9,7 @@
 
 {% block settings %}
 	{% if user.id %}
-		<h2>Account Settings</h2>
+		<h2>{{ pageTitle }}</h2>
 	{% endif %}
 
 	<form method="post" action="">
@@ -18,7 +18,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="username" class="required">Username</label></h3>
+				<h3><label for="username" class="required">{{ "Username"|t }}</label></h3>
 			</div>
 			<input id="username" name="username" class="text" type="text" value="{{ user.username }}">
 			{% if user.errors.username %}
@@ -28,7 +28,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="email" class="required">Email</label></h3>
+				<h3><label for="email" class="required">{{ "Email"|t }}</label></h3>
 			</div>
 			<input id="email" name="email" class="text" type="text" value="{{ user.email }}">
 			{% if user.errors.email %}
@@ -46,8 +46,8 @@
 		{% if user.isCurrent or blx.users.current.admin %}
 			<div class="field">
 				<div class="heading">
-					<h3><label for="password">Password</label></h3>
-					{% if user.id %}<p>Leave blank to keep password unchanged.</p>{% endif %}
+					<h3><label for="password">{{ "Password"|t }}</label></h3>
+					{% if user.id %}<p>{{ "Leave blank to keep password unchanged."|t }}</p>{% endif %}
 				</div>
 				<input id="password" name="password" class="text {% if passwordForm and passwordForm.errors.password %}error{% endif %}" type="password">
 				{% if passwordForm and passwordForm.errors.password %}
@@ -66,14 +66,14 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="email_format">Email Format</label></h3>
+				<h3><label for="email_format">{{ "Email Format"|t }}</label></h3>
 			</div>
 
 			{% include "_includes/pill" with {
 				'name': "email_format",
 				'options': [
-					{'value': "text", 'label': "Plain Text"},
-					{'value': "html", 'label': 'HTML'}
+					{'value': "text", 'label': "Plain Text"|t},
+					{'value': "html", 'label': "HTML"|t}
 				],
 				'value': user.email_format,
 				'default': 'html'
@@ -82,7 +82,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="preferred_language">Preferred Language</label></h3>
+				<h3><label for="preferred_language">{{ "Preferred Language"|t }}</label></h3>
 			</div>
 			<select id="preferred_language" name="preferred_language">
 				{% for language in blx.localization.languages %}
@@ -91,7 +91,7 @@
 			</select>
 		</div>
 
-		<input type="submit" class="btn submit" value="Save">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
 	</form>
 {% endblock %}

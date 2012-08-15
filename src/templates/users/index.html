@@ -1,16 +1,16 @@
-{% set title = "Users" %}
+{% set title = "Users"|t %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Users</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
 	<section>
-		<h2>Recent Users</h2>
+		<h2>{{ "Recent Users"|t }}</h2>
 		<ul class="actions">
-			<li><a href="{{ blx.url.base }}users/new" class="btn addbtn">New user</a></li>
+			<li><a href="{{ blx.url.base }}users/new" class="btn addbtn">{{ "New user"|t }}</a></li>
 		</ul>
 
 		<ul>

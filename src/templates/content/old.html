@@ -1,9 +1,9 @@
-{% set title = "Content" %}
+{% set title = "Content"|t %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
-	<h1>Content</h1>
+	<h1>{{ title }}</h1>
 
 	{% for section in blx.content.sections %}
 		<section>
@@ -14,7 +14,7 @@
 					<form method="post" action="">
 						<input type="hidden" name="action" value="content/createEntry">
 						<input type="hidden" name="sectionId" value="{{ section.id }}">
-						<a class="btn addbtn formsubmit">New entry</a>
+						<a class="btn addbtn formsubmit">{{ "New entry"|t }}</a>
 					</form>
 				</li>
 				<li>
@@ -40,6 +40,6 @@
 	{% endfor %}
 
 	<div class="buttons">
-		<a href="{{ blx.url.base }}content/sections/new" class="btn addbtn">New section</a>
+		<a href="{{ blx.url.base }}content/sections/new" class="btn addbtn">{{ "New section"|t }}</a>
 	</div>
 {% endblock %}

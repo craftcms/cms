@@ -1,10 +1,10 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/index.html	2012-08-14 14:03:21.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/index.html	2012-08-14 15:50:00.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/index.html	2012-08-15 06:02:09.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/index.html	2012-08-15 06:08:17.000000000 -0700
 @@ -10,6 +10,7 @@
- 	<h2>System</h2>
+ 	<h2>{{ "System"|t }}</h2>
  	<ul class="icons">
- 		<li><a href="{{ blx.url.base }}settings/general" data-icon="g">General</a></li>
-+		<li><a href="{{ blx.url.base }}settings/routes" data-icon="R">Routes</a></li>
- 		<li><a href="{{ blx.url.base }}settings/email" data-icon="E">Email</a></li>
- 		<li><a href="{{ blx.url.base }}settings/advanced" data-icon="a">Advanced</a></li>
+ 		<li><a href="{{ blx.url.base }}settings/general" data-icon="g">{{ "General"|t }}</a></li>
++		<li><a href="{{ blx.url.base }}settings/routes" data-icon="R">{{ "Routes"|t }}</a></li>
+ 		<li><a href="{{ blx.url.base }}settings/email" data-icon="E">{{ "Email"|t }}</a></li>
+ 		<li><a href="{{ blx.url.base }}settings/advanced" data-icon="a">{{ "Advanced"|t }}</a></li>
  	</ul>

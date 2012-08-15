@@ -1,6 +1,6 @@
 <div class="field">
 	<div class="heading">
-		<label for="{{ idPrefix }}type" style="margin-top:2px">Number Type</label>
+		<label for="{{ idPrefix }}type" style="margin-top:2px">{{ "Number Type"|t }}</label>
 	</div>
 	{% include "_includes/pill" with {
 		'id': idPrefix ~ "type",
@@ -16,13 +16,13 @@
 </div>
 <div class="field">
 	<div class="heading">
-		<label for="{{ idPrefix }}min">Min Value</label>
+		<label for="{{ idPrefix }}min">{{ "Min Value"|t }}</label>
 	</div>
 	<input id="{{ idPrefix }}min" name="{{ namePrefix }}[min]" class="text" type="number" value="{{ settings.min }}" size="5">
 </div>
 <div class="field">
 	<div class="heading">
-		<label for="{{ idPrefix }}max">Max Value</label>
+		<label for="{{ idPrefix }}max">{{ "Max Value"|t }}</label>
 	</div>
 	<input id="{{ idPrefix }}max" name="{{ namePrefix }}[max]" class="text" type="number" value="{{ settings.max }}" size="5">
 </div>

@@ -14,17 +14,17 @@ class CpVariable
 	{
 		return array(
 			array(
-				array('handle' => 'dashboard', 'name' => 'Dashboard', 'icon' => 'D'),
+				array('handle' => 'dashboard', 'name' => Blocks::t('Dashboard'), 'icon' => 'D'),
 			),
 			array(
-				array('handle' => 'content', 'name' => 'Content', 'icon' => 'C'),
-				array('handle' => 'assets', 'name' => 'Assets', 'icon' => 'A'),
+				array('handle' => 'content', 'name' => Blocks::t('Content'), 'icon' => 'C'),
+				array('handle' => 'assets', 'name' => Blocks::t('Assets'), 'icon' => 'A'),
 			),
 			array(
-				array('handle' => 'users', 'name' => 'Users', 'icon' => 'U'),
-				array('handle' => 'plugins', 'name' => 'Plugins', 'icon' => 'P'),
-				array('handle' => 'updates', 'name' => 'Updates', 'icon' => 'V', 'badge' => '1'),
-				array('handle' => 'settings', 'name' => 'Settings', 'icon' => 'S'),
+				array('handle' => 'users', 'name' => Blocks::t('Users'), 'icon' => 'U'),
+				array('handle' => 'plugins', 'name' => Blocks::t('Plugins'), 'icon' => 'P'),
+				array('handle' => 'updates', 'name' => Blocks::t('Updates'), 'icon' => 'V', 'badge' => '1'),
+				array('handle' => 'settings', 'name' => Blocks::t('Settings'), 'icon' => 'S'),
 			)
 		);
 	}

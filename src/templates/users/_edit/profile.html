@@ -1,4 +1,4 @@
-{% set title = "Profile" %}
+{% set pageTitle = "Profile"|t %}
 {% extends "users/_layouts/edit" %}
 
 
@@ -9,7 +9,7 @@
 
 {% block settings %}
 
-	<h2>Profile</h2>
+	<h2>{{ pageTitle }}</h2>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="users/saveProfile">
@@ -17,7 +17,7 @@
 
 		<div class="field first">
 			<div class="heading">
-				<h3><label for="first_name">First Name</label></h3>
+				<h3><label for="first_name">{{ "First Name"|t }}</label></h3>
 			</div>
 			<input id="first_name" name="first_name" class="text" type="text" value="{{ user.first_name }}">
 			{% if user.errors.first_name %}
@@ -27,7 +27,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="last_name">Last Name</label></h3>
+				<h3><label for="last_name">{{ "Last Name"|t }}</label></h3>
 			</div>
 			<input id="last_name" name="last_name" class="text" type="text" value="{{ user.last_name }}">
 			{% if user.errors.last_name %}
@@ -37,7 +37,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="avatar">Avatar</label></h3>
+				<h3><label for="avatar">{{ "Avatar"|t }}</label></h3>
 			</div>
 			<input id="avatar" name="avatar" type="file">
 			{% if settings.errors.avatar %}
@@ -45,7 +45,7 @@
 			{% endif %}
 		</div>
 
-		<input type="submit" class="btn submit" value="Save">
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
 	</form>
 

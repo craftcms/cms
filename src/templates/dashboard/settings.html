@@ -1,4 +1,4 @@
-{% set title = "Dashboard Settings" %}
+{% set title = "Dashboard Settings"|t %}
 {% extends "_layouts/cp" %}
 
 
@@ -8,13 +8,13 @@
 
 
 {% block main %}
-	<h1>Dashboard Settings</h1>
+	<h1>{{ title }}</h1>
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="dashboard/saveSettings">
 		<input type="hidden" name="redirect" value="dashboard">
 
-		<h3>My Widgets</h3>
+		<h3>{{ "My Widgets"|t }}</h3>
 		<div id="widgetadmin" class="pane inset adminpane" data-input-name="widgets">
 			<div class="list">
 				<ul>
@@ -28,7 +28,7 @@
 					{% endfor %}
 				</ul>
 
-				<div class="btn menubtn">Add a widget</div>
+				<div class="btn menubtn">{{ "Add a widget"|t }}</div>
 				<div class="menu" style="display:none">
 					<ul>
 						{% for widget in blx.dashboard.allwidgets %}
@@ -46,8 +46,8 @@
 						{{ widget.displaySettings(idPrefix, namePrefix) }}
 
 						<div class="buttons">
-							<div class="btn done">Done</div>
-							<div class="btn red delete">Delete this widget</div>
+							<div class="btn done">{{ "Done"|t }}</div>
+							<div class="btn red delete">{{ "Delete this widget"|t }}</div>
 						</div>
 					</div>
 				{% endfor %}
@@ -55,14 +55,14 @@
 
 			<div class="freshsettings" style="display:none">
 				<div class="buttons">
-					<div class="btn done">Done</div>
-					<div class="btn red delete">Delete this widget</div>
+					<div class="btn done">{{ "Done"|t }}</div>
+					<div class="btn red delete">{{ "Delete this widget"|t }}</div>
 				</div>
 			</div>
 		</div>
 
 		<div class="buttons">
-			<input type="submit" value="Save settings" class="btn big submit">
+			<input type="submit" value="{{ 'Save settings'|t }}" class="btn big submit">
 		</div>
 
 	</form>

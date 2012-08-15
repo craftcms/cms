@@ -1,28 +1,28 @@
 <div id="account" class="modal">
-	<h1>Create your account</h1>
+	<h1>{{ "Create your account" }}</h1>
 
 	<form id="accountform">
 		<div class="field">
 			<div class="heading">
-				<h3><label for="username">Username</label></h3>
+				<h3><label for="username">{{ "Username"|t }}</label></h3>
 			</div>
 			<div class="textwrapper"><input id="username" class="text" type="text" maxlength="255"></div>
 		</div>
 		<div class="field">
 			<div class="heading">
-				<h3><label for="email">Email</label></h3>
+				<h3><label for="email">{{ "Email"|t }}</label></h3>
 			</div>
 			<div class="textwrapper"><input id="email" class="text" type="text" maxlength="255"></div>
 		</div>
 		<div class="field">
 			<div class="heading">
-				<h3><label for="password">Password</label></h3>
+				<h3><label for="password">{{ "Password"|t }}</label></h3>
 			</div>
 			<div class="passwordwrapper"><input id="password" class="text password" type="password"></div>
 		</div>
 
 		<div class="buttons">
-			<div id="accountsubmit" class="btn big submit">Next</div>
+			<div id="accountsubmit" class="btn big submit">{{ "Next"|t }}</div>
 			<input type="submit" class="hidden" tabindex="-1">
 		</div>
 	</form>

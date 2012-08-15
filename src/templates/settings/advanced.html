@@ -1,4 +1,4 @@
-{% set title = "Advanced Settings" %}
+{% set title = "Advanced Settings"|t %}
 {% extends "_layouts/cp" %}
 
 
@@ -9,7 +9,7 @@
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Advanced Settings</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
 	<form method="post" action="">
@@ -17,7 +17,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3>Debugging</h3>
+				<h3>{{ "Debugging"|t }}</h3>
 			</div>
 
 			<div class="checkbox"><label><input type="checkbox" name="showDebugInfo" value="y" {% if settings.showDebugInfo %}checked{% endif %}> Show debugging info in the browser console</label></div>
@@ -26,7 +26,7 @@
 		</div>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="Save">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>

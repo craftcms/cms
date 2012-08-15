@@ -1,4 +1,4 @@
-{% set title = "Verify Account" %}
+{% set title = "Verify Account"|t %}
 {% extends "_layouts/basic" %}
 
 
@@ -24,14 +24,14 @@
 					<div class="pane-item">Let's set a password for your account.</div>
 					<input type="hidden" name="userId" value="{{ user.id }}">
 					<div class="pane-item field">
-						<label for="password">Password</label>
+						<label for="password">{{ "Password"|t }}</label>
 						<div class="passwordwrapper"><input id="password" name="password" class="text password {% if verifyAccountInfo.errors.password %}error{% endif %}" type="password"></div>
 						{% if verifyAccountInfo.errors.password %}
 							{% include "_includes/error_list" with {'errors': verifyAccountInfo.errors.password} %}
 						{% endif %}
 					</div>
 					<div class="pane-item">
-						<input class="btn big submit" type="submit" value="Set Password">
+						<input class="btn big submit" type="submit" value="{{ 'Set Password'|t }}">
 					</div>
 				{% else %}
 					There was a problem validating this activation code.

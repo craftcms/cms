@@ -1,10 +1,10 @@
-{% set title = "General Settings" %}
+{% set title = "General Settings"|t %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
 	<header class="titlebar">
-		<h1>General Settings</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
 	<form method="post" action="">
@@ -13,7 +13,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="siteName">Site Name</label></h3>
+				<h3><label for="siteName">{{ "Site Name"|t }}</label></h3>
 			</div>
 			<input id="siteName" name="siteName" class="text {% if post.errors.siteName %}error{% endif %}" type="text" value="{% if post %}{{ post.siteName }}{% else %}{{ blx.app.siteName }}{% endif %}">
 			{% if post.errors.siteName %}
@@ -23,7 +23,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="siteUrl">Site URL</label></h3>
+				<h3><label for="siteUrl">{{ "Site URL"|t }}</label></h3>
 			</div>
 			<input id="siteUrl" name="siteUrl" class="text {% if post.errors.siteUrl %}error{% endif %}" type="text" value="{% if post %}{{ post.siteUrl }}{% else %}{{ blx.app.siteUrl }}{% endif %}">
 			{% if post.errors.siteUrl %}
@@ -32,7 +32,7 @@
 		</div>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="Save">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>

@@ -1,10 +1,10 @@
-{% set title = "Asset Settings" %}
+{% set title = "Asset Settings"|t %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Asset Settings</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
 	<form method="post" action="">
@@ -13,12 +13,12 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="url">Asset Sources</label></h3>
+				<h3><label for="url">{{ "Asset Sources"|t }}</label></h3>
 			</div>
 		</div>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="Save">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>

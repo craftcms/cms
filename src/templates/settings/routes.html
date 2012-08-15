@@ -1,4 +1,4 @@
-{% set title = "Routes" %}
+{% set title = "Routes"|t %}
 {% extends "_layouts/cp" %}
 
 
@@ -9,9 +9,9 @@
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Routes</h1>
+		<h1>{{ title }}</h1>
 		<ul class="right">
-			<li><div id="add-route-btn" class="btn addbtn">New Route</div></li>
+			<li><div id="add-route-btn" class="btn addbtn">{{ "New Route"|t }}</div></li>
 		</ul>
 	</header>
 

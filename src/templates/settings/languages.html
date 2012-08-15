@@ -1,10 +1,10 @@
-{% set title = "Content Languages" %}
+{% set title = "Content Languages"|t %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Content Languages</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
 	<form method="post" action="">
@@ -13,7 +13,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="languages">Which languages will your content be available in?</label></h3>
+				<h3><label for="languages">{{ "Which languages will your content be available in?"|t }}</label></h3>
 
 				{% if not selectedLanguages %}
 					{% set selectedLanguages = blx.settings.languages %}
@@ -39,7 +39,7 @@
 		</div>
 
 		<div class="buttons">
-			<input class="btn submit" type="submit" value="Save">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>

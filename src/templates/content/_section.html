@@ -5,7 +5,7 @@
 {% if section %}
 	{% set title = section.name ~ " section settings" %}
 {% else %}
-	{% set title = "Create a new section" %}
+	{% set title = "Create a new section"|t %}
 {% endif %}
 
 {% extends "_layouts/cp" title=title crumbs="content:Content" %}
@@ -21,8 +21,8 @@
 
 		<div class="field">
 			<div class="heading">
-				<label class="required" for="name">Section Name</label>
-				<p>What this section will be called in the CP.</p>
+				<label class="required" for="name">{{ "Section Name"|t }}</label>
+				<p>{{ "What this section will be called in the CP."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="name" name="name" class="text" type="text" value="{{ section.name }}"></div>
 			{% if section.errors.name %}
@@ -31,8 +31,8 @@
 		</div>
 		<div class="field">
 			<div class="heading">
-				<label class="required" for="handle">Section Handle</label>
-				<p>How you’ll refer to this section in the templates.</p>
+				<label class="required" for="handle">{{ "Section Handle"|t }}</label>
+				<p>{{ "How you’ll refer to this section in the templates."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="handle" name="handle" class="text code" type="text" value="{{ section.handle }}"></div>
 			{% if section.errors.handle %}
@@ -41,7 +41,7 @@
 		</div>
 		{#<div class="field">
 			<div class="heading">
-				<label for="sortable">Entries in this section can be manually sorted</label>
+				<label for="sortable">{{ "Entries in this section can be manually sorted"|t }}</label>
 			</div>
 				{% include "_includes/lightswitch" with {'name': "sortable", 'on': section.sortable} %}
 		</div>#}
@@ -53,22 +53,22 @@
 		<div id="has-urls-setting" class="nested-fields" {% if not section.has_urls %}style="height: 0"{% endif %}>
 			<div class="field">
 				<div class="heading">
-					<label for="url_format">Entry URL Format</label>
-					<p>What the entry URLs should look like.</p>
+					<label for="url_format">{{ "Entry URL Format"|t }}</label>
+					<p>{{ "What the entry URLs should look like."|t }}</p>
 				</div>
 				<div class="textwrapper"><input id="url_format" name="url_format" class="text code" type="text" value="{{ section.url_format }}"></div>
 			</div>
 			<div class="field">
 				<div class="heading">
-					<label for="template">Entry Template</label>
-					<p>Which template to use when an entry’s URL is requested.</p>
+					<label for="template">{{ "Entry Template"|t }}</label>
+					<p>{{ "Which template to use when an entry’s URL is requested."|t }}</p>
 				</div>
 				<div class="textwrapper"><input id="template" name="template" class="text" type="text" value="{{ section.template }}"></div>
 			</div>
 		</div>
 		{#<div class="field">
 			<div class="heading">
-				<label for="max_entries">Max Entries</label>
+				<label for="max_entries">{{ "Max Entries"|t }}</label>
 			</div>
 			<input id="max_entries" name="max_entries" class="text" type="number" value="{{ section.max_entries }}" size="5">
 			{% if section.errors.max_entries %}
@@ -78,7 +78,7 @@
 
 		{% include "_includes/blockeditor" with {'name': "blocks", 'currentBlocks': section.blocks} %}
 
-		<input class="btn big submit" type="submit" value="Save section">
+		<input class="btn big submit" type="submit" value="{{ 'Save section'|t }}">
 	</form>
 {% endblock %}
 

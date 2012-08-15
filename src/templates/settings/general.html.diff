@@ -1,20 +1,12 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/general.html	2012-08-14 14:03:21.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/general.html	2012-08-14 14:03:20.000000000 -0700
-@@ -3,6 +3,7 @@
- 
- 
- {% block main %}
-+
- 	<header class="titlebar">
- 		<h1>General Settings</h1>
- 	</header>
-@@ -31,6 +32,27 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/general.html	2012-08-15 05:57:23.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/general.html	2012-08-15 06:00:51.000000000 -0700
+@@ -31,6 +31,27 @@
  			{% endif %}
  		</div>
  
 +		<div class="field">
 +			<div class="heading">
-+				<h3><label for="licenseKey">License Key</label></h3>
++				<h3><label for="licenseKey">{{ "License Key"|t }}</label></h3>
 +			</div>
 +			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{% if post %}{{ post.licenseKey }}{% else %}{{ blx.app.licenseKey }}{% endif %}">
 +			{% if post.errors.licenseKey %}
@@ -24,8 +16,8 @@
 +
 +		<div class="field">
 +			<div class="heading">
-+				<h3><label for="logo">Logo</label></h3>
-+				<p>Use a 300 × 100px transparent PNG for best results.</p>
++				<h3><label for="logo">{{ "Logo"|t }}</label></h3>
++				<p>{{ "Use a 300 × 100px transparent PNG for best results."|t }}</p>
 +			</div>
 +			<input id="logo" name="logo" type="file">
 +			{% if post.errors.logo %}
@@ -34,5 +26,5 @@
 +		</div>
 +
  		<div class="buttons">
- 			<input class="btn submit" type="submit" value="Save">
+ 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
  			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>

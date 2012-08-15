@@ -11,13 +11,13 @@
 
 		{% if plugin.isInstalled %}
 			{% if plugin.enabled %}
-				<input type="button" value="Disable" class="btn formsubmit" data-action="plugins/disablePlugin">
+				<input type="button" value="{{ 'Disable'|t }}" class="btn formsubmit" data-action="plugins/disablePlugin">
 			{% else %}
-				<input type="button" value="Enable" class="btn formsubmit" data-action="plugins/enablePlugin">
+				<input type="button" value="{{ 'Enable'|t }}" class="btn formsubmit" data-action="plugins/enablePlugin">
 			{% endif %}
-			<input type="button" value="Uninstall" class="btn formsubmit" data-action="plugins/uninstallPlugin">
+			<input type="button" value="{{ 'Uninstall'|t }}" class="btn formsubmit" data-action="plugins/uninstallPlugin">
 		{% else %}
-			<input type="button" value="Install" class="btn formsubmit" data-action="plugins/installPlugin">
+			<input type="button" value="{{ 'Install'|t }}" class="btn formsubmit" data-action="plugins/installPlugin">
 		{% endif %}
 	</form>
 {% endblock %}

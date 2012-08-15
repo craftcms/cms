@@ -1,4 +1,4 @@
-{% set title = "Update Blocks" %}
+{% set title = "Update Blocks"|t %}
 {% extends "_layouts/basic" %}
 
 
@@ -28,7 +28,7 @@
 		<form method="post" action="">
 			<input type="hidden" name="action" value="dbUpdate/update">
 			<input type="hidden" name="redirect" value="dashboard">
-			<div><input class="btn big submit" type="submit" value="Do It."></div>
+			<div><input class="btn big submit" type="submit" value="{{ 'Do It.'|t }}"></div>
 		</form></div>#}
 
 {% endblock %}

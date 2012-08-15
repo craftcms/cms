@@ -3,11 +3,11 @@
 
 	{% if not updateInfo.blocks.manualUpdateRequired %}
 		<form method="post" action="{{ blx.url.base }}update/all">
-			<input id="update-all" class="btn big submit" type="submit" value="Update All">
+			<input id="update-all" class="btn big submit" type="submit" value="{{ 'Update All'|t }}">
 		</form>
 	{% endif %}
 
-	<h2>You’ve got updates!</h2>
+	<h2>{{ "You’ve got updates!"|t }}</h2>
 
 	<ul class="biglist">
 
@@ -22,7 +22,7 @@
 					{% if updateInfo.blocks.manualUpdateRequired %}
 						<div class="manual"><a href="http://blockscms.com/alpha/blocks_{{ updateInfo.blocks.latestVersion }}.{{ updateInfo.blocks.latestBuild }}.zip">manual update required</a></div>
 					{% else %}
-						<form method="post" action="{{ blx.url.base }}update/Blocks"><input class="btn" type="submit" value="Update"></form>
+						<form method="post" action="{{ blx.url.base }}update/Blocks"><input class="btn" type="submit" value="{{ 'Update'|t }}"></form>
 					{% endif %}
 				</div>
 
@@ -46,7 +46,7 @@
 					<h4><a>release notes</a></h4>
 
 					<div class="cta">
-						<form method="post" action="{{ blx.url.base }}update/{{ pluginInfo.class|lower }}"><input class="btn" type="submit" value="Update"></form>
+						<form method="post" action="{{ blx.url.base }}update/{{ pluginInfo.class|lower }}"><input class="btn" type="submit" value="{{ 'Update'|t }}"></form>
 					</div>
 
 					<div class="notes">
@@ -64,6 +64,6 @@
 
 {% else %}
 
-	<h3>You’re up to date!</h3>
+	<h3>{{ "You’re up to date!"|t }}</h3>
 
 {% endif %}

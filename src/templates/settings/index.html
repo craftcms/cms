@@ -1,23 +1,23 @@
-{% set title = "Settings" %}
+{% set title = "Settings"|t %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
 	<header class="titlebar">
-		<h1>Settings</h1>
+		<h1>{{ title }}</h1>
 	</header>
 
-	<h2>System</h2>
+	<h2>{{ "System"|t }}</h2>
 	<ul class="icons">
-		<li><a href="{{ blx.url.base }}settings/general" data-icon="g">General</a></li>
-		<li><a href="{{ blx.url.base }}settings/email" data-icon="E">Email</a></li>
-		<li><a href="{{ blx.url.base }}settings/advanced" data-icon="a">Advanced</a></li>
+		<li><a href="{{ blx.url.base }}settings/general" data-icon="g">{{ "General"|t }}</a></li>
+		<li><a href="{{ blx.url.base }}settings/email" data-icon="E">{{ "Email"|t }}</a></li>
+		<li><a href="{{ blx.url.base }}settings/advanced" data-icon="a">{{ "Advanced"|t }}</a></li>
 	</ul>
 
-	<h2>Content</h2>
+	<h2>{{ "Content"|t }}</h2>
 	<ul class="icons">
-		<li><a href="{{ blx.url.base }}settings/content" data-icon="C">Pages &amp; Sections</a></li>
-		<li><a href="{{ blx.url.base }}settings/assets" data-icon="A">Assets</a></li>
-		<li><a href="{{ blx.url.base }}settings/languages" data-icon="L">Languages</a></li>
+		<li><a href="{{ blx.url.base }}settings/content" data-icon="C">{{ "Pages &amp; Sections"|t }}</a></li>
+		<li><a href="{{ blx.url.base }}settings/assets" data-icon="A">{{ "Assets"|t }}</a></li>
+		<li><a href="{{ blx.url.base }}settings/languages" data-icon="L">{{ "Languages"|t }}</a></li>
 	</ul>
 {% endblock %}

@@ -3,7 +3,7 @@
 {% endif #}
 
 
-{% set title = "Login" %}
+{% set title = "Login"|t %}
 {% extends "_layouts/basic" %}
 
 
@@ -24,14 +24,14 @@
 					'<div id="login-pane" class="main">' +
 						'<div class="field">' +
 							'<div class="heading">' +
-								'<label for="username">Username or email</label>' +
+								'<label for="username">{{ "Username or email"|t }}</label>' +
 							'</div>' +
 							'<div class="textwrapper"><input id="username" class="text" type="text" value="{{ blx.session.rememberedusername }}"></div>' +
 						'</div>' +
 						'<div id="password-container" class="nested-fields">' +
 							'<div class="field">' +
 								'<div class="heading">' +
-									'<label for="password">Password</label>' +
+									'<label for="password">{{ "Password"|t }}</label>' +
 									' <p><a id="forgot-password">Forget?</a></p>' +
 								'</div>' +
 								'<div class="passwordwrapper"><input id="password" class="text password" type="password"></div>' +
@@ -39,7 +39,7 @@
 						'</div>' +
 
 						'<div class="buttons">' +
-							'<input id="login-btn" class="btn big submit disabled" type="submit" value="Login">' +
+							'<input id="login-btn" class="btn big submit disabled" type="submit" value="{{ 'Login'|t }}">' +
 
 							'<label id="remember-me-label" class="checkbox">' +
 								'<div class="cbwrapper"><input type="checkbox" id="remember-me"></div>' +
@@ -48,7 +48,7 @@
 						'</div>' +
 
 						{% if not blx.request.secure %}
-							'<a id="insecure" title="This is an insecure connection." data-icon="i"></a>' +
+							'<a id="insecure" title="{{ 'This is an insecure connection.'|t }}" data-icon="i"></a>' +
 						{% endif %}
 
 					'</div>' +
