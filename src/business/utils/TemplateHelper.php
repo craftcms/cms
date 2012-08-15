@@ -31,6 +31,8 @@ class TemplateHelper
 				//'strict_variables'  => true,
 			));
 
+			static::$_twig->addFunction('t', new \Twig_Function_Function('\Blocks\Blocks::t'));
+
 			if (blx()->config->devMode)
 				static::$_twig->addExtension(new \Twig_Extension_Debug());
 		}
