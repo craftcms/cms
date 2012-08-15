@@ -1,0 +1,29 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/controllers/EmailController.php	2012-08-15 12:23:30.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/controllers/EmailController.php	2012-08-15 12:24:28.000000000 -0700
+@@ -9,6 +9,26 @@
+ 	/**
+ 	 *
+ 	 */
++	public function actionSaveMessage()
++	{
++		$this->requirePostRequest();
++		$this->requireAjaxRequest();
++
++		$messageId = blx()->request->getRequiredPost('messageId');
++		$subject = blx()->request->getRequiredPost('subject');
++		$body = blx()->request->getRequiredPost('body');
++
++		$content = blx()->email->saveMessageContent($messageId, $subject, $body);
++
++		if ($content->getErrors())
++			$this->returnErrorJson('There was a problem saving your message.');
++		else
++			$this->returnJson(array('success' => true));
++	}
++
++	/**
++	 *
++	 */
+ 	public function actionSendTestEmail()
+ 	{
+ 		$user = blx()->users->getCurrentUser();

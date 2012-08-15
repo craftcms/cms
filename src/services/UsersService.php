@@ -247,7 +247,7 @@ class UsersService extends \CApplicationComponent
 	public function forgotPassword(User $user)
 	{
 		$user = $this->generateVerificationCodeForUser($user);
-		return blx()->email->sendEmail($user, 'forgot_password');
+		return blx()->email->sendEmailByKey($user, 'forgot_password');
 	}
 
 	/**
