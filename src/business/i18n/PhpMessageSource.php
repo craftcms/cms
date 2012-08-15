@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class PhpMessageSource extends \CPhpMessageSource
 {
+	private $_blocks_files = array();
+
 	public function init()
 	{
 		$this->forceTranslation = true;
@@ -18,19 +20,9 @@ class PhpMessageSource extends \CPhpMessageSource
 		if ($category !== 'blocks')
 			return parent::getMessageFile($category, $language);
 
-		if (!isset($this->_files[$category][$language]))
-		{
-			if (($pos = strpos($category, '.')) !== false)
-			{
-				$moduleClass = substr($category,0,$pos);
-				$moduleCategory = substr($category,$pos+1);
-				$class=new ReflectionClass($moduleClass);
-				$this->_files[$category][$language]=dirname($class->getFileName()).DIRECTORY_SEPARATOR.'messages'.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR.$moduleCategory.'.php';
-			}
-			else
-				$this->_files[$category][$language]=$this->basePath.DIRECTORY_SEPARATOR.$language.DIRECTORY_SEPARATOR.$category.'.php';
-		}
+		if (!isset($this->_blocks_files[$language]))
+			$this->_blocks_files[$language] = blx()->path->getTranslationsPath().$language.'.php';
 
-		return $this->_files[$category][$language];
+		return $this->_blocks_files[$language];
 	}
 }
