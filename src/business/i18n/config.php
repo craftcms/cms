@@ -5,7 +5,6 @@ return array(
 	'messagePath'   => dirname(__FILE__).'/../../languages',
 	'languages'     => array('en_gb','nl','de','fr','ru','es','it'),
 	'fileTypes'     => array('php', 'html'),
-	'overwrite'     => true,
 	'sort'          => true,
 	'removeOld'     => true,
 	'translator'    => 'Blocks::t,blx.t',

@@ -1,0 +1,27 @@
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/it.php	2012-08-14 17:30:55.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/it.php	2012-08-14 17:30:56.000000000 -0700
+@@ -30,9 +30,11 @@
+   'Memcache extension' => 'Memcache estensione',
+   'MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the Id of a DbConnection application component.' => 'MigrationCommand connectionId “{connectionId}” non è valido. Si prega di assicurarsi che si riferisce alla Id di un componente dell’applicazione DbConnection.',
+   'MySQL version' => 'MySQL versione',
++  'MySQL {requiredMySqlVersion} or higher is required to run Blocks Pro.' => '',
+   'No draft exists with the Id “{entryId}”.' => 'Nessun progetto è quella con la Id “{EntryId}”.',
+   'No entry exists with the Id “{entryId}”.' => 'Non esiste nessuna voce con l’id “{EntryId}”.',
+   'No plugin exists with the class “{className}”' => 'Nessun plugin esiste con la classe “{className}”',
++  'No route exists with the Id “{routeId}”' => '',
+   'No section exists with the Id “{sectionId}”' => 'No sezione esiste con l’Id “{sectionId}”',
+   'No user exists with the Id “{userId}”.' => 'Nessun utente è quella con la Id “{userId}”.',
+   'No widget exists with the Id “{widgetId}”.' => 'Widget di No è ​​quella con la Id “{widgetId}”.',
+@@ -81,6 +83,12 @@
+   'You must specify a port in your email settings.' => 'È necessario specificare una porta nelle impostazioni di posta elettronica.',
+   'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.' => 'La tua installazione di PHP non supporta il glob <a href="http://us.php.net/manual/en/function.glob.php">glob</a> funzione.',
+   'build' => '',
++  'forgot_password_default_body' => '',
++  'forgot_password_default_subject' => '',
++  'verify_email_default_body' => '',
++  'verify_email_default_subject' => '',
++  'verify_new_email_default_body' => '',
++  'verify_new_email_default_subject' => '',
+   '{403message}' => '',
+   '{404message}' => '',
+   '{500message}' => '',
