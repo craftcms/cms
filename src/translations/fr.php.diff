@@ -1,6 +1,6 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/fr.php	2012-08-16 12:46:26.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/fr.php	2012-08-16 12:46:26.000000000 -0700
-@@ -29,6 +29,7 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/fr.php	2012-08-16 14:03:28.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/fr.php	2012-08-16 14:03:28.000000000 -0700
+@@ -24,6 +24,7 @@
    'Blocks is already installed.' => 'Blocks est déjà installé.',
    'Blocks is already up to date.' => 'Blocks est déjà à jour.',
    'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => 'Blocs doit être en mesure d’écrire aux fichiers suivent, mais ne peut pas: {fileList}',
@@ -8,36 +8,35 @@
    'Can’t install Blocks' => '',
    'Checkbox Options' => '',
    'Checking for updates…' => '',
-@@ -37,6 +38,7 @@
-   'Content Languages' => 'Langues de contenu',
+@@ -31,6 +32,7 @@
+   'Content Blocks' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => 'Impossible de déterminer la façon d’envoyer l’e-mail. Vérifiez vos paramètres de messagerie.',
 +  'Could not find an email template with the key “{key}”' => '',
-   'Could not find the requested email template.' => 'Impossible de trouver le modèle de courrier électronique demandée.',
    'Could not hash the given password.' => 'Ne pouvait pas le hash du mot de passe donné.',
-   'Could not render the html email template or the text email template body for the requested email.' => 'Impossible de rendre le modèle de courrier électronique HTML ou le corps modèle de texte électronique de l’e-mail sur demande.',
-@@ -57,10 +59,12 @@
+   'DOM extension' => 'DOM d’extension',
+   'Dashboard' => 'Tableau de bord',
+@@ -45,9 +47,11 @@
    'Do It.' => '',
    'Done' => '',
    'Dropdown Options' => '',
 +  'Edit Message' => '',
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => 'Soit $_SERVER["REQUEST_URI"] ou $_SERVER["QUERY_STRING"] doit exister.',
-   'Either the email Html body or text body is required when sending an email.' => 'Soit le corps du message HTML ou le corps du texte est nécessaire lors de l’envoi d’un e-mail.',
    'Email' => '',
    'Email Format' => '',
 +  'Email Settings' => '',
    'Email error: {errorMessage}' => 'Error Email: {errorMessage}',
    'Enable' => '',
    'Entries in this section can be manually sorted' => '',
-@@ -87,6 +91,7 @@
+@@ -71,6 +75,7 @@
+   'How you’ll refer to this block in the templates.' => '',
    'How you’ll refer to this section in the templates.' => '',
    'Install' => '',
-   'Install Blocks' => 'Installer les blocs',
 +  'Installing Blocks Pro…' => '',
    'Instructions' => '',
-   'Invalid include tag.' => 'Blancs comprennent tag.',
-   'Invalid layout tag.' => 'Tag mise en page non valide.',
-@@ -100,11 +105,13 @@
+   'IsNullOrEmpty requires a string.' => 'IsNullOrEmpty nécessite une chaîne.',
+   'Languages' => '',
+@@ -80,11 +85,13 @@
    'Last Name' => '',
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
@@ -51,7 +50,7 @@
    'Max Entries' => '',
    'Max Length' => '',
    'Max Value' => '',
-@@ -118,7 +125,9 @@
+@@ -96,7 +103,9 @@
    'My Account' => '',
    'My Widgets' => '',
    'MySQL version' => 'MySQL version',
@@ -61,33 +60,33 @@
    'New content block' => '',
    'New draft' => '',
    'New entry' => '',
-@@ -129,6 +138,7 @@
+@@ -106,6 +115,7 @@
+   'No draft exists with the Id “{entryId}”.' => 'Aucun projet existe avec l’id “{entryId}”.',
    'No entry exists with the Id “{entryId}”.' => 'Aucune entrée existe avec l’id “{entryId}”.',
-   'No parameter value set.' => 'Aucune valeur de paramètres.',
    'No plugin exists with the class “{className}”' => 'Pas de plugin existe avec la classe “{className}”',
 +  'No route exists with the Id “{routeId}”' => '',
    'No section exists with the Id “{sectionId}”' => 'Aucune section existe avec l’id “{sectionId}”',
-   'No site exists with the Id “{siteId}”.' => 'Pas de site existe avec l’id “{siteId}”.',
    'No updates available.' => '',
-@@ -167,6 +177,7 @@
+   'No user exists with the Id “{userId}”.' => 'Aucun utilisateur existe avec l’id “{userId}”.',
+@@ -138,6 +148,7 @@
+   'Radio Button Options' => '',
    'Recent Users' => '',
    'Reflection extension' => 'L’extension de réflexion',
-   'Register a new user' => 'Enregistrer un nouvel utilisateur',
 +  'Routes' => '',
    'SOAP extension' => 'Extension SOAP',
    'Save' => '',
    'Save as a draft' => '',
-@@ -188,6 +199,7 @@
+@@ -157,6 +168,7 @@
+   'Site Name' => '',
    'Site URL' => '',
-   'Smtp' => 'Smtp',
    'Smtp Secure Transport Type' => '',
 +  'Subject' => '',
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -242,12 +254,14 @@
+@@ -204,11 +216,13 @@
+   'Update' => '',
    'Update All' => '',
-   'Update Blocks' => 'Mettre à jour les blocs',
    'Updates' => 'Mises à jour',
 +  'Use a 300 × 100px transparent PNG for best results.' => '',
    'User Info' => 'Infos utilisateurs',
@@ -95,28 +94,19 @@
    'Username and password are required.  Check your email settings.' => 'Nom d’utilisateur et mot de passe sont nécessaires. Vérifiez vos paramètres de messagerie.',
    'Username or email' => '',
    'Users' => 'Utilisateurs',
-   'Verify Account' => 'Vérifier le compte',
 +  'Welcome to Blocks Pro' => '',
    'What the entry URLs should look like.' => '',
    'What this block will be called in the CP.' => '',
    'What this section will be called in the CP.' => '',
-@@ -263,8 +277,20 @@
+@@ -222,6 +236,12 @@
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
    'build' => '',
 +  'forgot_password_body' => '',
-+  'forgot_password_default_body' => '',
-+  'forgot_password_default_subject' => '',
 +  'forgot_password_subject' => '',
-   'require_password_reset' => '',
-   'require_verification' => '',
 +  'verify_email_body' => '',
-+  'verify_email_default_body' => '',
-+  'verify_email_default_subject' => '',
 +  'verify_email_subject' => '',
 +  'verify_new_email_body' => '',
-+  'verify_new_email_default_body' => '',
-+  'verify_new_email_default_subject' => '',
 +  'verify_new_email_subject' => '',
    '{403message}' => '',
    '{404message}' => '',
