@@ -145,7 +145,7 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 * 
+	 *
 	 * @return Returns which URL format we're using (PATH_INFO or the query string)
 	 */
 	public function getUrlFormat()
@@ -288,7 +288,7 @@ class HttpRequest extends \CHttpRequest
 		$value = $this->getParam($name);
 
 		if ($value === null)
-			throw new Exception(Blocks::t('Param “{name}” doesn’t exist.', array('{name}' => $name)));
+			throw new Exception(Blocks::t('Param “{name}” doesn’t exist.', array('name' => $name)));
 
 		return $value;
 	}
@@ -304,7 +304,7 @@ class HttpRequest extends \CHttpRequest
 		$value = $this->getQuery($name);
 
 		if ($value === null)
-			throw new Exception(Blocks::t('GET param “{name}” doesn’t exist.', array('{name}' => $name)));
+			throw new Exception(Blocks::t('GET param “{name}” doesn’t exist.', array('name' => $name)));
 
 		return $value;
 	}
@@ -320,7 +320,7 @@ class HttpRequest extends \CHttpRequest
 		$value = $this->getPost($name);
 
 		if ($value === null)
-			throw new Exception(Blocks::t('POST param “{name}” doesn’t exist.', array('{name}' => $name)));
+			throw new Exception(Blocks::t('POST param “{name}” doesn’t exist.', array('name' => $name)));
 
 		return $value;
 	}

@@ -26,7 +26,7 @@ class RequirementsChecker extends \CComponent
 				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
-				Blocks::t('PHP {requiredPhpVersion} or higher is required.', array('{requiredPhpVersion}' => $requiredPhpVersion))
+				Blocks::t('PHP {requiredPhpVersion} or higher is required.', array('requiredPhpVersion' => $requiredPhpVersion))
 			),
 			new Requirement(
 				Blocks::t('$_SERVER Variable'),
@@ -158,7 +158,7 @@ class RequirementsChecker extends \CComponent
 		}
 
 		if (!empty($missing))
-			return Blocks::t('$_SERVER does not have {messages}.', array('{messages}' => implode(', ', $missing)));
+			return Blocks::t('$_SERVER does not have {messages}.', array('messages' => implode(', ', $missing)));
 
 		if (!isset($_SERVER["REQUEST_URI"]) && isset($_SERVER["QUERY_STRING"]))
 			return Blocks::t('Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.');

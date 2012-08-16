@@ -230,7 +230,7 @@ class File extends \CApplicationComponent
 			return $instance;
 		}
 
-		throw new Exception(Blocks::t('Path to filesystem object isn’t specified within “{methodName}” method.', array('{methodName}' => __METHOD__)));
+		throw new Exception(Blocks::t('Path to filesystem object isn’t specified within “{methodName}” method.', array('methodName' => __METHOD__)));
 	}
 
 	/**
@@ -809,7 +809,7 @@ class File extends \CApplicationComponent
 		}
 		else
 		{
-			throw new Exception(Blocks::t('Unable to get directory contents for “{directory}”.', array('{directory}' => $directory)));
+			throw new Exception(Blocks::t('Unable to get directory contents for “{directory}”.', array('directory' => $directory)));
 		}
 
 		return $descendants;

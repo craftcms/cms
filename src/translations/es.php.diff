@@ -1,5 +1,5 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/es.php	2012-08-16 15:31:37.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/es.php	2012-08-16 15:31:37.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/es.php	2012-08-16 15:55:44.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/es.php	2012-08-16 15:55:44.000000000 -0700
 @@ -28,6 +28,7 @@
    'Blocks is already installed.' => 'Los bloques ya está instalado.',
    'Blocks is already up to date.' => 'Los bloques ya está en marcha hasta la fecha.',
@@ -110,6 +110,6 @@
 +  'verify_email_subject' => '',
 +  'verify_new_email_body' => '',
 +  'verify_new_email_subject' => '',
-   '{403message}' => '',
-   '{404message}' => '',
-   '{500message}' => '',
+   '“{className}” doesn’t have an attribute “{attributeName}”.' => '“{className}” no tiene un atributo “{attributeName}”.',
+   '“{pluginName}” can’t be disabled because it isn’t installed yet.' => '“{pluginName}” no se puede desactivar, ya que no está instalado todavía.',
+   '“{pluginName}” can’t be enabled because it isn’t installed yet.' => '"“{pluginName}” no puede ser habilitado porque no está instalado todavía.',

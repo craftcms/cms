@@ -26,7 +26,7 @@ class UsersController extends BaseController
 		{
 			$user = blx()->users->getUserById($userId);
 			if (!$user)
-				throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+				throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 		}
 		else
 			$user = new User();
@@ -115,7 +115,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		$user->first_name = blx()->request->getPost('first_name');
 		$user->last_name = blx()->request->getPost('last_name');
@@ -143,7 +143,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		$user->admin = (blx()->request->getPost('admin') === 'y');
 		$user->save();
@@ -163,7 +163,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		$user->status = UserAccountStatus::Pending;
 		blx()->users->generateVerificationCodeForUser($user, false);
@@ -185,7 +185,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		blx()->users->activateUser($user);
 
@@ -204,7 +204,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		blx()->users->unlockUser($user);
 
@@ -223,7 +223,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		blx()->users->suspendUser($user);
 
@@ -242,7 +242,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		blx()->users->unsuspendUser($user);
 
@@ -261,7 +261,7 @@ class UsersController extends BaseController
 		$userId = blx()->request->getRequiredPost('user_id');
 		$user = blx()->users->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('{userId}' => $userId)));
+			throw new Exception(Blocks::t('No user exists with the Id “{userId}”.', array('userId' => $userId)));
 
 		blx()->users->deleteUser($user);
 

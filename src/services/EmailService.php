@@ -97,7 +97,7 @@ class EmailService extends \CApplicationComponent
 		}
 
 		if (!$email->send())
-			throw new Exception(Blocks::t('Email error: {errorMessage}', array('{errorMessage}' => $email->errorInfo)));
+			throw new Exception(Blocks::t('Email error: {errorMessage}', array('errorMessage' => $email->errorInfo)));
 
 		return true;
 	}

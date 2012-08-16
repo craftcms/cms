@@ -315,7 +315,15 @@ class Blocks extends \Yii
 	 */
 	public static function t($message, $params = array(), $category = 'blocks', $source = null, $language = null)
 	{
-		return parent::t($category, $message, $params, $source, $language);
+		// Normalize the param keys
+		$normalizedParams = array();
+		foreach ($params as $key => $value)
+		{
+			$key = '{'.trim($key, '{}').'}';
+			$normalizedParams[$key] = $value;
+		}
+
+		return parent::t($category, $message, $normalizedParams, $source, $language);
 	}
 
 	/**

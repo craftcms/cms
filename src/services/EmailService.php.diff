@@ -2,7 +2,7 @@
 +++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-15 12:18:10.000000000 -0700
 @@ -9,6 +9,108 @@
  	private $_defaultEmailTimeout = 10;
- 
+
  	/**
 +	 * Returns all of the system email messages.
 +	 *
@@ -117,7 +117,7 @@
 +		$message = $this->getMessageByKey($key);
 +
 +		if (!$message)
-+			throw new Exception(Blocks::t('Could not find an email template with the key “{key}”', array('{key}' => $key)));
++			throw new Exception(Blocks::t('Could not find an email template with the key “{key}”', array('key' => $key)));
 +
 +		// Get the content
 +		$content = $this->getMessageContent($message->id, $user->preferred_language);
@@ -125,5 +125,5 @@
 +		// Send the email
 +		return $this->sendEmail($user, $content->subject, $content->body, $content->html_body, $variables);
  	}
- 
+
  	/**
