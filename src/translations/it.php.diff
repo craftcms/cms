@@ -1,6 +1,6 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/it.php	2012-08-16 14:08:54.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/it.php	2012-08-16 14:08:54.000000000 -0700
-@@ -24,6 +24,7 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/it.php	2012-08-16 15:31:37.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/it.php	2012-08-16 15:31:37.000000000 -0700
+@@ -28,6 +28,7 @@
    'Blocks is already installed.' => 'Blocchi è già installato.',
    'Blocks is already up to date.' => 'Blocks è già aggiornato.',
    'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => 'Blocchi deve essere in grado di scrivere i file seguire, ma non può: {fileList}',
@@ -8,15 +8,15 @@
    'Can’t install Blocks' => '',
    'Checkbox Options' => '',
    'Checking for updates…' => '',
-@@ -31,6 +32,7 @@
-   'Content Blocks' => '',
+@@ -36,6 +37,7 @@
+   'Content Languages' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => 'Impossibile determinare come inviare l’e-mail. Controllare le impostazioni e-mail.',
 +  'Could not find an email template with the key “{key}”' => '',
    'Could not hash the given password.' => 'Non potrebbe hash la password data.',
+   'Create a new section' => '',
    'DOM extension' => 'Estensione DOM',
-   'Dashboard' => 'Cruscotto',
-@@ -45,9 +47,11 @@
+@@ -52,6 +54,7 @@
    'Do It.' => '',
    'Done' => '',
    'Dropdown Options' => '',
@@ -24,19 +24,15 @@
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => 'O $_SERVER["REQUEST_URI"] o $_SERVER["QUERY_STRING"] deve esistere.',
    'Email' => '',
    'Email Format' => '',
-+  'Email Settings' => '',
-   'Email error: {errorMessage}' => 'Email di errore: {errorMessage}',
-   'Enable' => '',
-   'Entries in this section can be manually sorted' => '',
-@@ -71,6 +75,7 @@
-   'How you’ll refer to this block in the templates.' => '',
+@@ -82,6 +85,7 @@
    'How you’ll refer to this section in the templates.' => '',
    'Install' => '',
+   'Install Blocks' => '',
 +  'Installing Blocks Pro…' => '',
    'Instructions' => '',
    'IsNullOrEmpty requires a string.' => 'IsNullOrEmpty richiede una stringa.',
    'Languages' => '',
-@@ -80,11 +85,13 @@
+@@ -91,23 +95,28 @@
    'Last Name' => '',
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
@@ -50,7 +46,12 @@
    'Max Entries' => '',
    'Max Length' => '',
    'Max Value' => '',
-@@ -96,7 +103,9 @@
+   'Mcrypt extension' => 'Mcrypt estensione',
+   'Memcache extension' => 'Memcache estensione',
++  'Messages' => '',
+   'MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the Id of a DbConnection application component.' => 'MigrationCommand connectionId “{connectionId}” non è valido. Si prega di assicurarsi che si riferisce alla Id di un componente dell’applicazione DbConnection.',
+   'Min Value' => '',
+   'Multi-select Options' => '',
    'My Account' => '',
    'My Widgets' => '',
    'MySQL version' => 'MySQL versione',
@@ -60,7 +61,7 @@
    'New content block' => '',
    'New draft' => '',
    'New entry' => '',
-@@ -106,6 +115,7 @@
+@@ -117,6 +126,7 @@
    'No draft exists with the Id “{entryId}”.' => 'Nessun progetto è quella con la Id “{EntryId}”.',
    'No entry exists with the Id “{entryId}”.' => 'Non esiste nessuna voce con l’id “{EntryId}”.',
    'No plugin exists with the class “{className}”' => 'Nessun plugin esiste con la classe “{className}”',
@@ -68,15 +69,15 @@
    'No section exists with the Id “{sectionId}”' => 'No sezione esiste con l’Id “{sectionId}”',
    'No updates available.' => '',
    'No user exists with the Id “{userId}”.' => 'Nessun utente è quella con la Id “{userId}”.',
-@@ -138,6 +148,7 @@
-   'Radio Button Options' => '',
+@@ -152,6 +162,7 @@
    'Recent Users' => '',
    'Reflection extension' => 'Riflessione di estensione',
+   'Register a new user' => '',
 +  'Routes' => '',
    'SOAP extension' => 'Estensione SOAP',
    'Save' => '',
    'Save as a draft' => '',
-@@ -157,6 +168,7 @@
+@@ -171,6 +182,7 @@
    'Site Name' => '',
    'Site URL' => '',
    'Smtp Secure Transport Type' => '',
@@ -84,9 +85,9 @@
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -204,11 +216,13 @@
-   'Update' => '',
+@@ -219,12 +231,14 @@
    'Update All' => '',
+   'Update Blocks' => '',
    'Updates' => 'Aggiornamenti',
 +  'Use a 300 × 100px transparent PNG for best results.' => '',
    'User Info' => 'User Info',
@@ -94,11 +95,12 @@
    'Username and password are required.  Check your email settings.' => 'Nome utente e password sono obbligatori. Controllare le impostazioni e-mail.',
    'Username or email' => '',
    'Users' => 'Utenti',
+   'Verify Account' => '',
 +  'Welcome to Blocks Pro' => '',
    'What the entry URLs should look like.' => '',
    'What this block will be called in the CP.' => '',
    'What this section will be called in the CP.' => '',
-@@ -222,6 +236,12 @@
+@@ -238,6 +252,12 @@
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
    'build' => '',

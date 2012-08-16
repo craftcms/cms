@@ -1,6 +1,6 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/ru.php	2012-08-16 14:08:54.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/ru.php	2012-08-16 14:08:54.000000000 -0700
-@@ -24,6 +24,7 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/ru.php	2012-08-16 15:31:37.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/ru.php	2012-08-16 15:31:37.000000000 -0700
+@@ -28,6 +28,7 @@
    'Blocks is already installed.' => '',
    'Blocks is already up to date.' => '',
    'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => '',
@@ -8,15 +8,15 @@
    'Can’t install Blocks' => '',
    'Checkbox Options' => '',
    'Checking for updates…' => '',
-@@ -31,6 +32,7 @@
-   'Content Blocks' => '',
+@@ -36,6 +37,7 @@
+   'Content Languages' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => '',
 +  'Could not find an email template with the key “{key}”' => '',
    'Could not hash the given password.' => '',
+   'Create a new section' => '',
    'DOM extension' => '',
-   'Dashboard' => '',
-@@ -45,9 +47,11 @@
+@@ -52,6 +54,7 @@
    'Do It.' => '',
    'Done' => '',
    'Dropdown Options' => '',
@@ -24,19 +24,15 @@
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => '',
    'Email' => '',
    'Email Format' => '',
-+  'Email Settings' => '',
-   'Email error: {errorMessage}' => '',
-   'Enable' => '',
-   'Entries in this section can be manually sorted' => '',
-@@ -71,6 +75,7 @@
-   'How you’ll refer to this block in the templates.' => '',
+@@ -82,6 +85,7 @@
    'How you’ll refer to this section in the templates.' => '',
    'Install' => '',
+   'Install Blocks' => '',
 +  'Installing Blocks Pro…' => '',
    'Instructions' => '',
    'IsNullOrEmpty requires a string.' => '',
    'Languages' => '',
-@@ -80,11 +85,13 @@
+@@ -91,23 +95,28 @@
    'Last Name' => '',
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
@@ -50,7 +46,12 @@
    'Max Entries' => '',
    'Max Length' => '',
    'Max Value' => '',
-@@ -96,7 +103,9 @@
+   'Mcrypt extension' => '',
+   'Memcache extension' => '',
++  'Messages' => '',
+   'MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the Id of a DbConnection application component.' => '',
+   'Min Value' => '',
+   'Multi-select Options' => '',
    'My Account' => '',
    'My Widgets' => '',
    'MySQL version' => '',
@@ -60,7 +61,7 @@
    'New content block' => '',
    'New draft' => '',
    'New entry' => '',
-@@ -106,6 +115,7 @@
+@@ -117,6 +126,7 @@
    'No draft exists with the Id “{entryId}”.' => '',
    'No entry exists with the Id “{entryId}”.' => '',
    'No plugin exists with the class “{className}”' => '',
@@ -68,15 +69,15 @@
    'No section exists with the Id “{sectionId}”' => '',
    'No updates available.' => '',
    'No user exists with the Id “{userId}”.' => '',
-@@ -138,6 +148,7 @@
-   'Radio Button Options' => '',
+@@ -152,6 +162,7 @@
    'Recent Users' => '',
    'Reflection extension' => '',
+   'Register a new user' => '',
 +  'Routes' => '',
    'SOAP extension' => '',
    'Save' => '',
    'Save as a draft' => '',
-@@ -157,6 +168,7 @@
+@@ -171,6 +182,7 @@
    'Site Name' => '',
    'Site URL' => '',
    'Smtp Secure Transport Type' => '',
@@ -84,9 +85,9 @@
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -204,11 +216,13 @@
-   'Update' => '',
+@@ -219,12 +231,14 @@
    'Update All' => '',
+   'Update Blocks' => '',
    'Updates' => '',
 +  'Use a 300 × 100px transparent PNG for best results.' => '',
    'User Info' => '',
@@ -94,11 +95,12 @@
    'Username and password are required.  Check your email settings.' => '',
    'Username or email' => '',
    'Users' => '',
+   'Verify Account' => '',
 +  'Welcome to Blocks Pro' => '',
    'What the entry URLs should look like.' => '',
    'What this block will be called in the CP.' => '',
    'What this section will be called in the CP.' => '',
-@@ -222,6 +236,12 @@
+@@ -238,6 +252,12 @@
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
    'build' => '',

@@ -6,7 +6,7 @@
 {% endif %}
 
 
-{% set title = "Editing “" ~ entry.title ~ "”"|t %}
+{% set title = "Editing “" ~ entry.title ~ "”" %}
 {% if entry.draft %}
 	{% set title = title ~ " (" ~ entry.draft.name ~ ")" %}
 {% endif %}
