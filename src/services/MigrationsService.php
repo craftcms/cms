@@ -190,7 +190,7 @@ class MigrationsService extends \CApplicationComponent
 		else if (($this->_db = Blocks::app()->getComponent($this->connectionID)) instanceof \CDbConnection)
 			return $this->_db;
 		else
-			throw new Exception(Blocks::t('MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the Id of a DbConnection application component.', array('connectionId' => $this->connectionID)));
+			throw new Exception(Blocks::t('MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the ID of a DbConnection application component.', array('connectionId' => $this->connectionID)));
 	}
 
 	/**
