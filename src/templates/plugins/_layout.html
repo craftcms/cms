@@ -1,10 +1,10 @@
-{% set title = "Plugins" ~ (title ? " - "~title : "") %}
+{% set title = "Plugins"|t ~ (plugin ? " - "~plugin.name : "") %}
 {% extends "_layouts/cp" %}
 
 
 {% block main %}
 	<header class="titlebar">
-		<h1>{{ title }}</h1>
+		<h1>{{ "Plugins"|t }}</h1>
 	</header>
 
 	<nav class="nav">
