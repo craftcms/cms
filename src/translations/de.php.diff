@@ -1,5 +1,5 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-16 14:03:28.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-16 14:03:28.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-16 14:08:54.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-16 14:08:54.000000000 -0700
 @@ -24,6 +24,7 @@
    'Blocks is already installed.' => 'Blocks ist bereits installiert.',
    'Blocks is already up to date.' => 'Blocks ist bereits aktuell.',
