@@ -1,22 +1,43 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/nl.php	2012-08-15 17:51:10.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/nl.php	2012-08-15 17:53:18.000000000 -0700
-@@ -32,6 +32,7 @@
-   'Content Blocks' => '',
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/nl.php	2012-08-16 12:46:26.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/nl.php	2012-08-16 12:46:26.000000000 -0700
+@@ -29,6 +29,7 @@
+   'Blocks is already installed.' => '',
+   'Blocks is already up to date.' => '',
+   'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => '',
++  'Body' => '',
+   'Can’t install Blocks' => '',
+   'Checkbox Options' => '',
+   'Checking for updates…' => '',
+@@ -37,6 +38,7 @@
+   'Content Languages' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => '',
 +  'Could not find an email template with the key “{key}”' => '',
+   'Could not find the requested email template.' => '',
    'Could not hash the given password.' => '',
-   'DOM extension' => '',
-   'Dashboard' => '',
-@@ -74,6 +75,7 @@
-   'How you’ll refer to this block in the templates.' => '',
+   'Could not render the html email template or the text email template body for the requested email.' => '',
+@@ -57,10 +59,12 @@
+   'Do It.' => '',
+   'Done' => '',
+   'Dropdown Options' => '',
++  'Edit Message' => '',
+   'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => '',
+   'Either the email Html body or text body is required when sending an email.' => '',
+   'Email' => '',
+   'Email Format' => '',
++  'Email Settings' => '',
+   'Email error: {errorMessage}' => '',
+   'Enable' => '',
+   'Entries in this section can be manually sorted' => '',
+@@ -87,6 +91,7 @@
    'How you’ll refer to this section in the templates.' => '',
    'Install' => '',
+   'Install Blocks' => '',
 +  'Installing Blocks Pro…' => '',
    'Instructions' => '',
-   'IsNullOrEmpty requires a string.' => '',
-   'Languages' => '',
-@@ -83,11 +85,13 @@
+   'Invalid include tag.' => '',
+   'Invalid layout tag.' => '',
+@@ -100,11 +105,13 @@
    'Last Name' => '',
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
@@ -30,7 +51,7 @@
    'Max Entries' => '',
    'Max Length' => '',
    'Max Value' => '',
-@@ -99,7 +103,9 @@
+@@ -118,7 +125,9 @@
    'My Account' => '',
    'My Widgets' => '',
    'MySQL version' => '',
@@ -40,25 +61,33 @@
    'New content block' => '',
    'New draft' => '',
    'New entry' => '',
-@@ -109,6 +115,7 @@
-   'No draft exists with the Id “{entryId}”.' => '',
+@@ -129,6 +138,7 @@
    'No entry exists with the Id “{entryId}”.' => '',
+   'No parameter value set.' => '',
    'No plugin exists with the class “{className}”' => '',
 +  'No route exists with the Id “{routeId}”' => '',
    'No section exists with the Id “{sectionId}”' => '',
+   'No site exists with the Id “{siteId}”.' => '',
    'No updates available.' => '',
-   'No user exists with the Id “{userId}”.' => '',
-@@ -141,6 +148,7 @@
-   'Radio Button Options' => '',
+@@ -167,6 +177,7 @@
    'Recent Users' => '',
    'Reflection extension' => '',
+   'Register a new user' => '',
 +  'Routes' => '',
    'SOAP extension' => '',
    'Save' => '',
    'Save as a draft' => '',
-@@ -208,11 +216,13 @@
-   'Update' => '',
+@@ -188,6 +199,7 @@
+   'Site URL' => '',
+   'Smtp' => '',
+   'Smtp Secure Transport Type' => '',
++  'Subject' => '',
+   'Suspend' => '',
+   'Suspended' => '',
+   'System' => '',
+@@ -242,12 +254,14 @@
    'Update All' => '',
+   'Update Blocks' => '',
    'Updates' => '',
 +  'Use a 300 × 100px transparent PNG for best results.' => '',
    'User Info' => '',
@@ -66,19 +95,28 @@
    'Username and password are required.  Check your email settings.' => '',
    'Username or email' => '',
    'Users' => '',
+   'Verify Account' => '',
 +  'Welcome to Blocks Pro' => '',
    'What the entry URLs should look like.' => '',
    'What this block will be called in the CP.' => '',
    'What this section will be called in the CP.' => '',
-@@ -226,6 +236,12 @@
+@@ -263,8 +277,20 @@
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
    'build' => '',
 +  'forgot_password_body' => '',
++  'forgot_password_default_body' => '',
++  'forgot_password_default_subject' => '',
 +  'forgot_password_subject' => '',
+   'require_password_reset' => '',
+   'require_verification' => '',
 +  'verify_email_body' => '',
++  'verify_email_default_body' => '',
++  'verify_email_default_subject' => '',
 +  'verify_email_subject' => '',
 +  'verify_new_email_body' => '',
++  'verify_new_email_default_body' => '',
++  'verify_new_email_default_subject' => '',
 +  'verify_new_email_subject' => '',
    '{403message}' => '',
    '{404message}' => '',
