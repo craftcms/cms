@@ -3,10 +3,10 @@
 @@ -31,6 +31,27 @@
  			{% endif %}
  		</div>
- 
+
 +		<div class="field">
 +			<div class="heading">
-+				<h3><label for="licenseKey">{{ "License Key"|t }}</label></h3>
++				<label for="licenseKey">{{ "License Key"|t }}</label>
 +			</div>
 +			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{% if post %}{{ post.licenseKey }}{% else %}{{ blx.app.licenseKey }}{% endif %}">
 +			{% if post.errors.licenseKey %}
@@ -16,7 +16,7 @@
 +
 +		<div class="field">
 +			<div class="heading">
-+				<h3><label for="logo">{{ "Logo"|t }}</label></h3>
++				<label for="logo">{{ "Logo"|t }}</label>
 +				<p>{{ "Use a 300 × 100px transparent PNG for best results."|t }}</p>
 +			</div>
 +			<input id="logo" name="logo" type="file">

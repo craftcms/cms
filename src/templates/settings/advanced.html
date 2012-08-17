@@ -15,15 +15,10 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveAdvancedSettings">
 
-		<div class="field">
-			<div class="heading">
-				<h3>{{ "Debugging"|t }}</h3>
-			</div>
-
-			<div class="checkbox"><label><input type="checkbox" name="showDebugInfo" value="y" {% if settings.showDebugInfo %}checked{% endif %}> Show debugging info in the browser console</label></div>
-			<div class="checkbox"><label><input type="checkbox" name="useUncompressedJs" value="y" {% if settings.useUncompressedJs %}checked{% endif %}> Use uncompressed CP JavaScript files</label></div>
-			<div class="checkbox"><label><input type="checkbox" name="disablePlugins" value="y" {% if settings.disablePlugins %}checked{% endif %}> Disable plugins</label></div>
-		</div>
+		<h3>{{ "Debugging"|t }}</h3>
+		<div class="checkbox"><label><input type="checkbox" name="showDebugInfo" value="y" {% if settings.showDebugInfo %}checked{% endif %}> Show debugging info in the browser console</label></div>
+		<div class="checkbox"><label><input type="checkbox" name="useUncompressedJs" value="y" {% if settings.useUncompressedJs %}checked{% endif %}> Use uncompressed CP JavaScript files</label></div>
+		<div class="checkbox"><label><input type="checkbox" name="disablePlugins" value="y" {% if settings.disablePlugins %}checked{% endif %}> Disable plugins</label></div>
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">

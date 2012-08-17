@@ -12,29 +12,27 @@
 		<input type="hidden" name="redirect" value="settings">
 
 		<div class="field">
-			<div class="heading">
-				<h3><label for="languages">{{ "Which languages will your content be available in?"|t }}</label></h3>
+			<p>{{ "Which languages will your content be available in?"|t }}</p>
 
-				{% if not selectedLanguages %}
-					{% set selectedLanguages = blx.settings.languages %}
-				{% endif %}
+			{% if not selectedLanguages %}
+				{% set selectedLanguages = blx.settings.languages %}
+			{% endif %}
 
-				{% for language in selectedLanguages %}
+			{% for language in selectedLanguages %}
+				<div class="checkbox"><label>
+					<input type="checkbox" name="languages[]" value="{{ language }}" checked>
+					{{ blx.localization.localeName(language) }}
+				</label></div>
+			{% endfor %}
+
+			{% for language in blx.localization.languages %}
+				{% if language not in selectedLanguages %}
 					<div class="checkbox"><label>
-						<input type="checkbox" name="languages[]" value="{{ language }}" checked>
+						<input type="checkbox" name="languages[]" value="{{ language }}">
 						{{ blx.localization.localeName(language) }}
 					</label></div>
-				{% endfor %}
-
-				{% for language in blx.localization.languages %}
-					{% if language not in selectedLanguages %}
-						<div class="checkbox"><label>
-							<input type="checkbox" name="languages[]" value="{{ language }}">
-							{{ blx.localization.localeName(language) }}
-						</label></div>
-					{% endif %}
-				{% endfor %}
-			</div>
+				{% endif %}
+			{% endfor %}
 
 		</div>
 

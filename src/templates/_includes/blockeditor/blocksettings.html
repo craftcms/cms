@@ -30,8 +30,9 @@
 	</div>
 
 	<div class="field checkbox">
-		<label>This block is required
-			<div class="cbwrapper"><input type="checkbox" name="{{ namePrefix }}[required]" value="y" {% if block.required %}checked{% endif %} class="blockrequired"></div>
+		<label>
+			<input type="checkbox" name="{{ namePrefix }}[required]" value="y" {% if block.required %}checked{% endif %} class="blockrequired">
+			{{ "This block is required"|t }}
 		</label>
 	</div>
 

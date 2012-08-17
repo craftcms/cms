@@ -46,8 +46,9 @@
 				{% include "_includes/lightswitch" with {'name': "sortable", 'on': section.sortable} %}
 		</div>#}
 		<div class="field checkbox">
-			<label>Entries in this section have their own URLs
-				<div class="cbwrapper"><input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="togglefields" data-target="has-urls-setting"></div>
+			<label>
+				<input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="togglefields" data-target="has-urls-setting">
+				{{ "Entries in this section have their own URLs"|t }}
 			</label>
 		</div>
 		<div id="has-urls-setting" class="nested-fields" {% if not section.has_urls %}style="height: 0"{% endif %}>
