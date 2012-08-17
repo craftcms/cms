@@ -473,7 +473,7 @@ class App extends \CWebApplication
 		{
 			if (strpos(get_class($this->request), 'HttpRequest') !== false)
 			{
-				$this->_templatePath = $this->path->getTemplatePath();
+				$this->_templatePath = $this->path->getTemplatesPath();
 			}
 			else
 			{

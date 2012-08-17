@@ -1,5 +1,5 @@
 --- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-16 15:47:28.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-17 15:27:31.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-17 16:41:36.000000000 -0700
 @@ -9,6 +9,106 @@
  	private $_defaultEmailTimeout = 10;
  
@@ -107,7 +107,7 @@
  	 * Sends an email.
  	 *
  	 * @param User $user
-@@ -114,6 +214,17 @@
+@@ -114,6 +214,52 @@
  	 */
  	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
  	{
@@ -120,8 +120,43 @@
 +		// Get the content
 +		$content = $this->getMessageContent($message->id, $user->preferred_language);
 +
++		// Come up with our own HTML body content if it's not already supplied
++		if (!$content->html_body)
++		{
++			if (!class_exists('\Markdown_Parser', false))
++				require_once blx()->path->getFrameworkPath().'vendors/markdown/markdown.php';
++
++			$md = new \Markdown_Parser();
++			$content->html_body = $md->transform($content->body);
++		}
++
++		if ($message->template)
++		{
++			$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
++			$template = $message->template;
++		}
++		else
++		{
++			$tempTemplatesPath = blx()->path->getAppTemplatesPath();
++			$template = '_special/email';
++		}
++
++		$htmlBody = "{% extends '".$template."' %}\n" .
++			"{% block body %}\n" .
++			$content->html_body .
++			"{% endblock %}\n";
++
++		// Temporarily swap the templates path
++		$originalTemplatesPath = blx()->path->getTemplatesPath();
++		blx()->path->setTemplatesPath($tempTemplatesPath);
++
 +		// Send the email
-+		return $this->sendEmail($user, $content->subject, $content->body, $content->html_body, $variables);
++		$return = $this->sendEmail($user, $content->subject, $content->body, $htmlBody, $variables);
++
++		// Return to the original templates path
++		blx()->path->setTemplatesPath($originalTemplatesPath);
++
++		return $return;
  	}
  
  	/**

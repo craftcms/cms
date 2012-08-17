@@ -78,7 +78,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 
 		// Set the view path
 		//  - We need to set this for each template request, in case it was changed to a plugin's template path
-		$basePath = blx()->path->getTemplatePath();
+		$basePath = blx()->path->getTemplatesPath();
 
 		if ($path = $this->_findTemplate($basePath.$name))
 			return $this->cache[$name] = $path;
