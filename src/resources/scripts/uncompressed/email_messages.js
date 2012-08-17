@@ -66,6 +66,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 	$subjectInput: null,
 	$bodyInput: null,
+	$templateInput: null,
 	$saveBtn: null,
 	$cancelBtn: null,
 	$spinner: null,
@@ -86,6 +87,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 			this.$subjectInput = this.$container.find('.subject:first');
 			this.$bodyInput = this.$container.find('.body:first');
+			this.$templateInput = this.$container.find('.template:first');
 			this.$saveBtn = this.$container.find('.submit:first');
 			this.$cancelBtn = this.$container.find('.cancel:first');
 			this.$spinner = this.$container.find('.spinner:first');
@@ -106,7 +108,8 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 		var data = {
 			messageId: this.message.id,
 			subject:   this.$subjectInput.val(),
-			body:      this.$bodyInput.val()
+			body:      this.$bodyInput.val(),
+			template:  this.$templateInput.val()
 		};
 
 		this.$subjectInput.removeClass('error');

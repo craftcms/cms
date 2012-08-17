@@ -1,8 +1,8 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-15 11:55:22.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-15 12:18:10.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-16 15:47:28.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-17 14:27:24.000000000 -0700
 @@ -9,6 +9,108 @@
  	private $_defaultEmailTimeout = 10;
-
+ 
  	/**
 +	 * Returns all of the system email messages.
 +	 *
@@ -125,5 +125,5 @@
 +		// Send the email
 +		return $this->sendEmail($user, $content->subject, $content->body, $content->html_body, $variables);
  	}
-
+ 
  	/**
