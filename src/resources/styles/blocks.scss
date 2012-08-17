@@ -405,7 +405,8 @@ ul.errors li { color: $errorcolor; }
 /*  Modals
 /* ----------------------------------------*/
 
-.modal { position: absolute; z-index: 1; width: 400px; padding: 25px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px rgba(0,0,0,0.5); }
+.modal { position: absolute; z-index: 9999; width: 400px; padding: 25px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px rgba(0,0,0,0.5); }
+.modal-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.75); }
 
 /* ----------------------------------------
 /*  Menus
