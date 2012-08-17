@@ -64,12 +64,14 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 	message: null,
 
+	$languageSelect: null,
 	$subjectInput: null,
 	$bodyInput: null,
 	$templateInput: null,
 	$saveBtn: null,
 	$cancelBtn: null,
 	$spinner: null,
+
 	loading: false,
 
 	init: function(message)
@@ -77,14 +79,30 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 		this.message = message;
 
 		this.base();
+		this.loadContainer();
+	},
 
-		$.post(blx.baseUrl+'settings/email/_message_modal', { messageId: this.message.id }, $.proxy(function(response, textStatus, jqXHR) {
+	loadContainer: function(language)
+	{
+		var data = {
+			messageId: this.message.id,
+			language: language
+		};
 
-			var $container = $('<form class="modal message-settings">'+response+'</form>').appendTo(blx.$body);
+		$.post(blx.baseUrl+'settings/email/_message_modal', data, $.proxy(function(response, textStatus, jqXHR) {
 
-			this.setContainer($container);
-			this.show();
+			if (!this.$container)
+			{
+				var $container = $('<form class="modal message-settings">'+response+'</form>').appendTo(blx.$body);
+				this.setContainer($container);
+				this.show();
+			}
+			else
+			{
+				this.$container.html(response);
+			}
 
+			this.$languageSelect = this.$container.find('.language:first');
 			this.$subjectInput = this.$container.find('.subject:first');
 			this.$bodyInput = this.$container.find('.body:first');
 			this.$templateInput = this.$container.find('.template:first');
@@ -92,10 +110,17 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 			this.$cancelBtn = this.$container.find('.cancel:first');
 			this.$spinner = this.$container.find('.spinner:first');
 
+			this.addListener(this.$languageSelect, 'change', 'switchLanguage');
 			this.addListener(this.$container, 'submit', 'saveMessage');
 			this.addListener(this.$cancelBtn, 'click', 'cancel');
 
 		}, this));
+	},
+
+	switchLanguage: function()
+	{
+		var language = this.$languageSelect.val();
+		this.loadContainer(language);
 	},
 
 	saveMessage: function(event)
@@ -107,6 +132,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 		var data = {
 			messageId: this.message.id,
+			language:  this.$languageSelect.val(),
 			subject:   this.$subjectInput.val(),
 			body:      this.$bodyInput.val(),
 			template:  this.$templateInput.val()
@@ -119,6 +145,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 		{
 			if (!data.subject)
 				this.$subjectInput.addClass('error');
+
 			if (!data.body)
 				this.$bodyInput.addClass('error');
 
@@ -134,9 +161,11 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 			if (response.success)
 			{
-				this.message.updateHtmlFromModal();
-				this.hide();
+				// Only update the page if we're editing the user's preferred language
+				if (data.language == blx.language)
+					this.message.updateHtmlFromModal();
 
+				this.hide();
 				blx.displayNotice('Message saved.')
 			}
 			else

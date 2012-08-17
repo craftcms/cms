@@ -46,9 +46,9 @@ class EmailVariable
 	 *
 	 * @param $messageId
 	 */
-	public function getMessageContent($messageId)
+	public function getMessageContent($messageId, $language = null)
 	{
-		$content = blx()->email->getMessageContent($messageId);
+		$content = blx()->email->getMessageContent($messageId, $language);
 		return $content;
 	}
 }

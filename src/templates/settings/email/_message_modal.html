@@ -1,8 +1,16 @@
 {% set messageId = blx.request.post('messageId') %}
+{% set language = blx.request.post('language') %}
 {% set message = blx.email.getMessage(messageId) %}
-{% set content = blx.email.getMessageContent(messageId) %}
+{% set content = blx.email.getMessageContent(messageId, language) %}
 
-<h1>{{ "Edit Message"|t }}</h1>
+
+<h1>{{ "Edit Message"|t }} - {{ language }} - {{ content.language }}</h1>
+
+<select class="language">
+	{% for language in blx.localization.languages %}
+		<option value="{{ language }}" {% if language == content.language %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
+	{% endfor %}
+</select>
 
 <div class="field">
 	<div class="heading">
