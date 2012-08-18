@@ -15,13 +15,12 @@
 		<input type="hidden" name="user_id" value="{{ user.id }}">
 
 		<div class="field">
-			<div class="heading">
-				<h3>{{ "Admin Account"|t }}</h3>
+			<div class="checkbox">
+				<label>
+					<input type="checkbox" name="admin" value="y" {% if user.admin %}checked{% endif %}>
+					{{ "This is an admin account"|t }}
+				</label>
 			</div>
-			<div class="checkbox"><label>
-				<input type="checkbox" name="admin" value="y" {% if user.admin %}checked{% endif %}>
-				This is an admin account
-			</label></div>
 		</div>
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

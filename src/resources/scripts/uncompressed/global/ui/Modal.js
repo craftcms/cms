@@ -79,16 +79,21 @@ blx.ui.Modal = blx.Base.extend({
 
 	show: function()
 	{
+		if (blx.ui.Modal.visibleModal)
+			blx.ui.Modal.visibleModal.hide();
+
 		if (this.$container)
 		{
 			this.$container.show();
 			this.centerInViewport();
-			this.$container.fadeIn('fast');
-
+			this.$container.delay(50).fadeIn();
 			this.addListener(blx.$window, 'resize', 'centerInViewport');
 		}
 
 		this.visible = true;
+		blx.ui.Modal.visibleModal = this;
+		blx.ui.Modal.$shade.fadeIn(50);
+		this.addListener(blx.ui.Modal.$shade, 'click', 'hide');
 	},
 
 	hide: function()
@@ -96,12 +101,13 @@ blx.ui.Modal = blx.Base.extend({
 		if (this.$container)
 		{
 			this.$container.fadeOut('fast');
-			this.blur();
-
 			this.removeListener(blx.$window, 'resize');
 		}
 
 		this.visible = false;
+		blx.ui.Modal.visibleModal = null;
+		blx.ui.Modal.$shade.fadeOut('fast');
+		this.removeListener(blx.ui.Modal.$shade, 'click');
 	},
 
 	getHeight: function()
@@ -145,7 +151,7 @@ blx.ui.Modal = blx.Base.extend({
 			viewportHeight = blx.$window.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
-			left = 200 + (viewportWidth - modalWidth - 200) / 2,
+			left = (viewportWidth - modalWidth) / 2,
 			top = (viewportHeight - modalHeight) / 2;
 
 		this.$container.css({
@@ -197,7 +203,9 @@ blx.ui.Modal = blx.Base.extend({
 	defaults: {
 		draggable: true
 	},
-	instances: []
+	instances: [],
+	visibleModal: null,
+	$shade: $('<div class="modal-shade"/>').appendTo(blx.$body)
 });
 
 })(jQuery);

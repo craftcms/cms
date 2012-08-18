@@ -1,8 +1,8 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-15 11:55:22.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-15 12:18:10.000000000 -0700
-@@ -9,6 +9,108 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-16 15:47:28.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-17 16:41:36.000000000 -0700
+@@ -9,6 +9,106 @@
  	private $_defaultEmailTimeout = 10;
-
+ 
  	/**
 +	 * Returns all of the system email messages.
 +	 *
@@ -67,9 +67,16 @@
 +			$language = blx()->language;
 +
 +		$content = EmailMessageContent::model()->findByAttributes(array(
-+			'id' => $messageId,
++			'message_id' => $messageId,
 +			'language' => $language
 +		));
++
++		if (!$content)
++		{
++			$content = new EmailMessageContent();
++			$content->message_id = $messageId;
++			$content->language = ($language ? $language : blx()->language);
++		}
 +
 +		return $content;
 +	}
@@ -85,17 +92,8 @@
 +	 */
 +	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
 +	{
-+		if (!$language)
-+			$language = blx()->language;
-+
 +		// Has this message already been translated into this language?
 +		$content = $this->getMessageContent($messageId, $language);
-+
-+		if (!$content)
-+		{
-+			$content = new EmailMessageContent();
-+			$content->language = $language;
-+		}
 +
 +		$content->subject = $subject;
 +		$content->body = $body;
@@ -109,7 +107,7 @@
  	 * Sends an email.
  	 *
  	 * @param User $user
-@@ -114,6 +216,17 @@
+@@ -114,6 +214,52 @@
  	 */
  	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
  	{
@@ -122,8 +120,43 @@
 +		// Get the content
 +		$content = $this->getMessageContent($message->id, $user->preferred_language);
 +
++		// Come up with our own HTML body content if it's not already supplied
++		if (!$content->html_body)
++		{
++			if (!class_exists('\Markdown_Parser', false))
++				require_once blx()->path->getFrameworkPath().'vendors/markdown/markdown.php';
++
++			$md = new \Markdown_Parser();
++			$content->html_body = $md->transform($content->body);
++		}
++
++		if ($message->template)
++		{
++			$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
++			$template = $message->template;
++		}
++		else
++		{
++			$tempTemplatesPath = blx()->path->getAppTemplatesPath();
++			$template = '_special/email';
++		}
++
++		$htmlBody = "{% extends '".$template."' %}\n" .
++			"{% block body %}\n" .
++			$content->html_body .
++			"{% endblock %}\n";
++
++		// Temporarily swap the templates path
++		$originalTemplatesPath = blx()->path->getTemplatesPath();
++		blx()->path->setTemplatesPath($tempTemplatesPath);
++
 +		// Send the email
-+		return $this->sendEmail($user, $content->subject, $content->body, $content->html_body, $variables);
++		$return = $this->sendEmail($user, $content->subject, $content->body, $htmlBody, $variables);
++
++		// Return to the original templates path
++		blx()->path->setTemplatesPath($originalTemplatesPath);
++
++		return $return;
  	}
-
+ 
  	/**

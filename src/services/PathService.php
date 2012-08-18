@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class PathService extends \CApplicationComponent
 {
-	/* Paths */
+	private $_templatePath;
 
 	/**
 	 * @return string
@@ -98,14 +98,30 @@ class PathService extends \CApplicationComponent
 
 	/**
 	 * Returns the current templates path, taking into account whether this is a CP or Site request.
-	 * @return mixed
+	 *
+	 * @return string
 	 */
-	public function getTemplatePath()
+	public function getTemplatesPath()
 	{
-		if (BLOCKS_CP_REQUEST)
-			return $this->getAppTemplatesPath();
-		else
-			return $this->getSiteTemplatesPath();
+		if (!isset($this->_templatePath))
+		{
+			if (BLOCKS_CP_REQUEST)
+				$this->_templatePath = $this->getAppTemplatesPath();
+			else
+				$this->_templatePath = $this->getSiteTemplatesPath();
+		}
+
+		return $this->_templatePath;
+	}
+
+	/**
+	 * Sets the current templates path.
+	 *
+	 * @param string $path
+	 */
+	public function setTemplatesPath($path)
+	{
+		$this->_templatePath = $path;
 	}
 
 	/**

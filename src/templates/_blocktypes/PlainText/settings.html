@@ -6,8 +6,9 @@
 	<div class="textwrapper"><input id="{{ idPrefix }}hint" name="{{ namePrefix }}[hint]" class="text" type="text" value="{{ settings.hint }}"></div>
 </div>
 <div class="field checkbox">
-	<label>Allow line breaks
-		<div class="cbwrapper"><input type="checkbox" name="{{ namePrefix }}[multiline]" value="y" {% if settings.multiline %}checked{% endif %}></div>
+	<label>
+		<input type="checkbox" name="{{ namePrefix }}[multiline]" value="y" {% if settings.multiline %}checked{% endif %}>
+		{{ "Allow line breaks"|t }}
 	</label>
 </div>
 {#<div class="field">

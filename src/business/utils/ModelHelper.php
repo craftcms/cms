@@ -29,7 +29,7 @@ class ModelHelper
 
 		foreach ($attributes as $name => $settings)
 		{
-			$type = is_string($settings) ? $settings : (isset($settings['type']) ? $settings['type'] : null);
+			$type = is_string($settings) ? $settings : (isset($settings['type']) ? $settings['type'] : (isset($settings[0]) ? $settings[0] : null));
 
 			// Catch handles, email addresses, languages and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
 			if ($type == AttributeType::Handle)

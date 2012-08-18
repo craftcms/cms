@@ -18,7 +18,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="username" class="required">{{ "Username"|t }}</label></h3>
+				<label for="username" class="required">{{ "Username"|t }}</label>
 			</div>
 			<input id="username" name="username" class="text" type="text" value="{{ user.username }}">
 			{% if user.errors.username %}
@@ -28,7 +28,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="email" class="required">{{ "Email"|t }}</label></h3>
+				<label for="email" class="required">{{ "Email"|t }}</label>
 			</div>
 			<input id="email" name="email" class="text" type="text" value="{{ user.email }}">
 			{% if user.errors.email %}
@@ -46,7 +46,7 @@
 		{% if user.isCurrent or blx.users.current.admin %}
 			<div class="field">
 				<div class="heading">
-					<h3><label for="password">{{ "Password"|t }}</label></h3>
+					<label for="password">{{ "Password"|t }}</label>
 					{% if user.id %}<p>{{ "Leave blank to keep password unchanged."|t }}</p>{% endif %}
 				</div>
 				<input id="password" name="password" class="text {% if passwordForm and passwordForm.errors.password %}error{% endif %}" type="password">
@@ -66,7 +66,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="email_format">{{ "Email Format"|t }}</label></h3>
+				<label for="email_format">{{ "Email Format"|t }}</label>
 			</div>
 
 			{% include "_includes/pill" with {
@@ -82,7 +82,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="preferred_language">{{ "Preferred Language"|t }}</label></h3>
+				<label for="preferred_language">{{ "Preferred Language"|t }}</label>
 			</div>
 			<select id="preferred_language" name="preferred_language">
 				{% for language in blx.localization.languages %}

@@ -17,7 +17,7 @@
 
 		<div class="field first">
 			<div class="heading">
-				<h3><label for="first_name">{{ "First Name"|t }}</label></h3>
+				<label for="first_name">{{ "First Name"|t }}</label>
 			</div>
 			<input id="first_name" name="first_name" class="text" type="text" value="{{ user.first_name }}">
 			{% if user.errors.first_name %}
@@ -27,7 +27,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="last_name">{{ "Last Name"|t }}</label></h3>
+				<label for="last_name">{{ "Last Name"|t }}</label>
 			</div>
 			<input id="last_name" name="last_name" class="text" type="text" value="{{ user.last_name }}">
 			{% if user.errors.last_name %}
@@ -37,7 +37,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<h3><label for="avatar">{{ "Avatar"|t }}</label></h3>
+				<label for="avatar">{{ "Avatar"|t }}</label>
 			</div>
 			<input id="avatar" name="avatar" type="file">
 			{% if settings.errors.avatar %}
