@@ -50,9 +50,9 @@ class AccountController extends BaseController
 			{
 				if (($userToChange = blx()->users->changePassword($userToChange, $passwordForm->password)) !== false)
 				{
-					$userToChange->activationcode = null;
-					$userToChange->activationcode_issued_date = null;
-					$userToChange->activationcode_expire_date = null;
+					$userToChange->verification_code = null;
+					$userToChange->verification_code_issued_date = null;
+					$userToChange->verification_code_expiry_date = null;
 					$userToChange->status = UserAccountStatus::Active;
 					$userToChange->last_password_change_date = DateTimeHelper::currentTime();
 					$userToChange->password_reset_required = false;
@@ -71,7 +71,7 @@ class AccountController extends BaseController
 				}
 			}
 
-			throw new Exception(Blocks::t('There was a problem validating this activation code.'));
+			throw new Exception(Blocks::t('There was a problem validating this verification code.'));
 		}
 
 		// display the verify account form

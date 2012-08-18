@@ -106,14 +106,14 @@ class UsersService extends \CApplicationComponent
 	 * @param User $user
 	 * @param bool $save
 	 */
-	public function generateVerificationCodeForUser(User $user, $save = true)
+	public function generateVerificationCode(User $user, $save = true)
 	{
-		$activationCode = StringHelper::UUID();
-		$user->activationcode = $activationCode;
+		$verificationCode = StringHelper::UUID();
+		$user->verification_code = $verificationCode;
 		$date = new DateTime();
-		$user->activationcode_issued_date = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->activationCodeExpiration) .'S');
-		$user->activationcode_expire_date = $date->add($dateInterval)->getTimestamp();
+		$user->verification_code_issued_date = $date->getTimestamp();
+		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->verificationCodeDuration) .'S');
+		$user->verification_code_expiry_date = $date->add($dateInterval)->getTimestamp();
 
 		if ($save)
 			$user->save();
@@ -170,16 +170,16 @@ class UsersService extends \CApplicationComponent
 	}
 
 	/**
-	 * Activates a user, bypassing account verification.
+	 * Activates a user, bypassing email verification.
 	 *
 	  * @param User $user
 	 */
 	public function activateUser(User $user)
 	{
 		$user->status = UserAccountStatus::Active;
-		$user->activationcode = null;
-		$user->activationcode_issued_date = null;
-		$user->activationcode_expire_date = null;
+		$user->verification_code = null;
+		$user->verification_code_issued_date = null;
+		$user->verification_code_expiry_date = null;
 		$user->save();
 	}
 
@@ -246,7 +246,7 @@ class UsersService extends \CApplicationComponent
 	 */
 	public function forgotPassword(User $user)
 	{
-		$user = $this->generateVerificationCodeForUser($user);
+		$user = $this->generateVerificationCode($user);
 		return blx()->email->sendEmailByKey($user, 'forgot_password');
 	}
 

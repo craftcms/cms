@@ -66,10 +66,10 @@ class SecurityService extends \CApplicationComponent
 	 * @param $code
 	 * @return mixed
 	 */
-	public function getUserByActivationCode($code)
+	public function getUserByVerificationCode($code)
 	{
 		return User::model()->findByAttributes(array(
-			'activationcode' => $code,
+			'verification_code' => $code,
 		));
 	}
 
@@ -78,31 +78,20 @@ class SecurityService extends \CApplicationComponent
 	 * @return mixed
 	 * @throws Exception
 	 */
-	public function validateUserActivationCode($code)
+	public function validateUserVerificationCode($code)
 	{
-		$user = $this->_validateActivationRequest($code);
-		return $user !== null;
-	}
+		$user = $this->getUserByVerificationCode($code);
 
-	/**
-	 * @param $code
-	 * @return mixed
-	 * @throws Exception
-	 */
-	private function _validateActivationRequest($code)
-	{
-		$user = $this->getUserByActivationCode($code);
-
-		if ($user == null)
+		if (!$user)
 		{
-			Blocks::log('Unable to find activation code:'.$code);
-			throw new Exception(Blocks::t('Unable to validate the activation code.'));
+			Blocks::log('Unable to find verification code:'.$code);
+			throw new Exception(Blocks::t('Unable to validate the verification code.'));
 		}
 
-		if (DateTimeHelper::currentTime() > $user->activationcode_expire_date)
+		if (DateTimeHelper::currentTime() > $user->verification_code_expiry_date)
 		{
-			Blocks::log('Activation: '.$code.' has already expired.');
-			throw new Exception(Blocks::t('Unable to validate the activation code.'));
+			Blocks::log('Verification: '.$code.' has already expired.');
+			throw new Exception(Blocks::t('Unable to validate the verification code.'));
 		}
 
 		return $user;

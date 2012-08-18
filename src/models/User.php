@@ -28,9 +28,9 @@ class User extends BaseModel
 		'failed_password_attempt_count'         => array('type' => AttributeType::TinyInt, 'unsigned' => true),
 		'failed_password_attempt_window_start'  => AttributeType::Int,
 		'cooldown_start'                        => AttributeType::Int,
-		'activationcode'                        => array('type' => AttributeType::Char, 'maxLength' => 36),
-		'activationcode_issued_date'            => array('type' => AttributeType::Int),
-		'activationcode_expire_date'            => array('type' => AttributeType::Int),
+		'verification_code'                     => array('type' => AttributeType::Char, 'maxLength' => 36),
+		'verification_code_issued_date'         => array('type' => AttributeType::Int),
+		'verification_code_expiry_date'         => array('type' => AttributeType::Int),
 		'archived_username'                     => array('type' => AttributeType::Varchar, 'maxLength' => 100),
 		'archived_email'                        => array('type' => AttributeType::Email),
 	);

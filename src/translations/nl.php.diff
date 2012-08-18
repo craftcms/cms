@@ -1,5 +1,5 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/nl.php	2012-08-16 16:07:16.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/nl.php	2012-08-16 16:07:16.000000000 -0700
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/nl.php	2012-08-18 11:39:25.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/nl.php	2012-08-18 11:39:25.000000000 -0700
 @@ -28,6 +28,7 @@
    'Blocks is already installed.' => '',
    'Blocks is already up to date.' => '',
@@ -12,7 +12,7 @@
    'Content Languages' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => '',
-+  'Could not find an email template with the key “{key}”' => '',
++  'Could not find an email message with the key “{key}”' => '',
    'Could not hash the given password.' => '',
    'Create a new section' => '',
    'DOM extension' => '',
@@ -24,7 +24,7 @@
    'Editing “{entryTitle}”' => '',
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => '',
    'Email' => '',
-@@ -83,6 +86,7 @@
+@@ -84,6 +87,7 @@
    'How you’ll refer to this section in the templates.' => '',
    'Install' => '',
    'Install Blocks' => '',
@@ -32,7 +32,7 @@
    'Instructions' => '',
    'IsNullOrEmpty requires a string.' => '',
    'Languages' => '',
-@@ -92,23 +96,28 @@
+@@ -93,23 +97,28 @@
    'Last Name' => '',
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
@@ -61,7 +61,7 @@
    'New content block' => '',
    'New draft' => '',
    'New entry' => '',
-@@ -118,6 +127,7 @@
+@@ -119,6 +128,7 @@
    'No draft exists with the ID “{entryId}”.' => '',
    'No entry exists with the ID “{entryId}”.' => '',
    'No plugin exists with the class “{className}”' => '',
@@ -69,7 +69,7 @@
    'No section exists with the ID “{sectionId}”' => '',
    'No updates available.' => '',
    'No user exists with the ID “{userId}”.' => '',
-@@ -153,6 +163,7 @@
+@@ -154,6 +164,7 @@
    'Recent Users' => '',
    'Reflection extension' => '',
    'Register a new user' => '',
@@ -77,7 +77,7 @@
    'SOAP extension' => '',
    'Save' => '',
    'Save as a draft' => '',
-@@ -172,6 +183,7 @@
+@@ -173,6 +184,7 @@
    'Site Name' => '',
    'Site URL' => '',
    'Smtp Secure Transport Type' => '',
@@ -85,7 +85,15 @@
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -220,12 +232,14 @@
+@@ -183,6 +195,7 @@
+   'The content row can’t be updated because it’s new.' => '',
+   'The email address Blocks will use when sending email.' => '',
+   'The protocol Blocks will use to send email.' => '',
++  'The template Blocks will use for users who prefer HTML email' => '',
+   'The text that will be shown if the field doesn’t have a value.' => '',
+   'The text to be displayed beside the Block Name on the entry’s publish page.' => '',
+   'The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.' => '',
+@@ -223,12 +236,14 @@
    'Update All' => '',
    'Update Blocks' => '',
    'Updates' => '',
@@ -100,7 +108,7 @@
    'What the entry URLs should look like.' => '',
    'What this block will be called in the CP.' => '',
    'What this section will be called in the CP.' => '',
-@@ -239,6 +253,12 @@
+@@ -242,6 +257,12 @@
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
    'build' => '',
