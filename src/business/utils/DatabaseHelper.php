@@ -45,9 +45,16 @@ class DatabaseHelper
 	public static function normalizeAttributeSettings($settings)
 	{
 		if (is_string($settings))
+		{
 			$settings = array('type' => $settings);
+		}
 		else if (!isset($settings['type']))
-			$settings['type'] = AttributeType::Varchar;
+		{
+			if (isset($settings[0]))
+				$settings['type'] = $settings[0];
+			else
+				$settings['type'] = AttributeType::Varchar;
+		}
 
 		// Merge in the default settings
 		if (isset(self::$attributeTypeDefaults[$settings['type']]))
