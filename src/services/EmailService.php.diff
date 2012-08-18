@@ -1,5 +1,5 @@
 --- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-18 09:31:07.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-18 09:34:17.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-18 09:43:32.000000000 -0700
 @@ -10,6 +10,106 @@
  	private $_settings;
  
@@ -107,6 +107,22 @@
  	 * Sends an email.
  	 *
  	 * @param User $user
+@@ -83,12 +183,12 @@
+ 
+ 		$variables['user'] = $user;
+ 
+-		$email->subject = TemplateHelper::renderString($subject.' subject', $subject, $variables);
+-		$renderedBody = TemplateHelper::renderString($subject.' body', $body, $variables);
++		$email->subject = TemplateHelper::renderString($subject.' - subject', $subject, $variables);
++		$renderedBody = TemplateHelper::renderString($subject.' - body', $body, $variables);
+ 
+ 		if ($user->email_format == 'html' && $htmlBody)
+ 		{
+-			$renderedHtmlBody = TemplateHelper::renderString($subject.' HTML body', $htmlBody, $variables);
++			$renderedHtmlBody = TemplateHelper::renderString($subject.' - HTML body', $htmlBody, $variables);
+ 			$email->msgHtml($renderedHtmlBody);
+ 			$email->altBody = $renderedBody;
+ 		}
 @@ -115,6 +215,54 @@
  	 */
  	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
