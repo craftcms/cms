@@ -26,14 +26,6 @@
 	<div class="textwrapper"><textarea id="body" class="text body" rows="15">{{ content.body }}</textarea></div>
 </div>
 
-<div class="field">
-	<div class="heading">
-		<label for="template">{{ "HTML Email Template" }}</label>
-		<p>{{ "The template Blocks will use for users who prefer HTML email"|t }}</p>
-	</div>
-	<input id="template" name="template" type="text" class="text template" value="{{ message.template }}">
-</div>
-
 <div class="buttons">
 	<input type="submit" class="btn submit" value="{{ 'Save' }}">
 	<input type="button" class="btn cancel" value="{{ 'Cancel' }}">
