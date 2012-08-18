@@ -13,16 +13,15 @@
 			Set Password
 		</div>
 		<div class="pane-body">
-			<form method="post" action="">
-				<input type="hidden" name="action" value="account/verify">
-				<input type="hidden" name="redirect" value="dashboard">
-
-				{% set activationCode = blx.url.get('code') %}
-				{% if activationCode and blx.security.validateUserVerificationCode(activationCode) %}
-					{% set user = blx.security.getUserByVerificationCode(activationCode) %}
+			{% set verificationCode = blx.url.get('code') %}
+			{% set user = blx.users.getUserByVerificationCode(verificationCode) %}
+			{% if user %}
+				<form method="post" action="">
+					<input type="hidden" name="action" value="account/verify">
+					<input type="hidden" name="redirect" value="dashboard">
+					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
 
 					<div class="pane-item">Let's set a password for your account.</div>
-					<input type="hidden" name="userId" value="{{ user.id }}">
 					<div class="pane-item field">
 						<label for="password">{{ "Password"|t }}</label>
 						<div class="passwordwrapper"><input id="password" name="password" class="text password {% if verifyAccountInfo.errors.password %}error{% endif %}" type="password"></div>
@@ -33,10 +32,10 @@
 					<div class="pane-item">
 						<input class="btn big submit" type="submit" value="{{ 'Set Password'|t }}">
 					</div>
-				{% else %}
-					There was a problem validating this activation code.
-				{% endif %}
-			</form>
+				</form>
+			{% else %}
+				<p>{{ "There was a problem validating this activation code."|t }}</p>
+			{% endif %}
 		</div>
 	</div>
 {% endblock %}

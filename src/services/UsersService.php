@@ -65,6 +65,22 @@ class UsersService extends \CApplicationComponent
 	}
 
 	/**
+	 * Gets a user by a verification code
+	 *
+	 * @param string $code
+	 * @return User
+	 */
+	public function getUserByVerificationCode($code)
+	{
+		if (!$code)
+			return null;
+
+		return User::model()->findByAttributes(array(
+			'verification_code' => $code,
+		));
+	}
+
+	/**
 	 * Returns the User model of the currently logged in user and null if is user is not logged in.
 	 * @return User The model of the logged in user.
 	 */

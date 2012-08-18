@@ -61,39 +61,4 @@ class SecurityService extends \CApplicationComponent
 
 		return $check;
 	}
-
-	/**
-	 * @param $code
-	 * @return mixed
-	 */
-	public function getUserByVerificationCode($code)
-	{
-		return User::model()->findByAttributes(array(
-			'verification_code' => $code,
-		));
-	}
-
-	/**
-	 * @param $code
-	 * @return mixed
-	 * @throws Exception
-	 */
-	public function validateUserVerificationCode($code)
-	{
-		$user = $this->getUserByVerificationCode($code);
-
-		if (!$user)
-		{
-			Blocks::log('Unable to find verification code:'.$code);
-			throw new Exception(Blocks::t('Unable to validate the verification code.'));
-		}
-
-		if (DateTimeHelper::currentTime() > $user->verification_code_expiry_date)
-		{
-			Blocks::log('Verification: '.$code.' has already expired.');
-			throw new Exception(Blocks::t('Unable to validate the verification code.'));
-		}
-
-		return $user;
-	}
 }
