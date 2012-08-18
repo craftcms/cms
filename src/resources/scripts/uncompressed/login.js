@@ -71,7 +71,7 @@ var LoginForm = blx.Base.extend({
 			username: this.$usernameInput.val()
 		};
 
-		$.post(blx.actionUrl+'account/forgot', data, $.proxy(function(response) {
+		$.post(blx.actionUrl+'account/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				// Add the notice

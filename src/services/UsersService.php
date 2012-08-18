@@ -109,11 +109,13 @@ class UsersService extends \CApplicationComponent
 	public function generateVerificationCode(User $user, $save = true)
 	{
 		$verificationCode = StringHelper::UUID();
+		$issuedDate = new DateTime();
+		$duration = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->verificationCodeDuration) .'S');
+		$expiryDate = $issuedDate->add($duration);
+
 		$user->verification_code = $verificationCode;
-		$date = new DateTime();
-		$user->verification_code_issued_date = $date->getTimestamp();
-		$dateInterval = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->verificationCodeDuration) .'S');
-		$user->verification_code_expiry_date = $date->add($dateInterval)->getTimestamp();
+		$user->verification_code_issued_date = $issuedDate->getTimestamp();
+		$user->verification_code_expiry_date = $expiryDate->getTimestamp();
 
 		if ($save)
 			$user->save();

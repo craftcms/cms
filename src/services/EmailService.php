@@ -108,12 +108,11 @@ class EmailService extends \CApplicationComponent
 	 *
 	 * @param User $user
 	 * @param string $key
-	 * @param int $pluginId
 	 * @param array $variables
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
+	public function sendEmailByKey(User $user, $key, $variables = array())
 	{
 	}
 

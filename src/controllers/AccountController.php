@@ -9,7 +9,7 @@ class AccountController extends BaseController
 	/**
 	 *
 	 */
-	public function actionForgot()
+	public function actionForgotPassword()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -22,7 +22,12 @@ class AccountController extends BaseController
 			$user = blx()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
 			if ($user)
 			{
-				if (blx()->email->sendEmailByKey($user, 'forgot_password'))
+				// Generate a new verification code
+				blx()->users->generateVerificationCode($user);
+
+				// Send the Forgot Password email
+				$link = UrlHelper::generateUrl(blx()->users->getVerifyAccountUrl(), array('code' => $user->verification_code));
+				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
 					$this->returnJson(array('success' => true));
 
 				$this->returnErrorJson('There was a problem sending the forgot password email.');
@@ -46,9 +51,9 @@ class AccountController extends BaseController
 		{
 			$userToChange = blx()->users->getUserById(blx()->request->getPost('userId'));
 
-			if ($userToChange !== null)
+			if ($userToChange)
 			{
-				if (($userToChange = blx()->users->changePassword($userToChange, $passwordForm->password)) !== false)
+				if (($userToChange = blx()->users->changePassword($userToChange, $passwordForm->password)))
 				{
 					$userToChange->verification_code = null;
 					$userToChange->verification_code_issued_date = null;
