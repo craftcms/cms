@@ -88,7 +88,7 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 /*  Panes
 /* ----------------------------------------*/
 
-.pane { position: relative; margin: 25px 0; padding: 10px 15px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 5px rgba(0,0,0,0.15); }
+.pane { position: relative; margin: 25px 0; padding: 10px 15px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25); }
 .pane h2 { margin-bottom: 15px; border-bottom: none; }
 .pane h2 + .actions { margin-top: -44px; }
 h3 + .pane { margin-top: 15px; }
