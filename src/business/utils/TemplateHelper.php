@@ -49,8 +49,13 @@ class TemplateHelper
 	 */
 	public static function render($template, $variables)
 	{
-		// Add the global blx object
+		// Add the global variables
 		$variables['blx'] = new BlxVariable();
+		$variables['siteName'] = Blocks::getSiteName();
+		$variables['siteUrl'] = Blocks::getSiteUrl();
+
+		if ($user = blx()->users->getCurrentUser())
+			$variables['userName'] = $user->getFullName();
 
 		$twig = static::getTwig();
 
