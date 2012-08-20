@@ -2,9 +2,9 @@
 {% set title = "Verify Account"|t %}
 
 
-{# if blx.session.loggedin %}
+{% if blx.session.loggedin %}
 	{% redirect "dashboard" %}
-{% endif #}
+{% endif %}
 
 
 {% block body %}
