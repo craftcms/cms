@@ -1,3 +1,18 @@
+{% extends "_layouts/cp" %}
+{% set title = "Email Settings"|t %}
+{% include_js "email_settings.js" %}
+
+
+{% if not settings %}
+	{% set settings = blx.settings.email %}
+{% endif %}
+
+
+{% block main %}
+	<header class="titlebar">
+		<h1>{{ title }}</h1>
+	</header>
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveemailsettings">
 		<input type="hidden" name="redirect" value="settings">
@@ -147,9 +162,4 @@
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-{% endblock %}
-
-
-{% block scripts %}
-	{% include "_includes/js_include" with {'file': "email_settings.js"} %}
 {% endblock %}

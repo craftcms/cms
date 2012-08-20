@@ -1,26 +1,17 @@
-{% set title = "Install Blocks"|t %}
+{# if reqcheck.result == 'failure' %}
+	{% redirect install/cantinstall %}
+{% endif #}
+
+
 {% extends "_layouts/basic" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/install.css"} %}
-{% endblock %}
+{% set title = "Install Blocks"|t %}
+{% include_css "install.css" %}
+{% include_js "install.js"}
 
 
 {% block body %}
-	{% if reqcheck.result != 'failure' %}
-		{% include "_special/install/welcome" %}
-		{% include "_special/install/account" %}
-		{% include "_special/install/site" with {'sitename': sitename, 'url': url} %}
-		{% include "_special/install/installing" %}
-	{% else %}
-		{% include "_special/install/cantinstall" %}
-	{% endif %}
-{% endblock %}
-
-
-{% block scripts %}
-	{% if reqcheck.result != 'failure' %}
-		{% include "_includes/js_include" with {'file': "install.js"} %}
-	{% endif %}
+	{% include "_special/install/welcome" %}
+	{% include "_special/install/account" %}
+	{% include "_special/install/site" with {'sitename': sitename, 'url': url} %}
+	{% include "_special/install/installing" %}
 {% endblock %}

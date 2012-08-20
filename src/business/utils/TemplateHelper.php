@@ -23,7 +23,7 @@ class TemplateHelper
 
 			$loader = new TemplateLoader();
 
-			static::$_twig = new \Twig_Environment($loader, array(
+			$twig = new \Twig_Environment($loader, array(
 				'debug'               => blx()->config->devMode,
 				//'base_template_class' => '\Blocks\BaseTemplate',
 				'cache'               => blx()->path->getCompiledTemplatesPath(),
@@ -31,10 +31,14 @@ class TemplateHelper
 				//'strict_variables'  => true,
 			));
 
-			static::$_twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
+			$twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
+			$twig->addTokenParser(new IncludeCss_TokenParser());
+			$twig->addTokenParser(new IncludeJs_TokenParser());
 
 			if (blx()->config->devMode)
-				static::$_twig->addExtension(new \Twig_Extension_Debug());
+				$twig->addExtension(new \Twig_Extension_Debug());
+
+			static::$_twig = $twig;
 		}
 
 		return static::$_twig;

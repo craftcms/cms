@@ -1,10 +1,7 @@
-{% set title = "Content"|t %}
 {% extends "_layouts/cp" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/sitemap.css"} %}
-{% endblock %}
+{% set title = "Content"|t %}
+{% include_css "sitemap.css" %}
+{% include_js "sitemap.js" %}
 
 
 {% block main %}
@@ -73,7 +70,6 @@
 
 
 {% block scripts %}
-	{% include "_includes/js_include" with {'file': "sitemap.js"} %}
 	<script type="text/javascript">
 
 		new blx.Tier('#tier');
