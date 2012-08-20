@@ -83,8 +83,8 @@ blx.Installer = blx.Base.extend({
 			}
 
 			$.post(blx.actionUrl+'install/install', data, $.proxy(function() {
-				this.$currentScreen.find('h1:first').text('All done!');
-				var $buttons = $('<div class="buttons"><a href="'+blx.baseUrl+'dashboard" class="btn big submit">Go to Blocks</a></div>');
+				this.$currentScreen.find('h1:first').text(blx.t('All done!'));
+				var $buttons = $('<div class="buttons"><a href="'+blx.baseUrl+'dashboard" class="btn big submit">'+blx.t("Go to @@@productDisplay@@@")+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 

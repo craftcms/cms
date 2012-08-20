@@ -1,22 +1,23 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-20 12:06:25.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-20 12:09:24.000000000 -0700
-@@ -32,6 +32,7 @@
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-20 15:20:10.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-20 15:20:19.000000000 -0700
+@@ -33,6 +33,8 @@
    'Blocks is already installed.' => 'Blocks ist bereits installiert.',
    'Blocks is already up to date.' => 'Blocks ist bereits aktuell.',
    'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => 'Blocks der Lage sein muss, um auf die Follow-Dateien zu schreiben, können aber nicht: {fileList}',
 +  'Body' => 'Körper',
++  'Cancel' => 'Kündigen',
    'Can’t install Blocks' => 'Kann nicht installieren Blocks',
    'Checkbox Options' => 'Checkbox-Optionen',
    'Checking for updates…' => 'Auf Updates prüfen...',
-@@ -41,6 +42,7 @@
+@@ -42,6 +44,7 @@
    'Cookies must be enabled to access the Blocks CP.' => 'Cookies müssen aktiviert sein, um die Blocks CP zugreifen.',
    'Cooldown Time Remaining' => 'Die Abklingzeit wurde Restzeitanzeige',
    'Could not determine how to send the email.  Check your email settings.' => 'Konnte nicht ermittelt werden, wie die E-Mail senden. Überprüfen Sie Ihre E-Mail-Einstellungen.',
 +  'Could not find an email message with the key “{key}”' => 'Konnte nicht gefunden werden eine E-Mail-Nachricht mit dem Schlüssel “{key}”',
    'Could not hash the given password.' => 'Konnte nicht die gegebene Hash-Passwort ein.',
    'Create a new section' => 'Erstellen Sie einen neuen Abschnitt',
-   'DOM extension' => 'DOM-Erweiterung',
-@@ -57,6 +59,7 @@
+   'Create your account' => 'Erstellen Sie Ihr Konto',
+@@ -59,6 +62,7 @@
    'Do It.' => 'Do It.',
    'Done' => 'Fertig',
    'Dropdown Options' => 'Dropdown-Optionen',
@@ -24,7 +25,26 @@
    'Editing “{entryTitle}”' => 'Bearbeitung “{entryTitle}”',
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => 'Entweder $_SERVER["REQUEST_URI"] oder $_SERVER["QUERY_STRING"] muss vorhanden sein.',
    'Email' => 'E-Mail',
-@@ -90,6 +93,7 @@
+@@ -66,6 +70,7 @@
+   'Email Settings' => 'E-Mail-Einstellungen',
+   'Email error: {errorMessage}' => 'E-Mail-Fehler: {errorMessage}',
+   'Enable' => 'ermöglichen',
++  'Enter your license key…' => 'Geben Sie Ihren Lizenzschlüssel...',
+   'Entries in this section can be manually sorted' => 'Einträge in diesem Abschnitt können manuell sortiert werden',
+   'Entries in this section have their own URLs' => 'Einträge in diesem Abschnitt haben ihre eigenen URLs',
+   'Entry Template' => 'Eingabemaske',
+@@ -84,7 +89,10 @@
+   'General' => 'General',
+   'General Settings' => 'Allgemeine Einstellungen',
+   'Glob' => 'Glob',
++  'Go' => 'Gehen',
++  'Go to Blocks Pro' => 'Gehen Blocks Pro',
+   'HTML' => 'HTML',
++  'HTML Email Template' => 'HTML E-Mail Vorlage',
+   'Hide' => 'Verbergen',
+   'Hint Text' => 'Hinweistext',
+   'Host Name' => 'Host-Name',
+@@ -93,6 +101,7 @@
    'How you’ll refer to this section in the templates.' => 'Wie Sie zu diesem Abschnitt in den Vorlagen zu verweisen.',
    'Install' => 'Installieren',
    'Install Blocks' => 'Install Blocks',
@@ -32,11 +52,11 @@
    'Instructions' => 'Anleitung',
    'Invalid Username or Email.' => 'Ungültiger Benutzername oder E-Mail.',
    'Invalid username or password.' => 'Falsche Passwort oder Benutzername.',
-@@ -102,23 +106,28 @@
+@@ -105,23 +114,28 @@
    'Last Name' => 'Nachname',
    'Last Password Change Date' => 'Letzte Password Change Datum',
    'Leave blank to keep password unchanged.' => 'Leer lassen, damit das Kennwort unverändert.',
-+  'License Key' => 'License Key',
++  'License Key' => 'Lizenzschlüssel',
    'Limit' => 'begrenzen',
    'List view' => 'Listenansicht',
    'Locked' => 'Verschlossen',
@@ -48,7 +68,7 @@
    'Max Value' => 'Max Value',
    'Mcrypt extension' => 'Mcrypt Erweiterung',
    'Memcache extension' => 'Memcache Erweiterung',
-+  'Messages' => 'Meldungen',
++  'Messages' => 'Nachrichten',
    'MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the ID of a DbConnection application component.' => 'MigrationCommand ConnectionId {} ConnectionId ist ungültig. Bitte stellen Sie sicher, es bezieht sich auf die id einer DbConnection Anwendungskomponente.',
    'Min Value' => 'Min Value',
    'Multi-select Options' => 'Multi-Select-Options',
@@ -61,54 +81,62 @@
    'New content block' => 'Neue Inhalte Block',
    'New draft' => 'Neuer Entwurf',
    'New entry' => 'Neuer Eintrag',
-@@ -128,6 +137,7 @@
+@@ -131,6 +145,7 @@
    'No draft exists with the ID “{entryId}”.' => 'Kein Entwurf existiert mit der Id {entryId}.',
    'No entry exists with the ID “{entryId}”.' => 'Kein Eintrag vorhanden mit der Id {entryId}.',
    'No plugin exists with the class “{className}”' => 'Kein Plugin existiert mit der Klasse “{className}”',
-+  'No route exists with the ID “{routeId}”' => 'Keine Route existiert mit der Id “{routeId}”',
++  'No route exists with the ID “{routeId}”' => 'Keine Route besteht mit der ID “{routeId}”',
    'No section exists with the ID “{sectionId}”' => 'Nein Abschnitt existiert mit der Id “{sectionId}”',
    'No updates available.' => 'Keine Updates verfügbar.',
    'No user exists with the ID “{userId}”.' => 'Kein Benutzer vorhanden mit der Id “{userId}”.',
-@@ -164,6 +174,7 @@
+@@ -167,6 +182,7 @@
    'Reflection extension' => 'Reflection Extension',
    'Register a new user' => 'Einen neuen Benutzer registrieren',
-   'Reset Password' => '',
+   'Reset Password' => 'Passwort Zurücksetzen',
 +  'Routes' => 'Routen',
    'SOAP extension' => 'SOAP-Erweiterung',
    'Save' => 'Sparen',
    'Save as a draft' => 'Als Entwurf speichern',
-@@ -184,6 +195,7 @@
+@@ -188,6 +204,7 @@
    'Site Name' => 'Site Name',
    'Site URL' => 'Website-URL',
    'Smtp Secure Transport Type' => 'Smtp Secure Transport Type',
-+  'Subject' => 'Betreff',
++  'Subject' => 'Thema',
    'Suspend' => 'Aussetzen',
    'Suspended' => 'Ausgesetzt',
    'System' => 'System',
-@@ -194,6 +206,7 @@
+@@ -198,6 +215,7 @@
    'The content row can’t be updated because it’s new.' => 'Der Inhalt Zeile kann nicht aktualisiert werden, da es neu ist werden.',
    'The email address Blocks will use when sending email.' => 'Die E-Mail-Adress-Blöcke werden beim Senden von E-Mail',
    'The protocol Blocks will use to send email.' => 'Die Protokoll-Blöcke verwenden wird, um E-Mail zu senden.',
-+  'The template Blocks will use for users who prefer HTML email' => 'Die Vorlage Blocks wird für Benutzer, die HTML-Mail bevorzugen, verwenden',
++  'The template Blocks will use for users who prefer HTML email' => 'Die Vorlage Blocks wird für Benutzer, die HTML-Mail bevorzugen, verwenden.',
    'The text that will be shown if the field doesn’t have a value.' => 'Der Text, der erscheint, wenn das Feld keinen Wert sein.',
    'The text to be displayed beside the Block Name on the entry’s publish page.' => 'Der Text, der neben dem Blocknamen auf den Eintrag für die Publizieren-Seite angezeigt werden.',
    'The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.' => 'Das Update kann nicht installiert werden, weil Blocks erfordert MySQL-Version “{requiredMySqlVersion}” oder höher und Sie haben MySQL-Version “{installedMySqlVersion}” installiert werden.',
-@@ -234,12 +247,14 @@
+@@ -226,6 +244,7 @@
+   'This is required if you are using SQLite database.' => 'Dies ist erforderlich, wenn Sie mit SQLite-Datenbank sind.',
+   'Timeout' => 'Timeout',
+   'Title' => 'Titel',
++  'To complete the Blocks Pro update, some changes must be made to your database.' => 'Um die Blocks Pro Aktualisierung abzuschließen, müssen einige Änderungen an Ihrer Datenbank vorgenommen werden.',
+   'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' => 'Um memcached Satz <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> zu <code>true</code>.',
+   'Tree view' => 'Baumansicht',
+   'URL' => 'URL',
+@@ -238,12 +257,14 @@
    'Update All' => 'Alle aktualisieren',
    'Update Blocks' => 'Update blockiert',
    'Updates' => 'Updates',
-+  'Use a 300 × 100px transparent PNG for best results.' => 'Verwenden Sie ein 300 × 100px transparente PNG für beste Ergebnisse.',
++  'Use a 300 × 100px transparent PNG for best results.' => 'Verwenden Sie ein 300 × 100px transparente PNG für die besten Ergebnisse.',
    'User Info' => 'Benutzer-Info',
    'Username' => 'Benutzername oder E-Mail',
    'Username and password are required.  Check your email settings.' => 'Nutzername und Passwort erforderlich sind. Überprüfen Sie Ihre E-Mail-Einstellungen.',
    'Username or Email' => 'Benutzername oder E-Mail',
    'Users' => 'Benutzer',
    'Verify Account' => 'Account überprüfen',
-+  'Welcome to Blocks Pro' => 'Willkommen in Blocks Pro',
-   'We’ve sent you an email with instructions to reset your password.' => '',
++  'Welcome to Blocks Pro' => 'Willkommen bei Blocks Pro',
+   'We’ve sent you an email with instructions to reset your password.' => 'Wir haben Ihnen eine E-Mail mit Anweisungen zum Zurücksetzen des Passworts.',
    'What the entry URLs should look like.' => 'Was der Eintrag URLs aussehen sollte.',
    'What this block will be called in the CP.' => 'Was wird dieser Block in der CP genannt werden.',
-@@ -257,7 +272,14 @@
+@@ -262,7 +283,14 @@
    'build' => 'bauen',
    'forget?' => 'vergessen?',
    'forgot_password_body' => '',

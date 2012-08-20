@@ -75,7 +75,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 		}
 
 		this.setCurrentInput(this.$textInput);
-		this.updateToggleLabel('Hide');
+		this.updateToggleLabel(blx.t('Hide'));
 		this.showingPassword = true;
 	},
 
@@ -86,7 +86,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 			return;
 
 		this.setCurrentInput(this.$passwordInput);
-		this.updateToggleLabel('Show');
+		this.updateToggleLabel(blx.t('Show'));
 		this.showingPassword = false;
 
 		// Alt key temporarily shows the password
