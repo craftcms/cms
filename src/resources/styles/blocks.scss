@@ -201,7 +201,7 @@ div.btn.submit input { position: absolute; left: 100%; }
 .btn.red:not(.disabled).loading { @include linear-gradient(#9c2313, #66170c); }
 
 /* input buttons */
-input.btn { border: none; height: 26px; }
+input.btn { border: none; height: 31px; }
 input.btn.big { height: 36px; }
 
 /* button groups */
