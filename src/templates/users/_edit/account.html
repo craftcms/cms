@@ -38,7 +38,7 @@
 			{% if not user.id and blx.users.current.admin %}
 				<div class="checkbox"><label>
 					<input type="checkbox" name="require_verification" value="y" {% if blx.request.post('require_verification') %}checked{% endif %}>
-					Require verification
+					{{ "Require verification"|t }}
 				</label></div>
 			{% endif %}
 		</div>
@@ -58,7 +58,7 @@
 					<div class="checkbox"><label>
 						<input type="hidden" name="require_password_reset" value="n">
 						<input type="checkbox" name="require_password_reset" value="y" {% if not user or blx.request.post('require_password_reset') %}checked{% endif %}>
-						Require a password reset on next login
+						{{ "Require a password reset on next login"|t }}
 					</label></div>
 				{% endif %}
 			</div>
