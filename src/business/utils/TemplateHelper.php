@@ -32,6 +32,7 @@ class TemplateHelper
 			));
 
 			$twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
+			$twig->addTokenParser(new Redirect_TokenParser());
 			$twig->addTokenParser(new IncludeCss_TokenParser());
 			$twig->addTokenParser(new IncludeJs_TokenParser());
 			$twig->addTokenParser(new IncludeTranslation_TokenParser());

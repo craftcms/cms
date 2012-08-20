@@ -1,12 +1,12 @@
-{# if reqcheck.result == 'failure' %}
+{% if reqcheck.result == 'failure' %}
 	{% redirect install/cantinstall %}
-{% endif #}
+{% endif %}
 
 
 {% extends "_layouts/basic" %}
 {% set title = "Install Blocks"|t %}
 {% include_css "install.css" %}
-{% include_js "install.js"}
+{% include_js "install.js" %}
 
 
 {% block body %}

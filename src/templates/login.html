@@ -1,6 +1,6 @@
-{# if blx.session.loggedin %}
+{% if blx.session.loggedin %}
 	{% redirect "dashboard" %}
-{% endif #}
+{% endif %}
 
 
 {% extends "_layouts/basic" %}
