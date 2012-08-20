@@ -1,14 +1,15 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/ru.php	2012-08-20 12:06:25.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/ru.php	2012-08-20 12:06:26.000000000 -0700
-@@ -32,6 +32,7 @@
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/ru.php	2012-08-20 14:34:59.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/ru.php	2012-08-20 14:34:59.000000000 -0700
+@@ -32,6 +32,8 @@
    'Blocks is already installed.' => '',
    'Blocks is already up to date.' => '',
    'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => '',
 +  'Body' => '',
++  'Cancel' => '',
    'Can’t install Blocks' => '',
    'Checkbox Options' => '',
    'Checking for updates…' => '',
-@@ -41,6 +42,7 @@
+@@ -41,6 +43,7 @@
    'Cookies must be enabled to access the Blocks CP.' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => '',
@@ -16,7 +17,7 @@
    'Could not hash the given password.' => '',
    'Create a new section' => '',
    'DOM extension' => '',
-@@ -57,6 +59,7 @@
+@@ -57,6 +60,7 @@
    'Do It.' => '',
    'Done' => '',
    'Dropdown Options' => '',
@@ -24,7 +25,25 @@
    'Editing “{entryTitle}”' => '',
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => '',
    'Email' => '',
-@@ -90,6 +93,7 @@
+@@ -64,6 +68,7 @@
+   'Email Settings' => '',
+   'Email error: {errorMessage}' => '',
+   'Enable' => '',
++  'Enter your license key…' => '',
+   'Entries in this section can be manually sorted' => '',
+   'Entries in this section have their own URLs' => '',
+   'Entry Template' => '',
+@@ -82,7 +87,9 @@
+   'General' => '',
+   'General Settings' => '',
+   'Glob' => '',
++  'Go' => '',
+   'HTML' => '',
++  'HTML Email Template' => '',
+   'Hide' => '',
+   'Hint Text' => '',
+   'Host Name' => '',
+@@ -91,6 +98,7 @@
    'How you’ll refer to this section in the templates.' => '',
    'Install' => '',
    'Install Blocks' => '',
@@ -32,7 +51,7 @@
    'Instructions' => '',
    'Invalid Username or Email.' => '',
    'Invalid username or password.' => '',
-@@ -102,23 +106,28 @@
+@@ -103,23 +111,28 @@
    'Last Name' => '',
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
@@ -61,7 +80,7 @@
    'New content block' => '',
    'New draft' => '',
    'New entry' => '',
-@@ -128,6 +137,7 @@
+@@ -129,6 +142,7 @@
    'No draft exists with the ID “{entryId}”.' => '',
    'No entry exists with the ID “{entryId}”.' => '',
    'No plugin exists with the class “{className}”' => '',
@@ -69,7 +88,7 @@
    'No section exists with the ID “{sectionId}”' => '',
    'No updates available.' => '',
    'No user exists with the ID “{userId}”.' => '',
-@@ -164,6 +174,7 @@
+@@ -165,6 +179,7 @@
    'Reflection extension' => '',
    'Register a new user' => '',
    'Reset Password' => '',
@@ -77,7 +96,7 @@
    'SOAP extension' => '',
    'Save' => '',
    'Save as a draft' => '',
-@@ -184,6 +195,7 @@
+@@ -186,6 +201,7 @@
    'Site Name' => '',
    'Site URL' => '',
    'Smtp Secure Transport Type' => '',
@@ -85,7 +104,7 @@
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -194,6 +206,7 @@
+@@ -196,6 +212,7 @@
    'The content row can’t be updated because it’s new.' => '',
    'The email address Blocks will use when sending email.' => '',
    'The protocol Blocks will use to send email.' => '',
@@ -93,7 +112,7 @@
    'The text that will be shown if the field doesn’t have a value.' => '',
    'The text to be displayed beside the Block Name on the entry’s publish page.' => '',
    'The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.' => '',
-@@ -234,12 +247,14 @@
+@@ -236,12 +253,14 @@
    'Update All' => '',
    'Update Blocks' => '',
    'Updates' => '',
@@ -108,7 +127,7 @@
    'We’ve sent you an email with instructions to reset your password.' => '',
    'What the entry URLs should look like.' => '',
    'What this block will be called in the CP.' => '',
-@@ -257,7 +272,14 @@
+@@ -259,7 +278,14 @@
    'build' => '',
    'forget?' => '',
    'forgot_password_body' => '',
