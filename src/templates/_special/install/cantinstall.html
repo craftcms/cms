@@ -3,7 +3,7 @@
 	<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
 
 	<ul class="list">
-		{% for req in reqcheck.requirements %}
+		{% for req in reqCheck.requirements %}
 			{% if req.result == 'failed' %}
 				<li>{{ req.notes }}</li>
 			{% endif %}

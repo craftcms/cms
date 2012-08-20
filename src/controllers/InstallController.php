@@ -25,16 +25,22 @@ class InstallController extends BaseController
 		// Run the requirements checker
 		$reqCheck = new RequirementsChecker();
 		$reqCheck->run();
-		$vars['reqcheck'] = $reqCheck;
 
-		// Guess the site name based on the server name
-		$server = blx()->request->getServerName();
-		$words = preg_split('/[\-_\.]+/', $server);
-		array_pop($words);
-		$vars['sitename'] = implode(' ', array_map('ucfirst', $words));
-		$vars['url'] = 'http://'.$server;
+		if ($reqCheck->getResult() == InstallStatus::Failure)
+		{
+			$this->renderTemplate('_special/install/cantinstall', array('reqCheck' => $reqCheck));
+		}
+		else
+		{
+			// Guess the site name based on the server name
+			$server = blx()->request->getServerName();
+			$words = preg_split('/[\-_\.]+/', $server);
+			array_pop($words);
+			$vars['sitename'] = implode(' ', array_map('ucfirst', $words));
+			$vars['url'] = 'http://'.$server;
 
-		$this->renderTemplate('_special/install', $vars);
+			$this->renderTemplate('_special/install', $vars);
+		}
 	}
 
 	/**

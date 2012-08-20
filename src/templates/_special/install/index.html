@@ -1,8 +1,3 @@
-{% if reqcheck.result == 'failure' %}
-	{% redirect install/cantinstall %}
-{% endif %}
-
-
 {% extends "_layouts/basic" %}
 {% set title = "Install Blocks"|t %}
 {% include_css "install.css" %}
