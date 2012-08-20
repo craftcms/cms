@@ -4,7 +4,7 @@
 {% include_js "dashboard-settings.js" %}
 
 
-{% block main %}
+{% set main %}
 	<h1>{{ title }}</h1>
 
 	<form method="post" action="">
@@ -74,4 +74,4 @@
 			</div>
 		{% endif %}
 	{% endfor %}
-{% endblock %}
+{% endset %}

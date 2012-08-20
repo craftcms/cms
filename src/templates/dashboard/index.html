@@ -4,7 +4,7 @@
 {% include_js "dashboard.js" %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 		<ul class="right">
@@ -28,9 +28,9 @@
 
 	<div id="widgets" class="grid"></div>
 
-{% endblock %}
+{% endset %}
 
-{% block scripts %}
+{% set scripts %}
 	{#if !blx.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
@@ -41,4 +41,4 @@
 	<script type="text/javascript">
 		blx.dashboard = new blx.Dashboard([{{ blx.dashboard.userwidgetids|join(',') }}]);
 	</script>
-{% endblock %}
+{% endset %}

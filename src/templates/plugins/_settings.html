@@ -2,7 +2,7 @@
 {% set plugin = blx.plugins.get(pluginClass) %}
 
 
-{% block settings %}
+{% set settings %}
 	<h2>{{ plugin.name }}</h2>
 
 	<form method="post" action="">
@@ -19,4 +19,4 @@
 			<input type="button" value="{{ 'Install'|t }}" class="btn formsubmit" data-action="plugins/installPlugin">
 		{% endif %}
 	</form>
-{% endblock %}
+{% endset %}

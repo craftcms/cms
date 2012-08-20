@@ -3,7 +3,7 @@
 {% include_css "assets.css" %}
 
 
-{% block sidebar %}
+{% set sidebar %}
 	<h5>Local Files</h5>
 	<ul class="nav tree">
 		<li><span class="toggle expanded"></span><a href=""><span class="icon icon133"></span>shared</a>
@@ -32,10 +32,10 @@
 			</ul>
 		</li>
 	</ul>
-{% endblock %}
+{% endset %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 		{#<div class="btn-group">
@@ -48,5 +48,5 @@
 		<div class="search"><input type="text"></div>
 	</header>
 
-	{{ block('files') }}
-{% endblock %}
+	{{ files }}
+{% endset %}

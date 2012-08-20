@@ -4,7 +4,7 @@
 {% include_js "sitemap.js" %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 		<ul class="right">
@@ -66,10 +66,10 @@
 			</div>
 		</div>
 	</div>
-{% endblock %}
+{% endset %}
 
 
-{% block scripts %}
+{% set scripts %}
 	<script type="text/javascript">
 
 		new blx.Tier('#tier');
@@ -78,4 +78,4 @@
 		//home.addSubpage('About.png', 'About');
 
 	</script>
-{% endblock %}
+{% endset %}

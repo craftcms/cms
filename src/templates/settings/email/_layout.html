@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ "Email Settings"|t }}</h1>
 	</header>
@@ -14,6 +14,6 @@
 	</nav>
 
 	<div>
-		{{ block('settings') }}
+		{{ settings }}
 	</div>
-{% endblock %}
+{% endset %}

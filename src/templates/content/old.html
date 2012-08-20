@@ -2,7 +2,7 @@
 {% set title = "Content"|t %}
 
 
-{% block main %}
+{% set main %}
 	<h1>{{ title }}</h1>
 
 	{% for section in blx.content.sections %}
@@ -42,4 +42,4 @@
 	<div class="buttons">
 		<a href="{{ blx.url.base }}content/sections/new" class="btn addbtn">{{ "New section"|t }}</a>
 	</div>
-{% endblock %}
+{% endset %}

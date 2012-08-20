@@ -4,7 +4,7 @@
 {% include_js "email_messages.js" %}
 
 
-{% block settings %}
+{% set settings %}
 	<div id="messages">
 		{% for message in blx.email.messages %}
 			<div class="field">
@@ -18,4 +18,4 @@
 			</div>
 		{% endfor %}
 	</div>
-{% endblock %}
+{% endset %}

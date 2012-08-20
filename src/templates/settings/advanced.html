@@ -7,7 +7,7 @@
 {% endif %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 	</header>
@@ -25,4 +25,4 @@
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-{% endblock %}
+{% endset %}

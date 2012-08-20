@@ -3,17 +3,17 @@
 {% include_js "updates.js" %}
 
 
-{% block styles %}
+{% set styles %}
 	<style type="text/css">
 		h3.critical { color: #8a1f11; }
 		.notes { display: none; }
 		.cta { position: absolute; top: 15px; right: 15px; }
 		.cta .manual { margin-top: 5px; }
 	</style>
-{% endblock %}
+{% endset %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 	</header>
@@ -51,4 +51,4 @@
 			<p>On shared hosts, Blocks files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment.</p>
 		</div>
 	{% endif %}
-{% endblock %}
+{% endset %}

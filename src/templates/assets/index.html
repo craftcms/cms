@@ -1,10 +1,8 @@
 {% extends "assets/_layouts/assets" %}
+{% set viewMode = "thumbs" %}
 
 
-{% block viewMode %}thumbs{% endblock %}
-
-
-{% block files %}
+{% set files %}
 	<div class="files thumbs">
 		<ul>
 			<li>
@@ -213,4 +211,4 @@
 			</li>
 		</ul>
 	</div>
-{% endblock %}
+{% endset %}

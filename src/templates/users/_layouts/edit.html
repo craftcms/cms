@@ -15,7 +15,7 @@
 {% endif %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ heading }}</h1>
 	</header>
@@ -34,5 +34,5 @@
 		</nav>
 	{% endif %}
 
-	<div>{{ block('settings') }}</div>
-{% endblock %}
+	<div>{{ settings }}</div>
+{% endset %}

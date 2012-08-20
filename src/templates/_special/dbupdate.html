@@ -2,14 +2,14 @@
 {% set title = "Update Blocks"|t %}
 
 
-{% block styles %}
+{% set styles %}
 	<style type="text/css">
 		#dbupdate .icon { background-image: url({{ blx.url.resource }}images/notice-dbupdate.png); }
 	</style>
-{% endblock %}
+{% endset %}
 
 
-{% block body %}
+{% set body %}
 	<div class="no-access" id="dbupdate">
 		<div class="pane">
 			<div class="pane-body">
@@ -29,10 +29,10 @@
 			<input type="hidden" name="redirect" value="dashboard">
 			<div><input class="btn big submit" type="submit" value="{{ 'Do It.'|t }}"></div>
 		</form></div>#}
-{% endblock %}
+{% endset %}
 
 
-{% block scripts %}
+{% set scripts %}
 	<script type="text/javascript">
 		var waiting = false;
 		$('#go').click(function() {
@@ -47,4 +47,4 @@
 			});
 		});
 	</script>
-{% endblock %}
+{% endset %}

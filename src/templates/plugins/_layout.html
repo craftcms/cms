@@ -2,7 +2,7 @@
 {% set title = "Plugins"|t ~ (plugin ? " - "~plugin.name : "") %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ "Plugins"|t }}</h1>
 	</header>
@@ -19,5 +19,5 @@
 		</ul>
 	</nav>
 
-	<div>{{ block('settings') }}</div>
-{% endblock %}
+	<div>{{ settings }}</div>
+{% endset %}

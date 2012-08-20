@@ -11,7 +11,7 @@
 {% extends "_layouts/cp" title=title crumbs="content:Content" %}
 
 
-{% block main %}
+{% set main %}
 	<h1>{{ title }}</h1>
 
 	<form method="post" action="">
@@ -81,11 +81,11 @@
 
 		<input class="btn big submit" type="submit" value="{{ 'Save section'|t }}">
 	</form>
-{% endblock %}
+{% endset %}
 
-{% block scripts %}
+{% set scripts %}
 	<script type="text/javascript">
 		{% if not section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
 		{% if not section.url_format %}new blx.ui.EntryUrlFormatGenerator('#name', '#url_format');{% endif %}
 	</script>
-{% endblock %}
+{% endset %}

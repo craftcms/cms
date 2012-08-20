@@ -1,7 +1,7 @@
 {% extends "_layouts/basic" %}
 
 
-{% block body %}
+{% set body %}
 	<div id="sidebar">
 		<div id="header">
 			<div id="branding">
@@ -43,11 +43,11 @@
 	</div>
 
 	<div id="main" class="main">
-		{{ block('main') }}
+		{{ main }}
 	</div>
 
 	{#<div id="footer">
 		<p id="version">Blocks {{ blx.app.version }}.{{ blx.app.build }}</p>
 		<p id="copyright">© {{ blx.date.year }} Pixel &amp; Tonic, Inc. All rights reserved.</p>
 	</div>#}
-{% endblock %}
+{% endset %}

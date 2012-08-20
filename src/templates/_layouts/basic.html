@@ -9,7 +9,7 @@
 		<link rel="stylesheet" type="text/css" href="{{ blx.url.resource(path) }}">
 	{% endfor %}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
-	{{ block('styles') }}
+	{{ styles }}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0">
 	<script type="text/javascript">
 		blx = {
@@ -25,8 +25,8 @@
 		};
 	</script>
 </head>
-<body class="{{ block('bodyClass') }}">
-	{{ block('body') }}
+<body class="{{ bodyClass }}">
+	{{ body }}
 
 	<noscript>
 		<div class="no-access">
@@ -51,7 +51,7 @@
 	<script type="text/javascript" src="{{ blx.url.resource(path) }}"></script>
 {% endfor %}
 
-{{ block('scripts') }}
+{{ scripts }}
 
 </body>
 </html>

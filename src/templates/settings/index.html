@@ -2,7 +2,7 @@
 {% set title = "Settings"|t %}
 
 
-{% block main %}
+{% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 	</header>
@@ -20,4 +20,4 @@
 		<li><a href="{{ blx.url.base }}settings/assets" data-icon="A">{{ "Assets"|t }}</a></li>
 		<li><a href="{{ blx.url.base }}settings/languages" data-icon="L">{{ "Languages"|t }}</a></li>
 	</ul>
-{% endblock %}
+{% endset %}

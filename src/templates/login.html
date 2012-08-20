@@ -16,7 +16,7 @@
 %}
 
 
-{% block body %}
+{% set body %}
 	<script type="text/javascript">
 		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookie;
@@ -77,4 +77,4 @@
 			);
 		}
 	</script>
-{% endblock %}
+{% endset %}

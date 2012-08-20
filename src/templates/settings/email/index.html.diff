@@ -5,24 +5,24 @@
 +{% extends "settings/email/_layout" %}
  {% set title = "Email Settings"|t %}
  {% include_js "email_settings.js" %}
- 
+
 @@ -8,11 +8,7 @@
  {% endif %}
- 
- 
--{% block main %}
+
+
+-{% set main %}
 -	<header class="titlebar">
 -		<h1>{{ title }}</h1>
 -	</header>
 -
-+{% block settings %}
++{% set settings %}
  	<form method="post" action="">
  		<input type="hidden" name="action" value="settings/saveemailsettings">
  		<input type="hidden" name="redirect" value="settings">
 @@ -39,6 +35,14 @@
  			{% endif %}
  		</div>
- 
+
 +		<div class="field">
 +			<div class="heading">
 +				<label for="template">{{ "HTML Email Template"|t }}</label>

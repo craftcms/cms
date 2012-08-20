@@ -7,7 +7,7 @@
 {% endif %}
 
 
-{% block settings %}
+{% set settings %}
 	<h2>{{ pageTitle }}</h2>
 
 	{% if blx.config.failedPasswordMode == 'cooldown' and user.cooldown_start %}
@@ -53,4 +53,4 @@
 		</div>
 		<p>{% if user.failed_password_attempt_count %}{{ user.failed_password_attempt_count }}{% else %}0{% endif %}</p>
 	</div>
-{% endblock %}
+{% endset %}
