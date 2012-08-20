@@ -34,6 +34,7 @@ class TemplateHelper
 			$twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
 			$twig->addTokenParser(new IncludeCss_TokenParser());
 			$twig->addTokenParser(new IncludeJs_TokenParser());
+			$twig->addTokenParser(new IncludeTranslation_TokenParser());
 
 			if (blx()->config->devMode)
 				$twig->addExtension(new \Twig_Extension_Debug());
