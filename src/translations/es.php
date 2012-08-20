@@ -147,7 +147,6 @@ return array (
   'Preferred Language' => '',
   'Profile' => 'Perfil',
   'Protocol' => '',
-  'Pubish' => '',
   'Publish' => '',
   'Radio Button Options' => '',
   'Recent Users' => '',
