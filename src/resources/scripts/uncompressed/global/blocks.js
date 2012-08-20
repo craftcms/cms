@@ -43,6 +43,21 @@ var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae
 var $notificationContainer = $('#notifications'),
 	notificationDuration = 2000;
 
+
+/**
+ * Get a translated message.
+ *
+ * @param string message
+ * @return string
+ */
+blx.t = function(message)
+{
+	if (typeof blx.translations[message] != undefined)
+		return blx.translations[message];
+	else
+		return message;
+};
+
 /**
  * Format a number with commas.
  *
@@ -460,15 +475,21 @@ blx.animateWidth = function(elem, callback)
  *
  * @param mixed elem Either an actual element or a jQuery collection.
  */
-blx.shake = function(elem)
+blx.shake = function(elem, property)
 {
-	var $elem = $(elem),
-		startingMargin = parseInt($elem.css('marginLeft'));
+	var $elem = $(elem);
+
+	if (!property)
+		property = 'margin-left';
+
+	var startingPoint = parseInt($elem.css(property));
+	if (isNaN(startingPoint))
+		startingPoint = 0;
 
 	for (var i = 10; i > 0; i--)
 	{
-		var margin = startingMargin + (i % 2 ? -1 : 1) * i;
-		$elem.animate({marginLeft: margin}, {
+		var value = startingPoint + (i % 2 ? -1 : 1) * i;
+		$elem.animate({property: value}, {
 			duration: 50,
 			queue: true
 		});

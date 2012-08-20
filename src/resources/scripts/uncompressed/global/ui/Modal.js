@@ -43,7 +43,7 @@ blx.ui.Modal = blx.Base.extend({
 
 	setContainer: function(container)
 	{
-		this.$container = $(container).addClass('modal');
+		this.$container = $(container);
 
 		// Is this already a modal?
 		if (this.$container.data('modal'))

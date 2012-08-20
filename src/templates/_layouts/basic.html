@@ -12,12 +12,17 @@
 	{{ block('styles') }}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0">
 	<script type="text/javascript">
-		blx = {};
-		blx.messages = {};
-		blx.baseUrl = '{{ blx.url.base }}';
-		blx.actionUrl = '{{ blx.url.action }}';
-		blx.resourceUrl = '{{ blx.url.resource }}';
-		blx.language = '{{ blx.localization.getCurrentLanguage }}';
+		blx = {
+			baseUrl: '{{ blx.url.base }}',
+			actionUrl: '{{ blx.url.action }}',
+			resourceUrl: '{{ blx.url.resource }}',
+			language: '{{ blx.localization.getCurrentLanguage }}',
+			translations: {
+				{% for message in translations %}
+					'{{ message|e('js') }}': '{{ message|t|e('js') }}'{% if not loop.last %},{% endif %}
+				{% endfor %}
+			}
+		};
 	</script>
 </head>
 <body class="{{ block('bodyClass') }}">

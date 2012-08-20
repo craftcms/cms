@@ -3,13 +3,15 @@
 {% endif #}
 
 
-{% set title = "Login"|t %}
 {% extends "_layouts/basic" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': 'styles/login.css'} %}
-{% endblock %}
+{% set title = "Login"|t %}
+{% include_css "login.css" %}
+{% include_js "login.js" %}
+{% include_translation
+	"Reset Password",
+	"We’ve sent you an email with instructions to reset your password.",
+	"An unknown error occurred."
+%}
 
 
 {% block body %}
@@ -21,36 +23,33 @@
 		{
 			document.write(
 				'<form id="login-form" method="post" action="">' +
-					'<div id="login-pane" class="main">' +
+					'<div class="field">' +
+						'<div class="textwrapper"><input id="username" class="text nicetext" type="text" data-hint="{{ "Username or Email"|t }}" value="{{ blx.session.rememberedusername }}"></div>' +
+					'</div>' +
+
+					'<div id="login-fields" class="nested-fields">' +
 						'<div class="field">' +
-							'<div class="heading">' +
-								'<label for="username">{{ "Username or email"|t }}</label>' +
-							'</div>' +
-							'<div class="textwrapper"><input id="username" class="text" type="text" value="{{ blx.session.rememberedusername }}"></div>' +
-						'</div>' +
-						'<div id="password-container" class="nested-fields">' +
-							'<div class="field">' +
-								'<div class="heading">' +
-									'<label for="password">{{ "Password"|t }}</label>' +
-									' <p><a id="forgot-password">Forget?</a></p>' +
-								'</div>' +
-								'<div class="passwordwrapper"><input id="password" class="text password" type="password"></div>' +
-							'</div>' +
+							{#'<div class="heading">' +
+								'<label for="password">{{ "Password"|t }}</label>' +
+								' <a id="forgot-password">{{ "forget?"|t }}</a>' +
+							'</div>' +#}
+							'<div class="passwordwrapper"><input id="password" class="text nicetext password" type="password" data-hint="{{ "Password"|t }}"></div>' +
 						'</div>' +
 
-						'<div class="buttons">' +
-							'<input id="login-btn" class="btn big submit disabled" type="submit" value="{{ 'Login'|t }}">' +
-
-							'<label id="remember-me-label" class="checkbox">' +
+						'<div class="field">' +
+							'<label>' +
 								'<input type="checkbox" id="remember-me"> ' +
-								'Remember me' +
+								'{{ "Keep me logged in"|t }}' +
 							'</label>' +
 						'</div>' +
+					'</div>' +
 
-						{% if not blx.request.secure %}
-							'<a id="insecure" title="{{ 'This is an insecure connection.'|t }}" data-icon="i"></a>' +
-						{% endif %}
-
+					'<div class="buttons">' +
+						'<div id="submit" class="btn submit disabled" data-icon="{{ blx.request.secure ? '`' : '~' }}">' +
+							'<span class="label">{{ "Login"|t }}</span>' +
+							'<input type="submit">' +
+						'</div>' +
+						'<div id="spinner" class="spinner" style="display: none;"></div>' +
 					'</div>' +
 				'</form>'
 			);
@@ -66,8 +65,8 @@
 						'<div class="pane-body">' +
 							'<div class="notice">' +
 								'<div class="icon"></div>' +
-								'<p>Cookies must be enabled to access the Blocks CP.<br>' +
-									'<a class="go" href="">See how</a>' +
+								'<p>{{ "Cookies must be enabled to access the Blocks CP."|t }}<br>' +
+									'<a class="go" href="">{{ "See how"|t }}</a>' +
 								'</p>' +
 							'</div>' +
 						'</div>' +
@@ -76,9 +75,4 @@
 			);
 		}
 	</script>
-{% endblock %}
-
-
-{% block scripts %}
-	{% include "_includes/js_include" with {'file': 'login.js'} %}
 {% endblock %}

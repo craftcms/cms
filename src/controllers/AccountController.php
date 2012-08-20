@@ -30,11 +30,11 @@ class AccountController extends BaseController
 				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
 					$this->returnJson(array('success' => true));
 
-				$this->returnErrorJson('There was a problem sending the forgot password email.');
+				$this->returnErrorJson(Blocks::t('There was a problem sending the forgot password email.'));
 			}
 		}
 
-		$this->returnErrorJson('Invalid username or email.');
+		$this->returnErrorJson(Blocks::t('Invalid Username or Email.'));
 	}
 
 	/**

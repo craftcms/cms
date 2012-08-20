@@ -3,34 +3,32 @@
 var LoginForm = blx.Base.extend({
 
 	$form: null,
-	$pane: null,
 	$usernameInput: null,
-	$passwordContainer: null,
+	$loginFields: null,
 	$passwordPaneItem: null,
-	$forgotPasswordLink: null,
 	$passwordInput: null,
 	$rememberMeInput: null,
-	$loginBtn: null,
-	$notice: null,
+	$submitBtn: null,
+	$spinner: null,
+	$error: null,
 
 	forgotPassword: false,
+	loading: false,
 
 	init: function()
 	{
 		this.$form = $('#login-form'),
-		this.$pane = $('#login-pane'),
 		this.$usernameInput = $('#username'),
-		this.$passwordContainer = $('#password-container');
-		this.$passwordPaneItem = this.$passwordContainer.children();
-		this.$forgotPasswordLink = $('#forgot-password');
+		this.$loginFields = $('#login-fields');
+		this.$passwordPaneItem = this.$loginFields.children();
 		this.$passwordInput = $('#password'),
-		this.$loginBtn = $('#login-btn'),
-		this.$rememberMeLabel = $('#remember-me-label');
+		this.$submitBtn = $('#submit'),
+		this.$spinner = $('#spinner');
 		this.$rememberMeInput = $('#remember-me');
 
 		this.addListener(this.$usernameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
-		this.addListener(this.$forgotPasswordLink, 'click', 'onForgetPassword');
+		this.addListener(this.$submitBtn, 'click', 'onSubmit');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 	},
 
@@ -38,11 +36,11 @@ var LoginForm = blx.Base.extend({
 	{
 		if (this.$usernameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6))
 		{
-			this.$loginBtn.removeClass('disabled');
+			this.$submitBtn.removeClass('disabled');
 			return true;
 		}
 
-		this.$loginBtn.addClass('disabled');
+		this.$submitBtn.addClass('disabled');
 		return false;
 	},
 
@@ -59,6 +57,13 @@ var LoginForm = blx.Base.extend({
 		if (!this.validate())
 			return;
 
+		this.$submitBtn.addClass('active');
+		this.$spinner.show();
+		this.loading = true;
+
+		if (this.$error)
+			this.$error.remove();
+
 		if (this.forgotPassword)
 			this.submitForgotPassword();
 		else
@@ -74,24 +79,14 @@ var LoginForm = blx.Base.extend({
 		$.post(blx.actionUrl+'account/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
-				// Add the notice
-				if (this.$notice)
-					this.$notice.attr('className', 'notice');
-				else
-					this.createNoticeElem('notice');
-
-				var notice = 'Check your email for instructions to reset your password.';
+				new MessageSentModal();
 			}
 			else
 			{
-				// Add the error message
-				if (!this.$notice)
-					this.createNoticeElem('error');
-
-				var notice = response.error || 'An unknown error occurred.';
+				this.showError(response.error);
 			}
 
-			this.$notice.html(notice);
+			this.onSubmitResponse();
 		}, this));
 	},
 
@@ -110,44 +105,77 @@ var LoginForm = blx.Base.extend({
 			}
 			else
 			{
+				blx.shake(this.$form);
+				this.onSubmitResponse();
+
 				// Add the error message
-				if (!this.$notice)
-					this.createNoticeElem('error');
+				this.showError(response.error);
 
-				var error = response.error || 'An unknown error occurred.';
-				this.$notice.html(error);
-
-				blx.shake(this.$pane);
+				var $forgotPasswordLink = this.$error.find('a');
+				if ($forgotPasswordLink.length)
+					this.addListener($forgotPasswordLink, 'mousedown', 'onForgetPassword');
 			}
 		}, this));
 
 		return false;
 	},
 
-	onForgetPassword: function()
+	onSubmitResponse: function()
 	{
-		var passwordContainerHeight = this.$passwordContainer.height();
-		this.$pane.animate({marginTop: (passwordContainerHeight/2)}, 'fast');
-		this.$passwordContainer.animate({height: 0}, 'fast', $.proxy(function() {
-			this.$usernameInput.focus();
-		}, this));
+		this.$submitBtn.removeClass('active');
+		this.$spinner.hide();
+		this.loading = false;
+	},
 
-		this.$loginBtn.attr('value', 'Reset Password');
-		this.$loginBtn.removeClass('disabled');
-		this.$rememberMeLabel.hide();
+	showError: function(error)
+	{
+		if (!error)
+			error = blx.t('An unknown error occurred.');
+
+		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
+		this.$error.fadeIn();
+	},
+
+	onForgetPassword: function(event)
+	{
+		event.preventDefault();
+		this.$usernameInput.focus();
+
+		this.$error.remove();
+
+		var formTopMargin = parseInt(this.$form.css('margin-top')),
+			loginFieldsHeight = this.$loginFields.height(),
+			newFormTopMargin = formTopMargin + Math.round(loginFieldsHeight/2);
+
+		this.$form.animate({marginTop: newFormTopMargin}, 'fast');
+		this.$loginFields.animate({height: 0}, 'fast');
+
+		this.$submitBtn.find('span').html(blx.t('Reset Password'));
+		this.$submitBtn.removeClass('disabled');
+		this.$submitBtn.removeAttr('data-icon');
 
 		this.forgotPassword = true;
 		this.validate();
+	}
+});
+
+
+var MessageSentModal = blx.ui.Modal.extend({
+
+	init: function()
+	{
+		var $container = $('<div class="pane email-sent">'+blx.t('We’ve sent you an email with instructions to reset your password.')+'</div>')
+			.appendTo(blx.$body);
+
+		this.base($container);
 	},
 
-	createNoticeElem: function(className)
+	hide: function()
 	{
-		this.$noticeContainer = $('<div id="notice"/>').appendTo(this.$form);
-		this.$notice = $('<p class="'+className+'"/>').appendTo(this.$noticeContainer);
-		this.$notice.hide().fadeIn();
 	}
 
-});
+})
+
 
 var loginForm = new LoginForm();
 
