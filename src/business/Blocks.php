@@ -323,7 +323,7 @@ class Blocks extends \Yii
 			$normalizedParams[$key] = $value;
 		}
 
-		return '%'.parent::t($category, $message, $normalizedParams, $source, $language).'%';
+		return parent::t($category, $message, $normalizedParams, $source, $language);
 	}
 
 	/**
