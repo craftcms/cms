@@ -126,9 +126,9 @@ class UserIdentity extends \CUserIdentity
 		$user->last_login_date = DateTimeHelper::currentTime();
 		$user->failed_password_attempt_count = null;
 		$user->failed_password_attempt_window_start = null;
-		$user->activationcode = null;
-		$user->activationcode_issued_date = null;
-		$user->activationcode_expire_date = null;
+		$user->verification_code = null;
+		$user->verification_code_issued_date = null;
+		$user->verification_code_expiry_date = null;
 
 		if (!$user->save())
 		{

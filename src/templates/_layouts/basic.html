@@ -3,16 +3,26 @@
 <head>
 	<meta charset="utf-8">
 	<title>{{ title }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
-	{% include "_includes/css_include.html" with {'file': 'styles/blocks.css'} %}
+	<link rel="stylesheet" type="text/css" href="{{ blx.url.resource('styles/blocks.css') }}">
+	{% for file in cssIncludes %}
+		{% set path = 'styles/' ~ file %}
+		<link rel="stylesheet" type="text/css" href="{{ blx.url.resource(path) }}">
+	{% endfor %}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
 	{{ block('styles') }}
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0">
 	<script type="text/javascript">
-		if (typeof blx == 'undefined') blx = {};
-		blx.baseUrl = '{{ blx.url.base }}';
-		blx.actionUrl = '{{ blx.url.action }}';
-		blx.resourceUrl = '{{ blx.url.resource }}';
-		blx.language = '{{ blx.localization.getCurrentLanguage }}';
+		blx = {
+			baseUrl: '{{ blx.url.base }}',
+			actionUrl: '{{ blx.url.action }}',
+			resourceUrl: '{{ blx.url.resource }}',
+			language: '{{ blx.localization.getCurrentLanguage }}',
+			translations: {
+				{% for message in translations %}
+					'{{ message|e('js') }}': '{{ message|t|e('js') }}'{% if not loop.last %},{% endif %}
+				{% endfor %}
+			}
+		};
 	</script>
 </head>
 <body class="{{ block('bodyClass') }}">
@@ -33,8 +43,13 @@
 		</div>
 	</noscript>
 
-{% set file = blx.config.useCompressedJs ? 'blocks.js' : 'global_bootstrap.js' %}
-{% include "_includes/js_include.html" with {'file': file} %}
+{% set file = 'scripts/' ~ (blx.config.useCompressedJs ? 'compressed/blocks.js' : 'uncompressed/global_bootstrap.js') %}
+<script type="text/javascript" src="{{ blx.url.resource(file) }}"></script>
+
+{% for file in jsIncludes %}
+	{% set path = 'scripts/' ~ (blx.config.useCompressedJs ? 'compressed/' : 'uncompressed/') ~ file %}
+	<script type="text/javascript" src="{{ blx.url.resource(path) }}"></script>
+{% endfor %}
 
 {{ block('scripts') }}
 

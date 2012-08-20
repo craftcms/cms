@@ -1,3 +1,18 @@
+{% extends "_layouts/cp" %}
+{% set title = "Email Settings"|t %}
+{% include_js "email_settings.js" %}
+
+
+{% if not settings %}
+	{% set settings = blx.settings.email %}
+{% endif %}
+
+
+{% block main %}
+	<header class="titlebar">
+		<h1>{{ title }}</h1>
+	</header>
+
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveemailsettings">
 		<input type="hidden" name="redirect" value="settings">
@@ -12,6 +27,7 @@
 				{% include "_includes/error_list" with {'errors': settings.errors.emailAddress} %}
 			{% endif %}
 		</div>
+
 		<div class="field">
 			<div class="heading">
 				<label for="senderName">{{ "Sender Name"|t }}</label>
@@ -22,6 +38,7 @@
 				{% include "_includes/error_list" with {'errors': settings.errors.senderName} %}
 			{% endif %}
 		</div>
+
 		<div class="field" id="protocol-field">
 			<div class="heading">
 				<label for="protocol">{{ "Protocol"|t }}</label>
@@ -46,6 +63,7 @@
 					{% include "_includes/error_list" with {'errors': settings.errors.username} %}
 				{% endif %}
 			</div>
+
 			<div id="password-field" class="field">
 				<div class="heading">
 					<label for="password">{{ "Password"|t }}</label>
@@ -103,6 +121,7 @@
 						{% include "_includes/error_list" with {'errors': settings.errors.username} %}
 					{% endif %}
 				</div>
+
 				<div id="smtp-password-field" class="field">
 					<div class="heading">
 						<label for="smtp-password">{{ "Password"|t }}</label>
@@ -120,6 +139,7 @@
 					Use Smtp Keep Alive
 				</label>
 			</div>
+
 			<div id="smtpSecureTransportType-field" class="field">
 				<div class="heading">
 					<label for="smtpSecureTransportType">{{ "Smtp Secure Transport Type"|t }}</label>
@@ -142,9 +162,4 @@
 			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
 		</div>
 	</form>
-{% endblock %}
-
-
-{% block scripts %}
-	{% include "_includes/js_include" with {'file': "email_settings.js"} %}
 {% endblock %}

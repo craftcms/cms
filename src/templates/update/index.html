@@ -1,10 +1,7 @@
-{% set title = "Blocks Update"|t %}
 {% extends "_layouts/basic" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" file="styles/update.css" %}
-{% endblock %}
+{% set title = "Blocks Update"|t %}
+{% include_css "update.css" %}
+{% include_js "update.js" %}
 
 
 {% block body %}
@@ -18,5 +15,4 @@
 		window.updateInfoUrl = '{{ blx.url.action('update/getupdateinfo', 'h=') }}';
 		window.updateUrl = '{{ blx.url.action('update/update', 'h=') }}';
 	</script>
-	{% include "_includes/js_include" file="update.js" %}
 {% endblock %}

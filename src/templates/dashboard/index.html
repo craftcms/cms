@@ -1,10 +1,7 @@
-{% set title = "Dashboard"|t %}
 {% extends "_layouts/cp" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/dashboard.css"} %}
-{% endblock %}
+{% set title = "Dashboard"|t %}
+{% include_css "dashboard.css" %}
+{% include_js "dashboard.js" %}
 
 
 {% block main %}
@@ -40,8 +37,6 @@
 			window.getAlertsUrl = '{{ blx.url.action("dashboard/getalerts") }}';
 		</script>
 	{/if#}
-
-	{% include "_includes/js_include" with {'file': "dashboard.js"} %}
 
 	<script type="text/javascript">
 		blx.dashboard = new blx.Dashboard([{{ blx.dashboard.userwidgetids|join(',') }}]);

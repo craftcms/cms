@@ -1,10 +1,7 @@
-{% set title = "Messages"|t %}
 {% extends "settings/email/_layout" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/email_messages.css"} %}
-{% endblock %}
+{% set title = "Messages"|t %}
+{% include_css "email_messages.css" %}
+{% include_js "email_messages.js" %}
 
 
 {% block settings %}
@@ -21,9 +18,4 @@
 			</div>
 		{% endfor %}
 	</div>
-{% endblock %}
-
-
-{% block scripts %}
-	{% include "_includes/js_include" with {'file': "email_messages.js"} %}
 {% endblock %}

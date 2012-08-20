@@ -9,7 +9,7 @@ class AccountController extends BaseController
 	/**
 	 *
 	 */
-	public function actionForgot()
+	public function actionForgotPassword()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -22,14 +22,19 @@ class AccountController extends BaseController
 			$user = blx()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
 			if ($user)
 			{
-				if (blx()->email->sendEmailByKey($user, 'forgot_password'))
+				// Generate a new verification code
+				blx()->users->generateVerificationCode($user);
+
+				// Send the Forgot Password email
+				$link = UrlHelper::generateUrl(blx()->users->getVerifyAccountUrl(), array('code' => $user->verification_code));
+				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
 					$this->returnJson(array('success' => true));
 
-				$this->returnErrorJson('There was a problem sending the forgot password email.');
+				$this->returnErrorJson(Blocks::t('There was a problem sending the forgot password email.'));
 			}
 		}
 
-		$this->returnErrorJson('Invalid username or email.');
+		$this->returnErrorJson(Blocks::t('Invalid Username or Email.'));
 	}
 
 	/**
@@ -39,39 +44,41 @@ class AccountController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$verificationCode = blx()->request->getRequiredPost('verificationCode');
+		$password = blx()->request->getRequiredPost('password');
+
 		$passwordForm = new PasswordForm();
-		$passwordForm->password = blx()->request->getPost('password');
+		$passwordForm->password = $password;
 
 		if ($passwordForm->validate())
 		{
-			$userToChange = blx()->users->getUserById(blx()->request->getPost('userId'));
+			$user = blx()->users->getUserByVerificationCode($verificationCode);
 
-			if ($userToChange !== null)
+			if ($user)
 			{
-				if (($userToChange = blx()->users->changePassword($userToChange, $passwordForm->password)) !== false)
-				{
-					$userToChange->activationcode = null;
-					$userToChange->activationcode_issued_date = null;
-					$userToChange->activationcode_expire_date = null;
-					$userToChange->status = UserAccountStatus::Active;
-					$userToChange->last_password_change_date = DateTimeHelper::currentTime();
-					$userToChange->password_reset_required = false;
-					$userToChange->failed_password_attempt_count = null;
-					$userToChange->failed_password_attempt_window_start = null;
-					$userToChange->cooldown_start = null;
-					$userToChange->save();
+				blx()->users->changePassword($user, $password, false);
 
-					if (!blx()->user->getIsLoggedIn())
-						blx()->user->startLogin($userToChange->username, $passwordForm->password);
+				$user->verification_code = null;
+				$user->verification_code_issued_date = null;
+				$user->verification_code_expiry_date = null;
+				$user->status = UserAccountStatus::Active;
+				$user->last_password_change_date = DateTimeHelper::currentTime();
+				$user->password_reset_required = false;
+				$user->failed_password_attempt_count = null;
+				$user->failed_password_attempt_window_start = null;
+				$user->cooldown_start = null;
+				$user->save();
 
-					blx()->dashboard->assignDefaultUserWidgets($userToChange->id);
+				if (!blx()->user->getIsLoggedIn())
+					blx()->user->startLogin($user->username, $passwordForm->password);
 
-					blx()->user->setNotice('Password updated.');
-					$this->redirect('dashboard');
-				}
+				blx()->user->setNotice(Blocks::t('Password updated.'));
+				$this->redirect('dashboard');
 			}
-
-			throw new Exception(Blocks::t('There was a problem validating this activation code.'));
+			else
+			{
+				throw new Exception(Blocks::t('There was a problem validating this verification code.'));
+			}
 		}
 
 		// display the verify account form

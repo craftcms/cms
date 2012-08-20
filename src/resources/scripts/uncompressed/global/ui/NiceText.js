@@ -180,9 +180,6 @@ blx.ui.NiceText = blx.Base.extend({
 		this.focussed = true;
 		this.interval = setInterval($.proxy(this, 'checkInput'), blx.ui.NiceText.interval);
 		this.checkInput();
-
-		if (this.$hint)
-			this.$hint.addClass('focussed');
 	},
 
 	onBlur: function()
@@ -191,9 +188,6 @@ blx.ui.NiceText = blx.Base.extend({
 		clearInterval(this.interval);
 
 		this.checkInput();
-
-		if (this.$hint)
-			this.$hint.removeClass('focussed');
 	},
 
 	onKeyDown: function()

@@ -11,7 +11,7 @@ class TemplateController extends BaseController
 	 */
 	public function actionIndex()
 	{
-		// Require user to be logged in on every page but /login in the control panel and account/password with an activation code
+		// Require user to be logged in on every page but /login in the control panel and account/password with a verification code
 		if (blx()->request->getMode() == RequestMode::CP)
 		{
 			$path = blx()->request->getPath();

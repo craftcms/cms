@@ -1,6 +1,6 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/controllers/EmailController.php	2012-08-15 12:23:30.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/controllers/EmailController.php	2012-08-17 15:19:13.000000000 -0700
-@@ -9,6 +9,34 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/controllers/EmailController.php	2012-08-17 16:09:09.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/controllers/EmailController.php	2012-08-18 09:21:56.000000000 -0700
+@@ -9,6 +9,27 @@
  	/**
  	 *
  	 */
@@ -19,14 +19,7 @@
 +		if ($content->getErrors())
 +			$this->returnErrorJson('There was a problem saving your message.');
 +		else
-+		{
-+			// Update the HTML template value
-+			$message = blx()->email->getMessageById($messageId);
-+			$message->template = blx()->request->getPost('template');
-+			$message->save();
-+
 +			$this->returnJson(array('success' => true));
-+		}
 +	}
 +
 +	/**

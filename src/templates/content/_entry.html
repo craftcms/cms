@@ -1,3 +1,6 @@
+{% extends "_layouts/cp" %}
+{% include_css "content-entry.css" %}
+
 {% if not entry and entryId %}
 	{% set entry = blx.content.getEntryById(entryId) %}
 	{% if draftNum %}
@@ -10,13 +13,6 @@
 {% if entry.draft %}
 	{% set title = title ~ " (" ~ entry.draft.name ~ ")" %}
 {% endif %}
-
-{% extends "_layouts/cp" title=title crumbs="content:Content" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" file="styles/content-entry.css" %}
-{% endblock %}
 
 
 {% block main %}

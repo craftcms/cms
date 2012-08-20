@@ -24,42 +24,51 @@ class SessionController extends BaseController
 		// Did it work?
 		if (blx()->user->getIsLoggedIn())
 		{
-			$r = array(
+			$this->returnJson(array(
 				'success' => true,
 				'redirectUrl' => blx()->user->getReturnUrl()
-			);
+			));
 		}
 		else
 		{
 			// they are not logged in, but they need to reset their password.
 			if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_PASSWORD_RESET_REQUIRED)
 			{
-				$r = array('error' => 'You need to reset your password. Check your email for instructions.');
+				$this->returnJson(array(
+					'notice' => Blocks::t('You need to reset your password. Check your email for instructions.')
+				));
+
 			}
 			else
 			{
-				// error logging in.
-				$errorMessage = '';
-
-				if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_ACCOUNT_LOCKED)
-					$errorMessage = 'Account locked.';
-				else if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_ACCOUNT_COOLDOWN)
+				switch ($loginInfo->getIdentity()->errorCode)
 				{
-					$user = blx()->users->getUserByUsernameOrEmail($username);
-					$errorMessage = 'Account locked. Try again in '.DateTimeHelper::secondsToHumanTimeDuration(blx()->users->getRemainingCooldownTime($user), false).'.';
+					case UserIdentity::ERROR_ACCOUNT_LOCKED:
+					{
+						$error = Blocks::t('Account locked.');
+						break;
+					}
+					case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
+					{
+						$user = blx()->users->getUserByUsernameOrEmail($username);
+						$timeRemaining = DateTimeHelper::secondsToHumanTimeDuration(blx()->users->getRemainingCooldownTime($user), false);
+						$error = Blocks::t('Account locked. Try again in {timeRemaining}.', array('timeRemaining' => $timeRemaining));
+						break;
+					}
+					case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
+					{
+						$error = Blocks::t('Account suspended.');
+						break;
+					}
+					default:
+					{
+						$error = Blocks::t('Invalid username or password.').'<br><a>'.Blocks::t('Forget your password?').'</a>';
+					}
 				}
-				else if ($loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_USERNAME_INVALID || $loginInfo->getIdentity()->errorCode === UserIdentity::ERROR_ACCOUNT_SUSPENDED)
-					$errorMessage = 'Invalid login name or password.';
-				else if ($loginInfo->getIdentity()->errorCode !== UserIdentity::ERROR_NONE)
-					$errorMessage = $loginInfo->getIdentity()->failedPasswordAttemptCount.' of '.blx()->config->maxInvalidPasswordAttempts.' failed password attempts.';
 
-				$r = array(
-					'error' => $errorMessage,
-				);
+				$this->returnErrorJson($error);
 			}
 		}
-
-		$this->returnJson($r);
 	}
 
 	/**

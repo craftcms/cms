@@ -76,7 +76,7 @@ class UsersController extends BaseController
 			if ($isNewUser && (!blx()->users->getCurrentUser()->admin || blx()->request->getPost('require_verification')))
 			{
 				$user->status = UserAccountStatus::Pending;
-				blx()->users->generateVerificationCodeForUser($user, false);
+				blx()->users->generateVerificationCode($user, false);
 				blx()->email->sendEmailByKey($user, 'verify_email');
 			}
 
@@ -166,7 +166,7 @@ class UsersController extends BaseController
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
 
 		$user->status = UserAccountStatus::Pending;
-		blx()->users->generateVerificationCodeForUser($user, false);
+		blx()->users->generateVerificationCode($user, false);
 		blx()->email->sendEmailByKey($user, 'verify_email');
 		$user->save();
 
@@ -175,9 +175,9 @@ class UsersController extends BaseController
 	}
 
 	/**
-	 * Activates a user, bypassing verification.
+	 * Activates a user, bypassing email verification.
 	 */
-	public function actionActivateUser()
+	public function actionActivateUser())
 	{
 		$this->requirePostRequest();
 		$this->requireAdmin();

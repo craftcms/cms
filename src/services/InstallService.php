@@ -100,7 +100,7 @@ class InstallService extends \CApplicationComponent
 			blx()->dashboard->assignDefaultUserWidgets($user->id);
 
 			// Save the default email settings
-			blx()->email->saveEmailSettings(array(
+			blx()->email->saveSettings(array(
 				'protocol'     => EmailerType::PhpMail,
 				'emailAddress' => $user->email,
 				'senderName'   => $inputs['sitename']

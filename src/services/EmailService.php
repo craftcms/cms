@@ -7,6 +7,7 @@ namespace Blocks;
 class EmailService extends \CApplicationComponent
 {
 	private $_defaultEmailTimeout = 10;
+	private $_settings;
 
 	/**
 	 * Sends an email.
@@ -22,7 +23,7 @@ class EmailService extends \CApplicationComponent
 	public function sendEmail(User $user, $subject, $body, $htmlBody = null, $variables = array())
 	{
 		// Get the saved email settings.
-		$emailSettings = $this->getEmailSettings();
+		$emailSettings = $this->getSettings();
 
 		if (!isset($emailSettings['protocol']))
 			throw new Exception(Blocks::t('Could not determine how to send the email.  Check your email settings.'));
@@ -107,12 +108,11 @@ class EmailService extends \CApplicationComponent
 	 *
 	 * @param User $user
 	 * @param string $key
-	 * @param int $pluginId
 	 * @param array $variables
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
+	public function sendEmailByKey(User $user, $key, $variables = array())
 	{
 	}
 
@@ -155,22 +155,31 @@ class EmailService extends \CApplicationComponent
 	}
 
 	/**
-	 * @return mixed
+	 * Gets the system email settings.
+	 *
+	 * @return array
 	 */
-	public function getEmailSettings()
+	public function getSettings()
 	{
-		$emailSettings = blx()->settings->getSystemSettings('email');
-		return $emailSettings;
+		if (!isset($this->_settings))
+			$this->_settings = blx()->settings->getSystemSettings('email');
+
+		return $this->_settings;
 	}
 
 	/**
-	 * @param $settings
+	 * Saves the system email settings.
+	 *
+	 * @param array $settings
 	 * @return bool
 	 */
-	public function saveEmailSettings($settings)
+	public function saveSettings($settings)
 	{
 		if (blx()->settings->saveSettings('systemsettings', $settings, 'email', true))
+		{
+			$this->_settings = $settings;
 			return true;
+		}
 
 		return false;
 	}

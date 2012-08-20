@@ -1,5 +1,6 @@
-{% set title = "Updates"|t %}
 {% extends "_layouts/cp" %}
+{% set title = "Updates"|t %}
+{% include_js "updates.js" %}
 
 
 {% block styles %}
@@ -50,8 +51,4 @@
 			<p>On shared hosts, Blocks files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment.</p>
 		</div>
 	{% endif %}
-{% endblock %}
-
-{% block scripts %}
-	{% include "_includes/js_include" with {'file': "updates.js"} %}
 {% endblock %}

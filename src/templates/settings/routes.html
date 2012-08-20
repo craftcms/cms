@@ -1,10 +1,7 @@
-{% set title = "Routes"|t %}
 {% extends "_layouts/cp" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/routes.css"} %}
-{% endblock %}
+{% set title = "Routes"|t %}
+{% include_css "routes.css" %}
+{% include_js "routes.js" %}
 
 
 {% block main %}
@@ -31,9 +28,4 @@
 	<div class="buttons">
 		<a class="btn" href="{{ blx.url.base }}settings">Done</a>
 	</div>
-{% endblock %}
-
-
-{% block scripts %}
-	{% include "_includes/js_include" with {'file': "routes.js"} %}
 {% endblock %}

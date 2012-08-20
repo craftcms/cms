@@ -1,10 +1,6 @@
-{% set title = "Assets"|t %}
 {% extends "_layouts/cp" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/assets.css"} %}
-{% endblock %}
+{% set title = "Assets"|t %}
+{% include_css "assets.css" %}
 
 
 {% block sidebar %}

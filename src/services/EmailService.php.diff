@@ -1,7 +1,7 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-16 15:47:28.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-17 16:41:36.000000000 -0700
-@@ -9,6 +9,106 @@
- 	private $_defaultEmailTimeout = 10;
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/EmailService.php	2012-08-18 12:07:22.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/EmailService.php	2012-08-18 12:08:55.000000000 -0700
+@@ -10,6 +10,106 @@
+ 	private $_settings;
  
  	/**
 +	 * Returns all of the system email messages.
@@ -107,15 +107,31 @@
  	 * Sends an email.
  	 *
  	 * @param User $user
-@@ -114,6 +214,52 @@
+@@ -83,12 +183,12 @@
+ 
+ 		$variables['user'] = $user;
+ 
+-		$email->subject = TemplateHelper::renderString($subject.' subject', $subject, $variables);
+-		$renderedBody = TemplateHelper::renderString($subject.' body', $body, $variables);
++		$email->subject = TemplateHelper::renderString($subject.' - subject', $subject, $variables);
++		$renderedBody = TemplateHelper::renderString($subject.' - body', $body, $variables);
+ 
+ 		if ($user->email_format == 'html' && $htmlBody)
+ 		{
+-			$renderedHtmlBody = TemplateHelper::renderString($subject.' HTML body', $htmlBody, $variables);
++			$renderedHtmlBody = TemplateHelper::renderString($subject.' - HTML body', $htmlBody, $variables);
+ 			$email->msgHtml($renderedHtmlBody);
+ 			$email->altBody = $renderedBody;
+ 		}
+@@ -114,6 +214,54 @@
  	 */
- 	public function sendEmailByKey(User $user, $key, $pluginId = null, $variables = array())
+ 	public function sendEmailByKey(User $user, $key, $variables = array())
  	{
 +		// Get the email by key from the database.
 +		$message = $this->getMessageByKey($key);
 +
 +		if (!$message)
-+			throw new Exception(Blocks::t('Could not find an email template with the key “{key}”', array('key' => $key)));
++			throw new Exception(Blocks::t('Could not find an email message with the key “{key}”', array('key' => $key)));
 +
 +		// Get the content
 +		$content = $this->getMessageContent($message->id, $user->preferred_language);
@@ -130,10 +146,12 @@
 +			$content->html_body = $md->transform($content->body);
 +		}
 +
-+		if ($message->template)
++		$settings = $this->getSettings();
++
++		if (!empty($settings['template']))
 +		{
 +			$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
-+			$template = $message->template;
++			$template = $settings['template'];
 +		}
 +		else
 +		{

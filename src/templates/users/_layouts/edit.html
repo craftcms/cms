@@ -1,10 +1,6 @@
-{% set title = "Users"|t ~ " - " ~ user.username ~ " - " ~ pageTitle %}
 {% extends "_layouts/cp" %}
-
-
-{% block styles %}
-	{% include "_includes/css_include" with {'file': "styles/user.css"} %}
-{% endblock %}
+{% set title = "Users"|t ~ " - " ~ user.username ~ " - " ~ pageTitle %}
+{% include_css "user.css" %}
 
 
 {% if user.id %}

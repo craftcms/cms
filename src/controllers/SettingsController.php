@@ -130,7 +130,7 @@ class SettingsController extends BaseController
 				}
 			}
 
-			if (blx()->email->saveEmailSettings($settings))
+			if (blx()->email->saveSettings($settings))
 			{
 				blx()->user->setNotice('Email settings saved.');
 				$this->redirectToPostedUrl();

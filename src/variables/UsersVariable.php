@@ -26,6 +26,17 @@ class UsersVariable
 	}
 
 	/**
+	 * Gets a user by a verification code.
+	 *
+	 * @param string $code
+	 * @return User
+	 */
+	public function getUserByVerificationCode($code)
+	{
+		return blx()->users->getUserByVerificationCode($code);
+	}
+
+	/**
 	 * Returns the recent users.
 	 * @return array
 	 */

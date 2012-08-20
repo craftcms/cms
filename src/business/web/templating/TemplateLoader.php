@@ -104,7 +104,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 			}
 		}
 
-		throw new \Twig_Error_Loader(sprintf('Unable to find template "%s" (looked into: %s).', $name, implode(', ', $this->paths)));
+		throw new \Twig_Error_Loader(sprintf('Unable to find template "%s".', $name));
 	}
 
 	/**
