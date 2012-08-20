@@ -313,7 +313,7 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .field { position: relative; margin: 25px 0; }
 .field .heading { margin-bottom: 4px; }
-.field .heading p { font-size: 11px; color: #999; }
+.field .heading p { margin-top: 0; font-size: 11px; color: #999; }
 
 .nested-fields { margin: -25px -5px; padding: 25px 5px 0; overflow: hidden; }
 .nested-fields > .field:last-child { padding-bottom: 25px; }
