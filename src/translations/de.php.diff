@@ -1,6 +1,6 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-16 18:09:04.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-19 19:55:52.000000000 -0700
-@@ -28,6 +28,7 @@
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-20 12:06:25.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-20 12:09:24.000000000 -0700
+@@ -32,6 +32,7 @@
    'Blocks is already installed.' => 'Blocks ist bereits installiert.',
    'Blocks is already up to date.' => 'Blocks ist bereits aktuell.',
    'Blocks needs to be able to write to the follow files, but can’t: {fileList}' => 'Blocks der Lage sein muss, um auf die Follow-Dateien zu schreiben, können aber nicht: {fileList}',
@@ -8,15 +8,15 @@
    'Can’t install Blocks' => 'Kann nicht installieren Blocks',
    'Checkbox Options' => 'Checkbox-Optionen',
    'Checking for updates…' => 'Auf Updates prüfen...',
-@@ -36,6 +37,7 @@
-   'Content Languages' => 'Inhalt Sprachen',
+@@ -41,6 +42,7 @@
+   'Cookies must be enabled to access the Blocks CP.' => 'Cookies müssen aktiviert sein, um die Blocks CP zugreifen.',
    'Cooldown Time Remaining' => 'Die Abklingzeit wurde Restzeitanzeige',
    'Could not determine how to send the email.  Check your email settings.' => 'Konnte nicht ermittelt werden, wie die E-Mail senden. Überprüfen Sie Ihre E-Mail-Einstellungen.',
-+  'Could not find an email template with the key “{key}”' => 'Konnte nicht gefunden werden eine E-Mail-Vorlage mit der Taste “{key}”',
++  'Could not find an email message with the key “{key}”' => 'Konnte nicht gefunden werden eine E-Mail-Nachricht mit dem Schlüssel “{key}”',
    'Could not hash the given password.' => 'Konnte nicht die gegebene Hash-Passwort ein.',
    'Create a new section' => 'Erstellen Sie einen neuen Abschnitt',
    'DOM extension' => 'DOM-Erweiterung',
-@@ -52,6 +54,7 @@
+@@ -57,6 +59,7 @@
    'Do It.' => 'Do It.',
    'Done' => 'Fertig',
    'Dropdown Options' => 'Dropdown-Optionen',
@@ -24,15 +24,15 @@
    'Editing “{entryTitle}”' => 'Bearbeitung “{entryTitle}”',
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => 'Entweder $_SERVER["REQUEST_URI"] oder $_SERVER["QUERY_STRING"] muss vorhanden sein.',
    'Email' => 'E-Mail',
-@@ -83,6 +86,7 @@
+@@ -90,6 +93,7 @@
    'How you’ll refer to this section in the templates.' => 'Wie Sie zu diesem Abschnitt in den Vorlagen zu verweisen.',
    'Install' => 'Installieren',
    'Install Blocks' => 'Install Blocks',
 +  'Installing Blocks Pro…' => 'Installieren Blocks Pro...',
    'Instructions' => 'Anleitung',
-   'IsNullOrEmpty requires a string.' => 'IsNullOrEmpty erfordert einen String zurück.',
-   'Languages' => 'Sprachen',
-@@ -92,23 +96,28 @@
+   'Invalid Username or Email.' => 'Ungültiger Benutzername oder E-Mail.',
+   'Invalid username or password.' => 'Falsche Passwort oder Benutzername.',
+@@ -102,23 +106,28 @@
    'Last Name' => 'Nachname',
    'Last Password Change Date' => 'Letzte Password Change Datum',
    'Leave blank to keep password unchanged.' => 'Leer lassen, damit das Kennwort unverändert.',
@@ -61,7 +61,7 @@
    'New content block' => 'Neue Inhalte Block',
    'New draft' => 'Neuer Entwurf',
    'New entry' => 'Neuer Eintrag',
-@@ -118,6 +127,7 @@
+@@ -128,6 +137,7 @@
    'No draft exists with the ID “{entryId}”.' => 'Kein Entwurf existiert mit der Id {entryId}.',
    'No entry exists with the ID “{entryId}”.' => 'Kein Eintrag vorhanden mit der Id {entryId}.',
    'No plugin exists with the class “{className}”' => 'Kein Plugin existiert mit der Klasse “{className}”',
@@ -69,15 +69,15 @@
    'No section exists with the ID “{sectionId}”' => 'Nein Abschnitt existiert mit der Id “{sectionId}”',
    'No updates available.' => 'Keine Updates verfügbar.',
    'No user exists with the ID “{userId}”.' => 'Kein Benutzer vorhanden mit der Id “{userId}”.',
-@@ -152,6 +162,7 @@
-   'Recent Users' => 'Letzte Teilnehmer',
+@@ -164,6 +174,7 @@
    'Reflection extension' => 'Reflection Extension',
    'Register a new user' => 'Einen neuen Benutzer registrieren',
+   'Reset Password' => '',
 +  'Routes' => 'Routen',
    'SOAP extension' => 'SOAP-Erweiterung',
    'Save' => 'Sparen',
    'Save as a draft' => 'Als Entwurf speichern',
-@@ -171,6 +182,7 @@
+@@ -184,6 +195,7 @@
    'Site Name' => 'Site Name',
    'Site URL' => 'Website-URL',
    'Smtp Secure Transport Type' => 'Smtp Secure Transport Type',
@@ -85,7 +85,15 @@
    'Suspend' => 'Aussetzen',
    'Suspended' => 'Ausgesetzt',
    'System' => 'System',
-@@ -219,12 +231,14 @@
+@@ -194,6 +206,7 @@
+   'The content row can’t be updated because it’s new.' => 'Der Inhalt Zeile kann nicht aktualisiert werden, da es neu ist werden.',
+   'The email address Blocks will use when sending email.' => 'Die E-Mail-Adress-Blöcke werden beim Senden von E-Mail',
+   'The protocol Blocks will use to send email.' => 'Die Protokoll-Blöcke verwenden wird, um E-Mail zu senden.',
++  'The template Blocks will use for users who prefer HTML email' => 'Die Vorlage Blocks wird für Benutzer, die HTML-Mail bevorzugen, verwenden',
+   'The text that will be shown if the field doesn’t have a value.' => 'Der Text, der erscheint, wenn das Feld keinen Wert sein.',
+   'The text to be displayed beside the Block Name on the entry’s publish page.' => 'Der Text, der neben dem Blocknamen auf den Eintrag für die Publizieren-Seite angezeigt werden.',
+   'The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.' => 'Das Update kann nicht installiert werden, weil Blocks erfordert MySQL-Version “{requiredMySqlVersion}” oder höher und Sie haben MySQL-Version “{installedMySqlVersion}” installiert werden.',
+@@ -234,12 +247,14 @@
    'Update All' => 'Alle aktualisieren',
    'Update Blocks' => 'Update blockiert',
    'Updates' => 'Updates',
@@ -93,22 +101,24 @@
    'User Info' => 'Benutzer-Info',
    'Username' => 'Benutzername oder E-Mail',
    'Username and password are required.  Check your email settings.' => 'Nutzername und Passwort erforderlich sind. Überprüfen Sie Ihre E-Mail-Einstellungen.',
-   'Username or email' => 'Benutzername oder E-Mail',
+   'Username or Email' => 'Benutzername oder E-Mail',
    'Users' => 'Benutzer',
    'Verify Account' => 'Account überprüfen',
 +  'Welcome to Blocks Pro' => 'Willkommen in Blocks Pro',
+   'We’ve sent you an email with instructions to reset your password.' => '',
    'What the entry URLs should look like.' => 'Was der Eintrag URLs aussehen sollte.',
    'What this block will be called in the CP.' => 'Was wird dieser Block in der CP genannt werden.',
-   'What this section will be called in the CP.' => 'Was wird dieser Abschnitt in der CP genannt werden.',
-@@ -238,6 +252,12 @@
-   'You’re up to date!' => 'Du bist auf dem Laufenden!',
-   'You’ve got updates!' => 'Du mußt Updates!',
+@@ -257,7 +272,14 @@
    'build' => 'bauen',
-+  'forgot_password_body' => '',
-+  'forgot_password_subject' => '',
+   'forget?' => 'vergessen?',
+   'forgot_password_body' => '',
++  'forgot_password_heading' => '',
+   'forgot_password_subject' => '',
 +  'verify_email_body' => '',
++  'verify_email_heading' => '',
 +  'verify_email_subject' => '',
 +  'verify_new_email_body' => '',
++  'verify_new_email_heading' => '',
 +  'verify_new_email_subject' => '',
    '{sectionName} section settings' => '{sectionName} abschnitt einstellungen',
    '“{className}” doesn’t have an attribute “{attributeName}”.' => '“{className}” nicht über ein Attribut “{attributeName}”.',
