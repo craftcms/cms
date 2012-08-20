@@ -25,7 +25,7 @@
  
 +		<div class="field">
 +			<div class="heading">
-+				<label for="template">{{ "HTML Email Template" }}</label>
++				<label for="template">{{ "HTML Email Template"|t }}</label>
 +				<p>{{ "The template Blocks will use for users who prefer HTML email"|t }}</p>
 +			</div>
 +			<input id="template" name="template" type="text" class="text template" value="{{ settings.template }}">
