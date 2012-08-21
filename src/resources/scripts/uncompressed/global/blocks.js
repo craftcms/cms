@@ -584,7 +584,7 @@ blx.displayNotification = function(type, message)
 };
 
 /**
- * Dispays a notice.
+ * Displays a notice.
  *
  * @param string message
  */
