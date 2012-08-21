@@ -31,7 +31,15 @@ class TemplateHelper
 				//'strict_variables'  => true,
 			));
 
+			// Add custom filters
 			$twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
+
+			// Add custom functions
+			$twig->addFunction('url', new \Twig_Function_Function('\Blocks\UrlHelper::generateUrl'));
+			$twig->addFunction('resourceUrl', new \Twig_Function_Function('\Blocks\UrlHelper::generateResourceUrl'));
+			$twig->addFunction('actionUrl', new \Twig_Function_Function('\Blocks\UrlHelper::generateActionUrl'));
+
+			// Add custom tags
 			$twig->addTokenParser(new Redirect_TokenParser());
 			$twig->addTokenParser(new IncludeCss_TokenParser());
 			$twig->addTokenParser(new IncludeJs_TokenParser());

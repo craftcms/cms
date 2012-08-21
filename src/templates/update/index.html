@@ -14,8 +14,8 @@
 
 {% set scripts %}
 	<script type="text/javascript">
-		window.updateHandle = '{{ handle }}';
-		window.updateInfoUrl = '{{ blx.url.action('update/getupdateinfo', 'h=') }}';
-		window.updateUrl = '{{ blx.url.action('update/update', 'h=') }}';
+		window.updateHandle = "{{ handle }}";
+		window.updateInfoUrl = "{{ actionUrl('update/getupdateinfo', 'h=') }}";
+		window.updateUrl = "{{ actionUrl('update/update', 'h=') }}";
 	</script>
 {% endset %}

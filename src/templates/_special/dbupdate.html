@@ -4,7 +4,7 @@
 
 {% set styles %}
 	<style type="text/css">
-		#dbupdate .icon { background-image: url({{ blx.url.resource }}images/notice-dbupdate.png); }
+		#dbupdate .icon { background-image: url({{ resourceUrl('images/notice-dbupdate.png') }}); }
 	</style>
 {% endset %}
 
@@ -36,12 +36,12 @@
 	<script type="text/javascript">
 		var waiting = false;
 		$('#go').click(function() {
-			$.post('{{ blx.url.action }}dbupdate/update', function(response) {
+			$.post("{{ actionUrl('dbupdate/update') }}", function(response) {
 				if (response.success)
 					window.location.reload()
 				else
 				{
-					var error = (response.error or 'An unknown error occurred.');
+					var error = (response.error or '{{ "An unknown error occurred."|t }}');
 					alert(error);
 				}
 			});

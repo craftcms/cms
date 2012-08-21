@@ -8,17 +8,11 @@
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 		<ul class="right">
-			<li><a href="{{ blx.url.base }}dashboard/settings" class="btn" data-icon="⚙">{{ "Settings"|t }}</a></li>
+			<li><a href="{{ url('dashboard/settings') }}" class="btn" data-icon="⚙">{{ "Settings"|t }}</a></li>
 		</ul>
 	</header>
 
 	{#<div id="alerts">
-		{% if not blx.sites.licensekeys %}
-			<div class="alert">
-				<p>{{ 'You need to enter your license key into your <a href="{{ blx.url.base }}settings/info">System Info</a> page.'|t }}</p>
-			</div>
-		{% endif %}
-
 		{% for alert in blx.dashboard.alerts %}
 			<div class="alert">
 				<p>{{ alert }}</p>
@@ -34,7 +28,7 @@
 	{#if !blx.updates.cached}
 		<script type="text/javascript">
 			window.getAlerts = true;
-			window.getAlertsUrl = '{{ blx.url.action("dashboard/getalerts") }}';
+			window.getAlertsUrl = "{{ actionUrl('dashboard/getalerts') }}";
 		</script>
 	{/if#}
 

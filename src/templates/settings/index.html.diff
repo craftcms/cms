@@ -3,8 +3,8 @@
 @@ -10,6 +10,7 @@
  	<h2>{{ "System"|t }}</h2>
  	<ul class="icons">
- 		<li><a href="{{ blx.url.base }}settings/general" data-icon="g">{{ "General"|t }}</a></li>
-+		<li><a href="{{ blx.url.base }}settings/routes" data-icon="⇈">{{ "Routes"|t }}</a></li>
- 		<li><a href="{{ blx.url.base }}settings/email" data-icon="E">{{ "Email"|t }}</a></li>
- 		<li><a href="{{ blx.url.base }}settings/advanced" data-icon="a">{{ "Advanced"|t }}</a></li>
+ 		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
++		<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
+ 		<li><a href="{{ url('settings/email') }}" data-icon="E">{{ "Email"|t }}</a></li>
+ 		<li><a href="{{ url('settings/advanced') }}" data-icon="a">{{ "Advanced"|t }}</a></li>
  	</ul>
