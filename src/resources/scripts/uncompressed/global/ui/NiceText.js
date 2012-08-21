@@ -57,7 +57,8 @@ blx.ui.NiceText = blx.Base.extend({
 				this.showingHint = true;
 
 			// Focus the input when clicking on the hint
-			this.addListener(this.$hint, 'mousedown', function(event) {
+			var $focusTargets = this.$hint.add(this.$input.parent('.textwrapper'));
+			this.addListener($focusTargets, 'mousedown', function(event) {
 				event.preventDefault();
 				this.$input.focus()
 			});

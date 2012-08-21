@@ -1,0 +1,43 @@
+{% extends "_layouts/cp" %}
+{% set title = "Assets"|t %}
+{% include_css "assets.css" %}
+
+
+{% set main %}
+	<header class="titlebar">
+		<h1>{{ title }}</h1>
+
+		<ul class="right">
+			<li>
+				<div class="btn-group">
+					<a class="btn {% if view == 'thumbview' %}active{% endif %}" href="{{ blx.url.base }}assets" title="{{ 'Display files as thumbnails'|t }}" data-icon="⌗"></a>
+					<a class="btn {% if view == 'listview' %}active{% endif %}" href="{{ blx.url.base }}assets/list" title="{{ 'Display files in a list'|t }}" data-icon="•"></a>
+				</div>
+			</li>
+			<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="Search assets"></div></li>
+			<li><a href="" class="btn" data-icon="↑">Upload files</a></li>
+		</ul>
+	</header>
+
+	<nav class="nav">
+		<ul>
+			<li><a href="">shared</a></li>
+			<li class="sel"><a href="">drinks</a></li>
+			<li><a href="">content</a></li>
+			<li><a href="">add-ons</a></li>
+			<li><a href="">assets</a></li>
+			<li><a href="">matrix</a></li>
+			<li><a href="">playa</a></li>
+			<li><a href="">wygwam</a></li>
+			<li><a href="">blog-posts</a></li>
+			<li><a href="">2009</a></li>
+			<li><a href="">2010</a></li>
+			<li><a href="">2011</a></li>
+			<li><a href="">divebar</a></li>
+		</ul>
+	</nav>
+
+	<div>
+		{{ files }}
+	</div>
+{% endset %}

@@ -21,7 +21,7 @@
 .nav ul li a:before { margin: -4px 5px -5px 0; width: 22px; text-align: center; }
 .nav ul li a .status { margin: 0 10px 0 6px; }
 .nav ul li a .badge { display: block; float: right; margin: 1px 0; padding: 0 8px; border-radius: 9px; line-height: 18px; background: #ddd; }
-.nav ul li.sel a { color: #2c2c2c; }
+.nav ul li.sel > a { color: #2c2c2c; }
 
 /* headings */
 h1 { margin-bottom: 25px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 30px; color: #000; }
@@ -74,6 +74,9 @@ strong, i em { font-weight: bold; font-family: sans-serif; }
 
 .left { float: left; }
 .right { float: right; }
+
+th.right,
+td.right { float: none; text-align: right; }
 
 .no-outline { outline: none; }
 .clear { display: block; clear: both; height: 0; }
@@ -160,17 +163,23 @@ ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; widt
 .btn.active { -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 2px rgba(0,0,0,0.25); }
 .btn.active { position: relative; @include linear-gradient(#ccc, #999); cursor: default; }
 .btn.disabled { opacity: 0.5; cursor: default; text-shadow: none; }
+
 .btn[data-icon]:before,
 .addbtn:before { margin-right: 5px; }
 .btn[data-icon-after]:after,
 .menubtn:after { margin-left: 5px; }
 
 /* add buttons */
-.addbtn:before { @include icon; content: '+'; font-size: 16px; margin-top: 2px; }
+.addbtn:before { @include icon; content: '+'; }
+
+.btn[data-icon]:before,
+.btn[data-icon-after]:after,
+.addbtn:before,
+.menubtn:after { font-size: 17px; margin-top: 2px; }
 
 /* menu buttons */
 .menubtn { cursor: default; @include unselectable; }
-.menubtn:after { @include icon; margin-top: 2px; content: '▼'; font-size: 0.8em; }
+.menubtn:after { @include icon; content: '▼'; font-size: 0.8em; }
 
 /* small buttons */
 .btn.small { padding: 0 7px; height: 17px; font-size: 11px; line-height: 17px; }
@@ -338,6 +347,10 @@ textarea.text,
 .text.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
 .text.error { border-color: $errorcolor; }
+
+.textwrapper.search { position: relative; width: 164px; padding-right: 36px; cursor: text; }
+.textwrapper.search:before { @include icon; position: absolute; top: 9px; left: 8px; content: "s"; color: #a1a4a6; }
+.textwrapper.search .text { padding-left: 27px; }
 
 .texthint-container { position: relative; height: 0; }
 .texthint { position: absolute; top: -1px; width: 100%; color: #a1a4a6; cursor: text; }
