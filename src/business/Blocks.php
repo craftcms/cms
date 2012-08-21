@@ -323,7 +323,11 @@ class Blocks extends \Yii
 			$normalizedParams[$key] = $value;
 		}
 
-		return '@'.parent::t($category, $message, $normalizedParams, $source, $language).'@';
+		$translation = parent::t($category, $message, $normalizedParams, $source, $language);
+		if (blx()->config->translationDebugOutput)
+			$translation = '@'.$translation.'@';
+
+		return $translation;;
 	}
 
 	/**
