@@ -12,7 +12,7 @@ class InstallController extends BaseController
 	 */
 	public function init()
 	{
-		// Return a 404 if Blocks is already installed
+		// Return a 404 if @@@productDisplay@@@ is already installed
 		if (!blx()->config->devMode && blx()->getIsInstalled())
 			throw new HttpException(404);
 	}

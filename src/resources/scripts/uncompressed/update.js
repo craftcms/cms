@@ -21,7 +21,7 @@ function showSuccess(msg)
 // make sure an update handle was provided
 if (!updateHandle)
 {
-	showError('Unable to determine what to update.');
+	showError(blx.t('Unable to determine what to update.'));
 	return;
 }
 
@@ -31,7 +31,7 @@ function getUpdateInfo()
 	$.getJSON(updateInfoUrl + updateHandle, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
-			showError('An unknown error occurred.');
+			showError(blx.t('An unknown error occurred.'));
 			return;
 		}
 
@@ -43,7 +43,7 @@ function getUpdateInfo()
 
 		if (!data.updateInfo)
 		{
-			showSuccess('You’re already up-to-date.');
+			showSuccess(blx.t('You’re already up-to-date.'));
 			return;
 		}
 
@@ -63,7 +63,7 @@ function updateNext()
 	$.post(updateUrl + updateInfo[updating].handle, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
-			showError('An unknown error occurred while updating '+updateInfo[updating].name+'.');
+			showError(blx.t('An unknown error occurred while updating {name}.', {'name': updateInfo[updating].name}));
 			return;
 		}
 
@@ -75,7 +75,7 @@ function updateNext()
 
 		if (updating == totalUpdates-1)
 		{
-			showSuccess('All done!');
+			showSuccess(blx.t('All done!'));
 
 			// Redirect to the Dashboard in half a second
 			setTimeout(function() {

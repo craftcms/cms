@@ -10,7 +10,7 @@
 {% set body %}
 	<div class="pane">
 		<div class="pane-head">
-			Set Password
+			{{ "Set Password"|t }}
 		</div>
 		<div class="pane-body">
 			{% set verificationCode = blx.url.get('code') %}
@@ -21,7 +21,7 @@
 					<input type="hidden" name="redirect" value="dashboard">
 					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
 
-					<div class="pane-item">Let's set a password for your account.</div>
+					<div class="pane-item">{{ "Let’s set a password for your account."|t }}</div>
 					<div class="pane-item field">
 						<label for="password">{{ "Password"|t }}</label>
 						<div class="passwordwrapper"><input id="password" name="password" class="text password {% if verifyAccountInfo.errors.password %}error{% endif %}" type="password"></div>

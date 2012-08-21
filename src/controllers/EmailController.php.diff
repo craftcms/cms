@@ -17,7 +17,7 @@
 +		$content = blx()->email->saveMessageContent($messageId, $subject, $body, null, $language);
 +
 +		if ($content->getErrors())
-+			$this->returnErrorJson('There was a problem saving your message.');
++			$this->returnErrorJson(Blocks::t('There was a problem saving your message.'));
 +		else
 +			$this->returnJson(array('success' => true));
 +	}

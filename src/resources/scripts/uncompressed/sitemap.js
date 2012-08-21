@@ -241,7 +241,7 @@ blx.Node = blx.Base.extend({
 		this.setTrailPosition(this.pos);
 
 		this.$elem.css({
-			opacity: 0,
+			opacity: 0
 			//left: '50%'
 		});
 		this.$trail.css('opacity', 0);

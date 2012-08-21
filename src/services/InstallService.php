@@ -7,14 +7,16 @@ namespace Blocks;
 class InstallService extends \CApplicationComponent
 {
 	/**
-	 * Installs Blocks!
+	 * Installs @@@productDisplay@@@!
 	 * @param array $inputs
+	 * @throws Exception
 	 * @throws \Exception
+	 * @return void
 	 */
 	public function run($inputs)
 	{
 		if (blx()->getIsInstalled())
-			throw new Exception(Blocks::t('Blocks is already installed.'));
+			throw new Exception(Blocks::t('@@@productDisplay@@@ is already installed.'));
 
 		// Install the Block model first so the other models can create FK's to it
 		$models[] = new Block();
@@ -62,7 +64,7 @@ class InstallService extends \CApplicationComponent
 				$model->addForeignKeys();
 			}
 
-			// Tell Blocks that it's installed now
+			// Tell @@@productDisplay@@@ that it's installed now
 			blx()->setIsInstalled(true);
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);

@@ -9,7 +9,7 @@ class LocalizationService extends \CApplicationComponent
 	private $_translatedLanguages;
 
 	/**
-	 * Returns a list of language ids from the languages directory that Blocks is translated into.
+	 * Returns a list of language ids from the languages directory that @@@productDisplay@@@ is translated into.
 	 * @return mixed
 	 */
 	public function getAppTranslatedLanguages()

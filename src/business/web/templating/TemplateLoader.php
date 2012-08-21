@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Loads Blocks templates into Twig.
+ * Loads @@@productDisplay@@@ templates into Twig.
  */
 class TemplateLoader extends \Twig_Loader_Filesystem
 {

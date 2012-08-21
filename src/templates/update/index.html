@@ -1,11 +1,14 @@
 {% extends "_layouts/basic" %}
-{% set title = "Blocks Update"|t %}
+{% set title = "@@@productDisplay@@@ Update"|t %}
 {% include_css "update.css" %}
 {% include_js "update.js" %}
 
+{% include_translation
+	"Release Notes"
+%}
 
 {% set body %}
-	<div id="status">Preparing to update…</div>
+	<div id="status">{{ "Preparing to update…"|t }}</div>
 {% endset %}
 
 

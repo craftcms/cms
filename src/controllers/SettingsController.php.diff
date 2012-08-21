@@ -14,7 +14,7 @@
 +			$info->license_key = $generalSettingsForm->licenseKey;
  			$info->save();
  
- 			blx()->user->setNotice('General settings saved.');
+ 			blx()->user->setNotice(Blocks::t('General settings saved.'));
 @@ -80,6 +82,7 @@
  			$settings = array('protocol' => $emailSettings->protocol);
  			$settings['emailAddress'] = $emailSettings->emailAddress;

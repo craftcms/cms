@@ -35,7 +35,7 @@
 
 		<div id="updates"></div>
 	{% else %}
-		<p>Blocks will have a problem writing to the following {% if problems|length == 1 %}directory{% else %}directories{% endif %}:</p>
+		<p>{{ "@@@productDisplay@@@ will have a problem writing to the following"|t }} {% if problems|length == 1 %}{{ "directory"|t }{% else %}{{ "directories"|t }}{% endif %}:</p>
 		<ul>
 			{% for problem in problems %}
 				<li>{{ problem }}<li>
@@ -45,10 +45,10 @@
 		<br>
 
 		<div>
-			<p><strong>For automatic updates to work, at least two criteria must be satisfied:</strong></p>
-			<p><strong>(a) File ownership:</strong> All of your Blocks files must be owned by the user under which your web server executes. In other words, the owner of your Blocks files must match the user under which your web server executes. The web server user (named "apache", "web", "www", "nobody", or some such) is not necessarily the owner of your Blocks files. Typically, Blocks files are owned by the ftp user which uploaded the original files.</p>
-			<p><strong>(b) File permissions:</strong> All of your Blocks files must be either owner writable by, or group writable by, the user under which your Apache server executes.</p>
-			<p>On shared hosts, Blocks files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment.</p>
+			<p><strong>{{ "For automatic updates to work, at least two criteria must be satisfied:"|t }</strong></p>
+			<p><strong>(a) {{ "File ownership:"|t }}</strong> {{ "All of your @@@productDisplay@@@ files must be owned by the user under which your web server executes. In other words, the owner of your @@@productDisplay@@@ files must match the user under which your web server executes. The web server user (named "apache", "web", "www", "nobody", or some such) is not necessarily the owner of your @@@productDisplay@@@ files. Typically, @@@productDisplay@@@ files are owned by the ftp user which uploaded the original files."|t }</p>
+			<p><strong>(b) {{ "File permissions:"|t }}</strong> {{ "All of your @@@productDislay@@@ files must be either owner writable by, or group writable by, the user under which your Apache server executes."|t }}</p>
+			<p>{{ "On shared hosts, @@@productDisplay@@@ files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment."|t }}</p>
 		</div>
 	{% endif %}
 {% endset %}

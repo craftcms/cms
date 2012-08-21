@@ -20,7 +20,7 @@
 		<div class="field">
 			<div class="heading">
 				<label for="emailAddress">{{ "System Email Address"|t }}</label>
-				<p>{{ "The email address Blocks will use when sending email."|t }}</p>
+				<p>{{ "The email address @@@productDisplay@@@ will use when sending email."|t }}</p>
 			</div>
 			<input id="emailAddress" name="emailAddress" class="text" type="text" value="{{ settings.emailAddress }}">
 			{% if settings.errors.emailAddress %}
@@ -31,7 +31,7 @@
 		<div class="field">
 			<div class="heading">
 				<label for="senderName">{{ "Sender Name"|t }}</label>
-				<p>{{ "The “From” name Blocks will use when sending email."|t }}</p>
+				<p>{{ "The “From” name @@@productDisplay@@@ will use when sending email."|t }}</p>
 			</div>
 			<input id="senderName" name="senderName" class="text" type="text" value="{{ settings.senderName }}">
 			{% if settings.errors.senderName %}
@@ -42,14 +42,14 @@
 		<div class="field" id="protocol-field">
 			<div class="heading">
 				<label for="protocol">{{ "Protocol"|t }}</label>
-				<p>{{ "The protocol Blocks will use to send email."|t }}</p>
+				<p>{{ "The protocol @@@productDisplay@@@ will use to send email."|t }}</p>
 			</div>
 			<select id="protocol" name="protocol">
-				<option value="PhpMail" {% if settings.protocol == 'PhpMail' %}selected{% endif %}>Php Mail</option>
-				<option value="Sendmail" {% if settings.protocol == 'Sendmail' %}selected{% endif %}>Sendmail</option>
-				<option value="Smtp" {% if settings.protocol == 'Smtp' %}selected{% endif %}>Smtp</option>
-				<option value="GmailSmtp" {% if settings.protocol == 'GmailSmtp' %}selected{% endif %}>Gmail Smtp</option>
-				<option value="Pop" {% if settings.protocol == 'Pop' %}selected{% endif %}>Pop before Smtp</option>
+				<option value="PhpMail" {% if settings.protocol == 'PhpMail' %}selected{% endif %}>{{ "Php Mail"|t }}</option>
+				<option value="Sendmail" {% if settings.protocol == 'Sendmail' %}selected{% endif %}>{{ "Sendmail|t }}</option>
+				<option value="Smtp" {% if settings.protocol == 'Smtp' %}selected{% endif %}>{{ "Smtp|t }}</option>
+				<option value="GmailSmtp" {% if settings.protocol == 'GmailSmtp' %}selected{% endif %}>{{ "Gmail Smtp|t }}</option>
+				<option value="Pop" {% if settings.protocol == 'Pop' %}selected{% endif %}>{{ "Pop before Smtp|t }}</option>
 			</select>
 		</div>
 
@@ -147,9 +147,9 @@
 				{% include "_includes/pill" with {
 					'name': "smtpSecureTransportType",
 					'options': [
-						{'value': "none", 'label': "None"},
-						{'value': "ssl", 'label': "SSL"},
-						{'value': "tls", 'label': "TLS"}
+						{'value': "none", 'label': "None"|t},
+						{'value': "ssl", 'label': "SSL"|t},
+						{'value': "tls", 'label': "TLS"|t}
 					],
 					default: "none",
 					'value': settings.smtpSecureTransportType
@@ -159,7 +159,7 @@
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-			<a class="btn" href="{{ blx.url.base }}settings">Cancel</a>
+			<a class="btn" href="{{ blx.url.base }}settings">{{ "Cancel"|t }}</a>
 		</div>
 	</form>
 {% endset %}

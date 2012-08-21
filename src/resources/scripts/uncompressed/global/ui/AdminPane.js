@@ -190,7 +190,7 @@ blx.ui.AdminPane.Item = blx.Base.extend({
 
 	deleteItem: function()
 	{
-		if (confirm('Are you sure you want to delete “'+this.$name.html()+'”?'))
+		if (confirm(blx.t('Are you sure you want to delete “{name}”?', {'name': this.$name.html()})))
 		{
 			this.$item.remove();
 			this.$settings.remove();
