@@ -1,14 +1,14 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/es.php	2012-08-21 13:48:33.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/es.php	2012-08-21 13:48:33.000000000 -0700
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/es.php	2012-08-21 15:05:07.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/es.php	2012-08-21 15:05:07.000000000 -0700
 @@ -15,6 +15,7 @@
    'Account suspended.' => '',
    'Activate' => '',
    'Active' => '',
 +  'Add a token' => '',
    'Add a widget' => '',
-   'Add-ons' => '',
    'Admin settings saved.' => '',
-@@ -24,6 +25,8 @@
+   'Administration' => 'Administración',
+@@ -23,6 +24,8 @@
    'Advanced settings saved.' => '',
    'All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>' => 'Todos <a href="http://www.yiiframework.com/doc/api/#system.db">relacionadas con la BD clases</a>',
    'All done!' => '',
@@ -17,7 +17,7 @@
    'All rights reserved.' => '',
    'Allow line breaks' => '',
    'An unknown error occurred while updating {name}.' => '',
-@@ -41,11 +44,18 @@
+@@ -40,10 +43,17 @@
    'Block Handle' => '',
    'Block Name' => '',
    'Block Type' => '',
@@ -27,7 +27,6 @@
 +  'Blocks Pro needs to be able to write to the follow files, but can’t: {fileList}' => '',
 +  'Blocks Pro will have a problem writing to the following' => '',
    'Blog' => '',
-   'Blog & Tonic' => '',
 +  'Body' => '',
    'Build' => '',
    'COOKIE Info' => '',
@@ -36,7 +35,7 @@
    'Case Studies' => '',
    'Checkbox Options' => '',
    'Checking for updates…' => '',
-@@ -57,6 +67,7 @@
+@@ -55,6 +65,7 @@
    'Cookies must be enabled to access the Blocks CP.' => '',
    'Cooldown Time Remaining' => '',
    'Could not determine how to send the email.  Check your email settings.' => 'No se pudo determinar la forma de enviar el correo electrónico. Compruebe la configuración de correo electrónico.',
@@ -44,7 +43,7 @@
    'Could not find any update information for the plugin with handle “{handle}”.' => '',
    'Could not hash the given password.' => '¿No podría el hash de la contraseña proporcionada.',
    'Couldn’t disable plugin.' => '',
-@@ -73,9 +84,13 @@
+@@ -71,9 +82,13 @@
    'Couldn’t save entry.' => '',
    'Couldn’t save general settings.' => '',
    'Couldn’t save language settings.' => '',
@@ -58,7 +57,7 @@
    'Create a new section' => '',
    'Create your account' => '',
    'Critical' => '',
-@@ -104,6 +119,8 @@
+@@ -101,6 +116,8 @@
    'Draft published.' => '',
    'Draft saved.' => '',
    'Dropdown Options' => '',
@@ -67,15 +66,15 @@
    'Edit section' => '',
    'Editing “{entryTitle}”' => '',
    'Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.' => 'Cualquiera de $_SERVER["REQUEST_URI"] o $_SERVER["QUERY_STRING"] debe existir.',
-@@ -116,6 +133,7 @@
+@@ -112,6 +129,7 @@
+   'Enable' => '',
    'Enabled' => '',
-   'English (US)' => '',
    'Enter a title…' => '',
 +  'Enter your license key…' => '',
    'Entries in this section can be manually sorted' => '',
    'Entries in this section have their own URLs' => '',
    'Entry Template' => '',
-@@ -144,7 +162,10 @@
+@@ -139,7 +157,10 @@
    'General settings saved.' => '',
    'Glob' => 'Glob',
    'Gmail Smtp' => '',
@@ -83,20 +82,18 @@
 +  'Go to Blocks Pro' => '',
    'HTML' => '',
 +  'HTML Email Template' => '',
-   'Have a drink on us!' => '',
    'Hide' => '',
    'Hint Text' => '',
-@@ -153,13 +174,17 @@
+   'Home' => '',
+@@ -147,11 +168,15 @@
    'Host, port, username and password must be configured under your email settings.' => 'Host, puerto, nombre de usuario y la contraseña debe estar configurado en la configuración de su correo electrónico.',
    'How you’ll refer to this block in the templates.' => '',
    'How you’ll refer to this section in the templates.' => '',
 +  'If the URL looks like this' => '',
    'Install' => '',
 +  'Install Blocks Pro' => '',
-   'Installation Instructions' => '',
 +  'Installing Blocks Pro…' => '',
    'Instructions' => '',
-   'Introducing Assets' => '',
    'Invalid Username or Email.' => '',
    'Invalid username or password.' => '',
    'IsNullOrEmpty requires a string.' => 'IsNullOrEmpty requiere una cadena.',
@@ -104,7 +101,7 @@
    'Keep me logged in' => '',
    'Language settings saved.' => '',
    'Languages' => '',
-@@ -170,31 +195,39 @@
+@@ -162,30 +187,38 @@
    'Last Password Change Date' => '',
    'Leave blank to keep password unchanged.' => '',
    'Let’s set a password for your account.' => '',
@@ -117,7 +114,6 @@
    'Login' => 'Iniciar sesión',
    'Login is required.' => 'El registro es necesario.',
 +  'Logo' => '',
-   'Matrix' => '',
    'Max Entries' => '',
    'Max Length' => '',
    'Max Value' => '',
@@ -144,7 +140,7 @@
    'New section' => '',
    'New user' => '',
    'Next' => '',
-@@ -202,6 +235,7 @@
+@@ -193,6 +226,7 @@
    'No draft exists with the ID “{entryId}”.' => 'No existe el proyecto con el id “{entryId}”.',
    'No entry exists with the ID “{entryId}”.' => 'No existe una entrada con el id “{entryId}”.',
    'No plugin exists with the class “{className}”' => 'No plugin existe con la clase “{className}”',
@@ -152,15 +148,15 @@
    'No section exists with the ID “{sectionId}”' => 'No existe la sección con el id “{sectionId}”',
    'No updates available.' => '',
    'No user exists with the ID “{userId}”.' => 'El usuario no existe con el id “{userId}”.',
-@@ -210,6 +244,7 @@
+@@ -201,6 +235,7 @@
    'Not installed' => '',
    'Number Type' => '',
    'Offline' => '',
 +  'On shared hosts, Blocks Pro files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment.' => '',
    'Only required if you plan on APC for caching.' => 'Sólo es necesario si usted planea en la APC para el almacenamiento en caché.',
    'Only required if you plan on using Memcache.' => 'Sólo es necesario si usted planea usar Memcache.',
-   'P&T Field Pack' => '',
-@@ -258,6 +293,9 @@
+   'PCRE extension' => 'PCRE de extensión',
+@@ -243,6 +278,9 @@
    'Require a password reset on next login' => '',
    'Require verification' => '',
    'Reset Password' => '',
@@ -170,15 +166,15 @@
    'SERVER Info' => '',
    'SESSION Info' => '',
    'SOAP extension' => 'De extensión SOAP',
-@@ -289,6 +327,7 @@
+@@ -274,6 +312,7 @@
+   'Size' => '',
    'Smtp' => '',
    'Smtp Secure Transport Type' => '',
-   'Spread' => '',
 +  'Subject' => '',
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -299,15 +338,23 @@
+@@ -283,15 +322,23 @@
    'The content row can’t be inserted into the database because it’s not new.' => 'La fila de contenido no puede ser insertado en la base de datos porque no es nuevo.',
    'The content row can’t be inserted into the database before it’s record has been saved.' => 'La fila de contenido no puede ser insertado en la base de datos antes de que el registro se ha guardado.',
    'The content row can’t be updated because it’s new.' => 'La fila de contenido no se puede actualizar porque es nuevo.',
@@ -202,7 +198,7 @@
    'There was a problem sending the forgot password email.' => '',
    'There was a problem unpacking the downloaded package.' => 'Hubo un problema al descomprimir el paquete descargado.',
    'There was a problem updating the database.' => '',
-@@ -325,6 +372,7 @@
+@@ -309,6 +356,7 @@
    'This is required if you are using SQLite database.' => 'Esto es necesario si usted está usando la base de datos SQLite.',
    'Timeout' => '',
    'Title' => '',
@@ -210,18 +206,18 @@
    'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' => 'Para utilizar memcached conjunto <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> en <code>true</code>.',
    'Tree view' => '',
    'URL' => '',
-@@ -337,8 +385,10 @@
+@@ -321,8 +369,10 @@
    'Untitled' => '',
    'Update' => '',
    'Update All' => '',
 +  'Update Blocks Pro' => '',
    'Updates' => 'Actualizaciones',
-   'Updating Instructions' => '',
+   'Upload files' => '',
 +  'Use a 300 × 100px transparent PNG for best results.' => '',
    'Use uncompressed CP JavaScript files' => '',
    'User Info' => 'Información del usuario',
    'User activated.' => '',
-@@ -352,6 +402,7 @@
+@@ -336,6 +386,7 @@
    'Users' => 'Usuarios',
    'Verification email sent.' => '',
    'Verify Account' => '',
@@ -229,7 +225,7 @@
    'We’re offline.' => '',
    'We’ve sent you an email with instructions to reset your password.' => '',
    'What the entry URLs should look like.' => '',
-@@ -368,6 +419,7 @@
+@@ -349,18 +400,31 @@
    'You need to reset your password. Check your email for instructions.' => '',
    'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.' => 'Su instalación de PHP no es compatible con el patrón <a href="http://us.php.net/manual/en/function.glob.php">glob</a> función.',
    'Your database needs to be updated.  Make a backup, then press this button.' => '',
@@ -237,34 +233,26 @@
    'You’re already up-to-date.' => '',
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
-@@ -377,19 +429,31 @@
    'build' => '',
    'by' => '',
-   'content' => '',
 +  'day' => '',
    'directories' => '',
    'directory' => '',
-   'divebar' => '',
-   'drinks' => '',
    'forget?' => '',
    'forgot_password_body' => '',
 +  'forgot_password_heading' => '',
    'forgot_password_subject' => '',
    'manual update required' => '',
-   'matrix' => '',
 +  'month' => '',
 +  'number' => '',
 +  'page' => '',
-   'playa' => '',
    'release notes' => '',
-   'shared' => '',
 +  'verify_email_body' => '',
 +  'verify_email_heading' => '',
 +  'verify_email_subject' => '',
 +  'verify_new_email_body' => '',
 +  'verify_new_email_heading' => '',
 +  'verify_new_email_subject' => '',
-   'wygwam' => '',
 +  'year' => '',
    '{sectionName} section settings' => '',
    '“{className}” doesn’t have an attribute “{attributeName}”.' => '“{className}” no tiene un atributo “{attributeName}”.',
