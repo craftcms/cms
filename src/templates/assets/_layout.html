@@ -14,8 +14,8 @@
 					<a class="btn {% if view == 'listview' %}active{% endif %}" href="{{ url('assets/list') }}" title="{{ 'Display files in a list'|t }}" data-icon="•"></a>
 				</div>
 			</li>
-			<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="Search assets"></div></li>
-			<li><a href="" class="btn" data-icon="↑">Upload files</a></li>
+			<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search assets'|t }}"></div></li>
+			<li><a href="" class="btn" data-icon="↑">{{ "Upload files"|t }}</a></li>
 		</ul>
 	</header>
 
