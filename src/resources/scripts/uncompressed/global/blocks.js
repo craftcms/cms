@@ -48,14 +48,23 @@ var $notificationContainer = $('#notifications'),
  * Get a translated message.
  *
  * @param string message
+ * @param object params
  * @return string
  */
-blx.t = function(message)
+blx.t = function(message, params)
 {
 	if (typeof blx.translations[message] != undefined)
-		return blx.translations[message];
-	else
-		return message;
+		message = blx.translations[message];
+
+	if (params)
+	{
+		for (var key in params)
+		{
+			message = message.replace('{'+key+'}', params[key])
+		}
+	}
+
+	return message;
 };
 
 /**
