@@ -7,40 +7,6 @@ namespace Blocks;
 class UrlHelper
 {
 	/**
-	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
-	 *
-	 * @static
-	 * @param string $path
-	 * @param null   $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return string The URL to the resource, via Blocks' resource server
-	 */
-	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
-	{
-		$origPath = $path;
-		$path = blx()->config->resourceTriggerWord.'/'.trim($path, '/');
-		$path = self::generateUrl($path, $params, $protocol);
-		$path = $origPath == '' ? $path.'/' : $path;
-		return $path;
-	}
-
-	/**
-	 * @static
-	 * @param string $path
-	 * @param null   $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return array|string
-	 */
-	public static function generateActionUrl($path = '', $params = null, $protocol = '')
-	{
-		$origPath = $path;
-		$path = blx()->config->actionTriggerWord.'/'.trim($path, '/');
-		$path = self::generateUrl($path, $params, $protocol);
-		$path = $origPath == '' ? $path.'/' : $path;
-		return $path;
-	}
-
-	/**
 	 * @static
 	 * @param      $path
 	 * @param null $params
@@ -80,6 +46,40 @@ class UrlHelper
 			}
 		}
 
+		return $path;
+	}
+
+	/**
+	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
+	 *
+	 * @static
+	 * @param string $path
+	 * @param null   $params
+	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @return string The URL to the resource, via Blocks' resource server
+	 */
+	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
+	{
+		$origPath = $path;
+		$path = blx()->config->resourceTriggerWord.'/'.trim($path, '/');
+		$path = self::generateUrl($path, $params, $protocol);
+		$path = $origPath == '' ? $path.'/' : $path;
+		return $path;
+	}
+
+	/**
+	 * @static
+	 * @param string $path
+	 * @param null   $params
+	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @return array|string
+	 */
+	public static function generateActionUrl($path = '', $params = null, $protocol = '')
+	{
+		$origPath = $path;
+		$path = blx()->config->actionTriggerWord.'/'.trim($path, '/');
+		$path = self::generateUrl($path, $params, $protocol);
+		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
 	}
 

@@ -13,7 +13,7 @@
 			{{ "Set Password"|t }}
 		</div>
 		<div class="pane-body">
-			{% set verificationCode = blx.url.get('code') %}
+			{% set verificationCode = blx.request.query('code') %}
 			{% set user = blx.users.getUserByVerificationCode(verificationCode) %}
 			{% if user %}
 				<form method="post" action="">

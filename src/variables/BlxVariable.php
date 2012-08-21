@@ -133,14 +133,6 @@ class BlxVariable
 	}
 
 	/**
-	 * @return UrlVariable
-	 */
-	public function url()
-	{
-		return new UrlVariable();
-	}
-
-	/**
 	 * @return UsersVariable
 	 */
 	public function users()

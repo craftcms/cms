@@ -59,7 +59,7 @@
 				{% if entry %}
 					{% if entry.published %}
 						<ul>
-							<li><a href="{{ blx.url.base }}content/{{ entry.id }}" class="published {% if not entry.draft %}sel{% endif %}">
+							<li><a href="{{ url('content/' ~ entry.id) }}" class="published {% if not entry.draft %}sel{% endif %}">
 								<div class="status on"></div>
 								<div class="name">Published</div>
 							</a></li>
@@ -70,7 +70,7 @@
 						<h6>Drafts</h6>
 						<ul>
 							{% for draft in entry.drafts %}
-								<li><a href="{{ blx.url.base }}content/{{ entry.id }}/draft{{ draft.num }}" class="draft {% if entry.draft.num == draft.num %}sel{% endif %}">
+								<li><a href="{{ url('content/' ~ entry.id ~ '/draft' ~ draft.num) }}" class="draft {% if entry.draft.num == draft.num %}sel{% endif %}">
 									<div class="name">{{ draft.name }}</div>
 									<div class="author">{{ draft.author.firstNameLastInitial }}</div>
 								</a></li>

@@ -4,12 +4,12 @@
 	<div id="sidebar">
 		<div id="header">
 			<div id="branding">
-				<img src="{{ blx.url.resource }}images/pt.png">
+				<img src="{{ resourceUrl('images/pt.png') }}">
 			</div>
 			<a id="account" data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
 			<div id="account-menu" class="menu">
 				<div class="userinfo">
-					<img src="{{ blx.url.resource }}images/avatar.jpg" width="100" height="100">
+					<img src="{{ resourceUrl('images/avatar.jpg') }}" width="100" height="100">
 					<div class="fullname">{{ blx.users.current.getFullName }}</div>
 					<div class="username">{{ blx.users.current.username }}</div>
 				</div>
@@ -24,8 +24,8 @@
 			<nav class="nav">
 				<ul>
 					{% for item in group %}
-						<li id="nav-{{ item.handle }}" {% if blx.url.segment(1)==item.handle %}class="sel"{% endif %}>
-							<a href="{{ blx.url.base }}{{ item.handle }}" data-icon="{{ item.icon }}">{{ item.name }}
+						<li id="nav-{{ item.handle }}" {% if blx.request.segment(1)==item.handle %}class="sel"{% endif %}>
+							<a href="{{ url(item.handle) }}" data-icon="{{ item.icon }}">{{ item.name }}
 								{% if item.badge %}<span class="badge">{{ item.badge }}</span>{% endif %}
 							</a>
 						</li>

@@ -1,12 +1,15 @@
 body { background: #fff; }
 
 /*-- grid --*/
-#main .files.thumbs ul { margin: -20px 0 0 -20px; }
-#main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
-#main .files.thumbs ul li { float: left; margin: 20px 0 0 20px; width: 96px; padding: 2px 2px 0; text-align: center; }
-#main .files.thumbs ul li .filename { text-align: center; }
+#main .files.thumbview ul { margin: -20px 0 0 -20px; }
+#main .files.thumbview ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+#main .files.thumbview ul li { float: left; margin: 20px 0 0 20px; width: 96px; padding: 2px 2px 0; text-align: center; }
+#main .files.thumbview ul li .filename { text-align: center; }
 
 /*-- list --*/
-#main .files.list table th:first-child,
-#main .files.list table td:first-child { padding-left: 39px; }
-#main .files.list table td:first-child img { display: block; float: left; margin: -3px 0 -3px -29px; width: 24px; height: 24px; }
+#main .files.listview table { width: 100%; }
+#main .files.listview table td,
+#main .files.listview table th { padding: 0 0 10px 10px; }
+#main .files.listview table th:first-child,
+#main .files.listview table td:first-child { padding-left: 39px; }
+#main .files.listview table td:first-child img { display: block; float: left; margin: -3px 0 -3px -29px; width: 24px; height: 24px; }
