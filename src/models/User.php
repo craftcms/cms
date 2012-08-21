@@ -51,21 +51,13 @@ class User extends BaseModel
 	}
 
 	/**
-	 * Returns the user's full name (first name + last name)
+	 * Returns the user's full name (first+last name), if it's available.
+	 *
 	 * @return string
 	 */
 	public function getFullName()
 	{
-		if ($this->first_name)
-		{
-			$fullName = $this->first_name;
-			if ($this->last_name)
-			 	$fullName .= ' '.$this->last_name;
-		}
-		else
-			$fullName = $this->username;
-
-		return $fullName;
+		return $this->first_name . ($this->first_name && $this->last_name ? ' ' : '') . $this->last_name;
 	}
 
 	/**

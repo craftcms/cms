@@ -1,0 +1,54 @@
+{% extends "_layouts/cp" %}
+{% set title = "Users"|t ~ (title ? " - " ~ title : '') %}
+
+
+{% set main %}
+	<header class="titlebar">
+		<h1>{{ "Users"|t }}</h1>
+
+		<ul class="right">
+			<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div></li>
+			<li><a href="{{ url('users/new') }}" class="btn" data-icon="+">{{ "Add a user"|t }}</a></li>
+		</ul>
+	</header>
+
+	<nav class="nav">
+		<ul>
+			<li {% if blx.request.segment(2) == '' %}class="sel"{% endif %}><a href="{{ url('users') }}">{{ "All users"|t }}</a></li>
+			<li {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %}><a href="{{ url('users/admins') }}">{{ "Admins"|t }}</a></li>
+		</ul>
+	</nav>
+
+	<div>
+		<table class="data">
+			<thead>
+				<th scope="col">{{ "Username"|t }}</th>
+				<th scope="col">{{ "Full Name"|t }}</th>
+				<th scope="col">{{ "Email"|t }}</th>
+				<th scope="col">{{ "Last Login"|t }}</th>
+				<th scope="col">{{ "Status"|t }}</th>
+			</thead>
+			<tbody>
+				{% for user in users %}
+					<tr>
+						<td><a href="{{ url('users/' ~ user.id) }}">{{ user.username }}</a></td>
+						<td>{{ user.fullname }}</td>
+						<td>{% if user.email %}<a href="mailto:{{ user.email }}">{{ user.email }}</a>{% endif %}</td>
+						<td>{% if user.last_login_date %}{{ blx.date.nice(user.last_login_date) }}{% else %}{{ "Never"|t }}{% endif %}</td>
+						<td>
+							{%- if user.status == 'pending' -%}
+								<div class="status"></div> {{ "Pending Verification"|t }}
+							{%- elseif user.status == 'locked' -%}
+								<div class="status pending"></div> {% if blx.config.failedPasswordMode == 'cooldown' %}{{ "Temporarily"|t }}{% endif %} {{ "Locked"|t }}
+							{%- elseif user.status == 'suspended' -%}
+								<div class="status off"></div> {{ "Suspended"|t }}
+							{%- else -%}
+								<div class="status on"></div> {{ "Active"|t }}
+							{%- endif -%}
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endset %}

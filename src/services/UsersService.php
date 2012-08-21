@@ -7,11 +7,25 @@ namespace Blocks;
 class UsersService extends \CApplicationComponent
 {
 	/**
-	 * @return User
+	 * Gets all the users.
+	 *
+	 * @return array
 	 */
 	public function getAllUsers()
 	{
 		return User::model()->findAll();
+	}
+
+	/**
+	 * Gets all the admins.
+	 *
+	 * @return array
+	 */
+	public function getAllAdmins()
+	{
+		return User::model()->findAllByAttributes(array(
+			'admin' => true
+		));
 	}
 
 	/**

@@ -16,6 +16,26 @@ class UsersVariable
 	}
 
 	/**
+	 * Returns all the users.
+	 *
+	 * @return array
+	 */
+	public function all()
+	{
+		return blx()->users->getAllUsers();
+	}
+
+	/**
+	 * Returns all the admins.
+	 *
+	 * @return array
+	 */
+	public function admins()
+	{
+		return blx()->users->getAllAdmins();
+	}
+
+	/**
 	 * Returns a user by its ID.
 	 * @param $userId
 	 * @return User

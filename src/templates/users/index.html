@@ -1,22 +1,3 @@
-{% extends "_layouts/cp" %}
-{% set title = "Users"|t %}
-
-
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-	</header>
-
-	<section>
-		<h2>{{ "Recent Users"|t }}</h2>
-		<ul class="actions">
-			<li><a href="{{ url('users/new') }}" class="btn addbtn">{{ "New user"|t }}</a></li>
-		</ul>
-
-		<ul>
-			{% for user in blx.users.recent %}
-				<li><a href="{{ url('users/' ~ user.id) }}" {% if blx.request.segment(3) == user.id %}class="sel"{% endif %}><span class="icon icon{% if user.admin %}247{% else %}243{% endif %}"></span>{{ user.fullName }}</a></li>
-			{% endfor %}
-		</ul>
-	</section>
-{% endset %}
+{% extends "users/_layout" %}
+{% set title = "All"|t %}
+{% set users = blx.users.all %}

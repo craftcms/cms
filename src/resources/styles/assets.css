@@ -7,9 +7,6 @@ body { background: #fff; }
 #main .files.thumbview ul li .filename { text-align: center; }
 
 /*-- list --*/
-#main .files.listview table { width: 100%; }
-#main .files.listview table td,
-#main .files.listview table th { padding: 0 0 10px 10px; }
 #main .files.listview table th:first-child,
-#main .files.listview table td:first-child { padding-left: 39px; }
-#main .files.listview table td:first-child img { display: block; float: left; margin: -3px 0 -3px -29px; width: 24px; height: 24px; }
+#main .files.listview table td:first-child { padding-left: 34px; }
+#main .files.listview table td:first-child img { display: block; float: left; margin: -3px 0 -3px -34px; width: 24px; height: 24px; }
