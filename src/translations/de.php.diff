@@ -1,5 +1,5 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-21 15:05:07.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-21 15:05:07.000000000 -0700
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-21 15:48:10.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-21 15:48:10.000000000 -0700
 @@ -15,6 +15,7 @@
    'Account suspended.' => 'Konto gesperrt.',
    'Activate' => 'Aktivieren',
@@ -166,7 +166,7 @@
    'SERVER Info' => 'SERVER Info',
    'SESSION Info' => 'SESSION Info',
    'SOAP extension' => 'SOAP-Erweiterung',
-@@ -274,6 +312,7 @@
+@@ -275,6 +313,7 @@
    'Size' => 'Größe',
    'Smtp' => 'Smtp',
    'Smtp Secure Transport Type' => 'Smtp Secure Transport Type',
@@ -174,7 +174,7 @@
    'Suspend' => 'Aussetzen',
    'Suspended' => 'Ausgesetzt',
    'System' => 'System',
-@@ -283,15 +322,23 @@
+@@ -284,15 +323,23 @@
    'The content row can’t be inserted into the database because it’s not new.' => 'Der Inhalt Zeile kann nicht in die Datenbank eingefügt werden, denn es ist nicht neu.',
    'The content row can’t be inserted into the database before it’s record has been saved.' => 'Der Inhalt Zeile kann nicht in die Datenbank eingefügt werden, bevor er den Rekord wurde gespeichert.',
    'The content row can’t be updated because it’s new.' => 'Der Inhalt Zeile kann nicht aktualisiert werden, da es neu ist werden.',
@@ -198,7 +198,7 @@
    'There was a problem sending the forgot password email.' => 'Es gab ein Problem Senden des Passwort vergessen E-Mail.',
    'There was a problem unpacking the downloaded package.' => 'Es gab ein Problem Entpacken Sie das heruntergeladene Paket.',
    'There was a problem updating the database.' => 'Es war ein Problem beim Aktualisieren der Datenbank.',
-@@ -309,6 +356,7 @@
+@@ -310,6 +357,7 @@
    'This is required if you are using SQLite database.' => 'Dies ist erforderlich, wenn Sie mit SQLite-Datenbank sind.',
    'Timeout' => 'Timeout',
    'Title' => 'Titel',
@@ -206,7 +206,7 @@
    'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' => 'Um memcached Satz <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> zu <code>true</code>.',
    'Tree view' => 'Baumansicht',
    'URL' => 'URL',
-@@ -321,8 +369,10 @@
+@@ -322,8 +370,10 @@
    'Untitled' => 'Untitled',
    'Update' => 'Aktualisieren',
    'Update All' => 'Alle aktualisieren',
@@ -217,7 +217,7 @@
    'Use uncompressed CP JavaScript files' => 'Unkomprimierte CP JavaScript-Dateien',
    'User Info' => 'Benutzer-Info',
    'User activated.' => 'Benutzer aktiviert.',
-@@ -336,6 +386,7 @@
+@@ -337,6 +387,7 @@
    'Users' => 'Benutzer',
    'Verification email sent.' => 'Verification E-Mail zugeschickt.',
    'Verify Account' => 'Account überprüfen',
@@ -225,7 +225,7 @@
    'We’re offline.' => 'Wir sind offline.',
    'We’ve sent you an email with instructions to reset your password.' => 'Wir haben Ihnen eine E-Mail mit Anweisungen zum Zurücksetzen des Passworts.',
    'What the entry URLs should look like.' => 'Was der Eintrag URLs aussehen sollte.',
-@@ -349,18 +400,31 @@
+@@ -350,18 +401,31 @@
    'You need to reset your password. Check your email for instructions.' => 'Sie müssen Ihr Passwort zurückzusetzen. Überprüfen Sie Ihre E-Mail-Anweisungen.',
    'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.' => 'Ihre PHP-Installation unterstützt nicht die <a href="http://us.php.net/manual/en/function.glob.php">glob</a>-Funktion.',
    'Your database needs to be updated.  Make a backup, then press this button.' => 'Ihre Datenbank muss aktualisiert werden. Erstellen Sie eine Sicherungskopie, und drücken Sie diese Taste.',
