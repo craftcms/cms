@@ -60,6 +60,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 	 *
 	 * @access protected
 	 * @param string $name The name of the template to load
+	 * @throws \Twig_Error_Loader
 	 * @return string The template path
 	 */
 	protected function findTemplate($name)

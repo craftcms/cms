@@ -116,6 +116,11 @@ class App extends \CWebApplication
 		// Process install requests
 		$this->_processInstallRequest();
 
+		//blx()->dateFormatter->formatDateTime(1345586842,'short', 'short') = 21.08.12 22:07
+		//blx()->numberFormatter->formatPercentage('0.8') = 80 %
+		//blx()->numberFormatter->formatCurrency(100, 'EUR') = 100,00 €
+		//blx()->numberFormatter->formatDecimal(100.567) = 100,567
+
 		// Are we in the middle of a manual update?
 		if ($this->getIsDbUpdateNeeded())
 		{
