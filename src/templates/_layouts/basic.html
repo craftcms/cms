@@ -1,3 +1,19 @@
+{% include_translation
+	"Are you sure you want to delete this content block?",
+	"Attempted to get the height of a modal whose container has not been set.",
+	"Attempted to get the width of a modal whose container has not been set.",
+	"Attempted to position a modal whose container has not been set.",
+	"Attempted to position a modal whose container has not been set.",
+	"Save",
+	"Cancel",
+	"Delete",
+	"Show",
+	"Hide",
+	"Close",
+	"An unknown error occurred.",
+	"Are you sure you want to delete “{name}”?"
+%}
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
@@ -34,7 +50,7 @@
 				<div class="pane-body">
 					<div class="pane-item notice">
 						<div class="icon"></div>
-						<p>JavaScript must be enabled to access the Blocks CP.<br>
+						<p>{{ "JavaScript must be enabled to access the @@@productDisplay@@@ CP."|t }}<br>
 							<a class="go" href="">See how</a>
 						</p>
 					</div>

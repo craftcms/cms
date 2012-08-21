@@ -9,7 +9,7 @@ namespace Blocks;
 */
 
 /*
- * Heavily modified for Blocks.
+ * Heavily modified for @@@productDisplay@@@.
  */
 
 class File extends \CApplicationComponent

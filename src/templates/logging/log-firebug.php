@@ -20,11 +20,11 @@ if (typeof(console) == 'object')
 
 	$serverInfo = substr($environmentData[0], $serverPos);
 
-	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, 'GET Info');
-	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, 'COOKIE Info');
+	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, Blocks\Blocks::t('GET Info'));
+	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, Blocks\Blocks::t('COOKIE Info'));
 	if ($sessionPos)
-		Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, 'SESSION Info');
-	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, 'SERVER Info');
+		Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, Blocks\Blocks::t('SESSION Info'));
+	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, Blocks\Blocks::t('SERVER Info'));
 
 	echo "\tconsole.groupCollapsed(\"Logs\");\n";
 	foreach ($data as $index => $log)

@@ -2,13 +2,13 @@
 	<div class="center">
 		<div class="status">
 			{% if entry.live %}
-				<span class="status on"></span><span class="label">Live</span>
+				<span class="status on"></span><span class="label">{{ "Live"|t }}</span>
 			{% elseif entry.pending %}
-				<span class="status pending"></span><span class="label">Pending</span>
+				<span class="status pending"></span><span class="label">{{ "Pending"|t }}</span>
 			{% elseif entry.expired %}
-				<span class="status off"></span><span class="label">Expired</span>
+				<span class="status off"></span><span class="label">{{ "Expired"|t }}</span>
 			{% else %}
-				<span class="status"></span><span class="label">Never published</span>
+				<span class="status"></span><span class="label">{{ "Never published"|t }}</span>
 			{% endif %}
 		</div>
 	</div>
@@ -16,12 +16,12 @@
 	<div class="left">
 		<select class="versionselect">
 			{% if entry.published %}
-				<option value="published" {% if not entry.draft %}selected{% endif %}>Published</option>
+				<option value="published" {% if not entry.draft %}selected{% endif %}>{{ "Published"|t }}</option>
 			{% endif %}
 			{% for draft in entry.drafts %}
-				<option value="{{ draft.num }}" {% if entry.draft.num == draft.num %}selected{% endif %}>“{{ draft.name }}” by {{ draft.author.firstNameLastInitial }}</option>
+				<option value="{{ draft.num }}" {% if entry.draft.num == draft.num %}selected{% endif %}>“{{ draft.name }}” {{ "by"|t }} {{ draft.author.firstNameLastInitial }}</option>
 			{% endfor %}
-			<option value="new">New draft…</option>
+			<option value="new">{{ "New draft…"|t }}</option>
 		</select>
 	</div>
 

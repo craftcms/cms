@@ -32,12 +32,12 @@ class SettingsController extends BaseController
 			$info->site_url = $generalSettingsForm->siteUrl;
 			$info->save();
 
-			blx()->user->setNotice('General settings saved.');
+			blx()->user->setNotice(Blocks::t('General settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save general settings.');
+			blx()->user->setError(Blocks::t('Couldn’t save general settings.'));
 			$this->renderRequestedTemplate(array('post' => $generalSettingsForm));
 		}
 	}
@@ -132,17 +132,17 @@ class SettingsController extends BaseController
 
 			if (blx()->email->saveSettings($settings))
 			{
-				blx()->user->setNotice('Email settings saved.');
+				blx()->user->setNotice(Blocks::t('Email settings saved.'));
 				$this->redirectToPostedUrl();
 			}
 			else
 			{
-				blx()->user->setError('Couldn’t save email settings.');
+				blx()->user->setError(Blocks::t('Couldn’t save email settings.'));
 			}
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save email settings.');
+			blx()->user->setError(Blocks::t('Couldn’t save email settings.'));
 		}
 
 		$this->renderRequestedTemplate(array('settings' => $emailSettings));
@@ -160,12 +160,12 @@ class SettingsController extends BaseController
 
 		if (blx()->settings->saveSettings('systemsettings', $languages, 'languages', true))
 		{
-			blx()->user->setNotice('Language settings saved.');
+			blx()->user->setNotice(Blocks::t('Language settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save language settings.');
+			blx()->user->setError(Blocks::t('Couldn’t save language settings.'));
 			$this->renderRequestedTemplate(array('selectedLanguages' => $languages));
 		}
 	}
@@ -188,12 +188,12 @@ class SettingsController extends BaseController
 
 		if (blx()->settings->saveSettings('systemsettings', $settings, 'advanced', true))
 		{
-			blx()->user->setNotice('Advanced settings saved.');
+			blx()->user->setNotice(Blocks::t('Advanced settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save advanced settings.');
+			blx()->user->setError(Blocks::t('Couldn’t save advanced settings.'));
 			$this->renderRequestedTemplate(array('settings' => $settings));
 		}
 	}

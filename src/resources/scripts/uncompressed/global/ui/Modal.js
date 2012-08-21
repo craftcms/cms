@@ -113,7 +113,7 @@ blx.ui.Modal = blx.Base.extend({
 	getHeight: function()
 	{
 		if (!this.$container)
-			throw 'Attempted to get the height of a modal whose container has not been set.';
+			throw blx.t('Attempted to get the height of a modal whose container has not been set.');
 
 		if (!this.visible)
 			this.$container.show();
@@ -129,7 +129,7 @@ blx.ui.Modal = blx.Base.extend({
 	getWidth: function()
 	{
 		if (!this.$container)
-			throw 'Attempted to get the width of a modal whose container has not been set.';
+			throw blx.t('Attempted to get the width of a modal whose container has not been set.');
 
 		if (!this.visible)
 			this.$container.show();
@@ -145,7 +145,7 @@ blx.ui.Modal = blx.Base.extend({
 	centerInViewport: function()
 	{
 		if (!this.$container)
-			throw 'Attempted to position a modal whose container has not been set.';
+			throw blx.t('Attempted to position a modal whose container has not been set.');
 
 		var viewportWidth = blx.$window.width(),
 			viewportHeight = blx.$window.height(),
@@ -163,7 +163,7 @@ blx.ui.Modal = blx.Base.extend({
 	positionRelativeTo: function(elem)
 	{
 		if (!this.$container)
-			throw 'Attempted to position a modal whose container has not been set.';
+			throw blx.t('Attempted to position a modal whose container has not been set.');
 
 		var $elem = $(elem),
 			elemOffset = $elem.offset(),

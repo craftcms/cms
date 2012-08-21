@@ -1,3 +1,10 @@
+{% include_translation
+	"Unable to determine what to update.",
+	"You’re already up-to-date.",
+	"All done!",
+	"An unknown error occurred while updating {name}."
+%}
+
 {% set updateInfo = blx.updates.updateinfo('y') %}
 {% if updateInfo.blocks.releases or updateInfo.plugins %}
 
@@ -14,13 +21,13 @@
 		{% if updateInfo.blocks.releases %}
 			<li>
 				<h3 {% if updateInfo.blocks.criticalUpdateAvailable %}class="critical"{% endif %}>
-					@@@productDisplay@@@ {{ updateInfo.blocks.latestVersion }} build {{ updateInfo.blocks.latestBuild }}
+					@@@productDisplay@@@ {{ updateInfo.blocks.latestVersion }} {{ "build"|t }} {{ updateInfo.blocks.latestBuild }}
 				</h3>
-				<h4><a href="">release notes</a></h4>
+				<h4><a href="">{{ "release notes"|t }}</a></h4>
 
 				<div class="cta">
 					{% if updateInfo.blocks.manualUpdateRequired %}
-						<div class="manual"><a href="http://blockscms.com/alpha/blocks_{{ updateInfo.blocks.latestVersion }}.{{ updateInfo.blocks.latestBuild }}.zip">manual update required</a></div>
+						<div class="manual"><a href="http://blockscms.com/alpha/blocks_{{ updateInfo.blocks.latestVersion }}.{{ updateInfo.blocks.latestBuild }}.zip">{{ "manual update required"|t }}</a></div>
 					{% else %}
 						<form method="post" action="{{ blx.url.base }}update/Blocks"><input class="btn" type="submit" value="{{ 'Update'|t }}"></form>
 					{% endif %}
@@ -28,7 +35,7 @@
 
 				<div class="notes">
 					{% for release in updateInfo.blocks.releases %}
-						<h5>@@@productDisplay@@@ {{ release.version }} Build {{ release.build }}</h5>
+						<h5>@@@productDisplay@@@ {{ release.version }} {{ "Build"|t }} {{ release.build }}</h5>
 						<ul>
 							<li>{{ release.notes|nl2br }}</li>
 						</ul>
@@ -43,7 +50,7 @@
 					<h3 {% if pluginInfo.criticalUpdateAvailable %}class="critical"{% endif %}>
 						{{ pluginInfo.displayName }} {{ pluginInfo.latestVersion }}
 					</h3>
-					<h4><a>release notes</a></h4>
+					<h4><a>{{ "release notes"|t }}</a></h4>
 
 					<div class="cta">
 						<form method="post" action="{{ blx.url.base }}update/{{ pluginInfo.class|lower }}"><input class="btn" type="submit" value="{{ 'Update'|t }}"></form>

@@ -19,7 +19,7 @@
 	<div class="grid">
 		<div class="col col66"><div class="col-inner">
 			<form id="content" method="post" action="">
-				<div class="textwrapper"><input id="title" type="text" name="title" value="{{ entry.title }}" class="text nicetext" data-hint="Enter a title…"></div>
+				<div class="textwrapper"><input id="title" type="text" name="title" value="{{ entry.title }}" class="text nicetext" data-hint="{{ 'Enter a title…'|t }}"></div>
 
 				{% for block in entry.blocks %}
 					<div class="field">

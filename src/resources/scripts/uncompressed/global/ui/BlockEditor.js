@@ -308,7 +308,7 @@ blx.ui.BlockEditor.Block = blx.Base.extend({
 
 	deleteBlock: function()
 	{
-		if (confirm('Are you sure you want to delete this content block?'))
+		if (confirm(blx.t('Are you sure you want to delete this content block?')))
 		{
 			this.$link.remove();
 			this.$settings.remove();

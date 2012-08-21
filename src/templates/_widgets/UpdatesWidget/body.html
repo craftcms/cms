@@ -3,7 +3,7 @@
 		<tbody>
 			{% for update in widget.updates %}
 				<tr>
-					<td><strong>{{ update.name }}</strong> {{ update.version }} {% if update.critical %}<div class="badge warning">Critical</div>{% endif %}</td>
+					<td><strong>{{ update.name }}</strong> {{ update.version }} {% if update.critical %}<div class="badge warning">{{ "Critical"|t }}</div>{% endif %}</td>
 					<td class="timestamp">{{ update.date }}</td>
 				</tr>
 			{% endfor %}

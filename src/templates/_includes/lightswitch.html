@@ -3,8 +3,8 @@
 {% endif %}
 <div id="{{ id }}" class="lightswitch {% if on %}on{% endif %} {{ class }}" {% if toggle %}data-toggle="{{ toggle }}"{% endif %} tabindex="0">
 	<div class="container">
-		<div class="label on">Yes</div>
-		<div class="label off">No</div>
+		<div class="label on">{{ "Yes"|t }}</div>
+		<div class="label off">{{ "No"|t }}</div>
 		<div class="handle"></div>
 	</div>
 	<input type="hidden" name="{{ name }}" value="{% if on %}y{% endif %}">

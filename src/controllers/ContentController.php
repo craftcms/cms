@@ -50,14 +50,14 @@ class ContentController extends BaseController
 
 			if ($blocksSaved)
 			{
-				blx()->user->setNotice('Section saved.');
+				blx()->user->setNotice(Blocks::t('Section saved.'));
 				$this->redirectToPostedUrl();
 			}
 			else
-				blx()->user->setError('Section saved, but couldn’t save all the content blocks.');
+				blx()->user->setError(Blocks::t('Section saved, but couldn’t save all the content blocks.'));
 		}
 		else
-			blx()->user->setError('Couldn’t save section.');
+			blx()->user->setError(Blocks::t('Couldn’t save section.'));
 
 
 		// Reload the original template
@@ -82,7 +82,7 @@ class ContentController extends BaseController
 		// Create the first draft
 		$draft = blx()->content->createEntryDraft($entry);
 
-		blx()->user->setNotice('Entry created.');
+		blx()->user->setNotice(Blocks::t('Entry created.'));
 		$this->redirect("content/{$entry->id}/draft{$draft->num}");
 	}
 
@@ -99,12 +99,12 @@ class ContentController extends BaseController
 		// Save the new entry content
 		if (blx()->content->saveEntryContent($entry, $changes))
 		{
-			blx()->user->setNotice('Entry saved.');
+			blx()->user->setNotice(Blocks::t('Entry saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save entry.');
+			blx()->user->setError(Blocks::t('Couldn’t save entry.'));
 		}
 
 		$this->renderRequestedTemplate(array('entry' => $entry));
@@ -124,7 +124,7 @@ class ContentController extends BaseController
 		// Create the new draft
 		$draft = blx()->content->createEntryDraft($entry, $changes, $draftName);
 
-		blx()->user->setNotice('Draft created.');
+		blx()->user->setNotice(Blocks::t('Draft created.'));
 		$this->redirect("content/{$entry->id}/draft{$draft->num}");
 	}
 
@@ -142,12 +142,12 @@ class ContentController extends BaseController
 		// Save the new draft content
 		if (blx()->content->saveDraftContent($draft, $changes))
 		{
-			blx()->user->setNotice('Draft saved.');
+			blx()->user->setNotice(Blocks::t('Draft saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save draft.');
+			blx()->user->setError(Blocks::t('Couldn’t save draft.'));
 		}
 
 		$entry->setDraft($draft);
@@ -173,12 +173,12 @@ class ContentController extends BaseController
 		$draft->entry = $entry;
 		if (blx()->content->publishEntryDraft($draft))
 		{
-			blx()->user->setNotice('Draft published.');
+			blx()->user->setNotice(Blocks::t('Draft published.'));
 			$this->redirect('content/'.$entry->id);
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t publish draft.');
+			blx()->user->setError(Blocks::t('Couldn’t publish draft.'));
 			$entry->setDraft($draft);
 			$this->renderRequestedTemplate(array('entry' => $entry));
 		}

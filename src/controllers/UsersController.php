@@ -72,7 +72,7 @@ class UsersController extends BaseController
 		{
 			// Send a verification email?
 			//  - Only an option when registering a new user
-			//  - Only admins have a choince in the matter. Verification emails _must_ be sent when a non-admin registers a user.
+			//  - Only admins have a choice in the matter. Verification emails _must_ be sent when a non-admin registers a user.
 			if ($isNewUser && (!blx()->users->getCurrentUser()->admin || blx()->request->getPost('require_verification')))
 			{
 				$user->status = UserAccountStatus::Pending;
@@ -83,20 +83,18 @@ class UsersController extends BaseController
 			$user->save();
 
 			if ($isNewUser)
-				blx()->user->setNotice('User registered.');
+				blx()->user->setNotice(Blocks::t('User registered.'));
 			else
-				blx()->user->setNotice('Account settings saved.');
+				blx()->user->setNotice(Blocks::t('Account settings saved.'));
 
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			print_r($user->getErrors()); die();
-
 			if ($isNewUser)
-				blx()->user->setError('Couldn’t register user.');
+				blx()->user->setError(Blocks::t('Couldn’t register user.'));
 			else
-				blx()->user->setError('Couldn’t save account settings.');
+				blx()->user->setError(Blocks::t('Couldn’t save account settings.'));
 
 			$this->renderRequestedTemplate(array(
 				'user' => $user,
@@ -122,12 +120,12 @@ class UsersController extends BaseController
 
 		if ($user->save())
 		{
-			blx()->user->setNotice('Profile saved.');
+			blx()->user->setNotice(blocks::t('Profile saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save profile.');
+			blx()->user->setError(Blocks::t('Couldn’t save profile.'));
 			$this->renderRequestedTemplate(array('user' => $user));
 		}
 	}
@@ -148,7 +146,7 @@ class UsersController extends BaseController
 		$user->admin = (blx()->request->getPost('admin') === 'y');
 		$user->save();
 
-		blx()->user->setNotice('Admin settings saved.');
+		blx()->user->setNotice(Blocks::t('Admin settings saved.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -170,14 +168,14 @@ class UsersController extends BaseController
 		blx()->email->sendEmailByKey($user, 'verify_email');
 		$user->save();
 
-		blx()->user->setNotice('Verification email sent.');
+		blx()->user->setNotice(Blocks::t('Verification email sent.'));
 		$this->redirectToPostedUrl();
 	}
 
 	/**
 	 * Activates a user, bypassing email verification.
 	 */
-	public function actionActivateUser())
+	public function actionActivateUser()
 	{
 		$this->requirePostRequest();
 		$this->requireAdmin();
@@ -189,7 +187,7 @@ class UsersController extends BaseController
 
 		blx()->users->activateUser($user);
 
-		blx()->user->setNotice('User activated.');
+		blx()->user->setNotice(Blocks::t('User activated.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -208,7 +206,7 @@ class UsersController extends BaseController
 
 		blx()->users->unlockUser($user);
 
-		blx()->user->setNotice('User activated.');
+		blx()->user->setNotice(Blocks::t('User activated.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -227,7 +225,7 @@ class UsersController extends BaseController
 
 		blx()->users->suspendUser($user);
 
-		blx()->user->setNotice('User suspended.');
+		blx()->user->setNotice(Blocks::t('User suspended.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -246,7 +244,7 @@ class UsersController extends BaseController
 
 		blx()->users->unsuspendUser($user);
 
-		blx()->user->setNotice('User unsuspended.');
+		blx()->user->setNotice(Blocks::t('User unsuspended.'));
 		$this->redirectToPostedUrl();
 	}
 
@@ -265,7 +263,7 @@ class UsersController extends BaseController
 
 		blx()->users->deleteUser($user);
 
-		blx()->user->setNotice('User deleted.');
+		blx()->user->setNotice(Blocks::t('User deleted.'));
 		$this->redirectToPostedUrl();
 	}
 }

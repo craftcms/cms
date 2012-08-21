@@ -26,11 +26,11 @@ $('#updates').load(updatesUrl, function()
 		if ($noteLinks.length)
 		{
 			var $pane = $('<div class="pane modal"/>').appendTo(blx.$body),
-				$head = $('<div class="pane-head"><h5>Release Notes</h5></div>').appendTo($pane),
+				$head = $('<div class="pane-head"><h5>'+blx.t("Release Notes")+'</h5></div>').appendTo($pane),
 				$body = $('<div class="pane-body scrollpane"/>').appendTo($pane),
 				$item = $('<div class="pane-item"/>').appendTo($body),
 				$foot = $('<div class="pane-foot"/>').appendTo($pane),
-				$btn  = $('<div class="btn close"><span class="label">Close</span></div>').appendTo($foot);
+				$btn  = $('<div class="btn close"><span class="label">'+blx.t("Close")+'</span></div>').appendTo($foot);
 
 			var noteModal = new blx.ui.Modal($pane);
 

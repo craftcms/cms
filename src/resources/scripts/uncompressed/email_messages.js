@@ -151,7 +151,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 		}
 
 		this.loading = true;
-		this.$saveBtn.addClass('active')
+		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
 		$.post(blx.actionUrl+'email/saveMessage', data, $.proxy(function(response, textStatus, jqXHR) {
@@ -163,10 +163,10 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 					this.message.updateHtmlFromModal();
 
 				this.hide();
-				blx.displayNotice('Message saved.')
+				blx.displayNotice(blx.t('Message saved.'))
 			}
 			else
-				blx.displayError('Couldn’t save message.')
+				blx.displayError(blx.t('Couldn’t save message.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();

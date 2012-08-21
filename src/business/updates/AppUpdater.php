@@ -37,7 +37,7 @@ class AppUpdater implements IUpdater
 		$databaseCompat = version_compare($installedMySqlVersion, $requiredMySqlVersion, '>=');
 
 		if (!$phpCompat && !$databaseCompat)
-			throw new Exception(Blocks::t('The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and MySQL version "{requiredMySqlVersion}" or higher.  You have PHP version "{installedPhpVersion}" and MySQL version "{installedMySqlVersion}" installed.',
+			throw new Exception(Blocks::t('The update can’t be installed because @@@productDisplay@@@ requires PHP version "{requiredPhpVersion}" or higher and MySQL version "{requiredMySqlVersion}" or higher.  You have PHP version "{installedPhpVersion}" and MySQL version "{installedMySqlVersion}" installed.',
 				array('requiredPhpVersion' => $requiredMySqlVersion,
 				      'installedPhpVersion' => PHP_VERSION,
 				      'requiredMySqlVersion' => $requiredMySqlVersion,
@@ -45,13 +45,13 @@ class AppUpdater implements IUpdater
 				)));
 		else
 			if (!$phpCompat)
-				throw new Exception(Blocks::t('The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.',
+				throw new Exception(Blocks::t('The update can’t be installed because @@@productDisplay@@@ requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.',
 					array('requiredPhpVersion' => $requiredMySqlVersion,
 					      'installedPhpVersion' => PHP_VERSION
 					)));
 			else
 				if (!$databaseCompat)
-					throw new Exception(Blocks::t('The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.',
+					throw new Exception(Blocks::t('The update can’t be installed because @@@productDisplay@@@ requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.',
 						array('requiredMySqlVersion' => $requiredMySqlVersion,
 						      'installedMySqlVersion' => $installedMySqlVersion
 						)));
@@ -60,7 +60,7 @@ class AppUpdater implements IUpdater
 	}
 
 	/**
-	 * Starts the process of running a Blocks app update.
+	 * Starts the process of running a @@@productDisplay@@@ app update.
 	 * @return bool
 	 * @throws Exception
 	 */
@@ -69,7 +69,7 @@ class AppUpdater implements IUpdater
 		$this->checkRequirements();
 
 		if ($this->_buildsToUpdate == null)
-			throw new Exception(Blocks::t('Blocks is already up to date.'));
+			throw new Exception(Blocks::t('@@@productDisplay@@@ is already up to date.'));
 
 		Blocks::log('Starting the AppUpdater.', \CLogger::LEVEL_INFO);
 
@@ -93,10 +93,10 @@ class AppUpdater implements IUpdater
 		if (!$this->unpackPackage())
 			throw new Exception(Blocks::t('There was a problem unpacking the downloaded package.'));
 
-		// Validate that the paths in the update manifest file are all writable by Blocks
+		// Validate that the paths in the update manifest file are all writable by @@@productDisplay@@@
 		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
 		if (!$this->validateManifestPathsWritable())
-			throw new Exception(Blocks::t('Blocks needs to be able to write to the follow files, but can’t: {fileList}', array('fileList' => implode(',', $this->_writableErrors))));
+			throw new Exception(Blocks::t('@@@productDisplay@@@ needs to be able to write to the follow files, but can’t: {fileList}', array('fileList' => implode(',', $this->_writableErrors))));
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
@@ -137,8 +137,8 @@ class AppUpdater implements IUpdater
 		if (!blx()->updates->flushUpdateInfoFromCache())
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
 
-		// Update the db with the new Blocks info.
-		Blocks::log('Setting new Blocks info in the database after update.', \CLogger::LEVEL_INFO);
+		// Update the db with the new @@@productDisplay@@@ info.
+		Blocks::log('Setting new @@@productDisplay@@@ info in the database after update.', \CLogger::LEVEL_INFO);
 		if (!blx()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem setting the new version and build number in the database.'));
 
@@ -281,7 +281,7 @@ class AppUpdater implements IUpdater
 	}
 
 	/**
-	 * Checks to see if the files that we are about to update are writable by Blocks.
+	 * Checks to see if the files that we are about to update are writable by @@@productDisplay@@@.
 	 * @return bool
 	 */
 	public function validateManifestPathsWritable()

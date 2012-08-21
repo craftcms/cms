@@ -46,7 +46,7 @@ class BlocksController extends BaseController
 			}
 			else
 			{
-				blx()->user->setNotice('Content block saved.');
+				blx()->user->setNotice(Blocks::t('Content block saved.'));
 			}
 
 			$this->redirectToPostedUrl();
@@ -59,7 +59,7 @@ class BlocksController extends BaseController
 		}
 		else
 		{
-			blx()->user->setError('Couldn’t save content block.');
+			blx()->user->setError(Blocks::t('Couldn’t save content block.'));
 		}
 
 		// Reload the original template

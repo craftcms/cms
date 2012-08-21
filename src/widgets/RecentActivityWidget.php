@@ -31,7 +31,7 @@ class RecentActivityWidget extends BaseWidget
 	{
 		$this->actions = array(
 			array(
-				'action' => '<a>Brandon</a> is editing <a>Blocks</a>',
+				'action' => '<a>Brandon</a> is editing <a>@@@productDisplay@@@</a>',
 				'date' => 'right now'
 			),
 			array(
@@ -39,7 +39,7 @@ class RecentActivityWidget extends BaseWidget
 				'date' => 'yesterday'
 			),
 			array(
-				'action' => '<a>Brad</a> updated Blocks and Wygwam</a>',
+				'action' => '<a>Brad</a> updated @@@productDisplay@@@ and Wygwam</a>',
 				'date' => 'Sep 5, 2011'
 			)
 		);

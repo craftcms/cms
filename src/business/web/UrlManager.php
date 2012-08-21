@@ -95,7 +95,7 @@ class UrlManager extends \CUrlManager
 	{
 		if (BLOCKS_CP_REQUEST)
 		{
-			// Check the Blocks predefined routes.
+			// Check the @@@productDisplay@@@ predefined routes.
 			foreach ($this->cpRoutes as $route)
 			{
 				if ($this->_matchRouteInternal($route[0]))

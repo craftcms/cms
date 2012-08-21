@@ -2,19 +2,14 @@
 	{% redirect "dashboard" %}
 {% endif %}
 
-
 {% extends "_layouts/basic" %}
 {% set title = "Login"|t %}
 {% include_css "login.css" %}
 {% include_js "login.js" %}
 {% include_translation
 	"Reset Password",
-	"We’ve sent you an email with instructions to reset your password.",
-	"An unknown error occurred.",
-	"Show",
-	"Hide"
+	"We’ve sent you an email with instructions to reset your password."
 %}
-
 
 {% set body %}
 	<script type="text/javascript">

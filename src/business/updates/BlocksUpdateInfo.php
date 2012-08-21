@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Stores the available Blocks update info.
+ * Stores the available @@@productDisplay@@@ update info.
  */
 class BlocksUpdateInfo
 {

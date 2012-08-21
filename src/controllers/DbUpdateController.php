@@ -35,7 +35,7 @@ class DbUpdateController extends BaseController
 				{
 					// flush update cache.
 					blx()->updates->flushUpdateInfoFromCache();
-					blx()->user->setNotice('Database successfully updated.');
+					blx()->user->setNotice(Blocks::t('Database successfully updated.'));
 
 					// Bring the system back online.
 					blx()->updates->turnSystemOnAfterUpdate();
@@ -44,12 +44,12 @@ class DbUpdateController extends BaseController
 				}
 			}
 
-			$this->returnJson(array('error' => 'There was a problem updating the database.'));
+			$this->returnJson(array('error' => Blocks::t('There was a problem updating the database.')));
 		}
 		catch (\Exception $e)
 		{
 			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
-			$this->returnJson(array('error' => 'There was a problem updating the database.'));
+			$this->returnJson(array('error' => Blocks::t('There was a problem updating the database.')));
 		}
 
 	}

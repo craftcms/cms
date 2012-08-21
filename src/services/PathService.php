@@ -125,7 +125,7 @@ class PathService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the Blocks app templates path.
+	 * Returns the @@@productDisplay@@@ app templates path.
 	 * @return string
 	 */
 	public function getAppTemplatesPath()
