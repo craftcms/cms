@@ -87,7 +87,7 @@
 
 			<select id="preferred_language" name="preferred_language">
 				{% for language in blx.localization.languages %}
-					<option value="{{ language }}" {% if language == user.preferred_language %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
+					<option value="{{ language }}" {% if language == user.preferred_language %}selected{% endif %}>{{ blx.localization.localeName(language, language) }}</option>
 				{% endfor %}
 			</select>
 		</div>

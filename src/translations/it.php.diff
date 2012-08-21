@@ -1,5 +1,5 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/it.php	2012-08-21 15:05:07.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/it.php	2012-08-21 15:05:07.000000000 -0700
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/it.php	2012-08-21 15:48:10.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/it.php	2012-08-21 15:48:10.000000000 -0700
 @@ -15,6 +15,7 @@
    'Account suspended.' => '',
    'Activate' => '',
@@ -166,7 +166,7 @@
    'SERVER Info' => '',
    'SESSION Info' => '',
    'SOAP extension' => 'Estensione SOAP',
-@@ -274,6 +312,7 @@
+@@ -275,6 +313,7 @@
    'Size' => '',
    'Smtp' => '',
    'Smtp Secure Transport Type' => '',
@@ -174,7 +174,7 @@
    'Suspend' => '',
    'Suspended' => '',
    'System' => '',
-@@ -283,15 +322,23 @@
+@@ -284,15 +323,23 @@
    'The content row can’t be inserted into the database because it’s not new.' => 'La riga contenuto non può essere inserito nel database perché non è nuovo.',
    'The content row can’t be inserted into the database before it’s record has been saved.' => 'La riga contenuto non può essere inserita nella banca dati prima che il disco è stato registrato.',
    'The content row can’t be updated because it’s new.' => 'La riga contenuto non può essere aggiornato perché è nuova.',
@@ -198,7 +198,7 @@
    'There was a problem sending the forgot password email.' => '',
    'There was a problem unpacking the downloaded package.' => 'C’è stato un problema decomprimere il pacchetto scaricato.',
    'There was a problem updating the database.' => '',
-@@ -309,6 +356,7 @@
+@@ -310,6 +357,7 @@
    'This is required if you are using SQLite database.' => 'Questo è necessario se si utilizza database SQLite.',
    'Timeout' => '',
    'Title' => '',
@@ -206,7 +206,7 @@
    'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' => 'Per usare memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> per <code>true</code>.',
    'Tree view' => '',
    'URL' => '',
-@@ -321,8 +369,10 @@
+@@ -322,8 +370,10 @@
    'Untitled' => '',
    'Update' => '',
    'Update All' => '',
@@ -217,7 +217,7 @@
    'Use uncompressed CP JavaScript files' => '',
    'User Info' => 'User Info',
    'User activated.' => '',
-@@ -336,6 +386,7 @@
+@@ -337,6 +387,7 @@
    'Users' => 'Utenti',
    'Verification email sent.' => '',
    'Verify Account' => '',
@@ -225,7 +225,7 @@
    'We’re offline.' => '',
    'We’ve sent you an email with instructions to reset your password.' => '',
    'What the entry URLs should look like.' => '',
-@@ -349,18 +400,31 @@
+@@ -350,18 +401,31 @@
    'You need to reset your password. Check your email for instructions.' => '',
    'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.' => 'La tua installazione di PHP non supporta il glob <a href="http://us.php.net/manual/en/function.glob.php">glob</a> funzione.',
    'Your database needs to be updated.  Make a backup, then press this button.' => '',

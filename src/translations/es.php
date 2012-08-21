@@ -262,6 +262,7 @@ return array (
   'See how' => '',
   'Send Verification Email' => '',
   'Sender Name' => '',
+  'Sendmail' => '',
   'Services' => '',
   'Set Password' => '',
   'Settings' => 'Configuración',
