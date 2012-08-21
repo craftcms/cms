@@ -2,7 +2,7 @@ body { background: #fff; }
 
 /*-- grid --*/
 #main .files.thumbs ul { margin: -20px 0 0 -20px; }
-#main .files.thumbs ul:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+#main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 #main .files.thumbs ul li { float: left; margin: 20px 0 0 20px; width: 96px; padding: 2px 2px 0; text-align: center; }
 #main .files.thumbs ul li .filename { text-align: center; }
 
