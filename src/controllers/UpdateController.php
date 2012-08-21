@@ -64,10 +64,10 @@ class UpdateController extends BaseController
 						if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
 							$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
 						else
-							$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{$h}”."));
+							$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $h)));
 					}
 					else
-						$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{$h}”."));
+						$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $h)));
 				}
 			}
 

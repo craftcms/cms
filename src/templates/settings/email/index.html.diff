@@ -1,5 +1,5 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/templates/settings/email/index.html	2012-08-20 17:14:32.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/templates/settings/email/index.html	2012-08-20 17:15:49.000000000 -0700
+--- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/templates/settings/email/index.html	2012-08-21 12:36:25.000000000 -0700
++++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/templates/settings/email/index.html	2012-08-21 12:36:28.000000000 -0700
 @@ -1,4 +1,4 @@
 -{% extends "_layouts/cp" %}
 +{% extends "settings/email/_layout" %}
