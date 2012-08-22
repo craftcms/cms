@@ -1,0 +1,10 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/variables/CpVariable.php	2012-08-22 05:14:41.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/variables/CpVariable.php	2012-08-22 05:15:10.000000000 -0700
+@@ -21,6 +21,7 @@
+ 				array('handle' => 'assets', 'name' => Blocks::t('Assets'), 'icon' => 'A'),
+ 			),
+ 			array(
++				array('handle' => 'accounts', 'name' => Blocks::t('Accounts'), 'icon' => 'U'),
+ 				array('handle' => 'plugins', 'name' => Blocks::t('Plugins'), 'icon' => 'P'),
+ 				array('handle' => 'updates', 'name' => Blocks::t('Updates'), 'icon' => 'V', 'badge' => '1'),
+ 				array('handle' => 'settings', 'name' => Blocks::t('Settings'), 'icon' => 'S'),

@@ -1,10 +1,19 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/index.html	2012-08-15 06:02:09.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/index.html	2012-08-15 06:08:17.000000000 -0700
-@@ -10,6 +10,7 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/settings/index.html	2012-08-22 05:09:24.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/settings/index.html	2012-08-22 05:08:04.000000000 -0700
+@@ -10,12 +10,16 @@
  	<h2>{{ "System"|t }}</h2>
  	<ul class="icons">
  		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
 +		<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
++		<li><a href="{{ url('settings/groups') }}" data-icon="U">{{ "Groups"|t }}</a></li>
  		<li><a href="{{ url('settings/email') }}" data-icon="E">{{ "Email"|t }}</a></li>
  		<li><a href="{{ url('settings/advanced') }}" data-icon="a">{{ "Advanced"|t }}</a></li>
  	</ul>
+ 
+ 	<h2>{{ "Content"|t }}</h2>
+ 	<ul class="icons">
++		<li><a href="{{ url('settings/sections') }}" data-icon="C">{{ "Sections"|t }}</a></li>
+ 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
++		<li><a href="{{ url('settings/languages') }}" data-icon="L">{{ "Languages"|t }}</a></li>
+ 	</ul>
+ {% endset %}

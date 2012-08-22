@@ -1,6 +1,6 @@
 {% extends "_layouts/cp" %}
-{% set title = "Users"|t ~ " - " ~ user.username ~ " - " ~ pageTitle %}
-{% include_css "user.css" %}
+{% set title = "My Account"|t ~ " - " ~ pageTitle %}
+{% include_css "account.css" %}
 
 
 {% if user.id %}
@@ -17,7 +17,7 @@
 
 {% set main %}
 	<header class="titlebar">
-		<h1>{{ heading }}</h1>
+		<h1>{{ "My Account"|t }}</h1>
 	</header>
 
 	{% if user.id %}
@@ -25,11 +25,6 @@
 			<ul>
 				<li {% if blx.request.segment(3) == '' %}class="sel"{% endif %}><a href="{{ url('accounts/' ~ user.id) }}" data-icon="⚙">{{ "Account Settings"|t }}</a></li>
 				<li {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %}><a href="{{ url('accounts/' ~ user.id ~ '/profile') }}" data-icon="p">{{ "Profile"|t }}</a></li>
-				<li {% if blx.request.segment(3) == 'info' %}class="sel"{% endif %}><a href="{{ url('accounts/' ~ user.id ~ '/info') }}" data-icon="i">{{ "User Info"|t }}</a></li>
-
-				{% if blx.accounts.current.admin %}
-					<li {% if blx.request.segment(3) == 'admin' %}class="sel"{% endif %}><a href="{{ url('accounts/' ~ user.id ~ '/admin') }}" data-icon="☻">{{ "Administration"|t }}</a></li>
-				{% endif %}
 			</ul>
 		</nav>
 	{% endif %}
