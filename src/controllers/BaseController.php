@@ -40,7 +40,10 @@ abstract class BaseController extends \CController
 			}
 			catch (TemplateLoaderException $e)
 			{
-				throw new HttpException(404);
+				if ($e->template == $template)
+					throw new HttpException(404);
+				else
+					throw $e;
 			}
 
 			// Set the Content-Type header
