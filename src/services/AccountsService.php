@@ -24,8 +24,11 @@ class AccountsService extends \CApplicationComponent
 		$query = blx()->db->createCommand()
 			->from('users');
 
-		// Where conditions
+		// Count?
+		if ($count = !empty($params['count']))
+			$query->select('count(id)');
 
+		// Where conditions
 		$whereConditions = array('and');
 		$whereParams = array();
 
@@ -52,24 +55,28 @@ class AccountsService extends \CApplicationComponent
 
 		$query->where($whereConditions, $whereParams);
 
-		// Order
+		if (!$count)
+		{
+			// Order
+			if (!empty($params['order']))
+				$query->order($params['order']);
 
-		if (!empty($params['order']))
-			$query->order($params['order']);
+			// Offset and Limit
+			if (!empty($params['offset']))
+				$query->offset($params['offset']);
 
-		// Offset and Limit
+			if (!empty($params['limit']))
+				$query->limit($params['limit']);
 
-		if (!empty($params['offset']))
-			$query->offset($params['offset']);
-
-		if (!empty($params['limit']))
-			$query->limit($params['limit']);
-
-		// Find the users
-
-		$result = $query->queryAll();
-		$users = User::model()->populateRecords($result);
-		return $users;
+			// Find the users
+			$result = $query->queryAll();
+			$users = User::model()->populateRecords($result);
+			return $users;
+		}
+		else
+		{
+			return (int) $query->queryScalar();
+		}
 	}
 
 	/**
@@ -86,57 +93,58 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the 50 most recent users
-	 * @return mixed
+	 * Gets the most recent users.
+	 *
+	 * @param array $params
+	 * @return array
 	 */
-	public function getRecentUsers()
+	public function getRecentUsers($params = array())
 	{
-		return User::model()->recentlyCreated()->findAll();
+		return $this->getUsers(array_merge($params, array(
+			'order' => 'date_created DESC'
+		)));
 	}
 
 	/**
-	 * @return string
+	 * Gets the total number of users.
+	 *
+	 * @param array $params
+	 * @return int
 	 */
-	public function getChangePasswordUrl()
+	public function getTotalUsers($params = array())
 	{
-		return 'account/password';
+		return $this->getUsers(array_merge($params, array(
+			'count' => true
+		)));
 	}
 
 	/**
-	 * @return string
-	 */
-	public function getVerifyAccountUrl()
-	{
-		return 'verify';
-	}
-
-	/**
-	 * @param $userId
-	 * @return mixed
+	 * Gets a user by their ID.
+	 *
+	 * @param int $userId
+	 * @return User
 	 */
 	public function getUserById($userId)
 	{
-		$user = User::model()->findById($userId);
-		return $user;
+		return User::model()->findById($userId);
 	}
 
 	/**
-	 * Returns a user by its username or email
+	 * Gets a user by their username or email.
+	 *
 	 * @param string $usernameOrEmail
 	 * @return User
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
-		$user = User::model()->find(array(
+		return User::model()->find(array(
 			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
 			'params' => array(':usernameOrEmail' => $usernameOrEmail),
 		));
-
-		return $user;
 	}
 
 	/**
-	 * Gets a user by a verification code
+	 * Gets a user by a verification code.
 	 *
 	 * @param string $code
 	 * @return User
@@ -152,44 +160,57 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the User model of the currently logged in user and null if is user is not logged in.
-	 * @return User The model of the logged in user.
+	 * Gets the currently logged-in user.
+	 *
+	 * @return User
 	 */
 	public function getCurrentUser()
 	{
-		return $this->getUserById(isset(blx()->user) ? blx()->user->getId() : null);
+		if (!empty(blx()->user))
+			return $this->getUserById(blx()->user->getId());
+		else
+			return null;
 	}
 
 	/**
-	 * @param $userName
-	 * @return mixed
+	 * @return string
 	 */
-	public function isUserNameInUse($userName)
+	public function getVerifyAccountUrl()
 	{
-		$exists = User::model()->exists(array(
-			'username=:userName',
-			array(':userName' => $userName),
-		));
-
-		return $exists;
+		return 'verify';
 	}
 
 	/**
-	 * @param $email
-	 * @return mixed
+	 * Returns whether a username is already in use.
+	 *
+	 * @param string $username
+	 * @return bool
+	 */
+	public function isUserNameInUse($username)
+	{
+		return User::model()->exists(array(
+			'username=:username',
+			array(':username' => $username),
+		));
+	}
+
+	/**
+	 * Returns whether an email is already in use.
+	 *
+	 * @param string $email
+	 * @return bool
 	 */
 	public function isEmailInUse($email)
 	{
-		$exists = User::model()->exists(array(
-			'email=:userName',
+		return User::model()->exists(array(
+			'email=:email',
 			array(':email' => $email),
 		));
-
-		return $exists;
 	}
 
 	/**
 	 * Generates a new verification code for a user.
+	 *
 	 * @param User $user
 	 * @param bool $save
 	 */
@@ -209,59 +230,9 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param $userId
-	 * @return array
-	 */
-	public function getGroupsByUserId($userId)
-	{
-		$groups = blx()->db->createCommand()
-			->select('g.*')
-			->from('groups g')
-			->join('usergroups ug', 'g.id = ug.group_id')
-			->join('users u', 'ug.user_id = u.id')
-			->where('u.id=:userId', array(':userId' => $userId))
-			->queryAll();
-
-		return $groups;
-	}
-
-	/**
-	 * @param $groupId
-	 * @return array
-	 */
-	public function getUsersByGroupId($groupId)
-	{
-		$groups = blx()->db->createCommand()
-			->select('u.*')
-			->from('groups g')
-			->join('usergroups ug', 'g.id = ug.group_id')
-			->join('users u', 'ug.user_id = u.id')
-			->where('g.id=:groupId', array(':groupId' => $groupId))
-			->queryAll();
-
-		return $groups;
-	}
-
-	/**
-	 * @return UserGroup
-	 */
-	public function getAllGroups()
-	{
-		return UserGroup::model()->findAll();
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getTotalUsers()
-	{
-		return User::model()->count();
-	}
-
-	/**
 	 * Activates a user, bypassing email verification.
 	 *
-	  * @param User $user
+	 * @param User $user
 	 */
 	public function activateUser(User $user)
 	{
@@ -309,8 +280,10 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
+	 * Changes a user's password.
+	 *
 	 * @param User $user
-	 * @param      $newPassword
+	 * @param string $newPassword
 	 * @param bool $save
 	 * @return bool
 	 */
@@ -340,8 +313,10 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
+	 * Returns the remaining cooldown time for a user.
+	 *
 	 * @param User $user
-	 * @return null
+	 * @return int
 	 */
 	public function getRemainingCooldownTime(User $user)
 	{
@@ -355,6 +330,8 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
+	 * Deletes a user.
+	 *
 	 * @param User $user
 	 */
 	public function deleteUser(User $user)
