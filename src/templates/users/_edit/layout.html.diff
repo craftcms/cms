@@ -1,0 +1,23 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/templates/users/_edit/layout.html	2012-08-22 05:28:19.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/templates/users/_edit/layout.html	2012-08-22 05:29:09.000000000 -0700
+@@ -17,7 +17,7 @@
+
+ {% set main %}
+ 	<header class="titlebar">
+-		<h1>{{ "My Account"|t }}</h1>
++		<h1>{{ heading }}</h1>
+ 	</header>
+
+ 	{% if user.id %}
+@@ -25,6 +25,11 @@
+ 			<ul>
+ 				<li {% if blx.request.segment(3) == '' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id) }}" data-icon="⚙">{{ "Account Settings"|t }}</a></li>
+ 				<li {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/profile') }}" data-icon="p">{{ "Profile"|t }}</a></li>
++				<li {% if blx.request.segment(3) == 'info' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/info') }}" data-icon="i">{{ "User Info"|t }}</a></li>
++
++				{% if blx.accounts.current.admin %}
++					<li {% if blx.request.segment(3) == 'admin' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/admin') }}" data-icon="☻">{{ "Administration"|t }}</a></li>
++				{% endif %}
+ 			</ul>
+ 		</nav>
+ 	{% endif %}

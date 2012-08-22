@@ -8,14 +8,14 @@
 
 		<ul class="right">
 			<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div></li>
-			<li><a href="{{ url('accounts/new') }}" class="btn" data-icon="+">{{ "Add a user"|t }}</a></li>
+			<li><a href="{{ url('users/new') }}" class="btn" data-icon="+">{{ "Add a user"|t }}</a></li>
 		</ul>
 	</header>
 
 	<nav class="nav">
 		<ul>
-			<li {% if blx.request.segment(2) == '' %}class="sel"{% endif %}><a href="{{ url('accounts') }}">{{ "All users"|t }}</a></li>
-			<li {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %}><a href="{{ url('accounts/admins') }}">{{ "Admins"|t }}</a></li>
+			<li {% if blx.request.segment(2) == '' %}class="sel"{% endif %}><a href="{{ url('users') }}">{{ "All users"|t }}</a></li>
+			<li {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %}><a href="{{ url('users/admins') }}">{{ "Admins"|t }}</a></li>
 		</ul>
 	</nav>
 
@@ -31,7 +31,7 @@
 			<tbody>
 				{% for user in users %}
 					<tr>
-						<td><a href="{{ url('accounts/' ~ user.id) }}">{{ user.username }}</a></td>
+						<td><a href="{{ url('users/' ~ user.id) }}">{{ user.username }}</a></td>
 						<td>{{ user.fullname }}</td>
 						<td>{% if user.email %}<a href="mailto:{{ user.email }}">{{ user.email }}</a>{% endif %}</td>
 						<td>{% if user.last_login_date %}{{ blx.date.nice(user.last_login_date) }}{% else %}{{ "Never"|t }}{% endif %}</td>
