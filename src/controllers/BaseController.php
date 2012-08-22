@@ -6,8 +6,6 @@ namespace Blocks;
  */
 abstract class BaseController extends \CController
 {
-	private $_widgetStack = array();
-
 	/**
 	 * Returns the directory containing view files for this controller.
 	 * We're overriding this since CController's version defaults $module to blx().
@@ -100,7 +98,7 @@ abstract class BaseController extends \CController
 	public function requireAdmin()
 	{
 		if (!blx()->accounts->getCurrentUser()->admin)
-			throw new Exception(Blocks::t('This action may only be performed by admins.'));
+			throw new HttpException(403, Blocks::t('This action may only be performed by admins.'));
 	}
 
 	/**
