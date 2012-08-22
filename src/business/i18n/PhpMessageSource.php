@@ -15,6 +15,11 @@ class PhpMessageSource extends \CPhpMessageSource
 		parent::init();
 	}
 
+	/**
+	 * @param string $category
+	 * @param string $language
+	 * @return string
+	 */
 	protected function getMessageFile($category, $language)
 	{
 		if ($category !== 'blocks')

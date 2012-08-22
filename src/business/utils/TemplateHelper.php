@@ -74,7 +74,7 @@ class TemplateHelper
 			$variables['siteName'] = Blocks::getSiteName();
 			$variables['siteUrl'] = Blocks::getSiteUrl();
 
-			if ($user = blx()->accounts->getCurrentUser())
+			if (($user = blx()->accounts->getCurrentUser()) !== null)
 				$variables['userName'] = $user->getFullName();
 		}
 

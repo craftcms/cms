@@ -6,18 +6,6 @@ namespace Blocks;
  */
 class NumberHelper
 {
-	private static $_numberWordMap = array(
-		1 => 'one',
-		2 => 'two',
-		3 => 'three',
-		4 => 'four',
-		5 => 'five',
-		6 => 'six',
-		7 => 'seven',
-		8 => 'eight',
-		9 => 'nine'
-	);
-
 	/**
 	 * Returns the "word" version of a number
 	 * @param int $num The number
@@ -25,8 +13,20 @@ class NumberHelper
 	 */
 	public static function word($num)
 	{
-		if (isset(self::$_numberWordMap[$num]))
-			return self::$_numberWordMap[$num];
+		$numberWordMap = array(
+				1 => Blocks::t('one'),
+				2 => Blocks::t('two'),
+				3 => Blocks::t('three'),
+				4 => Blocks::t('four'),
+				5 => Blocks::t('five'),
+				6 => Blocks::t('six'),
+				7 => Blocks::t('seven'),
+				8 => Blocks::t('eight'),
+				9 => Blocks::t('nine')
+			);
+
+		if (isset($numberWordMap[$num]))
+			return $numberWordMap[$num];
 
 		return (string)$num;
 	}
@@ -45,7 +45,7 @@ class NumberHelper
 		while ($num >= 0)
 		{
 			$ascii = ($num % 26) + 65;
-			$alpha = chr($ascii) . $alpha;
+			$alpha = chr($ascii).$alpha;
 
 			$num = intval($num / 26) - 1;
 		}

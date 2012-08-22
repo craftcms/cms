@@ -377,25 +377,25 @@ class App extends \CWebApplication
 		$databaseCollation = $this->config->getDbItem('collation');
 
 		if (StringHelper::isNullOrEmpty($databaseServerName))
-			$messages[] = 'The database server name isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database server name isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databaseAuthName))
-			$messages[] = 'The database user name isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database user name isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databaseName))
-			$messages[] = 'The database name isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database name isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databasePort))
-			$messages[] = 'The database port isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database port isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databaseTablePrefix))
-			$messages[] = 'The database table prefix isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database table prefix isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databaseCharset))
-			$messages[] = 'The database charset isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database charset isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databaseCollation))
-			$messages[] = 'The database collation isn’t set in your db config file.';
+			$messages[] = Blocks::t('The database collation isn’t set in your db config file.');
 
 		if (!empty($messages))
 			throw new Exception(Blocks::t('Database configuration errors: {errorList}', array('errorList' => implode(PHP_EOL, $messages))));
@@ -404,11 +404,11 @@ class App extends \CWebApplication
 		{
 			$connection = $this->db;
 			if (!$connection)
-				$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
+				$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 		}
 		catch (\Exception $e)
 		{
-			$messages[] = 'There is a problem connecting to the database with the credentials supplied in your db config file.';
+			$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 		}
 
 		if (!empty($messages))

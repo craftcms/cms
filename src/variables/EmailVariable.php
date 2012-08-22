@@ -44,7 +44,9 @@ class EmailVariable
 	/**
 	 * Returns a message's content by the message ID.
 	 *
-	 * @param $messageId
+	 * @param      $messageId
+	 * @param null $language
+	 * @return
 	 */
 	public function getMessageContent($messageId, $language = null)
 	{

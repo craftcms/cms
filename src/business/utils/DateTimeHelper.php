@@ -48,24 +48,23 @@ class DateTimeHelper
 			$minutes = round($seconds / $secondsInMinute);
 			$seconds = 0;
 		}
-		
 
 		$timeComponents = array();
 
 		if ($weeks)
-			$timeComponents[] = $weeks.' week'.($weeks > 1 ? 's' : '');
+			$timeComponents[] = $weeks.' '.($weeks > 1 ? Blocks::t('weeks') : Blocks::t('week'));
 
 		if ($days)
-			$timeComponents[] = $days.' day'.($days > 1 ? 's' : '');
+			$timeComponents[] = $days.' '.($days > 1 ? Blocks::t('days') : Blocks::t('day'));
 
 		if ($hours)
-			$timeComponents[] = $hours.' hour'.($hours > 1 ? 's' : '');
+			$timeComponents[] = $hours.' '.($hours > 1 ? Blocks::t('hours') : Blocks::t('hour'));
 
 		if ($minutes)
-			$timeComponents[] = $minutes.' minute'.($minutes > 1 ? 's' : '');
+			$timeComponents[] = $minutes.' '.($minutes > 1 ? Blocks::t('minutes') : Blocks::t('minute'));
 
 		if ($seconds)
-			$timeComponents[] = $seconds.' second'.($seconds > 1 ? 's' : '');
+			$timeComponents[] = $seconds.' '.($seconds > 1 ? Blocks::t('seconds') : Blocks::t('second'));
 
 		return implode(', ', $timeComponents);
 	}
@@ -83,10 +82,9 @@ class DateTimeHelper
 	 * Returns a nicely formatted date string for given Datetime string.
 	 *
 	 * @param string     $dateString Datetime string
-	 * @param int|string $format Format of returned date
 	 * @return string Formatted date string
 	 */
-	public static function nice($dateString = null, $format = 'D, M jS Y, H:i')
+	public static function nice($dateString = null)
 	{
 		if ($dateString == null)
 			$date = time();
@@ -98,7 +96,7 @@ class DateTimeHelper
 				$date = strtotime($dateString);
 		}
 
-		return date($format, $date);
+		return blx()->dateFormatter->formatDateTime($date);
 	}
 
 	/**

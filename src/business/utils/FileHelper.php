@@ -11,6 +11,7 @@ class FileHelper extends \CFileHelper
 	 *
 	 * @param string $path
 	 * @param string $default
+	 * @return null|string
 	 */
 	public static function getExtension($path, $default = null)
 	{

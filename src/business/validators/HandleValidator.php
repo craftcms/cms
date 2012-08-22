@@ -21,12 +21,13 @@ class HandleValidator extends \CValidator
 
 		if (in_array($value, $reservedWords))
 		{
-			$message = "“{$value}” is a reserved word.";
+			$message = Blocks::t('“{value}” is a reserved word.', array('value', $value));
 			$this->addError($object, $attribute, $message);
 		}
 		else if (!preg_match('/^'.TemplateParser::varPattern.'$/', $value))
 		{
-			$message = $this->message !== null ? $this->message : '{attribute} isn’t a valid handle.';
+			$altMessage = Blocks::t('“{attribute}” isn’t a valid handle.', $attribute);;
+			$message = $this->message !== null ? $this->message : $altMessage;
 			$this->addError($object, $attribute, $message);
 		}
 	}

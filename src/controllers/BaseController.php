@@ -27,6 +27,8 @@ abstract class BaseController extends \CController
 	 *
 	 * @param array $variables
 	 * @throws HttpException
+	 * @throws TemplateLoaderException
+	 * @return void
 	 */
 	public function renderRequestedTemplate($variables = array())
 	{

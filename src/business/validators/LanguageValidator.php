@@ -17,7 +17,7 @@ class LanguageValidator extends \CValidator
 
 		if (!Locale::exists($value))
 		{
-			$message = "Couldn’t find the language id “{$value}”.";
+			$message = Blocks::t('Couldn’t find the language id “{value}”.', array('value', $value));
 			$this->addError($object, $attribute, $message);
 		}
 	}

@@ -118,7 +118,7 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * @param $route
+	 * @param $urlPattern
 	 * @return bool
 	 */
 	private function _matchRouteInternal($urlPattern)

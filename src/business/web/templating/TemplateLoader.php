@@ -81,7 +81,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 		//  - We need to set this for each template request, in case it was changed to a plugin's template path
 		$basePath = blx()->path->getTemplatesPath();
 
-		if ($path = $this->_findTemplate($basePath.$name))
+		if (($path = $this->_findTemplate($basePath.$name)) !== null)
 			return $this->cache[$name] = $path;
 
 		// Otherwise maybe it's a plugin template?
@@ -100,7 +100,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 				// Chop off the plugin segment, since that's already covered by $basePath
 				$name = implode($parts);
 
-				if ($path = $this->_findTemplate($basePath.$name))
+				if (($path = $this->_findTemplate($basePath.$name)) !== null)
 					return $this->cache[$name] = $path;
 			}
 		}
