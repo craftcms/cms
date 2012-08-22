@@ -33,7 +33,15 @@ abstract class BaseController extends \CController
 		if (($template = blx()->urlManager->processTemplateMatching()) !== false)
 		{
 			$variables = array_merge(blx()->urlManager->getTemplateVariables(), $variables);
-			$output = $this->renderTemplate($template, $variables, true);
+
+			try
+			{
+				$output = $this->renderTemplate($template, $variables, true);
+			}
+			catch (TemplateLoaderException $e)
+			{
+				throw new HttpException(404);
+			}
 
 			// Set the Content-Type header
 			$mimeType = blx()->request->getMimeType();
