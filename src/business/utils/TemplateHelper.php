@@ -33,6 +33,10 @@ class TemplateHelper
 
 			// Add custom filters
 			$twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
+			$twig->addFilter('decimal', new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatDecimal'));
+			$twig->addFilter('currency', new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'));
+			$twig->addFilter('percentage', new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'));
+			$twig->addFilter('datetime', new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'));
 
 			// Add custom functions
 			$twig->addFunction('url', new \Twig_Function_Function('\Blocks\UrlHelper::generateUrl'));
