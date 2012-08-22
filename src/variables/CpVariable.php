@@ -21,7 +21,7 @@ class CpVariable
 				array('handle' => 'assets', 'name' => Blocks::t('Assets'), 'icon' => 'A'),
 			),
 			array(
-				array('handle' => 'users', 'name' => Blocks::t('Users'), 'icon' => 'U'),
+				array('handle' => 'accounts', 'name' => Blocks::t('Accounts'), 'icon' => 'U'),
 				array('handle' => 'plugins', 'name' => Blocks::t('Plugins'), 'icon' => 'P'),
 				array('handle' => 'updates', 'name' => Blocks::t('Updates'), 'icon' => 'V', 'badge' => '1'),
 				array('handle' => 'settings', 'name' => Blocks::t('Settings'), 'icon' => 'S'),
