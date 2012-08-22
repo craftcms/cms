@@ -28,6 +28,10 @@ return CMap::mergeArray(
 
 		// application components
 		'components' => array(
+			'accounts' => array(
+				'class' => 'Blocks\AccountsService',
+			),
+
 			// services
 			'assets' => array(
 				'class' => 'Blocks\AssetsService',
@@ -79,10 +83,6 @@ return CMap::mergeArray(
 
 			'updates' => array(
 				'class' => 'Blocks\UpdatesService',
-			),
-
-			'users' => array(
-				'class' => 'Blocks\UsersService',
 			),
 			// end services
 

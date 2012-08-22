@@ -23,7 +23,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = blx()->users->getUserByUsernameOrEmail($this->username);
+		$user = blx()->accounts->getUserByUsernameOrEmail($this->username);
 
 		if ($user === null)
 			$this->errorCode = self::ERROR_USERNAME_INVALID;
@@ -98,7 +98,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = self::ERROR_PASSWORD_RESET_REQUIRED;
-						blx()->users->forgotPassword($user);
+						blx()->accounts->forgotPassword($user);
 					}
 					else
 					{

@@ -19,14 +19,14 @@ class AccountController extends BaseController
 
 		if ($forgotPasswordForm->validate())
 		{
-			$user = blx()->users->getUserByUsernameOrEmail($forgotPasswordForm->username);
+			$user = blx()->accounts->getUserByUsernameOrEmail($forgotPasswordForm->username);
 			if ($user)
 			{
 				// Generate a new verification code
-				blx()->users->generateVerificationCode($user);
+				blx()->accounts->generateVerificationCode($user);
 
 				// Send the Forgot Password email
-				$link = UrlHelper::generateUrl(blx()->users->getVerifyAccountUrl(), array('code' => $user->verification_code));
+				$link = UrlHelper::generateUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verification_code));
 				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
 					$this->returnJson(array('success' => true));
 
@@ -52,11 +52,11 @@ class AccountController extends BaseController
 
 		if ($passwordForm->validate())
 		{
-			$user = blx()->users->getUserByVerificationCode($verificationCode);
+			$user = blx()->accounts->getUserByVerificationCode($verificationCode);
 
 			if ($user)
 			{
-				blx()->users->changePassword($user, $password, false);
+				blx()->accounts->changePassword($user, $password, false);
 
 				$user->verification_code = null;
 				$user->verification_code_issued_date = null;
@@ -91,7 +91,7 @@ class AccountController extends BaseController
 	 */
 	public function checkPassword($password)
 	{
-		$user = blx()->users->getCurrentUser();
+		$user = blx()->accounts->getCurrentUser();
 		if (blx()->security->checkPassword($password, $user->password, $user->enc_type))
 			return true;
 

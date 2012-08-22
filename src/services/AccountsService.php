@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UsersService extends \CApplicationComponent
+class AccountsService extends \CApplicationComponent
 {
 	protected static $defaultParams = array(
 		'offset' => 0,

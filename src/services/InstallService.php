@@ -89,7 +89,7 @@ class InstallService extends \CApplicationComponent
 			$user->email      = $inputs['email'];
 			$user->admin = true;
 			$user->preferred_language = blx()->language;
-			blx()->users->changePassword($user, $inputs['password'], false);
+			blx()->accounts->changePassword($user, $inputs['password'], false);
 			$user->save();
 
 			// Log them in

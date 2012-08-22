@@ -16,7 +16,7 @@ class TemplateController extends BaseController
 		{
 			$path = blx()->request->getPath();
 			if ($path !== 'login')
-				if ($path !== blx()->users->getVerifyAccountUrl() && blx()->request->getParam('code', null) == null)
+				if ($path !== blx()->accounts->getVerifyAccountUrl() && blx()->request->getParam('code', null) == null)
 					$this->requireLogin();
 		}
 

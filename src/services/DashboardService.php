@@ -34,7 +34,7 @@ class DashboardService extends \CApplicationComponent
 			return null;
 	}
 
-	/** 
+	/**
 	 * Returns a widget by its ID.
 	 * @param int $widgetId
 	 * @return Widget
@@ -43,7 +43,7 @@ class DashboardService extends \CApplicationComponent
 	{
 		$record = Widget::model()->findByAttributes(array(
 			'id' => $widgetId,
-			'user_id' => blx()->users->getCurrentUser()->id
+			'user_id' => blx()->accounts->getCurrentUser()->id
 		));
 
 		if ($record)
@@ -67,7 +67,7 @@ class DashboardService extends \CApplicationComponent
 	public function getUserWidgets()
 	{
 		$records = Widget::model()->findAllByAttributes(array(
-			'user_id' => blx()->users->getCurrentUser()->id
+			'user_id' => blx()->accounts->getCurrentUser()->id
 		), array(
 			'order' => 'sort_order'
 		));
@@ -119,7 +119,7 @@ class DashboardService extends \CApplicationComponent
 	public function saveSettings($settings)
 	{
 		// Get the current user
-		$user = blx()->users->getCurrentUser();
+		$user = blx()->accounts->getCurrentUser();
 		if (!$user)
 			throw new Exception(Blocks::t('There is no current user.'));
 

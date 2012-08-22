@@ -10,11 +10,11 @@
 			<div id="account-menu" class="menu">
 				<div class="userinfo">
 					<img src="{{ resourceUrl('images/avatar.jpg') }}" width="100" height="100">
-					{% if blx.users.current.fullname %}<div class="fullname">{{ blx.users.current.fullname }}</div>{% endif %}
-					<div class="username">{{ blx.users.current.username }}</div>
+					{% if blx.accounts.current.fullname %}<div class="fullname">{{ blx.accounts.current.fullname }}</div>{% endif %}
+					<div class="username">{{ blx.accounts.current.username }}</div>
 				</div>
 				<ul>
-					<li data-url="users/{{ blx.users.current.id }}">{{ "My Account"|t }}</li>
+					<li data-url="users/{{ blx.accounts.current.id }}">{{ "My Account"|t }}</li>
 					<li data-url="logout">{{ "Sign out"|t }}</li>
 				</ul>
 			</div>

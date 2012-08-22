@@ -11,7 +11,7 @@ class EmailController extends BaseController
 	 */
 	public function actionSendTestEmail()
 	{
-		$user = blx()->users->getCurrentUser();
+		$user = blx()->accounts->getCurrentUser();
 		blx()->email->sendEmailByKey($user, 'forgot_password');
 	}
 }

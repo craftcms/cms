@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * User functions
  */
-class UsersVariable
+class AccountsVariable
 {
 	/**
 	 * Returns the current logged-in user.
@@ -12,7 +12,7 @@ class UsersVariable
 	 */
 	public function current()
 	{
-		return blx()->users->getCurrentUser();
+		return blx()->accounts->getCurrentUser();
 	}
 
 	/**
@@ -20,9 +20,9 @@ class UsersVariable
 	 *
 	 * @return array
 	 */
-	public function all()
+	public function users()
 	{
-		return blx()->users->getUsers();
+		return blx()->accounts->getUsers();
 	}
 
 	/**
@@ -32,7 +32,7 @@ class UsersVariable
 	 */
 	public function admins()
 	{
-		return blx()->users->getAdmins();
+		return blx()->accounts->getAdmins();
 	}
 
 	/**
@@ -42,7 +42,7 @@ class UsersVariable
 	 */
 	public function getById($userId)
 	{
-		return blx()->users->getUserById($userId);
+		return blx()->accounts->getUserById($userId);
 	}
 
 	/**
@@ -53,7 +53,7 @@ class UsersVariable
 	 */
 	public function getUserByVerificationCode($code)
 	{
-		return blx()->users->getUserByVerificationCode($code);
+		return blx()->accounts->getUserByVerificationCode($code);
 	}
 
 	/**
@@ -62,7 +62,7 @@ class UsersVariable
 	 */
 	public function recent()
 	{
-		return blx()->users->getRecentUsers();
+		return blx()->accounts->getRecentUsers();
 	}
 
 	/**
@@ -71,6 +71,6 @@ class UsersVariable
 	 */
 	public function verifyAccountUrl()
 	{
-		return blx()->users->getVerifyAccountUrl();
+		return blx()->accounts->getVerifyAccountUrl();
 	}
 }

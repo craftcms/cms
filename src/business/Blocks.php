@@ -293,7 +293,7 @@ class Blocks extends \Yii
 	{
 		$encodedData = Json::encode($data);
 
-		if (($currentUser = blx()->users->getCurrentUser()) !== null)
+		if (($currentUser = blx()->accounts->getCurrentUser()) !== null)
 			$userId = $currentUser->id;
 		else
 			$userId = null;

@@ -3,7 +3,7 @@
 
 
 {% if not user and userId %}
-	{% set user = blx.users.getById(userId) %}
+	{% set user = blx.accounts.getById(userId) %}
 {% endif %}
 
 

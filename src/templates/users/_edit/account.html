@@ -3,7 +3,7 @@
 
 
 {% if not user and userId %}
-	{% set user = blx.users.getById(userId) %}
+	{% set user = blx.accounts.getById(userId) %}
 {% endif %}
 
 
@@ -35,7 +35,7 @@
 				{% include "_includes/error_list" with {'errors': user.errors.email} %}
 			{% endif %}
 
-			{% if not user.id and blx.users.current.admin %}
+			{% if not user.id and blx.accounts.current.admin %}
 				<div class="checkbox"><label>
 					<input type="checkbox" name="require_verification" value="y" {% if blx.request.post('require_verification') %}checked{% endif %}>
 					{{ "Require verification"|t }}
@@ -43,7 +43,7 @@
 			{% endif %}
 		</div>
 
-		{% if user.isCurrent or blx.users.current.admin %}
+		{% if user.isCurrent or blx.accounts.current.admin %}
 			<div class="field">
 				<div class="heading">
 					<label for="password">{{ "Password"|t }}</label>

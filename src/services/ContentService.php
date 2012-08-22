@@ -295,7 +295,7 @@ class ContentService extends \CApplicationComponent
 			// Create the entry
 			$entry = new Entry();
 			$entry->section_id = $sectionId;
-			$entry->author_id = ($authorId ? $authorId : blx()->users->getCurrentUser()->id);
+			$entry->author_id = ($authorId ? $authorId : blx()->accounts->getCurrentUser()->id);
 			$entry->parent_id = $parentId;
 			$entry->save();
 
@@ -525,7 +525,7 @@ class ContentService extends \CApplicationComponent
 
 		$version = new EntryVersion();
 		$version->entry_id  = $entry->id;
-		$version->author_id = blx()->users->getCurrentUser()->id;
+		$version->author_id = blx()->accounts->getCurrentUser()->id;
 		$version->language  = $language;
 		$version->draft = $draft;
 		$version->name = $name;
