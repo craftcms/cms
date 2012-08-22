@@ -37,6 +37,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @return AccountsVariable
+	 */
+	public function accounts()
+	{
+		return new AccountsVariable();
+	}
+
+	/**
 	 * @return AssetsVariable
 	 */
 	public function assets()
@@ -130,14 +138,6 @@ class BlxVariable
 	public function updates()
 	{
 		return new UpdatesVariable();
-	}
-
-	/**
-	 * @return UsersVariable
-	 */
-	public function users()
-	{
-		return new UsersVariable();
 	}
 
 	/**

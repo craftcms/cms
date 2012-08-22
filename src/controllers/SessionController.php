@@ -50,8 +50,8 @@ class SessionController extends BaseController
 					}
 					case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 					{
-						$user = blx()->users->getUserByUsernameOrEmail($username);
-						$timeRemaining = DateTimeHelper::secondsToHumanTimeDuration(blx()->users->getRemainingCooldownTime($user), false);
+						$user = blx()->accounts->getUserByUsernameOrEmail($username);
+						$timeRemaining = DateTimeHelper::secondsToHumanTimeDuration(blx()->accounts->getRemainingCooldownTime($user), false);
 						$error = Blocks::t('Account locked. Try again in {timeRemaining}.', array('timeRemaining' => $timeRemaining));
 						break;
 					}

@@ -27,4 +27,4 @@
 +	 */
  	public function actionSendTestEmail()
  	{
- 		$user = blx()->users->getCurrentUser();
+ 		$user = blx()->accounts->getCurrentUser();
