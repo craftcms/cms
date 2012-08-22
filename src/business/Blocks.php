@@ -327,7 +327,7 @@ class Blocks extends \Yii
 		if (blx()->config->translationDebugOutput)
 			$translation = '@'.$translation.'@';
 
-		return $translation;;
+		return $translation;
 	}
 
 	/**
