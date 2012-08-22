@@ -13,7 +13,7 @@
 	{% endif %}
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="users/saveAccountSettings">
+		<input type="hidden" name="action" value="accounts/saveAccountSettings">
 		{% if user.id %}<input type="hidden" name="user_id" value="{{ user.id }}">{% endif %}
 
 		<div class="field">

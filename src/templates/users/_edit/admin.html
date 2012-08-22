@@ -11,7 +11,7 @@
 	<h2>{{ pageTitle }}</h2>
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="users/saveAdminSettings">
+		<input type="hidden" name="action" value="accounts/saveAdminSettings">
 		<input type="hidden" name="user_id" value="{{ user.id }}">
 
 		<div class="field">
@@ -39,18 +39,18 @@
 			{% if user.status == 'pending' %}
 
 				<div class="status"></div> {{ "Pending Verification"|t }}  
-				<input type="button" class="btn formsubmit" value="{{ 'Send Verification Email'|t }}" data-action="users/sendVerificationEmail">
-				<input type="button" class="btn formsubmit" value="{{ 'Activate'|t }}" data-action="users/activateUser">
+				<input type="button" class="btn formsubmit" value="{{ 'Send Verification Email'|t }}" data-action="accounts/sendVerificationEmail">
+				<input type="button" class="btn formsubmit" value="{{ 'Activate'|t }}" data-action="accounts/activateUser">
 
 			{% elseif user.status == 'locked' %}
 
 				<div class="status pending"></div> {% if blx.config.failedPasswordMode == 'cooldown' %}{{ "Temporarily"|t }}{% endif %} {{ "Locked"|t }}  
-				<input type="button" class="btn formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">
+				<input type="button" class="btn formsubmit" value="{{ 'Unlock'|t }}" data-action="accounts/unlockUser">
 
 			{% elseif user.status == 'suspended' %}
 
 				<div class="status off"></div> {{ "Suspended"|t }}  
-				<input type="submit" class="btn formsubmit" value="{{ 'Unsuspend'|t }}" data-action="users/unsuspendUser">
+				<input type="submit" class="btn formsubmit" value="{{ 'Unsuspend'|t }}" data-action="accounts/unsuspendUser">
 
 			{% else %}
 
@@ -64,10 +64,10 @@
 				<h3>{{ "Account Actions"|t }}</h3>
 
 				{% if user.status != 'suspended' %}
-					<input type="button" class="btn formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
+					<input type="button" class="btn formsubmit" value="{{ 'Suspend'|t }}" data-action="accounts/suspendUser">
 				{% endif %}
 
-				<input class="btn" type="submit" name="delete" value="{{ 'Delete'|t }}" data-action="users/deleteUser">
+				<input class="btn" type="submit" name="delete" value="{{ 'Delete'|t }}" data-action="accounts/deleteUser">
 			</div>
 		{% endif %}
 	</form>

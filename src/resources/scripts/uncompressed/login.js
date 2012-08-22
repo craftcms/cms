@@ -76,7 +76,7 @@ var LoginForm = blx.Base.extend({
 			username: this.$usernameInput.val()
 		};
 
-		$.post(blx.actionUrl+'account/forgotPassword', data, $.proxy(function(response) {
+		$.post(blx.actionUrl+'accounts/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				new MessageSentModal();

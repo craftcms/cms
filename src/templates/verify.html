@@ -17,7 +17,7 @@
 			{% set user = blx.accounts.getUserByVerificationCode(verificationCode) %}
 			{% if user %}
 				<form method="post" action="">
-					<input type="hidden" name="action" value="account/verify">
+					<input type="hidden" name="action" value="accounts/resetPassword">
 					<input type="hidden" name="redirect" value="dashboard">
 					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
 

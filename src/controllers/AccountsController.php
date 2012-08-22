@@ -2,17 +2,92 @@
 namespace Blocks;
 
 /**
- * Handles user management tasks including registering, etc., etc.
+ * Handles account related tasks including updating profiles, changing passwords, etc.
  */
-class UsersController extends BaseController
+class AccountsController extends BaseController
 {
+	// Forgot / Reset Password
+
 	/**
-	 * All user actions require the user to be logged in
+	 * Sends a Forgot Password email.
 	 */
-	public function init()
+	public function actionForgotPassword()
 	{
-		$this->requireLogin();
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$forgotPasswordForm = new ForgotPasswordForm();
+		$forgotPasswordForm->username = blx()->request->getPost('username');
+
+		if ($forgotPasswordForm->validate())
+		{
+			$user = blx()->accounts->getUserByUsernameOrEmail($forgotPasswordForm->username);
+			if ($user)
+			{
+				// Generate a new verification code
+				blx()->accounts->generateVerificationCode($user);
+
+				// Send the Forgot Password email
+				$link = UrlHelper::generateUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verification_code));
+				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
+					$this->returnJson(array('success' => true));
+
+				$this->returnErrorJson(Blocks::t('There was a problem sending the forgot password email.'));
+			}
+		}
+
+		$this->returnErrorJson(Blocks::t('Invalid Username or Email.'));
 	}
+
+	/**
+	 * Resets a user's password once they've verified they have access to their email.
+	 */
+	public function actionResetPassword()
+	{
+		$this->requirePostRequest();
+
+		$verificationCode = blx()->request->getRequiredPost('verificationCode');
+		$password = blx()->request->getRequiredPost('password');
+
+		$passwordForm = new PasswordForm();
+		$passwordForm->password = $password;
+
+		if ($passwordForm->validate())
+		{
+			$user = blx()->accounts->getUserByVerificationCode($verificationCode);
+
+			if ($user)
+			{
+				blx()->accounts->changePassword($user, $password, false);
+
+				$user->verification_code = null;
+				$user->verification_code_issued_date = null;
+				$user->verification_code_expiry_date = null;
+				$user->status = UserAccountStatus::Active;
+				$user->last_password_change_date = DateTimeHelper::currentTime();
+				$user->password_reset_required = false;
+				$user->failed_password_attempt_count = null;
+				$user->failed_password_attempt_window_start = null;
+				$user->cooldown_start = null;
+				$user->save();
+
+				if (!blx()->user->getIsLoggedIn())
+					blx()->user->startLogin($user->username, $passwordForm->password);
+
+				blx()->user->setNotice(Blocks::t('Password updated.'));
+				$this->redirect('dashboard');
+			}
+			else
+			{
+				throw new Exception(Blocks::t('There was a problem validating this verification code.'));
+			}
+		}
+
+		// display the verify account form
+		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordForm));
+	}
+
+	// Account / Profile / Admin Settings
 
 	/**
 	 * Registers a new user, or saves an existing user's account settings.
@@ -267,4 +342,3 @@ class UsersController extends BaseController
 		$this->redirectToPostedUrl();
 	}
 }
-
