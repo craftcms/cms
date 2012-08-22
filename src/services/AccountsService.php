@@ -13,7 +13,7 @@ class AccountsService extends \CApplicationComponent
 	);
 
 	/**
-	 * Gets all the users.
+	 * Gets users.
 	 *
 	 * @param array $params
 	 * @return array
@@ -73,7 +73,7 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
-	 * Gets all the admins.
+	 * Gets admins.
 	 *
 	 * @param array $params
 	 * @return array

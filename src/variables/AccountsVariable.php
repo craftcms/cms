@@ -16,23 +16,25 @@ class AccountsVariable
 	}
 
 	/**
-	 * Returns all the users.
+	 * Gets users.
 	 *
+	 * @param array $params
 	 * @return array
 	 */
-	public function users()
+	public function users($params = array())
 	{
-		return blx()->accounts->getUsers();
+		return blx()->accounts->getUsers($params);
 	}
 
 	/**
-	 * Returns all the admins.
+	 * Gets admins.
 	 *
+	 * @param array $params
 	 * @return array
 	 */
-	public function admins()
+	public function admins($params = array())
 	{
-		return blx()->accounts->getAdmins();
+		return blx()->accounts->getAdmins($params);
 	}
 
 	/**
