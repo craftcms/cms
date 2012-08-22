@@ -95,7 +95,7 @@ class AccountsController extends BaseController
 	public function actionSaveAccountSettings()
 	{
 		$this->requirePostRequest();
-		$this->requireLogin()
+		$this->requireLogin();
 
 		$userId = blx()->request->getPost('user_id');
 		if ($userId !== null)
