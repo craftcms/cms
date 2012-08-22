@@ -6,14 +6,69 @@ namespace Blocks;
  */
 class UsersService extends \CApplicationComponent
 {
+	protected static $defaultParams = array(
+		'offset' => 0,
+		'limit' => 50,
+		'status' => 'active',
+	);
+
 	/**
 	 * Gets all the users.
 	 *
 	 * @return array
 	 */
-	public function getAllUsers()
+	public function getUsers($params = array())
 	{
-		return User::model()->findAll();
+		$params = array_merge(static::$defaultParams, $params);
+		$query = blx()->db->createCommand()
+			->from('users');
+
+		// Where conditions
+
+		$whereConditions = array('and');
+		$whereParams = array();
+
+		if (!empty($params['username']))
+			$whereConditions[] = DatabaseHelper::parseParam('username', $params['username'], $whereParams);
+
+		if (!empty($params['first_name']))
+			$whereConditions[] = DatabaseHelper::parseParam('first_name', $params['first_name'], $whereParams);
+
+		if (!empty($params['last_name']))
+			$whereConditions[] = DatabaseHelper::parseParam('last_name', $params['last_name'], $whereParams);
+
+		if (!empty($params['email']))
+			$whereConditions[] = DatabaseHelper::parseParam('email', $params['email'], $whereParams);
+
+		if (!empty($params['admin']))
+			$whereConditions[] = DatabaseHelper::parseParam('admin', 1, $whereParams);
+
+		if (!empty($params['status']))
+			$whereConditions[] = DatabaseHelper::parseParam('status', $params['status'], $whereParams);
+
+		if (!empty($params['last_login_date']))
+			$whereConditions[] = DatabaseHelper::parseParam('last_login_date', $params['last_login_date'], $whereParams);
+
+		$query->where($whereConditions, $whereParams);
+
+		// Order
+
+		if (!empty($params['order']))
+			$query->order($params['order']);
+
+		// Offset and Limit
+
+		if (!empty($params['offset']))
+			$query->offset($params['offset']);
+
+		if (!empty($params['limit']))
+			$query->limit($params['limit']);
+
+		// Find the users
+
+		$result = $query->queryAll();
+		$users = User::model()->populateRecords($result);
+		return $users;
 	}
 
 	/**
@@ -21,9 +76,9 @@ class UsersService extends \CApplicationComponent
 	 *
 	 * @return array
 	 */
-	public function getAllAdmins()
+	public function getAdmins()
 	{
-		return User::model()->findAllByAttributes(array(
+		return $this->getUsers(array(
 			'admin' => true
 		));
 	}

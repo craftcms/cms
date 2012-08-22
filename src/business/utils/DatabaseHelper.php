@@ -164,4 +164,42 @@ class DatabaseHelper
 			'uid'          => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
 		);
 	}
+
+	/**
+	 * @access protected
+	 * @static
+	 */
+	protected static $operators = array(
+		'not ' => '!=',
+		'!'    => '!=',
+		'<='   => '<=',
+		'>='   => '>=',
+		'<'    => '<',
+		'>'    => '>',
+		'='    => '=',
+	);
+
+	/**
+	 * Parses a service param value to a DbCommand where condition.
+	 *
+	 * @param string $key
+	 * @param string $value
+	 * @param array &$params
+	 * @return mixed
+	 */
+	public static function parseParam($key, $value, &$params)
+	{
+		foreach (static::$operators as $operator => $sqlOperator)
+		{
+			$length = strlen($operator);
+			if (strncmp(strtolower($value), $operator, $length) == 0)
+			{
+				$value = substr($value, $length);
+				break;
+			}
+		}
+
+		$params[':'.$key] = $value;
+		return $key.$sqlOperator.':'.$key;
+	}
 }

@@ -22,7 +22,7 @@ class UsersVariable
 	 */
 	public function all()
 	{
-		return blx()->users->getAllUsers();
+		return blx()->users->getUsers();
 	}
 
 	/**
@@ -32,7 +32,7 @@ class UsersVariable
 	 */
 	public function admins()
 	{
-		return blx()->users->getAllAdmins();
+		return blx()->users->getAdmins();
 	}
 
 	/**
