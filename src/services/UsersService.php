@@ -15,6 +15,7 @@ class UsersService extends \CApplicationComponent
 	/**
 	 * Gets all the users.
 	 *
+	 * @param array $params
 	 * @return array
 	 */
 	public function getUsers($params = array())
@@ -74,13 +75,14 @@ class UsersService extends \CApplicationComponent
 	/**
 	 * Gets all the admins.
 	 *
+	 * @param array $params
 	 * @return array
 	 */
-	public function getAdmins()
+	public function getAdmins($params = array())
 	{
-		return $this->getUsers(array(
+		return $this->getUsers(array_merge($params, array(
 			'admin' => true
-		));
+		)));
 	}
 
 	/**
