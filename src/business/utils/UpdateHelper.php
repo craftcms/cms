@@ -14,10 +14,10 @@ class UpdateHelper
 	{
 		foreach ($manifestData as $row)
 		{
-			if (self::isManifestVersionInfoLine($row))
+			if (static::isManifestVersionInfoLine($row))
 				continue;
 
-			if (self::isManifestMigrationLine($row))
+			if (static::isManifestMigrationLine($row))
 				continue;
 
 			$rowData = explode(';', $row);
@@ -42,10 +42,10 @@ class UpdateHelper
 		{
 			foreach ($manifestData as $row)
 			{
-				if (self::isManifestVersionInfoLine($row))
+				if (static::isManifestVersionInfoLine($row))
 					continue;
 
-				if (self::isManifestMigrationLine($row))
+				if (static::isManifestMigrationLine($row))
 					continue;
 
 				$rowData = explode(';', $row);

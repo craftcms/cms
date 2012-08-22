@@ -57,18 +57,18 @@ class DatabaseHelper
 		}
 
 		// Merge in the default settings
-		if (isset(self::$attributeTypeDefaults[$settings['type']]))
+		if (isset(static::$attributeTypeDefaults[$settings['type']]))
 		{
-			$settings = array_merge(self::$attributeTypeDefaults[$settings['type']], $settings);
+			$settings = array_merge(static::$attributeTypeDefaults[$settings['type']], $settings);
 
 			// Override the type if the default settings specifies it
-			if (isset(self::$attributeTypeDefaults[$settings['type']]['type']))
+			if (isset(static::$attributeTypeDefaults[$settings['type']]['type']))
 			{
-				$newType = self::$attributeTypeDefaults[$settings['type']]['type'];
+				$newType = static::$attributeTypeDefaults[$settings['type']]['type'];
 				$settings['type'] = $newType;
 
 				// ...And merge in the new type's settings...
-				$settings = self::normalizeAttributeSettings($settings);
+				$settings = static::normalizeAttributeSettings($settings);
 			}
 		}
 
@@ -83,7 +83,7 @@ class DatabaseHelper
 	 */
 	public static function generateColumnDefinition($settings)
 	{
-		$settings = self::normalizeAttributeSettings($settings);
+		$settings = static::normalizeAttributeSettings($settings);
 
 		// Treat strict lengths as max lengths when defining columns
 		if (isset($settings['length']) && is_numeric($settings['length']) && $settings['length'] > 0)

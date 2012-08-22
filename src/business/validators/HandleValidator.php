@@ -17,7 +17,7 @@ class HandleValidator extends \CValidator
 	{
 		$value = $object->$attribute;
 
-		$reservedWords = array_merge($this->reservedWords, self::$baseReservedWords);
+		$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
 
 		if (in_array($value, $reservedWords))
 		{

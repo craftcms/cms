@@ -133,12 +133,12 @@ class File extends \CApplicationComponent
 	 */
 	public static function getInstance($filePath)
 	{
-		if (!array_key_exists($filePath, self::$_instances))
+		if (!array_key_exists($filePath, static::$_instances))
 		{
-			self::$_instances[$filePath] = new File($filePath);
+			static::$_instances[$filePath] = new File($filePath);
 		}
 
-		return self::$_instances[$filePath];
+		return static::$_instances[$filePath];
 	}
 
 	/**
@@ -202,8 +202,8 @@ class File extends \CApplicationComponent
 			}
 
 			clearstatcache();
-			$realPath = self::_realPath($filePath);
-			$instance = self::getInstance($realPath);
+			$realPath = static::_realPath($filePath);
+			$instance = static::getInstance($realPath);
 			$instance->_filepath = $filePath;
 			$instance->_realpath = $realPath;
 

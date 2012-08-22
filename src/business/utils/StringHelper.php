@@ -31,7 +31,7 @@ class StringHelper
 	 */
 	public static function isNotNullOrEmpty($value)
 	{
-		return !self::isNullOrEmpty($value);
+		return !static::isNullOrEmpty($value);
 	}
 
 	/**

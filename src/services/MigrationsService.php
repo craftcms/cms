@@ -139,7 +139,7 @@ class MigrationsService extends \CApplicationComponent
 	 */
 	protected function migrateUp($class)
 	{
-		if($class === self::BASE_MIGRATION)
+		if($class === static::BASE_MIGRATION)
 			return null;
 
 		Blocks::log('Applying migration: '.$class, \CLogger::LEVEL_INFO);
@@ -232,7 +232,7 @@ class MigrationsService extends \CApplicationComponent
 		$db->createCommand()->createIndex("migration_version_unique_idx", $this->migrationTable, "version", true);
 
 		$db->createCommand()->insert($this->migrationTable, array(
-			'version' => self::BASE_MIGRATION,
+			'version' => static::BASE_MIGRATION,
 			'apply_time' => time(),
 		));
 

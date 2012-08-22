@@ -159,7 +159,7 @@ EOD;
 		));
 
 		$db->createCommand()->insert($this->migrationTable, array(
-			'version' => self::BASE_MIGRATION,
+			'version' => static::BASE_MIGRATION,
 			'apply_time' => time(),
 		));
 

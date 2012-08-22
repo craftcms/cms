@@ -18,7 +18,7 @@ class UrlManager extends \CUrlManager
 	 */
 	function __construct()
 	{
-		$this->routeVar = self::RouteVar;
+		$this->routeVar = static::RouteVar;
 	}
 
 	/**
@@ -33,9 +33,9 @@ class UrlManager extends \CUrlManager
 
 		// makes more sense to set in HttpRequest
 		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
-			$this->setUrlFormat(self::PATH_FORMAT);
+			$this->setUrlFormat(static::PATH_FORMAT);
 		else
-			$this->setUrlFormat(self::GET_FORMAT);
+			$this->setUrlFormat(static::GET_FORMAT);
 	}
 
 	/**

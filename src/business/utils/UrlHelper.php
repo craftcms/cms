@@ -22,7 +22,7 @@ class UrlHelper
 		$origPath = $path;
 		$pathVar = blx()->urlManager->routeVar;
 
-		$path = self::_normalizePath(trim($path, '/'), $params);
+		$path = static::_normalizePath(trim($path, '/'), $params);
 		$path = blx()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 
 		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
@@ -62,7 +62,7 @@ class UrlHelper
 	{
 		$origPath = $path;
 		$path = blx()->config->resourceTriggerWord.'/'.trim($path, '/');
-		$path = self::generateUrl($path, $params, $protocol);
+		$path = static::generateUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
 	}
@@ -78,7 +78,7 @@ class UrlHelper
 	{
 		$origPath = $path;
 		$path = blx()->config->actionTriggerWord.'/'.trim($path, '/');
-		$path = self::generateUrl($path, $params, $protocol);
+		$path = static::generateUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
 	}

@@ -23,7 +23,7 @@ class ArrayHelper
 
 			if (is_array($value))
 			{
-				$flattened = array_merge($flattened, self::flattenArray($value, $key));
+				$flattened = array_merge($flattened, static::flattenArray($value, $key));
 			}
 			else
 			{
@@ -71,7 +71,7 @@ class ArrayHelper
 		foreach ($settings as $setting)
 			$arr[$setting->name] = $setting->value;
 
-		return self::expandArray($arr);
+		return static::expandArray($arr);
 	}
 
 	/**

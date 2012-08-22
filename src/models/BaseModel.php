@@ -308,17 +308,17 @@ abstract class BaseModel extends \CActiveRecord
 
 		foreach ($this->hasMany as $key => $settings)
 		{
-			$relations[$key] = $this->generateHasXRelation(self::HAS_MANY, $settings);
+			$relations[$key] = $this->generateHasXRelation(static::HAS_MANY, $settings);
 		}
 
 		foreach ($this->hasOne as $key => $settings)
 		{
-			$relations[$key] = $this->generateHasXRelation(self::HAS_ONE, $settings);
+			$relations[$key] = $this->generateHasXRelation(static::HAS_ONE, $settings);
 		}
 
 		foreach ($this->belongsTo as $key => $settings)
 		{
-			$relations[$key] = array(self::BELONGS_TO, __NAMESPACE__.'\\'.$settings['model'], $key.'_id');
+			$relations[$key] = array(static::BELONGS_TO, __NAMESPACE__.'\\'.$settings['model'], $key.'_id');
 		}
 
 		return $relations;
@@ -357,7 +357,7 @@ abstract class BaseModel extends \CActiveRecord
 	/**
 	 * Generates HAS_MANY and HAS_ONE relations
 	 * @access protected
-	 * @param string $relationType The type of relation to generate (self::HAS_MANY or self::HAS_ONE)
+	 * @param string $relationType The type of relation to generate (static::HAS_MANY or static::HAS_ONE)
 	 * @param        $settings
 	 * @param array  $settings The relation settings
 	 * @return array The CActiveRecord relation

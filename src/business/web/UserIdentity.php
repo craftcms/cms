@@ -26,7 +26,7 @@ class UserIdentity extends \CUserIdentity
 		$user = blx()->accounts->getUserByUsernameOrEmail($this->username);
 
 		if ($user === null)
-			$this->errorCode = self::ERROR_USERNAME_INVALID;
+			$this->errorCode = static::ERROR_USERNAME_INVALID;
 		else
 			$this->_processUserStatus($user);
 
@@ -44,7 +44,7 @@ class UserIdentity extends \CUserIdentity
 			case UserAccountStatus::Pending:
 			case UserAccountStatus::Archived:
 			{
-				$this->errorCode = self::ERROR_USERNAME_INVALID;
+				$this->errorCode = static::ERROR_USERNAME_INVALID;
 				break;
 			}
 
@@ -55,7 +55,7 @@ class UserIdentity extends \CUserIdentity
 				{
 					// they are still in the cooldown window.
 					if ($user->cooldown_start + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
-						$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
+						$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
 					else
 					{
 						// no longer in cooldown window, set them to active and retry.
@@ -67,7 +67,7 @@ class UserIdentity extends \CUserIdentity
 				}
 				else
 				{
-					$this->errorCode = self::ERROR_ACCOUNT_LOCKED;
+					$this->errorCode = static::ERROR_ACCOUNT_LOCKED;
 				}
 
 				break;
@@ -76,7 +76,7 @@ class UserIdentity extends \CUserIdentity
 			// if the account is suspended don't attempt to log in.
 			case UserAccountStatus::Suspended:
 			{
-				$this->errorCode = self::ERROR_ACCOUNT_SUSPENDED;
+				$this->errorCode = static::ERROR_ACCOUNT_SUSPENDED;
 				break;
 			}
 
@@ -97,7 +97,7 @@ class UserIdentity extends \CUserIdentity
 					if ($user->password_reset_required == 1)
 					{
 						$this->_id = $user->id;
-						$this->errorCode = self::ERROR_PASSWORD_RESET_REQUIRED;
+						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
 						blx()->accounts->forgotPassword($user);
 					}
 					else
@@ -119,7 +119,7 @@ class UserIdentity extends \CUserIdentity
 	{
 		$this->_id = $user->id;
 		$this->username = $user->username;
-		$this->errorCode = self::ERROR_NONE;
+		$this->errorCode = static::ERROR_NONE;
 
 		$authSessionToken = StringHelper::UUID();
 		$user->auth_session_token = $authSessionToken;
@@ -147,7 +147,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	private function _processBadPassword(User $user)
 	{
-		$this->errorCode = self::ERROR_PASSWORD_INVALID;
+		$this->errorCode = static::ERROR_PASSWORD_INVALID;
 		$user->last_login_failed_date = DateTimeHelper::currentTime();
 
 		// get the current failed password attempt count.
@@ -174,11 +174,11 @@ class UserIdentity extends \CUserIdentity
 				// time to slow things down a bit.
 				if (blx()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
 				{
-					$this->errorCode = self::ERROR_ACCOUNT_COOLDOWN;
+					$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
 					$user->cooldown_start = DateTimeHelper::currentTime();
 				}
 				else
-					$this->errorCode = self::ERROR_ACCOUNT_LOCKED;
+					$this->errorCode = static::ERROR_ACCOUNT_LOCKED;
 
 				$user->status = UserAccountStatus::Locked;
 				$user->last_lockout_date = DateTimeHelper::currentTime();

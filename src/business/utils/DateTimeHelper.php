@@ -90,7 +90,7 @@ class DateTimeHelper
 			$date = time();
 		else
 		{
-			if (self::isValidTimeStamp($dateString))
+			if (static::isValidTimeStamp($dateString))
 				$date = $dateString;
 			else
 				$date = strtotime($dateString);
@@ -114,13 +114,13 @@ class DateTimeHelper
 	{
 		$date = ($dateString == null) ? time() : strtotime($dateString);
 
-		$y = (self::isThisYear($date)) ? '' : ' Y';
+		$y = (static::isThisYear($date)) ? '' : ' Y';
 
-		if (self::isToday($date))
+		if (static::isToday($date))
 		{
 			$ret = sprintf('Today, %s', date("g:i a", $date));
 		}
-		elseif (self::wasYesterday($date))
+		elseif (static::wasYesterday($date))
 		{
 			$ret = sprintf('Yesterday, %s', date("g:i a", $date));
 		}
@@ -425,9 +425,9 @@ class DateTimeHelper
 			$timeInterval = $tmp.' '.__('days', true);
 		}
 
-		$date = self::fromString($dateString, $userOffset);
+		$date = static::fromString($dateString, $userOffset);
 
-		$interval = self::fromString('-'.$timeInterval);
+		$interval = static::fromString('-'.$timeInterval);
 
 		if ($date >= $interval && $date <= time())
 		{
@@ -445,7 +445,7 @@ class DateTimeHelper
 	 */
 	public static function wasInThePast($date)
 	{
-		return self::fromString($date) < time() ? true : false;
+		return static::fromString($date) < time() ? true : false;
 	}
 
 	/**

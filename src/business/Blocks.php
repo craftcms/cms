@@ -28,7 +28,7 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredVersion()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->version : null;
 	}
 
@@ -52,7 +52,7 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredBuild()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->build : null;
 	}
 
@@ -75,7 +75,7 @@ class Blocks extends \Yii
 	 */
 	public static function getStoredReleaseDate()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->release_date : null;
 	}
 
@@ -87,7 +87,7 @@ class Blocks extends \Yii
 	 */
 	public static function getSiteName()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->site_name : null;
 	}
 
@@ -99,7 +99,7 @@ class Blocks extends \Yii
 	 */
 	public static function getSiteUrl()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->site_url : null;
 	}
 
@@ -111,7 +111,7 @@ class Blocks extends \Yii
 	 */
 	public static function getLicenseKey()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->license_key : null;
 	}
 
@@ -123,7 +123,7 @@ class Blocks extends \Yii
 	 */
 	public static function isSystemOn()
 	{
-		$storedBlocksInfo = self::_getStoredInfo();
+		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->on == 1 : false;
 	}
 
@@ -180,12 +180,12 @@ class Blocks extends \Yii
 		if (!isset(static::$_storedBlocksInfo))
 		{
 			if (blx()->getIsInstalled())
-				self::$_storedBlocksInfo = Info::model()->find();
+				static::$_storedBlocksInfo = Info::model()->find();
 			else
-				self::$_storedBlocksInfo = false;
+				static::$_storedBlocksInfo = false;
 		}
 
-		return self::$_storedBlocksInfo;
+		return static::$_storedBlocksInfo;
 	}
 
 	/**
@@ -269,14 +269,14 @@ class Blocks extends \Yii
 			{
 				foreach ($files as $file)
 				{
-					self::_importFile(realpath($file));
+					static::_importFile(realpath($file));
 				}
 			}
 		}
 		else
 		{
 			$file = $path.'.php';
-			self::_importFile($file);
+			static::_importFile($file);
 
 			if ($forceInclude)
 				require_once $file;
@@ -298,7 +298,7 @@ class Blocks extends \Yii
 		else
 			$userId = null;
 
-		$logger = self::getLogger();
+		$logger = static::getLogger();
 		$logger->log($userId.'///'.$msgKey.'///'.$encodedData, 'activity', $category);
 	}
 

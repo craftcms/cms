@@ -12,8 +12,8 @@ class Locale extends \CLocale
 	 */
 	public static function exists($id)
 	{
-		$id = self::getCanonicalID($id);
-		$dataPath = self::$dataPath === null ? blx()->path->getFrameworkPath().'i18n/data' : self::$dataPath;
+		$id = static::getCanonicalID($id);
+		$dataPath = static::$dataPath === null ? blx()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
 		$dataFile = $dataPath.'/'.$id.'.php';
 
 		return is_file($dataFile);
