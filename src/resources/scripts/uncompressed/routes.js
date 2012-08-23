@@ -149,7 +149,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			'</div>' +
 			'<div class="buttons">' +
 				'<input type="submit" class="btn submit" value="'+blx.t("Save")+'"> ' +
-				'<input type="button" class="btn cancel" value='+blx.t("Cancel")+'">' +
+				'<input type="button" class="btn cancel" value="'+blx.t("Cancel")+'">' +
 				'<div class="spinner" style="display: none;"></div>' +
 				'<a class="delete">'+blx.t("Delete")+'</a>' +
 			'</div>' +
@@ -242,7 +242,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 					setTimeout($.proxy(function() {
 						this.urlInput.focusPreviousElement($urlVar);
 					}, this), 1);
-					
+
 					break;
 				}
 				case blx.RIGHT_KEY:
@@ -310,7 +310,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		this.loading = true;
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
-	
+
 		$.post(blx.actionUrl+'routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (response.success)
