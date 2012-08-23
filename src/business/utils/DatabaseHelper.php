@@ -199,7 +199,7 @@ class DatabaseHelper
 			}
 		}
 
-		$params[':'.$key] = $value;
+		$params[':'.$key] = trim($value);
 		return $key.$sqlOperator.':'.$key;
 	}
 }

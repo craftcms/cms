@@ -6,10 +6,16 @@ namespace Blocks;
  */
 class AccountsService extends \CApplicationComponent
 {
-	protected static $defaultParams = array(
+	/**
+	 * The default parameters for getUsers() and getTotalUsers().
+	 *
+	 * @access private
+	 * @static
+	 */
+	private static $_defaultUserParams = array(
+		'status' => 'active',
 		'offset' => 0,
 		'limit' => 50,
-		'status' => 'active',
 	);
 
 	/**
@@ -20,17 +26,57 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function getUsers($params = array())
 	{
-		$params = array_merge(static::$defaultParams, $params);
+		$params = array_merge(static::$_defaultUserParams, $params);
 		$query = blx()->db->createCommand()
 			->from('users');
 
-		// Count?
-		if ($count = !empty($params['count']))
-			$query->select('count(id)');
+		$this->_applyUserConditions($query, $params);
 
-		// Where conditions
+		if (!empty($params['order']))
+			$query->order($params['order']);
+
+		if (!empty($params['offset']))
+			$query->offset($params['offset']);
+
+		if (!empty($params['limit']))
+			$query->limit($params['limit']);
+
+		$result = $query->queryAll();
+		return User::model()->populateRecords($result);
+	}
+
+	/**
+	 * Gets the total number of users.
+	 *
+	 * @param array $params
+	 * @return int
+	 */
+	public function getTotalUsers($params = array())
+	{
+		$params = array_merge(static::$_defaultUserParams, $params);
+		$query = blx()->db->createCommand()
+			->select('count(id)')
+			->from('users');
+
+		$this->_applyUserConditions($query, $params);
+
+		return (int) $query->queryScalar();
+	}
+
+	/**
+	 * Applies WHERE conditions to a DbCommand query for users.
+	 *
+	 * @access private
+	 * @param DbCommand $query
+	 * @param array $params
+	 */
+	private function _applyUserConditions($query, $params)
+	{
 		$whereConditions = array('and');
 		$whereParams = array();
+
+		if (!empty($params['id']))
+			$whereConditions[] = DatabaseHelper::parseParam('id', $params['id'], $whereParams);
 
 		if (!empty($params['username']))
 			$whereConditions[] = DatabaseHelper::parseParam('username', $params['username'], $whereParams);
@@ -54,29 +100,6 @@ class AccountsService extends \CApplicationComponent
 			$whereConditions[] = DatabaseHelper::parseParam('last_login_date', $params['last_login_date'], $whereParams);
 
 		$query->where($whereConditions, $whereParams);
-
-		if (!$count)
-		{
-			// Order
-			if (!empty($params['order']))
-				$query->order($params['order']);
-
-			// Offset and Limit
-			if (!empty($params['offset']))
-				$query->offset($params['offset']);
-
-			if (!empty($params['limit']))
-				$query->limit($params['limit']);
-
-			// Find the users
-			$result = $query->queryAll();
-			$users = User::model()->populateRecords($result);
-			return $users;
-		}
-		else
-		{
-			return (int) $query->queryScalar();
-		}
 	}
 
 	/**
@@ -106,27 +129,14 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
-	 * Gets the total number of users.
-	 *
-	 * @param array $params
-	 * @return int
-	 */
-	public function getTotalUsers($params = array())
-	{
-		return $this->getUsers(array_merge($params, array(
-			'count' => true
-		)));
-	}
-
-	/**
 	 * Gets a user by their ID.
 	 *
 	 * @param int $userId
 	 * @return User
 	 */
-	public function getUserById($userId)
+	public function getUserById($id)
 	{
-		return User::model()->findById($userId);
+		return User::model()->findById($id);
 	}
 
 	/**
