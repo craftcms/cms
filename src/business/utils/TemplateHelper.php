@@ -9,17 +9,30 @@ class TemplateHelper
 	private static $_twig;
 
 	/**
-	 * Gets the Twig instance
+	 * Registers the Twig autoloader.
 	 *
+	 * @static
+	 */
+	public static function registerTwigAutoloader()
+	{
+		if (!class_exists('\Twig_Autoloader', false))
+		{
+			require_once blx()->path->getAppPath().'business/lib/Twig/Autoloader.php';
+			Blocks::registerAutoloader(array(new \Twig_Autoloader, 'autoload'), true);
+		}
+	}
+
+	/**
+	 * Gets the Twig instance.
+	 *
+	 * @static
 	 * @return \Twig_Environment
 	 */
 	public static function getTwig()
 	{
 		if (!isset(static::$_twig))
 		{
-			// Register Twig's autoloader
-			require_once blx()->path->getAppPath().'business/lib/Twig/Autoloader.php';
-			Blocks::registerAutoloader(array(new \Twig_Autoloader, 'autoload'), true);
+			static::registerTwigAutoloader();
 
 			$loader = new TemplateLoader();
 
@@ -61,6 +74,7 @@ class TemplateHelper
 	/**
 	 * Renders a template.
 	 *
+	 * @static
 	 * @param mixed $template The name of the template to load, or a StringTemplate object
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
@@ -91,8 +105,9 @@ class TemplateHelper
 	}
 
 	/**
-	 * Renders a template string
+	 * Renders a template string.
 	 *
+	 * @static
 	 * @param string $cacheKey A unique key for the template
 	 * @param string $template The source template string
 	 * @param array $variables The variables that should be available to the template

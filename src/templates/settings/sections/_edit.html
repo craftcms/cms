@@ -1,0 +1,80 @@
+{% if not section %}
+	{% set section = blx.content.getSectionById(sectionId) %}
+{% endif %}
+
+
+{% extends "_layouts/cp" %}
+{% set title = (section.id ? "{sectionName} Settings"|t({ 'sectionName': section.name }) : "Create a new section"|t) %}
+
+
+{% set main %}
+	<header class="titlebar">
+		<h1>{{ title }}</h1>
+	</header>
+
+	<form method="post" action="">
+		<input type="hidden" name="action" value="content/saveSection">
+		<input type="hidden" name="redirect" value="settings/sections">
+		{% if section.id %}<input type="hidden" name="section_id" value="{{ section.id }}">{% endif %}
+
+		<div class="field">
+			<div class="heading">
+				<label class="required" for="name">{{ "Section Name"|t }}</label>
+				<p>{{ "What this section will be called in the CP."|t }}</p>
+			</div>
+			<input id="name" name="name" class="text {% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}">
+			{% if section.errors.name %}
+				{% include "_includes/error_list" with {'errors': section.errors.name} %}
+			{% endif %}
+		</div>
+
+		<div class="field">
+			<div class="heading">
+				<label class="required" for="handle">{{ "Section Handle"|t }}</label>
+				<p>{{ "How you’ll refer to this section in the templates."|t }}</p>
+			</div>
+			<input id="handle" name="handle" class="text code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}">
+			{% if section.errors.handle %}
+				{% include "_includes/error_list" with {'errors': section.errors.handle} %}
+			{% endif %}
+		</div>
+
+		<div class="field checkbox">
+			<label>
+				<input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="togglefields" data-target="has-urls-setting">
+				{{ "Entries in this section have their own URLs"|t }}
+			</label>
+		</div>
+
+		<div id="has-urls-setting" class="nested-fields" {% if not section.has_urls %}style="height: 0"{% endif %}>
+			<div class="field">
+				<div class="heading">
+					<label for="url_format">{{ "Entry URL Format"|t }}</label>
+					<p>{{ "What the entry URLs should look like."|t }}</p>
+				</div>
+				<input id="url_format" name="url_format" class="text code" type="text" value="{{ section.url_format }}">
+			</div>
+
+			<div class="field">
+				<div class="heading">
+					<label for="template">{{ "Entry Template"|t }}</label>
+					<p>{{ "Which template to use when an entry’s URL is requested."|t }}</p>
+				</div>
+				<input id="template" name="template" class="text" type="text" value="{{ section.template }}">
+			</div>
+		</div>
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			<a class="btn" href="{{ url('settings/sections') }}">{{ "Cancel"|t }}</a>
+		</div>
+	</form>
+{% endset %}
+
+
+{% set scripts %}
+	<script type="text/javascript">
+		{% if not section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if not section.url_format %}new blx.ui.EntryUrlFormatGenerator('#name', '#url_format');{% endif %}
+	</script>
+{% endset %}

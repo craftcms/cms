@@ -21,44 +21,26 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$sectionSettings['name']        = blx()->request->getPost('name');
-		$sectionSettings['handle']      = blx()->request->getPost('handle');
-		$sectionSettings['max_entries'] = blx()->request->getPost('max_entries');
-		$sectionSettings['sortable']    = blx()->request->getPost('sortable');
-		$sectionSettings['has_urls']    = blx()->request->getPost('has_urls');
-		$sectionSettings['url_format']  = blx()->request->getPost('url_format');
-		$sectionSettings['template']    = blx()->request->getPost('template');
-		$sectionSettings['blocks']      = blx()->request->getPost('blocks');
-
 		$sectionId = blx()->request->getPost('section_id');
+
+		$sectionSettings['name']       = blx()->request->getPost('name');
+		$sectionSettings['handle']     = blx()->request->getPost('handle');
+		$sectionSettings['has_urls']   = blx()->request->getPost('has_urls');
+		$sectionSettings['url_format'] = blx()->request->getPost('url_format');
+		$sectionSettings['template']   = blx()->request->getPost('template');
 
 		$section = blx()->content->saveSection($sectionSettings, $sectionId);
 
 		// Did it save?
-		if (!$section->errors)
+		if (!$section->getErrors())
 		{
-			// Did all of the blocks save?
-			$blocksSaved = true;
-			foreach ($section->blocks as $block)
-			{
-				if ($block->errors)
-				{
-					$blocksSaved = false;
-					break;
-				}
-			}
-
-			if ($blocksSaved)
-			{
-				blx()->user->setNotice(Blocks::t('Section saved.'));
-				$this->redirectToPostedUrl();
-			}
-			else
-				blx()->user->setError(Blocks::t('Section saved, but couldn’t save all the content blocks.'));
+			blx()->user->setNotice(Blocks::t('Section saved.'));
+			$this->redirectToPostedUrl();
 		}
 		else
+		{
 			blx()->user->setError(Blocks::t('Couldn’t save section.'));
-
+		}
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(

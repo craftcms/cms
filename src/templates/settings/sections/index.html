@@ -5,7 +5,28 @@
 {% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
+
+		<ul class="right">
+			<li><a href="{{ url('settings/sections/new') }}" class="btn" data-icon="+">{{ "New Section"|t }}</a></li>
+		</ul>
 	</header>
+
+	<table class="data">
+		<tbody>
+			{% set sections = blx.content.sections %}
+			{% if sections|length %}
+				{% for section in sections %}
+					<tr>
+						<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
+					</tr>
+				{% endfor %}
+			{% else %}
+				<tr>
+					<td>{{ "No sections exist yet."|t }} <a href="{{ url('settings/sections/new') }}">{{ "Create the first one"|t }}</a></td>
+				</tr>
+			{% endif %}
+		</tbody>
+	</table>
 
 	<div class="buttons">
 		<a class="btn" href="{{ url('settings') }}">{{ "Done"|t }}</a>

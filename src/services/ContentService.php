@@ -9,69 +9,102 @@ class ContentService extends \CApplicationComponent
 	/* Sections */
 
 	/**
-	 * Get all sections for the current site
+	 * The default parameters for getSections() and getTotalSections().
+	 *
+	 * @access private
+	 * @static
+	 */
+	private static $_defaultSectionParams = array(
+		'parent_id' => null,
+		'order' => 'name asc',
+	);
+
+	/**
+	 * Gets sections.
+	 *
+	 * @param array $params
 	 * @return array
 	 */
-	public function getSections()
+	public function getSections($params = array())
 	{
-		$sections = Section::model()->findAllByAttributes(array(
-			'parent_id' => null
-		));
+		$params = array_merge(static::$_defaultSectionParams, $params);
+		$query = blx()->db->createCommand()
+			->from('sections');
 
-		return $sections;
+		$this->_applySectionConditions($query, $params);
+
+		if (!empty($params['order']))
+			$query->order($params['order']);
+
+		if (!empty($params['offset']))
+			$query->offset($params['offset']);
+
+		if (!empty($params['limit']))
+			$query->limit($params['limit']);
+
+		$result = $query->queryAll();
+		return Section::model()->populateRecords($result);
 	}
 
 	/**
-	 * Returns all sections across all sites.
-	 * @return mixed
+	 * Gets the total number of sections.
+	 *
+	 * @param array $params
+	 * @return int
 	 */
-	public function getAllSections()
+	public function getTotalSections($params = array())
 	{
-		$sections = Section::model()->findAll();
-		return $sections;
+		$params = array_merge(static::$_defaultUserParams, $params);
+		$query = blx()->db->createCommand()
+			->select('count(id)')
+			->from('sections');
+
+		$this->_applySectionConditions($query, $params);
+
+		return (int) $query->queryScalar();
 	}
 
 	/**
-	 * Get the sub sections of another section
-	 * @param int $parentId The ID of the parent section
-	 * @return array
+	 * Applies WHERE conditions to a DbCommand query for sections.
+	 *
+	 * @access private
+	 * @param DbCommand $query
+	 * @param array $params
 	 */
-	public function getSubSections($parentId)
+	private function _applySectionConditions($query, $params)
 	{
-		return Section::model()->findAllByAttributes(array(
-			'parent_id' => $parentId
-		));
+		$whereConditions = array('and');
+		$whereParams = array();
+
+		if (!empty($params['id']))
+			$whereConditions[] = DatabaseHelper::parseParam('id', $params['id'], $whereParams);
+
+		$whereConditions[] = DatabaseHelper::parseParam('parent_id', $params['parent_id'], $whereParams);
+
+		if (!empty($params['handle']))
+			$whereConditions[] = DatabaseHelper::parseParam('handle', $params['handle'], $whereParams);
+
+		if (!empty($params['has_urls']))
+			$whereConditions[] = DatabaseHelper::parseParam('has_urls', $params['has_urls'], $whereParams);
+
+		$query->where($whereConditions, $whereParams);
 	}
 
 	/**
-	 * Returns a Section instance, whether it already exists based on an ID, or is new
-	 * @param int $sectionId The Section ID if it exists
+	 * Gets a section by its ID.
+	 *
+	 * @param int $id
 	 * @return Section
 	 */
-	public function getSection($sectionId = null)
+	public function getSectionById($id)
 	{
-		if ($sectionId)
-			$section = $this->getSectionById($sectionId);
-
-		if (empty($section))
-			$section = new Section();
-
-		return $section;
+		return Section::model()->findById($id);
 	}
 
 	/**
-	 * Get a specific section by ID
-	 * @param int $sectionId The ID of the section to get
-	 * @return Section
-	 */
-	public function getSectionById($sectionId)
-	{
-		return Section::model()->findById($sectionId);
-	}
-
-	/**
-	 * Get a specific section by its handle
-	 * @param $handle
+	 * Gets a section by its handle.
+	 *
+	 * @param string $handle
 	 * @return Section
 	 */
 	public function getSectionByHandle($handle)
@@ -83,10 +116,9 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Saves a section.
+	 *
 	 * @param array $sectionSettings
-	 * @param int   $sectionId The site ID, if saving an existing site.
-	 * @throws \CDbException|\Exception
-	 * @throws Exception
+	 * @param int $sectionId
 	 * @return Section
 	 */
 	public function saveSection($sectionSettings, $sectionId = null)
@@ -110,8 +142,6 @@ class ContentService extends \CApplicationComponent
 
 		$section->name        = $sectionSettings['name'];
 		$section->handle      = $sectionSettings['handle'];
-		$section->max_entries = (isset($sectionSettings['max_entries']) && $sectionSettings['max_entries'] > 0 ? (int)$sectionSettings['max_entries'] : null);
-		$section->sortable    = (isset($sectionSettings['sortable']) ? (bool)$sectionSettings['sortable'] : false);
 		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
 		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
 		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
@@ -120,14 +150,11 @@ class ContentService extends \CApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			// Try saving the section
-			$sectionSaved = $section->save();
-
-			// Get the section's content table name
-			$contentTable = $section->getContentTableName();
-
-			if ($sectionSaved)
+			if ($section->save())
 			{
+				// Get the section's content table name
+				$contentTable = $section->getContentTableName();
+
 				if ($isNewSection)
 				{
 					// Create the content table
@@ -150,118 +177,6 @@ class ContentService extends \CApplicationComponent
 					}
 				}
 			}
-
-			// Create the blocks
-			$blocks = array();
-
-			if (isset($sectionSettings['blocks']))
-			{
-				if (isset($sectionSettings['blocks']['order']))
-					$blockIds = $sectionSettings['blocks']['order'];
-				else
-				{
-					$blockIds = array_keys($sectionSettings['blocks']);
-					if (($deleteIndex = array_search('delete', $blockIds)) !== false)
-						array_splice($blockIds, $deleteIndex, 1);
-					if (($tempIndex = array_search('BLOCK_ID', $blockIds)) !== false)
-						array_splice($blockIds, $tempIndex, 1);
-				}
-
-				$lastColumn = 'title';
-
-				foreach ($blockIds as $order => $blockId)
-				{
-					$blockData = $sectionSettings['blocks'][$blockId];
-
-					$block = blx()->blocks->getBlockByClass($blockData['class']);
-					$isNewBlock = true;
-
-					if (strncmp($blockId, 'new', 3) != 0)
-					{
-						$originalBlock = blx()->blocks->getBlockById($blockId);
-						if ($originalBlock)
-						{
-							$isNewBlock = false;
-							$block->isNewRecord = false;
-							$block->id = $blockId;
-							$block->setPrimaryKey($blockId);
-						}
-					}
-
-					$block->name         = $blockData['name'];
-					$block->handle       = $blockData['handle'];
-					$block->class        = $blockData['class'];
-					$block->instructions = (isset($blockData['instructions']) ? $blockData['instructions'] : null);
-					$block->required     = (isset($blockData['required']) ? (bool)$blockData['required'] : false);
-					$block->sort_order   = ($order+1);
-
-					// Only save it if the section saved
-					if ($sectionSaved)
-					{
-						if ($block->save())
-						{
-							// Attach it to the section
-							try
-							{
-								blx()->db->createCommand()->insert('sectionblocks', array(
-									'section_id' => $section->id,
-									'block_id'   => $block->id,
-								));
-							}
-							catch (\CDbException $e)
-							{
-								// Only allow a Duplicate Key exception (the section is already tied to the block)
-								if (!isset($e->errorInfo[0]) || $e->errorInfo[0] != 23000)
-									throw $e;
-							}
-
-							// Save the settings
-							if (!isset($blockData['settings']))
-								$blockData['settings'] = array();
-
-							$block->settings = $blockData['settings'];
-
-							// Add or modify the block's content column
-							$columnType = DatabaseHelper::generateColumnDefinition($block->columnType);
-
-							if ($isNewBlock)
-							{
-								// Add the new column
-								blx()->db->createCommand()->addColumnAfter($contentTable, $block->handle, $columnType, $lastColumn);
-							}
-							else
-							{
-								// Alter the column
-								blx()->db->createCommand()->alterColumn($contentTable, $originalBlock->handle, $columnType, $block->handle, $lastColumn);
-							}
-
-							// Remember this column name for the next block
-							$lastColumn = $block->handle;
-						}
-					}
-
-					// Keep the "newX" ID around for the templates
-					if ($block->getIsNewRecord())
-						$block->id = $blockId;
-
-					$blocks[] = $block;
-				}
-			}
-
-			// Any deleted blocks?
-			if (isset($sectionSettings['blocks']['delete']))
-			{
-				foreach ($sectionSettings['blocks']['delete'] as $blockId)
-				{
-					$block = blx()->blocks->getBlockById($blockId);
-					blx()->db->createCommand()->delete('sectionblocks',       array('block_id'=>$blockId));
-					blx()->db->createCommand()->delete('blocksettings',       array('block_id'=>$blockId));
-					blx()->db->createCommand()->delete('blocks',              array('id'=>$blockId));
-					blx()->db->createCommand()->dropColumn($contentTable, $block->handle);
-				}
-			}
-
-			$section->blocks = $blocks;
 
 			$transaction->commit();
 		}

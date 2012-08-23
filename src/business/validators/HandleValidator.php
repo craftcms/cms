@@ -15,20 +15,25 @@ class HandleValidator extends \CValidator
 	 */
 	protected function validateAttribute($object, $attribute)
 	{
-		$value = $object->$attribute;
+		$handle = $object->$attribute;
 
 		$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
 
-		if (in_array($value, $reservedWords))
+		if (in_array($handle, $reservedWords))
 		{
-			$message = Blocks::t('“{value}” is a reserved word.', array('value', $value));
+			$message = Blocks::t('“{handle}” is a reserved word.', array('handle' => $handle));
 			$this->addError($object, $attribute, $message);
 		}
-		else if (!preg_match('/^'.TemplateParser::varPattern.'$/', $value))
+		else
 		{
-			$altMessage = Blocks::t('“{attribute}” isn’t a valid handle.', $attribute);;
-			$message = $this->message !== null ? $this->message : $altMessage;
-			$this->addError($object, $attribute, $message);
+			TemplateHelper::registerTwigAutoloader();
+
+			if (!preg_match(\Twig_Lexer::REGEX_NAME, $handle))
+			{
+				$altMessage = Blocks::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
+				$message = $this->message !== null ? $this->message : $altMessage;
+				$this->addError($object, $attribute, $message);
+			}
 		}
 	}
 }

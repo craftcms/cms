@@ -7,31 +7,35 @@ namespace Blocks;
 class ContentVariable
 {
 	/**
-	 * Returns an entry by its ID.
-	 * @param int $entryId
-	 * @return Entry
-	 */
-	public function getEntryById($entryId)
-	{
-		return blx()->content->getEntryById($entryId);
-	}
-
-	/**
-	 * Returns a section by its ID.
-	 * @param int $sectionId
-	 * @return Section
-	 */
-	public function getSectionById($sectionId)
-	{
-		return blx()->content->getSectionById($sectionId);
-	}
-
-	/**
-	 * Returns all sections.
+	 * Gets sections.
+	 *
+	 * @param array $params
 	 * @return array
 	 */
-	public function sections()
+	public function sections($params = array())
 	{
-		return blx()->content->getSections();
+		return blx()->content->getSections($params);
+	}
+
+	/**
+	 * Gets the total number of sections.
+	 *
+	 * @param array $params
+	 * @return int
+	 */
+	public function total_sections($params = array())
+	{
+		return blx()->content->getTotalSections($params);
+	}
+
+	/**
+	 * Gets a section by its ID.
+	 *
+	 * @param int $id
+	 * @return Section
+	 */
+	public function getSectionById($id)
+	{
+		return blx()->content->getSectionById($id);
 	}
 }

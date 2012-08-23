@@ -199,7 +199,17 @@ class DatabaseHelper
 			}
 		}
 
-		$params[':'.$key] = trim($value);
-		return $key.$sqlOperator.':'.$key;
+		if ($value === null)
+		{
+			if ($operator == '=')
+				return $key.' is null';
+			else if ($operator == '!=')
+				return $key.' is not null';
+		}
+		else
+		{
+			$params[':'.$key] = trim($value);
+			return $key.$sqlOperator.':'.$key;
+		}
 	}
 }
