@@ -104,6 +104,18 @@ class Blocks extends \Yii
 	}
 
 	/**
+	 * Returns the site language.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getLanguage()
+	{
+		$storedBlocksInfo = static::_getStoredInfo();
+		return $storedBlocksInfo ? $storedBlocksInfo->language : null;
+	}
+
+	/**
 	 * Returns the license key.
 	 *
 	 * @static

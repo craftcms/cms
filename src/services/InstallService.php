@@ -76,12 +76,9 @@ class InstallService extends \CApplicationComponent
 			$info->release_date = Blocks::getReleaseDate();
 			$info->site_name = $inputs['sitename'];
 			$info->site_url = $inputs['url'];
+			$info->language = $inputs['language'];
 			$info->on = true;
 			$info->save();
-
-			// Set the default language
-			$languages = array(blx()->language);
-			blx()->settings->saveSettings('systemsettings', $languages, 'languages');
 
 			// Add the user
 			$user = new User();

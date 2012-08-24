@@ -3,7 +3,7 @@
 @@ -30,9 +30,25 @@
  			.removeClass('scaleddown')
  			.animate({opacity: 1}, 'fast', $.proxy(function() {
- 
+
 +				// Give the License Key input focus after half a second
 +				this.focusFirstInput();
 +
@@ -14,7 +14,7 @@
 +
  			}, this));
  	},
- 
+
 +	validateLicenseKey: function(event)
 +	{
 +		event.preventDefault();
@@ -29,9 +29,9 @@
 @@ -71,7 +87,7 @@
  	{
  		this.showScreen(3, $.proxy(function() {
- 
--			var inputs = ['username', 'email', 'password', 'sitename', 'url'],
-+			var inputs = ['licensekey', 'username', 'email', 'password', 'sitename', 'url'],
+
+-			var inputs = ['username', 'email', 'password', 'sitename', 'url', 'language'],
++			var inputs = ['licensekey', 'username', 'email', 'password', 'sitename', 'url', 'language'],
  				data = {};
- 
+
  			for (var i = 0; i < inputs.length; i++)

@@ -1,17 +1,13 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-15 11:16:29.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-15 11:17:19.000000000 -0700
-@@ -74,6 +74,7 @@
- 			$info->release_date = Blocks::getReleaseDate();
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/services/InstallService.php	2012-08-24 16:25:27.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/services/InstallService.php	2012-08-24 16:46:23.000000000 -0700
+@@ -77,9 +77,26 @@
  			$info->site_name = $inputs['sitename'];
  			$info->site_url = $inputs['url'];
+ 			$info->language = $inputs['language'];
 +			$info->license_key = $inputs['licensekey'];
  			$info->on = true;
  			$info->save();
-
-@@ -81,6 +82,22 @@
- 			$languages = array(blx()->language);
- 			blx()->settings->saveSettings('systemsettings', $languages, 'languages');
-
+ 
 +			// Register the email messages
 +			$message = blx()->email->registerMessage('verify_email');
 +			blx()->email->saveMessageContent($message->id,

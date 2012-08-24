@@ -47,6 +47,16 @@ class AppVariable
 	}
 
 	/**
+	 * Returns the site language.
+	 *
+	 * @return string
+	 */
+	public function language()
+	{
+		return Blocks::getLanguage();
+	}
+
+	/**
 	 * Returns the license key.
 	 *
 	 * @return string

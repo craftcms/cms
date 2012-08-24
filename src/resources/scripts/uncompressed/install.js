@@ -71,7 +71,7 @@ blx.Installer = blx.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			var inputs = ['username', 'email', 'password', 'sitename', 'url'],
+			var inputs = ['username', 'email', 'password', 'sitename', 'url', 'language'],
 				data = {};
 
 			for (var i = 0; i < inputs.length; i++)

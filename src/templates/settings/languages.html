@@ -14,6 +14,11 @@
 		<div class="field">
 			<p>{{ "Which languages will your content be available in?"|t }}</p>
 
+			<div class="checkbox"><label>
+				<input type="checkbox" checked disabled>
+				{{ blx.localization.localeName(blx.app.language) }} ({{ "Primary"|t }})
+			</label></div>
+
 			{% if not selectedLanguages %}
 				{% set selectedLanguages = blx.settings.languages %}
 			{% endif %}
@@ -26,7 +31,7 @@
 			{% endfor %}
 
 			{% for language in blx.localization.languages %}
-				{% if language not in selectedLanguages %}
+				{% if language != blx.app.language and language not in selectedLanguages %}
 					<div class="checkbox"><label>
 						<input type="checkbox" name="languages[]" value="{{ language }}">
 						{{ blx.localization.localeName(language) }}
