@@ -11,12 +11,12 @@
 		<input type="hidden" name="action" value="settings/saveLanguageSettings">
 		<input type="hidden" name="redirect" value="settings">
 
-		<div class="field">
-			<p>{{ "Which languages will your content be available in?"|t }}</p>
+		<h3>{{ "Which languages will your content be available in?"|t }}</h3>
 
+		<div class="field">
 			<div class="checkbox"><label>
 				<input type="checkbox" checked disabled>
-				{{ blx.localization.localeName(blx.app.language) }} ({{ "Primary"|t }})
+				{{ blx.localization.localeName(blx.app.language) }} <strong>({{ "Primary"|t }})</strong>
 			</label></div>
 
 			{% if not selectedLanguages %}
@@ -30,6 +30,8 @@
 				</label></div>
 			{% endfor %}
 
+			<hr class="minor">
+
 			{% for language in blx.localization.languages %}
 				{% if language != blx.app.language and language not in selectedLanguages %}
 					<div class="checkbox"><label>
@@ -38,7 +40,6 @@
 					</label></div>
 				{% endif %}
 			{% endfor %}
-
 		</div>
 
 		<div class="buttons">
