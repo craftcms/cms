@@ -36,7 +36,31 @@ class BlocksTwigExtension extends \Twig_Extension
 			'currency'   => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'),
 			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),
 			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
+			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 		);
+	}
+
+	/**
+	 * Returns an array without certain values.
+	 *
+	 * @param array $arr
+	 * @param mixed $exclude
+	 * @return array
+	 */
+	public function withoutFilter($arr, $exclude)
+	{
+		$filteredArray = array();
+
+		if (!is_array($exclude))
+			$exclude = array($exclude);
+
+		foreach ($arr as $key => $value)
+		{
+			if (!in_array($value, $exclude))
+				$filteredArray[$key] = $value;
+		}
+
+		return $filteredArray;
 	}
 
 	/**
