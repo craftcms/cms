@@ -74,6 +74,9 @@ class BlocksTwigExtension extends \Twig_Extension
 			'url'         => new \Twig_Function_Function('\Blocks\UrlHelper::generateUrl'),
 			'resourceUrl' => new \Twig_Function_Function('\Blocks\UrlHelper::generateResourceUrl'),
 			'actionUrl'   => new \Twig_Function_Function('\Blocks\UrlHelper::generateActionUrl'),
+			'round'       => new \Twig_Function_Function('round'),
+			'ceil'        => new \Twig_Function_Function('ceil'),
+			'floor'       => new \Twig_Function_Function('floor'),
 		);
 	}
 
