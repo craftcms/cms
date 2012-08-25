@@ -44,23 +44,7 @@ class TemplateHelper
 				//'strict_variables'  => true,
 			));
 
-			// Add custom filters
-			$twig->addFilter('t', new \Twig_Filter_Function('\Blocks\Blocks::t'));
-			$twig->addFilter('decimal', new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatDecimal'));
-			$twig->addFilter('currency', new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'));
-			$twig->addFilter('percentage', new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'));
-			$twig->addFilter('datetime', new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'));
-
-			// Add custom functions
-			$twig->addFunction('url', new \Twig_Function_Function('\Blocks\UrlHelper::generateUrl'));
-			$twig->addFunction('resourceUrl', new \Twig_Function_Function('\Blocks\UrlHelper::generateResourceUrl'));
-			$twig->addFunction('actionUrl', new \Twig_Function_Function('\Blocks\UrlHelper::generateActionUrl'));
-
-			// Add custom tags
-			$twig->addTokenParser(new Redirect_TokenParser());
-			$twig->addTokenParser(new IncludeCss_TokenParser());
-			$twig->addTokenParser(new IncludeJs_TokenParser());
-			$twig->addTokenParser(new IncludeTranslation_TokenParser());
+			$twig->addExtension(new BlocksTwigExtension());
 
 			if (blx()->config->devMode)
 				$twig->addExtension(new \Twig_Extension_Debug());
@@ -79,19 +63,8 @@ class TemplateHelper
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
-	public static function render($template, $variables)
+	public static function render($template, $variables = array())
 	{
-		// Add the global variables
-		$variables['blx'] = new BlxVariable();
-		if (blx()->getIsInstalled())
-		{
-			$variables['siteName'] = Blocks::getSiteName();
-			$variables['siteUrl'] = Blocks::getSiteUrl();
-
-			if (($user = blx()->accounts->getCurrentUser()) !== null)
-				$variables['userName'] = $user->getFullName();
-		}
-
 		$twig = static::getTwig();
 
 		//try
