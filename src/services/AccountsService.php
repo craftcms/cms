@@ -18,6 +18,8 @@ class AccountsService extends \CApplicationComponent
 		'limit' => 50,
 	);
 
+	private $_currentUser;
+
 	/**
 	 * Gets users.
 	 *
@@ -177,7 +179,12 @@ class AccountsService extends \CApplicationComponent
 	public function getCurrentUser()
 	{
 		if (!empty(blx()->user))
-			return $this->getUserById(blx()->user->getId());
+		{
+			if (!isset($this->_currentUser))
+				$this->_currentUser = $this->getUserById(blx()->user->getId());
+
+			return $this->_currentUser;
+		}
 		else
 			return null;
 	}
