@@ -29,9 +29,34 @@ blx.Installer = blx.Base.extend({
 		this.$currentScreen = $(this.$screens[0])
 			.removeClass('scaleddown')
 			.animate({opacity: 1}, 'fast', $.proxy(function() {
+				/* BLOCKS ONLY */
 
+				this.addListener($('#getstarted'), 'click', 'showAccountScreen');
+
+				/* end BLOCKS ONLY */
+				/* BLOCKSPRO ONLY */
+
+				// Give the License Key input focus after half a second
+				this.focusFirstInput();
+
+				// Get ready for form submit
+				this.$licensekeySubmitBtn = $('#licensekeysubmit');
+				this.addListener(this.$licensekeySubmitBtn, 'click', 'validateLicenseKey');
+				this.addListener($('#licensekeyform'), 'submit', 'validateLicenseKey');
+
+				/* end BLOCKSPRO ONLY */
 			}, this));
 	},
+
+	/* BLOCKSPRO ONLY */
+	validateLicenseKey: function(event)
+	{
+		event.preventDefault();
+
+		var inputs = ['licensekey'];
+		this.validate('licensekey', inputs, $.proxy(this, 'showAccountScreen'));
+	},
+	/* end BLOCKSPRO ONLY */
 
 	showAccountScreen: function(event)
 	{
@@ -71,8 +96,14 @@ blx.Installer = blx.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			var inputs = ['username', 'email', 'password', 'sitename', 'url', 'language'],
-				data = {};
+			/* BLOCKS ONLY */
+			var inputs = ['username', 'email', 'password', 'sitename', 'url', 'language'];
+			/* end BLOCKS ONLY */
+			/* BLOCKSPRO ONLY */
+			var inputs = ['licensekey', 'username', 'email', 'password', 'sitename', 'url', 'language'];
+			/* end BLOCKSPRO ONLY */
+
+			var data = {};
 
 			for (var i = 0; i < inputs.length; i++)
 			{

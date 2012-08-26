@@ -13,6 +13,9 @@ class EtPackage
 	public $requestTime;
 	public $requestDomain;
 	public $requestPort;
+	/* BLOCKSPRO ONLY */
+	public $product;
+	/* end BLOCKSPRO ONLY */
 	public $data;
 	public $errors = array();
 
@@ -28,6 +31,9 @@ class EtPackage
 		$this->licenseKey = isset($properties['licenseKey']) ? $properties['licenseKey'] : null;
 		$this->licenseKeyStatus = isset($properties['licenseKeyStatus']) ? $properties['licenseKeyStatus'] : null;
 		$this->data = isset($properties['data']) ? $properties['data'] : null;
+		/* BLOCKSPRO ONLY */
+		$this->product = isset($properties['product']) ? $properties['product'] : null;
+		/* end BLOCKSPRO ONLY */
 		$this->requestDomain = isset($properties['requestDomain']) ? $properties['requestDomain'] : null;
 		$this->requestIp = isset($properties['requestIp']) ? $properties['requestIp'] : null;
 		$this->requestTime = isset($properties['requestTime']) ? $properties['requestTime'] : null;

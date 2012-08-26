@@ -24,12 +24,18 @@ class SettingsController extends BaseController
 		$generalSettingsForm = new GeneralSettingsForm();
 		$generalSettingsForm->siteName = blx()->request->getPost('siteName');
 		$generalSettingsForm->siteUrl = blx()->request->getPost('siteUrl');
+		/* BLOCKSPRO ONLY */
+		$generalSettingsForm->licenseKey = blx()->request->getPost('licenseKey');
+		/* end BLOCKSPRO ONLY */
 
 		if ($generalSettingsForm->validate())
 		{
 			$info = Info::model()->find();
 			$info->site_name = $generalSettingsForm->siteName;
 			$info->site_url = $generalSettingsForm->siteUrl;
+			/* BLOCKSPRO ONLY */
+			$info->license_key = $generalSettingsForm->licenseKey;
+			/* end BLOCKSPRO ONLY */
 			$info->save();
 
 			blx()->user->setNotice(Blocks::t('General settings saved.'));
@@ -80,6 +86,9 @@ class SettingsController extends BaseController
 			$settings = array('protocol' => $emailSettings->protocol);
 			$settings['emailAddress'] = $emailSettings->emailAddress;
 			$settings['senderName'] = $emailSettings->senderName;
+			/* BLOCKSPRO ONLY */
+			$settings['template'] = blx()->request->getPost('template');
+			/* end BLOCKSPRO ONLY */
 
 			switch ($emailSettings->protocol)
 			{

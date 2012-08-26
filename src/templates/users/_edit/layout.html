@@ -17,7 +17,12 @@
 
 {% set main %}
 	<header class="titlebar">
+		<!-- BLOCKS ONLY -->
 		<h1>{{ "My Account"|t }}</h1>
+		<!-- end BLOCKS ONLY -->
+		<!-- BLOCKSPRO ONLY -->
+		<h1>{{ heading }}</h1>
+		<!-- end BLOCKSPRO ONLY -->
 	</header>
 
 	{% if user.id %}
@@ -25,6 +30,13 @@
 			<ul>
 				<li><a href="{{ url('users/' ~ user.id) }}" {% if blx.request.segment(3) == '' %}class="sel"{% endif %} data-icon="⚙">{{ "Account Settings"|t }}</a></li>
 				<li><a href="{{ url('users/' ~ user.id ~ '/profile') }}" {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
+				<!-- BLOCKSPRO ONLY -->
+				<li><a href="{{ url('users/' ~ user.id ~ '/info') }}" {% if blx.request.segment(3) == 'info' %}class="sel"{% endif %} data-icon="i">{{ "User Info"|t }}</a></li>
+
+				{% if blx.accounts.current.admin %}
+					<li><a href="{{ url('users/' ~ user.id ~ '/admin') }}" {% if blx.request.segment(3) == 'admin' %}class="sel"{% endif %} data-icon="☻">{{ "Administration"|t }}</a></li>
+				{% endif %}
+				<!-- end BLOCKSPRO ONLY -->
 			</ul>
 		</nav>
 	{% endif %}

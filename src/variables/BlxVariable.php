@@ -124,6 +124,18 @@ class BlxVariable
 		return new RequestVariable();
 	}
 
+	/* BLOCKSPRO ONLY */
+
+ 	/**
+	 * @return RoutesVariable
+	 */
+	public function routes()
+	{
+		return new RoutesVariable();
+	}
+
+	/* end BLOCKSPRO ONLY */
+
 	/**
 	 * @return SettingsVariable
 	 */

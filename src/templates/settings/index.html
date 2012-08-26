@@ -10,12 +10,22 @@
 	<h2>{{ "System"|t }}</h2>
 	<ul class="icons">
 		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
+		<!-- BLOCKSPRO ONLY -->
+		<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
+		<li><a href="{{ url('settings/groups') }}" data-icon="U">{{ "Groups"|t }}</a></li>
+		<!-- end BLOCKSPRO ONLY -->
 		<li><a href="{{ url('settings/email') }}" data-icon="E">{{ "Email"|t }}</a></li>
 		<li><a href="{{ url('settings/advanced') }}" data-icon="a">{{ "Advanced"|t }}</a></li>
 	</ul>
 
 	<h2>{{ "Content"|t }}</h2>
 	<ul class="icons">
+		<!-- BLOCKSPRO ONLY -->
+		<li><a href="{{ url('settings/sections') }}" data-icon="C">{{ "Sections"|t }}</a></li>
+		<!-- end BLOCKSPRO ONLY -->
 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
+		<!-- BLOCKSPRO ONLY -->
+		<li><a href="{{ url('settings/languages') }}" data-icon="L">{{ "Languages"|t }}</a></li>
+		<!-- end BLOCKSPRO ONLY -->
 	</ul>
 {% endset %}

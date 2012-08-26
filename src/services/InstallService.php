@@ -69,6 +69,18 @@ class InstallService extends \CApplicationComponent
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 
+			/* BLOCKS ONLY */
+			// Generate a license key
+			$licenseKey = strtoupper(sprintf('%04x-%04x-%04x-%04x-%04x-%04x',
+				mt_rand(0, 0xffff),
+				mt_rand(0, 0xffff),
+				mt_rand(0, 0xffff),
+				mt_rand(0, 0xffff),
+				mt_rand(0, 0xffff),
+				mt_rand(0, 0xffff)
+			));
+			/* end BLOCKS ONLY */
+
 			// Populate the info table
 			$info = new Info();
 			$info->version = Blocks::getVersion();
@@ -77,8 +89,32 @@ class InstallService extends \CApplicationComponent
 			$info->site_name = $inputs['sitename'];
 			$info->site_url = $inputs['url'];
 			$info->language = $inputs['language'];
+			/* BLOCKS ONLY */
+			$info->license_key = $licenseKey;
+			/* end BLOCKS ONLY */
+			/* BLOCKSPRO ONLY */
+			$info->license_key = $inputs['licensekey'];
+			/* end BLOCKSPRO ONLY */
 			$info->on = true;
 			$info->save();
+
+			/* BLOCKSPRO ONLY */
+			// Register the email messages
+			$message = blx()->email->registerMessage('verify_email');
+			blx()->email->saveMessageContent($message->id,
+				Blocks::t('verify_email_subject'),
+				Blocks::t('verify_email_body'));
+
+			$message = blx()->email->registerMessage('verify_new_email');
+			blx()->email->saveMessageContent($message->id,
+				Blocks::t('verify_new_email_subject'),
+				Blocks::t('verify_new_email_body'));
+
+			$message = blx()->email->registerMessage('forgot_password');
+			blx()->email->saveMessageContent($message->id,
+				Blocks::t('forgot_password_subject'),
+				Blocks::t('forgot_password_body'));
+			/* end BLOCKSPRO ONLY */
 
 			// Add the user
 			$user = new User();

@@ -1,9 +1,0 @@
---- /Users/brandon/git/Blocks/Source/Core/blocks/app/models/forms/GeneralSettingsForm.php	2012-08-03 06:48:38.000000000 -0700
-+++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/models/forms/GeneralSettingsForm.php	2012-08-03 06:49:06.000000000 -0700
-@@ -9,5 +9,6 @@
- 	protected $attributes = array(
- 		'siteName'   => array('type' => AttributeType::Name, 'required' => true),
- 		'siteUrl'    => array('type' => AttributeType::Url, 'required' => true),
-+		'licenseKey' => AttributeType::LicenseKey,
- 	);
- }

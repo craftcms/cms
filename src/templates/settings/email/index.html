@@ -1,4 +1,9 @@
+<!-- BLOCKS ONLY -->
 {% extends "_layouts/cp" %}
+<!-- end BLOCKS ONLY -->
+<!-- BLOCKSPRO ONLY -->
+{% extends "settings/email/_layout" %}
+<!-- end BLOCKSPRO ONLY -->
 {% set title = "Email Settings"|t %}
 {% include_js "email_settings.js" %}
 
@@ -8,11 +13,16 @@
 {% endif %}
 
 
+<!-- BLOCKS ONLY -->
 {% set main %}
 	<header class="titlebar">
 		<h1>{{ title }}</h1>
 	</header>
 
+<!-- end BLOCKS ONLY -->
+<!-- BLOCKSPRO ONLY -->
+{% set settings %}
+<!-- end BLOCKSPRO ONLY -->
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveemailsettings">
 		<input type="hidden" name="redirect" value="settings">
@@ -38,6 +48,16 @@
 				{% include "_includes/error_list" with {'errors': settings.errors.senderName} %}
 			{% endif %}
 		</div>
+
+		<!-- BLOCKSPRO ONLY -->
+		<div class="field">
+			<div class="heading">
+				<label for="template">{{ "HTML Email Template"|t }}</label>
+				<p>{{ "The template Blocks Pro will use for users who prefer HTML email"|t }}</p>
+			</div>
+			<input id="template" name="template" type="text" class="text template" value="{{ settings.template }}">
+		</div>
+		<!-- end BLOCKSPRO ONLY -->
 
 		<div class="field" id="protocol-field">
 			<div class="heading">

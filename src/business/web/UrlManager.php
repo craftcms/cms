@@ -113,6 +113,18 @@ class UrlManager extends \CUrlManager
 				}
 			}
 		}
+		/* BLOCKSPRO ONLY */
+		else
+		{
+			// Check the user-defined routes
+			$siteRoutes = blx()->routes->getAllRoutes();
+			foreach ($siteRoutes as $route)
+			{
+				if ($this->_matchRouteInternal($route->url_pattern))
+					return $route->template;
+			}
+		}
+		/* end BLOCKSPRO ONLY */
 
 		return false;
 	}

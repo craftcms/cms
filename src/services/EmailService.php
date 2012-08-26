@@ -9,6 +9,110 @@ class EmailService extends \CApplicationComponent
 	private $_defaultEmailTimeout = 10;
 	private $_settings;
 
+	/* BLOCKSPRO ONLY */
+
+	/**
+	 * Returns all of the system email messages.
+	 *
+	 * @return array
+	 */
+	public function getAllMessages()
+	{
+		$messages = EmailMessage::model()->findAll();
+		return $messages;
+	}
+
+	/**
+	 * Returns a system email message by its ID.
+	 *
+	 * @param int $messageId
+	 * @return EmailMessage
+	 */
+	public function getMessageById($messageId)
+	{
+		$message = EmailMessage::model()->findById($messageId);
+		return $message;
+	}
+
+	/**
+	 * Returns a system email message by its key.
+	 *
+	 * @param string $key
+	 * @return EmailMessage
+	 */
+	public function getMessageByKey($key)
+	{
+		$message = EmailMessage::model()->findByAttributes(array(
+			'key' => $key
+		));
+		return $message;
+	}
+
+	/**
+	 * Registers a new system email message.
+	 *
+	 * @param string $key
+	 * @return EmailMessage
+	 */
+	public function registerMessage($key)
+	{
+		$message = new EmailMessage();
+		$message->key = $key;
+		$message->save();
+		return $message;
+	}
+
+	/**
+	 * Returns the localized content for a system email message.
+	 *
+	 * @param int $messageId
+	 * @param string $language
+	 * @return string
+	 */
+	public function getMessageContent($messageId, $language = null)
+	{
+		if (!$language)
+			$language = blx()->language;
+
+		$content = EmailMessageContent::model()->findByAttributes(array(
+			'message_id' => $messageId,
+			'language' => $language
+		));
+
+		if (!$content)
+		{
+			$content = new EmailMessageContent();
+			$content->message_id = $messageId;
+			$content->language = ($language ? $language : blx()->language);
+		}
+
+		return $content;
+	}
+
+	/**
+	 * Saves the localized content for a system email message.
+	 *
+	 * @param int $messageId
+	 * @param string $subject
+	 * @param string $body
+	 * @param string $htmlBody
+	 * @param string $language
+	 */
+	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
+	{
+		// Has this message already been translated into this language?
+		$content = $this->getMessageContent($messageId, $language);
+
+		$content->subject = $subject;
+		$content->body = $body;
+		$content->html_body = $htmlBody;
+		$content->save();
+
+		return $content;
+	}
+
+	/* end BLOCKSPRO ONLY */
+
 	/**
 	 * Sends an email.
 	 *
@@ -83,12 +187,12 @@ class EmailService extends \CApplicationComponent
 
 		$variables['user'] = $user;
 
-		$email->subject = TemplateHelper::renderString($subject.' subject', $subject, $variables);
-		$renderedBody = TemplateHelper::renderString($subject.' body', $body, $variables);
+		$email->subject = TemplateHelper::renderString($subject.' - subject', $subject, $variables);
+		$renderedBody = TemplateHelper::renderString($subject.' - body', $body, $variables);
 
 		if ($user->email_format == 'html' && $htmlBody)
 		{
-			$renderedHtmlBody = TemplateHelper::renderString($subject.' HTML body', $htmlBody, $variables);
+			$renderedHtmlBody = TemplateHelper::renderString($subject.' - HTML body', $htmlBody, $variables);
 			$email->msgHtml($renderedHtmlBody);
 			$email->altBody = $renderedBody;
 		}
@@ -114,6 +218,68 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function sendEmailByKey(User $user, $key, $variables = array())
 	{
+		/* BLOCKS ONLY */
+
+		$subject = Blocks::t($key.'_subject');
+		$body = Blocks::t($key.'_body');
+		$htmlBody = Blocks::t($key.'_html_body');
+		$tempTemplatesPath = blx()->path->getAppTemplatesPath();
+		$template = '_special/email';
+
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
+
+		// Get the email by key from the database.
+		$message = $this->getMessageByKey($key);
+
+		if (!$message)
+			throw new Exception(Blocks::t('Could not find an email message with the key “{key}”', array('key' => $key)));
+
+		// Get the content
+		$content = $this->getMessageContent($message->id, $user->preferred_language);
+		$subject = $content->subject;
+		$body = $content->body;
+		$htmlBody = $content->html_body;
+
+		$settings = $this->getSettings();
+		if (!empty($settings['template']))
+		{
+			$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
+			$template = $settings['template'];
+		}
+		else
+		{
+			$tempTemplatesPath = blx()->path->getAppTemplatesPath();
+			$template = '_special/email';
+		}
+
+		/* end BLOCKSPRO ONLY */
+
+		if (!$htmlBody || $htmlBody == $key.'_html_body')
+		{
+			if (!class_exists('\Markdown_Parser', false))
+				require_once blx()->path->getFrameworkPath().'vendors/markdown/markdown.php';
+
+			$md = new \Markdown_Parser();
+			$htmlBody = $md->transform($body);
+		}
+
+		$htmlBody = "{% extends '{$template}' %}\n" .
+			"{% block body %}\n" .
+			$htmlBody .
+			"{% endblock %}\n";
+
+		// Temporarily swap the templates path
+		$originalTemplatesPath = blx()->path->getTemplatesPath();
+		blx()->path->setTemplatesPath($tempTemplatesPath);
+
+		// Send the email
+		$return = $this->sendEmail($user, $subject, $body, $htmlBody, $variables);
+
+		// Return to the original templates path
+		blx()->path->setTemplatesPath($originalTemplatesPath);
+
+		return $return;
 	}
 
 	/**
