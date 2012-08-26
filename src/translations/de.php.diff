@@ -1,6 +1,6 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-22 14:09:43.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-22 14:09:54.000000000 -0700
-@@ -6,19 +6,32 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/de.php	2012-08-26 07:00:48.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/de.php	2012-08-26 07:00:48.000000000 -0700
+@@ -6,19 +6,31 @@
    'APC extension' => 'APC-Erweiterung',
    'About' => 'über',
    'Account' => 'Konto',
@@ -15,7 +15,6 @@
 +  'Activate' => 'Aktivieren',
 +  'Active' => 'Aktiv',
 +  'Add a token' => 'Fügen Sie einen Token',
-+  'Add a user' => 'Hinzufügen eines Benutzers',
    'Add a widget' => 'Hinzufügen von Widgets',
    'Admin settings saved.' => 'Admin-Einstellungen gespeichert.',
 +  'Administration' => 'Verwaltung',
@@ -33,7 +32,7 @@
    'Allow line breaks' => 'Lassen Sie Zeilenumbrüche',
    'An unknown error occurred while updating {name}.' => 'Ein unbekannter Fehler ist aufgetreten während der Aktualisierung {name}.',
    'An unknown error occurred.' => 'Ein unbekannter Fehler ist aufgetreten.',
-@@ -35,19 +48,29 @@
+@@ -35,19 +47,29 @@
    'Block Handle' => 'Blockieren Griff',
    'Block Name' => 'Blockiert Namen',
    'Block Type' => 'Blockiert Typ',
@@ -63,7 +62,7 @@
    'Could not find any update information for the plugin with handle “{handle}”.' => 'Konnte keine Update-Informationen für das Plugin mit Griff “{handle}”',
    'Could not hash the given password.' => 'Konnte nicht die gegebene Hash-Passwort ein.',
    'Couldn’t disable plugin.' => 'Könnte nicht deaktivieren Plugin.',
-@@ -65,9 +88,13 @@
+@@ -65,10 +87,15 @@
    'Couldn’t save entry.' => 'Konnte nicht gespeichert Eintrag.',
    'Couldn’t save general settings.' => 'Konnte nicht gespeichert werden allgemeine Einstellungen.',
    'Couldn’t save language settings.' => 'Konnte nicht gespeichert werden Spracheinstellungen.',
@@ -75,8 +74,10 @@
    'Couldn’t uninstall plugin.' => 'Konnte nicht deinstallieren plugin.',
 +  'Create a new route' => 'Erstellen Sie eine neue Route',
    'Create a new section' => 'Erstellen Sie einen neuen Abschnitt',
++  'Create the first one' => '',
    'Create your account' => 'Erstellen Sie Ihr Konto',
    'Critical' => 'Kritisch',
+   'DOM extension' => 'DOM-Erweiterung',
 @@ -79,6 +106,7 @@
    'Database successfully updated.' => 'Die Datenbank wurde erfolgreich aktualisiert.',
    'Date Modified' => 'Änderungsdatum',
@@ -131,7 +132,7 @@
    'Hide' => 'Verbergen',
    'Hint Text' => 'Hinweistext',
    'Home' => 'Zuhause',
-@@ -140,45 +177,66 @@
+@@ -140,47 +177,71 @@
    'Host, port, username and password must be configured under your email settings.' => 'Host, Port, Benutzername und Kennwort müssen unter Ihrer E-Mail-Einstellungen konfiguriert werden.',
    'How you’ll refer to this block in the templates.' => 'Wie werden Sie auf diesem Block in den Vorlagen zu verweisen.',
    'How you’ll refer to this section in the templates.' => 'Wie Sie zu diesem Abschnitt in den Vorlagen zu verweisen.',
@@ -145,6 +146,7 @@
    'IsNullOrEmpty requires a string.' => 'IsNullOrEmpty erfordert einen String zurück.',
 +  'JavaScript must be enabled to access the Blocks Pro CP.' => 'JavaScript muss aktiviert sein, um die Blocks Pro CP zugreifen.',
    'Keep me logged in' => 'Angemeldet bleiben',
+   'Language' => '',
    'Language settings saved.' => 'Sprache Einstellungen gespeichert.',
 +  'Languages' => 'Sprachen',
 +  'Last Failed Login Date' => 'Letzten fehlgeschlagenen Login Datum',
@@ -183,6 +185,8 @@
 +  'Never' => 'Nie',
    'Never published' => 'Nie veröffentlicht',
 +  'New Route' => 'Neue Route',
++  'New Section' => '',
++  'New User' => '',
    'New content block' => 'Neue Inhalte Block',
    'New draft' => 'Neuer Entwurf',
    'New draft…' => 'Neuer Entwurf…',
@@ -196,9 +200,11 @@
    'No plugin exists with the class “{className}”' => 'Kein Plugin existiert mit der Klasse “{className}”',
 +  'No route exists with the ID “{routeId}”' => 'Keine Route besteht mit der ID “{routeId}”',
    'No section exists with the ID “{sectionId}”' => 'Nein Abschnitt existiert mit der Id “{sectionId}”',
++  'No sections exist yet.' => '',
    'No updates available.' => 'Keine Updates verfügbar.',
    'No user exists with the ID “{userId}”.' => 'Kein Benutzer vorhanden mit der Id “{userId}”.',
-@@ -187,6 +245,7 @@
+   'No widget exists with the ID “{widgetId}”.' => 'Nein Widget existiert mit der Id “{widgetId}”.',
+@@ -188,6 +249,7 @@
    'Not installed' => 'Nicht installiert',
    'Number Type' => 'Anzahl Typ',
    'Offline' => 'Offline',
@@ -206,7 +212,7 @@
    'Only required if you plan on APC for caching.' => 'Nur erforderlich, wenn Sie auf APC für die Zwischenspeicherung zu planen.',
    'Only required if you plan on using Memcache.' => 'Nur erforderlich, wenn Sie über die Verwendung Memcache zu planen.',
    'PCRE extension' => 'PCRE-Erweiterung',
-@@ -202,6 +261,7 @@
+@@ -203,6 +265,7 @@
    'Password updated.' => 'Kennwort aktualisiert.',
    'Path to filesystem object isn’t specified within “{methodName}” method.' => 'Pfad zu Dateisystem-Objekt wird nicht innerhalb von {methodName} Methode angegeben.',
    'Pending' => 'Schwebend',
@@ -214,7 +220,15 @@
    'Php Mail' => 'Php Mail',
    'Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”.' => 'Platzieren Sie jede Option in eine neue Zeile. Wenn Sie eine Option zu geben, ein benutzerdefiniertes Etikett möchten, verwenden Sie das Format “<code> OptionValue: OptionLabel </code>”.',
    'Plain Text' => 'Nur-Text',
-@@ -225,6 +285,9 @@
+@@ -215,6 +278,7 @@
+   'Port' => 'Port',
+   'Preferred Language' => 'Bevorzugte Sprache',
+   'Preparing to update…' => 'Vorbereitung zu aktualisieren…',
++  'Primary' => '',
+   'Profile' => 'Profil',
+   'Protocol' => 'Protokill',
+   'Publish' => 'Veröffentlichen',
+@@ -226,6 +290,9 @@
    'Require a password reset on next login' => 'Erfordern ein Passwort-Reset bei der nächsten Anmeldung',
    'Require verification' => 'Erfordern Verifizierung',
    'Reset Password' => 'Passwort Zurücksetzen',
@@ -224,14 +238,13 @@
    'SERVER Info' => 'SERVER Info',
    'SESSION Info' => 'SESSION Info',
    'SOAP extension' => 'SOAP-Erweiterung',
-@@ -236,11 +299,14 @@
+@@ -237,10 +304,13 @@
    'Save section' => 'Speichern Abschnitt',
    'Save settings' => 'Speichern Sie die Einstellungen',
    'Search assets' => 'Suche Vermögenswerte',
 +  'Search users' => 'User suchen',
    'Section Handle' => 'Abschnitt Griff',
    'Section Name' => 'Abschnitt Name',
-   'Section saved, but couldn’t save all the content blocks.' => 'Abschnitt gespeichert, aber nicht retten konnte alle Content-Blöcke.',
    'Section saved.' => 'Abschnitt gespeichert.',
 +  'Sections' => 'Sektionen',
    'See how' => 'Siehe how',
@@ -239,7 +252,7 @@
    'Sender Name' => 'Absender Name',
    'Sendmail' => 'Sendmail',
    'Services' => 'Dienstleistungen',
-@@ -255,9 +321,14 @@
+@@ -255,9 +325,14 @@
    'Size' => 'Größe',
    'Smtp' => 'Smtp',
    'Smtp Secure Transport Type' => 'Smtp Secure Transport Type',
@@ -254,7 +267,7 @@
    'The content row can’t be inserted into the database because it’s not new.' => 'Der Inhalt Zeile kann nicht in die Datenbank eingefügt werden, denn es ist nicht neu.',
    'The content row can’t be inserted into the database before it’s record has been saved.' => 'Der Inhalt Zeile kann nicht in die Datenbank eingefügt werden, bevor er den Rekord wurde gespeichert.',
    'The content row can’t be updated because it’s new.' => 'Der Inhalt Zeile kann nicht aktualisiert werden, da es neu ist werden.',
-@@ -268,16 +339,26 @@
+@@ -268,16 +343,26 @@
    'The database server name isn’t set in your db config file.' => 'Der Name des Datenbankservers ist in Ihrem db config Datei.',
    'The database table prefix isn’t set in your db config file.' => 'Die Datenbank Tabellen-Präfix ist in Ihrem db config Datei.',
    'The database user name isn’t set in your db config file.' => 'Der Datenbank-Benutzernamen ist in Ihrem db config Datei.',
@@ -281,7 +294,7 @@
    'There was a problem sending the forgot password email.' => 'Es gab ein Problem Senden des Passwort vergessen E-Mail.',
    'There was a problem unpacking the downloaded package.' => 'Es gab ein Problem Entpacken Sie das heruntergeladene Paket.',
    'There was a problem updating the database.' => 'Es war ein Problem beim Aktualisieren der Datenbank.',
-@@ -288,12 +369,14 @@
+@@ -288,12 +373,14 @@
    'There was a problem validating this verification code.' => 'Es gab ein Problem Validierung dieser Bestätigungs-Code.',
    'This action may only be performed by admins.' => 'Diese Aktion kann nur von Administratoren ausgeführt werden.',
    'This block is required' => 'Dieser Baustein ist notwendig',
@@ -296,7 +309,7 @@
    'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' => 'Um memcached Satz <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> zu <code>true</code>.',
    'Tree view' => 'Baumansicht',
    'URL' => 'URL',
-@@ -302,12 +385,17 @@
+@@ -302,12 +389,17 @@
    'Unable to find the template “{template}”.' => 'Unfähig, die Vorlage zu finden “{template}”.',
    'Unable to get directory contents for “{directory}”.' => 'Kann Verzeichnis für Inhalte bekommen “{directory}”.',
    'Uninstall' => 'Deinstallieren',
@@ -314,7 +327,7 @@
    'User activated.' => 'Benutzer aktiviert.',
    'User deleted.' => 'Benutzer gelöscht.',
    'User registered.' => 'Benutzer registriert.',
-@@ -316,13 +404,16 @@
+@@ -316,13 +408,16 @@
    'Username' => 'Benutzername oder E-Mail',
    'Username and password are required.  Check your email settings.' => 'Nutzername und Passwort erforderlich sind. Überprüfen Sie Ihre E-Mail-Einstellungen.',
    'Username or Email' => 'Benutzername oder E-Mail',
@@ -331,7 +344,7 @@
    'Which template to use when an entry’s URL is requested.' => 'Welche Vorlage zu verwenden, wenn ein Eintrag URL angefordert wird.',
    'Yes' => 'Ja',
    'You must specify a host name in your email settings.' => 'Sie müssen einen Host-Namen in Ihrer E-Mail-Einstellungen.',
-@@ -330,6 +421,7 @@
+@@ -330,6 +425,7 @@
    'You need to reset your password. Check your email for instructions.' => 'Sie müssen Ihr Passwort zurückzusetzen. Überprüfen Sie Ihre E-Mail-Anweisungen.',
    'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.' => 'Ihre PHP-Installation unterstützt nicht die <a href="http://us.php.net/manual/en/function.glob.php">glob</a>-Funktion.',
    'Your database needs to be updated.  Make a backup, then press this button.' => 'Ihre Datenbank muss aktualisiert werden. Erstellen Sie eine Sicherungskopie, und drücken Sie diese Taste.',
@@ -339,7 +352,7 @@
    'You’re already up-to-date.' => 'Du bist bereits up-to-date.',
    'You’re up to date!' => 'Du bist auf dem Laufenden!',
    'You’ve got updates!' => 'Du mußt Updates!',
-@@ -343,6 +435,7 @@
+@@ -343,6 +439,7 @@
    'five' => 'fünf',
    'forget?' => 'vergessen?',
    'forgot_password_body' => '',
@@ -347,7 +360,7 @@
    'forgot_password_subject' => '',
    'four' => 'vier',
    'hour' => 'stunde',
-@@ -350,8 +443,11 @@
+@@ -350,8 +447,11 @@
    'manual update required' => 'manuelle Aktualisierung erforderlich',
    'minute' => 'minute',
    'minutes' => 'minuten',
@@ -359,7 +372,7 @@
    'release notes' => 'veröffentlichung aufzeichnungen',
    'second' => 'sekunde',
    'seconds' => 'sekunden',
-@@ -359,8 +455,15 @@
+@@ -359,8 +459,16 @@
    'six' => 'sechs',
    'three' => 'drei',
    'two' => 'zwei',
@@ -372,6 +385,7 @@
    'week' => 'woche',
    'weeks' => 'wochen',
 +  'year' => 'jahr',
++  '{sectionName} Settings' => '',
    '{sectionName} section settings' => '{sectionName} abschnitt einstellungen',
-   '“{attribute}” isn’t a valid handle.' => '“{attribute}” ist keine gültige Griff.',
    '“{className}” doesn’t have an attribute “{attributeName}”.' => '“{className}” nicht über ein Attribut “{attributeName}”.',
+   '“{handle}” is a reserved word.' => '',

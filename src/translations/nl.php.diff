@@ -1,6 +1,6 @@
---- /Users/Brad/Dropbox/GitRepos/Blocks/Source/Core/blocks/app/translations/nl.php	2012-08-22 14:09:43.000000000 -0700
-+++ /Users/Brad/Dropbox/GitRepos/Blocks/Source/BlocksPro/blocks/app/translations/nl.php	2012-08-22 14:09:43.000000000 -0700
-@@ -6,19 +6,32 @@
+--- /Users/brandon/git/Blocks/Source/Core/blocks/app/translations/nl.php	2012-08-26 07:00:48.000000000 -0700
++++ /Users/brandon/git/Blocks/Source/BlocksPro/blocks/app/translations/nl.php	2012-08-26 07:00:48.000000000 -0700
+@@ -6,19 +6,31 @@
    'APC extension' => '',
    'About' => '',
    'Account' => '',
@@ -15,7 +15,6 @@
 +  'Activate' => '',
 +  'Active' => '',
 +  'Add a token' => '',
-+  'Add a user' => '',
    'Add a widget' => '',
    'Admin settings saved.' => '',
 +  'Administration' => '',
@@ -33,7 +32,7 @@
    'Allow line breaks' => '',
    'An unknown error occurred while updating {name}.' => '',
    'An unknown error occurred.' => '',
-@@ -35,19 +48,29 @@
+@@ -35,19 +47,29 @@
    'Block Handle' => '',
    'Block Name' => '',
    'Block Type' => '',
@@ -63,7 +62,7 @@
    'Could not find any update information for the plugin with handle “{handle}”.' => '',
    'Could not hash the given password.' => '',
    'Couldn’t disable plugin.' => '',
-@@ -65,9 +88,13 @@
+@@ -65,10 +87,15 @@
    'Couldn’t save entry.' => '',
    'Couldn’t save general settings.' => '',
    'Couldn’t save language settings.' => '',
@@ -75,8 +74,10 @@
    'Couldn’t uninstall plugin.' => '',
 +  'Create a new route' => '',
    'Create a new section' => '',
++  'Create the first one' => '',
    'Create your account' => '',
    'Critical' => '',
+   'DOM extension' => '',
 @@ -79,6 +106,7 @@
    'Database successfully updated.' => '',
    'Date Modified' => '',
@@ -131,7 +132,7 @@
    'Hide' => '',
    'Hint Text' => '',
    'Home' => '',
-@@ -140,45 +177,66 @@
+@@ -140,47 +177,71 @@
    'Host, port, username and password must be configured under your email settings.' => '',
    'How you’ll refer to this block in the templates.' => '',
    'How you’ll refer to this section in the templates.' => '',
@@ -145,6 +146,7 @@
    'IsNullOrEmpty requires a string.' => '',
 +  'JavaScript must be enabled to access the Blocks Pro CP.' => '',
    'Keep me logged in' => '',
+   'Language' => '',
    'Language settings saved.' => '',
 +  'Languages' => '',
 +  'Last Failed Login Date' => '',
@@ -183,6 +185,8 @@
 +  'Never' => '',
    'Never published' => '',
 +  'New Route' => '',
++  'New Section' => '',
++  'New User' => '',
    'New content block' => '',
    'New draft' => '',
    'New draft…' => '',
@@ -196,9 +200,11 @@
    'No plugin exists with the class “{className}”' => '',
 +  'No route exists with the ID “{routeId}”' => '',
    'No section exists with the ID “{sectionId}”' => '',
++  'No sections exist yet.' => '',
    'No updates available.' => '',
    'No user exists with the ID “{userId}”.' => '',
-@@ -187,6 +245,7 @@
+   'No widget exists with the ID “{widgetId}”.' => '',
+@@ -188,6 +249,7 @@
    'Not installed' => '',
    'Number Type' => '',
    'Offline' => '',
@@ -206,7 +212,7 @@
    'Only required if you plan on APC for caching.' => '',
    'Only required if you plan on using Memcache.' => '',
    'PCRE extension' => '',
-@@ -202,6 +261,7 @@
+@@ -203,6 +265,7 @@
    'Password updated.' => '',
    'Path to filesystem object isn’t specified within “{methodName}” method.' => '',
    'Pending' => '',
@@ -214,7 +220,15 @@
    'Php Mail' => '',
    'Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”.' => '',
    'Plain Text' => '',
-@@ -225,6 +285,9 @@
+@@ -215,6 +278,7 @@
+   'Port' => '',
+   'Preferred Language' => '',
+   'Preparing to update…' => '',
++  'Primary' => '',
+   'Profile' => '',
+   'Protocol' => '',
+   'Publish' => '',
+@@ -226,6 +290,9 @@
    'Require a password reset on next login' => '',
    'Require verification' => '',
    'Reset Password' => '',
@@ -224,14 +238,13 @@
    'SERVER Info' => '',
    'SESSION Info' => '',
    'SOAP extension' => '',
-@@ -236,11 +299,14 @@
+@@ -237,10 +304,13 @@
    'Save section' => '',
    'Save settings' => '',
    'Search assets' => '',
 +  'Search users' => '',
    'Section Handle' => '',
    'Section Name' => '',
-   'Section saved, but couldn’t save all the content blocks.' => '',
    'Section saved.' => '',
 +  'Sections' => '',
    'See how' => '',
@@ -239,7 +252,7 @@
    'Sender Name' => '',
    'Sendmail' => '',
    'Services' => '',
-@@ -255,9 +321,14 @@
+@@ -255,9 +325,14 @@
    'Size' => '',
    'Smtp' => '',
    'Smtp Secure Transport Type' => '',
@@ -254,7 +267,7 @@
    'The content row can’t be inserted into the database because it’s not new.' => '',
    'The content row can’t be inserted into the database before it’s record has been saved.' => '',
    'The content row can’t be updated because it’s new.' => '',
-@@ -268,16 +339,26 @@
+@@ -268,16 +343,26 @@
    'The database server name isn’t set in your db config file.' => '',
    'The database table prefix isn’t set in your db config file.' => '',
    'The database user name isn’t set in your db config file.' => '',
@@ -281,7 +294,7 @@
    'There was a problem sending the forgot password email.' => '',
    'There was a problem unpacking the downloaded package.' => '',
    'There was a problem updating the database.' => '',
-@@ -288,12 +369,14 @@
+@@ -288,12 +373,14 @@
    'There was a problem validating this verification code.' => '',
    'This action may only be performed by admins.' => '',
    'This block is required' => '',
@@ -296,7 +309,7 @@
    'To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.' => '',
    'Tree view' => '',
    'URL' => '',
-@@ -302,12 +385,17 @@
+@@ -302,12 +389,17 @@
    'Unable to find the template “{template}”.' => '',
    'Unable to get directory contents for “{directory}”.' => '',
    'Uninstall' => '',
@@ -314,7 +327,7 @@
    'User activated.' => '',
    'User deleted.' => '',
    'User registered.' => '',
-@@ -316,13 +404,16 @@
+@@ -316,13 +408,16 @@
    'Username' => '',
    'Username and password are required.  Check your email settings.' => '',
    'Username or Email' => '',
@@ -331,7 +344,7 @@
    'Which template to use when an entry’s URL is requested.' => '',
    'Yes' => '',
    'You must specify a host name in your email settings.' => '',
-@@ -330,6 +421,7 @@
+@@ -330,6 +425,7 @@
    'You need to reset your password. Check your email for instructions.' => '',
    'Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.' => '',
    'Your database needs to be updated.  Make a backup, then press this button.' => '',
@@ -339,7 +352,7 @@
    'You’re already up-to-date.' => '',
    'You’re up to date!' => '',
    'You’ve got updates!' => '',
-@@ -343,6 +435,7 @@
+@@ -343,6 +439,7 @@
    'five' => '',
    'forget?' => '',
    'forgot_password_body' => '',
@@ -347,7 +360,7 @@
    'forgot_password_subject' => '',
    'four' => '',
    'hour' => '',
-@@ -350,8 +443,11 @@
+@@ -350,8 +447,11 @@
    'manual update required' => '',
    'minute' => '',
    'minutes' => '',
@@ -359,7 +372,7 @@
    'release notes' => '',
    'second' => '',
    'seconds' => '',
-@@ -359,8 +455,15 @@
+@@ -359,8 +459,16 @@
    'six' => '',
    'three' => '',
    'two' => '',
@@ -372,6 +385,7 @@
    'week' => '',
    'weeks' => '',
 +  'year' => '',
++  '{sectionName} Settings' => '',
    '{sectionName} section settings' => '',
-   '“{attribute}” isn’t a valid handle.' => '',
    '“{className}” doesn’t have an attribute “{attributeName}”.' => '',
+   '“{handle}” is a reserved word.' => '',
