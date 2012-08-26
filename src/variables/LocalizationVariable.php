@@ -17,13 +17,23 @@ class LocalizationVariable
 	}
 
 	/**
-	 * Gets the languages that @@@productDisplay@@@ is translated into.
+	 * Gets all known languages.
 	 *
 	 * @return array
 	 */
 	public function languages()
 	{
-		return blx()->localization->getAppTranslatedLanguages();
+		return blx()->localization->getLanguages();
+	}
+
+	/**
+	 * Gets the languages that @@@productDisplay@@@ is translated into.
+	 *
+	 * @return array
+	 */
+	public function translatedLanguages()
+	{
+		return blx()->localization->getTranslatedLanguages();
 	}
 
 	/**

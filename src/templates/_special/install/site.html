@@ -21,7 +21,7 @@
 				<label for="language">{{ "Language"|t }}</label>
 			</div>
 			<select id="language">
-				{% for language in blx.localization.languages %}
+				{% for language in blx.localization.translatedLanguages %}
 					<option value="{{ language }}" {% if language == blx.localization.getCurrentLanguage %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
 				{% endfor %}
 			</select>

@@ -30,16 +30,25 @@
 				</label></div>
 			{% endfor %}
 
-			<hr class="minor">
+			<hr>
 
-			{% for language in blx.localization.languages %}
-				{% if language != blx.app.language and language not in selectedLanguages %}
-					<div class="checkbox"><label>
-						<input type="checkbox" name="languages[]" value="{{ language }}">
-						{{ blx.localization.localeName(language) }}
-					</label></div>
-				{% endif %}
-			{% endfor %}
+			{% set languages = blx.localization.languages|without(blx.app.language)|without(selectedLanguages) %}
+			{% set totalLanguages = languages|length %}
+			{% set languagesPerColumn = ceil(totalLanguages / 3 )%}
+
+			<div class="grid">
+				<div class="col col33"><div class="col-inner">
+					{% for language in languages %}
+						{% if loop.index0 != 0 and loop.index0 % languagesPerColumn == 0 %}
+							</div></div><div class="col col33"><div class="col-inner">
+						{% endif %}
+						<div class="checkbox"><label>
+							<input type="checkbox" name="languages[]" value="{{ language }}">
+							{{ blx.localization.localeName(language) }}
+						</label></div>
+					{% endfor %}
+				</div></div>
+			</div>
 		</div>
 
 		<div class="buttons">
