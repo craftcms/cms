@@ -23,8 +23,8 @@
 	{% if user.id %}
 		<nav class="nav">
 			<ul>
-				<li {% if blx.request.segment(3) == '' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id) }}" data-icon="⚙">{{ "Account Settings"|t }}</a></li>
-				<li {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/profile') }}" data-icon="p">{{ "Profile"|t }}</a></li>
+				<li><a href="{{ url('users/' ~ user.id) }}" {% if blx.request.segment(3) == '' %}class="sel"{% endif %} data-icon="⚙">{{ "Account Settings"|t }}</a></li>
+				<li><a href="{{ url('users/' ~ user.id ~ '/profile') }}" {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
 			</ul>
 		</nav>
 	{% endif %}

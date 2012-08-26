@@ -1,9 +1,9 @@
 @import "shared";
 
-body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; color: #5b5b5b; background: #fff; }
+body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-serif; color: #5b5b5b; background: #fff; }
 
 /* sidebar */
-#sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100%; background: -webkit-linear-gradient(left, #c9c9c9 194px, #bbb 199px, #999 199px); overflow: auto; }
+#sidebar { position: fixed; left: 0; top: 0; width: 200px; height: 100%; @include left-linear-gradient(#c9c9c9 194px, #bbb); overflow: auto; -webkit-box-shadow: inset -1px 0 rgba(0,0,0,0.1); }
 
 #sidebar #header { @include linear-gradient(#5b5b5b, #2c2c2c); -webkit-box-shadow: inset 0 -1px 0 #000, 0 1px 4px rgba(0,0,0,0.25); }
 #sidebar #header:after {@include clearafter; }
@@ -19,17 +19,17 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #account-menu .userinfo { padding: 33px 15px 5px 111px; height: 64px; background: rgba(0,0,0,0.9); }
 #account-menu .userinfo img { display: block; float: left; margin: -32px 0 0 -110px; }
 #account-menu .userinfo .fullname { color: #fff; font-weight: bold; }
-#account-menu .userinfo .username { font-size: 12px; color: #d5d5d5; }
+#account-menu .userinfo .username { color: #d5d5d5; }
 
 #sidebar .nav { padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.25); border-bottom: 1px solid rgba(0,0,0,0.1); @include linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0) 25px); -webkit-background-clip: padding-box; }
 #sidebar .nav:nth-of-type(1) { -webkit-box-shadow: 0 -1px 0 rgba(0,0,0,0.1); }
 #sidebar .nav:last-child { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
-#sidebar .nav ul li a { padding: 3px 20px; color: #5b5b5b; text-shadow: 0 1px 1px rgba(255,255,255,0.5); }
-#sidebar .nav ul li:not(.sel) a:hover { color: #2c2c2c; background: rgba(0,0,0,0.05); }
+#sidebar .nav ul li a { padding: 7px 20px; color: #5b5b5b; text-shadow: 0 1px 1px rgba(255,255,255,0.5); }
+#sidebar .nav ul li a:before { margin-top: -2px; font-size: 22px; }
+#sidebar .nav ul li a:not(.sel):hover { color: #2c2c2c; background: rgba(0,0,0,0.05); }
 #sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.2); }
-#sidebar .nav ul li.sel { @include linear-gradient(#fff, #dbdbdb); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.25); }
-#sidebar .nav ul li.sel a { color: #2c2c2c; @include left-linear-gradient(rgba(255,255,255,0) 50%, #fff); }
-#sidebar .nav ul li.sel a .badge { background: #ddd; -webkit-box-shadow: inset 0 0 0 1px #c1c1c1; }
+#sidebar .nav ul li a.sel { color: #2c2c2c; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 1px 4px rgba(0,0,0,0.25); }
+#sidebar .nav ul li a.sel .badge { background: #ddd; -webkit-box-shadow: inset 0 0 0 1px #c1c1c1; }
 
 /* main */
 #main { position: relative; margin-left: 200px; padding: 25px; overflow: hidden; }

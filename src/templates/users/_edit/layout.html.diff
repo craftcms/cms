@@ -11,12 +11,12 @@
  	{% if user.id %}
 @@ -25,6 +25,11 @@
  			<ul>
- 				<li {% if blx.request.segment(3) == '' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id) }}" data-icon="⚙">{{ "Account Settings"|t }}</a></li>
- 				<li {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/profile') }}" data-icon="p">{{ "Profile"|t }}</a></li>
-+				<li {% if blx.request.segment(3) == 'info' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/info') }}" data-icon="i">{{ "User Info"|t }}</a></li>
+ 				<li><a href="{{ url('users/' ~ user.id) }}" {% if blx.request.segment(3) == '' %}class="sel"{% endif %} data-icon="⚙">{{ "Account Settings"|t }}</a></li>
+ 				<li><a href="{{ url('users/' ~ user.id ~ '/profile') }}" {% if blx.request.segment(3) == 'profile' %}class="sel"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
++				<li><a href="{{ url('users/' ~ user.id ~ '/info') }}" {% if blx.request.segment(3) == 'info' %}class="sel"{% endif %} data-icon="i">{{ "User Info"|t }}</a></li>
 +
 +				{% if blx.accounts.current.admin %}
-+					<li {% if blx.request.segment(3) == 'admin' %}class="sel"{% endif %}><a href="{{ url('users/' ~ user.id ~ '/admin') }}" data-icon="☻">{{ "Administration"|t }}</a></li>
++					<li><a href="{{ url('users/' ~ user.id ~ '/admin') }}" {% if blx.request.segment(3) == 'admin' %}class="sel"{% endif %} data-icon="☻">{{ "Administration"|t }}</a></li>
 +				{% endif %}
  			</ul>
  		</nav>

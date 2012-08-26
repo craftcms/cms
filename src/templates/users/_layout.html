@@ -14,8 +14,8 @@
 
 	<nav class="nav">
 		<ul>
-			<li {% if blx.request.segment(2) == '' %}class="sel"{% endif %}><a href="{{ url('users') }}">{{ "All users"|t }}</a></li>
-			<li {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %}><a href="{{ url('users/admins') }}">{{ "Admins"|t }}</a></li>
+			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All users"|t }}</a></li>
+			<li><a href="{{ url('users/admins') }}" {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %}>{{ "Admins"|t }}</a></li>
 		</ul>
 	</nav>
 
