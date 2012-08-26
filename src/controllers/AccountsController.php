@@ -206,6 +206,8 @@ class AccountsController extends BaseController
 		}
 	}
 
+	/* BLOCKSPRO ONLY */
+
 	/**
 	 * Saves a user's admin settings.
 	 */
@@ -342,4 +344,6 @@ class AccountsController extends BaseController
 		blx()->user->setNotice(Blocks::t('User deleted.'));
 		$this->redirectToPostedUrl();
 	}
+
+	/* end BLOCKSPRO ONLY */
 }
