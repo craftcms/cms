@@ -2,11 +2,11 @@
 {% set title = "Plugins"|t ~ (plugin ? " - "~plugin.name : "") %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ "Plugins"|t }}</h1>
-	</header>
+{% set titlebar %}
+	<h1>{{ "Plugins"|t }}</h1>
+{% endset %}
 
+{% set content %}
 	<nav class="nav">
 		<ul>
 			{% for plugin in blx.plugins.all %}

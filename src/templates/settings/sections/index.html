@@ -2,15 +2,16 @@
 {% set title = "Sections"|t %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
+{% set titlebar %}
+	<h1>{{ title }}</h1>
 
-		<ul class="right">
-			<li><a href="{{ url('settings/sections/new') }}" class="btn" data-icon="+">{{ "New Section"|t }}</a></li>
-		</ul>
-	</header>
+	<ul class="right">
+		<li><a href="{{ url('settings/sections/new') }}" class="btn" data-icon="+">{{ "New Section"|t }}</a></li>
+	</ul>
+{% endset %}
 
+
+{% set content %}
 	<table class="data">
 		<tbody>
 			{% set sections = blx.content.sections %}

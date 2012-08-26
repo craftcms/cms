@@ -4,14 +4,15 @@
 {% include_js "dashboard.js" %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-		<ul class="right">
-			<li><a href="{{ url('dashboard/settings') }}" class="btn" data-icon="⚙">{{ "Settings"|t }}</a></li>
-		</ul>
-	</header>
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+	<ul class="right">
+		<li><a href="{{ url('dashboard/settings') }}" class="btn" data-icon="⚙">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
 
+
+{% set content %}
 	{#<div id="alerts">
 		{% for alert in blx.dashboard.alerts %}
 			<div class="alert">

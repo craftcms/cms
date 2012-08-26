@@ -13,11 +13,12 @@
 {% endset %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-	</header>
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
 
+
+{% set content %}
 	{% set problems = blx.updates.unwritabledirectories %}
 	{% if not problems %}
 		<div id="checking">

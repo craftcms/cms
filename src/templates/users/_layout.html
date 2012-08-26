@@ -2,16 +2,17 @@
 {% set title = "Accounts"|t ~ (title ? " - " ~ title : '') %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ "Accounts"|t }}</h1>
+{% set titlebar %}
+	<h1>{{ "Accounts"|t }}</h1>
 
-		<ul class="right">
-			<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div></li>
-			<li><a href="{{ url('users/new') }}" class="btn" data-icon="+">{{ "New User"|t }}</a></li>
-		</ul>
-	</header>
+	<ul class="right">
+		<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div></li>
+		<li><a href="{{ url('users/new') }}" class="btn" data-icon="+">{{ "New User"|t }}</a></li>
+	</ul>
+{% endset %}
 
+
+{% set content %}
 	<nav class="nav">
 		<ul>
 			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All users"|t }}</a></li>

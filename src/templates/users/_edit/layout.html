@@ -15,16 +15,17 @@
 {% endif %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<!-- BLOCKS ONLY -->
-		<h1>{{ "My Account"|t }}</h1>
-		<!-- end BLOCKS ONLY -->
-		<!-- BLOCKSPRO ONLY -->
-		<h1>{{ heading }}</h1>
-		<!-- end BLOCKSPRO ONLY -->
-	</header>
+{% set titlebar %}
+	<!-- BLOCKS ONLY -->
+	<h1>{{ "My Account"|t }}</h1>
+	<!-- end BLOCKS ONLY -->
+	<!-- BLOCKSPRO ONLY -->
+	<h1>{{ heading }}</h1>
+	<!-- end BLOCKSPRO ONLY -->
+{% endset %}
 
+
+{% set content %}
 	{% if user.id %}
 		<nav class="nav">
 			<ul>

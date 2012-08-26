@@ -2,11 +2,12 @@
 {% set title = "General Settings"|t %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-	</header>
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
 
+
+{% set content %}
 	<form method="post" action="">
 		<input type="hidden" name="action" value="settings/saveGeneralSettings">
 		<input type="hidden" name="redirect" value="settings">

@@ -2,11 +2,12 @@
 {% set title = "Groups"|t %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-	</header>
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
 
+
+{% set content %}
 	<div class="buttons">
 		<a class="btn" href="{{ url('settings') }}">{{ "Done"|t }}</a>
 	</div>

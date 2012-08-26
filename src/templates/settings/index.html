@@ -2,11 +2,12 @@
 {% set title = "Settings"|t %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-	</header>
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
 
+
+{% set content %}
 	<h2>{{ "System"|t }}</h2>
 	<ul class="icons">
 		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>

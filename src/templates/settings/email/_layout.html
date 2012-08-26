@@ -1,11 +1,12 @@
 {% extends "_layouts/cp" %}
 
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ "Email Settings"|t }}</h1>
-	</header>
+{% set titlebar %}
+	<h1>{{ "Email Settings"|t }}</h1>
+{% endset %}
 
+
+{% set content %}
 	<nav class="nav">
 		<ul>
 			<li><a href="{{ url('settings/email') }}" {% if blx.request.segment(3) == '' %}class="sel"{% endif %} data-icon="⚙">{{ "Settings"|t }}</a></li>

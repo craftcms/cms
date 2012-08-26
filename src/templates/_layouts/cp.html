@@ -43,7 +43,15 @@
 	</div>
 
 	<div id="main" class="main">
-		{{ main }}
+		{% if titlebar %}
+			<header id="titlebar">
+				{{ titlebar }}
+			</header>
+		{% endif %}
+
+		<div id="content">
+			{{ content }}
+		</code>
 	</div>
 
 	{#<div id="footer">

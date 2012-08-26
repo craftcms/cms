@@ -22,14 +22,16 @@
 	"Route deleted."
 %}
 
-{% set main %}
-	<header class="titlebar">
-		<h1>{{ title }}</h1>
-		<ul class="right">
-			<li><div id="add-route-btn" class="btn addbtn">{{ "New Route"|t }}</div></li>
-		</ul>
-	</header>
 
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+	<ul class="right">
+		<li><div id="add-route-btn" class="btn addbtn">{{ "New Route"|t }}</div></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
 	<div id="routes">
 		{% for route in blx.routes.all %}
 			<div class="pane route" data-id="{{ route.id }}">

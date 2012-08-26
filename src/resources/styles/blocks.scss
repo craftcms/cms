@@ -19,7 +19,6 @@
 .nav ul li a:hover { color: $linkcolor; text-decoration: none; }
 .nav ul li a:before { margin: -4px 5px -5px 0; width: 22px; text-align: center; }
 .nav ul li a .status { margin: 0 10px 0 6px; }
-.nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; background: #ddd; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
@@ -223,16 +222,6 @@ input.btn.big { height: 36px; }
 .btn-group .btn[data-icon]:before { margin-right: -2px; }
 
 .btn-group.big { height: 36px; }
-
-/* titlebar */
-.titlebar { margin: -25px -25px 25px; padding: 10px 25px 9px; border-bottom: 1px solid #dadada; height: 30px; @include linear-gradient(white, #f3f3f3); }
-.titlebar:before { position: absolute; top: 0; left: 0; width: 50%; height: 50px; @include left-linear-gradient(white, rgba(255,255,255,0)); content: '.'; text-indent: -100%; }
-.titlebar:after { position: absolute; top: 0; right: 0; width: 50%; height: 50px; @include right-linear-gradient(white, rgba(255,255,255,0)); content: '.'; text-indent: -100%; }
-.titlebar h1 { position: relative; z-index: 1; margin-bottom: -30px; text-shadow: 0 1px 1px #fff; }
-.titlebar h1 span { display: block; float: left; margin: 12px 5px 0 0; font-family: HelveticaNeue, sans-serif; font-size: 11px; line-height: 1; color: #999; }
-.titlebar ul li { position: relative; z-index: 1; float: left; }
-.titlebar ul li + li { margin-left: 10px; }
-.titlebar .btn { padding: 0 12px; height: 30px; line-height: 30px; }
 
 /* switch */
 .lightswitch { border-radius: 10px; width: 51px; height: 20px; background: #999; overflow: hidden; -webkit-box-shadow: 0 0 0 1px #999; cursor: pointer; @include unselectable; }
