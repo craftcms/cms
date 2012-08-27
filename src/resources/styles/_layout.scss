@@ -6,7 +6,7 @@ html, body, #sidebar, #main { height: 100%; }
 body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-serif; color: #5b5b5b; background: #fff; }
 
 /* sidebar */
-#sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 200px; }
+#sidebar { position: fixed; z-index: 1; left: 0; top: 0; border-right: 1px solid; width: 199px; }
 
 #sidebar #header:after {@include clearafter; }
 #sidebar #header #branding { float: left; padding: 10px; }
@@ -22,7 +22,7 @@ body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-seri
 #account-menu .userinfo .username { color: #d5d5d5; }
 
 #sidebar .nav ul li { border-bottom: 1px solid; }
-#sidebar .nav ul li a { padding: 15px 20px; color: #5b5b5b; text-shadow: 0 1px 1px rgba(255,255,255,0.5); }
+#sidebar .nav ul li a { padding: 15px 20px; color: #5b5b5b; }
 #sidebar .nav ul li a:before { margin-top: -2px; margin-right: 5px; font-size: 24px; }
 .nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; font-weight: bold; }
 
@@ -33,22 +33,23 @@ body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-seri
 #sidebar #header #account:after { color: rgba(255,255,255,0.5); text-shadow: none; }
 
 /* BLOCKS ONLY */
-#sidebar { background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 0 8px rgba(0,0,0,0.2); }
+#sidebar { border-right-color: #bbb; background: #e6e6e6; }
 
-#sidebar .nav ul li { border-bottom-color: #f0f0f0; }
-#sidebar .nav ul li a { color: #808080;}
-#sidebar .nav ul li a:hover { color: $linkcolor; }
-#sidebar .nav ul li a.sel { margin: -1px 0; padding: 16px 20px; color: #252525; text-shadow: 0 1px 1px #fff; background: rgba(0,0,0,0.05); }
+#sidebar .nav ul li { border-bottom-color: #ccc; }
+#sidebar .nav ul li a { color: #808080; @include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0)); }
+#sidebar .nav ul li a:hover { color: #5b5b5b; @include linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0)); }
+#sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0)); }
+#sidebar .nav ul li a.sel { margin: -1px 0; padding: 16px 20px; color: #252525; text-shadow: 0 1px 1px rgba(255,255,255,0.5); @include linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.1)); }
 #sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
 /* end BLOCKS ONLY */
 /* BLOCKSPRO ONLY */
-#sidebar { background: #2a2a2a; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,1), 0 0 8px rgba(0,0,0,0.5); }
+#sidebar { border-right-color: #1a1a1a; background: #2a2a2a; }
 
-#sidebar .nav ul li { border-bottom-color: #222; }
+#sidebar .nav ul li { border-bottom-color: #1a1a1a; }
 #sidebar .nav ul li a { color: #b3b3b3; text-shadow: 0 -1px 1px #000; @include linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.1)); }
 #sidebar .nav ul li a:hover { color: #bababa; @include linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0.1)); }
 #sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.175), rgba(255,255,255,0.1)); }
-#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px #000; @include linear-gradient(hsl(203, 71%, 52%), hsl(203, 71%, 37%)); }
+#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px #000; @include linear-gradient(rgba(0,0,0,0), rgba(255,255,255,0.1)); }
 #sidebar .nav ul li a .badge { background: #000; }
 #sidebar .nav ul li a.sel .badge { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
 /* end BLOCKSPRO ONLY */
