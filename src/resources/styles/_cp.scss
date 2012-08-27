@@ -1,19 +1,25 @@
 @import "shared";
 
+/* ----------------------------------------
+/*  CP
+/* ----------------------------------------*/
+
 html, body, #sidebar, #main { height: 100%; }
 #sidebar, #main { overflow: auto; }
 
-body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-serif; color: #5b5b5b; background: #fff; }
-
 /* sidebar */
-#sidebar { position: fixed; z-index: 1; left: 0; top: 0; border-right: 1px solid; width: 199px; }
+#sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 199px; padding-right: 1px; }
 
+#sidebar #header { margin-right: -1px; border: solid #000; border-width: 0 1px 1px 0; @include linear-gradient(#5b5b5b, #2c2c2c); }
 #sidebar #header:after {@include clearafter; }
 #sidebar #header #branding { float: left; padding: 10px; }
 #sidebar #header #branding img { display: block; width: 120px; }
 
-#sidebar #header #account { float: right; padding: 15px 0 15px 15px; width: 35px; }
+#sidebar #header #account { float: right; padding: 15px 0 15px 15px; width: 35px; color: #fff; text-shadow: 0 1px 1px #000; -webkit-box-shadow: -1px 0 0 rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.05); }
 #sidebar #header #account:after { margin-right: -5px; }
+#sidebar #header #account:hover { background: rgba(0,0,0,0.25); }
+#sidebar #header #account.sel { background: #000; }
+#sidebar #header #account:after { color: rgba(255,255,255,0.5); text-shadow: none; }
 
 #account-menu { margin-top: -1px; }
 #account-menu .userinfo { padding: 33px 15px 5px 111px; height: 64px; background: rgba(0,0,0,0.9); }
@@ -26,14 +32,8 @@ body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-seri
 #sidebar .nav ul li a:before { margin-top: -2px; margin-right: 5px; font-size: 24px; }
 .nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; font-weight: bold; }
 
-#sidebar #header { @include linear-gradient(#5b5b5b, #2c2c2c); -webkit-box-shadow: inset 0 -1px 0 #000; }
-#sidebar #header #account { color: #fff; text-shadow: 0 1px 1px #000; -webkit-box-shadow: -1px 0 0 rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.05); }
-#sidebar #header #account:hover { background: rgba(0,0,0,0.25); }
-#sidebar #header #account.sel { background: #000; }
-#sidebar #header #account:after { color: rgba(255,255,255,0.5); text-shadow: none; }
-
 /* BLOCKS ONLY */
-#sidebar { border-right-color: #bbb; background: #e6e6e6; }
+#sidebar { background: #e6e6e6; -webkit-box-shadow: inset -1px 0 #bbb; }
 
 #sidebar .nav ul li { border-bottom-color: #ccc; }
 #sidebar .nav ul li a { color: #808080; @include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0)); }
@@ -43,7 +43,7 @@ body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-seri
 #sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
 /* end BLOCKS ONLY */
 /* BLOCKSPRO ONLY */
-#sidebar { border-right-color: #1a1a1a; background: #2a2a2a; }
+#sidebar { background: #2a2a2a; -webkit-box-shadow: inset -1px 0 #1a1a1a; }
 
 #sidebar .nav ul li { border-bottom-color: #1a1a1a; }
 #sidebar .nav ul li a { color: #b3b3b3; text-shadow: 0 -1px 1px #000; @include linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.1)); }
@@ -56,6 +56,12 @@ body { font-size: 13px; line-height: 17px; font-family: HelveticaNeue, sans-seri
 
 /* main */
 #main { position: relative; margin-left: 200px; }
+
+/* notifications */
+#notifications { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; text-align: center; }
+#notifications .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+#notifications .notification.notice { border-color: #1F6794; background: #2782bb; }
+#notifications .notification.error { border-color: #992f2f; background: #e14545; }
 
 /* titlebar */
 #titlebar { padding: 10px 25px 9px; border-bottom: 1px solid #dadada; height: 30px; @include linear-gradient(white, #f3f3f3); }
