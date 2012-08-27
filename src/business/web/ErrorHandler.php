@@ -79,9 +79,18 @@ class ErrorHandler extends \CErrorHandler
 			}
 
 			// If this is a template renderer exception, we don't want to show any stack track information.
-			if ($exception instanceof TemplateProcessorException)
+			if ($exception instanceof \Twig_Error_Syntax)
 			{
-				$trace = array();
+				$this->_error = $data = array(
+					'code' => 500,
+					'type' => Blocks::t('Template Syntax Error'),
+					'errorCode' => $exception->getCode(),
+					'message' => $exception->getMessage(),
+					'file' => realpath(blx()->path->getTemplatesPath().$exception->getTemplateFile().'.html'),
+					'line' => $exception->getTemplateLine(),
+					'trace' => '',
+					'traces' => array(),
+				);
 			}
 			else
 			{
@@ -101,33 +110,38 @@ class ErrorHandler extends \CErrorHandler
 
 					unset($trace[$i]['object']);
 				}
-			}
 
-			$this->_error = $data = array(
-				'code' => ($exception instanceof \CHttpException) ? $exception->statusCode : 500,
-				'type' => get_class($exception),
-				'errorCode' => $exception->getCode(),
-				'message' => $exception->getMessage(),
-				'file' => $fileName,
-				'line' => $errorLine,
-				'trace' => $exception->getTraceAsString(),
-				'traces' => $trace,
-			);
+				$this->_error = $data = array(
+					'code' => ($exception instanceof \CHttpException) ? $exception->statusCode : 500,
+					'type' => get_class($exception),
+					'errorCode' => $exception->getCode(),
+					'message' => $exception->getMessage(),
+					'file' => $fileName,
+					'line' => $errorLine,
+					'trace' => $exception->getTraceAsString(),
+					'traces' => $trace,
+				);
+			}
 
 			if (!headers_sent())
 				header("HTTP/1.0 {$data['code']} ".get_class($exception));
 
 			// If this is an HttpException or we're not in dev mode, render the error template.
 			if ($exception instanceof \CHttpException || !blx()->config->devMode)
-				$this->render('errors/error', $data);
+			{
+				if ($this->isAjaxRequest())
+					$app->returnAjaxError($data['code'], $data['message'], $data['file'], $data['line']);
+				else
+					$this->render('error', $data);
+			}
 			else
 			{
 				// If this is an ajax request, we want to prep the exception a bit before we return it.
-				if($this->isAjaxRequest())
+				if ($this->isAjaxRequest())
 					$app->returnAjaxException($data);
 				else
 					// If we've made it this far, just render the exception template.
-					$this->render('errors/exception', $data);
+					$this->render('exception', $data);
 			}
 		}
 		else
@@ -211,9 +225,9 @@ class ErrorHandler extends \CErrorHandler
 			if ($this->isAjaxRequest())
 				$app->returnAjaxError($event->code, $event->message, $event->file, $event->line);
 			else if(blx()->config->devMode == true)
-				$this->render('errors/exception', $data);
+				$this->render('exception', $data);
 			else
-				$this->render('errors/error', $data);
+				$this->render('error', $data);
 		}
 		else
 			$app->displayError($event->code, $event->message, $event->file, $event->line);
@@ -228,15 +242,32 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function render($template, $data)
 	{
-		if($template === 'errors/error' && $this->errorAction !== null)
-			blx()->runController($this->errorAction);
-		else
+		$viewFile = $this->getViewFile($template, $data['code']);
+
+		if (blx()->config->devMode && $template == 'exception')
 		{
-			// additional information to be passed to view
 			$data['version'] = $this->getVersionInfo();
 			$data['time'] = time();
-			$data['admin'] = $this->adminInfo;
-			include($this->getViewFile($template, $data['code']));
+			include($viewFile);
+		}
+		else
+		{
+			$relativePath = pathinfo($viewFile, PATHINFO_FILENAME);
+			try
+			{
+				if (($output = TemplateHelper::render($relativePath, $data)) !== false)
+				{
+					echo $output;
+				}
+				else
+				{
+					echo '<h1>'.Blocks::t('There was a problem rendering the error template.').'</h1>';
+				}
+			}
+			catch (\Exception $e)
+			{
+				echo $e->getMessage();
+			}
 		}
 	}
 
@@ -244,7 +275,7 @@ class ErrorHandler extends \CErrorHandler
 	 * Looks for the template under the specified directory.
 	 * @access protected
 	 * @param string $templatePath the directory containing the views
-	 * @param string $templateName template name (either 'errors/exception' or 'errors/error')
+	 * @param string $templateName template name (either 'exception' or 'error')
 	 * @param integer $code HTTP status code
 	 * @param string $srcLanguage the language that the template is in
 	 * @return string template path
@@ -252,7 +283,24 @@ class ErrorHandler extends \CErrorHandler
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
 		$extension = FileHelper::getExtension($templatePath.$templateName, 'html');
-		$templateFile = blx()->findLocalizedFile($templatePath.$templateName.'.'.$extension, $srcLanguage);
+
+		if (strpos($templatePath, '/framework/') !== false)
+			$extension = 'php';
+
+		if ($templateName == 'error')
+		{
+			if (!empty($code))
+			{
+				$templateFile = blx()->findLocalizedFile(realpath($templatePath).'/'.$templateName.$code.'.'.$extension, $srcLanguage);
+				if (is_file($templateFile))
+					return realpath($templateFile);
+
+				return null;
+			}
+		}
+
+		$templateFile = blx()->findLocalizedFile(realpath($templatePath).'/'.$templateName.'.'.$extension, $srcLanguage);
+
 		if (is_file($templateFile))
 			$templateFile = realpath($templateFile);
 
@@ -268,36 +316,24 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getViewFile($view, $code)
 	{
-		$viewPaths = array(
-			blx()->theme === null ? null : blx()->theme->getSystemViewPath(),
-			blx() instanceof \CWebApplication ? blx()->getSystemViewPath() : null,
-			blx()->path->getFrameworkPath().'views/',
-		);
+		$viewPaths = array();
 
-		try
+		if (blx()->config->devMode && $view == 'exception')
+			$viewPaths[] = blx()->path->getFrameworkPath().'views/';
+		else
 		{
-			$connection = blx()->db;
-			if ($connection && blx()->db->getSchema()->getTable('{{sites}}') !== null)
+
+			if (blx()->request->getMode() == RequestMode::Site)
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 
-		}
-		catch(\CDbException $e)
-		{
-			// swallow the exception.
+			$viewPaths[] = blx()->path->getAppTemplatesPath();
 		}
 
-		foreach ($viewPaths as $i => $viewPath)
+		for ($counter = 0; $counter < count($viewPaths); $counter ++)
 		{
-			if ($viewPath !== null)
-			{
-				// if it's an exception on the front-end, we don't show the exception template, only the error template.
-				if ($view == 'errors/exception' && blx()->request->getMode() == RequestMode::Site)
-					$view = 'errors/error';
-
-				$viewFile = $this->getViewFileInternal($viewPath, $view, $code, $i === 2 ? 'en_us' : null);
-				if (is_file($viewFile))
-					return $viewFile;
-			}
+			$viewFile = $this->getViewFileInternal($viewPaths[$counter], $view, $code, null);
+			if (is_file($viewFile))
+				return $viewFile;
 		}
 
 		return null;
@@ -306,15 +342,14 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Returns server version information.
 	 * If the application is in production mode, empty string is returned.
-	 * @access protected
 	 * @return string server version information. Empty if in production mode.
 	 */
 	protected function getVersionInfo()
 	{
-		if(blx()->config->devMode)
+		if (blx()->config->devMode)
 		{
-			$version = '<a href="http://blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion().' build '.Blocks::getBuild();
-			if(isset($_SERVER['SERVER_SOFTWARE']))
+			$version = '<a href="http://blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion().' '.Blocks::t('build').' '.Blocks::getBuild();
+			if (isset($_SERVER['SERVER_SOFTWARE']))
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
 		}
 		else
