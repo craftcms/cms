@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>Internal Server Error</title>
+	<title>{{ "Internal Server Error"|t }}</title>
 
 	<style type="text/css">
 	/*<![CDATA[*/
@@ -17,14 +17,11 @@
 </head>
 
 <body>
-	<h1>Internal Server Error</h1>
-	<h2><?php echo nl2br(Blocks\HtmlHelper::encode($data['message'])); ?></h2>
+	<h1>{{ "Internal Server Error"|t }}</h1>
+	<h2>{{ message|nl2br }}</h2>
 
-	<p>An internal error occurred while the Web server was processing your request.  Please contact <?php echo $data['admin']; ?> to report this problem.</p>
+	<p>{{ "An internal error occurred while the Web server was processing your request.  Please contact someone to report this problem."|t }}</p>
 
-	<div class="version">
-		<?php echo date('Y-m-d H:i:s',$data['time']) .' '. $data['version']; ?>
-	</div>
 </body>
 
 </html>

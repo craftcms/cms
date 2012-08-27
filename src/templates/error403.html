@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>Service Unavailable</title>
+	<title>{{ "Unauthorized"|t }}</title>
 	<style type="text/css">
 	/*<![CDATA[*/
 		body {font-family:"Verdana";font-weight:normal;color:black;background-color:white;}
@@ -16,12 +16,12 @@
 </head>
 
 <body>
-	<h1>Service Unavailable</h1>
-	<p>Our system is currently under maintenance. Please come back later.</p>
+	<h1>{{ "Unauthorized"|t }}</h1>
+	<h2>{{ message|nl2br }}</h2>
 
-	<div class="version">
-		<?php echo date('Y-m-d H:i:s',$data['time']) .' '. $data['version']; ?>
-	</div>
+	<p>{{ "You do not have the proper credential to access this page."|t }}</p>
+	<p>{{ "If you think this is a server error, please contact someone."|t }}</p>
+
 </body>
 
 </html>
