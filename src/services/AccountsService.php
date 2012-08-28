@@ -133,7 +133,7 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Gets a user by their ID.
 	 *
-	 * @param int $userId
+	 * @param $id
 	 * @return User
 	 */
 	public function getUserById($id)
