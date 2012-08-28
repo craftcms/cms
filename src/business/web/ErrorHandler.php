@@ -361,7 +361,7 @@ class ErrorHandler extends \CErrorHandler
 			}
 			catch (\Exception $e)
 			{
-				echo $e->getMessage();
+				blx()->displayException($e);
 			}
 		}
 	}
