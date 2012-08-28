@@ -81,18 +81,32 @@ class ErrorHandler extends \CErrorHandler
 			// If this is a template renderer exception, we don't want to show any stack track information.
 			if ($exception instanceof \Twig_Error_Syntax)
 			{
+				// This is the template file for the exception.
 				$templateFile = realpath(blx()->path->getTemplatesPath().$exception->getTemplateFile().'.html');
+
+				// This is the template file for the request.
+				$stackTraceStartTemplate = realpath(blx()->path->getTemplatesPath().blx()->request->getPathInfo().'.html');
 
 				if (!$templateFile)
 					$templateFile = realpath(blx()->path->getTemplatesPath().$exception->getTemplateFile().'/index.html');
 
-				// See if we can process the template "stack trace".
-				$traces = array();
-				if (is_file($templateFile))
-					$traces = $this->processTemplateStackTrace($templateFile);
+				if (!$stackTraceStartTemplate)
+					$stackTraceStartTemplate = realpath(blx()->path->getTemplatesPath().blx()->request->getPathInfo().'/index.html');
 
-				$traces[count($traces) - 1]['line'] = 0;
-				$traces = $this->prepStackTrace($traces);
+				$traces = array();
+
+				// If the requested template file is not the same as the template file the exception was thrown in, let's try and build a stack trace.
+				if ($templateFile !== $stackTraceStartTemplate)
+				{
+					if (is_file($stackTraceStartTemplate))
+						$traces = $this->processTemplateStackTrace($stackTraceStartTemplate);
+
+						$traces = $this->prepStackTrace($traces);
+						$traces = array_reverse($traces);
+
+						if ($traces[0]['file'] == $templateFile)
+						unset($traces[0]);
+				}
 
 				$this->_error = $data = array(
 					'code' => 500,
@@ -149,21 +163,20 @@ class ErrorHandler extends \CErrorHandler
 	}
 
 	/**
-	 * @param $templateFile
-	 * @return array
+	 * @param       $templateFile
+	 * @param array $trace
+	 * @return mixed
 	 */
-	protected function processTemplateStackTrace($templateFile)
+	protected function processTemplateStackTrace($templateFile, $trace = array())
 	{
-		$trace = array();
-
 		if (($lineNumber = $this->getExtendsTemplateLineNumber($templateFile)) !== false)
 		{
 			if (($fileName = $this->getExtendsTemplateName($templateFile)) !== false)
 			{
 				$temp['line'] = $lineNumber;
-				$temp['file'] = $fileName;
+				$temp['file'] = $templateFile;
 				array_push($trace, $temp);
-				$trace = array_merge_recursive($trace, $this->processTemplateStackTrace($fileName));
+				$trace = $this->processTemplateStackTrace($fileName, $trace);
 			}
 		}
 
