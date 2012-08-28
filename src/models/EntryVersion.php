@@ -6,25 +6,37 @@ namespace Blocks;
  */
 class EntryVersion extends BaseModel
 {
-	protected $tableName = 'entryversions';
+	public function getTableName()
+	{
+		return 'entryversions';
+	}
 
-	protected $attributes = array(
-		'language' => AttributeType::Language,
-		'draft'    => AttributeType::Boolean,
-		'num'      => array('type' => AttributeType::Int, 'unsigned' => true, 'required' => true),
-		'name'     => AttributeType::Name,
-		'notes'    => AttributeType::TinyText,
-		'changes'  => AttributeType::MediumText
-	);
+	protected function getProperties()
+	{
+		return array(
+			'language' => PropertyType::Language,
+			'draft'    => PropertyType::Boolean,
+			'num'      => array(PropertyType::Int, 'unsigned' => true, 'required' => true),
+			'name'     => PropertyType::Name,
+			'notes'    => PropertyType::TinyText,
+			'changes'  => PropertyType::MediumText
+		);
+	}
 
-	protected $belongsTo = array(
-		'entry'  => array('model' => 'Entry', 'required' => true),
-		'author' => array('model' => 'User', 'required' => true)
-	);
+	protected function getRelations()
+	{
+		return array(
+			'entry'  => array(static::BELONGS_TO, 'Entry', 'required' => true),
+			'author' => array(static::BELONGS_TO, 'User', 'required' => true)
+		);
+	}
 
-	protected $indexes = array(
-		array('columns' => array('num','draft','entry_id'), 'unique' => true)
-	);
+	protected function getIndexes()
+	{
+		return array(
+			array('columns' => array('num','draft','entry_id'), 'unique' => true)
+		);
+	}
 
 	protected $_decodedChanges;
 

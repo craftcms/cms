@@ -6,18 +6,18 @@ namespace Blocks;
  */
 class Plugin extends BaseModel
 {
-	protected $tableName = 'plugins';
-	protected $settingsTableName = 'pluginsettings';
-	protected $foreignKeyName = 'plugin_id';
-	public $hasSettings = true;
+	public function getTableName()
+	{
+		return 'plugins';
+	}
 
-	protected $attributes = array(
-		'class'      => AttributeType::ClassName,
-		'version'    => AttributeType::Version,
-		'enabled'    => array('type' => AttributeType::Boolean)
-	);
-
-	protected $hasMany = array(
-		'settings' => array('model' => 'PluginSetting', 'foreignKey' => 'plugin')
-	);
+	protected function getProperties()
+	{
+		return array(
+			'class'    => PropertyType::ClassName,
+			'version'  => PropertyType::Version,
+			'enabled'  => PropertyType::Boolean,
+			'settings' => PropertyType::Text,
+		);
+	}
 }

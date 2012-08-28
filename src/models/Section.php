@@ -6,51 +6,35 @@ namespace Blocks;
  */
 class Section extends BaseModel
 {
-	protected $tableName = 'sections';
-	public $hasBlocks = true;
-
-	protected $attributes = array(
-		'name'        => AttributeType::Name,
-		'handle'      => AttributeType::Handle,
-		'has_urls'    => array('type' => AttributeType::Boolean, 'default' => true),
-		'url_format'  => AttributeType::Varchar,
-		'template'    => AttributeType::Template,
-	);
-
-	protected $belongsTo = array(
-		'parent' => array('model' => 'Section')
-	);
-
-	protected $hasMany = array(
-		'children' => array('model' => 'Section', 'foreignKey' => 'parent'),
-		'entries'  => array('model' => 'Entry', 'foreignKey' => 'section')
-	);
-
-	protected $indexes = array(
-		array('columns' => array('handle'), 'unique' => true),
-	);
-
-	/**
-	 * Content table names are based on the site and section handles
-	 * @return string
-	 */
-	public function getContentTableName()
+	public function getTableName()
 	{
-		return 'entrycontent_'.$this->handle;
+		return 'sections';
 	}
 
-	/**
-	 * Section content tables reference entries, not sections
-	 */
-	public function createContentTable()
+	protected function getProperties()
 	{
-		$table = $this->getContentTableName();
+		return array(
+			'name'        => PropertyType::Name,
+			'handle'      => PropertyType::Handle,
+			'has_urls'    => array(PropertyType::Boolean, 'default' => true),
+			'url_format'  => PropertyType::Varchar,
+			'template'    => PropertyType::Template,
+		);
+	}
 
-		// Create the content table
-		blx()->db->createCommand()->createContentTable($table, 'entries', 'entry_id');
+	protected function getRelations()
+	{
+		return array(
+			'parent'   => array(static::BELONGS_TO, 'Section'),
+			'children' => array(static::HAS_MANY, 'Section', 'parent_id'),
+			'entries'  => array(static::HAS_MANY, 'Entry', 'section_id'),
+		);
+	}
 
-		// Add the title column and index it
-		blx()->db->createCommand()->addColumn($table, 'title', array('type' => AttributeType::Varchar, 'required' => true));
-		blx()->db->createCommand()->createIndex("{$table}_title_idx", $table, 'title');
+	protected function getIndexes()
+	{
+		return array(
+			array('columns' => array('handle'), 'unique' => true),
+		);
 	}
 }

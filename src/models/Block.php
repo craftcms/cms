@@ -6,17 +6,21 @@ namespace Blocks;
  */
 class Block extends BaseModel
 {
-	protected $tableName = 'blocks';
-	protected $settingsTableName = 'blocksettings';
-	protected $foreignKeyName = 'block_id';
-	public $hasSettings = true;
+	public function getTableName()
+	{
+		return 'blocks';
+	}
 
-	protected $attributes = array(
-		'name'         => AttributeType::Name,
-		'handle'       => array('type' => AttributeType::Handle, 'reservedWords' => 'id,date_created,date_updated,uid,title'),
-		'class'        => AttributeType::ClassName,
-		'instructions' => AttributeType::Text,
-		'required'     => AttributeType::Boolean,
-		'sort_order'   => AttributeType::SortOrder
-	);
+	protected function getProperties()
+	{
+		return array(
+			'name'         => PropertyType::Name,
+			'handle'       => array(PropertyType::Handle, 'reservedWords' => 'id,date_created,date_updated,uid,title'),
+			'class'        => PropertyType::ClassName,
+			'instructions' => PropertyType::Text,
+			'required'     => PropertyType::Boolean,
+			'sort_order'   => PropertyType::SortOrder,
+			'settings'     => PropertyType::Text,
+		);
+	}
 }

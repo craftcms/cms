@@ -20,7 +20,9 @@ abstract class BaseWidget extends BaseComponent
 	{
 		if (isset($this->record))
 		{
-			$this->settings = array_merge($this->settings, $this->record->getSettings());
+			$recordSettings = Json::decode($this->record->settings);
+			if ($recordSettings)
+				$this->settings = array_merge($this->settings, $recordSettings);
 		}
 
 		parent::init();

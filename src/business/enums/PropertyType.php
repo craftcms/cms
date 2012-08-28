@@ -20,7 +20,7 @@ namespace Blocks;
  *
 */
 
-class AttributeType
+class PropertyType
 {
 	const PK           = 'pk';
 	const Char         = 'char';

@@ -26,11 +26,11 @@ class NumberBlock extends BaseBlock
 		switch ($this->settings['type'])
 		{
 			case 'int':
-				return AttributeType::Int;
+				return PropertyType::Int;
 			case 'float':
-				return AttributeType::Float;
+				return PropertyType::Float;
 			case 'dec':
-				return AttributeType::Decimal;
+				return PropertyType::Decimal;
 		}
 
 		return null;

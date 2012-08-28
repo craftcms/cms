@@ -7,6 +7,6 @@ namespace Blocks;
 class InstallLicenseKeyForm extends BaseForm
 {
 	protected $attributes = array(
-		'licensekey' => AttributeType::LicenseKey
+		'licensekey' => PropertyType::LicenseKey
 	);
 }

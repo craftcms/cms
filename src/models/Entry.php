@@ -6,52 +6,44 @@ namespace Blocks;
  */
 class Entry extends BaseModel
 {
-	protected $tableName = 'entries';
-	public $hasContent = true;
+	public function getTableName()
+	{
+		return 'entries';
+	}
 
-	protected $attributes = array(
-		'slug'           => array('type' => AttributeType::Char, 'maxLength' => 100),
-		'uri'            => array('type' => AttributeType::Varchar, 'maxLength' => 1000, 'unique' => true),
-		'publish_date'   => AttributeType::Int,
-		'expiry_date'    => AttributeType::Int,
-		'sort_order'     => array('type' => AttributeType::Int, 'unsigned' => true),
-		'latest_draft'   => AttributeType::Int,
-		'latest_version' => AttributeType::Int,
-		'archived'       => AttributeType::Boolean
-	);
+	protected function getProperties()
+	{
+		return array(
+			'slug'           => array(PropertyType::Char, 'maxLength' => 50),
+			'uri'            => array(PropertyType::Varchar, 'maxLength' => 150, 'unique' => true),
+			'publish_date'   => PropertyType::Int,
+			'expiry_date'    => PropertyType::Int,
+			'sort_order'     => array(PropertyType::Int, 'unsigned' => true),
+			'latest_draft'   => PropertyType::Int,
+			'latest_version' => PropertyType::Int,
+			'archived'       => PropertyType::Boolean,
+		);
+	}
 
-	protected $belongsTo = array(
-		'parent'  => array('model' => 'Entry'),
-		'section' => array('model' => 'Section', 'required' => true),
-		'author'  => array('model' => 'User', 'required' => true)
-	);
+	protected function getRelations()
+	{
+		return array(
+			'parent'   => array(static::BELONGS_TO, 'Entry'),
+			'section'  => array(static::BELONGS_TO, 'Section', 'required' => true),
+			'author'   => array(static::BELONGS_TO, 'User', 'required' => true),
+			'versions' => array(static::HAS_MANY, 'EntryVersion', 'entry_id'),
+			'children' => array(static::HAS_MANY, 'Entry', 'parent_id'),
+		);
+	}
 
-	protected $hasMany = array(
-		'versions' => array('model' => 'EntryVersion', 'foreignKey' => 'entry'),
-		'children' => array('model' => 'Entry', 'foreignKey' => 'parent')
-	);
-
-	protected $indexes = array(
-		array('columns' => array('slug','section_id','parent_id'), 'unique' => true),
-	);
+	protected function getIndexes()
+	{
+		return array(
+			array('columns' => array('slug','section_id','parent_id'), 'unique' => true),
+		);
+	}
 
 	protected $_draft;
-
-	/**
-	 * Use the section's content table name
-	 * @return mixed
-	 */
-	public function getContentTableName()
-	{
-		return $this->section->getContentTableName();
-	}
-
-	/**
-	 * There is no single "entrycontent" table
-	 */
-	public function createContentTable()
-	{
-	}
 
 	/**
 	 * Returns the status of the entry

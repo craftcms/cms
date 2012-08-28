@@ -7,8 +7,8 @@ namespace Blocks;
 class InstallUserForm extends BaseForm
 {
 	protected $attributes = array(
-		'username' => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
-		'email'    => array('type' => AttributeType::Email, 'required' => true),
-		'password' => array('type' => AttributeType::Varchar, 'minLength' => 6, 'required' => true)
+		'username' => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
+		'email'    => array('type' => PropertyType::Email, 'required' => true),
+		'password' => array('type' => PropertyType::Varchar, 'minLength' => 6, 'required' => true)
 	);
 }

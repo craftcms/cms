@@ -6,16 +6,22 @@ namespace Blocks;
  */
 class Info extends BaseModel
 {
-	protected $tableName = 'info';
+	public function getTableName()
+	{
+		return 'info';
+	}
 
-	protected $attributes = array(
-		'version'       => AttributeType::Version,
-		'build'         => AttributeType::Build,
-		'release_date'  => array(AttributeType::Int, 'required' => true),
-		'site_name'     => array(AttributeType::Name, 'required' => true),
-		'site_url'      => array(AttributeType::Url, 'required' => true),
-		'language'      => AttributeType::Language,
-		'license_key'   => AttributeType::LicenseKey,
-		'on'            => AttributeType::Boolean,
-	);
+	protected function getProperties()
+	{
+		return array(
+			'version'       => PropertyType::Version,
+			'build'         => PropertyType::Build,
+			'release_date'  => array(PropertyType::Int, 'required' => true),
+			'site_name'     => array(PropertyType::Name, 'required' => true),
+			'site_url'      => array(PropertyType::Url, 'required' => true),
+			'language'      => PropertyType::Language,
+			'license_key'   => PropertyType::LicenseKey,
+			'on'            => PropertyType::Boolean,
+		);
+	}
 }
