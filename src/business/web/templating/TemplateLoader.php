@@ -4,15 +4,8 @@ namespace Blocks;
 /**
  * Loads @@@productDisplay@@@ templates into Twig.
  */
-class TemplateLoader extends \Twig_Loader_Filesystem
+class TemplateLoader implements \Twig_LoaderInterface
 {
-	/**
-	 * Constructor
-	 */
-	public function __construct()
-	{
-	}
-
 	/**
 	 * Gets the source code of a template.
 	 *
@@ -22,7 +15,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 	public function getSource($template)
 	{
 		if (is_string($template))
-			return file_get_contents($this->findTemplate($template));
+			return file_get_contents(TemplateHelper::findTemplate($template));
 		else
 			return $template->template;
 	}
@@ -36,7 +29,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 	public function getCacheKey($template)
 	{
 		if (is_string($template))
-			return $this->findTemplate($template);
+			return TemplateHelper::findTemplate($template);
 		else
 			return $template->cacheKey;
 	}
@@ -51,7 +44,7 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 	public function isFresh($template, $time)
 	{
 		if (is_string($template))
-			return filemtime($this->findTemplate($template)) <= $time;
+			return filemtime(TemplateHelper::findTemplate($template)) <= $time;
 		else
 			return false;
 	}
@@ -66,103 +59,6 @@ class TemplateLoader extends \Twig_Loader_Filesystem
 	 */
 	protected function findTemplate($name)
 	{
-		// Normalize the template name
-		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
-		// Is this template path already cached?
-		if (isset($this->cache[$name]))
-			return $this->cache[$name];
-
-		// Validate the template name
-		$this->validateName($name);
-
-		// Check if the template exists in the main templates path
-
-		// Set the view path
-		//  - We need to set this for each template request, in case it was changed to a plugin's template path
-		$basePath = realpath(blx()->path->getTemplatesPath()).'/';
-
-		// If it's an error template we might need to check for a user-defined template on the front-end of the site.
-		if ($this->_isErrorTemplate($name))
-		{
-			$viewPaths = array();
-
-			if (blx()->request->getMode() == RequestMode::Site)
-				$viewPaths[] = blx()->path->getSiteTemplatesPath();
-
-			$viewPaths[] = blx()->path->getAppTemplatesPath();
-
-			foreach ($viewPaths as $viewPath)
-			{
-				if (is_file($viewPath.$name.'.html'))
-				{
-					$basePath = realpath($viewPath).'/';
-					break;
-				}
-			}
-		}
-
-		if (($path = $this->_findTemplate($basePath.$name)) !== null)
-			return $this->cache[$name] = $path;
-
-		// Otherwise maybe it's a plugin template?
-
-		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (($mode = blx()->request->getMode()) == RequestMode::CP || $mode == RequestMode::Action)
-		{
-			$parts = array_filter(explode('/', $name));
-			$plugin = strtolower(array_shift($parts));
-
-			if ($plugin && blx()->plugins->getPlugin($plugin))
-			{
-				// Get the template path for the plugin.
-				$basePath = blx()->path->getPluginsPath().$plugin.'/templates/';
-
-				// Chop off the plugin segment, since that's already covered by $basePath
-				$name = implode($parts);
-
-				if (($path = $this->_findTemplate($basePath.$name)) !== null)
-					return $this->cache[$name] = $path;
-			}
-		}
-
-		throw new TemplateLoaderException($name);
-	}
-
-	/**
-	 * Searches for localized template files, and returns the first match if there is one.
-	 *
-	 * @access protected
-	 * @param string $path
-	 * @return mixed
-	 */
-	protected function _findTemplate($path)
-	{
-		// Get the extension on the path, if there is one
-		$extension = FileHelper::getExtension($path);
-
-		if ($extension)
-			$testPaths = array($path);
-		else
-			$testPaths = array($path.'.html', $path.'/index.html');
-
-		foreach ($testPaths as $path)
-		{
-			if (is_file(blx()->findLocalizedFile($path)))
-				return $path;
-		}
-
-		return null;
-	}
-
-	/**
-	 * Checks to see if the template name matches error, error400, error500, etc. or exception.
-	 *
-	 * @param $name
-	 * @return int
-	 */
-	protected function _isErrorTemplate($name)
-	{
-		return preg_match("/^(error([0-9]{3})?|exception)$/uis", $name);
 	}
 }
