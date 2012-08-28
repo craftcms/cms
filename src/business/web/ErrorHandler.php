@@ -81,35 +81,35 @@ class ErrorHandler extends \CErrorHandler
 			// If this is a template renderer exception, we don't want to show any stack track information.
 			if ($exception instanceof \Twig_Error_Syntax)
 			{
+				$templateFile = realpath(blx()->path->getTemplatesPath().$exception->getTemplateFile().'.html');
+
+				if (!$templateFile)
+					$templateFile = realpath(blx()->path->getTemplatesPath().$exception->getTemplateFile().'/index.html');
+
+				// See if we can process the template "stack trace".
+				$traces = array();
+				if (is_file($templateFile))
+					$traces = $this->processTemplateStackTrace($templateFile);
+
+				$traces[count($traces) - 1]['line'] = 0;
+				$traces = $this->prepStackTrace($traces);
+
 				$this->_error = $data = array(
 					'code' => 500,
 					'type' => Blocks::t('Template Syntax Error'),
 					'errorCode' => $exception->getCode(),
 					'message' => $exception->getMessage(),
-					'file' => realpath(blx()->path->getTemplatesPath().$exception->getTemplateFile().'.html'),
+					'file' => $templateFile,
 					'line' => $exception->getTemplateLine(),
 					'trace' => '',
-					'traces' => array(),
+					'traces' => $traces,
 				);
 			}
 			else
 			{
 				// Build the full stack trace.
 				$trace = $exception->getTrace();
-
-				foreach ($trace as $i => $t)
-				{
-					if (!isset($t['file']))
-						$trace[$i]['file'] = 'unknown';
-
-					if (!isset($t['line']))
-						$trace[$i]['line'] = 0;
-
-					if (!isset($t['function']))
-						$trace[$i]['function'] = 'unknown';
-
-					unset($trace[$i]['object']);
-				}
+				$trace = $this->prepStackTrace($trace);
 
 				$this->_error = $data = array(
 					'code' => ($exception instanceof \CHttpException) ? $exception->statusCode : 500,
@@ -146,6 +146,88 @@ class ErrorHandler extends \CErrorHandler
 		}
 		else
 			$app->displayException($exception);
+	}
+
+	/**
+	 * @param $templateFile
+	 * @return array
+	 */
+	protected function processTemplateStackTrace($templateFile)
+	{
+		$trace = array();
+
+		if (($lineNumber = $this->getExtendsTemplateLineNumber($templateFile)) !== false)
+		{
+			if (($fileName = $this->getExtendsTemplateName($templateFile)) !== false)
+			{
+				$temp['line'] = $lineNumber;
+				$temp['file'] = $fileName;
+				array_push($trace, $temp);
+				$trace = array_merge_recursive($trace, $this->processTemplateStackTrace($fileName));
+			}
+		}
+
+		return $trace;
+	}
+
+	/**
+	 * @param $templateFile
+	 * @return array|bool
+	 */
+	protected function getExtendsTemplateLineNumber($templateFile)
+	{
+		$contents = file($templateFile);
+		$matches = preg_grep("/({%\s*extends\s*('|\"))([A-Za-z0-9_\\/]*)('|\")(\s%})/uis", $contents);
+
+		if (count($matches) > 0)
+		{
+			$lineNo = array_keys($matches);
+			$lineNo = $lineNo[0] + 1;
+			return $lineNo;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $templateFile
+	 * @return bool
+	 */
+	protected function getExtendsTemplateName($templateFile)
+	{
+		$contents = file_get_contents($templateFile);
+		$n = preg_match("/({%\s*extends\s*('|\"))([A-Za-z0-9_\\/]*)('|\")(\s%})/uis", $contents, $matches);
+
+		if ($n > 0)
+		{
+			if (isset($matches[3]))
+				return realpath(blx()->path->getTemplatesPath().$matches[3].'.html');
+		}
+
+		return false;
+	}
+
+	/**
+	 * @param $trace
+	 * @return mixed
+	 */
+	protected function prepStackTrace($trace)
+	{
+		foreach ($trace as $i => $t)
+		{
+			if (!isset($t['file']))
+				$trace[$i]['file'] = 'unknown';
+
+			if (!isset($t['line']))
+				$trace[$i]['line'] = 0;
+
+			if (!isset($t['function']))
+				$trace[$i]['function'] = '';
+
+			unset($trace[$i]['object']);
+		}
+
+		return $trace;
 	}
 
 	/**
