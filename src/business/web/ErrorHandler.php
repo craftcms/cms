@@ -44,6 +44,23 @@ namespace Blocks;
 class ErrorHandler extends \CErrorHandler
 {
 	private $_error;
+	private $_devMode = false;
+
+	/**
+	 * 
+	 */
+	public function init()
+	{
+		parent::init();
+
+		$admin = false;
+
+		// Set whether the currently logged in user is an admin.
+		if (($currentUser = blx()->accounts->getCurrentUser()) !== null)
+			$admin = $currentUser->admin == 1 ? true : false;
+
+		$this->_devMode = blx()->config->devMode || $admin;
+	}
 
 	/**
 	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
@@ -135,7 +152,7 @@ class ErrorHandler extends \CErrorHandler
 				header("HTTP/1.0 {$data['code']} ".get_class($exception));
 
 			// If this is an HttpException or we're not in dev mode, render the error template.
-			if ($exception instanceof \CHttpException || !blx()->config->devMode)
+			if ($exception instanceof \CHttpException || !$this->_devMode)
 			{
 				if ($this->isAjaxRequest())
 					$app->returnAjaxError($data['code'], $data['message'], $data['file'], $data['line']);
@@ -313,7 +330,7 @@ class ErrorHandler extends \CErrorHandler
 
 			if ($this->isAjaxRequest())
 				$app->returnAjaxError($event->code, $event->message, $event->file, $event->line);
-			else if(blx()->config->devMode == true)
+			else if($this->_devMode)
 				$this->render('exception', $data);
 			else
 				$this->render('error', $data);
@@ -333,7 +350,7 @@ class ErrorHandler extends \CErrorHandler
 	{
 		$viewFile = $this->getViewFile($template, $data['code']);
 
-		if (blx()->config->devMode && $template == 'exception')
+		if (($this->_devMode) && $template == 'exception')
 		{
 			$data['version'] = $this->getVersionInfo();
 			$data['time'] = time();
@@ -380,6 +397,9 @@ class ErrorHandler extends \CErrorHandler
 		{
 			if (!empty($code))
 			{
+				if (!is_numeric($code))
+					$code = '';
+
 				$templateFile = blx()->findLocalizedFile(realpath($templatePath).'/'.$templateName.$code.'.'.$extension, $srcLanguage);
 				if (is_file($templateFile))
 					return realpath($templateFile);
@@ -407,11 +427,10 @@ class ErrorHandler extends \CErrorHandler
 	{
 		$viewPaths = array();
 
-		if (blx()->config->devMode && $view == 'exception')
+		if (($this->_devMode) && $view == 'exception')
 			$viewPaths[] = blx()->path->getFrameworkPath().'views/';
 		else
 		{
-
 			if (blx()->request->getMode() == RequestMode::Site)
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 
@@ -435,7 +454,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getVersionInfo()
 	{
-		if (blx()->config->devMode)
+		if ($this->_devMode)
 		{
 			$version = '<a href="http://blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion().' '.Blocks::t('build').' '.Blocks::getBuild();
 			if (isset($_SERVER['SERVER_SOFTWARE']))
