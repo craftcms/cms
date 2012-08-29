@@ -1,5 +1,6 @@
 {% extends "plugins/_layout" %}
 {% set plugin = blx.plugins.get(pluginClass) %}
+{% if not plugin %}{% exit 404 %}{% endif %}
 
 
 {% set settings %}
