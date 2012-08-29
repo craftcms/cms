@@ -98,6 +98,7 @@ class TemplateHelper
 	 *
 	 * @static
 	 * @param string $name
+	 * @throws TemplateLoaderException
 	 * @return string
 	 */
 	public static function findTemplate($name)
@@ -172,27 +173,28 @@ class TemplateHelper
 	 * @static
 	 * @access private
 	 * @param string $name
+	 * @throws \Twig_Error_Loader
 	 */
 	private static function _validateTemplateName($name)
-    {
-        if (false !== strpos($name, "\0"))
-            throw new \Twig_Error_Loader(Blocks::t('A template name cannot contain NUL bytes.'));
+	{
+		if (false !== strpos($name, "\0"))
+			throw new \Twig_Error_Loader(Blocks::t('A template name cannot contain NUL bytes.'));
 
-        $parts = explode('/', $name);
-        $level = 0;
-        foreach ($parts as $part)
-        {
-            if ('..' === $part)
-                $level--;
-            elseif ('.' !== $part)
-                $level++;
+		$parts = explode('/', $name);
+		$level = 0;
+		foreach ($parts as $part)
+		{
+			if ($part === '..')
+				$level--;
+			elseif ($part !== '.')
+				$level++;
 
-            if ($level < 0)
-                throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template directory: {template}.', array('template' => $name)));
-        }
-    }
+			if ($level < 0)
+				throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template directory: {template}.', array('template' => $name)));
+		}
+	}
 
-    /**
+	/**
 	 * Checks to see if the template name matches error, error400, error500, etc. or exception.
 	 *
 	 * @static
