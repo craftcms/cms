@@ -13,9 +13,11 @@ class EntryContent extends BaseModel
 	 *
 	 * @param Section $section
 	 */
-	public function __construct(Section $section)
+	public function __construct($section = null)
 	{
-		$this->section = $section;
+		if ($section && $section instanceof Section)
+			$this->section = $section;
+
 		parent::__construct(null);
 	}
 
