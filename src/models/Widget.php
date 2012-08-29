@@ -6,18 +6,25 @@ namespace Blocks;
  */
 class Widget extends BaseModel
 {
-	protected $tableName = 'widgets';
-	protected $settingsTableName = 'widgetsettings';
-	protected $foreignKeyName = 'widget_id';
-	public $hasSettings = true;
+	public function getTableName()
+	{
+		return 'widgets';
+	}
 
-	protected $attributes = array(
-		'class'      => AttributeType::ClassName,
-		'sort_order' => AttributeType::SortOrder
-	);
+	protected function getProperties()
+	{
+		return array(
+			'class'      => PropertyType::ClassName,
+			'sort_order' => PropertyType::SortOrder,
+			'settings'   => PropertyType::Text,
+		);
+	}
 
-	protected $belongsTo = array(
-		'user'   => array('model' => 'User', 'required' => true),
-		'plugin' => array('model' => 'Plugin')
-	);
+	protected function getRelations()
+	{
+		return array(
+			'user'   => array(static::BELONGS_TO, 'User', 'user_id', 'required' => true),
+			'plugin' => array(static::BELONGS_TO, 'Plugin', 'plugin_id'),
+		);
+	}
 }

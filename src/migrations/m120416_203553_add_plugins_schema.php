@@ -17,9 +17,9 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 		if (!$pluginsTable)
 		{
 			$this->createTable('plugins', array(
-				'class'      => AttributeType::ClassName,
-				'version'    => AttributeType::Version,
-				'enabled'    => array('type' => AttributeType::Boolean, 'default' => true)
+				'class'      => PropertyType::ClassName,
+				'version'    => PropertyType::Version,
+				'enabled'    => array('type' => PropertyType::Boolean, 'default' => true)
 			));
 		}
 
@@ -36,7 +36,7 @@ class m120416_203553_add_plugins_schema extends \CDbMigration
 
 		if (!$pluginIdColumn)
 		{
-			blx()->db->createCommand()->addColumnAfter('widgets', 'plugin_id', array('type' => AttributeType::Int, 'required' => false), 'user_id');
+			blx()->db->createCommand()->addColumnAfter('widgets', 'plugin_id', array('type' => PropertyType::Int, 'required' => false), 'user_id');
 			$this->createIndex('widgets_plugins_fk', 'widgets', 'plugin_id');
 			$this->addForeignKey('widgets_plugins_fk', 'widgets', 'plugin_id', 'plugins', 'id');
 		}

@@ -10,5 +10,5 @@ class RadioButtonsBlock extends BaseOptionsBlock
 
 	protected $settingsTemplate = '_blocktypes/RadioButtons/settings';
 	protected $fieldTemplate = '_blocktypes/RadioButtons/field';
-	protected $columnType = AttributeType::Varchar;
+	protected $columnType = PropertyType::Varchar;
 }

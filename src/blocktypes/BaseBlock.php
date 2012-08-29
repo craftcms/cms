@@ -11,7 +11,7 @@ abstract class BaseBlock extends BaseComponent
 
 	protected $componentType = 'Block';
 	protected $settingsTemplate;
-	protected $columnType = AttributeType::Text;
+	protected $columnType = PropertyType::Text;
 
 	/**
 	 * Getter

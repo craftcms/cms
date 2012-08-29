@@ -35,9 +35,9 @@ class InstallService extends \CApplicationComponent
 
 			$class = __NAMESPACE__.'\\'.$fileName;
 
-			// Ignore abstract classes
+			// Ignore abstract classes and interfaces
 			$ref = new \ReflectionClass($class);
-			if ($ref->isAbstract())
+			if ($ref->isAbstract() || $ref->isInterface())
 				continue;
 
 			$obj = new $class;

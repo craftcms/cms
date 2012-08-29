@@ -181,7 +181,7 @@ class DbCommand extends \CDbCommand
 	public function createTable($table, $columns, $options=null)
 	{
 		$columns = array_merge(
-			array('id' => AttributeType::PK),
+			array('id' => PropertyType::PK),
 			$columns,
 			($table !== 'activity' ? DatabaseHelper::getAuditColumnDefinition() : array())
 		);
@@ -207,8 +207,8 @@ class DbCommand extends \CDbCommand
 	public function createContentTable($table, $refTable, $fk)
 	{
 		$columns = array(
-			$fk        => array('type' => AttributeType::Int, 'required' => true),
-			'language' => AttributeType::Language
+			$fk        => array('type' => PropertyType::Int, 'required' => true),
+			'language' => PropertyType::Language
 		);
 
 		// Create the table
@@ -233,8 +233,8 @@ class DbCommand extends \CDbCommand
 	public function createBlocksJoinTable($table, $refTable, $fk)
 	{
 		$columns = array(
-			$fk          => array('type' => AttributeType::Int, 'required' => true),
-			'block_id'   => array('type' => AttributeType::Int, 'required' => true)
+			$fk          => array('type' => PropertyType::Int, 'required' => true),
+			'block_id'   => array('type' => PropertyType::Int, 'required' => true)
 		);
 
 		// Create the table
@@ -259,9 +259,9 @@ class DbCommand extends \CDbCommand
 	public function createSettingsTable($table, $refTable, $fk)
 	{
 		$columns = array(
-			$fk     => array('type' => AttributeType::Int, 'required' => true),
-			'name'  => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
-			'value' => AttributeType::Text
+			$fk     => array('type' => PropertyType::Int, 'required' => true),
+			'name'  => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
+			'value' => PropertyType::Text
 		);
 
 		// Create the table

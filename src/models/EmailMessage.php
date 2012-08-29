@@ -6,14 +6,23 @@ namespace Blocks;
  */
 class EmailMessage extends BaseModel
 {
-	protected $tableName = 'emailmessages';
+	public function getTableName()
+	{
+		return 'emailmessages';
+	}
 
-	protected $attributes = array(
-		'key'      => array('type' => AttributeType::Char, 'required' => true, 'unique' => true, 'maxLength' => 150),
-		'template' => array('type' => AttributeType::Varchar, 'maxLength' => 500),
-	);
+	protected function getProperties()
+	{
+		return array(
+			'key'      => array(PropertyType::Char, 'required' => true, 'unique' => true, 'maxLength' => 150),
+			'template' => array(PropertyType::Varchar, 'maxLength' => 500),
+		);
+	}
 
-	protected $hasMany = array(
-		'content' => array('model' => 'EmailMessageContent', 'foreignKey' => 'message'),
-	);
+	protected function getRelations()
+	{
+		return array(
+			'content' => array(static::HAS_MANY, 'EmailMessageContent', 'message_id'),
+		);
+	}
 }

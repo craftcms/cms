@@ -16,7 +16,7 @@ class m120417_212359_add_name_column_to_plugins extends \CDbMigration
 
 		if (!$pluginNameColumn)
 		{
-			blx()->db->createCommand()->addColumnBefore('plugins', 'name', AttributeType::Name, 'class');
+			blx()->db->createCommand()->addColumnBefore('plugins', 'name', PropertyType::Name, 'class');
 		}
 	}
 }

@@ -11,6 +11,6 @@ class m120423_163212_make_draft_names_nullable extends \CDbMigration
 	 */
 	public function safeUp()
 	{
-		$this->alterColumn('entryversions', 'name', AttributeType::Name);
+		$this->alterColumn('entryversions', 'name', PropertyType::Name);
 	}
 }

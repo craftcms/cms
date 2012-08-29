@@ -11,7 +11,7 @@ class LoginForm extends BaseForm
 	protected $attributes = array(
 		'username'   => array('required' => true),
 		'password'   => array('required' => true),
-		'rememberMe' => AttributeType::Boolean
+		'rememberMe' => PropertyType::Boolean
 	);
 
 	/**

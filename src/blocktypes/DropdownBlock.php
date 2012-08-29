@@ -10,5 +10,5 @@ class DropdownBlock extends BaseOptionsBlock
 
 	protected $settingsTemplate = '_blocktypes/Dropdown/settings';
 	protected $fieldTemplate = '_blocktypes/Dropdown/field';
-	protected $columnType = AttributeType::Varchar;
+	protected $columnType = PropertyType::Varchar;
 }

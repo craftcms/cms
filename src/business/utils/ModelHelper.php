@@ -24,33 +24,33 @@ class ModelHelper
 		$minLengths = array();
 		$maxLengths = array();
 
-		$numberTypes = array(AttributeType::TinyInt, AttributeType::SmallInt, AttributeType::MediumInt, AttributeType::Int, AttributeType::BigInt, AttributeType::Float, AttributeType::Decimal);
-		$integerTypes = array(AttributeType::TinyInt, AttributeType::SmallInt, AttributeType::MediumInt, AttributeType::Int, AttributeType::BigInt);
+		$numberTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Float, PropertyType::Decimal);
+		$integerTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
 
 		foreach ($attributes as $name => $settings)
 		{
 			$type = is_string($settings) ? $settings : (isset($settings['type']) ? $settings['type'] : (isset($settings[0]) ? $settings[0] : null));
 
-			// Catch handles, email addresses, languages and URLs before running normalizeAttributeSettings, since 'type' will get changed to VARCHAR
-			if ($type == AttributeType::Handle)
+			// Catch handles, email addresses, languages and URLs before running normalizePropertyConfig, since 'type' will get changed to VARCHAR
+			if ($type == PropertyType::Handle)
 			{
 				$reservedWords = isset($settings['reservedWords']) ? ArrayHelper::stringToArray($settings['reservedWords']) : array();
 				$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => $reservedWords);
 			}
 
-			if ($type == AttributeType::Language)
+			if ($type == PropertyType::Language)
 				$rules[] = array($name, 'Blocks\LanguageValidator');
 
-			if ($type == AttributeType::Email)
+			if ($type == PropertyType::Email)
 				$emails[] = $name;
 
-			if ($type == AttributeType::Url)
+			if ($type == PropertyType::Url)
 				$urls[] = $name;
 
 			// Remember if it's a license key
-			$isLicenseKey = ($type == AttributeType::LicenseKey);
+			$isLicenseKey = ($type == PropertyType::LicenseKey);
 
-			$settings = DatabaseHelper::normalizeAttributeSettings($settings);
+			$settings = DatabaseHelper::normalizePropertyConfig($settings);
 
 			// Uniques
 			if (isset($settings['unique']) && $settings['unique'] === true)
@@ -78,7 +78,7 @@ class ModelHelper
 			}
 
 			// Enum attribute values
-			if ($settings['type'] == AttributeType::Enum)
+			if ($settings['type'] == PropertyType::Enum)
 			{
 				$values = ArrayHelper::stringToArray($settings['values']);
 				$rules[] = array($name, 'in', 'range' => $values);

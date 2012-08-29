@@ -6,18 +6,27 @@ namespace Blocks;
  */
 class Route extends BaseModel
 {
-	protected $tableName = 'routes';
+	public function getTableName()
+	{
+		return 'routes';
+	}
 
-	protected $attributes = array(
-		'url_parts'   => array('type' => AttributeType::Varchar, 'required' => true),
-		'url_pattern' => array('type' => AttributeType::Varchar, 'required' => true),
-		'template'    => array('type' => AttributeType::Varchar, 'required' => true),
-		'sort_order'  => array('type' => AttributeType::Int, 'required' => true),
-	);
+	protected function getProperties()
+	{
+		return array(
+			'url_parts'   => array(PropertyType::Varchar, 'required' => true),
+			'url_pattern' => array(PropertyType::Varchar, 'required' => true),
+			'template'    => array(PropertyType::Varchar, 'required' => true),
+			'sort_order'  => array(PropertyType::Int, 'required' => true),
+		);
+	}
 
-	protected $indexes = array(
-		array('columns' => array('url_pattern'), 'unique' => true),
-	);
+	protected function getIndexes()
+	{
+		return array(
+			array('columns' => array('url_pattern'), 'unique' => true),
+		);
+	}
 
 	public function scopes()
 	{
