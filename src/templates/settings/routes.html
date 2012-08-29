@@ -47,10 +47,10 @@
 
 {% set scripts %}
 	<script type="text/javascript">
-		blx.translations.year   = '{{ "year"|t(null, null, "en_us", blx.app.language) }}';
-		blx.translations.month  = '{{ "month"|t(null, null, "en_us", blx.app.language) }}';
-		blx.translations.day    = '{{ "day"|t(null, null, "en_us", blx.app.language) }}';
-		blx.translations.number = '{{ "number"|t(null, null, "en_us", blx.app.language) }}';
-		blx.translations.page   = '{{ "page"|t(null, null, "en_us", blx.app.language) }}';
+		blx.translations.year   = '{{ "year"|t(null, null, null, blx.app.language) }}';
+		blx.translations.month  = '{{ "month"|t(null, null, null, blx.app.language) }}';
+		blx.translations.day    = '{{ "day"|t(null, null, null, blx.app.language) }}';
+		blx.translations.number = '{{ "number"|t(null, null, null, blx.app.language) }}';
+		blx.translations.page   = '{{ "page"|t(null, null, null, blx.app.language) }}';
 	</script>
 {% endset %}
