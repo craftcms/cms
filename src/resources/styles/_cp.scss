@@ -43,9 +43,9 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
 /* end BLOCKS ONLY */
 /* BLOCKSPRO ONLY */
-#sidebar { background: #2a2a2a; -webkit-box-shadow: inset -1px 0 #1a1a1a; }
+#sidebar { background: #2a2a2a; -webkit-box-shadow: inset -1px 0 #000; }
 
-#sidebar .nav ul li { border-bottom-color: #1a1a1a; }
+#sidebar .nav ul li { border-bottom-color: #222; }
 #sidebar .nav ul li a { color: #b3b3b3; text-shadow: 0 -1px 1px #000; @include linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.1)); }
 #sidebar .nav ul li a:hover { color: #bababa; @include linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0.1)); }
 #sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.175), rgba(255,255,255,0.1)); }
