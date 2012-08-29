@@ -18,6 +18,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			new IncludeCss_TokenParser(),
 			new IncludeJs_TokenParser(),
 			new IncludeTranslation_TokenParser(),
+			new Exit_TokenParser(),
 		);
 	}
 
