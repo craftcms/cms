@@ -26,6 +26,7 @@ class Section extends BaseModel
 	{
 		return array(
 			'parent'   => array(static::BELONGS_TO, 'Section'),
+			'blocks'   => array(static::HAS_MANY, 'SectionBlock', 'section_id'),
 			'children' => array(static::HAS_MANY, 'Section', 'parent_id'),
 			'entries'  => array(static::HAS_MANY, 'Entry', 'section_id'),
 		);
