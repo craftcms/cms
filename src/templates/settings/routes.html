@@ -8,11 +8,6 @@
 	"Couldn’t save new route order.",
 	"If the URL looks like this",
 	"Add a token",
-	"year",
-	"month",
-	"day",
-	"number",
-	"page",
 	"Load this template",
 	"Edit Route",
 	"Create a new route",
@@ -48,4 +43,14 @@
 	<div class="buttons">
 		<a class="btn" href="{{ url('settings') }}">{{ "Done"|t }}</a>
 	</div>
+{% endset %}
+
+{% set scripts %}
+	<script type="text/javascript">
+		blx.translations.year   = '{{ "year"|t(null, null, "en_us", blx.app.language) }}';
+		blx.translations.month  = '{{ "month"|t(null, null, "en_us", blx.app.language) }}';
+		blx.translations.day    = '{{ "day"|t(null, null, "en_us", blx.app.language) }}';
+		blx.translations.number = '{{ "number"|t(null, null, "en_us", blx.app.language) }}';
+		blx.translations.page   = '{{ "page"|t(null, null, "en_us", blx.app.language) }}';
+	</script>
 {% endset %}
