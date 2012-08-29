@@ -112,7 +112,7 @@ return CMap::mergeArray(
 				'cpRoutes' => array(
 					array('update\/(?P<handle>[^\/]*)',                        'update'),
 					array('users\/new',                                        'users/_edit/account'),
-					array('users\/(P<userId>\d+)',                             'users/_edit/account'),
+					array('users\/(?P<userId>\d+)',                            'users/_edit/account'),
 					array('users\/(?P<userId>\d+)\/profile',                   'users/_edit/profile'),
 					array('users\/(?P<userId>\d+)\/admin',                     'users/_edit/admin'),
 					array('users\/(?P<userId>\d+)\/info',                      'users/_edit/info'),
