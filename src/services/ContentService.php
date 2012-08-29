@@ -126,12 +126,11 @@ class ContentService extends \CApplicationComponent
 		if ($sectionId)
 		{
 			$section = $this->getSectionById($sectionId);
-
 			if (!$section)
 				throw new Exception(Blocks::t('No section exists with the ID “{sectionId}”', array('sectionId' => $sectionId)));
 
 			$isNewSection = false;
-			$oldContentTable = $section->getContentTableName();
+			$oldContentTable = $this->getEntryContentTableName($section);
 			$oldUrlFormat = $section->url_format;
 		}
 		else
@@ -153,12 +152,13 @@ class ContentService extends \CApplicationComponent
 			if ($section->save())
 			{
 				// Get the section's content table name
-				$contentTable = $section->getContentTableName();
+				$contentTable = $this->getEntryContentTableName($section);
 
 				if ($isNewSection)
 				{
 					// Create the content table
-					$section->createContentTable();
+					$entryContent = new EntryContent($section);
+					$entryContent->createTable();
 				}
 				else
 				{
@@ -189,6 +189,17 @@ class ContentService extends \CApplicationComponent
 		return $section;
 	}
 
+	/**
+	 * Returns a section's content table name
+	 *
+	 * @param Section $section
+	 * @return string
+	 */
+	public function getEntryContentTableName(Section $section)
+	{
+		return 'entrycontent_'.$section->handle;
+	}
+
 	/* Entries */
 
 	/**
@@ -215,7 +226,7 @@ class ContentService extends \CApplicationComponent
 			$entry->save();
 
 			// Create a content row for it
-			$table = $entry->section->getContentTableName();
+			$table = $this->getEntryContentTableName($entry->section);
 			blx()->db->createCommand()->insert($table, array(
 				'entry_id' => $entry->id,
 				'language' => $entry->section->site->language,

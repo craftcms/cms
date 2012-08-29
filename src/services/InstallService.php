@@ -18,9 +18,7 @@ class InstallService extends \CApplicationComponent
 		if (blx()->getIsInstalled())
 			throw new Exception(Blocks::t('@@@productDisplay@@@ is already installed.'));
 
-		// Install the Block model first so the other models can create FK's to it
-		$models[] = new Block();
-
+		$models = array();
 		$modelsDir = blx()->file->set(blx()->path->getModelsPath());
 		$modelFiles = $modelsDir->getContents(false, '.php');
 

@@ -2,15 +2,12 @@
 namespace Blocks;
 
 /**
+ * Block model base class
  *
+ * @abstract
  */
-class Block extends BaseModel
+abstract class BaseBlockModel extends BaseModel
 {
-	public function getTableName()
-	{
-		return 'blocks';
-	}
-
 	protected function getProperties()
 	{
 		return array(

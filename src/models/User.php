@@ -44,6 +44,8 @@ class User extends BaseModel
 	protected function getRelations()
 	{
 		return array(
+			'blocks'  => array(static::HAS_MANY, 'UserBlock', 'user_id'),
+			'content' => array(static::HAS_ONE, 'UserContent', 'user_id'),
 			'widgets' => array(static::HAS_MANY, 'Widget', 'user_id'),
 		);
 	}
