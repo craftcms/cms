@@ -113,6 +113,7 @@ return CMap::mergeArray(
 					array('update\/(?P<handle>[^\/]*)',                        'update'),
 					/* BLOCKS ONLY */
 					array('myaccount',                                         'users/_edit/account'),
+					array('myaccount\/profile',                                'users/_edit/profile'),
 					/* end BLOCKS ONLY */
 					/* BLOCKSPRO ONLY */
 					array('users\/new',                                        'users/_edit/account'),

@@ -2,9 +2,17 @@
 {% set pageTitle = "Profile"|t %}
 
 
+<!-- BLOCKS ONLY -->
+{% if not user %}
+	{% set user = blx.accounts.current %}
+{% endif %}
+<!-- end BLOCKS ONLY -->
+<!-- BLOCKSPRO ONLY -->
 {% if not user and userId %}
 	{% set user = blx.accounts.getById(userId) %}
+	{% if not user %}{% exit 404 %}{% endif %}
 {% endif %}
+<!-- end BLOCKSPRO ONLY -->
 
 
 {% set settings %}
