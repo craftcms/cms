@@ -24,7 +24,7 @@ class User extends BaseModel
 			'admin'                                => PropertyType::Boolean,
 			'password_reset_required'              => PropertyType::Boolean,
 			'status'                               => array(PropertyType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
-			'language'                             => PropertyType::Language,
+			'language'                             => array(PropertyType::Language, 'default' => Blocks::getLanguage()),
 			'email_format'                         => array(PropertyType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
 			'last_login_date'                      => PropertyType::Int,
 			'last_login_failed_date'               => PropertyType::Int,
