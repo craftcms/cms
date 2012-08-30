@@ -1,10 +1,10 @@
-{% if not id %}
-	{% set id = name %}
-{% endif %}
+{% if not id %}{% set id = name %}{% endif %}
+{% if not value %}{% set value = default %}{% endif -%}
+
 <div id="{{ id }}" class="pill">
 	<div class="btn-group" tabindex="0">
 		{% for option in options %}
-			<div class="btn {% if (value and option.value == value) or (not value and option.value == default) %}active{% endif %}" data-value="{{ option.value }}">
+			<div class="btn {% if option.value == value %}active{% endif %}" data-value="{{ option.value }}">
 				{{- option.label ? option.label : option.value -}}
 			</div>
 		{% endfor %}
