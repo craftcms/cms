@@ -52,6 +52,7 @@ class AccountsService extends \CApplicationComponent
 	 *
 	 * @param array $params
 	 * @return int
+	 * @return int
 	 */
 	public function getTotalUsers($params = array())
 	{
@@ -70,7 +71,8 @@ class AccountsService extends \CApplicationComponent
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param array $params
+	 * @param           $params
+	 * @param array     $params
 	 */
 	private function _applyUserConditions($query, $params)
 	{
