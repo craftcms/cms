@@ -15,8 +15,15 @@
 {% set content %}
 	<nav class="nav">
 		<ul>
-			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All users"|t }}</a></li>
-			<li><a href="{{ url('users/admins') }}" {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %}>{{ "Admins"|t }}</a></li>
+			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
+			{% set statuses = ['active', 'pending', 'locked', 'suspended'] %}
+			{% set statusClasses = ['on', '', 'pending', 'off'] %}
+			{% for status in statuses %}
+				{% set total = blx.accounts.totalUsers({ 'status': status }) %}
+				{% if total %}
+					<li><a href="{{ url('users/' ~ status) }}" {% if blx.request.segment(2) == status %}class="sel"{% endif %}><div class="status {{ statusClasses[loop.index0] }}"></div> {{ status|ucfirst|t }}</a></li>
+				{% endif %}
+			{% endfor %}
 		</ul>
 	</nav>
 

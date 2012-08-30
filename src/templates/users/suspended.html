@@ -1,0 +1,3 @@
+{% extends "users/_layout" %}
+{% set title = "Admins"|t %}
+{% set users = blx.accounts.users({ 'status': 'suspended' }) %}

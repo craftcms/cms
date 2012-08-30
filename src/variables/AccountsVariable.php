@@ -27,14 +27,14 @@ class AccountsVariable
 	}
 
 	/**
-	 * Gets admins.
+	 * Gets the total number of users.
 	 *
 	 * @param array $params
-	 * @return array
+	 * @return int
 	 */
-	public function admins($params = array())
+	public function totalUsers($params = array())
 	{
-		return blx()->accounts->getAdmins($params);
+		return blx()->accounts->getTotalUsers($params);
 	}
 
 	/**

@@ -74,7 +74,7 @@ class AccountsService extends \CApplicationComponent
 	 */
 	private function _applyUserConditions($query, $params)
 	{
-		$whereConditions = array('and');
+		$whereConditions = array();
 		$whereParams = array();
 
 		if (!empty($params['id']))
@@ -95,26 +95,17 @@ class AccountsService extends \CApplicationComponent
 		if (!empty($params['admin']))
 			$whereConditions[] = DatabaseHelper::parseParam('admin', 1, $whereParams);
 
-		if (!empty($params['status']))
+		if (!empty($params['status']) && $params['status'] != '*')
 			$whereConditions[] = DatabaseHelper::parseParam('status', $params['status'], $whereParams);
 
 		if (!empty($params['last_login_date']))
 			$whereConditions[] = DatabaseHelper::parseParam('last_login_date', $params['last_login_date'], $whereParams);
 
-		$query->where($whereConditions, $whereParams);
-	}
-
-	/**
-	 * Gets admins.
-	 *
-	 * @param array $params
-	 * @return array
-	 */
-	public function getAdmins($params = array())
-	{
-		return $this->getUsers(array_merge($params, array(
-			'admin' => true
-		)));
+		if ($whereConditions)
+		{
+			array_unshift($whereConditions, 'and');
+			$query->where($whereConditions, $whereParams);
+		}
 	}
 
 	/**

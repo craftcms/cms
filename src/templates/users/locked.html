@@ -1,0 +1,3 @@
+{% extends "users/_layout" %}
+{% set title = "All"|t %}
+{% set users = blx.accounts.users({ 'status': 'locked' }) %}
