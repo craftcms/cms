@@ -1,6 +1,10 @@
 {% extends "_layouts/cp" %}
 {% set title = "Accounts"|t ~ (title ? " - " ~ title : '') %}
 
+{% set statuses = ['active', 'pending', 'locked', 'suspended'] %}
+{% set statusClasses = ['on', '', 'pending', 'off'] %}
+{% set showStatus = blx.request.segment(2) not in statuses %}
+
 
 {% set titlebar %}
 	<h1>{{ "Accounts"|t }}</h1>
@@ -16,8 +20,6 @@
 	<nav class="nav">
 		<ul>
 			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
-			{% set statuses = ['active', 'pending', 'locked', 'suspended'] %}
-			{% set statusClasses = ['on', '', 'pending', 'off'] %}
 			{% for status in statuses %}
 				{% set total = blx.accounts.totalUsers({ 'status': status }) %}
 				{% if total %}
@@ -35,7 +37,7 @@
 				<th scope="col">{{ "Full Name"|t }}</th>
 				<th scope="col">{{ "Email"|t }}</th>
 				<th scope="col">{{ "Last Login"|t }}</th>
-				<th scope="col">{{ "Status"|t }}</th>
+				{% if showStatus %}<th scope="col">{{ "Status"|t }}</th>{% endif %}
 			</thead>
 			<tbody>
 				{% for user in users %}
@@ -44,17 +46,19 @@
 						<td>{{ user.fullname }}</td>
 						<td>{% if user.email %}<a href="mailto:{{ user.email }}">{{ user.email }}</a>{% endif %}</td>
 						<td>{% if user.last_login_date %}{{ blx.date.nice(user.last_login_date) }}{% else %}{{ "Never"|t }}{% endif %}</td>
-						<td>
-							{%- if user.status == 'pending' -%}
-								<div class="status"></div> {{ "Pending Verification"|t }}
-							{%- elseif user.status == 'locked' -%}
-								<div class="status pending"></div> {% if blx.config.failedPasswordMode == 'cooldown' %}{{ "Temporarily"|t }}{% endif %} {{ "Locked"|t }}
-							{%- elseif user.status == 'suspended' -%}
-								<div class="status off"></div> {{ "Suspended"|t }}
-							{%- else -%}
-								<div class="status on"></div> {{ "Active"|t }}
-							{%- endif -%}
-						</td>
+						{% if showStatus %}
+							<td>
+								{%- if user.status == 'pending' -%}
+									<div class="status"></div> {{ "Pending Verification"|t }}
+								{%- elseif user.status == 'locked' -%}
+									<div class="status pending"></div> {% if blx.config.failedPasswordMode == 'cooldown' %}{{ "Temporarily"|t }}{% endif %} {{ "Locked"|t }}
+								{%- elseif user.status == 'suspended' -%}
+									<div class="status off"></div> {{ "Suspended"|t }}
+								{%- else -%}
+									<div class="status on"></div> {{ "Active"|t }}
+								{%- endif -%}
+							</td>
+						{% endif %}
 					</tr>
 				{% endfor %}
 			</tbody>
