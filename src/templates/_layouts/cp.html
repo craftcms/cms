@@ -14,7 +14,12 @@
 					<div class="username">{{ blx.accounts.current.username }}</div>
 				</div>
 				<ul>
+					<!-- BLOCKS ONLY -->
+					<li data-url="myaccount">{{ "My Account"|t }}</li>
+					<!-- end BLOCKS ONLY -->
+					<!-- BLOCKSPRO ONLY -->
 					<li data-url="users/{{ blx.accounts.current.id }}">{{ "My Account"|t }}</li>
+					<!-- end BLOCKSPRO ONLY -->
 					<li data-url="logout">{{ "Sign out"|t }}</li>
 				</ul>
 			</div>

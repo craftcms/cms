@@ -111,16 +111,23 @@ return CMap::mergeArray(
 				'class' => 'Blocks\UrlManager',
 				'cpRoutes' => array(
 					array('update\/(?P<handle>[^\/]*)',                        'update'),
+					/* BLOCKS ONLY */
+					array('myaccount',                                         'users/_edit/account'),
+					/* end BLOCKS ONLY */
+					/* BLOCKSPRO ONLY */
 					array('users\/new',                                        'users/_edit/account'),
 					array('users\/(?P<userId>\d+)',                            'users/_edit/account'),
 					array('users\/(?P<userId>\d+)\/profile',                   'users/_edit/profile'),
 					array('users\/(?P<userId>\d+)\/admin',                     'users/_edit/admin'),
 					array('users\/(?P<userId>\d+)\/info',                      'users/_edit/info'),
+					/* end BLOCKSPRO ONLY */
 					array('content\/(?P<entryId>\d+)',                         'content/_entry'),
 					array('content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)', 'content/_entry'),
 					array('plugins\/(?P<pluginClass>[A-Za-z]\w*)',             'plugins/_settings'),
+					/* BLOCKSPRO ONLY */
 					array('settings\/sections\/new',                           'settings/sections/_edit'),
 					array('settings\/sections\/(?P<sectionId>\d+)',            'settings/sections/_edit'),
+					/* end BLOCKSPRO ONLY */
 				),
 			),
 
