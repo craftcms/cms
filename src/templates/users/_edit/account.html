@@ -90,12 +90,12 @@
 
 		<div class="field">
 			<div class="heading">
-				<label for="preferred_language">{{ "Preferred Language"|t }}</label>
+				<label for="language">{{ "Language"|t }}</label>
 			</div>
 
-			<select id="preferred_language" name="preferred_language">
+			<select id="language" name="language">
 				{% for language in blx.localization.translatedLanguages %}
-					<option value="{{ language }}" {% if language == user.preferred_language %}selected{% endif %}>{{ blx.localization.localeName(language, language) }}</option>
+					<option value="{{ language }}" {% if language == user.language %}selected{% endif %}>{{ blx.localization.localeName(language, language) }}</option>
 				{% endfor %}
 			</select>
 		</div>

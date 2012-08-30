@@ -236,7 +236,7 @@ class EmailService extends \CApplicationComponent
 			throw new Exception(Blocks::t('Could not find an email message with the key “{key}”', array('key' => $key)));
 
 		// Get the content
-		$content = $this->getMessageContent($message->id, $user->preferred_language);
+		$content = $this->getMessageContent($message->id, $user->language);
 		$subject = $content->subject;
 		$body = $content->body;
 		$htmlBody = $content->html_body;

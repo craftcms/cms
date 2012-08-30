@@ -218,7 +218,7 @@ class App extends \CWebApplication
 		if (blx()->user->getIsLoggedIn())
 		{
 			$user = blx()->accounts->getCurrentUser();
-			$userLanguage = Locale::getCanonicalID($user->preferred_language);
+			$userLanguage = Locale::getCanonicalID($user->language);
 
 			// If the user has a preferred language saved and we have translation data for it, set the target language.
 			if (($userLanguage !== $this->getLanguage()) && Locale::exists($userLanguage))
