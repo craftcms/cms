@@ -1,9 +1,8 @@
 {% extends "_layouts/cp" %}
 {% set title = "Accounts"|t ~ (title ? " - " ~ title : '') %}
 
-{% set statuses = ['active', 'pending', 'locked', 'suspended'] %}
-{% set statusClasses = ['on', '', 'pending', 'off'] %}
-{% set showStatus = blx.request.segment(2) not in statuses %}
+{% set statuses = { 'active': 'on', 'pending': '', 'locked': 'pending', 'suspended': 'off' } %}
+{% set showStatus = blx.request.segment(2) not in statuses|keys %}
 
 
 {% set titlebar %}
@@ -20,10 +19,10 @@
 	<nav class="nav">
 		<ul>
 			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
-			{% for status in statuses %}
+			{% for status, class in statuses %}
 				{% set total = blx.accounts.totalUsers({ 'status': status }) %}
 				{% if total %}
-					<li><a href="{{ url('users/' ~ status) }}" {% if blx.request.segment(2) == status %}class="sel"{% endif %}><div class="status {{ statusClasses[loop.index0] }}"></div> {{ status|ucfirst|t }}</a></li>
+					<li><a href="{{ url('users/' ~ status) }}" {% if blx.request.segment(2) == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 				{% endif %}
 			{% endfor %}
 			<li><a href="{{ url('users/admins') }}" {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %} data-icon="☻">{{ "Admins"|t }}</a></li>
@@ -46,19 +45,7 @@
 						<td>{{ user.fullname }}</td>
 						<td>{% if user.email %}<a href="mailto:{{ user.email }}">{{ user.email }}</a>{% endif %}</td>
 						<td>{% if user.last_login_date %}{{ blx.date.nice(user.last_login_date) }}{% else %}{{ "Never"|t }}{% endif %}</td>
-						{% if showStatus %}
-							<td>
-								{%- if user.status == 'pending' -%}
-									<div class="status"></div> {{ "Pending Verification"|t }}
-								{%- elseif user.status == 'locked' -%}
-									<div class="status pending"></div> {% if blx.config.failedPasswordMode == 'cooldown' %}{{ "Temporarily"|t }}{% endif %} {{ "Locked"|t }}
-								{%- elseif user.status == 'suspended' -%}
-									<div class="status off"></div> {{ "Suspended"|t }}
-								{%- else -%}
-									<div class="status on"></div> {{ "Active"|t }}
-								{%- endif -%}
-							</td>
-						{% endif %}
+						{% if showStatus %}<td><div class="status {{ statuses[user.status] }}"></div> {{ user.status|ucfirst|t }}</td>{% endif %}
 					</tr>
 				{% endfor %}
 			</tbody>
