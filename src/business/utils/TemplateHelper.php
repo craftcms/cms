@@ -148,15 +148,15 @@ class TemplateHelper
 		if (($mode = blx()->request->getMode()) == RequestMode::CP || $mode == RequestMode::Action)
 		{
 			$parts = array_filter(explode('/', $name));
-			$plugin = strtolower(array_shift($parts));
+			$pluginHandle = strtolower(array_shift($parts));
 
-			if ($plugin && blx()->plugins->getPlugin($plugin))
+			if ($pluginHandle && ($plugin = blx()->plugins->getPlugin($pluginHandle)) !== false)
 			{
 				// Get the template path for the plugin.
-				$basePath = blx()->path->getPluginsPath().$plugin.'/templates/';
+				$basePath = blx()->path->getPluginsPath().$plugin->getClassHandle().'/templates/';
 
 				// Chop off the plugin segment, since that's already covered by $basePath
-				$name = implode($parts);
+				$name = implode('/', $parts);
 
 				if (($path = static::_findTemplate($basePath.$name)) !== null)
 					return static::$_templatePaths[$name] = $path;
@@ -228,7 +228,11 @@ class TemplateHelper
 		foreach ($testPaths as $path)
 		{
 			if (is_file(blx()->findLocalizedFile($path)))
+			{
+				$path = str_replace('\\', '/', $path);
+				$path = str_replace('//', '/', $path);
 				return $path;
+			}
 		}
 
 		return null;
