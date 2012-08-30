@@ -24,6 +24,7 @@
 					<li><a href="{{ url('users/' ~ status) }}" {% if blx.request.segment(2) == status %}class="sel"{% endif %}><div class="status {{ statusClasses[loop.index0] }}"></div> {{ status|ucfirst|t }}</a></li>
 				{% endif %}
 			{% endfor %}
+			<li><a href="{{ url('users/admins') }}" {% if blx.request.segment(2) == 'admins' %}class="sel"{% endif %} data-icon="☻">{{ "Admins"|t }}</a></li>
 		</ul>
 	</nav>
 
