@@ -38,6 +38,8 @@ class BlocksTwigExtension extends \Twig_Extension
 			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),
 			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
+			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
+			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
 		);
 	}
 
