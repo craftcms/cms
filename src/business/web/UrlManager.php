@@ -96,20 +96,20 @@ class UrlManager extends \CUrlManager
 		if (BLOCKS_CP_REQUEST)
 		{
 			// Check the @@@productDisplay@@@ predefined routes.
-			foreach ($this->cpRoutes as $route)
+			foreach ($this->cpRoutes as $pattern => $template)
 			{
-				if ($this->_matchRouteInternal($route[0]))
-					return $route[1];
+				if ($this->_matchRouteInternal($pattern))
+					return $template;
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
 			$pluginCpRoutes = blx()->plugins->callHook('registerCpRoutes');
 			foreach ($pluginCpRoutes as $pluginRoutes)
 			{
-				foreach ($pluginRoutes as $route)
+				foreach ($pluginRoutes as $pattern => $template)
 				{
-					if ($this->_matchRouteInternal($route[0]))
-						return $route[1];
+					if ($this->_matchRouteInternal($pattern))
+						return $template;
 				}
 			}
 		}

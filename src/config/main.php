@@ -110,24 +110,24 @@ return CMap::mergeArray(
 			'urlManager' => array(
 				'class' => 'Blocks\UrlManager',
 				'cpRoutes' => array(
-					array('update\/(?P<handle>[^\/]*)',                        'update'),
+					'update\/(?P<handle>[^\/]*)'                        => 'update',
 					/* BLOCKS ONLY */
-					array('myaccount',                                         'users/_edit/account'),
-					array('myaccount\/profile',                                'users/_edit/profile'),
+					'myaccount'                                         => 'users/_edit/account',
+					'myaccount\/profile'                                => 'users/_edit/profile',
 					/* end BLOCKS ONLY */
 					/* BLOCKSPRO ONLY */
-					array('users\/new',                                        'users/_edit/account'),
-					array('users\/(?P<userId>\d+)',                            'users/_edit/account'),
-					array('users\/(?P<userId>\d+)\/profile',                   'users/_edit/profile'),
-					array('users\/(?P<userId>\d+)\/admin',                     'users/_edit/admin'),
-					array('users\/(?P<userId>\d+)\/info',                      'users/_edit/info'),
+					'users\/new'                                        => 'users/_edit/account',
+					'users\/(?P<userId>\d+)'                            => 'users/_edit/account',
+					'users\/(?P<userId>\d+)\/profile'                   => 'users/_edit/profile',
+					'users\/(?P<userId>\d+)\/admin'                     => 'users/_edit/admin',
+					'users\/(?P<userId>\d+)\/info'                      => 'users/_edit/info',
 					/* end BLOCKSPRO ONLY */
-					array('content\/(?P<entryId>\d+)',                         'content/_entry'),
-					array('content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)', 'content/_entry'),
-					array('plugins\/(?P<pluginClass>[A-Za-z]\w*)',             'plugins/_settings'),
+					'content\/(?P<entryId>\d+)'                         => 'content/_entry',
+					'content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)' => 'content/_entry',
+					'plugins\/(?P<pluginClass>[A-Za-z]\w*)'             => 'plugins/_settings',
 					/* BLOCKSPRO ONLY */
-					array('settings\/sections\/new',                           'settings/sections/_edit'),
-					array('settings\/sections\/(?P<sectionId>\d+)',            'settings/sections/_edit'),
+					'settings\/sections\/new'                           => 'settings/sections/_edit',
+					'settings\/sections\/(?P<sectionId>\d+)'            => 'settings/sections/_edit',
 					/* end BLOCKSPRO ONLY */
 				),
 			),
