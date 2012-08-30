@@ -46,9 +46,7 @@ class PluginsService extends \CApplicationComponent
 			$plugin = $this->getPlugin($record->class);
 			if ($plugin)
 			{
-				$key = strtolower($plugin->getClassHandle());
-				$this->_enabledPlugins[$key] = $plugin;
-
+				$this->_enabledPlugins[$plugin->getClassHandle()] = $plugin;
 				$plugin->record = $record;
 
 				$this->_registerPluginServices($plugin->getClassHandle());
@@ -86,11 +84,11 @@ class PluginsService extends \CApplicationComponent
 
 			foreach ($records as $record)
 			{
-				$this->_installedPlugins[] = strtolower($record['class']);
+				$this->_installedPlugins[] = $record['class'];
 			}
 		}
 
-		return in_array(strtolower($class), $this->_installedPlugins);
+		return in_array($class, $this->_installedPlugins);
 	}
 
 	/**
@@ -101,10 +99,7 @@ class PluginsService extends \CApplicationComponent
 	 */
 	public function getPlugin($classHandle)
 	{
-		// Plugins are indexed by lowercase class handles
-		$key = strtolower($classHandle);
-
-		if (!isset($this->_plugins[$key]))
+		if (!isset($this->_plugins[$classHandle]))
 		{
 			// Get the full class name
 			$class = $classHandle.'Plugin';
@@ -114,22 +109,25 @@ class PluginsService extends \CApplicationComponent
 			if (!class_exists($nsClass, false))
 			{
 				$path = blx()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
-				if (($path = File::fileExists($path)) !== false)
+
+				if (($path = File::fileExists($path, false)) !== false)
 					require_once $path;
+				else
+					return false;
 			}
 
-			if (!class_exists($nsClass, false))
-				$plugin = false;
-			else
+			if (class_exists($nsClass, false))
 			{
 				$plugin = new $nsClass;
 				$plugin->init();
-			}
 
-			$this->_plugins[$key] = $plugin;
+				$this->_plugins[$classHandle] = $plugin;
+			}
+			else
+				return false;
 		}
 
-		return $this->_plugins[$key];
+		return $this->_plugins[$classHandle];
 	}
 
 	/**
@@ -144,20 +142,20 @@ class PluginsService extends \CApplicationComponent
 			$this->_allPlugins = array();
 
 			// Find all of the plugins in the plugins folder
-			$pluginsPath = blx()->path->getPluginsPath();
-			$folders = scandir($pluginsPath);
-			foreach ($folders as $folder)
-			{
-				// Ignore files and relative directories
-				if (strncmp($folder, '.', 1) === 0 || !is_dir($pluginsPath.$folder))
-					continue;
+			$pluginsPath = blx()->file->set(blx()->path->getPluginsPath());
+			$paths = $pluginsPath->getContents(true, '/[^_]Plugin.php/');
 
-				// Folder names == the class handle
-				$plugin = $this->getPlugin($folder);
-				if ($plugin)
+			if (is_array($paths) && count($paths) > 0)
+			{
+				foreach ($paths as $path)
 				{
-					$key = strtolower($plugin->getClassHandle());
-					$this->_allPlugins[$key] = $plugin;
+					$handle = pathinfo($path, PATHINFO_FILENAME);
+					$handle = substr($handle, 0, strlen($handle) - strlen('Plugin'));
+
+					// Plugin file name (minus 'Plugin') == the class handle
+					$plugin = $this->getPlugin($handle);
+					if ($plugin)
+						$this->_allPlugins[$plugin->getClassHandle()] = $plugin;
 				}
 			}
 
