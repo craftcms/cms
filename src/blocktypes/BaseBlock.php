@@ -44,8 +44,12 @@ abstract class BaseBlock extends BaseComponent
 		if (empty($this->settingsTemplate))
 			return;
 
+		if (!is_array($settings))
+			$settings = array();
+		$settings = array_merge($this->getDefaultSettings(), $settings);
+
 		$variables = array(
-			'settings' => array_merge($this->getDefaultSettings(), $settings)
+			'settings' => $settings
 		);
 
 		$template = TemplateHelper::render($this->settingsTemplate, $variables);
