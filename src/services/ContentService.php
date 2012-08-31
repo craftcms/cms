@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class ContentService extends \CApplicationComponent
 {
+	/* BLOCKSPRO ONLY */
+
 	/* Sections */
 
 	/**
@@ -73,7 +75,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	private function _applySectionConditions($query, $params)
 	{
-		$whereConditions = array('and');
+		$whereConditions = array();
 		$whereParams = array();
 
 		if (!empty($params['id']))
@@ -87,7 +89,11 @@ class ContentService extends \CApplicationComponent
 		if (!empty($params['has_urls']))
 			$whereConditions[] = DatabaseHelper::parseParam('has_urls', $params['has_urls'], $whereParams);
 
-		$query->where($whereConditions, $whereParams);
+		if ($whereConditions)
+		{
+			array_unshift($whereConditions, 'and');
+			$query->where($whereConditions, $whereParams);
+		}
 	}
 
 	/**
@@ -115,35 +121,55 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
-	 * Saves a section.
+	 * Gets a section or creates a new one.
 	 *
-	 * @param array $sectionSettings
-	 * @param int $sectionId
+	 * @access private
+	 * @param int $id
 	 * @return Section
+	 * @throws Exception
 	 */
-	public function saveSection($sectionSettings, $sectionId = null)
+	private function _getSection($id = null)
 	{
-		if ($sectionId)
+		if ($id)
 		{
-			$section = $this->getSectionById($sectionId);
-			if (!$section)
-				throw new Exception(Blocks::t('No section exists with the ID “{sectionId}”', array('sectionId' => $sectionId)));
+			$section = $this->getSectionById($id);
 
-			$isNewSection = false;
-			$oldContentTable = $this->getEntryContentTableName($section);
-			$oldUrlFormat = $section->url_format;
+			// This is serious business.
+			if (!$section)
+				throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $id)));
 		}
 		else
 		{
 			$section = new Section();
-			$isNewSection = true;
 		}
 
-		$section->name        = $sectionSettings['name'];
-		$section->handle      = $sectionSettings['handle'];
-		$section->has_urls    = (isset($sectionSettings['has_urls']) ? (bool)$sectionSettings['has_urls'] : false);
-		$section->url_format  = (isset($sectionSettings['url_format']) ? $sectionSettings['url_format'] : null);
-		$section->template    = (isset($sectionSettings['template']) ? $sectionSettings['template'] : null);
+		return $section;
+	}
+
+	/**
+	 * Saves a section.
+	 *
+	 * @param array $settings
+	 * @param int $sectionId
+	 * @return Section
+	 */
+	public function saveSection($settings, $sectionId = null)
+	{
+		$section = $this->_getSection($sectionId);
+		$content = new EntryContent($section);
+
+		$isNewSection = $section->getIsNewRecord();
+		if (!$isNewSection)
+		{
+			$oldUrlFormat = $section->url_format;
+			$oldContentTable = $content->getTableName();
+		}
+
+		$section->name        = $settings['name'];
+		$section->handle      = $settings['handle'];
+		$section->has_urls    = !empty($settings['has_urls']);
+		$section->url_format  = (!empty($settings['url_format']) ? $settings['url_format'] : null);
+		$section->template    = (!empty($settings['template']) ? $settings['template'] : null);
 
 		// Start a transaction
 		$transaction = blx()->db->beginTransaction();
@@ -152,13 +178,12 @@ class ContentService extends \CApplicationComponent
 			if ($section->save())
 			{
 				// Get the section's content table name
-				$contentTable = $this->getEntryContentTableName($section);
+				$contentTable = $content->getTableName();
 
 				if ($isNewSection)
 				{
 					// Create the content table
-					$entryContent = new EntryContent($section);
-					$entryContent->createTable();
+					$content->createTable();
 				}
 				else
 				{
@@ -189,16 +214,95 @@ class ContentService extends \CApplicationComponent
 		return $section;
 	}
 
+	/* Section blocks */
+
 	/**
-	 * Returns a section's content table name
+	 * Gets a section block by its ID.
 	 *
-	 * @param Section $section
-	 * @return string
+	 * @param int $id
+	 * @return SectionBlock
 	 */
-	public function getEntryContentTableName(Section $section)
+	public function getSectionBlockById($id)
 	{
-		return 'entrycontent_'.$section->handle;
+		return SectionBlock::model()->findById($id);
 	}
+
+	/**
+	 * Gets a section block by its handle.
+	 *
+	 * @param string $handle
+	 * @return SectionBlock
+	 */
+	public function getSectionBlockByHandle($handle)
+	{
+		return SectionBlock::model()->findByAttributes(array(
+			'handle' => $handle
+		));
+	}
+
+	/**
+	 * Gets a section block or creates a new one.
+	 *
+	 * @access private
+	 * @param int $id
+	 * @return SectionBlock
+	 * @throws Exception
+	 */
+	private function _getSectionBlock($id = null)
+	{
+		if ($id)
+		{
+			$block = $this->getSectionBlockById($id);
+
+			// This is serious business.
+			if (!$block)
+				throw new Exception(Blocks::t('No section block exists with the ID “{id}”', array('id' => $id)));
+		}
+		else
+		{
+			$block = new SectionBlock();
+		}
+
+		return $block;
+	}
+
+	/**
+	 * Saves a section block.
+	 *
+	 * @param array $settings
+	 * @param int $sectionId
+	 * @param int $blockId
+	 * @return SectionBlock
+	 */
+	public function saveSectionBlock($settings, $sectionId, $blockId = null)
+	{
+		$section = $this->_getSection($sectionId);
+		$block = $this->_getSectionBlock($blockId);
+
+		$block->section_id   = $section->id;
+		$block->name         = $settings['name'];
+		$block->handle       = $settings['handle'];
+		$block->instructions = (!empty($settings['instructions']) ? $settings['instructions'] : null);
+		$block->required     = !empty($settings['required']);
+		$block->translatable = !empty($settings['translatable']);
+		$block->class        = $settings['class'];
+		$block->settings     = (!empty($settings['settings']) ? $settings['settings'] : null);
+
+		if ($block->getIsNewRecord())
+		{
+			$maxSortOrder = blx()->db->createCommand()
+				->select('max(sort_order)')
+				->from('sectionblocks')
+				->queryScalar();
+
+			$block->sort_order = $maxSortOrder + 1;
+		}
+
+		$block->save();
+		return $block;
+	}
+
+	/* end BLOCKSPRO ONLY */
 
 	/* Entries */
 
@@ -218,6 +322,8 @@ class ContentService extends \CApplicationComponent
 
 		try
 		{
+			$section = $this->_getSection($sectionId);
+
 			// Create the entry
 			$entry = new Entry();
 			$entry->section_id = $sectionId;
@@ -226,12 +332,11 @@ class ContentService extends \CApplicationComponent
 			$entry->save();
 
 			// Create a content row for it
-			$table = $this->getEntryContentTableName($entry->section);
-			blx()->db->createCommand()->insert($table, array(
-				'entry_id' => $entry->id,
-				'language' => $entry->section->site->language,
-				'title'    => $title
-			));
+			$content = new EntryContent($section);
+			$content->entry_id = $entry->id;
+			$content->language = blx()->language;
+			$content->title = $title;
+			$content->save();
 
 			// Commit the transaction and return the entry
 			$transaction->commit();

@@ -60,6 +60,8 @@
 		</div>
 		<!-- end BLOCKSPRO ONLY -->
 
+		<hr>
+
 		<div class="field" id="protocol-field">
 			<div class="heading">
 				<label for="protocol">{{ "Protocol"|t }}</label>
@@ -127,8 +129,8 @@
 
 			<div id="smtpAuth-field" class="field">
 				<label>
-					<input type="checkbox" name="smtpAuth" value="y" {% if settings.smtpAuth %}checked{% endif %} class="togglefields" data-target="smtpAuthCredentials-field">
-					Use Smtp Authentication
+					<input type="checkbox" name="smtpAuth" value="y" {% if settings.smtpAuth %}checked{% endif %} class="fieldtoggle" data-target="smtpAuthCredentials-field">
+					{{ "Use SMTP Authentication" }}
 				</label>
 			</div>
 
@@ -177,6 +179,8 @@
 				} %}
 			</div>
 		</div>
+
+		<hr>
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">

@@ -40,7 +40,8 @@ var scripts =
 	'ui/BlockEditor.js',
 	'ui/PasswordInput.js',
 	'ui/MixedInput.js',
-	'ui/AdminPane.js'
+	'ui/AdminPane.js',
+	'ui/FieldToggle.js'
 ];
 
 for (var i = 0; i < scripts.length; i++)

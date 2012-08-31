@@ -13,11 +13,12 @@ abstract class BaseBlockModel extends BaseModel
 		return array(
 			'name'         => PropertyType::Name,
 			'handle'       => array(PropertyType::Handle, 'reservedWords' => 'id,date_created,date_updated,uid,title'),
-			'class'        => PropertyType::ClassName,
 			'instructions' => PropertyType::Text,
 			'required'     => PropertyType::Boolean,
+			'translatable' => PropertyType::Boolean,
+			'class'        => PropertyType::ClassName,
+			'settings'     => PropertyType::Json,
 			'sort_order'   => PropertyType::SortOrder,
-			'settings'     => PropertyType::Text,
 		);
 	}
 }

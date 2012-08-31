@@ -51,12 +51,12 @@ class RoutesService extends \CApplicationComponent
 			$route = new Route();
 
 			// Get the next biggest sort order
-			$query = blx()->db->createCommand()
-				->select('MAX(sort_order) AS max_sort_order')
+			$maxSortOrder = blx()->db->createCommand()
+				->select('max(sort_order)')
 				->from('routes')
-				->queryRow();
+				->queryScalar();
 
-			$route->sort_order = $query['max_sort_order'] + 1;
+			$route->sort_order = $maxSortOrder + 1;
 		}
 
 		// Compile the URL parts into a regex pattern

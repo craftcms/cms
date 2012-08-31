@@ -8,6 +8,8 @@ namespace Blocks;
  */
 abstract class BaseModel extends \CActiveRecord
 {
+	private $_jsonProperties;
+
 	/**
 	 * Constructor
 	 * @param string $scenario
@@ -28,6 +30,67 @@ abstract class BaseModel extends \CActiveRecord
 		{
 			parent::__construct($scenario);
 			$this->populatePropertyDefaults();
+		}
+	}
+
+	/**
+	 * Init
+	 */
+	public function init()
+	{
+		$this->attachEventHandler('onAfterFind', array($this, 'decodeJsonProperties'));
+		$this->attachEventHandler('onBeforeSave', array($this, 'encodeJsonProperties'));
+		$this->attachEventHandler('onAfterSave', array($this, 'decodeJsonProperties'));
+	}
+
+	/**
+	 * Gets any JSON properties
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getJsonProperties()
+	{
+		if (!isset($this->_jsonProperties))
+		{
+			$this->_jsonProperties = array();
+			foreach ($this->getProperties() as $name => $config)
+			{
+				$type = ModelHelper::getPropertyType($config);
+				if ($type == PropertyType::Json)
+					$this->_jsonProperties[] = $name;
+			}
+		}
+		return $this->_jsonProperties;
+	}
+
+	/**
+	 * Decodes any JSON properties.
+	 */
+	public function decodeJsonProperties()
+	{
+		foreach ($this->_getJsonProperties() as $name)
+		{
+			$value = $this->$name;
+			if (!empty($value) && is_string($value))
+				$this->$name = Json::decode($value);
+			else
+				$this->$name = array();
+		}
+	}
+
+	/**
+	 * Encodes any JSON properties.
+	 */
+	public function encodeJsonProperties()
+	{
+		foreach ($this->_getJsonProperties() as $name)
+		{
+			$value = $this->$name;
+			if (!empty($value) && is_array($value))
+				$this->$name = Json::encode($value);
+			else
+				$this->name = null;
 		}
 	}
 

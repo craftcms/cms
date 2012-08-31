@@ -21,15 +21,15 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$sectionId = blx()->request->getPost('section_id');
+		$sectionId = blx()->request->getPost('sectionId');
 
-		$sectionSettings['name']       = blx()->request->getPost('name');
-		$sectionSettings['handle']     = blx()->request->getPost('handle');
-		$sectionSettings['has_urls']   = blx()->request->getPost('has_urls');
-		$sectionSettings['url_format'] = blx()->request->getPost('url_format');
-		$sectionSettings['template']   = blx()->request->getPost('template');
+		$settings['name']       = blx()->request->getPost('name');
+		$settings['handle']     = blx()->request->getPost('handle');
+		$settings['has_urls']   = blx()->request->getPost('has_urls');
+		$settings['url_format'] = blx()->request->getPost('url_format');
+		$settings['template']   = blx()->request->getPost('template');
 
-		$section = blx()->content->saveSection($sectionSettings, $sectionId);
+		$section = blx()->content->saveSection($settings, $sectionId);
 
 		// Did it save?
 		if (!$section->getErrors())
@@ -45,6 +45,46 @@ class ContentController extends BaseController
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
 			'section' => $section
+		));
+	}
+
+	/**
+	 * Saves a section block.
+	 */
+	public function actionSaveSectionBlock()
+	{
+		$this->requirePostRequest();
+
+		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$blockId   = blx()->request->getPost('blockId');
+		$class     = blx()->request->getRequiredPost('class');
+
+		$settings['name']         = blx()->request->getPost('name');
+		$settings['handle']       = blx()->request->getPost('handle');
+		$settings['instructions'] = blx()->request->getPost('instructions');
+		$settings['required']     = blx()->request->getPost('required');
+		$settings['translatable'] = blx()->request->getPost('translatable');
+
+		$blocktypeSettings = blx()->request->getPost('settings');
+		$settings['class']    = $class;
+		$settings['settings'] = isset($blocktypeSettings[$class]) ? $blocktypeSettings[$class] : null;
+
+		$block = blx()->content->saveSectionBlock($settings, $sectionId, $blockId);
+
+		// Did it save?
+		if (!$block->getErrors())
+		{
+			blx()->user->setNotice(Blocks::t('Content block saved.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setError(Blocks::t('Couldn’t save content block.'));
+		}
+
+		// Reload the original template
+		$this->renderRequestedTemplate(array(
+			'block' => $block
 		));
 	}
 

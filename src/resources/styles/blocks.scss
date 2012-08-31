@@ -8,8 +8,8 @@
 
 body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; color: #5b5b5b; background: #fff; }
 
-.first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child, .buttons:first-child { margin-top: 0; }
-.last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child                        { margin-bottom: 0; }
+.first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, .pane:first-child, .grid:first-child, .field:first-child, .buttons:first-child { margin-top: 0 !important; }
+.last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,  .pane:last-child,  .grid:last-child,  .field:last-child                        { margin-bottom: 0 !important; }
 
 /* icons */
 [data-icon]:before { @include icon; content: attr(data-icon); }
@@ -240,6 +240,8 @@ table.data th,
 table.data td { padding: 5px 0 5px 10px; }
 table.data th:first-child,
 table.data td:first-child { padding-left: 0; }
+table.data thead td,
+table.data thead th { padding-top: 0; }
 table.data thead th { color: $mediumdark; font-weight: bold; }
 table.data tbody th,
 table.data tbody td { border-top: 1px dotted rgba(0,0,0,0.1); }
@@ -312,7 +314,7 @@ input, textarea { font-family: 'Helvetica Neue', sans-serif; }
 .textwrapper { padding-right: 16px; }
 .textwrapper > .text { width: 100%; }
 
-.text { display: block; border: 1px solid #c9c9c9; width: 334px; padding: 7px; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.text { display: block; border: 1px solid #c9c9c9; width: 384px; padding: 7px; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 input.text,
 textarea.text,
 .text input,

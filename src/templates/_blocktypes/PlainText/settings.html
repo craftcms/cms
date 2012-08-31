@@ -1,21 +1,21 @@
 <div class="field">
 	<div class="heading">
-		<label for="{{ idPrefix }}hint">{{ "Hint Text"|t }}</label>
+		<label for="hint">{{ "Hint Text"|t }}</label>
 		<p>{{ "The text that will be shown if the field doesn’t have a value."|t }}</p>
 	</div>
-	<div class="textwrapper"><input id="{{ idPrefix }}hint" name="{{ namePrefix }}[hint]" class="text" type="text" value="{{ settings.hint }}"></div>
+	<input id="hint" name="hint" class="text" type="text" value="{{ settings.hint }}">
 </div>
 <div class="field checkbox">
 	<label>
-		<input type="checkbox" name="{{ namePrefix }}[multiline]" value="y" {% if settings.multiline %}checked{% endif %}>
+		<input type="checkbox" name="multiline" value="y" {% if settings.multiline %}checked{% endif %}>
 		{{ "Allow line breaks"|t }}
 	</label>
 </div>
 {#<div class="field">
 	<div class="heading">
-		<label for="{{ idPrefix }}maxLength">{{ "Max Length"|t }}</label>
+		<label for="maxLength">{{ "Max Length"|t }}</label>
 	</div>
-	<input id="{{ idPrefix }}maxLength" name="{{ namePrefix }}[maxLength]" class="text" type="text" value="{{ settings.maxLength }}" size="4" style="display: inline-block">
+	<input id="maxLength" name="maxLength" class="text" type="text" value="{{ settings.maxLength }}" size="4" style="display: inline-block">
 	<div style="display: inline-block; margin-left: 4px; vertical-align: middle;">
 		{%- include "_includes/pill" with {
 			'name': namePrefix ~ "[maxLengthUnit]",

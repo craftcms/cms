@@ -6,10 +6,13 @@ namespace Blocks;
  */
 class CheckboxesBlock extends BaseOptionsBlock
 {
-	public $blocktypeName = 'Checkboxes';
-
 	protected $settingsTemplate = '_blocktypes/Checkboxes/settings';
 	protected $fieldTemplate = '_blocktypes/Checkboxes/field';
+
+	public function getType()
+	{
+		return Blocks::t('Checkboxes');
+	}
 
 	/**
 	 * Combines the checkbox selections into a flat string

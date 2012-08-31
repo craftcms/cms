@@ -30,9 +30,13 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getFilters()
 	{
 		$translateFilter = new \Twig_Filter_Function('\Blocks\Blocks::t');
+		$namespaceFilter = new \Twig_Filter_Function('\Blocks\TemplateHelper::namespaceInputs');
+
 		return array(
-			't'          => $translateFilter,
 			'translate'  => $translateFilter,
+			't'          => $translateFilter,
+			'namespace'  => $namespaceFilter,
+			'ns'         => $namespaceFilter,
 			'decimal'    => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatDecimal'),
 			'currency'   => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'),
 			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),

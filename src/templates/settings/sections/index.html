@@ -1,35 +1,36 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
+{% set sections = blx.content.sections %}
 
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
-
-	<ul class="right">
-		<li><a href="{{ url('settings/sections/new') }}" class="btn" data-icon="+">{{ "New Section"|t }}</a></li>
-	</ul>
 {% endset %}
 
 
 {% set content %}
-	<table class="data">
-		<tbody>
-			{% set sections = blx.content.sections %}
-			{% if sections|length %}
-				{% for section in sections %}
-					<tr>
-						<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
-					</tr>
-				{% endfor %}
-			{% else %}
-				<tr>
-					<td>{{ "No sections exist yet."|t }} <a href="{{ url('settings/sections/new') }}">{{ "Create the first one"|t }}</a></td>
-				</tr>
-			{% endif %}
-		</tbody>
-	</table>
+	<div class="pane">
+		{% if sections|length %}
+			<table class="data">
+				<thead>
+					<th scope="col">{{ "Section Name"|t }}</th>
+					<th scope="col">{{ "Edit Content Blocks"|t }}</th>
+				</thead>
+				<tbody>
+					{% for section in sections %}
+						<tr>
+							<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
+							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Edit Content Blocks"|t }}</a></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p>{{ "No sections exist yet."|t }} <a href="{{ url('settings/sections/new') }}">{{ "Create the first one."|t }}</a></p>
+		{% endif %}
+	</div>
 
 	<div class="buttons">
-		<a class="btn" href="{{ url('settings') }}">{{ "Done"|t }}</a>
+		<a href="{{ url('settings/sections/new') }}" class="btn" data-icon="+">{{ "New Section"|t }}</a>
 	</div>
 {% endset %}

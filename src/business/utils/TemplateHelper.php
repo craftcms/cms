@@ -252,7 +252,8 @@ class TemplateHelper
 		$template = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $template);
 
 		// id= and for= attributes
-		$template = preg_replace('/((id=|for=)(\'|"))([^\'"]+)\3/', '$1'.$namespace.'-$4$3', $template);
+		$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
+		$template = preg_replace('/((id=|for=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $template);
 
 		return $template;
 	}

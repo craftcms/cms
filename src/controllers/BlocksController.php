@@ -40,7 +40,7 @@ class BlocksController extends BaseController
 					'success' => true,
 					'id'      => $block->id,
 					'name'    => $block->name,
-					'type'    => $block->blocktypeName
+					'type'    => $block->getType()
 				);
 				$this->returnJson($r);
 			}

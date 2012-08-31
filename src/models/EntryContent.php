@@ -23,7 +23,10 @@ class EntryContent extends BaseModel
 
 	public function getTableName()
 	{
-		return blx()->content->getEntryContentTableName($this->section);
+		if (isset($this->section))
+			return 'entrycontent_'.$this->section->handle;
+		else
+			throw new Exception(Blocks::t('Cannot get the table name if a section hasn’t been defined.'));
 	}
 
 	protected function getProperties()

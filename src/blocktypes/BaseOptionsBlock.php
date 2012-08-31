@@ -6,9 +6,12 @@ namespace Blocks;
  */
 abstract class BaseOptionsBlock extends BaseBlock
 {
-	protected $defaultSettings = array(
-		'options' => array()
-	);
+	protected function getDefaultSettings()
+	{
+		return array(
+			'options' => array()
+		);
+	}
 
 	/**
 	 * Set the settings

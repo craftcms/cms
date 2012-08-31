@@ -1,10 +1,17 @@
-{% if not section %}
+{% if not section and sectionId %}
 	{% set section = blx.content.getSectionById(sectionId) %}
+	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
 {% extends "_layouts/cp" %}
-{% set title = (section.id ? "{sectionName} Settings"|t({ 'sectionName': section.name }) : "Create a new section"|t) %}
+
+
+{% if section.id %}
+	{% set title = "{section} Settings"|t({ 'section': section.name }) %}
+{% else %}
+	{% set title = "Create a new section"|t %}
+{% endif %}
 
 
 {% set titlebar %}
@@ -16,9 +23,9 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="content/saveSection">
 		<input type="hidden" name="redirect" value="settings/sections">
-		{% if section.id %}<input type="hidden" name="section_id" value="{{ section.id }}">{% endif %}
+		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
-		<div class="field">
+		<div class="field first">
 			<div class="heading">
 				<label class="required" for="name">{{ "Section Name"|t }}</label>
 				<p>{{ "What this section will be called in the CP."|t }}</p>
@@ -40,9 +47,11 @@
 			{% endif %}
 		</div>
 
+		<hr>
+
 		<div class="field checkbox">
 			<label>
-				<input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="togglefields" data-target="has-urls-setting">
+				<input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="fieldtoggle" data-target="has-urls-setting">
 				{{ "Entries in this section have their own URLs"|t }}
 			</label>
 		</div>
@@ -64,6 +73,8 @@
 				<input id="template" name="template" class="text" type="text" value="{{ section.template }}">
 			</div>
 		</div>
+
+		<hr>
 
 		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

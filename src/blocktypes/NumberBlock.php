@@ -6,21 +6,23 @@ namespace Blocks;
  */
 class NumberBlock extends BaseBlock
 {
-	public $blocktypeName = 'Number';
-
-	protected $defaultSettings = array(
-		'type' => 'int',
-		'min' => null,
-		'max' => null
-	);
-
 	protected $settingsTemplate = '_blocktypes/Number/settings';
 	protected $fieldTemplate = '_blocktypes/Number/field';
 
-	/**
-	 * Get the
-	 * @return bool|string Whether the settings passed validation
-	 */
+	public function getType()
+	{
+		return Blocks::t('Number');
+	}
+
+	protected function getDefaultSettings()
+	{
+		return array(
+			'type' => 'int',
+			'min' => null,
+			'max' => null
+		);
+	}
+
 	public function getColumnType()
 	{
 		switch ($this->settings['type'])

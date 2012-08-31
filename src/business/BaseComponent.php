@@ -24,6 +24,16 @@ abstract class BaseComponent extends \CApplicationComponent
 	private $_classHandle;
 
 	/**
+	 * Returns the type of... whatever it is.
+	 *
+	 * @return string
+	 */
+	public function getType()
+	{
+		return '';
+	}
+
+	/**
 	 * Get the class name, sans namespace.
 	 * @return string
 	 */
@@ -72,5 +82,4 @@ abstract class BaseComponent extends \CApplicationComponent
 		else
 			return parent::__get($name);
 	}
-
 }

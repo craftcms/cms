@@ -41,5 +41,16 @@ class ContentVariable
 		return blx()->content->getSectionById($id);
 	}
 
+	/**
+	 * Gets a section block by its ID.
+	 *
+	 * @param int $id
+	 * @return SectionBlock
+	 */
+	public function getSectionBlockById($id)
+	{
+		return blx()->content->getSectionBlockById($id);
+	}
+
 	/* end BLOCKSPRO ONLY */
 }

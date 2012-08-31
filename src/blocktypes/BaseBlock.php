@@ -6,7 +6,6 @@ namespace Blocks;
  */
 abstract class BaseBlock extends BaseComponent
 {
-	public $blocktypeName;
 	public $required;
 
 	protected $componentType = 'Block';
@@ -14,15 +13,8 @@ abstract class BaseBlock extends BaseComponent
 	protected $columnType = PropertyType::Text;
 
 	/**
-	 * Getter
-	 */
-	public function __get($name)
-	{
-		//if (in_array($name, array('name', 'handle', 'class'))
-	}
-
-	/**
-	 * Get the content column type
+	 * Get the content column type.
+	 *
 	 * @return string
 	 */
 	public function getColumnType()
@@ -31,21 +23,29 @@ abstract class BaseBlock extends BaseComponent
 	}
 
 	/**
-	 * Display the blocktype's settings
+	 * Returns the default block settings.
 	 *
-	 * @param $idPrefix
-	 * @param $namePrefix
+	 * @access protected
+	 * @return array
+	 */
+	protected function getDefaultSettings()
+	{
+		return array();
+	}
+
+	/**
+	 * Display the blocktype's settings.
+	 *
+	 * @param array $settings
 	 * @return string
 	 */
-	public function displaySettings($idPrefix, $namePrefix)
+	public function displaySettings($settings = array())
 	{
 		if (empty($this->settingsTemplate))
-			return '';
+			return;
 
 		$variables = array(
-			'idPrefix'   => $idPrefix,
-			'namePrefix' => $namePrefix,
-			'settings'   => $this->settings
+			'settings' => array_merge($this->getDefaultSettings(), $settings)
 		);
 
 		$template = TemplateHelper::render($this->settingsTemplate, $variables);
@@ -53,7 +53,8 @@ abstract class BaseBlock extends BaseComponent
 	}
 
 	/**
-	 * Display the field
+	 * Display the field.
+	 *
 	 * @param $data
 	 * @return string
 	 */

@@ -6,10 +6,13 @@ namespace Blocks;
  */
 class MultiSelectBlock extends BaseOptionsBlock
 {
-	public $blocktypeName = 'Multi-select';
-
 	protected $settingsTemplate = '_blocktypes/MultiSelect/settings';
 	protected $fieldTemplate = '_blocktypes/MultiSelect/field';
+
+	public function getType()
+	{
+		return Blocks::t('Multi-select');
+	}
 
 	/**
 	 * Combines the multi-select selections into a flat string

@@ -55,4 +55,5 @@ class PropertyType
 	const Url          = 'url';
 	const Build        = 'build';
 	const LicenseKey   = 'licensekey';
+	const Json         = 'json';
 }

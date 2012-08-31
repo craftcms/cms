@@ -1,10 +1,10 @@
 <div class="blocksettings">
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}name">{{ "Block Name"|t }}</label>
+			<label for="name">{{ "Block Name"|t }}</label>
 			<p>{{ "What this block will be called in the CP."|t }}</p>
 		</div>
-		<div class="textwrapper"><input id="{{ idPrefix }}name" name="{{ namePrefix }}[name]" class="text name" type="text" maxlength="100%" value="{{ block.name }}"></div>
+		<div class="textwrapper"><input id="name" name="name" class="text name" type="text" maxlength="100%" value="{{ block.name }}"></div>
 		{% if block.errors.name %}
 			{% include "_includes/error_list" with {'errors': block.errors.name} %}
 		{% endif %}
@@ -12,10 +12,10 @@
 
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}handle">{{ "Block Handle"|t }}</label>
+			<label for="handle">{{ "Block Handle"|t }}</label>
 			<p>{{ "How you’ll refer to this block in the templates."|t }}</p>
 		</div>
-		<div class="textwrapper"><input id="{{ idPrefix }}handle" name="{{ namePrefix }}[handle]" class="text handle code" type="text" maxlength="100" value="{{ block.handle }}"></div>
+		<div class="textwrapper"><input id="handle" name="handle" class="text handle code" type="text" maxlength="100" value="{{ block.handle }}"></div>
 		{% if block.errors.handle %}
 			{% include "_includes/error_list" with {'errors': block.errors.handle} %}
 		{% endif %}
@@ -23,31 +23,31 @@
 
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}instructions">{{ "Instructions"|t }}</label>
+			<label for="instructions">{{ "Instructions"|t }}</label>
 			<p>{{ "The text to be displayed beside the Block Name on the entry’s publish page."|t }}</p>
 		</div>
-		<div class="textwrapper"><textarea id="{{ idPrefix }}instructions" name="{{ namePrefix }}[instructions]" class="text instructions" rows="2" cols="100">{{ block.instructions }}</textarea></div>
+		<div class="textwrapper"><textarea id="instructions" name="instructions" class="text instructions" rows="2" cols="100">{{ block.instructions }}</textarea></div>
 	</div>
 
 	<div class="field checkbox">
 		<label>
-			<input type="checkbox" name="{{ namePrefix }}[required]" value="y" {% if block.required %}checked{% endif %} class="blockrequired">
+			<input type="checkbox" name="required" value="y" {% if block.required %}checked{% endif %} class="blockrequired">
 			{{ "This block is required"|t }}
 		</label>
 	</div>
 
 	<div class="field">
 		<div class="heading">
-			<label for="{{ idPrefix }}class">{{ "Block Type"|t }}</label>
+			<label for="class">{{ "Block Type"|t }}</label>
 		</div>
 		{% if block.class %}
 			{% set blockClass = block.class %}
 		{% else %}
 			{% set blockClass = "PlainText" %}
 		{% endif %}
-		<select id="{{ idPrefix }}class" name="{{ namePrefix }}[class]" class="blocktype">
+		<select id="class" name="class" class="blocktype">
 			{% for blocktype in blx.contentblocks.blocktypes %}
-				<option value="{{ blocktype.classHandle }}" {% if blocktype.classHandle == blockClass %}selected{% endif %}>{{ blocktype.blocktypeName }}</option>
+				<option value="{{ blocktype.classHandle }}" {% if blocktype.classHandle == blockClass %}selected{% endif %}>{{ blocktype.getType }}</option>
 			{% endfor %}
 		</select>
 	</div>

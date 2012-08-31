@@ -6,7 +6,7 @@
 			{% for block in currentBlocks %}
 				<li><a class="block-item {% if block.errors %}error{% endif %}" data-block-id="{{ block.id }}">
 					<div class="name {% if block.required %}required{% endif %}">{% if block.name %}{{ block.name }}{% else %}Untitled{% endif %}</div>
-					<div class="type">{{ block.blocktypeName }}</div>
+					<div class="type">{{ block.getType }}</div>
 					<input type="hidden" name="{{ name }}[order][]" value="{{ block.id }}">
 				</a></li>
 			{% endfor %}

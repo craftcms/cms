@@ -1,0 +1,42 @@
+{% extends "_layouts/cp" %}
+
+{% set section = blx.content.getSectionById(sectionId) %}
+{% if not section %}{% exit 404 %}{% endif %}
+
+{% set title = "{section} Content Blocks"|t({ 'section': section.name }) %}
+{% set blocks = section.blocks %}
+
+
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
+
+
+{% set content %}
+	<div class="pane">
+		{% if blocks|length %}
+			<table class="data">
+				<thead>
+					<th scope="col">{{ "Name"|t }}</th>
+					<th scope="col">{{ "Handle"|t }}</th>
+					<th scope="col">{{ "Type"|t }}</th>
+				</thead>
+				<tbody>
+					{% for block in blocks %}
+						<tr>
+							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name }}</a></td>
+							<td><code>{{ block.handle }}</code></td>
+							<td>{{ blx.contentblocks.getBlockByClass(block.class).getType }}</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p>{{ "No content blocks exist yet."|t }} <a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}">{{ "Create the first one."|t }}</a></p>
+		{% endif %}
+	</div>
+
+	<div class="buttons">
+		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn" data-icon="+">{{ "New Content Block"|t }}</a>
+	</div>
+{% endset %}

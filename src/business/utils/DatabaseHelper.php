@@ -34,6 +34,7 @@ class DatabaseHelper
 		PropertyType::Url          => array('type' => PropertyType::Varchar, 'maxLength' => 255),
 		PropertyType::Build        => array('type' => PropertyType::Int, 'required' => true, 'unsigned' => true),
 		PropertyType::LicenseKey   => array('type' => PropertyType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
+		PropertyType::Json         => array('type' => PropertyType::Text),
 	);
 
 	/**
@@ -50,10 +51,7 @@ class DatabaseHelper
 		}
 		else if (!isset($config['type']))
 		{
-			if (isset($config[0]))
-				$config['type'] = $config[0];
-			else
-				$config['type'] = PropertyType::Varchar;
+			$config['type'] = ModelHelper::getPropertyType($config);
 		}
 
 		// Merge in the default settings

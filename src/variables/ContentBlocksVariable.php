@@ -14,4 +14,15 @@ class ContentBlocksVariable
 	{
 		return blx()->blocks->getBlockTypes();
 	}
+
+	/**
+	 * Gets a content block by its class handle.
+	 *
+	 * @param string $class
+	 * @return BaseBlock
+	 */
+	public function getBlockByClass($class)
+	{
+		return blx()->blocks->getBlockByClass($class);
+	}
 }

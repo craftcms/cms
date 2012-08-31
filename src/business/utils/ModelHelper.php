@@ -6,13 +6,27 @@ namespace Blocks;
  */
 class ModelHelper
 {
+	/*
+	 * Gets the property type.
+	 *
+	 * @static
+	 * @param mixed $config
+	 * @return string
+	 */
+	public static function getPropertyType($config)
+	{
+		return is_string($config) ? $config : (isset($config['type']) ? $config['type'] : (isset($config[0]) ? $config[0] : PropertyType::Varchar));
+	}
+
 	/**
-	 * Returns the rules array used by CActiveRecord
-	 * @param array $attributes
+	 * Returns the rules array used by CActiveRecord.
+	 *
+	 * @static
+	 * @param array $properties
 	 * @param array $indexes
 	 * @return array
 	 */
-	public static function createRules($attributes, $indexes = array())
+	public static function createRules($properties, $indexes = array())
 	{
 		$rules = array();
 
@@ -27,14 +41,14 @@ class ModelHelper
 		$numberTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Float, PropertyType::Decimal);
 		$integerTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
 
-		foreach ($attributes as $name => $settings)
+		foreach ($properties as $name => $config)
 		{
-			$type = is_string($settings) ? $settings : (isset($settings['type']) ? $settings['type'] : (isset($settings[0]) ? $settings[0] : null));
+			$type = static::getPropertyType($config);
 
 			// Catch handles, email addresses, languages and URLs before running normalizePropertyConfig, since 'type' will get changed to VARCHAR
 			if ($type == PropertyType::Handle)
 			{
-				$reservedWords = isset($settings['reservedWords']) ? ArrayHelper::stringToArray($settings['reservedWords']) : array();
+				$reservedWords = isset($config['reservedWords']) ? ArrayHelper::stringToArray($config['reservedWords']) : array();
 				$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => $reservedWords);
 			}
 
@@ -50,60 +64,60 @@ class ModelHelper
 			// Remember if it's a license key
 			$isLicenseKey = ($type == PropertyType::LicenseKey);
 
-			$settings = DatabaseHelper::normalizePropertyConfig($settings);
+			$config = DatabaseHelper::normalizePropertyConfig($config);
 
 			// Uniques
-			if (isset($settings['unique']) && $settings['unique'] === true)
+			if (isset($config['unique']) && $config['unique'] === true)
 				$uniques[] = $name;
 
 			// Only enforce 'required' validation if there's no default value
-			if (isset($settings['required']) && $settings['required'] === true && !isset($settings['default']))
+			if (isset($config['required']) && $config['required'] === true && !isset($config['default']))
 				$required[] = $name;
 
 			// Numbers
-			if (in_array($settings['type'], $numberTypes))
+			if (in_array($config['type'], $numberTypes))
 			{
 				$rule = array($name, 'numerical');
 
-				if (isset($settings['min']) && is_numeric($settings['min']))
-					$rule['min'] = $settings['min'];
+				if (isset($config['min']) && is_numeric($config['min']))
+					$rule['min'] = $config['min'];
 
-				if (isset($settings['max']) && is_numeric($settings['max']))
-					$rule['max'] = $settings['max'];
+				if (isset($config['max']) && is_numeric($config['max']))
+					$rule['max'] = $config['max'];
 
-				if (in_array($settings['type'], $integerTypes))
+				if (in_array($config['type'], $integerTypes))
 					$rule['integerOnly'] = true;
 
 				$rules[] = $rule;
 			}
 
-			// Enum attribute values
-			if ($settings['type'] == PropertyType::Enum)
+			// Enum property values
+			if ($config['type'] == PropertyType::Enum)
 			{
-				$values = ArrayHelper::stringToArray($settings['values']);
+				$values = ArrayHelper::stringToArray($config['values']);
 				$rules[] = array($name, 'in', 'range' => $values);
 			}
 
 			// License keys' length=36 is redundant in the context of validation, since matchPattern already enforces 36 chars
 			if ($isLicenseKey)
-				unset($settings['length']);
+				unset($config['length']);
 
 			// Strict, min, and max lengths
-			if (isset($settings['length']) && is_numeric($settings['length']))
-				$strictLengths[(string)$settings['length']][] = $name;
+			if (isset($config['length']) && is_numeric($config['length']))
+				$strictLengths[(string)$config['length']][] = $name;
 			else
 			{
 				// Only worry about min- and max-lengths if a strict length isn't set
-				if (isset($settings['minLength']) && is_numeric($settings['minLength']))
-					$minLengths[(string)$settings['minLength']][] = $name;
+				if (isset($config['minLength']) && is_numeric($config['minLength']))
+					$minLengths[(string)$config['minLength']][] = $name;
 
-				if (isset($settings['maxLength']) && is_numeric($settings['maxLength']))
-					$maxLengths[(string)$settings['maxLength']][] = $name;
+				if (isset($config['maxLength']) && is_numeric($config['maxLength']))
+					$maxLengths[(string)$config['maxLength']][] = $name;
 			}
 
 			// Regex pattern matching
-			if (!empty($settings['matchPattern']))
-				$rules[] = array($name, 'match', 'pattern' => $settings['matchPattern']);
+			if (!empty($config['matchPattern']))
+				$rules[] = array($name, 'match', 'pattern' => $config['matchPattern']);
 		}
 
 		// Catch any composite unique indexes
@@ -134,29 +148,29 @@ class ModelHelper
 
 		if ($strictLengths)
 		{
-			foreach ($strictLengths as $strictLength => $attributeNames)
+			foreach ($strictLengths as $strictLength => $propertyNames)
 			{
-				$rules[] = array(implode(',', $attributeNames), 'length', 'is' => (int)$strictLength);
+				$rules[] = array(implode(',', $propertyNames), 'length', 'is' => (int)$strictLength);
 			}
 		}
 
 		if ($minLengths)
 		{
-			foreach ($minLengths as $minLength => $attributeNames)
+			foreach ($minLengths as $minLength => $propertyNames)
 			{
-				$rules[] = array(implode(',', $attributeNames), 'length', 'min' => (int)$minLength);
+				$rules[] = array(implode(',', $propertyNames), 'length', 'min' => (int)$minLength);
 			}
 		}
 
 		if ($maxLengths)
 		{
-			foreach ($maxLengths as $maxLength => $attributeNames)
+			foreach ($maxLengths as $maxLength => $propertyNames)
 			{
-				$rules[] = array(implode(',', $attributeNames), 'length', 'max' => (int)$maxLength);
+				$rules[] = array(implode(',', $propertyNames), 'length', 'max' => (int)$maxLength);
 			}
 		}
 
-		$rules[] = array(implode(',', array_keys($attributes)), 'safe', 'on' => 'search');
+		$rules[] = array(implode(',', array_keys($properties)), 'safe', 'on' => 'search');
 
 		return $rules;
 	}
