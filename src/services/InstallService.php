@@ -119,7 +119,9 @@ class InstallService extends \CApplicationComponent
 			$user->username   = $inputs['username'];
 			$user->email      = $inputs['email'];
 			$user->admin = true;
+			/* BLOCKSPRO ONLY */
 			$user->language = blx()->language;
+			/* end BLOCKSPRO ONLY */
 			blx()->accounts->changePassword($user, $inputs['password'], false);
 			$user->save();
 

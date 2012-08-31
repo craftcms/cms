@@ -113,7 +113,9 @@ class AccountsController extends BaseController
 		$user->username = blx()->request->getPost('username');
 		$user->email = blx()->request->getPost('email');
 		$user->email_format = blx()->request->getPost('email_format');
+		/* BLOCKSPRO ONLY */
 		$user->language = blx()->request->getPost('language');
+		/* end BLOCKSPRO ONLY */
 
 		// New password?
 		//  - Only admins can change other members' passwords, and even then, they're encouraged to require a password reset.

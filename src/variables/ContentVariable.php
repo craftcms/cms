@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class ContentVariable
 {
+	/* BLOCKSPRO ONLY */
+
 	/**
 	 * Gets sections.
 	 *
@@ -23,7 +25,7 @@ class ContentVariable
 	 * @param array $params
 	 * @return int
 	 */
-	public function total_sections($params = array())
+	public function totalSections($params = array())
 	{
 		return blx()->content->getTotalSections($params);
 	}
@@ -38,4 +40,6 @@ class ContentVariable
 	{
 		return blx()->content->getSectionById($id);
 	}
+
+	/* end BLOCKSPRO ONLY */
 }

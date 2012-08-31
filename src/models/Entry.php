@@ -17,13 +17,17 @@ class Entry extends BaseModel
 			'slug'           => array(PropertyType::Char, 'maxLength' => 50),
 			'uri'            => array(PropertyType::Varchar, 'maxLength' => 150, 'unique' => true),
 			'publish_date'   => PropertyType::Int,
+			/* BLOCKSPRO ONLY */
 			'expiry_date'    => PropertyType::Int,
 			'sort_order'     => array(PropertyType::Int, 'unsigned' => true),
 			'latest_draft'   => PropertyType::Int,
 			'latest_version' => PropertyType::Int,
+			/* end BLOCKSPRO ONLY */
 			'archived'       => PropertyType::Boolean,
 		);
 	}
+
+	/* BLOCKSPRO ONLY */
 
 	protected function getRelations()
 	{
@@ -36,10 +40,17 @@ class Entry extends BaseModel
 		);
 	}
 
+	/* end BLOCKSPRO ONLY */
+
 	protected function getIndexes()
 	{
 		return array(
+			/* BLOCKS ONLY */
+			array('columns' => array('slug'), 'unique' => true),
+			/* end BLOCKS ONLY */
+			/* BLOCKSPRO ONLY */
 			array('columns' => array('slug','section_id','parent_id'), 'unique' => true),
+			/* end BLOCKSPRO ONLY */
 		);
 	}
 

@@ -17,5 +17,4 @@ class SectionBlock extends BaseBlockModel
 			'section' => array(static::BELONGS_TO, 'Section'),
 		);
 	}
-
 }
