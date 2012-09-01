@@ -157,8 +157,8 @@ ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; widt
 .menubtn:after { margin-left: 5px; }
 
 /* back button */
-.backbtn { position: relative; margin-left: -6px; padding-left: 18px; overflow: visible; }
-.backbtn:before { position: absolute; top: 0; left: 0; width: 13px; height: 32px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn_2x.png) no-repeat; background-size: 13px 32px; }
+.backbtn { position: relative; margin-left: -8px; padding-left: 20px; overflow: visible; }
+.backbtn:before { position: absolute; top: 0; left: 0; width: 15px; height: 32px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn.png) no-repeat; }
 
 /* add buttons */
 .addbtn:before { @include icon; content: '+'; }
@@ -392,6 +392,8 @@ only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (-webkit-min-device-pixel-ratio: 1.5),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
+	.backbtn:before { background-image: url(../images/backbtn_2x.png); background-size: 15px 32px; }
+
 	ul.biglist li a.go { background-image: url(../images/go_2x.png); background-size: 22px 14px; }
 	ul.biglist li a.go:hover { background-image: url(../images/go_hover_2x.png); }
 
