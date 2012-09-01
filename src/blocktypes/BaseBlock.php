@@ -22,17 +22,6 @@ abstract class BaseBlock extends BaseComponent
 	}
 
 	/**
-	 * Returns the default block settings.
-	 *
-	 * @access protected
-	 * @return array
-	 */
-	protected function getDefaultSettings()
-	{
-		return array();
-	}
-
-	/**
 	 * Display the blocktype's settings.
 	 *
 	 * @param array $settings
@@ -43,12 +32,10 @@ abstract class BaseBlock extends BaseComponent
 		if (empty($this->settingsTemplate))
 			return;
 
-		if (!is_array($settings))
-			$settings = array();
-		$settings = array_merge($this->getDefaultSettings(), $settings);
+		$this->setSettings($settings);
 
 		$variables = array(
-			'settings' => $settings
+			'settings' => $this->getSettings()
 		);
 
 		$template = TemplateHelper::render($this->settingsTemplate, $variables);

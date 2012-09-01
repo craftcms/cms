@@ -24,6 +24,7 @@ abstract class BaseComponent extends \CApplicationComponent
 	protected $componentType;
 
 	private $_classHandle;
+	private $_settings;
 
 	/**
 	 * Returns the type of... whatever it is.
@@ -33,6 +34,39 @@ abstract class BaseComponent extends \CApplicationComponent
 	public function getType()
 	{
 		return '';
+	}
+
+	/**
+	 * Returns the default block settings.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getDefaultSettings()
+	{
+		return array();
+	}
+
+	/**
+	 * Gets the settings.
+	 */
+	public function getSettings()
+	{
+		if (!isset($this->_settings))
+			$this->_settings = $this->getDefaultSettings();
+		return $this->_settings;
+	}
+
+	/**
+	 * Sets the settings.
+	 *
+	 * @param array $settings
+	 */
+	public function setSettings($settings)
+	{
+		if (!is_array($settings))
+			$settings = array();
+		$this->_settings = array_merge($this->getDefaultSettings(), $settings);
 	}
 
 	/**

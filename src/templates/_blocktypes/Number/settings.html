@@ -3,8 +3,7 @@
 		<label for="type" style="margin-top:2px">{{ "Number Type"|t }}</label>
 	</div>
 	{% include "_includes/pill" with {
-		'id': idPrefix ~ "type",
-		'name': namePrefix ~ "[type]",
+		'name': "type",
 		'options': [
 			{'value': "int", 'label': "Integer"},
 			{'value': "float", 'label': "Float"},

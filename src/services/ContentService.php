@@ -317,6 +317,7 @@ class ContentService extends \CApplicationComponent
 				$contentTable = $content->getTableName();
 
 				$blockType = blx()->blocks->getBlockByClass($block->class);
+				$blockType->setSettings($block->settings);
 				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
 
 				if ($isNewBlock)
@@ -368,6 +369,7 @@ class ContentService extends \CApplicationComponent
 
 				// Update the column order in the content table
 				$blockType = blx()->blocks->getBlockByClass($block->class);
+				$blockType->setSettings($block->settings);
 				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
 				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
 				$lastColumn = $block->handle;
