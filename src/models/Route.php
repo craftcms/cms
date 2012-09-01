@@ -17,7 +17,7 @@ class Route extends BaseModel
 			'url_parts'   => array(PropertyType::Varchar, 'required' => true),
 			'url_pattern' => array(PropertyType::Varchar, 'required' => true),
 			'template'    => array(PropertyType::Varchar, 'required' => true),
-			'sort_order'  => array(PropertyType::Int, 'required' => true),
+			'sort_order'  => PropertyType::SortOrder,
 		);
 	}
 
