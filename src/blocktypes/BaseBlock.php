@@ -10,16 +10,15 @@ abstract class BaseBlock extends BaseComponent
 
 	protected $componentType = 'Block';
 	protected $settingsTemplate;
-	protected $columnType = PropertyType::Text;
 
 	/**
-	 * Get the content column type.
+	 * Returns the content column type.
 	 *
 	 * @return string
 	 */
 	public function getColumnType()
 	{
-		return $this->columnType;
+		return PropertyType::Text;
 	}
 
 	/**

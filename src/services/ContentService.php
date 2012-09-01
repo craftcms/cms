@@ -281,6 +281,10 @@ class ContentService extends \CApplicationComponent
 		$section = $this->_getSection($sectionId);
 		$block = $this->_getSectionBlock($blockId);
 
+		$isNewBlock = $block->getIsNewRecord();
+		if (!$isNewBlock)
+			$oldHandle = $block->handle;
+
 		$block->section_id   = $section->id;
 		$block->name         = $settings['name'];
 		$block->handle       = $settings['handle'];
@@ -300,7 +304,40 @@ class ContentService extends \CApplicationComponent
 			$block->sort_order = $maxSortOrder + 1;
 		}
 
-		$block->save();
+		if ($block->validate())
+		{
+			// Start a transaction
+			$transaction = blx()->db->beginTransaction();
+
+			try
+			{
+				$block->save(false);
+
+				$content = new EntryContent($section);
+				$contentTable = $content->getTableName();
+
+				$blockType = blx()->blocks->getBlockByClass($block->class);
+				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
+
+				if ($isNewBlock)
+				{
+					blx()->db->createCommand()->addColumn($contentTable, $block->handle, $columnType);
+				}
+				else
+				{
+					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $columnType, $block->handle);
+				}
+
+				// Commit the transaction
+				$transaction->commit();
+			}
+			catch (\Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
+			}
+		}
+
 		return $block;
 	}
 
