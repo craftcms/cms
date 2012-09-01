@@ -341,6 +341,48 @@ class ContentService extends \CApplicationComponent
 		return $block;
 	}
 
+	/**
+	 * Updates the order of a section's content blocks.
+	 *
+	 * @param int $sectionId
+	 * @param array $blockIds
+	 */
+	public function updateSectionBlockOrder($sectionId, $blockIds)
+	{
+		$section = $this->_getSection($sectionId);
+		$content = new EntryContent($section);
+		$contentTable = $content->getTableName();
+		$lastColumn = 'title';
+
+		// Start a transaction
+		$transaction = blx()->db->beginTransaction();
+
+		try
+		{
+			foreach ($blockIds as $blockOrder => $blockId)
+			{
+				// Update the sort_order in sectionblocks
+				$block = $this->getSectionBlockById($blockId);
+				$block->sort_order = $blockOrder;
+				$block->save();
+
+				// Update the column order in the content table
+				$blockType = blx()->blocks->getBlockByClass($block->class);
+				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
+				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
+				$lastColumn = $block->handle;
+			}
+
+			// Commit the transaction
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
 	/* end BLOCKSPRO ONLY */
 
 	/* Entries */

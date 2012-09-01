@@ -89,6 +89,21 @@ class ContentController extends BaseController
 	}
 
 	/**
+	 * Updates the order of a section's content blocks
+	 */
+	public function actionUpdateSectionBlockOrder()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$blockIds = Json::decode(blx()->request->getRequiredPost('blockIds'));
+
+		blx()->content->updateSectionBlockOrder($sectionId, $blockIds);
+		$this->returnJson(array('success' => true));
+	}
+
+	/**
 	 * Creates a new entry and returns its edit page
 	 */
 	public function actionCreateEntry()

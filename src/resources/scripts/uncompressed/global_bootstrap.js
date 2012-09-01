@@ -24,6 +24,7 @@ var scripts =
 	'ui/Drag.js',
 	'ui/DragMove.js',
 	'ui/DragSort.js',
+	'ui/DataTableSorter.js',
 
 	'ui/InputGenerator.js',
 	'ui/HandleGenerator.js',

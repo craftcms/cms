@@ -76,9 +76,12 @@ class MysqlSchema extends \CMysqlSchema
 	 */
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
+		if (!$newName)
+			$newName = $column;
+
 		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' CHANGE '
 			. $this->quoteColumnName($column) . ' '
-			. $this->quoteColumnName($newName ? $newName : $column) . ' '
+			. $this->quoteColumnName($newName) . ' '
 			. $this->getColumnType($type)
 			. ($after ? ' AFTER '.$this->quoteColumnName($after) : '');
 	}

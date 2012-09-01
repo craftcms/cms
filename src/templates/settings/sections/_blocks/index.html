@@ -1,10 +1,16 @@
 {% extends "_layouts/cp" %}
+{% include_translation
+	"New block order saved.",
+	"Couldn’t save new block order."
+%}
+
 
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
 
 {% set title = "{section} Content Blocks"|t({ 'section': section.name }) %}
 {% set blocks = section.blocks %}
+{% set sortable  = (blocks|length > 1) %}
 
 
 {% set titlebar %}
@@ -18,18 +24,20 @@
 {% set content %}
 	<div class="pane">
 		{% if blocks|length %}
-			<table class="data">
+			<table id="blocks" class="data">
 				<thead>
-					<th scope="col">{{ "Name"|t }}</th>
-					<th scope="col">{{ "Handle"|t }}</th>
-					<th scope="col">{{ "Type"|t }}</th>
+					<th scope="col" width="33%">{{ "Name"|t }}</th>
+					<th scope="col" width="33%">{{ "Handle"|t }}</th>
+					<th scope="col" width="33%">{{ "Type"|t }}</th>
+					{% if sortable %}<td width="1%"></td>{% endif %}
 				</thead>
 				<tbody>
 					{% for block in blocks %}
-						<tr>
+						<tr data-block-id="{{ block.id }}">
 							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name }}</a></td>
 							<td><code>{{ block.handle }}</code></td>
 							<td>{{ blx.contentblocks.getBlockByClass(block.class).getType }}</td>
+							{% if sortable %}<td><div class="move"></div></td>{% endif %}
 						</tr>
 					{% endfor %}
 				</tbody>
@@ -43,3 +51,12 @@
 		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn submit addbtn">{{ "New Content Block"|t }}</a>
 	</div>
 {% endset %}
+
+
+{% if sortable %}
+	{% include_js "section_blocks.js" %}
+
+	{% set scripts %}
+		<script type="text/javascript">sectionId = {{ section.id }};</script>
+	{% endset %}
+{% endif %}
