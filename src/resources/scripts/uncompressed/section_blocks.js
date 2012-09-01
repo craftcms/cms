@@ -1,7 +1,8 @@
 (function($) {
 
 
-$table = $('#blocks');
+var $table = $('#blocks'),
+	totalBlocks = $table.children('thead').children().length;
 
 
 var sorter = new blx.ui.DataTableSorter($table, {
@@ -47,6 +48,14 @@ $table.find('.deletebtn').click(function() {
 			if (response.success)
 			{
 				$row.remove();
+
+				totalBlocks--;
+				if (totalBlocks == 0)
+				{
+					$table.remove();
+					$('#noblocks').show();
+				}
+
 				blx.displayNotice(blx.t('Content block deleted.'));
 			}
 			else

@@ -27,6 +27,10 @@
 
 {% set content %}
 	<div class="pane">
+		<p id="noblocks" {% if blocks|length %}style="display: none"{% endif %}>
+			{{ "No content blocks exist yet."|t }} <a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}">{{ "Create the first one."|t }}</a>
+		</p>
+
 		{% if blocks|length %}
 			<table id="blocks" class="data">
 				<thead>
@@ -48,8 +52,6 @@
 					{% endfor %}
 				</tbody>
 			</table>
-		{% else %}
-			<p>{{ "No content blocks exist yet."|t }} <a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}">{{ "Create the first one."|t }}</a></p>
 		{% endif %}
 	</div>
 
