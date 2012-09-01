@@ -40,7 +40,7 @@ blx.ui.LightSwitch = blx.Base.extend({
 		this.addListener(this.$innerContainer, 'mousedown', '_onMouseDown');
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
-		this.dragger = new blx.ui.DragCore(this.$innerContainer, {
+		this.dragger = new blx.ui.BaseDrag(this.$innerContainer, {
 			axis: 'x',
 			ignoreButtons: false,
 			onDragStart: $.proxy(this, '_onDragStart'),

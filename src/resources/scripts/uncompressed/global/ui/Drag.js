@@ -4,7 +4,7 @@
  * Drag
  * Used as a base class for DragDrop and DragSort
  */
-blx.ui.Drag = blx.ui.DragCore.extend({
+blx.ui.Drag = blx.ui.BaseDrag.extend({
 
 	$draggee: null,
 	helpers: null,

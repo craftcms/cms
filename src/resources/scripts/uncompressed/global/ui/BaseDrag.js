@@ -3,7 +3,7 @@
 /**
  * Drag Core
  */
-blx.ui.DragCore = blx.Base.extend({
+blx.ui.BaseDrag = blx.Base.extend({
 
 	$items: null,
 
@@ -34,7 +34,7 @@ blx.ui.DragCore = blx.Base.extend({
 			items = null;
 		}
 
-		this.settings = $.extend({}, blx.ui.DragCore.defaults, settings);
+		this.settings = $.extend({}, blx.ui.BaseDrag.defaults, settings);
 
 		this.$items = $();
 
@@ -97,7 +97,7 @@ blx.ui.DragCore = blx.Base.extend({
 			// has the mouse moved far enough to initiate dragging yet?
 			var mouseDist = blx.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
 
-			if (mouseDist >= blx.ui.DragCore.minMouseDist)
+			if (mouseDist >= blx.ui.BaseDrag.minMouseDist)
 				this.startDragging();
 			else
 				return;

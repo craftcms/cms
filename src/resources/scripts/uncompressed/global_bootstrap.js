@@ -20,7 +20,7 @@ var scripts =
 	'blocks.js',
 
 	'ui/Select.js',
-	'ui/DragCore.js',
+	'ui/BaseDrag.js',
 	'ui/Drag.js',
 	'ui/DragMove.js',
 	'ui/DragSort.js',
