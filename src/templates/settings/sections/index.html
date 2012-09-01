@@ -18,14 +18,17 @@
 				<thead>
 					<th scope="col">{{ "Name"|t }}</th>
 					<th scope="col">{{ "Handle"|t }}</th>
-					<th scope="col">{{ "Edit Content Blocks"|t }}</th>
+					<td></td>
 				</thead>
 				<tbody>
 					{% for section in sections %}
 						<tr>
 							<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
 							<td><code>{{ section.handle }}</code></td>
-							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Edit Content Blocks"|t }}</a></td>
+							<td>
+								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Content Blocks"|t }}</a>
+								<span class="light">({{ section.totalBlocks }})</span>
+							</td>
 						</tr>
 					{% endfor %}
 				</tbody>

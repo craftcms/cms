@@ -253,7 +253,9 @@ table.data tbody th,
 table.data tbody td { border-top: 1px dotted rgba(0,0,0,0.1); }
 table.data tbody:first-child tr:first-child th,
 table.data tbody:first-child tr:first-child td { border-top: none; }
-table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; color: $mediumlight; }
+table.data .light,
+table.data .timestamp { color: #999; }
+table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; }
 
 /* ----------------------------------------
 /*  Nav
