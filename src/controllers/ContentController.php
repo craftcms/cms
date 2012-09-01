@@ -69,7 +69,7 @@ class ContentController extends BaseController
 		$settings['class']    = $class;
 		$settings['settings'] = isset($blocktypeSettings[$class]) ? $blocktypeSettings[$class] : null;
 
-		$block = blx()->content->saveSectionBlock($settings, $sectionId, $blockId);
+		$block = blx()->content->saveSectionBlock($sectionId, $settings, $blockId);
 
 		// Did it save?
 		if (!$block->getErrors())

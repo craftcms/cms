@@ -271,12 +271,12 @@ class ContentService extends \CApplicationComponent
 	/**
 	 * Saves a section block.
 	 *
-	 * @param array $settings
 	 * @param int $sectionId
+	 * @param array $settings
 	 * @param int $blockId
 	 * @return SectionBlock
 	 */
-	public function saveSectionBlock($settings, $sectionId, $blockId = null)
+	public function saveSectionBlock($sectionId, $settings, $blockId = null)
 	{
 		$section = $this->_getSection($sectionId);
 		$block = $this->_getSectionBlock($blockId);
