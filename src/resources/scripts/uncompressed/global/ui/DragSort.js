@@ -7,6 +7,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 
 	$insertion: null,
 	midpoints: null,
+	startDraggeeIndex: null,
 	closestItemIndex: null,
 
 	/**
@@ -35,9 +36,10 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 		this.getMidpoints();
 
 		this.closestItem = -1;
-		this.draggeeStartIndex = this.draggeeIndex;
 
 		this.base();
+
+		this.startDraggeeIndex = this.draggeeIndex;
 	},
 
 	/**
