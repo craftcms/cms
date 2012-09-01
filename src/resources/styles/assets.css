@@ -1,7 +1,7 @@
 body { background: #fff; }
 
 #main .toolbar .btn-group { float: right; }
-#main .toolbar .search { margin-right: 96px; }
+#main .toolbar .search { margin-right: 86px; }
 
 /*-- grid --*/
 #main .files.thumbview ul { margin: -20px 0 0 -20px; }
