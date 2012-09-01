@@ -126,6 +126,7 @@ class PathService extends \CApplicationComponent
 
 	/**
 	 * Returns the @@@productDisplay@@@ app templates path.
+	 *
 	 * @return string
 	 */
 	public function getAppTemplatesPath()
@@ -135,6 +136,7 @@ class PathService extends \CApplicationComponent
 
 	/**
 	 * Returns the site templates path.
+	 *
 	 * @return string
 	 */
 	public function getSiteTemplatesPath()
@@ -145,6 +147,7 @@ class PathService extends \CApplicationComponent
 	/**
 	 * Returns the path to the offline template by first checking to see if they have set a custom path in config.
 	 * If that is not set, it will fall back on the default CP offline template.
+	 *
 	 * @return mixed
 	 */
 	public function getOfflineTemplatePath()
@@ -158,6 +161,7 @@ class PathService extends \CApplicationComponent
 
 	/**
 	 * Returns the current parsed templates path, taking into account whether this is a CP or Site request.
+	 *
 	 * @return mixed
 	 */
 	public function getCompiledTemplatesPath()

@@ -94,6 +94,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Processes the request.
+	 *
 	 * @throws HttpException
 	 */
 	public function processRequest()
@@ -164,6 +165,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Processes install requests.
+	 *
 	 * @access private
 	 * @throws HttpException
 	 */
@@ -238,6 +240,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Processes action requests.
+	 *
 	 * @access private
 	 * @throws HttpException
 	 */
@@ -318,6 +321,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Processes resource requests.
+	 *
 	 * @access private
 	 * @throws HttpException
 	 */
@@ -370,6 +374,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Validates the system config.
+	 *
 	 * @access private
 	 * @return mixed
 	 * @throws Exception|HttpException
@@ -437,6 +442,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Determines if we're in the middle of a manual update, and a DB update is needed.
+	 *
 	 * @return bool
 	 */
 	public function getIsDbUpdateNeeded()
@@ -451,6 +457,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Determines if @@@productDisplay@@@ is installed by checking if the info table exists.
+	 *
 	 * @return bool
 	 */
 	public function getIsInstalled()
@@ -466,6 +473,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Sets the isInstalled state.
+	 *
 	 * @param bool $isInstalled
 	 */
 	public function setIsInstalled($isInstalled)
@@ -476,6 +484,7 @@ class App extends \CWebApplication
 	/**
 	 * Gets the viewPath for the incoming request.
 	 * We can't use setViewPath() because our view path depends on the request type, which is initialized after web application, so we override getViewPath();
+	 *
 	 * @return mixed
 	 */
 	public function getViewPath()
@@ -498,6 +507,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Sets the template path for the app.
+	 *
 	 * @param $path
 	 */
 	public function setViewPath($path)
@@ -507,6 +517,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Returns the CP templates path.
+	 *
 	 * @return string
 	 */
 	public function getSystemViewPath()
@@ -516,6 +527,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Formats an exception into JSON before returning it to the client.
+	 *
 	 * @param array $data
 	 */
 	public function returnAjaxException($data)
@@ -538,6 +550,7 @@ class App extends \CWebApplication
 
 	/**
 	 * Formats a PHP error into JSON before returning it to the client.
+	 *
 	 * @param integer $code error code
 	 * @param string $message error message
 	 * @param string $file error file

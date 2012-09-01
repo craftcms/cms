@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class Json extends \CJSON
 {
+	/**
+	 * @static
+	 */
 	public static function sendJsonHeaders()
 	{
 		header('Cache-Control: no-cache, must-revalidate');

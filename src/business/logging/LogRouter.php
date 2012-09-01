@@ -19,6 +19,7 @@ class LogRouter extends \CLogRouter
 
 	/**
 	 * Removes a route from the LogRouter by class name.
+	 *
 	 * @param $class
 	 */
 	public function removeRoute($class)

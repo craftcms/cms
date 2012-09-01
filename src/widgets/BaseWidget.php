@@ -30,6 +30,7 @@ abstract class BaseWidget extends BaseComponent
 
 	/**
 	 * Adds action buttons to the widget.
+	 *
 	 * @return array
 	 */
 	public function getActionButtons()
@@ -67,6 +68,7 @@ abstract class BaseWidget extends BaseComponent
 
 	/**
 	 * Display the settings form
+	 *
 	 * @param $idPrefix
 	 * @param $namePrefix
 	 * @return bool

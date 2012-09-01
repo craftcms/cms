@@ -3,6 +3,7 @@ namespace Blocks;
 
 /**
  * Form base class
+ *
  * @abstract
  */
 abstract class BaseForm extends \CFormModel
@@ -12,6 +13,7 @@ abstract class BaseForm extends \CFormModel
 
 	/**
 	 * Attribute Setter
+	 *
 	 * @param string $name
 	 * @param mixed  $value
 	 * @return mixed|void
@@ -26,7 +28,8 @@ abstract class BaseForm extends \CFormModel
 	}
 
 	/**
-	 * Attribute Setter
+	 * Attribute Getter
+	 *
 	 * @param string $name
 	 * @throws Exception
 	 * @return mixed|null
@@ -48,6 +51,7 @@ abstract class BaseForm extends \CFormModel
 
 	/**
 	 * Used by CActiveRecord
+	 * 
 	 * @return array Validation rules for model's attributes
 	 */
 	public function rules()

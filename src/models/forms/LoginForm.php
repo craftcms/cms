@@ -16,6 +16,7 @@ class LoginForm extends BaseForm
 
 	/**
 	 * Stores the user identity.
+	 *
 	 * @access private
 	 * @var UserIdentity
 	 */
@@ -23,6 +24,7 @@ class LoginForm extends BaseForm
 
 	/**
 	 * Returns the user identity.
+	 *
 	 * @return UserIdentity
 	 */
 	public function getIdentity()
@@ -32,6 +34,7 @@ class LoginForm extends BaseForm
 
 	/**
 	 * Logs in the user using the given username and password in the model.
+	 *
 	 * @return boolean whether login is successful
 	 */
 	public function login()

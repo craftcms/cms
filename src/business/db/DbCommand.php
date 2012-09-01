@@ -199,6 +199,7 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * Creates a content table
+	 *
 	 * @param string $table The content table name
 	 * @param string $refTable The reference table name
 	 * @param string $fk The foreign key column name to the reference table
@@ -225,6 +226,7 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * Creates a blocks join table
+	 *
 	 * @param string $table The blocks join table name
 	 * @param string $refTable The reference table name
 	 * @param string $fk The foreign key column name to the reference table
@@ -252,6 +254,7 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * Creates a settings table
+	 *
 	 * @param string $table The settings table name
 	 * @param string $refTable The reference table name
 	 * @param string $fk The foreign key column name to the reference table
@@ -399,6 +402,7 @@ class DbCommand extends \CDbCommand
 
 	/**
 	 * Prepares a table name for Yii to add its table prefix
+	 *
 	 * @param mixed $table The table name or an array of table names
 	 * @return mixed The modified table name(s)
 	 */

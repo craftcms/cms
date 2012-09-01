@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class FileLogRoute extends \CFileLogRoute
 {
+	/**
+	 *
+	 */
 	public function init()
 	{
 		$this->setLogFile('blocks.log');
@@ -18,6 +21,7 @@ class FileLogRoute extends \CFileLogRoute
 
 	/**
 	 * Saves log messages in files.
+	 *
 	 * @param array $logs list of log messages
 	 */
 	protected function processLogs($logs)

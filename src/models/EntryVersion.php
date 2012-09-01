@@ -42,6 +42,7 @@ class EntryVersion extends BaseModel
 
 	/**
 	 * Returns the version name
+	 *
 	 * @return string
 	 */
 	public function name()
@@ -54,6 +55,7 @@ class EntryVersion extends BaseModel
 
 	/**
 	 * Sets the changes
+	 *
 	 * @param array $changes
 	 */
 	public function setChanges($changes)
@@ -75,6 +77,7 @@ class EntryVersion extends BaseModel
 
 	/**
 	 * Returns the changes
+	 *
 	 * @return array
 	 */
 	public function getChanges()

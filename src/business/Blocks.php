@@ -23,6 +23,7 @@ class Blocks extends \Yii
 
 	/**
 	 * Returns the @@@productDisplay@@@ version number, as defined in the blx_info table.
+	 *
 	 * @static
 	 * @return string
 	 */
@@ -316,13 +317,11 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 *
 	 * @param string $category
 	 * @param string $message
 	 * @param array  $params
 	 * @param null   $source
 	 * @param null   $language
-	 *
 	 * @return string|void
 	 */
 	public static function t($message, $params = array(), $category = null, $source = null, $language = null)

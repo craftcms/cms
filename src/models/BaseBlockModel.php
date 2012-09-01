@@ -8,6 +8,9 @@ namespace Blocks;
  */
 abstract class BaseBlockModel extends BaseModel
 {
+	/**
+	 * @return array
+	 */
 	protected function getProperties()
 	{
 		return array(

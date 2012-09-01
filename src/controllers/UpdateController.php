@@ -16,6 +16,7 @@ class UpdateController extends BaseController
 
 	/**
 	 * Returns the update info JSON.
+	 *
 	 * @param string $h The handle of which update to retrieve info for.
 	 */
 	public function actionGetUpdateInfo($h)
@@ -82,6 +83,7 @@ class UpdateController extends BaseController
 
 	/**
 	 * Runs an update.
+	 *
 	 * @param string $h The handle of what to update.
 	 */
 	public function actionUpdate($h)

@@ -97,6 +97,7 @@ class EmailService extends \CApplicationComponent
 	 * @param string $body
 	 * @param string $htmlBody
 	 * @param string $language
+	 * @return string
 	 */
 	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
 	{

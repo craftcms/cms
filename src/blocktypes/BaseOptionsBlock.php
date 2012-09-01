@@ -6,6 +6,9 @@ namespace Blocks;
  */
 abstract class BaseOptionsBlock extends BaseBlock
 {
+	/**
+	 * @return array
+	 */
 	protected function getDefaultSettings()
 	{
 		return array(

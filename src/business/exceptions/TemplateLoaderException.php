@@ -9,8 +9,7 @@ class TemplateLoaderException extends Exception
 	public $template;
 
 	/**
-	 * @param $message
-	 * @param $lineNumber
+	 * @param string $template
 	 */
 	function __construct($template)
 	{

@@ -128,6 +128,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns the instance of File for the specified file.
+	 *
 	 * @param string $filePath Path to file specified by user
 	 * @return object File instance
 	 */
@@ -143,6 +144,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Logs a message.
+	 *
 	 * @param string $message Message to be logged
 	 * @param string $level Level of the message (e.g. 'trace', 'warning', 'error', 'info', see CLogger constants definitions)
 	 * @access private
@@ -236,6 +238,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Populates basic File properties (i.e. 'Dirname', 'Basename', etc.) using values
 	 * resolved by pathinfo() php function. Detects filesystem object type (file, directory).
+	 *
 	 * @access private
 	 */
 	private function _pathInfo()
@@ -275,6 +278,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns real filesystem object path figured by script (see {@link realPath}) on the basis of user supplied $_filepath.
 	 * If $_realpath property is set, returned value is read from that property.
+	 *
 	 * @param string $dir_separator Directory separator char (depends upon OS)
 	 * @return string Real file path
 	 */
@@ -288,6 +292,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Base real filesystem object path resolving method.  Returns real path resolved from the supplied path.
+	 *
 	 * @param string $suppliedPath Path from which real filesystem object path should be resolved
 	 * @param string $dir_separator Directory separator char (depends upon OS)
 	 * @return string Real file path
@@ -352,6 +357,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Tests current filesystem object existence and returns boolean (see {@link exists}).
+	 *
 	 * If $_exists property is set, returned value is read from that property.
 	 * @return boolean 'True' if file exists, otherwise 'false'
 	 */
@@ -366,6 +372,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns filesystem object type for the current file (see {@link pathInfo}).
 	 * Tells whether filesystem object is a regular file.
+	 *
 	 * @return boolean 'True' if filesystem object is a regular file, otherwise 'false'
 	 */
 	public function getIsFile()
@@ -375,6 +382,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns filesystem object type for the current file (see {@link pathInfo}). Tells whether filesystem object is a directory.
+	 *
 	 * @return boolean 'True' if filesystem object is a directory, otherwise 'false'
 	 */
 	public function getIsDir()
@@ -384,6 +392,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Tells whether file is uploaded through a web form.
+	 *
 	 * @return boolean 'True' if file is uploaded, otherwise 'false'
 	 */
 	public function getIsUploaded()
@@ -395,6 +404,7 @@ class File extends \CApplicationComponent
 	 * Returns filesystem object has-contents flag.
 	 * Directory considered empty if it doesn't contain descendants.
 	 * File considered empty if its size is 0 bytes.
+	 *
 	 * @return boolean 'True' if file is a directory, otherwise 'false'
 	 */
 	public function getIsEmpty()
@@ -413,6 +423,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Tests whether the current filesystem object is readable and returns boolean.
 	 * If $_readable property is set, returned value is read from that property.
+	 *
 	 * @return boolean 'True' if filesystem object is readable, otherwise 'false'
 	 */
 	public function getReadable()
@@ -426,6 +437,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Tests whether the current filesystem object is readable and returns boolean.
 	 * If $_writable property is set, returned value is read from that property.
+	 *
 	 * @return boolean 'True' if filesystem object is writable, otherwise 'false'
 	 */
 	public function getWritable()
@@ -440,6 +452,7 @@ class File extends \CApplicationComponent
 	 * PHP's is_writable has problems (especially on Windows).
 	 * See: https://bugs.php.net/bug.php?id=27609 and https://bugs.php.net/bug.php?id=30931.
 	 * This function tests write-ability by creating a temp file on the filesystem.
+	 *
 	 * @param $path = the path to test.
 	 * @return boolean 'True' if filesystem object is writable, otherwise 'false'
 	 * @access private
@@ -469,6 +482,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Base filesystem object existence resolving method.
 	 * Tests current filesystem object existence and returns boolean.
+	 *
 	 * @return boolean 'True' if filesystem object exists, otherwise 'false'
 	 * @access private
 	 */
@@ -489,6 +503,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Creates empty file if the current file doesn't exist.
+	 *
 	 * @return mixed Updated the current File object on success, 'false' on fail.
 	 */
 	public function create()
@@ -511,6 +526,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Creates empty directory defined either through {@link set} or through the $directory parameter.
+	 *
 	 * @param int|string $permissions Access permissions for the directory
 	 * @param string $directory Parameter used to create directory other than supplied by {@link set} method of the File
 	 * @return mixed Updated the current File object on success, 'false' on fail.
@@ -541,6 +557,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Opens (if not already opened) the current file using certain mode. See fopen() php function for more info.
 	 * For now used only internally.
+	 *
 	 * @param string $mode Type of access required to the stream
 	 * @return mixed Current File object on success, 'false' on fail.
 	 * @access private
@@ -560,6 +577,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Closes (if opened) the current file pointer.  See fclose() php function for more info.
 	 * For now used only internally.
+	 *
 	 * @access private
 	 */
 	private function _close()
@@ -574,6 +592,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns owner of current filesystem object (UNIX systems). Returned value depends upon $getName parameter value.
 	 * If $_owner property is set, returned value is read from that property.
+	 *
 	 * @param boolean $getName Defaults to 'true', meaning that owner name instead of ID should be returned.
 	 * @return mixed Owner name, or ID if $getName set to 'false'
 	 */
@@ -594,6 +613,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns group of current filesystem object (UNIX systems). Returned value depends upon $getName parameter value.
 	 * If $_group property is set, returned value is read from that property.
+	 *
 	 * @param boolean $getName Defaults to 'true', meaning that group name instead of ID should be returned.
 	 * @return mixed Group name, or ID if $getName set to 'false'
 	 */
@@ -613,6 +633,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns permissions of current filesystem object (UNIX systems). If $_permissions property is set, returned value is read from that property.
+	 *
 	 * @return string Filesystem object permissions in octal format (i.e. '0755')
 	 */
 	public function getPermissions()
@@ -626,6 +647,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns size of current filesystem object. Returned value depends upon $format parameter value.
 	 * If $_size property is set, returned value is read from that property. Uses {@link dirSize} method for directory size calculation.
+	 *
 	 * @param mixed $format Number format (see {@link CNumberFormatter}) or 'false'
 	 * @return mixed Filesystem object size formatted (eg. '70.4 KB') or in bytes (eg. '72081') if $format set to 'false'
 	 */
@@ -650,6 +672,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Calculates the current directory size recursively fetching sizes of all descendant files.
 	 * This method is used internally and only for folders. See {@link getSize} method params for detailed information.
+	 *
 	 * @return integer $size
 	 * @access private
 	 */
@@ -667,6 +690,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Base filesystem object size format method. Converts file size in bytes into human readable format (i.e. '70.4 KB')
+	 *
 	 * @param integer $bytes Filesystem object size in bytes
 	 * @param integer $format Number format (see {@link CNumberFormatter})
 	 * @return string Filesystem object size in human readable format
@@ -688,6 +712,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns the current file last modified time.
 	 * Returned Unix timestamp could be passed to php date() function.
+	 *
 	 * @return integer Last modified time Unix timestamp (eg. '1213760802')
 	 */
 	public function getTimeModified()
@@ -700,6 +725,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns the current file extension from $_extension property set by {@link pathInfo} (eg. 'htm' for '/var/www/htdocs/files/myfile.htm').
+	 *
 	 * @return string Current file extension without the leading dot
 	 */
 	public function getExtension()
@@ -709,6 +735,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns the current file basename (file name plus extension) from $_basename property set by {@link pathInfo} (eg. 'myfile.htm' for '/var/www/htdocs/files/myfile.htm').
+	 *
 	 * @return string Current file basename
 	 */
 	public function getBaseName()
@@ -718,6 +745,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns the current file name (without extension) from $_filename property set by {@link pathInfo} (eg. 'myfile' for '/var/www/htdocs/files/myfile.htm')
+	 *
 	 * @return string Current file name
 	 */
 	public function getFileName()
@@ -727,6 +755,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Returns the current file directory name (without final slash) from $_dirname property set by {@link pathInfo} (eg. '/var/www/htdocs/files' for '/var/www/htdocs/files/myfile.htm')
+	 *
 	 * @return string Current file directory name
 	 */
 	public function getDirName()
@@ -737,6 +766,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Returns the current filesystem object contents. Reads data from filesystem object if it is a regular file.
 	 * List files and directories inside the specified path if filesystem object is a directory.
+	 *
 	 * @param boolean $recursive If 'true' method would return all directory descendants
 	 * @param string $filter Filter to be applied to all directory descendants.
 	 * Could be a string, or an array of strings (perl regexp supported).
@@ -765,6 +795,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Gets directory contents (descendant files and folders).
+	 *
 	 * @param bool|string $directory Initial directory to get descendants for
 	 * @param boolean     $recursive If 'true' method would return all descendants recursively, otherwise just immediate descendants
 	 * @param string      $filter Filter to be applied to all directory descendants.
@@ -817,6 +848,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Applies an array of filter rules to the string representing filepath. Used internally by {@link dirContents} method.
+	 *
 	 * @param string $str String representing filepath to be filtered
 	 * @param array $filter An array of filter rules, where each rule is a string, supposing that the string starting with '/' is a regular
 	 * expression. Any other string treated as an extension part of the given filepath (eg. file extension)
@@ -853,6 +885,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Writes contents (data) into the current file. This method works only for files.
+	 *
 	 * @param string $destination Alternative file to write to (not $this).
 	 * @param string $contents Contents to be written
 	 * @param boolean $autoCreate If 'true' file will be created automatically
@@ -904,6 +937,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Sets basename for the current file. Lazy wrapper for {@link rename}. This method works only for files.
+	 *
 	 * @param bool|string $basename New file basename (eg. 'mynewfile.txt')
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -930,6 +964,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Sets the current file name. Lazy wrapper for {@link rename}. This method works only for files.
+	 *
 	 * @param bool|string $filename New file name (eg. 'mynewfile')
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -957,6 +992,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Sets the current file extension. If new extension is 'null' or 'false' current file extension is dropped.
 	 * Lazy wrapper for {@link rename}. This method works only for files.
+	 *
 	 * @param bool|string $extension New file extension (eg. 'txt')
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -1004,6 +1040,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Sets the current filesystem object owner, updates $_owner property on success. For UNIX systems.
+	 *
 	 * @param mixed $owner New owner name or ID
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -1021,6 +1058,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Sets the current filesystem object group, updates $_group property on success. For UNIX systems.
+	 *
 	 * @param mixed $group New group name or ID
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -1038,6 +1076,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Sets the current filesystem object permissions, updates $_permissions property on success. For UNIX systems.
+	 *
 	 * @param string $permissions New filesystem object permissions in numeric (octal, i.e. '0755') format
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -1062,6 +1101,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Resolves destination path for the current filesystem object. This method enables short calls for {@link copy} & {@link rename} methods
 	 * (i.e. copy('mynewfile.htm') makes a copy of the current filesystem object in the same directory, named 'mynewfile.htm')
+	 *
 	 * @param string $fileDest Destination filesystem object name (with or w/o path) submitted by user
 	 * @return string Resolved real destination path for the current filesystem object
 	 * @access private
@@ -1076,6 +1116,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Copies the current filesystem object to specified destination. Destination path supplied by user resolved to real destination path with {@link resolveDestPath}
+	 *
 	 * @param string $fileDest Destination path for the current filesystem object to be copied to
 	 * @param bool $recursive If set to true, if the current filesystem object is a file, will recursively create the subdirectories needed to copy the file.
 	 * @return mixed New File object for newly created filesystem object on success, 'false' on fail.
@@ -1123,6 +1164,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Renames/moves the current filesystem object to specified destination. Destination path supplied by user resolved to real destination path with {@link resolveDestPath}
+	 *
 	 * @param string $fileDest Destination path for the current filesystem object to be renamed/moved to
 	 * @return mixed Updated current File object on success, 'false' on fail.
 	 */
@@ -1146,6 +1188,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Alias for {@link rename}
+	 *
 	 * @param $fileDest
 	 * @return mixed
 	 */
@@ -1157,6 +1200,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Purges (makes empty) the current filesystem object. If the current filesystem object is a file its contents set to ''.
 	 * If the current filesystem object is a directory all its descendants are deleted.
+	 *
 	 * @param bool $path
 	 * @return mixed Current File object on success, 'false' on fail.
 	 */
@@ -1198,6 +1242,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Deletes the current filesystem object. For folders purge parameter can be supplied.
+	 *
 	 * @param boolean $purge If 'true' folder would be deleted with all the descendants
 	 * @return boolean 'True' if successfully deleted, 'false' on fail
 	 */
@@ -1219,6 +1264,7 @@ class File extends \CApplicationComponent
 	/**
 	 * Sends the current file to browser as a download with real or faked file name.
 	 * Browser caching is prevented.  This method works only for files.
+	 *
 	 * @param bool|string $fakeName New filename (eg. 'myfileFakedName.htm')
 	 * @param boolean $serverHandled Whether file contents delivery is handled by server internals (cf. when file contents is read and sent by php).
 	 * E.g.: lighttpd and Apache with mod-sendfile can use X-Senfile header to speed up file delivery blazingly.
@@ -1281,6 +1327,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Alias for {@link send}
+	 *
 	 * @param bool $fakeName
 	 * @param bool $serverHandled
 	 * @return File
@@ -1294,6 +1341,7 @@ class File extends \CApplicationComponent
 	 * Returns the MIME type of the current file. If $_mimeType property is set, returned value is read from that property.
 	 * This method will attempt the following approaches in order: 1) finfo 2) {@link getMimeTypeByExtension}
 	 * This method works only for files.
+	 *
 	 * @return mixed the MIME type on success, 'false' on fail.
 	 */
 	public function getMimeType()
@@ -1323,6 +1371,7 @@ class File extends \CApplicationComponent
 
 	/**
 	 * Determines the MIME type based on the extension of the current file. This method will use a local map between extension name and MIME type. This method works only for files.
+	 *
 	 * @return string the MIME type. False is returned if the MIME type cannot be determined.
 	 */
 	public function getMimeTypeByExtension()

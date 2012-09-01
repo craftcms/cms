@@ -10,6 +10,7 @@ class DashboardService extends \CApplicationComponent
 
 	/**
 	 * Returns all installed widgets.
+	 *
 	 * @return array
 	 */
 	public function getAllWidgets()
@@ -22,6 +23,7 @@ class DashboardService extends \CApplicationComponent
 
 	/**
 	 * Returns a widget by its class.
+	 *
 	 * @param string $class
 	 * @return mixed
 	 */
@@ -36,6 +38,7 @@ class DashboardService extends \CApplicationComponent
 
 	/**
 	 * Returns a widget by its ID.
+	 *
 	 * @param int $widgetId
 	 * @return Widget
 	 */
@@ -62,6 +65,7 @@ class DashboardService extends \CApplicationComponent
 
 	/**
 	 * Returns the dashboard widgets for the current user.
+	 *
 	 * @return array
 	 */
 	public function getUserWidgets()
@@ -90,6 +94,7 @@ class DashboardService extends \CApplicationComponent
 
 	/**
 	 * Assign the default widgets to a user.
+	 *
 	 * @param int $userId
 	 */
 	public function assignDefaultUserWidgets($userId = null)
@@ -111,6 +116,7 @@ class DashboardService extends \CApplicationComponent
 
 	/**
 	 * Saves the user's dashboard settings
+	 *
 	 * @param array $settings
 	 * @throws \Exception
 	 * @throws Exception

@@ -8,6 +8,7 @@ class PluginsVariable
 {
 	/**
 	 * Returns a plugin.
+	 *
 	 * @param string $class
 	 * @return Plugin
 	 */
@@ -18,6 +19,7 @@ class PluginsVariable
 
 	/**
 	 * Returns all plugins.
+	 *
 	 * @return array
 	 */
 	public function all()

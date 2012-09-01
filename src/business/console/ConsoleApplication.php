@@ -7,6 +7,9 @@ namespace Blocks;
 class ConsoleApplication extends \CConsoleApplication
 {
 
+	/**
+	 *
+	 */
 	public function init()
 	{
 		$this->_importClasses();

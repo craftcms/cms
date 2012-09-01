@@ -14,6 +14,7 @@ class UpdatesWidget extends BaseWidget
 
 	/**
 	 * Add a link to Updates.
+	 *
 	 * @return array
 	 */
 	public function getActionButtons()

@@ -9,6 +9,7 @@ abstract class BaseComponent extends \CApplicationComponent
 {
 	/**
 	 * The AR record associated with this instance.
+	 *
 	 * @var Model
 	 */
 	public $record;
@@ -16,6 +17,7 @@ abstract class BaseComponent extends \CApplicationComponent
 	/**
 	 * The type of component, e.g. "Plugin", "Widget", or "Block"
 	 * Defined by the component type's base class.
+	 *
 	 * @access protected
 	 * @var string
 	 */
@@ -35,6 +37,7 @@ abstract class BaseComponent extends \CApplicationComponent
 
 	/**
 	 * Get the class name, sans namespace.
+	 *
 	 * @return string
 	 */
 	public function getClassHandle()

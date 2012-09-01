@@ -8,6 +8,7 @@ class SessionVariable
 {
 	/**
 	 * Returns whether the user is logged in.
+	 *
 	 * @return bool
 	 */
 	public function loggedin()
@@ -17,6 +18,7 @@ class SessionVariable
 
 	/**
 	 * Returns the remembered username from cookie.
+	 *
 	 * @return string
 	 */
 	public function rememberedusername()
@@ -26,6 +28,7 @@ class SessionVariable
 
 	/**
 	 * Returns any active notifications for the user.
+	 *
 	 * @return array
 	 */
 	public function messages()

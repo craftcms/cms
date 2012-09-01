@@ -28,6 +28,7 @@ class SettingsVariable
 	/**
 	 * Returns whether a setting category exists.
 	 *
+	 * @param $category
 	 * @return bool
 	 */
 	public function __isset($category)
@@ -39,6 +40,7 @@ class SettingsVariable
 	/**
 	 * Returns the system settings for a category.
 	 *
+	 * @param $category
 	 * @return array
 	 */
 	public function __get($category)

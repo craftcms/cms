@@ -8,6 +8,7 @@ class InstallService extends \CApplicationComponent
 {
 	/**
 	 * Installs @@@productDisplay@@@!
+	 *
 	 * @param array $inputs
 	 * @throws Exception
 	 * @throws \Exception

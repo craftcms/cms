@@ -8,6 +8,7 @@ class ConfigVariable
 {
 	/**
 	 * Returns a config item.
+	 *
 	 * @param string $name
 	 * @return string
 	 */
