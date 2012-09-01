@@ -4,7 +4,7 @@
 /**
  * FieldToggle
  */
-blx.ui.FieldToggle = blx.ui.Drag.extend({
+blx.ui.FieldToggle = blx.Base.extend({
 
 	$toggle: null,
 	$target: null,
@@ -35,8 +35,6 @@ blx.ui.FieldToggle = blx.ui.Drag.extend({
 			this.$target = $('#'+this.$toggle.attr('data-target'));
 		else
 			this.$target = $('#'+this.getToggleVal());
-
-		console.log('findTarget', this.$target);
 	},
 
 	getToggleVal: function()
@@ -47,7 +45,6 @@ blx.ui.FieldToggle = blx.ui.Drag.extend({
 	onToggleChange: function()
 	{
 		var val = this.getToggleVal();
-		console.log(val);
 
 		if (this.isCheckbox)
 		{
