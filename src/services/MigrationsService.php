@@ -240,7 +240,8 @@ class MigrationsService extends \CApplicationComponent
 	}
 
 	/**
-	 * Gets migrations that have no been applied yet AND have a later timestamp than the current Blocks release.
+	 * Gets migrations that have no been applied yet AND have a later timestamp than the current @@@productDisplay@@@ release.
+	 *
 	 * @return array
 	 */
 	protected function getNewMigrations()

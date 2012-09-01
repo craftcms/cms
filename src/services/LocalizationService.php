@@ -45,6 +45,7 @@ class LocalizationService extends \CApplicationComponent
 
 	/**
 	 * Returns a list of language ids from the languages directory that @@@productDisplay@@@ is translated into.
+	 *
 	 * @return mixed
 	 */
 	public function getTranslatedLanguages()

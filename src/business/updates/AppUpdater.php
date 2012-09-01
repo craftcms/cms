@@ -25,6 +25,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Performs environmental requirement checks before running an update.
+	 *
 	 * @throws Exception
 	 */
 	public function checkRequirements()
@@ -61,6 +62,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Starts the process of running a @@@productDisplay@@@ app update.
+	 *
 	 * @return bool
 	 * @throws Exception
 	 */
@@ -148,6 +150,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Returns the relevant lines from the update manifest file starting with the current local version/build.
+	 *
 	 * @return array
 	 */
 	private function _getManifestData()
@@ -171,8 +174,9 @@ class AppUpdater implements IUpdater
 	}
 
 	/**
-	 * Scans through the update manifest file for any migrations.  If it finds one, copies it to the app's miggrations
+	 * Scans through the update manifest file for any migrations.  If it finds one, copies it to the app's migrations
 	 * folder so they can be ran before any file updates occur.
+	 *
 	 * @return mixed
 	 */
 	public function gatherMigrations()
@@ -195,6 +199,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Run the database migrations to top.
+	 *
 	 * @return bool
 	 */
 	public function doDatabaseUpdate()
@@ -239,6 +244,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Calculate the MD5 of the downloaded file and verify it with ET against the stored MD5 of the patch file.
+	 *
 	 * @param $version
 	 * @param $build
 	 * @return bool
@@ -263,6 +269,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Unzip the downloaded update file into the temp package directory.
+	 *
 	 * @return bool
 	 */
 	public function unpackPackage()
@@ -282,6 +289,7 @@ class AppUpdater implements IUpdater
 
 	/**
 	 * Checks to see if the files that we are about to update are writable by @@@productDisplay@@@.
+	 *
 	 * @return bool
 	 */
 	public function validateManifestPathsWritable()
@@ -310,6 +318,7 @@ class AppUpdater implements IUpdater
 	/**
 	 * Attempt to backup each of the update manifest files by copying them to a file with the same name with a .bak extension.
 	 * If there is an exception thrown, we attempt to roll back all of the changes.
+	 *
 	 * @return bool
 	 */
 	public function backupFiles()

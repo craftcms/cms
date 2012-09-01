@@ -8,6 +8,7 @@ class UpdatesVariable
 {
 	/**
 	 * Returns whether the update info is cached.
+	 *
 	 * @return bool
 	 */
 	public function cached()
@@ -17,6 +18,7 @@ class UpdatesVariable
 
 	/**
 	 * Returns whether a critical update is available.
+	 *
 	 * @return bool
 	 */
 	public function critical()
@@ -26,6 +28,7 @@ class UpdatesVariable
 
 	/**
 	 * Returns the directories that need to be set to writable.
+	 *
 	 * @return array
 	 */
 	public function unwritabledirectories()

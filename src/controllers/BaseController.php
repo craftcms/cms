@@ -9,6 +9,7 @@ abstract class BaseController extends \CController
 	/**
 	 * Returns the directory containing view files for this controller.
 	 * We're overriding this since CController's version defaults $module to blx().
+	 *
 	 * @return string the directory containing the view files for this controller.
 	 */
 	public function getViewPath()
@@ -150,6 +151,7 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Respond with JSON
+	 *
 	 * @param array $r The array to JSON-encode and return
 	 */
 	public function returnJson($r)
@@ -161,6 +163,7 @@ abstract class BaseController extends \CController
 
 	/**
 	 * Respond with a JSON error message
+	 *
 	 * @param string $error The error message
 	 */
 	public function returnErrorJson($error)

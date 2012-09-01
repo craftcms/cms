@@ -8,6 +8,7 @@ class AccountsVariable
 {
 	/**
 	 * Returns the current logged-in user.
+	 *
 	 * @return User
 	 */
 	public function current()
@@ -39,6 +40,7 @@ class AccountsVariable
 
 	/**
 	 * Returns a user by its ID.
+	 *
 	 * @param $userId
 	 * @return User
 	 */
@@ -60,6 +62,7 @@ class AccountsVariable
 
 	/**
 	 * Returns the recent users.
+	 *
 	 * @return array
 	 */
 	public function recent()
@@ -69,6 +72,7 @@ class AccountsVariable
 
 	/**
 	 * Returns the URL segment for account verification.
+	 *
 	 * @return string
 	 */
 	public function verifyAccountUrl()

@@ -9,11 +9,17 @@ class NumberBlock extends BaseBlock
 	protected $settingsTemplate = '_blocktypes/Number/settings';
 	protected $fieldTemplate = '_blocktypes/Number/field';
 
+	/**
+	 * @return string|void
+	 */
 	public function getType()
 	{
 		return Blocks::t('Number');
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function getDefaultSettings()
 	{
 		return array(
@@ -23,6 +29,9 @@ class NumberBlock extends BaseBlock
 		);
 	}
 
+	/**
+	 * @return null|string
+	 */
 	public function getColumnType()
 	{
 		switch ($this->settings['type'])

@@ -71,6 +71,7 @@ class UrlManager extends \CUrlManager
 
 	/**
 	 * Attempts to match a request with an entry in the database.
+	 *
 	 * @return bool The URI if a match was found, false otherwise.
 	 */
 	public function matchEntry()

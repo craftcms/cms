@@ -8,6 +8,7 @@ class ContentBlocksVariable
 {
 	/**
 	 * Returns all blocktypes.
+	 *
 	 * @return array
 	 */
 	public function blocktypes()

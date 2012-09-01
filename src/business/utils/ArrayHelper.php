@@ -8,6 +8,7 @@ class ArrayHelper
 {
 	/**
 	 * Flattens a multi-dimensional array into a single-dimensional array
+	 *
 	 * @param        $arr
 	 * @param string $prefix
 	 * @return array
@@ -36,6 +37,7 @@ class ArrayHelper
 
 	/**
 	 * Expands a flattened array back into its original form
+	 *
 	 * @param $arr
 	 * @return array
 	 */
@@ -77,6 +79,7 @@ class ArrayHelper
 	/**
 	 * Converts a comma-delimited string into a trimmed array
 	 * ex: ArrayHelper::stringToArray('one, two, three') => array('one', 'two', 'three')
+	 *
 	 * @param mixed $str The string to convert to an array
 	 * @return array The trimmed array
 	 */

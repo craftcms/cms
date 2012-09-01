@@ -9,6 +9,9 @@ class CheckboxesBlock extends BaseOptionsBlock
 	protected $settingsTemplate = '_blocktypes/Checkboxes/settings';
 	protected $fieldTemplate = '_blocktypes/Checkboxes/field';
 
+	/**
+	 * @return string|void
+	 */
 	public function getType()
 	{
 		return Blocks::t('Checkboxes');
@@ -27,6 +30,7 @@ class CheckboxesBlock extends BaseOptionsBlock
 
 	/**
 	 * Converts the newline-separated data into an array
+	 *
 	 * @param $data
 	 */
 	public function setData($data)

@@ -8,6 +8,7 @@ class CpVariable
 {
 	/**
 	 * Get the sections of the CP.
+	 *
 	 * @return array
 	 */
 	public function nav()

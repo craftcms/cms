@@ -10,6 +10,9 @@ class DropdownBlock extends BaseOptionsBlock
 	protected $fieldTemplate = '_blocktypes/Dropdown/field';
 	protected $columnType = PropertyType::Varchar;
 
+	/**
+	 * @return string|void
+	 */
 	public function getType()
 	{
 		return Blocks::t('Dropdown');

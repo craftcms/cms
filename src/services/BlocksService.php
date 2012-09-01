@@ -10,6 +10,7 @@ class BlocksService extends \CApplicationComponent
 
 	/**
 	 * Returns all content blocks
+	 *
 	 * @return array
 	 */
 	public function getBlocks()
@@ -20,6 +21,7 @@ class BlocksService extends \CApplicationComponent
 
 	/**
 	 * Returns a new block by the blocktype
+	 *
 	 * @param string $class The blocktype class, sans "Block" suffix
 	 * @return mixed The block instance
 	 */
@@ -32,6 +34,7 @@ class BlocksService extends \CApplicationComponent
 
 	/**
 	 * Returns a block by its ID
+	 *
 	 * @param int $blockId
 	 * @return Block
 	 */
@@ -50,6 +53,7 @@ class BlocksService extends \CApplicationComponent
 
 	/**
 	 * Returns all block types
+	 *
 	 * @return array
 	 */
 	public function getBlockTypes()

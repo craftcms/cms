@@ -58,6 +58,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns the status of the entry
+	 *
 	 * @return string The entry status (live, pending, expired, offline)
 	 */
 	public function getStatus()
@@ -74,6 +75,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns whether the entry is live
+	 *
 	 * @return bool
 	 */
 	public function getLive()
@@ -83,6 +85,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns whether the entry has been published
+	 *
 	 * @return bool
 	 */
 	public function getPublished()
@@ -92,6 +95,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns whether the entry is pending
+	 *
 	 * @return bool
 	 */
 	public function getPending()
@@ -101,6 +105,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns whether the entry has expired
+	 *
 	 * @return bool
 	 */
 	public function getExpired()
@@ -110,6 +115,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns the publish date
+	 *
 	 * @return DateTime
 	 */
 	public function getPublishDate()
@@ -125,6 +131,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Returns the entry's full URL
+	 *
 	 * @return mixed
 	 */
 	public function getUrl()
@@ -140,6 +147,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Get all drafts
+	 *
 	 * @return array
 	 */
 	public function getDrafts()
@@ -160,6 +168,7 @@ class Entry extends BaseModel
 
 	/**
 	 * Sets a draft
+	 *
 	 * @param EntryVersion $draft
 	 */
 	public function setDraft($draft)

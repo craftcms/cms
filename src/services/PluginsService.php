@@ -8,18 +8,21 @@ class PluginsService extends \CApplicationComponent
 {
 	/**
 	 * Stores all enabled plugins. Populated on init.
+	 *
 	 * @var array
 	 */
 	private $_enabledPlugins = array();
 
 	/**
 	 * Stores all installed plugins, whether they're enabled or not.
+	 *
 	 * @var array
 	 */
 	private $_installedPlugins;
 
 	/**
 	 * Stores all initialized plugins for the current request.
+	 *
 	 * @access private
 	 * @var array
 	 */
@@ -27,6 +30,7 @@ class PluginsService extends \CApplicationComponent
 
 	/**
 	 * Stores all plugins, whether installed or not
+	 *
 	 * @access private
 	 * @var array
 	 */

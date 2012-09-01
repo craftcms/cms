@@ -9,6 +9,9 @@ class MultiSelectBlock extends BaseOptionsBlock
 	protected $settingsTemplate = '_blocktypes/MultiSelect/settings';
 	protected $fieldTemplate = '_blocktypes/MultiSelect/field';
 
+	/**
+	 * @return string|void
+	 */
 	public function getType()
 	{
 		return Blocks::t('Multi-select');
@@ -34,6 +37,7 @@ class MultiSelectBlock extends BaseOptionsBlock
 	{
 		if (!is_array($data))
 			$data = preg_split('/[\r\n]/', $data);
+
 		parent::setData($data);
 	}
 }

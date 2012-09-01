@@ -56,6 +56,7 @@ class User extends BaseModel
 
 	/**
 	 * String representation of a user
+	 *
 	 * @return string
 	 */
 	function __toString()
@@ -75,6 +76,7 @@ class User extends BaseModel
 
 	/**
 	 * Returns whether this is the current logged-in user
+	 *
 	 * @return bool
 	 */
 	public function getIsCurrent()

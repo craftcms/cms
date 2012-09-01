@@ -8,6 +8,7 @@ class ComponentHelper
 {
 	/**
 	 * Returns instances of a component type.
+	 *
 	 * @param string $subfolder     The subfolder to look in within app/ and each plugin's folder.
 	 * @param string $componentType The type of components to load.
 	 * @return array

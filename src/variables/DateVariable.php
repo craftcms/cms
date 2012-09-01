@@ -18,6 +18,7 @@ class DateVariable
 
 	/**
 	 * Forward any unknown requests to the DateTime variable.
+	 *
 	 * @param string $name
 	 * @return string
 	 */
@@ -28,6 +29,7 @@ class DateVariable
 
 	/**
 	 * Returns a given number of seconds in a more meaningful format.
+	 *
 	 * @param int $seconds
 	 * @return string
 	 */

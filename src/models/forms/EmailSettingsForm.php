@@ -23,6 +23,7 @@ class EmailSettingsForm extends \CFormModel
 
 	/**
 	 * Declares the validation rules.
+	 *
 	 * @return array of validation rules.
 	 */
 	public function rules()

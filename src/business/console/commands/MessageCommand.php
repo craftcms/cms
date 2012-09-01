@@ -9,7 +9,6 @@ class MessageCommand extends \MessageCommand
 	/**
 	 * @param $fileName
 	 * @param $translator
-	 *
 	 * @return array
 	 */
 	protected function extractMessages($fileName, $translator)

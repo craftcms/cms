@@ -36,10 +36,8 @@ class StringHelper
 
 	/**
 	 * @static
-	 *
 	 * @param int  $length
 	 * @param bool $extendedChars
-	 *
 	 * @return string
 	 */
 	public static function randomString($length = 36, $extendedChars = false)

@@ -293,6 +293,7 @@ class UpdatesService extends \CApplicationComponent
 
 	/**
 	 * Checks to see if @@@productDisplay@@@ can write to a defined set of folders/files that are needed for auto-update to work.
+	 *
 	 * @return array|null
 	 */
 	public function getUnwritableDirectories()

@@ -45,6 +45,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	/**
 	 * Adds commands from the specified command path.
 	 * If a command already exists, the new one will overwrite it.
+	 *
 	 * @param string $path the alias of the directory containing the command class files.
 	 */
 	public function addCommands($path)

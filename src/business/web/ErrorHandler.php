@@ -39,7 +39,6 @@ namespace Blocks;
  * {@link CApplication::getErrorHandler()}.
  *
  * @property array $error The error details. Null if there is no error.
- *
  */
 class ErrorHandler extends \CErrorHandler
 {
@@ -64,6 +63,7 @@ class ErrorHandler extends \CErrorHandler
 
 	/**
 	 * Handles a thrown exception.  Will also log extra information if the exception happens to by a MySql deadlock.
+	 *
 	 * @access protected
 	 * @param Exception $exception the exception captured
 	 */
@@ -256,6 +256,7 @@ class ErrorHandler extends \CErrorHandler
 
 	/**
 	 * Handles a PHP error event.
+	 *
 	 * @param \CErrorEvent $event the PHP error event
 	 */
 	protected function handleError($event)
@@ -341,6 +342,7 @@ class ErrorHandler extends \CErrorHandler
 
 	/**
 	 * Renders the template.
+	 *
 	 * @access protected
 	 * @param string $template the template name (file name without extension).
 	 * See {@link getViewFile} for how a template is located given its name.
@@ -379,6 +381,7 @@ class ErrorHandler extends \CErrorHandler
 
 	/**
 	 * Looks for the template under the specified directory.
+	 *
 	 * @access protected
 	 * @param string $templatePath the directory containing the views
 	 * @param string $templateName template name (either 'exception' or 'error')
@@ -418,6 +421,7 @@ class ErrorHandler extends \CErrorHandler
 
 	/**
 	 * Determines which view file should be used.
+	 *
 	 * @access protected
 	 * @param string $view view name (either 'exception' or 'error')
 	 * @param integer $code HTTP status code
@@ -450,6 +454,7 @@ class ErrorHandler extends \CErrorHandler
 	/**
 	 * Returns server version information.
 	 * If the application is in production mode, empty string is returned.
+	 *
 	 * @return string server version information. Empty if in production mode.
 	 */
 	protected function getVersionInfo()

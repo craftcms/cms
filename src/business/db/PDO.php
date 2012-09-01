@@ -12,6 +12,7 @@ class PDO extends \PDO
 
  	/**
  	 * Returns whether the DB supports savepoints.
+	  *
  	 * @return bool
  	 */
 	protected function getSupportsSavepoints()

@@ -8,6 +8,7 @@ class DashboardVariable
 {
 	/**
 	 * Returns dashboard alerts.
+	 *
 	 * @return array
 	 */
 	public function alerts()
@@ -17,6 +18,7 @@ class DashboardVariable
 
 	/**
 	 * Returns all installed widgets.
+	 *
 	 * @return array
 	 */
 	public function allwidgets()
@@ -27,6 +29,7 @@ class DashboardVariable
 
 	/**
 	 * Returns the user's widgets.
+	 *
 	 * @return array
 	 */
 	public function userwidgets()
@@ -37,6 +40,7 @@ class DashboardVariable
 
 	/**
 	 * Returns the user's widget IDs.
+	 *
 	 * @return array
 	 */
 	public function userwidgetids()

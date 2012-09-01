@@ -141,6 +141,7 @@ class UserSessionService extends \CWebUser
 
 	/**
 	 * Check to see if the current web user is logged in.
+	 *
 	 * @return bool
 	 */
 	public function getIsLoggedIn()

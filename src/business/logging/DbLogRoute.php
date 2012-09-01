@@ -28,6 +28,7 @@ class DbLogRoute extends \CDbLogRoute
 
 	/**
 	 * Creates the DB table for storing log messages.
+	 *
 	 * @param \CDbConnection $db the database connection
 	 * @param string $tableName the name of the table to be created
 	 */
@@ -50,6 +51,7 @@ class DbLogRoute extends \CDbLogRoute
 
 	/**
 	 * Stores log messages into database.
+	 *
 	 * @param array $logs list of log messages
 	 */
 	protected function processLogs($logs)

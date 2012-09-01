@@ -150,7 +150,9 @@ class ContentService extends \CApplicationComponent
 	 * Saves a section.
 	 *
 	 * @param array $settings
-	 * @param int $sectionId
+	 * @param int   $sectionId
+	 *
+	 * @throws \Exception
 	 * @return Section
 	 */
 	public function saveSection($settings, $sectionId = null)
@@ -308,6 +310,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Creates a new entry
+	 *
 	 * @param int   $sectionId
 	 * @param mixed $parentId
 	 * @param mixed $authorId
@@ -351,6 +354,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Saves an entry's slug
+	 *
 	 * @param Entry  $entry
 	 * @param string $slug
 	 * @throws \CDbException
@@ -391,6 +395,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Saves changes to an entry's content.
+	 *
 	 * @param mixed  $entry      An Entry record or an entry ID.
 	 * @param array  $newContent The new entry content.
 	 * @param null   $language
@@ -444,6 +449,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Returns the full URI for an entry
+	 *
 	 * @param $entry
 	 * @return mixed
 	 */
@@ -533,6 +539,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Creates a new entry version
+	 *
 	 * @param mixed  $entry    The Entry record, or an entry ID.
 	 * @param array  $content  The content to be saved with the version.
 	 * @param string $name     The name of the version.
@@ -611,6 +618,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Creates a new entry draft
+	 *
 	 * @param mixed  $entry    The Entry record, or an entry ID.
 	 * @param array  $content  The content to be saved with the draft.
 	 * @param string $name     The name of the draft.
@@ -669,6 +677,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Saves draft content
+	 *
 	 * @param EntryVersion $draft
 	 * @param array $newChanges
 	 * @return bool
@@ -684,6 +693,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Publishes an entry draft
+	 *
 	 * @param EntryVersion $draft
 	 * @throws \Exception
 	 * @return bool
@@ -715,6 +725,7 @@ class ContentService extends \CApplicationComponent
 
 	/**
 	 * Deletes an entry draft
+	 *
 	 * @param int $draftId
 	 */
 	public function deleteEntryDraft($draftId)

@@ -208,6 +208,7 @@ class ContentController extends BaseController
 
 	/**
 	 * Returns an entry based on the entryId in the post data
+	 *
 	 * @access private
 	 * @throws Exception
 	 * @return Entry
@@ -242,6 +243,7 @@ class ContentController extends BaseController
 
 	/**
 	 * Returns any content changes in the post data
+	 *
 	 * @access private
 	 * @param  Entry $entry
 	 * @return array

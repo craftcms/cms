@@ -8,6 +8,7 @@ class InstallController extends BaseController
 {
 	/**
 	 * Init
+	 *
 	 * @throws HttpException
 	 */
 	public function init()

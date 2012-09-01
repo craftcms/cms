@@ -117,6 +117,7 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns a specific path segment
+	 *
 	 * @param      $num
 	 * @param null $default
 	 * @return mixed The requested path segment, or null
@@ -145,7 +146,6 @@ class HttpRequest extends \CHttpRequest
 	}
 
 	/**
-	 *
 	 * @return Returns which URL format we're using (PATH_INFO or the query string)
 	 */
 	public function getUrlFormat()
@@ -279,6 +279,7 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 *
 	 * @param $name
 	 * @throws Exception
 	 * @return mixed
@@ -295,6 +296,7 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns the named GET parameter value, or throws an exception if it's not set
+	 *
 	 * @param $name
 	 * @throws Exception
 	 * @return mixed
@@ -311,6 +313,7 @@ class HttpRequest extends \CHttpRequest
 
 	/**
 	 * Returns the named GET or POST parameter value, or throws an exception if it's not set
+	 *
 	 * @param $name
 	 * @throws Exception
 	 * @return mixed
@@ -328,6 +331,7 @@ class HttpRequest extends \CHttpRequest
 	/**
 	 * Returns whether the request is coming from a mobile browser
 	 * Detection script courtesy of http://detectmobilebrowsers.com
+	 *
 	 * @return bool Whether the request is coming from a mobile browser
 	 */
 	public function getIsMobileBrowser()
@@ -362,6 +366,7 @@ class HttpRequest extends \CHttpRequest
 	 * Returns the user preferred languages sorted by preference.
 	 * The returned language IDs will be canonicalized using {@link Locale::getCanonicalID}.
 	 * This method returns false if the user does not have language preferences.
+	 *
 	 * @return array the user preferred languages.
 	 */
 	public function getBrowserLanguages()
