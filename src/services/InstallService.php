@@ -142,32 +142,37 @@ class InstallService extends \CApplicationComponent
 				'senderName'   => $inputs['sitename']
 			));
 
+			/* BLOCKSPRO ONLY */
 			// Create a Blog section
-			/*$section = blx()->content->saveSection(array(
-				'name'       => 'Blog',
+			$section = blx()->content->saveSection(array(
+				'name'       => Blocks::t('Blog'),
 				'handle'     => 'blog',
 				'url_format' => 'blog/{slug}',
-				'template'   => 'blog/_entry',
-				'blocks'     => array(
-					'new1' => array(
-						'class'    => 'PlainText',
-						'name'     => 'Body',
-						'handle'   => 'body',
-						'required' => true,
-						'settings' => array(
-							'hint' => 'Enter your blog post’s body…'
-						)
-					)
+				'has_urls'   => true,
+				'template'   => 'blog/_entry'
+			));
+
+			// Give it a Body block
+			blx()->content->saveSectionBlock($section->id, array(
+				'name'   => Blocks::t('Body'),
+				'handle' => 'body',
+				'required' => true,
+				'translatable' => true,
+				'class' => 'PlainText',
+				'settings' => array(
+					'hint' => Blocks::t('Enter your blog post’s body…')
 				)
 			));
 
-			// Add a Welcome entry to the Blog
+			/*// Add a Welcome entry to the Blog
 			$entry = blx()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
 			blx()->content->saveEntryContent($entry, array(
 				'body' => "Hey {$user->username},\n\n" .
 				          "Welcome to Blocks Alpha 2!\n\n" .
 				          '-Brandon & Brad'
 			));*/
+
+			/* end BLOCKSPRO ONLY */
 
 			$transaction->commit();
 		}
