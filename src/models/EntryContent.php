@@ -35,6 +35,7 @@ class EntryContent extends BaseModel
 			/* BLOCKSPRO ONLY */
 			'language' => PropertyType::Language,
 			/* end BLOCKSPRO ONLY */
+			'title'    => PropertyType::Varchar,
 		);
 	}
 
