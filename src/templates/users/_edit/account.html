@@ -28,7 +28,7 @@
 			<div class="heading">
 				<label for="username" class="required">{{ "Username"|t }}</label>
 			</div>
-			<input id="username" name="username" class="text" type="text" value="{{ user.username }}">
+			<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{{ user.username }}"></div>
 			{% if user.errors.username %}
 				{% include "_includes/error_list" with {'errors': user.errors.username} %}
 			{% endif %}
@@ -38,7 +38,7 @@
 			<div class="heading">
 				<label for="email" class="required">{{ "Email"|t }}</label>
 			</div>
-			<input id="email" name="email" class="text" type="text" value="{{ user.email }}">
+			<div class="textwrapper"><input id="email" name="email" class="text" type="text" value="{{ user.email }}"></div>
 			{% if user.errors.email %}
 				{% include "_includes/error_list" with {'errors': user.errors.email} %}
 			{% endif %}
@@ -57,7 +57,7 @@
 					<label for="password">{{ "Password"|t }}</label>
 					{% if user.id %}<p>{{ "Leave blank to keep password unchanged."|t }}</p>{% endif %}
 				</div>
-				<input id="password" name="password" class="text {% if passwordForm and passwordForm.errors.password %}error{% endif %}" type="password">
+				<div class="textwrapper"><input id="password" name="password" class="text {% if passwordForm and passwordForm.errors.password %}error{% endif %}" type="password"></div>
 				{% if passwordForm and passwordForm.errors.password %}
 					{% include "_includes/error_list" with {'errors': passwordForm.errors.password} %}
 				{% endif %}

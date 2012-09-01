@@ -27,7 +27,7 @@
 			<div class="heading">
 				<label for="first_name">{{ "First Name"|t }}</label>
 			</div>
-			<input id="first_name" name="first_name" class="text" type="text" value="{{ user.first_name }}">
+			<div class="textwrapper"><input id="first_name" name="first_name" class="text" type="text" value="{{ user.first_name }}"></div>
 			{% if user.errors.first_name %}
 				{% include "_includes/error_list" with {'errors': user.errors.first_name} %}
 			{% endif %}
@@ -37,7 +37,7 @@
 			<div class="heading">
 				<label for="last_name">{{ "Last Name"|t }}</label>
 			</div>
-			<input id="last_name" name="last_name" class="text" type="text" value="{{ user.last_name }}">
+			<div class="textwrapper"><input id="last_name" name="last_name" class="text" type="text" value="{{ user.last_name }}"></div>
 			{% if user.errors.last_name %}
 				{% include "_includes/error_list" with {'errors': user.errors.last_name} %}
 			{% endif %}

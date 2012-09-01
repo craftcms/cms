@@ -3,7 +3,7 @@
 #routes { margin: 0 1px 25px; }
 
 .route { position: relative; margin: 15px 0; padding: 0; @include linear-gradient(#fafafa, #f3f3f3); cursor: pointer; }
-.route:hover:after { position: absolute; top: 9px; right: 5px; @include icon; content: 'e'; color: $linkcolor; }
+.route:hover:after { position: absolute; top: 9px; right: 5px; @include icon; content: '✎'; color: $linkcolor; }
 
 .route .url,
 .route .template { padding: 7px 15px; }

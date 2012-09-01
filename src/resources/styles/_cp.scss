@@ -67,17 +67,20 @@ html, body, #sidebar, #main { height: 100%; }
 #titlebar { padding: 10px 25px 9px; border-bottom: 1px solid #dadada; height: 30px; @include linear-gradient(white, #f3f3f3); }
 #titlebar:before { position: absolute; top: 0; left: 0; width: 50%; height: 50px; @include left-linear-gradient(white, rgba(255,255,255,0)); content: '.'; text-indent: -100%; }
 #titlebar:after { position: absolute; top: 0; right: 0; width: 50%; height: 50px; @include right-linear-gradient(white, rgba(255,255,255,0)); content: '.'; text-indent: -100%; }
-#titlebar h1 { position: relative; z-index: 1; margin-bottom: -30px; text-shadow: 0 1px 1px #fff; }
+#titlebar h1 { position: relative; z-index: 1; margin-bottom: -30px; text-align: center; text-shadow: 0 1px 1px #fff; }
 #titlebar h1 span { display: block; float: left; margin: 12px 5px 0 0; font-family: HelveticaNeue, sans-serif; font-size: 11px; line-height: 1; color: #999; }
 #titlebar ul li { position: relative; z-index: 1; float: left; }
 #titlebar ul li + li { margin-left: 10px; }
-#titlebar .btn { padding: 0 12px; height: 30px; line-height: 30px; }
 
 /* content */
 #content { padding: 25px; }
+#content form { max-width: 400px; }
+#content form.full { max-width: none; }
+#content .centered { margin: 0 auto; }
 
 /* nav */
-#main .nav { float: left; margin-top: 4px; width: 150px; }
+#main .nav { float: left; width: 150px; }
+#main .nav .btn.submit { display: block; }
 #main .nav ul li a:after { @include icon; display: none; margin: 0 0 -2px 8px; font-size: 13px; content: '>'; color: $linkcolor; }
 #main .nav ul li a:hover:after { display: inline-block; }
 #main .nav ul li.sel a:after { display: inline-block; color: #2c2c2c; }

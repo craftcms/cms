@@ -4,11 +4,14 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="btn backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
 {% set content %}
-	<form method="post" action="">
+	<form method="post" action="" class="full">
 		<input type="hidden" name="action" value="settings/saveLanguageSettings">
 		<input type="hidden" name="redirect" value="settings">
 

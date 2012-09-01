@@ -3,5 +3,5 @@
 		<label for="options">{{ "Multi-select Options"|t }}</label>
 		<p>{{ "Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”."|t }}</p>
 	</div>
-	<textarea id="options" name="options" class="text" cols="100" rows="10">{{ settings.options|join("\n") }}</textarea>
+	<div class="textwrapper"><textarea id="options" name="options" class="text" cols="100" rows="10">{{ settings.options|join("\n") }}</textarea></div>
 </div>

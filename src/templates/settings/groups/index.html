@@ -4,11 +4,11 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="btn backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
 {% set content %}
-	<div class="buttons">
-		<a class="btn" href="{{ url('settings') }}">{{ "Done"|t }}</a>
-	</div>
 {% endset %}

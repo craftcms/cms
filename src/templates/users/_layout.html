@@ -7,16 +7,15 @@
 
 {% set titlebar %}
 	<h1>{{ "Accounts"|t }}</h1>
-
-	<ul class="right">
-		<li><div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div></li>
-		<li><a href="{{ url('users/new') }}" class="btn" data-icon="+">{{ "New User"|t }}</a></li>
-	</ul>
 {% endset %}
 
 
 {% set content %}
 	<nav class="nav">
+		<div class="buttons">
+			<a href="{{ url('users/new') }}" class="btn submit" data-icon="+">{{ "New User"|t }}</a>
+		</div>
+
 		<ul>
 			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
 			{% for status, class in statuses %}
@@ -29,7 +28,10 @@
 		</ul>
 	</nav>
 
-	<div class="pane first">
+	<div>
+		<div class="toolbar">
+			<div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div>
+		</div>
 		<table class="data">
 			<thead>
 				<th scope="col">{{ "Username"|t }}</th>

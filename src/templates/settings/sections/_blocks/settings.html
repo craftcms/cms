@@ -22,11 +22,14 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Content Blocks"|t({ 'section': section.name }) }}</a></li>
+	</ul>
 {% endset %}
 
 
 {% set content %}
-	<form method="post" action="">
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="content/saveSectionBlock">
 		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
@@ -37,7 +40,7 @@
 				<label class="required" for="name">{{ "Name"|t }}</label>
 				<p>{{ "What this block will be called in the CP."|t }}</p>
 			</div>
-			<input id="name" name="name" class="text {% if block.errors.name %}error{% endif %}" type="text" value="{{ block.name }}">
+			<div class="textwrapper"><input id="name" name="name" class="text {% if block.errors.name %}error{% endif %}" type="text" value="{{ block.name }}"></div>
 			{% if block.errors.name %}
 				{% include "_includes/error_list" with {'errors': block.errors.name} %}
 			{% endif %}
@@ -48,7 +51,7 @@
 				<label class="required" for="handle">{{ "Handle"|t }}</label>
 				<p>{{ "How you’ll refer to this block in the templates."|t }}</p>
 			</div>
-			<input id="handle" name="handle" class="text code {% if block.errors.handle %}error{% endif %}" type="text" value="{{ block.handle }}">
+			<div class="textwrapper"><input id="handle" name="handle" class="text code {% if block.errors.handle %}error{% endif %}" type="text" value="{{ block.handle }}"></div>
 			{% if block.errors.handle %}
 				{% include "_includes/error_list" with {'errors': block.errors.handle} %}
 			{% endif %}
@@ -59,7 +62,7 @@
 				<label for="instructions">{{ "Instructions"|t }}</label>
 				<p>{{ "Helper text to guide the author."|t }}</p>
 			</div>
-			<textarea id="instructions" name="instructions" class="text {% if block.errors.instructions %}error{% endif %}">{{ block.instructions }}</textarea>
+			<div class="textwrapper"><textarea id="instructions" name="instructions" class="text {% if block.errors.instructions %}error{% endif %}">{{ block.instructions }}</textarea></div>
 			{% if block.errors.instructions %}
 				{% include "_includes/error_list" with {'errors': block.errors.instructions} %}
 			{% endif %}
@@ -119,7 +122,6 @@
 
 		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-			<a class="btn" href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Cancel"|t }}</a>
 		</div>
 	</form>
 {% endset %}

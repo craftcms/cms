@@ -9,10 +9,13 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="btn backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
 {% endset %}
 
 {% set content %}
-	<form method="post" action="">
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="settings/saveAdvancedSettings">
 
 		<h3>{{ "Debugging"|t }}</h3>

@@ -2,7 +2,7 @@
 
 .message { position: relative; @include linear-gradient(#fff, #fafafa); cursor: pointer; }
 .message:hover { padding-right: 26px; }
-.message:hover:after { position: absolute; top: 20px; right: 5px; @include icon; content: 'e'; color: $linkcolor; }
+.message:hover:after { position: absolute; top: 20px; right: 5px; @include icon; content: '✎'; color: $linkcolor; }
 
 .message .subject,
 .message .body { font-family: Courier, monospace; overflow: hidden; white-space: pre; text-overflow: ellipsis; }

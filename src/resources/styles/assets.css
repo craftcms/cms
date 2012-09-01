@@ -1,5 +1,8 @@
 body { background: #fff; }
 
+#main .toolbar .btn-group { float: right; }
+#main .toolbar .search { margin-right: 96px; }
+
 /*-- grid --*/
 #main .files.thumbview ul { margin: -20px 0 0 -20px; }
 #main .files.thumbview ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }

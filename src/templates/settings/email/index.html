@@ -33,7 +33,7 @@
 				<label for="emailAddress">{{ "System Email Address"|t }}</label>
 				<p>{{ "The email address @@@productDisplay@@@ will use when sending email."|t }}</p>
 			</div>
-			<input id="emailAddress" name="emailAddress" class="text" type="text" value="{{ settings.emailAddress }}">
+			<div class="textwrapper"><input id="emailAddress" name="emailAddress" class="text" type="text" value="{{ settings.emailAddress }}"></div>
 			{% if settings.errors.emailAddress %}
 				{% include "_includes/error_list" with {'errors': settings.errors.emailAddress} %}
 			{% endif %}
@@ -44,7 +44,7 @@
 				<label for="senderName">{{ "Sender Name"|t }}</label>
 				<p>{{ "The “From” name @@@productDisplay@@@ will use when sending email."|t }}</p>
 			</div>
-			<input id="senderName" name="senderName" class="text" type="text" value="{{ settings.senderName }}">
+			<div class="textwrapper"><input id="senderName" name="senderName" class="text" type="text" value="{{ settings.senderName }}"></div>
 			{% if settings.errors.senderName %}
 				{% include "_includes/error_list" with {'errors': settings.errors.senderName} %}
 			{% endif %}
@@ -56,7 +56,7 @@
 				<label for="template">{{ "HTML Email Template"|t }}</label>
 				<p>{{ "The template Blocks Pro will use for users who prefer HTML email"|t }}</p>
 			</div>
-			<input id="template" name="template" type="text" class="text template" value="{{ settings.template }}">
+			<div class="textwrapper"><input id="template" name="template" type="text" class="text template" value="{{ settings.template }}"></div>
 		</div>
 		<!-- end BLOCKSPRO ONLY -->
 
@@ -81,7 +81,7 @@
 				<div class="heading">
 					<label for="username">{{ "Username"|t }}</label>
 				</div>
-				<input id="username" name="username" class="text" type="text" value="{{ settings.username }}">
+				<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{{ settings.username }}"></div>
 				{% if settings.protocol != 'Smtp' and settings.errors.username %}
 					{% include "_includes/error_list" with {'errors': settings.errors.username} %}
 				{% endif %}
@@ -91,7 +91,7 @@
 				<div class="heading">
 					<label for="password">{{ "Password"|t }}</label>
 				</div>
-				<input id="password" name="password" class="text" type="password" value="{{ settings.password }}">
+				<div class="textwrapper"><input id="password" name="password" class="text" type="password" value="{{ settings.password }}"></div>
 				{% if settings.protocol != 'Smtp' and settings.errors.password %}
 					{% include "_includes/error_list" with {'errors': settings.errors.password} %}
 				{% endif %}
@@ -111,7 +111,7 @@
 				<div class="heading">
 					<label for="host">{{ "Host Name"|t }}</label>
 				</div>
-				<input id="host" name="host" class="text" type="text" value="{{ settings.host }}">
+				<div class="textwrapper"><input id="host" name="host" class="text" type="text" value="{{ settings.host }}"></div>
 				{% if settings.errors.host %}
 					{% include "_includes/error_list" with {'errors': settings.errors.host} %}
 				{% endif %}
@@ -139,7 +139,7 @@
 					<div class="heading">
 						<label for="smtp-username">{{ "Username"|t }}</label>
 					</div>
-					<input id="smtp-username" name="smtp_username" class="text" type="text" value="{{ settings.username }}">
+					<div class="textwrapper"><input id="smtp-username" name="smtp_username" class="text" type="text" value="{{ settings.username }}"></div>
 					{% if settings.protocol == 'Smtp' and settings.errors.username %}
 						{% include "_includes/error_list" with {'errors': settings.errors.username} %}
 					{% endif %}
@@ -149,7 +149,7 @@
 					<div class="heading">
 						<label for="smtp-password">{{ "Password"|t }}</label>
 					</div>
-					<input id="smtp-password" name="smtp_password" class="text" type="password" value="{{ settings.password }}">
+					<div class="textwrapper"><input id="smtp-password" name="smtp_password" class="text" type="password" value="{{ settings.password }}"></div>
 					{% if settings.protocol == 'Smtp' and settings.errors.password %}
 						{% include "_includes/error_list" with {'errors': settings.errors.password} %}
 					{% endif %}

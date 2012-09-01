@@ -4,11 +4,14 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="btn backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
 {% set content %}
-	<form method="post" action="">
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="settings/saveGeneralSettings">
 		<input type="hidden" name="redirect" value="settings">
 
@@ -16,7 +19,7 @@
 			<div class="heading">
 				<label for="siteName">{{ "Site Name"|t }}</label>
 			</div>
-			<input id="siteName" name="siteName" class="text {% if post.errors.siteName %}error{% endif %}" type="text" value="{% if post %}{{ post.siteName }}{% else %}{{ blx.app.siteName }}{% endif %}">
+			<div class="textwrapper"><input id="siteName" name="siteName" class="text {% if post.errors.siteName %}error{% endif %}" type="text" value="{% if post %}{{ post.siteName }}{% else %}{{ blx.app.siteName }}{% endif %}"></div>
 			{% if post.errors.siteName %}
 				{% include "_includes/error_list" with {'errors': post.errors.siteName} %}
 			{% endif %}
@@ -26,7 +29,7 @@
 			<div class="heading">
 				<label for="siteUrl">{{ "Site URL"|t }}</label>
 			</div>
-			<input id="siteUrl" name="siteUrl" class="text {% if post.errors.siteUrl %}error{% endif %}" type="text" value="{% if post %}{{ post.siteUrl }}{% else %}{{ blx.app.siteUrl }}{% endif %}">
+			<div class="textwrapper"><input id="siteUrl" name="siteUrl" class="text {% if post.errors.siteUrl %}error{% endif %}" type="text" value="{% if post %}{{ post.siteUrl }}{% else %}{{ blx.app.siteUrl }}{% endif %}"></div>
 			{% if post.errors.siteUrl %}
 				{% include "_includes/error_list" with {'errors': post.errors.siteUrl} %}
 			{% endif %}
@@ -38,7 +41,7 @@
 			<div class="heading">
 				<label for="licenseKey">{{ "License Key"|t }}</label>
 			</div>
-			<input id="licenseKey" name="licenseKey" class="text code" type="text" value="{% if post %}{{ post.licenseKey }}{% else %}{{ blx.app.licenseKey }}{% endif %}">
+			<div class="textwrapper"><input id="licenseKey" name="licenseKey" class="text code" type="text" value="{% if post %}{{ post.licenseKey }}{% else %}{{ blx.app.licenseKey }}{% endif %}"></div>
 			{% if post.errors.licenseKey %}
 				{% include "_includes/error_list" with {'errors': post.errors.licenseKey} %}
 			{% endif %}
@@ -59,7 +62,6 @@
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-			<a class="btn" href="{{ url('settings') }}">{{ "Cancel"|t }}</a>
 		</div>
 	</form>
 {% endset %}

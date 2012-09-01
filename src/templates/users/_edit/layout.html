@@ -23,6 +23,9 @@
 	<!-- end BLOCKS ONLY -->
 	<!-- BLOCKSPRO ONLY -->
 	<h1>{{ heading }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('users') }}" class="btn backbtn">{{ "Accounts"|t }}</a></li>
+	</ul>
 	<!-- end BLOCKSPRO ONLY -->
 {% endset %}
 
@@ -48,5 +51,7 @@
 		</nav>
 	{% endif %}
 
-	<div>{{ settings }}</div>
+	<div {% if not user.id %}class="centered"{% endif %}>
+		{{ settings }}
+	</div>
 {% endset %}

@@ -9,6 +9,9 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/sections') }}" class="btn backbtn">{{ "Sections"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
@@ -37,6 +40,6 @@
 	</div>
 
 	<div class="buttons">
-		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn" data-icon="+">{{ "New Content Block"|t }}</a>
+		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn submit addbtn">{{ "New Content Block"|t }}</a>
 	</div>
 {% endset %}

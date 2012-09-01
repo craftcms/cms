@@ -16,11 +16,14 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/sections') }}" class="btn backbtn">{{ "Sections"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
 {% set content %}
-	<form method="post" action="">
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="content/saveSection">
 		<input type="hidden" name="redirect" value="settings/sections">
 		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
@@ -30,7 +33,7 @@
 				<label class="required" for="name">{{ "Section Name"|t }}</label>
 				<p>{{ "What this section will be called in the CP."|t }}</p>
 			</div>
-			<input id="name" name="name" class="text {% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}">
+			<div class="textwrapper"><input id="name" name="name" class="text {% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}"></div>
 			{% if section.errors.name %}
 				{% include "_includes/error_list" with {'errors': section.errors.name} %}
 			{% endif %}
@@ -41,7 +44,7 @@
 				<label class="required" for="handle">{{ "Section Handle"|t }}</label>
 				<p>{{ "How you’ll refer to this section in the templates."|t }}</p>
 			</div>
-			<input id="handle" name="handle" class="text code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}">
+			<div class="textwrapper"><input id="handle" name="handle" class="text code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}"></div>
 			{% if section.errors.handle %}
 				{% include "_includes/error_list" with {'errors': section.errors.handle} %}
 			{% endif %}
@@ -62,7 +65,7 @@
 					<label for="url_format">{{ "Entry URL Format"|t }}</label>
 					<p>{{ "What the entry URLs should look like."|t }}</p>
 				</div>
-				<input id="url_format" name="url_format" class="text code" type="text" value="{{ section.url_format }}">
+				<div class="textwrapper"><input id="url_format" name="url_format" class="text code" type="text" value="{{ section.url_format }}"></div>
 			</div>
 
 			<div class="field">
@@ -70,7 +73,7 @@
 					<label for="template">{{ "Entry Template"|t }}</label>
 					<p>{{ "Which template to use when an entry’s URL is requested."|t }}</p>
 				</div>
-				<input id="template" name="template" class="text" type="text" value="{{ section.template }}">
+				<div class="textwrapper"><input id="template" name="template" class="text" type="text" value="{{ section.template }}"></div>
 			</div>
 		</div>
 
@@ -78,7 +81,6 @@
 
 		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-			<a class="btn" href="{{ url('settings/sections') }}">{{ "Cancel"|t }}</a>
 		</div>
 	</form>
 {% endset %}

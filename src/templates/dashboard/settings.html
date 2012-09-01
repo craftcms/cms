@@ -4,10 +4,16 @@
 {% include_js "dashboard-settings.js" %}
 
 
-{% set content %}
+{% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('dashboard') }}" class="btn backbtn">{{ "Dashboard"|t }}</a></li>
+	</ul>
+{% endset %}
 
-	<form method="post" action="">
+
+{% set content %}
+	<form method="post" action="" class="full">
 		<input type="hidden" name="action" value="dashboard/saveSettings">
 		<input type="hidden" name="redirect" value="dashboard">
 

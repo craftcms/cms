@@ -5,6 +5,9 @@
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="btn backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
@@ -13,13 +16,15 @@
 		{% if sections|length %}
 			<table class="data">
 				<thead>
-					<th scope="col">{{ "Section Name"|t }}</th>
+					<th scope="col">{{ "Name"|t }}</th>
+					<th scope="col">{{ "Handle"|t }}</th>
 					<th scope="col">{{ "Edit Content Blocks"|t }}</th>
 				</thead>
 				<tbody>
 					{% for section in sections %}
 						<tr>
 							<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
+							<td><code>{{ section.handle }}</code></td>
 							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Edit Content Blocks"|t }}</a></td>
 						</tr>
 					{% endfor %}
@@ -31,6 +36,6 @@
 	</div>
 
 	<div class="buttons">
-		<a href="{{ url('settings/sections/new') }}" class="btn" data-icon="+">{{ "New Section"|t }}</a>
+		<a href="{{ url('settings/sections/new') }}" class="btn submit addbtn">{{ "New Section"|t }}</a>
 	</div>
 {% endset %}
