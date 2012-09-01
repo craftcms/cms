@@ -91,6 +91,11 @@ td.right { float: none; text-align: right; }
 
 .move { display: inline-block; cursor: move; }
 .move:before { @include icon; content: 'm'; color: #ddd; }
+.move:hover:before { color: $linkcolor; }
+
+.deletebtn { display: inline-block; }
+.deletebtn:before { @include icon; content: 'd'; color: #ddd; }
+.deletebtn:hover:before { color: $errorcolor; }
 
 /* ----------------------------------------
 /*  Panes

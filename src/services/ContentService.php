@@ -343,6 +343,32 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
+	 * Deletes a section block.
+	 *
+	 * @param int $sectionId
+	 * @param int $blockId
+	 */
+	public function deleteSectionBlock($sectionId, $blockId)
+	{
+		$section = $this->_getSection($sectionId);
+		$content = new EntryContent($section);
+		$block = $this->_getSectionBlock($blockId);
+
+		$transaction = blx()->db->beginTransaction();
+		try
+		{
+			$block->delete();
+			blx()->db->createCommand()->dropColumn($content->getTableName(), $block->handle);
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
 	 * Updates the order of a section's content blocks.
 	 *
 	 * @param int $sectionId

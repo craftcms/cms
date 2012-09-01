@@ -89,6 +89,21 @@ class ContentController extends BaseController
 	}
 
 	/**
+	 * Deletes a section block.
+	 */
+	public function actionDeleteSectionBlock()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$blockId = Json::decode(blx()->request->getRequiredPost('blockId'));
+
+		blx()->content->deleteSectionBlock($sectionId, $blockId);
+		$this->returnJson(array('success' => true));
+	}
+
+	/**
 	 * Updates the order of a section's content blocks
 	 */
 	public function actionUpdateSectionBlockOrder()

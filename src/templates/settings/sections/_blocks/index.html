@@ -1,7 +1,11 @@
 {% extends "_layouts/cp" %}
+{% include_js "section_blocks.js" %}
 {% include_translation
 	"New block order saved.",
-	"Couldn’t save new block order."
+	"Couldn’t save new block order.",
+	"Are you sure you want to delete the content block “{block}”?",
+	"Content block deleted.",
+	"Couldn’t delete content block."
 %}
 
 
@@ -30,6 +34,7 @@
 					<th scope="col" width="33%">{{ "Handle"|t }}</th>
 					<th scope="col" width="33%">{{ "Type"|t }}</th>
 					{% if sortable %}<td width="1%"></td>{% endif %}
+					<td width="1%"></td>
 				</thead>
 				<tbody>
 					{% for block in blocks %}
@@ -37,7 +42,8 @@
 							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name }}</a></td>
 							<td><code>{{ block.handle }}</code></td>
 							<td>{{ blx.contentblocks.getBlockByClass(block.class).getType }}</td>
-							{% if sortable %}<td><div class="move"></div></td>{% endif %}
+							{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
 						</tr>
 					{% endfor %}
 				</tbody>
@@ -53,10 +59,6 @@
 {% endset %}
 
 
-{% if sortable %}
-	{% include_js "section_blocks.js" %}
-
-	{% set scripts %}
-		<script type="text/javascript">sectionId = {{ section.id }};</script>
-	{% endset %}
-{% endif %}
+{% set scripts %}
+	<script type="text/javascript">sectionId = {{ section.id }};</script>
+{% endset %}
