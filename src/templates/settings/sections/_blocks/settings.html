@@ -91,13 +91,15 @@
 				<label for="class">{{ "Type"|t }}</label>
 				<p>{{ "What type of block is this?" }}</p>
 			</div>
-			<select id="class" name="class" class="fieldtoggle">
-				{% for blocktype in blx.contentblocks.blocktypes %}
-					<option value="{{ blocktype.getClassHandle }}" {% if blocktype.getClassHandle == blockClass %}selected{% endif %}>
-						{{- blocktype.getType -}}
-					</option>
-				{% endfor %}
-			</select>
+			<div class="select">
+				<select id="class" name="class" class="fieldtoggle">
+					{% for blocktype in blx.contentblocks.blocktypes %}
+						<option value="{{ blocktype.getClassHandle }}" {% if blocktype.getClassHandle == blockClass %}selected{% endif %}>
+							{{- blocktype.getType -}}
+						</option>
+					{% endfor %}
+				</select>
+			</div>
 		</div>
 
 		{% for blocktype in blx.contentblocks.blocktypes %}

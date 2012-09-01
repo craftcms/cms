@@ -6,11 +6,13 @@
 
 <h1>{{ "Edit Message"|t }}</h1>
 
-<select class="language">
-	{% for language in blx.localization.translatedLanguages %}
-		<option value="{{ language }}" {% if language == content.language %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
-	{% endfor %}
-</select>
+<div class="select language">
+	<select>
+		{% for language in blx.localization.translatedLanguages %}
+			<option value="{{ language }}" {% if language == content.language %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
+		{% endfor %}
+	</select>
+</div>
 
 <div class="field">
 	<div class="heading">

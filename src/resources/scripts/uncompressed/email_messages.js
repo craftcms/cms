@@ -101,7 +101,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 				this.$container.html(response);
 			}
 
-			this.$languageSelect = this.$container.find('.language:first');
+			this.$languageSelect = this.$container.find('.language:first > select');
 			this.$subjectInput = this.$container.find('.subject:first');
 			this.$bodyInput = this.$container.find('.body:first');
 			this.$saveBtn = this.$container.find('.submit:first');

@@ -67,13 +67,15 @@
 				<label for="protocol">{{ "Protocol"|t }}</label>
 				<p>{{ "The protocol @@@productDisplay@@@ will use to send email."|t }}</p>
 			</div>
-			<select id="protocol" name="protocol">
-				<option value="PhpMail" {% if settings.protocol == 'PhpMail' %}selected{% endif %}>{{ "Php Mail"|t }}</option>
-				<option value="Sendmail" {% if settings.protocol == 'Sendmail' %}selected{% endif %}>{{ "Sendmail"|t }}</option>
-				<option value="Smtp" {% if settings.protocol == 'Smtp' %}selected{% endif %}>{{ "Smtp"|t }}</option>
-				<option value="GmailSmtp" {% if settings.protocol == 'GmailSmtp' %}selected{% endif %}>{{ "Gmail Smtp"|t }}</option>
-				<option value="Pop" {% if settings.protocol == 'Pop' %}selected{% endif %}>{{ "Pop before Smtp"|t }}</option>
-			</select>
+			<div class="select">
+				<select id="protocol" name="protocol">
+					<option value="PhpMail" {% if settings.protocol == 'PhpMail' %}selected{% endif %}>{{ "Php Mail"|t }}</option>
+					<option value="Sendmail" {% if settings.protocol == 'Sendmail' %}selected{% endif %}>{{ "Sendmail"|t }}</option>
+					<option value="Smtp" {% if settings.protocol == 'Smtp' %}selected{% endif %}>{{ "Smtp"|t }}</option>
+					<option value="GmailSmtp" {% if settings.protocol == 'GmailSmtp' %}selected{% endif %}>{{ "Gmail Smtp"|t }}</option>
+					<option value="Pop" {% if settings.protocol == 'Pop' %}selected{% endif %}>{{ "Pop before Smtp"|t }}</option>
+				</select>
+			</div>
 		</div>
 
 		<div id="hidden-fields" style="display: none">

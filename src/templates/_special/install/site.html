@@ -20,11 +20,13 @@
 			<div class="heading">
 				<label for="language">{{ "Language"|t }}</label>
 			</div>
-			<select id="language">
-				{% for language in blx.localization.translatedLanguages %}
-					<option value="{{ language }}" {% if language == blx.localization.getCurrentLanguage %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
-				{% endfor %}
-			</select>
+			<div class="select">
+				<select id="language">
+					{% for language in blx.localization.translatedLanguages %}
+						<option value="{{ language }}" {% if language == blx.localization.getCurrentLanguage %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
+					{% endfor %}
+				</select>
+			</div>
 		</div>
 
 		<div class="buttons">

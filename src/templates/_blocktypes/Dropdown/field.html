@@ -1,5 +1,7 @@
-<select id="{{ handle }}-block" name="{{ handle }}">
-	{% for option in settings.options %}
-		<option {% if option == data %}selected{% endif %}>{{ option }}</option>
-	{% endfor %}
-</select>
+<div class="select">
+	<select id="{{ handle }}-block" name="{{ handle }}">
+		{% for option in settings.options %}
+			<option {% if option == data %}selected{% endif %}>{{ option }}</option>
+		{% endfor %}
+	</select>
+</div>
