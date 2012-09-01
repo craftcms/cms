@@ -37,7 +37,6 @@ var scripts =
 	'ui/RTE.js',
 	'ui/SelectMenu.js',
 	'ui/LightSwitch.js',
-	'ui/BlockEditor.js',
 	'ui/PasswordInput.js',
 	'ui/MixedInput.js',
 	'ui/AdminPane.js',
