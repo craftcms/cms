@@ -3,10 +3,7 @@
 $common = require_once(BLOCKS_APP_PATH.'config/common.php');
 
 Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
-Yii::setPathOfAlias('config', BLOCKS_CONFIG_PATH);
 Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
-Yii::setPathOfAlias('runtime', BLOCKS_RUNTIME_PATH);
-Yii::setPathOfAlias('templates', BLOCKS_TEMPLATES_PATH);
 
 return CMap::mergeArray(
 	$common,

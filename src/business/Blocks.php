@@ -240,29 +240,14 @@ class Blocks extends \Yii
 					$rootPath = BLOCKS_APP_PATH;
 					break;
 				}
-				case 'config':
-				{
-					$rootPath = BLOCKS_CONFIG_PATH;
-					break;
-				}
 				case 'plugins':
 				{
 					$rootPath = BLOCKS_PLUGINS_PATH;
 					break;
 				}
-				case 'runtime':
-				{
-					$rootPath = BLOCKS_RUNTIME_PATH;
-					break;
-				}
-				case 'templates':
-				{
-					$rootPath = BLOCKS_TEMPLATES_PATH;
-					break;
-				}
 				default:
 				{
-					$rootPath = BLOCKS_APP_PATH;
+					throw new \Exception('Unknown alias “'.$alias.'”');
 				}
 			}
 		}
