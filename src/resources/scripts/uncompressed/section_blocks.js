@@ -2,7 +2,7 @@
 
 
 var $table = $('#blocks'),
-	totalBlocks = $table.children('thead').children().length;
+	totalBlocks = $table.children('tbody').children().length;
 
 
 var sorter = new blx.ui.DataTableSorter($table, {
