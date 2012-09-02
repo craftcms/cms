@@ -14,6 +14,8 @@ class ContentController extends BaseController
 		$this->requireLogin();
 	}
 
+	/* BLOCKSPRO ONLY */
+
 	/* Sections */
 
 	/**
@@ -63,6 +65,8 @@ class ContentController extends BaseController
 		blx()->content->deleteSection($sectionId);
 		$this->returnJson(array('success' => true));
 	}
+
+	/* end BLOCKSPRO ONLY */
 
 	/* Entry blocks */
 
