@@ -10,12 +10,4 @@ class UserBlock extends BaseBlockModel
 	{
 		return 'userblocks';
 	}
-
-	protected function getRelations()
-	{
-		return array(
-			'user' => array(static::BELONGS_TO, 'User'),
-		);
-	}
-
 }

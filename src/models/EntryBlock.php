@@ -17,4 +17,11 @@ class EntryBlock extends BaseBlockModel
 			'section' => array(static::BELONGS_TO, 'Section'),
 		);
 	}
+
+	protected function getIndexes()
+	{
+		return array(
+			array('columns' => array('section_id', 'handle'), 'unique' => true)
+		);
+	}
 }

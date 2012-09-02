@@ -24,4 +24,14 @@ abstract class BaseBlockModel extends BaseModel
 			'sort_order'   => PropertyType::SortOrder,
 		);
 	}
+
+	/**
+	 * @return array
+	 */
+	protected function getIndexes()
+	{
+		return array(
+			array('columns' => 'handle', 'unique' => true)
+		);
+	}
 }

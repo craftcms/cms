@@ -67,7 +67,7 @@ class ModelHelper
 			$config = DatabaseHelper::normalizePropertyConfig($config);
 
 			// Uniques
-			if (isset($config['unique']) && $config['unique'] === true)
+			if (!empty($config['unique']))
 				$uniques[] = $name;
 
 			// Only enforce 'required' validation if there's no default value
@@ -120,14 +120,19 @@ class ModelHelper
 				$rules[] = array($name, 'match', 'pattern' => $config['matchPattern']);
 		}
 
-		// Catch any composite unique indexes
-		foreach ($indexes as $index)
+		// Catch any unique indexes
+		foreach ($indexes as $config)
 		{
-			if (isset($index['unique']) && $index['unique'] === true)
+			if (!empty($config['unique']))
 			{
-				if (count($index['columns']) > 1)
+				$columns = ArrayHelper::stringToArray($config['columns']);
+
+				if (count($columns) == 1)
 				{
-					$columns = ArrayHelper::stringToArray($index['columns']);
+					$uniques[] = $columns[0];
+				}
+				else
+				{
 					$initialColumn = array_shift($columns);
 					$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
 				}
