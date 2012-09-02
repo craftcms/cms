@@ -279,19 +279,6 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
-	 * Gets an entry block by its handle.
-	 *
-	 * @param string $handle
-	 * @return EntryBlock
-	 */
-	public function getEntryBlockByHandle($handle)
-	{
-		return EntryBlock::model()->findByAttributes(array(
-			'handle' => $handle
-		));
-	}
-
-	/**
 	 * Gets an entry block or creates a new one.
 	 *
 	 * @access private
