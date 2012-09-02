@@ -130,7 +130,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 		var data = {
 			messageId: this.message.id,
-			language:  this.$languageSelect.val(),
+			language:  (this.$languageSelect.length ? this.$languageSelect.val() : blx.language),
 			subject:   this.$subjectInput.val(),
 			body:      this.$bodyInput.val()
 		};
