@@ -46,7 +46,7 @@ class ErrorHandler extends \CErrorHandler
 	private $_devMode = false;
 
 	/**
-	 * 
+	 *
 	 */
 	public function init()
 	{
@@ -438,7 +438,7 @@ class ErrorHandler extends \CErrorHandler
 			if (blx()->request->getMode() == RequestMode::Site)
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 
-			$viewPaths[] = blx()->path->getAppTemplatesPath();
+			$viewPaths[] = blx()->path->getCpTemplatesPath();
 		}
 
 		for ($counter = 0; $counter < count($viewPaths); $counter ++)

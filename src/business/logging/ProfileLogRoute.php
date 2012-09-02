@@ -30,7 +30,7 @@ class ProfileLogRoute extends \CProfileLogRoute
 		if ($mimeType !== 'text/html')
 			return;
 
-		$viewFile = blx()->path->getAppTemplatesPath().'logging/'.$view.'.php';
+		$viewFile = blx()->path->getCpTemplatesPath().'logging/'.$view.'.php';
 		include(blx()->findLocalizedFile($viewFile,'en'));
 	}
 }

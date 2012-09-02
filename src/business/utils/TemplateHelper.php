@@ -127,7 +127,7 @@ class TemplateHelper
 			if (blx()->request->getMode() == RequestMode::Site)
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 
-			$viewPaths[] = blx()->path->getAppTemplatesPath();
+			$viewPaths[] = blx()->path->getCpTemplatesPath();
 
 			foreach ($viewPaths as $viewPath)
 			{

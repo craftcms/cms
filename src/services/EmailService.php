@@ -224,7 +224,7 @@ class EmailService extends \CApplicationComponent
 		$subject = Blocks::t($key.'_subject');
 		$body = Blocks::t($key.'_body');
 		$htmlBody = Blocks::t($key.'_html_body');
-		$tempTemplatesPath = blx()->path->getAppTemplatesPath();
+		$tempTemplatesPath = blx()->path->getCpTemplatesPath();
 		$template = '_special/email';
 
 		/* end BLOCKS ONLY */
@@ -250,7 +250,7 @@ class EmailService extends \CApplicationComponent
 		}
 		else
 		{
-			$tempTemplatesPath = blx()->path->getAppTemplatesPath();
+			$tempTemplatesPath = blx()->path->getCpTemplatesPath();
 			$template = '_special/email';
 		}
 

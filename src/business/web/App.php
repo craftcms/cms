@@ -522,7 +522,7 @@ class App extends \CWebApplication
 	 */
 	public function getSystemViewPath()
 	{
-		return $this->path->getAppTemplatesPath();
+		return $this->path->getCpTemplatesPath();
 	}
 
 	/**

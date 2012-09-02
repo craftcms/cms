@@ -106,7 +106,7 @@ class PathService extends \CApplicationComponent
 		if (!isset($this->_templatePath))
 		{
 			if (BLOCKS_CP_REQUEST)
-				$this->_templatePath = $this->getAppTemplatesPath();
+				$this->_templatePath = $this->getCpTemplatesPath();
 			else
 				$this->_templatePath = $this->getSiteTemplatesPath();
 		}
@@ -125,11 +125,11 @@ class PathService extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the @@@productDisplay@@@ app templates path.
+	 * Returns the @@@productDisplay@@@ CP templates path.
 	 *
 	 * @return string
 	 */
-	public function getAppTemplatesPath()
+	public function getCpTemplatesPath()
 	{
 		return $this->getAppPath().'templates/';
 	}
@@ -156,7 +156,7 @@ class PathService extends \CApplicationComponent
 		if (($path = blx()->config->offlinePath) !== null)
 			return substr($path, 0, strlen($path) - strlen(pathinfo($path, PATHINFO_BASENAME)));
 
-		return $this->getAppTemplatesPath();
+		return $this->getCpTemplatesPath();
 	}
 
 	/**
