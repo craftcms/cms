@@ -9,17 +9,6 @@ class BlocksService extends \CApplicationComponent
 	private $_blockTypes;
 
 	/**
-	 * Returns all content blocks
-	 *
-	 * @return array
-	 */
-	public function getBlocks()
-	{
-		$blocks = blx()->db->createCommand()->from('blocks')->queryAll();
-		return Block::model()->populateSubclassRecords($blocks);
-	}
-
-	/**
 	 * Returns a new block by the blocktype
 	 *
 	 * @param string $class The blocktype class, sans "Block" suffix
@@ -30,25 +19,6 @@ class BlocksService extends \CApplicationComponent
 		$class = __NAMESPACE__.'\\'.$class.'Block';
 		$block = new $class;
 		return $block;
-	}
-
-	/**
-	 * Returns a block by its ID
-	 *
-	 * @param int $blockId
-	 * @return Block
-	 */
-	public function getBlockById($blockId)
-	{
-		$block = blx()->db->createCommand()
-			->where('id = :id', array(':id' => $blockId))
-			->from('blocks')
-			->queryRow();
-
-		if ($block)
-			return Block::model()->populateSubclassRecord($block);
-
-		return null;
 	}
 
 	/**
