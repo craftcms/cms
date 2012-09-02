@@ -17,22 +17,26 @@ class HandleValidator extends \CValidator
 	{
 		$handle = $object->$attribute;
 
-		$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
-
-		if (in_array($handle, $reservedWords))
+		// Handles are always required, so if it's blank, the required validator will catch this.
+		if ($handle)
 		{
-			$message = Blocks::t('“{handle}” is a reserved word.', array('handle' => $handle));
-			$this->addError($object, $attribute, $message);
-		}
-		else
-		{
-			TemplateHelper::registerTwigAutoloader();
+			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
 
-			if (!preg_match(\Twig_Lexer::REGEX_NAME, $handle))
+			if (in_array($handle, $reservedWords))
 			{
-				$altMessage = Blocks::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
-				$message = $this->message !== null ? $this->message : $altMessage;
+				$message = Blocks::t('“{handle}” is a reserved word.', array('handle' => $handle));
 				$this->addError($object, $attribute, $message);
+			}
+			else
+			{
+				TemplateHelper::registerTwigAutoloader();
+
+				if (!preg_match(\Twig_Lexer::REGEX_NAME, $handle))
+				{
+					$altMessage = Blocks::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
+					$message = $this->message !== null ? $this->message : $altMessage;
+					$this->addError($object, $attribute, $message);
+				}
 			}
 		}
 	}
