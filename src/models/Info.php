@@ -17,7 +17,7 @@ class Info extends BaseModel
 			'version'       => PropertyType::Version,
 			'build'         => PropertyType::Build,
 			'release_date'  => array(PropertyType::Int, 'required' => true),
-			'site_name'     => array(PropertyType::Name, 'required' => true),
+			'site_name'     => PropertyType::Name,
 			'site_url'      => array(PropertyType::Url, 'required' => true),
 			'language'      => PropertyType::Language,
 			'license_key'   => PropertyType::LicenseKey,

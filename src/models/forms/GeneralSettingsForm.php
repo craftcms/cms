@@ -7,8 +7,8 @@ namespace Blocks;
 class GeneralSettingsForm extends BaseForm
 {
 	protected $attributes = array(
-		'siteName'   => array('type' => PropertyType::Name, 'required' => true),
-		'siteUrl'    => array('type' => PropertyType::Url, 'required' => true),
+		'siteName'   => PropertyType::Name,
+		'siteUrl'    => array(PropertyType::Url, 'required' => true),
 		/* BLOCKSPRO ONLY */
 		'licenseKey' => PropertyType::LicenseKey,
 		/* end BLOCKSPRO ONLY */

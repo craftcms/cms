@@ -27,7 +27,7 @@ class DatabaseHelper
 		PropertyType::Email        => array('type' => PropertyType::Varchar, 'minLength' => 5),
 		PropertyType::Handle       => array('type' => PropertyType::Char, 'maxLength' => 100, 'required' => true),
 		PropertyType::Language     => array('type' => PropertyType::Char, 'maxLength' => 12, 'required' => true),
-		PropertyType::Name         => array('type' => PropertyType::Varchar, 'maxLength' => 100),
+		PropertyType::Name         => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
 		PropertyType::SortOrder    => array('type' => PropertyType::SmallInt, 'required' => true, 'unsigned' => true),
 		PropertyType::Template     => array('type' => PropertyType::Varchar, 'maxLength' => 500),
 		PropertyType::Version      => array('type' => PropertyType::Char, 'maxLength' => 15, 'required' => true),
