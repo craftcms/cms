@@ -75,9 +75,17 @@ class PathService extends \CApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getTranslationsPath()
+	public function getCpTranslationsPath()
 	{
 		return $this->getAppPath().'translations/';
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getSiteTranslationsPath()
+	{
+		return BLOCKS_SITE_TRANSLATIONS_PATH;
 	}
 
 	/**
@@ -141,7 +149,7 @@ class PathService extends \CApplicationComponent
 	 */
 	public function getSiteTemplatesPath()
 	{
-		return BLOCKS_TEMPLATES_PATH;
+		return BLOCKS_SITE_TEMPLATES_PATH;
 	}
 
 	/**

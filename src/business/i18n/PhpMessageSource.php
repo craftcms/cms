@@ -6,28 +6,41 @@ namespace Blocks;
  */
 class PhpMessageSource extends \CPhpMessageSource
 {
-	private $_blocks_files = array();
+	public $forceTranslation = true;
 
-	public function init()
-	{
-		$this->forceTranslation = true;
-		$this->basePath = blx()->path->getTranslationsPath();
-		parent::init();
-	}
+	private $_translations;
 
 	/**
-	 * @param string $category
-	 * @param string $language
-	 * @return string
+	 * Loads the message translation for the specified language and category.
+	 *
+	 * @param string $category the message category
+	 * @param string $language the target language
+	 * @return array the loaded messages
 	 */
-	protected function getMessageFile($category, $language)
+	protected function loadMessages($category, $language)
 	{
-		if ($category !== 'blocks')
-			return parent::getMessageFile($category, $language);
+		if ($category != 'blocks')
+			return parent::loadMessages($category, $language);
 
-		if (!isset($this->_blocks_files[$language]))
-			$this->_blocks_files[$language] = blx()->path->getTranslationsPath().$language.'.php';
+		if (!isset($this->_translations[$language]))
+		{
+			$this->_translations[$language] = array();
 
-		return $this->_blocks_files[$language];
+			$paths[] = blx()->path->getCpTranslationsPath();
+			$paths[] = blx()->path->getSiteTranslationsPath();
+
+			foreach ($paths as $path)
+			{
+				$file = $path.$language.'.php';
+				if (is_file($file))
+				{
+					$translations = include($file);
+					if (is_array($translations))
+						$this->_translations[$language] = array_merge($this->_translations[$language], $translations);
+				}
+			}
+		}
+
+		return $this->_translations[$language];
 	}
 }
