@@ -12,7 +12,7 @@
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
 
-{% set title = "{section} Content Blocks"|t({ 'section': section.name|t }) %}
+{% set title = "{section} Entry Blocks"|t({ 'section': section.name|t }) %}
 {% set blocks = section.blocks %}
 {% set sortable  = (blocks|length > 1) %}
 

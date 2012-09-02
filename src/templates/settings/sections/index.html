@@ -28,7 +28,7 @@
 				<thead>
 					<th scope="col" width="33%">{{ "Name"|t }}</th>
 					<th scope="col" width="33%">{{ "Handle"|t }}</th>
-					<th scope="col" width="33%">{{ "Content Blocks"|t }}</th>
+					<th scope="col" width="33%">{{ "Entry Blocks"|t }}</th>
 					<td width="1%"></td>
 				</thead>
 				<tbody>
@@ -37,7 +37,7 @@
 							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 							<td><code>{{ section.handle }}</code></td>
 							<td>
-								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Content Blocks"|t }}</a>
+								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Entry Blocks"|t }}</a>
 								<span class="light">({{ section.totalBlocks }})</span>
 							</td>
 							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>

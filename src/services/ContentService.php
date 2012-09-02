@@ -265,81 +265,83 @@ class ContentService extends \CApplicationComponent
 		}
 	}
 
-	/* Section blocks */
+	/* end BLOCKSPRO ONLY */
+
+	/* Entry blocks s */
 
 	/**
-	 * Gets a section block by its ID.
+	 * Gets an entry block by its ID.
 	 *
 	 * @param int $id
-	 * @return SectionBlock
+	 * @return EntryBlock
 	 */
-	public function getSectionBlockById($id)
+	public function getEntryBlockById($id)
 	{
-		return SectionBlock::model()->findById($id);
+		return EntryBlock::model()->findById($id);
 	}
 
 	/**
-	 * Gets a section block by its handle.
+	 * Gets an entry block by its handle.
 	 *
 	 * @param string $handle
-	 * @return SectionBlock
+	 * @return EntryBlock
 	 */
-	public function getSectionBlockByHandle($handle)
+	public function getEntryBlockByHandle($handle)
 	{
-		return SectionBlock::model()->findByAttributes(array(
+		return EntryBlock::model()->findByAttributes(array(
 			'handle' => $handle
 		));
 	}
 
 	/**
-	 * Gets a section block or creates a new one.
+	 * Gets an entry block or creates a new one.
 	 *
 	 * @access private
 	 * @param int $blockId
-	 * @return SectionBlock
+	 * @return EntryBlock
 	 */
-	private function _getSectionBlock($blockId = null)
+	private function _getEntryBlock($blockId = null)
 	{
 		if ($blockId)
 		{
-			$block = $this->getSectionBlockById($blockId);
+			$block = $this->getEntryBlockById($blockId);
 
 			// This is serious business.
 			if (!$block)
-				$this->_noSectionBlockExists($blockId);
+				$this->_noEntryBlockExists($blockId);
 		}
 		else
 		{
-			$block = new SectionBlock();
+			$block = new EntryBlock();
 		}
 
 		return $block;
 	}
 
 	/**
-	 * Throws a "No section block exists" exception.
+	 * Throws a "No entry block exists" exception.
 	 *
 	 * @access private
 	 * @param int $blockId
 	 * @throws Exception
 	 */
-	private function _noSectionBlockExists($blockId)
+	private function _noEntryBlockExists($blockId)
 	{
-		throw new Exception(Blocks::t('No section block exists with the ID “{id}”', array('id' => $blockId)));
+		throw new Exception(Blocks::t('No entry block exists with the ID “{id}”', array('id' => $blockId)));
 	}
 
 	/**
-	 * Saves a section block.
+	 * Saves an entry block.
 	 *
 	 * @param int $sectionId
 	 * @param array $settings
 	 * @param int $blockId
-	 * @return SectionBlock
+	 * @return EntryBlock
 	 */
-	public function saveSectionBlock($sectionId, $settings, $blockId = null)
+	public function saveEntryBlock($sectionId, $settings, $blockId = null)
 	{
 		$section = $this->_getSection($sectionId);
-		$block = $this->_getSectionBlock($blockId);
+		$block = $this->_getEntryBlock($blockId);
 
 		$isNewBlock = $block->getIsNewRecord();
 		if (!$isNewBlock)
@@ -358,7 +360,7 @@ class ContentService extends \CApplicationComponent
 		{
 			$maxSortOrder = blx()->db->createCommand()
 				->select('max(sort_order)')
-				->from('sectionblocks')
+				->from('entryblocks')
 				->queryScalar();
 
 			$block->sort_order = $maxSortOrder + 1;
@@ -403,16 +405,16 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
-	 * Deletes a section block.
+	 * Deletes an entry block.
 	 *
 	 * @param int $sectionId
 	 * @param int $blockId
 	 */
-	public function deleteSectionBlock($sectionId, $blockId)
+	public function deleteEntryBlock($sectionId, $blockId)
 	{
 		$section = $this->_getSection($sectionId);
 		$content = new EntryContent($section);
-		$block = $this->_getSectionBlock($blockId);
+		$block = $this->_getEntryBlock($blockId);
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -434,7 +436,7 @@ class ContentService extends \CApplicationComponent
 	 * @param int $sectionId
 	 * @param array $blockIds
 	 */
-	public function updateSectionBlockOrder($sectionId, $blockIds)
+	public function updateEntryBlockOrder($sectionId, $blockIds)
 	{
 		$section = $this->_getSection($sectionId);
 		$content = new EntryContent($section);
@@ -448,8 +450,8 @@ class ContentService extends \CApplicationComponent
 		{
 			foreach ($blockIds as $blockOrder => $blockId)
 			{
-				// Update the sort_order in sectionblocks
-				$block = $this->getSectionBlockById($blockId);
+				// Update the sort_order in entryblocks
+				$block = $this->getEntryBlockById($blockId);
 				$block->sort_order = $blockOrder;
 				$block->save();
 
@@ -470,8 +472,6 @@ class ContentService extends \CApplicationComponent
 			throw $e;
 		}
 	}
-
-	/* end BLOCKSPRO ONLY */
 
 	/* Entries */
 

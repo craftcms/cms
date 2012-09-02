@@ -22,7 +22,7 @@ class m120411_233620_remove_triggers extends \CDbMigration
 			'info',
 			'languages',
 			'licensekeys',
-			'sectionblocks',
+			'entryblocks',
 			'sections',
 			'sites',
 			'systemsettings',

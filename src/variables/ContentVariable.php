@@ -42,14 +42,14 @@ class ContentVariable
 	}
 
 	/**
-	 * Gets a section block by its ID.
+	 * Gets an entry block by its ID.
 	 *
 	 * @param int $id
-	 * @return SectionBlock
+	 * @return EntryBlock
 	 */
-	public function getSectionBlockById($id)
+	public function getEntryBlockById($id)
 	{
-		return blx()->content->getSectionBlockById($id);
+		return blx()->content->getEntryBlockById($id);
 	}
 
 	/* end BLOCKSPRO ONLY */

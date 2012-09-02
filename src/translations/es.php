@@ -424,7 +424,7 @@ return array(
 	'Blocks Pro will have a problem writing to the following' => '',
 	'Body' => '',
 	'Can’t install Blocks Pro' => '',
-	'Content Blocks' => '',
+	'Entry Blocks' => '',
 	'Content Languages' => '',
 	'Cooldown Time Remaining' => '',
 	'Could not find an email message with the key “{key}”' => '',
@@ -536,6 +536,6 @@ return array(
 	'verify_new_email_subject' => '',
 	'year' => '',
 	'{name} Settings' => '',
-	'{section} Content Blocks' => '',
+	'{section} Entry Blocks' => '',
 	/* end BLOCKSPRO ONLY */
 );

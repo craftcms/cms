@@ -4,11 +4,11 @@ namespace Blocks;
 /**
  *
  */
-class SectionBlock extends BaseBlockModel
+class EntryBlock extends BaseBlockModel
 {
 	public function getTableName()
 	{
-		return 'sectionblocks';
+		return 'entryblocks';
 	}
 
 	protected function getRelations()

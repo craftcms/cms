@@ -3,7 +3,7 @@
 
 
 {% if not block and blockId %}
-	{% set block = blx.content.getSectionBlockById(blockId) %}
+	{% set block = blx.content.getEntryBlockById(blockId) %}
 	{% if not block %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -23,14 +23,14 @@
 {% set titlebar %}
 	<h1>{{ title }}</h1>
 	<ul class="left">
-		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Content Blocks"|t({ 'section': section.name|t }) }}</a></li>
+		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Entry Blocks"|t({ 'section': section.name|t }) }}</a></li>
 	</ul>
 {% endset %}
 
 
 {% set content %}
 	<form method="post" action="" class="centered">
-		<input type="hidden" name="action" value="content/saveSectionBlock">
+		<input type="hidden" name="action" value="content/saveEntryBlock">
 		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% if block.id %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}

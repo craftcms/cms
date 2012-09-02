@@ -424,7 +424,7 @@ return array(
 	'Blocks Pro will have a problem writing to the following' => 'Blocks Pro ein Problem haben schriftlich an folgende',
 	'Body' => 'Körper',
 	'Can’t install Blocks Pro' => 'Kann nicht installieren Blocks Pro',
-	'Content Blocks' => 'Inhalt Blocks',
+	'Entry Blocks' => 'Eintrag Blocks',
 	'Content Languages' => 'Inhalt Sprachen',
 	'Cooldown Time Remaining' => 'Die Abklingzeit wurde Restzeitanzeige',
 	'Could not find an email message with the key “{key}”' => 'Konnte nicht gefunden werden eine E-Mail-Nachricht mit dem Schlüssel “{key}”',
@@ -536,6 +536,6 @@ return array(
 	'verify_new_email_subject' => '',
 	'year' => 'jahr',
 	'{name} Settings' => '{name} Einstellungen',
-	'{section} Content Blocks' => '{section} Inhalt Blocks',
+	'{section} Entry Blocks' => '{section} Eintrag Blocks',
 	/* end BLOCKSPRO ONLY */
 );

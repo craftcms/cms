@@ -32,9 +32,7 @@ class EntryContent extends BaseModel
 	protected function getProperties()
 	{
 		return array(
-			/* BLOCKSPRO ONLY */
 			'language' => PropertyType::Language,
-			/* end BLOCKSPRO ONLY */
 			'title'    => PropertyType::Varchar,
 		);
 	}

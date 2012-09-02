@@ -153,7 +153,7 @@ class InstallService extends \CApplicationComponent
 			));
 
 			// Give it a Body block
-			blx()->content->saveSectionBlock($section->id, array(
+			blx()->content->saveEntryBlock($section->id, array(
 				'name'   => Blocks::t('Body'),
 				'handle' => 'body',
 				'required' => true,

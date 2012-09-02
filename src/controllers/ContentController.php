@@ -64,12 +64,12 @@ class ContentController extends BaseController
 		$this->returnJson(array('success' => true));
 	}
 
-	/* Section blocks */
+	/* Entry blocks */
 
 	/**
-	 * Saves a section block.
+	 * Saves an entry block.
 	 */
-	public function actionSaveSectionBlock()
+	public function actionSaveEntryBlock()
 	{
 		$this->requirePostRequest();
 
@@ -87,7 +87,7 @@ class ContentController extends BaseController
 		$settings['class']    = $class;
 		$settings['settings'] = isset($blocktypeSettings[$class]) ? $blocktypeSettings[$class] : null;
 
-		$block = blx()->content->saveSectionBlock($sectionId, $settings, $blockId);
+		$block = blx()->content->saveEntryBlock($sectionId, $settings, $blockId);
 
 		// Did it save?
 		if (!$block->getErrors())
@@ -107,9 +107,9 @@ class ContentController extends BaseController
 	}
 
 	/**
-	 * Deletes a section block.
+	 * Deletes an entry block.
 	 */
-	public function actionDeleteSectionBlock()
+	public function actionDeleteEntryBlock()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -117,14 +117,14 @@ class ContentController extends BaseController
 		$sectionId = blx()->request->getRequiredPost('sectionId');
 		$blockId = Json::decode(blx()->request->getRequiredPost('blockId'));
 
-		blx()->content->deleteSectionBlock($sectionId, $blockId);
+		blx()->content->deleteEntryBlock($sectionId, $blockId);
 		$this->returnJson(array('success' => true));
 	}
 
 	/**
 	 * Updates the order of a section's content blocks
 	 */
-	public function actionUpdateSectionBlockOrder()
+	public function actionUpdateEntryBlockOrder()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
@@ -132,7 +132,7 @@ class ContentController extends BaseController
 		$sectionId = blx()->request->getRequiredPost('sectionId');
 		$blockIds = Json::decode(blx()->request->getRequiredPost('blockIds'));
 
-		blx()->content->updateSectionBlockOrder($sectionId, $blockIds);
+		blx()->content->updateEntryBlockOrder($sectionId, $blockIds);
 		$this->returnJson(array('success' => true));
 	}
 
