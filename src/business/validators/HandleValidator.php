@@ -29,9 +29,7 @@ class HandleValidator extends \CValidator
 			}
 			else
 			{
-				TemplateHelper::registerTwigAutoloader();
-
-				if (!preg_match(\Twig_Lexer::REGEX_NAME, $handle))
+				if (!preg_match('/^[a-zA-Z][a-zA-Z0-9_]*$/', $handle))
 				{
 					$altMessage = Blocks::t('“{handle}” isn’t a valid handle.', array('handle' => $handle));
 					$message = $this->message !== null ? $this->message : $altMessage;
