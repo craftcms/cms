@@ -18,7 +18,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8">
-	<title>{{ title }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
+	<title>{{ title|text }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
 	<link rel="stylesheet" type="text/css" href="{{ resourceUrl('styles/blocks.css') }}">
 	{% for file in cssIncludes %}
 		{% set path = 'styles/' ~ file %}

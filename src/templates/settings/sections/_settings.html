@@ -8,14 +8,14 @@
 
 
 {% if section.id %}
-	{% set title = "{name} Settings"|t({ 'name': section.name|t }) %}
+	{% set title = "{name} Settings"|t({ 'name': '<i>'~section.name|t~'</i>' }) %}
 {% else %}
 	{% set title = "Create a new section"|t %}
 {% endif %}
 
 
 {% set titlebar %}
-	<h1>{{ title }}</h1>
+	<h1>{{ title|raw }}</h1>
 	<ul class="left">
 		<li><a href="{{ url('settings/sections') }}" class="btn backbtn">{{ "Sections"|t }}</a></li>
 	</ul>

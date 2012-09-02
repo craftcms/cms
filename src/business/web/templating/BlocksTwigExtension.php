@@ -41,6 +41,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			'currency'   => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'),
 			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),
 			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
+			'text'       => new \Twig_Filter_Method($this, 'textFilter'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
@@ -68,6 +69,17 @@ class BlocksTwigExtension extends \Twig_Extension
 		}
 
 		return $filteredArray;
+	}
+
+	/**
+	 * Returns the text without any HTML tags.
+	 *
+	 * @param string $str
+	 * @return string
+	 */
+	public function textFilter($str)
+	{
+		return preg_replace('/\<[^\>]+\>/', '', $str);
 	}
 
 	/**
