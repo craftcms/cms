@@ -69,11 +69,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return ContentBlocksVariable
+	 * @return BlocksVariable
 	 */
-	public function contentblocks()
+	public function blocks()
 	{
-		return new ContentBlocksVariable();
+		return new BlocksVariable();
 	}
 
 	/**

@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Content block functions
+ * Block functions
  */
-class ContentBlocksVariable
+class BlocksVariable
 {
 	/**
 	 * Returns all blocktypes.
@@ -17,7 +17,7 @@ class ContentBlocksVariable
 	}
 
 	/**
-	 * Gets a content block by its class handle.
+	 * Gets a blocktype by its class.
 	 *
 	 * @param string $class
 	 * @return BaseBlock

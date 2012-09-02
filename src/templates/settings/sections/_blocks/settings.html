@@ -15,7 +15,7 @@
 	{% set title = "{name} Settings"|t({ 'name': '<i>'~block.name|t~'</i>' }) %}
 	{% set blockClass = block.class %}
 {% else %}
-	{% set title = "Create a new content block"|t %}
+	{% set title = "Create a new entry block"|t %}
 	{% set blockClass = 'Checkboxes' %}
 {% endif %}
 
@@ -77,7 +77,7 @@
 		<div class="field checkbox">
 			<label>
 				<input type="checkbox" name="required" value="y" {% if block.required %}checked{% endif %}>
-				{{ "This content block is required"|t }}
+				{{ "This entry block is required"|t }}
 			</label>
 		</div>
 
@@ -85,7 +85,7 @@
 			<div class="field checkbox">
 				<label>
 					<input type="checkbox" name="translatable" value="y" {% if block.translatable %}checked{% endif %}>
-					{{ "This content block is translatable"|t }}
+					{{ "This entry block is translatable"|t }}
 				</label>
 			</div>
 		{% endif %}
@@ -99,7 +99,7 @@
 			</div>
 			<div class="select">
 				<select id="class" name="class" class="fieldtoggle">
-					{% for blocktype in blx.contentblocks.blocktypes %}
+					{% for blocktype in blx.blocks.blocktypes %}
 						<option value="{{ blocktype.getClassHandle }}" {% if blocktype.getClassHandle == blockClass %}selected{% endif %}>
 							{{- blocktype.getType -}}
 						</option>
@@ -108,7 +108,7 @@
 			</div>
 		</div>
 
-		{% for blocktype in blx.contentblocks.blocktypes %}
+		{% for blocktype in blx.blocks.blocktypes %}
 			{% set isCurrent = (blocktype.getClassHandle == blockClass) %}
 			{% if isCurrent %}
 				{% set settings = blocktype.displaySettings(block.settings) %}

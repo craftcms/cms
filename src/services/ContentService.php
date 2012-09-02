@@ -240,7 +240,7 @@ class ContentService extends \CApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			// Delete the content blocks
+			// Delete the entry blocks
 			foreach ($section->blocks as $block)
 			{
 				$block->delete();
@@ -416,7 +416,7 @@ class ContentService extends \CApplicationComponent
 	}
 
 	/**
-	 * Updates the order of a section's content blocks.
+	 * Reorders entry blocks.
 	 *
 	 * @param array $blockIds
 	 */

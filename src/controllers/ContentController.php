@@ -96,12 +96,12 @@ class ContentController extends BaseController
 		// Did it save?
 		if (!$block->getErrors())
 		{
-			blx()->user->setNotice(Blocks::t('Content block saved.'));
+			blx()->user->setNotice(Blocks::t('Entry block saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save content block.'));
+			blx()->user->setError(Blocks::t('Couldn’t save entry block.'));
 		}
 
 		// Reload the original template
@@ -124,7 +124,7 @@ class ContentController extends BaseController
 	}
 
 	/**
-	 * Updates the order of a section's content blocks
+	 * Reorders entry blocks.
 	 */
 	public function actionReorderEntryBlocks()
 	{

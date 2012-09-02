@@ -36,7 +36,7 @@ $table.find('.deletebtn').click(function() {
 	var $row = $(this).closest('tr'),
 		blockName = $row.children(':first').children('a').text();
 
-	if (confirm(blx.t('Are you sure you want to delete the content block “{block}”?', { block: blockName })))
+	if (confirm(blx.t('Are you sure you want to delete the entry block “{block}”?', { block: blockName })))
 	{
 		var data = {
 			blockId: $row.attr('data-block-id')
@@ -54,10 +54,10 @@ $table.find('.deletebtn').click(function() {
 					$('#noblocks').show();
 				}
 
-				blx.displayNotice(blx.t('Content block deleted.'));
+				blx.displayNotice(blx.t('Entry block deleted.'));
 			}
 			else
-				blx.displayError(blx.t('Couldn’t delete content block.'));
+				blx.displayError(blx.t('Couldn’t delete entry block.'));
 		});
 	}
 });
