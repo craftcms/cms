@@ -34,19 +34,17 @@
 		</div>
 		<table class="data">
 			<thead>
-				<th scope="col">{{ "Username"|t }}</th>
-				<th scope="col">{{ "Full Name"|t }}</th>
-				<th scope="col">{{ "Email"|t }}</th>
-				<th scope="col">{{ "Last Login"|t }}</th>
-				{% if showStatus %}<th scope="col">{{ "Status"|t }}</th>{% endif %}
+				<th scope="col" width="25%">{{ "Username"|t }}</th>
+				<th scope="col" width="25%">{{ "Full Name"|t }}</th>
+				<th scope="col" width="25%">{{ "Email"|t }}</th>
+				{% if showStatus %}<th scope="col" width="25%">{{ "Status"|t }}</th>{% endif %}
 			</thead>
 			<tbody>
 				{% for user in users %}
 					<tr>
-						<td><a href="{{ url('users/' ~ user.id) }}">{{ user.username }}</a></td>
+						<th scope="row"><a href="{{ url('users/' ~ user.id) }}">{{ user.username }}</a></th>
 						<td>{{ user.fullname }}</td>
 						<td>{% if user.email %}<a href="mailto:{{ user.email }}">{{ user.email }}</a>{% endif %}</td>
-						<td>{% if user.last_login_date %}{{ blx.date.nice(user.last_login_date) }}{% else %}{{ "Never"|t }}{% endif %}</td>
 						{% if showStatus %}<td><div class="status {{ statuses[user.status] }}"></div> {{ user.status|ucfirst|t }}</td>{% endif %}
 					</tr>
 				{% endfor %}

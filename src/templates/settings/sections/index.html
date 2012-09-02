@@ -34,7 +34,7 @@
 				<tbody>
 					{% for section in sections %}
 						<tr data-section-id="{{ section.id }}">
-							<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
+							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></th>
 							<td><code>{{ section.handle }}</code></td>
 							<td>
 								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Content Blocks"|t }}</a>

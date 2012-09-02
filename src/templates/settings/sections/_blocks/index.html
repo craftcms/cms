@@ -43,7 +43,7 @@
 				<tbody>
 					{% for block in blocks %}
 						<tr data-block-id="{{ block.id }}">
-							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name }}</a></td>
+							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name }}</a></th>
 							<td><code>{{ block.handle }}</code></td>
 							<td>{{ blx.contentblocks.getBlockByClass(block.class).getType }}</td>
 							{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
