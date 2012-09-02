@@ -12,7 +12,7 @@
 
 
 {% if block.id %}
-	{% set title = "{block} Settings"|t({ 'block': block.name }) %}
+	{% set title = "{name} Settings"|t({ 'name': block.name|t }) %}
 	{% set blockClass = block.class %}
 {% else %}
 	{% set title = "Create a new content block"|t %}
@@ -23,7 +23,7 @@
 {% set titlebar %}
 	<h1>{{ title }}</h1>
 	<ul class="left">
-		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Content Blocks"|t({ 'section': section.name }) }}</a></li>
+		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Content Blocks"|t({ 'section': section.name|t }) }}</a></li>
 	</ul>
 {% endset %}
 
@@ -37,7 +37,10 @@
 
 		<div class="field first">
 			<div class="heading">
-				<label class="required" for="name">{{ "Name"|t }}</label>
+				<label class="required" for="name">
+					{{ "Name"|t }}
+					{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
+				</label>
 				<p>{{ "What this block will be called in the CP."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="name" name="name" class="text {% if block.errors.name %}error{% endif %}" type="text" value="{{ block.name }}"></div>
@@ -59,7 +62,10 @@
 
 		<div class="field">
 			<div class="heading">
-				<label for="instructions">{{ "Instructions"|t }}</label>
+				<label for="instructions">
+					{{ "Instructions"|t }}
+					{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
+				</label>
 				<p>{{ "Helper text to guide the author."|t }}</p>
 			</div>
 			<div class="textwrapper"><textarea id="instructions" name="instructions" class="text {% if block.errors.instructions %}error{% endif %}">{{ block.instructions }}</textarea></div>

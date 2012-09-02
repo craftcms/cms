@@ -12,7 +12,7 @@
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
 
-{% set title = "{section} Content Blocks"|t({ 'section': section.name }) %}
+{% set title = "{section} Content Blocks"|t({ 'section': section.name|t }) %}
 {% set blocks = section.blocks %}
 {% set sortable  = (blocks|length > 1) %}
 
@@ -43,7 +43,7 @@
 				<tbody>
 					{% for block in blocks %}
 						<tr data-block-id="{{ block.id }}">
-							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name }}</a></th>
+							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name|t }}</a></th>
 							<td><code>{{ block.handle }}</code></td>
 							<td>{{ blx.contentblocks.getBlockByClass(block.class).getType }}</td>
 							{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}

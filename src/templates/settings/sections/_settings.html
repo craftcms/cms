@@ -8,7 +8,7 @@
 
 
 {% if section.id %}
-	{% set title = "{section} Settings"|t({ 'section': section.name }) %}
+	{% set title = "{name} Settings"|t({ 'name': section.name|t }) %}
 {% else %}
 	{% set title = "Create a new section"|t %}
 {% endif %}
@@ -30,7 +30,10 @@
 
 		<div class="field first">
 			<div class="heading">
-				<label class="required" for="name">{{ "Section Name"|t }}</label>
+				<label class="required" for="name">
+					{{ "Name"|t }}
+					{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
+				</label>
 				<p>{{ "What this section will be called in the CP."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="name" name="name" class="text {% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}"></div>
@@ -41,7 +44,7 @@
 
 		<div class="field">
 			<div class="heading">
-				<label class="required" for="handle">{{ "Section Handle"|t }}</label>
+				<label class="required" for="handle">{{ "Handle"|t }}</label>
 				<p>{{ "How you’ll refer to this section in the templates."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="handle" name="handle" class="text code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}"></div>

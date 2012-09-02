@@ -1,6 +1,9 @@
 <div class="field">
 	<div class="heading">
-		<label for="hint">{{ "Hint Text"|t }}</label>
+		<label for="hint">
+			{{ "Hint Text"|t }}
+			{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
+		</label>
 		<p>{{ "The text that will be shown if the field doesn’t have a value."|t }}</p>
 	</div>
 	<div class="textwrapper"><input id="hint" name="hint" class="text" type="text" value="{{ settings.hint }}"></div>
