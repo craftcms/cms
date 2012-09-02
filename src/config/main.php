@@ -122,6 +122,10 @@ return CMap::mergeArray(
 					'content\/(?P<entryId>\d+)'                                        => 'content/_entry',
 					'content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)'                => 'content/_entry',
 					'plugins\/(?P<pluginClass>[A-Za-z]\w*)'                            => 'plugins/_settings',
+					/* BLOCKS ONLY */
+					'settings\/blog\/blocks\/new'                                      => 'settings/blog/_blocksettings',
+					'settings\/blog\/blocks\/(?P<blockId>\d+)'                         => 'settings/blog/_blocksettings',
+					/* end BLOCKS ONLY */
 					/* BLOCKSPRO ONLY */
 					'settings\/sections\/new'                                          => 'settings/sections/_settings',
 					'settings\/sections\/(?P<sectionId>\d+)'                           => 'settings/sections/_settings',

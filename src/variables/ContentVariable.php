@@ -6,6 +6,19 @@ namespace Blocks;
  */
 class ContentVariable
 {
+	/* BLOCKS ONLY */
+
+	/**
+	 * Returns all entry blocks.
+	 *
+	 * @return array
+	 */
+	public function entryBlocks()
+	{
+		return blx()->content->getEntryBlocks();
+	}
+
+	/* end BLOCKS ONLY */
 	/* BLOCKSPRO ONLY */
 
 	/**
@@ -41,6 +54,8 @@ class ContentVariable
 		return blx()->content->getSectionById($id);
 	}
 
+	/* end BLOCKSPRO ONLY */
+
 	/**
 	 * Gets an entry block by its ID.
 	 *
@@ -51,6 +66,4 @@ class ContentVariable
 	{
 		return blx()->content->getEntryBlockById($id);
 	}
-
-	/* end BLOCKSPRO ONLY */
 }

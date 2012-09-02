@@ -267,6 +267,20 @@ class ContentService extends \CApplicationComponent
 
 	/* Entry blocks s */
 
+	/* BLOCKS ONLY */
+
+	/**
+	 * Returns all entry blocks.
+	 *
+	 * @return array
+	 */
+	public function getEntryBlocks()
+	{
+		return EntryBlock::model()->ordered()->findAll();
+	}
+
+	/* end BLOCKS ONLY */
+
 	/**
 	 * Gets an entry block by its ID.
 	 *
@@ -315,6 +329,20 @@ class ContentService extends \CApplicationComponent
 		throw new Exception(Blocks::t('No entry block exists with the ID “{id}”', array('id' => $blockId)));
 	}
 
+	/* BLOCKS ONLY */
+
+	/**
+	 * Saves an entry block.
+	 *
+	 * @param array $settings
+	 * @param int $blockId
+	 * @return EntryBlock
+	 */
+	public function saveEntryBlock($settings, $blockId = null)
+	{
+	/* end BLOCKS ONLY */
+	/* BLOCKSPRO ONLY */
+
 	/**
 	 * Saves an entry block.
 	 *
@@ -326,13 +354,16 @@ class ContentService extends \CApplicationComponent
 	public function saveEntryBlock($sectionId, $settings, $blockId = null)
 	{
 		$section = $this->_getSection($sectionId);
+	/* end BLOCKSPRO ONLY */
 		$block = $this->_getEntryBlock($blockId);
 
 		$isNewBlock = $block->getIsNewRecord();
 		if (!$isNewBlock)
 			$oldHandle = $block->handle;
 
+		/* BLOCKSPRO ONLY */
 		$block->section_id   = $section->id;
+		/* end BLOCKSPRO ONLY */
 		$block->name         = $settings['name'];
 		$block->handle       = $settings['handle'];
 		$block->instructions = (!empty($settings['instructions']) ? $settings['instructions'] : null);
@@ -360,7 +391,13 @@ class ContentService extends \CApplicationComponent
 			{
 				$block->save(false);
 
+				/* BLOCKS ONLY */
+				$content = new EntryContent();
+				$contentTable = $content->getTableName();
+				/* end BLOCKS ONLY */
+				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContent::getTableNameForSection($section);
+				/* end BLOCKSPRO ONLY */
 
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
@@ -395,11 +432,18 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function deleteEntryBlock($blockId)
 	{
+		/* BLOCKS ONLY */
+		$block = $this->_getEntryBlock($blockId);
+		$content = new EntryContent();
+		$contentTable = $content->getTableName();
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
 		$block = EntryBlock::model()->with('section')->findById($blockId);
 		if (!$block)
 			$this->_noEntryBlockExists($blockId);
 
 		$contentTable = EntryContent::getTableNameForSection($block->section);
+		/* end BLOCKSPRO ONLY */
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -422,6 +466,11 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function reorderEntryBlocks($blockIds)
 	{
+		/* BLOCKS ONLY */
+		$content = new EntryContent();
+		$contentTable = $content->getTableName();
+		/* end BLOCKS ONLY */
+
 		$lastColumn = 'title';
 
 		$transaction = blx()->db->beginTransaction();
@@ -430,14 +479,23 @@ class ContentService extends \CApplicationComponent
 			foreach ($blockIds as $blockOrder => $blockId)
 			{
 				// Update the sort_order in entryblocks
+				/* BLOCKS ONLY */
+				$block = $this->_getEntryBlock($blockId);
+				/* end BLOCKS ONLY */
+				/* BLOCKSPRO ONLY */
 				$block = EntryBlock::model()->with('section')->findById($blockId);
+				if (!$block)
+					$this->_noEntryBlockExists($blockId);
+				/* end BLOCKSPRO ONLY */
 				$block->sort_order = $blockOrder+1;
 				$block->save();
 
 				// Update the column order in the content table
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
+				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContent::getTableNameForSection($block->section);
+				/* end BLOCKSPRO ONLY */
 				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
 				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
 				$lastColumn = $block->handle;

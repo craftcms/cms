@@ -77,7 +77,9 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		/* BLOCKSPRO ONLY */
 		$sectionId = blx()->request->getRequiredPost('sectionId');
+		/* end BLOCKSPRO ONLY */
 		$blockId   = blx()->request->getPost('blockId');
 		$class     = blx()->request->getRequiredPost('class');
 
@@ -85,13 +87,20 @@ class ContentController extends BaseController
 		$settings['handle']       = blx()->request->getPost('handle');
 		$settings['instructions'] = blx()->request->getPost('instructions');
 		$settings['required']     = blx()->request->getPost('required');
+		/* BLOCKSPRO ONLY */
 		$settings['translatable'] = blx()->request->getPost('translatable');
+		/* end BLOCKSPRO ONLY */
 
 		$blocktypeSettings = blx()->request->getPost('settings');
 		$settings['class']    = $class;
 		$settings['settings'] = isset($blocktypeSettings[$class]) ? $blocktypeSettings[$class] : null;
 
+		/* BLOCKS ONLY */
+		$block = blx()->content->saveEntryBlock($settings, $blockId);
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
 		$block = blx()->content->saveEntryBlock($sectionId, $settings, $blockId);
+		/* end BLOCKSPRO ONLY */
 
 		// Did it save?
 		if (!$block->getErrors())
