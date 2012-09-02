@@ -38,7 +38,7 @@ class ModelHelper
 		$minLengths = array();
 		$maxLengths = array();
 
-		$numberTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Float, PropertyType::Decimal);
+		$numberTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Decimal);
 		$integerTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
 
 		foreach ($properties as $name => $config)

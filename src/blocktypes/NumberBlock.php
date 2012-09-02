@@ -38,8 +38,6 @@ class NumberBlock extends BaseBlock
 		{
 			case 'int':
 				return PropertyType::Int;
-			case 'float':
-				return PropertyType::Float;
 			case 'dec':
 				return PropertyType::Decimal;
 		}
