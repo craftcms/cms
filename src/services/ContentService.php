@@ -124,19 +124,18 @@ class ContentService extends \CApplicationComponent
 	 * Gets a section or creates a new one.
 	 *
 	 * @access private
-	 * @param int $id
+	 * @param int $sectionId
 	 * @return Section
-	 * @throws Exception
 	 */
-	private function _getSection($id = null)
+	private function _getSection($sectionId = null)
 	{
-		if ($id)
+		if ($sectionId)
 		{
-			$section = $this->getSectionById($id);
+			$section = $this->getSectionById($sectionId);
 
 			// This is serious business.
 			if (!$section)
-				throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $id)));
+				$this->_noSectionExists($sectionId);
 		}
 		else
 		{
@@ -144,6 +143,18 @@ class ContentService extends \CApplicationComponent
 		}
 
 		return $section;
+	}
+
+	/**
+	 * Throws a "No section exists" exception.
+	 *
+	 * @access private
+	 * @param int $sectionId
+	 * @throws Exception
+	 */
+	private function _noSectionExists($sectionId)
+	{
+		throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
 	}
 
 	/**
@@ -186,6 +197,7 @@ class ContentService extends \CApplicationComponent
 				{
 					// Create the content table
 					$content->createTable();
+					$content->addForeignKeys();
 				}
 				else
 				{
@@ -214,6 +226,43 @@ class ContentService extends \CApplicationComponent
 		}
 
 		return $section;
+	}
+
+	/**
+	 * Deletes a section.
+	 *
+	 * @param int $sectionId
+	 */
+	public function deleteSection($sectionId)
+	{
+		$section = Section::model()->with('blocks')->findById($sectionId);
+		if (!$section)
+			$this->_noSectionExists($sectionId);
+
+		$transaction = blx()->db->beginTransaction();
+		try
+		{
+			// Delete the content blocks
+			foreach ($section->blocks as $block)
+			{
+				$block->delete();
+			}
+
+			// Delete the content table
+			$content = new EntryContent($section);
+			$content->dropForeignKeys();
+			$content->dropTable();
+
+			// Delete the section
+			$section->delete();
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
 	}
 
 	/* Section blocks */
@@ -246,19 +295,18 @@ class ContentService extends \CApplicationComponent
 	 * Gets a section block or creates a new one.
 	 *
 	 * @access private
-	 * @param int $id
+	 * @param int $blockId
 	 * @return SectionBlock
-	 * @throws Exception
 	 */
-	private function _getSectionBlock($id = null)
+	private function _getSectionBlock($blockId = null)
 	{
-		if ($id)
+		if ($blockId)
 		{
-			$block = $this->getSectionBlockById($id);
+			$block = $this->getSectionBlockById($blockId);
 
 			// This is serious business.
 			if (!$block)
-				throw new Exception(Blocks::t('No section block exists with the ID “{id}”', array('id' => $id)));
+				$this->_noSectionBlockExists($blockId);
 		}
 		else
 		{
@@ -266,6 +314,18 @@ class ContentService extends \CApplicationComponent
 		}
 
 		return $block;
+	}
+
+	/**
+	 * Throws a "No section block exists" exception.
+	 *
+	 * @access private
+	 * @param int $blockId
+	 * @throws Exception
+	 */
+	private function _noSectionBlockExists($blockId)
+	{
+		throw new Exception(Blocks::t('No section block exists with the ID “{id}”', array('id' => $blockId)));
 	}
 
 	/**

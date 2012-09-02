@@ -14,6 +14,8 @@ class ContentController extends BaseController
 		$this->requireLogin();
 	}
 
+	/* Sections */
+
 	/**
 	 * Saves a section
 	 */
@@ -47,6 +49,22 @@ class ContentController extends BaseController
 			'section' => $section
 		));
 	}
+
+	/**
+	 * Deletes a section.
+	 */
+	public function actionDeleteSection()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$sectionId = blx()->request->getRequiredPost('sectionId');
+
+		blx()->content->deleteSection($sectionId);
+		$this->returnJson(array('success' => true));
+	}
+
+	/* Section blocks */
 
 	/**
 	 * Saves a section block.

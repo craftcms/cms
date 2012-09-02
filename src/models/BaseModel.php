@@ -208,8 +208,7 @@ abstract class BaseModel extends \CActiveRecord
 	public function dropTable()
 	{
 		$table = $this->getTableName();
-		if (blx()->db->getSchema()->getTable($table) !== null)
-			blx()->db->createCommand()->dropTable($table);
+		blx()->db->createCommand()->dropTable($table);
 	}
 
 	/**

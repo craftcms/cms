@@ -1,6 +1,12 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
 {% set sections = blx.content.sections %}
+{% include_js "sections.js" %}
+{% include_translation
+	"Are you sure you want to delete the section “{section}”?",
+	"Section deleted.",
+	"Couldn’t delete section."
+%}
 
 
 {% set titlebar %}
@@ -13,28 +19,32 @@
 
 {% set content %}
 	<div class="pane">
+		<p id="nosections" {% if sections|length %}style="display: none"{% endif %}>
+			{{ "No sections exist yet."|t }} <a href="{{ url('settings/sections/new') }}">{{ "Create the first one."|t }}</a>
+		</p>
+
 		{% if sections|length %}
-			<table class="data">
+			<table id="sections" class="data">
 				<thead>
 					<th scope="col" width="33%">{{ "Name"|t }}</th>
 					<th scope="col" width="33%">{{ "Handle"|t }}</th>
-					<td width="33%"></td>
+					<th scope="col" width="33%">{{ "Content Blocks"|t }}</th>
+					<td width="1%"></td>
 				</thead>
 				<tbody>
 					{% for section in sections %}
-						<tr>
+						<tr data-section-id="{{ section.id }}">
 							<td><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name }}</a></td>
 							<td><code>{{ section.handle }}</code></td>
 							<td>
 								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Content Blocks"|t }}</a>
 								<span class="light">({{ section.totalBlocks }})</span>
 							</td>
+							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
 						</tr>
 					{% endfor %}
 				</tbody>
 			</table>
-		{% else %}
-			<p>{{ "No sections exist yet."|t }} <a href="{{ url('settings/sections/new') }}">{{ "Create the first one."|t }}</a></p>
 		{% endif %}
 	</div>
 

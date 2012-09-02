@@ -375,7 +375,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropForeignKey($name, $table)
 	{
-		return parent::dropForeignKey($name, $this->_addTablePrefix($table));
+		return parent::dropForeignKey($this->_addTablePrefix($name), $this->_addTablePrefix($table));
 	}
 
 	/**
