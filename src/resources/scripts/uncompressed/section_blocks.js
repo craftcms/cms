@@ -19,11 +19,10 @@ var sorter = new blx.ui.DataTableSorter($table, {
 
 		// Send it to the server
 		var data = {
-			sectionId: sectionId,
 			blockIds: JSON.stringify(blockIds)
 		};
 
-		$.post(blx.actionUrl+'content/updateEntryBlockOrder', data, function(response) {
+		$.post(blx.actionUrl+'content/reorderEntryBlocks', data, function(response) {
 			if (response.success)
 				blx.displayNotice(blx.t('New block order saved.'));
 			else
@@ -40,7 +39,6 @@ $table.find('.deletebtn').click(function() {
 	if (confirm(blx.t('Are you sure you want to delete the content block “{block}”?', { block: blockName })))
 	{
 		var data = {
-			sectionId: sectionId,
 			blockId: $row.attr('data-block-id')
 		};
 

@@ -391,14 +391,15 @@ class ContentService extends \CApplicationComponent
 	/**
 	 * Deletes an entry block.
 	 *
-	 * @param int $sectionId
 	 * @param int $blockId
 	 */
-	public function deleteEntryBlock($sectionId, $blockId)
+	public function deleteEntryBlock($blockId)
 	{
-		$section = $this->_getSection($sectionId);
-		$contentTable = EntryContent::getTableNameForSection($section);
-		$block = $this->_getEntryBlock($blockId);
+		$block = EntryBlock::model()->with('section')->findById($blockId);
+		if (!$block)
+			$this->_noEntryBlockExists($blockId);
+
+		$contentTable = EntryContent::getTableNameForSection($block->section);
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -417,30 +418,26 @@ class ContentService extends \CApplicationComponent
 	/**
 	 * Updates the order of a section's content blocks.
 	 *
-	 * @param int $sectionId
 	 * @param array $blockIds
 	 */
-	public function updateEntryBlockOrder($sectionId, $blockIds)
+	public function reorderEntryBlocks($blockIds)
 	{
-		$section = $this->_getSection($sectionId);
-		$contentTable = EntryContent::getTableNameForSection($section);
 		$lastColumn = 'title';
 
-		// Start a transaction
 		$transaction = blx()->db->beginTransaction();
-
 		try
 		{
 			foreach ($blockIds as $blockOrder => $blockId)
 			{
 				// Update the sort_order in entryblocks
-				$block = $this->getEntryBlockById($blockId);
-				$block->sort_order = $blockOrder;
+				$block = EntryBlock::model()->with('section')->findById($blockId);
+				$block->sort_order = $blockOrder+1;
 				$block->save();
 
 				// Update the column order in the content table
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
+				$contentTable = EntryContent::getTableNameForSection($block->section);
 				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
 				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
 				$lastColumn = $block->handle;

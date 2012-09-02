@@ -114,25 +114,21 @@ class ContentController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sectionId = blx()->request->getRequiredPost('sectionId');
 		$blockId = Json::decode(blx()->request->getRequiredPost('blockId'));
-
-		blx()->content->deleteEntryBlock($sectionId, $blockId);
+		blx()->content->deleteEntryBlock($blockId);
 		$this->returnJson(array('success' => true));
 	}
 
 	/**
 	 * Updates the order of a section's content blocks
 	 */
-	public function actionUpdateEntryBlockOrder()
+	public function actionReorderEntryBlocks()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sectionId = blx()->request->getRequiredPost('sectionId');
 		$blockIds = Json::decode(blx()->request->getRequiredPost('blockIds'));
-
-		blx()->content->updateEntryBlockOrder($sectionId, $blockIds);
+		blx()->content->reorderEntryBlocks($blockIds);
 		$this->returnJson(array('success' => true));
 	}
 

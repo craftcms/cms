@@ -59,8 +59,3 @@
 		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn submit addbtn">{{ "New Content Block"|t }}</a>
 	</div>
 {% endset %}
-
-
-{% set scripts %}
-	<script type="text/javascript">sectionId = {{ section.id }};</script>
-{% endset %}
