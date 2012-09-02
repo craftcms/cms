@@ -7,16 +7,6 @@ namespace Blocks;
 class LocalizationVariable
 {
 	/**
-	 * Gets the current language in use.
-	 *
-	 * @return string
-	 */
-	public function getCurrentLanguage()
-	{
-		return blx()->language;
-	}
-
-	/**
 	 * Gets all known languages.
 	 *
 	 * @return array

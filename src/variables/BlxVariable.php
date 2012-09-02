@@ -109,6 +109,16 @@ class BlxVariable
 	}
 
 	/**
+	 * Gets the current language in use.
+	 *
+	 * @return string
+	 */
+	public function language()
+	{
+		return blx()->language;
+	}
+
+	/**
 	 * @return PluginsVariable
 	 */
 	public function plugins()

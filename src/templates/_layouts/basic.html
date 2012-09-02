@@ -32,7 +32,7 @@
 			baseUrl: '{{ url() }}',
 			actionUrl: '{{ actionUrl() }}',
 			resourceUrl: '{{ resourceUrl() }}',
-			language: '{{ blx.localization.getCurrentLanguage }}',
+			language: '{{ blx.language }}',
 			translations: {
 				{% for message in translations %}
 					'{{ message|e('js') }}': '{{ message|t|e('js') }}'{% if not loop.last %},{% endif %}
