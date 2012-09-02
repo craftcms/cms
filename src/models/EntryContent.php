@@ -24,9 +24,22 @@ class EntryContent extends BaseModel
 	public function getTableName()
 	{
 		if (isset($this->section))
-			return 'entrycontent_'.$this->section->handle;
+			return static::getTableNameForSection($this->section);
 		else
 			throw new Exception(Blocks::t('Cannot get the table name if a section hasn’t been defined.'));
+	}
+
+	/**
+	 * Returns the table name for an entry content table.
+	 * (lame that this can't also be called getTableName() -- see https://bugs.php.net/bug.php?id=40837)
+	 *
+	 * @static
+	 * @param Section $section
+	 * @return string
+	 */
+	public static function getTableNameForSection($section)
+	{
+		return 'entrycontent_'.$section->handle;
 	}
 
 	protected function getProperties()

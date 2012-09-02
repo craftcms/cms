@@ -169,13 +169,12 @@ class ContentService extends \CApplicationComponent
 	public function saveSection($settings, $sectionId = null)
 	{
 		$section = $this->_getSection($sectionId);
-		$content = new EntryContent($section);
 
 		$isNewSection = $section->getIsNewRecord();
 		if (!$isNewSection)
 		{
 			$oldUrlFormat = $section->url_format;
-			$oldContentTable = $content->getTableName();
+			$oldContentTable = EntryContent::getTableNameForSection($section);
 		}
 
 		$section->name        = $settings['name'];
@@ -190,20 +189,19 @@ class ContentService extends \CApplicationComponent
 		{
 			if ($section->save())
 			{
-				// Get the section's content table name
-				$contentTable = $content->getTableName();
-
 				if ($isNewSection)
 				{
 					// Create the content table
+					$content = new EntryContent($section);
 					$content->createTable();
 					$content->addForeignKeys();
 				}
 				else
 				{
 					// Rename the content table if the handle changed
-					if ($contentTable != $oldContentTable)
-						blx()->db->createCommand()->renameTable($oldContentTable, $contentTable);
+					$newContentTable = EntryContent::getTableNameForSection($section);
+					if ($newContentTable != $oldContentTable)
+						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
 
 					// Update the entry URIs if the URL format changed
 					if ($section->url_format != $oldUrlFormat)
@@ -375,8 +373,7 @@ class ContentService extends \CApplicationComponent
 			{
 				$block->save(false);
 
-				$content = new EntryContent($section);
-				$contentTable = $content->getTableName();
+				$contentTable = EntryContent::getTableNameForSection($section);
 
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
@@ -413,14 +410,14 @@ class ContentService extends \CApplicationComponent
 	public function deleteEntryBlock($sectionId, $blockId)
 	{
 		$section = $this->_getSection($sectionId);
-		$content = new EntryContent($section);
+		$contentTable = EntryContent::getTableNameForSection($section);
 		$block = $this->_getEntryBlock($blockId);
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			$block->delete();
-			blx()->db->createCommand()->dropColumn($content->getTableName(), $block->handle);
+			blx()->db->createCommand()->dropColumn($contentTable, $block->handle);
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -439,8 +436,7 @@ class ContentService extends \CApplicationComponent
 	public function updateEntryBlockOrder($sectionId, $blockIds)
 	{
 		$section = $this->_getSection($sectionId);
-		$content = new EntryContent($section);
-		$contentTable = $content->getTableName();
+		$contentTable = EntryContent::getTableNameForSection($section);
 		$lastColumn = 'title';
 
 		// Start a transaction
