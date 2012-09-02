@@ -119,9 +119,7 @@
 			{% if settings %}
 				<div id="{{ blocktype.getClassHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
 					{% set namespace = 'settings[' ~ blocktype.getClassHandle ~ ']' %}
-					{% autoescape false %}
-						{{- settings|ns(namespace) -}}
-					{% endautoescape %}
+					{{- settings|ns(namespace)|raw -}}
 				</div>
 			{% endif %}
 		{% endfor %}

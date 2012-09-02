@@ -1,7 +1,7 @@
 <div class="field">
 	<div class="heading">
 		<label for="options">{{ "Checkbox Options"|t }}</label>
-		<p>{{ "Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”."|t }}</p>
+		<p>{{ "Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”."|t|raw }}</p>
 	</div>
 	<div class="textwrapper"><textarea id="options" name="options" class="text" cols="100" rows="10">{{ settings.options|join("\n") }}</textarea></div>
 </div>
