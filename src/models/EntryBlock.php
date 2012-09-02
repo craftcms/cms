@@ -14,7 +14,7 @@ class EntryBlock extends BaseBlockModel
 	protected function getRelations()
 	{
 		return array(
-			'section' => array(static::BELONGS_TO, 'Section'),
+			'section' => array(static::BELONGS_TO, 'Section', 'required' => true),
 		);
 	}
 
