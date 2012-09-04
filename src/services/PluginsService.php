@@ -210,7 +210,7 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $className)));
+			$this->_noPluginExists($className);
 
 		if (!$plugin->getIsInstalled())
 			throw new Exception(Blocks::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->name)));
@@ -234,7 +234,7 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $className)));
+			$this->_noPluginExists($className);
 
 		if (!$plugin->getIsInstalled())
 			throw new Exception(Blocks::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->name)));
@@ -258,7 +258,7 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $className)));
+			$this->_noPluginExists($className);
 
 		if ($plugin->getIsInstalled())
 			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->name)));
@@ -286,7 +286,7 @@ class PluginsService extends \CApplicationComponent
 		$plugin = $this->getPlugin($className);
 
 		if (!$plugin)
-			throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $className)));
+			$this->_noPluginExists($className);
 
 		if (!$plugin->getIsInstalled())
 			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->name)));
@@ -315,6 +315,18 @@ class PluginsService extends \CApplicationComponent
 		}
 
 		return $result;
+	}
+
+	/**
+	 * Throws a "no plugin exists" exception.
+	 *
+	 * @access private
+	 * @param string $className
+	 * @throws Exception
+	 */
+	private function _noPluginExists($className)
+	{
+		throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $className)));
 	}
 
 	/**
