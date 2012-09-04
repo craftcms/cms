@@ -16,7 +16,7 @@ class SessionController extends BaseController
 
 		$username = blx()->request->getPost('username');
 		$password = blx()->request->getPost('password');
-		$rememberMe = (blx()->request->getPost('rememberMe') === 'y');
+		$rememberMe = (bool)blx()->request->getPost('rememberMe');
 
 		// Attempt to log in
 		$loginInfo = blx()->user->startLogin($username, $password, $rememberMe);

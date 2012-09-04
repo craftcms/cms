@@ -57,7 +57,7 @@
 
 {% macro checkbox(config) %}
 	{% set class = [ config.class, (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
-	{% set value = config.value ? config.value : 'y' %}
+	{% set value = config.value ? config.value : '1' %}
 	<label>
 		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if class %} class="{{ class }}"{% endif %} type="checkbox"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %}>
 		{{ config.label|raw }}

@@ -29,7 +29,7 @@ class ContentController extends BaseController
 
 		$settings['name']       = blx()->request->getPost('name');
 		$settings['handle']     = blx()->request->getPost('handle');
-		$settings['has_urls']   = blx()->request->getPost('has_urls');
+		$settings['has_urls']   = (bool)blx()->request->getPost('has_urls');
 		$settings['url_format'] = blx()->request->getPost('url_format');
 		$settings['template']   = blx()->request->getPost('template');
 
@@ -86,9 +86,9 @@ class ContentController extends BaseController
 		$settings['name']         = blx()->request->getPost('name');
 		$settings['handle']       = blx()->request->getPost('handle');
 		$settings['instructions'] = blx()->request->getPost('instructions');
-		$settings['required']     = blx()->request->getPost('required');
+		$settings['required']     = (bool)blx()->request->getPost('required');
 		/* BLOCKSPRO ONLY */
-		$settings['translatable'] = blx()->request->getPost('translatable');
+		$settings['translatable'] = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
 
 		$blocktypeSettings = blx()->request->getPost('settings');

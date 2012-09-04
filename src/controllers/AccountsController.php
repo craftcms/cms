@@ -222,7 +222,7 @@ class AccountsController extends BaseController
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
 
-		$user->admin = (blx()->request->getPost('admin') === 'y');
+		$user->admin = (bool)blx()->request->getPost('admin');
 		$user->save();
 
 		blx()->user->setNotice(Blocks::t('Admin settings saved.'));

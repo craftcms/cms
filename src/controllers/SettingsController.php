@@ -61,7 +61,7 @@ class SettingsController extends BaseController
 		$emailSettings->protocol                    = blx()->request->getPost('protocol');
 		$emailSettings->host                        = blx()->request->getPost('host');
 		$emailSettings->port                        = blx()->request->getPost('port');
-		$emailSettings->smtpAuth                    = (blx()->request->getPost('smtpAuth') === 'y');
+		$emailSettings->smtpAuth                    = (bool)blx()->request->getPost('smtpAuth');
 
 		if ($emailSettings->smtpAuth)
 		{
@@ -74,7 +74,7 @@ class SettingsController extends BaseController
 			$emailSettings->password                = blx()->request->getPost('password');
 		}
 
-		$emailSettings->smtpKeepAlive               = (blx()->request->getPost('smtpKeepAlive') === 'y');
+		$emailSettings->smtpKeepAlive               = (bool)blx()->request->getPost('smtpKeepAlive');
 		$emailSettings->smtpSecureTransportType     = blx()->request->getPost('smtpSecureTransportType');
 		$emailSettings->timeout                     = blx()->request->getPost('timeout');
 		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
