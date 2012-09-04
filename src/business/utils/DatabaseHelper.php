@@ -23,18 +23,19 @@ class DatabaseHelper
 		PropertyType::Enum         => array('values' => array()),
 
 		// Common model property types
-		PropertyType::ClassName    => array('type' => PropertyType::Char, 'maxLength' => 150, 'required' => true),
-		PropertyType::Email        => array('type' => PropertyType::Varchar, 'minLength' => 5),
-		PropertyType::Handle       => array('type' => PropertyType::Char, 'maxLength' => 100, 'required' => true),
-		PropertyType::Language     => array('type' => PropertyType::Char, 'maxLength' => 12, 'required' => true),
-		PropertyType::Name         => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
-		PropertyType::SortOrder    => array('type' => PropertyType::SmallInt, 'required' => true, 'unsigned' => true),
-		PropertyType::Template     => array('type' => PropertyType::Varchar, 'maxLength' => 500),
-		PropertyType::Version      => array('type' => PropertyType::Char, 'maxLength' => 15, 'required' => true),
-		PropertyType::Url          => array('type' => PropertyType::Varchar, 'maxLength' => 255),
-		PropertyType::Build        => array('type' => PropertyType::Int, 'required' => true, 'unsigned' => true),
-		PropertyType::LicenseKey   => array('type' => PropertyType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
-		PropertyType::Json         => array('type' => PropertyType::Text),
+		PropertyType::ClassName     => array('type' => PropertyType::Char, 'maxLength' => 150, 'required' => true),
+		PropertyType::Email         => array('type' => PropertyType::Varchar, 'minLength' => 5),
+		PropertyType::Handle        => array('type' => PropertyType::Char, 'maxLength' => 100, 'required' => true),
+		PropertyType::Language      => array('type' => PropertyType::Char, 'maxLength' => 12, 'required' => true),
+		PropertyType::Name          => array('type' => PropertyType::Varchar, 'maxLength' => 100),
+		PropertyType::SortOrder     => array('type' => PropertyType::SmallInt, 'required' => true, 'unsigned' => true),
+		PropertyType::Template      => array('type' => PropertyType::Varchar, 'maxLength' => 500),
+		PropertyType::Version       => array('type' => PropertyType::Char, 'maxLength' => 15, 'required' => true),
+		PropertyType::Url           => array('type' => PropertyType::Varchar, 'maxLength' => 255),
+		PropertyType::Build         => array('type' => PropertyType::Int, 'required' => true, 'unsigned' => true),
+		PropertyType::LicenseKey    => array('type' => PropertyType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
+		PropertyType::Json          => array('type' => PropertyType::Text),
+		PropertyType::UnixTimeStamp => array('type' => PropertyType::Int)
 	);
 
 	/**
@@ -158,8 +159,8 @@ class DatabaseHelper
 	public static function getAuditColumnDefinition()
 	{
 		return array(
-			'date_created' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
-			'date_updated' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
+			'date_created' => array('type' => PropertyType::UnixTimeStamp, 'required' => true, 'default' => 0),
+			'date_updated' => array('type' => PropertyType::UnixTimeStamp, 'required' => true, 'default' => 0),
 			'uid'          => array('type' => PropertyType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
 		);
 	}

@@ -16,9 +16,9 @@ class Entry extends BaseModel
 		return array(
 			'slug'           => array(PropertyType::Char, 'maxLength' => 50),
 			'uri'            => array(PropertyType::Varchar, 'maxLength' => 150, 'unique' => true),
-			'publish_date'   => PropertyType::Int,
+			'publish_date'   => PropertyType::UnixTimeStamp,
 			/* BLOCKSPRO ONLY */
-			'expiry_date'    => PropertyType::Int,
+			'expiry_date'    => PropertyType::UnixTimeStamp,
 			'sort_order'     => array(PropertyType::Int, 'unsigned' => true),
 			'latest_draft'   => PropertyType::Int,
 			'latest_version' => PropertyType::Int,

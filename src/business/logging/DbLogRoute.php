@@ -43,7 +43,6 @@ class DbLogRoute extends \CDbLogRoute
 					'logtime'       => array('type' => PropertyType::Int, 'required' => true)
 				));
 
-
 		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
 		$db->createCommand()->createIndex('logtime_idx', $tableName, 'logtime', false);
 		$db->createCommand()->addForeignKey('activity_users_fk', $tableName, 'user_id', 'users', 'id');

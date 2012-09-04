@@ -43,16 +43,17 @@ class PropertyType
 	const Binary       = 'binary';
 	const Enum         = 'enum';
 
-	const ClassName    = 'classname';
-	const Email        = 'email';
-	const Handle       = 'handle';
-	const Language     = 'language';
-	const Name         = 'name';
-	const SortOrder    = 'sortorder';
-	const Template     = 'template';
-	const Version      = 'version';
-	const Url          = 'url';
-	const Build        = 'build';
-	const LicenseKey   = 'licensekey';
-	const Json         = 'json';
+	const ClassName     = 'classname';
+	const Email         = 'email';
+	const Handle        = 'handle';
+	const Language      = 'language';
+	const Name          = 'name';
+	const SortOrder     = 'sortorder';
+	const Template      = 'template';
+	const Version       = 'version';
+	const Url           = 'url';
+	const Build         = 'build';
+	const LicenseKey    = 'licensekey';
+	const Json          = 'json';
+	const UnixTimeStamp = 'unixtimestamp';
 }
