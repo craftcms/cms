@@ -37,7 +37,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			't'          => $translateFilter,
 			'namespace'  => $namespaceFilter,
 			'ns'         => $namespaceFilter,
-			'decimal'    => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatDecimal'),
+			'number'     => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatDecimal'),
 			'currency'   => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'),
 			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),
 			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
