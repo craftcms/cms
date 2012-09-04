@@ -136,6 +136,23 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
+	 * @return array
+	 */
+	public function scopes()
+	{
+		$scopes = array();
+
+		// Add ordered() scope if this model has a sortOrder property
+		$properties = $this->getProperties();
+		if (isset($properties['sortOrder']))
+		{
+			$scopes['ordered'] = array('order' => 'sortOrder');
+		}
+
+		return $scopes;
+	}
+
+	/**
 	 * Creates the model's table
 	 */
 	public function createTable()

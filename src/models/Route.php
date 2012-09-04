@@ -27,13 +27,4 @@ class Route extends BaseModel
 			array('columns' => array('urlPattern'), 'unique' => true),
 		);
 	}
-
-	public function scopes()
-	{
-		return array(
-			'ordered' => array(
-				'order' => 'sortOrder ASC'
-			)
-		);
-	}
 }

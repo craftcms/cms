@@ -34,16 +34,4 @@ abstract class BaseBlockModel extends BaseModel
 			array('columns' => 'handle', 'unique' => true)
 		);
 	}
-
-	/**
-	 * @return array
-	 */
-	public function scopes()
-	{
-		return array(
-			'ordered' => array(
-				'order' => 'sortOrder ASC'
-			)
-		);
-	}
 }
