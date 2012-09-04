@@ -36,7 +36,6 @@ class PropertyType
 	const Int          = 'integer';
 	const BigInt       = 'bigint';
 	const Boolean      = 'boolean';
-	const Float        = 'float';
 	const Decimal      = 'decimal';
 	const DateTime     = 'datetime';
 	const Timestamp    = 'timestamp';
