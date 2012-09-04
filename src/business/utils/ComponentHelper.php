@@ -7,7 +7,7 @@ namespace Blocks;
 class ComponentHelper
 {
 	/**
-	 * Returns instances of a component type.
+	 * Returns instances of a component type, indexed by their class handles.
 	 *
 	 * @param string $subfolder     The subfolder to look in within app/ and each plugin's folder.
 	 * @param string $componentType The type of components to load.
@@ -38,17 +38,19 @@ class ComponentHelper
 				if (!class_exists($class, false))
 					require_once $file;
 
-				// Ignore if we couldn't find the widget class
+				// Ignore if we couldn't find the class
 				if (!class_exists($class, false))
 					continue;
 
-				// Ignore if it's an abstract class
+				// Ignore abstract classes and interfaces
 				$ref = new \ReflectionClass($class);
-				if ($ref->isAbstract())
+				if ($ref->isAbstract() || $ref->isInterface())
 					continue;
 
 				// Save an instance of it
-				$components[] = new $class;
+				$obj = new $class;
+				$classHandle = $obj->getClassHandle();
+				$components[$classHandle] = $obj;
 			}
 		}
 
