@@ -164,7 +164,7 @@ class SettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$languages = blx()->request->getPost('languages');
+		$languages = blx()->request->getPost('languages', array());
 		sort($languages);
 
 		if (blx()->settings->saveSettings('systemsettings', $languages, 'languages', true))
