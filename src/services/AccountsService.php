@@ -80,28 +80,28 @@ class AccountsService extends \CApplicationComponent
 		$whereParams = array();
 
 		if (!empty($params['id']))
-			$whereConditions[] = DatabaseHelper::parseParam('id', $params['id'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
 
 		if (!empty($params['username']))
-			$whereConditions[] = DatabaseHelper::parseParam('username', $params['username'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('username', $params['username'], $whereParams);
 
 		if (!empty($params['firstName']))
-			$whereConditions[] = DatabaseHelper::parseParam('firstName', $params['firstName'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('firstName', $params['firstName'], $whereParams);
 
 		if (!empty($params['lastName']))
-			$whereConditions[] = DatabaseHelper::parseParam('lastName', $params['lastName'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('lastName', $params['lastName'], $whereParams);
 
 		if (!empty($params['email']))
-			$whereConditions[] = DatabaseHelper::parseParam('email', $params['email'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('email', $params['email'], $whereParams);
 
 		if (!empty($params['admin']))
-			$whereConditions[] = DatabaseHelper::parseParam('admin', 1, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('admin', 1, $whereParams);
 
 		if (!empty($params['status']) && $params['status'] != '*')
-			$whereConditions[] = DatabaseHelper::parseParam('status', $params['status'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('status', $params['status'], $whereParams);
 
 		if (!empty($params['lastLoginDate']))
-			$whereConditions[] = DatabaseHelper::parseParam('lastLoginDate', $params['lastLoginDate'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('lastLoginDate', $params['lastLoginDate'], $whereParams);
 
 		if ($whereConditions)
 		{

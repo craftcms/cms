@@ -64,7 +64,7 @@ class ModelHelper
 			// Remember if it's a license key
 			$isLicenseKey = ($type == PropertyType::LicenseKey);
 
-			$config = DatabaseHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizePropertyConfig($config);
 
 			// Uniques
 			if (!empty($config['unique']))

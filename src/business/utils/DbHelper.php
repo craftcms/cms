@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DatabaseHelper
+class DbHelper
 {
 	/**
 	 * Default property settings

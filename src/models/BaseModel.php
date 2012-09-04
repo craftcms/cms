@@ -159,7 +159,7 @@ abstract class BaseModel extends \CActiveRecord
 		// Add all other columns
 		foreach ($this->getProperties() as $name => $config)
 		{
-			$config = DatabaseHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizePropertyConfig($config);
 
 			// Add (unique) index for this column?
 			$unique = (isset($config['unique']) && $config['unique'] === true);
@@ -263,7 +263,7 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		foreach ($this->getProperties() as $name => $config)
 		{
-			$config = DatabaseHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizePropertyConfig($config);
 			if (isset($config['default']))
 				$this->_attributes[$name] = $config['default'];
 		}

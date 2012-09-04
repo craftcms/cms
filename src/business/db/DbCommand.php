@@ -14,7 +14,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->addColumnFirst($this->_addTablePrefix($table), $column, $type))->execute();
 	}
 
@@ -27,7 +27,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->addColumnAfter($this->_addTablePrefix($table), $column, $type, $after))->execute();
 	}
 
@@ -40,7 +40,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->addColumnBefore($this->_addTablePrefix($table), $column, $type, $before))->execute();
 	}
 
@@ -183,12 +183,12 @@ class DbCommand extends \CDbCommand
 		$columns = array_merge(
 			array('id' => PropertyType::PK),
 			$columns,
-			($table !== 'activity' ? DatabaseHelper::getAuditColumnDefinition() : array())
+			($table !== 'activity' ? DbHelper::getAuditColumnDefinition() : array())
 		);
 
 		foreach ($columns as $col => $settings)
 		{
-			$columns[$col] = DatabaseHelper::generateColumnDefinition($settings);
+			$columns[$col] = DbHelper::generateColumnDefinition($settings);
 		}
 
 		// Create the table
@@ -233,7 +233,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumn($table, $column, $type)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->addColumnBefore($table, $column, $type, 'dateCreated');
 	}
 
@@ -269,7 +269,7 @@ class DbCommand extends \CDbCommand
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
 		$table = $this->_addTablePrefix($table);
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->alterColumn($table, $column, $type, $newName, $after))->execute();
 	}
 

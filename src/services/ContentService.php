@@ -79,15 +79,15 @@ class ContentService extends \CApplicationComponent
 		$whereParams = array();
 
 		if (!empty($params['id']))
-			$whereConditions[] = DatabaseHelper::parseParam('id', $params['id'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
 
-		$whereConditions[] = DatabaseHelper::parseParam('parentId', $params['parentId'], $whereParams);
+		$whereConditions[] = DbHelper::parseParam('parentId', $params['parentId'], $whereParams);
 
 		if (!empty($params['handle']))
-			$whereConditions[] = DatabaseHelper::parseParam('handle', $params['handle'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('handle', $params['handle'], $whereParams);
 
 		if (!empty($params['hasUrls']))
-			$whereConditions[] = DatabaseHelper::parseParam('hasUrls', $params['hasUrls'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('hasUrls', $params['hasUrls'], $whereParams);
 
 		if ($whereConditions)
 		{
@@ -401,7 +401,7 @@ class ContentService extends \CApplicationComponent
 
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
-				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
+				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
 
 				if ($isNewBlock)
 				{
@@ -496,7 +496,7 @@ class ContentService extends \CApplicationComponent
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContent::getTableNameForSection($block->section);
 				/* end BLOCKSPRO ONLY */
-				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
+				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
 				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
 				$lastColumn = $block->handle;
 			}
