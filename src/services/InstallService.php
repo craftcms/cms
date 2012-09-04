@@ -137,7 +137,7 @@ class InstallService extends \CApplicationComponent
 
 			// Save the default email settings
 			blx()->email->saveSettings(array(
-				'protocol'     => EmailerType::PhpMail,
+				'protocol'     => EmailerType::Php,
 				'emailAddress' => $user->email,
 				'senderName'   => $inputs['siteName']
 			));

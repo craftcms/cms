@@ -126,7 +126,7 @@ class SettingsController extends BaseController
 					break;
 				}
 
-				case EmailerType::GmailSmtp:
+				case EmailerType::Gmail:
 				{
 					$settings['host'] = $gMailSmtp;
 					$settings['smtpAuth'] = 1;

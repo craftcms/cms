@@ -138,7 +138,7 @@ class EmailService extends \CApplicationComponent
 		// Check which protocol we need to use.
 		switch ($emailSettings['protocol'])
 		{
-			case EmailerType::GmailSmtp:
+			case EmailerType::Gmail:
 			case EmailerType::Smtp:
 			{
 				$this->_setSmtpSettings($email, $emailSettings);
@@ -169,7 +169,7 @@ class EmailService extends \CApplicationComponent
 				break;
 			}
 
-			case EmailerType::PhpMail:
+			case EmailerType::Php:
 			{
 				$email->isMail();
 				break;

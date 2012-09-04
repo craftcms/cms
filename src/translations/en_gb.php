@@ -133,7 +133,7 @@ return array(
 	'General Settings' => '',
 	'General settings saved.' => '',
 	'Glob' => '',
-	'Gmail SMTP' => '',
+	'Gmail' => '',
 	'Go to Updates' => '',
 	'HTML' => '',
 	'Handle' => '',
