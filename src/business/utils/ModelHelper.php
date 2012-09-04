@@ -38,8 +38,9 @@ class ModelHelper
 		$minLengths = array();
 		$maxLengths = array();
 
-		$numberTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Decimal);
 		$integerTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
+		$numberTypes = $integerTypes;
+		$numberTypes[] = PropertyType::Decimal;
 
 		foreach ($properties as $name => $config)
 		{
@@ -51,6 +52,9 @@ class ModelHelper
 				$reservedWords = isset($config['reservedWords']) ? ArrayHelper::stringToArray($config['reservedWords']) : array();
 				$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => $reservedWords);
 			}
+
+			if ($type === PropertyType::UnixTimeStamp)
+				$rules[] = array($name, 'Blocks\DateTimeValidator');
 
 			if ($type == PropertyType::Language)
 				$rules[] = array($name, 'Blocks\LanguageValidator');
@@ -75,9 +79,9 @@ class ModelHelper
 				$required[] = $name;
 
 			// Numbers
-			if (in_array($config['type'], $numberTypes))
+			if (in_array($config['type'], $numberTypes) && $type !== PropertyType::UnixTimeStamp)
 			{
-				$rule = array($name, 'numerical');
+				$rule = array($name, 'Blocks\LocaleNumberValidator');
 
 				if (isset($config['min']) && is_numeric($config['min']))
 					$rule['min'] = $config['min'];

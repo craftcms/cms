@@ -38,9 +38,80 @@ abstract class BaseModel extends \CActiveRecord
 	 */
 	public function init()
 	{
-		$this->attachEventHandler('onAfterFind', array($this, 'decodeJsonProperties'));
-		$this->attachEventHandler('onBeforeSave', array($this, 'encodeJsonProperties'));
-		$this->attachEventHandler('onAfterSave', array($this, 'decodeJsonProperties'));
+		$this->attachEventHandler('onAfterFind', array($this, 'unPrepDataFromDb'));
+		$this->attachEventHandler('onBeforeSave', array($this, 'prepDataForDb'));
+		$this->attachEventHandler('onAfterSave', array($this, 'unPrepDataFromDb'));
+	}
+
+	/**
+	 * Gives us a chance massage data into formats that we require for our database.
+	 *
+	 * @return null
+	 */
+	public function prepDataForDb()
+	{
+		// Process any JSON properties.
+		foreach ($this->_getJsonProperties() as $name)
+		{
+			$value = $this->$name;
+			if (!empty($value) && is_array($value))
+				$this->$name = Json::encode($value);
+			else
+				$this->name = null;
+		}
+
+		// Process any normalization that needs to be done for localization.
+		foreach ($this->getProperties() as $name => $config)
+		{
+			$type = ModelHelper::getPropertyType($config);
+
+			if ($type == PropertyType::Decimal)
+				$this->$name = LocalizationHelper::normalizeNumber($this->$name);
+
+			if ($type == PropertyType::UnixTimeStamp)
+				$this->$name = LocalizationHelper::normalizeDateTime($this->$name);
+		}
+	}
+
+	/**
+	 * Returns data from the database back info a format the user expects.
+	 *
+	 * @return null
+	 */
+	public function unPrepDataFromDb()
+	{
+		// Process any JSON properties
+		$this->_decodeJsonProperties();
+
+		// Convert any unix timestamps back into DateTime objects.
+		foreach ($this->getProperties() as $name => $config)
+		{
+			$type = ModelHelper::getPropertyType($config);
+
+			if ($type == PropertyType::UnixTimeStamp)
+			{
+				$dateTime = new DateTime();
+				$this->$name = $dateTime->setTimestamp($this->$name);
+			}
+		}
+	}
+
+	/**
+	 * Decodes JSON properties.
+	 *
+	 * @return null
+	 */
+	private function _decodeJsonProperties()
+	{
+		foreach ($this->_getJsonProperties() as $name)
+		{
+			$value = $this->$name;
+
+			if (!empty($value) && is_string($value))
+				$this->$name = Json::decode($value);
+			else
+				$this->$name = array();
+		}
 	}
 
 	/**
@@ -62,36 +133,6 @@ abstract class BaseModel extends \CActiveRecord
 			}
 		}
 		return $this->_jsonProperties;
-	}
-
-	/**
-	 * Decodes any JSON properties.
-	 */
-	public function decodeJsonProperties()
-	{
-		foreach ($this->_getJsonProperties() as $name)
-		{
-			$value = $this->$name;
-			if (!empty($value) && is_string($value))
-				$this->$name = Json::decode($value);
-			else
-				$this->$name = array();
-		}
-	}
-
-	/**
-	 * Encodes any JSON properties.
-	 */
-	public function encodeJsonProperties()
-	{
-		foreach ($this->_getJsonProperties() as $name)
-		{
-			$value = $this->$name;
-			if (!empty($value) && is_array($value))
-				$this->$name = Json::encode($value);
-			else
-				$this->name = null;
-		}
 	}
 
 	/**
