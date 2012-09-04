@@ -138,10 +138,9 @@ class AccountsController extends BaseController
 		}
 
 		// Require a password reset?
-		//  - Only set this if it's actually in the post
-		$passwordResetRequired = blx()->request->getPost('require_password_reset');
-		if ($passwordResetRequired !== null)
-			$user->password_reset_required = ($passwordResetRequired === 'y');
+		//  - Only admins are allowed to set this
+		if (blx()->accounts->getCurrentUser()->admin)
+			$user->password_reset_required = (bool)blx()->request->getPost('require_password_reset');
 
 		// Run user validation
 		$userValidates = $user->validate();
