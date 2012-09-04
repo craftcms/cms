@@ -12,6 +12,17 @@ abstract class BaseForm extends \CFormModel
 	private $_attributes = array();
 
 	/**
+	 * Isset?
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	function __isset($name)
+	{
+		return array_key_exists($name, $this->attributes);
+	}
+
+	/**
 	 * Attribute Setter
 	 *
 	 * @param string $name
@@ -51,7 +62,7 @@ abstract class BaseForm extends \CFormModel
 
 	/**
 	 * Used by CActiveRecord
-	 * 
+	 *
 	 * @return array Validation rules for model's attributes
 	 */
 	public function rules()
