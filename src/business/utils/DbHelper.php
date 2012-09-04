@@ -223,7 +223,7 @@ class DbHelper
 	 * @static
 	 * @return array
 	 */
-	public static function getAuditColumnDefinition()
+	public static function getAuditColumnConfig()
 	{
 		return array(
 			'dateCreated' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
