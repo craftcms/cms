@@ -9,12 +9,6 @@
 	translatable: true
 }) }}
 
-{{ forms.checkboxField({
-	label: "Allow line breaks"|t,
-	name: 'multiline',
-	checked: settings.multiline
-}) }}
-
 {% set input %}
 	{{ forms.text({
 		id: 'maxLength',
@@ -30,3 +24,9 @@
 	}) }}
 {% endset %}
 {{ forms.field({ label: "Max Length"|t, id: 'maxLength' }, input) }}
+
+{{ forms.checkboxField({
+	label: "Allow line breaks"|t,
+	name: 'multiline',
+	checked: settings.multiline
+}) }}
