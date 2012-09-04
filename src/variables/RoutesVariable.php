@@ -17,7 +17,7 @@ class RoutesVariable
 		foreach ($routes as $route)
 		{
 			$urlDisplayHtml = '';
-			$urlParts = Json::decode($route->url_parts);
+			$urlParts = Json::decode($route->urlParts);
 			foreach ($urlParts as $part)
 			{
 				if (is_string($part))

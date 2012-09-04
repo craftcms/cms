@@ -77,8 +77,8 @@ class RoutesService extends \CApplicationComponent
 			}
 		}
 
-		$route->url_parts = Json::encode($urlParts);
-		$route->url_pattern = $urlPattern;
+		$route->urlParts = Json::encode($urlParts);
+		$route->urlPattern = $urlPattern;
 		$route->template = $template;
 		$route->save();
 
