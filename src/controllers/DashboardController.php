@@ -55,7 +55,7 @@ class DashboardController extends BaseController
 		$widget = blx()->dashboard->getWidgetById($widgetId);
 
 		if (!$widget)
-			throw new Exception(Blocks::t('No widget exists with the ID “{widgetId}”.', array('widgetId' => $widgetId)));
+			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
 
 		$this->renderTemplate('dashboard/_widget', array('widget' => $widget));
 	}

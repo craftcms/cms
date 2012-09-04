@@ -26,7 +26,7 @@ class RequirementsChecker extends \CComponent
 				version_compare(PHP_VERSION, $requiredPhpVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
-				Blocks::t('PHP {requiredPhpVersion} or higher is required.', array('requiredPhpVersion' => $requiredPhpVersion))
+				Blocks::t('PHP {version} or higher is required.', array('version' => $requiredPhpVersion))
 			),
 			new Requirement(
 				Blocks::t('$_SERVER Variable'),
@@ -130,7 +130,7 @@ class RequirementsChecker extends \CComponent
 				version_compare(blx()->db->serverVersion, $requiredMysqlVersion, ">="),
 				true,
 				'<a href="http://www.blockscms.com">@@@productDisplay@@@</a>',
-				Blocks::t('MySQL {requiredMySqlVersion} or higher is required to run @@@productDisplay@@@.', array('requiredMySqlVersion' => $requiredMysqlVersion))
+				Blocks::t('MySQL {version} or higher is required to run @@@productDisplay@@@.', array('version' => $requiredMysqlVersion))
 			),
 			new Requirement(
 				Blocks::t('Glob'),

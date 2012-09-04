@@ -52,7 +52,7 @@ class SessionController extends BaseController
 					{
 						$user = blx()->accounts->getUserByUsernameOrEmail($username);
 						$timeRemaining = DateTimeHelper::secondsToHumanTimeDuration(blx()->accounts->getRemainingCooldownTime($user), false);
-						$error = Blocks::t('Account locked. Try again in {timeRemaining}.', array('timeRemaining' => $timeRemaining));
+						$error = Blocks::t('Account locked. Try again in {time}.', array('time' => $timeRemaining));
 						break;
 					}
 					case UserIdentity::ERROR_ACCOUNT_SUSPENDED:

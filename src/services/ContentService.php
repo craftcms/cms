@@ -614,7 +614,7 @@ class ContentService extends \CApplicationComponent
 		{
 			$entry = $this->getEntryById($entry);
 			if (!$entry)
-				throw new Exception(Blocks::t('No entry exists with the ID “{entryId}”.', array('entryId' => $entry->id)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”.', array('id' => $entry->id)));
 		}
 
 		if (!$language)
@@ -760,7 +760,7 @@ class ContentService extends \CApplicationComponent
 		{
 			$entry = $this->getEntryById($entry);
 			if (!$entry)
-				throw new Exception(Blocks::t('No entry exists with the ID “{entryId}”.', array('entryId' => $entry->id)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”.', array('id' => $entry->id)));
 		}
 
 		if (!$language)

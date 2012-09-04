@@ -136,7 +136,7 @@ class UserIdentity extends \CUserIdentity
 			foreach ($user->errors as $errorArr)
 				$errorMsg .= implode(' ', $errorArr);
 
-			throw new Exception(Blocks::t('There was a problem logging you in: {errorMessage}', array('errorMessage' => $errorMsg)));
+			throw new Exception(Blocks::t('There was a problem logging you in: {error}', array('error' => $errorMsg)));
 		}
 
 		$this->setState('authSessionToken', $authSessionToken);

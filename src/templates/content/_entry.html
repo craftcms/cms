@@ -9,7 +9,7 @@
 {% endif %}
 
 
-{% set title = "Editing “{entryTitle}”"|t({ 'entryTitle': entry.title }) %}
+{% set title = "Editing “{title}”"|t({ title: entry.title }) %}
 {% if entry.draft %}
 	{% set title = title ~ " (" ~ entry.draft.name ~ ")" %}
 {% endif %}

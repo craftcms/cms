@@ -81,7 +81,7 @@
 					<label{% if config.required %} class="required"{% endif %}{% if config.id %} for="{{ config.id }}"{% endif %}>
 						{{ config.label|raw }}
 						<!-- BLOCKSPRO ONLY -->
-						{% if config.translatable and blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
+						{% if config.translatable and blx.language != blx.app.language %}{{ "(in {language})"|t({ language: blx.localization.localeName(blx.app.language) }) }}{% endif %}
 						<!-- end BLOCKSPRO ONLY -->
 					</label>
 				{% endif %}

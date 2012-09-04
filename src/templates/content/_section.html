@@ -3,7 +3,7 @@
 {% endif %}
 
 {% if section %}
-	{% set title = "{sectionName} section settings"|t({ 'sectionName': section.name }) %}
+	{% set title = "{section} section settings"|t({ section: section.name }) %}
 {% else %}
 	{% set title = "Create a new section"|t %}
 {% endif %}

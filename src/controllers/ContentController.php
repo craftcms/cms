@@ -276,7 +276,7 @@ class ContentController extends BaseController
 		$entry = blx()->content->getEntryById($entryId);
 
 		if (!$entry)
-			throw new Exception(Blocks::t('No entry exists with the ID “{entryId}”.', array('entryId' => $entryId)));
+			throw new Exception(Blocks::t('No entry exists with the ID “{id}”.', array('id' => $entryId)));
 
 		return $entry;
 	}
@@ -293,7 +293,7 @@ class ContentController extends BaseController
 		$draft = blx()->content->getDraftById($draftId);
 
 		if (!$draft)
-			throw new Exception(Blocks::t('No draft exists with the ID “{entryId}”.', array('entryId' => $draft)));
+			throw new Exception(Blocks::t('No draft exists with the ID “{id}”.', array('id' => $draft)));
 
 		return $draft;
 	}
