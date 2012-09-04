@@ -1,3 +1,3 @@
 {% extends "users/_layout" %}
 {% set title = "Pending Users"|t %}
-{% set users = blx.accounts.users({ 'status': 'pending' }) %}
+{% set users = blx.accounts.users({ status: 'pending' }) %}

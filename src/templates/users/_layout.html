@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Accounts"|t ~ (title ? " - " ~ title : '') %}
 
-{% set statuses = { 'active': 'on', 'pending': '', 'locked': 'pending', 'suspended': 'off' } %}
+{% set statuses = { active: 'on', pending: '', locked: 'pending', suspended: 'off' } %}
 {% set showStatus = blx.request.segment(2) not in statuses|keys %}
 
 
@@ -19,7 +19,7 @@
 		<ul>
 			<li><a href="{{ url('users') }}" {% if blx.request.segment(2) == '' %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
 			{% for status, class in statuses %}
-				{% set total = blx.accounts.totalUsers({ 'status': status }) %}
+				{% set total = blx.accounts.totalUsers({ status: status }) %}
 				{% if total %}
 					<li><a href="{{ url('users/' ~ status) }}" {% if blx.request.segment(2) == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 				{% endif %}

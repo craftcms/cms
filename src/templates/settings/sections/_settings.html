@@ -9,7 +9,7 @@
 
 
 {% if section.id %}
-	{% set title = "{name} Settings"|t({ 'name': '<i>'~section.name|t~'</i>' }) %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~section.name|t~'</i>' }) %}
 {% else %}
 	{% set title = "Create a new section"|t %}
 {% endif %}

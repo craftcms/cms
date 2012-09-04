@@ -9,7 +9,7 @@
 
 
 {% if block.id %}
-	{% set title = "{name} Settings"|t({ 'name': '<i>'~block.name|t~'</i>' }) %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
 	{% set blockClass = block.class %}
 {% else %}
 	{% set title = "Create a new entry block"|t %}

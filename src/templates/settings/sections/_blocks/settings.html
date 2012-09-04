@@ -13,7 +13,7 @@
 
 
 {% if block.id %}
-	{% set title = "{name} Settings"|t({ 'name': '<i>'~block.name|t~'</i>' }) %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
 	{% set blockClass = block.class %}
 {% else %}
 	{% set title = "Create a new entry block"|t %}
@@ -24,7 +24,7 @@
 {% set titlebar %}
 	<h1>{{ title|raw }}</h1>
 	<ul class="left">
-		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Entry Blocks"|t({ 'section': '<i>'~section.name|t~'</i>' })|raw }}</a></li>
+		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' })|raw }}</a></li>
 	</ul>
 {% endset %}
 

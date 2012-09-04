@@ -34,7 +34,7 @@
 							{{ block.displayField(data) }}
 						</div>
 						{% if entry.content.getErrors(block.handle) %}
-							{% include "_includes/error_list" with {'errors': entry.content.getErrors(block.handle)} %}
+							{% include "_includes/error_list" with {errors: entry.content.getErrors(block.handle)} %}
 						{% endif %}
 					</div>
 				{% endfor %}
