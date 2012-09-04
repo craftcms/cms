@@ -102,7 +102,7 @@ class AccountsController extends BaseController
 		{
 			$user = blx()->accounts->getUserById($userId);
 			if (!$user)
-				throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+				$this->_noUserExists($userId);
 		}
 		else
 			$user = new User();
@@ -190,7 +190,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		$user->firstName = blx()->request->getPost('firstName');
 		$user->lastName = blx()->request->getPost('lastName');
@@ -220,7 +220,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		$user->admin = (bool)blx()->request->getPost('admin');
 		$user->save();
@@ -240,7 +240,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		$user->status = UserAccountStatus::Pending;
 		blx()->accounts->generateVerificationCode($user, false);
@@ -262,7 +262,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		blx()->accounts->activateUser($user);
 
@@ -281,7 +281,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		blx()->accounts->unlockUser($user);
 
@@ -300,7 +300,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		blx()->accounts->suspendUser($user);
 
@@ -319,7 +319,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		blx()->accounts->unsuspendUser($user);
 
@@ -338,7 +338,7 @@ class AccountsController extends BaseController
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
-			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			$this->_noUserExists($userId);
 
 		blx()->accounts->deleteUser($user);
 
@@ -346,5 +346,16 @@ class AccountsController extends BaseController
 		$this->redirectToPostedUrl();
 	}
 
+	/**
+	 * Throws a "no user exists" exception
+	 *
+	 * @access private
+	 * @param int $userId
+	 * @throws Exception
+	 */
+	private function _noUserExists($userId)
+	{
+		throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+	}
 	/* end BLOCKSPRO ONLY */
 }
