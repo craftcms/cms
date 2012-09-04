@@ -6,8 +6,11 @@ namespace Blocks;
  */
 class InstallSiteForm extends BaseForm
 {
-	protected $attributes = array(
-		'sitename' => PropertyType::Name,
-		'url'      => array('type' => PropertyType::Url, 'required' => true)
-	);
+	protected function getProperties()
+	{
+		return array(
+			'siteName' => PropertyType::Name,
+			'siteUrl'  => array(PropertyType::Url, 'required' => true)
+		);
+	}
 }

@@ -8,11 +8,14 @@ namespace Blocks;
  */
 class LoginForm extends BaseForm
 {
-	protected $attributes = array(
-		'username'   => array('required' => true),
-		'password'   => array('required' => true),
-		'rememberMe' => PropertyType::Boolean
-	);
+	protected function getProperties()
+	{
+		return array(
+			'username'   => array(PropertyType::Varchar, 'required' => true),
+			'password'   => array(PropertyType::Varchar, 'required' => true),
+			'rememberMe' => PropertyType::Boolean
+		);
+	}
 
 	/**
 	 * Stores the user identity.

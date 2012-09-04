@@ -37,8 +37,8 @@ class InstallController extends BaseController
 			$server = blx()->request->getServerName();
 			$words = preg_split('/[\-_\.]+/', $server);
 			array_pop($words);
-			$vars['sitename'] = implode(' ', array_map('ucfirst', $words));
-			$vars['url'] = 'http://'.$server;
+			$vars['siteName'] = implode(' ', array_map('ucfirst', $words));
+			$vars['siteUrl'] = 'http://'.$server;
 
 			$this->renderTemplate('_special/install', $vars);
 		}
@@ -97,8 +97,8 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		$site = new InstallSiteForm();
-		$site->sitename = blx()->request->getPost('sitename');
-		$site->url = blx()->request->getPost('url');
+		$site->siteName = blx()->request->getPost('siteName');
+		$site->siteUrl = blx()->request->getPost('siteUrl');
 
 		if ($site->validate())
 			$return['validates'] = true;
@@ -123,8 +123,8 @@ class InstallController extends BaseController
 		$inputs['username']   = blx()->request->getPost('username');
 		$inputs['email']      = blx()->request->getPost('email');
 		$inputs['password']   = blx()->request->getPost('password');
-		$inputs['sitename']   = blx()->request->getPost('sitename');
-		$inputs['url']        = blx()->request->getPost('url');
+		$inputs['siteName']   = blx()->request->getPost('siteName');
+		$inputs['siteUrl']    = blx()->request->getPost('siteUrl');
 		$inputs['language']   = blx()->request->getPost('language');
 
 		blx()->installer->run($inputs);

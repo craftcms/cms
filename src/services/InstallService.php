@@ -85,8 +85,8 @@ class InstallService extends \CApplicationComponent
 			$info->version = Blocks::getVersion();
 			$info->build = Blocks::getBuild();
 			$info->releaseDate = Blocks::getReleaseDate();
-			$info->siteName = $inputs['sitename'];
-			$info->siteUrl = $inputs['url'];
+			$info->siteName = $inputs['siteName'];
+			$info->siteUrl = $inputs['siteUrl'];
 			$info->language = $inputs['language'];
 			/* BLOCKS ONLY */
 			$info->licenseKey = $licenseKey;
@@ -139,7 +139,7 @@ class InstallService extends \CApplicationComponent
 			blx()->email->saveSettings(array(
 				'protocol'     => EmailerType::PhpMail,
 				'emailAddress' => $user->email,
-				'senderName'   => $inputs['sitename']
+				'senderName'   => $inputs['siteName']
 			));
 
 			/* BLOCKSPRO ONLY */

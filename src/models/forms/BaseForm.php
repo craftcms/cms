@@ -8,8 +8,17 @@ namespace Blocks;
  */
 abstract class BaseForm extends \CFormModel
 {
-	protected $attributes = array();
-	private $_attributes = array();
+	private $_properties = array();
+
+	/**
+	 * Returns a list of this form's properties.
+	 *
+	 * @return array
+	 */
+	protected function getProperties()
+	{
+		return array();
+	}
 
 	/**
 	 * Isset?
@@ -19,7 +28,7 @@ abstract class BaseForm extends \CFormModel
 	 */
 	function __isset($name)
 	{
-		return array_key_exists($name, $this->attributes);
+		return array_key_exists($name, $this->getProperties());
 	}
 
 	/**
@@ -32,10 +41,10 @@ abstract class BaseForm extends \CFormModel
 	 */
 	function __set($name, $value)
 	{
-		if (array_key_exists($name, $this->attributes))
-			$this->_attributes[$name] = $value;
+		if (array_key_exists($name, $this->getProperties()))
+			$this->_properties[$name] = $value;
 		else
-			throw new Exception(Blocks::t('“{className}” doesn’t have an attribute “{attributeName}”.', array('className' => get_class($this), 'attributeName' => $name)));
+			$this->_noPropertyExists($name);
 	}
 
 	/**
@@ -47,26 +56,37 @@ abstract class BaseForm extends \CFormModel
 	 */
 	function __get($name)
 	{
-		if (array_key_exists($name, $this->attributes))
+		if (array_key_exists($name, $this->getProperties()))
 		{
-			if (isset($this->_attributes[$name]))
-				return $this->_attributes[$name];
+			if (isset($this->_properties[$name]))
+				return $this->_properties[$name];
 			else
 				return null;
 		}
 		else if ($name == 'errors')
 			return $this->getErrors();
 		else
-			throw new Exception(Blocks::t('“{className}” doesn’t have an attribute “{attributeName}”.', array('className' => get_class($this), 'attributeName' => $name)));
+			$this->_noPropertyExists($name);
+	}
+
+	/**
+	 * Throws a "no property exists" exception
+	 *
+	 * @param string $property
+	 * @throws Exception
+	 */
+	private function _noPropertyExists($property)
+	{
+		throw new Exception(Blocks::t('“{class}” doesn’t have a property “{property}”.', array('class' => get_class($this), 'property' => $property)));
 	}
 
 	/**
 	 * Used by CActiveRecord
 	 *
-	 * @return array Validation rules for model's attributes
+	 * @return array Validation rules for model's properties
 	 */
 	public function rules()
 	{
-		return ModelHelper::createRules($this->attributes);
+		return ModelHelper::createRules($this->getProperties());
 	}
 }
