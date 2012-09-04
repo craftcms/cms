@@ -14,14 +14,14 @@ class Info extends BaseModel
 	protected function getProperties()
 	{
 		return array(
-			'version'       => PropertyType::Version,
-			'build'         => PropertyType::Build,
-			'release_date'  => array(PropertyType::Int, 'required' => true),
-			'site_name'     => PropertyType::Name,
-			'site_url'      => array(PropertyType::Url, 'required' => true),
-			'language'      => PropertyType::Language,
-			'license_key'   => PropertyType::LicenseKey,
-			'on'            => PropertyType::Boolean,
+			'version'     => PropertyType::Version,
+			'build'       => PropertyType::Build,
+			'releaseDate' => array(PropertyType::Int, 'required' => true),
+			'siteName'    => PropertyType::Name,
+			'siteUrl'     => array(PropertyType::Url, 'required' => true),
+			'language'    => PropertyType::Language,
+			'licenseKey'  => PropertyType::LicenseKey,
+			'on'          => PropertyType::Boolean,
 		);
 	}
 }

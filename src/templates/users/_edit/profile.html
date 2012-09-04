@@ -22,23 +22,23 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveProfile">
-		<input type="hidden" name="user_id" value="{{ user.id }}">
+		<input type="hidden" name="userId" value="{{ user.id }}">
 
 		{{ forms.textField({
 			first: true,
 			label: "First Name"|t,
-			id: 'first_name',
-			name: 'first_name',
-			value: user.first_name,
-			errors: user.errors.first_name
+			id: 'firstName',
+			name: 'firstName',
+			value: user.firstName,
+			errors: user.errors.firstName
 		}) }}
 
 		{{ forms.textField({
 			label: "Last Name"|t,
-			id: 'last_name',
-			name: 'last_name',
-			value: user.last_name,
-			errors: user.errors.last_name
+			id: 'lastName',
+			name: 'lastName',
+			value: user.lastName,
+			errors: user.errors.lastName
 		}) }}
 
 		{{ forms.fileField({

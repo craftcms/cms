@@ -23,7 +23,7 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveAccountSettings">
-		{% if user.id %}<input type="hidden" name="user_id" value="{{ user.id }}">{% endif %}
+		{% if user.id %}<input type="hidden" name="userId" value="{{ user.id }}">{% endif %}
 
 		{{ forms.textField({
 			label: "Username"|t,
@@ -46,8 +46,8 @@
 		{% if not user.id and blx.accounts.current.admin %}
 			{{ forms.checkboxField({
 				label: "Require verification"|t,
-				name: 'require_verification',
-				checked: blx.request.post('require_verification')
+				name: 'requireVerification',
+				checked: blx.request.post('requireVerification')
 			}) }}
 		{% endif %}
 
@@ -63,18 +63,18 @@
 			{% if not user.isCurrent %}
 				{{ forms.checkboxField({
 					label: "Require a password reset on next login"|t,
-					name: 'require_password_reset',
-					checked: (not user or blx.request.post('require_password_reset'))
+					name: 'requirePasswordReset',
+					checked: (not user or blx.request.post('requirePasswordReset'))
 				}) }}
 			{% endif %}
 		{% endif %}
 
 		{{ forms.selectField({
 			label: "Email Format"|t,
-			id: 'email_format',
-			name: 'email_format',
+			id: 'emailFormat',
+			name: 'emailFormat',
 			options: { text: "Plain Text"|t, html: "HTML"|t },
-			value: user.email_format,
+			value: user.emailFormat,
 			default: 'html'
 		}) }}
 

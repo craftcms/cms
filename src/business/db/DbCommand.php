@@ -52,8 +52,8 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
-		$columns[] = 'date_updated';
-		$columns[] = 'date_created';
+		$columns[] = 'dateCreated';
+		$columns[] = 'dateUpdated';
 		$columns[] = 'uid';
 
 		foreach ($vals as &$val)
@@ -136,8 +136,8 @@ class DbCommand extends \CDbCommand
 	{
 		if ($table !== 'languages')
 		{
-			$columns['date_created'] = DateTimeHelper::currentTime();
-			$columns['date_updated'] = DateTimeHelper::currentTime();
+			$columns['dateCreated'] = DateTimeHelper::currentTime();
+			$columns['dateUpdated'] = DateTimeHelper::currentTime();
 			$columns['uid'] = StringHelper::UUID();
 		}
 
@@ -153,7 +153,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function update($table, $columns, $conditions='', $params = array())
 	{
-		$columns['date_updated'] = DateTimeHelper::currentTime();
+		$columns['dateUpdated'] = DateTimeHelper::currentTime();
 		return parent::update($this->_addTablePrefix($table), $columns, $conditions, $params);
 	}
 
@@ -169,7 +169,7 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Adds `id`, `date_created`, `date_update`, and `uid` columns to $columns,
+	 * Adds `id`, `dateCreated`, `date_update`, and `uid` columns to $columns,
 	 * packages up the column definitions into strings,
 	 * and then passes it back to CDbCommand->createTable()
 	 *
@@ -234,7 +234,7 @@ class DbCommand extends \CDbCommand
 	public function addColumn($table, $column, $type)
 	{
 		$type = DatabaseHelper::generateColumnDefinition($type);
-		return $this->addColumnBefore($table, $column, $type, 'date_created');
+		return $this->addColumnBefore($table, $column, $type, 'dateCreated');
 	}
 
 	/**

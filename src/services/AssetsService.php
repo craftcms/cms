@@ -13,7 +13,7 @@ class AssetsService extends \CApplicationComponent
 	public function getAssetsInAssetFolder($assetFolderId)
 	{
 		$assets = Asset::model()->findAllByAttributes(array(
-			'folder_id' => $assetFolderId,
+			'folderId' => $assetFolderId,
 		));
 
 		return $assets;
@@ -26,7 +26,7 @@ class AssetsService extends \CApplicationComponent
 	public function getAssetFolderById($assetFolderId)
 	{
 		$folder = AssetFolder::model()->findByAttributes(array(
-			'asset_folder_id' => $assetFolderId,
+			'asset_folderId' => $assetFolderId,
 		));
 
 		return $folder;

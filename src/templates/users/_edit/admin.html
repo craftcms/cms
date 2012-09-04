@@ -13,7 +13,7 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveAdminSettings">
-		<input type="hidden" name="user_id" value="{{ user.id }}">
+		<input type="hidden" name="userId" value="{{ user.id }}">
 
 		{{ forms.checkboxField({
 			label: "This is an admin account"|t,
@@ -27,7 +27,7 @@
 	<hr>
 
 	<form method="post" action="">
-		<input type="hidden" name="user_id" value="{{ user.id }}">
+		<input type="hidden" name="userId" value="{{ user.id }}">
 
 		<div class="field">
 			<div class="heading">

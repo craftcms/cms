@@ -132,15 +132,15 @@
 				{{ forms.textField({
 					label: "Username"|t,
 					id: 'smtp-username',
-					name: 'smtp_username',
+					name: 'smtpUsername',
 					value: settings.username,
 					errors: (settings.protocol == 'Smtp' ? settings.errors.username : null)
 				}) }}
 
 				{{ forms.passwordField({
 					label: "Password"|t,
-					id: 'smtp-password',
-					name: 'smtp_password',
+					id: 'smtpPassword',
+					name: 'smtpPassword',
 					value: settings.password,
 					errors: (settings.protocol == 'Smtp' ? settings.errors.password : null)
 				}) }}

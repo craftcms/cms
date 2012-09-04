@@ -84,15 +84,15 @@ class InstallService extends \CApplicationComponent
 			$info = new Info();
 			$info->version = Blocks::getVersion();
 			$info->build = Blocks::getBuild();
-			$info->release_date = Blocks::getReleaseDate();
-			$info->site_name = $inputs['sitename'];
-			$info->site_url = $inputs['url'];
+			$info->releaseDate = Blocks::getReleaseDate();
+			$info->siteName = $inputs['sitename'];
+			$info->siteUrl = $inputs['url'];
 			$info->language = $inputs['language'];
 			/* BLOCKS ONLY */
-			$info->license_key = $licenseKey;
+			$info->licenseKey = $licenseKey;
 			/* end BLOCKS ONLY */
 			/* BLOCKSPRO ONLY */
-			$info->license_key = $inputs['licensekey'];
+			$info->licenseKey = $inputs['licensekey'];
 			/* end BLOCKSPRO ONLY */
 			$info->on = true;
 			$info->save();
@@ -145,11 +145,11 @@ class InstallService extends \CApplicationComponent
 			/* BLOCKSPRO ONLY */
 			// Create a Blog section
 			$section = blx()->content->saveSection(array(
-				'name'       => Blocks::t('Blog'),
-				'handle'     => 'blog',
-				'url_format' => 'blog/{slug}',
-				'has_urls'   => true,
-				'template'   => 'blog/_entry'
+				'name'      => Blocks::t('Blog'),
+				'handle'    => 'blog',
+				'urlFormat' => 'blog/{slug}',
+				'hasUrls'   => true,
+				'template'  => 'blog/_entry'
 			));
 
 			// Give it a Body block

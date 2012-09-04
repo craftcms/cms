@@ -27,11 +27,11 @@ class ContentController extends BaseController
 
 		$sectionId = blx()->request->getPost('sectionId');
 
-		$settings['name']       = blx()->request->getPost('name');
-		$settings['handle']     = blx()->request->getPost('handle');
-		$settings['has_urls']   = (bool)blx()->request->getPost('has_urls');
-		$settings['url_format'] = blx()->request->getPost('url_format');
-		$settings['template']   = blx()->request->getPost('template');
+		$settings['name']      = blx()->request->getPost('name');
+		$settings['handle']    = blx()->request->getPost('handle');
+		$settings['hasUrls']   = (bool)blx()->request->getPost('hasUrls');
+		$settings['urlFormat'] = blx()->request->getPost('urlFormat');
+		$settings['template']  = blx()->request->getPost('template');
 
 		$section = blx()->content->saveSection($settings, $sectionId);
 

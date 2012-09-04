@@ -226,9 +226,9 @@ class DatabaseHelper
 	public static function getAuditColumnDefinition()
 	{
 		return array(
-			'date_created' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
-			'date_updated' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
-			'uid'          => array('type' => PropertyType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
+			'dateCreated' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
+			'dateUpdated' => array('type' => PropertyType::Int, 'required' => true, 'default' => 0),
+			'uid'         => array('type' => PropertyType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
 		);
 	}
 

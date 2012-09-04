@@ -52,11 +52,11 @@ class RoutesService extends \CApplicationComponent
 
 			// Get the next biggest sort order
 			$maxSortOrder = blx()->db->createCommand()
-				->select('max(sort_order)')
+				->select('max(sortOrder)')
 				->from('routes')
 				->queryScalar();
 
-			$route->sort_order = $maxSortOrder + 1;
+			$route->sortOrder = $maxSortOrder + 1;
 		}
 
 		// Compile the URL parts into a regex pattern
@@ -111,7 +111,7 @@ class RoutesService extends \CApplicationComponent
 	{
 		foreach ($routeIds as $order => $routeId)
 		{
-			$data = array('sort_order' => $order + 1);
+			$data = array('sortOrder' => $order + 1);
 			$condition = array('id' => $routeId);
 			blx()->db->createCommand()->update('routes', $data, $condition);
 		}

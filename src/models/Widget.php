@@ -15,7 +15,7 @@ class Widget extends BaseModel
 	{
 		return array(
 			'class'      => PropertyType::ClassName,
-			'sort_order' => PropertyType::SortOrder,
+			'sortOrder'  => PropertyType::SortOrder,
 			'settings'   => PropertyType::Text,
 		);
 	}
@@ -23,8 +23,8 @@ class Widget extends BaseModel
 	protected function getRelations()
 	{
 		return array(
-			'user'   => array(static::BELONGS_TO, 'User', 'user_id', 'required' => true),
-			'plugin' => array(static::BELONGS_TO, 'Plugin', 'plugin_id'),
+			'user'   => array(static::BELONGS_TO, 'User', 'userId', 'required' => true),
+			'plugin' => array(static::BELONGS_TO, 'Plugin', 'pluginId'),
 		);
 	}
 }

@@ -75,14 +75,14 @@ class EmailService extends \CApplicationComponent
 			$language = blx()->language;
 
 		$content = EmailMessageContent::model()->findByAttributes(array(
-			'message_id' => $messageId,
+			'messageId' => $messageId,
 			'language' => $language
 		));
 
 		if (!$content)
 		{
 			$content = new EmailMessageContent();
-			$content->message_id = $messageId;
+			$content->messageId = $messageId;
 			$content->language = ($language ? $language : blx()->language);
 		}
 
@@ -106,7 +106,7 @@ class EmailService extends \CApplicationComponent
 
 		$content->subject = $subject;
 		$content->body = $body;
-		$content->html_body = $htmlBody;
+		$content->htmlBody = $htmlBody;
 		$content->save();
 
 		return $content;
@@ -240,7 +240,7 @@ class EmailService extends \CApplicationComponent
 		$content = $this->getMessageContent($message->id, $user->language);
 		$subject = $content->subject;
 		$body = $content->body;
-		$htmlBody = $content->html_body;
+		$htmlBody = $content->htmlBody;
 
 		$settings = $this->getSettings();
 		if (!empty($settings['template']))

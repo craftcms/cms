@@ -270,18 +270,18 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
-	 * If it is a new active record instance, will populate date_created with the current UTC unix timestamp and a new GUID
-	 * for uid. If it is an existing record, will populate date_updated with the current UTC unix timestamp.
+	 * If it is a new active record instance, will populate dateCreated with the current UTC unix timestamp and a new GUID
+	 * for uid. If it is an existing record, will populate dateUpdated with the current UTC unix timestamp.
 	 */
 	public function populateAuditProperties()
 	{
 		if ($this->getIsNewRecord())
 		{
-			$this->date_created = DateTimeHelper::currentTime();
+			$this->dateCreated = DateTimeHelper::currentTime();
 			$this->uid = StringHelper::UUID();
 		}
 
-		$this->date_updated = DateTimeHelper::currentTime();
+		$this->dateUpdated = DateTimeHelper::currentTime();
 	}
 
 
@@ -351,7 +351,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		// Add the foreign key to BELONGS_TO relations
 		if ($config[0] == static::BELONGS_TO && empty($config[2]))
-			array_splice($config, 2, 0, $name.'_id');
+			array_splice($config, 2, 0, $name.'Id');
 	}
 
 	/**

@@ -60,7 +60,7 @@ class EntryContent extends BaseModel
 	protected function getIndexes()
 	{
 		return array(
-			array('columns' => array('entry_id', 'language'), 'unique' => true),
+			array('columns' => array('entryId', 'language'), 'unique' => true),
 		);
 	}
 

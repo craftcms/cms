@@ -31,10 +31,10 @@ class SettingsController extends BaseController
 		if ($generalSettingsForm->validate())
 		{
 			$info = Info::model()->find();
-			$info->site_name = $generalSettingsForm->siteName;
-			$info->site_url = $generalSettingsForm->siteUrl;
+			$info->siteName = $generalSettingsForm->siteName;
+			$info->siteUrl = $generalSettingsForm->siteUrl;
 			/* BLOCKSPRO ONLY */
-			$info->license_key = $generalSettingsForm->licenseKey;
+			$info->licenseKey = $generalSettingsForm->licenseKey;
 			/* end BLOCKSPRO ONLY */
 			$info->save();
 
@@ -65,8 +65,8 @@ class SettingsController extends BaseController
 
 		if ($emailSettings->smtpAuth)
 		{
-			$emailSettings->username                = blx()->request->getPost('smtp_username');
-			$emailSettings->password                = blx()->request->getPost('smtp_password');
+			$emailSettings->username                = blx()->request->getPost('smtpUsername');
+			$emailSettings->password                = blx()->request->getPost('smtpPassword');
 		}
 		else
 		{

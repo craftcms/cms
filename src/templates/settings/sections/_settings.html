@@ -57,21 +57,21 @@
 
 		{{ forms.checkboxField({
 			label: "Entries in this section have their own URLs"|t,
-			name: 'has_urls',
-			checked: section.has_urls,
+			name: 'hasUrls',
+			checked: section.hasUrls,
 			toggle: 'has-urls-setting'
 		}) }}
 
-		<div id="has-urls-setting" class="nested-fields" {% if not section.has_urls %}style="height: 0"{% endif %}>
+		<div id="has-urls-setting" class="nested-fields" {% if not section.hasUrls %}style="height: 0"{% endif %}>
 
 			{{ forms.textField({
 				label: "Entry URL Format"|t,
 				instructions: "What the entry URLs should look like."|t,
-				id: 'url_format',
+				id: 'urlFormat',
 				class: 'code',
-				name: 'url_format',
-				value: section.url_format,
-				errors: section.errors.url_format
+				name: 'urlFormat',
+				value: section.urlFormat,
+				errors: section.errors.urlFormat
 			}) }}
 
 			{{ forms.textField({
@@ -97,6 +97,6 @@
 {% set scripts %}
 	<script type="text/javascript">
 		{% if not section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
-		{% if not section.url_format %}new blx.ui.EntryUrlFormatGenerator('#name', '#url_format');{% endif %}
+		{% if not section.urlFormat %}new blx.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
 	</script>
 {% endset %}

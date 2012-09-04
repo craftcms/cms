@@ -14,10 +14,10 @@ class EmailMessageContent extends BaseModel
 	protected function getProperties()
 	{
 		return array(
-			'language'  => PropertyType::Language,
-			'subject'   => array(PropertyType::Varchar, 'required' => true, 'maxLength' => 1000),
-			'body'      => array(PropertyType::Text, 'required' => true),
-			'html_body' => PropertyType::Text,
+			'language' => PropertyType::Language,
+			'subject'  => array(PropertyType::Varchar, 'required' => true, 'maxLength' => 1000),
+			'body'     => array(PropertyType::Text, 'required' => true),
+			'htmlBody' => PropertyType::Text,
 		);
 	}
 
@@ -31,7 +31,7 @@ class EmailMessageContent extends BaseModel
 	protected function getIndexes()
 	{
 		return array(
-			array('columns' => array('message_id', 'language'), 'unique' => true)
+			array('columns' => array('messageId', 'language'), 'unique' => true)
 		);
 	}
 }

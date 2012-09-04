@@ -28,7 +28,7 @@ class AccountsController extends BaseController
 				blx()->accounts->generateVerificationCode($user);
 
 				// Send the Forgot Password email
-				$link = UrlHelper::generateUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verification_code));
+				$link = UrlHelper::generateUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verificationCode));
 				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
 					$this->returnJson(array('success' => true));
 
@@ -60,15 +60,15 @@ class AccountsController extends BaseController
 			{
 				blx()->accounts->changePassword($user, $password, false);
 
-				$user->verification_code = null;
-				$user->verification_code_issued_date = null;
-				$user->verification_code_expiry_date = null;
+				$user->verificationCode = null;
+				$user->verificationCodeIssuedDate = null;
+				$user->verificationCodeExpiryDate = null;
 				$user->status = UserAccountStatus::Active;
-				$user->last_password_change_date = DateTimeHelper::currentTime();
-				$user->password_reset_required = false;
-				$user->failed_password_attempt_count = null;
-				$user->failed_password_attempt_window_start = null;
-				$user->cooldown_start = null;
+				$user->lastPasswordChangeDate = DateTimeHelper::currentTime();
+				$user->passwordResetRequired = false;
+				$user->failedPasswordAttemptCount = null;
+				$user->failedPasswordAttemptWindowStart = null;
+				$user->cooldownStart = null;
 				$user->save();
 
 				if (!blx()->user->getIsLoggedIn())
@@ -97,7 +97,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireLogin();
 
-		$userId = blx()->request->getPost('user_id');
+		$userId = blx()->request->getPost('userId');
 		if ($userId !== null)
 		{
 			$user = blx()->accounts->getUserById($userId);
@@ -112,7 +112,7 @@ class AccountsController extends BaseController
 		// Set all the standard stuff
 		$user->username = blx()->request->getPost('username');
 		$user->email = blx()->request->getPost('email');
-		$user->email_format = blx()->request->getPost('email_format');
+		$user->emailFormat = blx()->request->getPost('emailFormat');
 		/* BLOCKSPRO ONLY */
 		$user->language = blx()->request->getPost('language');
 		/* end BLOCKSPRO ONLY */
@@ -140,7 +140,7 @@ class AccountsController extends BaseController
 		// Require a password reset?
 		//  - Only admins are allowed to set this
 		if (blx()->accounts->getCurrentUser()->admin)
-			$user->password_reset_required = (bool)blx()->request->getPost('require_password_reset');
+			$user->passwordResetRequired = (bool)blx()->request->getPost('requirePasswordReset');
 
 		// Run user validation
 		$userValidates = $user->validate();
@@ -150,7 +150,7 @@ class AccountsController extends BaseController
 			// Send a verification email?
 			//  - Only an option when registering a new user
 			//  - Only admins have a choice in the matter. Verification emails _must_ be sent when a non-admin registers a user.
-			if ($isNewUser && (!blx()->accounts->getCurrentUser()->admin || blx()->request->getPost('require_verification')))
+			if ($isNewUser && (!blx()->accounts->getCurrentUser()->admin || blx()->request->getPost('requireVerification')))
 			{
 				$user->status = UserAccountStatus::Pending;
 				blx()->accounts->generateVerificationCode($user, false);
@@ -187,13 +187,13 @@ class AccountsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
 
-		$user->first_name = blx()->request->getPost('first_name');
-		$user->last_name = blx()->request->getPost('last_name');
+		$user->firstName = blx()->request->getPost('firstName');
+		$user->lastName = blx()->request->getPost('lastName');
 
 		if ($user->save())
 		{
@@ -217,7 +217,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
@@ -237,7 +237,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
@@ -259,7 +259,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
@@ -278,7 +278,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
@@ -297,7 +297,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
@@ -316,7 +316,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));
@@ -335,7 +335,7 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAdmin();
 
-		$userId = blx()->request->getRequiredPost('user_id');
+		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
 		if (!$user)
 			throw new Exception(Blocks::t('No user exists with the ID “{userId}”.', array('userId' => $userId)));

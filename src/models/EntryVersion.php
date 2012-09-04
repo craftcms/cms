@@ -34,7 +34,7 @@ class EntryVersion extends BaseModel
 	protected function getIndexes()
 	{
 		return array(
-			array('columns' => array('num','draft','entry_id'), 'unique' => true)
+			array('columns' => array('num','draft','entryId'), 'unique' => true)
 		);
 	}
 

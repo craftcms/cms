@@ -51,16 +51,16 @@ class UserIdentity extends \CUserIdentity
 			// if the account is locked, don't even attempt to log in.
 			case UserAccountStatus::Locked:
 			{
-				if ($user->cooldown_start !== null)
+				if ($user->cooldownStart !== null)
 				{
 					// they are still in the cooldown window.
-					if ($user->cooldown_start + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
+					if ($user->cooldownStart + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
 						$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
 					else
 					{
 						// no longer in cooldown window, set them to active and retry.
 						$user->status = UserAccountStatus::Active;
-						$user->cooldown_start = null;
+						$user->cooldownStart = null;
 						$user->save();
 						$this->_processUserStatus($user);
 					}
@@ -84,7 +84,7 @@ class UserIdentity extends \CUserIdentity
 			case UserAccountStatus::Active:
 			{
 				// check the password
-				$checkPassword = blx()->security->checkPassword($this->password, $user->password, $user->enc_type);
+				$checkPassword = blx()->security->checkPassword($this->password, $user->password, $user->encType);
 
 				// bad password
 				if (!$checkPassword)
@@ -94,7 +94,7 @@ class UserIdentity extends \CUserIdentity
 				else
 				{
 					// valid creds, but they have to reset their password.
-					if ($user->password_reset_required == 1)
+					if ($user->passwordResetRequired)
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
@@ -122,13 +122,13 @@ class UserIdentity extends \CUserIdentity
 		$this->errorCode = static::ERROR_NONE;
 
 		$authSessionToken = StringHelper::UUID();
-		$user->auth_session_token = $authSessionToken;
-		$user->last_login_date = DateTimeHelper::currentTime();
-		$user->failed_password_attempt_count = null;
-		$user->failed_password_attempt_window_start = null;
-		$user->verification_code = null;
-		$user->verification_code_issued_date = null;
-		$user->verification_code_expiry_date = null;
+		$user->authSessionToken = $authSessionToken;
+		$user->lastLoginDate = DateTimeHelper::currentTime();
+		$user->failedPasswordAttemptCount = null;
+		$user->failedPasswordAttemptWindowStart = null;
+		$user->verificationCode = null;
+		$user->verificationCodeIssuedDate = null;
+		$user->verificationCodeExpiryDate = null;
 
 		if (!$user->save())
 		{
@@ -148,21 +148,21 @@ class UserIdentity extends \CUserIdentity
 	private function _processBadPassword(User $user)
 	{
 		$this->errorCode = static::ERROR_PASSWORD_INVALID;
-		$user->last_login_failed_date = DateTimeHelper::currentTime();
+		$user->lastLoginFailedDate = DateTimeHelper::currentTime();
 
 		// get the current failed password attempt count.
-		$currentFailedCount = $user->failed_password_attempt_count;
+		$currentFailedCount = $user->failedPasswordAttemptCount;
 
 		// if it's empty, this is the first failed attempt we have for the current window.
 		if (StringHelper::isNullOrEmpty($currentFailedCount))
 		{
 			// start at 1 and start the window
 			$currentFailedCount = 0;
-			$user->failed_password_attempt_window_start = DateTimeHelper::currentTime();
+			$user->failedPasswordAttemptWindowStart = DateTimeHelper::currentTime();
 		}
 
 		$currentFailedCount += 1;
-		$user->failed_password_attempt_count = $currentFailedCount;
+		$user->failedPasswordAttemptCount = $currentFailedCount;
 		$this->failedPasswordAttemptCount = $currentFailedCount;
 
 		// check to see if they are still inside the configured failure window
@@ -175,24 +175,24 @@ class UserIdentity extends \CUserIdentity
 				if (blx()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
 				{
 					$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
-					$user->cooldown_start = DateTimeHelper::currentTime();
+					$user->cooldownStart = DateTimeHelper::currentTime();
 				}
 				else
 					$this->errorCode = static::ERROR_ACCOUNT_LOCKED;
 
 				$user->status = UserAccountStatus::Locked;
-				$user->last_lockout_date = DateTimeHelper::currentTime();
-				$user->failed_password_attempt_count = null;
+				$user->lastLockoutDate = DateTimeHelper::currentTime();
+				$user->failedPasswordAttemptCount = null;
 				$this->failedPasswordAttemptCount = 0;
-				$user->failed_password_attempt_window_start = null;
+				$user->failedPasswordAttemptWindowStart = null;
 			}
 		}
 		// the user is outside the window of failure, so we can reset their counters.
 		else
 		{
-			$user->failed_password_attempt_count = 1;
+			$user->failedPasswordAttemptCount = 1;
 			$this->failedPasswordAttemptCount = 1;
-			$user->failed_password_attempt_window_start = DateTimeHelper::currentTime();
+			$user->failedPasswordAttemptWindowStart = DateTimeHelper::currentTime();
 		}
 
 		$user->save();
@@ -208,7 +208,7 @@ class UserIdentity extends \CUserIdentity
 		$result = false;
 
 		// check to see if the failed window start plus the configured failed password window is greater than the current time.
-		$totalWindowTime = $user->failed_password_attempt_window_start + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordWindow);
+		$totalWindowTime = $user->failedPasswordAttemptWindowStart + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordWindow);
 		$currentTime = DateTimeHelper::currentTime();
 		if ($currentTime < $totalWindowTime)
 			$result = true;

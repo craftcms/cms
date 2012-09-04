@@ -17,7 +17,7 @@ class Route extends BaseModel
 			'url_parts'   => array(PropertyType::Varchar, 'required' => true),
 			'url_pattern' => array(PropertyType::Varchar, 'required' => true),
 			'template'    => array(PropertyType::Varchar, 'required' => true),
-			'sort_order'  => PropertyType::SortOrder,
+			'sortOrder'   => PropertyType::SortOrder,
 		);
 	}
 
@@ -32,7 +32,7 @@ class Route extends BaseModel
 	{
 		return array(
 			'ordered' => array(
-				'order' => 'sort_order ASC'
+				'order' => 'sortOrder ASC'
 			)
 		);
 	}
