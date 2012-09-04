@@ -1,4 +1,5 @@
 {% extends "users/_edit/layout" %}
+{% import "_includes/forms" as forms %}
 {% set pageTitle = "Administration"|t %}
 
 
@@ -14,14 +15,11 @@
 		<input type="hidden" name="action" value="accounts/saveAdminSettings">
 		<input type="hidden" name="user_id" value="{{ user.id }}">
 
-		<div class="field">
-			<div class="checkbox">
-				<label>
-					<input type="checkbox" name="admin" value="y" {% if user.admin %}checked{% endif %}>
-					{{ "This is an admin account"|t }}
-				</label>
-			</div>
-		</div>
+		{{ forms.checkboxField({
+			label: "This is an admin account"|t,
+			name: 'admin',
+			checked: user.admin
+		}) }}
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 	</form>

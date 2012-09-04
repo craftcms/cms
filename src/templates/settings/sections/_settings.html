@@ -5,6 +5,7 @@
 
 
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 
 
 {% if section.id %}
@@ -28,56 +29,60 @@
 		<input type="hidden" name="redirect" value="settings/sections">
 		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 
-		<div class="field first">
-			<div class="heading">
-				<label class="required" for="name">
-					{{ "Name"|t }}
-					{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
-				</label>
-				<p>{{ "What this section will be called in the CP."|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="name" name="name" class="text {% if section.errors.name %}error{% endif %}" type="text" value="{{ section.name }}"></div>
-			{% if section.errors.name %}
-				{% include "_includes/error_list" with {'errors': section.errors.name} %}
-			{% endif %}
-		</div>
 
-		<div class="field">
-			<div class="heading">
-				<label class="required" for="handle">{{ "Handle"|t }}</label>
-				<p>{{ "How you’ll refer to this section in the templates."|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="handle" name="handle" class="text code {% if section.errors.handle %}error{% endif %}" type="text" value="{{ section.handle }}"></div>
-			{% if section.errors.handle %}
-				{% include "_includes/error_list" with {'errors': section.errors.handle} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "Name"|t,
+			instructions: "What this section will be called in the CP."|t,
+			id: 'name',
+			name: 'name',
+			value: section.name,
+			errors: section.errors.name,
+			first: true,
+			required: true,
+			translatable: true
+		}) }}
+
+		{{ forms.textField({
+			label: "Handle"|t,
+			instructions: "How you’ll refer to this section in the templates."|t,
+			id: 'handle',
+			class: 'code',
+			name: 'handle',
+			value: section.handle,
+			errors: section.errors.handle,
+			required: true
+		}) }}
 
 		<hr>
 
-		<div class="field checkbox">
-			<label>
-				<input type="checkbox" name="has_urls" value="y" {% if section.has_urls %}checked{% endif %} class="fieldtoggle" data-target="has-urls-setting">
-				{{ "Entries in this section have their own URLs"|t }}
-			</label>
-		</div>
+		{{ forms.checkboxField({
+			label: "Entries in this section have their own URLs"|t,
+			name: 'has_urls',
+			checked: section.has_urls,
+			toggle: 'has-urls-setting'
+		}) }}
 
 		<div id="has-urls-setting" class="nested-fields" {% if not section.has_urls %}style="height: 0"{% endif %}>
-			<div class="field">
-				<div class="heading">
-					<label for="url_format">{{ "Entry URL Format"|t }}</label>
-					<p>{{ "What the entry URLs should look like."|t }}</p>
-				</div>
-				<div class="textwrapper"><input id="url_format" name="url_format" class="text code" type="text" value="{{ section.url_format }}"></div>
-			</div>
 
-			<div class="field">
-				<div class="heading">
-					<label for="template">{{ "Entry Template"|t }}</label>
-					<p>{{ "Which template to use when an entry’s URL is requested."|t }}</p>
-				</div>
-				<div class="textwrapper"><input id="template" name="template" class="text" type="text" value="{{ section.template }}"></div>
-			</div>
+			{{ forms.textField({
+				label: "Entry URL Format"|t,
+				instructions: "What the entry URLs should look like."|t,
+				id: 'url_format',
+				class: 'code',
+				name: 'url_format',
+				value: section.url_format,
+				errors: section.errors.url_format
+			}) }}
+
+			{{ forms.textField({
+				label: "Entry Template"|t,
+				instructions: "Which template to use when an entry’s URL is requested."|t,
+				id: 'template',
+				name: 'template',
+				value: section.template,
+				errors: section.errors.template
+			}) }}
+
 		</div>
 
 		<hr>

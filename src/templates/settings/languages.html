@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 {% set title = "Content Languages"|t %}
 
 
@@ -18,20 +19,23 @@
 		<h3>{{ "Which languages will your content be available in?"|t }}</h3>
 
 		<div class="field">
-			<div class="checkbox"><label>
-				<input type="checkbox" checked disabled>
-				{{ blx.localization.localeName(blx.app.language) }} <strong>({{ "Primary"|t }})</strong>
-			</label></div>
+			{{ forms.checkboxField({
+				label: blx.localization.localeName(blx.app.language) ~ ' <strong>(' ~ "Primary"|t ~ ')</strong>',
+				checked: true,
+				disabled: true
+			}) }}
 
 			{% if not selectedLanguages %}
 				{% set selectedLanguages = blx.settings.languages %}
 			{% endif %}
 
 			{% for language in selectedLanguages %}
-				<div class="checkbox"><label>
-					<input type="checkbox" name="languages[]" value="{{ language }}" checked>
-					{{ blx.localization.localeName(language) }}
-				</label></div>
+				{{ forms.checkboxField({
+					label: blx.localization.localeName(language),
+					name: 'languages[]',
+					value: language,
+					checked: true
+				}) }}
 			{% endfor %}
 
 			<hr>
@@ -46,10 +50,11 @@
 						{% if loop.index0 != 0 and loop.index0 % languagesPerColumn == 0 %}
 							</div></div><div class="col col33"><div class="col-inner">
 						{% endif %}
-						<div class="checkbox"><label>
-							<input type="checkbox" name="languages[]" value="{{ language }}">
-							{{ blx.localization.localeName(language) }}
-						</label></div>
+						{{ forms.checkboxField({
+							label: blx.localization.localeName(language),
+							name: 'languages[]',
+							value: language
+						}) }}
 					{% endfor %}
 				</div></div>
 			</div>

@@ -1,0 +1,130 @@
+{% macro errorList(errors) %}
+	{% if errors %}
+		<ul class="errors">
+			{% for error in errors %}
+				<li>{{ error }}</li>
+			{% endfor %}
+		</ul>
+	{% endif %}
+{% endmacro %}
+
+
+{# Inputs #}
+
+
+{% macro textClass(config) %}{{ [
+	'text',
+	config.class,
+	(config.hint ? 'nicehint' : null),
+	(config.type == 'password' ? 'password' : null),
+	(config.errors ? 'error' : null)
+]|filter|join(' ') }}{% endmacro %}
+
+
+{% macro text(config) %}
+	{% set class = _self.textClass(config) %}
+	{% set type = config.type ? config.type : 'text' %}
+	{% if not config.size %}<div class="{{ config.type == 'password' ? 'password' : 'text' }}wrapper">{% endif -%}
+	<input{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" type="{{ type }}"{% if config.size %} size="{{ config.size }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.value %} value="{{ config.value }}"{% endif %}{% if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}{% if config.disabled %} disabled {% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
+	{%- if not config.size %}</div>{% endif %}
+{% endmacro %}
+
+
+{% macro password(config) %}
+	{{ _self.text(config|merge({ type: 'password' })) }}
+{% endmacro %}
+
+
+{% macro textarea(config) %}
+	{% set class = _self.textClass(config) %}
+	{% set rows = config.rows ? config.rows : 2 %}
+	{% set cols = config.cols ? config.cols : 50 %}
+	<div class="textwrapper"><textarea{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" rows="{{ rows }}" cols="{{ cols }}" name="{{ config.name }}"{% if config.disabled %} disabled {% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea></div>
+{% endmacro %}
+
+
+{% macro select(config) %}
+	{% set class = ['select', config.class]|filter|join(' ') %}
+	<div class="{{ class }}">
+		<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.toggle %} class="fieldtoggle"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.disabled %} disabled{% endif %}>
+			{% for value, label in config.options %}
+				<option value="{{ value }}"{% if value == config.value %} selected{% endif %}>{{ label }}</option>
+			{% endfor %}
+		</select>
+	</div>
+{% endmacro %}
+
+
+{% macro checkbox(config) %}
+	{% set class = [ config.class, (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
+	{% set value = config.value ? config.value : 'y' %}
+	<label>
+		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if class %} class="{{ class }}"{% endif %} type="checkbox"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %}>
+		{{ config.label|raw }}
+	</label>
+{% endmacro %}
+
+
+{% macro file(config) %}
+	<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %} type="file"{% if config.disabled %} disabled{% endif %}>
+{% endmacro %}
+
+
+{# Fields #}
+
+
+{% macro field(config, input) %}
+	<div class="field{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+		{% if config.label or config.instructions %}
+			<div class="heading">
+				{% if config.label %}
+					<label{% if config.required %} class="required"{% endif %}{% if config.id %} for="{{ config.id }}"{% endif %}>
+						{{ config.label|raw }}
+						<!-- BLOCKSPRO ONLY -->
+						{% if config.translatable and blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
+						<!-- end BLOCKSPRO ONLY -->
+					</label>
+				{% endif %}
+				{% if config.instructions %}
+					<p>{{ config.instructions|raw }}</p>
+				{% endif %}
+			</div>
+		{% endif %}
+		<div class="input">
+			{{ input }}
+		</div>
+		{{ _self.errorList(config.errors) }}
+	</div>
+{% endmacro %}
+
+
+{% macro textField(config) %}
+	{{ _self.field(config, _self.text(config)) }}
+{% endmacro %}
+
+
+{% macro passwordField(config) %}
+	{{ _self.field(config, _self.password(config)) }}
+{% endmacro %}
+
+
+{% macro textareaField(config) %}
+	{{ _self.field(config, _self.textarea(config)) }}
+{% endmacro %}
+
+
+{% macro selectField(config) %}
+	{{ _self.field(config, _self.select(config)) }}
+{% endmacro %}
+
+
+{% macro checkboxField(config) %}
+	<div class="field checkbox{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+		{{ _self.checkbox(config) }}
+	</div>
+{% endmacro %}
+
+
+{% macro fileField(config) %}
+	{{ _self.field(config, _self.file(config)) }}
+{% endmacro %}

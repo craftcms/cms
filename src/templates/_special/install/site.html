@@ -1,25 +1,14 @@
+{% import "_includes/forms" as forms %}
+
+
 <div id="site" class="modal">
 	<h1>{{ "Setup your site"|t }}</h1>
 
 	<form id="siteform">
-		<div class="field">
-			<div class="heading">
-				<label for="sitename">{{ "Site Name"|t }}</label>
-			</div>
-			<div class="textwrapper"><input id="sitename" class="text" type="text" maxlength="255" value="{{ sitename }}"></div>
-		</div>
+		{{ forms.textField({ label: "Site Name"|t, id: 'sitename', value: sitename, maxlength: 255 }) }}
+		{{ forms.textField({ label: "Site URL"|t, id: 'url', value: url, maxlength: 255 }) }}
 
-		<div class="field">
-			<div class="heading">
-				<label for="url">{{ "Site URL"|t }}</label>
-			</div>
-			<div class="textwrapper"><input id="url" class="text" type="text" maxlength="255" value="{{ url }}"></div>
-		</div>
-
-		<div class="field">
-			<div class="heading">
-				<label for="language">{{ "Language"|t }}</label>
-			</div>
+		{% set languageInput %}
 			<div class="select">
 				<select id="language">
 					{% for language in blx.localization.translatedLanguages %}
@@ -27,7 +16,8 @@
 					{% endfor %}
 				</select>
 			</div>
-		</div>
+		{% endset %}
+		{{ forms.field({ label: "Language"|t, id: 'language' }, languageInput) }}
 
 		<div class="buttons">
 			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t }}</div>

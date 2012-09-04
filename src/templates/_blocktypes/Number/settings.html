@@ -1,27 +1,5 @@
-<div class="field">
-	<div class="heading">
-		<label for="type" style="margin-top:2px">{{ "Number Type"|t }}</label>
-	</div>
-	{% include "_includes/pill" with {
-		'name': "type",
-		'options': [
-			{'value': "int", 'label': "Integer"},
-			{'value': "float", 'label': "Float"},
-			{'value': "dec", 'label': "Decimal"}
-		],
-		'default': "int",
-		'value': settings.type
-	} %}
-</div>
-<div class="field">
-	<div class="heading">
-		<label for="min">{{ "Min Value"|t }}</label>
-	</div>
-	<input id="min" name="min" class="text" type="number" value="{{ settings.min }}" size="5">
-</div>
-<div class="field">
-	<div class="heading">
-		<label for="max">{{ "Max Value"|t }}</label>
-	</div>
-	<input id="max" name="max" class="text" type="number" value="{{ settings.max }}" size="5">
-</div>
+{% import "_includes/forms.html" as forms %}
+
+{{ forms.textField({ label: "Min Value"|t, id: 'min', name: 'min', value: settings.min, size: 5 }) }}
+{{ forms.textField({ label: "Max Value"|t, id: 'max', name: 'max', value: settings.max, size: 5 }) }}
+{{ forms.textField({ label: "Decimal Points"|t, id: 'decimals', name: 'decimals', value: settings.decimals, size: 1 }) }}

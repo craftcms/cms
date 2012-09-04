@@ -9,6 +9,7 @@
 
 
 {% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
 
 
 {% if block.id %}
@@ -35,80 +36,70 @@
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% if block.id %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}
 
-		<div class="field first">
-			<div class="heading">
-				<label class="required" for="name">
-					{{ "Name"|t }}
-					{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
-				</label>
-				<p>{{ "What this block will be called in the CP."|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="name" name="name" class="text {% if block.errors.name %}error{% endif %}" type="text" value="{{ block.name }}"></div>
-			{% if block.errors.name %}
-				{% include "_includes/error_list" with {'errors': block.errors.name} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "Name"|t,
+			instructions: "What this block will be called in the CP."|t,
+			id: 'name',
+			name: 'name',
+			value: block.name,
+			errors: block.errors.name,
+			first: true,
+			required: true,
+			translatable: true
+		}) }}
 
-		<div class="field">
-			<div class="heading">
-				<label class="required" for="handle">{{ "Handle"|t }}</label>
-				<p>{{ "How you’ll refer to this block in the templates."|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="handle" name="handle" class="text code {% if block.errors.handle %}error{% endif %}" type="text" value="{{ block.handle }}"></div>
-			{% if block.errors.handle %}
-				{% include "_includes/error_list" with {'errors': block.errors.handle} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "Handle"|t,
+			instructions: "How you’ll refer to this block in the templates."|t,
+			id: 'handle',
+			class: 'code',
+			name: 'handle',
+			value: block.handle,
+			errors: block.errors.handle,
+			required: true,
+		}) }}
 
-		<div class="field">
-			<div class="heading">
-				<label for="instructions">
-					{{ "Instructions"|t }}
-					{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
-				</label>
-				<p>{{ "Helper text to guide the author."|t }}</p>
-			</div>
-			<div class="textwrapper"><textarea id="instructions" name="instructions" class="text {% if block.errors.instructions %}error{% endif %}">{{ block.instructions }}</textarea></div>
-			{% if block.errors.instructions %}
-				{% include "_includes/error_list" with {'errors': block.errors.instructions} %}
-			{% endif %}
-		</div>
+		{{ forms.textareaField({
+			label: "Instructions"|t,
+			instructions: "Helper text to guide the author."|t,
+			id: 'instructions',
+			name: 'instructions',
+			value: block.instructions,
+			errors: block.errors.instructions,
+			translatable: true
+		}) }}
 
-		<div class="field checkbox">
-			<label>
-				<input type="checkbox" name="required" value="y" {% if block.required %}checked{% endif %}>
-				{{ "This entry block is required"|t }}
-			</label>
-		</div>
+		{{ forms.checkboxField({
+			label: "This entry block is required"|t,
+			name: 'required',
+			checked: block.required
+		}) }}
 
 		{% if blx.settings.languages %}
-			<div class="field checkbox">
-				<label>
-					<input type="checkbox" name="translatable" value="y" {% if block.translatable %}checked{% endif %}>
-					{{ "This entry block is translatable"|t }}
-				</label>
-			</div>
+
+			{{ forms.checkboxField({
+				label: "This entry block is translatable"|t,
+				name: 'translatable',
+				checked: block.translatable
+			}) }}
+
 		{% endif %}
 
 		<hr>
 
-		<div class="field">
-			<div class="heading">
-				<label for="class">{{ "Type"|t }}</label>
-				<p>{{ "What type of block is this?" }}</p>
-			</div>
-			<div class="select">
-				<select id="class" name="class" class="fieldtoggle">
-					{% for blocktype in blx.blocks.blocktypes %}
-						<option value="{{ blocktype.getClassHandle }}" {% if blocktype.getClassHandle == blockClass %}selected{% endif %}>
-							{{- blocktype.getType -}}
-						</option>
-					{% endfor %}
-				</select>
-			</div>
-		</div>
+		{% set blocktypes = blx.blocks.blocktypes %}
 
-		{% for blocktype in blx.blocks.blocktypes %}
+		{{ forms.selectField({
+			label: "Type",
+			instructions: "What type of block is this?"|t,
+			id: 'class',
+			name: 'class',
+			options: blocktypes,
+			value: blockClass,
+			toggle: true
+		 }) }}
+
+		{% for blocktype in blocktypes %}
 			{% set isCurrent = (blocktype.getClassHandle == blockClass) %}
 			{% if isCurrent %}
 				{% set settings = blocktype.displaySettings(block.settings) %}

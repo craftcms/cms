@@ -4,6 +4,7 @@
 <!-- BLOCKSPRO ONLY -->
 {% extends "settings/email/_layout" %}
 <!-- end BLOCKSPRO ONLY -->
+{% import "_includes/forms" as forms %}
 {% set title = "Email Settings"|t %}
 {% include_js "email_settings.js" %}
 
@@ -28,158 +29,131 @@
 		<input type="hidden" name="action" value="settings/saveemailsettings">
 		<input type="hidden" name="redirect" value="settings">
 
-		<div class="field">
-			<div class="heading">
-				<label for="emailAddress">{{ "System Email Address"|t }}</label>
-				<p>{{ "The email address @@@productDisplay@@@ will use when sending email."|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="emailAddress" name="emailAddress" class="text" type="text" value="{{ settings.emailAddress }}"></div>
-			{% if settings.errors.emailAddress %}
-				{% include "_includes/error_list" with {'errors': settings.errors.emailAddress} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "System Email Address"|t,
+			instructions: "The email address @@@productDisplay@@@ will use when sending email."|t,
+			id: 'emailAddress',
+			name: 'emailAddress',
+			value: settings.emailAddress,
+			required: true,
+			errors: settings.errors.emailAddress
+		}) }}
 
-		<div class="field">
-			<div class="heading">
-				<label for="senderName">{{ "Sender Name"|t }}</label>
-				<p>{{ "The “From” name @@@productDisplay@@@ will use when sending email."|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="senderName" name="senderName" class="text" type="text" value="{{ settings.senderName }}"></div>
-			{% if settings.errors.senderName %}
-				{% include "_includes/error_list" with {'errors': settings.errors.senderName} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "Sender Name"|t,
+			instructions: "The “From” name @@@productDisplay@@@ will use when sending email."|t,
+			id: 'senderName',
+			name: 'senderName',
+			value: settings.senderName,
+			required: true,
+			errors: settings.errors.senderName
+		}) }}
 
 		<!-- BLOCKSPRO ONLY -->
-		<div class="field">
-			<div class="heading">
-				<label for="template">{{ "HTML Email Template"|t }}</label>
-				<p>{{ "The template Blocks Pro will use for users who prefer HTML email"|t }}</p>
-			</div>
-			<div class="textwrapper"><input id="template" name="template" type="text" class="text template" value="{{ settings.template }}"></div>
-		</div>
+		{{ forms.textField({
+			label: "HTML Email Template"|t,
+			instructions: "The template Blocks Pro will use for users who prefer HTML email"|t,
+			id: 'template',
+			name: 'template',
+			value: settings.template,
+			errors: settings.errors.template
+		}) }}
 		<!-- end BLOCKSPRO ONLY -->
 
 		<hr>
 
-		<div class="field" id="protocol-field">
-			<div class="heading">
-				<label for="protocol">{{ "Protocol"|t }}</label>
-				<p>{{ "The protocol @@@productDisplay@@@ will use to send email."|t }}</p>
-			</div>
-			<div class="select">
-				<select id="protocol" name="protocol">
-					<option value="PhpMail" {% if settings.protocol == 'PhpMail' %}selected{% endif %}>{{ "Php Mail"|t }}</option>
-					<option value="Sendmail" {% if settings.protocol == 'Sendmail' %}selected{% endif %}>{{ "Sendmail"|t }}</option>
-					<option value="Smtp" {% if settings.protocol == 'Smtp' %}selected{% endif %}>{{ "Smtp"|t }}</option>
-					<option value="GmailSmtp" {% if settings.protocol == 'GmailSmtp' %}selected{% endif %}>{{ "Gmail Smtp"|t }}</option>
-					<option value="Pop" {% if settings.protocol == 'Pop' %}selected{% endif %}>{{ "Pop before Smtp"|t }}</option>
-				</select>
-			</div>
-		</div>
+		{{ forms.selectField({
+			label: "Protocol"|t,
+			instructions: "The protocol @@@productDisplay@@@ will use to send email."|t,
+			id: 'protocol',
+			name: 'protocol',
+			options: { PhpMail: "PHP Mail"|t, Sendmail: "Sendmail"|t, Smtp: "SMTP"|t, GmailSmtp: "Gmail SMTP"|t, Pop: "POP"|t },
+			value: settings.protocol
+		}) }}
 
 		<div id="hidden-fields" style="display: none">
-			<div id="username-field" class="field">
-				<div class="heading">
-					<label for="username">{{ "Username"|t }}</label>
-				</div>
-				<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{{ settings.username }}"></div>
-				{% if settings.protocol != 'Smtp' and settings.errors.username %}
-					{% include "_includes/error_list" with {'errors': settings.errors.username} %}
-				{% endif %}
-			</div>
+			{{ forms.textFiled({
+				label: "Username"|t,
+				id: 'username',
+				name: 'username',
+				value: settings.username
+			}) }}
 
-			<div id="password-field" class="field">
-				<div class="heading">
-					<label for="password">{{ "Password"|t }}</label>
-				</div>
-				<div class="textwrapper"><input id="password" name="password" class="text" type="password" value="{{ settings.password }}"></div>
-				{% if settings.protocol != 'Smtp' and settings.errors.password %}
-					{% include "_includes/error_list" with {'errors': settings.errors.password} %}
-				{% endif %}
-			</div>
+			{{ forms.passwordField({
+				label: "Password"|t,
+				id: 'password',
+				name: 'password',
+				value: settings.password,
+				errors: (settings.protocol != 'Smtp' ? settings.errors.password : null)
+			}) }}
 
-			<div id="port-field" class="field">
-				<div class="heading">
-					<label for="port">{{ "Port"|t }}</label>
-				</div>
-				<input id="port" name="port" class="text" type="text" value="{% if settings.port %}{{ settings.port }}{% else %}25{% endif %}" size="5">
-				{% if settings.errors.port %}
-					{% include "_includes/error_list" with {'errors': settings.errors.port} %}
-				{% endif %}
-			</div>
+			{{ forms.textField({
+				label: "Port"|t,
+				id: 'port',
+				name: 'port',
+				value: (settings.port ? settings.port : 25),
+				size: 4,
+				errors: settings.errors.port
+			}) }}
 
-			<div id="host-field" class="field">
-				<div class="heading">
-					<label for="host">{{ "Host Name"|t }}</label>
-				</div>
-				<div class="textwrapper"><input id="host" name="host" class="text" type="text" value="{{ settings.host }}"></div>
-				{% if settings.errors.host %}
-					{% include "_includes/error_list" with {'errors': settings.errors.host} %}
-				{% endif %}
-			</div>
+			{{ forms.textField({
+				label: "Host Name"|t,
+				id: 'host',
+				name: 'host',
+				value: settings.host,
+				errors: settings.errors.host
+			}) }}
 
-			<div id="timeout-field" class="field">
-				<div class="heading">
-					<label for="timeout">{{ "Timeout"|t }}</label>
-				</div>
-				<input id="timeout" name="timeout" class="text" type="text" value="{% if settings.timeout %}{{ settings.timeout }}{% else %}30{% endif %}" size="5">
-				{% if settings.errors.timeout %}
-					{% include "_includes/error_list" with {'errors': settings.errors.timeout} %}
-				{% endif %}
-			</div>
+			{{ forms.textField({
+				label: "Timeout"|t,
+				id: 'timeout',
+				name: 'timeout',
+				value: (settings.timeout ? settings.timeout : 30),
+				size: 2,
+				errors: settings.errors.timeout
+			}) }}
 
-			<div id="smtpAuth-field" class="field">
-				<label>
-					<input type="checkbox" name="smtpAuth" value="y" {% if settings.smtpAuth %}checked{% endif %} class="fieldtoggle" data-target="smtpAuthCredentials-field">
-					{{ "Use SMTP Authentication" }}
-				</label>
-			</div>
+			{{ forms.checkboxField({
+				label: "Use SMTP Keep Alive"|t,
+				id: 'smtpKeepAlive',
+				name: 'smtpKeepAlive',
+				checked: settings.smtpKeepAlive
+			}) }}
+
+			{{ forms.checkboxField({
+				label: "Use SMTP authentication"|t,
+				id: 'smtpAuth',
+				name: 'smtpAuth',
+				checked: settings.smtpAuth,
+				toggle: 'smtpAuthCredentials-field'
+			}) }}
 
 			<div id="smtpAuthCredentials-field" class="nested-fields" {% if not settings.smtpAuth %}style="height:0"{% endif %}>
-				<div id="smtp-username-field" class="field">
-					<div class="heading">
-						<label for="smtp-username">{{ "Username"|t }}</label>
-					</div>
-					<div class="textwrapper"><input id="smtp-username" name="smtp_username" class="text" type="text" value="{{ settings.username }}"></div>
-					{% if settings.protocol == 'Smtp' and settings.errors.username %}
-						{% include "_includes/error_list" with {'errors': settings.errors.username} %}
-					{% endif %}
-				</div>
+				{{ forms.textField({
+					label: "Username"|t,
+					id: 'smtp-username',
+					name: 'smtp_username',
+					value: settings.username,
+					errors: (settings.protocol == 'Smtp' ? settings.errors.username : null)
+				}) }}
 
-				<div id="smtp-password-field" class="field">
-					<div class="heading">
-						<label for="smtp-password">{{ "Password"|t }}</label>
-					</div>
-					<div class="textwrapper"><input id="smtp-password" name="smtp_password" class="text" type="password" value="{{ settings.password }}"></div>
-					{% if settings.protocol == 'Smtp' and settings.errors.password %}
-						{% include "_includes/error_list" with {'errors': settings.errors.password} %}
-					{% endif %}
-				</div>
+				{{ forms.passwordField({
+					label: "Password"|t,
+					id: 'smtp-password',
+					name: 'smtp_password',
+					value: settings.password,
+					errors: (settings.protocol == 'Smtp' ? settings.errors.password : null)
+				}) }}
 			</div>
 
-			<div id="smtpKeepAlive-field" class="field">
-				<label>
-					<input type="checkbox" name="smtpKeepAlive" value="y" {% if settings.smtpKeepAlive %}checked{% endif %}>
-					Use Smtp Keep Alive
-				</label>
-			</div>
-
-			<div id="smtpSecureTransportType-field" class="field">
-				<div class="heading">
-					<label for="smtpSecureTransportType">{{ "Smtp Secure Transport Type"|t }}</label>
-				</div>
-				{% include "_includes/pill" with {
-					'name': "smtpSecureTransportType",
-					'options': [
-						{'value': "none", 'label': "None"|t},
-						{'value': "ssl", 'label': "SSL"|t},
-						{'value': "tls", 'label': "TLS"|t}
-					],
-					default: "none",
-					'value': settings.smtpSecureTransportType
-				} %}
-			</div>
+			{{ forms.selectField({
+				label: "SMTP Secure Transport Type",
+				id: 'smtpSecureTransportType',
+				name: 'smtpSecureTransportType',
+				options: { none: "None"|t, ssl: "SSL"|t, tls: "TLS"|t },
+				default: 'none',
+				value: settings.smtpSecureTransportType
+			}) }}
 		</div>
 
 		<hr>
