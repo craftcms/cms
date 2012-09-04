@@ -38,7 +38,7 @@ class ModelHelper
 		$minLengths = array();
 		$maxLengths = array();
 
-		$numberTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Float, PropertyType::Decimal);
+		$numberTypes = array(PropertyType::Number, PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt, PropertyType::Float, PropertyType::Decimal);
 		$integerTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
 
 		foreach ($properties as $name => $config)
@@ -85,7 +85,7 @@ class ModelHelper
 				if (isset($config['max']) && is_numeric($config['max']))
 					$rule['max'] = $config['max'];
 
-				if (in_array($config['type'], $integerTypes))
+				if (($config['type'] == PropertyType::Number && empty($config['decimals'])) || in_array($config['type'], $integerTypes))
 					$rule['integerOnly'] = true;
 
 				$rules[] = $rule;

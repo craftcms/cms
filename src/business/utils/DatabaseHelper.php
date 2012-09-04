@@ -12,13 +12,14 @@ class DatabaseHelper
 	protected static $propertyTypeDefaults = array(
 		PropertyType::Char         => array('maxLength' => 255),
 		PropertyType::Varchar      => array('maxLength' => 255),
+		PropertyType::Number       => array('maxLength' => 10, 'min' => -2147483648, 'max' => 2147483647, 'decimals' => 0),
 		PropertyType::TinyInt      => array('maxLength' => 4),
 		PropertyType::SmallInt     => array('maxLength' => 6),
 		PropertyType::MediumInt    => array('maxLength' => 9),
 		PropertyType::Int          => array('maxLength' => 11),
 		PropertyType::BigInt       => array('maxLength' => 20),
 		PropertyType::TinyInt      => array('maxLength' => 4),
-		PropertyType::Decimal      => array('maxLength' => 10),
+		PropertyType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
 		PropertyType::Boolean      => array('type '=> PropertyType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
 		PropertyType::Enum         => array('values' => array()),
 
@@ -68,6 +69,73 @@ class DatabaseHelper
 				// ...And merge in the new type's settings...
 				$config = static::normalizePropertyConfig($config);
 			}
+			// Handle number columns
+			else if ($config['type'] == PropertyType::Number)
+			{
+				$config = static::getNumberColumnConfig($config['min'], $config['max'], $config['decimals']);
+			}
+		}
+
+		return $config;
+	}
+
+	private static $_intColumnTypes = array(
+		PropertyType::TinyInt   => 128,
+		PropertyType::SmallInt  => 32768,
+		PropertyType::MediumInt => 8388608,
+		PropertyType::Int       => 2147483648,
+		PropertyType::BigInt    => 9223372036854775808
+	);
+
+	/**
+	 * Returns a number column config, taking the min, max, and number of decimal points into account.
+	 *
+	 * @static
+	 * @param number $min
+	 * @param number $max
+	 * @param int $decimals
+	 * @return array
+	 */
+	public static function getNumberColumnConfig($min = null, $max = null, $decimals = null)
+	{
+		$config = array();
+
+		// Normalize the arguments
+		$min = is_numeric($min) ? $min : static::$propertyTypeDefaults[PropertyType::Number]['min'];
+		$max = is_numeric($max) ? $max : static::$propertyTypeDefaults[PropertyType::Number]['max'];
+		$decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
+
+		// Unsigned?
+		$config['unsigned'] = ($min >= 0);
+
+		// Figure out the max length
+		$maxAbsSize = intval($config['unsigned'] ? $max : max(abs($min), abs($max)));
+		$config['maxLength'] = ($maxAbsSize ? strlen($maxAbsSize) : 0) + $decimals;
+
+		// Int or decimal?
+		if ($decimals == 0)
+		{
+			// Figure out the smallest possible int column type that will fit our min/max
+			foreach (static::$_intColumnTypes as $colType => $size)
+			{
+				if ($config['unsigned'])
+				{
+					if ($max < $size * 2)
+						break;
+				}
+				else
+				{
+					if ($min >= -$size && $max < $size)
+						break;
+				}
+			}
+
+			$config['type'] = $colType;
+		}
+		else
+		{
+			$config['type'] = PropertyType::Decimal;
+			$config['decimals'] = $decimals;
 		}
 
 		return $config;
@@ -113,7 +181,7 @@ class DatabaseHelper
 				$def = 'BIGINT('.$config['maxLength'].')';
 				break;
 			case PropertyType::Decimal:
-				$def = 'DECIMAL('.$config['maxLength'].')';
+				$def = 'DECIMAL('.$config['maxLength'].','.$config['decimals'].')';
 				break;
 			case PropertyType::Enum:
 				$def = 'ENUM(';
