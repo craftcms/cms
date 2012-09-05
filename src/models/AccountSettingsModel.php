@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Validates the required User attributes for the installer.
  */
-class InstallUserModel extends BaseModel
+class AccountSettingsModel extends BaseModel
 {
 	protected function getProperties()
 	{

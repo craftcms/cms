@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Validates the required Site attributes for the installer.
  */
-class InstallLicenseKeyModel extends BaseModel
+class LicenseKeyModel extends BaseModel
 {
 	protected function getProperties()
 	{

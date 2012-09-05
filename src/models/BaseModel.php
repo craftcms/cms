@@ -6,19 +6,17 @@ namespace Blocks;
  *
  * @abstract
  */
-abstract class BaseModel extends \CFormModel
+abstract class BaseModel extends \CModel
 {
 	private $_properties = array();
 
 	/**
 	 * Returns a list of this model's properties.
 	 *
+	 * @abstract
 	 * @return array
 	 */
-	protected function getProperties()
-	{
-		return array();
-	}
+	abstract protected function getProperties();
 
 	/**
 	 * Isset?
@@ -81,9 +79,19 @@ abstract class BaseModel extends \CFormModel
 	}
 
 	/**
-	 * Used by CActiveRecord
+	 * Returns the list of property names.
 	 *
-	 * @return array Validation rules for model's properties
+	 * @return array
+	 */
+	public function attributeNames()
+	{
+		return array_keys($this->getProperties());
+	}
+
+	/**
+	 * Returns the validation rules for properties.
+	 *
+	 * @return array
 	 */
 	public function rules()
 	{

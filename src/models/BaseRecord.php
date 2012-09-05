@@ -141,23 +141,18 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Returns the name of the associated database table.
 	 *
+	 * @abstract
 	 * @return string
 	 */
-	public function getTableName()
-	{
-		// Default to the lowercase classname, sans namespace
-		return strtolower(substr(get_class($this), strlen(__NAMESPACE__) + 1));
-	}
+	abstract public function getTableName();
 
 	/**
 	 * Returns a list of this model's properties.
 	 *
+	 * @abstract
 	 * @return array
 	 */
-	protected function getProperties()
-	{
-		return array();
-	}
+	abstract protected function getProperties();
 
 	/**
 	 * Returns a list of this model's active record relations.
