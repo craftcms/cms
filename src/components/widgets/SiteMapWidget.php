@@ -8,7 +8,7 @@ class SiteMapWidget extends BaseWidget
 {
 	public $name = 'Site Map';
 
-	protected $bodyTemplate = '_widgets/SiteMapWidget/body';
+	protected $bodyTemplate = '_components/widgets/SiteMapWidget/body';
 
 	/**
 	 * Gets the widget title.

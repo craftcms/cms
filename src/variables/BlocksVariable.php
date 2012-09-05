@@ -7,20 +7,20 @@ namespace Blocks;
 class BlocksVariable
 {
 	/**
-	 * Returns all blocktypes.
+	 * Returns all installed blocks.
 	 *
 	 * @return array
 	 */
-	public function blocktypes()
+	public function getBlocks()
 	{
-		return blx()->blocks->getBlockTypes();
+		return blx()->blocks->getAllBlocks();
 	}
 
 	/**
-	 * Gets a blocktype by its class.
+	 * Gets a block by its class.
 	 *
 	 * @param string $class
-	 * @return BaseBlock
+	 * @return mixed
 	 */
 	public function getBlockByClass($class)
 	{

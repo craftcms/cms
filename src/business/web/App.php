@@ -52,7 +52,6 @@ class App extends \CWebApplication
 		if (!$this->_classesImported)
 		{
 			$aliases = array(
-				'app.blocktypes.*',
 				'app.business.*',
 				'app.business.console.*',
 				'app.business.console.commands.*',
@@ -74,12 +73,13 @@ class App extends \CWebApplication
 				'app.business.web.templating.adapters.*',
 				'app.business.web.templating.templatewidgets.*',
 				'app.business.webservices.*',
+				'app.components.blocks.*',
+				'app.components.widgets.*',
 				'app.controllers.*',
 				'app.migrations.*',
 				'app.models.*',
 				'app.services.*',
 				'app.variables.*',
-				'app.widgets.*',
 			);
 
 			foreach ($aliases as $alias)

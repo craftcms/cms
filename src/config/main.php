@@ -38,6 +38,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\BlocksService',
 			),
 
+			'components' => array(
+				'class' => 'Blocks\ComponentsService',
+			),
+
 			'content' => array(
 				'class' => 'Blocks\ContentService',
 			),

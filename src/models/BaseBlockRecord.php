@@ -14,14 +14,14 @@ abstract class BaseBlockRecord extends BaseRecord
 	protected function getProperties()
 	{
 		return array(
-			'name'         => PropertyType::Name,
-			'handle'       => array(PropertyType::Handle, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title'),
-			'instructions' => PropertyType::Text,
-			'required'     => PropertyType::Boolean,
-			'translatable' => PropertyType::Boolean,
-			'class'        => PropertyType::ClassName,
-			'settings'     => PropertyType::Json,
-			'sortOrder'    => PropertyType::SortOrder,
+			'name'          => PropertyType::Name,
+			'handle'        => array(PropertyType::Handle, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title'),
+			'instructions'  => PropertyType::Text,
+			'required'      => PropertyType::Boolean,
+			'translatable'  => PropertyType::Boolean,
+			'class'         => PropertyType::ClassName,
+			'blockSettings' => PropertyType::Json,
+			'sortOrder'     => PropertyType::SortOrder,
 		);
 	}
 

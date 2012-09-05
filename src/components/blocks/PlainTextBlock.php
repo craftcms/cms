@@ -6,8 +6,8 @@ namespace Blocks;
  */
 class PlainTextBlock extends BaseBlock
 {
-	protected $settingsTemplate = '_blocktypes/PlainText/settings';
-	protected $fieldTemplate = '_blocktypes/PlainText/field';
+	protected $settingsTemplate = '_components/blocks/PlainText/settings';
+	protected $fieldTemplate = '_components/blocks/PlainText/field';
 
 	/**
 	 * @return string|void

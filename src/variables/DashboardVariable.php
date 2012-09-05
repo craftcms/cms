@@ -17,14 +17,13 @@ class DashboardVariable
 	}
 
 	/**
-	 * Returns all installed widgets.
+	 * Returns all installed widget components.
 	 *
 	 * @return array
 	 */
 	public function allwidgets()
 	{
-		$widgets = blx()->dashboard->getAllWidgets();
-		return $widgets;
+		return blx()->dashboard->getAllWidgets();
 	}
 
 	/**
@@ -34,8 +33,7 @@ class DashboardVariable
 	 */
 	public function userwidgets()
 	{
-		$widgets = blx()->dashboard->getUserWidgets();
-		return $widgets;
+		return blx()->dashboard->getUserWidgets();
 	}
 
 	/**

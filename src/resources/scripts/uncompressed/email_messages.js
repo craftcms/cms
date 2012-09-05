@@ -163,10 +163,10 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 					this.message.updateHtmlFromModal();
 
 				this.hide();
-				blx.displayNotice(blx.t('Message saved.'))
+				blx.cp.displayNotice(blx.t('Message saved.'));
 			}
 			else
-				blx.displayError(blx.t('Couldn’t save message.'));
+				blx.cp.displayError(blx.t('Couldn’t save message.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();

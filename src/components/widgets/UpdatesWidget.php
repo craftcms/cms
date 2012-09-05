@@ -10,7 +10,7 @@ class UpdatesWidget extends BaseWidget
 
 	public $updates = array();
 
-	protected $bodyTemplate = '_widgets/UpdatesWidget/body';
+	protected $bodyTemplate = '_components/widgets/UpdatesWidget/body';
 
 	/**
 	 * Add a link to Updates.

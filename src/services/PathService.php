@@ -43,6 +43,14 @@ class PathService extends \CApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getComponentsPath()
+	{
+		return $this->getAppPath().'components/';
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getResourcesPath()
 	{
 		return $this->getAppPath().'resources/';

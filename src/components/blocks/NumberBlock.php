@@ -6,8 +6,8 @@ namespace Blocks;
  */
 class NumberBlock extends BaseBlock
 {
-	protected $settingsTemplate = '_blocktypes/Number/settings';
-	protected $fieldTemplate = '_blocktypes/Number/field';
+	protected $settingsTemplate = '_components/blocks/Number/settings';
+	protected $fieldTemplate = '_components/blocks/Number/field';
 
 	/**
 	 * @return string|void
