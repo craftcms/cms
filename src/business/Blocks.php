@@ -149,7 +149,7 @@ class Blocks extends \Yii
 	public static function turnSystemOn()
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
-		$blocksInfo = Info::model()->find();
+		$blocksInfo = InfoRecord::model()->find();
 
 		if ($blocksInfo)
 		{
@@ -170,7 +170,7 @@ class Blocks extends \Yii
 	public static function turnSystemOff()
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
-		$blocksInfo = Info::model()->find();
+		$blocksInfo = InfoRecord::model()->find();
 
 		if ($blocksInfo)
 		{
@@ -193,7 +193,7 @@ class Blocks extends \Yii
 		if (!isset(static::$_storedBlocksInfo))
 		{
 			if (blx()->getIsInstalled())
-				static::$_storedBlocksInfo = Info::model()->find();
+				static::$_storedBlocksInfo = InfoRecord::model()->find();
 			else
 				static::$_storedBlocksInfo = false;
 		}

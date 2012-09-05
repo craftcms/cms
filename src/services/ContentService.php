@@ -45,7 +45,7 @@ class ContentService extends \CApplicationComponent
 			$query->limit($params['limit']);
 
 		$result = $query->queryAll();
-		return Section::model()->populateRecords($result);
+		return SectionRecord::model()->populateRecords($result);
 	}
 
 	/**
@@ -104,7 +104,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getSectionById($id)
 	{
-		return Section::model()->findById($id);
+		return SectionRecord::model()->findById($id);
 	}
 
 	/**
@@ -115,7 +115,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getSectionByHandle($handle)
 	{
-		return Section::model()->findByAttributes(array(
+		return SectionRecord::model()->findByAttributes(array(
 			'handle' => $handle
 		));
 	}
@@ -139,7 +139,7 @@ class ContentService extends \CApplicationComponent
 		}
 		else
 		{
-			$section = new Section();
+			$section = new SectionRecord();
 		}
 
 		return $section;
@@ -174,7 +174,7 @@ class ContentService extends \CApplicationComponent
 		if (!$isNewSection)
 		{
 			$oldUrlFormat = $section->urlFormat;
-			$oldContentTable = EntryContent::getTableNameForSection($section);
+			$oldContentTable = EntryContentRecord::getTableNameForSection($section);
 		}
 
 		$section->name      = $settings['name'];
@@ -192,14 +192,14 @@ class ContentService extends \CApplicationComponent
 				if ($isNewSection)
 				{
 					// Create the content table
-					$content = new EntryContent($section);
+					$content = new EntryContentRecord($section);
 					$content->createTable();
 					$content->addForeignKeys();
 				}
 				else
 				{
 					// Rename the content table if the handle changed
-					$newContentTable = EntryContent::getTableNameForSection($section);
+					$newContentTable = EntryContentRecord::getTableNameForSection($section);
 					if ($newContentTable != $oldContentTable)
 						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
 
@@ -233,7 +233,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function deleteSection($sectionId)
 	{
-		$section = Section::model()->with('blocks')->findById($sectionId);
+		$section = SectionRecord::model()->with('blocks')->findById($sectionId);
 		if (!$section)
 			$this->_noSectionExists($sectionId);
 
@@ -247,7 +247,7 @@ class ContentService extends \CApplicationComponent
 			}
 
 			// Delete the content table
-			$content = new EntryContent($section);
+			$content = new EntryContentRecord($section);
 			$content->dropForeignKeys();
 			$content->dropTable();
 
@@ -276,7 +276,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getEntryBlocks()
 	{
-		return EntryBlock::model()->ordered()->findAll();
+		return EntryBlockRecord::model()->ordered()->findAll();
 	}
 
 	/* end BLOCKS ONLY */
@@ -289,7 +289,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getEntryBlockById($id)
 	{
-		return EntryBlock::model()->findById($id);
+		return EntryBlockRecord::model()->findById($id);
 	}
 
 	/**
@@ -311,7 +311,7 @@ class ContentService extends \CApplicationComponent
 		}
 		else
 		{
-			$block = new EntryBlock();
+			$block = new EntryBlockRecord();
 		}
 
 		return $block;
@@ -392,11 +392,11 @@ class ContentService extends \CApplicationComponent
 				$block->save(false);
 
 				/* BLOCKS ONLY */
-				$content = new EntryContent();
+				$content = new EntryContentRecord();
 				$contentTable = $content->getTableName();
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
-				$contentTable = EntryContent::getTableNameForSection($section);
+				$contentTable = EntryContentRecord::getTableNameForSection($section);
 				/* end BLOCKSPRO ONLY */
 
 				$blockType = blx()->blocks->getBlockByClass($block->class);
@@ -434,15 +434,15 @@ class ContentService extends \CApplicationComponent
 	{
 		/* BLOCKS ONLY */
 		$block = $this->_getEntryBlock($blockId);
-		$content = new EntryContent();
+		$content = new EntryContentRecord();
 		$contentTable = $content->getTableName();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$block = EntryBlock::model()->with('section')->findById($blockId);
+		$block = EntryBlockRecord::model()->with('section')->findById($blockId);
 		if (!$block)
 			$this->_noEntryBlockExists($blockId);
 
-		$contentTable = EntryContent::getTableNameForSection($block->section);
+		$contentTable = EntryContentRecord::getTableNameForSection($block->section);
 		/* end BLOCKSPRO ONLY */
 
 		$transaction = blx()->db->beginTransaction();
@@ -467,7 +467,7 @@ class ContentService extends \CApplicationComponent
 	public function reorderEntryBlocks($blockIds)
 	{
 		/* BLOCKS ONLY */
-		$content = new EntryContent();
+		$content = new EntryContentRecord();
 		$contentTable = $content->getTableName();
 		/* end BLOCKS ONLY */
 
@@ -483,7 +483,7 @@ class ContentService extends \CApplicationComponent
 				$block = $this->_getEntryBlock($blockId);
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
-				$block = EntryBlock::model()->with('section')->findById($blockId);
+				$block = EntryBlockRecord::model()->with('section')->findById($blockId);
 				if (!$block)
 					$this->_noEntryBlockExists($blockId);
 				/* end BLOCKSPRO ONLY */
@@ -494,7 +494,7 @@ class ContentService extends \CApplicationComponent
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
 				/* BLOCKSPRO ONLY */
-				$contentTable = EntryContent::getTableNameForSection($block->section);
+				$contentTable = EntryContentRecord::getTableNameForSection($block->section);
 				/* end BLOCKSPRO ONLY */
 				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
 				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
@@ -533,14 +533,14 @@ class ContentService extends \CApplicationComponent
 			$section = $this->_getSection($sectionId);
 
 			// Create the entry
-			$entry = new Entry();
+			$entry = new EntryRecord();
 			$entry->sectionId = $sectionId;
 			$entry->authorId = ($authorId ? $authorId : blx()->accounts->getCurrentUser()->id);
 			$entry->parentId = $parentId;
 			$entry->save();
 
 			// Create a content row for it
-			$content = new EntryContent($section);
+			$content = new EntryContentRecord($section);
 			$content->entryId = $entry->id;
 			$content->language = blx()->language;
 			$content->title = $title;
@@ -676,7 +676,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getEntryById($entryId)
 	{
-		$entry = Entry::model()->findById($entryId);
+		$entry = EntryRecord::model()->findById($entryId);
 		return $entry;
 	}
 
@@ -686,7 +686,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getEntriesBySectionId($sectionId)
 	{
-		$entries = Entry::model()->findAllByAttributes(array(
+		$entries = EntryRecord::model()->findAllByAttributes(array(
 			'sectionId' => $sectionId,
 		));
 		return $entries;
@@ -698,7 +698,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function doesEntryHaveSubEntries($entryId)
 	{
-		$exists = Entry::model()->exists(
+		$exists = EntryRecord::model()->exists(
 			'parentId=:parentId',
 			array(':parentId' => $entryId)
 		);
@@ -717,7 +717,7 @@ class ContentService extends \CApplicationComponent
 			->order('dateCreated DESC')
 			->queryAll();
 
-		return EntryVersion::model()->populateRecords($drafts);
+		return EntryVersionRecord::model()->populateRecords($drafts);
 	}
 
 	/**
@@ -726,7 +726,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getEntryVersionsByEntryId($entryId)
 	{
-		$versions = EntryVersion::model()->findAllByAttributes(array(
+		$versions = EntryVersionRecord::model()->findAllByAttributes(array(
 			'entryId' => $entryId,
 		));
 		return $versions;
@@ -738,7 +738,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getVersionById($versionId)
 	{
-		$version = EntryVersion::model()->findById($versionId);
+		$version = EntryVersionRecord::model()->findById($versionId);
 		return $version;
 	}
 
@@ -766,7 +766,7 @@ class ContentService extends \CApplicationComponent
 		if (!$language)
 			$language = blx()->language;
 
-		$version = new EntryVersion();
+		$version = new EntryVersionRecord();
 		$version->entryId  = $entry->id;
 		$version->authorId = blx()->accounts->getCurrentUser()->id;
 		$version->language  = $language;
@@ -841,7 +841,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getDraftById($draftId)
 	{
-		$draft = EntryVersion::model()->findByAttributes(array(
+		$draft = EntryVersionRecord::model()->findByAttributes(array(
 			'id'    => $draftId,
 			'draft' => true
 		));
@@ -856,7 +856,7 @@ class ContentService extends \CApplicationComponent
 	 */
 	public function getDraftByNum($entryId, $draftNum)
 	{
-		$draft = EntryVersion::model()->findByAttributes(array(
+		$draft = EntryVersionRecord::model()->findByAttributes(array(
 			'entryId' => $entryId,
 			'draft'   => true,
 			'num'     => $draftNum
@@ -877,7 +877,7 @@ class ContentService extends \CApplicationComponent
 			->order('num DESC')
 			->queryRow();
 
-		return EntryVersion::model()->populateRecord($draft);
+		return EntryVersionRecord::model()->populateRecord($draft);
 	}
 
 	/**

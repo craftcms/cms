@@ -19,7 +19,7 @@ class SystemSettingsService extends \CApplicationComponent
 	{
 		if (!isset($this->_settings[$category]))
 		{
-			$settings = SystemSettings::model()->findByAttributes(array(
+			$settings = SystemSettingsRecord::model()->findByAttributes(array(
 				'category' => $category
 			));
 
@@ -66,7 +66,7 @@ class SystemSettingsService extends \CApplicationComponent
 				return true;
 
 			// Create a new SystemSettings record, and save a reference to it
-			$record = new SystemSettings();
+			$record = new SystemSettingsRecord();
 			$record->category = $category;
 			$this->_settings[$category] = $record;
 		}

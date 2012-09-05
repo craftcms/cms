@@ -44,7 +44,7 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getWidgetById($widgetId)
 	{
-		$record = Widget::model()->findByAttributes(array(
+		$record = WidgetRecord::model()->findByAttributes(array(
 			'id' => $widgetId,
 			'userId' => blx()->accounts->getCurrentUser()->id
 		));
@@ -70,7 +70,7 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getUserWidgets()
 	{
-		$records = Widget::model()->findAllByAttributes(array(
+		$records = WidgetRecord::model()->findAllByAttributes(array(
 			'userId' => blx()->accounts->getCurrentUser()->id
 		), array(
 			'order' => 'sortOrder'
@@ -106,7 +106,7 @@ class DashboardService extends \CApplicationComponent
 		$widgets = array('RecentActivity', 'Feed');
 		foreach ($widgets as $i => $widgetClass)
 		{
-			$widget = new Widget();
+			$widget = new WidgetRecord();
 			$widget->userId = $userId;
 			$widget->class = $widgetClass;
 			$widget->sortOrder = ($i + 1);
@@ -145,14 +145,14 @@ class DashboardService extends \CApplicationComponent
 			{
 				$widgetData = $settings[$widgetId];
 
-				$widget = new Widget();
+				$widget = new WidgetRecord();
 				$isNewWidget = true;
 
 				if (strncmp($widgetId, 'new', 3) != 0)
 					$widget = $this->getWidgetById($widgetId);
 
 				if (empty($widget))
-					$widget = new Widget();
+					$widget = new WidgetRecord();
 
 				$widget->userId = $user->id;
 				$widget->class = $widgetData['class'];

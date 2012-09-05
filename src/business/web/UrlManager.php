@@ -76,7 +76,7 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$entry = Entry::model()->findByAttributes(array(
+		$entry = EntryRecord::model()->findByAttributes(array(
 			'uri' => blx()->request->getPath(),
 		));
 

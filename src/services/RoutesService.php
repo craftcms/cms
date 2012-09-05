@@ -11,7 +11,7 @@ class RoutesService extends \CApplicationComponent
 	 */
 	public function getAllRoutes()
 	{
-		return Route::model()->ordered()->findAll();
+		return RouteRecord::model()->ordered()->findAll();
 	}
 
 	/**
@@ -21,7 +21,7 @@ class RoutesService extends \CApplicationComponent
 	 */
 	public function getRouteById($routeId)
 	{
-		$route = Route::model()->findById($routeId);
+		$route = RouteRecord::model()->findById($routeId);
 		return $route;
 	}
 
@@ -48,7 +48,7 @@ class RoutesService extends \CApplicationComponent
 		}
 		else
 		{
-			$route = new Route();
+			$route = new RouteRecord();
 
 			// Get the next biggest sort order
 			$maxSortOrder = blx()->db->createCommand()

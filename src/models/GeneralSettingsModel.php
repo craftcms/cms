@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Validates the required User attributes for the installer.
  */
-class GeneralSettingsForm extends BaseForm
+class GeneralSettingsModel extends BaseModel
 {
 	protected function getProperties()
 	{

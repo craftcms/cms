@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EntryContent extends BaseModel
+class EntryContentRecord extends BaseRecord
 {
 	protected $section;
 
@@ -53,7 +53,7 @@ class EntryContent extends BaseModel
 	protected function getRelations()
 	{
 		return array(
-			'entry' => array(static::BELONGS_TO, 'Entry', 'required' => true),
+			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
 		);
 	}
 

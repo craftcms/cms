@@ -194,7 +194,7 @@ class UpdatesService extends \CApplicationComponent
 	 */
 	public function setNewBlocksInfo($version, $build, $releaseDate)
 	{
-		$info = Info::model()->find();
+		$info = InfoRecord::model()->find();
 		$info->version = $version;
 		$info->build = $build;
 		$info->releaseDate = $releaseDate;

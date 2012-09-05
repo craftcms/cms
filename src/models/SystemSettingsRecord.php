@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SystemSettings extends BaseModel
+class SystemSettingsRecord extends BaseRecord
 {
 	public function getTableName()
 	{

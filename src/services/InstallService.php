@@ -81,7 +81,7 @@ class InstallService extends \CApplicationComponent
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 
 			// Populate the info table
-			$info = new Info();
+			$info = new InfoRecord();
 			$info->version = Blocks::getVersion();
 			$info->build = Blocks::getBuild();
 			$info->releaseDate = Blocks::getReleaseDate();
@@ -115,7 +115,7 @@ class InstallService extends \CApplicationComponent
 			/* end BLOCKSPRO ONLY */
 
 			// Add the user
-			$user = new User();
+			$user = new UserRecord();
 			$user->username   = $inputs['username'];
 			$user->email      = $inputs['email'];
 			$user->admin = true;
@@ -126,7 +126,7 @@ class InstallService extends \CApplicationComponent
 			$user->save();
 
 			// Log them in
-			$loginForm = new LoginForm();
+			$loginForm = new LoginModel();
 			$loginForm->username = $user->username;
 			$loginForm->password = $inputs['password'];
 			$loginForm->login();

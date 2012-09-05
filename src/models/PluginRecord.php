@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Plugin extends BaseModel
+class PluginRecord extends BaseRecord
 {
 	public function getTableName()
 	{

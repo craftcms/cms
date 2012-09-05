@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Route extends BaseModel
+class RouteRecord extends BaseRecord
 {
 	public function getTableName()
 	{

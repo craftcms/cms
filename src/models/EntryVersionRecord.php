@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EntryVersion extends BaseModel
+class EntryVersionRecord extends BaseRecord
 {
 	public function getTableName()
 	{
@@ -26,7 +26,7 @@ class EntryVersion extends BaseModel
 	protected function getRelations()
 	{
 		return array(
-			'entry'  => array(static::BELONGS_TO, 'Entry', 'required' => true),
+			'entry'  => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
 			'author' => array(static::BELONGS_TO, 'User', 'required' => true)
 		);
 	}

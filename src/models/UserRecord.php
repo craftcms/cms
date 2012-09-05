@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class User extends BaseModel
+class UserRecord extends BaseRecord
 {
 	public function getTableName()
 	{
@@ -47,8 +47,8 @@ class User extends BaseModel
 	{
 		return array(
 			/* BLOCKSPRO ONLY */
-			'blocks'  => array(static::HAS_MANY, 'UserBlock', 'userId'),
-			'content' => array(static::HAS_ONE, 'UserContent', 'userId'),
+			'blocks'  => array(static::HAS_MANY, 'UserBlockRecord', 'userId'),
+			'content' => array(static::HAS_ONE, 'UserContentRecord', 'userId'),
 			/* end BLOCKSPRO ONLY */
 			'widgets' => array(static::HAS_MANY, 'Widget', 'userId'),
 		);
