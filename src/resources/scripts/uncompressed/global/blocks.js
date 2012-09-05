@@ -575,41 +575,6 @@ blx.getInputPostVal = function($input)
 		return val;
 };
 
-/**
- * Dispays a notification.
- *
- * @param string type
- * @param string message
- */
-blx.displayNotification = function(type, message)
-{
-	$('<div class="notification '+type+'">'+message+'</div>')
-		.appendTo($notificationContainer)
-		.fadeIn('fast')
-		.delay(notificationDuration)
-		.fadeOut();
-};
-
-/**
- * Displays a notice.
- *
- * @param string message
- */
-blx.displayNotice = function(message)
-{
-	blx.displayNotification('notice', message);
-};
-
-/**
- * Displays an error.
- *
- * @param string message
- */
-blx.displayError = function(message)
-{
-	blx.displayNotification('error', message);
-};
-
 
 
 /**

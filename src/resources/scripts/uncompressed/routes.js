@@ -47,9 +47,9 @@ var Routes = blx.Base.extend({
 
 		$.post(blx.actionUrl+'routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
 			if (response.success)
-				blx.displayNotice(blx.t('New route order saved.'));
+				blx.cp.displayNotice(blx.t('New route order saved.'));
 			else
-				blx.displayError(blx.t('Couldn’t save new route order.'));
+				blx.cp.displayError(blx.t('Couldn’t save new route order.'));
 		}, this));
 	},
 
@@ -334,10 +334,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 				this.route.updateHtmlFromModal();
 				this.hide();
 
-				blx.displayNotice(blx.t('Route saved.'));
+				blx.cp.displayNotice(blx.t('Route saved.'));
 			}
 			else
-				blx.displayError(blx.t('Couldn’t save route.'));
+				blx.cp.displayError(blx.t('Couldn’t save route.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
@@ -359,7 +359,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		if (confirm(blx.t(('Are you sure you want to delete this route?'))))
 		{
 			$.post(blx.actionUrl+'routes/deleteRoute', { routeId: this.route.id }, function() {
-				blx.displayNotice(blx.t('Route deleted.'))
+				blx.cp.displayNotice(blx.t('Route deleted.'))
 			});
 
 			this.route.$container.remove();

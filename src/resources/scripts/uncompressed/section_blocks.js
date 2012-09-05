@@ -24,9 +24,9 @@ var sorter = new blx.ui.DataTableSorter($table, {
 
 		$.post(blx.actionUrl+'content/reorderEntryBlocks', data, function(response) {
 			if (response.success)
-				blx.displayNotice(blx.t('New block order saved.'));
+				blx.cp.displayNotice(blx.t('New block order saved.'));
 			else
-				blx.displayError(blx.t('Couldn’t save new block order.'));
+				blx.cp.displayError(blx.t('Couldn’t save new block order.'));
 		});
 	}
 });
@@ -54,10 +54,10 @@ $table.find('.deletebtn').click(function() {
 					$('#noblocks').show();
 				}
 
-				blx.displayNotice(blx.t('Entry block deleted.'));
+				blx.cp.displayNotice(blx.t('Entry block deleted.'));
 			}
 			else
-				blx.displayError(blx.t('Couldn’t delete entry block.'));
+				blx.cp.displayError(blx.t('Couldn’t delete entry block.'));
 		});
 	}
 });

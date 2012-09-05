@@ -27,10 +27,10 @@ $table.find('.deletebtn').click(function() {
 					$('#nosections').show();
 				}
 
-				blx.displayNotice(blx.t('Section deleted.'));
+				blx.cp.displayNotice(blx.t('Section deleted.'));
 			}
 			else
-				blx.displayError(blx.t('Couldn’t delete section.'));
+				blx.cp.displayError(blx.t('Couldn’t delete section.'));
 		});
 	}
 });
