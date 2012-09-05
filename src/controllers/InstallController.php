@@ -54,7 +54,7 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$licenseKey = new InstallLicenseKeyModel();
+		$licenseKey = new LicenseKeyModel();
 		$licenseKey->licensekey = blx()->request->getPost('licensekey');
 
 		if ($licenseKey->validate())
@@ -75,15 +75,15 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$user = new InstallUserModel();
-		$user->username = blx()->request->getPost('username');
-		$user->email = blx()->request->getPost('email');
-		$user->password = blx()->request->getPost('password');
+		$accountSettings = new AccountSettingsModel();
+		$accountSettings->username = blx()->request->getPost('username');
+		$accountSettings->email = blx()->request->getPost('email');
+		$accountSettings->password = blx()->request->getPost('password');
 
-		if ($user->validate())
+		if ($accountSettings->validate())
 			$return['validates'] = true;
 		else
-			$return['errors'] = $user->getErrors();
+			$return['errors'] = $accountSettings->getErrors();
 
 		$this->returnJson($return);
 	}
@@ -96,14 +96,14 @@ class InstallController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$site = new InstallSiteModel();
-		$site->siteName = blx()->request->getPost('siteName');
-		$site->siteUrl = blx()->request->getPost('siteUrl');
+		$siteSettings = new SiteSettingsModel();
+		$siteSettings->siteName = blx()->request->getPost('siteName');
+		$siteSettings->siteUrl = blx()->request->getPost('siteUrl');
 
-		if ($site->validate())
+		if ($siteSettings->validate())
 			$return['validates'] = true;
 		else
-			$return['errors'] = $site->getErrors();
+			$return['errors'] = $siteSettings->getErrors();
 
 		$this->returnJson($return);
 	}

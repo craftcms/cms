@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Forgot Password model
+ * Username model
  */
-class ForgotPasswordModel extends BaseModel
+class UsernameModel extends BaseModel
 {
 	protected function getProperties()
 	{

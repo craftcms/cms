@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Validates the required Site attributes for the installer.
  */
-class InstallSiteModel extends BaseModel
+class SiteSettingsModel extends BaseModel
 {
 	protected function getProperties()
 	{

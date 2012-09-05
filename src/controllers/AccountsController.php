@@ -16,12 +16,12 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$forgotPasswordModel = new ForgotPasswordModel();
-		$forgotPasswordModel->username = blx()->request->getPost('username');
+		$username = new UsernameModel();
+		$username->username = blx()->request->getPost('username');
 
-		if ($forgotPasswordModel->validate())
+		if ($username->validate())
 		{
-			$user = blx()->accounts->getUserByUsernameOrEmail($forgotPasswordModel->username);
+			$user = blx()->accounts->getUserByUsernameOrEmail($username->username);
 			if ($user)
 			{
 				// Generate a new verification code
