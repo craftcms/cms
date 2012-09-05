@@ -66,8 +66,6 @@ class InstallService extends \CApplicationComponent
 			// Tell @@@productDisplay@@@ that it's installed now
 			blx()->setIsInstalled(true);
 
-			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
-
 			/* BLOCKS ONLY */
 			// Generate a license key
 			$licenseKey = strtoupper(sprintf('%04x-%04x-%04x-%04x-%04x-%04x',
@@ -79,6 +77,8 @@ class InstallService extends \CApplicationComponent
 				mt_rand(0, 0xffff)
 			));
 			/* end BLOCKS ONLY */
+
+			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 
 			// Populate the info table
 			$info = new Info();
@@ -95,24 +95,23 @@ class InstallService extends \CApplicationComponent
 			$info->licenseKey = $inputs['licensekey'];
 			/* end BLOCKSPRO ONLY */
 			$info->on = true;
+
 			$info->save();
 
+			// Something bad happened (probably a validation error)
+			if ($info->hasErrors())
+			{
+				$errors = $info->getErrors();
+				$errorMessages = implode('.  ', $errors);
+				throw new Exception(Blocks::t('There was a problem saving to the info table: {errorMessages}', array('errorMessages' => $errorMessages)));
+			}
+
 			/* BLOCKSPRO ONLY */
-			// Register the email messages
-			$message = blx()->email->registerMessage('verify_email');
-			blx()->email->saveMessageContent($message->id,
-				Blocks::t('verify_email_subject'),
-				Blocks::t('verify_email_body'));
+			Blocks::log('Registering email messages.', \CLogger::LEVEL_INFO);
 
-			$message = blx()->email->registerMessage('verify_new_email');
-			blx()->email->saveMessageContent($message->id,
-				Blocks::t('verify_new_email_subject'),
-				Blocks::t('verify_new_email_body'));
-
-			$message = blx()->email->registerMessage('forgot_password');
-			blx()->email->saveMessageContent($message->id,
-				Blocks::t('forgot_password_subject'),
-				Blocks::t('forgot_password_body'));
+			$this->_registerEmailMessage('verify_email', Blocks::t('verify_email_subject'), Blocks::t('verify_email_body'));
+			$this->_registerEmailMessage('verify_new_email', Blocks::t('verify_new_email_subject'), Blocks::t('verify_new_email_body'));
+			$this->_registerEmailMessage('forgot_password', Blocks::t('forgot_password_subject'), Blocks::t('forgot_password_body'));
 			/* end BLOCKSPRO ONLY */
 
 			// Add the user
@@ -180,6 +179,38 @@ class InstallService extends \CApplicationComponent
 		{
 			$transaction->rollBack();
 			throw $e;
+		}
+	}
+
+	/**
+	 * @param $messageKey
+	 * @param $subjectKey
+	 * @param $bodyKey
+	 */
+	private function _registerEmailMessage($messageKey, $subjectKey, $bodyKey)
+	{
+		// Register the email messages
+		$message = blx()->email->registerMessage($messageKey);
+
+		if (!$message->hasErrors())
+		{
+			// Save the message content.
+			$content = blx()->email->saveMessageContent($message->id, $subjectKey, $bodyKey);
+
+			// Problem saving content.
+			if ($content->hasErrors())
+			{
+				$errors = $content->getErrors();
+				$errorMessages = implode('.  ', $errors);
+				Blocks::log('There was a problem saving email message content: '.$errorMessages, \CLogger::LEVEL_WARNING);
+			}
+		}
+		else
+		{
+			// Problem registering email.
+			$errors = $message->getErrors();
+			$errorMessages = implode('.  ', $errors);
+			Blocks::log('There was a problem registering email with key '.$messageKey.' : '.$errorMessages, \CLogger::LEVEL_WARNING);
 		}
 	}
 }
