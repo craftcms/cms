@@ -153,11 +153,11 @@ class UserSessionService extends \CWebUser
 	 * @param $username
 	 * @param $password
 	 * @param bool $rememberMe
-	 * @return LoginForm
+	 * @return LoginModel
 	 */
 	public function startLogin($username, $password, $rememberMe = false)
 	{
-		$loginForm = new LoginForm();
+		$loginForm = new LoginModel();
 		$loginForm->username = $username;
 		$loginForm->password = $password;
 		$loginForm->rememberMe = $rememberMe;

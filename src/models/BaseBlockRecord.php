@@ -2,11 +2,11 @@
 namespace Blocks;
 
 /**
- * Block model base class
+ * Block record base class
  *
  * @abstract
  */
-abstract class BaseBlockModel extends BaseModel
+abstract class BaseBlockRecord extends BaseRecord
 {
 	/**
 	 * @return array

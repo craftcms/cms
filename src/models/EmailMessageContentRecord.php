@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EmailMessageContent extends BaseModel
+class EmailMessageContentRecord extends BaseRecord
 {
 	public function getTableName()
 	{
@@ -24,7 +24,7 @@ class EmailMessageContent extends BaseModel
 	protected function getRelations()
 	{
 		return array(
-			'message' => array(static::BELONGS_TO, 'EmailMessage'),
+			'message' => array(static::BELONGS_TO, 'EmailMessageRecord'),
 		);
 	}
 

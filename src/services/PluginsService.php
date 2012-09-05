@@ -41,7 +41,7 @@ class PluginsService extends \CApplicationComponent
 	 */
 	public function init()
 	{
-		$records = Plugin::model()->findAllByAttributes(array(
+		$records = PluginRecord::model()->findAllByAttributes(array(
 			'enabled' => true
 		));
 
@@ -167,7 +167,7 @@ class PluginsService extends \CApplicationComponent
 			uasort($this->_allPlugins, array($this, '_comparePluginNames'));
 
 			// Now figure out which of these are installed
-			$records = Plugin::model()->findAll();
+			$records = PluginRecord::model()->findAll();
 
 			foreach ($records as $record)
 			{
@@ -263,7 +263,7 @@ class PluginsService extends \CApplicationComponent
 		if ($plugin->getIsInstalled())
 			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->name)));
 
-		$record = new Plugin();
+		$record = new PluginRecord();
 		$record->class = $plugin->getClassHandle();
 		$record->version = $plugin->version;
 		$record->enabled = true;

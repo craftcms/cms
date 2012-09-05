@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EntryBlock extends BaseBlockModel
+class EntryBlockRecord extends BaseBlockRecord
 {
 	public function getTableName()
 	{
@@ -14,7 +14,7 @@ class EntryBlock extends BaseBlockModel
 	protected function getRelations()
 	{
 		return array(
-			'section' => array(static::BELONGS_TO, 'Section', 'required' => true),
+			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
 		);
 	}
 

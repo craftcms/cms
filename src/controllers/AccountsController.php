@@ -16,12 +16,12 @@ class AccountsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$forgotPasswordForm = new ForgotPasswordForm();
-		$forgotPasswordForm->username = blx()->request->getPost('username');
+		$forgotPasswordModel = new ForgotPasswordModel();
+		$forgotPasswordModel->username = blx()->request->getPost('username');
 
-		if ($forgotPasswordForm->validate())
+		if ($forgotPasswordModel->validate())
 		{
-			$user = blx()->accounts->getUserByUsernameOrEmail($forgotPasswordForm->username);
+			$user = blx()->accounts->getUserByUsernameOrEmail($forgotPasswordModel->username);
 			if ($user)
 			{
 				// Generate a new verification code
@@ -49,7 +49,7 @@ class AccountsController extends BaseController
 		$verificationCode = blx()->request->getRequiredPost('verificationCode');
 		$password = blx()->request->getRequiredPost('password');
 
-		$passwordForm = new PasswordForm();
+		$passwordForm = new PasswordModel();
 		$passwordForm->password = $password;
 
 		if ($passwordForm->validate())
@@ -105,7 +105,7 @@ class AccountsController extends BaseController
 				$this->_noUserExists($userId);
 		}
 		else
-			$user = new User();
+			$user = new UserRecord();
 
 		$isNewUser = $user->getIsNewRecord();
 
@@ -125,7 +125,7 @@ class AccountsController extends BaseController
 			if ($password)
 			{
 				// Make sure the passwords match and are at least the minimum length
-				$passwordForm = new PasswordForm();
+				$passwordForm = new PasswordModel();
 				$passwordForm->password = $password;
 
 				$passwordValidates = $passwordForm->validate();

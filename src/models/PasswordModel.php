@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PasswordForm extends BaseForm
+class PasswordModel extends BaseModel
 {
 	protected function getProperties()
 	{

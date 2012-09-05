@@ -44,7 +44,7 @@ class AccountsService extends \CApplicationComponent
 			$query->limit($params['limit']);
 
 		$result = $query->queryAll();
-		return User::model()->populateRecords($result);
+		return UserRecord::model()->populateRecords($result);
 	}
 
 	/**
@@ -131,7 +131,7 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function getUserById($id)
 	{
-		return User::model()->findById($id);
+		return UserRecord::model()->findById($id);
 	}
 
 	/**
@@ -142,7 +142,7 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function getUserByUsernameOrEmail($usernameOrEmail)
 	{
-		return User::model()->find(array(
+		return UserRecord::model()->find(array(
 			'condition' => 'username=:usernameOrEmail OR email=:usernameOrEmail',
 			'params' => array(':usernameOrEmail' => $usernameOrEmail),
 		));
@@ -159,7 +159,7 @@ class AccountsService extends \CApplicationComponent
 		if (!$code)
 			return null;
 
-		return User::model()->findByAttributes(array(
+		return UserRecord::model()->findByAttributes(array(
 			'verificationCode' => $code,
 		));
 	}
@@ -198,7 +198,7 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function isUserNameInUse($username)
 	{
-		return User::model()->exists(array(
+		return UserRecord::model()->exists(array(
 			'username=:username',
 			array(':username' => $username),
 		));
@@ -212,7 +212,7 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function isEmailInUse($email)
 	{
-		return User::model()->exists(array(
+		return UserRecord::model()->exists(array(
 			'email=:email',
 			array(':email' => $email),
 		));
@@ -221,10 +221,10 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Generates a new verification code for a user.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @param bool $save
 	 */
-	public function generateVerificationCode(User $user, $save = true)
+	public function generateVerificationCode(UserRecord $user, $save = true)
 	{
 		$verificationCode = StringHelper::UUID();
 		$issuedDate = new DateTime();
@@ -242,9 +242,9 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Activates a user, bypassing email verification.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	public function activateUser(User $user)
+	public function activateUser(UserRecord $user)
 	{
 		$user->status = UserAccountStatus::Active;
 		$user->verificationCode = null;
@@ -256,9 +256,9 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Unlocks a user, bypassing the cooldown phase.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	public function unlockUser(User $user)
+	public function unlockUser(UserRecord $user)
 	{
 		$user->status = UserAccountStatus::Active;
 		$user->failedPasswordAttemptCount = null;
@@ -270,9 +270,9 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Suspends a user.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	public function suspendUser(User $user)
+	public function suspendUser(UserRecord $user)
 	{
 		$user->status = UserAccountStatus::Suspended;
 		$user->save();
@@ -281,9 +281,9 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Unsuspends a user.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	public function unsuspendUser(User $user)
+	public function unsuspendUser(UserRecord $user)
 	{
 		$user->status = UserAccountStatus::Active;
 		$user->save();
@@ -292,12 +292,12 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Changes a user's password.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @param string $newPassword
 	 * @param bool $save
 	 * @return bool
 	 */
-	public function changePassword(User $user, $newPassword, $save = true)
+	public function changePassword(UserRecord $user, $newPassword, $save = true)
 	{
 		$hashAndType = blx()->security->hashPassword($newPassword);
 		$user->password = $hashAndType['hash'];
@@ -313,10 +313,10 @@ class AccountsService extends \CApplicationComponent
 	}
 
 	/**
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @return bool
 	 */
-	public function forgotPassword(User $user)
+	public function forgotPassword(UserRecord $user)
 	{
 		$user = $this->generateVerificationCode($user);
 		return blx()->email->sendEmailByKey($user, 'forgot_password');
@@ -325,10 +325,10 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Returns the remaining cooldown time for a user.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @return int
 	 */
-	public function getRemainingCooldownTime(User $user)
+	public function getRemainingCooldownTime(UserRecord $user)
 	{
 		$cooldownEnd = $user->lastLoginFailedDate + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown);
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
@@ -342,9 +342,9 @@ class AccountsService extends \CApplicationComponent
 	/**
 	 * Deletes a user.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	public function deleteUser(User $user)
+	public function deleteUser(UserRecord $user)
 	{
 		$user->archivedUsername = $user->username;
 		$user->archivedEmail = $user->email;

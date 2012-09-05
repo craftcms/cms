@@ -21,7 +21,7 @@ class SettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$generalSettingsForm = new GeneralSettingsForm();
+		$generalSettingsForm = new GeneralSettingsModel();
 		$generalSettingsForm->siteName = blx()->request->getPost('siteName');
 		$generalSettingsForm->siteUrl = blx()->request->getPost('siteUrl');
 		/* BLOCKSPRO ONLY */
@@ -30,7 +30,7 @@ class SettingsController extends BaseController
 
 		if ($generalSettingsForm->validate())
 		{
-			$info = Info::model()->find();
+			$info = InfoRecord::model()->find();
 			$info->siteName = $generalSettingsForm->siteName;
 			$info->siteUrl = $generalSettingsForm->siteUrl;
 			/* BLOCKSPRO ONLY */
@@ -55,7 +55,7 @@ class SettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$emailSettings = new EmailSettingsForm();
+		$emailSettings = new EmailSettingsModel();
 		$gMailSmtp = 'smtp.gmail.com';
 
 		$emailSettings->protocol                    = blx()->request->getPost('protocol');

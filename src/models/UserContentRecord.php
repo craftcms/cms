@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UserContent extends BaseModel
+class UserContentRecord extends BaseRecord
 {
 	public function getTableName()
 	{

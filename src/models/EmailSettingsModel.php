@@ -2,10 +2,10 @@
 namespace Blocks;
 
 /**
- * EmailSettingsForm class.
+ * EmailSettingsModel class.
  * It is used by the 'saveEmail' action of 'settingsController'.
  */
-class EmailSettingsForm extends \CFormModel
+class EmailSettingsModel extends \CFormModel
 {
 	public $protocol;
 	public $host;

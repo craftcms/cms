@@ -18,7 +18,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getAllMessages()
 	{
-		$messages = EmailMessage::model()->findAll();
+		$messages = EmailMessageRecord::model()->findAll();
 		return $messages;
 	}
 
@@ -30,7 +30,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getMessageById($messageId)
 	{
-		$message = EmailMessage::model()->findById($messageId);
+		$message = EmailMessageRecord::model()->findById($messageId);
 		return $message;
 	}
 
@@ -42,7 +42,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getMessageByKey($key)
 	{
-		$message = EmailMessage::model()->findByAttributes(array(
+		$message = EmailMessageRecord::model()->findByAttributes(array(
 			'key' => $key
 		));
 		return $message;
@@ -56,7 +56,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function registerMessage($key)
 	{
-		$message = new EmailMessage();
+		$message = new EmailMessageRecord();
 		$message->key = $key;
 		$message->save();
 		return $message;
@@ -74,14 +74,14 @@ class EmailService extends \CApplicationComponent
 		if (!$language)
 			$language = blx()->language;
 
-		$content = EmailMessageContent::model()->findByAttributes(array(
+		$content = EmailMessageContentRecord::model()->findByAttributes(array(
 			'messageId' => $messageId,
 			'language' => $language
 		));
 
 		if (!$content)
 		{
-			$content = new EmailMessageContent();
+			$content = new EmailMessageContentRecord();
 			$content->messageId = $messageId;
 			$content->language = ($language ? $language : blx()->language);
 		}
@@ -117,7 +117,7 @@ class EmailService extends \CApplicationComponent
 	/**
 	 * Sends an email.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @param string $subject
 	 * @param string $body
 	 * @param string $htmlBody
@@ -125,7 +125,7 @@ class EmailService extends \CApplicationComponent
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmail(User $user, $subject, $body, $htmlBody = null, $variables = array())
+	public function sendEmail(UserRecord $user, $subject, $body, $htmlBody = null, $variables = array())
 	{
 		// Get the saved email settings.
 		$emailSettings = $this->getSettings();
@@ -211,13 +211,13 @@ class EmailService extends \CApplicationComponent
 	/**
 	 * Sends an email by its key.
 	 *
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @param string $key
 	 * @param array $variables
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmailByKey(User $user, $key, $variables = array())
+	public function sendEmailByKey(UserRecord $user, $key, $variables = array())
 	{
 		/* BLOCKS ONLY */
 

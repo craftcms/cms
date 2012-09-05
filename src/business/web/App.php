@@ -77,7 +77,6 @@ class App extends \CWebApplication
 				'app.controllers.*',
 				'app.migrations.*',
 				'app.models.*',
-				'app.models.forms.*',
 				'app.services.*',
 				'app.variables.*',
 				'app.widgets.*',

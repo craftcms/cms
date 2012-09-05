@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Validates the required User attributes for the installer.
  */
-class InstallUserForm extends BaseForm
+class InstallUserModel extends BaseModel
 {
 	protected function getProperties()
 	{

@@ -34,9 +34,9 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	private function _processUserStatus(User $user)
+	private function _processUserStatus(UserRecord $user)
 	{
 		switch ($user->status)
 		{
@@ -112,10 +112,10 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @throws Exception
 	 */
-	private function _processSuccessfulLogin(User $user)
+	private function _processSuccessfulLogin(UserRecord $user)
 	{
 		$this->_id = $user->id;
 		$this->username = $user->username;
@@ -143,9 +143,9 @@ class UserIdentity extends \CUserIdentity
 	}
 
 	/**
-	 * @param User $user
+	 * @param UserRecord $user
 	 */
-	private function _processBadPassword(User $user)
+	private function _processBadPassword(UserRecord $user)
 	{
 		$this->errorCode = static::ERROR_PASSWORD_INVALID;
 		$user->lastLoginFailedDate = DateTimeHelper::currentTime();
@@ -200,10 +200,10 @@ class UserIdentity extends \CUserIdentity
 
 
 	/**
-	 * @param User $user
+	 * @param UserRecord $user
 	 * @return bool
 	 */
-	private function _isUserInsideFailWindow(User $user)
+	private function _isUserInsideFailWindow(UserRecord $user)
 	{
 		$result = false;
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class Widget extends BaseModel
+class WidgetRecord extends BaseRecord
 {
 	public function getTableName()
 	{
@@ -24,7 +24,7 @@ class Widget extends BaseModel
 	{
 		return array(
 			'user'   => array(static::BELONGS_TO, 'User', 'userId', 'required' => true),
-			'plugin' => array(static::BELONGS_TO, 'Plugin', 'pluginId'),
+			'plugin' => array(static::BELONGS_TO, 'PluginRecord', 'pluginId'),
 		);
 	}
 }
