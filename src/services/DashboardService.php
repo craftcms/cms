@@ -96,11 +96,15 @@ class DashboardService extends \CApplicationComponent
 	 * Assign the default widgets to a user.
 	 *
 	 * @param int $userId
+	 * @throws Exception
+	 * @return bool
 	 */
-	public function assignDefaultUserWidgets($userId = null)
+	public function assignDefaultUserWidgets($userId)
 	{
-		if ($userId === null)
-			$userId = 1;
+		if (!$userId)
+			throw new Exception(Blocks::t('Missing userID in {methodName}', array('methodName' => __METHOD__)));
+
+		$success = true;
 
 		// Add the default dashboard widgets
 		$widgets = array('RecentActivity', 'Feed');
@@ -111,7 +115,17 @@ class DashboardService extends \CApplicationComponent
 			$widget->class = $widgetClass;
 			$widget->sortOrder = ($i + 1);
 			$widget->save();
+
+			if ($widget->hasErrors())
+			{
+				$success = false;
+				$errors = $widget->getErrors();
+				$errorMessages = implode('.  ', $errors);
+				Blocks::log('There was a problem assigning the widget “{widgetClass}” to userID “{userId}”: {errorMessages}', array('widgetClass' => $widgetClass, 'userId' => $userId, 'errorMessages' => $errorMessages), \CLogger::LEVEL_ERROR);
+			}
 		}
+
+		return $success;
 	}
 
 	/**
