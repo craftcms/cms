@@ -68,7 +68,7 @@
 			checked: block.required
 		}) }}
 
-		{% if blx.settings.languages %}
+		{% if blx.systemSettings.languages %}
 			{{ forms.checkboxField({
 				label: "This entry block is translatable"|t,
 				name: 'translatable',

@@ -74,8 +74,8 @@ return CMap::mergeArray(
 				'class' => 'Blocks\SecurityService',
 			),
 
-			'settings' => array(
-				'class' => 'Blocks\SettingsService',
+			'systemSettings' => array(
+				'class' => 'Blocks\SystemSettingsService',
 			),
 
 			'updates' => array(

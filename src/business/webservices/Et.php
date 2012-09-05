@@ -72,7 +72,7 @@ class Et extends \CApplicationComponent
 		$this->_endpoint = $endPoint;
 		$this->_timeout = $timeout;
 
-		$generalSettings = blx()->settings->getSystemSettings('general');
+		$generalSettings = blx()->systemSettings->getSettings('general');
 
 		$this->_package = new EtPackage();
 		$this->_package->url = Blocks::getSiteUrl();

@@ -7,7 +7,7 @@
 
 <h1>{{ "Edit Message"|t }}</h1>
 
-{% set languages = blx.settings.languages %}
+{% set languages = blx.systemSettings.languages %}
 {% if languages|length %}
 	<div class="select language">
 		<select>
