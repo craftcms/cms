@@ -16,8 +16,9 @@ abstract class BaseBlock extends BaseComponent
 	 *
 	 * @return string
 	 */
-	public function getColumnType()
+	public function getColumn()
 	{
+		// Default to a text column
 		return PropertyType::Text;
 	}
 

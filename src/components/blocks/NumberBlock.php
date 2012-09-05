@@ -32,7 +32,7 @@ class NumberBlock extends BaseBlock
 	/**
 	 * @return null|string
 	 */
-	public function getColumnType()
+	public function getColumn()
 	{
 		return array(PropertyType::Number,
 			'min'      => $this->settings['min'],

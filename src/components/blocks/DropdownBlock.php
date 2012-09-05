@@ -22,7 +22,7 @@ class DropdownBlock extends BaseOptionsBlock
 	 *
 	 * @return string
 	 */
-	public function getColumnType()
+	public function getColumn()
 	{
 		return PropertyType::Varchar;
 	}

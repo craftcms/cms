@@ -403,7 +403,7 @@ class ContentService extends \CApplicationComponent
 
 				$block = blx()->blocks->getBlockByClass($record->class);
 				$block->setSettings($record->blockSettings);
-				$columnType = DbHelper::generateColumnDefinition($block->getColumnType());
+				$columnType = DbHelper::generateColumnDefinition($block->getColumn());
 
 				if ($isNewRecord)
 				{
@@ -498,7 +498,7 @@ class ContentService extends \CApplicationComponent
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */
-				$columnType = DbHelper::generateColumnDefinition($block->getColumnType());
+				$columnType = DbHelper::generateColumnDefinition($block->getColumn());
 				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $columnType, null, $lastColumn);
 				$lastColumn = $record->handle;
 			}

@@ -29,12 +29,10 @@ abstract class BaseComponent extends \CApplicationComponent
 	/**
 	 * Returns the type of... whatever it is.
 	 *
+	 * @abstract
 	 * @return string
 	 */
-	public function getType()
-	{
-		return '';
-	}
+	abstract public function getType();
 
 	/**
 	 * Use the component's type as its string representation.

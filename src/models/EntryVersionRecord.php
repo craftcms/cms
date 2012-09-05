@@ -27,7 +27,7 @@ class EntryVersionRecord extends BaseRecord
 	{
 		return array(
 			'entry'  => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
-			'author' => array(static::BELONGS_TO, 'User', 'required' => true)
+			'author' => array(static::BELONGS_TO, 'UserRecord', 'required' => true)
 		);
 	}
 

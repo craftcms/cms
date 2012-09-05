@@ -34,7 +34,7 @@ class EntryRecord extends BaseRecord
 		return array(
 			'parent'   => array(static::BELONGS_TO, 'EntryRecord'),
 			'section'  => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
-			'author'   => array(static::BELONGS_TO, 'User', 'required' => true),
+			'author'   => array(static::BELONGS_TO, 'UserRecord', 'required' => true),
 			'versions' => array(static::HAS_MANY, 'EntryVersionRecord', 'entryId'),
 			'children' => array(static::HAS_MANY, 'EntryRecord', 'parentId'),
 		);
