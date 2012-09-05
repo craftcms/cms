@@ -39,11 +39,11 @@ class DateVariable
 	}
 
 	/**
-	 * @param $dateString
+	 * @param $dateTime
 	 * @return string
 	 */
-	public function nice($dateString)
+	public function nice(DateTime $dateTime)
 	{
-		return DateTimeHelper::nice($dateString);
+		return DateTimeHelper::nice($dateTime->getTimestamp());
 	}
 }
