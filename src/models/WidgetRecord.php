@@ -23,7 +23,7 @@ class WidgetRecord extends BaseRecord
 	protected function getRelations()
 	{
 		return array(
-			'user'   => array(static::BELONGS_TO, 'User', 'userId', 'required' => true),
+			'user'   => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true),
 			'plugin' => array(static::BELONGS_TO, 'PluginRecord', 'pluginId'),
 		);
 	}
