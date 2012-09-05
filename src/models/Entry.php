@@ -122,8 +122,7 @@ class Entry extends BaseModel
 	{
 		if ($this->publish_date)
 		{
-			$dt = new DateTime('@'.$this->publish_date);
-			return $dt;
+			return $this->publish_date;
 		}
 		else
 			return null;

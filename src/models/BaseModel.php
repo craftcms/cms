@@ -69,7 +69,10 @@ abstract class BaseModel extends \CActiveRecord
 				$this->$name = LocalizationHelper::normalizeNumber($this->$name);
 
 			if ($type == PropertyType::UnixTimeStamp)
-				$this->$name = LocalizationHelper::normalizeDateTime($this->$name);
+			{
+				if (gettype($this->$name) === gettype(new DateTime()))
+					$this->$name = LocalizationHelper::normalizeDateTime($this->$name);
+			}
 		}
 	}
 
