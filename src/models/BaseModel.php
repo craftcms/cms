@@ -13,12 +13,10 @@ abstract class BaseModel extends \CModel
 	/**
 	 * Returns a list of this model's properties.
 	 *
+	 * @abstract
 	 * @return array
 	 */
-	protected function getProperties()
-	{
-		return array();
-	}
+	abstract protected function getProperties();
 
 	/**
 	 * Isset?
