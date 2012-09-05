@@ -27,11 +27,11 @@ class ContentController extends BaseController
 
 		$sectionId = blx()->request->getPost('sectionId');
 
-		$settings['name']       = blx()->request->getPost('name');
-		$settings['handle']     = blx()->request->getPost('handle');
-		$settings['has_urls']   = blx()->request->getPost('has_urls');
-		$settings['url_format'] = blx()->request->getPost('url_format');
-		$settings['template']   = blx()->request->getPost('template');
+		$settings['name']      = blx()->request->getPost('name');
+		$settings['handle']    = blx()->request->getPost('handle');
+		$settings['hasUrls']   = (bool)blx()->request->getPost('hasUrls');
+		$settings['urlFormat'] = blx()->request->getPost('urlFormat');
+		$settings['template']  = blx()->request->getPost('template');
 
 		$section = blx()->content->saveSection($settings, $sectionId);
 
@@ -86,9 +86,9 @@ class ContentController extends BaseController
 		$settings['name']         = blx()->request->getPost('name');
 		$settings['handle']       = blx()->request->getPost('handle');
 		$settings['instructions'] = blx()->request->getPost('instructions');
-		$settings['required']     = blx()->request->getPost('required');
+		$settings['required']     = (bool)blx()->request->getPost('required');
 		/* BLOCKSPRO ONLY */
-		$settings['translatable'] = blx()->request->getPost('translatable');
+		$settings['translatable'] = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
 
 		$blocktypeSettings = blx()->request->getPost('settings');
@@ -276,7 +276,7 @@ class ContentController extends BaseController
 		$entry = blx()->content->getEntryById($entryId);
 
 		if (!$entry)
-			throw new Exception(Blocks::t('No entry exists with the ID “{entryId}”.', array('entryId' => $entryId)));
+			throw new Exception(Blocks::t('No entry exists with the ID “{id}”.', array('id' => $entryId)));
 
 		return $entry;
 	}
@@ -293,7 +293,7 @@ class ContentController extends BaseController
 		$draft = blx()->content->getDraftById($draftId);
 
 		if (!$draft)
-			throw new Exception(Blocks::t('No draft exists with the ID “{entryId}”.', array('entryId' => $draft)));
+			throw new Exception(Blocks::t('No draft exists with the ID “{id}”.', array('id' => $draft)));
 
 		return $draft;
 	}

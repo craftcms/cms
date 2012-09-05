@@ -14,7 +14,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnFirst($table, $column, $type)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->addColumnFirst($this->_addTablePrefix($table), $column, $type))->execute();
 	}
 
@@ -27,7 +27,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnAfter($table, $column, $type, $after)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->addColumnAfter($this->_addTablePrefix($table), $column, $type, $after))->execute();
 	}
 
@@ -40,7 +40,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumnBefore($table, $column, $type, $before)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->addColumnBefore($this->_addTablePrefix($table), $column, $type, $before))->execute();
 	}
 
@@ -52,8 +52,8 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insertAll($table, $columns, $vals)
 	{
-		$columns[] = 'date_updated';
-		$columns[] = 'date_created';
+		$columns[] = 'dateCreated';
+		$columns[] = 'dateUpdated';
 		$columns[] = 'uid';
 
 		foreach ($vals as &$val)
@@ -136,8 +136,8 @@ class DbCommand extends \CDbCommand
 	{
 		if ($table !== 'languages')
 		{
-			$columns['date_created'] = DateTimeHelper::currentTime();
-			$columns['date_updated'] = DateTimeHelper::currentTime();
+			$columns['dateCreated'] = DateTimeHelper::currentTime();
+			$columns['dateUpdated'] = DateTimeHelper::currentTime();
 			$columns['uid'] = StringHelper::UUID();
 		}
 
@@ -153,7 +153,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function update($table, $columns, $conditions='', $params = array())
 	{
-		$columns['date_updated'] = DateTimeHelper::currentTime();
+		$columns['dateUpdated'] = DateTimeHelper::currentTime();
 		return parent::update($this->_addTablePrefix($table), $columns, $conditions, $params);
 	}
 
@@ -169,7 +169,7 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
-	 * Adds `id`, `date_created`, `date_update`, and `uid` columns to $columns,
+	 * Adds `id`, `dateCreated`, `date_update`, and `uid` columns to $columns,
 	 * packages up the column definitions into strings,
 	 * and then passes it back to CDbCommand->createTable()
 	 *
@@ -183,98 +183,18 @@ class DbCommand extends \CDbCommand
 		$columns = array_merge(
 			array('id' => PropertyType::PK),
 			$columns,
-			($table !== 'activity' ? DatabaseHelper::getAuditColumnDefinition() : array())
+			($table !== 'activity' ? DbHelper::getAuditColumnConfig() : array())
 		);
 
 		foreach ($columns as $col => $settings)
 		{
-			$columns[$col] = DatabaseHelper::generateColumnDefinition($settings);
+			$columns[$col] = DbHelper::generateColumnDefinition($settings);
 		}
 
 		// Create the table
 		$return = parent::createTable($this->_addTablePrefix($table), $columns, $options);
 
 		return $return;
-	}
-
-	/**
-	 * Creates a content table
-	 *
-	 * @param string $table The content table name
-	 * @param string $refTable The reference table name
-	 * @param string $fk The foreign key column name to the reference table
-	 * @return int
-	 */
-	public function createContentTable($table, $refTable, $fk)
-	{
-		$columns = array(
-			$fk        => array('type' => PropertyType::Int, 'required' => true),
-			'language' => PropertyType::Language
-		);
-
-		// Create the table
-		$return = $this->createTable($table, $columns);
-
-		// Create the unique constraint
-		$this->createIndex("{$table}_{$fk}_language_unique_idx", $table, "{$fk},language", true);
-
-		// Add the foreign key
-		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk, $refTable, 'id');
-
-		return $return;
-	}
-
-	/**
-	 * Creates a blocks join table
-	 *
-	 * @param string $table The blocks join table name
-	 * @param string $refTable The reference table name
-	 * @param string $fk The foreign key column name to the reference table
-	 * @return int
-	 */
-	public function createBlocksJoinTable($table, $refTable, $fk)
-	{
-		$columns = array(
-			$fk          => array('type' => PropertyType::Int, 'required' => true),
-			'block_id'   => array('type' => PropertyType::Int, 'required' => true)
-		);
-
-		// Create the table
-		$return = $this->createTable($table, $columns);
-
-		// Create the unique constraint
-		$this->createIndex("{$table}_{$fk}_block_id_unique_idx", $table, "{$fk},block_id", true);
-
-		// Add the foreign keys
-		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk,        $refTable, 'id');
-		$this->addForeignKey("{$table}_blocks_fk",      $table, 'block_id', 'blocks',  'id');
-
-		return $return;
-	}
-
-	/**
-	 * Creates a settings table
-	 *
-	 * @param string $table The settings table name
-	 * @param string $refTable The reference table name
-	 * @param string $fk The foreign key column name to the reference table
-	 */
-	public function createSettingsTable($table, $refTable, $fk)
-	{
-		$columns = array(
-			$fk     => array('type' => PropertyType::Int, 'required' => true),
-			'name'  => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
-			'value' => PropertyType::Text
-		);
-
-		// Create the table
-		$this->createTable($table, $columns);
-
-		// Create the unique constraint
-		$this->createIndex("{$table}_{$fk}_name_unique_idx", $table, "{$fk},name", true);
-
-		// Add the foreign key
-		$this->addForeignKey("{$table}_{$refTable}_fk", $table, $fk, $refTable, 'id');
 	}
 
 	/**
@@ -313,8 +233,8 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addColumn($table, $column, $type)
 	{
-		$type = DatabaseHelper::generateColumnDefinition($type);
-		return $this->addColumnBefore($table, $column, $type, 'date_created');
+		$type = DbHelper::generateColumnDefinition($type);
+		return $this->addColumnBefore($table, $column, $type, 'dateCreated');
 	}
 
 	/**
@@ -349,7 +269,7 @@ class DbCommand extends \CDbCommand
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
 		$table = $this->_addTablePrefix($table);
-		$type = DatabaseHelper::generateColumnDefinition($type);
+		$type = DbHelper::generateColumnDefinition($type);
 		return $this->setText($this->getConnection()->getSchema()->alterColumn($table, $column, $type, $newName, $after))->execute();
 	}
 

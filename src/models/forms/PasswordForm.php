@@ -6,7 +6,10 @@ namespace Blocks;
  */
 class PasswordForm extends BaseForm
 {
-	protected $attributes = array(
-		'password' => array('type' => PropertyType::Varchar, 'minLength' => 6, 'required' => true)
-	);
+	protected function getProperties()
+	{
+		return array(
+			'password' => array(PropertyType::Varchar, 'minLength' => 6, 'required' => true)
+		);
+	}
 }

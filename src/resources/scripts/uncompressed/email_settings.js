@@ -58,9 +58,9 @@ var EmailSettingsForm = blx.Base.extend({
 
 }, {
 	protocolFields: {
-		Smtp:      ['host', 'port', 'smtpAuth', 'smtpAuthCredentials', 'smtpKeepAlive', 'smtpSecureTransportType', 'timeout'],
-		Pop:       ['username', 'password', 'host', 'port', 'timeout'],
-		GmailSmtp: ['username', 'password']
+		smtp:  ['host', 'port', 'smtpKeepAlive', 'smtpAuth', 'smtpAuthCredentials', 'smtpSecureTransportType', 'timeout'],
+		pop:   ['username', 'password', 'host', 'port', 'timeout'],
+		gmail: ['username', 'password']
 	}
 });
 

@@ -121,7 +121,7 @@ class UrlManager extends \CUrlManager
 			$siteRoutes = blx()->routes->getAllRoutes();
 			foreach ($siteRoutes as $route)
 			{
-				if ($this->_matchRouteInternal($route->url_pattern))
+				if ($this->_matchRouteInternal($route->urlPattern))
 					return $route->template;
 			}
 		}

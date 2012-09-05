@@ -77,7 +77,7 @@ class Blocks extends \Yii
 	public static function getStoredReleaseDate()
 	{
 		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->release_date : null;
+		return $storedBlocksInfo ? $storedBlocksInfo->releaseDate : null;
 	}
 
 	/**
@@ -89,7 +89,7 @@ class Blocks extends \Yii
 	public static function getSiteName()
 	{
 		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->site_name : null;
+		return $storedBlocksInfo ? $storedBlocksInfo->siteName : null;
 	}
 
 	/**
@@ -101,7 +101,7 @@ class Blocks extends \Yii
 	public static function getSiteUrl()
 	{
 		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->site_url : null;
+		return $storedBlocksInfo ? $storedBlocksInfo->siteUrl : null;
 	}
 
 	/**
@@ -125,7 +125,7 @@ class Blocks extends \Yii
 	public static function getLicenseKey()
 	{
 		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->license_key : null;
+		return $storedBlocksInfo ? $storedBlocksInfo->licenseKey : null;
 	}
 
 	/**

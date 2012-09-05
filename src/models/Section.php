@@ -14,11 +14,11 @@ class Section extends BaseModel
 	protected function getProperties()
 	{
 		return array(
-			'name'        => PropertyType::Name,
-			'handle'      => PropertyType::Handle,
-			'has_urls'    => array(PropertyType::Boolean, 'default' => true),
-			'url_format'  => PropertyType::Varchar,
-			'template'    => PropertyType::Template,
+			'name'      => PropertyType::Name,
+			'handle'    => PropertyType::Handle,
+			'hasUrls'   => array(PropertyType::Boolean, 'default' => true),
+			'urlFormat' => PropertyType::Varchar,
+			'template'  => PropertyType::Template,
 		);
 	}
 
@@ -26,10 +26,10 @@ class Section extends BaseModel
 	{
 		return array(
 			'parent'      => array(static::BELONGS_TO, 'Section'),
-			'blocks'      => array(static::HAS_MANY, 'EntryBlock', 'section_id', 'order' => 'blocks.sort_order'),
-			'children'    => array(static::HAS_MANY, 'Section', 'parent_id'),
-			'entries'     => array(static::HAS_MANY, 'Entry', 'section_id'),
-			'totalBlocks' => array(static::STAT, 'EntryBlock', 'section_id'),
+			'blocks'      => array(static::HAS_MANY, 'EntryBlock', 'sectionId', 'order' => 'blocks.sortOrder'),
+			'children'    => array(static::HAS_MANY, 'Section', 'parentId'),
+			'entries'     => array(static::HAS_MANY, 'Entry', 'sectionId'),
+			'totalBlocks' => array(static::STAT, 'EntryBlock', 'sectionId'),
 		);
 	}
 

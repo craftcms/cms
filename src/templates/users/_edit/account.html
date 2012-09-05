@@ -1,4 +1,5 @@
 {% extends "users/_edit/layout" %}
+{% import "_includes/forms" as forms %}
 {% set pageTitle = "Account Settings"|t %}
 
 
@@ -22,78 +23,63 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveAccountSettings">
-		{% if user.id %}<input type="hidden" name="user_id" value="{{ user.id }}">{% endif %}
+		{% if user.id %}<input type="hidden" name="userId" value="{{ user.id }}">{% endif %}
 
-		<div class="field">
-			<div class="heading">
-				<label for="username" class="required">{{ "Username"|t }}</label>
-			</div>
-			<div class="textwrapper"><input id="username" name="username" class="text" type="text" value="{{ user.username }}"></div>
-			{% if user.errors.username %}
-				{% include "_includes/error_list" with {'errors': user.errors.username} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "Username"|t,
+			id: 'username',
+			name: 'username',
+			value: user.username,
+			required: true,
+			errors: user.errors.username
+		}) }}
 
-		<div class="field">
-			<div class="heading">
-				<label for="email" class="required">{{ "Email"|t }}</label>
-			</div>
-			<div class="textwrapper"><input id="email" name="email" class="text" type="text" value="{{ user.email }}"></div>
-			{% if user.errors.email %}
-				{% include "_includes/error_list" with {'errors': user.errors.email} %}
-			{% endif %}
+		{{ forms.textField({
+			label: "Email"|t,
+			id: 'email',
+			name: 'email',
+			value: user.email,
+			required: true,
+			errors: user.errors.email
+		}) }}
 
-			{% if not user.id and blx.accounts.current.admin %}
-				<div class="checkbox"><label>
-					<input type="checkbox" name="require_verification" value="y" {% if blx.request.post('require_verification') %}checked{% endif %}>
-					{{ "Require verification"|t }}
-				</label></div>
-			{% endif %}
-		</div>
-
-		{% if user.isCurrent or blx.accounts.current.admin %}
-			<div class="field">
-				<div class="heading">
-					<label for="password">{{ "Password"|t }}</label>
-					{% if user.id %}<p>{{ "Leave blank to keep password unchanged."|t }}</p>{% endif %}
-				</div>
-				<div class="textwrapper"><input id="password" name="password" class="text {% if passwordForm and passwordForm.errors.password %}error{% endif %}" type="password"></div>
-				{% if passwordForm and passwordForm.errors.password %}
-					{% include "_includes/error_list" with {'errors': passwordForm.errors.password} %}
-				{% endif %}
-
-				{% if not user.isCurrent %}
-					<div class="checkbox"><label>
-						<input type="hidden" name="require_password_reset" value="n">
-						<input type="checkbox" name="require_password_reset" value="y" {% if not user or blx.request.post('require_password_reset') %}checked{% endif %}>
-						{{ "Require a password reset on next login"|t }}
-					</label></div>
-				{% endif %}
-			</div>
+		{% if not user.id and blx.accounts.current.admin %}
+			{{ forms.checkboxField({
+				label: "Require verification"|t,
+				name: 'requireVerification',
+				checked: blx.request.post('requireVerification')
+			}) }}
 		{% endif %}
 
-		<div class="field">
-			<div class="heading">
-				<label for="email_format">{{ "Email Format"|t }}</label>
-			</div>
+		{% if user.isCurrent or blx.accounts.current.admin %}
+			{{ forms.passwordField({
+				label: "Password"|t,
+				instructions: (user.id ? "Leave blank to keep password unchanged."|t : null),
+				id: 'password',
+				name: 'password',
+				errors: (passwordForm.errors.password)
+			}) }}
 
-			{% include "_includes/pill" with {
-				'name': "email_format",
-				'options': [
-					{'value': "text", 'label': "Plain Text"|t},
-					{'value': "html", 'label': "HTML"|t}
-				],
-				'value': user.email_format,
-				'default': 'html'
-			} %}
-		</div>
+			{% if not user.isCurrent %}
+				{{ forms.checkboxField({
+					label: "Require a password reset on next login"|t,
+					name: 'requirePasswordReset',
+					checked: (not user or blx.request.post('requirePasswordReset'))
+				}) }}
+			{% endif %}
+		{% endif %}
+
+		{{ forms.selectField({
+			label: "Email Format"|t,
+			id: 'emailFormat',
+			name: 'emailFormat',
+			options: { text: "Plain Text"|t, html: "HTML"|t },
+			value: user.emailFormat,
+			default: 'html'
+		}) }}
 
 		<!-- BLOCKSPRO ONLY -->
-		<div class="field">
-			<div class="heading">
-				<label for="language">{{ "Language"|t }}</label>
-			</div>
-
+		{% set languageInput %}
 			<div class="select">
 				<select id="language" name="language">
 					{% set userLanguage = user ? user.language : blx.app.language %}
@@ -102,7 +88,8 @@
 					{% endfor %}
 				</select>
 			</div>
-		</div>
+		{% endset %}
+		{{ forms.field({ label: "Language"|t, id: 'language' }, languageInput) }}
 		<!-- end BLOCKSPRO ONLY -->
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

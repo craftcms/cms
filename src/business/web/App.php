@@ -413,7 +413,7 @@ class App extends \CWebApplication
 			$messages[] = Blocks::t('The database collation isn’t set in your db config file.');
 
 		if (!empty($messages))
-			throw new Exception(Blocks::t('Database configuration errors: {errorList}', array('errorList' => implode(PHP_EOL, $messages))));
+			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 
 		try
 		{
@@ -428,7 +428,7 @@ class App extends \CWebApplication
 		}
 
 		if (!empty($messages))
-			throw new Exception(Blocks::t('Database configuration errors: {errorList}', array('errorList' => implode(PHP_EOL, $messages))));
+			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 	}
 
 	/**

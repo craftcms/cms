@@ -31,10 +31,10 @@ class SettingsController extends BaseController
 		if ($generalSettingsForm->validate())
 		{
 			$info = Info::model()->find();
-			$info->site_name = $generalSettingsForm->siteName;
-			$info->site_url = $generalSettingsForm->siteUrl;
+			$info->siteName = $generalSettingsForm->siteName;
+			$info->siteUrl = $generalSettingsForm->siteUrl;
 			/* BLOCKSPRO ONLY */
-			$info->license_key = $generalSettingsForm->licenseKey;
+			$info->licenseKey = $generalSettingsForm->licenseKey;
 			/* end BLOCKSPRO ONLY */
 			$info->save();
 
@@ -61,12 +61,12 @@ class SettingsController extends BaseController
 		$emailSettings->protocol                    = blx()->request->getPost('protocol');
 		$emailSettings->host                        = blx()->request->getPost('host');
 		$emailSettings->port                        = blx()->request->getPost('port');
-		$emailSettings->smtpAuth                    = (blx()->request->getPost('smtpAuth') === 'y');
+		$emailSettings->smtpAuth                    = (bool)blx()->request->getPost('smtpAuth');
 
 		if ($emailSettings->smtpAuth)
 		{
-			$emailSettings->username                = blx()->request->getPost('smtp_username');
-			$emailSettings->password                = blx()->request->getPost('smtp_password');
+			$emailSettings->username                = blx()->request->getPost('smtpUsername');
+			$emailSettings->password                = blx()->request->getPost('smtpPassword');
 		}
 		else
 		{
@@ -74,7 +74,7 @@ class SettingsController extends BaseController
 			$emailSettings->password                = blx()->request->getPost('password');
 		}
 
-		$emailSettings->smtpKeepAlive               = (blx()->request->getPost('smtpKeepAlive') === 'y');
+		$emailSettings->smtpKeepAlive               = (bool)blx()->request->getPost('smtpKeepAlive');
 		$emailSettings->smtpSecureTransportType     = blx()->request->getPost('smtpSecureTransportType');
 		$emailSettings->timeout                     = blx()->request->getPost('timeout');
 		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
@@ -126,7 +126,7 @@ class SettingsController extends BaseController
 					break;
 				}
 
-				case EmailerType::GmailSmtp:
+				case EmailerType::Gmail:
 				{
 					$settings['host'] = $gMailSmtp;
 					$settings['smtpAuth'] = 1;
@@ -164,7 +164,7 @@ class SettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$languages = blx()->request->getPost('languages');
+		$languages = blx()->request->getPost('languages', array());
 		sort($languages);
 
 		if (blx()->settings->saveSettings('systemsettings', $languages, 'languages', true))

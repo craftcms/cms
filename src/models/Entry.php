@@ -14,16 +14,16 @@ class Entry extends BaseModel
 	protected function getProperties()
 	{
 		return array(
-			'slug'           => array(PropertyType::Char, 'maxLength' => 50),
-			'uri'            => array(PropertyType::Varchar, 'maxLength' => 150, 'unique' => true),
-			'publish_date'   => PropertyType::UnixTimeStamp,
+			'slug'          => array(PropertyType::Char, 'maxLength' => 50),
+			'uri'           => array(PropertyType::Varchar, 'maxLength' => 150, 'unique' => true),
+			'publishDate'   => PropertyType::UnixTimeStamp,
 			/* BLOCKSPRO ONLY */
-			'expiry_date'    => PropertyType::UnixTimeStamp,
-			'sort_order'     => array(PropertyType::Int, 'unsigned' => true),
-			'latest_draft'   => PropertyType::Int,
-			'latest_version' => PropertyType::Int,
+			'expiryDate'    => PropertyType::UnixTimeStamp,
+			'sortOrder'     => array(PropertyType::Int, 'unsigned' => true),
+			'latestDraft'   => PropertyType::Int,
+			'latestVersion' => PropertyType::Int,
 			/* end BLOCKSPRO ONLY */
-			'archived'       => PropertyType::Boolean,
+			'archived'      => PropertyType::Boolean,
 		);
 	}
 
@@ -35,8 +35,8 @@ class Entry extends BaseModel
 			'parent'   => array(static::BELONGS_TO, 'Entry'),
 			'section'  => array(static::BELONGS_TO, 'Section', 'required' => true),
 			'author'   => array(static::BELONGS_TO, 'User', 'required' => true),
-			'versions' => array(static::HAS_MANY, 'EntryVersion', 'entry_id'),
-			'children' => array(static::HAS_MANY, 'Entry', 'parent_id'),
+			'versions' => array(static::HAS_MANY, 'EntryVersion', 'entryId'),
+			'children' => array(static::HAS_MANY, 'Entry', 'parentId'),
 		);
 	}
 
@@ -49,7 +49,7 @@ class Entry extends BaseModel
 			array('columns' => array('slug'), 'unique' => true),
 			/* end BLOCKS ONLY */
 			/* BLOCKSPRO ONLY */
-			array('columns' => array('slug','section_id','parent_id'), 'unique' => true),
+			array('columns' => array('slug','sectionId','parentId'), 'unique' => true),
 			/* end BLOCKSPRO ONLY */
 		);
 	}

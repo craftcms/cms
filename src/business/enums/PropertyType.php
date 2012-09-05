@@ -29,6 +29,7 @@ class PropertyType
 	const Text         = 'text';
 	const MediumText   = 'mediumtext';
 	const LongText     = 'longtext';
+	const Number       = 'number';
 	const TinyInt      = 'tinyint';
 	const SmallInt     = 'smallint';
 	const MediumInt    = 'mediumint';

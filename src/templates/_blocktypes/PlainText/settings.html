@@ -1,32 +1,32 @@
-<div class="field">
-	<div class="heading">
-		<label for="hint">
-			{{ "Hint Text"|t }}
-			{% if blx.language != blx.app.language %}{{ "(in {language})"|t({ 'language': blx.localization.localeName(blx.app.language) }) }}{% endif %}
-		</label>
-		<p>{{ "The text that will be shown if the field doesn’t have a value."|t }}</p>
-	</div>
-	<div class="textwrapper"><input id="hint" name="hint" class="text" type="text" value="{{ settings.hint }}"></div>
-</div>
-<div class="field checkbox">
-	<label>
-		<input type="checkbox" name="multiline" value="y" {% if settings.multiline %}checked{% endif %}>
-		{{ "Allow line breaks"|t }}
-	</label>
-</div>
-{#<div class="field">
-	<div class="heading">
-		<label for="maxLength">{{ "Max Length"|t }}</label>
-	</div>
-	<input id="maxLength" name="maxLength" class="text" type="text" value="{{ settings.maxLength }}" size="4" style="display: inline-block">
-	<div style="display: inline-block; margin-left: 4px; vertical-align: middle;">
-		{%- include "_includes/pill" with {
-			'name': namePrefix ~ "[maxLengthUnit]",
-			'options': [
-				{'value': "words"},
-				{'value': "chars", 'label': "characters"}
-			],
-			'value': settings.maxLengthUnit
-		} -%}
-	</div>
-</div>#}
+{% import "_includes/forms" as forms %}
+
+{{ forms.textField({
+	label: "Hint Text"|t,
+	instructions: "The text that will be shown if the field doesn’t have a value."|t,
+	id: 'hint',
+	name: 'hint',
+	value: settings.hint,
+	translatable: true
+}) }}
+
+{% set input %}
+	{{ forms.text({
+		id: 'maxLength',
+		name: 'maxLength',
+		value: settings.maxLength,
+		size: 3
+	}) }}
+
+	{{ forms.select({
+		name: 'maxLengthUnit',
+		options: { words: "words"|t, chars: "characters"|t },
+		value: settings.maxLengthUnit
+	}) }}
+{% endset %}
+{{ forms.field({ label: "Max Length"|t, id: 'maxLength' }, input) }}
+
+{{ forms.checkboxField({
+	label: "Allow line breaks"|t,
+	name: 'multiline',
+	checked: settings.multiline
+}) }}

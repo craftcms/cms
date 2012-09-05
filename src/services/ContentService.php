@@ -17,7 +17,7 @@ class ContentService extends \CApplicationComponent
 	 * @static
 	 */
 	private static $_defaultSectionParams = array(
-		'parent_id' => null,
+		'parentId' => null,
 		'order' => 'name asc',
 	);
 
@@ -79,15 +79,15 @@ class ContentService extends \CApplicationComponent
 		$whereParams = array();
 
 		if (!empty($params['id']))
-			$whereConditions[] = DatabaseHelper::parseParam('id', $params['id'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
 
-		$whereConditions[] = DatabaseHelper::parseParam('parent_id', $params['parent_id'], $whereParams);
+		$whereConditions[] = DbHelper::parseParam('parentId', $params['parentId'], $whereParams);
 
 		if (!empty($params['handle']))
-			$whereConditions[] = DatabaseHelper::parseParam('handle', $params['handle'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('handle', $params['handle'], $whereParams);
 
-		if (!empty($params['has_urls']))
-			$whereConditions[] = DatabaseHelper::parseParam('has_urls', $params['has_urls'], $whereParams);
+		if (!empty($params['hasUrls']))
+			$whereConditions[] = DbHelper::parseParam('hasUrls', $params['hasUrls'], $whereParams);
 
 		if ($whereConditions)
 		{
@@ -173,15 +173,15 @@ class ContentService extends \CApplicationComponent
 		$isNewSection = $section->getIsNewRecord();
 		if (!$isNewSection)
 		{
-			$oldUrlFormat = $section->url_format;
+			$oldUrlFormat = $section->urlFormat;
 			$oldContentTable = EntryContent::getTableNameForSection($section);
 		}
 
-		$section->name        = $settings['name'];
-		$section->handle      = $settings['handle'];
-		$section->has_urls    = !empty($settings['has_urls']);
-		$section->url_format  = (!empty($settings['url_format']) ? $settings['url_format'] : null);
-		$section->template    = (!empty($settings['template']) ? $settings['template'] : null);
+		$section->name      = $settings['name'];
+		$section->handle    = $settings['handle'];
+		$section->hasUrls   = !empty($settings['hasUrls']);
+		$section->urlFormat = (!empty($settings['urlFormat']) ? $settings['urlFormat'] : null);
+		$section->template  = (!empty($settings['template']) ? $settings['template'] : null);
 
 		// Start a transaction
 		$transaction = blx()->db->beginTransaction();
@@ -204,7 +204,7 @@ class ContentService extends \CApplicationComponent
 						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
 
 					// Update the entry URIs if the URL format changed
-					if ($section->url_format != $oldUrlFormat)
+					if ($section->urlFormat != $oldUrlFormat)
 					{
 						foreach ($section->entries as $entry)
 						{
@@ -362,7 +362,7 @@ class ContentService extends \CApplicationComponent
 			$oldHandle = $block->handle;
 
 		/* BLOCKSPRO ONLY */
-		$block->section_id   = $section->id;
+		$block->sectionId   = $section->id;
 		/* end BLOCKSPRO ONLY */
 		$block->name         = $settings['name'];
 		$block->handle       = $settings['handle'];
@@ -375,11 +375,11 @@ class ContentService extends \CApplicationComponent
 		if ($block->getIsNewRecord())
 		{
 			$maxSortOrder = blx()->db->createCommand()
-				->select('max(sort_order)')
+				->select('max(sortOrder)')
 				->from('entryblocks')
 				->queryScalar();
 
-			$block->sort_order = $maxSortOrder + 1;
+			$block->sortOrder = $maxSortOrder + 1;
 		}
 
 		if ($block->validate())
@@ -401,7 +401,7 @@ class ContentService extends \CApplicationComponent
 
 				$blockType = blx()->blocks->getBlockByClass($block->class);
 				$blockType->setSettings($block->settings);
-				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
+				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
 
 				if ($isNewBlock)
 				{
@@ -478,7 +478,7 @@ class ContentService extends \CApplicationComponent
 		{
 			foreach ($blockIds as $blockOrder => $blockId)
 			{
-				// Update the sort_order in entryblocks
+				// Update the sortOrder in entryblocks
 				/* BLOCKS ONLY */
 				$block = $this->_getEntryBlock($blockId);
 				/* end BLOCKS ONLY */
@@ -487,7 +487,7 @@ class ContentService extends \CApplicationComponent
 				if (!$block)
 					$this->_noEntryBlockExists($blockId);
 				/* end BLOCKSPRO ONLY */
-				$block->sort_order = $blockOrder+1;
+				$block->sortOrder = $blockOrder+1;
 				$block->save();
 
 				// Update the column order in the content table
@@ -496,7 +496,7 @@ class ContentService extends \CApplicationComponent
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContent::getTableNameForSection($block->section);
 				/* end BLOCKSPRO ONLY */
-				$columnType = DatabaseHelper::generateColumnDefinition($blockType->getColumnType());
+				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
 				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
 				$lastColumn = $block->handle;
 			}
@@ -534,14 +534,14 @@ class ContentService extends \CApplicationComponent
 
 			// Create the entry
 			$entry = new Entry();
-			$entry->section_id = $sectionId;
-			$entry->author_id = ($authorId ? $authorId : blx()->accounts->getCurrentUser()->id);
-			$entry->parent_id = $parentId;
+			$entry->sectionId = $sectionId;
+			$entry->authorId = ($authorId ? $authorId : blx()->accounts->getCurrentUser()->id);
+			$entry->parentId = $parentId;
 			$entry->save();
 
 			// Create a content row for it
 			$content = new EntryContent($section);
-			$content->entry_id = $entry->id;
+			$content->entryId = $entry->id;
 			$content->language = blx()->language;
 			$content->title = $title;
 			$content->save();
@@ -614,7 +614,7 @@ class ContentService extends \CApplicationComponent
 		{
 			$entry = $this->getEntryById($entry);
 			if (!$entry)
-				throw new Exception(Blocks::t('No entry exists with the ID “{entryId}”.', array('entryId' => $entry->id)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”.', array('id' => $entry->id)));
 		}
 
 		if (!$language)
@@ -662,7 +662,7 @@ class ContentService extends \CApplicationComponent
 	{
 		if ($entry->slug)
 		{
-			$urlFormat = $entry->section->url_format;
+			$urlFormat = $entry->section->urlFormat;
 			$uri = str_replace('{slug}', $entry->slug, $urlFormat);
 			return $uri;
 		}
@@ -687,7 +687,7 @@ class ContentService extends \CApplicationComponent
 	public function getEntriesBySectionId($sectionId)
 	{
 		$entries = Entry::model()->findAllByAttributes(array(
-			'section_id' => $sectionId,
+			'sectionId' => $sectionId,
 		));
 		return $entries;
 	}
@@ -699,7 +699,7 @@ class ContentService extends \CApplicationComponent
 	public function doesEntryHaveSubEntries($entryId)
 	{
 		$exists = Entry::model()->exists(
-			'parent_id=:parentId',
+			'parentId=:parentId',
 			array(':parentId' => $entryId)
 		);
 		return $exists;
@@ -713,8 +713,8 @@ class ContentService extends \CApplicationComponent
 	{
 		$drafts = blx()->db->createCommand()
 			->from('entryversions')
-			->where(array('entry_id' => $entryId, 'draft' => true))
-			->order('date_created DESC')
+			->where(array('entryId' => $entryId, 'draft' => true))
+			->order('dateCreated DESC')
 			->queryAll();
 
 		return EntryVersion::model()->populateRecords($drafts);
@@ -727,7 +727,7 @@ class ContentService extends \CApplicationComponent
 	public function getEntryVersionsByEntryId($entryId)
 	{
 		$versions = EntryVersion::model()->findAllByAttributes(array(
-			'entry_id' => $entryId,
+			'entryId' => $entryId,
 		));
 		return $versions;
 	}
@@ -760,15 +760,15 @@ class ContentService extends \CApplicationComponent
 		{
 			$entry = $this->getEntryById($entry);
 			if (!$entry)
-				throw new Exception(Blocks::t('No entry exists with the ID “{entryId}”.', array('entryId' => $entry->id)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”.', array('id' => $entry->id)));
 		}
 
 		if (!$language)
 			$language = blx()->language;
 
 		$version = new EntryVersion();
-		$version->entry_id  = $entry->id;
-		$version->author_id = blx()->accounts->getCurrentUser()->id;
+		$version->entryId  = $entry->id;
+		$version->authorId = blx()->accounts->getCurrentUser()->id;
 		$version->language  = $language;
 		$version->draft = $draft;
 		$version->name = $name;
@@ -782,9 +782,9 @@ class ContentService extends \CApplicationComponent
 		try
 		{
 			if ($version->draft)
-				$num = $entry->latest_draft + 1;
+				$num = $entry->latestDraft + 1;
 			else
-				$num = $entry->latest_version + 1;
+				$num = $entry->latestVersion + 1;
 
 			for ($num; true; $num++)
 			{
@@ -805,9 +805,9 @@ class ContentService extends \CApplicationComponent
 
 			// Update the entry
 			if ($version->draft)
-				$entry->latest_draft = $version->num;
+				$entry->latestDraft = $version->num;
 			else
-				$entry->latest_version = $version->num;
+				$entry->latestVersion = $version->num;
 			$entry->save();
 
 			$transaction->commit();
@@ -857,9 +857,9 @@ class ContentService extends \CApplicationComponent
 	public function getDraftByNum($entryId, $draftNum)
 	{
 		$draft = EntryVersion::model()->findByAttributes(array(
-			'entry_id' => $entryId,
-			'draft'    => true,
-			'num'      => $draftNum
+			'entryId' => $entryId,
+			'draft'   => true,
+			'num'     => $draftNum
 		));
 
 		return $draft;
@@ -873,7 +873,7 @@ class ContentService extends \CApplicationComponent
 	{
 		$draft = blx()->db->createCommand()
 			->from('entryversions')
-			->where(array('and', 'entry_id'=>$entryId, 'draft=1'))
+			->where(array('and', 'entryId'=>$entryId, 'draft=1'))
 			->order('num DESC')
 			->queryRow();
 

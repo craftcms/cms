@@ -44,7 +44,7 @@ class RoutesService extends \CApplicationComponent
 			$route = $this->getRouteById($routeId);
 
 			if (!$route)
-				throw new Exception(Blocks::t('No route exists with the ID “{routeId}”', array('routeId' => $routeId)));
+				throw new Exception(Blocks::t('No route exists with the ID “{id}”', array('id' => $routeId)));
 		}
 		else
 		{
@@ -52,11 +52,11 @@ class RoutesService extends \CApplicationComponent
 
 			// Get the next biggest sort order
 			$maxSortOrder = blx()->db->createCommand()
-				->select('max(sort_order)')
+				->select('max(sortOrder)')
 				->from('routes')
 				->queryScalar();
 
-			$route->sort_order = $maxSortOrder + 1;
+			$route->sortOrder = $maxSortOrder + 1;
 		}
 
 		// Compile the URL parts into a regex pattern
@@ -77,8 +77,8 @@ class RoutesService extends \CApplicationComponent
 			}
 		}
 
-		$route->url_parts = Json::encode($urlParts);
-		$route->url_pattern = $urlPattern;
+		$route->urlParts = Json::encode($urlParts);
+		$route->urlPattern = $urlPattern;
 		$route->template = $template;
 		$route->save();
 
@@ -97,7 +97,7 @@ class RoutesService extends \CApplicationComponent
 		$route = $this->getRouteById($routeId);
 
 		if (!$route)
-			throw new Exception(Blocks::t('No route exists with the ID “{routeId}”', array('routeId' => $routeId)));
+			throw new Exception(Blocks::t('No route exists with the ID “{id}”', array('id' => $routeId)));
 
 		$route->delete();
 	}
@@ -111,7 +111,7 @@ class RoutesService extends \CApplicationComponent
 	{
 		foreach ($routeIds as $order => $routeId)
 		{
-			$data = array('sort_order' => $order + 1);
+			$data = array('sortOrder' => $order + 1);
 			$condition = array('id' => $routeId);
 			blx()->db->createCommand()->update('routes', $data, $condition);
 		}

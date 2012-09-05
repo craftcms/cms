@@ -1,4 +1,5 @@
 {% extends "users/_edit/layout" %}
+{% import "_includes/forms" as forms %}
 {% set pageTitle = "Profile"|t %}
 
 
@@ -21,37 +22,31 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveProfile">
-		<input type="hidden" name="user_id" value="{{ user.id }}">
+		<input type="hidden" name="userId" value="{{ user.id }}">
 
-		<div class="field first">
-			<div class="heading">
-				<label for="first_name">{{ "First Name"|t }}</label>
-			</div>
-			<div class="textwrapper"><input id="first_name" name="first_name" class="text" type="text" value="{{ user.first_name }}"></div>
-			{% if user.errors.first_name %}
-				{% include "_includes/error_list" with {'errors': user.errors.first_name} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			first: true,
+			label: "First Name"|t,
+			id: 'firstName',
+			name: 'firstName',
+			value: user.firstName,
+			errors: user.errors.firstName
+		}) }}
 
-		<div class="field">
-			<div class="heading">
-				<label for="last_name">{{ "Last Name"|t }}</label>
-			</div>
-			<div class="textwrapper"><input id="last_name" name="last_name" class="text" type="text" value="{{ user.last_name }}"></div>
-			{% if user.errors.last_name %}
-				{% include "_includes/error_list" with {'errors': user.errors.last_name} %}
-			{% endif %}
-		</div>
+		{{ forms.textField({
+			label: "Last Name"|t,
+			id: 'lastName',
+			name: 'lastName',
+			value: user.lastName,
+			errors: user.errors.lastName
+		}) }}
 
-		<div class="field">
-			<div class="heading">
-				<label for="avatar">{{ "Avatar"|t }}</label>
-			</div>
-			<input id="avatar" name="avatar" type="file">
-			{% if settings.errors.avatar %}
-				{% include "_includes/error_list" with {'errors': settings.errors.avatar} %}
-			{% endif %}
-		</div>
+		{{ forms.fileField({
+			label: "Avatar"|t,
+			id: 'avatar',
+			name: 'avatar',
+			errors: user.errors.avatar
+		}) }}
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 

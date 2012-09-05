@@ -21,7 +21,7 @@ class EntryBlock extends BaseBlockModel
 	protected function getIndexes()
 	{
 		return array(
-			array('columns' => array('section_id', 'handle'), 'unique' => true)
+			array('columns' => array('sectionId', 'handle'), 'unique' => true)
 		);
 	}
 }

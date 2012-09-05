@@ -36,16 +36,16 @@ class DbLogRoute extends \CDbLogRoute
 	{
 		$db = $this->getDbConnection();
 			$db->createCommand()->createTable($tableName, array(
-					'user_id'       => array('type' => PropertyType::Int),
-					'category'      => array('type' => PropertyType::Varchar, 'maxLength' => 200, 'required' => true),
-					'activity_key'  => array('type' => PropertyType::Varchar, 'maxLength' => 400, 'required' => true),
-					'activity_data' => PropertyType::Text,
-					'logtime'       => array('type' => PropertyType::Int, 'required' => true)
+					'userId'   => array('type' => PropertyType::Int),
+					'category' => array('type' => PropertyType::Varchar, 'maxLength' => 200, 'required' => true),
+					'key'      => array('type' => PropertyType::Varchar, 'maxLength' => 400, 'required' => true),
+					'data'     => PropertyType::Text,
+					'logtime'  => array('type' => PropertyType::Int, 'required' => true)
 				));
 
 		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
 		$db->createCommand()->createIndex('logtime_idx', $tableName, 'logtime', false);
-		$db->createCommand()->addForeignKey('activity_users_fk', $tableName, 'user_id', 'users', 'id');
+		$db->createCommand()->addForeignKey('activity_users_fk', $tableName, 'userId', 'users', 'id');
 	}
 
 	/**
@@ -59,7 +59,7 @@ class DbLogRoute extends \CDbLogRoute
 		{
 			$sql="
 				INSERT INTO blx_{$this->logTableName}
-				(user_id, category, activity_key, activity_data, logtime) VALUES
+				(userId, category, key, data, logtime) VALUES
 				(:userId, :category, :activityKey, :activityData, :logtime)
 			";
 

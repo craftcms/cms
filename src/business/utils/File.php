@@ -232,7 +232,7 @@ class File extends \CApplicationComponent
 			return $instance;
 		}
 
-		throw new Exception(Blocks::t('Path to filesystem object isn’t specified within “{methodName}” method.', array('methodName' => __METHOD__)));
+		throw new Exception(Blocks::t('Path to filesystem object isn’t specified within “{method}” method.', array('method' => __METHOD__)));
 	}
 
 	/**

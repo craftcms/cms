@@ -38,7 +38,7 @@ class ModelHelper
 		$minLengths = array();
 		$maxLengths = array();
 
-		$integerTypes = array(PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
+		$integerTypes = array(PropertyType::Number, PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
 		$numberTypes = $integerTypes;
 		$numberTypes[] = PropertyType::Decimal;
 
@@ -68,7 +68,7 @@ class ModelHelper
 			// Remember if it's a license key
 			$isLicenseKey = ($type == PropertyType::LicenseKey);
 
-			$config = DatabaseHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizePropertyConfig($config);
 
 			// Uniques
 			if (!empty($config['unique']))
@@ -89,7 +89,7 @@ class ModelHelper
 				if (isset($config['max']) && is_numeric($config['max']))
 					$rule['max'] = $config['max'];
 
-				if (in_array($config['type'], $integerTypes))
+				if (($config['type'] == PropertyType::Number && empty($config['decimals'])) || in_array($config['type'], $integerTypes))
 					$rule['integerOnly'] = true;
 
 				$rules[] = $rule;

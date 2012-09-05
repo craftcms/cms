@@ -6,9 +6,9 @@ namespace Blocks;
  */
 class EmailerType
 {
-	const PhpMail    = 'PhpMail';
-	const Sendmail   = 'Sendmail';
-	const Smtp       = 'Smtp';
-	const Pop       = 'Pop';
-	const GmailSmtp  = 'GmailSmtp';
+	const Php      = 'php';
+	const Sendmail = 'sendmail';
+	const Smtp     = 'smtp';
+	const Pop      = 'pop';
+	const Gmail    = 'gmail';
 }

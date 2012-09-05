@@ -197,7 +197,7 @@ class UpdatesService extends \CApplicationComponent
 		$info = Info::model()->find();
 		$info->version = $version;
 		$info->build = $build;
-		$info->release_date = $releaseDate;
+		$info->releaseDate = $releaseDate;
 
 		if ($info->save())
 			return true;

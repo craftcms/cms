@@ -11,14 +11,10 @@
 {% set settings %}
 	<div id="messages">
 		{% for message in blx.email.messages %}
-			<div class="field">
-				<div class="heading">
-					<h3>{{ message.heading }}</h3>
-				</div>
-				<div class="pane message" data-id="{{ message.id }}">
-					<div class="subject">{{ message.subject }}</div>
-					<div class="body">{{ message.bodyPreview }}</div>
-				</div>
+			<h3>{{ message.heading }}</h3>
+			<div class="pane message" data-id="{{ message.id }}">
+				<div class="subject">{{ message.subject }}</div>
+				<div class="body">{{ message.bodyPreview }}</div>
 			</div>
 		{% endfor %}
 	</div>

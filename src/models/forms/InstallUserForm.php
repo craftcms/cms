@@ -6,9 +6,12 @@ namespace Blocks;
  */
 class InstallUserForm extends BaseForm
 {
-	protected $attributes = array(
-		'username' => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
-		'email'    => array('type' => PropertyType::Email, 'required' => true),
-		'password' => array('type' => PropertyType::Varchar, 'minLength' => 6, 'required' => true)
-	);
+	protected function getProperties()
+	{
+		return array(
+			'username' => array(PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
+			'email'    => array(PropertyType::Email, 'required' => true),
+			'password' => array(PropertyType::Varchar, 'minLength' => 6, 'required' => true)
+		);
+	}
 }

@@ -6,7 +6,11 @@ namespace Blocks;
  */
 class ForgotPasswordForm extends BaseForm
 {
-	protected $attributes = array(
-		'username' => array('required' => true)
-	);
+	protected function getProperties()
+	{
+		return array(
+			'username' => array(PropertyType::Varchar, 'required' => true),
+		);
+	}
+
 }

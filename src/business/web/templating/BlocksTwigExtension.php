@@ -43,6 +43,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
 			'text'       => new \Twig_Filter_Method($this, 'textFilter'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
+			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
 		);

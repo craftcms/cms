@@ -37,6 +37,16 @@ abstract class BaseComponent extends \CApplicationComponent
 	}
 
 	/**
+	 * Use the component's type as its string representation.
+	 *
+	 * @return string
+	 */
+	public function __toString()
+	{
+		return $this->getType();
+	}
+
+	/**
 	 * Returns the default block settings.
 	 *
 	 * @access protected

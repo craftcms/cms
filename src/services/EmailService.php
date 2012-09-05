@@ -75,14 +75,14 @@ class EmailService extends \CApplicationComponent
 			$language = blx()->language;
 
 		$content = EmailMessageContent::model()->findByAttributes(array(
-			'message_id' => $messageId,
+			'messageId' => $messageId,
 			'language' => $language
 		));
 
 		if (!$content)
 		{
 			$content = new EmailMessageContent();
-			$content->message_id = $messageId;
+			$content->messageId = $messageId;
 			$content->language = ($language ? $language : blx()->language);
 		}
 
@@ -106,7 +106,7 @@ class EmailService extends \CApplicationComponent
 
 		$content->subject = $subject;
 		$content->body = $body;
-		$content->html_body = $htmlBody;
+		$content->htmlBody = $htmlBody;
 		$content->save();
 
 		return $content;
@@ -138,7 +138,7 @@ class EmailService extends \CApplicationComponent
 		// Check which protocol we need to use.
 		switch ($emailSettings['protocol'])
 		{
-			case EmailerType::GmailSmtp:
+			case EmailerType::Gmail:
 			case EmailerType::Smtp:
 			{
 				$this->_setSmtpSettings($email, $emailSettings);
@@ -169,7 +169,7 @@ class EmailService extends \CApplicationComponent
 				break;
 			}
 
-			case EmailerType::PhpMail:
+			case EmailerType::Php:
 			{
 				$email->isMail();
 				break;
@@ -191,7 +191,7 @@ class EmailService extends \CApplicationComponent
 		$email->subject = TemplateHelper::renderString($subject.' - subject', $subject, $variables);
 		$renderedBody = TemplateHelper::renderString($subject.' - body', $body, $variables);
 
-		if ($user->email_format == 'html' && $htmlBody)
+		if ($user->emailFormat == 'html' && $htmlBody)
 		{
 			$renderedHtmlBody = TemplateHelper::renderString($subject.' - HTML body', $htmlBody, $variables);
 			$email->msgHtml($renderedHtmlBody);
@@ -203,7 +203,7 @@ class EmailService extends \CApplicationComponent
 		}
 
 		if (!$email->send())
-			throw new Exception(Blocks::t('Email error: {errorMessage}', array('errorMessage' => $email->errorInfo)));
+			throw new Exception(Blocks::t('Email error: {error}', array('error' => $email->errorInfo)));
 
 		return true;
 	}
@@ -240,7 +240,7 @@ class EmailService extends \CApplicationComponent
 		$content = $this->getMessageContent($message->id, $user->language);
 		$subject = $content->subject;
 		$body = $content->body;
-		$htmlBody = $content->html_body;
+		$htmlBody = $content->htmlBody;
 
 		$settings = $this->getSettings();
 		if (!empty($settings['template']))

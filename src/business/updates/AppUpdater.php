@@ -98,7 +98,7 @@ class AppUpdater implements IUpdater
 		// Validate that the paths in the update manifest file are all writable by @@@productDisplay@@@
 		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
 		if (!$this->validateManifestPathsWritable())
-			throw new Exception(Blocks::t('@@@productDisplay@@@ needs to be able to write to the follow files, but can’t: {fileList}', array('fileList' => implode(',', $this->_writableErrors))));
+			throw new Exception(Blocks::t('@@@productDisplay@@@ needs to be able to write to the follow files, but can’t: {files}', array('files' => implode(',', $this->_writableErrors))));
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);

@@ -46,7 +46,7 @@ class DashboardService extends \CApplicationComponent
 	{
 		$record = Widget::model()->findByAttributes(array(
 			'id' => $widgetId,
-			'user_id' => blx()->accounts->getCurrentUser()->id
+			'userId' => blx()->accounts->getCurrentUser()->id
 		));
 
 		if ($record)
@@ -71,9 +71,9 @@ class DashboardService extends \CApplicationComponent
 	public function getUserWidgets()
 	{
 		$records = Widget::model()->findAllByAttributes(array(
-			'user_id' => blx()->accounts->getCurrentUser()->id
+			'userId' => blx()->accounts->getCurrentUser()->id
 		), array(
-			'order' => 'sort_order'
+			'order' => 'sortOrder'
 		));
 
 		$widgets = array();
@@ -107,9 +107,9 @@ class DashboardService extends \CApplicationComponent
 		foreach ($widgets as $i => $widgetClass)
 		{
 			$widget = new Widget();
-			$widget->user_id = $userId;
+			$widget->userId = $userId;
 			$widget->class = $widgetClass;
-			$widget->sort_order = ($i + 1);
+			$widget->sortOrder = ($i + 1);
 			$widget->save();
 		}
 	}
@@ -154,9 +154,9 @@ class DashboardService extends \CApplicationComponent
 				if (empty($widget))
 					$widget = new Widget();
 
-				$widget->user_id = $user->id;
+				$widget->userId = $user->id;
 				$widget->class = $widgetData['class'];
-				$widget->sort_order = $order + 1;
+				$widget->sortOrder = $order + 1;
 				$widget->save();
 
 				if (!empty($widgetData['settings']))
@@ -167,7 +167,7 @@ class DashboardService extends \CApplicationComponent
 			{
 				foreach ($settings['delete'] as $widgetId)
 				{
-					blx()->db->createCommand()->delete('widgetsettings', array('widget_id'=>$widgetId));
+					blx()->db->createCommand()->delete('widgetsettings', array('widgetId'=>$widgetId));
 					blx()->db->createCommand()->delete('widgets',        array('id'=>$widgetId));
 				}
 			}

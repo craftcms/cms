@@ -14,32 +14,32 @@ class User extends BaseModel
 	protected function getProperties()
 	{
 		return array(
-			'username'                             => array(PropertyType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),
-			'first_name'                           => array(PropertyType::Varchar, 'maxLength' => 100),
-			'last_name'                            => array(PropertyType::Varchar, 'maxLength' => 100),
-			'email'                                => array(PropertyType::Email, 'required' => true, 'unique' => true),
-			'password'                             => PropertyType::Char,
-			'enc_type'                             => array(PropertyType::Char, 'maxLength' => 10),
-			'auth_session_token'                   => array(PropertyType::Char, 'maxLength' => 100),
-			'admin'                                => PropertyType::Boolean,
-			'password_reset_required'              => PropertyType::Boolean,
-			'status'                               => array(PropertyType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
+			'username'                         => array(PropertyType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),
+			'firstName'                        => array(PropertyType::Varchar, 'maxLength' => 100),
+			'lastName'                         => array(PropertyType::Varchar, 'maxLength' => 100),
+			'email'                            => array(PropertyType::Email, 'required' => true, 'unique' => true),
+			'password'                         => PropertyType::Char,
+			'encType'                          => array(PropertyType::Char, 'maxLength' => 10),
+			'authSessionToken'                 => array(PropertyType::Char, 'maxLength' => 100),
+			'admin'                            => PropertyType::Boolean,
+			'passwordResetRequired'            => PropertyType::Boolean,
+			'status'                           => array(PropertyType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
 			/* BLOCKSPRO ONLY */
-			'language'                             => array(PropertyType::Language, 'default' => Blocks::getLanguage()),
+			'language'                         => array(PropertyType::Language, 'default' => Blocks::getLanguage()),
 			/* end BLOCKSPRO ONLY */
-			'email_format'                         => array(PropertyType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
-			'last_login_date'                      => PropertyType::UnixTimeStamp,
-			'last_login_failed_date'               => PropertyType::UnixTimeStamp,
-			'last_password_change_date'            => PropertyType::UnixTimeStamp,
-			'last_lockout_date'                    => PropertyType::UnixTimeStamp,
-			'failed_password_attempt_count'        => array(PropertyType::TinyInt, 'unsigned' => true),
-			'failed_password_attempt_window_start' => PropertyType::UnixTimeStamp,
-			'cooldown_start'                       => PropertyType::UnixTimeStamp,
-			'verification_code'                    => array(PropertyType::Char, 'maxLength' => 36),
-			'verification_code_issued_date'        => PropertyType::UnixTimeStamp,
-			'verification_code_expiry_date'        => PropertyType::UnixTimeStamp,
-			'archived_username'                    => array(PropertyType::Varchar, 'maxLength' => 100),
-			'archived_email'                       => PropertyType::Email,
+			'emailFormat'                      => array(PropertyType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
+			'lastLoginDate'                    => PropertyType::UnixTimeStamp,
+			'lastLoginFailedDate'              => PropertyType::UnixTimeStamp,
+			'lastPasswordChangeDate'           => PropertyType::UnixTimeStamp,
+			'lastLockoutDate'                  => PropertyType::UnixTimeStamp,
+			'failedPasswordAttemptCount'       => array(PropertyType::TinyInt, 'unsigned' => true),
+			'failedPasswordAttemptWindowStart' => PropertyType::UnixTimeStamp,
+			'cooldownStart'                    => PropertyType::UnixTimeStamp,
+			'verificationCode'                 => array(PropertyType::Char, 'maxLength' => 36),
+			'verificationCodeIssuedDate'       => PropertyType::UnixTimeStamp,
+			'verificationCodeExpiryDate'       => PropertyType::UnixTimeStamp,
+			'archivedUsername'                 => array(PropertyType::Varchar, 'maxLength' => 100),
+			'archivedEmail'                    => PropertyType::Email,
 		);
 	}
 
@@ -47,10 +47,10 @@ class User extends BaseModel
 	{
 		return array(
 			/* BLOCKSPRO ONLY */
-			'blocks'  => array(static::HAS_MANY, 'UserBlock', 'user_id'),
-			'content' => array(static::HAS_ONE, 'UserContent', 'user_id'),
+			'blocks'  => array(static::HAS_MANY, 'UserBlock', 'userId'),
+			'content' => array(static::HAS_ONE, 'UserContent', 'userId'),
 			/* end BLOCKSPRO ONLY */
-			'widgets' => array(static::HAS_MANY, 'Widget', 'user_id'),
+			'widgets' => array(static::HAS_MANY, 'Widget', 'userId'),
 		);
 	}
 
@@ -71,7 +71,7 @@ class User extends BaseModel
 	 */
 	public function getFullName()
 	{
-		return $this->first_name . ($this->first_name && $this->last_name ? ' ' : '') . $this->last_name;
+		return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
 	}
 
 	/**

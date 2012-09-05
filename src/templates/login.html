@@ -3,6 +3,7 @@
 {% endif %}
 
 {% extends "_layouts/basic" %}
+{% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
 {% include_css "login.css" %}
 {% include_js "login.js" %}
@@ -20,25 +21,11 @@
 		{
 			document.write(
 				'<form id="login-form" method="post" action="">' +
-					'<div class="field">' +
-						'<div class="textwrapper"><input id="username" class="text nicetext" type="text" data-hint="{{ "Username or Email"|t }}" value="{{ blx.session.rememberedusername }}"></div>' +
-					'</div>' +
+					'{{ forms.textField({ id: "username", hint: "Username or Email"|t, value: blx.session.rememberedusername })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
-						'<div class="field">' +
-							{#'<div class="heading">' +
-								'<label for="password">{{ "Password"|t }}</label>' +
-								' <a id="forgot-password">{{ "forget?"|t }}</a>' +
-							'</div>' +#}
-							'<div class="passwordwrapper"><input id="password" class="text nicetext password" type="password" data-hint="{{ "Password"|t }}"></div>' +
-						'</div>' +
-
-						'<div class="field">' +
-							'<label>' +
-								'<input type="checkbox" id="remember-me"> ' +
-								'{{ "Keep me logged in"|t }}' +
-							'</label>' +
-						'</div>' +
+						'{{ forms.passwordField({ id: "password", hint: "Password"|t })|e("js") }}' +
+						'{{ forms.checkboxField({ id: "remember-me", label: "Keep me logged in"|t })|e("js") }}' +
 					'</div>' +
 
 					'<div class="buttons">' +

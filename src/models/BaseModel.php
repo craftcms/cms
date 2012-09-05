@@ -177,6 +177,23 @@ abstract class BaseModel extends \CActiveRecord
 	}
 
 	/**
+	 * @return array
+	 */
+	public function scopes()
+	{
+		$scopes = array();
+
+		// Add ordered() scope if this model has a sortOrder property
+		$properties = $this->getProperties();
+		if (isset($properties['sortOrder']))
+		{
+			$scopes['ordered'] = array('order' => 'sortOrder');
+		}
+
+		return $scopes;
+	}
+
+	/**
 	 * Creates the model's table
 	 */
 	public function createTable()
@@ -200,7 +217,7 @@ abstract class BaseModel extends \CActiveRecord
 		// Add all other columns
 		foreach ($this->getProperties() as $name => $config)
 		{
-			$config = DatabaseHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizePropertyConfig($config);
 
 			// Add (unique) index for this column?
 			$unique = (isset($config['unique']) && $config['unique'] === true);
@@ -304,25 +321,25 @@ abstract class BaseModel extends \CActiveRecord
 	{
 		foreach ($this->getProperties() as $name => $config)
 		{
-			$config = DatabaseHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizePropertyConfig($config);
 			if (isset($config['default']))
 				$this->_attributes[$name] = $config['default'];
 		}
 	}
 
 	/**
-	 * If it is a new active record instance, will populate date_created with the current UTC unix timestamp and a new GUID
-	 * for uid. If it is an existing record, will populate date_updated with the current UTC unix timestamp.
+	 * If it is a new active record instance, will populate dateCreated with the current UTC unix timestamp and a new GUID
+	 * for uid. If it is an existing record, will populate dateUpdated with the current UTC unix timestamp.
 	 */
 	public function populateAuditProperties()
 	{
 		if ($this->getIsNewRecord())
 		{
-			$this->date_created = DateTimeHelper::currentTime();
+			$this->dateCreated = DateTimeHelper::currentTime();
 			$this->uid = StringHelper::UUID();
 		}
 
-		$this->date_updated = DateTimeHelper::currentTime();
+		$this->dateUpdated = DateTimeHelper::currentTime();
 	}
 
 
@@ -392,7 +409,7 @@ abstract class BaseModel extends \CActiveRecord
 
 		// Add the foreign key to BELONGS_TO relations
 		if ($config[0] == static::BELONGS_TO && empty($config[2]))
-			array_splice($config, 2, 0, $name.'_id');
+			array_splice($config, 2, 0, $name.'Id');
 	}
 
 	/**

@@ -22,7 +22,7 @@ class EmailMessage extends BaseModel
 	protected function getRelations()
 	{
 		return array(
-			'content' => array(static::HAS_MANY, 'EmailMessageContent', 'message_id'),
+			'content' => array(static::HAS_MANY, 'EmailMessageContent', 'messageId'),
 		);
 	}
 }

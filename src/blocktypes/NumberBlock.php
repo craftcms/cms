@@ -23,9 +23,9 @@ class NumberBlock extends BaseBlock
 	protected function getDefaultSettings()
 	{
 		return array(
-			'type' => 'int',
-			'min' => null,
-			'max' => null
+			'min'      => 0,
+			'max'      => null,
+			'decimals' => 0
 		);
 	}
 
@@ -34,14 +34,10 @@ class NumberBlock extends BaseBlock
 	 */
 	public function getColumnType()
 	{
-		switch ($this->settings['type'])
-		{
-			case 'int':
-				return PropertyType::Int;
-			case 'dec':
-				return PropertyType::Decimal;
-		}
-
-		return null;
+		return array(PropertyType::Number,
+			'min'      => $this->settings['min'],
+			'max'      => $this->settings['max'],
+			'decimals' => $this->settings['decimals']
+		);
 	}
 }

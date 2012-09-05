@@ -43,7 +43,7 @@ class EmailSettingsForm extends \CFormModel
 				break;
 			}
 
-			case EmailerType::GmailSmtp:
+			case EmailerType::Gmail:
 			{
 				$rules[] = array('username, password, timeout', 'required');
 				$rules[] = array('username', 'email');
@@ -56,7 +56,7 @@ class EmailSettingsForm extends \CFormModel
 				break;
 			}
 
-			case EmailerType::PhpMail:
+			case EmailerType::Php:
 			case EmailerType::Sendmail:
 			{
 				break;

@@ -80,28 +80,28 @@ class AccountsService extends \CApplicationComponent
 		$whereParams = array();
 
 		if (!empty($params['id']))
-			$whereConditions[] = DatabaseHelper::parseParam('id', $params['id'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
 
 		if (!empty($params['username']))
-			$whereConditions[] = DatabaseHelper::parseParam('username', $params['username'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('username', $params['username'], $whereParams);
 
-		if (!empty($params['first_name']))
-			$whereConditions[] = DatabaseHelper::parseParam('first_name', $params['first_name'], $whereParams);
+		if (!empty($params['firstName']))
+			$whereConditions[] = DbHelper::parseParam('firstName', $params['firstName'], $whereParams);
 
-		if (!empty($params['last_name']))
-			$whereConditions[] = DatabaseHelper::parseParam('last_name', $params['last_name'], $whereParams);
+		if (!empty($params['lastName']))
+			$whereConditions[] = DbHelper::parseParam('lastName', $params['lastName'], $whereParams);
 
 		if (!empty($params['email']))
-			$whereConditions[] = DatabaseHelper::parseParam('email', $params['email'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('email', $params['email'], $whereParams);
 
 		if (!empty($params['admin']))
-			$whereConditions[] = DatabaseHelper::parseParam('admin', 1, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('admin', 1, $whereParams);
 
 		if (!empty($params['status']) && $params['status'] != '*')
-			$whereConditions[] = DatabaseHelper::parseParam('status', $params['status'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('status', $params['status'], $whereParams);
 
-		if (!empty($params['last_login_date']))
-			$whereConditions[] = DatabaseHelper::parseParam('last_login_date', $params['last_login_date'], $whereParams);
+		if (!empty($params['lastLoginDate']))
+			$whereConditions[] = DbHelper::parseParam('lastLoginDate', $params['lastLoginDate'], $whereParams);
 
 		if ($whereConditions)
 		{
@@ -119,7 +119,7 @@ class AccountsService extends \CApplicationComponent
 	public function getRecentUsers($params = array())
 	{
 		return $this->getUsers(array_merge($params, array(
-			'order' => 'date_created DESC'
+			'order' => 'dateCreated DESC'
 		)));
 	}
 
@@ -160,7 +160,7 @@ class AccountsService extends \CApplicationComponent
 			return null;
 
 		return User::model()->findByAttributes(array(
-			'verification_code' => $code,
+			'verificationCode' => $code,
 		));
 	}
 
@@ -231,9 +231,9 @@ class AccountsService extends \CApplicationComponent
 		$duration = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->verificationCodeDuration) .'S');
 		$expiryDate = $issuedDate->add($duration);
 
-		$user->verification_code = $verificationCode;
-		$user->verification_code_issued_date = $issuedDate->getTimestamp();
-		$user->verification_code_expiry_date = $expiryDate->getTimestamp();
+		$user->verificationCode = $verificationCode;
+		$user->verificationCodeIssuedDate = $issuedDate->getTimestamp();
+		$user->verificationCodeExpiryDate = $expiryDate->getTimestamp();
 
 		if ($save)
 			$user->save();
@@ -247,9 +247,9 @@ class AccountsService extends \CApplicationComponent
 	public function activateUser(User $user)
 	{
 		$user->status = UserAccountStatus::Active;
-		$user->verification_code = null;
-		$user->verification_code_issued_date = null;
-		$user->verification_code_expiry_date = null;
+		$user->verificationCode = null;
+		$user->verificationCodeIssuedDate = null;
+		$user->verificationCodeExpiryDate = null;
 		$user->save();
 	}
 
@@ -261,9 +261,9 @@ class AccountsService extends \CApplicationComponent
 	public function unlockUser(User $user)
 	{
 		$user->status = UserAccountStatus::Active;
-		$user->failed_password_attempt_count = null;
-		$user->failed_password_attempt_window_start = null;
-		$user->cooldown_start = null;
+		$user->failedPasswordAttemptCount = null;
+		$user->failedPasswordAttemptWindowStart = null;
+		$user->cooldownStart = null;
 		$user->save();
 	}
 
@@ -301,10 +301,10 @@ class AccountsService extends \CApplicationComponent
 	{
 		$hashAndType = blx()->security->hashPassword($newPassword);
 		$user->password = $hashAndType['hash'];
-		$user->enc_type = $hashAndType['encType'];
+		$user->encType = $hashAndType['encType'];
 		$user->status = UserAccountStatus::Active;
-		$user->last_password_change_date = DateTimeHelper::currentTime();
-		$user->password_reset_required = false;
+		$user->lastPasswordChangeDate = DateTimeHelper::currentTime();
+		$user->passwordResetRequired = false;
 
 		if (!$save || $user->save())
 			return true;
@@ -330,7 +330,7 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function getRemainingCooldownTime(User $user)
 	{
-		$cooldownEnd = $user->last_login_failed_date + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown);
+		$cooldownEnd = $user->lastLoginFailedDate + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown);
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
 
 		if ($cooldownRemaining > 0)
@@ -346,8 +346,8 @@ class AccountsService extends \CApplicationComponent
 	 */
 	public function deleteUser(User $user)
 	{
-		$user->archived_username = $user->username;
-		$user->archived_email = $user->email;
+		$user->archivedUsername = $user->username;
+		$user->archivedEmail = $user->email;
 		$user->username = '';
 		$user->email = '';
 		$user->status = UserAccountStatus::Archived;

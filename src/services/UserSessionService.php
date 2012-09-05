@@ -65,10 +65,10 @@ class UserSessionService extends \CWebUser
 
 			$user = blx()->accounts->getUserById($id);
 
-			if ($user === null || $user->auth_session_token !== $authSessionToken)
+			if ($user === null || $user->authSessionToken !== $authSessionToken)
 			{
 				// everything is not cool.
-				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record: '.($user ? $user->auth_session_token : ''.'.'));
+				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record: '.($user ? $user->authSessionToken : ''.'.'));
 				return false;
 			}
 
@@ -87,7 +87,7 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->getIsLoggedIn() && !$fromCookie)
 		{
-			blx()->accounts->getCurrentUser()->last_login_date = DateTimeHelper::currentTime();
+			blx()->accounts->getCurrentUser()->lastLoginDate = DateTimeHelper::currentTime();
 			blx()->accounts->getCurrentUser()->save();
 		}
 	}
