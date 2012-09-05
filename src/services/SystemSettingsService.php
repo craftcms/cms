@@ -80,6 +80,6 @@ class SystemSettingsService extends \CApplicationComponent
 
 		$record->settings = $settings;
 		$record->save();
-		return !$record->getErrors();
+		return !$record->hasErrors();
 	}
 }

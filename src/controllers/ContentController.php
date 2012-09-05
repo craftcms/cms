@@ -36,7 +36,7 @@ class ContentController extends BaseController
 		$section = blx()->content->saveSection($settings, $sectionId);
 
 		// Did it save?
-		if (!$section->getErrors())
+		if (!$section->hasErrors())
 		{
 			blx()->user->setNotice(Blocks::t('Section saved.'));
 			$this->redirectToPostedUrl();
@@ -103,7 +103,7 @@ class ContentController extends BaseController
 		/* end BLOCKSPRO ONLY */
 
 		// Did it save?
-		if (!$block->getErrors())
+		if (!$block->hasErrors())
 		{
 			blx()->user->setNotice(Blocks::t('Entry block saved.'));
 			$this->redirectToPostedUrl();

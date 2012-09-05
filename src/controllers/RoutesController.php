@@ -20,7 +20,7 @@ class RoutesController extends BaseController
 
 		$route = blx()->routes->saveRoute($urlParts, $template, $routeId);
 
-		if ($route->getErrors())
+		if ($route->hasErrors())
 			$this->returnJson(array('errors' => $route->getErrors()));
 		else
 		{

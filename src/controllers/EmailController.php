@@ -21,7 +21,7 @@ class EmailController extends BaseController
 
 		$content = blx()->email->saveMessageContent($messageId, $subject, $body, null, $language);
 
-		if ($content->getErrors())
+		if ($content->hasErrors())
 			$this->returnErrorJson(Blocks::t('There was a problem saving your message.'));
 		else
 			$this->returnJson(array('success' => true));
