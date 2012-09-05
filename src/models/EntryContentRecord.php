@@ -11,11 +11,11 @@ class EntryContentRecord extends BaseRecord
 	/**
 	 * Constructor
 	 *
-	 * @param Section $section
+	 * @param SectionRecord $section
 	 */
 	public function __construct($section = null)
 	{
-		if ($section && $section instanceof Section)
+		if ($section && $section instanceof SectionRecord)
 			$this->section = $section;
 
 		parent::__construct(null);
@@ -34,7 +34,7 @@ class EntryContentRecord extends BaseRecord
 	 * (lame that this can't also be called getTableName() -- see https://bugs.php.net/bug.php?id=40837)
 	 *
 	 * @static
-	 * @param Section $section
+	 * @param SectionRecord $section
 	 * @return string
 	 */
 	public static function getTableNameForSection($section)
