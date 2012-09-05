@@ -21,20 +21,20 @@ class SettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$generalSettingsForm = new GeneralSettingsModel();
-		$generalSettingsForm->siteName = blx()->request->getPost('siteName');
-		$generalSettingsForm->siteUrl = blx()->request->getPost('siteUrl');
+		$generalSettingsModel = new GeneralSettingsModel();
+		$generalSettingsModel->siteName = blx()->request->getPost('siteName');
+		$generalSettingsModel->siteUrl = blx()->request->getPost('siteUrl');
 		/* BLOCKSPRO ONLY */
-		$generalSettingsForm->licenseKey = blx()->request->getPost('licenseKey');
+		$generalSettingsModel->licenseKey = blx()->request->getPost('licenseKey');
 		/* end BLOCKSPRO ONLY */
 
-		if ($generalSettingsForm->validate())
+		if ($generalSettingsModel->validate())
 		{
 			$info = InfoRecord::model()->find();
-			$info->siteName = $generalSettingsForm->siteName;
-			$info->siteUrl = $generalSettingsForm->siteUrl;
+			$info->siteName = $generalSettingsModel->siteName;
+			$info->siteUrl = $generalSettingsModel->siteUrl;
 			/* BLOCKSPRO ONLY */
-			$info->licenseKey = $generalSettingsForm->licenseKey;
+			$info->licenseKey = $generalSettingsModel->licenseKey;
 			/* end BLOCKSPRO ONLY */
 			$info->save();
 
@@ -44,7 +44,7 @@ class SettingsController extends BaseController
 		else
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save general settings.'));
-			$this->renderRequestedTemplate(array('post' => $generalSettingsForm));
+			$this->renderRequestedTemplate(array('post' => $generalSettingsModel));
 		}
 	}
 

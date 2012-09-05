@@ -49,10 +49,10 @@ class AccountsController extends BaseController
 		$verificationCode = blx()->request->getRequiredPost('verificationCode');
 		$password = blx()->request->getRequiredPost('password');
 
-		$passwordForm = new PasswordModel();
-		$passwordForm->password = $password;
+		$passwordModel = new PasswordModel();
+		$passwordModel->password = $password;
 
-		if ($passwordForm->validate())
+		if ($passwordModel->validate())
 		{
 			$user = blx()->accounts->getUserByVerificationCode($verificationCode);
 
@@ -72,7 +72,7 @@ class AccountsController extends BaseController
 				$user->save();
 
 				if (!blx()->user->getIsLoggedIn())
-					blx()->user->startLogin($user->username, $passwordForm->password);
+					blx()->user->startLogin($user->username, $passwordModel->password);
 
 				blx()->user->setNotice(Blocks::t('Password updated.'));
 				$this->redirect('dashboard');
@@ -84,7 +84,7 @@ class AccountsController extends BaseController
 		}
 
 		// display the verify account form
-		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordForm));
+		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordModel));
 	}
 
 	// Account / Profile / Admin Settings
