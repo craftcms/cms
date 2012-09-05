@@ -19,8 +19,6 @@ class EmailSettingsModel extends \CFormModel
 	public $emailAddress;
 	public $senderName;
 
-
-
 	/**
 	 * Declares the validation rules.
 	 *

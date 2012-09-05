@@ -71,6 +71,7 @@ abstract class BaseModel extends \CModel
 	 * Throws a "no property exists" exception
 	 *
 	 * @param string $property
+	 * @param        $property
 	 * @throws Exception
 	 */
 	private function _noPropertyExists($property)
