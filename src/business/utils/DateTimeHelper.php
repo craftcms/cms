@@ -483,5 +483,6 @@ class DateTimeHelper
 
 		return $date;
 	}
+
 }
 

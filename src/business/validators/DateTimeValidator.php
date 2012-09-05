@@ -24,11 +24,16 @@ class DateTimeValidator extends \CValidator
 	{
 		$value = $object->$attribute;
 
-		// Handles are always required, so if it's blank, the required validator will catch this.
-		if ($value &&  gettype($value) !== gettype(new DateTime()))
+		if ($value)
 		{
-			$message = Blocks::t('“{object}->{attribute}” must be a DateTime object.', array('object' => get_class($object), 'attribute' => $attribute));
-			$this->addError($object, $attribute, $message);
+			if (!DateTimeHelper::isValidTimeStamp((string)$value))
+			{
+				if (gettype($value) !== gettype(new DateTime()))
+				{
+					$message = Blocks::t('“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', array('object' => get_class($object), 'attribute' => $attribute));
+					$this->addError($object, $attribute, $message);
+				}
+			}
 		}
 	}
 }
