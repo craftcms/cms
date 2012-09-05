@@ -15,7 +15,7 @@
 {% macro textClass(config) %}{{ [
 	'text',
 	config.class,
-	(config.hint ? 'nicehint' : null),
+	(config.hint ? 'nicetext' : null),
 	(config.type == 'password' ? 'password' : null),
 	(config.errors ? 'error' : null)
 ]|filter|join(' ') }}{% endmacro %}
