@@ -149,10 +149,12 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Returns a list of this model's properties.
 	 *
-	 * @abstract
 	 * @return array
 	 */
-	abstract protected function getProperties();
+	protected function getProperties()
+	{
+		return array();
+	}
 
 	/**
 	 * Returns a list of this model's active record relations.
