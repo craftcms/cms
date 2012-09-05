@@ -147,11 +147,11 @@ class BlxVariable
 	/* end BLOCKSPRO ONLY */
 
 	/**
-	 * @return SettingsVariable
+	 * @return SystemSettingsVariable
 	 */
-	public function settings()
+	public function systemSettings()
 	{
-		return new SettingsVariable();
+		return new SystemSettingsVariable();
 	}
 
 	/**

@@ -10,7 +10,7 @@
 
 
 {% if not settings %}
-	{% set settings = blx.settings.email %}
+	{% set settings = blx.systemSettings.email %}
 {% endif %}
 
 
@@ -160,7 +160,6 @@
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
-			<a class="btn" href="{{ url('settings') }}">{{ "Cancel"|t }}</a>
 		</div>
 	</form>
 {% endset %}

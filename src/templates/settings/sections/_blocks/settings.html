@@ -1,5 +1,7 @@
+<!-- BLOCKSPRO ONLY -->
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
+<!-- end BLOCKSPRO ONLY -->
 
 
 {% if not block and blockId %}
@@ -24,7 +26,12 @@
 {% set titlebar %}
 	<h1>{{ title|raw }}</h1>
 	<ul class="left">
+		<!-- BLOCKS ONLY -->
+		<li><a href="{{ url('settings/blog') }}" class="btn backbtn">{{ "Blog"|t }}</a></li>
+		<!-- end BLOCKS ONLY -->
+		<!-- BLOCKSPRO ONLY -->
 		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' })|raw }}</a></li>
+		<!-- end BLOCKSPRO ONLY -->
 	</ul>
 {% endset %}
 
@@ -32,8 +39,13 @@
 {% set content %}
 	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="content/saveEntryBlock">
+		<!-- BLOCKS ONLY -->
+		<input type="hidden" name="redirect" value="settings/blog">
+		<!-- end BLOCKS ONLY -->
+		<!-- BLOCKSPRO ONLY -->
 		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
+		<!-- end BLOCKSPRO ONLY -->
 		{% if block.id %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}
 
 		{{ forms.textField({
@@ -61,7 +73,12 @@
 
 		{{ forms.textareaField({
 			label: "Instructions"|t,
+			<!-- BLOCKS ONLY -->
+			instructions: "Helper text to guide you when authoring an entry."|t,
+			<!-- end BLOCKS ONLY -->
+			<!-- BLOCKSPRO ONLY -->
 			instructions: "Helper text to guide the author."|t,
+			<!-- end BLOCKSPRO ONLY -->
 			id: 'instructions',
 			name: 'instructions',
 			value: block.instructions,
@@ -75,15 +92,15 @@
 			checked: block.required
 		}) }}
 
-		{% if blx.settings.languages %}
-
+		<!-- BLOCKSPRO ONLY -->
+		{% if blx.systemSettings.languages %}
 			{{ forms.checkboxField({
 				label: "This entry block is translatable"|t,
 				name: 'translatable',
 				checked: block.translatable
 			}) }}
-
 		{% endif %}
+		<!-- end BLOCKSPRO ONLY -->
 
 		<hr>
 

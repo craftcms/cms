@@ -328,10 +328,7 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function getSettings()
 	{
-		if (!isset($this->_settings))
-			$this->_settings = blx()->settings->getSystemSettings('email');
-
-		return $this->_settings;
+		return blx()->systemSettings->getSettings('email');
 	}
 
 	/**
@@ -342,12 +339,6 @@ class EmailService extends \CApplicationComponent
 	 */
 	public function saveSettings($settings)
 	{
-		if (blx()->settings->saveSettings('systemsettings', $settings, 'email', true))
-		{
-			$this->_settings = $settings;
-			return true;
-		}
-
-		return false;
+		return blx()->systemSettings->saveSettings('email', $settings);
 	}
 }

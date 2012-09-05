@@ -74,8 +74,8 @@ return CMap::mergeArray(
 				'class' => 'Blocks\SecurityService',
 			),
 
-			'settings' => array(
-				'class' => 'Blocks\SettingsService',
+			'systemSettings' => array(
+				'class' => 'Blocks\SystemSettingsService',
 			),
 
 			'updates' => array(
@@ -108,10 +108,6 @@ return CMap::mergeArray(
 				'class' => 'Blocks\UrlManager',
 				'cpRoutes' => array(
 					'update\/(?P<handle>[^\/]*)'                                       => 'update',
-					/* BLOCKS ONLY */
-					'myaccount'                                                        => 'users/_edit/account',
-					'myaccount\/profile'                                               => 'users/_edit/profile',
-					/* end BLOCKS ONLY */
 					/* BLOCKSPRO ONLY */
 					'users\/new'                                                       => 'users/_edit/account',
 					'users\/(?P<userId>\d+)'                                           => 'users/_edit/account',

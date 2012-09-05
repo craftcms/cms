@@ -167,7 +167,7 @@ class SettingsController extends BaseController
 		$languages = blx()->request->getPost('languages', array());
 		sort($languages);
 
-		if (blx()->settings->saveSettings('systemsettings', $languages, 'languages', true))
+		if (blx()->systemSettings->saveSettings('languages', $languages))
 		{
 			blx()->user->setNotice(Blocks::t('Language settings saved.'));
 			$this->redirectToPostedUrl();
@@ -195,7 +195,7 @@ class SettingsController extends BaseController
 				$settings[$key] = true;
 		}
 
-		if (blx()->settings->saveSettings('systemsettings', $settings, 'advanced', true))
+		if (blx()->systemSettings->saveSettings('advanced', $settings))
 		{
 			blx()->user->setNotice(Blocks::t('Advanced settings saved.'));
 			$this->redirectToPostedUrl();

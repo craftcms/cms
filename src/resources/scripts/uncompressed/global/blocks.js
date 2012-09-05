@@ -1,5 +1,6 @@
 (function($) {
 
+
 if (typeof blx == 'undefined') blx = {};
 if (typeof blx.ui == 'undefined') blx.ui = {};
 
@@ -39,9 +40,6 @@ blx.log = function(msg)
 };
 
 var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae','230':'ae','228':'ae','231':'c','232':'e','233':'e','234':'e','235':'e','236':'i','237':'i','238':'i','239':'i','241':'n','242':'o','243':'o','244':'o','245':'o','246':'oe','249':'u','250':'u','251':'u','252':'ue','255':'y','257':'aa','269':'ch','275':'ee','291':'gj','299':'ii','311':'kj','316':'lj','326':'nj','353':'sh','363':'uu','382':'zh','256':'aa','268':'ch','274':'ee','290':'gj','298':'ii','310':'kj','315':'lj','325':'nj','352':'sh','362':'uu','381':'zh'};
-
-var $notificationContainer = $('#notifications'),
-	notificationDuration = 2000;
 
 
 /**
@@ -680,28 +678,6 @@ blx.Base = Base.extend({
 		this.removeAllListeners(this._$listeners);
 	}
 
-});
-
-blx.$document.ready(function() {
-	// Fade the notification out in two seconds
-	var $notifications = $notificationContainer.children();
-	$notifications.delay(notificationDuration).fadeOut();
-
-	// Initialize the account menu button
-	new blx.ui.MenuBtn('#account', {
-		onOptionSelect: function(option) {
-			var url = $(option).attr('data-url');
-			document.location.href = blx.baseUrl + url;
-		}
-	});
-
-	$('.formsubmit').click(function() {
-		var $btn = $(this),
-			$form = $btn.closest('form');
-		if ($btn.attr('data-action'))
-			$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
-		$form.submit();
-	});
 });
 
 
