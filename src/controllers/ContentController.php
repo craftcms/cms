@@ -91,9 +91,9 @@ class ContentController extends BaseController
 		$settings['translatable'] = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
 
-		$blocktypeSettings = blx()->request->getPost('settings');
-		$settings['class']    = $class;
-		$settings['settings'] = isset($blocktypeSettings[$class]) ? $blocktypeSettings[$class] : null;
+		$blockSettings = blx()->request->getPost('types');
+		$settings['class'] = $class;
+		$settings['blockSettings'] = isset($blockSettings[$class]) ? $blockSettings[$class] : null;
 
 		/* BLOCKS ONLY */
 		$block = blx()->content->saveEntryBlock($settings, $blockId);
@@ -115,7 +115,7 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'block' => $block
+			'record' => $block
 		));
 	}
 

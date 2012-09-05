@@ -6,8 +6,6 @@ namespace Blocks;
  */
 class DashboardService extends \CApplicationComponent
 {
-	private $_allWidgets;
-
 	/**
 	 * Returns all installed widgets.
 	 *
@@ -15,10 +13,7 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getAllWidgets()
 	{
-		if (!isset($this->_allWidgets))
-			$this->_allWidgets = ComponentHelper::getComponents('widgets', 'Widget');
-
-		return $this->_allWidgets;
+		return blx()->components->getComponentsByType('widget');
 	}
 
 	/**
@@ -29,11 +24,7 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getWidgetByClass($class)
 	{
-		$class = __NAMESPACE__.'\\'.$class.'Widget';
-		if (class_exists($class))
-			return new $class;
-		else
-			return null;
+		return blx()->components->getComponentByTypeAndClass('widget', $class);
 	}
 
 	/**

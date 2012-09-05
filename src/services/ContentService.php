@@ -355,41 +355,41 @@ class ContentService extends \CApplicationComponent
 	{
 		$section = $this->_getSection($sectionId);
 	/* end BLOCKSPRO ONLY */
-		$block = $this->_getEntryBlock($blockId);
+		$record = $this->_getEntryBlock($blockId);
 
-		$isNewBlock = $block->getIsNewRecord();
-		if (!$isNewBlock)
-			$oldHandle = $block->handle;
+		$isNewRecord = $record->getIsNewRecord();
+		if (!$isNewRecord)
+			$oldHandle = $record->handle;
 
 		/* BLOCKSPRO ONLY */
-		$block->sectionId   = $section->id;
+		$record->sectionId   = $section->id;
 		/* end BLOCKSPRO ONLY */
-		$block->name         = $settings['name'];
-		$block->handle       = $settings['handle'];
-		$block->instructions = (!empty($settings['instructions']) ? $settings['instructions'] : null);
-		$block->required     = !empty($settings['required']);
-		$block->translatable = !empty($settings['translatable']);
-		$block->class        = $settings['class'];
-		$block->settings     = (!empty($settings['settings']) ? $settings['settings'] : null);
+		$record->name         = $settings['name'];
+		$record->handle        = $settings['handle'];
+		$record->instructions  = (!empty($settings['instructions']) ? $settings['instructions'] : null);
+		$record->required      = !empty($settings['required']);
+		$record->translatable  = !empty($settings['translatable']);
+		$record->class         = $settings['class'];
+		$record->blockSettings = (!empty($settings['blockSettings']) ? $settings['blockSettings'] : null);
 
-		if ($block->getIsNewRecord())
+		if ($isNewRecord)
 		{
 			$maxSortOrder = blx()->db->createCommand()
 				->select('max(sortOrder)')
 				->from('entryblocks')
 				->queryScalar();
 
-			$block->sortOrder = $maxSortOrder + 1;
+			$record->sortOrder = $maxSortOrder + 1;
 		}
 
-		if ($block->validate())
+		if ($record->validate())
 		{
 			// Start a transaction
 			$transaction = blx()->db->beginTransaction();
 
 			try
 			{
-				$block->save(false);
+				$record->save(false);
 
 				/* BLOCKS ONLY */
 				$content = new EntryContentRecord();
@@ -399,17 +399,17 @@ class ContentService extends \CApplicationComponent
 				$contentTable = EntryContentRecord::getTableNameForSection($section);
 				/* end BLOCKSPRO ONLY */
 
-				$blockType = blx()->blocks->getBlockByClass($block->class);
-				$blockType->setSettings($block->settings);
-				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
+				$block = blx()->blocks->getBlockByClass($record->class);
+				$block->setSettings($record->blockSettings);
+				$columnType = DbHelper::generateColumnDefinition($block->getColumnType());
 
-				if ($isNewBlock)
+				if ($isNewRecord)
 				{
-					blx()->db->createCommand()->addColumn($contentTable, $block->handle, $columnType);
+					blx()->db->createCommand()->addColumn($contentTable, $record->handle, $columnType);
 				}
 				else
 				{
-					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $columnType, $block->handle);
+					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $columnType, $record->handle);
 				}
 
 				// Commit the transaction
@@ -422,7 +422,7 @@ class ContentService extends \CApplicationComponent
 			}
 		}
 
-		return $block;
+		return $record;
 	}
 
 	/**
@@ -480,25 +480,25 @@ class ContentService extends \CApplicationComponent
 			{
 				// Update the sortOrder in entryblocks
 				/* BLOCKS ONLY */
-				$block = $this->_getEntryBlock($blockId);
+				$record = $this->_getEntryBlock($blockId);
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
-				$block = EntryBlockRecord::model()->with('section')->findById($blockId);
-				if (!$block)
+				$record = EntryBlockRecord::model()->with('section')->findById($blockId);
+				if (!$record)
 					$this->_noEntryBlockExists($blockId);
 				/* end BLOCKSPRO ONLY */
-				$block->sortOrder = $blockOrder+1;
-				$block->save();
+				$record->sortOrder = $blockOrder+1;
+				$record->save();
 
 				// Update the column order in the content table
-				$blockType = blx()->blocks->getBlockByClass($block->class);
-				$blockType->setSettings($block->settings);
+				$block = blx()->blocks->getBlockByClass($record->class);
+				$block->setSettings($record->blockSettings);
 				/* BLOCKSPRO ONLY */
-				$contentTable = EntryContentRecord::getTableNameForSection($block->section);
+				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */
-				$columnType = DbHelper::generateColumnDefinition($blockType->getColumnType());
-				blx()->db->createCommand()->alterColumn($contentTable, $block->handle, $columnType, null, $lastColumn);
-				$lastColumn = $block->handle;
+				$columnType = DbHelper::generateColumnDefinition($block->getColumnType());
+				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $columnType, null, $lastColumn);
+				$lastColumn = $record->handle;
 			}
 
 			// Commit the transaction

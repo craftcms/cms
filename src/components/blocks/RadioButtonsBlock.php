@@ -6,8 +6,8 @@ namespace Blocks;
  */
 class RadioButtonsBlock extends BaseOptionsBlock
 {
-	protected $settingsTemplate = '_blocktypes/RadioButtons/settings';
-	protected $fieldTemplate = '_blocktypes/RadioButtons/field';
+	protected $settingsTemplate = '_components/blocks/RadioButtons/settings';
+	protected $fieldTemplate = '_components/blocks/RadioButtons/field';
 
 	/**
 	 * @return string|void

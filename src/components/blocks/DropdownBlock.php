@@ -6,8 +6,8 @@ namespace Blocks;
  */
 class DropdownBlock extends BaseOptionsBlock
 {
-	protected $settingsTemplate = '_blocktypes/Dropdown/settings';
-	protected $fieldTemplate = '_blocktypes/Dropdown/field';
+	protected $settingsTemplate = '_components/blocks/Dropdown/settings';
+	protected $fieldTemplate = '_components/blocks/Dropdown/field';
 
 	/**
 	 * @return string|void

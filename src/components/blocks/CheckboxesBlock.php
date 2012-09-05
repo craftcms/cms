@@ -6,8 +6,8 @@ namespace Blocks;
  */
 class CheckboxesBlock extends BaseOptionsBlock
 {
-	protected $settingsTemplate = '_blocktypes/Checkboxes/settings';
-	protected $fieldTemplate = '_blocktypes/Checkboxes/field';
+	protected $settingsTemplate = '_components/blocks/Checkboxes/settings';
+	protected $fieldTemplate = '_components/blocks/Checkboxes/field';
 
 	/**
 	 * @return string|void

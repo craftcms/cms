@@ -11,8 +11,8 @@ class FeedWidget extends BaseWidget
 
 	public $items;
 
-	protected $bodyTemplate = '_widgets/FeedWidget/body';
-	protected $settingsTemplate = '_widgets/FeedWidget/settings';
+	protected $bodyTemplate = '_components/widgets/FeedWidget/body';
+	protected $settingsTemplate = '_components/widgets/FeedWidget/settings';
 
 	protected $settings = array(
 		'url'   => 'http://feeds.feedburner.com/blogandtonic',

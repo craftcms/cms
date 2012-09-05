@@ -6,31 +6,24 @@ namespace Blocks;
  */
 class BlocksService extends \CApplicationComponent
 {
-	private $_blockTypes;
-
 	/**
-	 * Returns a new block by the blocktype
-	 *
-	 * @param string $class The blocktype class, sans "Block" suffix
-	 * @return mixed The block instance
-	 */
-	public function getBlockByClass($class)
-	{
-		$class = __NAMESPACE__.'\\'.$class.'Block';
-		$block = new $class;
-		return $block;
-	}
-
-	/**
-	 * Returns all block types
+	 * Returns all installed blocks.
 	 *
 	 * @return array
 	 */
-	public function getBlockTypes()
+	public function getAllBlocks()
 	{
-		if (!isset($this->_blockTypes))
-			$this->_blockTypes = ComponentHelper::getComponents('blocktypes', 'Block');
+		return blx()->components->getComponentsByType('block');
+	}
 
-		return $this->_blockTypes;
+	/**
+	 * Gets a block by its class
+	 *
+	 * @param string $class
+	 * @return mixed
+	 */
+	public function getBlockByClass($class)
+	{
+		return blx()->components->getComponentByTypeAndClass('block', $class);
 	}
 }

@@ -10,7 +10,7 @@ class RecentActivityWidget extends BaseWidget
 
 	public $actions = array();
 
-	protected $bodyTemplate = '_widgets/RecentActivityWidget/body';
+	protected $bodyTemplate = '_components/widgets/RecentActivityWidget/body';
 
 	/**
 	 * Gets the widget title.

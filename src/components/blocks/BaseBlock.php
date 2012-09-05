@@ -22,7 +22,7 @@ abstract class BaseBlock extends BaseComponent
 	}
 
 	/**
-	 * Display the blocktype's settings.
+	 * Display the block's settings.
 	 *
 	 * @param array $settings
 	 * @return string
@@ -65,7 +65,7 @@ abstract class BaseBlock extends BaseComponent
 
 	/**
 	 * Provides an opportunity to modify the post data before it gets saved to the database.
-	 * This function is required for blocktypes that post array data that can't be converted to a string.
+	 * This function is required for block components that post array data that can't be converted to a string.
 	 *
 	 * @param mixed $data
 	 * @return string
