@@ -12,7 +12,7 @@ class DropdownBlock extends BaseOptionsBlock
 	/**
 	 * @return string|void
 	 */
-	public function getType()
+	public function getName()
 	{
 		return Blocks::t('Dropdown');
 	}
