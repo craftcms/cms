@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class FeedWidget extends BaseWidget
 {
-	public $name = 'Feed';
 	public $multipleInstances = true;
 
 	public $items;
@@ -19,6 +18,14 @@ class FeedWidget extends BaseWidget
 		'title' => 'Blog &amp; Tonic',
 		'limit' => 5
 	);
+
+	/**
+	 * @return string
+	 */
+	public function getName()
+	{
+		return Blocks::t('Feed');
+	}
 
 	/**
 	 * Gets the widget title.

@@ -6,17 +6,13 @@ namespace Blocks;
  */
 class SiteMapWidget extends BaseWidget
 {
-	public $name = 'Site Map';
-
 	protected $bodyTemplate = '_components/widgets/SiteMapWidget/body';
 
 	/**
-	 * Gets the widget title.
-	 *
 	 * @return string
 	 */
-	public function getTitle()
+	public function getName()
 	{
-		return 'Site Map';
+		return Blocks::t('Site Map');
 	}
 }
