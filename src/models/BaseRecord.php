@@ -8,7 +8,7 @@ namespace Blocks;
  */
 abstract class BaseRecord extends \CActiveRecord
 {
-	private $_jsonProperties;
+	private $_jsonAttributes;
 
 	/**
 	 * Constructor
@@ -16,8 +16,6 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	function __construct($scenario = 'insert')
 	{
-		$this->attachEventHandler('onBeforeSave', array($this, 'populateAuditProperties'));
-
 		// If @@@productDisplay@@@ isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
 		if (!blx()->getIsInstalled())
@@ -29,7 +27,7 @@ abstract class BaseRecord extends \CActiveRecord
 		else
 		{
 			parent::__construct($scenario);
-			$this->populatePropertyDefaults();
+			ModelHelper::populateAttributeDefaults($this);
 		}
 	}
 
@@ -38,104 +36,9 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function init()
 	{
-		$this->attachEventHandler('onAfterFind', array($this, 'unPrepDataFromDb'));
-		$this->attachEventHandler('onBeforeSave', array($this, 'prepDataForDb'));
-		$this->attachEventHandler('onAfterSave', array($this, 'unPrepDataFromDb'));
-	}
-
-	/**
-	 * Gives us a chance massage data into formats that we require for our database.
-	 *
-	 * @return null
-	 */
-	public function prepDataForDb()
-	{
-		// Process any JSON properties.
-		foreach ($this->_getJsonProperties() as $name)
-		{
-			$value = $this->$name;
-			if (!empty($value) && is_array($value))
-				$this->$name = Json::encode($value);
-			else
-				$this->name = null;
-		}
-
-		// Process any normalization that needs to be done for localization.
-		foreach ($this->defineAttributes() as $name => $config)
-		{
-			$type = ModelHelper::getAttributeType($config);
-
-			if ($type == AttributeType::Decimal)
-				$this->$name = LocalizationHelper::normalizeNumber($this->$name);
-
-			if ($type == AttributeType::UnixTimeStamp)
-			{
-				if (gettype($this->$name) === gettype(new DateTime()))
-					$this->$name = LocalizationHelper::normalizeDateTime($this->$name);
-			}
-		}
-	}
-
-	/**
-	 * Returns data from the database back info a format the user expects.
-	 *
-	 * @return null
-	 */
-	public function unPrepDataFromDb()
-	{
-		// Process any JSON properties
-		$this->_decodeJsonProperties();
-
-		// Convert any unix timestamps back into DateTime objects.
-		foreach ($this->defineAttributes() as $name => $config)
-		{
-			$type = ModelHelper::getAttributeType($config);
-
-			if ($type == AttributeType::UnixTimeStamp)
-			{
-				$dateTime = new DateTime();
-				$this->$name = $dateTime->setTimestamp($this->$name);
-			}
-		}
-	}
-
-	/**
-	 * Decodes JSON properties.
-	 *
-	 * @return null
-	 */
-	private function _decodeJsonProperties()
-	{
-		foreach ($this->_getJsonProperties() as $name)
-		{
-			$value = $this->$name;
-
-			if (!empty($value) && is_string($value))
-				$this->$name = Json::decode($value);
-			else
-				$this->$name = array();
-		}
-	}
-
-	/**
-	 * Gets any JSON properties
-	 *
-	 * @access private
-	 * @return array
-	 */
-	private function _getJsonProperties()
-	{
-		if (!isset($this->_jsonProperties))
-		{
-			$this->_jsonProperties = array();
-			foreach ($this->defineAttributes() as $name => $config)
-			{
-				$type = ModelHelper::getAttributeType($config);
-				if ($type == AttributeType::Json)
-					$this->_jsonProperties[] = $name;
-			}
-		}
-		return $this->_jsonProperties;
+		$this->attachEventHandler('onAfterFind', array($this, 'propAttributesForUse'));
+		$this->attachEventHandler('onBeforeSave', array($this, 'prepAttributesForSave'));
+		$this->attachEventHandler('onAfterSave', array($this, 'propAttributesForUse'));
 	}
 
 	/**
@@ -147,33 +50,112 @@ abstract class BaseRecord extends \CActiveRecord
 	abstract public function getTableName();
 
 	/**
-	 * Returns a list of this model's properties.
+	 * Defines this model's attributes.
 	 *
 	 * @return array
 	 */
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array();
 	}
 
 	/**
-	 * Returns a list of this model's active record relations.
+	 * Defines this model's relations to other models.
 	 *
 	 * @return array
 	 */
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array();
 	}
 
 	/**
-	 * Returns a list of this model's indexes.
+	 * Defines this model's database table indexes.
 	 *
 	 * @return array
 	 */
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array();
+	}
+
+	/**
+	 * Prepares the model's attribute values to be saved to the database.
+	 *
+	 * @return null
+	 */
+	public function prepAttributesForSave()
+	{
+		foreach ($this->defineAttributes() as $name => $config)
+		{
+			$type = ModelHelper::getAttributeType($config);
+			$value = $this->$name;
+
+			switch($type)
+			{
+				case AttributeType::Decimal:
+				{
+					$this->$name = LocalizationHelper::normalizeNumber($value);
+					break;
+				}
+				case AttributeType::UnixTimeStamp:
+				{
+					if (gettype($value) === gettype(new DateTime()))
+						$this->$name = LocalizationHelper::normalizeDateTime($value);
+					break;
+				}
+				case AttributeType::Json:
+				{
+					if (!empty($value) && is_array($value))
+						$this->$name = Json::encode($value);
+					else
+						$this->name = null;
+					break;
+				}
+			}
+		}
+
+		// Populate dateCreated and uid if this is a new record
+		if ($this->getIsNewRecord())
+		{
+			$this->dateCreated = DateTimeHelper::currentTime();
+			$this->uid = StringHelper::UUID();
+		}
+
+		// Update the dateUpdated
+		$this->dateUpdated = DateTimeHelper::currentTime();
+	}
+
+	/**
+	 * Return the attribute values to the formats we want to work with in the code.
+	 *
+	 * @return null
+	 */
+	public function propAttributesForUse()
+	{
+		foreach ($this->defineAttributes() as $name => $config)
+		{
+			$type = ModelHelper::getAttributeType($config);
+			$value = $this->$value;
+
+			switch ($type)
+			{
+				case AttributeType::UnixTimeStamp:
+				{
+					$dateTime = new DateTime();
+					$this->$name = $dateTime->setTimestamp($this->$name);
+					break;
+				}
+				case AttributeType::Json:
+				{
+					if (!empty($value) && is_string($value))
+						$this->$name = Json::decode($value);
+					else
+						$this->$name = array();
+					break;
+				}
+			}
+		}
 	}
 
 	/**
@@ -183,9 +165,9 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		$scopes = array();
 
-		// Add ordered() scope if this model has a sortOrder property
-		$properties = $this->defineAttributes();
-		if (isset($properties['sortOrder']))
+		// Add ordered() scope if this model has a sortOrder attribute
+		$attributes = $this->defineAttributes();
+		if (isset($attributes['sortOrder']))
 		{
 			$scopes['ordered'] = array('order' => 'sortOrder');
 		}
@@ -217,7 +199,7 @@ abstract class BaseRecord extends \CActiveRecord
 		// Add all other columns
 		foreach ($this->defineAttributes() as $name => $config)
 		{
-			$config = DbHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizeAttributeConfig($config);
 
 			// Add (unique) index for this column?
 			$unique = (isset($config['unique']) && $config['unique'] === true);
@@ -314,34 +296,6 @@ abstract class BaseRecord extends \CActiveRecord
 		return $this->findByPk($id, $condition, $params);
 	}
 
-	/**
-	 * Populates any default values that are set on the model's properties.
-	 */
-	public function populatePropertyDefaults()
-	{
-		foreach ($this->defineAttributes() as $name => $config)
-		{
-			$config = DbHelper::normalizePropertyConfig($config);
-			if (isset($config['default']))
-				$this->_attributes[$name] = $config['default'];
-		}
-	}
-
-	/**
-	 * If it is a new active record instance, will populate dateCreated with the current UTC unix timestamp and a new GUID
-	 * for uid. If it is an existing record, will populate dateUpdated with the current UTC unix timestamp.
-	 */
-	public function populateAuditProperties()
-	{
-		if ($this->getIsNewRecord())
-		{
-			$this->dateCreated = DateTimeHelper::currentTime();
-			$this->uid = StringHelper::UUID();
-		}
-
-		$this->dateUpdated = DateTimeHelper::currentTime();
-	}
-
 
 	/* CModel and CActiveRecord methods */
 
@@ -368,13 +322,13 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Returns the validation rules for properties.
+	 * Returns this model's validation rules.
 	 *
 	 * @return array
 	 */
 	public function rules()
 	{
-		return ModelHelper::createRules($this->defineAttributes(), $this->defineIndexes());
+		return ModelHelper::getRules($this);
 	}
 
 	/**
@@ -413,13 +367,13 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
-	 * Adds search criteria based on the properties.
+	 * Adds search criteria based on this model's attributes.
 	 *
 	 * @return \CActiveDataProvider
 	 */
 	public function search()
 	{
-		// Warning: Please modify the following code to remove properties that should not be searched.
+		// Warning: Please modify the following code to remove attributes that should not be searched.
 		$criteria = new \CDbCriteria;
 
 		foreach (array_keys($this->defineAttributes()) as $name)

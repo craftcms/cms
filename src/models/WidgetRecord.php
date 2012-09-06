@@ -11,7 +11,7 @@ class WidgetRecord extends BaseRecord
 		return 'widgets';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'class'      => AttributeType::ClassName,
@@ -20,7 +20,7 @@ class WidgetRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'user'   => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true),

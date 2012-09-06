@@ -11,7 +11,7 @@ abstract class BaseBlockRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'name'          => AttributeType::Name,
@@ -28,7 +28,7 @@ abstract class BaseBlockRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			array('columns' => 'handle', 'unique' => true)

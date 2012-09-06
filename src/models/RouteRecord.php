@@ -11,7 +11,7 @@ class RouteRecord extends BaseRecord
 		return 'routes';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'urlParts'   => array(AttributeType::Varchar, 'required' => true),
@@ -21,7 +21,7 @@ class RouteRecord extends BaseRecord
 		);
 	}
 
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('urlPattern'), 'unique' => true),

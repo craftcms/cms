@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class SiteSettingsModel extends BaseModel
 {
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'siteName' => AttributeType::Name,

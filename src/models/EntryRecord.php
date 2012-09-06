@@ -11,7 +11,7 @@ class EntryRecord extends BaseRecord
 		return 'entries';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'slug'          => array(AttributeType::Char, 'maxLength' => 50),
@@ -29,7 +29,7 @@ class EntryRecord extends BaseRecord
 
 	/* BLOCKSPRO ONLY */
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'parent'   => array(static::BELONGS_TO, 'EntryRecord'),
@@ -42,7 +42,7 @@ class EntryRecord extends BaseRecord
 
 	/* end BLOCKSPRO ONLY */
 
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			/* BLOCKS ONLY */

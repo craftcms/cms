@@ -11,7 +11,7 @@ class SectionRecord extends BaseRecord
 		return 'sections';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'name'      => AttributeType::Name,
@@ -22,7 +22,7 @@ class SectionRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'parent'      => array(static::BELONGS_TO, 'SectionRecord'),
@@ -33,7 +33,7 @@ class SectionRecord extends BaseRecord
 		);
 	}
 
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('handle'), 'unique' => true),

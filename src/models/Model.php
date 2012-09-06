@@ -6,27 +6,26 @@ namespace Blocks;
  */
 class Model extends BaseModel
 {
-	private $_properties;
+	private $_attributes;
 
 	/**
 	 * Constructor
 	 *
-	 * @param array $properties
+	 * @param array $attributes
 	 */
-	function __construct($properties)
+	function __construct($attributes)
 	{
-		$this->_properties = $properties;
+		$this->_attributes = $attributes;
 		parent::__construct();
 	}
 
 	/**
-	 * Returns a list of this model's properties.
+	 * Defines this model's attributes.
 	 *
-	 * @access protected
 	 * @return array
 	 */
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
-		return $this->_properties;
+		return $this->_attributes;
 	}
 }

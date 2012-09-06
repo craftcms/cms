@@ -11,7 +11,7 @@ class SystemSettingsRecord extends BaseRecord
 		return 'systemsettings';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'category' => array(AttributeType::Varchar, 'maxLength' => 15, 'unique' => true, 'required' => true),

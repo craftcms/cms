@@ -11,7 +11,7 @@ class EmailMessageRecord extends BaseRecord
 		return 'emailmessages';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'key'      => array(AttributeType::Char, 'required' => true, 'unique' => true, 'maxLength' => 150),
@@ -19,7 +19,7 @@ class EmailMessageRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'content' => array(static::HAS_MANY, 'EmailMessageContentRecord', 'messageId'),

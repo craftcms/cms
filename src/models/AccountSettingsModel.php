@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class AccountSettingsModel extends BaseModel
 {
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'username' => array(AttributeType::Varchar, 'maxLength' => 100, 'required' => true),

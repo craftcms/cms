@@ -7,9 +7,9 @@ namespace Blocks;
 class DbHelper
 {
 	/**
-	 * Default property settings
+	 * Default attribute configs
 	 */
-	protected static $propertyTypeDefaults = array(
+	protected static $attributeTypeConfigs = array(
 		AttributeType::Char         => array('maxLength' => 255),
 		AttributeType::Varchar      => array('maxLength' => 255),
 		AttributeType::Number       => array('maxLength' => 10, 'min' => -2147483648, 'max' => 2147483647, 'decimals' => 0),
@@ -23,7 +23,6 @@ class DbHelper
 		AttributeType::Boolean      => array('type '=> AttributeType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
 		AttributeType::Enum         => array('values' => array()),
 
-		// Common model property types
 		AttributeType::ClassName     => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
 		AttributeType::Email         => array('type' => AttributeType::Varchar, 'minLength' => 5),
 		AttributeType::Handle        => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
@@ -40,12 +39,12 @@ class DbHelper
 	);
 
 	/**
-	 * Normalize property config
+	 * Normalize attribute config
 	 *
 	 * @param $config
 	 * @return array
 	 */
-	public static function normalizePropertyConfig($config)
+	public static function normalizeAttributeConfig($config)
 	{
 		if (is_string($config))
 		{
@@ -57,18 +56,18 @@ class DbHelper
 		}
 
 		// Merge in the default settings
-		if (isset(static::$propertyTypeDefaults[$config['type']]))
+		if (isset(static::$attributeTypeConfigs[$config['type']]))
 		{
-			$config = array_merge(static::$propertyTypeDefaults[$config['type']], $config);
+			$config = array_merge(static::$attributeTypeConfigs[$config['type']], $config);
 
 			// Override the type if the default settings specifies it
-			if (isset(static::$propertyTypeDefaults[$config['type']]['type']))
+			if (isset(static::$attributeTypeConfigs[$config['type']]['type']))
 			{
-				$newType = static::$propertyTypeDefaults[$config['type']]['type'];
+				$newType = static::$attributeTypeConfigs[$config['type']]['type'];
 				$config['type'] = $newType;
 
 				// ...And merge in the new type's settings...
-				$config = static::normalizePropertyConfig($config);
+				$config = static::normalizeAttributeConfig($config);
 			}
 			// Handle number columns
 			else if ($config['type'] == AttributeType::Number)
@@ -102,8 +101,8 @@ class DbHelper
 		$config = array();
 
 		// Normalize the arguments
-		$min = is_numeric($min) ? $min : static::$propertyTypeDefaults[AttributeType::Number]['min'];
-		$max = is_numeric($max) ? $max : static::$propertyTypeDefaults[AttributeType::Number]['max'];
+		$min = is_numeric($min) ? $min : static::$attributeTypeConfigs[AttributeType::Number]['min'];
+		$max = is_numeric($max) ? $max : static::$attributeTypeConfigs[AttributeType::Number]['max'];
 		$decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
 
 		// Unsigned?
@@ -151,7 +150,7 @@ class DbHelper
 	 */
 	public static function generateColumnDefinition($config)
 	{
-		$config = static::normalizePropertyConfig($config);
+		$config = static::normalizeAttributeConfig($config);
 
 		// Treat strict lengths as max lengths when defining columns
 		if (isset($config['length']) && is_numeric($config['length']) && $config['length'] > 0)

@@ -15,24 +15,16 @@ abstract class BaseModel extends \CModel
 	 */
 	function __construct()
 	{
-		// Set the default values
-		foreach ($this->defineAttributes() as $name => $config)
-		{
-			if (!empty($config['default']))
-			{
-				$this->$name = $config['default'];
-			}
-		}
+		ModelHelper::populateAttributeDefaults($this);
 	}
 
 	/**
-	 * Returns a list of this model's properties.
+	 * Defines this model's attributes.
 	 *
 	 * @abstract
-	 * @access protected
 	 * @return array
 	 */
-	abstract protected function defineAttributes();
+	abstract public function defineAttributes();
 
 	/**
 	 * Isset?
@@ -58,7 +50,7 @@ abstract class BaseModel extends \CModel
 		if (array_key_exists($name, $this->defineAttributes()))
 			$this->_values[$name] = $value;
 		else
-			$this->_noPropertyExists($name);
+			$this->_noAttributeExists($name);
 	}
 
 	/**
@@ -80,23 +72,22 @@ abstract class BaseModel extends \CModel
 		else if ($name == 'errors')
 			return $this->getErrors();
 		else
-			$this->_noPropertyExists($name);
+			$this->_noAttributeExists($name);
 	}
 
 	/**
-	 * Throws a "no property exists" exception
+	 * Throws a "no attribute exists" exception
 	 *
-	 * @param string $property
-	 * @param        $property
+	 * @param string $attribute
 	 * @throws Exception
 	 */
-	private function _noPropertyExists($property)
+	private function _noAttributeExists($attribute)
 	{
-		throw new Exception(Blocks::t('“{class}” doesn’t have a property “{property}”.', array('class' => get_class($this), 'property' => $property)));
+		throw new Exception(Blocks::t('“{class}” doesn’t have an attribute called “{attribute}”.', array('class' => get_class($this), 'attribute' => $attribute)));
 	}
 
 	/**
-	 * Returns the list of property names.
+	 * Returns the list of this model's attribute names.
 	 *
 	 * @return array
 	 */
@@ -106,12 +97,12 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
-	 * Returns the validation rules for properties.
+	 * Returns this model's validation rules.
 	 *
 	 * @return array
 	 */
 	public function rules()
 	{
-		return ModelHelper::createRules($this->defineAttributes());
+		return ModelHelper::getRules($this);
 	}
 }

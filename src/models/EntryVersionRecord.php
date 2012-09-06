@@ -11,7 +11,7 @@ class EntryVersionRecord extends BaseRecord
 		return 'entryversions';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'language' => AttributeType::Language,
@@ -23,7 +23,7 @@ class EntryVersionRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'entry'  => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
@@ -31,7 +31,7 @@ class EntryVersionRecord extends BaseRecord
 		);
 	}
 
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('num','draft','entryId'), 'unique' => true)

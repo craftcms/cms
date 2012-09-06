@@ -11,7 +11,7 @@ class UserRecord extends BaseRecord
 		return 'users';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'username'                         => array(AttributeType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),
@@ -43,7 +43,7 @@ class UserRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			/* BLOCKSPRO ONLY */

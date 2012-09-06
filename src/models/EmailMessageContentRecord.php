@@ -11,7 +11,7 @@ class EmailMessageContentRecord extends BaseRecord
 		return 'emailmessagecontnet';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'language' => AttributeType::Language,
@@ -21,14 +21,14 @@ class EmailMessageContentRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'message' => array(static::BELONGS_TO, 'EmailMessageRecord'),
 		);
 	}
 
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('messageId', 'language'), 'unique' => true)

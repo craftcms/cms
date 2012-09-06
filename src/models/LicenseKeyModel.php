@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class LicenseKeyModel extends BaseModel
 {
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'licensekey' => AttributeType::LicenseKey

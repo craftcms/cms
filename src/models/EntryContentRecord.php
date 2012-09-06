@@ -42,7 +42,7 @@ class EntryContentRecord extends BaseRecord
 		return 'entrycontent_'.$section->handle;
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'language' => AttributeType::Language,
@@ -50,14 +50,14 @@ class EntryContentRecord extends BaseRecord
 		);
 	}
 
-	protected function defineRelations()
+	public function defineRelations()
 	{
 		return array(
 			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
 		);
 	}
 
-	protected function defineIndexes()
+	public function defineIndexes()
 	{
 		return array(
 			array('columns' => array('entryId', 'language'), 'unique' => true),

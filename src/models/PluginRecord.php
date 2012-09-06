@@ -11,7 +11,7 @@ class PluginRecord extends BaseRecord
 		return 'plugins';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'class'    => AttributeType::ClassName,

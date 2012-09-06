@@ -11,7 +11,7 @@ class InfoRecord extends BaseRecord
 		return 'info';
 	}
 
-	protected function defineAttributes()
+	public function defineAttributes()
 	{
 		return array(
 			'version'     => AttributeType::Version,

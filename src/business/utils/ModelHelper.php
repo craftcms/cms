@@ -7,7 +7,7 @@ namespace Blocks;
 class ModelHelper
 {
 	/*
-	 * Gets the property type.
+	 * Gets the attribute type.
 	 *
 	 * @static
 	 * @param mixed $config
@@ -19,14 +19,28 @@ class ModelHelper
 	}
 
 	/**
-	 * Returns the rules array used by CActiveRecord.
+	 * Populates any default values that are defined for a model.
 	 *
 	 * @static
-	 * @param array $properties
-	 * @param array $indexes
+	 * @param BaseModel|BaseRecord $model
+	 */
+	public static function populateAttributeDefaults($model)
+	{
+		foreach ($model->defineAttributes() as $name => $config)
+		{
+			if (isset($config['default']))
+				$model->$name = $config['default'];
+		}
+	}
+
+	/**
+	 * Returns the rules array used by CModel.
+	 *
+	 * @static
+	 * @param BaseModel|BaseRecord $model
 	 * @return array
 	 */
-	public static function createRules($properties, $indexes = array())
+	public static function getRules($model)
 	{
 		$rules = array();
 
@@ -42,11 +56,13 @@ class ModelHelper
 		$numberTypes = $integerTypes;
 		$numberTypes[] = AttributeType::Decimal;
 
-		foreach ($properties as $name => $config)
+		$attributes = $model->defineAttributes();
+
+		foreach ($attributes as $name => $config)
 		{
 			$type = static::getAttributeType($config);
 
-			// Catch handles, email addresses, languages and URLs before running normalizePropertyConfig, since 'type' will get changed to VARCHAR
+			// Catch handles, email addresses, languages and URLs before running normalizeAttributeConfig, since 'type' will get changed to VARCHAR
 			if ($type == AttributeType::Handle)
 			{
 				$reservedWords = isset($config['reservedWords']) ? ArrayHelper::stringToArray($config['reservedWords']) : array();
@@ -68,7 +84,7 @@ class ModelHelper
 			// Remember if it's a license key
 			$isLicenseKey = ($type == AttributeType::LicenseKey);
 
-			$config = DbHelper::normalizePropertyConfig($config);
+			$config = DbHelper::normalizeAttributeConfig($config);
 
 			// Uniques
 			if (!empty($config['unique']))
@@ -95,7 +111,7 @@ class ModelHelper
 				$rules[] = $rule;
 			}
 
-			// Enum property values
+			// Enum attribute values
 			if ($config['type'] == AttributeType::Enum)
 			{
 				$values = ArrayHelper::stringToArray($config['values']);
@@ -124,21 +140,24 @@ class ModelHelper
 				$rules[] = array($name, 'match', 'pattern' => $config['matchPattern']);
 		}
 
-		// Catch any unique indexes
-		foreach ($indexes as $config)
+		// Catch any unique indexes, if this is a BaseRecord instance
+		if ($model instanceof BaseRecord)
 		{
-			if (!empty($config['unique']))
+			foreach ($model->defineIndexes() as $config)
 			{
-				$columns = ArrayHelper::stringToArray($config['columns']);
+				if (!empty($config['unique']))
+				{
+					$columns = ArrayHelper::stringToArray($config['columns']);
 
-				if (count($columns) == 1)
-				{
-					$uniques[] = $columns[0];
-				}
-				else
-				{
-					$initialColumn = array_shift($columns);
-					$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
+					if (count($columns) == 1)
+					{
+						$uniques[] = $columns[0];
+					}
+					else
+					{
+						$initialColumn = array_shift($columns);
+						$rules[] = array($initialColumn, 'Blocks\CompositeUniqueValidator', 'with' => implode(',', $columns));
+					}
 				}
 			}
 		}
@@ -157,29 +176,29 @@ class ModelHelper
 
 		if ($strictLengths)
 		{
-			foreach ($strictLengths as $strictLength => $propertyNames)
+			foreach ($strictLengths as $strictLength => $attributeNames)
 			{
-				$rules[] = array(implode(',', $propertyNames), 'length', 'is' => (int)$strictLength);
+				$rules[] = array(implode(',', $attributeNames), 'length', 'is' => (int)$strictLength);
 			}
 		}
 
 		if ($minLengths)
 		{
-			foreach ($minLengths as $minLength => $propertyNames)
+			foreach ($minLengths as $minLength => $attributeNames)
 			{
-				$rules[] = array(implode(',', $propertyNames), 'length', 'min' => (int)$minLength);
+				$rules[] = array(implode(',', $attributeNames), 'length', 'min' => (int)$minLength);
 			}
 		}
 
 		if ($maxLengths)
 		{
-			foreach ($maxLengths as $maxLength => $propertyNames)
+			foreach ($maxLengths as $maxLength => $attributeNames)
 			{
-				$rules[] = array(implode(',', $propertyNames), 'length', 'max' => (int)$maxLength);
+				$rules[] = array(implode(',', $attributeNames), 'length', 'max' => (int)$maxLength);
 			}
 		}
 
-		$rules[] = array(implode(',', array_keys($properties)), 'safe', 'on' => 'search');
+		$rules[] = array(implode(',', array_keys($attributes)), 'safe', 'on' => 'search');
 
 		return $rules;
 	}
