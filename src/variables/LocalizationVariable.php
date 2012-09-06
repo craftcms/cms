@@ -13,7 +13,7 @@ class LocalizationVariable
 	 */
 	public function languages()
 	{
-		return blx()->localization->getLanguages();
+		return blx()->i18n->getLanguages();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class LocalizationVariable
 	 */
 	public function translatedLanguages()
 	{
-		return blx()->localization->getTranslatedLanguages();
+		return blx()->i18n->getTranslatedLanguages();
 	}
 
 	/**
@@ -39,7 +39,7 @@ class LocalizationVariable
 		if (!$language)
 			$language = blx()->language;
 
-		$languageData = blx()->localization->getLanguageData($language);
+		$languageData = blx()->i18n->getLanguageData($language);
 		$localeName = $languageData->getLocaleDisplayName($locale);
 		return $localeName;
 	}

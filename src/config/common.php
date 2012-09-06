@@ -40,7 +40,7 @@ return array(
 			'class' => 'Blocks\ConfigService',
 		),
 
-		'localization' => array(
+		'i18n' => array(
 			'class' => 'Blocks\LocalizationService',
 		)
 	),

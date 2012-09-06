@@ -189,7 +189,7 @@ class BlxVariable
 	/**
 	 * @return LocalizationVariable
 	 */
-	public function localization()
+	public function i18n()
 	{
 		return new LocalizationVariable();
 	}

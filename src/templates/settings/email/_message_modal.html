@@ -11,9 +11,9 @@
 {% if languages|length %}
 	<div class="select language">
 		<select>
-			<option value="{{ blx.language }}" {% if blx.language == content.language %}selected{% endif %}>{{ blx.localization.localeName(blx.language) }}</option>
+			<option value="{{ blx.language }}" {% if blx.language == content.language %}selected{% endif %}>{{ blx.i18n.localeName(blx.language) }}</option>
 			{% for language in languages %}
-				<option value="{{ language }}" {% if language == content.language %}selected{% endif %}>{{ blx.localization.localeName(language) }}</option>
+				<option value="{{ language }}" {% if language == content.language %}selected{% endif %}>{{ blx.i18n.localeName(language) }}</option>
 			{% endfor %}
 		</select>
 	</div>

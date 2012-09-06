@@ -20,7 +20,7 @@
 
 		<div class="field">
 			{{ forms.checkboxField({
-				label: blx.localization.localeName(blx.app.language) ~ ' <strong>(' ~ "Primary"|t ~ ')</strong>',
+				label: blx.i18n.localeName(blx.app.language) ~ ' <strong>(' ~ "Primary"|t ~ ')</strong>',
 				checked: true,
 				disabled: true
 			}) }}
@@ -31,7 +31,7 @@
 
 			{% for language in selectedLanguages %}
 				{{ forms.checkboxField({
-					label: blx.localization.localeName(language),
+					label: blx.i18n.localeName(language),
 					name: 'languages[]',
 					value: language,
 					checked: true
@@ -40,7 +40,7 @@
 
 			<hr>
 
-			{% set languages = blx.localization.languages|without(blx.app.language)|without(selectedLanguages) %}
+			{% set languages = blx.i18n.languages|without(blx.app.language)|without(selectedLanguages) %}
 			{% set totalLanguages = languages|length %}
 			{% set languagesPerColumn = ceil(totalLanguages / 3 )%}
 
@@ -51,7 +51,7 @@
 							</div></div><div class="col col33"><div class="col-inner">
 						{% endif %}
 						{{ forms.checkboxField({
-							label: blx.localization.localeName(language),
+							label: blx.i18n.localeName(language),
 							name: 'languages[]',
 							value: language
 						}) }}
