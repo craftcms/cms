@@ -27,7 +27,6 @@ abstract class BaseRecord extends \CActiveRecord
 		else
 		{
 			parent::__construct($scenario);
-			ModelHelper::populateAttributeDefaults($this);
 		}
 	}
 
@@ -36,6 +35,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function init()
 	{
+		ModelHelper::populateAttributeDefaults($this);
 		$this->attachEventHandler('onAfterFind', array($this, 'propAttributesForUse'));
 		$this->attachEventHandler('onBeforeSave', array($this, 'prepAttributesForSave'));
 		$this->attachEventHandler('onAfterSave', array($this, 'propAttributesForUse'));
@@ -384,30 +384,5 @@ abstract class BaseRecord extends \CActiveRecord
 		return new \CActiveDataProvider($this, array(
 			'criteria' => $criteria
 		));
-	}
-
-	/**
-	 * @param string $name
-	 * @param mixed  $value
-	 * @return bool
-	 */
-	public function setAttribute($name, $value)
-	{
-		if (isset($this->getMetaData()->columns[$name]))
-			$this->_attributes[$name] = $value;
-		else
-			return false;
-
-		return true;
-	}
-
-	/**
-	 * @param string $name
-	 * @return mixed
-	 */
-	public function getAttribute($name)
-	{
-		if (isset($this->_attributes[$name]))
-			return $this->_attributes[$name];
 	}
 }
