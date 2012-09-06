@@ -6,26 +6,20 @@ namespace Blocks;
  */
 abstract class BaseWidget extends BaseComponent
 {
-	public $name;
-
 	protected $componentType = 'Widget';
 	protected $bodyTemplate;
 	protected $settingsTemplate;
 	protected $settings = array();
 
 	/**
+	 * Gets the widget title.
 	 *
+	 * @return string
 	 */
-	public function init()
+	public function getTitle()
 	{
-		if (isset($this->record))
-		{
-			$recordSettings = Json::decode($this->record->settings);
-			if ($recordSettings)
-				$this->settings = array_merge($this->settings, $recordSettings);
-		}
-
-		parent::init();
+		// Default to the widget name
+		return $this->getName();
 	}
 
 	/**
@@ -36,16 +30,6 @@ abstract class BaseWidget extends BaseComponent
 	public function getActionButtons()
 	{
 		return array();
-	}
-
-	/**
-	 * Gets the widget title.
-	 *
-	 * @return string
-	 */
-	public function getTitle()
-	{
-		return '';
 	}
 
 	/**

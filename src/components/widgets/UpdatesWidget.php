@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class UpdatesWidget extends BaseWidget
 {
-	public $name = 'Updates';
-
 	public $updates = array();
 
 	protected $bodyTemplate = '_components/widgets/UpdatesWidget/body';
+
+	/**
+	 * @return string
+	 */
+	public function getName()
+	{
+		return Blocks::t('Updates');
+	}
 
 	/**
 	 * Add a link to Updates.
@@ -25,16 +31,6 @@ class UpdatesWidget extends BaseWidget
 				'url' => 'updates'
 			)
 		);
-	}
-
-	/**
-	 * Gets the widget title.
-	 *
-	 * @return string
-	 */
-	public function getTitle()
-	{
-		return 'Updates';
 	}
 
 	/**

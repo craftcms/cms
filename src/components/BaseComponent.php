@@ -27,12 +27,12 @@ abstract class BaseComponent extends \CApplicationComponent
 	private $_settings;
 
 	/**
-	 * Returns the type of... whatever it is.
+	 * Returns the name of the component.
 	 *
 	 * @abstract
 	 * @return string
 	 */
-	abstract public function getType();
+	abstract public function getName();
 
 	/**
 	 * Use the component's type as its string representation.
@@ -41,7 +41,7 @@ abstract class BaseComponent extends \CApplicationComponent
 	 */
 	public function __toString()
 	{
-		return $this->getType();
+		return $this->getName();
 	}
 
 	/**

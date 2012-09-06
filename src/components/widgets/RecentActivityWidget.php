@@ -6,20 +6,16 @@ namespace Blocks;
  */
 class RecentActivityWidget extends BaseWidget
 {
-	public $name = 'Recent Activity';
-
 	public $actions = array();
 
 	protected $bodyTemplate = '_components/widgets/RecentActivityWidget/body';
 
 	/**
-	 * Gets the widget title.
-	 *
 	 * @return string
 	 */
-	public function getTitle()
+	public function getName()
 	{
-		return 'Recent Activity';
+		return Blocks::t('Recent Activity');
 	}
 
 	/**

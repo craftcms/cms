@@ -12,7 +12,7 @@ class NumberBlock extends BaseBlock
 	/**
 	 * @return string|void
 	 */
-	public function getType()
+	public function getName()
 	{
 		return Blocks::t('Number');
 	}
