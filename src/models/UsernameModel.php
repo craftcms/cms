@@ -6,10 +6,10 @@ namespace Blocks;
  */
 class UsernameModel extends BaseModel
 {
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'username' => array(PropertyType::Varchar, 'required' => true),
+			'username' => array(AttributeType::Varchar, 'required' => true),
 		);
 	}
 

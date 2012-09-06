@@ -181,7 +181,7 @@ class DbCommand extends \CDbCommand
 	public function createTable($table, $columns, $options=null)
 	{
 		$columns = array_merge(
-			array('id' => PropertyType::PK),
+			array('id' => AttributeType::PK),
 			$columns,
 			($table !== 'activity' ? DbHelper::getAuditColumnConfig() : array())
 		);

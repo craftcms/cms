@@ -22,8 +22,8 @@ class RadioButtonsBlock extends BaseOptionsBlock
 	 *
 	 * @return string
 	 */
-	public function getColumn()
+	public function defineContentColumn()
 	{
-		return PropertyType::Varchar;
+		return AttributeType::Varchar;
 	}
 }

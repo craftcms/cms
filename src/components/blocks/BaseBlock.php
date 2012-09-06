@@ -16,10 +16,10 @@ abstract class BaseBlock extends BaseComponent
 	 *
 	 * @return string
 	 */
-	public function getColumn()
+	public function defineContentColumn()
 	{
 		// Default to a text column
-		return PropertyType::Text;
+		return AttributeType::Text;
 	}
 
 	/**
@@ -56,7 +56,7 @@ abstract class BaseBlock extends BaseComponent
 
 		$variables = array(
 			'handle'   => $this->handle,
-			'settings' => $this->settings,
+			'settings' => $this->getSettings(),
 			'data'     => $data
 		);
 

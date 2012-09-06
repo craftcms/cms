@@ -61,14 +61,14 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Process any normalization that needs to be done for localization.
-		foreach ($this->getProperties() as $name => $config)
+		foreach ($this->defineAttributes() as $name => $config)
 		{
-			$type = ModelHelper::getPropertyType($config);
+			$type = ModelHelper::getAttributeType($config);
 
-			if ($type == PropertyType::Decimal)
+			if ($type == AttributeType::Decimal)
 				$this->$name = LocalizationHelper::normalizeNumber($this->$name);
 
-			if ($type == PropertyType::UnixTimeStamp)
+			if ($type == AttributeType::UnixTimeStamp)
 			{
 				if (gettype($this->$name) === gettype(new DateTime()))
 					$this->$name = LocalizationHelper::normalizeDateTime($this->$name);
@@ -87,11 +87,11 @@ abstract class BaseRecord extends \CActiveRecord
 		$this->_decodeJsonProperties();
 
 		// Convert any unix timestamps back into DateTime objects.
-		foreach ($this->getProperties() as $name => $config)
+		foreach ($this->defineAttributes() as $name => $config)
 		{
-			$type = ModelHelper::getPropertyType($config);
+			$type = ModelHelper::getAttributeType($config);
 
-			if ($type == PropertyType::UnixTimeStamp)
+			if ($type == AttributeType::UnixTimeStamp)
 			{
 				$dateTime = new DateTime();
 				$this->$name = $dateTime->setTimestamp($this->$name);
@@ -128,10 +128,10 @@ abstract class BaseRecord extends \CActiveRecord
 		if (!isset($this->_jsonProperties))
 		{
 			$this->_jsonProperties = array();
-			foreach ($this->getProperties() as $name => $config)
+			foreach ($this->defineAttributes() as $name => $config)
 			{
-				$type = ModelHelper::getPropertyType($config);
-				if ($type == PropertyType::Json)
+				$type = ModelHelper::getAttributeType($config);
+				if ($type == AttributeType::Json)
 					$this->_jsonProperties[] = $name;
 			}
 		}
@@ -151,7 +151,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return array
 	 */
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array();
 	}
@@ -161,7 +161,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return array
 	 */
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array();
 	}
@@ -171,7 +171,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return array
 	 */
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array();
 	}
@@ -184,7 +184,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$scopes = array();
 
 		// Add ordered() scope if this model has a sortOrder property
-		$properties = $this->getProperties();
+		$properties = $this->defineAttributes();
 		if (isset($properties['sortOrder']))
 		{
 			$scopes['ordered'] = array('order' => 'sortOrder');
@@ -199,14 +199,14 @@ abstract class BaseRecord extends \CActiveRecord
 	public function createTable()
 	{
 		$table = $this->getTableName();
-		$indexes = $this->getIndexes();
+		$indexes = $this->defineIndexes();
 		$columns = array();
 
 		// Add any Foreign Key columns
 		foreach ($this->_getBelongsToRelations() as $name => $config)
 		{
 			$required = isset($config['required']) ? $config['required'] : false;
-			$columns[$config[2]] = array('type' => PropertyType::Int, 'required' => $required);
+			$columns[$config[2]] = array('type' => AttributeType::Int, 'required' => $required);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
@@ -215,7 +215,7 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Add all other columns
-		foreach ($this->getProperties() as $name => $config)
+		foreach ($this->defineAttributes() as $name => $config)
 		{
 			$config = DbHelper::normalizePropertyConfig($config);
 
@@ -249,7 +249,7 @@ abstract class BaseRecord extends \CActiveRecord
 	private function _getBelongsToRelations()
 	{
 		$belongsTo = array();
-		foreach ($this->getRelations() as $name => $config)
+		foreach ($this->defineRelations() as $name => $config)
 		{
 			if ($config[0] == static::BELONGS_TO)
 			{
@@ -319,7 +319,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function populatePropertyDefaults()
 	{
-		foreach ($this->getProperties() as $name => $config)
+		foreach ($this->defineAttributes() as $name => $config)
 		{
 			$config = DbHelper::normalizePropertyConfig($config);
 			if (isset($config['default']))
@@ -374,7 +374,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function rules()
 	{
-		return ModelHelper::createRules($this->getProperties(), $this->getIndexes());
+		return ModelHelper::createRules($this->defineAttributes(), $this->defineIndexes());
 	}
 
 	/**
@@ -384,7 +384,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function relations()
 	{
-		$relations = $this->getRelations();
+		$relations = $this->defineRelations();
 		foreach ($relations as $name => &$config)
 		{
 			$this->_normalizeRelation($name, $config);
@@ -422,7 +422,7 @@ abstract class BaseRecord extends \CActiveRecord
 		// Warning: Please modify the following code to remove properties that should not be searched.
 		$criteria = new \CDbCriteria;
 
-		foreach (array_keys($this->getProperties()) as $name)
+		foreach (array_keys($this->defineAttributes()) as $name)
 		{
 			$criteria->compare($name, $this->$name);
 		}

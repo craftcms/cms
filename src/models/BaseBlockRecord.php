@@ -11,24 +11,24 @@ abstract class BaseBlockRecord extends BaseRecord
 	/**
 	 * @return array
 	 */
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'name'          => PropertyType::Name,
-			'handle'        => array(PropertyType::Handle, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title'),
-			'instructions'  => PropertyType::Text,
-			'required'      => PropertyType::Boolean,
-			'translatable'  => PropertyType::Boolean,
-			'class'         => PropertyType::ClassName,
-			'blockSettings' => PropertyType::Json,
-			'sortOrder'     => PropertyType::SortOrder,
+			'name'          => AttributeType::Name,
+			'handle'        => array(AttributeType::Handle, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title'),
+			'instructions'  => AttributeType::Text,
+			'required'      => AttributeType::Boolean,
+			'translatable'  => AttributeType::Boolean,
+			'class'         => AttributeType::ClassName,
+			'blockSettings' => AttributeType::Json,
+			'sortOrder'     => AttributeType::SortOrder,
 		);
 	}
 
 	/**
 	 * @return array
 	 */
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => 'handle', 'unique' => true)

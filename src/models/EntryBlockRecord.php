@@ -11,14 +11,14 @@ class EntryBlockRecord extends BaseBlockRecord
 		return 'entryblocks';
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
 		);
 	}
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => array('sectionId', 'handle'), 'unique' => true)

@@ -10,8 +10,8 @@
 	<form method="post" action="">
 		<input type="hidden" name="pluginClass" value="{{ plugin.getClassHandle }}">
 
-		{% if plugin.isInstalled %}
-			{% if plugin.enabled %}
+		{% if plugin.getIsInstalled %}
+			{% if plugin.record.enabled %}
 				<input type="button" value="{{ 'Disable'|t }}" class="btn formsubmit" data-action="plugins/disablePlugin">
 			{% else %}
 				<input type="button" value="{{ 'Enable'|t }}" class="btn formsubmit" data-action="plugins/enablePlugin">

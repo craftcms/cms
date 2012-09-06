@@ -10,33 +10,33 @@ class DbHelper
 	 * Default property settings
 	 */
 	protected static $propertyTypeDefaults = array(
-		PropertyType::Char         => array('maxLength' => 255),
-		PropertyType::Varchar      => array('maxLength' => 255),
-		PropertyType::Number       => array('maxLength' => 10, 'min' => -2147483648, 'max' => 2147483647, 'decimals' => 0),
-		PropertyType::TinyInt      => array('maxLength' => 4),
-		PropertyType::SmallInt     => array('maxLength' => 6),
-		PropertyType::MediumInt    => array('maxLength' => 9),
-		PropertyType::Int          => array('maxLength' => 11),
-		PropertyType::BigInt       => array('maxLength' => 20),
-		PropertyType::TinyInt      => array('maxLength' => 4),
-		PropertyType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
-		PropertyType::Boolean      => array('type '=> PropertyType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
-		PropertyType::Enum         => array('values' => array()),
+		AttributeType::Char         => array('maxLength' => 255),
+		AttributeType::Varchar      => array('maxLength' => 255),
+		AttributeType::Number       => array('maxLength' => 10, 'min' => -2147483648, 'max' => 2147483647, 'decimals' => 0),
+		AttributeType::TinyInt      => array('maxLength' => 4),
+		AttributeType::SmallInt     => array('maxLength' => 6),
+		AttributeType::MediumInt    => array('maxLength' => 9),
+		AttributeType::Int          => array('maxLength' => 11),
+		AttributeType::BigInt       => array('maxLength' => 20),
+		AttributeType::TinyInt      => array('maxLength' => 4),
+		AttributeType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
+		AttributeType::Boolean      => array('type '=> AttributeType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
+		AttributeType::Enum         => array('values' => array()),
 
 		// Common model property types
-		PropertyType::ClassName     => array('type' => PropertyType::Char, 'maxLength' => 150, 'required' => true),
-		PropertyType::Email         => array('type' => PropertyType::Varchar, 'minLength' => 5),
-		PropertyType::Handle        => array('type' => PropertyType::Char, 'maxLength' => 100, 'required' => true),
-		PropertyType::Language      => array('type' => PropertyType::Char, 'maxLength' => 12, 'required' => true),
-		PropertyType::Name          => array('type' => PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
-		PropertyType::SortOrder     => array('type' => PropertyType::SmallInt, 'required' => true, 'unsigned' => true),
-		PropertyType::Template      => array('type' => PropertyType::Varchar, 'maxLength' => 500),
-		PropertyType::Version       => array('type' => PropertyType::Char, 'maxLength' => 15, 'required' => true),
-		PropertyType::Url           => array('type' => PropertyType::Varchar, 'maxLength' => 255),
-		PropertyType::Build         => array('type' => PropertyType::Int, 'required' => true, 'unsigned' => true),
-		PropertyType::LicenseKey    => array('type' => PropertyType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
-		PropertyType::Json          => array('type' => PropertyType::Text),
-		PropertyType::UnixTimeStamp => array('type' => PropertyType::Int)
+		AttributeType::ClassName     => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
+		AttributeType::Email         => array('type' => AttributeType::Varchar, 'minLength' => 5),
+		AttributeType::Handle        => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
+		AttributeType::Language      => array('type' => AttributeType::Char, 'maxLength' => 12, 'required' => true),
+		AttributeType::Name          => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+		AttributeType::SortOrder     => array('type' => AttributeType::SmallInt, 'required' => true, 'unsigned' => true),
+		AttributeType::Template      => array('type' => AttributeType::Varchar, 'maxLength' => 500),
+		AttributeType::Version       => array('type' => AttributeType::Char, 'maxLength' => 15, 'required' => true),
+		AttributeType::Url           => array('type' => AttributeType::Varchar, 'maxLength' => 255),
+		AttributeType::Build         => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
+		AttributeType::LicenseKey    => array('type' => AttributeType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
+		AttributeType::Json          => array('type' => AttributeType::Text),
+		AttributeType::UnixTimeStamp => array('type' => AttributeType::Int)
 	);
 
 	/**
@@ -53,7 +53,7 @@ class DbHelper
 		}
 		else if (!isset($config['type']))
 		{
-			$config['type'] = ModelHelper::getPropertyType($config);
+			$config['type'] = ModelHelper::getAttributeType($config);
 		}
 
 		// Merge in the default settings
@@ -71,7 +71,7 @@ class DbHelper
 				$config = static::normalizePropertyConfig($config);
 			}
 			// Handle number columns
-			else if ($config['type'] == PropertyType::Number)
+			else if ($config['type'] == AttributeType::Number)
 			{
 				$config = static::getNumberColumnConfig($config['min'], $config['max'], $config['decimals']);
 			}
@@ -81,11 +81,11 @@ class DbHelper
 	}
 
 	private static $_intColumnTypes = array(
-		PropertyType::TinyInt   => 128,
-		PropertyType::SmallInt  => 32768,
-		PropertyType::MediumInt => 8388608,
-		PropertyType::Int       => 2147483648,
-		PropertyType::BigInt    => 9223372036854775808
+		AttributeType::TinyInt   => 128,
+		AttributeType::SmallInt  => 32768,
+		AttributeType::MediumInt => 8388608,
+		AttributeType::Int       => 2147483648,
+		AttributeType::BigInt    => 9223372036854775808
 	);
 
 	/**
@@ -102,8 +102,8 @@ class DbHelper
 		$config = array();
 
 		// Normalize the arguments
-		$min = is_numeric($min) ? $min : static::$propertyTypeDefaults[PropertyType::Number]['min'];
-		$max = is_numeric($max) ? $max : static::$propertyTypeDefaults[PropertyType::Number]['max'];
+		$min = is_numeric($min) ? $min : static::$propertyTypeDefaults[AttributeType::Number]['min'];
+		$max = is_numeric($max) ? $max : static::$propertyTypeDefaults[AttributeType::Number]['max'];
 		$decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
 
 		// Unsigned?
@@ -135,7 +135,7 @@ class DbHelper
 		}
 		else
 		{
-			$config['type'] = PropertyType::Decimal;
+			$config['type'] = AttributeType::Decimal;
 			$config['decimals'] = $decimals;
 		}
 
@@ -160,31 +160,31 @@ class DbHelper
 		// Start the column definition
 		switch ($config['type'])
 		{
-			case PropertyType::Char:
+			case AttributeType::Char:
 				$def = 'CHAR('.$config['maxLength'].')';
 				break;
-			case PropertyType::Varchar:
+			case AttributeType::Varchar:
 				$def = 'VARCHAR('.$config['maxLength'].')';
 				break;
-			case PropertyType::TinyInt:
+			case AttributeType::TinyInt:
 				$def = 'TINYINT('.$config['maxLength'].')';
 				break;
-			case PropertyType::SmallInt:
+			case AttributeType::SmallInt:
 				$def = 'SMALLINT('.$config['maxLength'].')';
 				break;
-			case PropertyType::MediumInt:
+			case AttributeType::MediumInt:
 				$def = 'MEDIUMINT('.$config['maxLength'].')';
 				break;
-			case PropertyType::Int:
+			case AttributeType::Int:
 				$def = 'INT('.$config['maxLength'].')';
 				break;
-			case PropertyType::BigInt:
+			case AttributeType::BigInt:
 				$def = 'BIGINT('.$config['maxLength'].')';
 				break;
-			case PropertyType::Decimal:
+			case AttributeType::Decimal:
 				$def = 'DECIMAL('.$config['maxLength'].','.$config['decimals'].')';
 				break;
-			case PropertyType::Enum:
+			case AttributeType::Enum:
 				$def = 'ENUM(';
 				$values = is_array($config['values']) ? $config['values'] : explode(',', $config['values']);
 				foreach ($values as $i => $value)
@@ -227,9 +227,9 @@ class DbHelper
 	public static function getAuditColumnConfig()
 	{
 		return array(
-			'dateCreated' => array('type' => PropertyType::UnixTimeStamp, 'required' => true, 'default' => 0),
-			'dateUpdated' => array('type' => PropertyType::UnixTimeStamp, 'required' => true, 'default' => 0),
-			'uid'         => array('type' => PropertyType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
+			'dateCreated' => array('type' => AttributeType::UnixTimeStamp, 'required' => true, 'default' => 0),
+			'dateUpdated' => array('type' => AttributeType::UnixTimeStamp, 'required' => true, 'default' => 0),
+			'uid'         => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
 		);
 	}
 

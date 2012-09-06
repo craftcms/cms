@@ -6,12 +6,12 @@ namespace Blocks;
  */
 class AccountSettingsModel extends BaseModel
 {
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'username' => array(PropertyType::Varchar, 'maxLength' => 100, 'required' => true),
-			'email'    => array(PropertyType::Email, 'required' => true),
-			'password' => array(PropertyType::Varchar, 'minLength' => 6, 'required' => true)
+			'username' => array(AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
+			'email'    => array(AttributeType::Email, 'required' => true),
+			'password' => array(AttributeType::Varchar, 'minLength' => 6, 'required' => true)
 		);
 	}
 }

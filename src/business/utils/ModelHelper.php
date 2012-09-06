@@ -13,9 +13,9 @@ class ModelHelper
 	 * @param mixed $config
 	 * @return string
 	 */
-	public static function getPropertyType($config)
+	public static function getAttributeType($config)
 	{
-		return is_string($config) ? $config : (isset($config['type']) ? $config['type'] : (isset($config[0]) ? $config[0] : PropertyType::Varchar));
+		return is_string($config) ? $config : (isset($config['type']) ? $config['type'] : (isset($config[0]) ? $config[0] : AttributeType::Varchar));
 	}
 
 	/**
@@ -38,35 +38,35 @@ class ModelHelper
 		$minLengths = array();
 		$maxLengths = array();
 
-		$integerTypes = array(PropertyType::Number, PropertyType::TinyInt, PropertyType::SmallInt, PropertyType::MediumInt, PropertyType::Int, PropertyType::BigInt);
+		$integerTypes = array(AttributeType::Number, AttributeType::TinyInt, AttributeType::SmallInt, AttributeType::MediumInt, AttributeType::Int, AttributeType::BigInt);
 		$numberTypes = $integerTypes;
-		$numberTypes[] = PropertyType::Decimal;
+		$numberTypes[] = AttributeType::Decimal;
 
 		foreach ($properties as $name => $config)
 		{
-			$type = static::getPropertyType($config);
+			$type = static::getAttributeType($config);
 
 			// Catch handles, email addresses, languages and URLs before running normalizePropertyConfig, since 'type' will get changed to VARCHAR
-			if ($type == PropertyType::Handle)
+			if ($type == AttributeType::Handle)
 			{
 				$reservedWords = isset($config['reservedWords']) ? ArrayHelper::stringToArray($config['reservedWords']) : array();
 				$rules[] = array($name, 'Blocks\HandleValidator', 'reservedWords' => $reservedWords);
 			}
 
-			if ($type === PropertyType::UnixTimeStamp)
+			if ($type === AttributeType::UnixTimeStamp)
 				$rules[] = array($name, 'Blocks\DateTimeValidator');
 
-			if ($type == PropertyType::Language)
+			if ($type == AttributeType::Language)
 				$rules[] = array($name, 'Blocks\LanguageValidator');
 
-			if ($type == PropertyType::Email)
+			if ($type == AttributeType::Email)
 				$emails[] = $name;
 
-			if ($type == PropertyType::Url)
+			if ($type == AttributeType::Url)
 				$urls[] = $name;
 
 			// Remember if it's a license key
-			$isLicenseKey = ($type == PropertyType::LicenseKey);
+			$isLicenseKey = ($type == AttributeType::LicenseKey);
 
 			$config = DbHelper::normalizePropertyConfig($config);
 
@@ -79,7 +79,7 @@ class ModelHelper
 				$required[] = $name;
 
 			// Numbers
-			if (in_array($config['type'], $numberTypes) && $type !== PropertyType::UnixTimeStamp)
+			if (in_array($config['type'], $numberTypes) && $type !== AttributeType::UnixTimeStamp)
 			{
 				$rule = array($name, 'Blocks\LocaleNumberValidator');
 
@@ -89,14 +89,14 @@ class ModelHelper
 				if (isset($config['max']) && is_numeric($config['max']))
 					$rule['max'] = $config['max'];
 
-				if (($config['type'] == PropertyType::Number && empty($config['decimals'])) || in_array($config['type'], $integerTypes))
+				if (($config['type'] == AttributeType::Number && empty($config['decimals'])) || in_array($config['type'], $integerTypes))
 					$rule['integerOnly'] = true;
 
 				$rules[] = $rule;
 			}
 
 			// Enum property values
-			if ($config['type'] == PropertyType::Enum)
+			if ($config['type'] == AttributeType::Enum)
 			{
 				$values = ArrayHelper::stringToArray($config['values']);
 				$rules[] = array($name, 'in', 'range' => $values);

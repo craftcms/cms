@@ -11,39 +11,39 @@ class UserRecord extends BaseRecord
 		return 'users';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'username'                         => array(PropertyType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),
-			'firstName'                        => array(PropertyType::Varchar, 'maxLength' => 100),
-			'lastName'                         => array(PropertyType::Varchar, 'maxLength' => 100),
-			'email'                            => array(PropertyType::Email, 'required' => true, 'unique' => true),
-			'password'                         => PropertyType::Char,
-			'encType'                          => array(PropertyType::Char, 'maxLength' => 10),
-			'authSessionToken'                 => array(PropertyType::Char, 'maxLength' => 100),
-			'admin'                            => PropertyType::Boolean,
-			'passwordResetRequired'            => PropertyType::Boolean,
-			'status'                           => array(PropertyType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
+			'username'                         => array(AttributeType::Varchar, 'maxLength' => 100, 'required' => true, 'unique' => true),
+			'firstName'                        => array(AttributeType::Varchar, 'maxLength' => 100),
+			'lastName'                         => array(AttributeType::Varchar, 'maxLength' => 100),
+			'email'                            => array(AttributeType::Email, 'required' => true, 'unique' => true),
+			'password'                         => AttributeType::Char,
+			'encType'                          => array(AttributeType::Char, 'maxLength' => 10),
+			'authSessionToken'                 => array(AttributeType::Char, 'maxLength' => 100),
+			'admin'                            => AttributeType::Boolean,
+			'passwordResetRequired'            => AttributeType::Boolean,
+			'status'                           => array(AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
 			/* BLOCKSPRO ONLY */
-			'language'                         => array(PropertyType::Language, 'default' => Blocks::getLanguage()),
+			'language'                         => array(AttributeType::Language, 'default' => Blocks::getLanguage()),
 			/* end BLOCKSPRO ONLY */
-			'emailFormat'                      => array(PropertyType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
-			'lastLoginDate'                    => PropertyType::UnixTimeStamp,
-			'lastLoginFailedDate'              => PropertyType::UnixTimeStamp,
-			'lastPasswordChangeDate'           => PropertyType::UnixTimeStamp,
-			'lastLockoutDate'                  => PropertyType::UnixTimeStamp,
-			'failedPasswordAttemptCount'       => array(PropertyType::TinyInt, 'unsigned' => true),
-			'failedPasswordAttemptWindowStart' => PropertyType::UnixTimeStamp,
-			'cooldownStart'                    => PropertyType::UnixTimeStamp,
-			'verificationCode'                 => array(PropertyType::Char, 'maxLength' => 36),
-			'verificationCodeIssuedDate'       => PropertyType::UnixTimeStamp,
-			'verificationCodeExpiryDate'       => PropertyType::UnixTimeStamp,
-			'archivedUsername'                 => array(PropertyType::Varchar, 'maxLength' => 100),
-			'archivedEmail'                    => PropertyType::Email,
+			'emailFormat'                      => array(AttributeType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
+			'lastLoginDate'                    => AttributeType::UnixTimeStamp,
+			'lastLoginFailedDate'              => AttributeType::UnixTimeStamp,
+			'lastPasswordChangeDate'           => AttributeType::UnixTimeStamp,
+			'lastLockoutDate'                  => AttributeType::UnixTimeStamp,
+			'failedPasswordAttemptCount'       => array(AttributeType::TinyInt, 'unsigned' => true),
+			'failedPasswordAttemptWindowStart' => AttributeType::UnixTimeStamp,
+			'cooldownStart'                    => AttributeType::UnixTimeStamp,
+			'verificationCode'                 => array(AttributeType::Char, 'maxLength' => 36),
+			'verificationCodeIssuedDate'       => AttributeType::UnixTimeStamp,
+			'verificationCodeExpiryDate'       => AttributeType::UnixTimeStamp,
+			'archivedUsername'                 => array(AttributeType::Varchar, 'maxLength' => 100),
+			'archivedEmail'                    => AttributeType::Email,
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			/* BLOCKSPRO ONLY */

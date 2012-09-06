@@ -11,16 +11,16 @@ class WidgetRecord extends BaseRecord
 		return 'widgets';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'class'      => PropertyType::ClassName,
-			'sortOrder'  => PropertyType::SortOrder,
-			'settings'   => PropertyType::Text,
+			'class'      => AttributeType::ClassName,
+			'sortOrder'  => AttributeType::SortOrder,
+			'settings'   => AttributeType::Text,
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'user'   => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true),

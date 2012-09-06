@@ -20,21 +20,21 @@ class NumberBlock extends BaseBlock
 	/**
 	 * @return array
 	 */
-	protected function getDefaultSettings()
+	protected function defineSettings()
 	{
 		return array(
-			'min'      => 0,
-			'max'      => null,
-			'decimals' => 0
+			'min'      => array(AttributeType::Decimal, 'default' => 0),
+			'max'      => array(AttributeType::Decimal),
+			'decimals' => array(AttributeType::Int, 'default' => 0),
 		);
 	}
 
 	/**
 	 * @return null|string
 	 */
-	public function getColumn()
+	public function defineContentColumn()
 	{
-		return array(PropertyType::Number,
+		return array(AttributeType::Number,
 			'min'      => $this->settings['min'],
 			'max'      => $this->settings['max'],
 			'decimals' => $this->settings['decimals']

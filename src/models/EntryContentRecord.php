@@ -42,22 +42,22 @@ class EntryContentRecord extends BaseRecord
 		return 'entrycontent_'.$section->handle;
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'language' => PropertyType::Language,
-			'title'    => PropertyType::Varchar,
+			'language' => AttributeType::Language,
+			'title'    => AttributeType::Varchar,
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
 		);
 	}
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => array('entryId', 'language'), 'unique' => true),

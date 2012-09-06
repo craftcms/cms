@@ -11,17 +11,17 @@ class InfoRecord extends BaseRecord
 		return 'info';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'version'     => PropertyType::Version,
-			'build'       => PropertyType::Build,
-			'releaseDate' => array(PropertyType::Int, 'required' => true),
-			'siteName'    => PropertyType::Name,
-			'siteUrl'     => array(PropertyType::Url, 'required' => true),
-			'language'    => PropertyType::Language,
-			'licenseKey'  => PropertyType::LicenseKey,
-			'on'          => PropertyType::Boolean,
+			'version'     => AttributeType::Version,
+			'build'       => AttributeType::Build,
+			'releaseDate' => array(AttributeType::Int, 'required' => true),
+			'siteName'    => AttributeType::Name,
+			'siteUrl'     => array(AttributeType::Url, 'required' => true),
+			'language'    => AttributeType::Language,
+			'licenseKey'  => AttributeType::LicenseKey,
+			'on'          => AttributeType::Boolean,
 		);
 	}
 }

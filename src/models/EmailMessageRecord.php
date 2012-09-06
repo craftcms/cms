@@ -11,15 +11,15 @@ class EmailMessageRecord extends BaseRecord
 		return 'emailmessages';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'key'      => array(PropertyType::Char, 'required' => true, 'unique' => true, 'maxLength' => 150),
-			'template' => array(PropertyType::Varchar, 'maxLength' => 500),
+			'key'      => array(AttributeType::Char, 'required' => true, 'unique' => true, 'maxLength' => 150),
+			'template' => array(AttributeType::Varchar, 'maxLength' => 500),
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'content' => array(static::HAS_MANY, 'EmailMessageContentRecord', 'messageId'),

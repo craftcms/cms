@@ -11,25 +11,25 @@ class EntryRecord extends BaseRecord
 		return 'entries';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'slug'          => array(PropertyType::Char, 'maxLength' => 50),
-			'uri'           => array(PropertyType::Varchar, 'maxLength' => 150, 'unique' => true),
-			'publishDate'   => PropertyType::UnixTimeStamp,
+			'slug'          => array(AttributeType::Char, 'maxLength' => 50),
+			'uri'           => array(AttributeType::Varchar, 'maxLength' => 150, 'unique' => true),
+			'publishDate'   => AttributeType::UnixTimeStamp,
 			/* BLOCKSPRO ONLY */
-			'expiryDate'    => PropertyType::UnixTimeStamp,
-			'sortOrder'     => array(PropertyType::Int, 'unsigned' => true),
-			'latestDraft'   => PropertyType::Int,
-			'latestVersion' => PropertyType::Int,
+			'expiryDate'    => AttributeType::UnixTimeStamp,
+			'sortOrder'     => array(AttributeType::Int, 'unsigned' => true),
+			'latestDraft'   => AttributeType::Int,
+			'latestVersion' => AttributeType::Int,
 			/* end BLOCKSPRO ONLY */
-			'archived'      => PropertyType::Boolean,
+			'archived'      => AttributeType::Boolean,
 		);
 	}
 
 	/* BLOCKSPRO ONLY */
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'parent'   => array(static::BELONGS_TO, 'EntryRecord'),
@@ -42,7 +42,7 @@ class EntryRecord extends BaseRecord
 
 	/* end BLOCKSPRO ONLY */
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			/* BLOCKS ONLY */

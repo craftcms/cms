@@ -11,17 +11,17 @@ class RouteRecord extends BaseRecord
 		return 'routes';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'urlParts'   => array(PropertyType::Varchar, 'required' => true),
-			'urlPattern' => array(PropertyType::Varchar, 'required' => true),
-			'template'   => array(PropertyType::Varchar, 'required' => true),
-			'sortOrder'  => PropertyType::SortOrder,
+			'urlParts'   => array(AttributeType::Varchar, 'required' => true),
+			'urlPattern' => array(AttributeType::Varchar, 'required' => true),
+			'template'   => array(AttributeType::Varchar, 'required' => true),
+			'sortOrder'  => AttributeType::SortOrder,
 		);
 	}
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => array('urlPattern'), 'unique' => true),

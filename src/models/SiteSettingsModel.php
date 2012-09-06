@@ -6,11 +6,11 @@ namespace Blocks;
  */
 class SiteSettingsModel extends BaseModel
 {
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'siteName' => PropertyType::Name,
-			'siteUrl'  => array(PropertyType::Url, 'required' => true)
+			'siteName' => AttributeType::Name,
+			'siteUrl'  => array(AttributeType::Url, 'required' => true)
 		);
 	}
 }

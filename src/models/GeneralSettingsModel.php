@@ -6,13 +6,13 @@ namespace Blocks;
  */
 class GeneralSettingsModel extends BaseModel
 {
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'siteName'   => PropertyType::Name,
-			'siteUrl'    => array(PropertyType::Url, 'required' => true),
+			'siteName'   => AttributeType::Name,
+			'siteUrl'    => array(AttributeType::Url, 'required' => true),
 			/* BLOCKSPRO ONLY */
-			'licenseKey' => PropertyType::LicenseKey,
+			'licenseKey' => AttributeType::LicenseKey,
 			/* end BLOCKSPRO ONLY */
 		);
 	}

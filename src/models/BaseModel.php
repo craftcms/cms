@@ -8,15 +8,31 @@ namespace Blocks;
  */
 abstract class BaseModel extends \CModel
 {
-	private $_properties = array();
+	private $_values = array();
+
+	/**
+	 * Constructor
+	 */
+	function __construct()
+	{
+		// Set the default values
+		foreach ($this->defineAttributes() as $name => $config)
+		{
+			if (!empty($config['default']))
+			{
+				$this->$name = $config['default'];
+			}
+		}
+	}
 
 	/**
 	 * Returns a list of this model's properties.
 	 *
 	 * @abstract
+	 * @access protected
 	 * @return array
 	 */
-	abstract protected function getProperties();
+	abstract protected function defineAttributes();
 
 	/**
 	 * Isset?
@@ -26,7 +42,7 @@ abstract class BaseModel extends \CModel
 	 */
 	function __isset($name)
 	{
-		return array_key_exists($name, $this->getProperties());
+		return array_key_exists($name, $this->defineAttributes());
 	}
 
 	/**
@@ -39,8 +55,8 @@ abstract class BaseModel extends \CModel
 	 */
 	function __set($name, $value)
 	{
-		if (array_key_exists($name, $this->getProperties()))
-			$this->_properties[$name] = $value;
+		if (array_key_exists($name, $this->defineAttributes()))
+			$this->_values[$name] = $value;
 		else
 			$this->_noPropertyExists($name);
 	}
@@ -54,10 +70,10 @@ abstract class BaseModel extends \CModel
 	 */
 	function __get($name)
 	{
-		if (array_key_exists($name, $this->getProperties()))
+		if (array_key_exists($name, $this->defineAttributes()))
 		{
-			if (isset($this->_properties[$name]))
-				return $this->_properties[$name];
+			if (isset($this->_values[$name]))
+				return $this->_values[$name];
 			else
 				return null;
 		}
@@ -86,7 +102,7 @@ abstract class BaseModel extends \CModel
 	 */
 	public function attributeNames()
 	{
-		return array_keys($this->getProperties());
+		return array_keys($this->defineAttributes());
 	}
 
 	/**
@@ -96,6 +112,6 @@ abstract class BaseModel extends \CModel
 	 */
 	public function rules()
 	{
-		return ModelHelper::createRules($this->getProperties());
+		return ModelHelper::createRules($this->defineAttributes());
 	}
 }

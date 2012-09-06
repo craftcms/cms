@@ -11,24 +11,24 @@ class EmailMessageContentRecord extends BaseRecord
 		return 'emailmessagecontnet';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'language' => PropertyType::Language,
-			'subject'  => array(PropertyType::Varchar, 'required' => true, 'maxLength' => 1000),
-			'body'     => array(PropertyType::Text, 'required' => true),
-			'htmlBody' => PropertyType::Text,
+			'language' => AttributeType::Language,
+			'subject'  => array(AttributeType::Varchar, 'required' => true, 'maxLength' => 1000),
+			'body'     => array(AttributeType::Text, 'required' => true),
+			'htmlBody' => AttributeType::Text,
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'message' => array(static::BELONGS_TO, 'EmailMessageRecord'),
 		);
 	}
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => array('messageId', 'language'), 'unique' => true)

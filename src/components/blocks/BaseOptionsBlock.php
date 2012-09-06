@@ -9,10 +9,10 @@ abstract class BaseOptionsBlock extends BaseBlock
 	/**
 	 * @return array
 	 */
-	protected function getDefaultSettings()
+	protected function defineSettings()
 	{
 		return array(
-			'options' => array()
+			'options' => array(AttributeType::Text)
 		);
 	}
 

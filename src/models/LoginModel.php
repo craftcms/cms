@@ -8,12 +8,12 @@ namespace Blocks;
  */
 class LoginModel extends BaseModel
 {
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'username'   => array(PropertyType::Varchar, 'required' => true),
-			'password'   => array(PropertyType::Varchar, 'required' => true),
-			'rememberMe' => PropertyType::Boolean
+			'username'   => array(AttributeType::Varchar, 'required' => true),
+			'password'   => array(AttributeType::Varchar, 'required' => true),
+			'rememberMe' => AttributeType::Boolean
 		);
 	}
 

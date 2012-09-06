@@ -11,19 +11,19 @@ class EntryVersionRecord extends BaseRecord
 		return 'entryversions';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'language' => PropertyType::Language,
-			'draft'    => PropertyType::Boolean,
-			'num'      => array(PropertyType::Int, 'unsigned' => true, 'required' => true),
-			'name'     => PropertyType::Name,
-			'notes'    => PropertyType::TinyText,
-			'changes'  => PropertyType::MediumText
+			'language' => AttributeType::Language,
+			'draft'    => AttributeType::Boolean,
+			'num'      => array(AttributeType::Int, 'unsigned' => true, 'required' => true),
+			'name'     => AttributeType::Name,
+			'notes'    => AttributeType::TinyText,
+			'changes'  => AttributeType::MediumText
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'entry'  => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
@@ -31,7 +31,7 @@ class EntryVersionRecord extends BaseRecord
 		);
 	}
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => array('num','draft','entryId'), 'unique' => true)

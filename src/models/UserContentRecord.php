@@ -11,7 +11,7 @@ class UserContentRecord extends BaseRecord
 		return 'usercontent';
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'user' => array(static::BELONGS_TO, 'UserRecord', 'unique' => true, 'required' => true),

@@ -11,18 +11,18 @@ class SectionRecord extends BaseRecord
 		return 'sections';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'name'      => PropertyType::Name,
-			'handle'    => PropertyType::Handle,
-			'hasUrls'   => array(PropertyType::Boolean, 'default' => true),
-			'urlFormat' => PropertyType::Varchar,
-			'template'  => PropertyType::Template,
+			'name'      => AttributeType::Name,
+			'handle'    => AttributeType::Handle,
+			'hasUrls'   => array(AttributeType::Boolean, 'default' => true),
+			'urlFormat' => AttributeType::Varchar,
+			'template'  => AttributeType::Template,
 		);
 	}
 
-	protected function getRelations()
+	protected function defineRelations()
 	{
 		return array(
 			'parent'      => array(static::BELONGS_TO, 'SectionRecord'),
@@ -33,7 +33,7 @@ class SectionRecord extends BaseRecord
 		);
 	}
 
-	protected function getIndexes()
+	protected function defineIndexes()
 	{
 		return array(
 			array('columns' => array('handle'), 'unique' => true),

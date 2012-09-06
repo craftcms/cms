@@ -11,11 +11,11 @@ class SystemSettingsRecord extends BaseRecord
 		return 'systemsettings';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'category' => array(PropertyType::Varchar, 'maxLength' => 15, 'unique' => true, 'required' => true),
-			'settings' => PropertyType::Json,
+			'category' => array(AttributeType::Varchar, 'maxLength' => 15, 'unique' => true, 'required' => true),
+			'settings' => AttributeType::Json,
 		);
 	}
 }

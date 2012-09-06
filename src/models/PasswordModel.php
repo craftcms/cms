@@ -6,10 +6,10 @@ namespace Blocks;
  */
 class PasswordModel extends BaseModel
 {
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'password' => array(PropertyType::Varchar, 'minLength' => 6, 'required' => true)
+			'password' => array(AttributeType::Varchar, 'minLength' => 6, 'required' => true)
 		);
 	}
 }

@@ -11,13 +11,13 @@ class PluginRecord extends BaseRecord
 		return 'plugins';
 	}
 
-	protected function getProperties()
+	protected function defineAttributes()
 	{
 		return array(
-			'class'    => PropertyType::ClassName,
-			'version'  => PropertyType::Version,
-			'enabled'  => PropertyType::Boolean,
-			'settings' => PropertyType::Text,
+			'class'    => AttributeType::ClassName,
+			'version'  => AttributeType::Version,
+			'enabled'  => AttributeType::Boolean,
+			'settings' => AttributeType::Text,
 		);
 	}
 }

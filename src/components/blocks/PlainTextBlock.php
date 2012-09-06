@@ -20,13 +20,13 @@ class PlainTextBlock extends BaseBlock
 	/**
 	 * @return array
 	 */
-	protected function getDefaultSettings()
+	protected function defineSettings()
 	{
 		return array(
-			'multiline'     => true,
-			'hint'          => 'Enter text…',
-			'maxLength'     => null,
-			'maxLengthUnit' => 'words'
+			'multiline'     => array(AttributeType::Boolean, 'default' => true),
+			'hint'          => array(AttributeType::Varchar, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),
+			'maxLength'     => array(AttributeType::Int),
+			'maxLengthUnit' => array(AttributeType::Enum, 'options' => array('words', 'chars')),
 		);
 	}
 }

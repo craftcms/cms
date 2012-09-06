@@ -5,7 +5,7 @@ namespace Blocks;
  * Component base class
  * Extended by BasePlugin, BaseWidget, BaseBlock, etc.
  */
-abstract class BaseComponent extends \CApplicationComponent
+abstract class BaseComponent extends \CComponent
 {
 	/**
 	 * The AR record associated with this instance.
@@ -26,6 +26,8 @@ abstract class BaseComponent extends \CApplicationComponent
 	private $_classHandle;
 	private $_settings;
 
+	public function init(){}
+
 	/**
 	 * Returns the name of the component.
 	 *
@@ -45,12 +47,11 @@ abstract class BaseComponent extends \CApplicationComponent
 	}
 
 	/**
-	 * Returns the default block settings.
+	 * Defines the settings.
 	 *
-	 * @access protected
 	 * @return array
 	 */
-	protected function getDefaultSettings()
+	protected function defineSettings()
 	{
 		return array();
 	}
@@ -61,20 +62,18 @@ abstract class BaseComponent extends \CApplicationComponent
 	public function getSettings()
 	{
 		if (!isset($this->_settings))
-			$this->_settings = $this->getDefaultSettings();
+			$this->_settings = new Model($this->defineSettings());
 		return $this->_settings;
 	}
 
 	/**
-	 * Sets the settings.
+	 * Sets the setting values.
 	 *
-	 * @param array $settings
+	 * @param array $values
 	 */
-	public function setSettings($settings)
+	public function setSettings($values)
 	{
-		if (!is_array($settings))
-			$settings = array();
-		$this->_settings = array_merge($this->getDefaultSettings(), $settings);
+		$this->getSettings()->setAttributes($values);
 	}
 
 	/**
@@ -98,33 +97,5 @@ abstract class BaseComponent extends \CApplicationComponent
 		}
 
 		return $this->_classHandle;
-	}
-
-	/**
-	 * Is Set?
-	 *
-	 * @param string $name
-	 * @return bool
-	 */
-	function __isset($name)
-	{
-		if (isset($this->record->$name))
-			return true;
-		else
-			return parent::__isset($name);
-	}
-
-	/**
-	 * Getter
-	 *
-	 * @param string $name
-	 * @return mixed
-	 */
-	function __get($name)
-	{
-		if (isset($this->record->$name))
-			return $this->record->$name;
-		else
-			return parent::__get($name);
 	}
 }
