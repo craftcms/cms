@@ -13,7 +13,7 @@
 				{% set seg = plugin.getClassHandle %}
 				<li><a href="{{ url('plugins/' ~ seg) }}" {% if blx.request.segment(2) == seg %}class="sel"{% endif %}>
 					<span class="status {% if plugin.enabled %}on{% elseif plugin.getIsInstalled %}off{% endif %}" title="{% if plugin.enabled %}{{ 'Enabled'|t }}{% elseif plugin.getIsInstalled %}{{ 'Disabled'|t }}{% else %}{{ 'Not installed'|t }}{% endif %}"></span>
-					{{ plugin.name }}
+					{{ plugin.getName }}
 				</a></li>
 			{% endfor %}
 		</ul>

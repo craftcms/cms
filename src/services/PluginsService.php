@@ -191,10 +191,10 @@ class PluginsService extends \CApplicationComponent
 	 */
 	private function _comparePluginNames($a, $b)
 	{
-		if ($a->name == $b->name)
+		if ($a->getName() == $b->getName())
 			return 0;
 		else
-			return ($a->name < $b->name) ? -1 : 1;
+			return ($a->getName() < $b->getName()) ? -1 : 1;
 	}
 
 	/**
@@ -213,7 +213,7 @@ class PluginsService extends \CApplicationComponent
 			$this->_noPluginExists($className);
 
 		if (!$plugin->getIsInstalled())
-			throw new Exception(Blocks::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->name)));
+			throw new Exception(Blocks::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 
 		$plugin->record->enabled = true;
 		if ($plugin->record->save())
@@ -237,7 +237,7 @@ class PluginsService extends \CApplicationComponent
 			$this->_noPluginExists($className);
 
 		if (!$plugin->getIsInstalled())
-			throw new Exception(Blocks::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->name)));
+			throw new Exception(Blocks::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 
 		$plugin->record->enabled = false;
 		if ($plugin->record->save())
@@ -261,7 +261,7 @@ class PluginsService extends \CApplicationComponent
 			$this->_noPluginExists($className);
 
 		if ($plugin->getIsInstalled())
-			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->name)));
+			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 
 		$record = new PluginRecord();
 		$record->class = $plugin->getClassHandle();
@@ -289,7 +289,7 @@ class PluginsService extends \CApplicationComponent
 			$this->_noPluginExists($className);
 
 		if (!$plugin->getIsInstalled())
-			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->name)));
+			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
 
 		blx()->db->createCommand()->delete('plugins', array('class' => $className));
 		return true;
