@@ -28,8 +28,8 @@ class ModelHelper
 	{
 		foreach ($model->defineAttributes() as $name => $config)
 		{
-			if (isset($config['default']))
-				$model->$name = $config['default'];
+			if (is_array($config) && isset($config['default']))
+				$model->setAttribute($name, $config['default']);
 		}
 	}
 

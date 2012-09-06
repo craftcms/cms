@@ -95,21 +95,21 @@ abstract class BaseRecord extends \CActiveRecord
 			{
 				case AttributeType::Decimal:
 				{
-					$this->$name = LocalizationHelper::normalizeNumber($value);
+					$this->setAttribute($name, LocalizationHelper::normalizeNumber($value));
 					break;
 				}
 				case AttributeType::UnixTimeStamp:
 				{
 					if (gettype($value) === gettype(new DateTime()))
-						$this->$name = LocalizationHelper::normalizeDateTime($value);
+						$this->setAttribute($name, LocalizationHelper::normalizeDateTime($value));
 					break;
 				}
 				case AttributeType::Json:
 				{
 					if (!empty($value) && is_array($value))
-						$this->$name = Json::encode($value);
+						$this->setAttribute($name, Json::encode($value));
 					else
-						$this->name = null;
+						$this->setAttribute($name, null);
 					break;
 				}
 			}
@@ -136,22 +136,22 @@ abstract class BaseRecord extends \CActiveRecord
 		foreach ($this->defineAttributes() as $name => $config)
 		{
 			$type = ModelHelper::getAttributeType($config);
-			$value = $this->$value;
+			$value = $this->getAttribute($name);
 
 			switch ($type)
 			{
 				case AttributeType::UnixTimeStamp:
 				{
 					$dateTime = new DateTime();
-					$this->$name = $dateTime->setTimestamp($this->$name);
+					$this->setAttribute($name, $dateTime->setTimestamp($value));
 					break;
 				}
 				case AttributeType::Json:
 				{
 					if (!empty($value) && is_string($value))
-						$this->$name = Json::decode($value);
+						$this->setAttribute($name, Json::decode($value));
 					else
-						$this->$name = array();
+						$this->setAttribute($name, array());
 					break;
 				}
 			}
@@ -384,5 +384,30 @@ abstract class BaseRecord extends \CActiveRecord
 		return new \CActiveDataProvider($this, array(
 			'criteria' => $criteria
 		));
+	}
+
+	/**
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return bool
+	 */
+	public function setAttribute($name, $value)
+	{
+		if (isset($this->getMetaData()->columns[$name]))
+			$this->_attributes[$name] = $value;
+		else
+			return false;
+
+		return true;
+	}
+
+	/**
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function getAttribute($name)
+	{
+		if (isset($this->_attributes[$name]))
+			return $this->_attributes[$name];
 	}
 }
