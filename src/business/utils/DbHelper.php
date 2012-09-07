@@ -53,9 +53,11 @@ class DbHelper
 			$config = array_merge(static::$columnTypeDefaults[$config['column']], $config);
 
 		// Rename 'maxLength' to 'length'
-		if (isset($config['maxLength']) && is_numeric($config['maxLength']) && $config['maxLength'] > 0)
+		if (isset($config['maxLength']))
 		{
-			$config['length'] = $config['maxLength'];
+			if (!isset($config['length']) && is_numeric($config['maxLength']) && $config['maxLength'] > 0)
+				$config['length'] = $config['maxLength'];
+
 			unset($config['maxLength']);
 		}
 
