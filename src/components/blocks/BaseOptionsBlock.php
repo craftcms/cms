@@ -12,7 +12,7 @@ abstract class BaseOptionsBlock extends BaseBlock
 	protected function defineSettings()
 	{
 		return array(
-			'options' => array(ColumnType::Text)
+			'options' => AttributeType::Mixed
 		);
 	}
 

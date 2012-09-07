@@ -23,9 +23,9 @@ class NumberBlock extends BaseBlock
 	protected function defineSettings()
 	{
 		return array(
-			'min'      => array(ColumnType::Decimal, 'default' => 0),
-			'max'      => array(ColumnType::Decimal),
-			'decimals' => array(ColumnType::Int, 'default' => 0),
+			'min'      => array(AttributeType::Number, 'default' => 0),
+			'max'      => AttributeType::Number,
+			'decimals' => array(AttributeType::Number, 'default' => 0),
 		);
 	}
 
@@ -34,10 +34,6 @@ class NumberBlock extends BaseBlock
 	 */
 	public function defineContentColumn()
 	{
-		return array(AttributeType::Number,
-			'min'      => $this->settings['min'],
-			'max'      => $this->settings['max'],
-			'decimals' => $this->settings['decimals']
-		);
+		return DbHelper::getNumberColumnConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
 	}
 }

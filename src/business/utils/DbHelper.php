@@ -73,6 +73,73 @@ class DbHelper
 	}
 
 	/**
+	 * Integer column sizes
+	 *
+	 * @static
+	 * @var array
+	 */
+	public static $intColumnSizes = array(
+		ColumnType::TinyInt   => 128,
+		ColumnType::SmallInt  => 32768,
+		ColumnType::MediumInt => 8388608,
+		ColumnType::Int       => 2147483648,
+		ColumnType::BigInt    => 9223372036854775808
+	);
+
+	/**
+	 * Returns a number column config, taking the min, max, and number of decimal points into account.
+	 *
+	 * @static
+	 * @param number $min
+	 * @param number $max
+	 * @param int $decimals
+	 * @return array
+	 */
+	public static function getNumberColumnConfig($min = null, $max = null, $decimals = null)
+	{
+		$config = array();
+
+		// Normalize the arguments
+		$config['min'] = is_numeric($min) ? $min : -static::$intColumnSizes[ColumnType::Int];
+		$config['max'] = is_numeric($max) ? $max : static::$intColumnSizes[ColumnType::Int]-1;
+		$config['decimals'] = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
+
+		// Unsigned?
+		$config['unsigned'] = ($config['min'] >= 0);
+
+		// Figure out the max length
+		$maxAbsSize = intval($config['unsigned'] ? $config['max'] : max(abs($config['min']), abs($config['max'])));
+		$config['length'] = ($maxAbsSize ? strlen($maxAbsSize) : 0) + $config['decimals'];
+
+		// Decimal or int?
+		if ($config['decimals'] > 0)
+		{
+			$config['column'] = ColumnType::Decimal;
+		}
+		else
+		{
+			// Figure out the smallest possible int column type that will fit our min/max
+			foreach (static::$intColumnSizes as $colType => $size)
+			{
+				if ($config['unsigned'])
+				{
+					if ($config['max'] < $size * 2)
+						break;
+				}
+				else
+				{
+					if ($config['min'] >= -$size && $config['max'] < $size)
+						break;
+				}
+			}
+
+			$config['column'] = $colType;
+		}
+
+		return $config;
+	}
+
+	/**
 	 * Generates the column definition SQL for a column
 	 *
 	 * @param array $config
