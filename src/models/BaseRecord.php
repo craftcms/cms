@@ -283,7 +283,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 	public function isNewRecord()
 	{
-		return $this->isNewRecord();
+		return $this->getIsNewRecord();
 	}
 
 	public function findById($id, $condition = '', $params = array())
