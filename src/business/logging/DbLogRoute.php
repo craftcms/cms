@@ -40,7 +40,7 @@ class DbLogRoute extends \CDbLogRoute
 					'category' => array('column' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
 					'key'      => array('column' => ColumnType::Varchar, 'maxLength' => 400, 'required' => true),
 					'data'     => ColumnType::Text,
-					'logtime'  => array('column' => AttributeType::DateTime, 'required' => true)
+					'logtime'  => array('column' => ColumnType::Int, 'required' => true)
 				));
 
 		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
