@@ -61,10 +61,8 @@ class DashboardService extends \CApplicationComponent
 	 */
 	public function getUserWidgets()
 	{
-		$records = WidgetRecord::model()->findAllByAttributes(array(
+		$records = WidgetRecord::model()->ordered()->findAllByAttributes(array(
 			'userId' => blx()->accounts->getCurrentUser()->id
-		), array(
-			'order' => 'sortOrder'
 		));
 
 		$widgets = array();

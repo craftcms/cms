@@ -48,7 +48,7 @@ class DashboardVariable
 
 		foreach ($widgets as $widget)
 		{
-			$widgetIds[] = $widget->id;
+			$widgetIds[] = $widget->record->id;
 		}
 		return $widgetIds;
 	}
