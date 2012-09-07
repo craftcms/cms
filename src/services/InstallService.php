@@ -251,7 +251,7 @@ class InstallService extends \CApplicationComponent
 			'required' => true,
 			'translatable' => true,
 			'class' => 'PlainText',
-			'settings' => array(
+			'blockSettings' => array(
 				'hint' => Blocks::t('Enter your blog post’s body…')
 			)
 		));
