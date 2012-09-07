@@ -8,7 +8,7 @@ class EmailMessageContentRecord extends BaseRecord
 {
 	public function getTableName()
 	{
-		return 'emailmessagecontnet';
+		return 'emailmessagecontent';
 	}
 
 	public function defineAttributes()
