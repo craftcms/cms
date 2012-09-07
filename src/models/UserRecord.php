@@ -79,7 +79,7 @@ class UserRecord extends BaseRecord
 	 *
 	 * @return bool
 	 */
-	public function getIsCurrent()
+	public function isCurrent()
 	{
 		return (!$this->getIsNewRecord() && $this->id == blx()->accounts->getCurrentUser()->id);
 	}

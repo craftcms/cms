@@ -16,7 +16,7 @@ class InstallService extends \CApplicationComponent
 	 */
 	public function run($inputs)
 	{
-		if (blx()->getIsInstalled())
+		if (blx()->isInstalled())
 			throw new Exception(Blocks::t('@@@productDisplay@@@ is already installed.'));
 
 		$records = $this->_findInstallableRecords();
@@ -32,7 +32,7 @@ class InstallService extends \CApplicationComponent
 			$this->_createForeignKeysFromRecords($records);
 
 			// Tell @@@productDisplay@@@ that it's installed now
-			blx()->setIsInstalled(true);
+			blx()->setInstalledStatus(true);
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 			$this->_populateInfoTable($inputs);

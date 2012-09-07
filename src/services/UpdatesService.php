@@ -17,7 +17,7 @@ class UpdatesService extends \CApplicationComponent
 	{
 		$updates = array();
 
-		if (!$forceRefresh && !$this->getIsUpdateInfoCached())
+		if (!$forceRefresh && !$this->isUpdateInfoCached())
 			return null;
 
 		$updateInfo = $this->getUpdateInfo($forceRefresh);
@@ -115,7 +115,7 @@ class UpdatesService extends \CApplicationComponent
 	/**
 	 * @return bool
 	 */
-	public function getIsUpdateInfoCached()
+	public function isUpdateInfoCached()
 	{
 		return (isset($this->_updateInfo) || blx()->fileCache->get('updateInfo') !== false);
 	}
@@ -123,7 +123,7 @@ class UpdatesService extends \CApplicationComponent
 	/**
 	 * @return mixed
 	 */
-	public function getIsCriticalUpdateAvailable()
+	public function isCriticalUpdateAvailable()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->criticalUpdateAvailable))
 			return true;
@@ -134,7 +134,7 @@ class UpdatesService extends \CApplicationComponent
 	/**
 	 * @return mixed
 	 */
-	public function getIsManualUpdateRequired()
+	public function isManualUpdateRequired()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->manualUpdateRequired))
 			return true;

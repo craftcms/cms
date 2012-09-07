@@ -14,7 +14,7 @@ class InstallController extends BaseController
 	public function init()
 	{
 		// Return a 404 if @@@productDisplay@@@ is already installed
-		if (!blx()->config->devMode && blx()->getIsInstalled())
+		if (!blx()->config->devMode && blx()->isInstalled())
 			throw new HttpException(404);
 	}
 

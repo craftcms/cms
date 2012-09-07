@@ -71,7 +71,7 @@ class AccountsController extends BaseController
 				$user->cooldownStart = null;
 				$user->save();
 
-				if (!blx()->user->getIsLoggedIn())
+				if (!blx()->user->isLoggedIn())
 					blx()->user->startLogin($user->username, $passwordModel->password);
 
 				blx()->user->setNotice(Blocks::t('Password updated.'));
@@ -119,7 +119,7 @@ class AccountsController extends BaseController
 
 		// New password?
 		//  - Only admins can change other members' passwords, and even then, they're encouraged to require a password reset.
-		if ($user->getIsCurrent() || blx()->accounts->getCurrentUser()->admin)
+		if ($user->isCurrent() || blx()->accounts->getCurrentUser()->admin)
 		{
 			$password = blx()->request->getPost('password');
 			if ($password)

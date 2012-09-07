@@ -13,7 +13,7 @@ class UpdatesVariable
 	 */
 	public function cached()
 	{
-		return blx()->updates->getIsUpdateInfoCached();
+		return blx()->updates->isUpdateInfoCached();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class UpdatesVariable
 	 */
 	public function critical()
 	{
-		return blx()->updates->getIsCriticalUpdateAvailable();
+		return blx()->updates->isCriticalUpdateAvailable();
 	}
 
 	/**

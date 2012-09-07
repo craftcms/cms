@@ -46,7 +46,7 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (!BLOCKS_CP_REQUEST)
 		{
-			if (blx()->getIsInstalled())
+			if (blx()->isInstalled())
 				if (($path = $this->matchEntry()) !== false)
 					return $path;
 		}

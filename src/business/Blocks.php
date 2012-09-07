@@ -192,7 +192,7 @@ class Blocks extends \Yii
 	{
 		if (!isset(static::$_storedBlocksInfo))
 		{
-			if (blx()->getIsInstalled())
+			if (blx()->isInstalled())
 				static::$_storedBlocksInfo = InfoRecord::model()->find();
 			else
 				static::$_storedBlocksInfo = false;

@@ -13,7 +13,7 @@ class SessionVariable
 	 */
 	public function loggedin()
 	{
-		return blx()->user->getIsLoggedIn();
+		return blx()->user->isLoggedIn();
 	}
 
 	/**

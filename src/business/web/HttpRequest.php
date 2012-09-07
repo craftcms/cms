@@ -334,7 +334,7 @@ class HttpRequest extends \CHttpRequest
 	 *
 	 * @return bool Whether the request is coming from a mobile browser
 	 */
-	public function getIsMobileBrowser()
+	public function isMobileBrowser()
 	{
 		if (!isset($this->_isMobileBrowser))
 		{

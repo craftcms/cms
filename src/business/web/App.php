@@ -118,7 +118,7 @@ class App extends \CWebApplication
 		$this->_processInstallRequest();
 
 		// Are we in the middle of a manual update?
-		if ($this->getIsDbUpdateNeeded())
+		if ($this->isDbUpdateNeeded())
 		{
 			// Let's let all CP requests through.
 			if ($this->request->getMode() == RequestMode::CP)
@@ -186,7 +186,7 @@ class App extends \CWebApplication
 		}
 
 		// Should they be?
-		else if (!$this->getIsInstalled())
+		else if (!$this->isInstalled())
 		{
 			// Give it to them if accessing the CP
 			if ($this->request->getMode() == RequestMode::CP)
@@ -225,7 +225,7 @@ class App extends \CWebApplication
 	private function _processUserPreferredLanguage()
 	{
 		// See if the user is logged in.
-		if (blx()->user->getIsLoggedIn())
+		if (blx()->user->isLoggedIn())
 		{
 			$user = blx()->accounts->getCurrentUser();
 			$userLanguage = Locale::getCanonicalID($user->language);
@@ -445,7 +445,7 @@ class App extends \CWebApplication
 	 *
 	 * @return bool
 	 */
-	public function getIsDbUpdateNeeded()
+	public function isDbUpdateNeeded()
 	{
 		if (Blocks::getBuild() !== Blocks::getStoredBuild() || Blocks::getVersion() !== Blocks::getStoredVersion())
 		{
@@ -460,7 +460,7 @@ class App extends \CWebApplication
 	 *
 	 * @return bool
 	 */
-	public function getIsInstalled()
+	public function isInstalled()
 	{
 		if (!isset($this->_isInstalled))
 		{
@@ -476,7 +476,7 @@ class App extends \CWebApplication
 	 *
 	 * @param bool $isInstalled
 	 */
-	public function setIsInstalled($isInstalled)
+	public function setInstalledStatus($isInstalled)
 	{
 		$this->_isInstalled = (bool)$isInstalled;
 	}

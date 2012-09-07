@@ -85,7 +85,7 @@ class UserSessionService extends \CWebUser
 	 */
 	protected function afterLogin($fromCookie)
 	{
-		if ($this->getIsLoggedIn() && !$fromCookie)
+		if ($this->isLoggedIn() && !$fromCookie)
 		{
 			blx()->accounts->getCurrentUser()->lastLoginDate = DateTimeHelper::currentTime();
 			blx()->accounts->getCurrentUser()->save();
@@ -144,7 +144,7 @@ class UserSessionService extends \CWebUser
 	 *
 	 * @return bool
 	 */
-	public function getIsLoggedIn()
+	public function isLoggedIn()
 	{
 		return !$this->getIsGuest();
 	}

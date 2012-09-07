@@ -212,7 +212,7 @@ class PluginsService extends \CApplicationComponent
 		if (!$plugin)
 			$this->_noPluginExists($className);
 
-		if (!$plugin->getIsInstalled())
+		if (!$plugin->isInstalled())
 			throw new Exception(Blocks::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 
 		$plugin->record->enabled = true;
@@ -236,7 +236,7 @@ class PluginsService extends \CApplicationComponent
 		if (!$plugin)
 			$this->_noPluginExists($className);
 
-		if (!$plugin->getIsInstalled())
+		if (!$plugin->isInstalled())
 			throw new Exception(Blocks::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 
 		$plugin->record->enabled = false;
@@ -260,7 +260,7 @@ class PluginsService extends \CApplicationComponent
 		if (!$plugin)
 			$this->_noPluginExists($className);
 
-		if ($plugin->getIsInstalled())
+		if ($plugin->isInstalled())
 			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 
 		$record = new PluginRecord();
@@ -288,7 +288,7 @@ class PluginsService extends \CApplicationComponent
 		if (!$plugin)
 			$this->_noPluginExists($className);
 
-		if (!$plugin->getIsInstalled())
+		if (!$plugin->isInstalled())
 			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
 
 		blx()->db->createCommand()->delete('plugins', array('class' => $className));

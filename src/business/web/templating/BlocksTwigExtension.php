@@ -109,7 +109,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	{
 		$globals['blx'] = new BlxVariable();
 
-		if (blx()->getIsInstalled())
+		if (blx()->isInstalled())
 		{
 			$globals['siteName'] = Blocks::getSiteName();
 			$globals['siteUrl'] = Blocks::getSiteUrl();

@@ -18,7 +18,7 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		// If @@@productDisplay@@@ isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
-		if (blx()->getIsInstalled())
+		if (blx()->isInstalled())
 		{
 			parent::__construct($scenario);
 		}

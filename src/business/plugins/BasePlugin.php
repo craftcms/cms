@@ -18,7 +18,7 @@ abstract class BasePlugin extends BaseComponent
 	 *
 	 * @return bool
 	 */
-	public function getIsInstalled()
+	public function isInstalled()
 	{
 		if (isset($this->record))
 			return true;

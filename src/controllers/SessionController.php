@@ -22,7 +22,7 @@ class SessionController extends BaseController
 		$loginInfo = blx()->user->startLogin($username, $password, $rememberMe);
 
 		// Did it work?
-		if (blx()->user->getIsLoggedIn())
+		if (blx()->user->isLoggedIn())
 		{
 			$this->returnJson(array(
 				'success' => true,

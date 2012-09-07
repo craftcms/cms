@@ -15,7 +15,7 @@ class DashboardHelper
 	{
 		$alerts = array();
 
-		if (blx()->updates->getIsUpdateInfoCached() || $fetch)
+		if (blx()->updates->isUpdateInfoCached() || $fetch)
 		{
 			$updateInfo = blx()->updates->getUpdateInfo();
 
