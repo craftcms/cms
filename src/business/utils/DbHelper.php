@@ -130,7 +130,7 @@ class DbHelper
 			}
 			default:
 			{
-				$def = $config['type'];
+				$def = $config['column'];
 			}
 		}
 
@@ -163,9 +163,9 @@ class DbHelper
 	public static function getAuditColumnConfig()
 	{
 		return array(
-			'dateCreated' => array('type' => ColumnType::Int, 'required' => true, 'default' => 0),
-			'dateUpdated' => array('type' => ColumnType::Int, 'required' => true, 'default' => 0),
-			'uid'         => array('type' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0)
+			'dateCreated' => array('column' => ColumnType::Int, 'required' => true, 'default' => 0),
+			'dateUpdated' => array('column' => ColumnType::Int, 'required' => true, 'default' => 0),
+			'uid'         => array('column' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0)
 		);
 	}
 
