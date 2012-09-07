@@ -181,12 +181,12 @@ abstract class BaseRecord extends \CActiveRecord
 		// Add any Foreign Key columns
 		foreach ($this->_getBelongsToRelations() as $name => $config)
 		{
-			$required = isset($config['required']) ? $config['required'] : false;
+			$required = !empty($config['required']);
 			$columns[$config[2]] = array('type' => AttributeType::Number, 'required' => $required, 'unsigned' => true);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
-			if (isset($config['unique']) && $config['unique'] === true)
+			if (!empty($config['unique']))
 				$indexes[] = array('columns' => array($config[2]), 'unique' => true);
 		}
 
@@ -196,9 +196,10 @@ abstract class BaseRecord extends \CActiveRecord
 			$config = ModelHelper::normalizeAttributeConfig($config);
 
 			// Add (unique) index for this column?
-			$unique = (isset($config['unique']) && $config['unique'] === true);
-			if ($unique || (isset($config['indexed']) && $config['indexed'] === true))
-				$indexes[] = array('columns' => array($name), 'unique' => true);
+			$indexed = !empty($config['indexed']);
+			$unique = !empty($config['unique']);
+			if ($unique || $indexed)
+				$indexes[] = array('columns' => array($name), 'unique' => $unique);
 
 			$columns[$name] = $config;
 		}
@@ -210,7 +211,7 @@ abstract class BaseRecord extends \CActiveRecord
 		foreach ($indexes as $index)
 		{
 			$columns = ArrayHelper::stringToArray($index['columns']);
-			$unique = (isset($index['unique']) && $index['unique'] === true);
+			$unique = !empty($index['unique']);
 			$name = "{$table}_".implode('_', $columns).($unique ? '_unique' : '').'_idx';
 			blx()->db->createCommand()->createIndex($name, $table, implode(',', $columns), $unique);
 		}
