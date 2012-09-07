@@ -42,8 +42,8 @@ class InstallService extends \CApplicationComponent
 			$this->_registerEmailMessage('verify_email', Blocks::t('verify_email_subject'), Blocks::t('verify_email_body'));
 			$this->_registerEmailMessage('verify_new_email', Blocks::t('verify_new_email_subject'), Blocks::t('verify_new_email_body'));
 			$this->_registerEmailMessage('forgot_password', Blocks::t('forgot_password_subject'), Blocks::t('forgot_password_body'));
-
 			/* end BLOCKSPRO ONLY */
+
 			Blocks::log('Creating user.', \CLogger::LEVEL_INFO);
 			$user = $this->_addUser($inputs);
 

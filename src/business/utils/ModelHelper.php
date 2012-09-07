@@ -70,7 +70,15 @@ class ModelHelper
 		}
 		else if (!isset($config['type']))
 		{
-			$config['type'] = isset($config[0]) ? $config[0] : AttributeType::String;
+			if (isset($config[0]))
+			{
+				$config['type'] = $config[0];
+				unset($config[0]);
+			}
+			else
+			{
+				$config['type'] = AttributeType::String;
+			}
 		}
 
 		// Merge in the default attribute + column configs
@@ -176,7 +184,7 @@ class ModelHelper
 		{
 			$config = static::normalizeAttributeConfig($config);
 			if (isset($config['default']))
-				$model->setAttribute($name, $config['default']);
+				$model->$name = $config['default'];
 		}
 	}
 
@@ -274,7 +282,7 @@ class ModelHelper
 				$uniques[] = $name;
 
 			// Required
-			if (!empty($config['required']))
+			if ($config['type'] != AttributeType::Bool && !empty($config['required']))
 				$required[] = $name;
 
 			// License keys' length=36 is redundant in the context of validation, since matchPattern already enforces 36 chars

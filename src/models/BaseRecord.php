@@ -87,7 +87,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 			switch($config['type'])
 			{
-				case ColumnType::Decimal:
+				case AttributeType::Number:
 				{
 					$this->setAttribute($name, LocalizationHelper::normalizeNumber($value));
 					break;
@@ -182,7 +182,7 @@ abstract class BaseRecord extends \CActiveRecord
 		foreach ($this->_getBelongsToRelations() as $name => $config)
 		{
 			$required = !empty($config['required']);
-			$columns[$config[2]] = array('type' => AttributeType::Number, 'required' => $required, 'unsigned' => true);
+			$columns[$config[2]] = array('column' => ColumnType::Int, 'required' => $required);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)

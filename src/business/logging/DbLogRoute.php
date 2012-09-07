@@ -36,11 +36,11 @@ class DbLogRoute extends \CDbLogRoute
 	{
 		$db = $this->getDbConnection();
 			$db->createCommand()->createTable($tableName, array(
-					'userId'   => array('type' => ColumnType::Int),
-					'category' => array('type' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
-					'key'      => array('type' => ColumnType::Varchar, 'maxLength' => 400, 'required' => true),
+					'userId'   => array('column' => ColumnType::Int),
+					'category' => array('column' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
+					'key'      => array('column' => ColumnType::Varchar, 'maxLength' => 400, 'required' => true),
 					'data'     => ColumnType::Text,
-					'logtime'  => array('type' => AttributeType::DateTime, 'required' => true)
+					'logtime'  => array('column' => AttributeType::DateTime, 'required' => true)
 				));
 
 		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
