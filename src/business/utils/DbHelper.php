@@ -45,7 +45,15 @@ class DbHelper
 		}
 		else if (!isset($config['column']))
 		{
-			$config['column'] = isset($config[0]) ? $config[0] : ColumnType::Varchar;
+			if (isset($config[0]))
+			{
+				$config['column'] = $config[0];
+				unset($config[0]);
+			}
+			else
+			{
+				$config['column'] = AttributeType::Varchar;
+			}
 		}
 
 		// Merge in the default config
