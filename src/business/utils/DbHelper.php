@@ -7,135 +7,56 @@ namespace Blocks;
 class DbHelper
 {
 	/**
-	 * Default attribute configs
+	 * Default column configs
 	 */
-	protected static $attributeTypeConfigs = array(
-		AttributeType::Char         => array('maxLength' => 255),
-		AttributeType::Varchar      => array('maxLength' => 255),
-		AttributeType::Number       => array('maxLength' => 10, 'min' => -2147483648, 'max' => 2147483647, 'decimals' => 0),
-		AttributeType::TinyInt      => array('maxLength' => 4),
-		AttributeType::SmallInt     => array('maxLength' => 6),
-		AttributeType::MediumInt    => array('maxLength' => 9),
-		AttributeType::Int          => array('maxLength' => 11),
-		AttributeType::BigInt       => array('maxLength' => 20),
-		AttributeType::TinyInt      => array('maxLength' => 4),
-		AttributeType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
-		AttributeType::Boolean      => array('type '=> AttributeType::TinyInt, 'maxLength' => 1, 'unsigned' => true, 'required' => true, 'default' => false),
-		AttributeType::Enum         => array('values' => array()),
-
-		AttributeType::ClassName     => array('type' => AttributeType::Char, 'maxLength' => 150, 'required' => true),
-		AttributeType::Email         => array('type' => AttributeType::Varchar, 'minLength' => 5),
-		AttributeType::Handle        => array('type' => AttributeType::Char, 'maxLength' => 100, 'required' => true),
-		AttributeType::Language      => array('type' => AttributeType::Char, 'maxLength' => 12, 'required' => true),
-		AttributeType::Name          => array('type' => AttributeType::Varchar, 'maxLength' => 100, 'required' => true),
-		AttributeType::SortOrder     => array('type' => AttributeType::SmallInt, 'required' => true, 'unsigned' => true),
-		AttributeType::Template      => array('type' => AttributeType::Varchar, 'maxLength' => 500),
-		AttributeType::Version       => array('type' => AttributeType::Char, 'maxLength' => 15, 'required' => true),
-		AttributeType::Url           => array('type' => AttributeType::Varchar, 'maxLength' => 255),
-		AttributeType::Build         => array('type' => AttributeType::Int, 'required' => true, 'unsigned' => true),
-		AttributeType::LicenseKey    => array('type' => AttributeType::Char, 'length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true),
-		AttributeType::Json          => array('type' => AttributeType::Text),
-		AttributeType::UnixTimeStamp => array('type' => AttributeType::Int)
+	public static $columnTypeDefaults = array(
+		ColumnType::Char         => array('maxLength' => 255),
+		ColumnType::Varchar      => array('maxLength' => 255),
+		ColumnType::TinyInt      => array('maxLength' => 4),
+		ColumnType::SmallInt     => array('maxLength' => 6),
+		ColumnType::MediumInt    => array('maxLength' => 9),
+		ColumnType::Int          => array('maxLength' => 11),
+		ColumnType::BigInt       => array('maxLength' => 20),
+		ColumnType::TinyInt      => array('maxLength' => 4),
+		ColumnType::Decimal      => array('maxLength' => 10, 'decimals' => 2),
+		ColumnType::Enum         => array('values' => array()),
 	);
 
 	/**
-	 * Normalize attribute config
+	 * Normalizes a column's config.
 	 *
-	 * @param $config
+	 * Columns can be defined in 3 ways:
+	 *
+	 * 1. ColumnType::TypeName
+	 * 2. array(ColumnType::TypeName [, 'other' => 'settings' ... ] )
+	 * 3. array('column' => ColumnType::TypeName [, 'other' => 'settings' ... ] )
+	 *
+	 * This function normalizes on the 3rd, merges in the default config settings for the column type,
+	 * and renames 'maxLength' to 'length'
+	 *
+	 * @param string|array $config
 	 * @return array
 	 */
 	public static function normalizeAttributeConfig($config)
 	{
 		if (is_string($config))
 		{
-			$config = array('type' => $config);
+			$config = array('column' => $config);
 		}
-		else if (!isset($config['type']))
+		else if (!isset($config['column']))
 		{
-			$config['type'] = ModelHelper::getAttributeType($config);
-		}
-
-		// Merge in the default settings
-		if (isset(static::$attributeTypeConfigs[$config['type']]))
-		{
-			$config = array_merge(static::$attributeTypeConfigs[$config['type']], $config);
-
-			// Override the type if the default settings specifies it
-			if (isset(static::$attributeTypeConfigs[$config['type']]['type']))
-			{
-				$newType = static::$attributeTypeConfigs[$config['type']]['type'];
-				$config['type'] = $newType;
-
-				// ...And merge in the new type's settings...
-				$config = static::normalizeAttributeConfig($config);
-			}
-			// Handle number columns
-			else if ($config['type'] == AttributeType::Number)
-			{
-				$config = static::getNumberColumnConfig($config['min'], $config['max'], $config['decimals']);
-			}
+			$config['column'] = isset($config[0]) ? $config[0] : ColumnType::Varchar;
 		}
 
-		return $config;
-	}
+		// Merge in the default config
+		if (isset(static::$columnTypeDefaults[$config['column']]))
+			$config = array_merge(static::$columnTypeDefaults[$config['column']], $config);
 
-	private static $_intColumnTypes = array(
-		AttributeType::TinyInt   => 128,
-		AttributeType::SmallInt  => 32768,
-		AttributeType::MediumInt => 8388608,
-		AttributeType::Int       => 2147483648,
-		AttributeType::BigInt    => 9223372036854775808
-	);
-
-	/**
-	 * Returns a number column config, taking the min, max, and number of decimal points into account.
-	 *
-	 * @static
-	 * @param number $min
-	 * @param number $max
-	 * @param int $decimals
-	 * @return array
-	 */
-	public static function getNumberColumnConfig($min = null, $max = null, $decimals = null)
-	{
-		$config = array();
-
-		// Normalize the arguments
-		$min = is_numeric($min) ? $min : static::$attributeTypeConfigs[AttributeType::Number]['min'];
-		$max = is_numeric($max) ? $max : static::$attributeTypeConfigs[AttributeType::Number]['max'];
-		$decimals = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
-
-		// Unsigned?
-		$config['unsigned'] = ($min >= 0);
-
-		// Figure out the max length
-		$maxAbsSize = intval($config['unsigned'] ? $max : max(abs($min), abs($max)));
-		$config['maxLength'] = ($maxAbsSize ? strlen($maxAbsSize) : 0) + $decimals;
-
-		// Int or decimal?
-		if ($decimals == 0)
+		// Rename 'maxLength' to 'length'
+		if (isset($config['maxLength']) && is_numeric($config['maxLength']) && $config['maxLength'] > 0)
 		{
-			// Figure out the smallest possible int column type that will fit our min/max
-			foreach (static::$_intColumnTypes as $colType => $size)
-			{
-				if ($config['unsigned'])
-				{
-					if ($max < $size * 2)
-						break;
-				}
-				else
-				{
-					if ($min >= -$size && $max < $size)
-						break;
-				}
-			}
-
-			$config['type'] = $colType;
-		}
-		else
-		{
-			$config['type'] = AttributeType::Decimal;
-			$config['decimals'] = $decimals;
+			$config['length'] = $config['maxLength'];
+			unset($config['maxLength']);
 		}
 
 		return $config;
@@ -152,40 +73,53 @@ class DbHelper
 	{
 		$config = static::normalizeAttributeConfig($config);
 
-		// Treat strict lengths as max lengths when defining columns
-		if (isset($config['length']) && is_numeric($config['length']) && $config['length'] > 0)
-			$config['maxLength'] = $config['length'];
-
 		// Start the column definition
-		switch ($config['type'])
+		switch ($config['column'])
 		{
-			case AttributeType::Char:
-				$def = 'CHAR('.$config['maxLength'].')';
+			case ColumnType::Char:
+			{
+				$def = 'CHAR('.$config['length'].')';
 				break;
-			case AttributeType::Varchar:
-				$def = 'VARCHAR('.$config['maxLength'].')';
+			}
+			case ColumnType::Varchar:
+			{
+				$def = 'VARCHAR('.$config['length'].')';
 				break;
-			case AttributeType::TinyInt:
-				$def = 'TINYINT('.$config['maxLength'].')';
+			}
+			case ColumnType::TinyInt:
+			{
+				$def = 'TINYINT('.$config['length'].')';
 				break;
-			case AttributeType::SmallInt:
-				$def = 'SMALLINT('.$config['maxLength'].')';
+			}
+			case ColumnType::SmallInt:
+			{
+				$def = 'SMALLINT('.$config['length'].')';
 				break;
-			case AttributeType::MediumInt:
-				$def = 'MEDIUMINT('.$config['maxLength'].')';
+			}
+			case ColumnType::MediumInt:
+			{
+				$def = 'MEDIUMINT('.$config['length'].')';
 				break;
-			case AttributeType::Int:
-				$def = 'INT('.$config['maxLength'].')';
+			}
+			case ColumnType::Int:
+			{
+				$def = 'INT('.$config['length'].')';
 				break;
-			case AttributeType::BigInt:
-				$def = 'BIGINT('.$config['maxLength'].')';
+			}
+			case ColumnType::BigInt:
+			{
+				$def = 'BIGINT('.$config['length'].')';
 				break;
-			case AttributeType::Decimal:
-				$def = 'DECIMAL('.$config['maxLength'].','.$config['decimals'].')';
+			}
+			case ColumnType::Decimal:
+			{
+				$def = 'DECIMAL('.$config['length'].','.$config['decimals'].')';
 				break;
-			case AttributeType::Enum:
+			}
+			case ColumnType::Enum:
+			{
 				$def = 'ENUM(';
-				$values = is_array($config['values']) ? $config['values'] : explode(',', $config['values']);
+				$values = ArrayHelper::stringToArray($config['values']);
 				foreach ($values as $i => $value)
 				{
 					if ($i > 0) $def .= ',';
@@ -193,17 +127,20 @@ class DbHelper
 				}
 				$def .= ')';
 				break;
+			}
 			default:
+			{
 				$def = $config['type'];
+			}
 		}
 
-		if (isset($config['unsigned']) && $config['unsigned'] === true)
+		if (!empty($config['unsigned']))
 			$def .= ' UNSIGNED';
 
-		if (isset($config['zerofill']) && $config['zerofill'] === true)
+		if (!empty($config['zerofill']))
 			$def .= ' ZEROFILL';
 
-		if (isset($config['required']) && $config['required'] === true)
+		if (!empty($config['required']))
 			$def .= ' NOT NULL';
 		else
 			$def .= ' NULL';
@@ -226,9 +163,9 @@ class DbHelper
 	public static function getAuditColumnConfig()
 	{
 		return array(
-			'dateCreated' => array('type' => AttributeType::UnixTimeStamp, 'required' => true, 'default' => 0),
-			'dateUpdated' => array('type' => AttributeType::UnixTimeStamp, 'required' => true, 'default' => 0),
-			'uid'         => array('type' => AttributeType::Char, 'maxLength' => 36, 'required' => true, 'default' => 0)
+			'dateCreated' => array('type' => ColumnType::Int, 'required' => true, 'default' => 0),
+			'dateUpdated' => array('type' => ColumnType::Int, 'required' => true, 'default' => 0),
+			'uid'         => array('type' => ColumnType::Char, 'length' => 36, 'required' => true, 'default' => 0)
 		);
 	}
 

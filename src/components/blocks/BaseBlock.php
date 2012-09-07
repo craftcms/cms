@@ -19,7 +19,7 @@ abstract class BaseBlock extends BaseComponent
 	public function defineContentColumn()
 	{
 		// Default to a text column
-		return AttributeType::Text;
+		return ColumnType::Text;
 	}
 
 	/**

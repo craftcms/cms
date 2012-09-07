@@ -23,9 +23,9 @@ class NumberBlock extends BaseBlock
 	protected function defineSettings()
 	{
 		return array(
-			'min'      => array(AttributeType::Decimal, 'default' => 0),
-			'max'      => array(AttributeType::Decimal),
-			'decimals' => array(AttributeType::Int, 'default' => 0),
+			'min'      => array(ColumnType::Decimal, 'default' => 0),
+			'max'      => array(ColumnType::Decimal),
+			'decimals' => array(ColumnType::Int, 'default' => 0),
 		);
 	}
 

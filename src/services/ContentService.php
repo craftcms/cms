@@ -403,15 +403,14 @@ class ContentService extends \CApplicationComponent
 
 				$block = blx()->blocks->getBlockByClass($record->class);
 				$block->setSettings($record->blockSettings);
-				$columnType = DbHelper::generateColumnDefinition($block->defineContentColumn());
 
 				if ($isNewRecord)
 				{
-					blx()->db->createCommand()->addColumn($contentTable, $record->handle, $columnType);
+					blx()->db->createCommand()->addColumn($contentTable, $record->handle, $block->defineContentColumn());
 				}
 				else
 				{
-					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $columnType, $record->handle);
+					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $block->defineContentColumn(), $record->handle);
 				}
 
 				// Commit the transaction
@@ -498,8 +497,7 @@ class ContentService extends \CApplicationComponent
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */
-				$columnType = DbHelper::generateColumnDefinition($block->defineContentColumn());
-				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $columnType, null, $lastColumn);
+				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $block->defineContentColumn(), null, $lastColumn);
 				$lastColumn = $record->handle;
 			}
 

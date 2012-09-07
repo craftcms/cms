@@ -20,7 +20,7 @@ namespace Blocks;
  *
 */
 
-class AttributeType
+class ColumnType
 {
 	const PK           = 'pk';
 	const Char         = 'char';
@@ -29,32 +29,17 @@ class AttributeType
 	const Text         = 'text';
 	const MediumText   = 'mediumtext';
 	const LongText     = 'longtext';
-	const Number       = 'number';
 	const TinyInt      = 'tinyint';
 	const SmallInt     = 'smallint';
 	const MediumInt    = 'mediumint';
 	const Int          = 'integer';
 	const BigInt       = 'bigint';
-	const Boolean      = 'boolean';
 	const Decimal      = 'decimal';
+	const Bool         = 'bool';
 	const DateTime     = 'datetime';
 	const Timestamp    = 'timestamp';
 	const Time         = 'time';
 	const Date         = 'date';
 	const Binary       = 'binary';
 	const Enum         = 'enum';
-
-	const ClassName     = 'classname';
-	const Email         = 'email';
-	const Handle        = 'handle';
-	const Language      = 'language';
-	const Name          = 'name';
-	const SortOrder     = 'sortorder';
-	const Template      = 'template';
-	const Version       = 'version';
-	const Url           = 'url';
-	const Build         = 'build';
-	const LicenseKey    = 'licensekey';
-	const Json          = 'json';
-	const UnixTimeStamp = 'unixtimestamp';
 }

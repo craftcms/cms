@@ -14,10 +14,10 @@ class PluginRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'class'    => AttributeType::ClassName,
-			'version'  => AttributeType::Version,
-			'enabled'  => AttributeType::Boolean,
-			'settings' => AttributeType::Text,
+			'class'    => array(AttributeType::ClassName, 'required' => true),
+			'version'  => array(AttributeType::Version, 'required' => true),
+			'enabled'  => AttributeType::Bool,
+			'settings' => array(AttributeType::String, 'column' => ColumnType::Text),
 		);
 	}
 }

@@ -14,10 +14,10 @@ class EmailMessageContentRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'language' => AttributeType::Language,
-			'subject'  => array(AttributeType::Varchar, 'required' => true, 'maxLength' => 1000),
-			'body'     => array(AttributeType::Text, 'required' => true),
-			'htmlBody' => AttributeType::Text,
+			'language' => array(AttributeType::Language, 'required' => true),
+			'subject'  => array(AttributeType::String, 'required' => true, 'maxLength' => 1000),
+			'body'     => array(AttributeType::String, 'required' => true, 'column' => ColumnType::Text),
+			'htmlBody' => array(AttributeType::String, 'column' => ColumnType::Text),
 		);
 	}
 

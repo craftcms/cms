@@ -23,9 +23,9 @@ class PlainTextBlock extends BaseBlock
 	protected function defineSettings()
 	{
 		return array(
-			'multiline'     => array(AttributeType::Boolean, 'default' => true),
-			'hint'          => array(AttributeType::Varchar, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),
-			'maxLength'     => array(AttributeType::Int),
+			'multiline'     => array(AttributeType::Bool, 'default' => true),
+			'hint'          => array(ColumnType::Varchar, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),
+			'maxLength'     => array(ColumnType::Int),
 			'maxLengthUnit' => array(AttributeType::Enum, 'options' => array('words', 'chars')),
 		);
 	}

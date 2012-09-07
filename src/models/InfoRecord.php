@@ -14,14 +14,14 @@ class InfoRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'version'     => AttributeType::Version,
-			'build'       => AttributeType::Build,
-			'releaseDate' => array(AttributeType::Int, 'required' => true),
-			'siteName'    => AttributeType::Name,
+			'version'     => array(AttributeType::Version, 'required' => true),
+			'build'       => array(AttributeType::Build, 'required' => true),
+			'releaseDate' => array(AttributeType::DateTime, 'required' => true),
+			'siteName'    => array(AttributeType::Name, 'required' => true),
 			'siteUrl'     => array(AttributeType::Url, 'required' => true),
-			'language'    => AttributeType::Language,
+			'language'    => array(AttributeType::Language, 'required' => true),
 			'licenseKey'  => AttributeType::LicenseKey,
-			'on'          => AttributeType::Boolean,
+			'on'          => AttributeType::Bool,
 		);
 	}
 }

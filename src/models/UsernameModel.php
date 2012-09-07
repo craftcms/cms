@@ -9,7 +9,7 @@ class UsernameModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'username' => array(AttributeType::Varchar, 'required' => true),
+			'username' => array(AttributeType::String, 'required' => true),
 		);
 	}
 

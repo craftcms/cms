@@ -24,7 +24,7 @@ class DropdownBlock extends BaseOptionsBlock
 	 */
 	public function defineContentColumn()
 	{
-		return AttributeType::Varchar;
+		return ColumnType::Varchar;
 	}
 
 }

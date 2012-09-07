@@ -14,8 +14,8 @@ class EmailMessageRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'key'      => array(AttributeType::Char, 'required' => true, 'unique' => true, 'maxLength' => 150),
-			'template' => array(AttributeType::Varchar, 'maxLength' => 500),
+			'key'      => array(AttributeType::String, 'required' => true, 'unique' => true, 'maxLength' => 150, 'column' => ColumnType::Char),
+			'template' => array(AttributeType::String, 'maxLength' => 500),
 		);
 	}
 

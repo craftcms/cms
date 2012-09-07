@@ -14,12 +14,12 @@ class EntryVersionRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'language' => AttributeType::Language,
-			'draft'    => AttributeType::Boolean,
-			'num'      => array(AttributeType::Int, 'unsigned' => true, 'required' => true),
-			'name'     => AttributeType::Name,
-			'notes'    => AttributeType::TinyText,
-			'changes'  => AttributeType::MediumText
+			'language' => array(AttributeType::Language, 'required' => true),
+			'draft'    => AttributeType::Bool,
+			'num'      => array(AttributeType::Number, 'unsigned' => true, 'required' => true),
+			'name'     => array(AttributeType::Name, 'required' => true),
+			'notes'    => array(AttributeType::String, 'column' => ColumnType::TinyText),
+			'changes'  => array(AttributeType::String, 'column' => ColumnType::MediumText),
 		);
 	}
 

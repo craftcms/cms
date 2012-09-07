@@ -45,8 +45,8 @@ class EntryContentRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'language' => AttributeType::Language,
-			'title'    => AttributeType::Varchar,
+			'language' => array(AttributeType::Language, 'required' => true),
+			'title'    => AttributeType::String,
 		);
 	}
 

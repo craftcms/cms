@@ -14,9 +14,9 @@ class WidgetRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'class'      => AttributeType::ClassName,
-			'sortOrder'  => AttributeType::SortOrder,
-			'settings'   => AttributeType::Text,
+			'class'      => array(AttributeType::ClassName, 'required' => true),
+			'sortOrder'  => array(AttributeType::SortOrder, 'required' => true),
+			'settings'   => array(AttributeType::String, 'column' => ColumnType::Text),
 		);
 	}
 

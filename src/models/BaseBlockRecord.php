@@ -14,14 +14,14 @@ abstract class BaseBlockRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'name'          => AttributeType::Name,
-			'handle'        => array(AttributeType::Handle, 'reservedWords' => 'id,dateCreated,dateUpdated,uid,title'),
-			'instructions'  => AttributeType::Text,
-			'required'      => AttributeType::Boolean,
-			'translatable'  => AttributeType::Boolean,
-			'class'         => AttributeType::ClassName,
-			'blockSettings' => AttributeType::Json,
-			'sortOrder'     => AttributeType::SortOrder,
+			'name'          => array(AttributeType::Name, 'required' => true),
+			'handle'        => array(AttributeType::Handle, 'required' => true),
+			'instructions'  => array(AttributeType::String, 'column' => ColumnType::Text),
+			'required'      => AttributeType::Bool,
+			'translatable'  => AttributeType::Bool,
+			'class'         => array(AttributeType::ClassName, 'required' => true),
+			'blockSettings' => AttributeType::Mixed,
+			'sortOrder'     => array(AttributeType::SortOrder, 'required' => true),
 		);
 	}
 

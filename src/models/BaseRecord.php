@@ -88,23 +88,23 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		foreach ($this->defineAttributes() as $name => $config)
 		{
-			$type = ModelHelper::getAttributeType($config);
-			$value = $this->$name;
+			$config = ModelHelper::normalizeAttributeConfig($config);
+			$value = $this->getAttribute($name);
 
-			switch($type)
+			switch($config['type'])
 			{
-				case AttributeType::Decimal:
+				case ColumnType::Decimal:
 				{
 					$this->setAttribute($name, LocalizationHelper::normalizeNumber($value));
 					break;
 				}
-				case AttributeType::UnixTimeStamp:
+				case AttributeType::DateTime:
 				{
 					if (gettype($value) === gettype(new DateTime()))
 						$this->setAttribute($name, LocalizationHelper::normalizeDateTime($value));
 					break;
 				}
-				case AttributeType::Json:
+				case AttributeType::Mixed:
 				{
 					if (!empty($value) && is_array($value))
 						$this->setAttribute($name, Json::encode($value));
@@ -135,18 +135,18 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		foreach ($this->defineAttributes() as $name => $config)
 		{
-			$type = ModelHelper::getAttributeType($config);
+			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
 
-			switch ($type)
+			switch ($config['type'])
 			{
-				case AttributeType::UnixTimeStamp:
+				case AttributeType::DateTime:
 				{
 					$dateTime = new DateTime();
 					$this->setAttribute($name, $dateTime->setTimestamp($value));
 					break;
 				}
-				case AttributeType::Json:
+				case AttributeType::Mixed:
 				{
 					if (!empty($value) && is_string($value))
 						$this->setAttribute($name, Json::decode($value));
@@ -188,7 +188,7 @@ abstract class BaseRecord extends \CActiveRecord
 		foreach ($this->_getBelongsToRelations() as $name => $config)
 		{
 			$required = isset($config['required']) ? $config['required'] : false;
-			$columns[$config[2]] = array('type' => AttributeType::Int, 'required' => $required);
+			$columns[$config[2]] = array('type' => AttributeType::Number, 'required' => $required, 'unsigned' => true);
 
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
@@ -199,7 +199,7 @@ abstract class BaseRecord extends \CActiveRecord
 		// Add all other columns
 		foreach ($this->defineAttributes() as $name => $config)
 		{
-			$config = DbHelper::normalizeAttributeConfig($config);
+			$config = ModelHelper::normalizeAttributeConfig($config);
 
 			// Add (unique) index for this column?
 			$unique = (isset($config['unique']) && $config['unique'] === true);

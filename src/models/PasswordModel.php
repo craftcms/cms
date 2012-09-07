@@ -9,7 +9,7 @@ class PasswordModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'password' => array(AttributeType::Varchar, 'minLength' => 6, 'required' => true)
+			'password' => array(AttributeType::String, 'minLength' => 6, 'required' => true)
 		);
 	}
 }

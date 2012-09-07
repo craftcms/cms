@@ -9,7 +9,7 @@ class GeneralSettingsModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'siteName'   => AttributeType::Name,
+			'siteName'   => array(AttributeType::Name, 'required' => true),
 			'siteUrl'    => array(AttributeType::Url, 'required' => true),
 			/* BLOCKSPRO ONLY */
 			'licenseKey' => AttributeType::LicenseKey,

@@ -14,10 +14,10 @@ class SectionRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'name'      => AttributeType::Name,
-			'handle'    => AttributeType::Handle,
-			'hasUrls'   => array(AttributeType::Boolean, 'default' => true),
-			'urlFormat' => AttributeType::Varchar,
+			'name'      => array(AttributeType::Name, 'required' => true),
+			'handle'    => array(AttributeType::Handle, 'required' => true),
+			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
+			'urlFormat' => AttributeType::String,
 			'template'  => AttributeType::Template,
 		);
 	}

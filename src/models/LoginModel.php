@@ -11,9 +11,9 @@ class LoginModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'username'   => array(AttributeType::Varchar, 'required' => true),
-			'password'   => array(AttributeType::Varchar, 'required' => true),
-			'rememberMe' => AttributeType::Boolean
+			'username'   => array(AttributeType::String, 'required' => true),
+			'password'   => array(AttributeType::String, 'required' => true),
+			'rememberMe' => AttributeType::Bool
 		);
 	}
 

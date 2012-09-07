@@ -14,16 +14,16 @@ class EntryRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'slug'          => array(AttributeType::Char, 'maxLength' => 50),
-			'uri'           => array(AttributeType::Varchar, 'maxLength' => 150, 'unique' => true),
-			'publishDate'   => AttributeType::UnixTimeStamp,
+			'slug'          => AttributeType::Slug,
+			'uri'           => array(AttributeType::String, 'maxLength' => 150, 'unique' => true),
+			'publishDate'   => AttributeType::DateTime,
 			/* BLOCKSPRO ONLY */
-			'expiryDate'    => AttributeType::UnixTimeStamp,
-			'sortOrder'     => array(AttributeType::Int, 'unsigned' => true),
-			'latestDraft'   => AttributeType::Int,
-			'latestVersion' => AttributeType::Int,
+			'expiryDate'    => AttributeType::DateTime,
+			'sortOrder'     => array(AttributeType::Number, 'unsigned' => true),
+			'latestDraft'   => array(AttributeType::Number, 'unsigned' => true),
+			'latestVersion' => array(AttributeType::Number, 'unsigned' => true),
 			/* end BLOCKSPRO ONLY */
-			'archived'      => AttributeType::Boolean,
+			'archived'      => AttributeType::Bool,
 		);
 	}
 
