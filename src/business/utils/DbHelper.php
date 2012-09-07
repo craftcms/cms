@@ -52,7 +52,7 @@ class DbHelper
 			}
 			else
 			{
-				$config['column'] = AttributeType::Varchar;
+				$config['column'] = ColumnType::Varchar;
 			}
 		}
 
