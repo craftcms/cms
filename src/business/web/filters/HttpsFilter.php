@@ -13,7 +13,7 @@ class HttpsFilter extends \CFilter
 	 */
 	protected function preFilter($filterChain)
 	{
-		if (!blx()->request->getIsSecureConnection())
+		if (!blx()->request->isSecureConnection())
 		{
 			// Redirect to the secure version of the page.
 			$url = 'https://'.blx()->request->getServerName().blx()->request->getRequestUri();

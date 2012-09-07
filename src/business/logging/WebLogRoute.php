@@ -14,7 +14,7 @@ class WebLogRoute extends \CWebLogRoute
 	 */
 	protected function render($view, $data)
 	{
-		$isAjax = blx()->request->getIsAjaxRequest();
+		$isAjax = blx()->request->isAjaxRequest();
 		$mimeType = blx()->request->getMimeType();
 
 		if ($this->showInFireBug)

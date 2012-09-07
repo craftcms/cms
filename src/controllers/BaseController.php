@@ -89,7 +89,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireLogin()
 	{
-		if (blx()->user->getIsGuest())
+		if (blx()->user->isGuest())
 			blx()->user->loginRequired();
 	}
 
@@ -118,7 +118,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAjaxRequest()
 	{
-		if (!blx()->config->devMode && !blx()->request->getIsAjaxRequest())
+		if (!blx()->config->devMode && !blx()->request->isAjaxRequest())
 			throw new HttpException(404);
 	}
 

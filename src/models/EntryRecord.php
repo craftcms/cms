@@ -151,7 +151,7 @@ class EntryRecord extends BaseRecord
 	 */
 	public function getDrafts()
 	{
-		if (!$this->getIsNewRecord())
+		if (!$this->isNewRecord())
 			return blx()->content->getEntryDrafts($this->id);
 		else
 			return array();

@@ -13,7 +13,7 @@ class RequestVariable
 	 */
 	public function secure()
 	{
-		return blx()->request->getIsSecureConnection();
+		return blx()->request->isSecureConnection();
 	}
 
 	/**

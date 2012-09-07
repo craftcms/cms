@@ -26,7 +26,7 @@ class UserSessionService extends \CWebUser
 		$app = blx();
 		$request = $app->getRequest();
 
-		if (!$request->getIsAjaxRequest())
+		if (!$request->isAjaxRequest())
 		{
 			if ($request->getPathInfo() !== '')
 				$this->setReturnUrl($request->getUrl());
@@ -140,13 +140,26 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 *
+	 * Check to see if the current web user is a guest.
+	 *
+	 * (wrapper for getIsGuest() for consistency)
+	 *
+	 * @return bool
+	 */
+	public function isGuest()
+	{
+		return $this->getIsGuest();
+	}
+
+	/**
 	 * Check to see if the current web user is logged in.
 	 *
 	 * @return bool
 	 */
 	public function isLoggedIn()
 	{
-		return !$this->getIsGuest();
+		return !$this->isGuest();
 	}
 
 	/**

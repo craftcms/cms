@@ -160,7 +160,7 @@ class UrlManager extends \CUrlManager
 	public function matchTemplatePath()
 	{
 		// Make sure they're not trying to access a private template
-		if (!blx()->request->getIsAjaxRequest())
+		if (!blx()->request->isAjaxRequest())
 		{
 			foreach (blx()->request->getPathSegments() as $requestPathSeg)
 			{

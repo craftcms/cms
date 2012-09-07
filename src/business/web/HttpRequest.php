@@ -393,4 +393,48 @@ class HttpRequest extends \CHttpRequest
 
 		return $this->_browserLanguages;
 	}
+
+	// Rename getIsX() => isX() functions for consistency
+	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter)
+	//    but we're trying to resist the temptation of magic methods for the sake of code obviousness.
+
+	public function isSecureConnection()
+	{
+		return $this->getIsSecureConnection();
+	}
+
+	public function isPostRequest()
+	{
+		return $this->getIsPostRequest();
+	}
+
+	public function isDeleteRequest()
+	{
+		return $this->getIsDeleteRequest();
+	}
+
+	public function isDeleteViaPostRequest()
+	{
+		return $this->getIsDeleteViaPostRequest();
+	}
+
+	public function isPutRequest()
+	{
+		return $this->getIsPutRequest();
+	}
+
+	public function isPutViaPostRequest()
+	{
+		return $this->getIsPutViaPostRequest();
+	}
+
+	public function isAjaxRequest()
+	{
+		return $this->getIsAjaxRequest();
+	}
+
+	public function isFlashRequest()
+	{
+		return $this->getIsFlashRequest();
+	}
 }

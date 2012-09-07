@@ -110,7 +110,7 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 
 		// Populate dateCreated and uid if this is a new record
-		if ($this->getIsNewRecord())
+		if ($this->isNewRecord())
 		{
 			$this->dateCreated = DateTimeHelper::currentTime();
 			$this->uid = StringHelper::UUID();
@@ -278,21 +278,21 @@ abstract class BaseRecord extends \CActiveRecord
 		}
 	}
 
-	/**
-	 * Gets a record by its ID.
-	 *
-	 * @param $id
-	 * @param string $condition
-	 * @param array $params
-	 * @return BaseRecord
-	 */
+	// Rename a couple CActiveRecord functions
+
+
+	public function isNewRecord()
+	{
+		return $this->isNewRecord();
+	}
+
 	public function findById($id, $condition = '', $params = array())
 	{
 		return $this->findByPk($id, $condition, $params);
 	}
 
 
-	/* CModel and CActiveRecord methods */
+	// CModel and CActiveRecord methods
 
 
 	/**

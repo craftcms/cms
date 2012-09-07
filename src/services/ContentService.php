@@ -170,7 +170,7 @@ class ContentService extends \CApplicationComponent
 	{
 		$section = $this->_getSection($sectionId);
 
-		$isNewSection = $section->getIsNewRecord();
+		$isNewSection = $section->isNewRecord();
 		if (!$isNewSection)
 		{
 			$oldUrlFormat = $section->urlFormat;
@@ -359,7 +359,7 @@ class ContentService extends \CApplicationComponent
 	/* end BLOCKSPRO ONLY */
 		$record = $this->_getEntryBlock($blockId);
 
-		$isNewRecord = $record->getIsNewRecord();
+		$isNewRecord = $record->isNewRecord();
 		if (!$isNewRecord)
 			$oldHandle = $record->handle;
 

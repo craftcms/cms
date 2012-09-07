@@ -107,7 +107,7 @@ class AccountsController extends BaseController
 		else
 			$user = new UserRecord();
 
-		$isNewUser = $user->getIsNewRecord();
+		$isNewUser = $user->isNewRecord();
 
 		// Set all the standard stuff
 		$user->username = blx()->request->getPost('username');
