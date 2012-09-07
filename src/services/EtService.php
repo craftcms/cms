@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EtService extends \CApplicationComponent
+class EtService extends ApplicationComponent
 {
 	/**
 	 * @return bool|EtPackage

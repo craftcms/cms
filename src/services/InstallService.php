@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class InstallService extends \CApplicationComponent
+class InstallService extends ApplicationComponent
 {
 	/**
 	 * Installs @@@productDisplay@@@!

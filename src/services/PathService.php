@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PathService extends \CApplicationComponent
+class PathService extends ApplicationComponent
 {
 	private $_templatePath;
 

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AccountsService extends \CApplicationComponent
+class AccountsService extends ApplicationComponent
 {
 	/**
 	 * The default parameters for getUsers() and getTotalUsers().

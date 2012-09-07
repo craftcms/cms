@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ComponentsService extends \CApplicationComponent
+class ComponentsService extends ApplicationComponent
 {
 	protected static $componentTypes = array(
 		'block' => array('folder' => 'blocks', 'suffix' => 'Block'),

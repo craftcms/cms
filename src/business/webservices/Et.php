@@ -16,7 +16,7 @@ namespace Blocks;
 	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
 	 *
 	 */
-class Et extends \CApplicationComponent
+class Et extends ApplicationComponent
 {
 	private $_endpoint;
 	private $_timeout;

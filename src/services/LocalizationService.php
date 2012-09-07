@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class LocalizationService extends \CApplicationComponent
+class LocalizationService extends ApplicationComponent
 {
 	private static $_languages = array(
 		'aa',    'af',    'ak',  'am',    'ar',    'ar_001', 'as',    'az',  'bas',     'be',

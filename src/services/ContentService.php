@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class ContentService extends \CApplicationComponent
+class ContentService extends ApplicationComponent
 {
 	/* BLOCKSPRO ONLY */
 

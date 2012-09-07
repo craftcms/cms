@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class DashboardService extends \CApplicationComponent
+class DashboardService extends ApplicationComponent
 {
 	/**
 	 * Returns all installed widgets.

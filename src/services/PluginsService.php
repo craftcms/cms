@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PluginsService extends \CApplicationComponent
+class PluginsService extends ApplicationComponent
 {
 	/**
 	 * Stores all enabled plugins. Populated on init.

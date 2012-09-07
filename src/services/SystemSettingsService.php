@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class SystemSettingsService extends \CApplicationComponent
+class SystemSettingsService extends ApplicationComponent
 {
 	private $_settings;
 

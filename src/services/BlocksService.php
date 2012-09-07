@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class BlocksService extends \CApplicationComponent
+class BlocksService extends ApplicationComponent
 {
 	/**
 	 * Returns all installed blocks.

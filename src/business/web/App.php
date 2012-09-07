@@ -18,6 +18,8 @@ class App extends \CWebApplication
 		// Set default timezone to UTC
 		date_default_timezone_set('UTC');
 
+		Blocks::import('app.business.ApplicationComponent');
+
 		// Import internationalization stuff.
 		Blocks::import('app.services.PathService');
 		Blocks::import('app.business.i18n.PhpMessageSource');

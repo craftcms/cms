@@ -12,7 +12,7 @@ namespace Blocks;
  * Heavily modified for @@@productDisplay@@@.
  */
 
-class File extends \CApplicationComponent
+class File extends ApplicationComponent
 {
 	/**
 	 * @var array object instances array with key set to $_filepath

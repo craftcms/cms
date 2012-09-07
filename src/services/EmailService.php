@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EmailService extends \CApplicationComponent
+class EmailService extends ApplicationComponent
 {
 	private $_defaultEmailTimeout = 10;
 	private $_settings;

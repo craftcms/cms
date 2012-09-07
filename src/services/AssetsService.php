@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetsService extends \CApplicationComponent
+class AssetsService extends ApplicationComponent
 {
 	/**
 	 * @param $assetFolderId

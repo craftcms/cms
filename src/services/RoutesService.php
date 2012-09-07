@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class RoutesService extends \CApplicationComponent
+class RoutesService extends ApplicationComponent
 {
 	/**
 	 * Returns all of the routes.
