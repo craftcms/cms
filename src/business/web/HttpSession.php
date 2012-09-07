@@ -14,4 +14,11 @@ class HttpSession extends \CHttpSession
 		$this->setSavePath(blx()->path->getSessionPath());
 		parent::init();
 	}
+
+	// For consistency!
+
+	public function isStarted()
+	{
+		return $this->getIsStarted();
+	}
 }
