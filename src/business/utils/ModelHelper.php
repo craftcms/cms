@@ -133,8 +133,8 @@ class ModelHelper
 		$config = array();
 
 		// Normalize the arguments
-		$config['min'] = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int]['min'];
-		$config['max'] = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int]['max']-1;
+		$config['min'] = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
+		$config['max'] = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int]-1;
 		$config['decimals'] = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
 
 		// Unsigned?
