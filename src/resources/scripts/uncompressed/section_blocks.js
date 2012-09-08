@@ -5,7 +5,7 @@ var $table = $('#blocks'),
 	totalBlocks = $table.children('tbody').children().length;
 
 
-var sorter = new blx.ui.DataTableSorter($table, {
+var sorter = new Blocks.ui.DataTableSorter($table, {
 	onSortChange: function() {
 
 		// Get the new block order
@@ -22,11 +22,11 @@ var sorter = new blx.ui.DataTableSorter($table, {
 			blockIds: JSON.stringify(blockIds)
 		};
 
-		$.post(blx.actionUrl+'content/reorderEntryBlocks', data, function(response) {
+		$.post(Blocks.actionUrl+'content/reorderEntryBlocks', data, function(response) {
 			if (response.success)
-				blx.cp.displayNotice(blx.t('New block order saved.'));
+				Blocks.cp.displayNotice(Blocks.t('New block order saved.'));
 			else
-				blx.cp.displayError(blx.t('Couldn’t save new block order.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t save new block order.'));
 		});
 	}
 });
@@ -36,13 +36,13 @@ $table.find('.deletebtn').click(function() {
 	var $row = $(this).closest('tr'),
 		blockName = $row.children(':first').children('a').text();
 
-	if (confirm(blx.t('Are you sure you want to delete the entry block “{block}”?', { block: blockName })))
+	if (confirm(Blocks.t('Are you sure you want to delete the entry block “{block}”?', { block: blockName })))
 	{
 		var data = {
 			blockId: $row.attr('data-block-id')
 		};
 
-		$.post(blx.actionUrl+'content/deleteEntryBlock', data, function(response) {
+		$.post(Blocks.actionUrl+'content/deleteEntryBlock', data, function(response) {
 			if (response.success)
 			{
 				$row.remove();
@@ -54,10 +54,10 @@ $table.find('.deletebtn').click(function() {
 					$('#noblocks').show();
 				}
 
-				blx.cp.displayNotice(blx.t('Entry block deleted.'));
+				Blocks.cp.displayNotice(Blocks.t('Entry block deleted.'));
 			}
 			else
-				blx.cp.displayError(blx.t('Couldn’t delete entry block.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t delete entry block.'));
 		});
 	}
 });

@@ -1,7 +1,7 @@
 (function($) {
 
 
-var CP = blx.Base.extend({
+var CP = Blocks.Base.extend({
 
 	$notificationContainer: null,
 	$notifications: null,
@@ -14,10 +14,10 @@ var CP = blx.Base.extend({
 		this.$notifications.delay(CP.notificationDuration).fadeOut();
 
 		// Initialize the account menu button
-		new blx.ui.MenuBtn('#account', {
+		new Blocks.ui.MenuBtn('#account', {
 			onOptionSelect: function(option) {
 				var url = $(option).attr('data-url');
-				document.location.href = blx.baseUrl + url;
+				document.location.href = Blocks.baseUrl + url;
 			}
 		});
 
@@ -71,7 +71,7 @@ var CP = blx.Base.extend({
 });
 
 
-blx.cp = new CP();
+Blocks.cp = new CP();
 
 
 })(jQuery);

@@ -3,7 +3,7 @@
 /**
  * HUD
  */
-blx.ui.HUD = blx.Base.extend({
+Blocks.ui.HUD = Blocks.Base.extend({
 
 	/**
 	 * Constructor
@@ -12,7 +12,7 @@ blx.ui.HUD = blx.Base.extend({
 
 		this.$trigger = $(trigger);
 		this.$contents = $(contents);
-		this.settings = $.extend({}, blx.ui.HUD.defaults, settings);
+		this.settings = $.extend({}, Blocks.ui.HUD.defaults, settings);
 
 		this.showing = false;
 
@@ -31,8 +31,8 @@ blx.ui.HUD = blx.Base.extend({
 
 		if (this.showing) return;
 
-		if (blx.ui.HUD.active)
-			blx.ui.HUD.active.hide();
+		if (Blocks.ui.HUD.active)
+			Blocks.ui.HUD.active.hide();
 
 		this.$hud.show();
 
@@ -131,10 +131,10 @@ blx.ui.HUD = blx.Base.extend({
 		if (event.stopPropagation)
 			event.stopPropagation();
 
-		this.addListener(blx.$body, 'click', 'hide');
+		this.addListener(Blocks.$body, 'click', 'hide');
 
 		this.showing = true;
-		blx.ui.HUD.active = this;
+		Blocks.ui.HUD.active = this;
 
 		// onShow callback
 		this.settings.onShow();
@@ -200,14 +200,14 @@ blx.ui.HUD = blx.Base.extend({
 		this.$hud.hide();
 		this.showing = false;
 
-		blx.ui.HUD.active = null;
+		Blocks.ui.HUD.active = null;
 
 		// onHide callback
 		this.settings.onHide();
 	}
 });
 
-blx.ui.HUD.defaults = {
+Blocks.ui.HUD.defaults = {
 	triggerSpacing: 7,
 	windowSpacing: 20,
 	tipWidth: 8,

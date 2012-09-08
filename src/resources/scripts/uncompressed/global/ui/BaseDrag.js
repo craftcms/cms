@@ -3,7 +3,7 @@
 /**
  * Drag Core
  */
-blx.ui.BaseDrag = blx.Base.extend({
+Blocks.ui.BaseDrag = Blocks.Base.extend({
 
 	$items: null,
 
@@ -27,14 +27,14 @@ blx.ui.BaseDrag = blx.Base.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && blx.isObject(items))
+		if (!settings && Blocks.isObject(items))
 		{
 			// (settings)
 			settings = items;
 			items = null;
 		}
 
-		this.settings = $.extend({}, blx.ui.BaseDrag.defaults, settings);
+		this.settings = $.extend({}, Blocks.ui.BaseDrag.defaults, settings);
 
 		this.$items = $();
 
@@ -75,8 +75,8 @@ blx.ui.BaseDrag = blx.Base.extend({
 		this.targetItemMouseDiffY = event.pageY - offset.top;
 
 		// listen for mousemove, mouseup
-		this.addListener(blx.$document, 'mousemove', 'onMouseMove');
-		this.addListener(blx.$document, 'mouseup', 'onMouseUp');
+		this.addListener(Blocks.$document, 'mousemove', 'onMouseMove');
+		this.addListener(Blocks.$document, 'mouseup', 'onMouseUp');
 	},
 
 	/**
@@ -95,9 +95,9 @@ blx.ui.BaseDrag = blx.Base.extend({
 		if (!this.dragging)
 		{
 			// has the mouse moved far enough to initiate dragging yet?
-			var mouseDist = blx.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
+			var mouseDist = Blocks.getDist(this.mousedownX, this.mousedownY, this.mouseX, this.mouseY);
 
-			if (mouseDist >= blx.ui.BaseDrag.minMouseDist)
+			if (mouseDist >= Blocks.ui.BaseDrag.minMouseDist)
 				this.startDragging();
 			else
 				return;
@@ -112,7 +112,7 @@ blx.ui.BaseDrag = blx.Base.extend({
 	onMouseUp: function(event)
 	{
 		// unbind the document events
-		this.removeAllListeners(blx.$document);
+		this.removeAllListeners(Blocks.$document);
 
 		if (this.dragging)
 			this.stopDragging();
@@ -177,7 +177,7 @@ blx.ui.BaseDrag = blx.Base.extend({
 			// Make sure this element doesn't belong to another dragger
 			if ($.data(item, 'drag'))
 			{
-				blx.log('Element was added to more than one dragger');
+				Blocks.log('Element was added to more than one dragger');
 				$.data(item, 'drag').removeItems(item);
 			}
 

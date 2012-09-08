@@ -3,7 +3,7 @@
 /**
  * Admin Pane
  */
-blx.ui.AdminPane = blx.Base.extend({
+Blocks.ui.AdminPane = Blocks.Base.extend({
 
 	$container: null,
 	$listContainer: null,
@@ -25,7 +25,7 @@ blx.ui.AdminPane = blx.Base.extend({
 		// Is this already a item adminPane?
 		if (this.$container.data('adminpane'))
 		{
-			blx.log('Double-instantiating an admin pane on an element');
+			Blocks.log('Double-instantiating an admin pane on an element');
 			this.$container.data('adminpane').destroy();
 		}
 
@@ -44,7 +44,7 @@ blx.ui.AdminPane = blx.Base.extend({
 		this.freshSettingsHtml = $freshSettings.html();
 
 		// Initialize the sorter
-		this.itemSort = new blx.ui.DragSort({
+		this.itemSort = new Blocks.ui.DragSort({
 			axis: 'y',
 			helper: function($li) {
 				var $ul = $('<ul/>');
@@ -65,7 +65,7 @@ blx.ui.AdminPane = blx.Base.extend({
 				itemId = $item.attr('data-item-id'),
 				$itemSettings = $settings.filter('[data-item-id='+itemId+']:first');
 
-			var item = new blx.ui.AdminPane.Item(this, itemId, $item, $itemSettings);
+			var item = new Blocks.ui.AdminPane.Item(this, itemId, $item, $itemSettings);
 			this.items[itemId] = item;
 
 			// Is this a new item? (Could be if there were validation errors)
@@ -106,7 +106,7 @@ blx.ui.AdminPane = blx.Base.extend({
 			settingsHtml = this.freshSettingsHtml.replace(/ITEM_ID/g, itemId),
 			$settings = $('<div data-item-id="'+itemId+'"/>').html(settingsHtml).appendTo(this.$settingsContainer);
 
-		var item = new blx.ui.AdminPane.Item(this, itemId, $item, $settings);
+		var item = new Blocks.ui.AdminPane.Item(this, itemId, $item, $settings);
 		this.items[itemId] = item;
 		item.select();
 
@@ -117,7 +117,7 @@ blx.ui.AdminPane = blx.Base.extend({
 
 });
 
-blx.ui.AdminPane.Item = blx.Base.extend({
+Blocks.ui.AdminPane.Item = Blocks.Base.extend({
 
 	adminPane: null,
 	id: null,
@@ -190,7 +190,7 @@ blx.ui.AdminPane.Item = blx.Base.extend({
 
 	deleteItem: function()
 	{
-		if (confirm(blx.t('Are you sure you want to delete “{name}”?', {'name': this.$name.html()})))
+		if (confirm(Blocks.t('Are you sure you want to delete “{name}”?', {'name': this.$name.html()})))
 		{
 			this.$item.remove();
 			this.$settings.remove();

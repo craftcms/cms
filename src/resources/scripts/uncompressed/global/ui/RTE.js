@@ -3,7 +3,7 @@
 /**
  * Rich Text Editor
  */
-blx.ui.RTE = blx.Base.extend({
+Blocks.ui.RTE = Blocks.Base.extend({
 
 	/**
 	 * Constructor
@@ -11,7 +11,7 @@ blx.ui.RTE = blx.Base.extend({
 	init: function(id, settings)
 	{
 		this.id = id;
-		this.settings = $.extend({}, blx.ui.RTE.defaults, settings);
+		this.settings = $.extend({}, Blocks.ui.RTE.defaults, settings);
 
 		this.focussed = false;
 
@@ -83,7 +83,7 @@ blx.ui.RTE = blx.Base.extend({
 		//	italic: this.addFormattingButton('italic', '<i>I</i>')
 		//};
 
-		blx.ui.RTE.instances.push(this);
+		Blocks.ui.RTE.instances.push(this);
 	},
 
 	/**
@@ -117,7 +117,7 @@ blx.ui.RTE = blx.Base.extend({
 			options.push({ label: $label.prop('outerHTML') });
 		}
 
-		this.styleSelect = new blx.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
+		this.styleSelect = new Blocks.ui.SelectMenu(this.dom.stylesBtn, options, $.proxy(this, 'selectStyle'));
 
 		this.styleSelect.select(0);
 	},
@@ -313,7 +313,7 @@ blx.ui.RTE = blx.Base.extend({
 					p.appendChild(extracted);
 
 					// add a <br> so that the <p> is selectable
-					// (the browser should remove this automatically when they start typing) 
+					// (the browser should remove this automatically when they start typing)
 					var br = this.iDoc.createElement('br');
 					p.appendChild(br);
 
@@ -329,7 +329,7 @@ blx.ui.RTE = blx.Base.extend({
 
 			default:
 
-				
+
 		}
 	},
 
@@ -346,14 +346,14 @@ blx.ui.RTE = blx.Base.extend({
 
 		$(this.dom.stylesBtn).removeClass('disabled');
 
-		
+
 	}
 
 }, {
 	instances: []
 });
 
-blx.ui.RTE.defaults = {
+Blocks.ui.RTE.defaults = {
 	bold: true,
 	italic: true,
 
@@ -373,7 +373,7 @@ blx.ui.RTE.defaults = {
 /**
  * Formatting Button
  */
-var FormattingButton = blx.Base.extend({
+var FormattingButton = Blocks.Base.extend({
 	/**
 	 * Constructor
 	 */

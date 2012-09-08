@@ -3,7 +3,7 @@
 /**
  * DragSort
  */
-blx.ui.DragSort = blx.ui.Drag.extend({
+Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 
 	$insertion: null,
 	midpoints: null,
@@ -16,14 +16,14 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && blx.isObject(items))
+		if (!settings && Blocks.isObject(items))
 		{
 			// (settings)
 			settings = items;
 			items = null;
 		}
 
-		settings = $.extend({}, blx.ui.DragSort.defaults, settings);
+		settings = $.extend({}, Blocks.ui.DragSort.defaults, settings);
 		this.base(items, settings);
 	},
 
@@ -82,7 +82,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 	onDrag: function()
 	{
 		// if there's a container set, make sure that we're hovering over it
-		if (this.settings.container && !blx.hitTest(this.mouseX, this.mouseY, $(this.settings.container)))
+		if (this.settings.container && !Blocks.hitTest(this.mouseX, this.mouseY, $(this.settings.container)))
 		{
 			if (this.closestItemIndex != -1)
 			{
@@ -113,7 +113,7 @@ blx.ui.DragSort = blx.ui.Drag.extend({
 
 		for (var i = 0; i < this.$items.length; i++)
 		{
-			var mouseDiff = blx.getDist(this.midpoints[i].left, this.midpoints[i].top, this.mouseX, this.mouseY);
+			var mouseDiff = Blocks.getDist(this.midpoints[i].left, this.midpoints[i].top, this.mouseX, this.mouseY);
 
 			if (closestItemIndex == -1 || mouseDiff < closestItemMouseDiff)
 			{

@@ -3,7 +3,7 @@
 /**
  * Handle Generator
  */
-blx.ui.EntryUrlFormatGenerator = blx.ui.InputGenerator.extend({
+Blocks.ui.EntryUrlFormatGenerator = Blocks.ui.InputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -14,14 +14,14 @@ blx.ui.EntryUrlFormatGenerator = blx.ui.InputGenerator.extend({
 		sourceVal = sourceVal.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		sourceVal = blx.asciiString(sourceVal);
+		sourceVal = Blocks.asciiString(sourceVal);
 
 		// Handle must start with a letter and end with a letter/number
 		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
-		var words = blx.filterArray(sourceVal.split(/[^a-z0-9]+/));
+		var words = Blocks.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words.length)
 			return words.join('-') + '/{slug}';

@@ -1,6 +1,6 @@
 (function($) {
 
-var WidgetAdmin = blx.ui.AdminPane.extend({
+var WidgetAdmin = Blocks.ui.AdminPane.extend({
 
 	menuBtn: null,
 
@@ -10,7 +10,7 @@ var WidgetAdmin = blx.ui.AdminPane.extend({
 		this.base($container);
 
 		this.removeListener(this.$addBtn, 'click');
-		this.menuBtn = new blx.ui.MenuBtn(this.$addBtn, {
+		this.menuBtn = new Blocks.ui.MenuBtn(this.$addBtn, {
 			onOptionSelect: $.proxy(this, 'addItem')
 		});
 	},

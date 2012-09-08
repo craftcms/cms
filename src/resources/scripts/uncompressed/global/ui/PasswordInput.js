@@ -3,7 +3,7 @@
 /**
  * Password Input
  */
-blx.ui.PasswordInput = blx.Base.extend({
+Blocks.ui.PasswordInput = Blocks.Base.extend({
 
 	$passwordInput: null,
 	$textInput: null,
@@ -20,7 +20,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 		// Is this already a password input?
 		if (this.$passwordInput.data('passwordInput'))
 		{
-			blx.log('Double-instantiating a password input on an element');
+			Blocks.log('Double-instantiating a password input on an element');
 			this.$passwordInput.data('passwordInput').destroy();
 		}
 
@@ -75,7 +75,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 		}
 
 		this.setCurrentInput(this.$textInput);
-		this.updateToggleLabel(blx.t('Hide'));
+		this.updateToggleLabel(Blocks.t('Hide'));
 		this.showingPassword = true;
 	},
 
@@ -86,7 +86,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 			return;
 
 		this.setCurrentInput(this.$passwordInput);
-		this.updateToggleLabel(blx.t('Show'));
+		this.updateToggleLabel(Blocks.t('Show'));
 		this.showingPassword = false;
 
 		// Alt key temporarily shows the password
@@ -126,7 +126,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 
 	onKeyDown: function(event)
 	{
-		if (event.keyCode == blx.ALT_KEY && this.$currentInput.val())
+		if (event.keyCode == Blocks.ALT_KEY && this.$currentInput.val())
 		{
 			this.showPassword();
 			this.$showPasswordToggle.hide();
@@ -138,7 +138,7 @@ blx.ui.PasswordInput = blx.Base.extend({
 	{
 		event.preventDefault();
 
-		if (event.keyCode == blx.ALT_KEY)
+		if (event.keyCode == Blocks.ALT_KEY)
 		{
 			this.hidePassword();
 			this.$showPasswordToggle.show();
@@ -192,11 +192,11 @@ $.fn.passwordInput = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'passwordInput'))
-			new blx.ui.PasswordInput(this);
+			new Blocks.ui.PasswordInput(this);
 	});
 };
 
-blx.$document.ready(function()
+Blocks.$document.ready(function()
 {
 	$('input.password').passwordInput();
 });

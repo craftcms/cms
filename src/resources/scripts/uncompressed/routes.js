@@ -1,7 +1,7 @@
 (function($) {
 
 
-var Routes = blx.Base.extend({
+var Routes = Blocks.Base.extend({
 
 	routes: null,
 	$container: null,
@@ -20,7 +20,7 @@ var Routes = blx.Base.extend({
 			this.routes.push(route);
 		}
 
-		this.sorter = new blx.ui.DragSort($routes, {
+		this.sorter = new Blocks.ui.DragSort($routes, {
 			axis: 'y',
 			onSortChange: $.proxy(this, 'updateRouteOrder')
 		});
@@ -45,11 +45,11 @@ var Routes = blx.Base.extend({
 			data['routeIds['+i+']'] = $($routes[i]).attr('data-id');
 		}
 
-		$.post(blx.actionUrl+'routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
+		$.post(Blocks.actionUrl+'routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
 			if (response.success)
-				blx.cp.displayNotice(blx.t('New route order saved.'));
+				Blocks.cp.displayNotice(Blocks.t('New route order saved.'));
 			else
-				blx.cp.displayError(blx.t('Couldn’t save new route order.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t save new route order.'));
 		}, this));
 	},
 
@@ -61,7 +61,7 @@ var Routes = blx.Base.extend({
 });
 
 
-var Route = blx.Base.extend({
+var Route = Blocks.Base.extend({
 
 	$container: null,
 	id: null,
@@ -108,7 +108,7 @@ var Route = blx.Base.extend({
 });
 
 
-var RouteSettingsModal = blx.ui.Modal.extend({
+var RouteSettingsModal = Blocks.ui.Modal.extend({
 
 	route: null,
 	$heading: null,
@@ -129,33 +129,33 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			'<h1></h1>' +
 			'<div class="field">' +
 				'<div class="heading">' +
-					'<label for="url">'+blx.t("If the URL looks like this")+':</label>' +
+					'<label for="url">'+Blocks.t("If the URL looks like this")+':</label>' +
 				'</div>' +
 				'<div id="url" class="text url"></div>' +
 				'<div class="url-tokens">' +
-					'<h4>'+blx.t("Add a token")+'</h4>' +
-					'<div class="token" data-name="year" data-value="\\d{4}">'+blx.t("year")+'</div>' +
-					'<div class="token" data-name="month" data-value="1?\\d">'+blx.t("month")+'</div>' +
-					'<div class="token" data-name="day" data-value="[1-3]?\\d">'+blx.t("day")+'</div>' +
-					'<div class="token" data-name="number" data-value="\\d+">'+blx.t("number")+'</div>' +
-					'<div class="token" data-name="page" data-value="\\d+">'+blx.t("page")+'</div>' +
+					'<h4>'+Blocks.t("Add a token")+'</h4>' +
+					'<div class="token" data-name="year" data-value="\\d{4}">'+Blocks.t("year")+'</div>' +
+					'<div class="token" data-name="month" data-value="1?\\d">'+Blocks.t("month")+'</div>' +
+					'<div class="token" data-name="day" data-value="[1-3]?\\d">'+Blocks.t("day")+'</div>' +
+					'<div class="token" data-name="number" data-value="\\d+">'+Blocks.t("number")+'</div>' +
+					'<div class="token" data-name="page" data-value="\\d+">'+Blocks.t("page")+'</div>' +
 				'</div>' +
 			'</div>' +
 			'<div class="field">' +
 				'<div class="heading">' +
-					'<label for="template">'+blx.t("Load this template")+':</label>' +
+					'<label for="template">'+Blocks.t("Load this template")+':</label>' +
 				'</div>' +
 				'<div class="textwrapper"><input id="template" type="text" class="text template"></div>' +
 			'</div>' +
 			'<div class="buttons">' +
-				'<input type="submit" class="btn submit" value="'+blx.t("Save")+'"> ' +
-				'<input type="button" class="btn cancel" value="'+blx.t("Cancel")+'">' +
+				'<input type="submit" class="btn submit" value="'+Blocks.t("Save")+'"> ' +
+				'<input type="button" class="btn cancel" value="'+Blocks.t("Cancel")+'">' +
 				'<div class="spinner" style="display: none;"></div>' +
-				'<a class="delete">'+blx.t("Delete")+'</a>' +
+				'<a class="delete">'+Blocks.t("Delete")+'</a>' +
 			'</div>' +
 		'</form>');
 
-		$container.appendTo(blx.$body);
+		$container.appendTo(Blocks.$body);
 
 		// Find the other elements
 		this.$heading = $container.find('h1:first');
@@ -171,13 +171,13 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			this.$deleteBtn.hide();
 
 		// Initialize the URL input
-		this.urlInput = new blx.ui.MixedInput(this.$urlInput);
+		this.urlInput = new Blocks.ui.MixedInput(this.$urlInput);
 
 		// Set the heading
 		if (this.route)
-			this.$heading.html(blx.t('Edit Route'));
+			this.$heading.html(Blocks.t('Edit Route'));
 		else
-			this.$heading.html(blx.t('Create a new route'));
+			this.$heading.html(Blocks.t('Create a new route'));
 
 		if (this.route)
 		{
@@ -186,7 +186,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 			for (var i = 0; i < urlNodes.length; i++)
 			{
 				var node = urlNodes[i];
-				if (blx.isTextNode(node))
+				if (Blocks.isTextNode(node))
 				{
 					var text = this.urlInput.addTextElement();
 					text.setVal(node.nodeValue);
@@ -236,7 +236,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		this.addListener($urlVar, 'keydown', function(event) {
 			switch (event.keyCode)
 			{
-				case blx.LEFT_KEY:
+				case Blocks.LEFT_KEY:
 				{
 					// Select the previous element
 					setTimeout($.proxy(function() {
@@ -245,7 +245,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 
 					break;
 				}
-				case blx.RIGHT_KEY:
+				case Blocks.RIGHT_KEY:
 				{
 					// Select the next element
 					setTimeout($.proxy(function() {
@@ -254,7 +254,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 
 					break;
 				}
-				case blx.DELETE_KEY:
+				case Blocks.DELETE_KEY:
 				{
 					// Delete this element
 					setTimeout($.proxy(function() {
@@ -271,7 +271,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 	{
 		if (this.route)
 		{
-			this.$heading.html(blx.t('Edit Route'));
+			this.$heading.html(Blocks.t('Edit Route'));
 			this.$deleteBtn.show();
 		}
 
@@ -311,7 +311,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		$.post(blx.actionUrl+'routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
+		$.post(Blocks.actionUrl+'routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (response.success)
 			{
@@ -328,16 +328,16 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 					this.route = new Route($route);
 					this.route.modal = this;
 
-					blx.routes.sorter.addItems($route);
+					Blocks.routes.sorter.addItems($route);
 				}
 
 				this.route.updateHtmlFromModal();
 				this.hide();
 
-				blx.cp.displayNotice(blx.t('Route saved.'));
+				Blocks.cp.displayNotice(Blocks.t('Route saved.'));
 			}
 			else
-				blx.cp.displayError(blx.t('Couldn’t save route.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t save route.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();
@@ -356,10 +356,10 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 
 	deleteRoute: function()
 	{
-		if (confirm(blx.t(('Are you sure you want to delete this route?'))))
+		if (confirm(Blocks.t(('Are you sure you want to delete this route?'))))
 		{
-			$.post(blx.actionUrl+'routes/deleteRoute', { routeId: this.route.id }, function() {
-				blx.cp.displayNotice(blx.t('Route deleted.'))
+			$.post(Blocks.actionUrl+'routes/deleteRoute', { routeId: this.route.id }, function() {
+				Blocks.cp.displayNotice(Blocks.t('Route deleted.'))
 			});
 
 			this.route.$container.remove();
@@ -370,7 +370,7 @@ var RouteSettingsModal = blx.ui.Modal.extend({
 });
 
 
-blx.routes = new Routes();
+Blocks.routes = new Routes();
 
 
 })(jQuery);

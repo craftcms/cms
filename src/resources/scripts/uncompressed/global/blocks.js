@@ -1,31 +1,31 @@
 (function($) {
 
 
-if (typeof blx == 'undefined') blx = {};
-if (typeof blx.ui == 'undefined') blx.ui = {};
+if (typeof Blocks == 'undefined') Blocks = {};
+if (typeof Blocks.ui == 'undefined') Blocks.ui = {};
 
 // jQuery objects for common elements
-blx.$window = $(window);
-blx.$document = $(document);
-blx.$body = $(document.body);
+Blocks.$window = $(window);
+Blocks.$document = $(document);
+Blocks.$body = $(document.body);
 
 // Key code constants
-blx.DELETE_KEY = 8;
-blx.SHIFT_KEY  = 16;
-blx.CTRL_KEY   = 17;
-blx.ALT_KEY    = 18;
-blx.RETURN_KEY = 13;
-blx.ESC_KEY    = 27;
-blx.SPACE_KEY  = 32;
-blx.LEFT_KEY   = 37;
-blx.UP_KEY     = 38;
-blx.RIGHT_KEY  = 39;
-blx.DOWN_KEY   = 40;
-blx.CMD_KEY    = 91;
+Blocks.DELETE_KEY = 8;
+Blocks.SHIFT_KEY  = 16;
+Blocks.CTRL_KEY   = 17;
+Blocks.ALT_KEY    = 18;
+Blocks.RETURN_KEY = 13;
+Blocks.ESC_KEY    = 27;
+Blocks.SPACE_KEY  = 32;
+Blocks.LEFT_KEY   = 37;
+Blocks.UP_KEY     = 38;
+Blocks.RIGHT_KEY  = 39;
+Blocks.DOWN_KEY   = 40;
+Blocks.CMD_KEY    = 91;
 
-blx.navHeight = 48;
+Blocks.navHeight = 48;
 
-blx.fx = {
+Blocks.fx = {
 	duration: 400,
 	delay: 100
 };
@@ -33,7 +33,7 @@ blx.fx = {
 /**
  * Log
  */
-blx.log = function(msg)
+Blocks.log = function(msg)
 {
 	if (typeof console != 'undefined' && typeof console.log == 'function')
 		console.log(msg);
@@ -49,10 +49,10 @@ var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae
  * @param object params
  * @return string
  */
-blx.t = function(message, params)
+Blocks.t = function(message, params)
 {
-	if (typeof blx.translations[message] != undefined)
-		message = blx.translations[message];
+	if (typeof Blocks.translations[message] != undefined)
+		message = Blocks.translations[message];
 
 	if (params)
 	{
@@ -71,7 +71,7 @@ blx.t = function(message, params)
  * @param mixed num
  * @return string
  */
-blx.numCommas = function(num)
+Blocks.numCommas = function(num)
 {
 	num = num.toString();
 
@@ -89,7 +89,7 @@ blx.numCommas = function(num)
  * @param string str
  * @return array
  */
-blx.stringToArray = function(str)
+Blocks.stringToArray = function(str)
 {
 	if (typeof str != 'string')
 		return str;
@@ -109,7 +109,7 @@ blx.stringToArray = function(str)
  * @param function callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
  * @return array
  */
-blx.filterArray = function(arr, callback)
+Blocks.filterArray = function(arr, callback)
 {
 	var filtered = [];
 
@@ -134,7 +134,7 @@ blx.filterArray = function(arr, callback)
  * @param mixed arr
  * @return bool
  */
-blx.inArray = function(elem, arr)
+Blocks.inArray = function(elem, arr)
 {
 	return ($.inArray(elem, arr) != -1);
 };
@@ -146,7 +146,7 @@ blx.inArray = function(elem, arr)
  * @param array arr
  * @return bool Whether the element could be found or not.
  */
-blx.removeFromArray = function(elem, arr)
+Blocks.removeFromArray = function(elem, arr)
 {
 	var index = $.inArray(elem, arr);
 	if (index != -1)
@@ -164,7 +164,7 @@ blx.removeFromArray = function(elem, arr)
  * @param array
  * @return mixed
  */
-blx.getLast = function(arr)
+Blocks.getLast = function(arr)
 {
 	if (!arr.length)
 		return null;
@@ -178,7 +178,7 @@ blx.getLast = function(arr)
  * @param string str
  * @return string
  */
-blx.uppercaseFirst = function(str)
+Blocks.uppercaseFirst = function(str)
 {
 	return str.charAt(0).toUpperCase() + str.slice(1);
 };
@@ -189,7 +189,7 @@ blx.uppercaseFirst = function(str)
  * @param string str
  * @return string
  */
-blx.lowercaseFirst = function(str)
+Blocks.lowercaseFirst = function(str)
 {
 	return str.charAt(0).toLowerCase() + str.slice(1);
 };
@@ -200,7 +200,7 @@ blx.lowercaseFirst = function(str)
  * @param string str
  * @return string
  */
-blx.asciiString = function(str)
+Blocks.asciiString = function(str)
 {
 	var asciiStr = '';
 
@@ -225,7 +225,7 @@ blx.asciiString = function(str)
  * @param int y2 The second coordinate's position on the Y axis.
  * @return float
  */
-blx.getDist = function(x1, y1, x2, y2)
+Blocks.getDist = function(x1, y1, x2, y2)
 {
 	return Math.sqrt(Math.pow(x1-x2, 2) + Math.pow(y1-y2, 2));
 };
@@ -238,7 +238,7 @@ blx.getDist = function(x1, y1, x2, y2)
  * @param mixed elem Either an actual element or a jQuery collection.
  * @return bool
  */
-blx.hitTest = function(x0, y0, elem)
+Blocks.hitTest = function(x0, y0, elem)
 {
 	var $elem = $(elem),
 		offset = $elem.offset(),
@@ -257,9 +257,9 @@ blx.hitTest = function(x0, y0, elem)
  * @param mixed  elem  Either an actual element or a jQuery collection.
  * @return bool
  */
-blx.isCursorOver = function(event, elem)
+Blocks.isCursorOver = function(event, elem)
 {
-	return blx.hitTest(event.pageX, event.pageY, elem);
+	return Blocks.hitTest(event.pageX, event.pageY, elem);
 };
 
 /**
@@ -267,7 +267,7 @@ blx.isCursorOver = function(event, elem)
  *
  * @param mixed elem Either an actual element or a jQuery collection.
  */
-blx.preventOutlineOnMouseFocus = function(elem)
+Blocks.preventOutlineOnMouseFocus = function(elem)
 {
 	var $elem = $(elem),
 		namespace = '.preventOutlineOnMouseFocus';
@@ -277,7 +277,7 @@ blx.preventOutlineOnMouseFocus = function(elem)
 		$elem.focus();
 	})
 	.on('keydown'+namespace+' blur'+namespace, function(event) {
-		if (event.keyCode != blx.SHIFT_KEY && event.keyCode != blx.CTRL_KEY && event.keyCode != blx.CMD_KEY)
+		if (event.keyCode != Blocks.SHIFT_KEY && event.keyCode != Blocks.CTRL_KEY && event.keyCode != Blocks.CMD_KEY)
 			$elem.removeClass('no-outline');
 	});
 };
@@ -288,7 +288,7 @@ blx.preventOutlineOnMouseFocus = function(elem)
  * @param array arr
  * @return array
  */
-blx.caseInsensitiveSort = function(arr)
+Blocks.caseInsensitiveSort = function(arr)
 {
 	return arr.sort(this.caseInsensitiveCompare)
 };
@@ -301,7 +301,7 @@ blx.caseInsensitiveSort = function(arr)
  * @param string b
  * @return int
  */
-blx.caseInsensitiveCompare = function(a, b)
+Blocks.caseInsensitiveCompare = function(a, b)
 {
 	a = a.toLowerCase();
 	b = b.toLowerCase();
@@ -314,7 +314,7 @@ blx.caseInsensitiveCompare = function(a, b)
  * @param mixed from The source element. Can be either an actual element or a jQuery collection.
  * @param mixed to   The target element. Can be either an actual element or a jQuery collection.
  */
-blx.copyTextStyles = function(from, to)
+Blocks.copyTextStyles = function(from, to)
 {
 	var $from = $(from),
 		$to = $(to);
@@ -334,7 +334,7 @@ blx.copyTextStyles = function(from, to)
  *
  * @return int
  */
-blx.getBodyScrollTop = function()
+Blocks.getBodyScrollTop = function()
 {
 	var scrollTop = document.body.scrollTop;
 
@@ -342,7 +342,7 @@ blx.getBodyScrollTop = function()
 		scrollTop = 0;
 	else
 	{
-		var maxScrollTop = blx.$body.outerHeight() - blx.$window.height();
+		var maxScrollTop = Blocks.$body.outerHeight() - Blocks.$window.height();
 		if (scrollTop > maxScrollTop)
 			scrollTop = maxScrollTop;
 	}
@@ -356,7 +356,7 @@ blx.getBodyScrollTop = function()
  * @param mixed container Either an actual element or a jQuery collection.
  * @param mixed elem      Either an actual element or a jQuery collection.
  */
-blx.scrollContainerToElement = function(container, elem) {
+Blocks.scrollContainerToElement = function(container, elem) {
 	var $container = $(container),
 		$elem = $(elem);
 
@@ -387,7 +387,7 @@ blx.scrollContainerToElement = function(container, elem) {
  * @param mixed elem
  * @return mixed
  */
-blx.getElement = function(elem)
+Blocks.getElement = function(elem)
 {
 	return $.makeArray(elem)[0];
 };
@@ -398,7 +398,7 @@ blx.getElement = function(elem)
  * @param array errors
  * @return jQuery
  */
-blx.createErrorList = function(errors)
+Blocks.createErrorList = function(errors)
 {
 	var $ul = $(document.createElement('ul')).addClass('errors');
 
@@ -418,7 +418,7 @@ blx.createErrorList = function(errors)
  * @param mixed elem
  * @return bool
  */
-blx.isTextNode = function(elem)
+Blocks.isTextNode = function(elem)
 {
 	return (elem.nodeType == 3);
 };
@@ -429,7 +429,7 @@ blx.isTextNode = function(elem)
  * @param mixed val
  * @return bool
  */
-blx.isArray = function(val)
+Blocks.isArray = function(val)
 {
 	return (val instanceof Array);
 };
@@ -440,7 +440,7 @@ blx.isArray = function(val)
  * @param mixed val
  * @return bool
  */
-blx.isJquery = function(val)
+Blocks.isJquery = function(val)
 {
 	return (val instanceof jQuery);
 };
@@ -451,9 +451,9 @@ blx.isJquery = function(val)
  * @param mixed val
  * @return bool
  */
-blx.isObject = function(val)
+Blocks.isObject = function(val)
 {
-	return (typeof val == 'object' && !blx.isArray(val) && !blx.isJquery(val) && typeof val.nodeType == 'undefined');
+	return (typeof val == 'object' && !Blocks.isArray(val) && !Blocks.isJquery(val) && typeof val.nodeType == 'undefined');
 };
 
 /**
@@ -462,7 +462,7 @@ blx.isObject = function(val)
  * @param mixed    elem     Either an actual element or a jQuery collection.
  * @param function callback A callback function to call while the element is temporarily set to the target width before the animation begins.
  */
-blx.animateWidth = function(elem, callback)
+Blocks.animateWidth = function(elem, callback)
 {
 	var $elem = $(elem),
 		oldWidth = $elem.width();
@@ -482,7 +482,7 @@ blx.animateWidth = function(elem, callback)
  *
  * @param mixed elem Either an actual element or a jQuery collection.
  */
-blx.shake = function(elem, property)
+Blocks.shake = function(elem, property)
 {
 	var $elem = $(elem);
 
@@ -509,7 +509,7 @@ blx.shake = function(elem, property)
  * @param mixed container The container element. Can be either an actual element or a jQuery collection.
  * @return jQuery
  */
-blx.findInputs = function(container)
+Blocks.findInputs = function(container)
 {
 	return $(container).find('input,text,textarea,select,button');
 };
@@ -523,7 +523,7 @@ blx.findInputs = function(container)
  * @param string namespace
  * @return string
  */
-blx.namespaceInputName = function(inputName, namespace)
+Blocks.namespaceInputName = function(inputName, namespace)
 {
 	return inputName.replace(/^([^\[\]]+)(.*)$/, namespace+'[$1]$2');
 };
@@ -534,7 +534,7 @@ blx.namespaceInputName = function(inputName, namespace)
  * @param jQuery $input
  * @return string
  */
-blx.getInputBasename = function($input)
+Blocks.getInputBasename = function($input)
 {
 	return $input.attr('name').replace(/\[.*/, '');
 };
@@ -547,7 +547,7 @@ blx.getInputBasename = function($input)
  * @param jQuery $input
  * @return mixed
  */
-blx.getInputPostVal = function($input)
+Blocks.getInputPostVal = function($input)
 {
 	var type = $input.attr('type'),
 		val  = $input.val();
@@ -580,7 +580,7 @@ blx.getInputPostVal = function($input)
 /**
  * Base class
  */
-blx.Base = Base.extend({
+Blocks.Base = Base.extend({
 
 	settings: null,
 
@@ -589,7 +589,7 @@ blx.Base = Base.extend({
 
 	constructor: function()
 	{
-		this._namespace = '.blx'+Math.floor(Math.random()*999999999);
+		this._namespace = '.Blocks'+Math.floor(Math.random()*999999999);
 		this._$listeners = $();
 		this.init.apply(this, arguments);
 	},
@@ -604,7 +604,7 @@ blx.Base = Base.extend({
 
 	_formatEvents: function(events)
 	{
-		events = blx.stringToArray(events);
+		events = Blocks.stringToArray(events);
 		for (var i = 0; i < events.length; i++)
 		{
 			events[i] += this._namespace;

@@ -3,7 +3,7 @@
 /**
  * Nice Text
  */
-blx.ui.NiceText = blx.Base.extend({
+Blocks.ui.NiceText = Blocks.Base.extend({
 
 	$input: null,
 	$hint: null,
@@ -19,12 +19,12 @@ blx.ui.NiceText = blx.Base.extend({
 	init: function(input, settings)
 	{
 		this.$input = $(input);
-		this.settings = $.extend({}, blx.ui.NiceText.defaults, settings);
+		this.settings = $.extend({}, Blocks.ui.NiceText.defaults, settings);
 
 		// Is this already a transparent text input?
 		if (this.$input.data('nicetext'))
 		{
-			blx.log('Double-instantiating a transparent text input on an element');
+			Blocks.log('Double-instantiating a transparent text input on an element');
 			this.$input.data('nicetext').destroy();
 		}
 
@@ -38,7 +38,7 @@ blx.ui.NiceText = blx.Base.extend({
 			this.minHeight = this.getStageHeight('');
 			this.setHeight();
 
-			this.addListener(blx.$window, 'resize', 'setHeight');
+			this.addListener(Blocks.$window, 'resize', 'setHeight');
 		}
 
 		if (this.settings.hint)
@@ -49,7 +49,7 @@ blx.ui.NiceText = blx.Base.extend({
 				top:  (parseInt(this.$input.css('borderTopWidth'))  + parseInt(this.$input.css('paddingTop'))),
 				left: (parseInt(this.$input.css('borderLeftWidth')) + parseInt(this.$input.css('paddingLeft')) + 1)
 			});
-			blx.copyTextStyles(this.$input, this.$hint);
+			Blocks.copyTextStyles(this.$input, this.$hint);
 
 			if (this.val)
 				this.$hint.hide();
@@ -77,13 +77,13 @@ blx.ui.NiceText = blx.Base.extend({
 
 	showHint: function()
 	{
-		this.$hint.fadeIn(blx.ui.NiceText.hintFadeDuration);
+		this.$hint.fadeIn(Blocks.ui.NiceText.hintFadeDuration);
 		this.showingHint = true;
 	},
 
 	hideHint: function()
 	{
-		this.$hint.fadeOut(blx.ui.NiceText.hintFadeDuration);
+		this.$hint.fadeOut(Blocks.ui.NiceText.hintFadeDuration);
 		this.showingHint = false;
 	},
 
@@ -110,7 +110,7 @@ blx.ui.NiceText = blx.Base.extend({
 
 	buildStage: function()
 	{
-		this.$stage = $('<stage/>').appendTo(blx.$body);
+		this.$stage = $('<stage/>').appendTo(Blocks.$body);
 
 		// replicate the textarea's text styles
 		this.$stage.css({
@@ -120,7 +120,7 @@ blx.ui.NiceText = blx.Base.extend({
 			wordWrap: 'break-word'
 		});
 
-		blx.copyTextStyles(this.$input, this.$stage);
+		Blocks.copyTextStyles(this.$input, this.$stage);
 	},
 
 	getStageHeight: function(val)
@@ -179,7 +179,7 @@ blx.ui.NiceText = blx.Base.extend({
 	onFocus: function()
 	{
 		this.focussed = true;
-		this.interval = setInterval($.proxy(this, 'checkInput'), blx.ui.NiceText.interval);
+		this.interval = setInterval($.proxy(this, 'checkInput'), Blocks.ui.NiceText.interval);
 		this.checkInput();
 	},
 
@@ -216,11 +216,11 @@ $.fn.nicetext = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'text'))
-			new blx.ui.NiceText(this, {hint: this.getAttribute('data-hint')});
+			new Blocks.ui.NiceText(this, {hint: this.getAttribute('data-hint')});
 	});
 };
 
-blx.$document.ready(function()
+Blocks.$document.ready(function()
 {
 	$('.nicetext').nicetext();
 });

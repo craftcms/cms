@@ -1,7 +1,7 @@
 (function($) {
 
 
-var EmailMessages = blx.Base.extend({
+var EmailMessages = Blocks.Base.extend({
 
 	messages: null,
 
@@ -22,7 +22,7 @@ var EmailMessages = blx.Base.extend({
 });
 
 
-var Message = blx.Base.extend({
+var Message = Blocks.Base.extend({
 
 	$container: null,
 	id: null,
@@ -60,7 +60,7 @@ var Message = blx.Base.extend({
 });
 
 
-var MessageSettingsModal = blx.ui.Modal.extend({
+var MessageSettingsModal = Blocks.ui.Modal.extend({
 
 	message: null,
 
@@ -88,11 +88,11 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 			language: language
 		};
 
-		$.post(blx.baseUrl+'settings/email/_message_modal', data, $.proxy(function(response, textStatus, jqXHR) {
+		$.post(Blocks.baseUrl+'settings/email/_message_modal', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (!this.$container)
 			{
-				var $container = $('<form class="modal message-settings">'+response+'</form>').appendTo(blx.$body);
+				var $container = $('<form class="modal message-settings">'+response+'</form>').appendTo(Blocks.$body);
 				this.setContainer($container);
 				this.show();
 			}
@@ -130,7 +130,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 
 		var data = {
 			messageId: this.message.id,
-			language:  (this.$languageSelect.length ? this.$languageSelect.val() : blx.language),
+			language:  (this.$languageSelect.length ? this.$languageSelect.val() : Blocks.language),
 			subject:   this.$subjectInput.val(),
 			body:      this.$bodyInput.val()
 		};
@@ -146,7 +146,7 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 			if (!data.body)
 				this.$bodyInput.addClass('error');
 
-			blx.shake(this.$container);
+			Blocks.shake(this.$container);
 			return;
 		}
 
@@ -154,19 +154,19 @@ var MessageSettingsModal = blx.ui.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		$.post(blx.actionUrl+'email/saveMessage', data, $.proxy(function(response, textStatus, jqXHR) {
+		$.post(Blocks.actionUrl+'email/saveMessage', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (response.success)
 			{
 				// Only update the page if we're editing the user's preferred language
-				if (data.language == blx.language)
+				if (data.language == Blocks.language)
 					this.message.updateHtmlFromModal();
 
 				this.hide();
-				blx.cp.displayNotice(blx.t('Message saved.'));
+				Blocks.cp.displayNotice(Blocks.t('Message saved.'));
 			}
 			else
-				blx.cp.displayError(blx.t('Couldn’t save message.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t save message.'));
 
 			this.$saveBtn.removeClass('active');
 			this.$spinner.hide();

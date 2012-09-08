@@ -3,7 +3,7 @@
 /**
  * Modal
  */
-blx.ui.Modal = blx.Base.extend({
+Blocks.ui.Modal = Blocks.Base.extend({
 
 	$container: null,
 	$header: null,
@@ -23,14 +23,14 @@ blx.ui.Modal = blx.Base.extend({
 	init: function(container, settings)
 	{
 		// Param mapping
-		if (!settings && blx.isObject(container))
+		if (!settings && Blocks.isObject(container))
 		{
 			// (settings)
 			settings = container;
 			items = null;
 		}
 
-		this.setSettings(settings, blx.ui.Modal.defaults);
+		this.setSettings(settings, Blocks.ui.Modal.defaults);
 
 		if (container)
 		{
@@ -38,7 +38,7 @@ blx.ui.Modal = blx.Base.extend({
 			this.show();
 		}
 
-		blx.ui.Modal.instances.push(this);
+		Blocks.ui.Modal.instances.push(this);
 	},
 
 	setContainer: function(container)
@@ -48,7 +48,7 @@ blx.ui.Modal = blx.Base.extend({
 		// Is this already a modal?
 		if (this.$container.data('modal'))
 		{
-			blx.log('Double-instantiating a modal on an element');
+			Blocks.log('Double-instantiating a modal on an element');
 			this.$container.data('modal').destroy();
 		}
 
@@ -67,7 +67,7 @@ blx.ui.Modal = blx.Base.extend({
 			var $dragHandles = this.$header.add(this.$footer);
 			if ($dragHandles.length)
 			{
-				this.dragger = new blx.ui.DragMove(this.$container, {
+				this.dragger = new Blocks.ui.DragMove(this.$container, {
 					handle: this.$container
 				});
 			}
@@ -79,21 +79,21 @@ blx.ui.Modal = blx.Base.extend({
 
 	show: function()
 	{
-		if (blx.ui.Modal.visibleModal)
-			blx.ui.Modal.visibleModal.hide();
+		if (Blocks.ui.Modal.visibleModal)
+			Blocks.ui.Modal.visibleModal.hide();
 
 		if (this.$container)
 		{
 			this.$container.show();
 			this.centerInViewport();
 			this.$container.delay(50).fadeIn();
-			this.addListener(blx.$window, 'resize', 'centerInViewport');
+			this.addListener(Blocks.$window, 'resize', 'centerInViewport');
 		}
 
 		this.visible = true;
-		blx.ui.Modal.visibleModal = this;
-		blx.ui.Modal.$shade.fadeIn(50);
-		this.addListener(blx.ui.Modal.$shade, 'click', 'hide');
+		Blocks.ui.Modal.visibleModal = this;
+		Blocks.ui.Modal.$shade.fadeIn(50);
+		this.addListener(Blocks.ui.Modal.$shade, 'click', 'hide');
 	},
 
 	hide: function()
@@ -101,19 +101,19 @@ blx.ui.Modal = blx.Base.extend({
 		if (this.$container)
 		{
 			this.$container.fadeOut('fast');
-			this.removeListener(blx.$window, 'resize');
+			this.removeListener(Blocks.$window, 'resize');
 		}
 
 		this.visible = false;
-		blx.ui.Modal.visibleModal = null;
-		blx.ui.Modal.$shade.fadeOut('fast');
-		this.removeListener(blx.ui.Modal.$shade, 'click');
+		Blocks.ui.Modal.visibleModal = null;
+		Blocks.ui.Modal.$shade.fadeOut('fast');
+		this.removeListener(Blocks.ui.Modal.$shade, 'click');
 	},
 
 	getHeight: function()
 	{
 		if (!this.$container)
-			throw blx.t('Attempted to get the height of a modal whose container has not been set.');
+			throw Blocks.t('Attempted to get the height of a modal whose container has not been set.');
 
 		if (!this.visible)
 			this.$container.show();
@@ -129,7 +129,7 @@ blx.ui.Modal = blx.Base.extend({
 	getWidth: function()
 	{
 		if (!this.$container)
-			throw blx.t('Attempted to get the width of a modal whose container has not been set.');
+			throw Blocks.t('Attempted to get the width of a modal whose container has not been set.');
 
 		if (!this.visible)
 			this.$container.show();
@@ -145,10 +145,10 @@ blx.ui.Modal = blx.Base.extend({
 	centerInViewport: function()
 	{
 		if (!this.$container)
-			throw blx.t('Attempted to position a modal whose container has not been set.');
+			throw Blocks.t('Attempted to position a modal whose container has not been set.');
 
-		var viewportWidth = blx.$window.width(),
-			viewportHeight = blx.$window.height(),
+		var viewportWidth = Blocks.$window.width(),
+			viewportHeight = Blocks.$window.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
 			left = (viewportWidth - modalWidth) / 2,
@@ -163,18 +163,18 @@ blx.ui.Modal = blx.Base.extend({
 	positionRelativeTo: function(elem)
 	{
 		if (!this.$container)
-			throw blx.t('Attempted to position a modal whose container has not been set.');
+			throw Blocks.t('Attempted to position a modal whose container has not been set.');
 
 		var $elem = $(elem),
 			elemOffset = $elem.offset(),
-			bodyScrollTop = blx.$body.scrollTop(),
+			bodyScrollTop = Blocks.$body.scrollTop(),
 			topClearance = elemOffset.top - bodyScrollTop,
 			modalHeight = this.getHeight();
 
-		if (modalHeight < topClearance + blx.navHeight + blx.ui.Modal.relativeElemPadding*2)
-			var top = elemOffset.top - modalHeight - blx.ui.Modal.relativeElemPadding;
+		if (modalHeight < topClearance + Blocks.navHeight + Blocks.ui.Modal.relativeElemPadding*2)
+			var top = elemOffset.top - modalHeight - Blocks.ui.Modal.relativeElemPadding;
 		else
-			var top = elemOffset.top + $elem.height() + blx.ui.Modal.relativeElemPadding;
+			var top = elemOffset.top + $elem.height() + Blocks.ui.Modal.relativeElemPadding;
 
 		this.$container.css({
 			top: top,
@@ -184,7 +184,7 @@ blx.ui.Modal = blx.Base.extend({
 
 	onKeyDown: function(event)
 	{
-		if (event.target.nodeName != 'TEXTAREA' && event.keyCode == blx.RETURN_KEY)
+		if (event.target.nodeName != 'TEXTAREA' && event.keyCode == Blocks.RETURN_KEY)
 		{
 			this.$submitBtn.click();
 		}
@@ -205,7 +205,7 @@ blx.ui.Modal = blx.Base.extend({
 	},
 	instances: [],
 	visibleModal: null,
-	$shade: $('<div class="modal-shade"/>').appendTo(blx.$body)
+	$shade: $('<div class="modal-shade"/>').appendTo(Blocks.$body)
 });
 
 })(jQuery);

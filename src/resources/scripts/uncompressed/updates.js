@@ -1,12 +1,12 @@
 (function($) {
 
 // Keep the spinner vertically centered
-	blx.$window.on('resize.updates', centerSpinner);
+	Blocks.$window.on('resize.updates', centerSpinner);
 
-var updatesUrl = blx.baseUrl+'updates/updates';
+var updatesUrl = Blocks.baseUrl+'updates/updates';
 $('#updates').load(updatesUrl, function()
 {
-	blx.$window.off('resize.updates');
+	Blocks.$window.off('resize.updates');
 
 	var $sidebarLink = $('#sb-updates'),
 		$sidebarBadge = $sidebarLink.find('span.badge'),
@@ -25,14 +25,14 @@ $('#updates').load(updatesUrl, function()
 		var $noteLinks = $updatesContainer.find('a.notes');
 		if ($noteLinks.length)
 		{
-			var $pane = $('<div class="pane modal"/>').appendTo(blx.$body),
-				$head = $('<div class="pane-head"><h5>'+blx.t("Release Notes")+'</h5></div>').appendTo($pane),
+			var $pane = $('<div class="pane modal"/>').appendTo(Blocks.$body),
+				$head = $('<div class="pane-head"><h5>'+Blocks.t("Release Notes")+'</h5></div>').appendTo($pane),
 				$body = $('<div class="pane-body scrollpane"/>').appendTo($pane),
 				$item = $('<div class="pane-item"/>').appendTo($body),
 				$foot = $('<div class="pane-foot"/>').appendTo($pane),
-				$btn  = $('<div class="btn close"><span class="label">'+blx.t("Close")+'</span></div>').appendTo($foot);
+				$btn  = $('<div class="btn close"><span class="label">'+Blocks.t("Close")+'</span></div>').appendTo($foot);
 
-			var noteModal = new blx.ui.Modal($pane);
+			var noteModal = new Blocks.ui.Modal($pane);
 
 			$noteLinks.click(function() {
 				var $link = $(this),
@@ -56,7 +56,7 @@ $('#updates').load(updatesUrl, function()
 			$dialog.css('top', top);
 		};
 		centerDialog();
-		blx.$window.on('resize', centerDialog);
+		Blocks.$window.on('resize', centerDialog);
 	}
 
 	// fade in the updates

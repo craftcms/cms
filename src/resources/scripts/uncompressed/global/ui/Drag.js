@@ -4,7 +4,7 @@
  * Drag
  * Used as a base class for DragDrop and DragSort
  */
-blx.ui.Drag = blx.ui.BaseDrag.extend({
+Blocks.ui.Drag = Blocks.ui.BaseDrag.extend({
 
 	$draggee: null,
 	helpers: null,
@@ -19,14 +19,14 @@ blx.ui.Drag = blx.ui.BaseDrag.extend({
 	init: function(items, settings)
 	{
 		// Param mapping
-		if (!settings && blx.isObject(items))
+		if (!settings && Blocks.isObject(items))
 		{
 			// (settings)
 			settings = items;
 			items = null;
 		}
 
-		settings = $.extend({}, blx.ui.Drag.defaults, settings);
+		settings = $.extend({}, Blocks.ui.Drag.defaults, settings);
 		this.base(items, settings);
 	},
 
@@ -56,8 +56,8 @@ blx.ui.Drag = blx.ui.BaseDrag.extend({
 		this.lastMouseX = this.lastMouseY = null;
 
 		// keep the helpers following the cursor, with a little lag to smooth it out
-		this.helperLagIncrement = this.helpers.length == 1 ? 0 : blx.ui.Drag.helperLagIncrementDividend / (this.helpers.length-1);
-		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), blx.ui.Drag.updateHelperPosInterval);
+		this.helperLagIncrement = this.helpers.length == 1 ? 0 : Blocks.ui.Drag.helperLagIncrementDividend / (this.helpers.length-1);
+		this.updateHelperPosInterval = setInterval($.proxy(this, 'updateHelperPos'), Blocks.ui.Drag.updateHelperPosInterval);
 
 		this.base();
 	},
@@ -125,7 +125,7 @@ blx.ui.Drag = blx.ui.BaseDrag.extend({
 				position: 'absolute',
 				top: helperPos.top,
 				left: helperPos.left,
-				zIndex: blx.ui.Drag.helperZindex, // + this.$draggee.length - i,
+				zIndex: Blocks.ui.Drag.helperZindex, // + this.$draggee.length - i,
 				opacity: this.settings.helperOpacity
 			});
 
@@ -144,8 +144,8 @@ blx.ui.Drag = blx.ui.BaseDrag.extend({
 	getHelperTarget: function(i)
 	{
 		return {
-			left: this.mouseX - this.targetItemMouseDiffX + (i * blx.ui.Drag.helperSpacingX),
-			top:  this.mouseY - this.targetItemMouseDiffY + (i * blx.ui.Drag.helperSpacingY)
+			left: this.mouseX - this.targetItemMouseDiffX + (i * Blocks.ui.Drag.helperSpacingX),
+			top:  this.mouseY - this.targetItemMouseDiffY + (i * Blocks.ui.Drag.helperSpacingY)
 		};
 	},
 
@@ -170,7 +170,7 @@ blx.ui.Drag = blx.ui.BaseDrag.extend({
 		// gravitate helpers toward their target positions
 		for (var j = 0; j < this.helpers.length; j++)
 		{
-			var lag = blx.ui.Drag.helperLagBase + (this.helperLagIncrement * j);
+			var lag = Blocks.ui.Drag.helperLagBase + (this.helperLagIncrement * j);
 
 			this.helperPositions[j] = {
 				left: this.helperPositions[j].left + ((this.helperTargets[j].left - this.helperPositions[j].left) / lag),

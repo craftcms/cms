@@ -4,7 +4,7 @@
 /**
  * DataTableSorter
  */
-blx.ui.DataTableSorter = blx.ui.DragSort.extend({
+Blocks.ui.DataTableSorter = Blocks.ui.DragSort.extend({
 
 	$table: null,
 
@@ -13,7 +13,7 @@ blx.ui.DataTableSorter = blx.ui.DragSort.extend({
 		this.$table = $(table);
 		var $rows = this.$table.children('tbody').children();
 
-		if (!blx.isObject(settings))
+		if (!Blocks.isObject(settings))
 			settings = {};
 
 		settings.handle = '.move';
@@ -25,7 +25,7 @@ blx.ui.DataTableSorter = blx.ui.DragSort.extend({
 
 	getHelper: function($helperRow)
 	{
-		var $helper = $('<div class="datatablesorthelper"/>').appendTo(blx.$body),
+		var $helper = $('<div class="datatablesorthelper"/>').appendTo(Blocks.$body),
 			$table = $('<table/>').appendTo($helper),
 			$tbody = $('<tbody/>').appendTo($table);
 

@@ -1,6 +1,6 @@
 (function($) {
 
-blx.Installer = blx.Base.extend({
+Blocks.Installer = Blocks.Base.extend({
 
 	$screens: null,
 	$currentScreen: null,
@@ -15,13 +15,13 @@ blx.Installer = blx.Base.extend({
 	*/
 	init: function()
 	{
-		this.$screens = blx.$body.children('.modal');
+		this.$screens = Blocks.$body.children('.modal');
 
 		setTimeout($.proxy(this, 'showWelcomeScreen'), 500);
 
 		// Preload the spinner image
 		var spinner = new Image;
-		spinner.src = blx.resourceUrl+'images/submit-spinner.gif';
+		spinner.src = Blocks.resourceUrl+'images/submit-spinner.gif';
 	},
 
 	showWelcomeScreen: function()
@@ -110,12 +110,12 @@ blx.Installer = blx.Base.extend({
 				var input = inputs[i],
 					$input = $('#'+input);
 
-				data[input] = blx.getInputPostVal($input);
+				data[input] = Blocks.getInputPostVal($input);
 			}
 
-			$.post(blx.actionUrl+'install/install', data, $.proxy(function() {
-				this.$currentScreen.find('h1:first').text(blx.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+blx.baseUrl+'dashboard" class="btn big submit">'+blx.t("Go to @@@productDisplay@@@")+'</a></div>');
+			$.post(Blocks.actionUrl+'install/install', data, $.proxy(function() {
+				this.$currentScreen.find('h1:first').text(Blocks.t('All done!'));
+				var $buttons = $('<div class="buttons"><a href="'+Blocks.baseUrl+'dashboard" class="btn big submit">'+Blocks.t("Go to @@@productDisplay@@@")+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 
@@ -125,7 +125,7 @@ blx.Installer = blx.Base.extend({
 	showScreen: function(i, callback)
 	{
 		// Slide out the old screen
-		var windowWidth = blx.$window.width(),
+		var windowWidth = Blocks.$window.width(),
 			centeredLeftPos = Math.floor(windowWidth / 2);
 
 		this.$currentScreen
@@ -167,14 +167,14 @@ blx.Installer = blx.Base.extend({
 		var $submitBtn = this['$'+what+'SubmitBtn'];
 		$submitBtn.addClass('sel loading');
 
-		var url = blx.actionUrl+'install/validate'+blx.uppercaseFirst(what);
+		var url = Blocks.actionUrl+'install/validate'+Blocks.uppercaseFirst(what);
 
 		var data = {};
 		for (var i = 0; i < inputs.length; i++)
 		{
 			var input = inputs[i],
 				$input = $('#'+input);
-			data[input] = blx.getInputPostVal($input);
+			data[input] = Blocks.getInputPostVal($input);
 		}
 
 		$.post(url, data, $.proxy(function(response) {
@@ -207,7 +207,7 @@ blx.Installer = blx.Base.extend({
 					}
 				}
 
-				blx.shake(this.$currentScreen);
+				Blocks.shake(this.$currentScreen);
 			}
 
 			this.loading = false;
@@ -224,8 +224,8 @@ blx.Installer = blx.Base.extend({
 
 });
 
-blx.$window.on('load', function() {
-	blx.installer = new blx.Installer();
+Blocks.$window.on('load', function() {
+	Blocks.installer = new Blocks.Installer();
 });
 
 })(jQuery);

@@ -1,7 +1,7 @@
 (function($) {
 
 
-var SiteMap = blx.Base.extend({
+var SiteMap = Blocks.Base.extend({
 
 	tiers: null,
 	windowWidth: null,
@@ -12,12 +12,12 @@ var SiteMap = blx.Base.extend({
 	{
 		this.tiers = [];
 		this.onWindowResize();
-		this.addListener(blx.$window, 'resize', 'onWindowResize');
+		this.addListener(Blocks.$window, 'resize', 'onWindowResize');
 	},
 
 	getMaxVisibleNodes: function()
 	{
-		var maxVisibleNodes = Math.floor((blx.$window.width()-SiteMap.minElementMargin) / (SiteMap.elementWidth+SiteMap.minElementMargin));
+		var maxVisibleNodes = Math.floor((Blocks.$window.width()-SiteMap.minElementMargin) / (SiteMap.elementWidth+SiteMap.minElementMargin));
 		if (maxVisibleNodes < 1)
 			maxVisibleNodes = 1;
 		return maxVisibleNodes;
@@ -25,7 +25,7 @@ var SiteMap = blx.Base.extend({
 
 	onWindowResize: function()
 	{
-		if (this.windowWidth !== (this.windowWidth = blx.$window.width()))
+		if (this.windowWidth !== (this.windowWidth = Blocks.$window.width()))
 		{
 			// Update the trail curve width based on the new window width
 			this.trailCurveWidth = 100 * SiteMap.trailCurveRadius / this.windowWidth;
@@ -54,7 +54,7 @@ var siteMap = new SiteMap();
 
 
 
-blx.Tier = blx.Base.extend({
+Blocks.Tier = Blocks.Base.extend({
 
 	$container: null,
 	$trailContainer: null,
@@ -86,7 +86,7 @@ blx.Tier = blx.Base.extend({
 		this.nodes = [];
 		for (var i = 0; i < this.totalNodes; i++)
 		{
-			var node = new blx.Node(this, $nodes[i], i);
+			var node = new Blocks.Node(this, $nodes[i], i);
 			this.nodes.push(node);
 		}
 
@@ -115,7 +115,7 @@ blx.Tier = blx.Base.extend({
 });
 
 
-blx.Node = blx.Base.extend({
+Blocks.Node = Blocks.Base.extend({
 
 	tier: null,
 	$elem: null,
@@ -160,14 +160,14 @@ blx.Node = blx.Base.extend({
 		this.$elem.addClass('sel');
 
 		// Scroll the new tier into the middle of the screen
-		var heightDiff = blx.$window.height() - blx.$body.outerHeight(),
+		var heightDiff = Blocks.$window.height() - Blocks.$body.outerHeight(),
 			padding = heightDiff,// + SiteMap.tierHeight,
-			scrollTop = blx.$body.scrollTop();
-		blx.$body.css('padding-bottom', padding);
-		blx.$body.animate({
+			scrollTop = Blocks.$body.scrollTop();
+		Blocks.$body.css('padding-bottom', padding);
+		Blocks.$body.animate({
 			scrollTop: (scrollTop + SiteMap.tierHeight)
 		}, $.proxy(function() {
-			blx.$body.css('padding-bottom', heightDiff)
+			Blocks.$body.css('padding-bottom', heightDiff)
 		}, this));
 
 		// Animate the element to the center
@@ -204,7 +204,7 @@ blx.Node = blx.Base.extend({
 			complete: $.proxy(function()
 			{
 				//setTimeout($.proxy(function() {
-					
+
 				//}, this), 1);
 			}, this)
 		});
@@ -223,11 +223,11 @@ blx.Node = blx.Base.extend({
 		for (var i = 0; i < newPages.length; i++)
 		{
 			var $newNode = $('<div class="node page"/>').appendTo($newNodes);
-			$('<img src="'+blx.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
+			$('<img src="'+Blocks.resourceUrl+'images/screenshots/UI/'+newPages[i].image+'"/>').appendTo($newNode);
 			$('<div class="title">'+newPages[i].title+'</div>').appendTo($newNode);
 		}
 
-		new blx.Tier($newTier, true);
+		new Blocks.Tier($newTier, true);
 
 	},
 

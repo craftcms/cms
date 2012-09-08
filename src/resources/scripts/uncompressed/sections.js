@@ -9,13 +9,13 @@ $table.find('.deletebtn').click(function() {
 	var $row = $(this).closest('tr'),
 		sectionName = $row.children(':first').children('a').text();
 
-	if (confirm(blx.t('Are you sure you want to delete the section “{section}”?', { section: sectionName })))
+	if (confirm(Blocks.t('Are you sure you want to delete the section “{section}”?', { section: sectionName })))
 	{
 		var data = {
 			sectionId: $row.attr('data-section-id')
 		};
 
-		$.post(blx.actionUrl+'content/deleteSection', data, function(response) {
+		$.post(Blocks.actionUrl+'content/deleteSection', data, function(response) {
 			if (response.success)
 			{
 				$row.remove();
@@ -27,10 +27,10 @@ $table.find('.deletebtn').click(function() {
 					$('#nosections').show();
 				}
 
-				blx.cp.displayNotice(blx.t('Section deleted.'));
+				Blocks.cp.displayNotice(Blocks.t('Section deleted.'));
 			}
 			else
-				blx.cp.displayError(blx.t('Couldn’t delete section.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t delete section.'));
 		});
 	}
 });

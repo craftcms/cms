@@ -1,7 +1,7 @@
 (function($) {
 
 
-blx.ui.MixedInput = blx.Base.extend({
+Blocks.ui.MixedInput = Blocks.Base.extend({
 
 	$container: null,
 	elements: null,
@@ -11,7 +11,7 @@ blx.ui.MixedInput = blx.Base.extend({
 	init: function(container, settings)
 	{
 		this.$container = $(container);
-		this.setSettings(settings, blx.ui.MixedInput.defaults);
+		this.setSettings(settings, Blocks.ui.MixedInput.defaults);
 
 		this.elements = [];
 
@@ -263,7 +263,7 @@ blx.ui.MixedInput = blx.Base.extend({
 
 
 
-var TextElement = blx.Base.extend({
+var TextElement = Blocks.Base.extend({
 
 	parentInput: null,
 	$input: null,
@@ -294,7 +294,7 @@ var TextElement = blx.Base.extend({
 
 	buildStage: function()
 	{
-		this.$stage = $('<stage/>').appendTo(blx.$body);
+		this.$stage = $('<stage/>').appendTo(Blocks.$body);
 
 		// replicate the textarea's text styles
 		this.$stage.css({
@@ -304,7 +304,7 @@ var TextElement = blx.Base.extend({
 			wordWrap: 'nowrap'
 		});
 
-		blx.copyTextStyles(this.$input, this.$stage);
+		Blocks.copyTextStyles(this.$input, this.$stage);
 	},
 
 	getTextWidth: function(val)
@@ -333,7 +333,7 @@ var TextElement = blx.Base.extend({
 	onFocus: function()
 	{
 		this.focussed = true;
-		this.interval = setInterval($.proxy(this, 'checkInput'), blx.ui.NiceText.interval);
+		this.interval = setInterval($.proxy(this, 'checkInput'), Blocks.ui.NiceText.interval);
 		this.checkInput();
 	},
 
@@ -350,7 +350,7 @@ var TextElement = blx.Base.extend({
 
 		switch (event.keyCode)
 		{
-			case blx.LEFT_KEY:
+			case Blocks.LEFT_KEY:
 			{
 				if (this.$input.prop('selectionStart') == 0 && this.$input.prop('selectionEnd') == 0)
 				{
@@ -359,7 +359,7 @@ var TextElement = blx.Base.extend({
 				}
 				break;
 			}
-			case blx.RIGHT_KEY:
+			case Blocks.RIGHT_KEY:
 			{
 				if (this.$input.prop('selectionStart') == this.val.length && this.$input.prop('selectionEnd') == this.val.length)
 				{
@@ -368,7 +368,7 @@ var TextElement = blx.Base.extend({
 				}
 				break;
 			}
-			case blx.DELETE_KEY:
+			case Blocks.DELETE_KEY:
 			{
 				if (this.$input.prop('selectionStart') == 0 && this.$input.prop('selectionEnd') == 0)
 				{

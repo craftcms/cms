@@ -3,7 +3,7 @@
 /**
  * Handle Generator
  */
-blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
+Blocks.ui.HandleGenerator = Blocks.ui.InputGenerator.extend({
 
 	generateTargetValue: function(sourceVal)
 	{
@@ -14,7 +14,7 @@ blx.ui.HandleGenerator = blx.ui.InputGenerator.extend({
 		handle = handle.toLowerCase();
 
 		// Convert extended ASCII characters to basic ASCII
-		handle = blx.asciiString(handle);
+		handle = Blocks.asciiString(handle);
 
 		// Remove any non alphanumeric characters
 		handle = handle.replace(/[^a-z0-9]+/g, '');

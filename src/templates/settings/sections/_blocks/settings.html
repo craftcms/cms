@@ -146,6 +146,6 @@
 
 {% set scripts %}
 	<script type="text/javascript">
-		{% if not block.record.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if not block.record.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
 	</script>
 {% endset %}

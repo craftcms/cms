@@ -4,7 +4,7 @@
 /**
  * FieldToggle
  */
-blx.ui.FieldToggle = blx.Base.extend({
+Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	$toggle: null,
 	$target: null,
@@ -17,7 +17,7 @@ blx.ui.FieldToggle = blx.Base.extend({
 		// Is this already a field toggle?
 		if (this.$toggle.data('fieldtoggle'))
 		{
-			blx.log('Double-instantiating a field toggle on an element');
+			Blocks.log('Double-instantiating a field toggle on an element');
 			this.$toggle.data('fieldtoggle').destroy();
 		}
 
@@ -39,7 +39,7 @@ blx.ui.FieldToggle = blx.Base.extend({
 
 	getToggleVal: function()
 	{
-		return blx.getInputPostVal(this.$toggle);
+		return Blocks.getInputPostVal(this.$toggle);
 	},
 
 	onToggleChange: function()
@@ -100,12 +100,12 @@ $.fn.fieldtoggle = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'fieldtoggle'))
-			new blx.ui.FieldToggle(this);
+			new Blocks.ui.FieldToggle(this);
 	});
 };
 
 
-blx.$document.ready(function()
+Blocks.$document.ready(function()
 {
 	$('.fieldtoggle').fieldtoggle();
 });

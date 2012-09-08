@@ -1,6 +1,6 @@
 (function($) {
 
-var LoginForm = blx.Base.extend({
+var LoginForm = Blocks.Base.extend({
 
 	$form: null,
 	$usernameInput: null,
@@ -76,7 +76,7 @@ var LoginForm = blx.Base.extend({
 			username: this.$usernameInput.val()
 		};
 
-		$.post(blx.actionUrl+'accounts/forgotPassword', data, $.proxy(function(response) {
+		$.post(Blocks.actionUrl+'accounts/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				new MessageSentModal();
@@ -98,14 +98,14 @@ var LoginForm = blx.Base.extend({
 			rememberMe: (this.$rememberMeInput.attr('checked') ? 'y' : '')
 		};
 
-		$.post(blx.actionUrl+'session/login', data, $.proxy(function(response) {
+		$.post(Blocks.actionUrl+'session/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				window.location = response.redirectUrl;
 			}
 			else
 			{
-				blx.shake(this.$form);
+				Blocks.shake(this.$form);
 				this.onSubmitResponse();
 
 				// Add the error message
@@ -130,7 +130,7 @@ var LoginForm = blx.Base.extend({
 	showError: function(error)
 	{
 		if (!error)
-			error = blx.t('An unknown error occurred.');
+			error = Blocks.t('An unknown error occurred.');
 
 		this.$error = $('<p class="error" style="display:none">'+error+'</p>').appendTo(this.$form);
 		this.$error.fadeIn();
@@ -150,7 +150,7 @@ var LoginForm = blx.Base.extend({
 		this.$form.animate({marginTop: newFormTopMargin}, 'fast');
 		this.$loginFields.animate({height: 0}, 'fast');
 
-		this.$submitBtn.find('span').html(blx.t('Reset Password'));
+		this.$submitBtn.find('span').html(Blocks.t('Reset Password'));
 		this.$submitBtn.removeClass('disabled');
 		this.$submitBtn.removeAttr('data-icon');
 
@@ -160,12 +160,12 @@ var LoginForm = blx.Base.extend({
 });
 
 
-var MessageSentModal = blx.ui.Modal.extend({
+var MessageSentModal = Blocks.ui.Modal.extend({
 
 	init: function()
 	{
-		var $container = $('<div class="pane email-sent">'+blx.t('We’ve sent you an email with instructions to reset your password.')+'</div>')
-			.appendTo(blx.$body);
+		var $container = $('<div class="pane email-sent">'+Blocks.t('We’ve sent you an email with instructions to reset your password.')+'</div>')
+			.appendTo(Blocks.$body);
 
 		this.base($container);
 	},

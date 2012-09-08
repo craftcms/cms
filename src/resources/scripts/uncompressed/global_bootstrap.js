@@ -48,7 +48,7 @@ var scripts =
 
 for (var i = 0; i < scripts.length; i++)
 {
-	document.write('<script type="text/javascript" src="'+blx.resourceUrl+'scripts/uncompressed/global/'+scripts[i]+'"></script>');
+	document.write('<script type="text/javascript" src="'+Blocks.resourceUrl+'scripts/uncompressed/global/'+scripts[i]+'"></script>');
 }
 
 

@@ -85,7 +85,7 @@
 
 {% set scripts %}
 	<script type="text/javascript">
-		{% if not section.handle %}new blx.ui.HandleGenerator('#name', '#handle');{% endif %}
-		{% if not section.urlFormat %}new blx.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
+		{% if not section.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if not section.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
 	</script>
 {% endset %}

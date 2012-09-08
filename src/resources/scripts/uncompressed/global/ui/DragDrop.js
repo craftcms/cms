@@ -3,7 +3,7 @@
 /**
  * DragDrop
  */
-blx.ui.DragDrop = blx.ui.Drag.extend({
+Blocks.ui.DragDrop = Blocks.ui.Drag.extend({
 
 	$dropTargets: null,
 	$activeDropTarget: null,
@@ -13,7 +13,7 @@ blx.ui.DragDrop = blx.ui.Drag.extend({
 	 */
 	init: function(settings)
 	{
-		settings = $.extend({}, blx.ui.DragDrop.defaults, settings);
+		settings = $.extend({}, Blocks.ui.DragDrop.defaults, settings);
 		this.base(settings);
 	},
 
@@ -53,7 +53,7 @@ blx.ui.DragDrop = blx.ui.Drag.extend({
 			{
 				var elem = this.$dropTargets[i];
 
-				if (blx.hitTest(this.mouseX, this.mouseY, elem))
+				if (Blocks.hitTest(this.mouseX, this.mouseY, elem))
 				{
 					_activeDropTarget = elem;
 					break;

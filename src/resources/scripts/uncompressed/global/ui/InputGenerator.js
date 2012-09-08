@@ -3,7 +3,7 @@
 /**
  * Handle Generator
  */
-blx.ui.InputGenerator = blx.Base.extend({
+Blocks.ui.InputGenerator = Blocks.Base.extend({
 
 	$source: null,
 	$target: null,

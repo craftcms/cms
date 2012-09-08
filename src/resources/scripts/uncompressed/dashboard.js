@@ -1,6 +1,6 @@
 (function($) {
 
-blx.Dashboard = blx.Base.extend({
+Blocks.Dashboard = Blocks.Base.extend({
 
 	$alerts: null,
 	$container: null,
@@ -25,7 +25,7 @@ blx.Dashboard = blx.Base.extend({
 		this.loadNextWidget();
 
 		// setup events
-		this.addListener(blx.$window, 'resize', 'setCols');
+		this.addListener(Blocks.$window, 'resize', 'setCols');
 
 		// do the version check
 		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
@@ -38,7 +38,7 @@ blx.Dashboard = blx.Base.extend({
 		if (typeof this.widgetIds[this.loadingWidget] != 'undefined')
 		{
 			var widgetId = this.widgetIds[this.loadingWidget];
-			$.get(blx.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
+			$.get(Blocks.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
 				var $widget = $(response).css('opacity', 0);
 				this.placeWidget($widget);
 				$widget.animate({opacity: 1}, 'fast');
@@ -50,7 +50,7 @@ blx.Dashboard = blx.Base.extend({
 
 	setCols: function()
 	{
-		var totalCols = Math.floor(this.$container.width() / blx.Dashboard.minColWidth);
+		var totalCols = Math.floor(this.$container.width() / Blocks.Dashboard.minColWidth);
 
 		if (totalCols !== this.totalCols)
 		{
@@ -191,7 +191,7 @@ blx.Dashboard = blx.Base.extend({
 				var $alert = $('<div class="alert"><p>'+data.alerts[i]+'</p></div>');
 				this.$alerts.append($alert);
 				$alert.css({opacity: 0});
-				$alert.delay((i+1)*blx.fx.delay).animate({opacity: 1});
+				$alert.delay((i+1)*Blocks.fx.delay).animate({opacity: 1});
 			}
 
 			// make room for them
@@ -208,7 +208,7 @@ blx.Dashboard = blx.Base.extend({
 	sidebarWidth: 240
 });
 
-var Col = blx.Base.extend({
+var Col = Blocks.Base.extend({
 
 	dashboard: null,
 	index: null,
