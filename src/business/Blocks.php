@@ -302,14 +302,14 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @param string $category
 	 * @param string $message
 	 * @param array  $params
-	 * @param null   $source
-	 * @param null   $language
-	 * @return string|void
+	 * @param string $source
+	 * @param string $language
+	 * @param string $category
+	 * @return string|null
 	 */
-	public static function t($message, $params = array(), $category = null, $source = null, $language = null)
+	public static function t($message, $params = array(), $source = null, $language = null, $category = 'blocks')
 	{
 		// Normalize the param keys
 		$normalizedParams = array();
@@ -321,9 +321,6 @@ class Blocks extends \Yii
 				$normalizedParams[$key] = $value;
 			}
 		}
-
-		if ($category === null)
-			$category = 'blocks';
 
 		$translation = parent::t($category, $message, $normalizedParams, $source, $language);
 		if (blx()->config->translationDebugOutput)
