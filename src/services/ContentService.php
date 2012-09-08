@@ -276,7 +276,8 @@ class ContentService extends ApplicationComponent
 	 */
 	public function getEntryBlocks()
 	{
-		return EntryBlockRecord::model()->ordered()->findAll();
+		$records = EntryBlockRecord::model()->ordered()->findAll();
+		return blx()->blocks->populateBlocks($records);
 	}
 
 	/* end BLOCKS ONLY */
@@ -285,11 +286,13 @@ class ContentService extends ApplicationComponent
 	 * Gets an entry block by its ID.
 	 *
 	 * @param int $id
-	 * @return EntryBlock
+	 * @return BaseBlock
 	 */
 	public function getEntryBlockById($id)
 	{
-		return EntryBlockRecord::model()->findById($id);
+		$record = EntryBlockRecord::model()->findById($id);
+		if ($record)
+			return blx()->blocks->populateBlock($record);
 	}
 
 	/**
@@ -297,24 +300,24 @@ class ContentService extends ApplicationComponent
 	 *
 	 * @access private
 	 * @param int $blockId
-	 * @return EntryBlock
+	 * @return EntryBlockRecord
 	 */
-	private function _getEntryBlock($blockId = null)
+	private function _getEntryBlockRecord($blockId = null)
 	{
 		if ($blockId)
 		{
-			$block = $this->getEntryBlockById($blockId);
+			$record = EntryBlockRecord::model()->findById($blockId);
 
 			// This is serious business.
-			if (!$block)
+			if (!$record)
 				$this->_noEntryBlockExists($blockId);
 		}
 		else
 		{
-			$block = new EntryBlockRecord();
+			$record = new EntryBlockRecord();
 		}
 
-		return $block;
+		return $record;
 	}
 
 	/**
@@ -357,7 +360,7 @@ class ContentService extends ApplicationComponent
 	{
 		$section = $this->_getSection($sectionId);
 	/* end BLOCKSPRO ONLY */
-		$record = $this->_getEntryBlock($blockId);
+		$record = $this->_getEntryBlockRecord($blockId);
 
 		$isNewRecord = $record->isNewRecord();
 		if (!$isNewRecord)
@@ -434,23 +437,23 @@ class ContentService extends ApplicationComponent
 	public function deleteEntryBlock($blockId)
 	{
 		/* BLOCKS ONLY */
-		$block = $this->_getEntryBlock($blockId);
+		$record = $this->_getEntryBlockRecord($blockId);
 		$content = new EntryContentRecord();
 		$contentTable = $content->getTableName();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$block = EntryBlockRecord::model()->with('section')->findById($blockId);
-		if (!$block)
+		$record = EntryBlockRecord::model()->with('section')->findById($blockId);
+		if (!$record)
 			$this->_noEntryBlockExists($blockId);
 
-		$contentTable = EntryContentRecord::getTableNameForSection($block->section);
+		$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 		/* end BLOCKSPRO ONLY */
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			$block->delete();
-			blx()->db->createCommand()->dropColumn($contentTable, $block->handle);
+			$record->delete();
+			blx()->db->createCommand()->dropColumn($contentTable, $record->handle);
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -481,7 +484,7 @@ class ContentService extends ApplicationComponent
 			{
 				// Update the sortOrder in entryblocks
 				/* BLOCKS ONLY */
-				$record = $this->_getEntryBlock($blockId);
+				$record = $this->_getEntryBlockRecord($blockId);
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
 				$record = EntryBlockRecord::model()->with('section')->findById($blockId);

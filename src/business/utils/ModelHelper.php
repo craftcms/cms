@@ -116,7 +116,7 @@ class ModelHelper
 		{
 			$config = static::normalizeAttributeConfig($config);
 			if (isset($config['default']))
-				$model->$name = $config['default'];
+				$model->setAttribute($name, $config['default']);
 		}
 	}
 

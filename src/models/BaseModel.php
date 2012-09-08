@@ -8,7 +8,8 @@ namespace Blocks;
  */
 abstract class BaseModel extends \CModel
 {
-	private $_values = array();
+	private $_attributeNames = array();
+	private $_attributes = array();
 
 	/**
 	 * Constructor
@@ -16,6 +17,51 @@ abstract class BaseModel extends \CModel
 	function __construct()
 	{
 		ModelHelper::populateAttributeDefaults($this);
+	}
+
+	/**
+	 * PHP getter magic method.
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	function __get($name)
+	{
+		if (isset($this->_attributes[$name]))
+			return $this->_attributes[$name];
+		else if (in_array($name, $this->attributeNames()))
+			return null;
+		else
+			return parent::__get($name);
+	}
+
+	/**
+	 * PHP setter magic method.
+	 *
+	 * @param string $name
+	 * @param mixed  $value
+	 * @return mixed
+	 */
+	function __set($name, $value)
+	{
+		if ($this->setAttribute($name, $value) === false)
+			parent::__set($name, $value);
+	}
+
+	/**
+	 * Checks if an attribute value is set.
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	function __isset($name)
+	{
+		if (isset($this->_attributes[$name]))
+			return true;
+		else if (in_array($name, $this->attributeNames()))
+			return false;
+		else
+			return parent::__isset($name);
 	}
 
 	/**
@@ -27,73 +73,60 @@ abstract class BaseModel extends \CModel
 	abstract public function defineAttributes();
 
 	/**
-	 * Isset?
-	 *
-	 * @param string $name
-	 * @return bool
-	 */
-	function __isset($name)
-	{
-		return array_key_exists($name, $this->defineAttributes());
-	}
-
-	/**
-	 * Attribute Setter
-	 *
-	 * @param string $name
-	 * @param mixed  $value
-	 * @return mixed|void
-	 * @throws Exception
-	 */
-	function __set($name, $value)
-	{
-		if (array_key_exists($name, $this->defineAttributes()))
-			$this->_values[$name] = $value;
-		else
-			$this->_noAttributeExists($name);
-	}
-
-	/**
-	 * Attribute Getter
-	 *
-	 * @param string $name
-	 * @throws Exception
-	 * @return mixed|null
-	 */
-	function __get($name)
-	{
-		if (array_key_exists($name, $this->defineAttributes()))
-		{
-			if (isset($this->_values[$name]))
-				return $this->_values[$name];
-			else
-				return null;
-		}
-		else if ($name == 'errors')
-			return $this->getErrors();
-		else
-			$this->_noAttributeExists($name);
-	}
-
-	/**
-	 * Throws a "no attribute exists" exception
-	 *
-	 * @param string $attribute
-	 * @throws Exception
-	 */
-	private function _noAttributeExists($attribute)
-	{
-		throw new Exception(Blocks::t('“{class}” doesn’t have an attribute called “{attribute}”.', array('class' => get_class($this), 'attribute' => $attribute)));
-	}
-
-	/**
 	 * Returns the list of this model's attribute names.
 	 *
 	 * @return array
 	 */
 	public function attributeNames()
 	{
-		return array_keys($this->defineAttributes());
+		if (!$this->_attributeNames)
+			$this->_attributeNames = array_keys($this->defineAttributes());
+		return $this->_attributeNames;
+	}
+
+	/**
+	 * Gets an attribute's value.
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function getAttribute($name)
+	{
+		if (isset($this->_attributes[$name]))
+			return $this->_attributes[$name];
+	}
+
+	/**
+	 * Sets an attribute's value.
+	 *
+	 * @param string $name
+	 * @param mixed $value
+	 */
+	public function setAttribute($name, $value)
+	{
+		if (in_array($name, $this->attributeNames()))
+		{
+			$this->_attributes[$name] = $value;
+			return true;
+		}
+		else
+			return false;
+	}
+
+	/**
+	 * Sets multiple attribute values at once.
+	 *
+	 * @param array $values
+	 */
+	public function setAttributes($values)
+	{
+		if (!is_array($values))
+			return;
+		foreach ($values as $name => $value)
+		{
+			if (in_array($name, $this->attributeNames()))
+				$this->_attributes[$name] = $value;
+		}
 	}
 
 	/**

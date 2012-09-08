@@ -7,9 +7,11 @@ namespace Blocks;
 abstract class BaseOptionsBlock extends BaseBlock
 {
 	/**
+	 * Defines the block settings.
+	 *
 	 * @return array
 	 */
-	protected function defineSettings()
+	public function defineSettings()
 	{
 		return array(
 			'options' => AttributeType::Mixed
@@ -17,19 +19,24 @@ abstract class BaseOptionsBlock extends BaseBlock
 	}
 
 	/**
-	 * Set the settings
+	 * Returns the block's settings HTML.
 	 *
-	 * @param $settings
-	 * @return mixed
+	 * @return string|null
 	 */
-	public function setSettings($settings)
+	public function getSettingsHtml()
 	{
-		// Make sure that options is an array
-		if (isset($settings['options']) && is_string($settings['options']))
-		{
-			$settings['options'] = preg_split('/[\r\n]+/', $settings['options']);
-		}
-
-		return parent::setSettings($settings);
+		return TemplateHelper::render('_components/blocks/optionsblocksettings', array(
+			'label'    => $this->getOptionsSettingsLabel(),
+			'settings' => $this->settings
+		));
 	}
+
+	/**
+	 * Returns the label for the Options setting.
+	 *
+	 * @abstract
+	 * @access protected
+	 * @return string
+	 */
+	abstract protected function getOptionsSettingsLabel();
 }

@@ -6,11 +6,10 @@ namespace Blocks;
  */
 class CheckboxesBlock extends BaseOptionsBlock
 {
-	protected $settingsTemplate = '_components/blocks/Checkboxes/settings';
-	protected $fieldTemplate = '_components/blocks/Checkboxes/field';
-
 	/**
-	 * @return string|void
+	 * Returns the type of block this is.
+	 *
+	 * @return string
 	 */
 	public function getName()
 	{
@@ -18,25 +17,25 @@ class CheckboxesBlock extends BaseOptionsBlock
 	}
 
 	/**
-	 * Combines the checkbox selections into a flat string
+	 * Returns the label for the Options setting.
 	 *
-	 * @param $data
+	 * @access protected
 	 * @return string
 	 */
-	public function modifyPostData($data)
+	protected function getOptionsSettingsLabel()
 	{
-		return implode("\n", $data);
+		return Blocks::t('Checkbox Options');
 	}
 
 	/**
-	 * Converts the newline-separated data into an array
+	 * Returns the block's input HTML.
 	 *
-	 * @param $data
+	 * @return string
 	 */
-	public function setData($data)
+	public function getBlockHtml()
 	{
-		if (!is_array($data))
-			$data = preg_split('/[\r\n]/', $data);
-		parent::setData($data);
+		return TemplateHelper::render('_components/blocks/Checkboxes/field', array(
+			'settings' => $this->settings
+		));
 	}
 }

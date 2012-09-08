@@ -6,11 +6,9 @@ namespace Blocks;
  */
 class UpdatesWidget extends BaseWidget
 {
-	public $updates = array();
-
-	protected $bodyTemplate = '_components/widgets/UpdatesWidget/body';
-
 	/**
+	 * Returns the type of widget this is.
+	 *
 	 * @return string
 	 */
 	public function getName()
@@ -19,33 +17,34 @@ class UpdatesWidget extends BaseWidget
 	}
 
 	/**
-	 * Add a link to Updates.
+	 * Gets the widget's body HTML.
 	 *
-	 * @return array
+	 * @access protected
+	 * @return string
 	 */
-	public function getActionButtons()
+	protected function getBodyHtml()
 	{
-		return array(
-			array(
-				'label' => 'Updates',
-				'url' => 'updates'
-			)
-		);
+		return TemplateHelper::render('_components/widgets/UpdatesWidget/body', array(
+			'updates' => $this->_getUpdates()
+		));
 	}
 
 	/**
-	 * Gets the widget body.
+	 * Gets the available updates.
 	 *
-	 * @return string
+	 * @access private
+	 * @return array
 	 */
-	public function getBody()
+	private function _getUpdates()
 	{
+		$updates = array();
+
 		$updateInfo = blx()->updates->getUpdateInfo();
 
 		// Blocks first
 		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 		{
-			$this->updates[] = array(
+			$updates[] = array(
 				'name'     => 'Blocks',
 				'handle'   => 'Blocks',
 				'version'  => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
@@ -61,7 +60,7 @@ class UpdatesWidget extends BaseWidget
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
-					$this->updates[] = array(
+					$updates[] = array(
 						'name'    => $plugin->displayName,
 						'handle'  => $plugin->class,
 						'version' => $plugin->latestVersion,
@@ -71,6 +70,6 @@ class UpdatesWidget extends BaseWidget
 			}
 		}
 
-		return parent::getBody();
+		return $updates;
 	}
 }

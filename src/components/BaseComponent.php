@@ -5,7 +5,7 @@ namespace Blocks;
  * Component base class
  * Extended by BasePlugin, BaseWidget, BaseBlock, etc.
  */
-abstract class BaseComponent extends \CComponent
+abstract class BaseComponent extends ApplicationComponent
 {
 	/**
 	 * The AR record associated with this instance.
@@ -23,10 +23,16 @@ abstract class BaseComponent extends \CComponent
 	 */
 	protected $componentType;
 
+	/**
+	 * The column that the record settings will be stored in.
+	 *
+	 * @access protected
+	 * @var string
+	 */
+	protected $settingsColumn;
+
 	private $_classHandle;
 	private $_settings;
-
-	public function init(){}
 
 	/**
 	 * Returns the name of the component.
@@ -51,7 +57,7 @@ abstract class BaseComponent extends \CComponent
 	 *
 	 * @return array
 	 */
-	protected function defineSettings()
+	public function defineSettings()
 	{
 		return array();
 	}
@@ -62,7 +68,16 @@ abstract class BaseComponent extends \CComponent
 	public function getSettings()
 	{
 		if (!isset($this->_settings))
+		{
 			$this->_settings = new Model($this->defineSettings());
+
+			// If a record is set, fill in the saved settings
+			if (isset($this->record))
+			{
+				$settings = $this->record->getAttribute($this->settingsColumn);
+				$this->_settings->setAttributes($settings);
+			}
+		}
 		return $this->_settings;
 	}
 

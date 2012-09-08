@@ -4,71 +4,53 @@ namespace Blocks;
 /**
  * Widget base class
  */
-abstract class BaseWidget extends BaseComponent
+abstract class BaseWidget extends BaseComponent implements IWidget
 {
 	protected $componentType = 'Widget';
-	protected $bodyTemplate;
-	protected $settingsTemplate;
-	protected $settings = array();
+	protected $settingsColumn = 'settings';
 
 	/**
-	 * Gets the widget title.
+	 * Returns the widget's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return null;
+	}
+
+	/**
+	 * Returns the widget's widget HTML.
 	 *
 	 * @return string
 	 */
-	public function getTitle()
+	public function getWidgetHtml()
+	{
+		return TemplateHelper::render('dashboard/_widget', array(
+			'class' => $this->getClassHandle(),
+			'title' => $this->getTitle(),
+			'body'  => $this->getBodyHtml()
+		));
+	}
+
+	/**
+	 * Gets the widget's title.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getTitle()
 	{
 		// Default to the widget name
 		return $this->getName();
 	}
 
 	/**
-	 * Adds action buttons to the widget.
+	 * Gets the widget's body HTML.
 	 *
-	 * @return array
-	 */
-	public function getActionButtons()
-	{
-		return array();
-	}
-
-	/**
-	 * Gets the widget body.
-	 *
+	 * @abstract
+	 * @access protected
 	 * @return string
 	 */
-	public function getBody()
-	{
-		if (empty($this->bodyTemplate))
-			return '';
-
-		$variables = array(
-			'widget' => $this
-		);
-
-		$template = TemplateHelper::render($this->bodyTemplate, $variables);
-		return $template;
-	}
-
-	/**
-	 * Display the settings form
-	 *
-	 * @param $idPrefix
-	 * @param $namePrefix
-	 * @return bool
-	 */
-	public function displaySettings($idPrefix, $namePrefix)
-	{
-		if (empty($this->settingsTemplate))
-			return '';
-
-		$variables = array(
-			'idPrefix'   => $idPrefix,
-			'namePrefix' => $namePrefix,
-			'settings'   => $this->settings
-		);
-
-		$template = TemplateHelper::render($this->settingsTemplate, $variables);
-		return $template;
-	}
+	abstract protected function getBodyHtml();
 }

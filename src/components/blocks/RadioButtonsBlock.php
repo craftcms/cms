@@ -6,11 +6,10 @@ namespace Blocks;
  */
 class RadioButtonsBlock extends BaseOptionsBlock
 {
-	protected $settingsTemplate = '_components/blocks/RadioButtons/settings';
-	protected $fieldTemplate = '_components/blocks/RadioButtons/field';
-
 	/**
-	 * @return string|void
+	 * Returns the type of block this is.
+	 *
+	 * @return string
 	 */
 	public function getName()
 	{
@@ -18,12 +17,25 @@ class RadioButtonsBlock extends BaseOptionsBlock
 	}
 
 	/**
-	 * Returns the content column type.
+	 * Returns the label for the Options setting.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getOptionsSettingsLabel()
+	{
+		return Blocks::t('Radio Button Options');
+	}
+
+	/**
+	 * Returns the block's input HTML.
 	 *
 	 * @return string
 	 */
-	public function defineContentColumn()
+	public function getBlockHtml()
 	{
-		return ColumnType::Varchar;
+		return TemplateHelper::render('_components/blocks/RadioButtons/field', array(
+			'settings' => $this->settings
+		));
 	}
 }

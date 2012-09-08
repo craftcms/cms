@@ -41,17 +41,7 @@ class DashboardService extends ApplicationComponent
 		));
 
 		if ($record)
-		{
-			$widget = $this->getWidgetByClass($record->class);
-			if ($widget)
-			{
-				$widget->record = $record;
-				$widget->init();
-				return $widget;
-			}
-		}
-
-		return null;
+			return $this->populateWidget($record);
 	}
 
 	/**
@@ -65,17 +55,41 @@ class DashboardService extends ApplicationComponent
 			'userId' => blx()->accounts->getCurrentUser()->id
 		));
 
+		return $this->populateWidgets($records);
+	}
+
+	/**
+	 * Populates a widget with a given record.
+	 *
+	 * @param WidgetRecord $record
+	 * @return BaseWidget
+	 */
+	public function populateBlock(WidgetRecord $record)
+	{
+		$widget = $this->getWidgetByClass($record->class);
+		if ($widget)
+		{
+			$widget->record = $record;
+			$widget->init();
+			return $widget;
+		}
+	}
+
+	/**
+	 * Creates an array of widgets based on an array of widget records.
+	 *
+	 * @param array $records
+	 * @return array
+	 */
+	public function populateWidgets($records)
+	{
 		$widgets = array();
 
 		foreach ($records as $record)
 		{
-			$widget = $this->getWidgetByClass($record->class);
+			$widget = $this->populateWidget($record);
 			if ($widget)
-			{
-				$widget->record = $record;
-				$widget->init();
 				$widgets[] = $widget;
-			}
 		}
 
 		return $widgets;

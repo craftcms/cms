@@ -120,15 +120,18 @@ class PluginsService extends ApplicationComponent
 					return false;
 			}
 
-			if (class_exists($nsClass, false))
-			{
-				$plugin = new $nsClass;
-				$plugin->init();
-
-				$this->_plugins[$classHandle] = $plugin;
-			}
-			else
+			if (!class_exists($nsClass, false))
 				return false;
+
+			$plugin = new $nsClass;
+
+			// Make sure the plugin implements the IPlugin interface
+			if (!$plugin instanceof IPlugin)
+				return false;
+
+			$plugin->init();
+
+			$this->_plugins[$classHandle] = $plugin;
 		}
 
 		return $this->_plugins[$classHandle];

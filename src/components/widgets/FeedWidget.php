@@ -8,18 +8,9 @@ class FeedWidget extends BaseWidget
 {
 	public $multipleInstances = true;
 
-	public $items;
-
-	protected $bodyTemplate = '_components/widgets/FeedWidget/body';
-	protected $settingsTemplate = '_components/widgets/FeedWidget/settings';
-
-	protected $settings = array(
-		'url'   => 'http://feeds.feedburner.com/blogandtonic',
-		'title' => 'Blog &amp; Tonic',
-		'limit' => 5
-	);
-
 	/**
+	 * Returns the type of widget this is.
+	 *
 	 * @return string
 	 */
 	public function getName()
@@ -28,41 +19,83 @@ class FeedWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget title.
+	 * Defines the widget settings.
 	 *
-	 * @return string
+	 * @return array
 	 */
-	public function getTitle()
+	public function defineSettings()
 	{
-		return $this->settings['title'];
+		return array(
+			'url'   => array(AttributeType::Url, 'default' => 'http://feeds.feedburner.com/blogandtonic'),
+			'title' => array(AttributeType::Name, 'default' => 'Blog & Tonic'),
+			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
+		);
 	}
 
 	/**
-	 * Gets the widget body.
+	 * Returns the widget's widget HTML.
 	 *
 	 * @return string
 	 */
-	public function getBody()
+	public function getSettingsHtml()
 	{
+		return TemplateHelper::render('_components/widgets/FeedWidget/settings', array(
+			'settings' => $this->settings
+		));
+	}
+
+	/**
+	 * Gets the widget's title.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getTitle()
+	{
+		return $this->settings->title;
+	}
+
+	/**
+	 * Gets the widget's body HTML.
+	 *
+	 * @access protected
+	 * @return string
+	 */
+	protected function getBodyHtml()
+	{
+		return TemplateHelper::render('_components/widgets/FeedWidget/body', array(
+			'items' => $this->_getItems()
+		));
+	}
+
+	/**
+	 * Gets the feed items.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getItems()
+	{
+		$items = array();
+
 		$url = $this->settings['url'];
 		$cachePath = blx()->path->getCachePath();
 		$feed = new \SimplePie($url, $cachePath);
 		$feed->init();
 		$feed->handle_content_type();
 
-		$limit = $this->settings['limit'];
-		$items = $feed->get_items(0, $limit);
+		$limit = $this->settings->limit;
 
-		$this->items = array();
-		foreach ($items as $item)
+		foreach ($feed->get_items(0, $limit) as $item)
 		{
-			$this->items[] = array(
+			$items[] = array(
 				'url'   => $item->get_permalink(),
 				'title' => $item->get_title(),
 				'date'  => new DateTime('@'.$item->get_date('U'))
 			);
 		}
 
-		return parent::getBody();
+		return $items;
 	}
+
 }

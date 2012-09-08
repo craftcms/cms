@@ -6,11 +6,10 @@ namespace Blocks;
  */
 class NumberBlock extends BaseBlock
 {
-	protected $settingsTemplate = '_components/blocks/Number/settings';
-	protected $fieldTemplate = '_components/blocks/Number/field';
-
 	/**
-	 * @return string|void
+	 * Returns the type of block this is.
+	 *
+	 * @return string
 	 */
 	public function getName()
 	{
@@ -18,9 +17,11 @@ class NumberBlock extends BaseBlock
 	}
 
 	/**
+	 * Defines the settings.
+	 *
 	 * @return array
 	 */
-	protected function defineSettings()
+	public function defineSettings()
 	{
 		return array(
 			'min'      => array(AttributeType::Number, 'default' => 0),
@@ -30,10 +31,36 @@ class NumberBlock extends BaseBlock
 	}
 
 	/**
-	 * @return null|string
+	 * Returns the block's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return TemplateHelper::render('_components/blocks/Number/settings', array(
+			'settings' => $this->settings
+		));
+	}
+
+	/**
+	 * Returns the content column type.
+	 *
+	 * @return string
 	 */
 	public function defineContentColumn()
 	{
 		return DbHelper::getNumberColumnConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
+	}
+
+	/**
+	 * Returns the block's input HTML.
+	 *
+	 * @return string
+	 */
+	public function getBlockHtml()
+	{
+		return TemplateHelper::render('_components/blocks/Number/field', array(
+			'settings' => $this->settings
+		));
 	}
 }

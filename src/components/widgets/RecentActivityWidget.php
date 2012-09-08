@@ -6,11 +6,9 @@ namespace Blocks;
  */
 class RecentActivityWidget extends BaseWidget
 {
-	public $actions = array();
-
-	protected $bodyTemplate = '_components/widgets/RecentActivityWidget/body';
-
 	/**
+	 * Returns the type of widget this is.
+	 *
 	 * @return string
 	 */
 	public function getName()
@@ -19,13 +17,27 @@ class RecentActivityWidget extends BaseWidget
 	}
 
 	/**
-	 * Gets the widget body.
+	 * Gets the widget's body HTML.
 	 *
+	 * @access protected
 	 * @return string
 	 */
-	public function getBody()
+	protected function getBodyHtml()
 	{
-		$this->actions = array(
+		return TemplateHelper::render('_components/widgets/RecentActivityWidget/body', array(
+			'actions' => $this->_getActions()
+		));
+	}
+
+	/**
+	 * Gets the recent user actions.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getActions()
+	{
+		return array(
 			array(
 				'action' => '<a>Brandon</a> is editing <a>@@@productDisplay@@@</a>',
 				'date' => 'right now'
@@ -39,7 +51,5 @@ class RecentActivityWidget extends BaseWidget
 				'date' => 'Sep 5, 2011'
 			)
 		);
-
-		return parent::getBody();
 	}
 }

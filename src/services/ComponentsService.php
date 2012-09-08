@@ -7,8 +7,8 @@ namespace Blocks;
 class ComponentsService extends ApplicationComponent
 {
 	protected static $componentTypes = array(
-		'block' => array('folder' => 'blocks', 'suffix' => 'Block'),
-		'widget' => array('folder' => 'widgets', 'suffix' => 'Widget'),
+		'block' => array('folder' => 'blocks', 'suffix' => 'Block', 'interface' => 'IBlock'),
+		'widget' => array('folder' => 'widgets', 'suffix' => 'Widget', 'interface' => 'Iwidget'),
 	);
 
 	private $_components;
@@ -21,15 +21,17 @@ class ComponentsService extends ApplicationComponent
 	 */
 	public function getComponentsByType($type)
 	{
-		if (!isset(static::$componentTypes[$type]))
-			$this->_noComponentTypeExists($type);
-
 		if (!isset($this->_components[$type]))
 		{
+			if (!isset(static::$componentTypes[$type]))
+				$this->_noComponentTypeExists($type);
+
+			$ctype = static::$componentTypes[$type];
+
 			$this->_components[$type] = array();
 
-			$folderPath = blx()->path->getComponentsPath().static::$componentTypes[$type]['folder'].'/';
-			$classSuffix = static::$componentTypes[$type]['suffix'];
+			$folderPath = blx()->path->getComponentsPath().$ctype['folder'].'/';
+			$classSuffix = $ctype['suffix'];
 			$files = glob($folderPath.'/*'.$classSuffix.'.php');
 
 			if (is_array($files) && count($files) > 0)
@@ -54,8 +56,15 @@ class ComponentsService extends ApplicationComponent
 					if ($ref->isAbstract() || $ref->isInterface())
 						continue;
 
-					// Save an instance of it
+					// Instantiate it
 					$obj = new $class;
+
+					// Make sure it implements the correct interface
+					$interface = __NAMESPACE__.'\\'.$ctype['interface'];
+					if (!$obj instanceof $interface)
+						continue;
+
+					// Save it
 					$classHandle = $obj->getClassHandle();
 					$this->_components[$type][$classHandle] = $obj;
 				}

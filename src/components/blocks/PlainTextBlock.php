@@ -6,11 +6,10 @@ namespace Blocks;
  */
 class PlainTextBlock extends BaseBlock
 {
-	protected $settingsTemplate = '_components/blocks/PlainText/settings';
-	protected $fieldTemplate = '_components/blocks/PlainText/field';
-
 	/**
-	 * @return string|void
+	 * Returns the type of block this is.
+	 *
+	 * @return string
 	 */
 	public function getName()
 	{
@@ -18,9 +17,11 @@ class PlainTextBlock extends BaseBlock
 	}
 
 	/**
+	 * Defines the settings.
+	 *
 	 * @return array
 	 */
-	protected function defineSettings()
+	public function defineSettings()
 	{
 		return array(
 			'multiline'     => array(AttributeType::Bool, 'default' => true),
@@ -28,5 +29,29 @@ class PlainTextBlock extends BaseBlock
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
 			'maxLengthUnit' => array(AttributeType::Enum, 'options' => array('words', 'chars')),
 		);
+	}
+
+	/**
+	 * Returns the block's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return TemplateHelper::render('_components/blocks/PlainText/settings', array(
+			'settings' => $this->settings
+		));
+	}
+
+	/**
+	 * Returns the block's input HTML.
+	 *
+	 * @return string
+	 */
+	public function getBlockHtml()
+	{
+		return TemplateHelper::render('_components/blocks/PlainText/field', array(
+			'settings' => $this->settings
+		));
 	}
 }
