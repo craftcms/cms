@@ -239,7 +239,7 @@ class ModelHelper
 				$comparisons = ArrayHelper::stringToArray($config['compare']);
 				foreach ($comparisons as $comparison)
 				{
-					if (preg_match('/^(==|=|!=|>=|>|<=|<)\b(.*)$/', $comparison, $match))
+					if (preg_match('/^(==|=|!=|>=|>|<=|<)\s*\b(.*)$/', $comparison, $match))
 						$rules[] = array($name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1]);
 				}
 			}
