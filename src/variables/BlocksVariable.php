@@ -11,7 +11,7 @@ class BlocksVariable
 	 *
 	 * @return array
 	 */
-	public function getBlocks()
+	public function getAllBlocks()
 	{
 		return blx()->blocks->getAllBlocks();
 	}
