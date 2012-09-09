@@ -4,10 +4,8 @@ namespace Blocks;
 /**
  * Block interface
  */
-interface IBlock
+interface IBlock extends IComponent
 {
-	public function getName();
 	public function defineContentColumn();
-	public function getSettingsHtml();
 	public function getBlockHtml();
 }

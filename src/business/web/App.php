@@ -74,7 +74,7 @@ class App extends \CWebApplication
 				'app.business.web.templating.adapters.*',
 				'app.business.web.templating.templatewidgets.*',
 				'app.business.webservices.*',
-				'app.components.BaseComponent',
+				'app.components.*',
 				'app.components.blocks.*',
 				'app.components.plugins.*',
 				'app.components.widgets.*',

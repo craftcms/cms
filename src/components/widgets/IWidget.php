@@ -4,9 +4,7 @@ namespace Blocks;
 /**
  * Block interface
  */
-interface IWidget
+interface IWidget extends IComponent
 {
-	public function getName();
 	public function getWidgetHtml();
-	public function getSettingsHtml();
 }
