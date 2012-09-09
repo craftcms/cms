@@ -17,7 +17,7 @@ class RouteRecord extends BaseRecord
 			'urlParts'   => array(AttributeType::String, 'required' => true),
 			'urlPattern' => array(AttributeType::String, 'required' => true),
 			'template'   => array(AttributeType::String, 'required' => true),
-			'sortOrder'  => array(AttributeType::SortOrder, 'required' => true),
+			'sortOrder'  => AttributeType::SortOrder,
 		);
 	}
 

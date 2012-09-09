@@ -21,7 +21,7 @@ abstract class BaseBlockRecord extends BaseRecord
 			'translatable'  => AttributeType::Bool,
 			'class'         => array(AttributeType::ClassName, 'required' => true),
 			'blockSettings' => AttributeType::Mixed,
-			'sortOrder'     => array(AttributeType::SortOrder, 'required' => true),
+			'sortOrder'     => AttributeType::SortOrder,
 		);
 	}
 
