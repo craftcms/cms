@@ -53,16 +53,6 @@ abstract class BaseComponent extends ApplicationComponent
 	}
 
 	/**
-	 * Defines the settings.
-	 *
-	 * @return array
-	 */
-	public function defineSettings()
-	{
-		return array();
-	}
-
-	/**
 	 * Gets the settings.
 	 *
 	 * @return BaseModel
@@ -71,7 +61,7 @@ abstract class BaseComponent extends ApplicationComponent
 	{
 		if (!isset($this->_settings))
 		{
-			$this->_settings = new Model($this->defineSettings());
+			$this->_settings = $this->getSettingsModel();
 
 			// If a record is set, fill in the saved settings
 			if (isset($this->record))
@@ -81,6 +71,26 @@ abstract class BaseComponent extends ApplicationComponent
 			}
 		}
 		return $this->_settings;
+	}
+
+	/**
+	 * Gets the settings model.
+	 *
+	 * @return BaseModel
+	 */
+	public function getSettingsModel()
+	{
+		return new Model($this->defineSettings());
+	}
+
+	/**
+	 * Defines the settings.
+	 *
+	 * @return array
+	 */
+	public function defineSettings()
+	{
+		return array();
 	}
 
 	/**
