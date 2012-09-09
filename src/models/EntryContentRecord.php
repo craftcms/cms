@@ -60,7 +60,7 @@ class EntryContentRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('entryId', 'language'), 'unique' => true),
+			array('columns' => array('language', 'entryId'), 'unique' => true),
 		);
 	}
 

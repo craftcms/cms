@@ -31,7 +31,7 @@ class EmailMessageContentRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('messageId', 'language'), 'unique' => true)
+			array('columns' => array('language', 'messageId'), 'unique' => true)
 		);
 	}
 }

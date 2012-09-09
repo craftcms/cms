@@ -21,7 +21,7 @@ class EntryBlockRecord extends BaseBlockRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('sectionId', 'handle'), 'unique' => true)
+			array('columns' => array('handle', 'sectionId'), 'unique' => true)
 		);
 	}
 }
