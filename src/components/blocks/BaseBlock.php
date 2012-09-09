@@ -21,16 +21,6 @@ abstract class BaseBlock extends BaseComponent implements IBlock
 	}
 
 	/**
-	 * Returns the block's settings HTML.
-	 *
-	 * @return string|null
-	 */
-	public function getSettingsHtml()
-	{
-		return null;
-	}
-
-	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @abstract

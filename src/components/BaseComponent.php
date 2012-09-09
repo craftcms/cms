@@ -104,6 +104,16 @@ abstract class BaseComponent extends ApplicationComponent
 	}
 
 	/**
+	 * Returns the component's settings HTML.
+	 *
+	 * @return string|null
+	 */
+	public function getSettingsHtml()
+	{
+		return null;
+	}
+
+	/**
 	 * Get the class name, sans namespace.
 	 *
 	 * @return string
