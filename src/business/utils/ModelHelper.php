@@ -131,17 +131,13 @@ class ModelHelper
 	{
 		$rules = array();
 
-		$uniques = array();
-		$required = array();
-		$emails = array();
-		$urls = array();
-		$strictLengths = array();
-		$minLengths = array();
-		$maxLengths = array();
-
-		$integerTypes = array(AttributeType::Number, ColumnType::TinyInt, ColumnType::SmallInt, ColumnType::MediumInt, ColumnType::Int, ColumnType::BigInt);
-		$numberTypes = $integerTypes;
-		$numberTypes[] = ColumnType::Decimal;
+		$uniqueAttributes = array();
+		$requiredAttributes = array();
+		$emailAttributes = array();
+		$urlAttributes = array();
+		$strictLengthAttributes = array();
+		$minLengthAttributes = array();
+		$maxLengthAttributes = array();
 
 		$attributes = $model->defineAttributes();
 
@@ -159,7 +155,7 @@ class ModelHelper
 
 				case AttributeType::Email:
 				{
-					$emails[] = $name;
+					$emailAttributes[] = $name;
 					break;
 				}
 
@@ -185,21 +181,22 @@ class ModelHelper
 				{
 					$rule = array($name, 'Blocks\LocaleNumberValidator');
 
-					if (isset($config['min']) && is_numeric($config['min']))
+					if ($config['min'])
 						$rule['min'] = $config['min'];
 
-					if (isset($config['max']) && is_numeric($config['max']))
+					if ($config['max'])
 						$rule['max'] = $config['max'];
 
-					if (($config['type'] == AttributeType::Number && empty($config['decimals'])) || in_array($config['type'], $integerTypes))
+					if (!$config['decimals'])
 						$rule['integerOnly'] = true;
 
 					$rules[] = $rule;
+					break;
 				}
 
 				case AttributeType::Url:
 				{
-					$urls[] = $name;
+					$urlAttributes[] = $name;
 					break;
 				}
 			}
@@ -211,11 +208,11 @@ class ModelHelper
 
 			// Uniques
 			if (!empty($config['unique']))
-				$uniques[] = $name;
+				$uniqueAttributes[] = $name;
 
 			// Required
 			if ($config['type'] != AttributeType::Bool && !empty($config['required']))
-				$required[] = $name;
+				$requiredAttributes[] = $name;
 
 			// License keys' length=36 is redundant in the context of validation, since matchPattern already enforces 36 chars
 			if ($isLicenseKey)
@@ -224,16 +221,27 @@ class ModelHelper
 			// Lengths
 			if (isset($config['length']) && is_numeric($config['length']))
 			{
-				$strictLengths[(string)$config['length']][] = $name;
+				$strictLengthAttributes[(string)$config['length']][] = $name;
 			}
 			else
 			{
 				// Only worry about min- and max-lengths if a strict length isn't set
 				if (isset($config['minLength']) && is_numeric($config['minLength']))
-					$minLengths[(string)$config['minLength']][] = $name;
+					$minLengthAttributes[(string)$config['minLength']][] = $name;
 
 				if (isset($config['maxLength']) && is_numeric($config['maxLength']))
-					$maxLengths[(string)$config['maxLength']][] = $name;
+					$maxLengthAttributes[(string)$config['maxLength']][] = $name;
+			}
+
+			// Compare with other attributes
+			if (isset($config['compare']))
+			{
+				$comparisons = ArrayHelper::stringToArray($config['compare']);
+				foreach ($comparisons as $comparison)
+				{
+					if (preg_match('/^(==|=|!=|>=|>|<=|<)\b(.*)$/', $comparison, $match))
+						$rules[] = array($name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1]);
+				}
 			}
 
 			// Regex pattern matching
@@ -257,7 +265,7 @@ class ModelHelper
 					{
 						if (count($columns) == 1)
 						{
-							$uniques[] = $columns[0];
+							$uniqueAttributes[] = $columns[0];
 						}
 						else
 						{
@@ -268,43 +276,43 @@ class ModelHelper
 
 					if ($required)
 					{
-						$required = array_merge($required, $columns);
+						$requiredAttributes = array_merge($requiredAttributes, $columns);
 					}
 				}
 			}
 		}
 
-		if ($uniques)
-			$rules[] = array(implode(',', $uniques), 'unique');
+		if ($uniqueAttributes)
+			$rules[] = array(implode(',', $uniqueAttributes), 'unique');
 
-		if ($required)
-			$rules[] = array(implode(',', $required), 'required');
+		if ($requiredAttributes)
+			$rules[] = array(implode(',', $requiredAttributes), 'required');
 
-		if ($emails)
-			$rules[] = array(implode(',', $emails), 'email');
+		if ($emailAttributes)
+			$rules[] = array(implode(',', $emailAttributes), 'email');
 
-		if ($urls)
-			$rules[] = array(implode(',', $urls), 'url', 'defaultScheme' => 'http');
+		if ($urlAttributes)
+			$rules[] = array(implode(',', $urlAttributes), 'url', 'defaultScheme' => 'http');
 
-		if ($strictLengths)
+		if ($strictLengthAttributes)
 		{
-			foreach ($strictLengths as $strictLength => $attributeNames)
+			foreach ($strictLengthAttributes as $strictLength => $attributeNames)
 			{
 				$rules[] = array(implode(',', $attributeNames), 'length', 'is' => (int)$strictLength);
 			}
 		}
 
-		if ($minLengths)
+		if ($minLengthAttributes)
 		{
-			foreach ($minLengths as $minLength => $attributeNames)
+			foreach ($minLengthAttributes as $minLength => $attributeNames)
 			{
 				$rules[] = array(implode(',', $attributeNames), 'length', 'min' => (int)$minLength);
 			}
 		}
 
-		if ($maxLengths)
+		if ($maxLengthAttributes)
 		{
-			foreach ($maxLengths as $maxLength => $attributeNames)
+			foreach ($maxLengthAttributes as $maxLength => $attributeNames)
 			{
 				$rules[] = array(implode(',', $attributeNames), 'length', 'max' => (int)$maxLength);
 			}
@@ -314,4 +322,11 @@ class ModelHelper
 
 		return $rules;
 	}
+
+	/**
+	 * @static
+	 * @access private
+	 * @var array
+	 */
+	private static $_comparisonOperators = array('==|=|!=|>=|>|<=|<');
 }
