@@ -40,7 +40,7 @@ class FeedWidget extends BaseWidget
 	public function getSettingsHtml()
 	{
 		return TemplateHelper::render('_components/widgets/FeedWidget/settings', array(
-			'settings' => $this->settings
+			'settings' => $this->getSettings()
 		));
 	}
 
