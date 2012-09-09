@@ -35,13 +35,7 @@ class BlocksService extends ApplicationComponent
 	 */
 	public function populateBlock(BaseBlockRecord $record)
 	{
-		$block = $this->getBlockByClass($record->class);
-		if ($block)
-		{
-			$block->record = $record;
-			$block->init();
-			return $block;
-		}
+		return blx()->components->populateComponent('block', $record);
 	}
 
 	/**
@@ -52,15 +46,6 @@ class BlocksService extends ApplicationComponent
 	 */
 	public function populateBlocks($records)
 	{
-		$blocks = array();
-
-		foreach ($records as $record)
-		{
-			$block = $this->populateBlock($record);
-			if ($block)
-				$blocks[] = $block;
-		}
-
-		return $blocks;
+		return blx()->components->populateComponents('block', $records);
 	}
 }

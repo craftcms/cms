@@ -64,15 +64,9 @@ class DashboardService extends ApplicationComponent
 	 * @param WidgetRecord $record
 	 * @return BaseWidget
 	 */
-	public function populateBlock(WidgetRecord $record)
+	public function populateWidget(WidgetRecord $record)
 	{
-		$widget = $this->getWidgetByClass($record->class);
-		if ($widget)
-		{
-			$widget->record = $record;
-			$widget->init();
-			return $widget;
-		}
+		return blx()->components->populateComponent('widget', $record);
 	}
 
 	/**
@@ -83,16 +77,7 @@ class DashboardService extends ApplicationComponent
 	 */
 	public function populateWidgets($records)
 	{
-		$widgets = array();
-
-		foreach ($records as $record)
-		{
-			$widget = $this->populateWidget($record);
-			if ($widget)
-				$widgets[] = $widget;
-		}
-
-		return $widgets;
+		return blx()->components->populateComponents('widget', $records);
 	}
 
 	/**

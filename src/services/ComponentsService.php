@@ -75,7 +75,7 @@ class ComponentsService extends ApplicationComponent
 	}
 
 	/**
-	 * Returns a new component instance by its type and class
+	 * Returns a new component instance by its type and class.
 	 *
 	 * @param string $type
 	 * @param string $class
@@ -88,6 +88,45 @@ class ComponentsService extends ApplicationComponent
 
 		$class = __NAMESPACE__.'\\'.$class.static::$componentTypes[$type]['suffix'];
 		return new $class;
+	}
+
+	/**
+	 * Populates a component instance with a given record.
+	 *
+	 * @param string $type
+	 * @param BaseRecord $record
+	 * @return BaseComponent
+	 */
+	public function populateComponent($type, BaseRecord $record)
+	{
+		$component = $this->getComponentByTypeAndClass($type, $record->class);
+		if ($component)
+		{
+			$component->record = $record;
+			$component->init();
+			return $component;
+		}
+	}
+
+	/**
+	 * Creates an array of component instances based on an array of records.
+	 *
+	 * @param string $type
+	 * @param array $records
+	 * @return array
+	 */
+	public function populateComponents($type, $records)
+	{
+		$components = array();
+
+		foreach ($records as $record)
+		{
+			$component = $this->populateComponent($type, $record);
+			if ($component)
+				$components[] = $component;
+		}
+
+		return $components;
 	}
 
 	/**
