@@ -1,28 +1,29 @@
 <!-- BLOCKS ONLY -->
 <!-- TARGET: blocks/app/templates/settings/blog/_blocksettings.html -->
 <!-- end BLOCKS ONLY -->
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
 <!-- BLOCKSPRO ONLY -->
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
 <!-- end BLOCKSPRO ONLY -->
 
 
-{% if not block and blockId %}
-	{% set block = blx.content.getEntryBlockById(blockId) %}
-	{% if not block %}{% exit 404 %}{% endif %}
+{% if not block %}
+	{% if blockId %}
+		{% set block = blx.content.getEntryBlockById(blockId) %}
+		{% if not block %}{% exit 404 %}{% endif %}
+	{% else %}
+		{% set block = blx.blocks.getBlockByClass('PlainText') %}
+	{% endif %}
 {% endif %}
-
-
-{% extends "_layouts/cp" %}
-{% import "_includes/forms" as forms %}
 
 
 {% if block.record.id %}
 	{% set title = "{name} Settings"|t({ name: '<i>'~block.record.name|t~'</i>' }) %}
-	{% set blockClass = block.getClassHandle %}
 {% else %}
 	{% set title = "Create a new entry block"|t %}
-	{% set blockClass = 'PlainText' %}
 {% endif %}
 
 
@@ -115,12 +116,12 @@
 			id: 'class',
 			name: 'class',
 			options: blocks,
-			value: blockClass,
+			value: block.getClassHandle,
 			toggle: true
 		}) }}
 
 		{% for _block in blocks %}
-			{% set isCurrent = (_block.getClassHandle == blockClass) %}
+			{% set isCurrent = (_block.getClassHandle == block.getClassHandle) %}
 			{% if isCurrent %}
 				{% set settings = block.getSettingsHtml %}
 			{% else %}

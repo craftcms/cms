@@ -64,6 +64,8 @@ abstract class BaseComponent extends ApplicationComponent
 
 	/**
 	 * Gets the settings.
+	 *
+	 * @return BaseModel
 	 */
 	public function getSettings()
 	{

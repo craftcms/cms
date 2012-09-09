@@ -25,7 +25,7 @@ class NumberBlock extends BaseBlock
 	{
 		return array(
 			'min'      => array(AttributeType::Number, 'default' => 0),
-			'max'      => AttributeType::Number,
+			'max'      => array(AttributeType::Number, 'compare' => '>min'),
 			'decimals' => array(AttributeType::Number, 'default' => 0),
 		);
 	}

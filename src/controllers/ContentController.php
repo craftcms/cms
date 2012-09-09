@@ -103,7 +103,7 @@ class ContentController extends BaseController
 		/* end BLOCKSPRO ONLY */
 
 		// Did it save?
-		if (!$block->hasErrors())
+		if (!$block->getSettings()->hasErrors() && !$block->record->hasErrors())
 		{
 			blx()->user->setNotice(Blocks::t('Entry block saved.'));
 			$this->redirectToPostedUrl();
@@ -115,7 +115,7 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'record' => $block
+			'block' => $block
 		));
 	}
 

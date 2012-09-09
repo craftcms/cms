@@ -354,7 +354,7 @@ class ContentService extends ApplicationComponent
 	 * @param array $settings
 	 * @param int   $blockId
 	 * @throws \Exception
-	 * @return EntryBlock
+	 * @return BaseBlock
 	 */
 	public function saveEntryBlock($sectionId, $settings, $blockId = null)
 	{
@@ -367,9 +367,9 @@ class ContentService extends ApplicationComponent
 			$oldHandle = $record->handle;
 
 		/* BLOCKSPRO ONLY */
-		$record->sectionId   = $section->id;
+		$record->sectionId     = $section->id;
 		/* end BLOCKSPRO ONLY */
-		$record->name         = $settings['name'];
+		$record->name          = $settings['name'];
 		$record->handle        = $settings['handle'];
 		$record->instructions  = (!empty($settings['instructions']) ? $settings['instructions'] : null);
 		$record->required      = !empty($settings['required']);
@@ -377,25 +377,32 @@ class ContentService extends ApplicationComponent
 		$record->class         = $settings['class'];
 		$record->blockSettings = (!empty($settings['blockSettings']) ? $settings['blockSettings'] : null);
 
-		if ($isNewRecord)
-		{
-			$maxSortOrder = blx()->db->createCommand()
-				->select('max(sortOrder)')
-				->from('entryblocks')
-				->queryScalar();
+		$block = blx()->blocks->populateBlock($record);
 
-			$record->sortOrder = $maxSortOrder + 1;
-		}
+		$recordValidates = $record->validate();
+		$settingsValidate = $block->getSettings()->validate();
 
-		if ($record->validate())
+		if ($recordValidates && $settingsValidate)
 		{
-			// Start a transaction
+			// The block might have tweaked the settings
+			$record->blockSettings = $block->getSettings()->getAttributes();
+
+			if ($isNewRecord)
+			{
+				$maxSortOrder = blx()->db->createCommand()
+					->select('max(sortOrder)')
+					->from('entryblocks')
+					->queryScalar();
+
+				$record->sortOrder = $maxSortOrder + 1;
+			}
+
 			$transaction = blx()->db->beginTransaction();
-
 			try
 			{
 				$record->save(false);
 
+				// Create/alter the content table column
 				/* BLOCKS ONLY */
 				$content = new EntryContentRecord();
 				$contentTable = $content->getTableName();
@@ -403,9 +410,6 @@ class ContentService extends ApplicationComponent
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($section);
 				/* end BLOCKSPRO ONLY */
-
-				$block = blx()->blocks->getBlockByClass($record->class);
-				$block->setSettings($record->blockSettings);
 
 				if ($isNewRecord)
 				{
@@ -416,7 +420,6 @@ class ContentService extends ApplicationComponent
 					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $block->defineContentColumn(), $record->handle);
 				}
 
-				// Commit the transaction
 				$transaction->commit();
 			}
 			catch (\Exception $e)
@@ -426,7 +429,7 @@ class ContentService extends ApplicationComponent
 			}
 		}
 
-		return $record;
+		return $block;
 	}
 
 	/**
