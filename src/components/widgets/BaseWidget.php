@@ -36,10 +36,9 @@ abstract class BaseWidget extends BaseComponent implements IWidget
 	/**
 	 * Gets the widget's title.
 	 *
-	 * @access protected
 	 * @return string
 	 */
-	protected function getTitle()
+	public function getTitle()
 	{
 		// Default to the widget name
 		return $this->getName();

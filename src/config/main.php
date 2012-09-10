@@ -111,6 +111,8 @@ return CMap::mergeArray(
 			'urlManager' => array(
 				'class' => 'Blocks\UrlManager',
 				'cpRoutes' => array(
+					'dashboard\/settings\/new'                                         => 'dashboard/settings/_widgetsettings',
+					'dashboard\/settings\/(?P<widgetId>\d+)'                           => 'dashboard/settings/_widgetsettings',
 					'update\/(?P<handle>[^\/]*)'                                       => 'update',
 					/* BLOCKSPRO ONLY */
 					'users\/new'                                                       => 'users/_edit/account',

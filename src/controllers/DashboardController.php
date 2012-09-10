@@ -24,25 +24,62 @@ class DashboardController extends BaseController
 	}
 
 	/**
-	 * Saves the user's dashboard settings
+	 * Saves a widget.
 	 */
-	public function actionSaveSettings()
+	public function actionSaveWidget()
 	{
 		$this->requirePostRequest();
 
-		$widgetsPost = blx()->request->getPost('widgets');
+		$widgetId = blx()->request->getPost('widgetId');
+		$class    = blx()->request->getRequiredPost('class');
 
-		if (blx()->dashboard->saveSettings($widgetsPost))
+		$widgetSettings = blx()->request->getPost('types');
+		$settings['class'] = $class;
+		$settings['settings'] = isset($widgetSettings[$class]) ? $widgetSettings[$class] : null;
+
+		$widget = blx()->dashboard->saveWidget($settings, $widgetId);
+
+		// Did it save?
+		if (!$widget->getSettings()->hasErrors() && !$widget->record->hasErrors())
 		{
-			blx()->user->setNotice(Blocks::t('Dashboard settings saved.'));
+			blx()->user->setNotice(Blocks::t('Widget saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save dashboard settings.'));
+			blx()->user->setError(Blocks::t('Couldn’t save widget.'));
 		}
 
-		$this->renderRequestedTemplate();
+		// Reload the original template
+		$this->renderRequestedTemplate(array(
+			'widget' => $widget
+		));
+	}
+
+	/**
+	 * Deletes a widget.
+	 */
+	public function actionDeleteWidget()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$widgetId = Json::decode(blx()->request->getRequiredPost('widgetId'));
+		blx()->dashboard->deleteWidget($widgetId);
+		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Reorders widgets.
+	 */
+	public function actionReorderWidgets()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$widgetIds = Json::decode(blx()->request->getRequiredPost('widgetIds'));
+		blx()->dashboard->reorderWidgets($widgetIds);
+		$this->returnJson(array('success' => true));
 	}
 
 	/**

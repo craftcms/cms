@@ -21,9 +21,31 @@ class DashboardVariable
 	 *
 	 * @return array
 	 */
-	public function allwidgets()
+	public function getAllWidgets()
 	{
 		return blx()->dashboard->getAllWidgets();
+	}
+
+	/**
+	 * Returns a widget by its class.
+	 *
+	 * @param string $class
+	 * @return BaseWidget
+	 */
+	public function getWidgetByClass($class)
+	{
+		return blx()->dashboard->getWidgetByClass($class);
+	}
+
+	/**
+	 * Returns a widget by its ID.
+	 *
+	 * @param int $id
+	 * @return array
+	 */
+	public function getWidgetById($id)
+	{
+		return blx()->dashboard->getWidgetById($id);
 	}
 
 	/**
@@ -31,7 +53,7 @@ class DashboardVariable
 	 *
 	 * @return array
 	 */
-	public function userwidgets()
+	public function userWidgets()
 	{
 		return blx()->dashboard->getUserWidgets();
 	}

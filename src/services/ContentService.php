@@ -337,9 +337,8 @@ class ContentService extends ApplicationComponent
 	/**
 	 * Saves an entry block.
 	 *
-	 * @param array $settings
-	 * @param int $blockId
-	 * @throws \Exception
+	 * @param array    $settings
+	 * @param int|null $blockId
 	 * @return EntryBlock
 	 */
 	public function saveEntryBlock($settings, $blockId = null)
@@ -350,10 +349,9 @@ class ContentService extends ApplicationComponent
 	/**
 	 * Saves an entry block.
 	 *
-	 * @param int   $sectionId
-	 * @param array $settings
-	 * @param int   $blockId
-	 * @throws \Exception
+	 * @param int      $sectionId
+	 * @param array    $settings
+	 * @param int|null $blockId
 	 * @return BaseBlock
 	 */
 	public function saveEntryBlock($sectionId, $settings, $blockId = null)

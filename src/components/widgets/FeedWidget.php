@@ -39,18 +39,22 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
+		try{
 		return TemplateHelper::render('_components/widgets/FeedWidget/settings', array(
 			'settings' => $this->getSettings()
 		));
+		} catch (\Exception $e)
+		{
+			print_r($e); die();
+		}
 	}
 
 	/**
 	 * Gets the widget's title.
 	 *
-	 * @access protected
 	 * @return string
 	 */
-	protected function getTitle()
+	public function getTitle()
 	{
 		return $this->settings->title;
 	}

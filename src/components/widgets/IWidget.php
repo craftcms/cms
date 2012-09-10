@@ -6,5 +6,6 @@ namespace Blocks;
  */
 interface IWidget extends IComponent
 {
+	public function getTitle();
 	public function getWidgetHtml();
 }

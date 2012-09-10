@@ -30,13 +30,13 @@ class DashboardService extends ApplicationComponent
 	/**
 	 * Returns a widget by its ID.
 	 *
-	 * @param int $widgetId
+	 * @param int $id
 	 * @return Widget
 	 */
-	public function getWidgetById($widgetId)
+	public function getWidgetById($id)
 	{
 		$record = WidgetRecord::model()->findByAttributes(array(
-			'id' => $widgetId,
+			'id' => $id,
 			'userId' => blx()->accounts->getCurrentUser()->id
 		));
 
@@ -81,6 +81,84 @@ class DashboardService extends ApplicationComponent
 	}
 
 	/**
+	 * Saves a widget.
+	 *
+	 * @param array    $settings
+	 * @param int|null $widgetId
+	 * @return BaseWidget
+	 */
+	public function saveWidget($settings, $widgetId = null)
+	{
+		$record = $this->_getWidgetRecord($widgetId);
+
+		$record->class    = $settings['class'];
+		$record->settings = (!empty($settings['settings']) ? $settings['settings'] : null);
+
+		$widget = $this->populateWidget($record);
+
+		$recordValidates = $record->validate();
+		$settingsValidate = $widget->getSettings()->validate();
+
+		if ($recordValidates && $settingsValidate)
+		{
+			// The widget might have tweaked the settings
+			$record->settings = $widget->getSettings()->getAttributes();
+
+			if ($record->isNewRecord())
+			{
+				$maxSortOrder = blx()->db->createCommand()
+					->select('max(sortOrder)')
+					->from('widgets')
+					->queryScalar();
+
+				$record->sortOrder = $maxSortOrder + 1;
+			}
+
+			$record->save(false);
+		}
+
+		return $widget;
+	}
+
+	/**
+	 * Deletes a widget.
+	 *
+	 * @param int $widgetId
+	 */
+	public function deleteWidget($widgetId)
+	{
+		$record = $this->_getWidgetRecord($widgetId);
+		$record->delete();
+	}
+
+	/**
+	 * Reorders widgets.
+	 *
+	 * @param array $widgetIds
+	 */
+	public function reorderWidgets($widgetIds)
+	{
+		$transaction = blx()->db->beginTransaction();
+
+		try
+		{
+			foreach ($widgetIds as $widgetOrder => $widgetId)
+			{
+				$record = $this->_getWidgetRecord($widgetId);
+				$record->sortOrder = $widgetOrder+1;
+				$record->save();
+			}
+
+			$transaction->commit();
+		}
+		catch (\Exception $e)
+		{
+			$transaction->rollBack();
+			throw $e;
+		}
+	}
+
+	/**
 	 * Assign the default widgets to a user.
 	 *
 	 * @param int $userId
@@ -117,71 +195,45 @@ class DashboardService extends ApplicationComponent
 	}
 
 	/**
-	 * Saves the user's dashboard settings
+	 * Gets a widget's record.
 	 *
-	 * @param array $settings
-	 * @throws \Exception
-	 * @throws Exception
-	 * @return bool
+	 * @access private
+	 * @param int $widgetId
+	 * @return WidgetRecord
 	 */
-	public function saveSettings($settings)
+	private function _getWidgetRecord($widgetId = null)
 	{
-		// Get the current user
-		$user = blx()->accounts->getCurrentUser();
-		if (!$user)
-			throw new Exception(Blocks::t('There is no current user.'));
+		$userId = blx()->accounts->getCurrentUser()->id;
 
-		$transaction = blx()->db->beginTransaction();
-		try
+		if ($widgetId)
 		{
-			if (isset($settings['order']))
-				$widgetIds = $settings['order'];
-			else
-			{
-				$widgetIds = array_keys($settings);
-				if (($deleteIndex = array_search('delete', $widgetIds)) !== false)
-					array_splice($widgetIds, $deleteIndex, 1);
-			}
+			$record = WidgetRecord::model()->findByAttributes(array(
+				'id'     => $widgetId,
+				'userId' => $userId
+			));
 
-			foreach ($widgetIds as $order => $widgetId)
-			{
-				$widgetData = $settings[$widgetId];
-
-				$widget = new WidgetRecord();
-				$isNewWidget = true;
-
-				if (strncmp($widgetId, 'new', 3) != 0)
-					$widget = $this->getWidgetById($widgetId);
-
-				if (empty($widget))
-					$widget = new WidgetRecord();
-
-				$widget->userId = $user->id;
-				$widget->class = $widgetData['class'];
-				$widget->sortOrder = $order + 1;
-				$widget->save();
-
-				if (!empty($widgetData['settings']))
-					$widget->setSettings($widgetData['settings']);
-			}
-
-			if (isset($settings['delete']))
-			{
-				foreach ($settings['delete'] as $widgetId)
-				{
-					blx()->db->createCommand()->delete('widgetsettings', array('widgetId'=>$widgetId));
-					blx()->db->createCommand()->delete('widgets',        array('id'=>$widgetId));
-				}
-			}
-
-			$transaction->commit();
+			// This is serious business.
+			if (!$record)
+				$this->_noWidgetExists($widgetId);
 		}
-		catch (\Exception $e)
+		else
 		{
-			$transaction->rollBack();
-			throw $e;
+			$record = new WidgetRecord();
+			$record->userId = $userId;
 		}
 
-		return true;
+		return $record;
+	}
+
+	/**
+	 * Throws a "No widget exists" exception.
+	 *
+	 * @access private
+	 * @param int $widgetId
+	 * @throws Exception
+	 */
+	private function _noWidgetExists($widgetId)
+	{
+		throw new Exception(Blocks::t('No widget exists with the ID “{id}”', array('id' => $widgetId)));
 	}
 }

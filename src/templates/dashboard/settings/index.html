@@ -1,0 +1,54 @@
+{% extends "_layouts/cp" %}
+{% include_js "dashboard_settings.js" %}
+{% include_translation
+	"New widget order saved.",
+	"Couldn’t save new widget order.",
+	"Are you sure you want to delete the widget “{widget}”?",
+	"Widget deleted.",
+	"Couldn’t delete widget."
+%}
+
+
+{% set title = "Dashboard Settings"|t %}
+{% set widgets = blx.dashboard.userWidgets %}
+{% set sortable  = (widgets|length > 1) %}
+
+
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('dashboard') }}" class="btn backbtn">{{ "Dashboard"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<h2>{{ "My Widgets"|t }}</h2>
+
+	<div class="pane">
+		<p id="nowidgets" {% if widgets|length %}style="display: none"{% endif %}>
+			{{ "You don’t have any widgets yet."|t }} <a href="{{ url('dashboard/settings/new') }}">{{ "Add the first one."|t }}</a>
+		</p>
+
+		{% if widgets|length %}
+			<table id="widgets" class="data">
+				<tbody>
+					{% for widget in widgets %}
+						<tr data-widget-id="{{ widget.record.id }}">
+							<th scope="row">
+								<a href="{{ url('dashboard/settings/' ~ widget.record.id) }}">{{ widget.getTitle }}</a>
+								{% if widget.getName != widget.getTitle %}<span class="light">({{ widget.getName }})</span>{% endif %}
+							</th>
+							{% if sortable %}<td width="1%"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+							<td width="1%"><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+	</div>
+
+	<div class="buttons">
+		<a href="{{ url('dashboard/settings/new') }}" class="btn submit addbtn">{{ "New Widget"|t }}</a>
+	</div>
+{% endset %}

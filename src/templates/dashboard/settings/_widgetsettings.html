@@ -1,0 +1,69 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+
+{% if not widget %}
+	{% if widgetId %}
+		{% set widget = blx.dashboard.getWidgetById(widgetId) %}
+		{% if not widget %}{% exit 404 %}{% endif %}
+	{% else %}
+		{% set widget = blx.dashboard.getWidgetByClass('Feed') %}
+	{% endif %}
+{% endif %}
+
+
+{% if widget.record.id %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~widget.getTitle~'</i>' }) %}
+{% else %}
+	{% set title = "Add a new widget"|t %}
+{% endif %}
+
+
+{% set titlebar %}
+	<h1>{{ title|raw }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('dashboard/settings') }}" class="btn backbtn">{{ "Dashboard Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="" class="centered">
+		<input type="hidden" name="action" value="dashboard/saveWidget">
+		<input type="hidden" name="redirect" value="dashboard/settings">
+		{% if widget.record.id %}<input type="hidden" name="widgetId" value="{{ widget.record.id }}">{% endif %}
+
+		{% set widgets = blx.dashboard.getAllWidgets %}
+
+		{{ forms.selectField({
+			label: "Type",
+			instructions: "What type of widget is this?"|t,
+			id: 'class',
+			name: 'class',
+			options: widgets,
+			value: widget.getClassHandle,
+			toggle: true
+		}) }}
+
+		{% for _widget in widgets %}
+			{% set isCurrent = (_widget.getClassHandle == widget.getClassHandle) %}
+			{% if isCurrent %}
+				{% set settings = widget.getSettingsHtml %}
+			{% else %}
+				{% set settings = _widget.getSettingsHtml %}
+			{% endif %}
+
+			{% if settings %}
+				<div id="{{ _widget.getClassHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+					<hr>
+					{% set namespace = 'types[' ~ _widget.getClassHandle ~ ']' %}
+					{{- settings|ns(namespace)|raw -}}
+					<hr>
+				</div>
+			{% endif %}
+		{% endfor %}
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
