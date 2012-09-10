@@ -15,7 +15,7 @@ class SectionRecord extends BaseRecord
 	{
 		return array(
 			'name'      => array(AttributeType::Name, 'required' => true),
-			'handle'    => array(AttributeType::Handle, 'required' => true),
+			'handle'    => array(AttributeType::Handle, 'maxLength' => 45, 'required' => true),
 			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
 			'urlFormat' => AttributeType::String,
 			'template'  => AttributeType::Template,
