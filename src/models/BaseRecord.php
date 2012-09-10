@@ -179,7 +179,7 @@ abstract class BaseRecord extends \CActiveRecord
 		$columns = array();
 
 		// Add any Foreign Key columns
-		foreach ($this->_getBelongsToRelations() as $name => $config)
+		foreach ($this->getBelongsToRelations() as $name => $config)
 		{
 			$required = !empty($config['required']);
 			$columns[$config[2]] = array('column' => ColumnType::Int, 'required' => $required);
@@ -220,10 +220,9 @@ abstract class BaseRecord extends \CActiveRecord
 	/**
 	 * Returns the BELONGS_TO relations.
 	 *
-	 * @access private
 	 * @return array
 	 */
-	private function _getBelongsToRelations()
+	public function getBelongsToRelations()
 	{
 		$belongsTo = array();
 		foreach ($this->defineRelations() as $name => $config)
@@ -253,7 +252,7 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		$table = $this->getTableName();
 
-		foreach ($this->_getBelongsToRelations() as $name => $config)
+		foreach ($this->getBelongsToRelations() as $name => $config)
 		{
 			$otherModel = new $config[1];
 			$otherTable = $otherModel->getTableName();
@@ -269,7 +268,7 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		$table = $this->getTableName();
 
-		foreach ($this->_getBelongsToRelations() as $name => $config)
+		foreach ($this->getBelongsToRelations() as $name => $config)
 		{
 			$otherModel = new $config[1];
 			$otherTable = $otherModel->getTableName();

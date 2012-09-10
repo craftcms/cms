@@ -249,9 +249,15 @@ class ModelHelper
 				$rules[] = array($name, 'match', 'pattern' => $config['matchPattern']);
 		}
 
-		// Catch any unique/required indexes, if this is a BaseRecord instance
+		// If this is a BaseRecord instance, catch any required BELONGS_TO relations and unique/required indexes
 		if ($model instanceof BaseRecord)
 		{
+			foreach ($model->getBelongsToRelations() as $name => $config)
+			{
+				if (!empty($config['required']))
+					$requiredAttributes[] = $name;
+			}
+
 			foreach ($model->defineIndexes() as $config)
 			{
 				$unique = !empty($config['unique']);
