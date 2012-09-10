@@ -43,16 +43,6 @@ abstract class BaseComponent extends ApplicationComponent
 	abstract public function getName();
 
 	/**
-	 * Use the component's type as its string representation.
-	 *
-	 * @return string
-	 */
-	public function __toString()
-	{
-		return $this->getName();
-	}
-
-	/**
 	 * Gets the settings.
 	 *
 	 * @return BaseModel

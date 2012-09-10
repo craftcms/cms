@@ -39,7 +39,7 @@ class PlainTextBlock extends BaseBlock
 	public function getSettingsHtml()
 	{
 		return TemplateHelper::render('_components/blocks/PlainText/settings', array(
-			'settings' => $this->getSettings()
+			'settings' => new ModelVariable($this->getSettings())
 		));
 	}
 
@@ -48,10 +48,10 @@ class PlainTextBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getBlockHtml()
+	public function getInputHtml()
 	{
 		return TemplateHelper::render('_components/blocks/PlainText/field', array(
-			'settings' => $this->getSettings()
+			'settings' => new ModelVariable($this->getSettings())
 		));
 	}
 }

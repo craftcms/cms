@@ -25,7 +25,7 @@ class NumberBlock extends BaseBlock
 	{
 		return array(
 			'min'      => array(AttributeType::Number, 'default' => 0),
-			'max'      => array(AttributeType::Number, 'compare' => '> min'),
+			'max'      => array(AttributeType::Number, 'compare' => '>= min'),
 			'decimals' => array(AttributeType::Number, 'default' => 0),
 		);
 	}
@@ -38,7 +38,7 @@ class NumberBlock extends BaseBlock
 	public function getSettingsHtml()
 	{
 		return TemplateHelper::render('_components/blocks/Number/settings', array(
-			'settings' => $this->getSettings()
+			'settings' => new ModelVariable($this->getSettings())
 		));
 	}
 
@@ -57,10 +57,10 @@ class NumberBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getBlockHtml()
+	public function getInputHtml()
 	{
 		return TemplateHelper::render('_components/blocks/Number/field', array(
-			'settings' => $this->getSettings()
+			'settings' => new ModelVariable($this->getSettings())
 		));
 	}
 }

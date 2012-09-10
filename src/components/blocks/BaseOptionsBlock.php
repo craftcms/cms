@@ -27,7 +27,7 @@ abstract class BaseOptionsBlock extends BaseBlock
 	{
 		return TemplateHelper::render('_components/blocks/optionsblocksettings', array(
 			'label'    => $this->getOptionsSettingsLabel(),
-			'settings' => $this->getSettings()
+			'settings' => new ModelVariable($this->getSettings())
 		));
 	}
 

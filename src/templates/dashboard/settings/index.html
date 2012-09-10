@@ -36,8 +36,8 @@
 					{% for widget in widgets %}
 						<tr data-widget-id="{{ widget.record.id }}">
 							<th scope="row">
-								<a href="{{ url('dashboard/settings/' ~ widget.record.id) }}">{{ widget.getTitle }}</a>
-								{% if widget.getName != widget.getTitle %}<span class="light">({{ widget.getName }})</span>{% endif %}
+								<a href="{{ url('dashboard/settings/' ~ widget.record.id) }}">{{ widget.title }}</a>
+								{% if widget.name != widget.title %}<span class="light">({{ widget.name }})</span>{% endif %}
 							</th>
 							{% if sortable %}<td width="1%"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
 							<td width="1%"><a class="deletebtn" title="{{ 'Delete' }}"></a></td>

@@ -21,9 +21,21 @@ class DashboardVariable
 	 *
 	 * @return array
 	 */
-	public function getAllWidgets()
+	public function allWidgets()
 	{
-		return blx()->dashboard->getAllWidgets();
+		$widgets = blx()->dashboard->getAllWidgets();
+		return VariableHelper::populateComponentVariables($widgets, 'WidgetVariable');
+	}
+
+	/**
+	 * Returns the user's widgets.
+	 *
+	 * @return array
+	 */
+	public function userWidgets()
+	{
+		$widgets = blx()->dashboard->getUserWidgets();
+		return VariableHelper::populateComponentVariables($widgets, 'WidgetVariable');
 	}
 
 	/**
@@ -34,7 +46,9 @@ class DashboardVariable
 	 */
 	public function getWidgetByClass($class)
 	{
-		return blx()->dashboard->getWidgetByClass($class);
+		$widget = blx()->dashboard->getWidgetByClass($class);
+		if ($widget)
+			return new WidgetVariable($widget);
 	}
 
 	/**
@@ -45,17 +59,9 @@ class DashboardVariable
 	 */
 	public function getWidgetById($id)
 	{
-		return blx()->dashboard->getWidgetById($id);
-	}
-
-	/**
-	 * Returns the user's widgets.
-	 *
-	 * @return array
-	 */
-	public function userWidgets()
-	{
-		return blx()->dashboard->getUserWidgets();
+		$widget = blx()->dashboard->getWidgetById($id);
+		if ($widget)
+			return new WidgetVariable($widget);
 	}
 
 	/**
@@ -63,7 +69,7 @@ class DashboardVariable
 	 *
 	 * @return array
 	 */
-	public function userwidgetids()
+	public function userWidgetIds()
 	{
 		$widgetIds = array();
 		$widgets = blx()->dashboard->getUserWidgets();
@@ -72,6 +78,7 @@ class DashboardVariable
 		{
 			$widgetIds[] = $widget->record->id;
 		}
+
 		return $widgetIds;
 	}
 }
