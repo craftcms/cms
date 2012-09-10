@@ -100,6 +100,8 @@ class BlxVariable
 		return new DateVariable();
 	}
 
+	/* BLOCKSPRO ONLY */
+
 	/**
 	 * @return EmailVariable
 	 */
@@ -107,6 +109,8 @@ class BlxVariable
 	{
 		return new EmailVariable();
 	}
+
+	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Gets the current language in use.
