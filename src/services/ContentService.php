@@ -281,6 +281,21 @@ class ContentService extends ApplicationComponent
 	}
 
 	/* end BLOCKS ONLY */
+	/* BLOCKSPRO ONLY */
+	/**
+	 * Returns all entry blocks for a given section
+	 *
+	 * @param int $sectionId
+	 * @return array
+	 */
+	public function getEntryBlocksBySectionId($sectionId)
+	{
+		$records = EntryBlockRecord::model()->ordered()->findAllByAttributes(array(
+			'sectionId' => $sectionId
+		));
+		return blx()->blocks->populateBlocks($records);
+	}
+	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Gets an entry block by its ID.
