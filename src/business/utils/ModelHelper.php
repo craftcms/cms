@@ -78,7 +78,7 @@ class ModelHelper
 		}
 
 		// Add in DB column-specific settings
-		if (isset($config['column']))
+		if ($config['type'] != AttributeType::DateTime && isset($config['column']))
 		{
 			if (isset(DbHelper::$columnTypeDefaults[$config['column']]))
 				$config = array_merge(DbHelper::$columnTypeDefaults[$config['column']], $config);
