@@ -19,10 +19,9 @@ class UpdatesWidget extends BaseWidget
 	/**
 	 * Gets the widget's body HTML.
 	 *
-	 * @access protected
 	 * @return string
 	 */
-	protected function getBodyHtml()
+	public function getBodyHtml()
 	{
 		return TemplateHelper::render('_components/widgets/UpdatesWidget/body', array(
 			'updates' => $this->_getUpdates()

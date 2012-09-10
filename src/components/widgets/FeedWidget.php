@@ -33,7 +33,7 @@ class FeedWidget extends BaseWidget
 	}
 
 	/**
-	 * Returns the widget's widget HTML.
+	 * Returns the widget's body HTML.
 	 *
 	 * @return string
 	 */
@@ -62,10 +62,9 @@ class FeedWidget extends BaseWidget
 	/**
 	 * Gets the widget's body HTML.
 	 *
-	 * @access protected
 	 * @return string
 	 */
-	protected function getBodyHtml()
+	public function getBodyHtml()
 	{
 		return TemplateHelper::render('_components/widgets/FeedWidget/body', array(
 			'items' => $this->_getItems()

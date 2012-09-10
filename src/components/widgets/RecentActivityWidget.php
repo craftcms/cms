@@ -19,10 +19,9 @@ class RecentActivityWidget extends BaseWidget
 	/**
 	 * Gets the widget's body HTML.
 	 *
-	 * @access protected
 	 * @return string
 	 */
-	protected function getBodyHtml()
+	public function getBodyHtml()
 	{
 		return TemplateHelper::render('_components/widgets/RecentActivityWidget/body', array(
 			'actions' => $this->_getActions()

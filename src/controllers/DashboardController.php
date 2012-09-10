@@ -94,6 +94,10 @@ class DashboardController extends BaseController
 		if (!$widget)
 			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
 
-		echo $widget->getWidgetHtml();
+		$this->renderTemplate('dashboard/_widget', array(
+			'class' => $widget->getClassHandle(),
+			'title' => $widget->getTitle(),
+			'body'  => $widget->getBodyHtml()
+		));
 	}
 }
