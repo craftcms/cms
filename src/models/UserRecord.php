@@ -47,7 +47,6 @@ class UserRecord extends BaseRecord
 	{
 		return array(
 			/* BLOCKSPRO ONLY */
-			'blocks'  => array(static::HAS_MANY, 'UserBlockRecord', 'userId'),
 			'content' => array(static::HAS_ONE, 'UserContentRecord', 'userId'),
 			/* end BLOCKSPRO ONLY */
 			'widgets' => array(static::HAS_MANY, 'Widget', 'userId'),
