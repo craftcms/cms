@@ -26,8 +26,8 @@ class FeedWidget extends BaseWidget
 	public function defineSettings()
 	{
 		return array(
-			'url'   => array(AttributeType::Url, 'default' => 'http://feeds.feedburner.com/blogandtonic'),
-			'title' => array(AttributeType::Name, 'default' => 'Blog & Tonic'),
+			'url'   => array(AttributeType::Url, 'required' => true),
+			'title' => array(AttributeType::Name, 'required' => true),
 			'limit' => array(AttributeType::Number, 'min' => 0, 'default' => 5),
 		);
 	}
