@@ -13,6 +13,15 @@ if ($blocksConfig['devMode'] == true)
 	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
 }
 
+// Table prefixes cannot be longer than 5 characters
+$tablePrefix = rtrim($dbConfig['tablePrefix'], '_');
+if ($tablePrefix)
+{
+	if (strlen($tablePrefix) > 5)
+		$tablePrefix = substr($tablePrefix, 0, 5);
+	$tablePrefix .= '_';
+}
+
 return array(
 
 	// autoloading model and component classes
@@ -30,7 +39,7 @@ return array(
 			'username'          => $dbConfig['user'],
 			'password'          => $dbConfig['password'],
 			'charset'           => $dbConfig['charset'],
-			'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
+			'tablePrefix'       => $tablePrefix,
 			'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
 			'class'             => 'Blocks\DbConnection',
 			'pdoClass'          => 'Blocks\PDO',

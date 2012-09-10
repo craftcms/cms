@@ -389,7 +389,6 @@ class App extends \CWebApplication
 		$databaseAuthName = $this->config->getDbItem('user');
 		$databaseName = $this->config->getDbItem('database');
 		$databasePort = $this->config->getDbItem('port');
-		$databaseTablePrefix = $this->config->getDbItem('tablePrefix');
 		$databaseCharset = $this->config->getDbItem('charset');
 		$databaseCollation = $this->config->getDbItem('collation');
 
@@ -404,9 +403,6 @@ class App extends \CWebApplication
 
 		if (StringHelper::isNullOrEmpty($databasePort))
 			$messages[] = Blocks::t('The database port isn’t set in your db config file.');
-
-		if (StringHelper::isNullOrEmpty($databaseTablePrefix))
-			$messages[] = Blocks::t('The database table prefix isn’t set in your db config file.');
 
 		if (StringHelper::isNullOrEmpty($databaseCharset))
 			$messages[] = Blocks::t('The database charset isn’t set in your db config file.');

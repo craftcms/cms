@@ -51,22 +51,4 @@ class ConfigService extends ApplicationComponent
 
 		return $default;
 	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getTablePrefix()
-	{
-		if (!isset($this->_tablePrefix))
-		{
-			$tablePrefix = (string)$this->getDbItem('tablePrefix');
-
-			if ($tablePrefix)
-				$tablePrefix = rtrim($tablePrefix, '_').'_';
-
-			$this->_tablePrefix = $tablePrefix;
-		}
-
-		return $this->_tablePrefix;
-	}
 }
