@@ -4,64 +4,34 @@ namespace Blocks;
 /**
  *
  */
-class File
+class File extends BaseIO
 {
-	private $_filePath;
-	private $_realPath;
-	private $_isReadable;
-	private $_isWritable;
 	private $_baseName;
 	private $_fileName;
 	private $_extension;
-	private $_fullDirName;
-	private $_dirNameOnly;
 	private $_mimeType;
-	private $_lastTimeModified;
 	private $_size;
 	private $_isEmpty;
-	private $_owner;
-	private $_group;
-	private $_permissions;
 	private $_contents;
 	private $_md5;
 
 	/**
-	 * @param $filePath
+	 * @param $path
 	 */
-	public function __construct($filePath)
+	public function __construct($path)
 	{
 		clearstatcache();
 
-		if (IOHelper::fileExists($filePath))
-			$this->_filePath;
+		if (IOHelper::fileExists($path))
+			$this->path;
 
 		return false;
 	}
 
-	public function getRealPath()
-	{
-		if (!$this->_realPath)
-			$this->_realPath = IOHelper::getRealPath($this->_filePath);
-
-		return $this->_realPath;
-	}
-
-	public function isReadable()
-	{
-		if (!$this->_isReadable)
-			$this->_isReadable = IOHelper::isReadable($this->getRealPath());
-
-		return $this->_isReadable;
-	}
-
-	public function isWritable()
-	{
-		if (!$this->_isWritable)
-			$this->_isWritable = IOHelper::isWritable($this->getRealPath());
-
-		return $this->_isWritable;
-	}
-
+	/**
+	 * @param bool $includeExtension
+	 * @return mixed
+	 */
 	public function getFileName($includeExtension = true)
 	{
 		if ($includeExtension)
@@ -75,33 +45,25 @@ class File
 		{
 			if (!$this->_baseName)
 				$this->_baseName = IOHelper::getFileName($this->getRealPath(), $includeExtension);
+
+			return $this->_baseName;
 		}
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getExtension()
 	{
 		if (!$this->_extension)
 			$this->_extension = IOHelper::getExtension($this->getRealPath());
+
+		return $this->_extension;
 	}
 
-	public function getFolderName($fullPath = true)
-	{
-		if ($fullPath)
-		{
-			if (!$this->_fullDirName)
-				$this->_fullDirName = IOHelper::getFolderName($this->getRealPath(), $fullPath);
-
-			return $this->_fullDirName;
-		}
-		else
-		{
-			if (!$this->_dirNameOnly)
-				$this->_dirNameOnly = IOHelper::getFolderName($this->getRealPath(), $fullPath);
-
-			return $this->_dirNameOnly;
-		}
-	}
-
+	/**
+	 * @return mixed
+	 */
 	public function getMimeType()
 	{
 		if (!$this->_mimeType)
@@ -110,14 +72,9 @@ class File
 		return $this->_mimeType;
 	}
 
-	public function getLastTimeModified()
-	{
-		if (!$this->_lastTimeModified)
-			$this->_lastTimeModified = IOHelper::getLastTimeModified($this->getRealPath());
-
-		return $this->_lastTimeModified;
-	}
-
+	/**
+	 * @return mixed
+	 */
 	public function getSize()
 	{
 		if (!$this->_size)
@@ -126,6 +83,9 @@ class File
 		return $this->_size;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function isEmpty()
 	{
 		if (!$this->_isEmpty)
@@ -134,30 +94,9 @@ class File
 		return $this->_isEmpty;
 	}
 
-	public function getOwner()
-	{
-		if (!$this->_owner)
-			$this->_owner = IOHelper::getOwner($this->getRealPath());
-
-		return $this->_owner;
-	}
-
-	public function getGroup()
-	{
-		if (!$this->_group)
-			$this->_group = IOHelper::getGroup($this->getRealPath());
-
-		return $this->_group;
-	}
-
-	public function getPermissions()
-	{
-		if (!$this->_permissions)
-			$this->_permissions = IOHelper::getPermissions($this->getRealPath());
-
-		return $this->_permissions;
-	}
-
+	/**
+	 * @return mixed
+	 */
 	public function getContents()
 	{
 		if (!$this->_contents)
@@ -166,6 +105,10 @@ class File
 		return $this->_contents;
 	}
 
+	/**
+	 * @param $contents
+	 * @return bool
+	 */
 	public function write($contents)
 	{
 		if (!IOHelper::writeToFile($this->getRealPath(), $contents, false))
@@ -174,30 +117,10 @@ class File
 		return true;
 	}
 
-	public function changeOwner($owner)
-	{
-		if (!IOHelper::changeOwner($this->getRealPath(), $owner))
-			return false;
-
-		return true;
-	}
-
-	public function changeGroup($group)
-	{
-		if (!IOHelper::changeGroup($this->getRealPath(), $group))
-			return false;
-
-		return true;
-	}
-
-	public function changePermissions($permissions)
-	{
-		if (!IOHelper::changePermissions($this->getRealPath(), $permissions))
-			return false;
-
-		return true;
-	}
-
+	/**
+	 * @param $destination
+	 * @return bool
+	 */
 	public function copy($destination)
 	{
 		if (!IOHelper::copyFile($this->getRealPath(), $destination))
@@ -206,22 +129,9 @@ class File
 		return true;
 	}
 
-	public function rename($newName)
-	{
-		if (!IOHelper::rename($this->getRealPath(), $newName))
-			return false;
-
-		return true;
-	}
-
-	public function move($newPath)
-	{
-		if (!IOHelper::move($this->getRealpath(), $newPath))
-			return false;
-
-		return true;
-	}
-
+	/**
+	 * @return bool
+	 */
 	public function clear()
 	{
 		if (!IOHelper::clearFile($this->getRealPath()))
@@ -230,6 +140,9 @@ class File
 		return true;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function delete()
 	{
 		if (!IOHelper::deleteFile($this->getRealPath()))
@@ -238,10 +151,13 @@ class File
 		return true;
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function getMD5()
 	{
 		if (!$this->_md5)
-			$this->_md5 = IOHelper::getMD5($this->getRealPath());
+			$this->_md5 = IOHelper::getFileMD5($this->getRealPath());
 
 		return $this->_md5;
 	}
