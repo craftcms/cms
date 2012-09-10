@@ -48,7 +48,7 @@ class PlainTextBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getBlockHtml()
+	public function getInputHtml()
 	{
 		return TemplateHelper::render('_components/blocks/PlainText/field', array(
 			'settings' => $this->getSettings()

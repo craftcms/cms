@@ -57,7 +57,7 @@ class NumberBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getBlockHtml()
+	public function getInputHtml()
 	{
 		return TemplateHelper::render('_components/blocks/Number/field', array(
 			'settings' => $this->getSettings()
