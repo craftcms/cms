@@ -53,8 +53,6 @@
 			required: true
 		}) }}
 
-		<hr>
-
 		{{ forms.checkboxField({
 			label: "Entries in this section have their own URLs"|t,
 			name: 'hasUrls',
@@ -63,6 +61,8 @@
 		}) }}
 
 		<div id="has-urls-setting" class="nested-fields" {% if not section.hasUrls %}style="height: 0"{% endif %}>
+
+			<hr>
 
 			{{ forms.textField({
 				label: "Entry URL Format"|t,
@@ -83,9 +83,9 @@
 				errors: section.errors.template
 			}) }}
 
-		</div>
+			<hr>
 
-		<hr>
+		</div>
 
 		<div class="buttons">
 			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">

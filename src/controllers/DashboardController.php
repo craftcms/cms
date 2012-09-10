@@ -52,7 +52,7 @@ class DashboardController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'widget' => $widget
+			'widget' => new WidgetVariable($widget)
 		));
 	}
 

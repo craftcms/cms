@@ -35,7 +35,7 @@ class CheckboxesBlock extends BaseOptionsBlock
 	public function getInputHtml()
 	{
 		return TemplateHelper::render('_components/blocks/Checkboxes/field', array(
-			'settings' => $this->getSettings()
+			'settings' => new ModelVariable($this->getSettings())
 		));
 	}
 }

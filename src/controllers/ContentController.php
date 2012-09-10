@@ -48,7 +48,7 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'section' => $section
+			'section' => new SectionVariable($section)
 		));
 	}
 
@@ -115,7 +115,7 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'block' => $block
+			'block' => new BlockVariable($block)
 		));
 	}
 
@@ -186,7 +186,9 @@ class ContentController extends BaseController
 			blx()->user->setError(Blocks::t('Couldn’t save entry.'));
 		}
 
-		$this->renderRequestedTemplate(array('entry' => $entry));
+		$this->renderRequestedTemplate(array(
+			'entry' => $entry
+		));
 	}
 
 	/**
@@ -230,7 +232,9 @@ class ContentController extends BaseController
 		}
 
 		$entry->setDraft($draft);
-		$this->renderRequestedTemplate(array('entry' => $entry));
+		$this->renderRequestedTemplate(array(
+			'entry' => $entry
+		));
 	}
 
 	/**
@@ -259,7 +263,9 @@ class ContentController extends BaseController
 		{
 			blx()->user->setError(Blocks::t('Couldn’t publish draft.'));
 			$entry->setDraft($draft);
-			$this->renderRequestedTemplate(array('entry' => $entry));
+			$this->renderRequestedTemplate(array(
+				'entry' => $entry
+			));
 		}
 	}
 

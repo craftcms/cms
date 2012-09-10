@@ -32,7 +32,7 @@
 		<input type="hidden" name="redirect" value="dashboard/settings">
 		{% if widget.record.id %}<input type="hidden" name="widgetId" value="{{ widget.record.id }}">{% endif %}
 
-		{% set widgets = blx.dashboard.getAllWidgets %}
+		{% set widgets = blx.dashboard.allWidgets %}
 
 		{{ forms.selectField({
 			label: "Type",
@@ -40,22 +40,22 @@
 			id: 'class',
 			name: 'class',
 			options: widgets,
-			value: widget.getClassHandle,
+			value: widget.classHandle,
 			toggle: true
 		}) }}
 
 		{% for _widget in widgets %}
-			{% set isCurrent = (_widget.getClassHandle == widget.getClassHandle) %}
+			{% set isCurrent = (_widget.classHandle == widget.classHandle) %}
 			{% if isCurrent %}
-				{% set settings = widget.getSettingsHtml %}
+				{% set settings = widget.settings %}
 			{% else %}
-				{% set settings = _widget.getSettingsHtml %}
+				{% set settings = _widget.settings %}
 			{% endif %}
 
 			{% if settings %}
-				<div id="{{ _widget.getClassHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+				<div id="{{ _widget.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
 					<hr>
-					{% set namespace = 'types[' ~ _widget.getClassHandle ~ ']' %}
+					{% set namespace = 'types[' ~ _widget.classHandle ~ ']' %}
 					{{- settings|ns(namespace)|raw -}}
 					<hr>
 				</div>

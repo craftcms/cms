@@ -55,10 +55,8 @@ class InstallService extends ApplicationComponent
 
 			Blocks::log('Saving default mail settings.', \CLogger::LEVEL_INFO);
 			$this->_saveDefaultMailSettings($user->email, $inputs['siteName']);
-			/* BLOCKSPRO ONLY */
 
 			$this->_createDefaultContent();
-			/* end BLOCKSPRO ONLY */
 
 			Blocks::log('Finished installing... committing transaction.', \CLogger::LEVEL_INFO);
 			$transaction->commit();
@@ -226,7 +224,6 @@ class InstallService extends ApplicationComponent
 			throw new Exception(Blocks::t('There was a problem saving to the info table: {errorMessages}', array('errorMessages' => $errorMessages)));
 		}
 	}
-	/* BLOCKSPRO ONLY */
 
 	/**
 	 * Creates initial database content for the install.
@@ -235,6 +232,7 @@ class InstallService extends ApplicationComponent
 	 */
 	private function _createDefaultContent()
 	{
+		/* BLOCKSPRO ONLY */
 		Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
 		$section = blx()->content->saveSection(array(
 			'name'      => Blocks::t('Blog'),
@@ -243,13 +241,21 @@ class InstallService extends ApplicationComponent
 			'hasUrls'   => true,
 			'template'  => 'blog/_entry'
 		));
+		/* end BLOCKSPRO ONLY */
 
 		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
+		/* BLOCKS ONLY */
+		blx()->content->saveEntryBlock(array(
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
 		blx()->content->saveEntryBlock($section->id, array(
+		/* end BLOCKSPRO ONLY */
 			'name'   => Blocks::t('Body'),
 			'handle' => 'body',
 			'required' => true,
+			/* BLOCKSPRO ONLY */
 			'translatable' => true,
+			/* end BLOCKSPRO ONLY */
 			'class' => 'PlainText',
 			'blockSettings' => array(
 				'hint' => Blocks::t('Enter your blog post’s body…')
@@ -265,6 +271,7 @@ class InstallService extends ApplicationComponent
 		));*/
 	}
 
+	/* BLOCKSPRO ONLY */
 	/**
 	 * @param $messageKey
 	 * @param $subjectKey

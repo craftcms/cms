@@ -13,7 +13,8 @@ class BlocksVariable
 	 */
 	public function getAllBlocks()
 	{
-		return blx()->blocks->getAllBlocks();
+		$blocks = blx()->blocks->getAllBlocks();
+		return VariableHelper::populateComponentVariables($blocks, 'BlockVariable');
 	}
 
 	/**
@@ -24,6 +25,8 @@ class BlocksVariable
 	 */
 	public function getBlockByClass($class)
 	{
-		return blx()->blocks->getBlockByClass($class);
+		$block = blx()->blocks->getBlockByClass($class);
+		if ($block)
+			return new BlockVariable($block);
 	}
 }
