@@ -159,39 +159,22 @@ class DashboardService extends ApplicationComponent
 	}
 
 	/**
-	 * Assign the default widgets to a user.
-	 *
-	 * @param int $userId
-	 * @throws Exception
-	 * @return bool
+	 * Adds the default widgets to the logged-in user.
 	 */
-	public function assignDefaultUserWidgets($userId)
+	public function addDefaultWidgets()
 	{
-		if (!$userId)
-			throw new Exception(Blocks::t('Missing userID in {methodName}', array('methodName' => __METHOD__)));
-
-		$success = true;
-
 		// Add the default dashboard widgets
-		$widgets = array('RecentActivity', 'Feed');
-		foreach ($widgets as $i => $widgetClass)
-		{
-			$widget = new WidgetRecord();
-			$widget->userId = $userId;
-			$widget->class = $widgetClass;
-			$widget->sortOrder = ($i + 1);
-			$widget->save();
+		$this->saveWidget(array(
+			'class' => 'RecentActivity'
+		));
 
-			if ($widget->hasErrors())
-			{
-				$success = false;
-				$errors = $widget->getErrors();
-				$errorMessages = implode('.  ', $errors);
-				Blocks::log('There was a problem assigning the widget “{widgetClass}” to userID “{userId}”: {errorMessages}', array('widgetClass' => $widgetClass, 'userId' => $userId, 'errorMessages' => $errorMessages), \CLogger::LEVEL_ERROR);
-			}
-		}
-
-		return $success;
+		$this->saveWidget(array(
+			'class'    => 'Feed',
+			'settings' => array(
+				'url' => 'http://feeds.feedburner.com/blogandtonic',
+				'title' => 'Blog & Tonic'
+			)
+		));
 	}
 
 	/**
