@@ -16,7 +16,7 @@ class ContentVariable
 	public function entryBlocks()
 	{
 		$blocks = blx()->content->getEntryBlocks();
-		return VariableHelper::populateComponentVariables($blocks, 'BlockVariable');
+		return VariableHelper::populateVariables($blocks, 'BlockVariable');
 	}
 
 	/* end BLOCKS ONLY */
@@ -31,7 +31,7 @@ class ContentVariable
 	public function sections($params = array())
 	{
 		$records = blx()->content->getSections($params);
-		return VariableHelper::populateModelVariables($records, 'SectionVariable');
+		return VariableHelper::populateVariables($records, 'SectionVariable');
 	}
 
 	/**

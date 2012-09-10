@@ -24,7 +24,7 @@ class DashboardVariable
 	public function allWidgets()
 	{
 		$widgets = blx()->dashboard->getAllWidgets();
-		return VariableHelper::populateComponentVariables($widgets, 'WidgetVariable');
+		return VariableHelper::populateVariables($widgets, 'WidgetVariable');
 	}
 
 	/**
@@ -35,7 +35,7 @@ class DashboardVariable
 	public function userWidgets()
 	{
 		$widgets = blx()->dashboard->getUserWidgets();
-		return VariableHelper::populateComponentVariables($widgets, 'WidgetVariable');
+		return VariableHelper::populateVariables($widgets, 'WidgetVariable');
 	}
 
 	/**

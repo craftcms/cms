@@ -14,7 +14,7 @@ class BlocksVariable
 	public function getAllBlocks()
 	{
 		$blocks = blx()->blocks->getAllBlocks();
-		return VariableHelper::populateComponentVariables($blocks, 'BlockVariable');
+		return VariableHelper::populateVariables($blocks, 'BlockVariable');
 	}
 
 	/**
