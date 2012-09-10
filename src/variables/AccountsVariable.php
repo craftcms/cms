@@ -13,7 +13,9 @@ class AccountsVariable
 	 */
 	public function current()
 	{
-		return blx()->accounts->getCurrentUser();
+		$record = blx()->accounts->getCurrentUser();
+		if ($record)
+			return new UserVariable($record);
 	}
 
 	/**
@@ -24,7 +26,8 @@ class AccountsVariable
 	 */
 	public function users($params = array())
 	{
-		return blx()->accounts->getUsers($params);
+		$records = blx()->accounts->getUsers($params);
+		return VariableHelper::populateVariables($records, 'UserVariable');
 	}
 
 	/**
@@ -46,7 +49,9 @@ class AccountsVariable
 	 */
 	public function getById($userId)
 	{
-		return blx()->accounts->getUserById($userId);
+		$record = blx()->accounts->getUserById($userId);
+		if ($record)
+			return new UserVariable($record);
 	}
 
 	/**
@@ -57,7 +62,9 @@ class AccountsVariable
 	 */
 	public function getUserByVerificationCode($code)
 	{
-		return blx()->accounts->getUserByVerificationCode($code);
+		$record = blx()->accounts->getUserByVerificationCode($code);
+		if ($record)
+			return new UserVariable($user);
 	}
 
 	/**
@@ -67,7 +74,8 @@ class AccountsVariable
 	 */
 	public function recent()
 	{
-		return blx()->accounts->getRecentUsers();
+		$records = blx()->accounts->getRecentUsers();
+		return VariableHelper::populateVariables($records, 'UserVariable');
 	}
 
 	/**

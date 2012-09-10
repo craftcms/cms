@@ -54,16 +54,6 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
-	 * String representation of a user
-	 *
-	 * @return string
-	 */
-	function __toString()
-	{
-		return $this->getFullName();
-	}
-
-	/**
 	 * Returns the user's full name (first+last name), if it's available.
 	 *
 	 * @return string
@@ -74,7 +64,7 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
-	 * Returns whether this is the current logged-in user
+	 * Returns whether this is the current logged-in user.
 	 *
 	 * @return bool
 	 */
@@ -84,6 +74,8 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
+	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
+	 *
 	 * @return mixed
 	 */
 	public function getRemainingCooldownTime()

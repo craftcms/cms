@@ -43,7 +43,7 @@
 				{% for user in users %}
 					<tr>
 						<th scope="row"><a href="{{ url('users/' ~ user.id) }}">{{ user.username }}</a></th>
-						<td>{{ user.fullname }}</td>
+						<td>{{ user.fullName }}</td>
 						<td>{% if user.email %}<a href="mailto:{{ user.email }}">{{ user.email }}</a>{% endif %}</td>
 						{% if showStatus %}<td><div class="status {{ statuses[user.status] }}"></div> {{ user.status|ucfirst|t }}</td>{% endif %}
 					</tr>
