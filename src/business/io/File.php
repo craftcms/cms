@@ -12,7 +12,8 @@ class File extends BaseIO
 	private $_mimeType;
 	private $_size;
 	private $_isEmpty;
-	private $_contents;
+	private $_arrayContents;
+	private $_stringContents;
 	private $_md5;
 
 	/**
@@ -95,14 +96,25 @@ class File extends BaseIO
 	}
 
 	/**
+	 * @param bool $array
 	 * @return mixed
 	 */
-	public function getContents()
+	public function getContents($array = false)
 	{
-		if (!$this->_contents)
-			$this->_contents = IOHelper::getFileContents($this->getRealPath());
+		if ($array)
+		{
+			if (!$this->_arrayContents)
+				$this->_arrayContents = IOHelper::getFileContents($this->getRealPath(), $array);
 
-		return $this->_contents;
+			return $this->_arrayContents;
+		}
+		else
+		{
+			if (!$this->_stringContents)
+				$this->_arrayContents = IOHelper::getFileContents($this->getRealPath(), $array);
+
+			return $this->_stringContents;
+		}
 	}
 
 	/**
