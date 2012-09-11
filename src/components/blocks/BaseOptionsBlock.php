@@ -7,15 +7,43 @@ namespace Blocks;
 abstract class BaseOptionsBlock extends BaseBlock
 {
 	/**
-	 * Defines the block settings.
+	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array(
-			'options' => AttributeType::Mixed
+			'options' => array(AttributeType::Mixed, 'default' => array())
 		);
+	}
+
+	/**
+	 * Expand the options setting into an array.
+	 *
+	 * @access protected
+	 * @param array $values
+	 * @return array
+	 */
+	protected function preprocessSettings($values)
+	{
+		$options = array();
+
+		if (!empty($values['options']))
+		{
+			$lines = array_filter(preg_split('/[\r\n]+/', $values['options']));
+
+			foreach($lines as $line)
+			{
+				$parts = preg_split('/\s+=>\s+/', $line, 2);
+				if ($parts[0])
+					$options[$parts[0]] = (isset($parts[1])) ? $parts[1] : $parts[0];
+			}
+		}
+
+		$values['options'] = $options;
+		return $values;
 	}
 
 	/**
@@ -25,9 +53,19 @@ abstract class BaseOptionsBlock extends BaseBlock
 	 */
 	public function getSettingsHtml()
 	{
+		// Prepare the options array for the textarea
+		$options = '';
+		foreach ($this->getSettings()->options as $name => $label)
+		{
+			if ((string)$name === (string)$label)
+				$options .= $label."\n";
+			else
+				$options .= $name.' => '.$label."\n";
+		}
+
 		return TemplateHelper::render('_components/blocks/optionsblocksettings', array(
-			'label'    => $this->getOptionsSettingsLabel(),
-			'settings' => new ModelVariable($this->getSettings())
+			'label'   => $this->getOptionsSettingsLabel(),
+			'options' => $options
 		));
 	}
 

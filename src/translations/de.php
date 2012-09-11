@@ -217,7 +217,7 @@ return array(
 	'Password updated.' => 'Kennwort aktualisiert.',
 	'Path to filesystem object isn’t specified within “{method}” method.' => 'Pfad zu Dateisystem-Objekt wird nicht innerhalb von {method} Methode angegeben.',
 	'Pending' => 'Schwebend',
-	'Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”.' => 'Platzieren Sie jede Option in eine neue Zeile. Wenn Sie eine Option zu geben, ein benutzerdefiniertes Etikett möchten, verwenden Sie das Format “<code> OptionValue: OptionLabel </code>”.',
+	'Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue => OptionLabel</code>”.' => 'Platzieren Sie jede Option in eine neue Zeile. Wenn Sie eine Option zu geben, ein benutzerdefiniertes Etikett möchten, verwenden Sie das Format “<code> OptionValue: OptionLabel </code>”.',
 	'Plain Text' => 'Nur-Text',
 	'Plugin disabled.' => 'Plugin deaktiviert.',
 	'Plugin enabled.' => 'Plugin aktiviert.',

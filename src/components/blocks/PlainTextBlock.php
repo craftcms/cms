@@ -19,9 +19,10 @@ class PlainTextBlock extends BaseBlock
 	/**
 	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array(
 			'hint'          => array(AttributeType::String, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),

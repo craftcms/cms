@@ -19,9 +19,10 @@ class NumberBlock extends BaseBlock
 	/**
 	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array(
 			'min'      => array(AttributeType::Number, 'default' => 0),

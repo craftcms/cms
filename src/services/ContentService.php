@@ -390,17 +390,19 @@ class ContentService extends ApplicationComponent
 		$record->translatable  = !empty($settings['translatable']);
 		/* end BLOCKSPRO ONLY */
 		$record->class         = $settings['class'];
-		$record->blockSettings = (!empty($settings['blockSettings']) ? $settings['blockSettings'] : null);
+		$record->settings      = null;
 
 		$block = blx()->blocks->populateBlock($record);
+		$blockSettings = (!empty($settings['blockSettings']) ? $settings['blockSettings'] : null);
+		$block->setSettings($blockSettings);
 
 		$recordValidates = $record->validate();
 		$settingsValidate = $block->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// The block might have tweaked the settings
-			$record->blockSettings = $block->getSettings()->getAttributes();
+			// Set the record settings now that the block has had a chance to tweak them
+			$record->settings = $block->getSettings()->getAttributes();
 
 			if ($isNewRecord)
 			{
@@ -514,7 +516,7 @@ class ContentService extends ApplicationComponent
 
 				// Update the column order in the content table
 				$block = blx()->blocks->getBlockByClass($record->class);
-				$block->setSettings($record->blockSettings);
+				$block->setSettings($record->settings);
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */

@@ -56,9 +56,10 @@ abstract class BaseComponent extends ApplicationComponent
 	/**
 	 * Gets the settings model.
 	 *
+	 * @access protected
 	 * @return BaseModel
 	 */
-	public function getSettingsModel()
+	protected function getSettingsModel()
 	{
 		return new Model($this->defineSettings());
 	}
@@ -66,9 +67,10 @@ abstract class BaseComponent extends ApplicationComponent
 	/**
 	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array();
 	}
@@ -80,7 +82,20 @@ abstract class BaseComponent extends ApplicationComponent
 	 */
 	public function setSettings($values)
 	{
+		$values = $this->preprocessSettings($values);
 		$this->getSettings()->setAttributes($values);
+	}
+
+	/**
+	 * Preprocesses settings values coming from setSettings() before they get saved to the settings model.
+	 *
+	 * @access protected
+	 * @param array $values
+	 * @return array
+	 */
+	protected function preprocessSettings($values)
+	{
+		return $values;
 	}
 
 	/**

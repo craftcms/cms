@@ -217,7 +217,7 @@ return array(
 	'Password updated.' => '',
 	'Path to filesystem object isn’t specified within “{method}” method.' => 'Chemin d’accès au système de fichiers objet n’est pas spécifié dans les “{method}” méthode.',
 	'Pending' => '',
-	'Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue : OptionLabel</code>”.' => '',
+	'Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue => OptionLabel</code>”.' => '',
 	'Plain Text' => '',
 	'Plugin disabled.' => '',
 	'Plugin enabled.' => '',
