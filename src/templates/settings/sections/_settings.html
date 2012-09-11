@@ -60,7 +60,7 @@
 			toggle: 'has-urls-setting'
 		}) }}
 
-		<div id="has-urls-setting" class="nested-fields" {% if not section.hasUrls %}style="height: 0"{% endif %}>
+		<div id="has-urls-setting" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
 
 			<hr>
 
