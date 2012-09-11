@@ -515,8 +515,7 @@ class ContentService extends ApplicationComponent
 				$record->save();
 
 				// Update the column order in the content table
-				$block = blx()->blocks->getBlockByClass($record->class);
-				$block->setSettings($record->settings);
+				$block = blx()->blocks->populateBlock($record);
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */
