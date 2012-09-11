@@ -17,8 +17,10 @@ abstract class BaseBlockRecord extends BaseRecord
 			'name'          => array(AttributeType::Name, 'required' => true),
 			'handle'        => array(AttributeType::Handle, 'maxLength' => 64, 'required' => true),
 			'instructions'  => array(AttributeType::String, 'column' => ColumnType::Text),
+			/* BLOCKSPRO ONLY */
 			'required'      => AttributeType::Bool,
 			'translatable'  => AttributeType::Bool,
+			/* end BLOCKSPRO ONLY */
 			'class'         => array(AttributeType::ClassName, 'required' => true),
 			'blockSettings' => AttributeType::Mixed,
 			'sortOrder'     => AttributeType::SortOrder,

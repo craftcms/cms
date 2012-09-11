@@ -385,8 +385,10 @@ class ContentService extends ApplicationComponent
 		$record->name          = $settings['name'];
 		$record->handle        = $settings['handle'];
 		$record->instructions  = (!empty($settings['instructions']) ? $settings['instructions'] : null);
+		/* BLOCKSPRO ONLY */
 		$record->required      = !empty($settings['required']);
 		$record->translatable  = !empty($settings['translatable']);
+		/* end BLOCKSPRO ONLY */
 		$record->class         = $settings['class'];
 		$record->blockSettings = (!empty($settings['blockSettings']) ? $settings['blockSettings'] : null);
 

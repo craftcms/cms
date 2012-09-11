@@ -90,13 +90,13 @@
 			translatable: true
 		}) }}
 
+		<!-- BLOCKSPRO ONLY -->
 		{{ forms.checkboxField({
 			label: "This entry block is required"|t,
 			name: 'required',
 			checked: block.record.required
 		}) }}
 
-		<!-- BLOCKSPRO ONLY -->
 		{% if blx.systemSettings.languages %}
 			{{ forms.checkboxField({
 				label: "This entry block is translatable"|t,
