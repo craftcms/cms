@@ -24,8 +24,10 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 		this.$toggle.data('fieldtoggle', this);
 
+		if (!this.isCheckbox())
+			this.findTarget();
+
 		this.addListener(this.$toggle, 'change', 'onToggleChange');
-		console.log(this.$toggle);
 	},
 
 	isCheckbox: function()
@@ -76,7 +78,6 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	showTarget: function()
 	{
-		console.log('showTarget', this.getTarget());
 		if (this.getTarget().length)
 		{
 			if (this.isCheckbox())
@@ -98,7 +99,6 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	hideTarget: function()
 	{
-		console.log('hideTarget');
 		if (this.getTarget().length)
 		{
 			if (this.isCheckbox())
