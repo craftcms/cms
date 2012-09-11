@@ -87,7 +87,9 @@ class ComponentsService extends ApplicationComponent
 			$this->_noComponentTypeExists($type);
 
 		$class = __NAMESPACE__.'\\'.$class.static::$componentTypes[$type]['suffix'];
-		return new $class;
+
+		if (class_exists($class))
+			return new $class;
 	}
 
 	/**
