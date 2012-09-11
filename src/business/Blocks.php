@@ -224,8 +224,9 @@ class Blocks extends \Yii
 
 	/**
 	 * @static
-	 * @param      $alias
-	 * @param bool $forceInclude
+	 * @param string $alias
+	 * @param bool   $forceInclude
+	 * @throws \Exception
 	 * @return string|void
 	 */
 	public static function import($alias, $forceInclude = false)
@@ -258,8 +259,8 @@ class Blocks extends \Yii
 
 		$path = $rootPath.implode('/', array_slice($segs, 1));
 
-		$directory = (substr($path, -2) == '/*');
-		if ($directory)
+		$folder = (substr($path, -2) == '/*');
+		if ($folder)
 		{
 			$path = substr($path, 0, -1);
 			$files = glob($path."*.php");

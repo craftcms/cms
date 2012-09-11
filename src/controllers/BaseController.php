@@ -7,10 +7,10 @@ namespace Blocks;
 abstract class BaseController extends \CController
 {
 	/**
-	 * Returns the directory containing view files for this controller.
+	 * Returns the folder containing view files for this controller.
 	 * We're overriding this since CController's version defaults $module to blx().
 	 *
-	 * @return string the directory containing the view files for this controller.
+	 * @return string The folder containing the view files for this controller.
 	 */
 	public function getViewPath()
 	{
@@ -144,8 +144,10 @@ abstract class BaseController extends \CController
 	public function redirectToPostedUrl()
 	{
 		$url = blx()->request->getPost('redirect');
+
 		if ($url === null)
 			$url = blx()->request->getPath();
+
 		$this->redirect($url);
 	}
 

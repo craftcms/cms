@@ -16,7 +16,9 @@ class HttpSession extends \CHttpSession
 	}
 
 	// For consistency!
-
+	/**
+	 * @return bool
+	 */
 	public function isStarted()
 	{
 		return $this->getIsStarted();

@@ -31,6 +31,6 @@ class ProfileLogRoute extends \CProfileLogRoute
 			return;
 
 		$viewFile = blx()->path->getCpTemplatesPath().'logging/'.$view.'.php';
-		include(blx()->findLocalizedFile($viewFile,'en'));
+		include(blx()->findLocalizedFile($viewFile, 'en'));
 	}
 }

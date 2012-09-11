@@ -296,20 +296,18 @@ class UpdatesService extends ApplicationComponent
 	 *
 	 * @return array|null
 	 */
-	public function getUnwritableDirectories()
+	public function getUnwritableFolders()
 	{
 		$checkPaths = array(
-			blx()->file->set(blx()->path->getAppPath(), false),
-			blx()->file->set(blx()->path->getPluginsPath(), false),
+			blx()->path->getAppPath(),
+			blx()->path->getPluginsPath(),
 		);
 
 		$errorPath = null;
 		foreach ($checkPaths as $writablePath)
 		{
-			if (!$writablePath->getWritable())
-			{
-				$errorPath[] = $writablePath->getRealPath();
-			}
+			if (!IOHelper::isWritable($writablePath))
+				$errorPath[] = IOHelper::getRealPath($writablePath);
 		}
 
 		return $errorPath;

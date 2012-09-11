@@ -27,13 +27,13 @@ class UpdatesVariable
 	}
 
 	/**
-	 * Returns the directories that need to be set to writable.
+	 * Returns the folders that need to be set to writable.
 	 *
 	 * @return array
 	 */
-	public function unwritabledirectories()
+	public function unwritablefolders()
 	{
-		return blx()->updates->getUnwritableDirectories();
+		return blx()->updates->getUnwritableFolders();
 	}
 
 	/**

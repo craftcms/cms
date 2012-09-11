@@ -19,7 +19,7 @@
 
 
 {% set content %}
-	{% set problems = blx.updates.unwritabledirectories %}
+	{% set problems = blx.updates.unwritablefolders %}
 	{% if not problems %}
 		<div id="checking">
 			{{ "Checking for updates…"|t }}
@@ -36,7 +36,7 @@
 
 		<div id="updates"></div>
 	{% else %}
-		<p>{{ "@@@productDisplay@@@ will have a problem writing to the following"|t }} {% if problems|length == 1 %}{{ "directory"|t }}{% else %}{{ "directories"|t }}{% endif %}:</p>
+		<p>{{ "@@@productDisplay@@@ will have a problem writing to the following"|t }} {% if problems|length == 1 %}{{ "folder"|t }}{% else %}{{ "folders"|t }}{% endif %}:</p>
 		<ul>
 			{% for problem in problems %}
 				<li>{{ problem }}<li>
