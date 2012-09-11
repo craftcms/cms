@@ -175,13 +175,13 @@ class UserIdentity extends \CUserIdentity
 				if (blx()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
 				{
 					$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
-					$user->cooldownStart = $date->setTimestamp(DateTimeHelper::currentTime());
+					$user->cooldownStart = DateTimeHelper::currentTime();
 				}
 				else
 					$this->errorCode = static::ERROR_ACCOUNT_LOCKED;
 
 				$user->status = UserAccountStatus::Locked;
-				$user->lastLockoutDate = $date->setTimestamp(DateTimeHelper::currentTime());
+				$user->lastLockoutDate = DateTimeHelper::currentTime();
 				$user->failedPasswordAttemptCount = null;
 				$this->failedPasswordAttemptCount = 0;
 				$user->failedPasswordAttemptWindowStart = null;
@@ -192,7 +192,7 @@ class UserIdentity extends \CUserIdentity
 		{
 			$user->failedPasswordAttemptCount = 1;
 			$this->failedPasswordAttemptCount = 1;
-			$user->failedPasswordAttemptWindowStart = $date->setTimestamp(DateTimeHelper::currentTime());
+			$user->failedPasswordAttemptWindowStart = DateTimeHelper::currentTime();
 		}
 
 		$user->save();
