@@ -52,6 +52,11 @@ $blocksConfig['devCacheTimeSeconds'] = 5;
 $blocksConfig['urlFormat'] = 'auto';
 
 /**
+ * If you have Apache's mod_xsendfile installed and configured, set this to 'true' and @@@productDisplay@@@ will use xSendFile to transfer files.
+ */
+$blocksConfig['useXSendFile'] = false;
+
+/**
  * The time a user stays logged in by default.  If set to 0, the session will expire when the browser is closed.
  * Valid units of time are:
  * m = minute(s)
@@ -127,7 +132,7 @@ $blocksConfig['failedPasswordCooldown'] = '5m';
 $blocksConfig['phpPass-iterationCount'] = 8;
 
 /**
- * Controls whether to use the minified and merged JavaScript in the resources/scripts/uncompressed or the resources/scripts/compressed directory.
+ * Controls whether to use the minified and merged JavaScript in the resources/scripts/uncompressed or the resources/scripts/compressed folder.
  */
 $blocksConfig['useCompressedJs'] = true;
 
