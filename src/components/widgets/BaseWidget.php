@@ -7,7 +7,6 @@ namespace Blocks;
 abstract class BaseWidget extends BaseComponent implements IWidget
 {
 	protected $componentType = 'Widget';
-	protected $settingsColumn = 'settings';
 
 	/**
 	 * Returns the widget's settings HTML.
