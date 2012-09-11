@@ -1,11 +1,8 @@
-{% from "_includes/forms" import radio %}
+{% from "_includes/forms" import radioGroup %}
 
-{% for value, label in settings.options %}
-	{{ radio({
-		id: (loop.first ? record.handle : ''),
-		label: label,
-		name: record.handle ~ '[]',
-		value: value,
-		checked: (option in data)
-	}) }}
-{% endfor %}
+{{ radioGroup({
+	options: settings.options,
+	id: record.handle,
+	name: record.handle,
+	values: values
+}) }}

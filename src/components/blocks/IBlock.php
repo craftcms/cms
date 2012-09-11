@@ -7,5 +7,5 @@ namespace Blocks;
 interface IBlock extends IComponent
 {
 	public function defineContentColumn();
-	public function getInputHtml($data = null);
+	public function getInputHtml($value = null);
 }

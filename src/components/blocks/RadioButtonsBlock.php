@@ -32,12 +32,12 @@ class RadioButtonsBlock extends BaseOptionsBlock
 	 *
 	 * @return string
 	 */
-	public function getInputHtml($data = null)
+	public function getInputHtml($value = null)
 	{
 		return TemplateHelper::render('_components/blocks/RadioButtons/input', array(
 			'record'   => new ModelVariable($this->record),
 			'settings' => new ModelVariable($this->getSettings()),
-			'data'     => $data
+			'value'    => $value
 		));
 	}
 }
