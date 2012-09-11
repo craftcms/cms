@@ -9,7 +9,7 @@ class ResourceProcessor
 	private $_rootFolderPath;
 	private $_rootFolderUrl;
 	private $_relResourcePath;
-	private $_relResourceDirName;
+	private $_relResourceFolderName;
 	private $_relResourceFileName;
 	private $_resourceFullPath;
 	private $_content;
@@ -23,17 +23,17 @@ class ResourceProcessor
 	 */
 	function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
 	{
-		$this->_rootFolderPath = rtrim($rootFolderPath, '/').'/';
-		$this->_rootFolderUrl = rtrim($rootFolderUrl, '/').'/';
-		$this->_relResourcePath = trim($relResourcePath, '/');
+		$this->_rootFolderPath = IOHelper::normalizePathSeparators($rootFolderPath);
+		$this->_rootFolderUrl = IOHelper::normalizePathSeparators($rootFolderUrl);
+		$this->_relResourcePath = IOHelper::normalizePathSeparators($relResourcePath);
 
-		// Parse the relative resource path, separating the directory path from the filename
-		$pathInfo = pathinfo($this->_relResourcePath);
-		$this->_relResourceDirName = isset($pathInfo['dirname']) && $pathInfo['dirname'] != '.' ? $pathInfo['dirname'].'/' : '';
-		$this->_relResourceFileName = basename($this->_relResourcePath);
+		// Parse the relative resource path, separating the folder path from the filename
+		$folderName = IOHelper::getFolderName($this->_relResourcePath);
+		$this->_relResourceFolderName = $folderName !== '.' ? $folderName : '';
+		$this->_relResourceFileName = IOHelper::getFileName($this->_relResourcePath);
 
 		// Save the full server path
-		$this->_resourceFullPath = $this->_rootFolderPath . $this->_relResourcePath;
+		$this->_resourceFullPath = $this->_rootFolderPath.$this->_relResourcePath;
 	}
 
 	/**
@@ -43,14 +43,10 @@ class ResourceProcessor
 	 */
 	public function processResourceRequest()
 	{
-		if (file_exists($this->_resourceFullPath) && is_file($this->_resourceFullPath))
-		{
+		if (IOHelper::fileExists($this->_resourceFullPath))
 			$this->sendResource();
-		}
 		else
-		{
 			throw new HttpException(404);
-		}
 	}
 
 	/**
@@ -60,18 +56,20 @@ class ResourceProcessor
 	 */
 	public function sendResource()
 	{
-		$this->_content = file_get_contents($this->_resourceFullPath);
+		$this->_content = IOHelper::getFileContents($this->_resourceFullPath);
 
-		if (! $this->_content)
+		if (!$this->_content)
 			throw new HttpException(404);
 
-		$file = blx()->file->set($this->_resourceFullPath);
-		$mimeType = $file->getMimeType();
+		$mimeType = IOHelper::getMimeTypeByExtension($this->_resourceFullPath);
 
 		if (strpos($mimeType, 'css') > 0)
 			$this->_convertRelativeUrls();
 
-		$file->send(false, false, $this->_content);
+		if (!blx()->config->useXSendFile)
+			blx()->request->sendFile($this->_relResourceFileName, $this->_content);
+		else
+			blx()->request->xSendFile($this->_resourceFullPath);
 	}
 
 	/**
@@ -97,6 +95,6 @@ class ResourceProcessor
 			return $match[0];
 		}
 
-		return $match[1].$this->_rootFolderUrl.$this->_relResourceDirName.$match[3].$match[4];
+		return $match[1].$this->_rootFolderUrl.$this->_relResourceFolderName.$match[3].$match[4];
 	}
 }
