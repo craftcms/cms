@@ -3,7 +3,7 @@
 
 {% if not widget %}
 	{% if widgetId %}
-		{% set widget = blx.dashboard.getWidgetById(widgetId) %}
+		{% set widget = blx.dashboard.getUserWidgetById(widgetId) %}
 		{% if not widget %}{% exit 404 %}{% endif %}
 	{% else %}
 		{% set widget = blx.dashboard.getWidgetByClass('Feed') %}
@@ -28,7 +28,7 @@
 
 {% set content %}
 	<form method="post" action="" class="centered">
-		<input type="hidden" name="action" value="dashboard/saveWidget">
+		<input type="hidden" name="action" value="dashboard/saveUserWidget">
 		<input type="hidden" name="redirect" value="dashboard/settings">
 		{% if widget.record.id %}<input type="hidden" name="widgetId" value="{{ widget.record.id }}">{% endif %}
 

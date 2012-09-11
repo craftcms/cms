@@ -22,7 +22,7 @@ var sorter = new Blocks.ui.DataTableSorter($table, {
 			widgetIds: JSON.stringify(widgetIds)
 		};
 
-		$.post(Blocks.actionUrl+'dashboard/reorderWidgets', data, function(response) {
+		$.post(Blocks.actionUrl+'dashboard/reorderUserWidgets', data, function(response) {
 			if (response.success)
 				Blocks.cp.displayNotice(Blocks.t('New widget order saved.'));
 			else
@@ -42,7 +42,7 @@ $table.find('.deletebtn').click(function() {
 			widgetId: $row.attr('data-widget-id')
 		};
 
-		$.post(Blocks.actionUrl+'dashboard/deleteWidget', data, function(response) {
+		$.post(Blocks.actionUrl+'dashboard/deleteUserWidget', data, function(response) {
 			if (response.success)
 			{
 				$row.remove();

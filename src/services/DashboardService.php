@@ -28,37 +28,6 @@ class DashboardService extends ApplicationComponent
 	}
 
 	/**
-	 * Returns a widget by its ID.
-	 *
-	 * @param int $id
-	 * @return Widget
-	 */
-	public function getWidgetById($id)
-	{
-		$record = WidgetRecord::model()->findByAttributes(array(
-			'id' => $id,
-			'userId' => blx()->accounts->getCurrentUser()->id
-		));
-
-		if ($record)
-			return $this->populateWidget($record);
-	}
-
-	/**
-	 * Returns the dashboard widgets for the current user.
-	 *
-	 * @return array
-	 */
-	public function getUserWidgets()
-	{
-		$records = WidgetRecord::model()->ordered()->findAllByAttributes(array(
-			'userId' => blx()->accounts->getCurrentUser()->id
-		));
-
-		return $this->populateWidgets($records);
-	}
-
-	/**
 	 * Populates a widget with a given record.
 	 *
 	 * @param WidgetRecord $record
@@ -81,15 +50,46 @@ class DashboardService extends ApplicationComponent
 	}
 
 	/**
+	 * Returns the dashboard widgets for the current user.
+	 *
+	 * @return array
+	 */
+	public function getUserWidgets()
+	{
+		$records = WidgetRecord::model()->ordered()->findAllByAttributes(array(
+			'userId' => blx()->accounts->getCurrentUser()->id
+		));
+
+		return $this->populateWidgets($records);
+	}
+
+	/**
+	 * Returns a widget by its ID.
+	 *
+	 * @param int $id
+	 * @return Widget
+	 */
+	public function getUserWidgetById($id)
+	{
+		$record = WidgetRecord::model()->findByAttributes(array(
+			'id' => $id,
+			'userId' => blx()->accounts->getCurrentUser()->id
+		));
+
+		if ($record)
+			return $this->populateWidget($record);
+	}
+
+	/**
 	 * Saves a widget.
 	 *
 	 * @param array    $settings
 	 * @param int|null $widgetId
 	 * @return BaseWidget
 	 */
-	public function saveWidget($settings, $widgetId = null)
+	public function saveUserWidget($settings, $widgetId = null)
 	{
-		$record = $this->_getWidgetRecord($widgetId);
+		$record = $this->_getUserWidgetRecord($widgetId);
 
 		$record->class    = $settings['class'];
 		$record->settings = (!empty($settings['settings']) ? $settings['settings'] : null);
@@ -125,9 +125,9 @@ class DashboardService extends ApplicationComponent
 	 *
 	 * @param int $widgetId
 	 */
-	public function deleteWidget($widgetId)
+	public function deleteUserWidget($widgetId)
 	{
-		$record = $this->_getWidgetRecord($widgetId);
+		$record = $this->_getUserWidgetRecord($widgetId);
 		$record->delete();
 	}
 
@@ -136,7 +136,7 @@ class DashboardService extends ApplicationComponent
 	 *
 	 * @param array $widgetIds
 	 */
-	public function reorderWidgets($widgetIds)
+	public function reorderUserWidgets($widgetIds)
 	{
 		$transaction = blx()->db->beginTransaction();
 
@@ -144,7 +144,7 @@ class DashboardService extends ApplicationComponent
 		{
 			foreach ($widgetIds as $widgetOrder => $widgetId)
 			{
-				$record = $this->_getWidgetRecord($widgetId);
+				$record = $this->_getUserWidgetRecord($widgetId);
 				$record->sortOrder = $widgetOrder+1;
 				$record->save();
 			}
@@ -161,14 +161,14 @@ class DashboardService extends ApplicationComponent
 	/**
 	 * Adds the default widgets to the logged-in user.
 	 */
-	public function addDefaultWidgets()
+	public function addDefaultUserWidgets()
 	{
 		// Add the default dashboard widgets
-		$this->saveWidget(array(
+		$this->saveUserWidget(array(
 			'class' => 'RecentActivity'
 		));
 
-		$this->saveWidget(array(
+		$this->saveUserWidget(array(
 			'class'    => 'Feed',
 			'settings' => array(
 				'url' => 'http://feeds.feedburner.com/blogandtonic',
@@ -184,7 +184,7 @@ class DashboardService extends ApplicationComponent
 	 * @param int $widgetId
 	 * @return WidgetRecord
 	 */
-	private function _getWidgetRecord($widgetId = null)
+	private function _getUserWidgetRecord($widgetId = null)
 	{
 		$userId = blx()->accounts->getCurrentUser()->id;
 

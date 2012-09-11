@@ -57,9 +57,9 @@ class DashboardVariable
 	 * @param int $id
 	 * @return array
 	 */
-	public function getWidgetById($id)
+	public function getUserWidgetById($id)
 	{
-		$widget = blx()->dashboard->getWidgetById($id);
+		$widget = blx()->dashboard->getUserWidgetById($id);
 		if ($widget)
 			return new WidgetVariable($widget);
 	}
