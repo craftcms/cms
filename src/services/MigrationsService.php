@@ -11,7 +11,7 @@ class MigrationsService extends ApplicationComponent
 	const BASE_MIGRATION = 'm000000_000000_base';
 
 	/**
-	 * @var string the directory that stores the migrations. This must be specified
+	 * @var string the folder that stores the migrations. This must be specified
 	 * in terms of a path alias, and the corresponding directory must exist.
 	 * Defaults to 'application.migrations' (meaning 'protected/migrations').
 	 */
@@ -43,8 +43,8 @@ class MigrationsService extends ApplicationComponent
 	{
 		$path= Blocks::getPathOfAlias($this->migrationPath);
 
-		if ($path === false || !is_dir($path))
-			throw new Exception(Blocks::t('Error: The migration directory “{directory}” does’t exist.', array('directory' => $this->migrationPath)));
+		if ($path === false || !IOHelper::folderExists($path))
+			throw new Exception(Blocks::t('Error: The migration folder “{folder}” does’t exist.', array('folder' => $this->migrationPath)));
 
 		$this->migrationPath = $path;
 	}
@@ -126,7 +126,7 @@ class MigrationsService extends ApplicationComponent
 
 		$name = 'm'.gmdate('ymd_His').'_'.$migrationName;
 		$content = strtr($this->getTemplate(), array('{ClassName}' => $name));
-		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$name.'.php');
 
 		file_put_contents($file, $content);
 		Blocks::log("New migration created successfully: ".$file);
@@ -171,7 +171,7 @@ class MigrationsService extends ApplicationComponent
 	 */
 	protected function instantiateMigration($class)
 	{
-		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$class.'.php';
+		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$class.'.php');
 		require_once($file);
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
@@ -259,9 +259,9 @@ class MigrationsService extends ApplicationComponent
 			if ($file === '.' || $file === '..')
 				continue;
 
-			$path = $this->migrationPath.DIRECTORY_SEPARATOR.$file;
+			$path = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$file);
 
-			if (preg_match('/^(m(\d{6}_\d{6})_.*?)\.php$/', $file, $matches) && is_file($path) && !isset($applied[$matches[2]]))
+			if (preg_match('/^(m(\d{6}_\d{6})_.*?)\.php$/', $file, $matches) && IOHelper::fileExists($path) && !isset($applied[$matches[2]]))
 			{
 				$time = strtotime('20'.substr($matches[2], 0, 2).'-'.substr($matches[2], 2, 2).'-'.substr($matches[2], 4, 2).' '.substr($matches[2], 7, 2).':'.substr($matches[2], 9, 2).':'.substr($matches[2], 11, 2));
 

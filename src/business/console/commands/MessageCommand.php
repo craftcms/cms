@@ -15,7 +15,7 @@ class MessageCommand extends \MessageCommand
 	{
 		echo "Extracting messages from $fileName...\n";
 
-		$subject = file_get_contents($fileName);
+		$subject = IOHelper::getFileContents($fileName);
 		$messages = array();
 
 		$translators = explode(',', $translator);
@@ -70,7 +70,7 @@ class MessageCommand extends \MessageCommand
 	{
 		echo "Saving messages to $fileName...";
 
-		if (is_file($fileName))
+		if (IOHelper::fileExists($fileName))
 		{
 			$translated = require($fileName);
 			sort($messages);

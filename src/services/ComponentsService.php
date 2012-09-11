@@ -32,13 +32,13 @@ class ComponentsService extends ApplicationComponent
 
 			$folderPath = blx()->path->getComponentsPath().$ctype['folder'].'/';
 			$classSuffix = $ctype['suffix'];
-			$files = glob($folderPath.'/*'.$classSuffix.'.php');
+			$files = IOHelper::getFolderContents($folderPath, false, ".*{$classSuffix}\.php");
 
 			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
 				{
-					$class = basename($file, '.php');
+					$class = IOHelper::getFileName($file);
 
 					// Add the namespace
 					$class = __NAMESPACE__.'\\'.$class;

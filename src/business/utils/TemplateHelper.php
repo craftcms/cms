@@ -117,7 +117,7 @@ class TemplateHelper
 
 		// Set the view path
 		//  - We need to set this for each template request, in case it was changed to a plugin's template path
-		$basePath = realpath(blx()->path->getTemplatesPath()).'/';
+		$basePath = blx()->path->getTemplatesPath();
 
 		// If it's an error template we might need to check for a user-defined template on the front-end of the site.
 		if (static::_isErrorTemplate($name))
@@ -131,9 +131,9 @@ class TemplateHelper
 
 			foreach ($viewPaths as $viewPath)
 			{
-				if (is_file($viewPath.$name.'.html'))
+				if (IOHelper::fileExists($viewPath.$name.'.html'))
 				{
-					$basePath = realpath($viewPath).'/';
+					$basePath = IOHelper::getRealPath($viewPath);
 					break;
 				}
 			}
@@ -167,7 +167,7 @@ class TemplateHelper
 	}
 
 	/**
-	 * Ensures that a template name isn't null, and that it doesn't lead outside the template directory.
+	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder.
 	 * Borrowed from Twig_Loader_Filesystem.
 	 *
 	 * @static
@@ -190,7 +190,7 @@ class TemplateHelper
 				$level++;
 
 			if ($level < 0)
-				throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template directory: {template}.', array('template' => $name)));
+				throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
 		}
 	}
 
@@ -218,7 +218,7 @@ class TemplateHelper
 	private static function _findTemplate($path)
 	{
 		// Get the extension on the path, if there is one
-		$extension = FileHelper::getExtension($path);
+		$extension = IOHelper::getExtension($path);
 
 		if ($extension)
 			$testPaths = array($path);
@@ -227,12 +227,10 @@ class TemplateHelper
 
 		foreach ($testPaths as $path)
 		{
-			if (is_file(blx()->findLocalizedFile($path)))
-			{
-				$path = str_replace('\\', '/', $path);
-				$path = str_replace('//', '/', $path);
+			$path = IOHelper::normalizePathSeparators($path);
+
+			if (IOHelper::fileExists(blx()->findLocalizedFile($path)))
 				return $path;
-			}
 		}
 
 		return null;

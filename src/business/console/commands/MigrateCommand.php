@@ -138,7 +138,7 @@ EOD;
 	 */
 	protected function instantiateMigration($class)
 	{
-		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$class.'.php';
+		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$class.'.php');
 		require_once($file);
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
@@ -172,7 +172,7 @@ EOD;
 	protected function getTemplate()
 	{
 		if($this->templateFile !== null)
-			return file_get_contents(Blocks::getPathOfAlias($this->templateFile).'.php');
+			return IOHelper::getFileContents(Blocks::getPathOfAlias($this->templateFile).'.php');
 		else
 			return <<<EOD
 <?php

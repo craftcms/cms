@@ -21,10 +21,10 @@ class UpdateHelper
 				continue;
 
 			$rowData = explode(';', $row);
-			$file = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
+			$file = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);
 
-			if ($file->getExists())
-				$file->rename(blx()->path->getAppPath().'../../'.$rowData[0]);
+			if (IOHelper::fileExists($file.'.bak'))
+				IOHelper::rename($file.'.bak', $file);
 		}
 	}
 
@@ -32,11 +32,11 @@ class UpdateHelper
 	 * @static
 	 *
 	 * @param $manifestData
-	 * @param $sourceTempDir
+	 * @param $sourceTempFolder
 	 * @return bool
 	 * @return bool
 	 */
-	public static function doFileUpdate($manifestData, $sourceTempDir)
+	public static function doFileUpdate($manifestData, $sourceTempFolder)
 	{
 		try
 		{
@@ -50,25 +50,25 @@ class UpdateHelper
 
 				$rowData = explode(';', $row);
 
-				$destFile = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0]);
-				$sourceFile = blx()->file->set($sourceTempDir->getRealPath().'/'.$rowData[0]);
+				$destFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]));
+				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/'.$rowData[0]));
 
 				switch (trim($rowData[1]))
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
-						Blocks::log('Updating file: '.$destFile->getRealPath());
-						$sourceFile->copy($destFile->getRealPath(), true);
+						Blocks::log('Updating file: '.$destFile);
+						IOHelper::copyFile($sourceFile, $destFile);
 						break;
 
 					case PatchManifestFileAction::Remove:
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
-						Blocks::log('Renaming file for delete: '.$destFile->getRealPath());
-						$destFile->rename($destFile->getRealPath().'.bak');
+						Blocks::log('Renaming file for delete: '.$destFile);
+						IOHelper::rename($destFile, $destFile.'.bak');
 						break;
 
 					default:
-						Blocks::log('Unknown PatchManifestFileAction');
+						Blocks::log('Unknown PatchManifestFileAction', \CLogger::LEVEL_ERROR);
 						UpdateHelper::rollBackFileChanges($manifestData);
 						return false;
 				}
@@ -118,9 +118,7 @@ class UpdateHelper
 	public static function getManifestData($manifestDataPath)
 	{
 		// get manifest file
-		$manifestFile = blx()->file->set($manifestDataPath.'/blocks_manifest');
-		$manifestFileData = $manifestFile->contents;
-		$manifestFileData = preg_split('/[\r\n]/', $manifestFileData);
+		$manifestFileData = IOHelper::getFileContents($manifestDataPath.'/blocks_manifest', true);
 
 		// Remove any trailing empty newlines
 		if ($manifestFileData[count($manifestFileData) - 1] == '')
@@ -134,9 +132,14 @@ class UpdateHelper
 	 * @param $downloadPath
 	 * @return mixed
 	 */
-	public static function getTempDirForPackage($downloadPath)
+	public static function getTempFolderForPackage($downloadPath)
 	{
-		return blx()->file->set(pathinfo($downloadPath, PATHINFO_DIRNAME).'/'.pathinfo($downloadPath, PATHINFO_FILENAME).'_temp');
+		$tempPath = IOHelper::normalizePathSeparators(IOHelper::getFolderName($downloadPath, true).'/'.IOHelper::getFileName($downloadPath, false.'_temp'));
+
+		if (IOHelper::folderExists($tempPath))
+			IOHelper::deleteFolder($tempPath);
+
+		return IOHelper::createFolder($tempPath);
 	}
 
 	/**
@@ -146,9 +149,10 @@ class UpdateHelper
 	 */
 	public static function copyMigrationFile($filePath)
 	{
-		$migrationFile = blx()->file->set($filePath);
-		$destinationFile = blx()->path->getMigrationsPath().$migrationFile->baseName;
-		$migrationFile->copy($destinationFile, true);
+		$migrationFile = new File($filePath);
+		$destinationFile = blx()->path->getMigrationsPath().$migrationFile->getFileName();
+		$migrationFile->copy($destinationFile);
+
 		return $destinationFile;
 	}
 }

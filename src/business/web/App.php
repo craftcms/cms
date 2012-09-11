@@ -18,6 +18,9 @@ class App extends \CWebApplication
 		// Set default timezone to UTC
 		date_default_timezone_set('UTC');
 
+		Blocks::import('app.business.io.*');
+		Blocks::import('app.business.utils.IOHelper');
+
 		Blocks::import('app.business.ApplicationComponent');
 
 		// Import internationalization stuff.
@@ -260,7 +263,7 @@ class App extends \CWebApplication
 
 				// Check for a valid controller in app/controllers.
 				$controllerPath = blx()->path->getAppPath().'controllers/'.$controller.'Controller.php';
-				if (File::fileExists($controllerPath))
+				if (IOHelper::fileExists($controllerPath))
 				{
 					// Run the controller and action.
 					$this->runController($controller.'/'.$action);
@@ -279,10 +282,10 @@ class App extends \CWebApplication
 						$controller = $pluginName;
 						$action = $actionPath[1];
 
-						// Check for a valid controller in the plugins directories.
+						// Check for a valid controller in the plugins folders.
 						$controllerPath = blx()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'Controller.php';
 
-						if (File::fileExists($controllerPath))
+						if (IOHelper::fileExists($controllerPath))
 						{
 							Blocks::import('plugins.'.$pluginName.'.controllers.*');
 							$this->setControllerPath(blx()->path->getPluginsPath().$pluginName.'/controllers/');
@@ -303,10 +306,10 @@ class App extends \CWebApplication
 						$controller = $actionPath[1];
 						$action = $actionPath[2];
 
-						// Check for a valid controller in the plugins directory.
+						// Check for a valid controller in the plugins folder.
 						$controllerPath = blx()->path->getPluginsPath().$pluginName.'/controllers/'.$pluginName.'_'.$controller.'Controller.php';
 
-						if (File::fileExists($controllerPath))
+						if (IOHelper::fileExists($controllerPath))
 						{
 							Blocks::import('plugins.'.$pluginName.'.controllers.*');
 							$this->setControllerPath(blx()->path->getPluginsPath().$pluginName.'/controllers/');
@@ -343,7 +346,7 @@ class App extends \CWebApplication
 			$relativeResourcePath = implode('/', $segs);
 
 			// Check app/resources folder first.
-			if (File::fileExists($rootFolderPath.$relativeResourcePath))
+			if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))
 			{
 				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.'/');
 			}
@@ -356,7 +359,7 @@ class App extends \CWebApplication
 					$relativeResourcePath = implode('/', array_splice($segs, 2));
 
 					// Looks like it belongs to a plugin.
-					if (File::fileExists($rootFolderPath.$relativeResourcePath))
+					if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))
 					{
 						$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.$segs[0]);
 					}

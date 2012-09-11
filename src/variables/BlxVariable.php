@@ -19,7 +19,7 @@ class BlxVariable
 			$pluginName = $plugin->getClassHandle();
 			$path = blx()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
 
-			if (File::fileExists($path))
+			if (IOHelper::fileExists($path))
 			{
 				Blocks::import('plugins.'.$pluginName.'.'.$pluginName.'Variable');
 				$variableName = __NAMESPACE__.'\\'.$pluginName.'Variable';

@@ -10,7 +10,7 @@ class AppUpdater implements IUpdater
 	private $_migrationsToRun = false;
 	private $_updateInfo;
 	private $_downloadFilePath;
-	private $_tempPackageDir;
+	private $_tempPackageFolder;
 	private $_manifestData;
 	private $_writableErrors = null;
 
@@ -78,7 +78,7 @@ class AppUpdater implements IUpdater
 		// Get the most up-to-date build.
 		$latestBuild = $this->_buildsToUpdate[0];
 		$this->_downloadFilePath = blx()->path->getRuntimePath()."@@@product@@@{$latestBuild->version}.{$latestBuild->build}_patch.zip";
-		$this->_tempPackageDir = UpdateHelper::getTempDirForPackage($this->_downloadFilePath);
+		$this->_tempPackageFolder = UpdateHelper::getTempFolderForPackage($this->_downloadFilePath);
 
 		// Download the package from ET.
 		Blocks::log('Downloading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
@@ -123,7 +123,7 @@ class AppUpdater implements IUpdater
 
 		// Update the files.
 		Blocks::log('Performing file udpate.', \CLogger::LEVEL_INFO);
-		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_tempPackageDir))
+		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_tempPackageFolder->getRealPath()))
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
 
 		// Bring the system back online.
@@ -157,7 +157,7 @@ class AppUpdater implements IUpdater
 	{
 		if ($this->_manifestData == null)
 		{
-			$manifestData = UpdateHelper::getManifestData($this->_tempPackageDir->getRealPath());
+			$manifestData = UpdateHelper::getManifestData($this->_tempPackageFolder->getRealPath());
 
 			// Only use the manifest data starting from the local version
 			for ($counter = 0; $counter < count($manifestData); $counter++)
@@ -191,7 +191,7 @@ class AppUpdater implements IUpdater
 			if (UpdateHelper::isManifestMigrationLine($row[0]) && $row[1] == PatchManifestFileAction::Add)
 			{
 				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
-				UpdateHelper::copyMigrationFile($this->_tempPackageDir->getRealPath().'/'.$row[0]);
+				UpdateHelper::copyMigrationFile($this->_tempPackageFolder->getRealPath().'/'.$row[0]);
 				$this->_migrationsToRun = true;
 			}
 		}
@@ -211,7 +211,7 @@ class AppUpdater implements IUpdater
 	}
 
 	/**
-	 * Remove any temp files and/or directories that might have been created.
+	 * Remove any temp files and/or folders that might have been created.
 	 */
 	public function cleanTempFiles()
 	{
@@ -225,21 +225,19 @@ class AppUpdater implements IUpdater
 			$rowData = explode(';', $row);
 
 			// Delete any files we backed up.
-			$backupFile = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
-			if ($backupFile->getExists())
+			$backupFilePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
+			if (($file = new File($backupFilePath)) !== false)
 			{
-				Blocks::log('Deleting backup file: '.$backupFile->getRealPath());
-				$backupFile->delete();
+				Blocks::log('Deleting backup file: '.$file->getRealPath());
+				$file->delete();
 			}
 		}
 
-		// Delete the temp patch dir
-		$tempPatchDir = $this->_tempPackageDir;
-		$tempPatchDir->delete();
+		// Delete the temp patch folder
+		IOHelper::deleteFolder($this->_tempPackageFolder);
 
 		// Delete the downloaded patch file.
-		$downloadPatchFile = blx()->file->set($this->_downloadFilePath);
-		$downloadPatchFile->delete();
+		IOHelper::deleteFile($this->_downloadFilePath);
 	}
 
 	/**
@@ -258,8 +256,7 @@ class AppUpdater implements IUpdater
 		if(StringHelper::isNullOrEmpty($sourceMD5))
 			throw new Exception(Blocks::t('Error in validating the download.'));
 
-		$localFile = blx()->file->set($this->_downloadFilePath, false);
-		$localMD5 = $localFile->generateMD5();
+		$localMD5 = IOHelper::getFileMD5($this->_downloadFilePath);
 
 		if($localMD5 === $sourceMD5)
 			return true;
@@ -268,20 +265,14 @@ class AppUpdater implements IUpdater
 	}
 
 	/**
-	 * Unzip the downloaded update file into the temp package directory.
+	 * Unzip the downloaded update file into the temp package folder.
 	 *
 	 * @return bool
 	 */
 	public function unpackPackage()
 	{
-		Blocks::log('Unzipping package to '.$this->_tempPackageDir->getRealPath(), \CLogger::LEVEL_INFO);
-		if ($this->_tempPackageDir->getExists())
-			$this->_tempPackageDir->delete();
-
-		$this->_tempPackageDir->createDir(0754);
-
-		$downloadPath = blx()->file->set($this->_downloadFilePath);
-		if ($downloadPath->unzip($this->_tempPackageDir->getRealPath()))
+		Blocks::log('Unzipping package to '.$this->_tempPackageFolder->getRealPath(), \CLogger::LEVEL_INFO);
+		if ($this->_downloadFilePath->unzip($this->_tempPackageFolder->getRealPath()))
 			return true;
 
 		return false;
@@ -302,13 +293,13 @@ class AppUpdater implements IUpdater
 				continue;
 
 			$rowData = explode(';', $row);
-			$file = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0]);
+			$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);
 
 			// Check to see if the file we need to update is writable.
-			if ($file->getExists())
+			if (IOHelper::fileExists($filePath));
 			{
-				if (!$file->getWritable())
-					$this->_writableErrors[] = $file->getRealPath();
+				if (!IOHelper::isWritable($filePath))
+					$this->_writableErrors[] = $filePath;
 			}
 		}
 
@@ -337,13 +328,13 @@ class AppUpdater implements IUpdater
 					continue;
 
 				$rowData = explode(';', $row);
-				$file = blx()->file->set(blx()->path->getAppPath().'../../'.$rowData[0]);
+				$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);
 
 				// If the file doesn't exist, it's a new file.
-				if ($file->getExists())
+				if (IOHelper::fileExists($filePath))
 				{
-					Blocks::log('Backing up file '.$file->getRealPath());
-					$file->copy($file->getRealPath().'.bak');
+					Blocks::log('Backing up file '.$filePath);
+					IOHelper::copyFile($filePath, $filePath.'.bak');
 				}
 			}
 		}

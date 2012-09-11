@@ -26,9 +26,9 @@ class FileLogRoute extends \CFileLogRoute
 	 */
 	protected function processLogs($logs)
 	{
-		$logFile = $this->getLogPath().DIRECTORY_SEPARATOR.$this->getLogFile();
+		$logFile = IOHelper::normalizePathSeparators($this->getLogPath().'/'.$this->getLogFile());
 
-		if (@filesize($logFile) > $this->getMaxFileSize() * 1024)
+		if (IOHelper::getFileSize($logFile) > $this->getMaxFileSize() * 1024)
 			$this->rotateFiles();
 
 		$fp = @fopen($logFile, 'a');

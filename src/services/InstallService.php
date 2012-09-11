@@ -69,31 +69,33 @@ class InstallService extends ApplicationComponent
 	}
 
 	/**
-	 * Finds installable records from the models directory.
+	 * Finds installable records from the models folder.
 	 *
 	 * @return array
 	 */
 	private function _findInstallableRecords()
 	{
 		$records = array();
-		$modelsDir = blx()->file->set(blx()->path->getModelsPath());
+		$modelsDir = new Folder(blx()->path->getModelsPath());
 		$recordFiles = $modelsDir->getContents(false, '/Record.php/');
 
-		foreach ($recordFiles as $filePath)
+		foreach ($recordFiles as $file)
 		{
-			$file = blx()->file->set($filePath);
-			$fileName = $file->fileName;
-			$class = __NAMESPACE__.'\\'.$fileName;
+			if (IOHelper::fileExists($file))
+			{
+				$fileName = $file->getFileName(false);
+				$class = __NAMESPACE__.'\\'.$fileName;
 
-			// Ignore abstract classes and interfaces
-			$ref = new \ReflectionClass($class);
-			if ($ref->isAbstract() || $ref->isInterface())
-				continue;
+				// Ignore abstract classes and interfaces
+				$ref = new \ReflectionClass($class);
+				if ($ref->isAbstract() || $ref->isInterface())
+					continue;
 
-			$obj = new $class;
+				$obj = new $class;
 
-			if (method_exists($obj, 'createTable'))
-				$records[] = $obj;
+				if (method_exists($obj, 'createTable'))
+					$records[] = $obj;
+			}
 		}
 
 		return $records;

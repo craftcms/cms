@@ -59,8 +59,8 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!$this->_mimeType)
 		{
-			$extension = FileHelper::getExtension($this->getPath(), 'html');
-			$this->_mimeType = FileHelper::getMimeTypeByExtension('.'.$extension);
+			$extension = IOHelper::getExtension($this->getPath(), 'html');
+			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
 		}
 
 		return $this->_mimeType;
@@ -138,7 +138,7 @@ class HttpRequest extends \CHttpRequest
 	{
 		if (!isset($this->_pathExtension))
 		{
-			$ext = pathinfo($this->getPath(), PATHINFO_EXTENSION);
+			$ext = IOHelper::getExtension($this->getPath());
 			$this->_pathExtension = strtolower($ext);
 		}
 
@@ -180,14 +180,13 @@ class HttpRequest extends \CHttpRequest
 					// Last ditch, let's try to determine if PATH_INFO is enabled on the server.
 					try
 					{
-						$context = stream_context_create(array('http' => array('header' => 'Connection: close')));
 						$url = blx()->request->getHostInfo().blx()->request->getScriptUrl().'/testpathinfo';
-						if (($result = @file_get_contents($url, 0, $context)) !== false)
+						$response = \Requests::get($url);
+
+						if ($response->success)
 						{
-							if ($result === 'success')
-							{
+							if ($response->body === 'success')
 								$this->_urlFormat = UrlFormat::PathInfo;
-							}
 						}
 					}
 					catch (\Exception $e)
@@ -398,41 +397,65 @@ class HttpRequest extends \CHttpRequest
 	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter)
 	//    but we're trying to resist the temptation of magic methods for the sake of code obviousness.
 
+	/**
+	 * @return bool
+	 */
 	public function isSecureConnection()
 	{
 		return $this->getIsSecureConnection();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isPostRequest()
 	{
 		return $this->getIsPostRequest();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isDeleteRequest()
 	{
 		return $this->getIsDeleteRequest();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isDeleteViaPostRequest()
 	{
 		return $this->getIsDeleteViaPostRequest();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isPutRequest()
 	{
 		return $this->getIsPutRequest();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isPutViaPostRequest()
 	{
 		return $this->getIsPutViaPostRequest();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isAjaxRequest()
 	{
 		return $this->getIsAjaxRequest();
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isFlashRequest()
 	{
 		return $this->getIsFlashRequest();

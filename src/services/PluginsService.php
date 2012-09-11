@@ -114,7 +114,7 @@ class PluginsService extends ApplicationComponent
 			{
 				$path = blx()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
 
-				if (($path = File::fileExists($path, false)) !== false)
+				if (($path = IOHelper::fileExists($path, false)) !== false)
 					require_once $path;
 				else
 					return false;
@@ -149,14 +149,15 @@ class PluginsService extends ApplicationComponent
 			$this->_allPlugins = array();
 
 			// Find all of the plugins in the plugins folder
-			$pluginsPath = blx()->file->set(blx()->path->getPluginsPath());
-			$paths = $pluginsPath->getContents(true, '/[^_]Plugin.php/');
+			$pluginsPath = blx()->path->getPluginsPath();
+			$paths = IOHelper::getFolderContents($pluginsPath, true, '/[^_]Plugin.php/');
 
 			if (is_array($paths) && count($paths) > 0)
 			{
 				foreach ($paths as $path)
 				{
-					$handle = pathinfo($path, PATHINFO_FILENAME);
+					$path = IOHelper::normalizePathSeparators($path);
+					$handle = IOHelper::getFileName($path, false);
 					$handle = substr($handle, 0, strlen($handle) - strlen('Plugin'));
 
 					// Plugin file name (minus 'Plugin') == the class handle
@@ -340,19 +341,19 @@ class PluginsService extends ApplicationComponent
 	 */
 	private function _importPluginModels($className)
 	{
-		$modelsDirectory = blx()->path->getPluginsPath().$className.'/models/';
+		$modelsFolder = blx()->path->getPluginsPath().$className.'/models/';
 
 		// Make sure it exists.
-		if (is_dir($modelsDirectory))
+		if (IOHelper::folderExists($modelsFolder))
 		{
 			// See if it has any files in ClassName*Service.php format.
-			$files = glob($modelsDirectory.$className."_*.php");
+			$files = IOHelper::getFolderContents($modelsFolder, false, "{$className}_.*\.php");
 			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
 				{
 					// Get the file name minus the extension.
-					$fileName = pathinfo($file, PATHINFO_FILENAME);
+					$fileName = IOHelper::getFileName($file, false);
 
 					// Import the class.
 					Blocks::import('plugins.'.$className.'.models.'.$fileName);
@@ -369,20 +370,20 @@ class PluginsService extends ApplicationComponent
 	 */
 	private function _registerPluginServices($className)
 	{
-		// Get the services directory for the plugin.
-		$serviceDirectory = blx()->path->getPluginsPath().$className.'/services/';
+		// Get the services folder for the plugin.
+		$serviceFolder = blx()->path->getPluginsPath().$className.'/services/';
 
 		// Make sure it exists.
-		if (is_dir($serviceDirectory))
+		if (IOHelper::folderExists($serviceFolder))
 		{
 			// See if it has any files in ClassName*Service.php format.
-			$files = glob($serviceDirectory.$className."*Service.php");
+			$files = IOHelper::getFolderContents($serviceFolder, false, "{$className}.*Service\.php");
 			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
 				{
 					// Get the file name minus the extension.
-					$fileName = pathinfo($file, PATHINFO_FILENAME);
+					$fileName = IOHelper::getFileName($file, false);
 
 					// Import the class.
 					Blocks::import('plugins.'.$className.'.services.'.$fileName);

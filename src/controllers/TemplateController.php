@@ -29,7 +29,7 @@ class TemplateController extends BaseController
 	public function actionOffline()
 	{
 		if (($path = blx()->config->offlinePath) !== null)
-			$templateName = pathinfo($path, PATHINFO_FILENAME);
+			$templateName = IOHelper::getFileName($path, false);
 		else
 			$templateName = '_offline';
 

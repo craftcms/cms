@@ -16,6 +16,6 @@ class Locale extends \CLocale
 		$dataPath = static::$dataPath === null ? blx()->path->getFrameworkPath().'i18n/data' : static::$dataPath;
 		$dataFile = $dataPath.'/'.$id.'.php';
 
-		return is_file($dataFile);
+		return IOHelper::fileExists($dataFile);
 	}
 }

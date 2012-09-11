@@ -32,7 +32,7 @@ class PhpMessageSource extends \CPhpMessageSource
 			foreach ($paths as $path)
 			{
 				$file = $path.$language.'.php';
-				if (is_file($file))
+				if (IOHelper::fileExists($file))
 				{
 					$translations = include($file);
 					if (is_array($translations))

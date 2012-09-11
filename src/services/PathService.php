@@ -170,7 +170,7 @@ class PathService extends ApplicationComponent
 	{
 		// If the user has set offlinePath config item, let's use it.
 		if (($path = blx()->config->offlinePath) !== null)
-			return substr($path, 0, strlen($path) - strlen(pathinfo($path, PATHINFO_BASENAME)));
+			return substr($path, 0, strlen($path) - strlen(IOHelper::getFileName($path)));
 
 		return $this->getCpTemplatesPath();
 	}
@@ -184,8 +184,8 @@ class PathService extends ApplicationComponent
 	{
 		$path = $this->getRuntimePath().'compiled_templates/';
 
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
+		if (!IOHelper::folderExists($path))
+			IOHelper::createFolder($path, 0777);
 
 		return $path;
 	}
@@ -197,8 +197,8 @@ class PathService extends ApplicationComponent
 	{
 		$path = $this->getRuntimePath().'sessions/';
 
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
+		if (!IOHelper::folderExists($path))
+			IOHelper::createFolder($path, 0777);
 
 		return $path;
 	}
@@ -210,8 +210,8 @@ class PathService extends ApplicationComponent
 	{
 		$path = $this->getRuntimePath().'state/';
 
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
+		if (!IOHelper::folderExists($path))
+			IOHelper::createFolder($path, 0777);
 
 		return $path;
 	}
@@ -223,8 +223,8 @@ class PathService extends ApplicationComponent
 	{
 		$path = $this->getRuntimePath().'cache/';
 
-		if (!is_dir($path))
-			mkdir($path, 0777, true);
+		if (!IOHelper::folderExists($path))
+			IOHelper::createFolder($path, 0777);
 
 		return $path;
 	}

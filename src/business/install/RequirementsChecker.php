@@ -208,7 +208,7 @@ class RequirementsChecker extends \CComponent
 	private function _getWritableFolders()
 	{
 		$folders = array(
-			blx()->file->set(blx()->path->getRuntimePath(), false),
+			blx()->path->getRuntimePath(),
 		);
 
 		return $folders;
@@ -238,9 +238,9 @@ class RequirementsChecker extends \CComponent
 
 		foreach ($writableFolders as $writableFolder)
 		{
-			if (!$writableFolder->getWritable())
+			if (!IOHelper::isWritable($writableFolder))
 			{
-				$errorFolders[] = $writableFolder->getRealPath();
+				$errorFolders[] = IOHelper::getRealPath($writableFolder);
 				$installResult = InstallStatus::Failure;
 			}
 		}

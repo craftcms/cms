@@ -15,7 +15,7 @@ class TemplateLoader implements \Twig_LoaderInterface
 	public function getSource($template)
 	{
 		if (is_string($template))
-			return file_get_contents(TemplateHelper::findTemplate($template));
+			return IOHelper::getFileContents(TemplateHelper::findTemplate($template));
 		else
 			return $template->template;
 	}
@@ -44,7 +44,7 @@ class TemplateLoader implements \Twig_LoaderInterface
 	public function isFresh($template, $time)
 	{
 		if (is_string($template))
-			return filemtime(TemplateHelper::findTemplate($template)) <= $time;
+			return IOHelper::getLastTimeModified(TemplateHelper::findTemplate($template)) <= $time;
 		else
 			return false;
 	}

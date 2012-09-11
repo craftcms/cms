@@ -19,7 +19,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 			{
 				if (strpos($this->commands[$name], '/') !== false || strpos($this->commands[$name], '\\') !== false)
 				{
-					$className = substr(basename($this->commands[$name]), 0, -4);
+					$className = substr(IOHelper::getFileName($this->commands[$name], false), 0, -4);
 
 					// If it's a default framework command, don't namespace it.
 					if (strpos($this->commands[$name], 'framework') === false)
@@ -46,7 +46,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	 * Adds commands from the specified command path.
 	 * If a command already exists, the new one will overwrite it.
 	 *
-	 * @param string $path the alias of the directory containing the command class files.
+	 * @param string $path the alias of the folder containing the command class files.
 	 */
 	public function addCommands($path)
 	{

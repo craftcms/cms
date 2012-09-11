@@ -112,7 +112,7 @@ class ErrorHandler extends \CErrorHandler
 				// If the requested template file is not the same as the template file the exception was thrown in, let's try and build a stack trace.
 				if ($templateFile !== $stackTraceStartTemplate)
 				{
-					if (is_file($stackTraceStartTemplate))
+					if (IOHelper::fileExists($stackTraceStartTemplate))
 						$traces = $this->processTemplateStackTrace($stackTraceStartTemplate);
 
 						$traces = $this->prepStackTrace($traces);
@@ -203,7 +203,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getExtendsTemplateLineNumber($templateFile)
 	{
-		$contents = file($templateFile);
+		$contents = IOHelper::getFileContents($templateFile, true);
 		$matches = preg_grep("/({%\s*extends\s*('|\"))([A-Za-z0-9_\\/]*)('|\")(\s%})/uis", $contents);
 
 		if (count($matches) > 0)
@@ -222,7 +222,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getExtendsTemplateName($templateFile)
 	{
-		$contents = file_get_contents($templateFile);
+		$contents = IOHelper::getFileContents($templateFile);
 		$n = preg_match("/({%\s*extends\s*('|\"))([A-Za-z0-9_\\/]*)('|\")(\s%})/uis", $contents, $matches);
 
 		if ($n > 0)
@@ -363,7 +363,7 @@ class ErrorHandler extends \CErrorHandler
 		}
 		else
 		{
-			$relativePath = pathinfo($viewFile, PATHINFO_FILENAME);
+			$relativePath = IOHelper::getFileName($viewFile, false);
 			try
 			{
 				if (($output = TemplateHelper::render($relativePath, $data)) !== false)
@@ -386,7 +386,7 @@ class ErrorHandler extends \CErrorHandler
 	 * Looks for the template under the specified directory.
 	 *
 	 * @access protected
-	 * @param string $templatePath the directory containing the views
+	 * @param string $templatePath the folder containing the views
 	 * @param string $templateName template name (either 'exception' or 'error')
 	 * @param integer $code HTTP status code
 	 * @param string $srcLanguage the language that the template is in
@@ -394,7 +394,7 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
-		$extension = FileHelper::getExtension($templatePath.$templateName, 'html');
+		$extension = IOHelper::getExtension($templatePath.$templateName, 'html');
 
 		if (strpos($templatePath, '/framework/') !== false)
 			$extension = 'php';
@@ -406,18 +406,18 @@ class ErrorHandler extends \CErrorHandler
 				if (!is_numeric($code))
 					$code = '';
 
-				$templateFile = blx()->findLocalizedFile(realpath($templatePath).'/'.$templateName.$code.'.'.$extension, $srcLanguage);
-				if (is_file($templateFile))
-					return realpath($templateFile);
+				$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.$code.'.'.$extension), $srcLanguage);
+				if (IOHelper::fileExists($templateFile))
+					return IOHelper::getRealPath($templateFile);
 
 				return null;
 			}
 		}
 
-		$templateFile = blx()->findLocalizedFile(realpath($templatePath).'/'.$templateName.'.'.$extension, $srcLanguage);
+		$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
 
-		if (is_file($templateFile))
-			$templateFile = realpath($templateFile);
+		if (IOHelper::fileExists($templateFile))
+			$templateFile = IOHelper::getRealPath($templateFile);
 
 		return $templateFile;
 	}
@@ -447,7 +447,7 @@ class ErrorHandler extends \CErrorHandler
 		for ($counter = 0; $counter < count($viewPaths); $counter ++)
 		{
 			$viewFile = $this->getViewFileInternal($viewPaths[$counter], $view, $code, null);
-			if (is_file($viewFile))
+			if (IOHelper::fileExists($viewFile))
 				return $viewFile;
 		}
 

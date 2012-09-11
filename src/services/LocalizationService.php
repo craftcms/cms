@@ -55,13 +55,13 @@ class LocalizationService extends ApplicationComponent
 			$this->_translatedLanguages = array();
 
 			$path = blx()->path->getCpTranslationsPath();
-			$dirs = glob($path.'*.php');
+			$folders = IOHelper::getFolderContents($path, false, ".*\.php");
 
-			if (is_array($dirs) && count($dirs) > 0)
+			if (is_array($folders) && count($folders) > 0)
 			{
-				foreach ($dirs as $dir)
+				foreach ($folders as $dir)
 				{
-					$this->_translatedLanguages[] = pathinfo($dir, PATHINFO_FILENAME);
+					$this->_translatedLanguages[] = IOHelper::getFileName($dir, false);
 				}
 			}
 
