@@ -111,7 +111,7 @@ class File extends BaseIO
 		else
 		{
 			if (!$this->_stringContents)
-				$this->_arrayContents = IOHelper::getFileContents($this->getRealPath(), $array);
+				$this->_stringContents = IOHelper::getFileContents($this->getRealPath(), $array);
 
 			return $this->_stringContents;
 		}
