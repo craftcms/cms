@@ -35,10 +35,12 @@ class MultiSelectBlock extends BaseOptionsBlock
 	 *
 	 * @return string
 	 */
-	public function getInputHtml()
+	public function getInputHtml($data = null)
 	{
-		return TemplateHelper::render('_components/blocks/MultiSelect/field', array(
-			'settings' => new ModelVariable($this->getSettings())
+		return TemplateHelper::render('_components/blocks/MultiSelect/input', array(
+			'record'   => new ModelVariable($this->record),
+			'settings' => new ModelVariable($this->getSettings()),
+			'data'     => $data
 		));
 	}
 }

@@ -18,8 +18,7 @@ class EmailService extends ApplicationComponent
 	 */
 	public function getAllMessages()
 	{
-		$messages = EmailMessageRecord::model()->findAll();
-		return $messages;
+		return EmailMessageRecord::model()->findAll();
 	}
 
 	/**
@@ -30,8 +29,7 @@ class EmailService extends ApplicationComponent
 	 */
 	public function getMessageById($messageId)
 	{
-		$message = EmailMessageRecord::model()->findById($messageId);
-		return $message;
+		return EmailMessageRecord::model()->findById($messageId);
 	}
 
 	/**
@@ -42,10 +40,9 @@ class EmailService extends ApplicationComponent
 	 */
 	public function getMessageByKey($key)
 	{
-		$message = EmailMessageRecord::model()->findByAttributes(array(
+		return EmailMessageRecord::model()->findByAttributes(array(
 			'key' => $key
 		));
-		return $message;
 	}
 
 	/**

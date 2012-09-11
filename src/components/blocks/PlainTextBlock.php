@@ -19,13 +19,15 @@ class PlainTextBlock extends BaseBlock
 	/**
 	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array(
-			'multiline'     => array(AttributeType::Bool, 'default' => true),
 			'hint'          => array(AttributeType::String, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),
+			'multiline'     => array(AttributeType::Bool),
+			'initialRows'   => array(AttributeType::Number, 'default' => 4),
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
 			'maxLengthUnit' => array(AttributeType::Enum, 'values' => array('words', 'chars')),
 		);
@@ -48,10 +50,12 @@ class PlainTextBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getInputHtml()
+	public function getInputHtml($data = null)
 	{
-		return TemplateHelper::render('_components/blocks/PlainText/field', array(
-			'settings' => new ModelVariable($this->getSettings())
+		return TemplateHelper::render('_components/blocks/PlainText/input', array(
+			'record'   => new ModelVariable($this->record),
+			'settings' => new ModelVariable($this->getSettings()),
+			'data'     => $data
 		));
 	}
 }

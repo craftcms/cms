@@ -19,11 +19,12 @@ class FeedWidget extends BaseWidget
 	}
 
 	/**
-	 * Defines the widget settings.
+	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array(
 			'url'   => array(AttributeType::Url, 'required' => true),

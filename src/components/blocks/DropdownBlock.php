@@ -32,9 +32,9 @@ class DropdownBlock extends BaseOptionsBlock
 	 *
 	 * @return string
 	 */
-	public function getInputHtml()
+	public function getInputHtml($data = null)
 	{
-		return TemplateHelper::render('_components/blocks/Dropdown/field', array(
+		return TemplateHelper::render('_components/blocks/Dropdown/input', array(
 			'settings' => new ModelVariable($this->getSettings())
 		));
 	}

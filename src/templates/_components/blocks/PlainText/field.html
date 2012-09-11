@@ -1,7 +1,0 @@
-<div class="textwrapper"><div class="textwrapper"></div>
-	{% if settings.multiline %}
-		<div class="textwrapper"><textarea id="{{ handle }}-block" name="{{ handle }}" class="text nicetext" data-hint="{{ settings.hint }}" rows="4">{{ data }}</textarea></div>
-	{% else %}
-		<div class="textwrapper"><input id="{{ handle }}-block" name="{{ handle }}" class="text nicetext" data-hint="{{ settings.hint }}" type="text" value="{{ data }}"></div>
-	{% endif %}
-</div>

@@ -13,6 +13,15 @@ function normalizeDbHostname($dbHostname)
 	return $dbHostname;
 }
 
+// Table prefixes cannot be longer than 5 characters
+$tablePrefix = rtrim($dbConfig['tablePrefix'], '_');
+if ($tablePrefix)
+{
+	if (strlen($tablePrefix) > 5)
+		$tablePrefix = substr($tablePrefix, 0, 5);
+	$tablePrefix .= '_';
+}
+
 return CMap::mergeArray(
 	require(BLOCKS_APP_PATH.'config/common.php'),
 
@@ -35,7 +44,7 @@ return CMap::mergeArray(
 				'username'          => $dbConfig['user'],
 				'password'          => $dbConfig['password'],
 				'charset'           => $dbConfig['charset'],
-				'tablePrefix'       => rtrim($dbConfig['tablePrefix'], '_').'_',
+				'tablePrefix'       => $tablePrefix,
 				'driverMap'         => array('mysql' => 'Blocks\MysqlSchema'),
 				'class'             => 'Blocks\DbConnection',
 			),

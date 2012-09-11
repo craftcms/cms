@@ -333,6 +333,7 @@ textarea.text,
 .field .heading p { margin-top: 0; font-size: 11px; color: #999; }
 
 .nested-fields { margin: -25px -5px; padding: 25px 5px 0; overflow: hidden; }
+.nested-fields.hidden { height: 0; }
 .nested-fields > .field:last-child { padding-bottom: 25px; }
 
 /* checkbox */

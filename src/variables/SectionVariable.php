@@ -14,7 +14,7 @@ class SectionVariable extends ModelVariable
 	public function blocks()
 	{
 		$blocks = blx()->blocks->populateBlocks($this->model->blocks);
-		return VariableHelper::populateComponentVariables($blocks, 'BlockVariable');
+		return VariableHelper::populateVariables($blocks, 'BlockVariable');
 	}
 
 	/**

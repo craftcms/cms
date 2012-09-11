@@ -285,7 +285,8 @@ class DbCommand extends \CDbCommand
 	 */
 	public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete=null, $update=null)
 	{
-		return parent::addForeignKey($this->_addTablePrefix($name), $this->_addTablePrefix($table), $columns, $this->_addTablePrefix($refTable), $refColumns, $delete, $update);
+		$name = md5($this->_addTablePrefix($name));
+		return parent::addForeignKey($name, $this->_addTablePrefix($table), $columns, $this->_addTablePrefix($refTable), $refColumns, $delete, $update);
 	}
 
 	/**
@@ -295,7 +296,8 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropForeignKey($name, $table)
 	{
-		return parent::dropForeignKey($this->_addTablePrefix($name), $this->_addTablePrefix($table));
+		$name = md5($this->_addTablePrefix($name));
+		return parent::dropForeignKey($name, $this->_addTablePrefix($table));
 	}
 
 	/**
@@ -307,7 +309,8 @@ class DbCommand extends \CDbCommand
 	 */
 	public function createIndex($name, $table, $column, $unique=false)
 	{
-		return parent::createIndex($this->_addTablePrefix($name), $this->_addTablePrefix($table), $column, $unique);
+		$name = md5($this->_addTablePrefix($name));
+		return parent::createIndex($name, $this->_addTablePrefix($table), $column, $unique);
 	}
 
 	/**
@@ -317,6 +320,7 @@ class DbCommand extends \CDbCommand
 	 */
 	public function dropIndex($name, $table)
 	{
+		$name = md5($this->_addTablePrefix($name));
 		return parent::dropIndex($name, $this->getTableName($table));
 	}
 
@@ -336,7 +340,7 @@ class DbCommand extends \CDbCommand
 			}
 		}
 		else
-			$table = preg_replace('/^\w+/', blx()->config->tablePrefix.'\0', $table);
+			$table = preg_replace('/^\w+/', blx()->db->tablePrefix.'\0', $table);
 
 		return $table;
 	}

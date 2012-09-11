@@ -37,8 +37,9 @@ class EmailVariable
 	 */
 	public function getMessage($messageId)
 	{
-		$message = blx()->email->getMessageById($messageId);
-		return $message;
+		$record = blx()->email->getMessageById($messageId);
+		if ($record)
+			return new ModelVariable($record);
 	}
 
 	/**
@@ -50,7 +51,8 @@ class EmailVariable
 	 */
 	public function getMessageContent($messageId, $language = null)
 	{
-		$content = blx()->email->getMessageContent($messageId, $language);
-		return $content;
+		$record = blx()->email->getMessageContent($messageId, $language);
+		if ($record)
+			return new modelVariable($record);
 	}
 }

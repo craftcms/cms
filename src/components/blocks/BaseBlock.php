@@ -7,7 +7,6 @@ namespace Blocks;
 abstract class BaseBlock extends BaseComponent implements IBlock
 {
 	protected $componentType = 'Block';
-	protected $settingsColumn = 'blockSettings';
 
 	/**
 	 * Returns the content column type.
@@ -26,5 +25,5 @@ abstract class BaseBlock extends BaseComponent implements IBlock
 	 * @abstract
 	 * @return string
 	 */
-	abstract public function getInputHtml();
+	abstract public function getInputHtml($data = null);
 }

@@ -86,8 +86,8 @@ class ContentController extends BaseController
 		$settings['name']         = blx()->request->getPost('name');
 		$settings['handle']       = blx()->request->getPost('handle');
 		$settings['instructions'] = blx()->request->getPost('instructions');
-		$settings['required']     = (bool)blx()->request->getPost('required');
 		/* BLOCKSPRO ONLY */
+		$settings['required']     = (bool)blx()->request->getPost('required');
 		$settings['translatable'] = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
 

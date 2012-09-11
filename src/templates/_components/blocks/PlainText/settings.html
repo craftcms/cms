@@ -38,5 +38,18 @@
 {{ forms.checkboxField({
 	label: "Allow line breaks"|t,
 	name: 'multiline',
-	checked: settings.multiline
+	checked: settings.multiline,
+	toggle: 'initialRowsContainer'
 }) }}
+
+
+<div id="initialRowsContainer" class="nested-fields{% if not settings.multiline %} hidden{% endif %}">
+	{{ forms.textField({
+		label: "Initial Rows"|t,
+		id: 'initialRows',
+		name: 'initialRows',
+		value: settings.initialRows,
+		size: 3,
+		errors: settings.errors.initialRows
+	}) }}
+</div>

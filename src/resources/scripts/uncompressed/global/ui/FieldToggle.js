@@ -7,8 +7,9 @@
 Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	$toggle: null,
-	$target: null,
-	isCheckbox: null,
+
+	_$target: null,
+	_isCheckbox: null,
 
 	init: function(toggle)
 	{
@@ -23,18 +24,32 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 		this.$toggle.data('fieldtoggle', this);
 
-		this.isCheckbox = (this.$toggle.prop('nodeName') == 'INPUT' && this.$toggle.attr('type').toLowerCase() == 'checkbox');
-		this.findTarget();
+		if (!this.isCheckbox())
+			this.findTarget();
 
 		this.addListener(this.$toggle, 'change', 'onToggleChange');
 	},
 
+	isCheckbox: function()
+	{
+		if (!this._isCheckbox)
+			this._isCheckbox = (this.$toggle.prop('nodeName') == 'INPUT' && this.$toggle.attr('type').toLowerCase() == 'checkbox');
+		return this._isCheckbox;
+	},
+
+	getTarget: function()
+	{
+		if (!this._$target)
+			this.findTarget();
+		return this._$target;
+	},
+
 	findTarget: function()
 	{
-		if (this.isCheckbox)
-			this.$target = $('#'+this.$toggle.attr('data-target'));
+		if (this.isCheckbox())
+			this._$target = $('#'+this.$toggle.attr('data-target'));
 		else
-			this.$target = $('#'+this.getToggleVal());
+			this._$target = $('#'+this.getToggleVal());
 	},
 
 	getToggleVal: function()
@@ -46,7 +61,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 	{
 		var val = this.getToggleVal();
 
-		if (this.isCheckbox)
+		if (this.isCheckbox())
 		{
 			if (val)
 				this.showTarget();
@@ -63,11 +78,11 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	showTarget: function()
 	{
-		if (this.$target.length)
+		if (this.getTarget().length)
 		{
-			if (this.isCheckbox)
+			if (this.isCheckbox())
 			{
-				var $target = this.$target;
+				var $target = this.getTarget();
 				$target.height('auto');
 				var height = $target.height();
 				$target.height(0);
@@ -77,19 +92,19 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 			}
 			else
 			{
-				this.$target.show();
+				this.getTarget().show();
 			}
 		}
 	},
 
 	hideTarget: function()
 	{
-		if (this.$target.length)
+		if (this.getTarget().length)
 		{
-			if (this.isCheckbox)
-				this.$target.stop().animate({height: 0}, 'fast');
+			if (this.isCheckbox())
+				this.getTarget().stop().animate({height: 0}, 'fast');
 			else
-				this.$target.hide();
+				this.getTarget().hide();
 		}
 	}
 });

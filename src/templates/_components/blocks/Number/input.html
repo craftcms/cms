@@ -1,0 +1,9 @@
+{% from "_includes/forms" import text %}
+
+{{ text({
+	id: record.handle,
+	name: record.handle,
+	value: data,
+	type: 'number',
+	size: 5
+}) }}

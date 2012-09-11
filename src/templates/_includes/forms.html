@@ -55,13 +55,31 @@
 {% endmacro %}
 
 
+{% macro multiselect(config) %}
+	<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %} multiple{% if config.disabled %} disabled{% endif %}>
+		{% for value, label in config.options %}
+			<option value="{{ value }}"{% if value in config.values %} selected{% endif %}>{{ label }}</option>
+		{% endfor %}
+	</select>
+{% endmacro %}
+
+
 {% macro checkbox(config) %}
 	{% set class = [ config.class, (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
 	{% set value = config.value ? config.value : '1' %}
-	<label>
+	<div><label>
 		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if class %} class="{{ class }}"{% endif %} type="checkbox"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %}>
 		{{ config.label|raw }}
-	</label>
+	</label></div>
+{% endmacro %}
+
+
+{% macro radio(config) %}
+	{% set value = config.value ? config.value : '1' %}
+	<div><label>
+		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.class %} class="{{ config.class }}"{% endif %} type="radio"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}>
+		{{ config.label|raw }}
+	</label></div>
 {% endmacro %}
 
 
@@ -91,7 +109,7 @@
 			</div>
 		{% endif %}
 		<div class="input">
-			{{ input }}
+			{{ input|raw }}
 		</div>
 		{{ _self.errorList(config.errors) }}
 	</div>
@@ -115,6 +133,11 @@
 
 {% macro selectField(config) %}
 	{{ _self.field(config, _self.select(config)) }}
+{% endmacro %}
+
+
+{% macro multiselectField(config) %}
+	{{ _self.field(config, _self.multiselect(config)) }}
 {% endmacro %}
 
 

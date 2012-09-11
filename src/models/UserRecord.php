@@ -47,21 +47,10 @@ class UserRecord extends BaseRecord
 	{
 		return array(
 			/* BLOCKSPRO ONLY */
-			'blocks'  => array(static::HAS_MANY, 'UserBlockRecord', 'userId'),
 			'content' => array(static::HAS_ONE, 'UserContentRecord', 'userId'),
 			/* end BLOCKSPRO ONLY */
 			'widgets' => array(static::HAS_MANY, 'Widget', 'userId'),
 		);
-	}
-
-	/**
-	 * String representation of a user
-	 *
-	 * @return string
-	 */
-	function __toString()
-	{
-		return $this->getFullName();
 	}
 
 	/**
@@ -75,7 +64,7 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
-	 * Returns whether this is the current logged-in user
+	 * Returns whether this is the current logged-in user.
 	 *
 	 * @return bool
 	 */
@@ -85,6 +74,8 @@ class UserRecord extends BaseRecord
 	}
 
 	/**
+	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
+	 *
 	 * @return mixed
 	 */
 	public function getRemainingCooldownTime()

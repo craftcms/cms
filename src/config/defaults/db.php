@@ -35,7 +35,7 @@ $dbConfig['password'] = '';
 $dbConfig['database'] = '';
 
 /*
- * The prefix to use when naming tables
+ * The prefix to use when naming tables. This can be no greater than 5 characters.
  */
 $dbConfig['tablePrefix'] = 'blx';
 

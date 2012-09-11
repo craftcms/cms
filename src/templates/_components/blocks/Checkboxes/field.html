@@ -1,3 +1,0 @@
-{% for option in settings.options %}
-	<div><label><input {% if index == 0 %}id="{{ handle }}-block"{% endif %} name="{{ handle }}[]" type="checkbox" value="{{ option }}" {% if option in data %}checked{% endif %}> {{ option }}</label></div>
-{% endfor %}

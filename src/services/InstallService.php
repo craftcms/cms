@@ -51,7 +51,7 @@ class InstallService extends ApplicationComponent
 			$this->_logUserIn($user, $inputs['password']);
 
 			Blocks::log('Assigning default dashboard widgets to user.', \CLogger::LEVEL_INFO);
-			blx()->dashboard->addDefaultWidgets();
+			blx()->dashboard->addDefaultUserWidgets();
 
 			Blocks::log('Saving default mail settings.', \CLogger::LEVEL_INFO);
 			$this->_saveDefaultMailSettings($user->email, $inputs['siteName']);

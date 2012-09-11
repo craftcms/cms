@@ -7,24 +7,24 @@ namespace Blocks;
 class VariableHelper
 {
 	/**
-	 * Returns an array of ModelVariable's for a given set of models.
+	 * Returns an array of variables for a given set of class instances.
 	 *
 	 * @static
-	 * @param array       $models
-	 * @param string|null $class
+	 * @param array $instances
+	 * @param string $class
 	 * @return array
 	 */
-	public static function populateModelVariables($models, $class = 'ModelVariable')
+	public static function populateVariables($instances, $class)
 	{
 		$variables = array();
 
-		if (is_array($models))
+		if (is_array($instances))
 		{
 			$nsClass = __NAMESPACE__.'\\'.$class;
 
-			foreach ($models as $key => $model)
+			foreach ($instances as $key => $instance)
 			{
-				$variables[$key] = new $nsClass($model);
+				$variables[$key] = new $nsClass($instance);
 			}
 		}
 
@@ -32,27 +32,26 @@ class VariableHelper
 	}
 
 	/**
+	 * Returns an array of ModelVariable's for a given set of models.
+	 *
+	 * @static
+	 * @param array $models
+	 * @return array
+	 */
+	public static function populateModelVariables($models)
+	{
+		return static::populateVariables($models, 'ModelVariable');
+	}
+
+	/**
 	 * Returns an array of ComponentVariable's for a given set of components.
 	 *
 	 * @static
-	 * @param array       $components
-	 * @param string|null $class
+	 * @param array $components
 	 * @return array
 	 */
-	public static function populateComponentVariables($components, $class = 'ComponentVariable')
+	public static function populateComponentVariables($components)
 	{
-		$variables = array();
-
-		if (is_array($components))
-		{
-			$nsClass = __NAMESPACE__.'\\'.$class;
-
-			foreach ($components as $key => $component)
-			{
-				$variables[$key] = new $nsClass($component);
-			}
-		}
-
-		return $variables;
+		return static::populateVariables($components, 'ComponentVariable');
 	}
 }

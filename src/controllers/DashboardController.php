@@ -26,7 +26,7 @@ class DashboardController extends BaseController
 	/**
 	 * Saves a widget.
 	 */
-	public function actionSaveWidget()
+	public function actionSaveUserWidget()
 	{
 		$this->requirePostRequest();
 
@@ -37,7 +37,7 @@ class DashboardController extends BaseController
 		$settings['class'] = $class;
 		$settings['settings'] = isset($widgetSettings[$class]) ? $widgetSettings[$class] : null;
 
-		$widget = blx()->dashboard->saveWidget($settings, $widgetId);
+		$widget = blx()->dashboard->saveUserWidget($settings, $widgetId);
 
 		// Did it save?
 		if (!$widget->getSettings()->hasErrors() && !$widget->record->hasErrors())
@@ -59,26 +59,26 @@ class DashboardController extends BaseController
 	/**
 	 * Deletes a widget.
 	 */
-	public function actionDeleteWidget()
+	public function actionDeleteUserWidget()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
 		$widgetId = Json::decode(blx()->request->getRequiredPost('widgetId'));
-		blx()->dashboard->deleteWidget($widgetId);
+		blx()->dashboard->deleteUserWidget($widgetId);
 		$this->returnJson(array('success' => true));
 	}
 
 	/**
 	 * Reorders widgets.
 	 */
-	public function actionReorderWidgets()
+	public function actionReorderUserWidgets()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
 		$widgetIds = Json::decode(blx()->request->getRequiredPost('widgetIds'));
-		blx()->dashboard->reorderWidgets($widgetIds);
+		blx()->dashboard->reorderUserWidgets($widgetIds);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -89,7 +89,7 @@ class DashboardController extends BaseController
 	public function actionGetWidgetHtml()
 	{
 		$widgetId = blx()->request->getRequiredParam('widgetId');
-		$widget = blx()->dashboard->getWidgetById($widgetId);
+		$widget = blx()->dashboard->getUserWidgetById($widgetId);
 
 		if (!$widget)
 			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));

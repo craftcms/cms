@@ -23,14 +23,6 @@ abstract class BaseComponent extends ApplicationComponent
 	 */
 	protected $componentType;
 
-	/**
-	 * The column that the record settings will be stored in.
-	 *
-	 * @access protected
-	 * @var string
-	 */
-	protected $settingsColumn;
-
 	private $_classHandle;
 	private $_settings;
 
@@ -55,20 +47,19 @@ abstract class BaseComponent extends ApplicationComponent
 
 			// If a record is set, fill in the saved settings
 			if (isset($this->record))
-			{
-				$settings = $this->record->getAttribute($this->settingsColumn);
-				$this->_settings->setAttributes($settings);
-			}
+				$this->_settings->setAttributes($this->record->settings);
 		}
+
 		return $this->_settings;
 	}
 
 	/**
 	 * Gets the settings model.
 	 *
+	 * @access protected
 	 * @return BaseModel
 	 */
-	public function getSettingsModel()
+	protected function getSettingsModel()
 	{
 		return new Model($this->defineSettings());
 	}
@@ -76,9 +67,10 @@ abstract class BaseComponent extends ApplicationComponent
 	/**
 	 * Defines the settings.
 	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineSettings()
+	protected function defineSettings()
 	{
 		return array();
 	}
@@ -90,7 +82,20 @@ abstract class BaseComponent extends ApplicationComponent
 	 */
 	public function setSettings($values)
 	{
+		$values = $this->preprocessSettings($values);
 		$this->getSettings()->setAttributes($values);
+	}
+
+	/**
+	 * Preprocesses settings values coming from setSettings() before they get saved to the settings model.
+	 *
+	 * @access protected
+	 * @param array $values
+	 * @return array
+	 */
+	protected function preprocessSettings($values)
+	{
+		return $values;
 	}
 
 	/**

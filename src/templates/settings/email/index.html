@@ -128,7 +128,7 @@
 				toggle: 'smtpAuthCredentials-field'
 			}) }}
 
-			<div id="smtpAuthCredentials-field" class="nested-fields" {% if not settings.smtpAuth %}style="height:0"{% endif %}>
+			<div id="smtpAuthCredentials-field" class="nested-fields{% if not settings.smtpAuth %} hidden{% endif %}">
 				{{ forms.textField({
 					label: "Username"|t,
 					id: 'smtp-username',

@@ -111,6 +111,10 @@ return CMap::mergeArray(
 			'urlManager' => array(
 				'class' => 'Blocks\UrlManager',
 				'cpRoutes' => array(
+					/* BLOCKS ONLY */
+					'content\/blog\/new'                                               => 'content/blog/_edit',
+					'content\/blog\/(?P<entryId>\d+)'                                  => 'content/blog/_edit',
+					/* end BLOCKS ONLY */
 					'dashboard\/settings\/new'                                         => 'dashboard/settings/_widgetsettings',
 					'dashboard\/settings\/(?P<widgetId>\d+)'                           => 'dashboard/settings/_widgetsettings',
 					'update\/(?P<handle>[^\/]*)'                                       => 'update',
