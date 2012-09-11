@@ -165,10 +165,6 @@ class DashboardService extends ApplicationComponent
 	{
 		// Add the default dashboard widgets
 		$this->saveUserWidget(array(
-			'class' => 'RecentActivity'
-		));
-
-		$this->saveUserWidget(array(
 			'class'    => 'Feed',
 			'settings' => array(
 				'url' => 'http://feeds.feedburner.com/blogandtonic',
