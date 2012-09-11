@@ -6,21 +6,10 @@ namespace Blocks;
  */
 class ContentVariable
 {
-	/* BLOCKS ONLY */
-
-	/**
-	 * Returns all entry blocks.
-	 *
-	 * @return array
-	 */
-	public function entryBlocks()
-	{
-		$blocks = blx()->content->getEntryBlocks();
-		return VariableHelper::populateVariables($blocks, 'BlockVariable');
-	}
-
-	/* end BLOCKS ONLY */
 	/* BLOCKSPRO ONLY */
+	// -------------------------------------------
+	//  Sections
+	// -------------------------------------------
 
 	/**
 	 * Gets sections.
@@ -49,7 +38,7 @@ class ContentVariable
 	 * Gets a section by its ID.
 	 *
 	 * @param int $id
-	 * @return Section
+	 * @return SectionVariable
 	 */
 	public function getSectionById($id)
 	{
@@ -57,19 +46,51 @@ class ContentVariable
 		if ($record)
 			return new SectionVariable($record);
 	}
-
 	/* end BLOCKSPRO ONLY */
+
+	// -------------------------------------------
+	//  Entry Blocks
+	// -------------------------------------------
+
+	/* BLOCKS ONLY */
+	/**
+	 * Returns all entry blocks.
+	 *
+	 * @return array
+	 */
+	public function entryBlocks()
+	{
+		$blocks = blx()->content->getEntryBlocks();
+		return VariableHelper::populateVariables($blocks, 'BlockVariable');
+	}
+	/* end BLOCKS ONLY */
 
 	/**
 	 * Gets an entry block by its ID.
 	 *
 	 * @param int $id
-	 * @return EntryBlock
+	 * @return BlockVariable
 	 */
 	public function getEntryBlockById($id)
 	{
 		$block = blx()->content->getEntryBlockById($id);
 		if ($block)
 			return new BlockVariable($block);
+	}
+
+	// -------------------------------------------
+	//  Entries
+	// -------------------------------------------
+
+	/**
+	 * Gets entries.
+	 *
+	 * @param array|null $params
+	 * @return array
+	 */
+	public function getEntries($params = array())
+	{
+		$records = blx()->content->getEntries($params);
+		return VariableHelper::populateVariables($records, 'EntryVariable');
 	}
 }

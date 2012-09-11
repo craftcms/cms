@@ -1,0 +1,11 @@
+{% from "_includes/forms" import checkbox %}
+
+{% for value, label in settings.options %}
+	{{ checkbox({
+		id: (loop.first ? record.handle : ''),
+		label: label,
+		name: record.handle ~ '[]',
+		value: value,
+		checked: (option in data)
+	}) }}
+{% endfor %}

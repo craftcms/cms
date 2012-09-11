@@ -58,10 +58,12 @@ class NumberBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getInputHtml()
+	public function getInputHtml($data = null)
 	{
-		return TemplateHelper::render('_components/blocks/Number/field', array(
-			'settings' => new ModelVariable($this->getSettings())
+		return TemplateHelper::render('_components/blocks/Number/input', array(
+			'record'   => new ModelVariable($this->record),
+			'settings' => new ModelVariable($this->getSettings()),
+			'data'     => $data
 		));
 	}
 }

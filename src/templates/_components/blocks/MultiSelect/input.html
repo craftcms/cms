@@ -1,0 +1,8 @@
+{% from "_includes/forms" import multiselect %}
+
+{{ multiselect({
+	id: record.handle,
+	name: record.handle ~ '[]',
+	options: settings.options,
+	values: data,
+}) }}

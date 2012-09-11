@@ -25,5 +25,5 @@ abstract class BaseBlock extends BaseComponent implements IBlock
 	 * @abstract
 	 * @return string
 	 */
-	abstract public function getInputHtml();
+	abstract public function getInputHtml($data = null);
 }

@@ -50,10 +50,12 @@ class PlainTextBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function getInputHtml()
+	public function getInputHtml($data = null)
 	{
-		return TemplateHelper::render('_components/blocks/PlainText/field', array(
-			'settings' => new ModelVariable($this->getSettings())
+		return TemplateHelper::render('_components/blocks/PlainText/input', array(
+			'record'   => new ModelVariable($this->record),
+			'settings' => new ModelVariable($this->getSettings()),
+			'data'     => $data
 		));
 	}
 }

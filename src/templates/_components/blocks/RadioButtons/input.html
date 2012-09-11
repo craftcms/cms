@@ -1,0 +1,11 @@
+{% from "_includes/forms" import radio %}
+
+{% for value, label in settings.options %}
+	{{ radio({
+		id: (loop.first ? record.handle : ''),
+		label: label,
+		name: record.handle ~ '[]',
+		value: value,
+		checked: (option in data)
+	}) }}
+{% endfor %}

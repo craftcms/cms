@@ -55,12 +55,12 @@ abstract class BaseOptionsBlock extends BaseBlock
 	{
 		// Prepare the options array for the textarea
 		$options = '';
-		foreach ($this->getSettings()->options as $name => $label)
+		foreach ($this->getSettings()->options as $value => $label)
 		{
-			if ((string)$name === (string)$label)
+			if ((string)$value === (string)$label)
 				$options .= $label."\n";
 			else
-				$options .= $name.' => '.$label."\n";
+				$options .= $value.' => '.$label."\n";
 		}
 
 		return TemplateHelper::render('_components/blocks/optionsblocksettings', array(

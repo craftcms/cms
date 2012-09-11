@@ -57,76 +57,80 @@ class EntryRecord extends BaseRecord
 	protected $_draft;
 
 	/**
-	 * Returns the status of the entry
+	 * Returns the entry's status (live, pending, expired, offline).
 	 *
-	 * @return string The entry status (live, pending, expired, offline)
+	 * @return string
 	 */
 	public function getStatus()
 	{
-		if ($this->getLive())
+		if ($this->isLive())
 			return 'live';
-		else if ($this->getPending())
+		else if ($this->isPending())
 			return 'pending';
-		else if ($this->getExpired())
+		/* BLOCKSPRO ONLY */
+		else if ($this->hasExpired())
 			return 'expired';
+		/* end BLOCKSPRO ONLY */
 		else
 			return 'offline';
 	}
 
 	/**
-	 * Returns whether the entry is live
+	 * Returns whether the entry is live.
 	 *
 	 * @return bool
 	 */
-	public function getLive()
+	public function isLive()
 	{
-		return ($this->getPublished() && !$this->getPending() && !$this->getExpired());
+		/* BLOCKS ONLY */
+		return ($this->getPublished() && !$this->isPending());
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
+		return ($this->getPublished() && !$this->isPending() && !$this->hasExpired());
+		/* end BLOCKSPRO ONLY */
 	}
 
 	/**
-	 * Returns whether the entry has been published
+	 * Returns whether the entry is offline.
 	 *
 	 * @return bool
 	 */
-	public function getPublished()
+	public function isOffline()
 	{
-		return (bool)$this->latest_version;
+		return !$this->getPublished();
 	}
 
 	/**
-	 * Returns whether the entry is pending
+	 * Returns whether the entry has been published.
 	 *
 	 * @return bool
 	 */
-	public function getPending()
+	public function isPublished()
 	{
-		return ($this->getPublished() && $this->publish_date && $this->publish_date > DateTimeHelper::currentTime());
+		return (bool)$this->publishDate;
 	}
 
 	/**
-	 * Returns whether the entry has expired
+	 * Returns whether the entry is pending.
 	 *
 	 * @return bool
 	 */
-	public function getExpired()
+	public function isPending()
 	{
-		return ($this->getPublished() && $this->expiry_date && $this->expiry_date < DateTimeHelper::currentTime());
+		return ($this->getPublished() && $this->publishDate && $this->publishDate > DateTimeHelper::currentTime());
 	}
 
+	/* BLOCKSPRO ONLY */
 	/**
-	 * Returns the publish date
+	 * Returns whether the entry has expired.
 	 *
-	 * @return DateTime
+	 * @return bool
 	 */
-	public function getPublishDate()
+	public function hasExpired()
 	{
-		if ($this->publish_date)
-		{
-			return $this->publish_date;
-		}
-		else
-			return null;
+		return ($this->getPublished() && $this->expiryDate && $this->expiryDate < DateTimeHelper::currentTime());
 	}
+	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Returns the entry's full URL
@@ -137,8 +141,7 @@ class EntryRecord extends BaseRecord
 	{
 		if ($this->uri)
 		{
-			$url = Blocks::getSiteUrl().$this->uri;
-			return $url;
+			return Blocks::getSiteUrl().$this->uri;
 		}
 		else
 			return null;
