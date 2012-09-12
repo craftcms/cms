@@ -987,9 +987,9 @@ class IOHelper
 					if (static::_filterPassed($contents[$key], $filter))
 					{
 						if (static::fileExists($contents[$key]))
-							$descendants[] = $contents[$key];
+							$descendants[] = static::normalizePathSeparators($contents[$key]);
 						elseif (static::folderExists($contents[$key]))
-							$descendants[] = $contents[$key];
+							$descendants[] = static::normalizePathSeparators($contents[$key]);
 					}
 
 					if (static::folderExists($contents[$key]) && $recursive)
