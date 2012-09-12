@@ -1,11 +1,8 @@
-{% from "_includes/forms" import checkbox %}
+{% from "_includes/forms" import checkboxGroup %}
 
-{% for value, label in settings.options %}
-	{{ checkbox({
-		id: (loop.first ? record.handle : ''),
-		label: label,
-		name: record.handle ~ '[]',
-		value: value,
-		checked: (option in data)
-	}) }}
-{% endfor %}
+{{ checkboxGroup({
+	options: settings.options,
+	id: record.handle,
+	name: record.handle,
+	values: values
+}) }}
