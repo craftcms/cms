@@ -31,6 +31,10 @@ return array(
 		'application.framework.logging.CLogger',
 	),
 
+	'componentAliases' => array(
+/* COMPONENT ALIASES */
+	),
+
 	'components' => array(
 
 		'db' => array(

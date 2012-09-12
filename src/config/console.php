@@ -30,10 +30,8 @@ return CMap::mergeArray(
 
 		// autoloading model and component classes
 		'import' => array(
-			'application.business.*',
-			'application.business.Blocks',
+			'application.*',
 			'application.migrations.*',
-			'application.services.*',
 		),
 
 		'components' => array(
