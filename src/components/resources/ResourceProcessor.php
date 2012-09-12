@@ -37,7 +37,7 @@ class ResourceProcessor
 	}
 
 	/**
-	 * Process the request
+	 * Process the request.
 	 *
 	 * @throws HttpException
 	 */
@@ -67,7 +67,7 @@ class ResourceProcessor
 			$this->_convertRelativeUrls();
 
 		if (!blx()->config->useXSendFile)
-			blx()->request->sendFile($this->_relResourceFileName, $this->_content);
+			blx()->request->sendFile($this->_relResourceFileName, $this->_content, array('forceDownload' => false));
 		else
 			blx()->request->xSendFile($this->_resourceFullPath);
 	}

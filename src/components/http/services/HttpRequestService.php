@@ -393,6 +393,52 @@ class HttpRequestService extends \CHttpRequest
 		return $this->_browserLanguages;
 	}
 
+
+	/**
+	 * Sends a file to the user.
+	 *
+	 * We're overriding this from \CHttpRequest so we can have more control over the headers.
+	 *
+	 * @param string $fileName
+	 * @param string $content
+	 * @param array|null $options
+	 * @param bool|null $terminate
+	 */
+	public function sendFile($fileName, $content, $options = array(), $terminate = true)
+	{
+		// Default to disposition to 'download'
+		if (!isset($options['forceDownload']) || $options['forceDownload'])
+			$disposition = 'attachment';
+		else
+			$disposition = 'inline';
+
+		if (empty($options['mimeType']))
+		{
+			if (($options['mimeType'] = \CFileHelper::getMimeTypeByExtension($fileName)) === null)
+				$options['mimeType'] = 'text/plain';
+		}
+
+		header('Pragma: public');
+		header('Expires: 0');
+		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		header('Content-type: '.$options['mimeType']);
+		if(ob_get_length()===false)
+			header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content,'8bit') : strlen($content)));
+		header('Content-Disposition: '.$disposition.'; filename="'.$fileName.'"');
+		header('Content-Transfer-Encoding: binary');
+
+		if($terminate)
+		{
+			// clean up the application first because the file downloading could take long time
+			// which may cause timeout of some resources (such as DB connection)
+			Blocks::app()->end(0,false);
+			echo $content;
+			exit(0);
+		}
+		else
+			echo $content;
+	}
+
 	// Rename getIsX() => isX() functions for consistency
 	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter)
 	//    but we're trying to resist the temptation of magic methods for the sake of code obviousness.
