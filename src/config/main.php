@@ -15,12 +15,12 @@ return CMap::mergeArray(
 
 		// autoloading model and component classes
 		'import' => array(
-			'application.business.lib.*',
-			'application.business.lib.PhpMailer.*',
-			'application.business.lib.Requests.*',
-			'application.business.lib.Requests.Auth.*',
-			'application.business.lib.Requests.Response.*',
-			'application.business.lib.Requests.Transport.*',
+			'application.lib.*',
+			'application.lib.PhpMailer.*',
+			'application.lib.Requests.*',
+			'application.lib.Requests.Auth.*',
+			'application.lib.Requests.Response.*',
+			'application.lib.Requests.Transport.*',
 		),
 
 		// application components
@@ -96,8 +96,8 @@ return CMap::mergeArray(
 			),
 
 			'request' => array(
-				'class' => 'Blocks\HttpRequest',
-				'enableCookieValidation'      => true,
+				'class' => 'Blocks\HttpRequestService',
+				'enableCookieValidation' => true,
 			),
 
 			'viewRenderer' => array(
@@ -105,7 +105,7 @@ return CMap::mergeArray(
 			),
 
 			'statePersister' => array(
-				'class' => 'Blocks\StatePersister'
+				'stateFile' => BLOCKS_RUNTIME_PATH.'state/state.bin',
 			),
 
 			'urlManager' => array(
@@ -180,7 +180,7 @@ return CMap::mergeArray(
 			'session' => array(
 				'autoStart'     => true,
 				'cookieMode'    => 'only',
-				'class'         => 'Blocks\HttpSession',
+				'class'         => 'Blocks\HttpSessionService',
 				'sessionName'   => 'BlocksSessionId',
 			),
 
