@@ -272,7 +272,7 @@ class AppUpdater implements IUpdater
 	public function unpackPackage()
 	{
 		Blocks::log('Unzipping package to '.$this->_tempPackageFolder->getRealPath(), \CLogger::LEVEL_INFO);
-		if ($this->_downloadFilePath->unzip($this->_tempPackageFolder->getRealPath()))
+		if (Zip::unzip($this->_downloadFilePath, $this->_tempPackageFolder->getRealPath()))
 			return true;
 
 		return false;
