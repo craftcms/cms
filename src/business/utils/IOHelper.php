@@ -18,24 +18,27 @@ class IOHelper
 	 */
 	public static function fileExists($path, $caseInsensitive = false)
 	{
-		$path = static::normalizePathSeparators($path);
+		$path = static::getRealPath($path);
 
-		if (is_file($path))
-			return $path;
-
-		if ($caseInsensitive)
+		if ($path)
 		{
-			$folder = static::getFolderName($path);
-			$files = static::getFolderContents($folder, false);
-			$lcaseFileName = strtolower($path);
+			if (is_file($path))
+				return $path;
 
-			if (is_array($files) && count($files) > 0)
+			if ($caseInsensitive)
 			{
-				foreach ($files as $file)
+				$folder = static::getFolderName($path);
+				$files = static::getFolderContents($folder, false);
+				$lcaseFileName = strtolower($path);
+
+				if (is_array($files) && count($files) > 0)
 				{
-					$file = static::normalizePathSeparators($file);
-					if (strtolower($file) === $lcaseFileName)
-						return $file;
+					foreach ($files as $file)
+					{
+						$file = static::normalizePathSeparators($file);
+						if (strtolower($file) === $lcaseFileName)
+							return $file;
+					}
 				}
 			}
 		}
@@ -53,13 +56,16 @@ class IOHelper
 	 */
 	public static function folderExists($path, $caseInsensitive = false)
 	{
-		$path = static::normalizePathSeparators($path);
+		$path = static::getRealPath($path);
 
-		if (is_dir($path))
-			return $path;
+		if ($path)
+		{
+			if (is_dir($path))
+				return $path;
 
-		if ($caseInsensitive)
-			return strtolower(static::getFolderName($path)) === strtolower($path);
+			if ($caseInsensitive)
+				return strtolower(static::getFolderName($path)) === strtolower($path);
+		}
 
 		return false;
 	}
@@ -76,7 +82,7 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 		$path = realpath($path);
 
-		if (static::folderExists($path))
+		if (is_dir($path))
 			$path = $path.'/';
 
 		return $path;
@@ -275,7 +281,8 @@ class IOHelper
 		$path = str_replace('\\', '/', $path);
 		$path = str_replace('//', '/', $path);
 
-		if (static::folderExists($path))
+		// Use is_dir here to prevent an endless recursive loop
+		if (is_dir($path))
 			$path = rtrim($path, '/').'/';
 
 		return $path;
@@ -960,27 +967,29 @@ class IOHelper
 	{
 		$descendants = array();
 
+		$path = static::getRealPath($path);
+
 		if ($filter !== null)
 		{
 			if (is_string($filter))
 				$filter = array($filter);
 		}
 
-		if (($contents = @scandir($path)) !== false)
+		if (($contents = scandir($path)) !== false)
 		{
 			foreach ($contents as $key => $item)
 			{
-				// TODO: normalize item?
-				$contents[$key] = $key.'/'.$item;
+				$fullItem = $path.$item;
+				$contents[$key] = $fullItem;
 
-				if (!in_array($item, array('.', '..')))
+				if ($item[0] !== '.')
 				{
 					if (static::_filterPassed($contents[$key], $filter))
 					{
 						if (static::fileExists($contents[$key]))
-							$descendants[] = new Folder($contents[$key]);
+							$descendants[] = $contents[$key];
 						elseif (static::folderExists($contents[$key]))
-							$descendants[] = new File($contents[$key]);
+							$descendants[] = $contents[$key];
 					}
 
 					if (static::folderExists($contents[$key]) && $recursive)
@@ -1013,7 +1022,7 @@ class IOHelper
 		{
 			foreach ($filter as $rule)
 			{
-				$passed = (bool)preg_match($rule, $str);
+				$passed = (bool)preg_match('/'.$rule.'/', $str);
 
 				if ($passed)
 					break;
