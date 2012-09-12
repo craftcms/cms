@@ -49,12 +49,17 @@
 
 		{% for block in blx.content.entryBlocks %}
 			{% set data = entry.content[block.record.handle] %}
+			{% set input = block.input(data) %}
 			{{ forms.field({
 				label: block.record.name,
+				<!-- BLOCKSPRO ONLY -->
+				required: block.record.required,
+				translatable: block.record.translatable,
+				<!-- end BLOCKSPRO ONLY -->
 				instructions: block.record.instructions,
 				id: block.record.handle,
 				name: block.record.handle
-			}, block.input(data)) }}
+			}, input)|ns('blocks')|raw }}
 		{% endfor %}
 
 		<div class="buttons">
