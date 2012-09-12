@@ -24,6 +24,7 @@ class ModelVariable
 	 * Returns whether an attribute exists.
 	 *
 	 * @param string $name
+	 * @return bool
 	 */
 	function __isset($name)
 	{
