@@ -23,8 +23,8 @@ class ResourceProcessor
 	 */
 	function __construct($rootFolderPath, $rootFolderUrl, $relResourcePath)
 	{
+		$this->_rootFolderUrl = $rootFolderUrl;
 		$this->_rootFolderPath = IOHelper::normalizePathSeparators($rootFolderPath);
-		$this->_rootFolderUrl = IOHelper::normalizePathSeparators($rootFolderUrl);
 		$this->_relResourcePath = IOHelper::normalizePathSeparators($relResourcePath);
 
 		// Parse the relative resource path, separating the folder path from the filename
@@ -95,6 +95,6 @@ class ResourceProcessor
 			return $match[0];
 		}
 
-		return $match[1].$this->_rootFolderUrl.$this->_relResourceFolderName.$match[3].$match[4];
+		return $match[1].rtrim($this->_rootFolderUrl, '/').'/'.rtrim($this->_relResourceFolderName, '/').'/'.$match[3].$match[4];
 	}
 }
