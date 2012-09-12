@@ -129,6 +129,7 @@ class UserIdentity extends \CUserIdentity
 		$user->verificationCode = null;
 		$user->verificationCodeIssuedDate = null;
 		$user->verificationCodeExpiryDate = null;
+		$user->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
 
 		if (!$user->save())
 		{
@@ -149,6 +150,7 @@ class UserIdentity extends \CUserIdentity
 	{
 		$this->errorCode = static::ERROR_PASSWORD_INVALID;
 		$user->lastLoginFailedDate = DateTimeHelper::currentTime();
+		$user->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
 
 		// get the current failed password attempt count.
 		$currentFailedCount = $user->failedPasswordAttemptCount;
