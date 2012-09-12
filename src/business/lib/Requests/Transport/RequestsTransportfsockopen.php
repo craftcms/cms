@@ -57,7 +57,6 @@ class RequestsTransportfsockopen implements RequestsTransport {
 			throw new RequestsException($errstr, 'fsockopenerror');
 			return;
 		}
-		stream_set_timeout($fp, $options['timeout']);
 
 		$request_body = '';
 		$out = '';
@@ -120,6 +119,7 @@ class RequestsTransportfsockopen implements RequestsTransport {
 			$options['hooks']->dispatch('fsockopen.after_request', array(&$fake_headers));
 			return '';
 		}
+		stream_set_timeout($fp, $options['timeout']);
 
 		$this->info = stream_get_meta_data($fp);
 
@@ -127,6 +127,11 @@ class RequestsTransportfsockopen implements RequestsTransport {
 		$this->info = stream_get_meta_data($fp);
 		if (!$options['filename']) {
 			while (!feof($fp)) {
+				$this->info = stream_get_meta_data($fp);
+				if ($this->info['timed_out']) {
+					throw new RequestsException('fsocket timed out', 'timeout');
+				}
+
 				$this->headers .= fread($fp, 1160);
 			}
 		}
@@ -135,6 +140,11 @@ class RequestsTransportfsockopen implements RequestsTransport {
 			$doingbody = false;
 			$response = '';
 			while (!feof($fp)) {
+				$this->info = stream_get_meta_data($fp);
+				if ($this->info['timed_out']) {
+					throw new RequestsException('fsocket timed out', 'timeout');
+				}
+
 				$block = fread($fp, 1160);
 				if ($doingbody) {
 					fwrite($download, $block);
@@ -149,9 +159,6 @@ class RequestsTransportfsockopen implements RequestsTransport {
 				}
 			}
 			fclose($download);
-		}
-		if ($this->info['timed_out']) {
-			throw new RequestsException('fsocket timed out', 'timeout');
 		}
 		fclose($fp);
 

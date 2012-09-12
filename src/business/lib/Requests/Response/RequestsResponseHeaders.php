@@ -32,8 +32,9 @@ class RequestsResponseHeaders implements ArrayAccess, IteratorAggregate {
 
 	/**
 	 * Get the given header
+	 *
 	 * @param string $key
-	 * @return mixed|string Header value
+	 * @return string Header value
 	 */
 	public function offsetGet($key) {
 		$key = strtolower($key);
@@ -77,7 +78,7 @@ class RequestsResponseHeaders implements ArrayAccess, IteratorAggregate {
 	/**
 	 * Get an iterator for the data
 	 *
-	 * @return ArrayIterator|Traversable
+	 * @return ArrayIterator
 	 */
 	public function getIterator() {
 		return new ArrayIterator($this->data);
