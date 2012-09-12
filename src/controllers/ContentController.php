@@ -15,6 +15,9 @@ class ContentController extends BaseController
 	}
 
 	/* BLOCKSPRO ONLY */
+	// -------------------------------------------
+	//  Sections
+	// -------------------------------------------
 
 	/* Sections */
 
@@ -67,8 +70,9 @@ class ContentController extends BaseController
 	}
 
 	/* end BLOCKSPRO ONLY */
-
-	/* Entry blocks */
+	// -------------------------------------------
+	//  Entry Blocks
+	// -------------------------------------------
 
 	/**
 	 * Saves an entry block.
@@ -145,25 +149,9 @@ class ContentController extends BaseController
 		$this->returnJson(array('success' => true));
 	}
 
-	/**
-	 * Creates a new entry and returns its edit page
-	 */
-	public function actionCreateEntry()
-	{
-		$this->requirePostRequest();
-
-		$sectionId = blx()->request->getRequiredPost('sectionId');
-		$title = blx()->request->getPost('title');
-
-		// Create the entry
-		$entry = blx()->content->createEntry($sectionId, null, null, $title);
-
-		// Create the first draft
-		$draft = blx()->content->createEntryDraft($entry);
-
-		blx()->user->setNotice(Blocks::t('Entry created.'));
-		$this->redirect("content/{$entry->id}/draft{$draft->num}");
-	}
+	// -------------------------------------------
+	//  Entries
+	// -------------------------------------------
 
 	/**
 	 * Saves an entry.
@@ -172,11 +160,16 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entry = $this->_getEntry();
-		$changes = $this->_getContentFromPost($entry);
+		/* BLOCKSPRO ONLY */
+		$sectionId = blx()->request->getRequiredPost('sectionId');
+		/* end BLOCKSPRO ONLY */
+		$entryId = blx()->request->getPost('entryId');
+		$title = blx()->request->getPost('title');
+		$slug = blx()->request->getPost('slug');
+		$blocks = blx()->request->getPost('blocks');
 
 		// Save the new entry content
-		if (blx()->content->saveEntryContent($entry, $changes))
+		if (blx()->content->saveEntry($entryId, $title, $slug, $blocks))
 		{
 			blx()->user->setNotice(Blocks::t('Entry saved.'));
 			$this->redirectToPostedUrl();

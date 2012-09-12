@@ -47,7 +47,6 @@ class ContentVariable
 			return new SectionVariable($record);
 	}
 	/* end BLOCKSPRO ONLY */
-
 	// -------------------------------------------
 	//  Entry Blocks
 	// -------------------------------------------
