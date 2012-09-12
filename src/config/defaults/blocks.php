@@ -137,6 +137,11 @@ $blocksConfig['phpPass-iterationCount'] = 8;
 $blocksConfig['useCompressedJs'] = true;
 
 /**
+ * Controls whether to add the @ symbol around translated strings to help during dubugging.
+ */
+$blocksConfig['translationDebugOutput'] = false;
+
+/**
  * Error Path Keys
  * 'errorPath'      => blocks.app.templates.errors.error
  * 'error400Path'   => blocks.app.templates.errors.error400
