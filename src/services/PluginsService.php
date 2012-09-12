@@ -150,7 +150,7 @@ class PluginsService extends ApplicationComponent
 
 			// Find all of the plugins in the plugins folder
 			$pluginsPath = blx()->path->getPluginsPath();
-			$paths = IOHelper::getFolderContents($pluginsPath, true, '/[^_]Plugin.php/');
+			$paths = IOHelper::getFolderContents($pluginsPath, true, ".*Plugin\.php");
 
 			if (is_array($paths) && count($paths) > 0)
 			{

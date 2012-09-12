@@ -77,13 +77,13 @@ class InstallService extends ApplicationComponent
 	{
 		$records = array();
 		$modelsDir = new Folder(blx()->path->getModelsPath());
-		$recordFiles = $modelsDir->getContents(false, '/Record.php/');
+		$recordFiles = $modelsDir->getContents(false, ".*Record\.php");
 
 		foreach ($recordFiles as $file)
 		{
 			if (IOHelper::fileExists($file))
 			{
-				$fileName = $file->getFileName(false);
+				$fileName = IOHelper::getFileName($file, false);
 				$class = __NAMESPACE__.'\\'.$fileName;
 
 				// Ignore abstract classes and interfaces
