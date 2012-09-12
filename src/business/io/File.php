@@ -24,7 +24,10 @@ class File extends BaseIO
 		clearstatcache();
 
 		if (IOHelper::fileExists($path))
-			$this->path;
+		{
+			$this->path = $path;
+			return true;
+		}
 
 		return false;
 	}

@@ -8,7 +8,6 @@ class Folder extends BaseIO
 {
 	private $_size;
 	private $_isEmpty;
-	private $_contents;
 
 	/**
 	 * @param $path
@@ -18,7 +17,10 @@ class Folder extends BaseIO
 		clearstatcache();
 
 		if (IOHelper::folderExists($path))
-			$this->path;
+		{
+			$this->path = $path;
+			return true;
+		}
 
 		return false;
 	}
@@ -46,14 +48,13 @@ class Folder extends BaseIO
 	}
 
 	/**
+	 * @param $recursive
+	 * @param $filter
 	 * @return mixed
 	 */
-	public function getContents()
+	public function getContents($recursive, $filter)
 	{
-		if (!$this->_contents)
-			$this->_contents = IOHelper::getFolderContents($this->getRealPath());
-
-		return $this->_contents;
+		return IOHelper::getFolderContents($this->getRealPath(), $recursive, $filter);
 	}
 
 	/**
