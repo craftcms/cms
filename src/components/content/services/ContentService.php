@@ -231,7 +231,9 @@ class ContentService extends BaseApplicationComponent
 	 * Deletes a section.
 	 *
 	 * @param int $sectionId
-	 */
+	 * @throws \Exception
+	 * @return void
+	*/
 	public function deleteSection($sectionId)
 	{
 		$section = SectionRecord::model()->with('blocks')->findById($sectionId);
@@ -353,6 +355,7 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param array    $settings
 	 * @param int|null $blockId
+	 * @throws \Exception
 	 * @return EntryBlock
 	 */
 	public function saveEntryBlock($settings, $blockId = null)
@@ -365,6 +368,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param int      $sectionId
 	 * @param array    $settings
 	 * @param int|null $blockId
+	 * @throws \Exception
 	 * @return BaseBlock
 	 */
 	public function saveEntryBlock($sectionId, $settings, $blockId = null)
@@ -453,6 +457,7 @@ class ContentService extends BaseApplicationComponent
 	 * Deletes an entry block.
 	 *
 	 * @param int $blockId
+	 * @throws \Exception
 	 */
 	public function deleteEntryBlock($blockId)
 	{
@@ -487,6 +492,7 @@ class ContentService extends BaseApplicationComponent
 	 * Reorders entry blocks.
 	 *
 	 * @param array $blockIds
+	 * @throws \Exception
 	 */
 	public function reorderEntryBlocks($blockIds)
 	{
@@ -773,7 +779,7 @@ class ContentService extends BaseApplicationComponent
 
 			// This is serious business.
 			if (!$record)
-				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entryId)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 		}
 		else
 		{
