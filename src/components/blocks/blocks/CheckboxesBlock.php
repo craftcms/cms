@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class CheckboxesBlock extends BaseOptionsBlock
 {
+	protected $multi = true;
+
 	/**
 	 * Returns the type of block this is.
 	 *

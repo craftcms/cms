@@ -6,6 +6,8 @@ namespace Blocks;
  */
 abstract class BaseOptionsBlock extends BaseBlock
 {
+	protected $multi = false;
+
 	/**
 	 * Defines the settings.
 	 *
@@ -44,6 +46,19 @@ abstract class BaseOptionsBlock extends BaseBlock
 
 		$values['options'] = $options;
 		return $values;
+	}
+
+	/**
+	 * Returns the content column type.
+	 *
+	 * @return string
+	 */
+	public function defineContentAttribute()
+	{
+		if ($this->multi)
+			return AttributeType::Mixed;
+		else
+			return AttributeType::String;
 	}
 
 	/**

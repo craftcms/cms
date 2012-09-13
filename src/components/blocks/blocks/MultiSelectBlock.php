@@ -6,8 +6,7 @@ namespace Blocks;
  */
 class MultiSelectBlock extends BaseOptionsBlock
 {
-	protected $settingsTemplate = '_components/blocks/MultiSelect/settings';
-	protected $fieldTemplate = '_components/blocks/MultiSelect/field';
+	protected $multi = true;
 
 	/**
 	 * Returns the type of block this is.
