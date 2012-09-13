@@ -288,18 +288,21 @@ class ModelHelper
 				unset($config['length']);
 
 			// Lengths
-			if (isset($config['length']) && is_numeric($config['length']))
+			if ($config['type'] != AttributeType::Number)
 			{
-				$strictLengthAttributes[(string)$config['length']][] = $name;
-			}
-			else
-			{
-				// Only worry about min- and max-lengths if a strict length isn't set
-				if (isset($config['minLength']) && is_numeric($config['minLength']))
-					$minLengthAttributes[(string)$config['minLength']][] = $name;
+				if (isset($config['length']) && is_numeric($config['length']))
+				{
+					$strictLengthAttributes[(string)$config['length']][] = $name;
+				}
+				else
+				{
+					// Only worry about min- and max-lengths if a strict length isn't set
+					if (isset($config['minLength']) && is_numeric($config['minLength']))
+						$minLengthAttributes[(string)$config['minLength']][] = $name;
 
-				if (isset($config['maxLength']) && is_numeric($config['maxLength']))
-					$maxLengthAttributes[(string)$config['maxLength']][] = $name;
+					if (isset($config['maxLength']) && is_numeric($config['maxLength']))
+						$maxLengthAttributes[(string)$config['maxLength']][] = $name;
+				}
 			}
 
 			// Compare with other attributes
