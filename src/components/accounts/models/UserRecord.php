@@ -30,7 +30,7 @@ class UserRecord extends BaseRecord
 			'emailFormat'                      => array(AttributeType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
 			'lastLoginDate'                    => AttributeType::DateTime,
 			'lastLoginFailedDate'              => AttributeType::DateTime,
-			'lastLoginAttemptIPAddress'        => array(AttributeType::String, 'required' => true, 'maxLength' => 45),
+			'lastLoginAttemptIPAddress'        => array(AttributeType::String, 'maxLength' => 45),
 			'lastPasswordChangeDate'           => AttributeType::DateTime,
 			'lastLockoutDate'                  => AttributeType::DateTime,
 			'failedPasswordAttemptCount'       => array(AttributeType::Number, 'column' => ColumnType::TinyInt, 'unsigned' => true),
