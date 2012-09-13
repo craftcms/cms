@@ -50,7 +50,7 @@ class NumberBlock extends BaseBlock
 	 */
 	public function defineContentColumn()
 	{
-		return DbHelper::getNumberColumnConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
+		return ModelHelper::getNumberAttributeConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
 	}
 
 	/**

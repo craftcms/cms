@@ -73,7 +73,7 @@ class ModelHelper
 		// Set the column type, min, and max values for Number attributes
 		if ($config['type'] == AttributeType::Number && !isset($config['column']))
 		{
-			$numberConfig = DbHelper::getNumberColumnConfig($config['min'], $config['max'], $config['decimals']);
+			$numberConfig = static::getNumberAttributeConfig($config['min'], $config['max'], $config['decimals']);
 			$config = array_merge($config, $numberConfig);
 		}
 
@@ -84,12 +84,12 @@ class ModelHelper
 				$config = array_merge(DbHelper::$columnTypeDefaults[$config['column']], $config);
 
 			// Add unsigned, min, and max settings to number columns
-			if (isset(DbHelper::$intColumnSizes[$config['column']]))
+			if (isset(static::$_intColumnSizes[$config['column']]))
 			{
 				if (!isset($config['unsigned']))
 					$config['unsigned'] = (isset($config['min']) && $config['min'] >= 0);
 
-				$maxSize = DbHelper::$intColumnSizes[$config['column']];
+				$maxSize = static::$_intColumnSizes[$config['column']];
 				$minMin = $config['unsigned'] ? 0 : -$maxSize;
 				$maxMax = ($config['unsigned'] ? $maxSize * 2 : $maxSize) - 1;
 
@@ -103,6 +103,75 @@ class ModelHelper
 
 		return $config;
 	}
+
+	/**
+	 * Returns a number attribute config, taking the min, max, and number of decimal points into account.
+	 *
+	 * @static
+	 * @param number $min
+	 * @param number $max
+	 * @param int $decimals
+	 * @return array
+	 */
+	public static function getNumberAttributeConfig($min = null, $max = null, $decimals = null)
+	{
+		$config = array();
+
+		// Normalize the arguments
+		$config['type'] = AttributeType::Number;
+		$config['min'] = is_numeric($min) ? $min : -static::$_intColumnSizes[ColumnType::Int];
+		$config['max'] = is_numeric($max) ? $max : static::$_intColumnSizes[ColumnType::Int]-1;
+		$config['decimals'] = is_numeric($decimals) && $decimals > 0 ? intval($decimals) : 0;
+
+		// Unsigned?
+		$config['unsigned'] = ($config['min'] >= 0);
+
+		// Figure out the max length
+		$maxAbsSize = intval($config['unsigned'] ? $config['max'] : max(abs($config['min']), abs($config['max'])));
+		$config['length'] = ($maxAbsSize ? strlen($maxAbsSize) : 0) + $config['decimals'];
+
+		// Decimal or int?
+		if ($config['decimals'] > 0)
+		{
+			$config['column'] = ColumnType::Decimal;
+		}
+		else
+		{
+			// Figure out the smallest possible int column type that will fit our min/max
+			foreach (static::$_intColumnSizes as $colType => $size)
+			{
+				if ($config['unsigned'])
+				{
+					if ($config['max'] < $size * 2)
+						break;
+				}
+				else
+				{
+					if ($config['min'] >= -$size && $config['max'] < $size)
+						break;
+				}
+			}
+
+			$config['column'] = $colType;
+		}
+
+		return $config;
+	}
+
+	/**
+	 * Integer column sizes
+	 *
+	 * @static
+	 * @access private
+	 * @var array
+	 */
+	private static $_intColumnSizes = array(
+		ColumnType::TinyInt   => 128,
+		ColumnType::SmallInt  => 32768,
+		ColumnType::MediumInt => 8388608,
+		ColumnType::Int       => 2147483648,
+		ColumnType::BigInt    => 9223372036854775808
+	);
 
 	/**
 	 * Populates any default values that are defined for a model.
@@ -204,7 +273,7 @@ class ModelHelper
 			// Remember if it's a license key
 			$isLicenseKey = ($config['type'] == AttributeType::LicenseKey);
 
-			$config = ModelHelper::normalizeAttributeConfig($config);
+			$config = static::normalizeAttributeConfig($config);
 
 			// Uniques
 			if (!empty($config['unique']))
