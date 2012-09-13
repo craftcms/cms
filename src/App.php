@@ -23,15 +23,6 @@ class App extends \CWebApplication
 		{
 			Blocks::import($alias);
 		}
-		/*echo '<table>';
-		foreach ($this->componentAliases as $alias)
-		{
-			$segs = explode('.', $alias);
-			$className = __NAMESPACE__.'\\'.$segs[count($segs)-1];
-			echo '<tr><td>'.$alias.'</td>'.(class_exists($className) ? '<td>&#10004;</td><td></td>' : '<td></td><td>&#10008;</td>').'</tr>';
-		}
-		echo '</table>';
-		die('hey');*/
 
 		blx()->getComponent('request');
 		blx()->getComponent('log');
