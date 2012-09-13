@@ -109,7 +109,7 @@ class ContentVariable
 	 * Gets an entry by its ID.
 	 *
 	 * @param int $id
-	 * @return EntryModel
+	 * @return EntryPackage|null
 	 */
 	public function getEntryById($id)
 	{

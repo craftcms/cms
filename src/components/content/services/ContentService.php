@@ -562,14 +562,14 @@ class ContentService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
-	 * Populates an EntryModel from an entry row.
+	 * Populates an entry package from an entry row.
 	 *
 	 * @param array $row
-	 * @return EntryModel
+	 * @return EntryPackage
 	 */
-	public function populateEntry($row)
+	public function populateEntryPackage($row)
 	{
-		$entry = new EntryModel();
+		$entry = new EntryPackage();
 		$entry->id = $row['id'];
 		/* BLOCKSPRO ONLY */
 		$entry->authorId = $row['authorId'];
@@ -597,18 +597,18 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates EntryModel's from a list of entry rows.
+	 * Mass-populates entry packages from a list of entry rows.
 	 *
 	 * @param array $rows
 	 * @return array
 	 */
-	public function populateEntries($rows)
+	public function populateEntryPackages($rows)
 	{
 		$entries = array();
 
 		foreach ($rows as $row)
 		{
-			$entries[] = $this->populateEntry($row);
+			$entries[] = $this->populateEntryPackage($row);
 		}
 
 		return $entries;
@@ -645,7 +645,7 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		return $this->populateEntries($result);
+		return $this->populateEntryPackages($result);
 	}
 
 	/**
@@ -703,7 +703,7 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry by its ID.
 	 *
 	 * @param int $id
-	 * @return EntryModel
+	 * @return EntryPackage
 	 */
 	public function getEntryById($entryId)
 	{
@@ -715,16 +715,16 @@ class ContentService extends BaseApplicationComponent
 			->limit(1);
 
 		$result = $query->queryRow();
-		return $this->populateEntry($result);
+		return $this->populateEntryPackage($result);
 	}
 
 	/**
 	 * Saves an entry.
 	 *
-	 * @param EntryModel $entry
+	 * @param EntryPackage $entry
 	 * @return bool
 	 */
-	public function saveEntry(EntryModel $entry)
+	public function saveEntry(EntryPackage $entry)
 	{
 		$entryRecord = $this->_getEntryRecord($entry);
 		$titleRecord = $this->_getEntryTitleRecord($entry);
@@ -800,7 +800,7 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryModel $entry
+	 * @param EntryPackage $entry
 	 * @return EntryRecord
 	 */
 	private function _getEntryRecord($entry)
@@ -827,7 +827,7 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry's title record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryModel $entry
+	 * @param EntryPackage $entry
 	 * @return EntryTitleRecord
 	 */
 	private function _getEntryTitleRecord($entry)
@@ -863,7 +863,7 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry's content record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryModel $entry
+	 * @param EntryPackage $entry
 	 * @return EntryContentRecord
 	 */
 	private function _getEntryContentRecord($entry)

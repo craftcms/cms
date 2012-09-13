@@ -6,7 +6,7 @@ namespace Blocks;
  *
  * Used for transporting entry data between templates, controllers, and EntryService.
  */
-class EntryModel
+class EntryPackage
 {
 	public $id;
 	/* BLOCKSPRO ONLY */

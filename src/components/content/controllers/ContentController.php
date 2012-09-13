@@ -160,7 +160,7 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entry = new EntryModel();
+		$entry = new EntryPackage();
 		$entry->id = blx()->request->getPost('entryId');
 		/* BLOCKSPRO ONLY */
 		$entry->authorId = blx()->accounts->getCurrentUser()->id;
