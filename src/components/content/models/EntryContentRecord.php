@@ -46,7 +46,6 @@ class EntryContentRecord extends BaseRecord
 	{
 		$attributes = array(
 			'language' => array(AttributeType::Language, 'required' => true),
-			'title'    => AttributeType::String,
 		);
 
 		$blocks = blx()->content->getEntryBlocksBySectionId($this->section->id);
