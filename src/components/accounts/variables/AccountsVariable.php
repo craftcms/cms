@@ -18,6 +18,7 @@ class AccountsVariable
 			return new UserVariable($record);
 	}
 
+	/* BLOCKSPRO ONLY */
 	/**
 	 * Gets users.
 	 *
@@ -26,6 +27,7 @@ class AccountsVariable
 	 */
 	public function users($params = array())
 	{
+		$params = new UserParams($params);
 		$records = blx()->accounts->getUsers($params);
 		return VariableHelper::populateVariables($records, 'UserVariable');
 	}
@@ -38,9 +40,11 @@ class AccountsVariable
 	 */
 	public function totalUsers($params = array())
 	{
+		$params = new UserParams($params);
 		return blx()->accounts->getTotalUsers($params);
 	}
 
+	/* end BLOCKSPRO ONLY */
 	/**
 	 * Returns a user by its ID.
 	 *
@@ -65,17 +69,6 @@ class AccountsVariable
 		$record = blx()->accounts->getUserByVerificationCode($code);
 		if ($record)
 			return new UserVariable($user);
-	}
-
-	/**
-	 * Returns the recent users.
-	 *
-	 * @return array
-	 */
-	public function recent()
-	{
-		$records = blx()->accounts->getRecentUsers();
-		return VariableHelper::populateVariables($records, 'UserVariable');
 	}
 
 	/**

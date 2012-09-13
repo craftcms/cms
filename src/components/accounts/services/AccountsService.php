@@ -6,42 +6,40 @@ namespace Blocks;
  */
 class AccountsService extends BaseApplicationComponent
 {
-	/**
-	 * The default parameters for getUsers() and getTotalUsers().
-	 *
-	 * @access private
-	 * @static
-	 */
-	private static $_defaultUserParams = array(
-		'status' => 'active',
-		'offset' => 0,
-		'limit' => 50,
-	);
-
 	private $_currentUser;
 
 	/**
 	 * Gets users.
 	 *
-	 * @param array $params
+	 * @param UserParams|null $params
 	 * @return array
 	 */
-	public function getUsers($params = array())
+	public function getUsers(UserParams $params = null)
 	{
-		$params = array_merge(static::$_defaultUserParams, $params);
+		if (!$params)
+		{
+			$params = new UserParams();
+		}
+
 		$query = blx()->db->createCommand()
 			->from('users');
 
 		$this->_applyUserConditions($query, $params);
 
-		if (!empty($params['order']))
-			$query->order($params['order']);
+		if ($params->order)
+		{
+			$query->order($params->order);
+		}
 
-		if (!empty($params['offset']))
-			$query->offset($params['offset']);
+		if ($params->offset)
+		{
+			$query->offset($params->offset);
+		}
 
-		if (!empty($params['limit']))
-			$query->limit($params['limit']);
+		if ($params->limit)
+		{
+			$query->limit($params->limit);
+		}
 
 		$result = $query->queryAll();
 		return UserRecord::model()->populateRecords($result);
@@ -56,7 +54,11 @@ class AccountsService extends BaseApplicationComponent
 	 */
 	public function getTotalUsers($params = array())
 	{
-		$params = array_merge(static::$_defaultUserParams, $params);
+		if (!$params)
+		{
+			$params = new UserParams();
+		}
+
 		$query = blx()->db->createCommand()
 			->select('count(id)')
 			->from('users');
@@ -79,48 +81,51 @@ class AccountsService extends BaseApplicationComponent
 		$whereConditions = array();
 		$whereParams = array();
 
-		if (!empty($params['id']))
-			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
+		if ($params->id)
+		{
+			$whereConditions[] = DbHelper::parseParam('id', $params->id, $whereParams);
+		}
 
-		if (!empty($params['username']))
-			$whereConditions[] = DbHelper::parseParam('username', $params['username'], $whereParams);
+		if ($params->username)
+		{
+			$whereConditions[] = DbHelper::parseParam('username', $params->username, $whereParams);
+		}
 
-		if (!empty($params['firstName']))
-			$whereConditions[] = DbHelper::parseParam('firstName', $params['firstName'], $whereParams);
+		if ($params->firstName)
+		{
+			$whereConditions[] = DbHelper::parseParam('firstName', $params->firstName, $whereParams);
+		}
 
-		if (!empty($params['lastName']))
-			$whereConditions[] = DbHelper::parseParam('lastName', $params['lastName'], $whereParams);
+		if ($params->lastName)
+		{
+			$whereConditions[] = DbHelper::parseParam('lastName', $params->lastName, $whereParams);
+		}
 
-		if (!empty($params['email']))
-			$whereConditions[] = DbHelper::parseParam('email', $params['email'], $whereParams);
+		if ($params->email)
+		{
+			$whereConditions[] = DbHelper::parseParam('email', $params->email, $whereParams);
+		}
 
-		if (!empty($params['admin']))
+		if ($params->admin)
+		{
 			$whereConditions[] = DbHelper::parseParam('admin', 1, $whereParams);
+		}
 
-		if (!empty($params['status']) && $params['status'] != '*')
-			$whereConditions[] = DbHelper::parseParam('status', $params['status'], $whereParams);
+		if ($params->status && $params->status != '*')
+		{
+			$whereConditions[] = DbHelper::parseParam('status', $params->status, $whereParams);
+		}
 
-		if (!empty($params['lastLoginDate']))
-			$whereConditions[] = DbHelper::parseParam('lastLoginDate', $params['lastLoginDate'], $whereParams);
+		if ($params->lastLoginDate)
+		{
+			$whereConditions[] = DbHelper::parseParam('lastLoginDate', $params->lastLoginDate, $whereParams);
+		}
 
 		if ($whereConditions)
 		{
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
 		}
-	}
-
-	/**
-	 * Gets the most recent users.
-	 *
-	 * @param array $params
-	 * @return array
-	 */
-	public function getRecentUsers($params = array())
-	{
-		return $this->getUsers(array_merge($params, array(
-			'order' => 'dateCreated DESC'
-		)));
 	}
 
 	/**
@@ -156,12 +161,12 @@ class AccountsService extends BaseApplicationComponent
 	 */
 	public function getUserByVerificationCode($code)
 	{
-		if (!$code)
-			return null;
-
-		return UserRecord::model()->findByAttributes(array(
-			'verificationCode' => $code,
-		));
+		if ($code)
+		{
+			return UserRecord::model()->findByAttributes(array(
+				'verificationCode' => $code,
+			));
+		}
 	}
 
 	/**
@@ -174,12 +179,12 @@ class AccountsService extends BaseApplicationComponent
 		if (!empty(blx()->user))
 		{
 			if (!isset($this->_currentUser))
+			{
 				$this->_currentUser = $this->getUserById(blx()->user->getId());
+			}
 
 			return $this->_currentUser;
 		}
-		else
-			return null;
 	}
 
 	/**
@@ -236,7 +241,9 @@ class AccountsService extends BaseApplicationComponent
 		$user->verificationCodeExpiryDate = $expiryDate->getTimestamp();
 
 		if ($save)
+		{
 			$user->save();
+		}
 	}
 
 	/**
@@ -307,9 +314,13 @@ class AccountsService extends BaseApplicationComponent
 		$user->passwordResetRequired = false;
 
 		if (!$save || $user->save())
+		{
 			return true;
+		}
 		else
+		{
 			return false;
+		}
 	}
 
 	/**
@@ -334,9 +345,9 @@ class AccountsService extends BaseApplicationComponent
 		$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
 
 		if ($cooldownRemaining > 0)
+		{
 			return $cooldownRemaining;
-
-		return null;
+		}
 	}
 
 	/**
