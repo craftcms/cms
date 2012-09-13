@@ -14,11 +14,12 @@ class ContentVariable
 	/**
 	 * Gets sections.
 	 *
-	 * @param array $params
+	 * @param array|null $params
 	 * @return array
 	 */
 	public function sections($params = array())
 	{
+		$params = new SectionParams($params);
 		$records = blx()->content->getSections($params);
 		return VariableHelper::populateVariables($records, 'SectionVariable');
 	}
@@ -26,11 +27,12 @@ class ContentVariable
 	/**
 	 * Gets the total number of sections.
 	 *
-	 * @param array $params
+	 * @param array|null $params
 	 * @return int
 	 */
 	public function totalSections($params = array())
 	{
+		$params = new SectionParams($params);
 		return blx()->content->getTotalSections($params);
 	}
 

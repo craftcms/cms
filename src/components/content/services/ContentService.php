@@ -12,38 +12,37 @@ class ContentService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
-	 * The default parameters for getSections() and getTotalSections().
-	 *
-	 * @access private
-	 * @static
-	 */
-	private static $_defaultSectionParams = array(
-		'parentId' => null,
-		'order' => 'name asc',
-	);
-
-	/**
 	 * Gets sections.
 	 *
-	 * @param array $params
+	 * @param SectionParams|null $params
 	 * @return array
 	 */
 	public function getSections($params = array())
 	{
-		$params = array_merge(static::$_defaultSectionParams, $params);
+		if (!$params)
+		{
+			$params = new SectionParams();
+		}
+
 		$query = blx()->db->createCommand()
 			->from('sections');
 
 		$this->_applySectionConditions($query, $params);
 
-		if (!empty($params['order']))
-			$query->order($params['order']);
+		if ($params->order)
+		{
+			$query->order($params->order);
+		}
 
-		if (!empty($params['offset']))
-			$query->offset($params['offset']);
+		if ($params->offset)
+		{
+			$query->offset($params->offset);
+		}
 
-		if (!empty($params['limit']))
-			$query->limit($params['limit']);
+		if ($params->limit)
+		{
+			$query->limit($params->limit);
+		}
 
 		$result = $query->queryAll();
 		return SectionRecord::model()->populateRecords($result);
@@ -57,6 +56,11 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function getTotalSections($params = array())
 	{
+		if (!$params)
+		{
+			$params = new SectionParams();
+		}
+
 		$params = array_merge(static::$_defaultUserParams, $params);
 		$query = blx()->db->createCommand()
 			->select('count(id)')
@@ -79,21 +83,19 @@ class ContentService extends BaseApplicationComponent
 		$whereConditions = array();
 		$whereParams = array();
 
-		if (!empty($params['id']))
+		if ($params->id)
 		{
-			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('id', $params->id, $whereParams);
 		}
 
-		$whereConditions[] = DbHelper::parseParam('parentId', $params['parentId'], $whereParams);
-
-		if (!empty($params['handle']))
+		if ($params->handle)
 		{
-			$whereConditions[] = DbHelper::parseParam('handle', $params['handle'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('handle', $params->handle, $whereParams);
 		}
 
-		if (!empty($params['hasUrls']))
+		if ($params->hasUrls)
 		{
-			$whereConditions[] = DbHelper::parseParam('hasUrls', $params['hasUrls'], $whereParams);
+			$whereConditions[] = DbHelper::parseParam('hasUrls', $params->hasUrls, $whereParams);
 		}
 
 		if ($whereConditions)
@@ -622,6 +624,11 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function getEntries(EntryParams $params = null)
 	{
+		if (!$params)
+		{
+			$params = new EntryParams();
+		}
+
 		$query = blx()->db->createCommand()
 			->select('e.*, t.title')
 			->from('entries e')
@@ -651,11 +658,16 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Gets the total number of entries.
 	 *
-	 * @param EntryParams $params
+	 * @param EntryParams|null $params
 	 * @return int
 	 */
 	public function getTotalEntries(EntryParams $params = null)
 	{
+		if (!$params)
+		{
+			$params = new EntryParams();
+		}
+
 		$query = blx()->db->createCommand()
 			->select('count(e.id)')
 			->from('entries e')
