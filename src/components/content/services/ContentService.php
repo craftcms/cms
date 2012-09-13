@@ -80,15 +80,21 @@ class ContentService extends BaseApplicationComponent
 		$whereParams = array();
 
 		if (!empty($params['id']))
+		{
 			$whereConditions[] = DbHelper::parseParam('id', $params['id'], $whereParams);
+		}
 
 		$whereConditions[] = DbHelper::parseParam('parentId', $params['parentId'], $whereParams);
 
 		if (!empty($params['handle']))
+		{
 			$whereConditions[] = DbHelper::parseParam('handle', $params['handle'], $whereParams);
+		}
 
 		if (!empty($params['hasUrls']))
+		{
 			$whereConditions[] = DbHelper::parseParam('hasUrls', $params['hasUrls'], $whereParams);
+		}
 
 		if ($whereConditions)
 		{
@@ -136,7 +142,9 @@ class ContentService extends BaseApplicationComponent
 
 			// This is serious business.
 			if (!$section)
+			{
 				$this->_noSectionExists($sectionId);
+			}
 		}
 		else
 		{
@@ -238,7 +246,9 @@ class ContentService extends BaseApplicationComponent
 	{
 		$section = SectionRecord::model()->with('blocks')->findById($sectionId);
 		if (!$section)
+		{
 			$this->_noSectionExists($sectionId);
+		}
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -309,7 +319,9 @@ class ContentService extends BaseApplicationComponent
 	{
 		$record = EntryBlockRecord::model()->findById($id);
 		if ($record)
+		{
 			return blx()->blocks->populateBlock($record);
+		}
 	}
 
 	/**
@@ -327,7 +339,9 @@ class ContentService extends BaseApplicationComponent
 
 			// This is serious business.
 			if (!$record)
+			{
 				$this->_noEntryBlockExists($blockId);
+			}
 		}
 		else
 		{
@@ -379,7 +393,9 @@ class ContentService extends BaseApplicationComponent
 
 		$isNewRecord = $record->isNewRecord();
 		if (!$isNewRecord)
+		{
 			$oldHandle = $record->handle;
+		}
 
 		/* BLOCKSPRO ONLY */
 		$record->sectionId     = $section->id;
@@ -469,7 +485,9 @@ class ContentService extends BaseApplicationComponent
 		/* BLOCKSPRO ONLY */
 		$record = EntryBlockRecord::model()->with('section')->findById($blockId);
 		if (!$record)
+		{
 			$this->_noEntryBlockExists($blockId);
+		}
 
 		$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 		/* end BLOCKSPRO ONLY */
@@ -612,13 +630,19 @@ class ContentService extends BaseApplicationComponent
 		$this->_applyEntryConditions($query, $params);
 
 		if ($params->order)
+		{
 			$query->order($params->order);
+		}
 
 		if ($params->offset)
+		{
 			$query->offset($params->offset);
+		}
 
 		if ($params->limit)
+		{
 			$query->limit($params->limit);
+		}
 
 		$result = $query->queryAll();
 		return $this->populateEntries($result);
@@ -655,10 +679,14 @@ class ContentService extends BaseApplicationComponent
 		$whereParams = array();
 
 		if ($params->id)
+		{
 			$whereConditions[] = DbHelper::parseParam('e.id', $params->id, $whereParams);
+		}
 
 		if ($params->slug)
+		{
 			$whereConditions[] = DbHelper::parseParam('e.handle', $params->slug, $whereParams);
+		}
 
 		/* BLOCKSPRO ONLY */
 		$whereConditions[] = DbHelper::parseParam('t.language', $params->language, $whereParams);
@@ -726,9 +754,13 @@ class ContentService extends BaseApplicationComponent
 			$handle = $block->record->handle;
 
 			if (isset($entry->blocks[$handle]))
+			{
 				$contentRecord->$handle = $entry->blocks[$handle];
+			}
 			else
+			{
 				$contentRecord->$handle = null;
+			}
 		}
 
 		$entryValidates = $entryRecord->validate();
@@ -779,7 +811,9 @@ class ContentService extends BaseApplicationComponent
 
 			// This is serious business.
 			if (!$record)
+			{
 				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+			}
 		}
 		else
 		{
@@ -836,7 +870,9 @@ class ContentService extends BaseApplicationComponent
 	{
 		/* BLOCKSPRO ONLY */
 		if (!$entry->language)
+		{
 			$entry->language = blx()->language;
+		}
 
 		// We have to get the content manually, since there's no way to tell EntryContentRecord
 		// which section to use from EntryContentRecord::model()->findByAttributes()
@@ -852,7 +888,9 @@ class ContentService extends BaseApplicationComponent
 				->queryRow();
 
 			if ($contentRow)
+			{
 				$contentRecord->populateRecord($contentRow);
+			}
 		}
 
 		if (empty($contentRow))
