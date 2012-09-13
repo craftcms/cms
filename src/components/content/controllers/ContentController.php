@@ -160,19 +160,24 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$entry = new EntryModel();
+		$entry->id = blx()->request->getPost('entryId');
 		/* BLOCKSPRO ONLY */
-		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$entry->authorId = blx()->accounts->getCurrentUser()->id;
+		$entry->sectionId = blx()->request->getRequiredPost('sectionId');
+		$entry->language = blx()->request->getPost('language');
 		/* end BLOCKSPRO ONLY */
-		$entryId = blx()->request->getPost('entryId');
-		$title = blx()->request->getPost('title');
-		$slug = blx()->request->getPost('slug');
-		$blocks = blx()->request->getPost('blocks');
+		$entry->title = blx()->request->getPost('title');
+		$entry->slug = blx()->request->getPost('slug');
+		$entry->blocks = blx()->request->getPost('blocks');
 
-		// Save the new entry content
-		if (blx()->content->saveEntry($entryId, $title, $slug, $blocks))
+		if ($entry->save())
 		{
 			blx()->user->setNotice(Blocks::t('Entry saved.'));
-			$this->redirectToPostedUrl();
+
+			$this->redirectToPostedUrl(array(
+				'entryId' => $entry->id
+			));
 		}
 		else
 		{

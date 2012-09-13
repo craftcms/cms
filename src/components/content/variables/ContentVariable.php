@@ -87,9 +87,32 @@ class ContentVariable
 	 * @param array|null $params
 	 * @return array
 	 */
-	public function getEntries($params = array())
+	public function entries($params = array())
 	{
-		$records = blx()->content->getEntries($params);
-		return VariableHelper::populateVariables($records, 'EntryVariable');
+		$params = new EntryParams($params);
+		return blx()->content->getEntries($params);
+	}
+
+	/**
+	 * Gets the total number of entries.
+	 *
+	 * @param array|null $params
+	 * @return array
+	 */
+	public function totalEntries($params = array())
+	{
+		$params = new EntryParams($params);
+		return blx()->content->getTotalEntries($params);
+	}
+
+	/**
+	 * Gets an entry by its ID.
+	 *
+	 * @param int $id
+	 * @return EntryModel
+	 */
+	public function getEntryById($id)
+	{
+		return blx()->content->getEntryById($id);
 	}
 }

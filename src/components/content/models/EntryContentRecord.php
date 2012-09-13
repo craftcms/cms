@@ -44,10 +44,18 @@ class EntryContentRecord extends BaseRecord
 
 	public function defineAttributes()
 	{
-		return array(
+		$attributes = array(
 			'language' => array(AttributeType::Language, 'required' => true),
 			'title'    => AttributeType::String,
 		);
+
+		$blocks = blx()->content->getEntryBlocksBySectionId($this->section->id);
+		foreach ($blocks as $block)
+		{
+			$attributes[$block->record->handle] = $block->defineContentAttribute();
+		}
+
+		return $attributes;
 	}
 
 	public function defineRelations()

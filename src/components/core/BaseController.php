@@ -24,7 +24,7 @@ abstract class BaseController extends \CController
 	 * Renders and outputs the template requested by the URL
 	 * and sets the Content-Type header based on the URL extension.
 	 *
-	 * @param array $variables
+	 * @param array|null $variables
 	 * @throws HttpException
 	 * @throws TemplateLoaderException
 	 * @return void
@@ -139,16 +139,21 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Redirects to the URI specified in the POST. If no URL is specified, redirects to the current requ
+	 * Redirects to the URI specified in the POST.
+	 *
+	 * @param array|null $variables Variables to parse in the URL
 	 */
-	public function redirectToPostedUrl()
+	public function redirectToPostedUrl($variables = array())
 	{
-		$url = blx()->request->getPost('redirect');
+		if ($url = blx()->request->getPost('redirect'))
+		{
+			foreach ($variables as $name => $value)
+			{
+				$url = str_replace('{'.$name.'}', $value, $url);
+			}
 
-		if ($url === null)
-			$url = blx()->request->getPath();
-
-		$this->redirect($url);
+			$this->redirect($url);
+		}
 	}
 
 	/**

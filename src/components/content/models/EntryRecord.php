@@ -28,20 +28,16 @@ class EntryRecord extends BaseRecord
 	}
 
 	/* BLOCKSPRO ONLY */
-
 	public function defineRelations()
 	{
 		return array(
-			'parent'   => array(static::BELONGS_TO, 'EntryRecord'),
-			'section'  => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
 			'author'   => array(static::BELONGS_TO, 'UserRecord', 'required' => true),
+			'section'  => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
 			'versions' => array(static::HAS_MANY, 'EntryVersionRecord', 'entryId'),
-			'children' => array(static::HAS_MANY, 'EntryRecord', 'parentId'),
 		);
 	}
 
 	/* end BLOCKSPRO ONLY */
-
 	public function defineIndexes()
 	{
 		return array(
@@ -49,7 +45,7 @@ class EntryRecord extends BaseRecord
 			array('columns' => array('slug'), 'unique' => true),
 			/* end BLOCKS ONLY */
 			/* BLOCKSPRO ONLY */
-			array('columns' => array('slug','sectionId','parentId'), 'unique' => true),
+			array('columns' => array('slug','sectionId'), 'unique' => true),
 			/* end BLOCKSPRO ONLY */
 		);
 	}

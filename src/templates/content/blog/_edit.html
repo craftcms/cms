@@ -26,14 +26,15 @@
 {% set content %}
 	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="content/saveEntry">
+		<input type="hidden" name="redirect" value="content/blog/{entryId}">
 		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
 
 		{{ forms.textField({
 			label: "Title"|t,
 			id: 'title',
 			name: 'title',
-			value: entry.content.title,
-			errors: entry.content.errors.title,
+			value: entry.title,
+			errors: entry.errors.title,
 			first: true,
 			required: true
 		}) }}
@@ -48,7 +49,7 @@
 		}) }}
 
 		{% for block in blx.content.entryBlocks %}
-			{% set data = entry.content[block.record.handle] %}
+			{% set data = entry.blocks[block.record.handle] %}
 			{% set input = block.input(data) %}
 			{{ forms.field({
 				label: block.record.name,
@@ -58,7 +59,8 @@
 				<!-- end BLOCKSPRO ONLY -->
 				instructions: block.record.instructions,
 				id: block.record.handle,
-				name: block.record.handle
+				name: block.record.handle,
+				errors: entry.errors[block.record.handle]
 			}, input)|ns('blocks')|raw }}
 		{% endfor %}
 

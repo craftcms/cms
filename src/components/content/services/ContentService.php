@@ -7,8 +7,9 @@ namespace Blocks;
 class ContentService extends BaseApplicationComponent
 {
 	/* BLOCKSPRO ONLY */
-
-	/* Sections */
+	// -------------------------------------------
+	//  Sections
+	// -------------------------------------------
 
 	/**
 	 * The default parameters for getSections() and getTotalSections().
@@ -121,13 +122,13 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a section or creates a new one.
+	 * Gets a section record or creates a new one.
 	 *
 	 * @access private
 	 * @param int $sectionId
 	 * @return Section
 	 */
-	private function _getSection($sectionId = null)
+	private function _getSectionRecord($sectionId = null)
 	{
 		if ($sectionId)
 		{
@@ -168,7 +169,7 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function saveSection($settings, $sectionId = null)
 	{
-		$section = $this->_getSection($sectionId);
+		$section = $this->_getSectionRecord($sectionId);
 
 		$isNewSection = $section->isNewRecord();
 		if (!$isNewSection)
@@ -264,11 +265,11 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/* end BLOCKSPRO ONLY */
-
-	/* Entry blocks s */
+	// -------------------------------------------
+	//  Entry Blocks
+	// -------------------------------------------
 
 	/* BLOCKS ONLY */
-
 	/**
 	 * Returns all entry blocks.
 	 *
@@ -279,7 +280,6 @@ class ContentService extends BaseApplicationComponent
 		$records = EntryBlockRecord::model()->ordered()->findAll();
 		return blx()->blocks->populateBlocks($records);
 	}
-
 	/* end BLOCKS ONLY */
 	/* BLOCKSPRO ONLY */
 	/**
@@ -348,7 +348,6 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/* BLOCKS ONLY */
-
 	/**
 	 * Saves an entry block.
 	 *
@@ -360,7 +359,6 @@ class ContentService extends BaseApplicationComponent
 	{
 	/* end BLOCKS ONLY */
 	/* BLOCKSPRO ONLY */
-
 	/**
 	 * Saves an entry block.
 	 *
@@ -371,7 +369,7 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function saveEntryBlock($sectionId, $settings, $blockId = null)
 	{
-		$section = $this->_getSection($sectionId);
+		$section = $this->_getSectionRecord($sectionId);
 	/* end BLOCKSPRO ONLY */
 		$record = $this->_getEntryBlockRecord($blockId);
 
@@ -497,7 +495,7 @@ class ContentService extends BaseApplicationComponent
 		$contentTable = $content->getTableName();
 		/* end BLOCKS ONLY */
 
-		$lastColumn = 'title';
+		$lastColumn = 'id';
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -521,7 +519,7 @@ class ContentService extends BaseApplicationComponent
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */
-				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $block->defineContentColumn(), null, $lastColumn);
+				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $block->defineContentAttribute(), null, $lastColumn);
 				$lastColumn = $record->handle;
 			}
 
@@ -535,7 +533,355 @@ class ContentService extends BaseApplicationComponent
 		}
 	}
 
-	/* Entries */
+	// -------------------------------------------
+	//  Entries
+	// -------------------------------------------
+
+	/**
+	 * Populates an EntryModel from an entry row.
+	 *
+	 * @param array $row
+	 * @return EntryModel
+	 */
+	public function populateEntry($row)
+	{
+		$entry = new EntryModel();
+		$entry->id = $row['id'];
+		/* BLOCKSPRO ONLY */
+		$entry->authorId = $row['authorId'];
+		$entry->sectionId = $row['sectionId'];
+		/* end BLOCKSPRO ONLY */
+		$entry->title = $row['title'];
+		$entry->slug = $row['slug'];
+
+		$entry->blocks = array();
+		$contentRecord = $this->_getEntryContentRecord($entry);
+
+		/* BLOCKS ONLY */
+		$blocks = $this->getEntryBlocks();
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
+		$blocks = $this->getEntryBlocksBySectionId($entry->sectionId);
+		/* end BLOCKSPRO ONLY */
+		foreach ($blocks as $block)
+		{
+			$handle = $block->record->handle;
+			$entry->blocks[$handle] = $contentRecord->$handle;
+		}
+
+		return $entry;
+	}
+
+	/**
+	 * Mass-populates EntryModel's from a list of entry rows.
+	 *
+	 * @param array $rows
+	 * @return array
+	 */
+	public function populateEntries($rows)
+	{
+		$entries = array();
+
+		foreach ($rows as $row)
+		{
+			$entries[] = $this->populateEntry($row);
+		}
+
+		return $entries;
+	}
+
+	/**
+	 * Gets entries.
+	 *
+	 * @param EntryParams|null $params
+	 * @return array
+	 */
+	public function getEntries(EntryParams $params = null)
+	{
+		$query = blx()->db->createCommand()
+			->select('e.*, t.title')
+			->from('entries e')
+			->join('entrytitles t', 't.entryId=e.id');
+
+		$this->_applyEntryConditions($query, $params);
+
+		if ($params->order)
+			$query->order($params->order);
+
+		if ($params->offset)
+			$query->offset($params->offset);
+
+		if ($params->limit)
+			$query->limit($params->limit);
+
+		$result = $query->queryAll();
+		return $this->populateEntries($result);
+	}
+
+	/**
+	 * Gets the total number of entries.
+	 *
+	 * @param EntryParams $params
+	 * @return int
+	 */
+	public function getTotalEntries(EntryParams $params = null)
+	{
+		$query = blx()->db->createCommand()
+			->select('count(e.id)')
+			->from('entries e')
+			->join('entrytitles t', 't.entryId=e.id');
+
+		$this->_applyEntryConditions($query, $params);
+
+		return (int) $query->queryScalar();
+	}
+
+	/**
+	 * Applies WHERE conditions to a DbCommand query for entries.
+	 *
+	 * @access private
+	 * @param DbCommand $query
+	 * @param array $params
+	 */
+	private function _applyEntryConditions($query, $params)
+	{
+		$whereConditions = array();
+		$whereParams = array();
+
+		if ($params->id)
+			$whereConditions[] = DbHelper::parseParam('e.id', $params->id, $whereParams);
+
+		if ($params->slug)
+			$whereConditions[] = DbHelper::parseParam('e.handle', $params->slug, $whereParams);
+
+		/* BLOCKSPRO ONLY */
+		$whereConditions[] = DbHelper::parseParam('t.language', $params->language, $whereParams);
+		/* end BLOCKSPRO ONLY */
+
+		if ($whereConditions)
+		{
+			array_unshift($whereConditions, 'and');
+			$query->where($whereConditions, $whereParams);
+		}
+	}
+
+	/**
+	 * Gets an entry by its ID.
+	 *
+	 * @param int $id
+	 * @return EntryModel
+	 */
+	public function getEntryById($entryId)
+	{
+		$query = blx()->db->createCommand()
+			->select('e.*, t.title')
+			->from('entries e')
+			->join('entrytitles t', 't.entryId=e.id')
+			->where(array('e.id' => $entryId))
+			->limit(1);
+
+		$result = $query->queryRow();
+		return $this->populateEntry($result);
+	}
+
+	/**
+	 * Saves an entry.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function saveEntry(EntryModel $entry)
+	{
+		$entryRecord = $this->_getEntryRecord($entry);
+		$titleRecord = $this->_getEntryTitleRecord($entry);
+		$contentRecord = $this->_getEntryContentRecord($entry);
+
+		/* BLOCKSPRO ONLY */
+		if ($entryRecord->isNewRecord())
+		{
+			$entryRecord->authorId = $entry->authorId;
+			$entryRecord->sectionId = $entry->sectionId;
+		}
+
+		/* end BLOCKSPRO ONLY */
+		$entryRecord->slug = $entry->slug;
+		$titleRecord->title = $entry->title;
+
+ 		// Populate the blocks' content
+		/* BLOCKS ONLY */
+		$blocks = $this->getEntryBlocks();
+		/* end BLOCKS ONLY */
+		/* BLOCKSPRO ONLY */
+		$blocks = $this->getEntryBlocksBySectionId($entry->sectionId);
+		/* end BLOCKSPRO ONLY */
+
+		foreach ($blocks as $block)
+		{
+			$handle = $block->record->handle;
+
+			if (isset($entry->blocks[$handle]))
+				$contentRecord->$handle = $entry->blocks[$handle];
+			else
+				$contentRecord->$handle = null;
+		}
+
+		$entryValidates = $entryRecord->validate();
+		$titleValidates = $titleRecord->validate();
+		$contentValidates = $contentRecord->validate();
+
+		if ($entryValidates && $titleValidates && $contentValidates)
+		{
+			$entryRecord->save(false);
+
+			// Now that we have an entry ID, save it on the models
+			if (!$entry->id)
+			{
+				$entry->id = $entryRecord->id;
+				$titleRecord->entryId = $entryRecord->id;
+				$contentRecord->entryId = $entryRecord->id;
+			}
+
+			$titleRecord->save(false);
+			$contentRecord->save(false);
+
+			return true;
+		}
+		else
+		{
+			$entry->errors = array_merge(
+				$entryRecord->getErrors(),
+				$titleRecord->getErrors(),
+				$contentRecord->getErrors()
+			);
+
+			return false;
+		}
+	}
+
+	/**
+	 * Gets an entry record or creates a new one.
+	 *
+	 * @access private
+	 * @param EntryModel $entry
+	 * @return EntryRecord
+	 */
+	private function _getEntryRecord($entry)
+	{
+		if ($entry->id)
+		{
+			$record = EntryRecord::model()->findById($entry->id);
+
+			// This is serious business.
+			if (!$record)
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entryId)));
+		}
+		else
+		{
+			$record = new EntryRecord();
+		}
+
+		return $record;
+	}
+
+	/**
+	 * Gets an entry's title record or creates a new one.
+	 *
+	 * @access private
+	 * @param EntryModel $entry
+	 * @return EntryTitleRecord
+	 */
+	private function _getEntryTitleRecord($entry)
+	{
+		/* BLOCKSPRO ONLY */
+		if (!$entry->language)
+			$entry->language = blx()->language;
+
+		/* end BLOCKSPRO ONLY */
+		if ($entry->id)
+		{
+			$record = EntryTitleRecord::model()->findByAttributes(array(
+				'entryId' => $entry->id,
+				/* BLOCKSPRO ONLY */
+				'language' => $entry->language,
+				/* end BLOCKSPRO ONLY */
+			));
+		}
+
+		if (empty($record))
+		{
+			$record = new EntryTitleRecord();
+			$record->entryId = $entry->id;
+			/* BLOCKSPRO ONLY */
+			$record->language = $entry->language;
+			/* end BLOCKSPRO ONLY */
+		}
+
+		return $record;
+	}
+
+	/**
+	 * Gets an entry's content record or creates a new one.
+	 *
+	 * @access private
+	 * @param EntryModel $entry
+	 * @return EntryContentRecord
+	 */
+	private function _getEntryContentRecord($entry)
+	{
+		/* BLOCKSPRO ONLY */
+		if (!$entry->language)
+			$entry->language = blx()->language;
+
+		// We have to get the content manually, since there's no way to tell EntryContentRecord
+		// which section to use from EntryContentRecord::model()->findByAttributes()
+
+		$sectionRecord = $this->_getSectionRecord($entry->sectionId);
+		$contentRecord = new EntryContentRecord($sectionRecord);
+
+		if ($entry->id)
+		{
+			$contentRow = blx()->db->createCommand()
+				->from($contentRecord->getTableName())
+				->where(array('entryId' => $entry->id, 'language' => $entry->language))
+				->queryRow();
+
+			if ($contentRow)
+				$contentRecord->populateRecord($contentRow);
+		}
+
+		if (empty($contentRow))
+		{
+			$contentRecord->entryId = $entry->id;
+			$contentRecord->language = $entry->language;
+		}
+
+		/* end BLOCKSPRO ONLY */
+		/* BLOCKS ONLY */
+		if ($entry->id)
+		{
+			$contentRecord = EntryContentRecord::model()->findByAttributes(array(
+				'entryId' => $entry->id,
+			));
+		}
+
+		if (empty($contentRecord))
+		{
+			$contentRecord = new EntryContentRecord();
+			$contentRecord->entryId = $entry->id;
+		}
+
+		/* end BLOCKS ONLY */
+		return $contentRecord;
+	}
+
+
+
+
+
+
+	// -------------------------------------------
+	//  Old stuff (to de deleted...)
+	// -------------------------------------------
 
 	/**
 	 * Creates a new entry
@@ -554,7 +900,7 @@ class ContentService extends BaseApplicationComponent
 
 		try
 		{
-			$section = $this->_getSection($sectionId);
+			$section = $this->_getSectionRecord($sectionId);
 
 			// Create the entry
 			$entry = new EntryRecord();
@@ -692,16 +1038,6 @@ class ContentService extends BaseApplicationComponent
 		}
 		else
 			return null;
-	}
-
-	/**
-	 * @param $entryId
-	 * @return mixed
-	 */
-	public function getEntryById($entryId)
-	{
-		$entry = EntryRecord::model()->findById($entryId);
-		return $entry;
 	}
 
 	/**
