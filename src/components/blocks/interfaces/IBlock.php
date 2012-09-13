@@ -6,6 +6,6 @@ namespace Blocks;
  */
 interface IBlock extends IComponent
 {
-	public function defineContentColumn();
+	public function defineContentAttribute();
 	public function getInputHtml($value = null);
 }

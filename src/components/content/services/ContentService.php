@@ -428,13 +428,15 @@ class ContentService extends BaseApplicationComponent
 				$contentTable = EntryContentRecord::getTableNameForSection($section);
 				/* end BLOCKSPRO ONLY */
 
+				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
+
 				if ($isNewRecord)
 				{
-					blx()->db->createCommand()->addColumn($contentTable, $record->handle, $block->defineContentColumn());
+					blx()->db->createCommand()->addColumn($contentTable, $record->handle, $column);
 				}
 				else
 				{
-					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $block->defineContentColumn(), $record->handle);
+					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $column, $record->handle);
 				}
 
 				$transaction->commit();

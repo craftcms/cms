@@ -48,7 +48,7 @@ class NumberBlock extends BaseBlock
 	 *
 	 * @return string
 	 */
-	public function defineContentColumn()
+	public function defineContentAttribute()
 	{
 		return ModelHelper::getNumberAttributeConfig($this->settings->min, $this->settings->max, $this->settings->decimals);
 	}

@@ -13,10 +13,9 @@ abstract class BaseBlock extends BaseComponent implements IBlock
 	 *
 	 * @return string
 	 */
-	public function defineContentColumn()
+	public function defineContentAttribute()
 	{
-		// Default to a varchar column
-		return ColumnType::Varchar;
+		return AttributeType::String;
 	}
 
 	/**
