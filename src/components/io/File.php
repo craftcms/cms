@@ -122,11 +122,12 @@ class File extends BaseIO
 
 	/**
 	 * @param $contents
+	 * @param $flags
 	 * @return bool
 	 */
-	public function write($contents)
+	public function write($contents, $flags)
 	{
-		if (!IOHelper::writeToFile($this->getRealPath(), $contents, false))
+		if (!IOHelper::writeToFile($this->getRealPath(), $contents, false, $flags))
 			return false;
 
 		return true;
