@@ -98,7 +98,7 @@ var LoginForm = Blocks.Base.extend({
 			rememberMe: (this.$rememberMeInput.attr('checked') ? 'y' : '')
 		};
 
-		$.post(Blocks.actionUrl+'session/login', data, $.proxy(function(response) {
+		$.post(Blocks.actionUrl+'usersession/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				window.location = response.redirectUrl;
