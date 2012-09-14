@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * LoginModel class.
  * LoginModel is the data structure for keeping user login form data.
- * It is used by the 'login' action of 'sessionController'.
+ * It is used by the 'login' action of 'UserSessionController'.
  */
 class LoginModel extends BaseModel
 {
