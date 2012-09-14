@@ -455,19 +455,19 @@ class ContentService extends BaseApplicationComponent
 	{
 		if ($blockId)
 		{
-			$record = EntryBlockRecord::model()->findById($blockId);
+			$blockRecord = EntryBlockRecord::model()->findById($blockId);
 
-			if (!$record)
+			if (!$blockRecord)
 			{
 				$this->_noEntryBlockExists($blockId);
 			}
 		}
 		else
 		{
-			$record = new EntryBlockRecord();
+			$blockRecord = new EntryBlockRecord();
 		}
 
-		return $record;
+		return $blockRecord;
 	}
 
 	/**
@@ -649,24 +649,26 @@ class ContentService extends BaseApplicationComponent
 			{
 				// Update the sortOrder in entryblocks
 				/* BLOCKS ONLY */
-				$record = $this->_getEntryBlockRecordById($blockId);
+				$blockRecord = $this->_getEntryBlockRecordById($blockId);
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
-				$record = EntryBlockRecord::model()->with('section')->findById($blockId);
-				if (!$record)
+				$blockRecord = EntryBlockRecord::model()->with('section')->findById($blockId);
+				if (!$blockRecord)
 					$this->_noEntryBlockExists($blockId);
 				/* end BLOCKSPRO ONLY */
-				$record->sortOrder = $blockOrder+1;
-				$record->save();
+				$blockRecord->sortOrder = $blockOrder+1;
+				$blockRecord->save();
 
 				// Update the column order in the content table
 				/* BLOCKSPRO ONLY */
-				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
+				$sectionPackage = $this->populateSectionPackage($blockRecord->section);
+				$contentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
 				/* end BLOCKSPRO ONLY */
-				$block = blx()->blocks->populateBlock($record);
+				$block = blx()->blocks->getBlockByClass($blockRecord->class);
+				$block->getSettings()->setAttributes($blockRecord->settings);
 				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
-				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $column, null, $lastColumn);
-				$lastColumn = $record->handle;
+				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
+				$lastColumn = $blockRecord->handle;
 			}
 
 			// Commit the transaction
@@ -861,41 +863,41 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves an entry.
 	 *
-	 * @param EntryPackage $entry
+	 * @param EntryPackage $entryPackage
 	 * @return bool
 	 */
-	public function saveEntry(EntryPackage $entry)
+	public function saveEntry(EntryPackage $entryPackage)
 	{
-		$entryRecord = $this->_getEntryRecord($entry);
-		$titleRecord = $this->_getEntryTitleRecord($entry);
-		$contentRecord = $this->_getEntryContentRecord($entry);
+		$entryRecord = $this->_getEntryRecord($entryPackage);
+		$titleRecord = $this->_getEntryTitleRecord($entryPackage);
+		$contentRecord = $this->_getEntryContentRecord($entryPackage);
 
 		/* BLOCKSPRO ONLY */
 		if ($entryRecord->isNewRecord())
 		{
-			$entryRecord->authorId = $entry->authorId;
-			$entryRecord->sectionId = $entry->sectionId;
+			$entryRecord->authorId = $entryPackage->authorId;
+			$entryRecord->sectionId = $entryPackage->sectionId;
 		}
 
 		/* end BLOCKSPRO ONLY */
-		$entryRecord->slug = $entry->slug;
-		$titleRecord->title = $entry->title;
+		$entryRecord->slug = $entryPackage->slug;
+		$titleRecord->title = $entryPackage->title;
 
  		// Populate the blocks' content
 		/* BLOCKS ONLY */
 		$blocks = $this->getEntryBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blocks = $this->getEntryBlocksBySectionId($entry->sectionId);
+		$blocks = $this->getEntryBlocksBySectionId($entryPackage->sectionId);
 		/* end BLOCKSPRO ONLY */
 
 		foreach ($blocks as $block)
 		{
 			$handle = $block->handle;
 
-			if (isset($entry->blocks[$handle]))
+			if (isset($entryPackage->blocks[$handle]))
 			{
-				$contentRecord->$handle = $entry->blocks[$handle];
+				$contentRecord->$handle = $entryPackage->blocks[$handle];
 			}
 			else
 			{
@@ -912,9 +914,9 @@ class ContentService extends BaseApplicationComponent
 			$entryRecord->save(false);
 
 			// Now that we have an entry ID, save it on the models
-			if (!$entry->id)
+			if (!$entryPackage->id)
 			{
-				$entry->id = $entryRecord->id;
+				$entryPackage->id = $entryRecord->id;
 				$titleRecord->entryId = $entryRecord->id;
 				$contentRecord->entryId = $entryRecord->id;
 			}
@@ -926,7 +928,7 @@ class ContentService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entry->errors = array_merge(
+			$entryPackage->errors = array_merge(
 				$entryRecord->getErrors(),
 				$titleRecord->getErrors(),
 				$contentRecord->getErrors()
@@ -940,91 +942,91 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entry
+	 * @param EntryPackage $entryPackage
 	 * @return EntryRecord
 	 */
-	private function _getEntryRecord($entry)
+	private function _getEntryRecord($entryPackage)
 	{
-		if ($entry->id)
+		if ($entryPackage->id)
 		{
-			$record = EntryRecord::model()->findById($entry->id);
+			$entryRecord = EntryRecord::model()->findById($entryPackage->id);
 
 			// This is serious business.
-			if (!$record)
+			if (!$entryRecord)
 			{
-				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entryPackage->id)));
 			}
 		}
 		else
 		{
-			$record = new EntryRecord();
+			$entryRecord = new EntryRecord();
 		}
 
-		return $record;
+		return $entryRecord;
 	}
 
 	/**
 	 * Gets an entry's title record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entry
+	 * @param EntryPackage $entryPackage
 	 * @return EntryTitleRecord
 	 */
-	private function _getEntryTitleRecord($entry)
+	private function _getEntryTitleRecord($entryPackage)
 	{
 		/* BLOCKSPRO ONLY */
-		if (!$entry->language)
-			$entry->language = blx()->language;
+		if (!$entryPackage->language)
+			$entryPackage->language = blx()->language;
 
 		/* end BLOCKSPRO ONLY */
-		if ($entry->id)
+		if ($entryPackage->id)
 		{
-			$record = EntryTitleRecord::model()->findByAttributes(array(
-				'entryId' => $entry->id,
+			$titleRecord = EntryTitleRecord::model()->findByAttributes(array(
+				'entryId' => $entryPackage->id,
 				/* BLOCKSPRO ONLY */
-				'language' => $entry->language,
+				'language' => $entryPackage->language,
 				/* end BLOCKSPRO ONLY */
 			));
 		}
 
-		if (empty($record))
+		if (empty($titleRecord))
 		{
-			$record = new EntryTitleRecord();
-			$record->entryId = $entry->id;
+			$titleRecord = new EntryTitleRecord();
+			$titleRecord->entryId = $entryPackage->id;
 			/* BLOCKSPRO ONLY */
-			$record->language = $entry->language;
+			$titleRecord->language = $entryPackage->language;
 			/* end BLOCKSPRO ONLY */
 		}
 
-		return $record;
+		return $titleRecord;
 	}
 
 	/**
 	 * Gets an entry's content record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entry
+	 * @param EntryPackage $entryPackage
 	 * @return EntryContentRecord
 	 */
-	private function _getEntryContentRecord($entry)
+	private function _getEntryContentRecord($entryPackage)
 	{
 		/* BLOCKSPRO ONLY */
-		if (!$entry->language)
+		if (!$entryPackage->language)
 		{
-			$entry->language = blx()->language;
+			$entryPackage->language = blx()->language;
 		}
 
 		// We have to get the content manually, since there's no way to tell EntryContentRecord
 		// which section to use from EntryContentRecord::model()->findByAttributes()
 
-		$sectionRecord = $this->_getSectionRecordById($entry->sectionId);
+		$sectionRecord = $this->_getSectionRecordById($entryPackage->sectionId);
 		$contentRecord = new EntryContentRecord($sectionRecord);
 
-		if ($entry->id)
+		if ($entryPackage->id)
 		{
 			$contentRow = blx()->db->createCommand()
 				->from($contentRecord->getTableName())
-				->where(array('entryId' => $entry->id, 'language' => $entry->language))
+				->where(array('entryId' => $entryPackage->id, 'language' => $entryPackage->language))
 				->queryRow();
 
 			if ($contentRow)
@@ -1035,23 +1037,23 @@ class ContentService extends BaseApplicationComponent
 
 		if (empty($contentRow))
 		{
-			$contentRecord->entryId = $entry->id;
-			$contentRecord->language = $entry->language;
+			$contentRecord->entryId = $entryPackage->id;
+			$contentRecord->language = $entryPackage->language;
 		}
 
 		/* end BLOCKSPRO ONLY */
 		/* BLOCKS ONLY */
-		if ($entry->id)
+		if ($entryPackage->id)
 		{
 			$contentRecord = EntryContentRecord::model()->findByAttributes(array(
-				'entryId' => $entry->id,
+				'entryId' => $entryPackage->id,
 			));
 		}
 
 		if (empty($contentRecord))
 		{
 			$contentRecord = new EntryContentRecord();
-			$contentRecord->entryId = $entry->id;
+			$contentRecord->entryId = $entryPackage->id;
 		}
 
 		/* end BLOCKS ONLY */

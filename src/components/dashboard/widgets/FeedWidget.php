@@ -40,14 +40,9 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		try{
 		return TemplateHelper::render('_components/widgets/FeedWidget/settings', array(
-			'settings' => new ModelVariable($this->getSettings())
+			'settings' => $this->getSettings()
 		));
-		} catch (\Exception $e)
-		{
-			print_r($e); die();
-		}
 	}
 
 	/**
