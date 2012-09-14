@@ -39,7 +39,7 @@ class NumberBlock extends BaseBlock
 	public function getSettingsHtml()
 	{
 		return TemplateHelper::render('_components/blocks/Number/settings', array(
-			'settings' => new ModelVariable($this->getSettings())
+			'settings' => $this->getSettings()
 		));
 	}
 

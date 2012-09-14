@@ -30,28 +30,4 @@ class VariableHelper
 
 		return $variables;
 	}
-
-	/**
-	 * Returns an array of ModelVariable's for a given set of models.
-	 *
-	 * @static
-	 * @param array $models
-	 * @return array
-	 */
-	public static function populateModelVariables($models)
-	{
-		return static::populateVariables($models, 'ModelVariable');
-	}
-
-	/**
-	 * Returns an array of ComponentVariable's for a given set of components.
-	 *
-	 * @static
-	 * @param array $components
-	 * @return array
-	 */
-	public static function populateComponentVariables($components)
-	{
-		return static::populateVariables($components, 'ComponentVariable');
-	}
 }

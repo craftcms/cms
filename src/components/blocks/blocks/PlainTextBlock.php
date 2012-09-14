@@ -41,7 +41,7 @@ class PlainTextBlock extends BaseBlock
 	public function getSettingsHtml()
 	{
 		return TemplateHelper::render('_components/blocks/PlainText/settings', array(
-			'settings' => new ModelVariable($this->getSettings())
+			'settings' => $this->getSettings()
 		));
 	}
 
