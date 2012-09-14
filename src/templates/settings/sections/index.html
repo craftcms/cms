@@ -38,7 +38,7 @@
 							<td><code>{{ section.handle }}</code></td>
 							<td>
 								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Entry Blocks"|t }}</a>
-								<span class="light">({{ section.totalBlocks }})</span>
+								<span class="light">({{ blx.content.totalEntryBlocksBySectionId(section.id) }})</span>
 							</td>
 							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
 						</tr>

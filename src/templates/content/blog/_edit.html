@@ -49,18 +49,18 @@
 		}) }}
 
 		{% for block in blx.content.entryBlocks %}
-			{% set data = entry.blocks[block.record.handle] %}
-			{% set input = block.input(data) %}
+			{% set _block = blx.blocks.getBlockByClass(block.class) %}
+			{% set input = _block.input(block.settings, entry, block.handle) %}
 			{{ forms.field({
-				label: block.record.name,
+				label: block.name,
 				<!-- BLOCKSPRO ONLY -->
-				required: block.record.required,
-				translatable: block.record.translatable,
+				required: block.required,
+				translatable: block.translatable,
 				<!-- end BLOCKSPRO ONLY -->
-				instructions: block.record.instructions,
-				id: block.record.handle,
-				name: block.record.handle,
-				errors: entry.errors[block.record.handle]
+				instructions: block.instructions,
+				id: block.handle,
+				name: block.handle,
+				errors: entry.errors[block.handle]
 			}, input)|ns('blocks')|raw }}
 		{% endfor %}
 

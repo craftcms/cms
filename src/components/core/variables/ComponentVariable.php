@@ -62,10 +62,12 @@ class ComponentVariable
 	/**
 	 * Returns the component's settings.
 	 *
+	 * @param array|null $settings
 	 * @return string
 	 */
-	public function settings()
+	public function settings($settings = null)
 	{
+		$this->component->getSettings()->setAttributes($settings);
 		return $this->component->getSettingsHtml();
 	}
 }

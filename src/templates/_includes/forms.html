@@ -56,7 +56,7 @@
 
 
 {% macro multiselect(config) %}
-	<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %} multiple{% if config.disabled %} disabled{% endif %}>
+	<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}[]"{% endif %} multiple{% if config.disabled %} disabled{% endif %}>
 		{% for value, label in config.options %}
 			<option value="{{ value }}"{% if value in config.values %} selected{% endif %}>{{ label }}</option>
 		{% endfor %}

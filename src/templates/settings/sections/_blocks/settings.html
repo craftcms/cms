@@ -10,18 +10,14 @@
 <!-- end BLOCKSPRO ONLY -->
 
 
-{% if not block %}
-	{% if blockId %}
-		{% set block = blx.content.getEntryBlockById(blockId) %}
-		{% if not block %}{% exit 404 %}{% endif %}
-	{% else %}
-		{% set block = blx.blocks.getBlockByClass('PlainText') %}
-	{% endif %}
+{% if not block and blockId %}
+	{% set block = blx.content.getEntryBlockById(blockId) %}
+	{% if not block %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% if block.record.id %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~block.record.name|t~'</i>' }) %}
+{% if block.id %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
 {% else %}
 	{% set title = "Create a new entry block"|t %}
 {% endif %}
@@ -50,15 +46,15 @@
 		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		<!-- end BLOCKSPRO ONLY -->
-		{% if block.record.id %}<input type="hidden" name="blockId" value="{{ block.record.id }}">{% endif %}
+		{% if block.id %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}
 
 		{{ forms.textField({
 			label: "Name"|t,
 			instructions: "What this block will be called in the CP."|t,
 			id: 'name',
 			name: 'name',
-			value: block.record.name,
-			errors: block.record.errors.name,
+			value: block.name,
+			errors: block.errors.name,
 			first: true,
 			required: true,
 			translatable: true
@@ -70,8 +66,8 @@
 			id: 'handle',
 			class: 'code',
 			name: 'handle',
-			value: block.record.handle,
-			errors: block.record.errors.handle,
+			value: block.handle,
+			errors: block.errors.handle,
 			required: true,
 		}) }}
 
@@ -85,8 +81,8 @@
 			<!-- end BLOCKSPRO ONLY -->
 			id: 'instructions',
 			name: 'instructions',
-			value: block.record.instructions,
-			errors: block.record.errors.instructions,
+			value: block.instructions,
+			errors: block.errors.instructions,
 			translatable: true
 		}) }}
 
@@ -94,19 +90,20 @@
 		{{ forms.checkboxField({
 			label: "This entry block is required"|t,
 			name: 'required',
-			checked: block.record.required
+			checked: block.required
 		}) }}
 
 		{% if blx.systemSettings.languages %}
 			{{ forms.checkboxField({
 				label: "This entry block is translatable"|t,
 				name: 'translatable',
-				checked: block.record.translatable
+				checked: block.translatable
 			}) }}
 		{% endif %}
 		<!-- end BLOCKSPRO ONLY -->
 
 		{% set blocks = blx.blocks.getAllBlocks %}
+		{% set blockClass = block ? block.class : 'PlainText' %}
 
 		{{ forms.selectField({
 			label: "Type",
@@ -114,17 +111,13 @@
 			id: 'class',
 			name: 'class',
 			options: blocks,
-			value: block.classHandle,
+			value: blockClass,
 			toggle: true
 		}) }}
 
 		{% for _block in blocks %}
-			{% set isCurrent = (_block.classHandle == block.classHandle) %}
-			{% if isCurrent %}
-				{% set settings = block.settings %}
-			{% else %}
-				{% set settings = _block.settings %}
-			{% endif %}
+			{% set isCurrent = (_block.classHandle == blockClass) %}
+			{% set settings = _block.settings(isCurrent ? block.settings : null) %}
 
 			{% if settings %}
 				<div id="{{ _block.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
@@ -145,6 +138,6 @@
 
 {% set scripts %}
 	<script type="text/javascript">
-		{% if not block.record.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if not block.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
 	</script>
 {% endset %}

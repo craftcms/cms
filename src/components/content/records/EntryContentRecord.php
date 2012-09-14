@@ -11,11 +11,11 @@ class EntryContentRecord extends BaseRecord
 	/**
 	 * Constructor
 	 *
-	 * @param SectionRecord $section
+	 * @param SectionPackage $section
 	 */
-	public function __construct($section = null)
+	public function __construct(SectionPackage $section = null)
 	{
-		if ($section && $section instanceof SectionRecord)
+		if ($section && $section instanceof SectionPackage)
 			$this->section = $section;
 
 		parent::__construct(null);
@@ -34,10 +34,10 @@ class EntryContentRecord extends BaseRecord
 	 * (lame that this can't also be called getTableName() -- see https://bugs.php.net/bug.php?id=40837)
 	 *
 	 * @static
-	 * @param SectionRecord $section
+	 * @param SectionPackage $section
 	 * @return string
 	 */
-	public static function getTableNameForSection($section)
+	public static function getTableNameForSection(SectionPackage $section)
 	{
 		return 'entrycontent_'.$section->handle;
 	}
@@ -48,10 +48,12 @@ class EntryContentRecord extends BaseRecord
 			'language' => array(AttributeType::Language, 'required' => true),
 		);
 
-		$blocks = blx()->content->getEntryBlocksBySectionId($this->section->id);
-		foreach ($blocks as $block)
+		$blockPackages = blx()->content->getEntryBlocksBySectionId($this->section->id);
+		foreach ($blockPackages as $blockPackage)
 		{
-			$attributes[$block->record->handle] = $block->defineContentAttribute();
+			$block = blx()->blocks->getBlockByClass($blockPackage->class);
+			$block->getSettings()->setAttributes($blockPackage->settings);
+			$attributes[$blockPackage->handle] = $block->defineContentAttribute();
 		}
 
 		return $attributes;

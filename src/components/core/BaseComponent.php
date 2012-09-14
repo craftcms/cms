@@ -82,8 +82,11 @@ abstract class BaseComponent extends BaseApplicationComponent
 	 */
 	public function setSettings($values)
 	{
-		$values = $this->preprocessSettings($values);
-		$this->getSettings()->setAttributes($values);
+		if ($values)
+		{
+			$values = $this->preprocessSettings($values);
+			$this->getSettings()->setAttributes($values);
+		}
 	}
 
 	/**

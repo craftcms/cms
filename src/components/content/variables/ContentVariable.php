@@ -20,8 +20,7 @@ class ContentVariable
 	public function sections($params = array())
 	{
 		$params = new SectionParams($params);
-		$records = blx()->content->getSections($params);
-		return VariableHelper::populateVariables($records, 'SectionVariable');
+		return blx()->content->getSections($params);
 	}
 
 	/**
@@ -40,14 +39,13 @@ class ContentVariable
 	 * Gets a section by its ID.
 	 *
 	 * @param int $id
-	 * @return SectionVariable
+	 * @return SectionPackage|null
 	 */
 	public function getSectionById($id)
 	{
-		$record = blx()->content->getSectionById($id);
-		if ($record)
-			return new SectionVariable($record);
+		return blx()->content->getSectionById($id);
 	}
+
 	/* end BLOCKSPRO ONLY */
 	// -------------------------------------------
 	//  Entry Blocks
@@ -61,11 +59,34 @@ class ContentVariable
 	 */
 	public function entryBlocks()
 	{
-		$blocks = blx()->content->getEntryBlocks();
-		return VariableHelper::populateVariables($blocks, 'BlockVariable');
+		return blx()->content->getEntryBlocks();
 	}
-	/* end BLOCKS ONLY */
 
+	/* end BLOCKS ONLY */
+	/* BLOCKSPRO ONLY */
+	/**
+	 * Returns all entry blocks by a given section ID.
+	 *
+	 * @param int $sectionId
+	 * @return array
+	 */
+	public function entryBlocksBySectionId($sectionId)
+	{
+		return blx()->content->getEntryBlocksBySectionId($sectionId);
+	}
+
+	/**
+	 * Returns the total number of entry blocks by a given section ID.
+	 *
+	 * @param int $sectionId
+	 * @return int
+	 */
+	public function totalEntryBlocksBySectionId($sectionId)
+	{
+		return blx()->content->getTotalEntryBlocksBySectionId($sectionId);
+	}
+
+	/* end BLOCKSPRO ONLY */
 	/**
 	 * Gets an entry block by its ID.
 	 *
@@ -74,9 +95,7 @@ class ContentVariable
 	 */
 	public function getEntryBlockById($id)
 	{
-		$block = blx()->content->getEntryBlockById($id);
-		if ($block)
-			return new BlockVariable($block);
+		return blx()->content->getEntryBlockById($id);
 	}
 
 	// -------------------------------------------

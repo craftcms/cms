@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Entry model class
+ * Entry package class
  *
- * Used for transporting entry data between templates, controllers, and EntryService.
+ * Used for transporting entry data throughout the system.
  */
 class EntryPackage
 {

@@ -1,11 +1,12 @@
 {% import "_includes/forms" as forms %}
 
 {% set config = {
-	id: record.handle,
-	name: record.handle,
-	value: value,
+	id: handle,
+	name: handle,
+	value: package.blocks[handle],
 	hint: settings.hint,
-	rows: settings.initialRows
+	rows: settings.initialRows,
+	errors: package.errors[handle]
 } %}
 
 {% if settings.multiline %}

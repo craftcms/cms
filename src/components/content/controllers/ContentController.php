@@ -28,21 +28,20 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$sectionId = blx()->request->getPost('sectionId');
+		$section = new SectionPackage();
+		$section->id = blx()->request->getPost('sectionId');
+		$section->name = blx()->request->getPost('name');
+		$section->handle = blx()->request->getPost('handle');
+		$section->hasUrls = blx()->request->getPost('hasUrls');
+		$section->urlFormat = blx()->request->getPost('urlFormat');
+		$section->template = blx()->request->getPost('template');
 
-		$settings['name']      = blx()->request->getPost('name');
-		$settings['handle']    = blx()->request->getPost('handle');
-		$settings['hasUrls']   = (bool)blx()->request->getPost('hasUrls');
-		$settings['urlFormat'] = blx()->request->getPost('urlFormat');
-		$settings['template']  = blx()->request->getPost('template');
-
-		$section = blx()->content->saveSection($settings, $sectionId);
-
-		// Did it save?
-		if (!$section->hasErrors())
+		if ($section->save())
 		{
 			blx()->user->setNotice(Blocks::t('Section saved.'));
-			$this->redirectToPostedUrl();
+			$this->redirectToPostedUrl(array(
+				'sectionId' => $section->id
+			));
 		}
 		else
 		{
@@ -51,7 +50,7 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'section' => new SectionVariable($section)
+			'section' => $section
 		));
 	}
 
@@ -65,7 +64,7 @@ class ContentController extends BaseController
 
 		$sectionId = blx()->request->getRequiredPost('sectionId');
 
-		blx()->content->deleteSection($sectionId);
+		blx()->content->deleteSectionById($sectionId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -81,36 +80,32 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$block = new EntryBlockPackage();
+		$block->id = blx()->request->getPost('blockId');
 		/* BLOCKSPRO ONLY */
-		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$block->sectionId = blx()->request->getRequiredPost('sectionId');
 		/* end BLOCKSPRO ONLY */
-		$blockId   = blx()->request->getPost('blockId');
-		$class     = blx()->request->getRequiredPost('class');
-
-		$settings['name']         = blx()->request->getPost('name');
-		$settings['handle']       = blx()->request->getPost('handle');
-		$settings['instructions'] = blx()->request->getPost('instructions');
+		$block->name = blx()->request->getPost('name');
+		$block->handle = blx()->request->getPost('handle');
+		$block->instructions = blx()->request->getPost('instructions');
 		/* BLOCKSPRO ONLY */
-		$settings['required']     = (bool)blx()->request->getPost('required');
-		$settings['translatable'] = (bool)blx()->request->getPost('translatable');
+		$block->required = (bool)blx()->request->getPost('required');
+		$block->translatable = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
+		$block->class = blx()->request->getRequiredPost('class');
 
-		$blockSettings = blx()->request->getPost('types');
-		$settings['class'] = $class;
-		$settings['blockSettings'] = isset($blockSettings[$class]) ? $blockSettings[$class] : null;
+		$typeSettings = blx()->request->getPost('types');
+		if (isset($typeSettings[$block->class]))
+		{
+			$block->settings = $typeSettings[$block->class];
+		}
 
-		/* BLOCKS ONLY */
-		$block = blx()->content->saveEntryBlock($settings, $blockId);
-		/* end BLOCKS ONLY */
-		/* BLOCKSPRO ONLY */
-		$block = blx()->content->saveEntryBlock($sectionId, $settings, $blockId);
-		/* end BLOCKSPRO ONLY */
-
-		// Did it save?
-		if (!$block->getSettings()->hasErrors() && !$block->record->hasErrors())
+		if ($block->save())
 		{
 			blx()->user->setNotice(Blocks::t('Entry block saved.'));
-			$this->redirectToPostedUrl();
+			$this->redirectToPostedUrl(array(
+				'blockId' => $block->id
+			));
 		}
 		else
 		{
@@ -119,20 +114,20 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'block' => new BlockVariable($block)
+			'block' => $block
 		));
 	}
 
 	/**
 	 * Deletes an entry block.
 	 */
-	public function actionDeleteEntryBlock()
+	public function actiondeleteEntryBlock()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$blockId = JsonHelper::decode(blx()->request->getRequiredPost('blockId'));
-		blx()->content->deleteEntryBlock($blockId);
+		$blockId = blx()->request->getRequiredPost('blockId');
+		blx()->content->deleteEntryBlockById($blockId);
 		$this->returnJson(array('success' => true));
 	}
 

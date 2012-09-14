@@ -12,12 +12,55 @@ class ContentService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
+	 * Populates a section package.
+	 *
+	 * @param array|SectionRecord $attributes
+	 * @return SectionPackage
+	 */
+	public function populateSectionPackage($attributes)
+	{
+		if ($attributes instanceof SectionRecord)
+		{
+			$attributes = $attributes->getAttributes();
+		}
+
+		$sectionPackage = new SectionPackage();
+
+		$sectionPackage->id = $attributes['id'];
+		$sectionPackage->name = $attributes['name'];
+		$sectionPackage->handle = $attributes['handle'];
+		$sectionPackage->hasUrls = $attributes['hasUrls'];
+		$sectionPackage->urlFormat = $attributes['urlFormat'];
+		$sectionPackage->template = $attributes['template'];
+
+		return $sectionPackage;
+	}
+
+	/**
+	 * Mass-populates section packages.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public function populateSectionPackages($data)
+	{
+		$sectionPackages = array();
+
+		foreach ($data as $attributes)
+		{
+			$sectionPackages[] = $this->populateSectionPackage($attributes);
+		}
+
+		return $sectionPackages;
+	}
+
+	/**
 	 * Gets sections.
 	 *
 	 * @param SectionParams|null $params
 	 * @return array
 	 */
-	public function getSections($params = array())
+	public function getSections(SectionParams $params = null)
 	{
 		if (!$params)
 		{
@@ -45,23 +88,22 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		return SectionRecord::model()->populateRecords($result);
+		return $this->populateSectionPackages($result);
 	}
 
 	/**
 	 * Gets the total number of sections.
 	 *
-	 * @param array $params
+	 * @param SectionParams|null $params
 	 * @return int
 	 */
-	public function getTotalSections($params = array())
+	public function getTotalSections(SectionParams $params = null)
 	{
 		if (!$params)
 		{
 			$params = new SectionParams();
 		}
 
-		$params = array_merge(static::$_defaultUserParams, $params);
 		$query = blx()->db->createCommand()
 			->select('count(id)')
 			->from('sections');
@@ -108,25 +150,34 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Gets a section by its ID.
 	 *
-	 * @param int $id
+	 * @param int $sectionid
 	 * @return Section
 	 */
-	public function getSectionById($id)
+	public function getSectionById($sectionId)
 	{
-		return SectionRecord::model()->findById($id);
+		$sectionRecord = SectionRecord::model()->findById($sectionId);
+		if ($sectionRecord)
+		{
+			return $this->populateSectionPackage($sectionRecord);
+		}
 	}
 
 	/**
 	 * Gets a section by its handle.
 	 *
-	 * @param string $handle
+	 * @param string $sectionHandle
 	 * @return Section
 	 */
-	public function getSectionByHandle($handle)
+	public function getSectionByHandle($sectionHandle)
 	{
-		return SectionRecord::model()->findByAttributes(array(
-			'handle' => $handle
+		$sectionRecord = SectionRecord::model()->findByAttributes(array(
+			'handle' => $sectionHandle
 		));
+
+		if ($sectionRecord)
+		{
+			return $this->populateSectionPackage($sectionRecord);
+		}
 	}
 
 	/**
@@ -136,24 +187,23 @@ class ContentService extends BaseApplicationComponent
 	 * @param int $sectionId
 	 * @return Section
 	 */
-	private function _getSectionRecord($sectionId = null)
+	private function _getSectionRecordById($sectionId = null)
 	{
 		if ($sectionId)
 		{
-			$section = $this->getSectionById($sectionId);
+			$sectionRecord = SectionRecord::model()->findById($sectionId);
 
-			// This is serious business.
-			if (!$section)
+			if (!$sectionRecord)
 			{
 				$this->_noSectionExists($sectionId);
 			}
 		}
 		else
 		{
-			$section = new SectionRecord();
+			$sectionRecord = new SectionRecord();
 		}
 
-		return $section;
+		return $sectionRecord;
 	}
 
 	/**
@@ -171,103 +221,105 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves a section.
 	 *
-	 * @param array $settings
-	 * @param int   $sectionId
-	 *
+	 * @param SectionPackage $sectionPackage
 	 * @throws \Exception
-	 * @return Section
+	 * @return bool
 	 */
-	public function saveSection($settings, $sectionId = null)
+	public function saveSection(SectionPackage $sectionPackage)
 	{
-		$section = $this->_getSectionRecord($sectionId);
+		$sectionRecord = $this->_getSectionRecordById($sectionPackage->id);
 
-		$isNewSection = $section->isNewRecord();
+		$isNewSection = $sectionRecord->isNewRecord();
 		if (!$isNewSection)
 		{
-			$oldUrlFormat = $section->urlFormat;
-			$oldContentTable = EntryContentRecord::getTableNameForSection($section);
+			$oldUrlFormat = $sectionRecord->urlFormat;
+			$oldSectionPackage = $this->populateSectionPackage($sectionRecord);
+			$oldContentTable = EntryContentRecord::getTableNameForSection($oldSectionPackage);
 		}
 
-		$section->name      = $settings['name'];
-		$section->handle    = $settings['handle'];
-		$section->hasUrls   = !empty($settings['hasUrls']);
-		$section->urlFormat = (!empty($settings['urlFormat']) ? $settings['urlFormat'] : null);
-		$section->template  = (!empty($settings['template']) ? $settings['template'] : null);
+		$sectionRecord->name      = $sectionPackage->name;
+		$sectionRecord->handle    = $sectionPackage->handle;
+		$sectionRecord->hasUrls   = $sectionPackage->hasUrls;
+		$sectionRecord->urlFormat = $sectionPackage->urlFormat;
+		$sectionRecord->template  = $sectionPackage->template;
 
-		// Start a transaction
-		$transaction = blx()->db->beginTransaction();
-		try
+		if ($sectionRecord->validate())
 		{
-			if ($section->save())
+			$transaction = blx()->db->beginTransaction();
+			try
 			{
-				if ($isNewSection)
+				if ($sectionRecord->save(false))
 				{
-					// Create the content table
-					$content = new EntryContentRecord($section);
-					$content->createTable();
-					$content->addForeignKeys();
-				}
-				else
-				{
-					// Rename the content table if the handle changed
-					$newContentTable = EntryContentRecord::getTableNameForSection($section);
-					if ($newContentTable != $oldContentTable)
-						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
-
-					// Update the entry URIs if the URL format changed
-					if ($section->urlFormat != $oldUrlFormat)
+					if ($isNewSection)
 					{
-						foreach ($section->entries as $entry)
+						// Create the content table
+						$contentRecord = new EntryContentRecord($sectionPackage);
+						$contentRecord->createTable();
+						$contentRecord->addForeignKeys();
+					}
+					else
+					{
+						// Rename the content table if the handle changed
+						$newContentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
+						if ($newContentTable != $oldContentTable)
+							blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
+
+						// Update the entry URIs if the URL format changed
+						if ($sectionRecord->urlFormat != $oldUrlFormat)
 						{
-							$entry->uri = $this->getEntryUri($entry);
-							$entry->save();
+							foreach ($sectionRecord->entries as $entryRecord)
+							{
+								$entry->uri = $this->getEntryUri($entryRecord);
+								$entry->save();
+							}
 						}
 					}
 				}
+
+				$transaction->commit();
+			}
+			catch (\Exception $e)
+			{
+				$transaction->rollBack();
+				throw $e;
 			}
 
-			$transaction->commit();
+			return true;
 		}
-		catch (\Exception $e)
+		else
 		{
-			$transaction->rollBack();
-			throw $e;
+			return false;
 		}
-
-		return $section;
 	}
 
 	/**
-	 * Deletes a section.
+	 * Deletes a section by its ID.
 	 *
 	 * @param int $sectionId
 	 * @throws \Exception
-	 * @return void
+	 * @return bool
 	*/
-	public function deleteSection($sectionId)
+	public function deleteSectionById($sectionId)
 	{
-		$section = SectionRecord::model()->with('blocks')->findById($sectionId);
-		if (!$section)
-		{
-			$this->_noSectionExists($sectionId);
-		}
+		$sectionRecord = $this->_getSectionRecordById($sectionId);
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Delete the entry blocks
-			foreach ($section->blocks as $block)
+			foreach ($sectionRecord->blocks as $block)
 			{
 				$block->delete();
 			}
 
 			// Delete the content table
-			$content = new EntryContentRecord($section);
-			$content->dropForeignKeys();
-			$content->dropTable();
+			$sectionPackage = $this->populateSectionPackage($sectionRecord);
+			$contentRecord = new EntryContentRecord($sectionPackage);
+			$contentRecord->dropForeignKeys();
+			$contentRecord->dropTable();
 
 			// Delete the section
-			$section->delete();
+			$sectionRecord->delete();
 
 			$transaction->commit();
 		}
@@ -276,12 +328,64 @@ class ContentService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
+
+		return true;
 	}
 
 	/* end BLOCKSPRO ONLY */
 	// -------------------------------------------
 	//  Entry Blocks
 	// -------------------------------------------
+
+	/**
+	 * Populates an entry block package.
+	 *
+	 * @param array|EntryBlockRecord $attributes
+	 * @return EntryBlockPackage
+	 */
+	public function populateEntryBlockPackage($attributes)
+	{
+		if ($attributes instanceof EntryBlockRecord)
+		{
+			$attributes = $attributes->getAttributes();
+		}
+
+		$blockPackage = new EntryBlockPackage();
+
+		$blockPackage->id = $attributes['id'];
+		/* BLOCKSPRO ONLY */
+		$blockPackage->sectionId = $attributes['sectionId'];
+		/* end BLOCKSPRO ONLY */
+		$blockPackage->name = $attributes['name'];
+		$blockPackage->handle = $attributes['handle'];
+		$blockPackage->instructions = $attributes['instructions'];
+		/* BLOCKSPRO ONLY */
+		$blockPackage->required = $attributes['required'];
+		$blockPackage->translatable = $attributes['translatable'];
+		/* end BLOCKSPRO ONLY */
+		$blockPackage->class = $attributes['class'];
+		$blockPackage->settings = $attributes['settings'];
+
+		return $blockPackage;
+	}
+
+	/**
+	 * Mass-populates entry block packages.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public function populateEntryBlockPackages($data)
+	{
+		$blockPackages = array();
+
+		foreach ($data as $attributes)
+		{
+			$blockPackages[] = $this->populateEntryBlockPackage($attributes);
+		}
+
+		return $blockPackages;
+	}
 
 	/* BLOCKS ONLY */
 	/**
@@ -291,38 +395,52 @@ class ContentService extends BaseApplicationComponent
 	 */
 	public function getEntryBlocks()
 	{
-		$records = EntryBlockRecord::model()->ordered()->findAll();
-		return blx()->blocks->populateBlocks($records);
+		$blockRecords = EntryBlockRecord::model()->ordered()->findAll();
+		return $this->populateEntryBlockPackages($blockRecords);
 	}
+
 	/* end BLOCKS ONLY */
 	/* BLOCKSPRO ONLY */
 	/**
-	 * Returns all entry blocks for a given section
+	 * Returns all entry blocks by a given section ID.
 	 *
 	 * @param int $sectionId
 	 * @return array
 	 */
 	public function getEntryBlocksBySectionId($sectionId)
 	{
-		$records = EntryBlockRecord::model()->ordered()->findAllByAttributes(array(
+		$blockRecords = EntryBlockRecord::model()->ordered()->findAllByAttributes(array(
 			'sectionId' => $sectionId
 		));
-		return blx()->blocks->populateBlocks($records);
+		return $this->populateEntryBlockPackages($blockRecords);
 	}
-	/* end BLOCKSPRO ONLY */
 
+	/**
+	 * Returns the total number of entry blocks by a given section ID.
+	 *
+	 * @param int $sectionId
+	 * @return int
+	 */
+	public function getTotalEntryBlocksBySectionId($sectionId)
+	{
+		return EntryBlockRecord::model()->countByAttributes(array(
+			'sectionId' => $sectionId
+		));
+	}
+
+	/* end BLOCKSPRO ONLY */
 	/**
 	 * Gets an entry block by its ID.
 	 *
-	 * @param int $id
+	 * @param int $blockId
 	 * @return BaseBlock
 	 */
-	public function getEntryBlockById($id)
+	public function getEntryBlockById($blockId)
 	{
-		$record = EntryBlockRecord::model()->findById($id);
-		if ($record)
+		$blockRecord = EntryBlockRecord::model()->findById($blockId);
+		if ($blockRecord)
 		{
-			return blx()->blocks->populateBlock($record);
+			return $this->populateEntryBlockPackage($blockRecord);
 		}
 	}
 
@@ -333,13 +451,12 @@ class ContentService extends BaseApplicationComponent
 	 * @param int $blockId
 	 * @return EntryBlockRecord
 	 */
-	private function _getEntryBlockRecord($blockId = null)
+	private function _getEntryBlockRecordById($blockId = null)
 	{
 		if ($blockId)
 		{
 			$record = EntryBlockRecord::model()->findById($blockId);
 
-			// This is serious business.
 			if (!$record)
 			{
 				$this->_noEntryBlockExists($blockId);
@@ -365,98 +482,86 @@ class ContentService extends BaseApplicationComponent
 		throw new Exception(Blocks::t('No entry block exists with the ID “{id}”', array('id' => $blockId)));
 	}
 
-	/* BLOCKS ONLY */
 	/**
 	 * Saves an entry block.
 	 *
-	 * @param array    $settings
-	 * @param int|null $blockId
+	 * @param EntryBlockPackage $blockPackage
 	 * @throws \Exception
-	 * @return EntryBlock
+	 * @return bool
 	 */
-	public function saveEntryBlock($settings, $blockId = null)
+	public function saveEntryBlock(EntryBlockPackage $blockPackage)
 	{
-	/* end BLOCKS ONLY */
-	/* BLOCKSPRO ONLY */
-	/**
-	 * Saves an entry block.
-	 *
-	 * @param int      $sectionId
-	 * @param array    $settings
-	 * @param int|null $blockId
-	 * @throws \Exception
-	 * @return BaseBlock
-	 */
-	public function saveEntryBlock($sectionId, $settings, $blockId = null)
-	{
-		$section = $this->_getSectionRecord($sectionId);
-	/* end BLOCKSPRO ONLY */
-		$record = $this->_getEntryBlockRecord($blockId);
+		$blockRecord = $this->_getEntryBlockRecordById($blockPackage->id);
 
-		$isNewRecord = $record->isNewRecord();
-		if (!$isNewRecord)
+		$isNewBlock = $blockRecord->isNewRecord();
+
+		if (!$isNewBlock)
 		{
-			$oldHandle = $record->handle;
+			$oldHandle = $blockRecord->handle;
 		}
 
 		/* BLOCKSPRO ONLY */
-		$record->sectionId     = $section->id;
+		$blockRecord->sectionId = $blockPackage->sectionId;
 		/* end BLOCKSPRO ONLY */
-		$record->name          = $settings['name'];
-		$record->handle        = $settings['handle'];
-		$record->instructions  = (!empty($settings['instructions']) ? $settings['instructions'] : null);
+		$blockRecord->name = $blockPackage->name;
+		$blockRecord->handle = $blockPackage->handle;
+		$blockRecord->instructions = $blockPackage->instructions;
 		/* BLOCKSPRO ONLY */
-		$record->required      = !empty($settings['required']);
-		$record->translatable  = !empty($settings['translatable']);
+		$blockRecord->required = $blockPackage->required;
+		$blockRecord->translatable = $blockPackage->translatable;
 		/* end BLOCKSPRO ONLY */
-		$record->class         = $settings['class'];
-		$record->settings      = null;
+		$blockRecord->class = $blockPackage->class;
 
-		$block = blx()->blocks->populateBlock($record);
-		$blockSettings = (!empty($settings['blockSettings']) ? $settings['blockSettings'] : null);
-		$block->setSettings($blockSettings);
+		$block = blx()->blocks->getBlockByClass($blockPackage->class);
+		$block->setSettings($blockPackage->settings);
 
-		$recordValidates = $record->validate();
+		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $block->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
 			// Set the record settings now that the block has had a chance to tweak them
-			$record->settings = $block->getSettings()->getAttributes();
+			$blockRecord->settings = $block->getSettings()->getAttributes();
 
-			if ($isNewRecord)
+			if ($isNewBlock)
 			{
 				$maxSortOrder = blx()->db->createCommand()
 					->select('max(sortOrder)')
 					->from('entryblocks')
 					->queryScalar();
 
-				$record->sortOrder = $maxSortOrder + 1;
+				$blockRecord->sortOrder = $maxSortOrder + 1;
 			}
 
 			$transaction = blx()->db->beginTransaction();
 			try
 			{
-				$record->save(false);
+				$blockRecord->save(false);
 
 				// Create/alter the content table column
 				/* BLOCKS ONLY */
-				$content = new EntryContentRecord();
-				$contentTable = $content->getTableName();
+				$contentRecord = new EntryContentRecord();
+				$contentTable = $contentRecord->getTableName();
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
+				$section = $this->getSectionById($blockPackage->sectionId);
+				if (!$section)
+				{
+					$this->_noSectionExists($blockPackage->sectionId);
+				}
+
 				$contentTable = EntryContentRecord::getTableNameForSection($section);
 				/* end BLOCKSPRO ONLY */
 
 				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
 
-				if ($isNewRecord)
+				if ($isNewBlock)
 				{
-					blx()->db->createCommand()->addColumn($contentTable, $record->handle, $column);
+					blx()->db->createCommand()->addColumn($contentTable, $blockRecord->handle, $column);
 				}
 				else
 				{
-					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $column, $record->handle);
+					blx()->db->createCommand()->alterColumn($contentTable, $oldHandle, $column, $blockRecord->handle);
 				}
 
 				$transaction->commit();
@@ -466,39 +571,50 @@ class ContentService extends BaseApplicationComponent
 				$transaction->rollBack();
 				throw $e;
 			}
-		}
 
-		return $block;
+			return true;
+		}
+		else
+		{
+			$blockPackage->errors = array_merge(
+				$blockRecord->getErrors(),
+				$block->getSettings()->getErrors()
+			);
+
+			return false;
+		}
 	}
 
 	/**
-	 * Deletes an entry block.
+	 * Deletes an entry block by its ID.
 	 *
 	 * @param int $blockId
 	 * @throws \Exception
+	 * @return bool
 	 */
-	public function deleteEntryBlock($blockId)
+	public function deleteEntryBlockById($blockId)
 	{
 		/* BLOCKS ONLY */
-		$record = $this->_getEntryBlockRecord($blockId);
-		$content = new EntryContentRecord();
-		$contentTable = $content->getTableName();
+		$blockRecord = $this->_getEntryBlockRecordById($blockId);
+		$contentRecord = new EntryContentRecord();
+		$contentTable = $contentRecord->getTableName();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$record = EntryBlockRecord::model()->with('section')->findById($blockId);
-		if (!$record)
+		$blockRecord = EntryBlockRecord::model()->with('section')->findById($blockId);
+		if (!$blockRecord)
 		{
 			$this->_noEntryBlockExists($blockId);
 		}
 
-		$contentTable = EntryContentRecord::getTableNameForSection($record->section);
+		$sectionPackage = $this->populateSectionPackage($blockRecord->section);
+		$contentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
 		/* end BLOCKSPRO ONLY */
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			$record->delete();
-			blx()->db->createCommand()->dropColumn($contentTable, $record->handle);
+			$blockRecord->delete();
+			blx()->db->createCommand()->dropColumn($contentTable, $blockRecord->handle);
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -506,6 +622,8 @@ class ContentService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
+
+		return true;
 	}
 
 	/**
@@ -513,12 +631,13 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @param array $blockIds
 	 * @throws \Exception
+	 * @return bool
 	 */
 	public function reorderEntryBlocks($blockIds)
 	{
 		/* BLOCKS ONLY */
-		$content = new EntryContentRecord();
-		$contentTable = $content->getTableName();
+		$contentRecord = new EntryContentRecord();
+		$contentTable = $contentRecord->getTableName();
 		/* end BLOCKS ONLY */
 
 		$lastColumn = 'id';
@@ -530,7 +649,7 @@ class ContentService extends BaseApplicationComponent
 			{
 				// Update the sortOrder in entryblocks
 				/* BLOCKS ONLY */
-				$record = $this->_getEntryBlockRecord($blockId);
+				$record = $this->_getEntryBlockRecordById($blockId);
 				/* end BLOCKS ONLY */
 				/* BLOCKSPRO ONLY */
 				$record = EntryBlockRecord::model()->with('section')->findById($blockId);
@@ -541,11 +660,12 @@ class ContentService extends BaseApplicationComponent
 				$record->save();
 
 				// Update the column order in the content table
-				$block = blx()->blocks->populateBlock($record);
 				/* BLOCKSPRO ONLY */
 				$contentTable = EntryContentRecord::getTableNameForSection($record->section);
 				/* end BLOCKSPRO ONLY */
-				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $block->defineContentAttribute(), null, $lastColumn);
+				$block = blx()->blocks->populateBlock($record);
+				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
+				blx()->db->createCommand()->alterColumn($contentTable, $record->handle, $column, null, $lastColumn);
 				$lastColumn = $record->handle;
 			}
 
@@ -557,6 +677,8 @@ class ContentService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
+
+		return true;
 	}
 
 	// -------------------------------------------
@@ -564,53 +686,59 @@ class ContentService extends BaseApplicationComponent
 	// -------------------------------------------
 
 	/**
-	 * Populates an entry package from an entry row.
+	 * Populates an entry package.
 	 *
-	 * @param array $row
+	 * @param array|EntryRecord $attributes
 	 * @return EntryPackage
 	 */
-	public function populateEntryPackage($row)
+	public function populateEntryPackage($attributes)
 	{
-		$entry = new EntryPackage();
-		$entry->id = $row['id'];
-		/* BLOCKSPRO ONLY */
-		$entry->authorId = $row['authorId'];
-		$entry->sectionId = $row['sectionId'];
-		/* end BLOCKSPRO ONLY */
-		$entry->title = $row['title'];
-		$entry->slug = $row['slug'];
+		if ($attributes instanceof EntryRecord)
+		{
+			$attributes = $attributes->getAttributes();
+		}
 
-		$entry->blocks = array();
-		$contentRecord = $this->_getEntryContentRecord($entry);
+		$entryPackage = new EntryPackage();
+
+		$entryPackage->id = $attributes['id'];
+		/* BLOCKSPRO ONLY */
+		$entryPackage->authorId = $attributes['authorId'];
+		$entryPackage->sectionId = $attributes['sectionId'];
+		/* end BLOCKSPRO ONLY */
+		$entryPackage->title = $attributes['title'];
+		$entryPackage->slug = $attributes['slug'];
+
+		$entryPackage->blocks = array();
+		$contentRecord = $this->_getEntryContentRecord($entryPackage);
 
 		/* BLOCKS ONLY */
 		$blocks = $this->getEntryBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blocks = $this->getEntryBlocksBySectionId($entry->sectionId);
+		$blocks = $this->getEntryBlocksBySectionId($entryPackage->sectionId);
 		/* end BLOCKSPRO ONLY */
 		foreach ($blocks as $block)
 		{
-			$handle = $block->record->handle;
-			$entry->blocks[$handle] = $contentRecord->$handle;
+			$handle = $block->handle;
+			$entryPackage->blocks[$handle] = $contentRecord->$handle;
 		}
 
-		return $entry;
+		return $entryPackage;
 	}
 
 	/**
-	 * Mass-populates entry packages from a list of entry rows.
+	 * Mass-populates entry packages.
 	 *
-	 * @param array $rows
+	 * @param array $data
 	 * @return array
 	 */
-	public function populateEntryPackages($rows)
+	public function populateEntryPackages($data)
 	{
 		$entries = array();
 
-		foreach ($rows as $row)
+		foreach ($data as $attributes)
 		{
-			$entries[] = $this->populateEntryPackage($row);
+			$entries[] = $this->populateEntryPackage($attributes);
 		}
 
 		return $entries;
@@ -763,7 +891,7 @@ class ContentService extends BaseApplicationComponent
 
 		foreach ($blocks as $block)
 		{
-			$handle = $block->record->handle;
+			$handle = $block->handle;
 
 			if (isset($entry->blocks[$handle]))
 			{
@@ -889,7 +1017,7 @@ class ContentService extends BaseApplicationComponent
 		// We have to get the content manually, since there's no way to tell EntryContentRecord
 		// which section to use from EntryContentRecord::model()->findByAttributes()
 
-		$sectionRecord = $this->_getSectionRecord($entry->sectionId);
+		$sectionRecord = $this->_getSectionRecordById($entry->sectionId);
 		$contentRecord = new EntryContentRecord($sectionRecord);
 
 		if ($entry->id)
@@ -956,7 +1084,7 @@ class ContentService extends BaseApplicationComponent
 
 		try
 		{
-			$section = $this->_getSectionRecord($sectionId);
+			$section = $this->_getSectionRecordById($sectionId);
 
 			// Create the entry
 			$entry = new EntryRecord();

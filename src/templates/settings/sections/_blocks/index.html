@@ -13,7 +13,7 @@
 {% if not section %}{% exit 404 %}{% endif %}
 
 {% set title = "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' }) %}
-{% set blocks = section.blocks %}
+{% set blocks = blx.content.entryBlocksBySectionId(section.id) %}
 {% set sortable  = (blocks|length > 1) %}
 
 
@@ -42,10 +42,10 @@
 				</thead>
 				<tbody>
 					{% for block in blocks %}
-						<tr data-block-id="{{ block.record.id }}">
-							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.record.id) }}">{{ block.record.name|t }}</a></th>
-							<td><code>{{ block.record.handle }}</code></td>
-							<td>{{ block.name }}</td>
+						<tr data-block-id="{{ block.id }}">
+							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name|t }}</a></th>
+							<td><code>{{ block.handle }}</code></td>
+							<td>{{ blx.blocks.getBlockByClass(block.class).name }}</td>
 							{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
 							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
 						</tr>

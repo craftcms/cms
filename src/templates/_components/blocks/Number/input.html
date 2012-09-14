@@ -1,9 +1,10 @@
 {% from "_includes/forms" import text %}
 
 {{ text({
-	id: record.handle,
-	name: record.handle,
-	value: value,
+	id: handle,
+	name: handle,
+	value: package.blocks[handle],
 	type: 'number',
-	size: 5
+	size: 5,
+	errors: package.errors[handle]
 }) }}

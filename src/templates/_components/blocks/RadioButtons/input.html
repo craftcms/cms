@@ -1,8 +1,8 @@
 {% from "_includes/forms" import radioGroup %}
 
 {{ radioGroup({
+	id: handle,
+	name: handle,
 	options: settings.options,
-	id: record.handle,
-	name: record.handle,
-	values: values
+	values: package.blocks[handle]
 }) }}
