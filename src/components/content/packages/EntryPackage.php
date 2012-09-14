@@ -6,9 +6,8 @@ namespace Blocks;
  *
  * Used for transporting entry data throughout the system.
  */
-class EntryPackage
+class EntryPackage extends BasePackage
 {
-	public $id;
 	/* BLOCKSPRO ONLY */
 	public $authorId;
 	public $sectionId;
@@ -17,7 +16,6 @@ class EntryPackage
 	public $title;
 	public $slug;
 	public $blocks;
-	public $errors;
 
 	/**
 	 * Saves the entry.

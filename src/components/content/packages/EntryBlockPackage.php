@@ -2,11 +2,11 @@
 namespace Blocks;
 
 /**
- * Entry block package class.
+ * Entry block package class
  *
  * Used for transporting entry block data throughout the system.
  */
-class EntryBlockPackage extends BlockPackage
+class EntryBlockPackage extends BaseBlockPackage
 {
 	/* BLOCKSPRO ONLY */
 	public $sectionId;

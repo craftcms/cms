@@ -101,10 +101,10 @@ class ComponentsService extends BaseApplicationComponent
 	 * Populates a new component instance by its type and package.
 	 *
 	 * @param string $type
-	 * @param mixed $package
+	 * @param BaseComponentPackage $package
 	 * @return BaseComponent|null
 	 */
-	public function populateComponentByTypeAndPackage($type, $package)
+	public function populateComponentByTypeAndPackage($type, BaseComponentPackage $package)
 	{
 		$component = $this->getComponentByTypeAndClass($type, $package->class);
 

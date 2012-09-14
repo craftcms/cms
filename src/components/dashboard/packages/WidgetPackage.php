@@ -6,15 +6,8 @@ namespace Blocks;
  *
  * Used for transporting widget data throughout the system.
  */
-class WidgetPackage
+class WidgetPackage extends BaseComponentPackage
 {
-	public $id;
-	public $class;
-	public $settings;
-
-	public $errors;
-	public $settingsErrors;
-
 	/**
 	 * Saves the Widget.
 	 *

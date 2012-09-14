@@ -6,15 +6,13 @@ namespace Blocks;
  *
  * Used for transporting section data throughout the system.
  */
-class SectionPackage
+class SectionPackage extends BasePackage
 {
-	public $id;
 	public $name;
 	public $handle;
 	public $hasUrls = false;
 	public $urlFormat;
 	public $template;
-	public $errors;
 
 	/**
 	 * Saves the section.
