@@ -145,7 +145,7 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($variables = array())
 	{
-		if ($url = blx()->request->getPost('redirect'))
+		if (($url = blx()->request->getPost('redirect')) !== null)
 		{
 			foreach ($variables as $name => $value)
 			{
