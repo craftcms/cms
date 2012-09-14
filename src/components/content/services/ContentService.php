@@ -248,30 +248,35 @@ class ContentService extends BaseApplicationComponent
 			$transaction = blx()->db->beginTransaction();
 			try
 			{
-				if ($sectionRecord->save(false))
-				{
-					if ($isNewSection)
-					{
-						// Create the content table
-						$contentRecord = new EntryContentRecord($sectionPackage);
-						$contentRecord->createTable();
-						$contentRecord->addForeignKeys();
-					}
-					else
-					{
-						// Rename the content table if the handle changed
-						$newContentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
-						if ($newContentTable != $oldContentTable)
-							blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
+				$sectionRecord->save(false);
 
-						// Update the entry URIs if the URL format changed
-						if ($sectionRecord->urlFormat != $oldUrlFormat)
+				// Now that we have a section ID, save it on the package
+				if (!$sectionPackage->id)
+				{
+					$sectionPackage->id = $sectionRecord->id;
+				}
+
+				if ($isNewSection)
+				{
+					// Create the content table
+					$contentRecord = new EntryContentRecord($sectionPackage);
+					$contentRecord->createTable();
+					$contentRecord->addForeignKeys();
+				}
+				else
+				{
+					// Rename the content table if the handle changed
+					$newContentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
+					if ($newContentTable != $oldContentTable)
+						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
+
+					// Update the entry URIs if the URL format changed
+					if ($sectionRecord->urlFormat != $oldUrlFormat)
+					{
+						foreach ($sectionRecord->entries as $entryRecord)
 						{
-							foreach ($sectionRecord->entries as $entryRecord)
-							{
-								$entry->uri = $this->getEntryUri($entryRecord);
-								$entry->save();
-							}
+							$entry->uri = $this->getEntryUri($entryRecord);
+							$entry->save();
 						}
 					}
 				}
@@ -537,6 +542,12 @@ class ContentService extends BaseApplicationComponent
 			try
 			{
 				$blockRecord->save(false);
+
+				// Now that we have a block ID, save it on the package
+				if (!$blockPackage->id)
+				{
+					$blockPackage->id = $blockRecord->id;
+				}
 
 				// Create/alter the content table column
 				/* BLOCKS ONLY */
@@ -913,7 +924,7 @@ class ContentService extends BaseApplicationComponent
 		{
 			$entryRecord->save(false);
 
-			// Now that we have an entry ID, save it on the models
+			// Now that we have an entry ID, save it on the package & models
 			if (!$entryPackage->id)
 			{
 				$entryPackage->id = $entryRecord->id;
