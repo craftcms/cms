@@ -34,34 +34,48 @@ class DashboardVariable
 	 */
 	public function userWidgets()
 	{
-		$widgets = blx()->dashboard->getUserWidgets();
-		return VariableHelper::populateVariables($widgets, 'WidgetVariable');
+		return blx()->dashboard->getUserWidgets();
 	}
 
 	/**
 	 * Returns a widget by its class.
 	 *
 	 * @param string $class
-	 * @return BaseWidget
+	 * @return BaseWidget|null
 	 */
 	public function getWidgetByClass($class)
 	{
 		$widget = blx()->dashboard->getWidgetByClass($class);
 		if ($widget)
+		{
 			return new WidgetVariable($widget);
+		}
+	}
+
+	/**
+	 * Populates a widget.
+	 *
+	 * @param WidgetPackage $widgetPackage
+	 * @return BaseWidget|null
+	 */
+	public function populateWidget(WidgetPackage $widgetPackage)
+	{
+		$widget = blx()->dashboard->populateWidget($widgetPackage);
+		if ($widget)
+		{
+			return new WidgetVariable($widget);
+		}
 	}
 
 	/**
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
-	 * @return array
+	 * @return WidgetPackage|null
 	 */
 	public function getUserWidgetById($id)
 	{
-		$widget = blx()->dashboard->getUserWidgetById($id);
-		if ($widget)
-			return new WidgetVariable($widget);
+		return blx()->dashboard->getUserWidgetById($id);
 	}
 
 	/**
@@ -76,7 +90,7 @@ class DashboardVariable
 
 		foreach ($widgets as $widget)
 		{
-			$widgetIds[] = $widget->record->id;
+			$widgetIds[] = $widget->id;
 		}
 
 		return $widgetIds;

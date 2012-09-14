@@ -24,7 +24,9 @@ class ComponentsService extends BaseApplicationComponent
 		if (!isset($this->_components[$type]))
 		{
 			if (!isset(static::$componentTypes[$type]))
+			{
 				$this->_noComponentTypeExists($type);
+			}
 
 			$ctype = static::$componentTypes[$type];
 
@@ -78,17 +80,48 @@ class ComponentsService extends BaseApplicationComponent
 	 *
 	 * @param string $type
 	 * @param string $class
-	 * @return BaseComponent
+	 * @return BaseComponent|null
 	 */
 	public function getComponentByTypeAndClass($type, $class)
 	{
 		if (!isset(static::$componentTypes[$type]))
+		{
 			$this->_noComponentTypeExists($type);
+		}
 
 		$class = __NAMESPACE__.'\\'.$class.static::$componentTypes[$type]['suffix'];
 
 		if (class_exists($class))
+		{
 			return new $class;
+		}
+	}
+
+	/**
+	 * Populates a new component instance by its type and package.
+	 *
+	 * @param string $type
+	 * @param mixed $package
+	 * @return BaseComponent|null
+	 */
+	public function populateComponentByTypeAndPackage($type, $package)
+	{
+		$component = $this->getComponentByTypeAndClass($type, $package->class);
+
+		if ($component)
+		{
+			if ($package->settings)
+			{
+				$component->setSettings($package->settings);
+			}
+
+			if ($package->settingsErrors)
+			{
+				$component->getSettings()->addErrors($package->settingsErrors);
+			}
+
+			return $component;
+		}
 	}
 
 	/**

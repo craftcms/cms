@@ -30,17 +30,18 @@ class DashboardController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$widgetId = blx()->request->getPost('widgetId');
-		$class    = blx()->request->getRequiredPost('class');
+		$widgetPackage = new WidgetPackage();
+		$widgetPackage->id = blx()->request->getPost('widgetId');
+		$widgetPackage->class = blx()->request->getRequiredPost('class');
 
-		$widgetSettings = blx()->request->getPost('types');
-		$settings['class'] = $class;
-		$settings['settings'] = isset($widgetSettings[$class]) ? $widgetSettings[$class] : null;
-
-		$widget = blx()->dashboard->saveUserWidget($settings, $widgetId);
+		$typeSettings = blx()->request->getPost('types');
+		if (isset($typeSettings[$widgetPackage->class]))
+		{
+			$widgetPackage->settings = $typeSettings[$widgetPackage->class];
+		}
 
 		// Did it save?
-		if (!$widget->getSettings()->hasErrors() && !$widget->record->hasErrors())
+		if ($widgetPackage->save())
 		{
 			blx()->user->setNotice(Blocks::t('Widget saved.'));
 			$this->redirectToPostedUrl();
@@ -52,7 +53,7 @@ class DashboardController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'widget' => new WidgetVariable($widget)
+			'widgetPackage' => $widgetPackage
 		));
 	}
 
@@ -65,7 +66,7 @@ class DashboardController extends BaseController
 		$this->requireAjaxRequest();
 
 		$widgetId = JsonHelper::decode(blx()->request->getRequiredPost('widgetId'));
-		blx()->dashboard->deleteUserWidget($widgetId);
+		blx()->dashboard->deleteUserWidgetById($widgetId);
 		$this->returnJson(array('success' => true));
 	}
 
@@ -89,10 +90,17 @@ class DashboardController extends BaseController
 	public function actionGetWidgetHtml()
 	{
 		$widgetId = blx()->request->getRequiredParam('widgetId');
-		$widget = blx()->dashboard->getUserWidgetById($widgetId);
+		$widgetPackage = blx()->dashboard->getUserWidgetById($widgetId);
+
+		if (!$widgetPackage)
+			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
+
+		$widget = blx()->dashboard->getWidgetByClass($widgetPackage->class);
 
 		if (!$widget)
-			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
+			throw new Exception(Blocks::t('No widget exists with the class “{class}”.', array('class' => $widgetPackage->class)));
+
+		$widget->setSettings($widgetPackage->settings);
 
 		$this->renderTemplate('dashboard/_widget', array(
 			'class' => $widget->getClassHandle(),

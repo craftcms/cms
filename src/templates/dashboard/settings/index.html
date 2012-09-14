@@ -25,28 +25,27 @@
 {% set content %}
 	<h2>{{ "My Widgets"|t }}</h2>
 
-	<div class="pane">
-		<p id="nowidgets" {% if widgets|length %}style="display: none"{% endif %}>
-			{{ "You don’t have any widgets yet."|t }} <a href="{{ url('dashboard/settings/new') }}">{{ "Add the first one."|t }}</a>
-		</p>
+	<p id="nowidgets" {% if widgets|length %}style="display: none"{% endif %}>
+		{{ "You don’t have any widgets yet."|t }} <a href="{{ url('dashboard/settings/new') }}">{{ "Add the first one."|t }}</a>
+	</p>
 
-		{% if widgets|length %}
-			<table id="widgets" class="data">
-				<tbody>
-					{% for widget in widgets %}
-						<tr data-widget-id="{{ widget.record.id }}">
-							<th scope="row">
-								<a href="{{ url('dashboard/settings/' ~ widget.record.id) }}">{{ widget.title }}</a>
-								{% if widget.name != widget.title %}<span class="light">({{ widget.name }})</span>{% endif %}
-							</th>
-							{% if sortable %}<td width="1%"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-							<td width="1%"><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-	</div>
+	{% if widgets|length %}
+		<table id="widgets" class="data">
+			<tbody>
+				{% for widgetPackage in widgets %}
+					{% set widget = blx.dashboard.populateWidget(widgetPackage) %}
+					<tr data-widget-id="{{ widgetPackage.id }}">
+						<th scope="row">
+							<a href="{{ url('dashboard/settings/' ~ widgetPackage.id) }}">{{ widget.title }}</a>
+							{% if widget.name != widget.title %}<span class="light">({{ widget.name }})</span>{% endif %}
+						</th>
+						{% if sortable %}<td width="1%"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+						<td width="1%"><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
 
 	<div class="buttons">
 		<a href="{{ url('dashboard/settings/new') }}" class="btn submit addbtn">{{ "New Widget"|t }}</a>

@@ -20,7 +20,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Returns a widget by its class.
 	 *
 	 * @param string $class
-	 * @return mixed
+	 * @return BaseWidget|null
 	 */
 	public function getWidgetByClass($class)
 	{
@@ -28,25 +28,54 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates a widget with a given record.
+	 * Populates a widget
 	 *
-	 * @param WidgetRecord $record
+	 * @param WidgetPackage $widgetPackage
 	 * @return BaseWidget
 	 */
-	public function populateWidget(WidgetRecord $record)
+	public function populateWidget(WidgetPackage $widgetPackage)
 	{
-		return blx()->components->populateComponent('widget', $record);
+		return blx()->components->populateComponentByTypeAndPackage('widget', $widgetPackage);
 	}
 
 	/**
-	 * Creates an array of widgets based on an array of widget records.
+	 * Populates a widget package.
 	 *
-	 * @param array $records
+	 * @param array|WidgetRecord $attributes
+	 * @return WidgetPackage
+	 */
+	public function populateWidgetPackage($attributes)
+	{
+		if ($attributes instanceof WidgetRecord)
+		{
+			$attributes = $attributes->getAttributes();
+		}
+
+		$widgetPackage = new WidgetPackage();
+
+		$widgetPackage->id = $attributes['id'];
+		$widgetPackage->class = $attributes['class'];
+		$widgetPackage->settings = $attributes['settings'];
+
+		return $widgetPackage;
+	}
+
+	/**
+	 * Mass-populates widget packages.
+	 *
+	 * @param array $data
 	 * @return array
 	 */
-	public function populateWidgets($records)
+	public function populateWidgetPackages($data)
 	{
-		return blx()->components->populateComponents('widget', $records);
+		$widgetPackages = array();
+
+		foreach ($data as $attributes)
+		{
+			$widgetPackages[] = $this->populateWidgetPackage($attributes);
+		}
+
+		return $widgetPackages;
 	}
 
 	/**
@@ -56,85 +85,103 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function getUserWidgets()
 	{
-		$records = WidgetRecord::model()->ordered()->findAllByAttributes(array(
+		$widgetRecords = WidgetRecord::model()->ordered()->findAllByAttributes(array(
 			'userId' => blx()->accounts->getCurrentUser()->id
 		));
 
-		return $this->populateWidgets($records);
+		return $this->populateWidgetPackages($widgetRecords);
 	}
 
 	/**
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
-	 * @return Widget
+	 * @return WidgetPackage
 	 */
 	public function getUserWidgetById($id)
 	{
-		$record = WidgetRecord::model()->findByAttributes(array(
+		$widgetRecord = WidgetRecord::model()->findByAttributes(array(
 			'id' => $id,
 			'userId' => blx()->accounts->getCurrentUser()->id
 		));
 
-		if ($record)
-			return $this->populateWidget($record);
+		if ($widgetRecord)
+		{
+			return $this->populateWidgetPackage($widgetRecord);
+		}
 	}
 
 	/**
-	 * Saves a widget.
+	 * Saves a widget for the current user.
 	 *
-	 * @param array    $settings
-	 * @param int|null $widgetId
-	 * @return BaseWidget
+	 * @param WidgetPackage $widgetPackage
+	 * @return bool
 	 */
-	public function saveUserWidget($settings, $widgetId = null)
+	public function saveUserWidget(WidgetPackage $widgetPackage)
 	{
-		$record = $this->_getUserWidgetRecord($widgetId);
+		$widgetRecord = $this->_getUserWidgetRecordById($widgetPackage->id);
 
-		$record->class    = $settings['class'];
-		$record->settings = (!empty($settings['settings']) ? $settings['settings'] : null);
+		$widgetRecord->class = $widgetPackage->class;
+		$widgetRecord->settings = $widgetPackage->settings;
 
-		$widget = $this->populateWidget($record);
+		$widget = $this->populateWidget($widgetPackage);
 
-		$recordValidates = $record->validate();
+		$recordValidates = $widgetRecord->validate();
 		$settingsValidate = $widget->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// The widget might have tweaked the settings
-			$record->settings = $widget->getSettings()->getAttributes();
+			// Set the record settings now that the widget has had a chance to tweak them
+			$widgetRecord->settings = $widget->getSettings()->getAttributes();
 
-			if ($record->isNewRecord())
+			if ($widgetRecord->isNewRecord())
 			{
 				$maxSortOrder = blx()->db->createCommand()
 					->select('max(sortOrder)')
 					->from('widgets')
 					->queryScalar();
 
-				$record->sortOrder = $maxSortOrder + 1;
+				$widgetRecord->sortOrder = $maxSortOrder + 1;
 			}
 
-			$record->save(false);
-		}
+			$widgetRecord->save(false);
 
-		return $widget;
+			// Now that we have a widget ID, save it on the package
+			if (!$widgetPackage->id)
+			{
+				$widgetPackage->id = $widgetRecord->id;
+			}
+
+			return true;
+		}
+		else
+		{
+			$widgetPackage->errors = $widgetRecord->getErrors();
+			$widgetPackage->settingsErrors = $widget->getSettings()->getErrors();
+
+			return false;
+		}
 	}
 
 	/**
 	 * Deletes a widget.
 	 *
 	 * @param int $widgetId
+	 * @return bool
 	 */
-	public function deleteUserWidget($widgetId)
+	public function deleteUserWidgetById($widgetId)
 	{
-		$record = $this->_getUserWidgetRecord($widgetId);
-		$record->delete();
+		$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+		$widgetRecord->delete();
+
+		return true;
 	}
 
 	/**
 	 * Reorders widgets.
 	 *
 	 * @param array $widgetIds
+	 * @return bool
 	 */
 	public function reorderUserWidgets($widgetIds)
 	{
@@ -144,9 +191,9 @@ class DashboardService extends BaseApplicationComponent
 		{
 			foreach ($widgetIds as $widgetOrder => $widgetId)
 			{
-				$record = $this->_getUserWidgetRecord($widgetId);
-				$record->sortOrder = $widgetOrder+1;
-				$record->save();
+				$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
+				$widgetRecord->sortOrder = $widgetOrder+1;
+				$widgetRecord->save();
 			}
 
 			$transaction->commit();
@@ -156,21 +203,26 @@ class DashboardService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
+
+		return true;
 	}
 
 	/**
 	 * Adds the default widgets to the logged-in user.
+	 *
+	 * @return bool
 	 */
 	public function addDefaultUserWidgets()
 	{
-		// Add the default dashboard widgets
-		$this->saveUserWidget(array(
-			'class'    => 'Feed',
-			'settings' => array(
-				'url' => 'http://feeds.feedburner.com/blogandtonic',
-				'title' => 'Blog & Tonic'
-			)
-		));
+		$widgetPackage = new WidgetPackage();
+
+		$widgetPackage->class = 'Feed';
+		$widgetPackage->settings = array(
+			'url'   => 'http://feeds.feedburner.com/blogandtonic',
+			'title' => 'Blog & Tonic'
+		);
+
+		$this->saveUserWidget($widgetPackage);
 	}
 
 	/**
@@ -180,28 +232,27 @@ class DashboardService extends BaseApplicationComponent
 	 * @param int $widgetId
 	 * @return WidgetRecord
 	 */
-	private function _getUserWidgetRecord($widgetId = null)
+	private function _getUserWidgetRecordById($widgetId = null)
 	{
 		$userId = blx()->accounts->getCurrentUser()->id;
 
 		if ($widgetId)
 		{
-			$record = WidgetRecord::model()->findByAttributes(array(
+			$widgetRecord = WidgetRecord::model()->findByAttributes(array(
 				'id'     => $widgetId,
 				'userId' => $userId
 			));
 
-			// This is serious business.
-			if (!$record)
+			if (!$widgetRecord)
 				$this->_noWidgetExists($widgetId);
 		}
 		else
 		{
-			$record = new WidgetRecord();
-			$record->userId = $userId;
+			$widgetRecord = new WidgetRecord();
+			$widgetRecord->userId = $userId;
 		}
 
-		return $record;
+		return $widgetRecord;
 	}
 
 	/**
