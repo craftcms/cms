@@ -22,7 +22,7 @@ abstract class BaseOptionsBlock extends BaseBlock
 	}
 
 	/**
-	 * Expand the options setting into an array.
+	 * Preprocesses settings values coming from setSettings() before they get saved to the settings model.
 	 *
 	 * @access protected
 	 * @param array $values
@@ -30,10 +30,11 @@ abstract class BaseOptionsBlock extends BaseBlock
 	 */
 	protected function preprocessSettings($values)
 	{
-		$options = array();
-
-		if (!empty($values['options']))
+		// Expand the options setting into an array.
+		if (!empty($values['options']) && is_string($values['options']))
 		{
+			$options = array();
+
 			$lines = array_filter(preg_split('/[\r\n]+/', $values['options']));
 
 			foreach($lines as $line)
@@ -42,9 +43,10 @@ abstract class BaseOptionsBlock extends BaseBlock
 				if ($parts[0])
 					$options[$parts[0]] = (isset($parts[1])) ? $parts[1] : $parts[0];
 			}
+
+			$values['options'] = $options;
 		}
 
-		$values['options'] = $options;
 		return $values;
 	}
 

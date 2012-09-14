@@ -67,7 +67,7 @@ class ComponentVariable
 	 */
 	public function settings($settings = null)
 	{
-		$this->component->getSettings()->setAttributes($settings);
+		$this->component->setSettings($settings);
 		return $this->component->getSettingsHtml();
 	}
 }

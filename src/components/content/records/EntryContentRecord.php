@@ -52,7 +52,7 @@ class EntryContentRecord extends BaseRecord
 		foreach ($blockPackages as $blockPackage)
 		{
 			$block = blx()->blocks->getBlockByClass($blockPackage->class);
-			$block->getSettings()->setAttributes($blockPackage->settings);
+			$block->setSettings($blockPackage->settings);
 			$attributes[$blockPackage->handle] = $block->defineContentAttribute();
 		}
 

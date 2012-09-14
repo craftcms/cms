@@ -676,7 +676,7 @@ class ContentService extends BaseApplicationComponent
 				$contentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
 				/* end BLOCKSPRO ONLY */
 				$block = blx()->blocks->getBlockByClass($blockRecord->class);
-				$block->getSettings()->setAttributes($blockRecord->settings);
+				$block->setSettings($blockRecord->settings);
 				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
 				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
 				$lastColumn = $blockRecord->handle;

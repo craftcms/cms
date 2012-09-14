@@ -16,7 +16,7 @@ class BlockVariable extends ComponentVariable
 	 */
 	public function input($settings, $package, $handle)
 	{
-		$this->component->getSettings()->setAttributes($settings);
+		$this->component->setSettings($settings);
 		return $this->component->getInputHtml($package, $handle);
 	}
 }
