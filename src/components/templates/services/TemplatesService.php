@@ -192,14 +192,14 @@ class TemplatesService extends BaseApplicationComponent
 		// Is there any CSS to include?
 		if (!empty($this->_css))
 		{
-			$css = implode("\n\n", $this->_css);
+			$css = implode("\n\n", array_unique($this->_css));
 			$node = "<style type=\"text/css\">\n".$css."\n</style>";
 			$this->includeHeadNode($node);
 		}
 
 		if (!empty($this->_headNodes))
 		{
-			$headNodes = implode("\n", $this->_headNodes);
+			$headNodes = implode("\n", array_unique($this->_headNodes));
 			$this->_headNodes = null;
 			return $headNodes;
 		}
@@ -216,14 +216,14 @@ class TemplatesService extends BaseApplicationComponent
 		// Is there any JS to include?
 		if (!empty($this->_js))
 		{
-			$js = implode("\n\n", $this->_js);
-			$node = "<script type=\"text/javascript\">//<![CDATA[\n".$js."\n//]]></script>";
+			$js = implode("\n\n", array_unique($this->_js));
+			$node = "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
 			$this->includeFootNode($node);
 		}
 
 		if (!empty($this->_footNodes))
 		{
-			$footNodes = implode("\n", $this->_footNodes);
+			$footNodes = implode("\n", array_unique($this->_footNodes));
 			$this->_footNodes = null;
 			return $footNodes;
 		}
