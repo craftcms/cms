@@ -38,7 +38,7 @@ class CheckboxesBlock extends BaseOptionsBlock
 	 */
 	public function getInputHtml($handle, $values)
 	{
-		return TemplateHelper::render('_components/blocks/Checkboxes/input', array(
+		return blx()->templates->render('_components/blocks/Checkboxes/input', array(
 			'handle'   => $handle,
 			'values'   => $values,
 			'settings' => $this->getSettings()

@@ -38,7 +38,7 @@ class NumberBlock extends BaseBlock
 	 */
 	public function getSettingsHtml()
 	{
-		return TemplateHelper::render('_components/blocks/Number/settings', array(
+		return blx()->templates->render('_components/blocks/Number/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -63,7 +63,7 @@ class NumberBlock extends BaseBlock
 	 */
 	public function getInputHtml($handle, $value, $errors = null)
 	{
-		return TemplateHelper::render('_components/blocks/Number/input', array(
+		return blx()->templates->render('_components/blocks/Number/input', array(
 			'handle'   => $handle,
 			'value'    => $value,
 			'errors'   => $errors,

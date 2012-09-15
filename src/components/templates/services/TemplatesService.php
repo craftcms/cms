@@ -4,17 +4,15 @@ namespace Blocks;
 /**
  *
  */
-class TemplateHelper
+class TemplatesService extends BaseApplicationComponent
 {
-	private static $_twig;
-	private static $_templatePaths;
+	private $_twig;
+	private $_templatePaths;
 
 	/**
 	 * Registers the Twig autoloader.
-	 *
-	 * @static
 	 */
-	public static function registerTwigAutoloader()
+	public function registerTwigAutoloader()
 	{
 		if (!class_exists('\Twig_Autoloader', false))
 		{
@@ -26,14 +24,13 @@ class TemplateHelper
 	/**
 	 * Gets the Twig instance.
 	 *
-	 * @static
 	 * @return \Twig_Environment
 	 */
-	public static function getTwig()
+	public function getTwig()
 	{
-		if (!isset(static::$_twig))
+		if (!isset($this->_twig))
 		{
-			static::registerTwigAutoloader();
+			$this->registerTwigAutoloader();
 
 			$loader = new TemplateLoader();
 
@@ -48,25 +45,26 @@ class TemplateHelper
 			$twig->addExtension(new BlocksTwigExtension());
 
 			if (blx()->config->devMode)
+			{
 				$twig->addExtension(new \Twig_Extension_Debug());
+			}
 
-			static::$_twig = $twig;
+			$this->_twig = $twig;
 		}
 
-		return static::$_twig;
+		return $this->_twig;
 	}
 
 	/**
 	 * Renders a template.
 	 *
-	 * @static
 	 * @param mixed $template The name of the template to load, or a StringTemplate object
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
-	public static function render($template, $variables = array())
+	public function render($template, $variables = array())
 	{
-		$twig = static::getTwig();
+		$twig = $this->getTwig();
 
 		//try
 		//{
@@ -81,37 +79,35 @@ class TemplateHelper
 	/**
 	 * Renders a template string.
 	 *
-	 * @static
 	 * @param string $cacheKey A unique key for the template
 	 * @param string $template The source template string
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
-	public static function renderString($cacheKey, $template, $variables)
+	public function renderString($cacheKey, $template, $variables)
 	{
 		$stringTemplate = new StringTemplate($cacheKey, $template);
-		return static::render($stringTemplate, $variables);
+		return $this->render($stringTemplate, $variables);
 	}
 
 	/**
 	 * Finds a template on the file system and returns its path.
 	 *
-	 * @static
 	 * @param string $name
 	 * @throws TemplateLoaderException
 	 * @return string
 	 */
-	public static function findTemplate($name)
+	public function findTemplate($name)
 	{
 		// Normalize the template name
 		$name = trim(preg_replace('#/{2,}#', '/', strtr($name, '\\', '/')), '/');
 
 		// Is this template path already cached?
-		if (isset(static::$_templatePaths[$name]))
-			return static::$_templatePaths[$name];
+		if (isset($this->_templatePaths[$name]))
+			return $this->_templatePaths[$name];
 
 		// Validate the template name
-		static::_validateTemplateName($name);
+		$this->_validateTemplateName($name);
 
 		// Check if the template exists in the main templates path
 
@@ -120,7 +116,7 @@ class TemplateHelper
 		$basePath = blx()->path->getTemplatesPath();
 
 		// If it's an error template we might need to check for a user-defined template on the front-end of the site.
-		if (static::_isErrorTemplate($name))
+		if ($this->_isErrorTemplate($name))
 		{
 			$viewPaths = array();
 
@@ -139,8 +135,8 @@ class TemplateHelper
 			}
 		}
 
-		if (($path = static::_findTemplate($basePath.$name)) !== null)
-			return static::$_templatePaths[$name] = $path;
+		if (($path = $this->_findTemplate($basePath.$name)) !== null)
+			return $this->_templatePaths[$name] = $path;
 
 		// Otherwise maybe it's a plugin template?
 
@@ -158,8 +154,8 @@ class TemplateHelper
 				// Chop off the plugin segment, since that's already covered by $basePath
 				$name = implode('/', $parts);
 
-				if (($path = static::_findTemplate($basePath.$name)) !== null)
-					return static::$_templatePaths[$name] = $path;
+				if (($path = $this->_findTemplate($basePath.$name)) !== null)
+					return $this->_templatePaths[$name] = $path;
 			}
 		}
 
@@ -170,12 +166,11 @@ class TemplateHelper
 	 * Ensures that a template name isn't null, and that it doesn't lead outside the template folder.
 	 * Borrowed from Twig_Loader_Filesystem.
 	 *
-	 * @static
 	 * @access private
 	 * @param string $name
 	 * @throws \Twig_Error_Loader
 	 */
-	private static function _validateTemplateName($name)
+	private function _validateTemplateName($name)
 	{
 		if (false !== strpos($name, "\0"))
 			throw new \Twig_Error_Loader(Blocks::t('A template name cannot contain NUL bytes.'));
@@ -197,12 +192,11 @@ class TemplateHelper
 	/**
 	 * Checks to see if the template name matches error, error400, error500, etc. or exception.
 	 *
-	 * @static
 	 * @access private
 	 * @param $name
 	 * @return int
 	 */
-	private static function _isErrorTemplate($name)
+	private function _isErrorTemplate($name)
 	{
 		return preg_match("/^(error([0-9]{3})?|exception)$/uis", $name);
 	}
@@ -210,12 +204,11 @@ class TemplateHelper
 	/**
 	 * Searches for localized template files, and returns the first match if there is one.
 	 *
-	 * @static
 	 * @access private
 	 * @param string $path
 	 * @return mixed
 	 */
-	private static function _findTemplate($path)
+	private function _findTemplate($path)
 	{
 		// Get the extension on the path, if there is one
 		$extension = IOHelper::getExtension($path);
@@ -239,12 +232,11 @@ class TemplateHelper
 	/**
 	 * Renames input names so they belong to a namespace.
 	 *
-	 * @static
 	 * @param string $template The template with the inputs
 	 * @param string $namespace The namespace to make inputs belong to
 	 * @return string The template with namespaced inputs
 	 */
-	public static function namespaceInputs($template, $namespace)
+	public function namespaceInputs($template, $namespace)
 	{
 		// name= attributes
 		$template = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $template);

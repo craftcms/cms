@@ -80,7 +80,7 @@ abstract class BaseOptionsBlock extends BaseBlock
 				$options .= $value.' => '.$label."\n";
 		}
 
-		return TemplateHelper::render('_components/blocks/optionsblocksettings', array(
+		return blx()->templates->render('_components/blocks/optionsblocksettings', array(
 			'label'   => $this->getOptionsSettingsLabel(),
 			'options' => $options
 		));

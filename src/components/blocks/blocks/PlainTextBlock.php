@@ -40,7 +40,7 @@ class PlainTextBlock extends BaseBlock
 	 */
 	public function getSettingsHtml()
 	{
-		return TemplateHelper::render('_components/blocks/PlainText/settings', array(
+		return blx()->templates->render('_components/blocks/PlainText/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -55,7 +55,7 @@ class PlainTextBlock extends BaseBlock
 	 */
 	public function getInputHtml($handle, $value, $errors = null)
 	{
-		return TemplateHelper::render('_components/blocks/PlainText/input', array(
+		return blx()->templates->render('_components/blocks/PlainText/input', array(
 			'handle'   => $handle,
 			'value'    => $value,
 			'errors'   => $errors,

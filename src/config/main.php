@@ -82,6 +82,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\SystemSettingsService',
 			),
 
+			'templates' => array(
+				'class' => 'Blocks\TemplatesService',
+			),
+
 			'updates' => array(
 				'class' => 'Blocks\UpdatesService',
 			),

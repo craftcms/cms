@@ -30,7 +30,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getFilters()
 	{
 		$translateFilter = new \Twig_Filter_Function('\Blocks\Blocks::t');
-		$namespaceFilter = new \Twig_Filter_Function('\Blocks\TemplateHelper::namespaceInputs');
+		$namespaceFilter = new \Twig_Filter_Function('\Blocks\blx()->templates->namespaceInputs');
 
 		return array(
 			'translate'  => $translateFilter,

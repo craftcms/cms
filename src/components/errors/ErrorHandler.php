@@ -99,10 +99,10 @@ class ErrorHandler extends \CErrorHandler
 			if ($exception instanceof \Twig_Error_Syntax)
 			{
 				// This is the template file for the exception.
-				$templateFile = TemplateHelper::findTemplate($exception->getTemplateFile());
+				$templateFile = blx()->templates->findTemplate($exception->getTemplateFile());
 
 				// This is the template file for the request.
-				$stackTraceStartTemplate = TemplateHelper::findTemplate(blx()->urlManager->processTemplateMatching());
+				$stackTraceStartTemplate = blx()->templates->findTemplate(blx()->urlManager->processTemplateMatching());
 
 				$traces = array();
 
@@ -225,7 +225,7 @@ class ErrorHandler extends \CErrorHandler
 		if ($n > 0)
 		{
 			if (isset($matches[3]))
-				return TemplateHelper::findTemplate($matches[3]);
+				return blx()->templates->findTemplate($matches[3]);
 		}
 
 		return false;
@@ -363,7 +363,7 @@ class ErrorHandler extends \CErrorHandler
 			$relativePath = IOHelper::getFileName($viewFile, false);
 			try
 			{
-				if (($output = TemplateHelper::render($relativePath, $data)) !== false)
+				if (($output = blx()->templates->render($relativePath, $data)) !== false)
 				{
 					echo $output;
 				}

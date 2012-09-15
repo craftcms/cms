@@ -70,7 +70,7 @@ abstract class BaseController extends \CController
 	 */
 	public function renderTemplate($template, $variables = array(), $return = false, $processOutput = false)
 	{
-		if (($output = TemplateHelper::render($template, $variables)) !== false)
+		if (($output = blx()->templates->render($template, $variables)) !== false)
 		{
 			if ($processOutput)
 				$output = $this->processOutput($output);

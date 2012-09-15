@@ -185,12 +185,12 @@ class EmailService extends BaseApplicationComponent
 
 		$variables['user'] = $user;
 
-		$email->subject = TemplateHelper::renderString($subject.' - subject', $subject, $variables);
-		$renderedBody = TemplateHelper::renderString($subject.' - body', $body, $variables);
+		$email->subject = blx()->templates->renderString($subject.' - subject', $subject, $variables);
+		$renderedBody = blx()->templates->renderString($subject.' - body', $body, $variables);
 
 		if ($user->emailFormat == 'html' && $htmlBody)
 		{
-			$renderedHtmlBody = TemplateHelper::renderString($subject.' - HTML body', $htmlBody, $variables);
+			$renderedHtmlBody = blx()->templates->renderString($subject.' - HTML body', $htmlBody, $variables);
 			$email->msgHtml($renderedHtmlBody);
 			$email->altBody = $renderedBody;
 		}

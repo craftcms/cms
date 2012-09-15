@@ -36,7 +36,7 @@ class DropdownBlock extends BaseOptionsBlock
 	 */
 	public function getInputHtml($handle, $value)
 	{
-		return TemplateHelper::render('_components/blocks/Dropdown/input', array(
+		return blx()->templates->render('_components/blocks/Dropdown/input', array(
 			'handle'   => $handle,
 			'value'    => $value,
 			'settings' => $this->getSettings()

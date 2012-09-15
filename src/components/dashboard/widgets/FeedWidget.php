@@ -40,7 +40,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getSettingsHtml()
 	{
-		return TemplateHelper::render('_components/widgets/FeedWidget/settings', array(
+		return blx()->templates->render('_components/widgets/FeedWidget/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -62,7 +62,7 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		return TemplateHelper::render('_components/widgets/FeedWidget/body', array(
+		return blx()->templates->render('_components/widgets/FeedWidget/body', array(
 			'items' => $this->_getItems()
 		));
 	}
