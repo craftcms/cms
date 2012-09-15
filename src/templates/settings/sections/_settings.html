@@ -1,6 +1,6 @@
-{% if not section and sectionId %}
-	{% set section = blx.content.getSectionById(sectionId) %}
-	{% if not section %}{% exit 404 %}{% endif %}
+{% if not sectionPackage and sectionId %}
+	{% set sectionPackage = blx.content.getSectionById(sectionId) %}
+	{% if not sectionPackage %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
@@ -8,8 +8,8 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if section.id %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~section.name|t~'</i>' }) %}
+{% if sectionPackage.id %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~sectionPackage.name|t~'</i>' }) %}
 {% else %}
 	{% set title = "Create a new section"|t %}
 {% endif %}
@@ -27,7 +27,7 @@
 	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="content/saveSection">
 		<input type="hidden" name="redirect" value="settings/sections">
-		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
+		{% if sectionPackage.id %}<input type="hidden" name="sectionId" value="{{ sectionPackage.id }}">{% endif %}
 
 
 		{{ forms.textField({
@@ -35,8 +35,8 @@
 			instructions: "What this section will be called in the CP."|t,
 			id: 'name',
 			name: 'name',
-			value: section.name,
-			errors: section.errors.name,
+			value: sectionPackage.name,
+			errors: sectionPackage.errors.name,
 			first: true,
 			required: true,
 			translatable: true
@@ -48,19 +48,19 @@
 			id: 'handle',
 			class: 'code',
 			name: 'handle',
-			value: section.handle,
-			errors: section.errors.handle,
+			value: sectionPackage.handle,
+			errors: sectionPackage.errors.handle,
 			required: true
 		}) }}
 
 		{{ forms.checkboxField({
 			label: "Entries in this section have their own URLs"|t,
 			name: 'hasUrls',
-			checked: section.hasUrls,
+			checked: sectionPackage.hasUrls,
 			toggle: 'has-urls-setting'
 		}) }}
 
-		<div id="has-urls-setting" class="nested-fields{% if not section.hasUrls %} hidden{% endif %}">
+		<div id="has-urls-setting" class="nested-fields{% if not sectionPackage.hasUrls %} hidden{% endif %}">
 
 			<hr>
 
@@ -70,8 +70,8 @@
 				id: 'urlFormat',
 				class: 'code',
 				name: 'urlFormat',
-				value: section.urlFormat,
-				errors: section.errors.urlFormat
+				value: sectionPackage.urlFormat,
+				errors: sectionPackage.errors.urlFormat
 			}) }}
 
 			{{ forms.textField({
@@ -79,8 +79,8 @@
 				instructions: "Which template to use when an entry’s URL is requested."|t,
 				id: 'template',
 				name: 'template',
-				value: section.template,
-				errors: section.errors.template
+				value: sectionPackage.template,
+				errors: sectionPackage.errors.template
 			}) }}
 
 			<hr>
@@ -96,7 +96,7 @@
 
 {% set scripts %}
 	<script type="text/javascript">
-		{% if not section.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
-		{% if not section.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
+		{% if not sectionPackage.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
+		{% if not sectionPackage.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
 	</script>
 {% endset %}

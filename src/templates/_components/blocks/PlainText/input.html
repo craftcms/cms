@@ -3,10 +3,10 @@
 {% set config = {
 	id: handle,
 	name: handle,
-	value: package.blocks[handle],
+	value: value,
+	errors: errors,
 	hint: settings.hint,
-	rows: settings.initialRows,
-	errors: package.errors[handle]
+	rows: settings.initialRows
 } %}
 
 {% if settings.multiline %}

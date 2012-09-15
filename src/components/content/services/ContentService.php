@@ -517,8 +517,7 @@ class ContentService extends BaseApplicationComponent
 		/* end BLOCKSPRO ONLY */
 		$blockRecord->class = $blockPackage->class;
 
-		$block = blx()->blocks->getBlockByClass($blockPackage->class);
-		$block->setSettings($blockPackage->settings);
+		$block = blx()->blocks->populateBlock($blockPackage);
 
 		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $block->getSettings()->validate();
@@ -587,10 +586,8 @@ class ContentService extends BaseApplicationComponent
 		}
 		else
 		{
-			$blockPackage->errors = array_merge(
-				$blockRecord->getErrors(),
-				$block->getSettings()->getErrors()
-			);
+			$blockPackage->errors = $blockRecord->getErrors();
+			$blockPackage->settingsErrors = $block->getSettings()->getErrors();
 
 			return false;
 		}
@@ -675,8 +672,7 @@ class ContentService extends BaseApplicationComponent
 				$sectionPackage = $this->populateSectionPackage($blockRecord->section);
 				$contentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
 				/* end BLOCKSPRO ONLY */
-				$block = blx()->blocks->getBlockByClass($blockRecord->class);
-				$block->setSettings($blockRecord->settings);
+				$block = blx()->blocks->populateBlock($blockRecord);
 				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
 				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
 				$lastColumn = $blockRecord->handle;
@@ -725,14 +721,14 @@ class ContentService extends BaseApplicationComponent
 		$contentRecord = $this->_getEntryContentRecord($entryPackage);
 
 		/* BLOCKS ONLY */
-		$blocks = $this->getEntryBlocks();
+		$blockPackages = $this->getEntryBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blocks = $this->getEntryBlocksBySectionId($entryPackage->sectionId);
+		$blockPackages = $this->getEntryBlocksBySectionId($entryPackage->sectionId);
 		/* end BLOCKSPRO ONLY */
-		foreach ($blocks as $block)
+		foreach ($blockPackages as $blockPackage)
 		{
-			$handle = $block->handle;
+			$handle = $blockPackage->handle;
 			$entryPackage->blocks[$handle] = $contentRecord->$handle;
 		}
 
@@ -896,15 +892,15 @@ class ContentService extends BaseApplicationComponent
 
  		// Populate the blocks' content
 		/* BLOCKS ONLY */
-		$blocks = $this->getEntryBlocks();
+		$blockPackages = $this->getEntryBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blocks = $this->getEntryBlocksBySectionId($entryPackage->sectionId);
+		$blockPackages = $this->getEntryBlocksBySectionId($entryPackage->sectionId);
 		/* end BLOCKSPRO ONLY */
 
-		foreach ($blocks as $block)
+		foreach ($blockPackages as $blockPackage)
 		{
-			$handle = $block->handle;
+			$handle = $blockPackage->handle;
 
 			if (isset($entryPackage->blocks[$handle]))
 			{
@@ -939,11 +935,8 @@ class ContentService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entryPackage->errors = array_merge(
-				$entryRecord->getErrors(),
-				$titleRecord->getErrors(),
-				$contentRecord->getErrors()
-			);
+			$entryPackage->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
+			$entryPackage->blockErrors = $contentRecord->getErrors();
 
 			return false;
 		}

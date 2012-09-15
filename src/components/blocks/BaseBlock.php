@@ -22,9 +22,9 @@ abstract class BaseBlock extends BaseComponent implements IBlock
 	 * Returns the block's input HTML.
 	 *
 	 * @abstract
-	 * @param mixed $package
-	 * @param string $handle
+	 * @param string     $handle
+	 * @param mixed      $value
 	 * @return string
 	 */
-	abstract public function getInputHtml($package, $handle);
+	abstract public function getInputHtml($handle, $value);
 }

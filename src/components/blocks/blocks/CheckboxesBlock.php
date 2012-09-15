@@ -32,15 +32,15 @@ class CheckboxesBlock extends BaseOptionsBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param mixed $package
 	 * @param string $handle
+	 * @param mixed  $values
 	 * @return string
 	 */
-	public function getInputHtml($package, $handle)
+	public function getInputHtml($handle, $values)
 	{
 		return TemplateHelper::render('_components/blocks/Checkboxes/input', array(
-			'package'  => $package,
 			'handle'   => $handle,
+			'values'   => $values,
 			'settings' => $this->getSettings()
 		));
 	}

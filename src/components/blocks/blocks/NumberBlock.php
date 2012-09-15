@@ -56,15 +56,17 @@ class NumberBlock extends BaseBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param mixed $package
-	 * @param string $handle
+	 * @param string     $handle
+	 * @param mixed      $value
+	 * @param array|null $errors
 	 * @return string
 	 */
-	public function getInputHtml($package, $handle)
+	public function getInputHtml($handle, $value, $errors = null)
 	{
 		return TemplateHelper::render('_components/blocks/Number/input', array(
-			'package'  => $package,
 			'handle'   => $handle,
+			'value'    => $value,
+			'errors'   => $errors,
 			'settings' => $this->getSettings()
 		));
 	}

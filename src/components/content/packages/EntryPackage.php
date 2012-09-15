@@ -16,6 +16,7 @@ class EntryPackage extends BasePackage
 	public $title;
 	public $slug;
 	public $blocks;
+	public $blockErrors;
 
 	/**
 	 * Saves the entry.

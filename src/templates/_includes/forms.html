@@ -104,9 +104,9 @@
 			{{ _self.radio({
 				label: label,
 				id: (loop.first ? config.id : null),
-				name: config.name ~ '[]',
+				name: config.name,
 				value: value,
-				checked: (value in config.values)
+				checked: (value == config.value)
 			}) }}
 		</div>
 	{% endfor %}

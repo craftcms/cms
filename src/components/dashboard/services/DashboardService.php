@@ -28,10 +28,10 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates a widget
+	 * Populates a widget.
 	 *
 	 * @param WidgetPackage $widgetPackage
-	 * @return BaseWidget
+	 * @return BaseWidget|null
 	 */
 	public function populateWidget(WidgetPackage $widgetPackage)
 	{

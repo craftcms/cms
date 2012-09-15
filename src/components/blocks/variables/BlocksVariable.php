@@ -21,12 +21,29 @@ class BlocksVariable
 	 * Gets a block by its class.
 	 *
 	 * @param string $class
-	 * @return mixed
+	 * @return BaseBlock|null
 	 */
 	public function getBlockByClass($class)
 	{
 		$block = blx()->blocks->getBlockByClass($class);
 		if ($block)
+		{
 			return new BlockVariable($block);
+		}
+	}
+
+	/**
+	 * Populates a block.
+	 *
+	 * @param BaseBlockPackage $blockPackage
+	 * @return BaseBlock|null
+	 */
+	public function populateBlock(BaseBlockPackage $blockPackage)
+	{
+		$block = blx()->blocks->populateBlock($blockPackage);
+		if ($block)
+		{
+			return new BlockVariable($block);
+		}
 	}
 }

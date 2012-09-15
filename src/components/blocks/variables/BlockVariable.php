@@ -9,14 +9,13 @@ class BlockVariable extends ComponentVariable
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param array|null $settings
-	 * @param mixed      $package
 	 * @param string     $handle
+	 * @param mixed      $value
+	 * @param array|null $errors
 	 * @return string
 	 */
-	public function input($settings, $package, $handle)
+	public function input($handle, $value, $errors = null)
 	{
-		$this->component->setSettings($settings);
-		return $this->component->getInputHtml($package, $handle);
+		return $this->component->getInputHtml($handle, $value, $errors);
 	}
 }

@@ -2,14 +2,14 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if not entry and entryId %}
-	{% set entry = blx.content.getEntryById(entryId) %}
-	{% if not entry %}{% exit 404 %}{% endif %}
+{% if not entryPackage and entryId %}
+	{% set entryPackage = blx.content.getEntryById(entryId) %}
+	{% if not entryPackage %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% if entry.id %}
-	{% set title = "Editing {title}"|t({ title: '<i>'~entry.title|t~'</i>' }) %}
+{% if entryPackage.id %}
+	{% set title = "Editing {title}"|t({ title: '<i>'~entryPackage.title|t~'</i>' }) %}
 {% else %}
 	{% set title = "Create a new entry"|t %}
 {% endif %}
@@ -27,14 +27,14 @@
 	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="content/saveEntry">
 		<input type="hidden" name="redirect" value="content/blog/{entryId}">
-		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
+		{% if entryPackage.id %}<input type="hidden" name="entryId" value="{{ entryPackage.id }}">{% endif %}
 
 		{{ forms.textField({
 			label: "Title"|t,
 			id: 'title',
 			name: 'title',
-			value: entry.title,
-			errors: entry.errors.title,
+			value: entryPackage.title,
+			errors: entryPackage.errors.title,
 			first: true,
 			required: true
 		}) }}
@@ -43,24 +43,26 @@
 			label: "Slug"|t,
 			id: 'slug',
 			name: 'slug',
-			value: entry.slug,
-			errors: entry.errors.slug,
+			value: entryPackage.slug,
+			errors: entryPackage.errors.slug,
 			required: true
 		}) }}
 
-		{% for block in blx.content.entryBlocks %}
-			{% set _block = blx.blocks.getBlockByClass(block.class) %}
-			{% set input = _block.input(block.settings, entry, block.handle) %}
+		{% for blockPackage in blx.content.entryBlocks %}
+			{% set block = blx.blocks.populateBlock(blockPackage) %}
+			{% set data = entryPackage.blocks[blockPackage.handle] %}
+			{% set errors = entryPackage.blockErrors[blockPackage.handle] %}
+			{% set input = block.input(blockPackage.handle, data, errors) %}
+
 			{{ forms.field({
-				label: block.name,
+				label: blockPackage.name,
 				<!-- BLOCKSPRO ONLY -->
-				required: block.required,
-				translatable: block.translatable,
+				required: blockPackage.required,
+				translatable: blockPackage.translatable,
 				<!-- end BLOCKSPRO ONLY -->
-				instructions: block.instructions,
-				id: block.handle,
-				name: block.handle,
-				errors: entry.errors[block.handle]
+				instructions: blockPackage.instructions,
+				id: blockPackage.handle,
+				errors: errors
 			}, input)|ns('blocks')|raw }}
 		{% endfor %}
 
