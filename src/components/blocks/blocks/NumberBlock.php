@@ -44,9 +44,9 @@ class NumberBlock extends BaseBlock
 	}
 
 	/**
-	 * Returns the content column type.
+	 * Returns the content attribute config.
 	 *
-	 * @return string
+	 * @return string|array
 	 */
 	public function defineContentAttribute()
 	{

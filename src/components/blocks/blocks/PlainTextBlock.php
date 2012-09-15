@@ -46,6 +46,19 @@ class PlainTextBlock extends BaseBlock
 	}
 
 	/**
+	 * Returns the content attribute config.
+	 *
+	 * @return string|array
+	 */
+	public function defineContentAttribute()
+	{
+		if ($this->getSettings()->multiline)
+			return array(AttributeType::String, 'column' => ColumnType::Text);
+		else
+			return array(AttributeType::String, 'column' => ColumnType::Varhcar);
+	}
+
+	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string     $handle
