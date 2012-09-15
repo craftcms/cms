@@ -37,16 +37,19 @@ class LocaleNumberValidator extends \CNumberValidator
 			}
 		}
 
-		if ($this->min !== null && $value < $this->min)
+		if (is_numeric($value))
 		{
-			$message = $this->tooSmall !== null ? $this->tooSmall : Blocks::t('“{attribute}” is too small (minimum is {min}).');
-			$this->addError($object, $attribute, $message, array('{min}' => $this->min));
-		}
+			if ($this->min !== null && $value < $this->min)
+			{
+				$message = $this->tooSmall !== null ? $this->tooSmall : Blocks::t('“{attribute}” is too small (minimum is {min}).');
+				$this->addError($object, $attribute, $message, array('{min}' => $this->min));
+			}
 
-		if ($this->max !== null && $value > $this->max)
-		{
-			$message = $this->tooBig !== null ? $this->tooBig : Blocks::t('“{attribute}” is too big (maximum is {max}).');
-			$this->addError($object, $attribute, $message, array('{max}' => $this->max));
+			if ($this->max !== null && $value > $this->max)
+			{
+				$message = $this->tooBig !== null ? $this->tooBig : Blocks::t('“{attribute}” is too big (maximum is {max}).');
+				$this->addError($object, $attribute, $message, array('{max}' => $this->max));
+			}
 		}
 	}
 }
