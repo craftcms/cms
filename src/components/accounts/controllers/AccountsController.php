@@ -28,7 +28,7 @@ class AccountsController extends BaseController
 				blx()->accounts->generateVerificationCode($user);
 
 				// Send the Forgot Password email
-				$link = UrlHelper::generateUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verificationCode));
+				$link = UrlHelper::getUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verificationCode));
 				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
 					$this->returnJson(array('success' => true));
 

@@ -13,7 +13,7 @@ class Redirect_Node extends \Twig_Node
 	{
 		$compiler
 		    ->addDebugInfo($this)
-		    ->write('header(\'Location: \'.\Blocks\UrlHelper::generateUrl(')
+		    ->write('header(\'Location: \'.\Blocks\UrlHelper::getUrl(')
 		    ->subcompile($this->getNode('path'))
 		    ->raw(").'');\n");
 	}

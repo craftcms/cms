@@ -126,7 +126,7 @@ class App extends \CWebApplication
 			// Give it to them if accessing the CP
 			if ($this->request->getMode() == HttpRequestMode::CP)
 			{
-				$url = UrlHelper::generateUrl('install');
+				$url = UrlHelper::getUrl('install');
 				$this->request->redirect($url);
 			}
 			// Otherwise return a 404
@@ -261,7 +261,7 @@ class App extends \CWebApplication
 			// Check app/resources folder first.
 			if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))
 			{
-				$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.'/');
+				$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTriggerWord.'/');
 			}
 			else
 			{
@@ -274,7 +274,7 @@ class App extends \CWebApplication
 					// Looks like it belongs to a plugin.
 					if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))
 					{
-						$rootFolderUrl = UrlHelper::generateUrl($this->config->resourceTriggerWord.$segs[0]);
+						$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTriggerWord.$segs[0]);
 					}
 				}
 			}

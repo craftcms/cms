@@ -13,7 +13,7 @@ class UrlHelper
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
-	public static function generateUrl($path = '', $params = null, $protocol = '')
+	public static function getUrl($path = '', $params = null, $protocol = '')
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (strpos($path, '://') !== false)
@@ -58,11 +58,11 @@ class UrlHelper
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return string The URL to the resource, via Blocks' resource server
 	 */
-	public static function generateResourceUrl($path = '', $params = null, $protocol = '')
+	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
 		$path = blx()->config->resourceTriggerWord.'/'.trim($path, '/');
-		$path = static::generateUrl($path, $params, $protocol);
+		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
 	}
@@ -74,11 +74,11 @@ class UrlHelper
 	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
 	 * @return array|string
 	 */
-	public static function generateActionUrl($path = '', $params = null, $protocol = '')
+	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
 		$path = blx()->config->actionTriggerWord.'/'.trim($path, '/');
-		$path = static::generateUrl($path, $params, $protocol);
+		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
 	}

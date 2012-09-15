@@ -132,7 +132,7 @@ abstract class BaseController extends \CController
 	public function redirect($url, $terminate = true, $statusCode = 302)
 	{
 		if (is_string($url))
-			$url = UrlHelper::generateUrl($url);
+			$url = UrlHelper::getUrl($url);
 
 		if ($url !== null)
 			parent::redirect($url, $terminate, $statusCode);

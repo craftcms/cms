@@ -15,7 +15,7 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getReturnUrl($defaultUrl = null)
 	{
-		return $this->getState('__returnUrl', $defaultUrl === null ? UrlHelper::generateUrl('dashboard') : HtmlHelper::normalizeUrl($defaultUrl));
+		return $this->getState('__returnUrl', $defaultUrl === null ? UrlHelper::getUrl('dashboard') : HtmlHelper::normalizeUrl($defaultUrl));
 	}
 
 	/**

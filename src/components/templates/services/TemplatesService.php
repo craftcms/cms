@@ -145,7 +145,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeCssResource($path, $plugin = null)
 	{
-		$url = UrlHelper::generateResourceUrl(($plugin ? $plugin.'/' : '').'css/'.$path);
+		$url = UrlHelper::getResourceUrl(($plugin ? $plugin.'/' : '').'css/'.$path);
 		$this->includeCssFile($url);
 	}
 
@@ -157,7 +157,7 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeJsResource($path, $plugin = null)
 	{
-		$url = UrlHelper::generateResourceUrl(($plugin ? $plugin.'/' : '').'js/'.$path);
+		$url = UrlHelper::getResourceUrl(($plugin ? $plugin.'/' : '').'js/'.$path);
 		$this->includeJsFile($url);
 	}
 

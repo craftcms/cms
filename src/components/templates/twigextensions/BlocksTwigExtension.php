@@ -93,9 +93,9 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getFunctions()
 	{
 		return array(
-			'url'          => new \Twig_Function_Function('\Blocks\UrlHelper::generateUrl'),
-			'resourceUrl'  => new \Twig_Function_Function('\Blocks\UrlHelper::generateResourceUrl'),
-			'actionUrl'    => new \Twig_Function_Function('\Blocks\UrlHelper::generateActionUrl'),
+			'url'          => new \Twig_Function_Function('\Blocks\UrlHelper::getUrl'),
+			'resourceUrl'  => new \Twig_Function_Function('\Blocks\UrlHelper::getResourceUrl'),
+			'actionUrl'    => new \Twig_Function_Function('\Blocks\UrlHelper::getActionUrl'),
 			'getHeadNodes' => new \Twig_Function_Function('\Blocks\blx()->templates->getHeadNodes'),
 			'getFootNodes' => new \Twig_Function_Function('\Blocks\blx()->templates->getFootNodes'),
 			'round'        => new \Twig_Function_Function('round'),
