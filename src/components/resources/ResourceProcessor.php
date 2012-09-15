@@ -89,8 +89,8 @@ class ResourceProcessor
 	 */
 	private function _convertRelativeUrlMatch($match)
 	{
-		// ignore root-relative and absolute URLs
-		if (preg_match('/^(\/|https?:\/\/)/', $match[3]))
+		// ignore root-relative, absolute, and data: URLs
+		if (preg_match('/^(\/|https?:\/\/|data:)/', $match[3]))
 		{
 			return $match[0];
 		}
