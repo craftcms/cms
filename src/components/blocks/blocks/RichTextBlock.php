@@ -64,15 +64,19 @@ class RichTextBlock extends BaseBlock
 		blx()->templates->includeCssFile(UrlHelper::getResourceUrl('lib/redactor/redactor.css'));
 		blx()->templates->includeJsFile(UrlHelper::getResourceUrl('lib/redactor/redactor.min.js'));
 
+		$config = array(
+			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table')
+		);
+
 		if ($this->getSettings()->minHeight)
 		{
 			$config['minHeight'] = $this->getSettings()->minHeight;
 		}
 
-		$configJson = !empty($config) ? JsonHelper::encode($config) : null;
+		$configJson = JsonHelper::encode($config);
 
-		blx()->templates->includeJs('$(".redactor").redactor('.$configJson.');');
+		blx()->templates->includeJs('$(".redactor-'.$handle.'").redactor('.$configJson.');');
 
-		return '<textarea id="'.$handle.'" name="'.$handle.'" class="redactor">'.$value.'</textarea>';
+		return '<textarea id="'.$handle.'" name="'.$handle.'" class="redactor-'.$handle.'" style="display: none">'.$value.'</textarea>';
 	}
 }
