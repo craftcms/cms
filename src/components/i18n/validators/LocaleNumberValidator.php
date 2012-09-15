@@ -15,8 +15,11 @@ class LocaleNumberValidator extends \CNumberValidator
 	protected function validateAttribute($object, $attribute)
 	{
 		$value = $object->$attribute;
+
 		if ($this->allowEmpty && $this->isEmpty($value))
+		{
 			return;
+		}
 
 		if ($this->integerOnly)
 		{

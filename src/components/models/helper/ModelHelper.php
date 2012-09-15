@@ -250,10 +250,10 @@ class ModelHelper
 				{
 					$rule = array($name, 'Blocks\LocaleNumberValidator');
 
-					if ($config['min'])
+					if ($config['min'] !== null)
 						$rule['min'] = $config['min'];
 
-					if ($config['max'])
+					if ($config['max'] !== null)
 						$rule['max'] = $config['max'];
 
 					if (!$config['decimals'])

@@ -27,7 +27,7 @@ class PlainTextBlock extends BaseBlock
 		return array(
 			'hint'          => array(AttributeType::String, 'default' => Blocks::t('Enter text…', null, null, null, blx()->language)),
 			'multiline'     => array(AttributeType::Bool),
-			'initialRows'   => array(AttributeType::Number, 'default' => 4),
+			'initialRows'   => array(AttributeType::Number, 'min' => 1, 'default' => 4),
 			'maxLength'     => array(AttributeType::Number, 'min' => 0),
 			'maxLengthUnit' => array(AttributeType::Enum, 'values' => array('words', 'chars')),
 		);
