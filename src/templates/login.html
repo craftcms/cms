@@ -5,8 +5,8 @@
 {% extends "_layouts/basic" %}
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
-{% include_css "login.css" %}
-{% include_js "login.js" %}
+{% includeCssResource "login.css" %}
+{% includeJsResource "login.js" %}
 {% include_translation
 	"Reset Password",
 	"We’ve sent you an email with instructions to reset your password."

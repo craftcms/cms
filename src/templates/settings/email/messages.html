@@ -1,7 +1,7 @@
 {% extends "settings/email/_layout" %}
 {% set title = "Messages"|t %}
-{% include_css "email_messages.css" %}
-{% include_js "email_messages.js" %}
+{% includeCssResource "email_messages.css" %}
+{% includeJsResource "email_messages.js" %}
 
 {% include_translation
 	"Couldn’t save message.",

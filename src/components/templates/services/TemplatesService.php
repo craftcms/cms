@@ -9,6 +9,11 @@ class TemplatesService extends BaseApplicationComponent
 	private $_twig;
 	private $_templatePaths;
 
+	private $_headNodes;
+	private $_footNodes;
+	private $_css;
+	private $_js;
+
 	/**
 	 * Registers the Twig autoloader.
 	 */
@@ -88,6 +93,140 @@ class TemplatesService extends BaseApplicationComponent
 	{
 		$stringTemplate = new StringTemplate($cacheKey, $template);
 		return $this->render($stringTemplate, $variables);
+	}
+
+	/**
+	 * Prepares an HTML node for inclusion in the <head> of the template.
+	 *
+	 * @param string $node
+	 */
+	public function includeHeadNode($node)
+	{
+		$this->_headNodes[] = $node;
+	}
+
+	/**
+	 * Prepares an HTML node for inclusion right above the </body> in the template.
+	 *
+	 * @param string $node
+	 */
+	public function includeFootNode($node)
+	{
+		$this->_footNodes[] = $node;
+	}
+
+	/**
+	 * Prepares a CSS file for inclusion in the template.
+	 *
+	 * @param string $url
+	 */
+	public function includeCssFile($url)
+	{
+		$node = '<link rel="stylesheet" type="text/css" href="'.$url.'"/>';
+		$this->includeHeadNode($node);
+	}
+
+	/**
+	 * Prepares a JS file for inclusion in the template.
+	 *
+	 * @param string $url
+	 */
+	public function includeJsFile($url)
+	{
+		$node = '<script type="text/javascript" src="'.$url.'"></script>';
+		$this->includeFootNode($node);
+	}
+
+	/**
+	 * Prepares a CSS file from resources/ for inclusion in the template.
+	 *
+	 * @param string      $path
+	 * @param string|null $plugin
+	 */
+	public function includeCssResource($path, $plugin = null)
+	{
+		$url = UrlHelper::generateResourceUrl(($plugin ? $plugin.'/' : '').'css/'.$path);
+		$this->includeCssFile($url);
+	}
+
+	/**
+	 * Prepares a JS file from resources/ for inclusion in the template.
+	 *
+	 * @param string      $path
+	 * @param string|null $plugin
+	 */
+	public function includeJsResource($path, $plugin = null)
+	{
+		$url = UrlHelper::generateResourceUrl(($plugin ? $plugin.'/' : '').'js/'.$path);
+		$this->includeJsFile($url);
+	}
+
+	/**
+	 * Prepares CSS for inclusion in the template.
+	 *
+	 * @param string $url
+	 */
+	public function includeCss($css)
+	{
+		$this->_css[] = trim($css);
+	}
+
+	/**
+	 * Prepares JS for inclusion in the template.
+	 *
+	 * @param string $url
+	 */
+	public function includeJs($js)
+	{
+		$this->_js[] = trim($js);
+	}
+
+	/**
+	 * Returns the nodes prepared for inclusion in the <head> of the template,
+	 * and flushes out the head nodes queue.
+	 *
+	 * @return string
+	 */
+	public function getHeadNodes()
+	{
+		// Is there any CSS to include?
+		if (!empty($this->_css))
+		{
+			$css = implode("\n\n", $this->_css);
+			$node = "<style type=\"text/css\">\n".$css."\n</style>";
+			$this->includeHeadNode($node);
+		}
+
+		if (!empty($this->_headNodes))
+		{
+			$headNodes = implode("\n", $this->_headNodes);
+			$this->_headNodes = null;
+			return $headNodes;
+		}
+	}
+
+	/**
+	 * Returns the nodes prepared for inclusion right above the </body> in the template,
+	 * and flushes out the foot nodes queue.
+	 *
+	 * @return string
+	 */
+	public function getFootNodes()
+	{
+		// Is there any JS to include?
+		if (!empty($this->_js))
+		{
+			$js = implode("\n\n", $this->_js);
+			$node = "<script type=\"text/javascript\">//<![CDATA[\n".$js."\n//]]></script>";
+			$this->includeFootNode($node);
+		}
+
+		if (!empty($this->_footNodes))
+		{
+			$footNodes = implode("\n", $this->_footNodes);
+			$this->_footNodes = null;
+			return $footNodes;
+		}
 	}
 
 	/**

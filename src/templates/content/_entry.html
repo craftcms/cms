@@ -1,5 +1,5 @@
 {% extends "_layouts/cp" %}
-{% include_css "content-entry.css" %}
+{% includeCssResource "content-entry.css" %}
 
 {% if not entry and entryId %}
 	{% set entry = blx.content.getEntryById(entryId) %}

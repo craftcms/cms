@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
 {% set sections = blx.content.sections %}
-{% include_js "sections.js" %}
+{% includeJsResource "sections.js" %}
 {% include_translation
 	"Are you sure you want to delete the section “{section}”?",
 	"Section deleted.",

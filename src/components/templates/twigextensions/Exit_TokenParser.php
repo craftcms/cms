@@ -10,7 +10,7 @@ class Exit_TokenParser extends \Twig_TokenParser
 	 * Parses {% exit %} tags.
 	 *
 	 * @param \Twig_Token $token
-	 * @return IncludeCss_Node
+	 * @return IncludeCssFile_Node
 	 */
 	public function parse(\Twig_Token $token)
 	{
