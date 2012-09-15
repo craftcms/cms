@@ -648,7 +648,7 @@ class ContentService extends BaseApplicationComponent
 		$contentTable = $contentRecord->getTableName();
 		/* end BLOCKS ONLY */
 
-		$lastColumn = 'id';
+		$lastColumn = 'entryId';
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -672,7 +672,8 @@ class ContentService extends BaseApplicationComponent
 				$sectionPackage = $this->populateSectionPackage($blockRecord->section);
 				$contentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
 				/* end BLOCKSPRO ONLY */
-				$block = blx()->blocks->populateBlock($blockRecord);
+				$blockPackage = $this->populateEntryBlockPackage($blockRecord);
+				$block = blx()->blocks->populateBlock($blockPackage);
 				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
 				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
 				$lastColumn = $blockRecord->handle;
