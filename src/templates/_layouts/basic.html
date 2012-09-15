@@ -19,9 +19,9 @@
 <head>
 	<meta charset="utf-8">
 	<title>{{ title|text }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
-	<link rel="stylesheet" type="text/css" href="{{ resourceUrl('styles/blocks.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ resourceUrl('css/blocks.css') }}">
 	{% for file in cssIncludes %}
-		{% set path = 'styles/' ~ file %}
+		{% set path = 'css/' ~ file %}
 		<link rel="stylesheet" type="text/css" href="{{ resourceUrl(path) }}">
 	{% endfor %}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
@@ -59,11 +59,11 @@
 		</div>
 	</noscript>
 
-{% set file = 'scripts/' ~ (blx.config.useCompressedJs ? 'compressed/blocks.js' : 'uncompressed/global_bootstrap.js') %}
+{% set file = 'js/' ~ (blx.config.useCompressedJs ? 'compressed/blocks.js' : 'uncompressed/global_bootstrap.js') %}
 <script type="text/javascript" src="{{ resourceUrl(file) }}"></script>
 
 {% for file in jsIncludes %}
-	{% set path = 'scripts/' ~ (blx.config.useCompressedJs ? 'compressed/' : 'uncompressed/') ~ file %}
+	{% set path = 'js/' ~ (blx.config.useCompressedJs ? 'compressed/' : 'uncompressed/') ~ file %}
 	<script type="text/javascript" src="{{ resourceUrl(path) }}"></script>
 {% endfor %}
 

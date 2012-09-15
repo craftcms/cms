@@ -1,7 +1,7 @@
 /**
  * Uncompressed JS bootstrap
  *
- * The scripts loaded by this file all get compressed into resources/scripts/compressed/blocks.js
+ * The scripts loaded by this file all get compressed into resources/js/compressed/blocks.js
  *
  * To use the uncompressed scripts, add this to your config/blocks.php file:
  * $blocksConfig['useCompressedJs'] = false;
@@ -48,7 +48,7 @@ var scripts =
 
 for (var i = 0; i < scripts.length; i++)
 {
-	document.write('<script type="text/javascript" src="'+Blocks.resourceUrl+'scripts/uncompressed/global/'+scripts[i]+'"></script>');
+	document.write('<script type="text/javascript" src="'+Blocks.resourceUrl+'js/uncompressed/global/'+scripts[i]+'"></script>');
 }
 
 

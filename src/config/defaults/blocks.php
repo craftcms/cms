@@ -132,7 +132,7 @@ $blocksConfig['failedPasswordCooldown'] = '5m';
 $blocksConfig['phpPass-iterationCount'] = 8;
 
 /**
- * Controls whether to use the minified and merged JavaScript in the resources/scripts/uncompressed or the resources/scripts/compressed folder.
+ * Controls whether to use the minified and merged JavaScript in the resources/js/uncompressed or the resources/js/compressed folder.
  */
 $blocksConfig['useCompressedJs'] = true;
 
