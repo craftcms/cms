@@ -69,13 +69,10 @@
 {% endset %}
 
 
-{% set scripts %}
-	<script type="text/javascript">
+{% set js %}
+	new Blocks.Tier('#tier');
 
-		new Blocks.Tier('#tier');
-
-		//var home = new Blocks.SiteMapPage('Home.png', 'Home');
-		//home.addSubpage('About.png', 'About');
-
-	</script>
+	//var home = new Blocks.SiteMapPage('Home.png', 'Home');
+	//home.addSubpage('About.png', 'About');
 {% endset %}
+{% includeJs js %}

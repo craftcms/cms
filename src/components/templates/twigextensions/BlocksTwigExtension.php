@@ -19,6 +19,8 @@ class BlocksTwigExtension extends \Twig_Extension
 			new IncludeResource_TokenParser('includeJsFile'),
 			new IncludeResource_TokenParser('includeCssResource'),
 			new IncludeResource_TokenParser('includeJsResource'),
+			new IncludeResource_TokenParser('includeCss'),
+			new IncludeResource_TokenParser('includeJs'),
 			new IncludeTranslation_TokenParser(),
 			new Exit_TokenParser(),
 		);

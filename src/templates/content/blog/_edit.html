@@ -73,9 +73,8 @@
 {% endset %}
 
 
-{% set scripts %}
-	<script type="text/javascript">
-		{% if not section.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
-		{% if not section.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
-	</script>
+{% set js %}
+	{% if not section.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
+	{% if not section.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
 {% endset %}
+{% includeJs js %}

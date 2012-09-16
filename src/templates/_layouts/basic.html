@@ -1,5 +1,20 @@
 {% includeCssResource "css/blocks.css" first %}
 {% includeJsResource (blx.config.useCompressedJs ? "js/blocks.js" : "js/global_bootstrap.js") first -%}
+{% include_translation
+	"Are you sure you want to delete this entry block?",
+	"Attempted to get the height of a modal whose container has not been set.",
+	"Attempted to get the width of a modal whose container has not been set.",
+	"Attempted to position a modal whose container has not been set.",
+	"Attempted to position a modal whose container has not been set.",
+	"Save",
+	"Cancel",
+	"Delete",
+	"Show",
+	"Hide",
+	"Close",
+	"An unknown error occurred.",
+	"Are you sure you want to delete “{name}”?"
+%}
 
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
@@ -7,7 +22,6 @@
 	<meta charset="utf-8">
 	<title>{{ title|text }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
 	{{ getHeadNodes()|raw }}
-	{{ styles }}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
 	<meta name="viewport" content="width=device-width, maximum-scale=1.0">
 </head>
@@ -29,24 +43,8 @@
 		</div>
 	</noscript>
 
-{% include_translation
-	"Are you sure you want to delete this entry block?",
-	"Attempted to get the height of a modal whose container has not been set.",
-	"Attempted to get the width of a modal whose container has not been set.",
-	"Attempted to position a modal whose container has not been set.",
-	"Attempted to position a modal whose container has not been set.",
-	"Save",
-	"Cancel",
-	"Delete",
-	"Show",
-	"Hide",
-	"Close",
-	"An unknown error occurred.",
-	"Are you sure you want to delete “{name}”?"
-%}
-
 <script type="text/javascript">
-	Blocks = {
+	window.Blocks = {
 		baseUrl: '{{ url() }}',
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
@@ -58,7 +56,7 @@
 		}
 	};
 </script>
+
 {{ getFootNodes()|raw }}
-{{ scripts }}
 </body>
 </html>

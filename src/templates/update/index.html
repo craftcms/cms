@@ -12,10 +12,9 @@
 {% endset %}
 
 
-{% set scripts %}
-	<script type="text/javascript">
-		window.updateHandle = "{{ handle }}";
-		window.updateInfoUrl = "{{ actionUrl('update/getupdateinfo', 'h=') }}";
-		window.updateUrl = "{{ actionUrl('update/update', 'h=') }}";
-	</script>
+{% set js %}
+	window.updateHandle = "{{ handle }}";
+	window.updateInfoUrl = "{{ actionUrl('update/getupdateinfo', 'h=') }}";
+	window.updateUrl = "{{ actionUrl('update/update', 'h=') }}";
 {% endset %}
+{% includeJs js %}

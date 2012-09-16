@@ -3,14 +3,13 @@
 {% includeJsResource "js/updates.js" %}
 
 
-{% set styles %}
-	<style type="text/css">
-		h3.critical { color: #8a1f11; }
-		.notes { display: none; }
-		.cta { position: absolute; top: 15px; right: 15px; }
-		.cta .manual { margin-top: 5px; }
-	</style>
+{% set css %}
+	h3.critical { color: #8a1f11; }
+	.notes { display: none; }
+	.cta { position: absolute; top: 15px; right: 15px; }
+	.cta .manual { margin-top: 5px; }
 {% endset %}
+{% includeCss css %}
 
 
 {% set titlebar %}

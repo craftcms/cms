@@ -2,11 +2,10 @@
 {% set title = "Update @@@productDisplay@@@"|t %}
 
 
-{% set styles %}
-	<style type="text/css">
-		#dbupdate .icon { background-image: url({{ resourceUrl('images/notice-dbupdate.png') }}); }
-	</style>
+{% set css %}
+	#dbupdate .icon { background-image: url({{ resourceUrl('images/notice-dbupdate.png') }}); }
 {% endset %}
+{% includeCss css %}
 
 
 {% set body %}
@@ -32,19 +31,18 @@
 {% endset %}
 
 
-{% set scripts %}
-	<script type="text/javascript">
-		var waiting = false;
-		$('#go').click(function() {
-			$.post("{{ actionUrl('dbupdate/update') }}", function(response) {
-				if (response.success)
-					window.location.reload()
-				else
-				{
-					var error = (response.error or '{{ "An unknown error occurred."|t }}');
-					alert(error);
-				}
-			});
+{% set js %}
+	var waiting = false;
+	$('#go').click(function() {
+		$.post("{{ actionUrl('dbupdate/update') }}", function(response) {
+			if (response.success)
+				window.location.reload()
+			else
+			{
+				var error = (response.error or '{{ "An unknown error occurred."|t }}');
+				alert(error);
+			}
 		});
-	</script>
+	});
 {% endset %}
+{% includeJs js %}

@@ -45,10 +45,10 @@
 	</div>
 {% endset %}
 
-{% set scripts %}
-	<script type="text/javascript">
-		{% for message in ['year', 'month', 'day', 'number', 'page'] %}
-			Blocks.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, blx.app.language)|e("js") }}';
-		{% endfor %}
-	</script>
+
+{% set js %}
+	{% for message in ['year', 'month', 'day', 'number', 'page'] %}
+		Blocks.translations['{{ message|e("js") }}'] = '{{ message|t(null, null, blx.app.language)|e("js") }}';
+	{% endfor %}
 {% endset %}
+{% includeJs js %}

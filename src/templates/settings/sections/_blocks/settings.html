@@ -146,8 +146,7 @@
 {% endset %}
 
 
-{% set scripts %}
-	<script type="text/javascript">
-		{% if not blockPackage.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
-	</script>
+{% set js %}
+	{% if not blockPackage.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
 {% endset %}
+{% includeJs js %}

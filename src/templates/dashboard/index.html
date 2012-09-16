@@ -22,18 +22,15 @@
 	</div>#}
 
 	<div id="widgets" class="grid"></div>
-
 {% endset %}
 
-{% set scripts %}
+
+{% set js %}
 	{#if !blx.updates.cached}
-		<script type="text/javascript">
-			window.getAlerts = true;
-			window.getAlertsUrl = "{{ actionUrl('dashboard/getalerts') }}";
-		</script>
+		window.getAlerts = true;
+		window.getAlertsUrl = "{{ actionUrl('dashboard/getalerts') }}";
 	{/if#}
 
-	<script type="text/javascript">
-		Blocks.dashboard = new Blocks.Dashboard([{{ blx.dashboard.userWidgetIds|join(',') }}]);
-	</script>
+	Blocks.dashboard = new Blocks.Dashboard([{{ blx.dashboard.userWidgetIds|join(',') }}]);
 {% endset %}
+{% includeJs js %}
