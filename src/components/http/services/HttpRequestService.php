@@ -223,20 +223,20 @@ class HttpRequestService extends \CHttpRequest
 	{
 		if (!isset($this->_mode))
 		{
-			$resourceTriggerWord = blx()->config->resourceTriggerWord;
-			$actionTriggerWord = blx()->config->actionTriggerWord;
+			$resourceTrigger = blx()->config->resourceTrigger;
+			$actionTrigger = blx()->config->actionTrigger;
 			$logoutTriggerWord = blx()->config->logoutTriggerWord;
 
 			$firstPathSegment = $this->getPathSegment(1);
 
 			// If the first path segment is the resource trigger word, it's a resource request.
-			if ($firstPathSegment === $resourceTriggerWord)
+			if ($firstPathSegment === $resourceTrigger)
 			{
 				$this->_mode = HttpRequestMode::Resource;
 			}
 
 			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request.
-			else if ($firstPathSegment === $actionTriggerWord || $firstPathSegment === $logoutTriggerWord)
+			else if ($firstPathSegment === $actionTrigger || $firstPathSegment === $logoutTriggerWord)
 			{
 				$this->_mode = HttpRequestMode::Action;
 

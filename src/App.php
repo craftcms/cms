@@ -261,7 +261,7 @@ class App extends \CWebApplication
 			// Check app/resources folder first.
 			if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))
 			{
-				$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTriggerWord.'/');
+				$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTrigger.'/');
 			}
 			else
 			{
@@ -274,7 +274,7 @@ class App extends \CWebApplication
 					// Looks like it belongs to a plugin.
 					if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))
 					{
-						$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTriggerWord.$segs[0]);
+						$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTrigger.$segs[0]);
 					}
 				}
 			}

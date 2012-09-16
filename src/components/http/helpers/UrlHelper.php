@@ -61,7 +61,7 @@ class UrlHelper
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$path = blx()->config->resourceTriggerWord.'/'.trim($path, '/');
+		$path = blx()->config->resourceTrigger.'/'.trim($path, '/');
 		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
@@ -77,7 +77,7 @@ class UrlHelper
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
 		$origPath = $path;
-		$path = blx()->config->actionTriggerWord.'/'.trim($path, '/');
+		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
 		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 		return $path;
