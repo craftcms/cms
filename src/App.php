@@ -269,7 +269,7 @@ class App extends \CWebApplication
 				if (isset($segs[0]))
 				{
 					$rootFolderPath = $this->path->getPluginsPath().$segs[0].'/resources/';
-					$relativeResourcePath = implode('/', array_splice($segs, 2));
+					$relativeResourcePath = implode('/', array_splice($segs, 1));
 
 					// Looks like it belongs to a plugin.
 					if (IOHelper::fileExists($rootFolderPath.$relativeResourcePath))

@@ -1,9 +1,11 @@
+{% includeCssResource "css/blocks.css" first %}
+{% includeJsResource (blx.config.useCompressedJs ? "js/blocks.js" : "js/global_bootstrap.js") first -%}
+
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en-US">
 <head>
 	<meta charset="utf-8">
 	<title>{{ title|text }}{% if title and blx.app.siteName %} - {% endif %}{{ blx.app.siteName }}</title>
-	<link rel="stylesheet" type="text/css" href="{{ resourceUrl('css/blocks.css') }}">
 	{{ getHeadNodes()|raw }}
 	{{ styles }}
 	<link href="//get.pictos.cc/fonts/1550/1" rel="stylesheet" type="text/css">
@@ -56,15 +58,7 @@
 		}
 	};
 </script>
-
-{% if blx.config.useCompressedJs %}
-<script type="text/javascript" src="{{ resourceUrl('js/blocks.js') }}"></script>
-{% else %}
-<script type="text/javascript" src="{{ resourceUrl('js/global_bootstrap.js') }}"></script>
-{% endif %}
-
 {{ getFootNodes()|raw }}
 {{ scripts }}
-
 </body>
 </html>

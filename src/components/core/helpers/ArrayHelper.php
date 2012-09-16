@@ -90,4 +90,23 @@ class ArrayHelper
 
 		return array_map('trim', explode(',', $str));
 	}
+
+	/**
+	 * Prepends or appends a value to an array.
+	 *
+	 * @param array &$arr
+	 * @param mixed $value
+	 * @param bool  $prepend
+	 */
+	public function prependOrAppend(&$arr, $value, $prepend)
+	{
+		if ($prepend)
+		{
+			array_unshift($arr, $value);
+		}
+		else
+		{
+			array_push($arr, $value);
+		}
+	}
 }

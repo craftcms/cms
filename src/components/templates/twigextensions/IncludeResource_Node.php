@@ -11,13 +11,19 @@ class IncludeResource_Node extends \Twig_Node
 	 */
 	public function compile(\Twig_Compiler $compiler)
 	{
-		$path = $this->getNode('path');
 		$function = $this->getAttribute('function');
+		$path = $this->getNode('path');
 
 		$compiler
 			->addDebugInfo($this)
 			->write('\Blocks\blx()->templates->'.$function.'(')
-			->subcompile($path)
-		    ->raw(");\n");
+			->subcompile($path);
+
+		if ($this->getAttribute('first'))
+		{
+			$compiler->raw(', true');
+		}
+
+		$compiler->raw(");\n");
 	}
 }

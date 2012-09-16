@@ -9,10 +9,10 @@ class TemplatesService extends BaseApplicationComponent
 	private $_twig;
 	private $_templatePaths;
 
-	private $_headNodes;
-	private $_footNodes;
-	private $_css;
-	private $_js;
+	private $_headNodes = array();
+	private $_footNodes = array();
+	private $_css = array();
+	private $_js = array();
 
 	/**
 	 * Registers the Twig autoloader.
@@ -98,87 +98,93 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Prepares an HTML node for inclusion in the <head> of the template.
 	 *
-	 * @param string $node
+	 * @param string    $node
+	 * @param bool|null $first
 	 */
-	public function includeHeadNode($node)
+	public function includeHeadNode($node, $first = false)
 	{
-		$this->_headNodes[] = $node;
+		ArrayHelper::prependOrAppend($this->_headNodes, $node, $first);
 	}
 
 	/**
 	 * Prepares an HTML node for inclusion right above the </body> in the template.
 	 *
-	 * @param string $node
+	 * @param string    $node
+	 * @param bool|null $first
 	 */
-	public function includeFootNode($node)
+	public function includeFootNode($node, $first = false)
 	{
-		$this->_footNodes[] = $node;
+		ArrayHelper::prependOrAppend($this->_footNodes, $node, $first);
 	}
 
 	/**
 	 * Prepares a CSS file for inclusion in the template.
 	 *
-	 * @param string $url
+	 * @param string    $url
+	 * @param bool|null $first
 	 */
-	public function includeCssFile($url)
+	public function includeCssFile($url, $first = false)
 	{
 		$node = '<link rel="stylesheet" type="text/css" href="'.$url.'"/>';
-		$this->includeHeadNode($node);
+		$this->includeHeadNode($node, $first);
 	}
 
 	/**
 	 * Prepares a JS file for inclusion in the template.
 	 *
-	 * @param string $url
+	 * @param string    $url
+	 * @param bool|null $first
 	 */
-	public function includeJsFile($url)
+	public function includeJsFile($url, $first = false)
 	{
 		$node = '<script type="text/javascript" src="'.$url.'"></script>';
-		$this->includeFootNode($node);
+		$this->includeFootNode($node, $first);
 	}
 
 	/**
 	 * Prepares a CSS file from resources/ for inclusion in the template.
 	 *
-	 * @param string      $path
-	 * @param string|null $plugin
+	 * @param string    $path
+	 * @param bool|null $first
 	 */
-	public function includeCssResource($path, $plugin = null)
+	public function includeCssResource($path, $first = false)
 	{
-		$url = UrlHelper::getResourceUrl(($plugin ? $plugin.'/' : '').'css/'.$path);
-		$this->includeCssFile($url);
+		$url = UrlHelper::getResourceUrl($path);
+		$this->includeCssFile($url, $first);
 	}
 
 	/**
 	 * Prepares a JS file from resources/ for inclusion in the template.
 	 *
-	 * @param string      $path
-	 * @param string|null $plugin
+	 * @param string    $path
+	 * @param bool|null $first
 	 */
-	public function includeJsResource($path, $plugin = null)
+	public function includeJsResource($path, $first = false)
 	{
-		$url = UrlHelper::getResourceUrl(($plugin ? $plugin.'/' : '').'js/'.$path);
-		$this->includeJsFile($url);
+		$url = UrlHelper::getResourceUrl($path);
+		$this->includeJsFile($url, $first);
 	}
 
 	/**
 	 * Prepares CSS for inclusion in the template.
 	 *
-	 * @param string $url
+	 * @param string    $url
+	 * @param bool|null $first
 	 */
-	public function includeCss($css)
+	public function includeCss($css, $first = false)
 	{
-		$this->_css[] = trim($css);
+		ArrayHelper::prependOrAppend($this->_css, trim($css), $first);
 	}
 
 	/**
 	 * Prepares JS for inclusion in the template.
 	 *
-	 * @param string $url
+	 * @param string    $url
+	 * @param bool|null $first
 	 */
-	public function includeJs($js)
+	public function includeJs($js, $first = false)
 	{
-		$this->_js[] = trim($js);
+		ArrayHelper::prependOrAppend($this->_js, trim($js), $first);
 	}
 
 	/**
@@ -200,7 +206,7 @@ class TemplatesService extends BaseApplicationComponent
 		if (!empty($this->_headNodes))
 		{
 			$headNodes = implode("\n", array_unique($this->_headNodes));
-			$this->_headNodes = null;
+			$this->_headNodes = array();
 			return $headNodes;
 		}
 	}
@@ -224,7 +230,7 @@ class TemplatesService extends BaseApplicationComponent
 		if (!empty($this->_footNodes))
 		{
 			$footNodes = implode("\n", array_unique($this->_footNodes));
-			$this->_footNodes = null;
+			$this->_footNodes = array();
 			return $footNodes;
 		}
 	}
