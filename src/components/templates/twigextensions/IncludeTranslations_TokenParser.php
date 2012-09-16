@@ -4,13 +4,13 @@ namespace Blocks;
 /**
  *
  */
-class IncludeTranslation_TokenParser extends \Twig_TokenParser
+class IncludeTranslations_TokenParser extends \Twig_TokenParser
 {
 	/**
-	 * Parses {% includeTranslation %} tags.
+	 * Parses {% includeTranslations %} tags.
 	 *
 	 * @param \Twig_Token $token
-	 * @return IncludeTranslation_Node
+	 * @return IncludeTranslations_Node
 	 */
 	public function parse(\Twig_Token $token)
 	{
@@ -30,7 +30,7 @@ class IncludeTranslation_TokenParser extends \Twig_TokenParser
 
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
 
-		return new IncludeTranslation_Node($messages, array(), $lineno, $this->getTag());
+		return new IncludeTranslations_Node($messages, array(), $lineno, $this->getTag());
 	}
 
 	/**
@@ -40,6 +40,6 @@ class IncludeTranslation_TokenParser extends \Twig_TokenParser
 	 */
 	public function getTag()
 	{
-		return 'includeTranslation';
+		return 'includeTranslations';
 	}
 }

@@ -21,7 +21,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			new IncludeResource_TokenParser('includeJsResource'),
 			new IncludeResource_TokenParser('includeCss'),
 			new IncludeResource_TokenParser('includeJs'),
-			new IncludeTranslation_TokenParser(),
+			new IncludeTranslations_TokenParser(),
 			new Exit_TokenParser(),
 		);
 	}
@@ -95,14 +95,15 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getFunctions()
 	{
 		return array(
-			'url'          => new \Twig_Function_Function('\Blocks\UrlHelper::getUrl'),
-			'resourceUrl'  => new \Twig_Function_Function('\Blocks\UrlHelper::getResourceUrl'),
-			'actionUrl'    => new \Twig_Function_Function('\Blocks\UrlHelper::getActionUrl'),
-			'getHeadNodes' => new \Twig_Function_Function('\Blocks\blx()->templates->getHeadNodes'),
-			'getFootNodes' => new \Twig_Function_Function('\Blocks\blx()->templates->getFootNodes'),
-			'round'        => new \Twig_Function_Function('round'),
-			'ceil'         => new \Twig_Function_Function('ceil'),
-			'floor'        => new \Twig_Function_Function('floor'),
+			'url'             => new \Twig_Function_Function('\Blocks\UrlHelper::getUrl'),
+			'resourceUrl'     => new \Twig_Function_Function('\Blocks\UrlHelper::getResourceUrl'),
+			'actionUrl'       => new \Twig_Function_Function('\Blocks\UrlHelper::getActionUrl'),
+			'getHeadNodes'    => new \Twig_Function_Function('\Blocks\blx()->templates->getHeadNodes'),
+			'getFootNodes'    => new \Twig_Function_Function('\Blocks\blx()->templates->getFootNodes'),
+			'getTranslations' => new \Twig_Function_Function('\Blocks\blx()->templates->getTranslations'),
+			'round'           => new \Twig_Function_Function('round'),
+			'ceil'            => new \Twig_Function_Function('ceil'),
+			'floor'           => new \Twig_Function_Function('floor'),
 		);
 	}
 

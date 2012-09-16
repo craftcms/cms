@@ -13,6 +13,7 @@ class TemplatesService extends BaseApplicationComponent
 	private $_footNodes = array();
 	private $_css = array();
 	private $_js = array();
+	private $_translations = array();
 
 	/**
 	 * Registers the Twig autoloader.
@@ -233,6 +234,46 @@ class TemplatesService extends BaseApplicationComponent
 			$this->_footNodes = array();
 			return $footNodes;
 		}
+	}
+
+	/**
+	 * Prepares translations for inclusion in the template, to be used by the JS.
+	 *
+	 * @param string $message
+	 */
+	public function includeTranslations()
+	{
+		$messages = func_get_args();
+
+		foreach ($messages as $message)
+		{
+			if (!array_key_exists($message, $this->_translations))
+			{
+				$translation = Blocks::t($message);
+
+				if ($translation != $message)
+				{
+					$this->_translations[$message] = $translation;
+				}
+				else
+				{
+					$this->_translations[$message] = null;
+				}
+			}
+		}
+	}
+
+	/**
+	 * Returns the translations prepared for inclusion by includeTranslations(), in JSON,
+	 * and flushes out the translations queue.
+	 *
+	 * @return string
+	 */
+	public function getTranslations()
+	{
+		$translations = JsonHelper::encode(array_filter($this->_translations));
+		$this->_translations = array();
+		return $translations;
 	}
 
 	/**

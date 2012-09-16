@@ -1,6 +1,6 @@
 {% includeCssResource "css/blocks.css" first %}
 {% includeJsResource (blx.config.useCompressedJs ? "js/blocks.js" : "js/global_bootstrap.js") first -%}
-{% includeTranslation
+{% includeTranslations
 	"Are you sure you want to delete this entry block?",
 	"Attempted to get the height of a modal whose container has not been set.",
 	"Attempted to get the width of a modal whose container has not been set.",
@@ -49,11 +49,7 @@
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
 		language: '{{ blx.language }}',
-		translations: {
-			{% for message in translations %}
-				'{{ message|e('js') }}': '{{ message|t|e('js') }}'{% if not loop.last %},{% endif %}
-			{% endfor %}
-		}
+		translations: {{ getTranslations()|raw }}
 	};
 </script>
 
