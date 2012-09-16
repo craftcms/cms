@@ -8,7 +8,6 @@ Blocks.Dashboard = Blocks.Base.extend({
 	widgets: null,
 	cols: null,
 	colWidth: null,
-	widgetIds: null,
 	loadingWidget: -1,
 
 	init: function(widgetIds)
@@ -20,9 +19,11 @@ Blocks.Dashboard = Blocks.Base.extend({
 		// Set the columns
 		this.setCols();
 
-		// Start loading the widgets
-		this.widgetIds = widgetIds;
-		this.loadNextWidget();
+		// Load the widgets
+		for (var i = 0; i < widgetIds.length; i++)
+		{
+			this.loadWidget(widgetIds[i]);
+		}
 
 		// setup events
 		this.addListener(Blocks.$window, 'resize', 'setCols');
@@ -32,20 +33,14 @@ Blocks.Dashboard = Blocks.Base.extend({
 			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
 	},
 
-	loadNextWidget: function()
+	loadWidget: function(widgetId)
 	{
-		this.loadingWidget++;
-		if (typeof this.widgetIds[this.loadingWidget] != 'undefined')
-		{
-			var widgetId = this.widgetIds[this.loadingWidget];
-			$.get(Blocks.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
-				var $widget = $(response).css('opacity', 0);
-				this.placeWidget($widget);
-				$widget.animate({opacity: 1}, 'fast');
-				this.widgets.push($widget);
-				this.loadNextWidget();
-			}, this));
-		}
+		$.get(Blocks.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
+			var $widget = $(response).css('opacity', 0);
+			this.placeWidget($widget);
+			$widget.animate({opacity: 1}, 'fast');
+			this.widgets.push($widget);
+		}, this));
 	},
 
 	setCols: function()
