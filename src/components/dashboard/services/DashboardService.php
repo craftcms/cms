@@ -63,16 +63,18 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Mass-populates widget packages.
 	 *
-	 * @param array $data
+	 * @param array  $data
+	 * @param string $index
 	 * @return array
 	 */
-	public function populateWidgetPackages($data)
+	public function populateWidgetPackages($data, $index = 'id')
 	{
 		$widgetPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$widgetPackages[] = $this->populateWidgetPackage($attributes);
+			$widgetPackage = $this->populateWidgetPackage($attributes);
+			$widgetPackages[$widgetPackage->$index] = $widgetPackage;
 		}
 
 		return $widgetPackages;

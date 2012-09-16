@@ -39,16 +39,18 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Mass-populates section packages.
 	 *
-	 * @param array $data
+	 * @param array  $data
+	 * @param string $index
 	 * @return array
 	 */
-	public function populateSectionPackages($data)
+	public function populateSectionPackages($data, $index = 'id')
 	{
 		$sectionPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$sectionPackages[] = $this->populateSectionPackage($attributes);
+			$sectionPackage = $this->populateSectionPackage($attributes);
+			$sectionPackages[$sectionPackage->$index] = $sectionPackage;
 		}
 
 		return $sectionPackages;
@@ -377,16 +379,18 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Mass-populates entry block packages.
 	 *
-	 * @param array $data
+	 * @param array  $data
+	 * @param string $index
 	 * @return array
 	 */
-	public function populateEntryBlockPackages($data)
+	public function populateEntryBlockPackages($data, $index = 'id')
 	{
 		$blockPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$blockPackages[] = $this->populateEntryBlockPackage($attributes);
+			$blockPackage = $this->populateEntryBlockPackage($attributes);
+			$blockPackages[$blockPackage->$index] = $blockPackage;
 		}
 
 		return $blockPackages;
@@ -739,19 +743,21 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Mass-populates entry packages.
 	 *
-	 * @param array $data
+	 * @param array  $data
+	 * @param string $index
 	 * @return array
 	 */
-	public function populateEntryPackages($data)
+	public function populateEntryPackages($data, $index = 'id')
 	{
-		$entries = array();
+		$entryPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$entries[] = $this->populateEntryPackage($attributes);
+			$entryPackage = $this->populateEntryPackage($attributes);
+			$entryPackages[$entryPackage->$index] = $entryPackage;
 		}
 
-		return $entries;
+		return $entryPackages;
 	}
 
 	/**
