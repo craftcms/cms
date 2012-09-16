@@ -17,12 +17,12 @@ $blocksConfig['devMode'] = false;
 /**
  *
  */
-$blocksConfig['resourceTriggerWord'] = 'resource';
+$blocksConfig['resourceTriggerWord'] = 'resources';
 
 /**
  *
  */
-$blocksConfig['actionTriggerWord'] = 'action';
+$blocksConfig['actionTriggerWord'] = 'actions';
 
 /**
  *
