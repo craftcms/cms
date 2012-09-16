@@ -7,7 +7,7 @@ namespace Blocks;
 class IncludeTranslation_TokenParser extends \Twig_TokenParser
 {
 	/**
-	 * Parses {% include_translation %} tags.
+	 * Parses {% includeTranslation %} tags.
 	 *
 	 * @param \Twig_Token $token
 	 * @return IncludeTranslation_Node
@@ -40,6 +40,6 @@ class IncludeTranslation_TokenParser extends \Twig_TokenParser
 	 */
 	public function getTag()
 	{
-		return 'include_translation';
+		return 'includeTranslation';
 	}
 }
