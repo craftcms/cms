@@ -98,7 +98,7 @@ class ArrayHelper
 	 * @param mixed $value
 	 * @param bool  $prepend
 	 */
-	public function prependOrAppend(&$arr, $value, $prepend)
+	public static function prependOrAppend(&$arr, $value, $prepend)
 	{
 		if ($prepend)
 		{
