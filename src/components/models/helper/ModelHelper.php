@@ -177,9 +177,9 @@ class ModelHelper
 	 * Populates any default values that are defined for a model.
 	 *
 	 * @static
-	 * @param BaseModel|BaseRecord $model
+	 * @param \CModel $model
 	 */
-	public static function populateAttributeDefaults($model)
+	public static function populateAttributeDefaults(\CModel $model)
 	{
 		foreach ($model->defineAttributes() as $name => $config)
 		{
@@ -193,10 +193,10 @@ class ModelHelper
 	 * Returns the rules array used by CModel.
 	 *
 	 * @static
-	 * @param BaseModel|BaseRecord $model
+	 * @param \CModel $model
 	 * @return array
 	 */
-	public static function getRules($model)
+	public static function getRules(\CModel $model)
 	{
 		$rules = array();
 
@@ -394,6 +394,36 @@ class ModelHelper
 		$rules[] = array(implode(',', array_keys($attributes)), 'safe', 'on' => 'search');
 
 		return $rules;
+	}
+
+	/**
+	 * Returns the attribute labels.
+	 *
+	 * @static
+	 * @param \CModel $model
+	 * @return array
+	 */
+	public static function getAttributeLabels(\CModel $model)
+	{
+		$labels = array();
+
+		foreach ($model->defineAttributes() as $name => $config)
+		{
+			$config = static::normalizeAttributeConfig($config);
+
+			if (isset($config['label']))
+			{
+				$label = $config['label'];
+			}
+			else
+			{
+				$label = $model->generateAttributeLabel($name);
+			}
+
+			$labels[$name] = Blocks::t($label);
+		}
+
+		return $labels;
 	}
 
 	/**

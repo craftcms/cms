@@ -138,4 +138,14 @@ abstract class BaseModel extends \CModel
 	{
 		return ModelHelper::getRules($this);
 	}
+
+	/**
+	 * Returns the attribute labels.
+	 *
+	 * @return array
+	 */
+	public function attributeLabels()
+	{
+		return ModelHelper::getAttributeLabels($this);
+	}
 }

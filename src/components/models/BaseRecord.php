@@ -326,6 +326,16 @@ abstract class BaseRecord extends \CActiveRecord
 	}
 
 	/**
+	 * Returns the attribute labels.
+	 *
+	 * @return array
+	 */
+	public function attributeLabels()
+	{
+		return ModelHelper::getAttributeLabels($this);
+	}
+
+	/**
 	 * Declares the related models.
 	 *
 	 * @return array
