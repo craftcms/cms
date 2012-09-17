@@ -350,6 +350,9 @@ textarea.text,
 .text:focus,
 .text.focus { -webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
+
+.input.errors .text,
+.input.errors div.redactor_box,
 .text.error { border-color: $errorcolor; }
 
 .textwrapper.search { position: relative; padding-right: 36px; cursor: text; }

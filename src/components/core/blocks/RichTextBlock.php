@@ -54,12 +54,11 @@ class RichTextBlock extends BaseBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string     $handle
-	 * @param mixed      $value
-	 * @param array|null $errors
+	 * @param string $handle
+	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($handle, $value, $errors = null)
+	public function getInputHtml($handle, $value)
 	{
 		blx()->templates->includeCssResource('lib/redactor/redactor.css');
 		blx()->templates->includeJsResource('lib/redactor/redactor.min.js');
