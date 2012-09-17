@@ -269,10 +269,7 @@ class InstallService extends BaseApplicationComponent
 		$blockPackage->required = true;
 		$blockPackage->translatable = true;
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->class = 'PlainText';
-		$blockPackage->settings = array(
-			'hint' => Blocks::t('Enter your blog post’s body…')
-		);
+		$blockPackage->class = 'RichText';
 
 		blx()->content->saveEntryBlock($blockPackage);
 
