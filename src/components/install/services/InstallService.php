@@ -102,7 +102,7 @@ class InstallService extends BaseApplicationComponent
 					continue;
 				}
 
-				$obj = new $class;
+				$obj = new $class('install');
 
 				if (method_exists($obj, 'createTable'))
 				{
