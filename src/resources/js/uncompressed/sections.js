@@ -2,14 +2,16 @@
 
 
 var $table = $('#sections'),
-	totalSections = $table.children('thead').children().length;
+	totalSections = $table.children('tbody').children().length;
 
 
 $table.find('.deletebtn').click(function() {
 	var $row = $(this).closest('tr'),
 		sectionName = $row.children(':first').children('a').text();
 
-	if (confirm(Blocks.t('Are you sure you want to delete the section “{section}”?', { section: sectionName })))
+	var message = Blocks.t('Are you sure you want to delete the section “{section}”?', { section: sectionName });
+
+	if (confirm(message))
 	{
 		var data = {
 			sectionId: $row.attr('data-section-id')

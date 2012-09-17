@@ -180,12 +180,11 @@ class DbHelper
 	}
 
 	/**
-	 * @access protected
+	 * @access private
 	 * @static
 	 */
-	protected static $operators = array(
+	private static $_operators = array(
 		'not ' => '!=',
-		'!'    => '!=',
 		'<='   => '<=',
 		'>='   => '>=',
 		'<'    => '<',
@@ -197,33 +196,54 @@ class DbHelper
 	 * Parses a service param value to a DbCommand where condition.
 	 *
 	 * @param string $key
-	 * @param string $value
+	 * @param string $values
 	 * @param array &$params
 	 * @return mixed
 	 */
-	public static function parseParam($key, $value, &$params)
+	public static function parseParam($key, $values, &$params)
 	{
-		foreach (static::$operators as $operator => $sqlOperator)
+		$conditions = array();
+
+		$values = ArrayHelper::stringToArray($values);
+		foreach ($values as $value)
 		{
-			$length = strlen($operator);
-			if (strncmp(strtolower($value), $operator, $length) == 0)
+			foreach (static::$_operators as $operator => $sqlOperator)
 			{
-				$value = substr($value, $length);
-				break;
+				$length = strlen($operator);
+				if (strncmp(strtolower($value), $operator, $length) == 0)
+				{
+					$value = substr($value, $length);
+					break;
+				}
+			}
+
+			if ($value === null)
+			{
+				if ($operator == '=')
+				{
+					$conditions[] = $key.' is null';
+				}
+				else if ($operator == '!=')
+				{
+					$conditions[] = $key.' is not null';
+				}
+			}
+			else
+			{
+				$param = 'p'.StringHelper::randomString(9);
+				$params[':'.$param] = trim($value);
+				$conditions[] = $key.$sqlOperator.':'.$param;
 			}
 		}
 
-		if ($value === null)
+		if (count($conditions) == 1)
 		{
-			if ($operator == '=')
-				return $key.' is null';
-			else if ($operator == '!=')
-				return $key.' is not null';
+			return $conditions[0];
 		}
 		else
 		{
-			$params[':'.$key] = trim($value);
-			return $key.$sqlOperator.':'.$key;
+			array_unshift($conditions, 'or');
+			return $conditions;
 		}
 	}
 }

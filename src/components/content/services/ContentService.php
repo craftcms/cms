@@ -94,6 +94,31 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Gets a section.
+	 *
+	 * @param SectionParams|null $params
+	 * @return SectionPackage|null
+	 */
+	public function getSection(SectionParams $params = null)
+	{
+		if (!$params)
+		{
+			$params = new SectionParams();
+		}
+
+		$query = blx()->db->createCommand()
+			->from('sections');
+
+		$this->_applySectionConditions($query, $params);
+
+		$result = $query->queryRow();
+		if ($result)
+		{
+			return $this->populateSectionPackage($result);
+		}
+	}
+
+	/**
 	 * Gets the total number of sections.
 	 *
 	 * @param SectionParams|null $params
@@ -153,7 +178,7 @@ class ContentService extends BaseApplicationComponent
 	 * Gets a section by its ID.
 	 *
 	 * @param int $sectionid
-	 * @return Section
+	 * @return SectionPackage|null
 	 */
 	public function getSectionById($sectionId)
 	{
@@ -168,7 +193,7 @@ class ContentService extends BaseApplicationComponent
 	 * Gets a section by its handle.
 	 *
 	 * @param string $sectionHandle
-	 * @return Section
+	 * @return SectionPackage|null
 	 */
 	public function getSectionByHandle($sectionHandle)
 	{
@@ -187,7 +212,7 @@ class ContentService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param int $sectionId
-	 * @return Section
+	 * @return SectionRecord
 	 */
 	private function _getSectionRecordById($sectionId = null)
 	{
@@ -313,17 +338,22 @@ class ContentService extends BaseApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			// Delete the entry blocks
-			foreach ($sectionRecord->blocks as $block)
-			{
-				$block->delete();
-			}
-
-			// Delete the content table
+			// Delete the entire content table
 			$sectionPackage = $this->populateSectionPackage($sectionRecord);
 			$contentRecord = new EntryContentRecord($sectionPackage);
 			$contentRecord->dropForeignKeys();
 			$contentRecord->dropTable();
+
+			// Delete the entries and titles
+			blx()->db->createCommand()
+				->setText('delete e, t from {{entries}} e inner join {{entrytitles}} t
+				           where e.id = t.entryId and e.id = 4')
+				->query();
+
+			// Delete the entry blocks
+			blx()->db->createCommand()
+				->where(array('sectionId' => $sectionId))
+				->delete('entryblocks');
 
 			// Delete the section
 			$sectionRecord->delete();
@@ -721,6 +751,10 @@ class ContentService extends BaseApplicationComponent
 		/* end BLOCKSPRO ONLY */
 		$entryPackage->title = $attributes['title'];
 		$entryPackage->slug = $attributes['slug'];
+		$entryPackage->publishDate = $attributes['publishDate'];
+		/* BLOCKSPRO ONLY */
+		$entryPackage->expiryDate = $attributes['expiryDate'];
+		/* end BLOCKSPRO ONLY */
 
 		$entryPackage->blocks = array();
 		$contentRecord = $this->_getEntryContentRecord($entryPackage);
@@ -776,7 +810,7 @@ class ContentService extends BaseApplicationComponent
 		$query = blx()->db->createCommand()
 			->select('e.*, t.title')
 			->from('entries e')
-			->join('entrytitles t', 't.entryId=e.id');
+			->join('entrytitles t', 'e.id = t.entryId');
 
 		$this->_applyEntryConditions($query, $params);
 
@@ -800,6 +834,32 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Gets an entry.
+	 *
+	 * @param EntryParams|null $params
+	 * @return EntryPackage|null
+	 */
+	public function getEntry(EntryParams $params = null)
+	{
+		if (!$params)
+		{
+			$params = new EntryParams();
+		}
+
+		$query = blx()->db->createCommand()
+			->from('entries e')
+			->join('entrytitles t', 'e.id = t.entryId');
+
+		$this->_applyEntryConditions($query, $params);
+
+		$result = $query->queryRow();
+		if ($result)
+		{
+			return $this->populateEntryPackage($result);
+		}
+	}
+
+	/**
 	 * Gets the total number of entries.
 	 *
 	 * @param EntryParams|null $params
@@ -815,7 +875,7 @@ class ContentService extends BaseApplicationComponent
 		$query = blx()->db->createCommand()
 			->select('count(e.id)')
 			->from('entries e')
-			->join('entrytitles t', 't.entryId=e.id');
+			->join('entrytitles t', 'e.id = t.entryId');
 
 		$this->_applyEntryConditions($query, $params);
 
@@ -844,14 +904,111 @@ class ContentService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('e.handle', $params->slug, $whereParams);
 		}
 
+		if ($params->archived)
+		{
+			$whereConditions[] = 'e.archived = 1';
+		}
+		else if ($params->status && $params->status != '*')
+		{
+			$statusCondition = $this->_getEntryStatusCondition($params->status);
+			if ($statusCondition)
+			{
+				$whereConditions[] = $statusCondition;
+			}
+		}
+
 		/* BLOCKSPRO ONLY */
-		$whereConditions[] = DbHelper::parseParam('t.language', $params->language, $whereParams);
+		if ($params->sectionId)
+		{
+			$whereConditions[] = DbHelper::parseParam('e.sectionId', $params->sectionId, $whereParams);
+		}
+
+		if ($params->section)
+		{
+			$query->join('sections s', 'e.sectionId = s.id');
+			$whereConditions[] = DbHelper::parseParam('s.handle', $params->section, $whereParams);
+		}
+
+		if (!$params->language)
+		{
+			$params->language = blx()->language;
+		}
+
+		$whereConditions[] = 't.language = "'.$params->language.'"';
 		/* end BLOCKSPRO ONLY */
 
 		if ($whereConditions)
 		{
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
+		}
+	}
+
+	/**
+	 * Returns the entry status conditions.
+	 *
+	 * @access private
+	 * @param $statusParam
+	 */
+	private function _getEntryStatusCondition($statusParam)
+	{
+		$statusConditions = array();
+
+		$statuses = ArrayHelper::stringToArray($statusParam);
+		foreach ($statuses as $status)
+		{
+			$status = strtolower($status);
+
+			$currentTime = DateTimeHelper::currentTime();
+
+			switch ($status)
+			{
+				case 'live':
+				{
+					/* BLOCKS ONLY */
+					$statusConditions[] = 'e.publishDate <= '.$currentTime;
+					/* end BLOCKS ONLY */
+					/* BLOCKSPRO ONLY */
+					$statusConditions[] = array('and',
+						'e.publishDate <= '.$currentTime,
+						array('or', 'e.expiryDate is null', 'e.expiryDate > '.$currentTime)
+					);
+					/* end BLOCKSPRO ONLY */
+					break;
+				}
+				case 'pending':
+				{
+					$statusConditions[] = 'e.publishDate > '.$currentTime;
+					break;
+				}
+				/* BLOCKSPRO ONLY */
+				case 'expired':
+				{
+					$statusConditions[] = array('and',
+						'e.expiryDate is not null',
+						'e.expiryDate <= '.$currentTime
+					);
+					break;
+				}
+				/* end BLOCKSPRO ONLY */
+				case 'unpublished':
+				{
+					$statusConditions[] = 'e.publishDate is null';
+				}
+			}
+		}
+
+		if ($statusConditions)
+		{
+			if (count($statusConditions) == 1)
+			{
+				return $statusConditions[0];
+			}
+			else
+			{
+				array_unshift($conditions, 'or');
+				return $statusConditions;
+			}
 		}
 	}
 
@@ -866,7 +1023,7 @@ class ContentService extends BaseApplicationComponent
 		$query = blx()->db->createCommand()
 			->select('e.*, t.title')
 			->from('entries e')
-			->join('entrytitles t', 't.entryId=e.id')
+			->join('entrytitles t', 'e.id = t.entryId')
 			->where(array('e.id' => $entryId))
 			->limit(1);
 
@@ -1027,47 +1184,40 @@ class ContentService extends BaseApplicationComponent
 			$entryPackage->language = blx()->language;
 		}
 
-		// We have to get the content manually, since there's no way to tell EntryContentRecord
-		// which section to use from EntryContentRecord::model()->findByAttributes()
-
-		$sectionRecord = $this->_getSectionRecordById($entryPackage->sectionId);
-		$contentRecord = new EntryContentRecord($sectionRecord);
-
-		if ($entryPackage->id)
+		$sectionPackage = $this->getSectionById($entryPackage->sectionId);
+		if (!$sectionPackage)
 		{
-			$contentRow = blx()->db->createCommand()
-				->from($contentRecord->getTableName())
-				->where(array('entryId' => $entryPackage->id, 'language' => $entryPackage->language))
-				->queryRow();
-
-			if ($contentRow)
-			{
-				$contentRecord->populateRecord($contentRow);
-			}
+			$this->_noSectionExists($entryPackage->sectionId);
 		}
-
-		if (empty($contentRow))
-		{
-			$contentRecord->entryId = $entryPackage->id;
-			$contentRecord->language = $entryPackage->language;
-		}
-
 		/* end BLOCKSPRO ONLY */
-		/* BLOCKS ONLY */
+
 		if ($entryPackage->id)
 		{
+			/* BLOCKS ONLY */
 			$contentRecord = EntryContentRecord::model()->findByAttributes(array(
-				'entryId' => $entryPackage->id,
+				'entryId' => $entryPackage->id
 			));
+			/* end BLOCKS ONLY */
+			/* BLOCKSPRO ONLY */
+			$contentRecord = EntryContentRecord::model($sectionPackage)->findByAttributes(array(
+				'entryId'  => $entryPackage->id,
+				'language' => $entryPackage->language
+			));
+			/* end BLOCKSPRO ONLY */
 		}
 
 		if (empty($contentRecord))
 		{
+			/* BLOCKS ONLY */
 			$contentRecord = new EntryContentRecord();
+			/* end BLOCKS ONLY */
+			/* BLOCKSPRO ONLY */
+			$contentRecord = new EntryContentRecord($sectionPackage);
+			$contentRecord->language = $entryPackage->language;
+			/* end BLOCKSPRO ONLY */
 			$contentRecord->entryId = $entryPackage->id;
 		}
 
-		/* end BLOCKS ONLY */
 		return $contentRecord;
 	}
 

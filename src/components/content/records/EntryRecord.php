@@ -53,7 +53,7 @@ class EntryRecord extends BaseRecord
 	protected $_draft;
 
 	/**
-	 * Returns the entry's status (live, pending, expired, offline).
+	 * Returns the entry's status (live, pending, expired, unpublished).
 	 *
 	 * @return string
 	 */
@@ -68,7 +68,7 @@ class EntryRecord extends BaseRecord
 			return 'expired';
 		/* end BLOCKSPRO ONLY */
 		else
-			return 'offline';
+			return 'unpublished';
 	}
 
 	/**
@@ -79,21 +79,21 @@ class EntryRecord extends BaseRecord
 	public function isLive()
 	{
 		/* BLOCKS ONLY */
-		return ($this->getPublished() && !$this->isPending());
+		return ($this->isPublished() && !$this->isPending());
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		return ($this->getPublished() && !$this->isPending() && !$this->hasExpired());
+		return ($this->isPublished() && !$this->isPending() && !$this->hasExpired());
 		/* end BLOCKSPRO ONLY */
 	}
 
 	/**
-	 * Returns whether the entry is offline.
+	 * Returns whether the entry is unpublished.
 	 *
 	 * @return bool
 	 */
-	public function isOffline()
+	public function isUnpublished()
 	{
-		return !$this->getPublished();
+		return !$this->isPublished();
 	}
 
 	/**
@@ -113,7 +113,7 @@ class EntryRecord extends BaseRecord
 	 */
 	public function isPending()
 	{
-		return ($this->getPublished() && $this->publishDate && $this->publishDate > DateTimeHelper::currentTime());
+		return ($this->publishDate > DateTimeHelper::currentTime());
 	}
 
 	/* BLOCKSPRO ONLY */
@@ -124,7 +124,7 @@ class EntryRecord extends BaseRecord
 	 */
 	public function hasExpired()
 	{
-		return ($this->getPublished() && $this->expiryDate && $this->expiryDate < DateTimeHelper::currentTime());
+		return ($this->expiryDate && $this->expiryDate <= DateTimeHelper::currentTime());
 	}
 	/* end BLOCKSPRO ONLY */
 

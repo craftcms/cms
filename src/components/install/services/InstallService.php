@@ -84,17 +84,30 @@ class InstallService extends BaseApplicationComponent
 			if (IOHelper::fileExists($file))
 			{
 				$fileName = IOHelper::getFileName($file, false);
+
+				/* BLOCKSPRO ONLY */
+				// Skip EntryContentRecord
+				if ($fileName == 'EntryContentRecord')
+				{
+					continue;
+				}
+				/* end BLOCKSPRO ONLY */
+
 				$class = __NAMESPACE__.'\\'.$fileName;
 
 				// Ignore abstract classes and interfaces
 				$ref = new \ReflectionClass($class);
 				if ($ref->isAbstract() || $ref->isInterface())
+				{
 					continue;
+				}
 
 				$obj = new $class;
 
 				if (method_exists($obj, 'createTable'))
+				{
 					$records[] = $obj;
+				}
 			}
 		}
 

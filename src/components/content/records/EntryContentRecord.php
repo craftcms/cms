@@ -6,27 +6,27 @@ namespace Blocks;
  */
 class EntryContentRecord extends BaseRecord
 {
-	protected $section;
+	private static $_models = array();
+
+	private $_section;
+	private $_md;
 
 	/**
 	 * Constructor
 	 *
 	 * @param SectionPackage $section
+	 * @param string         $scenario
 	 */
-	public function __construct(SectionPackage $section = null)
+	public function __construct(SectionPackage $section, $scenario = 'insert')
 	{
-		if ($section && $section instanceof SectionPackage)
-			$this->section = $section;
+		$this->_section = $section;
 
-		parent::__construct(null);
+		parent::__construct($scenario);
 	}
 
 	public function getTableName()
 	{
-		if (isset($this->section))
-			return static::getTableNameForSection($this->section);
-		else
-			throw new Exception(Blocks::t('Cannot get the table name if a section hasn’t been defined.'));
+		return static::getTableNameForSection($this->_section);
 	}
 
 	/**
@@ -48,7 +48,7 @@ class EntryContentRecord extends BaseRecord
 			'language' => array(AttributeType::Language, 'required' => true),
 		);
 
-		$blockPackages = blx()->content->getEntryBlocksBySectionId($this->section->id);
+		$blockPackages = blx()->content->getEntryBlocksBySectionId($this->_section->id);
 		foreach ($blockPackages as $blockPackage)
 		{
 			$block = blx()->blocks->populateBlock($blockPackage);
@@ -72,29 +72,84 @@ class EntryContentRecord extends BaseRecord
 		);
 	}
 
-	/* Prevent table creation/deletion unless $section has been set */
-
-	public function createTable()
+	public function rules()
 	{
-		if (isset($this->section))
-			parent::createTable();
+		$rules = parent::rules();
+
+		foreach ($rules as $index => $rule)
+		{
+			if ($rule[1] == 'Blocks\CompositeUniqueValidator')
+			{
+				array_splice($rules, $index, 1);
+			}
+		}
+
+		return $rules;
 	}
 
-	public function dropTable()
+	// -------------------------------------------------------------------------
+	//  Keep the section reference when creating new instances off of this one
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Returns the static model of the specified AR class.
+	 *
+	 * @param SectionPackage $section
+	 * @return EntryContentRecord
+	 */
+	public static function model(SectionPackage $section)
 	{
-		if (isset($this->section))
-			parent::dropTable();
+		if (isset(static::$_models['EntryContentRecord'][$section->handle]))
+		{
+			return static::$_models['EntryContentRecord'][$section->handle];
+		}
+		else
+		{
+			$model = static::$_models['EntryContentRecord'][$section->handle] = new EntryContentRecord($section, null);
+			$model->_md = new \CActiveRecordMetaData($model);
+			$model->attachBehaviors($model->behaviors());
+			return $model;
+		}
 	}
 
-	public function addForeignKeys()
+	/**
+	 * Returns the meta-data for this AR.
+	 *
+	 * @return \CActiveRecordMetaData
+	 */
+	public function getMetaData()
 	{
-		if (isset($this->section))
-			parent::addForeignKeys();
+		if ($this->_md !== null)
+		{
+			return $this->_md;
+		}
+		else
+		{
+			return $this->_md = self::model($this->_section)->_md;
+		}
 	}
 
-	public function dropForeignKeys()
+	/**
+	 * Refreshes the meta data for this AR class.
+	 */
+	public function refreshMetaData()
 	{
-		if (isset($this->section))
-			parent::dropForeignKeys();
+		$finder = static::model($this->_section);
+		$finder->_md = new \CActiveRecordMetaData($finder);
+		if ($this !== $finder)
+		{
+			$this->_md = $finder->_md;
+		}
+	}
+
+	/**
+	 * Creates an active record instance.
+	 *
+	 * @param array $attributes
+	 * @return EntryContentRecord
+	 */
+	protected function instantiate($attributes)
+	{
+		return new EntryContentRecord($this->_section, null);
 	}
 }

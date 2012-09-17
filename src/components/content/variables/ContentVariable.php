@@ -24,6 +24,18 @@ class ContentVariable
 	}
 
 	/**
+	 * Gets a section.
+	 *
+	 * @param array|null $params
+	 * @return SectionPackage|null
+	 */
+	public function section($params = array())
+	{
+		$params = new SectionParams($params);
+		return blx()->content->getSection($params);
+	}
+
+	/**
 	 * Gets the total number of sections.
 	 *
 	 * @param array|null $params
@@ -112,6 +124,18 @@ class ContentVariable
 	{
 		$params = new EntryParams($params);
 		return blx()->content->getEntries($params);
+	}
+
+	/**
+	 * Gets an entry.
+	 *
+	 * @param array|null $params
+	 * @return EntryPackage|null
+	 */
+	public function entry($params = array())
+	{
+		$params = new EntryParams($params);
+		return blx()->content->getEntry($params);
 	}
 
 	/**

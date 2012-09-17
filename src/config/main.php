@@ -5,6 +5,8 @@ $common = require_once(BLOCKS_APP_PATH.'config/common.php');
 Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
 Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
 
+$handle = '[a-zA-Z][a-zA-Z0-9_]*';
+
 return CMap::mergeArray(
 	$common,
 
@@ -116,9 +118,14 @@ return CMap::mergeArray(
 				'class' => 'Blocks\UrlManager',
 				'cpRoutes' => array(
 					/* BLOCKS ONLY */
-					'content\/blog\/new'                                               => 'content/blog/_edit',
-					'content\/blog\/(?P<entryId>\d+)'                                  => 'content/blog/_edit',
+					'content\/blog\/new'                                               => 'content/_edit',
+					'content\/blog\/(?P<entryId>\d+)'                                  => 'content/_edit',
 					/* end BLOCKS ONLY */
+					/* BLOCKSPRO ONLY */
+					'content\/(?P<sectionHandle>'.$handle.')\/new'                     => 'content/_edit',
+					'content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)'        => 'content/_edit',
+					/* end BLOCKSPRO ONLY */
+					'content\/(?P<filter>'.$handle.')'                                 => 'content',
 					'dashboard\/settings\/new'                                         => 'dashboard/settings/_widgetsettings',
 					'dashboard\/settings\/(?P<widgetId>\d+)'                           => 'dashboard/settings/_widgetsettings',
 					'update\/(?P<handle>[^\/]*)'                                       => 'update',

@@ -1,78 +1,134 @@
 {% extends "_layouts/cp" %}
 {% set title = "Content"|t %}
-{% includeCssResource "css/sitemap.css" %}
-{% includeJsResource "js/sitemap.js" %}
+
+
+<!-- BLOCKS ONLY -->
+{% set statuses = { live: 'on', pending: 'pending', unpublished: '' } %}
+<!-- end BLOCKS ONLY -->
+<!-- BLOCKSPRO ONLY -->
+{% set sections = blx.content.sections %}
+{% set showSection = true %}
+
+
+{% set statuses = { live: 'on', pending: 'pending', unpublished: '', expired: 'off' } %}
+<!-- end BLOCKSPRO ONLY -->
+{% set showStatus = true %}
+
+
+{% if not filter %}
+	{% set params = { status: '*' } %}
+{% elseif filter in statuses|keys %}
+	{% set params = { status: filter } %}
+	{% set showStatus = false %}
+{% elseif filter == 'archived' %}
+	{% set params = { archived: true } %}
+	{% set showStatus = false %}
+<!-- BLOCKSPRO ONLY -->
+{% elseif blx.content.totalSections({ handle: filter }) %}
+	{% set params = { section: filter, status: '*' } %}
+	{% set showSection = false %}
+<!-- end BLOCKSPRO ONLY -->
+{% else %}
+	{% exit 404 %}
+{% endif %}
 
 
 {% set titlebar %}
 	<h1>{{ title }}</h1>
-	<ul class="right">
-		<li class="btn-group">
-			<a href="" class="btn active" data-icon="⽊" title="{{ 'Tree view'|t }}"></a>
-			<a href="" class="btn" data-icon="•" title="{{ 'List view'|t }}"></a>
-		</li>
-	</ul>
 {% endset %}
+
 
 {% set content %}
-	<div id="sitemap">
+	<nav class="nav">
+		<!-- BLOCKS ONLY -->
+		<div class="buttons">
+			<a href="{{ url('content/blog/new') }}" class="btn submit" data-icon="+">{{ "New Entry"|t }}</a>
+		</div>
+		<!-- end BLOCKS ONLY -->
 
-		<div id="home" class="tier">
-			<div class="nodes">
-				<a class="node page">
-					<img src="{{ resourceUrl('images/screenshots/Home.png') }}">
-					<div class="title">{{ "Home"|t }}</div>
-				</a>
-			</div>
+		<ul>
+			<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
+
+			<!-- BLOCKSPRO ONLY -->
+			{% for section in sections %}
+				<li><a href="{{ url('content/' ~ section.handle) }}" {% if filter == section.handle %}class="sel"{% endif %}>{{ section.name|t }}</a></li>
+			{% endfor %}
+			<!-- end BLOCKSPRO ONLY -->
+
+			{% for status, class in statuses %}
+				{% set total = blx.content.totalEntries({ status: status }) %}
+				{% if total %}
+					<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
+				{% endif %}
+			{% endfor %}
+
+			{% if blx.content.totalEntries({ archived: true }) %}
+				<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
+			{% endif %}
+		</ul>
+	</nav>
+
+	<div>
+		<div class="toolbar">
+			<div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search entries'|t }}"></div>
 		</div>
 
-		<div class="tier" id="tier">
-			<div class="nodes">
-				<div class="node section">
-					<div class="peephole">
-						<img src="{{ resourceUrl('images/screenshots/CaseStudies/Agency.png') }}" style="margin-left: -39px">
-						<img src="{{ resourceUrl('images/screenshots/CaseStudies/Navy.png') }}">
-						<img src="{{ resourceUrl('images/screenshots/CaseStudies/REDI.png') }}" style="margin-right: -39px">
-					</div>
-					<div class="title">{{ "Case Studies"|t }}</div>
+		{% if blx.content.totalEntries(params) %}
+			<!-- BLOCKS ONLY -->
+			{% set totalCols = 2 + (showStatus ? 1 : 0) %}
+			<!-- end BLOCKS ONLY -->
+			<!-- BLOCKSPRO ONLY -->
+			{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
+			<!-- end BLOCKSPRO ONLY -->
+			{% set colWidth = round(100 / totalCols) %}
+			<table class="data">
+				<thead>
+					<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
+					<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
+					<!-- BLOCKSPRO ONLY -->
+					{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
+					<!-- end BLOCKSPRO ONLY -->
+					{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
+				</thead>
+				<tbody>
+					{% for entry in blx.content.entries(params) %}
+						<!-- BLOCKS ONLY -->
+						{% set editUrl = url('content/blog/' ~ entry.id) %}
+						<!-- end BLOCKS ONLY -->
+						<!-- BLOCKSPRO ONLY -->
+						{% set entrySection = sections[entry.sectionId] %}
+						{% set editUrl = url('content/' ~ entrySection.handle ~ '/' ~ entry.id) %}
+						<!-- end BLOCKSPRO ONLY -->
+						<tr>
+							<th scope="row"><a href="{{ editUrl }}">{{ entry.title }}</a></th>
+							<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
+							<!-- BLOCKSPRO ONLY -->
+							{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
+							<!-- end BLOCKSPRO ONLY -->
+							{% if showStatus %}<td><div class="status {{ entry.status }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+			<!-- BLOCKSPRO ONLY -->
+			{% if not showSection %}
+				<div class="buttons">
+					<a class="btn submit addbtn" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
 				</div>
-
-				<div class="node section">
-					<div class="peephole">
-						<img src="{{ resourceUrl('images/screenshots/UI/Chimaeric.png') }}" style="margin-left: -39px">
-						<img src="{{ resourceUrl('images/screenshots/UI/Pure.png') }}">
-						<img src="{{ resourceUrl('images/screenshots/UI/MessageMarker.png') }}" style="margin-right: -39px">
-					</div>
-					<div class="title">{{ "Design & User Interface"|t }}</div>
-				</div>
-
-				<a class="node page">
-					<img src="{{ resourceUrl('images/screenshots/Services.png') }}">
-					<div class="title">{{ "Services"|t }}</div>
-				</a>
-
-				<a class="node page">
-					<img src="{{ resourceUrl('images/screenshots/About.png') }}">
-					<div class="title">{{ "About"|t }}</div>
-				</a>
-
-				<div class="node section">
-					<div class="peephole">
-						<img src="{{ resourceUrl('images/screenshots/Blog/Usability.png') }}" style="margin-left: -2px">
-						<img src="{{ resourceUrl('images/screenshots/Blog/HelloWorld.png') }}" style="margin-right: -2px">
-					</div>
-					<div class="title">{{ "Blog"|t }}</div>
-				</div>
-			</div>
-		</div>
+			{% endif %}
+			<!-- end BLOCKSPRO ONLY -->
+		{% else %}
+			<p>
+				{{ "No entries exist yet."|t }}
+				<!-- BLOCKS ONLY -->
+				<a href="{{ url('content/blog/new') }}">{{ "Create the first one."|t }}</a>
+				<!-- end BLOCKS ONLY -->
+				<!-- BLOCKSPRO ONLY -->
+				{% if not showSection %}
+					<a href="{{ url('content/' ~ filter ~ '/new') }}">{{ "Create the first one."|t }}</a>
+				{% endif %}
+				<!-- end BLOCKSPRO ONLY -->
+			</p>
+		{% endif %}
 	</div>
 {% endset %}
-
-
-{% set js %}
-	new Blocks.Tier('#tier');
-
-	//var home = new Blocks.SiteMapPage('Home.png', 'Home');
-	//home.addSubpage('About.png', 'About');
-{% endset %}
-{% includeJs js %}

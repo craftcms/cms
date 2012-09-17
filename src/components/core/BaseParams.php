@@ -19,14 +19,17 @@ abstract class BaseParams
 	/**
 	 * Sets the params based on an arary's keys and values.
 	 *
-	 * @param array $params
+	 * @param array|null $params
 	 */
-	public function setParams($params)
+	public function setParams($params = null)
 	{
-		foreach ($params as $name => $value)
+		if (is_array($params))
 		{
-			if (property_exists($this, $name))
-				$this->$name = $value;
+			foreach ($params as $name => $value)
+			{
+				if (property_exists($this, $name))
+					$this->$name = $value;
+			}
 		}
 	}
 }
