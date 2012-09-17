@@ -77,7 +77,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		$records = array();
 		$componentsDir = new Folder(blx()->path->getComponentsPath());
-		$recordFiles = $componentsDir->getContents(true, "\/models\/.*Record\.php");
+		$recordFiles = $componentsDir->getContents(true, "\/records\/.*Record\.php");
 
 		foreach ($recordFiles as $file)
 		{
@@ -256,26 +256,25 @@ class InstallService extends BaseApplicationComponent
 			'hasUrls'   => true,
 			'template'  => 'blog/_entry'
 		));
-		/* end BLOCKSPRO ONLY */
 
-		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
-		/* BLOCKS ONLY */
-		blx()->content->saveEntryBlock(array(
-		/* end BLOCKS ONLY */
-		/* BLOCKSPRO ONLY */
-		blx()->content->saveEntryBlock($section->id, array(
 		/* end BLOCKSPRO ONLY */
-			'name'   => Blocks::t('Body'),
-			'handle' => 'body',
-			'required' => true,
-			/* BLOCKSPRO ONLY */
-			'translatable' => true,
-			/* end BLOCKSPRO ONLY */
-			'class' => 'PlainText',
-			'blockSettings' => array(
-				'hint' => Blocks::t('Enter your blog post’s body…')
-			)
-		));
+		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
+		$blockPackage = new EntryBlockPackage();
+		/* BLOCKSPRO ONLY */
+		$blockPackage->sectionId = $section->id;
+		/* end BLOCKSPRO ONLY */
+		$blockPackage->name = Blocks::t('Body');
+		$blockPackage->handle = 'body';
+		/* BLOCKSPRO ONLY */
+		$blockPackage->required = true;
+		$blockPackage->translatable = true;
+		/* end BLOCKSPRO ONLY */
+		$blockPackage->class = 'PlainText';
+		$blockPackage->settings = array(
+			'hint' => Blocks::t('Enter your blog post’s body…')
+		);
+
+		blx()->content->saveEntryBlock($blockPackage);
 
 		/*// Add a Welcome entry to the Blog
 		$entry = blx()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');

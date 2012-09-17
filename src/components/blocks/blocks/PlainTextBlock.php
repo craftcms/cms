@@ -55,7 +55,7 @@ class PlainTextBlock extends BaseBlock
 		if ($this->getSettings()->multiline)
 			return array(AttributeType::String, 'column' => ColumnType::Text);
 		else
-			return array(AttributeType::String, 'column' => ColumnType::Varhcar);
+			return array(AttributeType::String, 'column' => ColumnType::Varchar);
 	}
 
 	/**
