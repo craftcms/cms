@@ -53,6 +53,12 @@ class EntryContentRecord extends BaseRecord
 		{
 			$block = blx()->blocks->populateBlock($blockPackage);
 			$attributes[$blockPackage->handle] = $block->defineContentAttribute();
+
+			// Required?
+			if ($blockPackage->required)
+			{
+				$attributes[$blockPackage->handle]['required'] = true;
+			}
 		}
 
 		return $attributes;

@@ -14,7 +14,7 @@ class EntryRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'slug'          => AttributeType::Slug,
+			'slug'          => array(AttributeType::Slug, 'required' => true),
 			'uri'           => array(AttributeType::String, 'maxLength' => 150, 'unique' => true),
 			'publishDate'   => AttributeType::DateTime,
 			/* BLOCKSPRO ONLY */
