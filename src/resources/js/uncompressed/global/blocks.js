@@ -51,7 +51,7 @@ var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae
  */
 Blocks.t = function(message, params)
 {
-	if (typeof Blocks.translations[message] != undefined)
+	if (typeof Blocks.translations[message] != 'undefined')
 		message = Blocks.translations[message];
 
 	if (params)
