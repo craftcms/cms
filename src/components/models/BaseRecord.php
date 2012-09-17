@@ -8,8 +8,6 @@ namespace Blocks;
  */
 abstract class BaseRecord extends \CActiveRecord
 {
-	private $_jsonAttributes;
-
 	/**
 	 * Constructor
 	 * @param string $scenario
@@ -18,7 +16,7 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		// If @@@productDisplay@@@ isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
-		if (blx()->isInstalled())
+		if ($scenario !== 'install')
 		{
 			parent::__construct($scenario);
 		}
@@ -30,6 +28,7 @@ abstract class BaseRecord extends \CActiveRecord
 	public function init()
 	{
 		ModelHelper::populateAttributeDefaults($this);
+
 		$this->attachEventHandler('onAfterFind', array($this, 'propAttributesForUse'));
 		$this->attachEventHandler('onBeforeSave', array($this, 'prepAttributesForSave'));
 		$this->attachEventHandler('onAfterSave', array($this, 'propAttributesForUse'));
@@ -95,15 +94,22 @@ abstract class BaseRecord extends \CActiveRecord
 				case AttributeType::DateTime:
 				{
 					if (gettype($value) === gettype(new DateTime()))
+					{
 						$this->setAttribute($name, LocalizationHelper::normalizeDateTime($value));
+					}
+
 					break;
 				}
 				case AttributeType::Mixed:
 				{
 					if (!empty($value) && is_array($value))
+					{
 						$this->setAttribute($name, JsonHelper::encode($value));
+					}
 					else
+					{
 						$this->setAttribute($name, null);
+					}
 					break;
 				}
 			}
@@ -143,9 +149,14 @@ abstract class BaseRecord extends \CActiveRecord
 				case AttributeType::Mixed:
 				{
 					if (!empty($value) && is_string($value))
+					{
 						$this->setAttribute($name, JsonHelper::decode($value));
+					}
 					else
+					{
 						$this->setAttribute($name, array());
+					}
+
 					break;
 				}
 			}
@@ -187,7 +198,9 @@ abstract class BaseRecord extends \CActiveRecord
 			// Add unique index for this column?
 			// (foreign keys already get indexed, so we're only concerned with whether it should be unique)
 			if (!empty($config['unique']))
+			{
 				$indexes[] = array('columns' => array($config[2]), 'unique' => true);
+			}
 		}
 
 		// Add all other columns
@@ -198,8 +211,11 @@ abstract class BaseRecord extends \CActiveRecord
 			// Add (unique) index for this column?
 			$indexed = !empty($config['indexed']);
 			$unique = !empty($config['unique']);
+
 			if ($unique || $indexed)
+			{
 				$indexes[] = array('columns' => array($name), 'unique' => $unique);
+			}
 
 			$columns[$name] = $config;
 		}
@@ -225,6 +241,7 @@ abstract class BaseRecord extends \CActiveRecord
 	public function getBelongsToRelations()
 	{
 		$belongsTo = array();
+
 		foreach ($this->defineRelations() as $name => $config)
 		{
 			if ($config[0] == static::BELONGS_TO)
@@ -363,11 +380,15 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		// Add the namespace to the class name
 		if (strpos($config[1], '\\') === false)
+		{
 			$config[1] = __NAMESPACE__.'\\'.$config[1];
+		}
 
 		// Add the foreign key to BELONGS_TO relations
 		if ($config[0] == static::BELONGS_TO && empty($config[2]))
+		{
 			array_splice($config, 2, 0, $name.'Id');
+		}
 	}
 
 	/**
