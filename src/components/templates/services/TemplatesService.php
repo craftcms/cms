@@ -169,8 +169,9 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Prepares CSS for inclusion in the template.
 	 *
-	 * @param string    $url
+	 * @param           $css
 	 * @param bool|null $first
+	 * @return void
 	 */
 	public function includeCss($css, $first = false)
 	{
@@ -180,8 +181,9 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Prepares JS for inclusion in the template.
 	 *
-	 * @param string    $url
+	 * @param           $js
 	 * @param bool|null $first
+	 * @return void
 	 */
 	public function includeJs($js, $first = false)
 	{
@@ -239,7 +241,7 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Prepares translations for inclusion in the template, to be used by the JS.
 	 *
-	 * @param string $message
+	 * @return void
 	 */
 	public function includeTranslations()
 	{
@@ -290,7 +292,9 @@ class TemplatesService extends BaseApplicationComponent
 
 		// Is this template path already cached?
 		if (isset($this->_templatePaths[$name]))
+		{
 			return $this->_templatePaths[$name];
+		}
 
 		// Validate the template name
 		$this->_validateTemplateName($name);
@@ -307,7 +311,9 @@ class TemplatesService extends BaseApplicationComponent
 			$viewPaths = array();
 
 			if (blx()->request->getMode() == HttpRequestMode::Site)
+			{
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
+			}
 
 			$viewPaths[] = blx()->path->getCpTemplatesPath();
 
@@ -322,7 +328,9 @@ class TemplatesService extends BaseApplicationComponent
 		}
 
 		if (($path = $this->_findTemplate($basePath.$name)) !== null)
+		{
 			return $this->_templatePaths[$name] = $path;
+		}
 
 		// Otherwise maybe it's a plugin template?
 
@@ -335,13 +343,15 @@ class TemplatesService extends BaseApplicationComponent
 			if ($pluginHandle && ($plugin = blx()->plugins->getPlugin($pluginHandle)) !== false)
 			{
 				// Get the template path for the plugin.
-				$basePath = blx()->path->getPluginsPath().$plugin->getClassHandle().'/templates/';
+				$basePath = blx()->path->getPluginsPath().strtolower($plugin->getClassHandle()).'/templates/';
 
 				// Chop off the plugin segment, since that's already covered by $basePath
-				$name = implode('/', $parts);
+				$tempName = implode('/', $parts);
 
-				if (($path = $this->_findTemplate($basePath.$name)) !== null)
+				if (($path = $this->_findTemplate($basePath.$tempName)) !== null)
+				{
 					return $this->_templatePaths[$name] = $path;
+				}
 			}
 		}
 
@@ -359,19 +369,28 @@ class TemplatesService extends BaseApplicationComponent
 	private function _validateTemplateName($name)
 	{
 		if (false !== strpos($name, "\0"))
+		{
 			throw new \Twig_Error_Loader(Blocks::t('A template name cannot contain NUL bytes.'));
+		}
 
 		$parts = explode('/', $name);
 		$level = 0;
+
 		foreach ($parts as $part)
 		{
 			if ($part === '..')
+			{
 				$level--;
+			}
 			elseif ($part !== '.')
+			{
 				$level++;
+			}
 
 			if ($level < 0)
+			{
 				throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
+			}
 		}
 	}
 
@@ -399,17 +418,23 @@ class TemplatesService extends BaseApplicationComponent
 		// Get the extension on the path, if there is one
 		$extension = IOHelper::getExtension($path);
 
+		$path = rtrim(IOHelper::normalizePathSeparators($path), '/');
+
 		if ($extension)
+		{
 			$testPaths = array($path);
+		}
 		else
+		{
 			$testPaths = array($path.'.html', $path.'/index.html');
+		}
 
 		foreach ($testPaths as $path)
 		{
-			$path = IOHelper::normalizePathSeparators($path);
-
 			if (IOHelper::fileExists(blx()->findLocalizedFile($path)))
+			{
 				return $path;
+			}
 		}
 
 		return null;
