@@ -1,6 +1,6 @@
 body { background: #fff; }
 
-#main .toolbar .btn-group { float: right; }
+#main .toolbar .btngroup { float: right; }
 #main .toolbar .search { margin-right: 86px; }
 
 /*-- grid --*/

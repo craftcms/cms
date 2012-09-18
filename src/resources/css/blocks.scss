@@ -213,16 +213,16 @@ input.btn { border: none; height: 31px; }
 input.btn.big { height: 36px; }
 
 /* button groups */
-.btn-group { display: block; height: 24px; }
-.btn-group .btn { float: left; }
-.btn-group .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
-.btn-group .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.btn-group .btn + .btn { margin-left: -1px; }
-.btn-group .btn.active { position: relative; }
-.btn-group .btn:active { position: relative; z-index: 1; }
-.btn-group .btn[data-icon]:before { margin-right: -2px; }
+.btngroup { display: block; height: 24px; }
+.btngroup .btn { float: left; }
+.btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.btngroup .btn + .btn { margin-left: -1px; }
+.btngroup .btn.active { position: relative; }
+.btngroup .btn:active { position: relative; z-index: 1; }
+.btngroup .btn[data-icon]:before { margin-right: -2px; }
 
-.btn-group.big { height: 36px; }
+.btngroup.big { height: 36px; }
 
 /* switch */
 .lightswitch { border-radius: 10px; width: 51px; height: 20px; background: #999; overflow: hidden; -webkit-box-shadow: 0 0 0 1px #999; cursor: pointer; @include unselectable; }

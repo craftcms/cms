@@ -24,7 +24,7 @@ Blocks.ui.Pill = Blocks.Base.extend({
 
 		this.$outerContainer.data('pill', this);
 
-		this.$innerContainer = this.$outerContainer.find('.btn-group:first');
+		this.$innerContainer = this.$outerContainer.find('.btngroup:first');
 		this.$btns = this.$innerContainer.find('.btn');
 		this.$selectedBtn = this.$btns.filter('.active:first');
 		this.$input = this.$outerContainer.find('input:first');
