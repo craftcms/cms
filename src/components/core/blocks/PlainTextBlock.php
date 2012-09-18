@@ -61,17 +61,15 @@ class PlainTextBlock extends BaseBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string     $handle
-	 * @param mixed      $value
-	 * @param array|null $errors
+	 * @param string $handle
+	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($handle, $value, $errors = null)
+	public function getInputHtml($handle, $value)
 	{
 		return blx()->templates->render('_components/blocks/PlainText/input', array(
 			'handle'   => $handle,
 			'value'    => $value,
-			'errors'   => $errors,
 			'settings' => $this->getSettings()
 		));
 	}

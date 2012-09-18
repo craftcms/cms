@@ -52,13 +52,16 @@ class EntryContentRecord extends BaseRecord
 		foreach ($blockPackages as $blockPackage)
 		{
 			$block = blx()->blocks->populateBlock($blockPackage);
-			$attributes[$blockPackage->handle] = $block->defineContentAttribute();
+			$attribute = $block->defineContentAttribute();
+			$attribute['label'] = $blockPackage->name;
 
 			// Required?
 			if ($blockPackage->required)
 			{
-				$attributes[$blockPackage->handle]['required'] = true;
+				$attribute['required'] = true;
 			}
+
+			$attributes[$blockPackage->handle] = $attribute;
 		}
 
 		return $attributes;
