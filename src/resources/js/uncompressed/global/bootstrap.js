@@ -11,11 +11,6 @@
 
 var scripts =
 [
-	'lib/jquery-1.7.1.js',
-	'lib/Base.js',
-	'lib/history.js-1.7.1/history.js',
-	'lib/history.js-1.7.1/history.adapter.jquery.js',
-
 	'blocks.js',
 
 	'ui/Select.js',
@@ -34,15 +29,12 @@ var scripts =
 	'ui/HUD.js',
 	'ui/Menu.js',
 	'ui/Pill.js',
-	'ui/RTE.js',
 	'ui/SelectMenu.js',
 	'ui/LightSwitch.js',
 	'ui/PasswordInput.js',
 	'ui/MixedInput.js',
 	'ui/AdminPane.js',
-	'ui/FieldToggle.js',
-
-	'cp.js'
+	'ui/FieldToggle.js'
 ];
 
 for (var i = 0; i < scripts.length; i++)
