@@ -111,7 +111,7 @@ return CMap::mergeArray(
 			),
 
 			'statePersister' => array(
-				'stateFile' => BLOCKS_RUNTIME_PATH.'state.bin',
+				'class' => 'Blocks\StatePersister',
 			),
 
 			'urlManager' => array(

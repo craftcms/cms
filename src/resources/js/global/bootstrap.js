@@ -17,6 +17,7 @@ var scripts =
 	'ui/BaseDrag.js',
 	'ui/Drag.js',
 	'ui/DragMove.js',
+	'ui/DragDrop.js',
 	'ui/DragSort.js',
 	'ui/DataTableSorter.js',
 

@@ -249,19 +249,19 @@ class InstallService extends BaseApplicationComponent
 	{
 		/* BLOCKSPRO ONLY */
 		Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
-		$section = blx()->content->saveSection(array(
-			'name'      => Blocks::t('Blog'),
-			'handle'    => 'blog',
-			'urlFormat' => 'blog/{slug}',
-			'hasUrls'   => true,
-			'template'  => 'blog/_entry'
-		));
+		$sectionPackage = new SectionPackage();
+		$sectionPackage->name = Blocks::t('Blog');
+		$sectionPackage->handle = 'blog';
+		$sectionPackage->hasUrls = true;
+		$sectionPackage->urlFormat = 'blog/{slug}';
+		$sectionPackage->template = 'blog/_entry';
+		blx()->content->saveSection($sectionPackage);
 
 		/* end BLOCKSPRO ONLY */
 		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
 		$blockPackage = new EntryBlockPackage();
 		/* BLOCKSPRO ONLY */
-		$blockPackage->sectionId = $section->id;
+		$blockPackage->sectionId = $sectionPackage->id;
 		/* end BLOCKSPRO ONLY */
 		$blockPackage->name = Blocks::t('Body');
 		$blockPackage->handle = 'body';
@@ -274,7 +274,7 @@ class InstallService extends BaseApplicationComponent
 		blx()->content->saveEntryBlock($blockPackage);
 
 		/*// Add a Welcome entry to the Blog
-		$entry = blx()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
+		$entry = blx()->content->createEntry($sectionPackage->id, null, $user->id, 'Welcome to Blocks Alpha 2');
 		blx()->content->saveEntryContent($entry, array(
 			'body' => "Hey {$user->username},\n\n" .
 			          "Welcome to Blocks Alpha 2!\n\n" .

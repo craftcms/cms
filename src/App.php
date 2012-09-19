@@ -289,10 +289,6 @@ class App extends \CWebApplication
 				{
 					array_splice($segs, 1, 0, 'compressed');
 				}
-				else
-				{
-					array_splice($segs, 1, 0, 'uncompressed');
-				}
 			}
 
 			$rootFolderUrl = null;
