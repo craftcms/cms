@@ -286,7 +286,7 @@ class ContentService extends BaseApplicationComponent
 				if ($isNewSection)
 				{
 					// Create the content table
-					$contentRecord = new EntryContentRecord($sectionPackage);
+					$contentRecord = new EntryContentRecord($sectionPackage, 'install');
 					$contentRecord->createTable();
 					$contentRecord->addForeignKeys();
 				}
