@@ -559,7 +559,7 @@ class PluginsService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_allPlugins[$className]['records'];
+		return isset($this->_allPlugins[$className]['records']) ? $this->_allPlugins[$className]['records'] : array();
 	}
 
 	/**
@@ -600,7 +600,19 @@ class PluginsService extends BaseApplicationComponent
 						// Import the class.
 						Blocks::import("plugins.{$className}.{$folderName}.{$fileName}");
 
-						$this->_pluginFileMap[$origClassName][$folderName][] = $file;
+						if (!isset($this->_pluginFileMap[$className][$folderName]))
+						{
+							$this->_pluginFileMap[$className][$folderName][] = $file;
+						}
+						else
+						{
+							if (!in_array($file, $this->_pluginFileMap[$className][$folderName]))
+							{
+								$this->_pluginFileMap[$className][$folderName][] = $file;
+							}
+						}
+
+
 					}
 				}
 			}
@@ -617,21 +629,31 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _registerPluginServices($className)
 	{
+		$className = strtolower($className);
+
 		if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['services']))
 		{
 			foreach ($this->_pluginFileMap[$className]['services'] as $filePath)
 			{
 				$fileName = IOHelper::getFileName($filePath, false);
-				$tempName = lcfirst(substr($className, 0, strpos($fileName, 'Service')));
+				$parts = explode('_', $fileName);
 
-				if (!blx()->getComponent($tempName))
+				foreach ($parts as $index => $part)
+				{
+					$parts[$index] = lcfirst($part);
+				}
+
+				$serviceName = implode('_', $parts);
+				$serviceName = substr($serviceName, 0, strpos($serviceName, 'Service'));
+
+				if (!blx()->getComponent($serviceName, false))
 				{
 					// Register the component with the handle as (className or className_*) minus "Service" if multiple.
-					blx()->setComponents(array($tempName => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
+					blx()->setComponents(array($serviceName => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
 				}
 				else
 				{
-					throw new Exception(Blocks::t('The plugin “{className}” tried to register a service “{serviceName}” that conflicts with a core service name.', array('className' => $className, 'serviceName' => $tempName)));
+					throw new Exception(Blocks::t('The plugin “{className}” tried to register a service “{serviceName}” that conflicts with a core service name.', array('className' => $className, 'serviceName' => $serviceName)));
 				}
 			}
 		}
