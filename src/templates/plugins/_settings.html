@@ -9,6 +9,7 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="pluginClass" value="{{ plugin.getClassHandle }}">
+		<input type="hidden" name="redirect" value="plugins/{{ plugin.getClassHandle }}">
 
 		{% if plugin.isInstalled %}
 			{% if plugin.record.enabled %}
