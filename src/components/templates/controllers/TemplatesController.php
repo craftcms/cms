@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class TemplatesController extends BaseController
 {
+	public $allowAnonymous = array('actionIndex', 'actionOffline');
+
 	/**
 	 * Required
 	 */

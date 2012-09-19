@@ -6,13 +6,6 @@ namespace Blocks;
  */
 class SystemSettingsController extends BaseController
 {
-	/**
-	 * All settings actions require the user to be logged in
-	 */
-	public function init()
-	{
-		$this->requireLogin();
-	}
 
 	/**
 	 * Saves the general settings.
