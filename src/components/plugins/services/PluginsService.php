@@ -72,8 +72,7 @@ class PluginsService extends BaseApplicationComponent
 
 			if ($plugin)
 			{
-				$this->_enabledPlugins[$plugin->getClassHandle()] = $plugin;
-				$plugin->record = $record;
+				$this->_enabledPlugins[strtolower($plugin->getClassHandle())] = $plugin;
 			}
 		}
 	}
@@ -96,6 +95,8 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function isPluginInstalled($class)
 	{
+		$class = strtolower($class);
+
 		if (!isset($this->_installedPlugins))
 		{
 			$this->_installedPlugins = array();
@@ -107,12 +108,14 @@ class PluginsService extends BaseApplicationComponent
 
 			foreach ($records as $record)
 			{
-				$this->_installedPlugins[] = $record['class'];
+				$this->_installedPlugins[] = strtolower($record['class']);
 			}
 		}
 
 		return in_array($class, $this->_installedPlugins);
 	}
+
+
 
 	/**
 	 * Returns a plugin by its class handle, regardless of whether it's installed or not.
@@ -122,6 +125,8 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPlugin($classHandle)
 	{
+		$classHandle = strtolower($classHandle);
+
 		if (!isset($this->_plugins[$classHandle]))
 		{
 			// Get the full class name
@@ -156,8 +161,20 @@ class PluginsService extends BaseApplicationComponent
 				return false;
 			}
 
-			$this->_importPluginClasses($plugin->getClassHandle());
-			$this->_registerPluginServices($plugin->getClassHandle());
+			$pluginRecord = PluginRecord::model()->findByAttributes(array(
+				'class' => $classHandle
+			));
+
+			if ($pluginRecord)
+			{
+				$plugin->record = $pluginRecord;
+			}
+
+			if ($this->isPluginInstalled($plugin->getClassHandle()) && $plugin->isEnabled())
+			{
+				$this->_importPluginClasses($plugin->getClassHandle());
+				$this->_registerPluginServices($plugin->getClassHandle());
+			}
 
 			$plugin->init();
 
@@ -611,8 +628,6 @@ class PluginsService extends BaseApplicationComponent
 								$this->_pluginFileMap[$className][$folderName][] = $file;
 							}
 						}
-
-
 					}
 				}
 			}
