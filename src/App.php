@@ -199,6 +199,47 @@ class App extends \CWebApplication
 					$this->runController($route);
 					$this->end();
 				}
+				else
+				{
+					// Mayhaps this is a plugin action request.
+					$plugin = strtolower($actionPath[0]);
+
+					if (($plugin = blx()->plugins->getPlugin($plugin)) !== false)
+					{
+						$pluginHandle = $plugin->getClassHandle();
+
+						// Check to see if the second segment is an existing controller.  If no second segment, check for "PluginHandle"Controller, which is a plugin's default controller.
+						// i.e. pluginHandle/testController or pluginHandle/pluginController
+						$controller = (isset($actionPath[1]) ? ucfirst($actionPath[1]) : ucfirst($pluginHandle)).'Controller';
+
+						if (class_exists(__NAMESPACE__.'\\'.$controller))
+						{
+							// Check to see if there is a 3rd path segment.  If so, use it for the action.  If not, use the default Index for the action.
+							// i.e. pluginHandle/pluginController/index or pluginHandle/pluginController/testAction
+							$action = isset($actionPath[2]) ? $actionPath[2] : 'Index';
+
+							$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
+							$this->runController($route);
+							$this->end();
+						}
+						else
+						{
+							// It's possible the 2nd segment is an action and they are using the plugin's default controller.
+							// i.e. pluginHandle/testAction or pluginHandle/indexAction.
+							// Here, the plugin's default controller is assumed.
+							$controller = ucfirst($pluginHandle).'Controller';
+
+							if (class_exists(__NAMESPACE__.'\\'.$controller))
+							{
+								$action = $actionPath[1];
+
+								$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
+								$this->runController($route);
+								$this->end();
+							}
+						}
+					}
+				}
 			}
 
 			throw new HttpException(404);
