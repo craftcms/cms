@@ -1349,7 +1349,7 @@ class ContentService extends BaseApplicationComponent
 	{
 		if ($draftPackage->draftId)
 		{
-			$draftRecord = $this->_getEntryDraftRecordById($draftPackage->id);
+			$draftRecord = $this->_getEntryDraftRecordById($draftPackage->draftId);
 		}
 		else
 		{
