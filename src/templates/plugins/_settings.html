@@ -1,5 +1,5 @@
 {% extends "plugins/_layout" %}
-{% set plugin = blx.plugins.get(pluginClass) %}
+{% set plugin = blx.plugins.get(pluginClass, false) %}
 {% if not plugin %}{% exit 404 %}{% endif %}
 
 
@@ -9,6 +9,7 @@
 
 	<form method="post" action="">
 		<input type="hidden" name="pluginClass" value="{{ plugin.getClassHandle }}">
+		<input type="hidden" name="redirect" value="plugins/{{ plugin.getClassHandle }}">
 
 		{% if plugin.isInstalled %}
 			{% if plugin.record.enabled %}

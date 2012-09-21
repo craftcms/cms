@@ -50,4 +50,16 @@ abstract class BasePlugin extends BaseComponent implements IPlugin
 		$installed = blx()->plugins->isPluginInstalled($class);
 		return $installed;
 	}
+
+	/**
+	 * Return if a plugin is enabled or not.
+	 * @return bool
+	 */
+	public function isEnabled()
+	{
+		if (!isset($this->record))
+			return false;
+
+		return $this->record->enabled == 1 ? true : false;
+	}
 }

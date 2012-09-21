@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class AccountsController extends BaseController
 {
-	// Forgot / Reset Password
+	protected $allowAnonymous = array('actionForgotPassword', 'actionResetPassword');
 
 	/**
 	 * Sends a Forgot Password email.
@@ -22,6 +22,7 @@ class AccountsController extends BaseController
 		if ($username->validate())
 		{
 			$user = blx()->accounts->getUserByUsernameOrEmail($username->username);
+
 			if ($user)
 			{
 				// Generate a new verification code
@@ -29,8 +30,11 @@ class AccountsController extends BaseController
 
 				// Send the Forgot Password email
 				$link = UrlHelper::getUrl(blx()->accounts->getVerifyAccountUrl(), array('code' => $user->verificationCode));
+
 				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
+				{
 					$this->returnJson(array('success' => true));
+				}
 
 				$this->returnErrorJson(Blocks::t('There was a problem sending the forgot password email.'));
 			}
@@ -72,7 +76,9 @@ class AccountsController extends BaseController
 				$user->save();
 
 				if (!blx()->user->isLoggedIn())
+				{
 					blx()->user->startLogin($user->username, $passwordModel->password);
+				}
 
 				blx()->user->setNotice(Blocks::t('Password updated.'));
 				$this->redirect('dashboard');
@@ -95,17 +101,21 @@ class AccountsController extends BaseController
 	public function actionSaveAccountSettings()
 	{
 		$this->requirePostRequest();
-		$this->requireLogin();
 
 		$userId = blx()->request->getPost('userId');
 		if ($userId !== null)
 		{
 			$user = blx()->accounts->getUserById($userId);
+
 			if (!$user)
+			{
 				$this->_noUserExists($userId);
+			}
 		}
 		else
+		{
 			$user = new UserRecord();
+		}
 
 		$isNewUser = $user->isNewRecord();
 
@@ -122,13 +132,15 @@ class AccountsController extends BaseController
 		if ($user->isCurrent() || blx()->accounts->getCurrentUser()->admin)
 		{
 			$password = blx()->request->getPost('password');
+
 			if ($password)
 			{
 				// Make sure the passwords match and are at least the minimum length
-				$passwordForm = new PasswordModel();
-				$passwordForm->password = $password;
+				$passwordModel = new PasswordModel();
+				$passwordModel->password = $password;
 
-				$passwordValidates = $passwordForm->validate();
+				$passwordValidates = $passwordModel->validate();
+
 				if ($passwordValidates)
 				{
 					// Store the new hashed password on the User record, but don't save it yet
@@ -140,7 +152,9 @@ class AccountsController extends BaseController
 		// Require a password reset?
 		//  - Only admins are allowed to set this
 		if (blx()->accounts->getCurrentUser()->admin)
+		{
 			$user->passwordResetRequired = (bool)blx()->request->getPost('requirePasswordReset');
+		}
 
 		// Run user validation
 		$userValidates = $user->validate();
@@ -160,22 +174,30 @@ class AccountsController extends BaseController
 			$user->save();
 
 			if ($isNewUser)
+			{
 				blx()->user->setNotice(Blocks::t('User registered.'));
+			}
 			else
+			{
 				blx()->user->setNotice(Blocks::t('Account settings saved.'));
+			}
 
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
 			if ($isNewUser)
+			{
 				blx()->user->setError(Blocks::t('Couldn’t register user.'));
+			}
 			else
+			{
 				blx()->user->setError(Blocks::t('Couldn’t save account settings.'));
+			}
 
 			$this->renderRequestedTemplate(array(
 				'user' => $user,
-				'passwordForm' => (isset($passwordForm) ? $passwordForm : null)
+				'passwordForm' => (isset($passwordModel) ? $passwordModel : null)
 			));
 		}
 	}
@@ -219,8 +241,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		$user->admin = (bool)blx()->request->getPost('admin');
 		$user->save();
@@ -239,8 +264,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		$user->status = UserAccountStatus::Pending;
 		blx()->accounts->generateVerificationCode($user, false);
@@ -261,8 +289,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		blx()->accounts->activateUser($user);
 
@@ -280,8 +311,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		blx()->accounts->unlockUser($user);
 
@@ -299,8 +333,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		blx()->accounts->suspendUser($user);
 
@@ -318,8 +355,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		blx()->accounts->unsuspendUser($user);
 
@@ -337,8 +377,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		blx()->accounts->deleteUser($user);
 

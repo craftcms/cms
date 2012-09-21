@@ -17,7 +17,6 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetUpdateInfo($h)
 	{
-		$this->requireLogin();
 		$this->requireAjaxRequest();
 
 		$return = array();
@@ -85,7 +84,6 @@ class UpdateController extends BaseController
 	 */
 	public function actionRunAutoUpdate($h)
 	{
-		$this->requireLogin();
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 

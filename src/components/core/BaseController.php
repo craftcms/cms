@@ -7,6 +7,16 @@ namespace Blocks;
 abstract class BaseController extends \CController
 {
 	/**
+	 * If set to false, you are required to be logged in to execute any of the given controller's actions.
+	 * If set to true, anonymous access is allowed for all of the given controller's actions.
+	 * If the value is an array of action names, then you must be logged in for any action method except for the ones in the array list.
+	 * If you have a controller that where the majority of action methods will be anonymous, but you only want require login on a few, it's best to use $this->requireLogin() in the individual methods.
+	 *
+	 * @var bool
+	 */
+	protected $allowAnonymous = false;
+
+	/**
 	 * Returns the folder containing view files for this controller.
 	 * We're overriding this since CController's version defaults $module to blx().
 	 *
@@ -15,7 +25,9 @@ abstract class BaseController extends \CController
 	public function getViewPath()
 	{
 		if (($module = $this->getModule()) === null)
+		{
 			$module = blx();
+		}
 
 		return $module->getViewPath().'/';
 	}
@@ -42,9 +54,13 @@ abstract class BaseController extends \CController
 			catch (TemplateLoaderException $e)
 			{
 				if ($e->template == $template)
+				{
 					throw new HttpException(404);
+				}
 				else
+				{
 					throw $e;
+				}
 			}
 
 			// Set the Content-Type header
@@ -55,7 +71,9 @@ abstract class BaseController extends \CController
 			echo $output;
 		}
 		else
+		{
 			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -73,15 +91,23 @@ abstract class BaseController extends \CController
 		if (($output = blx()->templates->render($template, $variables)) !== false)
 		{
 			if ($processOutput)
+			{
 				$output = $this->processOutput($output);
+			}
 
 			if ($return)
+			{
 				return $output;
+			}
 			else
+			{
 				echo $output;
+			}
 		}
 		else
+		{
 			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -90,7 +116,9 @@ abstract class BaseController extends \CController
 	public function requireLogin()
 	{
 		if (blx()->user->isGuest())
+		{
 			blx()->user->loginRequired();
+		}
 	}
 
 	/**
@@ -99,7 +127,9 @@ abstract class BaseController extends \CController
 	public function requireAdmin()
 	{
 		if (!blx()->accounts->getCurrentUser()->admin)
+		{
 			throw new HttpException(403, Blocks::t('This action may only be performed by admins.'));
+		}
 	}
 
 	/**
@@ -109,7 +139,9 @@ abstract class BaseController extends \CController
 	public function requirePostRequest()
 	{
 		if (!blx()->config->devMode && blx()->request->getRequestType() !== 'POST')
+		{
 			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -119,7 +151,9 @@ abstract class BaseController extends \CController
 	public function requireAjaxRequest()
 	{
 		if (!blx()->config->devMode && !blx()->request->isAjaxRequest())
+		{
 			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -132,10 +166,14 @@ abstract class BaseController extends \CController
 	public function redirect($url, $terminate = true, $statusCode = 302)
 	{
 		if (is_string($url))
+		{
 			$url = UrlHelper::getUrl($url);
+		}
 
 		if ($url !== null)
+		{
 			parent::redirect($url, $terminate, $statusCode);
+		}
 	}
 
 	/**
@@ -176,6 +214,32 @@ abstract class BaseController extends \CController
 	public function returnErrorJson($error)
 	{
 		$this->returnJson(array('error' => $error));
+	}
+
+	/**
+	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access to
+	 * or as a bool that applies to all actions.
+	 *
+	 * @return bool
+	 */
+	public function beforeAction()
+	{
+		if (is_array($this->allowAnonymous))
+		{
+			if (!preg_grep("/{$this->getAction()->id}/i", $this->allowAnonymous))
+			{
+				$this->requireLogin();
+			}
+		}
+		elseif (is_bool($this->allowAnonymous))
+		{
+			if ($this->allowAnonymous == false)
+			{
+				$this->requireLogin();
+			}
+		}
+
+		return true;
 	}
 
 	/**

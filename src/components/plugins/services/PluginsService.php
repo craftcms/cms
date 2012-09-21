@@ -7,34 +7,12 @@ namespace Blocks;
 class PluginsService extends BaseApplicationComponent
 {
 	/**
-	 * Stores all enabled plugins. Populated on init.
-	 *
-	 * @var array
-	 */
-	private $_enabledPlugins = array();
-
-	/**
-	 * Stores all installed plugins, whether they're enabled or not.
-	 *
-	 * @var array
-	 */
-	private $_installedPlugins;
-
-	/**
-	 * Stores all initialized plugins for the current request.
-	 *
-	 * @access private
-	 * @var array
-	 */
-	private $_plugins;
-
-	/**
 	 * Stores all plugins, whether installed or not
 	 *
 	 * @access private
 	 * @var array
 	 */
-	private $_allPlugins;
+	private $_plugins = array();
 
 	/**
 	 * @var array
@@ -72,8 +50,7 @@ class PluginsService extends BaseApplicationComponent
 
 			if ($plugin)
 			{
-				$this->_enabledPlugins[$plugin->getClassHandle()] = $plugin;
-				$plugin->record = $record;
+				$this->_plugins[strtolower($plugin->getClassHandle())] = $plugin;
 			}
 		}
 	}
@@ -85,7 +62,17 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getEnabledPlugins()
 	{
-		return $this->_enabledPlugins;
+		$enabledPlugins = array();
+
+		foreach ($this->_plugins as $plugin)
+		{
+			if ($plugin->isEnabled())
+			{
+				$enabledPlugins[] = $plugin;
+			}
+		}
+
+		return $enabledPlugins;
 	}
 
 	/**
@@ -96,72 +83,74 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function isPluginInstalled($class)
 	{
-		if (!isset($this->_installedPlugins))
+		$class = strtolower($class);
+
+		if (($plugin = $this->getPlugin($class, false)) !== false)
 		{
-			$this->_installedPlugins = array();
-
-			$records = blx()->db->createCommand()
-				->select('class')
-				->from('plugins')
-				->queryAll();
-
-			foreach ($records as $record)
+			if ($plugin->record)
 			{
-				$this->_installedPlugins[] = $record['class'];
+				return true;
 			}
 		}
 
-		return in_array($class, $this->_installedPlugins);
+		return false;
 	}
 
 	/**
-	 * Returns a plugin by its class handle, regardless of whether it's installed or not.
+	 * Returns an enabled plugin.
 	 *
-	 * @param string $classHandle
-	 * @return BasePlugin
+	 * @param       $classHandle
+	 * @param  bool $enabledOnly
+	 * @return null
 	 */
-	public function getPlugin($classHandle)
+	public function getPlugin($classHandle, $enabledOnly = true)
 	{
-		if (!isset($this->_plugins[$classHandle]))
+		$classHandle = strtolower($classHandle);
+
+		if ($enabledOnly && isset($this->_plugins[$classHandle]) && $this->_plugins[$classHandle]->record !== null && $this->_plugins[$classHandle]->record->enabled)
 		{
-			// Get the full class name
-			$class = $classHandle.'Plugin';
-			$nsClass = __NAMESPACE__.'\\'.$class;
+			return $this->_plugins[$classHandle];
+		}
 
-			// Skip the autoloader
-			if (!class_exists($nsClass, false))
+		if ((!isset($this->_plugins[$classHandle])))
+		{
+			if (($plugin = $this->_processPlugin($classHandle)) == false)
 			{
-				$path = blx()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
+				return null;
+			}
 
-				if (($path = IOHelper::fileExists($path, false)) !== false)
+			$pluginRecord = PluginRecord::model()->findByAttributes(array(
+				'class' => $classHandle
+			));
+
+			// See if the plugin is installed && enabled.
+			if ($pluginRecord)
+			{
+				$plugin->record = $pluginRecord;
+
+				if ($pluginRecord->enabled)
 				{
-					require_once $path;
+					$this->_processPluginClasses($plugin->getClassHandle());
+					$this->_registerPluginServices($plugin->getClassHandle());
 				}
-				else
-				{
-					return false;
-				}
-			}
 
-			if (!class_exists($nsClass, false))
+				$plugin->init();
+			}
+			else
 			{
-				return false;
+				// Not enabled, but let's add the classes to our file map.
+				$this->_processPluginClasses($plugin->getClassHandle(), false);
 			}
-
-			$plugin = new $nsClass;
-
-			// Make sure the plugin implements the IPlugin interface
-			if (!$plugin instanceof IPlugin)
-			{
-				return false;
-			}
-
-			$this->_importPluginClasses($plugin->getClassHandle());
-			$this->_registerPluginServices($plugin->getClassHandle());
-
-			$plugin->init();
 
 			$this->_plugins[$classHandle] = $plugin;
+		}
+
+		if ($enabledOnly)
+		{
+			if (!$this->_plugins[$classHandle]->record || !$this->_plugins[$classHandle]->record->enabled)
+			{
+				return null;
+			}
 		}
 
 		return $this->_plugins[$classHandle];
@@ -172,52 +161,38 @@ class PluginsService extends BaseApplicationComponent
 	 *
 	 * @return array
 	 */
-	public function getAllPlugins()
+	public function getPlugins()
 	{
-		if (!isset($this->_allPlugins))
+		// Find all of the plugins in the plugins folder
+		$pluginsPath = blx()->path->getPluginsPath();
+		$paths = IOHelper::getFolderContents($pluginsPath, true, ".*Plugin\.php");
+
+		if (is_array($paths) && count($paths) > 0)
 		{
-			$this->_allPlugins = array();
-
-			// Find all of the plugins in the plugins folder
-			$pluginsPath = blx()->path->getPluginsPath();
-			$paths = IOHelper::getFolderContents($pluginsPath, true, ".*Plugin\.php");
-
-			if (is_array($paths) && count($paths) > 0)
+			foreach ($paths as $path)
 			{
-				foreach ($paths as $path)
+				$path = IOHelper::normalizePathSeparators($path);
+				$handle = IOHelper::getFileName($path, false);
+				$handle = strtolower(substr($handle, 0, strlen($handle) - strlen('Plugin')));
+
+				// See if we've already loaded this plugin
+				if (isset($this->_plugins[$handle]))
 				{
-					$path = IOHelper::normalizePathSeparators($path);
-					$handle = IOHelper::getFileName($path, false);
-					$handle = substr($handle, 0, strlen($handle) - strlen('Plugin'));
-
-					// Plugin file name (minus 'Plugin') == the class handle
-					$plugin = $this->getPlugin($handle);
-
-					if ($plugin)
-					{
-						$this->_allPlugins[$plugin->getClassHandle()] = $plugin;
-					}
+					continue;
 				}
-			}
 
-			// Sort plugins by their names
-			uasort($this->_allPlugins, array($this, '_comparePluginNames'));
-
-			// Now figure out which of these are installed
-			$records = PluginRecord::model()->findAll();
-
-			foreach ($records as $record)
-			{
-				$plugin = $this->getPlugin($record->class);
-
-				if ($plugin && !isset($plugin->record))
+				// Plugin file name (minus 'Plugin') == the class handle
+				if (($plugin = $this->getPlugin($handle, false)) !== false)
 				{
-					$plugin->record = $record;
+					$this->_plugins[strtolower($plugin->getClassHandle())] = $plugin;
 				}
 			}
 		}
 
-		return $this->_allPlugins;
+		// Sort plugins by their names
+		uasort($this->_plugins, array($this, '_comparePluginNames'));
+
+		return $this->_plugins;
 	}
 
 	/**
@@ -250,9 +225,7 @@ class PluginsService extends BaseApplicationComponent
 	public function enablePlugin($className)
 	{
 		$className = strtolower($className);
-
-		$this->getAllPlugins();
-		$plugin = $this->getPlugin($className);
+		$plugin = $this->getPlugin($className, false);
 
 		if (!$plugin)
 		{
@@ -306,7 +279,7 @@ class PluginsService extends BaseApplicationComponent
 	public function installPlugin($className)
 	{
 		$className = strtolower($className);
-		$plugin = $this->getPlugin($className);
+		$plugin = $this->getPlugin($className, false);
 
 		if (!$plugin)
 		{
@@ -439,11 +412,14 @@ class PluginsService extends BaseApplicationComponent
 	{
 		$result = array();
 
-		foreach ($this->_enabledPlugins as $plugin)
+		foreach ($this->_plugins as $plugin)
 		{
-			if (method_exists($plugin, $methodName))
+			if ($plugin->isEnabled())
 			{
-				$result[] = call_user_func_array(array($plugin, $methodName), $args);
+				if (method_exists($plugin, $methodName))
+				{
+					$result[] = call_user_func_array(array($plugin, $methodName), $args);
+				}
 			}
 		}
 
@@ -457,34 +433,37 @@ class PluginsService extends BaseApplicationComponent
 	public function getPluginModels($className)
 	{
 		$className = strtolower($className);
+		$models = array();
 
-		if (!isset($this->_allPlugins[$className]) && !isset($this->_allPlugins[$className]['models']))
+		$plugin = $this->getPlugin($className, false);
+
+		if (!$plugin)
 		{
-			$plugin = $this->getPlugin($className);
+			$this->_noPluginExists($className);
+		}
 
-			if (!$plugin)
+		if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['models']))
+		{
+			foreach ($this->_pluginFileMap[$className]['models'] as $modelPath)
 			{
-				$this->_noPluginExists($className);
-			}
+				$class = __NAMESPACE__.'\\'.IOHelper::getFileName($modelPath, false);
 
-			if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['models']))
-			{
-				foreach ($this->_pluginFileMap[$className]['models'] as $modelsPath)
+				if (!class_exists($class, false))
 				{
-					$class = __NAMESPACE__.'\\'.IOHelper::getFileName($modelsPath, false);
-
-					// Ignore abstract classes and interfaces
-					$ref = new \ReflectionClass($class);
-
-					if ($ref->isAbstract() || $ref->isInterface())
-						continue;
-
-					$this->_allPlugins[$className]['models'][] = new $class;
+					require_once $modelPath;
 				}
+
+				// Ignore abstract classes and interfaces
+				$ref = new \ReflectionClass($class);
+
+				if ($ref->isAbstract() || $ref->isInterface())
+					continue;
+
+				$models[] = new $class;
 			}
 		}
 
-		return $this->_allPlugins[$className]['models'];
+		return $models;
 	}
 
 	/**
@@ -494,34 +473,32 @@ class PluginsService extends BaseApplicationComponent
 	public function getPluginServices($className)
 	{
 		$className = strtolower($className);
+		$services = array();
 
-		if (!isset($this->_allPlugins[$className]) && !isset($this->_allPlugins[$className]['services']))
+		$plugin = $this->getPlugin($className, false);
+
+		if (!$plugin)
 		{
-			$plugin = $this->getPlugin($className);
+			$this->_noPluginExists($className);
+		}
 
-			if (!$plugin)
+		if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['services']))
+		{
+			foreach ($this->_pluginFileMap[$className]['services'] as $servicePath)
 			{
-				$this->_noPluginExists($className);
-			}
+				$class = __NAMESPACE__.'\\'.IOHelper::getFileName($servicePath, false);
 
-			if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['services']))
-			{
-				foreach ($this->_pluginFileMap[$className]['services'] as $servicePath)
-				{
-					$class = __NAMESPACE__.'\\'.IOHelper::getFileName($servicePath, false);
+				// Ignore abstract classes and interfaces
+				$ref = new \ReflectionClass($class);
 
-					// Ignore abstract classes and interfaces
-					$ref = new \ReflectionClass($class);
+				if ($ref->isAbstract() || $ref->isInterface())
+					continue;
 
-					if ($ref->isAbstract() || $ref->isInterface())
-						continue;
-
-					$this->_allPlugins[$className]['services'][] = $servicePath;
-				}
+				$services[] = $servicePath;
 			}
 		}
 
-		return $this->_allPlugins[$className]['services'];
+		return $services;
 	}
 
 	/**
@@ -532,34 +509,39 @@ class PluginsService extends BaseApplicationComponent
 	public function getPluginRecords($className, $scenario = null)
 	{
 		$className = strtolower($className);
+		$records = array();
 
-		if (!isset($this->_allPlugins[$className]) && !isset($this->_allPlugins[$className]['records']))
+		$plugin = $this->getPlugin($className, false);
+
+		if (!$plugin)
 		{
-			$plugin = $this->getPlugin($className);
+			$this->_noPluginExists($className);
+		}
 
-			if (!$plugin)
+		if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['records']))
+		{
+			foreach ($this->_pluginFileMap[$className]['records'] as $recordPath)
 			{
-				$this->_noPluginExists($className);
-			}
+				$class = __NAMESPACE__.'\\'.IOHelper::getFileName($recordPath, false);
 
-			if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['records']))
-			{
-				foreach ($this->_pluginFileMap[$className]['records'] as $recordPath)
+				if (!class_exists($class, false))
 				{
-					$class = __NAMESPACE__.'\\'.IOHelper::getFileName($recordPath, false);
-
-					// Ignore abstract classes and interfaces
-					$ref = new \ReflectionClass($class);
-
-					if ($ref->isAbstract() || $ref->isInterface())
-						continue;
-
-					$this->_allPlugins[$className]['records'][] = new $class($scenario);
+					require_once $recordPath;
 				}
+
+				// Ignore abstract classes and interfaces
+				$ref = new \ReflectionClass($class);
+
+				if ($ref->isAbstract() || $ref->isInterface())
+				{
+					continue;
+				}
+
+				$records[] = new $class($scenario);
 			}
 		}
 
-		return $this->_allPlugins[$className]['records'];
+		return $records;
 	}
 
 	/**
@@ -575,9 +557,11 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $className
+	 * @param      $className
+	 * @param bool $import
+	 * @return void
 	 */
-	private function _importPluginClasses($className)
+	private function _processPluginClasses($className, $import = true)
 	{
 		$origClassName = $className;
 		$className = strtolower($className);
@@ -587,7 +571,7 @@ class PluginsService extends BaseApplicationComponent
 		{
 			if (IOHelper::folderExists($pluginFolder.$folderName))
 			{
-				// See if it has any files in ClassName*Record.php format.
+				// See if it has any files in ClassName*Suffix.php format.
 				$files = IOHelper::getFolderContents($pluginFolder.$folderName, false, "{$origClassName}_?.*{$suffix}\.php");
 
 				if (is_array($files) && count($files) > 0)
@@ -597,10 +581,23 @@ class PluginsService extends BaseApplicationComponent
 						// Get the file name minus the extension.
 						$fileName = IOHelper::getFileName($file, false);
 
-						// Import the class.
-						Blocks::import("plugins.{$className}.{$folderName}.{$fileName}");
+						if ($import)
+						{
+							// Import the class.
+							Blocks::import("plugins.{$className}.{$folderName}.{$fileName}");
+						}
 
-						$this->_pluginFileMap[$origClassName][$folderName][] = $file;
+						if (!isset($this->_pluginFileMap[$className][$folderName]))
+						{
+							$this->_pluginFileMap[$className][$folderName][] = $file;
+						}
+						else
+						{
+							if (!in_array($file, $this->_pluginFileMap[$className][$folderName]))
+							{
+								$this->_pluginFileMap[$className][$folderName][] = $file;
+							}
+						}
 					}
 				}
 			}
@@ -617,23 +614,76 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _registerPluginServices($className)
 	{
+		$className = strtolower($className);
+
 		if (isset($this->_pluginFileMap[$className]) && isset($this->_pluginFileMap[$className]['services']))
 		{
 			foreach ($this->_pluginFileMap[$className]['services'] as $filePath)
 			{
 				$fileName = IOHelper::getFileName($filePath, false);
-				$tempName = lcfirst(substr($className, 0, strpos($fileName, 'Service')));
+				$parts = explode('_', $fileName);
 
-				if (!blx()->getComponent($tempName))
+				foreach ($parts as $index => $part)
+				{
+					$parts[$index] = lcfirst($part);
+				}
+
+				$serviceName = implode('_', $parts);
+				$serviceName = substr($serviceName, 0, strpos($serviceName, 'Service'));
+
+				if (!blx()->getComponent($serviceName, false))
 				{
 					// Register the component with the handle as (className or className_*) minus "Service" if multiple.
-					blx()->setComponents(array($tempName => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
+					blx()->setComponents(array($serviceName => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
 				}
 				else
 				{
-					throw new Exception(Blocks::t('The plugin “{className}” tried to register a service “{serviceName}” that conflicts with a core service name.', array('className' => $className, 'serviceName' => $tempName)));
+					throw new Exception(Blocks::t('The plugin “{className}” tried to register a service “{serviceName}” that conflicts with a core service name.', array('className' => $className, 'serviceName' => $serviceName)));
 				}
 			}
 		}
+	}
+
+	/**
+	 * @param $classHandle
+	 * @return bool
+	 */
+	private function _processPlugin($classHandle)
+	{
+		$classHandle = strtolower($classHandle);
+
+		// Get the full class name
+		$class = $classHandle.'Plugin';
+		$nsClass = __NAMESPACE__.'\\'.$class;
+
+		// Skip the autoloader
+		if (!class_exists($nsClass, false))
+		{
+			$path = blx()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
+
+			if (($path = IOHelper::fileExists($path, false)) !== false)
+			{
+				require_once $path;
+			}
+			else
+			{
+				return false;
+			}
+		}
+
+		if (!class_exists($nsClass, false))
+		{
+			return false;
+		}
+
+		$plugin = new $nsClass;
+
+		// Make sure the plugin implements the IPlugin interface
+		if (!$plugin instanceof IPlugin)
+		{
+			return false;
+		}
+
+		return $plugin;
 	}
 }

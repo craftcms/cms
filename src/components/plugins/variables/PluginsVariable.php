@@ -10,11 +10,12 @@ class PluginsVariable
 	 * Returns a plugin.
 	 *
 	 * @param string $class
-	 * @return Plugin
+	 * @param bool   $enabledOnly
+	 * @return PluginRecord
 	 */
-	public function get($class)
+	public function get($class, $enabledOnly = true)
 	{
-		return blx()->plugins->getPlugin($class);
+		return blx()->plugins->getPlugin($class, $enabledOnly);
 	}
 
 	/**
@@ -24,6 +25,6 @@ class PluginsVariable
 	 */
 	public function all()
 	{
-		return blx()->plugins->getAllPlugins(true, true);
+		return blx()->plugins->getPlugins();
 	}
 }

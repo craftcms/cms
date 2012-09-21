@@ -7,6 +7,11 @@ namespace Blocks;
 class UserSessionController extends BaseController
 {
 	/**
+	 * @var array
+	 */
+	public $allowAnonymous = array('actionLogin');
+
+	/**
 	 * Displays the login template. If valid login information, redirects to previous template.
 	 */
 	public function actionLogin()

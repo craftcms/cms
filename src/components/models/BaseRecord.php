@@ -273,7 +273,7 @@ abstract class BaseRecord extends \CActiveRecord
 		{
 			$otherModel = new $config[1];
 			$otherTable = $otherModel->getTableName();
-			$fkName = "{$table}_{$otherTable}_fk";
+			$fkName = "{$table}_{$name}_fk";
 			blx()->db->createCommand()->addForeignKey($fkName, $table, $config[2], $otherTable, 'id');
 		}
 	}
@@ -287,9 +287,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 		foreach ($this->getBelongsToRelations() as $name => $config)
 		{
-			$otherModel = new $config[1];
-			$otherTable = $otherModel->getTableName();
-			$fkName = "{$table}_{$otherTable}_fk";
+			$fkName = "{$table}_{$name}_fk";
 			blx()->db->createCommand()->dropForeignKey($fkName, $table);
 		}
 	}
