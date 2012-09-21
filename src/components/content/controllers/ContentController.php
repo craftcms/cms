@@ -148,19 +148,17 @@ class ContentController extends BaseController
 		$this->requirePostRequest();
 
 		$entryPackage = new EntryPackage();
-		$entryPackage->id = blx()->request->getPost('entryId');
-		/* BLOCKSPRO ONLY */
-		$entryPackage->authorId = blx()->accounts->getCurrentUser()->id;
-		$entryPackage->sectionId = blx()->request->getRequiredPost('sectionId');
-		$entryPackage->language = blx()->request->getPost('language');
-		/* end BLOCKSPRO ONLY */
-		$entryPackage->title = blx()->request->getPost('title');
-		$entryPackage->slug = blx()->request->getPost('slug');
-		$entryPackage->blocks = blx()->request->getPost('blocks');
+		$this->_populateEntryPackageFromPost($entryPackage);
 
 		if ($entryPackage->save())
 		{
 			blx()->user->setNotice(Blocks::t('Entry saved.'));
+
+			// Do we need to delete a draft?
+			if (($draftId = blx()->request->getPost('draftId')) !== null)
+			{
+				blx()->content->deleteEntryDraftById($draftId);
+			}
 
 			$this->redirectToPostedUrl(array(
 				'entryId' => $entryPackage->id
@@ -172,8 +170,67 @@ class ContentController extends BaseController
 		}
 
 		$this->renderRequestedTemplate(array(
-			'entryPackage' => $entryPackage
+			'entry' => $entryPackage
 		));
+	}
+
+	/**
+	 * Saves an entry draft.
+	 */
+	public function actionSaveEntryDraft()
+	{
+		$draftPackage = new EntryDraftPackage();
+		$this->_populateEntryPackageFromPost($draftPackage);
+		$draftPackage->draftId = blx()->request->getPost('draftId');
+
+		if ($draftPackage->save())
+		{
+			blx()->user->setNotice(Blocks::t('Draft saved.'));
+
+			$this->redirectToPostedUrl(array(
+				'entryId' => $draftPackage->id,
+				'draftId' => $draftPackage->draftId
+			));
+		}
+		else
+		{
+			blx()->user->setError(Blocks::t('Couldn’t save draft.'));
+		}
+
+		$this->renderRequestedTemplate(array(
+			'entry' => $draftPackage
+		));
+	}
+
+	/**
+	 * Populates an entry package from post data.
+	 *
+	 * @param EntryPackage $entryPackage
+	 */
+	private function _populateEntryPackageFromPost(EntryPackage $entryPackage)
+	{
+		$entryPackage->id = blx()->request->getPost('entryId');
+		/* BLOCKSPRO ONLY */
+		$entryPackage->authorId = blx()->accounts->getCurrentUser()->id;
+		$entryPackage->sectionId = blx()->request->getRequiredPost('sectionId');
+		$entryPackage->language = blx()->request->getPost('language');
+		/* end BLOCKSPRO ONLY */
+		$entryPackage->title = blx()->request->getPost('title');
+		$entryPackage->slug = blx()->request->getPost('slug');
+
+		if ($postDate = blx()->request->getPost('postDate'))
+		{
+			$entryPackage->postDate = DateTime::createFromFormat(DateTime::W3C_DATE, $postDate);
+		}
+
+		/* BLOCKSPRO ONLY */
+		if ($expiryDate = blx()->request->getPost('expiryDate'))
+		{
+			$entryPackage->expiryDate = DateTime::createFromFormat(DateTime::W3C_DATE, $expiryDate);
+		}
+
+		/* end BLOCKSPRO ONLY */
+		$entryPackage->blocks = blx()->request->getPost('blocks');
 	}
 
 	/**
@@ -192,34 +249,6 @@ class ContentController extends BaseController
 
 		blx()->user->setNotice(Blocks::t('Draft created.'));
 		$this->redirect("content/{$entry->id}/draft{$draft->num}");
-	}
-
-	/**
-	 * Saves a draft
-	 */
-	public function actionSaveDraft()
-	{
-		$this->requirePostRequest();
-
-		$entry = $this->_getEntry();
-		$draft = $this->_getDraft();
-		$changes = $this->_getContentFromPost($entry);
-
-		// Save the new draft content
-		if (blx()->content->saveDraftContent($draft, $changes))
-		{
-			blx()->user->setNotice(Blocks::t('Draft saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			blx()->user->setError(Blocks::t('Couldn’t save draft.'));
-		}
-
-		$entry->setDraft($draft);
-		$this->renderRequestedTemplate(array(
-			'entry' => $entry
-		));
 	}
 
 	/**

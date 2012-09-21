@@ -24,6 +24,7 @@ var scripts =
 	'ui/InputGenerator.js',
 	'ui/HandleGenerator.js',
 	'ui/EntryUrlFormatGenerator.js',
+	'ui/SlugGenerator.js',
 	'ui/NiceText.js',
 
 	'ui/Modal.js',

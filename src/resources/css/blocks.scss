@@ -97,6 +97,8 @@ td.right { float: none; text-align: right; }
 .deletebtn:before { @include icon; content: 'd'; color: #ddd; }
 .deletebtn:hover:before { color: $errorcolor; }
 
+.hidden { display: none; }
+
 /* ----------------------------------------
 /*  Panes
 /* ----------------------------------------*/
@@ -340,8 +342,18 @@ textarea.text,
 .field .heading { margin-bottom: 4px; }
 .field .heading p { margin-top: 0; font-size: 11px; color: #999; }
 
+/* toggles and nested fields */
+a.fieldtoggle:hover { text-decoration: none; }
+a.fieldtoggle:hover span { text-decoration: underline; }
+a.fieldtoggle:before { @include icon; font-size: 10px; }
+a.fieldtoggle.collapsed:before { content: "+"; }
+a.fieldtoggle.expanded:before { content: "-"; }
+a.fieldtoggle.collapsed .expanded-label { display: none; }
+a.fieldtoggle.expanded .collapsed-label { display: none; }
+
 .nested-fields { margin: -25px -5px; padding: 25px 5px 0; overflow: hidden; }
-.nested-fields.hidden { height: 0; }
+a.fieldtoggle + .nested-fields { margin-top: 0; }
+.nested-fields.hidden { display: block; height: 0; }
 .nested-fields > .field:last-child { padding-bottom: 25px; }
 
 /* checkbox */
@@ -375,6 +387,10 @@ textarea.text,
 .password { padding-right: 70px; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
+.datewrapper { position: relative; padding-right: 36px; width: 194px; }
+.datewrapper:before { @include icon; position: absolute; top: 9px; left: 8px; content: "c"; color: #a1a4a6; }
+.datewrapper .text { padding-left: 27px; width: 100%; }
+
 /* select */
 .select,
 .select select { border-radius: 2px; }
@@ -383,6 +399,19 @@ textarea.text,
 .select select { position: relative; padding: 7px 22px 7px 10px; @include linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.05)); -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-appearance: none; }
 .select:hover select:not(:focus) { border-color: #999; }
 .select select:focus { -webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor; }
+
+/* datepicker */
+.ui-datepicker { padding: 10px; width: 210px; height: 200px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 2px 10px -2px rgba(0,0,0,0.25); }
+.ui-datepicker-header { margin-bottom: 2px; }
+.ui-datepicker-prev { float: left; }
+.ui-datepicker-next { float: right; }
+.ui-datepicker-title { text-align: center; }
+.ui-datepicker-calendar thead { display: none; }
+.ui-datepicker-calendar td { padding: 2px; }
+.ui-datepicker-calendar td a { display: block; width: 26px; line-height: 26px; text-align: center; color: #808080; }
+.ui-datepicker-calendar td a:hover { color: $linkcolor; text-decoration: none; }
+.ui-datepicker-calendar td a.ui-state-active { background: $linkcolor; color: #fff; cursor: default; }
+.ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px; -webkit-box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15); }
 
 /* errors */
 ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }

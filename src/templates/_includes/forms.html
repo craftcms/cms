@@ -35,6 +35,19 @@
 {% endmacro %}
 
 
+{% macro date(config) %}
+	<div class="datewrapper">{{ _self.text(config|merge({ size: 10 })) }}</div>
+	{% set js %}
+		$('#{{ config.id }}').datepicker({
+			dateFormat: $.datepicker.W3C,
+			prevText: '{{ "Prev"|t|e('js') }}',
+			nextText: '{{ "Next"|t|e('js') }}'
+		});
+	{% endset %}
+	{% includeJs js %}
+{% endmacro %}
+
+
 {% macro textarea(config) %}
 	{% set class = _self.textClass(config) %}
 	{% set rows = config.rows ? config.rows : 2 %}
@@ -153,6 +166,11 @@
 
 {% macro passwordField(config) %}
 	{{ _self.field(config, _self.password(config)) }}
+{% endmacro %}
+
+
+{% macro dateField(config) %}
+	{{ _self.field(config, _self.date(config)) }}
 {% endmacro %}
 
 

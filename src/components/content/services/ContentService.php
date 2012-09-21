@@ -751,9 +751,29 @@ class ContentService extends BaseApplicationComponent
 		/* end BLOCKSPRO ONLY */
 		$entryPackage->title = $attributes['title'];
 		$entryPackage->slug = $attributes['slug'];
-		$entryPackage->publishDate = $attributes['publishDate'];
+
+		if (is_numeric($attributes['postDate']))
+		{
+			$dateTime = new DateTime();
+			$dateTime->setTimestamp($attributes['postDate']);
+			$entryPackage->postDate = $dateTime;
+		}
+		else
+		{
+			$entryPackage->postDate = $attributes['postDate'];
+		}
 		/* BLOCKSPRO ONLY */
-		$entryPackage->expiryDate = $attributes['expiryDate'];
+
+		if (is_numeric($attributes['expiryDate']))
+		{
+			$dateTime = new DateTime();
+			$dateTime->setTimestamp($attributes['expiryDate']);
+			$entryPackage->expiryDate = $dateTime;
+		}
+		else
+		{
+			$entryPackage->expiryDate = $attributes['expiryDate'];
+		}
 		/* end BLOCKSPRO ONLY */
 
 		$entryPackage->blocks = array();
@@ -792,6 +812,33 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		return $entryPackages;
+	}
+
+	/**
+	 * Populates an entry with draft data.
+	 *
+	 * @param EntryPackage $entryPackage
+	 */
+	public function populateEntryDraftData(EntryPackage $entryPackage)
+	{
+		$draftRecord = EntryDraftRecord::model()->findByAttributes(array(
+			'entryId'  => $entryPackage->id,
+			/* BLOCKSPRO ONLY */
+			'language' => ($entryPackage->language ? $entryPackage->language : blx()->language),
+			/* end BLOCKSPRO ONLY */
+		));
+
+		if ($draftRecord)
+		{
+			$entryPackage->draftId    = $draftRecord->id;
+			$entryPackage->title      = (isset($draftRecord->data['title']) ? $draftRecord->data['title'] : null);
+			$entryPackage->slug       = (isset($draftRecord->data['slug']) ? $draftRecord->data['slug'] : null);
+			$entryPackage->postDate   = (isset($draftRecord->data['postDate']) ? DateTime::createFromFormat(DateTime::W3C_DATE, $draftRecord->data['postDate']) : null);
+			/* BLOCKSPRO ONLY */
+			$entryPackage->expiryDate = (isset($draftRecord->data['expiryDate']) ? DateTime::createFromFormat(DateTime::W3C_DATE, $draftRecord->data['expiryDate']) : null);
+			/* end BLOCKSPRO ONLY */
+			$entryPackage->blocks     = (isset($draftRecord->data['blocks']) ? $draftRecord->data['blocks'] : null);
+		}
 	}
 
 	/**
@@ -966,11 +1013,11 @@ class ContentService extends BaseApplicationComponent
 				case 'live':
 				{
 					/* BLOCKS ONLY */
-					$statusConditions[] = 'e.publishDate <= '.$currentTime;
+					$statusConditions[] = 'e.postDate <= '.$currentTime;
 					/* end BLOCKS ONLY */
 					/* BLOCKSPRO ONLY */
 					$statusConditions[] = array('and',
-						'e.publishDate <= '.$currentTime,
+						'e.postDate <= '.$currentTime,
 						array('or', 'e.expiryDate is null', 'e.expiryDate > '.$currentTime)
 					);
 					/* end BLOCKSPRO ONLY */
@@ -978,7 +1025,7 @@ class ContentService extends BaseApplicationComponent
 				}
 				case 'pending':
 				{
-					$statusConditions[] = 'e.publishDate > '.$currentTime;
+					$statusConditions[] = 'e.postDate > '.$currentTime;
 					break;
 				}
 				/* BLOCKSPRO ONLY */
@@ -991,9 +1038,9 @@ class ContentService extends BaseApplicationComponent
 					break;
 				}
 				/* end BLOCKSPRO ONLY */
-				case 'unpublished':
+				case 'draft':
 				{
-					$statusConditions[] = 'e.publishDate is null';
+					$statusConditions[] = 'e.postDate is null';
 				}
 			}
 		}
@@ -1013,25 +1060,6 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets an entry by its ID.
-	 *
-	 * @param int $id
-	 * @return EntryPackage
-	 */
-	public function getEntryById($entryId)
-	{
-		$query = blx()->db->createCommand()
-			->select('e.*, t.title')
-			->from('entries e')
-			->join('entrytitles t', 'e.id = t.entryId')
-			->where(array('e.id' => $entryId))
-			->limit(1);
-
-		$result = $query->queryRow();
-		return $this->populateEntryPackage($result);
-	}
-
-	/**
 	 * Saves an entry.
 	 *
 	 * @param EntryPackage $entryPackage
@@ -1043,16 +1071,22 @@ class ContentService extends BaseApplicationComponent
 		$titleRecord = $this->_getEntryTitleRecord($entryPackage);
 		$contentRecord = $this->_getEntryContentRecord($entryPackage);
 
-		/* BLOCKSPRO ONLY */
-		if ($entryRecord->isNewRecord())
-		{
-			$entryRecord->authorId = $entryPackage->authorId;
-			$entryRecord->sectionId = $entryPackage->sectionId;
-		}
-
-		/* end BLOCKSPRO ONLY */
 		$entryRecord->slug = $entryPackage->slug;
 		$titleRecord->title = $entryPackage->title;
+
+		// Save the post date if it wasn't set already
+		if ($entryPackage->postDate)
+		{
+			$entryRecord->postDate = $entryPackage->postDate;
+		}
+		else
+		{
+			$entryRecord->postDate = new DateTime();
+		}
+
+		/* BLOCKSPRO ONLY */
+		$entryRecord->expiryDate = $entryPackage->expiryDate;
+		/* end BLOCKSPRO ONLY */
 
  		// Populate the blocks' content
 		/* BLOCKS ONLY */
@@ -1084,6 +1118,12 @@ class ContentService extends BaseApplicationComponent
 		{
 			$entryRecord->save(false);
 
+			// Save the post date on the package if we just made it up
+			if (!$entryPackage->postDate)
+			{
+				$entryPackage->postDate = $entryRecord->postDate;
+			}
+
 			// Now that we have an entry ID, save it on the package & models
 			if (!$entryPackage->id)
 			{
@@ -1107,19 +1147,91 @@ class ContentService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Saves an entry draft.
+	 *
+	 * @param EntryDraftPackage $draftPackage
+	 * @return bool
+	 */
+	public function saveEntryDraft(EntryDraftPackage $draftPackage)
+	{
+		$entryRecord = $this->_getEntryRecord($draftPackage);
+
+		// If it's a new entry, make sure it saves first
+		if ($entryRecord->isNewRecord())
+		{
+			$titleRecord = $this->_getEntryTitleRecord($draftPackage);
+
+			$entryRecord->slug = $draftPackage->slug;
+			$titleRecord->title = $draftPackage->title;
+
+			$entryValidates = $entryRecord->validate();
+			$titleValidates = $titleRecord->validate();
+
+			if ($entryValidates && $titleValidates)
+			{
+				$entryRecord->save(false);
+
+				$draftPackage->id = $entryRecord->id;
+				$titleRecord->entryId = $entryRecord->id;
+
+				$titleRecord->save(false);
+			}
+			else
+			{
+				$draftPackage->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
+
+				return false;
+			}
+		}
+
+		$draftRecord = $this->_getEntryDraftRecord($draftPackage);
+
+		$draftRecord->data = array(
+			'title'      => $draftPackage->title,
+			'slug'       => $draftPackage->slug,
+			'postDate'   => (!empty($draftPackage->postDate) ? $draftPackage->postDate->getTimestamp() : null),
+			/* BLOCKSPRO ONLY */
+			'expiryDate' => (!empty($draftPackage->expiryDate) ? $draftPackage->expiryDate->getTimestamp() : null),
+			/* end BLOCKSPRO ONLY */
+			'blocks'     => $draftPackage->blocks
+		);
+
+		$draftRecord->save(false);
+
+		if (!$draftPackage->draftId)
+		{
+			$draftPackage->draftId = $draftRecord->id;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Deletes an entry draft by its ID.
+	 *
+	 * @param int $draftId
+	 * @return bool
+	 */
+	public function deleteEntryDraftById($draftId)
+	{
+		$draftRecord = $this->_getEntryDraftRecordById($draftId);
+		$draftRecord->delete();
+		return true;
+	}
+
+	/**
 	 * Gets an entry record or creates a new one.
 	 *
 	 * @access private
 	 * @param EntryPackage $entryPackage
 	 * @return EntryRecord
 	 */
-	private function _getEntryRecord($entryPackage)
+	private function _getEntryRecord(EntryPackage $entryPackage)
 	{
 		if ($entryPackage->id)
 		{
 			$entryRecord = EntryRecord::model()->findById($entryPackage->id);
 
-			// This is serious business.
 			if (!$entryRecord)
 			{
 				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entryPackage->id)));
@@ -1128,6 +1240,11 @@ class ContentService extends BaseApplicationComponent
 		else
 		{
 			$entryRecord = new EntryRecord();
+			/* BLOCKSPRO ONLY */
+
+			$entryRecord->authorId = $entryPackage->authorId;
+			$entryRecord->sectionId = $entryPackage->sectionId;
+			/* end BLOCKSPRO ONLY */
 		}
 
 		return $entryRecord;
@@ -1140,7 +1257,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param EntryPackage $entryPackage
 	 * @return EntryTitleRecord
 	 */
-	private function _getEntryTitleRecord($entryPackage)
+	private function _getEntryTitleRecord(EntryPackage $entryPackage)
 	{
 		/* BLOCKSPRO ONLY */
 		if (!$entryPackage->language)
@@ -1176,7 +1293,7 @@ class ContentService extends BaseApplicationComponent
 	 * @param EntryPackage $entryPackage
 	 * @return EntryContentRecord
 	 */
-	private function _getEntryContentRecord($entryPackage)
+	private function _getEntryContentRecord(EntryPackage $entryPackage)
 	{
 		/* BLOCKSPRO ONLY */
 		if (!$entryPackage->language)
@@ -1219,6 +1336,52 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		return $contentRecord;
+	}
+
+	/**
+	 * Gets an entry draft record or creates a new one.
+	 *
+	 * @access private
+	 * @param EntryDraftPackage $draftPackage
+	 * @return EntryDraftRecord
+	 */
+	private function _getEntryDraftRecord(EntryDraftPackage $draftPackage)
+	{
+		if ($draftPackage->draftId)
+		{
+			$draftRecord = $this->_getEntryDraftRecordById($draftPackage->id);
+		}
+		else
+		{
+			$draftRecord = new EntryDraftRecord();
+			$draftRecord->entryId = $draftPackage->id;
+			/* BLOCKSPRO ONLY */
+			$draftRecord->authorId = $draftPackage->authorId;
+			$draftRecord->language = ($draftPackage->language ? $draftPackage->language : blx()->language);
+			/* end BLOCKSPRO ONLY */
+		}
+
+		return $draftRecord;
+	}
+
+	/**
+	 * Gets an entry draft record by its ID.
+	 *
+	 * @param int $draftId
+	 * @return EntryDraftRecord
+	 */
+	private function _getEntryDraftRecordById($draftId)
+	{
+		$draftRecord = EntryDraftRecord::model()->findById($draftId);
+
+		if ($draftRecord)
+		{
+			return $draftRecord;
+		}
+		else
+		{
+			throw new Exception(Blocks::t('No entry draft exists with the ID “{id}”', array('id' => $draftId)));
+		}
 	}
 
 

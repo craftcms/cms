@@ -115,6 +115,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getGlobals()
 	{
 		$globals['blx'] = new BlxVariable();
+		$globals['date'] = new DateTime();
 
 		if (blx()->isInstalled())
 		{

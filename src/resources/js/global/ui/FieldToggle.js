@@ -9,7 +9,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 	$toggle: null,
 
 	_$target: null,
-	_isCheckbox: null,
+	type: null,
 
 	init: function(toggle)
 	{
@@ -24,32 +24,59 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 		this.$toggle.data('fieldtoggle', this);
 
-		if (!this.isCheckbox())
-			this.findTarget();
+		this.type = this.getType();
 
-		this.addListener(this.$toggle, 'change', 'onToggleChange');
+		if (this.type == 'select')
+		{
+			this.findTarget();
+		}
+
+		if (this.type == 'link')
+		{
+			this.addListener(this.$toggle, 'click', 'onToggleChange');
+		}
+		else
+		{
+			this.addListener(this.$toggle, 'change', 'onToggleChange');
+		}
 	},
 
-	isCheckbox: function()
+	getType: function()
 	{
-		if (!this._isCheckbox)
-			this._isCheckbox = (this.$toggle.prop('nodeName') == 'INPUT' && this.$toggle.attr('type').toLowerCase() == 'checkbox');
-		return this._isCheckbox;
+		if (this.$toggle.prop('nodeName') == 'INPUT' && this.$toggle.attr('type').toLowerCase() == 'checkbox')
+		{
+			return 'checkbox';
+		}
+		else if (this.$toggle.prop('nodeName') == 'SELECT')
+		{
+			return 'select';
+		}
+		else if (this.$toggle.prop('nodeName') == 'A')
+		{
+			return 'link';
+		}
 	},
 
 	getTarget: function()
 	{
 		if (!this._$target)
+		{
 			this.findTarget();
+		}
+
 		return this._$target;
 	},
 
 	findTarget: function()
 	{
-		if (this.isCheckbox())
-			this._$target = $('#'+this.$toggle.attr('data-target'));
-		else
+		if (this.type == 'select')
+		{
 			this._$target = $('#'+this.getToggleVal());
+		}
+		else
+		{
+			this._$target = $('#'+this.$toggle.attr('data-target'));
+		}
 	},
 
 	getToggleVal: function()
@@ -59,20 +86,31 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	onToggleChange: function()
 	{
-		var val = this.getToggleVal();
-
-		if (this.isCheckbox())
-		{
-			if (val)
-				this.showTarget();
-			else
-				this.hideTarget();
-		}
-		else
+		if (this.type == 'select')
 		{
 			this.hideTarget();
 			this.findTarget();
 			this.showTarget();
+		}
+		else
+		{
+			if (this.type == 'link')
+			{
+				var show = this.$toggle.hasClass('collapsed');
+			}
+			else
+			{
+				var show = !!this.getToggleVal();
+			}
+
+			if (show)
+			{
+				this.showTarget();
+			}
+			else
+			{
+				this.hideTarget();
+			}
 		}
 	},
 
@@ -80,8 +118,18 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 	{
 		if (this.getTarget().length)
 		{
-			if (this.isCheckbox())
+			if (this.type == 'select')
 			{
+				this.getTarget().show();
+			}
+			else
+			{
+				if (this.type == 'link')
+				{
+					this.$toggle.removeClass('collapsed');
+					this.$toggle.addClass('expanded');
+				}
+
 				var $target = this.getTarget();
 				$target.height('auto');
 				var height = $target.height();
@@ -90,10 +138,6 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 					$target.height('auto');
 				}, this));
 			}
-			else
-			{
-				this.getTarget().show();
-			}
 		}
 	},
 
@@ -101,10 +145,20 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 	{
 		if (this.getTarget().length)
 		{
-			if (this.isCheckbox())
-				this.getTarget().stop().animate({height: 0}, 'fast');
-			else
+			if (this.type == 'select')
+			{
 				this.getTarget().hide();
+			}
+			else
+			{
+				if (this.type == 'link')
+				{
+					this.$toggle.removeClass('expanded');
+					this.$toggle.addClass('collapsed');
+				}
+
+				this.getTarget().stop().animate({height: 0}, 'fast');
+			}
 		}
 	}
 });
@@ -115,7 +169,9 @@ $.fn.fieldtoggle = function()
 	return this.each(function()
 	{
 		if (!$.data(this, 'fieldtoggle'))
+		{
 			new Blocks.ui.FieldToggle(this);
+		}
 	});
 };
 

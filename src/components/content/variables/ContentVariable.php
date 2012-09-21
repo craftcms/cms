@@ -115,6 +115,18 @@ class ContentVariable
 	// -------------------------------------------
 
 	/**
+	 * Gets the total number of entries.
+	 *
+	 * @param array|null $params
+	 * @return array
+	 */
+	public function totalEntries($params = array())
+	{
+		$params = new EntryParams($params);
+		return blx()->content->getTotalEntries($params);
+	}
+
+	/**
 	 * Gets entries.
 	 *
 	 * @param array|null $params
@@ -139,25 +151,14 @@ class ContentVariable
 	}
 
 	/**
-	 * Gets the total number of entries.
+	 * Populates an entry with draft data.
 	 *
-	 * @param array|null $params
-	 * @return array
+	 * @param EntryPackage $entryPackage
+	 * @return EntryPackage
 	 */
-	public function totalEntries($params = array())
+	public function populateEntryDraftData(EntryPackage $entryPackage)
 	{
-		$params = new EntryParams($params);
-		return blx()->content->getTotalEntries($params);
-	}
-
-	/**
-	 * Gets an entry by its ID.
-	 *
-	 * @param int $id
-	 * @return EntryPackage|null
-	 */
-	public function getEntryById($id)
-	{
-		return blx()->content->getEntryById($id);
+		blx()->content->populateEntryDraftData($entryPackage);
+		return $entryPackage;
 	}
 }

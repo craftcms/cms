@@ -3,14 +3,14 @@
 
 
 <!-- BLOCKS ONLY -->
-{% set statuses = { live: 'on', pending: 'pending', unpublished: '' } %}
+{% set statuses = { live: 'on', pending: 'pending', draft: '' } %}
 <!-- end BLOCKS ONLY -->
 <!-- BLOCKSPRO ONLY -->
 {% set sections = blx.content.sections %}
 {% set showSection = true %}
 
 
-{% set statuses = { live: 'on', pending: 'pending', unpublished: '', expired: 'off' } %}
+{% set statuses = { live: 'on', pending: 'pending', draft: '', expired: 'off' } %}
 <!-- end BLOCKSPRO ONLY -->
 {% set showStatus = true %}
 
@@ -105,7 +105,7 @@
 							<!-- BLOCKSPRO ONLY -->
 							{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
 							<!-- end BLOCKSPRO ONLY -->
-							{% if showStatus %}<td><div class="status {{ entry.status }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+							{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
 						</tr>
 					{% endfor %}
 				</tbody>

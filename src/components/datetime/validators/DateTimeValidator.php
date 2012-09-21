@@ -26,9 +26,9 @@ class DateTimeValidator extends \CValidator
 
 		if ($value)
 		{
-			if (!DateTimeHelper::isValidTimeStamp((string)$value))
+			if (!($value instanceof \DateTime))
 			{
-				if (gettype($value) !== gettype(new DateTime()))
+				if (!DateTimeHelper::isValidTimeStamp((string)$value))
 				{
 					$message = Blocks::t('“{object}->{attribute}” must be a DateTime object or a valid Unix timestamp.', array('object' => get_class($object), 'attribute' => $attribute));
 					$this->addError($object, $attribute, $message);

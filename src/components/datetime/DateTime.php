@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class DateTime extends \DateTime
 {
+	const W3C_DATE = 'Y-m-d';
+
 	/**
 	 * @return string
 	 */
@@ -92,6 +94,14 @@ class DateTime extends \DateTime
 	public function w3c()
 	{
 		return $this->format(static::W3C);
+	}
+
+	/**
+	 * @return string
+	 */
+	public function w3cDate()
+	{
+		return $this->format(static::W3C_DATE);
 	}
 
 	/**

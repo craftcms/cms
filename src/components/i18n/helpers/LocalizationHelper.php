@@ -26,14 +26,4 @@ class LocalizationHelper
 
 		return $number;
 	}
-
-	/**
-	 * @static
-	 * @param $dateTime
-	 * @return int
-	 */
-	public static function normalizeDateTime(DateTime $dateTime)
-	{
-		return $dateTime->getTimestamp();
-	}
 }

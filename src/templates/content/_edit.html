@@ -1,4 +1,6 @@
 {% extends "_layouts/cp" %}
+{% includeCssResource "css/entry.css" %}
+{% includeJsResource "lib/jquery-ui-1.8.23.custom.min.js" %}
 {% import "_includes/forms" as forms %}
 
 
@@ -8,9 +10,13 @@
 <!-- end BLOCKSPRO ONLY -->
 
 
-{% if not entryPackage and entryId %}
-	{% set entryPackage = blx.content.getEntryById(entryId) %}
-	{% if not entryPackage %}{% exit 404 %}{% endif %}
+{% if not entry and entryId %}
+	{% set entry = blx.content.entry({ id: entryId, status: '*' }) %}
+	{% if not entry %}{% exit 404 %}{% endif %}
+
+	{% if entry.status == 'draft' %}
+		{% set entry = blx.content.populateEntryDraftData(entry) %}
+	{% endif %}
 {% endif %}
 
 
@@ -22,8 +28,8 @@
 <!-- end BLOCKSPRO ONLY -->
 
 
-{% if entryPackage.id %}
-	{% set title = "Editing {title}"|t({ title: '<i>'~entryPackage.title|t~'</i>' }) %}
+{% if entry.id %}
+	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' ~ (entry.status == 'draft' ? ' <span class="draft"><span>(</span>draft<span>)</span></span>' : '') }) %}
 {% else %}
 	{% set title = "Create a new entry"|t %}
 {% endif %}
@@ -31,20 +37,29 @@
 
 {% set titlebar %}
 	<h1>{{ title|raw }}</h1>
+
 	<ul class="left">
 		<!-- BLOCKS ONLY -->
-		<li><a href="{{ url('content') }}" class="btn backbtn">{{ "Content"|t }}</a></li>
+		<li><a href="{{ url('content') }}" class="backbtn">{{ "Content"|t }}</a></li>
 		<!-- end BLOCKS ONLY -->
 		<!-- BLOCKSPRO ONLY -->
-		<li><a href="{{ url('content/' ~ section.handle) }}" class="btn backbtn">{{ section.name|t }}</a></li>
+		<li><a href="{{ url('content/' ~ section.handle) }}" class="backbtn">{{ section.name|t }}</a></li>
 		<!-- end BLOCKSPRO ONLY -->
+	</ul>
+
+	{#<ul class="right">
+		<li><div class="btn menubtn" data-icon="⚙"></div></li>
+	</ul>#}
+
+	<ul class="tabs">
+		<li><a data-icon="✎" class="active" data-target="entry-content">Content</a></li>
+		<li><a data-icon="⚙" data-target="entry-settings">Settings</a></li>
 	</ul>
 {% endset %}
 
 
 {% set content %}
 	<form method="post" action="" class="centered">
-		<input type="hidden" name="action" value="content/saveEntry">
 		<!-- BLOCKS ONLY -->
 		<input type="hidden" name="redirect" value="content/blog/{entryId}">
 		<!-- end BLOCKS ONLY -->
@@ -52,54 +67,91 @@
 		<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		<!-- end BLOCKSPRO ONLY -->
-		{% if entryPackage.id %}<input type="hidden" name="entryId" value="{{ entryPackage.id }}">{% endif %}
+		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
 
-		{{ forms.textField({
-			label: "Title"|t,
-			id: 'title',
-			name: 'title',
-			value: entryPackage.title,
-			errors: entryPackage.errors.title,
-			first: true,
-			required: true
-		}) }}
+		<div id="entry-content">
+			{{ forms.textField({
+				label: "Title"|t,
+				id: 'title',
+				name: 'title',
+				value: entry.title,
+				errors: entry.errors.title,
+				first: true,
+				required: true
+			}) }}
 
-		{{ forms.textField({
-			label: "Slug"|t,
-			id: 'slug',
-			name: 'slug',
-			value: entryPackage.slug,
-			errors: entryPackage.errors.slug,
-			required: true
-		}) }}
+			{% for blockPackage in blocks %}
+				{% set block = blx.blocks.populateBlock(blockPackage) %}
+				{% set data = entry.blocks[blockPackage.handle] %}
+				{% set errors = entry.blockErrors[blockPackage.handle] %}
+				{% set input = block.input(blockPackage.handle, data, errors) %}
 
-		{% for blockPackage in blocks %}
-			{% set block = blx.blocks.populateBlock(blockPackage) %}
-			{% set data = entryPackage.blocks[blockPackage.handle] %}
-			{% set errors = entryPackage.blockErrors[blockPackage.handle] %}
-			{% set input = block.input(blockPackage.handle, data, errors) %}
+				{{ forms.field({
+					label: blockPackage.name,
+					<!-- BLOCKSPRO ONLY -->
+					required: blockPackage.required,
+					translatable: blockPackage.translatable,
+					<!-- end BLOCKSPRO ONLY -->
+					instructions: blockPackage.instructions,
+					id: blockPackage.handle,
+					errors: errors
+				}, input)|ns('blocks')|raw }}
+			{% endfor %}
+		</div>
 
-			{{ forms.field({
-				label: blockPackage.name,
-				<!-- BLOCKSPRO ONLY -->
-				required: blockPackage.required,
-				translatable: blockPackage.translatable,
-				<!-- end BLOCKSPRO ONLY -->
-				instructions: blockPackage.instructions,
-				id: blockPackage.handle,
-				errors: errors
-			}, input)|ns('blocks')|raw }}
-		{% endfor %}
+		<div id="entry-settings" class="hidden">
+			{{ forms.textField({
+				label: "Slug"|t,
+				id: 'slug',
+				name: 'slug',
+				value: entry.slug,
+				errors: entry.errors.slug,
+				required: true
+			}) }}
+
+			{{ forms.dateField({
+				label: "Post Date"|t,
+				id: 'postDate',
+				name: 'postDate',
+				value: entry.postDate.w3cDate,
+				errors: entry.errors.postDate
+			}) }}
+
+			{{ forms.dateField({
+				label: "Expiration Date"|t,
+				id: 'expiryDate',
+				name: 'expiryDate',
+				value: entry.expiryDate.w3cDate,
+				errors: entry.errors.expiryDate
+			}) }}
+		</div>
+
+		<hr>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			{% if not entry.id %}
+				{# -- brand new entry -- #}
+				<input type="hidden" name="action" value="content/saveEntry">
+				<input type="submit" class="btn submit" value="{{ 'Publish'|t }}">
+				<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="content/saveEntryDraft">
+			{% elseif entry.status == 'draft' %}
+				{# -- draft -- #}
+				<input type="hidden" name="action" value="content/saveEntryDraft">
+				{% if entry.draftId %}<input type="hidden" name="draftId" value="{{ entry.draftId }}">{% endif %}
+				<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
+				<input type="button" class="btn formsubmit" value="{{ 'Publish'|t }}" data-action="content/saveEntry">
+			{% else %}
+				{# -- live entry -- #}
+				<input type="hidden" name="action" value="content/saveEntry">
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+				{# <input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="content/saveEntryDraft"> #}
+			{% endif %}
 		</div>
 	</form>
 {% endset %}
 
 
-{% set js %}
-	{% if not section.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
-	{% if not section.urlFormat %}new Blocks.ui.EntryUrlFormatGenerator('#name', '#urlFormat');{% endif %}
-{% endset %}
-{% includeJs js %}
+{% if not entry.slug %}
+	{% includeJs "new Blocks.ui.SlugGenerator('#title', '#slug');" %}
+{% endif %}
+

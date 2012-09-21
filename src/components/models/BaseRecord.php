@@ -93,9 +93,9 @@ abstract class BaseRecord extends \CActiveRecord
 				}
 				case AttributeType::DateTime:
 				{
-					if (gettype($value) === gettype(new DateTime()))
+					if ($value instanceof \DateTime)
 					{
-						$this->setAttribute($name, LocalizationHelper::normalizeDateTime($value));
+						$this->setAttribute($name, $value->getTimestamp());
 					}
 
 					break;
@@ -143,7 +143,8 @@ abstract class BaseRecord extends \CActiveRecord
 				case AttributeType::DateTime:
 				{
 					$dateTime = new DateTime();
-					$this->setAttribute($name, $dateTime->setTimestamp($value));
+					$dateTime->setTimestamp($value);
+					$this->setAttribute($name, $dateTime);
 					break;
 				}
 				case AttributeType::Mixed:

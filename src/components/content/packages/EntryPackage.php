@@ -8,6 +8,7 @@ namespace Blocks;
  */
 class EntryPackage extends BasePackage
 {
+	public $draftId;
 	/* BLOCKSPRO ONLY */
 	public $authorId;
 	public $sectionId;
@@ -15,7 +16,7 @@ class EntryPackage extends BasePackage
 	/* end BLOCKSPRO ONLY */
 	public $title;
 	public $slug;
-	public $publishDate;
+	public $postDate;
 	/* BLOCKSPRO ONLY */
 	public $expiryDate;
 	/* end BLOCKSPRO ONLY */
@@ -32,31 +33,49 @@ class EntryPackage extends BasePackage
 		return blx()->content->saveEntry($this);
 	}
 
+	/**
+	 * Saves the entry draft.
+	 *
+	 * @return bool
+	 */
+	public function saveDraft()
+	{
+		return blx()->content->saveEntryDraft($this);
+	}
+
+	/**
+	 * Returns the entries status.
+	 */
 	public function status()
 	{
 		$currentTime = DateTimeHelper::currentTime();
+		$postDate = ($this->postDate ? $this->postDate->getTimestamp() : null);
+		/* BLOCKSPRO ONLY */
+		$expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+		/* end BLOCKSPRO ONLY */
+
 		/* BLOCKS ONLY */
-		if ($this->publishDate && $this->publishDate <= $currentTime)
+		if ($postDate && $postDate <= $currentTime)
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		if ($this->publishDate && $this->publishDate <= $currentTime && (!$this->expiryDate || $this->expiryDate > $currentTime))
+		if ($postDate && $postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
 		/* end BLOCKSPRO ONLY */
 		{
 			return 'live';
 		}
-		else if ($this->publishDate > $currentTime)
+		else if ($postDate && $postDate > $currentTime)
 		{
 			return 'pending';
 		}
 		/* BLOCKSPRO ONLY */
-		else if ($this->expiryDate && $this->expiryDate <= $currentTime)
+		else if ($postDate && $expiryDate && $expiryDate <= $currentTime)
 		{
 			return 'expired';
 		}
 		/* end BLOCKSPRO ONLY */
 		else
 		{
-			return 'unpublished';
+			return 'draft';
 		}
 	}
 }
