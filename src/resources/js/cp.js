@@ -21,6 +21,36 @@ var CP = Blocks.Base.extend({
 			}
 		});
 
+		// Tabs
+		$('.tabs').each(function() {
+			var $container = $(this),
+				$tabs = $container.find('a');
+				$activeTab = $tabs.filter('.active:first');
+
+			$tabs.click(function() {
+				var $tab = $(this);
+				if (this != $activeTab[0])
+				{
+					$activeTab.removeClass('active');
+					var oldTarget = $activeTab.attr('data-target');
+
+					$activeTab = $tab;
+					$activeTab.addClass('active');
+					var newTarget = $activeTab.attr('data-target');
+
+					if (newTarget)
+					{
+						$('#'+newTarget).show();
+					}
+
+					if (oldTarget)
+					{
+						$('#'+oldTarget).hide();
+					}
+				}
+			});
+		});
+
 		// Secondary form submit buttons
 		$('.formsubmit').click(function() {
 			var $btn = $(this),

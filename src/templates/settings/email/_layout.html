@@ -3,21 +3,13 @@
 
 {% set titlebar %}
 	<h1>{{ "Email"|t }}</h1>
+
 	<ul class="left">
-		<li><a href="{{ url('settings') }}" class="btn backbtn">{{ "Settings"|t }}</a></li>
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
 	</ul>
-{% endset %}
 
-
-{% set content %}
-	<nav class="nav">
-		<ul>
-			<li><a href="{{ url('settings/email') }}" {% if blx.request.segment(3) == '' %}class="sel"{% endif %} data-icon="⚙">{{ "Settings"|t }}</a></li>
-			<li><a href="{{ url('settings/email/messages') }}" {% if blx.request.segment(3) == 'messages' %}class="sel"{% endif %} data-icon="E">{{ "Messages"|t }}</a></li>
-		</ul>
-	</nav>
-
-	<div>
-		{{ settings }}
-	</div>
+	<ul class="tabs">
+		<li><a href="{{ url('settings/email') }}" {% if blx.request.segment(3) == '' %}class="active"{% endif %} data-icon="⚙">{{ "Settings"|t }}</a></li>
+		<li><a href="{{ url('settings/email/messages') }}" {% if blx.request.segment(3) == 'messages' %}class="active"{% endif %} data-icon="E">{{ "Messages"|t }}</a></li>
+	</ul>
 {% endset %}

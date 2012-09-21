@@ -34,10 +34,10 @@
 	<h1>{{ title|raw }}</h1>
 	<ul class="left">
 		<!-- BLOCKS ONLY -->
-		<li><a href="{{ url('settings/blog') }}" class="btn backbtn">{{ "Blog"|t }}</a></li>
+		<li><a href="{{ url('settings/blog') }}" class="backbtn">{{ "Blog"|t }}</a></li>
 		<!-- end BLOCKS ONLY -->
 		<!-- BLOCKSPRO ONLY -->
-		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="btn backbtn">{{ "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' })|raw }}</a></li>
+		<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="backbtn">{{ "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' })|raw }}</a></li>
 		<!-- end BLOCKSPRO ONLY -->
 	</ul>
 {% endset %}
