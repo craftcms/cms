@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class InstallController extends BaseController
 {
+	protected $allowAnonymous = true;
+
 	/**
 	 * Init
 	 *
