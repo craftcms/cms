@@ -54,11 +54,11 @@ class RichTextBlock extends BaseBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string $handle
+	 * @param string $name
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($handle, $value)
+	public function getInputHtml($name, $value)
 	{
 		blx()->templates->includeCssResource('lib/redactor/redactor.css');
 		blx()->templates->includeJsResource('lib/redactor/redactor.min.js');
@@ -74,8 +74,8 @@ class RichTextBlock extends BaseBlock
 
 		$configJson = JsonHelper::encode($config);
 
-		blx()->templates->includeJs('$(".redactor-'.$handle.'").redactor('.$configJson.');');
+		blx()->templates->includeJs('$(".redactor-'.$name.'").redactor('.$configJson.');');
 
-		return '<textarea id="'.$handle.'" name="'.$handle.'" class="redactor-'.$handle.'" style="display: none">'.$value.'</textarea>';
+		return '<textarea id="'.$name.'" name="'.$name.'" class="redactor-'.$name.'" style="display: none">'.$value.'</textarea>';
 	}
 }

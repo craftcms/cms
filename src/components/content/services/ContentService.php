@@ -787,8 +787,10 @@ class ContentService extends BaseApplicationComponent
 		/* end BLOCKSPRO ONLY */
 		foreach ($blockPackages as $blockPackage)
 		{
+			$name = 'block'.$blockPackage->id;
 			$handle = $blockPackage->handle;
-			$entryPackage->blocks[$handle] = $contentRecord->$handle;
+
+			$entryPackage->blocks[$name] = $contentRecord->$handle;
 		}
 
 		return $entryPackage;
@@ -1099,10 +1101,11 @@ class ContentService extends BaseApplicationComponent
 		foreach ($blockPackages as $blockPackage)
 		{
 			$handle = $blockPackage->handle;
+			$name = 'block'.$blockPackage->id;
 
-			if (isset($entryPackage->blocks[$handle]))
+			if (isset($entryPackage->blocks[$name]))
 			{
-				$contentRecord->$handle = $entryPackage->blocks[$handle];
+				$contentRecord->$handle = $entryPackage->blocks[$name];
 			}
 			else
 			{

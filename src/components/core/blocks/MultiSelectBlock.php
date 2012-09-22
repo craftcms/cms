@@ -32,14 +32,14 @@ class MultiSelectBlock extends BaseOptionsBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string $handle
+	 * @param string $name
 	 * @param mixed  $values
 	 * @return string
 	 */
-	public function getInputHtml($handle, $values)
+	public function getInputHtml($name, $values)
 	{
 		return blx()->templates->render('_components/blocks/MultiSelect/input', array(
-			'handle'   => $handle,
+			'name'     => $name,
 			'values'   => $values,
 			'settings' => $this->getSettings()
 		));

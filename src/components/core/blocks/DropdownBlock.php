@@ -30,14 +30,14 @@ class DropdownBlock extends BaseOptionsBlock
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string $handle
+	 * @param string $name
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($handle, $value)
+	public function getInputHtml($name, $value)
 	{
 		return blx()->templates->render('_components/blocks/Dropdown/input', array(
-			'handle'   => $handle,
+			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()
 		));

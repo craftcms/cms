@@ -9,7 +9,7 @@ class BlockVariable extends ComponentVariable
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string $handle
+	 * @param string $name
 	 * @param mixed  $value
 	 * @return string
 	 */

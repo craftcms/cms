@@ -82,9 +82,10 @@
 
 			{% for blockPackage in blocks %}
 				{% set block = blx.blocks.populateBlock(blockPackage) %}
-				{% set data = entry.blocks[blockPackage.handle] %}
+				{% set name = 'block'~blockPackage.id %}
+				{% set value = entry.blocks[name] %}
 				{% set errors = entry.blockErrors[blockPackage.handle] %}
-				{% set input = block.input(blockPackage.handle, data, errors) %}
+				{% set input = block.input(name, value) %}
 
 				{{ forms.field({
 					label: blockPackage.name,
