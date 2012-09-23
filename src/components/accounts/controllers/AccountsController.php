@@ -211,8 +211,11 @@ class AccountsController extends BaseController
 
 		$userId = blx()->request->getRequiredPost('userId');
 		$user = blx()->accounts->getUserById($userId);
+
 		if (!$user)
+		{
 			$this->_noUserExists($userId);
+		}
 
 		$user->firstName = blx()->request->getPost('firstName');
 		$user->lastName = blx()->request->getPost('lastName');
