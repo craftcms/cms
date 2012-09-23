@@ -1,0 +1,98 @@
+{% import "_includes/forms" as forms %}
+
+
+{% if blockPackage %}
+	{% set block = blx.blocks.populateBlock(blockPackage) %}
+{% else %}
+	{% set block = blx.blocks.getBlockByClass('PlainText') %}
+{% endif %}
+
+
+{{ forms.textField({
+	label: "Name"|t,
+	instructions: "What this block will be called in the CP."|t,
+	id: 'name',
+	name: 'name',
+	value: blockPackage.name,
+	errors: blockPackage.errors.name,
+	first: true,
+	required: true,
+	translatable: true
+}) }}
+
+{{ forms.textField({
+	label: "Handle"|t,
+	instructions: "How you’ll refer to this block in the templates."|t,
+	id: 'handle',
+	class: 'code',
+	name: 'handle',
+	value: blockPackage.handle,
+	errors: blockPackage.errors.handle,
+	required: true,
+}) }}
+
+{{ forms.textareaField({
+	label: "Instructions"|t,
+	<!-- BLOCKS ONLY -->
+	instructions: "Helper text to guide you when authoring an entry."|t,
+	<!-- end BLOCKS ONLY -->
+	<!-- BLOCKSPRO ONLY -->
+	instructions: "Helper text to guide the author."|t,
+	<!-- end BLOCKSPRO ONLY -->
+	id: 'instructions',
+	name: 'instructions',
+	value: blockPackage.instructions,
+	errors: blockPackage.errors.instructions,
+	translatable: true
+}) }}
+
+<!-- BLOCKSPRO ONLY -->
+{{ forms.checkboxField({
+	label: "This entry block is required"|t,
+	name: 'required',
+	checked: blockPackage.required
+}) }}
+
+{% if blx.systemSettings.languages %}
+	{{ forms.checkboxField({
+		label: "This entry block is translatable"|t,
+		name: 'translatable',
+		checked: blockPackage.translatable
+	}) }}
+{% endif %}
+<!-- end BLOCKSPRO ONLY -->
+
+{% set blocks = blx.blocks.getAllBlocks %}
+
+{{ forms.selectField({
+	label: "Type",
+	instructions: "What type of block is this?"|t,
+	id: 'class',
+	name: 'class',
+	options: blocks,
+	value: block.classHandle,
+	toggle: true
+}) }}
+
+{% for _block in blocks %}
+	{% set isCurrent = (_block.classHandle == block.classHandle) %}
+	{% if isCurrent %}
+		{% set settings = block.settings %}
+	{% else %}
+		{% set settings = _block.settings %}
+	{% endif %}
+
+	{% if settings %}
+		<div id="{{ _block.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+			<hr>
+			{% set namespace = 'types[' ~ _block.classHandle ~ ']' %}
+			{{- settings|ns(namespace)|raw -}}
+			<hr>
+		</div>
+	{% endif %}
+{% endfor %}
+
+
+{% if not blockPackage.handle %}
+	{% includeJs "new Blocks.ui.HandleGenerator('#name', '#handle');" %}
+{% endif %}
