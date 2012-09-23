@@ -31,21 +31,24 @@ var CP = Blocks.Base.extend({
 				var $tab = $(this);
 				if (this != $activeTab[0])
 				{
-					$activeTab.removeClass('active');
-					var oldTarget = $activeTab.attr('data-target');
-
-					$activeTab = $tab;
-					$activeTab.addClass('active');
-					var newTarget = $activeTab.attr('data-target');
-
+					var newTarget = $tab.attr('data-target');
 					if (newTarget)
 					{
-						$('#'+newTarget).show();
-					}
+						$activeTab.removeClass('active');
+						var oldTarget = $activeTab.attr('data-target');
 
-					if (oldTarget)
-					{
-						$('#'+oldTarget).hide();
+						$activeTab = $tab;
+						$activeTab.addClass('active');
+
+						if (newTarget)
+						{
+							$('#'+newTarget).show();
+						}
+
+						if (oldTarget)
+						{
+							$('#'+oldTarget).hide();
+						}
 					}
 				}
 			});
