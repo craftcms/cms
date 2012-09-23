@@ -18,37 +18,35 @@
 
 
 {% set content %}
-	<div class="pane">
-		<p id="nosections" {% if sections|length %}style="display: none"{% endif %}>
-			{{ "No sections exist yet."|t }} <a href="{{ url('settings/sections/new') }}">{{ "Create the first one."|t }}</a>
-		</p>
+	<p id="nosections" {% if sections|length %}style="display: none"{% endif %}>
+		{{ "No sections exist yet."|t }}
+	</p>
 
-		{% if sections|length %}
-			<table id="sections" class="data">
-				<thead>
-					<th scope="col" width="33%">{{ "Name"|t }}</th>
-					<th scope="col" width="33%">{{ "Handle"|t }}</th>
-					<th scope="col" width="33%">{{ "Entry Blocks"|t }}</th>
-					<td width="1%"></td>
-				</thead>
-				<tbody>
-					{% for section in sections %}
-						<tr data-section-id="{{ section.id }}">
-							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
-							<td><code>{{ section.handle }}</code></td>
-							<td>
-								<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Entry Blocks"|t }}</a>
-								<span class="light">({{ blx.content.totalEntryBlocksBySectionId(section.id) }})</span>
-							</td>
-							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-	</div>
+	{% if sections|length %}
+		<table id="sections" class="data">
+			<thead>
+				<th scope="col" width="33%">{{ "Name"|t }}</th>
+				<th scope="col" width="33%">{{ "Handle"|t }}</th>
+				<th scope="col" width="33%">{{ "Entry Blocks"|t }}</th>
+				<td width="1%"></td>
+			</thead>
+			<tbody>
+				{% for section in sections %}
+					<tr data-section-id="{{ section.id }}">
+						<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
+						<td><code>{{ section.handle }}</code></td>
+						<td>
+							<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ "Entry Blocks"|t }}</a>
+							<span class="light">({{ blx.content.totalEntryBlocksBySectionId(section.id) }})</span>
+						</td>
+						<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
 
 	<div class="buttons">
-		<a href="{{ url('settings/sections/new') }}" class="btn submit addbtn">{{ "New Section"|t }}</a>
+		<a href="{{ url('settings/sections/new') }}" class="btn addbtn">{{ "New Section"|t }}</a>
 	</div>
 {% endset %}

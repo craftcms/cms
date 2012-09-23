@@ -3,9 +3,9 @@
 {% includeTranslations
 	"New block order saved.",
 	"Couldn’t save new block order.",
-	"Are you sure you want to delete the entry block “{block}”?",
-	"Entry block deleted.",
-	"Couldn’t delete entry block."
+	"Are you sure you want to delete the block “{block}”?",
+	"Block deleted.",
+	"Couldn’t delete block."
 %}
 
 
@@ -27,7 +27,7 @@
 
 	<div class="pane">
 		<p id="noblocks" {% if blocks|length %}style="display: none"{% endif %}>
-			{{ "No entry blocks exist yet."|t }} <a href="{{ url('settings/blog/blocks/new') }}">{{ "Create the first one."|t }}</a>
+			{{ "No blocks exist yet."|t }}
 		</p>
 
 		{% if blocks|length %}
@@ -55,6 +55,6 @@
 	</div>
 
 	<div class="buttons">
-		<a href="{{ url('settings/blog/blocks/new') }}" class="btn submit addbtn">{{ "New Entry Block"|t }}</a>
+		<a href="{{ url('settings/blog/blocks/new') }}" class="btn submit addbtn">{{ "New Block"|t }}</a>
 	</div>
 {% endset %}

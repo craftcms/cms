@@ -110,25 +110,16 @@
 					{% endfor %}
 				</tbody>
 			</table>
-			<!-- BLOCKSPRO ONLY -->
-			{% if not showSection %}
-				<div class="buttons">
-					<a class="btn submit addbtn" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
-				</div>
-			{% endif %}
-			<!-- end BLOCKSPRO ONLY -->
 		{% else %}
-			<p>
-				{{ "No entries exist yet."|t }}
-				<!-- BLOCKS ONLY -->
-				<a href="{{ url('content/blog/new') }}">{{ "Create the first one."|t }}</a>
-				<!-- end BLOCKS ONLY -->
-				<!-- BLOCKSPRO ONLY -->
-				{% if not showSection %}
-					<a href="{{ url('content/' ~ filter ~ '/new') }}">{{ "Create the first one."|t }}</a>
-				{% endif %}
-				<!-- end BLOCKSPRO ONLY -->
-			</p>
+			<p>{{ "No entries exist yet."|t }}</p>
 		{% endif %}
+		<!-- BLOCKSPRO ONLY -->
+
+		{% if not showSection %}
+			<div class="buttons">
+				<a class="btn submit addbtn" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
+			</div>
+		{% endif %}
+		<!-- end BLOCKSPRO ONLY -->
 	</div>
 {% endset %}

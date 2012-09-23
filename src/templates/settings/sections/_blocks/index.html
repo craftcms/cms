@@ -3,9 +3,9 @@
 {% includeTranslations
 	"New block order saved.",
 	"Couldn’t save new block order.",
-	"Are you sure you want to delete the entry block “{block}”?",
-	"Entry block deleted.",
-	"Couldn’t delete entry block."
+	"Are you sure you want to delete the block “{block}”?",
+	"Block deleted.",
+	"Couldn’t delete block."
 %}
 
 
@@ -26,36 +26,34 @@
 
 
 {% set content %}
-	<div class="pane">
-		<p id="noblocks" {% if blocks|length %}style="display: none"{% endif %}>
-			{{ "No entry blocks exist yet."|t }} <a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}">{{ "Create the first one."|t }}</a>
-		</p>
+	<p id="noblocks" {% if blocks|length %}style="display: none"{% endif %}>
+		{{ "No blocks exist yet."|t }}
+	</p>
 
-		{% if blocks|length %}
-			<table id="blocks" class="data">
-				<thead>
-					<th scope="col" width="33%">{{ "Name"|t }}</th>
-					<th scope="col" width="33%">{{ "Handle"|t }}</th>
-					<th scope="col" width="33%">{{ "Type"|t }}</th>
-					{% if sortable %}<td width="1%"></td>{% endif %}
-					<td width="1%"></td>
-				</thead>
-				<tbody>
-					{% for block in blocks %}
-						<tr data-block-id="{{ block.id }}">
-							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name|t }}</a></th>
-							<td><code>{{ block.handle }}</code></td>
-							<td>{{ blx.blocks.getBlockByClass(block.class).name }}</td>
-							{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-	</div>
+	{% if blocks|length %}
+		<table id="blocks" class="data">
+			<thead>
+				<th scope="col" width="33%">{{ "Name"|t }}</th>
+				<th scope="col" width="33%">{{ "Handle"|t }}</th>
+				<th scope="col" width="33%">{{ "Type"|t }}</th>
+				{% if sortable %}<td width="1%"></td>{% endif %}
+				<td width="1%"></td>
+			</thead>
+			<tbody>
+				{% for block in blocks %}
+					<tr data-block-id="{{ block.id }}">
+						<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name|t }}</a></th>
+						<td><code>{{ block.handle }}</code></td>
+						<td>{{ blx.blocks.getBlockByClass(block.class).name }}</td>
+						{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+						<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
 
 	<div class="buttons">
-		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn submit addbtn">{{ "New Entry Block"|t }}</a>
+		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn addbtn">{{ "New Block"|t }}</a>
 	</div>
 {% endset %}

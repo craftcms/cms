@@ -36,7 +36,7 @@ $table.find('.deletebtn').click(function() {
 	var $row = $(this).closest('tr'),
 		blockName = $row.children(':first').children('a').text();
 
-	if (confirm(Blocks.t('Are you sure you want to delete the entry block “{block}”?', { block: blockName })))
+	if (confirm(Blocks.t('Are you sure you want to delete the block “{block}”?', { block: blockName })))
 	{
 		var data = {
 			blockId: $row.attr('data-block-id')
@@ -54,10 +54,10 @@ $table.find('.deletebtn').click(function() {
 					$('#noblocks').show();
 				}
 
-				Blocks.cp.displayNotice(Blocks.t('Entry block deleted.'));
+				Blocks.cp.displayNotice(Blocks.t('Block deleted.'));
 			}
 			else
-				Blocks.cp.displayError(Blocks.t('Couldn’t delete entry block.'));
+				Blocks.cp.displayError(Blocks.t('Couldn’t delete block.'));
 		});
 	}
 });
