@@ -271,7 +271,7 @@ class InstallService extends BaseApplicationComponent
 		/* end BLOCKSPRO ONLY */
 		$blockPackage->class = 'RichText';
 
-		blx()->content->saveEntryBlock($blockPackage);
+		blx()->entryBlocks->saveBlock($blockPackage);
 
 		/*// Add a Welcome entry to the Blog
 		$entry = blx()->content->createEntry($sectionPackage->id, null, $user->id, 'Welcome to Blocks Alpha 2');

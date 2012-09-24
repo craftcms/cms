@@ -71,7 +71,7 @@ class ContentVariable
 	 */
 	public function entryBlocks()
 	{
-		return blx()->content->getEntryBlocks();
+		return blx()->entryBlocks->getAllBlocks();
 	}
 
 	/* end BLOCKS ONLY */
@@ -84,7 +84,7 @@ class ContentVariable
 	 */
 	public function entryBlocksBySectionId($sectionId)
 	{
-		return blx()->content->getEntryBlocksBySectionId($sectionId);
+		return blx()->entryBlocks->getBlocksBySectionId($sectionId);
 	}
 
 	/**
@@ -95,7 +95,7 @@ class ContentVariable
 	 */
 	public function totalEntryBlocksBySectionId($sectionId)
 	{
-		return blx()->content->getTotalEntryBlocksBySectionId($sectionId);
+		return blx()->entryBlocks->getTotalBlocksBySectionId($sectionId);
 	}
 
 	/* end BLOCKSPRO ONLY */
@@ -107,7 +107,7 @@ class ContentVariable
 	 */
 	public function getEntryBlockById($id)
 	{
-		return blx()->content->getEntryBlockById($id);
+		return blx()->entryBlocks->getBlockById($id);
 	}
 
 	// -------------------------------------------

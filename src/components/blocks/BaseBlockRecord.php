@@ -8,6 +8,8 @@ namespace Blocks;
  */
 abstract class BaseBlockRecord extends BaseRecord
 {
+	public $oldHandle;
+
 	/**
 	 * @return array
 	 */

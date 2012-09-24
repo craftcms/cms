@@ -1,20 +1,11 @@
 {% extends "_layouts/cp" %}
-{% includeJsResource "js/section_blocks.js" %}
-{% includeTranslations
-	"New block order saved.",
-	"Couldn’t save new block order.",
-	"Are you sure you want to delete the block “{block}”?",
-	"Block deleted.",
-	"Couldn’t delete block."
-%}
+{% includeJs "new Blocks.ui.BlockIndex('entryBlocks');" %}
 
 
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
 
 {% set title = "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' }) %}
-{% set blocks = blx.content.entryBlocksBySectionId(section.id) %}
-{% set sortable  = (blocks|length > 1) %}
 
 
 {% set titlebar %}
@@ -26,34 +17,7 @@
 
 
 {% set content %}
-	<p id="noblocks" {% if blocks|length %}style="display: none"{% endif %}>
-		{{ "No blocks exist yet."|t }}
-	</p>
-
-	{% if blocks|length %}
-		<table id="blocks" class="data">
-			<thead>
-				<th scope="col" width="33%">{{ "Name"|t }}</th>
-				<th scope="col" width="33%">{{ "Handle"|t }}</th>
-				<th scope="col" width="33%">{{ "Type"|t }}</th>
-				{% if sortable %}<td width="1%"></td>{% endif %}
-				<td width="1%"></td>
-			</thead>
-			<tbody>
-				{% for block in blocks %}
-					<tr data-block-id="{{ block.id }}">
-						<th scope="row"><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/' ~ block.id) }}">{{ block.name|t }}</a></th>
-						<td><code>{{ block.handle }}</code></td>
-						<td>{{ blx.blocks.getBlockByClass(block.class).name }}</td>
-						{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-						<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endif %}
-
-	<div class="buttons">
-		<a href="{{ url('settings/sections/' ~ section.id ~ '/blocks/new') }}" class="btn addbtn">{{ "New Block"|t }}</a>
-	</div>
+	{% set blocks = blx.content.entryBlocksBySectionId(section.id) %}
+	{% set settingsUrlPrefix = 'settings/sections/' ~ section.id ~ '/blocks/' %}
+	{% include "_includes/blockindex" with { blocks: blocks, settingsUrlPrefix: settingsUrlPrefix } only %}
 {% endset %}

@@ -56,6 +56,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\EmailService',
 			),
 
+			'entryBlocks' => array(
+				'class' => 'Blocks\EntryBlocksService',
+			),
+
 			'et' => array(
 				'class' => 'Blocks\EtService',
 			),
@@ -91,6 +95,7 @@ return CMap::mergeArray(
 			'updates' => array(
 				'class' => 'Blocks\UpdatesService',
 			),
+
 			// end services
 
 			'file' => array(

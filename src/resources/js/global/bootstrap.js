@@ -36,7 +36,9 @@ var scripts =
 	'ui/PasswordInput.js',
 	'ui/MixedInput.js',
 	'ui/AdminPane.js',
-	'ui/FieldToggle.js'
+	'ui/FieldToggle.js',
+
+	'ui/BlockIndex.js'
 ];
 
 for (var i = 0; i < scripts.length; i++)

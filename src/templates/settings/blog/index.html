@@ -1,17 +1,8 @@
 {% extends "_layouts/cp" %}
-{% includeJsResource "js/section_blocks.js" %}
-{% includeTranslations
-	"New block order saved.",
-	"Couldn’t save new block order.",
-	"Are you sure you want to delete the block “{block}”?",
-	"Block deleted.",
-	"Couldn’t delete block."
-%}
+{% includeJs "new Blocks.ui.BlockIndex('entryBlocks');" %}
 
 
 {% set title = "Blog"|t %}
-{% set blocks = blx.content.entryBlocks %}
-{% set sortable  = (blocks|length > 1) %}
 
 
 {% set titlebar %}
@@ -25,36 +16,6 @@
 {% set content %}
 	<h2>{{ "Entry Blocks"|t }}</h2>
 
-	<div class="pane">
-		<p id="noblocks" {% if blocks|length %}style="display: none"{% endif %}>
-			{{ "No blocks exist yet."|t }}
-		</p>
-
-		{% if blocks|length %}
-			<table id="blocks" class="data">
-				<thead>
-					<th scope="col" width="33%">{{ "Name"|t }}</th>
-					<th scope="col" width="33%">{{ "Handle"|t }}</th>
-					<th scope="col" width="33%">{{ "Type"|t }}</th>
-					{% if sortable %}<td width="1%"></td>{% endif %}
-					<td width="1%"></td>
-				</thead>
-				<tbody>
-					{% for block in blocks %}
-						<tr data-block-id="{{ block.id }}">
-							<th scope="row"><a href="{{ url('settings/blog/blocks/' ~ block.id) }}">{{ block.name|t }}</a></th>
-							<td><code>{{ block.handle }}</code></td>
-							<td>{{ blx.blocks.getBlockByClass(block.class).name }}</td>
-							{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-							<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% endif %}
-	</div>
-
-	<div class="buttons">
-		<a href="{{ url('settings/blog/blocks/new') }}" class="btn submit addbtn">{{ "New Block"|t }}</a>
-	</div>
+	{% set blocks = blx.content.entryBlocks %}
+	{% include "_includes/blockindex" with { blocks: blocks, settingsUrlPrefix: 'settings/blog/blocks/' } only %}
 {% endset %}

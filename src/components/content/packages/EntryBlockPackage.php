@@ -19,6 +19,6 @@ class EntryBlockPackage extends BaseBlockPackage
 	 */
 	public function save()
 	{
-		return blx()->content->saveEntryBlock($this);
+		return blx()->entryBlocks->saveBlock($this);
 	}
 }

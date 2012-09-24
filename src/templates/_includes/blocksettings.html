@@ -45,20 +45,24 @@
 	errors: blockPackage.errors.instructions,
 	translatable: true
 }) }}
-
 <!-- BLOCKSPRO ONLY -->
-{{ forms.checkboxField({
-	label: "This entry block is required"|t,
-	name: 'required',
-	checked: blockPackage.required
-}) }}
 
-{% if blx.systemSettings.languages %}
+{% if canBeRequired %}
 	{{ forms.checkboxField({
-		label: "This entry block is translatable"|t,
-		name: 'translatable',
-		checked: blockPackage.translatable
+		label: "This entry block is required"|t,
+		name: 'required',
+		checked: blockPackage.required
 	}) }}
+{% endif %}
+
+{% if canBeTranslatable %}
+	{% if blx.systemSettings.languages %}
+		{{ forms.checkboxField({
+			label: "This entry block is translatable"|t,
+			name: 'translatable',
+			checked: blockPackage.translatable
+		}) }}
+	{% endif %}
 {% endif %}
 <!-- end BLOCKSPRO ONLY -->
 
