@@ -1,0 +1,19 @@
+{% extends "_layouts/cp" %}
+{% set title = "User Settings"|t %}
+{% includeJs "new Blocks.ui.BlockIndex('userBlocks');" %}
+
+
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<h2>User Blocks</h2>
+
+	{% set blocks = blx.accounts.userBlocks %}
+	{% include "_includes/blockindex" with { blocks: blocks, settingsUrlPrefix: 'settings/users/blocks/' } only %}
+{% endset %}

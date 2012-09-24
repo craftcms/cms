@@ -8,6 +8,10 @@ class AccountsController extends BaseController
 {
 	protected $allowAnonymous = array('actionForgotPassword', 'actionResetPassword');
 
+	// -------------------------------------------
+	//  Password Reset
+	// -------------------------------------------
+
 	/**
 	 * Sends a Forgot Password email.
 	 */
@@ -93,7 +97,9 @@ class AccountsController extends BaseController
 		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordModel));
 	}
 
-	// Account / Profile / Admin Settings
+	// -------------------------------------------
+	//  Account Settings
+	// -------------------------------------------
 
 	/**
 	 * Registers a new user, or saves an existing user's account settings.
@@ -228,7 +234,6 @@ class AccountsController extends BaseController
 			$this->renderRequestedTemplate(array('user' => $user));
 		}
 	}
-
 	/* BLOCKSPRO ONLY */
 
 	/**

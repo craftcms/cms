@@ -6,6 +6,37 @@ namespace Blocks;
  */
 class AccountsVariable
 {
+	/* BLOCKSPRO ONLY */
+	// -------------------------------------------
+	//  User Blocks
+	// -------------------------------------------
+
+	/**
+	 * Returns all user blocks.
+	 *
+	 * @return array
+	 */
+	public function userBlocks()
+	{
+		return blx()->userBlocks->getAllBlocks();
+	}
+
+	/**
+	 * Gets a user block by its ID.
+	 *
+	 * @param int $id
+	 * @return BlockVariable
+	 */
+	public function getUserBlockById($id)
+	{
+		return blx()->userBlocks->getBlockById($id);
+	}
+
+	/* end BLOCKSPRO ONLY */
+	// -------------------------------------------
+	//  Users
+	// -------------------------------------------
+
 	/**
 	 * Returns the current logged-in user.
 	 *

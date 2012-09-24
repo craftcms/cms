@@ -96,6 +96,12 @@ return CMap::mergeArray(
 				'class' => 'Blocks\UpdatesService',
 			),
 
+			/* BLOCKSPRO ONLY */
+			'userBlocks' => array(
+				'class' => 'Blocks\UserBlocksService',
+			),
+
+			/* end BLOCKSPRO ONLY */
 			// end services
 
 			'file' => array(
@@ -149,6 +155,8 @@ return CMap::mergeArray(
 					'settings\/blog\/blocks\/(?P<blockId>\d+)'                         => 'settings/blog/_blocksettings',
 					/* end BLOCKS ONLY */
 					/* BLOCKSPRO ONLY */
+					'settings\/users\/blocks\/new'                                     => 'settings/users/_blocksettings',
+					'settings\/users\/blocks\/(?P<blockId>\d+)'                        => 'settings/users/_blocksettings',
 					'settings\/sections\/new'                                          => 'settings/sections/_settings',
 					'settings\/sections\/(?P<sectionId>\d+)'                           => 'settings/sections/_settings',
 					'settings\/sections\/(?P<sectionId>\d+)\/blocks'                   => 'settings/sections/_blocks',
