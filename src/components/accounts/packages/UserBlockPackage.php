@@ -15,6 +15,6 @@ class UserBlockPackage extends BaseBlockPackage
 	 */
 	public function save()
 	{
-		return blx()->accounts->saveUserBlock($this);
+		return blx()->userBlocks->saveBlock($this);
 	}
 }

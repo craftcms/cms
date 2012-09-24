@@ -105,7 +105,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * Gets a block by its ID.
 	 *
 	 * @param int $blockId
-	 * @return BaseBlock
+	 * @return BaseBlockPackage
 	 */
 	public function getBlockById($blockId)
 	{
