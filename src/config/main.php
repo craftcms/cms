@@ -101,6 +101,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\UserBlocksService',
 			),
 
+			'userGroups' => array(
+				'class' => 'Blocks\UserGroupsService',
+			),
+
 			/* end BLOCKSPRO ONLY */
 			// end services
 
@@ -157,6 +161,8 @@ return CMap::mergeArray(
 					/* BLOCKSPRO ONLY */
 					'settings\/users\/blocks\/new'                                     => 'settings/users/_blocksettings',
 					'settings\/users\/blocks\/(?P<blockId>\d+)'                        => 'settings/users/_blocksettings',
+					'settings\/users\/groups\/new'                                     => 'settings/users/_groupsettings',
+					'settings\/users\/groups\/(?P<groupId>\d+)'                        => 'settings/users/_groupsettings',
 					'settings\/sections\/new'                                          => 'settings/sections/_settings',
 					'settings\/sections\/(?P<sectionId>\d+)'                           => 'settings/sections/_settings',
 					'settings\/sections\/(?P<sectionId>\d+)\/blocks'                   => 'settings/sections/_blocks',

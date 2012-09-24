@@ -8,6 +8,31 @@ class AccountsVariable
 {
 	/* BLOCKSPRO ONLY */
 	// -------------------------------------------
+	//  User Groups
+	// -------------------------------------------
+
+	/**
+	 * Returns all user groups.
+	 *
+	 * @return array
+	 */
+	public function userGroups()
+	{
+		return blx()->userGroups->getAllGroups();
+	}
+
+	/**
+	 * Gets a user group by its ID.
+	 *
+	 * @param int $id
+	 * @return UserGroupPackage
+	 */
+	public function getUserGroupById($id)
+	{
+		return blx()->userGroups->getGroupById($id);
+	}
+
+	// -------------------------------------------
 	//  User Blocks
 	// -------------------------------------------
 

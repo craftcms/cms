@@ -31,6 +31,11 @@ class InstallService extends BaseApplicationComponent
 			// Create the foreign keys
 			$this->_createForeignKeysFromRecords($records);
 
+			/* BLOCKSPRO ONLY */
+			// Create the usergroups_users join table
+			$this->_createUsergroupsUsersTable();
+
+			/* end BLOCKSPRO ONLY */
 			// Tell @@@productDisplay@@@ that it's installed now
 			blx()->setInstalledStatus(true);
 
@@ -71,6 +76,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Finds installable records from the models folder.
 	 *
+	 * @access private
 	 * @return array
 	 */
 	private function _findInstallableRecords()
@@ -117,6 +123,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Attempts to log in the given user.
 	 *
+	 * @access private
 	 * @param $user
 	 * @param $password
 	 * @return void
@@ -134,6 +141,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Adds the initial user to the database.
 	 *
+	 * @access private
 	 * @param $inputs
 	 * @return UserRecord
 	 * @throws Exception
@@ -163,6 +171,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates the tables as defined in the records.
 	 *
+	 * @access private
 	 * @param $records
 	 */
 	private function _createTablesFromRecords($records)
@@ -177,6 +186,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates the foreign keys as defined in the records.
 	 *
+	 * @access private
 	 * @param $records
 	 */
 	private function _createForeignKeysFromRecords($records)
@@ -188,9 +198,28 @@ class InstallService extends BaseApplicationComponent
 		}
 	}
 
+	/** BLOCKSPRO ONLY */
+	/**
+	 * Creates the usergroups_users join table.
+	 *
+	 * @access private
+	 */
+	private function _createUsergroupsUsersTable()
+	{
+		blx()->db->createCommand()->createTable('usergroups_users', array(
+			'groupId' => array('column' => ColumnType::Int, 'required' => true),
+			'userId'  => array('column' => ColumnType::Int, 'required' => true)
+		));
+
+		blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id');
+		blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id');
+	}
+
+	/* end BLOCKSPRO ONLY */
 	/**
 	 * Saves some default mail settings for the site.
 	 *
+	 * @access private
 	 * @param $email
 	 * @param $siteName
 	 */
@@ -209,6 +238,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Populates the info table with install and environment information.
 	 *
+	 * @access private
 	 * @param $inputs
 	 * @throws Exception
 	 */
@@ -243,6 +273,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Creates initial database content for the install.
 	 *
+	 * @access private
 	 * @return null
 	 */
 	private function _createDefaultContent()
@@ -284,6 +315,7 @@ class InstallService extends BaseApplicationComponent
 
 	/* BLOCKSPRO ONLY */
 	/**
+	 * @access private
 	 * @param $messageKey
 	 * @param $subjectKey
 	 * @param $bodyKey
@@ -320,6 +352,7 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Generates a license key.
 	 *
+	 * @access private
 	 * @return string
 	 */
 	private function _generateLicenseKey()
