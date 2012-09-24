@@ -14,17 +14,18 @@ class BlxVariable
 	{
 		$plugin = blx()->plugins->getPlugin($name);
 
-		if ($plugin && $plugin->enabled)
+		if ($plugin && $plugin->record !== null && $plugin->record->enabled)
 		{
 			$pluginName = $plugin->getClassHandle();
-			$path = blx()->path->getPluginsPath().$pluginName.'/'.$pluginName.'Variable.php';
+			$className = __NAMESPACE__.'\\'.$pluginName.'Variable';
 
-			if (IOHelper::fileExists($path))
+			// Variables should already be imported by the plugin service, but let's double check.
+			if (!class_exists($className))
 			{
-				Blocks::import('plugins.'.$pluginName.'.'.$pluginName.'Variable');
-				$variableName = __NAMESPACE__.'\\'.$pluginName.'Variable';
-				return new $variableName;
+				Blocks::import('plugins.'.$pluginName.'.variables.'.$pluginName.'Variable');
 			}
+
+			return new $className;
 		}
 	}
 
@@ -101,7 +102,6 @@ class BlxVariable
 	}
 
 	/* BLOCKSPRO ONLY */
-
 	/**
 	 * @return EmailVariable
 	 */
@@ -109,7 +109,6 @@ class BlxVariable
 	{
 		return new EmailVariable();
 	}
-
 	/* end BLOCKSPRO ONLY */
 
 	/**
@@ -139,7 +138,6 @@ class BlxVariable
 	}
 
 	/* BLOCKSPRO ONLY */
-
  	/**
 	 * @return RoutesVariable
 	 */
@@ -147,7 +145,6 @@ class BlxVariable
 	{
 		return new RoutesVariable();
 	}
-
 	/* end BLOCKSPRO ONLY */
 
 	/**
@@ -167,27 +164,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return SecurityVariable
-	 */
-	public function security()
-	{
-		return new SecurityVariable();
-	}
-
-	/**
 	 * @return UserSessionVariable
 	 */
 	public function session()
 	{
 		return new UserSessionVariable();
-	}
-
-	/**
-	 * @return HttpStatusVariable
-	 */
-	public function httpstatus()
-	{
-		return new HttpStatusVariable();
 	}
 
 	/**
