@@ -16,7 +16,7 @@
 
 {% set content %}
 	<form method="post" action="" class="centered">
-		<input type="hidden" name="action" value="systemsettings/saveAdvancedSettings">
+		<input type="hidden" name="action" value="systemSettings/saveAdvancedSettings">
 
 		<h3>{{ "Debugging"|t }}</h3>
 		<div class="checkbox"><label><input type="checkbox" name="showDebugInfo" value="y" {% if settings.showDebugInfo %}checked{% endif %}> {{ "Show debugging info in the browser console"|t }}</label></div>
