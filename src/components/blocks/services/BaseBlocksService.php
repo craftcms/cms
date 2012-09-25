@@ -167,15 +167,15 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	public function saveBlock(BaseBlockPackage $blockPackage)
 	{
 		$blockRecord = $this->populateBlockRecord($blockPackage);
-		$block = blx()->blocks->populateBlock($blockPackage);
+		$blockType = blx()->blocks->populateBlockType($blockPackage);
 
 		$recordValidates = $blockRecord->validate();
-		$settingsValidate = $block->getSettings()->validate();
+		$settingsValidate = $blockType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
 			// Set the record settings now that the block has had a chance to tweak them
-			$blockRecord->settings = $block->getSettings()->getAttributes();
+			$blockRecord->settings = $blockType->getSettings()->getAttributes();
 
 			$isNewBlock = $blockRecord->isNewRecord();
 			if ($isNewBlock)
@@ -201,7 +201,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 
 				// Create/alter the content table column
 				$contentTable = $this->getContentTable($blockPackage);
-				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
+				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
 
 				if ($isNewBlock)
 				{
@@ -225,7 +225,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		else
 		{
 			$blockPackage->errors = $blockRecord->getErrors();
-			$blockPackage->settingsErrors = $block->getSettings()->getErrors();
+			$blockPackage->settingsErrors = $blockType->getSettings()->getErrors();
 
 			return false;
 		}
@@ -299,8 +299,8 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 				$blockPackage = $this->populateBlockPackage($blockRecord);
 				$contentTable = $this->getContentTable($blockPackage);
 
-				$block = blx()->blocks->populateBlock($blockPackage);
-				$column = ModelHelper::normalizeAttributeConfig($block->defineContentAttribute());
+				$blockType = blx()->blocks->populateBlockType($blockPackage);
+				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
 
 				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
 

@@ -8,14 +8,14 @@
 
 
 {% if widgetPackage %}
-	{% set widget = blx.dashboard.populateWidget(widgetPackage) %}
+	{% set widgetType = blx.dashboard.populateWidgetType(widgetPackage) %}
 {% else %}
-	{% set widget = blx.dashboard.getWidgetByClass('Feed') %}
+	{% set widgetType = blx.dashboard.getWidgetType('Feed') %}
 {% endif %}
 
 
 {% if widgetPackage.id %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~widget.title~'</i>' }) %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~widgetType.title~'</i>' }) %}
 {% else %}
 	{% set title = "Add a new widget"|t %}
 {% endif %}
@@ -35,30 +35,30 @@
 		<input type="hidden" name="redirect" value="dashboard/settings">
 		{% if widgetPackage.id %}<input type="hidden" name="widgetId" value="{{ widgetPackage.id }}">{% endif %}
 
-		{% set widgets = blx.dashboard.allWidgets %}
+		{% set widgetTypes = blx.dashboard.getAllWidgetTypes %}
 
 		{{ forms.selectField({
 			label: "Type",
 			instructions: "What type of widget is this?"|t,
 			id: 'class',
 			name: 'class',
-			options: widgets,
-			value: widget.classHandle,
+			options: widgetTypes,
+			value: widgetType.classHandle,
 			toggle: true
 		}) }}
 
-		{% for _widget in widgets %}
-			{% set isCurrent = (_widget.classHandle == widget.classHandle) %}
+		{% for _widgetType in widgetTypes %}
+			{% set isCurrent = (_widgetType.classHandle == widgetType.classHandle) %}
 			{% if isCurrent %}
-				{% set settings = widget.settings %}
+				{% set settings = widgetType.settings %}
 			{% else %}
-				{% set settings = _widget.settings %}
+				{% set settings = _widgetType.settings %}
 			{% endif %}
 
 			{% if settings %}
-				<div id="{{ _widget.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+				<div id="{{ _widgetType.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
 					<hr>
-					{% set namespace = 'types[' ~ _widget.classHandle ~ ']' %}
+					{% set namespace = 'types[' ~ _widgetType.classHandle ~ ']' %}
 					{{- settings|ns(namespace)|raw -}}
 					<hr>
 				</div>

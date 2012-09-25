@@ -7,33 +7,33 @@ namespace Blocks;
 class DashboardService extends BaseApplicationComponent
 {
 	/**
-	 * Returns all installed widgets.
+	 * Returns all installed widget types.
 	 *
 	 * @return array
 	 */
-	public function getAllWidgets()
+	public function getAllWidgetTypes()
 	{
 		return blx()->components->getComponentsByType('widget');
 	}
 
 	/**
-	 * Returns a widget by its class.
+	 * Returns a widget type.
 	 *
 	 * @param string $class
 	 * @return BaseWidget|null
 	 */
-	public function getWidgetByClass($class)
+	public function getWidgetType($class)
 	{
 		return blx()->components->getComponentByTypeAndClass('widget', $class);
 	}
 
 	/**
-	 * Populates a widget.
+	 * Populates a widget type.
 	 *
 	 * @param WidgetPackage $widgetPackage
 	 * @return BaseWidget|null
 	 */
-	public function populateWidget(WidgetPackage $widgetPackage)
+	public function populateWidgetType(WidgetPackage $widgetPackage)
 	{
 		return blx()->components->populateComponentByTypeAndPackage('widget', $widgetPackage);
 	}
@@ -126,15 +126,15 @@ class DashboardService extends BaseApplicationComponent
 		$widgetRecord->type = $widgetPackage->type;
 		$widgetRecord->settings = $widgetPackage->settings;
 
-		$widget = $this->populateWidget($widgetPackage);
+		$widgetType = $this->populateWidgetType($widgetPackage);
 
 		$recordValidates = $widgetRecord->validate();
-		$settingsValidate = $widget->getSettings()->validate();
+		$settingsValidate = $widgetType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
 			// Set the record settings now that the widget has had a chance to tweak them
-			$widgetRecord->settings = $widget->getSettings()->getAttributes();
+			$widgetRecord->settings = $widgetType->getSettings()->getAttributes();
 
 			if ($widgetRecord->isNewRecord())
 			{
@@ -159,7 +159,7 @@ class DashboardService extends BaseApplicationComponent
 		else
 		{
 			$widgetPackage->errors = $widgetRecord->getErrors();
-			$widgetPackage->settingsErrors = $widget->getSettings()->getErrors();
+			$widgetPackage->settingsErrors = $widgetType->getSettings()->getErrors();
 
 			return false;
 		}

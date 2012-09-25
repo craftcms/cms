@@ -7,43 +7,43 @@ namespace Blocks;
 class BlocksVariable
 {
 	/**
-	 * Returns all installed blocks.
+	 * Returns all installed block types.
 	 *
 	 * @return array
 	 */
-	public function getAllBlocks()
+	public function getAllBlockTypes()
 	{
-		$blocks = blx()->blocks->getAllBlocks();
-		return VariableHelper::populateVariables($blocks, 'BlockVariable');
+		$blockTypes = blx()->blocks->getAllBlockTypes();
+		return VariableHelper::populateVariables($blockTypes, 'BlockVariable');
 	}
 
 	/**
-	 * Gets a block by its class.
+	 * Gets a block type.
 	 *
 	 * @param string $class
 	 * @return BaseBlock|null
 	 */
-	public function getBlockByClass($class)
+	public function getBlockType($class)
 	{
-		$block = blx()->blocks->getBlockByClass($class);
-		if ($block)
+		$blockType = blx()->blocks->getBlockType($class);
+		if ($blockType)
 		{
-			return new BlockVariable($block);
+			return new BlockVariable($blockType);
 		}
 	}
 
 	/**
-	 * Populates a block.
+	 * Populates a block type.
 	 *
 	 * @param BaseBlockPackage $blockPackage
 	 * @return BaseBlock|null
 	 */
-	public function populateBlock(BaseBlockPackage $blockPackage)
+	public function populateBlockType(BaseBlockPackage $blockPackage)
 	{
-		$block = blx()->blocks->populateBlock($blockPackage);
-		if ($block)
+		$blockType = blx()->blocks->populateBlockType($blockPackage);
+		if ($blockType)
 		{
-			return new BlockVariable($block);
+			return new BlockVariable($blockType);
 		}
 	}
 }

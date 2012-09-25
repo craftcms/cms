@@ -2,9 +2,9 @@
 
 
 {% if blockPackage %}
-	{% set block = blx.blocks.populateBlock(blockPackage) %}
+	{% set blockType = blx.blocks.populateBlockType(blockPackage) %}
 {% else %}
-	{% set block = blx.blocks.getBlockByClass('PlainText') %}
+	{% set blockType = blx.blocks.getBlockType('PlainText') %}
 {% endif %}
 
 
@@ -66,30 +66,30 @@
 {% endif %}
 <!-- end BLOCKSPRO ONLY -->
 
-{% set blocks = blx.blocks.getAllBlocks %}
+{% set blockTypes = blx.blocks.getAllBlockTypes %}
 
 {{ forms.selectField({
 	label: "Type",
 	instructions: "What type of block is this?"|t,
 	id: 'class',
 	name: 'class',
-	options: blocks,
-	value: block.classHandle,
+	options: blockTypes,
+	value: blockType.classHandle,
 	toggle: true
 }) }}
 
-{% for _block in blocks %}
-	{% set isCurrent = (_block.classHandle == block.classHandle) %}
+{% for _blockType in blockTypes %}
+	{% set isCurrent = (_blockType.classHandle == blockType.classHandle) %}
 	{% if isCurrent %}
-		{% set settings = block.settings %}
+		{% set settings = blockType.settings %}
 	{% else %}
-		{% set settings = _block.settings %}
+		{% set settings = _blockType.settings %}
 	{% endif %}
 
 	{% if settings %}
-		<div id="{{ _block.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+		<div id="{{ _blockType.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
 			<hr>
-			{% set namespace = 'types[' ~ _block.classHandle ~ ']' %}
+			{% set namespace = 'types[' ~ _blockType.classHandle ~ ']' %}
 			{{- settings|ns(namespace)|raw -}}
 			<hr>
 		</div>
