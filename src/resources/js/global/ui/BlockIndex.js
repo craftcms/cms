@@ -42,7 +42,7 @@ Blocks.ui.BlockIndex = Blocks.Base.extend({
 			blockIds: JSON.stringify(blockIds)
 		};
 
-		$.post(Blocks.actionUrl+this.controller+'/reorderBlocks', data, function(response) {
+		$.post(Blocks.actionUrl+this.controller+'/reorderBlocks', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				Blocks.cp.displayNotice(Blocks.t('New block order saved.'));
@@ -51,7 +51,7 @@ Blocks.ui.BlockIndex = Blocks.Base.extend({
 			{
 				Blocks.cp.displayError(Blocks.t('Couldn’t save new block order.'));
 			}
-		});
+		}, this));
 	},
 
 	deleteBlock: function(event)
@@ -65,7 +65,7 @@ Blocks.ui.BlockIndex = Blocks.Base.extend({
 				blockId: $row.attr('data-block-id')
 			};
 
-			$.post(Blocks.actionUrl+this.controller+'/deleteBlock', data, function(response) {
+			$.post(Blocks.actionUrl+this.controller+'/deleteBlock', data, $.proxy(function(response) {
 				if (response.success)
 				{
 					$row.remove();
@@ -83,7 +83,7 @@ Blocks.ui.BlockIndex = Blocks.Base.extend({
 				{
 					Blocks.cp.displayError(Blocks.t('Couldn’t delete block.'));
 				}
-			});
+			}, this));
 		}
 	}
 });
