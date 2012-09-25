@@ -15,28 +15,28 @@ abstract class BaseBlocksController extends BaseController
 	 * @access protected
 	 * @return BaseBlockPackage
 	 */
-	protected function populateBlockPackageFromPost()
+	protected function populateBlockFromPost()
 	{
 		$class = __NAMESPACE__.'\\'.$this->blockPackageClass;
-		$blockPackage = new $class();
+		$block = new $class();
 
-		$blockPackage->id = blx()->request->getPost('blockId');
-		$blockPackage->name = blx()->request->getPost('name');
-		$blockPackage->handle = blx()->request->getPost('handle');
-		$blockPackage->instructions = blx()->request->getPost('instructions');
+		$block->id = blx()->request->getPost('blockId');
+		$block->name = blx()->request->getPost('name');
+		$block->handle = blx()->request->getPost('handle');
+		$block->instructions = blx()->request->getPost('instructions');
 		/* BLOCKSPRO ONLY */
-		$blockPackage->required = (bool)blx()->request->getPost('required');
-		$blockPackage->translatable = (bool)blx()->request->getPost('translatable');
+		$block->required = (bool)blx()->request->getPost('required');
+		$block->translatable = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->type = blx()->request->getRequiredPost('class');
+		$block->type = blx()->request->getRequiredPost('class');
 
 		$typeSettings = blx()->request->getPost('types');
-		if (isset($typeSettings[$blockPackage->type]))
+		if (isset($typeSettings[$block->type]))
 		{
-			$blockPackage->settings = $typeSettings[$blockPackage->type];
+			$block->settings = $typeSettings[$block->type];
 		}
 
-		return $blockPackage;
+		return $block;
 	}
 
 	/**
@@ -46,14 +46,14 @@ abstract class BaseBlocksController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$blockPackage = $this->populateBlockPackageFromPost();
+		$block = $this->populateBlockFromPost();
 
 		$service = $this->service;
-		if (blx()->$service->saveBlock($blockPackage))
+		if (blx()->$service->saveBlock($block))
 		{
 			blx()->user->setNotice(Blocks::t('Block saved.'));
 			$this->redirectToPostedUrl(array(
-				'blockId' => $blockPackage->id
+				'blockId' => $block->id
 			));
 		}
 		else
@@ -63,7 +63,7 @@ abstract class BaseBlocksController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'blockPackage' => $blockPackage
+			'block' => $block
 		));
 	}
 

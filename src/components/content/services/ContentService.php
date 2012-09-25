@@ -17,23 +17,23 @@ class ContentService extends BaseApplicationComponent
 	 * @param array|SectionRecord $attributes
 	 * @return SectionPackage
 	 */
-	public function populateSectionPackage($attributes)
+	public function populateSection($attributes)
 	{
 		if ($attributes instanceof SectionRecord)
 		{
 			$attributes = $attributes->getAttributes();
 		}
 
-		$sectionPackage = new SectionPackage();
+		$section = new SectionPackage();
 
-		$sectionPackage->id = $attributes['id'];
-		$sectionPackage->name = $attributes['name'];
-		$sectionPackage->handle = $attributes['handle'];
-		$sectionPackage->hasUrls = $attributes['hasUrls'];
-		$sectionPackage->urlFormat = $attributes['urlFormat'];
-		$sectionPackage->template = $attributes['template'];
+		$section->id = $attributes['id'];
+		$section->name = $attributes['name'];
+		$section->handle = $attributes['handle'];
+		$section->hasUrls = $attributes['hasUrls'];
+		$section->urlFormat = $attributes['urlFormat'];
+		$section->template = $attributes['template'];
 
-		return $sectionPackage;
+		return $section;
 	}
 
 	/**
@@ -43,14 +43,14 @@ class ContentService extends BaseApplicationComponent
 	 * @param string $index
 	 * @return array
 	 */
-	public function populateSectionPackages($data, $index = 'id')
+	public function populateSections($data, $index = 'id')
 	{
 		$sectionPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$sectionPackage = $this->populateSectionPackage($attributes);
-			$sectionPackages[$sectionPackage->$index] = $sectionPackage;
+			$section = $this->populateSection($attributes);
+			$sectionPackages[$section->$index] = $section;
 		}
 
 		return $sectionPackages;
@@ -90,7 +90,7 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		return $this->populateSectionPackages($result);
+		return $this->populateSections($result);
 	}
 
 	/**
@@ -114,7 +114,7 @@ class ContentService extends BaseApplicationComponent
 		$result = $query->queryRow();
 		if ($result)
 		{
-			return $this->populateSectionPackage($result);
+			return $this->populateSection($result);
 		}
 	}
 
@@ -185,7 +185,7 @@ class ContentService extends BaseApplicationComponent
 		$sectionRecord = SectionRecord::model()->findById($sectionId);
 		if ($sectionRecord)
 		{
-			return $this->populateSectionPackage($sectionRecord);
+			return $this->populateSection($sectionRecord);
 		}
 	}
 
@@ -203,7 +203,7 @@ class ContentService extends BaseApplicationComponent
 
 		if ($sectionRecord)
 		{
-			return $this->populateSectionPackage($sectionRecord);
+			return $this->populateSection($sectionRecord);
 		}
 	}
 
@@ -248,27 +248,27 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves a section.
 	 *
-	 * @param SectionPackage $sectionPackage
+	 * @param SectionPackage $section
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveSection(SectionPackage $sectionPackage)
+	public function saveSection(SectionPackage $section)
 	{
-		$sectionRecord = $this->_getSectionRecordById($sectionPackage->id);
+		$sectionRecord = $this->_getSectionRecordById($section->id);
 
 		$isNewSection = $sectionRecord->isNewRecord();
 		if (!$isNewSection)
 		{
 			$oldUrlFormat = $sectionRecord->urlFormat;
-			$oldSectionPackage = $this->populateSectionPackage($sectionRecord);
-			$oldContentTable = EntryContentRecord::getTableNameForSection($oldSectionPackage);
+			$oldSection = $this->populateSection($sectionRecord);
+			$oldContentTable = EntryContentRecord::getTableNameForSection($oldSection);
 		}
 
-		$sectionRecord->name      = $sectionPackage->name;
-		$sectionRecord->handle    = $sectionPackage->handle;
-		$sectionRecord->hasUrls   = $sectionPackage->hasUrls;
-		$sectionRecord->urlFormat = $sectionPackage->urlFormat;
-		$sectionRecord->template  = $sectionPackage->template;
+		$sectionRecord->name      = $section->name;
+		$sectionRecord->handle    = $section->handle;
+		$sectionRecord->hasUrls   = $section->hasUrls;
+		$sectionRecord->urlFormat = $section->urlFormat;
+		$sectionRecord->template  = $section->template;
 
 		if ($sectionRecord->validate())
 		{
@@ -278,22 +278,22 @@ class ContentService extends BaseApplicationComponent
 				$sectionRecord->save(false);
 
 				// Now that we have a section ID, save it on the package
-				if (!$sectionPackage->id)
+				if (!$section->id)
 				{
-					$sectionPackage->id = $sectionRecord->id;
+					$section->id = $sectionRecord->id;
 				}
 
 				if ($isNewSection)
 				{
 					// Create the content table
-					$contentRecord = new EntryContentRecord($sectionPackage, 'install');
+					$contentRecord = new EntryContentRecord($section, 'install');
 					$contentRecord->createTable();
 					$contentRecord->addForeignKeys();
 				}
 				else
 				{
 					// Rename the content table if the handle changed
-					$newContentTable = EntryContentRecord::getTableNameForSection($sectionPackage);
+					$newContentTable = EntryContentRecord::getTableNameForSection($section);
 					if ($newContentTable != $oldContentTable)
 						blx()->db->createCommand()->renameTable($oldContentTable, $newContentTable);
 
@@ -339,8 +339,8 @@ class ContentService extends BaseApplicationComponent
 		try
 		{
 			// Delete the entire content table
-			$sectionPackage = $this->populateSectionPackage($sectionRecord);
-			$contentRecord = new EntryContentRecord($sectionPackage);
+			$section = $this->populateSection($sectionRecord);
+			$contentRecord = new EntryContentRecord($section);
 			$contentRecord->dropForeignKeys();
 			$contentRecord->dropTable();
 
@@ -380,32 +380,32 @@ class ContentService extends BaseApplicationComponent
 	 * @param array|EntryRecord $attributes
 	 * @return EntryPackage
 	 */
-	public function populateEntryPackage($attributes)
+	public function populateEntry($attributes)
 	{
 		if ($attributes instanceof EntryRecord)
 		{
 			$attributes = $attributes->getAttributes();
 		}
 
-		$entryPackage = new EntryPackage();
+		$entry = new EntryPackage();
 
-		$entryPackage->id = $attributes['id'];
+		$entry->id = $attributes['id'];
 		/* BLOCKSPRO ONLY */
-		$entryPackage->authorId = $attributes['authorId'];
-		$entryPackage->sectionId = $attributes['sectionId'];
+		$entry->authorId = $attributes['authorId'];
+		$entry->sectionId = $attributes['sectionId'];
 		/* end BLOCKSPRO ONLY */
-		$entryPackage->title = $attributes['title'];
-		$entryPackage->slug = $attributes['slug'];
+		$entry->title = $attributes['title'];
+		$entry->slug = $attributes['slug'];
 
 		if (is_numeric($attributes['postDate']))
 		{
 			$dateTime = new DateTime();
 			$dateTime->setTimestamp($attributes['postDate']);
-			$entryPackage->postDate = $dateTime;
+			$entry->postDate = $dateTime;
 		}
 		else
 		{
-			$entryPackage->postDate = $attributes['postDate'];
+			$entry->postDate = $attributes['postDate'];
 		}
 		/* BLOCKSPRO ONLY */
 
@@ -413,32 +413,32 @@ class ContentService extends BaseApplicationComponent
 		{
 			$dateTime = new DateTime();
 			$dateTime->setTimestamp($attributes['expiryDate']);
-			$entryPackage->expiryDate = $dateTime;
+			$entry->expiryDate = $dateTime;
 		}
 		else
 		{
-			$entryPackage->expiryDate = $attributes['expiryDate'];
+			$entry->expiryDate = $attributes['expiryDate'];
 		}
 		/* end BLOCKSPRO ONLY */
 
-		$entryPackage->blocks = array();
-		$contentRecord = $this->_getEntryContentRecord($entryPackage);
+		$entry->blocks = array();
+		$contentRecord = $this->_getEntryContentRecord($entry);
 
 		/* BLOCKS ONLY */
 		$blockPackages = blx()->entryBlocks->getAllBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($entryPackage->sectionId);
+		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($entry->sectionId);
 		/* end BLOCKSPRO ONLY */
-		foreach ($blockPackages as $blockPackage)
+		foreach ($blockPackages as $block)
 		{
-			$name = 'block'.$blockPackage->id;
-			$handle = $blockPackage->handle;
+			$name = 'block'.$block->id;
+			$handle = $block->handle;
 
-			$entryPackage->blocks[$name] = $contentRecord->$handle;
+			$entry->blocks[$name] = $contentRecord->$handle;
 		}
 
-		return $entryPackage;
+		return $entry;
 	}
 
 	/**
@@ -448,14 +448,14 @@ class ContentService extends BaseApplicationComponent
 	 * @param string $index
 	 * @return array
 	 */
-	public function populateEntryPackages($data, $index = 'id')
+	public function populateEntries($data, $index = 'id')
 	{
 		$entryPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$entryPackage = $this->populateEntryPackage($attributes);
-			$entryPackages[$entryPackage->$index] = $entryPackage;
+			$entry = $this->populateEntry($attributes);
+			$entryPackages[$entry->$index] = $entry;
 		}
 
 		return $entryPackages;
@@ -464,27 +464,27 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Populates an entry with draft data.
 	 *
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 */
-	public function populateEntryDraftData(EntryPackage $entryPackage)
+	public function populateEntryDraftData(EntryPackage $entry)
 	{
 		$draftRecord = EntryDraftRecord::model()->findByAttributes(array(
-			'entryId'  => $entryPackage->id,
+			'entryId'  => $entry->id,
 			/* BLOCKSPRO ONLY */
-			'language' => ($entryPackage->language ? $entryPackage->language : blx()->language),
+			'language' => ($entry->language ? $entry->language : blx()->language),
 			/* end BLOCKSPRO ONLY */
 		));
 
 		if ($draftRecord)
 		{
-			$entryPackage->draftId    = $draftRecord->id;
-			$entryPackage->title      = (isset($draftRecord->data['title']) ? $draftRecord->data['title'] : null);
-			$entryPackage->slug       = (isset($draftRecord->data['slug']) ? $draftRecord->data['slug'] : null);
-			$entryPackage->postDate   = (isset($draftRecord->data['postDate']) ? DateTime::createFromFormat(DateTime::W3C_DATE, $draftRecord->data['postDate']) : null);
+			$entry->draftId    = $draftRecord->id;
+			$entry->title      = (isset($draftRecord->data['title']) ? $draftRecord->data['title'] : null);
+			$entry->slug       = (isset($draftRecord->data['slug']) ? $draftRecord->data['slug'] : null);
+			$entry->postDate   = (isset($draftRecord->data['postDate']) ? DateTime::createFromFormat(DateTime::W3C_DATE, $draftRecord->data['postDate']) : null);
 			/* BLOCKSPRO ONLY */
-			$entryPackage->expiryDate = (isset($draftRecord->data['expiryDate']) ? DateTime::createFromFormat(DateTime::W3C_DATE, $draftRecord->data['expiryDate']) : null);
+			$entry->expiryDate = (isset($draftRecord->data['expiryDate']) ? DateTime::createFromFormat(DateTime::W3C_DATE, $draftRecord->data['expiryDate']) : null);
 			/* end BLOCKSPRO ONLY */
-			$entryPackage->blocks     = (isset($draftRecord->data['blocks']) ? $draftRecord->data['blocks'] : null);
+			$entry->blocks     = (isset($draftRecord->data['blocks']) ? $draftRecord->data['blocks'] : null);
 		}
 	}
 
@@ -524,7 +524,7 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		return $this->populateEntryPackages($result);
+		return $this->populateEntries($result);
 	}
 
 	/**
@@ -549,7 +549,7 @@ class ContentService extends BaseApplicationComponent
 		$result = $query->queryRow();
 		if ($result)
 		{
-			return $this->populateEntryPackage($result);
+			return $this->populateEntry($result);
 		}
 	}
 
@@ -709,22 +709,22 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves an entry.
 	 *
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 * @return bool
 	 */
-	public function saveEntry(EntryPackage $entryPackage)
+	public function saveEntry(EntryPackage $entry)
 	{
-		$entryRecord = $this->_getEntryRecord($entryPackage);
-		$titleRecord = $this->_getEntryTitleRecord($entryPackage);
-		$contentRecord = $this->_getEntryContentRecord($entryPackage);
+		$entryRecord = $this->_getEntryRecord($entry);
+		$titleRecord = $this->_getEntryTitleRecord($entry);
+		$contentRecord = $this->_getEntryContentRecord($entry);
 
-		$entryRecord->slug = $entryPackage->slug;
-		$titleRecord->title = $entryPackage->title;
+		$entryRecord->slug = $entry->slug;
+		$titleRecord->title = $entry->title;
 
 		// Save the post date if it wasn't set already
-		if ($entryPackage->postDate)
+		if ($entry->postDate)
 		{
-			$entryRecord->postDate = $entryPackage->postDate;
+			$entryRecord->postDate = $entry->postDate;
 		}
 		else
 		{
@@ -732,7 +732,7 @@ class ContentService extends BaseApplicationComponent
 		}
 
 		/* BLOCKSPRO ONLY */
-		$entryRecord->expiryDate = $entryPackage->expiryDate;
+		$entryRecord->expiryDate = $entry->expiryDate;
 		/* end BLOCKSPRO ONLY */
 
  		// Populate the blocks' content
@@ -740,17 +740,17 @@ class ContentService extends BaseApplicationComponent
 		$blockPackages = blx()->entryBlocks->getAllBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($entryPackage->sectionId);
+		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($entry->sectionId);
 		/* end BLOCKSPRO ONLY */
 
-		foreach ($blockPackages as $blockPackage)
+		foreach ($blockPackages as $block)
 		{
-			$handle = $blockPackage->handle;
-			$name = 'block'.$blockPackage->id;
+			$handle = $block->handle;
+			$name = 'block'.$block->id;
 
-			if (isset($entryPackage->blocks[$name]))
+			if (isset($entry->blocks[$name]))
 			{
-				$contentRecord->$handle = $entryPackage->blocks[$name];
+				$contentRecord->$handle = $entry->blocks[$name];
 			}
 			else
 			{
@@ -767,15 +767,15 @@ class ContentService extends BaseApplicationComponent
 			$entryRecord->save(false);
 
 			// Save the post date on the package if we just made it up
-			if (!$entryPackage->postDate)
+			if (!$entry->postDate)
 			{
-				$entryPackage->postDate = $entryRecord->postDate;
+				$entry->postDate = $entryRecord->postDate;
 			}
 
 			// Now that we have an entry ID, save it on the package & models
-			if (!$entryPackage->id)
+			if (!$entry->id)
 			{
-				$entryPackage->id = $entryRecord->id;
+				$entry->id = $entryRecord->id;
 				$titleRecord->entryId = $entryRecord->id;
 				$contentRecord->entryId = $entryRecord->id;
 			}
@@ -787,8 +787,8 @@ class ContentService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entryPackage->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
-			$entryPackage->blockErrors = $contentRecord->getErrors();
+			$entry->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
+			$entry->blockErrors = $contentRecord->getErrors();
 
 			return false;
 		}
@@ -797,20 +797,20 @@ class ContentService extends BaseApplicationComponent
 	/**
 	 * Saves an entry draft.
 	 *
-	 * @param EntryDraftPackage $draftPackage
+	 * @param EntryDraftPackage $draft
 	 * @return bool
 	 */
-	public function saveEntryDraft(EntryDraftPackage $draftPackage)
+	public function saveEntryDraft(EntryDraftPackage $draft)
 	{
-		$entryRecord = $this->_getEntryRecord($draftPackage);
+		$entryRecord = $this->_getEntryRecord($draft);
 
 		// If it's a new entry, make sure it saves first
 		if ($entryRecord->isNewRecord())
 		{
-			$titleRecord = $this->_getEntryTitleRecord($draftPackage);
+			$titleRecord = $this->_getEntryTitleRecord($draft);
 
-			$entryRecord->slug = $draftPackage->slug;
-			$titleRecord->title = $draftPackage->title;
+			$entryRecord->slug = $draft->slug;
+			$titleRecord->title = $draft->title;
 
 			$entryValidates = $entryRecord->validate();
 			$titleValidates = $titleRecord->validate();
@@ -819,36 +819,36 @@ class ContentService extends BaseApplicationComponent
 			{
 				$entryRecord->save(false);
 
-				$draftPackage->id = $entryRecord->id;
+				$draft->id = $entryRecord->id;
 				$titleRecord->entryId = $entryRecord->id;
 
 				$titleRecord->save(false);
 			}
 			else
 			{
-				$draftPackage->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
+				$draft->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
 
 				return false;
 			}
 		}
 
-		$draftRecord = $this->_getEntryDraftRecord($draftPackage);
+		$draftRecord = $this->_getEntryDraftRecord($draft);
 
 		$draftRecord->data = array(
-			'title'      => $draftPackage->title,
-			'slug'       => $draftPackage->slug,
-			'postDate'   => (!empty($draftPackage->postDate) ? $draftPackage->postDate->getTimestamp() : null),
+			'title'      => $draft->title,
+			'slug'       => $draft->slug,
+			'postDate'   => (!empty($draft->postDate) ? $draft->postDate->getTimestamp() : null),
 			/* BLOCKSPRO ONLY */
-			'expiryDate' => (!empty($draftPackage->expiryDate) ? $draftPackage->expiryDate->getTimestamp() : null),
+			'expiryDate' => (!empty($draft->expiryDate) ? $draft->expiryDate->getTimestamp() : null),
 			/* end BLOCKSPRO ONLY */
-			'blocks'     => $draftPackage->blocks
+			'blocks'     => $draft->blocks
 		);
 
 		$draftRecord->save(false);
 
-		if (!$draftPackage->draftId)
+		if (!$draft->draftId)
 		{
-			$draftPackage->draftId = $draftRecord->id;
+			$draft->draftId = $draftRecord->id;
 		}
 
 		return true;
@@ -871,18 +871,18 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 * @return EntryRecord
 	 */
-	private function _getEntryRecord(EntryPackage $entryPackage)
+	private function _getEntryRecord(EntryPackage $entry)
 	{
-		if ($entryPackage->id)
+		if ($entry->id)
 		{
-			$entryRecord = EntryRecord::model()->findById($entryPackage->id);
+			$entryRecord = EntryRecord::model()->findById($entry->id);
 
 			if (!$entryRecord)
 			{
-				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entryPackage->id)));
+				throw new Exception(Blocks::t('No entry exists with the ID “{id}”', array('id' => $entry->id)));
 			}
 		}
 		else
@@ -890,8 +890,8 @@ class ContentService extends BaseApplicationComponent
 			$entryRecord = new EntryRecord();
 			/* BLOCKSPRO ONLY */
 
-			$entryRecord->authorId = $entryPackage->authorId;
-			$entryRecord->sectionId = $entryPackage->sectionId;
+			$entryRecord->authorId = $entry->authorId;
+			$entryRecord->sectionId = $entry->sectionId;
 			/* end BLOCKSPRO ONLY */
 		}
 
@@ -902,22 +902,22 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry's title record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 * @return EntryTitleRecord
 	 */
-	private function _getEntryTitleRecord(EntryPackage $entryPackage)
+	private function _getEntryTitleRecord(EntryPackage $entry)
 	{
 		/* BLOCKSPRO ONLY */
-		if (!$entryPackage->language)
-			$entryPackage->language = blx()->language;
+		if (!$entry->language)
+			$entry->language = blx()->language;
 
 		/* end BLOCKSPRO ONLY */
-		if ($entryPackage->id)
+		if ($entry->id)
 		{
 			$titleRecord = EntryTitleRecord::model()->findByAttributes(array(
-				'entryId' => $entryPackage->id,
+				'entryId' => $entry->id,
 				/* BLOCKSPRO ONLY */
-				'language' => $entryPackage->language,
+				'language' => $entry->language,
 				/* end BLOCKSPRO ONLY */
 			));
 		}
@@ -925,9 +925,9 @@ class ContentService extends BaseApplicationComponent
 		if (empty($titleRecord))
 		{
 			$titleRecord = new EntryTitleRecord();
-			$titleRecord->entryId = $entryPackage->id;
+			$titleRecord->entryId = $entry->id;
 			/* BLOCKSPRO ONLY */
-			$titleRecord->language = $entryPackage->language;
+			$titleRecord->language = $entry->language;
 			/* end BLOCKSPRO ONLY */
 		}
 
@@ -938,35 +938,35 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry's content record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 * @return EntryContentRecord
 	 */
-	private function _getEntryContentRecord(EntryPackage $entryPackage)
+	private function _getEntryContentRecord(EntryPackage $entry)
 	{
 		/* BLOCKSPRO ONLY */
-		if (!$entryPackage->language)
+		if (!$entry->language)
 		{
-			$entryPackage->language = blx()->language;
+			$entry->language = blx()->language;
 		}
 
-		$sectionPackage = $this->getSectionById($entryPackage->sectionId);
-		if (!$sectionPackage)
+		$section = $this->getSectionById($entry->sectionId);
+		if (!$section)
 		{
-			$this->_noSectionExists($entryPackage->sectionId);
+			$this->_noSectionExists($entry->sectionId);
 		}
 		/* end BLOCKSPRO ONLY */
 
-		if ($entryPackage->id)
+		if ($entry->id)
 		{
 			/* BLOCKS ONLY */
 			$contentRecord = EntryContentRecord::model()->findByAttributes(array(
-				'entryId' => $entryPackage->id
+				'entryId' => $entry->id
 			));
 			/* end BLOCKS ONLY */
 			/* BLOCKSPRO ONLY */
-			$contentRecord = EntryContentRecord::model($sectionPackage)->findByAttributes(array(
-				'entryId'  => $entryPackage->id,
-				'language' => $entryPackage->language
+			$contentRecord = EntryContentRecord::model($section)->findByAttributes(array(
+				'entryId'  => $entry->id,
+				'language' => $entry->language
 			));
 			/* end BLOCKSPRO ONLY */
 		}
@@ -977,10 +977,10 @@ class ContentService extends BaseApplicationComponent
 			$contentRecord = new EntryContentRecord();
 			/* end BLOCKS ONLY */
 			/* BLOCKSPRO ONLY */
-			$contentRecord = new EntryContentRecord($sectionPackage);
-			$contentRecord->language = $entryPackage->language;
+			$contentRecord = new EntryContentRecord($section);
+			$contentRecord->language = $entry->language;
 			/* end BLOCKSPRO ONLY */
-			$contentRecord->entryId = $entryPackage->id;
+			$contentRecord->entryId = $entry->id;
 		}
 
 		return $contentRecord;
@@ -990,22 +990,22 @@ class ContentService extends BaseApplicationComponent
 	 * Gets an entry draft record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryDraftPackage $draftPackage
+	 * @param EntryDraftPackage $draft
 	 * @return EntryDraftRecord
 	 */
-	private function _getEntryDraftRecord(EntryDraftPackage $draftPackage)
+	private function _getEntryDraftRecord(EntryDraftPackage $draft)
 	{
-		if ($draftPackage->draftId)
+		if ($draft->draftId)
 		{
-			$draftRecord = $this->_getEntryDraftRecordById($draftPackage->draftId);
+			$draftRecord = $this->_getEntryDraftRecordById($draft->draftId);
 		}
 		else
 		{
 			$draftRecord = new EntryDraftRecord();
-			$draftRecord->entryId = $draftPackage->id;
+			$draftRecord->entryId = $draft->id;
 			/* BLOCKSPRO ONLY */
-			$draftRecord->authorId = $draftPackage->authorId;
-			$draftRecord->language = ($draftPackage->language ? $draftPackage->language : blx()->language);
+			$draftRecord->authorId = $draft->authorId;
+			$draftRecord->language = ($draft->language ? $draft->language : blx()->language);
 			/* end BLOCKSPRO ONLY */
 		}
 

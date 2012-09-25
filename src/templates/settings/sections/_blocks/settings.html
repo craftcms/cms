@@ -9,14 +9,14 @@
 <!-- end BLOCKSPRO ONLY -->
 
 
-{% if not blockPackage and blockId %}
-	{% set blockPackage = blx.content.getEntryBlockById(blockId) %}
-	{% if not blockPackage %}{% exit 404 %}{% endif %}
+{% if not block and blockId %}
+	{% set block = blx.content.getEntryBlockById(blockId) %}
+	{% if not block %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% if blockPackage.id %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~blockPackage.name|t~'</i>' }) %}
+{% if block.id %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
 {% else %}
 	{% set title = "Create a new entry block"|t %}
 {% endif %}
@@ -45,13 +45,13 @@
 		<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 		<input type="hidden" name="sectionId" value="{{ section.id }}">
 		<!-- end BLOCKSPRO ONLY -->
-		{% if blockPackage.id %}<input type="hidden" name="blockId" value="{{ blockPackage.id }}">{% endif %}
+		{% if block.id %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}
 
 		<!-- BLOCKS ONLY -->
-		{% include "_includes/blocksettings" with { blockPackage: blockPackage } only %}
+		{% include "_includes/blocksettings" with { block: block } only %}
 		<!-- end BLOCKS ONLY -->
 		<!-- BLOCKSPRO ONLY -->
-		{% include "_includes/blocksettings" with { blockPackage: blockPackage, canBeRequired: true, canBeTranslatable: true } only %}
+		{% include "_includes/blocksettings" with { block: block, canBeRequired: true, canBeTranslatable: true } only %}
 		<!-- end BLOCKSPRO ONLY -->
 
 		<div class="buttons">

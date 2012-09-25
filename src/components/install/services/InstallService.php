@@ -280,32 +280,32 @@ class InstallService extends BaseApplicationComponent
 	{
 		/* BLOCKSPRO ONLY */
 		Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
-		$sectionPackage = new SectionPackage();
-		$sectionPackage->name = Blocks::t('Blog');
-		$sectionPackage->handle = 'blog';
-		$sectionPackage->hasUrls = true;
-		$sectionPackage->urlFormat = 'blog/{slug}';
-		$sectionPackage->template = 'blog/_entry';
-		blx()->content->saveSection($sectionPackage);
+		$section = new SectionPackage();
+		$section->name = Blocks::t('Blog');
+		$section->handle = 'blog';
+		$section->hasUrls = true;
+		$section->urlFormat = 'blog/{slug}';
+		$section->template = 'blog/_entry';
+		blx()->content->saveSection($section);
 
 		/* end BLOCKSPRO ONLY */
 		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
-		$blockPackage = new EntryBlockPackage();
+		$block = new EntryBlockPackage();
 		/* BLOCKSPRO ONLY */
-		$blockPackage->sectionId = $sectionPackage->id;
+		$block->sectionId = $section->id;
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->name = Blocks::t('Body');
-		$blockPackage->handle = 'body';
+		$block->name = Blocks::t('Body');
+		$block->handle = 'body';
 		/* BLOCKSPRO ONLY */
-		$blockPackage->required = true;
-		$blockPackage->translatable = true;
+		$block->required = true;
+		$block->translatable = true;
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->type = 'RichText';
+		$block->type = 'RichText';
 
-		blx()->entryBlocks->saveBlock($blockPackage);
+		blx()->entryBlocks->saveBlock($block);
 
 		/*// Add a Welcome entry to the Blog
-		$entry = blx()->content->createEntry($sectionPackage->id, null, $user->id, 'Welcome to Blocks Alpha 2');
+		$entry = blx()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
 		blx()->content->saveEntryContent($entry, array(
 			'body' => "Hey {$user->username},\n\n" .
 			          "Welcome to Blocks Alpha 2!\n\n" .

@@ -49,19 +49,19 @@ class EntryContentRecord extends BaseRecord
 		);
 
 		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($this->_section->id);
-		foreach ($blockPackages as $blockPackage)
+		foreach ($blockPackages as $block)
 		{
-			$blockType = blx()->blockTypes->populateBlockType($blockPackage);
+			$blockType = blx()->blockTypes->populateBlockType($block);
 			$attribute = $blockType->defineContentAttribute();
-			$attribute['label'] = $blockPackage->name;
+			$attribute['label'] = $block->name;
 
 			// Required?
-			if ($blockPackage->required)
+			if ($block->required)
 			{
 				$attribute['required'] = true;
 			}
 
-			$attributes[$blockPackage->handle] = $attribute;
+			$attributes[$block->handle] = $attribute;
 		}
 
 		return $attributes;

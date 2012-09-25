@@ -35,12 +35,12 @@ class BlocksVariable
 	/**
 	 * Populates a block type.
 	 *
-	 * @param BaseBlockPackage $blockPackage
+	 * @param BaseBlockPackage $block
 	 * @return BaseBlock|null
 	 */
-	public function populateBlockType(BaseBlockPackage $blockPackage)
+	public function populateBlockType(BaseBlockPackage $block)
 	{
-		$blockType = blx()->blockTypes->populateBlockType($blockPackage);
+		$blockType = blx()->blockTypes->populateBlockType($block);
 		if ($blockType)
 		{
 			return new BlockVariable($blockType);

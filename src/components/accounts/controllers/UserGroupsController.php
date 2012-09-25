@@ -13,13 +13,13 @@ class UserGroupsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$groupPackage = new UserGroupPackage();
-		$groupPackage->id = blx()->request->getPost('groupId');
-		$groupPackage->name = blx()->request->getPost('name');
-		$groupPackage->handle = blx()->request->getPost('handle');
+		$group = new UserGroupPackage();
+		$group->id = blx()->request->getPost('groupId');
+		$group->name = blx()->request->getPost('name');
+		$group->handle = blx()->request->getPost('handle');
 
 		// Did it save?
-		if ($groupPackage->save())
+		if ($group->save())
 		{
 			blx()->user->setNotice(Blocks::t('Group saved.'));
 			$this->redirectToPostedUrl();
@@ -31,7 +31,7 @@ class UserGroupsController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'group' => $groupPackage
+			'group' => $group
 		));
 	}
 

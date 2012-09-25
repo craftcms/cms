@@ -30,11 +30,11 @@ class BlockTypesService extends BaseApplicationComponent
 	/**
 	 * Populates a block type.
 	 *
-	 * @param BaseBlockPackage $blockPackage
+	 * @param BaseBlockPackage $block
 	 * @return BaseBlock|null
 	 */
-	public function populateBlockType(BaseBlockPackage $blockPackage)
+	public function populateBlockType(BaseBlockPackage $block)
 	{
-		return blx()->components->populateComponentByTypeAndPackage('block', $blockPackage);
+		return blx()->components->populateComponentByTypeAndPackage('block', $block);
 	}
 }

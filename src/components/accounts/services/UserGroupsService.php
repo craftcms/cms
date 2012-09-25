@@ -19,13 +19,13 @@ class UserGroupsService extends BaseApplicationComponent
 			$attributes = $attributes->getAttributes();
 		}
 
-		$groupPackage = new UserGroupPackage();
+		$group = new UserGroupPackage();
 
-		$groupPackage->id = $attributes['id'];
-		$groupPackage->name = $attributes['name'];
-		$groupPackage->handle = $attributes['handle'];
+		$group->id = $attributes['id'];
+		$group->name = $attributes['name'];
+		$group->handle = $attributes['handle'];
 
-		return $groupPackage;
+		return $group;
 	}
 
 	/**
@@ -41,8 +41,8 @@ class UserGroupsService extends BaseApplicationComponent
 
 		foreach ($data as $attributes)
 		{
-			$groupPackage = $this->populateGroupPackage($attributes);
-			$groupPackages[$groupPackage->$index] = $groupPackage;
+			$group = $this->populateGroupPackage($attributes);
+			$groupPackages[$group->$index] = $group;
 		}
 
 		return $groupPackages;
@@ -77,29 +77,29 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Saves a user group.
 	 *
-	 * @param UserGroupPackage $groupPackage
+	 * @param UserGroupPackage $group
 	 * @return bool
 	 */
-	public function saveGroup(UserGroupPackage $groupPackage)
+	public function saveGroup(UserGroupPackage $group)
 	{
-		$groupRecord = $this->_getGroupRecordById($groupPackage->id);
+		$groupRecord = $this->_getGroupRecordById($group->id);
 
-		$groupRecord->name = $groupPackage->name;
-		$groupRecord->handle = $groupPackage->handle;
+		$groupRecord->name = $group->name;
+		$groupRecord->handle = $group->handle;
 
 		if ($groupRecord->save())
 		{
 			// Now that we have a group ID, save it on the package
-			if (!$groupPackage->id)
+			if (!$group->id)
 			{
-				$groupPackage->id = $groupRecord->id;
+				$group->id = $groupRecord->id;
 			}
 
 			return true;
 		}
 		else
 		{
-			$groupPackage->errors = $groupRecord->getErrors();
+			$group->errors = $groupRecord->getErrors();
 
 			return false;
 		}
@@ -115,7 +115,7 @@ class UserGroupsService extends BaseApplicationComponent
 	public function deleteGroupById($groupId)
 	{
 		$groupRecord = $this->_getGroupRecordById($groupId);
-		$groupPackage = $this->populateGroupPackage($groupRecord);
+		$group = $this->populateGroupPackage($groupRecord);
 
 		$transaction = blx()->db->beginTransaction();
 		try

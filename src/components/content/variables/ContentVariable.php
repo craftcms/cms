@@ -153,12 +153,12 @@ class ContentVariable
 	/**
 	 * Populates an entry with draft data.
 	 *
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 * @return EntryPackage
 	 */
-	public function populateEntryDraftData(EntryPackage $entryPackage)
+	public function populateEntryDraftData(EntryPackage $entry)
 	{
-		blx()->content->populateEntryDraftData($entryPackage);
-		return $entryPackage;
+		blx()->content->populateEntryDraftData($entry);
+		return $entry;
 	}
 }

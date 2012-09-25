@@ -16,11 +16,11 @@ class EntryBlocksController extends BaseBlocksController
 	 * @access protected
 	 * @return EntryBlockPackage
 	 */
-	protected function populateBlockPackageFromPost()
+	protected function populateBlockFromPost()
 	{
-		$blockPackage = parent::populateBlockPackageFromPost();
-		$blockPackage->sectionId = blx()->request->getRequiredPost('sectionId');
-		return $blockPackage;
+		$block = parent::populateBlockFromPost();
+		$block->sectionId = blx()->request->getRequiredPost('sectionId');
+		return $block;
 	}
 	/* end BLOCKSPRO ONLY */
 }

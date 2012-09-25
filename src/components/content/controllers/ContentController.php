@@ -20,19 +20,19 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$sectionPackage = new SectionPackage();
-		$sectionPackage->id = blx()->request->getPost('sectionId');
-		$sectionPackage->name = blx()->request->getPost('name');
-		$sectionPackage->handle = blx()->request->getPost('handle');
-		$sectionPackage->hasUrls = blx()->request->getPost('hasUrls');
-		$sectionPackage->urlFormat = blx()->request->getPost('urlFormat');
-		$sectionPackage->template = blx()->request->getPost('template');
+		$section = new SectionPackage();
+		$section->id = blx()->request->getPost('sectionId');
+		$section->name = blx()->request->getPost('name');
+		$section->handle = blx()->request->getPost('handle');
+		$section->hasUrls = blx()->request->getPost('hasUrls');
+		$section->urlFormat = blx()->request->getPost('urlFormat');
+		$section->template = blx()->request->getPost('template');
 
-		if ($sectionPackage->save())
+		if ($section->save())
 		{
 			blx()->user->setNotice(Blocks::t('Section saved.'));
 			$this->redirectToPostedUrl(array(
-				'sectionId' => $sectionPackage->id
+				'sectionId' => $section->id
 			));
 		}
 		else
@@ -42,7 +42,7 @@ class ContentController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'sectionPackage' => $sectionPackage
+			'section' => $section
 		));
 	}
 
@@ -73,10 +73,10 @@ class ContentController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entryPackage = new EntryPackage();
-		$this->_populateEntryPackageFromPost($entryPackage);
+		$entry = new EntryPackage();
+		$this->_populateEntryFromPost($entry);
 
-		if ($entryPackage->save())
+		if ($entry->save())
 		{
 			blx()->user->setNotice(Blocks::t('Entry saved.'));
 
@@ -87,7 +87,7 @@ class ContentController extends BaseController
 			}
 
 			$this->redirectToPostedUrl(array(
-				'entryId' => $entryPackage->id
+				'entryId' => $entry->id
 			));
 		}
 		else
@@ -96,7 +96,7 @@ class ContentController extends BaseController
 		}
 
 		$this->renderRequestedTemplate(array(
-			'entry' => $entryPackage
+			'entry' => $entry
 		));
 	}
 
@@ -105,17 +105,17 @@ class ContentController extends BaseController
 	 */
 	public function actionSaveEntryDraft()
 	{
-		$draftPackage = new EntryDraftPackage();
-		$this->_populateEntryPackageFromPost($draftPackage);
-		$draftPackage->draftId = blx()->request->getPost('draftId');
+		$draft = new EntryDraftPackage();
+		$this->_populateEntryFromPost($draft);
+		$draft->draftId = blx()->request->getPost('draftId');
 
-		if ($draftPackage->save())
+		if ($draft->save())
 		{
 			blx()->user->setNotice(Blocks::t('Draft saved.'));
 
 			$this->redirectToPostedUrl(array(
-				'entryId' => $draftPackage->id,
-				'draftId' => $draftPackage->draftId
+				'entryId' => $draft->id,
+				'draftId' => $draft->draftId
 			));
 		}
 		else
@@ -124,39 +124,39 @@ class ContentController extends BaseController
 		}
 
 		$this->renderRequestedTemplate(array(
-			'entry' => $draftPackage
+			'entry' => $draft
 		));
 	}
 
 	/**
 	 * Populates an entry package from post data.
 	 *
-	 * @param EntryPackage $entryPackage
+	 * @param EntryPackage $entry
 	 */
-	private function _populateEntryPackageFromPost(EntryPackage $entryPackage)
+	private function _populateEntryFromPost(EntryPackage $entry)
 	{
-		$entryPackage->id = blx()->request->getPost('entryId');
+		$entry->id = blx()->request->getPost('entryId');
 		/* BLOCKSPRO ONLY */
-		$entryPackage->authorId = blx()->accounts->getCurrentUser()->id;
-		$entryPackage->sectionId = blx()->request->getRequiredPost('sectionId');
-		$entryPackage->language = blx()->request->getPost('language');
+		$entry->authorId = blx()->accounts->getCurrentUser()->id;
+		$entry->sectionId = blx()->request->getRequiredPost('sectionId');
+		$entry->language = blx()->request->getPost('language');
 		/* end BLOCKSPRO ONLY */
-		$entryPackage->title = blx()->request->getPost('title');
-		$entryPackage->slug = blx()->request->getPost('slug');
+		$entry->title = blx()->request->getPost('title');
+		$entry->slug = blx()->request->getPost('slug');
 
 		if ($postDate = blx()->request->getPost('postDate'))
 		{
-			$entryPackage->postDate = DateTime::createFromFormat(DateTime::W3C_DATE, $postDate);
+			$entry->postDate = DateTime::createFromFormat(DateTime::W3C_DATE, $postDate);
 		}
 
 		/* BLOCKSPRO ONLY */
 		if ($expiryDate = blx()->request->getPost('expiryDate'))
 		{
-			$entryPackage->expiryDate = DateTime::createFromFormat(DateTime::W3C_DATE, $expiryDate);
+			$entry->expiryDate = DateTime::createFromFormat(DateTime::W3C_DATE, $expiryDate);
 		}
 
 		/* end BLOCKSPRO ONLY */
-		$entryPackage->blocks = blx()->request->getPost('blocks');
+		$entry->blocks = blx()->request->getPost('blocks');
 	}
 
 	/**

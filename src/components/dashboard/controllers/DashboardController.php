@@ -22,18 +22,18 @@ class DashboardController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$widgetPackage = new WidgetPackage();
-		$widgetPackage->id = blx()->request->getPost('widgetId');
-		$widgetPackage->type = blx()->request->getRequiredPost('class');
+		$widget = new WidgetPackage();
+		$widget->id = blx()->request->getPost('widgetId');
+		$widget->type = blx()->request->getRequiredPost('class');
 
 		$typeSettings = blx()->request->getPost('types');
-		if (isset($typeSettings[$widgetPackage->type]))
+		if (isset($typeSettings[$widget->type]))
 		{
-			$widgetPackage->settings = $typeSettings[$widgetPackage->type];
+			$widget->settings = $typeSettings[$widget->type];
 		}
 
 		// Did it save?
-		if ($widgetPackage->save())
+		if ($widget->save())
 		{
 			blx()->user->setNotice(Blocks::t('Widget saved.'));
 			$this->redirectToPostedUrl();
@@ -45,7 +45,7 @@ class DashboardController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'widgetPackage' => $widgetPackage
+			'widget' => $widget
 		));
 	}
 
@@ -82,17 +82,17 @@ class DashboardController extends BaseController
 	public function actionGetWidgetHtml()
 	{
 		$widgetId = blx()->request->getRequiredParam('widgetId');
-		$widgetPackage = blx()->dashboard->getUserWidgetById($widgetId);
+		$widget = blx()->dashboard->getUserWidgetById($widgetId);
 
-		if (!$widgetPackage)
+		if (!$widget)
 			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
 
-		$widgetType = blx()->dashboard->getWidgetType($widgetPackage->type);
+		$widgetType = blx()->dashboard->getWidgetType($widget->type);
 
 		if (!$widgetType)
-			throw new Exception(Blocks::t('No widget exists with the class “{class}”.', array('class' => $widgetPackage->type)));
+			throw new Exception(Blocks::t('No widget exists with the class “{class}”.', array('class' => $widget->type)));
 
-		$widgetType->setSettings($widgetPackage->settings);
+		$widgetType->setSettings($widget->settings);
 
 		$this->renderTemplate('dashboard/_widget', array(
 			'class' => $widgetType->getClassHandle(),

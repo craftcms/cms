@@ -17,7 +17,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * @param array|BaseBlockRecord $attributes
 	 * @return BaseBlockPackage
 	 */
-	public function populateBlockPackage($attributes)
+	public function populateBlock($attributes)
 	{
 		if ($attributes instanceof BaseBlockRecord)
 		{
@@ -25,20 +25,20 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		}
 
 		$class = __NAMESPACE__.'\\'.$this->blockPackageClass;
-		$blockPackage = new $class();
+		$block = new $class();
 
-		$blockPackage->id = $attributes['id'];
-		$blockPackage->name = $attributes['name'];
-		$blockPackage->handle = $attributes['handle'];
-		$blockPackage->instructions = $attributes['instructions'];
+		$block->id = $attributes['id'];
+		$block->name = $attributes['name'];
+		$block->handle = $attributes['handle'];
+		$block->instructions = $attributes['instructions'];
 		/* BLOCKSPRO ONLY */
-		$blockRecord->required = $blockPackage->required;
-		$blockRecord->translatable = $blockPackage->translatable;
+		$blockRecord->required = $block->required;
+		$blockRecord->translatable = $block->translatable;
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->type = $attributes['type'];
-		$blockPackage->settings = $attributes['settings'];
+		$block->type = $attributes['type'];
+		$block->settings = $attributes['settings'];
 
-		return $blockPackage;
+		return $block;
 	}
 
 	/**
@@ -48,14 +48,14 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * @param string $index
 	 * @return array
 	 */
-	public function populateBlockPackages($data, $index = 'id')
+	public function populateBlocks($data, $index = 'id')
 	{
 		$blockPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$blockPackage = $this->populateBlockPackage($attributes);
-			$blockPackages[$blockPackage->$index] = $blockPackage;
+			$block = $this->populateBlock($attributes);
+			$blockPackages[$block->$index] = $block;
 		}
 
 		return $blockPackages;
@@ -65,26 +65,26 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * Populates a block record from a package.
 	 *
 	 * @access protected
-	 * @param BaseBlockPackage $blockPackage
+	 * @param BaseBlockPackage $block
 	 * @return BaseBlockRecord $blockRecord;
 	 */
-	protected function populateBlockRecord(BaseBlockPackage $blockPackage)
+	protected function populateBlockRecord(BaseBlockPackage $block)
 	{
-		$blockRecord = $this->_getBlockRecordById($blockPackage->id);
+		$blockRecord = $this->_getBlockRecordById($block->id);
 
 		if (!$blockRecord->isNewRecord())
 		{
 			$blockRecord->oldHandle = $blockRecord->handle;
 		}
 
-		$blockRecord->name = $blockPackage->name;
-		$blockRecord->handle = $blockPackage->handle;
-		$blockRecord->instructions = $blockPackage->instructions;
+		$blockRecord->name = $block->name;
+		$blockRecord->handle = $block->handle;
+		$blockRecord->instructions = $block->instructions;
 		/* BLOCKSPRO ONLY */
-		$blockRecord->required = $blockPackage->required;
-		$blockRecord->translatable = $blockPackage->translatable;
+		$blockRecord->required = $block->required;
+		$blockRecord->translatable = $block->translatable;
 		/* end BLOCKSPRO ONLY */
-		$blockRecord->type = $blockPackage->type;
+		$blockRecord->type = $block->type;
 
 		return $blockRecord;
 	}
@@ -98,7 +98,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	{
 		$class = __NAMESPACE__.'\\'.$this->blockRecordClass;
 		$blockRecords = $class::model()->ordered()->findAll();
-		return $this->populateBlockPackages($blockRecords);
+		return $this->populateBlocks($blockRecords);
 	}
 
 	/**
@@ -113,7 +113,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		$blockRecord = $class::model()->findById($blockId);
 		if ($blockRecord)
 		{
-			return $this->populateBlockPackage($blockRecord);
+			return $this->populateBlock($blockRecord);
 		}
 	}
 
@@ -160,14 +160,14 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	/**
 	 * Saves a block.
 	 *
-	 * @param BaseBlockPackage $blockPackage
+	 * @param BaseBlockPackage $block
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveBlock(BaseBlockPackage $blockPackage)
+	public function saveBlock(BaseBlockPackage $block)
 	{
-		$blockRecord = $this->populateBlockRecord($blockPackage);
-		$blockType = blx()->blockTypes->populateBlockType($blockPackage);
+		$blockRecord = $this->populateBlockRecord($block);
+		$blockType = blx()->blockTypes->populateBlockType($block);
 
 		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $blockType->getSettings()->validate();
@@ -194,13 +194,13 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 				$blockRecord->save(false);
 
 				// Now that we have a block ID, save it on the package
-				if (!$blockPackage->id)
+				if (!$block->id)
 				{
-					$blockPackage->id = $blockRecord->id;
+					$block->id = $blockRecord->id;
 				}
 
 				// Create/alter the content table column
-				$contentTable = $this->getContentTable($blockPackage);
+				$contentTable = $this->getContentTable($block);
 				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
 
 				if ($isNewBlock)
@@ -224,8 +224,8 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		}
 		else
 		{
-			$blockPackage->errors = $blockRecord->getErrors();
-			$blockPackage->settingsErrors = $blockType->getSettings()->getErrors();
+			$block->errors = $blockRecord->getErrors();
+			$block->settingsErrors = $blockType->getSettings()->getErrors();
 
 			return false;
 		}
@@ -234,11 +234,11 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	/**
 	 * Returns the content table name.
 	 *
-	 * @param BaseBlockPackage $blockPackage
+	 * @param BaseBlockPackage $block
 	 * @access protected
 	 * @return string
 	 */
-	protected function getContentTable(BaseBlockPackage $blockPackage)
+	protected function getContentTable(BaseBlockPackage $block)
 	{
 		$class = __NAMESPACE__.'\\'.$this->contentRecordClass;
 		$contentRecord = new $class();
@@ -255,8 +255,8 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	public function deleteBlockById($blockId)
 	{
 		$blockRecord = $this->_getBlockRecordById($blockId);
-		$blockPackage = $this->populateBlockPackage($blockRecord);
-		$contentTable = $this->getContentTable($blockPackage);
+		$block = $this->populateBlock($blockRecord);
+		$contentTable = $this->getContentTable($block);
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -296,10 +296,10 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 				$blockRecord->save();
 
 				// Update the column order in the content table
-				$blockPackage = $this->populateBlockPackage($blockRecord);
-				$contentTable = $this->getContentTable($blockPackage);
+				$block = $this->populateBlock($blockRecord);
+				$contentTable = $this->getContentTable($block);
 
-				$blockType = blx()->blockTypes->populateBlockType($blockPackage);
+				$blockType = blx()->blockTypes->populateBlockType($block);
 				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
 
 				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);

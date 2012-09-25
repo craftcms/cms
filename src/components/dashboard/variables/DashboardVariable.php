@@ -55,12 +55,12 @@ class DashboardVariable
 	/**
 	 * Populates a widget type.
 	 *
-	 * @param WidgetPackage $widgetPackage
+	 * @param WidgetPackage $widget
 	 * @return BaseWidget|null
 	 */
-	public function populateWidgetType(WidgetPackage $widgetPackage)
+	public function populateWidgetType(WidgetPackage $widget)
 	{
-		$widgetType = blx()->dashboard->populateWidgetType($widgetPackage);
+		$widgetType = blx()->dashboard->populateWidgetType($widget);
 		if ($widgetType)
 		{
 			return new WidgetVariable($widgetType);

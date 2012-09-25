@@ -30,12 +30,12 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Populates a widget type.
 	 *
-	 * @param WidgetPackage $widgetPackage
+	 * @param WidgetPackage $widget
 	 * @return BaseWidget|null
 	 */
-	public function populateWidgetType(WidgetPackage $widgetPackage)
+	public function populateWidgetType(WidgetPackage $widget)
 	{
-		return blx()->components->populateComponentByTypeAndPackage('widget', $widgetPackage);
+		return blx()->components->populateComponentByTypeAndPackage('widget', $widget);
 	}
 
 	/**
@@ -44,20 +44,20 @@ class DashboardService extends BaseApplicationComponent
 	 * @param array|WidgetRecord $attributes
 	 * @return WidgetPackage
 	 */
-	public function populateWidgetPackage($attributes)
+	public function populateWidget($attributes)
 	{
 		if ($attributes instanceof WidgetRecord)
 		{
 			$attributes = $attributes->getAttributes();
 		}
 
-		$widgetPackage = new WidgetPackage();
+		$widget = new WidgetPackage();
 
-		$widgetPackage->id = $attributes['id'];
-		$widgetPackage->type = $attributes['type'];
-		$widgetPackage->settings = $attributes['settings'];
+		$widget->id = $attributes['id'];
+		$widget->type = $attributes['type'];
+		$widget->settings = $attributes['settings'];
 
-		return $widgetPackage;
+		return $widget;
 	}
 
 	/**
@@ -67,14 +67,14 @@ class DashboardService extends BaseApplicationComponent
 	 * @param string $index
 	 * @return array
 	 */
-	public function populateWidgetPackages($data, $index = 'id')
+	public function populateWidgets($data, $index = 'id')
 	{
 		$widgetPackages = array();
 
 		foreach ($data as $attributes)
 		{
-			$widgetPackage = $this->populateWidgetPackage($attributes);
-			$widgetPackages[$widgetPackage->$index] = $widgetPackage;
+			$widget = $this->populateWidget($attributes);
+			$widgetPackages[$widget->$index] = $widget;
 		}
 
 		return $widgetPackages;
@@ -91,7 +91,7 @@ class DashboardService extends BaseApplicationComponent
 			'userId' => blx()->accounts->getCurrentUser()->id
 		));
 
-		return $this->populateWidgetPackages($widgetRecords);
+		return $this->populateWidgets($widgetRecords);
 	}
 
 	/**
@@ -109,24 +109,24 @@ class DashboardService extends BaseApplicationComponent
 
 		if ($widgetRecord)
 		{
-			return $this->populateWidgetPackage($widgetRecord);
+			return $this->populateWidget($widgetRecord);
 		}
 	}
 
 	/**
 	 * Saves a widget for the current user.
 	 *
-	 * @param WidgetPackage $widgetPackage
+	 * @param WidgetPackage $widget
 	 * @return bool
 	 */
-	public function saveUserWidget(WidgetPackage $widgetPackage)
+	public function saveUserWidget(WidgetPackage $widget)
 	{
-		$widgetRecord = $this->_getUserWidgetRecordById($widgetPackage->id);
+		$widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
-		$widgetRecord->type = $widgetPackage->type;
-		$widgetRecord->settings = $widgetPackage->settings;
+		$widgetRecord->type = $widget->type;
+		$widgetRecord->settings = $widget->settings;
 
-		$widgetType = $this->populateWidgetType($widgetPackage);
+		$widgetType = $this->populateWidgetType($widget);
 
 		$recordValidates = $widgetRecord->validate();
 		$settingsValidate = $widgetType->getSettings()->validate();
@@ -149,17 +149,17 @@ class DashboardService extends BaseApplicationComponent
 			$widgetRecord->save(false);
 
 			// Now that we have a widget ID, save it on the package
-			if (!$widgetPackage->id)
+			if (!$widget->id)
 			{
-				$widgetPackage->id = $widgetRecord->id;
+				$widget->id = $widgetRecord->id;
 			}
 
 			return true;
 		}
 		else
 		{
-			$widgetPackage->errors = $widgetRecord->getErrors();
-			$widgetPackage->settingsErrors = $widgetType->getSettings()->getErrors();
+			$widget->errors = $widgetRecord->getErrors();
+			$widget->settingsErrors = $widgetType->getSettings()->getErrors();
 
 			return false;
 		}
@@ -216,15 +216,15 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function addDefaultUserWidgets()
 	{
-		$widgetPackage = new WidgetPackage();
+		$widget = new WidgetPackage();
 
-		$widgetPackage->type = 'Feed';
-		$widgetPackage->settings = array(
+		$widget->type = 'Feed';
+		$widget->settings = array(
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
 		);
 
-		$this->saveUserWidget($widgetPackage);
+		$this->saveUserWidget($widget);
 	}
 
 	/**

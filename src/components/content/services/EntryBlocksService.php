@@ -18,37 +18,37 @@ class EntryBlocksService extends BaseBlocksService
 	 * @param array|EntryBlockRecord $attributes
 	 * @return EntryBlockPackage
 	 */
-	public function populateBlockPackage($attributes)
+	public function populateBlock($attributes)
 	{
-		$blockPackage = parent::populateBlockPackage($attributes);
-		$blockPackage->sectionId = $attributes['sectionId'];
-		return $blockPackage;
+		$block = parent::populateBlock($attributes);
+		$block->sectionId = $attributes['sectionId'];
+		return $block;
 	}
 
 	/**
 	 * Populates a block record from a package.
 	 *
 	 * @access protected
-	 * @param EntryBlockPackage $blockPackage
+	 * @param EntryBlockPackage $block
 	 * @return EntryBlockRecord $blockRecord;
 	 */
-	protected function populateBlockRecord(EntryBlockPackage $blockPackage)
+	protected function populateBlockRecord(EntryBlockPackage $block)
 	{
-		$blockRecord = parent::populateBlockRecord($blockPackage);
-		$blockRecord->sectionId = $blockPackage->sectionId;
+		$blockRecord = parent::populateBlockRecord($block);
+		$blockRecord->sectionId = $block->sectionId;
 		return $blockRecord;
 	}
 
 	/**
 	 * Returns the content table name.
 	 *
-	 * @param EntryBlockPackage $blockPackage
+	 * @param EntryBlockPackage $block
 	 * @access protected
 	 * @return string
 	 */
-	protected function getContentTable(EntryBlockPackage $blockPackage)
+	protected function getContentTable(EntryBlockPackage $block)
 	{
-		$section = blx()->content->getSectionById($blockPackage->sectionId);
+		$section = blx()->content->getSectionById($block->sectionId);
 		return EntryContentRecord::getTableNameForSection($section);
 	}
 
@@ -63,7 +63,7 @@ class EntryBlocksService extends BaseBlocksService
 		$blockRecords = EntryBlockRecord::model()->ordered()->findAllByAttributes(array(
 			'sectionId' => $sectionId
 		));
-		return $this->populateBlockPackages($blockRecords);
+		return $this->populateBlocks($blockRecords);
 	}
 
 	/**

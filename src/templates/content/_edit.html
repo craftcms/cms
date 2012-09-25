@@ -80,21 +80,21 @@
 				required: true
 			}) }}
 
-			{% for blockPackage in blocks %}
-				{% set blockType = blx.blocks.populateBlockType(blockPackage) %}
-				{% set name = 'block'~blockPackage.id %}
+			{% for block in blocks %}
+				{% set blockType = blx.blocks.populateBlockType(block) %}
+				{% set name = 'block'~block.id %}
 				{% set value = entry.blocks[name] %}
-				{% set errors = entry.blockErrors[blockPackage.handle] %}
+				{% set errors = entry.blockErrors[block.handle] %}
 				{% set input = blockType.input(name, value) %}
 
 				{{ forms.field({
-					label: blockPackage.name,
+					label: block.name,
 					<!-- BLOCKSPRO ONLY -->
-					required: blockPackage.required,
-					translatable: blockPackage.translatable,
+					required: block.required,
+					translatable: block.translatable,
 					<!-- end BLOCKSPRO ONLY -->
-					instructions: blockPackage.instructions,
-					id: blockPackage.handle,
+					instructions: block.instructions,
+					id: block.handle,
 					errors: errors
 				}, input)|ns('blocks')|raw }}
 			{% endfor %}

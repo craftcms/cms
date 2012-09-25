@@ -1,8 +1,8 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if blockPackage %}
-	{% set blockType = blx.blocks.populateBlockType(blockPackage) %}
+{% if block %}
+	{% set blockType = blx.blocks.populateBlockType(block) %}
 {% else %}
 	{% set blockType = blx.blocks.getBlockType('PlainText') %}
 {% endif %}
@@ -13,8 +13,8 @@
 	instructions: "What this block will be called in the CP."|t,
 	id: 'name',
 	name: 'name',
-	value: blockPackage.name,
-	errors: blockPackage.errors.name,
+	value: block.name,
+	errors: block.errors.name,
 	first: true,
 	required: true,
 	translatable: true
@@ -26,8 +26,8 @@
 	id: 'handle',
 	class: 'code',
 	name: 'handle',
-	value: blockPackage.handle,
-	errors: blockPackage.errors.handle,
+	value: block.handle,
+	errors: block.errors.handle,
 	required: true,
 }) }}
 
@@ -41,8 +41,8 @@
 	<!-- end BLOCKSPRO ONLY -->
 	id: 'instructions',
 	name: 'instructions',
-	value: blockPackage.instructions,
-	errors: blockPackage.errors.instructions,
+	value: block.instructions,
+	errors: block.errors.instructions,
 	translatable: true
 }) }}
 <!-- BLOCKSPRO ONLY -->
@@ -51,7 +51,7 @@
 	{{ forms.checkboxField({
 		label: "This entry block is required"|t,
 		name: 'required',
-		checked: blockPackage.required
+		checked: block.required
 	}) }}
 {% endif %}
 
@@ -60,7 +60,7 @@
 		{{ forms.checkboxField({
 			label: "This entry block is translatable"|t,
 			name: 'translatable',
-			checked: blockPackage.translatable
+			checked: block.translatable
 		}) }}
 	{% endif %}
 {% endif %}
@@ -97,6 +97,6 @@
 {% endfor %}
 
 
-{% if not blockPackage.handle %}
+{% if not block.handle %}
 	{% includeJs "new Blocks.ui.HandleGenerator('#name', '#handle');" %}
 {% endif %}
