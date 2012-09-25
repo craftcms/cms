@@ -106,7 +106,7 @@ class ComponentsService extends BaseApplicationComponent
 	 */
 	public function populateComponentByTypeAndPackage($type, BaseComponentPackage $package)
 	{
-		$component = $this->getComponentByTypeAndClass($type, $package->class);
+		$component = $this->getComponentByTypeAndClass($type, $package->type);
 
 		if ($component)
 		{

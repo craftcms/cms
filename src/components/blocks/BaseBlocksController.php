@@ -28,12 +28,12 @@ abstract class BaseBlocksController extends BaseController
 		$blockPackage->required = (bool)blx()->request->getPost('required');
 		$blockPackage->translatable = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->class = blx()->request->getRequiredPost('class');
+		$blockPackage->type = blx()->request->getRequiredPost('class');
 
 		$typeSettings = blx()->request->getPost('types');
-		if (isset($typeSettings[$blockPackage->class]))
+		if (isset($typeSettings[$blockPackage->type]))
 		{
-			$blockPackage->settings = $typeSettings[$blockPackage->class];
+			$blockPackage->settings = $typeSettings[$blockPackage->type];
 		}
 
 		return $blockPackage;

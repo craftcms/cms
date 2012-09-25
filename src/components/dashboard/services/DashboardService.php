@@ -54,7 +54,7 @@ class DashboardService extends BaseApplicationComponent
 		$widgetPackage = new WidgetPackage();
 
 		$widgetPackage->id = $attributes['id'];
-		$widgetPackage->class = $attributes['class'];
+		$widgetPackage->type = $attributes['type'];
 		$widgetPackage->settings = $attributes['settings'];
 
 		return $widgetPackage;
@@ -123,7 +123,7 @@ class DashboardService extends BaseApplicationComponent
 	{
 		$widgetRecord = $this->_getUserWidgetRecordById($widgetPackage->id);
 
-		$widgetRecord->class = $widgetPackage->class;
+		$widgetRecord->type = $widgetPackage->type;
 		$widgetRecord->settings = $widgetPackage->settings;
 
 		$widget = $this->populateWidget($widgetPackage);
@@ -218,7 +218,7 @@ class DashboardService extends BaseApplicationComponent
 	{
 		$widgetPackage = new WidgetPackage();
 
-		$widgetPackage->class = 'Feed';
+		$widgetPackage->type = 'Feed';
 		$widgetPackage->settings = array(
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'

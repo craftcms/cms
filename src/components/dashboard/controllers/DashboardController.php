@@ -24,12 +24,12 @@ class DashboardController extends BaseController
 
 		$widgetPackage = new WidgetPackage();
 		$widgetPackage->id = blx()->request->getPost('widgetId');
-		$widgetPackage->class = blx()->request->getRequiredPost('class');
+		$widgetPackage->type = blx()->request->getRequiredPost('class');
 
 		$typeSettings = blx()->request->getPost('types');
-		if (isset($typeSettings[$widgetPackage->class]))
+		if (isset($typeSettings[$widgetPackage->type]))
 		{
-			$widgetPackage->settings = $typeSettings[$widgetPackage->class];
+			$widgetPackage->settings = $typeSettings[$widgetPackage->type];
 		}
 
 		// Did it save?
@@ -87,10 +87,10 @@ class DashboardController extends BaseController
 		if (!$widgetPackage)
 			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
 
-		$widget = blx()->dashboard->getWidgetByClass($widgetPackage->class);
+		$widget = blx()->dashboard->getWidgetByClass($widgetPackage->type);
 
 		if (!$widget)
-			throw new Exception(Blocks::t('No widget exists with the class “{class}”.', array('class' => $widgetPackage->class)));
+			throw new Exception(Blocks::t('No widget exists with the class “{class}”.', array('class' => $widgetPackage->type)));
 
 		$widget->setSettings($widgetPackage->settings);
 

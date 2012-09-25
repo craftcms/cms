@@ -35,7 +35,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		$blockRecord->required = $blockPackage->required;
 		$blockRecord->translatable = $blockPackage->translatable;
 		/* end BLOCKSPRO ONLY */
-		$blockPackage->class = $attributes['class'];
+		$blockPackage->type = $attributes['type'];
 		$blockPackage->settings = $attributes['settings'];
 
 		return $blockPackage;
@@ -84,7 +84,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		$blockRecord->required = $blockPackage->required;
 		$blockRecord->translatable = $blockPackage->translatable;
 		/* end BLOCKSPRO ONLY */
-		$blockRecord->class = $blockPackage->class;
+		$blockRecord->type = $blockPackage->type;
 
 		return $blockRecord;
 	}

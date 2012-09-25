@@ -16,16 +16,16 @@ abstract class BaseBlockRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'name'          => array(AttributeType::Name, 'required' => true),
-			'handle'        => array(AttributeType::Handle, 'maxLength' => 64, 'required' => true),
-			'instructions'  => array(AttributeType::String, 'column' => ColumnType::Text),
+			'name'         => array(AttributeType::Name, 'required' => true),
+			'handle'       => array(AttributeType::Handle, 'maxLength' => 64, 'required' => true),
+			'instructions' => array(AttributeType::String, 'column' => ColumnType::Text),
 			/* BLOCKSPRO ONLY */
-			'required'      => AttributeType::Bool,
-			'translatable'  => AttributeType::Bool,
+			'required'     => AttributeType::Bool,
+			'translatable' => AttributeType::Bool,
 			/* end BLOCKSPRO ONLY */
-			'class'         => array(AttributeType::ClassName, 'required' => true),
-			'settings'      => AttributeType::Mixed,
-			'sortOrder'     => AttributeType::SortOrder,
+			'type'         => array(AttributeType::ClassName, 'required' => true),
+			'settings'     => AttributeType::Mixed,
+			'sortOrder'    => AttributeType::SortOrder,
 		);
 	}
 

@@ -10,7 +10,7 @@ namespace Blocks;
  */
 abstract class BaseComponentPackage extends BasePackage
 {
-	public $class;
+	public $type;
 	public $settings;
 	public $settingsErrors;
 }
