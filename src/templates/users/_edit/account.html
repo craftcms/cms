@@ -16,22 +16,19 @@
 <!-- end BLOCKS ONLY -->
 <!-- BLOCKSPRO ONLY -->
 {% if not user and userId %}
-	{% set user = blx.accounts.getById(userId) %}
+	{% set user = blx.accounts.getUserById(userId) %}
 	{% if not user %}{% exit 404 %}{% endif %}
 {% endif %}
 <!-- end BLOCKSPRO ONLY -->
 
 
 {% set settings %}
-	{% if user.id %}
-		<h2>{{ pageTitle }}</h2>
-	{% endif %}
-
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveAccountSettings">
 		{% if user.id %}<input type="hidden" name="userId" value="{{ user.id }}">{% endif %}
 
 		{{ forms.textField({
+			first: true,
 			label: "Username"|t,
 			id: 'username',
 			name: 'username',

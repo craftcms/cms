@@ -16,16 +16,13 @@
 <!-- end BLOCKS ONLY -->
 <!-- BLOCKSPRO ONLY -->
 {% if not user and userId %}
-	{% set user = blx.accounts.getById(userId) %}
+	{% set user = blx.accounts.getUserById(userId) %}
 	{% if not user %}{% exit 404 %}{% endif %}
 {% endif %}
 <!-- end BLOCKSPRO ONLY -->
 
 
 {% set settings %}
-
-	<h2>{{ pageTitle }}</h2>
-
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveProfile">
 		<input type="hidden" name="userId" value="{{ user.id }}">

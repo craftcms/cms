@@ -258,6 +258,22 @@ class AccountsController extends BaseController
 		$user->admin = (bool)blx()->request->getPost('admin');
 		$user->save();
 
+		// Update the user groups
+		blx()->db->createCommand()
+			->where(array('userId' => $userId))
+			->delete('usergroups_users');
+
+		$groups = blx()->request->getPost('groups');
+		if (is_array($groups) && $groups)
+		{
+			foreach ($groups as $groupId)
+			{
+				$values[] = array($groupId, $userId);
+			}
+
+			blx()->db->createCommand()->insertAll('usergroups_users', array('groupId', 'userId'), $values);
+		}
+
 		blx()->user->setNotice(Blocks::t('Admin settings saved.'));
 		$this->redirectToPostedUrl();
 	}

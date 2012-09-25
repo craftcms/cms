@@ -107,7 +107,7 @@ class AccountsVariable
 	 * @param $userId
 	 * @return User
 	 */
-	public function getById($userId)
+	public function getUserById($userId)
 	{
 		$record = blx()->accounts->getUserById($userId);
 		if ($record)

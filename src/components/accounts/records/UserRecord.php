@@ -49,6 +49,7 @@ class UserRecord extends BaseRecord
 		return array(
 			/* BLOCKSPRO ONLY */
 			'content' => array(static::HAS_ONE, 'UserContentRecord', 'userId'),
+			'groups'  => array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)'),
 			/* end BLOCKSPRO ONLY */
 			'widgets' => array(static::HAS_MANY, 'Widget', 'userId'),
 		);

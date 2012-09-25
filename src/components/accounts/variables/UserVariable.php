@@ -45,4 +45,23 @@ class UserVariable extends ModelVariable
 	{
 		return $this->model->getRemainingCooldownTime();
 	}
+	/* BLOCKSPRO ONLY */
+
+	/**
+	 * Returns the user's group IDs
+	 *
+	 * @return array
+	 */
+	public function groupIds()
+	{
+		$groupIds = array();
+
+		foreach ($this->model->groups as $group)
+		{
+			$groupIds[] = $group->id;
+		}
+
+		return $groupIds;
+	}
+	/* end BLOCKSPRO ONLY */
 }

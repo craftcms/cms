@@ -4,15 +4,14 @@
 
 
 {% if not user and userId %}
-	{% set user = blx.accounts.getById(userId) %}
+	{% set user = blx.accounts.getUserById(userId) %}
 {% endif %}
 
 
 {% set settings %}
-	<h2>{{ pageTitle }}</h2>
-
 	<form method="post" action="">
 		<input type="hidden" name="action" value="accounts/saveAdminSettings">
+		<input type="hidden" name="redirect" value="users/{{ user.id }}/admin">
 		<input type="hidden" name="userId" value="{{ user.id }}">
 
 		{{ forms.checkboxField({
@@ -21,7 +20,24 @@
 			checked: user.admin
 		}) }}
 
-		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		<h3>User Groups</h3>
+
+		{% set userGroupIds = user.groupIds %}
+
+		{% for group in blx.accounts.userGroups %}
+			<div class="field">
+				{{ forms.checkbox({
+					label: group.name,
+					name: 'groups[]',
+					value: group.id,
+					checked: (group.id in userGroupIds)
+				}) }}
+			</div>
+		{% endfor %}
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
 	</form>
 
 	<hr>

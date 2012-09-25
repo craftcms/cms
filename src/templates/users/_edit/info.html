@@ -3,13 +3,11 @@
 
 
 {% if not user and userId %}
-	{% set user = blx.accounts.getById(userId) %}
+	{% set user = blx.accounts.getUserById(userId) %}
 {% endif %}
 
 
 {% set settings %}
-	<h2>{{ pageTitle }}</h2>
-
 	{% if blx.config.failedPasswordMode == 'cooldown' and user.cooldownStart %}
 		<div class="field">
 			<div class="heading">

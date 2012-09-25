@@ -383,10 +383,23 @@ abstract class BaseRecord extends \CActiveRecord
 			$config[1] = __NAMESPACE__.'\\'.$config[1];
 		}
 
-		// Add the foreign key to BELONGS_TO relations
-		if ($config[0] == static::BELONGS_TO && empty($config[2]))
+		switch ($config[0])
 		{
-			array_splice($config, 2, 0, $name.'Id');
+			case static::BELONGS_TO:
+			{
+				// Ad the foreign key
+				if (empty($config[2]))
+				{
+					array_splice($config, 2, 0, $name.'Id');
+				}
+				break;
+			}
+
+			case static::MANY_MANY:
+			{
+				$config[2] = blx()->db->tablePrefix.$config[2];
+				break;
+			}
 		}
 	}
 
