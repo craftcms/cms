@@ -51,7 +51,7 @@ class EntryContentRecord extends BaseRecord
 		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($this->_section->id);
 		foreach ($blockPackages as $blockPackage)
 		{
-			$blockType = blx()->blocks->populateBlockType($blockPackage);
+			$blockType = blx()->blockTypes->populateBlockType($blockPackage);
 			$attribute = $blockType->defineContentAttribute();
 			$attribute['label'] = $blockPackage->name;
 

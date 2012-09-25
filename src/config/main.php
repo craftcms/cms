@@ -36,8 +36,8 @@ return CMap::mergeArray(
 				'class' => 'Blocks\AssetsService',
 			),
 
-			'blocks' => array(
-				'class' => 'Blocks\BlocksService',
+			'blockTypes' => array(
+				'class' => 'Blocks\BlockTypesService',
 			),
 
 			'components' => array(

@@ -167,7 +167,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	public function saveBlock(BaseBlockPackage $blockPackage)
 	{
 		$blockRecord = $this->populateBlockRecord($blockPackage);
-		$blockType = blx()->blocks->populateBlockType($blockPackage);
+		$blockType = blx()->blockTypes->populateBlockType($blockPackage);
 
 		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $blockType->getSettings()->validate();
@@ -299,7 +299,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 				$blockPackage = $this->populateBlockPackage($blockRecord);
 				$contentTable = $this->getContentTable($blockPackage);
 
-				$blockType = blx()->blocks->populateBlockType($blockPackage);
+				$blockType = blx()->blockTypes->populateBlockType($blockPackage);
 				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
 
 				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
