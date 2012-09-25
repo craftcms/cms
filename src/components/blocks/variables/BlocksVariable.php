@@ -21,7 +21,7 @@ class BlocksVariable
 	 * Gets a block type.
 	 *
 	 * @param string $class
-	 * @return BaseBlock|null
+	 * @return BlockVariable|null
 	 */
 	public function getBlockType($class)
 	{
@@ -36,7 +36,7 @@ class BlocksVariable
 	 * Populates a block type.
 	 *
 	 * @param BaseBlockPackage $block
-	 * @return BaseBlock|null
+	 * @return BlockVariable|null
 	 */
 	public function populateBlockType(BaseBlockPackage $block)
 	{

@@ -28,7 +28,7 @@ abstract class BaseBlocksController extends BaseController
 		$block->required = (bool)blx()->request->getPost('required');
 		$block->translatable = (bool)blx()->request->getPost('translatable');
 		/* end BLOCKSPRO ONLY */
-		$block->type = blx()->request->getRequiredPost('class');
+		$block->type = blx()->request->getRequiredPost('type');
 
 		$typeSettings = blx()->request->getPost('types');
 		if (isset($typeSettings[$block->type]))

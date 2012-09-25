@@ -141,8 +141,6 @@ class UserGroupsService extends BaseApplicationComponent
 	 */
 	private function _getGroupRecordById($groupId = null)
 	{
-		$userId = blx()->accounts->getCurrentUser()->id;
-
 		if ($groupId)
 		{
 			$groupRecord = UserGroupRecord::model()->findById($groupId);

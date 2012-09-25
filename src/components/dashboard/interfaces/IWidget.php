@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- * Block interface
+ * Widget interface
  */
 interface IWidget extends IComponent
 {

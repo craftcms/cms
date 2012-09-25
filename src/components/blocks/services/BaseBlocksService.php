@@ -174,7 +174,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// Set the record settings now that the block has had a chance to tweak them
+			// Set the record settings now that the block type has had a chance to tweak them
 			$blockRecord->settings = $blockType->getSettings()->getAttributes();
 
 			$isNewBlock = $blockRecord->isNewRecord();

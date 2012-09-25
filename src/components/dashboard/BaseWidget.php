@@ -9,16 +9,6 @@ abstract class BaseWidget extends BaseComponent implements IWidget
 	protected $componentType = 'Widget';
 
 	/**
-	 * Returns the widget's settings HTML.
-	 *
-	 * @return string|null
-	 */
-	public function getSettingsHtml()
-	{
-		return null;
-	}
-
-	/**
 	 * Gets the widget's title.
 	 *
 	 * @return string

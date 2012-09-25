@@ -53,9 +53,13 @@ class PlainTextBlock extends BaseBlock
 	public function defineContentAttribute()
 	{
 		if ($this->getSettings()->multiline)
+		{
 			return array(AttributeType::String, 'column' => ColumnType::Text);
+		}
 		else
+		{
 			return array(AttributeType::String, 'column' => ColumnType::Varchar);
+		}
 	}
 
 	/**

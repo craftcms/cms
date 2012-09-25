@@ -7,7 +7,7 @@ namespace Blocks;
 class BlockTypesService extends BaseApplicationComponent
 {
 	/**
-	 * Returns all installed blocktypes.
+	 * Returns all installed block types.
 	 *
 	 * @return array
 	 */

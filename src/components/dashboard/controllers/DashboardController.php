@@ -24,7 +24,7 @@ class DashboardController extends BaseController
 
 		$widget = new WidgetPackage();
 		$widget->id = blx()->request->getPost('widgetId');
-		$widget->type = blx()->request->getRequiredPost('class');
+		$widget->type = blx()->request->getRequiredPost('type');
 
 		$typeSettings = blx()->request->getPost('types');
 		if (isset($typeSettings[$widget->type]))
