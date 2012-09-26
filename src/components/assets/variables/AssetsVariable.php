@@ -6,6 +6,10 @@ namespace Blocks;
  */
 class AssetsVariable
 {
+	// -------------------------------------------
+	//  Sources
+	// -------------------------------------------
+
 	/**
 	 * Returns all installed asset source types.
 	 *
@@ -66,5 +70,30 @@ class AssetsVariable
 	public function getSourceById($id)
 	{
 		return blx()->assetSources->getSourceById($id);
+	}
+
+	// -------------------------------------------
+	//  Blocks
+	// -------------------------------------------
+
+	/**
+	 * Returns all asset blocks.
+	 *
+	 * @return array
+	 */
+	public function assetBlocks()
+	{
+		return blx()->assetBlocks->getAllBlocks();
+	}
+
+	/**
+	 * Gets an asset block by its ID.
+	 *
+	 * @param int $id
+	 * @return BlockVariable
+	 */
+	public function getAssetBlockById($id)
+	{
+		return blx()->assetBlocks->getBlockById($id);
 	}
 }

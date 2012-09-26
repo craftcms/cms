@@ -25,7 +25,8 @@ class AssetFileRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'folder' => array(static::BELONGS_TO, 'AssetFolderRecord', 'required' => true),
+			'folder'  => array(static::BELONGS_TO, 'AssetFolderRecord', 'required' => true),
+			'content' => array(static::HAS_ONE, 'AssetContentRecord', 'fileId'),
 		);
 	}
 

@@ -48,6 +48,16 @@
 	<div class="buttons">
 		<a href="{{ url('settings/assets/sources/new') }}" class="btn addbtn">{{ "New Source"|t }}</a>
 	</div>
+
+	<hr>
+
+	<h2>Asset Blocks</h2>
+
+	{% include "_includes/blockindex" with {
+		blocks: blx.assets.assetBlocks,
+		settingsUrlPrefix: 'settings/assets/blocks/',
+		controller: 'assetBlocks'
+	} only %}
 {% endset %}
 
 
