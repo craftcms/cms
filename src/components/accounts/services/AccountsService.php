@@ -22,7 +22,8 @@ class AccountsService extends BaseApplicationComponent
 		}
 
 		$query = blx()->db->createCommand()
-			->from('users');
+			->select('u.*')
+			->from('users u');
 
 		$this->_applyUserConditions($query, $params);
 
@@ -60,8 +61,8 @@ class AccountsService extends BaseApplicationComponent
 		}
 
 		$query = blx()->db->createCommand()
-			->select('count(id)')
-			->from('users');
+			->select('count(u.id)')
+			->from('users u');
 
 		$this->_applyUserConditions($query, $params);
 
@@ -83,42 +84,60 @@ class AccountsService extends BaseApplicationComponent
 
 		if ($params->id)
 		{
-			$whereConditions[] = DbHelper::parseParam('id', $params->id, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.id', $params->id, $whereParams);
 		}
+		/* BLOCKSPRO ONLY */
+
+		if ($params->groupId || $params->group)
+		{
+			$query->join('usergroups_users gu', 'gu.userId = u.id');
+
+			if ($params->groupId)
+			{
+				$whereConditions[] = DbHelper::parseParam('gu.groupId', $params->groupId, $whereParams);
+			}
+
+			if ($params->group)
+			{
+				$query->join('usergroups g', 'g.id = gu.groupId');
+				$whereConditions[] = DbHelper::parseParam('g.handle', $params->group, $whereParams);
+			}
+		}
+		/* end BLOCKSPRO ONLY */
 
 		if ($params->username)
 		{
-			$whereConditions[] = DbHelper::parseParam('username', $params->username, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.username', $params->username, $whereParams);
 		}
 
 		if ($params->firstName)
 		{
-			$whereConditions[] = DbHelper::parseParam('firstName', $params->firstName, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.firstName', $params->firstName, $whereParams);
 		}
 
 		if ($params->lastName)
 		{
-			$whereConditions[] = DbHelper::parseParam('lastName', $params->lastName, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.lastName', $params->lastName, $whereParams);
 		}
 
 		if ($params->email)
 		{
-			$whereConditions[] = DbHelper::parseParam('email', $params->email, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.email', $params->email, $whereParams);
 		}
 
 		if ($params->admin)
 		{
-			$whereConditions[] = DbHelper::parseParam('admin', 1, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.admin', 1, $whereParams);
 		}
 
 		if ($params->status && $params->status != '*')
 		{
-			$whereConditions[] = DbHelper::parseParam('status', $params->status, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.status', $params->status, $whereParams);
 		}
 
 		if ($params->lastLoginDate)
 		{
-			$whereConditions[] = DbHelper::parseParam('lastLoginDate', $params->lastLoginDate, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('u.lastLoginDate', $params->lastLoginDate, $whereParams);
 		}
 
 		if ($whereConditions)

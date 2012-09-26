@@ -7,6 +7,10 @@ namespace Blocks;
 class UserParams extends BaseParams
 {
 	public $id;
+	/* BLOCKSPRO ONLY */
+	public $groupId;
+	public $group;
+	/* end BLOCKSPRO ONLY */
 	public $username;
 	public $firstName;
 	public $lastName;

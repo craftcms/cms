@@ -75,6 +75,24 @@ class UserGroupsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Gets a user group by its handle.
+	 *
+	 * @param int $groupHandle
+	 * @return UserGroupPackage
+	 */
+	public function getGroupByHandle($groupHandle)
+	{
+		$groupRecord = UserGroupRecord::model()->findByAttributes(array(
+			'handle' => $groupHandle
+		));
+
+		if ($groupRecord)
+		{
+			return $this->populateGroupPackage($groupRecord);
+		}
+	}
+
+	/**
 	 * Saves a user group.
 	 *
 	 * @param UserGroupPackage $group

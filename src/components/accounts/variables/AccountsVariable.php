@@ -24,12 +24,23 @@ class AccountsVariable
 	/**
 	 * Gets a user group by its ID.
 	 *
-	 * @param int $id
+	 * @param int $groupId
 	 * @return UserGroupPackage
 	 */
-	public function getUserGroupById($id)
+	public function getUserGroupById($groupId)
 	{
-		return blx()->userGroups->getGroupById($id);
+		return blx()->userGroups->getGroupById($groupId);
+	}
+
+	/**
+	 * Gets a user group by its handle.
+	 *
+	 * @param string $handle
+	 * @return UserGroupPackage
+	 */
+	public function getUserGroupByHandle($groupHandle)
+	{
+		return blx()->userGroups->getGroupByHandle($groupHandle);
 	}
 
 	// -------------------------------------------

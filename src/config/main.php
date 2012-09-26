@@ -154,6 +154,7 @@ return CMap::mergeArray(
 					'update\/(?P<handle>[^\/]*)'                                       => 'update',
 					/* BLOCKSPRO ONLY */
 					'users\/new'                                                       => 'users/_edit/account',
+					'users\/(?P<filter>'.$handle.')'                                   => 'users',
 					'users\/(?P<userId>\d+)'                                           => 'users/_edit/account',
 					'users\/(?P<userId>\d+)\/profile'                                  => 'users/_edit/profile',
 					'users\/(?P<userId>\d+)\/admin'                                    => 'users/_edit/admin',
