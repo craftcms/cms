@@ -10,7 +10,7 @@
 {% if block.id %}
 	{% set title = "{name} Settings"|t({ name: '<i>'~block.name|t~'</i>' }) %}
 {% else %}
-	{% set title = "Create a new user block"|t %}
+	{% set title = "Create a new profile block"|t %}
 {% endif %}
 
 
@@ -24,7 +24,7 @@
 
 {% set content %}
 	<form method="post" action="" class="centered">
-		<input type="hidden" name="action" value="userBlocks/saveBlock">
+		<input type="hidden" name="action" value="userProfileBlocks/saveBlock">
 		<input type="hidden" name="redirect" value="settings/users">
 		{% if block.id %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}
 

@@ -15,6 +15,7 @@ class UserVariable extends ModelVariable
 	{
 		return $this->model->username;
 	}
+	/* BLOCKSPRO ONLY */
 
 	/**
 	 * Gets the user's full name.
@@ -25,6 +26,7 @@ class UserVariable extends ModelVariable
 	{
 		return $this->model->getFullName();
 	}
+	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Returns whether this is the current logged-in user.

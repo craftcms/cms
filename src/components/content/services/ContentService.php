@@ -425,12 +425,12 @@ class ContentService extends BaseApplicationComponent
 		$contentRecord = $this->_getEntryContentRecord($entry);
 
 		/* BLOCKS ONLY */
-		$blockPackages = blx()->entryBlocks->getAllBlocks();
+		$blocks = blx()->entryBlocks->getAllBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($entry->sectionId);
+		$blocks = blx()->entryBlocks->getBlocksBySectionId($entry->sectionId);
 		/* end BLOCKSPRO ONLY */
-		foreach ($blockPackages as $block)
+		foreach ($blocks as $block)
 		{
 			$name = 'block'.$block->id;
 			$handle = $block->handle;
@@ -737,13 +737,13 @@ class ContentService extends BaseApplicationComponent
 
  		// Populate the blocks' content
 		/* BLOCKS ONLY */
-		$blockPackages = blx()->entryBlocks->getAllBlocks();
+		$blocks = blx()->entryBlocks->getAllBlocks();
 		/* end BLOCKS ONLY */
 		/* BLOCKSPRO ONLY */
-		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($entry->sectionId);
+		$blocks = blx()->entryBlocks->getBlocksBySectionId($entry->sectionId);
 		/* end BLOCKSPRO ONLY */
 
-		foreach ($blockPackages as $block)
+		foreach ($blocks as $block)
 		{
 			$handle = $block->handle;
 			$name = 'block'.$block->id;

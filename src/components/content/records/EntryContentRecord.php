@@ -48,8 +48,8 @@ class EntryContentRecord extends BaseRecord
 			'language' => array(AttributeType::Language, 'required' => true),
 		);
 
-		$blockPackages = blx()->entryBlocks->getBlocksBySectionId($this->_section->id);
-		foreach ($blockPackages as $block)
+		$blocks = blx()->entryBlocks->getBlocksBySectionId($this->_section->id);
+		foreach ($blocks as $block)
 		{
 			$blockType = blx()->blockTypes->populateBlockType($block);
 			$attribute = $blockType->defineContentAttribute();

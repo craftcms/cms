@@ -1,6 +1,3 @@
-<!-- BLOCKS ONLY -->
-<!-- TARGET: blocks/app/templates/myaccount/_layout.html -->
-<!-- end BLOCKS ONLY -->
 {% extends "_layouts/cp" %}
 {% includeCssResource "css/account.css" %}
 
@@ -21,23 +18,13 @@
 
 
 {% set titlebar %}
-	<!-- BLOCKS ONLY -->
-	<h1>{{ "My Account"|t }}</h1>
-	<!-- end BLOCKS ONLY -->
-	<!-- BLOCKSPRO ONLY -->
 	<h1>{{ heading }}</h1>
 	<ul class="left">
 		<li><a href="{{ url('users') }}" class="backbtn">{{ "Accounts"|t }}</a></li>
 	</ul>
-	<!-- end BLOCKSPRO ONLY -->
 
 	{% if user.id %}
 		<ul class="tabs">
-			<!-- BLOCKS ONLY -->
-			<li><a href="{{ url('myaccount') }}" {% if blx.request.segment(2) == '' %}class="active"{% endif %} data-icon="⚙">{{ "Account"|t }}</a></li>
-			<li><a href="{{ url('myaccount/profile') }}" {% if blx.request.segment(2) == 'profile' %}class="active"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
-			<!-- end BLOCKS ONLY -->
-			<!-- BLOCKSPRO ONLY -->
 			<li><a href="{{ url('users/' ~ user.id) }}" {% if blx.request.segment(3) == '' %}class="active"{% endif %} data-icon="⚙">{{ "Account"|t }}</a></li>
 			<li><a href="{{ url('users/' ~ user.id ~ '/profile') }}" {% if blx.request.segment(3) == 'profile' %}class="active"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
 			<li><a href="{{ url('users/' ~ user.id ~ '/info') }}" {% if blx.request.segment(3) == 'info' %}class="active"{% endif %} data-icon="i">{{ "Info"|t }}</a></li>
@@ -45,14 +32,6 @@
 			{% if blx.accounts.current.admin %}
 				<li><a href="{{ url('users/' ~ user.id ~ '/admin') }}" {% if blx.request.segment(3) == 'admin' %}class="active"{% endif %} data-icon="☻">{{ "Admin"|t }}</a></li>
 			{% endif %}
-			<!-- end BLOCKSPRO ONLY -->
 		</ul>
 	{% endif %}
-{% endset %}
-
-
-{% set content %}
-	<div class="centered">
-		{{ settings }}
-	</div>
 {% endset %}

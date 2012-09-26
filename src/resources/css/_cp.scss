@@ -20,12 +20,13 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar #header #account:hover { background: rgba(0,0,0,0.25); }
 #sidebar #header #account.sel { background: #000; }
 #sidebar #header #account:after { color: rgba(255,255,255,0.5); text-shadow: none; }
+/* BLOCKSPRO ONLY */
 
-#account-menu { margin-top: -1px; }
-#account-menu .userinfo { padding: 33px 15px 5px 111px; height: 64px; background: rgba(0,0,0,0.9); }
-#account-menu .userinfo img { display: block; float: left; margin: -32px 0 0 -110px; }
-#account-menu .userinfo .fullname { color: #fff; font-weight: bold; }
+#account-menu .userinfo { padding: 41px 15px 5px 111px; height: 56px; background: rgba(0,0,0,0.9); }
+#account-menu .userinfo img { display: block; float: left; margin: -40px 0 0 -110px; }
+#account-menu .userinfo .fullname { margin-top: -8px; color: #fff; font-weight: bold; }
 #account-menu .userinfo .username { color: #d5d5d5; }
+/* end BLOCKSPRO ONLY */
 
 #sidebar .nav ul li { border-bottom: 1px solid; }
 #sidebar .nav ul li a { padding: 15px 20px; color: #5b5b5b; }

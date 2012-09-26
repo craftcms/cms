@@ -1,18 +1,24 @@
 <!-- BLOCKS ONLY -->
-<!-- TARGET: blocks/app/templates/myaccount/index.html -->
-{% extends "myaccount/_layout" %}
+<!-- TARGET: blocks/app/templates/myaccount.html -->
+{% extends "_layouts/cp" %}
+{% set title = "My Account"|t %}
 <!-- end BLOCKS ONLY -->
 <!-- BLOCKSPRO ONLY -->
 {% extends "users/_edit/layout" %}
+{% set pageTitle = "Account Settings"|t %}
 <!-- end BLOCKSPRO ONLY -->
 {% import "_includes/forms" as forms %}
-{% set pageTitle = "Account Settings"|t %}
 
 
 <!-- BLOCKS ONLY -->
 {% if not user %}
 	{% set user = blx.accounts.current %}
 {% endif %}
+
+
+{% set titlebar %}
+	<h1>{{ "My Account"|t }}</h1>
+{% endset %}
 <!-- end BLOCKS ONLY -->
 <!-- BLOCKSPRO ONLY -->
 {% if not user and userId %}
@@ -22,8 +28,8 @@
 <!-- end BLOCKSPRO ONLY -->
 
 
-{% set settings %}
-	<form method="post" action="">
+{% set content %}
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="accounts/saveAccountSettings">
 		{% if user.id %}<input type="hidden" name="userId" value="{{ user.id }}">{% endif %}
 

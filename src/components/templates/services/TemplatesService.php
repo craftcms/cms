@@ -71,15 +71,7 @@ class TemplatesService extends BaseApplicationComponent
 	public function render($template, $variables = array())
 	{
 		$twig = $this->getTwig();
-
-		//try
-		//{
-			return $twig->render($template, $variables);
-		//}
-		//catch (\Twig_Error_Syntax $e)
-		//{
-		//
-		//}
+		return $twig->render($template, $variables);
 	}
 
 	/**

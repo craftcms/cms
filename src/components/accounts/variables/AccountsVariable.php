@@ -44,7 +44,7 @@ class AccountsVariable
 	}
 
 	// -------------------------------------------
-	//  User Blocks
+	//  User Profile Blocks
 	// -------------------------------------------
 
 	/**
@@ -52,9 +52,9 @@ class AccountsVariable
 	 *
 	 * @return array
 	 */
-	public function userBlocks()
+	public function userProfileBlocks()
 	{
-		return blx()->userBlocks->getAllBlocks();
+		return blx()->userProfileBlocks->getAllBlocks();
 	}
 
 	/**
@@ -65,7 +65,7 @@ class AccountsVariable
 	 */
 	public function getUserBlockById($id)
 	{
-		return blx()->userBlocks->getBlockById($id);
+		return blx()->userProfileBlocks->getBlockById($id);
 	}
 
 	/* end BLOCKSPRO ONLY */
@@ -116,15 +116,11 @@ class AccountsVariable
 	 * Returns a user by its ID.
 	 *
 	 * @param $userId
-	 * @return UserVariable|null
+	 * @return UserRecord|null
 	 */
 	public function getUserById($userId)
 	{
-		$record = blx()->accounts->getUserById($userId);
-		if ($record)
-		{
-			return new UserVariable($record);
-		}
+		return blx()->accounts->getUserById($userId);
 	}
 
 	/**

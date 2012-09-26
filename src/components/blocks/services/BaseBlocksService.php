@@ -50,15 +50,15 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 */
 	public function populateBlocks($data, $index = 'id')
 	{
-		$blockPackages = array();
+		$blocks = array();
 
 		foreach ($data as $attributes)
 		{
 			$block = $this->populateBlock($attributes);
-			$blockPackages[$block->$index] = $block;
+			$blocks[$block->$index] = $block;
 		}
 
-		return $blockPackages;
+		return $blocks;
 	}
 
 	/**

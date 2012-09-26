@@ -6,7 +6,7 @@ namespace Blocks;
  *
  * Used for transporting user block data throughout the system.
  */
-class UserBlockPackage extends BaseBlockPackage
+class UserProfileBlockPackage extends BaseBlockPackage
 {
 	/**
 	 * Saves the user block.
@@ -15,6 +15,6 @@ class UserBlockPackage extends BaseBlockPackage
 	 */
 	public function save()
 	{
-		return blx()->userBlocks->saveBlock($this);
+		return blx()->userProfileBlocks->saveBlock($this);
 	}
 }

@@ -5,11 +5,12 @@
 
 {% if not user and userId %}
 	{% set user = blx.accounts.getUserById(userId) %}
+	{% if not user %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% set settings %}
-	<form method="post" action="">
+{% set content %}
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="accounts/saveAdminSettings">
 		<input type="hidden" name="redirect" value="users/{{ user.id }}/admin">
 		<input type="hidden" name="userId" value="{{ user.id }}">

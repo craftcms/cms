@@ -8,11 +8,13 @@
 			</div>
 			<a id="account" data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
 			<div id="account-menu" class="menu">
+				<!-- BLOCKSPRO ONLY -->
 				<div class="userinfo">
 					<img src="{{ resourceUrl('images/avatar.jpg') }}" width="100" height="100">
-					{% if blx.accounts.current.fullName %}<div class="fullname">{{ blx.accounts.current.fullName }}</div>{% endif %}
+					{% if blx.accounts.current.profile.fullName %}<div class="fullname">{{ blx.accounts.current.profile.fullName }}</div>{% endif %}
 					<div class="username">{{ blx.accounts.current.username }}</div>
 				</div>
+				<!-- end BLOCKSPRO ONLY -->
 				<ul>
 					<!-- BLOCKS ONLY -->
 					<li data-url="myaccount">{{ "My Account"|t }}</li>

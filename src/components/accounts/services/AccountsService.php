@@ -155,7 +155,7 @@ class AccountsService extends BaseApplicationComponent
 	 */
 	public function getUserById($id)
 	{
-		return UserRecord::model()->findById($id);
+		return UserRecord::model()->with('profile')->findById($id);
 	}
 
 	/**

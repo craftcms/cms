@@ -105,8 +105,12 @@ return CMap::mergeArray(
 			),
 
 			/* BLOCKSPRO ONLY */
-			'userBlocks' => array(
-				'class' => 'Blocks\UserBlocksService',
+			'userProfiles' => array(
+				'class' => 'Blocks\UserProfilesService',
+			),
+
+			'userProfileBlocks' => array(
+				'class' => 'Blocks\UserProfileBlocksService',
 			),
 
 			'userGroups' => array(

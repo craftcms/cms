@@ -4,51 +4,54 @@
 
 {% if not user and userId %}
 	{% set user = blx.accounts.getUserById(userId) %}
+	{% if not user %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% set settings %}
-	{% if blx.config.failedPasswordMode == 'cooldown' and user.cooldownStart %}
+{% set content %}
+	<div class="centered">
+		{% if blx.config.failedPasswordMode == 'cooldown' and user.cooldownStart %}
+			<div class="field">
+				<div class="heading">
+					<h3>{{ "Cooldown Time Remaining"|t }}</h3>
+				</div>
+				<p>{% set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime) %}</p>
+			</div>
+		{% endif %}
+
 		<div class="field">
 			<div class="heading">
-				<h3>{{ "Cooldown Time Remaining"|t }}</h3>
+				<h3>{{ "Last Login Date"|t }}</h3>
 			</div>
-			<p>{% set timeRemaining = blx.date.secondsToHumanTimeDuration(user.remainingCooldownTime) %}</p>
+			<p>{% if user.lastLoginDate %}{{ blx.date.nice(user.lastLoginDate) }}{% else %}{{ "Never"|t }}{% endif %}</p>
 		</div>
-	{% endif %}
 
-	<div class="field">
-		<div class="heading">
-			<h3>{{ "Last Login Date"|t }}</h3>
+		<div class="field">
+			<div class="heading">
+				<h3>{{ "Last Failed Login Date"|t }}</h3>
+			</div>
+			<p>{% if user.lastLoginFailedDate %}{{ blx.date.nice(user.lastLoginFailedDate) }}{% else %}{{ "Never"|t }}{% endif %}</p>
 		</div>
-		<p>{% if user.lastLoginDate %}{{ blx.date.nice(user.lastLoginDate) }}{% else %}{{ "Never"|t }}{% endif %}</p>
-	</div>
 
-	<div class="field">
-		<div class="heading">
-			<h3>{{ "Last Failed Login Date"|t }}</h3>
+		<div class="field">
+			<div class="heading">
+				<h3>{{ "Last Password Change Date"|t }}</h3>
+			</div>
+			<p>{% if user.last_password_changed_date %}{{ blx.date.nice(user.last_password_changed_date) }}{% else %}{{ "Never"|t }}{% endif %}</p>
 		</div>
-		<p>{% if user.lastLoginFailedDate %}{{ blx.date.nice(user.lastLoginFailedDate) }}{% else %}{{ "Never"|t }}{% endif %}</p>
-	</div>
 
-	<div class="field">
-		<div class="heading">
-			<h3>{{ "Last Password Change Date"|t }}</h3>
+		<div class="field">
+			<div class="heading">
+				<h3>{{ "Last Lockout Date"|t }}</h3>
+			</div>
+			<p>{% if user.lastLockoutDate %}{{ blx.date.nice(user.lastLockoutDate) }}{% else %}{{ "Never"|t }}{% endif %}</p>
 		</div>
-		<p>{% if user.last_password_changed_date %}{{ blx.date.nice(user.last_password_changed_date) }}{% else %}{{ "Never"|t }}{% endif %}</p>
-	</div>
 
-	<div class="field">
-		<div class="heading">
-			<h3>{{ "Last Lockout Date"|t }}</h3>
+		<div class="field">
+			<div class="heading">
+				<h3>{{ "Failed Password Attempt Count"|t }}</h3>
+			</div>
+			<p>{% if user.failedPasswordAttemptCount %}{{ user.failedPasswordAttemptCount }}{% else %}0{% endif %}</p>
 		</div>
-		<p>{% if user.lastLockoutDate %}{{ blx.date.nice(user.lastLockoutDate) }}{% else %}{{ "Never"|t }}{% endif %}</p>
-	</div>
-
-	<div class="field">
-		<div class="heading">
-			<h3>{{ "Failed Password Attempt Count"|t }}</h3>
-		</div>
-		<p>{% if user.failedPasswordAttemptCount %}{{ user.failedPasswordAttemptCount }}{% else %}0{% endif %}</p>
 	</div>
 {% endset %}

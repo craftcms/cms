@@ -207,6 +207,7 @@ class AccountsController extends BaseController
 			));
 		}
 	}
+	/* BLOCKSPRO ONLY */
 
 	/**
 	 * Saves a user's profile.
@@ -215,18 +216,13 @@ class AccountsController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->accounts->getUserById($userId);
+		$profile = new UserProfileModel();
+		$profile->userId = blx()->request->getRequiredPost('userId');
+		$profile->firstName = blx()->request->getPost('firstName');
+		$profile->lastName = blx()->request->getPost('lastName');
+		$profile->blocks = blx()->request->getPost('blocks');
 
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		$user->firstName = blx()->request->getPost('firstName');
-		$user->lastName = blx()->request->getPost('lastName');
-
-		if ($user->save())
+		if ($profile->save())
 		{
 			blx()->user->setNotice(blocks::t('Profile saved.'));
 			$this->redirectToPostedUrl();
@@ -234,10 +230,12 @@ class AccountsController extends BaseController
 		else
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save profile.'));
-			$this->renderRequestedTemplate(array('user' => $user));
 		}
+
+		$this->renderRequestedTemplate(array(
+			'profile' => $profile,
+		));
 	}
-	/* BLOCKSPRO ONLY */
 
 	/**
 	 * Saves a user's admin settings.

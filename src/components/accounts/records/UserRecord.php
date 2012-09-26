@@ -15,8 +15,6 @@ class UserRecord extends BaseRecord
 	{
 		return array(
 			'username'                         => array(AttributeType::String, 'maxLength' => 100, 'required' => true, 'unique' => true),
-			'firstName'                        => array(AttributeType::String, 'maxLength' => 100),
-			'lastName'                         => array(AttributeType::String, 'maxLength' => 100),
 			'email'                            => array(AttributeType::Email, 'required' => true, 'unique' => true),
 			'password'                         => array(AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char),
 			'encType'                          => array(AttributeType::String, 'maxLength' => 10, 'column' => ColumnType::Char),
@@ -43,27 +41,16 @@ class UserRecord extends BaseRecord
 			'archivedEmail'                    => AttributeType::Email,
 		);
 	}
+	/* BLOCKSPRO ONLY */
 
 	public function defineRelations()
 	{
 		return array(
-			/* BLOCKSPRO ONLY */
-			'content' => array(static::HAS_ONE, 'UserContentRecord', 'userId'),
+			'profile' => array(static::HAS_ONE, 'UserProfileRecord', 'userId'),
 			'groups'  => array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)'),
-			/* end BLOCKSPRO ONLY */
-			'widgets' => array(static::HAS_MANY, 'Widget', 'userId'),
 		);
 	}
-
-	/**
-	 * Returns the user's full name (first+last name), if it's available.
-	 *
-	 * @return string
-	 */
-	public function getFullName()
-	{
-		return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
-	}
+	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Returns whether this is the current logged-in user.

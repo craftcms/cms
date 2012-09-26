@@ -1,29 +1,21 @@
-<!-- BLOCKS ONLY -->
-<!-- TARGET: blocks/app/templates/myaccount/profile.html -->
-{% extends "myaccount/_layout" %}
-<!-- end BLOCKS ONLY -->
-<!-- BLOCKSPRO ONLY -->
 {% extends "users/_edit/layout" %}
-<!-- end BLOCKSPRO ONLY -->
 {% import "_includes/forms" as forms %}
 {% set pageTitle = "Profile"|t %}
 
 
-<!-- BLOCKS ONLY -->
 {% if not user %}
-	{% set user = blx.accounts.current %}
-{% endif %}
-<!-- end BLOCKS ONLY -->
-<!-- BLOCKSPRO ONLY -->
-{% if not user and userId %}
 	{% set user = blx.accounts.getUserById(userId) %}
 	{% if not user %}{% exit 404 %}{% endif %}
 {% endif %}
-<!-- end BLOCKSPRO ONLY -->
 
 
-{% set settings %}
-	<form method="post" action="">
+{% if not profile %}
+	{% set profile = user.profile %}
+{% endif %}
+
+
+{% set content %}
+	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="accounts/saveProfile">
 		<input type="hidden" name="userId" value="{{ user.id }}">
 
@@ -32,24 +24,39 @@
 			label: "First Name"|t,
 			id: 'firstName',
 			name: 'firstName',
-			value: user.firstName,
-			errors: user.errors.firstName
+			value: profile.firstName,
+			errors: profile.errors.firstName
 		}) }}
 
 		{{ forms.textField({
 			label: "Last Name"|t,
 			id: 'lastName',
 			name: 'lastName',
-			value: user.lastName,
-			errors: user.errors.lastName
+			value: profile.lastName,
+			errors: profile.errors.lastName
 		}) }}
 
 		{{ forms.fileField({
 			label: "Avatar"|t,
 			id: 'avatar',
 			name: 'avatar',
-			errors: user.errors.avatar
+			errors: profile.errors.avatar
 		}) }}
+
+		{% for block in blx.accounts.userProfileBlocks %}
+			{% set blockType = blx.blocks.populateBlockType(block) %}
+			{% set name = 'block'~block.id %}
+			{% set value = profile.blocks[name] %}
+			{% set errors = profile.blockErrors[block.handle] %}
+			{% set input = blockType.input(name, value) %}
+
+			{{ forms.field({
+				label: block.name,
+				instructions: block.instructions,
+				id: block.handle,
+				errors: errors
+			}, input)|ns('blocks')|raw }}
+		{% endfor %}
 
 		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
