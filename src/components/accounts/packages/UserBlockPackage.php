@@ -9,7 +9,7 @@ namespace Blocks;
 class UserBlockPackage extends BaseBlockPackage
 {
 	/**
-	 * Saves the entry block.
+	 * Saves the user block.
 	 *
 	 * @return bool
 	 */
