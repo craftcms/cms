@@ -204,7 +204,7 @@ class App extends \CWebApplication
 					// Mayhaps this is a plugin action request.
 					$plugin = strtolower($actionPath[0]);
 
-					if (($plugin = blx()->plugins->getPlugin($plugin)) !== false)
+					if (($plugin = blx()->plugins->getPlugin($plugin)) !== null)
 					{
 						// No need to proceed is the plugin is not installed or is disabled.
 						if ($plugin->isInstalled() && $plugin->isEnabled())

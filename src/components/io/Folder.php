@@ -15,14 +15,7 @@ class Folder extends BaseIO
 	public function __construct($path)
 	{
 		clearstatcache();
-
-		if (IOHelper::folderExists($path))
-		{
-			$this->path = $path;
-			return true;
-		}
-
-		return false;
+		$this->path = $path;
 	}
 
 	/**

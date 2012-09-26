@@ -71,6 +71,38 @@ class IOHelper
 	}
 
 	/**
+	 * If the file exists on the file system will return a new File instance, otherwise, false.
+	 *
+	 * @param $path
+	 * @return File|bool
+	 */
+	public static function getFile($path)
+	{
+		if (static::fileExists($path))
+		{
+			return new File($path);
+		}
+
+		return false;
+	}
+
+	/**
+	 * If the folder exists on the file system, will return a new Folder instance, otherwise, false.
+	 *
+	 * @param $path
+	 * @return Folder|bool
+	 */
+	public static function getFolder($path)
+	{
+		if (static::folderExists($path))
+		{
+			return new Folder($path);
+		}
+
+		return false;
+	}
+
+	/**
 	 * Returns the real filesystem path of the given path.
 	 *
 	 * @static

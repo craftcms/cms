@@ -226,7 +226,7 @@ class AppUpdater implements IUpdater
 
 			// Delete any files we backed up.
 			$backupFilePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
-			if (($file = new File($backupFilePath)) !== false)
+			if (($file = IOHelper::getFile($backupFilePath)) !== false)
 			{
 				Blocks::log('Deleting backup file: '.$file->getRealPath());
 				$file->delete();

@@ -82,7 +82,7 @@ class InstallService extends BaseApplicationComponent
 	private function _findInstallableRecords()
 	{
 		$records = array();
-		$componentsDir = new Folder(blx()->path->getComponentsPath());
+		$componentsDir = IOHelper::getFolder(blx()->path->getComponentsPath());
 		$recordFiles = $componentsDir->getContents(true, "\/records\/.*Record\.php");
 
 		foreach ($recordFiles as $file)

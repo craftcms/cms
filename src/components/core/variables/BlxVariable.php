@@ -30,6 +30,22 @@ class BlxVariable
 	}
 
 	/**
+	 * @param $name
+	 * @return bool
+	 */
+	public function __isset($name)
+	{
+		$plugin = blx()->plugins->getPlugin($name);
+
+		if ($plugin && $plugin->record !== null && $plugin->record->enabled)
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @return AppVariable
 	 */
 	public function app()

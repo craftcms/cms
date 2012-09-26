@@ -149,7 +149,7 @@ class UpdateHelper
 	 */
 	public static function copyMigrationFile($filePath)
 	{
-		$migrationFile = new File($filePath);
+		$migrationFile = IOHelper::getFile($filePath);
 		$destinationFile = blx()->path->getMigrationsPath().$migrationFile->getFileName();
 		$migrationFile->copy($destinationFile);
 
