@@ -151,28 +151,6 @@ class SystemSettingsController extends BaseController
 	}
 
 	/**
-	 * Saves the language settings.
-	 */
-	public function actionSaveLanguageSettings()
-	{
-		$this->requirePostRequest();
-
-		$languages = blx()->request->getPost('languages', array());
-		sort($languages);
-
-		if (blx()->systemSettings->saveSettings('languages', $languages))
-		{
-			blx()->user->setNotice(Blocks::t('Language settings saved.'));
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			blx()->user->setError(Blocks::t('Couldn’t save language settings.'));
-			$this->renderRequestedTemplate(array('selectedLanguages' => $languages));
-		}
-	}
-
-	/**
 	 * Saves the advanced settings.
 	 */
 	public function actionSaveAdvancedSettings()
