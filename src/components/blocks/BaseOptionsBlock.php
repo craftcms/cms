@@ -39,9 +39,8 @@ abstract class BaseOptionsBlock extends BaseBlock
 
 			foreach($lines as $line)
 			{
-				$parts = preg_split('/\s+=>\s+/', $line, 2);
-				if ($parts[0])
-					$options[$parts[0]] = (isset($parts[1])) ? $parts[1] : $parts[0];
+				$parts = preg_split('/=>/', $line, 2);
+				$options[trim($parts[0])] = (isset($parts[1])) ? trim($parts[1]) : trim($parts[0]);
 			}
 
 			$values['options'] = $options;

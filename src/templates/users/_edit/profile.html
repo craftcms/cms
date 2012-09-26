@@ -47,7 +47,7 @@
 			{% set blockType = blx.blocks.populateBlockType(block) %}
 			{% set name = 'block'~block.id %}
 			{% set value = profile.blocks[name] %}
-			{% set errors = profile.blockErrors[block.handle] %}
+			{% set errors = profile.errors[block.handle] %}
 			{% set input = blockType.input(name, value) %}
 
 			{{ forms.field({

@@ -312,7 +312,7 @@ class ModelHelper
 				foreach ($comparisons as $comparison)
 				{
 					if (preg_match('/^(==|=|!=|>=|>|<=|<)\s*\b(.*)$/', $comparison, $match))
-						$rules[] = array($name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1]);
+						$rules[] = array($name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1], 'allowEmpty' => true);
 				}
 			}
 
