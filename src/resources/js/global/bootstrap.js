@@ -38,7 +38,7 @@ var scripts =
 	'ui/AdminPane.js',
 	'ui/FieldToggle.js',
 
-	'ui/BlockIndex.js'
+	'ui/AdminTable.js'
 ];
 
 for (var i = 0; i < scripts.length; i++)

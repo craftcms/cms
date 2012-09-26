@@ -1,7 +1,4 @@
 {% extends "_layouts/cp" %}
-{% includeJs "new Blocks.ui.BlockIndex('entryBlocks');" %}
-
-
 {% set title = "Blog"|t %}
 
 
@@ -16,6 +13,9 @@
 {% set content %}
 	<h2>{{ "Entry Blocks"|t }}</h2>
 
-	{% set blocks = blx.content.entryBlocks %}
-	{% include "_includes/blockindex" with { blocks: blocks, settingsUrlPrefix: 'settings/blog/blocks/' } only %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.content.entryBlocks,
+		settingsUrlPrefix: 'settings/blog/blocks/',
+		controller: 'entryBlocks'
+	} only %}
 {% endset %}

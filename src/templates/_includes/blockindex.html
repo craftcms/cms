@@ -15,7 +15,7 @@
 		</thead>
 		<tbody>
 			{% for block in blocks %}
-				<tr data-block-id="{{ block.id }}">
+				<tr data-id="{{ block.id }}" data-name="{{ block.name|t }}">
 					<th scope="row"><a href="{{ url(settingsUrlPrefix ~ block.id) }}">{{ block.name|t }}</a></th>
 					<td><code>{{ block.handle }}</code></td>
 					<td>{{ blx.blocks.getBlockType(block.type).name }}</td>
@@ -30,3 +30,15 @@
 <div class="buttons">
 	<a href="{{ url(settingsUrlPrefix ~ 'new') }}" class="btn addbtn">{{ "New Block"|t }}</a>
 </div>
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#blocks',
+		noObjectsSelector: '#noblocks',
+		sortable: true,
+		reorderAction: '{{ controller }}/reorderBlocks',
+		deleteAction: '{{ controller }}/deleteBlock'
+	});
+{% endset %}
+{% includeJs js %}

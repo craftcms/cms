@@ -57,7 +57,7 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetId = JsonHelper::decode(blx()->request->getRequiredPost('widgetId'));
+		$widgetId = JsonHelper::decode(blx()->request->getRequiredPost('id'));
 		blx()->dashboard->deleteUserWidgetById($widgetId);
 		$this->returnJson(array('success' => true));
 	}
@@ -70,7 +70,7 @@ class DashboardController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$widgetIds = JsonHelper::decode(blx()->request->getRequiredPost('widgetIds'));
+		$widgetIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
 		blx()->dashboard->reorderUserWidgets($widgetIds);
 		$this->returnJson(array('success' => true));
 	}

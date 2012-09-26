@@ -43,7 +43,7 @@ class UserGroupsController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$groupId = blx()->request->getRequiredPost('groupId');
+		$groupId = blx()->request->getRequiredPost('id');
 
 		blx()->userGroups->deleteGroupById($groupId);
 

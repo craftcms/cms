@@ -1,13 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "User Settings"|t %}
 {% set groups = blx.accounts.userGroups %}
-{% includeJsResource "js/users.js" %}
-{% includeTranslations
-	"Are you sure you want to delete the group “{group}”?",
-	"Group deleted.",
-	"Couldn’t delete group."
-%}
-{% includeJs "new Blocks.ui.BlockIndex('userBlocks');" %}
 
 
 {% set titlebar %}
@@ -34,7 +27,7 @@
 			</thead>
 			<tbody>
 				{% for group in groups %}
-					<tr data-group-id="{{ group.id }}">
+					<tr data-id="{{ group.id }}" data-name="{{ group.name|t }}">
 						<th scope="row"><a href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t }}</a></th>
 						<td><code>{{ group.handle }}</code></td>
 						<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
@@ -52,6 +45,19 @@
 
 	<h2>User Blocks</h2>
 
-	{% set blocks = blx.accounts.userBlocks %}
-	{% include "_includes/blockindex" with { blocks: blocks, settingsUrlPrefix: 'settings/users/blocks/' } only %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.accounts.userBlocks,
+		settingsUrlPrefix: 'settings/users/blocks/',
+		controller: 'userBlocks'
+	} only %}
 {% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#groups',
+		noObjectsSelector: '#nogroups',
+		deleteAction: 'userGroups/deleteGroup'
+	});
+{% endset %}
+{% includeJs js %}

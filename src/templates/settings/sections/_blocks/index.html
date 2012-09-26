@@ -1,6 +1,4 @@
 {% extends "_layouts/cp" %}
-{% includeJs "new Blocks.ui.BlockIndex('entryBlocks');" %}
-
 
 {% set section = blx.content.getSectionById(sectionId) %}
 {% if not section %}{% exit 404 %}{% endif %}
@@ -17,7 +15,9 @@
 
 
 {% set content %}
-	{% set blocks = blx.content.entryBlocksBySectionId(section.id) %}
-	{% set settingsUrlPrefix = 'settings/sections/' ~ section.id ~ '/blocks/' %}
-	{% include "_includes/blockindex" with { blocks: blocks, settingsUrlPrefix: settingsUrlPrefix } only %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.content.entryBlocksBySectionId(section.id),
+		settingsUrlPrefix: 'settings/sections/' ~ section.id ~ '/blocks/',
+		controller: 'entryBlocks'
+	} only %}
 {% endset %}

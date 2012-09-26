@@ -1,14 +1,4 @@
 {% extends "_layouts/cp" %}
-{% includeJsResource "js/dashboard_settings.js" %}
-{% includeTranslations
-	"New widget order saved.",
-	"Couldn’t save new widget order.",
-	"Are you sure you want to delete the widget “{widget}”?",
-	"Widget deleted.",
-	"Couldn’t delete widget."
-%}
-
-
 {% set title = "Dashboard Settings"|t %}
 {% set widgets = blx.dashboard.userWidgets %}
 {% set sortable  = (widgets|length > 1) %}
@@ -34,7 +24,7 @@
 			<tbody>
 				{% for widget in widgets %}
 					{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
-					<tr data-widget-id="{{ widget.id }}">
+					<tr data-id="{{ widget.id }}" data-name="{{ widgetType.title }}">
 						<th scope="row">
 							<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetType.title }}</a>
 							{% if widgetType.name != widgetType.title %}<span class="light">({{ widgetType.name }})</span>{% endif %}
@@ -51,3 +41,15 @@
 		<a href="{{ url('dashboard/settings/new') }}" class="btn submit addbtn">{{ "New Widget"|t }}</a>
 	</div>
 {% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#widgets',
+		noObjectsSelector: '#nowidgets',
+		sortable: true,
+		reorderAction: 'dashboard/reorderUserWidgets',
+		deleteAction: 'dashboard/deleteUserWidget'
+	});
+{% endset %}
+{% includeJs js %}

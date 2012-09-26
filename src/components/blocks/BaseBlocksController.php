@@ -75,7 +75,7 @@ abstract class BaseBlocksController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$blockId = blx()->request->getRequiredPost('blockId');
+		$blockId = blx()->request->getRequiredPost('id');
 
 		$service = $this->service;
 		blx()->$service->deleteBlockById($blockId);
@@ -91,7 +91,7 @@ abstract class BaseBlocksController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$blockIds = JsonHelper::decode(blx()->request->getRequiredPost('blockIds'));
+		$blockIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
 
 		$service = $this->service;
 		blx()->$service->reorderBlocks($blockIds);

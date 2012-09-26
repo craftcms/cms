@@ -54,7 +54,7 @@ class ContentController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$sectionId = blx()->request->getRequiredPost('sectionId');
+		$sectionId = blx()->request->getRequiredPost('id');
 
 		blx()->content->deleteSectionById($sectionId);
 		$this->returnJson(array('success' => true));

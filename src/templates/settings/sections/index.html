@@ -1,12 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
 {% set sections = blx.content.sections %}
-{% includeJsResource "js/sections.js" %}
-{% includeTranslations
-	"Are you sure you want to delete the section “{section}”?",
-	"Section deleted.",
-	"Couldn’t delete section."
-%}
 
 
 {% set titlebar %}
@@ -32,7 +26,7 @@
 			</thead>
 			<tbody>
 				{% for section in sections %}
-					<tr data-section-id="{{ section.id }}">
+					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
 						<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 						<td><code>{{ section.handle }}</code></td>
 						<td>
@@ -50,3 +44,13 @@
 		<a href="{{ url('settings/sections/new') }}" class="btn addbtn">{{ "New Section"|t }}</a>
 	</div>
 {% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#sections',
+		noObjectsSelector: '#nosections',
+		deleteAction: 'content/deleteSection'
+	});
+{% endset %}
+{% includeJs js %}
