@@ -36,6 +36,10 @@ return CMap::mergeArray(
 				'class' => 'Blocks\AssetsService',
 			),
 
+			'assetSources' => array(
+				'class' => 'Blocks\AssetSourcesService',
+			),
+
 			'blockTypes' => array(
 				'class' => 'Blocks\BlockTypesService',
 			),
@@ -154,6 +158,8 @@ return CMap::mergeArray(
 					'content\/(?P<entryId>\d+)'                                        => 'content/_entry',
 					'content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)'                => 'content/_entry',
 					'plugins\/(?P<pluginClass>[A-Za-z]\w*)'                            => 'plugins/_settings',
+					'settings\/assets\/sources\/new'                                   => 'settings/assets/_sourcesettings',
+					'settings\/assets\/sources\/(?P<sourceId>\d+)'                     => 'settings/assets/_sourcesettings',
 					/* BLOCKS ONLY */
 					'settings\/blog\/blocks\/new'                                      => 'settings/blog/_blocksettings',
 					'settings\/blog\/blocks\/(?P<blockId>\d+)'                         => 'settings/blog/_blocksettings',

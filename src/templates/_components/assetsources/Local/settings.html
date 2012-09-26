@@ -1,0 +1,21 @@
+{% from "_includes/forms" import textField %}
+
+{{ textField({
+	label: "File System Path"|t,
+	instructions: "The path to your folder on the file system."|t,
+	id: 'path',
+	name: 'path',
+	value: settings.path,
+	errors: settings.errors.path,
+	required: true
+}) }}
+
+{{ textField({
+	label: "URL"|t,
+	instructions: "The URL to your folder."|t,
+	id: 'url',
+	name: 'url',
+	value: settings.url,
+	errors: settings.errors.url,
+	required: true
+}) }}

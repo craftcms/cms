@@ -105,26 +105,30 @@ class AccountsVariable
 	 * Returns a user by its ID.
 	 *
 	 * @param $userId
-	 * @return User
+	 * @return UserVariable|null
 	 */
 	public function getUserById($userId)
 	{
 		$record = blx()->accounts->getUserById($userId);
 		if ($record)
+		{
 			return new UserVariable($record);
+		}
 	}
 
 	/**
 	 * Gets a user by a verification code.
 	 *
 	 * @param string $code
-	 * @return User
+	 * @return UserVariable|null
 	 */
 	public function getUserByVerificationCode($code)
 	{
 		$record = blx()->accounts->getUserByVerificationCode($code);
 		if ($record)
+		{
 			return new UserVariable($user);
+		}
 	}
 
 	/**

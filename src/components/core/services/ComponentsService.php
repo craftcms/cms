@@ -7,8 +7,9 @@ namespace Blocks;
 class ComponentsService extends BaseApplicationComponent
 {
 	protected static $componentTypes = array(
-		'block' => array('subfolder' => 'blocktypes', 'suffix' => 'Block', 'interface' => 'IBlock'),
-		'widget' => array('subfolder' => 'widgettypes', 'suffix' => 'Widget', 'interface' => 'Iwidget'),
+		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSource', 'interface' => 'IAssetSource'),
+		'block'       => array('subfolder' => 'blocktypes', 'suffix' => 'Block', 'interface' => 'IBlock'),
+		'widget'      => array('subfolder' => 'widgettypes', 'suffix' => 'Widget', 'interface' => 'Iwidget'),
 	);
 
 	private $_components;
