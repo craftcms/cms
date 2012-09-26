@@ -22,14 +22,7 @@ class File extends BaseIO
 	public function __construct($path)
 	{
 		clearstatcache();
-
-		if (IOHelper::fileExists($path))
-		{
-			$this->path = $path;
-			return true;
-		}
-
-		return false;
+		$this->path = $path;
 	}
 
 	/**
