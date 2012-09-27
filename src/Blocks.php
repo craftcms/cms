@@ -16,7 +16,7 @@ class Blocks extends \Yii
 	 */
 	public static function getVersion()
 	{
-		return '@@@version@@@';
+		return BLOCKS_VERSION;
 	}
 
 	/**
@@ -39,7 +39,7 @@ class Blocks extends \Yii
 	 */
 	public static function getBuild()
 	{
-		return '@@@build@@@';
+		return BLOCKS_BUILD;
 	}
 
 	/**
@@ -63,7 +63,7 @@ class Blocks extends \Yii
 	 */
 	public static function getReleaseDate()
 	{
-		return '@@@releaseDate@@@';
+		return BLOCKS_RELEASE_DATE;
 	}
 
 	/**
@@ -76,6 +76,33 @@ class Blocks extends \Yii
 	{
 		$storedBlocksInfo = static::_getStoredInfo();
 		return $storedBlocksInfo ? $storedBlocksInfo->releaseDate : null;
+	}
+
+	/**
+	 * Returns the packages in this Blocks install, as defined by the BLOCKS_PACKAGES constant.
+	 *
+	 * @static
+	 * @return string
+	 */
+	public static function getPackages()
+	{
+		return BLOCKS_PACKAGES;
+	}
+
+	/**
+	 * Checks to see if the given package name is registered for this install.
+	 *
+	 * @param $packageName
+	 * @return bool
+	 */
+	public static function hasPackage($packageName)
+	{
+		if (in_array($packageName, static::getPackages()))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

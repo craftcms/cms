@@ -30,6 +30,7 @@ if (!class_exists('Yii', false))
 // Load 'em up
 require_once BLOCKS_APP_PATH.'Blocks.php';
 require_once BLOCKS_APP_PATH.'App.php';
+require_once BLOCKS_APP_PATH.'Info.php';
 
 $config = require_once BLOCKS_APP_PATH.'config/main.php';
 $app = new Blocks\App($config);
