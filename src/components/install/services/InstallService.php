@@ -155,7 +155,7 @@ class InstallService extends BaseApplicationComponent
 		/* BLOCKSPRO ONLY */
 		$user->language = blx()->language;
 		/* end BLOCKSPRO ONLY */
-		blx()->accounts->changePassword($user, $inputs['password'], false);
+		blx()->account->changePassword($user, $inputs['password'], false);
 		$user->save();
 
 		if ($user->hasErrors())

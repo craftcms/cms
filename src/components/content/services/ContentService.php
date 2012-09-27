@@ -1063,7 +1063,7 @@ class ContentService extends BaseApplicationComponent
 			// Create the entry
 			$entry = new EntryRecord();
 			$entry->sectionId = $sectionId;
-			$entry->authorId = ($authorId ? $authorId : blx()->accounts->getCurrentUser()->id);
+			$entry->authorId = ($authorId ? $authorId : blx()->account->getCurrentUser()->id);
 			$entry->parentId = $parentId;
 			$entry->save();
 
@@ -1286,7 +1286,7 @@ class ContentService extends BaseApplicationComponent
 
 		$version = new EntryVersionRecord();
 		$version->entryId  = $entry->id;
-		$version->authorId = blx()->accounts->getCurrentUser()->id;
+		$version->authorId = blx()->account->getCurrentUser()->id;
 		$version->language  = $language;
 		$version->draft = $draft;
 		$version->name = $name;

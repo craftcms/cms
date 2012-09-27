@@ -88,7 +88,7 @@ class DashboardService extends BaseApplicationComponent
 	public function getUserWidgets()
 	{
 		$widgetRecords = WidgetRecord::model()->ordered()->findAllByAttributes(array(
-			'userId' => blx()->accounts->getCurrentUser()->id
+			'userId' => blx()->account->getCurrentUser()->id
 		));
 
 		return $this->populateWidgets($widgetRecords);
@@ -104,7 +104,7 @@ class DashboardService extends BaseApplicationComponent
 	{
 		$widgetRecord = WidgetRecord::model()->findByAttributes(array(
 			'id' => $id,
-			'userId' => blx()->accounts->getCurrentUser()->id
+			'userId' => blx()->account->getCurrentUser()->id
 		));
 
 		if ($widgetRecord)
@@ -236,7 +236,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	private function _getUserWidgetRecordById($widgetId = null)
 	{
-		$userId = blx()->accounts->getCurrentUser()->id;
+		$userId = blx()->account->getCurrentUser()->id;
 
 		if ($widgetId)
 		{

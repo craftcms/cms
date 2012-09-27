@@ -8,20 +8,15 @@
 			</div>
 			<a id="account" data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
 			<div id="account-menu" class="menu">
-				<!-- BLOCKSPRO ONLY -->
-				<div class="userinfo">
-					<img src="{{ resourceUrl('images/avatar.jpg') }}" width="100" height="100">
-					{% if blx.accounts.current.profile.fullName %}<div class="fullname">{{ blx.accounts.current.profile.fullName }}</div>{% endif %}
-					<div class="username">{{ blx.accounts.current.username }}</div>
-				</div>
-				<!-- end BLOCKSPRO ONLY -->
+				{% if blx.app.hasPackage('users') %}
+					<div class="userinfo">
+						<img src="{{ resourceUrl('images/avatar.jpg') }}" width="100" height="100">
+						{% if user.fullName %}<div class="fullname">{{ user.fullName }}</div>{% endif %}
+						<div class="username">{{ user.username }}</div>
+					</div>
+				{% endif %}
 				<ul>
-					<!-- BLOCKS ONLY -->
 					<li data-url="myaccount">{{ "My Account"|t }}</li>
-					<!-- end BLOCKS ONLY -->
-					<!-- BLOCKSPRO ONLY -->
-					<li data-url="users/{{ blx.accounts.current.id }}">{{ "My Account"|t }}</li>
-					<!-- end BLOCKSPRO ONLY -->
 					<li data-url="logout">{{ "Sign out"|t }}</li>
 				</ul>
 			</div>

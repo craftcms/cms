@@ -15,18 +15,35 @@ class UserVariable extends ModelVariable
 	{
 		return $this->model->username;
 	}
-	/* BLOCKSPRO ONLY */
+
+	/**
+	 * Returns the user's profile.
+	 *
+	 * @return UserProfileRecord|null
+	 */
+	function profile()
+	{
+		if (Blocks::hasPackage(PackageType::Users))
+		{
+			return $this->model->profile;
+		}
+	}
 
 	/**
 	 * Gets the user's full name.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	function fullName()
 	{
-		return $this->model->getFullName();
+		if (Blocks::hasPackage(PackageType::Users))
+		{
+			if ($this->model->profile)
+			{
+				return $this->model->profile->getFullName();
+			}
+		}
 	}
-	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Returns whether this is the current logged-in user.
@@ -47,7 +64,6 @@ class UserVariable extends ModelVariable
 	{
 		return $this->model->getRemainingCooldownTime();
 	}
-	/* BLOCKSPRO ONLY */
 
 	/**
 	 * Returns the user's group IDs
@@ -58,12 +74,14 @@ class UserVariable extends ModelVariable
 	{
 		$groupIds = array();
 
-		foreach ($this->model->groups as $group)
+		if (Blocks::hasPackage(PackageType::Users))
 		{
-			$groupIds[] = $group->id;
+			foreach ($this->model->groups as $group)
+			{
+				$groupIds[] = $group->id;
+			}
 		}
 
 		return $groupIds;
 	}
-	/* end BLOCKSPRO ONLY */
 }

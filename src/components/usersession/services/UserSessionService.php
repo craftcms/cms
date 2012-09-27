@@ -63,21 +63,28 @@ class UserSessionService extends \CWebUser
 		{
 			$authSessionToken = $states['authSessionToken'];
 
-			$user = blx()->accounts->getUserById($id);
+			$userCount = UserRecord::model()->countByAttributes(array(
+				'id' => $id,
+				'authSessionToken' => $authSessionToken
+			));
 
-			if ($user === null || $user->authSessionToken !== $authSessionToken)
+			if ($userCount == 1)
+			{
+				// everything is cool.
+				return true;
+			}
+			else
 			{
 				// everything is not cool.
 				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record: '.($user ? $user->authSessionToken : ''.'.'));
 				return false;
 			}
-
-			// everything is cool.
-			return true;
 		}
-
-		// also not cool.
-		return false;
+		else
+		{
+			// also not cool.
+			return false;
+		}
 	}
 
 	/**
@@ -87,8 +94,8 @@ class UserSessionService extends \CWebUser
 	{
 		if ($this->isLoggedIn() && !$fromCookie)
 		{
-			blx()->accounts->getCurrentUser()->lastLoginDate = DateTimeHelper::currentTime();
-			blx()->accounts->getCurrentUser()->save();
+			blx()->account->getCurrentUser()->lastLoginDate = DateTimeHelper::currentTime();
+			blx()->account->getCurrentUser()->save();
 		}
 	}
 
@@ -195,6 +202,6 @@ class UserSessionService extends \CWebUser
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return blx()->accounts->getRemainingCooldownTime(blx()->accounts->getCurrentUser());
+		return blx()->account->getRemainingCooldownTime(blx()->account->getCurrentUser());
 	}
 }

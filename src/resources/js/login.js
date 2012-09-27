@@ -76,7 +76,7 @@ var LoginForm = Blocks.Base.extend({
 			username: this.$usernameInput.val()
 		};
 
-		$.post(Blocks.actionUrl+'accounts/forgotPassword', data, $.proxy(function(response) {
+		$.post(Blocks.actionUrl+'account/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				new MessageSentModal();

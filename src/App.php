@@ -76,14 +76,8 @@ class App extends \CWebApplication
 		// If it's not a CP request OR the system is on, let's continue processing.
 		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->getMode() == HttpRequestMode::CP || ($this->request->getMode() == HttpRequestMode::Action && BLOCKS_CP_REQUEST))))
 		{
-			/* BLOCKS ONLY */
-			// Set the target language to the site language
-			$this->setLanguage(Blocks::getLanguage());
-			/* end BLOCKS ONLY */
-			/* BLOCKSPRO ONLY */
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
-			/* end BLOCKSPRO ONLY */
 
 			// Otherwise maybe it's an action request?
 			$this->_processActionRequest();
@@ -152,8 +146,6 @@ class App extends \CWebApplication
 		}
 	}
 
-	/* BLOCKSPRO ONLY */
-
 	/**
 	 * See if the user is logged in and they have a preferred language.  If so, use it.
 	 */
@@ -162,7 +154,7 @@ class App extends \CWebApplication
 		// See if the user is logged in.
 		if (blx()->user->isLoggedIn())
 		{
-			$user = blx()->accounts->getCurrentUser();
+			$user = blx()->account->getCurrentUser();
 			$userLanguage = Locale::getCanonicalID($user->language);
 
 			// If the user has a preferred language saved and we have translation data for it, set the target language.
@@ -170,8 +162,6 @@ class App extends \CWebApplication
 				$this->setLanguage($userLanguage);
 		}
 	}
-
-	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Processes action requests.

@@ -121,11 +121,11 @@ class BlocksTwigExtension extends \Twig_Extension
 		{
 			$globals['siteName'] = Blocks::getSiteName();
 			$globals['siteUrl'] = Blocks::getSiteUrl();
-			/* BLOCKSPRO ONLY */
 
-			//if (($user = blx()->accounts->getCurrentUser()) !== null)
-			//	$globals['userName'] = ($user->profile && $user->profile->fullName() ? $user->profile->fullName() : $user->username);
-			/* end BLOCKSPRO ONLY */
+			if (($user = blx()->account->getCurrentUser()) !== null)
+			{
+				$globals['user'] = new UserVariable($user);
+			}
 		}
 
 		return $globals;

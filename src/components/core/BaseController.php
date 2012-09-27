@@ -126,7 +126,7 @@ abstract class BaseController extends \CController
 	 */
 	public function requireAdmin()
 	{
-		if (!blx()->accounts->getCurrentUser()->admin)
+		if (!blx()->account->getCurrentUser()->admin)
 		{
 			throw new HttpException(403, Blocks::t('This action may only be performed by admins.'));
 		}

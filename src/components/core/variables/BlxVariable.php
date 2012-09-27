@@ -54,11 +54,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return AccountsVariable
+	 * @return AccountVariable
 	 */
-	public function accounts()
+	public function account()
 	{
-		return new AccountsVariable();
+		return new AccountVariable();
 	}
 
 	/**
@@ -117,15 +117,16 @@ class BlxVariable
 		return new DateVariable();
 	}
 
-	/* BLOCKSPRO ONLY */
 	/**
 	 * @return EmailVariable
 	 */
 	public function email()
 	{
-		return new EmailVariable();
+		if (Blocks::hasPackage(PackageType::Rebrand))
+		{
+			return new EmailVariable();
+		}
 	}
-	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Gets the current language in use.
@@ -153,7 +154,6 @@ class BlxVariable
 		return new HttpRequestVariable();
 	}
 
-	/* BLOCKSPRO ONLY */
  	/**
 	 * @return RoutesVariable
 	 */
@@ -161,7 +161,6 @@ class BlxVariable
 	{
 		return new RoutesVariable();
 	}
-	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * @return SystemSettingsVariable
@@ -177,6 +176,14 @@ class BlxVariable
 	public function updates()
 	{
 		return new UpdatesVariable();
+	}
+
+	public function users()
+	{
+		if (Blocks::hasPackage(PackageType::Users))
+		{
+			return new UsersVariable();
+		}
 	}
 
 	/**

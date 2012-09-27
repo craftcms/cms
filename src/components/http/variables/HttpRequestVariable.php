@@ -75,6 +75,20 @@ class HttpRequestVariable
 	}
 
 	/**
+	 * Returns the last URL segment.
+	 *
+	 * @return string
+	 */
+	public function lastSegment()
+	{
+		$segments = blx()->request->getPathSegments();
+		if ($segments)
+		{
+			return $segments[count($segments)-1];
+		}
+	}
+
+	/**
 	 * Returns the server name.
 	 *
 	 * @return string

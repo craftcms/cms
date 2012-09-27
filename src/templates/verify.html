@@ -15,10 +15,10 @@
 		</div>
 		<div class="pane-body">
 			{% set verificationCode = blx.request.query('code') %}
-			{% set user = blx.accounts.getUserByVerificationCode(verificationCode) %}
+			{% set user = blx.account.getUserByVerificationCode(verificationCode) %}
 			{% if user %}
 				<form method="post" action="">
-					<input type="hidden" name="action" value="accounts/resetPassword">
+					<input type="hidden" name="action" value="account/forgotPassword">
 					<input type="hidden" name="redirect" value="dashboard">
 					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
 

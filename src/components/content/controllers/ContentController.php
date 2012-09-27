@@ -137,7 +137,7 @@ class ContentController extends BaseController
 	{
 		$entry->id = blx()->request->getPost('entryId');
 		/* BLOCKSPRO ONLY */
-		$entry->authorId = blx()->accounts->getCurrentUser()->id;
+		$entry->authorId = blx()->account->getCurrentUser()->id;
 		$entry->sectionId = blx()->request->getRequiredPost('sectionId');
 		$entry->language = blx()->request->getPost('language');
 		/* end BLOCKSPRO ONLY */

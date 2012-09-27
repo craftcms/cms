@@ -22,9 +22,7 @@ class UserRecord extends BaseRecord
 			'admin'                            => AttributeType::Bool,
 			'passwordResetRequired'            => AttributeType::Bool,
 			'status'                           => array(AttributeType::Enum, 'values' => array('locked', 'suspended', 'pending', 'active', 'archived'), 'default' => 'pending'),
-			/* BLOCKSPRO ONLY */
 			'language'                         => array(AttributeType::Language, 'required' => true, 'default' => Blocks::getLanguage()),
-			/* end BLOCKSPRO ONLY */
 			'emailFormat'                      => array(AttributeType::Enum, 'values' => array('text', 'html'), 'default' => 'text', 'required' => true),
 			'lastLoginDate'                    => AttributeType::DateTime,
 			'lastLoginFailedDate'              => AttributeType::DateTime,
@@ -41,16 +39,21 @@ class UserRecord extends BaseRecord
 			'archivedEmail'                    => AttributeType::Email,
 		);
 	}
-	/* BLOCKSPRO ONLY */
 
 	public function defineRelations()
 	{
-		return array(
-			'profile' => array(static::HAS_ONE, 'UserProfileRecord', 'userId'),
-			'groups'  => array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)'),
-		);
+		if (Blocks::hasPackage(PackageType::Users))
+		{
+			return array(
+				'profile' => array(static::HAS_ONE, 'UserProfileRecord', 'userId'),
+				'groups'  => array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)'),
+			);
+		}
+		else
+		{
+			return array();
+		}
 	}
-	/* end BLOCKSPRO ONLY */
 
 	/**
 	 * Returns whether this is the current logged-in user.
@@ -59,7 +62,7 @@ class UserRecord extends BaseRecord
 	 */
 	public function isCurrent()
 	{
-		return (!$this->isNewRecord() && $this->id == blx()->accounts->getCurrentUser()->id);
+		return (!$this->isNewRecord() && $this->id == blx()->account->getCurrentUser()->id);
 	}
 
 	/**
@@ -69,6 +72,6 @@ class UserRecord extends BaseRecord
 	 */
 	public function getRemainingCooldownTime()
 	{
-		return blx()->accounts->getRemainingCooldownTime($this);
+		return blx()->account->getRemainingCooldownTime($this);
 	}
 }
