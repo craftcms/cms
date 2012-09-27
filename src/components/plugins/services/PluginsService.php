@@ -40,17 +40,20 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function init()
 	{
-		$records = PluginRecord::model()->findAllByAttributes(array(
-			'enabled' => true
-		));
-
-		foreach ($records as $record)
+		if (blx()->isInstalled())
 		{
-			$plugin = $this->getPlugin($record->class);
+			$records = PluginRecord::model()->findAllByAttributes(array(
+				'enabled' => true
+			));
 
-			if ($plugin)
+			foreach ($records as $record)
 			{
-				$this->_plugins[strtolower($plugin->getClassHandle())] = $plugin;
+				$plugin = $this->getPlugin($record->class);
+
+				if ($plugin)
+				{
+					$this->_plugins[strtolower($plugin->getClassHandle())] = $plugin;
+				}
 			}
 		}
 	}
