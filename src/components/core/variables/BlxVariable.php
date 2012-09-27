@@ -122,7 +122,7 @@ class BlxVariable
 	 */
 	public function email()
 	{
-		if (Blocks::hasPackage(PackageType::Rebrand))
+		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
 			return new EmailVariable();
 		}
@@ -180,7 +180,7 @@ class BlxVariable
 
 	public function users()
 	{
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			return new UsersVariable();
 		}

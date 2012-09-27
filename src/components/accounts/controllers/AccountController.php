@@ -104,7 +104,7 @@ class AccountController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			$userId = blx()->request->getPost('userId');
 			if ($userId !== null)
@@ -133,7 +133,7 @@ class AccountController extends BaseController
 		$user->email = blx()->request->getPost('email');
 		$user->emailFormat = blx()->request->getPost('emailFormat');
 
-		if (Blocks::hasPackage(PackageType::Language))
+		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
 			$user->language = blx()->request->getPost('language');
 		}

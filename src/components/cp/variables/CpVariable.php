@@ -17,7 +17,7 @@ class CpVariable
 		$nav[] = array('handle' => 'content', 'name' => Blocks::t('Content'), 'icon' => 'C');
 		$nav[] = array('handle' => 'assets', 'name' => Blocks::t('Assets'), 'icon' => 'A');
 
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			$nav[] = array('handle' => 'users', 'name' => Blocks::t('Users'), 'icon' => 'U');
 		}

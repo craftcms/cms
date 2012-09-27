@@ -42,7 +42,7 @@ class UserRecord extends BaseRecord
 
 	public function defineRelations()
 	{
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			return array(
 				'profile' => array(static::HAS_ONE, 'UserProfileRecord', 'userId'),

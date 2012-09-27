@@ -23,7 +23,7 @@ class UserVariable extends ModelVariable
 	 */
 	function profile()
 	{
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			return $this->model->profile;
 		}
@@ -36,7 +36,7 @@ class UserVariable extends ModelVariable
 	 */
 	function fullName()
 	{
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			if ($this->model->profile)
 			{
@@ -74,7 +74,7 @@ class UserVariable extends ModelVariable
 	{
 		$groupIds = array();
 
-		if (Blocks::hasPackage(PackageType::Users))
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			foreach ($this->model->groups as $group)
 			{

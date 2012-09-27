@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class PackageType
+class BlocksPackage
 {
 	const PublishPro          = 'publishpro';
 	const Users               = 'users';
