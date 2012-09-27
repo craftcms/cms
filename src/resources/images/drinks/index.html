@@ -1,1 +1,0 @@
-Directory access is forbidden.

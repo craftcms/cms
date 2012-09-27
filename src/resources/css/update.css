@@ -1,3 +1,0 @@
-#status { position: absolute; top: 50%; margin-top: -44px; padding-top: 68px; width: 100%; text-align: center; font-size: 16px; line-height: 20px; color: #666; text-shadow: 0 1px 0 #fff; background: url(../images/spinner-big.gif) no-repeat 50% 0; }
-#status.error { background-image: url(../images/error.png); }
-#status.success { background-image: url(../images/success.png); }
