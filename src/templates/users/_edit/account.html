@@ -1,0 +1,100 @@
+{% extends (blx.app.hasPackage('users') ? "users/_edit/layout" : "_layouts/cp") %}
+{% import "_includes/forms" as forms %}
+
+
+{% if not account and blx.request.segment(1) == 'myaccount' %}
+	{% set account = user %}
+{% endif %}
+
+
+{% if blx.app.hasPackage('users') %}
+	{% if not account and userId %}
+		{% set account = blx.users.getUserById(userId) %}
+		{% if not account %}{% exit 404 %}{% endif %}
+	{% endif %}
+
+	{% set pageTitle = "Account Settings"|t %}
+{% else %}
+	{% set titlebar %}
+		<h1>{{ "My Account"|t }}</h1>
+	{% endset %}
+{% endif %}
+
+
+{% set content %}
+	<form method="post" action="" class="centered">
+		<input type="hidden" name="action" value="account/saveUser">
+		{% if account.id %}<input type="hidden" name="userId" value="{{ account.id }}">{% endif %}
+
+		{{ forms.textField({
+			first: true,
+			label: "Username"|t,
+			id: 'username',
+			name: 'username',
+			value: account.username,
+			required: true,
+			errors: account.errors.username
+		}) }}
+
+		{{ forms.textField({
+			label: "Email"|t,
+			id: 'email',
+			name: 'email',
+			value: account.email,
+			required: true,
+			errors: account.errors.email
+		}) }}
+
+		{% if not account.id and user.admin %}
+			{{ forms.checkboxField({
+				label: "Require verification"|t,
+				name: 'requireVerification',
+				checked: blx.request.post('requireVerification')
+			}) }}
+		{% endif %}
+
+		{% if account.isCurrent or user.admin %}
+			{{ forms.passwordField({
+				label: "Password"|t,
+				instructions: (account.id ? "Leave blank to keep password unchanged."|t : null),
+				id: 'password',
+				name: 'password',
+				errors: (passwordForm.errors.password)
+			}) }}
+
+			{% if not account.isCurrent %}
+				{{ forms.checkboxField({
+					label: "Require a password reset on next login"|t,
+					name: 'requirePasswordReset',
+					checked: (not account or blx.request.post('requirePasswordReset'))
+				}) }}
+			{% endif %}
+		{% endif %}
+
+		{{ forms.selectField({
+			label: "Email Format"|t,
+			id: 'emailFormat',
+			name: 'emailFormat',
+			options: { text: "Plain Text"|t, html: "HTML"|t },
+			value: account.emailFormat,
+			default: 'html'
+		}) }}
+
+		{% if blx.app.hasPackage('language') %}
+			{% set languageInput %}
+				<div class="select">
+					<select id="language" name="language">
+						{% set userLanguage = account ? account.language : blx.app.language %}
+						{% for language in blx.i18n.translatedLanguages %}
+							<option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ blx.i18n.localeName(language, language) }}</option>
+						{% endfor %}
+					</select>
+				</div>
+			{% endset %}
+			{{ forms.field({ label: "Language"|t, id: 'language' }, languageInput) }}
+		{% endif %}
+
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+	</form>
+{% endset %}

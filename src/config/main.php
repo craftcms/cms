@@ -1,0 +1,175 @@
+<?php
+
+$common = require_once(BLOCKS_APP_PATH.'config/common.php');
+
+Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
+Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
+
+$packages = explode(',', BLOCKS_PACKAGES);
+
+// -------------------------------------------
+//  CP routes
+// -------------------------------------------
+
+$handle = '[a-zA-Z][a-zA-Z0-9_]*';
+
+$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/new']                     = 'content/_edit';
+$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)']        = 'content/_edit';
+$cpRoutes['content\/(?P<filter>'.$handle.')']                                 = 'content';
+
+$cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
+$cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
+
+$cpRoutes['update\/(?P<handle>[^\/]*)']                                       = 'update';
+
+$cpRoutes['content\/(?P<entryId>\d+)']                                        = 'content/_entry';
+$cpRoutes['content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)']                = 'content/_entry';
+
+$cpRoutes['plugins\/(?P<pluginClass>[A-Za-z]\w*)']                            = 'plugins/_settings';
+
+$cpRoutes['settings\/assets\/blocks\/new']                                    = 'settings/assets/_blocksettings';
+$cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/_blocksettings';
+$cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/_sourcesettings';
+$cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/_sourcesettings';
+
+$cpRoutes['myaccount']                                                        = 'users/_edit/account';
+
+if (!in_array('publishpro', $packages))
+{
+	$cpRoutes['settings\/blog\/blocks\/new']                                      = 'settings/sections/_blocks/settings';
+	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_blocks/settings';
+}
+else
+{
+	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_settings';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_settings';
+
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks']                   = 'settings/sections/_blocks';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/new']              = 'settings/sections/_blocks/settings';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/(?P<blockId>\d+)'] = 'settings/sections/_blocks/settings';
+}
+
+if (in_array('users', $packages))
+{
+	$cpRoutes['myaccount\/profile']                                               = 'users/_edit/profile';
+	$cpRoutes['myaccount\/info']                                                  = 'users/_edit/info';
+	$cpRoutes['myaccount\/admin']                                                 = 'users/_edit/admin';
+
+	$cpRoutes['users\/new']                                                       = 'users/_edit/account';
+	$cpRoutes['users\/(?P<filter>'.$handle.')']                                   = 'users';
+	$cpRoutes['users\/(?P<userId>\d+)']                                           = 'users/_edit/account';
+	$cpRoutes['users\/(?P<userId>\d+)\/profile']                                  = 'users/_edit/profile';
+	$cpRoutes['users\/(?P<userId>\d+)\/admin']                                    = 'users/_edit/admin';
+	$cpRoutes['users\/(?P<userId>\d+)\/info']                                     = 'users/_edit/info';
+
+	$cpRoutes['settings\/users\/blocks\/new']                                     = 'settings/users/_blocksettings';
+	$cpRoutes['settings\/users\/blocks\/(?P<blockId>\d+)']                        = 'settings/users/_blocksettings';
+	$cpRoutes['settings\/users\/groups\/new']                                     = 'settings/users/_groupsettings';
+	$cpRoutes['settings\/users\/groups\/(?P<groupId>\d+)']                        = 'settings/users/_groupsettings';
+}
+
+// -------------------------------------------
+//  Component config
+// -------------------------------------------
+
+$components['account']['class']           = 'Blocks\AccountService';
+$components['assets']['class']            = 'Blocks\AssetsService';
+$components['assetBlocks']['class']       = 'Blocks\AssetBlocksService';
+$components['assetSources']['class']      = 'Blocks\AssetSourcesService';
+$components['blockTypes']['class']        = 'Blocks\BlockTypesService';
+$components['components']['class']        = 'Blocks\ComponentsService';
+$components['content']['class']           = 'Blocks\ContentService';
+$components['dashboard']['class']         = 'Blocks\DashboardService';
+$components['email']['class']             = 'Blocks\EmailService';
+$components['entryBlocks']['class']       = 'Blocks\EntryBlocksService';
+$components['et']['class']                = 'Blocks\EtService';
+$components['installer']['class']         = 'Blocks\InstallService';
+$components['migrations']['class']        = 'Blocks\MigrationsService';
+$components['path']['class']              = 'Blocks\PathService';
+$components['plugins']['class']           = 'Blocks\PluginsService';
+$components['routes']['class']            = 'Blocks\RoutesService';
+$components['security']['class']          = 'Blocks\SecurityService';
+$components['systemSettings']['class']    = 'Blocks\SystemSettingsService';
+$components['templates']['class']         = 'Blocks\TemplatesService';
+$components['updates']['class']           = 'Blocks\UpdatesService';
+
+if (in_array('users', $packages))
+{
+	$components['users']['class']             = 'Blocks\UsersService';
+	$components['userProfiles']['class']      = 'Blocks\UserProfilesService';
+	$components['userProfileBlocks']['class'] = 'Blocks\UserProfileBlocksService';
+	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
+}
+
+$components['file']['class'] = 'Blocks\File';
+$components['messages']['class'] = 'Blocks\PhpMessageSource';
+$components['request']['class'] = 'Blocks\HttpRequestService';
+$components['request']['enableCookieValidation'] = true;
+$components['viewRenderer']['class'] = 'Blocks\TemplateProcessor';
+$components['statePersister']['class'] = 'Blocks\StatePersister';
+
+$components['urlManager']['class'] = 'Blocks\UrlManager';
+$components['urlManager']['cpRoutes'] = $cpRoutes;
+
+$components['assetManager']['basePath'] = dirname(__FILE__).'/../assets';
+$components['assetManager']['baseUrl'] = '../../blocks/app/assets';
+
+$components['errorHandler']['class'] = 'Blocks\ErrorHandler';
+
+$components['fileCache']['class'] = 'CFileCache';
+
+$components['log']['class'] = 'Blocks\LogRouter';
+$components['log']['routes'] = array(
+	array(
+		'class'  => 'Blocks\FileLogRoute',
+	),
+	array(
+		'class'         => 'Blocks\WebLogRoute',
+		'filter'        => 'CLogFilter',
+		'showInFireBug' => true,
+	),
+	array(
+		'class'         => 'Blocks\ProfileLogRoute',
+		'showInFireBug' => true,
+	),
+);
+
+$components['session']['autoStart'] = true;
+$components['session']['cookieMode'] = 'only';
+$components['session']['class'] = 'Blocks\HttpSessionService';
+$components['session']['sessionName'] = 'BlocksSessionId';
+
+$components['user']['class'] = 'Blocks\UserSessionService';
+$components['user']['allowAutoLogin'] = true;
+$components['user']['loginUrl'] = array('/login');
+$components['user']['autoRenewCookie'] = true;
+
+
+return CMap::mergeArray(
+	$common,
+
+	array(
+		'basePath'    => BLOCKS_APP_PATH,
+		'runtimePath' => BLOCKS_RUNTIME_PATH,
+		'name'        => 'Blocks',
+
+		// autoloading model and component classes
+		'import' => array(
+			'application.lib.*',
+			'application.lib.PhpMailer.*',
+			'application.lib.Requests.*',
+			'application.lib.Requests.Auth.*',
+			'application.lib.Requests.Response.*',
+			'application.lib.Requests.Transport.*',
+		),
+
+		// application components
+		'components' => $components,
+
+		'params' => array(
+			'blocksConfig'         => $blocksConfig,
+			'requiredPhpVersion'   => '5.3.0',
+			'requiredMysqlVersion' => ''
+		),
+	)
+);

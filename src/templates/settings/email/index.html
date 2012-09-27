@@ -1,0 +1,162 @@
+<!-- BLOCKS ONLY -->
+{% extends "_layouts/cp" %}
+<!-- end BLOCKS ONLY -->
+<!-- BLOCKSPRO ONLY -->
+{% extends "settings/email/_layout" %}
+<!-- end BLOCKSPRO ONLY -->
+{% import "_includes/forms" as forms %}
+{% set title = "Email Settings"|t %}
+{% includeJsResource "js/email_settings.js" %}
+
+
+{% if not settings %}
+	{% set settings = blx.systemSettings.email %}
+{% endif %}
+
+
+<!-- BLOCKS ONLY -->
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
+
+
+<!-- end BLOCKS ONLY -->
+{% set content %}
+	<form method="post" action="" class="centered">
+		<input type="hidden" name="action" value="systemSettings/saveEmailSettings">
+		<input type="hidden" name="redirect" value="settings">
+
+		{{ forms.textField({
+			label: "System Email Address"|t,
+			instructions: "The email address @@@productDisplay@@@ will use when sending email."|t,
+			id: 'emailAddress',
+			name: 'emailAddress',
+			value: settings.emailAddress,
+			required: true,
+			errors: settings.errors.emailAddress
+		}) }}
+
+		{{ forms.textField({
+			label: "Sender Name"|t,
+			instructions: "The “From” name @@@productDisplay@@@ will use when sending email."|t,
+			id: 'senderName',
+			name: 'senderName',
+			value: settings.senderName,
+			required: true,
+			errors: settings.errors.senderName
+		}) }}
+
+		<!-- BLOCKSPRO ONLY -->
+		{{ forms.textField({
+			label: "HTML Email Template"|t,
+			instructions: "The template Blocks Pro will use for users who prefer HTML email"|t,
+			id: 'template',
+			name: 'template',
+			value: settings.template,
+			errors: settings.errors.template
+		}) }}
+		<!-- end BLOCKSPRO ONLY -->
+
+		<hr>
+
+		{{ forms.selectField({
+			label: "Protocol"|t,
+			instructions: "The protocol @@@productDisplay@@@ will use to send email."|t,
+			id: 'protocol',
+			name: 'protocol',
+			options: { php: "PHP Mail"|t, sendmail: "Sendmail"|t, smtp: "SMTP"|t, pop: "POP"|t, gmail: "Gmail"|t },
+			value: settings.protocol
+		}) }}
+
+		<div id="hidden-fields" style="display: none">
+			{{ forms.textFiled({
+				label: "Username"|t,
+				id: 'username',
+				name: 'username',
+				value: settings.username
+			}) }}
+
+			{{ forms.passwordField({
+				label: "Password"|t,
+				id: 'password',
+				name: 'password',
+				value: settings.password,
+				errors: (settings.protocol != 'Smtp' ? settings.errors.password : null)
+			}) }}
+
+			{{ forms.textField({
+				label: "Port"|t,
+				id: 'port',
+				name: 'port',
+				value: (settings.port ? settings.port : 25),
+				size: 4,
+				errors: settings.errors.port
+			}) }}
+
+			{{ forms.textField({
+				label: "Host Name"|t,
+				id: 'host',
+				name: 'host',
+				value: settings.host,
+				errors: settings.errors.host
+			}) }}
+
+			{{ forms.textField({
+				label: "Timeout"|t,
+				id: 'timeout',
+				name: 'timeout',
+				value: (settings.timeout ? settings.timeout : 30),
+				size: 2,
+				errors: settings.errors.timeout
+			}) }}
+
+			{{ forms.checkboxField({
+				label: "Use SMTP Keep Alive"|t,
+				id: 'smtpKeepAlive',
+				name: 'smtpKeepAlive',
+				checked: settings.smtpKeepAlive
+			}) }}
+
+			{{ forms.checkboxField({
+				label: "Use SMTP authentication"|t,
+				id: 'smtpAuth',
+				name: 'smtpAuth',
+				checked: settings.smtpAuth,
+				toggle: 'smtpAuthCredentials-field'
+			}) }}
+
+			<div id="smtpAuthCredentials-field" class="nested-fields{% if not settings.smtpAuth %} hidden{% endif %}">
+				{{ forms.textField({
+					label: "Username"|t,
+					id: 'smtp-username',
+					name: 'smtpUsername',
+					value: settings.username,
+					errors: (settings.protocol == 'Smtp' ? settings.errors.username : null)
+				}) }}
+
+				{{ forms.passwordField({
+					label: "Password"|t,
+					id: 'smtpPassword',
+					name: 'smtpPassword',
+					value: settings.password,
+					errors: (settings.protocol == 'Smtp' ? settings.errors.password : null)
+				}) }}
+			</div>
+
+			{{ forms.selectField({
+				label: "SMTP Secure Transport Type",
+				id: 'smtpSecureTransportType',
+				name: 'smtpSecureTransportType',
+				options: { none: "None"|t, ssl: "SSL"|t, tls: "TLS"|t },
+				default: 'none',
+				value: settings.smtpSecureTransportType
+			}) }}
+		</div>
+
+		<hr>
+
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}

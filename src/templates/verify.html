@@ -1,0 +1,40 @@
+{% extends "_layouts/basic" %}
+{% from "_includes/forms" import errorList %}
+{% set title = "Verify Account"|t %}
+
+
+{% if blx.session.loggedin %}
+	{% redirect "dashboard" %}
+{% endif %}
+
+
+{% set body %}
+	<div class="pane">
+		<div class="pane-head">
+			{{ "Set Password"|t }}
+		</div>
+		<div class="pane-body">
+			{% set verificationCode = blx.request.query('code') %}
+			{% set user = blx.account.getUserByVerificationCode(verificationCode) %}
+			{% if user %}
+				<form method="post" action="">
+					<input type="hidden" name="action" value="account/forgotPassword">
+					<input type="hidden" name="redirect" value="dashboard">
+					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
+
+					<div class="pane-item">{{ "Let’s set a password for your account."|t }}</div>
+					<div class="pane-item field">
+						<label for="password">{{ "Password"|t }}</label>
+						<div class="passwordwrapper"><input id="password" name="password" class="text password {% if verifyAccountInfo.errors.password %}error{% endif %}" type="password"></div>
+						{{ errorList(verifyAccountInfo.errors.password) }}
+					</div>
+					<div class="pane-item">
+						<input class="btn big submit" type="submit" value="{{ 'Set Password'|t }}">
+					</div>
+				</form>
+			{% else %}
+				<p>{{ "There was a problem validating this activation code."|t }}</p>
+			{% endif %}
+		</div>
+	</div>
+{% endset %}

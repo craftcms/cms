@@ -1,0 +1,125 @@
+{% extends "_layouts/cp" %}
+{% set title = "Content"|t %}
+
+
+<!-- BLOCKS ONLY -->
+{% set statuses = { live: 'on', pending: 'pending', draft: '' } %}
+<!-- end BLOCKS ONLY -->
+<!-- BLOCKSPRO ONLY -->
+{% set sections = blx.content.sections %}
+{% set showSection = true %}
+
+
+{% set statuses = { live: 'on', pending: 'pending', draft: '', expired: 'off' } %}
+<!-- end BLOCKSPRO ONLY -->
+{% set showStatus = true %}
+
+
+{% if not filter %}
+	{% set params = { status: '*' } %}
+{% elseif filter in statuses|keys %}
+	{% set params = { status: filter } %}
+	{% set showStatus = false %}
+{% elseif filter == 'archived' %}
+	{% set params = { archived: true } %}
+	{% set showStatus = false %}
+<!-- BLOCKSPRO ONLY -->
+{% elseif blx.content.totalSections({ handle: filter }) %}
+	{% set params = { section: filter, status: '*' } %}
+	{% set showSection = false %}
+<!-- end BLOCKSPRO ONLY -->
+{% else %}
+	{% exit 404 %}
+{% endif %}
+
+
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+{% endset %}
+
+
+{% set content %}
+	<nav class="nav">
+		<!-- BLOCKS ONLY -->
+		<div class="buttons">
+			<a href="{{ url('content/blog/new') }}" class="btn submit" data-icon="+">{{ "New Entry"|t }}</a>
+		</div>
+		<!-- end BLOCKS ONLY -->
+
+		<ul>
+			<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
+
+			<!-- BLOCKSPRO ONLY -->
+			{% for section in sections %}
+				<li><a href="{{ url('content/' ~ section.handle) }}" {% if filter == section.handle %}class="sel"{% endif %}>{{ section.name|t }}</a></li>
+			{% endfor %}
+			<!-- end BLOCKSPRO ONLY -->
+
+			{% for status, class in statuses %}
+				{% set total = blx.content.totalEntries({ status: status }) %}
+				{% if total %}
+					<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
+				{% endif %}
+			{% endfor %}
+
+			{% if blx.content.totalEntries({ archived: true }) %}
+				<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
+			{% endif %}
+		</ul>
+	</nav>
+
+	<div>
+		<div class="toolbar">
+			<div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search entries'|t }}"></div>
+		</div>
+
+		{% if blx.content.totalEntries(params) %}
+			<!-- BLOCKS ONLY -->
+			{% set totalCols = 2 + (showStatus ? 1 : 0) %}
+			<!-- end BLOCKS ONLY -->
+			<!-- BLOCKSPRO ONLY -->
+			{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
+			<!-- end BLOCKSPRO ONLY -->
+			{% set colWidth = round(100 / totalCols) %}
+			<table class="data">
+				<thead>
+					<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
+					<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
+					<!-- BLOCKSPRO ONLY -->
+					{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
+					<!-- end BLOCKSPRO ONLY -->
+					{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
+				</thead>
+				<tbody>
+					{% for entry in blx.content.entries(params) %}
+						<!-- BLOCKS ONLY -->
+						{% set editUrl = url('content/blog/' ~ entry.id) %}
+						<!-- end BLOCKS ONLY -->
+						<!-- BLOCKSPRO ONLY -->
+						{% set entrySection = sections[entry.sectionId] %}
+						{% set editUrl = url('content/' ~ entrySection.handle ~ '/' ~ entry.id) %}
+						<!-- end BLOCKSPRO ONLY -->
+						<tr>
+							<th scope="row"><a href="{{ editUrl }}">{{ entry.title }}</a></th>
+							<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
+							<!-- BLOCKSPRO ONLY -->
+							{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
+							<!-- end BLOCKSPRO ONLY -->
+							{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p>{{ "No entries exist yet."|t }}</p>
+		{% endif %}
+		<!-- BLOCKSPRO ONLY -->
+
+		{% if not showSection %}
+			<div class="buttons">
+				<a class="btn submit addbtn" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
+			</div>
+		{% endif %}
+		<!-- end BLOCKSPRO ONLY -->
+	</div>
+{% endset %}

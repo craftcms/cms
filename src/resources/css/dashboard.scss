@@ -1,0 +1,10 @@
+@import "shared";
+
+/* alerts */
+#alerts { margin: 30px -30px 0; }
+#alerts .alert { border-top: 1px solid $light; padding: 10px 30px; color: #e14545; background: #fff5f2; }
+
+/* dashboard */
+#widgets { position: relative; }
+
+#dashboard-sidebar { visibility: hidden; }

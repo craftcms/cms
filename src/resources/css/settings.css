@@ -1,0 +1,22 @@
+/*-- Sites --*/
+body.sites #sites li.primary { font-weight: bold; }
+
+/*-- URL Routing settings --*/
+body.routing #main .routes .site { margin-right: 2px; color: rgba(0,0,0,0.4); }
+body.routing #main .routes a { font-weight: normal; }
+body.routing #main .routes .new { border-top: 1px solid #aaa; padding: 18px 20px; }
+
+/*-- Plugins --*/
+body.plugins #main tr.uninstalled td { color: #999; text-shadow: 0 1px 0 #fff; }
+body.plugins #main th.status,
+body.plugins #main th.action { width: 0.01%; }
+body.plugins #main td { padding-top: 10px; padding-bottom: 10px; vertical-align: middle; }
+
+/*-- Updates --*/
+body.updates #checking { position: absolute; margin: 0 -20px; padding-top: 68px; width: 100%; text-align: center; font-size: 16px; line-height: 20px; color: #474a4d; text-shadow: 0 1px 0 rgba(255,255,255,0.5); background: url(../images/spinner-big.gif) no-repeat 50% 0; }
+body.updates #updates { display: none; }
+body.updates #updates #update-all { float: right; margin-top: -4px; }
+body.updates #updates .pane table { width: 100%; }
+body.updates #updates .pane table td:not(:first-child) { white-space: nowrap; width: 0.01%; }
+body.updates #updates .pane table .manual { color: #999; }
+body.updates .modal .pane-body { width: 440px; max-height: 220px; }

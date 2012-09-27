@@ -1,0 +1,10 @@
+{% from "_includes/forms" import textareaField %}
+
+{{ textareaField({
+	label: label,
+	instructions: "Place each option on a new line. If you want to give an option a custom label, use the format “<code>OptionValue => OptionLabel</code>”."|t|raw,
+	id: 'options',
+	name: 'options',
+	value: options,
+	rows: 10
+}) }}

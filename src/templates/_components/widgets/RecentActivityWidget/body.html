@@ -1,0 +1,8 @@
+<table class="data">
+	{% for action in actions %}
+	<tr>
+		<td>{{ action.action|raw }}</td>
+		<td class="timestamp">{{ action.date }}</td>
+	</tr>
+	{% endfor %}
+</table>

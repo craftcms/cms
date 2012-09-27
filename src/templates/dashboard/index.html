@@ -1,0 +1,36 @@
+{% extends "_layouts/cp" %}
+{% set title = "Dashboard"|t %}
+{% includeCssResource "css/dashboard.css" %}
+{% includeJsResource "js/dashboard.js" %}
+
+
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+	<ul class="right">
+		<li><a href="{{ url('dashboard/settings') }}" class="btn" data-icon="⚙">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	{#<div id="alerts">
+		{% for alert in blx.dashboard.alerts %}
+			<div class="alert">
+				<p>{{ alert }}</p>
+			</div>
+		{% endfor %}
+	</div>#}
+
+	<div id="widgets" class="grid"></div>
+{% endset %}
+
+
+{% set js %}
+	{#if !blx.updates.cached}
+		window.getAlerts = true;
+		window.getAlertsUrl = "{{ actionUrl('dashboard/getalerts') }}";
+	{/if#}
+
+	Blocks.dashboard = new Blocks.Dashboard([{{ blx.dashboard.userWidgetIds|join(',') }}]);
+{% endset %}
+{% includeJs js %}

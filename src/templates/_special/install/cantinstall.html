@@ -1,0 +1,12 @@
+<div id="cantinstall" class="main">
+	<h1>{{ "Can’t install @@@productDisplay@@@"|t }} :(</h1>
+	<p>{{ "Your server doesn’t meet the following requirements to install @@@productDisplay@@@:"|t }}</p>
+
+	<ul class="list">
+		{% for req in reqCheck.requirements %}
+			{% if req.result == 'failed' %}
+				<li>{{ req.notes }}</li>
+			{% endif %}
+		{% endfor %}
+	</ul>
+</div>

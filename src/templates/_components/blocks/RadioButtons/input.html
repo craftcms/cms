@@ -1,0 +1,8 @@
+{% from "_includes/forms" import radioGroup %}
+
+{{ radioGroup({
+	id: name,
+	name: name,
+	options: settings.options,
+	value: value
+}) }}
