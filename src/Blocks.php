@@ -7,6 +7,7 @@ namespace Blocks;
 class Blocks extends \Yii
 {
 	private static $_storedBlocksInfo;
+	private static $_packages;
 
 	/**
 	 * Returns the @@@productDisplay@@@ version number, as defined by the BLOCKS_VERSION constant.
@@ -86,11 +87,16 @@ class Blocks extends \Yii
 	 */
 	public static function getPackages()
 	{
-		return BLOCKS_PACKAGES;
+		if (!isset(static::$_packages))
+		{
+			static::$_packages = ArrayHelper::stringToArray(BLOCKS_PACKAGES);
+		}
+
+		return static::$_packages;
 	}
 
 	/**
-	 * Checks to see if the given package name is registered for this install.
+	 * Returns whether a package is included in this Blocks build.
 	 *
 	 * @param $packageName
 	 * @return bool

@@ -30,8 +30,8 @@
 		<li><a href="{{ url('settings/sections') }}" data-icon="n">{{ "Sections"|t }}</a></li>
 		<!-- end BLOCKSPRO ONLY -->
 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
-		<!-- BLOCKSPRO ONLY -->
-		<li><a href="{{ url('settings/languages') }}" data-icon="L">{{ "Languages"|t }}</a></li>
-		<!-- end BLOCKSPRO ONLY -->
+		{% if blx.app.hasPackage('language') %}
+			<li><a href="{{ url('settings/languages') }}" data-icon="L">{{ "Languages"|t }}</a></li>
+		{% endif %}
 	</ul>
 {% endset %}

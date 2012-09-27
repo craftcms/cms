@@ -27,6 +27,17 @@ class AppVariable
 	}
 
 	/**
+	 * Returns whether a package is included in this Blocks build.
+	 *
+	 * @param $packageName;
+	 * @return bool
+	 */
+	public function hasPackage($packageName)
+	{
+		return Blocks::hasPackage($packageName);
+	}
+
+	/**
 	 * Returns the site name.
 	 *
 	 * @return string
