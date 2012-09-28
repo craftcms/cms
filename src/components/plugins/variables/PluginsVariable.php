@@ -13,9 +13,13 @@ class PluginsVariable
 	 * @param bool   $enabledOnly
 	 * @return PluginRecord
 	 */
-	public function get($class, $enabledOnly = true)
+	public function getPlugin($class, $enabledOnly = true)
 	{
-		return blx()->plugins->getPlugin($class, $enabledOnly);
+		$plugin = blx()->plugins->getPlugin($class, $enabledOnly);
+		if ($plugin)
+		{
+			return new PluginVariable($plugin);
+		}
 	}
 
 	/**
@@ -23,8 +27,9 @@ class PluginsVariable
 	 *
 	 * @return array
 	 */
-	public function all()
+	public function plugins()
 	{
-		return blx()->plugins->getPlugins();
+		$plugins = blx()->plugins->getPlugins();
+		return VariableHelper::populateVariables($plugins, 'PluginVariable');
 	}
 }

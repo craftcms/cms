@@ -1,0 +1,69 @@
+{% extends "_layouts/cp" %}
+{% set title = "Plugins"|t %}
+
+
+{% set titlebar %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set plugins = blx.plugins.plugins %}
+
+
+{% set content %}
+	{% if plugins|length %}
+		<table id="plugins" class="data">
+			<thead>
+				<th scope="col">{{ "Plugin"|t }}</th>
+				<th scope="col">{{ "Developer"|t }}</th>
+				<th scope="col">{{ "Status"|t }}</th>
+				<td width="1%"></td>
+				<td width="1%"></td>
+			</thead>
+			<tbody>
+				{% for plugin in plugins %}
+					<tr data-name="{{ plugin.name|t }}">
+						<th>{{ plugin.name }} <span class="light">{{ plugin.version }}</span></th>
+						<td>{% if plugin.developer %}{{ plugin.developer|raw }}{% else %}<span class="light">--</span>{% endif %}</td>
+						<td>
+							{%- if plugin.record.enabled -%}
+								<span class="status on"></span> {{ "Enabled"|t }}
+							{%- elseif plugin.isInstalled -%}
+								<span class="status off"></span> {{ "Disabled"|t }}
+							{%- else -%}
+								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
+							{%- endif -%}
+						</td>
+						<td class="rightalign">
+							{%- if plugin.isInstalled -%}
+								<form action="" method="post">
+									<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
+									{%- if plugin.record.enabled -%}
+										<input type="button" value="{{ 'Disable'|t }}" class="btn formsubmit" data-action="plugins/disablePlugin">
+									{%- else -%}
+										<input type="button" value="{{ 'Enable'|t }}" class="btn formsubmit" data-action="plugins/enablePlugin">
+									{%- endif -%}
+								</form>
+							{%- endif -%}
+						</td>
+						<td class="rightalign">
+							<form action="" method="post">
+								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
+								{%- if plugin.isInstalled -%}
+									<input type="button" value="{{ 'Uninstall'|t }}" class="btn formsubmit" data-action="plugins/uninstallPlugin">
+								{%- else -%}
+									<input type="button" value="{{ 'Install'|t }}" class="btn formsubmit" data-action="plugins/installPlugin">
+								{%- endif -%}
+							</form>
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% else %}
+		<p>{{ "No plugins are installed yet."|t }}
+	{% endif %}
+{% endset %}

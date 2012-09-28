@@ -6,6 +6,8 @@ namespace Blocks;
  */
 abstract class BasePlugin extends BaseComponent implements IPlugin
 {
+	public $hasCpSection = false;
+
 	protected $componentType = 'Plugin';
 
 	/**

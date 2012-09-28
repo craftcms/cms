@@ -28,8 +28,8 @@ html, body, #sidebar, #main { height: 100%; }
 
 #sidebar .nav ul { margin-top: 7px; }
 #sidebar .nav ul li { margin-top: 3px; }
-#sidebar .nav ul li a { padding: 4px 10px; color: #b3b3b3; }
-#sidebar .nav ul li a:before { margin-top: -2px; margin-right: 5px; font-size: 18px; }
+#sidebar .nav ul li a { padding: 4px 10px 4px 36px; color: #b3b3b3; }
+#sidebar .nav ul li a:before { float: left; margin: 2px 0 0 -26px; font-size: 18px; }
 #sidebar .nav ul li a:hover { color: #fff; }
 .nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; font-weight: bold; }
 #sidebar .nav ul li a .badge { background: #000; }
