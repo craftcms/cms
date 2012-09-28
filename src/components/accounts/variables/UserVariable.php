@@ -30,6 +30,26 @@ class UserVariable extends ModelVariable
 	}
 
 	/**
+	 * Gets the user's username or first name.
+	 *
+	 * @return string|null
+	 */
+	function name()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users) &&
+			$this->model->profile &&
+			$this->model->profile->firstName
+		)
+		{
+			return $this->model->profile->firstName;
+		}
+		else
+		{
+			return $this->model->username;
+		}
+	}
+
+	/**
 	 * Gets the user's full name.
 	 *
 	 * @return string|null
