@@ -401,7 +401,7 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Determines if @@@productDisplay@@@ is installed by checking if the info table exists.
+	 * Determines if Blocks is installed by checking if the info table exists.
 	 *
 	 * @return bool
 	 */

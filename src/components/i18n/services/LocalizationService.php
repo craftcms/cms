@@ -44,7 +44,7 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns a list of language ids from the languages directory that @@@productDisplay@@@ is translated into.
+	 * Returns a list of language ids from the languages directory that Blocks is translated into.
 	 *
 	 * @return mixed
 	 */

@@ -14,7 +14,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	function __construct($scenario = 'insert')
 	{
-		// If @@@productDisplay@@@ isn't installed, this model's table won't exist yet,
+		// If Blocks isn't installed, this model's table won't exist yet,
 		// so just create an instance of the class, for use by the installer
 		if ($scenario !== 'install')
 		{

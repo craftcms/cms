@@ -27,7 +27,7 @@ class UpdatesService extends BaseApplicationComponent
 		{
 			$notes = $this->_generateUpdateNotes($updateInfo->blocks->releases, 'Blocks');
 			$updates[] = array(
-				'name' => '@@@productDisplay@@@',
+				'name' => 'Blocks',
 				'handle' => 'Blocks',
 				'version' => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
 				'critical' => $updateInfo->blocks->criticalUpdateAvailable,
@@ -292,7 +292,7 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Checks to see if @@@productDisplay@@@ can write to a defined set of folders/files that are needed for auto-update to work.
+	 * Checks to see if Blocks can write to a defined set of folders/files that are needed for auto-update to work.
 	 *
 	 * @return array|null
 	 */

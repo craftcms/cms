@@ -27,7 +27,7 @@
 
 		{{ forms.textField({
 			label: "System Email Address"|t,
-			instructions: "The email address @@@productDisplay@@@ will use when sending email."|t,
+			instructions: "The email address Blocks will use when sending email."|t,
 			id: 'emailAddress',
 			name: 'emailAddress',
 			value: settings.emailAddress,
@@ -37,7 +37,7 @@
 
 		{{ forms.textField({
 			label: "Sender Name"|t,
-			instructions: "The “From” name @@@productDisplay@@@ will use when sending email."|t,
+			instructions: "The “From” name Blocks will use when sending email."|t,
 			id: 'senderName',
 			name: 'senderName',
 			value: settings.senderName,
@@ -60,7 +60,7 @@
 
 		{{ forms.selectField({
 			label: "Protocol"|t,
-			instructions: "The protocol @@@productDisplay@@@ will use to send email."|t,
+			instructions: "The protocol Blocks will use to send email."|t,
 			id: 'protocol',
 			name: 'protocol',
 			options: { php: "PHP Mail"|t, sendmail: "Sendmail"|t, smtp: "SMTP"|t, pop: "POP"|t, gmail: "Gmail"|t },

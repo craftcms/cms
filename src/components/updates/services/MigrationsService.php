@@ -240,7 +240,7 @@ class MigrationsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets migrations that have no been applied yet AND have a later timestamp than the current @@@productDisplay@@@ release.
+	 * Gets migrations that have no been applied yet AND have a later timestamp than the current Blocks release.
 	 *
 	 * @return array
 	 */
@@ -265,7 +265,7 @@ class MigrationsService extends BaseApplicationComponent
 			{
 				$time = strtotime('20'.substr($matches[2], 0, 2).'-'.substr($matches[2], 2, 2).'-'.substr($matches[2], 4, 2).' '.substr($matches[2], 7, 2).':'.substr($matches[2], 9, 2).':'.substr($matches[2], 11, 2));
 
-				// Check the migration timestamp against the @@@productDisplay@@@ release date
+				// Check the migration timestamp against the Blocks release date
 				if ($time > Blocks::getStoredReleaseDate())
 					$migrations[] = $matches[1];
 			}

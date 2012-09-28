@@ -10,7 +10,7 @@ class Blocks extends \Yii
 	private static $_packages;
 
 	/**
-	 * Returns the @@@productDisplay@@@ version number, as defined by the BLOCKS_VERSION constant.
+	 * Returns the Blocks version number, as defined by the BLOCKS_VERSION constant.
 	 *
 	 * @static
 	 * @return string
@@ -21,7 +21,7 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the @@@productDisplay@@@ version number, as defined in the blx_info table.
+	 * Returns the Blocks version number, as defined in the blx_info table.
 	 *
 	 * @static
 	 * @return string
@@ -33,7 +33,7 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the @@@productDisplay@@@ build number, as defined by the BLOCKS_BUILD constant.
+	 * Returns the Blocks build number, as defined by the BLOCKS_BUILD constant.
 	 *
 	 * @static
 	 * @return string
@@ -45,7 +45,7 @@ class Blocks extends \Yii
 
 	/**
 	 *
-	 * Returns the @@@productDisplay@@@ build number, as defined in the blx_info table.
+	 * Returns the Blocks build number, as defined in the blx_info table.
 	 *
 	 * @static
 	 * @return string
@@ -57,7 +57,7 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the @@@productDisplay@@@ release date, as defined by the BLOCKS_RELEASE_DATE constant.
+	 * Returns the Blocks release date, as defined by the BLOCKS_RELEASE_DATE constant.
 	 *
 	 * @static
 	 * @return string
@@ -68,7 +68,7 @@ class Blocks extends \Yii
 	}
 
 	/**
-	 * Returns the @@@productDisplay@@@ release date, as defined in the blx_info table.
+	 * Returns the Blocks release date, as defined in the blx_info table.
 	 *
 	 * @static
 	 * @return string

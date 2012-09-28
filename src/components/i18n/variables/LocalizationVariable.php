@@ -17,7 +17,7 @@ class LocalizationVariable
 	}
 
 	/**
-	 * Gets the languages that @@@productDisplay@@@ is translated into.
+	 * Gets the languages that Blocks is translated into.
 	 *
 	 * @return array
 	 */
