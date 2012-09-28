@@ -9,108 +9,6 @@ class EmailService extends BaseApplicationComponent
 	private $_defaultEmailTimeout = 10;
 	private $_settings;
 
-	/* BLOCKSPRO ONLY */
-
-	/**
-	 * Returns all of the system email messages.
-	 *
-	 * @return array
-	 */
-	public function getAllMessages()
-	{
-		return EmailMessageRecord::model()->findAll();
-	}
-
-	/**
-	 * Returns a system email message by its ID.
-	 *
-	 * @param int $messageId
-	 * @return EmailMessage
-	 */
-	public function getMessageById($messageId)
-	{
-		return EmailMessageRecord::model()->findById($messageId);
-	}
-
-	/**
-	 * Returns a system email message by its key.
-	 *
-	 * @param string $key
-	 * @return EmailMessage
-	 */
-	public function getMessageByKey($key)
-	{
-		return EmailMessageRecord::model()->findByAttributes(array(
-			'key' => $key
-		));
-	}
-
-	/**
-	 * Registers a new system email message.
-	 *
-	 * @param string $key
-	 * @return EmailMessage
-	 */
-	public function registerMessage($key)
-	{
-		$message = new EmailMessageRecord();
-		$message->key = $key;
-		$message->save();
-		return $message;
-	}
-
-	/**
-	 * Returns the localized content for a system email message.
-	 *
-	 * @param int $messageId
-	 * @param string $language
-	 * @return string
-	 */
-	public function getMessageContent($messageId, $language = null)
-	{
-		if (!$language)
-			$language = blx()->language;
-
-		$content = EmailMessageContentRecord::model()->findByAttributes(array(
-			'messageId' => $messageId,
-			'language' => $language
-		));
-
-		if (!$content)
-		{
-			$content = new EmailMessageContentRecord();
-			$content->messageId = $messageId;
-			$content->language = ($language ? $language : blx()->language);
-		}
-
-		return $content;
-	}
-
-	/**
-	 * Saves the localized content for a system email message.
-	 *
-	 * @param int $messageId
-	 * @param string $subject
-	 * @param string $body
-	 * @param string $htmlBody
-	 * @param string $language
-	 * @return string
-	 */
-	public function saveMessageContent($messageId, $subject, $body, $htmlBody = null, $language = null)
-	{
-		// Has this message already been translated into this language?
-		$content = $this->getMessageContent($messageId, $language);
-
-		$content->subject = $subject;
-		$content->body = $body;
-		$content->htmlBody = $htmlBody;
-		$content->save();
-
-		return $content;
-	}
-
-	/* end BLOCKSPRO ONLY */
-
 	/**
 	 * Sends an email.
 	 *
@@ -216,47 +114,45 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendEmailByKey(UserRecord $user, $key, $variables = array())
 	{
-		/* BLOCKS ONLY */
-
-		$subject = Blocks::t($key.'_subject');
-		$body = Blocks::t($key.'_body');
-		$htmlBody = Blocks::t($key.'_html_body');
-		$tempTemplatesPath = blx()->path->getCpTemplatesPath();
-		$template = '_special/email';
-
-		/* end BLOCKS ONLY */
-		/* BLOCKSPRO ONLY */
-
-		// Get the email by key from the database.
-		$message = $this->getMessageByKey($key);
-
-		if (!$message)
-			throw new Exception(Blocks::t('Could not find an email message with the key “{key}”', array('key' => $key)));
-
-		// Get the content
-		$content = $this->getMessageContent($message->id, $user->language);
-		$subject = $content->subject;
-		$body = $content->body;
-		$htmlBody = $content->htmlBody;
-
-		$settings = $this->getSettings();
-		if (!empty($settings['template']))
+		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
-			$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
-			$template = $settings['template'];
+			$message = blx()->emailMessages->getMessage($key, $user->language);
+
+			$subject  = $message->subject;
+			$body     = $message->body;
+			$htmlBody = $message->htmlBody;
 		}
 		else
+		{
+			$subject  = Blocks::t($key.'_subject');
+			$body     = Blocks::t($key.'_body');
+			$htmlBody = Blocks::t($key.'_html_body');
+		}
+
+		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		{
+			// Is there a custom HTML template set?
+			$settings = $this->getSettings();
+			if (!empty($settings['template']))
+			{
+				$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
+				$template = $settings['template'];
+			}
+		}
+
+		if (empty($template))
 		{
 			$tempTemplatesPath = blx()->path->getCpTemplatesPath();
 			$template = '_special/email';
 		}
 
-		/* end BLOCKSPRO ONLY */
-
 		if (!$htmlBody || $htmlBody == $key.'_html_body')
 		{
+			// Auto-generate the HTML content
 			if (!class_exists('\Markdown_Parser', false))
+			{
 				require_once blx()->path->getFrameworkPath().'vendors/markdown/markdown.php';
+			}
 
 			$md = new \Markdown_Parser();
 			$htmlBody = $md->transform($body);

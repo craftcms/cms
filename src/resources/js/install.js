@@ -29,13 +29,9 @@ Blocks.Installer = Blocks.Base.extend({
 		this.$currentScreen = $(this.$screens[0])
 			.removeClass('scaleddown')
 			.animate({opacity: 1}, 'fast', $.proxy(function() {
-				/* BLOCKS ONLY */
-
 				this.addListener($('#getstarted'), 'click', 'showAccountScreen');
 
-				/* end BLOCKS ONLY */
-				/* BLOCKSPRO ONLY */
-
+				/* HIDE */
 				// Give the License Key input focus after half a second
 				this.focusFirstInput();
 
@@ -43,12 +39,11 @@ Blocks.Installer = Blocks.Base.extend({
 				this.$licensekeySubmitBtn = $('#licensekeysubmit');
 				this.addListener(this.$licensekeySubmitBtn, 'click', 'validateLicenseKey');
 				this.addListener($('#licensekeyform'), 'submit', 'validateLicenseKey');
-
-				/* end BLOCKSPRO ONLY */
+				/* end HIDE */
 			}, this));
 	},
 
-	/* BLOCKSPRO ONLY */
+	/* HIDE */
 	validateLicenseKey: function(event)
 	{
 		event.preventDefault();
@@ -56,7 +51,7 @@ Blocks.Installer = Blocks.Base.extend({
 		var inputs = ['licensekey'];
 		this.validate('licensekey', inputs, $.proxy(this, 'showAccountScreen'));
 	},
-	/* end BLOCKSPRO ONLY */
+	/* end HIDE */
 
 	showAccountScreen: function(event)
 	{
@@ -96,12 +91,10 @@ Blocks.Installer = Blocks.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			/* BLOCKS ONLY */
 			var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'language'];
-			/* end BLOCKS ONLY */
-			/* BLOCKSPRO ONLY */
+			/* HIDE */
 			var inputs = ['licensekey', 'username', 'email', 'password', 'siteName', 'siteUrl', 'language'];
-			/* end BLOCKSPRO ONLY */
+			/* end HIDE */
 
 			var data = {};
 

@@ -4,32 +4,30 @@
 {% import "_includes/forms" as forms %}
 
 
-<!-- BLOCKSPRO ONLY -->
-{% set section = blx.content.section({ handle: sectionHandle }) %}
-{% if not section %}{% exit 404 %}{% endif %}
-<!-- end BLOCKSPRO ONLY -->
-
-
-{% if not entry and entryId %}
-	{% set entry = blx.content.entry({ id: entryId, status: '*' }) %}
-	{% if not entry %}{% exit 404 %}{% endif %}
-
-	{% if entry.status == 'draft' %}
-		{% set entry = blx.content.populateEntryDraftData(entry) %}
-	{% endif %}
+{% if blx.hasPackage('publishpro') %}
+	{% set section = blx.sections.section({ handle: sectionHandle }) %}
+	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-<!-- BLOCKS ONLY -->
-{% set blocks = blx.content.entryBlocks %}
-<!-- end BLOCKS ONLY -->
-<!-- BLOCKSPRO ONLY -->
-{% set blocks = blx.content.entryBlocksBySectionId(section.id) %}
-<!-- end BLOCKSPRO ONLY -->
+{% if not entry and entryId %}
+	{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
+	{% if not entry %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% if blx.hasPackage('publishpro') %}
+	{% set blocks = blx.entryBlocks.entryBlocksBySectionId(section.id) %}
+{% else %}
+	{% set blocks = blx.entryBlocks.entryBlocks %}
+{% endif %}
 
 
 {% if entry.id %}
+	<!-- HIDE -->
 	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' ~ (entry.status == 'draft' ? ' <span class="draft"><span>(</span>draft<span>)</span></span>' : '') }) %}
+	<!-- end HIDE -->
+	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' }) %}
 {% else %}
 	{% set title = "Create a new entry"|t %}
 {% endif %}
@@ -39,17 +37,12 @@
 	<h1>{{ title|raw }}</h1>
 
 	<ul class="left">
-		<!-- BLOCKS ONLY -->
-		<li><a href="{{ url('content') }}" class="backbtn">{{ "Content"|t }}</a></li>
-		<!-- end BLOCKS ONLY -->
-		<!-- BLOCKSPRO ONLY -->
-		<li><a href="{{ url('content/' ~ section.handle) }}" class="backbtn">{{ section.name|t }}</a></li>
-		<!-- end BLOCKSPRO ONLY -->
+		{% if blx.hasPackage('publishpro') %}
+			<li><a href="{{ url('content/' ~ section.handle) }}" class="backbtn">{{ section.name|t }}</a></li>
+		{% else %}
+			<li><a href="{{ url('content') }}" class="backbtn">{{ "Content"|t }}</a></li>
+		{% endif %}
 	</ul>
-
-	{#<ul class="right">
-		<li><div class="btn menubtn" data-icon="⚙"></div></li>
-	</ul>#}
 
 	<ul class="tabs">
 		<li><a data-icon="✎" class="active" data-target="entry-content">Content</a></li>
@@ -60,14 +53,18 @@
 
 {% set content %}
 	<form method="post" action="" class="centered">
-		<!-- BLOCKS ONLY -->
-		<input type="hidden" name="redirect" value="content/blog/{entryId}">
-		<!-- end BLOCKS ONLY -->
-		<!-- BLOCKSPRO ONLY -->
-		<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
-		<input type="hidden" name="sectionId" value="{{ section.id }}">
-		<!-- end BLOCKSPRO ONLY -->
-		{% if entry.id %}<input type="hidden" name="entryId" value="{{ entry.id }}">{% endif %}
+		<input type="hidden" name="action" value="entries/saveEntry">
+
+		{% if blx.hasPackage('publishpro') %}
+			<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
+			<input type="hidden" name="sectionId" value="{{ section.id }}">
+		{% else %}
+			<input type="hidden" name="redirect" value="content/blog/{entryId}">
+		{% endif %}
+
+		{% if entry.id %}
+			<input type="hidden" name="entryId" value="{{ entry.id }}">
+		{% endif %}
 
 		<div id="entry-content">
 			{{ forms.textField({
@@ -89,10 +86,8 @@
 
 				{{ forms.field({
 					label: block.name,
-					<!-- BLOCKSPRO ONLY -->
 					required: block.required,
 					translatable: block.translatable,
-					<!-- end BLOCKSPRO ONLY -->
 					instructions: block.instructions,
 					id: block.handle,
 					errors: errors
@@ -110,8 +105,19 @@
 				required: true
 			}) }}
 
+			{% if blx.hasPackage('users') %}
+				{{ forms.selectField({
+					label: "Author"|t,
+					id: 'author',
+					name: 'author',
+					options: blx.users.users,
+					value: entry.author
+				}) }}
+			{% endif %}
+
 			{{ forms.dateField({
 				label: "Post Date"|t,
+				instructions: "When should the entry go live? (Set automatically if left blank)",
 				id: 'postDate',
 				name: 'postDate',
 				value: entry.postDate.w3cDate,
@@ -120,33 +126,34 @@
 
 			{{ forms.dateField({
 				label: "Expiration Date"|t,
+				instructions: "When should the entry expire?",
 				id: 'expiryDate',
 				name: 'expiryDate',
 				value: entry.expiryDate.w3cDate,
 				errors: entry.errors.expiryDate
 			}) }}
+
+
+			{% set statusLabel %}
+				{{- "Status:"|t }} <i>{{ entry ? entry.status|ucfirst|t : "Never saved"|t -}}</i>
+			{% endset %}
+			{% set statusInput %}
+				{{ forms.checkboxField({
+					label: "Entry is enabled",
+					name: 'enabled',
+					checked: (entry ? entry.enabled : true)
+				}) }}
+			{% endset %}
+			{{ forms.field({
+				label: statusLabel,
+				instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
+			}, statusInput) }}
 		</div>
 
 		<hr>
 
 		<div class="buttons">
-			{% if not entry.id %}
-				{# -- brand new entry -- #}
-				<input type="hidden" name="action" value="content/saveEntry">
-				<input type="submit" class="btn submit" value="{{ 'Publish'|t }}">
-				<input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="content/saveEntryDraft">
-			{% elseif entry.status == 'draft' %}
-				{# -- draft -- #}
-				<input type="hidden" name="action" value="content/saveEntryDraft">
-				{% if entry.draftId %}<input type="hidden" name="draftId" value="{{ entry.draftId }}">{% endif %}
-				<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
-				<input type="button" class="btn formsubmit" value="{{ 'Publish'|t }}" data-action="content/saveEntry">
-			{% else %}
-				{# -- live entry -- #}
-				<input type="hidden" name="action" value="content/saveEntry">
-				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
-				{# <input type="button" class="btn formsubmit" value="{{ 'Save as a draft'|t }}" data-action="content/saveEntryDraft"> #}
-			{% endif %}
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 		</div>
 	</form>
 {% endset %}

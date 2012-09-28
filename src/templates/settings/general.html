@@ -34,8 +34,7 @@
 			errors: post.errors.siteUrl
 		}) }}
 
-		<!-- BLOCKSPRO ONLY -->
-
+		<!-- HIDE -->
 		{{ forms.textField({
 			label: "License Key"|t,
 			id: 'licenseKey',
@@ -45,16 +44,17 @@
 			required: true,
 			errors: post.errors.licenseKey
 		}) }}
+		<!-- end HIDE -->
 
-		{{ forms.fileField({
-			label: "Logo"|t,
-			instructions: "Use a 300 × 100px transparent PNG for best results."|t,
-			id: 'logo',
-			name: 'logo',
-			errors: post.errors.logo
-		}) }}
-
-		<!-- end BLOCKSPRO ONLY -->
+		{% if blx.hasPackage('rebrand') %}
+			{{ forms.fileField({
+				label: "Logo"|t,
+				instructions: "Use a 300 × 100px transparent PNG for best results."|t,
+				id: 'logo',
+				name: 'logo',
+				errors: post.errors.logo
+			}) }}
+		{% endif %}
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">

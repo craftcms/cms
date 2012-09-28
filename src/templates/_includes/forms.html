@@ -141,9 +141,10 @@
 				{% if config.label %}
 					<label{% if config.required %} class="required"{% endif %}{% if config.id %} for="{{ config.id }}"{% endif %}>
 						{{ config.label|raw }}
-						<!-- BLOCKSPRO ONLY -->
-						{% if config.translatable and blx.language != blx.app.language %}{{ "(in {language})"|t({ language: blx.i18n.localeName(blx.app.language) }) }}{% endif %}
-						<!-- end BLOCKSPRO ONLY -->
+						{% if blx.hasPackage('language') and config.translatable and blx.language != blx.app.language %}
+							{% set localeName = blx.i18n.localeName(blx.app.language) %}
+							{{ "(in {language})"|t({ language: localeName }) }}
+						{% endif %}
 					</label>
 				{% endif %}
 				{% if config.instructions %}

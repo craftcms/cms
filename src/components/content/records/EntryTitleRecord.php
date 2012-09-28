@@ -13,12 +13,14 @@ class EntryTitleRecord extends BaseRecord
 
 	public function defineAttributes()
 	{
-		return array(
-			/* BLOCKSPRO ONLY */
-			'language' => array(AttributeType::Language, 'required' => true),
-			/* end BLOCKSPRO ONLY */
-			'title'    => array(AttributeType::String, 'required' => true),
-		);
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$attributes['language'] = array(AttributeType::Language, 'required' => true);
+		}
+
+		$attributes['title'] = array(AttributeType::String, 'required' => true);
+
+		return $attributes;
 	}
 
 	public function defineRelations()
@@ -30,13 +32,15 @@ class EntryTitleRecord extends BaseRecord
 
 	public function defineIndexes()
 	{
-		return array(
-			/* BLOCKS ONLY */
-			array('columns' => array('title', 'entryId'), 'unique' => true),
-			/* end BLOCKS ONLY */
-			/* BLOCKSPRO ONLY */
-			array('columns' => array('title', 'entryId', 'language'), 'unique' => true),
-			/* end BLOCKSPRO ONLY */
-		);
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$indexes[] = array('columns' => array('title', 'entryId', 'language'), 'unique' => true);
+		}
+		else
+		{
+			$indexes[] = array('columns' => array('title', 'entryId'), 'unique' => true);
+		}
+
+		return $indexes;
 	}
 }

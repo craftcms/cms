@@ -9,6 +9,7 @@ namespace Blocks;
 class AssetSourcePackage extends BaseComponentPackage
 {
 	public $name;
+	public $type = 'Local';
 
 	/**
 	 * Saves the entry block.

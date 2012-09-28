@@ -7,13 +7,21 @@ namespace Blocks;
 class UserVariable extends ModelVariable
 {
 	/**
-	 * Use the username as the string representation of the user.
+	 * Use the full name or username as the string representation of the user.
 	 *
 	 * @return string
 	 */
 	function __toString()
 	{
-		return $this->model->username;
+		$fullName = $this->fullName();
+		if ($fullName)
+		{
+			return $fullName;
+		}
+		else
+		{
+			return $this->model->username;
+		}
 	}
 
 	/**

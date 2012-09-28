@@ -8,7 +8,7 @@
 			</div>
 			<a id="account" data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
 			<div id="account-menu" class="menu">
-				{% if blx.app.hasPackage('users') %}
+				{% if blx.hasPackage('users') %}
 					<div class="userinfo">
 						<img src="{{ resourceUrl('images/avatar.jpg') }}" width="100" height="100">
 						{% if user.fullName %}<div class="fullname">{{ user.fullName }}</div>{% endif %}

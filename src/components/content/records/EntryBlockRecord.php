@@ -13,15 +13,25 @@ class EntryBlockRecord extends BaseBlockRecord
 
 	public function defineRelations()
 	{
-		return array(
-			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
-		);
+		$relations = array();
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$relations['section'] = array(static::BELONGS_TO, 'SectionRecord', 'required' => true);
+		}
+
+		return $relations;
 	}
 
 	public function defineIndexes()
 	{
-		return array(
-			array('columns' => array('handle', 'sectionId'), 'unique' => true)
-		);
+		$indexes = array();
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$indexes[] = array('columns' => array('handle', 'sectionId'), 'unique' => true);
+		}
+
+		return $indexes;
 	}
 }

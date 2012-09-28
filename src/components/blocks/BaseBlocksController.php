@@ -24,10 +24,13 @@ abstract class BaseBlocksController extends BaseController
 		$block->name = blx()->request->getPost('name');
 		$block->handle = blx()->request->getPost('handle');
 		$block->instructions = blx()->request->getPost('instructions');
-		/* BLOCKSPRO ONLY */
 		$block->required = (bool)blx()->request->getPost('required');
-		$block->translatable = (bool)blx()->request->getPost('translatable');
-		/* end BLOCKSPRO ONLY */
+
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$block->translatable = (bool)blx()->request->getPost('translatable');
+		}
+
 		$block->type = blx()->request->getRequiredPost('type');
 
 		$typeSettings = blx()->request->getPost('types');

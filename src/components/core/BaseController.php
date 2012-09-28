@@ -33,6 +33,22 @@ abstract class BaseController extends \CController
 	}
 
 	/**
+	 * Gets a date from post.
+	 *
+	 * @access protected
+	 * @param string $name
+	 * @return DateTime|null
+	 */
+	protected function getDateFromPost($name)
+	{
+		$timestamp = blx()->request->getPost($name);
+		if ($timestamp)
+		{
+			return DateTime::createFromFormat(DateTime::W3C_DATE, $timestamp);
+		}
+	}
+
+	/**
 	 * Renders and outputs the template requested by the URL
 	 * and sets the Content-Type header based on the URL extension.
 	 *

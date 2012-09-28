@@ -185,7 +185,7 @@ class PluginsService extends BaseApplicationComponent
 				}
 
 				// Plugin file name (minus 'Plugin') == the class handle
-				if (($plugin = $this->getPlugin($handle, false)) !== false)
+				if (($plugin = $this->getPlugin($handle, false)))
 				{
 					$this->_plugins[strtolower($plugin->getClassHandle())] = $plugin;
 				}

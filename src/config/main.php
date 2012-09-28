@@ -23,7 +23,6 @@ $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 
 $cpRoutes['update\/(?P<handle>[^\/]*)']                                       = 'update';
 
 $cpRoutes['content\/(?P<entryId>\d+)']                                        = 'content/_entry';
-$cpRoutes['content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)']                = 'content/_entry';
 
 $cpRoutes['plugins\/(?P<pluginClass>[A-Za-z]\w*)']                            = 'plugins/_settings';
 
@@ -34,19 +33,21 @@ $cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
-if (!in_array('publishpro', $packages))
+if (in_array('publishpro', $packages))
 {
-	$cpRoutes['settings\/blog\/blocks\/new']                                      = 'settings/sections/_blocks/settings';
-	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_blocks/settings';
-}
-else
-{
+	$cpRoutes['content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)']                = 'content/_entry';
+
 	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_settings';
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_settings';
 
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks']                   = 'settings/sections/_blocks';
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/new']              = 'settings/sections/_blocks/settings';
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/(?P<blockId>\d+)'] = 'settings/sections/_blocks/settings';
+}
+else
+{
+	$cpRoutes['settings\/blog\/blocks\/new']                                      = 'settings/sections/_blocks/settings';
+	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_blocks/settings';
 }
 
 if (in_array('users', $packages))
@@ -78,9 +79,9 @@ $components['assetBlocks']['class']       = 'Blocks\AssetBlocksService';
 $components['assetSources']['class']      = 'Blocks\AssetSourcesService';
 $components['blockTypes']['class']        = 'Blocks\BlockTypesService';
 $components['components']['class']        = 'Blocks\ComponentsService';
-$components['content']['class']           = 'Blocks\ContentService';
 $components['dashboard']['class']         = 'Blocks\DashboardService';
 $components['email']['class']             = 'Blocks\EmailService';
+$components['entries']['class']           = 'Blocks\EntriesService';
 $components['entryBlocks']['class']       = 'Blocks\EntryBlocksService';
 $components['et']['class']                = 'Blocks\EtService';
 $components['installer']['class']         = 'Blocks\InstallService';
@@ -93,12 +94,23 @@ $components['systemSettings']['class']    = 'Blocks\SystemSettingsService';
 $components['templates']['class']         = 'Blocks\TemplatesService';
 $components['updates']['class']           = 'Blocks\UpdatesService';
 
+if (in_array('publishpro', $packages))
+{
+	$components['sections']['class']          = 'Blocks\SectionsService';
+	$components['sectionBlocks']['class']     = 'Blocks\SectionBlocksService';
+}
+
 if (in_array('users', $packages))
 {
 	$components['users']['class']             = 'Blocks\UsersService';
 	$components['userProfiles']['class']      = 'Blocks\UserProfilesService';
 	$components['userProfileBlocks']['class'] = 'Blocks\UserProfileBlocksService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
+}
+
+if (in_array('rebrand', $packages))
+{
+	$components['emailMessages']['class']     = 'Blocks\EmailMessagesService';
 }
 
 $components['file']['class'] = 'Blocks\File';

@@ -20,32 +20,28 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar #header #account:hover { background: rgba(0,0,0,0.25); }
 #sidebar #header #account.sel { background: #000; }
 #sidebar #header #account:after { color: rgba(255,255,255,0.5); text-shadow: none; }
-/* BLOCKSPRO ONLY */
 
 #account-menu .userinfo { padding: 41px 15px 5px 111px; height: 56px; background: rgba(0,0,0,0.9); }
 #account-menu .userinfo img { display: block; float: left; margin: -40px 0 0 -110px; }
 #account-menu .userinfo .fullname { margin-top: -8px; color: #fff; font-weight: bold; }
 #account-menu .userinfo .username { color: #d5d5d5; }
-/* end BLOCKSPRO ONLY */
 
 #sidebar .nav ul li { border-bottom: 1px solid; }
 #sidebar .nav ul li a { padding: 15px 20px; color: #5b5b5b; }
 #sidebar .nav ul li a:before { margin-top: -2px; margin-right: 5px; font-size: 24px; }
 .nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; font-weight: bold; }
 
-/* BLOCKS ONLY */
+/* HIDE */
 #sidebar { background: #e6e6e6; -webkit-box-shadow: inset -1px 0 #bbb; }
-
 #sidebar .nav ul li { border-bottom-color: #ccc; }
 #sidebar .nav ul li a { color: #808080; @include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0)); }
 #sidebar .nav ul li a:hover { color: #5b5b5b; @include linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0)); }
 #sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0)); }
 #sidebar .nav ul li a.sel { margin: -1px 0; padding: 16px 20px; color: #252525; text-shadow: 0 1px 1px rgba(255,255,255,0.5); @include linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.1)); }
 #sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
-/* end BLOCKS ONLY */
-/* BLOCKSPRO ONLY */
-#sidebar { background: #1a1a1a; -webkit-box-shadow: inset -1px 0 #000; }
+/* end HIDE */
 
+#sidebar { background: #1a1a1a; -webkit-box-shadow: inset -1px 0 #000; }
 #sidebar .nav ul li { border-bottom-color: #000; }
 #sidebar .nav ul li a { color: #b3b3b3; text-shadow: 0 -1px 1px #000; @include linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.05)); }
 #sidebar .nav ul li a:hover { color: #bababa; @include linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.1)); }
@@ -53,7 +49,6 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px #000; @include linear-gradient(#000, #252525); }
 #sidebar .nav ul li a .badge { background: #000; }
 #sidebar .nav ul li a.sel .badge { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
-/* end BLOCKSPRO ONLY */
 
 /* main */
 #main { position: relative; margin-left: 200px; }

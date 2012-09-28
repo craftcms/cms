@@ -17,7 +17,9 @@ class InstallService extends BaseApplicationComponent
 	public function run($inputs)
 	{
 		if (blx()->isInstalled())
+		{
 			throw new Exception(Blocks::t('@@@productDisplay@@@ is already installed.'));
+		}
 
 		$records = $this->_findInstallableRecords();
 
@@ -31,23 +33,17 @@ class InstallService extends BaseApplicationComponent
 			// Create the foreign keys
 			$this->_createForeignKeysFromRecords($records);
 
-			/* BLOCKSPRO ONLY */
-			// Create the usergroups_users join table
-			$this->_createUsergroupsUsersTable();
+			if (Blocks::hasPackage(BlocksPackage::Users))
+			{
+				// Create the usergroups_users join table
+				$this->_createUsergroupsUsersTable();
+			}
 
-			/* end BLOCKSPRO ONLY */
 			// Tell @@@productDisplay@@@ that it's installed now
 			blx()->setInstalledStatus(true);
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
 			$this->_populateInfoTable($inputs);
-
-			/* BLOCKSPRO ONLY */
-			Blocks::log('Registering email messages.', \CLogger::LEVEL_INFO);
-			$this->_registerEmailMessage('verify_email', Blocks::t('verify_email_subject'), Blocks::t('verify_email_body'));
-			$this->_registerEmailMessage('verify_new_email', Blocks::t('verify_new_email_subject'), Blocks::t('verify_new_email_body'));
-			$this->_registerEmailMessage('forgot_password', Blocks::t('forgot_password_subject'), Blocks::t('forgot_password_body'));
-			/* end BLOCKSPRO ONLY */
 
 			Blocks::log('Creating user.', \CLogger::LEVEL_INFO);
 			$user = $this->_addUser($inputs);
@@ -91,13 +87,14 @@ class InstallService extends BaseApplicationComponent
 			{
 				$fileName = IOHelper::getFileName($file, false);
 
-				/* BLOCKSPRO ONLY */
-				// Skip EntryContentRecord
-				if ($fileName == 'EntryContentRecord')
+				if (Blocks::hasPackage(BlocksPackage::PublishPro))
 				{
-					continue;
+					// Skip EntryContentRecord and SectionContentRecord
+					if ($fileName == 'EntryContentRecord' || $fileName == 'SectionContentRecord')
+					{
+						continue;
+					}
 				}
-				/* end BLOCKSPRO ONLY */
 
 				$class = __NAMESPACE__.'\\'.$fileName;
 
@@ -135,7 +132,9 @@ class InstallService extends BaseApplicationComponent
 		$loginModel->password = $password;
 
 		if (!$loginModel->login())
+		{
 			Blocks::log('Could not log the user in during install.', \CLogger::LEVEL_ERROR);
+		}
 	}
 
 	/**
@@ -152,9 +151,7 @@ class InstallService extends BaseApplicationComponent
 		$user->username   = $inputs['username'];
 		$user->email      = $inputs['email'];
 		$user->admin = true;
-		/* BLOCKSPRO ONLY */
 		$user->language = blx()->language;
-		/* end BLOCKSPRO ONLY */
 		blx()->account->changePassword($user, $inputs['password'], false);
 		$user->save();
 
@@ -198,7 +195,6 @@ class InstallService extends BaseApplicationComponent
 		}
 	}
 
-	/** BLOCKSPRO ONLY */
 	/**
 	 * Creates the usergroups_users join table.
 	 *
@@ -206,16 +202,18 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _createUsergroupsUsersTable()
 	{
-		blx()->db->createCommand()->createTable('usergroups_users', array(
-			'groupId' => array('column' => ColumnType::Int, 'required' => true),
-			'userId'  => array('column' => ColumnType::Int, 'required' => true)
-		));
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			blx()->db->createCommand()->createTable('usergroups_users', array(
+				'groupId' => array('column' => ColumnType::Int, 'required' => true),
+				'userId'  => array('column' => ColumnType::Int, 'required' => true)
+			));
 
-		blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id');
-		blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id');
+			blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id');
+			blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id');
+		}
 	}
 
-	/* end BLOCKSPRO ONLY */
 	/**
 	 * Saves some default mail settings for the site.
 	 *
@@ -232,7 +230,9 @@ class InstallService extends BaseApplicationComponent
 		));
 
 		if (!$success)
+		{
 			Blocks::log('Could not save default email settings.', \CLogger::LEVEL_ERROR);
+		}
 	}
 
 	/**
@@ -251,12 +251,7 @@ class InstallService extends BaseApplicationComponent
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
 		$info->language = $inputs['language'];
-		/* BLOCKS ONLY */
 		$info->licenseKey = $this->_generateLicenseKey();
-		/* end BLOCKS ONLY */
-		/* BLOCKSPRO ONLY */
-		$info->licenseKey = $inputs['licensekey'];
-		/* end BLOCKSPRO ONLY */
 		$info->on = true;
 
 		$info->save();
@@ -278,76 +273,58 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _createDefaultContent()
 	{
-		/* BLOCKSPRO ONLY */
-		Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
-		$section = new SectionPackage();
-		$section->name = Blocks::t('Blog');
-		$section->handle = 'blog';
-		$section->hasUrls = true;
-		$section->urlFormat = 'blog/{slug}';
-		$section->template = 'blog/_entry';
-		blx()->content->saveSection($section);
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
+			$section = new SectionPackage();
+			$section->name = Blocks::t('Blog');
+			$section->handle = 'blog';
+			$section->hasUrls = true;
+			$section->urlFormat = 'blog/{slug}';
+			$section->template = 'blog/_entry';
+			blx()->sections->saveSection($section);
+		}
 
-		/* end BLOCKSPRO ONLY */
 		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
-		$block = new EntryBlockPackage();
-		/* BLOCKSPRO ONLY */
-		$block->sectionId = $section->id;
-		/* end BLOCKSPRO ONLY */
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$block = new SectionBlockPackage();
+			$block->sectionId = $section->id;
+		}
+		else
+		{
+			$block = new EntryBlockPackage();
+		}
+
 		$block->name = Blocks::t('Body');
 		$block->handle = 'body';
-		/* BLOCKSPRO ONLY */
 		$block->required = true;
-		$block->translatable = true;
-		/* end BLOCKSPRO ONLY */
 		$block->type = 'RichText';
 
-		blx()->entryBlocks->saveBlock($block);
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$block->translatable = true;
+		}
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			blx()->sectionBlocks->saveBlock($block);
+		}
+		else
+		{
+			blx()->entryBlocks->saveBlock($block);
+		}
+
 
 		/*// Add a Welcome entry to the Blog
-		$entry = blx()->content->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
-		blx()->content->saveEntryContent($entry, array(
+		$entry = blx()->entries->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
+		blx()->entries->saveEntryContent($entry, array(
 			'body' => "Hey {$user->username},\n\n" .
 			          "Welcome to Blocks Alpha 2!\n\n" .
 			          '-Brandon & Brad'
 		));*/
 	}
-
-	/* BLOCKSPRO ONLY */
-	/**
-	 * @access private
-	 * @param $messageKey
-	 * @param $subjectKey
-	 * @param $bodyKey
-	 */
-	private function _registerEmailMessage($messageKey, $subjectKey, $bodyKey)
-	{
-		// Register the email messages
-		$message = blx()->email->registerMessage($messageKey);
-
-		if (!$message->hasErrors())
-		{
-			// Save the message content.
-			$content = blx()->email->saveMessageContent($message->id, $subjectKey, $bodyKey);
-
-			// Problem saving content.
-			if ($content->hasErrors())
-			{
-				$errors = $content->getErrors();
-				$errorMessages = implode('.  ', $errors);
-				Blocks::log('There was a problem saving email message content: '.$errorMessages, \CLogger::LEVEL_WARNING);
-			}
-		}
-		else
-		{
-			// Problem registering email.
-			$errors = $message->getErrors();
-			$errorMessages = implode('.  ', $errors);
-			Blocks::log('There was a problem registering email with key '.$messageKey.' : '.$errorMessages, \CLogger::LEVEL_WARNING);
-		}
-	}
-	/* end BLOCKSPRO ONLY */
-	/* BLOCKS ONLY */
 
 	/**
 	 * Generates a license key.
@@ -358,15 +335,14 @@ class InstallService extends BaseApplicationComponent
 	private function _generateLicenseKey()
 	{
 		$licenseKey = strtoupper(sprintf('%04x-%04x-%04x-%04x-%04x-%04x',
-				mt_rand(0, 0xffff),
-				mt_rand(0, 0xffff),
-				mt_rand(0, 0xffff),
-				mt_rand(0, 0xffff),
-				mt_rand(0, 0xffff),
-				mt_rand(0, 0xffff)
-			));
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff)
+		));
 
 		return $licenseKey;
 	}
-	/* end BLOCKS ONLY */
 }

@@ -33,29 +33,22 @@
 
 {{ forms.textareaField({
 	label: "Instructions"|t,
-	<!-- BLOCKS ONLY -->
-	instructions: "Helper text to guide you when authoring an entry."|t,
-	<!-- end BLOCKS ONLY -->
-	<!-- BLOCKSPRO ONLY -->
-	instructions: "Helper text to guide the author."|t,
-	<!-- end BLOCKSPRO ONLY -->
-	id: 'instructions',
+	instructions: (blx.hasPackage('publishpro')
+		? "Helper text to guide you when authoring an entry."|t
+		: "Helper text to guide the author."|t),
 	name: 'instructions',
 	value: block.instructions,
 	errors: block.errors.instructions,
 	translatable: true
 }) }}
-<!-- BLOCKSPRO ONLY -->
 
-{% if canBeRequired %}
-	{{ forms.checkboxField({
-		label: "This entry block is required"|t,
-		name: 'required',
-		checked: block.required
-	}) }}
-{% endif %}
+{{ forms.checkboxField({
+	label: "This entry block is required"|t,
+	name: 'required',
+	checked: block.required
+}) }}
 
-{% if canBeTranslatable %}
+{% if blx.hasPackage('language') and canBeTranslatable %}
 	{% if blx.systemSettings.languages %}
 		{{ forms.checkboxField({
 			label: "This entry block is translatable"|t,
@@ -64,7 +57,6 @@
 		}) }}
 	{% endif %}
 {% endif %}
-<!-- end BLOCKSPRO ONLY -->
 
 {% set blockTypes = blx.blocks.getAllBlockTypes %}
 

@@ -24,9 +24,7 @@
 		<table id="sources" class="data">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
-				<!-- BLOCKSPRO ONLY -->
-				<th scope="col" width="66%">{{ "Type"|t }}</th>
-				<!-- end BLOCKSPRO ONLY -->
+				{% if blx.hasPackage('cloud') %}<th scope="col" width="66%">{{ "Type"|t }}</th>{% endif %}
 				{% if sortable %}<td width="1%"></td>{% endif %}
 				<td width="1%"></td>
 			</thead>
@@ -34,9 +32,7 @@
 				{% for source in sources %}
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
 						<th scope="row"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
-						<!-- BLOCKSPRO ONLY -->
-						<td>{{ blx.assets.getSourceType(source.type).name }}</td>
-						<!-- end BLOCKSPRO ONLY -->
+						{% if blx.hasPackage('cloud') %}<td>{{ blx.assets.getSourceType(source.type).name }}</td>{% endif %}
 						{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
 						<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
 					</tr>

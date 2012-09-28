@@ -26,7 +26,7 @@ class LocalAssetSource extends BaseAssetSource
 	{
 		return array(
 			'path' => array(AttributeType::String, 'required' => true),
-			'url'  => array(AttributeType::String, 'required' => true),
+			'url'  => array(AttributeType::String, 'required' => true, 'label' => 'URL'),
 		);
 	}
 

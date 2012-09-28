@@ -114,7 +114,6 @@ class UrlManager extends \CUrlManager
 				}
 			}
 		}
-		/* BLOCKSPRO ONLY */
 		else
 		{
 			// Check the user-defined routes
@@ -125,7 +124,6 @@ class UrlManager extends \CUrlManager
 					return $route->template;
 			}
 		}
-		/* end BLOCKSPRO ONLY */
 
 		return false;
 	}

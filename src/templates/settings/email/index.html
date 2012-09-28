@@ -1,9 +1,4 @@
-<!-- BLOCKS ONLY -->
-{% extends "_layouts/cp" %}
-<!-- end BLOCKS ONLY -->
-<!-- BLOCKSPRO ONLY -->
-{% extends "settings/email/_layout" %}
-<!-- end BLOCKSPRO ONLY -->
+{% extends (blx.hasPackage('rebrand') ? "settings/email/_layout" : "_layouts/cp") %}
 {% import "_includes/forms" as forms %}
 {% set title = "Email Settings"|t %}
 {% includeJsResource "js/email_settings.js" %}
@@ -14,13 +9,17 @@
 {% endif %}
 
 
-<!-- BLOCKS ONLY -->
-{% set titlebar %}
-	<h1>{{ title }}</h1>
-{% endset %}
+{% if not blx.hasPackage('rebrand') %}
+	{% set titlebar %}
+		<h1>{{ title }}</h1>
+
+		<ul class="left">
+			<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+		</ul>
+	{% endset %}
+{% endif %}
 
 
-<!-- end BLOCKS ONLY -->
 {% set content %}
 	<form method="post" action="" class="centered">
 		<input type="hidden" name="action" value="systemSettings/saveEmailSettings">
@@ -46,16 +45,16 @@
 			errors: settings.errors.senderName
 		}) }}
 
-		<!-- BLOCKSPRO ONLY -->
-		{{ forms.textField({
-			label: "HTML Email Template"|t,
-			instructions: "The template Blocks Pro will use for users who prefer HTML email"|t,
-			id: 'template',
-			name: 'template',
-			value: settings.template,
-			errors: settings.errors.template
-		}) }}
-		<!-- end BLOCKSPRO ONLY -->
+		{% if blx.hasPackage('rebrand') %}
+			{{ forms.textField({
+				label: "HTML Email Template"|t,
+				instructions: "The template Blocks Pro will use for users who prefer HTML email"|t,
+				id: 'template',
+				name: 'template',
+				value: settings.template,
+				errors: settings.errors.template
+			}) }}
+		{% endif %}
 
 		<hr>
 

@@ -31,12 +31,14 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		$block->name = $attributes['name'];
 		$block->handle = $attributes['handle'];
 		$block->instructions = $attributes['instructions'];
-		/* BLOCKSPRO ONLY */
-		$blockRecord->required = $block->required;
-		$blockRecord->translatable = $block->translatable;
-		/* end BLOCKSPRO ONLY */
+		$block->required = $attributes['required'];
 		$block->type = $attributes['type'];
 		$block->settings = $attributes['settings'];
+
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$block->translatable = $attributes['translatable'];
+		}
 
 		return $block;
 	}
@@ -80,11 +82,13 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		$blockRecord->name = $block->name;
 		$blockRecord->handle = $block->handle;
 		$blockRecord->instructions = $block->instructions;
-		/* BLOCKSPRO ONLY */
 		$blockRecord->required = $block->required;
-		$blockRecord->translatable = $block->translatable;
-		/* end BLOCKSPRO ONLY */
 		$blockRecord->type = $block->type;
+
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$blockRecord->translatable = $block->translatable;
+		}
 
 		return $blockRecord;
 	}
@@ -105,7 +109,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * Gets a block by its ID.
 	 *
 	 * @param int $blockId
-	 * @return BaseBlockPackage
+	 * @return BaseBlockPackage|null
 	 */
 	public function getBlockById($blockId)
 	{

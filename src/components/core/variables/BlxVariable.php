@@ -46,6 +46,31 @@ class BlxVariable
 	}
 
 	/**
+	 * Gets the current language in use.
+	 *
+	 * @return string
+	 */
+	public function language()
+	{
+		return blx()->language;
+	}
+
+	/**
+	 * Returns whether a package is included in the Blocks build.
+	 *
+	 * @param $packageName;
+	 * @return bool
+	 */
+	public function hasPackage($packageName)
+	{
+		return Blocks::hasPackage($packageName);
+	}
+
+	// -------------------------------------------
+	//  Template variable classes
+	// -------------------------------------------
+
+	/**
 	 * @return AppVariable
 	 */
 	public function app()
@@ -75,14 +100,6 @@ class BlxVariable
 	public function config()
 	{
 		return new ConfigVariable();
-	}
-
-	/**
-	 * @return ContentVariable
-	 */
-	public function content()
-	{
-		return new ContentVariable();
 	}
 
 	/**
@@ -118,24 +135,30 @@ class BlxVariable
 	}
 
 	/**
-	 * @return EmailVariable
+	 * @return EmailMessagesVariable
 	 */
-	public function email()
+	public function emailMessages()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
-			return new EmailVariable();
+			return new EmailMessagesVariable();
 		}
 	}
 
 	/**
-	 * Gets the current language in use.
-	 *
-	 * @return string
+	 * @return EntriesVariable
 	 */
-	public function language()
+	public function entries()
 	{
-		return blx()->language;
+		return new EntriesVariable();
+	}
+
+	/**
+	 * @return EntryBlocksVariable
+	 */
+	public function entryBlocks()
+	{
+		return new EntryBlocksVariable();
 	}
 
 	/**
@@ -160,6 +183,17 @@ class BlxVariable
 	public function routes()
 	{
 		return new RoutesVariable();
+	}
+
+	/**
+	 * @return SectionsVariable|null
+	 */
+	public function sections()
+	{
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			return new SectionsVariable();
+		}
 	}
 
 	/**
@@ -200,18 +234,5 @@ class BlxVariable
 	public function i18n()
 	{
 		return new LocalizationVariable();
-	}
-
-	/**
-	 * @param string $category
-	 * @param        $message
-	 * @param array  $params
-	 * @param null   $source
-	 * @param null   $language
-	 * @return string|void
-	 */
-	public function t($category = 'App', $message, $params = array(), $source = null, $language = null)
-	{
-		return Blocks::t($category, $message, $params, $source, $language);
 	}
 }

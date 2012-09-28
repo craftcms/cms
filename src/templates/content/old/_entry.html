@@ -2,7 +2,7 @@
 {% includeCssResource "css/content-entry.css" %}
 
 {% if not entry and entryId %}
-	{% set entry = blx.content.getEntryById(entryId) %}
+	{% set entry = blx.entries.getEntryById(entryId) %}
 	{% if draftNum %}
 		{{ entry.setDraft(draftNum) }}
 	{% endif %}
@@ -47,7 +47,7 @@
 						<input type="submit" value="{{ 'Save draft'|t }}" class="btn big submit">
 						<input type="button" value="{{ 'Publish'|t }}" class="btn big formsubmit" data-action="content/publishDraft">
 					{% else %}
-						<input type="hidden" name="action" value="content/saveEntry">
+						<input type="hidden" name="action" value="entries/saveEntry">
 						<input type="submit" value="{{ 'Save entry'|t }}" class="btn big submit">
 						<input type="button" value="{{ 'Save as a draft'|t }}" class="btn big formsubmit" data-action="content/createDraft">
 					{% endif %}

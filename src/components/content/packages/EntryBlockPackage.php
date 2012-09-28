@@ -8,10 +8,6 @@ namespace Blocks;
  */
 class EntryBlockPackage extends BaseBlockPackage
 {
-	/* BLOCKSPRO ONLY */
-	public $sectionId;
-	/* end BLOCKSPRO ONLY */
-
 	/**
 	 * Saves the entry block.
 	 *

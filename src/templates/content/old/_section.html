@@ -1,5 +1,5 @@
 {% if not section and sectionId %}
-	{% set section = blx.content.getSectionById(sectionId) %}
+	{% set section = blx.sections.getSectionById(sectionId) %}
 {% endif %}
 
 {% if section %}
@@ -15,7 +15,7 @@
 	<h1>{{ title }}</h1>
 
 	<form method="post" action="">
-		<input type="hidden" name="action" value="content/saveSection">
+		<input type="hidden" name="action" value="sections/saveSection">
 		<input type="hidden" name="redirect" value="content">
 		{% if section.id %}<input type="hidden" name="sectionId" value="{{ section.id }}">{% endif %}
 

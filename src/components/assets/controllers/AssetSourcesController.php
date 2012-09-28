@@ -16,12 +16,11 @@ class AssetSourcesController extends BaseController
 		$source = new AssetSourcePackage();
 		$source->id = blx()->request->getPost('sourceId');
 		$source->name = blx()->request->getPost('name');
-		/* BLOCKS ONLY */
-		$source->type = 'Local';
-		/* end BLOCKS ONLY */
-		/* BLOCKSPRO ONLY */
-		$source->type = blx()->request->getPost('type');
-		/* end BLOCKSPRO ONLY */
+
+		if (Blocks::hasPackage('Cloud'))
+		{
+			$source->type = blx()->request->getPost('type');
+		}
 
 		$typeSettings = blx()->request->getPost('types');
 		if (isset($typeSettings[$source->type]))

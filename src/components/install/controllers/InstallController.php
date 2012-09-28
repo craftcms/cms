@@ -45,8 +45,7 @@ class InstallController extends BaseController
 			$this->renderTemplate('_special/install', $vars);
 		}
 	}
-
-	/* BLOCKSPRO ONLY */
+	/* HIDE */
 
 	/**
 	 * Validates the license key
@@ -66,8 +65,7 @@ class InstallController extends BaseController
 
 		$this->returnJson($return);
 	}
-
-	/* end BLOCKSPRO ONLY */
+	/* end HIDE */
 
 	/**
 	 * Validates the user account credentials
@@ -119,9 +117,9 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		/* BLOCKSPRO ONLY */
+		/* HIDE */
 		$inputs['licensekey'] = blx()->request->getPost('licensekey');
-		/* end BLOCKSPRO ONLY */
+		/* end HIDE */
 		$inputs['username']   = blx()->request->getPost('username');
 		$inputs['email']      = blx()->request->getPost('email');
 		$inputs['password']   = blx()->request->getPost('password');

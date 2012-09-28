@@ -154,6 +154,7 @@ class AssetSourcesService extends BaseApplicationComponent
 		else
 		{
 			$source->errors = $sourceRecord->getErrors();
+			$source->settingsErrors = $sourceType->getSettings()->getErrors();
 
 			return false;
 		}

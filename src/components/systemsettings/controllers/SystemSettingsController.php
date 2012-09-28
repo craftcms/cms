@@ -17,18 +17,18 @@ class SystemSettingsController extends BaseController
 		$generalSettingsModel = new GeneralSettingsModel();
 		$generalSettingsModel->siteName = blx()->request->getPost('siteName');
 		$generalSettingsModel->siteUrl = blx()->request->getPost('siteUrl');
-		/* BLOCKSPRO ONLY */
+		/* HIDE */
 		$generalSettingsModel->licenseKey = blx()->request->getPost('licenseKey');
-		/* end BLOCKSPRO ONLY */
+		/* end HIDE */
 
 		if ($generalSettingsModel->validate())
 		{
 			$info = InfoRecord::model()->find();
 			$info->siteName = $generalSettingsModel->siteName;
 			$info->siteUrl = $generalSettingsModel->siteUrl;
-			/* BLOCKSPRO ONLY */
+			/* HIDE */
 			$info->licenseKey = $generalSettingsModel->licenseKey;
-			/* end BLOCKSPRO ONLY */
+			/* end HIDE */
 			$info->save();
 
 			blx()->user->setNotice(Blocks::t('General settings saved.'));
@@ -79,9 +79,11 @@ class SystemSettingsController extends BaseController
 			$settings = array('protocol' => $emailSettings->protocol);
 			$settings['emailAddress'] = $emailSettings->emailAddress;
 			$settings['senderName'] = $emailSettings->senderName;
-			/* BLOCKSPRO ONLY */
-			$settings['template'] = blx()->request->getPost('template');
-			/* end BLOCKSPRO ONLY */
+
+			if (Blocks::hasPackage(BlocksPackage::Rebrand))
+			{
+				$settings['template'] = blx()->request->getPost('template');
+			}
 
 			switch ($emailSettings->protocol)
 			{
