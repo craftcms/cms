@@ -12,7 +12,7 @@ class FileLogRoute extends \CFileLogRoute
 	public function init()
 	{
 		$this->setLogPath(blx()->path->getLogPath());
-		$this->setLogFile('@@@productLower@@@.log');
+		$this->setLogFile('blocks.log');
 
 		$this->levels = blx()->config->devMode ? '' : 'error, warning';
 		$this->filter = blx()->config->devMode ? 'CLogFilter' : null;

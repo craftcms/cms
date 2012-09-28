@@ -167,7 +167,7 @@ class PathService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the @@@productDisplay@@@ CP templates path.
+	 * Returns the Blocks CP templates path.
 	 *
 	 * @return string
 	 */

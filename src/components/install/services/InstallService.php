@@ -7,7 +7,7 @@ namespace Blocks;
 class InstallService extends BaseApplicationComponent
 {
 	/**
-	 * Installs @@@productDisplay@@@!
+	 * Installs Blocks!
 	 *
 	 * @param array $inputs
 	 * @throws Exception
@@ -18,7 +18,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		if (blx()->isInstalled())
 		{
-			throw new Exception(Blocks::t('@@@productDisplay@@@ is already installed.'));
+			throw new Exception(Blocks::t('Blocks is already installed.'));
 		}
 
 		$records = $this->_findInstallableRecords();
@@ -39,7 +39,7 @@ class InstallService extends BaseApplicationComponent
 				$this->_createUsergroupsUsersTable();
 			}
 
-			// Tell @@@productDisplay@@@ that it's installed now
+			// Tell Blocks that it's installed now
 			blx()->setInstalledStatus(true);
 
 			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);

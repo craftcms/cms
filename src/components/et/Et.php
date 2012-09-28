@@ -77,7 +77,6 @@ class Et extends BaseApplicationComponent
 		$this->_package = new EtPackage();
 		$this->_package->url = Blocks::getSiteUrl();
 		$this->_package->licenseKey = Blocks::getLicenseKey();
-		$this->_package->product = '@@@product@@@';
 		$this->_package->requestDomain = blx()->request->getServerName();
 		$this->_package->requestIp = blx()->request->getUserHostAddress();
 		$this->_package->requestTime = DateTimeHelper::currentTime();

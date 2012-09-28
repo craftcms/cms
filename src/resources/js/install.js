@@ -108,7 +108,7 @@ Blocks.Installer = Blocks.Base.extend({
 
 			$.post(Blocks.actionUrl+'install/install', data, $.proxy(function() {
 				this.$currentScreen.find('h1:first').text(Blocks.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+Blocks.baseUrl+'dashboard" class="btn big submit">'+Blocks.t("Go to @@@productDisplay@@@")+'</a></div>');
+				var $buttons = $('<div class="buttons"><a href="'+Blocks.baseUrl+'dashboard" class="btn big submit">'+Blocks.t("Go to Blocks")+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 

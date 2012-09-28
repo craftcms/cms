@@ -7,7 +7,7 @@ namespace Blocks;
 class AppVariable
 {
 	/**
-	 * Returns the current @@@productDisplay@@@ version.
+	 * Returns the current Blocks version.
 	 *
 	 * @return string
 	 */
@@ -17,7 +17,7 @@ class AppVariable
 	}
 
 	/**
-	 * Returns the current @@@productDisplay@@@ build.
+	 * Returns the current Blocks build.
 	 *
 	 * @return string
 	 */
