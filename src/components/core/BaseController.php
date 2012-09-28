@@ -199,15 +199,18 @@ abstract class BaseController extends \CController
 	 */
 	public function redirectToPostedUrl($variables = array())
 	{
-		if (($url = blx()->request->getPost('redirect')) !== null)
+		$url = blx()->request->getPost('redirect');
+		if ($url === null)
 		{
-			foreach ($variables as $name => $value)
-			{
-				$url = str_replace('{'.$name.'}', $value, $url);
-			}
-
-			$this->redirect($url);
+			$url = blx()->request->getPath();
 		}
+
+		foreach ($variables as $name => $value)
+		{
+			$url = str_replace('{'.$name.'}', $value, $url);
+		}
+
+		$this->redirect($url);
 	}
 
 	/**
