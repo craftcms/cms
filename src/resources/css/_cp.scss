@@ -8,9 +8,9 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar, #main { overflow: auto; }
 
 /* sidebar */
-#sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 199px; padding-right: 1px; }
+#sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 199px; padding-right: 1px; font-size: 12px; background: #1a1a1a; -webkit-box-shadow: inset -1px 0 #000; }
 
-#sidebar #header { margin-right: -1px; border: solid #000; border-width: 0 1px 1px 0; @include linear-gradient(#5b5b5b, #2c2c2c); }
+#sidebar #header { margin-right: -1px; background: #262626; -webkit-box-shadow: 0 2px #000; }
 #sidebar #header:after {@include clearafter; }
 #sidebar #header #branding { float: left; padding: 10px; }
 #sidebar #header #branding img { display: block; width: 120px; }
@@ -26,10 +26,15 @@ html, body, #sidebar, #main { height: 100%; }
 #account-menu .userinfo .fullname { margin-top: -8px; color: #fff; font-weight: bold; }
 #account-menu .userinfo .username { color: #d5d5d5; }
 
-#sidebar .nav ul li { border-bottom: 1px solid; }
-#sidebar .nav ul li a { padding: 15px 20px; color: #5b5b5b; }
-#sidebar .nav ul li a:before { margin-top: -2px; margin-right: 5px; font-size: 24px; }
+#sidebar .nav ul { margin-top: 7px; }
+#sidebar .nav ul li { margin-top: 3px; }
+#sidebar .nav ul li a { padding: 4px 10px; color: #b3b3b3; }
+#sidebar .nav ul li a:before { margin-top: -2px; margin-right: 5px; font-size: 18px; }
+#sidebar .nav ul li a:hover { color: #fff; }
 .nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; font-weight: bold; }
+#sidebar .nav ul li a .badge { background: #000; }
+#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5); background: -webkit-linear-gradient(top, #2d98db, #2375a8); -webkit-box-shadow: 0 2px 0 #000; }
+#sidebar .nav ul li a.sel .badge { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
 
 /* HIDE */
 #sidebar { background: #e6e6e6; -webkit-box-shadow: inset -1px 0 #bbb; }
@@ -40,15 +45,6 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li a.sel { margin: -1px 0; padding: 16px 20px; color: #252525; text-shadow: 0 1px 1px rgba(255,255,255,0.5); @include linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.1)); }
 #sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
 /* end HIDE */
-
-#sidebar { background: #1a1a1a; -webkit-box-shadow: inset -1px 0 #000; }
-#sidebar .nav ul li { border-bottom-color: #000; }
-#sidebar .nav ul li a { color: #b3b3b3; text-shadow: 0 -1px 1px #000; @include linear-gradient(rgba(255,255,255,0.1), rgba(255,255,255,0.05)); }
-#sidebar .nav ul li a:hover { color: #bababa; @include linear-gradient(rgba(255,255,255,0.15), rgba(255,255,255,0.1)); }
-#sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.125), rgba(255,255,255,0.075)); }
-#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px #000; @include linear-gradient(#000, #252525); }
-#sidebar .nav ul li a .badge { background: #000; }
-#sidebar .nav ul li a.sel .badge { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
 
 /* main */
 #main { position: relative; margin-left: 200px; }
