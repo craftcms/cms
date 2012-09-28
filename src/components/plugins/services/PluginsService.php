@@ -415,14 +415,11 @@ class PluginsService extends BaseApplicationComponent
 	{
 		$result = array();
 
-		foreach ($this->_plugins as $plugin)
+		foreach ($this->getEnabledPlugins() as $plugin)
 		{
-			if ($plugin->isEnabled())
+			if (method_exists($plugin, $methodName))
 			{
-				if (method_exists($plugin, $methodName))
-				{
-					$result[] = call_user_func_array(array($plugin, $methodName), $args);
-				}
+				$result[] = call_user_func_array(array($plugin, $methodName), $args);
 			}
 		}
 
