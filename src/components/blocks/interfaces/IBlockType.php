@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Block interface
+ * Block type interface
  */
-interface IBlock extends IComponent
+interface IBlockType extends IComponent
 {
 	public function defineContentAttribute();
 	public function getInputHtml($package, $handle);

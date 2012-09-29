@@ -4,8 +4,10 @@ namespace Blocks;
 /**
  *
  */
-class RadioButtonsBlock extends BaseOptionsBlock
+class CheckboxesBlockType extends BaseOptionsBlockType
 {
+	protected $multi = true;
+
 	/**
 	 * Returns the type of block this is.
 	 *
@@ -13,7 +15,7 @@ class RadioButtonsBlock extends BaseOptionsBlock
 	 */
 	public function getName()
 	{
-		return Blocks::t('Radio Buttons');
+		return Blocks::t('Checkboxes');
 	}
 
 	/**
@@ -24,21 +26,21 @@ class RadioButtonsBlock extends BaseOptionsBlock
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Radio Button Options');
+		return Blocks::t('Checkbox Options');
 	}
 
 	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $value
+	 * @param mixed  $values
 	 * @return string
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($name, $values)
 	{
-		return blx()->templates->render('_components/blocks/RadioButtons/input', array(
+		return blx()->templates->render('_components/blocks/Checkboxes/input', array(
 			'name'     => $name,
-			'value'    => $value,
+			'values'   => $values,
 			'settings' => $this->getSettings()
 		));
 	}

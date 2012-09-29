@@ -4,10 +4,8 @@ namespace Blocks;
 /**
  *
  */
-class MultiSelectBlock extends BaseOptionsBlock
+class RadioButtonsBlockType extends BaseOptionsBlockType
 {
-	protected $multi = true;
-
 	/**
 	 * Returns the type of block this is.
 	 *
@@ -15,7 +13,7 @@ class MultiSelectBlock extends BaseOptionsBlock
 	 */
 	public function getName()
 	{
-		return Blocks::t('Multi-select');
+		return Blocks::t('Radio Buttons');
 	}
 
 	/**
@@ -26,21 +24,21 @@ class MultiSelectBlock extends BaseOptionsBlock
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Multi-select Options');
+		return Blocks::t('Radio Button Options');
 	}
 
 	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $values
+	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $values)
+	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/blocks/MultiSelect/input', array(
+		return blx()->templates->render('_components/blocks/RadioButtons/input', array(
 			'name'     => $name,
-			'values'   => $values,
+			'value'    => $value,
 			'settings' => $this->getSettings()
 		));
 	}

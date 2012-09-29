@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class RichTextBlock extends BaseBlock
+class RichTextBlockType extends BaseBlockType
 {
 	/**
 	 * Returns the type of block this is.

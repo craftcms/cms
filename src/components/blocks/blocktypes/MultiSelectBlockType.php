@@ -4,8 +4,10 @@ namespace Blocks;
 /**
  *
  */
-class DropdownBlock extends BaseOptionsBlock
+class MultiSelectBlockType extends BaseOptionsBlockType
 {
+	protected $multi = true;
+
 	/**
 	 * Returns the type of block this is.
 	 *
@@ -13,7 +15,7 @@ class DropdownBlock extends BaseOptionsBlock
 	 */
 	public function getName()
 	{
-		return Blocks::t('Dropdown');
+		return Blocks::t('Multi-select');
 	}
 
 	/**
@@ -24,21 +26,21 @@ class DropdownBlock extends BaseOptionsBlock
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Dropdown Options');
+		return Blocks::t('Multi-select Options');
 	}
 
 	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $value
+	 * @param mixed  $values
 	 * @return string
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($name, $values)
 	{
-		return blx()->templates->render('_components/blocks/Dropdown/input', array(
+		return blx()->templates->render('_components/blocks/MultiSelect/input', array(
 			'name'     => $name,
-			'value'    => $value,
+			'values'   => $values,
 			'settings' => $this->getSettings()
 		));
 	}

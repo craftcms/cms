@@ -2,11 +2,11 @@
 namespace Blocks;
 
 /**
- * Block base class
+ * Block base type class
  */
-abstract class BaseBlock extends BaseComponent implements IBlock
+abstract class BaseBlockType extends BaseComponent implements IBlockType
 {
-	protected $componentType = 'Block';
+	protected $componentType = 'BlockType';
 
 	/**
 	 * Returns the content attribute config.

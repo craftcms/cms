@@ -8,8 +8,8 @@ class ComponentsService extends BaseApplicationComponent
 {
 	protected static $componentTypes = array(
 		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSource', 'interface' => 'IAssetSource'),
-		'block'       => array('subfolder' => 'blocktypes', 'suffix' => 'Block', 'interface' => 'IBlock'),
-		'widget'      => array('subfolder' => 'widgettypes', 'suffix' => 'Widget', 'interface' => 'Iwidget'),
+		'block'       => array('subfolder' => 'blocktypes', 'suffix' => 'BlockType', 'interface' => 'IBlockType'),
+		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'interface' => 'IWidget'),
 	);
 
 	private $_components;

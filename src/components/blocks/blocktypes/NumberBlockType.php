@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class NumberBlock extends BaseBlock
+class NumberBlockType extends BaseBlockType
 {
 	/**
 	 * Returns the type of block this is.

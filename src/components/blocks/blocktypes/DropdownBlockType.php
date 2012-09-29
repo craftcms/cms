@@ -4,10 +4,8 @@ namespace Blocks;
 /**
  *
  */
-class CheckboxesBlock extends BaseOptionsBlock
+class DropdownBlockType extends BaseOptionsBlockType
 {
-	protected $multi = true;
-
 	/**
 	 * Returns the type of block this is.
 	 *
@@ -15,7 +13,7 @@ class CheckboxesBlock extends BaseOptionsBlock
 	 */
 	public function getName()
 	{
-		return Blocks::t('Checkboxes');
+		return Blocks::t('Dropdown');
 	}
 
 	/**
@@ -26,21 +24,21 @@ class CheckboxesBlock extends BaseOptionsBlock
 	 */
 	protected function getOptionsSettingsLabel()
 	{
-		return Blocks::t('Checkbox Options');
+		return Blocks::t('Dropdown Options');
 	}
 
 	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $values
+	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $values)
+	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/blocks/Checkboxes/input', array(
+		return blx()->templates->render('_components/blocks/Dropdown/input', array(
 			'name'     => $name,
-			'values'   => $values,
+			'value'    => $value,
 			'settings' => $this->getSettings()
 		));
 	}

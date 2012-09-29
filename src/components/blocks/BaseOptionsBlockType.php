@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-abstract class BaseOptionsBlock extends BaseBlock
+abstract class BaseOptionsBlockType extends BaseBlockType
 {
 	protected $multi = false;
 
