@@ -67,7 +67,7 @@ if (in_array('users', $packages))
 	$cpRoutes['settings\/users']                                                  = 'settings/users/groups';
 	$cpRoutes['settings\/users\/groups\/new']                                     = 'settings/users/groups/_settings';
 	$cpRoutes['settings\/users\/groups\/(?P<groupId>\d+)']                        = 'settings/users/groups/_settings';
-	$cpRoutes['settings\/users\/blocks\/new']                                     = 'settings/users/rblocks/_settings';
+	$cpRoutes['settings\/users\/blocks\/new']                                     = 'settings/users/blocks/_settings';
 	$cpRoutes['settings\/users\/blocks\/(?P<blockId>\d+)']                        = 'settings/users/blocks/_settings';
 }
 

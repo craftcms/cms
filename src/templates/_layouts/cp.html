@@ -38,10 +38,12 @@
 		</nav>
 	</div>
 
-	<div id="notifications">
-		{% for message in blx.session.messages %}
-			<div class="notification {{ message.type }}">{{ message.value }}</div>
-		{% endfor %}
+	<div id="notifications-wrapper">
+		<div id="notifications">
+			{% for message in blx.session.messages %}
+				<div class="notification {{ message.type }}">{{ message.value }}</div>
+			{% endfor %}
+		</div>
 	</div>
 
 	<div id="main" class="main">
