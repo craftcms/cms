@@ -16,7 +16,9 @@
 		<tbody>
 			{% for block in blocks %}
 				<tr data-id="{{ block.id }}" data-name="{{ block.name|t }}">
-					<th scope="row"><a href="{{ url(settingsUrlPrefix ~ block.id) }}">{{ block.name|t }}</a></th>
+					<th scope="row"><a href="{{ url(settingsUrlPrefix ~ block.id) }}">{{ block.name|t }}</a>
+						{%- if block.required %} <span class="required"></span>{% endif -%}
+					</th>
 					<td><code>{{ block.handle }}</code></td>
 					<td>{{ blx.blocks.getBlockType(block.type).name }}</td>
 					{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
