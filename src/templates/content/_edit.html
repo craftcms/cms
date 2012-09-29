@@ -43,11 +43,12 @@
 			<li><a href="{{ url('content') }}" class="backbtn">{{ "Content"|t }}</a></li>
 		{% endif %}
 	</ul>
+{% endset %}
 
-	<ul class="tabs">
-		<li><a data-icon="✎" class="active" data-target="entry-content">Content</a></li>
-		<li><a data-icon="⚙" data-target="entry-settings">Settings</a></li>
-	</ul>
+
+{% set tabs %}
+	<li><a data-icon="✎" class="active" data-target="entry-content">Content</a></li>
+	<li><a data-icon="⚙" data-target="entry-settings">Settings</a></li>
 {% endset %}
 
 

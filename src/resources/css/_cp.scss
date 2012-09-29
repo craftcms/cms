@@ -10,7 +10,7 @@ html, body, #sidebar, #main { height: 100%; }
 /* sidebar */
 #sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 199px; padding-right: 1px; font-size: 12px; background: #1a1a1a; -webkit-box-shadow: inset -1px 0 #000; }
 
-#sidebar #header { margin-right: -1px; background: #262626; -webkit-box-shadow: 0 2px #000; }
+#sidebar #header { background: #262626; -webkit-box-shadow: 0 1px 2px #000; }
 #sidebar #header:after {@include clearafter; }
 #sidebar #header #branding { float: left; padding: 10px; }
 #sidebar #header #branding img { display: block; width: 120px; }
@@ -56,7 +56,7 @@ html, body, #sidebar, #main { height: 100%; }
 #notifications .notification.error { border-color: #992f2f; background: #e14545; }
 
 /* titlebar */
-#titlebar { position: relative; border-bottom: 1px solid #ccc; @include linear-gradient(#f6f6f6, #e6e6e6); -webkit-box-shadow: inset 0 -1px 0 #f5f5f5, 0 1px 0 rgba(0, 0, 0, 0.05); }
+#titlebar { position: relative; background: #fff; -webkit-box-shadow: 0 1px 2px #ccc; }
 #titlebar h1 { position: relative; z-index: 1; margin: 0; padding: 10px 25px; text-align: center; }
 
 #titlebar .left,
@@ -68,12 +68,13 @@ html, body, #sidebar, #main { height: 100%; }
 #titlebar .left li + li,
 #titlebar .right li + li { margin-left: 10px; }
 
-#titlebar .tabs { position: relative; z-index: 1; margin-bottom: -2px; text-align: center; overflow: hidden; padding: 15px 0 1px; font-size: 0; }
-#titlebar .tabs li { display: inline-block; }
-#titlebar .tabs li a { display: block; border: 1px solid transparent; border-bottom: none; padding: 8px 12px; font-size: 13px; color: #5b5b5b; text-shadow: 0 1px 1px rgba(255,255,255,0.5); }
-#titlebar .tabs li a:before { margin: 0 4px -1px 0; }
-#titlebar .tabs li a:hover { color: $linkcolor; text-decoration: none; }
-#titlebar .tabs li a.active { border-color: #bbb; border-bottom: none; border-radius: 3px 3px 0 0; color: #5b5b5b; background: #fff; cursor: default; -webkit-box-shadow: 0 1px 0 white, 0 5px 10px -2px rgba(0, 0, 0, 0.25); }
+#tabs { margin: 0 auto; padding: 15px 0; border-bottom: 1px solid #e5e5e5; width: 500px; }
+#tabs ul { text-align: center; }
+#tabs ul li { display: inline-block; }
+#tabs ul li a { display: block; padding: 5px 12px; font-size: 13px; color: #5b5b5b; }
+#tabs ul li a:before { margin: 0 4px -1px 0; }
+#tabs ul li a:hover { color: $linkcolor; text-decoration: none; }
+#tabs ul li a.active { border-radius: 3px; color: #5b5b5b; background: #e5e5e5; cursor: default; -webkit-box-shadow: inset 0 1px 2px #ccc; }
 
 /* content */
 #content { padding: 25px; }

@@ -50,6 +50,13 @@
 				{{ titlebar }}
 			</header>
 		{% endif %}
+		{% if tabs %}
+			<nav id="tabs">
+				<ul>
+					{{ tabs }}
+				</ul>
+			</nav>
+		{% endif %}
 
 		<div id="content">
 			{{ content }}

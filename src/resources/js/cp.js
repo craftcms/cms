@@ -22,9 +22,10 @@ var CP = Blocks.Base.extend({
 		});
 
 		// Tabs
-		$('.tabs').each(function() {
-			var $container = $(this),
-				$tabs = $container.find('a');
+		var $tabContainer = $('#tabs');
+		if ($tabContainer.length)
+		{
+			var $tabs = $tabContainer.find('a');
 				$activeTab = $tabs.filter('.active:first');
 
 			$tabs.click(function() {
@@ -52,7 +53,7 @@ var CP = Blocks.Base.extend({
 					}
 				}
 			});
-		});
+		};
 
 		// Secondary form submit buttons
 		$('.formsubmit').click(function() {
