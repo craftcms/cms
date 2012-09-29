@@ -23,7 +23,7 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		return blx()->templates->render('_components/widgets/UpdatesWidget/body', array(
+		return blx()->templates->render('_components/widgets/Updates/body', array(
 			'updates' => $this->_getUpdates()
 		));
 	}
