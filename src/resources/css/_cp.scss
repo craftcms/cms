@@ -31,12 +31,17 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #sidebar .nav ul { margin-top: 7px; }
 #sidebar .nav ul li { margin-top: 3px; }
 #sidebar .nav ul li a { padding: 4px 10px 4px 36px; font-size: 12px; color: #b3b3b3; }
-#sidebar .nav ul li a:before { float: left; margin: 2px 0 0 -26px; font-size: 18px; }
 #sidebar .nav ul li a:hover { color: #fff; }
-.nav ul li a .badge { display: block; float: right; padding: 0 8px; border-radius: 9px; line-height: 18px; font-weight: bold; }
-#sidebar .nav ul li a .badge { background: #000; }
+#sidebar .nav ul li a .badge { color: #262626; background: #b3b3b3; }
 #sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5); background: -webkit-linear-gradient(top, #2d98db, #2375a8); -webkit-box-shadow: 0 2px 0 #000; }
-#sidebar .nav ul li a.sel .badge { -webkit-box-shadow: 0 1px 0 rgba(255,255,255,0.25); }
+#sidebar .nav ul li a.sel .badge { color: #fff; background: #000; }
+
+#nav-dashboard:before { @include icon; content: 'D'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#nav-content:before { @include icon; content: 'C'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#nav-assets:before { @include icon; content: 'A'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#nav-users:before { @include icon; content: 'U'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#nav-updates:before { @include icon; content: 'V'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#nav-settings:before { @include icon; content: 'S'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
 
 /* HIDE */
 #sidebar { background: #e6e6e6; -webkit-box-shadow: inset -1px 0 #bbb; }
@@ -73,14 +78,14 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #tabs { margin: -10px auto 25px; padding-bottom: 15px; border-bottom: 1px solid #e5e5e5; text-align: center; }
 #tabs ul { }
 #tabs ul li { display: inline-block; }
-#tabs ul li a { display: block; padding: 5px 12px; font-size: 13px; color: #555; }
-#tabs ul li a:before { margin: 0 4px -1px 0; }
+#tabs ul li a { display: block; padding: 5px 12px 4px; font-size: 13px; color: #555; }
+#tabs ul li a:before { margin: 0 4px 0 0; font-size: 18px; }
 #tabs ul li a:hover { color: $linkcolor; text-decoration: none; }
 #tabs ul li a.active { border-radius: 2px; color: #555; text-shadow: 0 1px 0 #fff; @include linear-gradient(#dbdbdb, #e5e5e5); cursor: default; -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
 
 /* content */
-#content { padding: 25px; }
-#content.centered { max-width: 500px; margin: 0 auto; }
+#content { margin: 25px auto 0; padding: 0 25px; }
+#content.centered { max-width: 500px; }
 
 /* nav */
 #main .nav { float: left; width: 150px; }

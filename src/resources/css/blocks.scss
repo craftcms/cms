@@ -17,8 +17,8 @@
 .nav { display: block; }
 .nav ul li a { display: block; padding: 5px 0; color: #b3b3b3; }
 .nav ul li a:hover { color: $linkcolor; text-decoration: none; }
-.nav ul li a:before { margin: -4px 5px -5px 0; width: 22px; text-align: center; }
 .nav ul li a .status { margin: 0 7px 0 6px; }
+.nav ul li a .badge { display: block; float: right; padding: 0 7px; border-radius: 9px; line-height: 18px; font-weight: bold; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */

@@ -13,13 +13,13 @@ class CpVariable
 	 */
 	public function nav()
 	{
-		$nav['dashboard'] = array('name' => Blocks::t('Dashboard'), 'icon' => 'D');
-		$nav['content'] = array('name' => Blocks::t('Content'), 'icon' => 'C');
-		$nav['assets'] = array('name' => Blocks::t('Assets'), 'icon' => 'A');
+		$nav['dashboard'] = array('name' => Blocks::t('Dashboard'));
+		$nav['content'] = array('name' => Blocks::t('Content'));
+		$nav['assets'] = array('name' => Blocks::t('Assets'));
 
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$nav['users'] = array('name' => Blocks::t('Users'), 'icon' => 'U');
+			$nav['users'] = array('name' => Blocks::t('Users'));
 		}
 
 		// Add any Plugin nav items
@@ -33,8 +33,8 @@ class CpVariable
 			}
 		}
 
-		$nav['updates'] = array('name' => Blocks::t('Updates'), 'icon' => 'V', 'badge' => '1');
-		$nav['settings'] = array('name' => Blocks::t('Settings'), 'icon' => 'S');
+		$nav['updates'] = array('name' => Blocks::t('Updates'), 'badge' => '1');
+		$nav['settings'] = array('name' => Blocks::t('Settings'));
 
 		return $nav;
 	}
