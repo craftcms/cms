@@ -1,6 +1,7 @@
 {% extends "_layouts/cp" %}
 {% import "_includes/forms" as forms %}
 {% set title = "General Settings"|t %}
+{% set centered = true %}
 
 
 {% set titlebar %}
@@ -12,7 +13,7 @@
 
 
 {% set content %}
-	<form method="post" action="" class="centered">
+	<form method="post" action="">
 		<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
 		<input type="hidden" name="redirect" value="settings">
 

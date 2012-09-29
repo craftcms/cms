@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% set centered = true %}
 {% includeCssResource "css/entry.css" %}
 {% includeJsResource "lib/jquery-ui-1.8.23.custom.min.js" %}
 {% import "_includes/forms" as forms %}
@@ -53,7 +54,7 @@
 
 
 {% set content %}
-	<form method="post" action="" class="centered">
+	<form method="post" action="">
 		<input type="hidden" name="action" value="entries/saveEntry">
 
 		{% if blx.hasPackage('publishpro') %}
@@ -74,7 +75,6 @@
 				name: 'title',
 				value: entry.title,
 				errors: entry.errors.title,
-				first: true,
 				required: true
 			}) }}
 

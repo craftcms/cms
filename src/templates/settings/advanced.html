@@ -1,5 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Advanced Settings"|t %}
+{% set centered = true %}
 
 
 {% if not settings %}
@@ -15,7 +16,7 @@
 {% endset %}
 
 {% set content %}
-	<form method="post" action="" class="centered">
+	<form method="post" action="">
 		<input type="hidden" name="action" value="systemSettings/saveAdvancedSettings">
 
 		<h3>{{ "Debugging"|t }}</h3>

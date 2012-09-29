@@ -1,4 +1,5 @@
 {% extends (blx.hasPackage('users') ? "users/_edit/layout" : "_layouts/cp") %}
+{% set centered = true %}
 {% import "_includes/forms" as forms %}
 
 
@@ -22,12 +23,11 @@
 
 
 {% set content %}
-	<form method="post" action="" class="centered">
+	<form method="post" action="">
 		<input type="hidden" name="action" value="account/saveUser">
 		{% if account.id %}<input type="hidden" name="userId" value="{{ account.id }}">{% endif %}
 
 		{{ forms.textField({
-			first: true,
 			label: "Username"|t,
 			id: 'username',
 			name: 'username',

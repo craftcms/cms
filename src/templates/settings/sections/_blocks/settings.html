@@ -1,4 +1,5 @@
 {% extends "_layouts/cp" %}
+{% set centered = true %}
 
 
 {% if blx.hasPackage('publishpro') %}
@@ -33,7 +34,7 @@
 
 
 {% set content %}
-	<form method="post" action="" class="centered">
+	<form method="post" action="">
 		{% if blx.hasPackage('publishpro') %}
 			<input type="hidden" name="action" value="sectionBlocks/saveBlock">
 			<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">

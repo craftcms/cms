@@ -6,8 +6,6 @@
 /*  Basic stuff
 /* ----------------------------------------*/
 
-body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; color: #5b5b5b; background: #f8f8f8; }
-
 .first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 .last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
 
@@ -24,7 +22,7 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
-h1 { margin-bottom: 25px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 24px; line-height: 30px; color: #000; }
+h1 { margin-bottom: 25px; font-family: HelveticaNeue-Light, HelveticaNeue, sans-serif; font-size: 22px; line-height: 30px; color: #000; text-shadow: 0 1px 0 #fff; }
 h2 { margin: 25px 0; font-size: 18px; font-weight: bold; line-height: 1.2; }
 h3 { margin-bottom: 15px; font-family: HelveticaNeue, sans-serif; font-weight: normal; font-size: 15px; line-height: 20px; color: #2c2c2c; }
 h4 { font-family: HelveticaNeue, sans-serif; font-weight: normal; color: #999; }
@@ -81,7 +79,7 @@ td.right { float: none; text-align: right; }
 .no-outline { outline: none; }
 .clear { display: block; clear: both; height: 0; }
 
-.token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: #5b5b5b; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
+.token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: #555; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 .token:focus { border-color: #999; background: #aaa; outline: none; }
 
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
@@ -140,9 +138,9 @@ h3 + .pane { margin-top: 15px; }
 ul.icons:after { @include clearafter; }
 ul.icons li { float: left; margin: 0 25px 25px 0; }
 ul.icons li.break { clear: left; }
-ul.icons li a { display: block; position: relative; padding-top: 50px; width: 100px; text-align: center; color: #808080; }
-ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
+ul.icons li a { display: block; position: relative; padding-top: 50px; width: 100px; text-align: center; color: #555; }
 ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 50px; line-height: 50px; }
+ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* ----------------------------------------
 /*  Buttons
@@ -339,7 +337,7 @@ input.text,
 textarea.text,
 .text input,
 .text textarea,
-.select select { font-size: 13px; color: #5b5b5b; }
+.select select { font-size: 13px; color: #555; }
 
 .field { position: relative; margin: 25px 0; }
 .field .heading { margin-bottom: 4px; }

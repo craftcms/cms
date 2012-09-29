@@ -135,7 +135,7 @@
 
 
 {% macro field(config, input) %}
-	<div class="field{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+	<div class="field"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{% if config.label or config.instructions %}
 			<div class="heading">
 				{% if config.label %}
@@ -191,7 +191,7 @@
 
 
 {% macro checkboxField(config) %}
-	<div class="field checkbox{% if config.first %} first{% endif %}"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
+	<div class="field checkbox"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
 	</div>
 {% endmacro %}
