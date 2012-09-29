@@ -17,7 +17,7 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	protected function defineSettings()
 	{
 		return array(
-			'options' => array(AttributeType::Array, 'default' => array())
+			'options' => array(AttributeType::Mixed, 'default' => array())
 		);
 	}
 
@@ -57,7 +57,7 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	public function defineContentAttribute()
 	{
 		if ($this->multi)
-			return AttributeType::Array;
+			return AttributeType::Mixed;
 		else
 			return AttributeType::String;
 	}

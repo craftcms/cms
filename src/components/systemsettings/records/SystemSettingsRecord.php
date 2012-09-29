@@ -15,7 +15,7 @@ class SystemSettingsRecord extends BaseRecord
 	{
 		return array(
 			'category' => array(AttributeType::String, 'maxLength' => 15, 'unique' => true, 'required' => true),
-			'settings' => AttributeType::Array,
+			'settings' => AttributeType::Mixed,
 		);
 	}
 }

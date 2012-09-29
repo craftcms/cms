@@ -16,7 +16,7 @@ class AssetSourceRecord extends BaseRecord
 		return array(
 			'name'      => array(AttributeType::Name, 'required' => true),
 			'type'      => array(AttributeType::ClassName, 'required' => true),
-			'settings'  => AttributeType::Array,
+			'settings'  => AttributeType::Mixed,
 			'sortOrder' => AttributeType::SortOrder,
 		);
 	}

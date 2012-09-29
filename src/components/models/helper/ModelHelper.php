@@ -13,7 +13,7 @@ class ModelHelper
 	 * @var array
 	 */
 	public static $attributeTypeDefaults = array(
-		AttributeType::Array      => array('column' => ColumnType::Text),
+		AttributeType::Mixed      => array('column' => ColumnType::Text),
 		AttributeType::Bool       => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
 		AttributeType::Build      => array('column' => ColumnType::Int, 'unsigned' => true),
 		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Char),

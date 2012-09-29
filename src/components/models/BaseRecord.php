@@ -100,7 +100,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 					break;
 				}
-				case AttributeType::Array:
+				case AttributeType::Mixed:
 				{
 					if (!empty($value) && is_array($value))
 					{
@@ -147,7 +147,7 @@ abstract class BaseRecord extends \CActiveRecord
 					$this->setAttribute($name, $dateTime);
 					break;
 				}
-				case AttributeType::Array:
+				case AttributeType::Mixed:
 				{
 					if (!empty($value) && is_string($value))
 					{
