@@ -190,7 +190,9 @@ ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; widt
 .menubtn:after { @include icon; content: '▼'; font-size: 0.8em; }
 
 /* small buttons */
-.btn.small { padding: 0 7px; height: 17px; font-size: 11px; line-height: 17px; }
+.btngroup.small { height: 22px; }
+.btngroup.small .btn,
+.btn.small { padding: 0 7px; height: 22px; font-size: 11px; line-height: 22px; }
 
 /* big buttons */
 .btn.big { padding: 0 15px; height: 36px; font-size: 14px; line-height: 36px; }
@@ -222,7 +224,7 @@ input.btn { border: none; height: 31px; }
 input.btn.big { height: 36px; }
 
 /* button groups */
-.btngroup { display: block; height: 24px; }
+.btngroup { display: inline-block; height: 31px; }
 .btngroup .btn { float: left; }
 .btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
 .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
@@ -273,6 +275,7 @@ table.data tbody tr:last-child td { border-bottom: 1px dotted rgba(0,0,0,0.1); }
 table.data .light,
 table.data .timestamp { color: #999; }
 table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; }
+table.data td form { height: 22px; }
 
 .datatablesorthelper { margin: -2px -15px; padding: 2px 15px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 2px 10px -2px rgba(0,0,0,0.25); }
 

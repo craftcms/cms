@@ -20,7 +20,7 @@
 				<th scope="col">{{ "Plugin"|t }}</th>
 				<th scope="col">{{ "Developer"|t }}</th>
 				<th scope="col">{{ "Status"|t }}</th>
-				<td width="1%"></td>
+				{#<td width="1%"></td>#}
 				<td width="1%"></td>
 			</thead>
 			<tbody>
@@ -37,27 +37,22 @@
 								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
 							{%- endif -%}
 						</td>
-						<td class="rightalign">
-							{%- if plugin.isInstalled -%}
-								<form action="" method="post">
-									<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
-									{%- if plugin.record.enabled -%}
-										<input type="button" value="{{ 'Disable'|t }}" class="btn formsubmit" data-action="plugins/disablePlugin">
-									{%- else -%}
-										<input type="button" value="{{ 'Enable'|t }}" class="btn formsubmit" data-action="plugins/enablePlugin">
-									{%- endif -%}
-								</form>
-							{%- endif -%}
-						</td>
-						<td class="rightalign">
+						<td class="rightalign nowrap">
 							<form action="" method="post">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
-								{%- if plugin.isInstalled -%}
-									<input type="button" value="{{ 'Uninstall'|t }}" class="btn formsubmit" data-action="plugins/uninstallPlugin">
-								{%- else -%}
-									<input type="button" value="{{ 'Install'|t }}" class="btn formsubmit" data-action="plugins/installPlugin">
-								{%- endif -%}
-							</form>
+								<div class="btngroup small">
+									{%- if plugin.isInstalled -%}
+										{%- if plugin.record.enabled -%}
+											<input type="button" value="{{ 'Disable'|t }}" class="btn formsubmit" data-action="plugins/disablePlugin">
+										{%- else -%}
+											<input type="button" value="{{ 'Enable'|t }}" class="btn formsubmit" data-action="plugins/enablePlugin">
+										{%- endif -%}
+										<input type="button" value="{{ 'Uninstall'|t }}" class="btn formsubmit" data-action="plugins/uninstallPlugin">
+									{%- else -%}
+										<input type="button" value="{{ 'Install'|t }}" class="btn formsubmit" data-action="plugins/installPlugin">
+									{%- endif -%}
+								</form>
+							</div>
 						</td>
 					</tr>
 				{% endfor %}
