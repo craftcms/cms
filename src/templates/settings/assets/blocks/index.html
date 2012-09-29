@@ -1,0 +1,12 @@
+{% extends "settings/assets/_layout" %}
+{% set page = "blocks" %}
+{% set title = "Asset Blocks"|t %}
+
+
+{% set content %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.assets.assetBlocks,
+		settingsUrlPrefix: 'settings/assets/blocks/',
+		controller: 'assetBlocks'
+	} only %}
+{% endset %}

@@ -1,19 +1,10 @@
-{% extends "_layouts/cp" %}
-{% set title = "Assets"|t %}
+{% extends "settings/assets/_layout" %}
+{% set page = "sources" %}
+{% set title = "Asset Sources"|t %}
 {% set sources = blx.assets.sources %}
 
 
-{% set titlebar %}
-	<h1>{{ title }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
-	</ul>
-{% endset %}
-
-
 {% set content %}
-	<h2>Asset Sources</h2>
-
 	<p id="nosources" {% if sources|length %}style="display: none"{% endif %}>
 		{{ "No sources exist yet."|t }}
 	</p>
@@ -24,7 +15,7 @@
 		<table id="sources" class="data">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
-				{% if blx.hasPackage('cloud') %}<th scope="col" width="66%">{{ "Type"|t }}</th>{% endif %}
+				{% if blx.hasPackage('cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
 				{% if sortable %}<td width="1%"></td>{% endif %}
 				<td width="1%"></td>
 			</thead>
@@ -44,16 +35,6 @@
 	<div class="buttons">
 		<a href="{{ url('settings/assets/sources/new') }}" class="btn addbtn">{{ "New Source"|t }}</a>
 	</div>
-
-	<hr>
-
-	<h2>Asset Blocks</h2>
-
-	{% include "_includes/blockindex" with {
-		blocks: blx.assets.assetBlocks,
-		settingsUrlPrefix: 'settings/assets/blocks/',
-		controller: 'assetBlocks'
-	} only %}
 {% endset %}
 
 

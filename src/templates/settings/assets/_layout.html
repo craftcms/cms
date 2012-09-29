@@ -1,0 +1,16 @@
+{% extends "_layouts/cp" %}
+{% set centered = true %}
+
+
+{% set titlebar %}
+	<h1>{{ "Assets"|t }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set tabs %}
+	<li><a{% if page == 'sources' %} class="active"{% endif %} href="{{ url('settings/assets') }}">{{ "Asset Sources"|t }}</a></li>
+	<li><a{% if page == 'blocks' %} class="active"{% endif %} href="{{ url('settings/assets/blocks') }}">{{ "Asset Blocks"|t }}</a></li>
+{% endset %}

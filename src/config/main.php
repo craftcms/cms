@@ -26,10 +26,11 @@ $cpRoutes['content\/(?P<entryId>\d+)']                                        = 
 
 $cpRoutes['plugins\/(?P<pluginClass>[A-Za-z]\w*)']                            = 'plugins/_settings';
 
-$cpRoutes['settings\/assets\/blocks\/new']                                    = 'settings/assets/_blocksettings';
-$cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/_blocksettings';
-$cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/_sourcesettings';
-$cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/_sourcesettings';
+$cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
+$cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
+$cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
+$cpRoutes['settings\/assets\/blocks\/new']                                    = 'settings/assets/blocks/_settings';
+$cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/blocks/_settings';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
