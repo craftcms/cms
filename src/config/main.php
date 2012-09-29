@@ -63,10 +63,11 @@ if (in_array('users', $packages))
 	$cpRoutes['users\/(?P<userId>\d+)\/admin']                                    = 'users/_edit/admin';
 	$cpRoutes['users\/(?P<userId>\d+)\/info']                                     = 'users/_edit/info';
 
-	$cpRoutes['settings\/users\/blocks\/new']                                     = 'settings/users/_blocksettings';
-	$cpRoutes['settings\/users\/blocks\/(?P<blockId>\d+)']                        = 'settings/users/_blocksettings';
-	$cpRoutes['settings\/users\/groups\/new']                                     = 'settings/users/_groupsettings';
-	$cpRoutes['settings\/users\/groups\/(?P<groupId>\d+)']                        = 'settings/users/_groupsettings';
+	$cpRoutes['settings\/users']                                                  = 'settings/users/groups';
+	$cpRoutes['settings\/users\/groups\/new']                                     = 'settings/users/groups/_settings';
+	$cpRoutes['settings\/users\/groups\/(?P<groupId>\d+)']                        = 'settings/users/groups/_settings';
+	$cpRoutes['settings\/users\/blocks\/new']                                     = 'settings/users/rblocks/_settings';
+	$cpRoutes['settings\/users\/blocks\/(?P<blockId>\d+)']                        = 'settings/users/blocks/_settings';
 }
 
 // -------------------------------------------
