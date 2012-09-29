@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class AttributeType
 {
-	const Mixed      = 'mixed';
+	const Array      = 'array';
 	const Bool       = 'bool';
 	const Build      = 'build';
 	const ClassName  = 'classname';
