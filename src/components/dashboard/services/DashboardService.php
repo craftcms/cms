@@ -35,11 +35,11 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function populateWidgetType(WidgetModel $widget)
 	{
-		return blx()->components->populateComponentByTypeAndPackage('widget', $widget);
+		return blx()->components->populateComponentByTypeAndModel('widget', $widget);
 	}
 
 	/**
-	 * Populates a widget package.
+	 * Populates a widget model.
 	 *
 	 * @param array|WidgetRecord $attributes
 	 * @return WidgetModel
@@ -148,7 +148,7 @@ class DashboardService extends BaseApplicationComponent
 
 			$widgetRecord->save(false);
 
-			// Now that we have a widget ID, save it on the package
+			// Now that we have a widget ID, save it on the model
 			if (!$widget->id)
 			{
 				$widget->id = $widgetRecord->id;

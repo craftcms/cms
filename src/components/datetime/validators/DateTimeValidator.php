@@ -2,16 +2,6 @@
 namespace Blocks;
 
 /**
- * Blocks Pro by Pixel & Tonic
- *
- * @package   Blocks Pro
- * @author    Pixel & Tonic, Inc.
- * @copyright Copyright (c) 2012, Pixel & Tonic, Inc.
- * @license   http://pixelandtonic.com/blockspro/license1.0.html Blocks Pro License
- * @link      http://pixelandtonic.com/blockspro
- */
-
-/**
  *
  */
 class DateTimeValidator extends \CValidator

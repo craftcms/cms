@@ -10,7 +10,7 @@ abstract class BaseBlocksController extends BaseController
 	protected $service;
 
 	/**
-	 * Populates a block package from post.
+	 * Populates a block model from post.
 	 *
 	 * @access protected
 	 * @return BaseBlockModel

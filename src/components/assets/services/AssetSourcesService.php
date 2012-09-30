@@ -35,11 +35,11 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		return blx()->components->populateComponentByTypeAndPackage('assetSource', $source);
+		return blx()->components->populateComponentByTypeAndModel('assetSource', $source);
 	}
 
 	/**
-	 * Populates an asset source package.
+	 * Populates an asset source model.
 	 *
 	 * @param array|AssetSourceRecord $attributes
 	 * @return AssetSourceModel
@@ -143,7 +143,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 			$sourceRecord->save(false);
 
-			// Now that we have a source ID, save it on the package
+			// Now that we have a source ID, save it on the model
 			if (!$source->id)
 			{
 				$source->id = $sourceRecord->id;

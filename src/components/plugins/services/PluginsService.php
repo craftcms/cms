@@ -23,9 +23,8 @@ class PluginsService extends BaseApplicationComponent
 		'records'       => 'Record',
 		'services'      => 'Service',
 		'variables'     => 'Variable',
-		'packages'      => 'Package',
 		'helpers'       => 'Helper',
-		'blocks'        => 'Block',
+		'blocktypes'    => 'BlockType',
 		'widgets'       => 'Widget',
 		'validators'    => 'Validator',
 	);

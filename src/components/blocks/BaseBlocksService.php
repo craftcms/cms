@@ -12,7 +12,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	protected $placeBlockColumnsAfter;
 
 	/**
-	 * Populates a block package.
+	 * Populates a block model.
 	 *
 	 * @param array|BaseBlockRecord $attributes
 	 * @return BaseBlockModel
@@ -64,7 +64,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates a block record from a package.
+	 * Populates a block record from a model.
 	 *
 	 * @access protected
 	 * @param BaseBlockModel $block
@@ -197,7 +197,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 			{
 				$blockRecord->save(false);
 
-				// Now that we have a block ID, save it on the package
+				// Now that we have a block ID, save it on the model
 				if (!$block->id)
 				{
 					$block->id = $blockRecord->id;

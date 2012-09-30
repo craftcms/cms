@@ -7,7 +7,7 @@ namespace Blocks;
 class EntriesService extends BaseApplicationComponent
 {
 	/**
-	 * Populates an entry package.
+	 * Populates an entry model.
 	 *
 	 * @param array|EntryRecord $attributes
 	 * @return EntryModel
@@ -393,13 +393,13 @@ class EntriesService extends BaseApplicationComponent
 		{
 			$entryRecord->save(false);
 
-			// Save the post date on the package if we just made it up
+			// Save the post date on the model if we just made it up
 			if (!$entry->postDate)
 			{
 				$entry->postDate = $entryRecord->postDate;
 			}
 
-			// Now that we have an entry ID, save it on the package & models
+			// Now that we have an entry ID, save it on the model & models
 			if (!$entry->id)
 			{
 				$entry->id = $entryRecord->id;

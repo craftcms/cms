@@ -109,13 +109,13 @@ class ComponentsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates a new component instance by its type and package.
+	 * Populates a new component instance by its type and model.
 	 *
 	 * @param string $type
 	 * @param BaseComponentModel $model
 	 * @return BaseComponent|null
 	 */
-	public function populateComponentByTypeAndPackage($type, BaseComponentModel $model)
+	public function populateComponentByTypeAndModel($type, BaseComponentModel $model)
 	{
 		$component = $this->getComponentByTypeAndClass($type, $model->type);
 
