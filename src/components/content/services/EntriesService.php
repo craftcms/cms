@@ -242,7 +242,7 @@ class EntriesService extends BaseApplicationComponent
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			if ($params->sectionId)
+			if ($params->sectionId && $params->sectionId != '*')
 			{
 				$whereConditions[] = DbHelper::parseParam('e.sectionId', $params->sectionId, $whereParams);
 			}
