@@ -90,7 +90,7 @@ class PluginsService extends BaseApplicationComponent
 
 		if (($plugin = $this->getPlugin($class, false)) !== false)
 		{
-			if ($plugin->record)
+			if ($plugin->model)
 			{
 				return true;
 			}
@@ -110,7 +110,7 @@ class PluginsService extends BaseApplicationComponent
 	{
 		$classHandle = strtolower($classHandle);
 
-		if ($enabledOnly && isset($this->_plugins[$classHandle]) && $this->_plugins[$classHandle]->record !== null && $this->_plugins[$classHandle]->record->enabled)
+		if ($enabledOnly && isset($this->_plugins[$classHandle]) && $this->_plugins[$classHandle]->model !== null && $this->_plugins[$classHandle]->model->enabled)
 		{
 			return $this->_plugins[$classHandle];
 		}
@@ -129,7 +129,7 @@ class PluginsService extends BaseApplicationComponent
 			// See if the plugin is installed && enabled.
 			if ($pluginRecord)
 			{
-				$plugin->record = $pluginRecord;
+				$plugin->model = $pluginRecord;
 
 				if ($pluginRecord->enabled)
 				{
@@ -150,7 +150,7 @@ class PluginsService extends BaseApplicationComponent
 
 		if ($enabledOnly)
 		{
-			if (!$this->_plugins[$classHandle]->record || !$this->_plugins[$classHandle]->record->enabled)
+			if (!$this->_plugins[$classHandle]->model || !$this->_plugins[$classHandle]->model->enabled)
 			{
 				return null;
 			}
@@ -240,9 +240,9 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('“{plugin}” can’t be enabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 		}
 
-		$plugin->record->enabled = true;
+		$plugin->model->enabled = true;
 
-		return $plugin->record->save();
+		return $plugin->model->save();
 	}
 
 	/**
@@ -267,8 +267,8 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('“{plugin}” can’t be disabled because it isn’t installed yet.', array('plugin' => $plugin->getName())));
 		}
 
-		$plugin->record->enabled = false;
-		return $plugin->record->save();
+		$plugin->model->enabled = false;
+		return $plugin->model->save();
 	}
 
 	/**

@@ -121,6 +121,8 @@ class ComponentsService extends BaseApplicationComponent
 
 		if ($component)
 		{
+			$component->model = $model;
+
 			if ($model->settings)
 			{
 				$component->setSettings($model->settings);
