@@ -76,16 +76,27 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #titlebar .left li + li,
 #titlebar .right li + li { margin-left: 10px; }
 
-#tabs { margin: -10px auto 25px; padding-bottom: 15px; border-bottom: 1px solid #e5e5e5; text-align: center; }
+#titlebar .backbtn { position: relative; padding-left: 5px; height: 31px; background: url(../images/backbtn-right.png) 100% 0 no-repeat; }
+#titlebar .backbtn:before { position: absolute; top: 0; left: -15px; width: 15px; height: 31px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn-left.png) 0 0 no-repeat; }
+#titlebar .backbtn:hover { color: #666; text-decoration: none; background-position: 100% 50%; }
+#titlebar .backbtn:hover:before { background-position: 0 50%; }
+#titlebar .backbtn:active { background-position: 100% 100%; }
+#titlebar .backbtn:active:before { background-position: 0 100%; }
+
+#titlebar .btn { background-color: #e8e8e8; }
+#titlebar .btn:hover { background-color: #ddd; }
+#titlebar .btn:active { background-color: #d4d4d4; }
+
+#tabs { margin: -25px auto 25px; border-bottom: 1px solid #e5e5e5; text-align: center; }
 #tabs ul { }
-#tabs ul li { display: inline-block; }
-#tabs ul li a { display: block; padding: 5px 12px 4px; font-size: 13px; color: #555; }
+#tabs ul li { display: inline-block; margin: 0 10px; }
+#tabs ul li a { display: block; margin-bottom: -1px; padding: 20px 0; font-size: 13px; color: #808080; }
 #tabs ul li a:before { margin: 0 4px 0 0; font-size: 18px; }
 #tabs ul li a:hover { color: $linkcolor; text-decoration: none; }
-#tabs ul li a.active { border-radius: 2px; color: #555; text-shadow: 0 1px 0 #fff; @include linear-gradient(#dbdbdb, #e5e5e5); cursor: default; -webkit-box-shadow: inset 0 1px 2px rgba(0,0,0,0.15); }
+#tabs ul li a.active { padding-bottom: 18px; border-bottom: 2px solid #555; color: #555; cursor: default; }
 
 /* content */
-#content { margin: 25px auto 0; padding: 0 25px; }
+#content { margin: 25px auto; padding: 0 25px; }
 #content.centered { max-width: 500px; }
 
 /* nav */

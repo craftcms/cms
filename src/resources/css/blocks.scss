@@ -152,28 +152,20 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .buttons .btn + .btn { margin-left: 4px; }
 
 .btn,
-.backbtn { display: inline-block; padding: 0 12px; line-height: 31px; color: #808080; text-shadow: 0 1px 0 rgba(255,255,255,0.5); text-align: center; white-space: nowrap; @include unselectable; }
+.backbtn { display: inline-block; padding: 0 12px; line-height: 29px; color: #808080; text-align: center; white-space: nowrap; @include unselectable; }
 
-.btn { border-radius: 2px; height: 31px; @include linear-gradient(#fff, #f3f3f3); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), 0 1px 0 rgba(0,0,0,0.05); cursor: pointer; overflow: hidden; }
+.btn { border-radius: 2px; border: 1px solid #ddd; height: 29px; background: #f2f2f2; cursor: pointer; overflow: hidden; }
 .btn:hover { text-decoration: none; }
-.btn:not(.disabled):not(:active):not(.active):hover { color: #666; @include linear-gradient(#fff, #f7f7f7); -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.25), 0 1px 0 rgba(0,0,0,0.1); }
+.btn:not(.disabled):not(:active):not(.active):hover { background: #e8e8e8; }
 .btn:active,
-.btn.active { -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15), inset 0 2px 2px rgba(0,0,0,0.25); }
-.btn.active { position: relative; @include linear-gradient(#ccc, #999); cursor: default; }
-.btn.disabled { opacity: 0.5; cursor: default; text-shadow: none; }
+.btn.active { background: #ddd; }
+.btn.disabled { opacity: 0.5; cursor: default; }
+input.btn { height: 31px; }
 
 .btn[data-icon]:before,
 .addbtn:before { margin-right: 5px; }
 .btn[data-icon-after]:after,
 .menubtn:after { margin-left: 5px; }
-
-/* back button */
-.backbtn { position: relative; padding-left: 5px; height: 32px; background: url(../images/backbtn-right.png) 100% 0 no-repeat; }
-.backbtn:before { position: absolute; top: 0; left: -15px; width: 15px; height: 32px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn-left.png) 0 0 no-repeat; }
-.backbtn:hover { color: #666; text-decoration: none; background-position: 100% 50%; }
-.backbtn:hover:before { background-position: 0 50%; }
-.backbtn:active { background-position: 100% 100%; }
-.backbtn:active:before { background-position: 0 100%; }
 
 /* add buttons */
 .addbtn:before { @include icon; content: '+'; }
@@ -188,19 +180,25 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .menubtn:after { @include icon; content: '▼'; font-size: 0.8em; }
 
 /* small buttons */
-.btngroup.small { height: 22px; }
 .btngroup.small .btn,
-.btn.small { padding: 0 7px; height: 22px; font-size: 11px; line-height: 22px; }
+.btn.small { padding: 0 7px; height: 20px; font-size: 11px; line-height: 20px; }
+.btngroup.small,
+.btngroup.small input.btn,
+input.btn.small { height: 22px; }
 
 /* big buttons */
-.btn.big { padding: 0 15px; height: 36px; font-size: 14px; line-height: 36px; }
+.btngroup.big .btn,
+.btn.big { padding: 0 15px; height: 34px; font-size: 14px; line-height: 34px; }
 .btn.big[data-icon]:before { margin-left: -2px; }
+.btngroup.big,
+.btngroup.big input.btn,
+input.btn.big { height: 36px; }
 
 /* submit buttons */
-.btn.submit { color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.5); @include linear-gradient(#33abf5, #2885bf); }
-.btn.submit:not(.disabled):not(:active):not(.active):hover { color: #fff; @include linear-gradient(#309ee3, #2479ad); }
+.btn.submit { border-color: transparent; color: #fff; background-color: hsl(203, 79%, 50%); }
+.btn.submit:not(.disabled):not(:active):not(.active):hover { background-color: hsl(203, 79%, 55%); }
 .btn.submit:not(.disabled):active,
-.btn.submit:not(.disabled).active { @include linear-gradient(#2c92d1, #216c9c); }
+.btn.submit:not(.disabled).active { background-color: hsl(203, 79%, 40%); }
 
 div.btn.submit { position: relative; overflow: hidden; }
 div.btn.submit input { position: absolute; left: 100%; }
@@ -217,16 +215,11 @@ div.btn.submit input { position: absolute; left: 100%; }
 .btn.red:not(.disabled).active,
 .btn.red:not(.disabled).loading { @include linear-gradient(#9c2313, #66170c); }
 
-/* input buttons */
-input.btn { border: none; height: 31px; }
-input.btn.big { height: 36px; }
-
 /* button groups */
 .btngroup { display: inline-block; height: 31px; }
 .btngroup .btn { float: left; }
-.btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+.btngroup .btn:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; border-left: none; }
 .btngroup .btn:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; }
-.btngroup .btn + .btn { margin-left: -1px; }
 .btngroup .btn.active { position: relative; }
 .btngroup .btn:active { position: relative; z-index: 1; }
 .btngroup .btn[data-icon]:before { margin-right: -2px; }
@@ -368,7 +361,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .text { padding: 7px; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; }
 .text input { margin: 0; padding: 0; border: none; outline: none; }
 .text:focus,
-.text.focus { -webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor; }
+.text.focus { -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
 
 .input.errors .text,
@@ -462,8 +455,8 @@ only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (-webkit-min-device-pixel-ratio: 1.5),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-	.backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 112px; }
-	.backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 112px; }
+	#titlebar .backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
+	#titlebar .backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
 
 	ul.biglist li a.go { background-image: url(../images/go_2x.png); background-size: 22px 14px; }
 	ul.biglist li a.go:hover { background-image: url(../images/go_hover_2x.png); }
