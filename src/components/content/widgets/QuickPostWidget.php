@@ -15,7 +15,7 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getName()
 	{
-		return Blocks::t('Quick Publish');
+		return Blocks::t('Quick Post');
 	}
 
 	/**
