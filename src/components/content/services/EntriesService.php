@@ -344,6 +344,12 @@ class EntriesService extends BaseApplicationComponent
 		$titleRecord = $this->_getEntryTitleRecord($entry);
 		$contentRecord = $this->_getEntryContentRecord($entry);
 
+		// Has the slug changed?
+		if ($entryRecord->isNewRecord() || $entry->slug != $entryRecord->slug)
+		{
+			$this->generateEntrySlug($entry);
+		}
+
 		$entryRecord->slug = $entry->slug;
 		$titleRecord->title = $entry->title;
 		$entryRecord->postDate = $this->_getDate($entry->postDate, true);
@@ -556,5 +562,70 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		return $contentRecord;
+	}
+
+	/**
+	 * Generates an entry slug based on its title.
+	 *
+	 * @param EntryModel $entry
+	 */
+	public function generateEntrySlug(EntryModel $entry)
+	{
+		$slug = ($entry->slug ? $entry->slug : $entry->title);
+
+		// Remove HTML tags
+		$slug = preg_replace('/<(.*?)>/', '', $slug);
+
+		// Make it lowercase
+		$slug = strtolower($slug);
+
+		// Convert extended ASCII characters to basic ASCII
+		$slug = StringHelper::asciiString($slug);
+
+		// Slug must start and end with alphanumeric characters
+		$slug = preg_replace('/^[^a-z0-9]+/', '', $slug);
+		$slug = preg_replace('/[^a-z0-9]+$/', '', $slug);
+
+		// Get the "words"
+		$slug = implode('-', array_filter(preg_split('/[^a-z0-9]+/', $slug)));
+
+		if ($slug)
+		{
+			// Make it unique
+			$testSlug = '';
+
+			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			{
+				$where['sectionId'] = $entry->sectionId;
+			}
+
+			for ($i = 0; true; $i++)
+			{
+				$testSlug = $slug;
+				if ($i != 0)
+				{
+					$testSlug .= '-'.$i;
+				}
+
+				$where['slug'] = $testSlug;
+
+				$totalEntries = blx()->db->createCommand()
+					->select('count(e.id)')
+					->from('entries e')
+					->where($where)
+					->queryScalar();
+
+				if ($totalEntries == 0)
+				{
+					break;
+				}
+			}
+
+			$entry->slug = $testSlug;
+		}
+		else
+		{
+			$entry->slug = '';
+		}
 	}
 }
