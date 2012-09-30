@@ -60,4 +60,38 @@ class EntryVariable extends BaseModelVariable
 	{
 		return $this->model->getBlockErrors();
 	}
+
+	/**
+	 * Returns the entry's section
+	 *
+	 * @return SectionVariable|null
+	 */
+	public function section()
+	{
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$section = blx()->sections->getSectionById($this->model->sectionId);
+			if ($section)
+			{
+				return new SectionVariable($section);
+			}
+		}
+	}
+
+	/**
+	 * Returns the entry's author
+	 *
+	 * @return UserVariable|null
+	 */
+	public function author()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			$user = blx()->users->getUserById($this->model->authorId);
+			if ($user)
+			{
+				return new UserVariable($user);
+			}
+		}
+	}
 }
