@@ -79,7 +79,7 @@
 			}) }}
 
 			{% for block in blocks %}
-				{% set blockType = blx.blocks.populateBlockType(block) %}
+				{% set blockType = block.blockType %}
 				{% set name = 'block'~block.id %}
 				{% set value = entry.blocks[name] %}
 				{% set errors = entry.blockErrors[block.handle] %}

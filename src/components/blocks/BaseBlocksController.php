@@ -6,18 +6,18 @@ namespace Blocks;
  */
 abstract class BaseBlocksController extends BaseController
 {
-	protected $blockPackageClass;
+	protected $blockModelClass;
 	protected $service;
 
 	/**
 	 * Populates a block package from post.
 	 *
 	 * @access protected
-	 * @return BaseBlockPackage
+	 * @return BaseBlockModel
 	 */
 	protected function populateBlockFromPost()
 	{
-		$class = __NAMESPACE__.'\\'.$this->blockPackageClass;
+		$class = __NAMESPACE__.'\\'.$this->blockModelClass;
 		$block = new $class();
 
 		$block->id = blx()->request->getPost('blockId');
@@ -66,7 +66,7 @@ abstract class BaseBlocksController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'block' => $block
+			'block' => new BlockVariable($block)
 		));
 	}
 

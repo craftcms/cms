@@ -10,7 +10,7 @@ class EntriesService extends BaseApplicationComponent
 	 * Populates an entry package.
 	 *
 	 * @param array|EntryRecord $attributes
-	 * @return EntryPackage
+	 * @return EntryModel
 	 */
 	public function populateEntry($attributes)
 	{
@@ -19,7 +19,7 @@ class EntriesService extends BaseApplicationComponent
 			$attributes = $attributes->getAttributes();
 		}
 
-		$entry = new EntryPackage();
+		$entry = new EntryModel();
 
 		$entry->id = $attributes['id'];
 		$entry->title = $attributes['title'];
@@ -52,13 +52,17 @@ class EntriesService extends BaseApplicationComponent
 			$blocks = blx()->entryBlocks->getAllBlocks();
 		}
 
+		$blockValues = array();
+
 		foreach ($blocks as $block)
 		{
 			$name = 'block'.$block->id;
 			$handle = $block->handle;
 
-			$entry->blocks[$name] = $contentRecord->$handle;
+			$blockValues[$name] = $contentRecord->$handle;
 		}
+
+		$entry->blocks = $blockValues;
 
 		return $entry;
 	}
@@ -151,7 +155,7 @@ class EntriesService extends BaseApplicationComponent
 	 * Gets an entry.
 	 *
 	 * @param EntryParams|null $params
-	 * @return EntryPackage|null
+	 * @return EntryModel|null
 	 */
 	public function getEntry(EntryParams $params = null)
 	{
@@ -331,10 +335,10 @@ class EntriesService extends BaseApplicationComponent
 	/**
 	 * Saves an entry.
 	 *
-	 * @param EntryPackage $entry
+	 * @param EntryModel $entry
 	 * @return bool
 	 */
-	public function saveEntry(EntryPackage $entry)
+	public function saveEntry(EntryModel $entry)
 	{
 		$entryRecord = $this->_getEntryRecord($entry);
 		$titleRecord = $this->_getEntryTitleRecord($entry);
@@ -399,8 +403,8 @@ class EntriesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entry->errors = array_merge($entryRecord->getErrors(), $titleRecord->getErrors());
-			$entry->blockErrors = $contentRecord->getErrors();
+			$entry->addErrors(array_merge($entryRecord->getErrors(), $titleRecord->getErrors()));
+			$entry->addBlockErrors($contentRecord->getErrors());
 
 			return false;
 		}
@@ -410,10 +414,10 @@ class EntriesService extends BaseApplicationComponent
 	 * Gets an entry record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entry
+	 * @param EntryModel $entry
 	 * @return EntryRecord
 	 */
-	private function _getEntryRecord(EntryPackage $entry)
+	private function _getEntryRecord(EntryModel $entry)
 	{
 		if ($entry->id)
 		{
@@ -446,10 +450,10 @@ class EntriesService extends BaseApplicationComponent
 	 * Gets an entry's title record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entry
+	 * @param EntryModel $entry
 	 * @return EntryTitleRecord
 	 */
-	private function _getEntryTitleRecord(EntryPackage $entry)
+	private function _getEntryTitleRecord(EntryModel $entry)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
@@ -490,10 +494,10 @@ class EntriesService extends BaseApplicationComponent
 	 * Gets an entry's content record or creates a new one.
 	 *
 	 * @access private
-	 * @param EntryPackage $entry
+	 * @param EntryModel $entry
 	 * @return EntryContentRecord
 	 */
-	private function _getEntryContentRecord(EntryPackage $entry)
+	private function _getEntryContentRecord(EntryModel $entry)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{

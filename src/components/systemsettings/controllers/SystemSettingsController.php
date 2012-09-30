@@ -37,7 +37,9 @@ class SystemSettingsController extends BaseController
 		else
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save general settings.'));
-			$this->renderRequestedTemplate(array('post' => $generalSettingsModel));
+			$this->renderRequestedTemplate(array(
+				'post' => $generalSettingsModel
+			));
 		}
 	}
 
@@ -149,7 +151,9 @@ class SystemSettingsController extends BaseController
 			blx()->user->setError(Blocks::t('Couldn’t save email settings.'));
 		}
 
-		$this->renderRequestedTemplate(array('settings' => $emailSettings));
+		$this->renderRequestedTemplate(array(
+			'settings' => $emailSettings
+		));
 	}
 
 	/**
@@ -176,7 +180,9 @@ class SystemSettingsController extends BaseController
 		else
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save advanced settings.'));
-			$this->renderRequestedTemplate(array('settings' => $settings));
+			$this->renderRequestedTemplate(array(
+				'settings' => $settings
+			));
 		}
 	}
 }

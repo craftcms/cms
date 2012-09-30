@@ -2,11 +2,9 @@
 namespace Blocks;
 
 /**
- * Entry block package class
- *
- * Used for transporting entry block data throughout the system.
+ * Entry block model class.
  */
-class EntryBlockPackage extends BaseBlockPackage
+class EntryBlockModel extends BaseBlockModel
 {
 	/**
 	 * Saves the entry block.

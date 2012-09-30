@@ -2,7 +2,7 @@
 
 
 {% if block %}
-	{% set blockType = blx.blocks.populateBlockType(block) %}
+	{% set blockType = block.blockType %}
 {% else %}
 	{% set blockType = blx.blocks.getBlockType('PlainText') %}
 {% endif %}

@@ -20,11 +20,15 @@ class VariableHelper
 
 		if (is_array($instances))
 		{
-			$nsClass = __NAMESPACE__.'\\'.$class;
+			$namespace = __NAMESPACE__.'\\';
+			if (strncmp($class, $namespace, strlen($namespace)) != 0)
+			{
+				$class = $namespace.$class;
+			}
 
 			foreach ($instances as $key => $instance)
 			{
-				$variables[$key] = new $nsClass($instance);
+				$variables[$key] = new $class($instance);
 			}
 		}
 

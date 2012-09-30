@@ -9,7 +9,7 @@
 
 
 {% if widget %}
-	{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
+	{% set widgetType = widget.widgetType %}
 {% else %}
 	{% set widgetType = blx.dashboard.getWidgetType('Feed') %}
 {% endif %}

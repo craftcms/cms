@@ -18,36 +18,21 @@ class AssetsVariable
 	public function getAllSourceTypes()
 	{
 		$sourceTypes = blx()->assetSources->getAllSourceTypes();
-		return VariableHelper::populateVariables($sourceTypes, 'AssetSourceVariable');
+		return AssetSourceTypeVariable::populateVariables($sourceTypes);
 	}
 
 	/**
 	 * Gets an asset source type.
 	 *
 	 * @param string $class
-	 * @return AssetSourceVariable|null
+	 * @return AssetSourceTypeVariable|null
 	 */
 	public function getSourceType($class)
 	{
 		$sourceType = blx()->assetSources->getSourceType($class);
 		if ($sourceType)
 		{
-			return new AssetSourceVariable($sourceType);
-		}
-	}
-
-	/**
-	 * Populates an asset source type.
-	 *
-	 * @param AssetSourcePackage $block
-	 * @return AssetSourceVariable|null
-	 */
-	public function populateSourceType(AssetSourcePackage $source)
-	{
-		$sourceType = blx()->assetSources->populateSourceType($source);
-		if ($sourceType)
-		{
-			return new AssetSourceVariable($sourceType);
+			return new AssetSourceTypeVariable($sourceType);
 		}
 	}
 
@@ -58,18 +43,23 @@ class AssetsVariable
 	 */
 	public function sources()
 	{
-		return blx()->assetSources->getAllSources();
+		$sources = blx()->assetSources->getAllSources();
+		return AssetSourceVariable::populateVariables($sources);
 	}
 
 	/**
 	 * Gets an asset source by its ID.
 	 *
 	 * @param int $id
-	 * @return AssetSourcePackage|null
+	 * @return AssetSourceModel|null
 	 */
 	public function getSourceById($id)
 	{
-		return blx()->assetSources->getSourceById($id);
+		$source = blx()->assetSources->getSourceById($id);
+		if ($source)
+		{
+			return new AssetSourceVariable($source);
+		}
 	}
 
 	// -------------------------------------------
@@ -83,17 +73,22 @@ class AssetsVariable
 	 */
 	public function assetBlocks()
 	{
-		return blx()->assetBlocks->getAllBlocks();
+		$blocks = blx()->assetBlocks->getAllBlocks();
+		return BlockVariable::populateVariables($blocks);
 	}
 
 	/**
 	 * Gets an asset block by its ID.
 	 *
 	 * @param int $id
-	 * @return BlockVariable
+	 * @return BlockVariable|null
 	 */
 	public function getAssetBlockById($id)
 	{
-		return blx()->assetBlocks->getBlockById($id);
+		$block = blx()->assetBlocks->getBlockById($id);
+		if ($block)
+		{
+			return new BlockVariable($block);
+		}
 	}
 }

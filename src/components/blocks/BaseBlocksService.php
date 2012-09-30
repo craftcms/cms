@@ -6,7 +6,7 @@ namespace Blocks;
  */
 abstract class BaseBlocksService extends BaseApplicationComponent
 {
-	protected $blockPackageClass;
+	protected $blockModelClass;
 	protected $blockRecordClass;
 	protected $contentRecordClass;
 	protected $placeBlockColumnsAfter;
@@ -15,7 +15,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * Populates a block package.
 	 *
 	 * @param array|BaseBlockRecord $attributes
-	 * @return BaseBlockPackage
+	 * @return BaseBlockModel
 	 */
 	public function populateBlock($attributes)
 	{
@@ -24,7 +24,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 			$attributes = $attributes->getAttributes();
 		}
 
-		$class = __NAMESPACE__.'\\'.$this->blockPackageClass;
+		$class = __NAMESPACE__.'\\'.$this->blockModelClass;
 		$block = new $class();
 
 		$block->id = $attributes['id'];
@@ -67,10 +67,10 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * Populates a block record from a package.
 	 *
 	 * @access protected
-	 * @param BaseBlockPackage $block
+	 * @param BaseBlockModel $block
 	 * @return BaseBlockRecord $blockRecord;
 	 */
-	protected function populateBlockRecord(BaseBlockPackage $block)
+	protected function populateBlockRecord(BaseBlockModel $block)
 	{
 		$blockRecord = $this->_getBlockRecordById($block->id);
 
@@ -109,7 +109,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * Gets a block by its ID.
 	 *
 	 * @param int $blockId
-	 * @return BaseBlockPackage|null
+	 * @return BaseBlockModel|null
 	 */
 	public function getBlockById($blockId)
 	{
@@ -164,11 +164,11 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	/**
 	 * Saves a block.
 	 *
-	 * @param BaseBlockPackage $block
+	 * @param BaseBlockModel $block
 	 * @throws \Exception
 	 * @return bool
 	 */
-	public function saveBlock(BaseBlockPackage $block)
+	public function saveBlock(BaseBlockModel $block)
 	{
 		$blockRecord = $this->populateBlockRecord($block);
 		$blockType = blx()->blockTypes->populateBlockType($block);
@@ -228,9 +228,8 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		}
 		else
 		{
-			$block->errors = $blockRecord->getErrors();
-			$block->settingsErrors = $blockType->getSettings()->getErrors();
-
+			$block->addErrors($blockRecord->getErrors());
+			$block->addSettingErrors($blockType->getSettings()->getErrors());
 			return false;
 		}
 	}
@@ -238,11 +237,11 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	/**
 	 * Returns the content table name.
 	 *
-	 * @param BaseBlockPackage $block
+	 * @param BaseBlockModel $block
 	 * @access protected
 	 * @return string
 	 */
-	protected function getContentTable(BaseBlockPackage $block)
+	protected function getContentTable(BaseBlockModel $block)
 	{
 		$class = __NAMESPACE__.'\\'.$this->contentRecordClass;
 		$contentRecord = new $class();

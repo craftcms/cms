@@ -2,19 +2,41 @@
 namespace Blocks;
 
 /**
- * Block template variable
+ * Block template variable class
  */
-class BlockVariable extends ComponentVariable
+class BlockVariable extends BaseModelVariable
 {
 	/**
-	 * Returns the block's input HTML.
+	 * Use the translated block name as its string representation.
 	 *
-	 * @param string $name
-	 * @param mixed  $value
 	 * @return string
 	 */
-	public function input($handle, $value)
+	public function __toString()
 	{
-		return $this->component->getInputHtml($handle, $value);
+		return Blocks::t($this->model->name);
+	}
+
+	/**
+	 * Returns the model's settings errors.
+	 *
+	 * @return array
+	 */
+	public function settingErrors()
+	{
+		return $this->model->getSettingErrors();
+	}
+
+	/**
+	 * Returns a block type variable based on this block model.
+	 *
+	 * @return BlockTypeVariable|null
+	 */
+	public function blockType()
+	{
+		$blockType = blx()->blockTypes->populateBlockType($this->model);
+		if ($blockType)
+		{
+			return new BlockTypeVariable($blockType);
+		}
 	}
 }

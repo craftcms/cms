@@ -30,6 +30,6 @@ class PluginsVariable
 	public function plugins()
 	{
 		$plugins = blx()->plugins->getPlugins();
-		return VariableHelper::populateVariables($plugins, 'PluginVariable');
+		return PluginVariable::populateVariables($plugins);
 	}
 }

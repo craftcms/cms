@@ -14,36 +14,21 @@ class BlocksVariable
 	public function getAllBlockTypes()
 	{
 		$blockTypes = blx()->blockTypes->getAllBlockTypes();
-		return VariableHelper::populateVariables($blockTypes, 'BlockVariable');
+		return BlockTypeVariable::populateVariables($blockTypes);
 	}
 
 	/**
 	 * Gets a block type.
 	 *
 	 * @param string $class
-	 * @return BlockVariable|null
+	 * @return BlockTypeVariable|null
 	 */
 	public function getBlockType($class)
 	{
 		$blockType = blx()->blockTypes->getBlockType($class);
 		if ($blockType)
 		{
-			return new BlockVariable($blockType);
-		}
-	}
-
-	/**
-	 * Populates a block type.
-	 *
-	 * @param BaseBlockPackage $block
-	 * @return BlockVariable|null
-	 */
-	public function populateBlockType(BaseBlockPackage $block)
-	{
-		$blockType = blx()->blockTypes->populateBlockType($block);
-		if ($blockType)
-		{
-			return new BlockVariable($blockType);
+			return new BlockTypeVariable($blockType);
 		}
 	}
 }

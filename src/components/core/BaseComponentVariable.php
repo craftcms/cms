@@ -3,8 +3,10 @@ namespace Blocks;
 
 /**
  * Component template variable class
+ *
+ * @abstract
  */
-class ComponentVariable
+abstract class BaseComponentVariable
 {
 	protected $component;
 
@@ -39,17 +41,6 @@ class ComponentVariable
 	}
 
 	/**
-	 * Returns a ModelVariable instance for the component's record.
-	 *
-	 * @return ModelVariable
-	 */
-	public function record()
-	{
-		if ($this->component->record)
-			return new ModelVariable($this->component->record);
-	}
-
-	/**
 	 * Returns the component's name.
 	 *
 	 * @return string
@@ -69,5 +60,16 @@ class ComponentVariable
 	{
 		$this->component->setSettings($settings);
 		return $this->component->getSettingsHtml();
+	}
+
+	/**
+	 * Mass-populates instances of this class with a given set of models.
+	 *
+	 * @static
+	 * @param array $models
+	 */
+	public static function populateVariables($models)
+	{
+		return VariableHelper::populateVariables($models, get_called_class());
 	}
 }

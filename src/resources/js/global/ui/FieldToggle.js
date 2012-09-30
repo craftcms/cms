@@ -7,6 +7,7 @@
 Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	$toggle: null,
+	targetPrefix: null,
 
 	_$target: null,
 	type: null,
@@ -28,6 +29,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 		if (this.type == 'select')
 		{
+			this.targetPrefix = (this.$toggle.attr('data-target-prefix') || '');
 			this.findTarget();
 		}
 
@@ -71,7 +73,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 	{
 		if (this.type == 'select')
 		{
-			this._$target = $('#'+this.getToggleVal());
+			this._$target = $('#'+this.targetPrefix+this.getToggleVal());
 		}
 		else
 		{

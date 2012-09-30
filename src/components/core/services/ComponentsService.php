@@ -47,16 +47,22 @@ class ComponentsService extends BaseApplicationComponent
 
 					// Skip the autoloader
 					if (!class_exists($class, false))
+					{
 						require_once $file;
+					}
 
 					// Ignore if we couldn't find the class
 					if (!class_exists($class, false))
+					{
 						continue;
+					}
 
 					// Ignore abstract classes and interfaces
 					$ref = new \ReflectionClass($class);
 					if ($ref->isAbstract() || $ref->isInterface())
+					{
 						continue;
+					}
 
 					// Instantiate it
 					$obj = new $class;
@@ -64,12 +70,16 @@ class ComponentsService extends BaseApplicationComponent
 					// Make sure it implements the correct interface
 					$interface = __NAMESPACE__.'\\'.$ctype['interface'];
 					if (!$obj instanceof $interface)
+					{
 						continue;
+					}
 
 					// Save it
 					$classHandle = $obj->getClassHandle();
 					$this->_components[$type][$classHandle] = $obj;
 				}
+
+				ksort($this->_components[$type]);
 			}
 		}
 
@@ -102,23 +112,23 @@ class ComponentsService extends BaseApplicationComponent
 	 * Populates a new component instance by its type and package.
 	 *
 	 * @param string $type
-	 * @param BaseComponentPackage $package
+	 * @param BaseComponentModel $model
 	 * @return BaseComponent|null
 	 */
-	public function populateComponentByTypeAndPackage($type, BaseComponentPackage $package)
+	public function populateComponentByTypeAndPackage($type, BaseComponentModel $model)
 	{
-		$component = $this->getComponentByTypeAndClass($type, $package->type);
+		$component = $this->getComponentByTypeAndClass($type, $model->type);
 
 		if ($component)
 		{
-			if ($package->settings)
+			if ($model->settings)
 			{
-				$component->setSettings($package->settings);
+				$component->setSettings($model->settings);
 			}
 
-			if ($package->settingsErrors)
+			if ($model->hasSettingErrors())
 			{
-				$component->getSettings()->addErrors($package->settingsErrors);
+				$component->getSettings()->addErrors($model->getSettingErrors());
 			}
 
 			return $component;

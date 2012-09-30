@@ -24,7 +24,22 @@ class DashboardVariable
 	public function getAllWidgetTypes()
 	{
 		$widgetTypes = blx()->dashboard->getAllWidgetTypes();
-		return VariableHelper::populateVariables($widgetTypes, 'WidgetVariable');
+		return WidgetTypeVariable::populateVariables($widgetTypes);
+	}
+
+	/**
+	 * Returns a widget type.
+	 *
+	 * @param string $class
+	 * @return WidgetTypeVariable|null
+	 */
+	public function getWidgetType($class)
+	{
+		$widgetType = blx()->dashboard->getWidgetType($class);
+		if ($widgetType)
+		{
+			return new WidgetTypeVariable($widgetType);
+		}
 	}
 
 	/**
@@ -34,48 +49,23 @@ class DashboardVariable
 	 */
 	public function userWidgets()
 	{
-		return blx()->dashboard->getUserWidgets();
-	}
-
-	/**
-	 * Returns a widget type.
-	 *
-	 * @param string $class
-	 * @return BaseWidget|null
-	 */
-	public function getWidgetType($class)
-	{
-		$widgetType = blx()->dashboard->getWidgetType($class);
-		if ($widgetType)
-		{
-			return new WidgetVariable($widgetType);
-		}
-	}
-
-	/**
-	 * Populates a widget type.
-	 *
-	 * @param WidgetPackage $widget
-	 * @return BaseWidget|null
-	 */
-	public function populateWidgetType(WidgetPackage $widget)
-	{
-		$widgetType = blx()->dashboard->populateWidgetType($widget);
-		if ($widgetType)
-		{
-			return new WidgetVariable($widgetType);
-		}
+		$widgets = blx()->dashboard->getUserWidgets();
+		return WidgetVariable::populateVariables($widgets);
 	}
 
 	/**
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
-	 * @return WidgetPackage|null
+	 * @return WidgetVariable|null
 	 */
 	public function getUserWidgetById($id)
 	{
-		return blx()->dashboard->getUserWidgetById($id);
+		$widget = blx()->dashboard->getUserWidgetById($id);
+		if ($widget)
+		{
+			return new WidgetVariable($widget);
+		}
 	}
 
 	/**

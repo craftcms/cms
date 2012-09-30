@@ -27,18 +27,23 @@ class EntriesVariable
 	public function entries($params = array())
 	{
 		$params = new EntryParams($params);
-		return blx()->entries->getEntries($params);
+		$entries = blx()->entries->getEntries($params);
+		return EntryVariable::populateVariables($entries);
 	}
 
 	/**
 	 * Gets an entry.
 	 *
 	 * @param array|null $params
-	 * @return EntryPackage|null
+	 * @return EntryVariable|null
 	 */
 	public function entry($params = array())
 	{
 		$params = new EntryParams($params);
-		return blx()->entries->getEntry($params);
+		$entry = blx()->entries->getEntry($params);
+		if ($entry)
+		{
+			return new EntryVariable($entry);
+		}
 	}
 }

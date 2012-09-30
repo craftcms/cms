@@ -5,8 +5,10 @@ namespace Blocks;
  * Model template variable class
  *
  * Limits templates to only access a model's attributes.
+ *
+ * @abstract
  */
-class ModelVariable
+abstract class BaseModelVariable
 {
 	protected $model;
 
@@ -28,7 +30,7 @@ class ModelVariable
 	 */
 	function __isset($name)
 	{
-		return in_array($name, $this->model->attributeNames());
+		return property_exists($this->model, $name) || in_array($name, $this->model->attributeNames());
 	}
 
 	/**
@@ -39,7 +41,14 @@ class ModelVariable
 	 */
 	function __get($name)
 	{
-		return $this->model->getAttribute($name);
+		if (property_exists($this->model, $name))
+		{
+			return $this->model->$name;
+		}
+		else
+		{
+			return $this->model->getAttribute($name);
+		}
 	}
 
 	/**
@@ -83,5 +92,16 @@ class ModelVariable
 	public function errors()
 	{
 		return $this->model->getErrors();
+	}
+
+	/**
+	 * Mass-populates instances of this class with a given set of models.
+	 *
+	 * @static
+	 * @param array $models
+	 */
+	public static function populateVariables($models)
+	{
+		return VariableHelper::populateVariables($models, get_called_class());
 	}
 }

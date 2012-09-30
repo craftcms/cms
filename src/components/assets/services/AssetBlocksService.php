@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class AssetBlocksService extends BaseBlocksService
 {
-	protected $blockPackageClass = 'AssetBlockPackage';
+	protected $blockModelClass = 'AssetBlockModel';
 	protected $blockRecordClass = 'AssetBlockRecord';
 	protected $contentRecordClass = 'AssetContentRecord';
 	protected $placeBlockColumnsAfter = 'fileId';

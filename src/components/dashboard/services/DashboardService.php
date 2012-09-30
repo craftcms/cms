@@ -30,10 +30,10 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Populates a widget type.
 	 *
-	 * @param WidgetPackage $widget
+	 * @param WidgetModel $widget
 	 * @return BaseWidget|null
 	 */
-	public function populateWidgetType(WidgetPackage $widget)
+	public function populateWidgetType(WidgetModel $widget)
 	{
 		return blx()->components->populateComponentByTypeAndPackage('widget', $widget);
 	}
@@ -42,7 +42,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Populates a widget package.
 	 *
 	 * @param array|WidgetRecord $attributes
-	 * @return WidgetPackage
+	 * @return WidgetModel
 	 */
 	public function populateWidget($attributes)
 	{
@@ -51,7 +51,7 @@ class DashboardService extends BaseApplicationComponent
 			$attributes = $attributes->getAttributes();
 		}
 
-		$widget = new WidgetPackage();
+		$widget = new WidgetModel();
 
 		$widget->id = $attributes['id'];
 		$widget->type = $attributes['type'];
@@ -98,7 +98,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Returns a widget by its ID.
 	 *
 	 * @param int $id
-	 * @return WidgetPackage
+	 * @return WidgetModel
 	 */
 	public function getUserWidgetById($id)
 	{
@@ -116,10 +116,10 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Saves a widget for the current user.
 	 *
-	 * @param WidgetPackage $widget
+	 * @param WidgetModel $widget
 	 * @return bool
 	 */
-	public function saveUserWidget(WidgetPackage $widget)
+	public function saveUserWidget(WidgetModel $widget)
 	{
 		$widgetRecord = $this->_getUserWidgetRecordById($widget->id);
 
@@ -158,8 +158,8 @@ class DashboardService extends BaseApplicationComponent
 		}
 		else
 		{
-			$widget->errors = $widgetRecord->getErrors();
-			$widget->settingsErrors = $widgetType->getSettings()->getErrors();
+			$widget->addErrors($widgetRecord->getErrors());
+			$widget->addSettingErrors($widgetType->getSettings()->getErrors());
 
 			return false;
 		}
@@ -216,7 +216,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function addDefaultUserWidgets()
 	{
-		$widget = new WidgetPackage();
+		$widget = new WidgetModel();
 
 		$widget->type = 'Feed';
 		$widget->settings = array(

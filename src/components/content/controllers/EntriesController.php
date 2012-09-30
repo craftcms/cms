@@ -13,7 +13,7 @@ class EntriesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$entry = new EntryPackage();
+		$entry = new EntryModel();
 
 		$entry->id = blx()->request->getPost('entryId');
 		$entry->title = blx()->request->getPost('title');
@@ -52,7 +52,7 @@ class EntriesController extends BaseController
 		}
 
 		$this->renderRequestedTemplate(array(
-			'entry' => $entry
+			'entry' => new EntryVariable($entry)
 		));
 	}
 }

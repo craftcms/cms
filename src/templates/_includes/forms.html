@@ -59,7 +59,7 @@
 {% macro select(config) %}
 	{% set class = ['select', config.class]|filter|join(' ') %}
 	<div class="{{ class }}">
-		<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.toggle %} class="fieldtoggle"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.disabled %} disabled{% endif %}>
+		<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.toggle %} class="fieldtoggle"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.targetPrefix %} data-target-prefix="{{ config.targetPrefix }}"{% endif %}>
 			{% for value, label in config.options %}
 				<option value="{{ value }}"{% if value == config.value %} selected{% endif %}>{{ label }}</option>
 			{% endfor %}

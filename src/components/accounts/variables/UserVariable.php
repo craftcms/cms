@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * User template variable
  */
-class UserVariable extends ModelVariable
+class UserVariable extends BaseModelVariable
 {
 	/**
 	 * Use the full name or username as the string representation of the user.
@@ -27,13 +27,17 @@ class UserVariable extends ModelVariable
 	/**
 	 * Returns the user's profile.
 	 *
-	 * @return UserProfileRecord|null
+	 * @return UserProfileVariable|null
 	 */
 	function profile()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return $this->model->profile;
+			$profile = $this->model->profile;
+			if ($profile)
+			{
+				return new UserProfileVariable($profile);
+			}
 		}
 	}
 

@@ -13,7 +13,7 @@ class AssetSourcesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$source = new AssetSourcePackage();
+		$source = new AssetSourceModel();
 		$source->id = blx()->request->getPost('sourceId');
 		$source->name = blx()->request->getPost('name');
 
@@ -41,7 +41,7 @@ class AssetSourcesController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'source' => $source
+			'source' => new AssetSourceVariable($source)
 		));
 	}
 

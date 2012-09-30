@@ -276,25 +276,25 @@ class InstallService extends BaseApplicationComponent
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
-			$section = new SectionPackage();
+			$section = new SectionModel();
 			$section->name = Blocks::t('Blog');
 			$section->handle = 'blog';
 			$section->hasUrls = true;
 			$section->urlFormat = 'blog/{slug}';
 			$section->template = 'blog/_entry';
-			blx()->sections->saveSection($section);
+			$section->save();
 		}
 
 		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$block = new SectionBlockPackage();
+			$block = new SectionBlockModel();
 			$block->sectionId = $section->id;
 		}
 		else
 		{
-			$block = new EntryBlockPackage();
+			$block = new EntryBlockModel();
 		}
 
 		$block->name = Blocks::t('Body');
@@ -307,14 +307,7 @@ class InstallService extends BaseApplicationComponent
 			$block->translatable = true;
 		}
 
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			blx()->sectionBlocks->saveBlock($block);
-		}
-		else
-		{
-			blx()->entryBlocks->saveBlock($block);
-		}
+		$block->save();
 
 
 		/*// Add a Welcome entry to the Blog

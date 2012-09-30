@@ -23,7 +23,7 @@
 				{% for source in sources %}
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
 						<th scope="row"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
-						{% if blx.hasPackage('cloud') %}<td>{{ blx.assets.getSourceType(source.type).name }}</td>{% endif %}
+						{% if blx.hasPackage('cloud') %}<td>{{ source.sourceType.name }}</td>{% endif %}
 						{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
 						<td><a class="deletebtn" title="{{ 'Delete' }}"></a></td>
 					</tr>

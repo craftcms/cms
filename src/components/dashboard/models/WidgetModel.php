@@ -2,11 +2,11 @@
 namespace Blocks;
 
 /**
- * Widget package class
+ * Widget model class
  *
  * Used for transporting widget data throughout the system.
  */
-class WidgetPackage extends BaseComponentPackage
+class WidgetModel extends BaseComponentModel
 {
 	/**
 	 * Saves the Widget.

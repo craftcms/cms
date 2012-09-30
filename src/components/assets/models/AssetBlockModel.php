@@ -2,11 +2,11 @@
 namespace Blocks;
 
 /**
- * Asset block package class
+ * Asset block model class
  *
  * Used for transporting asset block data throughout the system.
  */
-class AssetBlockPackage extends BaseBlockPackage
+class AssetBlockModel extends BaseBlockModel
 {
 	/**
 	 * Saves the asset block.

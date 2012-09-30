@@ -6,6 +6,6 @@ namespace Blocks;
  */
 class AssetBlocksController extends BaseBlocksController
 {
-	protected $blockPackageClass = 'AssetBlockPackage';
+	protected $blockModelClass = 'AssetBlockModel';
 	protected $service = 'assetBlocks';
 }

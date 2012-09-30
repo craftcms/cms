@@ -10,7 +10,7 @@
 
 
 {% if source %}
-	{% set sourceType = blx.assets.populateSourceType(source) %}
+	{% set sourceType = source.sourceType %}
 {% else %}
 	{% set sourceType = blx.assets.getSourceType('Local') %}
 {% endif %}

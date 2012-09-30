@@ -2,17 +2,21 @@
 namespace Blocks;
 
 /**
- * Widget template variable
+ *
  */
-class WidgetVariable extends ComponentVariable
+class WidgetVariable extends BaseModelVariable
 {
 	/**
-	 * Returns the widget's title.
+	 * Returns a widget type variable based on this widget model.
 	 *
-	 * @return string
+	 * @return WidgetTypeVariable|null
 	 */
-	public function title()
+	public function widgetType()
 	{
-		return $this->component->getTitle();
+		$widgetType = blx()->dashboard->populateWidgetType($this->model);
+		if ($widgetType)
+		{
+			return new WidgetTypeVariable($widgetType);
+		}
 	}
 }

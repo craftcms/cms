@@ -30,10 +30,10 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Populates an asset source type.
 	 *
-	 * @param AssetSourcePackage $block
+	 * @param AssetSourceModel $block
 	 * @return BaseAssetSource|null
 	 */
-	public function populateSourceType(AssetSourcePackage $source)
+	public function populateSourceType(AssetSourceModel $source)
 	{
 		return blx()->components->populateComponentByTypeAndPackage('assetSource', $source);
 	}
@@ -42,7 +42,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Populates an asset source package.
 	 *
 	 * @param array|AssetSourceRecord $attributes
-	 * @return AssetSourcePackage
+	 * @return AssetSourceModel
 	 */
 	public function populateSource($attributes)
 	{
@@ -51,7 +51,7 @@ class AssetSourcesService extends BaseApplicationComponent
 			$attributes = $attributes->getAttributes();
 		}
 
-		$source = new AssetSourcePackage();
+		$source = new AssetSourceModel();
 
 		$source->id = $attributes['id'];
 		$source->name = $attributes['name'];
@@ -96,7 +96,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Gets an asset source by its ID.
 	 *
 	 * @param int $sourceId
-	 * @return AssetSourcePackage
+	 * @return AssetSourceModel
 	 */
 	public function getSourceById($sourceId)
 	{
@@ -110,10 +110,10 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Saves an asset source.
 	 *
-	 * @param AssetSourcePackage $source
+	 * @param AssetSourceModel $source
 	 * @return bool
 	 */
-	public function saveSource(AssetSourcePackage $source)
+	public function saveSource(AssetSourceModel $source)
 	{
 		$sourceRecord = $this->_getSourceRecordById($source->id);
 
@@ -153,8 +153,8 @@ class AssetSourcesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$source->errors = $sourceRecord->getErrors();
-			$source->settingsErrors = $sourceType->getSettings()->getErrors();
+			$source->addErrors($sourceRecord->getErrors());
+			$source->addSettingErrors($sourceType->getSettings()->getErrors());
 
 			return false;
 		}

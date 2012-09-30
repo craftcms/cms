@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Plugin template variable
  */
-class PluginVariable extends ComponentVariable
+class PluginVariable extends BaseComponentVariable
 {
 	/**
 	 * Returns the plugin's version.

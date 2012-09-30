@@ -22,7 +22,7 @@ class DashboardController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$widget = new WidgetPackage();
+		$widget = new WidgetModel();
 		$widget->id = blx()->request->getPost('widgetId');
 		$widget->type = blx()->request->getRequiredPost('type');
 
@@ -45,7 +45,7 @@ class DashboardController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'widget' => $widget
+			'widget' => new WidgetVariable($widget)
 		));
 	}
 

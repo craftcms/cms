@@ -6,6 +6,6 @@ namespace Blocks;
  */
 class EntryBlocksController extends BaseBlocksController
 {
-	protected $blockPackageClass = 'EntryBlockPackage';
+	protected $blockModelClass = 'EntryBlockModel';
 	protected $service = 'entryBlocks';
 }
