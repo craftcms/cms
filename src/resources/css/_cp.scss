@@ -83,12 +83,11 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #titlebar .backbtn:active { background-position: 100% 100%; }
 #titlebar .backbtn:active:before { background-position: 0 100%; }
 
-#titlebar .btn { background-color: #e8e8e8; }
+#titlebar .btn { border-color: #d4d4d4; background-color: #e8e8e8; }
 #titlebar .btn:hover { background-color: #ddd; }
 #titlebar .btn:active { background-color: #d4d4d4; }
 
 #tabs { margin: -25px auto 25px; border-bottom: 1px solid #e5e5e5; text-align: center; }
-#tabs ul { }
 #tabs ul li { display: inline-block; margin: 0 10px; }
 #tabs ul li a { display: block; margin-bottom: -1px; padding: 20px 0; font-size: 13px; color: #808080; }
 #tabs ul li a:before { margin: 0 4px 0 0; font-size: 18px; }
