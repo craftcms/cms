@@ -16,10 +16,11 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 		this.params = params;
 		this.$widget = $('#widget'+widgetId);
 		this.$form = this.$widget.find('form:first');
-		this.$formClone = this.$form.clone(true);
 		this.$spinner = this.$form.find('.spinner');
 
 		this.addListener(this.$form, 'submit', 'onSubmit');
+
+		this.$formClone = this.$form.clone(true);
 	},
 
 	onSubmit: function(event)
