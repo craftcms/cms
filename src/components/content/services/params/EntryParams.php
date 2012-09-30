@@ -13,7 +13,7 @@ class EntryParams extends BaseParams
 	public $language;
 	public $status = 'live';
 	public $archived = false;
-	public $order = 'title asc';
+	public $order = 'dateCreated desc';
 	public $offset;
 	public $limit;
 }

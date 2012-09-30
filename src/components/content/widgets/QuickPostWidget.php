@@ -78,7 +78,7 @@ class QuickPostWidget extends BaseWidget
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$section = $this->_getSection();
+			$section = blx()->sections->getSectionById($this->getSettings()->section);
 			if ($section)
 			{
 				return Blocks::t('Post a new {section} entry', array('section' => $section->name));
@@ -115,20 +115,5 @@ class QuickPostWidget extends BaseWidget
 		blx()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
 
 		return $html;
-	}
-
-	/**
-	 * Gets the section.
-	 *
-	 * @access private
-	 * @return SectionModel|null
-	 */
-	private function _getSection()
-	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$sectionId = $this->getSettings()->section;
-			return blx()->sections->getSectionById($sectionId);
-		}
 	}
 }

@@ -226,18 +226,23 @@ class EntriesService extends BaseApplicationComponent
 		{
 			$whereConditions[] = 'e.archived = 1';
 		}
-		else if ($params->status && $params->status != '*')
+		else
 		{
-			$statusCondition = $this->_getEntryStatusCondition($params->status);
-			if ($statusCondition)
-			{
-				$whereConditions[] = $statusCondition;
-			}
+			$whereConditions[] = 'e.archived = 0';
+
+			if ($params->status && $params->status != '*')
+					{
+						$statusCondition = $this->_getEntryStatusCondition($params->status);
+						if ($statusCondition)
+						{
+							$whereConditions[] = $statusCondition;
+						}
+					}
 		}
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			if ($params->sectionId)
+			if ($params->sectionId && $params->sectionId != '*')
 			{
 				$whereConditions[] = DbHelper::parseParam('e.sectionId', $params->sectionId, $whereParams);
 			}

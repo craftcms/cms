@@ -29,6 +29,7 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 		this.$spinner.show();
 
 		var data = Blocks.getPostData(this.$form);
+		data.enabled = 1;
 
 		$.post(Blocks.actionUrl+'entries/saveEntry', data, $.proxy(function(response) {
 			if (this.$errorList)

@@ -46,7 +46,7 @@ class UserVariable extends BaseModelVariable
 	 *
 	 * @return string|null
 	 */
-	function name()
+	function friendlyName()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users) &&
 			$this->model->profile &&
