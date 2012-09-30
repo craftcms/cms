@@ -332,7 +332,7 @@ class TemplatesService extends BaseApplicationComponent
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = strtolower(array_shift($parts));
 
-			if ($pluginHandle && ($plugin = blx()->plugins->getPlugin($pluginHandle)) !== false)
+			if ($pluginHandle && ($plugin = blx()->plugins->getPlugin($pluginHandle)) !== null)
 			{
 				// Don't attempt to resolve if the plugin is not installed or disabled.
 				if ($plugin->isInstalled() && $plugin->isEnabled())
