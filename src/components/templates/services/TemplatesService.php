@@ -450,7 +450,7 @@ class TemplatesService extends BaseApplicationComponent
 
 		// id= and for= attributes
 		$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-		$template = preg_replace('/((id=|for=|data\-target=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $template);
+		$template = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $template);
 
 		return $template;
 	}

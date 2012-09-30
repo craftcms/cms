@@ -15,4 +15,14 @@ class WidgetTypeVariable extends BaseComponentVariable
 	{
 		return $this->component->getTitle();
 	}
+
+	/**
+	 * Gets the widget's body HTML.
+	 *
+	 * @return string
+	 */
+	public function body()
+	{
+		return $this->component->getBodyHtml();
+	}
 }
