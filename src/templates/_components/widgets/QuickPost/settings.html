@@ -1,0 +1,63 @@
+{% import "_includes/forms" as forms %}
+
+
+{% macro blockList(blocks, selected, namePrefix) %}
+	{% from "_includes/forms" import checkbox %}
+
+	{% for block in blocks %}
+		{% set label -%}
+			{{ block.name|t }}
+			{%- if block.required %} <span class="required"></span>{% endif %}
+		{%- endset %}
+		<div>
+			{{ checkbox({
+				label: label,
+				name: namePrefix ~ '[]',
+				value: block.id,
+				checked: (block.required or block.id in selected),
+				disabled: block.required
+			}) }}
+		</div>
+	{% endfor %}
+{% endmacro %}
+
+
+{% if blx.hasPackage('publishpro') %}
+
+	{% set sections = blx.sections.sections %}
+
+	{{ forms.selectField({
+		label: "Section"|t,
+		instructions: "Which section do you want to publish entries to?"|t,
+		id: 'section',
+		name: 'section',
+		options: sections,
+		value: settings.section,
+		toggle: true,
+		targetPrefix: 'section'
+	}) }}
+
+	{% set blocksInput %}
+		{% for section in sections %}
+			{% set show = ((not settings.section and loop.first) or settings.section == section.id) %}
+			<div id="section{{ section.id }}"{% if not show %} style="display: none"{% endif %}>
+				{% set blocks = blx.entryBlocks.entryBlocksBySectionId(section.id) %}
+				{{ _self.blockList(blocks, settings.blocks, 'blocks[section'~section.id~']') }}
+			</div>
+		{% endfor %}
+	{% endset %}
+
+{% else %}
+
+	{% set blocksInput %}
+		{% set blocks = blx.entryBlocks.entryBlocks %}
+		{{ _self.blockList(blocks, settings.blocks) }}
+	{% endset %}
+
+{% endif %}
+
+
+{{ forms.field({
+	label: "Entry Blocks"|t,
+	instructions: "Which entry blocks should be visible in the widget?"|t
+}, blocksInput) }}

@@ -39,7 +39,13 @@ Blocks.log = function(msg)
 		console.log(msg);
 };
 
-var asciiCharMap = {'223':'ss','224':'a','225':'a','226':'a','229':'a','227':'ae','230':'ae','228':'ae','231':'c','232':'e','233':'e','234':'e','235':'e','236':'i','237':'i','238':'i','239':'i','241':'n','242':'o','243':'o','244':'o','245':'o','246':'oe','249':'u','250':'u','251':'u','252':'ue','255':'y','257':'aa','269':'ch','275':'ee','291':'gj','299':'ii','311':'kj','316':'lj','326':'nj','353':'sh','363':'uu','382':'zh','256':'aa','268':'ch','274':'ee','290':'gj','298':'ii','310':'kj','315':'lj','325':'nj','352':'sh','362':'uu','381':'zh'};
+var asciiCharMap = {
+	'223':'ss', '224':'a',  '225':'a',  '226':'a',  '229':'a',  '227':'ae', '230':'ae', '228':'ae', '231':'c',  '232':'e',
+	'233':'e',  '234':'e',  '235':'e',  '236':'i',  '237':'i',  '238':'i',  '239':'i',  '241':'n',  '242':'o',  '243':'o',
+	'244':'o',  '245':'o',  '246':'oe', '249':'u',  '250':'u',  '251':'u',  '252':'ue', '255':'y',  '257':'aa', '269':'ch',
+	'275':'ee', '291':'gj', '299':'ii', '311':'kj', '316':'lj', '326':'nj', '353':'sh', '363':'uu', '382':'zh', '256':'aa',
+	'268':'ch', '274':'ee', '290':'gj', '298':'ii', '310':'kj', '315':'lj', '325':'nj', '352':'sh', '362':'uu', '381':'zh'
+};
 
 
 /**
@@ -116,12 +122,18 @@ Blocks.filterArray = function(arr, callback)
 	for (var i = 0; i < arr.length; i++)
 	{
 		if (typeof callback == 'function')
+		{
 			var include = callback(arr[i], i);
+		}
 		else
+		{
 			var include = arr[i];
+		}
 
 		if (include)
+		{
 			filtered.push(arr[i]);
+		}
 	}
 
 	return filtered;
@@ -204,13 +216,18 @@ Blocks.asciiString = function(str)
 {
 	var asciiStr = '';
 
-	for (var c = 0; c < str.length; c++) {
-		var charCode = str.charCodeAt(c);
+	for (var c = 0; c < str.length; c++)
+	{
+		var ascii = str.asciiAt(c);
 
-		if (charCode >= 32 && charCode < 128)
+		if (ascii >= 32 && ascii < 128)
+		{
 			asciiStr += str.charAt(c);
-		else if (typeof asciiCharMap[charCode] != 'undefined')
-			asciiStr += asciiCharMap[charCode];
+		}
+		else if (typeof asciiCharMap[ascii] != 'undefined')
+		{
+			asciiStr += asciiCharMap[ascii];
+		}
 	}
 
 	return asciiStr;
@@ -515,6 +532,62 @@ Blocks.findInputs = function(container)
 };
 
 /**
+ * Returns the post data within a container.
+ *
+ * @param mixed container
+ * @return array
+ */
+Blocks.getPostData = function(container)
+{
+	var postData = {},
+		arrayInputCounters = {},
+		$inputs = Blocks.findInputs(container);
+
+	for (var i = 0; i < $inputs.length; i++)
+	{
+		var $input = $($inputs[i]);
+
+		var inputName = $input.attr('name');
+		if (!inputName) continue;
+
+		var inputVal = Blocks.getInputPostVal($input);
+		if (inputVal === null) continue;
+
+		var isArrayInput = (inputName.substr(-2) == '[]');
+
+		if (isArrayInput)
+		{
+			// Get the cropped input name
+			var croppedName = inputName.substr(0, -2);
+
+			// Prep the input counter
+			if (typeof arrayInputCounters[croppedName] == 'undefined')
+			{
+				arrayInputCounters[croppedName] = 0;
+			}
+		}
+
+		if (!Blocks.isArray(inputVal))
+		{
+			inputVal = [inputVal];
+		}
+
+		for (var j = 0; j < inputVal.length; j++)
+		{
+			if (isArrayInput)
+			{
+				var inputName = croppedName+'['+arrayInputCounters[croppedName]+']';
+				arrayInputCounters[croppedName]++;
+			}
+
+			postData[inputName] = inputVal[j];
+		}
+	}
+
+	return postData;
+}
+
+/**
  * Returns an inputs's name, "namespaced" into a basename.
  * So if name="gin" and you pass the namespace "drinks", this will return "drinks[gin]".
  * More useful in the event that the name already has its own brackets, e.g. "gin[tonic]" => "drinks[gin][tonic]".
@@ -561,8 +634,9 @@ Blocks.getInputPostVal = function($input)
 			return null;
 	}
 
-	// How bout a multi-select missing its "[]" at the end of its name?
-	else if ($input.prop('nodeName') == 'SELECT' && $input.attr('multiple') && $input.attr('name').substr(-2) != '[]')
+	// Flatten any array values whose input name doesn't end in "[]"
+	//  - e.g. a multi-select
+	else if (Blocks.isArray(val) && $input.attr('name').substr(-2) != '[]')
 	{
 		if (val.length)
 			return val[val.length-1];

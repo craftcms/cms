@@ -6,5 +6,20 @@
 
 /* dashboard */
 #widgets { position: relative; }
+.widget { display: none; margin: 0 -20px; padding: 0 20px; }
+/*.spinner { display: inline-block; vertical-align: bottom; width: 20px; height: 31px;  } */
+.widget.loading h2 { padding-right: 24px; background: url(../images/spinner.gif) no-repeat 100% 0; }
 
-#dashboard-sidebar { visibility: hidden; }
+.col:not(:first-child) .col-inner { margin-left: 0; padding-left: 25px; border-left: 1px solid #e5e5e5; }
+.col:not(:last-child) .col-inner { padding-right: 25px; border-right: 1px solid #e5e5e5; margin-right: -1px; }
+.col .widget { display: block; }
+
+.widget:not(:first-child) { margin-top: 25px; border-top: 1px solid #e5e5e5; padding-top: 25px; }
+
+.widget table.data:first-child tbody tr:first-child th,
+.widget table.data:first-child tbody tr:first-child td { padding-top: 0; border-top: none; }
+
+.widget table.data:last-child tbody tr:last-child th,
+.widget table.data:last-child tbody tr:last-child td { padding-bottom: 0; border-bottom: none; }
+
+.widget form + .errors { margin-top: 15px; }

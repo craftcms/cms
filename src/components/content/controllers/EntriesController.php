@@ -40,19 +40,39 @@ class EntriesController extends BaseController
 
 		if ($entry->save())
 		{
-			blx()->user->setNotice(Blocks::t('Entry saved.'));
+			if (blx()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'success' => true,
+					'entryId' => $entry->id
+				));
+			}
+			else
+			{
+				blx()->user->setNotice(Blocks::t('Entry saved.'));
 
-			$this->redirectToPostedUrl(array(
-				'entryId' => $entry->id
-			));
+				$this->redirectToPostedUrl(array(
+					'entryId' => $entry->id
+				));
+			}
 		}
 		else
 		{
-			blx()->user->setError(Blocks::t('Couldn’t save entry.'));
-		}
+			if (blx()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'errors' => $entry->getErrors(),
+					'blockErrors' => $entry->getBlockErrors()
+				));
+			}
+			else
+			{
+				blx()->user->setError(Blocks::t('Couldn’t save entry.'));
 
-		$this->renderRequestedTemplate(array(
-			'entry' => new EntryVariable($entry)
-		));
+				$this->renderRequestedTemplate(array(
+					'entry' => new EntryVariable($entry)
+				));
+			}
+		}
 	}
 }

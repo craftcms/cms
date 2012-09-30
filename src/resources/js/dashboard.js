@@ -10,19 +10,27 @@ Blocks.Dashboard = Blocks.Base.extend({
 	colWidth: null,
 	loadingWidget: -1,
 
-	init: function(widgetIds)
+	init: function()
 	{
 		this.$alerts = $('#alerts');
 		this.$container = $('#widgets');
 		this.widgets = [];
+		var $widgets = this.$container.children();
 
 		// Set the columns
 		this.setCols();
 
 		// Load the widgets
-		for (var i = 0; i < widgetIds.length; i++)
+		/*for (var i = 0; i < widgetIds.length; i++)
 		{
 			this.loadWidget(widgetIds[i]);
+		}*/
+
+		for (var i = 0; i < $widgets.length; i++)
+		{
+			var $widget = $($widgets[i]);
+			this.placeWidget($widget);
+			this.widgets.push($widget);
 		}
 
 		// setup events
@@ -30,10 +38,12 @@ Blocks.Dashboard = Blocks.Base.extend({
 
 		// do the version check
 		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
+		{
 			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
+		}
 	},
 
-	loadWidget: function(widgetId)
+	/*loadWidget: function(widgetId)
 	{
 		$.get(Blocks.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
 			var $widget = $(response).css('opacity', 0);
@@ -41,7 +51,7 @@ Blocks.Dashboard = Blocks.Base.extend({
 			$widget.animate({opacity: 1}, 'fast');
 			this.widgets.push($widget);
 		}, this));
-	},
+	},*/
 
 	setCols: function()
 	{
@@ -236,5 +246,9 @@ var Col = Blocks.Base.extend({
 	}
 
 });
+
+
+Blocks.dashboard = new Blocks.Dashboard();
+
 
 })(jQuery);

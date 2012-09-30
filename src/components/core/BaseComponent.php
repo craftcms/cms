@@ -8,11 +8,9 @@ namespace Blocks;
 abstract class BaseComponent extends BaseApplicationComponent
 {
 	/**
-	 * The AR record associated with this instance.
-	 *
-	 * @var Model
+	 * The model instance associated with this component.
 	 */
-	public $record;
+	public $model;
 
 	/**
 	 * The type of component, e.g. "Plugin", "Widget", or "Block"
@@ -44,10 +42,6 @@ abstract class BaseComponent extends BaseApplicationComponent
 		if (!isset($this->_settings))
 		{
 			$this->_settings = $this->getSettingsModel();
-
-			// If a record is set, fill in the saved settings
-			if (isset($this->record))
-				$this->_settings->setAttributes($this->record->settings);
 		}
 
 		return $this->_settings;
@@ -126,7 +120,9 @@ abstract class BaseComponent extends BaseApplicationComponent
 			// Chop off the class suffix
 			$suffixLength = strlen($this->componentType);
 			if (substr($classHandle, -$suffixLength) == $this->componentType)
+			{
 				$classHandle = substr($classHandle, 0, -$suffixLength);
+			}
 
 			$this->_classHandle = $classHandle;
 		}

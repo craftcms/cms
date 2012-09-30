@@ -21,16 +21,15 @@
 		{% endfor %}
 	</div>#}
 
-	<div id="widgets" class="grid"></div>
+	<div id="widgets" class="grid">
+		{% for widget in blx.dashboard.userWidgets %}
+			{% set widgetType = widget.widgetType %}
+			<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle }}" data-id="{{ widget.id }}">
+				<h2>{{ widgetType.title }}</h2>
+				<div class="body">
+					{{ widgetType.body|raw }}
+				</div>
+			</div>
+		{% endfor %}
+	</div>
 {% endset %}
-
-
-{% set js %}
-	{#if !blx.updates.cached}
-		window.getAlerts = true;
-		window.getAlertsUrl = "{{ actionUrl('dashboard/getalerts') }}";
-	{/if#}
-
-	Blocks.dashboard = new Blocks.Dashboard([{{ blx.dashboard.userWidgetIds|join(',') }}]);
-{% endset %}
-{% includeJs js %}

@@ -16,17 +16,21 @@ Blocks.ui.SlugGenerator = Blocks.ui.InputGenerator.extend({
 		// Convert extended ASCII characters to basic ASCII
 		sourceVal = Blocks.asciiString(sourceVal);
 
-		// Handle must start with a letter and end with a letter/number
-		sourceVal = sourceVal.replace(/^[^a-z]+/, '');
+		// Slug must start and end with alphanumeric characters
+		sourceVal = sourceVal.replace(/^[^a-z0-9]+/, '');
 		sourceVal = sourceVal.replace(/[^a-z0-9]+$/, '');
 
 		// Get the "words"
 		var words = Blocks.filterArray(sourceVal.split(/[^a-z0-9]+/));
 
 		if (words.length)
+		{
 			return words.join('-');
-
-		return '';
+		}
+		else
+		{
+			return '';
+		}
 	}
 });
 

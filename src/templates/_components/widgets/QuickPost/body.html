@@ -1,0 +1,48 @@
+{% import "_includes/forms" as forms %}
+
+
+{% if blx.hasPackage('publishpro') %}
+	{% set blocks = blx.entryBlocks.entryBlocksBySectionId(settings.section) %}
+{% else %}
+	{% set blocks = blx.entryBlocks.entryBlocks %}
+{% endif %}
+
+
+<form method="post" action="">
+	{% if blx.hasPackage('publishpro') %}
+		<input type="hidden" name="sectionId" value="{{ settings.section }}">
+	{% endif %}
+
+	{{ forms.textField({
+		label: "Title"|t,
+		id: 'title',
+		name: 'title',
+		value: entry.title,
+		errors: entry.errors.title,
+		required: true
+	}) }}
+
+	{% for block in blocks %}
+		{% if block.required or block.id in settings.blocks %}
+			{% set blockType = block.blockType %}
+			{% set name = 'block'~block.id %}
+			{% set value = entry.blocks[name] %}
+			{% set errors = entry.blockErrors[block.handle] %}
+			{% set input = blockType.input(name, value) %}
+
+			{{ forms.field({
+				label: block.name,
+				required: block.required,
+				translatable: block.translatable,
+				instructions: block.instructions,
+				id: block.handle,
+				errors: errors
+			}, input)|ns('blocks')|raw }}
+		{% endif %}
+	{% endfor %}
+
+	<div class="buttons">
+		<input type="submit" class="btn submit" value="{{ 'Post'|t }}">
+		<div class="spinner" style="display: none;"></div>
+	</div>
+</form>

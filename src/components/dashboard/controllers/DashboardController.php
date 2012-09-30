@@ -76,28 +76,16 @@ class DashboardController extends BaseController
 	}
 
 	/**
-	 * Returns
-	 * @throws Exception
+	 * Returns the items for the Feed widget.
 	 */
-	public function actionGetWidgetHtml()
+	public function actionGetFeedItems()
 	{
-		$widgetId = blx()->request->getRequiredParam('widgetId');
-		$widget = blx()->dashboard->getUserWidgetById($widgetId);
+		$this->requireAjaxRequest();
 
-		if (!$widget)
-			throw new Exception(Blocks::t('No widget exists with the ID “{id}”.', array('id' => $widgetId)));
+		$url = blx()->request->getRequiredParam('url');
+		$limit = blx()->request->getParam('limit');
 
-		$widgetType = blx()->dashboard->getWidgetType($widget->type);
-
-		if (!$widgetType)
-			throw new Exception(Blocks::t('No widget exists with the class “{class}”.', array('class' => $widget->type)));
-
-		$widgetType->setSettings($widget->settings);
-
-		$this->renderTemplate('dashboard/_widget', array(
-			'class' => $widgetType->getClassHandle(),
-			'title' => $widgetType->getTitle(),
-			'body'  => $widgetType->getBodyHtml()
-		));
+		$items = blx()->dashboard->getFeedItems($url, $limit);
+		$this->returnJson(array('items' => $items));
 	}
 }

@@ -62,39 +62,17 @@ class FeedWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
+		$id = $this->model->id;
+		$url = JsonHelper::encode($this->getSettings()->url);
+		$limit = $this->getSettings()->limit;
+
+		$js = "new Blocks.FeedWidget({$id}, {$url}, {$limit});";
+
+		blx()->templates->includeJsResource('js/FeedWidget.js');
+		blx()->templates->includeJs($js);
+
 		return blx()->templates->render('_components/widgets/Feed/body', array(
-			'items' => $this->_getItems()
+			'limit' => $limit
 		));
 	}
-
-	/**
-	 * Gets the feed items.
-	 *
-	 * @access private
-	 * @return array
-	 */
-	private function _getItems()
-	{
-		$items = array();
-
-		$url = $this->settings['url'];
-		$cachePath = blx()->path->getCachePath();
-		$feed = new \SimplePie($url, $cachePath);
-		$feed->init();
-		$feed->handle_content_type();
-
-		$limit = $this->settings->limit;
-
-		foreach ($feed->get_items(0, $limit) as $item)
-		{
-			$items[] = array(
-				'url'   => $item->get_permalink(),
-				'title' => $item->get_title(),
-				'date'  => new DateTime('@'.$item->get_date('U'))
-			);
-		}
-
-		return $items;
-	}
-
 }
