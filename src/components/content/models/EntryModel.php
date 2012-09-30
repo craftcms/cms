@@ -13,14 +13,22 @@ class EntryModel extends BaseModel
 	public function defineAttributes()
 	{
 		$attributes['id'] = AttributeType::Number;
-		$attributes['authorId'] = AttributeType::Number;
-		$attributes['sectionId'] = AttributeType::Number;
 		$attributes['title'] = AttributeType::String;
 		$attributes['slug'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['blocks'] = AttributeType::Mixed;
 		$attributes['enabled'] = AttributeType::Bool;
+
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			$attributes['authorId'] = AttributeType::Number;
+		}
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$attributes['sectionId'] = AttributeType::Number;
+		}
 
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
