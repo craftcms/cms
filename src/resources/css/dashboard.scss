@@ -21,3 +21,5 @@
 
 .widget table.data:last-child tbody tr:last-child th,
 .widget table.data:last-child tbody tr:last-child td { padding-bottom: 0; border-bottom: none; }
+
+.widget form + .errors { margin-top: 15px; }
