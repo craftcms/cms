@@ -24,7 +24,7 @@
 	<div id="widgets" class="grid">
 		{% for widget in blx.dashboard.userWidgets %}
 			{% set widgetType = widget.widgetType %}
-			<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle }}" data-id="{{ widget.id }}">
+			<div id="widget{{ widget.id }}" class="widget {{ widgetType.classHandle|lower }}" data-id="{{ widget.id }}">
 				<h2>{{ widgetType.title }}</h2>
 				<div class="body">
 					{{ widgetType.body|raw }}

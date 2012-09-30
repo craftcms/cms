@@ -101,14 +101,18 @@ class QuickPostWidget extends BaseWidget
 			'settings' => $this->getSettings()
 		));
 
-		$id = $this->model->id;
+		$params = array();
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$params['sectionId'] = $this->getSettings()->section;
+			$sectionId = $this->getSettings()->section;
+			if (is_numeric($sectionId))
+			{
+				$params['sectionId'] = (int)$sectionId;
+			}
 		}
 
-		$js = "new Blocks.QuickPostWidget({$id}, {$params});";
+		$js = 'new Blocks.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
 
 		blx()->templates->includeJsResource('js/QuickPostWidget.js');
 		blx()->templates->includeJs($js);

@@ -3,6 +3,7 @@
 
 Blocks.QuickPostWidget = Blocks.Base.extend({
 
+	params: null,
 	$widget: null,
 	$form: null,
 	$formClone: null,
@@ -12,6 +13,7 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 
 	init: function(widgetId, params)
 	{
+		this.params = params;
 		this.$widget = $('#widget'+widgetId);
 		this.$form = this.$widget.find('form:first');
 		this.$formClone = this.$form.clone(true);
@@ -28,8 +30,8 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 		this.loading = true;
 		this.$spinner.show();
 
-		var data = Blocks.getPostData(this.$form);
-		data.enabled = 1;
+		var formData = Blocks.getPostData(this.$form),
+			data = $.extend({ enabled: 1 }, formData, this.params);
 
 		$.post(Blocks.actionUrl+'entries/saveEntry', data, $.proxy(function(response) {
 			if (this.$errorList)
@@ -43,6 +45,24 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 				var $newForm = this.$formClone.clone(true);
 				this.$form.replaceWith($newForm);
 				this.$form = $newForm;
+
+				// Are there any Recent Entries widgets to notify?
+				if (typeof Blocks.RecentEntriesWidget != 'undefined')
+				{
+					for (var i = 0; i < Blocks.RecentEntriesWidget.instances.length; i++)
+					{
+						var widget = Blocks.RecentEntriesWidget.instances[i];
+						if (!widget.params.sectionId || widget.params.sectionId == this.params.sectionId)
+						{
+							widget.addEntry({
+								url:      response.cpEditUrl,
+								title:    response.entry.title,
+								postDate: response.entry.postDate.date.substr(0, 10),
+								username: response.author.username
+							});
+						}
+					}
+				}
 			}
 			else
 			{

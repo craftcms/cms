@@ -78,6 +78,23 @@ class RecentEntriesWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
+		$params = array();
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$sectionId = $this->getSettings()->section;
+			if (is_numeric($sectionId))
+			{
+				$params['sectionId'] = (int)$sectionId;
+			}
+		}
+
+		$js = 'new Blocks.RecentEntriesWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
+
+		blx()->templates->includeJsResource('js/RecentEntriesWidget.js');
+		blx()->templates->includeJs($js);
+		blx()->templates->includeTranslations('by {author}');
+
 		return blx()->templates->render('_components/widgets/RecentEntries/body', array(
 			'settings' => $this->getSettings()
 		));

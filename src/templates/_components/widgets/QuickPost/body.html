@@ -9,10 +9,6 @@
 
 
 <form method="post" action="">
-	{% if blx.hasPackage('publishpro') %}
-		<input type="hidden" name="sectionId" value="{{ settings.section }}">
-	{% endif %}
-
 	{{ forms.textField({
 		label: "Title"|t,
 		id: 'title',

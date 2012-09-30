@@ -42,10 +42,16 @@ class EntriesController extends BaseController
 		{
 			if (blx()->request->isAjaxRequest())
 			{
-				$this->returnJson(array(
-					'success' => true,
-					'entryId' => $entry->id
-				));
+				$return['success']   = true;
+				$return['entry']     = $entry->getAttributes();
+				$return['cpEditUrl'] = $entry->getCpEditUrl();
+
+				if (Blocks::hasPackage(BlocksPackage::Users))
+				{
+					$return['author'] = $entry->getAuthor()->getAttributes();
+				}
+
+				$this->returnJson($return);
 			}
 			else
 			{
