@@ -70,7 +70,7 @@ class EntryVariable extends BaseModelVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$section = blx()->sections->getSectionById($this->model->sectionId);
+			$section = $this->model->getSection();
 			if ($section)
 			{
 				return new SectionVariable($section);
@@ -87,7 +87,7 @@ class EntryVariable extends BaseModelVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$user = blx()->users->getUserById($this->model->authorId);
+			$user = $this->model->getAuthor();
 			if ($user)
 			{
 				return new UserVariable($user);

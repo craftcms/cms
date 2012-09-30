@@ -101,4 +101,56 @@ class EntryModel extends BaseModel
 			}
 		}
 	}
+
+	/**
+	 * Returns the entry's section.
+	 *
+	 * @return SectionModel|null
+	 */
+	public function getSection()
+	{
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			return blx()->sections->getSectionById($this->sectionId);
+		}
+	}
+
+	/**
+	 * Returns the entry's author.
+	 *
+	 * @return UserRecord|null
+	 */
+	public function getAuthor()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			return blx()->users->getUserById($this->authorId);
+		}
+	}
+
+	/**
+	 * Returns the entry's CP edit URL
+	 *
+	 * @return string
+	 */
+	public function getCpEditUrl()
+	{
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$section = $this->getSection();
+			if ($section)
+			{
+				$path = 'content/'.$section->handle.'/'.$this->id;
+			}
+		}
+		else
+		{
+			$path = 'content/blog/'.$this->id;
+		}
+
+		if (!empty($path))
+		{
+			return UrlHelper::getUrl($path);
+		}
+	}
 }
