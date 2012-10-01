@@ -185,8 +185,11 @@ class Blocks extends \Yii
 		if ($blocksInfo)
 		{
 			$blocksInfo->on = true;
+
 			if ($blocksInfo->save())
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -206,8 +209,11 @@ class Blocks extends \Yii
 		if ($blocksInfo)
 		{
 			$blocksInfo->on = false;
+
 			if ($blocksInfo->save())
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -224,9 +230,13 @@ class Blocks extends \Yii
 		if (!isset(static::$_storedBlocksInfo))
 		{
 			if (blx()->isInstalled())
+			{
 				static::$_storedBlocksInfo = InfoRecord::model()->find();
+			}
 			else
+			{
 				static::$_storedBlocksInfo = false;
+			}
 		}
 
 		return static::$_storedBlocksInfo;
@@ -263,6 +273,7 @@ class Blocks extends \Yii
 	public static function import($alias, $forceInclude = false)
 	{
 		$segs = explode('.', $alias);
+
 		if (isset($segs[0]))
 		{
 			switch ($segs[0])
@@ -291,10 +302,12 @@ class Blocks extends \Yii
 		$path = $rootPath.implode('/', array_slice($segs, 1));
 
 		$folder = (substr($path, -2) == '/*');
+
 		if ($folder)
 		{
 			$path = substr($path, 0, -1);
 			$files = glob($path."*.php");
+
 			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
@@ -309,7 +322,9 @@ class Blocks extends \Yii
 			static::_importFile($file);
 
 			if ($forceInclude)
+			{
 				require_once $file;
+			}
 		}
 	}
 
@@ -324,9 +339,13 @@ class Blocks extends \Yii
 		$encodedData = JsonHelper::encode($data);
 
 		if (($currentUser = blx()->account->getCurrentUser()) !== null)
+		{
 			$userId = $currentUser->id;
+		}
 		else
+		{
 			$userId = null;
+		}
 
 		$logger = static::getLogger();
 		$logger->log($userId.'///'.$msgKey.'///'.$encodedData, 'activity', $category);
@@ -345,6 +364,7 @@ class Blocks extends \Yii
 	{
 		// Normalize the param keys
 		$normalizedParams = array();
+
 		if (is_array($params))
 		{
 			foreach ($params as $key => $value)
@@ -356,7 +376,9 @@ class Blocks extends \Yii
 
 		$translation = parent::t($category, $message, $normalizedParams, $source, $language);
 		if (blx()->config->translationDebugOutput)
+		{
 			$translation = '@'.$translation.'@';
+		}
 
 		return $translation;
 	}
