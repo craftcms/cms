@@ -6,11 +6,71 @@ namespace Blocks;
  */
 class AccountController extends BaseController
 {
-	protected $allowAnonymous = array('actionForgotPassword', 'actionResetPassword');
+	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionResetPassword');
 
-	// -------------------------------------------
-	//  Password Reset
-	// -------------------------------------------
+	/**
+	 * Displays the login template. If valid login information, redirects to previous template.
+	 */
+	public function actionLogin()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$loginName = blx()->request->getPost('loginName');
+		$password = blx()->request->getPost('password');
+		$rememberMe = (bool)blx()->request->getPost('rememberMe');
+
+		if (blx()->user->login($loginName, $password, $rememberMe))
+		{
+			$this->returnJson(array(
+				'success' => true,
+				'redirectUrl' => blx()->user->getReturnUrl()
+			));
+		}
+		else
+		{
+			switch (blx()->user->getLoginErrorCode())
+			{
+				case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
+				{
+					$this->returnJson(array(
+						'notice' => Blocks::t('You need to reset your password. Check your email for instructions.')
+					));
+					break;
+				}
+				case UserIdentity::ERROR_ACCOUNT_LOCKED:
+				{
+					$this->returnErrorJson(Blocks::t('Account locked.'));
+					break;
+				}
+				case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
+				{
+					$user = blx()->account->getUserByUsernameOrEmail($loginName);
+					$timeRemaining = DateTimeHelper::secondsToHumanTimeDuration($user->getRemainingCooldownTime(), false);
+					$this->returnErrorJson(Blocks::t('Account locked. Try again in {time}.', array('time' => $timeRemaining)));
+					break;
+				}
+				case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
+				{
+					$this->returnErrorJson(Blocks::t('Account suspended.'));
+					break;
+				}
+				default:
+				{
+					$this->returnErrorJson(Blocks::t('Invalid username or password.').'<br><a>'.Blocks::t('Forget your password?').'</a>');
+				}
+			}
+		}
+	}
+
+	/**
+	 *
+	 */
+	public function actionLogout()
+	{
+		blx()->user->logout();
+		$this->redirect('');
+	}
 
 	/**
 	 * Sends a Forgot Password email.
@@ -20,31 +80,24 @@ class AccountController extends BaseController
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
-		$username = new UsernameModel();
-		$username->username = blx()->request->getPost('username');
+		$loginName = blx()->request->getRequiredPost('loginName');
 
-		if ($username->validate())
+		$user = blx()->account->getUserByUsernameOrEmail($loginName);
+		if ($user)
 		{
-			$user = blx()->account->getUserByUsernameOrEmail($username->username);
-
-			if ($user)
+			if (blx()->account->sendForgotPasswordEmail($user))
 			{
-				// Generate a new verification code
-				blx()->account->generateVerificationCode($user);
-
-				// Send the Forgot Password email
-				$link = UrlHelper::getUrl(blx()->account->getVerifyAccountUrl(), array('code' => $user->verificationCode));
-
-				if (blx()->email->sendEmailByKey($user, 'forgot_password', array('link' => $link)))
-				{
-					$this->returnJson(array('success' => true));
-				}
-
+				$this->returnJson(array('success' => true));
+			}
+			else
+			{
 				$this->returnErrorJson(Blocks::t('There was a problem sending the forgot password email.'));
 			}
 		}
-
-		$this->returnErrorJson(Blocks::t('Invalid Username or Email.'));
+		else
+		{
+			$this->returnErrorJson(Blocks::t('Invalid username or email.'));
+		}
 	}
 
 	/**
@@ -55,46 +108,31 @@ class AccountController extends BaseController
 		$this->requirePostRequest();
 
 		$verificationCode = blx()->request->getRequiredPost('verificationCode');
-		$password = blx()->request->getRequiredPost('password');
 
-		$passwordModel = new PasswordModel();
-		$passwordModel->password = $password;
-
-		if ($passwordModel->validate())
+		$user = blx()->account->getUserByVerificationCode($verificationCode);
+		if (!$user)
 		{
-			$user = blx()->account->getUserByVerificationCode($verificationCode);
-
-			if ($user)
-			{
-				blx()->account->changePassword($user, $password, false);
-
-				$user->verificationCode = null;
-				$user->verificationCodeIssuedDate = null;
-				$user->verificationCodeExpiryDate = null;
-				$user->status = UserAccountStatus::Active;
-				$user->lastPasswordChangeDate = DateTimeHelper::currentTime();
-				$user->passwordResetRequired = false;
-				$user->failedPasswordAttemptCount = null;
-				$user->failedPasswordAttemptWindowStart = null;
-				$user->cooldownStart = null;
-				$user->save();
-
-				if (!blx()->user->isLoggedIn())
-				{
-					blx()->user->startLogin($user->username, $passwordModel->password);
-				}
-
-				blx()->user->setNotice(Blocks::t('Password updated.'));
-				$this->redirect('dashboard');
-			}
-			else
-			{
-				throw new Exception(Blocks::t('There was a problem validating this verification code.'));
-			}
+			throw new Excption('Invalid verification code.');
 		}
 
-		// display the verify account form
-		$this->renderTemplate('verify', array('verifyAccountInfo' => $passwordModel));
+		$user->newPassword = blx()->request->getRequiredPost('password');
+
+		if (blx()->account->changePassword($user))
+		{
+			if (!blx()->user->isLoggedIn())
+			{
+				blx()->user->login($user->username, $password);
+			}
+
+			blx()->user->setNotice(Blocks::t('Password updated.'));
+			$this->redirect('dashboard');
+		}
+		else
+		{
+			$this->renderRequestedTemplate(array(
+				'error' => true
+			));
+		}
 	}
 
 	/**
@@ -104,31 +142,17 @@ class AccountController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$user = new UserModel();
+
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$userId = blx()->request->getPost('userId');
-			if ($userId !== null)
-			{
-				$user = blx()->users->getUserById($userId);
-
-				if (!$user)
-				{
-					throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
-				}
-			}
-			else
-			{
-				$user = new UserRecord();
-			}
+			$user->id = blx()->request->getPost('userId');
 		}
 		else
 		{
-			$user = blx()->account->getCurrentUser();
+			$user->id = blx()->account->getCurrentUser()->id;
 		}
 
-		$isNewUser = $user->isNewRecord();
-
-		// Set all the standard stuff
 		$user->username = blx()->request->getPost('username');
 		$user->email = blx()->request->getPost('email');
 		$user->emailFormat = blx()->request->getPost('emailFormat');
@@ -137,82 +161,32 @@ class AccountController extends BaseController
 		{
 			$user->language = blx()->request->getPost('language');
 		}
-		else
+
+		// Only admins can change other users' passwords
+		if ($user->isCurrent() || blx()->account->isAdmin())
 		{
-			$user->language = blx()->language;
+			$user->newPassword = blx()->request->getPost('password');
 		}
 
-		// New password?
-		//  - Only admins can change other members' passwords, and even then, they're encouraged to require a password reset.
-		if ($user->isCurrent() || blx()->account->getCurrentUser()->admin)
+		// Only adins can require verification/password resets
+		if (blx()->account->isAdmin())
 		{
-			$password = blx()->request->getPost('password');
-
-			if ($password)
-			{
-				// Make sure the passwords match and are at least the minimum length
-				$passwordModel = new PasswordModel();
-				$passwordModel->password = $password;
-
-				$passwordValidates = $passwordModel->validate();
-
-				if ($passwordValidates)
-				{
-					// Store the new hashed password on the User record, but don't save it yet
-					blx()->account->changePassword($user, $password, false);
-				}
-			}
+			$user->verificationRequired = (bool)blx()->request->getPost('verificationRequired');
+			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
 		}
 
-		// Require a password reset?
-		//  - Only admins are allowed to set this
-		if (blx()->account->getCurrentUser()->admin)
+		if ($user->save())
 		{
-			$user->passwordResetRequired = (bool)blx()->request->getPost('requirePasswordReset');
-		}
-
-		// Run user validation
-		$userValidates = $user->validate();
-
-		if ($userValidates && (!isset($passwordValidates) || $passwordValidates))
-		{
-			// Send a verification email?
-			//  - Only an option when registering a new user
-			//  - Only admins have a choice in the matter. Verification emails _must_ be sent when a non-admin registers a user.
-			if ($isNewUser && (!blx()->account->getCurrentUser()->admin || blx()->request->getPost('requireVerification')))
-			{
-				$user->status = UserAccountStatus::Pending;
-				blx()->account->generateVerificationCode($user, false);
-				blx()->email->sendEmailByKey($user, 'verify_email');
-			}
-
-			$user->save();
-
-			if ($isNewUser)
-			{
-				blx()->user->setNotice(Blocks::t('User registered.'));
-			}
-			else
-			{
-				blx()->user->setNotice(Blocks::t('Account settings saved.'));
-			}
-
-			$this->redirectToPostedUrl();
+			blx()->user->setNotice(Blocks::t('User saved.'));
+			$this->redirectToPostedUrl(array(
+				'userId' => $user->id
+			));
 		}
 		else
 		{
-			if ($isNewUser)
-			{
-				blx()->user->setError(Blocks::t('Couldn’t register user.'));
-			}
-			else
-			{
-				blx()->user->setError(Blocks::t('Couldn’t save account settings.'));
-			}
-
+			blx()->user->setError(Blocks::t('Couldn’t save user.'));
 			$this->renderRequestedTemplate(array(
-				'user' => $user,
-				'passwordForm' => (isset($passwordModel) ? $passwordModel : null)
+				'user' => $user
 			));
 		}
 	}

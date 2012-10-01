@@ -11,7 +11,7 @@ class UserVariable extends BaseModelVariable
 	 *
 	 * @return string
 	 */
-	function __toString()
+	public function __toString()
 	{
 		$fullName = $this->fullName();
 		if ($fullName)
@@ -29,11 +29,11 @@ class UserVariable extends BaseModelVariable
 	 *
 	 * @return UserProfileVariable|null
 	 */
-	function profile()
+	public function profile()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$profile = $this->model->profile;
+			$profile = $this->model->getProfile();
 			if ($profile)
 			{
 				return new UserProfileVariable($profile);
@@ -42,38 +42,28 @@ class UserVariable extends BaseModelVariable
 	}
 
 	/**
-	 * Gets the user's username or first name.
-	 *
-	 * @return string|null
-	 */
-	function friendlyName()
-	{
-		if (Blocks::hasPackage(BlocksPackage::Users) &&
-			$this->model->profile &&
-			$this->model->profile->firstName
-		)
-		{
-			return $this->model->profile->firstName;
-		}
-		else
-		{
-			return $this->model->username;
-		}
-	}
-
-	/**
 	 * Gets the user's full name.
 	 *
 	 * @return string|null
 	 */
-	function fullName()
+	public function fullName()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			if ($this->model->profile)
-			{
-				return $this->model->profile->getFullName();
-			}
+			return $this->model->getFullName();
+		}
+	}
+
+	/**
+	 * Gets the user's first name or username.
+	 *
+	 * @return string|null
+	 */
+	public function friendlyName()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			return $this->model->getFriendlyName();
 		}
 	}
 
@@ -82,7 +72,7 @@ class UserVariable extends BaseModelVariable
 	 *
 	 * @return bool
 	 */
-	function isCurrent()
+	public function isCurrent()
 	{
 		return $this->model->isCurrent();
 	}
@@ -92,7 +82,7 @@ class UserVariable extends BaseModelVariable
 	 *
 	 * @return mixed
 	 */
-	function remainingCooldownTime()
+	public function remainingCooldownTime()
 	{
 		return $this->model->getRemainingCooldownTime();
 	}
@@ -100,20 +90,20 @@ class UserVariable extends BaseModelVariable
 	/**
 	 * Returns the user's group IDs
 	 *
-	 * @return array
+	 * @return array|null
 	 */
 	public function groupIds()
 	{
-		$groupIds = array();
-
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			foreach ($this->model->groups as $group)
+			$groupIds = array();
+
+			foreach ($this->model->getGroups() as $group)
 			{
 				$groupIds[] = $group->id;
 			}
-		}
 
-		return $groupIds;
+			return $groupIds;
+		}
 	}
 }

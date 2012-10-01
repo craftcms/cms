@@ -10,6 +10,14 @@ class UserSessionService extends \CWebUser
 	const FLASH_COUNTERS   = 'Blocks.UserSessionService.flashcounters';
 
 	/**
+	 * Stores the user identity.
+	 *
+	 * @access private
+	 * @var UserIdentity
+	 */
+	private $_identity;
+
+	/**
 	 * @param null $defaultUrl
 	 * @return mixed
 	 */
@@ -88,18 +96,6 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @param $fromCookie
-	 */
-	protected function afterLogin($fromCookie)
-	{
-		if ($this->isLoggedIn() && !$fromCookie)
-		{
-			blx()->account->getCurrentUser()->lastLoginDate = DateTimeHelper::currentTime();
-			blx()->account->getCurrentUser()->save();
-		}
-	}
-
-	/**
 	 * Saves necessary user data into a cookie.
 	 * This method is used when automatic login ({@link allowAutoLogin}) is enabled.
 	 * This method saves user ID, username, other identity states and a validation key to cookie.
@@ -170,23 +166,59 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Logs a user in.
+	 *
 	 * @param $username
 	 * @param $password
 	 * @param bool $rememberMe
-	 * @return LoginModel
+	 * @return bool
 	 */
-	public function startLogin($username, $password, $rememberMe = false)
+	public function login($username, $password, $rememberMe = false)
 	{
-		$loginModel = new LoginModel();
-		$loginModel->username = $username;
-		$loginModel->password = $password;
-		$loginModel->rememberMe = $rememberMe;
+		// Validate the username/password first.
+		$usernameModel = new UsernameModel();
+		$passwordModel = new PasswordModel();
 
-		// Attempt to log in
-		if ($loginModel->validate())
-			$loginModel->login();
+		$usernameModel->username = $username;
+		$passwordModel->password = $password;
 
-		return $loginModel;
+		if ($usernameModel->validate() && $passwordModel->validate())
+		{
+			$this->_identity = new UserIdentity($username, $password);
+			$this->_identity->authenticate();
+
+			// Was the login successful?
+			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
+			{
+				$sessionDuration = blx()->config->getUserSessionDuration($rememberMe);
+				$usernameDuration = blx()->config->getRememberUsernameDuration();
+
+				if ($usernameDuration)
+				{
+					$cookie = new \CHttpCookie('username', $username);
+					$cookie->expire = DateTimeHelper::currentTime() + $usernameDuration;
+					$cookie->httpOnly = true;
+					blx()->request->cookies['username'] = $cookie;
+				}
+
+				return parent::login($this->_identity, $sessionDuration);
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the login error code from the user identity.
+	 *
+	 * @return UserIdentity
+	 */
+	public function getLoginErrorCode()
+	{
+		if (isset($this->_identity))
+		{
+			return $this->_identity->errorCode;
+		}
 	}
 
 	/**
@@ -195,13 +227,5 @@ class UserSessionService extends \CWebUser
 	public function getRememberedUsername()
 	{
 		return (isset(blx()->request->cookies['username'])) ? blx()->request->cookies['username']->value : null;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getRemainingCooldownTime()
-	{
-		return blx()->account->getRemainingCooldownTime(blx()->account->getCurrentUser());
 	}
 }

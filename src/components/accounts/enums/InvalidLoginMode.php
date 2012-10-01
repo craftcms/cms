@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class FailedPasswordMode
+class InvalidLoginMode
 {
 	const Cooldown          = 'cooldown';
 	const Lockout           = 'lockout';

@@ -12,7 +12,7 @@ class EmailService extends BaseApplicationComponent
 	/**
 	 * Sends an email.
 	 *
-	 * @param UserRecord $user
+	 * @param UserModel $user
 	 * @param string $subject
 	 * @param string $body
 	 * @param string $htmlBody
@@ -20,7 +20,7 @@ class EmailService extends BaseApplicationComponent
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmail(UserRecord $user, $subject, $body, $htmlBody = null, $variables = array())
+	public function sendEmail(UserModel $user, $subject, $body, $htmlBody = null, $variables = array())
 	{
 		// Get the saved email settings.
 		$emailSettings = $this->getSettings();
@@ -81,7 +81,7 @@ class EmailService extends BaseApplicationComponent
 		$email->fromName = $emailSettings['senderName'];
 		$email->addAddress($user->email, $user->getFullName());
 
-		$variables['user'] = $user;
+		$variables['user'] = new UserVariable($user);
 
 		$email->subject = blx()->templates->renderString($subject.' - subject', $subject, $variables);
 		$renderedBody = blx()->templates->renderString($subject.' - body', $body, $variables);
@@ -106,13 +106,13 @@ class EmailService extends BaseApplicationComponent
 	/**
 	 * Sends an email by its key.
 	 *
-	 * @param UserRecord $user
+	 * @param UserModel $user
 	 * @param string $key
 	 * @param array $variables
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function sendEmailByKey(UserRecord $user, $key, $variables = array())
+	public function sendEmailByKey(UserModel $user, $key, $variables = array())
 	{
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{

@@ -14,8 +14,8 @@ class AccountVariable
 	 */
 	public function getUserByVerificationCode($code)
 	{
-		$record = blx()->account->getUserByVerificationCode($code);
-		if ($record)
+		$user = blx()->account->getUserByVerificationCode($code);
+		if ($user)
 		{
 			return new UserVariable($user);
 		}

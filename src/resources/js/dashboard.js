@@ -20,12 +20,6 @@ Blocks.Dashboard = Blocks.Base.extend({
 		// Set the columns
 		this.setCols();
 
-		// Load the widgets
-		/*for (var i = 0; i < widgetIds.length; i++)
-		{
-			this.loadWidget(widgetIds[i]);
-		}*/
-
 		for (var i = 0; i < $widgets.length; i++)
 		{
 			var $widget = $($widgets[i]);
@@ -42,16 +36,6 @@ Blocks.Dashboard = Blocks.Base.extend({
 			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
 		}
 	},
-
-	/*loadWidget: function(widgetId)
-	{
-		$.get(Blocks.actionUrl+'dashboard/getWidgetHtml', 'widgetId='+widgetId, $.proxy(function(response) {
-			var $widget = $(response).css('opacity', 0);
-			this.placeWidget($widget);
-			$widget.animate({opacity: 1}, 'fast');
-			this.widgets.push($widget);
-		}, this));
-	},*/
 
 	setCols: function()
 	{

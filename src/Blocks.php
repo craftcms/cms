@@ -186,7 +186,9 @@ class Blocks extends \Yii
 		{
 			$blocksInfo->on = true;
 			if ($blocksInfo->save())
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -207,7 +209,9 @@ class Blocks extends \Yii
 		{
 			$blocksInfo->on = false;
 			if ($blocksInfo->save())
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -224,9 +228,13 @@ class Blocks extends \Yii
 		if (!isset(static::$_storedBlocksInfo))
 		{
 			if (blx()->isInstalled())
+			{
 				static::$_storedBlocksInfo = InfoRecord::model()->find();
+			}
 			else
+			{
 				static::$_storedBlocksInfo = false;
+			}
 		}
 
 		return static::$_storedBlocksInfo;
@@ -309,7 +317,9 @@ class Blocks extends \Yii
 			static::_importFile($file);
 
 			if ($forceInclude)
+			{
 				require_once $file;
+			}
 		}
 	}
 
@@ -323,10 +333,15 @@ class Blocks extends \Yii
 	{
 		$encodedData = JsonHelper::encode($data);
 
-		if (($currentUser = blx()->account->getCurrentUser()) !== null)
+		$currentUser = blx()->account->getCurrentUser();
+		if ($currentUser)
+		{
 			$userId = $currentUser->id;
+		}
 		else
+		{
 			$userId = null;
+		}
 
 		$logger = static::getLogger();
 		$logger->log($userId.'///'.$msgKey.'///'.$encodedData, 'activity', $category);

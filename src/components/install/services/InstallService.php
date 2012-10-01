@@ -27,39 +27,26 @@ class InstallService extends BaseApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
+			Blocks::log('Installing Blocks.', \CLogger::LEVEL_INFO);
+
 			// Create the tables
 			$this->_createTablesFromRecords($records);
-
-			// Create the foreign keys
 			$this->_createForeignKeysFromRecords($records);
+			$this->_createUsergroupsUsersTable();
 
-			if (Blocks::hasPackage(BlocksPackage::Users))
-			{
-				// Create the usergroups_users join table
-				$this->_createUsergroupsUsersTable();
-			}
-
-			// Tell Blocks that it's installed now
+			// Blocks, you are installed now.
 			blx()->setInstalledStatus(true);
 
-			Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
+			// Fill 'er up
 			$this->_populateInfoTable($inputs);
-
-			Blocks::log('Creating user.', \CLogger::LEVEL_INFO);
-			$user = $this->_addUser($inputs);
-
-			Blocks::log('Logging in user.', \CLogger::LEVEL_INFO);
-			$this->_logUserIn($user, $inputs['password']);
-
-			Blocks::log('Assigning default dashboard widgets to user.', \CLogger::LEVEL_INFO);
+			$this->_addUser($inputs);
+			$this->_logUserIn($inputs);
+			$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
+			$this->_createDefaultContent();
 			blx()->dashboard->addDefaultUserWidgets();
 
-			Blocks::log('Saving default mail settings.', \CLogger::LEVEL_INFO);
-			$this->_saveDefaultMailSettings($user->email, $inputs['siteName']);
-
-			$this->_createDefaultContent();
-
 			Blocks::log('Finished installing... committing transaction.', \CLogger::LEVEL_INFO);
+
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -118,54 +105,6 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Attempts to log in the given user.
-	 *
-	 * @access private
-	 * @param $user
-	 * @param $password
-	 * @return void
-	 */
-	private function _logUserIn($user, $password)
-	{
-		$loginModel = new LoginModel();
-		$loginModel->username = $user->username;
-		$loginModel->password = $password;
-
-		if (!$loginModel->login())
-		{
-			Blocks::log('Could not log the user in during install.', \CLogger::LEVEL_ERROR);
-		}
-	}
-
-	/**
-	 * Adds the initial user to the database.
-	 *
-	 * @access private
-	 * @param $inputs
-	 * @return UserRecord
-	 * @throws Exception
-	 */
-	private function _addUser($inputs)
-	{
-		$user = new UserRecord();
-		$user->username   = $inputs['username'];
-		$user->email      = $inputs['email'];
-		$user->admin = true;
-		$user->language = blx()->language;
-		blx()->account->changePassword($user, $inputs['password'], false);
-		$user->save();
-
-		if ($user->hasErrors())
-		{
-			$errors = $user->getErrors();
-			$errorMessages = implode('.  ', $errors);
-			throw new Exception(Blocks::t('There was a problem creating the user: {errorMessages}', array('errorMessages' => $errorMessages)));
-		}
-
-		return $user;
-	}
-
-	/**
 	 * Creates the tables as defined in the records.
 	 *
 	 * @access private
@@ -215,27 +154,6 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Saves some default mail settings for the site.
-	 *
-	 * @access private
-	 * @param $email
-	 * @param $siteName
-	 */
-	private function _saveDefaultMailSettings($email, $siteName)
-	{
-		$success = blx()->systemSettings->saveSettings('email', array(
-			'protocol'     => EmailerType::Php,
-			'emailAddress' => $email,
-			'senderName'   => $siteName
-		));
-
-		if (!$success)
-		{
-			Blocks::log('Could not save default email settings.', \CLogger::LEVEL_ERROR);
-		}
-	}
-
-	/**
 	 * Populates the info table with install and environment information.
 	 *
 	 * @access private
@@ -244,7 +162,10 @@ class InstallService extends BaseApplicationComponent
 	 */
 	private function _populateInfoTable($inputs)
 	{
+		Blocks::log('Populating the info table.', \CLogger::LEVEL_INFO);
+
 		$info = new InfoRecord();
+
 		$info->version = Blocks::getVersion();
 		$info->build = Blocks::getBuild();
 		$info->releaseDate = Blocks::getReleaseDate();
@@ -254,14 +175,112 @@ class InstallService extends BaseApplicationComponent
 		$info->licenseKey = $this->_generateLicenseKey();
 		$info->on = true;
 
-		$info->save();
-
-		// Something bad happened (probably a validation error)
-		if ($info->hasErrors())
+		if ($info->save())
 		{
-			$errors = $info->getErrors();
-			$errorMessages = implode('.  ', $errors);
-			throw new Exception(Blocks::t('There was a problem saving to the info table: {errorMessages}', array('errorMessages' => $errorMessages)));
+			Blocks::log('Info table populated successfully.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
+			throw new Exception(Blocks::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
+		}
+	}
+
+	/**
+	 * Generates a license key.
+	 *
+	 * @access private
+	 * @return string
+	 */
+	private function _generateLicenseKey()
+	{
+		$licenseKey = strtoupper(sprintf('%04x-%04x-%04x-%04x-%04x-%04x',
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff),
+			mt_rand(0, 0xffff)
+		));
+
+		return $licenseKey;
+	}
+
+	/**
+	 * Adds the initial user to the database.
+	 *
+	 * @access private
+	 * @param $inputs
+	 * @return UserModel
+	 * @throws Exception
+	 */
+	private function _addUser($inputs)
+	{
+		Blocks::log('Creating user.', \CLogger::LEVEL_INFO);
+
+		$user = new UserModel();
+
+		$user->username = $inputs['username'];
+		$user->newPassword = $inputs['password'];
+		$user->email = $inputs['email'];
+		$user->language = blx()->language;
+		$user->admin = true;
+
+		if ($user->save())
+		{
+			Blocks::log('User created successfully.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Could not create the user.', \CLogger::LEVEL_ERROR);
+			throw new Exception(Blocks::t('There was a problem creating the user:').$this->_getFlattenedErrors($user->getErrors()));
+		}
+	}
+
+	/**
+	 * Attempts to log in the given user.
+	 *
+	 * @access private
+	 * @param array $inputs
+	 */
+	private function _logUserIn($inputs)
+	{
+		Blocks::log('Logging in user.', \CLogger::LEVEL_INFO);
+
+		if (blx()->user->login($inputs['username'], $inputs['newPassword']))
+		{
+			Blocks::log('User logged in successfully.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Could not log the user in.', \CLogger::LEVEL_WARNING);
+		}
+	}
+
+	/**
+	 * Saves some default mail settings for the site.
+	 *
+	 * @access private
+	 * @param $email
+	 * @param $siteName
+	 */
+	private function _saveDefaultMailSettings($email, $siteName)
+	{
+		Blocks::log('Saving default mail settings.', \CLogger::LEVEL_INFO);
+
+		$settings = array(
+			'protocol'     => EmailerType::Php,
+			'emailAddress' => $email,
+			'senderName'   => $siteName
+		);
+
+		if (blx()->systemSettings->saveSettings('email', $settings))
+		{
+			Blocks::log('Default mail settings saved successfully.', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Could not save default email settings.', \CLogger::LEVEL_WARNING);
 		}
 	}
 
@@ -275,17 +294,27 @@ class InstallService extends BaseApplicationComponent
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			Blocks::log('Creating default "Blog" section."', \CLogger::LEVEL_INFO);
+			Blocks::log('Creating the Blog section.', \CLogger::LEVEL_INFO);
+
 			$section = new SectionModel();
+
 			$section->name = Blocks::t('Blog');
 			$section->handle = 'blog';
 			$section->hasUrls = true;
 			$section->urlFormat = 'blog/{slug}';
 			$section->template = 'blog/_entry';
-			$section->save();
+
+			if ($section->save())
+			{
+				Blocks::log('Blog section created successfuly."', \CLogger::LEVEL_INFO);
+			}
+			else
+			{
+				Blocks::log('Could not save the Blog section.', \CLogger::LEVEL_WARNING);
+			}
 		}
 
-		Blocks::log('Giving "Blog" section a "Body" block.', \CLogger::LEVEL_INFO);
+		Blocks::log('Creating the Body entry block.', \CLogger::LEVEL_INFO);
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
@@ -307,35 +336,30 @@ class InstallService extends BaseApplicationComponent
 			$block->translatable = true;
 		}
 
-		$block->save();
-
-
-		/*// Add a Welcome entry to the Blog
-		$entry = blx()->entries->createEntry($section->id, null, $user->id, 'Welcome to Blocks Alpha 2');
-		blx()->entries->saveEntryContent($entry, array(
-			'body' => "Hey {$user->username},\n\n" .
-			          "Welcome to Blocks Alpha 2!\n\n" .
-			          '-Brandon & Brad'
-		));*/
+		if ($block->save())
+		{
+			Blocks::log('Body entry block created successfuly."', \CLogger::LEVEL_INFO);
+		}
+		else
+		{
+			Blocks::log('Could not create the Body entry block.', \CLogger::LEVEL_WARNING);
+		}
 	}
 
 	/**
-	 * Generates a license key.
+	 * Get a flattened list of model errors
 	 *
 	 * @access private
+	 * @param array $errors
 	 * @return string
 	 */
-	private function _generateLicenseKey()
+	private function _getFlattenedErrors($errors)
 	{
-		$licenseKey = strtoupper(sprintf('%04x-%04x-%04x-%04x-%04x-%04x',
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff)
-		));
-
-		return $licenseKey;
+		$return = '';
+		foreach ($errors as $attribute => $attributeErrors)
+		{
+			$return .= "\n - ".implode("\n - ", $attributeErrors);
+		}
+		return $return;
 	}
 }

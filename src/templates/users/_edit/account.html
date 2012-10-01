@@ -48,8 +48,8 @@
 		{% if not account.id and user.admin %}
 			{{ forms.checkboxField({
 				label: "Require verification"|t,
-				name: 'requireVerification',
-				checked: blx.request.post('requireVerification')
+				name: 'verificationRequired',
+				checked: blx.request.post('verificationRequired')
 			}) }}
 		{% endif %}
 
@@ -65,8 +65,8 @@
 			{% if not account.isCurrent %}
 				{{ forms.checkboxField({
 					label: "Require a password reset on next login"|t,
-					name: 'requirePasswordReset',
-					checked: (not account or blx.request.post('requirePasswordReset'))
+					name: 'passwordResetRequired',
+					checked: (not account or blx.request.post('passwordResetRequired'))
 				}) }}
 			{% endif %}
 		{% endif %}
