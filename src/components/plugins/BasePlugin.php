@@ -45,7 +45,7 @@ abstract class BasePlugin extends BaseComponent implements IPlugin
 	 */
 	public function isInstalled()
 	{
-		if (isset($this->record))
+		if (isset($this->model))
 			return true;
 
 		$class = $this->getClassHandle();
@@ -59,9 +59,9 @@ abstract class BasePlugin extends BaseComponent implements IPlugin
 	 */
 	public function isEnabled()
 	{
-		if (!isset($this->record))
+		if (!isset($this->model))
 			return false;
 
-		return $this->record->enabled == 1 ? true : false;
+		return $this->record->model == 1 ? true : false;
 	}
 }

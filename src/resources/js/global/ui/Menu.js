@@ -115,12 +115,12 @@ Blocks.ui.Menu = Blocks.Base.extend({
 
 	show: function()
 	{
-		this.$container.fadeIn(75);
+		this.$container.show();
 	},
 
 	hide: function()
 	{
-		this.$container.fadeOut('fast');
+		this.$container.hide();
 	},
 
 	selectOption: function(event)
