@@ -45,7 +45,7 @@ abstract class BasePlugin extends BaseComponent implements IPlugin
 	 */
 	public function isInstalled()
 	{
-		if (isset($this->record))
+		if (isset($this->model))
 			return true;
 
 		$class = $this->getClassHandle();
