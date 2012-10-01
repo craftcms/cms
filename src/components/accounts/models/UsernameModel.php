@@ -12,5 +12,4 @@ class UsernameModel extends BaseModel
 			'username' => array(AttributeType::String, 'required' => true),
 		);
 	}
-
 }

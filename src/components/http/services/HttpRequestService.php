@@ -245,8 +245,7 @@ class HttpRequestService extends \CHttpRequest
 				// Special case for logging out.
 				if ($firstPathSegment === $logoutTriggerWord)
 				{
-					$segs[0] = 'UserSession';
-					$segs[1] = 'logout';
+					$segs = array('account', 'logout');
 				}
 				else
 				{

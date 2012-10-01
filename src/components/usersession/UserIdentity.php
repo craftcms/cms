@@ -9,8 +9,6 @@ class UserIdentity extends \CUserIdentity
 {
 	private $_id;
 
-	public $failedPasswordAttemptCount;
-
 	const ERROR_ACCOUNT_LOCKED          = 50;
 	const ERROR_ACCOUNT_COOLDOWN        = 51;
 	const ERROR_PASSWORD_RESET_REQUIRED = 52;
@@ -25,197 +23,109 @@ class UserIdentity extends \CUserIdentity
 	{
 		$user = blx()->account->getUserByUsernameOrEmail($this->username);
 
-		if ($user === null)
-			$this->errorCode = static::ERROR_USERNAME_INVALID;
-		else
+		if ($user)
+		{
 			$this->_processUserStatus($user);
-
-		return !$this->errorCode;
+			return true;
+		}
+		else
+		{
+			$this->errorCode = static::ERROR_USERNAME_INVALID;
+			return false;
+		}
 	}
 
 	/**
-	 * @param UserRecord $user
+	 * @access private
+	 * @param UserModel $user
 	 */
-	private function _processUserStatus(UserRecord $user)
+	private function _processUserStatus(UserModel $user)
 	{
 		switch ($user->status)
 		{
 			// If the account is pending, they don't exist yet.
-			case UserAccountStatus::Pending:
-			case UserAccountStatus::Archived:
+			case UserStatus::Pending:
+			case UserStatus::Archived:
 			{
 				$this->errorCode = static::ERROR_USERNAME_INVALID;
 				break;
 			}
 
-			// if the account is locked, don't even attempt to log in.
-			case UserAccountStatus::Locked:
+			case UserStatus::Locked:
 			{
-				if ($user->cooldownStart !== null)
-				{
-					// they are still in the cooldown window.
-					if ($user->cooldownStart + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordCooldown) > DateTimeHelper::currentTime())
-						$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
-					else
-					{
-						// no longer in cooldown window, set them to active and retry.
-						$user->status = UserAccountStatus::Active;
-						$user->cooldownStart = null;
-						$user->save();
-						$this->_processUserStatus($user);
-					}
-				}
-				else
-				{
-					$this->errorCode = static::ERROR_ACCOUNT_LOCKED;
-				}
-
+				$this->errorCode = $this->_getAccountLockedErrorCode();
 				break;
 			}
 
-			// if the account is suspended don't attempt to log in.
-			case UserAccountStatus::Suspended:
+			case UserStatus::Suspended:
 			{
 				$this->errorCode = static::ERROR_ACCOUNT_SUSPENDED;
 				break;
 			}
 
-			// account is active
-			case UserAccountStatus::Active:
+			case UserStatus::Active:
 			{
-				// check the password
-				$checkPassword = blx()->security->checkPassword($this->password, $user->password, $user->encType);
-
-				// bad password
-				if (!$checkPassword)
+				// Validate the password
+				if (blx()->security->checkPassword($this->password, $user->password, $user->encType))
 				{
-					$this->_processBadPassword($user);
-				}
-				else
-				{
-					// valid creds, but they have to reset their password.
 					if ($user->passwordResetRequired)
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						blx()->account->forgotPassword($user);
+						blx()->account->sendForgotPasswordEmail($user);
 					}
 					else
 					{
-						// finally, everything is well with the world.  let's log in.
-						$this->_processSuccessfulLogin($user);
+						// Finally, everything is well with the world. Let's log in.
+						$this->_id = $user->id;
+						$this->username = $user->username;
+						$this->errorCode = static::ERROR_NONE;
+
+						$authSessionToken = StringHelper::UUID();
+						blx()->account->handleSuccessfulLogin($user, $authSessionToken);
+						$this->setState('authSessionToken', $authSessionToken);
+					}
+				}
+				else
+				{
+					blx()->account->handleInvalidLogin($user);
+
+					// Was that one bad password too many?
+					if ($user->status == UserStatus::Locked)
+					{
+						$this->errorCode = $this->_getAccountLockedErrorCode();
+					}
+					else
+					{
+						$this->errorCode = static::ERROR_PASSWORD_INVALID;
 					}
 				}
 				break;
 			}
-		}
-	}
 
-	/**
-	 * @param UserRecord $user
-	 * @throws Exception
-	 */
-	private function _processSuccessfulLogin(UserRecord $user)
-	{
-		$this->_id = $user->id;
-		$this->username = $user->username;
-		$this->errorCode = static::ERROR_NONE;
-
-		$authSessionToken = StringHelper::UUID();
-		$user->authSessionToken = $authSessionToken;
-		$user->lastLoginDate = DateTimeHelper::currentTime();
-		$user->failedPasswordAttemptCount = null;
-		$user->failedPasswordAttemptWindowStart = null;
-		$user->verificationCode = null;
-		$user->verificationCodeIssuedDate = null;
-		$user->verificationCodeExpiryDate = null;
-		$user->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
-
-		if (!$user->save())
-		{
-			$errorMsg = '';
-			foreach ($user->errors as $errorArr)
-				$errorMsg .= implode(' ', $errorArr);
-
-			throw new Exception(Blocks::t('There was a problem logging you in: {error}', array('error' => $errorMsg)));
-		}
-
-		$this->setState('authSessionToken', $authSessionToken);
-	}
-
-	/**
-	 * @param UserRecord $user
-	 */
-	private function _processBadPassword(UserRecord $user)
-	{
-		$this->errorCode = static::ERROR_PASSWORD_INVALID;
-		$user->lastLoginFailedDate = DateTimeHelper::currentTime();
-		$user->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
-
-		// get the current failed password attempt count.
-		$currentFailedCount = $user->failedPasswordAttemptCount;
-
-		// if it's empty, this is the first failed attempt we have for the current window.
-		if (StringHelper::isNullOrEmpty($currentFailedCount))
-		{
-			// start at 1 and start the window
-			$currentFailedCount = 0;
-			$user->failedPasswordAttemptWindowStart = DateTimeHelper::currentTime();
-		}
-
-		$currentFailedCount += 1;
-		$user->failedPasswordAttemptCount = $currentFailedCount;
-		$this->failedPasswordAttemptCount = $currentFailedCount;
-
-		// check to see if they are still inside the configured failure window
-		if ($this->_isUserInsideFailWindow($user, $currentFailedCount))
-		{
-			// check to see if they hit the max attempts to login.
-			if ($currentFailedCount >= blx()->config->maxInvalidPasswordAttempts)
+			default:
 			{
-				// time to slow things down a bit.
-				if (blx()->config->failedPasswordMode === FailedPasswordMode::Cooldown)
-				{
-					$this->errorCode = static::ERROR_ACCOUNT_COOLDOWN;
-					$user->cooldownStart = DateTimeHelper::currentTime();
-				}
-				else
-					$this->errorCode = static::ERROR_ACCOUNT_LOCKED;
-
-				$user->status = UserAccountStatus::Locked;
-				$user->lastLockoutDate = DateTimeHelper::currentTime();
-				$user->failedPasswordAttemptCount = null;
-				$this->failedPasswordAttemptCount = 0;
-				$user->failedPasswordAttemptWindowStart = null;
+				throw new Exception(Blocks::t('User has unknown status “{status}”', array($user->status)));
 			}
 		}
-		// the user is outside the window of failure, so we can reset their counters.
-		else
-		{
-			$user->failedPasswordAttemptCount = 1;
-			$this->failedPasswordAttemptCount = 1;
-			$user->failedPasswordAttemptWindowStart = DateTimeHelper::currentTime();
-		}
-
-		$user->save();
 	}
 
-
 	/**
-	 * @param UserRecord $user
-	 * @return bool
+	 * Returns the proper Account Locked error code, based on the system's Invalid Login Mode
+	 *
+	 * @access private
+	 * @return int
 	 */
-	private function _isUserInsideFailWindow(UserRecord $user)
+	private function _getLockedAccountErrorCode()
 	{
-		$result = false;
-
-		// check to see if the failed window start plus the configured failed password window is greater than the current time.
-		$totalWindowTime = $user->failedPasswordAttemptWindowStart + ConfigHelper::getTimeInSeconds(blx()->config->failedPasswordWindow);
-		$currentTime = DateTimeHelper::currentTime();
-		if ($currentTime < $totalWindowTime)
-			$result = true;
-
-		return $result;
+		if (blx()->config->cooldownDuration)
+		{
+			return static::ERROR_ACCOUNT_COOLDOWN;
+		}
+		else
+		{
+			return static::ERROR_ACCOUNT_LOCKED;
+		}
 	}
 
 	/**

@@ -3,11 +3,11 @@
 var LoginForm = Blocks.Base.extend({
 
 	$form: null,
-	$usernameInput: null,
+	$loginNameInput: null,
 	$loginFields: null,
 	$passwordPaneItem: null,
 	$passwordInput: null,
-	$rememberMeInput: null,
+	$rememberMeCheckbox: null,
 	$submitBtn: null,
 	$spinner: null,
 	$error: null,
@@ -18,15 +18,15 @@ var LoginForm = Blocks.Base.extend({
 	init: function()
 	{
 		this.$form = $('#login-form'),
-		this.$usernameInput = $('#username'),
+		this.$loginNameInput = $('#loginName'),
 		this.$loginFields = $('#login-fields');
 		this.$passwordPaneItem = this.$loginFields.children();
 		this.$passwordInput = $('#password'),
 		this.$submitBtn = $('#submit'),
 		this.$spinner = $('#spinner');
-		this.$rememberMeInput = $('#remember-me');
+		this.$rememberMeCheckbox = $('#rememberMe');
 
-		this.addListener(this.$usernameInput, 'keypress,keyup,change,blur', 'onInputChange');
+		this.addListener(this.$loginNameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$submitBtn, 'click', 'onSubmit');
 		this.addListener(this.$form, 'submit', 'onSubmit');
@@ -34,7 +34,7 @@ var LoginForm = Blocks.Base.extend({
 
 	validate: function()
 	{
-		if (this.$usernameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6))
+		if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6))
 		{
 			this.$submitBtn.removeClass('disabled');
 			return true;
@@ -73,7 +73,7 @@ var LoginForm = Blocks.Base.extend({
 	submitForgotPassword: function()
 	{
 		var data = {
-			username: this.$usernameInput.val()
+			loginName: this.$loginNameInput.val()
 		};
 
 		$.post(Blocks.actionUrl+'account/forgotPassword', data, $.proxy(function(response) {
@@ -93,12 +93,12 @@ var LoginForm = Blocks.Base.extend({
 	submitLogin: function()
 	{
 		var data = {
-			username: this.$usernameInput.val(),
+			loginName: this.$loginNameInput.val(),
 			password: this.$passwordInput.val(),
-			rememberMe: (this.$rememberMeInput.attr('checked') ? 'y' : '')
+			rememberMe: (this.$rememberMeCheckbox.attr('checked') ? 'y' : '')
 		};
 
-		$.post(Blocks.actionUrl+'UserSession/login', data, $.proxy(function(response) {
+		$.post(Blocks.actionUrl+'account/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				window.location = response.redirectUrl;
@@ -139,7 +139,7 @@ var LoginForm = Blocks.Base.extend({
 	onForgetPassword: function(event)
 	{
 		event.preventDefault();
-		this.$usernameInput.focus();
+		this.$loginNameInput.focus();
 
 		this.$error.remove();
 

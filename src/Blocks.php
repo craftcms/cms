@@ -185,7 +185,6 @@ class Blocks extends \Yii
 		if ($blocksInfo)
 		{
 			$blocksInfo->on = true;
-
 			if ($blocksInfo->save())
 			{
 				return true;
@@ -209,7 +208,6 @@ class Blocks extends \Yii
 		if ($blocksInfo)
 		{
 			$blocksInfo->on = false;
-
 			if ($blocksInfo->save())
 			{
 				return true;
@@ -273,7 +271,6 @@ class Blocks extends \Yii
 	public static function import($alias, $forceInclude = false)
 	{
 		$segs = explode('.', $alias);
-
 		if (isset($segs[0]))
 		{
 			switch ($segs[0])
@@ -302,12 +299,10 @@ class Blocks extends \Yii
 		$path = $rootPath.implode('/', array_slice($segs, 1));
 
 		$folder = (substr($path, -2) == '/*');
-
 		if ($folder)
 		{
 			$path = substr($path, 0, -1);
 			$files = glob($path."*.php");
-
 			if (is_array($files) && count($files) > 0)
 			{
 				foreach ($files as $file)
@@ -338,7 +333,8 @@ class Blocks extends \Yii
 	{
 		$encodedData = JsonHelper::encode($data);
 
-		if (($currentUser = blx()->account->getCurrentUser()) !== null)
+		$currentUser = blx()->account->getCurrentUser();
+		if ($currentUser)
 		{
 			$userId = $currentUser->id;
 		}
@@ -364,7 +360,6 @@ class Blocks extends \Yii
 	{
 		// Normalize the param keys
 		$normalizedParams = array();
-
 		if (is_array($params))
 		{
 			foreach ($params as $key => $value)
@@ -376,9 +371,7 @@ class Blocks extends \Yii
 
 		$translation = parent::t($category, $message, $normalizedParams, $source, $language);
 		if (blx()->config->translationDebugOutput)
-		{
 			$translation = '@'.$translation.'@';
-		}
 
 		return $translation;
 	}

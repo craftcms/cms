@@ -33,9 +33,13 @@ class UrlManager extends \CUrlManager
 
 		// makes more sense to set in HttpRequest
 		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
+		{
 			$this->setUrlFormat(static::PATH_FORMAT);
+		}
 		else
+		{
 			$this->setUrlFormat(static::GET_FORMAT);
+		}
 	}
 
 	/**
@@ -46,9 +50,10 @@ class UrlManager extends \CUrlManager
 		// we'll never have a db entry match on a control panel request
 		if (!BLOCKS_CP_REQUEST)
 		{
-			if (blx()->isInstalled())
-				if (($path = $this->matchEntry()) !== false)
-					return $path;
+			if (($path = $this->matchEntry()) !== false)
+			{
+				return $path;
+			}
 		}
 
 		if (($path = $this->matchRoute()) !== false)
@@ -76,14 +81,17 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$entry = EntryRecord::model()->findByAttributes(array(
-			'uri' => blx()->request->getPath(),
-		));
-
-		if ($entry !== null)
+		if (blx()->isInstalled())
 		{
-			$this->_templateVariables['entry'] = $entry;
-			return $entry->uri;
+			$entry = EntryRecord::model()->findByAttributes(array(
+				'uri' => blx()->request->getPath(),
+			));
+
+			if ($entry)
+			{
+				$this->_templateVariables['entry'] = $entry;
+				return $entry->uri;
+			}
 		}
 
 		return false;
@@ -100,7 +108,9 @@ class UrlManager extends \CUrlManager
 			foreach ($this->cpRoutes as $pattern => $template)
 			{
 				if ($this->_matchRouteInternal($pattern))
+				{
 					return $template;
+				}
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
@@ -110,7 +120,9 @@ class UrlManager extends \CUrlManager
 				foreach ($pluginRoutes as $pattern => $template)
 				{
 					if ($this->_matchRouteInternal($pattern))
+					{
 						return $template;
+					}
 				}
 			}
 		}
@@ -121,7 +133,9 @@ class UrlManager extends \CUrlManager
 			foreach ($siteRoutes as $route)
 			{
 				if ($this->_matchRouteInternal($route->urlPattern))
+				{
 					return $route->template;
+				}
 			}
 		}
 
@@ -163,7 +177,9 @@ class UrlManager extends \CUrlManager
 			foreach (blx()->request->getPathSegments() as $requestPathSeg)
 			{
 				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
+				{
 					return false;
+				}
 			}
 		}
 

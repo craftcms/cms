@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class UserAccountStatus
+class UserStatus
 {
 	const Active                = 'active';
 	const Locked                = 'locked';

@@ -30,109 +30,112 @@ $blocksConfig['actionTrigger'] = 'actions';
 $blocksConfig['logoutTriggerWord'] = 'logout';
 
 /**
- * If you're running with devMode = false, this cache time will be used instead of devCacheTimeSeconds.
+ * Number of seconds to cache stuff in runtime/.
  */
 $blocksConfig['cacheTimeSeconds'] = 86400;
 
 /**
- * If you're running with devMode = true, this cache time will be used instead of cacheTimeSeconds.
+ * Number of seconds to cache stuff in runtime/ when in dev mode.
  */
 $blocksConfig['devCacheTimeSeconds'] = 5;
 
 /**
- * How to format the URLs
+ * How to format the URLs.
  *
  * Possible values:
  *  - 'pathinfo' (index.php/path)
  *  - 'querystring' (index.php?p=path)
  *  - 'auto'
  *
- * Note: Not all servers support PATH_INFO. If you're not sure, we recommend you leave this on 'auto'.
+ * If you're not sure whether your server supports PATH_INFO, we recommend you leave this on 'auto'.
  */
 $blocksConfig['urlFormat'] = 'auto';
 
 /**
- * If you have Apache's mod_xsendfile installed and configured, set this to 'true' and Blocks will use xSendFile to transfer files.
+ * If you have Apache's mod_xsendfile installed and configured, set this to 'true' and Blocks will
+ * use xSendFile to transfer files.
  */
 $blocksConfig['useXSendFile'] = false;
 
 /**
- * The time a user stays logged in by default.  If set to 0, the session will expire when the browser is closed.
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
- */
-$blocksConfig['sessionTimeout'] = '1h';
-
-/**
- * The time a user stays logged if 'Remember Me' is checked.
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
- */
-$blocksConfig['rememberMeSessionTimeout'] = '14d';
-
-/**
- * Whether to remember the username of the last successful user to login on the login page.
- */
-$blocksConfig['rememberUsernameEnabled'] = true;
-
-/**
- * The amount of time we'll remember the username if 'rememberUsernameEnabled' is set to true.
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
- */
-$blocksConfig['rememberUsernameTimeout'] = '365d';
-
-
-
-/**
- * The length of time a newly generated email verification code will last before expiring.
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
- */
-$blocksConfig['verificationCodeDuration'] = '24h';
-
-/**
- * The number of invalid login attempts within the 'failedPasswordWindow' before 'failedPasswordMode' is initiated.
- */
-$blocksConfig['maxInvalidPasswordAttempts'] = 5;
-
-/**
- * Valid choices are:
- * lockout
- * cooldown
+ * The amount of time a user stays logged in.
  *
- * If in 'lockout' mode, when a user reaches 'maxInvalidPasswordAttempts' within 'failedPasswordWindow', their account will be locked until an administrator manually removes the lock.
- * If in 'cooldown' mode, when a user reaches 'maxInvalidPasswordAttempts' within 'failedPasswordWindow', they will not be able to log in again for the 'failedPasswordCooldown' period.
+ * If set to '0', the session will expire when the browser is closed.
+ *
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
  */
-$blocksConfig['failedPasswordMode'] = 'cooldown';
+$blocksConfig['userSessionDuration'] = '1h';
 
 /**
- * The amount of time to track failed passwords for a user.
+ * The amount of time a user stays logged if "Remember Me" is checked.
+ *
+ * Set to '0' to disable the "Remember Me" feature altogether.
+ *
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
  */
-$blocksConfig['failedPasswordWindow'] = '1h';
+$blocksConfig['rememberedUserSessionDuration'] = '14d';
 
 /**
- * If 'failedPasswordMode' is in cooldown mode, if 'maxInvalidPasswordAttempts' happens within 'failedPasswordWindow', then they must wait this amount of time before they are able to log in again.
+ * The amount of time we'll remember usernames.
+ *
+ * Set to '0' to disable this feature altogether.
+ *
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
  */
-$blocksConfig['failedPasswordCooldown'] = '5m';
+$blocksConfig['rememberUsernameDuration'] = '365d';
+
+/**
+ * The amount of time a newly generated email verification code will last before expiring.
+ *
+ * Valid units of time are:
+ * m = minute(s)
+ * h = hour(s)
+ * d = day(s)
+ */
+$blocksConfig['verificationCodeLifespan'] = '24h';
+
+/**
+ * The number of invalid login attempts within the 'invalidLoginWindowDuration' before the account
+ * gets locked.
+ */
+$blocksConfig['maxInvalidLogins'] = 5;
+
+/**
+ * The amount of time to track invalid login attempts for a user.
+ *
+ * If someone tries to log in too many times in this window, their account will get locked.
+ */
+$blocksConfig['invalidLoginWindowDuration'] = '1h';
+
+/**
+ * The amount of time a user must wait before logging in after their account is locked.
+ *
+ * Set to '0' to prevent users from ever being able to log back in without an admin unlocking their
+ * account first.
+ */
+$blocksConfig['cooldownDuration'] = '5m';
 
 // PHPPass Config
 /**
- * Controls the number of iterations for key stretching. A setting of 8 means the hash algorithm will be applied 2^8 = 256 times.
+ * Controls the number of iterations for key stretching. A setting of 8 means the hash algorithm
+ * will be applied 2^8 = 256 times.
+ *
  * This setting should be kept between 4 and 31.
  */
 $blocksConfig['phpPass-iterationCount'] = 8;
 
 /**
- * Controls whether to use the minified and merged JavaScript in the resources/js/uncompressed or the resources/js/compressed folder.
+ * Controls whether to use the minified and merged JavaScript in the resources/js/uncompressed or
+ * the resources/js/compressed folder.
  */
 $blocksConfig['useCompressedJs'] = true;
 

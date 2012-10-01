@@ -118,13 +118,13 @@ class EntryModel extends BaseModel
 	/**
 	 * Returns the entry's author.
 	 *
-	 * @return UserRecord|null
+	 * @return UserModel|null
 	 */
 	public function getAuthor()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->users->getUserById($this->authorId);
+			return blx()->account->getUserById($this->authorId);
 		}
 	}
 
