@@ -52,7 +52,16 @@ class ErrorHandler extends \CErrorHandler
 	{
 		parent::init();
 
-		$this->_devMode = (blx()->config->devMode || blx()->account->isAdmin());
+		$admin = false;
+
+		if (blx()->isInstalled())
+		{
+			// Set whether the currently logged in user is an admin.
+			if (($currentUser = blx()->account->getCurrentUser()) !== null)
+				$admin = $currentUser->admin == 1 ? true : false;
+		}
+
+		$this->_devMode = blx()->config->devMode || $admin;
 	}
 
 	/**
@@ -140,28 +149,40 @@ class ErrorHandler extends \CErrorHandler
 			}
 
 			if (!headers_sent())
+			{
 				header("HTTP/1.0 {$data['code']} ".get_class($exception));
+			}
 
 			// If this is an HttpException or we're not in dev mode, render the error template.
 			if ($exception instanceof \CHttpException || !$this->_devMode)
 			{
 				if ($this->isAjaxRequest())
+				{
 					$app->returnAjaxError($data['code'], $data['message'], $data['file'], $data['line']);
+				}
 				else
+				{
 					$this->render('error', $data);
+				}
 			}
 			else
 			{
 				// If this is an ajax request, we want to prep the exception a bit before we return it.
 				if ($this->isAjaxRequest())
+				{
 					$app->returnAjaxException($data);
+				}
 				else
+				{
 					// If we've made it this far, just render the exception template.
 					$this->render('exception', $data);
+				}
 			}
 		}
 		else
+		{
 			$app->displayException($exception);
+		}
 	}
 
 	/**
@@ -216,7 +237,9 @@ class ErrorHandler extends \CErrorHandler
 		if ($n > 0)
 		{
 			if (isset($matches[3]))
+			{
 				return blx()->templates->findTemplate($matches[3]);
+			}
 		}
 
 		return false;
@@ -231,13 +254,19 @@ class ErrorHandler extends \CErrorHandler
 		foreach ($trace as $i => $t)
 		{
 			if (!isset($t['file']))
+			{
 				$trace[$i]['file'] = 'unknown';
+			}
 
 			if (!isset($t['line']))
+			{
 				$trace[$i]['line'] = 0;
+			}
 
 			if (!isset($t['function']))
+			{
 				$trace[$i]['function'] = '';
+			}
 
 			unset($trace[$i]['object']);
 		}
@@ -256,24 +285,34 @@ class ErrorHandler extends \CErrorHandler
 
 		// skip the first 3 stacks as they do not tell the error position
 		if (count($trace) > 3)
+		{
 			$trace = array_slice($trace, 3);
+		}
 
 		$traceString = '';
 		foreach ($trace as $i => $t)
 		{
 			if (!isset($t['file']))
+			{
 				$trace[$i]['file'] = 'unknown';
+			}
 
 			if (!isset($t['line']))
+			{
 				$trace[$i]['line'] = 0;
+			}
 
 			if (!isset($t['function']))
+			{
 				$trace[$i]['function'] = 'unknown';
+			}
 
 			$traceString .= "#$i {$trace[$i]['file']}({$trace[$i]['line']}): ";
 
 			if (isset($t['object']) && is_object($t['object']))
+			{
 				$traceString .= get_class($t['object']).'->';
+			}
 
 			$traceString .= "{$trace[$i]['function']}()\n";
 
@@ -318,17 +357,27 @@ class ErrorHandler extends \CErrorHandler
 			);
 
 			if (!headers_sent())
+			{
 				header("HTTP/1.0 500 PHP Error");
+			}
 
 			if ($this->isAjaxRequest())
+			{
 				$app->returnAjaxError($event->code, $event->message, $event->file, $event->line);
+			}
 			else if($this->_devMode)
+			{
 				$this->render('exception', $data);
+			}
 			else
+			{
 				$this->render('error', $data);
+			}
 		}
 		else
+		{
 			$app->displayError($event->code, $event->message, $event->file, $event->line);
+		}
 	}
 
 	/**
@@ -343,30 +392,27 @@ class ErrorHandler extends \CErrorHandler
 	{
 		$viewFile = $this->getViewFile($template, $data['code']);
 
-		if (($this->_devMode) && $template == 'exception')
+		$relativePath = IOHelper::getFileName($viewFile, false);
+		try
 		{
-			$data['version'] = $this->getVersionInfo();
-			$data['time'] = time();
-			include($viewFile);
+			$twig = blx()->templates->getTwig();
+
+			$twig->addFilter('renderSourceCode', new \Twig_Filter_Function('\Blocks\ErrorHelper::renderSourceCode'));
+			$twig->addFilter('isCoreCode', new \Twig_Filter_Function('\Blocks\ErrorHelper::isCoreCode'));
+			$twig->addFilter('argumentsToString', new \Twig_Filter_Function('\Blocks\ErrorHelper::argumentsToString'));
+
+			if (($output = $twig->render($relativePath, $data)) !== false)
+			{
+				echo $output;
+			}
+			else
+			{
+				echo '<h1>'.Blocks::t('There was a problem rendering the error template.').'</h1>';
+			}
 		}
-		else
+		catch (\Exception $e)
 		{
-			$relativePath = IOHelper::getFileName($viewFile, false);
-			try
-			{
-				if (($output = blx()->templates->render($relativePath, $data)) !== false)
-				{
-					echo $output;
-				}
-				else
-				{
-					echo '<h1>'.Blocks::t('There was a problem rendering the error template.').'</h1>';
-				}
-			}
-			catch (\Exception $e)
-			{
-				blx()->displayException($e);
-			}
+			blx()->displayException($e);
 		}
 	}
 
@@ -385,18 +431,25 @@ class ErrorHandler extends \CErrorHandler
 		$extension = IOHelper::getExtension($templatePath.$templateName, 'html');
 
 		if (strpos($templatePath, '/framework/') !== false)
+		{
 			$extension = 'php';
+		}
 
 		if ($templateName == 'error')
 		{
 			if (!empty($code))
 			{
 				if (!is_numeric($code))
+				{
 					$code = '';
+				}
 
 				$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.$code.'.'.$extension), $srcLanguage);
+
 				if (IOHelper::fileExists($templateFile))
+				{
 					return IOHelper::getRealPath($templateFile);
+				}
 
 				return null;
 			}
@@ -405,7 +458,9 @@ class ErrorHandler extends \CErrorHandler
 		$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
 
 		if (IOHelper::fileExists($templateFile))
+		{
 			$templateFile = IOHelper::getRealPath($templateFile);
+		}
 
 		return $templateFile;
 	}
@@ -422,21 +477,21 @@ class ErrorHandler extends \CErrorHandler
 	{
 		$viewPaths = array();
 
-		if (($this->_devMode) && $view == 'exception')
-			$viewPaths[] = blx()->path->getFrameworkPath().'views/';
-		else
+		if (blx()->request->getMode() == HttpRequestMode::Site)
 		{
-			if (blx()->request->getMode() == HttpRequestMode::Site)
-				$viewPaths[] = blx()->path->getSiteTemplatesPath();
-
-			$viewPaths[] = blx()->path->getCpTemplatesPath();
+			$viewPaths[] = blx()->path->getSiteTemplatesPath();
 		}
+
+		$viewPaths[] = blx()->path->getCpTemplatesPath();
 
 		for ($counter = 0; $counter < count($viewPaths); $counter ++)
 		{
 			$viewFile = $this->getViewFileInternal($viewPaths[$counter], $view, $code, null);
+
 			if (IOHelper::fileExists($viewFile))
+			{
 				return $viewFile;
+			}
 		}
 
 		return null;
@@ -452,12 +507,16 @@ class ErrorHandler extends \CErrorHandler
 	{
 		if ($this->_devMode)
 		{
-			$version = '<a href="http://blockscms.com/">@@@productDisplay@@@</a> v'.Blocks::getVersion().' '.Blocks::t('build').' '.Blocks::getBuild();
+			$version = '<a href="http://blockscms.com/">Blocks Pro</a> v'.Blocks::getVersion().' '.Blocks::t('build').' '.Blocks::getBuild();
 			if (isset($_SERVER['SERVER_SOFTWARE']))
+			{
 				$version = $_SERVER['SERVER_SOFTWARE'].' '.$version;
+			}
 		}
 		else
+		{
 			$version = '';
+		}
 
 		return $version;
 	}
