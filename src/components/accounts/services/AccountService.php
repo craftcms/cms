@@ -186,6 +186,7 @@ class AccountService extends BaseApplicationComponent
 		$userRecord->username = $user->username;
 		$userRecord->email = $user->email;
 		$userRecord->emailFormat = $user->emailFormat;
+		$userRecord->admin = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 
 		if (Blocks::hasPackage(BlocksPackage::Language))
