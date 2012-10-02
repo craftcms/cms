@@ -25,6 +25,7 @@ class AccountService extends BaseApplicationComponent
 
 		$user = new UserModel();
 
+		$user->id                           = (isset($attributes['id']) ? $attributes['id'] : null);
 		$user->username                     = (isset($attributes['username']) ? $attributes['username'] : null);
 		$user->email                        = (isset($attributes['email']) ? $attributes['email'] : null);
 		$user->password                     = (isset($attributes['password']) ? $attributes['password'] : null);
@@ -185,6 +186,7 @@ class AccountService extends BaseApplicationComponent
 		$userRecord->username = $user->username;
 		$userRecord->email = $user->email;
 		$userRecord->emailFormat = $user->emailFormat;
+		$userRecord->passwordResetRequired = $user->passwordResetRequired;
 
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
@@ -195,37 +197,24 @@ class AccountService extends BaseApplicationComponent
 			$userRecord->language = blx()->language;
 		}
 
-		// Only admins can change other users' passwords
-		if ($user->isCurrent() || $this->isAdmin())
+		if ($user->newPassword)
 		{
-			if ($user->newPassword)
-			{
-				$this->_setPasswordOnUserRecord($user, $userRecord);
-			}
-		}
-
-		// Only adins can require a password reset
-		if (blx()->account->isAdmin())
-		{
-			$userRecord->passwordResetRequired = $user->passwordResetRequired;
+			$this->_setPasswordOnUserRecord($user, $userRecord);
 		}
 
 		if ($userRecord->validate() && !$user->hasErrors())
 		{
-			if ($userRecord->isNewRecord())
+			if ($user->verificationRequired)
 			{
-				// Only admins get to opt out of sending a verification email
-				if (blx()->isInstalled() && (!$this->isAdmin() || $user->verificationRequired))
-				{
-					$userRecord->status = $user->status = UserStatus::Pending;
-					$this->_setVerificationCodeOnUserRecord($userRecord);
-					$sendVerificationEmail = true;
-				}
+				$userRecord->status = $user->status = UserStatus::Pending;
+				$this->_setVerificationCodeOnUserRecord($userRecord);
 			}
 
-			$user->save();
+			$userRecord->save();
 
-			if (!empty($sendVerificationEmail))
+			$user->id = $userRecord->id;
+
+			if ($user->verificationRequired)
 			{
 				blx()->email->sendEmailByKey($user, 'verify_email', array(
 					'link' => $this->_getVerifyAccountUrl($userRecord)

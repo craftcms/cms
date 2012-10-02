@@ -18,15 +18,15 @@
 			{% set user = blx.account.getUserByVerificationCode(verificationCode) %}
 			{% if user %}
 				<form method="post" action="">
-					<input type="hidden" name="action" value="account/forgotPassword">
+					<input type="hidden" name="action" value="account/resetPassword">
 					<input type="hidden" name="redirect" value="dashboard">
 					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
 
 					<div class="pane-item">{{ "Let’s set a password for your account."|t }}</div>
 					<div class="pane-item field">
-						<label for="password">{{ "Password"|t }}</label>
-						<div class="passwordwrapper"><input id="password" name="password" class="text password {% if verifyAccountInfo.errors.password %}error{% endif %}" type="password"></div>
-						{{ errorList(verifyAccountInfo.errors.password) }}
+						<label for="newPassword">{{ "Password"|t }}</label>
+						<div class="passwordwrapper"><input id="newPassword" name="newPassword" class="text password {% if verifyAccountInfo.errors.newPassword %}error{% endif %}" type="password"></div>
+						{{ errorList(verifyAccountInfo.errors.newPassword) }}
 					</div>
 					<div class="pane-item">
 						<input class="btn big submit" type="submit" value="{{ 'Set Password'|t }}">

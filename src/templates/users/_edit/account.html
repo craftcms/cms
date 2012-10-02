@@ -57,18 +57,18 @@
 			{{ forms.passwordField({
 				label: "Password"|t,
 				instructions: (account.id ? "Leave blank to keep password unchanged."|t : null),
-				id: 'password',
-				name: 'password',
-				errors: (passwordForm.errors.password)
+				id: 'newPassword',
+				name: 'newPassword',
+				errors: (account.errors.newPassword)
 			}) }}
+		{% endif %}
 
-			{% if not account.isCurrent %}
-				{{ forms.checkboxField({
-					label: "Require a password reset on next login"|t,
-					name: 'passwordResetRequired',
-					checked: (not account or blx.request.post('passwordResetRequired'))
-				}) }}
-			{% endif %}
+		{% if user.admin %}
+			{{ forms.checkboxField({
+				label: "Require a password reset on next login"|t,
+				name: 'passwordResetRequired',
+				checked: (not account or blx.request.post('passwordResetRequired'))
+			}) }}
 		{% endif %}
 
 		{{ forms.selectField({

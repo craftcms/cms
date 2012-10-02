@@ -34,19 +34,7 @@ class InstallService extends BaseApplicationComponent
 			$this->_createForeignKeysFromRecords($records);
 			$this->_createUsergroupsUsersTable();
 
-			// Blocks, you are installed now.
-			blx()->setInstalledStatus(true);
-
-			// Fill 'er up
-			$this->_populateInfoTable($inputs);
-			$this->_addUser($inputs);
-			$this->_logUserIn($inputs);
-			$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
-			$this->_createDefaultContent();
-			blx()->dashboard->addDefaultUserWidgets();
-
-			Blocks::log('Finished installing... committing transaction.', \CLogger::LEVEL_INFO);
-
+			Blocks::log('Committing the transaction.', \CLogger::LEVEL_INFO);
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -54,6 +42,19 @@ class InstallService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
+
+		// Blocks, you are installed now.
+		blx()->setInstalledStatus(true);
+
+		// Fill 'er up
+		$this->_populateInfoTable($inputs);
+		$this->_addUser($inputs);
+		$this->_logUserIn($inputs);
+		$this->_saveDefaultMailSettings($inputs['email'], $inputs['siteName']);
+		$this->_createDefaultContent();
+		blx()->dashboard->addDefaultUserWidgets();
+
+		Blocks::log('Finished installing Blocks.', \CLogger::LEVEL_INFO);
 	}
 
 	/**
@@ -247,7 +248,7 @@ class InstallService extends BaseApplicationComponent
 	{
 		Blocks::log('Logging in user.', \CLogger::LEVEL_INFO);
 
-		if (blx()->user->login($inputs['username'], $inputs['newPassword']))
+		if (blx()->user->login($inputs['username'], $inputs['password']))
 		{
 			Blocks::log('User logged in successfully.', \CLogger::LEVEL_INFO);
 		}

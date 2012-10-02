@@ -7,6 +7,17 @@ namespace Blocks;
 class ConfigVariable
 {
 	/**
+	 * Returns whether a config item exists.
+	 *
+	 * @param string $name
+	 * @return bool
+	 */
+	function __isset($name)
+	{
+		return isset(blx()->params['blocksConfig'][$name]);
+	}
+
+	/**
 	 * Returns a config item.
 	 *
 	 * @param string $name
