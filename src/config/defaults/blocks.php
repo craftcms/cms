@@ -31,13 +31,19 @@ $blocksConfig['logoutTriggerWord'] = 'logout';
 
 /**
  * Number of seconds to cache stuff in runtime/.
+ *
+ * Set to '0' to cache things indefinitely.
+ *
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['cacheTimeSeconds'] = 86400;
+$blocksConfig['cacheDuration'] = 'P1D';
 
 /**
  * Number of seconds to cache stuff in runtime/ when in dev mode.
+ *
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['devCacheTimeSeconds'] = 5;
+$blocksConfig['devModeCacheDuration'] = 'PT5S';
 
 /**
  * How to format the URLs.
@@ -62,46 +68,34 @@ $blocksConfig['useXSendFile'] = false;
  *
  * If set to '0', the session will expire when the browser is closed.
  *
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['userSessionDuration'] = '1h';
+$blocksConfig['userSessionDuration'] = 'PT1H';
 
 /**
  * The amount of time a user stays logged if "Remember Me" is checked.
  *
  * Set to '0' to disable the "Remember Me" feature altogether.
  *
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['rememberedUserSessionDuration'] = '14d';
+$blocksConfig['rememberedUserSessionDuration'] = 'P2W';
 
 /**
  * The amount of time we'll remember usernames.
  *
  * Set to '0' to disable this feature altogether.
  *
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['rememberUsernameDuration'] = '365d';
+$blocksConfig['rememberUsernameDuration'] = 'P1Y';
 
 /**
  * The amount of time a newly generated email verification code will last before expiring.
  *
- * Valid units of time are:
- * m = minute(s)
- * h = hour(s)
- * d = day(s)
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['verificationCodeLifespan'] = '24h';
+$blocksConfig['verificationCodeDuration'] = 'P1D';
 
 /**
  * The number of invalid login attempts within the 'invalidLoginWindowDuration' before the account
@@ -113,16 +107,20 @@ $blocksConfig['maxInvalidLogins'] = 5;
  * The amount of time to track invalid login attempts for a user.
  *
  * If someone tries to log in too many times in this window, their account will get locked.
+ *
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['invalidLoginWindowDuration'] = '1h';
+$blocksConfig['invalidLoginWindowDuration'] = 'PT1H';
 
 /**
  * The amount of time a user must wait before logging in after their account is locked.
  *
  * Set to '0' to prevent users from ever being able to log back in without an admin unlocking their
  * account first.
+ *
+ * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['cooldownDuration'] = '5m';
+$blocksConfig['cooldownDuration'] = 'PT5M';
 
 // PHPPass Config
 /**

@@ -190,18 +190,39 @@ class UserSessionService extends \CWebUser
 			// Was the login successful?
 			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
-				$sessionDuration = blx()->config->getUserSessionDuration($rememberMe);
-				$usernameDuration = blx()->config->getRememberUsernameDuration();
-
-				if ($usernameDuration)
+				$rememberUsernameDuration = blx()->config->rememberUsernameDuration();
+				if ($rememberUsernameDuration)
 				{
+					$interval = new DateInterval($rememberUsernameDuration);
+					$expire = new DateTime();
+					$expire->add($interval);
+
 					$cookie = new \CHttpCookie('username', $username);
-					$cookie->expire = DateTimeHelper::currentTime() + $usernameDuration;
+					$cookie->expire = $expire->getTimestamp();
 					$cookie->httpOnly = true;
 					blx()->request->cookies['username'] = $cookie;
 				}
 
-				return parent::login($this->_identity, $sessionDuration);
+				if ($rememberMe)
+				{
+					$duration = blx()->config->rememberedUserSessionDuration;
+				}
+				else
+				{
+					$duration = blx()->config->userSessionDuration;
+				}
+
+				if ($duration)
+				{
+					$interval = new DateInterval($duration);
+					$seconds = $interval->seconds();
+				}
+				else
+				{
+					$seconds = 0;
+				}
+
+				return parent::login($this->_identity, $seconds);
 			}
 		}
 

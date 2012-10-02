@@ -80,7 +80,7 @@ class UserVariable extends BaseModelVariable
 	/**
 	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
 	 *
-	 * @return mixed
+	 * @return DateInterval|null
 	 */
 	public function remainingCooldownTime()
 	{

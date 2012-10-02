@@ -7,6 +7,7 @@ namespace Blocks;
 class ConfigService extends BaseApplicationComponent
 {
 	private $_tablePrefix;
+	private $_cacheDuration;
 
 	/**
 	 * Adds config items to the mix of possible magic getter properties
@@ -53,62 +54,25 @@ class ConfigService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns the user session duration in seconds.
+	 * Get the time things should be cached for in seconds.
 	 *
-	 * @param bool $rememberMe
 	 * @return int
 	 */
-	public function getUserSessionDuration($rememberMe = false)
+	public function getCacheDuration()
 	{
-		if ($rememberMe)
+		if (!isset($this->_cacheDuration))
 		{
-			$item = 'rememberedUserSessionDuration';
+			$duration = $this->getItem('cacheDuration');
+			if ($duration)
+			{
+				$interval = new DateInterval($duration);
+				$this->_cacheDuration = $interval->seconds();
+			}
+			else
+			{
+				$this->_cacheDuration = 0;
+			}
 		}
-		else
-		{
-			$item = 'userSessionDuration';
-		}
-
-		return ConfigHelper::getTimeInSeconds($this->getItem($item));
-	}
-
-	/**
-	 * Returns the user session duration in seconds.
-	 *
-	 * @return int
-	 */
-	public function getRememberUsernameDuration()
-	{
-		return ConfigHelper::getTimeInSeconds($this->getItem('rememberUsernameDuration'));
-	}
-
-	/**
-	 * Returns the failed password window duration in seconds.
-	 *
-	 * @return int
-	 */
-	public function getInvalidLoginWindowDuration()
-	{
-		return ConfigHelper::getTimeInSeconds($this->getItem('invalidLoginWindowDuration'));
-	}
-
-	/**
-	 * Returns the cooldown duration in seconds.
-	 *
-	 * @return int
-	 */
-	public function getCooldownDuration()
-	{
-		return ConfigHelper::getTimeInSeconds($this->getItem('cooldownDuration'));
-	}
-
-	/**
-	 * Returns the verification code life span in seconds.
-	 *
-	 * @return int
-	 */
-	public function getVerificationCodeLifespan()
-	{
-		return ConfigHelper::getTimeInSeconds($this->getItem('verificationCodeLifespan'));
+		return $this->_cacheDuration;
 	}
 }

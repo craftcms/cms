@@ -10,7 +10,7 @@ if ($blocksConfig['devMode'] == true)
 	defined('YII_DEBUG') || define('YII_DEBUG', true);
 	error_reporting(E_ALL);
 
-	$blocksConfig['cacheTimeSeconds'] = $blocksConfig['devCacheTimeSeconds'];
+	$blocksConfig['cacheDuration'] = $blocksConfig['devModeCacheDuration'];
 }
 
 // Table prefixes cannot be longer than 5 characters

@@ -62,6 +62,6 @@ abstract class BasePlugin extends BaseComponent implements IPlugin
 		if (!isset($this->model))
 			return false;
 
-		return $this->record->model == 1 ? true : false;
+		return $this->model->enabled == 1 ? true : false;
 	}
 }

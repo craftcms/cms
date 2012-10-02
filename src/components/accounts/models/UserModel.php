@@ -32,6 +32,8 @@ class UserModel extends BaseModel
 			//'archivedUsername'           => AttributeType::String,
 			//'archivedEmail'              => AttributeType::Email,
 
+			'dateCreated'                  => AttributeType::DateTime,
+
 			'verificationRequired'         => AttributeType::Bool,
 			'newPassword'                  => AttributeType::String,
 		);
@@ -124,20 +126,35 @@ class UserModel extends BaseModel
 	}
 
 	/**
+	 * Returns the time when the user will be over their cooldown period.
+	 *
+	 * @return DateTime|null
+	 */
+	public function getCooldownEndTime()
+	{
+		if ($this->status == UserStatus::Locked)
+		{
+			$cooldownEnd = clone $this->lockoutDate;
+			$cooldownEnd->add(new DateInterval(blx()->config->cooldownDuration));
+			return $cooldownEnd;
+		}
+	}
+
+	/**
 	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
 	 *
-	 * @return mixed
+	 * @return DateInterval|null
 	 */
 	public function getRemainingCooldownTime()
 	{
 		if ($this->status == UserStatus::Locked)
 		{
-			$cooldownEnd = $this->lockoutDate + blx()->config->getCooldownDuration();
-			$cooldownRemaining = $cooldownEnd - DateTimeHelper::currentTime();
+			$currentTime = new DateTime();
+			$cooldownEnd = $this->getCooldownEndTime();
 
-			if ($cooldownRemaining > 0)
+			if ($currentTime < $cooldownEnd)
 			{
-				return $cooldownRemaining;
+				return $currentTime->diff($cooldownEnd);
 			}
 		}
 	}
