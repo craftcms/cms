@@ -112,7 +112,7 @@ class AccountController extends BaseController
 		$user = blx()->account->getUserByVerificationCode($verificationCode);
 		if (!$user)
 		{
-			throw new Excption('Invalid verification code.');
+			throw new Exception('Invalid verification code.');
 		}
 
 		$user->newPassword = blx()->request->getRequiredPost('newPassword');
@@ -121,7 +121,7 @@ class AccountController extends BaseController
 		{
 			if (!blx()->user->isLoggedIn())
 			{
-				blx()->user->login($user->username, $password);
+				blx()->user->login($user->username, $user->newPassword);
 			}
 
 			blx()->user->setNotice(Blocks::t('Password updated.'));
@@ -162,7 +162,7 @@ class AccountController extends BaseController
 			$user->language = blx()->request->getPost('language');
 		}
 
-		// Only adins can opt out of email verification
+		// Only admins can opt out of email verification
 		if (!$user->id)
 		{
 			if (blx()->account->isAdmin())
