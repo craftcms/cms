@@ -27,14 +27,22 @@ Blocks.Dashboard = Blocks.Base.extend({
 			this.widgets.push($widget);
 		}
 
+		this.stretchColHeights();
+
 		// setup events
-		this.addListener(Blocks.$window, 'resize', 'setCols');
+		this.addListener(Blocks.$window, 'resize', 'onWindowResize');
 
 		// do the version check
 		if (typeof window.getAlerts != 'undefined' && window.getAlerts)
 		{
 			$.getJSON(getAlertsUrl, $.proxy(this, 'displayAlerts'));
 		}
+	},
+
+	onWindowResize: function()
+	{
+		this.setCols();
+		this.stretchColHeights();
 	},
 
 	setCols: function()
@@ -107,6 +115,37 @@ Blocks.Dashboard = Blocks.Base.extend({
 		}
 
 		return shortestCol;
+	},
+
+	getTallestCol: function()
+	{
+		var tallestCol, tallestColHeight;
+
+		for (var i = 0; i < this.cols.length; i++)
+		{
+			var col = this.cols[i],
+				colHeight = this.cols[i].getHeight();
+
+			if (typeof tallestCol == 'undefined' || colHeight > tallestColHeight)
+			{
+				tallestCol = col;
+				tallestColHeight = colHeight;
+			}
+		}
+
+		return tallestCol;
+	},
+
+	stretchColHeights: function()
+	{
+		var minHeight = Blocks.$window.height() - 100,
+			tallestCol = this.getTallestCol(),
+			height = Math.max(minHeight, tallestCol.getHeight());
+
+		for (var i = 0; i < this.cols.length; i++)
+		{
+			this.cols[i].setHeight(height);
+		}
 	},
 
 	onWidgetMove: function()
@@ -216,7 +255,13 @@ var Col = Blocks.Base.extend({
 
 	getHeight: function()
 	{
+		this.$innerContainer.height('auto');
 		return this.$outerContainer.height();
+	},
+
+	setHeight: function(height)
+	{
+		this.$innerContainer.height(height);
 	},
 
 	addWidget: function(widget)

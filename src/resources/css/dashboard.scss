@@ -14,7 +14,8 @@
 .col:not(:last-child) .col-inner { padding-right: 25px; border-right: 1px solid #e5e5e5; margin-right: -1px; }
 .col .widget { display: block; }
 
-.widget:not(:first-child) { margin-top: 25px; border-top: 1px solid #e5e5e5; padding-top: 25px; }
+.widget { padding-bottom: 25px; border-bottom: 1px solid #e5e5e5; }
+.widget + .widget { margin-top: 25px; }
 
 .widget table.data tbody tr:first-child th,
 .widget table.data tbody tr:first-child td { padding-top: 0; border-top: none; }
