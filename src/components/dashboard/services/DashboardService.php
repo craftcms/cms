@@ -61,7 +61,7 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates widget packages.
+	 * Mass-populates widget model.
 	 *
 	 * @param array  $data
 	 * @param string $index

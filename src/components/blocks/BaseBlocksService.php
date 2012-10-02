@@ -44,7 +44,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates block packages.
+	 * Mass-populates block model.
 	 *
 	 * @param array  $data
 	 * @param string $index

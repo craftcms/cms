@@ -62,7 +62,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates asset source packages.
+	 * Mass-populates asset source model.
 	 *
 	 * @param array  $data
 	 * @param string $index

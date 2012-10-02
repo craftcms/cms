@@ -93,7 +93,7 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates entry packages.
+	 * Mass-populates entry model.
 	 *
 	 * @param array  $data
 	 * @param string $index
