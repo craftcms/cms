@@ -86,6 +86,6 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function setLicenseKeyStatus($status)
 	{
-		blx()->fileCache->set('licenseKeyStatus', $status, blx()->config->cacheTimeSeconds);
+		blx()->fileCache->set('licenseKeyStatus', $status, blx()->config->getCacheDuration());
 	}
 }

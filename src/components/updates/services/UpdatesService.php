@@ -165,7 +165,7 @@ class UpdatesService extends BaseApplicationComponent
 					$updateInfo = new UpdateInfo();
 
 				// cache it and set it to expire according to config
-				blx()->fileCache->set('updateInfo', $updateInfo, blx()->config->cacheTimeSeconds);
+				blx()->fileCache->set('updateInfo', $updateInfo);
 			}
 
 			$this->_updateInfo = $updateInfo;

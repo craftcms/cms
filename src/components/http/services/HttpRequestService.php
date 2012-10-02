@@ -201,7 +201,7 @@ class HttpRequestService extends \CHttpRequest
 				}
 
 				// cache it and set it to expire according to config
-				blx()->fileCache->set('urlFormat', $this->_urlFormat, blx()->config->cacheTimeSeconds);
+				blx()->fileCache->set('urlFormat', $this->_urlFormat, blx()->config->getCacheDuration());
 			}
 		}
 

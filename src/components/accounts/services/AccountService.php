@@ -48,12 +48,21 @@ class AccountService extends BaseApplicationComponent
 		//$user->archivedUsername           = (isset($attributes['archivedUsername']) ? $attributes['archivedUsername'] : null);
 		//$user->archivedEmail              = (isset($attributes['archivedEmail']) ? $attributes['archivedEmail'] : null);
 
+		if ($attributes['dateCreated'])
+		{
+			$user->dateCreated = new DateTime('@'.$attributes['dateCreated']);
+		}
+
 		// Is the user in cooldown mode, and are they past their window?
 		if ($user->status == UserStatus::Locked)
 		{
-			if ($user->lockoutDate + blx()->config->getCooldownDuration() <= DateTimeHelper::currentTime())
+			$cooldownDuration = blx()->config->cooldownDuration;
+			if ($cooldownDuration)
 			{
-				$this->activateUser($user);
+				if (!$user->getRemainingCooldownTime())
+				{
+					$this->activateUser($user);
+				}
 			}
 		}
 
@@ -105,7 +114,7 @@ class AccountService extends BaseApplicationComponent
 		if ($code)
 		{
 			$date = new DateTime();
-			$lifespan = new \DateInterval('PT'.blx()->config->getVerificationCodeLifespan() .'S');
+			$lifespan = new DateInterval(blx()->config->verificationCodeDuration);
 			$date->sub($duration);
 
 			$userRecord = UserRecord::model()->find(
@@ -232,6 +241,20 @@ class AccountService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Sends a verification email
+	 */
+	public function sendVerificationEmail(UserModel $user)
+	{
+		$userRecord = $this->_getUserRecordById($user->id);
+		$this->_setVerificationCodeOnUserRecord($userRecord);
+		$userRecord->save();
+
+		return blx()->email->sendEmailByKey($user, 'verify_email', array(
+			'link' => $this->_getVerifyAccountUrl($userRecord)
+		));
+	}
+
+	/**
 	 * Sends a "forgot password" email.
 	 *
 	 * @param UserModel $user
@@ -256,13 +279,8 @@ class AccountService extends BaseApplicationComponent
 	 */
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
-		$verificationCode = StringHelper::UUID();
-		$issuedDate = new DateTime();
-		$duration = new \DateInterval('PT'.ConfigHelper::getTimeInSeconds(blx()->config->verificationCodeLifespan) .'S');
-		$expiryDate = $issuedDate->add($duration);
-
-		$userRecord->verificationCode = $verificationCode;
-		$userRecord->verificationCodeIssuedDate = $issuedDate;
+		$userRecord->verificationCode = StringHelper::UUID();
+		$userRecord->verificationCodeIssuedDate = new DateTime();
 	}
 
 	/**
@@ -420,11 +438,9 @@ class AccountService extends BaseApplicationComponent
 	{
 		if ($userRecord->invalidLoginWindowStart)
 		{
-			$start = $userRecord->invalidLoginWindowStart;
-			$duration = blx()->config->getInvalidLoginWindowDuration();
-			$end = $start + $end;
-
-			return ($end >= DateTimeHelper::currentTime());
+			$duration = new DateInterval(blx()->config->invalidLoginWindowDuration);
+			$end = $userRecord->invalidLoginWindowStart->add($duration);
+			return ($end >= new DateTime());
 		}
 		else
 		{

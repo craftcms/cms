@@ -75,7 +75,7 @@ class DateTimeHelper
 	 */
 	public static function isValidTimeStamp($timestamp)
 	{
-		return ((string)(int)$timestamp === $timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX);
+		return (is_numeric($timestamp) && ($timestamp <= PHP_INT_MAX) && ($timestamp >= ~PHP_INT_MAX));
 	}
 
 	/**
@@ -87,13 +87,19 @@ class DateTimeHelper
 	public static function nice($dateString = null)
 	{
 		if ($dateString == null)
+		{
 			$date = time();
+		}
 		else
 		{
 			if (static::isValidTimeStamp($dateString))
+			{
 				$date = $dateString;
+			}
 			else
+			{
 				$date = strtotime($dateString);
+			}
 		}
 
 		return blx()->dateFormatter->formatDateTime($date);

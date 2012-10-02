@@ -127,14 +127,6 @@ class BlxVariable
 	}
 
 	/**
-	 * @return DateVariable
-	 */
-	public function date()
-	{
-		return new DateVariable();
-	}
-
-	/**
 	 * @return EmailMessagesVariable
 	 */
 	public function emailMessages()

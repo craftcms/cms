@@ -129,6 +129,43 @@ class DateTime extends \DateTime
 	}
 
 	/**
+	 * @return DateInterval|false
+	 */
+	public function diff($datetime2, $absolute = false)
+	{
+		$interval = parent::diff($datetime2, $absolute);
+
+		// Convert it to a DateInterval in this namespace
+		if ($interval instanceof \DateInterval)
+		{
+			$newInterval = new DateInterval();
+			$newInterval->y = $interval->y;
+			$newInterval->m = $interval->m;
+			$newInterval->d = $interval->d;
+			$newInterval->h = $interval->h;
+			$newInterval->i = $interval->i;
+			$newInterval->s = $interval->s;
+			$newInterval->invert = $interval->invert;
+			$newInterval->days = $interval->days;
+			return $newInterval;
+		}
+		else
+		{
+			return $interval;
+		}
+	}
+
+	/**
+	 * Returns a nicely formatted date string for given Datetime string.
+	 *
+	 * @return string
+	 */
+	public function nice()
+	{
+		return DateTimeHelper::nice($this->getTimestamp());
+	}
+
+	/**
 	 * @return string
 	 */
 	function __toString()

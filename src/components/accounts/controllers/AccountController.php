@@ -46,8 +46,16 @@ class AccountController extends BaseController
 				case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 				{
 					$user = blx()->account->getUserByUsernameOrEmail($loginName);
-					$timeRemaining = DateTimeHelper::secondsToHumanTimeDuration($user->getRemainingCooldownTime(), false);
-					$this->returnErrorJson(Blocks::t('Account locked. Try again in {time}.', array('time' => $timeRemaining)));
+					$timeRemaining = $user->getRemainingCooldownTime();
+					if ($timeRemaining)
+					{
+						$humanTimeRemaining = $timeRemaining->humanDuration(false);
+						$this->returnErrorJson(Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining)));
+					}
+					else
+					{
+						$this->returnErrorJson(Blocks::t('Account locked.'));
+					}
 					break;
 				}
 				case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
