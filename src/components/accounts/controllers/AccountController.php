@@ -150,15 +150,26 @@ class AccountController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$user = new UserModel();
-
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$user->id = blx()->request->getPost('userId');
+			$userId = blx()->request->getPost('userId');
 		}
 		else
 		{
-			$user->id = blx()->account->getCurrentUser()->id;
+			$userId = blx()->account->getCurrentUser()->id;
+		}
+
+		if ($userId)
+		{
+			$user = blx()->account->getUserById($userId);
+			if (!$user)
+			{
+				throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
+			}
+		}
+		else
+		{
+			$user = new UserModel();
 		}
 
 		$user->username = blx()->request->getPost('username');
