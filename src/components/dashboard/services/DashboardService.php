@@ -216,15 +216,40 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function addDefaultUserWidgets()
 	{
-		$widget = new WidgetModel();
+		// Quick Post widget(s)
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$sections = blx()->sections->getSections();
+			foreach ($sections as $section)
+			{
+				$widget = new WidgetModel();
+				$widget->type = 'QuickPost';
+				$widget->settings = array(
+					'section' => $section->id
+				);
+				$widget->save();
+			}
+		}
+		else
+		{
+			$widget = new WidgetModel();
+			$widget->type = 'QuickPost';
+			$widget->save();
+		}
 
+		// Recent Entries widget
+		$widget = new WidgetModel();
+		$widget->type = 'RecentEntries';
+		$widget->save();
+
+		// Blog & Tonic feed widget
+		$widget = new WidgetModel();
 		$widget->type = 'Feed';
 		$widget->settings = array(
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
 		);
-
-		$this->saveUserWidget($widget);
+		$widget->save();
 	}
 
 	/**
