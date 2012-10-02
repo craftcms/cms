@@ -32,6 +32,7 @@ class UserModel extends BaseModel
 			//'archivedUsername'           => AttributeType::String,
 			//'archivedEmail'              => AttributeType::Email,
 
+			'verificationRequired'         => AttributeType::Bool,
 			'newPassword'                  => AttributeType::String,
 		);
 	}

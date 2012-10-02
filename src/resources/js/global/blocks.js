@@ -218,7 +218,7 @@ Blocks.asciiString = function(str)
 
 	for (var c = 0; c < str.length; c++)
 	{
-		var ascii = str.asciiAt(c);
+		var ascii = str.charCodeAt(c);
 
 		if (ascii >= 32 && ascii < 128)
 		{

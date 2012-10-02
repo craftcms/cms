@@ -39,8 +39,6 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		// Set the block content
-		$entry->blocks = array();
-
 		$contentRecord = $this->_getEntryContentRecord($entry);
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
@@ -93,7 +91,7 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates entry packages.
+	 * Mass-populates entry model.
 	 *
 	 * @param array  $data
 	 * @param string $index

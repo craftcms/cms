@@ -115,7 +115,7 @@ class AccountController extends BaseController
 			throw new Excption('Invalid verification code.');
 		}
 
-		$user->newPassword = blx()->request->getRequiredPost('password');
+		$user->newPassword = blx()->request->getRequiredPost('newPassword');
 
 		if (blx()->account->changePassword($user))
 		{
@@ -162,16 +162,28 @@ class AccountController extends BaseController
 			$user->language = blx()->request->getPost('language');
 		}
 
+		// Only adins can opt out of email verification
+		if (!$user->id)
+		{
+			if (blx()->account->isAdmin())
+			{
+				$user->verificationRequired = (bool)blx()->request->getPost('verificationRequired');
+			}
+			else
+			{
+				$user->verificationRequired = true;
+			}
+		}
+
 		// Only admins can change other users' passwords
 		if ($user->isCurrent() || blx()->account->isAdmin())
 		{
-			$user->newPassword = blx()->request->getPost('password');
+			$user->newPassword = blx()->request->getPost('newPassword');
 		}
 
-		// Only adins can require verification/password resets
+		// Only admins can require users to reset their passwords
 		if (blx()->account->isAdmin())
 		{
-			$user->verificationRequired = (bool)blx()->request->getPost('verificationRequired');
 			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
 		}
 
