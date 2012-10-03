@@ -15,10 +15,14 @@ class StringHelper
 	public static function isNullOrEmpty($value)
 	{
 		if ($value === null || $value === '')
+		{
 			return true;
+		}
 
 		if (!is_string($value))
+		{
 			throw new Exception(Blocks::t('IsNullOrEmpty requires a string.'));
+		}
 
 		return false;
 	}
@@ -43,9 +47,13 @@ class StringHelper
 	public static function randomString($length = 36, $extendedChars = false)
 	{
 		if ($extendedChars)
+		{
 			$validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890`~!@#$%^&*()-_=+[]\{}|;:\'",./<>?"';
+		}
 		else
+		{
 			$validChars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+		}
 
 		$randomString = '';
 
@@ -105,7 +113,9 @@ class StringHelper
 		$escapedChars = array();
 
 		foreach ($charsToEscape as $char)
+		{
 			$escapedChars[] = "\\".$char;
+		}
 
 		return  str_replace($charsToEscape, $escapedChars, $string);
 	}
@@ -132,8 +142,8 @@ class StringHelper
 	public static function asciiString($str)
 	{
 		$asciiStr = '';
-
 		$strlen = strlen($str);
+
 		for ($c = 0; $c < $strlen; $c++)
 		{
 			$char = $str[$c];

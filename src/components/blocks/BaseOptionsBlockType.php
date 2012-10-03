@@ -57,9 +57,13 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	public function defineContentAttribute()
 	{
 		if ($this->multi)
+		{
 			return AttributeType::Mixed;
+		}
 		else
+		{
 			return AttributeType::String;
+		}
 	}
 
 	/**
@@ -71,12 +75,17 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	{
 		// Prepare the options array for the textarea
 		$options = '';
+
 		foreach ($this->getSettings()->options as $value => $label)
 		{
 			if ((string)$value === (string)$label)
+			{
 				$options .= $label."\n";
+			}
 			else
+			{
 				$options .= $value.' => '.$label."\n";
+			}
 		}
 
 		return blx()->templates->render('_components/blocks/optionsblocksettings', array(

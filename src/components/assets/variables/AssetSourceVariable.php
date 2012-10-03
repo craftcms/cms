@@ -14,6 +14,7 @@ class AssetSourceVariable extends BaseModelVariable
 	public function sourceType()
 	{
 		$sourceType = blx()->assetSources->populateSourceType($this->model);
+
 		if ($sourceType)
 		{
 			return new AssetSourceTypeVariable($sourceType);

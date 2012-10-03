@@ -26,7 +26,7 @@ class EntryLinkBlockType extends BaseBlock
 	{
 		$settings = array();
 
-		if (Blocks::hasPackage(Blocks::PublishPro))
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$settings['sections'] = array(AttributeType::Mixed);
 		}

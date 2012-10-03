@@ -57,6 +57,7 @@ class AccountService extends BaseApplicationComponent
 		if ($user->status == UserStatus::Locked)
 		{
 			$cooldownDuration = blx()->config->cooldownDuration;
+
 			if ($cooldownDuration)
 			{
 				if (!$user->getRemainingCooldownTime())
@@ -78,6 +79,7 @@ class AccountService extends BaseApplicationComponent
 	public function getUserById($id)
 	{
 		$userRecord = UserRecord::model()->findById($id);
+
 		if ($userRecord)
 		{
 			return $this->populateUser($userRecord);
@@ -114,7 +116,7 @@ class AccountService extends BaseApplicationComponent
 		if ($code)
 		{
 			$date = new DateTime();
-			$lifespan = new DateInterval(blx()->config->verificationCodeDuration);
+			$duration = new DateInterval(blx()->config->verificationCodeDuration);
 			$date->sub($duration);
 
 			$userRecord = UserRecord::model()->find(
@@ -143,6 +145,7 @@ class AccountService extends BaseApplicationComponent
 			{
 				$userId = blx()->user->getId();
 				$userRecord = UserRecord::model()->findById($userId);
+
 				if ($userRecord)
 				{
 					$this->_currentUser = $this->populateUser($userRecord);
@@ -165,6 +168,7 @@ class AccountService extends BaseApplicationComponent
 	public function isAdmin()
 	{
 		$user = $this->getCurrentUser();
+
 		if ($user)
 		{
 			return $user->admin;
@@ -542,10 +546,12 @@ class AccountService extends BaseApplicationComponent
 	private function _getUserRecordById($userId)
 	{
 		$userRecord = UserRecord::model()->findById($userId);
+
 		if (!$userRecord)
 		{
 			throw new Exception(Blocks::t('No user exists with the ID “{id}”', array('id' => $userId)));
 		}
+
 		return $userRecord;
 	}
 }

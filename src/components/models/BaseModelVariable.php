@@ -59,7 +59,9 @@ abstract class BaseModelVariable
 	public function id()
 	{
 		if ($this->model instanceof BaseRecord)
+		{
 			return $this->model->id;
+		}
 	}
 
 	/**
@@ -81,7 +83,9 @@ abstract class BaseModelVariable
 	public function dateUpdated()
 	{
 		if ($this->model instanceof BaseRecord)
+		{
 			return $this->model->dateUpdated;
+		}
 	}
 
 	/**
@@ -99,6 +103,7 @@ abstract class BaseModelVariable
 	 *
 	 * @static
 	 * @param array $models
+	 * @return array
 	 */
 	public static function populateVariables($models)
 	{

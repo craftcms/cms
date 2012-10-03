@@ -23,23 +23,35 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 
 					// If it's a default framework command, don't namespace it.
 					if (strpos($this->commands[$name], 'framework') === false)
+					{
 						$className = __NAMESPACE__.'\\'.$className;
+					}
 
 					if (!class_exists($className, false))
+					{
 						require_once($this->commands[$name]);
+					}
 				}
 				else // an alias
+				{
 					$className = Blocks::import($this->commands[$name]);
+				}
 
 				return new $className($name, $this);
 			}
 			else // an array configuration
+			{
 				return Blocks::createComponent($this->commands[$name], $name, $this);
+			}
 		}
 		else if ($name === 'help')
+		{
 			return new \CHelpCommand('help', $this);
+		}
 		else
+		{
 			return null;
+		}
 	}
 
 	/**
@@ -50,7 +62,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 	 */
 	public function addCommands($path)
 	{
-		if(($commands=$this->findCommands($path))!==array())
+		if (($commands=$this->findCommands($path))!==array())
 		{
 			foreach($commands as $name=>$file)
 			{

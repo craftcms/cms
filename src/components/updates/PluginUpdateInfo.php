@@ -31,7 +31,11 @@ class PluginUpdateInfo
 		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
 
 		if (isset($properties['releases']))
+		{
 			foreach ($properties['releases'] as $release)
+			{
 				$this->releases[] = new PluginNewReleaseInfo($release);
+			}
+		}
 	}
 }

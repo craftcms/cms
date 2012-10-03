@@ -15,15 +15,20 @@ if (typeof(console) == 'object')
 	$nextPos = !$sessionPos ? $serverPos : $sessionPos;
 	$cookieInfo = substr($environmentData[0], $cookiePos, $nextPos - $cookiePos);
 
+	$sessionInfo = false;
 	if ($sessionPos)
+	{
 		$sessionInfo = substr($environmentData[0], $sessionPos, $serverPos - $sessionPos);
+	}
 
 	$serverInfo = substr($environmentData[0], $serverPos);
 
 	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $getInfo, Blocks\Blocks::t('GET Info'));
 	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $cookieInfo, Blocks\Blocks::t('COOKIE Info'));
-	if ($sessionPos)
+	if ($sessionInfo)
+	{
 		Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $sessionInfo, Blocks\Blocks::t('SESSION Info'));
+	}
 	Blocks\LoggingHelper::processFireBugLogEntry($environmentData[1], $environmentData[3], $environmentData[2], $serverInfo, Blocks\Blocks::t('SERVER Info'));
 
 	echo "\tconsole.groupCollapsed(\"Logs\");\n";

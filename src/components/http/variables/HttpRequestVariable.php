@@ -49,7 +49,7 @@ class HttpRequestVariable
 	 */
 	public function post($name, $default = null)
 	{
-		return blx()->request->getPost($name, $default = null);
+		return blx()->request->getPost($name, $default);
 	}
 
 	/**
@@ -82,6 +82,7 @@ class HttpRequestVariable
 	public function lastSegment()
 	{
 		$segments = blx()->request->getPathSegments();
+
 		if ($segments)
 		{
 			return $segments[count($segments)-1];

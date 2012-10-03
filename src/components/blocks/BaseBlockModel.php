@@ -10,6 +10,9 @@ namespace Blocks;
  */
 abstract class BaseBlockModel extends BaseComponentModel
 {
+	/**
+	 * @return mixed
+	 */
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();

@@ -20,15 +20,21 @@ class WebLogRoute extends \CWebLogRoute
 		if ($this->showInFireBug)
 		{
 			if ($isAjax && $this->ignoreAjaxInFireBug)
+			{
 				return;
+			}
 
 			$view .= '-firebug';
 		}
 		else if(!(blx() instanceof \CWebApplication) || $isAjax)
+		{
 			return;
+		}
 
 		if ($mimeType !== 'text/html')
+		{
 			return;
+		}
 
 		$viewFile = blx()->path->getCpTemplatesPath().'logging/'.$view.'.php';
 		include(blx()->findLocalizedFile($viewFile, 'en'));

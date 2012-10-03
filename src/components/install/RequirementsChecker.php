@@ -13,7 +13,6 @@ class RequirementsChecker extends \CComponent
 
 	/**
 	 * @access private
-	 * @todo Find out what min versions of MySQL and other databases we are going to support.
 	 */
 	private function init()
 	{
@@ -154,17 +153,25 @@ class RequirementsChecker extends \CComponent
 		foreach($vars as $var)
 		{
 			if (!isset($_SERVER[$var]))
+			{
 				$missing[] = $var;
+			}
 		}
 
 		if (!empty($missing))
+		{
 			return Blocks::t('$_SERVER does not have {messages}.', array('messages' => implode(', ', $missing)));
+		}
 
 		if (!isset($_SERVER["REQUEST_URI"]) && isset($_SERVER["QUERY_STRING"]))
+		{
 			return Blocks::t('Either $_SERVER["REQUEST_URI"] or $_SERVER["QUERY_STRING"] must exist.');
+		}
 
 		if (!isset($_SERVER["PATH_INFO"]) && strpos($_SERVER["PHP_SELF"], $_SERVER["SCRIPT_NAME"]) !== 0)
+		{
 			return Blocks::t('Unable to determine URL path info. Please make sure $_SERVER["PATH_INFO"] (or $_SERVER["PHP_SELF"] and $_SERVER["SCRIPT_NAME"]) contains proper value.');
+		}
 
 		return '';
 	}
@@ -180,7 +187,9 @@ class RequirementsChecker extends \CComponent
 			$gdInfo = gd_info();
 
 			if ($gdInfo['FreeType Support'])
+			{
 				return '';
+			}
 
 			return Blocks::t('GD installed').'<br />'.Blocks::t('FreeType support not installed.');
 		}
@@ -198,6 +207,7 @@ class RequirementsChecker extends \CComponent
 		$info[] = isset($_SERVER['SERVER_SOFTWARE']) ? $_SERVER['SERVER_SOFTWARE'] : '';
 		$info[] = 'Yii v'.Blocks::getYiiVersion();
 		$info[] =  \CTimestamp::formatDate(blx()->locale->getTimeFormat());;
+
 		return implode(' | ', $info);
 	}
 
@@ -229,7 +239,9 @@ class RequirementsChecker extends \CComponent
 				break;
 			}
 			else if ($requirement->getResult() == RequirementResult::Warning)
+			{
 				$installResult = InstallStatus::Warning;
+			}
 		}
 
 		$writableFolders = $this->_getWritableFolders();

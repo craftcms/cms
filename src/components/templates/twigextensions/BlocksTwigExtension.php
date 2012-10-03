@@ -65,12 +65,16 @@ class BlocksTwigExtension extends \Twig_Extension
 		$filteredArray = array();
 
 		if (!is_array($exclude))
+		{
 			$exclude = array($exclude);
+		}
 
 		foreach ($arr as $key => $value)
 		{
 			if (!in_array($value, $exclude))
+			{
 				$filteredArray[$key] = $value;
+			}
 		}
 
 		return $filteredArray;
@@ -123,6 +127,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			$globals['siteUrl'] = Blocks::getSiteUrl();
 
 			$user = blx()->account->getCurrentUser();
+
 			if ($user)
 			{
 				$globals['user'] = new UserVariable($user);

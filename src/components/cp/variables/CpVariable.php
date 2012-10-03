@@ -24,6 +24,7 @@ class CpVariable
 
 		// Add any Plugin nav items
 		$plugins = blx()->plugins->getEnabledPlugins();
+
 		foreach ($plugins as $plugin)
 		{
 			if ($plugin->hasCpSection)

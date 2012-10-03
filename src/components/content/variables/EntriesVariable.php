@@ -41,6 +41,7 @@ class EntriesVariable
 	{
 		$params = new EntryParams($params);
 		$entry = blx()->entries->getEntry($params);
+
 		if ($entry)
 		{
 			return new EntryVariable($entry);

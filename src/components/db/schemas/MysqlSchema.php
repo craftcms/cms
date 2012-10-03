@@ -55,15 +55,20 @@ class MysqlSchema extends \CMysqlSchema
 		$tableInfo = $this->getTable($table, true);
 		$columns = array_keys($tableInfo->columns);
 		$beforeIndex = array_search($before, $columns);
+
 		if ($beforeIndex === false)
+		{
 			return $this->addColumn($table, $column, $type);
+		}
 		else if ($beforeIndex > 0)
 		{
 			$after = $columns[$beforeIndex-1];
 			return $this->addColumnAfter($table, $column, $type, $after);
 		}
 		else
+		{
 			return $this->addColumnFirst($table, $column, $type);
+		}
 	}
 
 	/**
@@ -77,7 +82,9 @@ class MysqlSchema extends \CMysqlSchema
 	public function alterColumn($table, $column, $type, $newName = null, $after = null)
 	{
 		if (!$newName)
+		{
 			$newName = $column;
+		}
 
 		return 'ALTER TABLE ' . $this->quoteTableName($table) . ' CHANGE '
 			. $this->quoteColumnName($column) . ' '
@@ -100,6 +107,7 @@ class MysqlSchema extends \CMysqlSchema
 
 		// parameterize the parameters
 		$uniqueCounter = 0;
+
 		foreach ($vals as $val)
 		{
 			for ($columnCounter = 0; $columnCounter < count($columns); $columnCounter++)
@@ -113,11 +121,12 @@ class MysqlSchema extends \CMysqlSchema
 		}
 
 		foreach ($columns as $columnName)
+		{
 			$names[] = $this->quoteColumnName($columnName);
+		}
 
 		// generate the SQL
-		$sql='INSERT INTO ' . $this->quoteTableName($table)
-			. ' (' . implode(', ',$names) . ') VALUES (';
+		$sql='INSERT INTO '.$this->quoteTableName($table).' ('.implode(', ', $names).') VALUES (';
 
 		$columnCounter = 0;
 		foreach ($placeHolders as $placeHolder)

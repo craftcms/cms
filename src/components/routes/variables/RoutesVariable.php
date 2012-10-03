@@ -14,16 +14,22 @@ class RoutesVariable
 		$return = array();
 
 		$routes = blx()->routes->getAllRoutes();
+
 		foreach ($routes as $route)
 		{
 			$urlDisplayHtml = '';
 			$urlParts = JsonHelper::decode($route->urlParts);
+
 			foreach ($urlParts as $part)
 			{
 				if (is_string($part))
+				{
 					$urlDisplayHtml .= $part;
+				}
 				else
+				{
 					$urlDisplayHtml .= '<span class="token" data-name="'.$part[0].'" data-value="'.$part[1].'">'.$part[0].'</span>';
+				}
 			}
 
 			$return[] = array(

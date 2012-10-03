@@ -23,7 +23,9 @@ class IncludeTranslations_TokenParser extends \Twig_TokenParser
 			$messages[] = $this->parser->getExpressionParser()->parseExpression();
 
 			if (!$stream->test(\Twig_Token::PUNCTUATION_TYPE, ','))
+			{
 				break;
+			}
 
 			$this->parser->getStream()->next();
 		}

@@ -36,6 +36,7 @@ class DashboardVariable
 	public function getWidgetType($class)
 	{
 		$widgetType = blx()->dashboard->getWidgetType($class);
+
 		if ($widgetType)
 		{
 			return new WidgetTypeVariable($widgetType);
@@ -62,6 +63,7 @@ class DashboardVariable
 	public function getUserWidgetById($id)
 	{
 		$widget = blx()->dashboard->getUserWidgetById($id);
+
 		if ($widget)
 		{
 			return new WidgetVariable($widget);

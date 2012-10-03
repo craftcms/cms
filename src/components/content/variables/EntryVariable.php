@@ -71,6 +71,7 @@ class EntryVariable extends BaseModelVariable
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$section = $this->model->getSection();
+
 			if ($section)
 			{
 				return new SectionVariable($section);
@@ -88,6 +89,7 @@ class EntryVariable extends BaseModelVariable
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			$user = $this->model->getAuthor();
+
 			if ($user)
 			{
 				return new UserVariable($user);

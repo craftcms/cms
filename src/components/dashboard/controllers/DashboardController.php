@@ -27,6 +27,7 @@ class DashboardController extends BaseController
 		$widget->type = blx()->request->getRequiredPost('type');
 
 		$typeSettings = blx()->request->getPost('types');
+
 		if (isset($typeSettings[$widget->type]))
 		{
 			$widget->settings = $typeSettings[$widget->type];
@@ -59,6 +60,7 @@ class DashboardController extends BaseController
 
 		$widgetId = JsonHelper::decode(blx()->request->getRequiredPost('id'));
 		blx()->dashboard->deleteUserWidgetById($widgetId);
+
 		$this->returnJson(array('success' => true));
 	}
 
@@ -72,6 +74,7 @@ class DashboardController extends BaseController
 
 		$widgetIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
 		blx()->dashboard->reorderUserWidgets($widgetIds);
+
 		$this->returnJson(array('success' => true));
 	}
 

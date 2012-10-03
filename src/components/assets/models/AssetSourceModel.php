@@ -8,6 +8,9 @@ namespace Blocks;
  */
 class AssetSourceModel extends BaseComponentModel
 {
+	/**
+	 * @return mixed
+	 */
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();

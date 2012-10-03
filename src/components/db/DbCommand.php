@@ -134,12 +134,9 @@ class DbCommand extends \CDbCommand
 	 */
 	public function insert($table, $columns)
 	{
-		if ($table !== 'languages')
-		{
-			$columns['dateCreated'] = DateTimeHelper::currentTime();
-			$columns['dateUpdated'] = DateTimeHelper::currentTime();
-			$columns['uid'] = StringHelper::UUID();
-		}
+		$columns['dateCreated'] = DateTimeHelper::currentTime();
+		$columns['dateUpdated'] = DateTimeHelper::currentTime();
+		$columns['uid'] = StringHelper::UUID();
 
 		return parent::insert($this->_addTablePrefix($table), $columns);
 	}
@@ -340,7 +337,9 @@ class DbCommand extends \CDbCommand
 			}
 		}
 		else
+		{
 			$table = preg_replace('/^\w+/', blx()->db->tablePrefix.'\0', $table);
+		}
 
 		return $table;
 	}

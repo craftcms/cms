@@ -23,7 +23,9 @@ abstract class BaseIO
 	public function getRealPath()
 	{
 		if (!$this->_realPath)
+		{
 			$this->_realPath = IOHelper::getRealPath($this->path);
+		}
 
 		return $this->_realPath;
 	}
@@ -34,7 +36,9 @@ abstract class BaseIO
 	public function isReadable()
 	{
 		if (!$this->_isReadable)
+		{
 			$this->_isReadable = IOHelper::isReadable($this->getRealPath());
+		}
 
 		return $this->_isReadable;
 	}
@@ -45,7 +49,9 @@ abstract class BaseIO
 	public function isWritable()
 	{
 		if (!$this->_isWritable)
+		{
 			$this->_isWritable = IOHelper::isWritable($this->getRealPath());
+		}
 
 		return $this->_isWritable;
 	}
@@ -56,7 +62,9 @@ abstract class BaseIO
 	public function getOwner()
 	{
 		if (!$this->_owner)
+		{
 			$this->_owner = IOHelper::getOwner($this->getRealPath());
+		}
 
 		return $this->_owner;
 	}
@@ -67,7 +75,9 @@ abstract class BaseIO
 	public function getGroup()
 	{
 		if (!$this->_group)
+		{
 			$this->_group = IOHelper::getGroup($this->getRealPath());
+		}
 
 		return $this->_group;
 	}
@@ -78,7 +88,9 @@ abstract class BaseIO
 	public function getPermissions()
 	{
 		if (!$this->_permissions)
+		{
 			$this->_permissions = IOHelper::getPermissions($this->getRealPath());
+		}
 
 		return $this->_permissions;
 	}
@@ -89,7 +101,9 @@ abstract class BaseIO
 	public function getLastTimeModified()
 	{
 		if (!$this->_lastTimeModified)
+		{
 			$this->_lastTimeModified = IOHelper::getLastTimeModified($this->getRealPath());
+		}
 
 		return $this->_lastTimeModified;
 	}
@@ -101,7 +115,9 @@ abstract class BaseIO
 	public function changeOwner($owner)
 	{
 		if (!IOHelper::changeOwner($this->getRealPath(), $owner))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -113,7 +129,9 @@ abstract class BaseIO
 	public function changeGroup($group)
 	{
 		if (!IOHelper::changeGroup($this->getRealPath(), $group))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -125,7 +143,9 @@ abstract class BaseIO
 	public function changePermissions($permissions)
 	{
 		if (!IOHelper::changePermissions($this->getRealPath(), $permissions))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -137,7 +157,9 @@ abstract class BaseIO
 	public function rename($newName)
 	{
 		if (!IOHelper::rename($this->getRealPath(), $newName))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -149,7 +171,9 @@ abstract class BaseIO
 	public function move($newPath)
 	{
 		if (!IOHelper::move($this->getRealPath(), $newPath))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -163,14 +187,18 @@ abstract class BaseIO
 		if ($fullPath)
 		{
 			if (!$this->_fullFolderName)
+			{
 				$this->_fullFolderName = IOHelper::getFolderName($this->getRealPath(), $fullPath);
+			}
 
 			return $this->_fullFolderName;
 		}
 		else
 		{
 			if (!$this->_folderNameOnly)
+			{
 				$this->_folderNameOnly = IOHelper::getFolderName($this->getRealPath(), $fullPath);
+			}
 
 			return $this->_folderNameOnly;
 		}

@@ -6,16 +6,22 @@ namespace Blocks;
  */
 class EntryContentRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'entrycontent';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		$attributes = array();
-
 		$blocks = blx()->entryBlocks->getAllBlocks();
+
 		foreach ($blocks as $block)
 		{
 			$blockType = blx()->blockTypes->populateBlockType($block);
@@ -34,6 +40,9 @@ class EntryContentRecord extends BaseRecord
 		return $attributes;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineRelations()
 	{
 		return array(

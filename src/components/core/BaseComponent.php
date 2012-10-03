@@ -119,6 +119,7 @@ abstract class BaseComponent extends BaseApplicationComponent
 
 			// Chop off the class suffix
 			$suffixLength = strlen($this->componentType);
+
 			if (substr($classHandle, -$suffixLength) == $this->componentType)
 			{
 				$classHandle = substr($classHandle, 0, -$suffixLength);

@@ -58,9 +58,11 @@ class RecentEntriesWidget extends BaseWidget
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
+
 			if (is_numeric($sectionId))
 			{
 				$section = blx()->sections->getSectionById($sectionId);
+
 				if ($section)
 				{
 					return Blocks::t('Recently in {section}', array('section' => $section->name));
@@ -83,6 +85,7 @@ class RecentEntriesWidget extends BaseWidget
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
+
 			if (is_numeric($sectionId))
 			{
 				$params['sectionId'] = (int)$sectionId;

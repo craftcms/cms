@@ -24,9 +24,13 @@ class SystemSettingsService extends BaseApplicationComponent
 			));
 
 			if ($settings)
+			{
 				$this->_settings[$category] = $settings;
+			}
 			else
+			{
 				$this->_settings[$category] = false;
+			}
 		}
 
 		return $this->_settings[$category];
@@ -43,9 +47,13 @@ class SystemSettingsService extends BaseApplicationComponent
 		$settings = $this->_getSettings($category);
 
 		if ($settings)
+		{
 			return $settings->settings;
+		}
 		else
+		{
 			return array();
+		}
 	}
 
 	/**
@@ -63,7 +71,9 @@ class SystemSettingsService extends BaseApplicationComponent
 		{
 			// If there are no new settings, we're already done
 			if (!$settings)
+			{
 				return true;
+			}
 
 			// Create a new SystemSettings record, and save a reference to it
 			$record = new SystemSettingsRecord();
@@ -75,11 +85,13 @@ class SystemSettingsService extends BaseApplicationComponent
 			// Delete the record
 			$record->delete();
 			$this->_settings[$category] = false;
+
 			return true;
 		}
 
 		$record->settings = $settings;
 		$record->save();
+
 		return !$record->hasErrors();
 	}
 }

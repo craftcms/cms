@@ -20,7 +20,7 @@ class BlockTypesService extends BaseApplicationComponent
 	 * Gets a block type.
 	 *
 	 * @param string $class
-	 * @return BaseBlock|null
+	 * @return BaseBlockType|null
 	 */
 	public function getBlockType($class)
 	{
@@ -31,7 +31,7 @@ class BlockTypesService extends BaseApplicationComponent
 	 * Populates a block type.
 	 *
 	 * @param BaseBlockModel $block
-	 * @return BaseBlock|null
+	 * @return BaseBlockType|null
 	 */
 	public function populateBlockType(BaseBlockModel $block)
 	{

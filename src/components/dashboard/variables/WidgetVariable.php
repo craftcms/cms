@@ -14,6 +14,7 @@ class WidgetVariable extends BaseModelVariable
 	public function widgetType()
 	{
 		$widgetType = blx()->dashboard->populateWidgetType($this->model);
+
 		if ($widgetType)
 		{
 			return new WidgetTypeVariable($widgetType);

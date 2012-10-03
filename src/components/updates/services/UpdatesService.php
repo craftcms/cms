@@ -18,7 +18,9 @@ class UpdatesService extends BaseApplicationComponent
 		$updates = array();
 
 		if (!$forceRefresh && !$this->isUpdateInfoCached())
+		{
 			return null;
+		}
 
 		$updateInfo = $this->getUpdateInfo($forceRefresh);
 
@@ -26,6 +28,7 @@ class UpdatesService extends BaseApplicationComponent
 		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateInfo->blocks->releases) > 0)
 		{
 			$notes = $this->_generateUpdateNotes($updateInfo->blocks->releases, 'Blocks');
+
 			$updates[] = array(
 				'name' => 'Blocks',
 				'handle' => 'Blocks',
@@ -47,6 +50,7 @@ class UpdatesService extends BaseApplicationComponent
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 				{
 					$notes = $this->_generateUpdateNotes($plugin->releases, $plugin->displayName);
+
 					$updates[] = array(
 						'name' => $plugin->displayName,
 						'handle' => $plugin->class,
@@ -70,7 +74,9 @@ class UpdatesService extends BaseApplicationComponent
 		foreach ($blocksReleases as $blocksRelease)
 		{
 			if ($blocksRelease->critical)
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -85,7 +91,9 @@ class UpdatesService extends BaseApplicationComponent
 		foreach ($blocksReleases as $blocksRelease)
 		{
 			if ($blocksRelease->manual_update_required)
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -104,7 +112,9 @@ class UpdatesService extends BaseApplicationComponent
 				foreach ($plugin->releases as $release)
 				{
 					if ($release->critical)
+					{
 						return true;
+					}
 				}
 			}
 		}
@@ -126,7 +136,9 @@ class UpdatesService extends BaseApplicationComponent
 	public function isCriticalUpdateAvailable()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->criticalUpdateAvailable))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -137,7 +149,9 @@ class UpdatesService extends BaseApplicationComponent
 	public function isManualUpdateRequired()
 	{
 		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->manualUpdateRequired))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -150,6 +164,8 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		if (!isset($this->_updateInfo) || $forceRefresh)
 		{
+			$updateInfo = false;
+
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
@@ -162,7 +178,9 @@ class UpdatesService extends BaseApplicationComponent
 				$updateInfo = $this->check();
 
 				if ($updateInfo == null)
+				{
 					$updateInfo = new UpdateInfo();
+				}
 
 				// cache it and set it to expire according to config
 				blx()->fileCache->set('updateInfo', $updateInfo);
@@ -180,8 +198,11 @@ class UpdatesService extends BaseApplicationComponent
 	public function flushUpdateInfoFromCache()
 	{
 		Blocks::log('Flushing update info from cache.');
+
 		if (blx()->fileCache->delete('updateInfo'))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -200,7 +221,9 @@ class UpdatesService extends BaseApplicationComponent
 		$info->releaseDate = $releaseDate;
 
 		if ($info->save())
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -211,8 +234,11 @@ class UpdatesService extends BaseApplicationComponent
 	public function doAppUpdate()
 	{
 		$appUpdater = new AppUpdater();
+
 		if ($appUpdater->start())
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -224,8 +250,11 @@ class UpdatesService extends BaseApplicationComponent
 	public function doPluginUpdate($pluginHandle)
 	{
 		$pluginUpdater = new PluginUpdater($pluginHandle);
+
 		if ($pluginUpdater->start())
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -240,6 +269,7 @@ class UpdatesService extends BaseApplicationComponent
 		$updateInfo->blocks->localVersion = Blocks::getVersion();
 
 		$plugins = blx()->plugins->getEnabledPlugins();
+
 		foreach ($plugins as $plugin)
 		{
 			$pluginUpdateInfo = new PluginUpdateInfo();
@@ -262,11 +292,15 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		// if the system wasn't on before, we're leave it in an off state
 		if (!$this->_isSystemOn)
+		{
 			return true;
+		}
 		else
 		{
 			if (Blocks::turnSystemOn())
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -285,7 +319,9 @@ class UpdatesService extends BaseApplicationComponent
 		if ($this->_isSystemOn)
 		{
 			if (Blocks::turnSystemOff())
+			{
 				return true;
+			}
 		}
 
 		return false;
@@ -304,10 +340,13 @@ class UpdatesService extends BaseApplicationComponent
 		);
 
 		$errorPath = null;
+
 		foreach ($checkPaths as $writablePath)
 		{
 			if (!IOHelper::isWritable($writablePath))
+			{
 				$errorPath[] = IOHelper::getRealPath($writablePath);
+			}
 		}
 
 		return $errorPath;
@@ -321,6 +360,7 @@ class UpdatesService extends BaseApplicationComponent
 	private function _generateUpdateNotes($updates, $name)
 	{
 		$notes = '';
+
 		foreach ($updates as $update)
 		{
 			$notes .= '<h5>'.$name.' '.$update->version.($name == 'Blocks' ? '.'.$update->build : '').'</h5>';

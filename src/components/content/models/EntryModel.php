@@ -138,6 +138,7 @@ class EntryModel extends BaseModel
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$section = $this->getSection();
+
 			if ($section)
 			{
 				$path = 'content/'.$section->handle.'/'.$this->id;

@@ -47,6 +47,7 @@ class AccountController extends BaseController
 				{
 					$user = blx()->account->getUserByUsernameOrEmail($loginName);
 					$timeRemaining = $user->getRemainingCooldownTime();
+
 					if ($timeRemaining)
 					{
 						$humanTimeRemaining = $timeRemaining->humanDuration(false);
@@ -91,6 +92,7 @@ class AccountController extends BaseController
 		$loginName = blx()->request->getRequiredPost('loginName');
 
 		$user = blx()->account->getUserByUsernameOrEmail($loginName);
+
 		if ($user)
 		{
 			if (blx()->account->sendForgotPasswordEmail($user))
@@ -118,6 +120,7 @@ class AccountController extends BaseController
 		$verificationCode = blx()->request->getRequiredPost('verificationCode');
 
 		$user = blx()->account->getUserByVerificationCode($verificationCode);
+
 		if (!$user)
 		{
 			throw new Exception('Invalid verification code.');

@@ -12,6 +12,7 @@ class DbConnection extends \CDbConnection
 	public function init()
 	{
 		parent::init();
+
 		if (blx()->config->devMode)
 		{
 			$this->enableProfiling = true;

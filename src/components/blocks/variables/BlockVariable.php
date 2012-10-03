@@ -34,6 +34,7 @@ class BlockVariable extends BaseModelVariable
 	public function blockType()
 	{
 		$blockType = blx()->blockTypes->populateBlockType($this->model);
+
 		if ($blockType)
 		{
 			return new BlockTypeVariable($blockType);

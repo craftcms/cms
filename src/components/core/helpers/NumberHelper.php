@@ -27,7 +27,9 @@ class NumberHelper
 			);
 
 		if (isset($numberWordMap[$num]))
+		{
 			return $numberWordMap[$num];
+		}
 
 		return (string)$num;
 	}
@@ -95,7 +97,8 @@ class NumberHelper
 
 		foreach ($map as $k => $v)
 		{
-			while ($num >= $v) {
+			while ($num >= $v)
+			{
 				$roman .= $k;
 				$num -= $v;
 			}

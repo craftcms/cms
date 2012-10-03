@@ -183,6 +183,7 @@ class DashboardService extends BaseApplicationComponent
 	 * Reorders widgets.
 	 *
 	 * @param array $widgetIds
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function reorderUserWidgets($widgetIds)
@@ -220,6 +221,7 @@ class DashboardService extends BaseApplicationComponent
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$sections = blx()->sections->getSections();
+
 			foreach ($sections as $section)
 			{
 				$widget = new WidgetModel();
@@ -227,6 +229,7 @@ class DashboardService extends BaseApplicationComponent
 				$widget->settings = array(
 					'section' => $section->id
 				);
+
 				$widget->save();
 			}
 		}
@@ -249,6 +252,7 @@ class DashboardService extends BaseApplicationComponent
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
 		);
+
 		$widget->save();
 	}
 
@@ -271,7 +275,9 @@ class DashboardService extends BaseApplicationComponent
 			));
 
 			if (!$widgetRecord)
+			{
 				$this->_noWidgetExists($widgetId);
+			}
 		}
 		else
 		{
@@ -315,6 +321,7 @@ class DashboardService extends BaseApplicationComponent
 		foreach ($feed->get_items(0, $limit) as $item)
 		{
 			$date = new DateTime('@'.$item->get_date('U'));
+
 			$items[] = array(
 				'url'   => $item->get_permalink(),
 				'title' => $item->get_title(),

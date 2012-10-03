@@ -17,7 +17,9 @@ class UrlHelper
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (strpos($path, '://') !== false)
+		{
 			return $path;
+		}
 
 		$origPath = $path;
 		$pathVar = blx()->urlManager->routeVar;
@@ -26,23 +28,31 @@ class UrlHelper
 		$path = blx()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
 
 		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
+		{
 			$path = $origPath == '' ? $path.'/' : $path;
+		}
 		else
 		{
 			// stupid way of checking if p doesn't have a value set in the given path.
 			if (($pos = strpos($path, $pathVar.'=')) !== false && isset($path[$pos+2]) && $path[$pos+2] == '&')
 			{
 				if ($params == null)
+				{
 					$search = $pathVar.'=';
+				}
 				else
+				{
 					$search = $pathVar.'=&';
+				}
 
 				$path = str_replace($search, '', $path);
 			}
 			else
 			{
 				if (strpos($path, $pathVar.'=') === false && blx()->request->getUrlFormat() == UrlFormat::QueryString)
+				{
 					$path = $path.'?'.$pathVar.'=';
+				}
 			}
 		}
 
@@ -64,6 +74,7 @@ class UrlHelper
 		$path = blx()->config->resourceTrigger.'/'.trim($path, '/');
 		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
+
 		return $path;
 	}
 
@@ -80,6 +91,7 @@ class UrlHelper
 		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
 		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
+
 		return $path;
 	}
 
@@ -94,19 +106,22 @@ class UrlHelper
 		$path = '/'.$path;
 
 		if (is_array($params))
+		{
 			return array_merge(array($path), $params);
+		}
 
 		if (is_string($params))
 		{
 			$params = ltrim($params, '?&');
 
 			if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
+			{
 				return array($path.'?'.$params);
+			}
 
 			return array($path.'&'.$params);
 		}
 
 		return array($path);
-
 	}
 }

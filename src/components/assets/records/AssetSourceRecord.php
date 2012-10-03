@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class AssetSourceRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'assetsources';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -21,6 +27,9 @@ class AssetSourceRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(

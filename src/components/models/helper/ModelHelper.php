@@ -68,7 +68,9 @@ class ModelHelper
 
 		// Merge in the default attribute + column configs
 		if (isset(static::$attributeTypeDefaults[$config['type']]))
+		{
 			$config = array_merge(static::$attributeTypeDefaults[$config['type']], $config);
+		}
 
 		// Set the column type, min, and max values for Number attributes
 		if ($config['type'] == AttributeType::Number && !isset($config['column']))
@@ -81,23 +83,31 @@ class ModelHelper
 		if ($config['type'] != AttributeType::DateTime && isset($config['column']))
 		{
 			if (isset(DbHelper::$columnTypeDefaults[$config['column']]))
+			{
 				$config = array_merge(DbHelper::$columnTypeDefaults[$config['column']], $config);
+			}
 
 			// Add unsigned, min, and max settings to number columns
 			if (isset(static::$_intColumnSizes[$config['column']]))
 			{
 				if (!isset($config['unsigned']))
+				{
 					$config['unsigned'] = (isset($config['min']) && $config['min'] >= 0);
+				}
 
 				$maxSize = static::$_intColumnSizes[$config['column']];
 				$minMin = $config['unsigned'] ? 0 : -$maxSize;
 				$maxMax = ($config['unsigned'] ? $maxSize * 2 : $maxSize) - 1;
 
 				if (!isset($config['min']) || $config['min'] < $minMin)
+				{
 					$config['min'] = $minMin;
+				}
 
 				if (!isset($config['max']) || $config['max'] > $maxMax)
+				{
 					$config['max'] = $maxMax;
+				}
 			}
 		}
 

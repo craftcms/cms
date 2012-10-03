@@ -52,9 +52,11 @@ abstract class BaseBlocksController extends BaseController
 		$block = $this->populateBlockFromPost();
 
 		$service = $this->service;
+
 		if (blx()->$service->saveBlock($block))
 		{
 			blx()->user->setNotice(Blocks::t('Block saved.'));
+
 			$this->redirectToPostedUrl(array(
 				'blockId' => $block->id
 			));

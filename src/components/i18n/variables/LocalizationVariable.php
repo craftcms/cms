@@ -41,6 +41,7 @@ class LocalizationVariable
 
 		$languageData = blx()->i18n->getLanguageData($language);
 		$localeName = $languageData->getLocaleDisplayName($locale);
+
 		return $localeName;
 	}
 }

@@ -64,10 +64,14 @@ class IOHelper
 		if ($path)
 		{
 			if (is_dir($path))
+			{
 				return $path;
+			}
 
 			if ($caseInsensitive)
+			{
 				return strtolower(static::getFolderName($path)) === strtolower($path);
+			}
 		}
 
 		return false;
@@ -118,7 +122,9 @@ class IOHelper
 		$path = realpath($path);
 
 		if (is_dir($path))
+		{
 			$path = $path.'/';
+		}
 
 		return $path;
 	}
@@ -165,7 +171,9 @@ class IOHelper
 		fclose($f);
 
 		if (!$rm)
+		{
 			unlink($path);
+		}
 
 		return true;
 	}
@@ -183,9 +191,13 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if ($includeExtension)
+		{
 			return pathinfo($path, PATHINFO_BASENAME);
+		}
 		else
+		{
 			return pathinfo($path, PATHINFO_FILENAME);
+		}
 	}
 
 	/**
@@ -201,9 +213,13 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if ($fullPath)
+		{
 			return static::normalizePathSeparators(pathinfo($path, PATHINFO_DIRNAME));
+		}
 		else
+		{
 			return basename(pathinfo($path, PATHINFO_DIRNAME));
+		}
 	}
 
 	/**
@@ -220,9 +236,13 @@ class IOHelper
 		$extension = pathinfo($path, PATHINFO_EXTENSION);
 
 		if ($extension)
+		{
 			return $extension;
+		}
 		else
+		{
 			return $default;
+		}
 	}
 
 	/**
@@ -263,7 +283,9 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path) || static::folderExists($path))
+		{
 			return filemtime($path);
+		}
 
 		return false;
 	}
@@ -280,7 +302,9 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path))
+		{
 			return sprintf("%u", filesize($path));
+		}
 
 		return false;
 	}
@@ -318,7 +342,9 @@ class IOHelper
 
 		// Use is_dir here to prevent an endless recursive loop
 		if (is_dir($path))
+		{
 			$path = rtrim($path, '/').'/';
+		}
 
 		return $path;
 	}
@@ -333,8 +359,11 @@ class IOHelper
 	public static function isFileEmpty($path)
 	{
 		$path = static::normalizePathSeparators($path);
+
 		if ((static::fileExists($path) && static::getFileSize($path) == 0))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -349,8 +378,11 @@ class IOHelper
 	public static function isFolderEmpty($path)
 	{
 		$path = static::normalizePathSeparators($path);
+
 		if ((static::folderExists($path) && static::getFolderSize($path) == 0))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -368,9 +400,13 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path) || static::folderExists($path))
+		{
 			$owner = fileowner($path);
+		}
 		else
+		{
 			$owner =  false;
+		}
 
 		if (is_int($owner) && function_exists('posix_getpwuid') && $getName == true)
 		{
@@ -394,9 +430,13 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path) || static::folderExists($path))
+		{
 			$group = filegroup($path);
+		}
 		else
+		{
 			$group =  false;
+		}
 
 		if (is_int($group) && function_exists('posix_getgrgid') && $getName == true)
 		{
@@ -419,7 +459,9 @@ class IOHelper
 		$path = static::normalizePathSeparators($path);
 
 		if (static::fileExists($path) || static::folderExists($path))
+		{
 			return substr(sprintf('%o', fileperms($path)), -4);
+		}
 
 		return false;
 	}
@@ -440,7 +482,9 @@ class IOHelper
 		if (static::folderExists($path) && static::isReadable($path))
 		{
 			if (($contents = static::_folderContents($path, $recursive, $filter)) !== false)
+			{
 				return $contents;
+			}
 
 			Blocks::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_ERROR);
 			return false;
@@ -467,12 +511,16 @@ class IOHelper
 			if ($array)
 			{
 				if (($contents = file($path)) !== false)
+				{
 					return $contents;
+				}
 			}
 			else
 			{
 				if (($contents = file_get_contents($path)) !== false)
+				{
 					return $contents;
+				}
 			}
 
 			Blocks::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_ERROR);
@@ -521,13 +569,16 @@ class IOHelper
 	public static function createFolder($path, $permissions = null)
 	{
 		if ($permissions == null)
+		{
 			$permissions = static::defaultFolderPermissions;
+		}
 
 		$path = static::normalizePathSeparators($path);
 
 		if (!static::folderExists($path))
 		{
 			$oldumask = umask(0);
+
 			if (!@mkdir($path, $permissions, true))
 			{
 				Blocks::log('Tried to create a folder at '.$path.', but could not.', \CLogger::LEVEL_ERROR);
@@ -561,25 +612,34 @@ class IOHelper
 		if (!static::fileExists($path) && $autoCreate)
 		{
 			$folderName = static::getFolderName($path);
+
 			if (!static::folderExists($folderName))
 			{
 				if (!static::createFolder($folderName))
+				{
 					return false;
+				}
 			}
 
 			if ((!static::createFile($path)) !== false)
+			{
 				return false;
+			}
 		}
 
 		if (static::isWritable($path))
 		{
 			if ((file_put_contents($path, $contents, $flags)) !== false)
+			{
 				return true;
+			}
 
 			Blocks::log('Tried to write to file at '.$path.', could not.', \CLogger::LEVEL_ERROR);
 		}
 		else
+		{
 			Blocks::log('Tried to write to file at '.$path.', but the file is not writable.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -589,7 +649,8 @@ class IOHelper
 	 *
 	 * @static
 	 * @param  string $path  The path to change the owner of.
-	 * @param  $owner The new owner's name.
+	 * @param         $owner The new owner's name.
+	 * @param bool    $recursive
 	 * @return bool   'true' if successful, 'false' if not or the given path does not exist.
 	 */
 	public static function changeOwner($path, $owner, $recursive = false)
@@ -609,11 +670,15 @@ class IOHelper
 			if ($success && static::folderExists($path) && $recursive)
 			{
 				$contents = static::getFolderContents($path);
+
 				foreach ($contents as $path)
 				{
 					$path = static::normalizePathSeparators($path);
+
 					if (!chown($path, $owner))
+					{
 						$success = false;
+					}
 				}
 			}
 
@@ -626,7 +691,9 @@ class IOHelper
 			return true;
 		}
 		else
+		{
 			Blocks::log('Tried to change owner of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -657,11 +724,15 @@ class IOHelper
 			if ($success && static::folderExists($path) && $recursive)
 			{
 				$contents = static::getFolderContents($path);
+
 				foreach ($contents as $path)
 				{
 					$path = static::normalizePathSeparators($path);
+
 					if (!chgrp($path, $group))
+					{
 						$success = false;
+					}
 				}
 			}
 
@@ -674,7 +745,9 @@ class IOHelper
 			return true;
 		}
 		else
+		{
 			Blocks::log('Tried to change group of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -697,12 +770,16 @@ class IOHelper
 			$permissions = octdec(str_pad($permissions, 4, '0', STR_PAD_LEFT));
 
 			if (chmod($path, $permissions))
+			{
 				return true;
+			}
 
 			Blocks::log('Tried to change the permissions of '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 		}
 		else
+		{
 			Blocks::log('Tried to change permissions of '.$path.', but that path does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -724,12 +801,16 @@ class IOHelper
 			$destFolder = static::getFolderName($destination);
 
 			if (!static::folderExists($destFolder))
+			{
 				static::createFolder($destFolder, static::defaultFolderPermissions);
+			}
 
 			if (static::isReadable($path))
 			{
 				if (copy($path, $destination))
+				{
 					return true;
+				}
 
 				Blocks::log('Tried to copy '.$path.' to '.$destination.', but could not.', \CLogger::LEVEL_ERROR);
 			}
@@ -767,27 +848,36 @@ class IOHelper
 			foreach ($folderContents as $item)
 			{
 				$itemDest = $destination.str_replace($path, '', $item);
+
 				if (static::fileExists($item))
 				{
 					if (!copy($item, $itemDest))
+					{
 						Blocks::log('Could not copy file from '.$item.' to '.$itemDest.'.', \CLogger::LEVEL_ERROR);
+					}
 				}
 				elseif (static::folderExists($item))
 				{
 					if (!static::createFolder($itemDest))
+					{
 						Blocks::log('Could not create destination folder '.$itemDest, \CLogger::LEVEL_ERROR);
+					}
 				}
 			}
 			if ($validate)
 			{
 				if (static::getFolderSize($path) !== static::getFolderSize($destination))
+				{
 					return false;
+				}
 			}
 
 			return true;
 		}
 		else
+		{
 			Blocks::log('Cannot copy folder '.$path.' to '.$destination.' because the source path does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -809,19 +899,32 @@ class IOHelper
 			if (static::isWritable($path))
 			{
 				if (rename($path, $newName))
+				{
 					return true;
+				}
 				else
+				{
 					Blocks::log('Could not rename '.$path.' to '.$newName.'.', \CLogger::LEVEL_ERROR);
+				}
 			}
 			else
+			{
 				Blocks::log('Could not rename '.$path.' to '.$newName.' because the source file or folder is not writable.', \CLogger::LEVEL_ERROR);
+			}
 		}
 		else
+		{
 			Blocks::log('Could not rename '.$path.' to '.$newName.' because the source file or folder does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
 
+	/**
+	 * @param $path
+	 * @param $newPath
+	 * @return bool
+	 */
 	public static function move($path, $newPath)
 	{
 		return static::rename($path, $newPath);
@@ -846,10 +949,14 @@ class IOHelper
 				return true;
 			}
 			else
+			{
 				Blocks::log('Could not clear the contents of '.$path.' because the source file is not writable.', \CLogger::LEVEL_ERROR);
+			}
 		}
 		else
+		{
 			Blocks::log('Could not clear the contents of '.$path.' because the source file does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -874,15 +981,21 @@ class IOHelper
 				$item = static::normalizePathSeparators($item);
 
 				if (static::fileExists($item))
+				{
 					static::deleteFile($item);
+				}
 				elseif (static::folderExists($item))
+				{
 					static::deleteFolder($item);
+				}
 			}
 
 			return true;
 		}
 		else
+		{
 			Blocks::log('Could not clear the contents of '.$path.' because the source folder does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -903,15 +1016,23 @@ class IOHelper
 			if (static::isWritable($path))
 			{
 				if (unlink($path))
+				{
 					return true;
+				}
 				else
+				{
 					Blocks::log('Could not delete the file '.$path.'.', \CLogger::LEVEL_ERROR);
+				}
 			}
 			else
+			{
 				Blocks::log('Could not delete the file '.$path.' because it is not writable.', \CLogger::LEVEL_ERROR);
+			}
 		}
 		else
+		{
 			Blocks::log('Could not delete the file '.$path.' because the file does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -932,15 +1053,23 @@ class IOHelper
 			if (static::isWritable($path))
 			{
 				if (rmdir($path))
+				{
 					return true;
+				}
 				else
+				{
 					Blocks::log('Could not delete the folder '.$path.'.', \CLogger::LEVEL_ERROR);
+				}
 			}
 			else
+			{
 				Blocks::log('Could not delete the folder '.$path.' because it is not writable.', \CLogger::LEVEL_ERROR);
+			}
 		}
 		else
+		{
 			Blocks::log('Could not delete the folder '.$path.' because the folder does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -961,7 +1090,9 @@ class IOHelper
 			return md5_file($path);
 		}
 		else
+		{
 			Blocks::log('Could not calculate the MD5 for the file '.$path.' because the file does not exist.', \CLogger::LEVEL_ERROR);
+		}
 
 		return false;
 	}
@@ -983,7 +1114,9 @@ class IOHelper
 			$item = static::normalizePathSeparators($item);
 
 			if (static::fileExists($item))
+			{
 				$size += sprintf("%u", filesize($item));
+			}
 		}
 
 		return $size;
@@ -1007,7 +1140,9 @@ class IOHelper
 		if ($filter !== null)
 		{
 			if (is_string($filter))
+			{
 				$filter = array($filter);
+			}
 		}
 
 		if (($contents = scandir($path)) !== false)
@@ -1022,13 +1157,19 @@ class IOHelper
 					if (static::_filterPassed($contents[$key], $filter))
 					{
 						if (static::fileExists($contents[$key]))
+						{
 							$descendants[] = static::normalizePathSeparators($contents[$key]);
+						}
 						elseif (static::folderExists($contents[$key]))
+						{
 							$descendants[] = static::normalizePathSeparators($contents[$key]);
+						}
 					}
 
 					if (static::folderExists($contents[$key]) && $recursive)
+					{
 						$descendants = array_merge($descendants, static::_folderContents($contents[$key], $recursive, $filter));
+					}
 				}
 			}
 		}
@@ -1060,11 +1201,15 @@ class IOHelper
 				$passed = (bool)preg_match('/'.$rule.'/', $str);
 
 				if ($passed)
+				{
 					break;
+				}
 			}
 		}
 		else
+		{
 			$passed = true;
+		}
 
 		return $passed;
 	}

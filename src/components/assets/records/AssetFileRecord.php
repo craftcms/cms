@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class AssetFileRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'assetfiles';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -22,6 +28,9 @@ class AssetFileRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineRelations()
 	{
 		return array(
@@ -30,6 +39,9 @@ class AssetFileRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(

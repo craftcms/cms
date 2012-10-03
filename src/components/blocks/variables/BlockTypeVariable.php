@@ -9,7 +9,7 @@ class BlockTypeVariable extends BaseComponentVariable
 	/**
 	 * Returns the block's input HTML.
 	 *
-	 * @param string $name
+	 * @param        $handle
 	 * @param mixed  $value
 	 * @return string
 	 */

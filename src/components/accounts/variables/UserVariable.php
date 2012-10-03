@@ -14,6 +14,7 @@ class UserVariable extends BaseModelVariable
 	public function __toString()
 	{
 		$fullName = $this->fullName();
+
 		if ($fullName)
 		{
 			return $fullName;
@@ -34,6 +35,7 @@ class UserVariable extends BaseModelVariable
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			$profile = $this->model->getProfile();
+
 			if ($profile)
 			{
 				return new UserProfileVariable($profile);

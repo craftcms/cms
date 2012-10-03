@@ -357,10 +357,12 @@ class InstallService extends BaseApplicationComponent
 	private function _getFlattenedErrors($errors)
 	{
 		$return = '';
+
 		foreach ($errors as $attribute => $attributeErrors)
 		{
 			$return .= "\n - ".implode("\n - ", $attributeErrors);
 		}
+
 		return $return;
 	}
 }

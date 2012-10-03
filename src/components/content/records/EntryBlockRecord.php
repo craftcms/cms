@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class EntryBlockRecord extends BaseBlockRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'entryblocks';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineRelations()
 	{
 		$relations = array();
@@ -23,6 +29,9 @@ class EntryBlockRecord extends BaseBlockRecord
 		return $relations;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		$indexes = array();

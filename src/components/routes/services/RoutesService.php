@@ -35,7 +35,7 @@ class RoutesService extends BaseApplicationComponent
 	 * @param int    $routeId The route ID, if editing an existing route.
 	 *
 	 * @throws Exception
-	 * @return Route
+	 * @return RouteRecord
 	 */
 	public function saveRoute($urlParts, $template, $routeId = null)
 	{
@@ -44,7 +44,9 @@ class RoutesService extends BaseApplicationComponent
 			$route = $this->getRouteById($routeId);
 
 			if (!$route)
+			{
 				throw new Exception(Blocks::t('No route exists with the ID “{id}”', array('id' => $routeId)));
+			}
 		}
 		else
 		{
@@ -97,7 +99,9 @@ class RoutesService extends BaseApplicationComponent
 		$route = $this->getRouteById($routeId);
 
 		if (!$route)
+		{
 			throw new Exception(Blocks::t('No route exists with the ID “{id}”', array('id' => $routeId)));
+		}
 
 		$route->delete();
 	}

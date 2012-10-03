@@ -30,6 +30,7 @@ class AssetsVariable
 	public function getSourceType($class)
 	{
 		$sourceType = blx()->assetSources->getSourceType($class);
+
 		if ($sourceType)
 		{
 			return new AssetSourceTypeVariable($sourceType);
@@ -56,6 +57,7 @@ class AssetsVariable
 	public function getSourceById($id)
 	{
 		$source = blx()->assetSources->getSourceById($id);
+
 		if ($source)
 		{
 			return new AssetSourceVariable($source);
@@ -86,6 +88,7 @@ class AssetsVariable
 	public function getAssetBlockById($id)
 	{
 		$block = blx()->assetBlocks->getBlockById($id);
+
 		if ($block)
 		{
 			return new BlockVariable($block);

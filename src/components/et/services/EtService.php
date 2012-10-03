@@ -13,6 +13,7 @@ class EtService extends BaseApplicationComponent
 	{
 		$et = new Et(ElliotEndPoints::Ping);
 		$response = $et->phoneHome();
+
 		return $response;
 	}
 
@@ -25,6 +26,7 @@ class EtService extends BaseApplicationComponent
 		$et = new Et(ElliotEndPoints::Check);
 		$et->getModel()->data = $updateInfo;
 		$response = $et->phoneHome();
+
 		return $response;
 	}
 
@@ -45,6 +47,7 @@ class EtService extends BaseApplicationComponent
 		$et = new Et(ElliotEndPoints::DownloadPackage, 60);
 		$et->setDestinationFileName($downloadPath);
 		$et->getModel()->data = $params;
+
 		if ($et->phoneHome())
 		{
 			return true;

@@ -24,12 +24,18 @@ class Zip
 		}
 
 		if (IOHelper::fileExists($destZip))
+		{
 			IOHelper::deleteFile($destZip);
+		}
 		else
+		{
 			IOHelper::createFile($destZip);
+		}
 
 		if (class_exists('ZipArchive', false))
+		{
 			return static::_zipZipArchive(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
+		}
 
 		return static::_zipPclZip(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
 	}
@@ -51,9 +57,13 @@ class Zip
 					$result = static::_unzipZipArchive($srcZip, $destFolder);
 
 					if ($result === true)
+					{
 						return $result;
+					}
 					else
+					{
 						Blocks::log('There was an error unzipping the file using ZipArchive: '.$srcZip, \CLogger::LEVEL_ERROR);
+					}
 				}
 			}
 			else
@@ -113,9 +123,13 @@ class Zip
 		}
 
 		if (IOHelper::fileExists($source))
+		{
 			$folderContents = array($source);
+		}
 		else
+		{
 			$folderContents = IOHelper::getFolderContents($source, true);
+		}
 
 		foreach ($folderContents as $itemToZip)
 		{
@@ -126,7 +140,9 @@ class Zip
 				$relFilePath = substr($itemToZip, strlen(IOHelper::getRealPath($source)) + 1);
 
 				if (!$zip->addFromString($relFilePath, $fileContents))
+				{
 					Blocks::log('There was an error adding the file '.$itemToZip.' to the zip: '.$itemToZip, \CLogger::LEVEL_ERROR);
+				}
 			}
 		}
 
@@ -165,7 +181,9 @@ class Zip
 		foreach ($zipFiles as $zipFile)
 		{
 			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
+			{
 				continue;
+			}
 
 			$destFolders[] = $destFolder.'/'.rtrim($zipFile['folder'] ? $zipFile['filename'] : IOHelper::getFolderName($zipFile['filename']), '/');
 		}
@@ -176,11 +194,15 @@ class Zip
 		{
 			// Skip over the working directory
 			if (rtrim($destFolder, '/') == $tempDestFolder)
+			{
 				continue;
+			}
 
 			// Make sure the current directory is within the working directory
 			if (strpos($tempDestFolder, $destFolder) === false)
+			{
 				continue;
+			}
 
 			$parentDirectory = IOHelper::getFolderName($tempDestFolder);
 
@@ -210,12 +232,17 @@ class Zip
 		{
 			// folders have already been created.
 			if ($zipFile['folder'])
+			{
 				continue;
+			}
 
 			if (substr($zipFile['filename'], 0, 9) === '__MACOSX/')
+			{
 				continue;
+			}
 
 			$destFile = $destFolder.'/'.$zipFile['filename'];
+
 			if (!IOHelper::writeToFile($destFile, $zipFile['content'], true, FILE_APPEND))
 			{
 				Blocks::log('Could not copy the file '.$destFile.' while unziping: '.$srcZip, \CLogger::LEVEL_ERROR);
@@ -266,7 +293,9 @@ class Zip
 
 			 // Don't extract the OSX __MACOSX directory
 			if (substr($info['name'], 0, 9) === '__MACOSX/')
+			{
 				continue;
+			}
 
 			$contents = $zipArchive->getFromIndex($i);
 

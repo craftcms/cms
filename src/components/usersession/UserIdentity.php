@@ -38,6 +38,8 @@ class UserIdentity extends \CUserIdentity
 	/**
 	 * @access private
 	 * @param UserModel $user
+	 * @throws Exception
+	 * @return void
 	 */
 	private function _processUserStatus(UserModel $user)
 	{
@@ -53,7 +55,7 @@ class UserIdentity extends \CUserIdentity
 
 			case UserStatus::Locked:
 			{
-				$this->errorCode = $this->_getAccountLockedErrorCode();
+				$this->errorCode = $this->_getLockedAccountErrorCode();
 				break;
 			}
 
@@ -93,7 +95,7 @@ class UserIdentity extends \CUserIdentity
 					// Was that one bad password too many?
 					if ($user->status == UserStatus::Locked)
 					{
-						$this->errorCode = $this->_getAccountLockedErrorCode();
+						$this->errorCode = $this->_getLockedAccountErrorCode();
 					}
 					else
 					{

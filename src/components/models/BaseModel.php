@@ -28,11 +28,17 @@ abstract class BaseModel extends \CModel
 	function __get($name)
 	{
 		if (isset($this->_attributes[$name]))
+		{
 			return $this->_attributes[$name];
+		}
 		else if (in_array($name, $this->attributeNames()))
+		{
 			return null;
+		}
 		else
+		{
 			return parent::__get($name);
+		}
 	}
 
 	/**
@@ -45,7 +51,9 @@ abstract class BaseModel extends \CModel
 	function __set($name, $value)
 	{
 		if ($this->setAttribute($name, $value) === false)
+		{
 			parent::__set($name, $value);
+		}
 	}
 
 	/**
@@ -57,11 +65,17 @@ abstract class BaseModel extends \CModel
 	function __isset($name)
 	{
 		if (isset($this->_attributes[$name]))
+		{
 			return true;
+		}
 		else if (in_array($name, $this->attributeNames()))
+		{
 			return false;
+		}
 		else
+		{
 			return parent::__isset($name);
+		}
 	}
 
 	/**
@@ -80,7 +94,10 @@ abstract class BaseModel extends \CModel
 	public function attributeNames()
 	{
 		if (!$this->_attributeNames)
+		{
 			$this->_attributeNames = array_keys($this->defineAttributes());
+		}
+
 		return $this->_attributeNames;
 	}
 
@@ -93,7 +110,9 @@ abstract class BaseModel extends \CModel
 	public function getAttribute($name)
 	{
 		if (isset($this->_attributes[$name]))
+		{
 			return $this->_attributes[$name];
+		}
 	}
 
 	/**
@@ -101,6 +120,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param string $name
 	 * @param mixed $value
+	 * @return bool
 	 */
 	public function setAttribute($name, $value)
 	{
@@ -110,7 +130,9 @@ abstract class BaseModel extends \CModel
 			return true;
 		}
 		else
+		{
 			return false;
+		}
 	}
 
 	/**
@@ -121,11 +143,16 @@ abstract class BaseModel extends \CModel
 	public function setAttributes($values)
 	{
 		if (!is_array($values))
+		{
 			return;
+		}
+
 		foreach ($values as $name => $value)
 		{
 			if (in_array($name, $this->attributeNames()))
+			{
 				$this->_attributes[$name] = $value;
+			}
 		}
 	}
 

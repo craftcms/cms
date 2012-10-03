@@ -38,26 +38,28 @@ class AppUpdater implements IUpdater
 		$databaseCompat = version_compare($installedMySqlVersion, $requiredMySqlVersion, '>=');
 
 		if (!$phpCompat && !$databaseCompat)
+		{
 			throw new Exception(Blocks::t('The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and MySQL version "{requiredMySqlVersion}" or higher.  You have PHP version "{installedPhpVersion}" and MySQL version "{installedMySqlVersion}" installed.',
 				array('requiredPhpVersion' => $requiredMySqlVersion,
 				      'installedPhpVersion' => PHP_VERSION,
 				      'requiredMySqlVersion' => $requiredMySqlVersion,
 				      'installedMySqlVersion' => $installedMySqlVersion
 				)));
-		else
-			if (!$phpCompat)
-				throw new Exception(Blocks::t('The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.',
-					array('requiredPhpVersion' => $requiredMySqlVersion,
-					      'installedPhpVersion' => PHP_VERSION
-					)));
-			else
-				if (!$databaseCompat)
-					throw new Exception(Blocks::t('The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.',
-						array('requiredMySqlVersion' => $requiredMySqlVersion,
-						      'installedMySqlVersion' => $installedMySqlVersion
-						)));
-
-
+		}
+		else if (!$phpCompat)
+		{
+			throw new Exception(Blocks::t('The update can’t be installed because Blocks requires PHP version "{requiredPhpVersion}" or higher and you have PHP version "{installedPhpVersion}" installed.',
+				array('requiredPhpVersion' => $requiredMySqlVersion,
+				      'installedPhpVersion' => PHP_VERSION
+			)));
+		}
+		else if (!$databaseCompat)
+		{
+			throw new Exception(Blocks::t('The update can’t be installed because Blocks requires MySQL version "{requiredMySqlVersion}" or higher and you have MySQL version "{installedMySqlVersion}" installed.',
+				array('requiredMySqlVersion' => $requiredMySqlVersion,
+				      'installedMySqlVersion' => $installedMySqlVersion
+				)));
+		}
 	}
 
 	/**
@@ -71,7 +73,9 @@ class AppUpdater implements IUpdater
 		$this->checkRequirements();
 
 		if ($this->_buildsToUpdate == null)
+		{
 			throw new Exception(Blocks::t('Blocks is already up to date.'));
+		}
 
 		Blocks::log('Starting the AppUpdater.', \CLogger::LEVEL_INFO);
 
@@ -83,22 +87,30 @@ class AppUpdater implements IUpdater
 		// Download the package from ET.
 		Blocks::log('Downloading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
 		if (!blx()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
+		{
 			throw new Exception(Blocks::t('There was a problem downloading the package.'));
+		}
 
 		// Validate the downloaded package against ET.
 		Blocks::log('Validating downloaded package.', \CLogger::LEVEL_INFO);
 		if (!$this->validatePackage($latestBuild->version, $latestBuild->build))
+		{
 			throw new Exception(Blocks::t('There was a problem validating the downloaded package.'));
+		}
 
 		// Unpack the downloaded package.
 		Blocks::log('Unpacking the downloaded package.', \CLogger::LEVEL_INFO);
 		if (!$this->unpackPackage())
+		{
 			throw new Exception(Blocks::t('There was a problem unpacking the downloaded package.'));
+		}
 
 		// Validate that the paths in the update manifest file are all writable by Blocks
 		Blocks::log('Validating update manifest file paths are writable.', \CLogger::LEVEL_INFO);
 		if (!$this->validateManifestPathsWritable())
+		{
 			throw new Exception(Blocks::t('Blocks needs to be able to write to the follow files, but can’t: {files}', array('files' => implode(',', $this->_writableErrors))));
+		}
 
 		// Check to see if there any migrations to run.
 		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
@@ -113,18 +125,24 @@ class AppUpdater implements IUpdater
 		{
 			Blocks::log('Starting to run update migrations.', \CLogger::LEVEL_INFO);
 			if (!$this->doDatabaseUpdate())
+			{
 				throw new Exception(Blocks::t('There was a problem updating your database.'));
+			}
 		}
 
 		// Backup any files about to be updated.
 		Blocks::log('Backing up files that are about to be updated.', \CLogger::LEVEL_INFO);
 		if (!$this->backupFiles())
+		{
 			throw new Exception(Blocks::t('There was a problem backing up your files for the update.'));
+		}
 
 		// Update the files.
 		Blocks::log('Performing file udpate.', \CLogger::LEVEL_INFO);
 		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_tempPackageFolder->getRealPath()))
+		{
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
+		}
 
 		// Bring the system back online.
 		Blocks::log('Turning system back on after update.', \CLogger::LEVEL_INFO);
@@ -137,12 +155,16 @@ class AppUpdater implements IUpdater
 		// Clear the updates cache.
 		Blocks::log('Clearing the update cache.', \CLogger::LEVEL_INFO);
 		if (!blx()->updates->flushUpdateInfoFromCache())
+		{
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem invalidating the update cache.'));
+		}
 
 		// Update the db with the new Blocks info.
 		Blocks::log('Setting new Blocks info in the database after update.', \CLogger::LEVEL_INFO);
 		if (!blx()->updates->setNewBlocksInfo($latestBuild->version, $latestBuild->build, $latestBuild->date))
+		{
 			throw new Exception(Blocks::t('The update was performed successfully, but there was a problem setting the new version and build number in the database.'));
+		}
 
 		Blocks::log('Finished AppUpdater.', \CLogger::LEVEL_INFO);
 		return true;
@@ -163,7 +185,9 @@ class AppUpdater implements IUpdater
 			for ($counter = 0; $counter < count($manifestData); $counter++)
 			{
 				if (strpos($manifestData[$counter], '##'.$this->_updateInfo->blocks->localVersion.'.'.$this->_updateInfo->blocks->localBuild) !== false)
+				{
 					break;
+				}
 			}
 
 			$manifestData = array_slice($manifestData, $counter);
@@ -205,7 +229,9 @@ class AppUpdater implements IUpdater
 	public function doDatabaseUpdate()
 	{
 		if (blx()->migrations->runToTop())
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -220,12 +246,15 @@ class AppUpdater implements IUpdater
 		foreach ($manifestData as $row)
 		{
 			if (UpdateHelper::isManifestVersionInfoLine($row))
+			{
 				continue;
+			}
 
 			$rowData = explode(';', $row);
 
 			// Delete any files we backed up.
 			$backupFilePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0].'.bak');
+
 			if (($file = IOHelper::getFile($backupFilePath)) !== false)
 			{
 				Blocks::log('Deleting backup file: '.$file->getRealPath());
@@ -254,12 +283,16 @@ class AppUpdater implements IUpdater
 		$sourceMD5 = blx()->et->getReleaseMD5($version, $build);
 
 		if(StringHelper::isNullOrEmpty($sourceMD5))
+		{
 			throw new Exception(Blocks::t('Error in validating the download.'));
+		}
 
 		$localMD5 = IOHelper::getFileMD5($this->_downloadFilePath);
 
 		if($localMD5 === $sourceMD5)
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -273,7 +306,9 @@ class AppUpdater implements IUpdater
 	{
 		Blocks::log('Unzipping package to '.$this->_tempPackageFolder->getRealPath(), \CLogger::LEVEL_INFO);
 		if (Zip::unzip($this->_downloadFilePath, $this->_tempPackageFolder->getRealPath()))
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -290,7 +325,9 @@ class AppUpdater implements IUpdater
 		foreach ($manifestData as $row)
 		{
 			if (UpdateHelper::isManifestVersionInfoLine($row))
+			{
 				continue;
+			}
 
 			$rowData = explode(';', $row);
 			$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);
@@ -299,7 +336,9 @@ class AppUpdater implements IUpdater
 			if (IOHelper::fileExists($filePath));
 			{
 				if (!IOHelper::isWritable($filePath))
+				{
 					$this->_writableErrors[] = $filePath;
+				}
 			}
 		}
 
@@ -321,11 +360,15 @@ class AppUpdater implements IUpdater
 			foreach ($manifestData as $row)
 			{
 				if (UpdateHelper::isManifestVersionInfoLine($row))
+				{
 					continue;
+				}
 
 				// No need to back up migration files.
 				if (UpdateHelper::isManifestMigrationLine($row))
+				{
 					continue;
+				}
 
 				$rowData = explode(';', $row);
 				$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);

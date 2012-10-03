@@ -24,7 +24,9 @@ class Folder extends BaseIO
 	public function getSize()
 	{
 		if (!$this->_size)
+		{
 			$this->_size = IOHelper::getFolderSize($this->getRealPath());
+		}
 
 		return $this->_size;
 	}
@@ -35,7 +37,9 @@ class Folder extends BaseIO
 	public function isEmpty()
 	{
 		if (!$this->_isEmpty)
+		{
 			$this->_isEmpty = IOHelper::isFolderEmpty($this->getRealPath());
+		}
 
 		return $this->_isEmpty;
 	}
@@ -57,7 +61,9 @@ class Folder extends BaseIO
 	public function copy($destination)
 	{
 		if (!IOHelper::copyFolder($this->getRealPath(), $destination))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -68,7 +74,9 @@ class Folder extends BaseIO
 	public function clear()
 	{
 		if (!IOHelper::clearFolder($this->getRealPath()))
+		{
 			return false;
+		}
 
 		return true;
 	}
@@ -79,7 +87,9 @@ class Folder extends BaseIO
 	public function delete()
 	{
 		if (!IOHelper::deleteFolder($this->getRealPath()))
+		{
 			return false;
+		}
 
 		return true;
 	}

@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class RouteRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'routes';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -21,6 +27,9 @@ class RouteRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(

@@ -44,9 +44,13 @@ class ResourceProcessor
 	public function processResourceRequest()
 	{
 		if (IOHelper::fileExists($this->_resourceFullPath))
+		{
 			$this->sendResource();
+		}
 		else
+		{
 			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -59,17 +63,25 @@ class ResourceProcessor
 		$this->_content = IOHelper::getFileContents($this->_resourceFullPath);
 
 		if (!$this->_content)
+		{
 			throw new HttpException(404);
+		}
 
 		$mimeType = IOHelper::getMimeTypeByExtension($this->_resourceFullPath);
 
 		if (strpos($mimeType, 'css') > 0)
+		{
 			$this->_convertRelativeUrls();
+		}
 
 		if (!blx()->config->useXSendFile)
+		{
 			blx()->request->sendFile($this->_relResourceFileName, $this->_content, array('forceDownload' => false));
+		}
 		else
+		{
 			blx()->request->xSendFile($this->_resourceFullPath);
+		}
 	}
 
 	/**

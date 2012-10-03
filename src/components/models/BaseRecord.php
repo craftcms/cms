@@ -97,7 +97,6 @@ abstract class BaseRecord extends \CActiveRecord
 					{
 						$this->setAttribute($name, $value->getTimestamp());
 					}
-
 					break;
 				}
 				case AttributeType::Mixed:
@@ -173,6 +172,7 @@ abstract class BaseRecord extends \CActiveRecord
 
 		// Add ordered() scope if this model has a sortOrder attribute
 		$attributes = $this->defineAttributes();
+
 		if (isset($attributes['sortOrder']))
 		{
 			$scopes['ordered'] = array('order' => 'sortOrder');
@@ -295,20 +295,26 @@ abstract class BaseRecord extends \CActiveRecord
 
 	// Rename a couple CActiveRecord functions
 
-
+	/**
+	 * @return bool
+	 */
 	public function isNewRecord()
 	{
 		return $this->getIsNewRecord();
 	}
 
+	/**
+	 * @param        $id
+	 * @param string $condition
+	 * @param array  $params
+	 * @return \CActiveRecord
+	 */
 	public function findById($id, $condition = '', $params = array())
 	{
 		return $this->findByPk($id, $condition, $params);
 	}
 
-
 	// CModel and CActiveRecord methods
-
 
 	/**
 	 * Returns an instance of the specified model
@@ -359,6 +365,7 @@ abstract class BaseRecord extends \CActiveRecord
 	public function relations()
 	{
 		$relations = $this->defineRelations();
+
 		foreach ($relations as $name => &$config)
 		{
 			$this->_normalizeRelation($name, $config);
@@ -366,6 +373,7 @@ abstract class BaseRecord extends \CActiveRecord
 			// Unset any keys that CActiveRecord isn't expecting
 			unset($config['required'], $config['unique']);
 		}
+
 		return $relations;
 	}
 

@@ -37,7 +37,9 @@ class UserSessionService extends \CWebUser
 		if (!$request->isAjaxRequest())
 		{
 			if ($request->getPathInfo() !== '')
+			{
 				$this->setReturnUrl($request->getUrl());
+			}
 		}
 		elseif (isset($this->loginRequiredAjaxResponse))
 		{
@@ -56,7 +58,9 @@ class UserSessionService extends \CWebUser
 			$request->redirect($url);
 		}
 		else
+		{
 			throw new HttpException(403, Blocks::t('Login is required.'));
+		}
 	}
 
 	/**
@@ -84,7 +88,7 @@ class UserSessionService extends \CWebUser
 			else
 			{
 				// everything is not cool.
-				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record: '.($user ? $user->authSessionToken : ''.'.'));
+				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record.));
 				return false;
 			}
 		}
@@ -106,7 +110,6 @@ class UserSessionService extends \CWebUser
 	*/
 	protected function saveToCookie($duration)
 	{
-		$app = blx();
 		$cookie = $this->createIdentityCookie($this->getStateKeyPrefix());
 		$cookie->expire = time() + $duration;
 		$cookie->httpOnly = true;
@@ -118,8 +121,8 @@ class UserSessionService extends \CWebUser
 			$this->saveIdentityStates(),
 		);
 
-		$cookie->value = $app->getSecurityManager()->hashData(serialize($data));
-		$app->getRequest()->getCookies()->add($cookie->name, $cookie);
+		$cookie->value = blx()->getSecurityManager()->hashData(serialize($data));
+		blx()->getRequest()->getCookies()->add($cookie->name, $cookie);
 	}
 
 	/**
