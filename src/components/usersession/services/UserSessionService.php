@@ -88,7 +88,7 @@ class UserSessionService extends \CWebUser
 			else
 			{
 				// everything is not cool.
-				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record.));
+				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record.');
 				return false;
 			}
 		}
