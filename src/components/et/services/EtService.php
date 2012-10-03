@@ -7,7 +7,7 @@ namespace Blocks;
 class EtService extends BaseApplicationComponent
 {
 	/**
-	 * @return bool|EtPackage
+	 * @return bool|EtModel
 	 */
 	public function ping()
 	{
@@ -18,12 +18,12 @@ class EtService extends BaseApplicationComponent
 
 	/**
 	 * @param $updateInfo
-	 * @return EtPackage|bool
+	 * @return EtModel|bool
 	 */
 	public function check($updateInfo)
 	{
 		$et = new Et(ElliotEndPoints::Check);
-		$et->package->data = $updateInfo;
+		$et->getModel()->data = $updateInfo;
 		$response = $et->phoneHome();
 		return $response;
 	}
@@ -43,10 +43,12 @@ class EtService extends BaseApplicationComponent
 		);
 
 		$et = new Et(ElliotEndPoints::DownloadPackage, 60);
-		$et->destinationFileName = $downloadPath;
-		$et->package->data = $params;
+		$et->setDestinationFileName($downloadPath);
+		$et->getModel()->data = $params;
 		if ($et->phoneHome())
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -65,7 +67,7 @@ class EtService extends BaseApplicationComponent
 		);
 
 		$et = new Et(ElliotEndPoints::GetAppReleaseFileMD5);
-		$et->package->data = $params;
+		$et->getModel()->data = $params;
 		$package = $et->phoneHome();
 
 		$sourceMD5 = $package->data;
