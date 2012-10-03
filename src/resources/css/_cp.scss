@@ -10,31 +10,28 @@ body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-seri
 #sidebar, #main { overflow: auto; }
 
 /* sidebar */
-#sidebar { position: fixed; z-index: 1; left: 0; top: 0; border-right: 1px solid #000; width: 199px; background: #262626; }
+#sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 200px; background: #1a1a1a; }
+#sidebar a { color: #b3b3b3; }
+#sidebar a:hover { color: #fff; }
 
-#sidebar #header { border-bottom: 1px solid #000; background: #1a1a1a; }
 #sidebar #header:after {@include clearafter; }
 #sidebar #header #branding { float: left; padding: 10px; }
 #sidebar #header #branding img { display: block; width: 120px; }
 
-#sidebar #header #account { float: right; padding: 15px 0 15px 15px; width: 35px; color: #fff; text-shadow: 0 1px 1px #000; -webkit-box-shadow: -1px 0 0 rgba(0,0,0,0.25), inset 1px 0 0 rgba(255,255,255,0.05); }
+#sidebar #header #account { float: right; padding: 15px 0 5px 5px; width: 35px; }
 #sidebar #header #account:after { margin-right: -5px; }
-#sidebar #header #account:hover { background: rgba(0,0,0,0.25); }
-#sidebar #header #account.sel { background: #000; }
-#sidebar #header #account:after { color: rgba(255,255,255,0.5); text-shadow: none; }
 
-#account-menu .userinfo { padding: 41px 15px 5px 111px; height: 56px; background: rgba(0,0,0,0.9); }
+#account-menu .userinfo { padding: 40px 15px 5px 110px; height: 56px; background: rgba(0,0,0,0.9); }
 #account-menu .userinfo img { display: block; float: left; margin: -40px 0 0 -110px; }
 #account-menu .userinfo .fullname { margin-top: -8px; color: #fff; font-weight: bold; }
 #account-menu .userinfo .username { color: #d5d5d5; }
 
 #sidebar .nav ul { margin-top: 7px; }
 #sidebar .nav ul li { margin-top: 3px; }
-#sidebar .nav ul li a { padding: 4px 10px 4px 36px; font-size: 12px; color: #b3b3b3; }
-#sidebar .nav ul li a:hover { color: #fff; }
+#sidebar .nav ul li a { padding: 4px 10px 4px 36px; font-size: 12px; }
 #sidebar .nav ul li a .badge { color: #262626; background: #b3b3b3; }
-#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5); background: -webkit-linear-gradient(top, #2d98db, #2375a8); -webkit-box-shadow: 0 2px 0 #000; }
-#sidebar .nav ul li a.sel .badge { color: #fff; background: #000; }
+#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); -webkit-box-shadow: inset -1px 0 rgba(0,0,0,0.5); }
+#sidebar .nav ul li a.sel .badge { color: #fff; background: #1a1a1a; }
 
 #nav-dashboard:before { @include icon; content: 'D'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
 #nav-content:before { @include icon; content: 'C'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }

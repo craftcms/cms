@@ -14,12 +14,7 @@ var CP = Blocks.Base.extend({
 		this.$notifications.delay(CP.notificationDuration).fadeOut();
 
 		// Initialize the account menu button
-		new Blocks.ui.MenuBtn('#account', {
-			onOptionSelect: function(option) {
-				var url = $(option).attr('data-url');
-				document.location.href = Blocks.baseUrl + url;
-			}
-		});
+		new Blocks.ui.MenuBtn('#account');
 
 		// Tabs
 		var $tabContainer = $('#tabs');
