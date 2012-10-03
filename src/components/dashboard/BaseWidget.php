@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Widget base class
  */
-abstract class BaseWidget extends BaseComponent implements IWidget
+abstract class BaseWidget extends BaseComponent
 {
 	protected $componentType = 'Widget';
 
