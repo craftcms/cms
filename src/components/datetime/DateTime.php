@@ -138,16 +138,22 @@ class DateTime extends \DateTime
 		// Convert it to a DateInterval in this namespace
 		if ($interval instanceof \DateInterval)
 		{
-			$newInterval = new DateInterval();
-			$newInterval->y = $interval->y;
-			$newInterval->m = $interval->m;
-			$newInterval->d = $interval->d;
-			$newInterval->h = $interval->h;
-			$newInterval->i = $interval->i;
-			$newInterval->s = $interval->s;
-			$newInterval->invert = $interval->invert;
-			$newInterval->days = $interval->days;
-			return $newInterval;
+			$spec = 'P';
+
+			if ($interval->y) $spec .= $interval->y.'Y';
+			if ($interval->m) $spec .= $interval->m.'M';
+			if ($interval->d) $spec .= $interval->d.'D';
+
+			if ($interval->h || $interval->i || $interval->s)
+			{
+				$spec .= 'T';
+
+				if ($interval->h) $spec .= $interval->h.'H';
+				if ($interval->i) $spec .= $interval->i.'M';
+				if ($interval->s) $spec .= $interval->s.'s';
+			}
+
+			return new DateInterval($spec);
 		}
 		else
 		{
