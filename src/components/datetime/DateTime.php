@@ -129,6 +129,8 @@ class DateTime extends \DateTime
 	}
 
 	/**
+	 * @param \DateTime $datetime2
+	 * @param bool      $absolute
 	 * @return DateInterval|false
 	 */
 	public function diff($datetime2, $absolute = false)
@@ -147,6 +149,7 @@ class DateTime extends \DateTime
 			$newInterval->s = $interval->s;
 			$newInterval->invert = $interval->invert;
 			$newInterval->days = $interval->days;
+
 			return $newInterval;
 		}
 		else
