@@ -183,14 +183,7 @@ class DbHelper
 	 * @access private
 	 * @static
 	 */
-	private static $_operators = array(
-		'not ' => '!=',
-		'<='   => '<=',
-		'>='   => '>=',
-		'<'    => '<',
-		'>'    => '>',
-		'='    => '=',
-	);
+	private static $_operators = array('not ', '!=', '<=', '>=', '<', '>', '=');
 
 	/**
 	 * Parses a service param value to a DbCommand where condition.
@@ -207,12 +200,25 @@ class DbHelper
 		$values = ArrayHelper::stringToArray($values);
 		foreach ($values as $value)
 		{
-			foreach (static::$_operators as $operator => $sqlOperator)
+			$operator = '=';
+
+			foreach (static::$_operators as $testOperator)
 			{
-				$length = strlen($operator);
-				if (strncmp(strtolower($value), $operator, $length) == 0)
+				// Does the value start with this operator?
+				$length = strlen($testOperator);
+				if (strncmp(strtolower($value), $testOperator, $length) == 0)
 				{
 					$value = substr($value, $length);
+
+					if ($testOperator == 'not ')
+					{
+						$operator = '!=';
+					}
+					else
+					{
+						$operator = $testOperator;
+					}
+
 					break;
 				}
 			}
@@ -232,8 +238,11 @@ class DbHelper
 			{
 				$param = 'p'.StringHelper::randomString(9);
 				$params[':'.$param] = trim($value);
-				$conditions[] = $key.$sqlOperator.':'.$param;
+				$conditions[] = $key.$operator.':'.$param;
 			}
+
+			// Stop looping through operators
+			break;
 		}
 
 		if (count($conditions) == 1)
