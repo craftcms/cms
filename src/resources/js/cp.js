@@ -21,7 +21,7 @@ var CP = Blocks.Base.extend({
 		if ($tabContainer.length)
 		{
 			var $tabs = $tabContainer.find('a');
-				$activeTab = $tabs.filter('.active:first');
+				var $activeTab = $tabs.filter('.active:first');
 
 			$tabs.click(function() {
 				var $tab = $(this);

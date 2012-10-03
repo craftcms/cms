@@ -182,7 +182,7 @@ Blocks.getLast = function(arr)
 		return null;
 	else
 		return arr[arr.length-1];
-}
+};
 
 /**
  * Makes the first character of a string uppercase.
@@ -585,7 +585,7 @@ Blocks.getPostData = function(container)
 	}
 
 	return postData;
-}
+};
 
 /**
  * Returns an inputs's name, "namespaced" into a basename.

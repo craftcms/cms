@@ -18,11 +18,11 @@ var LoginForm = Blocks.Base.extend({
 	init: function()
 	{
 		this.$form = $('#login-form'),
-		this.$loginNameInput = $('#loginName'),
+		this.$loginNameInput = $('#loginName');
 		this.$loginFields = $('#login-fields');
 		this.$passwordPaneItem = this.$loginFields.children();
-		this.$passwordInput = $('#password'),
-		this.$submitBtn = $('#submit'),
+		this.$passwordInput = $('#password');
+		this.$submitBtn = $('#submit');
 		this.$spinner = $('#spinner');
 		this.$rememberMeCheckbox = $('#rememberMe');
 
@@ -174,7 +174,7 @@ var MessageSentModal = Blocks.ui.Modal.extend({
 	{
 	}
 
-})
+});
 
 
 var loginForm = new LoginForm();
