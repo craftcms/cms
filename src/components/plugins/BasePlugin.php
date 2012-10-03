@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Plugin base class
  */
-abstract class BasePlugin extends BaseComponent implements IPlugin
+abstract class BasePlugin extends BaseComponent
 {
 	public $hasCpSection = false;
 
@@ -21,22 +21,16 @@ abstract class BasePlugin extends BaseComponent implements IPlugin
 	/**
 	 * Returns the plugin’s developer name.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	public function getDeveloper()
-	{
-		return null;
-	}
+	abstract public function getDeveloper();
 
 	/**
 	 * Returns the plugin’s developer URL.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	public function getDeveloperUrl()
-	{
-		return null;
-	}
+	abstract public function getDeveloperUrl();
 
 	/**
 	 * Returns whether the plugin is installed.

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Asset source base class
  */
-abstract class BaseAssetSource extends BaseComponent implements IAssetSource
+abstract class BaseAssetSource extends BaseComponent
 {
 	protected $componentType = 'AssetSource';
 }

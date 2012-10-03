@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Block base type class
  */
-abstract class BaseBlockType extends BaseComponent implements IBlockType
+abstract class BaseBlockType extends BaseComponent
 {
 	protected $componentType = 'BlockType';
 

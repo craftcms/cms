@@ -108,13 +108,14 @@ class PluginsService extends BaseApplicationComponent
 	public function getPlugin($classHandle, $enabledOnly = true)
 	{
 		$classHandle = strtolower($classHandle);
+		$origHandle = $this->_getPluginHandleFromFileSystem($classHandle);
 
 		if ($enabledOnly && isset($this->_plugins[$classHandle]) && $this->_plugins[$classHandle]->model !== null && $this->_plugins[$classHandle]->model->enabled)
 		{
 			return $this->_plugins[$classHandle];
 		}
 
-		if ((!isset($this->_plugins[$classHandle])))
+		if ((!isset($this->_plugins[$origHandle])))
 		{
 			if (($plugin = $this->_processPlugin($classHandle)) == false)
 			{
@@ -175,10 +176,10 @@ class PluginsService extends BaseApplicationComponent
 			{
 				$path = IOHelper::normalizePathSeparators($path);
 				$handle = IOHelper::getFileName($path, false);
-				$handle = strtolower(substr($handle, 0, strlen($handle) - strlen('Plugin')));
+				$handle = substr($handle, 0, strlen($handle) - strlen('Plugin'));
 
 				// See if we've already loaded this plugin
-				if (isset($this->_plugins[$handle]))
+				if (isset($this->_plugins[strtolower($handle)]))
 				{
 					continue;
 				}
@@ -649,8 +650,6 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _processPlugin($classHandle)
 	{
-		$classHandle = strtolower($classHandle);
-
 		// Get the full class name
 		$class = $classHandle.'Plugin';
 		$nsClass = __NAMESPACE__.'\\'.$class;
@@ -658,7 +657,7 @@ class PluginsService extends BaseApplicationComponent
 		// Skip the autoloader
 		if (!class_exists($nsClass, false))
 		{
-			$path = blx()->path->getPluginsPath().$classHandle.'/'.$class.'.php';
+			$path = blx()->path->getPluginsPath().strtolower($classHandle).'/'.$class.'.php';
 
 			if (($path = IOHelper::fileExists($path, false)) !== false)
 			{
@@ -677,12 +676,30 @@ class PluginsService extends BaseApplicationComponent
 
 		$plugin = new $nsClass;
 
-		// Make sure the plugin implements the IPlugin interface
-		if (!$plugin instanceof IPlugin)
+		// Make sure the plugin implements the BasePlugin abstract class
+		if (!$plugin instanceof BasePlugin)
 		{
 			return false;
 		}
 
 		return $plugin;
+	}
+
+	/**
+	 * @param $handle
+	 * @return bool|string
+	 */
+	private function _getPluginHandleFromFileSystem($handle)
+	{
+		$pluginsPath = blx()->path->getPluginsPath();
+		$fullPath = $pluginsPath.$handle.'/'.$handle.'Plugin.php';
+
+		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
+		{
+			$file = IOHelper::getFileName($file, false);
+			return substr($file, 0, strlen($file) - strlen('Plugin'));
+		}
+
+		return false;
 	}
 }

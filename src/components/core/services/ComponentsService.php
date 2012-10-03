@@ -7,9 +7,9 @@ namespace Blocks;
 class ComponentsService extends BaseApplicationComponent
 {
 	protected static $componentTypes = array(
-		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSource', 'interface' => 'IAssetSource'),
-		'block'       => array('subfolder' => 'blocktypes', 'suffix' => 'BlockType', 'interface' => 'IBlockType'),
-		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'interface' => 'IWidget'),
+		'assetSource' => array('subfolder' => 'assetsourcetypes', 'suffix' => 'AssetSource', 'baseclass' => 'BaseAssetSource'),
+		'block'       => array('subfolder' => 'blocktypes', 'suffix' => 'BlockType', 'baseclass' => 'BaseBlockType'),
+		'widget'      => array('subfolder' => 'widgets', 'suffix' => 'Widget', 'baseclass' => 'BaseWidget'),
 	);
 
 	private $_components;
@@ -67,9 +67,9 @@ class ComponentsService extends BaseApplicationComponent
 					// Instantiate it
 					$obj = new $class;
 
-					// Make sure it implements the correct interface
-					$interface = __NAMESPACE__.'\\'.$ctype['interface'];
-					if (!$obj instanceof $interface)
+					// Make sure it implements the correct abstract base class
+					$baseClass = __NAMESPACE__.'\\'.$ctype['baseclass'];
+					if (!$obj instanceof $baseClass)
 					{
 						continue;
 					}

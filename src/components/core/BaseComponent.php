@@ -25,7 +25,7 @@ abstract class BaseComponent extends BaseApplicationComponent
 	private $_settings;
 
 	/**
-	 * Returns the name of the component.
+	 * Returns the component’s name.
 	 *
 	 * @abstract
 	 * @return string

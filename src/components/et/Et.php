@@ -16,11 +16,11 @@ namespace Blocks;
 	 * - `transport`: Custom transport. Either a class name, or a transport object. Defaults to the first working transport from {@see getTransport()} (string|RequestsTransport, default: {@see getTransport()})
 	 *
 	 */
-class Et extends BaseApplicationComponent
+class Et
 {
 	private $_endpoint;
 	private $_timeout;
-	private $_package;
+	private $_model;
 	private $_options = array();
 
 	/**
@@ -72,36 +72,36 @@ class Et extends BaseApplicationComponent
 		$this->_endpoint = $endPoint;
 		$this->_timeout = $timeout;
 
-		$generalSettings = blx()->systemSettings->getSettings('general');
+		//$generalSettings = blx()->systemSettings->getSettings('general');
 
-		$this->_package = new EtPackage();
-		$this->_package->url = Blocks::getSiteUrl();
-		$this->_package->licenseKey = Blocks::getLicenseKey();
-		$this->_package->requestDomain = blx()->request->getServerName();
-		$this->_package->requestIp = blx()->request->getUserHostAddress();
-		$this->_package->requestTime = DateTimeHelper::currentTime();
-		$this->_package->requestPort = blx()->request->getPort();
+		$this->_model = new EtModel();
+		$this->_model->url = Blocks::getSiteUrl();
+		$this->_model->licenseKey = Blocks::getLicenseKey();
+		$this->_model->requestDomain = blx()->request->getServerName();
+		$this->_model->requestIp = blx()->request->getUserHostAddress();
+		$this->_model->requestTime = DateTimeHelper::currentTime();
+		$this->_model->requestPort = blx()->request->getPort();
 
 		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
 	}
 
 	/**
-	 * @return EtPackage
+	 * @return EtModel
 	 */
-	public function getPackage()
+	public function getModel()
 	{
-		return $this->_package;
+		return $this->_model;
 	}
 
 	/**
-	 * @return bool|EtPackage
+	 * @return bool|EtModel
 	 */
 	public function phoneHome()
 	{
 		try
 		{
-			$data = JsonHelper::encode($this->_package);
+			$data = JsonHelper::encode($this->_model);
 			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
 			if ($response->success)
@@ -109,13 +109,13 @@ class Et extends BaseApplicationComponent
 				if (isset($this->_options['filename']))
 					return true;
 
-				$packageData = JsonHelper::decode($response->body);
-				$package = new EtPackage($packageData);
+				$modelData = JsonHelper::decode($response->body);
+				$model = new EtModel($modelData);
 
 				// we set the license key status on every request
-				blx()->et->setLicenseKeyStatus($site, $package->licenseKeyStatus);
+				blx()->et->setLicenseKeyStatus($model->licenseKeyStatus);
 
-				return $package;
+				return $model;
 			}
 			else
 			{

@@ -18,26 +18,29 @@ class IOHelper
 	 */
 	public static function fileExists($path, $caseInsensitive = false)
 	{
-		$path = static::getRealPath($path);
+		$resolvedPath = static::getRealPath($path);
 
-		if ($path)
+		if ($resolvedPath)
 		{
-			if (is_file($path))
-				return $path;
-
-			if ($caseInsensitive)
+			if (is_file($resolvedPath))
 			{
-				$folder = static::getFolderName($path);
-				$files = static::getFolderContents($folder, false);
-				$lcaseFileName = strtolower($path);
+				return $resolvedPath;
+			}
+		}
+		else if ($caseInsensitive)
+		{
+			$folder = static::getFolderName($path);
+			$files = static::getFolderContents($folder, false);
+			$lcaseFileName = strtolower($path);
 
-				if (is_array($files) && count($files) > 0)
+			if (is_array($files) && count($files) > 0)
+			{
+				foreach ($files as $file)
 				{
-					foreach ($files as $file)
+					$file = static::normalizePathSeparators($file);
+					if (strtolower($file) === $lcaseFileName)
 					{
-						$file = static::normalizePathSeparators($file);
-						if (strtolower($file) === $lcaseFileName)
-							return $file;
+						return $file;
 					}
 				}
 			}
@@ -1046,7 +1049,7 @@ class IOHelper
 	 * @return boolean Returns 'true' if the supplied string matched one of the filter rules.
 	 * @access private
 	 */
-	private function _filterPassed($str, $filter)
+	private static function _filterPassed($str, $filter)
 	{
 		$passed = false;
 
