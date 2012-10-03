@@ -265,9 +265,9 @@ abstract class Twig_Template implements Twig_TemplateInterface
             $this->doDisplay($context, $blocks);
         } catch (Twig_Error $e) {
             throw $e;
-        } /*catch (Exception $e) {
+        } catch (Exception $e) {
             throw new Twig_Error_Runtime(sprintf('An exception has been thrown during the rendering of a template ("%s").', $e->getMessage()), -1, null, $e);
-        }*/
+        }
     }
 
     /**
@@ -411,7 +411,11 @@ abstract class Twig_Template implements Twig_TemplateInterface
                 return null;
             }
 
-            throw new Twig_Error_Runtime(sprintf('Method "%s" for object "%s" does not exist', $item, get_class($object)));
+            if ($e instanceof Twig_Error_Runtime) {
+                throw $e;
+            } else {
+                throw new Twig_Error_Runtime(sprintf('Method "%s" for object "%s" does not exist', $item, get_class($object)));
+            }
         }
 
         if ($isDefinedTest) {
@@ -422,15 +426,7 @@ abstract class Twig_Template implements Twig_TemplateInterface
             $this->env->getExtension('sandbox')->checkMethodAllowed($object, $method);
         }
 
-        try {
-            $ret = call_user_func_array(array($object, $method), $arguments);
-        } catch (Exception $e) {
-            if ($ignoreStrictCheck || !$this->env->isStrictVariables()) {
-                return null;
-            }
-
-            throw new Twig_Error_Runtime(sprintf('Method "%s" for object "%s" does not exist', $item, $class));
-        }
+        $ret = call_user_func_array(array($object, $method), $arguments);
 
         // useful when calling a template method from a template
         // this is not supported but unfortunately heavily used in the Symfony profiler
