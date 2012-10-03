@@ -58,13 +58,17 @@ class DbHelper
 
 		// Merge in the default config
 		if (isset(static::$columnTypeDefaults[$config['column']]))
+		{
 			$config = array_merge(static::$columnTypeDefaults[$config['column']], $config);
+		}
 
 		// Rename 'maxLength' to 'length'
 		if (isset($config['maxLength']))
 		{
 			if (!isset($config['length']) && is_numeric($config['maxLength']) && $config['maxLength'] > 0)
+			{
 				$config['length'] = $config['maxLength'];
+			}
 
 			unset($config['maxLength']);
 		}
@@ -130,6 +134,7 @@ class DbHelper
 			{
 				$def = 'ENUM(';
 				$values = ArrayHelper::stringToArray($config['values']);
+
 				foreach ($values as $i => $value)
 				{
 					if ($i > 0) $def .= ',';
@@ -145,22 +150,34 @@ class DbHelper
 		}
 
 		if (!empty($config['unsigned']))
+		{
 			$def .= ' UNSIGNED';
+		}
 
 		if (!empty($config['zerofill']))
+		{
 			$def .= ' ZEROFILL';
+		}
 
 		if (!empty($config['required']))
+		{
 			$def .= ' NOT NULL';
+		}
 		else
+		{
 			$def .= ' NULL';
+		}
 
 		if (isset($config['default']))
 		{
 			if (is_string($config['default']) && !is_numeric($config['default']))
+			{
 				$def .= ' DEFAULT "'.$config['default'].'"';
+			}
 			else
+			{
 				$def .= ' DEFAULT '.(int)$config['default'];
+			}
 		}
 
 		return $def;
@@ -205,11 +222,13 @@ class DbHelper
 		$conditions = array();
 
 		$values = ArrayHelper::stringToArray($values);
+
 		foreach ($values as $value)
 		{
 			foreach (static::$_operators as $operator => $sqlOperator)
 			{
 				$length = strlen($operator);
+
 				if (strncmp(strtolower($value), $operator, $length) == 0)
 				{
 					$value = substr($value, $length);
