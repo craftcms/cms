@@ -40,14 +40,16 @@ class TemplatesService extends BaseApplicationComponent
 
 			$loader = new TemplateLoader();
 
-			$twig = new \Twig_Environment($loader, array(
-				'debug'               => blx()->config->devMode,
-				//'base_template_class' => '\Blocks\BaseTemplate',
-				'cache'               => blx()->path->getCompiledTemplatesPath(),
-				'auto_reload'         => true,
-				//'strict_variables'  => true,
-			));
+			$options['cache'] = blx()->path->getCompiledTemplatesPath();
+			$options['auto_reload'] = true;
 
+			if (blx()->config->devMode)
+			{
+				$options['debug'] = true;
+				$options['strict_variables'] = true;
+			}
+
+			$twig = new \Twig_Environment($loader, $options);
 			$twig->addExtension(new BlocksTwigExtension());
 
 			if (blx()->config->devMode)
