@@ -18,13 +18,4 @@ class WidgetModel extends BaseComponentModel
 		return blx()->dashboard->saveUserWidget($this);
 	}
 
-	/**
-	 * Returns the widget type
-	 *
-	 * @return BaseWidget|null
-	 */
-	public function widgetType()
-	{
-		return blx()->dashboard->populateWidgetType($this);
-	}
 }
