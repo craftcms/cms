@@ -37,6 +37,7 @@ var scripts =
 	'ui/MixedInput.js',
 	'ui/AdminPane.js',
 	'ui/FieldToggle.js',
+	'ui/CheckboxSelect.js',
 
 	'ui/AdminTable.js'
 ];

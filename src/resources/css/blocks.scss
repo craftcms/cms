@@ -59,7 +59,7 @@ a.goto:hover { opacity: 1; }
 
 /* emphasis */
 em, i { font-style: italic; }
-strong, i em { font-weight: bold; font-family: sans-serif; }
+strong, b, i em { font-weight: bold; font-family: sans-serif; }
 
 /* text styles */
 .rightalign { text-align: right; }

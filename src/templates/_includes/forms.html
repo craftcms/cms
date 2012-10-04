@@ -104,6 +104,32 @@
 {% endmacro %}
 
 
+{% macro checkboxSelect(config) %}
+	{% set config = { id: null, allLabel: "All"|t, name: null, options: [], values: [] }|merge(config) %}
+	<div class="checkbox-select">
+		<div>
+			{{ _self.checkbox({
+				id: config.id,
+				class: 'all',
+				label: '<b>' ~ config.allLabel ~ '</b>',
+				checked: (config.values is empty)
+			}) }}
+		</div>
+		{% for value, label in config.options %}
+			<div>
+				{{ _self.checkbox({
+					label: label,
+					name: config.name ~ '[]',
+					value: value,
+					checked: (value in config.values or config.values is empty),
+					disabled: (config.values is empty)
+				}) }}
+			</div>
+		{% endfor %}
+	</div>
+{% endmacro %}
+
+
 {% macro radio(config) %}
 	{% set config = { id: null, class: null, name: null, value: '1', checked: false, disabled: false, label: null }|merge(config) %}
 	<label>
@@ -200,6 +226,11 @@
 	<div class="field checkbox"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
 	</div>
+{% endmacro %}
+
+
+{% macro checkboxSelectField(config) %}
+	{{ _self.field(config, _self.checkboxSelect(config)) }}
 {% endmacro %}
 
 
