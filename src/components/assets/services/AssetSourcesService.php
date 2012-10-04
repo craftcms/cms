@@ -20,7 +20,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Gets an asset source type.
 	 *
 	 * @param string $class
-	 * @return BaseAssetSource|null
+	 * @return BaseAssetSourceType|null
 	 */
 	public function getSourceType($class)
 	{
@@ -31,7 +31,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Populates an asset source type.
 	 *
 	 * @param AssetSourceModel $source
-	 * @return BaseAssetSource|null
+	 * @return BaseAssetSourceType|null
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{

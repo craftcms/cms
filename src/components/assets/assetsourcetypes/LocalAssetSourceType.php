@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Local source type class
  */
-class LocalAssetSource extends BaseAssetSource
+class LocalAssetSourceType extends BaseAssetSourceType
 {
 	/**
 	 * Returns the name of the source type.
