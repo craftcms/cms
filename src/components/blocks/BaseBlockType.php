@@ -2,10 +2,16 @@
 namespace Blocks;
 
 /**
- * Block base type class
+ * Block type base class
  */
 abstract class BaseBlockType extends BaseComponent
 {
+	/**
+	 * The type of component this is.
+	 *
+	 * @access protected
+	 * @var string
+	 */
 	protected $componentType = 'BlockType';
 
 	/**

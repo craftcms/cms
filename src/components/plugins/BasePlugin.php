@@ -6,8 +6,12 @@ namespace Blocks;
  */
 abstract class BasePlugin extends BaseComponent
 {
-	public $hasCpSection = false;
-
+	/**
+	 * The type of component this is.
+	 *
+	 * @access protected
+	 * @var string
+	 */
 	protected $componentType = 'Plugin';
 
 	/**
@@ -31,6 +35,16 @@ abstract class BasePlugin extends BaseComponent
 	 * @return string
 	 */
 	abstract public function getDeveloperUrl();
+
+	/**
+	 * Returns whether this plugin has its own section in the CP.
+	 *
+	 * @return bool
+	 */
+	public function hasCpSection()
+	{
+		return false;
+	}
 
 	/**
 	 * Returns whether the plugin is installed.
