@@ -14,7 +14,7 @@
 
 {% macro textClass(config) %}{{ [
 	'text',
-	config.class,
+	(config.class ? config.class : null),
 	(config.hint ? 'nicetext' : null),
 	(config.type == 'password' ? 'password' : null),
 	(config.errors ? 'error' : null)
@@ -22,10 +22,10 @@
 
 
 {% macro text(config) %}
+	{% set config = { id: null, class: null, type: 'text', size: null, maxlength: null, name: null, value: null, disabled: false, hint: null, errors: null }|merge(config) %}
 	{% set class = _self.textClass(config) %}
-	{% set type = config.type ? config.type : 'text' %}
 	{% if not config.size %}<div class="{{ config.type == 'password' ? 'password' : 'text' }}wrapper">{% endif -%}
-	<input{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" type="{{ type }}"{% if config.size %} size="{{ config.size }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.value %} value="{{ config.value }}"{% endif %}{% if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}{% if config.disabled %} disabled {% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
+	<input{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" type="{{ config.type }}"{% if config.size %} size="{{ config.size }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.value %} value="{{ config.value }}"{% endif %}{% if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}{% if config.disabled %} disabled {% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
 	{%- if not config.size %}</div>{% endif %}
 {% endmacro %}
 
@@ -49,14 +49,14 @@
 
 
 {% macro textarea(config) %}
+	{% set config = { id: null, class: null, type: 'text', rows: 2, cols: 50, name: null, value: null, disabled: false, hint: null, errors: null }|merge(config) %}
 	{% set class = _self.textClass(config) %}
-	{% set rows = config.rows ? config.rows : 2 %}
-	{% set cols = config.cols ? config.cols : 50 %}
-	<div class="textwrapper"><textarea{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" rows="{{ rows }}" cols="{{ cols }}" name="{{ config.name }}"{% if config.disabled %} disabled {% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea></div>
+	<div class="textwrapper"><textarea{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" rows="{{ config.rows }}" cols="{{ config.cols }}" name="{{ config.name }}"{% if config.disabled %} disabled{% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea></div>
 {% endmacro %}
 
 
 {% macro select(config) %}
+	{% set config = { id: null, class: null, name: null, value: null, toggle: false, targetPrefix: null, disabled: false }|merge(config) %}
 	{% set class = ['select', config.class]|filter|join(' ') %}
 	<div class="{{ class }}">
 		<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.toggle %} class="fieldtoggle"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.targetPrefix %} data-target-prefix="{{ config.targetPrefix }}"{% endif %}>
@@ -69,7 +69,8 @@
 
 
 {% macro multiselect(config) %}
-<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}[]"{% endif %} multiple{% if config.disabled %} disabled{% endif %}{% if config.size %} size={{ config.size }}{% endif %}>
+	{% set config = { id: null, name: null, size: null, options: [], values: [], disabled: false }|merge(config) %}
+	<select{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}[]"{% endif %} multiple{% if config.disabled %} disabled{% endif %}{% if config.size %} size="{{ config.size }}"{% endif %}>
 		{% for value, label in config.options %}
 			<option value="{{ value }}"{% if value in config.values %} selected{% endif %}>{{ label }}</option>
 		{% endfor %}
@@ -78,16 +79,17 @@
 
 
 {% macro checkbox(config) %}
-	{% set class = [ config.class, (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
-	{% set value = config.value ? config.value : '1' %}
+	{% set config = { id: null, class: null, name: null, value: '1', checked: false, toggle: null, disabled: false, label: null }|merge(config) %}
+	{% set class = [ (config.class), (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
 	<label>
-		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if class %} class="{{ class }}"{% endif %} type="checkbox"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %}>
+		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if class %} class="{{ class }}"{% endif %} type="checkbox"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ config.value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %}>
 		{{ config.label|raw }}
 	</label>
 {% endmacro %}
 
 
 {% macro checkboxGroup(config) %}
+	{% set config = { id: null, name: null, options: [], values: [] }|merge(config) %}
 	{% for value, label in config.options %}
 		<div>
 			{{ _self.checkbox({
@@ -103,15 +105,16 @@
 
 
 {% macro radio(config) %}
-	{% set value = config.value ? config.value : '1' %}
+	{% set config = { id: null, class: null, name: null, value: '1', checked: false, disabled: false, label: null }|merge(config) %}
 	<label>
-		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.class %} class="{{ config.class }}"{% endif %} type="radio"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}>
+		<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.class %} class="{{ config.class }}"{% endif %} type="radio"{% if config.name %} name="{{ config.name }}"{% endif %} value="{{ config.value }}"{% if config.checked %} checked{% endif %}{% if config.disabled %} disabled{% endif %}>
 		{{ config.label|raw }}
 	</label>
 {% endmacro %}
 
 
 {% macro radioGroup(config) %}
+	{% set config = { id: null, name: null, options: [], value: null }|merge(config) %}
 	{% for value, label in config.options %}
 		<div>
 			{{ _self.radio({
@@ -127,6 +130,7 @@
 
 
 {% macro file(config) %}
+	{% set config = { id: null, name: null, disabled: false }|merge(config) %}
 	<input{% if config.id %} id="{{ config.id }}"{% endif %}{% if config.name %} name="{{ config.name }}"{% endif %} type="file"{% if config.disabled %} disabled{% endif %}>
 {% endmacro %}
 
@@ -135,6 +139,7 @@
 
 
 {% macro field(config, input) %}
+	{% set config = { id: null, label: null, instructions: null, required: false, translatable: false, errors: null }|merge(config) %}
 	<div class="field"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{% if config.label or config.instructions %}
 			<div class="heading">
@@ -191,6 +196,7 @@
 
 
 {% macro checkboxField(config) %}
+	{% set config = { id: null }|merge(config) %}
 	<div class="field checkbox"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{{ _self.checkbox(config) }}
 	</div>

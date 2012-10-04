@@ -26,9 +26,9 @@
 			<ul>
 				{% for handle, item in blx.cp.nav %}
 					<li>
-						<a id="nav-{{ handle }}" href="{{ url(handle) }}" {% if blx.request.segment(1) == handle %}class="sel"{% endif %}{% if item.icon %} data-icon="{{ item.icon }}"{% endif %}>
+						<a id="nav-{{ handle }}" href="{{ url(handle) }}" {% if blx.request.segment(1) == handle %}class="sel"{% endif %}>
 							{{- item.name -}}
-							{%- if item.badge -%}
+							{%- if item.badge is defined and item.badge -%}
 								<span class="badge">{{ item.badge }}</span>
 							{%- endif -%}
 						</a>
@@ -47,14 +47,14 @@
 	</div>
 
 	<div id="main" class="main">
-		{% if titlebar %}
+		{% if titlebar is defined and titlebar %}
 			<header id="titlebar">
 				{{ titlebar }}
 			</header>
 		{% endif %}
 
-		<div id="content"{% if centered %} class="centered"{% endif %}>
-			{% if tabs %}
+		<div id="content"{% if centered is defined and centered %} class="centered"{% endif %}>
+			{% if tabs is defined and tabs %}
 				<nav id="tabs">
 					<ul>
 						{{ tabs }}

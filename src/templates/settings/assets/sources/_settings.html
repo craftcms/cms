@@ -3,23 +3,26 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if not source and sourceId %}
+{% if source is not defined and sourceId is defined %}
 	{% set source = blx.assets.getSourceById(sourceId) %}
 	{% if not source %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% if source %}
+{% if source is defined %}
 	{% set sourceType = source.sourceType %}
 {% else %}
 	{% set sourceType = blx.assets.getSourceType('Local') %}
 {% endif %}
 
 
-{% if source.id %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~source.name|t~'</i>' }) %}
-{% else %}
+{% set isNewSource = (source is not defined or not source.id) %}
+
+
+{% if isNewSource %}
 	{% set title = "Create a new asset source"|t %}
+{% else %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~source.name|t~'</i>' }) %}
 {% endif %}
 
 
@@ -35,14 +38,14 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="assetSources/saveSource">
 		<input type="hidden" name="redirect" value="settings/assets">
-		{% if source.id %}<input type="hidden" name="sourceId" value="{{ source.id }}">{% endif %}
+		{% if not isNewSource %}<input type="hidden" name="sourceId" value="{{ source.id }}">{% endif %}
 
 		{{ forms.textField({
 			label: "Name"|t,
 			id: 'name',
 			name: 'name',
-			value: source.name,
-			errors: source.errors.name,
+			value: (source is defined ? source.name : null),
+			errors: (source is defined ? source.getErrors('name') : null),
 			required: true,
 			translatable: true
 		}) }}
@@ -90,6 +93,6 @@
 {% endset %}
 
 
-{% if not source.handle %}
+{% if source is not defined or not source.handle %}
 	{% includeJs "new Blocks.ui.HandleGenerator('#name', '#handle');" %}
 {% endif %}

@@ -8,7 +8,7 @@
 	name: 'hint',
 	value: settings.hint,
 	translatable: true,
-	errors: settings.errors.hint
+	errors: settings.getErrors('hint')
 }) }}
 
 
@@ -18,7 +18,7 @@
 		name: 'maxLength',
 		value: settings.maxLength,
 		size: 3,
-		errors: settings.errors.maxLength
+		errors: settings.getErrors('maxLength')
 	}) }}
 
 	{{ forms.select({
@@ -31,7 +31,7 @@
 {{ forms.field({
 	label: "Max Length"|t,
 	id: 'maxLength',
-	errors: settings.errors.maxLength
+	errors: settings.getErrors('maxLength')
 }, maxLengthInput) }}
 
 
@@ -50,6 +50,6 @@
 		name: 'initialRows',
 		value: settings.initialRows,
 		size: 3,
-		errors: settings.errors.initialRows
+		errors: settings.getErrors('initialRows')
 	}) }}
 </div>

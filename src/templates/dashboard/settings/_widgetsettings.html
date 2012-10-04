@@ -2,23 +2,26 @@
 {% set centered = true %}
 {% import "_includes/forms" as forms %}
 
-{% if not widget and widgetId %}
+{% if widget is not defined and widgetId is defined %}
 	{% set widget = blx.dashboard.getUserWidgetById(widgetId) %}
 	{% if not widget %}{% exit 404 %}{% endif %}
 {% endif %}
 
 
-{% if widget %}
-	{% set widgetType = widget.widgetType %}
+{% if widget is defined %}
+	{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
 {% else %}
 	{% set widgetType = blx.dashboard.getWidgetType('Feed') %}
 {% endif %}
 
 
-{% if widget.id %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~widgetType.title~'</i>' }) %}
-{% else %}
+{% set isNewWidget = (widget is not defined or not widget.id) %}
+
+
+{% if isNewWidget %}
 	{% set title = "Add a new widget"|t %}
+{% else %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~widgetType.title~'</i>' }) %}
 {% endif %}
 
 
@@ -34,7 +37,7 @@
 	<form method="post" action="">
 		<input type="hidden" name="action" value="dashboard/saveUserWidget">
 		<input type="hidden" name="redirect" value="dashboard/settings">
-		{% if widget.id %}<input type="hidden" name="widgetId" value="{{ widget.id }}">{% endif %}
+		{% if not isNewWidget %}<input type="hidden" name="widgetId" value="{{ widget.id }}">{% endif %}
 
 		{% set widgetTypes = blx.dashboard.getAllWidgetTypes %}
 

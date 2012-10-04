@@ -13,18 +13,14 @@
 		label: "Title"|t,
 		id: 'title',
 		name: 'title',
-		value: entry.title,
-		errors: entry.errors.title,
 		required: true
 	}) }}
 
 	{% for block in blocks %}
 		{% if block.required or block.id in settings.blocks %}
-			{% set blockType = block.blockType %}
+			{% set blockType = blx.blockTypes.populateBlockType(block) %}
 			{% set name = 'block'~block.id %}
-			{% set value = entry.blocks[name] %}
-			{% set errors = entry.blockErrors[block.handle] %}
-			{% set input = blockType.input(name, value) %}
+			{% set input = blockType.input(name, null) %}
 
 			{{ forms.field({
 				label: block.name,
@@ -32,7 +28,6 @@
 				translatable: block.translatable,
 				instructions: block.instructions,
 				id: block.handle,
-				errors: errors
 			}, input)|ns('blocks')|raw }}
 		{% endif %}
 	{% endfor %}

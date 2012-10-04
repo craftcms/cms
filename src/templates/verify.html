@@ -25,8 +25,9 @@
 					<div class="pane-item">{{ "Let’s set a password for your account."|t }}</div>
 					<div class="pane-item field">
 						<label for="newPassword">{{ "Password"|t }}</label>
-						<div class="passwordwrapper"><input id="newPassword" name="newPassword" class="text password {% if verifyAccountInfo.errors.newPassword %}error{% endif %}" type="password"></div>
-						{{ errorList(verifyAccountInfo.errors.newPassword) }}
+						{% set errors = verifyAccountInfo.getErrors('newPassword') %}
+						<div class="passwordwrapper"><input id="newPassword" name="newPassword" class="text password {% if errors %}error{% endif %}" type="password"></div>
+						{{ errorList(errors) }}
 					</div>
 					<div class="pane-item">
 						<input class="btn big submit" type="submit" value="{{ 'Set Password'|t }}">

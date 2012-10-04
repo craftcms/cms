@@ -2,9 +2,9 @@
 
 
 {% if block %}
-	{% set blockType = block.blockType %}
+	{% set blockType = blx.blockTypes.populateBlockType(block) %}
 {% else %}
-	{% set blockType = blx.blocks.getBlockType('PlainText') %}
+	{% set blockType = blx.blockTypes.getBlockType('PlainText') %}
 {% endif %}
 
 
@@ -13,8 +13,8 @@
 	instructions: "What this block will be called in the CP."|t,
 	id: 'name',
 	name: 'name',
-	value: block.name,
-	errors: block.errors.name,
+	value: (block ? block.name : null),
+	errors: (block ? block.getErrors('name') : null),
 	required: true,
 	translatable: true
 }) }}
@@ -25,8 +25,8 @@
 	id: 'handle',
 	class: 'code',
 	name: 'handle',
-	value: block.handle,
-	errors: block.errors.handle,
+	value: (block ? block.handle : null),
+	errors: (block ? block.getErrors('handle') : null),
 	required: true,
 }) }}
 
@@ -36,28 +36,28 @@
 		? "Helper text to guide you when authoring an entry."|t
 		: "Helper text to guide the author."|t),
 	name: 'instructions',
-	value: block.instructions,
-	errors: block.errors.instructions,
+	value: (block ? block.instructions : null),
+	errors: (block ? block.getErrors('instructions') : null),
 	translatable: true
 }) }}
 
 {{ forms.checkboxField({
 	label: "This entry block is required"|t,
 	name: 'required',
-	checked: block.required
+	checked: (block ? block.required : false)
 }) }}
 
-{% if blx.hasPackage('language') and canBeTranslatable %}
+{% if blx.hasPackage('language') and canBeTranslatable is defined and canBeTranslatable %}
 	{% if blx.systemSettings.languages %}
 		{{ forms.checkboxField({
 			label: "This entry block is translatable"|t,
 			name: 'translatable',
-			checked: block.translatable
+			checked: (block ? block.translatable : false)
 		}) }}
 	{% endif %}
 {% endif %}
 
-{% set blockTypes = blx.blocks.getAllBlockTypes %}
+{% set blockTypes = blx.blockTypes.getAllBlockTypes %}
 
 {{ forms.selectField({
 	label: "Type",
@@ -88,6 +88,6 @@
 {% endfor %}
 
 
-{% if not block.handle %}
+{% if not block or not block.handle %}
 	{% includeJs "new Blocks.ui.HandleGenerator('#name', '#handle');" %}
 {% endif %}

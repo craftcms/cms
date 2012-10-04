@@ -14,7 +14,8 @@
 {% set showStatus = true %}
 
 
-{% if not filter %}
+{% if filter is not defined %}
+	{% set filter = null %}
 	{% set params = { status: '*' } %}
 {% elseif filter in statuses|keys %}
 	{% set params = { status: filter } %}

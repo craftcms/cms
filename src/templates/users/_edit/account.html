@@ -3,13 +3,13 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if not account and blx.request.segment(1) == 'myaccount' %}
+{% if account is not defined and blx.request.segment(1) == 'myaccount' %}
 	{% set account = user %}
 {% endif %}
 
 
 {% if blx.hasPackage('users') %}
-	{% if not account and userId %}
+	{% if account is not defined and userId is defined %}
 		{% set account = blx.users.getUserById(userId) %}
 		{% if not account %}{% exit 404 %}{% endif %}
 	{% endif %}
@@ -22,44 +22,47 @@
 {% endif %}
 
 
+{% set isNewAccount = (account is not defined or not account.id) %}
+
+
 {% set content %}
 	<form method="post" action="">
 		<input type="hidden" name="action" value="account/saveUser">
-		{% if account.id %}<input type="hidden" name="userId" value="{{ account.id }}">{% endif %}
+		{% if not isNewAccount %}<input type="hidden" name="userId" value="{{ account.id }}">{% endif %}
 
 		{{ forms.textField({
 			label: "Username"|t,
 			id: 'username',
 			name: 'username',
-			value: account.username,
+			value: (account is defined ? account.username : null),
 			required: true,
-			errors: account.errors.username
+			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}
 
 		{{ forms.textField({
 			label: "Email"|t,
 			id: 'email',
 			name: 'email',
-			value: account.email,
+			value: (account is defined ? account.email : null),
 			required: true,
-			errors: account.errors.email
+			errors: (account is defined ? account.getErrors('email') : null)
 		}) }}
 
-		{% if not account.id and user.admin %}
+		{% if isNewAccount and user.admin %}
 			{{ forms.checkboxField({
 				label: "Require verification"|t,
 				name: 'verificationRequired',
-				checked: blx.request.post('verificationRequired')
+				checked: (account is defined ? account.verificationRequired : true)
 			}) }}
 		{% endif %}
 
-		{% if account.isCurrent or user.admin %}
+		{% if account is defined and account.isCurrent or user.admin %}
 			{{ forms.passwordField({
 				label: "Password"|t,
-				instructions: (account.id ? "Leave blank to keep password unchanged."|t : null),
+				instructions: (isNewAccount ? null : "Leave blank to keep password unchanged."|t),
 				id: 'newPassword',
 				name: 'newPassword',
-				errors: (account.errors.newPassword)
+				errors: (account is defined ? account.getErrors('newPassword') : null)
 			}) }}
 		{% endif %}
 
@@ -67,7 +70,7 @@
 			{{ forms.checkboxField({
 				label: "Require a password reset on next login"|t,
 				name: 'passwordResetRequired',
-				checked: (not account or blx.request.post('passwordResetRequired'))
+				checked: (account is defined ? account.passwordResetRequired : true)
 			}) }}
 		{% endif %}
 
@@ -76,15 +79,14 @@
 			id: 'emailFormat',
 			name: 'emailFormat',
 			options: { text: "Plain Text"|t, html: "HTML"|t },
-			value: account.emailFormat,
-			default: 'html'
+			value: (account is defined ? account.emailFormat : 'text')
 		}) }}
 
 		{% if blx.hasPackage('language') %}
 			{% set languageInput %}
 				<div class="select">
 					<select id="language" name="language">
-						{% set userLanguage = account ? account.language : blx.app.language %}
+						{% set userLanguage = account is defined ? account.language : blx.app.language %}
 						{% for language in blx.i18n.translatedLanguages %}
 							<option value="{{ language }}" {% if language == userLanguage %}selected{% endif %}>{{ blx.i18n.localeName(language, language) }}</option>
 						{% endfor %}

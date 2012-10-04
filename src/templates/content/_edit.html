@@ -11,7 +11,7 @@
 {% endif %}
 
 
-{% if not entry and entryId %}
+{% if entry is not defined and entryId is defined %}
 	{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
 	{% if not entry %}{% exit 404 %}{% endif %}
 {% endif %}
@@ -25,9 +25,6 @@
 
 
 {% if entry.id %}
-	<!-- HIDE -->
-	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' ~ (entry.status == 'draft' ? ' <span class="draft"><span>(</span>draft<span>)</span></span>' : '') }) %}
-	<!-- end HIDE -->
 	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' }) %}
 {% else %}
 	{% set title = "Create a new entry"|t %}
@@ -74,15 +71,15 @@
 				id: 'title',
 				name: 'title',
 				value: entry.title,
-				errors: entry.errors.title,
+				errors: entry.getErrors('title'),
 				required: true
 			}) }}
 
 			{% for block in blocks %}
-				{% set blockType = block.blockType %}
+				{% set blockType = blx.blockTypes.populateBlockType(block) %}
 				{% set name = 'block'~block.id %}
 				{% set value = entry.blocks[name] %}
-				{% set errors = entry.blockErrors[block.handle] %}
+				{% set errors = entry.getBlockErrors(block.handle) %}
 				{% set input = blockType.input(name, value) %}
 
 				{{ forms.field({
@@ -102,7 +99,7 @@
 				id: 'slug',
 				name: 'slug',
 				value: entry.slug,
-				errors: entry.errors.slug,
+				errors: entry.getErrors('slug'),
 				required: true
 			}) }}
 
@@ -121,8 +118,8 @@
 				instructions: "When should the entry go live? (Set automatically if left blank)",
 				id: 'postDate',
 				name: 'postDate',
-				value: entry.postDate.w3cDate,
-				errors: entry.errors.postDate
+				value: (entry.postDate ? entry.postDate.w3cDate : null),
+				errors: entry.getErrors('postDate')
 			}) }}
 
 			{{ forms.dateField({
@@ -130,8 +127,8 @@
 				instructions: "When should the entry expire?",
 				id: 'expiryDate',
 				name: 'expiryDate',
-				value: entry.expiryDate.w3cDate,
-				errors: entry.errors.expiryDate
+				value: (entry.expiryDate ? entry.expiryDate.w3cDate : null),
+				errors: entry.getErrors('expiryDate')
 			}) }}
 
 

@@ -6,7 +6,7 @@
 	id: 'path',
 	name: 'path',
 	value: settings.path,
-	errors: settings.errors.path,
+	errors: settings.getErrors('path'),
 	required: true
 }) }}
 
@@ -16,6 +16,6 @@
 	id: 'url',
 	name: 'url',
 	value: settings.url,
-	errors: settings.errors.url,
+	errors: settings.getErrors('url'),
 	required: true
 }) }}

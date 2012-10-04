@@ -25,8 +25,8 @@
 				<p>{{ "What this section will be called in the CP."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="name" name="name" class="text" type="text" value="{{ section.name }}"></div>
-			{% if section.errors.name %}
-				{% include "_includes/error_list" with {errors: section.errors.name} %}
+			{% if section.hasErrors('name') %}
+				{% include "_includes/error_list" with {errors: section.getErrors('name')} %}
 			{% endif %}
 		</div>
 		<div class="field">
@@ -35,8 +35,8 @@
 				<p>{{ "How you’ll refer to this section in the templates."|t }}</p>
 			</div>
 			<div class="textwrapper"><input id="handle" name="handle" class="text code" type="text" value="{{ section.handle }}"></div>
-			{% if section.errors.handle %}
-				{% include "_includes/error_list" with {errors: section.errors.handle} %}
+			{% if section.hasErrors('handle') %}
+				{% include "_includes/error_list" with {errors: section.getErrors('handle')} %}
 			{% endif %}
 		</div>
 		{#<div class="field">
@@ -72,8 +72,8 @@
 				<label for="max_entries">{{ "Max Entries"|t }}</label>
 			</div>
 			<input id="max_entries" name="max_entries" class="text" type="number" value="{{ section.max_entries }}" size="5">
-			{% if section.errors.max_entries %}
-				{% include "_includes/error_list" with {errors: section.errors.max_entries} %}
+			{% if section.hasErrors('max_entries') %}
+				{% include "_includes/error_list" with {errors: section.getErrors('max_entries')} %}
 			{% endif %}
 		</div>#}
 

@@ -24,7 +24,7 @@
 		<table id="widgets" class="data">
 			<tbody>
 				{% for widget in widgets %}
-					{% set widgetType = widget.widgetType %}
+					{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
 					<tr data-id="{{ widget.id }}" data-name="{{ widgetType.title }}">
 						<th scope="row">
 							<a href="{{ url('dashboard/settings/' ~ widget.id) }}">{{ widgetType.title }}</a>
