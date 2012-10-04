@@ -9,6 +9,16 @@ namespace Blocks;
 class AssetSourceModel extends BaseComponentModel
 {
 	/**
+	 * Use the translated source name as the string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return Blocks::t($this->name);
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function defineAttributes()
