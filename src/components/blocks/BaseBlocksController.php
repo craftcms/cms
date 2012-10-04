@@ -66,7 +66,7 @@ abstract class BaseBlocksController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'block' => new BlockVariable($block)
+			'block' => $block
 		));
 	}
 

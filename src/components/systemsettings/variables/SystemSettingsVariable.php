@@ -14,8 +14,7 @@ class SystemSettingsVariable
 	 */
 	public function __isset($category)
 	{
-		$settings = blx()->systemSettings->getSettings($category);
-		return !empty($settings);
+		return true;
 	}
 
 	/**

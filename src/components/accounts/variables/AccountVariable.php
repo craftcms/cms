@@ -10,14 +10,10 @@ class AccountVariable
 	 * Gets a user by a verification code.
 	 *
 	 * @param string $code
-	 * @return UserVariable|null
+	 * @return UserModel|null
 	 */
 	public function getUserByVerificationCode($code)
 	{
-		$user = blx()->account->getUserByVerificationCode($code);
-		if ($user)
-		{
-			return new UserVariable($user);
-		}
+		return blx()->account->getUserByVerificationCode($code);
 	}
 }

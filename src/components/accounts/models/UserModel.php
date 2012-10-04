@@ -6,6 +6,24 @@ namespace Blocks;
  */
 class UserModel extends BaseModel
 {
+	/**
+	 * Use the full name or username as the string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		$fullName = $this->getFullName();
+		if ($fullName)
+		{
+			return $fullName;
+		}
+		else
+		{
+			return $this->model->username;
+		}
+	}
+
 	public function defineAttributes()
 	{
 		return array(
@@ -28,7 +46,7 @@ class UserModel extends BaseModel
 			//'verificationCode'           => AttributeType::String,
 			//'verificationCodeIssuedDate' => AttributeType::DateTime,
 			'passwordResetRequired'        => AttributeType::Bool,
-			//'lastPasswordChangeDate'     => AttributeType::DateTime,
+			'lastPasswordChangeDate'     => AttributeType::DateTime,
 			//'archivedUsername'           => AttributeType::String,
 			//'archivedEmail'              => AttributeType::Email,
 

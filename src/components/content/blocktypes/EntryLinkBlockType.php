@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Entry Link block type class
  */
-class EntryLinkBlockType extends BaseBlock
+class EntryLinkBlockType extends BaseBlockType
 {
 	/**
 	 * Returns the type of block this is.
@@ -13,7 +13,7 @@ class EntryLinkBlockType extends BaseBlock
 	 */
 	public function getName()
 	{
-		return Blocks::t('Plain Text');
+		return Blocks::t('Entry Link');
 	}
 
 	/**
@@ -26,7 +26,7 @@ class EntryLinkBlockType extends BaseBlock
 	{
 		$settings = array();
 
-		if (Blocks::hasPackage(Blocks::PublishPro))
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$settings['sections'] = array(AttributeType::Mixed);
 		}
@@ -41,6 +41,7 @@ class EntryLinkBlockType extends BaseBlock
 	 */
 	public function getSettingsHtml()
 	{
+		return '';
 		return blx()->templates->render('_components/blocks/EntryLink/settings', array(
 			'settings' => $this->getSettings()
 		));
@@ -55,6 +56,7 @@ class EntryLinkBlockType extends BaseBlock
 	 */
 	public function getInputHtml($name, $value)
 	{
+		return '';
 		return blx()->templates->render('_components/blocks/EntryLink/input', array(
 			'name'     => $name,
 			'value'    => $value,

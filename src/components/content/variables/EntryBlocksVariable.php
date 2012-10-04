@@ -13,8 +13,7 @@ class EntryBlocksVariable
 	 */
 	public function entryBlocks()
 	{
-		$blocks = blx()->entryBlocks->getAllBlocks();
-		return BlockVariable::populateVariables($blocks);
+		return blx()->entryBlocks->getAllBlocks();
 	}
 
 	/**
@@ -25,11 +24,7 @@ class EntryBlocksVariable
 	 */
 	public function entryBlocksBySectionId($sectionId)
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$blocks = blx()->sectionBlocks->getBlocksBySectionId($sectionId);
-			return BlockVariable::populateVariables($blocks);
-		}
+		return blx()->sectionBlocks->getBlocksBySectionId($sectionId);
 	}
 
 	/**
@@ -50,14 +45,10 @@ class EntryBlocksVariable
 	 * Gets an entry block by its ID.
 	 *
 	 * @param int $id
-	 * @return BlockVariable|null
+	 * @return EntryBlockModel|null
 	 */
 	public function getEntryBlockById($id)
 	{
-		$block = blx()->entryBlocks->getBlockById($id);
-		if ($block)
-		{
-			return new BlockVariable($block);
-		}
+		return blx()->entryBlocks->getBlockById($id);
 	}
 }

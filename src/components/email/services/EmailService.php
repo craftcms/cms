@@ -81,7 +81,7 @@ class EmailService extends BaseApplicationComponent
 		$email->fromName = $emailSettings['senderName'];
 		$email->addAddress($user->email, $user->getFullName());
 
-		$variables['user'] = new UserVariable($user);
+		$variables['user'] = $user;
 
 		$email->subject = blx()->templates->renderString($subject.' - subject', $subject, $variables);
 		$renderedBody = blx()->templates->renderString($subject.' - body', $body, $variables);

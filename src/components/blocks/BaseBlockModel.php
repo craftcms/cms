@@ -10,6 +10,16 @@ namespace Blocks;
  */
 abstract class BaseBlockModel extends BaseComponentModel
 {
+	/**
+	 * Use the translated block name as the string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return Blocks::t($this->name);
+	}
+
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();

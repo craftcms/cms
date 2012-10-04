@@ -57,11 +57,17 @@ abstract class BaseModel extends \CModel
 	function __isset($name)
 	{
 		if (isset($this->_attributes[$name]))
+		{
 			return true;
+		}
 		else if (in_array($name, $this->attributeNames()))
-			return false;
+		{
+			return true;
+		}
 		else
+		{
 			return parent::__isset($name);
+		}
 	}
 
 	/**

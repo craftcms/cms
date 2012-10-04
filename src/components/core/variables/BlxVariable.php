@@ -103,11 +103,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return BlocksVariable
+	 * @return BlockTypesVariable
 	 */
-	public function blocks()
+	public function blockTypes()
 	{
-		return new BlocksVariable();
+		return new BlockTypesVariable();
 	}
 
 	/**

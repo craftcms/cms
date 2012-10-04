@@ -8,6 +8,8 @@ namespace Blocks;
  */
 class AssetSourceModel extends BaseComponentModel
 {
+	private $_blockType;
+
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();
@@ -26,5 +28,19 @@ class AssetSourceModel extends BaseComponentModel
 	public function save()
 	{
 		return blx()->assetSources->saveSource($this);
+	}
+
+	/**
+	 * Returns the source type.
+	 *
+	 * @return BaseAssetSource|null
+	 */
+	public function getSourceType()
+	{
+		if (!isset($this->_sourceType))
+		{
+			$this->_sourceType = blx()->assetSources->populateSourceType($this);
+		}
+		return $this->_sourceType;
 	}
 }

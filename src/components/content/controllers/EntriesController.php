@@ -76,7 +76,7 @@ class EntriesController extends BaseController
 				blx()->user->setError(Blocks::t('Couldn’t save entry.'));
 
 				$this->renderRequestedTemplate(array(
-					'entry' => new EntryVariable($entry)
+					'entry' => $entry
 				));
 			}
 		}

@@ -44,7 +44,7 @@ class AccountService extends BaseApplicationComponent
 		//$user->verificationCode           = (isset($attributes['verificationCode']) ? $attributes['verificationCode'] : null);
 		//$user->verificationCodeIssuedDate = (isset($attributes['verificationCodeIssuedDate']) ? $attributes['verificationCodeIssuedDate'] : null);
 		$user->passwordResetRequired        = (isset($attributes['passwordResetRequired']) ? $attributes['passwordResetRequired'] : null);
-		//$user->lastPasswordChangeDate     = (isset($attributes['lastPasswordChangeDate']) ? $attributes['lastPasswordChangeDate'] : null);
+		$user->lastPasswordChangeDate       = (isset($attributes['lastPasswordChangeDate']) ? $attributes['lastPasswordChangeDate'] : null);
 		//$user->archivedUsername           = (isset($attributes['archivedUsername']) ? $attributes['archivedUsername'] : null);
 		//$user->archivedEmail              = (isset($attributes['archivedEmail']) ? $attributes['archivedEmail'] : null);
 
@@ -352,7 +352,7 @@ class AccountService extends BaseApplicationComponent
 			$userRecord->verificationCode = null;
 			$userRecord->verificationCodeIssuedDate = null;
 			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
-			$userRecord->lastPasswordChangeDate = DateTimeHelper::currentTime();
+			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentTime();
 
 			$user->newPassword = null;
 

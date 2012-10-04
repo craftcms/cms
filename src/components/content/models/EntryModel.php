@@ -10,6 +10,16 @@ class EntryModel extends BaseModel
 {
 	private $_blockErrors = array();
 
+	/**
+	 * Use the entry title as its string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->title;
+	}
+
 	public function defineAttributes()
 	{
 		$attributes['id'] = AttributeType::Number;
@@ -51,21 +61,37 @@ class EntryModel extends BaseModel
 	/**
 	 * Returns whether there are block errors.
 	 *
+	 * @param string|null $attribute
 	 * @return bool
 	 */
-	public function hasBlockErrors()
+	public function hasBlockErrors($attribute = null)
 	{
-		return !empty($this->_blockErrors);
+		if ($attribute === null)
+		{
+			return $this->_blockErrors !== array();
+		}
+		else
+		{
+			return isset($this->_blockErrors[$attribute]);
+		}
 	}
 
 	/**
 	 * Returns the errors for all block attributes.
 	 *
+	 * @param string|null $attribute
 	 * @return array
 	 */
-	public function getBlockErrors()
+	public function getBlockErrors($attribute = null)
 	{
-		return $this->_blockErrors;
+		if ($attribute === null)
+		{
+			return $this->_blockErrors;
+		}
+		else
+		{
+			return isset($this->_blockErrors[$attribute]) ? $this->_blockErrors[$attribute] : array();
+		}
 	}
 
 	/**
@@ -103,6 +129,41 @@ class EntryModel extends BaseModel
 	}
 
 	/**
+	 * Returns the entry's status.
+	 *
+	 * @return string
+	 */
+	public function getStatus()
+	{
+		if ($this->enabled)
+		{
+			$currentTime = DateTimeHelper::currentTime();
+			$postDate = ($this->postDate ? $this->postDate->getTimestamp() : null);
+			$expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+
+			if ($postDate <= $currentTime && (!$expiryDate || $expiryDate > $currentTime))
+			{
+				return 'live';
+			}
+			else if ($postDate && $postDate > $currentTime)
+			{
+				return 'pending';
+			}
+			/* HIDE */
+			//else if ($expiryDate && $expiryDate <= $currentTime)
+			/* end HIDE */
+			else
+			{
+				return 'expired';
+			}
+		}
+		else
+		{
+			return 'disabled';
+		}
+	}
+
+	/**
 	 * Returns the entry's section.
 	 *
 	 * @return SectionModel|null
@@ -126,6 +187,16 @@ class EntryModel extends BaseModel
 		{
 			return blx()->account->getUserById($this->authorId);
 		}
+	}
+
+	/**
+	 * Returns the entry's front end URL.
+	 *
+	 * @return string
+	 */
+	public function getUrl()
+	{
+		return '#';
 	}
 
 	/**

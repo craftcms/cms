@@ -43,8 +43,7 @@ class AssetsVariable
 	 */
 	public function sources()
 	{
-		$sources = blx()->assetSources->getAllSources();
-		return AssetSourceVariable::populateVariables($sources);
+		return blx()->assetSources->getAllSources();
 	}
 
 	/**
@@ -55,11 +54,7 @@ class AssetsVariable
 	 */
 	public function getSourceById($id)
 	{
-		$source = blx()->assetSources->getSourceById($id);
-		if ($source)
-		{
-			return new AssetSourceVariable($source);
-		}
+		return blx()->assetSources->getSourceById($id);
 	}
 
 	// -------------------------------------------
@@ -73,22 +68,17 @@ class AssetsVariable
 	 */
 	public function assetBlocks()
 	{
-		$blocks = blx()->assetBlocks->getAllBlocks();
-		return BlockVariable::populateVariables($blocks);
+		return blx()->assetBlocks->getAllBlocks();
 	}
 
 	/**
 	 * Gets an asset block by its ID.
 	 *
 	 * @param int $id
-	 * @return BlockVariable|null
+	 * @return AssetBlockModel|null
 	 */
 	public function getAssetBlockById($id)
 	{
-		$block = blx()->assetBlocks->getBlockById($id);
-		if ($block)
-		{
-			return new BlockVariable($block);
-		}
+		return blx()->assetBlocks->getBlockById($id);
 	}
 }

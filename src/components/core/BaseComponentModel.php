@@ -24,21 +24,37 @@ abstract class BaseComponentModel extends BaseModel
 	/**
 	 * Returns whether there are setting errors.
 	 *
+	 * @param string|null $attribute
 	 * @return bool
 	 */
-	public function hasSettingErrors()
+	public function hasSettingErrors($attribute = null)
 	{
-		return !empty($this->_settingErrors);
+		if ($attribute === null)
+		{
+			return $this->_settingErrors !== array();
+		}
+		else
+		{
+			return isset($this->_settingErrors[$attribute]);
+		}
 	}
 
 	/**
 	 * Returns the errors for all settings attributes.
 	 *
+	 * @param string|null $attribute
 	 * @return array
 	 */
-	public function getSettingErrors()
+	public function getSettingErrors($attribute = null)
 	{
-		return $this->_settingErrors;
+		if ($attribute === null)
+		{
+			return $this->_settingErrors;
+		}
+		else
+		{
+			return isset($this->_settingErrors[$attribute]) ? $this->_settingErrors[$attribute] : array();
+		}
 	}
 
 	/**

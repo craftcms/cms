@@ -41,7 +41,7 @@ class AssetSourcesController extends BaseController
 
 		// Reload the original template
 		$this->renderRequestedTemplate(array(
-			'source' => new AssetSourceVariable($source)
+			'source' => $source
 		));
 	}
 

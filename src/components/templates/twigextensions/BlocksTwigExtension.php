@@ -121,12 +121,7 @@ class BlocksTwigExtension extends \Twig_Extension
 		{
 			$globals['siteName'] = Blocks::getSiteName();
 			$globals['siteUrl'] = Blocks::getSiteUrl();
-
-			$user = blx()->account->getCurrentUser();
-			if ($user)
-			{
-				$globals['user'] = new UserVariable($user);
-			}
+			$globals['user'] = blx()->account->getCurrentUser();
 		}
 
 		return $globals;
