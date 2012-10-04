@@ -6,6 +6,13 @@ namespace Blocks;
  */
 class EntryBlocksController extends BaseBlocksController
 {
-	protected $blockModelClass = 'EntryBlockModel';
-	protected $service = 'entryBlocks';
+	/**
+	 * Returns the block service instance.
+	 *
+	 * @return EntryBlocksService
+	 */
+	protected function getService()
+	{
+		return blx()->entryBlocks;
+	}
 }

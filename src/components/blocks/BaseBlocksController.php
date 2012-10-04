@@ -6,8 +6,13 @@ namespace Blocks;
  */
 abstract class BaseBlocksController extends BaseController
 {
-	protected $blockModelClass;
-	protected $service;
+	/**
+	 * Returns the block service instance.
+	 *
+	 * @abstract
+	 * @return BaseBlocksService
+	 */
+	abstract protected function getService();
 
 	/**
 	 * Populates a block model from post.
@@ -17,8 +22,7 @@ abstract class BaseBlocksController extends BaseController
 	 */
 	protected function populateBlockFromPost()
 	{
-		$class = __NAMESPACE__.'\\'.$this->blockModelClass;
-		$block = new $class();
+		$block = $this->getService()->getNewBlock();
 
 		$block->id = blx()->request->getPost('blockId');
 		$block->name = blx()->request->getPost('name');
@@ -51,9 +55,7 @@ abstract class BaseBlocksController extends BaseController
 
 		$block = $this->populateBlockFromPost();
 
-		$service = $this->service;
-
-		if (blx()->$service->saveBlock($block))
+		if ($this->getService()->saveBlock($block))
 		{
 			blx()->user->setNotice(Blocks::t('Block saved.'));
 
@@ -81,9 +83,7 @@ abstract class BaseBlocksController extends BaseController
 		$this->requireAjaxRequest();
 
 		$blockId = blx()->request->getRequiredPost('id');
-
-		$service = $this->service;
-		blx()->$service->deleteBlockById($blockId);
+		$this->getService()->deleteBlockById($blockId);
 
 		$this->returnJson(array('success' => true));
 	}
@@ -97,9 +97,7 @@ abstract class BaseBlocksController extends BaseController
 		$this->requireAjaxRequest();
 
 		$blockIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
-
-		$service = $this->service;
-		blx()->$service->reorderBlocks($blockIds);
+		$this->getService()->reorderBlocks($blockIds);
 
 		$this->returnJson(array('success' => true));
 	}

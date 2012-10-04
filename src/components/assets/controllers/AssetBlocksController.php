@@ -6,6 +6,13 @@ namespace Blocks;
  */
 class AssetBlocksController extends BaseBlocksController
 {
-	protected $blockModelClass = 'AssetBlockModel';
-	protected $service = 'assetBlocks';
+	/**
+	 * Returns the block service instance.
+	 *
+	 * @return AssetBlocksService
+	 */
+	protected function getService()
+	{
+		return blx()->assetBlocks;
+	}
 }
