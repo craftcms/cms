@@ -212,8 +212,8 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 
 		$blockType = blx()->blockTypes->getBlockType($block->type);
 		$processedSettings = $blockType->preprocessSettings($block->settings);
+		$blockRecord->settings = $block->settings = $processedSettings;
 		$blockType->setSettings($processedSettings);
-		$blockRecord->settings = $processedSettings;
 
 		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $blockType->getSettings()->validate();

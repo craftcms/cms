@@ -126,8 +126,8 @@ class DashboardService extends BaseApplicationComponent
 
 		$widgetType = $this->getWidgetType($widget->type);
 		$processedSettings = $widgetType->preprocessSettings($widget->settings);
+		$widgetRecord->settings = $widget->settings = $processedSettings;
 		$widgetType->setSettings($processedSettings);
-		$widgetRecord->settings = $processedSettings;
 
 		$recordValidates = $widgetRecord->validate();
 		$settingsValidate = $widgetType->getSettings()->validate();
