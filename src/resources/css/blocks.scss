@@ -450,9 +450,9 @@ ul.errors li { color: $errorcolor; }
 
 .menu { display: none; position: absolute; z-index: 9999; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5); @include unselectable; }
 .menu ul { padding: 5px 0; background: rgba(255,255,255,0.9); }
-.menu ul li { padding: 1px 10px; font-size: 12px; line-height: 20px; cursor: default; }
-.menu ul li:hover { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); background: $linkcolor; }
 .menu ul li + li { margin-top: 4px; }
+.menu ul li a { display: block; padding: 1px 10px; font-size: 12px; line-height: 20px; color: #555; }
+.menu ul li a:hover { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); text-decoration: none; background: $linkcolor; }
 
 /* ----------------------------------------
 /*  Retina graphics
