@@ -37,7 +37,7 @@ class LocalAssetSource extends BaseAssetSource
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/assetsources/Local/settings', array(
+		return blx()->templates->render('_components/assetsourcetypes/Local/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
