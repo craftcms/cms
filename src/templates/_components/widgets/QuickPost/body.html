@@ -27,6 +27,7 @@
 				required: block.required,
 				translatable: block.translatable,
 				instructions: block.instructions,
+				inputClass: blockType.classHandle|lower,
 				id: block.handle,
 			}, input)|ns('blocks')|raw }}
 		{% endif %}
