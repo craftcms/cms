@@ -17,7 +17,7 @@ abstract class BaseParams
 	}
 
 	/**
-	 * Sets the params based on an arary's keys and values.
+	 * Sets the params based on an array’s keys and values.
 	 *
 	 * @param array|null $params
 	 */
@@ -28,7 +28,9 @@ abstract class BaseParams
 			foreach ($params as $name => $value)
 			{
 				if (property_exists($this, $name))
+				{
 					$this->$name = $value;
+				}
 			}
 		}
 	}

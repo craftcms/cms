@@ -22,8 +22,7 @@ class Exit_Node extends \Twig_Node
 		}
 		else
 		{
-			$compiler
-				->write("\Blocks\blx()->end();\n");
+			$compiler->write("\Blocks\blx()->end();\n");
 		}
 	}
 }

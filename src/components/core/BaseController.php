@@ -42,6 +42,7 @@ abstract class BaseController extends \CController
 	protected function getDateFromPost($name)
 	{
 		$timestamp = blx()->request->getPost($name);
+
 		if ($timestamp)
 		{
 			return DateTime::createFromFormat(DateTime::W3C_DATE, $timestamp);
@@ -200,6 +201,7 @@ abstract class BaseController extends \CController
 	public function redirectToPostedUrl($variables = array())
 	{
 		$url = blx()->request->getPost('redirect');
+
 		if ($url === null)
 		{
 			$url = blx()->request->getPath();

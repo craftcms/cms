@@ -107,7 +107,9 @@ class Et
 			if ($response->success)
 			{
 				if (isset($this->_options['filename']))
+				{
 					return true;
+				}
 
 				$modelData = JsonHelper::decode($response->body);
 				$model = new EtModel($modelData);

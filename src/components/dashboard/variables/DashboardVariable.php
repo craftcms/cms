@@ -36,6 +36,7 @@ class DashboardVariable
 	public function getWidgetType($class)
 	{
 		$widgetType = blx()->dashboard->getWidgetType($class);
+
 		if ($widgetType)
 		{
 			return new WidgetTypeVariable($widgetType);

@@ -36,6 +36,9 @@ class EtModel extends BaseModel
 		$this->requestPort = isset($properties['requestPort']) ? $properties['requestPort'] : null;
 	}*/
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		// The site URL as defined in blx_info->siteUrl.

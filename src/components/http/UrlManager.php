@@ -130,6 +130,7 @@ class UrlManager extends \CUrlManager
 		{
 			// Check the user-defined routes
 			$siteRoutes = blx()->routes->getAllRoutes();
+
 			foreach ($siteRoutes as $route)
 			{
 				if ($this->_matchRouteInternal($route->urlPattern))

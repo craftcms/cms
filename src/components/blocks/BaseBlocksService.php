@@ -115,6 +115,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	{
 		$class = __NAMESPACE__.'\\'.$this->blockRecordClass;
 		$blockRecord = $class::model()->findById($blockId);
+
 		if ($blockRecord)
 		{
 			return $this->populateBlock($blockRecord);
@@ -182,6 +183,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 			$blockRecord->settings = $blockType->getSettings()->getAttributes();
 
 			$isNewBlock = $blockRecord->isNewRecord();
+
 			if ($isNewBlock)
 			{
 				$maxSortOrder = blx()->db->createCommand()
@@ -245,6 +247,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	{
 		$class = __NAMESPACE__.'\\'.$this->contentRecordClass;
 		$contentRecord = new $class();
+
 		return $contentRecord->getTableName();
 	}
 

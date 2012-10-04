@@ -35,6 +35,7 @@ class UserSessionVariable
 	{
 		$flashes = blx()->user->getFlashes();
 		$messages = array();
+
 		foreach ($flashes as $type => $value)
 		{
 			$messages[] = array(
@@ -42,6 +43,7 @@ class UserSessionVariable
 				'value' => $value
 			);
 		}
+
 		return $messages;
 	}
 }

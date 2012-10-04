@@ -20,13 +20,19 @@ class DashboardHelper
 			$updateInfo = blx()->updates->getUpdateInfo();
 
 			if (blx()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
+			{
 				$alerts[] = Blocks::t('The license key you’re using isn’t authorized to run Blocks on “{domain}”.', array('domain', blx()->request->serverName).' <a href="">'.Blocks::t('Manage my licenses').'</a>');
+			}
 
 			if ($updateInfo->blocks->releases !== null && count($updateInfo->blocks->releases) > 0)
+			{
 				if (blx()->updates->criticalBlocksUpdateAvailable($updateInfo->blocks->releases))
+				{
 					$alerts[] = Blocks::t('There is a critical update for Blocks available.').' <a class="go" href="'.UrlHelper::getUrl('updates').'">'.Blocks::t('Go to Updates').'</a>';
-		}
+				}
+			}
 
-		return $alerts;
+			return $alerts;
+		}
 	}
 }

@@ -40,7 +40,9 @@ abstract class BasePlugin extends BaseComponent
 	public function isInstalled()
 	{
 		if (isset($this->model))
+		{
 			return true;
+		}
 
 		$class = $this->getClassHandle();
 		$installed = blx()->plugins->isPluginInstalled($class);
@@ -54,7 +56,9 @@ abstract class BasePlugin extends BaseComponent
 	public function isEnabled()
 	{
 		if (!isset($this->model))
+		{
 			return false;
+		}
 
 		return $this->model->enabled == 1 ? true : false;
 	}

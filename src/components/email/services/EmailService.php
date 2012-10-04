@@ -7,7 +7,6 @@ namespace Blocks;
 class EmailService extends BaseApplicationComponent
 {
 	private $_defaultEmailTimeout = 10;
-	private $_settings;
 
 	/**
 	 * Sends an email.
@@ -26,7 +25,9 @@ class EmailService extends BaseApplicationComponent
 		$emailSettings = $this->getSettings();
 
 		if (!isset($emailSettings['protocol']))
+		{
 			throw new Exception(Blocks::t('Could not determine how to send the email.  Check your email settings.'));
+		}
 
 		$email = new \PhpMailer(true);
 
@@ -43,6 +44,7 @@ class EmailService extends BaseApplicationComponent
 			case EmailerType::Pop:
 			{
 				$pop = new \Pop3();
+
 				if (!isset($emailSettings['host']) || !isset($emailSettings['port']) || !isset($emailSettings['username']) || !isset($emailSettings['password']) ||
 				    StringHelper::isNullOrEmpty($emailSettings['host']) || StringHelper::isNullOrEmpty($emailSettings['port']) || StringHelper::isNullOrEmpty($emailSettings['username']) || StringHelper::isNullOrEmpty($emailSettings['password']))
 				{
@@ -50,7 +52,9 @@ class EmailService extends BaseApplicationComponent
 				}
 
 				if (!isset($emailSettings['timeout']))
+				{
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
+				}
 
 				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], blx()->config->devMode ? 1 : 0);
 
@@ -98,7 +102,9 @@ class EmailService extends BaseApplicationComponent
 		}
 
 		if (!$email->send())
+		{
 			throw new Exception(Blocks::t('Email error: {error}', array('error' => $email->errorInfo)));
+		}
 
 		return true;
 	}
@@ -129,10 +135,13 @@ class EmailService extends BaseApplicationComponent
 			$htmlBody = Blocks::t($key.'_html_body');
 		}
 
+		$tempTemplatesPath = '';
+
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
 			// Is there a custom HTML template set?
 			$settings = $this->getSettings();
+
 			if (!empty($settings['template']))
 			{
 				$tempTemplatesPath = blx()->path->getSiteTemplatesPath();
@@ -188,26 +197,37 @@ class EmailService extends BaseApplicationComponent
 		if (isset($emailSettings['smtpAuth']) && $emailSettings['smtpAuth'] == 1)
 		{
 			$email->smtpAuth = true;
+
 			if ((!isset($emailSettings['username']) && StringHelper::isNullOrEmpty($emailSettings['username'])) || (!isset($emailSettings['password']) && StringHelper::isNullOrEmpty($emailSettings['password'])))
+			{
 				throw new Exception(Blocks::t('Username and password are required.  Check your email settings.'));
+			}
 
 			$email->userName = $emailSettings['username'];
 			$email->password = $emailSettings['password'];
 		}
 
 		if (isset($emailSettings['smtpKeepAlive']) && $emailSettings['smtpKeepAlive'] == 1)
+		{
 			$email->smtpKeepAlive = true;
+		}
 
 		$email->smtpSecure = $emailSettings['smtpSecureTransportType'] != 'none' ? $emailSettings['smtpSecureTransportType'] : null;
 
 		if (!isset($emailSettings['host']))
+		{
 			throw new Exception(Blocks::t('You must specify a host name in your email settings.'));
+		}
 
 		if (!isset($emailSettings['port']))
+		{
 			throw new Exception(Blocks::t('You must specify a port in your email settings.'));
+		}
 
 		if (!isset($emailSettings['timeout']))
+		{
 			$emailSettings['timeout'] = $this->_defaultEmailTimeout;
+		}
 
 		$email->host = $emailSettings['host'];
 		$email->port = $emailSettings['port'];

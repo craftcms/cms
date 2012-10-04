@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class EntryTitleRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'entrytitles';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Language))
@@ -23,6 +29,9 @@ class EntryTitleRecord extends BaseRecord
 		return $attributes;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineRelations()
 	{
 		return array(
@@ -30,6 +39,9 @@ class EntryTitleRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Language))

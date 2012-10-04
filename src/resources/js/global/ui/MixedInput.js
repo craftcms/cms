@@ -277,7 +277,7 @@ var TextElement = Blocks.Base.extend({
 		this.parentInput = parentInput;
 
 		this.$input = $('<input type="text"/>').appendTo(this.parentInput.$container);
-		this.$input.css('margin-right', (2-TextElement.padding)+'px')
+		this.$input.css('margin-right', (2-TextElement.padding)+'px');
 
 		this.setWidth();
 

@@ -24,6 +24,9 @@ class UserModel extends BaseModel
 		}
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -129,6 +132,7 @@ class UserModel extends BaseModel
 		if ($this->id)
 		{
 			$currentUser = blx()->account->getCurrentUser();
+
 			if ($currentUser)
 			{
 				return ($this->id == $currentUser->id);
@@ -149,6 +153,7 @@ class UserModel extends BaseModel
 		{
 			$cooldownEnd = clone $this->lockoutDate;
 			$cooldownEnd->add(new DateInterval(blx()->config->cooldownDuration));
+
 			return $cooldownEnd;
 		}
 	}

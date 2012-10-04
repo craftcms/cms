@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class UsernameModel extends BaseModel
 {
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(

@@ -204,6 +204,9 @@ class BlxVariable
 		return new UpdatesVariable();
 	}
 
+	/**
+	 * @return UsersVariable
+	 */
 	public function users()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))

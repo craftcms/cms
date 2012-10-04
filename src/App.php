@@ -70,7 +70,9 @@ class App extends \CWebApplication
 				$this->end();
 			}
 			else
+			{
 				throw new HttpException(404);
+			}
 		}
 
 		// If it's not a CP request OR the system is on, let's continue processing.
@@ -111,7 +113,9 @@ class App extends \CWebApplication
 		{
 			$actionPath = $this->request->getActionPath();
 			if (isset($actionPath[0]) && $actionPath[0] == 'install')
+			{
 				$this->_processActionRequest();
+			}
 		}
 
 		// Should they be?
@@ -125,7 +129,9 @@ class App extends \CWebApplication
 			}
 			// Otherwise return a 404
 			else
+			{
 				throw new HttpException(404);
+			}
 		}
 	}
 
@@ -135,6 +141,7 @@ class App extends \CWebApplication
 	private function _processBrowserLanguage()
 	{
 		$browserLanguages = blx()->request->getBrowserLanguages();
+
 		foreach ($browserLanguages as $language)
 		{
 			// Check to see if we have translation data for the language.  If it doesn't exist, it will default to en_us.
@@ -159,7 +166,9 @@ class App extends \CWebApplication
 
 			// If the user has a preferred language saved and we have translation data for it, set the target language.
 			if (($userLanguage !== $this->getLanguage()) && Locale::exists($userLanguage))
+			{
 				$this->setLanguage($userLanguage);
+			}
 		}
 	}
 
@@ -246,7 +255,9 @@ class App extends \CWebApplication
 	public function createController($route)
 	{
 		if (($route=trim($route,'/')) === '')
+		{
 			$route = $this->defaultController;
+		}
 
 		$routeParts = explode('/', $route);
 		$controllerId = ucfirst(array_shift($routeParts));
@@ -340,31 +351,47 @@ class App extends \CWebApplication
 		$databaseCollation = $this->config->getDbItem('collation');
 
 		if (StringHelper::isNullOrEmpty($databaseServerName))
+		{
 			$messages[] = Blocks::t('The database server name isn’t set in your db config file.');
+		}
 
 		if (StringHelper::isNullOrEmpty($databaseAuthName))
+		{
 			$messages[] = Blocks::t('The database user name isn’t set in your db config file.');
+		}
 
 		if (StringHelper::isNullOrEmpty($databaseName))
+		{
 			$messages[] = Blocks::t('The database name isn’t set in your db config file.');
+		}
 
 		if (StringHelper::isNullOrEmpty($databasePort))
+		{
 			$messages[] = Blocks::t('The database port isn’t set in your db config file.');
+		}
 
 		if (StringHelper::isNullOrEmpty($databaseCharset))
+		{
 			$messages[] = Blocks::t('The database charset isn’t set in your db config file.');
+		}
 
 		if (StringHelper::isNullOrEmpty($databaseCollation))
+		{
 			$messages[] = Blocks::t('The database collation isn’t set in your db config file.');
+		}
 
 		if (!empty($messages))
+		{
 			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+		}
 
 		try
 		{
 			$connection = $this->db;
 			if (!$connection)
+			{
 				$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
+			}
 		}
 		catch (\Exception $e)
 		{
@@ -373,7 +400,9 @@ class App extends \CWebApplication
 		}
 
 		if (!empty($messages))
+		{
 			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
+		}
 	}
 
 	/**
@@ -515,18 +544,26 @@ class App extends \CWebApplication
 			foreach($trace as $i => $t)
 			{
 				if (!isset($t['file']))
+				{
 					$t['file'] = 'unknown';
+				}
 
 				if (!isset($t['line']))
+				{
 					$t['line'] = 0;
+				}
 
 				if (!isset($t['function']))
+				{
 					$t['function'] = 'unknown';
+				}
 
 				$outputTrace .= "#$i {$t['file']}({$t['line']}): ";
 
 				if (isset($t['object']) && is_object($t['object']))
+				{
 					$outputTrace .= get_class($t['object']).'->';
+				}
 
 				$outputTrace .= "{$t['function']}()\n";
 			}

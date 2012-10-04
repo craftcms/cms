@@ -37,6 +37,7 @@ class SystemSettingsController extends BaseController
 		else
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save general settings.'));
+
 			$this->renderRequestedTemplate(array(
 				'post' => $generalSettingsModel
 			));
@@ -169,17 +170,21 @@ class SystemSettingsController extends BaseController
 		foreach ($checkboxes as $key)
 		{
 			if (blx()->request->getPost($key))
+			{
 				$settings[$key] = true;
+			}
 		}
 
 		if (blx()->systemSettings->saveSettings('advanced', $settings))
 		{
 			blx()->user->setNotice(Blocks::t('Advanced settings saved.'));
+
 			$this->redirectToPostedUrl();
 		}
 		else
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save advanced settings.'));
+
 			$this->renderRequestedTemplate(array(
 				'settings' => $settings
 			));

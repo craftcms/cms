@@ -31,7 +31,11 @@ class BlocksUpdateInfo
 		$this->versionUpdateStatus = isset($properties['versionUpdateStatus']) ? $properties['versionUpdateStatus'] : null;
 
 		if (isset($properties['releases']) && count($properties['releases']) > 0)
+		{
 			foreach ($properties['releases'] as $blocksNewReleaseData)
+			{
 				$this->releases[] = new BlocksNewReleaseInfo($blocksNewReleaseData);;
+			}
+		}
 	}
 }

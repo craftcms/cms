@@ -31,9 +31,10 @@ class IncludeResource_TokenParser extends \Twig_TokenParser
 		$nodes['path'] = $this->parser->getExpressionParser()->parseExpression();
 
 		$first = $stream->test(\Twig_Token::NAME_TYPE, 'first');
+
 		if ($first)
 		{
-		    $stream->next();
+			$stream->next();
 		}
 
 		$stream->expect(\Twig_Token::BLOCK_END_TYPE);

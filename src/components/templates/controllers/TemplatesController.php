@@ -17,9 +17,14 @@ class TemplatesController extends BaseController
 		if (blx()->request->getMode() == HttpRequestMode::CP)
 		{
 			$path = blx()->request->getPath();
+
 			if ($path !== 'login')
+			{
 				if ($path !== blx()->account->accountVerificationPath && blx()->request->getParam('code', null) == null)
+				{
 					$this->requireLogin();
+				}
+			}
 		}
 
 		$this->renderRequestedTemplate();
@@ -31,9 +36,13 @@ class TemplatesController extends BaseController
 	public function actionOffline()
 	{
 		if (($path = blx()->config->offlinePath) !== null)
+		{
 			$templateName = IOHelper::getFileName($path, false);
+		}
 		else
+		{
 			$templateName = '_offline';
+		}
 
 		blx()->setViewPath(blx()->path->getOfflineTemplatePath());
 		$this->renderTemplate($templateName, array(), false);

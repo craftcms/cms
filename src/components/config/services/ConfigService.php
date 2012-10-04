@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class ConfigService extends BaseApplicationComponent
 {
-	private $_tablePrefix;
 	private $_cacheDuration;
 
 	/**
@@ -18,9 +17,13 @@ class ConfigService extends BaseApplicationComponent
 	function __get($name)
 	{
 		if (parent::__isset($name))
+		{
 			return parent::__get($name);
+		}
 		else
+		{
 			return $this->getItem($name);
+		}
 	}
 
 	/**
@@ -33,7 +36,9 @@ class ConfigService extends BaseApplicationComponent
 	public function getItem($item, $default = null)
 	{
 		if (isset(blx()->params['blocksConfig'][$item]))
+		{
 			return blx()->params['blocksConfig'][$item];
+		}
 
 		return $default;
 	}
@@ -48,7 +53,9 @@ class ConfigService extends BaseApplicationComponent
 	public function getDbItem($item, $default = null)
 	{
 		if (isset(blx()->params['dbConfig'][$item]))
+		{
 			return blx()->params['dbConfig'][$item];
+		}
 
 		return $default;
 	}
@@ -63,6 +70,7 @@ class ConfigService extends BaseApplicationComponent
 		if (!isset($this->_cacheDuration))
 		{
 			$duration = $this->getItem('cacheDuration');
+
 			if ($duration)
 			{
 				$interval = new DateInterval($duration);

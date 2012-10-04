@@ -60,6 +60,7 @@ class QuickPostWidget extends BaseWidget
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$sectionId = $settings['section'];
+
 			if (isset($settings['blocks']['section'.$sectionId]))
 			{
 				$settings['blocks'] = $settings['blocks']['section'.$sectionId];
@@ -79,6 +80,7 @@ class QuickPostWidget extends BaseWidget
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$section = blx()->sections->getSectionById($this->getSettings()->section);
+
 			if ($section)
 			{
 				return Blocks::t('Post a new {section} entry', array('section' => $section->name));
@@ -106,6 +108,7 @@ class QuickPostWidget extends BaseWidget
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$sectionId = $this->getSettings()->section;
+
 			if (is_numeric($sectionId))
 			{
 				$params['sectionId'] = (int)$sectionId;

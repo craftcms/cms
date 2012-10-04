@@ -20,6 +20,9 @@ abstract class BaseBlockModel extends BaseComponentModel
 		return Blocks::t($this->name);
 	}
 
+	/**
+	 * @return mixed
+	 */
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();

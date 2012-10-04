@@ -129,6 +129,7 @@ class HttpRequestService extends \CHttpRequest
 	public function getPathSegment($num, $default = null)
 	{
 		$pathSegments = $this->getPathSegments();
+
 		if (isset($pathSegments[$num - 1]))
 		{
 			return $pathSegments[$num - 1];
@@ -460,10 +461,12 @@ class HttpRequestService extends \CHttpRequest
 		header('Expires: 0');
 		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		header('Content-type: '.$options['mimeType']);
+
 		if (ob_get_length() === false)
 		{
 			header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content,'8bit') : strlen($content)));
 		}
+
 		header('Content-Disposition: '.$disposition.'; filename="'.$fileName.'"');
 		header('Content-Transfer-Encoding: binary');
 
@@ -471,7 +474,7 @@ class HttpRequestService extends \CHttpRequest
 		{
 			// clean up the application first because the file downloading could take long time
 			// which may cause timeout of some resources (such as DB connection)
-			Blocks::app()->end(0,false);
+			Blocks::app()->end(0, false);
 			echo $content;
 			exit(0);
 		}

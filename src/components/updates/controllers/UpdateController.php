@@ -23,7 +23,9 @@ class UpdateController extends BaseController
 		$updateInfo = blx()->updates->getUpdateInfo();
 
 		if (!$updateInfo)
+		{
 			$this->returnErrorJson(Blocks::t('There was a problem getting the latest update information.'));
+		}
 
 		try
 		{
@@ -40,7 +42,9 @@ class UpdateController extends BaseController
 						foreach ($updateInfo->plugins as $plugin)
 						{
 							if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
+							{
 								$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+							}
 						}
 					}
 
@@ -59,12 +63,18 @@ class UpdateController extends BaseController
 					if (!empty($updateInfo->plugins))
 					{
 						if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
+						{
 							$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
+						}
 						else
+						{
 							$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $h)));
+						}
 					}
 					else
+					{
 						$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $h)));
+					}
 				}
 			}
 

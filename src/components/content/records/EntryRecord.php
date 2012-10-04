@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class EntryRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'entries';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -23,6 +29,9 @@ class EntryRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineRelations()
 	{
 		$relations = array();
@@ -41,6 +50,9 @@ class EntryRecord extends BaseRecord
 		return $relations;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))

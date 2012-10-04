@@ -17,7 +17,9 @@ class InstallController extends BaseController
 	{
 		// Return a 404 if Blocks is already installed
 		if (!blx()->config->devMode && blx()->isInstalled())
+		{
 			throw new HttpException(404);
+		}
 	}
 
 	/**
@@ -59,9 +61,13 @@ class InstallController extends BaseController
 		$licenseKey->licensekey = blx()->request->getPost('licensekey');
 
 		if ($licenseKey->validate())
+		{
 			$return['validates'] = true;
+		}
 		else
+		{
 			$return['errors'] = $licenseKey->getErrors();
+		}
 
 		$this->returnJson($return);
 	}
@@ -81,9 +87,13 @@ class InstallController extends BaseController
 		$accountSettings->password = blx()->request->getPost('password');
 
 		if ($accountSettings->validate())
+		{
 			$return['validates'] = true;
+		}
 		else
+		{
 			$return['errors'] = $accountSettings->getErrors();
+		}
 
 		$this->returnJson($return);
 	}
@@ -101,9 +111,13 @@ class InstallController extends BaseController
 		$siteSettings->siteUrl = blx()->request->getPost('siteUrl');
 
 		if ($siteSettings->validate())
+		{
 			$return['validates'] = true;
+		}
 		else
+		{
 			$return['errors'] = $siteSettings->getErrors();
+		}
 
 		$this->returnJson($return);
 	}

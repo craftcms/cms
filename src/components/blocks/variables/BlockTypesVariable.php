@@ -26,6 +26,7 @@ class BlockTypesVariable
 	public function getBlockType($class)
 	{
 		$blockType = blx()->blockTypes->getBlockType($class);
+
 		if ($blockType)
 		{
 			return new BlockTypeVariable($blockType);

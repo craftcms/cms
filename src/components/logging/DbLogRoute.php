@@ -19,6 +19,7 @@ class DbLogRoute extends \CDbLogRoute
 		if (blx()->isInstalled())
 		{
 			$activityTable = $this->getDbConnection()->getSchema()->getTable('{{activity}}');
+
 			if (!$activityTable)
 			{
 				$this->createLogTable($this->getDbConnection(), $this->logTableName);
@@ -35,13 +36,13 @@ class DbLogRoute extends \CDbLogRoute
 	protected function createLogTable($db, $tableName)
 	{
 		$db = $this->getDbConnection();
-			$db->createCommand()->createTable($tableName, array(
-					'userId'   => array('column' => ColumnType::Int),
-					'category' => array('column' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
-					'key'      => array('column' => ColumnType::Varchar, 'maxLength' => 400, 'required' => true),
-					'data'     => ColumnType::Text,
-					'logtime'  => array('column' => ColumnType::Int, 'required' => true)
-				));
+		$db->createCommand()->createTable($tableName, array(
+				'userId'   => array('column' => ColumnType::Int),
+				'category' => array('column' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
+				'key'      => array('column' => ColumnType::Varchar, 'maxLength' => 400, 'required' => true),
+				'data'     => ColumnType::Text,
+				'logtime'  => array('column' => ColumnType::Int, 'required' => true)
+			));
 
 		$db->createCommand()->createIndex('category_idx', $tableName, 'category', false);
 		$db->createCommand()->createIndex('logtime_idx', $tableName, 'logtime', false);

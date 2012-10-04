@@ -16,6 +16,7 @@ class PluginsVariable
 	public function getPlugin($class, $enabledOnly = true)
 	{
 		$plugin = blx()->plugins->getPlugin($class, $enabledOnly);
+
 		if ($plugin)
 		{
 			return new PluginVariable($plugin);

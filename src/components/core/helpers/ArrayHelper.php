@@ -20,7 +20,9 @@ class ArrayHelper
 		foreach ($arr as $key => $value)
 		{
 			if ($prefix !== null)
+			{
 				$key = "{$prefix}[{$key}]";
+			}
 
 			if (is_array($value))
 			{
@@ -71,7 +73,9 @@ class ArrayHelper
 		$arr = array();
 
 		foreach ($settings as $setting)
+		{
 			$arr[$setting->name] = $setting->value;
+		}
 
 		return static::expandArray($arr);
 	}
@@ -86,7 +90,9 @@ class ArrayHelper
 	public static function stringToArray($str)
 	{
 		if (is_array($str))
+		{
 			return $str;
+		}
 
 		return array_map('trim', explode(',', $str));
 	}

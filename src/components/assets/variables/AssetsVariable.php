@@ -30,6 +30,7 @@ class AssetsVariable
 	public function getSourceType($class)
 	{
 		$sourceType = blx()->assetSources->getSourceType($class);
+
 		if ($sourceType)
 		{
 			return new AssetSourceTypeVariable($sourceType);

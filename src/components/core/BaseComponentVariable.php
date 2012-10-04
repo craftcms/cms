@@ -67,6 +67,7 @@ abstract class BaseComponentVariable
 	 *
 	 * @static
 	 * @param array $models
+	 * @return array
 	 */
 	public static function populateVariables($models)
 	{

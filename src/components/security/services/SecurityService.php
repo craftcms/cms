@@ -44,7 +44,9 @@ class SecurityService extends BaseApplicationComponent
 		}
 
 		if ($check)
+		{
 			return $hashAndType;
+		}
 
 		throw new Exception(Blocks::t('Could not hash the given password.'));
 	}

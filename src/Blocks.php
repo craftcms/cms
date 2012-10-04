@@ -223,7 +223,7 @@ class Blocks extends \Yii
 	 * Return the saved stored blocks info.  If it's not set, get it from the database and return it.
 	 *
 	 * @static
-	 * @return Info
+	 * @return InfoRecord
 	 */
 	private static function _getStoredInfo()
 	{

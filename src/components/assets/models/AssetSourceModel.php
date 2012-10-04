@@ -8,8 +8,9 @@ namespace Blocks;
  */
 class AssetSourceModel extends BaseComponentModel
 {
-	private $_blockType;
-
+	/**
+	 * @return mixed
+	 */
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();
@@ -18,19 +19,5 @@ class AssetSourceModel extends BaseComponentModel
 		$attributes['type']['default'] = 'Local';
 
 		return $attributes;
-	}
-
-	/**
-	 * Returns the source type.
-	 *
-	 * @return BaseAssetSource|null
-	 */
-	public function getSourceType()
-	{
-		if (!isset($this->_sourceType))
-		{
-			$this->_sourceType = blx()->assetSources->populateSourceType($this);
-		}
-		return $this->_sourceType;
 	}
 }

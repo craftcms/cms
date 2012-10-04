@@ -32,9 +32,13 @@ class PDO extends \PDO
 	public function beginTransaction()
 	{
 		if ($this->transactionLevel == 0)
+		{
 			parent::beginTransaction();
+		}
 		else if ($this->getSupportsSavepoints())
+		{
 			$this->exec("SAVEPOINT LEVEL{$this->transactionLevel}");
+		}
 
 		$this->transactionLevel++;
 	}
@@ -47,9 +51,13 @@ class PDO extends \PDO
 		$this->transactionLevel--;
 
 		if ($this->transactionLevel == 0)
+		{
 			parent::commit();
+		}
 		else if ($this->getSupportsSavepoints())
+		{
 			$this->exec("RELEASE SAVEPOINT LEVEL{$this->transactionLevel}");
+		}
 	}
 
  	/**
@@ -60,8 +68,12 @@ class PDO extends \PDO
 		$this->transactionLevel--;
 
 		if ($this->transactionLevel == 0)
+		{
 			parent::rollBack();
+		}
 		else if ($this->getSupportsSavepoints())
+		{
 			$this->exec("ROLLBACK TO SAVEPOINT LEVEL{$this->transactionLevel}");
+		}
 	}
 }

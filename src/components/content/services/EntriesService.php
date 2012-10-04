@@ -169,6 +169,7 @@ class EntriesService extends BaseApplicationComponent
 		$this->_applyEntryConditions($query, $params);
 
 		$result = $query->queryRow();
+
 		if ($result)
 		{
 			return $this->populateEntry($result);
@@ -229,13 +230,14 @@ class EntriesService extends BaseApplicationComponent
 			$whereConditions[] = 'e.archived = 0';
 
 			if ($params->status && $params->status != '*')
-					{
-						$statusCondition = $this->_getEntryStatusCondition($params->status);
-						if ($statusCondition)
-						{
-							$whereConditions[] = $statusCondition;
-						}
-					}
+			{
+				$statusCondition = $this->_getEntryStatusCondition($params->status);
+
+				if ($statusCondition)
+				{
+					$whereConditions[] = $statusCondition;
+				}
+			}
 		}
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
@@ -274,16 +276,16 @@ class EntriesService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param $statusParam
+	 * @return array
 	 */
 	private function _getEntryStatusCondition($statusParam)
 	{
 		$statusConditions = array();
-
 		$statuses = ArrayHelper::stringToArray($statusParam);
+
 		foreach ($statuses as $status)
 		{
 			$status = strtolower($status);
-
 			$currentTime = DateTimeHelper::currentTime();
 
 			switch ($status)
@@ -424,6 +426,7 @@ class EntriesService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param EntryModel $entry
+	 * @throws Exception
 	 * @return EntryRecord
 	 */
 	private function _getEntryRecord(EntryModel $entry)
@@ -472,7 +475,6 @@ class EntriesService extends BaseApplicationComponent
 			}
 		}
 
-
 		if ($entry->id)
 		{
 			$attributes['entryId'] = $entry->id;
@@ -504,6 +506,7 @@ class EntriesService extends BaseApplicationComponent
 	 *
 	 * @access private
 	 * @param EntryModel $entry
+	 * @throws Exception
 	 * @return EntryContentRecord
 	 */
 	private function _getEntryContentRecord(EntryModel $entry)
@@ -522,7 +525,7 @@ class EntriesService extends BaseApplicationComponent
 
 			if (!$section)
 			{
-				throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $sectionId)));
+				throw new Exception(Blocks::t('No section exists with the ID “{id}”', array('id' => $entry->getSection()->id)));
 			}
 		}
 

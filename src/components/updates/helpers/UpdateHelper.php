@@ -15,16 +15,22 @@ class UpdateHelper
 		foreach ($manifestData as $row)
 		{
 			if (static::isManifestVersionInfoLine($row))
+			{
 				continue;
+			}
 
 			if (static::isManifestMigrationLine($row))
+			{
 				continue;
+			}
 
 			$rowData = explode(';', $row);
 			$file = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);
 
 			if (IOHelper::fileExists($file.'.bak'))
+			{
 				IOHelper::rename($file.'.bak', $file);
+			}
 		}
 	}
 
@@ -43,10 +49,14 @@ class UpdateHelper
 			foreach ($manifestData as $row)
 			{
 				if (static::isManifestVersionInfoLine($row))
+				{
 					continue;
+				}
 
 				if (static::isManifestMigrationLine($row))
+				{
 					continue;
+				}
 
 				$rowData = explode(';', $row);
 
@@ -57,20 +67,26 @@ class UpdateHelper
 				{
 					// update the file
 					case PatchManifestFileAction::Add:
+					{
 						Blocks::log('Updating file: '.$destFile);
 						IOHelper::copyFile($sourceFile, $destFile);
 						break;
+					}
 
 					case PatchManifestFileAction::Remove:
+					{
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
 						Blocks::log('Renaming file for delete: '.$destFile);
 						IOHelper::rename($destFile, $destFile.'.bak');
 						break;
+					}
 
 					default:
+					{
 						Blocks::log('Unknown PatchManifestFileAction', \CLogger::LEVEL_ERROR);
 						UpdateHelper::rollBackFileChanges($manifestData);
 						return false;
+					}
 				}
 			}
 		}
@@ -92,7 +108,9 @@ class UpdateHelper
 	public static function isManifestVersionInfoLine($line)
 	{
 		if ($line[0] == '#' && $line[1] == '#')
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -105,7 +123,9 @@ class UpdateHelper
 	public static function isManifestMigrationLine($line)
 	{
 		if (strpos($line, '/migrations/') !== false)
+		{
 			return true;
+		}
 
 		return false;
 	}
@@ -122,7 +142,9 @@ class UpdateHelper
 
 		// Remove any trailing empty newlines
 		if ($manifestFileData[count($manifestFileData) - 1] == '')
+		{
 			array_pop($manifestFileData);
+		}
 
 		return $manifestFileData;
 	}
@@ -137,7 +159,9 @@ class UpdateHelper
 		$tempPath = IOHelper::normalizePathSeparators(IOHelper::getFolderName($downloadPath, true).'/'.IOHelper::getFileName($downloadPath, false.'_temp'));
 
 		if (IOHelper::folderExists($tempPath))
+		{
 			IOHelper::deleteFolder($tempPath);
+		}
 
 		return IOHelper::createFolder($tempPath);
 	}

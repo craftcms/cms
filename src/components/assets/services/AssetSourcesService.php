@@ -30,7 +30,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	/**
 	 * Populates an asset source type.
 	 *
-	 * @param AssetSourceModel $block
+	 * @param AssetSourceModel $source
 	 * @return BaseAssetSource|null
 	 */
 	public function populateSourceType(AssetSourceModel $source)
@@ -101,6 +101,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function getSourceById($sourceId)
 	{
 		$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
+
 		if ($sourceRecord)
 		{
 			return $this->populateSource($sourceRecord);
@@ -164,6 +165,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Reorders asset sources.
 	 *
 	 * @param array $sourceIds
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function reorderSources($sourceIds)
@@ -231,7 +233,9 @@ class AssetSourcesService extends BaseApplicationComponent
 			$sourceRecord = AssetSourceRecord::model()->findById($sourceId);
 
 			if (!$sourceRecord)
+			{
 				$this->_noSourceExists($sourceId);
+			}
 		}
 		else
 		{

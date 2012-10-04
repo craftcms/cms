@@ -6,11 +6,17 @@ namespace Blocks;
  */
 class UserRecord extends BaseRecord
 {
+	/**
+	 * @return string
+	 */
 	public function getTableName()
 	{
 		return 'users';
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
@@ -38,6 +44,9 @@ class UserRecord extends BaseRecord
 		);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineRelations()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))

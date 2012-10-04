@@ -52,19 +52,29 @@ class DateTimeHelper
 		$timeComponents = array();
 
 		if ($weeks)
+		{
 			$timeComponents[] = $weeks.' '.($weeks > 1 ? Blocks::t('weeks') : Blocks::t('week'));
+		}
 
 		if ($days)
+		{
 			$timeComponents[] = $days.' '.($days > 1 ? Blocks::t('days') : Blocks::t('day'));
+		}
 
 		if ($hours)
+		{
 			$timeComponents[] = $hours.' '.($hours > 1 ? Blocks::t('hours') : Blocks::t('hour'));
+		}
 
 		if ($minutes)
+		{
 			$timeComponents[] = $minutes.' '.($minutes > 1 ? Blocks::t('minutes') : Blocks::t('minute'));
+		}
 
 		if ($seconds)
+		{
 			$timeComponents[] = $seconds.' '.($seconds > 1 ? Blocks::t('seconds') : Blocks::t('second'));
+		}
 
 		return implode(', ', $timeComponents);
 	}
@@ -255,6 +265,7 @@ class DateTimeHelper
 			$futureTime = $now;
 			$pastTime = $inSeconds;
 		}
+
 		$diff = $futureTime - $pastTime;
 
 		// If more than a week, then take into account the length of months
@@ -353,6 +364,7 @@ class DateTimeHelper
 			$diff = $diff - ($minutes * 60);
 			$seconds = $diff;
 		}
+
 		$relativeDate = '';
 		$diff = $futureTime - $pastTime;
 
@@ -411,6 +423,7 @@ class DateTimeHelper
 				$relativeDate = sprintf('%s ago', $relativeDate);
 			}
 		}
+
 		return $relativeDate;
 	}
 

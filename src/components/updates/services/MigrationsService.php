@@ -44,7 +44,9 @@ class MigrationsService extends BaseApplicationComponent
 		$path= Blocks::getPathOfAlias($this->migrationPath);
 
 		if ($path === false || !IOHelper::folderExists($path))
+		{
 			throw new Exception(Blocks::t('Error: The migration folder “{folder}” does’t exist.', array('folder' => $this->migrationPath)));
+		}
 
 		$this->migrationPath = $path;
 	}
@@ -65,7 +67,9 @@ class MigrationsService extends BaseApplicationComponent
 		Blocks::log("Total $total new ".($total === 1 ? 'migration':'migrations')." to be applied:".PHP_EOL, \CLogger::LEVEL_INFO);
 
 		foreach ($migrations as $migration)
+		{
 			Blocks::log($migration.PHP_EOL, \CLogger::LEVEL_INFO);
+		}
 
 		foreach ($migrations as $migration)
 		{
@@ -172,10 +176,13 @@ class MigrationsService extends BaseApplicationComponent
 	protected function instantiateMigration($class)
 	{
 		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$class.'.php');
+
 		require_once($file);
+
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
 		$migration->setDbConnection($this->getDbConnection());
+
 		return $migration;
 	}
 
@@ -186,11 +193,17 @@ class MigrationsService extends BaseApplicationComponent
 	protected function getDbConnection()
 	{
 		if ($this->_db !== null)
+		{
 			return $this->_db;
+		}
 		else if (($this->_db = Blocks::app()->getComponent($this->connectionID)) instanceof \CDbConnection)
+		{
 			return $this->_db;
+		}
 		else
+		{
 			throw new Exception(Blocks::t('MigrationCommand connectionId “{connectionId}” is invalid. Please make sure it refers to the ID of a DbConnection application component.', array('connectionId' => $this->connectionID)));
+		}
 	}
 
 	/**
@@ -202,7 +215,9 @@ class MigrationsService extends BaseApplicationComponent
 		$historyArr = array();
 
 		if ($db->schema->getTable(blx()->config->getDbItem('tablePrefix').'_'.$this->migrationTable) === null)
+		{
 			$this->createMigrationHistoryTable();
+		}
 
 		$migrationHistory = $db->createCommand()
 					->select('version, apply_time')
@@ -211,7 +226,9 @@ class MigrationsService extends BaseApplicationComponent
 					->queryAll();
 
 		foreach ($migrationHistory as $migration)
+		{
 			$historyArr[$migration['version']] = $migration['apply_time'];
+		}
 
 		return $historyArr;
 	}
@@ -249,7 +266,9 @@ class MigrationsService extends BaseApplicationComponent
 		$applied = array();
 
 		foreach ($this->getMigrationHistory() as $version => $time)
+		{
 			$applied[substr($version, 1, 13)] = true;
+		}
 
 		$migrations = array();
 		$handle = opendir($this->migrationPath);
@@ -257,7 +276,9 @@ class MigrationsService extends BaseApplicationComponent
 		while (($file = readdir($handle)) !== false)
 		{
 			if ($file === '.' || $file === '..')
+			{
 				continue;
+			}
 
 			$path = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$file);
 
@@ -267,7 +288,9 @@ class MigrationsService extends BaseApplicationComponent
 
 				// Check the migration timestamp against the Blocks release date
 				if ($time > Blocks::getStoredReleaseDate())
+				{
 					$migrations[] = $matches[1];
+				}
 			}
 		}
 

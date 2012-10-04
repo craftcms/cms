@@ -66,7 +66,9 @@ class LocalizationService extends BaseApplicationComponent
 			}
 
 			if (!in_array('en_us', $this->_translatedLanguages))
-					$this->_translatedLanguages[] = 'en_us';
+			{
+				$this->_translatedLanguages[] = 'en_us';
+			}
 
 			sort($this->_translatedLanguages);
 		}
@@ -82,7 +84,9 @@ class LocalizationService extends BaseApplicationComponent
 	public function getLanguageData($languageCode)
 	{
 		if (Locale::exists($languageCode))
+		{
 			return Locale::getInstance($languageCode);
+		}
 
 		return false;
 	}

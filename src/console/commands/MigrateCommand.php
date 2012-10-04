@@ -79,15 +79,23 @@ EOD;
 	public function actionTo($args)
 	{
 		if (isset($args[0]))
+		{
 			$version = $args[0];
+		}
 		else
+		{
 			$this->usageError('Please specify which version to migrate to.');
+		}
 
 		$originalVersion = $version;
 		if (preg_match('/^m?(\d{6}_\d{6})(_.*?)?$/', $version, $matches))
+		{
 			$version = 'm'.$matches[1];
+		}
 		else
+		{
 			die("Error: The version option must be either a timestamp (e.g. 101129_185401)\nor the full name of a migration (e.g. m101129_185401_create_user_table).\n");
+		}
 
 		// try migrate up
 		$migrations = $this->getNewMigrations();
@@ -139,10 +147,13 @@ EOD;
 	protected function instantiateMigration($class)
 	{
 		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$class.'.php');
+
 		require_once($file);
+
 		$class = __NAMESPACE__.'\\'.$class;
 		$migration = new $class;
 		$migration->setDbConnection($this->getDbConnection());
+
 		return $migration;
 	}
 
@@ -172,8 +183,11 @@ EOD;
 	protected function getTemplate()
 	{
 		if($this->templateFile !== null)
+		{
 			return IOHelper::getFileContents(Blocks::getPathOfAlias($this->templateFile).'.php');
+		}
 		else
+		{
 			return <<<EOD
 <?php
 namespace Blocks;
@@ -193,5 +207,6 @@ class {ClassName} extends \CDbMigration
 }
 
 EOD;
+		}
 	}
 }

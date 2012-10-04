@@ -33,7 +33,7 @@ Blocks.ui.DataTableSorter = Blocks.ui.DragSort.extend({
 
 		// Copy the table width and classes
 		$table.width(this.$table.width());
-		$table.prop('className', this.$table.prop('className'))
+		$table.prop('className', this.$table.prop('className'));
 
 		// Copy the column widths
 		var $firstRow = this.$table.find('tr:first'),

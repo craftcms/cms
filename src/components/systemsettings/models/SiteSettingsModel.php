@@ -6,6 +6,9 @@ namespace Blocks;
  */
 class SiteSettingsModel extends BaseModel
 {
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
 		return array(
