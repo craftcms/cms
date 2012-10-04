@@ -227,7 +227,7 @@ class InstallService extends BaseApplicationComponent
 		$user->language = blx()->language;
 		$user->admin = true;
 
-		if ($user->save())
+		if (blx()->account->saveUser($user))
 		{
 			Blocks::log('User created successfully.', \CLogger::LEVEL_INFO);
 		}
@@ -305,7 +305,7 @@ class InstallService extends BaseApplicationComponent
 			$section->urlFormat = 'blog/{slug}';
 			$section->template = 'blog/_entry';
 
-			if ($section->save())
+			if (blx()->sections->saveSection($section))
 			{
 				Blocks::log('Blog section created successfuly."', \CLogger::LEVEL_INFO);
 			}
@@ -321,10 +321,12 @@ class InstallService extends BaseApplicationComponent
 		{
 			$block = new SectionBlockModel();
 			$block->sectionId = $section->id;
+			$service = blx()->sectionBlocks;
 		}
 		else
 		{
 			$block = new EntryBlockModel();
+			$service = blx()->entryBlocks;
 		}
 
 		$block->name = Blocks::t('Body');
@@ -337,7 +339,7 @@ class InstallService extends BaseApplicationComponent
 			$block->translatable = true;
 		}
 
-		if ($block->save())
+		if ($service->saveBlock($block))
 		{
 			Blocks::log('Body entry block created successfuly."', \CLogger::LEVEL_INFO);
 		}

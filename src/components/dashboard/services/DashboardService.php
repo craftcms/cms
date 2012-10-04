@@ -230,20 +230,20 @@ class DashboardService extends BaseApplicationComponent
 					'section' => $section->id
 				);
 
-				$widget->save();
+				$this->saveUserWidget($widget);
 			}
 		}
 		else
 		{
 			$widget = new WidgetModel();
 			$widget->type = 'QuickPost';
-			$widget->save();
+			$this->saveUserWidget($widget);
 		}
 
 		// Recent Entries widget
 		$widget = new WidgetModel();
 		$widget->type = 'RecentEntries';
-		$widget->save();
+		$this->saveUserWidget($widget);
 
 		// Blog & Tonic feed widget
 		$widget = new WidgetModel();
@@ -252,8 +252,7 @@ class DashboardService extends BaseApplicationComponent
 			'url'   => 'http://feeds.feedburner.com/blogandtonic',
 			'title' => 'Blog & Tonic'
 		);
-
-		$widget->save();
+		$this->saveUserWidget($widget);
 	}
 
 	/**
