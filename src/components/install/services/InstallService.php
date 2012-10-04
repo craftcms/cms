@@ -317,15 +317,15 @@ class InstallService extends BaseApplicationComponent
 
 		Blocks::log('Creating the Body entry block.', \CLogger::LEVEL_INFO);
 
+		$block = new EntryBlockModel();
+
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$block = new SectionBlockModel();
 			$block->sectionId = $section->id;
 			$service = blx()->sectionBlocks;
 		}
 		else
 		{
-			$block = new EntryBlockModel();
 			$service = blx()->entryBlocks;
 		}
 
