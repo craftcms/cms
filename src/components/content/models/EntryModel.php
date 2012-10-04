@@ -49,16 +49,6 @@ class EntryModel extends BaseModel
 	}
 
 	/**
-	 * Saves the entry.
-	 *
-	 * @return bool
-	 */
-	public function save()
-	{
-		return blx()->entries->saveEntry($this);
-	}
-
-	/**
 	 * Returns whether there are block errors.
 	 *
 	 * @param string|null $attribute

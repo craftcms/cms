@@ -29,7 +29,7 @@ class AssetSourcesController extends BaseController
 		}
 
 		// Did it save?
-		if ($source->save())
+		if (blx()->assetSources->saveSource($source))
 		{
 			blx()->user->setNotice(Blocks::t('Source saved.'));
 			$this->redirectToPostedUrl();

@@ -8,14 +8,5 @@ namespace Blocks;
  */
 class WidgetModel extends BaseComponentModel
 {
-	/**
-	 * Saves the Widget.
-	 *
-	 * @return bool
-	 */
-	public function save()
-	{
-		return blx()->dashboard->saveUserWidget($this);
-	}
 
 }

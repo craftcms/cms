@@ -38,7 +38,7 @@ class EntriesController extends BaseController
 			$entry->language = blx()->request->getPost('language');
 		}
 
-		if ($entry->save())
+		if (blx()->entries->saveEntry($entry))
 		{
 			if (blx()->request->isAjaxRequest())
 			{

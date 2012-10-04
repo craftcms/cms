@@ -57,11 +57,6 @@ class UserModel extends BaseModel
 		);
 	}
 
-	public function save()
-	{
-		return blx()->account->saveUser($this);
-	}
-
 	/**
 	 * Returns the user's profile.
 	 *

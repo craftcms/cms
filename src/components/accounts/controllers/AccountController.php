@@ -206,7 +206,7 @@ class AccountController extends BaseController
 			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
 		}
 
-		if ($user->save())
+		if (blx()->account->saveUser($user))
 		{
 			blx()->user->setNotice(Blocks::t('User saved.'));
 			$this->redirectToPostedUrl(array(

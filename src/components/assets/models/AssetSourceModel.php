@@ -21,16 +21,6 @@ class AssetSourceModel extends BaseComponentModel
 	}
 
 	/**
-	 * Saves the asset block.
-	 *
-	 * @return bool
-	 */
-	public function save()
-	{
-		return blx()->assetSources->saveSource($this);
-	}
-
-	/**
 	 * Returns the source type.
 	 *
 	 * @return BaseAssetSource|null

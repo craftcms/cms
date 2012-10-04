@@ -33,7 +33,7 @@ class DashboardController extends BaseController
 		}
 
 		// Did it save?
-		if ($widget->save())
+		if (blx()->dashboard->saveUserWidget($widget))
 		{
 			blx()->user->setNotice(Blocks::t('Widget saved.'));
 			$this->redirectToPostedUrl();
