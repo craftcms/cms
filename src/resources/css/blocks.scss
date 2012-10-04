@@ -323,11 +323,14 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 
 .text,
 .select select,
-#main div.redactor_box { border: 1px solid #ccc; font-family: 'Helvetica Neue', sans-serif; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+#main div.redactor_box,
+.border-box { border: 1px solid #ccc; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 
 .text.focus,
 .text:focus,
-.select select:focus { border-color: $focusglowcolor; outline: none; }
+.select select:focus,
+.border-box:focus,
+.border-box.focus { border-color: $focusglowcolor; outline: none; }
 
 input.text,
 textarea.text,

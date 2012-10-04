@@ -5,7 +5,9 @@
 /* ----------------------------------------*/
 
 html, body, #sidebar, #main { height: 100%; }
-body { font-size: 13px; line-height: 18px; font-family: HelveticaNeue, sans-serif; color: #555; background: #fff; }
+body { font-size: 13px; line-height: 18px; color: #555; background: #fff; }
+
+body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 
 #sidebar, #main { overflow: auto; }
 
