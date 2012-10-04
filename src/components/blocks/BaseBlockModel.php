@@ -21,6 +21,14 @@ abstract class BaseBlockModel extends BaseComponentModel
 	}
 
 	/**
+	 * Returns the type of entity these blocks will be attached to.
+	 *
+	 * @abstract
+	 * @return string
+	 */
+	abstract public function getEntityType();
+
+	/**
 	 * @return mixed
 	 */
 	public function defineAttributes()

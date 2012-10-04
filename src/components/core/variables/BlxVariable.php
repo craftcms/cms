@@ -154,6 +154,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @return LinksVariable
+	 */
+	public function links()
+	{
+		return new LinksVariable();
+	}
+
+	/**
 	 * @return PluginsVariable
 	 */
 	public function plugins()

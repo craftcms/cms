@@ -87,6 +87,7 @@ $components['entries']['class']           = 'Blocks\EntriesService';
 $components['entryBlocks']['class']       = 'Blocks\EntryBlocksService';
 $components['et']['class']                = 'Blocks\EtService';
 $components['installer']['class']         = 'Blocks\InstallService';
+$components['links']['class']             = 'Blocks\LinksService';
 $components['migrations']['class']        = 'Blocks\MigrationsService';
 $components['path']['class']              = 'Blocks\PathService';
 $components['plugins']['class']           = 'Blocks\PluginsService';

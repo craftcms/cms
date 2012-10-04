@@ -1,0 +1,48 @@
+{% import "_includes/forms" as forms %}
+
+
+{{ forms.selectField({
+	label: "Link Type"|t,
+	instructions: "What do you want to link to?"|t,
+	id: 'type',
+	name: 'type',
+	options: blx.links.getAllLinkTypes,
+	value: settings.type,
+	toggle: true,
+	targetPrefix: 'linktype-'
+}) }}
+
+
+{% for _linkType in blx.links.getAllLinkTypes %}
+	{% set isCurrent = (_linkType.classHandle == linkType.classHandle) %}
+	{% if isCurrent %}
+		{% set linkTypeSettings = linkType.settings %}
+	{% else %}
+		{% set linkTypeSettings = _linkType.settings %}
+	{% endif %}
+
+	{% if linkTypeSettings %}
+		<div id="linktype-{{ _linkType.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+			{% set namespace = 'types[' ~ _linkType.classHandle ~ ']' %}
+			{{- linkTypeSettings|ns(namespace)|raw -}}
+		</div>
+	{% endif %}
+{% endfor %}
+
+
+{{ forms.textField({
+	label: "“Add Links” Label"|t,
+	translatable: true,
+	instructions: "What do you want the “Add Links” button to say?"|t,
+	id: 'addLabel',
+	name: 'addLabel',
+	value: settings.addLabel
+}) }}
+
+{{ forms.textField({
+	label: "Limit"|t,
+	id: 'limit',
+	name: 'limit',
+	value: settings.limit,
+	size: 5
+}) }}
