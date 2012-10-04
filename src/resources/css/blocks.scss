@@ -389,9 +389,9 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .datewrapper .text { padding-left: 27px; width: 100%; }
 
 /* redactor */
-#main .redactor_toolbar { background: #f5f5f5; border-bottom: 1px solid #dbdbdb; }
+#main .redactor_toolbar { height: 33px !important; background: #fafafa; border-bottom: 1px solid #eaeaea; }
 #main .redactor_toolbar li a:hover { border-radius: 2px; border: 1px solid #d4d4d4; background-color: #e8e8e8; }
-#main .redactor_toolbar li.redactor_separator { border-left: 1px solid #dbdbdb; border-right: none; }
+#main .redactor_toolbar li.redactor_separator { margin: 7px 2px 0 3px !important; height: 19px; border-left: 1px dotted #ccc; border-right: none; }
 
 /* select */
 .select,
