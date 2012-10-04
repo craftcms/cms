@@ -24,10 +24,13 @@
 {% endif %}
 
 
-{% if entry.id %}
-	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' }) %}
-{% else %}
+{% set isNewEntry = (entry is not defined or not entry.id) %}
+
+
+{% if isNewEntry %}
 	{% set title = "Create a new entry"|t %}
+{% else %}
+	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' }) %}
 {% endif %}
 
 
@@ -61,7 +64,7 @@
 			<input type="hidden" name="redirect" value="content/blog/{entryId}">
 		{% endif %}
 
-		{% if entry.id %}
+		{% if not isNewEntry %}
 			<input type="hidden" name="entryId" value="{{ entry.id }}">
 		{% endif %}
 
@@ -70,16 +73,16 @@
 				label: "Title"|t,
 				id: 'title',
 				name: 'title',
-				value: entry.title,
-				errors: entry.getErrors('title'),
+				value: (entry is defined ? entry.title : null),
+				errors: (entry is defined ? entry.getErrors('title') : null),
 				required: true
 			}) }}
 
 			{% for block in blocks %}
 				{% set blockType = blx.blockTypes.populateBlockType(block) %}
 				{% set name = 'block'~block.id %}
-				{% set value = entry.blocks[name] %}
-				{% set errors = entry.getBlockErrors(block.handle) %}
+				{% set value = (entry is defined ? entry.blocks[name] : null) %}
+				{% set errors = (entry is defined ? entry.getBlockErrors(block.handle) : null) %}
 				{% set input = blockType.input(name, value) %}
 
 				{{ forms.field({
@@ -98,8 +101,8 @@
 				label: "Slug"|t,
 				id: 'slug',
 				name: 'slug',
-				value: entry.slug,
-				errors: entry.getErrors('slug'),
+				value: (entry is defined ? entry.slug : null),
+				errors: (entry is defined ? entry.getErrors('slug') : null),
 				required: true
 			}) }}
 
@@ -109,7 +112,7 @@
 					id: 'author',
 					name: 'author',
 					options: blx.users.users,
-					value: entry.authorId
+					value: (entry is defined ? entry.authorId : null)
 				}) }}
 			{% endif %}
 
@@ -118,8 +121,8 @@
 				instructions: "When should the entry go live? (Set automatically if left blank)",
 				id: 'postDate',
 				name: 'postDate',
-				value: (entry.postDate ? entry.postDate.w3cDate : null),
-				errors: entry.getErrors('postDate')
+				value: (entry is defined and entry.postDate ? entry.postDate.w3cDate : null),
+				errors: (entry is defined ? entry.getErrors('postDate') : null)
 			}) }}
 
 			{{ forms.dateField({
@@ -127,19 +130,19 @@
 				instructions: "When should the entry expire?",
 				id: 'expiryDate',
 				name: 'expiryDate',
-				value: (entry.expiryDate ? entry.expiryDate.w3cDate : null),
-				errors: entry.getErrors('expiryDate')
+				value: (entry is defined and entry.expiryDate ? entry.expiryDate.w3cDate : null),
+				errors: (entry is defined ? entry.getErrors('expiryDate') : null)
 			}) }}
 
 
-			{% set statusLabel %}
-				{{- "Status:"|t }} <i>{{ entry ? entry.status|ucfirst|t : "Never saved"|t -}}</i>
-			{% endset %}
+			{% set statusLabel -%}
+				{{ "Status:"|t }} <i>{{ isNewEntry ? "Never saved"|t : entry.status|ucfirst|t }}</i>
+			{%- endset %}
 			{% set statusInput %}
 				{{ forms.checkboxField({
 					label: "Entry is enabled",
 					name: 'enabled',
-					checked: (entry ? entry.enabled : true)
+					checked: (entry is defined ? entry.enabled : true)
 				}) }}
 			{% endset %}
 			{{ forms.field({
@@ -157,7 +160,7 @@
 {% endset %}
 
 
-{% if not entry.slug %}
+{% if entry is not defined or not entry.slug %}
 	{% includeJs "new Blocks.ui.SlugGenerator('#title', '#slug');" %}
 {% endif %}
 
