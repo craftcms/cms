@@ -38,7 +38,7 @@ class MultiSelectBlockType extends BaseOptionsBlockType
 	 */
 	public function getInputHtml($name, $values)
 	{
-		return blx()->templates->render('_components/blocks/MultiSelect/input', array(
+		return blx()->templates->render('_components/blocktypes/MultiSelect/input', array(
 			'name'     => $name,
 			'values'   => $values,
 			'settings' => $this->getSettings()

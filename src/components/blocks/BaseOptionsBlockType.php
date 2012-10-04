@@ -88,7 +88,7 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 			}
 		}
 
-		return blx()->templates->render('_components/blocks/optionsblocksettings', array(
+		return blx()->templates->render('_components/blocktypes/optionsblocksettings', array(
 			'label'   => $this->getOptionsSettingsLabel(),
 			'options' => $options
 		));

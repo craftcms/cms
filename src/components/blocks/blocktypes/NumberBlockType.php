@@ -38,7 +38,7 @@ class NumberBlockType extends BaseBlockType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/blocks/Number/settings', array(
+		return blx()->templates->render('_components/blocktypes/Number/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -62,7 +62,7 @@ class NumberBlockType extends BaseBlockType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/blocks/Number/input', array(
+		return blx()->templates->render('_components/blocktypes/Number/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

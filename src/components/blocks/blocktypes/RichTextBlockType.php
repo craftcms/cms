@@ -36,7 +36,7 @@ class RichTextBlockType extends BaseBlockType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/blocks/RichText/settings', array(
+		return blx()->templates->render('_components/blocktypes/RichText/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}

@@ -40,7 +40,7 @@ class PlainTextBlockType extends BaseBlockType
 	 */
 	public function getSettingsHtml()
 	{
-		return blx()->templates->render('_components/blocks/PlainText/settings', array(
+		return blx()->templates->render('_components/blocktypes/PlainText/settings', array(
 			'settings' => $this->getSettings()
 		));
 	}
@@ -71,7 +71,7 @@ class PlainTextBlockType extends BaseBlockType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/blocks/PlainText/input', array(
+		return blx()->templates->render('_components/blocktypes/PlainText/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()

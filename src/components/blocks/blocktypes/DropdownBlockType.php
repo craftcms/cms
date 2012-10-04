@@ -36,7 +36,7 @@ class DropdownBlockType extends BaseOptionsBlockType
 	 */
 	public function getInputHtml($name, $value)
 	{
-		return blx()->templates->render('_components/blocks/Dropdown/input', array(
+		return blx()->templates->render('_components/blocktypes/Dropdown/input', array(
 			'name'     => $name,
 			'value'    => $value,
 			'settings' => $this->getSettings()
