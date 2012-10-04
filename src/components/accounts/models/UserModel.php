@@ -20,7 +20,7 @@ class UserModel extends BaseModel
 		}
 		else
 		{
-			return $this->model->username;
+			return $this->username;
 		}
 	}
 
