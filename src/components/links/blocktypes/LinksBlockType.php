@@ -49,14 +49,15 @@ class LinksBlockType extends BaseBlockType
 	public function getSettingsHtml()
 	{
 		$linkType = $this->_getLinkType();
-		if ($linkType)
+		if (!$linkType)
 		{
-			$vars['linkType'] = new LinkTypeVariable($linkType);
+			$linkType = blx()->links->getLinkType('Entries');
 		}
 
-		$vars['settings'] = $this->getSettings();
-
-		return blx()->templates->render('_components/blocktypes/Links/settings', $vars);
+		return blx()->templates->render('_components/blocktypes/Links/settings', array(
+			'linkType' => new LinkTypeVariable($linkType),
+			'settings' => $this->getSettings()
+		));
 	}
 
 	/**
