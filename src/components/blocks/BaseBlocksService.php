@@ -209,16 +209,17 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	public function saveBlock(BaseBlockModel $block)
 	{
 		$blockRecord = $this->populateBlockRecord($block);
-		$blockType = blx()->blockTypes->populateBlockType($block);
+
+		$blockType = blx()->blockTypes->getBlockType($block->type);
+		$processedSettings = $blockType->preprocessSettings($block->settings);
+		$blockType->setSettings($processedSettings);
+		$blockRecord->settings = $processedSettings;
 
 		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $blockType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// Set the record settings now that the block type has had a chance to tweak them
-			$blockRecord->settings = $blockType->getSettings()->getAttributes();
-
 			$isNewBlock = $blockRecord->isNewRecord();
 
 			if ($isNewBlock)

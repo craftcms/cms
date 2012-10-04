@@ -122,20 +122,18 @@ class DashboardService extends BaseApplicationComponent
 	public function saveUserWidget(WidgetModel $widget)
 	{
 		$widgetRecord = $this->_getUserWidgetRecordById($widget->id);
-
 		$widgetRecord->type = $widget->type;
-		$widgetRecord->settings = $widget->settings;
 
-		$widgetType = $this->populateWidgetType($widget);
+		$widgetType = $this->getWidgetType($widget->type);
+		$processedSettings = $widgetType->preprocessSettings($widget->settings);
+		$widgetType->setSettings($processedSettings);
+		$widgetRecord->settings = $processedSettings;
 
 		$recordValidates = $widgetRecord->validate();
 		$settingsValidate = $widgetType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// Set the record settings now that the widget has had a chance to tweak them
-			$widgetRecord->settings = $widgetType->getSettings()->getAttributes();
-
 			if ($widgetRecord->isNewRecord())
 			{
 				$maxSortOrder = blx()->db->createCommand()
