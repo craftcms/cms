@@ -4,31 +4,16 @@ namespace Blocks;
 /**
  * Stores all of the available update info.
  */
-class UpdateInfo
+class UpdateModel extends BaseModel
 {
-	public $blocks;
-	public $plugins = array();
-
 	/**
-	 * @param array $properties
+	 * @return array|void
 	 */
-	function __construct($properties = array())
+	public function defineAttributes()
 	{
-		if (isset($properties['blocks']))
-		{
-			$this->blocks = new BlocksUpdateInfo($properties['blocks']);
-		}
-		else
-		{
-			$this->blocks = new BlocksUpdateInfo();
-		}
+		$attributes['blocks']  = AttributeType::Mixed;
+		$attributes['plugins'] = AttributeType::Mixed;
 
-		if (isset($properties['plugins']))
-		{
-			foreach ($properties['plugins'] as $pluginData)
-			{
-				$this->plugins[$pluginData['class']] = new PluginUpdateInfo($pluginData);
-			}
-		}
+		return $attributes;
 	}
 }

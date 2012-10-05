@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class UpdatesService extends BaseApplicationComponent
 {
-	private $_updateInfo;
+	private $_updateModel;
 	private $_isSystemOn;
 
 	/**
@@ -22,30 +22,30 @@ class UpdatesService extends BaseApplicationComponent
 			return null;
 		}
 
-		$updateInfo = $this->getUpdateInfo($forceRefresh);
+		$updateModel = $this->getUpdateModel($forceRefresh);
 
 		// blocks first.
-		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateInfo->blocks->releases) > 0)
+		if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateModel->blocks->releases) > 0)
 		{
-			$notes = $this->_generateUpdateNotes($updateInfo->blocks->releases, 'Blocks');
+			$notes = $this->_generateUpdateNotes($updateModel->blocks->releases, 'Blocks');
 
 			$updates[] = array(
 				'name' => 'Blocks',
 				'handle' => 'Blocks',
-				'version' => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
-				'critical' => $updateInfo->blocks->criticalUpdateAvailable,
-				'manualUpdateRequired' => $updateInfo->blocks->manualUpdateRequired,
+				'version' => $updateModel->blocks->latestVersion.' Build '.$updateModel->blocks->latestBuild,
+				'critical' => $updateModel->blocks->criticalUpdateAvailable,
+				'manualUpdateRequired' => $updateModel->blocks->manualUpdateRequired,
 				'notes' => $notes,
-				'latestVersion' => $updateInfo->blocks->latestVersion,
-				'latestBuild' => $updateInfo->blocks->latestBuild,
+				'latestVersion' => $updateModel->blocks->latestVersion,
+				'latestBuild' => $updateModel->blocks->latestBuild,
 			);
 
 		}
 
 		// plugins second.
-		if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
+		if ($updateModel->plugins !== null && count($updateModel->plugins) > 0)
 		{
-			foreach ($updateInfo->plugins as $plugin)
+			foreach ($updateModel->plugins as $plugin)
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 				{
@@ -127,7 +127,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isUpdateInfoCached()
 	{
-		return (isset($this->_updateInfo) || blx()->fileCache->get('updateInfo') !== false);
+		return (isset($this->_updateModel) || blx()->fileCache->get('updateInfo') !== false);
 	}
 
 	/**
@@ -135,7 +135,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isCriticalUpdateAvailable()
 	{
-		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->criticalUpdateAvailable))
+		if ((isset($this->_updateModel) && $this->_updateModel->blocks->criticalUpdateAvailable))
 		{
 			return true;
 		}
@@ -148,7 +148,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isManualUpdateRequired()
 	{
-		if ((isset($this->_updateInfo) && $this->_updateInfo->blocks->manualUpdateRequired))
+		if ((isset($this->_updateModel) && $this->_updateModel->blocks->manualUpdateRequired))
 		{
 			return true;
 		}
@@ -160,36 +160,36 @@ class UpdatesService extends BaseApplicationComponent
 	 * @param bool $forceRefresh
 	 * @return mixed
 	 */
-	public function getUpdateInfo($forceRefresh = false)
+	public function getUpdateModel($forceRefresh = false)
 	{
-		if (!isset($this->_updateInfo) || $forceRefresh)
+		if (!isset($this->_updateModel) || $forceRefresh)
 		{
-			$updateInfo = false;
+			$updateModel = false;
 
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateInfo = blx()->fileCache->get('updateInfo');
+				$updateModel = blx()->fileCache->get('updateInfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
-			if ($forceRefresh || $updateInfo === false)
+			if ($forceRefresh || $updateModel === false)
 			{
-				$updateInfo = $this->check();
+				$updateModel = $this->check();
 
-				if ($updateInfo == null)
+				if ($updateModel == null)
 				{
-					$updateInfo = new UpdateInfo();
+					$updateModel = new UpdateModel();
 				}
 
 				// cache it and set it to expire according to config
-				blx()->fileCache->set('updateInfo', $updateInfo);
+				blx()->fileCache->set('updateinfo', $updateModel);
 			}
 
-			$this->_updateInfo = $updateInfo;
+			$this->_updateModel = $updateModel;
 		}
 
-		return $this->_updateInfo;
+		return $this->_updateModel;
 	}
 
 	/**
@@ -260,29 +260,29 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @return UpdateInfo
+	 * @return UpdateModel
 	 */
 	public function check()
 	{
-		$updateInfo = new UpdateInfo();
-		$updateInfo->blocks->localBuild = Blocks::getBuild();
-		$updateInfo->blocks->localVersion = Blocks::getVersion();
+		$updateModel = new UpdateModel();
+		$updateModel->blocks->localBuild = Blocks::getBuild();
+		$updateModel->blocks->localVersion = Blocks::getVersion();
 
 		$plugins = blx()->plugins->getEnabledPlugins();
 
 		foreach ($plugins as $plugin)
 		{
-			$pluginUpdateInfo = new PluginUpdateInfo();
-			$pluginUpdateInfo->class = $plugin->getClassHandle();
-			$pluginUpdateInfo->localVersion = $plugin->version;
+			$pluginUpdateModel = new PluginUpdateModel();
+			$pluginUpdateModel->class = $plugin->getClassHandle();
+			$pluginUpdateModel->localVersion = $plugin->version;
 
-			$updateInfo->plugins[$plugin->getClassHandle()] = $pluginUpdateInfo;
+			$updateModel->plugins[$plugin->getClassHandle()] = $pluginUpdateModel;
 		}
 
-		$response = blx()->et->check($updateInfo);
+		$response = blx()->et->check($updateModel);
 
-		$updateInfo = $response == null ? new UpdateInfo() : new UpdateInfo($response->data);
-		return $updateInfo;
+		$updateModel = $response == null ? new UpdateModel() : new UpdateModel($response->data);
+		return $updateModel;
 	}
 
 	/**

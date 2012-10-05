@@ -4,38 +4,23 @@ namespace Blocks;
 /**
  * Stores the available plugin update info.
  */
-class PluginUpdateInfo
+class PluginUpdateModel extends BaseModel
 {
-	public $class;
-	public $localVersion;
-	public $latestVersion;
-	public $latestDate;
-	public $status;
-	public $displayName;
-	public $notes;
-	public $criticalUpdateAvailable;
-	public $releases = array();
-
 	/**
-	 * @param array $properties
+	 * @return mixed
 	 */
-	function __construct($properties = array())
+	public function defineAttributes()
 	{
-		$this->class = isset($properties['class']) ? $properties['class'] : null;
-		$this->localVersion = isset($properties['localVersion']) ? $properties['localVersion'] : null;
-		$this->latestVersion = isset($properties['latestVersion']) ? $properties['latestVersion'] : null;
-		$this->latestDate = isset($properties['latestDate']) ? $properties['latestDate'] : null;
-		$this->status = isset($properties['status']) ? $properties['status'] : null;
-		$this->displayName = isset($properties['displayName']) ? $properties['displayName'] : null;
-		$this->notes = isset($properties['notes']) ? $properties['notes'] : null;
-		$this->criticalUpdateAvailable = isset($properties['criticalUpdateAvailable']) ? $properties['criticalUpdateAvailable'] : null;
+		$attributes['class']                   = AttributeType::String;
+		$attributes['localVersion']            = AttributeType::String;
+		$attributes['latestVersion']           = AttributeType::String;
+		$attributes['latestDate']              = AttributeType::DateTime;
+		$attributes['status']                  = AttributeType::Bool;
+		$attributes['displayName']             = AttributeType::String;
+		$attributes['notes']                   = AttributeType::String;
+		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
+		$attributes['releases']                = AttributeType::Mixed;
 
-		if (isset($properties['releases']))
-		{
-			foreach ($properties['releases'] as $release)
-			{
-				$this->releases[] = new PluginNewReleaseInfo($release);
-			}
-		}
+		return $attributes;
 	}
 }

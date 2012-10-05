@@ -4,21 +4,18 @@ namespace Blocks;
 /**
  * Stores the info for a plugin release.
  */
-class PluginNewReleaseInfo
+class PluginNewReleaseModel extends BaseModel
 {
-	public $version;
-	public $date;
-	public $notes;
-	public $critical;
-
 	/**
-	 * @param array $properties
+	 * @return array
 	 */
-	function __construct($properties = array())
+	public function defineAttributes()
 	{
-		$this->version = isset($properties['version']) ? $properties['version'] : null;
-		$this->critical = isset($properties['critical']) ? $properties['critical'] : null;
-		$this->date = isset($properties['date']) ? $properties['date'] : null;
-		$this->notes = isset($properties['notes']) ? $properties['notes'] : null;
+		$attributes['version']  = AttributeType::String;
+		$attributes['date']     = AttributeType::DateTime;
+		$attributes['notes']    = AttributeType::String;
+		$attributes['critical'] = AttributeType::Bool;
+
+		return $attributes;
 	}
 }

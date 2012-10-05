@@ -50,7 +50,7 @@ class EtModel extends BaseModel
 		// The license key status.  Set by the server response.
 		$attributes['licenseKeyStatus']     = AttributeType::String;
 
-		// Extra artibrary data to send to the server.
+		// Extra arbitrary data to send to the server.
 		$attributes['data'] = AttributeType::Mixed;
 
 		// The domain making the request.
