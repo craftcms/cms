@@ -27,7 +27,7 @@ class CpVariable
 
 		foreach ($plugins as $plugin)
 		{
-			if ($plugin->hasCpSection)
+			if ($plugin->hasCpSection())
 			{
 				$key = strtolower($plugin->getClassHandle());
 				$nav[$key] = array('name' => $plugin->getName());
