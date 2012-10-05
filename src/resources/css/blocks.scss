@@ -115,17 +115,6 @@ td.right { float: none; text-align: right; }
 .header .left li + li,
 .header .right li + li { margin-left: 10px; }
 
-.header .backbtn { position: relative; padding-left: 5px; height: 31px; background: url(../images/backbtn-right.png) 100% 0 no-repeat; }
-.header .backbtn:before { position: absolute; top: 0; left: -15px; width: 15px; height: 31px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn-left.png) 0 0 no-repeat; }
-.header .backbtn:hover { color: #666; text-decoration: none; background-position: 100% 50%; }
-.header .backbtn:hover:before { background-position: 0 50%; }
-.header .backbtn:active { background-position: 100% 100%; }
-.header .backbtn:active:before { background-position: 0 100%; }
-
-.header .btn { border-color: #d4d4d4; background-color: #e8e8e8; }
-.header .btn:hover { background-color: #ddd; }
-.header .btn:active { background-color: #d4d4d4; }
-
 /* ----------------------------------------
 /*  Panes
 /* ----------------------------------------*/
@@ -183,11 +172,11 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn,
 .backbtn { display: inline-block; padding: 0 12px; line-height: 31px; color: #808080; text-align: center; white-space: nowrap; @include unselectable; }
 
-.btn { border-radius: 2px; border: none; background: #f2f2f2; cursor: pointer; overflow: hidden; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
+.btn { border-radius: 2px; border: none; background: rgba(0,0,0,0.05); cursor: pointer; overflow: hidden; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15); }
 .btn:hover { text-decoration: none; }
-.btn:not(.disabled):not(:active):not(.active):hover { background: #e8e8e8; }
+.btn:not(.disabled):not(:active):not(.active):hover { background: rgba(0,0,0,0.09); }
 .btn:active,
-.btn.active { background: #ddd; }
+.btn.active { background: rgba(0,0,0,0.13); }
 .btn.disabled { opacity: 0.5; cursor: default; }
 
 .btngroup,
@@ -207,6 +196,11 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .addbtn:before,
 .menubtn:after { font-size: 17px; margin-top: 2px; }
 
+.btn.small[data-icon]:before,
+.btn.small[data-icon-after]:after,
+.addbtn.small:before,
+.menubtn.small:after { font-size: 10px; }
+
 /* button groups */
 .btngroup { display: inline-block; font-size: 0; }
 .btngroup .btn { font-size: 13px; }
@@ -215,6 +209,14 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btngroup .btn.active { position: relative; }
 .btngroup .btn:active { position: relative; z-index: 1; }
 .btngroup .btn[data-icon]:before { margin-right: -2px; }
+
+/* back buttons */
+.backbtn { position: relative; padding-left: 5px; height: 31px; background: url(../images/backbtn-right.png) 100% 0 no-repeat; }
+.backbtn:before { position: absolute; top: 0; left: -15px; width: 15px; height: 31px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn-left.png) 0 0 no-repeat; }
+.backbtn:hover { color: #666; text-decoration: none; background-position: 100% 50%; }
+.backbtn:hover:before { background-position: 0 50%; }
+.backbtn:active { background-position: 100% 100%; }
+.backbtn:active:before { background-position: 0 100%; }
 
 /* menu buttons */
 .menubtn { @include unselectable; }
@@ -495,8 +497,8 @@ only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (-webkit-min-device-pixel-ratio: 1.5),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-	.header .backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
-	.header .backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
+	.backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
+	.backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
 
 	ul.biglist li a.go { background-image: url(../images/go_2x.png); background-size: 22px 14px; }
 	ul.biglist li a.go:hover { background-image: url(../images/go_hover_2x.png); }
