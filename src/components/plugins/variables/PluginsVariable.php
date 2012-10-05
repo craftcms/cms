@@ -28,7 +28,7 @@ class PluginsVariable
 	 *
 	 * @return array
 	 */
-	public function plugins()
+	public function getPlugins()
 	{
 		$plugins = blx()->plugins->getPlugins();
 		return PluginVariable::populateVariables($plugins);

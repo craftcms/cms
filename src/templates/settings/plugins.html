@@ -10,7 +10,7 @@
 {% endset %}
 
 
-{% set plugins = blx.plugins.plugins %}
+{% set plugins = blx.plugins.getPlugins %}
 
 
 {% set content %}
@@ -29,28 +29,28 @@
 						<th>{{ plugin.name }} <span class="light">{{ plugin.version }}</span></th>
 						<td>{% if plugin.developer %}{{ plugin.developer|raw }}{% else %}<span class="light">--</span>{% endif %}</td>
 						<td>
-							{%- if plugin.record.enabled -%}
+							{% if plugin.isEnabled %}
 								<span class="status on"></span> {{ "Enabled"|t }}
-							{%- elseif plugin.isInstalled -%}
+							{% elseif plugin.isInstalled %}
 								<span class="status off"></span> {{ "Disabled"|t }}
-							{%- else -%}
+							{% else %}
 								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
-							{%- endif -%}
+							{% endif %}
 						</td>
 						<td class="rightalign nowrap">
 							<form action="" method="post">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 								<div class="btngroup small">
-									{%- if plugin.isInstalled -%}
-										{%- if plugin.record.enabled -%}
+									{% if plugin.isInstalled %}
+										{% if plugin.isEnabled %}
 											<input type="button" value="{{ 'Disable'|t }}" class="btn formsubmit" data-action="plugins/disablePlugin">
-										{%- else -%}
+										{% else %}
 											<input type="button" value="{{ 'Enable'|t }}" class="btn formsubmit" data-action="plugins/enablePlugin">
-										{%- endif -%}
+										{% endif %}
 										<input type="button" value="{{ 'Uninstall'|t }}" class="btn formsubmit" data-action="plugins/uninstallPlugin">
-									{%- else -%}
+									{% else %}
 										<input type="button" value="{{ 'Install'|t }}" class="btn formsubmit" data-action="plugins/installPlugin">
-									{%- endif -%}
+									{% endif %}
 								</form>
 							</div>
 						</td>
