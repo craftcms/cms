@@ -142,13 +142,17 @@ class App extends \CWebApplication
 	{
 		$browserLanguages = blx()->request->getBrowserLanguages();
 
-		foreach ($browserLanguages as $language)
+		// If browserLanguages == false, then it's not a browser request (cURL, Requests, etc.)
+		if ($browserLanguages)
 		{
-			// Check to see if we have translation data for the language.  If it doesn't exist, it will default to en_us.
-			if (Locale::exists($language))
+			foreach ($browserLanguages as $language)
 			{
-				$this->setLanguage($language);
-				break;
+				// Check to see if we have translation data for the language.  If it doesn't exist, it will default to en_us.
+				if (Locale::exists($language))
+				{
+					$this->setLanguage($language);
+					break;
+				}
 			}
 		}
 	}
