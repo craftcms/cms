@@ -17,7 +17,7 @@ class Zip
 		$source = IOHelper::normalizePathSeparators($source);
 		$destZip = IOHelper::normalizePathSeparators($destZip);
 
-		if (!IOHelper::fileExists($source) && !IOHelper::folderExists($destZip))
+		if (!IOHelper::folderExists($source) && !IOHelper::fileExists($destZip))
 		{
 			Blocks::log('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', \CLogger::LEVEL_ERROR);
 			return false;
@@ -26,10 +26,6 @@ class Zip
 		if (IOHelper::fileExists($destZip))
 		{
 			IOHelper::deleteFile($destZip);
-		}
-		else
-		{
-			IOHelper::createFile($destZip);
 		}
 
 		if (class_exists('ZipArchive', false))
@@ -137,7 +133,7 @@ class Zip
 			{
 				// We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
 				$fileContents = IOHelper::getFileContents($itemToZip);
-				$relFilePath = substr($itemToZip, strlen(IOHelper::getRealPath($source)) + 1);
+				$relFilePath = substr($itemToZip, strlen(IOHelper::getRealPath($source)));
 
 				if (!$zip->addFromString($relFilePath, $fileContents))
 				{
