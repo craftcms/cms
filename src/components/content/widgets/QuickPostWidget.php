@@ -49,13 +49,12 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
-	 * Preprocesses settings values coming from setSettings() before they get saved to the settings model.
+	 * Give the widget a chance to process the settings coming from post.
 	 *
-	 * @access protected
 	 * @param array $settings
 	 * @return array
 	 */
-	protected function preprocessSettings($settings)
+	public function preprocessSettings($settings)
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{

@@ -38,6 +38,21 @@ class AssetsVariable
 	}
 
 	/**
+	 * Populates an asset source type.
+	 *
+	 * @param AssetSourceModel $source
+	 * @return AssetSourceTypeVariable|null
+	 */
+	public function populateSourceType(AssetSourceModel $source)
+	{
+		$sourceType = blx()->assetSources->populateSourceType($source);
+		if ($sourceType)
+		{
+			return new AssetSourceTypeVariable($sourceType);
+		}
+	}
+
+	/**
 	 * Returns all asset sources.
 	 *
 	 * @return array

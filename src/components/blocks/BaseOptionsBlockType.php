@@ -22,20 +22,19 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	}
 
 	/**
-	 * Preprocesses settings values coming from setSettings() before they get saved to the settings model.
+	 * Give the block type a chance to process the settings coming from post.
 	 *
-	 * @access protected
-	 * @param array $values
+	 * @param array $settings
 	 * @return array
 	 */
-	protected function preprocessSettings($values)
+	public function preprocessSettings($settings)
 	{
 		// Expand the options setting into an array.
-		if (!empty($values['options']) && is_string($values['options']))
+		if (!empty($settings['options']) && is_string($settings['options']))
 		{
 			$options = array();
 
-			$lines = array_filter(preg_split('/[\r\n]+/', $values['options']));
+			$lines = array_filter(preg_split('/[\r\n]+/', $settings['options']));
 
 			foreach($lines as $line)
 			{
@@ -43,10 +42,10 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 				$options[trim($parts[0])] = (isset($parts[1])) ? trim($parts[1]) : trim($parts[0]);
 			}
 
-			$values['options'] = $options;
+			$settings['options'] = $options;
 		}
 
-		return $values;
+		return $settings;
 	}
 
 	/**

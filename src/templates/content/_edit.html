@@ -91,6 +91,7 @@
 					translatable: block.translatable,
 					instructions: block.instructions,
 					id: block.handle,
+					inputClass: blockType.classHandle|lower,
 					errors: errors
 				}, input)|ns('blocks')|raw }}
 			{% endfor %}

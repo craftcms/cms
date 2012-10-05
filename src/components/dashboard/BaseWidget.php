@@ -6,6 +6,12 @@ namespace Blocks;
  */
 abstract class BaseWidget extends BaseComponent
 {
+	/**
+	 * The type of component this is.
+	 *
+	 * @access protected
+	 * @var string
+	 */
 	protected $componentType = 'Widget';
 
 	/**

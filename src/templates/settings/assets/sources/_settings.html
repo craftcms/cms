@@ -10,7 +10,7 @@
 
 
 {% if source is defined %}
-	{% set sourceType = source.sourceType %}
+	{% set sourceType = blx.assets.populateSourceType(source) %}
 {% else %}
 	{% set sourceType = blx.assets.getSourceType('Local') %}
 {% endif %}
@@ -91,8 +91,3 @@
 		</div>
 	</form>
 {% endset %}
-
-
-{% if source is not defined or not source.handle %}
-	{% includeJs "new Blocks.ui.HandleGenerator('#name', '#handle');" %}
-{% endif %}

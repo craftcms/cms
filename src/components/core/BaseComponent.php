@@ -78,21 +78,19 @@ abstract class BaseComponent extends BaseApplicationComponent
 	{
 		if ($values)
 		{
-			$values = $this->preprocessSettings($values);
 			$this->getSettings()->setAttributes($values);
 		}
 	}
 
 	/**
-	 * Preprocesses settings values coming from setSettings() before they get saved to the settings model.
+	 * Give the component a chance to process the settings coming from post.
 	 *
-	 * @access protected
-	 * @param array $values
+	 * @param array $settings
 	 * @return array
 	 */
-	protected function preprocessSettings($values)
+	public function preprocessSettings($settings)
 	{
-		return $values;
+		return $settings;
 	}
 
 	/**

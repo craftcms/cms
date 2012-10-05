@@ -16,8 +16,8 @@
 					</div>
 				{% endif %}
 				<ul>
-					<li><a href="myaccount">{{ "My Account"|t }}</a></li>
-					<li><a href="{{ blx.config.logoutTriggerWord }}">{{ "Sign out"|t }}</a></li>
+					<li><a href="{{ url('myaccount') }}">{{ "My Account"|t }}</a></li>
+					<li><a href="{{ url(blx.config.logoutTriggerWord) }}">{{ "Sign out"|t }}</a></li>
 				</ul>
 			</div>
 		</div>

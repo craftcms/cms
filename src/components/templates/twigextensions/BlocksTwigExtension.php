@@ -108,6 +108,8 @@ class BlocksTwigExtension extends \Twig_Extension
 			'round'           => new \Twig_Function_Function('round'),
 			'ceil'            => new \Twig_Function_Function('ceil'),
 			'floor'           => new \Twig_Function_Function('floor'),
+			'min'             => new \Twig_Function_Function('min'),
+			'max'             => new \Twig_Function_Function('max'),
 		);
 	}
 

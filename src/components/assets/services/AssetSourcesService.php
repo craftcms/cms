@@ -46,19 +46,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSource($attributes)
 	{
-		if ($attributes instanceof AssetSourceRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$source = new AssetSourceModel();
-
-		$source->id = $attributes['id'];
-		$source->name = $attributes['name'];
-		$source->type = $attributes['type'];
-		$source->settings = $attributes['settings'];
-
-		return $source;
+		return AssetSourceModel::populateModel($attributes);
 	}
 
 	/**
@@ -117,20 +105,19 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function saveSource(AssetSourceModel $source)
 	{
 		$sourceRecord = $this->_getSourceRecordById($source->id);
-
 		$sourceRecord->name = $source->name;
 		$sourceRecord->type = $source->type;
 
-		$sourceType = blx()->assetSources->populateSourceType($source);
+		$sourceType = blx()->assetSources->getSourceType($source->type);
+		$processedSettings = $sourceType->preprocessSettings($source->settings);
+		$sourceRecord->settings = $source->settings = $processedSettings;
+		$sourceType->setSettings($processedSettings);
 
 		$recordValidates = $sourceRecord->validate();
 		$settingsValidate = $sourceType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// Set the record settings now that the source type has had a chance to tweak them
-			$sourceRecord->settings = $sourceType->getSettings()->getAttributes();
-
 			$isNewSource = $sourceRecord->isNewRecord();
 			if ($isNewSource)
 			{

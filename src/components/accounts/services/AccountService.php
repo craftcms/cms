@@ -18,40 +18,7 @@ class AccountService extends BaseApplicationComponent
 	 */
 	public function populateUser($attributes)
 	{
-		if ($attributes instanceof UserRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$user = new UserModel();
-
-		$user->id                           = (isset($attributes['id']) ? $attributes['id'] : null);
-		$user->username                     = (isset($attributes['username']) ? $attributes['username'] : null);
-		$user->email                        = (isset($attributes['email']) ? $attributes['email'] : null);
-		$user->password                     = (isset($attributes['password']) ? $attributes['password'] : null);
-		$user->encType                      = (isset($attributes['encType']) ? $attributes['encType'] : null);
-		$user->language                     = (isset($attributes['language']) ? $attributes['language'] : blx()->language);
-		$user->emailFormat                  = (isset($attributes['emailFormat']) ? $attributes['emailFormat'] : null);
-		$user->admin                        = (isset($attributes['admin']) ? $attributes['admin'] : null);
-		$user->status                       = (isset($attributes['status']) ? $attributes['status'] : null);
-		//$user->authSessionToken           = (isset($attributes['authSessionToken']) ? $attributes['authSessionToken'] : null);
-		$user->lastLoginDate                = (isset($attributes['lastLoginDate']) ? $attributes['lastLoginDate'] : null);
-		//$user->lastLoginAttemptIPAddress  = (isset($attributes['lastLoginAttemptIPAddress']) ? $attributes['lastLoginAttemptIPAddress'] : null);
-		//$user->invalidLoginWindowStart    = (isset($attributes['invalidLoginWindowStart']) ? $attributes['invalidLoginWindowStart'] : null);
-		$user->invalidLoginCount            = (isset($attributes['invalidLoginCount']) ? $attributes['invalidLoginCount'] : null);
-		$user->lastInvalidLoginDate         = (isset($attributes['lastInvalidLoginDate']) ? $attributes['lastInvalidLoginDate'] : null);
-		$user->lockoutDate                  = (isset($attributes['lockoutDate']) ? $attributes['lockoutDate'] : null);
-		//$user->verificationCode           = (isset($attributes['verificationCode']) ? $attributes['verificationCode'] : null);
-		//$user->verificationCodeIssuedDate = (isset($attributes['verificationCodeIssuedDate']) ? $attributes['verificationCodeIssuedDate'] : null);
-		$user->passwordResetRequired        = (isset($attributes['passwordResetRequired']) ? $attributes['passwordResetRequired'] : null);
-		$user->lastPasswordChangeDate       = (isset($attributes['lastPasswordChangeDate']) ? $attributes['lastPasswordChangeDate'] : null);
-		//$user->archivedUsername           = (isset($attributes['archivedUsername']) ? $attributes['archivedUsername'] : null);
-		//$user->archivedEmail              = (isset($attributes['archivedEmail']) ? $attributes['archivedEmail'] : null);
-
-		if ($attributes['dateCreated'])
-		{
-			$user->dateCreated = new DateTime('@'.$attributes['dateCreated']);
-		}
+		$user = UserModel::populateModel($attributes);
 
 		// Is the user in cooldown mode, and are they past their window?
 		if ($user->status == UserStatus::Locked)

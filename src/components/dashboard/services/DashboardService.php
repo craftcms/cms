@@ -46,18 +46,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function populateWidget($attributes)
 	{
-		if ($attributes instanceof WidgetRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$widget = new WidgetModel();
-
-		$widget->id = $attributes['id'];
-		$widget->type = $attributes['type'];
-		$widget->settings = $attributes['settings'];
-
-		return $widget;
+		return WidgetModel::populateModel($attributes);
 	}
 
 	/**
@@ -122,20 +111,18 @@ class DashboardService extends BaseApplicationComponent
 	public function saveUserWidget(WidgetModel $widget)
 	{
 		$widgetRecord = $this->_getUserWidgetRecordById($widget->id);
-
 		$widgetRecord->type = $widget->type;
-		$widgetRecord->settings = $widget->settings;
 
-		$widgetType = $this->populateWidgetType($widget);
+		$widgetType = $this->getWidgetType($widget->type);
+		$processedSettings = $widgetType->preprocessSettings($widget->settings);
+		$widgetRecord->settings = $widget->settings = $processedSettings;
+		$widgetType->setSettings($processedSettings);
 
 		$recordValidates = $widgetRecord->validate();
 		$settingsValidate = $widgetType->getSettings()->validate();
 
 		if ($recordValidates && $settingsValidate)
 		{
-			// Set the record settings now that the widget has had a chance to tweak them
-			$widgetRecord->settings = $widgetType->getSettings()->getAttributes();
-
 			if ($widgetRecord->isNewRecord())
 			{
 				$maxSortOrder = blx()->db->createCommand()
