@@ -16,16 +16,16 @@
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
 				{% if blx.hasPackage('cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
-				{% if sortable %}<td width="1%"></td>{% endif %}
-				<td width="1%"></td>
+				{% if sortable %}<td class="small"></td>{% endif %}
+				<td class="small"></td>
 			</thead>
 			<tbody>
 				{% for source in sources %}
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
 						<th scope="row"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
 						{% if blx.hasPackage('cloud') %}<td>{{ blx.assets.populateSourceType(source).name }}</td>{% endif %}
-						{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-						<td><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
+						{% if sortable %}<td class="small"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+						<td class="small"><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
 					</tr>
 				{% endfor %}
 			</tbody>

@@ -20,8 +20,7 @@
 				<th scope="col">{{ "Plugin"|t }}</th>
 				<th scope="col">{{ "Developer"|t }}</th>
 				<th scope="col">{{ "Status"|t }}</th>
-				{#<td width="1%"></td>#}
-				<td width="1%"></td>
+				<td class="small"></td>
 			</thead>
 			<tbody>
 				{% for plugin in plugins %}
@@ -37,7 +36,7 @@
 								<span class="status"></span> <span class="light">{{ "Not installed"|t }}</span>
 							{%- endif -%}
 						</td>
-						<td class="rightalign nowrap">
+						<td class="small rightalign nowrap">
 							<form action="" method="post">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
 								<div class="btngroup small">
