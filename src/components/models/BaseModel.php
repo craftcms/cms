@@ -177,4 +177,65 @@ abstract class BaseModel extends \CModel
 	{
 		return ModelHelper::getAttributeLabels($this);
 	}
+
+	/**
+	 * Populates a new model instance with a given set of attributes.
+	 *
+	 * @static
+	 * @param mixed $attributes
+	 */
+	public static function populateModel($attributes)
+	{
+		$class = get_called_class();
+		$model = new $class;
+
+		if ($attributes instanceof \CModel)
+		{
+			$attributes = $attributes->getAttributes();
+		}
+
+		foreach ($model->defineAttributes() as $name => $config)
+		{
+			if (isset($attributes[$name]))
+			{
+				$value = $attributes[$name];
+				$config = ModelHelper::normalizeAttributeConfig($config);
+
+				if ($config['type'] == AttributeType::DateTime && is_numeric($value))
+				{
+					$value = new DateTime('@'.$value);
+				}
+
+				$model->setAttribute($name, $value);
+			}
+		}
+
+		return $model;
+	}
+
+	/**
+	 * Mass-populates models based on an array of attribute arrays.
+	 *
+	 * @param array $data
+	 * @param string|null $index
+	 */
+	public static function populateModels($data, $index = null)
+	{
+		$models = array();
+
+		foreach ($data as $attributes)
+		{
+			$model = static::populateModel($attributes);
+			if ($index === null)
+			{
+				$models[] = $model;
+			}
+			else
+			{
+				$models[$model->$index] = $model;
+			}
+		}
+
+		return $models;
+	}
 }

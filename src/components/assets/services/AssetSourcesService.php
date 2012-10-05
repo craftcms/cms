@@ -46,19 +46,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSource($attributes)
 	{
-		if ($attributes instanceof AssetSourceRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$source = new AssetSourceModel();
-
-		$source->id = $attributes['id'];
-		$source->name = $attributes['name'];
-		$source->type = $attributes['type'];
-		$source->settings = $attributes['settings'];
-
-		return $source;
+		return AssetSourceModel::populateModel($attributes);
 	}
 
 	/**

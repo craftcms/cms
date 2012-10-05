@@ -14,29 +14,7 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function populateEntry($attributes)
 	{
-		if ($attributes instanceof EntryRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$entry = new EntryModel();
-
-		$entry->id = $attributes['id'];
-		$entry->title = $attributes['title'];
-		$entry->slug = $attributes['slug'];
-		$entry->postDate = $this->_getDate($attributes['postDate']);
-		$entry->expiryDate = $this->_getDate($attributes['expiryDate']);
-		$entry->enabled = $attributes['enabled'];
-
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			$entry->authorId = $attributes['authorId'];
-		}
-
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$entry->sectionId = $attributes['sectionId'];
-		}
+		$entry = EntryModel::populateModel($attributes);
 
 		// Set the block content
 		$contentRecord = $this->_getEntryContentRecord($entry);

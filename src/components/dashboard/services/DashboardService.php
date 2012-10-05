@@ -46,18 +46,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function populateWidget($attributes)
 	{
-		if ($attributes instanceof WidgetRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$widget = new WidgetModel();
-
-		$widget->id = $attributes['id'];
-		$widget->type = $attributes['type'];
-		$widget->settings = $attributes['settings'];
-
-		return $widget;
+		return WidgetModel::populateModel($attributes);
 	}
 
 	/**

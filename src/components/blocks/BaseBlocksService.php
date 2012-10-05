@@ -39,38 +39,19 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	protected $placeBlockColumnsAfter;
 
 	/**
-	 * Populates a block model.
+	 * Populates a new block model instance with a given set of attributes.
 	 *
 	 * @param array|BaseBlockRecord $attributes
 	 * @return BaseBlockModel
 	 */
 	public function populateBlock($attributes)
 	{
-		if ($attributes instanceof BaseBlockRecord)
-		{
-			$attributes = $attributes->getAttributes();
-		}
-
-		$block = $this->getNewBlock();
-
-		$block->id = $attributes['id'];
-		$block->name = $attributes['name'];
-		$block->handle = $attributes['handle'];
-		$block->instructions = $attributes['instructions'];
-		$block->required = $attributes['required'];
-		$block->type = $attributes['type'];
-		$block->settings = $attributes['settings'];
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$block->translatable = $attributes['translatable'];
-		}
-
-		return $block;
+		$class = __NAMESPACE__.'\\'.$this->blockModelClass;
+		return $class::populateModel($attributes);
 	}
 
 	/**
-	 * Mass-populates block model.
+	 * Mass-populates block model instances with an array of attribute arrays.
 	 *
 	 * @param array  $data
 	 * @param string $index
