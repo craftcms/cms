@@ -8,8 +8,6 @@ namespace Blocks;
  */
 class EntryModel extends BaseModel
 {
-	private $_blockErrors = array();
-
 	/**
 	 * Use the entry title as its string representation.
 	 *
@@ -46,76 +44,6 @@ class EntryModel extends BaseModel
 		}
 
 		return $attributes;
-	}
-
-	/**
-	 * Returns whether there are block errors.
-	 *
-	 * @param string|null $attribute
-	 * @return bool
-	 */
-	public function hasBlockErrors($attribute = null)
-	{
-		if ($attribute === null)
-		{
-			return $this->_blockErrors !== array();
-		}
-		else
-		{
-			return isset($this->_blockErrors[$attribute]);
-		}
-	}
-
-	/**
-	 * Returns the errors for all block attributes.
-	 *
-	 * @param string|null $attribute
-	 * @return array
-	 */
-	public function getBlockErrors($attribute = null)
-	{
-		if ($attribute === null)
-		{
-			return $this->_blockErrors;
-		}
-		else
-		{
-			return isset($this->_blockErrors[$attribute]) ? $this->_blockErrors[$attribute] : array();
-		}
-	}
-
-	/**
-	 * Adds a new error to the specified setting attribute.
-	 *
-	 * @param string $attribute
-	 * @param string $error
-	 */
-	public function addBlockError($attribute,$error)
-	{
-		$this->_blockErrors[$attribute][] = $error;
-	}
-
-	/**
-	 * Adds a list of block errors.
-	 *
-	 * @param array $errors
-	 */
-	public function addBlockErrors($errors)
-	{
-		foreach ($errors as $attribute => $error)
-		{
-			if (is_array($error))
-			{
-				foreach ($error as $e)
-				{
-					$this->addBlockError($attribute, $e);
-				}
-			}
-			else
-			{
-				$this->addBlockError($attribute, $error);
-			}
-		}
 	}
 
 	/**

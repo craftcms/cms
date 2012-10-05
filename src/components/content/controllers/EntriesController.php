@@ -68,7 +68,6 @@ class EntriesController extends BaseController
 			{
 				$this->returnJson(array(
 					'errors' => $entry->getErrors(),
-					'blockErrors' => $entry->getBlockErrors()
 				));
 			}
 			else

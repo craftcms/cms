@@ -25,7 +25,7 @@ class EntryContentRecord extends BaseRecord
 		foreach ($blocks as $block)
 		{
 			$blockType = blx()->blockTypes->populateBlockType($block);
-			$attribute = $blockType->defineContentAttribute();
+			$attribute = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
 			$attribute['label'] = $block->name;
 
 			// Required?
