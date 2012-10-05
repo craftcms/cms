@@ -97,6 +97,35 @@ td.right { float: none; text-align: right; }
 
 .hidden { display: none; }
 
+/* headers and footers */
+.header,
+.footer { position: relative; border: 0 solid #dbdbdb; background: #f5f5f5; }
+
+.header { border-bottom-width: 1px; }
+.footer { border-top-width: 1px; }
+
+.header h1 { margin: 0; padding: 10px 25px; text-align: center; }
+
+.header .left,
+.header .right { position: absolute; top: 9px; float: none; }
+.header .left { left: 25px; }
+.header .right { right: 25px; }
+.header .left li,
+.header .right li { float: left; }
+.header .left li + li,
+.header .right li + li { margin-left: 10px; }
+
+.header .backbtn { position: relative; padding-left: 5px; height: 31px; background: url(../images/backbtn-right.png) 100% 0 no-repeat; }
+.header .backbtn:before { position: absolute; top: 0; left: -15px; width: 15px; height: 31px; content: '.'; text-indent: -100px; overflow: hidden; background: url(../images/backbtn-left.png) 0 0 no-repeat; }
+.header .backbtn:hover { color: #666; text-decoration: none; background-position: 100% 50%; }
+.header .backbtn:hover:before { background-position: 0 50%; }
+.header .backbtn:active { background-position: 100% 100%; }
+.header .backbtn:active:before { background-position: 0 100%; }
+
+.header .btn { border-color: #d4d4d4; background-color: #e8e8e8; }
+.header .btn:hover { background-color: #ddd; }
+.header .btn:active { background-color: #d4d4d4; }
+
 /* ----------------------------------------
 /*  Panes
 /* ----------------------------------------*/
@@ -466,8 +495,8 @@ only screen and (-o-min-device-pixel-ratio: 3/2),
 only screen and (-webkit-min-device-pixel-ratio: 1.5),
 only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
-	#titlebar .backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
-	#titlebar .backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
+	.header .backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
+	.header .backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
 
 	ul.biglist li a.go { background-image: url(../images/go_2x.png); background-size: 22px 14px; }
 	ul.biglist li a.go:hover { background-image: url(../images/go_hover_2x.png); }
