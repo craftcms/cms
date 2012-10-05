@@ -28,6 +28,8 @@ class Zip
 			IOHelper::deleteFile($destZip);
 		}
 
+		IOHelper::createFile($destZip);
+
 		if (class_exists('ZipArchive', false))
 		{
 			return static::_zipZipArchive(IOHelper::getRealPath($source), IOHelper::getRealPath($destZip));
@@ -46,7 +48,7 @@ class Zip
 	{
 		if (IOHelper::fileExists($srcZip))
 		{
-			if (IOHelper::getExtension($srcZip == 'zip'))
+			if (IOHelper::getExtension($srcZip) == 'zip')
 			{
 				if (class_exists('ZipArchive', false))
 				{
@@ -278,17 +280,17 @@ class Zip
 			}
 
 			// normalize directory separators
-			$info = IOHelper::normalizePathSeparators($info);
+			$info = IOHelper::normalizePathSeparators($info['name']);
 
 			// found a directory
-			if (substr($info['name'], -1) === '/')
+			if (substr($info, -1) === '/')
 			{
-				IOHelper::createFolder($destFolder.'/'.$info['name']);
+				IOHelper::createFolder($destFolder.'/'.$info);
 				continue;
 			}
 
 			 // Don't extract the OSX __MACOSX directory
-			if (substr($info['name'], 0, 9) === '__MACOSX/')
+			if (substr($info, 0, 9) === '__MACOSX/')
 			{
 				continue;
 			}
@@ -301,9 +303,9 @@ class Zip
 				return false;
 			}
 
-			if (!IOHelper::writeToFile($destFolder.'/'.$info['name'], $contents, true, FILE_APPEND))
+			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, FILE_APPEND))
 			{
-				Blocks::log('Could not copy file to '.$destFolder.'/'.$info['name'].' while unzipping from '.$srcZip, \CLogger::LEVEL_ERROR);
+				Blocks::log('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, \CLogger::LEVEL_ERROR);
 				return false;
 			}
 		}
