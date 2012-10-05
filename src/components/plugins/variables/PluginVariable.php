@@ -45,4 +45,34 @@ class PluginVariable extends BaseComponentVariable
 	{
 		return $this->component->isInstalled();
 	}
+
+	/**
+	 * Returns the plugin’s display name.
+	 *
+	 * @return string
+	 */
+	public function name()
+	{
+		return $this->component->getName();
+	}
+
+	/**
+	 * Returns if the plugin is currently enabled or not.
+	 *
+	 * @return bool
+	 */
+	public function isEnabled()
+	{
+		return $this->component->isEnabled();
+	}
+
+	/**
+	 * Returns the plugin’s class handle.
+	 *
+	 * @return string
+	 */
+	public function classHandle()
+	{
+		return $this->component->getClassHandle();
+	}
 }

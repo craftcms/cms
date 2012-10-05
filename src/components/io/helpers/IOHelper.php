@@ -163,10 +163,12 @@ class IOHelper
 
 		// Check tmp file for read/write capabilities
 		$rm = static::fileExists($path);
-		$f = @fopen($path, 'a');
+		$f = fopen($path, 'a');
 
 		if ($f === false)
+		{
 			return false;
+		}
 
 		fclose($f);
 
@@ -218,7 +220,7 @@ class IOHelper
 		}
 		else
 		{
-			return basename(pathinfo($path, PATHINFO_DIRNAME));
+			return pathinfo($path, PATHINFO_BASENAME);
 		}
 	}
 
@@ -579,15 +581,15 @@ class IOHelper
 		{
 			$oldumask = umask(0);
 
-			if (!@mkdir($path, $permissions, true))
+			if (!mkdir($path, $permissions, true))
 			{
 				Blocks::log('Tried to create a folder at '.$path.', but could not.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 
 			// Because setting permission with mkdir is a crapshoot.
-			@chmod($path, $permissions);
-			@umask($oldumask);
+			chmod($path, $permissions);
+			umask($oldumask);
 			return new Folder($path);
 		}
 
@@ -1052,6 +1054,10 @@ class IOHelper
 		{
 			if (static::isWritable($path))
 			{
+				// Empty the folder contents first.
+				static::clearFolder($path);
+
+				// Delete the folder.
 				if (rmdir($path))
 				{
 					return true;

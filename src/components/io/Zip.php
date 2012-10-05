@@ -17,7 +17,7 @@ class Zip
 		$source = IOHelper::normalizePathSeparators($source);
 		$destZip = IOHelper::normalizePathSeparators($destZip);
 
-		if (!IOHelper::fileExists($source) && !IOHelper::folderExists($destZip))
+		if (!IOHelper::folderExists($source) && !IOHelper::fileExists($destZip))
 		{
 			Blocks::log('Tried to zip the contents of '.$source.' to '.$destZip.', but the source path does not exist.', \CLogger::LEVEL_ERROR);
 			return false;
@@ -27,10 +27,8 @@ class Zip
 		{
 			IOHelper::deleteFile($destZip);
 		}
-		else
-		{
-			IOHelper::createFile($destZip);
-		}
+
+		IOHelper::createFile($destZip);
 
 		if (class_exists('ZipArchive', false))
 		{
@@ -50,7 +48,7 @@ class Zip
 	{
 		if (IOHelper::fileExists($srcZip))
 		{
-			if (IOHelper::getExtension($srcZip == 'zip'))
+			if (IOHelper::getExtension($srcZip) == 'zip')
 			{
 				if (class_exists('ZipArchive', false))
 				{
@@ -137,7 +135,7 @@ class Zip
 			{
 				// We can't use $zip->addFile() here but it's a terrible, horrible, POS method that's buggy on Windows.
 				$fileContents = IOHelper::getFileContents($itemToZip);
-				$relFilePath = substr($itemToZip, strlen(IOHelper::getRealPath($source)) + 1);
+				$relFilePath = substr($itemToZip, strlen(IOHelper::getRealPath($source)));
 
 				if (!$zip->addFromString($relFilePath, $fileContents))
 				{
@@ -282,17 +280,17 @@ class Zip
 			}
 
 			// normalize directory separators
-			$info = IOHelper::normalizePathSeparators($info);
+			$info = IOHelper::normalizePathSeparators($info['name']);
 
 			// found a directory
-			if (substr($info['name'], -1) === '/')
+			if (substr($info, -1) === '/')
 			{
-				IOHelper::createFolder($destFolder.'/'.$info['name']);
+				IOHelper::createFolder($destFolder.'/'.$info);
 				continue;
 			}
 
 			 // Don't extract the OSX __MACOSX directory
-			if (substr($info['name'], 0, 9) === '__MACOSX/')
+			if (substr($info, 0, 9) === '__MACOSX/')
 			{
 				continue;
 			}
@@ -305,9 +303,9 @@ class Zip
 				return false;
 			}
 
-			if (!IOHelper::writeToFile($destFolder.'/'.$info['name'], $contents, true, FILE_APPEND))
+			if (!IOHelper::writeToFile($destFolder.'/'.$info, $contents, true, FILE_APPEND))
 			{
-				Blocks::log('Could not copy file to '.$destFolder.'/'.$info['name'].' while unzipping from '.$srcZip, \CLogger::LEVEL_ERROR);
+				Blocks::log('Could not copy file to '.$destFolder.'/'.$info.' while unzipping from '.$srcZip, \CLogger::LEVEL_ERROR);
 				return false;
 			}
 		}
