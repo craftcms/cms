@@ -42,6 +42,6 @@ class UpdatesVariable
 	 */
 	public function updateinfo($forceRefresh = false)
 	{
-		return blx()->updates->getUpdateInfo($forceRefresh);
+		return blx()->updates->getUpdateModel($forceRefresh);
 	}
 }

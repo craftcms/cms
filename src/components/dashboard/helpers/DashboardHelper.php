@@ -17,16 +17,16 @@ class DashboardHelper
 
 		if (blx()->updates->isUpdateInfoCached() || $fetch)
 		{
-			$updateInfo = blx()->updates->getUpdateInfo();
+			$updateModel = blx()->updates->getUpdateModel();
 
 			if (blx()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
 			{
 				$alerts[] = Blocks::t('The license key you’re using isn’t authorized to run Blocks on “{domain}”.', array('domain', blx()->request->serverName).' <a href="">'.Blocks::t('Manage my licenses').'</a>');
 			}
 
-			if ($updateInfo->blocks->releases !== null && count($updateInfo->blocks->releases) > 0)
+			if ($updateModel->blocks->releases !== null && count($updateModel->blocks->releases) > 0)
 			{
-				if (blx()->updates->criticalBlocksUpdateAvailable($updateInfo->blocks->releases))
+				if (blx()->updates->criticalBlocksUpdateAvailable($updateModel->blocks->releases))
 				{
 					$alerts[] = Blocks::t('There is a critical update for Blocks available.').' <a class="go" href="'.UrlHelper::getUrl('updates').'">'.Blocks::t('Go to Updates').'</a>';
 				}

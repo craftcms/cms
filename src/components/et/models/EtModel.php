@@ -65,6 +65,9 @@ class EtModel extends BaseModel
 		// The port number the request comes from.
 		$attributes['requestPort'] = AttributeType::String;
 
+		// Any packages installed on the client.
+		$attributes['packages'] = AttributeType::String;
+
 		return $attributes;
 	}
 

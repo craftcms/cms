@@ -15,12 +15,12 @@ class UpdateController extends BaseController
 	 *
 	 * @param string $h The handle of which update to retrieve info for.
 	 */
-	public function actionGetUpdateInfo($h)
+	public function actionGetUpdateModel($h)
 	{
 		$this->requireAjaxRequest();
 
 		$return = array();
-		$updateInfo = blx()->updates->getUpdateInfo();
+		$updateInfo = blx()->updates->getUpdateModel();
 
 		if (!$updateInfo)
 		{

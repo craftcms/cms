@@ -8,7 +8,7 @@ class AppUpdater implements IUpdater
 {
 	private $_buildsToUpdate;
 	private $_migrationsToRun = false;
-	private $_updateInfo;
+	private $_updateModel;
 	private $_downloadFilePath;
 	private $_tempPackageFolder;
 	private $_manifestData;
@@ -19,8 +19,8 @@ class AppUpdater implements IUpdater
 	 */
 	function __construct()
 	{
-		$this->_updateInfo = blx()->updates->getUpdateInfo(true);
-		$this->_buildsToUpdate = $this->_updateInfo->blocks->releases;
+		$this->_updateModel = blx()->updates->getUpdateModel(true);
+		$this->_buildsToUpdate = $this->_updateModel->blocks->releases;
 	}
 
 	/**
@@ -184,7 +184,7 @@ class AppUpdater implements IUpdater
 			// Only use the manifest data starting from the local version
 			for ($counter = 0; $counter < count($manifestData); $counter++)
 			{
-				if (strpos($manifestData[$counter], '##'.$this->_updateInfo->blocks->localVersion.'.'.$this->_updateInfo->blocks->localBuild) !== false)
+				if (strpos($manifestData[$counter], '##'.$this->_updateModel->blocks->localVersion.'.'.$this->_updateModel->blocks->localBuild) !== false)
 				{
 					break;
 				}
