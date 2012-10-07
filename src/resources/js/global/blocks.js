@@ -650,6 +650,42 @@ Blocks.getInputPostVal = function($input)
 };
 
 
+/**
+ * Disable jQuery plugin
+ */
+$.fn.enable = function()
+{
+	return this.each(function()
+	{
+		var $elem = $(this);
+		$elem.removeClass('disabled');
+
+		if ($elem.data('activatable'))
+		{
+			$elem.attr('tabindex', '0');
+		}
+	});
+};
+
+
+/**
+ * Enable jQuery plugin
+ */
+$.fn.disable = function()
+{
+	return this.each(function()
+	{
+		var $elem = $(this);
+		$elem.addClass('disabled');
+
+		if ($elem.data('activatable'))
+		{
+			$elem.removeAttr('tabindex');
+		}
+	});
+};
+
+
 
 /**
  * Base class
@@ -712,28 +748,50 @@ Blocks.Base = Base.extend({
 			{
 				var activateNamespace = this._namespace+'-activate';
 
-				$elem.on('click'+activateNamespace, function() {
-					$elem.trigger('activate');
+				// Prevent buttons from getting focus on click
+				$elem.on('mousedown'+activateNamespace, function(event) {
+					event.preventDefault();
 				});
 
-				$elem.attr('tabindex', '0');
+				$elem.on('click'+activateNamespace, function(event) {
+					event.preventDefault();
+
+					if (!$elem.hasClass('disabled'))
+					{
+						$elem.trigger('activate');
+					}
+				});
+
 				$elem.on('keydown'+activateNamespace, function(event) {
 					if (event.target == $elem[0] && event.keyCode == Blocks.SPACE_KEY)
 					{
 						event.preventDefault();
-						$elem.addClass('active');
 
-						Blocks.$document.on('keyup'+activateNamespace, function(event) {
-							$elem.removeClass('active');
-							if (event.target == $elem[0] && event.keyCode == Blocks.SPACE_KEY)
-							{
-								event.preventDefault();
-								$elem.trigger('activate');
-							}
-							Blocks.$document.off('keyup'+activateNamespace);
-						});
+						if (!$elem.hasClass('disabled'))
+						{
+							$elem.addClass('active');
+
+							Blocks.$document.on('keyup'+activateNamespace, function(event) {
+								$elem.removeClass('active');
+								if (event.target == $elem[0] && event.keyCode == Blocks.SPACE_KEY)
+								{
+									event.preventDefault();
+									$elem.trigger('activate');
+								}
+								Blocks.$document.off('keyup'+activateNamespace);
+							});
+						}
 					}
 				});
+
+				if (!$elem.hasClass('disabled'))
+				{
+					$elem.attr('tabindex', '0');
+				}
+				else
+				{
+					$elem.removeAttr('tabindex');
+				}
 
 				$elem.data('activatable', true);
 			}
