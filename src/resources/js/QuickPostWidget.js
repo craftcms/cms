@@ -69,20 +69,18 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 			{
 				Blocks.cp.displayError(Blocks.t('Couldn’t save entry.'));
 
-				if (response.errors || response.blockErrors)
+				if (response.errors)
 				{
 					if (!this.$errorList)
 					{
 						this.$errorList = $('<ul class="errors"/>').insertAfter(this.$form);
 					}
 
-					var errors = $.extend({}, response.errors, response.blockErrors);
-
-					for (var attribute in errors)
+					for (var attribute in response.errors)
 					{
-						for (var i = 0; i < errors[attribute].length; i++)
+						for (var i = 0; i < response.errors[attribute].length; i++)
 						{
-							var error = errors[attribute][i];
+							var error = response.errors[attribute][i];
 							$('<li>'+error+'</li>').appendTo(this.$errorList);
 						}
 					}

@@ -10,8 +10,8 @@
 			<th scope="col" width="33%">{{ "Name"|t }}</th>
 			<th scope="col" width="33%">{{ "Handle"|t }}</th>
 			<th scope="col" width="33%">{{ "Type"|t }}</th>
-			{% if sortable %}<td width="1%"></td>{% endif %}
-			<td width="1%"></td>
+			{% if sortable %}<td class="small"></td>{% endif %}
+			<td class="small"></td>
 		</thead>
 		<tbody>
 			{% for block in blocks %}
@@ -21,8 +21,8 @@
 					</th>
 					<td><code>{{ block.handle }}</code></td>
 					<td>{{ blx.blockTypes.populateBlockType(block).name }}</td>
-					{% if sortable %}<td><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-					<td><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
+					{% if sortable %}<td class="small"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+					<td class="small"><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
 				</tr>
 			{% endfor %}
 		</tbody>

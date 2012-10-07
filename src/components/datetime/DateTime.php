@@ -9,6 +9,36 @@ class DateTime extends \DateTime
 	const W3C_DATE = 'Y-m-d';
 
 	/**
+	 * Creates a new \Blocks\DateTime object (rather than \DateTime)
+	 *
+	 * @param string $format
+	 * @param string $time
+	 * @param \DateTimeZone|null $timezone
+	 * @return DateTime
+	 */
+	public static function createFromFormat($format, $time, $timezone = null)
+	{
+		if ($timezone === null)
+		{
+			$dateTime = parent::createFromFormat($format, $time);
+		}
+		else
+		{
+			$dateTime = parent::createFromFormat($format, $time, $timezone);
+		}
+
+		return new DateTime('@'.$dateTime->getTimestamp());
+	}
+
+	/**
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->format('M j, Y');
+	}
+
+	/**
 	 * @return string
 	 */
 	public function atom()
@@ -171,13 +201,5 @@ class DateTime extends \DateTime
 	public function nice()
 	{
 		return DateTimeHelper::nice($this->getTimestamp());
-	}
-
-	/**
-	 * @return string
-	 */
-	function __toString()
-	{
-		return $this->format('M j, Y');
 	}
 }

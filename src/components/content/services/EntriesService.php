@@ -392,8 +392,7 @@ class EntriesService extends BaseApplicationComponent
 		}
 		else
 		{
-			$entry->addErrors(array_merge($entryRecord->getErrors(), $titleRecord->getErrors()));
-			$entry->addBlockErrors($contentRecord->getErrors());
+			$entry->addErrors(array_merge($entryRecord->getErrors(), $titleRecord->getErrors(), $contentRecord->getErrors()));
 
 			return false;
 		}

@@ -30,7 +30,8 @@ abstract class BaseBlockType extends BaseComponent
 	 * @abstract
 	 * @param string $name
 	 * @param mixed  $value
+	 * @param int|null $entityId;
 	 * @return string
 	 */
-	abstract public function getInputHtml($name, $value);
+	abstract public function getInputHtml($name, $value, $entityId = null);
 }
