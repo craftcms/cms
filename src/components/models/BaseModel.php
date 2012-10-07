@@ -218,6 +218,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @param array $data
 	 * @param string|null $index
+	 * @return array
 	 */
 	public static function populateModels($data, $index = null)
 	{
@@ -226,6 +227,7 @@ abstract class BaseModel extends \CModel
 		foreach ($data as $attributes)
 		{
 			$model = static::populateModel($attributes);
+
 			if ($index === null)
 			{
 				$models[] = $model;
