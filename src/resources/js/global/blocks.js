@@ -688,17 +688,57 @@ Blocks.Base = Base.extend({
 
 	addListener: function(elem, events, func)
 	{
+		var $elem = $(elem);
 		events = this._formatEvents(events);
 
 		if (typeof func == 'function')
+		{
 			func = $.proxy(func, this);
+		}
 		else
+		{
 			func = $.proxy(this, func);
+		}
 
-		$(elem).on(events, func);
+		$elem.on(events, func);
 
 		// Remember that we're listening to this element
 		this._$listeners = this._$listeners.add(elem);
+
+		// Prep for activate event?
+		if (events.search(/\bactivate\b/) != -1)
+		{
+			if (!$elem.data('activatable'))
+			{
+				var activateNamespace = this._namespace+'-activate';
+
+				$elem.on('click'+activateNamespace, function() {
+					$elem.trigger('activate');
+				});
+
+				$elem.attr('tabindex', '0');
+				$elem.on('keydown'+activateNamespace, function(event) {
+					if (event.target == $elem[0] && event.keyCode == Blocks.SPACE_KEY)
+					{
+						event.preventDefault();
+						$elem.addClass('active');
+
+						Blocks.$document.on('keyup'+activateNamespace, function(event) {
+							$elem.removeClass('active');
+							if (event.target == $elem[0] && event.keyCode == Blocks.SPACE_KEY)
+							{
+								event.preventDefault();
+								$elem.trigger('activate');
+							}
+							Blocks.$document.off('keyup'+activateNamespace);
+						});
+					}
+				});
+
+				$elem.data('activatable', true);
+			}
+
+		}
 	},
 
 	removeListener: function(elem, events)
