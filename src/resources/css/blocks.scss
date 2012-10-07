@@ -99,21 +99,28 @@ td.right { float: none; text-align: right; }
 
 /* headers and footers */
 .header,
-.footer { position: relative; border: 0 solid #dbdbdb; background: #f5f5f5; }
+.footer { position: relative; border: 0 solid #dbdbdb; padding: 10px 25px; background: #f5f5f5; }
+
+.header:after,
+.footer:after { @include clearafter; }
 
 .header { border-bottom-width: 1px; }
-.footer { border-top-width: 1px; }
+.footer { border-top-width: 1px; padding-top: 9px; }
 
-.header h1 { margin: 0; padding: 10px 25px; text-align: center; }
+.header h1 { margin: 0; text-align: center; }
 
 .header .left,
 .header .right { position: absolute; top: 9px; float: none; }
 .header .left { left: 25px; }
 .header .right { right: 25px; }
 .header .left li,
-.header .right li { float: left; }
+.header .right li,
+.footer .left li,
+.footer .right li { float: left; }
 .header .left li + li,
 .header .right li + li { margin-left: 10px; }
+.footer .left li + li,
+.footer .right li + li { margin-left: 10px; }
 
 /* ----------------------------------------
 /*  Panes
@@ -296,7 +303,7 @@ table.data tbody tr th,
 table.data tbody tr td { border-top: 1px dotted #e5e5e5; }
 table.data tbody tr:last-child th,
 table.data tbody tr:last-child td { border-bottom: 1px dotted #e5e5e5; }
-table.data .small { width: 0.01%; padding-right: 7px; }
+table.data .small { width: 0.01%; padding-right: 7px; vertical-align: middle; }
 table.data .light,
 table.data .timestamp { color: #999; }
 table.data td.timestamp { text-align: right; vertical-align: bottom; white-space: nowrap; }
@@ -325,6 +332,43 @@ ul.tree,
 .status.on { background-position: 0 0; }
 .status.pending { background-position: 0 -10px; }
 .status.off { background-position: 0 -20px; }
+
+/* ----------------------------------------
+/*  Thumbs and filenames
+/* ----------------------------------------*/
+
+.thumb img { display: block; margin: 0 auto; width: 60px; height: 60px; }
+.filename { margin-top: 5px; height: 14px; line-height: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+
+/* ----------------------------------------
+/*  HUD
+/* ----------------------------------------*/
+
+.hud { position: absolute; background: rgba(25,25,25,0.9); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
+.hud .tip { position: absolute; }
+.hud .tip.top { top: -5px; left: 50%; margin-left: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-top.png); }
+.hud .tip.right { right: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-right.png); }
+.hud .tip.bottom { bottom: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-bottom.png); }
+.hud .tip.left { left: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-left.png); }
+
+/* ----------------------------------------
+/*  Modals
+/* ----------------------------------------*/
+
+.modal { position: absolute; z-index: 9999; width: 400px; padding: 25px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px rgba(0,0,0,0.5); }
+.modal .header { margin: -25px -25px 25px; }
+.modal .footer { margin: 25px -25px -25px; }
+.modal-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.75); }
+
+/* ----------------------------------------
+/*  Menus
+/* ----------------------------------------*/
+
+.menu { display: none; position: absolute; z-index: 9999; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5); @include unselectable; }
+.menu ul { padding: 5px 0; background: rgba(255,255,255,0.9); }
+.menu ul li + li { margin-top: 4px; }
+.menu ul li a { display: block; padding: 1px 10px; font-size: 12px; line-height: 20px; color: #555; }
+.menu ul li a:hover { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); text-decoration: none; background: $linkcolor; }
 
 /* ----------------------------------------
 /*  Tables
@@ -356,13 +400,13 @@ table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbf
 .text,
 .select select,
 #main div.redactor_box,
-.border-box { border: 1px solid #ccc; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
+.border-box { border: 1px solid #ccc; -webkit-box-shadow: 0 0 0 $blurglowcolor; -webkit-transition: border linear 100ms, -webkit-box-shadow linear 100ms; }
 
 .text.focus,
 .text:focus,
 .select select:focus,
 .border-box:focus,
-.border-box.focus { border-color: $focusglowcolor; outline: none; }
+.border-box.focus { border-color: $focusglowcolor; outline: none; -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 
 input.text,
 textarea.text,
@@ -396,14 +440,13 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .textwrapper { padding-right: 16px; }
 .textwrapper > .text { display: block; width: 100%; }
 
-.text { padding: 7px; background: #fff; -webkit-box-shadow: 0 0 0 $blurglowcolor; }
+.text { padding: 7px; background: #fff; }
 .text input { margin: 0; padding: 0; border: none; outline: none; }
-.text:focus,
-.text.focus { -webkit-box-shadow: 0 0 5px $focusglowcolor; }
 .text.small { padding: 3px; }
 
 .input.errors .text,
 .input.errors div.redactor_box,
+.input.errors .border-box,
 .text.error { border-color: $errorcolor; }
 
 .textwrapper.search { position: relative; padding-right: 36px; cursor: text; }
@@ -450,44 +493,31 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .ui-datepicker-calendar td a.ui-state-active { background: $linkcolor; color: #fff; cursor: default; }
 .ui-datepicker-calendar td.ui-datepicker-today a { border-radius: 13px; -webkit-box-shadow: inset 0 0 0 2px rgba(0,0,0,0.15); }
 
+/* links */
+.links .border-box { padding: 7px; @include unselectable; }
+.links .buttons { margin: 7px 0 0; }
+
+.links table.data tbody .filler th,
+.links table.data tbody .filler td { height: 15px; }
+.links table.data tbody tr:first-child th,
+.links table.data tbody tr:first-child td { border-top: none; }
+.links table.data tbody tr:last-child th,
+.links table.data tbody tr:last-child td { border-bottom: none; }
+
+.linksorthelper { margin: -2px -7px; padding: 2px 7px; }
+
+.addlinksmodal { width: 500px; }
+.addlinksmodal .body { margin: -25px; padding: 25px; height: 250px; overflow: auto; @include unselectable; }
+
+.entity { margin: -5px 0; padding: 3px 7px; cursor: pointer; -webkit-transition: background-color linear 100ms; }
+.entity:before { @include icon; content: 'l'; margin: 2px 5px -2px 0; font-size: 15px; }
+.entity:hover { color: $linkcolor; }
+.entity.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background-color: hsl(203, 79%, 50%); }
+.links .border-box:not(:focus) .entity.sel { text-shadow: none; background-color: #a1a4a6; }
+
 /* errors */
 ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }
 ul.errors li { color: $errorcolor; }
-
-/* ----------------------------------------
-/*  Thumbs and filenames
-/* ----------------------------------------*/
-
-.thumb img { display: block; margin: 0 auto; width: 60px; height: 60px; }
-.filename { margin-top: 5px; height: 14px; line-height: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
-
-/* ----------------------------------------
-/*  HUD
-/* ----------------------------------------*/
-
-.hud { position: absolute; background: rgba(25,25,25,0.9); -webkit-box-shadow: 0 1px 4px rgba(0,0,0,0.15); }
-.hud .tip { position: absolute; }
-.hud .tip.top { top: -5px; left: 50%; margin-left: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-top.png); }
-.hud .tip.right { right: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-right.png); }
-.hud .tip.bottom { bottom: -5px; width: 10px; height: 5px; background-image: url(../images/hud-tip-bottom.png); }
-.hud .tip.left { left: -5px; width: 5px; height: 10px; background-image: url(../images/hud-tip-left.png); }
-
-/* ----------------------------------------
-/*  Modals
-/* ----------------------------------------*/
-
-.modal { position: absolute; z-index: 9999; width: 400px; padding: 25px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.1), 0 10px 50px rgba(0,0,0,0.5); }
-.modal-shade { display: none; position: fixed; top: 0; left: 0; z-index: 9998; width: 100%; height: 100%; background: rgba(255,255,255,0.75); }
-
-/* ----------------------------------------
-/*  Menus
-/* ----------------------------------------*/
-
-.menu { display: none; position: absolute; z-index: 9999; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5); @include unselectable; }
-.menu ul { padding: 5px 0; background: rgba(255,255,255,0.9); }
-.menu ul li + li { margin-top: 4px; }
-.menu ul li a { display: block; padding: 1px 10px; font-size: 12px; line-height: 20px; color: #555; }
-.menu ul li a:hover { color: #fff; text-shadow: 0 1px 1px rgba(0,0,0,0.25); text-decoration: none; background: $linkcolor; }
 
 /* ----------------------------------------
 /*  Retina graphics

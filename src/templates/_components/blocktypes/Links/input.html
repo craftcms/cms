@@ -1,3 +1,29 @@
-<div class="border-box">
+{% set minRows = settings.limit ? min(3, settings.limit) : 3 %}
+{% set bufferRows = (minRows > entities|length ? minRows - entities|length : 0) %}
 
+<div id="{{ name }}" class="border-box">
+	<table class="data">
+		<tbody>
+			{% for entity in entities %}
+				<tr>
+					<td>
+						<div class="entity" data-id="{{ entity.id }}">
+							{{ entity }}
+							<input type="hidden" name="{{ name }}[]" value="{{ entity.id }}">
+						</div>
+					</td>
+				</tr>
+			{% endfor %}
+			{% for i in 1..bufferRows %}
+				<tr class="filler">
+					<td></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+</div>
+
+<div class="buttons">
+	<div class="btn addbtn small{% if settings.limit and entities|length >= settings.limit %} disabled{% endif %}">{{ settings.addLabel }}</div>
+	<div class="btn removebtn small disabled">{{ settings.removeLabel }}</div>
 </div>

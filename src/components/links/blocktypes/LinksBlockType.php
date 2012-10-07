@@ -36,6 +36,7 @@ class LinksBlockType extends BaseBlockType
 		return array(
 			'type'             => array(AttributeType::ClassName, 'required' => true, 'default' => 'Entries'),
 			'addLabel'         => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
+			'removeLabel'      => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
 			'limit'            => array(AttributeType::Number, 'min' => 0),
 			'linkTypeSettings' => array(AttributeType::Mixed, 'default' => array()),
 		);
@@ -91,16 +92,36 @@ class LinksBlockType extends BaseBlockType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
+	 * @param int|null $entityId;
 	 * @return string
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($name, $value, $entityId = null)
 	{
-		return '';
-		print_r($this->model->getEntityType()); die();
-		return blx()->templates->render('_components/blocktypes/EntryLink/input', array(
+		$linkType = $this->_getLinkType();
+
+		if ($entityId)
+		{
+			$entities = blx()->links->getLinkedEntities($this->model, $entityId);
+		}
+		else
+		{
+			$entities = array();
+		}
+
+		$settings = $this->getSettings()->getAttributes();
+		$settings['addLabel'] = Blocks::t($settings['addLabel']);
+		$jsonSettings = JsonHelper::encode($settings);
+
+		$entityIds = JsonHelper::encode(array_keys($entities));
+
+		blx()->templates->includeJs('new Blocks.ui.LinksBlock("'.$name.'", '.$jsonSettings.', '.$entityIds.');');
+
+		return blx()->templates->render('_components/blocktypes/Links/input', array(
 			'name'     => $name,
 			'value'    => $value,
-			'settings' => $this->getSettings()
+			'linkType' => $this->_getLinkType(),
+			'settings' => $this->getSettings(),
+			'entities' => $entities,
 		));
 	}
 

@@ -39,6 +39,8 @@ var scripts =
 	'ui/FieldToggle.js',
 	'ui/CheckboxSelect.js',
 
+	'ui/LinksBlock.js',
+
 	'ui/AdminTable.js'
 ];
 

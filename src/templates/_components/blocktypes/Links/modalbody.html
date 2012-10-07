@@ -1,0 +1,14 @@
+<table class="data">
+	<tbody>
+		{% for entity in entities %}
+			<tr{% if entity.id in selectedIds %} class="hidden"{% endif %}>
+				<td>
+					<div class="entity" data-id="{{ entity.id }}">
+						{{ entity }}
+						<input type="hidden" name="{{ name }}[]" value="{{ entity.id }}">
+					</div>
+				</td>
+			</tr>
+		{% endfor %}
+	</tbody>
+</table>

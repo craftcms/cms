@@ -17,6 +17,16 @@ class AssetsLinkType extends BaseLinkType
 	}
 
 	/**
+	 * Returns the name of the table where entities are stored.
+	 *
+	 * @return string
+	 */
+	public function getEntityTableName()
+	{
+		return 'assetfiles';
+	}
+
+	/**
 	 * Defines any link type-specific settings.
 	 *
 	 * @access protected
@@ -25,7 +35,8 @@ class AssetsLinkType extends BaseLinkType
 	protected function defineSettings()
 	{
 		return array(
-			'sources' => AttributeType::Mixed,
+			// Maps to AssetParams->sourceId
+			'sourceId' => AttributeType::Mixed,
 		);
 	}
 
@@ -39,5 +50,30 @@ class AssetsLinkType extends BaseLinkType
 		return blx()->templates->render('_components/linktypes/Assets/settings', array(
 			'settings' => $this->getSettings()
 		));
+	}
+
+	/**
+	 * Mass populates entity models.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public function populateEntities($data)
+	{
+		return array();
+		//return blx()->assets->populateAssets($data);
+	}
+
+	/**
+	 * Returns the linkable entity models.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function getLinkableEntities($settings)
+	{
+		return array();
+		//$params = new AssetParams($settings);
+		//return blx()->assets->getAssets($params);
 	}
 }
