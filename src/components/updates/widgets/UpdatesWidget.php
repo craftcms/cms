@@ -38,24 +38,24 @@ class UpdatesWidget extends BaseWidget
 	{
 		$updates = array();
 
-		$updateInfo = blx()->updates->getUpdateInfo();
+		$updateModel = blx()->updates->getUpdateModel();
 
 		// Blocks first
-		if ($updateInfo->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
+		if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 		{
 			$updates[] = array(
 				'name'     => 'Blocks',
 				'handle'   => 'Blocks',
-				'version'  => $updateInfo->blocks->latestVersion.' Build '.$updateInfo->blocks->latestBuild,
-				'date'     => new DateTime('@'.$updateInfo->blocks->latestDate),
-				'critical' => $updateInfo->blocks->criticalUpdateAvailable
+				'version'  => $updateModel->blocks->latestVersion.' Build '.$updateModel->blocks->latestBuild,
+				'date'     => new DateTime('@'.$updateModel->blocks->latestDate),
+				'critical' => $updateModel->blocks->criticalUpdateAvailable
 			);
 		}
 
 		// Plugins next
-		if ($updateInfo->plugins !== null && count($updateInfo->plugins) > 0)
+		if ($updateModel->plugins !== null && count($updateModel->plugins) > 0)
 		{
-			foreach ($updateInfo->plugins as $plugin)
+			foreach ($updateModel->plugins as $plugin)
 			{
 				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 				{
