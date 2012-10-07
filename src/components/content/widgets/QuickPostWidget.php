@@ -49,7 +49,7 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
-	 * Give the widget a chance to process the settings coming from post.
+	 * Preprocesses the settings before they're saved to the database.
 	 *
 	 * @param array $settings
 	 * @return array

@@ -61,7 +61,7 @@ class LinksBlockType extends BaseBlockType
 	}
 
 	/**
-	 * Give the block a chance to process the settings coming from post.
+	 * Preprocesses the settings before they're saved to the database.
 	 *
 	 * @param array $settings
 	 * @return array
