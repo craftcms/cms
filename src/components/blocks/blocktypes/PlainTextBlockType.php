@@ -69,7 +69,7 @@ class PlainTextBlockType extends BaseBlockType
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($name, $value, $entityId = null)
 	{
 		return blx()->templates->render('_components/blocktypes/PlainText/input', array(
 			'name'     => $name,
