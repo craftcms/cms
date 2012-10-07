@@ -6,7 +6,6 @@
 Blocks.ui.Select = Blocks.Base.extend({
 
 	$container: null,
-	$scrollpane: null,
 	$items: null,
 
 	totalSelected: null,
@@ -28,6 +27,7 @@ Blocks.ui.Select = Blocks.Base.extend({
 	init: function(container, items, settings)
 	{
 		this.$container = $(container);
+		this.$container.attr('tabindex', 0);
 
 		// Param mapping
 		if (!settings && Blocks.isObject(items))
@@ -49,7 +49,6 @@ Blocks.ui.Select = Blocks.Base.extend({
 		this.setSettings(settings, Blocks.ui.Select.defaults);
 		this.mouseUpTimeoutDuration = (this.settings.waitForDblClick ? 300 : 0);
 
-		this.$scrollpane = $('.scrollpane:first', this.$container);
 		this.$items = $();
 		this.addItems(items);
 
@@ -304,7 +303,7 @@ Blocks.ui.Select = Blocks.Base.extend({
 		//  Scroll to the item
 		// -------------------------------------------
 
-		Blocks.scrollContainerToElement(this.$scrollpane, $item);
+		Blocks.scrollContainerToElement(this.$container, $item);
 
 		// -------------------------------------------
 		//  Select the item
@@ -349,7 +348,7 @@ Blocks.ui.Select = Blocks.Base.extend({
 
 			// Add the item
 			$.data(item, 'select', this);
-			this.$items.push(item);
+			this.$items = this.$items.add(item);
 
 			// Get the handle
 			if (this.settings.handle)
@@ -362,7 +361,9 @@ Blocks.ui.Select = Blocks.Base.extend({
 					var $handle = $(this.settings.handle(item));
 			}
 			else
+			{
 				var $handle = $(item);
+			}
 
 			$.data(item, 'select-handle', $handle);
 			$handle.data('select-item', item);
@@ -408,14 +409,11 @@ Blocks.ui.Select = Blocks.Base.extend({
 	},
 
 	/**
-	 * Reset
+	 * Refresh Item Order
 	 */
-	reset: function()
+	refreshItemOrder: function()
 	{
-		this.removeItems(this.$items);
-		this.totalSelected = 0;
-		this.$first = this.first = this.$last = this.last = null;
-		this.clearCallbackTimeout();
+		this.$items = $(this.$items);
 	},
 
 	/**
@@ -440,6 +438,15 @@ Blocks.ui.Select = Blocks.Base.extend({
 			this.last = this.getItemIndex(this.$last);
 		}
 	},
+
+	/**
+	 * Reset Item Order
+	 */
+	 resetItemOrder: function()
+	 {
+	 	this.$items = $().add(this.$items);
+	 	this.updateIndexes();
+	 },
 
 	// --------------------------------------------------------------------
 
