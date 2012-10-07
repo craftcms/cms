@@ -216,7 +216,7 @@ class App extends \CWebApplication
 
 							// Check to see if the second segment is an existing controller.  If no second segment, check for "PluginHandle"Controller, which is a plugin's default controller.
 							// i.e. pluginHandle/testController or pluginHandle/pluginController
-							$controller = (isset($actionPath[1]) ? ucfirst($actionPath[1]) : ucfirst($pluginHandle)).'Controller';
+							$controller = (isset($actionPath[1]) ? ucfirst($pluginHandle).'_'.ucfirst($actionPath[1]) : ucfirst($pluginHandle)).'Controller';
 
 							if (class_exists(__NAMESPACE__.'\\'.$controller))
 							{
