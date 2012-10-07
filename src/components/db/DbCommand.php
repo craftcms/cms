@@ -322,6 +322,41 @@ class DbCommand extends \CDbCommand
 	}
 
 	/**
+	 * Adds additional select columns.
+	 *
+	 * @param string $columns
+	 * @return DbCommand
+	 */
+	public function addSelect($columns = '*')
+	{
+		$oldSelect = $this->getSelect();
+		if ($oldSelect)
+		{
+			$columns = str_replace('`', '', $oldSelect).','.$columns;
+		}
+		$this->setSelect($columns);
+		return $this;
+	}
+
+	/**
+	 * Adds an additional where condition.
+	 *
+	 * @param mixed $conditions
+	 * @param array|null $params
+	 * @return DbCommand
+	 */
+	public function addWhere($conditions, $params = array())
+	{
+		$oldWhere = $this->getWhere();
+		if ($oldWhere)
+		{
+			$conditions = array('and', $oldWhere, $conditions);
+		}
+		$this->where($conditions, $params);
+		return $this;
+	}
+
+	/**
 	 * Prepares a table name for Yii to add its table prefix
 	 *
 	 * @param mixed $table The table name or an array of table names
