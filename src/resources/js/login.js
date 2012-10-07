@@ -28,7 +28,7 @@ var LoginForm = Blocks.Base.extend({
 
 		this.addListener(this.$loginNameInput, 'keypress,keyup,change,blur', 'onInputChange');
 		this.addListener(this.$passwordInput, 'keypress,keyup,change,blur', 'onInputChange');
-		this.addListener(this.$submitBtn, 'click', 'onSubmit');
+		this.addListener(this.$submitBtn, 'activate', 'onSubmit');
 		this.addListener(this.$form, 'submit', 'onSubmit');
 	},
 
@@ -36,11 +36,11 @@ var LoginForm = Blocks.Base.extend({
 	{
 		if (this.$loginNameInput.val() && (this.forgotPassword || this.$passwordInput.val().length >= 6))
 		{
-			this.$submitBtn.removeClass('disabled');
+			this.$submitBtn.enable();
 			return true;
 		}
 
-		this.$submitBtn.addClass('disabled');
+		this.$submitBtn.disable();
 		return false;
 	},
 
@@ -151,7 +151,7 @@ var LoginForm = Blocks.Base.extend({
 		this.$loginFields.animate({height: 0}, 'fast');
 
 		this.$submitBtn.find('span').html(Blocks.t('Reset Password'));
-		this.$submitBtn.removeClass('disabled');
+		this.$submitBtn.enable();
 		this.$submitBtn.removeAttr('data-icon');
 
 		this.forgotPassword = true;

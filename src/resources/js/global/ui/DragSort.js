@@ -6,7 +6,6 @@
 Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 
 	$insertion: null,
-	midpoints: null,
 	startDraggeeIndex: null,
 	closestItemIndex: null,
 
@@ -43,9 +42,9 @@ Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 	},
 
 	/**
-	 * Get the insertion element
+	 * Sets the insertion element
 	 */
-	getInsertion: function()
+	setInsertion: function()
 	{
 		// get the insertion
 		if (this.settings.insertion)
@@ -58,18 +57,16 @@ Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 	},
 
 	/**
-	 * Get the item midpoints up front so we don't have to keep checking on every mouse move
+	 * Sets the item midpoints up front so we don't have to keep checking on every mouse move
 	 */
-	getMidpoints: function()
+	setMidpoints: function()
 	{
-		this.midpoints = [];
-
 		for (var i = 0; i < this.$items.length; i++)
 		{
 			var $item = $(this.$items[i]),
 				offset = $item.offset();
 
-			this.midpoints.push({
+			$item.data('midpoint', {
 				left: offset.left + $item.width() / 2,
 				top:  offset.top + $item.height() / 2
 			});
@@ -113,7 +110,9 @@ Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 
 		for (var i = 0; i < this.$items.length; i++)
 		{
-			var mouseDiff = Blocks.getDist(this.midpoints[i].left, this.midpoints[i].top, this.mouseX, this.mouseY);
+			var $item = $(this.$items[i]),
+				midpoint = $item.data('midpoint'),
+				mouseDiff = Blocks.getDist(midpoint.left, midpoint.top, this.mouseX, this.mouseY);
 
 			if (closestItemIndex == -1 || mouseDiff < closestItemMouseDiff)
 			{
@@ -130,35 +129,34 @@ Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 	 */
 	onInsertionPointChange: function()
 	{
-		// is this just the draggee?
-		if (this.closestItemIndex == this.draggeeIndex)
+		// Is the closest item one of the draggees?
+		if (this.closestItemIndex >= this.draggeeIndex && this.closestItemIndex < this.draggeeIndex + this.$draggee.length)
+		{
 			return;
-
-		var draggee = this.$draggee[0],
-			goingDown = (this.closestItemIndex > this.draggeeIndex);
-
-		// Reposition the draggee in the $items array
-		this.$items.splice(this.draggeeIndex, 1);
-		this.$items.splice(this.closestItemIndex, 0, draggee);
-
-		// Update the draggee index
-		this.draggeeIndex = this.closestItemIndex;
+		}
 
 		// Going down?
-		if (goingDown)
+		if (this.closestItemIndex > this.draggeeIndex)
 		{
-			this.closestItemIndex--;
 			this.$draggee.insertAfter(this.$closestItem);
 		}
 		// Going up?
 		else
 		{
-			this.closestItemIndex++;
 			this.$draggee.insertBefore(this.$closestItem);
 		}
 
+		// Update the $items order and the indexes
+		this.$items = $().add(this.$items);
+		this.$items = $().add(this.$items);
+		this.draggeeIndex = $.inArray(this.$draggee[0], this.$items);
+		this.closestItemIndex = $.inArray(this.$closestItem[0], this.$items);
+		this.setMidpoints();
+
 		if (this.$insertion)
+		{
 			this.$insertion.insertBefore(this.$draggee);
+		}
 
 		this.settings.onInsertionPointChange();
 	},
