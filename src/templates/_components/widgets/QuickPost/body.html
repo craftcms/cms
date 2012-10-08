@@ -16,7 +16,11 @@
 		required: true
 	}) }}
 
-	{% include "_includes/blockfields" with { blocks: blocks } only %}
+	{% for block in blocks %}
+		{% if block.required or block.id in settings.blocks %}
+			{% include "_includes/blockfield" with { block: block } only %}
+		{% endif %}
+	{% endfor %}
 
 	<div class="buttons">
 		<input type="submit" class="btn submit" value="{{ 'Post'|t }}">
