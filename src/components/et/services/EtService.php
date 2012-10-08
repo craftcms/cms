@@ -101,8 +101,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function decodeEtValues($values)
 	{
-		$etModel = EtModel::populateModel(JsonHelper::decode($values));
-		return $this->_convertDataTimeToTimeStamp($etModel);
+		return EtModel::populateModel(JsonHelper::decode($values));
 	}
 
 	/**
@@ -112,43 +111,13 @@ class EtService extends BaseApplicationComponent
 	public function decodeEtUpdateValues(EtModel $etModel)
 	{
 		$updateModel = UpdateModel::populateModel($etModel->data);
-		$updateModel = $this->_convertDataTimeToTimeStamp($updateModel);
-
 		$blocksUpdateModel = BlocksUpdateModel::populateModel($etModel->data['blocks']);
-		$blocksUpdateModel = $this->_convertDataTimeToTimeStamp($blocksUpdateModel);
-
 		$pluginsUpdateModel = PluginUpdateModel::populateModels($etModel->data['plugins']);
-		$pluginsUpdateModel = $this->_convertDataTimeToTimeStamp($pluginsUpdateModel);
 
 		$updateModel->blocks = $blocksUpdateModel;
 		$updateModel->plugins = $pluginsUpdateModel;
 		$etModel->data = $updateModel;
 
 		return $etModel;
-	}
-
-	/**
-	 * @param $model
-	 * @return mixed
-	 */
-	private function _convertDataTimeToTimeStamp($model)
-	{
-		// Normalize any DateTime objects into timestamps.
-		if ($model)
-		{
-			foreach ($model->defineAttributes() as $name => $config)
-			{
-				$value = $model->getAttribute($name);
-				$config = ModelHelper::normalizeAttributeConfig($config);
-
-				if ($config['type'] == AttributeType::DateTime && (get_class($value) == 'Blocks\DateTime'))
-				{
-					$value = $value->getTimestamp();
-					$model->setAttribute($name, $value);
-				}
-			}
-		}
-
-		return $model;
 	}
 }
