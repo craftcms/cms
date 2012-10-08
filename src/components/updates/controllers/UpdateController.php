@@ -17,23 +17,33 @@ class UpdateController extends BaseController
 	{
 		$updates = array(
 			'blocks' => array(
-				'version' => '1.1',
-				'build' => 12345,
-				'notes' => array(
-					'Added the Plugin Store',
-					'Added support for the new Cloud package',
-					'Fixed a PHP error in the installer',
-					'Fixed a PHP error when deleting a section that has entries'
-				)
+				array(
+					'version' => '1.1',
+					'build' => 12345,
+					'notes' => '[Fixed] PHP error in the installer
+[Fixed] PHP error when deleting a section that has entries'
+				),
+				array(
+					'version' => '1.1',
+					'build' => 12340,
+					'notes' => '[Added] Plugin Store
+[Added] Cloud package support
+[Improved] Keyboard support
+[Improved] Handle setting descriptions'
+				),
 			),
+
 			'packages' => array('Publish Pro', 'Cloud'),
+
 			'plugins' => array(
 				array(
 					'name' => 'CartThrob',
 					'class' => 'CartThrob',
-					'version' => '1.5.2',
-					'notes' => array(
-						'Plugged a security hole.'
+					'releases' => array(
+						array(
+							'version' => '1.5.2',
+							'notes' => '[Fixed] Plugged a security hole.'
+						)
 					)
 				)
 			)

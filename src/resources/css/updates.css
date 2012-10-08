@@ -1,0 +1,17 @@
+#loading { margin-top: 50px !important; padding-top: 70px; text-align: center; background: url({{ resourceUrl('images/spinner-big.gif') }}) no-repeat 50% 0; }
+
+#update-all,
+#updates,
+#no-system-updates,
+#system-updates,
+#no-plugin-updates,
+#plugin-updates { display: none; }
+
+#updates td.notes { border-top: none; padding-bottom: 15px; }
+#updates td.notes th { border: none; padding: 12px 0; }
+#updates td.notes td { border: none; padding-top: 2px; padding-bottom: 2px; }
+#updates td.notes td:first-child { padding-left: 25px; }
+#updates td.notes .category { display: block; border-radius: 2px; padding: 0 4px; text-align: center; font-size: 11px; color: #fff; }
+#updates td.notes .category.added { background: #1888cd; }
+#updates td.notes .category.improved { background: #00b007; }
+#updates td.notes .category.fixed { background: #ff471a; }
