@@ -1,67 +1,109 @@
 (function($) {
 
-// Keep the spinner vertically centered
-	Blocks.$window.on('resize.updates', centerSpinner);
 
-var updatesUrl = Blocks.baseUrl+'updates/updates';
-$('#updates').load(updatesUrl, function()
-{
-	Blocks.$window.off('resize.updates');
+$.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 
-	var $sidebarLink = $('#sb-updates'),
-		$sidebarBadge = $sidebarLink.find('span.badge'),
-		$updatesContainer = $('#updates'),
-		totalUpdates = $updatesContainer.find('tr').length;
-
-	if (totalUpdates)
-	{
-		// create the sidebar badge if it doesn't exist
-		if (!$sidebarBadge.length)
-			$sidebarBadge = $('<span />').addClass('badge').appendTo($sidebarLink);
-
-		$sidebarBadge.html(totalUpdates);
-
-		// initialize the modals
-		var $noteLinks = $updatesContainer.find('a.notes');
-		if ($noteLinks.length)
+	$('#loading').fadeOut('fast', function() {
+		if (response.blocks || response.packages)
 		{
-			var $pane = $('<div class="pane modal"/>').appendTo(Blocks.$body),
-				$head = $('<div class="pane-head"><h5>'+Blocks.t("Release Notes")+'</h5></div>').appendTo($pane),
-				$body = $('<div class="pane-body scrollpane"/>').appendTo($pane),
-				$item = $('<div class="pane-item"/>').appendTo($body),
-				$foot = $('<div class="pane-foot"/>').appendTo($pane),
-				$btn  = $('<div class="btn close"><span class="label">'+Blocks.t("Close")+'</span></div>').appendTo($foot);
+			var $table = $('#system-updates'),
+				$tbody = $table.children('tbody');
 
-			var noteModal = new Blocks.ui.Modal($pane);
+			$table.show();
 
-			$noteLinks.click(function() {
-				var $link = $(this),
-					$notes = $link.next();
-				$item.html($notes.html());
-				noteModal.show();
-				noteModal.centerInViewport();
-			});
+			if (response.blocks)
+			{
+				var $tr = $('<tr/>').appendTo($tbody),
+					$th = $('<th/>').appendTo($tr),
+					$td = $('<td class="thin rightalign"/>').appendTo($tr);
+
+				$th.html('Blocks '+response.blocks.version +
+					' <span class="light">' +
+					Blocks.t('build {build}', { build: response.blocks.build }) +
+					'</span>'
+				);
+
+				$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/blocks">'+Blocks.t('Update')+'</a>');
+
+				if (response.blocks.notes)
+				{
+					var $tr = $('<tr/>'),
+						$td = $('<td class="notes" colspan="2"/>').appendTo($tr),
+						$ul = $('<ul class="bullets"/>').appendTo($td);
+
+					for (var i = 0; i < response.blocks.notes.length; i++)
+					{
+						var $li = $('<li/>').appendTo($ul);
+						$li.text(response.blocks.notes[i]);
+					}
+				}
+			}
+
+			if (response.packages)
+			{
+				var $tr = $('<tr/>').appendTo($tbody),
+					$th = $('<th/>').appendTo($tr),
+					$td = $('<td class="thin rightalign"/>').appendTo($tr),
+					$btn = $('<a class="btn" href="'+Blocks.baseUrl+'updates/blocks">'+Blocks.t('Install')+'</a>').appendTo($td);
+
+				$th.html(Blocks.t('{packages} upgrades', { packages: response.packages.join(', ') }));
+
+				if (response.blocks)
+				{
+					$btn.addClass('disabled');
+				}
+			}
 		}
-	}
-	else
-	{
-		// delete the badge if it exists
-		$sidebarBadge.remove();
-
-		// Keep the "no updates" dialog vertically centered
-		var $dialog = $('#no-updates');
-		var centerDialog = function()
+		else
 		{
-			var top = ((window.innerHeight-48) / 2) - 43;
-			$dialog.css('top', top);
-		};
-		centerDialog();
-		Blocks.$window.on('resize', centerDialog);
-	}
+			$('#no-system-updates').show();
+		}
 
-	// fade in the updates
-	$('#checking').fadeOut();
-	$updatesContainer.fadeIn();
+		if (response.plugins)
+		{
+			var $table = $('#plugin-updates'),
+				$tbody = $table.children('tbody');
+
+			$table.show();
+
+			for (var i = 0; i < response.plugins.length; i++)
+			{
+				var plugin = response.plugins[i];
+
+				if (response.blocks)
+				{
+					var $tr = $('<tr/>').appendTo($tbody),
+						$th = $('<th/>').appendTo($tr),
+						$td = $('<td class="thin rightalign"/>').appendTo($tr);
+
+					$th.html(plugin.name+' '+plugin.version);
+
+					$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/'+plugin['class'].toLowerCase()+'">'+Blocks.t('Update')+'</a>');
+
+					if (plugin.notes)
+					{
+						var $tr = $('<tr/>'),
+							$td = $('<td class="notes" colspan="2"/>').appendTo($tr),
+							$ul = $('<ul class="bullets"/>').appendTo($td);
+
+						for (var j = 0; j < plugin.notes.length; j++)
+						{
+							var $li = $('<li/>').appendTo($ul);
+							$li.text(response.blocks.notes[j]);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			$('#no-plugin-updates').show();
+		}
+
+		$('#updates').fadeIn('fast');
+	});
+
 });
+
 
 })(jQuery);

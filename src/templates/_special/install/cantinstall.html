@@ -2,7 +2,7 @@
 	<h1>{{ "Can’t install Blocks"|t }} :(</h1>
 	<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
 
-	<ul class="list">
+	<ul class="bullets">
 		{% for req in reqCheck.requirements %}
 			{% if req.result == 'failed' %}
 				<li>{{ req.notes }}</li>
