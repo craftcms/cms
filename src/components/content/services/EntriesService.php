@@ -17,8 +17,6 @@ class EntriesService extends BaseApplicationComponent
 		$entry = EntryModel::populateModel($attributes);
 
 		// Set the block content
-		$contentRecord = $this->_getEntryContentRecord($entry);
-
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$blocks = blx()->sectionBlocks->getBlocksBySectionId($entry->sectionId);
@@ -28,17 +26,8 @@ class EntriesService extends BaseApplicationComponent
 			$blocks = blx()->entryBlocks->getAllBlocks();
 		}
 
-		$blockValues = array();
-
-		foreach ($blocks as $block)
-		{
-			$name = 'block'.$block->id;
-			$handle = $block->handle;
-
-			$blockValues[$name] = $contentRecord->$handle;
-		}
-
-		$entry->blocks = $blockValues;
+		$contentRecord = $this->_getEntryContentRecord($entry);
+		$entry->setBlockValuesFromAttributes($blocks, $contentRecord);
 
 		return $entry;
 	}
@@ -348,19 +337,21 @@ class EntriesService extends BaseApplicationComponent
 			$blocks = blx()->entryBlocks->getAllBlocks();
 		}
 
+		$blockTypes = array();
+
 		foreach ($blocks as $block)
 		{
-			$handle = $block->handle;
-			$name = 'block'.$block->id;
+			$blockType = blx()->blockTypes->populateBlockType($block);
+			$blockType->entity = $entry;
 
-			if (isset($entry->blocks[$name]))
+			if ($blockType->defineContentAttribute() !== false)
 			{
-				$contentRecord->$handle = $entry->blocks[$name];
+				$handle = $block->handle;
+				$contentRecord->$handle = $blockType->getInputValue();
 			}
-			else
-			{
-				$contentRecord->$handle = null;
-			}
+
+			// Keep the block type instance around for calling onAfterEntitySave()
+			$blockTypes[] = $blockType;
 		}
 
 		$entryValidates = $entryRecord->validate();
@@ -385,8 +376,15 @@ class EntriesService extends BaseApplicationComponent
 				$contentRecord->entryId = $entryRecord->id;
 			}
 
+			// Save the title and content records
 			$titleRecord->save(false);
 			$contentRecord->save(false);
+
+			// Give the block types a chance to do any post-processing
+			foreach ($blockTypes as $blockType)
+			{
+				$blockType->onAfterEntitySave();
+			}
 
 			return true;
 		}

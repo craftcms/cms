@@ -44,7 +44,7 @@ class RichTextBlockType extends BaseBlockType
 	/**
 	 * Returns the content attribute config.
 	 *
-	 * @return string|array
+	 * @return mixed
 	 */
 	public function defineContentAttribute()
 	{
@@ -58,7 +58,7 @@ class RichTextBlockType extends BaseBlockType
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $value, $entityId = null)
+	public function getInputHtml($name, $value)
 	{
 		blx()->templates->includeCssResource('lib/redactor/redactor.css');
 		blx()->templates->includeJsResource('lib/redactor/redactor.min.js');

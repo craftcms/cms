@@ -7,6 +7,14 @@ namespace Blocks;
 abstract class BaseBlockType extends BaseComponent
 {
 	/**
+	 * The enttiy that the block is associated with.
+	 * Set by the service classes.
+	 *
+	 * @var BaseBlockEntityModel
+	 */
+	public $entity;
+
+	/**
 	 * The type of component this is.
 	 *
 	 * @access protected
@@ -17,7 +25,7 @@ abstract class BaseBlockType extends BaseComponent
 	/**
 	 * Returns the content attribute config.
 	 *
-	 * @return string|array
+	 * @return mixed
 	 */
 	public function defineContentAttribute()
 	{
@@ -30,31 +38,38 @@ abstract class BaseBlockType extends BaseComponent
 	 * @abstract
 	 * @param string $name
 	 * @param mixed  $value
-	 * @param int|null $entityId;
 	 * @return string
 	 */
-	abstract public function getInputHtml($name, $value, $entityId = null);
+	abstract public function getInputHtml($name, $value);
 
 	/**
-	 * Preprocesses the input value before the entity is saved.
+	 * Returns the input value as it should be saved to the database.
 	 *
-	 * @param array $settings
-	 * @return array
+	 * @return mixed
 	 */
-	public function preprocessInputValue($settings)
+	public function getInputValue()
 	{
-		return $settings;
+		$value = $this->entity->getBlockValueById($this->model->id);
+		return $this->preprocessInputValue($value);
+	}
+
+	/**
+	 * Preprocesses the input value before it is saved to the database.
+	 *
+	 * @access protected
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	protected function preprocessInputValue($value)
+	{
+		return $value;
 	}
 
 	/**
 	 * Performs any additional actions after the entity has been saved.
-	 *
-	 * @param array $settings
-	 * @return array
 	 */
-	public function postprocessInputValue($settings)
+	public function onAfterEntitySave()
 	{
-		return $settings;
 	}
 
 }

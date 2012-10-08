@@ -6,7 +6,7 @@ namespace Blocks;
  *
  * Used for transporting entry data throughout the system.
  */
-class EntryModel extends BaseModel
+class EntryModel extends BaseBlockEntityModel
 {
 	/**
 	 * Use the entry title as its string representation.
@@ -25,7 +25,6 @@ class EntryModel extends BaseModel
 		$attributes['slug'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
-		$attributes['blocks'] = AttributeType::Mixed;
 		$attributes['enabled'] = AttributeType::Bool;
 
 		if (Blocks::hasPackage(BlocksPackage::Users))

@@ -1,21 +1,5 @@
-{% from "_includes/forms" import field %}
 {% if entity is not defined %}{% set entity = null %}{% endif %}
 
 {% for block in blocks %}
-	{% set blockType = blx.blockTypes.populateBlockType(block) %}
-	{% set name = 'block'~block.id %}
-	{% set value = (entity and entity.blocks[name] is defined ? entity.blocks[name] : null) %}
-	{% set id = (entity.id is defined ? entity.id : null) %}
-	{% set errors = (entity ? entity.getErrors(block.handle) : null) %}
-	{% set input = blockType.input(name, value, id) %}
-
-	{{ field({
-		label: block.name,
-		required: block.required,
-		translatable: block.translatable,
-		instructions: block.instructions,
-		id: name,
-		inputClass: blockType.classHandle|lower,
-		errors: errors
-	}, input)|ns('blocks')|raw }}
+	{% include "_includes/blockfield" with { block: block, entity: entity } only %}
 {% endfor %}

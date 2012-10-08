@@ -104,7 +104,7 @@ abstract class BaseComponent extends BaseApplicationComponent
 	}
 
 	/**
-	 * Get the class name, sans namespace.
+	 * Get the class name, sans namespace and suffix.
 	 *
 	 * @return string
 	 */

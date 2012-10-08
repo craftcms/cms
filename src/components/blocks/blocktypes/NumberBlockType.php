@@ -46,7 +46,7 @@ class NumberBlockType extends BaseBlockType
 	/**
 	 * Returns the content attribute config.
 	 *
-	 * @return string|array
+	 * @return mixed
 	 */
 	public function defineContentAttribute()
 	{
@@ -60,7 +60,7 @@ class NumberBlockType extends BaseBlockType
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $value, $entityId = null)
+	public function getInputHtml($name, $value)
 	{
 		return blx()->templates->render('_components/blocktypes/Number/input', array(
 			'name'     => $name,

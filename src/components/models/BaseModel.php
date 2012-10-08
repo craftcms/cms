@@ -8,8 +8,11 @@ namespace Blocks;
  */
 abstract class BaseModel extends \CModel
 {
+	private $_classHandle;
 	private $_attributeNames = array();
 	private $_attributes = array();
+
+	protected $classSuffix = 'Model';
 
 	/**
 	 * Constructor
@@ -78,6 +81,32 @@ abstract class BaseModel extends \CModel
 		{
 			return parent::__isset($name);
 		}
+	}
+
+	/**
+	 * Get the class name, sans namespace and suffix.
+	 *
+	 * @return string
+	 */
+	public function getClassHandle()
+	{
+		if (!isset($this->_classHandle))
+		{
+			// Chop off the namespace
+			$classHandle = substr(get_class($this), strlen(__NAMESPACE__) + 1);
+
+			// Chop off the class suffix
+			$suffixLength = strlen($this->classSuffix);
+
+			if (substr($classHandle, -$suffixLength) == $this->classSuffix)
+			{
+				$classHandle = substr($classHandle, 0, -$suffixLength);
+			}
+
+			$this->_classHandle = $classHandle;
+		}
+
+		return $this->_classHandle;
 	}
 
 	/**

@@ -16,6 +16,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 	_$cancelBtn: null,
 	_$selectBtn: null,
 
+	_name: null,
 	_settings: null,
 	_selectedIds: null,
 	_minSlots: null,
@@ -24,11 +25,13 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 	_modalSelect: null,
 	_inputSort: null,
 
-	init: function(id, settings, selectedIds)
+	init: function(name, settings, selectedIds)
 	{
-		this._$inputContainer = $('#blocks-'+id);
+		this._name = name;
 		this._settings = settings;
 		this._selectedIds = selectedIds;
+
+		this._$inputContainer = $('#blocks-'+this._name);
 
 		// Find the field buttons
 		var $buttons = this._$inputContainer.next();
@@ -57,7 +60,6 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 
 		this._inputSort = new Blocks.ui.DataTableSorter($table, {
 			handle: '.entity',
-			helperClass: 'datatablesorthelper linksorthelper',
 			filter: $.proxy(function() {
 				return this._inputSelect.getSelectedItems().closest('tr');
 			}, this),
@@ -128,6 +130,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 	{
 		var data = {
 			type: this._settings.type,
+			name: this._name,
 			settings: this._settings.linkTypeSettings,
 			selectedIds: this._selectedIds
 		};

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EntryContentRecord extends BaseRecord
+class EntryContentRecord extends BaseBlockEntityRecord
 {
 	/**
 	 * @return string
@@ -15,29 +15,14 @@ class EntryContentRecord extends BaseRecord
 	}
 
 	/**
+	 * Returns the list of blocks associated with this content.
+	 *
+	 * @access protected
 	 * @return array
 	 */
-	public function defineAttributes()
+	protected function getBlocks()
 	{
-		$attributes = array();
-		$blocks = blx()->entryBlocks->getAllBlocks();
-
-		foreach ($blocks as $block)
-		{
-			$blockType = blx()->blockTypes->populateBlockType($block);
-			$attribute = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
-			$attribute['label'] = $block->name;
-
-			// Required?
-			if ($block->required)
-			{
-				$attribute['required'] = true;
-			}
-
-			$attributes[$block->handle] = $attribute;
-		}
-
-		return $attributes;
+		return blx()->entryBlocks->getAllBlocks();
 	}
 
 	/**

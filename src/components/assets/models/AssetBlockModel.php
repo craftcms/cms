@@ -8,13 +8,4 @@ namespace Blocks;
  */
 class AssetBlockModel extends BaseBlockModel
 {
-	/**
-	 * Returns the type of entity these blocks will be attached to.
-	 *
-	 * @return string
-	 */
-	public function getEntityType()
-	{
-		return 'asset';
-	}
 }

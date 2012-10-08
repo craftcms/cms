@@ -31,8 +31,8 @@ Blocks.ui.DragSort = Blocks.ui.Drag.extend({
 	 */
 	onDragStart: function()
 	{
-		this.getInsertion();
-		this.getMidpoints();
+		this.setInsertion();
+		this.setMidpoints();
 
 		this.closestItem = -1;
 

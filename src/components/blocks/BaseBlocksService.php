@@ -225,16 +225,20 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 				}
 
 				// Create/alter the content table column
-				$contentTable = $this->getContentTable($block);
-				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
+				$column = $blockType->defineContentAttribute();
+				if ($column !== false)
+				{
+					$contentTable = $this->getContentTable($block);
+					$column = ModelHelper::normalizeAttributeConfig($column);
 
-				if ($isNewBlock)
-				{
-					blx()->db->createCommand()->addColumn($contentTable, $blockRecord->handle, $column);
-				}
-				else
-				{
-					blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->oldHandle, $column, $blockRecord->handle);
+					if ($isNewBlock)
+					{
+						blx()->db->createCommand()->addColumn($contentTable, $blockRecord->handle, $column);
+					}
+					else
+					{
+						blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->oldHandle, $column, $blockRecord->handle);
+					}
 				}
 
 				$transaction->commit();
@@ -281,13 +285,20 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	{
 		$blockRecord = $this->_getBlockRecordById($blockId);
 		$block = $this->populateBlock($blockRecord);
-		$contentTable = $this->getContentTable($block);
+		$blockType = blx()->blockTypes->populateBlockType($block);
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			$blockRecord->delete();
-			blx()->db->createCommand()->dropColumn($contentTable, $blockRecord->handle);
+
+			$column = $blockType->defineContentAttribute();
+			if ($column !== false)
+			{
+				$contentTable = $this->getContentTable($block);
+				blx()->db->createCommand()->dropColumn($contentTable, $blockRecord->handle);
+			}
+
 			$transaction->commit();
 		}
 		catch (\Exception $e)

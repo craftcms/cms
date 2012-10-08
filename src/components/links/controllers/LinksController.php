@@ -12,6 +12,7 @@ class LinksController extends BaseController
 	public function actionGetModalBody()
 	{
 		$type = blx()->request->getRequiredPost('type');
+		$name = blx()->request->getRequiredPost('name');
 		$settings = blx()->request->getPost('settings', array());
 		$selectedIds = blx()->request->getPost('selectedIds', array());
 
@@ -24,6 +25,7 @@ class LinksController extends BaseController
 		$entities = $linkType->getLinkableEntities($settings);
 
 		$this->renderTemplate('_components/blocktypes/Links/modalbody', array(
+			'name' => 'blocks['.$name.']',
 			'entities' => $entities,
 			'selectedIds' => $selectedIds,
 		));
