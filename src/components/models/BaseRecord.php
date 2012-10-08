@@ -84,34 +84,7 @@ abstract class BaseRecord extends \CActiveRecord
 			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
 
-			switch($config['type'])
-			{
-				case AttributeType::Number:
-				{
-					$this->setAttribute($name, LocalizationHelper::normalizeNumber($value));
-					break;
-				}
-				case AttributeType::DateTime:
-				{
-					if ($value instanceof \DateTime)
-					{
-						$this->setAttribute($name, $value->getTimestamp());
-					}
-					break;
-				}
-				case AttributeType::Mixed:
-				{
-					if (!empty($value) && is_array($value))
-					{
-						$this->setAttribute($name, JsonHelper::encode($value));
-					}
-					else
-					{
-						$this->setAttribute($name, null);
-					}
-					break;
-				}
-			}
+			$this->setAttribute($name, ModelHelper::packageAttributeValue($config, $value));
 		}
 
 		// Populate dateCreated and uid if this is a new record
