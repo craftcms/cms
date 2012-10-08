@@ -36,7 +36,7 @@ class MultiSelectBlockType extends BaseOptionsBlockType
 	 * @param mixed  $values
 	 * @return string
 	 */
-	public function getInputHtml($name, $values, $entityId = null)
+	public function getInputHtml($name, $values)
 	{
 		return blx()->templates->render('_components/blocktypes/MultiSelect/input', array(
 			'name'     => $name,

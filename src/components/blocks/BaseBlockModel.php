@@ -10,6 +10,8 @@ namespace Blocks;
  */
 abstract class BaseBlockModel extends BaseComponentModel
 {
+	protected $classSuffix = 'BlockModel';
+
 	/**
 	 * Use the translated block name as the string representation.
 	 *
@@ -19,14 +21,6 @@ abstract class BaseBlockModel extends BaseComponentModel
 	{
 		return Blocks::t($this->name);
 	}
-
-	/**
-	 * Returns the type of entity these blocks will be attached to.
-	 *
-	 * @abstract
-	 * @return string
-	 */
-	abstract public function getEntityType();
 
 	/**
 	 * @return mixed

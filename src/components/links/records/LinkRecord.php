@@ -20,8 +20,8 @@ class LinkRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'blockId'    => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
 			'parentType' => array(AttributeType::ClassName, 'required' => true),
+			'blockId'    => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
 			'parentId'   => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
 			'childType'  => array(AttributeType::ClassName, 'required' => true),
 			'childId'    => array(AttributeType::Number, 'required' => true, 'unsigned' => true),

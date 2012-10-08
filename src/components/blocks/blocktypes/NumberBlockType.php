@@ -60,7 +60,7 @@ class NumberBlockType extends BaseBlockType
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $value, $entityId = null)
+	public function getInputHtml($name, $value)
 	{
 		return blx()->templates->render('_components/blocktypes/Number/input', array(
 			'name'     => $name,

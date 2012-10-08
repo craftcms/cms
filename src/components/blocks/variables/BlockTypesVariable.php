@@ -37,13 +37,15 @@ class BlockTypesVariable
 	 * Populates a block type.
 	 *
 	 * @param BaseBlockModel $block
+	 * @param BaseModel|null $entity
 	 * @return BaseBlockType|null
 	 */
-	public function populateBlockType(BaseBlockModel $block)
+	public function populateBlockType(BaseBlockModel $block, $entity = null)
 	{
 		$blockType = blx()->blockTypes->populateBlockType($block);
 		if ($blockType)
 		{
+			$blockType->entity = $entity;
 			return new BlockTypeVariable($blockType);
 		}
 	}

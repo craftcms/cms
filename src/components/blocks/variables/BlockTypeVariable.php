@@ -11,11 +11,10 @@ class BlockTypeVariable extends BaseComponentVariable
 	 *
 	 * @param string $handle
 	 * @param mixed $value
-	 * @param int|null $entityId
 	 * @return string
 	 */
-	public function input($handle, $value, $entityId = null)
+	public function input($handle, $value)
 	{
-		return $this->component->getInputHtml($handle, $value, $entityId);
+		return $this->component->getInputHtml($handle, $value);
 	}
 }

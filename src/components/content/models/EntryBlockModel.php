@@ -20,14 +20,4 @@ class EntryBlockModel extends BaseBlockModel
 
 		return $attributes;
 	}
-
-	/**
-	 * Returns the type of entity these blocks will be attached to.
-	 *
-	 * @return string
-	 */
-	public function getEntityType()
-	{
-		return 'entry';
-	}
 }

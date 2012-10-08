@@ -44,7 +44,7 @@ class LinksBlockType extends BaseBlockType
 	protected function defineSettings()
 	{
 		return array(
-			'type'             => array(AttributeType::ClassName, 'required' => true, 'default' => 'Entries'),
+			'type'             => array(AttributeType::ClassName, 'required' => true, 'default' => 'Entry'),
 			'addLabel'         => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
 			'removeLabel'      => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
 			'limit'            => array(AttributeType::Number, 'min' => 0),
@@ -62,7 +62,7 @@ class LinksBlockType extends BaseBlockType
 		$linkType = $this->_getLinkType();
 		if (!$linkType)
 		{
-			$linkType = blx()->links->getLinkType('Entries');
+			$linkType = blx()->links->getLinkType('Entry');
 		}
 
 		return blx()->templates->render('_components/blocktypes/Links/settings', array(
@@ -102,16 +102,15 @@ class LinksBlockType extends BaseBlockType
 	 *
 	 * @param string $name
 	 * @param mixed  $value
-	 * @param int|null $entityId;
 	 * @return string
 	 */
-	public function getInputHtml($name, $value, $entityId = null)
+	public function getInputHtml($name, $value)
 	{
 		$linkType = $this->_getLinkType();
 
-		if ($entityId)
+		if ($this->entity && $this->entity->id)
 		{
-			$entities = blx()->links->getLinkedEntities($this->model, $entityId);
+			$entities = blx()->links->getLinkedEntities($this->model, $this->entity);
 		}
 		else
 		{
@@ -140,7 +139,7 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function onAfterEntitySave()
 	{
-
+		blx()->links->setLinks($this->model, $this->entity);
 	}
 
 	/**

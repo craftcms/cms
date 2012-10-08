@@ -25,7 +25,7 @@ class LinksController extends BaseController
 		$entities = $linkType->getLinkableEntities($settings);
 
 		$this->renderTemplate('_components/blocktypes/Links/modalbody', array(
-			'name' => $name,
+			'name' => 'blocks['.$name.']',
 			'entities' => $entities,
 			'selectedIds' => $selectedIds,
 		));
