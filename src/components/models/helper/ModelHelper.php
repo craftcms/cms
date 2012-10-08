@@ -437,6 +437,54 @@ class ModelHelper
 
 		return $labels;
 	}
+	/**
+	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
+	 *
+	 * @param $config
+	 * @param $storedValue
+	 * @return int|mixed|null|string
+	 */
+	public static function packageAttributeValue($config, $storedValue)
+	{
+		$config = static::normalizeAttributeConfig($config);
+		$newValue = $storedValue;
+
+		switch($config['type'])
+		{
+			case AttributeType::Number:
+			{
+				$newValue = LocalizationHelper::normalizeNumber($storedValue);
+				break;
+			}
+			case AttributeType::DateTime:
+			{
+				if ($storedValue instanceof \DateTime)
+				{
+					$newValue = $storedValue->getTimestamp();
+				}
+				break;
+			}
+			case AttributeType::Mixed:
+			{
+				if ($storedValue instanceof \CModel)
+				{
+					$storedValue = $storedValue->getAttributes(null, true);
+				}
+
+				if (!empty($storedValue) && is_array($storedValue))
+				{
+					$newValue = $storedValue;
+				}
+				else
+				{
+					$newValue = null;
+				}
+				break;
+			}
+		}
+
+		return $newValue;
+	}
 
 	/**
 	 * @static

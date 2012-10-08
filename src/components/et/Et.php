@@ -101,7 +101,7 @@ class Et
 	{
 		try
 		{
-			$data = JsonHelper::encode($this->_model);
+			$data = JsonHelper::encode($this->_model->getAttributes(null, true));
 			$response = \Requests::post($this->_endpoint, array(), $data, $this->_options);
 
 			if ($response->success)
