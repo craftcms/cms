@@ -44,7 +44,7 @@ var ReleaseNotes = Blocks.Base.extend({
 
 			if (match)
 			{
-				$('<td class="thin"><span class="category '+match[1].toLowerCase()+'">'+match[1]+'</span></td>').appendTo($tr);
+				$('<td class="thin"><span class="category '+match[1].toLowerCase()+'">'+Blocks.t(match[1])+'</span></td>').appendTo($tr);
 				$('<td>'+match[2]+'</td>').appendTo($tr);
 			}
 			else
