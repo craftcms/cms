@@ -17,6 +17,16 @@ class EntriesLinkType extends BaseLinkType
 	}
 
 	/**
+	 * Returns the name of the table where entities are stored.
+	 *
+	 * @return string
+	 */
+	public function getEntityTableName()
+	{
+		return 'entries';
+	}
+
+	/**
 	 * Defines any link type-specific settings.
 	 *
 	 * @access protected
@@ -28,7 +38,8 @@ class EntriesLinkType extends BaseLinkType
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$settings['sections'] = array(AttributeType::Mixed);
+			// Maps to EntryParams->sectionId
+			$settings['sectionId'] = AttributeType::Mixed;
 		}
 
 		return $settings;
@@ -44,5 +55,50 @@ class EntriesLinkType extends BaseLinkType
 		return blx()->templates->render('_components/linktypes/Entries/settings', array(
 			'settings' => $this->getSettings()
 		));
+	}
+
+	/**
+	 * Modifies the DbCommand being created that's used to retrieve the linked entities.
+	 *
+	 * @param DbCommand $query
+	 * @return DbCommand
+	 */
+	public function modifyLinkedEntitiesQuery($query)
+	{
+		$query
+			->addSelect('t.title')
+			->join('entrytitles t', 'entries.id = t.entryId')
+			->addWhere('entries.archived = 0');
+
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$query->addWhere('t.language = :language', array(':language' => blx()->language));
+		}
+
+		return $query;
+	}
+
+	/**
+	 * Mass populates entity models.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public function populateEntities($data)
+	{
+		return blx()->entries->populateEntries($data);
+	}
+
+	/**
+	 * Returns the linkable entity models.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function getLinkableEntities($settings)
+	{
+		$params = new EntryParams($settings);
+		$params->order = 'title';
+		return blx()->entries->getEntries($params);
 	}
 }

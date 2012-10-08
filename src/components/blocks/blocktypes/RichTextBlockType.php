@@ -58,7 +58,7 @@ class RichTextBlockType extends BaseBlockType
 	 * @param mixed  $value
 	 * @return string
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($name, $value, $entityId = null)
 	{
 		blx()->templates->includeCssResource('lib/redactor/redactor.css');
 		blx()->templates->includeJsResource('lib/redactor/redactor.min.js');

@@ -34,4 +34,27 @@ abstract class BaseBlockType extends BaseComponent
 	 * @return string
 	 */
 	abstract public function getInputHtml($name, $value, $entityId = null);
+
+	/**
+	 * Preprocesses the input value before the entity is saved.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function preprocessInputValue($settings)
+	{
+		return $settings;
+	}
+
+	/**
+	 * Performs any additional actions after the entity has been saved.
+	 *
+	 * @param array $settings
+	 * @return array
+	 */
+	public function postprocessInputValue($settings)
+	{
+		return $settings;
+	}
+
 }

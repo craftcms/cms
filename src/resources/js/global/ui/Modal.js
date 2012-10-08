@@ -147,11 +147,11 @@ Blocks.ui.Modal = Blocks.Base.extend({
 		if (!this.$container)
 			throw Blocks.t('Attempted to position a modal whose container has not been set.');
 
-		var viewportWidth = Blocks.$window.width() - 200,
+		var viewportWidth = Blocks.$window.width(),
 			viewportHeight = Blocks.$window.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
-			left = 200 + (viewportWidth - modalWidth) / 2,
+			left = (viewportWidth - modalWidth) / 2,
 			top = (viewportHeight - modalHeight) / 2;
 
 		this.$container.css({

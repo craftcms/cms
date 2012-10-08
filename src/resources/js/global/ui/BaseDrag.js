@@ -183,7 +183,7 @@ Blocks.ui.BaseDrag = Blocks.Base.extend({
 
 			// Add the item
 			$.data(item, 'drag', this);
-			this.$items.push(item);
+			this.$items = this.$items.add(item);
 
 			// Get the handle
 			if (this.settings.handle)
@@ -196,7 +196,9 @@ Blocks.ui.BaseDrag = Blocks.Base.extend({
 					var $handle = $(this.settings.handle(item));
 			}
 			else
+			{
 				var $handle = $(item);
+			}
 
 			$.data(item, 'drag-handle', $handle);
 			$handle.data('drag-item', item);

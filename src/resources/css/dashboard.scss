@@ -17,12 +17,6 @@
 .widget { padding-bottom: 25px; border-bottom: 1px solid #e5e5e5; }
 .widget + .widget { margin-top: 25px; }
 
-.widget table.data tbody tr:first-child th,
-.widget table.data tbody tr:first-child td { padding-top: 0; border-top: none; }
-
-.widget table.data tbody tr:last-child th,
-.widget table.data tbody tr:last-child td { padding-bottom: 0; border-bottom: none; }
-
 .widget form + .errors { margin-top: 15px; }
 
 /* Recent Entries widget */

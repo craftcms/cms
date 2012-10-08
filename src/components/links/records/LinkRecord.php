@@ -20,6 +20,7 @@ class LinkRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
+			'blockId'    => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
 			'parentType' => array(AttributeType::ClassName, 'required' => true),
 			'parentId'   => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
 			'childType'  => array(AttributeType::ClassName, 'required' => true),
@@ -31,7 +32,7 @@ class LinkRecord extends BaseRecord
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('parentType', 'parentId', 'childType', 'childId'), 'unique' => true),
+			array('columns' => array('blockId', 'parentType', 'parentId', 'childType', 'childId'), 'unique' => true),
 		);
 	}
 }

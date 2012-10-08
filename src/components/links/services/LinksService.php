@@ -81,4 +81,35 @@ class LinksService extends BaseApplicationComponent
 		return $links;
 	}*/
 
+	/**
+	 * Gets the linked entities for a Links block.
+	 *
+	 * @param BaseBlockModel $block
+	 * @param int $parentId
+	 */
+	public function getLinkedEntities(BaseBlockModel $block, $parentId)
+	{
+		$linkType = $this->getLinkType($block->settings['type']);
+		if (!$linkType)
+		{
+			throw new Exception(Blocks::t('No link type exists with the class “{class}”', array('class' => $block->settings['type'])));
+		}
+
+		$table = $linkType->getEntityTableName();
+		$query = blx()->db->createCommand()
+			->select($table.'.*')
+			->from($table.' '.$table)
+			->join('links l', 'l.childId = '.$table.'.id')
+			->where(array(
+				'l.blockId' => $block->id,
+				'l.parentType' => $block->getEntityType(),
+				'l.parentId' => $parentId
+			));
+
+		// Give the link type a chance to make any changes
+		$query = $linkType->modifyLinkedEntitiesQuery($query);
+
+		$rows = $query->queryAll();
+		return $linkType->populateEntities($rows);
+	}
 }
