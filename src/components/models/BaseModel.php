@@ -251,22 +251,58 @@ abstract class BaseModel extends \CModel
 	 */
 	public static function populateModels($data, $index = null)
 	{
-		$models = array();
-
-		foreach ($data as $attributes)
+		if ($data)
 		{
-			$model = static::populateModel($attributes);
+			$models = array();
 
-			if ($index === null)
+			foreach ($data as $attributes)
 			{
-				$models[] = $model;
+				$model = static::populateModel($attributes);
+
+				if ($index === null)
+				{
+					$models[] = $model;
+				}
+				else
+				{
+					$models[$model->$index] = $model;
+				}
 			}
-			else
+
+			return $models;
+		}
+
+		return null;
+	}
+
+	/**
+	 * Returns an array of attribute values.
+	 *
+	 * @param null $names
+	 * @param bool $flattenValues Will change a DateTime object to a timestamp, Mixed to Json, etc. Useful for saving to DB or sending over a web service.
+	 *
+	 * @return array
+	 */
+	public function getAttributes($names = null, $flattenValues = false)
+	{
+		$values = parent::getAttributes($names);
+
+		if ($flattenValues)
+		{
+			foreach ($values as $name => $value)
 			{
-				$models[$model->$index] = $model;
+				$definedAttributes = $this->defineAttributes();
+
+				if (isset($definedAttributes[$name]))
+				{
+					$config = $definedAttributes[$name];
+					$config = ModelHelper::normalizeAttributeConfig($config);
+
+					$values[$name] = ModelHelper::packageAttributeValue($config, $this->$name);
+				}
 			}
 		}
 
-		return $models;
+		return $values;
 	}
 }
