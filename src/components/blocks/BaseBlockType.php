@@ -7,6 +7,14 @@ namespace Blocks;
 abstract class BaseBlockType extends BaseComponent
 {
 	/**
+	 * The enttiy that the block is associated with.
+	 * Set by the service classes.
+	 *
+	 * @var BaseBlockEntityModel
+	 */
+	public $entity;
+
+	/**
 	 * The type of component this is.
 	 *
 	 * @access protected
@@ -36,22 +44,32 @@ abstract class BaseBlockType extends BaseComponent
 	abstract public function getInputHtml($name, $value, $entityId = null);
 
 	/**
-	 * Preprocesses the input value before the entity is saved.
+	 * Returns the input value as it should be saved to the database.
 	 *
-	 * @param array $value
-	 * @return array
+	 * @return mixed
 	 */
-	public function preprocessInputValue($value)
+	public function getInputValue()
+	{
+		$value = $this->entity->getBlockValueById($this->model->id);
+		return $this->preprocessInputValue($value);
+	}
+
+	/**
+	 * Preprocesses the input value before it is saved to the database.
+	 *
+	 * @access protected
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	protected function preprocessInputValue($value)
 	{
 		return $value;
 	}
 
 	/**
 	 * Performs any additional actions after the entity has been saved.
-	 *
-	 * @param array $value
 	 */
-	public function postprocessInputValue($value)
+	public function onAfterEntitySave()
 	{
 	}
 

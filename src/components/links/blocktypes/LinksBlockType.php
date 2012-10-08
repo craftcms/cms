@@ -136,6 +136,14 @@ class LinksBlockType extends BaseBlockType
 	}
 
 	/**
+	 * Performs any additional actions after the entity has been saved.
+	 */
+	public function onAfterEntitySave()
+	{
+
+	}
+
+	/**
 	 * Returns the link type
 	 *
 	 * @return BaseLinkType|null

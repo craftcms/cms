@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Content record base class
  */
-abstract class BaseBlockContentRecord extends BaseRecord
+abstract class BaseBlockEntityRecord extends BaseRecord
 {
 	/**
 	 * Returns the list of blocks associated with this content.

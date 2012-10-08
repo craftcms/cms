@@ -17,8 +17,6 @@ class EntriesService extends BaseApplicationComponent
 		$entry = EntryModel::populateModel($attributes);
 
 		// Set the block content
-		$contentRecord = $this->_getEntryContentRecord($entry);
-
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$blocks = blx()->sectionBlocks->getBlocksBySectionId($entry->sectionId);
@@ -28,22 +26,8 @@ class EntriesService extends BaseApplicationComponent
 			$blocks = blx()->entryBlocks->getAllBlocks();
 		}
 
-		$blockValues = array();
-
-		foreach ($blocks as $block)
-		{
-			$blockType = blx()->blockTypes->populateBlockType($block);
-
-			if ($blockType->defineContentAttribute() !== false)
-			{
-				$name = 'block'.$block->id;
-				$handle = $block->handle;
-
-				$blockValues[$name] = $contentRecord->$handle;
-			}
-		}
-
-		$entry->blocks = $blockValues;
+		$contentRecord = $this->_getEntryContentRecord($entry);
+		$entry->setBlockValuesFromAttributes($blocks, $contentRecord);
 
 		return $entry;
 	}
@@ -353,24 +337,21 @@ class EntriesService extends BaseApplicationComponent
 			$blocks = blx()->entryBlocks->getAllBlocks();
 		}
 
+		$blockTypes = array();
+
 		foreach ($blocks as $block)
 		{
 			$blockType = blx()->blockTypes->populateBlockType($block);
+			$blockType->entity = $entry;
 
 			if ($blockType->defineContentAttribute() !== false)
 			{
 				$handle = $block->handle;
-				$name = 'block'.$block->id;
-
-				if (isset($entry->blocks[$name]))
-				{
-					$contentRecord->$handle = $entry->blocks[$name];
-				}
-				else
-				{
-					$contentRecord->$handle = null;
-				}
+				$contentRecord->$handle = $blockType->getInputValue();
 			}
+
+			// Keep the block type instance around for calling onAfterEntitySave()
+			$blockTypes[] = $blockType;
 		}
 
 		$entryValidates = $entryRecord->validate();
@@ -395,8 +376,15 @@ class EntriesService extends BaseApplicationComponent
 				$contentRecord->entryId = $entryRecord->id;
 			}
 
+			// Save the title and content records
 			$titleRecord->save(false);
 			$contentRecord->save(false);
+
+			// Give the block types a chance to do any post-processing
+			foreach ($blockTypes as $blockType)
+			{
+				$blockType->onAfterEntitySave();
+			}
 
 			return true;
 		}

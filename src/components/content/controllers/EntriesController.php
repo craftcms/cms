@@ -18,10 +18,11 @@ class EntriesController extends BaseController
 		$entry->id = blx()->request->getPost('entryId');
 		$entry->title = blx()->request->getPost('title');
 		$entry->slug = blx()->request->getPost('slug');
-		$entry->blocks = blx()->request->getPost('blocks');
 		$entry->postDate = $this->getDateFromPost('postDate');
 		$entry->expiryDate = $this->getDateFromPost('expiryDate');
 		$entry->enabled = blx()->request->getPost('enabled');
+
+		$entry->setBlockValues(blx()->request->getPost('blocks'));
 
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{

@@ -451,7 +451,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .input.errors .text,
 .input.errors div.redactor_box,
 .input.errors .border-box,
-.text.error { border-color: $errorcolor; }
+.text.error { border-color: $errorcolor !important; }
 
 .textwrapper.search { position: relative; padding-right: 36px; cursor: text; }
 .textwrapper.search:before { @include icon; position: absolute; top: 9px; left: 8px; content: "s"; color: #a1a4a6; }

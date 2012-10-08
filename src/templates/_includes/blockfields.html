@@ -1,13 +1,13 @@
 {% from "_includes/forms" import field %}
 {% if entity is not defined %}{% set entity = null %}{% endif %}
+{% set entityId = (entity.id is defined ? entity.id : null) %}
 
 {% for block in blocks %}
 	{% set blockType = blx.blockTypes.populateBlockType(block) %}
 	{% set name = 'block'~block.id %}
-	{% set value = (entity and entity.blocks[name] is defined ? entity.blocks[name] : null) %}
-	{% set id = (entity.id is defined ? entity.id : null) %}
+	{% set value = (entity ? entity.getBlockValueById(block.id) : null) %}
 	{% set errors = (entity ? entity.getErrors(block.handle) : null) %}
-	{% set input = blockType.input(name, value, id) %}
+	{% set input = blockType.input(name, value, entityId) %}
 
 	{{ field({
 		label: block.name,
