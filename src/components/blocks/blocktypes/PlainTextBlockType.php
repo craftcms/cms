@@ -48,7 +48,7 @@ class PlainTextBlockType extends BaseBlockType
 	/**
 	 * Returns the content attribute config.
 	 *
-	 * @return string|array
+	 * @return mixed
 	 */
 	public function defineContentAttribute()
 	{

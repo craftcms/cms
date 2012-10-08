@@ -17,7 +17,7 @@ abstract class BaseBlockType extends BaseComponent
 	/**
 	 * Returns the content attribute config.
 	 *
-	 * @return string|array
+	 * @return mixed
 	 */
 	public function defineContentAttribute()
 	{
@@ -38,23 +38,21 @@ abstract class BaseBlockType extends BaseComponent
 	/**
 	 * Preprocesses the input value before the entity is saved.
 	 *
-	 * @param array $settings
+	 * @param array $value
 	 * @return array
 	 */
-	public function preprocessInputValue($settings)
+	public function preprocessInputValue($value)
 	{
-		return $settings;
+		return $value;
 	}
 
 	/**
 	 * Performs any additional actions after the entity has been saved.
 	 *
-	 * @param array $settings
-	 * @return array
+	 * @param array $value
 	 */
-	public function postprocessInputValue($settings)
+	public function postprocessInputValue($value)
 	{
-		return $settings;
 	}
 
 }

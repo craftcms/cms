@@ -32,10 +32,15 @@ class EntriesService extends BaseApplicationComponent
 
 		foreach ($blocks as $block)
 		{
-			$name = 'block'.$block->id;
-			$handle = $block->handle;
+			$blockType = blx()->blockTypes->populateBlockType($block);
 
-			$blockValues[$name] = $contentRecord->$handle;
+			if ($blockType->defineContentAttribute() !== false)
+			{
+				$name = 'block'.$block->id;
+				$handle = $block->handle;
+
+				$blockValues[$name] = $contentRecord->$handle;
+			}
 		}
 
 		$entry->blocks = $blockValues;
@@ -350,16 +355,21 @@ class EntriesService extends BaseApplicationComponent
 
 		foreach ($blocks as $block)
 		{
-			$handle = $block->handle;
-			$name = 'block'.$block->id;
+			$blockType = blx()->blockTypes->populateBlockType($block);
 
-			if (isset($entry->blocks[$name]))
+			if ($blockType->defineContentAttribute() !== false)
 			{
-				$contentRecord->$handle = $entry->blocks[$name];
-			}
-			else
-			{
-				$contentRecord->$handle = null;
+				$handle = $block->handle;
+				$name = 'block'.$block->id;
+
+				if (isset($entry->blocks[$name]))
+				{
+					$contentRecord->$handle = $entry->blocks[$name];
+				}
+				else
+				{
+					$contentRecord->$handle = null;
+				}
 			}
 		}
 

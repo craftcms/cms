@@ -26,6 +26,16 @@ class LinksBlockType extends BaseBlockType
 	}
 
 	/**
+	 * Returns the content attribute config.
+	 *
+	 * @return mixed
+	 */
+	public function defineContentAttribute()
+	{
+		return false;
+	}
+
+	/**
 	 * Defines the settings.
 	 *
 	 * @access protected
