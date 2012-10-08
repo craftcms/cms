@@ -265,6 +265,9 @@ class UpdatesService extends BaseApplicationComponent
 	public function check()
 	{
 		$updateModel = new UpdateModel();
+		$updateModel->blocks = new BlocksUpdateModel();
+		$updateModel->plugins = array();
+
 		$updateModel->blocks->localBuild = Blocks::getBuild();
 		$updateModel->blocks->localVersion = Blocks::getVersion();
 
