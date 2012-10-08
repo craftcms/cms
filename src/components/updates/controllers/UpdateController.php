@@ -11,6 +11,38 @@ class UpdateController extends BaseController
 	// -------------------------------------------
 
 	/**
+	 * Returns the available updates
+	 */
+	public function actionGetAvailableUpdates()
+	{
+		$updates = array(
+			'blocks' => array(
+				'version' => '1.1',
+				'build' => 12345,
+				'notes' => array(
+					'Added the Plugin Store',
+					'Added support for the new Cloud package',
+					'Fixed a PHP error in the installer',
+					'Fixed a PHP error when deleting a section that has entries'
+				)
+			),
+			'packages' => array('Publish Pro', 'Cloud'),
+			'plugins' => array(
+				array(
+					'name' => 'CartThrob',
+					'class' => 'CartThrob',
+					'version' => '1.5.2',
+					'notes' => array(
+						'Plugged a security hole.'
+					)
+				)
+			)
+		);
+
+		$this->returnJson($updates);
+	}
+
+	/**
 	 * Returns the update info JSON.
 	 *
 	 * @param string $h The handle of which update to retrieve info for.

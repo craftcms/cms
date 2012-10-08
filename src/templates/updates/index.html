@@ -1,54 +1,52 @@
 {% extends "_cp" %}
 {% set title = "Updates"|t %}
+{% set centered = true %}
 {% includeJsResource "js/updates.js" %}
+{% includeTranslations
+	"build {build}",
+	"Update",
+	"Install",
+	"{packages} upgrades"
+%}
 
 
 {% set css %}
-	h3.critical { color: #8a1f11; }
-	.notes { display: none; }
-	.cta { position: absolute; top: 15px; right: 15px; }
-	.cta .manual { margin-top: 5px; }
+	#loading { margin-top: 50px !important; padding-top: 70px; text-align: center; background: url({{ resourceUrl('images/spinner-big.gif') }}) no-repeat 50% 0; }
+	#updates { display: none; }
+	#updates td.notes { border-top: none; }
 {% endset %}
 {% includeCss css %}
 
 
 {% set header %}
 	<h1>{{ title }}</h1>
+
+	<ul class="right">
+		<li><a class="btn" href="{{ url('updates/all') }}">{{ "Update All"|t }}</a></li>
+	</ul>
 {% endset %}
 
 
 {% set content %}
-	{% set problems = blx.updates.unwritablefolders %}
-	{% if not problems %}
-		<div id="checking">
-			{{ "Checking for updates…"|t }}
-		</div>
-		<script type="text/javascript">
-			// Keep the spinner vertically centered
-			function centerSpinner()
-			{
-				var top = ((window.innerHeight-48) / 2) - 44;
-				document.getElementById('checking').style.top = top+'px';
-			}
-			centerSpinner();
-		</script>
+	<p id="loading">{{ "Checking for updates…"|t }}</p>
 
-		<div id="updates"></div>
-	{% else %}
-		<p>{{ "Blocks will have a problem writing to the following"|t }} {% if problems|length == 1 %}{{ "folder"|t }}{% else %}{{ "folders"|t }}{% endif %}:</p>
-		<ul>
-			{% for problem in problems %}
-				<li>{{ problem }}<li>
-			{% endfor %}
-		</ul>
+	<div id="updates">
+		<h2>{{ "System"|t }}</h2>
+		<p id="no-system-updates">{{ "No system updates are available."|t }}</p>
 
-		<br>
+		<table id="system-updates" class="data">
+			<tbody>
+			</tbody>
+		</table>
 
-		<div>
-			<p><strong>{{ "For automatic updates to work, one of the following two criteria must be satisfied:"|t }}</strong></p>
-			<p><strong>(a) {{ "File ownership:"|t }}</strong> {{ "All of your Blocks files must be owned by the user under which your web server executes. In other words, the owner of your Blocks files must match the user under which your web server executes. The web server user (named ‘apache’, ‘web’, ‘www’, ‘nobody’, or some such) is not necessarily the owner of your Blocks files. Typically, Blocks files are owned by the ftp user which uploaded the original files."|t }}</p>
-			<p><strong>(b) {{ "File permissions:"|t }}</strong> {{ "All of your Blocks files must be either owner writable by, or group writable by, the user under which your Apache server executes."|t }}</p>
-			<p>{{ "On shared hosts, Blocks files should specifically NOT be owned by the web server. If more than one user owns different files in the install (because of edits made by deleting and re-uploading of files via different accounts, for example), the file permissions need to be group writable (for example, 775 and 664 rather then the default 755 and 644). File permissions (in general) should be adjusted as appropriate for the server environment."|t }}</p>
-		</div>
-	{% endif %}
+		<hr>
+
+		<h2>{{ "Plugins"|t }}</h2>
+		<p id="no-plugin-updates">{{ "No plugin updates are available."|t }}</p>
+
+		<table id="plugin-updates" class="data">
+			<tbody>
+			</tbody>
+		</table>
+	</div>
 {% endset %}
