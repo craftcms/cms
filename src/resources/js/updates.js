@@ -1,6 +1,61 @@
 (function($) {
 
 
+var ReleaseNotes = Blocks.Base.extend({
+
+	$table: null,
+	$tbody: null,
+
+	init: function($td, releases, product)
+	{
+		console.log(releases);
+		this.$table = $('<table/>').appendTo($td);
+		this.$tbody = $('<tbody/>').appendTo(this.$table);
+
+		this.addNoteRows(releases[0].notes);
+
+		for (var i = 1; i < releases.length; i++)
+		{
+			var release = releases[i],
+				heading = product+' '+release.version;
+
+			if (release.build)
+			{
+				heading += ' <span class="light">' +
+					Blocks.t('build {build}', { build: release.build }) +
+					'</span>';
+			}
+
+			$('<tr><th colspan="2">'+heading+'</th></tr>').appendTo(this.$tbody);
+
+			this.addNoteRows(release.notes);
+		}
+	},
+
+	addNoteRows: function(notes)
+	{
+		notes = notes.split(/[\r\n]+/);
+
+		for (var i = 0; i < notes.length; i++)
+		{
+			var note = notes[i],
+				$tr = $('<tr/>').appendTo(this.$tbody),
+				match = note.match(/\[(\w+)\]\s*(.+)/);
+
+			if (match)
+			{
+				$('<td class="thin"><span class="category '+match[1].toLowerCase()+'">'+match[1]+'</span></td>').appendTo($tr);
+				$('<td>'+match[2]+'</td>').appendTo($tr);
+			}
+			else
+			{
+				$('<td colspan="2">'+note+'</td>').appendTo($tr);
+			}
+		}
+	}
+})
+
+
 $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 
 	$('#loading').fadeOut('fast', function() {
@@ -17,26 +72,18 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 					$th = $('<th/>').appendTo($tr),
 					$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-				$th.html('Blocks '+response.blocks.version +
+				$th.html('Blocks '+response.blocks[0].version +
 					' <span class="light">' +
-					Blocks.t('build {build}', { build: response.blocks.build }) +
+					Blocks.t('build {build}', { build: response.blocks[0].build }) +
 					'</span>'
 				);
 
 				$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/blocks">'+Blocks.t('Update')+'</a>');
 
-				if (response.blocks.notes)
-				{
-					var $tr = $('<tr/>').appendTo($tbody),
-						$td = $('<td class="notes" colspan="2"/>').appendTo($tr),
-						$ul = $('<ul class="bullets"/>').appendTo($td);
+				var $tr = $('<tr/>').appendTo($tbody),
+					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-					for (var i = 0; i < response.blocks.notes.length; i++)
-					{
-						var $li = $('<li/>').appendTo($ul);
-						$li.text(response.blocks.notes[i]);
-					}
-				}
+				new ReleaseNotes($td, response.blocks, 'Blocks');
 			}
 
 			if (response.packages)
@@ -51,6 +98,7 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 				if (response.blocks)
 				{
 					$btn.addClass('disabled');
+					$btn.attr('title', Blocks.t('Blocks update required'));
 				}
 			}
 		}
@@ -70,29 +118,18 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 			{
 				var plugin = response.plugins[i];
 
-				if (response.blocks)
-				{
-					var $tr = $('<tr/>').appendTo($tbody),
-						$th = $('<th/>').appendTo($tr),
-						$td = $('<td class="thin rightalign"/>').appendTo($tr);
+				var $tr = $('<tr/>').appendTo($tbody),
+					$th = $('<th/>').appendTo($tr),
+					$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-					$th.html(plugin.name+' '+plugin.version);
+				$th.html(plugin.name+' '+plugin.releases[0].version);
 
-					$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/'+plugin['class'].toLowerCase()+'">'+Blocks.t('Update')+'</a>');
+				$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/'+plugin['class'].toLowerCase()+'">'+Blocks.t('Update')+'</a>');
 
-					if (plugin.notes)
-					{
-						var $tr = $('<tr/>').appendTo($tbody),
-							$td = $('<td class="notes" colspan="2"/>').appendTo($tr),
-							$ul = $('<ul class="bullets"/>').appendTo($td);
+				var $tr = $('<tr/>').appendTo($tbody),
+					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-						for (var j = 0; j < plugin.notes.length; j++)
-						{
-							var $li = $('<li/>').appendTo($ul);
-							$li.text(response.blocks.notes[j]);
-						}
-					}
-				}
+				new ReleaseNotes($td, plugin.releases, plugin.name);
 			}
 		}
 		else
@@ -101,6 +138,11 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 		}
 
 		$('#updates').fadeIn('fast');
+
+		if (response.blocks || response.packages || response.plugins)
+		{
+			$('#update-all').fadeIn('fast');
+		}
 	});
 
 });

@@ -1,27 +1,21 @@
 {% extends "_cp" %}
 {% set title = "Updates"|t %}
 {% set centered = true %}
+{% includeCssResource "css/updates.css" %}
 {% includeJsResource "js/updates.js" %}
 {% includeTranslations
 	"build {build}",
 	"Update",
 	"Install",
-	"{packages} upgrades"
+	"{packages} upgrades",
+	"Blocks update required"
 %}
-
-
-{% set css %}
-	#loading { margin-top: 50px !important; padding-top: 70px; text-align: center; background: url({{ resourceUrl('images/spinner-big.gif') }}) no-repeat 50% 0; }
-	#updates { display: none; }
-	#updates td.notes { border-top: none; }
-{% endset %}
-{% includeCss css %}
 
 
 {% set header %}
 	<h1>{{ title }}</h1>
 
-	<ul class="right">
+	<ul id="update-all" class="right">
 		<li><a class="btn" href="{{ url('updates/all') }}">{{ "Update All"|t }}</a></li>
 	</ul>
 {% endset %}
