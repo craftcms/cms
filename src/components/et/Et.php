@@ -111,13 +111,13 @@ class Et
 					return true;
 				}
 
-				$modelData = JsonHelper::decode($response->body);
-				$model = new EtModel($modelData);
+				$values = JsonHelper::decode($response->body);
+				$etModel = blx()->et->decodeEtValues($values);
 
 				// we set the license key status on every request
-				blx()->et->setLicenseKeyStatus($model->licenseKeyStatus);
+				blx()->et->setLicenseKeyStatus($etModel->licenseKeyStatus);
 
-				return $model;
+				return $etModel;
 			}
 			else
 			{
