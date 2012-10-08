@@ -27,7 +27,7 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 
 				if (response.blocks.notes)
 				{
-					var $tr = $('<tr/>'),
+					var $tr = $('<tr/>').appendTo($tbody),
 						$td = $('<td class="notes" colspan="2"/>').appendTo($tr),
 						$ul = $('<ul class="bullets"/>').appendTo($td);
 
@@ -82,7 +82,7 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 
 					if (plugin.notes)
 					{
-						var $tr = $('<tr/>'),
+						var $tr = $('<tr/>').appendTo($tbody),
 							$td = $('<td class="notes" colspan="2"/>').appendTo($tr),
 							$ul = $('<ul class="bullets"/>').appendTo($td);
 
