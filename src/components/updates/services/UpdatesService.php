@@ -175,11 +175,15 @@ class UpdatesService extends BaseApplicationComponent
 			// fetch it if it wasn't cached, or if we're forcing a refresh
 			if ($forceRefresh || $updateModel === false)
 			{
-				$updateModel = $this->check();
+				$etModel = $this->check();
 
-				if ($updateModel == null)
+				if ($etModel == null)
 				{
 					$updateModel = new UpdateModel();
+				}
+				else
+				{
+					$updateModel = $etModel->data;
 				}
 
 				// cache it and set it to expire according to config
@@ -282,10 +286,8 @@ class UpdatesService extends BaseApplicationComponent
 			$updateModel->plugins[$plugin->getClassHandle()] = $pluginUpdateModel;
 		}
 
-		$response = blx()->et->check($updateModel);
-
-		$updateModel = $response == null ? new UpdateModel() : new UpdateModel($response->data);
-		return $updateModel;
+		$etModel = blx()->et->check($updateModel);
+		return ($etModel == null ? new EtModel() : $etModel);
 	}
 
 	/**

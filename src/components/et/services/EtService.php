@@ -25,11 +25,11 @@ class EtService extends BaseApplicationComponent
 	{
 		$et = new Et(ElliotEndPoints::Check);
 		$et->getModel()->data = $updateInfo;
-		$response = $et->phoneHome();
+		$etModel = $et->phoneHome();
 
-		$this->decodeEtUpdateValues($response);
+		$etModel = $this->decodeEtUpdateValues($etModel);
 
-		return $response;
+		return $etModel;
 	}
 
 	/**
