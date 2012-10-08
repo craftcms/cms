@@ -57,7 +57,6 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 
 		this._inputSort = new Blocks.ui.DataTableSorter($table, {
 			handle: '.entity',
-			helperClass: 'datatablesorthelper linksorthelper',
 			filter: $.proxy(function() {
 				return this._inputSelect.getSelectedItems().closest('tr');
 			}, this),
