@@ -89,7 +89,7 @@ td.right { float: none; text-align: right; }
 .move:hover:before { color: $linkcolor; }
 
 .deletebtn { display: inline-block; }
-.deletebtn:before { @include icon; content: 'd'; color: #ccc; }
+.deletebtn:before { @include icon; content: 'R'; color: #ccc; }
 .deletebtn:hover:before { color: $errorcolor; }
 
 .hidden { display: none; }
@@ -464,7 +464,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { position: relative; padding-right: 36px; width: 194px; }
-.datewrapper:before { @include icon; position: absolute; top: 9px; left: 8px; content: "c"; color: #a1a4a6; }
+.datewrapper:before { @include icon; position: absolute; top: 9px; left: 8px; content: "d"; color: #a1a4a6; }
 .datewrapper .text { padding-left: 27px; width: 100%; }
 
 /* redactor */
