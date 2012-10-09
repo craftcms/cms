@@ -62,12 +62,12 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 #notifications .notification.notice { border-color: #1F6794; background: #2782bb; }
 #notifications .notification.error { border-color: #992f2f; background: #e14545; }
 
-#tabs { margin: -25px auto 25px; border-bottom: 1px solid #e5e5e5; text-align: center; }
+#tabs { margin: -25px auto 25px; border-bottom: 1px solid #e5e5e5; text-align: center; font-size: 0; }
 #tabs ul li { display: inline-block; margin: 0 10px; }
-#tabs ul li a { display: block; margin-bottom: -1px; padding: 20px 0; font-size: 13px; color: #808080; }
-#tabs ul li a:before { margin: 0 4px 0 0; font-size: 18px; }
+#tabs ul li a { display: block; margin-bottom: -1px; padding: 16px 1px; font-size: 13px; color: #808080; }
+#tabs ul li a:before { margin: 0 4px -1px 0; font-size: 18px; }
 #tabs ul li a:hover { color: $linkcolor; text-decoration: none; }
-#tabs ul li a.active { padding-bottom: 18px; border-bottom: 2px solid #555; color: #555; cursor: default; }
+#tabs ul li a.active { padding-bottom: 14px; border-bottom: 2px solid #555; color: #555; cursor: default; }
 
 /* content */
 #content { margin: 25px auto; padding: 0 25px; }
