@@ -26,6 +26,7 @@ class EntryModel extends BaseBlockEntityModel
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
+		$attributes['tags'] = AttributeType::String;
 
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{

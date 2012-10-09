@@ -47,6 +47,8 @@ class EntryRecord extends BaseRecord
 			$relations['versions'] = array(static::HAS_MANY, 'EntryVersionRecord', 'entryId');
 		}
 
+		$relations['entryTagEntries'] = array(static::HAS_MANY, 'EntryTagEntryRecord', 'entryId');
+
 		return $relations;
 	}
 

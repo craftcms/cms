@@ -32,7 +32,7 @@ class InstallService extends BaseApplicationComponent
 			// Create the tables
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
-			$this->_createUsergroupsUsersTable();
+			$this->_createJoinTables();
 
 			Blocks::log('Committing the transaction.', \CLogger::LEVEL_INFO);
 			$transaction->commit();
@@ -136,12 +136,13 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates the usergroups_users join table.
+	 * Creates any many to many join tables.
 	 *
 	 * @access private
 	 */
-	private function _createUsergroupsUsersTable()
+	private function _createJoinTables()
 	{
+		// usergroups to users
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			blx()->db->createCommand()->createTable('usergroups_users', array(
