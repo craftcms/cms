@@ -15,21 +15,91 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetAvailableUpdates()
 	{
+		$updates = blx()->updates->getUpdates(true);
+			/*$updates = array(
+				'blocks' => array(
+					'localbuild' => 12000,
+					'localVersion' => '1.0',
+					'latestBuild' => 12345,
+					'latestVersion' => '1.1',
+					'latestDate' => 1349894524,
+					'criticalUpdateAvailable' => 1,
+					'manualUpdateRequired' => 1,
+					'versionUpdateStatus' => 'UpdateAvailable',
+					'releases' => array(
+						array(
+							'version' => '1.1',
+							'build' => 12345,
+							'date' => 1349894524,
+							'type' => 'Stable',
+							'manualUpdateRequired' => 1,
+							'critical' => 1,
+							'notes' => '[Fixed] PHP error in the installer
+							            [Fixed] PHP error when deleting a section that has entries'
+						),
+						array(
+							'version' => '1.1',
+							'build' => 12340,
+							'date' => 1349894524,
+							'type' => 'Stable',
+							'manualUpdateRequired' => 1,
+							'critical' => 0,
+							'notes' => '[Added] Plugin Store
+							            [Added] Cloud package support
+							            [Improved] Keyboard support
+							            [Improved] Handle setting descriptions'
+						),
+					),
+				),
+
+				'packages' => array(
+					'upgradeAvailable' => array('Publish Pro', 'Cloud'),
+				),
+
+				'plugins' => array(
+					array(
+						'displayName' => 'CartThrob',
+						'class' => 'CartThrob',
+						'localVersion' => '1.0',
+						'latestVersion' => '1.5.2',
+						'latestDate' => 1349894524,
+						'status' => 'UpdateAvailable',
+						'criticalUpdateAvailable' => 1,
+						'releases' => array(
+							array(
+								'version' => '1.5.2',
+								'date' => 1349894524,
+								'critical' => 1,
+								'notes' => '[Fixed] Plugged a security hole.'
+							),
+							array(
+								'version' => '1.5.0',
+								'date' => 1349894524,
+								'critical' => 0,
+								'notes' => '[Improved] User experience.
+								            [Fixed] A bad bug.',
+							)
+						)
+					)
+				)
+			);*/
+
+		/**
 		$updates = array(
 			'blocks' => array(
 				array(
 					'version' => '1.1',
 					'build' => 12345,
 					'notes' => '[Fixed] PHP error in the installer
-[Fixed] PHP error when deleting a section that has entries'
+					            [Fixed] PHP error when deleting a section that has entries'
 				),
 				array(
 					'version' => '1.1',
 					'build' => 12340,
 					'notes' => '[Added] Plugin Store
-[Added] Cloud package support
-[Improved] Keyboard support
-[Improved] Handle setting descriptions'
+					            [Added] Cloud package support
+					            [Improved] Keyboard support
+					            [Improved] Handle setting descriptions'
 				),
 			),
 
@@ -48,7 +118,7 @@ class UpdateController extends BaseController
 				)
 			)
 		);
-
+**/
 		$this->returnJson($updates);
 	}
 
@@ -57,12 +127,12 @@ class UpdateController extends BaseController
 	 *
 	 * @param string $h The handle of which update to retrieve info for.
 	 */
-	public function actionGetUpdateModel($h)
+	public function actionGetUpdates($h)
 	{
 		$this->requireAjaxRequest();
 
 		$return = array();
-		$updateInfo = blx()->updates->getUpdateModel();
+		$updateInfo = blx()->updates->getUpdates();
 
 		if (!$updateInfo)
 		{

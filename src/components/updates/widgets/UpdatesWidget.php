@@ -38,7 +38,7 @@ class UpdatesWidget extends BaseWidget
 	{
 		$updates = array();
 
-		$updateModel = blx()->updates->getUpdateModel();
+		$updateModel = blx()->updates->getUpdates();
 
 		// Blocks first
 		if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
