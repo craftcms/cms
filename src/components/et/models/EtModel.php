@@ -6,36 +6,6 @@ namespace Blocks;
  */
 class EtModel extends BaseModel
 {
-	//public $url;
-	//public $licenseKey;
-	//public $licenseKeyStatus;
-	//public $requestIp;
-	//public $requestTime;
-	//public $requestDomain;
-	//public $requestPort;
-	//public $packages;
-	//public $data;
-	//public $errors = array();
-
-	/**
-	 * @param null $properties
-	 */
-	/*function __construct($properties = null)
-	{
-		if ($properties == null)
-			return;
-
-		$this->url = isset($properties['url']) ? $properties['url'] : null;
-		$this->licenseKey = isset($properties['licenseKey']) ? $properties['licenseKey'] : null;
-		$this->licenseKeyStatus = isset($properties['licenseKeyStatus']) ? $properties['licenseKeyStatus'] : null;
-		$this->data = isset($properties['data']) ? $properties['data'] : null;
-		$this->packages = isset($properties['packages']) ? $properties['packages'] : null;
-		$this->requestDomain = isset($properties['requestDomain']) ? $properties['requestDomain'] : null;
-		$this->requestIp = isset($properties['requestIp']) ? $properties['requestIp'] : null;
-		$this->requestTime = isset($properties['requestTime']) ? $properties['requestTime'] : null;
-		$this->requestPort = isset($properties['requestPort']) ? $properties['requestPort'] : null;
-	}*/
-
 	/**
 	 * @return array
 	 */
@@ -66,7 +36,10 @@ class EtModel extends BaseModel
 		$attributes['requestPort'] = AttributeType::String;
 
 		// Any packages installed on the client.
-		$attributes['packages'] = AttributeType::String;
+		$attributes['installedPackages'] = AttributeType::String;
+
+		// Any errors to return;
+		$attributes['errors'] = AttributeType::Mixed;
 
 		return $attributes;
 	}

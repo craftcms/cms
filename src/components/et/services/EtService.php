@@ -112,10 +112,16 @@ class EtService extends BaseApplicationComponent
 	{
 		$updateModel = UpdateModel::populateModel($etModel->data);
 		$blocksUpdateModel = BlocksUpdateModel::populateModel($etModel->data['blocks']);
-		$pluginsUpdateModel = PluginUpdateModel::populateModels($etModel->data['plugins']);
+
+		$pluginUpdateModels = array();
+
+		foreach ($etModel->data['plugins'] as $key => $pluginAttributes)
+		{
+			$pluginUpdateModels[$key] = PluginUpdateModel::populateModel($pluginAttributes);
+		}
 
 		$updateModel->blocks = $blocksUpdateModel;
-		$updateModel->plugins = $pluginsUpdateModel;
+		$updateModel->plugins = $pluginUpdateModels;
 		$etModel->data = $updateModel;
 
 		return $etModel;
