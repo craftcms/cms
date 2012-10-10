@@ -36,7 +36,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 * @access protected
 	 * @var string
 	 */
-	protected $placeBlockColumnsAfter;
+	protected $placeBlockColumnsAfter = 'id';
 
 	/**
 	 * Populates a new block model instance with a given set of attributes.

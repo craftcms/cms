@@ -154,6 +154,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @return GlobalBlocksVariable
+	 */
+	public function globalBlocks()
+	{
+		return new GlobalBlocksVariable();
+	}
+
+	/**
 	 * @return LinksVariable
 	 */
 	public function links()

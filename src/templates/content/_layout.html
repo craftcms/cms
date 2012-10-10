@@ -1,0 +1,12 @@
+{% extends "_cp" %}
+
+
+{% set header %}
+	<h1>{{ "Content"|t }}</h1>
+{% endset %}
+
+
+{% set tabs %}
+	<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>
+	{% if blx.globalBlocks.getTotalBlocks %}<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{% endif %}
+{% endset %}

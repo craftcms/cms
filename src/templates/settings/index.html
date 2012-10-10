@@ -1,5 +1,6 @@
 {% extends "_cp" %}
 {% set title = "Settings"|t %}
+{% set centered = true %}
 
 
 {% set header %}
@@ -8,7 +9,8 @@
 
 
 {% set content %}
-	<h2>{{ "System"|t }}</h2>
+	<h2>System</h2>
+
 	<ul class="icons">
 		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
 		<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
@@ -21,13 +23,15 @@
 
 	<hr>
 
-	<h2>{{ "Content"|t }}</h2>
+	<h2>Content</h2>
+
 	<ul class="icons">
 		{% if not blx.hasPackage('publishpro') %}
 			<li><a href="{{ url('settings/blog') }}" data-icon="C">{{ "Blog"|t }}</a></li>
 		{% else %}
 			<li><a href="{{ url('settings/sections') }}" data-icon="n">{{ "Sections"|t }}</a></li>
 		{% endif %}
+		<li><a href="{{ url('settings/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>
 		<li><a href="{{ url('settings/assets') }}" data-icon="A">{{ "Assets"|t }}</a></li>
 		{% if blx.hasPackage('language') %}
 			<li><a href="{{ url('settings/languages') }}" data-icon="L">{{ "Languages"|t }}</a></li>

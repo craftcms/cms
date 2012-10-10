@@ -1,0 +1,21 @@
+{% extends "_cp" %}
+{% set title = "Global Blocks"|t %}
+{% set centered = true %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+
+	<ul class="left">
+		<li><a class="backbtn" href="{{ url('settings') }}">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.globalBlocks.getAllBlocks,
+		settingsUrlPrefix: 'settings/globals/',
+		controller: 'userProfileBlocks'
+	} only %}
+{% endset %}
