@@ -75,7 +75,7 @@ class RoutesService extends BaseApplicationComponent
 			else if (is_array($part))
 			{
 				// Add the var as a named subpattern
-				$urlPattern .= '(?<'.$part[0].'>'.$part[1].')';
+				$urlPattern .= '(?P<'.$part[0].'>'.$part[1].')';
 			}
 		}
 
