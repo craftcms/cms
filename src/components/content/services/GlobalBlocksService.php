@@ -28,7 +28,7 @@ class GlobalBlocksService extends BaseBlocksService
 	 * @access protected
 	 * @var string
 	 */
-	protected $recordClass = 'GlobalContentRecord';
+	protected $contentRecordClass = 'GlobalContentRecord';
 
 	/**
 	 * Gets the global content.
