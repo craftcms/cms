@@ -133,6 +133,36 @@ abstract class BaseModel extends \CModel
 	}
 
 	/**
+	 * Returns an array of attribute values.
+	 *
+	 * @param null $names
+	 * @param bool $flattenValues Will change a DateTime object to a timestamp, Mixed to array, etc. Useful for saving to DB or sending over a web service.
+	 *
+	 * @return array
+	 */
+	public function getAttributes($names = null, $flattenValues = false)
+	{
+		$values = array();
+
+		foreach ($this->defineAttributes() as $name => $config)
+		{
+			if (!is_array($names) || in_array($name, $names))
+			{
+				if ($flattenValues)
+				{
+					$values[$name] = $this->$name;
+				}
+				else
+				{
+					$values[$name] = ModelHelper::packageAttributeValue($config, $this->$name);
+				}
+			}
+		}
+
+		return $values;
+	}
+
+	/**
 	 * Gets an attribute's value.
 	 *
 	 * @param string $name
@@ -273,36 +303,5 @@ abstract class BaseModel extends \CModel
 		}
 
 		return null;
-	}
-
-	/**
-	 * Returns an array of attribute values.
-	 *
-	 * @param null $names
-	 * @param bool $flattenValues Will change a DateTime object to a timestamp, Mixed to Json, etc. Useful for saving to DB or sending over a web service.
-	 *
-	 * @return array
-	 */
-	public function getAttributes($names = null, $flattenValues = false)
-	{
-		$values = parent::getAttributes($names);
-
-		if ($flattenValues)
-		{
-			foreach ($values as $name => $value)
-			{
-				$definedAttributes = $this->defineAttributes();
-
-				if (isset($definedAttributes[$name]))
-				{
-					$config = $definedAttributes[$name];
-					$config = ModelHelper::normalizeAttributeConfig($config);
-
-					$values[$name] = ModelHelper::packageAttributeValue($config, $this->$name);
-				}
-			}
-		}
-
-		return $values;
 	}
 }
