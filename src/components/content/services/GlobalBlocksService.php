@@ -31,16 +31,6 @@ class GlobalBlocksService extends BaseBlocksService
 	protected $recordClass = 'GlobalContentRecord';
 
 	/**
-	 * Gets the total number of global blocks
-	 *
-	 * @return int
-	 */
-	public function getTotalBlocks()
-	{
-		return GlobalBlockRecord::model()->count();
-	}
-
-	/**
 	 * Gets the global content.
 	 *
 	 * @return GlobalContentModel

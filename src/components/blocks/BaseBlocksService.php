@@ -141,6 +141,17 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns the total number of blocks.
+	 *
+	 * @return int
+	 */
+	public function getTotalBlocks()
+	{
+		$class = __NAMESPACE__.'\\'.$this->blockRecordClass;
+		return $class::model()->count();
+	}
+
+	/**
 	 * Gets a block record or creates a new one.
 	 *
 	 * @access private
