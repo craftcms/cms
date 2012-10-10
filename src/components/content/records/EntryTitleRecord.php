@@ -46,11 +46,11 @@ class EntryTitleRecord extends BaseRecord
 	{
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
-			$indexes[] = array('columns' => array('title', 'entryId', 'language'), 'unique' => true);
+			$indexes[] = array('columns' => array('entryId', 'language'), 'unique' => true);
 		}
 		else
 		{
-			$indexes[] = array('columns' => array('title', 'entryId'), 'unique' => true);
+			$indexes[] = array('columns' => array('entryId'), 'unique' => true);
 		}
 
 		return $indexes;
