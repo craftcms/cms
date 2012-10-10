@@ -437,14 +437,16 @@ class ModelHelper
 
 		return $labels;
 	}
+
 	/**
 	 * Takes an attribute's config and value and "normalizes" them either for saving to db or sending across a web service.
 	 *
-	 * @param $config
-	 * @param $storedValue
+	 * @param      $config
+	 * @param      $storedValue
+	 * @param bool $jsonEncodeArrays
 	 * @return int|mixed|null|string
 	 */
-	public static function packageAttributeValue($config, $storedValue)
+	public static function packageAttributeValue($config, $storedValue, $jsonEncodeArrays = false)
 	{
 		$config = static::normalizeAttributeConfig($config);
 		$newValue = $storedValue;
@@ -473,7 +475,7 @@ class ModelHelper
 
 				if (!empty($storedValue) && is_array($storedValue))
 				{
-					$newValue = $storedValue;
+					$newValue = ($jsonEncodeArrays ? JsonHelper::encode($storedValue) : $storedValue);
 				}
 				else
 				{
