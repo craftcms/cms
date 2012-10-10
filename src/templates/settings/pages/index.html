@@ -1,0 +1,57 @@
+{% extends "_cp" %}
+{% set title = "Pages"|t %}
+{% set centered = true %}
+{% set pages = blx.pages.getAllPages %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<p id="nopages"{% if pages|length %}style="display: none"{% endif %}>
+		{{ "No pages exist yet."|t }}
+	</p>
+
+	{% if pages|length %}
+		<table id="pages" class="data">
+			<thead>
+				<th scope="col" width="33%">{{ "Title"|t }}</th>
+				<th scope="col" width="33%">{{ "URI"|t }}</th>
+				<th scope="col" width="33%">{{ "Page Blocks"|t }}</th>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for page in pages %}
+					<tr data-id="{{ page.id }}" data-name="{{ page.title|t }}">
+						<th scope="row"><a href="{{ url('settings/pages/' ~ page.id) }}">{{ page.title|t }}</a></th>
+						<td><a href="{{ page.getUrl }}" target="_blank">/{{ page.uri }}</a></td>
+						<td>
+							<a href="{{ url('settings/pages/' ~ page.id ~ '/blocks') }}">{{ "Page Blocks"|t }}</a>
+							<span class="light">({{ blx.pageBlocks.getTotalBlocksByPageId(page.id) }})</span>
+						</td>
+						<td class="thin"><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	<div class="buttons">
+		<a href="{{ url('settings/pages/new') }}" class="btn addbtn">{{ "New Page"|t }}</a>
+	</div>
+{% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#pages',
+		noObjectsSelector: '#nopages',
+		deleteAction: 'pages/deletePage'
+	});
+{% endset %}
+{% includeJs js %}

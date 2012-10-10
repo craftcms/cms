@@ -6,7 +6,13 @@
 {% endset %}
 
 
-{% set tabs %}
-	<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>
-	{% if blx.globalBlocks.getTotalBlocks %}<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{% endif %}
-{% endset %}
+{% set totalPages = blx.globalBlocks.getTotalBlocks %}
+{% set totalGlobals = blx.globalBlocks.getTotalBlocks %}
+
+{% if totalPages or totalGlobals %}
+	{% set tabs %}
+		<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>
+		{% if totalPages %}<li><a{% if tab == 'pages' %} class="active"{% endif %} href="{{ url('content/pages') }}" data-icon="c">{{ "Pages"|t }}</a></li>{% endif %}
+		{% if totalGlobals %}<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{% endif %}
+	{% endset %}
+{% endif %}

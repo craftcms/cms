@@ -170,6 +170,22 @@ class BlxVariable
 	}
 
 	/**
+	 * @return PagesVariable
+	 */
+	public function pages()
+	{
+		return new PagesVariable();
+	}
+
+	/**
+	 * @return PageBlocksVariable
+	 */
+	public function pageBlocks()
+	{
+		return new PageBlocksVariable();
+	}
+
+	/**
 	 * @return PluginsVariable
 	 */
 	public function plugins()

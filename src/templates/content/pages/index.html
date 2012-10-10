@@ -1,0 +1,24 @@
+{% extends "content/_layout" %}
+{% set title = "Pages"|t %}
+{% set tab = 'pages' %}
+{% set centered = true %}
+{% set pages = blx.pages.getAllPages %}
+{% includeCssResource 'css/pages.css' %}
+
+
+{% set content %}
+	<table class="data">
+		<thead>
+			<th scope="col" width="33%">{{ "Title"|t }}</th>
+			<th scope="col" width="33%">{{ "URL"|t }}</th>
+		</thead>
+		<tbody>
+			{% for page in pages %}
+				<tr>
+					<th><a href="{{ url('content/pages/'~page.id) }}">{{ page.title|t }}</a></th>
+					<td><a href="{{ page.getUrl }}" target="_blank">{{ page.getUrl }}</a></td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+{% endset %}

@@ -14,17 +14,18 @@ $packages = explode(',', BLOCKS_PACKAGES);
 $handle = '[a-zA-Z][a-zA-Z0-9_]*';
 
 $cpRoutes['content']                                                          = 'content/entries/index';
+$cpRoutes['content\/pages']                                                   = 'content/pages/index';
+$cpRoutes['content\/pages\/(?P<pageId>\d+)']                                  = 'content/pages/_edit';
 $cpRoutes['content\/globals']                                                 = 'content/globals/index';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/new']                     = 'content/entries/_edit';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)']        = 'content/entries/_edit';
 $cpRoutes['content\/(?P<filter>'.$handle.')']                                 = 'content/entries/index';
+$cpRoutes['content\/(?P<entryId>\d+)']                                        = 'content/_entry';
 
 $cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
 
 $cpRoutes['update\/(?P<handle>[^\/]*)']                                       = 'update';
-
-$cpRoutes['content\/(?P<entryId>\d+)']                                        = 'content/_entry';
 
 $cpRoutes['plugins\/(?P<pluginClass>[A-Za-z]\w*)']                            = 'plugins/_settings';
 
@@ -35,6 +36,11 @@ $cpRoutes['settings\/assets\/blocks\/new']                                    = 
 $cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/blocks/_settings';
 $cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_settings';
 $cpRoutes['settings\/globals\/(?P<blockId>\d+)']                              = 'settings/globals/_settings';
+$cpRoutes['settings\/pages\/new']                                             = 'settings/pages/_settings';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)']                                 = 'settings/pages/_settings';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks']                         = 'settings/pages/_blocks/index';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/new']                    = 'settings/pages/_blocks/settings';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']       = 'settings/pages/_blocks/settings';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
@@ -94,6 +100,8 @@ $components['globalBlocks']['class']      = 'Blocks\GlobalBlocksService';
 $components['installer']['class']         = 'Blocks\InstallService';
 $components['links']['class']             = 'Blocks\LinksService';
 $components['migrations']['class']        = 'Blocks\MigrationsService';
+$components['pages']['class']             = 'Blocks\PagesService';
+$components['pageBlocks']['class']        = 'Blocks\PageBlocksService';
 $components['path']['class']              = 'Blocks\PathService';
 $components['plugins']['class']           = 'Blocks\PluginsService';
 $components['routes']['class']            = 'Blocks\RoutesService';

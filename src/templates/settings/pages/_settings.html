@@ -1,0 +1,75 @@
+{% if page is not defined and pageId is defined %}
+	{% set page = blx.pages.getPageById(pageId) %}
+	{% if not page %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% extends "_cp" %}
+{% set centered = true %}
+{% import "_includes/forms" as forms %}
+
+
+{% set isNewPage = (page is not defined or not page.id) %}
+
+
+{% if isNewPage %}
+	{% set title = "Create a new page"|t %}
+{% else %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~page.title|t~'</i>' }) %}
+{% endif %}
+
+
+{% set header %}
+	<h1>{{ title|raw }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/pages') }}" class="backbtn">{{ "Pages"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="">
+		<input type="hidden" name="action" value="pages/savePage">
+		<input type="hidden" name="redirect" value="settings/pages">
+		{% if not isNewPage %}<input type="hidden" name="pageId" value="{{ page.id }}">{% endif %}
+
+
+		{{ forms.textField({
+			label: "Title"|t,
+			id: 'title',
+			name: 'title',
+			value: (page is defined ? page.title : null),
+			errors: (page is defined ? page.getErrors('title') : null),
+			required: true,
+			translatable: true
+		}) }}
+
+		{{ forms.textField({
+			label: "URI"|t,
+			instructions: "The URI that should load this page."|t,
+			id: 'uri',
+			name: 'uri',
+			value: (page is defined ? page.uri : null),
+			errors: (page is defined ? page.getErrors('uri') : null),
+			required: true
+		}) }}
+
+		{{ forms.textField({
+			label: "Template"|t,
+			instructions: "The template to use when the page’s URI is requested."|t,
+			id: 'template',
+			name: 'template',
+			value: (page is defined ? page.template : null),
+			errors: (page is defined ? page.getErrors('template') : null)
+		}) }}
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
+
+
+{% if page is not defined or not page.uri %}
+	{% includeJs "new Blocks.ui.SlugGenerator('#title', '#uri');" %}
+{% endif %}

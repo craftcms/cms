@@ -1,0 +1,38 @@
+{% extends "_cp" %}
+{% set centered = true %}
+
+
+{% if page is not defined %}
+	{% set page = blx.pages.getPageById(pageId) %}
+	{% if not page %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% set title = "Editing {title}"|t({ title: '“'~page.title|t~'”' }) %}
+
+
+{% set header %}
+	<h1>{{ title|raw }}</h1>
+
+	<ul class="left">
+		<li><a class="backbtn" href="{{ url('content/pages') }}">{{ "Pages"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="">
+		<input type="hidden" name="action" value="pages/savePageContent">
+		<input type="hidden" name="redirect" value="content/pages">
+		<input type="hidden" name="pageId" value="{{ page.id }}">
+
+		{% include "_includes/blockfields" with {
+			blocks: blx.pageBlocks.getBlocksByPageId(page.id),
+			entity: page
+		} only %}
+
+		<div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}

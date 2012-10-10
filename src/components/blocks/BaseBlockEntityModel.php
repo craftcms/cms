@@ -50,7 +50,7 @@ abstract class BaseBlockEntityModel extends BaseModel
 	 * @param array $blocks
 	 * @param \CModel|array $attributes
 	 */
-	public function setBlockValuesFromAttributes($blocks, $attributes)
+	public function setBlockValuesFromAttributes($blocks, $attributes, $indexedBy = 'handle')
 	{
 		$this->_blockValues = array();
 
@@ -61,9 +61,9 @@ abstract class BaseBlockEntityModel extends BaseModel
 
 		foreach ($blocks as $block)
 		{
-			if (isset($attributes[$block->handle]))
+			if (isset($attributes[$block->$indexedBy]))
 			{
-				$this->_blockValues[$block->id] = $attributes[$block->handle];
+				$this->_blockValues[$block->id] = $attributes[$block->$indexedBy];
 			}
 			else
 			{
