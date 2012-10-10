@@ -1,4 +1,5 @@
 (function($) {
+$(document).ready(function() {
 
 var $status = $('#status'),
 	updateInfo,
@@ -91,4 +92,5 @@ function updateNext()
 
 getUpdateInfo();
 
+});
 })(jQuery);

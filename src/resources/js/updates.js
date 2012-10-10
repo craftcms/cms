@@ -53,8 +53,22 @@ var ReleaseNotes = Blocks.Base.extend({
 			}
 		}
 	}
-})
+});
 
+var atLeastOnePluginHasARelease = function(plugins)
+{
+	for (var i = 0; i < plugins.length; i++)
+	{
+		var plugin = plugins[i];
+
+		if (plugin.releases && plugin.releases.length > 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+};
 
 $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 
@@ -72,18 +86,18 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 					$th = $('<th/>').appendTo($tr),
 					$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-				$th.html('Blocks '+response.blocks[0].version +
+				$th.html('Blocks '+response.blocks.releases[0].version +
 					' <span class="light">' +
-					Blocks.t('build {build}', { build: response.blocks[0].build }) +
+					Blocks.t('build {build}', { build: response.blocks.releases[0].build }) +
 					'</span>'
 				);
 
-				$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/blocks">'+Blocks.t('Update')+'</a>');
+				$td.html('<a class="btn" href="'+Blocks.baseUrl+'update/blocks">'+Blocks.t('Update')+'</a>');
 
 				var $tr = $('<tr/>').appendTo($tbody),
 					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-				new ReleaseNotes($td, response.blocks, 'Blocks');
+				new ReleaseNotes($td, response.blocks.releases, 'Blocks');
 			}
 
 			if (response.packages)
@@ -91,9 +105,9 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 				var $tr = $('<tr/>').appendTo($tbody),
 					$th = $('<th/>').appendTo($tr),
 					$td = $('<td class="thin rightalign"/>').appendTo($tr),
-					$btn = $('<a class="btn" href="'+Blocks.baseUrl+'updates/blocks">'+Blocks.t('Install')+'</a>').appendTo($td);
+					$btn = $('<a class="btn" href="'+Blocks.baseUrl+'update/blocks">'+Blocks.t('Install')+'</a>').appendTo($td);
 
-				$th.html(Blocks.t('{packages} upgrades', { packages: response.packages.join(', ') }));
+				$th.html(Blocks.t('{packages} upgrades', { packages: response.packages.upgradeAvailable.join(', ') }));
 
 				if (response.blocks)
 				{
@@ -107,7 +121,7 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 			$('#no-system-updates').show();
 		}
 
-		if (response.plugins)
+		if (response.plugins && atLeastOnePluginHasARelease(response.plugins))
 		{
 			var $table = $('#plugin-updates'),
 				$tbody = $table.children('tbody');
@@ -118,18 +132,21 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 			{
 				var plugin = response.plugins[i];
 
-				var $tr = $('<tr/>').appendTo($tbody),
-					$th = $('<th/>').appendTo($tr),
-					$td = $('<td class="thin rightalign"/>').appendTo($tr);
+				if (plugin.releases && plugin.releases.length > 0)
+				{
+					var $tr = $('<tr/>').appendTo($tbody),
+						$th = $('<th/>').appendTo($tr),
+						$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-				$th.html(plugin.name+' '+plugin.releases[0].version);
+					$th.html(plugin.displayName+' '+plugin.releases[0].version);
 
-				$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/'+plugin['class'].toLowerCase()+'">'+Blocks.t('Update')+'</a>');
+					$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/'+plugin['class'].toLowerCase()+'">'+Blocks.t('Update')+'</a>');
 
-				var $tr = $('<tr/>').appendTo($tbody),
-					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
+					var $tr = $('<tr/>').appendTo($tbody),
+						$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-				new ReleaseNotes($td, plugin.releases, plugin.name);
+					new ReleaseNotes($td, plugin.releases, plugin.displayName);
+				}
 			}
 		}
 		else
