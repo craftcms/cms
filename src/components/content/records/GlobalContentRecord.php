@@ -4,14 +4,14 @@ namespace Blocks;
 /**
  *
  */
-class EntryContentRecord extends BaseBlockEntityRecord
+class GlobalContentRecord extends BaseBlockEntityRecord
 {
 	/**
 	 * @return string
 	 */
 	public function getTableName()
 	{
-		return 'entrycontent';
+		return 'globalcontent';
 	}
 
 	/**
@@ -39,16 +39,6 @@ class EntryContentRecord extends BaseBlockEntityRecord
 	 */
 	protected function getBlocks()
 	{
-		return blx()->entryBlocks->getAllBlocks();
-	}
-
-	/**
-	 * @return array
-	 */
-	public function defineRelations()
-	{
-		return array(
-			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
-		);
+		return blx()->globalBlocks->getAllBlocks();
 	}
 }

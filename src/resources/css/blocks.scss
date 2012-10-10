@@ -157,11 +157,12 @@ h3 + .pane { margin-top: 15px; }
 /*  Icon lists
 /* ----------------------------------------*/
 
+ul.icons { margin-top: 25px; }
 ul.icons:after { @include clearafter; }
-ul.icons li { float: left; margin: 0 25px 25px 0; }
+ul.icons li { float: left; margin: 0 10px 25px; }
 ul.icons li.break { clear: left; }
-ul.icons li a { display: block; position: relative; padding-top: 50px; width: 100px; text-align: center; color: #555; }
-ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 50px; line-height: 50px; }
+ul.icons li a { display: block; position: relative; padding-top: 60px; width: 80px; text-align: center; color: #555; }
+ul.icons li a:before { display: block; position: absolute; top: 0; left: 0; width: 100%; font-size: 55px; line-height: 60px; }
 ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* ----------------------------------------

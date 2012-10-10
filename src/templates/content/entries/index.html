@@ -1,4 +1,5 @@
-{% extends "_cp" %}
+{% extends "content/_layout" %}
+{% set tab = 'entries' %}
 {% set title = "Content"|t %}
 
 
@@ -29,11 +30,6 @@
 {% else %}
 	{% exit 404 %}
 {% endif %}
-
-
-{% set header %}
-	<h1>{{ title }}</h1>
-{% endset %}
 
 
 {% set content %}
