@@ -15,6 +15,23 @@ class EntryContentRecord extends BaseBlockEntityRecord
 	}
 
 	/**
+	 * @return array
+	 */
+	public function defineAttributes()
+	{
+		$attributes = array();
+
+		if (Blocks::hasPackage(BlocksPackage::Language))
+		{
+			$attributes['language'] = array(AttributeType::Language, 'required' => true);
+		}
+
+		$attributes = array_merge($attributes, parent::defineAttributes());
+
+		return $attributes;
+	}
+
+	/**
 	 * Returns the list of blocks associated with this content.
 	 *
 	 * @access protected
