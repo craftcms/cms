@@ -237,9 +237,10 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 
 				// Create/alter the content table column
 				$column = $blockType->defineContentAttribute();
-				if ($column !== false)
+				$contentTable = $this->getContentTable($block);
+
+				if ($column !== false && $contentTable !== false)
 				{
-					$contentTable = $this->getContentTable($block);
 					$column = ModelHelper::normalizeAttributeConfig($column);
 
 					if ($isNewBlock)
@@ -275,7 +276,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 *
 	 * @param BaseBlockModel $block
 	 * @access protected
-	 * @return string
+	 * @return string|false
 	 */
 	protected function getContentTable(BaseBlockModel $block)
 	{
