@@ -127,7 +127,7 @@
 				instructions: "For multiple tags, separate them with a comma.",
 				id: 'tags',
 				name: 'tags',
-				value: (entry is defined ? entry.tags|join(', ') : null),
+				value: (entry is defined ? entry.getTags()|join(', ') : null),
 				errors: (entry is defined ? entry.getErrors('tags') : null),
 			}) }}
 

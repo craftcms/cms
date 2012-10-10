@@ -143,4 +143,19 @@ class EntryModel extends BaseBlockEntityModel
 			return UrlHelper::getUrl($path);
 		}
 	}
+
+	/**
+	 * Returns a list of EntryTag models for this EntryModel.
+	 *
+	 * @return mixed
+	 */
+	public function getTags()
+	{
+		if (!$this->tags)
+		{
+			$this->tags = blx()->entries->getTagsForEntryById($this->id);
+		}
+
+		return $this->tags;
+	}
 }

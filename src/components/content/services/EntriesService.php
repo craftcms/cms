@@ -33,6 +33,19 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Populates a list of EntryTag models
+	 *
+	 * @param $attributes
+	 * @return array
+	 */
+	public function populateEntryTags($attributes)
+	{
+		$entryTags = EntryTagModel::populateModels($attributes);
+		return $entryTags;
+
+	}
+
+	/**
 	 * Gets a DateTime object from an entry date attribute
 	 *
 	 * @param mixed $dateAttribute
@@ -449,26 +462,6 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Converts the EntryRecord's tags back into string format.
-	 *
-	 * @param EntryRecord $entryRecord
-	 * @return string
-	 */
-	private function _convertEntryTagRecordsToString(EntryRecord $entryRecord)
-	{
-		$tagString = '';
-		$entryTagRecords = $this->getTagsForEntry($entryRecord);
-
-		foreach ($entryTagRecords as $entryTagRecord)
-		{
-			$tagString .= $entryTagRecord->name.',';
-		}
-
-		$tagString = rtrim(',', $tagString);
-		return $tagString;
-	}
-
-	/**
 	 * Keeps the given $entryTagRecord->count column up-to-date with the number of entries using that tag.
 	 *
 	 * @param EntryTagRecord $entryTagRecord
@@ -530,7 +523,7 @@ class EntriesService extends BaseApplicationComponent
 		$entryTagRecords = array();
 
 		// Get the entries' current EntryTags
-		$currentEntryTagRecords = $this->getTagsForEntry($entryRecord);
+		$currentEntryTagRecords = $this->_getTagsForEntry($entryRecord);
 
 		// Trim any whitespaces from the new tag names.
 		foreach ($newEntryTags as $key => $entryTag)
@@ -575,7 +568,7 @@ class EntriesService extends BaseApplicationComponent
 
 			// If we make it here, then we know the tag is new for this entry because it doesn't exist in $currentEntryTagRecords
 			// Make sure the tag exists at all, if not create the record.
-			if (($entryTagRecord = $this->getEntryTagRecordByName($newEntryTag)) == null)
+			if (($entryTagRecord = $this->_getEntryTagRecordByName($newEntryTag)) == null)
 			{
 				$entryTagRecord = new EntryTagRecord();
 				$entryTagRecord->name = $newEntryTag;
@@ -614,7 +607,7 @@ class EntriesService extends BaseApplicationComponent
 	 * @param EntryRecord $entryRecord
 	 * @return array
 	 */
-	public function getTagsForEntry(EntryRecord $entryRecord)
+	private function _getTagsForEntry(EntryRecord $entryRecord)
 	{
 		$currentEntryTagRecords = array();
 
@@ -622,7 +615,7 @@ class EntriesService extends BaseApplicationComponent
 
 		foreach ($entryTagEntries as $entryTagEntry)
 		{
-			if (($currentEntryTagRecord = $this->getEntryTagRecordById($entryTagEntry->id)) !== null)
+			if (($currentEntryTagRecord = $this->_getEntryTagRecordById($entryTagEntry->id)) !== null)
 			{
 				$currentEntryTagRecords[] = $currentEntryTagRecord;
 			}
@@ -632,12 +625,26 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a list of EntryTagModels for a given entry.
+	 * @param $entryId
+	 * @return array
+	 */
+	public function getTagsForEntryById($entryId)
+	{
+		$entryRecord = EntryRecord::model()->findByPk($entryId);
+		$entryTagRecords = $this->_getTagsForEntry($entryRecord);
+
+		$entryTagModels = $this->populateEntryTags($entryTagRecords);
+		return $entryTagModels;
+	}
+
+	/**
 	 * Returns an EntryTagRecord with the given tag name.
 	 *
 	 * @param $tagName
 	 * @return EntryTagRecord
 	 */
-	public function getEntryTagRecordByName($tagName)
+	private function _getEntryTagRecordByName($tagName)
 	{
 		$entryTagRecord = EntryTagRecord::model()->findByAttributes(
 			array('name' => $tagName)
@@ -652,10 +659,9 @@ class EntriesService extends BaseApplicationComponent
 	 * @param $id
 	 * @return EntryTagRecord
 	 */
-	private function getEntryTagRecordById($id)
+	private function _getEntryTagRecordById($id)
 	{
 		$entryTagRecord = EntryTagRecord::model()->findByPk($id);
-
 		return $entryTagRecord;
 	}
 
