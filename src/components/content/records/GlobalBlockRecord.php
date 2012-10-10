@@ -11,6 +11,6 @@ class GlobalBlockRecord extends BaseBlockRecord
 	 */
 	public function getTableName()
 	{
-		return 'globals';
+		return 'globalblocks';
 	}
 }
