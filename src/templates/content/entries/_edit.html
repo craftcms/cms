@@ -122,6 +122,14 @@
 				errors: (entry is defined ? entry.getErrors('expiryDate') : null)
 			}) }}
 
+			{{ forms.textField({
+				label: "Tags"|t,
+				instructions: "For multiple tags, separate them with a comma.",
+				id: 'tags',
+				name: 'tags',
+				value: (entry is defined ? entry.tags : null),
+				errors: (entry is defined ? entry.getErrors('tags') : null),
+			}) }}
 
 			{% set statusLabel -%}
 				{{ "Status:"|t }} <i>{{ isNewEntry ? "Never saved"|t : entry.status|ucfirst|t }}</i>

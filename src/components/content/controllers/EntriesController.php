@@ -21,6 +21,7 @@ class EntriesController extends BaseController
 		$entry->postDate = $this->getDateFromPost('postDate');
 		$entry->expiryDate = $this->getDateFromPost('expiryDate');
 		$entry->enabled = blx()->request->getPost('enabled');
+		$entry->tags = blx()->request->getPost('tags');
 
 		$entry->setBlockValues(blx()->request->getPost('blocks'));
 
