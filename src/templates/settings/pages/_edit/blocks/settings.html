@@ -26,7 +26,7 @@
 {% set header %}
 	<h1>{{ title|raw }}</h1>
 	<ul class="left">
-		<li><a href="{{ url('settings/pages/' ~ page.id ~ '/blocks') }}" class="backbtn">{{ "{page} Page Blocks"|t({ page: '<i>'~page.title|t~'</i>' })|raw }}</a></li>
+		<li><a href="{{ url('settings/pages/' ~ page.id ~ '/blocks') }}" class="backbtn">{{ page.title|t }}</a></li>
 	</ul>
 {% endset %}
 

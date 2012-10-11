@@ -36,11 +36,11 @@ $cpRoutes['settings\/assets\/blocks\/new']                                    = 
 $cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/blocks/_settings';
 $cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_settings';
 $cpRoutes['settings\/globals\/(?P<blockId>\d+)']                              = 'settings/globals/_settings';
-$cpRoutes['settings\/pages\/new']                                             = 'settings/pages/_settings';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)']                                 = 'settings/pages/_settings';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks']                         = 'settings/pages/_blocks/index';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/new']                    = 'settings/pages/_blocks/settings';
-$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']       = 'settings/pages/_blocks/settings';
+$cpRoutes['settings\/pages\/new']                                             = 'settings/pages/_edit/settings';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)']                                 = 'settings/pages/_edit/settings';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks']                         = 'settings/pages/_edit/blocks/index';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/new']                    = 'settings/pages/_edit/blocks/settings';
+$cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']       = 'settings/pages/_edit/blocks/settings';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
@@ -48,17 +48,17 @@ if (in_array('publishpro', $packages))
 {
 	$cpRoutes['content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)']                = 'content/_entry';
 
-	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_settings';
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_settings';
+	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit/settings';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit/settings';
 
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks']                   = 'settings/sections/_blocks';
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/new']              = 'settings/sections/_blocks/settings';
-	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/(?P<blockId>\d+)'] = 'settings/sections/_blocks/settings';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks']                   = 'settings/sections/_edit/blocks';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/new']              = 'settings/sections/_edit/blocks/settings';
+	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)\/blocks\/(?P<blockId>\d+)'] = 'settings/sections/_edit/blocks/settings';
 }
 else
 {
-	$cpRoutes['settings\/blog\/blocks\/new']                                      = 'settings/sections/_blocks/settings';
-	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_blocks/settings';
+	$cpRoutes['settings\/blog\/blocks\/new']                                      = 'settings/sections/_edit/blocks/settings';
+	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_edit/blocks/settings';
 }
 
 if (in_array('users', $packages))

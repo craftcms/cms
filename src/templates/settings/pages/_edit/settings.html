@@ -4,33 +4,18 @@
 {% endif %}
 
 
-{% extends "_cp" %}
-{% set centered = true %}
+{% extends "settings/pages/_edit/layout" %}
+{% set tab = 'settings' %}
 {% import "_includes/forms" as forms %}
 
 
 {% set isNewPage = (page is not defined or not page.id) %}
 
 
-{% if isNewPage %}
-	{% set title = "Create a new page"|t %}
-{% else %}
-	{% set title = "{name} Settings"|t({ name: '<i>'~page.title|t~'</i>' }) %}
-{% endif %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/pages') }}" class="backbtn">{{ "Pages"|t }}</a></li>
-	</ul>
-{% endset %}
-
-
 {% set content %}
 	<form method="post" action="">
 		<input type="hidden" name="action" value="pages/savePage">
-		<input type="hidden" name="redirect" value="settings/pages">
+		<input type="hidden" name="redirect" value="settings/pages/{pageId}">
 		{% if not isNewPage %}<input type="hidden" name="pageId" value="{{ page.id }}">{% endif %}
 
 

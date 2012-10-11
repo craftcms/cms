@@ -22,7 +22,7 @@
 			<thead>
 				<th scope="col" width="33%">{{ "Title"|t }}</th>
 				<th scope="col" width="33%">{{ "URI"|t }}</th>
-				<th scope="col" width="33%">{{ "Page Blocks"|t }}</th>
+				<th scope="col" width="33%">{{ "Blocks"|t }}</th>
 				<td class="thin"></td>
 			</thead>
 			<tbody>
@@ -30,10 +30,7 @@
 					<tr data-id="{{ page.id }}" data-name="{{ page.title|t }}">
 						<th scope="row"><a href="{{ url('settings/pages/' ~ page.id) }}">{{ page.title|t }}</a></th>
 						<td><a href="{{ page.getUrl }}" target="_blank">/{{ page.uri }}</a></td>
-						<td>
-							<a href="{{ url('settings/pages/' ~ page.id ~ '/blocks') }}">{{ "Page Blocks"|t }}</a>
-							<span class="light">({{ blx.pageBlocks.getTotalBlocksByPageId(page.id) }})</span>
-						</td>
+						<td><a href="{{ url('settings/pages/' ~ page.id ~ '/blocks') }}">{{ blx.pageBlocks.getTotalBlocksByPageId(page.id) }}</a>
 						<td class="thin"><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
 					</tr>
 				{% endfor %}

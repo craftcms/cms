@@ -1,18 +1,8 @@
-{% extends "_cp" %}
-{% set centered = true %}
+{% extends "settings/pages/_edit/layout" %}
+{% set tab = 'blocks' %}
 
 {% set page = blx.pages.getPageById(pageId) %}
 {% if not page %}{% exit 404 %}{% endif %}
-
-{% set title = "{page} Entry Blocks"|t({ page: '<i>'~page.title|t~'</i>' }) %}
-
-
-{% set header %}
-	<h1>{{ title|raw }}</h1>
-	<ul class="left">
-		<li><a href="{{ url('settings/pages') }}" class="backbtn">{{ "Pages"|t }}</a></li>
-	</ul>
-{% endset %}
 
 
 {% set content %}

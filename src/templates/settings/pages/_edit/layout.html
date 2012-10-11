@@ -1,0 +1,22 @@
+{% extends "_cp" %}
+{% set centered = true %}
+
+
+{% if page is not defined or not page.id %}
+	{% set title = "Create a new page"|t %}
+{% else %}
+	{% set title = page.title|t %}
+
+	{% set tabs %}
+		<li><a{% if tab == 'settings' %} class="active"{% endif %} href="{{ url('settings/pages/'~page.id) }}" data-icon="⚙">{{ "Settings"|t }}</a></li>
+		<li><a{% if tab == 'blocks' %} class="active"{% endif %} href="{{ url('settings/pages/'~page.id~'/blocks') }}" data-icon="b">{{ "Blocks"|t }}</a></li>
+	{% endset %}
+{% endif %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/pages') }}" class="backbtn">{{ "Pages"|t }}</a></li>
+	</ul>
+{% endset %}
