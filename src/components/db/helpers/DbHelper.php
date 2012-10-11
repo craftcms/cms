@@ -159,7 +159,7 @@ class DbHelper
 			$def .= ' ZEROFILL';
 		}
 
-		if (!empty($config['required']))
+		if (!empty($config['required']) || (isset($config['null']) && $config['null'] === false))
 		{
 			$def .= ' NOT NULL';
 		}
@@ -223,7 +223,7 @@ class DbHelper
 			{
 				// Does the value start with this operator?
 				$length = strlen($testOperator);
-				
+
 				if (strncmp(strtolower($value), $testOperator, $length) == 0)
 				{
 					$value = substr($value, $length);

@@ -21,7 +21,7 @@ class PageRecord extends BaseRecord
 	{
 		return array(
 			'title'     => array(AttributeType::Name, 'required' => true),
-			'uri'       => array(AttributeType::String, 'required' => true),
+			'uri'       => array(AttributeType::String, 'null' => false, 'label' => 'URI'),
 			'template'  => AttributeType::Template,
 		);
 	}

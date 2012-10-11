@@ -153,12 +153,16 @@ class ModelHelper
 				if ($config['unsigned'])
 				{
 					if ($config['max'] < $size * 2)
+					{
 						break;
+					}
 				}
 				else
 				{
 					if ($config['min'] >= -$size && $config['max'] < $size)
+					{
 						break;
+					}
 				}
 			}
 
@@ -213,6 +217,7 @@ class ModelHelper
 		$rules = array();
 
 		$uniqueAttributes = array();
+		$uniqueRequiredAttributes = array();
 		$requiredAttributes = array();
 		$emailAttributes = array();
 		$urlAttributes = array();
@@ -263,13 +268,19 @@ class ModelHelper
 					$rule = array($name, 'Blocks\LocaleNumberValidator');
 
 					if ($config['min'] !== null)
+					{
 						$rule['min'] = $config['min'];
+					}
 
 					if ($config['max'] !== null)
+					{
 						$rule['max'] = $config['max'];
+					}
 
 					if (!$config['decimals'])
+					{
 						$rule['integerOnly'] = true;
+					}
 
 					$rules[] = $rule;
 					break;
@@ -289,15 +300,28 @@ class ModelHelper
 
 			// Uniques
 			if (!empty($config['unique']))
-				$uniqueAttributes[] = $name;
+			{
+				if (empty($config['required']) && (isset($config['null']) && $config['null'] === false))
+				{
+					$uniqueRequiredAttributes[] = $name;
+				}
+				else
+				{
+					$uniqueAttributes[] = $name;
+				}
+			}
 
 			// Required
 			if ($config['type'] != AttributeType::Bool && !empty($config['required']))
+			{
 				$requiredAttributes[] = $name;
+			}
 
 			// License keys' length=36 is redundant in the context of validation, since matchPattern already enforces 36 chars
 			if ($isLicenseKey)
+			{
 				unset($config['length']);
+			}
 
 			// Lengths
 			if ($config['type'] != AttributeType::Number)
@@ -310,10 +334,14 @@ class ModelHelper
 				{
 					// Only worry about min- and max-lengths if a strict length isn't set
 					if (isset($config['minLength']) && is_numeric($config['minLength']))
+					{
 						$minLengthAttributes[(string)$config['minLength']][] = $name;
+					}
 
 					if (isset($config['maxLength']) && is_numeric($config['maxLength']))
+					{
 						$maxLengthAttributes[(string)$config['maxLength']][] = $name;
+					}
 				}
 			}
 
@@ -324,13 +352,17 @@ class ModelHelper
 				foreach ($comparisons as $comparison)
 				{
 					if (preg_match('/^(==|=|!=|>=|>|<=|<)\s*\b(.*)$/', $comparison, $match))
+					{
 						$rules[] = array($name, 'compare', 'compareAttribute' => $match[2], 'operator' => $match[1], 'allowEmpty' => true);
+					}
 				}
 			}
 
 			// Regex pattern matching
 			if (!empty($config['matchPattern']))
+			{
 				$rules[] = array($name, 'match', 'pattern' => $config['matchPattern']);
+			}
 		}
 
 		// If this is a BaseRecord instance, catch any unique/required indexes
@@ -350,7 +382,14 @@ class ModelHelper
 					{
 						if (count($columns) == 1)
 						{
-							$uniqueAttributes[] = $columns[0];
+							if (empty($attributes[$columns[0]]['required']) && (isset($attributes[$columns[0]]['null']) && $attributes[$columns[0]]['null'] === false))
+							{
+								$uniqueRequiredAttributes[] = $columns[0];
+							}
+							else
+							{
+								$uniqueAttributes[] = $columns[0];
+							}
 						}
 						else
 						{
@@ -368,16 +407,29 @@ class ModelHelper
 		}
 
 		if ($uniqueAttributes)
+		{
 			$rules[] = array(implode(',', $uniqueAttributes), 'unique');
+		}
+
+		if ($uniqueRequiredAttributes)
+		{
+			$rules[] = array(implode(',', $uniqueRequiredAttributes), 'unique', 'allowEmpty' => false);
+		}
 
 		if ($requiredAttributes)
+		{
 			$rules[] = array(implode(',', $requiredAttributes), 'required');
+		}
 
 		if ($emailAttributes)
+		{
 			$rules[] = array(implode(',', $emailAttributes), 'email');
+		}
 
 		if ($urlAttributes)
+		{
 			$rules[] = array(implode(',', $urlAttributes), 'url', 'defaultScheme' => 'http');
+		}
 
 		if ($strictLengthAttributes)
 		{
