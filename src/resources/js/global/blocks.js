@@ -77,9 +77,9 @@ Blocks.t = function(message, params)
  * @param string $package
  * @return bool
  */
-Blocks.hasPackage = function(package)
+Blocks.hasPackage = function(pkg)
 {
-	return ($.inArray(package, Blocks.packages) != -1);
+	return ($.inArray(pkg, Blocks.packages) != -1);
 };
 
 /**
