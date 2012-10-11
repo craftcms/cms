@@ -40,7 +40,7 @@
 				'</form>'
 			);
 
-			document.getElementById("{{ (blx.session.rememberedusername ? 'loginName' : 'password') }}").focus();
+			document.getElementById("{{ (blx.session.rememberedusername ? 'password' : 'loginName') }}").focus();
 		}
 		else
 		{
