@@ -72,6 +72,17 @@ Blocks.t = function(message, params)
 };
 
 /**
+ * Returns whether a package is included in this Blocks build.
+ *
+ * @param string $package
+ * @return bool
+ */
+Blocks.hasPackage = function(package)
+{
+	return ($.inArray(package, Blocks.packages) != -1);
+};
+
+/**
  * Format a number with commas.
  *
  * @param mixed num

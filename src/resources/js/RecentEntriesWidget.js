@@ -41,7 +41,7 @@ Blocks.RecentEntriesWidget = Blocks.Base.extend({
 					'<a href="'+entry.url+'">'+entry.title+'</a> ' +
 					'<span class="light">' +
 						entry.postDate +
-						(entry.username ? Blocks.t('by {author}', { author: entry.username }) : '') +
+						(Blocks.hasPackage('users') ? ' '+Blocks.t('by {author}', { author: entry.username }) : '') +
 					'</span>' +
 				'</td>' +
 			'</tr>'

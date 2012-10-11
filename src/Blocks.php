@@ -89,7 +89,7 @@ class Blocks extends \Yii
 	{
 		if (!isset(static::$_packages))
 		{
-			static::$_packages = ArrayHelper::stringToArray(BLOCKS_PACKAGES);
+			static::$_packages = array_filter(ArrayHelper::stringToArray(BLOCKS_PACKAGES));
 		}
 
 		return static::$_packages;

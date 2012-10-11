@@ -56,6 +56,16 @@ class BlxVariable
 	}
 
 	/**
+	 * Returns the packages in this Blocks install, as defined by the BLOCKS_PACKAGES constant.
+	 *
+	 * @return array
+	 */
+	public function getPackages()
+	{
+		return Blocks::getPackages();
+	}
+
+	/**
 	 * Returns whether a package is included in the Blocks build.
 	 *
 	 * @param $packageName;

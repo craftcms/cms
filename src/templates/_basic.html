@@ -56,6 +56,7 @@
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
 		language: '{{ blx.language }}',
+		packages: {{ blx.getPackages|json_encode|raw }},
 		translations: {{ getTranslations()|raw }}
 	};
 </script>
