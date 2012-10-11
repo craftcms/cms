@@ -13,8 +13,8 @@ class PagesController extends BaseController
 	{
 		$this->requirePostRequest();
 
-		$pageId = blx()->request->getPost('pageId');
-		$page = blx()->pages->getPageById($pageId);
+		$page = new PageModel();
+		$page->id = blx()->request->getPost('pageId');
 
 		$page->title = blx()->request->getPost('title');
 		$page->uri = blx()->request->getPost('uri');

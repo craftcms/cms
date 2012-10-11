@@ -114,7 +114,7 @@ class PagesService extends BaseApplicationComponent
 	{
 		$pageRecord = $this->_getPageRecordById($page->id);
 
-		$pageRecord->name      = $page->name;
+		$pageRecord->title     = $page->title;
 		$pageRecord->uri       = $page->uri;
 		$pageRecord->template  = $page->template;
 
