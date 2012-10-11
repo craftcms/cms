@@ -10,62 +10,6 @@ class UpdatesService extends BaseApplicationComponent
 	private $_isSystemOn;
 
 	/**
-	 * @param $forceRefresh
-	 * @return mixed
-	 */
-	public function getAllAvailableUpdates($forceRefresh = false)
-	{
-		$updates = array();
-
-		if (!$forceRefresh && !$this->isUpdateInfoCached())
-		{
-			return null;
-		}
-
-		$updateModel = $this->getUpdateModel($forceRefresh);
-
-		// blocks first.
-		if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable && count($updateModel->blocks->releases) > 0)
-		{
-			$notes = $this->_generateUpdateNotes($updateModel->blocks->releases, 'Blocks');
-
-			$updates[] = array(
-				'name' => 'Blocks',
-				'handle' => 'Blocks',
-				'version' => $updateModel->blocks->latestVersion.' Build '.$updateModel->blocks->latestBuild,
-				'critical' => $updateModel->blocks->criticalUpdateAvailable,
-				'manualUpdateRequired' => $updateModel->blocks->manualUpdateRequired,
-				'notes' => $notes,
-				'latestVersion' => $updateModel->blocks->latestVersion,
-				'latestBuild' => $updateModel->blocks->latestBuild,
-			);
-
-		}
-
-		// plugins second.
-		if ($updateModel->plugins !== null && count($updateModel->plugins) > 0)
-		{
-			foreach ($updateModel->plugins as $plugin)
-			{
-				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
-				{
-					$notes = $this->_generateUpdateNotes($plugin->releases, $plugin->displayName);
-
-					$updates[] = array(
-						'name' => $plugin->displayName,
-						'handle' => $plugin->class,
-						'version' => $plugin->latestVersion,
-						'critical' => $plugin->criticalUpdateAvailable,
-						'notes' => $notes,
-					);
-				}
-			}
-		}
-
-		return $updates;
-	}
-
-	/**
 	 * @param $blocksReleases
 	 * @return bool
 	 */
@@ -160,7 +104,7 @@ class UpdatesService extends BaseApplicationComponent
 	 * @param bool $forceRefresh
 	 * @return mixed
 	 */
-	public function getUpdateModel($forceRefresh = false)
+	public function getUpdates($forceRefresh = false)
 	{
 		if (!isset($this->_updateModel) || $forceRefresh)
 		{
@@ -277,14 +221,18 @@ class UpdatesService extends BaseApplicationComponent
 
 		$plugins = blx()->plugins->getEnabledPlugins();
 
+		$pluginUpdateModels = array();
+
 		foreach ($plugins as $plugin)
 		{
 			$pluginUpdateModel = new PluginUpdateModel();
 			$pluginUpdateModel->class = $plugin->getClassHandle();
 			$pluginUpdateModel->localVersion = $plugin->version;
 
-			$updateModel->plugins[$plugin->getClassHandle()] = $pluginUpdateModel;
+			$pluginUpdateModels[$plugin->getClassHandle()] = $pluginUpdateModel;
 		}
+
+		$updateModel->plugins = $pluginUpdateModels;
 
 		$etModel = blx()->et->check($updateModel);
 		return ($etModel == null ? new EtModel() : $etModel);

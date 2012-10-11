@@ -11,8 +11,9 @@ class UpdateModel extends BaseModel
 	 */
 	public function defineAttributes()
 	{
-		$attributes['blocks']  = AttributeType::Mixed;
-		$attributes['plugins'] = AttributeType::Mixed;
+		$attributes['blocks']   = AttributeType::Mixed;
+		$attributes['plugins']  = AttributeType::Mixed;
+		$attributes['packages'] = AttributeType::Mixed;
 
 		return $attributes;
 	}

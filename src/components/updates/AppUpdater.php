@@ -19,7 +19,7 @@ class AppUpdater implements IUpdater
 	 */
 	function __construct()
 	{
-		$this->_updateModel = blx()->updates->getUpdateModel(true);
+		$this->_updateModel = blx()->updates->getUpdates(true);
 		$this->_buildsToUpdate = $this->_updateModel->blocks->releases;
 	}
 

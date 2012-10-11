@@ -72,8 +72,6 @@ class Et
 		$this->_endpoint = $endPoint;
 		$this->_timeout = $timeout;
 
-		//$generalSettings = blx()->systemSettings->getSettings('general');
-
 		$this->_model = new EtModel();
 		$this->_model->url = Blocks::getSiteUrl();
 		$this->_model->licenseKey = Blocks::getLicenseKey();
@@ -81,6 +79,7 @@ class Et
 		$this->_model->requestIp = blx()->request->getUserHostAddress();
 		$this->_model->requestTime = DateTimeHelper::currentTime();
 		$this->_model->requestPort = blx()->request->getPort();
+		$this->_model->installedPackages = ArrayHelper::stringToArray(Blocks::getPackages());
 
 		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;

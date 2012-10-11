@@ -14,7 +14,7 @@
 
 {% set js %}
 	window.updateHandle = "{{ handle }}";
-	window.updateInfoUrl = "{{ actionUrl('update/getupdatemodel', 'h=') }}";
+	window.updateInfoUrl = "{{ actionUrl('update/getupdates', 'h=') }}";
 	window.updateUrl = "{{ actionUrl('update/update', 'h=') }}";
 {% endset %}
 {% includeJs js %}

@@ -17,7 +17,7 @@ class DashboardHelper
 
 		if (blx()->updates->isUpdateInfoCached() || $fetch)
 		{
-			$updateModel = blx()->updates->getUpdateModel();
+			$updateModel = blx()->updates->getUpdates();
 
 			if (blx()->et->getLicenseKeyStatus() == LicenseKeyStatus::InvalidKey)
 			{

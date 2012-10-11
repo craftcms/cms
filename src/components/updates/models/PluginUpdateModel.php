@@ -17,7 +17,6 @@ class PluginUpdateModel extends BaseModel
 		$attributes['latestDate']              = AttributeType::DateTime;
 		$attributes['status']                  = AttributeType::Bool;
 		$attributes['displayName']             = AttributeType::String;
-		$attributes['notes']                   = AttributeType::String;
 		$attributes['criticalUpdateAvailable'] = AttributeType::Bool;
 		$attributes['releases']                = AttributeType::Mixed;
 

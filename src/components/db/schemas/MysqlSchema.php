@@ -147,4 +147,32 @@ class MysqlSchema extends \CMysqlSchema
 
 		return array('query' => $sql, 'params' => $params);
 	}
+
+	/**
+	 * @param string $table
+	 * @param array  $columns
+	 * @param null   $options
+	 * @return string
+	 */
+	public function createTable($table, $columns, $options = null)
+	{
+		$cols = array();
+		$options = 'ENGINE=InnoDb'.($options ? ' '.$options : '');
+
+		foreach ($columns as $name => $type)
+		{
+			if (is_string($name))
+			{
+				$cols[] = "\t".$this->quoteColumnName($name).' '.$this->getColumnType($type);
+			}
+			else
+			{
+				$cols[] = "\t".$type;
+			}
+		}
+
+		$sql = "CREATE TABLE ".$this->quoteTableName($table)." (\n".implode(",\n", $cols)."\n)";
+
+		return $options === null ? $sql : $sql.' '.$options;
+	}
 }
