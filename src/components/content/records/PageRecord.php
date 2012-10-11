@@ -46,4 +46,14 @@ class PageRecord extends BaseRecord
 			array('columns' => array('uri'), 'unique' => true),
 		);
 	}
+
+	/**
+	 * @return array
+	 */
+	public function scopes()
+	{
+		$scopes = parent::scopes();
+		$scopes['ordered'] = array('order' => 'uri');
+		return $scopes;
+	}
 }

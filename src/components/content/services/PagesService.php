@@ -56,7 +56,7 @@ class PagesService extends BaseApplicationComponent
 	 */
 	public function getAllPages()
 	{
-		$pageRecords = PageRecord::model()->findAll();
+		$pageRecords = PageRecord::model()->ordered()->findAll();
 		return $this->populatePages($pageRecords);
 	}
 
