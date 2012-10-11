@@ -21,6 +21,8 @@ class EntryModel extends BaseBlockEntityModel
 	public function defineAttributes()
 	{
 		$attributes['id'] = AttributeType::Number;
+		$attributes['authorId'] = AttributeType::Number;
+		$attributes['language'] = AttributeType::Language;
 		$attributes['title'] = AttributeType::String;
 		$attributes['slug'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
@@ -28,19 +30,9 @@ class EntryModel extends BaseBlockEntityModel
 		$attributes['enabled'] = AttributeType::Bool;
 		$attributes['tags'] = AttributeType::String;
 
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			$attributes['authorId'] = AttributeType::Number;
-		}
-
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$attributes['sectionId'] = AttributeType::Number;
-		}
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$attributes['language'] = AttributeType::Language;
 		}
 
 		return $attributes;
@@ -101,10 +93,7 @@ class EntryModel extends BaseBlockEntityModel
 	 */
 	public function getAuthor()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			return blx()->account->getUserById($this->authorId);
-		}
+		return blx()->account->getUserById($this->authorId);
 	}
 
 	/**

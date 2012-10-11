@@ -168,15 +168,7 @@ class AccountService extends BaseApplicationComponent
 		$userRecord->emailFormat = $user->emailFormat;
 		$userRecord->admin = $user->admin;
 		$userRecord->passwordResetRequired = $user->passwordResetRequired;
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$userRecord->language = $user->language;
-		}
-		else
-		{
-			$userRecord->language = blx()->language;
-		}
+		$userRecord->language = $user->language;
 
 		if ($user->newPassword)
 		{

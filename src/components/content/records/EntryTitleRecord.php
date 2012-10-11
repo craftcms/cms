@@ -19,14 +19,10 @@ class EntryTitleRecord extends BaseRecord
 	 */
 	public function defineAttributes()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$attributes['language'] = array(AttributeType::Language, 'required' => true);
-		}
-
-		$attributes['title'] = array(AttributeType::String, 'required' => true);
-
-		return $attributes;
+		return array(
+			'language' => array(AttributeType::Language, 'required' => true),
+			'title'    => array(AttributeType::String, 'required' => true),
+		);
 	}
 
 	/**
@@ -44,15 +40,9 @@ class EntryTitleRecord extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$indexes[] = array('columns' => array('entryId', 'language'), 'unique' => true);
-		}
-		else
-		{
-			$indexes[] = array('columns' => array('entryId'), 'unique' => true);
-		}
-
-		return $indexes;
+		return array(
+			array('columns' => array('title', 'entryId', 'language')),
+			array('columns' => array('entryId', 'language'), 'unique' => true),
+		);
 	}
 }

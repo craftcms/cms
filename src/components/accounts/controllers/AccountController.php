@@ -178,11 +178,7 @@ class AccountController extends BaseController
 		$user->username = blx()->request->getPost('username');
 		$user->email = blx()->request->getPost('email');
 		$user->emailFormat = blx()->request->getPost('emailFormat');
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$user->language = blx()->request->getPost('language');
-		}
+		$user->language = blx()->request->getPost('language');
 
 		// Only admins can opt out of email verification
 		if (!$user->id)

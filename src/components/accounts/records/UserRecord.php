@@ -49,16 +49,14 @@ class UserRecord extends BaseRecord
 	 */
 	public function defineRelations()
 	{
+		$relations = array();
+
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return array(
-				'profile' => array(static::HAS_ONE, 'UserProfileRecord', 'userId'),
-				'groups'  => array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)'),
-			);
+			$relations['profile'] = array(static::HAS_ONE, 'UserProfileRecord', 'userId');
+			$relations['groups']  = array(static::MANY_MANY, 'UserGroupRecord', 'usergroups_users(userId, groupId)');
 		}
-		else
-		{
-			return array();
-		}
+
+		return $relations;
 	}
 }

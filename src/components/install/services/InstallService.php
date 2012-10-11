@@ -334,11 +334,7 @@ class InstallService extends BaseApplicationComponent
 		$block->handle = 'body';
 		$block->required = true;
 		$block->type = 'RichText';
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$block->translatable = true;
-		}
+		$block->translatable = true;
 
 		if ($service->saveBlock($block))
 		{

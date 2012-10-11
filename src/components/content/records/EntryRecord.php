@@ -34,12 +34,7 @@ class EntryRecord extends BaseRecord
 	 */
 	public function defineRelations()
 	{
-		$relations = array();
-
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			$relations['author'] = array(static::BELONGS_TO, 'UserRecord', 'required' => true);
-		}
+		$relations['author'] = array(static::BELONGS_TO, 'UserRecord', 'required' => true);
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{

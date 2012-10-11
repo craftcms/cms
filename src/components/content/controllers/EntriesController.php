@@ -16,6 +16,7 @@ class EntriesController extends BaseController
 		$entry = new EntryModel();
 
 		$entry->id = blx()->request->getPost('entryId');
+		$entry->authorId = blx()->account->getCurrentUser()->id;
 		$entry->title = blx()->request->getPost('title');
 		$entry->slug = blx()->request->getPost('slug');
 		$entry->postDate = $this->getDateFromPost('postDate');
@@ -24,11 +25,6 @@ class EntriesController extends BaseController
 		$entry->tags = blx()->request->getPost('tags');
 
 		$entry->setBlockValues(blx()->request->getPost('blocks'));
-
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			$entry->authorId = blx()->account->getCurrentUser()->id;
-		}
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
@@ -39,6 +35,10 @@ class EntriesController extends BaseController
 		{
 			$entry->language = blx()->request->getPost('language');
 		}
+		else
+		{
+			$entry->language = blx()->language;
+		}
 
 		if (blx()->entries->saveEntry($entry))
 		{
@@ -47,11 +47,7 @@ class EntriesController extends BaseController
 				$return['success']   = true;
 				$return['entry']     = $entry->getAttributes();
 				$return['cpEditUrl'] = $entry->getCpEditUrl();
-
-				if (Blocks::hasPackage(BlocksPackage::Users))
-				{
-					$return['author'] = $entry->getAuthor()->getAttributes();
-				}
+				$return['author']    = $entry->getAuthor()->getAttributes();
 
 				$this->returnJson($return);
 			}

@@ -28,15 +28,12 @@ abstract class BaseBlockModel extends BaseComponentModel
 	public function defineAttributes()
 	{
 		$attributes = parent::defineAttributes();
+
 		$attributes['name'] = AttributeType::String;
 		$attributes['handle'] = AttributeType::String;
 		$attributes['instructions'] = AttributeType::String;
 		$attributes['required'] = AttributeType::Bool;
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$attributes['translatable'] = AttributeType::Bool;
-		}
+		$attributes['translatable'] = AttributeType::Bool;
 
 		return $attributes;
 	}

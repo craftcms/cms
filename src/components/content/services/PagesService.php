@@ -251,24 +251,16 @@ class PagesService extends BaseApplicationComponent
 	 */
 	private function _getPageContentRecordByPageId($pageId)
 	{
-		$contentAttributes['pageId'] = $pageId;
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$contentAttributes['language'] = blx()->language;
-		}
-
-		$record = PageContentRecord::model()->findByAttributes($contentAttributes);
+		$record = PageContentRecord::model()->findByAttributes(array(
+			'pageId'   => $pageId,
+			'language' => blx()->language,
+		));
 
 		if (empty($record))
 		{
 			$record = new PageContentRecord();
 			$record->pageId = $pageId;
-
-			if (Blocks::hasPackage(BlocksPackage::Language))
-			{
-				$record->language = blx()->language;
-			}
+			$record->language = blx()->language;
 		}
 
 		return $record;

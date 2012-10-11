@@ -10,13 +10,9 @@ class GlobalContentModel extends BaseBlockEntityModel
 {
 	public function defineAttributes()
 	{
-		$attributes['id'] = AttributeType::Number;
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$attributes['language'] = AttributeType::Language;
-		}
-
-		return $attributes;
+		return array(
+			'id'       => AttributeType::Number,
+			'language' => AttributeType::Language,
+		);
 	}
 }

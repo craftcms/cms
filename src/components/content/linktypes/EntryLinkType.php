@@ -68,12 +68,7 @@ class EntryLinkType extends BaseLinkType
 		$query
 			->addSelect('t.title')
 			->join('entrytitles t', 'entries.id = t.entryId')
-			->addWhere('entries.archived = 0');
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$query->addWhere('t.language = :language', array(':language' => blx()->language));
-		}
+			->addWhere(array('and', 't.language = :language', 'entries.archived = 0'), array(':language' => blx()->language));
 
 		return $query;
 	}

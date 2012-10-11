@@ -19,14 +19,10 @@ class PageContentRecord extends BaseRecord
 	 */
 	public function defineAttributes()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$attributes['language'] = array(AttributeType::Language, 'required' => true);
-		}
-
-		$attributes['content'] = array(AttributeType::Mixed, 'column' => ColumnType::MediumText);
-
-		return $attributes;
+		return array(
+			'language' => array(AttributeType::Language, 'required' => true),
+			'content'  => array(AttributeType::Mixed, 'column' => ColumnType::MediumText),
+		);
 	}
 
 	/**
@@ -44,15 +40,8 @@ class PageContentRecord extends BaseRecord
 	 */
 	public function defineIndexes()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$indexes[] = array('columns' => array('language', 'pageId'), 'unique' => true);
-		}
-		else
-		{
-			$indexes[] = array('columns' => array('pageId'), 'unique' => true);
-		}
-
-		return $indexes;
+		return array(
+			array('columns' => array('language', 'pageId'), 'unique' => true),
+		);
 	}
 }

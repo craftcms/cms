@@ -19,15 +19,8 @@ class GlobalContentRecord extends BaseBlockEntityRecord
 	 */
 	public function defineAttributes()
 	{
-		$attributes = array();
-
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$attributes['language'] = array(AttributeType::Language, 'required' => true);
-		}
-
+		$attributes['language'] = array(AttributeType::Language, 'required' => true);
 		$attributes = array_merge($attributes, parent::defineAttributes());
-
 		return $attributes;
 	}
 

@@ -28,7 +28,11 @@ class GlobalBlocksController extends BaseBlocksController
 
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{
-			$entry->language = blx()->request->getPost('language');
+			$content->language = blx()->request->getPost('language');
+		}
+		else
+		{
+			$content->language = blx()->language;
 		}
 
 		if (blx()->globalBlocks->saveGlobalContent($content))

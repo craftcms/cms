@@ -235,17 +235,22 @@ class EntriesService extends BaseApplicationComponent
 			}
 		}
 
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			if (!$params->language)
-			{
-				$params->language = blx()->language;
-			}
+		$whereConditions[] = 't.language = :language';
 
-			$whereConditions[] = 't.language = "'.$params->language.'"';
+		if ($params->language)
+		{
+			$whereParams[':language'] = $params->language;
+		}
+		else
+		{
+			$whereParams[':language'] = blx()->language;
 		}
 
-		if ($whereConditions)
+		if (count($whereConditions) == 1)
+		{
+			$query->where($whereConditions[0], $whereParams);
+		}
+		else
 		{
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
@@ -687,11 +692,7 @@ class EntriesService extends BaseApplicationComponent
 		else
 		{
 			$entryRecord = new EntryRecord();
-
-			if (Blocks::hasPackage(BlocksPackage::Users))
-			{
-				$entryRecord->authorId = $entry->authorId;
-			}
+			$entryRecord->authorId = $entry->authorId;
 
 			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
@@ -711,35 +712,24 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	private function _getEntryTitleRecord(EntryModel $entry)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (!$entry->language)
 		{
-			if (!$entry->language)
-			{
-				$entry->language = blx()->language;
-			}
+			$entry->language = blx()->language;
 		}
 
 		if ($entry->id)
 		{
-			$attributes['entryId'] = $entry->id;
-
-			if (Blocks::hasPackage(BlocksPackage::Language))
-			{
-				$attributes['language'] = $entry->language;
-			}
-
-			$titleRecord = EntryTitleRecord::model()->findByAttributes($attributes);
+			$titleRecord = EntryTitleRecord::model()->findByAttributes(array(
+				'entryId'  => $entry->id,
+				'language' => $entry->language,
+			));
 		}
 
 		if (empty($titleRecord))
 		{
 			$titleRecord = new EntryTitleRecord();
 			$titleRecord->entryId = $entry->id;
-
-			if (Blocks::hasPackage(BlocksPackage::Language))
-			{
-				$titleRecord->language = $entry->language;
-			}
+			$titleRecord->language = $entry->language;
 		}
 
 		return $titleRecord;
@@ -755,12 +745,9 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	private function _getEntryContentRecord(EntryModel $entry)
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
+		if (!$entry->language)
 		{
-			if (!$entry->language)
-			{
-				$entry->language = blx()->language;
-			}
+			$entry->language = blx()->language;
 		}
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
@@ -775,12 +762,10 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($entry->id)
 		{
-			$attributes['entryId'] = $entry->id;
-
-			if (Blocks::hasPackage(BlocksPackage::Language))
-			{
-				$attributes['language'] = $entry->language;
-			}
+			$attributes = array(
+				'entryId' => $entry->id,
+				'language' => $entry->language,
+			);
 
 			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
@@ -803,12 +788,8 @@ class EntriesService extends BaseApplicationComponent
 				$contentRecord = new EntryContentRecord();
 			}
 
-			if (Blocks::hasPackage(BlocksPackage::Language))
-			{
-				$contentRecord->language = $entry->language;
-			}
-
 			$contentRecord->entryId = $entry->id;
+			$contentRecord->language = $entry->language;
 		}
 
 		return $contentRecord;

@@ -97,25 +97,14 @@ class GlobalBlocksService extends BaseBlocksService
 	 */
 	private function _getGlobalContentRecord()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Language))
-		{
-			$record = GlobalContentRecord::model()->findByAttributes(array(
-				'language' => blx()->language
-			));
-		}
-		else
-		{
-			$record = GlobalContentRecord::model()->find();
-		}
+		$record = GlobalContentRecord::model()->findByAttributes(array(
+			'language' => blx()->language
+		));
 
 		if (!$record)
 		{
 			$record = new GlobalContentRecord();
-
-			if (Blocks::hasPackage(BlocksPackage::Language))
-			{
-				$record->language = blx()->language;
-			}
+			$record->language = blx()->language;
 		}
 
 		return $record;
