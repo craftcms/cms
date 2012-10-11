@@ -35,12 +35,13 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 #sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); -webkit-box-shadow: inset -1px 0 rgba(0,0,0,0.5); }
 #sidebar .nav ul li a.sel .badge { color: #fff; background: #1a1a1a; }
 
-#nav-dashboard:before { @include icon; content: 'D'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
-#nav-content:before { @include icon; content: 'C'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
-#nav-assets:before { @include icon; content: 'A'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
-#nav-users:before { @include icon; content: 'U'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
-#nav-updates:before { @include icon; content: 'V'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
-#nav-settings:before { @include icon; content: 'S'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#sidebar .nav ul li a:before { @include icon; content: 'P'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#sidebar .nav ul li a#nav-dashboard:before { content: 'D'; }
+#sidebar .nav ul li a#nav-content:before { content: 'C'; }
+#sidebar .nav ul li a#nav-assets:before { content: 'A'; }
+#sidebar .nav ul li a#nav-users:before { content: 'U'; }
+#sidebar .nav ul li a#nav-updates:before { content: 'V'; }
+#sidebar .nav ul li a#nav-settings:before { content: 'S'; }
 
 /* HIDE */
 #sidebar { background: #e6e6e6; -webkit-box-shadow: inset -1px 0 #bbb; }
@@ -62,7 +63,7 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 #notifications .notification.notice { border-color: #1F6794; background: #2782bb; }
 #notifications .notification.error { border-color: #992f2f; background: #e14545; }
 
-#tabs { margin: -25px auto 25px; border-bottom: 1px solid #e5e5e5; text-align: center; font-size: 0; }
+#tabs { margin: -25px auto 25px; border-bottom: 1px solid #dbdbdb; text-align: center; font-size: 0; }
 #tabs ul li { display: inline-block; margin: 0 10px; }
 #tabs ul li a { display: block; margin-bottom: -1px; padding: 16px 1px; font-size: 13px; color: #808080; }
 #tabs ul li a:before { margin: 0 4px -1px 0; font-size: 18px; }
