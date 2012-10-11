@@ -346,13 +346,17 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 				// Update the column order in the content table
 				$block = $this->populateBlock($blockRecord);
 				$contentTable = $this->getContentTable($block);
-
-				$blockType = blx()->blockTypes->populateBlockType($block);
-				$column = ModelHelper::normalizeAttributeConfig($blockType->defineContentAttribute());
-
-				blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
-
-				$lastColumn = $blockRecord->handle;
+				if ($contentTable !== false)
+				{
+					$blockType = blx()->blockTypes->populateBlockType($block);
+					$column = $blockType->defineContentAttribute();
+					if ($column !== false)
+					{
+						$column = ModelHelper::normalizeAttributeConfig($column);
+						blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->handle, $column, null, $lastColumn);
+						$lastColumn = $blockRecord->handle;
+					}
+				}
 			}
 
 			// Commit the transaction
