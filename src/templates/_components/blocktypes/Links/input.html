@@ -14,11 +14,13 @@
 					</td>
 				</tr>
 			{% endfor %}
-			{% for i in 1..bufferRows %}
-				<tr class="filler">
-					<td></td>
-				</tr>
-			{% endfor %}
+			{% if bufferRows %}
+				{% for i in 1..bufferRows %}
+					<tr class="filler">
+						<td></td>
+					</tr>
+				{% endfor %}
+			{% endif %}
 		</tbody>
 	</table>
 </div>
