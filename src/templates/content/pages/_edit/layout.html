@@ -1,0 +1,18 @@
+{% extends "_layouts/cp" %}
+{% set centered = true %}
+{% set title = page.title|t %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('content/pages') }}" class="backbtn">{{ "Pages"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set tabs %}
+	<li><a{% if tab == 'content' %} class="active"{% endif %} href="{{ url('content/pages/'~page.id) }}" data-icon="✎">{{ "Content"|t }}</a></li>
+	<li><a{% if tab == 'settings' %} class="active"{% endif %} href="{{ url('content/pages/'~page.id~'/settings') }}" data-icon="⚙">{{ "Settings"|t }}</a></li>
+	<li><a{% if tab == 'blocks' %} class="active"{% endif %} href="{{ url('content/pages/'~page.id~'/blocks') }}" data-icon="b">{{ "Blocks"|t }}</a></li>
+{% endset %}

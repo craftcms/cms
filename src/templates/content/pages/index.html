@@ -7,18 +7,40 @@
 
 
 {% set content %}
-	<table class="data">
-		<thead>
-			<th scope="col" width="33%">{{ "Title"|t }}</th>
-			<th scope="col" width="33%">{{ "URL"|t }}</th>
-		</thead>
-		<tbody>
-			{% for page in pages %}
-				<tr>
-					<th><a href="{{ url('content/pages/'~page.id) }}">{{ page.title|t }}</a></th>
-					<td><a href="{{ page.getUrl }}" target="_blank">{{ page.getUrl }}</a></td>
-				</tr>
-			{% endfor %}
-		</tbody>
-	</table>
+	<p id="nopages"{% if pages|length %}style="display: none"{% endif %}>
+		{{ "No pages exist yet."|t }}
+	</p>
+
+	{% if pages|length %}
+		<table id="pages" class="data">
+			<thead>
+				<th scope="col" width="33%">{{ "Title"|t }}</th>
+				<th scope="col" width="33%">{{ "URL"|t }}</th>
+					<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for page in pages %}
+					<tr data-id="{{ page.id }}" data-name="{{ page.title|t }}">
+						<th><a href="{{ url('content/pages/'~page.id) }}">{{ page.title|t }}</a></th>
+						<td><a href="{{ page.getUrl }}" target="_blank">{{ page.getUrl }}</a></td>
+						<td class="thin"><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	<div class="buttons">
+		<a href="{{ url('content/pages/new') }}" class="btn addbtn">{{ "New Page"|t }}</a>
+	</div>
 {% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#pages',
+		noObjectsSelector: '#nopages',
+		deleteAction: 'pages/deletePage'
+	});
+{% endset %}
+{% includeJs js %}

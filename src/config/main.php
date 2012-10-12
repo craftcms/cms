@@ -14,8 +14,15 @@ $packages = explode(',', BLOCKS_PACKAGES);
 $handle = '[a-zA-Z][a-zA-Z0-9_]*';
 
 $cpRoutes['content']                                                          = 'content/entries/index';
-$cpRoutes['content\/pages']                                                   = 'content/pages/index';
+
+$cpRoutes['content\/pages']                                                   = 'content/pages';
+$cpRoutes['content\/pages\/new']                                              = 'content/pages/_edit/settings';
 $cpRoutes['content\/pages\/(?P<pageId>\d+)']                                  = 'content/pages/_edit';
+$cpRoutes['content\/pages\/(?P<pageId>\d+)\/settings']                        = 'content/pages/_edit/settings';
+$cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks']                          = 'content/pages/_edit/blocks/index';
+$cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/new']                     = 'content/pages/_edit/blocks/settings';
+$cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']        = 'content/pages/_edit/blocks/settings';
+
 $cpRoutes['content\/globals']                                                 = 'content/globals/index';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/new']                     = 'content/entries/_edit';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)']        = 'content/entries/_edit';

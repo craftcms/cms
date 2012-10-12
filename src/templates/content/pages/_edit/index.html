@@ -1,0 +1,34 @@
+{% if page is not defined %}
+	{% set page = blx.pages.getPageById(pageId) %}
+	{% if not page %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% extends 'content/pages/_edit/layout' %}
+{% set tab = 'content' %}
+{% set blocks = blx.pageBlocks.getBlocksByPageId(page.id) %}
+
+
+{% set content %}
+	{% if blocks|length %}
+		<form method="post" action="">
+			<input type="hidden" name="action" value="pages/savePageContent">
+			<input type="hidden" name="redirect" value="content/pages/{pageId}">
+			<input type="hidden" name="pageId" value="{{ page.id }}">
+
+			{% include "_includes/blockfields" with {
+				blocks: blocks,
+				entity: page
+			} only %}
+
+			<div class="buttons">
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			</div>
+		</form>
+	{% else %}
+		<p>
+			{{ "No blocks exist yet."|t }}
+			<a class="go" href="{{ url('content/pages/'~page.id~'/blocks/new') }}">{{ "Add the first one"|t }}</a>
+		</p>
+	{% endif %}
+{% endset %}

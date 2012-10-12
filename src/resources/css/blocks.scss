@@ -50,7 +50,7 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
-a.go { padding-right: 10px; background: url(../images/go.png) no-repeat 100% 50%; }
+a.go:after { @include icon; content: '→'; font-size: 12px; margin: 2px 0 0 4px; }
 a.goto { display: inline-block; vertical-align: middle; width: 12px; height: 12px; background: url(../images/goto.png) no-repeat; opacity: 0.5; }
 a.goto:hover { opacity: 1; }
 
@@ -530,9 +530,6 @@ only screen and (min-device-pixel-ratio: 1.5),
 only screen and (min-resolution: 1.5dppx) {
 	.backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
 	.backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
-
-	ul.biglist li a.go { background-image: url(../images/go_2x.png); background-size: 22px 14px; }
-	ul.biglist li a.go:hover { background-image: url(../images/go_hover_2x.png); }
 
 	.status { background-image: url(../images/status_2x.png); background-size: 10px 40px; }
 

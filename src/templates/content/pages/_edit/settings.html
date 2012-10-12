@@ -4,20 +4,30 @@
 {% endif %}
 
 
-{% extends "settings/pages/_edit/layout" %}
-{% set tab = 'settings' %}
+{% set isNewPage = (page is not defined or not page.id) %}
+{% extends (isNewPage ? '_layouts/cp' : 'content/pages/_edit/layout') %}
 {% import "_includes/forms" as forms %}
 
 
-{% set isNewPage = (page is not defined or not page.id) %}
+{% if isNewPage %}
+	{% set centered = true %}
+	{% set title = "Create a New Page"|t %}
+	{% set header %}
+		<h1>{{ title }}</h1>
+		<ul class="left">
+			<li><a class="backbtn" href="{{ url('content/pages') }}">{{ "Pages"|t }}</a></li>
+		</ul>
+	{% endset %}
+{% else %}
+	{% set tab = 'settings' %}
+{% endif %}
 
 
 {% set content %}
 	<form method="post" action="">
 		<input type="hidden" name="action" value="pages/savePage">
-		<input type="hidden" name="redirect" value="settings/pages/{pageId}">
+		<input type="hidden" name="redirect" value="content/pages/{pageId}">
 		{% if not isNewPage %}<input type="hidden" name="pageId" value="{{ page.id }}">{% endif %}
-
 
 		{{ forms.textField({
 			label: "Title"|t,
@@ -55,6 +65,6 @@
 {% endset %}
 
 
-{% if page is not defined or not page.uri %}
+{% if page is not defined %}
 	{% includeJs "new Blocks.ui.SlugGenerator('#title', '#uri');" %}
 {% endif %}
