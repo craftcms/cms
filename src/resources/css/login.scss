@@ -2,10 +2,18 @@
 
 html, body { height: 100%; }
 
-#login-form { display: block; position: absolute; top: 50%; left: 50%; margin: -78px 0 0 -150px; width: 300px; }
+#login-form { display: block; position: absolute; top: 50%; left: 50%; margin: -189px 0 0 -150px; padding-top: 113px; width: 300px; background: url(../images/blocks.png) no-repeat 0 0; }
 .field { margin: 10px 0; }
 #forgot-password { margin-left: 5px; font-style: normal; font-size: 11px; }
 .submit:before { font-size: 13px; }
 
 .email-sent { z-index: 9999; margin: 0; padding-left: 50px; width: 220px; background: #fff; }
 .email-sent:before { @include icon; display: block; position: absolute; top: 23px; left: 10px; content: 'E'; font-size: 36px; color: $linkcolor; }
+
+@media only screen and (-moz-min-device-pixel-ratio: 1.5),
+only screen and (-o-min-device-pixel-ratio: 3/2),
+only screen and (-webkit-min-device-pixel-ratio: 1.5),
+only screen and (min-device-pixel-ratio: 1.5),
+only screen and (min-resolution: 1.5dppx) {
+	#login-form { background-image: url(../images/blocks_2x.png); background-size: 167px 83px; }
+}

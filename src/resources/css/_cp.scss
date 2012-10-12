@@ -16,11 +16,10 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 #sidebar a { color: #b3b3b3; }
 #sidebar a:hover { color: #fff; }
 
-#sidebar #header:after {@include clearafter; }
-#sidebar #header #branding { float: left; padding: 10px; }
-#sidebar #header #branding img { display: block; width: 120px; }
+#sidebar #header { position: relative; margin-bottom: 10px; border-bottom: 1px solid #333; height: 50px; }
+#sidebar #header #sitename { position: absolute; top: 0; left: 15px; width: 140px; line-height: 50px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-#sidebar #header #account { float: right; padding: 15px 0 5px 5px; width: 35px; }
+#sidebar #header #account { position: absolute; top: 0; right: 0; padding: 17px 0 13px 1px; width: 35px; }
 #sidebar #header #account:after { margin-right: -5px; }
 
 #account-menu .userinfo { padding: 40px 15px 5px 110px; height: 56px; background: rgba(0,0,0,0.9); }

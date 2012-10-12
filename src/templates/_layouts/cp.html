@@ -3,9 +3,7 @@
 {% set body %}
 	<div id="sidebar">
 		<div id="header">
-			<div id="branding">
-				<img src="{{ resourceUrl('images/pt.png') }}">
-			</div>
+			<h2 id="sitename">{{ siteName }}</h2>
 			<a id="account" data-icon="☺" class="menubtn" title="{{ 'My Account'|t }}"></a>
 			<div id="account-menu" class="menu">
 				{% if blx.hasPackage('users') %}
