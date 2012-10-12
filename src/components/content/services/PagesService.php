@@ -202,6 +202,11 @@ class PagesService extends BaseApplicationComponent
 				->where(array('pageId' => $pageId))
 				->delete('pageblocks');
 
+			// Delete the page content
+			blx()->db->createCommand()
+				->where(array('pageId' => $pageId))
+				->delete('pagecontent');
+
 			// Delete the page
 			$pageRecord->delete();
 
