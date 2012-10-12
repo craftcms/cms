@@ -620,7 +620,7 @@ class EntriesService extends BaseApplicationComponent
 
 		foreach ($entryTagEntries as $entryTagEntry)
 		{
-			if (($currentEntryTagRecord = $this->_getEntryTagRecordById($entryTagEntry->id)) !== null)
+			if (($currentEntryTagRecord = $this->_getEntryTagRecordById($entryTagEntry->tagId)) !== null)
 			{
 				$currentEntryTagRecords[] = $currentEntryTagRecord;
 			}
