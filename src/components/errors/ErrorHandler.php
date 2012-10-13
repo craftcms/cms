@@ -99,7 +99,7 @@ class ErrorHandler extends \CErrorHandler
 			}
 
 			// If this is a template renderer exception, we don't want to show any stack track information.
-			if ($exception instanceof \Twig_Error_Syntax)
+			if ($exception instanceof \Twig_Error_Syntax || $exception instanceof \Twig_Error_Runtime)
 			{
 				// This is the template file for the exception.
 				$templateFile = blx()->templates->findTemplate($exception->getTemplateFile());

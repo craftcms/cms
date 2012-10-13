@@ -1,4 +1,4 @@
-{% extends "settings/pages/_edit/layout" %}
+{% extends "content/pages/_edit/layout" %}
 {% set tab = 'blocks' %}
 
 {% set page = blx.pages.getPageById(pageId) %}
@@ -8,7 +8,7 @@
 {% set content %}
 	{% include "_includes/blockindex" with {
 		blocks: blx.pageBlocks.getBlocksByPageId(page.id),
-		settingsUrlPrefix: 'settings/pages/' ~ page.id ~ '/blocks/',
+		settingsUrlPrefix: 'content/pages/' ~ page.id ~ '/blocks/',
 		controller: 'pageBlocks'
 	} only %}
 {% endset %}
