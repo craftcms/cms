@@ -8,6 +8,7 @@ class EntryParams extends BaseParams
 {
 	public $id;
 	public $slug;
+	public $uri;
 	public $sectionId;
 	public $section;
 	public $language;

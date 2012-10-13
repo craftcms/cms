@@ -157,6 +157,19 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Gets an entry by its URI.
+	 *
+	 * @param string $uri
+	 * @return EntryModel|null
+	 */
+	public function getEntryByUri($uri)
+	{
+		$params = new EntryParams();
+		$params->uri = $uri;
+		return $this->getEntry($params);
+	}
+
+	/**
 	 * Gets the total number of entries.
 	 *
 	 * @param EntryParams|null $params
@@ -199,7 +212,12 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($params->slug)
 		{
-			$whereConditions[] = DbHelper::parseParam('e.handle', $params->slug, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('e.slug', $params->slug, $whereParams);
+		}
+
+		if ($params->uri)
+		{
+			$whereConditions[] = DbHelper::parseParam('e.uri', $params->uri, $whereParams);
 		}
 
 		if ($params->archived)
