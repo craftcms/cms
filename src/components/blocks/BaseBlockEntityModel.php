@@ -6,7 +6,44 @@ namespace Blocks;
  */
 abstract class BaseBlockEntityModel extends BaseModel
 {
-	private $_blockValues;
+	private $_blockValuesByHandle;
+	private $_blockValuesById;
+
+	/**
+	 * Is set?
+	 *
+	 * @param $name
+	 * @return bool
+	 */
+	function __isset($name)
+	{
+		if (isset($this->_blockValuesByHandle) && array_key_exists($name, $this->_blockValuesByHandle))
+		{
+			return true;
+		}
+		else
+		{
+			return parent::__isset($name);
+		}
+	}
+
+	/**
+	 * Getter
+	 *
+	 * @param string $name
+	 * @return mixed
+	 */
+	function __get($name)
+	{
+		if (isset($this->_blockValuesByHandle) && array_key_exists($name, $this->_blockValuesByHandle))
+		{
+			return $this->_blockValuesByHandle[$name];
+		}
+		else
+		{
+			return parent::__get($name);
+		}
+	}
 
 	/**
 	 * Gets a block value by its ID.
@@ -16,9 +53,9 @@ abstract class BaseBlockEntityModel extends BaseModel
 	 */
 	public function getBlockValueById($id)
 	{
-		if (isset($this->_blockValues[$id]))
+		if (isset($this->_blockValuesById[$id]))
 		{
-			return $this->_blockValues[$id];
+			return $this->_blockValuesById[$id];
 		}
 		else
 		{
@@ -33,14 +70,17 @@ abstract class BaseBlockEntityModel extends BaseModel
 	 */
 	public function setBlockValues($values)
 	{
-		foreach ($values as $id => $value)
+		if (is_array($values))
 		{
-			if (is_string($id) && strncmp($id, 'block', 5) == 0)
+			foreach ($values as $id => $value)
 			{
-				$id = substr($id, 5);
-			}
+				if (is_string($id) && strncmp($id, 'block', 5) == 0)
+				{
+					$id = substr($id, 5);
+				}
 
-			$this->_blockValues[$id] = $value;
+				$this->_blockValuesById[$id] = $value;
+			}
 		}
 	}
 
@@ -52,7 +92,7 @@ abstract class BaseBlockEntityModel extends BaseModel
 	 */
 	public function setBlockValuesFromAttributes($blocks, $attributes, $indexedBy = 'handle')
 	{
-		$this->_blockValues = array();
+		$this->_blockValuesById = array();
 
 		if ($attributes instanceof \CModel)
 		{
@@ -63,12 +103,15 @@ abstract class BaseBlockEntityModel extends BaseModel
 		{
 			if (isset($attributes[$block->$indexedBy]))
 			{
-				$this->_blockValues[$block->id] = $attributes[$block->$indexedBy];
+				$value = $attributes[$block->$indexedBy];
 			}
 			else
 			{
-				$this->_blockValues[$block->id] = null;
+				$value = null;
 			}
+
+			$this->_blockValuesByHandle[$block->handle] = $value;
+			$this->_blockValuesById[$block->id] = $value;
 		}
 	}
 }
