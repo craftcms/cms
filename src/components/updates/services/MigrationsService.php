@@ -45,7 +45,7 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($path === false || !IOHelper::folderExists($path))
 		{
-			throw new Exception(Blocks::t('Error: The migration folder “{folder}” does’t exist.', array('folder' => $this->migrationPath)));
+			throw new Exception(Blocks::t('Error: The migration folder “{folder}” doesn’t exist.', array('folder' => $this->migrationPath)));
 		}
 
 		$this->migrationPath = $path;
