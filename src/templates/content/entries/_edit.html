@@ -30,7 +30,7 @@
 {% if isNewEntry %}
 	{% set title = "Create a new entry"|t %}
 {% else %}
-	{% set title = "Editing {title}"|t({ title: '“'~entry.title|t~'”' }) %}
+	{% set title = "Editing “{title}”"|t({ title: '“'~entry.title|t~'”' }) %}
 {% endif %}
 
 

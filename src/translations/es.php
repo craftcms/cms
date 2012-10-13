@@ -16,7 +16,7 @@ return array(
 	'Account suspended.' => '',
 	'Activate' => '',
 	'Active' => '',
-	'Add a new widget' => '',
+	'Add a new widget.' => '',
 	'Add the first one.' => '',
 	'Admin' => '',
 	'Admin settings saved.' => '',

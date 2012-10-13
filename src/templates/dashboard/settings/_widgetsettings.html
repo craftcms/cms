@@ -19,7 +19,7 @@
 
 
 {% if isNewWidget %}
-	{% set title = "Add a new widget"|t %}
+	{% set title = "Add a new widget."|t %}
 {% else %}
 	{% set title = "{name} Settings"|t({ name: '<i>'~widgetType.title~'</i>' }) %}
 {% endif %}
