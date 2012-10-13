@@ -27,23 +27,12 @@ class UserSessionVariable
 	}
 
 	/**
-	 * Returns any active notifications for the user.
+	 * Returns any flash data for the user.
 	 *
 	 * @return array
 	 */
-	public function messages()
+	public function getFlashes()
 	{
-		$flashes = blx()->user->getFlashes();
-		$messages = array();
-
-		foreach ($flashes as $type => $value)
-		{
-			$messages[] = array(
-				'type' => $type,
-				'value' => $value
-			);
-		}
-
-		return $messages;
+		return blx()->user->getFlashes();
 	}
 }

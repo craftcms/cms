@@ -48,8 +48,13 @@ class UrlManager extends \CUrlManager
 	public function processTemplateMatching()
 	{
 		// we'll never have a db entry match on a control panel request
-		if (!BLOCKS_CP_REQUEST)
+		if (blx()->isInstalled() && !BLOCKS_CP_REQUEST)
 		{
+			if (($path = $this->matchPage()) !== false)
+			{
+				return $path;
+			}
+
 			if (($path = $this->matchEntry()) !== false)
 			{
 				return $path;
@@ -75,22 +80,42 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
+	 * Attempts to match a request with a page in the database.
+	 *
+	 * @return bool The URI if a match was found, false otherwise.
+	 */
+	public function matchPage()
+	{
+		$page = blx()->pages->getPageByUri(blx()->request->getPath());
+
+		if ($page)
+		{
+			$this->_templateVariables['page'] = $page;
+			return $page->uri;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Attempts to match a request with an entry in the database.
 	 *
 	 * @return bool The URI if a match was found, false otherwise.
 	 */
 	public function matchEntry()
 	{
-		if (blx()->isInstalled())
-		{
-			$entry = EntryRecord::model()->findByAttributes(array(
-				'uri' => blx()->request->getPath(),
-			));
+		$entry = blx()->entries->getEntryByUri(blx()->request->getPath());
 
-			if ($entry)
+		if ($entry)
+		{
+			$this->_templateVariables['entry'] = $entry;
+			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
-				$this->_templateVariables['entry'] = $entry;
-				return $entry->uri;
+				return $entry->getSection()->template;
+			}
+			else
+			{
+				return 'blog/_entry';
 			}
 		}
 

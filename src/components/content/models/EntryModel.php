@@ -25,6 +25,7 @@ class EntryModel extends BaseBlockEntityModel
 		$attributes['language'] = AttributeType::Language;
 		$attributes['title'] = AttributeType::String;
 		$attributes['slug'] = AttributeType::String;
+		$attributes['uri'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
