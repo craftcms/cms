@@ -84,7 +84,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 * Gets an asset source by its ID.
 	 *
 	 * @param int $sourceId
-	 * @return AssetSourceModel
+	 * @return AssetSourceModel|null
 	 */
 	public function getSourceById($sourceId)
 	{

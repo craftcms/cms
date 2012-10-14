@@ -60,8 +60,7 @@ class AssetLinkType extends BaseLinkType
 	 */
 	public function populateEntities($data)
 	{
-		return array();
-		//return blx()->assets->populateAssets($data);
+		return blx()->assets->populateFiles($data);
 	}
 
 	/**
@@ -72,7 +71,7 @@ class AssetLinkType extends BaseLinkType
 	 */
 	public function getLinkableEntities($settings)
 	{
-		return array();
+		return blx()->assets->getFilesBySourceId(1);
 		//$params = new AssetParams($settings);
 		//return blx()->assets->getAssets($params);
 	}

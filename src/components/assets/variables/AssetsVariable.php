@@ -97,4 +97,19 @@ class AssetsVariable
 	{
 		return blx()->assetBlocks->getBlockById($id);
 	}
+
+	// -------------------------------------------
+	//  Files
+	// -------------------------------------------
+
+	/**
+	 * Returns all top-level files in a source.
+	 *
+	 * @param int $id
+	 * @return array
+	 */
+	public function getFilesBySourceId($id)
+	{
+		return blx()->assets->getFilesBySourceId($id);
+	}
 }

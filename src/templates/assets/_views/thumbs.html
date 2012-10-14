@@ -1,0 +1,18 @@
+<div class="files thumbs">
+	<ul>
+		{% for file in files %}
+			<li>
+				<div class="thumb thumb-{{ file.id }}"></div>
+				<div class="filename">{{ file.filename }}</div>
+			</li>
+		{% endfor %}
+	</ul>
+</div>
+
+{% set css %}
+	{% for file in files %}
+		{% set thumbSize = file.getThumbSize %}
+		.thumb-{{ file.id }} { background-image: url({{ file.getUrl }}); background-size: {{ thumbSize.width }}px {{ thumbSize.height }}px; }
+	{% endfor %}
+{% endset %}
+{% includeCss css %}

@@ -71,7 +71,7 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Mass-populates entry model.
+	 * Mass-populates entry models.
 	 *
 	 * @param array  $data
 	 * @param string $index
@@ -79,15 +79,15 @@ class EntriesService extends BaseApplicationComponent
 	 */
 	public function populateEntries($data, $index = 'id')
 	{
-		$entryPackages = array();
+		$entries = array();
 
 		foreach ($data as $attributes)
 		{
 			$entry = $this->populateEntry($attributes);
-			$entryPackages[$entry->$index] = $entry;
+			$entries[$entry->$index] = $entry;
 		}
 
-		return $entryPackages;
+		return $entries;
 	}
 
 	/**

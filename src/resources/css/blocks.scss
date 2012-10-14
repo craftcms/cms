@@ -60,6 +60,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 
 /* text styles */
 .rightalign { text-align: right; }
+.centeralign { text-align: center; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumlight; font-weight: normal; }
 
@@ -169,7 +170,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 /*  Buttons
 /* ----------------------------------------*/
 
-.toolbar { margin: 25px 0; }
+.toolbar { margin: 25px 0; height: 31px; }
 
 .buttons { margin: 25px 0; }
 .buttons .btn + .btn { margin-left: 4px; }
@@ -331,13 +332,6 @@ ul.tree,
 .status.on { background-position: 0 0; }
 .status.pending { background-position: 0 -10px; }
 .status.off { background-position: 0 -20px; }
-
-/* ----------------------------------------
-/*  Thumbs and filenames
-/* ----------------------------------------*/
-
-.thumb img { display: block; margin: 0 auto; width: 60px; height: 60px; }
-.filename { margin-top: 5px; height: 14px; line-height: 14px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 /* ----------------------------------------
 /*  HUD
