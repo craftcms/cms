@@ -305,9 +305,10 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 			$blockRecord->delete();
 
 			$column = $blockType->defineContentAttribute();
-			if ($column !== false)
+			$contentTable = $this->getContentTable($block);
+
+			if ($column !== false && $contentTable !== false)
 			{
-				$contentTable = $this->getContentTable($block);
 				blx()->db->createCommand()->dropColumn($contentTable, $blockRecord->handle);
 			}
 
