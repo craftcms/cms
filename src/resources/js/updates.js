@@ -8,7 +8,6 @@ var ReleaseNotes = Blocks.Base.extend({
 
 	init: function($td, releases, product)
 	{
-		console.log(releases);
 		this.$table = $('<table/>').appendTo($td);
 		this.$tbody = $('<tbody/>').appendTo(this.$table);
 
@@ -57,7 +56,7 @@ var ReleaseNotes = Blocks.Base.extend({
 
 var atLeastOnePluginHasARelease = function(plugins)
 {
-	for (var i = 0; i < plugins.length; i++)
+	for (var i in plugins)
 	{
 		var plugin = plugins[i];
 
@@ -107,7 +106,8 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 					$td = $('<td class="thin rightalign"/>').appendTo($tr),
 					$btn = $('<a class="btn" href="'+Blocks.baseUrl+'update/blocks">'+Blocks.t('Install')+'</a>').appendTo($td);
 
-				$th.html(Blocks.t('{packages} upgrades', { packages: response.packages.upgradeAvailable.join(', ') }));
+				var packageValues = { packages: response.packages.join(', ') };
+				$th.html(response.packages.length > 1 ? Blocks.t('{packages} upgrades', packageValues) : Blocks.t('{packages} upgrade', packageValues));
 
 				if (response.blocks)
 				{
@@ -128,7 +128,7 @@ $.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
 
 			$table.show();
 
-			for (var i = 0; i < response.plugins.length; i++)
+			for (var i  in response.plugins)
 			{
 				var plugin = response.plugins[i];
 
