@@ -38,9 +38,13 @@ class IOHelper
 				foreach ($files as $file)
 				{
 					$file = static::normalizePathSeparators($file);
-					if (strtolower($file) === $lcaseFileName)
+
+					if (is_file($file))
 					{
-						return $file;
+						if (strtolower($file) === $lcaseFileName)
+						{
+							return $file;
+						}
 					}
 				}
 			}

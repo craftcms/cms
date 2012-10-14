@@ -115,9 +115,9 @@ class PluginsService extends BaseApplicationComponent
 			return $this->_plugins[$classHandle];
 		}
 
-		if ((!isset($this->_plugins[$origHandle])))
+		if ((!isset($this->_plugins[$classHandle])))
 		{
-			if (($plugin = $this->_processPlugin($classHandle)) == false)
+			if (($plugin = $this->_processPlugin($origHandle)) == false)
 			{
 				return null;
 			}
