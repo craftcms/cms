@@ -92,7 +92,7 @@ td.right { float: none; text-align: right; }
 .deletebtn:before { @include icon; content: 'R'; color: #ccc; }
 .deletebtn:hover:before { color: $errorcolor; }
 
-.hidden { display: none; }
+.hidden { display: none !important; }
 
 /* headers and footers */
 .header,
@@ -325,9 +325,6 @@ ul.tree,
 /* toggle */
 .toggle { display: block; float: left; margin: 3px 4px 0 0; width: 10px; height: 12px; background: url(../images/toggle.png) no-repeat 0 0; opacity: 0.5; }
 .toggle.expanded { background-position: 0 -10px; }
-
-/* icons */
-/*span.icon { display: block; float: left; width: 24px; height: 24px; background: url(../images/sidebar_icons.png) no-repeat 50% 50%; }*/
 
 /* status icons */
 .status { display: inline-block; margin-right: 5px; width: 10px; height: 10px; background: url(../images/status.png) no-repeat 0 -30px; }
