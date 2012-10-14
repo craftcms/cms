@@ -27,12 +27,23 @@ class UserSessionVariable
 	}
 
 	/**
-	 * Returns any flash data for the user.
+	 * Returns all flash data for the user.
 	 *
 	 * @return array
 	 */
 	public function getFlashes()
 	{
 		return blx()->user->getFlashes();
+	}
+
+	/**
+	 * Returns flash data.
+	 *
+	 * @param string $key
+	 * @param mixed $defaultValue
+	 */
+	public function getFlash($key, $defaultValue = null)
+	{
+		return blx()->user->getFlash($key, $defaultValue);
 	}
 }
