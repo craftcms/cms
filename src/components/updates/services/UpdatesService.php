@@ -75,6 +75,40 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @return int
+	 */
+	public function getTotalNumberOfAvailableUpdates()
+	{
+		if ($this->isUpdateInfoCached())
+		{
+			$count = 0;
+
+			if (isset($this->_updateModel->blocks->releases) && count($this->_updateModel->blocks->releases) > 0)
+			{
+				$count++;
+			}
+
+			if (isset($this->_updateModel->plugins))
+			{
+				foreach ($this->_updateModel->plugins as $plugin)
+				{
+					if (isset($plugin->releases) && count($plugin->releases) > 0)
+					{
+						$count++;
+					}
+				}
+			}
+
+			if (isset($this->_updateModel->packages) && count($this->_updateModel->packages) > 0)
+			{
+				$count++;
+			}
+
+			return $count;
+		}
+	}
+
+	/**
 	 * @return mixed
 	 */
 	public function isCriticalUpdateAvailable()
@@ -303,23 +337,5 @@ class UpdatesService extends BaseApplicationComponent
 		}
 
 		return $errorPath;
-	}
-
-	/**
-	 * @param $updates
-	 * @param $name
-	 * @return string
-	 */
-	private function _generateUpdateNotes($updates, $name)
-	{
-		$notes = '';
-
-		foreach ($updates as $update)
-		{
-			$notes .= '<h5>'.$name.' '.$update->version.($name == 'Blocks' ? '.'.$update->build : '').'</h5>';
-			$notes .= '<ul><li>'.$update->notes.'</li></ul>';
-		}
-
-		return $notes;
 	}
 }
