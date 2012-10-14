@@ -30,7 +30,7 @@
 {% if isNewEntry %}
 	{% set title = "Create a new entry"|t %}
 {% else %}
-	{% set title = "Editing “{title}”"|t({ title: '“'~entry.title|t~'”' }) %}
+	{% set title = "Editing “{title}”"|t({ title: entry.title|t }) %}
 {% endif %}
 
 
@@ -38,11 +38,7 @@
 	<h1>{{ title|raw }}</h1>
 
 	<ul class="left">
-		{% if blx.hasPackage('publishpro') %}
-			<li><a href="{{ url('content/' ~ section.handle) }}" class="backbtn">{{ section.name|t }}</a></li>
-		{% else %}
-			<li><a href="{{ url('content') }}" class="backbtn">{{ "Content"|t }}</a></li>
-		{% endif %}
+		<li><a href="{{ url('content') }}" class="backbtn">{{ "Entries"|t }}</a></li>
 	</ul>
 {% endset %}
 
