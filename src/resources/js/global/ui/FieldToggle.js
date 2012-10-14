@@ -122,7 +122,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 		{
 			if (this.type == 'select')
 			{
-				this.getTarget().show();
+				this.getTarget().removeClass('hidden');
 			}
 			else
 			{
@@ -149,7 +149,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 		{
 			if (this.type == 'select')
 			{
-				this.getTarget().hide();
+				this.getTarget().addClass('hidden');
 			}
 			else
 			{

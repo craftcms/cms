@@ -38,12 +38,12 @@ var CP = Blocks.Base.extend({
 
 						if (newTarget)
 						{
-							$('#'+newTarget).show();
+							$('#'+newTarget).removeClass('hidden');
 						}
 
 						if (oldTarget)
 						{
-							$('#'+oldTarget).hide();
+							$('#'+oldTarget).addClass('hidden');
 						}
 					}
 				}
