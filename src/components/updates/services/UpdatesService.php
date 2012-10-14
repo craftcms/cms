@@ -81,16 +81,17 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		if ($this->isUpdateInfoCached())
 		{
+			$updateModel = $this->getUpdates();
 			$count = 0;
 
-			if (isset($this->_updateModel->blocks->releases) && count($this->_updateModel->blocks->releases) > 0)
+			if (isset($updateModel->blocks->releases) && count($updateModel->blocks->releases) > 0)
 			{
 				$count++;
 			}
 
-			if (isset($this->_updateModel->plugins))
+			if (isset($updateModel->plugins))
 			{
-				foreach ($this->_updateModel->plugins as $plugin)
+				foreach ($updateModel->plugins as $plugin)
 				{
 					if (isset($plugin->releases) && count($plugin->releases) > 0)
 					{
@@ -99,7 +100,7 @@ class UpdatesService extends BaseApplicationComponent
 				}
 			}
 
-			if (isset($this->_updateModel->packages) && count($this->_updateModel->packages) > 0)
+			if (isset($updateModel->packages) && count($updateModel->packages) > 0)
 			{
 				$count++;
 			}
