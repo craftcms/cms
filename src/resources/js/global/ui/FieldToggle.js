@@ -120,11 +120,9 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 	{
 		if (this.getTarget().length)
 		{
-			if (this.type == 'select')
-			{
-				this.getTarget().removeClass('hidden');
-			}
-			else
+			this.getTarget().removeClass('hidden');
+
+			if (this.type != 'select')
 			{
 				if (this.type == 'link')
 				{
