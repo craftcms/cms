@@ -72,7 +72,7 @@
 				{% endif %}
 
 				{% if settings %}
-					<div id="{{ _sourceType.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+					<div id="{{ _sourceType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
 						<hr>
 						{% set namespace = 'types[' ~ _sourceType.classHandle ~ ']' %}
 						{{- settings|ns(namespace)|raw -}}

@@ -78,7 +78,7 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 					if (this.totalObjects == 0)
 					{
 						this.$table.remove();
-						$(this.settings.noObjectsSelector).show();
+						$(this.settings.noObjectsSelector).removeClass('hidden');
 					}
 
 					Blocks.cp.displayNotice(Blocks.t(this.settings.deleteSuccessMessage, { name: name }));

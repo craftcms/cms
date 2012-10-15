@@ -58,7 +58,7 @@ var LoginForm = Blocks.Base.extend({
 			return;
 
 		this.$submitBtn.addClass('active');
-		this.$spinner.show();
+		this.$spinner.removeClass('hidden');
 		this.loading = true;
 
 		if (this.$error)
@@ -123,7 +123,7 @@ var LoginForm = Blocks.Base.extend({
 	onSubmitResponse: function()
 	{
 		this.$submitBtn.removeClass('active');
-		this.$spinner.hide();
+		this.$spinner.addClass('hidden');
 		this.loading = false;
 	},
 

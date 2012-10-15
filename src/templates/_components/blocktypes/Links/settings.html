@@ -22,7 +22,7 @@
 	{% endif %}
 
 	{% if linkTypeSettings %}
-		<div id="linktype-{{ _linkType.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+		<div id="linktype-{{ _linkType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
 			{% set namespace = 'types[' ~ _linkType.classHandle ~ ']' %}
 			{{- linkTypeSettings|ns(namespace)|raw -}}
 		</div>

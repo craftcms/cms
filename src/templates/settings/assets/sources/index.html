@@ -5,7 +5,7 @@
 
 
 {% set content %}
-	<p id="nosources" {% if sources|length %}style="display: none"{% endif %}>
+	<p id="nosources"{% if sources|length %} class="hidden"{% endif %}>
 		{{ "No sources exist yet."|t }}
 	</p>
 

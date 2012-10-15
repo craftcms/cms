@@ -7,7 +7,7 @@
 
 
 {% set content %}
-	<p id="nopages"{% if pages|length %}style="display: none"{% endif %}>
+	<p id="nopages"{% if pages|length %} class="hidden"{% endif %}>
 		{{ "No pages exist yet."|t }}
 	</p>
 

@@ -60,7 +60,7 @@
 			{% endif %}
 
 			{% if settings %}
-				<div id="{{ _widgetType.classHandle }}" {% if not isCurrent %}style="display: none"{% endif %}>
+				<div id="{{ _widgetType.classHandle }}"{% if not isCurrent %} class="hidden"{% endif %}>
 					<hr>
 					{% set namespace = 'types[' ~ _widgetType.classHandle ~ ']' %}
 					{{- settings|ns(namespace)|raw -}}

@@ -29,7 +29,7 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 
 		if (this.loading) return;
 		this.loading = true;
-		this.$spinner.show();
+		this.$spinner.removeClass('hidden');
 
 		var formData = Blocks.getPostData(this.$form),
 			data = $.extend({ enabled: 1 }, formData, this.params);
@@ -88,7 +88,7 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 			}
 
 			this.loading = false;
-			this.$spinner.hide();
+			this.$spinner.addClass('hidden');
 		}, this));
 	}
 });
