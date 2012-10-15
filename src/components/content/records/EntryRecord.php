@@ -19,14 +19,19 @@ class EntryRecord extends BaseRecord
 	 */
 	public function defineAttributes()
 	{
-		return array(
-			'slug'       => array(AttributeType::Slug, 'required' => true),
-			'uri'        => array(AttributeType::String, 'maxLength' => 150, 'unique' => true),
-			'postDate'   => AttributeType::DateTime,
-			'expiryDate' => AttributeType::DateTime,
-			'enabled'    => AttributeType::Bool,
-			'archived'   => AttributeType::Bool,
-		);
+		$attributes['slug'] = array(AttributeType::Slug, 'required' => true);
+
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			$attributes['uri'] = array(AttributeType::String, 'maxLength' => 150, 'unique' => true);
+		}
+
+		$attributes['postDate'] = AttributeType::DateTime;
+		$attributes['expiryDate'] = AttributeType::DateTime;
+		$attributes['enabled'] = AttributeType::Bool;
+		$attributes['archived'] = AttributeType::Bool;
+
+		return $attributes;
 	}
 
 	/**

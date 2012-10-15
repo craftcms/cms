@@ -25,7 +25,6 @@ class EntryModel extends BaseBlockEntityModel
 		$attributes['language'] = AttributeType::Language;
 		$attributes['title'] = AttributeType::String;
 		$attributes['slug'] = AttributeType::String;
-		$attributes['uri'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
@@ -34,6 +33,7 @@ class EntryModel extends BaseBlockEntityModel
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$attributes['sectionId'] = AttributeType::Number;
+			$attributes['uri'] = AttributeType::String;
 		}
 
 		return $attributes;
@@ -104,7 +104,17 @@ class EntryModel extends BaseBlockEntityModel
 	 */
 	public function getUrl()
 	{
-		return '#';
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			if ($this->uri)
+			{
+				return UrlHelper::getUrl($this->uri);
+			}
+		}
+		else
+		{
+			return UrlHelper::getUrl('blog/'.$this->uri);
+		}
 	}
 
 	/**

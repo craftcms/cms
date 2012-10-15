@@ -407,6 +407,18 @@ class EntriesService extends BaseApplicationComponent
 
 		if ($entryValidates && $titleValidates && $contentValidates && $tagsValidate)
 		{
+			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			{
+				// We already had to fetch this in _getEntryContentRecord()
+				// Would be nice if we could eliminate the extra DB query...
+				$section = blx()->sections->getSectionById($entry->sectionId);
+
+				if ($section->hasUrls)
+				{
+					$entryRecord->uri = str_replace('{slug}', $entry->slug, $section->urlFormat);
+				}
+			}
+
 			$entryRecord->save(false);
 
 			// Save the post date on the model if we just made it up
