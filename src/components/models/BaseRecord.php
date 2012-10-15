@@ -114,9 +114,12 @@ abstract class BaseRecord extends \CActiveRecord
 			{
 				case AttributeType::DateTime:
 				{
-					$dateTime = new DateTime();
-					$dateTime->setTimestamp($value);
-					$this->setAttribute($name, $dateTime);
+					if ($value)
+					{
+						$dateTime = new DateTime();
+						$dateTime->setTimestamp($value);
+						$this->setAttribute($name, $dateTime);
+					}
 					break;
 				}
 				case AttributeType::Mixed:
