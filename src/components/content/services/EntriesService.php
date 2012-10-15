@@ -10,24 +10,28 @@ class EntriesService extends BaseApplicationComponent
 	 * Populates an entry model.
 	 *
 	 * @param array|EntryRecord $attributes
+	 * @param bool $includeContent
 	 * @return EntryModel
 	 */
-	public function populateEntry($attributes)
+	public function populateEntry($attributes, $includeContent = true)
 	{
 		$entry = EntryModel::populateModel($attributes);
 
-		// Set the block content
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if ($includeContent)
 		{
-			$blocks = blx()->sectionBlocks->getBlocksBySectionId($entry->sectionId);
-		}
-		else
-		{
-			$blocks = blx()->entryBlocks->getAllBlocks();
-		}
+			// Set the block content
+			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			{
+				$blocks = blx()->sectionBlocks->getBlocksBySectionId($entry->sectionId);
+			}
+			else
+			{
+				$blocks = blx()->entryBlocks->getAllBlocks();
+			}
 
-		$contentRecord = $this->_getEntryContentRecord($entry);
-		$entry->setBlockValuesFromAttributes($blocks, $contentRecord);
+			$contentRecord = $this->_getEntryContentRecord($entry);
+			$entry->setBlockValuesFromAttributes($blocks, $contentRecord);
+		}
 
 		return $entry;
 	}
@@ -75,15 +79,21 @@ class EntriesService extends BaseApplicationComponent
 	 *
 	 * @param array  $data
 	 * @param string $index
+	 * @param bool $includeContent
 	 * @return array
 	 */
-	public function populateEntries($data, $index = 'id')
+	public function populateEntries($data, $index = null, $includeContent = true)
 	{
 		$entries = array();
 
+		if (!$index)
+		{
+			$index = 'id';
+		}
+
 		foreach ($data as $attributes)
 		{
-			$entry = $this->populateEntry($attributes);
+			$entry = $this->populateEntry($attributes, $includeContent);
 			$entries[$entry->$index] = $entry;
 		}
 
@@ -126,7 +136,7 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		return $this->populateEntries($result);
+		return $this->populateEntries($result, null, $params->includeContent);
 	}
 
 	/**
@@ -154,19 +164,6 @@ class EntriesService extends BaseApplicationComponent
 		{
 			return $this->populateEntry($result);
 		}
-	}
-
-	/**
-	 * Gets an entry by its URI.
-	 *
-	 * @param string $uri
-	 * @return EntryModel|null
-	 */
-	public function getEntryByUri($uri)
-	{
-		$params = new EntryParams();
-		$params->uri = $uri;
-		return $this->getEntry($params);
 	}
 
 	/**

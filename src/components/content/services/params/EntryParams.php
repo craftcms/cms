@@ -17,4 +17,5 @@ class EntryParams extends BaseParams
 	public $order = 'dateCreated desc';
 	public $offset;
 	public $limit;
+	public $includeContent = false;
 }

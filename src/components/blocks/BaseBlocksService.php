@@ -6,6 +6,8 @@ namespace Blocks;
  */
 abstract class BaseBlocksService extends BaseApplicationComponent
 {
+	private $_blocks;
+
 	/**
 	 * The block model class name.
 	 *
@@ -118,9 +120,14 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 	 */
 	public function getAllBlocks()
 	{
-		$class = __NAMESPACE__.'\\'.$this->blockRecordClass;
-		$blockRecords = $class::model()->ordered()->findAll();
-		return $this->populateBlocks($blockRecords);
+		if (!isset($this->_blocks))
+		{
+			$class = __NAMESPACE__.'\\'.$this->blockRecordClass;
+			$blockRecords = $class::model()->ordered()->findAll();
+			$this->_blocks = $this->populateBlocks($blockRecords);
+		}
+
+		return $this->_blocks;
 	}
 
 	/**
