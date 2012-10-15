@@ -24,7 +24,7 @@ class GlobalBlocksController extends BaseBlocksController
 		$this->requirePostRequest();
 
 		$content = new GlobalContentModel();
-		$content->setBlockValues(blx()->request->getPost('blocks'));
+		$content->setContent(blx()->request->getPost('blocks'));
 
 		if (Blocks::hasPackage(BlocksPackage::Language))
 		{

@@ -49,7 +49,8 @@ abstract class BaseBlockType extends BaseComponent
 	 */
 	public function getInputValue()
 	{
-		$value = $this->entity->getBlockValueById($this->model->id);
+		$blockHandle = $this->model->handle;
+		$value = $this->entity->$blockHandle;
 		return $this->preprocessInputValue($value);
 	}
 

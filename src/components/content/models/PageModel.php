@@ -32,6 +32,28 @@ class PageModel extends BaseBlockEntityModel
 	}
 
 	/**
+	 * Gets the blocks.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getBlocks()
+	{
+		return blx()->pageBlocks->getBlocksByPageId($this->id);
+	}
+
+	/**
+	 * Gets the content.
+	 *
+	 * @access protected
+	 * @return array|\CModel
+	 */
+	protected function getContent()
+	{
+		return blx()->pages->getPageContentRecordByPageId($this->id);
+	}
+
+	/**
 	 * Returns the page's URL.
 	 *
 	 * @return string

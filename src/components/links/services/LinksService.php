@@ -131,7 +131,8 @@ class LinksService extends BaseApplicationComponent
 			));
 
 			// Save the new ones
-			$childIds = $entity->getBlockValueById($block->id);
+			$blockHandle = $block->handle;
+			$childIds = $entity->$blockHandle;
 			if ($childIds)
 			{
 				foreach ($childIds as $sortOrder => $childId)

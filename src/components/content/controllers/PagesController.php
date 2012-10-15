@@ -48,7 +48,7 @@ class PagesController extends BaseController
 		$pageId = blx()->request->getRequiredPost('pageId');
 		$page = blx()->pages->getPageById($pageId);
 
-		$page->setBlockValues(blx()->request->getPost('blocks'));
+		$page->setContent(blx()->request->getPost('blocks'));
 
 		if (blx()->pages->savePageContent($page))
 		{

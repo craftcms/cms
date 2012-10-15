@@ -24,7 +24,7 @@ class EntriesController extends BaseController
 		$entry->enabled = blx()->request->getPost('enabled');
 		$entry->tags = blx()->request->getPost('tags');
 
-		$entry->setBlockValues(blx()->request->getPost('blocks'));
+		$entry->setContent(blx()->request->getPost('blocks'));
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{

@@ -40,6 +40,35 @@ class EntryModel extends BaseBlockEntityModel
 	}
 
 	/**
+	 * Gets the blocks.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getBlocks()
+	{
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			return blx()->sectionBlocks->getBlocksBySectionId($this->sectionId);
+		}
+		else
+		{
+			return blx()->entryBlocks->getAllBlocks();
+		}
+	}
+
+	/**
+	 * Gets the content.
+	 *
+	 * @access protected
+	 * @return array|\CModel
+	 */
+	protected function getContent()
+	{
+		return blx()->entries->getEntryContentRecord($this);
+	}
+
+	/**
 	 * Returns the entry's status.
 	 *
 	 * @return string

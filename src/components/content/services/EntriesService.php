@@ -10,30 +10,11 @@ class EntriesService extends BaseApplicationComponent
 	 * Populates an entry model.
 	 *
 	 * @param array|EntryRecord $attributes
-	 * @param bool $includeContent
 	 * @return EntryModel
 	 */
-	public function populateEntry($attributes, $includeContent = true)
+	public function populateEntry($attributes)
 	{
-		$entry = EntryModel::populateModel($attributes);
-
-		if ($includeContent)
-		{
-			// Set the block content
-			if (Blocks::hasPackage(BlocksPackage::PublishPro))
-			{
-				$blocks = blx()->sectionBlocks->getBlocksBySectionId($entry->sectionId);
-			}
-			else
-			{
-				$blocks = blx()->entryBlocks->getAllBlocks();
-			}
-
-			$contentRecord = $this->_getEntryContentRecord($entry);
-			$entry->setBlockValuesFromAttributes($blocks, $contentRecord);
-		}
-
-		return $entry;
+		return EntryModel::populateModel($attributes);
 	}
 
 	/**
@@ -79,10 +60,9 @@ class EntriesService extends BaseApplicationComponent
 	 *
 	 * @param array  $data
 	 * @param string $index
-	 * @param bool $includeContent
 	 * @return array
 	 */
-	public function populateEntries($data, $index = null, $includeContent = true)
+	public function populateEntries($data, $index = null)
 	{
 		$entries = array();
 
@@ -93,7 +73,7 @@ class EntriesService extends BaseApplicationComponent
 
 		foreach ($data as $attributes)
 		{
-			$entry = $this->populateEntry($attributes, $includeContent);
+			$entry = $this->populateEntry($attributes);
 			$entries[$entry->$index] = $entry;
 		}
 
@@ -136,7 +116,7 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		$result = $query->queryAll();
-		return $this->populateEntries($result, null, $params->includeContent);
+		return $this->populateEntries($result);
 	}
 
 	/**
@@ -348,7 +328,7 @@ class EntriesService extends BaseApplicationComponent
 	{
 		$entryRecord = $this->_getEntryRecord($entry);
 		$titleRecord = $this->_getEntryTitleRecord($entry);
-		$contentRecord = $this->_getEntryContentRecord($entry);
+		$contentRecord = $this->getEntryContentRecord($entry);
 
 		// Has the slug changed?
 		if ($entryRecord->isNewRecord() || $entry->slug != $entryRecord->slug)
@@ -406,7 +386,7 @@ class EntriesService extends BaseApplicationComponent
 		{
 			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
-				// We already had to fetch this in _getEntryContentRecord()
+				// We already had to fetch this in getEntryContentRecord()
 				// Would be nice if we could eliminate the extra DB query...
 				$section = blx()->sections->getSectionById($entry->sectionId);
 
@@ -765,12 +745,11 @@ class EntriesService extends BaseApplicationComponent
 	/**
 	 * Gets an entry's content record or creates a new one.
 	 *
-	 * @access private
 	 * @param EntryModel $entry
 	 * @throws Exception
 	 * @return EntryContentRecord
 	 */
-	private function _getEntryContentRecord(EntryModel $entry)
+	public function getEntryContentRecord(EntryModel $entry)
 	{
 		if (!$entry->language)
 		{

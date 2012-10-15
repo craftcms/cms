@@ -17,7 +17,7 @@ class PagesService extends BaseApplicationComponent
 		$page = PageModel::populateModel($attributes);
 
 		// Set the block content
-		$content = $this->_getPageContentRecordByPageId($page->id);
+		$content = $this->getPageContentRecordByPageId($page->id);
 
 		if ($content)
 		{
@@ -143,7 +143,7 @@ class PagesService extends BaseApplicationComponent
 	 */
 	public function savePageContent(PageModel $page)
 	{
-		$contentRecord = $this->_getPageContentRecordByPageId($page->id);
+		$contentRecord = $this->getPageContentRecordByPageId($page->id);
 
 		$blocks = blx()->pageBlocks->getBlocksByPageId($page->id);
 
@@ -252,7 +252,7 @@ class PagesService extends BaseApplicationComponent
 	 * @param int $pageId
 	 * @return PageContentRecord
 	 */
-	private function _getPageContentRecordByPageId($pageId)
+	public function getPageContentRecordByPageId($pageId)
 	{
 		$record = PageContentRecord::model()->findByAttributes(array(
 			'pageId'   => $pageId,

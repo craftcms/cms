@@ -6,8 +6,8 @@ namespace Blocks;
  */
 abstract class BaseBlockEntityModel extends BaseModel
 {
-	private $_blockValuesByHandle;
-	private $_blockValuesById;
+	private $_blocks;
+	private $_content;
 
 	/**
 	 * Is set?
@@ -17,7 +17,8 @@ abstract class BaseBlockEntityModel extends BaseModel
 	 */
 	function __isset($name)
 	{
-		if (isset($this->_blockValuesByHandle) && array_key_exists($name, $this->_blockValuesByHandle))
+		$blocks = $this->_getBlocks();
+		if (isset($blocks[$name]))
 		{
 			return true;
 		}
@@ -35,9 +36,19 @@ abstract class BaseBlockEntityModel extends BaseModel
 	 */
 	function __get($name)
 	{
-		if (isset($this->_blockValuesByHandle) && array_key_exists($name, $this->_blockValuesByHandle))
+		// Is $name a block handle?
+		$blocks = $this->_getBlocks();
+		if (isset($blocks[$name]))
 		{
-			return $this->_blockValuesByHandle[$name];
+			$content = $this->_getContent();
+			if (isset($content[$name]))
+			{
+				return $content[$name];
+			}
+			else
+			{
+				return null;
+			}
 		}
 		else
 		{
@@ -46,72 +57,74 @@ abstract class BaseBlockEntityModel extends BaseModel
 	}
 
 	/**
-	 * Gets a block value by its ID.
+	 * Gets the blocks.
 	 *
-	 * @param int $id
-	 * @return mixed
+	 * @abstract
+	 * @access protected
+	 * @return array
 	 */
-	public function getBlockValueById($id)
+	abstract protected function getBlocks();
+
+	/**
+	 * Gets the content.
+	 *
+	 * @abstract
+	 * @access protected
+	 * @return array
+	 */
+	abstract protected function getContent();
+
+	/**
+	 * @acess private
+	 * @access private
+	 * @return array
+	 */
+	private function _getBlocks()
 	{
-		if (isset($this->_blockValuesById[$id]))
+		if (!isset($this->_blocks))
 		{
-			return $this->_blockValuesById[$id];
+			$this->_blocks = array();
+			foreach ($this->getBlocks() as $block)
+			{
+				$this->_blocks[$block->handle] = $block;
+			}
 		}
-		else
-		{
-			return null;
-		}
+
+		return $this->_blocks;
 	}
 
 	/**
-	 * Sets the block values.
-	 *
-	 * @param array $values
+	 * @acess private
+	 * @access private
+	 * @return array
 	 */
-	public function setBlockValues($values)
+	private function _getContent()
 	{
-		if (is_array($values))
+		if (!isset($this->_content))
 		{
-			foreach ($values as $id => $value)
-			{
-				if (is_string($id) && strncmp($id, 'block', 5) == 0)
-				{
-					$id = substr($id, 5);
-				}
+			$this->_content = $this->getContent();
 
-				$this->_blockValuesById[$id] = $value;
+			if ($this->_content instanceof \CModel)
+			{
+				$this->_content = $this->_content->getAttributes();
 			}
 		}
+
+		return $this->_content;
 	}
 
 	/**
-	 * Sets the block values from an attributes array or model.
+	 * Sets the content.
 	 *
-	 * @param array $blocks
-	 * @param \CModel|array $attributes
+	 * @param array $content
 	 */
-	public function setBlockValuesFromAttributes($blocks, $attributes, $indexedBy = 'handle')
+	public function setContent($content)
 	{
-		$this->_blockValuesById = array();
-
-		if ($attributes instanceof \CModel)
+		if ($content instanceof \CModel)
 		{
-			$attributes = $attributes->getAttributes();
+			$content = $content->getAttributes();
 		}
 
-		foreach ($blocks as $block)
-		{
-			if (isset($attributes[$block->$indexedBy]))
-			{
-				$value = $attributes[$block->$indexedBy];
-			}
-			else
-			{
-				$value = null;
-			}
-
-			$this->_blockValuesByHandle[$block->handle] = $value;
-			$this->_blockValuesById[$block->id] = $value;
-		}
+		$this->_content = $content;
 	}
 }

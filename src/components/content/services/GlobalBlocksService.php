@@ -37,13 +37,7 @@ class GlobalBlocksService extends BaseBlocksService
 	 */
 	public function getGlobalContent()
 	{
-		$content = new GlobalContentModel();
-
-		$blocks = $this->getAllBlocks();
-		$record = $this->_getGlobalContentRecord();
-		$content->setBlockValuesFromAttributes($blocks, $record);
-
-		return $content;
+		return new GlobalContentModel();
 	}
 
 	/**
@@ -53,7 +47,7 @@ class GlobalBlocksService extends BaseBlocksService
 	 */
 	public function saveGlobalContent(GlobalContentModel $content)
 	{
-		$record = $this->_getGlobalContentRecord();
+		$record = $this->getGlobalContentRecord();
 
 		$blockTypes = array();
 
@@ -92,10 +86,9 @@ class GlobalBlocksService extends BaseBlocksService
 	/**
 	 * Gets the global content record or creates a new one.
 	 *
-	 * @access private
 	 * @return GlobalContentRecord
 	 */
-	private function _getGlobalContentRecord()
+	public function getGlobalContentRecord()
 	{
 		$record = GlobalContentRecord::model()->findByAttributes(array(
 			'language' => blx()->language
