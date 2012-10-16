@@ -22,7 +22,7 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 #sidebar #header #account { position: absolute; top: 0; right: 0; padding: 17px 0 13px 1px; width: 35px; }
 #sidebar #header #account:after { margin-right: -5px; }
 
-#account-menu .userinfo { padding: 40px 15px 5px 110px; height: 56px; background: rgba(0,0,0,0.9); }
+#account-menu .userinfo { margin: -10px -15px 10px; padding: 40px 15px 5px 110px; height: 56px; background: rgba(0,0,0,0.9); }
 #account-menu .userinfo img { display: block; float: left; margin: -40px 0 0 -110px; }
 #account-menu .userinfo .fullname { margin-top: -8px; color: #fff; font-weight: bold; }
 #account-menu .userinfo .username { color: #d5d5d5; }
