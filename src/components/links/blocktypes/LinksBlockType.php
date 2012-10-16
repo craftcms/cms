@@ -124,6 +124,11 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function getInputHtml($name, $entities)
 	{
+		if (!$entities)
+		{
+			$entities = array();
+		}
+
 		$settings = $this->getSettings()->getAttributes();
 		$settings['addLabel'] = Blocks::t($settings['addLabel']);
 		$jsonSettings = JsonHelper::encode($settings);
