@@ -17,7 +17,7 @@ class WebLogRoute extends \CWebLogRoute
 		$isAjax = blx()->request->isAjaxRequest();
 		$mimeType = blx()->request->getMimeType();
 
-		if ($this->showInFireBug)
+		if ($this->showInFireBug && blx()->config->devMode)
 		{
 			if ($isAjax && $this->ignoreAjaxInFireBug)
 			{
