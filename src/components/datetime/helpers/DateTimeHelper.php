@@ -503,5 +503,30 @@ class DateTimeHelper
 		return $date;
 	}
 
+	/**
+	 * Gets a DateTime object from an entry date attribute
+	 *
+	 * @param mixed $dateAttribute
+	 * @param bool|null $required
+	 * @return DateTime|null
+	 */
+	public static function normalizeDate($dateAttribute, $required = false)
+	{
+		if ($dateAttribute instanceof \DateTime)
+		{
+			return $dateAttribute;
+		}
+		else if (is_numeric($dateAttribute))
+		{
+			$dateTime = new DateTime();
+			$dateTime->setTimestamp($dateAttribute);
+			return $dateTime;
+		}
+		else if ($required)
+		{
+			return new DateTime();
+		}
+	}
+
 }
 
