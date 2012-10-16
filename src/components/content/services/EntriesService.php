@@ -31,31 +31,6 @@ class EntriesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a DateTime object from an entry date attribute
-	 *
-	 * @param mixed $dateAttribute
-	 * @param bool|null $required
-	 * @return DateTime|null
-	 */
-	private function _getDate($dateAttribute, $required = false)
-	{
-		if ($dateAttribute instanceof \DateTime)
-		{
-			return $dateAttribute;
-		}
-		else if (is_numeric($dateAttribute))
-		{
-			$dateTime = new DateTime();
-			$dateTime->setTimestamp($dateAttribute);
-			return $dateTime;
-		}
-		else if ($required)
-		{
-			return new DateTime();
-		}
-	}
-
-	/**
 	 * Mass-populates entry models.
 	 *
 	 * @param array  $data
@@ -339,8 +314,8 @@ class EntriesService extends BaseApplicationComponent
 
 		$entryRecord->slug = $entry->slug;
 		$titleRecord->title = $entry->title;
-		$entryRecord->postDate = $this->_getDate($entry->postDate, true);
-		$entryRecord->expiryDate = $this->_getDate($entry->expiryDate);
+		$entryRecord->postDate = DateTimeHelper::normalizeDate($entry->postDate, true);
+		$entryRecord->expiryDate = DateTimeHelper::normalizeDate($entry->expiryDate);
 		$entryRecord->enabled = $entry->enabled;
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))

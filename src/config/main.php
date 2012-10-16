@@ -53,8 +53,8 @@ $cpRoutes['myaccount']                                                        = 
 
 if (in_array('publishpro', $packages))
 {
-	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/drafts\/(?P<draftNum>\d+)']     = 'content/entries/_edit';
-	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/versions\/(?P<versionNum>\d+)'] = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'content/entries/_edit';
 
 	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit/settings';
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit/settings';

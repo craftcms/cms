@@ -12,12 +12,12 @@
 
 
 {% if entry is not defined and entryId is defined %}
-	{% if draftNum is defined %}
-		{% set entry = blx.entryRevisions.getDraftByOffset(entryId, draftNum-1) %}
-		{% set revisionLabel = "Draft {num}"|t({ num: draftNum }) %}
-	{% elseif versionNum is defined %}
-		{% set entry = blx.entryRevisions.getVersionByOffset(entryId, versionNum-1) %}
-		{% set revisionLabel = "Version {num}"|t({ num: versionNum }) %}
+	{% if draftId is defined %}
+		{% set entry = blx.entryRevisions.getDraftById(draftId-1) %}
+		{% set revisionLabel = "Draft {id}"|t({ id: draftId }) %}
+	{% elseif versionId is defined %}
+		{% set entry = blx.entryRevisions.getVersionById(versionId-1) %}
+		{% set revisionLabel = "Version {id}"|t({ id: versionId }) %}
 	{% else %}
 		{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
 		{% set revisionLabel = "Current"|t %}
