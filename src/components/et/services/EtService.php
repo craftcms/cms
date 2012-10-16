@@ -27,9 +27,13 @@ class EtService extends BaseApplicationComponent
 		$et->getModel()->data = $updateInfo;
 		$etModel = $et->phoneHome();
 
-		$etModel = $this->decodeEtUpdateValues($etModel);
+		if ($etModel)
+		{
+			$etModel = $this->decodeEtUpdateValues($etModel);
+			return $etModel;
+		}
 
-		return $etModel;
+		return null;
 	}
 
 	/**
