@@ -54,11 +54,11 @@ class AssetFileModel extends BaseModel
 	/**
 	 * Returns the size of the thumbnail.
 	 *
+	 * @param int $maxSize
 	 * @return array
 	 */
-	public function getThumbSize()
+	public function getThumbSize($maxSize = 125)
 	{
-		$maxSize = 125;
 		$path = '../public/uploads/drinks/'.$this->filename;
 		list($width, $height) = getimagesize($path);
 
