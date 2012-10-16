@@ -51,8 +51,17 @@ var CP = Blocks.Base.extend({
 		$('.formsubmit').click(function() {
 			var $btn = $(this),
 				$form = $btn.closest('form');
+
 			if ($btn.attr('data-action'))
+			{
 				$('<input type="hidden" name="action" value="'+$btn.attr('data-action')+'"/>').appendTo($form);
+			}
+
+			if ($btn.attr('data-redirect'))
+			{
+				$('<input type="hidden" name="redirect" value="'+$btn.attr('data-redirect')+'"/>').appendTo($form);
+			}
+
 			$form.submit();
 		});
 	},
