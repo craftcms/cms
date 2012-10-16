@@ -17,26 +17,29 @@ class ProfileLogRoute extends \CProfileLogRoute
 		$isAjax = blx()->request->isAjaxRequest();
 		$mimeType = blx()->request->getMimeType();
 
-		if ($this->showInFireBug && blx()->config->devMode)
+		if (blx()->config->devMode)
 		{
-			if ($isAjax && $this->ignoreAjaxInFireBug)
+			if ($this->showInFireBug && blx()->config->devMode)
+			{
+				if ($isAjax && $this->ignoreAjaxInFireBug)
+				{
+					return;
+				}
+
+				$view .= '-firebug';
+			}
+			else if(!(blx() instanceof \CWebApplication) || $isAjax)
 			{
 				return;
 			}
 
-			$view .= '-firebug';
-		}
-		else if(!(blx() instanceof \CWebApplication) || $isAjax)
-		{
-			return;
-		}
+			if ($mimeType !== 'text/html')
+			{
+				return;
+			}
 
-		if ($mimeType !== 'text/html')
-		{
-			return;
+			$viewFile = blx()->path->getCpTemplatesPath().'logging/'.$view.'.php';
+			include(blx()->findLocalizedFile($viewFile, 'en'));
 		}
-
-		$viewFile = blx()->path->getCpTemplatesPath().'logging/'.$view.'.php';
-		include(blx()->findLocalizedFile($viewFile, 'en'));
 	}
 }
