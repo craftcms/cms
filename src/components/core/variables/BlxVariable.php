@@ -164,6 +164,17 @@ class BlxVariable
 	}
 
 	/**
+	 * @return EntryRevisionsVariable
+	 */
+	public function entryRevisions()
+	{
+		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		{
+			return new EntryRevisionsVariable();
+		}
+	}
+
+	/**
 	 * @return GlobalBlocksVariable
 	 */
 	public function globalBlocks()

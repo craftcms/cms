@@ -26,8 +26,8 @@ $cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']        = 
 $cpRoutes['content\/globals']                                                 = 'content/globals/index';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/new']                     = 'content/entries/_edit';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)']        = 'content/entries/_edit';
+$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/preview'] = 'content/entries/_edit';
 $cpRoutes['content\/(?P<filter>'.$handle.')']                                 = 'content/entries/index';
-$cpRoutes['content\/(?P<entryId>\d+)']                                        = 'content/_entry';
 
 $cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
@@ -53,7 +53,8 @@ $cpRoutes['myaccount']                                                        = 
 
 if (in_array('publishpro', $packages))
 {
-	$cpRoutes['content\/(?P<entryId>\d+)\/draft(?P<draftNum>\d+)']                = 'content/_entry';
+	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/drafts\/(?P<draftNum>\d+)']     = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/versions\/(?P<versionNum>\d+)'] = 'content/entries/_edit';
 
 	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit/settings';
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit/settings';
@@ -119,6 +120,7 @@ $components['updates']['class']           = 'Blocks\UpdatesService';
 
 if (in_array('publishpro', $packages))
 {
+	$components['entryRevisions']['class']    = 'Blocks\EntryRevisionsService';
 	$components['sections']['class']          = 'Blocks\SectionsService';
 	$components['sectionBlocks']['class']     = 'Blocks\SectionBlocksService';
 }

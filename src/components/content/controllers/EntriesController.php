@@ -16,7 +16,6 @@ class EntriesController extends BaseController
 		$entry = new EntryModel();
 
 		$entry->id = blx()->request->getPost('entryId');
-		$entry->authorId = blx()->account->getCurrentUser()->id;
 		$entry->title = blx()->request->getPost('title');
 		$entry->slug = blx()->request->getPost('slug');
 		$entry->postDate = $this->getDateFromPost('postDate');
@@ -29,6 +28,15 @@ class EntriesController extends BaseController
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$entry->sectionId = blx()->request->getRequiredPost('sectionId');
+		}
+
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			$entry->authorId = blx()->request->getPost('author');
+		}
+		else
+		{
+			$entry->authorId = blx()->account->getCurrentUser()->id;
 		}
 
 		if (Blocks::hasPackage(BlocksPackage::Language))

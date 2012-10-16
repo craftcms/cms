@@ -121,6 +121,31 @@ abstract class BaseBlockEntityModel extends BaseModel
 	}
 
 	/**
+	 * Sets content that's indexed by the block ID.
+	 *
+	 * @param array $content
+	 */
+	public function setContentIndexedByBlockId($content)
+	{
+		$this->_content = array();
+
+		$blocksById = array();
+		foreach ($this->_getBlocks() as $block)
+		{
+			$blocksById[$block->id] = $block;
+		}
+
+		foreach ($content as $blockId => $value)
+		{
+			if (isset($blocksById[$blockId]))
+			{
+				$block = $blocksById[$blockId];
+				$this->_content[$block->handle] = $value;
+			}
+		}
+	}
+
+	/**
 	 * Sets the content.
 	 *
 	 * @param array $content

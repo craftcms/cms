@@ -43,16 +43,20 @@ Blocks.ui.MenuBtn = Blocks.Base.extend({
 		event.preventDefault();
 
 		if (this.showingMenu)
+		{
 			this.hideMenu();
+		}
 		else
+		{
 			this.showMenu();
+		}
 	},
 
 	showMenu: function()
 	{
 		this.menu.setPosition(this.$btn);
 		this.menu.show();
-		this.$btn.addClass('sel');
+		this.$btn.addClass('active');
 		this.showingMenu = true;
 
 		setTimeout($.proxy(function() {
@@ -63,7 +67,7 @@ Blocks.ui.MenuBtn = Blocks.Base.extend({
 	hideMenu: function()
 	{
 		this.menu.hide();
-		this.$btn.removeClass('sel');
+		this.$btn.removeClass('active');
 		this.showingMenu = false;
 
 		this.removeListener(Blocks.$document, 'mousedown');
@@ -105,12 +109,23 @@ Blocks.ui.Menu = Blocks.Base.extend({
 
 	setPosition: function($btn)
 	{
-		var offset = $btn.offset();
-		this.$container.css({
-			top: offset.top + $btn.outerHeight(),
-			left: offset.left,
-			minWidth: $btn.outerWidth()
-		});
+		var btnOffset = $btn.offset(),
+			btnWidth = $btn.outerWidth(),
+			css = {
+				top: btnOffset.top + $btn.outerHeight(),
+				minWidth: btnWidth
+			};
+
+		if (this.$container.attr('data-align') == 'right')
+		{
+			css.right = 1 + Blocks.$window.width() - (btnOffset.left + btnWidth);
+		}
+		else
+		{
+			css.left = 1 + btnOffset.left;
+		}
+
+		this.$container.css(css);
 	},
 
 	show: function()

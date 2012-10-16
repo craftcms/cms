@@ -106,6 +106,7 @@ td.right { float: none; text-align: right; }
 .footer { border-top-width: 1px; padding-top: 9px; }
 
 .header h1 { margin: 0; text-align: center; }
+.header h1 .version { display: inline-block; position: relative; top: -2px; border-radius: 2px; padding: 0 5px; font-size: 11px; line-height: 18px; color: #fff; text-shadow: none; background: #555; -webkit-box-shadow: 0 1px 2px rgba(0,0,0,0.25); }
 
 .header .left,
 .header .right { position: absolute; top: 9px; float: none; }
@@ -358,10 +359,15 @@ ul.tree,
 /* ----------------------------------------*/
 
 .menu { display: none; position: absolute; z-index: 9999; padding: 10px 15px; background: #fff; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 5px 15px -5px rgba(0, 0, 0, 0.5); @include unselectable; }
-.menu ul li { margin: 0 -15px; }
 .menu ul li + li { margin-top: 3px; }
-.menu ul li a { display: block; padding: 4px 15px; font-size: 12px; color: #555; }
-.menu ul li a:hover { color: #fff; text-decoration: none; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); }
+.menu ul li a { display: block; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: #555; text-decoration: none; }
+.menu ul li a:not(.active):hover { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); }
+
+.menulist { padding-left: 33px; }
+.menulist h2 { margin: 10px 0 3px; }
+.menulist ul li a { margin-left: -33px; padding-left: 33px; }
+.menulist ul li a.active { color: #999; cursor: default; }
+.menulist ul li a.active:before { @include icon; content: "√"; float: left; margin: 2px 0 0 -18px; font-size: 16px; }
 
 /* ----------------------------------------
 /*  Tables

@@ -242,6 +242,7 @@ abstract class BaseModel extends \CModel
 	 *
 	 * @static
 	 * @param mixed $attributes
+	 * @return BaseModel
 	 */
 	public static function populateModel($attributes)
 	{

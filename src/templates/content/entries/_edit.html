@@ -12,7 +12,17 @@
 
 
 {% if entry is not defined and entryId is defined %}
-	{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
+	{% if draftNum is defined %}
+		{% set entry = blx.entryRevisions.getDraftByOffset(entryId, draftNum-1) %}
+		{% set revisionLabel = "Draft {num}"|t({ num: draftNum }) %}
+	{% elseif versionNum is defined %}
+		{% set entry = blx.entryRevisions.getVersionByOffset(entryId, versionNum-1) %}
+		{% set revisionLabel = "Version {num}"|t({ num: versionNum }) %}
+	{% else %}
+		{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
+		{% set revisionLabel = "Current"|t %}
+	{% endif %}
+
 	{% if not entry %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -31,6 +41,9 @@
 	{% set title = "Create a new entry"|t %}
 {% else %}
 	{% set title = "Editing “{title}”"|t({ title: entry.title|t }) %}
+	{% if entry is defined and entry.classHandle != 'Entry' %}
+		{% set title = title ~ ' <span class="version"><span class="hidden">(</span>' ~ revisionLabel ~ '<span class="hidden">)</span></span>' %}
+	{% endif %}
 {% endif %}
 
 
@@ -40,24 +53,27 @@
 	<ul class="left">
 		<li><a href="{{ url('content') }}" class="backbtn">{{ "Entries"|t }}</a></li>
 	</ul>
+
+	{% if not isNewEntry and blx.hasPackage('publishpro') %}
+		<ul class="right">
+			<li>
+				{% include "content/entries/_revisions" %}
+			</li>
+		</ul>
+	{% endif %}
 {% endset %}
 
 
 {% set tabs %}
-	<li><a data-icon="✎" class="active" data-target="entry-content">Content</a></li>
-	<li><a data-icon="⚙" data-target="entry-settings">Settings</a></li>
+	<li><a data-icon="✎" class="active" data-target="entry-content">{{ "Content"|t }}</a></li>
+	<li><a data-icon="⚙" data-target="entry-settings">{{ "Settings"|t }}</a></li>
 {% endset %}
 
 
 {% set content %}
 	<form method="post" action="">
-		<input type="hidden" name="action" value="entries/saveEntry">
-
 		{% if blx.hasPackage('publishpro') %}
-			<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
-		{% else %}
-			<input type="hidden" name="redirect" value="content/blog/{entryId}">
 		{% endif %}
 
 		{% if not isNewEntry %}
@@ -146,7 +162,31 @@
 		<hr>
 
 		<div class="buttons">
-			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+			{% if not isNewEntry and entry.classHandle == 'EntryDraft' %}
+
+				<input type="hidden" name="action" value="entryRevisions/saveDraft">
+				<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{{ entry.draftId }}">
+				<input type="hidden" name="draftId" value="{{ entry.draftId }}">
+				<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
+
+				<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}/preview">
+
+			{% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
+
+				<input type="hidden" name="action" value="entryRevisions/saveVersionAsDraft">
+				<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
+				<input type="hidden" name="versionId" value="{{ entry.versionId }}">
+				<input type="submit" class="btn" value="{{ 'Save as Draft'|t }}">
+
+			{% else %}
+
+				<input type="hidden" name="action" value="entries/saveEntry">
+				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+				{% if not isNewEntry and blx.hasPackage('publishpro') %}
+					<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" value="entryRevisions/createDraft" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+				{% endif %}
+			{% endif %}
 		</div>
 	</form>
 {% endset %}
