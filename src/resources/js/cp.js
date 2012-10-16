@@ -13,9 +13,6 @@ var CP = Blocks.Base.extend({
 		this.$notifications = this.$notificationContainer.children();
 		this.$notifications.delay(CP.notificationDuration).fadeOut();
 
-		// Initialize the account menu button
-		new Blocks.ui.MenuBtn('#account');
-
 		// Tabs
 		var $tabContainer = $('#tabs');
 		if ($tabContainer.length)

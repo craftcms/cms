@@ -8,6 +8,7 @@ class Blocks extends \Yii
 {
 	private static $_storedBlocksInfo;
 	private static $_packages;
+	private static $_siteUrl;
 
 	/**
 	 * Returns the Blocks version number, as defined by the BLOCKS_VERSION constant.
@@ -131,8 +132,31 @@ class Blocks extends \Yii
 	 */
 	public static function getSiteUrl()
 	{
-		$storedBlocksInfo = static::_getStoredInfo();
-		return $storedBlocksInfo ? $storedBlocksInfo->siteUrl : null;
+		if (!isset(static::$_siteUrl))
+		{
+			$storedBlocksInfo = static::_getStoredInfo();
+			if ($storedBlocksInfo)
+			{
+				$port = blx()->request->getPort();
+
+				if ($port == 80)
+				{
+					$port = '';
+				}
+				else
+				{
+					$port = ':'.$port;
+				}
+
+				static::$_siteUrl = $storedBlocksInfo->siteUrl.$port;
+			}
+			else
+			{
+				static::$_siteUrl = '';
+			}
+		}
+
+		return static::$_siteUrl;
 	}
 
 	/**
