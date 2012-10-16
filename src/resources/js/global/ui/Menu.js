@@ -134,4 +134,23 @@ Blocks.ui.Menu = Blocks.Base.extend({
 	}
 });
 
+
+$.fn.menubtn = function()
+{
+	return this.each(function()
+	{
+		if (!$.data(this, 'menubtn'))
+		{
+			new Blocks.ui.MenuBtn(this);
+		}
+	});
+};
+
+
+Blocks.$document.ready(function()
+{
+	$('.menubtn').menubtn();
+});
+
+
 })(jQuery);
