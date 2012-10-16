@@ -133,6 +133,7 @@ class EntriesService extends BaseApplicationComponent
 		}
 
 		$query = blx()->db->createCommand()
+			->select('e.*, t.title')
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
