@@ -25,7 +25,25 @@ class UrlHelper
 		$pathVar = blx()->urlManager->routeVar;
 
 		$path = static::_normalizePath(trim($path, '/'), $params);
-		$path = blx()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		if (blx()->request->getMode() == HttpRequestMode::Site)
+		{
+			$port = blx()->request->getPort();
+
+			if ($port == 80)
+			{
+				$port = '';
+			}
+			else
+			{
+				$port = ':'.$port;
+			}
+
+			$path = Blocks::getSiteUrl().$port.implode('/', $path);
+		}
+		else
+		{
+			$path = blx()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+		}
 
 		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
 		{
