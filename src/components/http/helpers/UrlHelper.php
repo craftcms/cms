@@ -27,18 +27,7 @@ class UrlHelper
 		$path = static::_normalizePath(trim($path, '/'), $params);
 		if (blx()->request->getMode() == HttpRequestMode::Site)
 		{
-			$port = blx()->request->getPort();
-
-			if ($port == 80)
-			{
-				$port = '';
-			}
-			else
-			{
-				$port = ':'.$port;
-			}
-
-			$path = Blocks::getSiteUrl().$port.implode('/', $path);
+			$path = Blocks::getSiteUrl().implode('/', $path);
 		}
 		else
 		{
