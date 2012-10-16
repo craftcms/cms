@@ -136,22 +136,29 @@ abstract class BaseBlockEntityModel extends BaseModel
 	}
 
 	/**
-	 * @param string $name
+	 * Returns the raw content saved on this entity.
+	 *
+	 * @param string|null $name
 	 * @return mixed
 	 */
-	public function getRawValue($name)
+	public function getRawContent($name = null)
 	{
 		$content = $this->_getContent();
 
-		if (isset($content[$name]))
+		if ($name)
 		{
-			$value = $content[$name];
+			if (isset($content[$name]))
+			{
+				return $content[$name];
+			}
+			else
+			{
+				return null;
+			}
 		}
 		else
 		{
-			$value = null;
+			return $content;
 		}
-
-		return $value;
 	}
 }

@@ -134,7 +134,7 @@ class LinksService extends BaseApplicationComponent
 
 			// Save the new ones
 			$blockHandle = $block->handle;
-			$childIds = $entity->getRawValue($blockHandle);
+			$childIds = $entity->getRawContent($blockHandle);
 
 			if ($childIds)
 			{
