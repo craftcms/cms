@@ -47,10 +47,10 @@ abstract class BaseBlockType extends BaseComponent
 	 *
 	 * @return mixed
 	 */
-	public function getInputValue()
+	public function getPostData()
 	{
 		$blockHandle = $this->model->handle;
-		$value = $this->entity->$blockHandle;
+		$value = $this->entity->getRawValue($blockHandle);
 		return $this->prepPostData($value);
 	}
 
