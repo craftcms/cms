@@ -75,11 +75,10 @@ abstract class BaseBlockEntityModel extends BaseModel
 	abstract protected function getContent();
 
 	/**
-	 * @acess private
-	 * @access private
+	 * @access protected
 	 * @return array
 	 */
-	private function _getBlocks()
+	protected function _getBlocks()
 	{
 		if (!isset($this->_blocks))
 		{
@@ -94,11 +93,10 @@ abstract class BaseBlockEntityModel extends BaseModel
 	}
 
 	/**
-	 * @acess private
-	 * @access private
+	 * @access protected
 	 * @return array
 	 */
-	private function _getContent()
+	protected function _getContent()
 	{
 		if (!isset($this->_content))
 		{

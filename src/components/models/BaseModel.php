@@ -150,11 +150,11 @@ abstract class BaseModel extends \CModel
 			{
 				if ($flattenValues)
 				{
-					$values[$name] = ModelHelper::packageAttributeValue($config, $this->$name);
+					$values[$name] = ModelHelper::packageAttributeValue($config, $this->getAttribute($name));
 				}
 				else
 				{
-					$values[$name] = $this->$name;
+					$values[$name] = $this->getAttribute($name);
 				}
 			}
 		}

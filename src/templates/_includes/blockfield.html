@@ -2,7 +2,7 @@
 {% if entity is not defined %}{% set entity = null %}{% endif %}
 
 {% set blockType = blx.blockTypes.populateBlockType(block, entity) %}
-{% set value = (entity ? entity[block.handle] : null) %}
+{% set value = (entity ? attribute(entity, block.handle) : null) %}
 {% set errors = (entity ? entity.getErrors(block.handle) : null) %}
 {% set input = blockType.input(block.handle, value) %}
 

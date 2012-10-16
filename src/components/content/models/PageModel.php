@@ -39,7 +39,7 @@ class PageModel extends BaseBlockEntityModel
 	 */
 	protected function getBlocks()
 	{
-		return blx()->pageBlocks->getBlocksByPageId($this->id);
+		return blx()->pageBlocks->getBlocksByPageId($this->getAttribute('id'));
 	}
 
 	/**
@@ -50,7 +50,28 @@ class PageModel extends BaseBlockEntityModel
 	 */
 	protected function getContent()
 	{
-		return blx()->pages->getPageContentRecordByPageId($this->id);
+		$content = array();
+
+		$blocksById = array();
+		foreach ($this->_getBlocks() as $block)
+		{
+			$blocksById[$block->id] = $block;
+		}
+
+		$contentRecord = blx()->pages->getPageContentRecordByPageId($this->getAttribute('id'));
+		if ($contentRecord->content)
+		{
+			foreach ($contentRecord->content as $blockId => $value)
+			{
+				if (isset($blocksById[$blockId]))
+				{
+					$block = $blocksById[$blockId];
+					$content[$block->handle] = $value;
+				}
+			}
+		}
+
+		return $content;
 	}
 
 	/**

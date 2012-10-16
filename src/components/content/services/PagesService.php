@@ -14,19 +14,7 @@ class PagesService extends BaseApplicationComponent
 	 */
 	public function populatePage($attributes)
 	{
-		$page = PageModel::populateModel($attributes);
-
-		// Set the block content
-		$content = $this->getPageContentRecordByPageId($page->id);
-
-		if ($content)
-		{
-			$blocks = blx()->pageBlocks->getBlocksByPageId($page->id);
-
-			$page->setBlockValuesFromAttributes($blocks, $content->content, 'id');
-		}
-
-		return $page;
+		return PageModel::populateModel($attributes);
 	}
 
 	/**
