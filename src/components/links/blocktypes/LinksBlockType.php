@@ -72,12 +72,12 @@ class LinksBlockType extends BaseBlockType
 	}
 
 	/**
-	 * Preprocesses the settings before they're saved to the database.
+	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
 	 * @return array
 	 */
-	public function preprocessSettings($settings)
+	public function prepSettings($settings)
 	{
 		if (isset($settings['types'][$settings['type']]))
 		{
@@ -92,31 +92,38 @@ class LinksBlockType extends BaseBlockType
 
 		// Give the link type a chance to pre-process any of its settings
 		$linkType = blx()->links->getLinkType($settings['type']);
-		$settings['linkTypeSettings'] = $linkType->preprocessSettings($linkTypeSettings);
+		$settings['linkTypeSettings'] = $linkType->prepSettings($linkTypeSettings);
 
 		return $settings;
+	}
+
+	/**
+	 * Preps the block value for use.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	public function prepValue($value)
+	{
+		if ($this->entity && $this->entity->id)
+		{
+			return blx()->links->getLinkedEntities($this->model, $this->entity);
+		}
+		else
+		{
+			return array();
+		}
 	}
 
 	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string $name
-	 * @param mixed  $value
+	 * @param mixed  $entities
 	 * @return string
 	 */
-	public function getInputHtml($name, $value)
+	public function getInputHtml($name, $entities)
 	{
-		$linkType = $this->_getLinkType();
-
-		if ($this->entity && $this->entity->id)
-		{
-			$entities = blx()->links->getLinkedEntities($this->model, $this->entity);
-		}
-		else
-		{
-			$entities = array();
-		}
-
 		$settings = $this->getSettings()->getAttributes();
 		$settings['addLabel'] = Blocks::t($settings['addLabel']);
 		$jsonSettings = JsonHelper::encode($settings);
@@ -127,7 +134,6 @@ class LinksBlockType extends BaseBlockType
 
 		return blx()->templates->render('_components/blocktypes/Links/input', array(
 			'name'     => $name,
-			'value'    => $value,
 			'linkType' => $this->_getLinkType(),
 			'settings' => $this->getSettings(),
 			'entities' => $entities,

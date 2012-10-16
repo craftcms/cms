@@ -109,7 +109,7 @@ class AssetSourcesService extends BaseApplicationComponent
 		$sourceRecord->type = $source->type;
 
 		$sourceType = blx()->assetSources->getSourceType($source->type);
-		$processedSettings = $sourceType->preprocessSettings($source->settings);
+		$processedSettings = $sourceType->prepSettings($source->settings);
 		$sourceRecord->settings = $source->settings = $processedSettings;
 		$sourceType->setSettings($processedSettings);
 

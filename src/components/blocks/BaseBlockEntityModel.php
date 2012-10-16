@@ -8,6 +8,7 @@ abstract class BaseBlockEntityModel extends BaseModel
 {
 	private $_blocks;
 	private $_content;
+	private $_preppedContent;
 
 	/**
 	 * Is set?
@@ -40,15 +41,23 @@ abstract class BaseBlockEntityModel extends BaseModel
 		$blocks = $this->_getBlocks();
 		if (isset($blocks[$name]))
 		{
-			$content = $this->_getContent();
-			if (isset($content[$name]))
+			if (!isset($this->_preppedContent[$name]))
 			{
-				return $content[$name];
+				$content = $this->_getContent();
+				if (isset($content[$name]))
+				{
+					$value = $content[$name];
+				}
+				else
+				{
+					$value = null;
+				}
+
+				$blockType = blx()->blockTypes->populateBlockType($blocks[$name], $this);
+				$this->_preppedContent[$name] = $blockType->prepValue($value);
 			}
-			else
-			{
-				return null;
-			}
+
+			return $this->_preppedContent[$name];
 		}
 		else
 		{

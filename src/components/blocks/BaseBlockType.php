@@ -51,17 +51,17 @@ abstract class BaseBlockType extends BaseComponent
 	{
 		$blockHandle = $this->model->handle;
 		$value = $this->entity->$blockHandle;
-		return $this->preprocessInputValue($value);
+		return $this->prepPostData($value);
 	}
 
 	/**
-	 * Preprocesses the input value before it is saved to the database.
+	 * Preps the post data before it's saved to the database.
 	 *
 	 * @access protected
 	 * @param mixed $value
 	 * @return mixed
 	 */
-	protected function preprocessInputValue($value)
+	protected function prepPostData($value)
 	{
 		return $value;
 	}
@@ -73,4 +73,14 @@ abstract class BaseBlockType extends BaseComponent
 	{
 	}
 
+	/**
+	 * Preps the block value for use.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	public function prepValue($value)
+	{
+		return $value;
+	}
 }

@@ -49,7 +49,7 @@ class EntryModel extends BaseBlockEntityModel
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			return blx()->sectionBlocks->getBlocksBySectionId($this->sectionId);
+			return blx()->sectionBlocks->getBlocksBySectionId($this->getAttribute('sectionId'));
 		}
 		else
 		{

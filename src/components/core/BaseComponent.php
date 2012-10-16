@@ -83,12 +83,12 @@ abstract class BaseComponent extends BaseApplicationComponent
 	}
 
 	/**
-	 * Preprocesses the settings before they're saved to the database.
+	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
 	 * @return array
 	 */
-	public function preprocessSettings($settings)
+	public function prepSettings($settings)
 	{
 		return $settings;
 	}

@@ -49,12 +49,12 @@ class QuickPostWidget extends BaseWidget
 	}
 
 	/**
-	 * Preprocesses the settings before they're saved to the database.
+	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
 	 * @return array
 	 */
-	public function preprocessSettings($settings)
+	public function prepSettings($settings)
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{

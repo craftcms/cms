@@ -22,12 +22,12 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	}
 
 	/**
-	 * Preprocesses the settings before they're saved to the database.
+	 * Preps the settings before they're saved to the database.
 	 *
 	 * @param array $settings
 	 * @return array
 	 */
-	public function preprocessSettings($settings)
+	public function prepSettings($settings)
 	{
 		// Expand the options setting into an array.
 		if (!empty($settings['options']) && is_string($settings['options']))
