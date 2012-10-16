@@ -71,7 +71,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function isUpdateInfoCached()
 	{
-		return (isset($this->_updateModel) || blx()->fileCache->get('updateInfo') !== false);
+		return (isset($this->_updateModel) || blx()->fileCache->get('updateinfo') !== false);
 	}
 
 	/**
@@ -148,7 +148,7 @@ class UpdatesService extends BaseApplicationComponent
 			if (!$forceRefresh)
 			{
 				// get the update info from the cache if it's there
-				$updateModel = blx()->fileCache->get('updateInfo');
+				$updateModel = blx()->fileCache->get('updateinfo');
 			}
 
 			// fetch it if it wasn't cached, or if we're forcing a refresh
@@ -182,7 +182,7 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Blocks::log('Flushing update info from cache.');
 
-		if (blx()->fileCache->delete('updateInfo'))
+		if (blx()->fileCache->delete('updateinfo'))
 		{
 			return true;
 		}

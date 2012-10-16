@@ -146,7 +146,7 @@ class PagesService extends BaseApplicationComponent
 			if ($blockType->defineContentAttribute() !== false)
 			{
 				$handle = $block->handle;
-				$content[$block->id] = $blockType->getInputValue();
+				$content[$block->id] = $blockType->getPostData();
 			}
 
 			// Keep the block type instance around for calling onAfterEntitySave()

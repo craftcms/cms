@@ -361,7 +361,7 @@ class EntriesService extends BaseApplicationComponent
 			if ($blockType->defineContentAttribute() !== false)
 			{
 				$handle = $block->handle;
-				$contentRecord->$handle = $blockType->getInputValue();
+				$contentRecord->$handle = $blockType->getPostData();
 			}
 
 			// Keep the block type instance around for calling onAfterEntitySave()

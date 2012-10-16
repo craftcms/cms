@@ -113,8 +113,10 @@ class LinksService extends BaseApplicationComponent
 	/**
 	 * Sets the linked entities for a Links block.
 	 *
-	 * @param BaseBlockModel $block
+	 * @param BaseBlockModel       $block
 	 * @param BaseBlockEntityModel $entity
+	 * @throws \Exception
+	 * @return void
 	 */
 	public function setLinks(BaseBlockModel $block, BaseBlockEntityModel $entity)
 	{
@@ -132,7 +134,8 @@ class LinksService extends BaseApplicationComponent
 
 			// Save the new ones
 			$blockHandle = $block->handle;
-			$childIds = $entity->$blockHandle;
+			$childIds = $entity->getRawValue($blockHandle);
+
 			if ($childIds)
 			{
 				foreach ($childIds as $sortOrder => $childId)

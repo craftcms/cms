@@ -59,7 +59,7 @@ class GlobalBlocksService extends BaseBlocksService
 			if ($blockType->defineContentAttribute() !== false)
 			{
 				$handle = $block->handle;
-				$record->$handle = $blockType->getInputValue();
+				$record->$handle = $blockType->getPostData();
 			}
 
 			// Keep the block type instance around for calling onAfterEntitySave()

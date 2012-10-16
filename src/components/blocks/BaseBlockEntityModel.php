@@ -134,4 +134,24 @@ abstract class BaseBlockEntityModel extends BaseModel
 
 		$this->_content = $content;
 	}
+
+	/**
+	 * @param string $name
+	 * @return mixed
+	 */
+	public function getRawValue($name)
+	{
+		$content = $this->_getContent();
+
+		if (isset($content[$name]))
+		{
+			$value = $content[$name];
+		}
+		else
+		{
+			$value = null;
+		}
+
+		return $value;
+	}
 }
