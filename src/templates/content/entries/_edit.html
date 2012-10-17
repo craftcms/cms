@@ -13,10 +13,10 @@
 
 {% if entry is not defined and entryId is defined %}
 	{% if draftId is defined %}
-		{% set entry = blx.entryRevisions.getDraftById(draftId-1) %}
+		{% set entry = blx.entryRevisions.getDraftById(draftId) %}
 		{% set revisionLabel = "Draft {id}"|t({ id: draftId }) %}
 	{% elseif versionId is defined %}
-		{% set entry = blx.entryRevisions.getVersionById(versionId-1) %}
+		{% set entry = blx.entryRevisions.getVersionById(versionId) %}
 		{% set revisionLabel = "Version {id}"|t({ id: versionId }) %}
 	{% else %}
 		{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
