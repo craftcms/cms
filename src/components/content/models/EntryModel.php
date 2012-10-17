@@ -15,7 +15,7 @@ class EntryModel extends BaseBlockEntityModel
 	 */
 	function __toString()
 	{
-		return $this->title;
+		return (string) $this->title;
 	}
 
 	public function defineAttributes()

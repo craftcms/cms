@@ -111,6 +111,51 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Gets entities by their ID.
+	 *
+	 * @param BaseBlockModel $block
+	 * @param array $entityIds
+	 * @return array
+	 */
+	public function getEntitiesById(BaseBlockModel $block, $entityIds)
+	{
+		if (!$entityIds)
+		{
+			return array();
+		}
+
+		$linkType = $this->_getLinkType($block->settings['type']);
+
+		$table = $linkType->getEntityTableName();
+		$query = blx()->db->createCommand()
+			->select($table.'.*')
+			->from($table.' '.$table)
+			->where(array('in', $table.'.id', $entityIds));
+
+		// Give the link type a chance to make any changes
+		$query = $linkType->modifyLinkedEntitiesQuery($query);
+
+		$rows = $query->queryAll();
+
+		$rowsById = array();
+		foreach ($rows as $row)
+		{
+			$rowsById[$row['id']] = $row;
+		}
+
+		$orderedRows = array();
+		foreach ($entityIds as $id)
+		{
+			if (isset($rowsById[$id]))
+			{
+				$orderedRows[] = $rowsById[$id];
+			}
+		}
+
+		return $linkType->populateEntities($orderedRows);
+	}
+
+	/**
 	 * Sets the linked entities for a Links block.
 	 *
 	 * @param BaseBlockModel       $block

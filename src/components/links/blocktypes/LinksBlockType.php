@@ -105,7 +105,13 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function prepValue($value)
 	{
-		if ($this->entity && $this->entity->id)
+		// $value will be an array of entity IDs if there was a validation error
+		// or we're loading a draft/version.
+		if (is_array($value))
+		{
+			return blx()->links->getEntitiesById($this->model, $value);
+		}
+		else if ($this->entity && $this->entity->id)
 		{
 			return blx()->links->getLinkedEntities($this->model, $this->entity);
 		}
