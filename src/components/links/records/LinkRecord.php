@@ -20,19 +20,30 @@ class LinkRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'parentType' => array(AttributeType::ClassName, 'required' => true),
-			'blockId'    => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
-			'parentId'   => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
-			'childType'  => array(AttributeType::ClassName, 'required' => true),
-			'childId'    => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
-			'sortOrder'  => AttributeType::SortOrder,
+			'leftEntityId' => array(AttributeType::Number, 'unsigned' => true),
+			'rightEntityId' => array(AttributeType::Number, 'required' => true, 'unsigned' => true),
+			'leftSortOrder' => AttributeType::SortOrder,
+			'rightSortOrder' => AttributeType::SortOrder,
 		);
 	}
 
+	/**
+	 * @return array
+	 */
+	public function defineRelations()
+	{
+		return array(
+			'criteria' => array(static::BELONGS_TO, 'LinkCriteriaRecord'),
+		);
+	}
+
+	/**
+	 * @return array
+	 */
 	public function defineIndexes()
 	{
 		return array(
-			array('columns' => array('blockId', 'parentType', 'parentId', 'childType', 'childId'), 'unique' => true),
+			array('columns' => array('criteriaId', 'leftEntityId', 'rightEntityId'), 'unique' => true),
 		);
 	}
 }
