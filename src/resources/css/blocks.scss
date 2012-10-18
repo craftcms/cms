@@ -1,10 +1,12 @@
 @import "shared";
 @import "reset";
-@import "cp";
 
 /* ----------------------------------------
 /*  Basic stuff
 /* ----------------------------------------*/
+
+body { font-size: 13px; line-height: 18px; color: #555; background: #fff; }
+body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 
 .first, h2:first-child, h3:first-child, h4:first-child, h5:first-child, h6:first-child, p:first-child, hr:first-child, .pane:first-child, .grid:first-child, .field:first-child, .toolbar:first-child, .buttons:first-child { margin-top: 0 !important; }
 .last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
@@ -40,8 +42,8 @@ p { margin: 1em 0; }
 ol { padding-left: 40px; list-style-type: decimal; }
 
 /* code */
-code { font-family: Menlo, fixed-width; font-size: 0.9em; }
-.code { font-family: Menlo, monospace; font-size: 12px !important; }
+code,
+.code { font-family: Menlo, monospace; font-size: 0.9em !important; }
 
 /* links */
 a { color: $linkcolor; cursor: pointer; }
@@ -286,6 +288,8 @@ h2 + .actions { margin-top: -54px; }
 /*  Tables
 /* ----------------------------------------*/
 
+table th { font-weight: bold; text-align: left; vertical-align: top; }
+
 /* info */
 table.info > tbody > tr > th { padding: 0 10px 2px 0; width: 150px; text-align: right; color: $mediumdark; }
 table.info > tbody > tr > td { padding: 0 0 2px 0; }
@@ -368,29 +372,6 @@ ul.tree,
 .menulist ul li a { margin-left: -33px; padding-left: 33px; }
 .menulist ul li a.active { color: #999; cursor: default; }
 .menulist ul li a.active:before { @include icon; content: "√"; float: left; margin: 2px 0 0 -18px; font-size: 16px; }
-
-/* ----------------------------------------
-/*  Tables
-/* ----------------------------------------*/
-
-table th { font-weight: bold; font-family: sans-serif; text-align: left; vertical-align: top; }
-
-/* matrix */
-table.matrix { display: table; padding: 0; }
-table.matrix > thead > tr > th { border-bottom: 1px solid #ccc; padding: 4px 10px 5px; font-size: 12px; color: #666; white-space: nowrap; @include linear-gradient(#fff, #fafafa); }
-table.matrix > thead > tr > th:not(:last-child) { border-right: 1px dotted #ccc; }
-table.matrix > thead > tr > th:first-child { border-top-left-radius: 1px; }
-table.matrix > thead > tr > th:last-child { border-top-right-radius: 1px; }
-
-table.matrix > tbody > tr > td { border: solid #bbb; border-width: 0 1px 1px 0; padding: 10px 12px; background: #fff; }
-table.matrix > tbody > tr > td.norows { text-align: center; color: #666; }
-
-table.matrix > tbody > tr:last-child > td { border-bottom: none; }
-table.matrix > tbody > tr:last-child > td:first-child { border-bottom-left-radius: 1px; }
-table.matrix > tbody > tr:last-child > td:last-child { border-bottom-right-radius: 1px; border-right: none; }
-
-table.matrix > tbody > tr:not(:first-child) > td { border-bottom: 1px solid #bfbfbf; }
-table.matrix > tbody > tr > td:not(:last-child) { border-right: 1px dotted #bfbfbf; }
 
 /* ----------------------------------------
 /*  Fields
