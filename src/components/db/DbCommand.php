@@ -318,7 +318,7 @@ class DbCommand extends \CDbCommand
 	public function dropIndex($name, $table)
 	{
 		$name = md5($this->_addTablePrefix($name));
-		return parent::dropIndex($name, $this->getTableName($table));
+		return parent::dropIndex($name, $this->_addTablePrefix($table));
 	}
 
 	/**
