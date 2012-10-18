@@ -199,10 +199,12 @@ class {ClassName} extends \CDbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
+	 *
+	 * @return bool
 	 */
 	public function safeUp()
 	{
-
+		return true;
 	}
 }
 

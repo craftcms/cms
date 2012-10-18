@@ -58,11 +58,11 @@ class App extends \CWebApplication
 			// Let's let all CP requests through.
 			if ($this->request->getMode() == HttpRequestMode::CP)
 			{
-				$this->runController('dbupdate');
+				$this->runController('update/manualUpdate');
 				$this->end();
 			}
-			// We'll also let action requests to dbupdate through as well.
-			else if ($this->request->getMode() == HttpRequestMode::Action && (($actionPath = $this->request->getActionPath()) !== null) && isset($actionPath[0]) && $actionPath[0] == 'dbupdate')
+			// We'll also let action requests to UpdateController through as well.
+			else if ($this->request->getMode() == HttpRequestMode::Action && (($actionPath = $this->request->getActionPath()) !== null) && isset($actionPath[0]) && $actionPath[0] == 'update')
 			{
 				$controller = $actionPath[0];
 				$action = isset($actionPath[1]) ? $actionPath[1] : 'index';

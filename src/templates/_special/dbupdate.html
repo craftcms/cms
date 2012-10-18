@@ -2,45 +2,45 @@
 {% set title = "Update Blocks"|t %}
 
 
-{% set css %}
-	#dbupdate .icon { background-image: url({{ resourceUrl('images/notice-dbupdate.png') }}); }
-{% endset %}
-{% includeCss css %}
-
-
 {% set body %}
-	<div class="no-access" id="dbupdate">
+	<div class="lockedup">
 		<div class="pane">
-			<div class="pane-body">
-				<div class="pane-item notice">
-					<div class="icon"></div>
-					<p>{{ "To complete the Blocks update, some changes must be made to your database."|t }}<br>
-						<a id="go" class="go">{{ "Finish up"|t }}</a></p>
-				</div>
+			<p>{{ "To complete the Blocks update, some changes must be made to your database."|t }}</p>
+			<div class="buttons">
+				<div id="finishup" class="btn submit">{{ "Finish up"|t }}</div>
+				<div id="spinner" class="spinner hidden"></div>
 			</div>
 		</div>
 	</div>
-
-
-		{#<div id="status">{{ "Your database needs to be updated.  Make a backup, then press this button."|t }}
-		<form method="post" action="">
-			<input type="hidden" name="action" value="dbUpdate/update">
-			<input type="hidden" name="redirect" value="dashboard">
-			<div><input class="btn big submit" type="submit" value="{{ 'Do It.'|t }}"></div>
-		</form></div>#}
 {% endset %}
 
 
 {% set js %}
-	var waiting = false;
-	$('#go').click(function() {
-		$.post("{{ actionUrl('dbupdate/update') }}", function(response) {
+	var $btn = $('#finishup'),
+		$spinner = $('#spinner');
+
+	$btn.click(function()
+	{
+		if ($btn.hasClass('active'))
+		{
+			return;
+		}
+
+		$btn.addClass('active');
+		$spinner.removeClass('hidden');
+
+		$.post("{{ actionUrl('update/runManualUpdate') }}", function(response)
+		{
 			if (response.success)
-				window.location.reload()
+			{
+				window.location.reload();
+			}
 			else
 			{
-				var error = (response.error or '{{ "An unknown error occurred."|t }}');
-				alert(error);
+				$btn.removeClass('active');
+				$spinner.addClass('hidden');
+
+				alert(response.error || '{{ "An unknown error occurred."|t }}');
 			}
 		});
 	});

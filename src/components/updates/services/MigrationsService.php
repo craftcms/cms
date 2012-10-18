@@ -285,6 +285,7 @@ class MigrationsService extends BaseApplicationComponent
 			if (preg_match('/^(m(\d{6}_\d{6})_.*?)\.php$/', $file, $matches) && IOHelper::fileExists($path) && !isset($applied[$matches[2]]))
 			{
 				$time = strtotime('20'.substr($matches[2], 0, 2).'-'.substr($matches[2], 2, 2).'-'.substr($matches[2], 4, 2).' '.substr($matches[2], 7, 2).':'.substr($matches[2], 9, 2).':'.substr($matches[2], 11, 2));
+				$time = new DateTime('@'.$time);
 
 				// Check the migration timestamp against the Blocks release date
 				if ($time > Blocks::getStoredReleaseDate())
@@ -315,10 +316,12 @@ class {ClassName} extends \CDbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
+	 *
+	 * @return bool
 	 */
 	public function safeUp()
 	{
-
+		return true;
 	}
 }
 EOD;
