@@ -17,7 +17,7 @@
 
 <body>
 	<h1>{{ "Page Not Found"|t }}</h1>
-	<h2>{{ message|nl2br }}<?php echo nl2br(Blocks\HtmlHelper::encode($data['message'])); ?></h2>
+	{% if message %}<h2>{{ message|nl2br }}</h2>{% endif %}
 
 	<p>{{ "The requested URL was not found on this server.  If you entered the URL manually please check your spelling and try again."|t }}</p>
 	<p>{{ "If you think this is a server error, please contact someone."|t }}</p>
