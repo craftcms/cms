@@ -22,16 +22,32 @@ if ($tablePrefix)
 	$tablePrefix .= '_';
 }
 
-return CMap::mergeArray(
-	require(BLOCKS_APP_PATH.'config/common.php'),
+$common = require(BLOCKS_APP_PATH.'config/common.php');
 
-	array(
+return CMap::mergeArray($common, array(
+
 		'basePath' => dirname(__FILE__).'/../',
 
 		// autoloading model and component classes
 		'import' => array(
 			'application.*',
 			'application.migrations.*',
+		),
+
+		'componentAliases' => array(
+				'app.*',
+				'app.console.*',
+				'app.console.commands.*',
+				'app.components.datetime.*',
+				'app.components.db.*',
+				'app.components.email.*',
+				'app.components.enums.*',
+				'app.components.logging.*',
+				'app.components.updates.*',
+				'app.components.core.helpers.*',
+				'app.components.core.validators.*',
+				'app.migrations.*',
+
 		),
 
 		'components' => array(

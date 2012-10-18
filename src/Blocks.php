@@ -298,9 +298,11 @@ class Blocks extends \Yii
 	{
 		$segs = explode('.', $alias);
 
-		if (isset($segs[0]))
+		if ($segs)
 		{
-			switch ($segs[0])
+			$firstSeg = array_shift($segs);
+
+			switch ($firstSeg)
 			{
 				case 'app':
 				{
@@ -323,10 +325,9 @@ class Blocks extends \Yii
 			$rootPath = BLOCKS_APP_PATH;
 		}
 
-		$path = $rootPath.implode('/', array_slice($segs, 1));
+		$path = $rootPath.implode('/', $segs);
 
 		$folder = (substr($path, -2) == '/*');
-
 		if ($folder)
 		{
 			$path = substr($path, 0, -1);

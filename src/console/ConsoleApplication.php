@@ -6,22 +6,19 @@ namespace Blocks;
  */
 class ConsoleApplication extends \CConsoleApplication
 {
+	public $componentAliases;
 
 	/**
 	 *
 	 */
 	public function init()
 	{
-		$this->_importClasses();
-		parent::init();
-	}
+		foreach ($this->componentAliases as $alias)
+		{
+			Blocks::import($alias);
+		}
 
-	/**
-	 * Prepares Yii's autoloader with a map pointing all of Blocks' class names to their file paths
-	 */
-	private function _importClasses()
-	{
-		$aliases = array(
+		/*$aliases = array(
 			'app.*',
 			'app.console.*',
 			'app.console.commands.*',
@@ -34,12 +31,9 @@ class ConsoleApplication extends \CConsoleApplication
 			'app.components.core.helpers.*',
 			'app.components.core.validators.*',
 			'app.migrations.*',
-		);
+		);*/
 
-		foreach ($aliases as $alias)
-		{
-			Blocks::import($alias);
-		}
+		parent::init();
 	}
 
 	/**

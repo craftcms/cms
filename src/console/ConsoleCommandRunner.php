@@ -19,7 +19,7 @@ class ConsoleCommandRunner extends \CConsoleCommandRunner
 			{
 				if (strpos($this->commands[$name], '/') !== false || strpos($this->commands[$name], '\\') !== false)
 				{
-					$className = substr(IOHelper::getFileName($this->commands[$name], false), 0, -4);
+					$className = IOHelper::getFileName($this->commands[$name], false);
 
 					// If it's a default framework command, don't namespace it.
 					if (strpos($this->commands[$name], 'framework') === false)
