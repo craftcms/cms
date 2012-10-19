@@ -164,6 +164,8 @@ class AccountService extends BaseApplicationComponent
 		}
 
 		$userRecord->username = $user->username;
+		$userRecord->firstName = $user->firstName;
+		$userRecord->lastName = $user->lastName;
 		$userRecord->email = $user->email;
 		$userRecord->emailFormat = $user->emailFormat;
 		$userRecord->admin = $user->admin;

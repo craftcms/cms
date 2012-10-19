@@ -109,12 +109,19 @@ abstract class BaseBlockEntityModel extends BaseModel
 	{
 		if (!isset($this->_content))
 		{
-			$this->_content = $this->getContent();
+			$content = $this->getContent();
 
-			if ($this->_content instanceof \CModel)
+			if ($content instanceof \CModel)
 			{
-				$this->_content = $this->_content->getAttributes();
+				$content = $content->getAttributes();
 			}
+
+			if (!is_array($content))
+			{
+				$content = array();
+			}
+
+			$this->_content = $content;
 		}
 
 		return $this->_content;

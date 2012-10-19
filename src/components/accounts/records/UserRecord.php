@@ -21,6 +21,8 @@ class UserRecord extends BaseRecord
 	{
 		return array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true, 'unique' => true),
+			'firstName'                  => array(AttributeType::String, 'maxLength' => 100),
+			'lastName'                   => array(AttributeType::String, 'maxLength' => 100),
 			'email'                      => array(AttributeType::Email, 'required' => true, 'unique' => true),
 			'password'                   => array(AttributeType::String, 'maxLength' => 255, 'column' => ColumnType::Char),
 			'encType'                    => array(AttributeType::String, 'maxLength' => 10, 'column' => ColumnType::Char),

@@ -18,7 +18,7 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 			'entryblocks' => 'Entry',
 			'globalblocks' => 'GlobalContent',
 			'pageblocks' => 'Page',
-			'userprofileblocks' => 'UserProfile',
+			'userprofileblocks' => 'User',
 		);
 
 		// AttributeType::SortOrder is now a signed TinyInt

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * User model class
  */
-class UserModel extends BaseModel
+class UserModel extends BaseBlockEntityModel
 {
 	/**
 	 * Use the full name or username as the string representation.
@@ -32,6 +32,8 @@ class UserModel extends BaseModel
 		return array(
 			'id'                           => AttributeType::Number,
 			'username'                     => AttributeType::String,
+			'firstName'                    => AttributeType::String,
+			'lastName'                     => AttributeType::String,
 			'email'                        => AttributeType::Email,
 			'password'                     => AttributeType::String,
 			'encType'                      => AttributeType::String,
@@ -61,15 +63,34 @@ class UserModel extends BaseModel
 	}
 
 	/**
-	 * Returns the user's profile.
+	 * Gets the blocks.
 	 *
-	 * @return UserProfileModel|null
+	 * @access protected
+	 * @return array
 	 */
-	public function getProfile()
+	protected function getBlocks()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->userProfiles->getProfileByUserId($this->id);
+			return blx()->userProfileBlocks->getAllBlocks();
+		}
+		else
+		{
+			return array();
+		}
+	}
+
+	/**
+	 * Gets the content.
+	 *
+	 * @access protected
+	 * @return array|\CModel
+	 */
+	protected function getContent()
+	{
+		if ($this->id && Blocks::hasPackage(BlocksPackage::Users))
+		{
+			return blx()->userProfiles->getProfileRecordByUserId($this->id);
 		}
 	}
 
@@ -95,11 +116,7 @@ class UserModel extends BaseModel
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$profile = $this->getProfile();
-			if ($profile)
-			{
-				return $profile->getFullName();
-			}
+			return $this->firstName . ($this->firstName && $this->lastName ? ' ' : '') . $this->lastName;
 		}
 	}
 
