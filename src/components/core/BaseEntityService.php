@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Base blocks service class
  */
-abstract class BaseBlocksService extends BaseApplicationComponent
+abstract class BaseEntityService extends BaseApplicationComponent
 {
 	private $_blocks;
 
@@ -213,6 +213,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 		$processedSettings = $blockType->prepSettings($block->settings);
 		$blockRecord->settings = $block->settings = $processedSettings;
 		$blockType->setSettings($processedSettings);
+		$blockType->model = $block;
 
 		$recordValidates = $blockRecord->validate();
 		$settingsValidate = $blockType->getSettings()->validate();
@@ -234,6 +235,7 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 			$transaction = blx()->db->beginTransaction();
 			try
 			{
+				//$blockType->onBeforeSave();
 				$blockRecord->save(false);
 
 				// Now that we have a block ID, save it on the model
@@ -259,6 +261,8 @@ abstract class BaseBlocksService extends BaseApplicationComponent
 						blx()->db->createCommand()->alterColumn($contentTable, $blockRecord->oldHandle, $column, $blockRecord->handle);
 					}
 				}
+
+				//$blockType->onAfterSave();
 
 				$transaction->commit();
 			}

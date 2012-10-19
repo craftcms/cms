@@ -33,7 +33,7 @@
 
 {% set content %}
 	<form method="post" action="">
-		<input type="hidden" name="action" value="pageBlocks/saveBlock">
+		<input type="hidden" name="action" value="pages/saveBlock">
 		<input type="hidden" name="redirect" value="content/pages/{{ page.id }}/blocks">
 		<input type="hidden" name="pageId" value="{{ page.id }}">
 		{% if not isNewBlock %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}

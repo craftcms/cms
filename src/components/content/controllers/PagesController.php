@@ -4,8 +4,32 @@ namespace Blocks;
 /**
  * Handles page management tasks
  */
-class PagesController extends BaseController
+class PagesController extends BaseEntityController
 {
+	/**
+	 * Returns the block service instance.
+	 *
+	 * @return PageBlocksService
+	 */
+	protected function getService()
+	{
+		return blx()->pages;
+	}
+
+	/**
+	 * Populates a block model from post.
+	 *
+	 * @access protected
+	 * @return EntryBlockModel
+	 */
+	protected function populateBlockFromPost()
+	{
+		$block = parent::populateBlockFromPost();
+		$block->pageId = blx()->request->getRequiredPost('pageId');
+
+		return $block;
+	}
+
 	/**
 	 * Saves a page.
 	 */

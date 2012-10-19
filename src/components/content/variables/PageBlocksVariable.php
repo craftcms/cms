@@ -13,7 +13,7 @@ class PageBlocksVariable
 	 */
 	public function getAllBlocks()
 	{
-		return blx()->pageBlocks->getAllBlocks();
+		return blx()->pages->getAllBlocks();
 	}
 
 	/**
@@ -24,7 +24,7 @@ class PageBlocksVariable
 	 */
 	public function getBlocksByPageId($pageId)
 	{
-		return blx()->pageBlocks->getBlocksByPageId($pageId);
+		return blx()->pages->getBlocksByPageId($pageId);
 	}
 
 	/**
@@ -37,7 +37,7 @@ class PageBlocksVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			return blx()->pageBlocks->getTotalBlocksByPageId($pageId);
+			return blx()->pages->getTotalBlocksByPageId($pageId);
 		}
 	}
 
@@ -49,6 +49,6 @@ class PageBlocksVariable
 	 */
 	public function getPageBlockById($id)
 	{
-		return blx()->pageBlocks->getBlockById($id);
+		return blx()->pages->getBlockById($id);
 	}
 }

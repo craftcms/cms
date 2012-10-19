@@ -72,7 +72,7 @@ class UserModel extends BaseEntityModel
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->userProfileBlocks->getAllBlocks();
+			return blx()->users->getAllBlocks();
 		}
 		else
 		{
@@ -90,7 +90,7 @@ class UserModel extends BaseEntityModel
 	{
 		if ($this->id && Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->userProfiles->getProfileRecordByUserId($this->id);
+			return blx()->users->getProfileRecordByUserId($this->id);
 		}
 	}
 

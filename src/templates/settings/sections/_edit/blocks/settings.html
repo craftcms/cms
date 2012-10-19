@@ -40,11 +40,11 @@
 {% set content %}
 	<form method="post" action="">
 		{% if blx.hasPackage('publishpro') %}
-			<input type="hidden" name="action" value="sectionBlocks/saveBlock">
+			<input type="hidden" name="action" value="sections/saveBlock">
 			<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% else %}
-			<input type="hidden" name="action" value="entryBlocks/saveBlock">
+			<input type="hidden" name="action" value="entries/saveBlock">
 			<input type="hidden" name="redirect" value="settings/blog">
 		{% endif %}
 

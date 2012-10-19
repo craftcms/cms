@@ -13,7 +13,7 @@ class EntryBlocksVariable
 	 */
 	public function entryBlocks()
 	{
-		return blx()->entryBlocks->getAllBlocks();
+		return blx()->entries->getAllBlocks();
 	}
 
 	/**
@@ -24,7 +24,7 @@ class EntryBlocksVariable
 	 */
 	public function entryBlocksBySectionId($sectionId)
 	{
-		return blx()->sectionBlocks->getBlocksBySectionId($sectionId);
+		return blx()->sections->getBlocksBySectionId($sectionId);
 	}
 
 	/**
@@ -37,7 +37,7 @@ class EntryBlocksVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			return blx()->sectionBlocks->getTotalBlocksBySectionId($sectionId);
+			return blx()->sections->getTotalBlocksBySectionId($sectionId);
 		}
 	}
 
@@ -49,6 +49,6 @@ class EntryBlocksVariable
 	 */
 	public function getEntryBlockById($id)
 	{
-		return blx()->entryBlocks->getBlockById($id);
+		return blx()->entries->getBlockById($id);
 	}
 }

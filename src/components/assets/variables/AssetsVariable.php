@@ -84,7 +84,7 @@ class AssetsVariable
 	 */
 	public function assetBlocks()
 	{
-		return blx()->assetBlocks->getAllBlocks();
+		return blx()->assets->getAllBlocks();
 	}
 
 	/**
@@ -95,7 +95,7 @@ class AssetsVariable
 	 */
 	public function getAssetBlockById($id)
 	{
-		return blx()->assetBlocks->getBlockById($id);
+		return blx()->assets->getBlockById($id);
 	}
 
 	// -------------------------------------------

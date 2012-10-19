@@ -2,9 +2,17 @@
 namespace Blocks;
 
 /**
- * Handles asset actions.
+ * Asset blocks controller class
  */
-class AssetsController extends BaseController
+class AssetsController extends BaseEntityController
 {
-
+	/**
+	 * Returns the block service instance.
+	 *
+	 * @return AssetBlocksService
+	 */
+	protected function getService()
+	{
+		return blx()->assets;
+	}
 }

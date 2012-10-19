@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Global blocks controller class
+ * Globals controller class
  */
-class GlobalBlocksController extends BaseBlocksController
+class GlobalsController extends BaseEntityController
 {
 	/**
 	 * Returns the block service instance.
@@ -13,13 +13,13 @@ class GlobalBlocksController extends BaseBlocksController
 	 */
 	protected function getService()
 	{
-		return blx()->globalBlocks;
+		return blx()->globals;
 	}
 
 	/**
 	 * Saves the global blocks.
 	 */
-	public function actionSaveGlobalContent()
+	public function actionSaveContent()
 	{
 		$this->requirePostRequest();
 
@@ -35,7 +35,7 @@ class GlobalBlocksController extends BaseBlocksController
 			$content->language = blx()->language;
 		}
 
-		if (blx()->globalBlocks->saveGlobalContent($content))
+		if (blx()->globals->saveGlobalContent($content))
 		{
 			blx()->user->setNotice(blocks::t('Global blocks saved.'));
 			$this->redirectToPostedUrl();

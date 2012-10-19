@@ -28,7 +28,7 @@
 
 {% set content %}
 	<form method="post" action="">
-		<input type="hidden" name="action" value="globalBlocks/saveBlock">
+		<input type="hidden" name="action" value="globals/saveBlock">
 		<input type="hidden" name="redirect" value="settings/globals">
 		{% if not isNewBlock %}<input type="hidden" name="blockId" value="{{ block.id }}">{% endif %}
 

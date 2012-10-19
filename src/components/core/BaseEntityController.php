@@ -4,13 +4,13 @@ namespace Blocks;
 /**
  * Base blocks controller class
  */
-abstract class BaseBlocksController extends BaseController
+abstract class BaseEntityController extends BaseController
 {
 	/**
 	 * Returns the block service instance.
 	 *
 	 * @abstract
-	 * @return BaseBlocksService
+	 * @return BaseEntityService
 	 */
 	abstract protected function getService();
 

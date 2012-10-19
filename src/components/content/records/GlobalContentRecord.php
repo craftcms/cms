@@ -32,6 +32,6 @@ class GlobalContentRecord extends BaseEntityRecord
 	 */
 	protected function getBlocks()
 	{
-		return blx()->globalBlocks->getAllBlocks();
+		return blx()->globals->getAllBlocks();
 	}
 }

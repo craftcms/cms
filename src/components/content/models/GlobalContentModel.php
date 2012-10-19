@@ -27,7 +27,7 @@ class GlobalContentModel extends BaseEntityModel
 	 */
 	protected function getBlocks()
 	{
-		return blx()->globalBlocks->getAllBlocks();
+		return blx()->globals->getAllBlocks();
 	}
 
 	/**
@@ -38,6 +38,6 @@ class GlobalContentModel extends BaseEntityModel
 	 */
 	protected function getContent()
 	{
-		return blx()->globalBlocks->getGlobalContentRecord($this);
+		return blx()->globals->getGlobalContentRecord($this);
 	}
 }

@@ -39,7 +39,7 @@ class PageModel extends BaseEntityModel
 	 */
 	protected function getBlocks()
 	{
-		return blx()->pageBlocks->getBlocksByPageId($this->getAttribute('id'));
+		return blx()->pages->getBlocksByPageId($this->getAttribute('id'));
 	}
 
 	/**

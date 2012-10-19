@@ -95,21 +95,18 @@ if (in_array('users', $packages))
 
 $components['account']['class']           = 'Blocks\AccountService';
 $components['assets']['class']            = 'Blocks\AssetsService';
-$components['assetBlocks']['class']       = 'Blocks\AssetBlocksService';
 $components['assetSources']['class']      = 'Blocks\AssetSourcesService';
 $components['blockTypes']['class']        = 'Blocks\BlockTypesService';
 $components['components']['class']        = 'Blocks\ComponentsService';
 $components['dashboard']['class']         = 'Blocks\DashboardService';
 $components['email']['class']             = 'Blocks\EmailService';
 $components['entries']['class']           = 'Blocks\EntriesService';
-$components['entryBlocks']['class']       = 'Blocks\EntryBlocksService';
 $components['et']['class']                = 'Blocks\EtService';
-$components['globalBlocks']['class']      = 'Blocks\GlobalBlocksService';
+$components['globals']['class']           = 'Blocks\GlobalsService';
 $components['installer']['class']         = 'Blocks\InstallService';
 $components['links']['class']             = 'Blocks\LinksService';
 $components['migrations']['class']        = 'Blocks\MigrationsService';
 $components['pages']['class']             = 'Blocks\PagesService';
-$components['pageBlocks']['class']        = 'Blocks\PageBlocksService';
 $components['path']['class']              = 'Blocks\PathService';
 $components['plugins']['class']           = 'Blocks\PluginsService';
 $components['routes']['class']            = 'Blocks\RoutesService';
@@ -122,14 +119,11 @@ if (in_array('publishpro', $packages))
 {
 	$components['entryRevisions']['class']    = 'Blocks\EntryRevisionsService';
 	$components['sections']['class']          = 'Blocks\SectionsService';
-	$components['sectionBlocks']['class']     = 'Blocks\SectionBlocksService';
 }
 
 if (in_array('users', $packages))
 {
 	$components['users']['class']             = 'Blocks\UsersService';
-	$components['userProfiles']['class']      = 'Blocks\UserProfilesService';
-	$components['userProfileBlocks']['class'] = 'Blocks\UserProfileBlocksService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
 }
 

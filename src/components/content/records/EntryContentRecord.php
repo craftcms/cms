@@ -32,7 +32,7 @@ class EntryContentRecord extends BaseEntityRecord
 	 */
 	protected function getBlocks()
 	{
-		return blx()->entryBlocks->getAllBlocks();
+		return blx()->entries->getAllBlocks();
 	}
 
 	/**

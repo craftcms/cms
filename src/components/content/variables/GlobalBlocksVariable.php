@@ -13,7 +13,7 @@ class GlobalBlocksVariable
 	 */
 	public function getAllBlocks()
 	{
-		return blx()->globalBlocks->getAllBlocks();
+		return blx()->globals->getAllBlocks();
 	}
 
 	/**
@@ -23,7 +23,7 @@ class GlobalBlocksVariable
 	 */
 	public function getTotalBlocks()
 	{
-		return blx()->globalBlocks->getTotalBlocks();
+		return blx()->globals->getTotalBlocks();
 	}
 
 	/**
@@ -34,6 +34,6 @@ class GlobalBlocksVariable
 	 */
 	public function getBlockById($id)
 	{
-		return blx()->globalBlocks->getBlockById($id);
+		return blx()->globals->getBlockById($id);
 	}
 }

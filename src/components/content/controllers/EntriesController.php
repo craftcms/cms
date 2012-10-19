@@ -2,10 +2,20 @@
 namespace Blocks;
 
 /**
- * Handles content management tasks
+ * Handles entry tasks
  */
-class EntriesController extends BaseController
+class EntriesController extends BaseEntityController
 {
+	/**
+	 * Returns the block service instance.
+	 *
+	 * @return EntryBlocksService
+	 */
+	protected function getService()
+	{
+		return blx()->entries;
+	}
+
 	/**
 	 * Saves an entry.
 	 */

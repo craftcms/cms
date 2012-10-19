@@ -9,6 +9,6 @@
 	{% include "_includes/blockindex" with {
 		blocks: blx.pageBlocks.getBlocksByPageId(page.id),
 		settingsUrlPrefix: 'content/pages/' ~ page.id ~ '/blocks/',
-		controller: 'pageBlocks'
+		controller: 'pages'
 	} only %}
 {% endset %}

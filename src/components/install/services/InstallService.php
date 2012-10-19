@@ -323,11 +323,11 @@ class InstallService extends BaseApplicationComponent
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$block->sectionId = $section->id;
-			$service = blx()->sectionBlocks;
+			$service = blx()->sections;
 		}
 		else
 		{
-			$service = blx()->entryBlocks;
+			$service = blx()->entries;
 		}
 
 		$block->name = Blocks::t('Body');

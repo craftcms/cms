@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class GlobalBlocksService extends BaseBlocksService
+class GlobalsService extends BaseEntityService
 {
 	/**
 	 * The block model class name.
