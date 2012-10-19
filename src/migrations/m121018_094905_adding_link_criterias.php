@@ -14,11 +14,19 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 	public function safeUp()
 	{
 		$blockSets = array(
-			'assetblocks' => 'Asset',
-			'entryblocks' => 'Entry',
-			'globalblocks' => 'GlobalContent',
-			'pageblocks' => 'Page',
-			'userprofileblocks' => 'User',
+			'assetblocks' => 'Assets',
+			'entryblocks' => 'Entries',
+			'globalblocks' => 'Globals',
+			'pageblocks' => 'Pages',
+			'userprofileblocks' => 'Users',
+		);
+
+		$oldEntityTypes = array(
+			'Asset' => 'Assets',
+			'Entry' => 'Entries',
+			'GlobalContent' => 'Globals',
+			'Page' => 'Pages',
+			'User' => 'Users',
 		);
 
 		// AttributeType::SortOrder is now a signed TinyInt
@@ -47,7 +55,7 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 		{
 			$select = 'id, handle, settings, sortOrder';
 
-			$isSection = ($entityType == 'Entry' && Blocks::hasPackage(BlocksPackage::PublishPro));
+			$isSection = ($entityType == 'Entries' && Blocks::hasPackage(BlocksPackage::PublishPro));
 			if ($isSection)
 			{
 				$select .= ', sectionId';
@@ -67,7 +75,7 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 				$criteria = new LinkCriteriaRecord();
 				$criteria->ltrHandle = $blockRow['handle'];
 				$criteria->leftEntityType = $entityType;
-				$criteria->rightEntityType = $blockSettings['type'];
+				$criteria->rightEntityType = $oldEntityTypes[$blockSettings['type']];
 				$criteria->leftSettings = ($isSection ? array('sectionId' => $blockRow['sectionId']) : null);
 				$criteria->rightSettings = $blockSettings['linkTypeSettings'];
 
@@ -81,9 +89,10 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 				);
 
 				// Update the rows in the links table
+				$oldEntityType = array_search($entityType, $oldEntityTypes);
 				blx()->db->createCommand()->update('links',
 					array('criteriaId' => $criteria->id),
-					array('parentType' => $entityType, 'blockId' => $blockRow['id'])
+					array('parentType' => $oldEntityType, 'blockId' => $blockRow['id'])
 				);
 			}
 		}

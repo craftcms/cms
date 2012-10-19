@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Asset link type class
  */
-class AssetLinkType extends BaseLinkType
+class AssetsLinkType extends BaseLinkType
 {
 	/**
 	 * Returns the type of links this creates.
