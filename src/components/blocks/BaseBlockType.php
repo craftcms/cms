@@ -10,7 +10,7 @@ abstract class BaseBlockType extends BaseComponent
 	 * The enttiy that the block is associated with.
 	 * Set by the service classes.
 	 *
-	 * @var BaseBlockEntityModel
+	 * @var BaseEntityModel
 	 */
 	public $entity;
 

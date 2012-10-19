@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class EntryContentRecord extends BaseBlockEntityRecord
+class EntryContentRecord extends BaseEntityRecord
 {
 	/**
 	 * @return string

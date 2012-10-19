@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class GlobalContentRecord extends BaseBlockEntityRecord
+class GlobalContentRecord extends BaseEntityRecord
 {
 	/**
 	 * @return string

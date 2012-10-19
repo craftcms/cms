@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Block entity model base class
  */
-abstract class BaseBlockEntityModel extends BaseModel
+abstract class BaseEntityModel extends BaseModel
 {
 	private $_blocks;
 	private $_content;

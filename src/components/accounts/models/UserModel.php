@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * User model class
  */
-class UserModel extends BaseBlockEntityModel
+class UserModel extends BaseEntityModel
 {
 	/**
 	 * Use the full name or username as the string representation.

@@ -6,7 +6,7 @@ namespace Blocks;
  *
  * Used for transporting page data throughout the system.
  */
-class PageModel extends BaseBlockEntityModel
+class PageModel extends BaseEntityModel
 {
 	/**
 	 * Use the translated page title as the string representation.

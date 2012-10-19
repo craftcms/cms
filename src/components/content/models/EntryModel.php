@@ -6,7 +6,7 @@ namespace Blocks;
  *
  * Used for transporting entry data throughout the system.
  */
-class EntryModel extends BaseBlockEntityModel
+class EntryModel extends BaseEntityModel
 {
 	/**
 	 * Use the entry title as its string representation.

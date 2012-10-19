@@ -85,9 +85,9 @@ class LinksService extends BaseApplicationComponent
 	 * Gets the linked entities for a Links block.
 	 *
 	 * @param BaseBlockModel $block
-	 * @param BaseBlockEntityModel $entity
+	 * @param BaseEntityModel $entity
 	 */
-	public function getLinkedEntities(BaseBlockModel $block, BaseBlockEntityModel $entity)
+	public function getLinkedEntities(BaseBlockModel $block, BaseEntityModel $entity)
 	{
 		$linkType = $this->_getLinkType($block->settings['type']);
 
@@ -159,11 +159,11 @@ class LinksService extends BaseApplicationComponent
 	 * Sets the linked entities for a Links block.
 	 *
 	 * @param BaseBlockModel       $block
-	 * @param BaseBlockEntityModel $entity
+	 * @param BaseEntityModel $entity
 	 * @throws \Exception
 	 * @return void
 	 */
-	public function setLinks(BaseBlockModel $block, BaseBlockEntityModel $entity)
+	public function setLinks(BaseBlockModel $block, BaseEntityModel $entity)
 	{
 		$linkType = $this->_getLinkType($block->settings['type']);
 

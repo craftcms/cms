@@ -6,7 +6,7 @@ namespace Blocks;
  *
  * Used for transporting entry data throughout the system.
  */
-class GlobalContentModel extends BaseBlockEntityModel
+class GlobalContentModel extends BaseEntityModel
 {
 	/**
 	 * @return array
