@@ -13,14 +13,6 @@
 
 
 {% set content %}
-	{#<div id="alerts">
-		{% for alert in blx.dashboard.alerts %}
-			<div class="alert">
-				<p>{{ alert }}</p>
-			</div>
-		{% endfor %}
-	</div>#}
-
 	<div id="widgets" class="grid">
 		{% for widget in blx.dashboard.userWidgets %}
 			{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
