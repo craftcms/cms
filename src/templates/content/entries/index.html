@@ -36,7 +36,7 @@
 	<nav class="nav">
 		{% if not blx.hasPackage('publishpro') %}
 			<div class="buttons">
-				<a href="{{ url('content/blog/new') }}" class="btn submit" data-icon="+">{{ "New Entry"|t }}</a>
+				<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
 			</div>
 		{% endif %}
 
@@ -100,7 +100,7 @@
 
 		{% if blx.hasPackage('publishpro') and not showSection %}
 			<div class="buttons">
-				<a class="btn submit addbtn" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
+				<a class="btn submit add icon" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
 			</div>
 		{% endif %}
 	</div>

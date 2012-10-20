@@ -21,8 +21,8 @@
 					</th>
 					<td><code>{{ block.handle }}</code></td>
 					<td>{{ blx.blockTypes.populateBlockType(block).name }}</td>
-					{% if sortable %}<td class="thin"><a class="move" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
-					<td class="thin"><a class="deletebtn" title="{{ 'Delete'|t }}"></a></td>
+					{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
+					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 				</tr>
 			{% endfor %}
 		</tbody>
@@ -30,7 +30,7 @@
 {% endif %}
 
 <div class="buttons">
-	<a href="{{ url(settingsUrlPrefix ~ 'new') }}" class="btn addbtn">{{ "New Block"|t }}</a>
+	<a href="{{ url(settingsUrlPrefix ~ 'new') }}" class="btn add icon">{{ "New Block"|t }}</a>
 </div>
 
 

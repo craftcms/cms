@@ -12,8 +12,28 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 .last,  h2:last-child,  h3:last-child,  h4:last-child,  h5:last-child,  h6:last-child,  p:last-child,                  .pane:last-child,  .grid:last-child,  .field:last-child,  .toolbar:last-child,  .buttons:last-child  { margin-bottom: 0 !important; }
 
 /* icons */
-[data-icon]:before { @include icon; content: attr(data-icon); }
-[data-icon-after]:after { @include icon; content: attr(data-icon-after); }
+.icon:before,
+.menulist ul li a.active:before,
+.textwrapper.search:before,
+.datewrapper:before,
+.select:before,
+.entity:before,
+.secure:before,
+.insecure:before,
+.go:after,
+.menubtn:after,
+.required:after,
+[data-icon]:before,
+[data-icon-after]:after { @include icon; }
+
+[data-icon]:before { content: attr(data-icon); }
+[data-icon-after]:after { content: attr(data-icon-after); }
+
+.icon.secure:before { content: '`'; }
+.icon.insecure:before { content: '~'; }
+.icon.add:before { content: '+'; }
+.icon.edit:before { content: '✎'; }
+.icon.settings:before { content: '⚙'; }
 
 /* nav */
 .nav { display: block; }
@@ -52,9 +72,7 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
-a.go:after { @include icon; content: '→'; font-size: 12px; margin: 2px 0 0 4px; }
-a.goto { display: inline-block; vertical-align: middle; width: 12px; height: 12px; background: url(../images/goto.png) no-repeat; opacity: 0.5; }
-a.goto:hover { opacity: 1; }
+a.go:after { content: '→'; font-size: 12px; margin: 2px 0 0 4px; }
 
 /* emphasis */
 em, i { font-style: italic; }
@@ -66,7 +84,7 @@ strong, b, i em { font-weight: bold; font-family: sans-serif; }
 .nowrap { white-space: nowrap; }
 .light { color: $mediumlight; font-weight: normal; }
 
-.required:after { @include icon; content: '*'; margin: -1px 0 -1px 1px; font-size: 8px; color: $errorcolor; }
+.required:after { content: '*'; margin: -1px 0 -1px 1px; font-size: 8px; color: $errorcolor; }
 
 .scrollpane { overflow: auto; }
 
@@ -88,12 +106,12 @@ td.right { float: none; text-align: right; }
 .error { color: $errorcolor; }
 
 .move { display: inline-block; cursor: move; }
-.move:before { @include icon; content: 'm'; color: #ccc; }
+.move:before { content: 'm'; color: #ccc; }
 .move:hover:before { color: $linkcolor; }
 
-.deletebtn { display: inline-block; }
-.deletebtn:before { @include icon; content: 'R'; color: #ccc; }
-.deletebtn:hover:before { color: $errorcolor; }
+.delete { display: inline-block; }
+.delete:before { content: 'R'; color: #ccc; }
+.delete:hover:before { color: $errorcolor; }
 
 .hidden { display: none !important; }
 
@@ -194,21 +212,18 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .spinner { height: 31px; }
 
 .btn[data-icon]:before,
-.addbtn:before { margin-right: 5px; }
+.btn.icon:before { margin-right: 5px; }
 .btn[data-icon-after]:after,
 .menubtn:after { margin-left: 5px; }
 
-/* add buttons */
-.addbtn:before { @include icon; content: '+'; }
-
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,
-.addbtn:before,
+.btn.icon:before,
 .menubtn:after { font-size: 17px; margin-top: 2px; }
 
 .btn.small[data-icon]:before,
 .btn.small[data-icon-after]:after,
-.addbtn.small:before,
+.btn.icon.small:before,
 .menubtn.small:after { font-size: 10px; }
 
 /* button groups */
@@ -230,7 +245,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 
 /* menu buttons */
 .menubtn { @include unselectable; }
-.menubtn:after { @include icon; content: '▼'; font-size: 0.8em; }
+.menubtn:after { content: '▼'; font-size: 0.8em; }
 
 /* spinner */
 .spinner { display: inline-block; vertical-align: bottom; width: 20px; background: url(../images/spinner.gif) no-repeat 50% 50%; }
@@ -372,7 +387,7 @@ ul.tree,
 .menulist h2 { margin: 10px 0 3px; }
 .menulist ul li a { margin-left: -33px; padding-left: 33px; }
 .menulist ul li a.active { color: #999; cursor: default; }
-.menulist ul li a.active:before { @include icon; content: "√"; float: left; margin: 2px 0 0 -18px; font-size: 16px; }
+.menulist ul li a.active:before { content: "√"; float: left; margin: 2px 0 0 -18px; font-size: 16px; }
 
 /* ----------------------------------------
 /*  Fields
@@ -400,16 +415,7 @@ textarea.text,
 .field .heading p { margin-top: 0; font-size: 11px; color: #999; }
 
 /* toggles and nested fields */
-a.fieldtoggle:hover { text-decoration: none; }
-a.fieldtoggle:hover span { text-decoration: underline; }
-a.fieldtoggle:before { @include icon; font-size: 10px; }
-a.fieldtoggle.collapsed:before { content: "+"; }
-a.fieldtoggle.expanded:before { content: "-"; }
-a.fieldtoggle.collapsed .expanded-label { display: none; }
-a.fieldtoggle.expanded .collapsed-label { display: none; }
-
 .nested-fields { margin: -25px -5px; padding: 25px 5px 0; overflow: hidden; }
-a.fieldtoggle + .nested-fields { margin-top: 0; }
 .nested-fields.hidden { display: block; height: 0; }
 .nested-fields > .field:last-child { padding-bottom: 25px; }
 
@@ -431,7 +437,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .text.error { border-color: $errorcolor !important; }
 
 .textwrapper.search { position: relative; padding-right: 36px; cursor: text; }
-.textwrapper.search:before { @include icon; position: absolute; top: 9px; left: 8px; content: "s"; color: #a1a4a6; }
+.textwrapper.search:before { position: absolute; top: 9px; left: 8px; content: "s"; color: #a1a4a6; }
 .textwrapper.search .text { padding-left: 27px; }
 
 .texthint-container { position: relative; height: 0; }
@@ -444,7 +450,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .password.capslock:focus { background: #fff url(../images/capslock.png) no-repeat 100% 50%; }
 
 .datewrapper { position: relative; padding-right: 36px; width: 194px; }
-.datewrapper:before { @include icon; position: absolute; top: 9px; left: 8px; content: "d"; color: #a1a4a6; }
+.datewrapper:before { position: absolute; top: 9px; left: 8px; content: "d"; color: #a1a4a6; }
 .datewrapper .text { padding-left: 27px; width: 100%; }
 
 /* redactor */
@@ -456,7 +462,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .select,
 .select select { border-radius: 2px; }
 .select { display: inline-block; position: relative; background: #fff; }
-.select:before { @include icon; position: absolute; top: 9px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+.select:before { position: absolute; top: 9px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
 .select select { position: relative; padding: 7px 22px 7px 10px; background: none; -webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-appearance: none; }
 .select:hover select:not(:focus) { border-color: #999; }
 .select select:focus { -webkit-box-shadow: inset 0 0 1px $focusglowcolor, 0 0 5px $focusglowcolor; }
@@ -489,7 +495,7 @@ a.fieldtoggle + .nested-fields { margin-top: 0; }
 .addlinksmodal .body { margin: -25px; padding: 25px; height: 250px; overflow: auto; @include unselectable; }
 
 .entity { margin: -5px 0; padding: 3px 7px; cursor: pointer; -webkit-transition: background-color linear 100ms; }
-.entity:before { @include icon; content: 'l'; margin: 2px 5px -2px 0; font-size: 15px; }
+.entity:before { content: 'l'; margin: 2px 5px -2px 0; font-size: 15px; }
 .entity:hover { color: $linkcolor; }
 .entity.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background-color: hsl(203, 79%, 50%); }
 .links .border-box:not(:focus) .entity.sel { text-shadow: none; background-color: #a1a4a6; }

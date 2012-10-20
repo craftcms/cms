@@ -31,7 +31,7 @@
 					'</div>' +
 
 					'<div class="buttons">' +
-						'<div id="submit" class="btn submit disabled" data-icon="{{ blx.request.secure ? '`' : '~' }}">' +
+						'<div id="submit" class="btn submit disabled {% if not blx.request.secure %}in{% endif %}secure icon">' +
 							'<span class="label">{{ "Login"|t }}</span>' +
 							'<input type="submit">' +
 						'</div>' +

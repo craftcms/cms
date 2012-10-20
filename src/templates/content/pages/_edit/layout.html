@@ -12,7 +12,7 @@
 
 
 {% set tabs %}
-	<li><a{% if tab == 'content' %} class="active"{% endif %} href="{{ url('content/pages/'~page.id) }}" data-icon="✎">{{ "Content"|t }}</a></li>
-	<li><a{% if tab == 'settings' %} class="active"{% endif %} href="{{ url('content/pages/'~page.id~'/settings') }}" data-icon="⚙">{{ "Settings"|t }}</a></li>
+	<li><a class="edit icon{% if tab == 'content' %} active{% endif %}" href="{{ url('content/pages/'~page.id) }}">{{ "Content"|t }}</a></li>
+	<li><a class="settings icon{% if tab == 'settings' %} active{% endif %}" href="{{ url('content/pages/'~page.id~'/settings') }}">{{ "Settings"|t }}</a></li>
 	<li><a{% if tab == 'blocks' %} class="active"{% endif %} href="{{ url('content/pages/'~page.id~'/blocks') }}" data-icon="b">{{ "Blocks"|t }}</a></li>
 {% endset %}
