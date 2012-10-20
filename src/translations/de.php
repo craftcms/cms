@@ -17,7 +17,7 @@ return array(
 	'Activate' => 'Aktivieren',
 	'Active' => 'Aktiv',
 	'Add a new widget.' => 'Fügen Sie ein neues Widget.',
-	'Add the first one.' => 'Fügen Sie den ersten ein.',
+	'Add the first one' => 'Fügen Sie den ersten ein',
 	'Admin' => 'Admin',
 	'Admin settings saved.' => 'Admin-Einstellungen gespeichert.',
 	'Administration' => 'Verwaltung',

@@ -28,7 +28,7 @@
 	{% else %}
 		<p>
 			{{ "No blocks exist yet."|t }}
-			<a class="go" href="{{ url('content/pages/'~page.id~'/blocks/new') }}">{{ "Add the first one."|t }}</a>
+			<a class="go" href="{{ url('content/pages/'~page.id~'/blocks/new') }}">{{ "Add the first one"|t }}</a>
 		</p>
 	{% endif %}
 {% endset %}
