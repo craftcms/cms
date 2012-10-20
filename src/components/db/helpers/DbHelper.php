@@ -254,9 +254,9 @@ class DbHelper
 			}
 			else
 			{
-				$param = 'p'.StringHelper::randomString(9);
-				$params[':'.$param] = trim($value);
-				$conditions[] = $key.$operator.':'.$param;
+				$param = ':p'.StringHelper::randomString(9);
+				$params[$param] = trim($value);
+				$conditions[] = $key.$operator.$param;
 			}
 
 			// Stop looping through operators
