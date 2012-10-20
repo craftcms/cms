@@ -35,7 +35,7 @@ abstract class BaseComponentVariable
 	 *
 	 * @return string
 	 */
-	public function classHandle()
+	public function getClassHandle()
 	{
 		return $this->component->getClassHandle();
 	}

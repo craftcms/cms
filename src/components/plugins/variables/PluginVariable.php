@@ -65,14 +65,4 @@ class PluginVariable extends BaseComponentVariable
 	{
 		return $this->component->isEnabled();
 	}
-
-	/**
-	 * Returns the plugin’s class handle.
-	 *
-	 * @return string
-	 */
-	public function classHandle()
-	{
-		return $this->component->getClassHandle();
-	}
 }
