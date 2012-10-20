@@ -847,9 +847,19 @@ class EntriesService extends BaseEntityService
 			// Make it unique
 			$testSlug = '';
 
+			$where = 'slug = :slug';
+			$params = array();
+
 			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
-				$where['sectionId'] = $entry->sectionId;
+				$where .= ' and sectionId = :sectionId';
+				$params[':sectionId'] = $entry->sectionId;
+			}
+
+			if ($entry->id)
+			{
+				$where .= ' and id != :entryId';
+				$params[':entryId'] = $entry->id;
 			}
 
 			for ($i = 0; true; $i++)
@@ -860,12 +870,12 @@ class EntriesService extends BaseEntityService
 					$testSlug .= '-'.$i;
 				}
 
-				$where['slug'] = $testSlug;
+				$params[':slug'] = $testSlug;
 
 				$totalEntries = blx()->db->createCommand()
 					->select('count(e.id)')
 					->from('entries e')
-					->where($where)
+					->where($where, $params)
 					->queryScalar();
 
 				if ($totalEntries == 0)
