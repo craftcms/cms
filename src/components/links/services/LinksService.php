@@ -82,26 +82,37 @@ class LinksService extends BaseApplicationComponent
 	}*/
 
 	/**
-	 * Gets the linked entities for a Links block.
+	 * Returns a criteria record by its ID.
 	 *
-	 * @param BaseBlockModel $block
-	 * @param BaseEntityModel $entity
+	 * @param int $criteriaId
+	 * @return LinkCriteriaRecord
 	 */
-	public function getLinkedEntities(BaseBlockModel $block, BaseEntityModel $entity)
+	public function getCriteriaRecordById($criteriaId)
 	{
-		$linkType = $this->_getLinkType($block->settings['type']);
+		return LinkCriteriaRecord::model()->findById($criteriaId);
+	}
+
+	/**
+	 * Gets the linked entities.
+	 *
+	 * @param int $criteriaId
+	 * @param int $leftEntityId
+	 */
+	public function getLinkedEntities($criteriaId, $leftEntityId)
+	{
+		$criteria = $this->getCriteriaRecordById($criteriaId);
+		$linkType = $this->_getLinkType($criteria->rightEntityType);
 
 		$table = $linkType->getEntityTableName();
 		$query = blx()->db->createCommand()
 			->select($table.'.*')
 			->from($table.' '.$table)
-			->join('links l', 'l.childId = '.$table.'.id')
+			->join('links l', 'l.rightEntityId = '.$table.'.id')
 			->where(array(
-				'l.parentType' => $entity->getClassHandle(),
-				'l.blockId' => $block->id,
-				'l.parentId' => $entity->id
+				'l.criteriaId'   => $criteriaId,
+				'l.leftEntityId' => $leftEntityId
 			))
-			->order('l.sortOrder');
+			->order('l.rightSortOrder');
 
 		// Give the link type a chance to make any changes
 		$query = $linkType->modifyLinkedEntitiesQuery($query);
@@ -113,18 +124,18 @@ class LinksService extends BaseApplicationComponent
 	/**
 	 * Gets entities by their ID.
 	 *
-	 * @param BaseBlockModel $block
+	 * @param string $type
 	 * @param array $entityIds
 	 * @return array
 	 */
-	public function getEntitiesById(BaseBlockModel $block, $entityIds)
+	public function getEntitiesById($type, $entityIds)
 	{
 		if (!$entityIds)
 		{
 			return array();
 		}
 
-		$linkType = $this->_getLinkType($block->settings['type']);
+		$linkType = $this->_getLinkType($type);
 
 		$table = $linkType->getEntityTableName();
 		$query = blx()->db->createCommand()
@@ -158,44 +169,36 @@ class LinksService extends BaseApplicationComponent
 	/**
 	 * Sets the linked entities for a Links block.
 	 *
-	 * @param BaseBlockModel       $block
-	 * @param BaseEntityModel $entity
+	 * @param int $criteriaId
+	 * @param int $leftEntityId
+	 * @param array $rightEntityIds
 	 * @throws \Exception
 	 * @return void
 	 */
-	public function setLinks(BaseBlockModel $block, BaseEntityModel $entity)
+	public function setLinks($criteriaId, $leftEntityId, $rightEntityIds)
 	{
-		$linkType = $this->_getLinkType($block->settings['type']);
+		$criteria = $this->getCriteriaRecordById($criteriaId);
+		$linkType = $this->_getLinkType($criteria->rightEntityType);
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
 			// Delete the existing links
 			blx()->db->createCommand()->delete('links', array(
-				'parentType' => $entity->getClassHandle(),
-				'blockId' => $block->id,
-				'parentId' => $entity->id
+				'criteriaId' => $criteriaId,
+				'leftEntityId' => $leftEntityId
 			));
 
-			// Save the new ones
-			$blockHandle = $block->handle;
-			$childIds = $entity->getRawContent($blockHandle);
-
-			if ($childIds)
+			if ($rightEntityIds)
 			{
-				foreach ($childIds as $sortOrder => $childId)
+				$totalEntities = count($rightEntityIds);
+				foreach ($rightEntityIds as $index => $entityId)
 				{
-					$values[] = array(
-						$entity->getClassHandle(),
-						$block->id,
-						$entity->id,
-						$linkType->getClassHandle(),
-						$childId,
-						($sortOrder+1)
-					);
+					$sortOrder = ($index - $totalEntities);
+					$values[] = array($criteriaId, $leftEntityId, $entityId, $sortOrder);
 				}
 
-				$columns = array('parentType', 'blockId', 'parentId', 'childType', 'childId', 'sortOrder');
+				$columns = array('criteriaId', 'leftEntityId', 'rightEntityId', 'rightSortOrder');
 				blx()->db->createCommand()->insertAll('links', $columns, $values);
 			}
 

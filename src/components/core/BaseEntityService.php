@@ -210,9 +210,9 @@ abstract class BaseEntityService extends BaseApplicationComponent
 		$blockRecord = $this->populateBlockRecord($block);
 
 		$blockType = blx()->blockTypes->getBlockType($block->type);
-		$processedSettings = $blockType->prepSettings($block->settings);
-		$blockRecord->settings = $block->settings = $processedSettings;
-		$blockType->setSettings($processedSettings);
+		$preppedSettings = $blockType->prepSettings($block->settings);
+		$blockRecord->settings = $block->settings = $preppedSettings;
+		$blockType->setSettings($preppedSettings);
 		$blockType->model = $block;
 
 		$recordValidates = $blockRecord->validate();

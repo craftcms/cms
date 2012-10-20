@@ -1,6 +1,8 @@
 {% set minRows = settings.limit ? min(3, settings.limit) : 3 %}
 {% set bufferRows = (minRows > entities|length ? minRows - entities|length : 0) %}
 
+<input type="hidden" name="{{ name }}[]" value="">
+
 <div id="{{ name }}" class="border-box">
 	<table class="data">
 		<tbody>

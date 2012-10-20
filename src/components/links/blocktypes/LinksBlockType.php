@@ -14,9 +14,10 @@ class LinksBlockType extends BaseBlockType
 	public function getName()
 	{
 		$name = Blocks::t('Links');
-		if (isset($this->model))
+		if (isset($this->getSettings()->criteriaId))
 		{
-			$linkType = $this->_getLinkType();
+			$criteria = blx()->links->getCriteriaRecordById($this->getSettings()->criteriaId);
+			$linkType = blx()->links->getLinkType($criteria->rightEntityType);
 			if ($linkType)
 			{
 				$name .= ' ('.$linkType->getName().')';
@@ -44,11 +45,10 @@ class LinksBlockType extends BaseBlockType
 	protected function defineSettings()
 	{
 		return array(
-			'type'             => array(AttributeType::ClassName, 'required' => true, 'default' => 'Entry'),
-			'addLabel'         => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
-			'removeLabel'      => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
-			'limit'            => array(AttributeType::Number, 'min' => 0),
-			'linkTypeSettings' => array(AttributeType::Mixed, 'default' => array()),
+			'criteriaId'  => AttributeType::Number,
+			'addLabel'    => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
+			'removeLabel' => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
+			'limit'       => array(AttributeType::Number, 'min' => 0),
 		);
 	}
 
@@ -59,8 +59,13 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function getSettingsHtml()
 	{
-		$linkType = $this->_getLinkType();
-		if (!$linkType)
+		if (isset($this->getSettings()->criteriaId))
+		{
+			$criteria = blx()->links->getCriteriaRecordById($this->getSettings()->criteriaId);
+			$linkType = blx()->links->getLinkType($criteria->rightEntityType);
+		}
+
+		if (empty($linkType))
 		{
 			$linkType = blx()->links->getLinkType('Entry');
 		}
@@ -88,11 +93,39 @@ class LinksBlockType extends BaseBlockType
 			$linkTypeSettings = array();
 		}
 
-		unset($settings['types']);
+		$type = $settings['type'];
+
+		unset($settings['types'], $settings['type']);
 
 		// Give the link type a chance to pre-process any of its settings
-		$linkType = blx()->links->getLinkType($settings['type']);
-		$settings['linkTypeSettings'] = $linkType->prepSettings($linkTypeSettings);
+		$linkType = blx()->links->getLinkType($type);
+		$linkTypeSettings = $linkType->prepSettings($linkTypeSettings);
+
+		if (isset($settings['criteriaId']))
+		{
+			$criteria = LinkCriteriaRecord::model()->findById($settings['criteriaId']);
+
+			// Has the entity type changed?
+			if ($criteria && $criteria->rightEntityType != $type)
+			{
+				// Delete the previous links
+				blx()->db->createCommand()->delete('links', array('criteriaId' => $criteria->id));
+			}
+		}
+
+		if (empty($criteria))
+		{
+			$criteria = new LinkCriteriaRecord();
+		}
+
+		$criteria->ltrHandle = $this->model->handle;
+		$criteria->leftEntityType = $this->model->getClassHandle();
+		$criteria->rightEntityType = $type;
+		$criteria->rightSettings = $linkTypeSettings;
+
+		$criteria->save();
+
+		$settings['criteriaId'] = $criteria->id;
 
 		return $settings;
 	}
@@ -105,20 +138,24 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function prepValue($value)
 	{
+		$criteriaId = $this->getSettings()->criteriaId;
+
 		// $value will be an array of entity IDs if there was a validation error
 		// or we're loading a draft/version.
 		if (is_array($value))
 		{
-			return blx()->links->getEntitiesById($this->model, $value);
+			$criteria = blx()->links->getCriteriaRecordById($criteriaId);
+			if ($criteria)
+			{
+				return blx()->links->getEntitiesById($criteria->rightEntityType, array_filter($value));
+			}
 		}
 		else if ($this->entity && $this->entity->id)
 		{
-			return blx()->links->getLinkedEntities($this->model, $this->entity);
+			return blx()->links->getLinkedEntities($criteriaId, $this->entity->id);
 		}
-		else
-		{
-			return array();
-		}
+
+		return array();
 	}
 
 	/**
@@ -135,7 +172,12 @@ class LinksBlockType extends BaseBlockType
 			$entities = array();
 		}
 
+		$criteria = blx()->links->getCriteriaRecordById($this->getSettings()->criteriaId);
+		$linkType = blx()->links->getLinkType($criteria->rightEntityType);
+
 		$settings = $this->getSettings()->getAttributes();
+		$settings['type'] = $criteria->rightEntityType;
+		$settings['linkTypeSettings'] = $criteria->rightSettings;
 		$settings['addLabel'] = Blocks::t($settings['addLabel']);
 		$jsonSettings = JsonHelper::encode($settings);
 
@@ -145,7 +187,7 @@ class LinksBlockType extends BaseBlockType
 
 		return blx()->templates->render('_components/blocktypes/Links/input', array(
 			'name'     => $name,
-			'linkType' => $this->_getLinkType(),
+			'linkType' => $linkType,
 			'settings' => $this->getSettings(),
 			'entities' => $entities,
 		));
@@ -156,21 +198,7 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function onAfterEntitySave()
 	{
-		blx()->links->setLinks($this->model, $this->entity);
-	}
-
-	/**
-	 * Returns the link type
-	 *
-	 * @return BaseLinkType|null
-	 */
-	private function _getLinkType()
-	{
-		$linkType = blx()->links->getLinkType($this->getSettings()->type);
-		if ($linkType)
-		{
-			$linkType->setSettings($this->getSettings()->linkTypeSettings);
-			return $linkType;
-		}
+		$entityIds = array_filter($this->entity->getRawContent($this->model->handle));
+		blx()->links->setLinks($this->getSettings()->criteriaId, $this->entity->id, $entityIds);
 	}
 }

@@ -39,8 +39,8 @@ class m121018_094905_adding_link_criterias extends \CDbMigration
 		blx()->db->createCommand()->addColumnAfter('links', 'criteriaId', array('column' => ColumnType::Int, 'null' => false), 'id');
 		blx()->db->createCommand()->alterColumn('links', 'parentId', array('column' => ColumnType::Int, 'unsigned' => true), 'leftEntityId');
 		blx()->db->createCommand()->alterColumn('links', 'childId', array('column' => ColumnType::Int, 'unsigned' => true, 'null' => false), 'rightEntityId');
-		blx()->db->createCommand()->alterColumn('links', 'sortOrder', $sortColumn, 'leftSortOrder');
-		blx()->db->createCommand()->addColumnAfter('links', 'rightSortOrder', $sortColumn, 'leftSortOrder');
+		blx()->db->createCommand()->addColumnAfter('links', 'leftSortOrder', $sortColumn, 'rightEntityId');
+		blx()->db->createCommand()->alterColumn('links', 'sortOrder', $sortColumn, 'rightSortOrder');
 
 		// Update all Links blocks
 		foreach ($blockSets as $table => $entityType)
