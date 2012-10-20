@@ -14,7 +14,7 @@ class LinksBlockType extends BaseBlockType
 	public function getName()
 	{
 		$name = Blocks::t('Links');
-		if (isset($this->getSettings()->criteriaId))
+		if ($this->getSettings()->criteriaId)
 		{
 			$criteria = blx()->links->getCriteriaRecordById($this->getSettings()->criteriaId);
 			$linkType = blx()->links->getLinkType($criteria->rightEntityType);
@@ -59,7 +59,7 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function getSettingsHtml()
 	{
-		if (isset($this->getSettings()->criteriaId))
+		if ($this->getSettings()->criteriaId)
 		{
 			$criteria = blx()->links->getCriteriaRecordById($this->getSettings()->criteriaId);
 			$linkType = blx()->links->getLinkType($criteria->rightEntityType);
