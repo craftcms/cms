@@ -44,7 +44,7 @@ class LinksBlockType extends BaseBlockType
 	protected function defineSettings()
 	{
 		return array(
-			'type'             => array(AttributeType::ClassName, 'required' => true, 'default' => 'Entries'),
+			'type'             => array(AttributeType::ClassName, 'required' => true, 'default' => 'Entry'),
 			'addLabel'         => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
 			'removeLabel'      => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
 			'limit'            => array(AttributeType::Number, 'min' => 0),
@@ -63,7 +63,6 @@ class LinksBlockType extends BaseBlockType
 		if (!$linkType)
 		{
 			$linkType = blx()->links->getLinkType('Entry');
-			$linkType = blx()->links->getLinkType('Entries');
 		}
 
 		return blx()->templates->render('_components/blocktypes/Links/settings', array(

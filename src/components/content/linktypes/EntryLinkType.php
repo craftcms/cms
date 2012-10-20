@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Entry link type class
  */
-class EntriesLinkType extends BaseLinkType
+class EntryLinkType extends BaseLinkType
 {
 	/**
 	 * Returns the type of links this creates.
