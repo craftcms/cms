@@ -435,7 +435,7 @@ return array(
 	'Update All' => 'Alle aktualisieren',
 	'Update Blocks' => 'Update blockiert',
 	'Updates' => 'aktuelles',
-	'Upload files' => 'Hochladen von Dateien',
+	'Upload Files' => 'Hochladen von Dateien',
 	'Use SMTP Keep Alive' => 'SMTP Verwenden Wachzuhalten',
 	'Use SMTP authentication' => 'SMTP-Authentifizierung verwenden',
 	'Use a 300 × 100px transparent PNG for best results.' => 'Verwenden Sie ein 300 × 100px transparente PNG für die besten Ergebnisse.',

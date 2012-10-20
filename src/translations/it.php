@@ -435,7 +435,7 @@ return array(
 	'Update All' => '',
 	'Update Blocks' => '',
 	'Updates' => 'Aggiornamenti',
-	'Upload files' => '',
+	'Upload Files' => '',
 	'Use SMTP Keep Alive' => '',
 	'Use SMTP authentication' => '',
 	'Use a 300 × 100px transparent PNG for best results.' => '',
