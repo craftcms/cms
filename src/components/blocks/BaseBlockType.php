@@ -67,6 +67,20 @@ abstract class BaseBlockType extends BaseComponent
 	}
 
 	/**
+	 * Performs any actions before a block is saved.
+	 */
+	public function onBeforeSave()
+	{
+	}
+
+	/**
+	 * Performs any actions after a block is saved.
+	 */
+	public function onAfterSave()
+	{
+	}
+
+	/**
 	 * Performs any additional actions after the entity has been saved.
 	 */
 	public function onAfterEntitySave()

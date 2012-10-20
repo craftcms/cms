@@ -235,7 +235,7 @@ abstract class BaseEntityService extends BaseApplicationComponent
 			$transaction = blx()->db->beginTransaction();
 			try
 			{
-				//$blockType->onBeforeSave();
+				$blockType->onBeforeSave();
 				$blockRecord->save(false);
 
 				// Now that we have a block ID, save it on the model
@@ -262,7 +262,7 @@ abstract class BaseEntityService extends BaseApplicationComponent
 					}
 				}
 
-				//$blockType->onAfterSave();
+				$blockType->onAfterSave();
 
 				$transaction->commit();
 			}
