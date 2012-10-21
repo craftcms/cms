@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class UpdateController extends BaseController
 {
+	protected $allowAnonymous = array('actionManualUpdate', 'actionRunManualUpdate');
+
 	// -------------------------------------------
 	//  Auto Updates
 	// -------------------------------------------
