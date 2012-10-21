@@ -141,7 +141,7 @@ class AccountController extends BaseController
 		else
 		{
 			$this->renderRequestedTemplate(array(
-				'error' => true
+				'errors' => $user->getErrors('newPassword')
 			));
 		}
 	}

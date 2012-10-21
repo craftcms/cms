@@ -1,41 +1,31 @@
 {% extends "_layouts/base" %}
-{% from "_includes/forms" import errorList %}
 {% set title = "Verify Account"|t %}
+{% import "_includes/forms" as forms %}
 
-
-{% if blx.session.loggedin %}
-	{% redirect "dashboard" %}
-{% endif %}
+{% set verificationCode = blx.request.query('code') %}
+{% set user = blx.account.getUserByVerificationCode(verificationCode) %}
+{% if not user %}{% exit 404 %}{% endif %}
 
 
 {% set body %}
-	<div class="pane">
-		<div class="pane-head">
-			{{ "Set Password"|t }}
-		</div>
-		<div class="pane-body">
-			{% set verificationCode = blx.request.query('code') %}
-			{% set user = blx.account.getUserByVerificationCode(verificationCode) %}
-			{% if user %}
-				<form method="post" action="">
-					<input type="hidden" name="action" value="account/resetPassword">
-					<input type="hidden" name="redirect" value="dashboard">
-					<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
+	<div class="lockedup">
+		<div class="pane">
+			<form method="post" action="">
+				{{ forms.passwordField({
+					id: 'newPassword',
+					label: "Choose a new password"|t,
+					name: 'newPassword',
+					errors: (errors is defined ? errors : null)
+				}) }}
 
-					<div class="pane-item">{{ "Let’s set a password for your account."|t }}</div>
-					<div class="pane-item field">
-						<label for="newPassword">{{ "Password"|t }}</label>
-						{% set errors = verifyAccountInfo.getErrors('newPassword') %}
-						<div class="passwordwrapper"><input id="newPassword" name="newPassword" class="text password {% if errors %}error{% endif %}" type="password"></div>
-						{{ errorList(errors) }}
-					</div>
-					<div class="pane-item">
-						<input class="btn big submit" type="submit" value="{{ 'Set Password'|t }}">
-					</div>
-				</form>
-			{% else %}
-				<p>{{ "There was a problem validating this activation code."|t }}</p>
-			{% endif %}
+				<input type="hidden" name="action" value="account/resetPassword">
+				<input type="hidden" name="redirect" value="dashboard">
+				<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
+
+				<div class="buttons">
+					<input class="btn submit" type="submit" value="{{ 'Reset Password'|t }}">
+				</div>
+			</form>
 		</div>
 	</div>
 {% endset %}

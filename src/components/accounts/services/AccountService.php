@@ -298,7 +298,10 @@ class AccountService extends BaseApplicationComponent
 		}
 		else
 		{
-			$user->addError('newPassword', Blocks::t('Invalid password.'));
+			$user->addErrors(array(
+				'newPassword' => $passwordModel->getErrors('password')
+			));
+
 			return false;
 		}
 	}
