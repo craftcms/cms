@@ -29,7 +29,7 @@ Blocks.Installer = Blocks.Base.extend({
 		this.$currentScreen = $(this.$screens[0])
 			.removeClass('scaleddown')
 			.animate({opacity: 1}, 'fast', $.proxy(function() {
-				this.addListener($('#getstarted'), 'click', 'showAccountScreen');
+				this.addListener($('#getstarted'), 'activate', 'showAccountScreen');
 
 				/* HIDE */
 				// Give the License Key input focus after half a second
@@ -37,7 +37,7 @@ Blocks.Installer = Blocks.Base.extend({
 
 				// Get ready for form submit
 				this.$licensekeySubmitBtn = $('#licensekeysubmit');
-				this.addListener(this.$licensekeySubmitBtn, 'click', 'validateLicenseKey');
+				this.addListener(this.$licensekeySubmitBtn, 'activate', 'validateLicenseKey');
 				this.addListener($('#licensekeyform'), 'submit', 'validateLicenseKey');
 				/* end HIDE */
 			}, this));
@@ -57,7 +57,7 @@ Blocks.Installer = Blocks.Base.extend({
 	{
 		this.showScreen(1, $.proxy(function() {
 			this.$accountSubmitBtn = $('#accountsubmit');
-			this.addListener(this.$accountSubmitBtn, 'click', 'validateAccount');
+			this.addListener(this.$accountSubmitBtn, 'activate', 'validateAccount');
 			this.addListener($('#accountform'), 'submit', 'validateAccount');
 		}, this));
 	},
@@ -74,7 +74,7 @@ Blocks.Installer = Blocks.Base.extend({
 	{
 		this.showScreen(2, $.proxy(function() {
 			this.$siteSubmitBtn = $('#sitesubmit');
-			this.addListener(this.$siteSubmitBtn, 'click', 'validateSite');
+			this.addListener(this.$siteSubmitBtn, 'activate', 'validateSite');
 			this.addListener($('#siteform'), 'submit', 'validateSite');
 		}, this));
 	},

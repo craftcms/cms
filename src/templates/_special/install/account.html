@@ -10,10 +10,11 @@
 		{{ forms.passwordField({ label: "Password"|t, id: 'password' }) }}
 
 		<div class="buttons">
-			<div id="accountsubmit" class="btn big submit">{{ "Next"|t }}</div>
-			<input type="submit" class="hidden" tabindex="-1">
+			<div id="accountsubmit" class="btn big submit">{{ "Next"|t }}
+				<input type="submit" tabindex="-1">
+			</div>
 		</div>
 	</form>
 
-	{% include "_special/install/dots" with {dot: 2} %}
+	{% include "_special/install/dots" with {dot: 1} %}
 </div>

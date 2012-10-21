@@ -20,10 +20,11 @@
 		{{ forms.field({ label: "Language"|t, id: 'language' }, languageInput) }}
 
 		<div class="buttons">
-			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t }}</div>
-			<input type="submit" class="hidden" tabindex="-1">
+			<div id="sitesubmit" class="btn big submit">{{ "Finish up"|t }}
+				<input type="submit" tabindex="-1">
+			</div>
 		</div>
 	</form>
 
-	{% include "_special/install/dots" with {dot: 3} %}
+	{% include "_special/install/dots" with {dot: 2} %}
 </div>
