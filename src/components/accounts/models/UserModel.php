@@ -193,4 +193,32 @@ class UserModel extends BaseEntityModel
 			}
 		}
 	}
+
+	/**
+	 * Populates a new user instance with a given set of attributes.
+	 *
+	 * @static
+	 * @param mixed $attributes
+	 * @return UserModel
+	 */
+	public static function populateModel($attributes)
+	{
+		$user = parent::populateModel($attributes);
+
+		// Is the user in cooldown mode, and are they past their window?
+		if ($user->status == UserStatus::Locked)
+		{
+			$cooldownDuration = blx()->config->cooldownDuration;
+
+			if ($cooldownDuration)
+			{
+				if (!$user->getRemainingCooldownTime())
+				{
+					blx()->account->activateUser($user);
+				}
+			}
+		}
+
+		return $user;
+	}
 }

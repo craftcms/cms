@@ -39,37 +39,6 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates an asset source model.
-	 *
-	 * @param array|AssetSourceRecord $attributes
-	 * @return AssetSourceModel
-	 */
-	public function populateSource($attributes)
-	{
-		return AssetSourceModel::populateModel($attributes);
-	}
-
-	/**
-	 * Mass-populates asset source model.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateSources($data, $index = 'id')
-	{
-		$sources = array();
-
-		foreach ($data as $attributes)
-		{
-			$source = $this->populateSource($attributes);
-			$sources[$source->$index] = $source;
-		}
-
-		return $sources;
-	}
-
-	/**
 	 * Returns all asset sources.
 	 *
 	 * @return array
@@ -77,7 +46,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function getAllSources()
 	{
 		$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
-		return $this->populateSources($sourceRecords);
+		return AssetSourceModel::populateModels($sourceRecords, 'id');
 	}
 
 	/**
@@ -92,7 +61,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 		if ($sourceRecord)
 		{
-			return $this->populateSource($sourceRecord);
+			return AssetSourceModel::populateModel($sourceRecord);
 		}
 	}
 
@@ -189,7 +158,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function deleteSourceById($sourceId)
 	{
 		$sourceRecord = $this->_getSourceRecordById($sourceId);
-		$source = $this->populateSource($sourceRecord);
+		$source = AssetSourceModel::populateModel($sourceRecord);
 
 		$transaction = blx()->db->beginTransaction();
 		try

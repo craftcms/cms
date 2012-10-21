@@ -81,7 +81,7 @@ class EntryLinkType extends BaseLinkType
 	 */
 	public function populateEntities($data)
 	{
-		return blx()->entries->populateEntries($data);
+		return EntryModel::populateModels($data);
 	}
 
 	/**

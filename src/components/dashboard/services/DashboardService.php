@@ -39,37 +39,6 @@ class DashboardService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates a widget model.
-	 *
-	 * @param array|WidgetRecord $attributes
-	 * @return WidgetModel
-	 */
-	public function populateWidget($attributes)
-	{
-		return WidgetModel::populateModel($attributes);
-	}
-
-	/**
-	 * Mass-populates widget model.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateWidgets($data, $index = 'id')
-	{
-		$widgetPackages = array();
-
-		foreach ($data as $attributes)
-		{
-			$widget = $this->populateWidget($attributes);
-			$widgetPackages[$widget->$index] = $widget;
-		}
-
-		return $widgetPackages;
-	}
-
-	/**
 	 * Returns the dashboard widgets for the current user.
 	 *
 	 * @return array
@@ -80,7 +49,7 @@ class DashboardService extends BaseApplicationComponent
 			'userId' => blx()->account->getCurrentUser()->id
 		));
 
-		return $this->populateWidgets($widgetRecords);
+		return WidgetModel::populateModels($widgetRecords, 'id');
 	}
 
 	/**
@@ -98,7 +67,7 @@ class DashboardService extends BaseApplicationComponent
 
 		if ($widgetRecord)
 		{
-			return $this->populateWidget($widgetRecord);
+			return WidgetModel::populateModel($widgetRecord);
 		}
 	}
 

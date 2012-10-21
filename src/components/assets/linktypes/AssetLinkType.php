@@ -60,7 +60,7 @@ class AssetLinkType extends BaseLinkType
 	 */
 	public function populateEntities($data)
 	{
-		return blx()->assets->populateFiles($data);
+		return AssetFileModel::populateModels($data);
 	}
 
 	/**

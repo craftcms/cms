@@ -92,37 +92,6 @@ class PagesService extends BaseEntityService
 	// -------------------------------------------
 
 	/**
-	 * Populates a page model.
-	 *
-	 * @param array|PageRecord $attributes
-	 * @return PageModel
-	 */
-	public function populatePage($attributes)
-	{
-		return PageModel::populateModel($attributes);
-	}
-
-	/**
-	 * Mass-populates page models.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populatePages($data, $index = 'id')
-	{
-		$pages = array();
-
-		foreach ($data as $attributes)
-		{
-			$page = $this->populatePage($attributes);
-			$pages[$page->$index] = $page;
-		}
-
-		return $pages;
-	}
-
-	/**
 	 * Gets all pages.
 	 *
 	 * @return array
@@ -130,7 +99,7 @@ class PagesService extends BaseEntityService
 	public function getAllPages()
 	{
 		$pageRecords = PageRecord::model()->ordered()->findAll();
-		return $this->populatePages($pageRecords);
+		return PageModel::populateModels($pageRecords, 'id');
 	}
 
 	/**
@@ -154,7 +123,7 @@ class PagesService extends BaseEntityService
 		$pageRecord = PageRecord::model()->findById($pageId);
 		if ($pageRecord)
 		{
-			return $this->populatePage($pageRecord);
+			return PageModel::populateModel($pageRecord);
 		}
 	}
 
@@ -172,7 +141,7 @@ class PagesService extends BaseEntityService
 
 		if ($pageRecord)
 		{
-			return $this->populatePage($pageRecord);
+			return PageModel::populateModel($pageRecord);
 		}
 	}
 

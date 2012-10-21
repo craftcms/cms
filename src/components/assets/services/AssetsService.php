@@ -47,38 +47,6 @@ class AssetsService extends BaseEntityService
 	// -------------------------------------------
 
 	/**
-	 * Populates a file model.
-	 *
-	 * @param array|FileRecord $attributes
-	 * @return AssetFileModel
-	 */
-	public function populateFile($attributes)
-	{
-		$file = AssetFileModel::populateModel($attributes);
-		return $file;
-	}
-
-	/**
-	 * Mass-populates file models.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateFiles($data, $index = 'id')
-	{
-		$files = array();
-
-		foreach ($data as $attributes)
-		{
-			$file = $this->populateFile($attributes);
-			$files[$file->$index] = $file;
-		}
-
-		return $files;
-	}
-
-	/**
 	 * Returns all top-level files in a source.
 	 *
 	 * @param int $sourceid
@@ -94,7 +62,7 @@ class AssetsService extends BaseEntityService
 			->order('fi.filename')
 			->queryAll();
 
-		return $this->populateFiles($query);
+		return AssetFileModel::populateModels($query, 'id');
 	}
 
 	/**
@@ -121,45 +89,13 @@ class AssetsService extends BaseEntityService
 		$fileRecord = AssetFileRecord::model()->findById($fileId);
 		if ($fileRecord)
 		{
-			return $this->populateFile($fileRecord);
+			return AssetFileModel::populateModel($fileRecord);
 		}
 	}
 
 	// -------------------------------------------
 	//  Folders
 	// -------------------------------------------
-
-	/**
-	 * Populates a folder model.
-	 *
-	 * @param array|FolderRecord $attributes
-	 * @return AssetFolderModel
-	 */
-	public function populateFolder($attributes)
-	{
-		$folder = AssetFolderModel::populateModel($attributes);
-		return $folder;
-	}
-
-	/**
-	 * Mass-populates folder models.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateFolders($data, $index = 'id')
-	{
-		$folders = array();
-
-		foreach ($data as $attributes)
-		{
-			$folder = $this->populateFolder($attributes);
-			$folders[$folder->$index] = $folder;
-		}
-
-		return $folders;
-	}
 
 	/**
 	 * Returns a folder by its ID.
@@ -172,7 +108,7 @@ class AssetsService extends BaseEntityService
 		$folderRecord = AssetFolderRecord::model()->findById($folderId);
 		if ($folderRecord)
 		{
-			return $this->populateFolder($folderRecord);
+			return AssetFolderModel::populateModel($folderRecord);
 		}
 	}
 }

@@ -47,55 +47,6 @@ class EntriesService extends BaseEntityService
 	// -------------------------------------------
 
 	/**
-	 * Populates an entry model.
-	 *
-	 * @param array|EntryRecord $attributes
-	 * @return EntryModel
-	 */
-	public function populateEntry($attributes)
-	{
-		return EntryModel::populateModel($attributes);
-	}
-
-	/**
-	 * Populates a list of EntryTag models
-	 *
-	 * @param $attributes
-	 * @return array
-	 */
-	public function populateEntryTags($attributes)
-	{
-		$entryTags = EntryTagModel::populateModels($attributes);
-		return $entryTags;
-
-	}
-
-	/**
-	 * Mass-populates entry models.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateEntries($data, $index = null)
-	{
-		$entries = array();
-
-		if (!$index)
-		{
-			$index = 'id';
-		}
-
-		foreach ($data as $attributes)
-		{
-			$entry = $this->populateEntry($attributes);
-			$entries[$entry->$index] = $entry;
-		}
-
-		return $entries;
-	}
-
-	/**
 	 * Gets entries.
 	 *
 	 * @param EntryParams|null $params
@@ -131,7 +82,7 @@ class EntriesService extends BaseEntityService
 		}
 
 		$result = $query->queryAll();
-		return $this->populateEntries($result);
+		return EntryModel::populateModels($result, 'id');
 	}
 
 	/**
@@ -158,7 +109,7 @@ class EntriesService extends BaseEntityService
 
 		if ($result)
 		{
-			return $this->populateEntry($result);
+			return EntryModel::populateModel($result);
 		}
 	}
 
@@ -662,7 +613,7 @@ class EntriesService extends BaseEntityService
 		$entryRecord = EntryRecord::model()->findByPk($entryId);
 		$entryTagRecords = $this->_getTagsForEntry($entryRecord);
 
-		$entryTagModels = $this->populateEntryTags($entryTagRecords);
+		$entryTagModels = EntryTagModel::populateModels($entryTagRecords);
 		return $entryTagModels;
 	}
 

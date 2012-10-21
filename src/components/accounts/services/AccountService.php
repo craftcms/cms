@@ -11,33 +11,6 @@ class AccountService extends BaseApplicationComponent
 	private $_currentUser;
 
 	/**
-	 * Populates a user model.
-	 *
-	 * @param array|UserRecord $attributes
-	 * @return UserModel
-	 */
-	public function populateUser($attributes)
-	{
-		$user = UserModel::populateModel($attributes);
-
-		// Is the user in cooldown mode, and are they past their window?
-		if ($user->status == UserStatus::Locked)
-		{
-			$cooldownDuration = blx()->config->cooldownDuration;
-
-			if ($cooldownDuration)
-			{
-				if (!$user->getRemainingCooldownTime())
-				{
-					$this->activateUser($user);
-				}
-			}
-		}
-
-		return $user;
-	}
-
-	/**
 	 * Gets a user by their ID.
 	 *
 	 * @param $id
@@ -49,7 +22,7 @@ class AccountService extends BaseApplicationComponent
 
 		if ($userRecord)
 		{
-			return $this->populateUser($userRecord);
+			return UserModel::populateModel($userRecord);
 		}
 	}
 
@@ -68,7 +41,7 @@ class AccountService extends BaseApplicationComponent
 
 		if ($userRecord)
 		{
-			return $this->populateUser($userRecord);
+			return UserModel::populateModel($userRecord);
 		}
 	}
 
@@ -93,7 +66,7 @@ class AccountService extends BaseApplicationComponent
 
 			if ($userRecord)
 			{
-				return $this->populateUser($userRecord);
+				return UserModel::populateModel($userRecord);
 			}
 		}
 	}
@@ -115,7 +88,7 @@ class AccountService extends BaseApplicationComponent
 
 				if ($userRecord)
 				{
-					$this->_currentUser = $this->populateUser($userRecord);
+					$this->_currentUser = UserModel::populateModel($userRecord);
 				}
 				else
 				{

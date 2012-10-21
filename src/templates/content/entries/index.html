@@ -81,12 +81,9 @@
 					{% for entry in blx.entries.entries(params) %}
 						{% if blx.hasPackage('publishpro') %}
 							{% set entrySection = sections[entry.sectionId] %}
-							{% set editUrl = url('content/' ~ entrySection.handle ~ '/' ~ entry.id) %}
-						{% else %}
-							{% set editUrl = url('content/blog/' ~ entry.id) %}
 						{% endif %}
 						<tr>
-							<th scope="row"><a href="{{ editUrl }}">{{ entry.title }}</a></th>
+							<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
 							<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
 							{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
 							{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
