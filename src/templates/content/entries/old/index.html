@@ -5,7 +5,7 @@
 {% set content %}
 	<h1>{{ title }}</h1>
 
-	{% for section in blx.sections.sections %}
+	{% for section in blx.sections.findSections %}
 		<section>
 			<h2 data-icon="C">{{ section.name }}</h2>
 

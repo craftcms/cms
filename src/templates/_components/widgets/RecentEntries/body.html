@@ -4,7 +4,7 @@
 	{% set params = params|merge({ sectionId: settings.section }) %}
 {% endif %}
 
-{% set entries = blx.entries.entries(params) %}
+{% set entries = blx.entries.findEntries(params) %}
 
 
 <div class="container">

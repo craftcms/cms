@@ -57,7 +57,7 @@ class AssetsVariable
 	 *
 	 * @return array
 	 */
-	public function sources()
+	public function getAllSources()
 	{
 		return blx()->assetSources->getAllSources();
 	}
@@ -82,7 +82,7 @@ class AssetsVariable
 	 *
 	 * @return array
 	 */
-	public function assetBlocks()
+	public function getAllBlocks()
 	{
 		return blx()->assets->getAllBlocks();
 	}
@@ -93,7 +93,7 @@ class AssetsVariable
 	 * @param int $id
 	 * @return AssetBlockModel|null
 	 */
-	public function getAssetBlockById($id)
+	public function getBlockById($id)
 	{
 		return blx()->assets->getBlockById($id);
 	}

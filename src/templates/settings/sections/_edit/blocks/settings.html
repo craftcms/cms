@@ -10,7 +10,7 @@
 
 
 {% if block is not defined and blockId is defined %}
-	{% set block = blx.entryBlocks.getEntryBlockById(blockId) %}
+	{% set block = blx.entries.getBlockById(blockId) %}
 	{% if not block %}{% exit 404 %}{% endif %}
 {% endif %}
 

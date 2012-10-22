@@ -94,6 +94,6 @@ class EntryLinkType extends BaseLinkType
 	{
 		$params = new EntryParams($settings);
 		$params->order = 'title';
-		return blx()->entries->getEntries($params);
+		return blx()->entries->findEntries($params);
 	}
 }

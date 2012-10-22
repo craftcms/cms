@@ -176,7 +176,7 @@ class DashboardService extends BaseApplicationComponent
 		// Quick Post widget(s)
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$sections = blx()->sections->getSections();
+			$sections = blx()->sections->findSections();
 
 			foreach ($sections as $section)
 			{

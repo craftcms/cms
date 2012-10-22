@@ -2,7 +2,7 @@
 {% set title = "Verify Account"|t %}
 {% import "_includes/forms" as forms %}
 
-{% set verificationCode = blx.request.query('code') %}
+{% set verificationCode = blx.request.getQuery('code') %}
 {% set user = blx.account.getUserByVerificationCode(verificationCode) %}
 {% if not user %}{% exit 404 %}{% endif %}
 

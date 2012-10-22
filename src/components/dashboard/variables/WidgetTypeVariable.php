@@ -11,7 +11,7 @@ class WidgetTypeVariable extends BaseComponentVariable
 	 *
 	 * @return string
 	 */
-	public function title()
+	public function getTitle()
 	{
 		return $this->component->getTitle();
 	}
@@ -21,7 +21,7 @@ class WidgetTypeVariable extends BaseComponentVariable
 	 *
 	 * @return string
 	 */
-	public function body()
+	public function getBodyHtml()
 	{
 		return $this->component->getBodyHtml();
 	}

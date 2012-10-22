@@ -11,7 +11,7 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function version()
+	public function getVersion()
 	{
 		return Blocks::getVersion();
 	}
@@ -21,7 +21,7 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function build()
+	public function getBuild()
 	{
 		return Blocks::getBuild();
 	}
@@ -31,7 +31,7 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function siteName()
+	public function getSiteName()
 	{
 		return Blocks::getSiteName();
 	}
@@ -41,7 +41,7 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function siteUrl()
+	public function getSiteUrl()
 	{
 		return Blocks::getSiteUrl();
 	}
@@ -51,7 +51,7 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function language()
+	public function getLanguage()
 	{
 		return Blocks::getLanguage();
 	}
@@ -61,7 +61,7 @@ class AppVariable
 	 *
 	 * @return string
 	 */
-	public function licenseKey()
+	public function getLicenseKey()
 	{
 		return Blocks::getLicenseKey();
 	}

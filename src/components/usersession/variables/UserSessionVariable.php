@@ -11,7 +11,7 @@ class UserSessionVariable
 	 *
 	 * @return bool
 	 */
-	public function loggedin()
+	public function isLoggedIn()
 	{
 		return blx()->user->isLoggedIn();
 	}
@@ -21,7 +21,7 @@ class UserSessionVariable
 	 *
 	 * @return string
 	 */
-	public function rememberedusername()
+	public function getRememberedUsername()
 	{
 		return blx()->user->getRememberedUsername();
 	}

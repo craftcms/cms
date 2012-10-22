@@ -9,7 +9,7 @@ class RoutesVariable
 	/**
 	 * Returns all routes.
 	 */
-	public function all()
+	public function getAllRoutes()
 	{
 		$return = array();
 

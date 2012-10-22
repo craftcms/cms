@@ -1,7 +1,7 @@
 {% extends "_layouts/cp" %}
 {% set title = "Assets"|t %}
 {% includeCssResource "css/assets.css" %}
-{% set sources = blx.assets.sources %}
+{% set sources = blx.assets.getAllSources %}
 {% set files = blx.assets.getFilesBySourceId(1) %}
 {% set view = 'thumbs' %}
 

@@ -47,12 +47,12 @@ class EntriesService extends BaseEntityService
 	// -------------------------------------------
 
 	/**
-	 * Gets entries.
+	 * Finds entries.
 	 *
 	 * @param EntryParams|null $params
 	 * @return array
 	 */
-	public function getEntries(EntryParams $params = null)
+	public function findEntries(EntryParams $params = null)
 	{
 		if (!$params)
 		{
@@ -86,12 +86,12 @@ class EntriesService extends BaseEntityService
 	}
 
 	/**
-	 * Gets an entry.
+	 * Finds an entry.
 	 *
 	 * @param EntryParams|null $params
 	 * @return EntryModel|null
 	 */
-	public function getEntry(EntryParams $params = null)
+	public function findEntry(EntryParams $params = null)
 	{
 		if (!$params)
 		{

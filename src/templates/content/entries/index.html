@@ -4,7 +4,7 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set sections = blx.sections.sections %}
+	{% set sections = blx.sections.findSections %}
 	{% set showSection = true %}
 {% else %}
 	{% set showSection = false %}
@@ -24,7 +24,7 @@
 {% elseif filter == 'archived' %}
 	{% set params = { archived: true } %}
 	{% set showStatus = false %}
-{% elseif blx.hasPackage('publishpro') and blx.sections.totalSections({ handle: filter }) %}
+{% elseif blx.hasPackage('publishpro') and blx.sections.getTotalSections({ handle: filter }) %}
 	{% set params = { section: filter, status: '*' } %}
 	{% set showSection = false %}
 {% else %}
@@ -50,13 +50,13 @@
 			{% endif %}
 
 			{% for status, class in statuses %}
-				{% set total = blx.entries.totalEntries({ status: status }) %}
+				{% set total = blx.entries.getTotalEntries({ status: status }) %}
 				{% if total %}
 					<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 				{% endif %}
 			{% endfor %}
 
-			{% if blx.entries.totalEntries({ archived: true }) %}
+			{% if blx.entries.getTotalEntries({ archived: true }) %}
 				<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
 			{% endif %}
 		</ul>
@@ -67,7 +67,7 @@
 			<div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search entries'|t }}"></div>
 		</div>
 
-		{% if blx.entries.totalEntries(params) %}
+		{% if blx.entries.getTotalEntries(params) %}
 			{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
 			{% set colWidth = round(100 / totalCols) %}
 			<table class="data">
@@ -78,7 +78,7 @@
 					{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
 				</thead>
 				<tbody>
-					{% for entry in blx.entries.entries(params) %}
+					{% for entry in blx.entries.findEntries(params) %}
 						{% if blx.hasPackage('publishpro') %}
 							{% set entrySection = sections[entry.sectionId] %}
 						{% endif %}

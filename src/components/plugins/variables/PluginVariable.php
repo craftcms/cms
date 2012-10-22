@@ -7,33 +7,43 @@ namespace Blocks;
 class PluginVariable extends BaseComponentVariable
 {
 	/**
+	 * Returns the plugin’s display name.
+	 *
+	 * @return string
+	 */
+	public function getName()
+	{
+		return $this->component->getName();
+	}
+
+	/**
 	 * Returns the plugin's version.
 	 *
 	 * @return string
 	 */
-	public function version()
+	public function getVersion()
 	{
 		return $this->component->getVersion();
 	}
 
 	/**
-	 * Returns the plugin's developer link.
+	 * Returns the plugin's developer.
 	 *
 	 * @return string
 	 */
-	public function developer()
+	public function getDeveloper()
 	{
-		$url = $this->component->getDeveloperUrl();
-		$name = $this->component->getDeveloper();
+		return $this->component->getDeveloper();
+	}
 
-		if ($url)
-		{
-			return '<a target="_blank" href="'.$url.'">'.$name.'</a>';
-		}
-		else
-		{
-			return $name;
-		}
+	/**
+	 * Returns the plugin's developer's URL.
+	 *
+	 * @return string
+	 */
+	public function getDeveloperUrl()
+	{
+		return $this->component->getDeveloperUrl();
 	}
 
 	/**
@@ -44,16 +54,6 @@ class PluginVariable extends BaseComponentVariable
 	public function isInstalled()
 	{
 		return $this->component->isInstalled();
-	}
-
-	/**
-	 * Returns the plugin’s display name.
-	 *
-	 * @return string
-	 */
-	public function name()
-	{
-		return $this->component->getName();
 	}
 
 	/**

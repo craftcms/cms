@@ -11,7 +11,7 @@ class HttpRequestVariable
 	 *
 	 * @return bool
 	 */
-	public function secure()
+	public function isSecure()
 	{
 		return blx()->request->isSecureConnection();
 	}
@@ -23,7 +23,7 @@ class HttpRequestVariable
 	 * @param string $default
 	 * @return mixed
 	 */
-	public function param($name, $default = null)
+	public function getParam($name, $default = null)
 	{
 		return blx()->request->getParam($name, $default);
 	}
@@ -35,7 +35,7 @@ class HttpRequestVariable
 	 * @param string $default
 	 * @return mixed
 	 */
-	public function query($name, $default = null)
+	public function getQuery($name, $default = null)
 	{
 		return blx()->request->getQuery($name, $default);
 	}
@@ -47,7 +47,7 @@ class HttpRequestVariable
 	 * @param string $default
 	 * @return mixed
 	 */
-	public function post($name, $default = null)
+	public function getPost($name, $default = null)
 	{
 		return blx()->request->getPost($name, $default);
 	}
@@ -57,7 +57,7 @@ class HttpRequestVariable
 	 *
 	 * @return array
 	 */
-	public function segments()
+	public function getSegments()
 	{
 		return blx()->request->getPathSegments();
 	}
@@ -69,7 +69,7 @@ class HttpRequestVariable
 	 * @param string $default
 	 * @return string
 	 */
-	public function segment($num, $default = null)
+	public function getSegment($num, $default = null)
 	{
 		return blx()->request->getPathSegment($num, $default);
 	}
@@ -79,7 +79,7 @@ class HttpRequestVariable
 	 *
 	 * @return string
 	 */
-	public function lastSegment()
+	public function getLastSegment()
 	{
 		$segments = blx()->request->getPathSegments();
 
@@ -94,7 +94,7 @@ class HttpRequestVariable
 	 *
 	 * @return string
 	 */
-	public function servername()
+	public function getServerName()
 	{
 		return blx()->request->getServerName();
 	}

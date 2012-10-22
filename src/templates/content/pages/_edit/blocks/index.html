@@ -7,7 +7,7 @@
 
 {% set content %}
 	{% include "_includes/blockindex" with {
-		blocks: blx.pageBlocks.getBlocksByPageId(page.id),
+		blocks: blx.pages.getBlocksByPageId(page.id),
 		settingsUrlPrefix: 'content/pages/' ~ page.id ~ '/blocks/',
 		controller: 'pages'
 	} only %}

@@ -173,7 +173,7 @@
 					<label{% if config.required %} class="required"{% endif %}{% if config.id %} for="{{ config.id }}"{% endif %}>
 						{{ config.label|raw }}
 						{% if blx.hasPackage('language') and config.translatable and blx.language != blx.app.language %}
-							{% set localeName = blx.i18n.localeName(blx.app.language) %}
+							{% set localeName = blx.i18n.getLocaleName(blx.app.language) %}
 							{{ "(in {language})"|t({ language: localeName }) }}
 						{% endif %}
 					</label>

@@ -28,7 +28,7 @@
 
 {% set content %}
 	<div id="routes">
-		{% for route in blx.routes.all %}
+		{% for route in blx.i18n.getAllRoutes %}
 			<div class="pane route" data-id="{{ route.id }}">
 				<div class="url">
 					{%- autoescape false -%}

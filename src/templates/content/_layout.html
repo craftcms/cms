@@ -6,7 +6,7 @@
 {% endset %}
 
 
-{% set totalGlobals = blx.globalBlocks.getTotalBlocks %}
+{% set totalGlobals = blx.globals.getTotalBlocks %}
 
 {% set tabs %}
 	<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>

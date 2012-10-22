@@ -2,9 +2,9 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set blocks = blx.entryBlocks.entryBlocksBySectionId(settings.section) %}
+	{% set blocks = blx.entries.getBlocksBySectionId(settings.section) %}
 {% else %}
-	{% set blocks = blx.entryBlocks.entryBlocks %}
+	{% set blocks = blx.entries.getAllBlocks %}
 {% endif %}
 
 

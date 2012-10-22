@@ -6,7 +6,7 @@
 		<div class="select">
 			<select id="section" name="section">
 				<option value="*">{{ "All"|t }}</option>
-				{% for section in blx.sections.sections %}
+				{% for section in blx.sections.findSections %}
 					<option value="{{ section.id }}"{% if section.id == settings.section %} selected{% endif %}>{{ section.name|t }}</option>
 				{% endfor %}
 			</select>

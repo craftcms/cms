@@ -26,7 +26,7 @@
 				{% for plugin in plugins %}
 					<tr data-name="{{ plugin.name|t }}">
 						<th>{{ plugin.name }} <span class="light">{{ plugin.version }}</span></th>
-						<td>{% if plugin.developer %}{{ plugin.developer|raw }}{% else %}<span class="light">--</span>{% endif %}</td>
+						<td><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}"{% endif %}>{{ plugin.developer }}</a></td>
 						<td>
 							<form action="" method="post">
 								<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">

@@ -24,7 +24,7 @@
 
 {% if blx.hasPackage('publishpro') %}
 
-	{% set sections = blx.sections.sections %}
+	{% set sections = blx.sections.findSections %}
 
 	{{ forms.selectField({
 		label: "Section"|t,
@@ -41,7 +41,7 @@
 		{% for section in sections %}
 			{% set show = ((not settings.section and loop.first) or settings.section == section.id) %}
 			<div id="section{{ section.id }}"{% if not show %} class="hidden"{% endif %}>
-				{% set blocks = blx.entryBlocks.entryBlocksBySectionId(section.id) %}
+				{% set blocks = blx.entries.getBlocksBySectionId(section.id) %}
 				{{ _self.blockList(blocks, settings.blocks, 'blocks[section'~section.id~']') }}
 			</div>
 		{% endfor %}
@@ -50,7 +50,7 @@
 {% else %}
 
 	{% set blocksInput %}
-		{% set blocks = blx.entryBlocks.entryBlocks %}
+		{% set blocks = blx.entries.getAllBlocks %}
 		{{ _self.blockList(blocks, settings.blocks) }}
 	{% endset %}
 

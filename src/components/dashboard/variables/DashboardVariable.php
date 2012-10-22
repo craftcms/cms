@@ -11,7 +11,7 @@ class DashboardVariable
 	 *
 	 * @return array
 	 */
-	public function alerts()
+	public function getAlerts()
 	{
 		return DashboardHelper::getAlerts();
 	}
@@ -63,7 +63,7 @@ class DashboardVariable
 	 *
 	 * @return array
 	 */
-	public function userWidgets()
+	public function getUserWidgets()
 	{
 		return blx()->dashboard->getUserWidgets();
 	}

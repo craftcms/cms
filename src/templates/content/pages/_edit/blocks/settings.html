@@ -8,7 +8,7 @@
 
 
 {% if block is not defined and blockId is defined %}
-	{% set block = blx.pageBlocks.getPageBlockById(blockId) %}
+	{% set block = blx.pages.getBlockById(blockId) %}
 	{% if not block %}{% exit 404 %}{% endif %}
 {% endif %}
 

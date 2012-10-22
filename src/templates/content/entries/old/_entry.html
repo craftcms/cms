@@ -2,7 +2,7 @@
 {% includeCssResource "css/content-entry.css" %}
 
 {% if not entry and entryId %}
-	{% set entry = blx.entries.getEntryById(entryId) %}
+	{% set entry = blx.entries.findEntryById(entryId) %}
 	{% if draftNum %}
 		{{ entry.setDraft(draftNum) }}
 	{% endif %}

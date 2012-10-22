@@ -6,7 +6,7 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set section = blx.sections.section({ handle: sectionHandle }) %}
+	{% set section = blx.sections.findSection({ handle: sectionHandle }) %}
 	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
 
@@ -17,7 +17,7 @@
 	{% elseif versionId is defined %}
 		{% set entry = blx.entryRevisions.getVersionById(versionId) %}
 	{% else %}
-		{% set entry = blx.entries.entry({ id: entryId, status: '*' }) %}
+		{% set entry = blx.entries.findEntry({ id: entryId, status: '*' }) %}
 	{% endif %}
 
 	{% if not entry %}{% exit 404 %}{% endif %}
@@ -37,9 +37,9 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set blocks = blx.entryBlocks.entryBlocksBySectionId(section.id) %}
+	{% set blocks = blx.entries.getBlocksBySectionId(section.id) %}
 {% else %}
-	{% set blocks = blx.entryBlocks.entryBlocks %}
+	{% set blocks = blx.entries.getAllBlocks %}
 {% endif %}
 
 
@@ -117,7 +117,7 @@
 					label: "Author"|t,
 					id: 'author',
 					name: 'author',
-					options: blx.users.users,
+					options: blx.users.findUsers,
 					value: (entry is defined ? entry.authorId : user.id)
 				}) }}
 			{% endif %}

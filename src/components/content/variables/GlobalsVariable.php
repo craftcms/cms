@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Global blocks functions
+ * Globals functions
  */
-class GlobalBlocksVariable
+class GlobalsVariable
 {
 	/**
 	 * Returns all global blocks.

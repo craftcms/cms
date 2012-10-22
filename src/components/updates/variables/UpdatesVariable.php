@@ -11,7 +11,7 @@ class UpdatesVariable
 	 *
 	 * @return bool
 	 */
-	public function cached()
+	public function isUpdateInfoCached()
 	{
 		return blx()->updates->isUpdateInfoCached();
 	}
@@ -21,7 +21,7 @@ class UpdatesVariable
 	 *
 	 * @return bool
 	 */
-	public function critical()
+	public function isCriticalUpdateAvailable()
 	{
 		return blx()->updates->isCriticalUpdateAvailable();
 	}
@@ -31,7 +31,7 @@ class UpdatesVariable
 	 *
 	 * @return array
 	 */
-	public function unwritablefolders()
+	public function getUnwritableFolders()
 	{
 		return blx()->updates->getUnwritableFolders();
 	}
@@ -40,7 +40,7 @@ class UpdatesVariable
 	 * @param bool $forceRefresh
 	 * @return mixed
 	 */
-	public function updateinfo($forceRefresh = false)
+	public function getUpdates($forceRefresh = false)
 	{
 		return blx()->updates->getUpdates($forceRefresh);
 	}

@@ -14,7 +14,7 @@
 
 {% set content %}
 	{% include "_includes/blockindex" with {
-		blocks: blx.globalBlocks.getAllBlocks,
+		blocks: blx.globals.getAllBlocks,
 		settingsUrlPrefix: 'settings/globals/',
 		controller: 'globals'
 	} only %}

@@ -1,4 +1,4 @@
-{% if blx.session.loggedin %}
+{% if blx.session.isLoggedIn %}
 	{% redirect "dashboard" %}
 {% endif %}
 
@@ -21,7 +21,7 @@
 		{
 			document.write(
 				'<form id="login-form" method="post" action="">' +
-					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.rememberedusername })|e("js") }}' +
+					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.getRememberedUsername })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
 						'{{ forms.passwordField({ id: "password", hint: "Password"|t })|e("js") }}' +
@@ -31,7 +31,7 @@
 					'</div>' +
 
 					'<div class="buttons">' +
-						'<div id="submit" class="btn submit disabled {% if not blx.request.secure %}in{% endif %}secure icon">' +
+						'<div id="submit" class="btn submit disabled {% if not blx.request.isSecure %}in{% endif %}secure icon">' +
 							'<span class="label">{{ "Login"|t }}</span>' +
 							'<input type="submit">' +
 						'</div>' +
@@ -40,7 +40,7 @@
 				'</form>'
 			);
 
-			document.getElementById("{{ (blx.session.rememberedusername ? 'password' : 'loginName') }}").focus();
+			document.getElementById("{{ (blx.session.getRememberedUsername ? 'password' : 'loginName') }}").focus();
 		}
 		else
 		{

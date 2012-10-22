@@ -156,14 +156,6 @@ class BlxVariable
 	}
 
 	/**
-	 * @return EntryBlocksVariable
-	 */
-	public function entryBlocks()
-	{
-		return new EntryBlocksVariable();
-	}
-
-	/**
 	 * @return EntryRevisionsVariable
 	 */
 	public function entryRevisions()
@@ -175,11 +167,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return GlobalBlocksVariable
+	 * @return GlobalsVariable
 	 */
-	public function globalBlocks()
+	public function globals()
 	{
-		return new GlobalBlocksVariable();
+		return new GlobalsVariable();
 	}
 
 	/**
@@ -196,14 +188,6 @@ class BlxVariable
 	public function pages()
 	{
 		return new PagesVariable();
-	}
-
-	/**
-	 * @return PageBlocksVariable
-	 */
-	public function pageBlocks()
-	{
-		return new PageBlocksVariable();
 	}
 
 	/**

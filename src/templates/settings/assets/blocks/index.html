@@ -5,7 +5,7 @@
 
 {% set content %}
 	{% include "_includes/blockindex" with {
-		blocks: blx.assets.assetBlocks,
+		blocks: blx.assets.getAllBlocks,
 		settingsUrlPrefix: 'settings/assets/blocks/',
 		controller: 'assets'
 	} only %}

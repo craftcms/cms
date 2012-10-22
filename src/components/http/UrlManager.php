@@ -107,7 +107,7 @@ class UrlManager extends \CUrlManager
 		$params = new EntryParams();
 		$params->uri = blx()->request->getPath();
 		$params->includeContent = true;
-		$entry = blx()->entries->getEntry($params);
+		$entry = blx()->entries->findEntry($params);
 
 		if ($entry)
 		{

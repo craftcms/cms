@@ -11,7 +11,7 @@ class LocalizationVariable
 	 *
 	 * @return array
 	 */
-	public function languages()
+	public function getLanguages()
 	{
 		return blx()->i18n->getLanguages();
 	}
@@ -21,7 +21,7 @@ class LocalizationVariable
 	 *
 	 * @return array
 	 */
-	public function translatedLanguages()
+	public function getTranslatedLanguages()
 	{
 		return blx()->i18n->getTranslatedLanguages();
 	}
@@ -33,7 +33,7 @@ class LocalizationVariable
 	 * @param string $language The language to translate the locale name into
 	 * @return string The locale display name
 	 */
-	public function localeName($locale, $language = null)
+	public function getLocaleName($locale, $language = null)
 	{
 		// If no language is specified, default to the user's language
 		if (!$language)

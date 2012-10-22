@@ -3,7 +3,7 @@
 
 
 {% if block is not defined and blockId is defined %}
-	{% set block = blx.assets.getAssetBlockById(blockId) %}
+	{% set block = blx.assets.getBlockById(blockId) %}
 	{% if not block %}{% exit 404 %}{% endif %}
 {% endif %}
 
