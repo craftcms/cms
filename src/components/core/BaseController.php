@@ -241,9 +241,10 @@ abstract class BaseController extends \CController
 	 * Checks if a controller has overridden allowAnonymous either as an array with actions to allow anonymous access to
 	 * or as a bool that applies to all actions.
 	 *
+	 * @param \CAction $action
 	 * @return bool
 	 */
-	public function beforeAction()
+	public function beforeAction($action)
 	{
 		if (is_array($this->allowAnonymous))
 		{
