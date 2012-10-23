@@ -13,7 +13,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getAllSourceTypes()
 	{
-		return blx()->components->getComponentsByType('assetSource');
+		return blx()->components->getComponentsByType(ComponentType::AssetSource);
 	}
 
 	/**
@@ -24,7 +24,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function getSourceType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass('assetSource', $class);
+		return blx()->components->getComponentByTypeAndClass(ComponentType::AssetSource, $class);
 	}
 
 	/**
@@ -35,7 +35,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		return blx()->components->populateComponentByTypeAndModel('assetSource', $source);
+		return blx()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
 	}
 
 	/**

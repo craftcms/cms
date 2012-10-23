@@ -13,7 +13,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function getAllWidgetTypes()
 	{
-		return blx()->components->getComponentsByType('widget');
+		return blx()->components->getComponentsByType(ComponentType::Widget);
 	}
 
 	/**
@@ -24,7 +24,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function getWidgetType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass('widget', $class);
+		return blx()->components->getComponentByTypeAndClass(ComponentType::Widget, $class);
 	}
 
 	/**
@@ -35,7 +35,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function populateWidgetType(WidgetModel $widget)
 	{
-		return blx()->components->populateComponentByTypeAndModel('widget', $widget);
+		return blx()->components->populateComponentByTypeAndModel(ComponentType::Widget, $widget);
 	}
 
 	/**

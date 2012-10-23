@@ -13,7 +13,7 @@ class BlockTypesService extends BaseApplicationComponent
 	 */
 	public function getAllBlockTypes()
 	{
-		return blx()->components->getComponentsByType('block');
+		return blx()->components->getComponentsByType(ComponentType::Block);
 	}
 
 	/**
@@ -24,7 +24,7 @@ class BlockTypesService extends BaseApplicationComponent
 	 */
 	public function getBlockType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass('block', $class);
+		return blx()->components->getComponentByTypeAndClass(ComponentType::Block, $class);
 	}
 
 	/**
@@ -37,7 +37,7 @@ class BlockTypesService extends BaseApplicationComponent
 	 */
 	public function populateBlockType(BaseBlockModel $block, $entity = null)
 	{
-		$blockType = blx()->components->populateComponentByTypeAndModel('block', $block);
+		$blockType = blx()->components->populateComponentByTypeAndModel(ComponentType::Block, $block);
 		$blockType->entity = $entity;
 		return $blockType;
 	}
