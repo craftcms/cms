@@ -229,6 +229,7 @@ class UserSessionService extends \CWebUser
 			}
 		}
 
+		Blocks::log($username.' tried to log in unsuccessfully.');
 		return false;
 	}
 
