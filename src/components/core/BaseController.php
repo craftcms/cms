@@ -150,26 +150,26 @@ abstract class BaseController extends \CController
 	}
 
 	/**
-	 * Returns a 404 if this isn't a POST request
+	 * Returns a 400 if this isn't a POST request
 	 * @throws HttpException
 	 */
 	public function requirePostRequest()
 	{
 		if (!blx()->config->devMode && blx()->request->getRequestType() !== 'POST')
 		{
-			throw new HttpException(404);
+			throw new HttpException(400);
 		}
 	}
 
 	/**
-	 * Returns a 404 if this isn't an Ajax request
+	 * Returns a 400 if this isn't an Ajax request
 	 * @throws HttpException
 	 */
 	public function requireAjaxRequest()
 	{
 		if (!blx()->config->devMode && !blx()->request->isAjaxRequest())
 		{
-			throw new HttpException(404);
+			throw new HttpException(400);
 		}
 	}
 
