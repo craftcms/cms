@@ -36,12 +36,12 @@ class UrlHelper
 
 		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
 		{
-			$path = $origPath == '' ? $path.'/' : $path;
+			$path = ($origPath == '' && $path[strlen($path) - 1] !== '/' ? $path.'/' : $path);
 		}
 		else
 		{
 			// stupid way of checking if p doesn't have a value set in the given path.
-			if (($pos = strpos($path, $pathVar.'=')) !== false && isset($path[$pos+2]) && $path[$pos+2] == '&')
+			if (($pos = strpos($path, $pathVar.'=')) !== false && isset($path[$pos + 2]) && $path[$pos + 2] == '&')
 			{
 				if ($params == null)
 				{
