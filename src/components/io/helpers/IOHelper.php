@@ -1142,7 +1142,7 @@ class IOHelper
 	{
 		$descendants = array();
 
-		$path = static::getRealPath($path);
+		$path = static::normalizePathSeparators(static::getRealPath($path));
 
 		if ($filter !== null)
 		{
