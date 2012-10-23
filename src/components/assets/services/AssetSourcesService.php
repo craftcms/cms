@@ -97,6 +97,18 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a source type by source id
+	 * @param $sourceId
+	 * @return BaseAssetSourceType
+	 */
+	public function getSourceTypeById($sourceId)
+	{
+		$source = $this->getSourceById($sourceId);
+		return $this->populateSourceType($source);
+
+	}
+
+	/**
 	 * Saves an asset source.
 	 *
 	 * @param AssetSourceModel $source

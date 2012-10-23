@@ -1223,5 +1223,64 @@ class IOHelper
 
 		return $passed;
 	}
+
+	/**
+	 * Get a list of allowed file extensions
+	 * @return array
+	 */
+	public static function getAllowedFileExtensions()
+	{
+		return  ArrayHelper::stringToArray(blx()->config->allowedFileExtensions);
+	}
+
+	/**
+	 * Returns whether the extension is allowed
+	 * @param $extension
+	 * @return bool
+	 */
+	public static function isExtensionAllowed($extension)
+	{
+		return in_array($extension, static::getAllowedFileExtensions());
+	}
+
+	/**
+	 * Returns a list of file kinds
+	 * @return array
+	 */
+	public static function getFileKinds()
+	{
+		return array(
+			'access'      => array('adp','accdb','mdb'),
+			'audio'       => array('wav','aif','aiff','aifc','m4a','wma','mp3','aac','oga'),
+			'excel'       => array('xls', 'xlsx'),
+			'flash'       => array('fla','swf'),
+			'html'        => array('html','htm'),
+			'illustrator' => array('ai'),
+			'image'       => array('jpg','jpeg','jpe','tiff','tif','png','gif','bmp','webp'),
+			'pdf'         => array('pdf'),
+			'photoshop'   => array('psd','psb'),
+			'php'         => array('php'),
+			'text'        => array('txt','text'),
+			'video'       => array('mov','m4v','wmv','avi','flv','mp4','ogg','ogv','rm'),
+			'word'        => array('doc','docx')
+		);
+	}
+
+	/**
+	 * Return a file's kind by extension
+	 * @param $extension
+	 * @return int|string
+	 */
+	public static function getFileKind($extension)
+	{
+		$fileKinds = static::getFileKinds();
+		foreach ($fileKinds as $kind => $extensions)
+		{
+			if (in_array($extension, $extensions))
+			{
+				return $kind;
+			}
+		}
+	}
 }
 

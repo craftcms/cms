@@ -6,6 +6,7 @@ namespace Blocks;
  */
 class AssetFileModel extends BaseModel
 {
+
 	/**
 	 * User the filename as the string representation.
 	 *
@@ -22,14 +23,16 @@ class AssetFileModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'id'        => AttributeType::Number,
-			'folderId'  => AttributeType::Number,
-			'contentId' => AttributeType::Number,
-			'filename'  => AttributeType::String,
-			'kind'      => AttributeType::String,
-			'width'     => AttributeType::Number,
-			'height'    => AttributeType::Number,
-			'size'      => AttributeType::Number,
+			'id'			=> AttributeType::Number,
+			'sourceId'		=> AttributeType::Number,
+			'folderId'		=> AttributeType::Number,
+			'contentId'		=> AttributeType::Number,
+			'filename'		=> AttributeType::String,
+			'kind'			=> AttributeType::String,
+			'width'			=> AttributeType::Number,
+			'height'		=> AttributeType::Number,
+			'size'			=> AttributeType::Number,
+			'dateModified'	=> AttributeType::Number
 		);
 	}
 

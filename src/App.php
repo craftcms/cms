@@ -3,6 +3,9 @@ namespace Blocks;
 
 /**
  *
+ * @property AssetsService $assets The asset manager component.
+ * @property AssetIndexingService $assetIndexing The asset manager component.
+ * @property AssetSourcesService $assetSources The asset manager component.
  */
 class App extends \CWebApplication
 {

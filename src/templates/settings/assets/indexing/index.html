@@ -1,0 +1,49 @@
+{% extends "settings/assets/_layout" %}
+{% set page = "indexing" %}
+{% set title = "Asset Indexing"|t %}
+{% set sources = blx.assets.sources %}
+
+
+{% set content %}
+	<p id="nosources" {% if sources|length %}style="display: none"{% endif %}>
+		{{ "No sources exist yet."|t }}
+	</p>
+
+	{% if sources|length %}
+		<table id="sources" class="data">
+			<thead>
+				<th scope="col">{{ "Name"|t }}</th>
+				{% if blx.hasPackage('cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
+				<td class="small"></td>
+				<td class="small"></td>
+			</thead>
+			<tbody>
+				{% for source in sources %}
+					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
+						<th scope="row"><label for="source_{{ source.id }}">{{ source.name|t }}</label></th>
+						{% if blx.hasPackage('cloud') %}<td>{{ blx.assets.populateSourceType(source).name }}</td>{% endif %}
+						<td class="small index-progress"></td>
+						<td class="small"><input type="checkbox" class="indexing" source_id="{{ source.id }}" id="source_{{ source.id }}"/></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+
+        <div class="buttons">
+            <a href="javascript:;" class="btn" id="start-index">{{ "Index"|t }}</a>
+        </div>
+
+        <div id="index-report">
+            <div id="index-message"></div>
+            <div id="index-obsolete"></div>
+            <div class="buttons">
+                <a href="javascript:;" class="btn" id="finish-index">{{ "Finish indexing"|t }}</a>
+            </div>
+        </div>
+	{% endif %}
+
+{% endset %}
+
+
+{% includeJsResource "js/AssetIndexing.js" %}
+{% includeJsResource "js/QueueManager.js" %}

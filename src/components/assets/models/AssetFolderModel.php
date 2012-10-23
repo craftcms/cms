@@ -6,6 +6,17 @@ namespace Blocks;
  */
 class AssetFolderModel extends BaseModel
 {
+
+	/**
+	 * Use the folder name as the string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->name;
+	}
+
 	/**
 	 * @return array
 	 */

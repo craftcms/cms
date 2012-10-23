@@ -95,6 +95,7 @@ if (in_array('users', $packages))
 $components['account']['class']           = 'Blocks\AccountService';
 $components['assets']['class']            = 'Blocks\AssetsService';
 $components['assetBlocks']['class']       = 'Blocks\AssetBlocksService';
+$components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
 $components['assetSources']['class']      = 'Blocks\AssetSourcesService';
 $components['blockTypes']['class']        = 'Blocks\BlockTypesService';
 $components['components']['class']        = 'Blocks\ComponentsService';
