@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 /*-- Sites --*/
 body.sites #sites li.primary { font-weight: bold; }
 
