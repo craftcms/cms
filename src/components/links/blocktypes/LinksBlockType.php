@@ -198,7 +198,8 @@ class LinksBlockType extends BaseBlockType
 	 */
 	public function onAfterEntitySave()
 	{
-		$entityIds = array_filter($this->entity->getRawContent($this->model->handle));
+		$rawValue = $this->entity->getRawContent($this->model->handle);
+		$entityIds = is_array($rawValue) ? array_filter($rawValue) : array();
 		blx()->links->setLinks($this->getSettings()->criteriaId, $this->entity->id, $entityIds);
 	}
 }

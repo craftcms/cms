@@ -11,6 +11,8 @@ class TemplatesService extends BaseApplicationComponent
 
 	private $_headNodes = array();
 	private $_footNodes = array();
+	private $_cssFiles = array();
+	private $_jsFiles = array();
 	private $_css = array();
 	private $_js = array();
 	private $_translations = array();
@@ -120,8 +122,10 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeCssFile($url, $first = false)
 	{
-		$node = '<link rel="stylesheet" type="text/css" href="'.$url.'"/>';
-		$this->includeHeadNode($node, $first);
+		if (!in_array($url, $this->_cssFiles))
+		{
+			ArrayHelper::prependOrAppend($this->_cssFiles, $url, $first);
+		}
 	}
 
 	/**
@@ -132,8 +136,10 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function includeJsFile($url, $first = false)
 	{
-		$node = '<script type="text/javascript" src="'.$url.'"></script>';
-		$this->includeFootNode($node, $first);
+		if (!in_array($url, $this->_jsFiles))
+		{
+			ArrayHelper::prependOrAppend($this->_jsFiles, $url, $first);
+		}
 	}
 
 	/**
@@ -192,17 +198,24 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function getHeadNodes()
 	{
+		// Are there any CSS files to include?
+		foreach($this->_cssFiles as $url)
+		{
+			$node = '<link rel="stylesheet" type="text/css" href="'.$url.'"/>';
+			$this->includeHeadNode($node);
+		}
+
 		// Is there any CSS to include?
 		if (!empty($this->_css))
 		{
-			$css = implode("\n\n", array_unique($this->_css));
+			$css = implode("\n\n", $this->_css);
 			$node = "<style type=\"text/css\">\n".$css."\n</style>";
 			$this->includeHeadNode($node);
 		}
 
 		if (!empty($this->_headNodes))
 		{
-			$headNodes = implode("\n", array_unique($this->_headNodes));
+			$headNodes = implode("\n", $this->_headNodes);
 			$this->_headNodes = array();
 			return $headNodes;
 		}
@@ -216,17 +229,24 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	public function getFootNodes()
 	{
+		// Are there any JS files to include?
+		foreach($this->_jsFiles as $url)
+		{
+			$node = '<script type="text/javascript" src="'.$url.'"></script>';
+			$this->includeFootNode($node);
+		}
+
 		// Is there any JS to include?
 		if (!empty($this->_js))
 		{
-			$js = implode("\n\n", array_unique($this->_js));
+			$js = implode("\n\n", $this->_js);
 			$node = "<script type=\"text/javascript\">\n/*<![CDATA[*/\n".$js."\n/*]]>*/\n</script>";
 			$this->includeFootNode($node);
 		}
 
 		if (!empty($this->_footNodes))
 		{
-			$footNodes = implode("\n", array_unique($this->_footNodes));
+			$footNodes = implode("\n", $this->_footNodes);
 			$this->_footNodes = array();
 			return $footNodes;
 		}
