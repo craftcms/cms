@@ -4,6 +4,7 @@
 Blocks.QuickPostWidget = Blocks.Base.extend({
 
 	params: null,
+	initBlocks: null,
 	$widget: null,
 	$form: null,
 	$formClone: null,
@@ -11,16 +12,23 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 	$errorList: null,
 	loading: false,
 
-	init: function(widgetId, params)
+	init: function(widgetId, params, initBlocks)
 	{
 		this.params = params;
+		this.initBlocks = initBlocks;
 		this.$widget = $('#widget'+widgetId);
 		this.$form = this.$widget.find('form:first');
 		this.$spinner = this.$form.find('.spinner');
 
-		this.addListener(this.$form, 'submit', 'onSubmit');
+		this.$formClone = this.$form.clone();
 
-		this.$formClone = this.$form.clone(true);
+		this.initForm();
+	},
+
+	initForm: function()
+	{
+		this.addListener(this.$form, 'submit', 'onSubmit');
+		this.initBlocks();
 	},
 
 	onSubmit: function(event)
@@ -43,9 +51,12 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 			if (response.success)
 			{
 				Blocks.cp.displayNotice(Blocks.t('Entry saved.'));
-				var $newForm = this.$formClone.clone(true);
+
+				// Reset the widget
+				var $newForm = this.$formClone.clone();
 				this.$form.replaceWith($newForm);
 				this.$form = $newForm;
+				this.initForm();
 
 				// Are there any Recent Entries widgets to notify?
 				if (typeof Blocks.RecentEntriesWidget != 'undefined')
