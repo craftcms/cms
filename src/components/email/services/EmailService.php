@@ -254,4 +254,25 @@ class EmailService extends BaseApplicationComponent
 	{
 		return blx()->systemSettings->saveSettings('email', $settings);
 	}
+
+	/**
+	 * @param $settings
+	 * @return void
+	 */
+	public function sendTestEmail($settings)
+	{
+		$userModel = blx()->account->getCurrentUser();
+		$userModel->email = $settings->testEmailAddress;
+		$newSettings = array();
+
+		foreach ($settings as $key => $value)
+		{
+			if (strpos($key, 'password') === false && $key !== 'senderName' && $key !== 'testEmailAddress')
+			{
+				$newSettings[$key] = $value;
+			}
+		};
+
+		$this->sendEmailByKey($userModel, 'test_email', array('settings' => $newSettings));
+	}
 }

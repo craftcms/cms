@@ -52,7 +52,7 @@
 		{% if blx.hasPackage('rebrand') %}
 			{{ forms.textField({
 				label: "HTML Email Template"|t,
-				instructions: "The template Blocks Pro will use for users who prefer HTML email"|t,
+				instructions: "The template Blocks will use for users who prefer HTML email"|t,
 				id: 'template',
 				name: 'template',
 				value: (settings.template is defined ? settings.template : null),
@@ -153,6 +153,19 @@
 				options: { none: "None"|t, ssl: "SSL"|t, tls: "TLS"|t },
 				default: 'none',
 				value: (settings.smtpSecureTransportType is defined ? settings.smtpSecureTransportType : null)
+			}) }}
+		</div>
+
+		<hr>
+
+		<div>
+			{{ forms.textField({
+				label: "Test Email Address"|t,
+				instructions: "Enter an email address if you would like to send a test email using these settings"|t,
+				id: 'testEmailAddress',
+				name: 'testEmailAddress',
+				value: (settings.testEmailAddress is defined ? settings.testEmailAddress : null),
+				errors: (freshSettings ? null : settings.getErrors('testEmailAddress'))
 			}) }}
 		</div>
 
