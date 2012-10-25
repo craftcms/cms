@@ -129,11 +129,7 @@ class UserModel extends BaseEntityModel
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			$profile = $this->getProfile();
-			if ($profile && $profile->firstName)
-			{
-				return $profile->firstName;
-			}
+			return $this->firstName;
 		}
 
 		return $this->username;
