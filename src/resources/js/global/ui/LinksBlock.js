@@ -35,8 +35,8 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 
 		// Find the field buttons
 		var $buttons = this._$inputContainer.next();
-		this._$showModalBtn = $buttons.find('.addbtn');
-		this._$removeLinksBtn = $buttons.find('.removebtn');
+		this._$showModalBtn = $buttons.find('.btn.add');
+		this._$removeLinksBtn = $buttons.find('.btn.remove');
 
 		// Find the preselected entities
 		var $table = this._$inputContainer.children('table');
