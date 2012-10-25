@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 #loading { margin-top: 50px !important; padding-top: 70px; text-align: center; background: url({{ resourceUrl('images/spinner-big.gif') }}) no-repeat 50% 0; }
 
 #update-all,

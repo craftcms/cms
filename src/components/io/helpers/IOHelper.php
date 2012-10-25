@@ -492,11 +492,10 @@ class IOHelper
 				return $contents;
 			}
 
-			Blocks::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_ERROR);
+			Blocks::log('Tried to read the file contents at '.$path.' and could not.', \CLogger::LEVEL_INFO);
 			return false;
 		}
 
-		Blocks::log('Tried to read the folder contents at '.$path.' and the folder does not exist or is not readable.', \CLogger::LEVEL_ERROR);
 		return false;
 	}
 
@@ -533,7 +532,6 @@ class IOHelper
 			return false;
 		}
 
-		Blocks::log('Tried to read the file contents at '.$path.' and the file does not exist or is not readable.', \CLogger::LEVEL_ERROR);
 		return false;
 	}
 
@@ -560,7 +558,6 @@ class IOHelper
 			return new File($path);
 		}
 
-		Blocks::log('Tried to create a file at '.$path.', but the file already exists.', \CLogger::LEVEL_ERROR);
 		return false;
 	}
 
@@ -1145,7 +1142,7 @@ class IOHelper
 	{
 		$descendants = array();
 
-		$path = static::getRealPath($path);
+		$path = static::normalizePathSeparators(static::getRealPath($path));
 
 		if ($filter !== null)
 		{

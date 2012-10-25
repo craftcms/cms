@@ -11,7 +11,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function ping()
 	{
-		$et = new Et(ElliotEndPoints::Ping);
+		$et = new Et(ElliottEndPoints::Ping);
 		$response = $et->phoneHome();
 
 		return $response;
@@ -23,7 +23,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function check($updateInfo)
 	{
-		$et = new Et(ElliotEndPoints::Check);
+		$et = new Et(ElliottEndPoints::Check);
 		$et->getModel()->data = $updateInfo;
 		$etModel = $et->phoneHome();
 
@@ -50,7 +50,7 @@ class EtService extends BaseApplicationComponent
 			'type' => AppReleaseFileType::Patch
 		);
 
-		$et = new Et(ElliotEndPoints::DownloadPackage, 60);
+		$et = new Et(ElliottEndPoints::DownloadPackage, 60);
 		$et->setDestinationFileName($downloadPath);
 		$et->getModel()->data = $params;
 
@@ -75,7 +75,7 @@ class EtService extends BaseApplicationComponent
 			'type' => AppReleaseFileType::Patch
 		);
 
-		$et = new Et(ElliotEndPoints::GetAppReleaseFileMD5);
+		$et = new Et(ElliottEndPoints::GetAppReleaseFileMD5);
 		$et->getModel()->data = $params;
 		$package = $et->phoneHome();
 

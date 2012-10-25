@@ -1,3 +1,5 @@
+@charset "UTF-8";
+
 #main .toolbar .btngroup { float: right; }
 #main .toolbar .search { margin-right: 86px; }
 

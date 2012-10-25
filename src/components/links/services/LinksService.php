@@ -13,7 +13,7 @@ class LinksService extends BaseApplicationComponent
 	 */
 	public function getAllLinkTypes()
 	{
-		return blx()->components->getComponentsByType('link');
+		return blx()->components->getComponentsByType(ComponentType::Link);
 	}
 
 	/**
@@ -24,7 +24,7 @@ class LinksService extends BaseApplicationComponent
 	 */
 	public function getLinkType($class)
 	{
-		return blx()->components->getComponentByTypeAndClass('link', $class);
+		return blx()->components->getComponentByTypeAndClass(ComponentType::Link, $class);
 	}
 
 	/**
@@ -43,6 +43,7 @@ class LinksService extends BaseApplicationComponent
 	 *
 	 * @param int $criteriaId
 	 * @param int $leftEntityId
+	 * @return array
 	 */
 	public function getLinkedEntities($criteriaId, $leftEntityId)
 	{
