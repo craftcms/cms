@@ -119,12 +119,12 @@ class Et
 			}
 			else
 			{
-				Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, 'warning');
+				Blocks::log('Error in calling '.$this->_endpoint.' Response: '.$response->body, \CLogger::LEVEL_WARNING);
 			}
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), 'error');
+			Blocks::log('Error in '.__METHOD__.'. Message: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 		}
 
 		return null;

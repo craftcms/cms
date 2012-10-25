@@ -399,7 +399,7 @@ class App extends \CWebApplication
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log($e->getMessage());
+			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
 			$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 		}
 

@@ -257,7 +257,7 @@ class AppUpdater implements IUpdater
 
 			if (($file = IOHelper::getFile($backupFilePath)) !== false)
 			{
-				Blocks::log('Deleting backup file: '.$file->getRealPath());
+				Blocks::log('Deleting backup file: '.$file->getRealPath(), \CLogger::LEVEL_INFO);
 				$file->delete();
 			}
 		}
@@ -376,14 +376,14 @@ class AppUpdater implements IUpdater
 				// If the file doesn't exist, it's a new file.
 				if (IOHelper::fileExists($filePath))
 				{
-					Blocks::log('Backing up file '.$filePath);
+					Blocks::log('Backing up file '.$filePath, \CLogger::LEVEL_INFO);
 					IOHelper::copyFile($filePath, $filePath.'.bak');
 				}
 			}
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log('Error updating files: '.$e->getMessage());
+			Blocks::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
