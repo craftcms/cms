@@ -197,7 +197,7 @@ class HttpRequestService extends \CHttpRequest
 					}
 					catch (\Exception $e)
 					{
-						Blocks::log('Unable to determine if server PATH_INFO is enabled: '.$e->getMessage());
+						Blocks::log('Unable to determine if server PATH_INFO is enabled: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 					}
 				}
 

@@ -13,7 +13,7 @@ class HttpException extends \CHttpException
 	 */
 	function __construct($status, $message = null, $code = 0)
 	{
-		Blocks::log($status.' - '.$message);
+		Blocks::log($status.' - '.$message, \CLogger::LEVEL_ERROR);
 		parent::__construct($status, $message, $code);
 	}
 }

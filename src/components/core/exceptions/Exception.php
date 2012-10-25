@@ -12,7 +12,7 @@ class Exception extends \CException
 	 */
 	function __construct($message, $code = 0)
 	{
-		Blocks::log($message);
+		Blocks::log($message, \CLogger::LEVEL_ERROR);
 		parent::__construct($message, $code);
 	}
 }
