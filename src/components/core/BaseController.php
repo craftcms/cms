@@ -204,7 +204,7 @@ abstract class BaseController extends \CController
 
 		if ($url === null)
 		{
-			$url = blx()->request->getPath();
+			$url = blx()->request->getUri();
 		}
 
 		foreach ($variables as $name => $value)

@@ -16,7 +16,7 @@ class TemplatesController extends BaseController
 		// Require user to be logged in on every page but /login in the control panel and account/password with a verification code
 		if (blx()->request->getMode() == HttpRequestMode::CP)
 		{
-			$path = blx()->request->getPath();
+			$path = blx()->request->getUri();
 
 			if ($path !== 'login')
 			{

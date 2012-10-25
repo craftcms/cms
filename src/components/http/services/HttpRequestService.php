@@ -8,52 +8,35 @@ class HttpRequestService extends \CHttpRequest
 {
 	private $_actionPath;
 	private $_urlFormat;
-	private $_path;
+	private $_uri;
 	private $_queryStringPath;
-	private $_pathSegments;
-	private $_pathExtension;
+	private $_segments;
 	private $_mode;
 	private $_isMobileBrowser;
 	private $_mimeType;
 	private $_browserLanguages;
 
 	/**
-	 * @return mixed
+	 * Returns the request's URI.
+	 *
+	 * @return string
 	 */
-	public function getPath()
+	public function getUri()
 	{
-		if (!isset($this->_path))
+		if (!isset($this->_uri))
 		{
 			// urlFormat determines where to look for a path first
 			if ($this->getUrlFormat() == UrlFormat::PathInfo)
 			{
-				$this->_path = $this->getPathInfo() ? $this->getPathInfo() : $this->getQueryStringPath();
+				$this->_uri = $this->getPathInfo() ? $this->getPathInfo() : $this->getQueryStringPath();
 			}
 			else
 			{
-				$this->_path = $this->getQueryStringPath() ? $this->getQueryStringPath() : $this->getPathInfo();
+				$this->_uri = $this->getQueryStringPath() ? $this->getQueryStringPath() : $this->getPathInfo();
 			}
 		}
 
-		return $this->_path;
-	}
-
-	/**
-	 * @param $path
-	 * @return void
-	 */
-	public function setPath($path)
-	{
-		$this->_path = $path;
-	}
-
-	/**
-	 * @param $mimeType
-	 * @return void
-	 */
-	public function setMimeType($mimeType)
-	{
-		$this->_mimeType = $mimeType;
+		return $this->_uri;
 	}
 
 	/**
@@ -63,7 +46,7 @@ class HttpRequestService extends \CHttpRequest
 	{
 		if (!$this->_mimeType)
 		{
-			$extension = IOHelper::getExtension($this->getPath(), 'html');
+			$extension = IOHelper::getExtension($this->getUri(), 'html');
 			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
 		}
 
@@ -99,6 +82,8 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns all URI segments.
+	 *
 	 * @param $path
 	 */
 	public function setQueryStringPath($path)
@@ -109,47 +94,33 @@ class HttpRequestService extends \CHttpRequest
 	/**
 	 * @return mixed
 	 */
-	public function getPathSegments()
+	public function getSegments()
 	{
-		if (!isset($this->_pathSegments))
+		if (!isset($this->_segments))
 		{
-			$this->_pathSegments = array_filter(explode('/', $this->getPath()));
+			$this->_segments = array_filter(explode('/', $this->getUri()));
 		}
 
-		return $this->_pathSegments;
+		return $this->_segments;
 	}
 
 	/**
-	 * Returns a specific path segment
+	 * Returns a specific URI segment
 	 *
 	 * @param      $num
 	 * @param null $default
 	 * @return mixed The requested path segment, or null
 	 */
-	public function getPathSegment($num, $default = null)
+	public function getSegment($num, $default = null)
 	{
-		$pathSegments = $this->getPathSegments();
+		$segments = $this->getSegments();
 
-		if (isset($pathSegments[$num - 1]))
+		if (isset($segments[$num - 1]))
 		{
-			return $pathSegments[$num - 1];
+			return $segments[$num - 1];
 		}
 
 		return $default;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getPathExtension()
-	{
-		if (!isset($this->_pathExtension))
-		{
-			$ext = IOHelper::getExtension($this->getPath());
-			$this->_pathExtension = strtolower($ext);
-		}
-
-		return $this->_pathExtension;
 	}
 
 	/**
@@ -228,29 +199,29 @@ class HttpRequestService extends \CHttpRequest
 			$actionTrigger = blx()->config->actionTrigger;
 			$logoutTriggerWord = blx()->config->logoutTriggerWord;
 
-			$firstPathSegment = $this->getPathSegment(1);
+			$firstSegment = $this->getSegment(1);
 
 			// If the first path segment is the resource trigger word, it's a resource request.
-			if ($firstPathSegment === $resourceTrigger)
+			if ($firstSegment === $resourceTrigger)
 			{
 				$this->_mode = HttpRequestMode::Resource;
 			}
 
 			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request.
-			else if ($firstPathSegment === $actionTrigger || $firstPathSegment === $logoutTriggerWord)
+			else if ($firstSegment === $actionTrigger || $firstSegment === $logoutTriggerWord)
 			{
 				$this->_mode = HttpRequestMode::Action;
 
 				// If it's an action request, we set the actionPath for the given request.
 
 				// Special case for logging out.
-				if ($firstPathSegment === $logoutTriggerWord)
+				if ($firstSegment === $logoutTriggerWord)
 				{
 					$segs = array('account', 'logout');
 				}
 				else
 				{
-					$segs = array_slice(array_merge($this->getPathSegments()), 1);
+					$segs = array_slice(array_merge($this->getSegments()), 1);
 				}
 
 				$this->_actionPath = $segs;
@@ -276,15 +247,6 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		return $this->_mode;
-	}
-
-	/**
-	 * @param $mode
-	 * @return void
-	 */
-	public function setMode($mode)
-	{
-		$this->_mode = $mode;
 	}
 
 	/**
@@ -373,19 +335,6 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		return $this->_isMobileBrowser;
-	}
-
-	/**
-	 * If the request is not on a SSL connection, redirect to the https version of the page.
-	 */
-	public function requireSecureConnection()
-	{
-		if (!$this->getIsSecureConnection())
-		{
-			// Redirect to the secure version of the page.
-			$url = 'https://'.$this->getServerName().$this->getRequestUri();
-			$this->redirect($url);
-		}
 	}
 
 	/**

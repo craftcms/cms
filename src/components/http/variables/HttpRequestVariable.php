@@ -17,6 +17,78 @@ class HttpRequestVariable
 	}
 
 	/**
+	 * Returns the request's URI.
+	 *
+	 * @param string $name
+	 * @param string $default
+	 * @return mixed
+	 */
+	public function getUri()
+	{
+		return blx()->request->getUri();
+	}
+
+	/**
+	 * Returns the request's full URL.
+	 *
+	 * @param string $name
+	 * @param string $default
+	 * @return mixed
+	 */
+	public function getUrl()
+	{
+		$uri = blx()->request->getUri();
+		return UrlHelper::getUrl($uri);
+	}
+
+	/**
+	 * Returns all URI segments.
+	 *
+	 * @return array
+	 */
+	public function getSegments()
+	{
+		return blx()->request->getSegments();
+	}
+
+	/**
+	 * Returns a specific URI segment.
+	 *
+	 * @param int $num
+	 * @param string $default
+	 * @return string
+	 */
+	public function getSegment($num, $default = null)
+	{
+		return blx()->request->getSegment($num, $default);
+	}
+
+	/**
+	 * Returns the first URI segment.
+	 *
+	 * @return string
+	 */
+	public function getFirstSegment()
+	{
+		return blx()->request->getSegment(1);
+	}
+
+	/**
+	 * Returns the last URL segment.
+	 *
+	 * @return string
+	 */
+	public function getLastSegment()
+	{
+		$segments = blx()->request->getSegments();
+
+		if ($segments)
+		{
+			return $segments[count($segments)-1];
+		}
+	}
+
+	/**
 	 * Returns a variable from either the query string or the post data.
 	 *
 	 * @param string $name
@@ -50,43 +122,6 @@ class HttpRequestVariable
 	public function getPost($name, $default = null)
 	{
 		return blx()->request->getPost($name, $default);
-	}
-
-	/**
-	 * Returns all URL segments.
-	 *
-	 * @return array
-	 */
-	public function getSegments()
-	{
-		return blx()->request->getPathSegments();
-	}
-
-	/**
-	 * Returns a specific URL segment.
-	 *
-	 * @param int $num
-	 * @param string $default
-	 * @return string
-	 */
-	public function getSegment($num, $default = null)
-	{
-		return blx()->request->getPathSegment($num, $default);
-	}
-
-	/**
-	 * Returns the last URL segment.
-	 *
-	 * @return string
-	 */
-	public function getLastSegment()
-	{
-		$segments = blx()->request->getPathSegments();
-
-		if ($segments)
-		{
-			return $segments[count($segments)-1];
-		}
 	}
 
 	/**

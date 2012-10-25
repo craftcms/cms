@@ -103,9 +103,9 @@ class App extends \CWebApplication
 	private function _processInstallRequest()
 	{
 		// Are they requesting an installer template/action specifically?
-		if ($this->request->getMode() == HttpRequestMode::CP && $this->request->getPathSegment(1) === 'install')
+		if ($this->request->getMode() == HttpRequestMode::CP && $this->request->getSegment(1) === 'install')
 		{
-			$action = $this->request->getPathSegment(2, 'index');
+			$action = $this->request->getSegment(2, 'index');
 			$this->runController('install/'.$action);
 			$this->end();
 		}
@@ -289,7 +289,7 @@ class App extends \CWebApplication
 		if ($this->request->getMode() == HttpRequestMode::Resource)
 		{
 			// Get the path segments, except for the first one which we already know is "resources"
-			$segs = array_slice(array_merge($this->request->getPathSegments()), 1);
+			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 
 			// If this is a system JS resource request, prepend either 'compressed/' or 'uncompressed/'
 			if (isset($segs[0]) && $segs[0] == 'js')

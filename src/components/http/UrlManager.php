@@ -86,7 +86,7 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchPage()
 	{
-		$page = blx()->pages->getPageByUri(blx()->request->getPath());
+		$page = blx()->pages->getPageByUri(blx()->request->getUri());
 
 		if ($page)
 		{
@@ -105,7 +105,7 @@ class UrlManager extends \CUrlManager
 	public function matchEntry()
 	{
 		$criteria = new EntryCriteria();
-		$criteria->uri = blx()->request->getPath();
+		$criteria->uri = blx()->request->getUri();
 		$criteria->includeContent = true;
 		$entry = blx()->entries->findEntry($criteria);
 
@@ -178,7 +178,7 @@ class UrlManager extends \CUrlManager
 	private function _matchRouteInternal($urlPattern)
 	{
 		// Does it match?
-		if (preg_match('/^'.$urlPattern.'$/', blx()->request->getPath(), $match))
+		if (preg_match('/^'.$urlPattern.'$/', blx()->request->getUri(), $match))
 		{
 			// Set any capture variables
 			foreach ($match as $key => $value)
@@ -203,7 +203,7 @@ class UrlManager extends \CUrlManager
 		// Make sure they're not trying to access a private template
 		if (!blx()->request->isAjaxRequest())
 		{
-			foreach (blx()->request->getPathSegments() as $requestPathSeg)
+			foreach (blx()->request->getSegments() as $requestPathSeg)
 			{
 				if (isset($requestPathSeg[0]) && $requestPathSeg[0] == '_')
 				{
@@ -212,6 +212,6 @@ class UrlManager extends \CUrlManager
 			}
 		}
 
-		return blx()->request->getPath();
+		return blx()->request->getUri();
 	}
 }
