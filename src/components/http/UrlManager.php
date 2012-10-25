@@ -104,10 +104,10 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$params = new EntryParams();
-		$params->uri = blx()->request->getPath();
-		$params->includeContent = true;
-		$entry = blx()->entries->findEntry($params);
+		$criteria = new EntryCriteria();
+		$criteria->uri = blx()->request->getPath();
+		$criteria->includeContent = true;
+		$entry = blx()->entries->findEntry($criteria);
 
 		if ($entry)
 		{

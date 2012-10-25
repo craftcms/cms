@@ -107,7 +107,7 @@ class PagesService extends BaseEntityService
 	 *
 	 * @return int
 	 */
-	public function getTotalPages(PageParams $params = null)
+	public function getTotalPages()
 	{
 		return PageRecord::model()->count();
 	}

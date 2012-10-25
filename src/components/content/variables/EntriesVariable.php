@@ -63,36 +63,36 @@ class EntriesVariable
 	/**
 	 * Gets the total number of entries.
 	 *
-	 * @param array|null $params
+	 * @param array|null $criteria
 	 * @return array
 	 */
-	public function getTotalEntries($params = array())
+	public function getTotalEntries($criteria = array())
 	{
-		$params = new EntryParams($params);
-		return blx()->entries->getTotalEntries($params);
+		$criteria = new EntryCriteria($criteria);
+		return blx()->entries->getTotalEntries($criteria);
 	}
 
 	/**
 	 * Finds entries.
 	 *
-	 * @param array|null $params
+	 * @param array|null $criteria
 	 * @return array
 	 */
-	public function findEntries($params = array())
+	public function findEntries($criteria = array())
 	{
-		$params = new EntryParams($params);
-		return blx()->entries->findEntries($params);
+		$criteria = new EntryCriteria($criteria);
+		return blx()->entries->findEntries($criteria);
 	}
 
 	/**
 	 * Finds an entry.
 	 *
-	 * @param array|null $params
+	 * @param array|null $criteria
 	 * @return EntryModel|null
 	 */
-	public function findEntry($params = array())
+	public function findEntry($criteria = array())
 	{
-		$params = new EntryParams($params);
-		return blx()->entries->findEntry($params);
+		$criteria = new EntryCriteria($criteria);
+		return blx()->entries->findEntry($criteria);
 	}
 }

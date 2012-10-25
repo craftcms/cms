@@ -38,7 +38,7 @@ class EntryLinkType extends BaseLinkType
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			// Maps to EntryParams->sectionId
+			// Maps to EntryCriteria->sectionId
 			$settings['sectionId'] = AttributeType::Mixed;
 		}
 
@@ -92,8 +92,8 @@ class EntryLinkType extends BaseLinkType
 	 */
 	public function getLinkableEntities($settings)
 	{
-		$params = new EntryParams($settings);
-		$params->order = 'title';
-		return blx()->entries->findEntries($params);
+		$criteria = new EntryCriteria($settings);
+		$criteria->order = 'title';
+		return blx()->entries->findEntries($criteria);
 	}
 }

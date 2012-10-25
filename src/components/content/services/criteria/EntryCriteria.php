@@ -2,9 +2,9 @@
 namespace Blocks;
 
 /**
- * Entry parameters
+ * Entry criteria class
  */
-class EntryParams extends BaseParams
+class EntryCriteria extends BaseCriteria
 {
 	public $id;
 	public $slug;
@@ -16,5 +16,5 @@ class EntryParams extends BaseParams
 	public $archived = false;
 	public $order = 'dateCreated desc';
 	public $offset;
-	public $limit;
+	public $limit = 100;
 }

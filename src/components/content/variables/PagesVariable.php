@@ -63,7 +63,6 @@ class PagesVariable
 	/**
 	 * Gets all pages.
 	 *
-	 * @param array|null $params
 	 * @return array
 	 */
 	public function getAllPages()

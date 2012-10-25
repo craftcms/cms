@@ -49,14 +49,14 @@ class EntriesService extends BaseEntityService
 	/**
 	 * Finds entries.
 	 *
-	 * @param EntryParams|null $params
+	 * @param EntryCriteria|null $criteria
 	 * @return array
 	 */
-	public function findEntries(EntryParams $params = null)
+	public function findEntries(EntryCriteria $criteria = null)
 	{
-		if (!$params)
+		if (!$criteria)
 		{
-			$params = new EntryParams();
+			$criteria = new EntryCriteria();
 		}
 
 		$query = blx()->db->createCommand()
@@ -64,21 +64,21 @@ class EntriesService extends BaseEntityService
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
-		$this->_applyEntryConditions($query, $params);
+		$this->_applyEntryConditions($query, $criteria);
 
-		if ($params->order)
+		if ($criteria->order)
 		{
-			$query->order($params->order);
+			$query->order($criteria->order);
 		}
 
-		if ($params->offset)
+		if ($criteria->offset)
 		{
-			$query->offset($params->offset);
+			$query->offset($criteria->offset);
 		}
 
-		if ($params->limit)
+		if ($criteria->limit)
 		{
-			$query->limit($params->limit);
+			$query->limit($criteria->limit);
 		}
 
 		$result = $query->queryAll();
@@ -88,14 +88,14 @@ class EntriesService extends BaseEntityService
 	/**
 	 * Finds an entry.
 	 *
-	 * @param EntryParams|null $params
+	 * @param EntryCriteria|null $criteria
 	 * @return EntryModel|null
 	 */
-	public function findEntry(EntryParams $params = null)
+	public function findEntry(EntryCriteria $criteria = null)
 	{
-		if (!$params)
+		if (!$criteria)
 		{
-			$params = new EntryParams();
+			$criteria = new EntryCriteria();
 		}
 
 		$query = blx()->db->createCommand()
@@ -103,7 +103,7 @@ class EntriesService extends BaseEntityService
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
-		$this->_applyEntryConditions($query, $params);
+		$this->_applyEntryConditions($query, $criteria);
 
 		$result = $query->queryRow();
 
@@ -116,14 +116,14 @@ class EntriesService extends BaseEntityService
 	/**
 	 * Gets the total number of entries.
 	 *
-	 * @param EntryParams|null $params
+	 * @param EntryCriteria|null $criteria
 	 * @return int
 	 */
-	public function getTotalEntries(EntryParams $params = null)
+	public function getTotalEntries(EntryCriteria $criteria = null)
 	{
-		if (!$params)
+		if (!$criteria)
 		{
-			$params = new EntryParams();
+			$criteria = new EntryCriteria();
 		}
 
 		$query = blx()->db->createCommand()
@@ -131,7 +131,7 @@ class EntriesService extends BaseEntityService
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
-		$this->_applyEntryConditions($query, $params);
+		$this->_applyEntryConditions($query, $criteria);
 
 		return (int) $query->queryScalar();
 	}
@@ -141,30 +141,30 @@ class EntriesService extends BaseEntityService
 	 *
 	 * @access private
 	 * @param DbCommand $query
-	 * @param           $params
-	 * @param array     $params
+	 * @param           $criteria
+	 * @param array     $criteria
 	 */
-	private function _applyEntryConditions($query, $params)
+	private function _applyEntryConditions($query, $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
 
-		if ($params->id)
+		if ($criteria->id)
 		{
-			$whereConditions[] = DbHelper::parseParam('e.id', $params->id, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('e.id', $criteria->id, $whereParams);
 		}
 
-		if ($params->slug)
+		if ($criteria->slug)
 		{
-			$whereConditions[] = DbHelper::parseParam('e.slug', $params->slug, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('e.slug', $criteria->slug, $whereParams);
 		}
 
-		if ($params->uri)
+		if ($criteria->uri)
 		{
-			$whereConditions[] = DbHelper::parseParam('e.uri', $params->uri, $whereParams);
+			$whereConditions[] = DbHelper::parseParam('e.uri', $criteria->uri, $whereParams);
 		}
 
-		if ($params->archived)
+		if ($criteria->archived)
 		{
 			$whereConditions[] = 'e.archived = 1';
 		}
@@ -172,9 +172,9 @@ class EntriesService extends BaseEntityService
 		{
 			$whereConditions[] = 'e.archived = 0';
 
-			if ($params->status && $params->status != '*')
+			if ($criteria->status && $criteria->status != '*')
 			{
-				$statusCondition = $this->_getEntryStatusCondition($params->status);
+				$statusCondition = $this->_getEntryStatusCondition($criteria->status);
 
 				if ($statusCondition)
 				{
@@ -185,23 +185,23 @@ class EntriesService extends BaseEntityService
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			if ($params->sectionId && $params->sectionId != '*')
+			if ($criteria->sectionId && $criteria->sectionId != '*')
 			{
-				$whereConditions[] = DbHelper::parseParam('e.sectionId', $params->sectionId, $whereParams);
+				$whereConditions[] = DbHelper::parseParam('e.sectionId', $criteria->sectionId, $whereParams);
 			}
 
-			if ($params->section)
+			if ($criteria->section)
 			{
 				$query->join('sections s', 'e.sectionId = s.id');
-				$whereConditions[] = DbHelper::parseParam('s.handle', $params->section, $whereParams);
+				$whereConditions[] = DbHelper::parseParam('s.handle', $criteria->section, $whereParams);
 			}
 		}
 
 		$whereConditions[] = 't.language = :language';
 
-		if ($params->language)
+		if ($criteria->language)
 		{
-			$whereParams[':language'] = $params->language;
+			$whereParams[':language'] = $criteria->language;
 		}
 		else
 		{
@@ -799,18 +799,18 @@ class EntriesService extends BaseEntityService
 			$testSlug = '';
 
 			$where = 'slug = :slug';
-			$params = array();
+			$criteria = array();
 
 			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
 				$where .= ' and sectionId = :sectionId';
-				$params[':sectionId'] = $entry->sectionId;
+				$criteria[':sectionId'] = $entry->sectionId;
 			}
 
 			if ($entry->id)
 			{
 				$where .= ' and id != :entryId';
-				$params[':entryId'] = $entry->id;
+				$criteria[':entryId'] = $entry->id;
 			}
 
 			for ($i = 0; true; $i++)
@@ -821,12 +821,12 @@ class EntriesService extends BaseEntityService
 					$testSlug .= '-'.$i;
 				}
 
-				$params[':slug'] = $testSlug;
+				$criteria[':slug'] = $testSlug;
 
 				$totalEntries = blx()->db->createCommand()
 					->select('count(e.id)')
 					->from('entries e')
-					->where($where, $params)
+					->where($where, $criteria)
 					->queryScalar();
 
 				if ($totalEntries == 0)
