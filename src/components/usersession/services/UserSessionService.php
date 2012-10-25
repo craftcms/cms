@@ -88,7 +88,7 @@ class UserSessionService extends \CWebUser
 			else
 			{
 				// everything is not cool.
-				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record.');
+				Blocks::log('During login, could not find a user with an id of '.$id.' or the user\'s authSessionToken: '.$authSessionToken.' did not match the one we have on record.', \CLogger::LEVEL_ERROR);
 				return false;
 			}
 		}
@@ -229,7 +229,7 @@ class UserSessionService extends \CWebUser
 			}
 		}
 
-		Blocks::log($username.' tried to log in unsuccessfully.');
+		Blocks::log($username.' tried to log in unsuccessfully.', \CLogger::LEVEL_WARNING);
 		return false;
 	}
 

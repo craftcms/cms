@@ -124,7 +124,7 @@ class MigrationsService extends BaseApplicationComponent
 	{
 		if (!preg_match('/^\w+$/', $migrationName))
 		{
-			Blocks::log("The name of the migration must contain letters, digits and/or underscore characters only.");
+			Blocks::log('The name of the migration must contain letters, digits and/or underscore characters only.', \CLogger::LEVEL_ERROR);
 			return false;
 		}
 
@@ -133,7 +133,7 @@ class MigrationsService extends BaseApplicationComponent
 		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$name.'.php');
 
 		file_put_contents($file, $content);
-		Blocks::log("New migration created successfully: ".$file);
+		Blocks::log("New migration created successfully: ".$file, \CLogger::LEVEL_INFO);
 		return true;
 	}
 

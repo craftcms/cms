@@ -180,7 +180,7 @@ class UpdatesService extends BaseApplicationComponent
 	 */
 	public function flushUpdateInfoFromCache()
 	{
-		Blocks::log('Flushing update info from cache.');
+		Blocks::log('Flushing update info from cache.', \CLogger::LEVEL_INFO);
 
 		if (blx()->fileCache->delete('updateinfo'))
 		{

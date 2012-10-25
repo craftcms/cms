@@ -68,7 +68,7 @@ class UpdateHelper
 					// update the file
 					case PatchManifestFileAction::Add:
 					{
-						Blocks::log('Updating file: '.$destFile);
+						Blocks::log('Updating file: '.$destFile, \CLogger::LEVEL_INFO);
 						IOHelper::copyFile($sourceFile, $destFile);
 						break;
 					}
@@ -76,7 +76,7 @@ class UpdateHelper
 					case PatchManifestFileAction::Remove:
 					{
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
-						Blocks::log('Renaming file for delete: '.$destFile);
+						Blocks::log('Renaming file for delete: '.$destFile, \CLogger::LEVEL_INFO);
 						IOHelper::rename($destFile, $destFile.'.bak');
 						break;
 					}
@@ -92,7 +92,7 @@ class UpdateHelper
 		}
 		catch (\Exception $e)
 		{
-			Blocks::log('Error updating files: '.$e->getMessage());
+			Blocks::log('Error updating files: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 			UpdateHelper::rollBackFileChanges($manifestData);
 			return false;
 		}
