@@ -114,7 +114,6 @@ class QuickPostWidget extends BaseWidget
 		}
 
 		blx()->templates->includeJs('new Blocks.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).', function() {');
-
 		$html = blx()->templates->render('_components/widgets/QuickPost/body', array(
 			'settings' => $this->getSettings()
 		));

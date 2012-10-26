@@ -18,6 +18,7 @@ class EmailSettingsModel extends \CFormModel
 	public $timeout;
 	public $emailAddress;
 	public $senderName;
+	public $testEmailAddress;
 
 	/**
 	 * Declares the validation rules.

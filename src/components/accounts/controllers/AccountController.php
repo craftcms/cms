@@ -50,7 +50,7 @@ class AccountController extends BaseController
 
 					if ($timeRemaining)
 					{
-						$humanTimeRemaining = $timeRemaining->humanDuration(false);
+						$humanTimeRemaining = DateTimeHelper::secondsToHumanTimeDuration($timeRemaining, false);
 						$this->returnErrorJson(Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining)));
 					}
 					else

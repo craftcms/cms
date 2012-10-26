@@ -13,7 +13,7 @@ class DateInterval extends \DateInterval
 	 */
 	public function seconds()
 	{
-		return $this->format('s');
+		return $this->format('%s');
 	}
 
 	/**

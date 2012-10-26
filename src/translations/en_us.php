@@ -23,4 +23,11 @@ return array (
 		"To reset your {{siteName}} password, click on this link:\n\n" .
 		"{{link}}\n\n" .
 		"If you weren't expecting this email, just ignore it.",
+	'test_email_subject' => 'This is a test email from Blocks',
+	'test_email_body' => "Hey {{user.friendlyName}},\n\n".
+		"Congratulations!\n\nBlocks was successfully able to send an email.\n\n".
+		"Here are the settings you used:\n\n".
+		"{% for key, setting in settings %}".
+		"{{ key }}:  {{ setting }}\n".
+		"{% endfor %}",
 );

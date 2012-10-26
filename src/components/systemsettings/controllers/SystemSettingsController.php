@@ -59,7 +59,7 @@ class SystemSettingsController extends BaseController
 		$emailSettings->port                        = blx()->request->getPost('port');
 		$emailSettings->smtpAuth                    = (bool)blx()->request->getPost('smtpAuth');
 
-		if ($emailSettings->smtpAuth)
+		if ($emailSettings->smtpAuth && $emailSettings->protocol !== EmailerType::Gmail)
 		{
 			$emailSettings->username                = blx()->request->getPost('smtpUsername');
 			$emailSettings->password                = blx()->request->getPost('smtpPassword');
@@ -75,6 +75,8 @@ class SystemSettingsController extends BaseController
 		$emailSettings->timeout                     = blx()->request->getPost('timeout');
 		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
 		$emailSettings->senderName                  = blx()->request->getPost('senderName');
+
+		$emailSettings->testEmailAddress            = blx()->request->getPost('testEmailAddress');
 
 		// Validate user input
 		if ($emailSettings->validate())
@@ -128,7 +130,7 @@ class SystemSettingsController extends BaseController
 				{
 					$settings['host'] = $gMailSmtp;
 					$settings['smtpAuth'] = 1;
-					$settings['smtpSecureTransportType'] = 'tls';
+					$settings['smtpSecureTransportType'] = 'ssl';
 					$settings['username'] = $emailSettings->username;
 					$settings['password'] = $emailSettings->password;
 					$settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
@@ -139,6 +141,20 @@ class SystemSettingsController extends BaseController
 
 			if (blx()->email->saveSettings($settings))
 			{
+				if ($emailSettings->testEmailAddress)
+				{
+					try
+					{
+						blx()->email->sendTestEmail($emailSettings);
+					}
+					catch (\Exception $e)
+					{
+						Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+						blx()->user->setError(Blocks::t('Unable to send email with these settings.'));
+						$this->redirectToPostedUrl();
+					}
+				}
+
 				blx()->user->setNotice(Blocks::t('Email settings saved.'));
 				$this->redirectToPostedUrl();
 			}
