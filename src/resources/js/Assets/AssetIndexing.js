@@ -85,7 +85,8 @@
             this.$startIndexingButton.removeClass('disabled');
             this.$sourceProgressBars.html('');
             return;
-            $('input.assets-index.disabled').removeClass('disabled');
+            // TODO deal with obsolete files
+            /*$('input.assets-index.disabled').removeClass('disabled');
             $('div.progress-bar').remove();
             var sources = [];
             sources_to_index.each(function () {
@@ -129,7 +130,7 @@
                     $('div#index-message').html(Assets.lang.index_complete);
                 }
                 $('div#assets-dialog').show();
-            });
+            });*/
         }
 
 

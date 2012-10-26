@@ -45,7 +45,7 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Returns all top-level files in a source.
 	 *
-	 * @param int $sourceid
+	 * @param int $sourceId
 	 * @return array
 	 */
 	public function getFilesBySourceId($sourceId)
@@ -62,18 +62,13 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $assetFolderId
-	 * @return array of AssetFileModel
+	 * Get files by folder id
+	 * @param $folderId
+	 * @return array
 	 */
-	public function getAssetsInAssetFolder($assetFolderId)
+	public function getFilesByFolderId($folderId)
 	{
-		$parameters = new FileParams(
-			array(
-				'folderId' => $assetFolderId
-			)
-		);
-
-		return $this->getFiles($parameters);
+		return $this->getFiles(new FileParams(array('folderId' => $folderId)));
 	}
 
 	/**
@@ -84,11 +79,7 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFileById($fileId)
 	{
-		$parameters = new FileParams(
-			array(
-				'id' => $fileId
-			)
-		);
+		$parameters = new FileParams(array('id' => $fileId));
 
 		return $this->getFile($parameters);
 	}
@@ -288,6 +279,15 @@ class AssetsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Delete a folder by it's model
+	 * @param AssetFolderModel $folderModel
+	 */
+	public function deleteFolder(AssetFolderModel $folderModel)
+	{
+		AssetFolderRecord::model()->findById($folderModel->id)->delete();
+	}
+
+	/**
 	 * Returns a folder by its ID.
 	 *
 	 * @param int $folderId
@@ -400,5 +400,40 @@ class AssetsService extends BaseApplicationComponent
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
 		}
+	}
+
+	// -------------------------------------------
+	//  File and folder managing
+	// -------------------------------------------
+
+	/**
+	 * @param $folderId
+	 * @param $userResponse
+	 * @return AssetFileModel|bool
+	 */
+	public function uploadFile($folderId, $userResponse)
+	{
+		try
+		{
+			// handle a user's conflict resolution response
+			if (empty($userResponse))
+			{
+				//$this->_mergeUploadedFiles();
+			}
+
+			$folder = $this->getFolderById($folderId);
+
+			$source = blx()->assetSources->getSourceTypeById($folder->sourceId);
+
+			return $source->uploadFile($folder);
+		}
+		catch (Exception $exception)
+		{
+			return false;
+			//$response = new AssetOperationResponseModel();
+			//$response->setError(Blocks::t('Error uploading the file: {error}', array('error' => $exception->getMessage())));
+		}
+
+		//return $response;
 	}
 }

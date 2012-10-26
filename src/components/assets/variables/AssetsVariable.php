@@ -112,4 +112,25 @@ class AssetsVariable
 	{
 		return blx()->assets->getFilesBySourceId($id);
 	}
+
+	// -------------------------------------------
+	// Folders
+	// -------------------------------------------
+
+	/**
+	 * Returns a sources top level folder
+	 * @param $id
+	 * @return AssetFolderModel|null
+	 */
+	public function getFolderBySourceId($id)
+	{
+		return blx()->assets->getFolder(
+			new FolderParams(
+				array(
+					'sourceId' => $id,
+					'parentId' => null
+				)
+			)
+		);
+	}
 }

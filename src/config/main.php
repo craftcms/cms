@@ -197,6 +197,7 @@ return CMap::mergeArray(
 			'application.lib.Requests.Auth.*',
 			'application.lib.Requests.Response.*',
 			'application.lib.Requests.Transport.*',
+			'application.lib.qqFileUploader.*',
 		),
 
 		// application components

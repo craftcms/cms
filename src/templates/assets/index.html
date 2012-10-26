@@ -2,9 +2,11 @@
 {% set title = "Assets"|t %}
 {% includeCssResource "css/assets.css" %}
 {% set sources = blx.assets.sources %}
-{% set files = blx.assets.getFilesBySourceId(1) %}
 {% set view = 'thumbs' %}
 
+{% if sources is not empty %}
+    {% set folder = blx.assets.getFolderBySourceId(     sources[ (sources|keys[0]) ].id ) %}
+{%  endif%}
 
 {% set header %}
 	<h1>{{ title }}</h1>
@@ -13,35 +15,47 @@
 
 {% set content %}
 	{% if sources %}
-		<nav class="nav">
-			<div class="buttons">
-				<a href="" class="btn submit" data-icon="↑">{{ "Upload files"|t }}</a>
-			</div>
 
-			<ul>
-				{% for source in sources %}
-					<li><a href=""{% if loop.first %} class="sel"{% endif %}>{{ source.name }}</a></li>
-				{% endfor %}
-			</ul>
-		</nav>
+        {% includeJsResource "js/Assets/AssetFileManager.js" %}
+        {% includeJsResource "js/Assets/AssetUploader.js" %}
+        {% includeJsResource "js/Assets/AssetPanel.js" %}
 
-		<div>
-			{% if files %}
-				<div class="toolbar">
-					<div class="btngroup">
-						<a class="btn {% if view == 'thumbs' %}active{% endif %}" href="{{ url('assets') }}" title="{{ 'Display files as thumbnails'|t }}" data-icon="⌗"></a>
-						<a class="btn {% if view == 'list' %}active{% endif %}" href="{{ url('assets/list') }}" title="{{ 'Display files in a list'|t }}" data-icon="•"></a>
-					</div>
+        <div class="assets">
+            <nav class="nav">
+                <div class="buttons">
+                    <div class="assets-upload">
+                    </div>
+                </div>
 
-					<div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search assets'|t }}"></div>
-				</div>
+                <ul class="assets-sources">
+                    {% for source in sources %}
+                        <li><a href=""{% if loop.first %} class="sel"{% endif %}>{{ source.name }}</a></li>
+                    {% endfor %}
+                </ul>
+            </nav>
 
-				{% include 'assets/_views/'~view with { files: files } only %}
-			{% else %}
-				<div class="toolbar"></div>
-				<p class="centeralign">{{ "No files have been uploaded yet."|t }}</p>
-			{% endif %}
-		</div>
+            <div class="asset-content">
+                {% if folder %}
+                    <div class="toolbar">
+                        <div class="btngroup">
+                            <a class="btn thumbs {% if view == 'thumbs' %}active{% endif %}" href="{{ url('assets') }}" title="{{ 'Display files as thumbnails'|t }}" data-icon="⌗"></a>
+                            <a class="btn list {% if view == 'list' %}active{% endif %}" href="{{ url('assets/list') }}" title="{{ 'Display files in a list'|t }}" data-icon="•"></a>
+                        </div>
+
+                        <div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search assets'|t }}"></div>
+                    </div>
+                    <div class="temp-spinner">Assets is working..</div>
+
+                    <div class="folder-container" data-folder="{{ folder.id }}">
+
+                    </div>
+
+                {% else %}
+                    <div class="toolbar"></div>
+                    <p class="centeralign">{{ "No files have been uploaded yet."|t }}</p>
+                {% endif %}
+            </div>
+        </div>
 	{% else %}
 		<p class="centeralign">
 			{{ "No asset sources exist yet."|t }}

@@ -43,6 +43,21 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getTempPath()
+	{
+		$path = $this->getRuntimePath().'temp/';
+
+		if (!IOHelper::folderExists($path))
+		{
+			IOHelper::createFolder($path, 0777);
+		}
+
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getLogPath()
 	{
 		$path = $this->getRuntimePath().'logs/';

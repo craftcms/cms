@@ -7,6 +7,7 @@ namespace Blocks;
 class IOHelper
 {
 	const defaultFolderPermissions = 0754;
+	const writableFilePermissions = 666;
 
 	/**
 	 * Tests whether the given file path exists on the file system.
@@ -763,7 +764,7 @@ class IOHelper
 	 *
 	 * @static
 	 * @param  string $path The path to change the permissions of.
-	 * @param  $permissions The new permissions.
+	 * @param  int $permissions The new permissions.
 	 * @return bool         'true' if successful, 'false' if not or the path does not exist.
 	 */
 	public static function changePermissions($path, $permissions)

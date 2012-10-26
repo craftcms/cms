@@ -237,4 +237,86 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		return true;
 	}
 
+	/**
+	 * Insert a file from path in folder
+	 * @param AssetFolderModel $folder
+	 * @param $filePath
+	 * @param $fileName
+	 * @return string
+	 * @throws Exception
+	 */
+	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
+	{
+
+		$targetFolder = $this->getSettings()->path . $folder->fullPath;
+
+		// make sure the folder is writable
+		if (! IOHelper::isWritable($targetFolder))
+		{
+			throw new Exception(Blocks::t('Target destination is not writable'));
+		}
+
+		$fileName = $this->_cleanupFilename($fileName);
+
+		$targetPath = $targetFolder . $fileName;
+		$extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+
+		if (! IOHelper::isExtensionAllowed($extension))
+		{
+			throw new Exception(Blocks::t('This file type is not allowed'));
+		}
+
+		if (IOHelper::fileExists($targetPath))
+		{
+			/*$response = new AssetOperationResponseModel();
+			$response->setResponse(AssetOperationResponseModel::StatusConflict);
+			$response->setResponseDataItem('prompt', $this->_getUserPromptOptions($fileName));
+			return $response;*/
+			// TODO handle the conflict instead of just saving as new
+			$targetPath = $this->_getNameReplacement($folder, $fileName);
+			if (!$targetPath)
+			{
+				throw new Exception(Blocks::t('Could not find a suitable replacement name for file'));
+			}
+		}
+
+		if (! IOHelper::copyFile($filePath, $targetPath))
+		{
+			throw new Exception(Blocks::t('Could not copy file to target destination'));
+		}
+
+		IOHelper::changePermissions($targetPath, IOHelper::writableFilePermissions);
+
+		/*$response = new AssetOperationResponseModel();
+		$response->setResponse(AssetOperationResponseModel::StatusSuccess);
+		$response->setResponseDataItem('file_path', $targetPath);
+		return $response;*/
+		return $targetPath;
+
+	}
+
+	/**
+	 * Get a name replacement for a filename already taken in a folder
+	 * @param AssetFolderModel $folder
+	 * @param $fileName
+	 * @return string
+	 */
+	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	{
+		$fileList = array_flip(IOHelper::getFolderContents($this->getSettings()->path . $folder->fullpath, false));
+		$fileParts = explode(".", $fileName);
+		$extension = array_pop($fileParts);
+		$fileName = join(".", $fileParts);
+
+		for ($i = 0; $i < 50; $i++)
+		{
+			if (!isset($fileList[$fileName . '_' . $i . '.' . $extension]))
+			{
+				return $fileName . '_' . $i . '.' . $extension;
+			}
+		}
+		return false;
+	}
+
+
 }

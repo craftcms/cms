@@ -39,3 +39,9 @@ Source/.idea/misc.xml
 Source/.idea/modules.xml
 
 Source/.idea/vcs.xml
+
+Source/.idea/jsLinters/jshint.xml
+
+Source/.idea/jsLinters/jslint.xml
+
+Source/.idea/libraries/sass_stdlib.xml
