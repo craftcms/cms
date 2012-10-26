@@ -386,7 +386,7 @@ class AssetsService extends BaseApplicationComponent
 			$whereConditions[] = DbHelper::parseParam('f.name', $params->name, $whereParams);
 		}
 
-		if ($params->fullPath)
+		if (!is_null($params->fullPath))
 		{
 			$whereConditions[] = DbHelper::parseParam('f.fullPath', $params->fullPath, $whereParams);
 		}

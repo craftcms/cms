@@ -3,6 +3,7 @@ namespace Blocks;
 
 /**
  * Handles asset indexing tasks
+ * TODO: clean up after indexing
  */
 class AssetIndexingController extends BaseController
 {
