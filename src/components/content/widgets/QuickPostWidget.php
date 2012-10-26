@@ -98,8 +98,9 @@ class QuickPostWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		blx()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
-		blx()->templates->includeJsResource('js/QuickPostWidget.js');
+		$html = blx()->templates->render('_components/widgets/QuickPost/body', array(
+			'settings' => $this->getSettings()
+		));
 
 		$params = array();
 
@@ -113,13 +114,11 @@ class QuickPostWidget extends BaseWidget
 			}
 		}
 
-		blx()->templates->includeJs('new Blocks.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).', function() {');
+		$js = 'new Blocks.QuickPostWidget('.$this->model->id.', '.JsonHelper::encode($params).');';
 
-		$html = blx()->templates->render('_components/widgets/QuickPost/body', array(
-			'settings' => $this->getSettings()
-		));
-
-		blx()->templates->includeJs('});');
+		blx()->templates->includeJsResource('js/QuickPostWidget.js');
+		blx()->templates->includeJs($js);
+		blx()->templates->includeTranslations('Entry saved.', 'Couldn’t save entry.');
 
 		return $html;
 	}

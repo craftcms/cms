@@ -127,14 +127,12 @@ class UserModel extends BaseEntityModel
 	 */
 	public function getFriendlyName()
 	{
-		if ($this->firstName)
+		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			return $this->firstName;
 		}
-		else
-		{
-			return $this->username;
-		}
+
+		return $this->username;
 	}
 
 	/**

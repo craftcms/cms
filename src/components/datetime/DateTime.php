@@ -182,7 +182,7 @@ class DateTime extends \DateTime
 
 				if ($interval->h) $spec .= $interval->h.'H';
 				if ($interval->i) $spec .= $interval->i.'M';
-				if ($interval->s) $spec .= $interval->s.'s';
+				if ($interval->s) $spec .= $interval->s.'S';
 			}
 
 			return new DateInterval($spec);
