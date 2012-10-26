@@ -128,7 +128,7 @@ class AssetsVariable
 			new FolderParams(
 				array(
 					'sourceId' => $id,
-					'parentId' => null
+					'fullPath' => ""
 				)
 			)
 		);

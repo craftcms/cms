@@ -273,7 +273,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			$response->setResponseDataItem('prompt', $this->_getUserPromptOptions($fileName));
 			return $response;*/
 			// TODO handle the conflict instead of just saving as new
-			$targetPath = $this->_getNameReplacement($folder, $fileName);
+			$targetPath = $targetFolder . $this->_getNameReplacement($folder, $fileName);
 			if (!$targetPath)
 			{
 				throw new Exception(Blocks::t('Could not find a suitable replacement name for file'));
@@ -303,14 +303,20 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
 	{
-		$fileList = array_flip(IOHelper::getFolderContents($this->getSettings()->path . $folder->fullpath, false));
+		$fileList = IOHelper::getFolderContents($this->getSettings()->path . $folder->fullPath, false);
+		$existingFiles = array();
+		foreach ($fileList as $file)
+		{
+			$existingFiles[pathinfo($file, PATHINFO_BASENAME)] = true;
+		}
+
 		$fileParts = explode(".", $fileName);
 		$extension = array_pop($fileParts);
 		$fileName = join(".", $fileParts);
 
-		for ($i = 0; $i < 50; $i++)
+		for ($i = 1; $i <= 50; $i++)
 		{
-			if (!isset($fileList[$fileName . '_' . $i . '.' . $extension]))
+			if (!isset($existingFiles[$fileName . '_' . $i . '.' . $extension]))
 			{
 				return $fileName . '_' . $i . '.' . $extension;
 			}

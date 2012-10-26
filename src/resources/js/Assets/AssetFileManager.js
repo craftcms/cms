@@ -160,9 +160,10 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
          * @return mixed
          */
         getCurrentFolderId: function () {
-            if (this.currentState.current_folder == null || typeof this.currentState.current_folder == "udefined") {
+            // TODO: we should remember the state here, but for that we have to make multiple sources work for navigation first
+            //if (this.currentState.current_folder == null || typeof this.currentState.current_folder == "udefined") {
                 this.storeState('current_folder', this.$folderContainer.attr('data-folder'));
-            }
+            //}
             return this.currentState.current_folder;
         },
 
