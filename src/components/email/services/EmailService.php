@@ -168,9 +168,9 @@ class EmailService extends BaseApplicationComponent
 		}
 
 		$htmlBody = "{% extends '{$template}' %}\n" .
-			"{% block body %}\n" .
+			"{% set body %}\n" .
 			$htmlBody .
-			"{% endblock %}\n";
+			"{% endset %}\n";
 
 		// Temporarily swap the templates path
 		$originalTemplatesPath = blx()->path->getTemplatesPath();
