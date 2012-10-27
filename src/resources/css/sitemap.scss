@@ -16,15 +16,30 @@
 #sitemap .tier .nodes .node:hover:not(.sel) { color: #2d98db; text-decoration: none; cursor: pointer; }
 
 #sitemap .tier .nodes .node.page img,
-#sitemap .tier .nodes .node.section .peephole { -webkit-transition: -webkit-box-shadow 150ms linear; }
+#sitemap .tier .nodes .node.section .peephole {
+	-webkit-transition: -webkit-box-shadow 150ms linear;
+	   -moz-transition: -webkit-box-shadow 150ms linear;
+}
 #sitemap .tier .nodes .node:hover:not(.sel).page img,
-#sitemap .tier .nodes .node:hover:not(.sel).section .peephole { -webkit-box-shadow: 0 0 0 1px #6eb1db, 0 0 10px rgba(55,156,219,0.5); }
+#sitemap .tier .nodes .node:hover:not(.sel).section .peephole {
+	-webkit-box-shadow: 0 0 0 1px #6eb1db, 0 0 10px rgba(55,156,219,0.5);
+	   -moz-box-shadow: 0 0 0 1px #6eb1db, 0 0 10px rgba(55,156,219,0.5);
+}
 
-#sitemap .tier .nodes .node.page img { display: block; margin: 0 auto; width: 115px; height: 150px; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.25); }
+#sitemap .tier .nodes .node.page img { display: block; margin: 0 auto; width: 115px; height: 150px;
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.25);
+	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 1px 5px rgba(0,0,0,0.25);
+}
 
-#sitemap .tier .nodes .node.section .peephole { margin: 5px; border-radius: 70px; padding: 25px 0; width: 140px; height: 90px; background: #f3f3f3; overflow: hidden; -webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 1px rgba(0,0,0,0.15); }
+#sitemap .tier .nodes .node.section .peephole { margin: 5px; border-radius: 70px; padding: 25px 0; width: 140px; height: 90px; background: #f3f3f3; overflow: hidden;
+	-webkit-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 1px rgba(0,0,0,0.15);
+	   -moz-box-shadow: 0 0 0 1px rgba(0,0,0,0.15), 0 2px 1px rgba(0,0,0,0.15);
+}
 #sitemap .tier .nodes .node.section .peephole:after { display: block; position: absolute; top: 5px; left: 5px; border-radius: 70px; width: 140px; height: 140px; content: '.'; text-indent: -100%; @include linear-gradient(transparent, rgba(0,0,0,.15)); overflow: hidden; }
-#sitemap .tier .nodes .node.section .peephole img { display: block; float: left; margin-left: 5px; width: 69px; height: 90px; -webkit-box-shadow: 0 1px 2px 0 rgba(0,0,0,0.25); }
+#sitemap .tier .nodes .node.section .peephole img { display: block; float: left; margin-left: 5px; width: 69px; height: 90px;
+	-webkit-box-shadow: 0 1px 2px 0 rgba(0,0,0,0.25);
+	   -moz-box-shadow: 0 1px 2px 0 rgba(0,0,0,0.25);
+}
 
 #sitemap #home { height: auto; }
 #sitemap #home .nodes .node { position: static; margin: 0 auto 15px; }

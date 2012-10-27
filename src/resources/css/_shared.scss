@@ -17,15 +17,34 @@ $blurglowcolor: rgba(55,156,219,0);
 $focusglowcolor: #6eb1db;
 $errorcolor: #d6301a;
 
-@font-face {
-	font-family: BlocksCP;
-	src: url(../fonts/BlocksCP.ttf) format("truetype");
+@mixin linear-gradient($from, $to) {
+	background-image: -webkit-linear-gradient(top, $from, $to);
+	background-image:    -moz-linear-gradient(top, $from, $to);
+	background-image:     -ms-linear-gradient(top, $from, $to);
+	background-image:      -o-linear-gradient(top, $from, $to);
+	background-image:         linear-gradient(to bottom, $from, $to);
 }
 
-@mixin linear-gradient($from, $to) { background: -webkit-linear-gradient($from, $to); }
-@mixin left-linear-gradient($from, $to) { background: -webkit-linear-gradient(left, $from, $to); }
-@mixin right-linear-gradient($from, $to) { background: -webkit-linear-gradient(right, $from, $to); }
+@mixin unselectable {
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	    -ms-user-select: none;
+}
 
-@mixin unselectable { -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; }
-@mixin icon { display: inline-block; font-family: BlocksCP; font-size: 20px; text-align: center; vertical-align: middle; -webkit-font-smoothing: antialiased; @include unselectable; }
-@mixin clearafter { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
+@mixin icon {
+	display: inline-block;
+	font-family: 'BlocksCP';
+	font-size: 20px;
+	text-align: center;
+	vertical-align: middle;
+	-webkit-font-smoothing: subpixel-antialiased;
+	@include unselectable;
+}
+
+@mixin clearafter {
+	content: '.';
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}

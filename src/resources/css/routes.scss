@@ -20,17 +20,21 @@
 .route-settings .url { width: auto; height: 16px; cursor: text; }
 .route-settings .url .token { position: relative; top: -1px; cursor: default; }
 
-.route-settings .url-tokens { margin-top: 10px; border-radius: 5px; padding: 15px 25px; background: #fafafa; -webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 2px rgba(0,0,0,0.1); }
+.route-settings .url-tokens { margin-top: 10px; border-radius: 5px; padding: 15px 25px; background: #fafafa;
+	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 2px rgba(0,0,0,0.1);
+	   -moz-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05), inset 0 1px 2px rgba(0,0,0,0.1);
+}
 .route-settings .url-tokens h4 { margin-bottom: 5px; text-align: center; }
 .route-settings .url-tokens .token { margin: 5px 5px 0 0; cursor: pointer; }
 
 .route-settings .delete { display: block; float: right; margin-top: 7px; color: $errorcolor; }
 
 
-@media only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+       only screen and (   -moz-min-device-pixel-ratio: 1.5),
+       only screen and (     -o-min-device-pixel-ratio: 3/2),
+       only screen and (        min-device-pixel-ratio: 1.5),
+       only screen and (        min-resolution: 1.5dppx)
+{
 	.route .url:after { background-image: url(../images/route-bg_2x.png); background-size: 15px 32px; }
 }

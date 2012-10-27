@@ -25,7 +25,10 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li { margin-top: 3px; }
 #sidebar .nav ul li a { padding: 4px 10px 4px 36px; font-size: 12px; }
 #sidebar .nav ul li a .badge { color: #262626; background: #b3b3b3; }
-#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); -webkit-box-shadow: inset -1px 0 rgba(0,0,0,0.5); }
+#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%);
+	-webkit-box-shadow: inset -1px 0 rgba(0,0,0,0.5);
+	   -moz-box-shadow: inset -1px 0 rgba(0,0,0,0.5);
+}
 #sidebar .nav ul li a.sel .badge { color: #fff; background: #1a1a1a; }
 
 #sidebar .nav ul li a:before { @include icon; content: 'P'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
@@ -37,13 +40,19 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li a#nav-settings:before { content: 'S'; }
 
 /* HIDE */
-#sidebar { background: #e6e6e6; -webkit-box-shadow: inset -1px 0 #bbb; }
+#sidebar { background: #e6e6e6;
+	-webkit-box-shadow: inset -1px 0 #bbb;
+	   -moz-box-shadow: inset -1px 0 #bbb;
+}
 #sidebar .nav ul li { border-bottom-color: #ccc; }
 #sidebar .nav ul li a { color: #808080; @include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0)); }
 #sidebar .nav ul li a:hover { color: #555; @include linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0)); }
 #sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0)); }
 #sidebar .nav ul li a.sel { margin: -1px 0; padding: 16px 20px; color: #252525; text-shadow: 0 1px 1px rgba(255,255,255,0.5); @include linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.1)); }
-#sidebar .nav ul li a .badge { background: #fff; -webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25); }
+#sidebar .nav ul li a .badge { background: #fff;
+	-webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25);
+	   -moz-box-shadow: 0 1px 1px rgba(0,0,0,0.25);
+}
 /* end HIDE */
 
 /* main */
@@ -52,7 +61,10 @@ html, body, #sidebar, #main { height: 100%; }
 /* notifications */
 #notifications-wrapper { position: fixed; z-index: 9999; top: 0; left: 0; width: 100%; }
 #notifications { margin-left: 200px; text-align: center; }
-#notifications .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff; -webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35); }
+#notifications .notification { display: inline-block; padding: 3px 10px 2px; border-radius: 0 0 3px 3px; border-width: 0 1px 1px; border-style: solid; color: #fff;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+	   -moz-box-shadow: 0 1px 3px rgba(0,0,0,0.35);
+}
 #notifications .notification.notice { border-color: #1F6794; background: #2782bb; }
 #notifications .notification.error { border-color: #992f2f; background: #e14545; }
 
