@@ -14,6 +14,7 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar #header #sitename { position: absolute; top: 0; left: 15px; width: 140px; line-height: 50px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 #sidebar #header #account { position: absolute; top: 0; right: 0; padding: 17px 0 13px 1px; width: 35px; }
+#sidebar #header #account:hover { text-decoration: none; }
 #sidebar #header #account:after { margin-right: -5px; }
 
 #account-menu .userinfo { margin: -10px -15px 10px; padding: 40px 15px 5px 110px; height: 56px; background: rgba(0,0,0,0.9); }
@@ -23,37 +24,18 @@ html, body, #sidebar, #main { height: 100%; }
 
 #sidebar .nav ul { margin-top: 7px; }
 #sidebar .nav ul li { margin-top: 3px; }
-#sidebar .nav ul li a { padding: 4px 10px 4px 36px; font-size: 12px; }
+#sidebar .nav ul li a { border-right: 1px solid transparent; padding: 4px 9px 4px 36px; font-size: 12px; }
 #sidebar .nav ul li a .badge { color: #262626; background: #b3b3b3; }
-#sidebar .nav ul li a.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%);
-	-webkit-box-shadow: inset -1px 0 rgba(0,0,0,0.5);
-	   -moz-box-shadow: inset -1px 0 rgba(0,0,0,0.5);
-}
+#sidebar .nav ul li a.sel { border-right-color: #0c4466; color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); }
 #sidebar .nav ul li a.sel .badge { color: #fff; background: #1a1a1a; }
 
-#sidebar .nav ul li a:before { @include icon; content: 'P'; float: left; margin: 1px 0 0 -26px; width: 22px; font-size: 18px; }
+#sidebar .nav ul li a:before { @include icon; content: 'P'; float: left; margin-left: -26px; width: 22px; font-size: 18px; }
 #sidebar .nav ul li a#nav-dashboard:before { content: 'D'; }
 #sidebar .nav ul li a#nav-content:before { content: 'C'; }
 #sidebar .nav ul li a#nav-assets:before { content: 'A'; }
 #sidebar .nav ul li a#nav-users:before { content: 'U'; }
 #sidebar .nav ul li a#nav-updates:before { content: 'V'; }
 #sidebar .nav ul li a#nav-settings:before { content: 'S'; }
-
-/* HIDE */
-#sidebar { background: #e6e6e6;
-	-webkit-box-shadow: inset -1px 0 #bbb;
-	   -moz-box-shadow: inset -1px 0 #bbb;
-}
-#sidebar .nav ul li { border-bottom-color: #ccc; }
-#sidebar .nav ul li a { color: #808080; @include linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0)); }
-#sidebar .nav ul li a:hover { color: #555; @include linear-gradient(rgba(255,255,255,0.75), rgba(255,255,255,0)); }
-#sidebar .nav ul li a:active { @include linear-gradient(rgba(255,255,255,0.25), rgba(255,255,255,0)); }
-#sidebar .nav ul li a.sel { margin: -1px 0; padding: 16px 20px; color: #252525; text-shadow: 0 1px 1px rgba(255,255,255,0.5); @include linear-gradient(rgba(0,0,0,0.25), rgba(0,0,0,0.1)); }
-#sidebar .nav ul li a .badge { background: #fff;
-	-webkit-box-shadow: 0 1px 1px rgba(0,0,0,0.25);
-	   -moz-box-shadow: 0 1px 1px rgba(0,0,0,0.25);
-}
-/* end HIDE */
 
 /* main */
 #main { position: relative; margin-left: 200px; }
@@ -71,7 +53,7 @@ html, body, #sidebar, #main { height: 100%; }
 #tabs { margin: -25px auto 25px; border-bottom: 1px solid #dbdbdb; text-align: center; font-size: 0; }
 #tabs ul li { display: inline-block; margin: 0 10px; }
 #tabs ul li a { display: block; margin-bottom: -1px; padding: 16px 1px; font-size: 13px; color: #808080; }
-#tabs ul li a:before { margin: 0 4px -1px 0; font-size: 18px; }
+#tabs ul li a:before { margin: -2px 4px 0 0; font-size: 18px; }
 #tabs ul li a:hover { color: $linkcolor; text-decoration: none; }
 #tabs ul li a.active { padding-bottom: 14px; border-bottom: 2px solid #555; color: #555; cursor: default; }
 
@@ -82,7 +64,7 @@ html, body, #sidebar, #main { height: 100%; }
 /* nav */
 #main .nav { float: left; width: 150px; }
 #main .nav .btn.submit { display: block; }
-#main .nav ul li a:after { @include icon; display: none; margin: 0 0 -2px 8px; font-size: 13px; content: '>'; color: $linkcolor; }
+#main .nav ul li a:after { @include icon; display: none; margin: -2px 0 0 8px; font-size: 13px; content: '>'; color: $linkcolor; }
 #main .nav ul li a:hover:after { display: inline-block; }
 #main .nav ul li a.sel:after { display: inline-block; color: #2c2c2c; }
 #main .nav + div { margin-left: 175px; }

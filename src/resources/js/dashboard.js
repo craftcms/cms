@@ -138,7 +138,7 @@ Blocks.Dashboard = Blocks.Base.extend({
 
 	stretchColHeights: function()
 	{
-		var minHeight = Blocks.$window.height() - 100,
+		var minHeight = Blocks.$window.height() - 101,
 			tallestCol = this.getTallestCol(),
 			height = Math.max(minHeight, tallestCol.getHeight());
 

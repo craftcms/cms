@@ -4,10 +4,11 @@
 @import "reset";
 
 @font-face {
-	font-family: 'BlocksCP';
-	src: url('../fonts/BlocksCP.eot');
-	src: url('../fonts/BlocksCP.woff') format('woff');
-	src: url('../fonts/BlocksCP.ttf') format('truetype');
+	font-family: 'pictosregular';
+	src: url('../fonts/pictos_custom-webfont.eot');
+	src: url('../fonts/pictos_custom-webfont.eot?#iefix') format('embedded-opentype'),
+		 url('../fonts/pictos_custom-webfont.woff') format('woff'),
+		 url('../fonts/pictos_custom-webfont.ttf') format('truetype');
 	font-weight: normal;
 	font-style: normal;
 }
@@ -82,7 +83,7 @@ a:hover { text-decoration: underline; }
 a.sel,
 li.sel a { cursor: default !important; text-decoration: none; }
 
-a.go:after { content: '→'; font-size: 12px; margin: 2px 0 0 4px; }
+a.go:after { content: '→'; font-size: 12px; margin: -2px 0 0 4px; }
 
 /* emphasis */
 em, i { font-style: italic; }
@@ -239,7 +240,7 @@ ul.icons li a:hover { text-decoration: none; color: $linkcolor; }
 .btn[data-icon]:before,
 .btn[data-icon-after]:after,
 .btn.icon:before,
-.menubtn:after { font-size: 17px; margin-top: 2px; }
+.menubtn:after { position: relative; font-size: 15px; margin-top: -2px; }
 
 .btn.small[data-icon]:before,
 .btn.small[data-icon-after]:after,
@@ -481,7 +482,7 @@ textarea.text,
 .text.error { border-color: $errorcolor !important; }
 
 .textwrapper.search { position: relative; padding-right: 36px; cursor: text; }
-.textwrapper.search:before { position: absolute; top: 9px; left: 8px; content: "s"; color: #a1a4a6; }
+.textwrapper.search:before { position: absolute; top: 7px; left: 8px; content: "s"; color: #a1a4a6; }
 .textwrapper.search .text { padding-left: 27px; }
 
 .texthint-container { position: relative; height: 0; }
@@ -559,11 +560,11 @@ textarea.text,
 .addlinksmodal { width: 500px; }
 .addlinksmodal .body { margin: -25px; padding: 25px; height: 250px; overflow: auto; @include unselectable; }
 
-.entity { margin: -5px 0; padding: 3px 7px; cursor: pointer;
+.entity { margin: -5px 0; padding: 4px 7px; cursor: pointer;
 	-webkit-transition: background-color linear 100ms;
 	   -moz-transition: background-color linear 100ms;
 }
-.entity:before { content: 'l'; margin: 2px 5px -2px 0; font-size: 15px; }
+.entity:before { content: 'l'; margin: -2px 5px 0 0; font-size: 15px; }
 .entity:hover { color: $linkcolor; }
 .entity.sel { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background-color: hsl(203, 79%, 50%); }
 .links .border-box:not(:focus) .entity.sel { text-shadow: none; background-color: #a1a4a6; }
@@ -581,10 +582,10 @@ ul.errors li { color: $errorcolor; }
 /* ----------------------------------------*/
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-       only screen and (   -moz-min-device-pixel-ratio: 1.5),
-       only screen and (     -o-min-device-pixel-ratio: 3/2),
-       only screen and (        min-device-pixel-ratio: 1.5),
-       only screen and (        min-resolution: 1.5dppx)
+	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
+	   only screen and (     -o-min-device-pixel-ratio: 3/2),
+	   only screen and (        min-device-pixel-ratio: 1.5),
+	   only screen and (        min-resolution: 1.5dppx)
 {
 	.backbtn { background-image: url(../images/backbtn-right_2x.png); background-size: 185px 113px; }
 	.backbtn:before { background-image: url(../images/backbtn-left_2x.png); background-size: 15px 113px; }
