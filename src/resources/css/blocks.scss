@@ -517,7 +517,7 @@ textarea.text,
 	.select,
 	.select select { border-radius: 2px; }
 	.select { display: inline-block; position: relative; background: #fff; }
-	.select:before { position: absolute; top: 9px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
+	.select:before { position: absolute; top: 7px; right: 9px; font-size: 10px; content: '▼'; @include unselectable; }
 	.select select { position: relative; padding: 7px 22px 7px 10px; background: none;
 		-webkit-box-shadow: 0 1px 0 rgba(0,0,0,0.05), 0 0 0 $blurglowcolor; -webkit-appearance: none;
 	}
