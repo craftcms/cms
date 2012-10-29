@@ -95,6 +95,7 @@ if (in_array('users', $packages))
 
 $components['account']['class']           = 'Blocks\AccountService';
 $components['assets']['class']            = 'Blocks\AssetsService';
+$components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
 $components['assetSources']['class']      = 'Blocks\AssetSourcesService';
 $components['blockTypes']['class']        = 'Blocks\BlockTypesService';
 $components['components']['class']        = 'Blocks\ComponentsService';
@@ -192,6 +193,7 @@ return CMap::mergeArray(
 			'application.lib.Requests.Auth.*',
 			'application.lib.Requests.Response.*',
 			'application.lib.Requests.Transport.*',
+			'application.lib.qqFileUploader.*',
 		),
 
 		// application components

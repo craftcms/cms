@@ -7,6 +7,11 @@ namespace Blocks;
 class AssetFileModel extends BaseModel
 {
 	/**
+	 * @var BaseAssetSourceType
+	 */
+	private $_sourceType = null;
+
+	/**
 	 * User the filename as the string representation.
 	 *
 	 * @return string
@@ -22,14 +27,17 @@ class AssetFileModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'id'        => AttributeType::Number,
-			'folderId'  => AttributeType::Number,
-			'contentId' => AttributeType::Number,
-			'filename'  => AttributeType::String,
-			'kind'      => AttributeType::String,
-			'width'     => AttributeType::Number,
-			'height'    => AttributeType::Number,
-			'size'      => AttributeType::Number,
+			'id'			=> AttributeType::Number,
+			'sourceId'		=> AttributeType::Number,
+			'folderId'		=> AttributeType::Number,
+			'contentId'		=> AttributeType::Number,
+			'filename'		=> AttributeType::String,
+			'originalName'	=> AttributeType::String,
+			'kind'			=> AttributeType::String,
+			'width'			=> AttributeType::Number,
+			'height'		=> AttributeType::Number,
+			'size'			=> AttributeType::Number,
+			'dateModified'	=> AttributeType::Number
 		);
 	}
 
@@ -48,7 +56,7 @@ class AssetFileModel extends BaseModel
 	 */
 	public function getUrl()
 	{
-		return '/uploads/drinks/'.$this->filename;
+		return $this->getSourceType()->getSettings()->url . $this->getFolder()->fullPath . $this->filename;
 	}
 
 	/**
@@ -59,7 +67,7 @@ class AssetFileModel extends BaseModel
 	 */
 	public function getThumbSize($maxSize = 125)
 	{
-		$path = '../public/uploads/drinks/'.$this->filename;
+		$path = $this->getSourceType()->getSettings()->path . $this->getFolder()->fullPath . $this->filename;
 		list($width, $height) = getimagesize($path);
 
 		if ($width > $height)
@@ -74,5 +82,17 @@ class AssetFileModel extends BaseModel
 		}
 
 		return array('width' => $thumbWidth, 'height' => $thumbHeight);
+	}
+
+	/**
+	 * @return BaseAssetSourceType|null
+	 */
+	protected function getSourceType()
+	{
+		if (!isset($this->_sourceType))
+		{
+			$this->_sourceType = blx()->assetSources->getSourceTypeById($this->sourceId);
+		}
+		return $this->_sourceType;
 	}
 }

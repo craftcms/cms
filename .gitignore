@@ -45,3 +45,5 @@ Source/.idea/scopes/scope_settings.xml
 Source/.idea/vcs.xml
 
 Source/.idea/workspace.xml
+
+*.orig

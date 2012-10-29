@@ -35,7 +35,38 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function populateSourceType(AssetSourceModel $source)
 	{
-		return blx()->components->populateComponentByTypeAndModel(ComponentType::AssetSource, $source);
+		return blx()->components->populateComponentByTypeAndModel('assetSource', $source);
+	}
+
+	/**
+	 * Populates an asset source model.
+	 *
+	 * @param array|AssetSourceRecord $attributes
+	 * @return AssetSourceModel
+	 */
+	public function populateSource($attributes)
+	{
+		return AssetSourceModel::populateModel($attributes);
+	}
+
+	/**
+	 * Mass-populates asset source model.
+	 *
+	 * @param array  $data
+	 * @param string $index
+	 * @return array
+	 */
+	public function populateSources($data, $index = 'id')
+	{
+		$sources = array();
+
+		foreach ($data as $attributes)
+		{
+			$source = $this->populateSource($attributes);
+			$sources[$source->$index] = $source;
+		}
+
+		return $sources;
 	}
 
 	/**
@@ -46,7 +77,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function getAllSources()
 	{
 		$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
-		return AssetSourceModel::populateModels($sourceRecords, 'id');
+		return $this->populateSources($sourceRecords);
 	}
 
 	/**
@@ -61,8 +92,20 @@ class AssetSourcesService extends BaseApplicationComponent
 
 		if ($sourceRecord)
 		{
-			return AssetSourceModel::populateModel($sourceRecord);
+			return $this->populateSource($sourceRecord);
 		}
+	}
+
+	/**
+	 * Returns a source type by source id
+	 * @param $sourceId
+	 * @return BaseAssetSourceType
+	 */
+	public function getSourceTypeById($sourceId)
+	{
+		$source = $this->getSourceById($sourceId);
+		return $this->populateSourceType($source);
+
 	}
 
 	/**
@@ -158,11 +201,20 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function deleteSourceById($sourceId)
 	{
 		$sourceRecord = $this->_getSourceRecordById($sourceId);
-		$source = AssetSourceModel::populateModel($sourceRecord);
 
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
+			$folderParams = new FolderParams(
+				array(
+					'sourceId' => $sourceId
+				)
+			);
+			$folders = blx()->assets->getFolders($folderParams);
+			foreach ($folders as $folder)
+			{
+				blx()->assets->deleteFolder($folder);
+			}
 			$sourceRecord->delete();
 			$transaction->commit();
 		}

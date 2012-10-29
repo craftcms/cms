@@ -2,7 +2,7 @@
 namespace Blocks;
 
 /**
- *
+ * TODO: create save function which calls parent::save and then updates the meta data table (keywords, author, etc)
  */
 class AssetFileRecord extends BaseRecord
 {
@@ -20,11 +20,12 @@ class AssetFileRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'filename' => array(AttributeType::String, 'required' => true),
-			'kind'     => array(AttributeType::String, 'maxLength' => 10, 'column' => ColumnType::Char),
-			'width'    => array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
-			'height'   => array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
-			'size'     => array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
+			'filename'		=> array(AttributeType::String, 'required' => true),
+			'kind'			=> array(AttributeType::String, 'maxLength' => 10, 'column' => ColumnType::Char),
+			'width'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
+			'height'		=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
+			'size'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
+			'dateModified'	=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
 		);
 	}
 
@@ -34,6 +35,7 @@ class AssetFileRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
+			'source'  => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true),
 			'folder'  => array(static::BELONGS_TO, 'AssetFolderRecord', 'required' => true),
 			'content' => array(static::HAS_ONE, 'AssetContentRecord', 'fileId'),
 		);
