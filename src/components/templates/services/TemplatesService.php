@@ -25,7 +25,7 @@ class TemplatesService extends BaseApplicationComponent
 		if (!class_exists('\Twig_Autoloader', false))
 		{
 			require_once blx()->path->getLibPath().'Twig/Autoloader.php';
-			Blocks::registerAutoloader(array(new \Twig_Autoloader, 'autoload'), true);
+			Blocks::registerAutoloader(array(new \Twig_Autoloader, 'autoload'));
 		}
 	}
 
