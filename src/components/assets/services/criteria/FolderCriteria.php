@@ -4,14 +4,14 @@ namespace Blocks;
 /**
  * Folders parameters
  */
-class FileParams extends BaseParams
+class FolderCriteria extends BaseCriteria
 {
 	public $id;
+	public $parentId;
 	public $sourceId;
-	public $folderId;
-	public $filename;
-	public $kind;
-	public $order = 'filename asc';
+	public $name;
+	public $fullPath;
+	public $order = 'name asc';
 	public $offset;
 	public $limit;
 }

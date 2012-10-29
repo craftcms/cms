@@ -7,6 +7,17 @@ namespace Blocks;
 class AssetsController extends BaseEntityController
 {
 	/**
+	 * Returns the block service instance.
+	 *
+	 * @return AssetsService
+	 */
+	protected function getService()
+	{
+		return blx()->assets;
+	}
+
+
+	/**
 	 * Upload a file
 	 */
 	public function actionUploadFile()

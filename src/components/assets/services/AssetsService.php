@@ -4,8 +4,44 @@ namespace Blocks;
 /**
  *
  */
-class AssetsService extends BaseApplicationComponent
+class AssetsService extends BaseEntityService
 {
+	// -------------------------------------------
+	//  Asset Blocks
+	// -------------------------------------------
+
+	/**
+	 * The block model class name.
+	 *
+	 * @access protected
+	 * @var string
+	 */
+	protected $blockModelClass = 'AssetBlockModel';
+
+	/**
+	 * The block record class name.
+	 *
+	 * @access protected
+	 * @var string
+	 */
+	protected $blockRecordClass = 'AssetBlockRecord';
+
+	/**
+	 * The content record class name.
+	 *
+	 * @access protected
+	 * @var string
+	 */
+	protected $contentRecordClass = 'AssetContentRecord';
+
+	/**
+	 * The name of the content table column right before where the block columns should be inserted.
+	 *
+	 * @access protected
+	 * @var string
+	 */
+	protected $placeBlockColumnsAfter = 'fileId';
+
 	// -------------------------------------------
 	//  Files
 	// -------------------------------------------
@@ -68,7 +104,7 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFilesByFolderId($folderId)
 	{
-		return $this->getFiles(new FileParams(array('folderId' => $folderId)));
+		return $this->getFiles(new FileCriteria(array('folderId' => $folderId)));
 	}
 
 	/**
@@ -79,7 +115,7 @@ class AssetsService extends BaseApplicationComponent
 	 */
 	public function getFileById($fileId)
 	{
-		$parameters = new FileParams(array('id' => $fileId));
+		$parameters = new FileCriteria(array('id' => $fileId));
 
 		return $this->getFile($parameters);
 	}
@@ -88,14 +124,14 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Gets files by parameters.
 	 *
-	 * @param FileParams|null $params
+	 * @param FileCriteria|null $params
 	 * @return array
 	 */
-	public function getFiles(FileParams $params = null)
+	public function getFiles(FileCriteria $params = null)
 	{
 		if (!$params)
 		{
-			$params = new FileParams();
+			$params = new FileCriteria();
 		}
 
 		$query = blx()->db->createCommand()
@@ -126,10 +162,10 @@ class AssetsService extends BaseApplicationComponent
 
 	/**
 	 * Get a single folder by params
-	 * @param FileParams $params
+	 * @param FileCriteria $params
 	 * @return AssetFileModel|null
 	 */
-	public function getFile(FileParams $params = null)
+	public function getFile(FileCriteria $params = null)
 	{
 		$params->limit = 1;
 		$file = $this->getFiles($params);
@@ -306,14 +342,14 @@ class AssetsService extends BaseApplicationComponent
 	/**
 	 * Gets folders.
 	 *
-	 * @param FolderParams|null $params
+	 * @param FolderCriteria|null $params
 	 * @return array
 	 */
-	public function getFolders(FolderParams $params = null)
+	public function getFolders(FolderCriteria $params = null)
 	{
 		if (!$params)
 		{
-			$params = new FolderParams();
+			$params = new FolderCriteria();
 		}
 
 		$query = blx()->db->createCommand()
@@ -344,10 +380,10 @@ class AssetsService extends BaseApplicationComponent
 
 	/**
 	 * Get a single folder by params
-	 * @param FolderParams $params
+	 * @param FolderCriteria $params
 	 * @return AssetFolderModel|null
 	 */
-	public function getFolder(FolderParams $params = null)
+	public function getFolder(FolderCriteria $params = null)
 	{
 		$params->limit = 1;
 		$folder = $this->getFolders($params);

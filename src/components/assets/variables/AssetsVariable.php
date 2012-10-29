@@ -57,7 +57,7 @@ class AssetsVariable
 	 *
 	 * @return array
 	 */
-	public function getAllSources()
+	public function sources()
 	{
 		return blx()->assetSources->getAllSources();
 	}
@@ -125,7 +125,7 @@ class AssetsVariable
 	public function getFolderBySourceId($id)
 	{
 		return blx()->assets->getFolder(
-			new FolderParams(
+			new FolderCriteria(
 				array(
 					'sourceId' => $id,
 					'fullPath' => ""

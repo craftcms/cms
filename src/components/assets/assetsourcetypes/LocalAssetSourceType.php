@@ -63,7 +63,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			if (is_dir($file))
 			{
 				$fullPath = rtrim(str_replace($this->getSettings()->path, '', $file), '/') . '/';
-				$parameters = new FolderParams(
+				$parameters = new FolderCriteria(
 					array(
 						'fullPath' => $fullPath,
 						'sourceId' => $this->model->id
@@ -127,7 +127,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		// figure out the obsolete records for folders
 		$missingFolderIds = array();
-		$parameters = new FolderParams(array(
+		$parameters = new FolderCriteria(array(
 			'sourceId' => $this->model->id
 		));
 
@@ -176,7 +176,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			$searchFullPath = join('/', $parts) . (empty($parts) ? '' : '/');
 
-			$folderParameters = new FolderParams(
+			$folderParameters = new FolderCriteria(
 				array(
 					'sourceId' => $this->model->id,
 					'fullPath' => $searchFullPath
@@ -192,7 +192,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 			$folderId = $parentFolder->id;
 
-			$fileParameters = new FileParams(
+			$fileParameters = new FileCriteria(
 				array(
 					'folderId' => $folderId,
 					'filename' => $fileName

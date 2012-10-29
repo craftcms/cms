@@ -205,7 +205,7 @@ class AssetSourcesService extends BaseApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			$folderParams = new FolderParams(
+			$folderParams = new FolderCriteria(
 				array(
 					'sourceId' => $sourceId
 				)
