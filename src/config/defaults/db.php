@@ -10,41 +10,41 @@
  */
 
 /*
- * The database server name or IP address
+ * The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
  */
 $dbConfig['server'] = 'localhost';
 
 /**
- * The database server port
+ * The database server port.
  */
 $dbConfig['port'] = '3306';
 
 /*
- * The database username to connect with
+ * The database username to connect with.
  */
 $dbConfig['user'] = 'root';
 
 /*
- * The database password to connect with
+ * The database password to connect with.
  */
 $dbConfig['password'] = '';
 
 /*
- * The database name to select
+ * The name of the database to select.
  */
 $dbConfig['database'] = '';
 
 /*
- * The prefix to use when naming tables. This can be no greater than 5 characters.
+ * The prefix to use when naming tables. This can be no more than 5 characters.
  */
 $dbConfig['tablePrefix'] = 'blx';
 
 /**
- * The charset to use when creating tables
+ * The charset to use when creating tables.
  */
 $dbConfig['charset'] = 'utf8';
 
 /**
- * The collation to use when creating tables
+ * The collation to use when creating tables.
  */
 $dbConfig['collation'] = 'utf8_general_ci';
