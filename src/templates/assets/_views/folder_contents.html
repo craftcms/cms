@@ -1,0 +1,13 @@
+<div class="folder-breadcrumbs">
+    {%  for folder_id, folder_name in folder.getBreadcrumbs %}
+        <a href="#">{{ folder_name }}</a> &nbsp;
+    {%  endfor %}
+</div>
+
+<div class="folder-contents">
+    {% include 'assets/_views/'~view with { files: files } only %}
+</div>
+
+<div class="asset-status">
+
+</div>

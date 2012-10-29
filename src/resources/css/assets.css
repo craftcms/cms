@@ -14,3 +14,10 @@
 #main .files.listview table th:first-child,
 #main .files.listview table td:first-child { padding-left: 34px; }
 #main .files.listview table td:first-child img { display: block; float: left; margin: -3px 0 -3px -34px; width: 24px; height: 24px; }
+
+
+/*-- uploader --*/
+
+#main .assets-upload { height: 31px;}
+#main .assets-qq-upload-list { display: none;}
+#main .assets .temp-spinner{ text-align: center; margin-top: -18px; display: none; }

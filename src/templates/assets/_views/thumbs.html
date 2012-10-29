@@ -9,10 +9,9 @@
 	</ul>
 </div>
 
-{% set css %}
-	{% for file in files %}
-		{% set thumbSize = file.getThumbSize %}
-		.thumb-{{ file.id }} { background-image: url({{ file.getUrl }}); background-size: {{ thumbSize.width }}px {{ thumbSize.height }}px; }
-	{% endfor %}
-{% endset %}
-{% includeCss css %}
+<style type="text/css">
+    {% for file in files %}
+        {% set thumbSize = file.getThumbSize %}
+        .thumb-{{ file.id }} { background-image: url({{ file.getUrl }}); background-size: {{ thumbSize.width }}px {{ thumbSize.height }}px; }
+    {% endfor %}
+</style>

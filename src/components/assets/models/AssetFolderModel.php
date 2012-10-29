@@ -6,6 +6,23 @@ namespace Blocks;
  */
 class AssetFolderModel extends BaseModel
 {
+
+	/**
+	 * Breadcrumbs for this folder (array of id => folder name ordered by depth)
+	 * @var array
+	 */
+	private $_breadCrumbs = null;
+
+	/**
+	 * Use the folder name as the string representation.
+	 *
+	 * @return string
+	 */
+	function __toString()
+	{
+		return $this->name;
+	}
+
 	/**
 	 * @return array
 	 */
@@ -26,5 +43,14 @@ class AssetFolderModel extends BaseModel
 	public function getSource()
 	{
 		return blx()->assetSources->getSourceById($this->sourceId);
+	}
+
+	/**
+	 * Return this folder's breadcrumbs
+	 * @return array
+	 */
+	public function getBreadCrumbs()
+	{
+		return array();
 	}
 }

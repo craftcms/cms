@@ -57,7 +57,7 @@ class AssetsVariable
 	 *
 	 * @return array
 	 */
-	public function getAllSources()
+	public function sources()
 	{
 		return blx()->assetSources->getAllSources();
 	}
@@ -111,5 +111,26 @@ class AssetsVariable
 	public function getFilesBySourceId($id)
 	{
 		return blx()->assets->getFilesBySourceId($id);
+	}
+
+	// -------------------------------------------
+	// Folders
+	// -------------------------------------------
+
+	/**
+	 * Returns a sources top level folder
+	 * @param $id
+	 * @return AssetFolderModel|null
+	 */
+	public function getFolderBySourceId($id)
+	{
+		return blx()->assets->getFolder(
+			new FolderCriteria(
+				array(
+					'sourceId' => $id,
+					'fullPath' => ""
+				)
+			)
+		);
 	}
 }

@@ -21,7 +21,7 @@ class AssetFolderRecord extends BaseRecord
 	{
 		return array(
 			'name'     => array(AttributeType::String, 'required' => true),
-			'fullPath' => array(AttributeType::String, 'required' => true),
+			'fullPath' => array(AttributeType::String),
 		);
 	}
 
