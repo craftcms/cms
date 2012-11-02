@@ -26,7 +26,7 @@ defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
 // Check early if runtime is a valid folder and writable.
 if (($runtimePath = realpath(BLOCKS_RUNTIME_PATH)) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
 {
-	exit('Blocks runtime path "'.$runtimePath.'" isn’t valid. Please make sure it is a folder writable by your web server process.');
+	exit('Blocks runtime path "'.$runtimePath.'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
 }
 
 // In case yiic is running

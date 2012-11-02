@@ -202,7 +202,7 @@ return CMap::mergeArray(
 		'params' => array(
 			'blocksConfig'         => $blocksConfig,
 			'requiredPhpVersion'   => '5.3.0',
-			'requiredMysqlVersion' => ''
+			'requiredMysqlVersion' => '5.1.0'
 		),
 	)
 );
