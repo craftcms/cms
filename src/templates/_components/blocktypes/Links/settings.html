@@ -16,9 +16,9 @@
 {% for _linkType in blx.links.getAllLinkTypes %}
 	{% set isCurrent = (_linkType.classHandle == linkType.classHandle) %}
 	{% if isCurrent %}
-		{% set linkTypeSettings = linkType.settings %}
+		{% set linkTypeSettings = linkType.settingsHtml %}
 	{% else %}
-		{% set linkTypeSettings = _linkType.settings %}
+		{% set linkTypeSettings = _linkType.settingsHtml %}
 	{% endif %}
 
 	{% if linkTypeSettings %}
