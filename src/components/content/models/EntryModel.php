@@ -8,6 +8,8 @@ namespace Blocks;
  */
 class EntryModel extends BaseEntityModel
 {
+	private $_tags;
+
 	/**
 	 * Use the entry title as its string representation.
 	 *
@@ -174,17 +176,24 @@ class EntryModel extends BaseEntityModel
 	}
 
 	/**
-	 * Returns a list of EntryTag models for this EntryModel.
+	 * Returns the entry's tags.
 	 *
-	 * @return mixed
+	 * @return array
 	 */
 	public function getTags()
 	{
-		if (!$this->tags)
+		if (!isset($this->_tags))
 		{
-			$this->tags = blx()->entries->getTagsForEntryById($this->id);
+			if ($this->id)
+			{
+				$this->_tags = blx()->entries->getTagsByEntryId($this->id);
+			}
+			else
+			{
+				$this->_tags = array();
+			}
 		}
 
-		return $this->tags;
+		return $this->_tags;
 	}
 }
