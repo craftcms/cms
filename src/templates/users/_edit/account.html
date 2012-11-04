@@ -28,7 +28,11 @@
 {% set content %}
 	<form method="post" action="">
 		<input type="hidden" name="action" value="account/saveUser">
-		{% if not isNewAccount %}<input type="hidden" name="userId" value="{{ account.id }}">{% endif %}
+		{% if isNewAccount %}
+			<input type="hidden" name="redirect" value="users/{userId}">
+		{% else %}
+			<input type="hidden" name="userId" value="{{ account.id }}">
+		{% endif %}
 
 		{{ forms.textField({
 			label: "Username"|t,
