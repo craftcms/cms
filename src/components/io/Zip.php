@@ -76,7 +76,14 @@ class Zip
 		}
 	}
 
-	public static function add($sourceZip, $pathToAdd, $basePath)
+	/**
+	 * @param      $sourceZip
+	 * @param      $pathToAdd
+	 * @param      $basePath
+	 * @param null $pathPrefix
+	 * @return bool
+	 */
+	public static function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
 	{
 		$sourceZip = IOHelper::normalizePathSeparators($sourceZip);
 		$pathToAdd = IOHelper::normalizePathSeparators($pathToAdd);
@@ -91,7 +98,12 @@ class Zip
 		@ini_set('memory_limit', '256M');
 
 		$zip = static::_getZipInstance($sourceZip);
-		$zip->add($sourceZip, $pathToAdd, $basePath);
+		if ($zip->add($sourceZip, $pathToAdd, $basePath, $pathPrefix))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
