@@ -23,14 +23,14 @@ abstract class BasePlugin extends BaseComponent
 	abstract public function getVersion();
 
 	/**
-	 * Returns the plugin’s developer name.
+	 * Returns the plugin developer's name.
 	 *
 	 * @return string
 	 */
 	abstract public function getDeveloper();
 
 	/**
-	 * Returns the plugin’s developer URL.
+	 * Returns the plugin developer's URL.
 	 *
 	 * @return string
 	 */
