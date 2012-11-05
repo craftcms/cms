@@ -228,15 +228,11 @@ class UserModel extends BaseEntityModel
 	 * @param bool $fallbackOnDefault
 	 * @return string|null
 	 */
-	public function getPhotoUrl($size = 100, $fallbackOnDefault = true)
+	public function getPhotoUrl($size = 100)
 	{
 		if ($this->photo)
 		{
 			return UrlHelper::getResourceUrl('userphotos/'.$this->username.'/'.$size.'/'.$this->photo);
-		}
-		else if ($fallbackOnDefault)
-		{
-			return UrlHelper::getResourceUrl('images/user.gif');
 		}
 	}
 }
