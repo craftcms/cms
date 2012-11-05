@@ -125,12 +125,15 @@ class PclZip implements IZip
 	}
 
 	/**
-	 * @param $sourceZip
-	 * @param $pathToAdd
-	 * @param $basePath
+	 * Will add either a file or a folder to an existing zip file.  If it is a folder, it will add the contents recursively.
+	 *
+	 * @param string $sourceZip     The zip file to be added to.
+	 * @param string $pathToAdd     A file or a folder to add.  If it is a folder, it will recursively add the contents of the folder to the zip.
+	 * @param string $basePath      The root path of the file(s) to be added that will be removed before adding.
+	 * @param string $pathPrefix    A path to be prepended to each file before it is added to the zip.
 	 * @return bool
 	 */
-	public function add($sourceZip, $pathToAdd, $basePath)
+	public function add($sourceZip, $pathToAdd, $basePath, $pathPrefix = null)
 	{
 		$zip = new \PclZip($sourceZip);
 
@@ -147,13 +150,21 @@ class PclZip implements IZip
 
 		foreach ($folderContents as $itemToZip)
 		{
-			if ((IOHelper::fileExists($itemToZip) || IOHelper::isReadable($itemToZip)) && !IOHelper::folderExists($itemToZip))
+			if (IOHelper::isReadable($itemToZip))
 			{
-				$filesToAdd[] = $itemToZip;
+				if ((IOHelper::folderExists($itemToZip) && IOHelper::isFolderEmpty($itemToZip)) || IOHelper::fileExists($itemToZip))
+				{
+					$filesToAdd[] = $itemToZip;
+				}
 			}
 		}
 
-		$result = $zip->add($filesToAdd, PCLZIP_OPT_REMOVE_PATH, $basePath);
+		if (!$pathPrefix)
+		{
+			$pathPrefix = '';
+		}
+
+		$result = $zip->add($filesToAdd, PCLZIP_OPT_ADD_PATH, $pathPrefix, PCLZIP_OPT_REMOVE_PATH, $basePath);
 
 		if ($result == 0)
 		{

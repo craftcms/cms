@@ -1,13 +1,3 @@
-/**
- * Ajax Queue Manager
- * @param workers amount of simultaneous workers
- * @param callback callback to perform when a queue is finished
- * @constructor
- * @package Assets
- *
- * @author Andris Sevcenko <andris@pixelandtonic.com>
- * @copyright Copyright (c) 2012 Pixel & Tonic, Inc
- */
 function AjaxQueueManager (workers, callback, context) {
     this._workers = workers;
     this._queue = [];

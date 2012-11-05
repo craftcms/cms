@@ -7,7 +7,8 @@ namespace Blocks;
 class IOHelper
 {
 	const defaultFolderPermissions = 0754;
-	const writableFilePermissions = 666;
+	const writableFolderPermissions = 0777;
+	const writableFilePermissions = 0666;
 
 	/**
 	 * Tests whether the given file path exists on the file system.
@@ -770,9 +771,6 @@ class IOHelper
 
 		if (static::fileExists($path) || static::folderExists($path))
 		{
-			// '755' normalizes to octal '0755'
-			$permissions = octdec(str_pad($permissions, 4, '0', STR_PAD_LEFT));
-
 			if (chmod($path, $permissions))
 			{
 				return true;
@@ -1279,6 +1277,28 @@ class IOHelper
 				return $kind;
 			}
 		}
+	}
+
+	/**
+	 * Makes sure a folder exists. If it does not - creates one with write permissions
+	 * @param $folderPath
+	 */
+	public static function ensureFolderExists($folderPath)
+	{
+		if (!IOHelper::folderExists($folderPath)) {
+			IOHelper::createFolder($folderPath, self::writableFolderPermissions);
+		}
+	}
+
+	/**
+	 * Clean a filename
+	 * @param $fileName
+	 * @return mixed
+	 */
+	public static function cleanFilename($fileName)
+	{
+		$fileName = ltrim($fileName, '.');
+		return preg_replace('/[^a-z0-9\.\-_]/i', '_', $fileName);
 	}
 }
 

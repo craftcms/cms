@@ -8,6 +8,9 @@ namespace Blocks;
  * @property AssetIndexingService $assetIndexing The assets indexing service
  * @property AssetSourcesService $assetSources The assets sources service
  * @property PathService $path
+ * @property UsersService $users
+ * @property AccountService $account
+ * @property ImageService $image
  */
 class App extends \CWebApplication
 {
@@ -300,6 +303,53 @@ class App extends \CWebApplication
 				{
 					array_splice($segs, 1, 0, 'compressed');
 				}
+			}
+
+			// parse user photo requests
+			if (Blocks::hasPackage(BlocksPackage::Users) && isset($segs[0]) && $segs[0] == 'userphotos')
+			{
+				if (empty($segs[1]) || empty($segs[2]))
+				{
+					throw new HttpException(404);
+				}
+
+				if ($segs[1] == 'temp')
+				{
+					$rootFolderPath = $this->path->getTempPath();
+					$relativeResourcePath = $segs[2];
+				}
+				else
+				{
+					$rootFolderPath = $this->path->getUserPhotoPath();
+					$userUid = IOHelper::cleanFilename($segs[1]);
+					$size = IOHelper::cleanFilename($segs[2]);
+					$file = IOHelper::cleanFilename($segs[3]);
+
+					// if a file doesn't exist, create it from the original
+					if (!IOHelper::fileExists($rootFolderPath . $userUid . '/' . $size . '/' . $file))
+					{
+						$userModel = blx()->account->getUserByUid($userUid);
+						if (!$userModel)
+						{
+							throw new HttpException(404);
+						}
+						else
+						{
+							blx()->users->resizeUserphoto($userModel, $size);
+							if (!IOHelper::fileExists($rootFolderPath . $userUid . '/' . $size . '/' . $file))
+							{
+								throw new HttpException(404);
+							}
+						}
+					}
+
+					$relativeResourcePath = $userUid . '/' . $size . '/' . $file;
+				}
+
+				$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTrigger.'/');
+				$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+				$resourceProcessor->processResourceRequest();
+				exit(1);
 			}
 
 			$rootFolderUrl = null;

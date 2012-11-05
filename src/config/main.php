@@ -104,6 +104,7 @@ $components['entries']['class']           = 'Blocks\EntriesService';
 $components['et']['class']                = 'Blocks\EtService';
 $components['globals']['class']           = 'Blocks\GlobalsService';
 $components['installer']['class']         = 'Blocks\InstallService';
+$components['image']['class']             = 'Blocks\ImageService';
 $components['links']['class']             = 'Blocks\LinksService';
 $components['migrations']['class']        = 'Blocks\MigrationsService';
 $components['pages']['class']             = 'Blocks\PagesService';

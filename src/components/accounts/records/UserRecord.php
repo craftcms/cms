@@ -43,6 +43,7 @@ class UserRecord extends BaseRecord
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
 			'archivedUsername'           => array(AttributeType::String, 'maxLength' => 100),
 			'archivedEmail'              => array(AttributeType::Email),
+			'userphoto'                  => array(AttributeType::String, 'maxLength' => 50)
 		);
 	}
 
