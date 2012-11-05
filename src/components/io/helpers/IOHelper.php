@@ -896,7 +896,7 @@ class IOHelper
 	{
 		$path = static::normalizePathSeparators($path);
 
-		if (static::fileExists($path))
+		if (static::fileExists($path) || static::folderExists($path))
 		{
 			if (static::isWritable($path))
 			{
