@@ -6,6 +6,7 @@ namespace Blocks;
  */
 class UserModel extends BaseEntityModel
 {
+
 	/**
 	 * Use the full name or username as the string representation.
 	 *
@@ -31,6 +32,7 @@ class UserModel extends BaseEntityModel
 	{
 		return array(
 			'id'                           => AttributeType::Number,
+			'uid'                          => AttributeType::String,
 			'username'                     => AttributeType::String,
 			'firstName'                    => AttributeType::String,
 			'lastName'                     => AttributeType::String,
@@ -51,7 +53,7 @@ class UserModel extends BaseEntityModel
 			//'verificationCode'           => AttributeType::String,
 			//'verificationCodeIssuedDate' => AttributeType::DateTime,
 			'passwordResetRequired'        => AttributeType::Bool,
-			'lastPasswordChangeDate'     => AttributeType::DateTime,
+			'lastPasswordChangeDate'       => AttributeType::DateTime,
 			//'archivedUsername'           => AttributeType::String,
 			//'archivedEmail'              => AttributeType::Email,
 
@@ -59,6 +61,7 @@ class UserModel extends BaseEntityModel
 
 			'verificationRequired'         => AttributeType::Bool,
 			'newPassword'                  => AttributeType::String,
+			'userphoto'                    => AttributeType::String
 		);
 	}
 
@@ -218,5 +221,56 @@ class UserModel extends BaseEntityModel
 		}
 
 		return $user;
+	}
+
+	/**
+	 * Return a URL for the users' photo image
+	 * @param $size
+	 * @return string
+	 */
+	public function getUserphotoUrl($size = 100)
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			if (!$this->isUserphotoUploaded())
+			{
+				return static::getDefaultUserphotoUrl($size);
+			}
+
+			return UrlHelper::getResourceUrl('userphotos/' . $this->uid . '/' . $size . '/' . $this->userphoto);
+		}
+
+		return "";
+	}
+
+	/**
+	 * @param int $size
+	 * @return string
+	 */
+	public static function getDefaultUserphotoUrl($size = 100)
+	{
+		// IF adminUploadedCustomDefault
+		// return UrlHelper::getResourceUrl('userphotos/default/' . $size . '/default.jpg');
+		return UrlHelper::getResourceUrl('images/avatar.jpg');
+	}
+
+	/**
+	 * Returns true if user has uploaded a photo
+	 * @return bool
+	 */
+	public function isUserphotoUploaded()
+	{
+		return IOHelper::fileExists($this->getUserphotoOriginalPath());
+	}
+
+	/**
+	 * Get path to the userphoto's original
+	 * @return string|boolean
+	 */
+	public function getUserphotoOriginalPath()
+	{
+		$path = blx()->path->getUserPhotoPath() . $this->uid . '/original/' . $this->userphoto;
+
+		return IOHelper::fileExists($path) ? $path : false;
 	}
 }

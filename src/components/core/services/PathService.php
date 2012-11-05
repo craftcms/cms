@@ -43,14 +43,31 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getUploadPath()
+	{
+		return BLOCKS_BASE_PATH . 'uploads/';
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getTempPath()
 	{
 		$path = $this->getRuntimePath().'temp/';
 
-		if (!IOHelper::folderExists($path))
-		{
-			IOHelper::createFolder($path, 0777);
-		}
+		IOHelper::ensureFolderExists($path);
+
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getUserPhotoPath()
+	{
+		$path = $this->getUploadPath() . 'userphotos/';
+
+		IOHelper::ensureFolderExists($path);
 
 		return $path;
 	}
@@ -62,10 +79,7 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getRuntimePath().'logs/';
 
-		if (!IOHelper::folderExists($path))
-		{
-			IOHelper::createFolder($path, 0777);
-		}
+		IOHelper::ensureFolderExists($path);
 
 		return $path;
 	}
@@ -77,10 +91,7 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getRuntimePath().'state/';
 
-		if (!IOHelper::folderExists($path))
-		{
-			IOHelper::createFolder($path, 0777);
-		}
+		IOHelper::ensureFolderExists($path);
 
 		return $path;
 	}
@@ -235,10 +246,7 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getRuntimePath().'compiled_templates/';
 
-		if (!IOHelper::folderExists($path))
-		{
-			IOHelper::createFolder($path, 0777);
-		}
+		IOHelper::ensureFolderExists($path);
 
 		return $path;
 	}
@@ -250,10 +258,7 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getRuntimePath().'sessions/';
 
-		if (!IOHelper::folderExists($path))
-		{
-			IOHelper::createFolder($path, 0777);
-		}
+		IOHelper::ensureFolderExists($path);
 
 		return $path;
 	}
@@ -265,10 +270,7 @@ class PathService extends BaseApplicationComponent
 	{
 		$path = $this->getRuntimePath().'cache/';
 
-		if (!IOHelper::folderExists($path))
-		{
-			IOHelper::createFolder($path, 0777);
-		}
+		IOHelper::ensureFolderExists($path);
 
 		return $path;
 	}

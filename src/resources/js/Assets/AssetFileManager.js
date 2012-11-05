@@ -78,7 +78,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             //  File Uploads
             // -------------------------------------------Lo
 
-            this.uploader = new Assets.QqUploader.FileUploader({
+            this.uploader = new qqUploader.FileUploader({
                 element:      this.$upload[0],
                 action:       Blocks.actionUrl + 'assets/uploadFile',
                 template:     '<div class="assets-qq-uploader">'

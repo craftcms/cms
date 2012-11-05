@@ -26,6 +26,8 @@
 
  */
 
+var qqUploader;
+
 (function(){
 
 //
@@ -1432,6 +1434,5 @@
         }
     });
 
-    Assets.QqUploader = QqUploader;
-
+    qqUploader = QqUploader;
 })();

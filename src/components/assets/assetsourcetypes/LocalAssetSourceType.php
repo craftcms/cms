@@ -256,7 +256,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			throw new Exception(Blocks::t('Target destination is not writable'));
 		}
 
-		$fileName = $this->_cleanupFilename($fileName);
+		$fileName = IOHelper::cleanFilename($fileName);
 
 		$targetPath = $targetFolder . $fileName;
 		$extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));

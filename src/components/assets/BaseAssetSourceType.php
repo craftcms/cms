@@ -65,17 +65,6 @@ abstract class BaseAssetSourceType extends BaseComponent
 	}
 
 	/**
-	 * Clean up a filename
-	 * @param $fileName
-	 * @return mixed
-	 */
-	protected function _cleanupFilename($fileName)
-	{
-		$fileName = ltrim($fileName, '.');
-		return preg_replace('/[^a-z0-9\.\-_]/i', '_', $fileName);
-	}
-
-	/**
 	 * @param AssetFolderModel $folder
 	 * @return object
 	 * @throws Exception

@@ -14,11 +14,27 @@ class AccountService extends BaseApplicationComponent
 	 * Gets a user by their ID.
 	 *
 	 * @param $id
-	 * @return UserRecord
+	 * @return UserModel
 	 */
 	public function getUserById($id)
 	{
 		$userRecord = UserRecord::model()->findById($id);
+
+		if ($userRecord)
+		{
+			return UserModel::populateModel($userRecord);
+		}
+	}
+
+	/**
+	 * Gets a user by their UID.
+	 *
+	 * @param $uid
+	 * @return UserModel
+	 */
+	public function getUserByUid($uid)
+	{
+		$userRecord = UserRecord::model()->find(array('condition' => 'uid=:uid', 'params' => array(':uid' => $uid)));
 
 		if ($userRecord)
 		{
