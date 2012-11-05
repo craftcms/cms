@@ -124,7 +124,7 @@
 
 			{{ forms.dateField({
 				label: "Post Date"|t,
-				instructions: "When should the entry go live? (Set automatically if left blank)",
+				instructions: "When should the entry go live? (Set automatically if left blank)"|t,
 				id: 'postDate',
 				name: 'postDate',
 				value: (entry is defined and entry.postDate ? entry.postDate.w3cDate : null),
@@ -133,7 +133,7 @@
 
 			{{ forms.dateField({
 				label: "Expiration Date"|t,
-				instructions: "When should the entry expire?",
+				instructions: "When should the entry expire?"|t,
 				id: 'expiryDate',
 				name: 'expiryDate',
 				value: (entry is defined and entry.expiryDate ? entry.expiryDate.w3cDate : null),
@@ -142,10 +142,10 @@
 
 			{{ forms.textField({
 				label: "Tags"|t,
-				instructions: "For multiple tags, separate them with a comma.",
+				instructions: "List multiple tags separated by commas."|t,
 				id: 'tags',
 				name: 'tags',
-				value: (entry is defined ? entry.getTags()|join(', ') : null),
+				value: (entry is defined ? (entry.tags ? entry.tags : entry.getTags|join(', ')) : null),
 				errors: (entry is defined ? entry.getErrors('tags') : null),
 			}) }}
 

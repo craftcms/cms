@@ -342,7 +342,7 @@ class EntriesService extends BaseEntityService
 		$tagsValidate = true;
 		$tagErrors = array();
 
-		if (!empty($entry->tags))
+		if ($entry->tags)
 		{
 			$entryTagRecords = $this->_processTags($entry, $entryRecord);
 			$tagErrors = $this->_validateEntryTagRecords($entryTagRecords);
@@ -604,11 +604,12 @@ class EntriesService extends BaseEntityService
 	}
 
 	/**
-	 * Returns a list of EntryTagModels for a given entry.
+	 * Returns tags by a given entry ID.
+	 *
 	 * @param $entryId
 	 * @return array
 	 */
-	public function getTagsForEntryById($entryId)
+	public function getTagsByEntryId($entryId)
 	{
 		$entryRecord = EntryRecord::model()->findByPk($entryId);
 		$entryTagRecords = $this->_getTagsForEntry($entryRecord);

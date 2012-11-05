@@ -45,20 +45,19 @@ abstract class BaseComponentVariable
 	 *
 	 * @return string
 	 */
-	public function name()
+	public function getName()
 	{
 		return $this->component->getName();
 	}
 
 	/**
-	 * Returns the component's settings.
+	 * Returns the component's settings HTML.
 	 *
 	 * @param array|null $settings
 	 * @return string
 	 */
-	public function settings($settings = null)
+	public function getSettingsHtml()
 	{
-		$this->component->setSettings($settings);
 		return $this->component->getSettingsHtml();
 	}
 

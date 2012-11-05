@@ -72,9 +72,9 @@
 {% for _blockType in blockTypes %}
 	{% set isCurrent = (_blockType.classHandle == blockType.classHandle) %}
 	{% if isCurrent %}
-		{% set settings = blockType.settings %}
+		{% set settings = blockType.settingsHtml %}
 	{% else %}
-		{% set settings = _blockType.settings %}
+		{% set settings = _blockType.settingsHtml %}
 	{% endif %}
 
 	{% if settings %}

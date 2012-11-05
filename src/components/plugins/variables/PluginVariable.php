@@ -27,7 +27,7 @@ class PluginVariable extends BaseComponentVariable
 	}
 
 	/**
-	 * Returns the plugin's developer.
+	 * Returns the plugin developer's name.
 	 *
 	 * @return string
 	 */
@@ -37,7 +37,7 @@ class PluginVariable extends BaseComponentVariable
 	}
 
 	/**
-	 * Returns the plugin's developer's URL.
+	 * Returns the plugin developer's URL.
 	 *
 	 * @return string
 	 */
@@ -45,6 +45,9 @@ class PluginVariable extends BaseComponentVariable
 	{
 		return $this->component->getDeveloperUrl();
 	}
+
+	/**
+	 * Returns
 
 	/**
 	 * Returns whether the plugin is installed.

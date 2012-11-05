@@ -18,6 +18,7 @@ class App extends \CWebApplication
 
 	private $_templatePath;
 	private $_isInstalled;
+	private $_validDbConfig = null;
 
 	/**
 	 * Processes resource requests before anything else has a chance to initialize.
@@ -51,8 +52,8 @@ class App extends \CWebApplication
 		// If this is a resource request, we should respond with the resource ASAP
 		$this->_processResourceRequest();
 
-		// Config validation
-		$this->_validateConfig();
+		// Database config validation
+		$this->_validateDbConfig();
 
 		// We add the DbLogRoute *after* we have validated the config.
 		$this->_addDbLogRoute();
@@ -382,7 +383,9 @@ class App extends \CWebApplication
 
 			// Couldn't find a match, so 404
 			if (!$rootFolderUrl)
+			{
 				throw new HttpException(404);
+			}
 
 			$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
 			$resourceProcessor->processResourceRequest();
@@ -392,13 +395,13 @@ class App extends \CWebApplication
 	}
 
 	/**
-	 * Validates the system config.
+	 * Validates that we can connect to the database with the settings in the db config file.
 	 *
 	 * @access private
 	 * @return mixed
 	 * @throws Exception|HttpException
 	 */
-	private function _validateConfig()
+	private function _validateDbConfig()
 	{
 		$messages = array();
 
@@ -441,6 +444,7 @@ class App extends \CWebApplication
 
 		if (!empty($messages))
 		{
+			$this->_validDbConfig = false;
 			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
 
@@ -460,17 +464,35 @@ class App extends \CWebApplication
 
 		if (!empty($messages))
 		{
+			$this->_validDbConfig = false;
 			throw new Exception(Blocks::t('Database configuration errors: {errors}', array('errors' => implode(PHP_EOL, $messages))));
 		}
+
+		$this->_validDbConfig = true;
 	}
 
 	/**
 	 * Adds the DbLogRoute class to the log router.
 	 */
-	public function _addDbLogRoute()
+	private function _addDbLogRoute()
 	{
 		$route = array('class' => 'Blocks\\DbLogRoute');
 		$this->log->addRoute($route);
+	}
+
+	/**
+	 * Checks whether the database config values are valid or not.
+	 *
+	 * @return mixed
+	 */
+	public function isDbConfigValid()
+	{
+		if ($this->_validDbConfig === null)
+		{
+			$this->_validateDbConfig();
+		}
+
+		return $this->_validDbConfig;
 	}
 
 	/**

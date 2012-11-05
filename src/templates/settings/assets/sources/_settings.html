@@ -66,9 +66,9 @@
 			{% for _sourceType in sourceTypes %}
 				{% set isCurrent = (_sourceType.classHandle == sourceType.classHandle) %}
 				{% if isCurrent %}
-					{% set settings = sourceType.settings %}
+					{% set settings = sourceType.settingsHtml %}
 				{% else %}
-					{% set settings = _sourceType.settings %}
+					{% set settings = _sourceType.settingsHtml %}
 				{% endif %}
 
 				{% if settings %}
@@ -81,7 +81,7 @@
 				{% endif %}
 			{% endfor %}
 		{% else %}
-			{% set settings = sourceType.settings %}
+			{% set settings = sourceType.settingsHtml %}
 			{% set namespace = 'types[' ~ sourceType.classHandle ~ ']' %}
 			{{- settings|ns(namespace)|raw -}}
 		{% endif %}

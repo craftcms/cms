@@ -54,9 +54,9 @@
 		{% for _widgetType in widgetTypes %}
 			{% set isCurrent = (_widgetType.classHandle == widgetType.classHandle) %}
 			{% if isCurrent %}
-				{% set settings = widgetType.settings %}
+				{% set settings = widgetType.settingsHtml %}
 			{% else %}
-				{% set settings = _widgetType.settings %}
+				{% set settings = _widgetType.settingsHtml %}
 			{% endif %}
 
 			{% if settings %}
