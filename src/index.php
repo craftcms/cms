@@ -17,6 +17,7 @@ defined('BLOCKS_BASE_PATH') || define('BLOCKS_BASE_PATH', str_replace('\\', '/',
 defined('BLOCKS_APP_PATH') || define('BLOCKS_APP_PATH', BLOCKS_BASE_PATH.'app/');
 defined('BLOCKS_CONFIG_PATH') || define('BLOCKS_CONFIG_PATH', BLOCKS_BASE_PATH.'config/');
 defined('BLOCKS_PLUGINS_PATH') || define('BLOCKS_PLUGINS_PATH', BLOCKS_BASE_PATH.'plugins/');
+defined('BLOCKS_UPLOADS_PATH') || define('BLOCKS_UPLOADS_PATH', BLOCKS_BASE_PATH.'uploads/');
 defined('BLOCKS_RUNTIME_PATH') || define('BLOCKS_RUNTIME_PATH', BLOCKS_BASE_PATH.'runtime/');
 defined('BLOCKS_SITE_TEMPLATES_PATH') || define('BLOCKS_SITE_TEMPLATES_PATH', BLOCKS_BASE_PATH.'templates/');
 defined('BLOCKS_SITE_TRANSLATIONS_PATH') || define('BLOCKS_SITE_TRANSLATIONS_PATH', BLOCKS_BASE_PATH.'translations/');

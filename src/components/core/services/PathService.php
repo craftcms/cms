@@ -35,6 +35,14 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getUploadsPath()
+	{
+		return BLOCKS_UPLOADS_PATH;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getRuntimePath()
 	{
 		return BLOCKS_RUNTIME_PATH;
@@ -43,32 +51,20 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getUploadPath()
-	{
-		return BLOCKS_BASE_PATH . 'uploads/';
-	}
-
-	/**
-	 * @return string
-	 */
 	public function getTempPath()
 	{
 		$path = $this->getRuntimePath().'temp/';
-
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getUserPhotoPath()
+	public function getUserPhotosPath()
 	{
-		$path = $this->getUploadPath() . 'userphotos/';
-
+		$path = $this->getUploadsPath().'userphotos/';
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 
@@ -78,9 +74,7 @@ class PathService extends BaseApplicationComponent
 	public function getLogPath()
 	{
 		$path = $this->getRuntimePath().'logs/';
-
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 
@@ -90,9 +84,7 @@ class PathService extends BaseApplicationComponent
 	public function getStatePath()
 	{
 		$path = $this->getRuntimePath().'state/';
-
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 
@@ -245,9 +237,7 @@ class PathService extends BaseApplicationComponent
 	public function getCompiledTemplatesPath()
 	{
 		$path = $this->getRuntimePath().'compiled_templates/';
-
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 
@@ -257,9 +247,7 @@ class PathService extends BaseApplicationComponent
 	public function getSessionPath()
 	{
 		$path = $this->getRuntimePath().'sessions/';
-
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 
@@ -269,9 +257,7 @@ class PathService extends BaseApplicationComponent
 	public function getCachePath()
 	{
 		$path = $this->getRuntimePath().'cache/';
-
 		IOHelper::ensureFolderExists($path);
-
 		return $path;
 	}
 }

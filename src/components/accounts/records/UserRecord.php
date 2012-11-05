@@ -21,6 +21,7 @@ class UserRecord extends BaseRecord
 	{
 		return array(
 			'username'                   => array(AttributeType::String, 'maxLength' => 100, 'required' => true, 'unique' => true),
+			'photo'                      => array(AttributeType::String, 'maxLength' => 50),
 			'firstName'                  => array(AttributeType::String, 'maxLength' => 100),
 			'lastName'                   => array(AttributeType::String, 'maxLength' => 100),
 			'email'                      => array(AttributeType::Email, 'required' => true, 'unique' => true),
@@ -43,7 +44,6 @@ class UserRecord extends BaseRecord
 			'lastPasswordChangeDate'     => array(AttributeType::DateTime),
 			'archivedUsername'           => array(AttributeType::String, 'maxLength' => 100),
 			'archivedEmail'              => array(AttributeType::Email),
-			'userphoto'                  => array(AttributeType::String, 'maxLength' => 50)
 		);
 	}
 

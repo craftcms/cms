@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class UserModel extends BaseEntityModel
 {
-
 	/**
 	 * Use the full name or username as the string representation.
 	 *
@@ -32,8 +31,8 @@ class UserModel extends BaseEntityModel
 	{
 		return array(
 			'id'                           => AttributeType::Number,
-			'uid'                          => AttributeType::String,
 			'username'                     => AttributeType::String,
+			'photo'                        => AttributeType::String,
 			'firstName'                    => AttributeType::String,
 			'lastName'                     => AttributeType::String,
 			'email'                        => AttributeType::Email,
@@ -61,7 +60,6 @@ class UserModel extends BaseEntityModel
 
 			'verificationRequired'         => AttributeType::Bool,
 			'newPassword'                  => AttributeType::String,
-			'userphoto'                    => AttributeType::String
 		);
 	}
 
@@ -224,53 +222,21 @@ class UserModel extends BaseEntityModel
 	}
 
 	/**
-	 * Return a URL for the users' photo image
-	 * @param $size
-	 * @return string
-	 */
-	public function getUserphotoUrl($size = 100)
-	{
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			if (!$this->isUserphotoUploaded())
-			{
-				return static::getDefaultUserphotoUrl($size);
-			}
-
-			return UrlHelper::getResourceUrl('userphotos/' . $this->uid . '/' . $size . '/' . $this->userphoto);
-		}
-
-		return "";
-	}
-
-	/**
+	 * Returns the URL to the user's photo.
+	 *
 	 * @param int $size
-	 * @return string
+	 * @param bool $fallbackOnDefault
+	 * @return string|null
 	 */
-	public static function getDefaultUserphotoUrl($size = 100)
+	public function getPhotoUrl($size = 100, $fallbackOnDefault = true)
 	{
-		// IF adminUploadedCustomDefault
-		// return UrlHelper::getResourceUrl('userphotos/default/' . $size . '/default.jpg');
-		return UrlHelper::getResourceUrl('images/avatar.jpg');
-	}
-
-	/**
-	 * Returns true if user has uploaded a photo
-	 * @return bool
-	 */
-	public function isUserphotoUploaded()
-	{
-		return IOHelper::fileExists($this->getUserphotoOriginalPath());
-	}
-
-	/**
-	 * Get path to the userphoto's original
-	 * @return string|boolean
-	 */
-	public function getUserphotoOriginalPath()
-	{
-		$path = blx()->path->getUserPhotoPath() . $this->uid . '/original/' . $this->userphoto;
-
-		return IOHelper::fileExists($path) ? $path : false;
+		if ($this->photo)
+		{
+			return UrlHelper::getResourceUrl('userphotos/'.$this->username.'/'.$size.'/'.$this->photo);
+		}
+		else if ($fallbackOnDefault)
+		{
+			return UrlHelper::getResourceUrl('images/user.gif');
+		}
 	}
 }

@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * Service for image operations
  */
-class ImageService extends BaseApplicationComponent
+class ImagesService extends BaseApplicationComponent
 {
 
 	/**

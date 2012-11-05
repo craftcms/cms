@@ -10,7 +10,7 @@ namespace Blocks;
  * @property PathService $path
  * @property UsersService $users
  * @property AccountService $account
- * @property ImageService $image
+ * @property ImagesService $images
  */
 class App extends \CWebApplication
 {
@@ -296,60 +296,76 @@ class App extends \CWebApplication
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
 
-			// If this is a system JS resource request, prepend either 'compressed/' or 'uncompressed/'
-			if (isset($segs[0]) && $segs[0] == 'js')
+			// Special resource routing
+			if (isset($segs[0]))
 			{
-				if (blx()->config->useCompressedJs)
+				switch($segs[0])
 				{
-					array_splice($segs, 1, 0, 'compressed');
-				}
-			}
-
-			// parse user photo requests
-			if (Blocks::hasPackage(BlocksPackage::Users) && isset($segs[0]) && $segs[0] == 'userphotos')
-			{
-				if (empty($segs[1]) || empty($segs[2]))
-				{
-					throw new HttpException(404);
-				}
-
-				if ($segs[1] == 'temp')
-				{
-					$rootFolderPath = $this->path->getTempPath();
-					$relativeResourcePath = $segs[2];
-				}
-				else
-				{
-					$rootFolderPath = $this->path->getUserPhotoPath();
-					$userUid = IOHelper::cleanFilename($segs[1]);
-					$size = IOHelper::cleanFilename($segs[2]);
-					$file = IOHelper::cleanFilename($segs[3]);
-
-					// if a file doesn't exist, create it from the original
-					if (!IOHelper::fileExists($rootFolderPath . $userUid . '/' . $size . '/' . $file))
+					case 'js':
 					{
-						$userModel = blx()->account->getUserByUid($userUid);
-						if (!$userModel)
+						// Route to js/compressed/ if useCompressedJs is enabled
+						if (blx()->config->useCompressedJs)
 						{
-							throw new HttpException(404);
+							array_splice($segs, 1, 0, 'compressed');
 						}
-						else
+						break;
+					}
+
+					case 'userphotos':
+					{
+						if (isset($segs[1]) && $segs[1] == 'temp')
 						{
-							blx()->users->resizeUserphoto($userModel, $size);
-							if (!IOHelper::fileExists($rootFolderPath . $userUid . '/' . $size . '/' . $file))
+							// URL format: /resources/userphotos/temp/?
+
+							if (!isset($segs[2]))
 							{
 								throw new HttpException(404);
 							}
+
+							$rootFolderPath = $this->path->getTempPath().'userphotos/';
+							$relativeResourcePath = $segs[2];
 						}
+						else
+						{
+							// URL format: /resources/userphotos/username/size/filename
+
+							if (!isset($segs[3]))
+							{
+								throw new HttpException(404);
+							}
+
+							$username = IOHelper::cleanFilename($segs[1]);
+							$size = IOHelper::cleanFilename($segs[2]);
+							$filename = IOHelper::cleanFilename($segs[3]);
+
+							$rootFolderPath = $this->path->getUserPhotosPath();
+							$relativeResourcePath = $username.'/'.$size.'/'.$filename;
+							$fullPath = $rootFolderPath.$relativeResourcePath;
+
+							// If the photo doesn't exist at this size, create it.
+							if (!IOHelper::fileExists($fullPath))
+							{
+								$originalPath = $rootFolderPath.$username.'/'.'original/'.$filename;
+
+								if (!IOHelper::fileExists($originalPath))
+								{
+									throw new HttpException(404);
+								}
+
+								// temp:
+								IOHelper::copyFile($originalPath, $fullPath);
+								//$image = blx()->images->getResourceFromPath($originalPath);
+								//$image->resizeTo($size);
+								//$image->saveAs($fullPath);
+							}
+						}
+
+						$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTrigger.'/');
+						$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
+						$resourceProcessor->processResourceRequest();
+						exit(1);
 					}
-
-					$relativeResourcePath = $userUid . '/' . $size . '/' . $file;
 				}
-
-				$rootFolderUrl = UrlHelper::getUrl($this->config->resourceTrigger.'/');
-				$resourceProcessor = new ResourceProcessor($rootFolderPath, $rootFolderUrl, $relativeResourcePath);
-				$resourceProcessor->processResourceRequest();
-				exit(1);
 			}
 
 			$rootFolderUrl = null;

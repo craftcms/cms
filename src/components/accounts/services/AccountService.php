@@ -27,22 +27,6 @@ class AccountService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets a user by their UID.
-	 *
-	 * @param $uid
-	 * @return UserModel
-	 */
-	public function getUserByUid($uid)
-	{
-		$userRecord = UserRecord::model()->find(array('condition' => 'uid=:uid', 'params' => array(':uid' => $uid)));
-
-		if ($userRecord)
-		{
-			return UserModel::populateModel($userRecord);
-		}
-	}
-
-	/**
 	 * Gets a user by their username or email.
 	 *
 	 * @param string $usernameOrEmail
@@ -143,9 +127,16 @@ class AccountService extends BaseApplicationComponent
 	 */
 	public function saveUser(UserModel $user)
 	{
-		if ($user->id)
+		if (($isNewUser = !$user->id) == false)
 		{
 			$userRecord = $this->_getUserRecordById($user->id);
+
+			if (!$userRecord)
+			{
+				throw new Exception(Blocks::t('No user exists with the ID “{id}”', array('id' => $user->id)));
+			}
+
+			$oldUsername = $userRecord->username;
 		}
 		else
 		{
@@ -183,6 +174,27 @@ class AccountService extends BaseApplicationComponent
 				blx()->email->sendEmailByKey($user, 'verify_email', array(
 					'link' => $this->_getVerifyAccountUrl($userRecord)
 				));
+			}
+
+			if (!$isNewUser)
+			{
+				// Has the username changed?
+				if ($user->username != $oldUsername)
+				{
+					// Rename the user's photo directory
+					$oldFolder = blx()->path->getUserPhotosPath().$oldUsername;
+					$newFolder = blx()->path->getUserPhotosPath().$user->username;
+
+					if (IOHelper::folderExists($newFolder))
+					{
+						IOHelper::deleteFolder($newFolder);
+					}
+
+					if (IOHelper::folderExists($oldFolder))
+					{
+						IOHelper::rename($oldFolder, $newFolder);
+					}
+				}
 			}
 
 			return true;
@@ -484,6 +496,13 @@ class AccountService extends BaseApplicationComponent
 		$userRecord->archivedEmail = $user->email;
 		$userRecord->username = '';
 		$userRecord->email = '';
+
+		// Delete their photo folder
+		$photoFolder = blx()->path->getUserPhotosPath().$userRecord->archivedUsername;
+		if (IOHelper::folderExists($photoFolder))
+		{
+			IOHelper::deleteFolder($photoFolder);
+		}
 
 		return $userRecord->save(false);
 	}
