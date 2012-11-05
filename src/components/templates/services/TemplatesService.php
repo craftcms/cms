@@ -356,19 +356,15 @@ class TemplatesService extends BaseApplicationComponent
 
 			if ($pluginHandle && ($plugin = blx()->plugins->getPlugin($pluginHandle)) !== null)
 			{
-				// Don't attempt to resolve if the plugin is not installed or disabled.
-				if ($plugin->isInstalled() && $plugin->isEnabled())
+				// Get the template path for the plugin.
+				$basePath = blx()->path->getPluginsPath().strtolower($plugin->getClassHandle()).'/templates/';
+
+				// Chop off the plugin segment, since that's already covered by $basePath
+				$tempName = implode('/', $parts);
+
+				if (($path = $this->_findTemplate($basePath.$tempName)) !== null)
 				{
-					// Get the template path for the plugin.
-					$basePath = blx()->path->getPluginsPath().strtolower($plugin->getClassHandle()).'/templates/';
-
-					// Chop off the plugin segment, since that's already covered by $basePath
-					$tempName = implode('/', $parts);
-
-					if (($path = $this->_findTemplate($basePath.$tempName)) !== null)
-					{
-						return $this->_templatePaths[$name] = $path;
-					}
+					return $this->_templatePaths[$name] = $path;
 				}
 			}
 		}

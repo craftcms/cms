@@ -28,9 +28,9 @@ class PluginsVariable
 	 *
 	 * @return array
 	 */
-	public function getPlugins()
+	public function getPlugins($enabledOnly = true)
 	{
-		$plugins = blx()->plugins->getPlugins();
+		$plugins = blx()->plugins->getPlugins($enabledOnly);
 		return PluginVariable::populateVariables($plugins);
 	}
 }

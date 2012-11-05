@@ -254,7 +254,7 @@ class UpdatesService extends BaseApplicationComponent
 		$updateModel->blocks->localBuild = Blocks::getBuild();
 		$updateModel->blocks->localVersion = Blocks::getVersion();
 
-		$plugins = blx()->plugins->getEnabledPlugins();
+		$plugins = blx()->plugins->getPlugins();
 
 		$pluginUpdateModels = array();
 

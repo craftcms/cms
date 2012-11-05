@@ -6,6 +6,9 @@ namespace Blocks;
  */
 abstract class BasePlugin extends BaseComponent
 {
+	public $isInstalled = false;
+	public $isEnabled = false;
+
 	/**
 	 * The type of component this is.
 	 *
@@ -47,33 +50,16 @@ abstract class BasePlugin extends BaseComponent
 	}
 
 	/**
-	 * Returns whether the plugin is installed.
-	 *
-	 * @return bool
+	 * Perform any actions after the plugin has been installed.
 	 */
-	public function isInstalled()
+	public function onAfterInstall()
 	{
-		if (isset($this->model))
-		{
-			return true;
-		}
-
-		$class = $this->getClassHandle();
-		$installed = blx()->plugins->isPluginInstalled($class);
-		return $installed;
 	}
 
 	/**
-	 * Return if a plugin is enabled or not.
-	 * @return bool
+	 * Perform any actions before the plugin gets uninstalled.
 	 */
-	public function isEnabled()
+	public function onBeforeUninstall()
 	{
-		if (!isset($this->model))
-		{
-			return false;
-		}
-
-		return $this->model->enabled == 1 ? true : false;
 	}
 }

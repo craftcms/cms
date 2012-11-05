@@ -23,7 +23,7 @@ class PluginRecord extends BaseRecord
 			'class'    => array(AttributeType::ClassName, 'required' => true),
 			'version'  => array(AttributeType::Version, 'required' => true),
 			'enabled'  => AttributeType::Bool,
-			'settings' => array(AttributeType::String, 'column' => ColumnType::Text),
+			'settings' => AttributeType::Mixed,
 		);
 	}
 }

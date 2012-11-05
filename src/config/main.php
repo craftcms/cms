@@ -34,8 +34,6 @@ $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 
 
 $cpRoutes['update\/(?P<handle>[^\/]*)']                                       = 'update';
 
-$cpRoutes['plugins\/(?P<pluginClass>[A-Za-z]\w*)']                            = 'plugins/_settings';
-
 $cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
 $cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
 $cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
@@ -48,6 +46,7 @@ $cpRoutes['settings\/pages\/(?P<pageId>\d+)']                                 = 
 $cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks']                         = 'settings/pages/_edit/blocks/index';
 $cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/new']                    = 'settings/pages/_edit/blocks/settings';
 $cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']       = 'settings/pages/_edit/blocks/settings';
+$cpRoutes['settings\/plugins\/(?P<pluginClass>'.$handle.')']                  = 'settings/plugins/_settings';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 

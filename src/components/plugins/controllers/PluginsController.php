@@ -7,7 +7,7 @@ namespace Blocks;
 class PluginsController extends BaseController
 {
 	/**
-	 * Installs a plugin
+	 * Installs a plugin.
 	 */
 	public function actionInstallPlugin()
 	{
@@ -27,7 +27,7 @@ class PluginsController extends BaseController
 	}
 
 	/**
-	 * Uninstalls a plugin
+	 * Uninstalls a plugin.
 	 */
 	public function actionUninstallPlugin()
 	{
@@ -47,7 +47,7 @@ class PluginsController extends BaseController
 	}
 
 	/**
-	 * Enables a plugin
+	 * Enables a plugin.
 	 */
 	public function actionEnablePlugin()
 	{
@@ -67,7 +67,7 @@ class PluginsController extends BaseController
 	}
 
 	/**
-	 * Disables a plugin
+	 * Disables a plugin.
 	 */
 	public function actionDisablePlugin()
 	{
@@ -84,5 +84,38 @@ class PluginsController extends BaseController
 		}
 
 		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Saves a plugin's settings.
+	 */
+	public function actionSavePluginSettings()
+	{
+		$this->requirePostRequest();
+		$pluginClass = blx()->request->getRequiredPost('pluginClass');
+		$settings = blx()->request->getPost('settings');
+
+		$plugin = blx()->plugins->getPlugin($pluginClass);
+		if (!$plugin)
+		{
+			throw new Exception(Blocks::t('No plugin exists with the class “{class}”', array('class' => $pluginClass)));
+		}
+
+		if (blx()->plugins->savePluginSettings($plugin, $settings))
+		{
+			blx()->user->setNotice(Blocks::t('Plugin settings saved.'));
+
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			$plugin->setSettings($settings);
+
+			blx()->user->setError(Blocks::t(Blocks::t('Couldn’t save plugin settings.')));
+
+			$this->renderRequestedTemplate(array(
+				'plugin' => $plugin
+			));
+		}
 	}
 }

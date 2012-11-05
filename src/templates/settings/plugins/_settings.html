@@ -1,0 +1,32 @@
+{% if plugin is not defined %}
+	{% set plugin = blx.plugins.getPlugin(pluginClass) %}
+	{% if not plugin %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% extends "_layouts/cp" %}
+{% set title = plugin.name %}
+{% set centered = true %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/plugins') }}" class="backbtn">{{ "Plugins"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="">
+		<input type="hidden" name="action" value="plugins/savePluginSettings">
+		<input type="hidden" name="pluginClass" value="{{ plugin.classHandle }}">
+		<input type="hidden" name="redirect" value="settings/plugins">
+
+		{{ plugin.settingsHtml|ns('settings')|raw }}
+
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}

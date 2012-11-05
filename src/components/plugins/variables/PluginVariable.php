@@ -56,7 +56,7 @@ class PluginVariable extends BaseComponentVariable
 	 */
 	public function isInstalled()
 	{
-		return $this->component->isInstalled();
+		return $this->component->isInstalled;
 	}
 
 	/**
@@ -66,6 +66,6 @@ class PluginVariable extends BaseComponentVariable
 	 */
 	public function isEnabled()
 	{
-		return $this->component->isEnabled();
+		return $this->component->isEnabled;
 	}
 }

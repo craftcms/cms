@@ -23,7 +23,7 @@ class CpVariable
 		}
 
 		// Add any Plugin nav items
-		$plugins = blx()->plugins->getEnabledPlugins();
+		$plugins = blx()->plugins->getPlugins();
 
 		foreach ($plugins as $plugin)
 		{

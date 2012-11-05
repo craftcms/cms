@@ -10,7 +10,7 @@
 {% endset %}
 
 
-{% set plugins = blx.plugins.getPlugins %}
+{% set plugins = blx.plugins.getPlugins(false) %}
 
 
 {% set content %}
@@ -24,8 +24,15 @@
 			</thead>
 			<tbody>
 				{% for plugin in plugins %}
-					<tr data-name="{{ plugin.name|t }}">
-						<th>{{ plugin.name }} <span class="light">{{ plugin.version }}</span></th>
+					<tr data-name="{{ plugin.name }}">
+						<th>
+							{% if plugin.isEnabled and plugin.settingsHtml %}
+								<a href="{{ url('settings/plugins/' ~ plugin.classHandle|lower) }}">{{ plugin.name }}</a>
+							{% else %}
+								{{ plugin.name }}
+							{% endif %}
+							<span class="light">{{ plugin.version }}</span>
+						</th>
 						<td><a{% if plugin.developerUrl %} href="{{ plugin.developerUrl }}"{% endif %}>{{ plugin.developer }}</a></td>
 						<td>
 							<form action="" method="post">

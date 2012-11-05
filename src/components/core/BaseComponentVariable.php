@@ -53,7 +53,6 @@ abstract class BaseComponentVariable
 	/**
 	 * Returns the component's settings HTML.
 	 *
-	 * @param array|null $settings
 	 * @return string
 	 */
 	public function getSettingsHtml()
