@@ -509,7 +509,7 @@ class ErrorHandler extends \CErrorHandler
 		}
 		else
 		{
-			if (blx()->request->getMode() == HttpRequestMode::Site)
+			if (blx()->request->getType() == HttpRequestType::Site)
 			{
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 			}

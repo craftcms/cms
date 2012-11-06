@@ -30,7 +30,7 @@ $blocksConfig['actionTrigger'] = 'actions';
 $blocksConfig['logoutTriggerWord'] = 'logout';
 
 /**
- * Number of seconds to cache stuff in runtime/.
+ * The amount of time to cache stuff in runtime/.
  *
  * Set to '0' to cache things indefinitely.
  *
@@ -39,7 +39,7 @@ $blocksConfig['logoutTriggerWord'] = 'logout';
 $blocksConfig['cacheDuration'] = 'P1D';
 
 /**
- * Number of seconds to cache stuff in runtime/ when in dev mode.
+ * The amount of time to cache stuff in runtime/ when in dev mode.
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */

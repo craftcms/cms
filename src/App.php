@@ -65,13 +65,13 @@ class App extends \CWebApplication
 		if ($this->isDbUpdateNeeded())
 		{
 			// Let's let all CP requests through.
-			if ($this->request->getMode() == HttpRequestMode::CP)
+			if ($this->request->getType() == HttpRequestType::CP)
 			{
 				$this->runController('update/manualUpdate');
 				$this->end();
 			}
 			// We'll also let action requests to UpdateController through as well.
-			else if ($this->request->getMode() == HttpRequestMode::Action && (($actionPath = $this->request->getActionPath()) !== null) && isset($actionPath[0]) && $actionPath[0] == 'update')
+			else if ($this->request->getType() == HttpRequestType::Action && (($actionPath = $this->request->getActionPath()) !== null) && isset($actionPath[0]) && $actionPath[0] == 'update')
 			{
 				$controller = $actionPath[0];
 				$action = isset($actionPath[1]) ? $actionPath[1] : 'index';
@@ -85,7 +85,7 @@ class App extends \CWebApplication
 		}
 
 		// If it's not a CP request OR the system is on, let's continue processing.
-		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->getMode() == HttpRequestMode::CP || ($this->request->getMode() == HttpRequestMode::Action && BLOCKS_CP_REQUEST))))
+		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->getType() == HttpRequestType::CP || ($this->request->getType() == HttpRequestType::Action && BLOCKS_CP_REQUEST))))
 		{
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
@@ -112,13 +112,13 @@ class App extends \CWebApplication
 	private function _processInstallRequest()
 	{
 		// Are they requesting an installer template/action specifically?
-		if ($this->request->getMode() == HttpRequestMode::CP && $this->request->getSegment(1) === 'install')
+		if ($this->request->getType() == HttpRequestType::CP && $this->request->getSegment(1) === 'install')
 		{
 			$action = $this->request->getSegment(2, 'index');
 			$this->runController('install/'.$action);
 			$this->end();
 		}
-		else if (BLOCKS_CP_REQUEST && $this->request->getMode() == HttpRequestMode::Action)
+		else if (BLOCKS_CP_REQUEST && $this->request->getType() == HttpRequestType::Action)
 		{
 			$actionPath = $this->request->getActionPath();
 			if (isset($actionPath[0]) && $actionPath[0] == 'install')
@@ -131,7 +131,7 @@ class App extends \CWebApplication
 		else if (!$this->isInstalled())
 		{
 			// Give it to them if accessing the CP
-			if ($this->request->getMode() == HttpRequestMode::CP)
+			if ($this->request->getType() == HttpRequestType::CP)
 			{
 				$url = UrlHelper::getUrl('install');
 				$this->request->redirect($url);
@@ -193,7 +193,7 @@ class App extends \CWebApplication
 	 */
 	private function _processActionRequest()
 	{
-		if ($this->request->getMode() == HttpRequestMode::Action)
+		if ($this->request->getType() == HttpRequestType::Action)
 		{
 			$actionPath = $this->request->getActionPath();
 
@@ -291,7 +291,7 @@ class App extends \CWebApplication
 	 */
 	private function _processResourceRequest()
 	{
-		if ($this->request->getMode() == HttpRequestMode::Resource)
+		if ($this->request->getType() == HttpRequestType::Resource)
 		{
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);

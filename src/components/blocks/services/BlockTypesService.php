@@ -29,7 +29,6 @@ class BlockTypesService extends BaseApplicationComponent
 
 	/**
 	 * Populates a block type by a block model.
-	 * Also
 	 *
 	 * @param BaseBlockModel $block
 	 * @param BaseModel|null $entity

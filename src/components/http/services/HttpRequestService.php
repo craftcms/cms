@@ -11,7 +11,7 @@ class HttpRequestService extends \CHttpRequest
 	private $_uri;
 	private $_queryStringPath;
 	private $_segments;
-	private $_mode;
+	private $_type;
 	private $_isMobileBrowser;
 	private $_mimeType;
 	private $_browserLanguages;
@@ -61,7 +61,7 @@ class HttpRequestService extends \CHttpRequest
 		if (!$this->_actionPath)
 		{
 			// Ugly.
-			$this->getMode();
+			$this->getType();
 		}
 
 		return $this->_actionPath;
@@ -189,11 +189,11 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @return string The app mode (Action, Resource, CP, or Site)
+	 * @return string The request type (Action, Resource, CP, or Site)
 	 */
-	public function getMode()
+	public function getType()
 	{
-		if (!isset($this->_mode))
+		if (!isset($this->_type))
 		{
 			$resourceTrigger = blx()->config->resourceTrigger;
 			$actionTrigger = blx()->config->actionTrigger;
@@ -204,13 +204,13 @@ class HttpRequestService extends \CHttpRequest
 			// If the first path segment is the resource trigger word, it's a resource request.
 			if ($firstSegment === $resourceTrigger)
 			{
-				$this->_mode = HttpRequestMode::Resource;
+				$this->_type = HttpRequestType::Resource;
 			}
 
 			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request.
 			else if ($firstSegment === $actionTrigger || $firstSegment === $logoutTriggerWord)
 			{
-				$this->_mode = HttpRequestMode::Action;
+				$this->_type = HttpRequestType::Action;
 
 				// If it's an action request, we set the actionPath for the given request.
 
@@ -229,24 +229,24 @@ class HttpRequestService extends \CHttpRequest
 			// Check post for action request.  If so, it's an action request and set action path.
 			else if (($action = $this->getParam('action')) !== null)
 			{
-				$this->_mode = HttpRequestMode::Action;
+				$this->_type = HttpRequestType::Action;
 				$this->_actionPath = array_filter(explode('/', $action));
 			}
 
 			// If we made it here and BLOCKS_CP_REQUEST is set, it's a CP request.
 			else if (BLOCKS_CP_REQUEST === true)
 			{
-				$this->_mode = HttpRequestMode::CP;
+				$this->_type = HttpRequestType::CP;
 			}
 
 			// If we made it here, it's a front-end site request.
 			else
 			{
-				$this->_mode = HttpRequestMode::Site;
+				$this->_type = HttpRequestType::Site;
 			}
 		}
 
-		return $this->_mode;
+		return $this->_type;
 	}
 
 	/**

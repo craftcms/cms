@@ -147,17 +147,17 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getCommandsPath()
+	public function getConsolePath()
 	{
-		return $this->getConsolePath().'commands/';
+		return $this->getAppPath().'console/';
 	}
 
 	/**
 	 * @return string
 	 */
-	public function getConsolePath()
+	public function getCommandsPath()
 	{
-		return $this->getAppPath().'console/';
+		return $this->getConsolePath().'commands/';
 	}
 
 	/**
