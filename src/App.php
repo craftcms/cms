@@ -295,8 +295,9 @@ class App extends \CWebApplication
 		{
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);
+			$path = implode('/', $segs);
 
-			blx()->resources->sendResource($segs);
+			blx()->resources->sendResource($path);
 		}
 	}
 

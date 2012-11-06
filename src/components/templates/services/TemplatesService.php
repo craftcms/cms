@@ -382,29 +382,14 @@ class TemplatesService extends BaseApplicationComponent
 	 */
 	private function _validateTemplateName($name)
 	{
-		if (false !== strpos($name, "\0"))
+		if (strpos($name, "\0") !== false)
 		{
 			throw new \Twig_Error_Loader(Blocks::t('A template name cannot contain NUL bytes.'));
 		}
 
-		$parts = explode('/', $name);
-		$level = 0;
-
-		foreach ($parts as $part)
+		if (PathHelper::ensurePathIsContained($name) === false)
 		{
-			if ($part === '..')
-			{
-				$level--;
-			}
-			elseif ($part !== '.')
-			{
-				$level++;
-			}
-
-			if ($level < 0)
-			{
-				throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
-			}
+			throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
 		}
 	}
 

@@ -9,20 +9,12 @@ class ResourcesService extends BaseApplicationComponent
 	/**
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
-	 * @param string|array $path
+	 * @param string $path
 	 * @return string|false
 	 */
 	public function getResourcePath($path)
 	{
-		if (is_array($path))
-		{
-			$segs = $path;
-			$path = implode('/', $segs);
-		}
-		else
-		{
-			$segs = explode('/', $path);
-		}
+		$segs = explode('/', $path);
 
 		// Special resource routing
 		if (isset($segs[0]))
@@ -58,9 +50,9 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 
-						$username = IOHelper::cleanFilename($segs[1]);
-						$size     = IOHelper::cleanFilename($segs[2]);
-						$filename = IOHelper::cleanFilename($segs[3]);
+						$username = $segs[1];
+						$size     = $segs[2];
+						$filename = $segs[3];
 
 						$userPhotosPath = blx()->path->getUserPhotosPath().$username.'/';
 						$sizedPhotoFolder = $userPhotosPath.$size.'/';
@@ -120,6 +112,11 @@ class ResourcesService extends BaseApplicationComponent
 	 */
 	public function sendResource($path)
 	{
+		if (PathHelper::ensurePathIsContained($path) === false)
+		{
+			throw new HttpException(403);
+		}
+
 		$path = $this->getResourcePath($path);
 
 		if ($path === false || !IOHelper::fileExists($path))
