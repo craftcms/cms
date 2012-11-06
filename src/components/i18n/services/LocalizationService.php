@@ -77,15 +77,15 @@ class LocalizationService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $languageCode
+	 * @param $localeId
 	 *
 	 * @return bool|\CLocale
 	 */
-	public function getLanguageData($languageCode)
+	public function getLanguageData($localeId)
 	{
-		if (Locale::exists($languageCode))
+		if (Locale::exists($localeId))
 		{
-			return Locale::getInstance($languageCode);
+			return Locale::getInstance($localeId);
 		}
 
 		return false;

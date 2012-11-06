@@ -86,7 +86,7 @@ class TemplatesService extends BaseApplicationComponent
 	 * @param array $variables The variables that should be available to the template
 	 * @return string The rendered template
 	 */
-	public function renderString($cacheKey, $template, $variables)
+	public function renderString($cacheKey, $template, $variables = array())
 	{
 		$stringTemplate = new StringTemplate($cacheKey, $template);
 		return $this->render($stringTemplate, $variables);
@@ -457,19 +457,19 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Renames input names so they belong to a namespace.
 	 *
-	 * @param string $template The template with the inputs
+	 * @param string $html The template with the inputs
 	 * @param string $namespace The namespace to make inputs belong to
 	 * @return string The template with namespaced inputs
 	 */
-	public function namespaceInputs($template, $namespace)
+	public function namespaceInputs($html, $namespace)
 	{
 		// name= attributes
-		$template = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $template);
+		$html = preg_replace('/(name=(\'|"))([^\'"\[\]]+)([^\'"]*)\2/i', '$1'.$namespace.'[$3]$4$2', $html);
 
 		// id= and for= attributes
 		$idNamespace = rtrim(preg_replace('/[\[\]]+/', '-', $namespace), '-');
-		$template = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $template);
+		$html = preg_replace('/((id=|for=|data\-target=|data-target-prefix=)(\'|"))([^\'"]+)\3/', '$1'.$idNamespace.'-$4$3', $html);
 
-		return $template;
+		return $html;
 	}
 }
