@@ -1281,11 +1281,14 @@ class IOHelper
 
 	/**
 	 * Makes sure a folder exists. If it does not - creates one with write permissions
+	 *
 	 * @param $folderPath
+	 * @return void
 	 */
 	public static function ensureFolderExists($folderPath)
 	{
-		if (!IOHelper::folderExists($folderPath)) {
+		if (!IOHelper::folderExists($folderPath))
+		{
 			IOHelper::createFolder($folderPath, self::writableFolderPermissions);
 		}
 	}
