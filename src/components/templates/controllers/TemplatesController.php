@@ -44,8 +44,14 @@ class TemplatesController extends BaseController
 			$templateName = '_offline';
 		}
 
-		blx()->setViewPath(blx()->path->getOfflineTemplatePath());
+		// Temporarily swap the templates path
+		$originalTemplatesPath = blx()->path->getTemplatesPath();
+		blx()->path->setTemplatesPath(blx()->path->getOfflineTemplatePath());
+
 		$this->renderTemplate($templateName, array(), false);
+
+			// Set it back to the original
+		blx()->path->setTemplatesPath($originalTemplatesPath);
 		blx()->setViewPath(null);
 	}
 }
