@@ -3,17 +3,12 @@
 
 
 {% set header %}
-	<ul class="tabs">
-		<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>
-		<li><a{% if tab == 'pages' %} class="active"{% endif %} href="{{ url('content/pages') }}" data-icon="c">{{ "Pages"|t }}</a></li>
-		{% if totalGlobals %}<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{% endif %}
-	</ul>
+	<h1>{{ "Content"|t }}</h1>
 {% endset %}
 
 
-
-{# set tabs }
+{% set tabs %}
 	<li><a{% if tab == 'entries' %} class="active"{% endif %} href="{{ url('content') }}" data-icon="C">{{ "Entries"|t }}</a></li>
 	<li><a{% if tab == 'pages' %} class="active"{% endif %} href="{{ url('content/pages') }}" data-icon="c">{{ "Pages"|t }}</a></li>
-	{ if totalGlobals }<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{ endif }
-{ endset #}
+	{% if totalGlobals %}<li><a{% if tab == 'globals' %} class="active"{% endif %} href="{{ url('content/globals') }}" data-icon="G">{{ "Globals"|t }}</a></li>{% endif %}
+{% endset %}
