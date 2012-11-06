@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class HttpRequestMode
+class HttpRequestType
 {
 	const CP = 'cp';
 	const Site = 'site';

@@ -482,12 +482,12 @@ class AccountService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes a user.
+	 * Archives a user.
 	 *
 	 * @param UserModel $user
 	 * @return bool
 	 */
-	public function deleteUser(UserModel $user)
+	public function archiveUser(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
 

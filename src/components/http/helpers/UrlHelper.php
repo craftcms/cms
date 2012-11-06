@@ -25,7 +25,7 @@ class UrlHelper
 		$pathVar = blx()->urlManager->routeVar;
 
 		$path = static::_normalizePath(trim($path, '/'), $params);
-		if (blx()->request->getMode() == HttpRequestMode::Site)
+		if (blx()->request->getType() == HttpRequestType::Site)
 		{
 			$path = Blocks::getSiteUrl().implode('/', $path);
 		}

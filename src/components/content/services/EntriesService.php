@@ -300,7 +300,7 @@ class EntriesService extends BaseEntityService
 		// Has the slug changed?
 		if ($entryRecord->isNewRecord() || $entry->slug != $entryRecord->slug)
 		{
-			$this->generateEntrySlug($entry);
+			$this->_generateEntrySlug($entry);
 		}
 
 		$entryRecord->slug = $entry->slug;
@@ -772,9 +772,10 @@ class EntriesService extends BaseEntityService
 	/**
 	 * Generates an entry slug based on its title.
 	 *
+	 * @access private
 	 * @param EntryModel $entry
 	 */
-	public function generateEntrySlug(EntryModel $entry)
+	private function _generateEntrySlug(EntryModel $entry)
 	{
 		$slug = ($entry->slug ? $entry->slug : $entry->title);
 
