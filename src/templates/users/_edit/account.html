@@ -10,7 +10,7 @@
 
 {% if blx.hasPackage('users') %}
 	{% if account is not defined and userId is defined %}
-		{% set account = blx.users.getUserById(userId) %}
+		{% set account = blx.users.id(userId).first %}
 		{% if not account %}{% exit 404 %}{% endif %}
 	{% endif %}
 

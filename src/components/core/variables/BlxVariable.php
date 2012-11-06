@@ -250,13 +250,35 @@ class BlxVariable
 	}
 
 	/**
-	 * @return UsersVariable
+	 * @return UserCriteria|null
 	 */
 	public function users()
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return new UsersVariable();
+			return new UserCriteria();
+		}
+	}
+
+	/**
+	 * @return UserProfileBlocksVariable|null
+	 */
+	public function userProfileBlocks()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			return new UserProfileBlocksVariable();
+		}
+	}
+
+	/**
+	 * @return UserGroupsVariable|null
+	 */
+	public function userGroups()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			return new UserGroupsVariable();
 		}
 	}
 

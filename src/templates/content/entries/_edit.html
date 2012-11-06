@@ -117,7 +117,7 @@
 					label: "Author"|t,
 					id: 'author',
 					name: 'author',
-					options: blx.users.findUsers,
+					options: blx.users.find,
 					value: (entry is defined ? entry.authorId : user.id)
 				}) }}
 			{% endif %}
