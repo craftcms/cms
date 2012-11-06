@@ -17,4 +17,40 @@ class EntryCriteria extends BaseCriteria
 	public $order = 'dateCreated desc';
 	public $offset;
 	public $limit = 100;
+
+	/**
+	 * Returns all entries that match the criteria.
+	 *
+	 * @param array|null $criteria
+	 * @return array
+	 */
+	public function find($criteria = null)
+	{
+		$this->setCriteria($criteria);
+		return blx()->entries->findEntries($this);
+	}
+
+	/**
+	 * Returns the first entry that matches the criteria.
+	 *
+	 * @param array|null $criteria
+	 * @return EntryModel|null
+	 */
+	public function first($criteria = null)
+	{
+		$this->setCriteria($criteria);
+		return blx()->entries->findEntry($this);
+	}
+
+	/**
+	 * Returns the total entries that match the criteria.
+	 *
+	 * @param array|null $criteria
+	 * @return int
+	 */
+	public function total($criteria = null)
+	{
+		$this->setCriteria($criteria);
+		return blx()->entries->getTotalEntries($this);
+	}
 }

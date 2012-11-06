@@ -11,17 +11,33 @@ abstract class BaseCriteria
 	 *
 	 * @param array|null $criteria
 	 */
-	public function __construct($criteria = array())
+	function __construct($criteria = null)
 	{
-		$this->setParams($criteria);
+		$this->setCriteria($criteria);
 	}
 
 	/**
-	 * Sets the params based on an array’s keys and values.
+	 * Magic __call() method, used for chain-setting criteria properties.
+	 *
+	 * @param string $name
+	 * @param array $arguments
+	 */
+	function __call($name, $arguments)
+	{
+		if (property_exists($this, $name) && count($arguments) == 1)
+		{
+			$this->$name = $arguments[0];
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Sets the criteria based on an array’s keys and values.
 	 *
 	 * @param array|null $criteria
 	 */
-	public function setParams($criteria = null)
+	public function setCriteria($criteria = null)
 	{
 		if (is_array($criteria))
 		{

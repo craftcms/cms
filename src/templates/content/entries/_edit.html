@@ -17,7 +17,7 @@
 	{% elseif versionId is defined %}
 		{% set entry = blx.entryRevisions.getVersionById(versionId) %}
 	{% else %}
-		{% set entry = blx.entries.findEntry({ id: entryId, status: '*' }) %}
+		{% set entry = blx.entries.id(entryId).status('*').first %}
 	{% endif %}
 
 	{% if not entry %}{% exit 404 %}{% endif %}
@@ -37,9 +37,9 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set blocks = blx.entries.getBlocksBySectionId(section.id) %}
+	{% set blocks = blx.entryBlocks.getBlocksBySectionId(section.id) %}
 {% else %}
-	{% set blocks = blx.entries.getAllBlocks %}
+	{% set blocks = blx.entryBlocks.getAllBlocks %}
 {% endif %}
 
 

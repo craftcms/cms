@@ -14,7 +14,7 @@
 	<h2>{{ "Entry Blocks"|t }}</h2>
 
 	{% include "_includes/blockindex" with {
-		blocks: blx.entries.getAllBlocks,
+		blocks: blx.entryBlocks.getAllBlocks,
 		settingsUrlPrefix: 'settings/blog/blocks/',
 		controller: 'entries'
 	} only %}

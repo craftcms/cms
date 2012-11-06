@@ -148,11 +148,19 @@ class BlxVariable
 	}
 
 	/**
-	 * @return EntriesVariable
+	 * @return EntryCriteria
 	 */
 	public function entries()
 	{
-		return new EntriesVariable();
+		return new EntryCriteria();
+	}
+
+	/**
+	 * @return EntryBlocksVariable
+	 */
+	public function entryBlocks()
+	{
+		return new EntryBlocksVariable();
 	}
 
 	/**

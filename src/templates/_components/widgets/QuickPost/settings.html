@@ -41,7 +41,7 @@
 		{% for section in sections %}
 			{% set show = ((not settings.section and loop.first) or settings.section == section.id) %}
 			<div id="section{{ section.id }}"{% if not show %} class="hidden"{% endif %}>
-				{% set blocks = blx.entries.getBlocksBySectionId(section.id) %}
+				{% set blocks = blx.entryBlocks.getBlocksBySectionId(section.id) %}
 				{{ _self.blockList(blocks, settings.blocks, 'blocks[section'~section.id~']') }}
 			</div>
 		{% endfor %}
@@ -50,7 +50,7 @@
 {% else %}
 
 	{% set blocksInput %}
-		{% set blocks = blx.entries.getAllBlocks %}
+		{% set blocks = blx.entryBlocks.getAllBlocks %}
 		{{ _self.blockList(blocks, settings.blocks) }}
 	{% endset %}
 
