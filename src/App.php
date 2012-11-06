@@ -315,14 +315,14 @@ class App extends \CWebApplication
 					{
 						if (isset($segs[1]) && $segs[1] == 'temp')
 						{
-							// URL format: /resources/userphotos/temp/?
+							// URL format: /resources/userphotos/temp/username_userId.ext
 
 							if (!isset($segs[2]))
 							{
 								throw new HttpException(404);
 							}
 
-							$rootFolderPath = $this->path->getTempPath().'userphotos/';
+							$rootFolderPath = $this->path->getTempPath();
 							$relativeResourcePath = $segs[2];
 						}
 						else
@@ -354,6 +354,18 @@ class App extends \CWebApplication
 
 								// temp:
 								IOHelper::copyFile($originalPath, $fullPath);
+
+								$originalImage = blx()->images->getResourceFromPath($originalPath);
+								$output = imagecreatetruecolor($size, $size);
+
+								list($sourceWidth, $sourceHeight) = getimagesize($originalPath);
+								imagecopyresampled($output, $originalImage, 0, 0, 0, 0, $size, $size, $sourceWidth, $sourceHeight);
+
+								$targetFolder = $rootFolderPath.$username.'/'.$size;
+								IOHelper::ensureFolderExists($targetFolder);
+
+								blx()->images->saveResourceToPath($output, $fullPath);
+
 								//$image = blx()->images->getResourceFromPath($originalPath);
 								//$image->resizeTo($size);
 								//$image->saveAs($fullPath);

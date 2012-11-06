@@ -261,8 +261,8 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendTestEmail($settings)
 	{
-		$userModel = blx()->account->getCurrentUser();
-		$userModel->email = $settings->testEmailAddress;
+		$user = blx()->account->getCurrentUser();
+		$user->email = $settings->testEmailAddress;
 		$newSettings = array();
 
 		foreach ($settings as $key => $value)
@@ -273,6 +273,6 @@ class EmailService extends BaseApplicationComponent
 			}
 		};
 
-		$this->sendEmailByKey($userModel, 'test_email', array('settings' => $newSettings));
+		$this->sendEmailByKey($user, 'test_email', array('settings' => $newSettings));
 	}
 }
