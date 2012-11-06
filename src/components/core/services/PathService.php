@@ -141,7 +141,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getSiteTranslationsPath()
 	{
-		return BLOCKS_SITE_TRANSLATIONS_PATH;
+		return BLOCKS_TRANSLATIONS_PATH;
 	}
 
 	/**
@@ -209,7 +209,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getSiteTemplatesPath()
 	{
-		return BLOCKS_SITE_TEMPLATES_PATH;
+		return BLOCKS_TEMPLATES_PATH;
 	}
 
 	/**

@@ -13,16 +13,16 @@ if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testpathinfo')
 }
 
 // Define app constants
-defined('BLOCKS_BASE_PATH') || define('BLOCKS_BASE_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/../')).'/');
-defined('BLOCKS_APP_PATH') || define('BLOCKS_APP_PATH', BLOCKS_BASE_PATH.'app/');
-defined('BLOCKS_CONFIG_PATH') || define('BLOCKS_CONFIG_PATH', BLOCKS_BASE_PATH.'config/');
-defined('BLOCKS_PLUGINS_PATH') || define('BLOCKS_PLUGINS_PATH', BLOCKS_BASE_PATH.'plugins/');
-defined('BLOCKS_UPLOADS_PATH') || define('BLOCKS_UPLOADS_PATH', BLOCKS_BASE_PATH.'uploads/');
-defined('BLOCKS_RUNTIME_PATH') || define('BLOCKS_RUNTIME_PATH', BLOCKS_BASE_PATH.'runtime/');
-defined('BLOCKS_SITE_TEMPLATES_PATH') || define('BLOCKS_SITE_TEMPLATES_PATH', BLOCKS_BASE_PATH.'templates/');
-defined('BLOCKS_SITE_TRANSLATIONS_PATH') || define('BLOCKS_SITE_TRANSLATIONS_PATH', BLOCKS_BASE_PATH.'translations/');
-defined('BLOCKS_CP_REQUEST') || define('BLOCKS_CP_REQUEST', false);
-defined('YII_TRACE_LEVEL') || define('YII_TRACE_LEVEL', 3);
+defined('BLOCKS_BASE_PATH')         || define('BLOCKS_BASE_PATH', str_replace('\\', '/', realpath(dirname(__FILE__).'/../')).'/');
+defined('BLOCKS_APP_PATH')          || define('BLOCKS_APP_PATH',          BLOCKS_BASE_PATH.'app/');
+defined('BLOCKS_CONFIG_PATH')       || define('BLOCKS_CONFIG_PATH',       BLOCKS_BASE_PATH.'config/');
+defined('BLOCKS_PLUGINS_PATH')      || define('BLOCKS_PLUGINS_PATH',      BLOCKS_BASE_PATH.'plugins/');
+defined('BLOCKS_UPLOADS_PATH')      || define('BLOCKS_UPLOADS_PATH',      BLOCKS_BASE_PATH.'uploads/');
+defined('BLOCKS_RUNTIME_PATH')      || define('BLOCKS_RUNTIME_PATH',      BLOCKS_BASE_PATH.'runtime/');
+defined('BLOCKS_TEMPLATES_PATH')    || define('BLOCKS_TEMPLATES_PATH',    BLOCKS_BASE_PATH.'templates/');
+defined('BLOCKS_TRANSLATIONS_PATH') || define('BLOCKS_TRANSLATIONS_PATH', BLOCKS_BASE_PATH.'translations/');
+defined('BLOCKS_CP_REQUEST')        || define('BLOCKS_CP_REQUEST', false);
+defined('YII_TRACE_LEVEL')          || define('YII_TRACE_LEVEL', 3);
 
 // Check early if runtime is a valid folder and writable.
 if (($runtimePath = realpath(BLOCKS_RUNTIME_PATH)) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
