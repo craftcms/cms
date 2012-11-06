@@ -110,6 +110,7 @@ $components['migrations']['class']        = 'Blocks\MigrationsService';
 $components['pages']['class']             = 'Blocks\PagesService';
 $components['path']['class']              = 'Blocks\PathService';
 $components['plugins']['class']           = 'Blocks\PluginsService';
+$components['resources']['class']         = 'Blocks\ResourcesService';
 $components['routes']['class']            = 'Blocks\RoutesService';
 $components['security']['class']          = 'Blocks\SecurityService';
 $components['systemSettings']['class']    = 'Blocks\SystemSettingsService';
