@@ -2,55 +2,70 @@
 namespace Blocks;
 
 /**
- * Image resource
+ * Image
  */
-class ImageResource
+class Image
 {
+	private $_sourceImage;
+	private $_outputImage;
+	private $_extension;
 
-	private $_sourceImage = null;
-	private $_outputImage = null;
-	private $_extension = '';
-
-	public function __construct($path)
+	/**
+	 * Loads an image from a file system path.
+	 *
+	 * @param string $path
+	 * @return Image
+	 */
+	public function loadImage($path)
 	{
 		if (!IOHelper::fileExists($path))
 		{
-			throw new Exception(Blocks::t("File doesn't exist!"));
+			throw new Exception(Blocks::t('No file exists at the path “{path}”', array('path' => $path)));
 		}
 
-		$this->_extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+		$this->_extension = IOHelper::getExtension($path);
 
 		switch ($this->_extension)
 		{
 			case 'jpg':
 			case 'jpeg':
+			{
 				$this->_sourceImage = imagecreatefromjpeg($path);
 				break;
+			}
+
 			case 'gif':
+			{
 				$this->_sourceImage = imagecreatefromgif($path);
 				break;
+			}
+
 			case 'png':
+			{
 				$this->_sourceImage = imagecreatefrompng($path);
 				break;
+			}
+
+			default:
+			{
+				throw new Exception(Blocks::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
+			}
 		}
 
-		if (empty($this->_sourceImage))
-		{
-			throw new Exception(Blocks::t("The file extension was not recognized"));
-		}
-
+		return $this;
 	}
 
 	/**
-	 * Crop an image to the size
-	 * @param $x1
-	 * @param $x2
-	 * @param $y1
-	 * @param $y2
+	 * Crops the image to the specified coordinates.
+	 *
+	 * @param int $x1
+	 * @param int $x2
+	 * @param int $y1
+	 * @param int $y2
+	 * @return Image
 	 */
 	public function crop($x1, $x2, $y1, $y2)
 	{
-
 		$width = $x2 - $x1;
 		$height = $y2 - $y1;
 
@@ -58,11 +73,20 @@ class ImageResource
 		$this->_preserveTransparency();
 
 		imagecopyresampled($this->_outputImage, $this->_sourceImage, 0, 0, $x1, $y1, $width, $height, $width, $height);
+
+		return $this;
 	}
 
+	/**
+	 * Resizes the image. If $height is not specified, it will default to $width, creating a square.
+	 *
+	 * @param int $width
+	 * @param int|null $height
+	 * @return Image
+	 */
 	public function resizeTo($width, $height = null)
 	{
-		if (is_null($height))
+		if ($height === null)
 		{
 			$height = $width;
 		}
@@ -71,10 +95,56 @@ class ImageResource
 		$this->_preserveTransparency();
 
 		imagecopyresampled($this->_outputImage, $this->_sourceImage, 0, 0, 0, 0, $width, $height, imagesx($this->_sourceImage), imagesy($this->_sourceImage));
+
+		return $this;
 	}
 
 	/**
-	 * Prepare canvas
+	 * Saves the image to the target path.
+	 *
+	 * @param $targetPath
+	 * @return bool
+	 */
+	public function saveAs($targetPath)
+	{
+		// If no operations have been performed, save the source
+		if (empty($this->_outputImage))
+		{
+			$this->_outputImage = $this->_sourceImage;
+		}
+
+		$extension = IOHelper::getExtension($targetPath);
+
+		$result = false;
+
+		switch ($extension)
+		{
+			case 'jpg':
+			{
+				$result = imagejpeg($this->_outputImage, $targetPath, 100);
+				break;
+			}
+
+			case 'gif':
+			{
+				$result = imagegif($this->_outputImage, $targetPath);
+				break;
+			}
+
+			case 'png':
+			{
+				$result = imagepng($this->_outputImage, $targetPath, 5);
+				break;
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Prepares the canvas.
+	 *
+	 * @access private
 	 * @param $width
 	 * @param $height
 	 */
@@ -87,17 +157,18 @@ class ImageResource
 	}
 
 	/**
-	 * Preserves transparency for a file extension
+	 * Preserves transparency depending on the file extension.
+	 *
+	 * @access private
 	 */
 	private function _preserveTransparency()
 	{
-
-		// keep transparency for gifs and jpegs
+		// Preserve transparency for GIFs and PNGs
 		if (in_array($this->_extension, array('gif', 'png')))
 		{
 			$transparencyIndex = imagecolortransparent($this->_sourceImage);
 
-			// if the index is set
+			// Is the index set?
 			if ($transparencyIndex >= 0)
 			{
 				$transparentColor = imagecolorsforindex($this->_sourceImage, $transparencyIndex);
@@ -105,7 +176,7 @@ class ImageResource
 				imagefill($this->_outputImage, 0, 0, $transparencyIndex);
 				imagecolortransparent($this->_outputImage, $transparencyIndex);
 			}
-			// png, baby
+			// PNG, baby
 			elseif ($this->_extension == 'png')
 			{
 				imagealphablending($this->_outputImage, false);
@@ -115,36 +186,4 @@ class ImageResource
 			}
 		}
 	}
-
-	/**
-	 * Saves to the target path
-	 * @param $targetPath
-	 * @return bool
-	 */
-	public function saveAs($targetPath)
-	{
-		// if no operations are done, save the source
-		if (empty($this->_outputImage))
-		{
-			$this->_outputImage = $this->_sourceImage;
-		}
-		$extension = pathinfo($targetPath, PATHINFO_EXTENSION);
-
-		$result = false;
-		switch ($extension)
-		{
-			case 'jpg':
-				$result = imagejpeg($this->_outputImage, $targetPath, 100);
-				break;
-			case 'gif':
-				$result = imagegif($this->_outputImage, $targetPath);
-				break;
-			case 'png':
-				$result = imagepng($this->_outputImage, $targetPath, 5);
-				break;
-		}
-
-		return $result;
-	}
-
 }

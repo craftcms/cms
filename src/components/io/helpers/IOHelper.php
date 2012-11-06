@@ -241,7 +241,7 @@ class IOHelper
 	public static function getExtension($path, $default = null)
 	{
 		$path = static::normalizePathSeparators($path);
-		$extension = pathinfo($path, PATHINFO_EXTENSION);
+		$extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
 
 		if ($extension)
 		{

@@ -6,16 +6,17 @@ namespace Blocks;
  */
 class ImagesService extends BaseApplicationComponent
 {
-
 	/**
-	 * Return image resource from path
+	 * Loads an image from a file system path.
+	 *
 	 * @param $path
 	 * @throws \Exception
-	 * @return ImageResource
+	 * @return Image
 	 */
-	public function getResourceFromPath($path)
+	public function loadImage($path)
 	{
-		return new ImageResource($path);
+		$image = new Image();
+		$image->loadImage($path);
+		return $image;
 	}
-
 }

@@ -348,10 +348,12 @@ class App extends \CWebApplication
 									throw new HttpException(404);
 								}
 
-								IOHelper::copyFile($originalPath, $fullPath);
-								$image = blx()->images->getResourceFromPath($originalPath);
-								$image->resizeTo($size);
-								$image->saveAs($fullPath);
+								$targetPath = $rootFolderPath.$username.'/'.$size.'/';
+								IOHelper::ensureFolderExists($targetPath);
+
+								blx()->images->loadImage($originalPath)
+									->resizeTo($size)
+									->saveAs($fullPath);
 							}
 						}
 
