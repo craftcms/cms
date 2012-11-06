@@ -14,7 +14,7 @@ class BlxVariable
 	{
 		$plugin = blx()->plugins->getPlugin($name);
 
-		if ($plugin && $plugin->model !== null && $plugin->model->enabled)
+		if ($plugin && $plugin->isEnabled)
 		{
 			$pluginName = $plugin->getClassHandle();
 			$className = __NAMESPACE__.'\\'.$pluginName.'Variable';
@@ -37,7 +37,7 @@ class BlxVariable
 	{
 		$plugin = blx()->plugins->getPlugin($name);
 
-		if ($plugin && $plugin->model !== null && $plugin->model->enabled)
+		if ($plugin && $plugin->isEnabled)
 		{
 			return true;
 		}

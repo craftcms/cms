@@ -122,6 +122,7 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Returns all plugins, whether they're installed or not.
 	 *
+	 * @param bool $enabledOnly
 	 * @return array
 	 */
 	public function getPlugins($enabledOnly = true)
@@ -469,7 +470,9 @@ class PluginsService extends BaseApplicationComponent
 				$ref = new \ReflectionClass($class);
 
 				if ($ref->isAbstract() || $ref->isInterface())
+				{
 					continue;
+				}
 
 				$services[] = $servicePath;
 			}
@@ -562,15 +565,15 @@ class PluginsService extends BaseApplicationComponent
 							Blocks::import("plugins.{$lcHandle}.{$folderName}.{$fileName}");
 						}
 
-						if (!isset($this->_pluginFileMap[$lcHandle][$folderName]))
+						if (!isset($this->_pluginFileMap[$handle][$folderName]))
 						{
-							$this->_pluginFileMap[$lcHandle][$folderName][] = $file;
+							$this->_pluginFileMap[$handle][$folderName][] = $file;
 						}
 						else
 						{
-							if (!in_array($file, $this->_pluginFileMap[$lcHandle][$folderName]))
+							if (!in_array($file, $this->_pluginFileMap[$handle][$folderName]))
 							{
-								$this->_pluginFileMap[$lcHandle][$folderName][] = $file;
+								$this->_pluginFileMap[$handle][$folderName][] = $file;
 							}
 						}
 					}
