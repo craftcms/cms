@@ -6,7 +6,7 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set section = blx.sections.findSection({ handle: sectionHandle }) %}
+	{% set section = blx.sections.handle(sectionHandle).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
 

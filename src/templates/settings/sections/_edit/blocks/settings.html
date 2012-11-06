@@ -4,7 +4,7 @@
 
 {% if blx.hasPackage('publishpro') %}
 	{% if sectionId is not defined %}{% exit 404 %}{% endif %}
-	{% set section = blx.sections.getSectionById(sectionId) %}
+	{% set section = blx.sections.id(sectionId).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
 

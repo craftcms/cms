@@ -4,7 +4,7 @@
 
 
 {% if blx.hasPackage('publishpro') %}
-	{% set sections = blx.sections.findSections %}
+	{% set sections = blx.sections.find %}
 	{% set showSection = true %}
 {% else %}
 	{% set showSection = false %}
@@ -24,7 +24,7 @@
 {% elseif filter == 'archived' %}
 	{% set params = { archived: true } %}
 	{% set showStatus = false %}
-{% elseif blx.hasPackage('publishpro') and blx.sections.getTotalSections({ handle: filter }) %}
+{% elseif blx.hasPackage('publishpro') and blx.sections.handle(filter).total %}
 	{% set params = { section: filter, status: '*' } %}
 	{% set showSection = false %}
 {% else %}

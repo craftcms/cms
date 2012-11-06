@@ -223,13 +223,13 @@ class BlxVariable
 	}
 
 	/**
-	 * @return SectionsVariable|null
+	 * @return SectionCriteria|null
 	 */
 	public function sections()
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			return new SectionsVariable();
+			return new SectionCriteria();
 		}
 	}
 
