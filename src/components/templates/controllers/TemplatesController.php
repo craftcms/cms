@@ -50,7 +50,7 @@ class TemplatesController extends BaseController
 
 		$this->renderTemplate($templateName, array(), false);
 
-			// Set it back to the original
+		// Set it back to the original
 		blx()->path->setTemplatesPath($originalTemplatesPath);
 		blx()->setViewPath(null);
 	}
