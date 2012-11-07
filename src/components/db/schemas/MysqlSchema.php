@@ -157,7 +157,7 @@ class MysqlSchema extends \CMysqlSchema
 	public function createTable($table, $columns, $options = null)
 	{
 		$cols = array();
-		$options = 'ENGINE=InnoDb CHARACTER SET=utf8 COLLATE=utf8_unicode_ci'.($options ? ' '.$options : '');
+		$options = 'ENGINE=InnoDb DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci'.($options ? ' '.$options : '');
 
 		foreach ($columns as $name => $type)
 		{
