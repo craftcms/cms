@@ -82,7 +82,7 @@ abstract class BaseController extends \CController
 
 			// Set the Content-Type header
 			$mimeType = blx()->request->getMimeType();
-			header('Content-Type: '.$mimeType);
+			header('Content-Type: '.$mimeType.'; charset=utf-8');
 
 			// Output to the browser!
 			echo $output;
