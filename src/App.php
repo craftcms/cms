@@ -460,7 +460,7 @@ class App extends \CWebApplication
 			else
 			{
 				// in the case of an exception, our custom classes are not loaded.
-				$this->_templatePath = BLOCKS_SITE_TEMPLATES_PATH;
+				$this->_templatePath = BLOCKS_TEMPLATES_PATH;
 			}
 		}
 
