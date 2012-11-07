@@ -6,6 +6,7 @@ namespace Blocks;
  */
 class Image
 {
+	private $_imageSourcePath;
 	private $_sourceImage;
 	private $_outputImage;
 	private $_extension;
@@ -15,6 +16,7 @@ class Image
 	 *
 	 * @param string $path
 	 * @return Image
+	 * @throws Exception
 	 */
 	public function loadImage($path)
 	{
@@ -51,6 +53,8 @@ class Image
 				throw new Exception(Blocks::t('The file “{path}” does not appear to be an image.', array('path' => $path)));
 			}
 		}
+
+		$this->_imageSourcePath = $path;
 
 		return $this;
 	}
@@ -119,6 +123,7 @@ class Image
 
 		switch ($extension)
 		{
+			case 'jpeg':
 			case 'jpg':
 			{
 				$result = imagejpeg($this->_outputImage, $targetPath, 100);
@@ -152,6 +157,11 @@ class Image
 	{
 		if (empty($this->_outputImage))
 		{
+			if (!blx()->images->setMemoryForImage($this->_imageSourcePath))
+			{
+				throw new Exception(Blocks::t("Not enough memory available to perform this image operation."));
+			}
+
 			$this->_outputImage = imagecreatetruecolor($width, $height);
 		}
 	}

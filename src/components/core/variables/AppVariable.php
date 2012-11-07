@@ -65,4 +65,20 @@ class AppVariable
 	{
 		return Blocks::getLicenseKey();
 	}
+
+	/**
+	 * Return max upload size in bytes.
+	 *
+	 * @return int
+	 */
+	public function getMaxUploadSize()
+	{
+		$maxUpload = (int)(ini_get('upload_max_filesize'));
+		$maxPost = (int)(ini_get('post_max_size'));
+		$memoryLimit = (int)(ini_get('memory_limit'));
+		$uploadMb = min($maxUpload, $maxPost, $memoryLimit);
+
+		return (int) $uploadMb * 1024 * 1024;
+
+	}
 }
