@@ -35,7 +35,7 @@
 			errors: (post is defined ? post.getErrors('siteUrl') : null)
 		}) }}
 
-
+		<!-- HIDE -->
 		{% if blx.hasPackage('rebrand') %}
 			{{ forms.fileField({
 				label: "Logo"|t,
@@ -45,6 +45,7 @@
 				errors: (post is defined ? post.getErrors('logo') : null)
 			}) }}
 		{% endif %}
+		<!-- end HIDE -->
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">

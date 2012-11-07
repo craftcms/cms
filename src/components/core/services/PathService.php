@@ -6,7 +6,7 @@ namespace Blocks;
  */
 class PathService extends BaseApplicationComponent
 {
-	private $_templatePath;
+	private $_templatesPath;
 
 	/**
 	 * @return string
@@ -167,19 +167,19 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getTemplatesPath()
 	{
-		if (!isset($this->_templatePath))
+		if (!isset($this->_templatesPath))
 		{
 			if (BLOCKS_CP_REQUEST)
 			{
-				$this->_templatePath = $this->getCpTemplatesPath();
+				$this->_templatesPath = $this->getCpTemplatesPath();
 			}
 			else
 			{
-				$this->_templatePath = $this->getSiteTemplatesPath();
+				$this->_templatesPath = $this->getSiteTemplatesPath();
 			}
 		}
 
-		return $this->_templatePath;
+		return $this->_templatesPath;
 	}
 
 	/**
@@ -189,7 +189,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function setTemplatesPath($path)
 	{
-		$this->_templatePath = $path;
+		$this->_templatesPath = $path;
 	}
 
 	/**
