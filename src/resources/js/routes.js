@@ -125,7 +125,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 	{
 		this.route = route;
 
-		var $container = $('<form class="modal route-settings">' +
+		var $container = $('<form class="modal route-settings" accept-charset="UTF-8">' +
 			'<h1></h1>' +
 			'<div class="field">' +
 				'<div class="heading">' +

@@ -11,7 +11,7 @@
 
 {% set content %}
 	{% if blocks|length %}
-		<form method="post" action="">
+		<form method="post" action="" accept-charset="UTF-8">
 			<input type="hidden" name="action" value="pages/savePageContent">
 			<input type="hidden" name="redirect" value="content/pages/{pageId}">
 			<input type="hidden" name="pageId" value="{{ page.id }}">

@@ -20,7 +20,7 @@
 		if (cookiesEnabled)
 		{
 			document.write(
-				'<form id="login-form" method="post" action="">' +
+				'<form id="login-form" method="post" action="" accept-charset="UTF-8">' +
 					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.getRememberedUsername })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
