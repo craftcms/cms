@@ -3,14 +3,14 @@ namespace Blocks;
 
 /**
  *
- * @property TemplatesService $templates The template service
- * @property AssetsService $assets The assets service
- * @property AssetIndexingService $assetIndexing The assets indexing service
- * @property AssetSourcesService $assetSources The assets sources service
- * @property PathService $path
- * @property UsersService $users
- * @property AccountService $account
- * @property ImagesService $images
+ * @property TemplatesService       $templates      The template service
+ * @property AssetsService          $assets         The assets service
+ * @property AssetIndexingService   $assetIndexing  The assets indexing service
+ * @property AssetSourcesService    $assetSources   The assets sources service
+ * @property PathService            $path
+ * @property UsersService           $users
+ * @property AccountService         $account
+ * @property ImagesService          $images
  */
 class App extends \CWebApplication
 {
