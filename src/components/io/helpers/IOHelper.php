@@ -475,13 +475,13 @@ class IOHelper
 	}
 
 	/**
-	 * Returns the contents of a folder as an array of {@link File} and/or {@link Folder} objects or false if the folder does not exist or is not readable.
+	 * Returns the contents of a folder as an array of file and folder paths, or false if the folder does not exist or is not readable.
 	 *
 	 * @static
 	 * @param  string     $path      The path to test.
 	 * @param  bool       $recursive Whether to do a recursive folder search.
 	 * @param  bool       $filter    The filter to use when performing the search.
-	 * @return array|bool An array of {@link File} and/or {@link Folder} objects or false if the folder does not exist or is not readable.
+	 * @return array|bool An array of file and folder paths, or false if the folder does not exist or is not readable.
 	 */
 	public static function getFolderContents($path, $recursive = true, $filter = null)
 	{

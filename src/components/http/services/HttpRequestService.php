@@ -411,7 +411,7 @@ class HttpRequestService extends \CHttpRequest
 		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		header('Content-type: '.$options['mimeType']);
 
-		if (ob_get_length() === false)
+		if (!ob_get_length())
 		{
 			header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content,'8bit') : strlen($content)));
 		}
