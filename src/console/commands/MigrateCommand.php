@@ -211,4 +211,74 @@ class {ClassName} extends \CDbMigration
 EOD;
 		}
 	}
+
+	/**
+	 * @param string $action
+	 * @param array  $params
+	 * @return bool
+	 */
+	public function beforeAction($action, $params)
+	{
+		if ($action == 'create')
+		{
+			$path = IOHelper::getFolderName($params[0][0]);
+		}
+		else
+		{
+			$path = Blocks::getPathOfAlias($this->migrationPath);
+		}
+
+		if ($path === false || !IOHelper::folderExists($path))
+		{
+			echo 'Error: The migration directory does not exist: '.$this->migrationPath."\n";
+			exit(1);
+		}
+
+		$this->migrationPath = $path;
+
+		$yiiVersion = Blocks::getYiiVersion();
+		echo "\nBlocks Migration Tool v1.0 (based on Yii v{$yiiVersion})\n\n";
+
+		if ($action == 'create')
+		{
+			return true;
+		}
+		else
+		{
+			return parent::beforeAction($action, $params);
+		}
+	}
+
+	/**
+	 * @param $args
+	 * @return int
+	 */
+	public function actionCreate($args)
+	{
+		if (isset($args[0]))
+		{
+			$name = IOHelper::getFileName($args[0], false);
+		}
+		else
+		{
+			$this->usageError('Please provide the name of the new migration.');
+			return 1;
+		}
+
+		if (!preg_match('/^\w+$/', $name))
+		{
+			echo "Error: The name of the migration must contain letters, digits and/or underscore characters only.\n";
+			return 1;
+		}
+
+		$name = 'm'.gmdate('ymd_His').'_'.$name;
+		$content = strtr($this->getTemplate(), array('{ClassName}' => $name));
+		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+
+		if ($this->confirm("Create new migration '$file'?"))
+		{
+			IOHelper::writeToFile($file, $content);
+			echo "New migration created successfully.\n";
+		}
+	}
 }
