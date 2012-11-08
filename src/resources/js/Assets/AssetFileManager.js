@@ -141,7 +141,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
                 view_type: this.currentState.view
             };
 
-            $.post(Blocks.actionUrl + 'assets/viewFolder', params, $.proxy(function(data, textStatus) {
+            Blocks.postActionRequest('assets/viewFolder', params, $.proxy(function(data, textStatus) {
                 if (data.request_id != this.requestId) {
                     return;
                 }

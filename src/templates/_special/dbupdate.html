@@ -29,7 +29,7 @@
 		$btn.addClass('active');
 		$spinner.removeClass('hidden');
 
-		$.post("{{ actionUrl('update/runManualUpdate') }}", function(response)
+		Blocks.postActionRequest('update/runManualUpdate', function(response)
 		{
 			if (response.success)
 			{

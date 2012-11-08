@@ -69,7 +69,7 @@ var atLeastOnePluginHasARelease = function(plugins)
 	return false;
 };
 
-$.post(Blocks.actionUrl+'update/getAvailableUpdates', function(response) {
+Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 	$('#loading').fadeOut('fast', function() {
 		if (response.blocks || response.packages)

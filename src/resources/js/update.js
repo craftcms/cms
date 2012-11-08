@@ -29,7 +29,13 @@ if (!updateHandle)
 function getUpdateInfo()
 {
 	// get the name and latest version
-	$.getJSON(updateInfoUrl + updateHandle, function(data, textStatus) {
+	var url = Blocks.getActionUrl('update/getUpdates');
+
+	var data = {
+		handle: updateHandle
+	};
+
+	$.getJSON(url, data, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
 			showError(Blocks.t('An unknown error occurred.'));
@@ -61,7 +67,11 @@ function updateNext()
 
 	$status.html('Updating '+updateInfo[updating].name+' to version '+updateInfo[updating].version+' ('+updating+' of '+totalUpdates+')');
 
-	$.post(updateUrl + updateInfo[updating].handle, function(data, textStatus) {
+	var data = {
+		handle: updateInfo[updating].handle
+	};
+
+	Blocks.postActionRequest('update/runAutoUpdate', data, function(data, textStatus) {
 		if (!data || textStatus != 'success')
 		{
 			showError(Blocks.t('An unknown error occurred while updating {name}.', {'name': updateInfo[updating].name}));

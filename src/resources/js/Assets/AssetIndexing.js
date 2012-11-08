@@ -42,7 +42,7 @@
             this.$startIndexingButton.addClass('disabled');
             var _t = this;
 
-            $.post(Blocks.actionUrl+'assetIndexing/getSessionId', function(data){
+            Blocks.postActionRequest('assetIndexing/getSessionId', function(data){
                 _t.sessionId = data.session_id;
                 _t.queue = new AjaxQueueManager(10, _t.displayIndexingReport, _t);
 
@@ -56,7 +56,7 @@
                         session: _t.sessionId
                     };
 
-                    _t.queue.addItem(Blocks.actionUrl+'assetIndexing/startIndex', params, function (data) {
+                    _t.queue.addItem(Blocks.getActionUrl('assetIndexing/startIndex'), params, function (data) {
 
                         progress_bar.attr('total', data.total).attr('current', 0);
                         for (var i = 0; i < data.total; i++) {
@@ -66,7 +66,7 @@
                                 offset: i
                             };
 
-                            _t.queue.addItem(Blocks.actionUrl+'assetIndexing/performIndex', params, function () {
+                            _t.queue.addItem(Blocks.getActionUrl('assetIndexing/performIndex'), params, function () {
                                 progress_bar.attr('current', parseInt(progress_bar.attr('current'), 10) + 1);
                                 progress_bar.html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
                             });

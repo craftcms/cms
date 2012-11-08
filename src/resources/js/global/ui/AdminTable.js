@@ -48,7 +48,7 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 			ids: JSON.stringify(ids)
 		};
 
-		$.post(Blocks.actionUrl+this.settings.reorderAction, data, $.proxy(function(response)
+		Blocks.postActionRequest(this.settings.reorderAction, data, $.proxy(function(response)
 		{
 			if (response.success)
 			{
@@ -69,7 +69,7 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 
 		if (confirm(Blocks.t(this.settings.confirmDeleteMessage, { name: name })))
 		{
-			$.post(Blocks.actionUrl+this.settings.deleteAction, { id: id }, $.proxy(function(response) {
+			Blocks.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response) {
 				if (response.success)
 				{
 					$row.remove();

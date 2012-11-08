@@ -170,6 +170,36 @@ Blocks.getActionUrl = function(path, params)
 };
 
 /**
+ * Posts an action request to the server.
+ *
+ * @param string action
+ * @param object|null data
+ * @param function|null callback
+ */
+Blocks.postActionRequest = function(action, data, callback)
+{
+	var url = Blocks.getActionUrl(action);
+
+	// Param mapping
+	if (typeof data == 'function')
+	{
+		// (action, callback)
+		callback = data;
+		data = {};
+	}
+
+	return $.ajax(url, {
+		type: 'POST',
+		data: data,
+		success: callback,
+		error: function(jqXHR, textStatus, errorThrown)
+		{
+			console.log(jqXHR, textStatus, errorThrown);
+		}
+	});
+};
+
+/**
  * Format a number with commas.
  *
  * @param mixed num

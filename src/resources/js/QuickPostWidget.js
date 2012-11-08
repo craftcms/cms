@@ -42,7 +42,7 @@ Blocks.QuickPostWidget = Blocks.Base.extend({
 		var formData = Blocks.getPostData(this.$form),
 			data = $.extend({ enabled: 1 }, formData, this.params);
 
-		$.post(Blocks.actionUrl+'entries/saveEntry', data, $.proxy(function(response) {
+		Blocks.postActionRequest('entries/saveEntry', data, $.proxy(function(response) {
 			if (this.$errorList)
 			{
 				this.$errorList.children().remove();
