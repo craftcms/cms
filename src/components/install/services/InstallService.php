@@ -174,7 +174,7 @@ class InstallService extends BaseApplicationComponent
 		$info->siteName = $inputs['siteName'];
 		$info->siteUrl = $inputs['siteUrl'];
 		$info->language = $inputs['language'];
-		$info->licenseKey = $this->_generateLicenseKey();
+		$info->licenseKey = $inputs['licenseKey'];
 		$info->on = true;
 
 		if ($info->save())
@@ -186,26 +186,6 @@ class InstallService extends BaseApplicationComponent
 			Blocks::log('Could not populate the info table.', \CLogger::LEVEL_ERROR);
 			throw new Exception(Blocks::t('There was a problem saving to the info table:').$this->_getFlattenedErrors($info->getErrors()));
 		}
-	}
-
-	/**
-	 * Generates a license key.
-	 *
-	 * @access private
-	 * @return string
-	 */
-	private function _generateLicenseKey()
-	{
-		$licenseKey = strtoupper(sprintf('%04x-%04x-%04x-%04x-%04x-%04x',
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff),
-			mt_rand(0, 0xffff)
-		));
-
-		return $licenseKey;
 	}
 
 	/**
