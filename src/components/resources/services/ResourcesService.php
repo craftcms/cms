@@ -133,21 +133,16 @@ class ResourcesService extends BaseApplicationComponent
 			throw new HttpException(404);
 		}
 
-		// If we're using query string URLs, the browser won't know how to resolve url(../resource.ext) in CSS files,
-		// so let's change them to absolute URLs.
-		if (blx()->request->getUrlFormat() == UrlFormat::QueryString)
+		// Normalize URLs in CSS files
+		$mimeType = IOHelper::getMimeTypeByExtension($path);
+		if (strpos($mimeType, 'css') !== false)
 		{
-			$mimeType = IOHelper::getMimeTypeByExtension($path);
-
-			if (strpos($mimeType, 'css') > 0)
-			{
-				$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_convertRelativeUrlMatch'), $content);
-			}
+			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_normalizeCssUrl'), $content);
 		}
 
 		if (!blx()->config->useXSendFile)
 		{
-			$options['forceDownload'] = true;
+			$options['forceDownload'] = false;
 
 			if (blx()->request->getQuery($this->dateParam))
 			{
@@ -169,7 +164,7 @@ class ResourcesService extends BaseApplicationComponent
 	 * @param $match
 	 * @return string
 	 */
-	private function _convertRelativeUrlMatch($match)
+	private function _normalizeCssUrl($match)
 	{
 		// ignore root-relative, absolute, and data: URLs
 		if (preg_match('/^(\/|https?:\/\/|data:)/', $match[3]))
@@ -177,6 +172,18 @@ class ResourcesService extends BaseApplicationComponent
 			return $match[0];
 		}
 
-		return $match[1].IOHelper::getFolderName(blx()->request->getUrl()).'/'.$match[3].$match[4];
+		$url = IOHelper::getFolderName(blx()->request->getUrl()).'/'.$match[3];
+
+		// Make sure this is a resource URL
+		$resourceTrigger = blx()->config->resourceTrigger;
+		$resourceTriggerPos = strpos($url, $resourceTrigger);
+		if ($resourceTriggerPos !== false)
+		{
+			// Give UrlHelper a chance to add the timestamp
+			$path = substr($url, $resourceTriggerPos+strlen($resourceTrigger));
+			$url = UrlHelper::getResourceUrl($path);
+		}
+
+		return $match[1].$url.$match[4];
 	}
 }
