@@ -86,16 +86,25 @@ class UrlHelper
 	 */
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
-		$origPath = $path;
-		$path = blx()->config->resourceTrigger.'/'.trim($path, '/');
+		$path = $origPath = trim($path, '/');
+		$path = blx()->config->resourceTrigger.'/'.$path;
 
 		// Add timestamp to the resource URL for caching, if Blocks is not operating in dev mode
-		if (blx()->config->devMode != true && $origPath != '')
+		if ($origPath && !blx()->config->devMode)
 		{
-			// Ignore everything up to and including the first slash for this
-			$resourcePath = substr($path, strpos($path, '/') + 1);
-			$timeModified = filemtime(blx()->resources->getResourcePath($resourcePath));
-			$params = '?cached=' . $timeModified;
+			$realPath = blx()->resources->getResourcePath($origPath);
+
+			if ($realPath)
+			{
+				if (!is_array($params))
+				{
+					$params = array($params);
+				}
+
+				$dateParam = blx()->resources->dateParam;
+				$timeModified = filemtime($realPath);
+				$params[$dateParam] = $timeModified;
+			}
 		}
 
 		$path = static::getUrl($path, $params, $protocol);

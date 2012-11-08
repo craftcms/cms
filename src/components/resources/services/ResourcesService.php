@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class ResourcesService extends BaseApplicationComponent
 {
+	public $dateParam;
+
 	/**
 	 * Resolves a resource path to the actual file system path, or returns false if the resource cannot be found.
 	 *
@@ -145,7 +147,14 @@ class ResourcesService extends BaseApplicationComponent
 
 		if (!blx()->config->useXSendFile)
 		{
-			blx()->request->sendFile(IOHelper::getFileName($path), $content, array('forceDownload' => false));
+			$options['forceDownload'] = true;
+
+			if (blx()->request->getQuery($this->dateParam))
+			{
+				$options['cache'] = true;
+			}
+
+			blx()->request->sendFile(IOHelper::getFileName($path), $content, $options);
 		}
 		else
 		{
