@@ -1,11 +1,11 @@
 <?php
 
+$packages = explode(',', BLOCKS_PACKAGES);
 $common = require_once(BLOCKS_APP_PATH.'config/common.php');
 
 Yii::setPathOfAlias('app', BLOCKS_APP_PATH);
 Yii::setPathOfAlias('plugins', BLOCKS_PLUGINS_PATH);
 
-$packages = explode(',', BLOCKS_PACKAGES);
 
 // -------------------------------------------
 //  CP routes
