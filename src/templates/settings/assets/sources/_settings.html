@@ -53,6 +53,8 @@
 		{% if blx.hasPackage('cloud') %}
 			{% set sourceTypes = blx.assets.getAllSourceTypes %}
 
+            {% includeJsResource "js/Assets/EditSource.js" %}
+
 			{{ forms.selectField({
 				label: "Type",
 				instructions: "What type of source is this?"|t,

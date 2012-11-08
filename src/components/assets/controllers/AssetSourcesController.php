@@ -17,7 +17,7 @@ class AssetSourcesController extends BaseController
 		$source->id = blx()->request->getPost('sourceId');
 		$source->name = blx()->request->getPost('name');
 
-		if (Blocks::hasPackage('Cloud'))
+		if (Blocks::hasPackage(BlocksPackage::Cloud))
 		{
 			$source->type = blx()->request->getPost('type');
 		}
@@ -71,5 +71,26 @@ class AssetSourcesController extends BaseController
 		blx()->assetSources->deleteSourceById($sourceId);
 
 		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Get Amazon S3 sources.
+	 */
+	public function actionGetS3Buckets()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Cloud))
+		{
+			$keyId = blx()->request->getRequiredPost('keyId');
+			$secret = blx()->request->getRequiredPost('secret');
+
+			try
+			{
+				$this->returnJson(S3AssetSourceType::getBucketList($keyId, $secret));
+			}
+			catch (Exception $exception)
+			{
+				$this->returnErrorJson($exception->getMessage());
+			}
+		}
 	}
 }
