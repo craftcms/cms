@@ -126,12 +126,12 @@ class UpdateController extends BaseController
 
 	/**
 	 * Returns the update info JSON.
-	 *
-	 * @param string $h The handle of which update to retrieve info for.
 	 */
-	public function actionGetUpdates($h)
+	public function actionGetUpdates()
 	{
 		$this->requireAjaxRequest();
+
+		$handle = blx()->request->getRequiredPost('handle');
 
 		$return = array();
 		$updateInfo = blx()->updates->getUpdates();
@@ -143,7 +143,7 @@ class UpdateController extends BaseController
 
 		try
 		{
-			switch ($h)
+			switch ($handle)
 			{
 				case 'all':
 				{
@@ -176,18 +176,18 @@ class UpdateController extends BaseController
 				{
 					if (!empty($updateInfo->plugins))
 					{
-						if (isset($updateInfo->plugins[$h]) && $updateInfo->plugins[$h]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$h]->releases) > 0)
+						if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0)
 						{
-							$return[] = array('handle' => $updateInfo->plugins[$h]->handle, 'name' => $updateInfo->plugins[$h]->displayName, 'version' => $updateInfo->plugins[$h]->latestVersion);
+							$return[] = array('handle' => $updateInfo->plugins[$handle]->handle, 'name' => $updateInfo->plugins[$handle]->displayName, 'version' => $updateInfo->plugins[$handle]->latestVersion);
 						}
 						else
 						{
-							$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $h)));
+							$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
 						}
 					}
 					else
 					{
-						$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $h)));
+						$this->returnErrorJson(Blocks::t("Could not find any update information for the plugin with handle “{handle}”.", array('handle' => $handle)));
 					}
 				}
 			}
@@ -203,17 +203,17 @@ class UpdateController extends BaseController
 
 	/**
 	 * Runs an update.
-	 *
-	 * @param string $h The handle of what to update.
 	 */
-	public function actionRunAutoUpdate($h)
+	public function actionRunAutoUpdate()
 	{
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 
+		$handle = blx()->request->getRequiredPost('handle');
+
 		try
 		{
-			switch ($h)
+			switch ($handle)
 			{
 				case 'Blocks':
 				{
@@ -224,7 +224,7 @@ class UpdateController extends BaseController
 				// Plugin handle
 				default:
 				{
-					blx()->updates->doPluginUpdate($h);
+					blx()->updates->doPluginUpdate($handle);
 				}
 			}
 

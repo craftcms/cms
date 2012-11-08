@@ -124,7 +124,9 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @return Returns which URL format we're using (PATH_INFO or the query string)
+	 * Returns which URL format we're using (PATH_INFO or the query string)
+	 *
+	 * @return string
 	 */
 	public function getUrlFormat()
 	{

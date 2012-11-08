@@ -135,7 +135,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 			selectedIds: this._selectedIds
 		};
 
-		$.post(Blocks.actionUrl+'links/getModalBody', data, $.proxy(function(response) {
+		Blocks.postActionRequest('links/getModalBody', data, $.proxy(function(response) {
 			this._$modalBody.html(response);
 
 			this._$modalTbody = this._$modalBody.find('tbody:first');

@@ -133,4 +133,14 @@ class HttpRequestVariable
 	{
 		return blx()->request->getServerName();
 	}
+
+	/**
+	 * Returns which URL format we're using (PATH_INFO or the query string)
+	 *
+	 * @return string
+	 */
+	public function getUrlFormat()
+	{
+		return blx()->request->getUrlFormat();
+	}
 }

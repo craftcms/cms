@@ -45,7 +45,7 @@ var Routes = Blocks.Base.extend({
 			data['routeIds['+i+']'] = $($routes[i]).attr('data-id');
 		}
 
-		$.post(Blocks.actionUrl+'routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
+		Blocks.postActionRequest('routes/updateRouteOrder', data, $.proxy(function(response, textStatus, jqXHR) {
 			if (response.success)
 				Blocks.cp.displayNotice(Blocks.t('New route order saved.'));
 			else
@@ -311,7 +311,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 		this.$saveBtn.addClass('active');
 		this.$spinner.show();
 
-		$.post(Blocks.actionUrl+'routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
+		Blocks.postActionRequest('routes/saveRoute', data, $.proxy(function(response, textStatus, jqXHR) {
 
 			if (response.success)
 			{
@@ -358,7 +358,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 	{
 		if (confirm(Blocks.t(('Are you sure you want to delete this route?'))))
 		{
-			$.post(Blocks.actionUrl+'routes/deleteRoute', { routeId: this.route.id }, function() {
+			Blocks.postActionRequest('routes/deleteRoute', { routeId: this.route.id }, function() {
 				Blocks.cp.displayNotice(Blocks.t('Route deleted.'))
 			});
 

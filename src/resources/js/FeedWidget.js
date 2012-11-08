@@ -15,7 +15,7 @@ Blocks.FeedWidget = Blocks.Base.extend({
 			limit: limit
 		};
 
-		$.post(Blocks.actionUrl+'dashboard/getFeedItems', data, $.proxy(function(response) {
+		Blocks.postActionRequest('dashboard/getFeedItems', data, $.proxy(function(response) {
 			var $tds = this.$widget.find('td');
 
 			for (var i = 0; i < response.items.length; i++)

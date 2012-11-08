@@ -46,7 +46,7 @@ var scripts =
 
 for (var i = 0; i < scripts.length; i++)
 {
-	document.write('<script type="text/javascript" src="'+Blocks.resourceUrl+'js/global/'+scripts[i]+'"></script>');
+	document.write('<script type="text/javascript" src="'+Blocks.resourceUrl+'/js/global/'+scripts[i]+'"></script>');
 }
 
 

@@ -7,13 +7,16 @@ namespace Blocks;
 class UrlHelper
 {
 	/**
+	 * Returns a URL.
+	 *
 	 * @static
-	 * @param   string          $path
-	 * @param   null            $params
-	 * @param   string          $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return  array|string
+	 * @param string $path
+	 * @param array|string|null $params
+	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @param bool|null $autoBaseUrl Whether to automatically determine the base URL based on the current request's URL.
+	 * @return string
 	 */
-	public static function getUrl($path = '', $params = null, $protocol = '')
+	public static function getUrl($path = '', $params = null, $protocol = '', $autoBaseUrl = false)
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (strpos($path, '://') !== false)
@@ -22,13 +25,13 @@ class UrlHelper
 		}
 
 		// Get the base URL
-		if (blx()->request->getType() == HttpRequestType::Site)
+		if ($autoBaseUrl || BLOCKS_CP_REQUEST)
 		{
-			$baseUrl = Blocks::getSiteUrl();
+			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
 		}
 		else
 		{
-			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
+			$baseUrl = Blocks::getSiteUrl();
 		}
 
 		$baseUrl = rtrim($baseUrl, '/');
@@ -76,13 +79,13 @@ class UrlHelper
 	}
 
 	/**
-	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
+	 * Returns a resource URL.
 	 *
 	 * @static
 	 * @param string $path
-	 * @param null   $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return string The URL to the resource, via Blocks' resource server
+	 * @param array|string|null $params
+	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @return string
 	 */
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
@@ -107,10 +110,7 @@ class UrlHelper
 			}
 		}
 
-		$path = static::getUrl($path, $params, $protocol);
-		$path = $origPath == '' ? $path.'/' : $path;
-
-		return $path;
+		return static::getUrl($path, $params, $protocol);
 	}
 
 	/**
@@ -122,11 +122,7 @@ class UrlHelper
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$origPath = $path;
 		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
-		$path = static::getUrl($path, $params, $protocol);
-		$path = $origPath == '' ? $path.'/' : $path;
-
-		return $path;
+		return static::getUrl($path, $params, $protocol, true);
 	}
 }

@@ -100,7 +100,7 @@ Blocks.Installer = Blocks.Base.extend({
 				data[input] = Blocks.getInputPostVal($input);
 			}
 
-			$.post(Blocks.actionUrl+'install/install', data, $.proxy(function() {
+			Blocks.postActionRequest('install/install', data, $.proxy(function() {
 				this.$currentScreen.find('h1:first').text(Blocks.t('All done!'));
 				var $buttons = $('<div class="buttons"><a href="'+Blocks.baseUrl+'dashboard" class="btn big submit">'+Blocks.t("Go to Blocks")+'</a></div>');
 				$('#spinner').replaceWith($buttons);
@@ -154,7 +154,7 @@ Blocks.Installer = Blocks.Base.extend({
 		var $submitBtn = this['$'+what+'SubmitBtn'];
 		$submitBtn.addClass('sel loading');
 
-		var url = Blocks.actionUrl+'install/validate'+Blocks.uppercaseFirst(what);
+		var action = 'install/validate'+Blocks.uppercaseFirst(what);
 
 		var data = {};
 		for (var i = 0; i < inputs.length; i++)
@@ -164,7 +164,7 @@ Blocks.Installer = Blocks.Base.extend({
 			data[input] = Blocks.getInputPostVal($input);
 		}
 
-		$.post(url, data, $.proxy(function(response) {
+		Blocks.postActionRequest(action, data, $.proxy(function(response) {
 			if (response.validates)
 				callback();
 			else
