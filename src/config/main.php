@@ -143,6 +143,7 @@ $components['statePersister']['class'] = 'Blocks\StatePersister';
 
 $components['urlManager']['class'] = 'Blocks\UrlManager';
 $components['urlManager']['cpRoutes'] = $cpRoutes;
+$components['urlManager']['pathParam'] = 'p';
 
 $components['assetManager']['basePath'] = dirname(__FILE__).'/../assets';
 $components['assetManager']['baseUrl'] = '../../blocks/app/assets';

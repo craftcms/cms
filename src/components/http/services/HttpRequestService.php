@@ -74,8 +74,8 @@ class HttpRequestService extends \CHttpRequest
 	{
 		if (!isset($this->_queryStringPath))
 		{
-			$pathVar = blx()->urlManager->routeVar;
-			$this->_queryStringPath = trim($this->getQuery($pathVar, ''), '/');
+			$pathParam = blx()->urlManager->pathParam;
+			$this->_queryStringPath = trim($this->getQuery($pathParam, ''), '/');
 		}
 
 		return $this->_queryStringPath;

@@ -21,49 +21,58 @@ class UrlHelper
 			return $path;
 		}
 
-		$origPath = $path;
-		$pathVar = blx()->urlManager->routeVar;
-
-		$path = static::_normalizePath(trim($path, '/'), $params);
+		// Get the base URL
 		if (blx()->request->getType() == HttpRequestType::Site)
 		{
-			$path = Blocks::getSiteUrl().implode('/', $path);
+			$baseUrl = Blocks::getSiteUrl();
 		}
 		else
 		{
-			$path = blx()->request->getHostInfo($protocol).HtmlHelper::normalizeUrl($path);
+			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
 		}
 
-		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo && $params == null)
+		$baseUrl = rtrim($baseUrl, '/');
+		$path = trim($path, '/');
+
+		$anchor = '';
+
+		// Normalize the params
+		if (is_array($params))
 		{
-			$path = ($origPath == '' && $path[strlen($path) - 1] !== '/' ? $path.'/' : $path);
+			foreach ($params as $name => $value)
+			{
+				if (!is_numeric($name))
+				{
+					if ($name == '#')
+					{
+						$anchor = '#'.$value;
+					}
+					else if ($value !== null && $value !== '')
+					{
+						$params[] = $name.'='.$value;
+					}
+
+					unset($params[$name]);
+				}
+			}
+
+			$params = implode('&', array_filter($params));
 		}
 		else
 		{
-			// Stupid way of checking if p doesn't have a value set in the given path.
-			if (($pos = strpos($path, $pathVar.'=')) !== false && isset($path[$pos + 2]) && $path[$pos + 2] == '&')
-			{
-				if ($params == null)
-				{
-					$search = $pathVar.'=';
-				}
-				else
-				{
-					$search = $pathVar.'=&';
-				}
-
-				$path = str_replace($search, '', $path);
-			}
-			else
-			{
-				if (strpos($path, $pathVar.'=') === false && blx()->request->getUrlFormat() == UrlFormat::QueryString)
-				{
-					$path = $path.'?'.$pathVar.'=';
-				}
-			}
+			$params = ltrim($params, '&?');
 		}
 
-		return $path;
+		// Put it all together
+		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
+		{
+			return $baseUrl.($path ? '/'.$path : '').($params ? '?'.$params : '').$anchor;
+		}
+		else
+		{
+			$pathParam = blx()->urlManager->pathParam;
+			return $baseUrl.($path || $params ? '?'.($path ? $pathParam.'='.$path : '').($path && $params ? '&' : '').$params : '').$anchor;
+		}
 	}
 
 	/**
@@ -110,35 +119,5 @@ class UrlHelper
 		$path = $origPath == '' ? $path.'/' : $path;
 
 		return $path;
-	}
-
-	/**
-	 * @static
-	 * @param        $path
-	 * @param        $params
-	 * @return array|string
-	 */
-	private static function _normalizePath($path, $params)
-	{
-		$path = '/'.$path;
-
-		if (is_array($params))
-		{
-			return array_merge(array($path), $params);
-		}
-
-		if (is_string($params))
-		{
-			$params = ltrim($params, '?&');
-
-			if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
-			{
-				return array($path.'?'.$params);
-			}
-
-			return array($path.'&'.$params);
-		}
-
-		return array($path);
 	}
 }

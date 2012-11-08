@@ -9,17 +9,7 @@ class UrlManager extends \CUrlManager
 	private $_templateVariables = array();
 
 	public $cpRoutes;
-	public $routeVar;
-
-	const RouteVar = 'p';
-
-	/**
-	 *
-	 */
-	function __construct()
-	{
-		$this->routeVar = static::RouteVar;
-	}
+	public $pathParam;
 
 	/**
 	 *
