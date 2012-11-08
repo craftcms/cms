@@ -43,13 +43,13 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Starts an indexing session
+	 * Starts an indexing session.
+	 *
 	 * @param $sessionId
 	 * @return array
 	 */
 	public function startIndex($sessionId)
 	{
-
 		$offset = 0;
 		$indexedFolderIds = array();
 
@@ -72,7 +72,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 				$folderModel = blx()->assets->getFolder($parameters);
 
-				// if we don't have a folder matching these, create a new one
+				// If we don't have a folder matching these, create a new one
 				if (is_null($folderModel))
 				{
 					$parts = explode('/', rtrim($fullPath, '/'));
@@ -87,7 +87,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 						$parameters->fullPath = join('/', $parts) . '/';
 					}
 
-					// look up the parent folder
+					// Look up the parent folder
 					$parentFolder = blx()->assets->getFolder($parameters);
 					if (is_null($parentFolder))
 					{
@@ -125,7 +125,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			}
 		}
 
-		// figure out the obsolete records for folders
+		// Figure out the obsolete records for folders
 		$missingFolderIds = array();
 		$parameters = new FolderCriteria(array(
 			'sourceId' => $this->model->id
@@ -145,7 +145,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Process an indexing session
+	 * Process an indexing session.
+	 *
 	 * @param $sessionId
 	 * @param $offset
 	 * @return mixed
@@ -163,7 +164,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$file = $indexEntryModel->uri;
 
-		// this is the part of the path that actually matters
+		// This is the part of the path that actually matters
 		$uriPath = substr($file, strlen($uploadPath));
 
 		$fileIndexed = false;
@@ -238,7 +239,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Insert a file from path in folder
+	 * Insert a file from path in folder.
+	 *
 	 * @param AssetFolderModel $folder
 	 * @param $filePath
 	 * @param $fileName
@@ -250,7 +252,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$targetFolder = $this->getSettings()->path . $folder->fullPath;
 
-		// make sure the folder is writable
+		// Make sure the folder is writable
 		if (! IOHelper::isWritable($targetFolder))
 		{
 			throw new Exception(Blocks::t('Target destination is not writable'));
@@ -296,7 +298,8 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	}
 
 	/**
-	 * Get a name replacement for a filename already taken in a folder
+	 * Get a name replacement for a filename already taken in a folder.
+	 *
 	 * @param AssetFolderModel $folder
 	 * @param $fileName
 	 * @return string

@@ -30,7 +30,8 @@ abstract class BaseAssetSourceType extends BaseComponent
 	abstract public function processIndex($sessionId, $offset);
 
 	/**
-	 * Insert a file from path in folder
+	 * Insert a file from path in folder.
+	 *
 	 * @param AssetFolderModel $folder
 	 * @param $filePath
 	 * @param $fileName
@@ -40,7 +41,8 @@ abstract class BaseAssetSourceType extends BaseComponent
 	abstract protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName);
 
 	/**
-	 * Get a name replacement for a filename already taken in a folder
+	 * Get a name replacement for a filename already taken in a folder.
+	 *
 	 * @param AssetFolderModel $folder
 	 * @param $fileName
 	 * @return mixed
@@ -48,7 +50,8 @@ abstract class BaseAssetSourceType extends BaseComponent
 	//abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
 
 	/**
-	 * Return a result object for prompting the user about filename conflicts
+	 * Return a result object for prompting the user about filename conflicts.
+	 *
 	 * @param string $fileName the cause of all trouble
 	 * @return object
 	 */
@@ -65,16 +68,18 @@ abstract class BaseAssetSourceType extends BaseComponent
 	}
 
 	/**
+	 * Upload a file.
+	 *
 	 * @param AssetFolderModel $folder
 	 * @return object
 	 * @throws Exception
 	 */
 	public function uploadFile($folder)
 	{
-		// upload the file and drop it in the temporary folder
+		// Upload the file and drop it in the temporary folder
 		$uploader = new \qqFileUploader();
 
-		// make sure a file was uploaded
+		// Make sure a file was uploaded
 		if (! $uploader->file)
 		{
 			throw new Exception(Blocks::t('No file was uploaded'));
@@ -82,7 +87,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 
 		$size = $uploader->file->getSize();
 
-		// make sure the file isn't empty
+		// Make sure the file isn't empty
 		if (! $size)
 		{
 			throw new Exception(Blocks::t('Uploaded file was empty'));
@@ -127,7 +132,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			$fileModel->id = blx()->assets->storeFile($fileModel);
 			IOHelper::deleteFile($filePath);
 
-			// now that we have stored all this information, we have to send back the original conflict response
+			// Now that we have stored all this information, we have to send back the original conflict response
 			/*if (isset($conflictResponse))
 			{
 				$response = $conflictResponse;
