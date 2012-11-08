@@ -7,11 +7,13 @@ namespace Blocks;
 class UrlHelper
 {
 	/**
+	 * Returns a URL.
+	 *
 	 * @static
-	 * @param      $path
-	 * @param null $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return array|string
+	 * @param string $path
+	 * @param array|string|null $params
+	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @return string
 	 */
 	public static function getUrl($path = '', $params = null, $protocol = '')
 	{
@@ -76,13 +78,13 @@ class UrlHelper
 	}
 
 	/**
-	 * Get the URL to a resource that's located in either blocks/app/resources or a plugin's resources folder
+	 * Returns a resource URL.
 	 *
 	 * @static
 	 * @param string $path
-	 * @param null   $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return string The URL to the resource, via Blocks' resource server
+	 * @param array|string|null $params
+	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @return string
 	 */
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
@@ -107,10 +109,7 @@ class UrlHelper
 			}
 		}
 
-		$path = static::getUrl($path, $params, $protocol);
-		$path = $origPath == '' ? $path.'/' : $path;
-
-		return $path;
+		return static::getUrl($path, $params, $protocol);
 	}
 
 	/**
@@ -122,11 +121,7 @@ class UrlHelper
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$origPath = $path;
 		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
-		$path = static::getUrl($path, $params, $protocol);
-		$path = $origPath == '' ? $path.'/' : $path;
-
-		return $path;
+		return static::getUrl($path, $params, $protocol);
 	}
 }

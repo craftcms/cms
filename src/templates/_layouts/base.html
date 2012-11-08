@@ -55,6 +55,9 @@
 		baseUrl: '{{ url() }}',
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
+		urlFormat: '{{ blx.request.urlFormat }}',
+		resourceTrigger: '{{ blx.config.resourceTrigger }}',
+		actionTrigger: '{{ blx.config.actionTrigger }}',
 		language: '{{ blx.language }}',
 		packages: {{ blx.getPackages|json_encode|raw }},
 		translations: {{ getTranslations()|raw }}

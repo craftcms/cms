@@ -83,6 +83,93 @@ Blocks.hasPackage = function(pkg)
 };
 
 /**
+ * Returns a URL.
+ *
+ * @param string path
+ * @param array|string|null params
+ * @return string
+ */
+Blocks.getUrl = function(path, params)
+{
+	// Return path if it appears to be an absolute URL.
+	if (path.search('://') != -1)
+	{
+		return path;
+	}
+
+	path = Blocks.trim(path, '/');
+
+	anchor = '';
+
+	// Normalize the params
+	if (Blocks.isObject(params))
+	{
+		var aParams = [];
+
+		for (var name in params)
+		{
+			var value = params[name];
+
+			if (name == '#')
+			{
+				anchor = '#'+value;
+			}
+			else if (value !== null && value !== '')
+			{
+				aParams.push(name+'='+value);
+			}
+		}
+
+		params = aParams;
+	}
+
+	if (Blocks.isArray(params))
+	{
+		params = params.join('&');
+	}
+	else
+	{
+		params = Blocks.ltrim(params, '&');
+	}
+
+	// Put it all together
+	if (Blocks.urlFormat == 'pathinfo')
+	{
+		return Blocks.baseUrl+(path ? '/'+path : '')+(params ? '?'+params : '')+anchor;
+	}
+	else
+	{
+		return Blocks.baseUrl+(path || params ? '?'+(path ? 'p='+path : '')+(path && params ? '&' : '')+(params ? params : '') : '')+anchor;
+	}
+};
+
+/**
+ * Returns a resource URL.
+ *
+ * @param string path
+ * @param array|string|null params
+ * @return string
+ */
+Blocks.getResourceUrl = function(path, params)
+{
+	path = Blocks.actionTrigger+'/'+Blocks.trim(path, '/');
+	return Blocks.getUrl(path, params);
+};
+
+/**
+ * Returns an action URL.
+ *
+ * @param string path
+ * @param array|string|null params
+ * @return string
+ */
+Blocks.getActionUrl = function(path, params)
+{
+	path = Blocks.actionTrigger+'/'+Blocks.trim(path, '/');
+	return Blocks.getUrl(path, params);
+};
+
+/**
  * Format a number with commas.
  *
  * @param mixed num
@@ -118,6 +205,75 @@ Blocks.stringToArray = function(str)
 	}
 	return arr;
 };
+
+/**
+ * Takes an array or string of chars, and places a backslash before each one, returning the combined string.
+ *
+ * Userd by ltrim() and rtrim()
+ *
+ * @param string|array chars
+ * @return string
+ */
+Blocks.escapeChars = function(chars)
+{
+	if (!Blocks.isArray(chars))
+	{
+		chars = chars.split();
+	}
+
+	var escaped = '';
+
+	for (var i = 0; i < chars.length; i++)
+	{
+		escaped += "\\"+chars[i];
+	}
+
+	return escaped;
+}
+
+/**
+ * Trim characters off of the beginning of a string.
+ *
+ * @param string str
+ * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+ * @return string
+ */
+Blocks.ltrim = function(str, chars)
+{
+	if (!str) return str;
+	if (chars === undefined) chars = ' ';
+	var re = new RegExp('^['+Blocks.escapeChars(chars)+']+');
+	return str.replace(re, '');
+}
+
+/**
+ * Trim characters off of the end of a string.
+ *
+ * @param string str
+ * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+ * @return string
+ */
+Blocks.rtrim = function(str, chars)
+{
+	if (!str) return str;
+	if (chars === undefined) chars = ' ';
+	var re = new RegExp('['+Blocks.escapeChars(chars)+']+$');
+	return str.replace(re, '');
+}
+
+/**
+ * Trim characters off of the beginning and end of a string.
+ *
+ * @param string str
+ * @param string|array|null The characters to trim off. Defaults to a space if left blank.
+ * @return string
+ */
+Blocks.trim = function(str, chars)
+{
+	str = Blocks.ltrim(str, chars);
+	str = Blocks.rtrim(str, chars);
+	return str;
+}
 
 /**
  * Filters an array.
@@ -482,6 +638,17 @@ Blocks.isJquery = function(val)
 Blocks.isObject = function(val)
 {
 	return (typeof val == 'object' && !Blocks.isArray(val) && !Blocks.isJquery(val) && typeof val.nodeType == 'undefined');
+};
+
+/**
+ * Returns whether a variable is a string.
+ *
+ * @param mixed val
+ * @return bool
+ */
+Blocks.isString = function(val)
+{
+	return (typeof val == 'string');
 };
 
 /**
