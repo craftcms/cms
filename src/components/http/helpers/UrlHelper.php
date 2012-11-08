@@ -8,10 +8,10 @@ class UrlHelper
 {
 	/**
 	 * @static
-	 * @param      $path
-	 * @param null $params
-	 * @param string $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @return array|string
+	 * @param   string          $path
+	 * @param   null            $params
+	 * @param   string          $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @return  array|string
 	 */
 	public static function getUrl($path = '', $params = null, $protocol = '')
 	{
@@ -102,7 +102,7 @@ class UrlHelper
 				}
 
 				$dateParam = blx()->resources->dateParam;
-				$timeModified = filemtime($realPath);
+				$timeModified = IOHelper::getLastTimeModified($realPath);
 				$params[$dateParam] = $timeModified;
 			}
 		}
