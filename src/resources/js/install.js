@@ -29,21 +29,16 @@ Blocks.Installer = Blocks.Base.extend({
 		this.$currentScreen = $(this.$screens[0])
 			.removeClass('scaleddown')
 			.animate({opacity: 1}, 'fast', $.proxy(function() {
-				this.addListener($('#getstarted'), 'activate', 'showAccountScreen');
-
-				/* HIDE */
 				// Give the License Key input focus after half a second
 				this.focusFirstInput();
 
 				// Get ready for form submit
-				this.$licensekeySubmitBtn = $('#licensekeysubmit');
+				this.$licensekeySubmitBtn = $('#getstarted');
 				this.addListener(this.$licensekeySubmitBtn, 'activate', 'validateLicenseKey');
 				this.addListener($('#licensekeyform'), 'submit', 'validateLicenseKey');
-				/* end HIDE */
 			}, this));
 	},
 
-	/* HIDE */
 	validateLicenseKey: function(event)
 	{
 		event.preventDefault();
@@ -51,7 +46,6 @@ Blocks.Installer = Blocks.Base.extend({
 		var inputs = ['licensekey'];
 		this.validate('licensekey', inputs, $.proxy(this, 'showAccountScreen'));
 	},
-	/* end HIDE */
 
 	showAccountScreen: function(event)
 	{

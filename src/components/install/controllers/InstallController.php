@@ -47,7 +47,6 @@ class InstallController extends BaseController
 			$this->renderTemplate('_special/install', $vars);
 		}
 	}
-	/* HIDE */
 
 	/**
 	 * Validates the license key
@@ -71,7 +70,6 @@ class InstallController extends BaseController
 
 		$this->returnJson($return);
 	}
-	/* end HIDE */
 
 	/**
 	 * Validates the user account credentials

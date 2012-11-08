@@ -134,7 +134,7 @@ class ZipArchive implements IZip
 				{
 					if (IOHelper::isFolderEmpty($itemToZip))
 					{
-						$zip->addEmptyDir($itemToZip);
+						$zip->addEmptyDir($relFilePath);
 					}
 				}
 				elseif (IOHelper::fileExists($itemToZip))

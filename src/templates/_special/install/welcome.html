@@ -1,5 +1,9 @@
 <div id="welcome" class="modal scaleddown">
 	<h1>{{ "Welcome to Blocks"|t }}</h1>
 
-	<div class="buttons"><div id="getstarted" class="btn big submit">{{ "Get started"|t }}</div></div>
+	<form id="licensekeyform">
+		<div class="textwrapper"><input id="licensekey" type="text" class="text nicetext" data-hint="Enter your license key…" value="@@@licenseKey@@@"></div>
+
+		<div class="buttons"><div id="getstarted" class="btn big submit">{{ "Get started"|t }}</div></div>
+	</form>
 </div>
