@@ -13,9 +13,10 @@ class UrlHelper
 	 * @param string $path
 	 * @param array|string|null $params
 	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
+	 * @param bool|null $autoBaseUrl Whether to automatically determine the base URL based on the current request's URL.
 	 * @return string
 	 */
-	public static function getUrl($path = '', $params = null, $protocol = '')
+	public static function getUrl($path = '', $params = null, $protocol = '', $autoBaseUrl = false)
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (strpos($path, '://') !== false)
@@ -24,13 +25,13 @@ class UrlHelper
 		}
 
 		// Get the base URL
-		if (blx()->request->getType() == HttpRequestType::Site)
+		if ($autoBaseUrl || BLOCKS_CP_REQUEST)
 		{
-			$baseUrl = Blocks::getSiteUrl();
+			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
 		}
 		else
 		{
-			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
+			$baseUrl = Blocks::getSiteUrl();
 		}
 
 		$baseUrl = rtrim($baseUrl, '/');
@@ -122,6 +123,6 @@ class UrlHelper
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
-		return static::getUrl($path, $params, $protocol);
+		return static::getUrl($path, $params, $protocol, true);
 	}
 }

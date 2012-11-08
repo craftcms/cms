@@ -52,7 +52,7 @@
 
 <script type="text/javascript">
 	window.Blocks = {
-		baseUrl: '{{ url() }}',
+		baseUrl: '{{ url("", null, "", true) }}',
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
 		urlFormat: '{{ blx.request.urlFormat }}',
