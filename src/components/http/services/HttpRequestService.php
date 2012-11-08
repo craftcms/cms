@@ -406,9 +406,21 @@ class HttpRequestService extends \CHttpRequest
 			}
 		}
 
-		header('Pragma: public');
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		// Cache for 1 month, unless Blocks is in dev mode
+		if (blx()->config->devMode == true)
+		{
+			header('Pragma: public');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+		}
+		else
+		{
+			$cacheTime = 60 * 60 * 24 * 30;
+			header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT');
+			header('Pragma: cache');
+			header('Cache-Control: max-age=' . $cacheTime);
+		}
+
 		header('Content-type: '.$options['mimeType']);
 
 		if (!ob_get_length())

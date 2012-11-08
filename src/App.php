@@ -7,10 +7,12 @@ namespace Blocks;
  * @property AssetsService          $assets         The assets service
  * @property AssetIndexingService   $assetIndexing  The assets indexing service
  * @property AssetSourcesService    $assetSources   The assets sources service
- * @property PathService            $path
- * @property UsersService           $users
- * @property AccountService         $account
- * @property ImagesService          $images
+ * @property PathService            $path			The path service
+ * @property UsersService           $users			The users service
+ * @property AccountService         $account		The account service
+ * @property ImagesService          $images			The images service
+ * @property ResourcesService		$resources		The resources service
+ * @property HttpRequestService 	$request 		The request service
  */
 class App extends \CWebApplication
 {

@@ -47,3 +47,7 @@ Source/.idea/vcs.xml
 Source/.idea/workspace.xml
 
 *.orig
+
+Source/.idea/.name
+
+Source/.idea/Blocks SOURCE.iml

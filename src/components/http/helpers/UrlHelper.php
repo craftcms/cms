@@ -40,7 +40,7 @@ class UrlHelper
 		}
 		else
 		{
-			// stupid way of checking if p doesn't have a value set in the given path.
+			// Stupid way of checking if p doesn't have a value set in the given path.
 			if (($pos = strpos($path, $pathVar.'=')) !== false && isset($path[$pos + 2]) && $path[$pos + 2] == '&')
 			{
 				if ($params == null)
@@ -79,6 +79,16 @@ class UrlHelper
 	{
 		$origPath = $path;
 		$path = blx()->config->resourceTrigger.'/'.trim($path, '/');
+
+		// Add timestamp to the resource URL for caching, if Blocks is not operating in dev mode
+		if (blx()->config->devMode != true && $origPath != '')
+		{
+			// Ignore everything up to and including the first slash for this
+			$resourcePath = substr($path, strpos($path, '/') + 1);
+			$timeModified = filemtime(blx()->resources->getResourcePath($resourcePath));
+			$params = '?cached=' . $timeModified;
+		}
+
 		$path = static::getUrl($path, $params, $protocol);
 		$path = $origPath == '' ? $path.'/' : $path;
 
