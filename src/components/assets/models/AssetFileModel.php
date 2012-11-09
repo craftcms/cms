@@ -93,6 +93,7 @@ class AssetFileModel extends BaseModel
 		{
 			$this->_sourceType = blx()->assetSources->getSourceTypeById($this->sourceId);
 		}
+
 		return $this->_sourceType;
 	}
 }

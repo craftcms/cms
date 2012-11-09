@@ -1,6 +1,9 @@
 <?php
 namespace Blocks;
 
+/**
+ *
+ */
 class AssetIndexingService extends BaseApplicationComponent
 {
 
@@ -74,10 +77,12 @@ class AssetIndexingService extends BaseApplicationComponent
 	public function storeIndexEntry($data)
 	{
 		$entry = new AssetIndexDataRecord();
+
 		foreach ($data as $key => $value)
 		{
 			$entry->setAttribute($key, $value);
 		}
+
 		$entry->save();
 	}
 

@@ -78,6 +78,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 						'uri' => $file,
 						'size' => is_dir($file) ? 0 : filesize($file)
 					);
+
 					blx()->assetIndexing->storeIndexEntry($indexEntry);
 					$total++;
 				}
@@ -204,6 +205,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 	{
 		$fileList = IOHelper::getFolderContents($this->getSettings()->path . $folder->fullPath, false);
 		$existingFiles = array();
+
 		foreach ($fileList as $file)
 		{
 			$existingFiles[pathinfo($file, PATHINFO_BASENAME)] = true;
@@ -220,6 +222,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 				return $fileName . '_' . $i . '.' . $extension;
 			}
 		}
+
 		return false;
 	}
 

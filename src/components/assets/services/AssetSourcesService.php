@@ -131,6 +131,7 @@ class AssetSourcesService extends BaseApplicationComponent
 		if ($recordValidates && $settingsValidate)
 		{
 			$isNewSource = $sourceRecord->isNewRecord();
+
 			if ($isNewSource)
 			{
 				$maxSortOrder = blx()->db->createCommand()
@@ -210,11 +211,14 @@ class AssetSourcesService extends BaseApplicationComponent
 					'sourceId' => $sourceId
 				)
 			);
+
 			$folders = blx()->assets->getFolders($folderParams);
+
 			foreach ($folders as $folder)
 			{
 				blx()->assets->deleteFolder($folder);
 			}
+
 			$sourceRecord->delete();
 			$transaction->commit();
 		}

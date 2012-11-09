@@ -46,6 +46,7 @@ class AssetsVariable
 	public function populateSourceType(AssetSourceModel $source)
 	{
 		$sourceType = blx()->assetSources->populateSourceType($source);
+
 		if ($sourceType)
 		{
 			return new AssetSourceTypeVariable($sourceType);
