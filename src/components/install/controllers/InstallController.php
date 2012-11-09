@@ -129,9 +129,7 @@ class InstallController extends BaseController
 		$this->requireAjaxRequest();
 
 		// Run the installer
-		/* HIDE */
 		$inputs['licensekey'] = blx()->request->getPost('licensekey');
-		/* end HIDE */
 		$inputs['username']   = blx()->request->getPost('username');
 		$inputs['email']      = blx()->request->getPost('email');
 		$inputs['password']   = blx()->request->getPost('password');
