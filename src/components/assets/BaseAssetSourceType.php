@@ -147,4 +147,144 @@ abstract class BaseAssetSourceType extends BaseComponent
 		}
 		return false;//$response;
 	}
+
+	/**
+	 * Ensure a folder entry exists in the DB for the full path and return it's id.
+	 *
+	 * @param $fullPath
+	 * @return int
+	 */
+	protected function _ensureFolderByFulPath($fullPath)
+	{
+		$parameters = new FolderCriteria(
+			array(
+				'fullPath' => $fullPath,
+				'sourceId' => $this->model->id
+			)
+		);
+
+		$folderModel = blx()->assets->getFolder($parameters);
+
+		// If we don't have a folder matching these, create a new one
+		if (is_null($folderModel))
+		{
+			$parts = explode('/', rtrim($fullPath, '/'));
+			$folderName = array_pop($parts);
+
+			if (empty($parts))
+			{
+				$parameters->fullPath = "";
+			}
+			else
+			{
+				$parameters->fullPath = join('/', $parts) . '/';
+			}
+
+			// Look up the parent folder
+			$parentFolder = blx()->assets->getFolder($parameters);
+			if (is_null($parentFolder))
+			{
+				$parentId = null;
+			}
+			else
+			{
+				$parentId = $parentFolder->id;
+			}
+
+			$folderModel = new AssetFolderModel();
+			$folderModel->sourceId = $this->model->id;
+			$folderModel->parentId = $parentId;
+			$folderModel->name = $folderName;
+			$folderModel->fullPath = $fullPath;
+
+			return blx()->assets->storeFolder($folderModel);
+		}
+		else
+		{
+			return $folderModel->id;
+		}
+	}
+
+	/**
+	 * Return a list of missing folders, when comparing the full folder list for this source against the provided list.
+	 *
+	 * @param array $folderList
+	 * @return array
+	 */
+	protected function _getMissingFolders(array $folderList)
+	{
+		// Figure out the obsolete records for folders
+		$missingFolders = array();
+		$parameters = new FolderCriteria(array(
+			'sourceId' => $this->model->id
+		));
+
+		$allFolders = blx()->assets->getFolders($parameters);
+
+		foreach ($allFolders as $folderModel)
+		{
+			if (!isset($folderList[$folderModel->id]))
+			{
+				$missingFolders[$folderModel->id] = $this->model->name . '/' . $folderModel->fullPath;
+			}
+		}
+
+		return $missingFolders;
+	}
+
+	protected function _indexFile($uriPath)
+	{
+
+		$fileIndexed = false;
+		$extension = IOHelper::getExtension($uriPath);
+
+		if (IOHelper::isExtensionAllowed($extension))
+		{
+			$parts = explode('/', $uriPath);
+			$fileName = array_pop($parts);
+
+			$searchFullPath = join('/', $parts) . (empty($parts) ? '' : '/');
+
+			$folderParameters = new FolderCriteria(
+				array(
+					'sourceId' => $this->model->id,
+					'fullPath' => $searchFullPath
+				)
+			);
+
+			$parentFolder = blx()->assets->getFolder($folderParameters);
+
+			if (empty($parentFolder))
+			{
+				return false;
+			}
+
+			$folderId = $parentFolder->id;
+
+			$fileParameters = new FileCriteria(
+				array(
+					'folderId' => $folderId,
+					'filename' => $fileName
+				)
+			);
+
+			$fileModel = blx()->assets->getFile($fileParameters);
+
+			if (is_null($fileModel))
+			{
+				$fileModel = new AssetFileModel();
+				$fileModel->sourceId = $this->model->id;
+				$fileModel->folderId = $folderId;
+				$fileModel->filename = $fileName;
+				$fileModel->kind = IOHelper::getFileKind($extension);
+				$fileId = blx()->assets->storeFile($fileModel);
+				$fileModel->id = $fileId;
+			}
+
+			return $fileModel;
+		}
+
+		return false;
+
+	}
 }

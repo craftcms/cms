@@ -10,6 +10,8 @@ class AssetsHelper
 	const ActionReplace = 'replace';
 	const ActionCancel = 'cancel';
 
+	const IndexSkipItemsPattern = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
+
 	/**
 	 * Get a temporary file path
 	 * @return mixed

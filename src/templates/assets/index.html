@@ -29,7 +29,9 @@
 
                 <ul class="assets-sources">
                     {% for source in sources %}
-                        <li><a href=""{% if loop.first %} class="sel"{% endif %}>{{ source.name }}</a></li>
+                        {% if source.type == 'Local' %}
+                            <li><a href=""{% if loop.first %} class="sel"{% endif %}>{{ source.name }}</a></li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </nav>

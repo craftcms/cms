@@ -1,14 +1,12 @@
 <?php
 namespace Blocks;
 
-/**
- *
- */
 class AssetIndexingService extends BaseApplicationComponent
 {
 
 	/**
-	 * Returns a unique indexing session id
+	 * Returns a unique indexing session id.
+	 *
 	 * @return string
 	 */
 	public function getIndexingSessionId()
@@ -17,7 +15,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets index list for a source
+	 * Gets index list for a source.
+	 *
 	 * @param $sessionId
 	 * @param $sourceId
 	 * @return array
@@ -28,7 +27,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Process index for a source
+	 * Process index for a source.
+	 *
 	 * @param $sessionId
 	 * @param $offset
 	 * @param $sourceId
@@ -67,7 +67,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Store an index entry
+	 * Store an index entry.
+	 *
 	 * @param $data
 	 */
 	public function storeIndexEntry($data)
@@ -81,7 +82,8 @@ class AssetIndexingService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Return an index model
+	 * Return an index model.
+	 *
 	 * @param $sourceId
 	 * @param $sessionId
 	 * @param $offset
