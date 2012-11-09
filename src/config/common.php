@@ -18,11 +18,14 @@ $tablePrefix = rtrim($dbConfig['tablePrefix'], '_');
 if ($tablePrefix)
 {
 	if (strlen($tablePrefix) > 5)
+	{
 		$tablePrefix = substr($tablePrefix, 0, 5);
+	}
+
 	$tablePrefix .= '_';
 }
 
-return array(
+$configArray = array(
 
 	// autoloading model and component classes
 	'import' => array(
@@ -33,7 +36,7 @@ return array(
 
 	'componentAliases' => array(
 /* COMPONENT ALIASES */
-	),
+		),
 
 	'components' => array(
 
@@ -64,3 +67,40 @@ return array(
 		'blocksConfig'          => $blocksConfig,
 	)
 );
+
+if (in_array('rebrand', $packages))
+{
+	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
+/* REBRAND COMPONENT ALIASES */
+	));
+}
+
+if (in_array('publishpro', $packages))
+{
+	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
+/* PUBLISHPRO COMPONENT ALIASES */
+	));
+}
+
+if (in_array('cloud', $packages))
+{
+	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
+/* CLOUD COMPONENT ALIASES */
+	));
+}
+
+if (in_array('language', $packages))
+{
+	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
+/* LANGUAGE COMPONENT ALIASES */
+	));
+}
+
+if (in_array('users', $packages))
+{
+	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
+/* USERS COMPONENT ALIASES */
+	));
+}
+
+return $configArray;

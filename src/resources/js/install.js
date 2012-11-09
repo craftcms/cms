@@ -85,10 +85,7 @@ Blocks.Installer = Blocks.Base.extend({
 	{
 		this.showScreen(3, $.proxy(function() {
 
-			var inputs = ['username', 'email', 'password', 'siteName', 'siteUrl', 'language'];
-			/* HIDE */
 			var inputs = ['licensekey', 'username', 'email', 'password', 'siteName', 'siteUrl', 'language'];
-			/* end HIDE */
 
 			var data = {};
 

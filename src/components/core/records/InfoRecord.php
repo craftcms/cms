@@ -26,7 +26,7 @@ class InfoRecord extends BaseRecord
 			'siteName'    => array(AttributeType::Name, 'required' => true),
 			'siteUrl'     => array(AttributeType::Url, 'required' => true),
 			'language'    => array(AttributeType::Language, 'required' => true),
-			'licenseKey'  => AttributeType::LicenseKey,
+			'licenseKey'  => array(AttributeType::LicenseKey, 'required' => true),
 			'on'          => AttributeType::Bool,
 		);
 	}
