@@ -1,0 +1,44 @@
+{% extends "settings/users/_layout" %}
+{% set page = "groups" %}
+{% set title = "User Groups"|t %}
+{% set groups = blx.userGroups.getAllGroups %}
+
+
+{% set content %}
+	<p id="nogroups"{% if groups|length %} class="hidden"{% endif %}>
+		{{ "No groups exist yet."|t }}
+	</p>
+
+	{% if groups|length %}
+		<table id="groups" class="data">
+			<thead>
+				<th scope="col">{{ "Name"|t }}</th>
+				<th scope="col">{{ "Handle"|t }}</th>
+				<td class="thin"></td>
+			</thead>
+			<tbody>
+				{% for group in groups %}
+					<tr data-id="{{ group.id }}" data-name="{{ group.name|t }}">
+						<th scope="row"><a href="{{ url('settings/users/groups/' ~ group.id) }}">{{ group.name|t }}</a></th>
+						<td><code>{{ group.handle }}</code></td>
+						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	{% endif %}
+
+	<div class="buttons">
+		<a href="{{ url('settings/users/groups/new') }}" class="btn add icon">{{ "New Group"|t }}</a>
+	</div>
+{% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#groups',
+		noObjectsSelector: '#nogroups',
+		deleteAction: 'userGroups/deleteGroup'
+	});
+{% endset %}
+{% includeJs js %}

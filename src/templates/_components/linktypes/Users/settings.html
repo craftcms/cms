@@ -1,0 +1,10 @@
+{% from "_includes/forms" import checkboxSelectField %}
+
+{{ checkboxSelectField({
+	label: "User Groups"|t,
+	instructions: "Which user groups do you want to link users from?"|t,
+	id: 'groupId',
+	name: 'groupId',
+	options: blx.userGroups.getAllGroups,
+	values: settings.groupId
+}) }}

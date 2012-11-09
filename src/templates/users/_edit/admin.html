@@ -1,0 +1,127 @@
+{% extends "users/_edit/layout" %}
+{% import "_includes/forms" as forms %}
+{% set pageTitle = "Administration"|t %}
+
+
+{% if not user.admin %}
+	{% exit 404 %}
+{% endif %}
+
+
+{% if account is not defined %}
+	{% if blx.request.segment(1) == 'myaccount' %}
+		{% set account = user %}
+	{% elseif userId %}
+		{% set account = blx.users.id(userId).first %}
+	{% endif %}
+	{% if not account %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="users/saveAdminSettings">
+		<input type="hidden" name="redirect" value="users/{{ account.id }}/admin">
+		<input type="hidden" name="userId" value="{{ account.id }}">
+
+		<h2>Groups and Permissions</h2>
+
+		<div>
+			{{ forms.checkbox({
+				label: '<strong>' ~ "Admin"|t ~ '</strong>',
+				name: 'admin',
+				checked: account.admin
+			}) }}
+		</div>
+
+		{% set userGroups = account.groups %}
+
+		{% for group in blx.userGroups.getAllGroups %}
+			<div>
+				{{ forms.checkbox({
+					label: group.name,
+					name: 'groups[]',
+					value: group.id,
+					checked: (group.id in userGroups|keys)
+				}) }}
+			</div>
+		{% endfor %}
+
+		<div class="buttons">
+			<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+
+	<hr>
+
+	<form method="post" action="" accept-charset="UTF-8">
+
+		<h2>User Info</h2>
+
+		<table class="data">
+			<tbody>
+				<tr>
+					<th class="nowrap">{{ "Account Status"|t }}</th>
+					<td>
+						{% if account.status == 'pending' %}
+							<div class="status"></div> {{ "Unverified"|t }} 
+							<input type="button" class="btn small formsubmit" value="{{ 'Resend Email'|t }}" data-action="users/sendVerificationEmail">
+							<input type="button" class="btn small formsubmit" value="{{ 'Activate'|t }}" data-action="users/activateUser">
+						{% elseif account.status == 'locked' %}
+							<div class="status pending"></div> {{ "Locked"|t }} 
+							<input type="button" class="btn small formsubmit" value="{{ 'Unlock'|t }}" data-action="users/unlockUser">
+						{% elseif account.status == 'suspended' %}
+							<div class="status off"></div> {{ "Suspended"|t }} 
+							<input type="submit" class="btn small formsubmit" value="{{ 'Unsuspend'|t }}" data-action="users/unsuspendUser">
+						{% else %}
+							<div class="status on"></div> {{ "Active"|t }}
+						{% endif %}
+					</td>
+				</tr>
+				{% if account.status == 'locked' and blx.config.cooldownDuration %}
+					<tr>
+						<th class="nowrap">{{ "Cooldown Time Remaining"|t }}</th>
+						<td>{% set timeRemaining = account.remainingCooldownTime.humanDuration %}</td>
+					</tr>
+				{% endif %}
+				<tr>
+					<th class="nowrap">{{ "Registration Date" }}</th>
+					<td>{{ account.dateCreated.nice }}</td>
+				</tr>
+				{% if account.status != 'pending' %}
+					<tr>
+						<th class="nowrap">{{ "Last Login Date"|t }}</th>
+						<td>{% if account.lastLoginDate %}{{ account.lastLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
+					</tr>
+
+					<tr>
+						<th class="nowrap">{{ "Last Invalid Login Date"|t }}</th>
+						<td>{% if account.lastInvalidLoginDate %}{{ account.lastInvalidLoginDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
+					</tr>
+
+					<tr>
+						<th class="nowrap">{{ "Last Password Change Date"|t }}</th>
+						<td>{% if account.lastPasswordChangeDate %}{{ account.lastPasswordChangeDate.nice }}{% else %}{{ "Never"|t }}{% endif %}</td>
+					</tr>
+
+					<tr>
+						<th class="nowrap">{{ "Invalid Login Count"|t }}</th>
+						<td>{% if account.invalidLoginCount %}{{ account.invalidLoginCount }}{% else %}0{% endif %}</td>
+					</tr>
+				{% endif %}
+			</tbody>
+		</table>
+
+		<hr>
+
+		<input type="hidden" name="userId" value="{{ account.id }}">
+
+		{% if true or not account.isCurrent %}
+			{% if account.status != 'suspended' %}
+				<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
+			{% endif %}
+
+			<input class="btn small" type="submit" name="delete" value="{{ 'Archive'|t }}" data-action="users/archiveUser">
+		{% endif %}
+	</form>
+{% endset %}

@@ -1,0 +1,40 @@
+{% extends "_layouts/cp" %}
+{% set centered = true %}
+{% includeCssResource "css/account.css" %}
+
+
+{% if account is defined and account.id %}
+	{% if account.id == user.id %}
+		{% set heading = "My Account"|t %}
+		{% set baseUrl = 'myaccount' %}
+	{% else %}
+		{% set name = account.fullName ? account.fullName : account.username %}
+		{% set lastChar = name|slice(account.fullName|length-1) %}
+		{% set heading = name ~ (lastChar|lower == "s" ? "’" : "’s") ~ ' ' ~ "Account"|t %}
+		{% set baseUrl = 'users/' ~ account.id %}
+	{% endif %}
+	{% set title = heading ~ " - " ~ pageTitle %}
+{% else %}
+	{% set heading = "Register a new user"|t %}
+	{% set title = heading %}
+{% endif %}
+
+
+{% set header %}
+	<h1>{{ heading }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('users') }}" class="backbtn">{{ "Users"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% if account is defined and account.id %}
+	{% set tabs %}
+		<li><a class="settings icon{% if blx.request.lastSegment not in ['profile', 'info', 'admin'] %} active{% endif %}" href="{{ url(baseUrl) }}">{{ "Account"|t }}</a></li>
+		<li><a href="{{ url(baseUrl ~ '/profile') }}" {% if blx.request.lastSegment == 'profile' %}class="active"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
+
+		{% if user.admin %}
+			<li><a href="{{ url(baseUrl ~ '/admin') }}" {% if blx.request.lastSegment == 'admin' %}class="active"{% endif %} data-icon="☻">{{ "Admin"|t }}</a></li>
+		{% endif %}
+	{% endset %}
+{% endif %}

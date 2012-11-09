@@ -1,0 +1,80 @@
+{% extends "_layouts/cp" %}
+{% set title = "Users"|t %}
+
+{% set groups = blx.userGroups.getAllGroups %}
+
+{% set statuses = { active: 'on', pending: '', locked: 'pending', suspended: 'off' } %}
+{% set showStatus = true %}
+
+
+{% if filter is not defined %}
+	{% set filter = null %}
+	{% set params = { status: '*' } %}
+{% elseif filter in statuses|keys %}
+	{% set params = { status: filter } %}
+	{% set showStatus = false %}
+{% elseif filter == 'admins' %}
+	{% set params = { admin: true } %}
+{% elseif blx.userGroups.getGroupByHandle(filter) %}
+	{% set params = { group: filter, status: '*' } %}
+{% else %}
+	{% exit 404 %}
+{% endif %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+{% endset %}
+
+
+{% set content %}
+	<nav class="nav">
+		<div class="buttons">
+			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
+		</div>
+
+		<ul>
+			<li><a href="{{ url('users') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
+
+			{% for group in groups %}
+				<li><a href="{{ url('users/' ~ group.handle) }}" {% if filter == group.handle %}class="sel"{% endif %}>{{ group.name|t }}</a></li>
+			{% endfor %}
+
+			{% for status, class in statuses %}
+				{% set total = blx.users.status(status).total %}
+				{% if total %}
+					<li><a href="{{ url('users/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
+				{% endif %}
+			{% endfor %}
+
+			<li><a href="{{ url('users/admins') }}" {% if filter == 'admins' %}class="sel"{% endif %} data-icon="☻">{{ "Admins"|t }}</a></li>
+		</ul>
+	</nav>
+
+	<div>
+		<div class="toolbar">
+			<div class="textwrapper search"><input type="text" class="text nicetext" data-hint="{{ 'Search users'|t }}"></div>
+		</div>
+		{% set totalCols = 3 + (showStatus ? 1 : 0) %}
+		{% set colWidth = round(100 / totalCols) %}
+		<table class="data">
+			<thead>
+				<th scope="col" width="{{ colWidth }}%">{{ "Username"|t }}</th>
+				<th scope="col" width="{{ colWidth }}%">{{ "Full Name"|t }}</th>
+				<th scope="col" width="{{ colWidth }}%">{{ "Email"|t }}</th>
+				{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
+			</thead>
+			<tbody>
+				{% for account in blx.users.find(params) %}
+					<tr>
+						{% set accountUrl = url(account.id == user.id ? 'myaccount' : 'users/' ~ account.id) %}
+						<th scope="row"><a href="{{ accountUrl }}">{{ account.username }}</a></th>
+						<td>{{ account.fullName }}</td>
+						<td>{% if account.email %}<a href="mailto:{{ account.email }}">{{ account.email }}</a>{% endif %}</td>
+						{% if showStatus %}<td><div class="status {{ statuses[account.status] }}"></div> {{ account.status|ucfirst|t }}</td>{% endif %}
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+{% endset %}
