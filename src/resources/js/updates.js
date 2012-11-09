@@ -72,14 +72,14 @@ var atLeastOnePluginHasARelease = function(plugins)
 Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 	$('#loading').fadeOut('fast', function() {
-		if (response.blocks || response.packages)
+		if (response.blocks.releases || response.packages)
 		{
 			var $table = $('#system-updates'),
 				$tbody = $table.children('tbody');
 
 			$table.show();
 
-			if (response.blocks)
+			if (response.blocks.releases)
 			{
 				var $tr = $('<tr/>').appendTo($tbody),
 					$th = $('<th/>').appendTo($tr),
@@ -91,7 +91,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					'</span>'
 				);
 
-				$td.html('<a class="btn" href="'+Blocks.baseUrl+'update/blocks">'+Blocks.t('Update')+'</a>');
+				$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Update')+'</a>');
 
 				var $tr = $('<tr/>').appendTo($tbody),
 					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
@@ -104,7 +104,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 				var $tr = $('<tr/>').appendTo($tbody),
 					$th = $('<th/>').appendTo($tr),
 					$td = $('<td class="thin rightalign"/>').appendTo($tr),
-					$btn = $('<a class="btn" href="'+Blocks.baseUrl+'update/blocks">'+Blocks.t('Install')+'</a>').appendTo($td);
+					$btn = $('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Install')+'</a>').appendTo($td);
 
 				var packageValues = { packages: response.packages.join(', ') };
 				$th.html(response.packages.length > 1 ? Blocks.t('{packages} upgrades', packageValues) : Blocks.t('{packages} upgrade', packageValues));
@@ -140,7 +140,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 					$th.html(plugin.displayName+' '+plugin.releases[0].version);
 
-					$td.html('<a class="btn" href="'+Blocks.baseUrl+'updates/'+plugin['class'].toLowerCase()+'">'+Blocks.t('Update')+'</a>');
+					$td.html('<a class="btn" href="'+Blocks.getUrl('updates/'+plugin['class'].toLowerCase())+'">'+Blocks.t('Update')+'</a>');
 
 					var $tr = $('<tr/>').appendTo($tbody),
 						$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
@@ -156,7 +156,23 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 		$('#updates').fadeIn('fast');
 
-		if (response.blocks || response.packages || response.plugins)
+		var count = 0;
+		if (response.blocks.releases)
+		{
+			count++;
+		}
+
+		if (reponse.packages)
+		{
+			count++;
+		}
+
+		if (atLeastOnePluginHasARelease(response.plugins))
+		{
+			count++;
+		}
+
+		if (count > 2)
 		{
 			$('#update-all').fadeIn('fast');
 		}
