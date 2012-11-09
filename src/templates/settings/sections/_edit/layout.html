@@ -1,0 +1,22 @@
+{% extends "_layouts/cp" %}
+{% set centered = true %}
+
+
+{% if section is not defined or not section.id %}
+	{% set title = "Create a new section"|t %}
+{% else %}
+	{% set title = section.name|t %}
+
+	{% set tabs %}
+		<li><a class="settings icon{% if tab == 'settings' %} active{% endif %}" href="{{ url('settings/sections/'~section.id) }}">{{ "Settings"|t }}</a></li>
+		<li><a{% if tab == 'blocks' %} class="active"{% endif %} href="{{ url('settings/sections/'~section.id~'/blocks') }}" data-icon="b">{{ "Blocks"|t }}</a></li>
+	{% endset %}
+{% endif %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/sections') }}" class="backbtn">{{ "Sections"|t }}</a></li>
+	</ul>
+{% endset %}
