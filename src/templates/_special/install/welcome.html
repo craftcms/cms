@@ -2,8 +2,9 @@
 	<h1>{{ "Welcome to Blocks"|t }}</h1>
 
 	<form id="licensekeyform">
-		<div class="textwrapper"><input id="licensekey" type="text" class="text nicetext" data-hint="Enter your license key…" value="@@@licenseKey@@@"></div>
-
-		<div class="buttons"><div id="getstarted" class="btn big submit">{{ "Get started"|t }}</div></div>
+		<div class="textwrapper"><input id="licensekey" type="text" class="text nicetext code" data-hint="{{ 'Enter your license key…'|t }}" value="@@@licenseKey@@@"></div>
+		<div id="licensekeysubmit" class="btn big submit" data-icon="→"><span>{{ "Go"|t }}</span></div>
 	</form>
+
+	{% include "_special/install/dots" with {dot: 1} %}
 </div>
