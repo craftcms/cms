@@ -255,11 +255,12 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 		}
 
+		$this->_processPluginClasses($handle);
+		$installableRecords = $this->getPluginRecords($handle, 'install');
+
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			$installableRecords = $this->getPluginRecords($handle, 'install');
-
 			// Create all tables first.
 			foreach ($installableRecords as $record)
 			{
