@@ -344,7 +344,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function uninstallPlugin($handle)
 	{
-		$plugin = $this->getPlugin($handle);
+		$plugin = $this->getPlugin($handle, false);
 
 		if (!$plugin)
 		{
@@ -354,6 +354,15 @@ class PluginsService extends BaseApplicationComponent
 		if (!$plugin->isInstalled)
 		{
 			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
+		}
+
+		if (!$plugin->isEnabled)
+		{
+			// Pretend that the plugin is enabled just for this request
+			$lcHandle = strtolower($plugin->getClassHandle());
+			$this->_enabledPlugins[$lcHandle] = $plugin;
+
+			$this->_importPluginComponents($plugin);
 		}
 
 		$plugin->onBeforeUninstall();
