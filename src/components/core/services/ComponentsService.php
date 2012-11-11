@@ -31,6 +31,7 @@ class ComponentsService extends BaseApplicationComponent
 			}
 
 			$ctype = static::$componentTypes[$type];
+			$baseClass = __NAMESPACE__.'\\'.$ctype['baseclass'];
 
 			$this->_components[$type] = array();
 
@@ -69,7 +70,6 @@ class ComponentsService extends BaseApplicationComponent
 					$obj = new $class;
 
 					// Make sure it implements the correct abstract base class
-					$baseClass = __NAMESPACE__.'\\'.$ctype['baseclass'];
 					if (!$obj instanceof $baseClass)
 					{
 						continue;
@@ -79,9 +79,20 @@ class ComponentsService extends BaseApplicationComponent
 					$classHandle = $obj->getClassHandle();
 					$this->_components[$type][$classHandle] = $obj;
 				}
-
-				ksort($this->_components[$type]);
 			}
+
+			// Now load any plugin-supplied components
+			$pluginComponents = blx()->plugins->getAllComponentsByType($ctype['subfolder']);
+
+			foreach ($pluginComponents as $component)
+			{
+				if ($component instanceof $baseClass)
+				{
+					$this->_components[$type][$component->getClassHandle()] = $component;
+				}
+			}
+
+			ksort($this->_components[$type]);
 		}
 
 		return $this->_components[$type];
