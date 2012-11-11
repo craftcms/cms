@@ -289,12 +289,25 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('“{plugin}” is already installed.', array('plugin' => $plugin->getName())));
 		}
 
-		$this->_importPluginComponents($plugin);
-		$installableRecords = $this->_getPluginRecords($handle, 'install');
-
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
+			// Add the plugins as a record to the database.
+			$record = new PluginRecord();
+			$record->class = $plugin->getClassHandle();
+			$record->version = $plugin->version;
+			$record->enabled = true;
+			$record->save();
+
+			$plugin->isInstalled = true;
+			$plugin->isEnabled = true;
+
+			$lcHandle = strtolower($plugin->getClassHandle());
+			$this->_enabledPlugins[$lcHandle] = $plugin;
+
+			$this->_importPluginComponents($plugin);
+			$installableRecords = $this->_getPluginRecords($handle, 'install');
+
 			// Create all tables first.
 			foreach ($installableRecords as $record)
 			{
@@ -313,13 +326,6 @@ class PluginsService extends BaseApplicationComponent
 				}
 			}
 
-			// Add the plugins as a record to the database.
-			$record = new PluginRecord();
-			$record->class = $plugin->getClassHandle();
-			$record->version = $plugin->version;
-			$record->enabled = true;
-			$record->save();
-
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -327,12 +333,6 @@ class PluginsService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
-
-		$plugin->isInstalled = true;
-		$plugin->isEnabled = true;
-
-		$lcHandle = strtolower($plugin->getClassHandle());
-		$this->_enabledPlugins[$lcHandle] = $plugin;
 
 		$plugin->onAfterInstall();
 
@@ -544,10 +544,10 @@ class PluginsService extends BaseApplicationComponent
 
 		if (!$plugin)
 		{
-			$this->_noPluginExists($handle);
+			$this->_noPluginExists($pluginHandle);
 		}
 
-		$classes = array();
+		$allClasses = array();
 
 		if (isset($this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()]))
 		{
@@ -565,11 +565,11 @@ class PluginsService extends BaseApplicationComponent
 					continue;
 				}
 
-				$classes[] = $nsClass;
+				$allClasses[] = $nsClass;
 			}
 		}
 
-		return $classes;
+		return $allClasses;
 	}
 
 	/**
