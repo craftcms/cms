@@ -51,11 +51,6 @@ class PluginsService extends BaseApplicationComponent
 	);
 
 	/**
-	 * @var array
-	 */
-	private $_pluginFileMap = array();
-
-	/**
 	 * List of the known component classes for each plugin,
 	 * indexed by the component type, then the plugin handle.
 	 *
@@ -476,7 +471,8 @@ class PluginsService extends BaseApplicationComponent
 
 		foreach ($classes as $class)
 		{
-			$components[] = new $class();
+			$nsClass = __NAMESPACE__.'\\'.$class;
+			$components[] = new $nsClass();
 		}
 
 		return $components;
@@ -565,7 +561,7 @@ class PluginsService extends BaseApplicationComponent
 					continue;
 				}
 
-				$allClasses[] = $nsClass;
+				$allClasses[] = $class;
 			}
 		}
 
@@ -588,7 +584,8 @@ class PluginsService extends BaseApplicationComponent
 
 		foreach ($classes as $class)
 		{
-			$records[] = new $class($scenario);
+			$nsClass = __NAMESPACE__.'\\'.$class;
+			$records[] = new $nsClass($scenario);
 		}
 
 		return $records;
@@ -623,7 +620,8 @@ class PluginsService extends BaseApplicationComponent
 			if (!blx()->getComponent($serviceName, false))
 			{
 				// Register the component with the handle as (className or className_*) minus the "Service" suffix
-				$services[$serviceName] = array('class' => $class);
+				$nsClass = __NAMESPACE__.'\\'.$class;
+				$services[$serviceName] = array('class' => $nsClass);
 			}
 			else
 			{
