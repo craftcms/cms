@@ -263,7 +263,7 @@ class App extends \CWebApplication
 	/**
 	 * Creates a controller instance based on a route.
 	 */
-	public function createController($route)
+	public function createController($route, $owner = null)
 	{
 		if (($route=trim($route,'/')) === '')
 		{
