@@ -7,8 +7,7 @@ namespace Blocks;
 class Image
 {
 	private $_imageSourcePath;
-	private $_sourceImage;
-	private $_outputImage;
+	private $_image;
 	private $_extension;
 
 	/**
@@ -32,19 +31,19 @@ class Image
 			case 'jpg':
 			case 'jpeg':
 			{
-				$this->_sourceImage = imagecreatefromjpeg($path);
+				$this->_image = imagecreatefromjpeg($path);
 				break;
 			}
 
 			case 'gif':
 			{
-				$this->_sourceImage = imagecreatefromgif($path);
+				$this->_image = imagecreatefromgif($path);
 				break;
 			}
 
 			case 'png':
 			{
-				$this->_sourceImage = imagecreatefrompng($path);
+				$this->_image = imagecreatefrompng($path);
 				break;
 			}
 
@@ -73,13 +72,33 @@ class Image
 		$width = $x2 - $x1;
 		$height = $y2 - $y1;
 
-		$this->_prepareCanvas($width, $height);
-		$this->_preserveTransparency();
+		$output = $this->_getCanvas($width, $height);
 
-		imagecopyresampled($this->_outputImage, $this->_sourceImage, 0, 0, $x1, $y1, $width, $height, $width, $height);
+		imagecopyresampled($output, $this->_image, 0, 0, $x1, $y1, $width, $height, $width, $height);
+
+		$this->_image = $output;
 
 		return $this;
 	}
+
+	/**
+	 * Scale the image to fit the specified size.
+	 *
+	 * @param $width
+	 * @param $height
+	 * @param bool $scaleIfSmaller
+	 */
+	public function scale($width, $height, $scaleIfSmaller = false)
+	{
+		if (imagesx($this->_image) > $width || imagesy($this->_image) > $height || $scaleIfSmaller)
+		{
+			$factor = max(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
+			$this->_doResize(imagesx($this->_image) / $factor, imagesy($this->_image) / $factor);
+		}
+
+		return $this;
+	}
+
 
 	/**
 	 * Resizes the image. If $height is not specified, it will default to $width, creating a square.
@@ -95,12 +114,22 @@ class Image
 			$height = $width;
 		}
 
-		$this->_prepareCanvas($width, $height);
-		$this->_preserveTransparency();
-
-		imagecopyresampled($this->_outputImage, $this->_sourceImage, 0, 0, 0, 0, $width, $height, imagesx($this->_sourceImage), imagesy($this->_sourceImage));
+		$this->_doResize($width, $height);
 
 		return $this;
+	}
+
+	/**
+	 * Perform the actual resize.
+	 *
+	 * @param $width
+	 * @param $height
+	 */
+	private function _doResize($width, $height)
+	{
+		$image = $this->_preserveTransparency($this->_getCanvas($width, $height));
+
+		imagecopyresampled($image, $this->_image, 0, 0, 0, 0, $width, $height, imagesx($this->_image), imagesy($this->_image));
 	}
 
 	/**
@@ -111,11 +140,6 @@ class Image
 	 */
 	public function saveAs($targetPath)
 	{
-		// If no operations have been performed, save the source
-		if (empty($this->_outputImage))
-		{
-			$this->_outputImage = $this->_sourceImage;
-		}
 
 		$extension = IOHelper::getExtension($targetPath);
 
@@ -126,19 +150,19 @@ class Image
 			case 'jpeg':
 			case 'jpg':
 			{
-				$result = imagejpeg($this->_outputImage, $targetPath, 100);
+				$result = imagejpeg($this->_image, $targetPath, 100);
 				break;
 			}
 
 			case 'gif':
 			{
-				$result = imagegif($this->_outputImage, $targetPath);
+				$result = imagegif($this->_image, $targetPath);
 				break;
 			}
 
 			case 'png':
 			{
-				$result = imagepng($this->_outputImage, $targetPath, 5);
+				$result = imagepng($this->_image, $targetPath, 5);
 				break;
 			}
 		}
@@ -147,53 +171,54 @@ class Image
 	}
 
 	/**
-	 * Prepares the canvas.
+	 * Get canvas.
 	 *
-	 * @access private
 	 * @param $width
 	 * @param $height
+	 * @return resource
+	 * @throws Exception
 	 */
-	private function _prepareCanvas($width, $height)
+	private function _getCanvas($width, $height)
 	{
-		if (empty($this->_outputImage))
+		if (!blx()->images->setMemoryForImage($this->_imageSourcePath))
 		{
-			if (!blx()->images->setMemoryForImage($this->_imageSourcePath))
-			{
-				throw new Exception(Blocks::t("Not enough memory available to perform this image operation."));
-			}
-
-			$this->_outputImage = imagecreatetruecolor($width, $height);
+			throw new Exception(Blocks::t("Not enough memory available to perform this image operation."));
 		}
+
+		return $this->_preserveTransparency(imagecreatetruecolor($width, $height));
 	}
 
 	/**
 	 * Preserves transparency depending on the file extension.
 	 *
-	 * @access private
+	 * @param resource $image
+	 * @return mixed $image
 	 */
-	private function _preserveTransparency()
+	private function _preserveTransparency($image)
 	{
 		// Preserve transparency for GIFs and PNGs
 		if (in_array($this->_extension, array('gif', 'png')))
 		{
-			$transparencyIndex = imagecolortransparent($this->_sourceImage);
+			$transparencyIndex = imagecolortransparent($this->_image);
 
 			// Is the index set?
 			if ($transparencyIndex >= 0)
 			{
-				$transparentColor = imagecolorsforindex($this->_sourceImage, $transparencyIndex);
-				$transparencyIndex = imagecolorallocate($this->_outputImage, $transparentColor['red'], $transparentColor['green'], $transparentColor['blue']);
-				imagefill($this->_outputImage, 0, 0, $transparencyIndex);
-				imagecolortransparent($this->_outputImage, $transparencyIndex);
+				$transparentColor = imagecolorsforindex($this->_image, $transparencyIndex);
+				$transparencyIndex = imagecolorallocate($image, $transparentColor['red'], $transparentColor['green'], $transparentColor['blue']);
+				imagefill($image, 0, 0, $transparencyIndex);
+				imagecolortransparent($this->_image, $transparencyIndex);
 			}
 			// PNG, baby
 			elseif ($this->_extension == 'png')
 			{
-				imagealphablending($this->_outputImage, false);
-				$color = imagecolorallocatealpha($this->_outputImage, 0, 0, 0, 127);
-				imagefill($this->_outputImage, 0, 0, $color);
-				imagesavealpha($this->_outputImage, true);
+				imagealphablending($image, false);
+				$color = imagecolorallocatealpha($image, 0, 0, 0, 127);
+				imagefill($image, 0, 0, $color);
+				imagesavealpha($image, true);
 			}
 		}
+
+		return $image;
 	}
 }

@@ -35,17 +35,33 @@
 			errors: (post is defined ? post.getErrors('siteUrl') : null)
 		}) }}
 
-		<!-- HIDE -->
 		{% if blx.hasPackage('rebrand') %}
-			{{ forms.fileField({
-				label: "Logo"|t,
-				instructions: "Use a 300 × 100px transparent PNG for best results."|t,
-				id: 'logo',
-				name: 'logo',
-				errors: (post is defined ? post.getErrors('logo') : null)
-			}) }}
+
+            {% includeJsResource "js/global/ui/QQUploader.js" %}
+            {% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+            {% includeJsResource ('js/rebrand.js') %}
+            {% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+            {% includeCssResource ('css/rebrand.css') %}
+
+            {% set logoInput %}
+                <div class="cp-logo">
+                    <div class="current-logo" style="background-image: url({{ blx.rebrand.isLogoUploaded() ? blx.rebrand.logoUrl : resourceUrl('images/blocks.png') }});"></div>
+                    <div class="logo-controls">
+                        {% if blx.app.isLogoUploaded() %}
+                            <div class="btn upload-logo">{{ "Change logo"|t }}</div>
+                            <div class="btn delete-logo">{{ "Delete logo"|t }}</div>
+                        {% else %}
+                            <div class="btn upload-logo">{{ "Upload a logo"|t }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endset %}
+
+            {{ forms.field({
+                label: "Logo"|t
+            }, logoInput) }}
+
 		{% endif %}
-		<!-- end HIDE -->
 
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">

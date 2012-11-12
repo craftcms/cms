@@ -80,6 +80,12 @@ class ResourcesService extends BaseApplicationComponent
 						return $sizedPhotoPath;
 					}
 				}
+
+				case 'uploads':
+				{
+					array_shift($segs);
+					return blx()->path->getUploadsPath() . implode('/', $segs);
+				}
 			}
 		}
 

@@ -225,7 +225,6 @@ class UserModel extends BaseEntityModel
 	 * Returns the URL to the user's photo.
 	 *
 	 * @param int $size
-	 * @param bool $fallbackOnDefault
 	 * @return string|null
 	 */
 	public function getPhotoUrl($size = 100)

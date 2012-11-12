@@ -60,9 +60,11 @@
 		actionTrigger: '{{ blx.config.actionTrigger }}',
 		language: '{{ blx.language }}',
 		packages: {{ blx.getPackages|json_encode|raw }},
-		translations: {{ getTranslations()|raw }}
+		translations: {{ getTranslations()|raw }},
+        maxUploadSize: {{ blx.app.getMaxUploadSize() }}
 	};
-</script>
+
+    </script>
 
 {{ getFootNodes()|raw }}
 </body>
