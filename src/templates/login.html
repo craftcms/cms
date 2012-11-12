@@ -13,6 +13,11 @@
 %}
 
 {% set body %}
+    {% if blx.hasPackage('rebrand') and blx.rebrand.isLogoUploaded() %}
+        {%  set loginFormOpener = '<form id="login-form" method="post" action="" accept-charset="UTF-8" style="background-image: url(' ~ blx.rebrand.logoUrl ~ ');">' %}
+    {% else %}
+        {%  set loginFormOpener = '<form id="login-form" method="post" action="" accept-charset="UTF-8">' %}
+    {% endif %}
 	<script type="text/javascript">
 		var cookie = 'BlocksCookieTest='+Math.floor(Math.random() * 1000000);
 		document.cookie = cookie;
@@ -20,7 +25,7 @@
 		if (cookiesEnabled)
 		{
 			document.write(
-				'<form id="login-form" method="post" action="" accept-charset="UTF-8">' +
+				'{{ loginFormOpener|raw }}' +
 					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.getRememberedUsername })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
