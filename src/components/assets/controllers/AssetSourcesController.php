@@ -55,6 +55,7 @@ class AssetSourcesController extends BaseController
 
 		$sourceIds = JsonHelper::decode(blx()->request->getRequiredPost('ids'));
 		blx()->assetSources->reorderSources($sourceIds);
+
 		$this->returnJson(array('success' => true));
 	}
 

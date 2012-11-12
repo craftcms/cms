@@ -232,9 +232,12 @@ abstract class BaseAssetSourceType extends BaseComponent
 		return $missingFolders;
 	}
 
+	/**
+	 * @param $uriPath
+	 * @return AssetFileModel|bool|null
+	 */
 	protected function _indexFile($uriPath)
 	{
-
 		$fileIndexed = false;
 		$extension = IOHelper::getExtension($uriPath);
 
@@ -285,6 +288,5 @@ abstract class BaseAssetSourceType extends BaseComponent
 		}
 
 		return false;
-
 	}
 }

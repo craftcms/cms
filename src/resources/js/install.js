@@ -29,11 +29,13 @@ Blocks.Installer = Blocks.Base.extend({
 		this.$currentScreen = $(this.$screens[0])
 			.removeClass('scaleddown')
 			.animate({opacity: 1}, 'fast', $.proxy(function() {
+				this.addListener($('#getstarted'), 'activate', 'showAccountScreen');
+
 				// Give the License Key input focus after half a second
 				this.focusFirstInput();
 
 				// Get ready for form submit
-				this.$licensekeySubmitBtn = $('#getstarted');
+				this.$licensekeySubmitBtn = $('#licensekeysubmit');
 				this.addListener(this.$licensekeySubmitBtn, 'activate', 'validateLicenseKey');
 				this.addListener($('#licensekeyform'), 'submit', 'validateLicenseKey');
 			}, this));
@@ -99,7 +101,7 @@ Blocks.Installer = Blocks.Base.extend({
 
 			Blocks.postActionRequest('install/install', data, $.proxy(function() {
 				this.$currentScreen.find('h1:first').text(Blocks.t('All done!'));
-				var $buttons = $('<div class="buttons"><a href="'+Blocks.baseUrl+'dashboard" class="btn big submit">'+Blocks.t("Go to Blocks")+'</a></div>');
+				var $buttons = $('<div class="buttons"><a href="'+Blocks.getUrl('dashboard')+'" class="btn big submit">'+Blocks.t("Go to Blocks")+'</a></div>');
 				$('#spinner').replaceWith($buttons);
 			}, this));
 

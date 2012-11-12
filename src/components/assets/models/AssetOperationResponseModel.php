@@ -49,6 +49,7 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * String containing a human readable message for status
+	 *
 	 * @return mixed
 	 */
 	public function getErrorMessage()
@@ -58,6 +59,7 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Response data. An StdClass object
+	 *
 	 * @return \StdClass
 	 */
 	public function getResponseData()
@@ -67,6 +69,7 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Set an error
+	 *
 	 * @param $message
 	 */
 	public function setError($message)
@@ -77,6 +80,7 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Set response data
+	 *
 	 * @param string $status
 	 */
 	public function setResponse($status)
@@ -86,16 +90,19 @@ class AssetOperationResponseModel extends BaseModel
 
 	/**
 	 * Add a response data item
+	 *
 	 * @param $item
 	 * @param $value
 	 */
 	public function setResponseDataItem($item, $value)
 	{
 		$dataObject = JsonHelper::decode($this->getResponseData());
+
 		if (!is_object($dataObject))
 		{
 			$dataObject = new \StdClass;
 		}
+
 		$dataObject->{$item} = $value;
 		$this->setAttribute('responseData', $dataObject);
 	}

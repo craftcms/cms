@@ -1,0 +1,85 @@
+{% extends "users/_edit/layout" %}
+{% import "_includes/forms" as forms %}
+{% set pageTitle = "Profile"|t %}
+{% includeTranslations
+	"Are you sure you want to delete this photo?"
+%}
+
+
+{% if account is not defined %}
+	{% if blx.request.segment(1) == 'myaccount' %}
+		{% set account = user %}
+	{% elseif userId %}
+		{% set account = blx.users.id(userId).first %}
+	{% endif %}
+	{% if not account %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% set content %}
+
+	{% includeJsResource "js/global/ui/QQUploader.js" %}
+	{% includeJsResource "js/profile.js" %}
+	{% includeCssResource "css/profile.css" %}
+	{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+	{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+
+	{% set photoInput %}
+		<div class="user-photo" data-user="{{ account.id }}">
+			<div class="current-photo" style="background-image: url({{ account.photo ? account.photoUrl : resourceUrl('images/user.gif') }});"></div>
+			<div class="user-photo-controls">
+				{% if account.photo %}
+					<div class="btn upload-photo">{{ "Change photo"|t }}</div>
+					<div class="btn delete-photo">{{ "Delete photo"|t }}</div>
+					{#<a href="javascript:;" class="upload-photo" data-message="{{ 'Change photo'|t }}">{{ "Change photo"|t }}</a>#}
+					{# "or"|t #}
+					{#<a href="javascript:;" class="delete-photo">{{ "Delete current photo"|t }}</a>#}
+				{% else %}
+					<div class="btn upload-photo">{{ "Upload a photo"|t }}</div>
+					{#<a href="javascript:;" class="upload-photo" data-message="{{ 'Upload a photo'|t }}">{{ "Upload a photo"|t }}</a>#}
+				{% endif %}
+			</div>
+		</div>
+	{% endset %}
+
+	{{ forms.field({
+		label: "Photo"|t
+	}, photoInput) }}
+
+	<hr>
+
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="users/saveProfile">
+		<input type="hidden" name="userId" value="{{ account.id }}">
+
+		{{ forms.textField({
+			label: "First Name"|t,
+			id: 'firstName',
+			name: 'firstName',
+			value: account.firstName,
+			errors: account.getErrors('firstName')
+		}) }}
+
+		{{ forms.textField({
+			label: "Last Name"|t,
+			id: 'lastName',
+			name: 'lastName',
+			value: account.lastName,
+			errors: account.getErrors('lastName')
+		}) }}
+
+		{% include "_includes/blockfields" with {
+			blocks: blx.userProfileBlocks.getAllBlocks,
+			entity: account
+		} only %}
+
+		<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+
+	</form>
+
+    <script type="text/javascript">
+        var maxUploadSize = {{ blx.app.getMaxUploadSize() }};
+    </script>
+
+
+{% endset %}

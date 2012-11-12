@@ -1,0 +1,13 @@
+{% extends "settings/sections/_edit/layout" %}
+{% set tab = 'blocks' %}
+{% set section = blx.sections.id(sectionId).first %}
+{% if not section %}{% exit 404 %}{% endif %}
+
+
+{% set content %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.entryBlocks.getBlocksBySectionId(section.id),
+		settingsUrlPrefix: 'settings/sections/' ~ section.id ~ '/blocks/',
+		controller: 'sections'
+	} only %}
+{% endset %}

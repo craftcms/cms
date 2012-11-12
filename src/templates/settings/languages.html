@@ -1,0 +1,67 @@
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+{% set title = "Content Languages"|t %}
+
+
+{% set header %}
+	<h1>{{ title }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="languageSettings/save">
+		<input type="hidden" name="redirect" value="settings">
+
+		<h2>{{ "Which languages will your content be available in?"|t }}</h2>
+
+		<div class="field">
+			{{ forms.checkboxField({
+				label: blx.i18n.getLocaleName(blx.app.language) ~ ' <strong>(' ~ "Primary"|t ~ ')</strong>',
+				checked: true,
+				disabled: true
+			}) }}
+
+			{% if selectedLanguages is not defined %}
+				{% set selectedLanguages = blx.systemSettings.languages %}
+			{% endif %}
+
+			{% for language in selectedLanguages %}
+				{{ forms.checkboxField({
+					label: blx.i18n.getLocaleName(language),
+					name: 'languages[]',
+					value: language,
+					checked: true
+				}) }}
+			{% endfor %}
+
+			<hr>
+
+			{% set languages = blx.i18n.getLanguages|without(blx.app.language)|without(selectedLanguages) %}
+			{% set totalLanguages = languages|length %}
+			{% set languagesPerColumn = ceil(totalLanguages / 3 )%}
+
+			<div class="grid">
+				<div class="col col33"><div class="col-inner">
+					{% for language in languages %}
+						{% if loop.index0 != 0 and loop.index0 % languagesPerColumn == 0 %}
+							</div></div><div class="col col33"><div class="col-inner">
+						{% endif %}
+						{{ forms.checkboxField({
+							label: blx.i18n.getLocaleName(language),
+							name: 'languages[]',
+							value: language
+						}) }}
+					{% endfor %}
+				</div></div>
+			</div>
+		</div>
+
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}

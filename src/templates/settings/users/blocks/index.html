@@ -1,0 +1,12 @@
+{% extends "settings/users/_layout" %}
+{% set page = "blocks" %}
+{% set title = "Profile Blocks"|t %}
+
+
+{% set content %}
+	{% include "_includes/blockindex" with {
+		blocks: blx.userProfileBlocks.getAllBlocks,
+		settingsUrlPrefix: 'settings/users/blocks/',
+		controller: 'users'
+	} only %}
+{% endset %}

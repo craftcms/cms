@@ -131,7 +131,7 @@ class UpdateController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$handle = blx()->request->getRequiredPost('handle');
+		$handle = blx()->request->getRequiredQuery('handle');
 
 		$return = array();
 		$updateInfo = blx()->updates->getUpdates();
@@ -165,7 +165,7 @@ class UpdateController extends BaseController
 					break;
 				}
 
-				case 'Blocks':
+				case 'blocks':
 				{
 					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
 					break;

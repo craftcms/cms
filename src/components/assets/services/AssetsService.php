@@ -169,10 +169,12 @@ class AssetsService extends BaseEntityService
 	{
 		$params->limit = 1;
 		$file = $this->getFiles($params);
+
 		if (is_array($file) && !empty($file))
 		{
 			return array_pop($file);
 		}
+
 		return null;
 	}
 
@@ -332,10 +334,12 @@ class AssetsService extends BaseEntityService
 	public function getFolderById($folderId)
 	{
 		$folderRecord = AssetFolderRecord::model()->findById($folderId);
+
 		if ($folderRecord)
 		{
 			return $this->populateFolder($folderRecord);
 		}
+
 		return null;
 	}
 
@@ -387,10 +391,12 @@ class AssetsService extends BaseEntityService
 	{
 		$params->limit = 1;
 		$folder = $this->getFolders($params);
+
 		if (is_array($folder) && !empty($folder))
 		{
 			return array_pop($folder);
 		}
+
 		return null;
 	}
 

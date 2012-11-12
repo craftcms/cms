@@ -92,6 +92,9 @@ class App extends \CWebApplication
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
 
+			// Load the plugins
+			$this->plugins;
+
 			// Otherwise maybe it's an action request?
 			$this->_processActionRequest();
 
@@ -263,7 +266,7 @@ class App extends \CWebApplication
 	/**
 	 * Creates a controller instance based on a route.
 	 */
-	public function createController($route)
+	public function createController($route, $owner = null)
 	{
 		if (($route=trim($route,'/')) === '')
 		{

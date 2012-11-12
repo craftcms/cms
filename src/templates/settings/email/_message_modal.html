@@ -1,0 +1,47 @@
+{% import "_includes/forms" as forms %}
+{% set key = blx.request.getPost('key') %}
+{% set language = blx.request.getPost('language') %}
+{% set message = blx.emailMessages.getMessage(key, language) %}
+
+
+<header class="header">
+	<h1>{{ "Edit Message"|t }}</h1>
+
+	{% if blx.hasPackage('language') %}
+		{% set languages = blx.systemSettings.languages %}
+		<ul class="right">
+			<li class="select language">
+				<select>
+					<option value="{{ blx.language }}" {% if blx.language == message.language %}selected{% endif %}>{{ blx.i18n.getLocaleName(blx.language) }}</option>
+					{% for language in languages %}
+						<option value="{{ language }}" {% if language == message.language %}selected{% endif %}>{{ blx.i18n.getLocaleName(language) }}</option>
+					{% endfor %}
+				</select>
+			</li>
+		</ul>
+	{% endif %}
+</header>
+
+
+{{ forms.textField({
+	label: "Subject"|t,
+	id: 'subject',
+	class: 'subject',
+	value: message.subject,
+	required: true
+}) }}
+
+{{ forms.textareaField({
+	label: "Body"|t,
+	id: 'body',
+	class: 'body',
+	value: message.body,
+	rows: 15
+}) }}
+
+<footer class="footer">
+	<ul class="right">
+		<li><input type="button" class="btn cancel" value="{{ 'Cancel'|t }}"></li>
+		<li><input type="submit" class="btn submit" value="{{ 'Save'|t }}"></li>
+	</ul>
+</footer>

@@ -25,7 +25,7 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 			});
 		}
 
-		var $deleteButtons = this.$table.find('.deletebtn');
+		var $deleteButtons = this.$table.find('.btn.delete');
 		this.addListener($deleteButtons, 'click', 'deleteObject');
 	},
 

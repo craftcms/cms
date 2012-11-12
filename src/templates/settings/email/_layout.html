@@ -1,0 +1,16 @@
+{% extends "_layouts/cp" %}
+
+
+{% set header %}
+	<h1>{{ "Email"|t }}</h1>
+
+	<ul class="left">
+		<li><a href="{{ url('settings') }}" class="backbtn">{{ "Settings"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set tabs %}
+	<li><a class="settings icon{% if blx.request.segment(3) == '' %} active{% endif %}" href="{{ url('settings/email') }}">{{ "Settings"|t }}</a></li>
+	<li><a{% if blx.request.segment(3) == 'messages' %} class="active"{% endif %} href="{{ url('settings/email/messages') }}" data-icon="E">{{ "Messages"|t }}</a></li>
+{% endset %}

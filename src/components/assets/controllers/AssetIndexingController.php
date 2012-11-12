@@ -25,7 +25,6 @@ class AssetIndexingController extends BaseController
 		$sessionId = blx()->request->getRequiredPost('session');
 
 		$this->returnJson(blx()->assetIndexing->getIndexListForSource($sessionId, $sourceId));
-
 	}
 
 	/**
