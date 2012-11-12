@@ -7,19 +7,38 @@ namespace Blocks;
 class PluginsService extends BaseApplicationComponent
 {
 	/**
-	 * Stores all plugins, whether installed or not
+	 * Stores all plugins, whether installed or not.
 	 *
 	 * @access private
 	 * @var array
 	 */
 	private $_plugins = array();
+
+	/**
+	 * Stores all enabled plugins.
+	 *
+	 * @access private
+	 * @var array
+	 */
 	private $_enabledPlugins = array();
+
+	/**
+	 * Stores all plugins in the system, regardless of whether they're installed/enabled or not.
+	 *
+	 * @access private
+	 * @var array
+	 */
 	private $_allPlugins;
 
 	/**
+	 * List of the supported plugin components that will get autoloaded for enabled plugins.
+	 *
+	 * The keys are folder names, and values are class suffixes.
+	 *
+	 * @access private
 	 * @var array
 	 */
-	private $_defaultFolders = array(
+	private $_supportedComponents = array(
 		'controllers'   => 'Controller',
 		'models'        => 'Model',
 		'records'       => 'Record',
@@ -32,17 +51,22 @@ class PluginsService extends BaseApplicationComponent
 	);
 
 	/**
+	 * List of the known component classes for each plugin,
+	 * indexed by the component type, then the plugin handle.
+	 *
+	 * @access private
 	 * @var array
 	 */
-	private $_pluginFileMap = array();
+	private $_pluginComponentClasses = array();
 
 	/**
-	 * Get all enabled plugins right away.
+	 * Init
 	 */
 	public function init()
 	{
 		if (blx()->isInstalled())
 		{
+			// Find all of the enabled plugins
 			$records = PluginRecord::model()->findAllByAttributes(array(
 				'enabled' => true
 			));
@@ -62,11 +86,16 @@ class PluginsService extends BaseApplicationComponent
 					$plugin->isInstalled = true;
 					$plugin->isEnabled = true;
 
-					$this->_processPluginClasses($plugin->getClassHandle());
+					$this->_importPluginComponents($plugin);
 					$this->_registerPluginServices($plugin->getClassHandle());
-
-					$plugin->init();
 				}
+			}
+
+			// Now that all of the components have been imported,
+			// initialize all the plugins
+			foreach ($this->_enabledPlugins as $plugin)
+			{
+				$plugin->init();
 			}
 		}
 	}
@@ -258,7 +287,21 @@ class PluginsService extends BaseApplicationComponent
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			$installableRecords = $this->getPluginRecords($handle, 'install');
+			// Add the plugins as a record to the database.
+			$record = new PluginRecord();
+			$record->class = $plugin->getClassHandle();
+			$record->version = $plugin->version;
+			$record->enabled = true;
+			$record->save();
+
+			$plugin->isInstalled = true;
+			$plugin->isEnabled = true;
+
+			$lcHandle = strtolower($plugin->getClassHandle());
+			$this->_enabledPlugins[$lcHandle] = $plugin;
+
+			$this->_importPluginComponents($plugin);
+			$installableRecords = $this->_getPluginRecords($handle, 'install');
 
 			// Create all tables first.
 			foreach ($installableRecords as $record)
@@ -278,13 +321,6 @@ class PluginsService extends BaseApplicationComponent
 				}
 			}
 
-			// Add the plugins as a record to the database.
-			$record = new PluginRecord();
-			$record->class = $plugin->getClassHandle();
-			$record->version = $plugin->version;
-			$record->enabled = true;
-			$record->save();
-
 			$transaction->commit();
 		}
 		catch (\Exception $e)
@@ -292,12 +328,6 @@ class PluginsService extends BaseApplicationComponent
 			$transaction->rollBack();
 			throw $e;
 		}
-
-		$plugin->isInstalled = true;
-		$plugin->isEnabled = true;
-
-		$lcHandle = strtolower($plugin->getClassHandle());
-		$this->_enabledPlugins[$lcHandle] = $plugin;
 
 		$plugin->onAfterInstall();
 
@@ -314,7 +344,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function uninstallPlugin($handle)
 	{
-		$plugin = $this->getPlugin($handle);
+		$plugin = $this->getPlugin($handle, false);
 
 		if (!$plugin)
 		{
@@ -326,9 +356,18 @@ class PluginsService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('“{plugin}” is already uninstalled.', array('plugin' => $plugin->getName())));
 		}
 
+		if (!$plugin->isEnabled)
+		{
+			// Pretend that the plugin is enabled just for this request
+			$lcHandle = strtolower($plugin->getClassHandle());
+			$this->_enabledPlugins[$lcHandle] = $plugin;
+
+			$this->_importPluginComponents($plugin);
+		}
+
 		$plugin->onBeforeUninstall();
 
-		$records = $this->getPluginRecords($handle);
+		$records = $this->_getPluginRecords($handle);
 
 		$transaction = blx()->db->beginTransaction();
 		try
@@ -407,120 +446,45 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $handle
-	 * @return mixed
+	 * Returns all components of a certain type, across all plugins.
+	 *
+	 * @param string $componentType
+	 * @return array
 	 */
-	public function getPluginModels($handle)
+	public function getAllComponentsByType($componentType)
 	{
-		$models = array();
+		$allClasses = array();
 
-		$plugin = $this->getPlugin($handle, false);
-
-		if (!$plugin)
+		foreach ($this->getPlugins() as $plugin)
 		{
-			$this->_noPluginExists($handle);
+			$classes = $this->getPluginComponentsByType($plugin->getClassHandle(), $componentType);
+
+			$allClasses = array_merge($allClasses, $classes);
 		}
 
-		if (isset($this->_pluginFileMap[$plugin->getClassHandle()]['models']))
-		{
-			foreach ($this->_pluginFileMap[$plugin->getClassHandle()]['models'] as $modelPath)
-			{
-				$class = __NAMESPACE__.'\\'.IOHelper::getFileName($modelPath, false);
-
-				if (!class_exists($class, false))
-				{
-					require_once $modelPath;
-				}
-
-				// Ignore abstract classes and interfaces
-				$ref = new \ReflectionClass($class);
-
-				if ($ref->isAbstract() || $ref->isInterface())
-					continue;
-
-				$models[] = new $class;
-			}
-		}
-
-		return $models;
+		return $allClasses;
 	}
 
 	/**
-	 * @param $handle
-	 * @return mixed
+	 * Returns all of a plugin's components of a certain type.
+	 *
+	 * @param string $pluginHandle
+	 * @param string $componentType
+	 * @return array
 	 */
-	public function getPluginServices($handle)
+	public function getPluginComponentsByType($pluginHandle, $componentType)
 	{
-		$services = array();
+		$classes = $this->_getPluginComponentClassesByType($pluginHandle, $componentType);
 
-		$plugin = $this->getPlugin($handle, false);
+		$components = array();
 
-		if (!$plugin)
+		foreach ($classes as $class)
 		{
-			$this->_noPluginExists($handle);
+			$nsClass = __NAMESPACE__.'\\'.$class;
+			$components[] = new $nsClass();
 		}
 
-		if (isset($this->_pluginFileMap[$plugin->getClassHandle()]['services']))
-		{
-			foreach ($this->_pluginFileMap[$plugin->getClassHandle()]['services'] as $servicePath)
-			{
-				$class = __NAMESPACE__.'\\'.IOHelper::getFileName($servicePath, false);
-
-				// Ignore abstract classes and interfaces
-				$ref = new \ReflectionClass($class);
-
-				if ($ref->isAbstract() || $ref->isInterface())
-				{
-					continue;
-				}
-
-				$services[] = $servicePath;
-			}
-		}
-
-		return $services;
-	}
-
-	/**
-	 * @param      $handle
-	 * @param null $scenario
-	 * @return mixed
-	 */
-	public function getPluginRecords($handle, $scenario = null)
-	{
-		$records = array();
-
-		$plugin = $this->getPlugin($handle, false);
-
-		if (!$plugin)
-		{
-			$this->_noPluginExists($handle);
-		}
-
-		if (isset($this->_pluginFileMap[$plugin->getClassHandle()]['records']))
-		{
-			foreach ($this->_pluginFileMap[$plugin->getClassHandle()]['records'] as $recordPath)
-			{
-				$class = __NAMESPACE__.'\\'.IOHelper::getFileName($recordPath, false);
-
-				if (!class_exists($class, false))
-				{
-					require_once $recordPath;
-				}
-
-				// Ignore abstract classes and interfaces
-				$ref = new \ReflectionClass($class);
-
-				if ($ref->isAbstract() || $ref->isInterface())
-				{
-					continue;
-				}
-
-				$records[] = new $class($scenario);
-			}
-		}
-
-		return $records;
+		return $components;
 	}
 
 	/**
@@ -536,50 +500,104 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param      $handle
-	 * @param bool $import
-	 * @return void
+	 * Finds and imports all of the supported component classes for a given plugin.
+	 *
+	 * @access private
+	 * @param BasePlugin $plugin
 	 */
-	private function _processPluginClasses($handle, $import = true)
+	private function _importPluginComponents(BasePlugin $plugin)
 	{
-		$lcHandle = strtolower($handle);
+		$lcHandle = strtolower($plugin->getClassHandle());
 		$pluginFolder = blx()->path->getPluginsPath().$lcHandle.'/';
 
-		foreach ($this->_defaultFolders as $folderName => $suffix)
+		foreach ($this->_supportedComponents as $folderName => $classSuffix)
 		{
 			if (IOHelper::folderExists($pluginFolder.$folderName))
 			{
 				// See if it has any files in ClassName*Suffix.php format.
-				$files = IOHelper::getFolderContents($pluginFolder.$folderName, false, "{$handle}_?.*{$suffix}\.php");
+				$files = IOHelper::getFolderContents($pluginFolder.$folderName, false, $plugin->getClassHandle().'_?.*'.$classSuffix.'\.php');
 
-				if (is_array($files) && count($files) > 0)
+				if ($files)
 				{
 					foreach ($files as $file)
 					{
 						// Get the file name minus the extension.
 						$fileName = IOHelper::getFileName($file, false);
 
-						if ($import)
-						{
-							// Import the class.
-							Blocks::import("plugins.{$lcHandle}.{$folderName}.{$fileName}");
-						}
+						// Import the class.
+						Blocks::import("plugins.{$lcHandle}.{$folderName}.{$fileName}");
 
-						if (!isset($this->_pluginFileMap[$handle][$folderName]))
-						{
-							$this->_pluginFileMap[$handle][$folderName][] = $file;
-						}
-						else
-						{
-							if (!in_array($file, $this->_pluginFileMap[$handle][$folderName]))
-							{
-								$this->_pluginFileMap[$handle][$folderName][] = $file;
-							}
-						}
+						// Remember it
+						$this->_pluginComponentClasses[$folderName][$plugin->getClassHandle()][] = $fileName;
 					}
 				}
 			}
 		}
+	}
+
+	/**
+	 * Returns all of a plugin's component class names of a certain type.
+	 *
+	 * @access private
+	 * @param string $pluginHandle
+	 * @param string $componentType
+	 * @return array
+	 */
+	private function _getPluginComponentClassesByType($pluginHandle, $componentType)
+	{
+		$plugin = $this->getPlugin($pluginHandle);
+
+		if (!$plugin)
+		{
+			$this->_noPluginExists($pluginHandle);
+		}
+
+		$allClasses = array();
+
+		if (isset($this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()]))
+		{
+			$classes = $this->_pluginComponentClasses[$componentType][$plugin->getClassHandle()];
+
+			foreach ($classes as $class)
+			{
+				$nsClass = __NAMESPACE__.'\\'.$class;
+
+				// Ignore abstract classes and interfaces
+				$ref = new \ReflectionClass($nsClass);
+
+				if ($ref->isAbstract() || $ref->isInterface())
+				{
+					continue;
+				}
+
+				$allClasses[] = $class;
+			}
+		}
+
+		return $allClasses;
+	}
+
+	/**
+	 * Returns all of a plugin's records, possibly initialized with a given scenario.
+	 *
+	 * @access private
+	 * @param string      $handle
+	 * @param string|null $scenario
+	 * @return mixed
+	 */
+	private function _getPluginRecords($handle, $scenario = null)
+	{
+		$classes = $this->_getPluginComponentClassesByType($handle, 'records');
+
+		$records = array();
+
+		foreach ($classes as $class)
+		{
+			$nsClass = __NAMESPACE__.'\\'.$class;
+			$records[] = new $nsClass($scenario);
+		}
+
+		return $records;
 	}
 
 	/**
@@ -592,34 +610,35 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _registerPluginServices($handle)
 	{
-		$plugin = $this->getPlugin($handle, false);
+		$classes = $this->_getPluginComponentClassesByType($handle, 'services');
 
-		if (isset($this->_pluginFileMap[$plugin->getClassHandle()]['services']))
+		$services = array();
+
+		foreach ($classes as $class)
 		{
-			foreach ($this->_pluginFileMap[$plugin->getClassHandle()]['services'] as $filePath)
+			$parts = explode('_', $class);
+
+			foreach ($parts as $index => $part)
 			{
-				$fileName = IOHelper::getFileName($filePath, false);
-				$parts = explode('_', $fileName);
+				$parts[$index] = lcfirst($part);
+			}
 
-				foreach ($parts as $index => $part)
-				{
-					$parts[$index] = lcfirst($part);
-				}
+			$serviceName = implode('_', $parts);
+			$serviceName = substr($serviceName, 0, strpos($serviceName, 'Service'));
 
-				$serviceName = implode('_', $parts);
-				$serviceName = substr($serviceName, 0, strpos($serviceName, 'Service'));
-
-				if (!blx()->getComponent($serviceName, false))
-				{
-					// Register the component with the handle as (className or className_*) minus "Service" if multiple.
-					blx()->setComponents(array($serviceName => array('class' => __NAMESPACE__.'\\'.$fileName)), false);
-				}
-				else
-				{
-					throw new Exception(Blocks::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', array('handle' => $handle, 'service' => $serviceName)));
-				}
+			if (!blx()->getComponent($serviceName, false))
+			{
+				// Register the component with the handle as (className or className_*) minus the "Service" suffix
+				$nsClass = __NAMESPACE__.'\\'.$class;
+				$services[$serviceName] = array('class' => $nsClass);
+			}
+			else
+			{
+				throw new Exception(Blocks::t('The plugin “{handle}” tried to register a service “{service}” that conflicts with a core service name.', array('handle' => $handle, 'service' => $serviceName)));
 			}
 		}
+
+		blx()->setComponents($services, false);
 	}
 
 	/**

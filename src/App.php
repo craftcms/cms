@@ -92,6 +92,9 @@ class App extends \CWebApplication
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
 
+			// Load the plugins
+			$this->plugins;
+
 			// Otherwise maybe it's an action request?
 			$this->_processActionRequest();
 
