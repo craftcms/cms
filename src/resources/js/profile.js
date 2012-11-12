@@ -14,7 +14,7 @@
             var element = $('.user-photo-controls .upload-photo');
             var options = {
                 element:    element[0],
-                action:     Blocks.getActionUrl('users/uploadUserPhoto'),
+                action:     Blocks.actionUrl + '/users/uploadUserPhoto',
                 params:     {userId: $('.user-photo').attr('data-user')},
                 multiple:   false,
                 onComplete: function (fileId, fileName, response) {
@@ -50,9 +50,8 @@
 
             };
 
-            if (typeof maxUploadSize != "undefined") {
-                options.sizeLimit = maxUploadSize;
-            }
+            options.sizeLimit = Blocks.maxUploadSize;
+
             this.uploader = new qqUploader.FileUploader(options);
 
             $('.user-photo-controls .delete-photo').click(function () {
