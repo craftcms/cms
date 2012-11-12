@@ -22,7 +22,7 @@ class ModelHelper
 		AttributeType::Enum       => array('column' => ColumnType::Enum),
 		AttributeType::Handle     => array('reservedWords' => 'id,dateCreated,dateUpdated,uid,title', 'column' => ColumnType::Char),
 		AttributeType::Language   => array('maxLength' => 12, 'column' => ColumnType::Char),
-		AttributeType::LicenseKey => array('length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'required' => true, 'column' => ColumnType::Char),
+		AttributeType::LicenseKey => array('length' => 36, 'matchPattern' => '/[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/', 'column' => ColumnType::Char),
 		AttributeType::Name       => array('maxLength' => 100, 'column' => ColumnType::Varchar),
 		AttributeType::Number     => array('min' => null, 'max' => null, 'decimals' => 0),
 		AttributeType::Slug       => array('maxLength' => 50, 'column' => ColumnType::Char),
