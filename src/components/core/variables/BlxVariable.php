@@ -207,6 +207,17 @@ class BlxVariable
 	}
 
 	/**
+	 * @return RebrandVariable
+	 */
+	public function rebrand()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		{
+			return new RebrandVariable();
+		}
+	}
+
+	/**
 	 * @return HttpRequestVariable
 	 */
 	public function request()

@@ -47,8 +47,8 @@
                 <div class="cp-logo">
                     <div class="current-logo" style="background-image: url({{ blx.rebrand.isLogoUploaded() ? blx.rebrand.logoUrl : resourceUrl('images/blocks.png') }});"></div>
                     <div class="logo-controls">
-                        {% if blx.app.isLogoUploaded() %}
-                            <div class="btn upload-logo">{{ "Change logo"|t }}</div>
+                        {% if blx.rebrand.isLogoUploaded() %}
+                            <div class="btn upload-logo">{{ "Change logo"|t }}</div><br /><br />
                             <div class="btn delete-logo">{{ "Delete logo"|t }}</div>
                         {% else %}
                             <div class="btn upload-logo">{{ "Upload a logo"|t }}</div>

@@ -87,13 +87,14 @@ class Image
 	 * @param $width
 	 * @param $height
 	 * @param bool $scaleIfSmaller
+	 * @return Image
 	 */
 	public function scale($width, $height, $scaleIfSmaller = false)
 	{
 		if (imagesx($this->_image) > $width || imagesy($this->_image) > $height || $scaleIfSmaller)
 		{
 			$factor = max(imagesx($this->_image) / $width, imagesy($this->_image) / $height);
-			$this->_doResize(imagesx($this->_image) / $factor, imagesy($this->_image) / $factor);
+			$this->_doResize(round(imagesx($this->_image)) / $factor, round(imagesy($this->_image) / $factor));
 		}
 
 		return $this;
@@ -127,9 +128,11 @@ class Image
 	 */
 	private function _doResize($width, $height)
 	{
-		$image = $this->_preserveTransparency($this->_getCanvas($width, $height));
+		$output = $this->_preserveTransparency($this->_getCanvas($width, $height));
 
-		imagecopyresampled($image, $this->_image, 0, 0, 0, 0, $width, $height, imagesx($this->_image), imagesy($this->_image));
+		imagecopyresampled($output, $this->_image, 0, 0, 0, 0, $width, $height, imagesx($this->_image), imagesy($this->_image));
+
+		$this->_image = $output;
 	}
 
 	/**
