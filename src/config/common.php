@@ -76,35 +76,35 @@ $configArray = array(
 	)
 );
 
-if (in_array('rebrand', $packages))
+if (in_array('Rebrand', $packages))
 {
 	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
 /* REBRAND COMPONENT ALIASES */
 	));
 }
 
-if (in_array('publishpro', $packages))
+if (in_array('PublishPro', $packages))
 {
 	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
 /* PUBLISHPRO COMPONENT ALIASES */
 	));
 }
 
-if (in_array('cloud', $packages))
+if (in_array('Cloud', $packages))
 {
 	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
 /* CLOUD COMPONENT ALIASES */
 	));
 }
 
-if (in_array('language', $packages))
+if (in_array('Language', $packages))
 {
 	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
 /* LANGUAGE COMPONENT ALIASES */
 	));
 }
 
-if (in_array('users', $packages))
+if (in_array('Users', $packages))
 {
 	$configArray['componentAliases'] = array_merge($configArray['componentAliases'], array(
 /* USERS COMPONENT ALIASES */

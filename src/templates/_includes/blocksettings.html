@@ -32,7 +32,7 @@
 
 {{ forms.textareaField({
 	label: "Instructions"|t,
-	instructions: (blx.hasPackage('publishpro')
+	instructions: (blx.hasPackage('PublishPro')
 		? "Helper text to guide you when authoring an entry."|t
 		: "Helper text to guide the author."|t),
 	name: 'instructions',
@@ -47,7 +47,7 @@
 	checked: (block ? block.required : false)
 }) }}
 
-{% if blx.hasPackage('language') and canBeTranslatable is defined and canBeTranslatable %}
+{% if blx.hasPackage('Language') and canBeTranslatable is defined and canBeTranslatable %}
 	{% if blx.systemSettings.languages %}
 		{{ forms.checkboxField({
 			label: "This entry block is translatable"|t,

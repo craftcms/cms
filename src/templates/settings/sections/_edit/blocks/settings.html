@@ -2,7 +2,7 @@
 {% set centered = true %}
 
 
-{% if blx.hasPackage('publishpro') %}
+{% if blx.hasPackage('PublishPro') %}
 	{% if sectionId is not defined %}{% exit 404 %}{% endif %}
 	{% set section = blx.sections.id(sectionId).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
@@ -28,7 +28,7 @@
 {% set header %}
 	<h1>{{ title|raw }}</h1>
 	<ul class="left">
-		{% if blx.hasPackage('publishpro') %}
+		{% if blx.hasPackage('PublishPro') %}
 			<li><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}" class="backbtn">{{ "{section} Entry Blocks"|t({ section: '<i>'~section.name|t~'</i>' })|raw }}</a></li>
 		{% else %}
 			<li><a href="{{ url('settings/blog') }}" class="backbtn">{{ "Blog"|t }}</a></li>
@@ -39,7 +39,7 @@
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
-		{% if blx.hasPackage('publishpro') %}
+		{% if blx.hasPackage('PublishPro') %}
 			<input type="hidden" name="action" value="sections/saveBlock">
 			<input type="hidden" name="redirect" value="settings/sections/{{ section.id }}/blocks">
 			<input type="hidden" name="sectionId" value="{{ section.id }}">

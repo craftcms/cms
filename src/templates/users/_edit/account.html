@@ -1,4 +1,4 @@
-{% extends (blx.hasPackage('users') ? "users/_edit/layout" : "_cp") %}
+{% extends (blx.hasPackage('Users') ? "users/_edit/layout" : "_cp") %}
 {% set centered = true %}
 {% import "_includes/forms" as forms %}
 
@@ -8,7 +8,7 @@
 {% endif %}
 
 
-{% if blx.hasPackage('users') %}
+{% if blx.hasPackage('Users') %}
 	{% if account is not defined and userId is defined %}
 		{% set account = blx.users.id(userId).first %}
 		{% if not account %}{% exit 404 %}{% endif %}
@@ -86,7 +86,7 @@
 			value: (account is defined ? account.emailFormat : 'text')
 		}) }}
 
-		{% if blx.hasPackage('language') %}
+		{% if blx.hasPackage('Language') %}
 			{% set languageInput %}
 				<div class="select">
 					<select id="language" name="language">

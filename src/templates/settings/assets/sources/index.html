@@ -15,7 +15,7 @@
 		<table id="sources" class="data">
 			<thead>
 				<th scope="col">{{ "Name"|t }}</th>
-				{% if blx.hasPackage('cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
+				{% if blx.hasPackage('Cloud') %}<th scope="col">{{ "Type"|t }}</th>{% endif %}
 				{% if sortable %}<td class="thin"></td>{% endif %}
 				<td class="thin"></td>
 			</thead>
@@ -23,7 +23,7 @@
 				{% for source in sources %}
 					<tr data-id="{{ source.id }}" data-name="{{ source.name|t }}">
 						<th scope="row"><a href="{{ url('settings/assets/sources/' ~ source.id) }}">{{ source.name|t }}</a></th>
-						{% if blx.hasPackage('cloud') %}<td>{{ blx.assets.populateSourceType(source).name }}</td>{% endif %}
+						{% if blx.hasPackage('Cloud') %}<td>{{ blx.assets.populateSourceType(source).name }}</td>{% endif %}
 						{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
 						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 					</tr>

@@ -6,9 +6,9 @@ namespace Blocks;
  */
 class BlocksPackage
 {
-	const PublishPro          = 'publishpro';
-	const Users               = 'users';
-	const Language            = 'language';
-	const Cloud               = 'cloud';
-	const Rebrand             = 'rebrand';
+	const PublishPro          = 'PublishPro';
+	const Users               = 'Users';
+	const Language            = 'Language';
+	const Cloud               = 'Cloud';
+	const Rebrand             = 'Rebrand';
 }

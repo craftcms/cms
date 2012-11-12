@@ -13,7 +13,7 @@
 %}
 
 {% set body %}
-    {% if blx.hasPackage('rebrand') and blx.rebrand.isLogoUploaded() %}
+    {% if blx.hasPackage('Rebrand') and blx.rebrand.isLogoUploaded() %}
         {%  set loginFormOpener = '<form id="login-form" method="post" action="" accept-charset="UTF-8" style="background-image: url(' ~ blx.rebrand.logoUrl ~ ');">' %}
     {% else %}
         {%  set loginFormOpener = '<form id="login-form" method="post" action="" accept-charset="UTF-8">' %}

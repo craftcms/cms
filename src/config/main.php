@@ -50,7 +50,7 @@ $cpRoutes['settings\/plugins\/(?P<pluginClass>'.$handle.')']                  = 
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
-if (in_array('publishpro', $packages))
+if (in_array('PublishPro', $packages))
 {
 	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
 	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'content/entries/_edit';
@@ -68,7 +68,7 @@ else
 	$cpRoutes['settings\/blog\/blocks\/(?P<blockId>\d+)']                         = 'settings/sections/_edit/blocks/settings';
 }
 
-if (in_array('users', $packages))
+if (in_array('Users', $packages))
 {
 	$cpRoutes['myaccount\/profile']                                               = 'users/_edit/profile';
 	$cpRoutes['myaccount\/info']                                                  = 'users/_edit/info';
@@ -120,19 +120,19 @@ $components['systemSettings']['class']    = 'Blocks\SystemSettingsService';
 $components['templates']['class']         = 'Blocks\TemplatesService';
 $components['updates']['class']           = 'Blocks\UpdatesService';
 
-if (in_array('publishpro', $packages))
+if (in_array('PublishPro', $packages))
 {
 	$components['entryRevisions']['class']    = 'Blocks\EntryRevisionsService';
 	$components['sections']['class']          = 'Blocks\SectionsService';
 }
 
-if (in_array('users', $packages))
+if (in_array('Users', $packages))
 {
 	$components['users']['class']             = 'Blocks\UsersService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
 }
 
-if (in_array('rebrand', $packages))
+if (in_array('Rebrand', $packages))
 {
 	$components['emailMessages']['class']     = 'Blocks\EmailMessagesService';
 }

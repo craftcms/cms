@@ -3,7 +3,7 @@
 {% set title = "Entries"|t %}
 
 
-{% if blx.hasPackage('publishpro') %}
+{% if blx.hasPackage('PublishPro') %}
 	{% set sections = blx.sections.find %}
 	{% set showSection = true %}
 {% else %}
@@ -24,7 +24,7 @@
 {% elseif filter == 'archived' %}
 	{% set params = { archived: true } %}
 	{% set showStatus = false %}
-{% elseif blx.hasPackage('publishpro') and blx.sections.handle(filter).total %}
+{% elseif blx.hasPackage('PublishPro') and blx.sections.handle(filter).total %}
 	{% set params = { section: filter, status: '*' } %}
 	{% set showSection = false %}
 {% else %}
@@ -34,7 +34,7 @@
 
 {% set content %}
 	<nav class="nav">
-		{% if not blx.hasPackage('publishpro') %}
+		{% if not blx.hasPackage('PublishPro') %}
 			<div class="buttons">
 				<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
 			</div>
@@ -43,7 +43,7 @@
 		<ul>
 			<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
 
-			{% if blx.hasPackage('publishpro') %}
+			{% if blx.hasPackage('PublishPro') %}
 				{% for section in sections %}
 					<li><a href="{{ url('content/' ~ section.handle) }}" {% if filter == section.handle %}class="sel"{% endif %}>{{ section.name|t }}</a></li>
 				{% endfor %}
@@ -79,7 +79,7 @@
 				</thead>
 				<tbody>
 					{% for entry in blx.entries.find(params) %}
-						{% if blx.hasPackage('publishpro') %}
+						{% if blx.hasPackage('PublishPro') %}
 							{% set entrySection = sections[entry.sectionId] %}
 						{% endif %}
 						<tr>
@@ -95,7 +95,7 @@
 			<p>{{ "No entries exist yet."|t }}</p>
 		{% endif %}
 
-		{% if blx.hasPackage('publishpro') and not showSection %}
+		{% if blx.hasPackage('PublishPro') and not showSection %}
 			<div class="buttons">
 				<a class="btn submit add icon" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
 			</div>

@@ -1,6 +1,6 @@
 {% set params = { status: '*', limit: settings.limit } %}
 
-{% if blx.hasPackage('publishpro') %}
+{% if blx.hasPackage('PublishPro') %}
 	{% set params = params|merge({ sectionId: settings.section }) %}
 {% endif %}
 
@@ -11,7 +11,7 @@
 	{% if entries|length %}
 		<table class="data">
 			{% for entry in entries %}
-				{% if blx.hasPackage('publishpro') %}
+				{% if blx.hasPackage('PublishPro') %}
 					{% set path = 'content/' ~ entry.section.handle ~ '/' ~ entry.id %}
 				{% else %}
 					{% set path = 'content/blog/' ~ entry.id %}
@@ -21,7 +21,7 @@
 						<a href="{{ url(path) }}">{{ entry.title }}</a>
 						<span class="light">
 							{{ entry.postDate.w3cDate }}
-							{% if blx.hasPackage('users') %}
+							{% if blx.hasPackage('Users') %}
 								{{ "by {author}"|t({ author: entry.author.username }) }}
 							{% endif %}
 						</span>

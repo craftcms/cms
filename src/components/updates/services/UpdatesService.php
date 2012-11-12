@@ -27,23 +27,6 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $blocksReleases
-	 * @return bool
-	 */
-	public function manualUpdateRequired($blocksReleases)
-	{
-		foreach ($blocksReleases as $blocksRelease)
-		{
-			if ($blocksRelease->manual_update_required)
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * @param $plugins
 	 * @return bool
 	 */

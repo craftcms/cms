@@ -5,7 +5,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if blx.hasPackage('publishpro') %}
+{% if blx.hasPackage('PublishPro') %}
 	{% set section = blx.sections.handle(sectionHandle).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
 {% endif %}
@@ -36,7 +36,7 @@
 {% endif %}
 
 
-{% if blx.hasPackage('publishpro') %}
+{% if blx.hasPackage('PublishPro') %}
 	{% set blocks = blx.entryBlocks.getBlocksBySectionId(section.id) %}
 {% else %}
 	{% set blocks = blx.entryBlocks.getAllBlocks %}
@@ -60,7 +60,7 @@
 		<li><a href="{{ url('content') }}" class="backbtn">{{ "Entries"|t }}</a></li>
 	</ul>
 
-	{% if not isNewEntry and blx.hasPackage('publishpro') %}
+	{% if not isNewEntry and blx.hasPackage('PublishPro') %}
 		<ul class="right">
 			<li>
 				{% include "content/entries/_revisions" %}
@@ -78,7 +78,7 @@
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
-		{% if blx.hasPackage('publishpro') %}
+		{% if blx.hasPackage('PublishPro') %}
 			<input type="hidden" name="sectionId" value="{{ section.id }}">
 		{% endif %}
 
@@ -112,7 +112,7 @@
 				required: true
 			}) }}
 
-			{% if blx.hasPackage('users') %}
+			{% if blx.hasPackage('Users') %}
 				{{ forms.selectField({
 					label: "Author"|t,
 					id: 'author',
@@ -187,14 +187,14 @@
 			{% else %}
 
 				<input type="hidden" name="action" value="entries/saveEntry">
-				{% if blx.hasPackage('publishpro') %}
+				{% if blx.hasPackage('PublishPro') %}
 					<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
 				{% else %}
 					<input type="hidden" name="redirect" value="content/blog/{entryId}">
 				{% endif %}
 				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
-				{% if not isNewEntry and blx.hasPackage('publishpro') %}
+				{% if not isNewEntry and blx.hasPackage('PublishPro') %}
 					<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" value="entryRevisions/createDraft" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
 				{% endif %}
 			{% endif %}

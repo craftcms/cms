@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 
-{% if blx.hasPackage('publishpro') %}
+{% if blx.hasPackage('PublishPro') %}
 	{% set blocks = blx.entryBlocks.getBlocksBySectionId(settings.section) %}
 {% else %}
 	{% set blocks = blx.entryBlocks.getAllBlocks %}
