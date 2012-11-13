@@ -34,6 +34,7 @@ class ComponentsService extends BaseApplicationComponent
 			$baseClass = __NAMESPACE__.'\\'.$ctype['baseclass'];
 
 			$this->_components[$type] = array();
+			$names = array();
 
 			$filter = '\/'.$ctype['subfolder'].'\/.*'.$ctype['suffix'].'\.php';
 			$files = IOHelper::getFolderContents(blx()->path->getComponentsPath(), true, $filter);
@@ -67,17 +68,18 @@ class ComponentsService extends BaseApplicationComponent
 					}
 
 					// Instantiate it
-					$obj = new $class;
+					$component = new $class;
 
 					// Make sure it implements the correct abstract base class
-					if (!$obj instanceof $baseClass)
+					if (!$component instanceof $baseClass)
 					{
 						continue;
 					}
 
 					// Save it
-					$classHandle = $obj->getClassHandle();
-					$this->_components[$type][$classHandle] = $obj;
+					$classHandle = $component->getClassHandle();
+					$this->_components[$type][$classHandle] = $component;
+					$names[] = $component->getName();
 				}
 			}
 
@@ -89,10 +91,11 @@ class ComponentsService extends BaseApplicationComponent
 				if ($component instanceof $baseClass)
 				{
 					$this->_components[$type][$component->getClassHandle()] = $component;
+					$names[] = $component->getName();
 				}
 			}
 
-			ksort($this->_components[$type]);
+			array_multisort($names, $this->_components[$type]);
 		}
 
 		return $this->_components[$type];
@@ -147,6 +150,27 @@ class ComponentsService extends BaseApplicationComponent
 
 			return $component;
 		}
+	}
+
+	/**
+	 * Compares two components for usort().
+	 *
+	 * @access private
+	 * @param BaseComponent $a
+	 * @param BaseComponent $b
+	 * @return int
+	 */
+	private function _compareComponents(BaseComponent $a, BaseComponent $b)
+	{
+		$aName = $a->getName();
+		$bName = $b->getName();
+
+		if ($a == $b)
+		{
+            return 0;
+        }
+
+        return ($a > $b) ? +1 : -1;
 	}
 
 	/**
