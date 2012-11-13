@@ -693,7 +693,7 @@ class PluginsService extends BaseApplicationComponent
 	private function _getPluginHandleFromFileSystem($iHandle)
 	{
 		$pluginsPath = blx()->path->getPluginsPath();
-		$fullPath = $pluginsPath.$iHandle.'/'.$iHandle.'Plugin.php';
+		$fullPath = $pluginsPath.strtolower($iHandle).'/'.$iHandle.'Plugin.php';
 
 		if (($file = IOHelper::fileExists($fullPath, true)) !== false)
 		{
