@@ -217,7 +217,7 @@
                 show: true,
                 persistent: true,
                 handles: true,
-                parent: this.$container
+                parent: $target.parent()
             };
 
             var areaSelect = $target.imgAreaSelect(areaOptions);
