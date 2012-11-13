@@ -63,6 +63,16 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getTempUploadPath()
+	{
+		$path = $this->getStoragePath().'tempuploads/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getUserPhotosPath()
 	{
 		$path = $this->getStoragePath().'userphotos/';

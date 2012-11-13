@@ -43,7 +43,7 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 
-						return blx()->path->getTempPath().'userphotos/'.$segs[2].'/'.$segs[3];
+						return blx()->path->getTempUploadPath().'userphotos/'.$segs[2].'/'.$segs[3];
 					}
 					else
 					{

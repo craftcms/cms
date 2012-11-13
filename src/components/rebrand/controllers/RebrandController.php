@@ -22,7 +22,7 @@ class RebrandController extends BaseController
 			// Make sure a file was uploaded
 			if ($uploader->file && $uploader->file->getSize())
 			{
-				$folderPath = blx()->path->getStoragePath().'tempuploads/';
+				$folderPath = blx()->path->getTempUploadPath();
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath);
 
@@ -83,7 +83,7 @@ class RebrandController extends BaseController
 			$y2 = blx()->request->getRequiredPost('y2');
 			$source = blx()->request->getRequiredPost('source');
 
-			$imagePath = blx()->path->getStoragePath().'tempuploads/'.$source;
+			$imagePath = blx()->path->getTempUploadPath().$source;
 
 			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
 			{
