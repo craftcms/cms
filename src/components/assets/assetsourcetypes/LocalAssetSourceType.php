@@ -158,7 +158,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		$fileName = IOHelper::cleanFilename($fileName);
 
 		$targetPath = $targetFolder . $fileName;
-		$extension = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
+		$extension = IOHelper::getExtension($fileName);
 
 		if (! IOHelper::isExtensionAllowed($extension))
 		{
