@@ -1,8 +1,8 @@
-div.cp-logo { height: 100px; }
 div.cp-logo div.current-logo { float: left; width: 300px; background-position: left; background-repeat: no-repeat;
 	-webkit-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 	-moz-box-shadow: inset 0 0 0 1px rgba(0,0,0,0.15);
 }
+div.cp-logo div.current-logo img{ display: block;}
 div.cp-logo div.logo-controls { margin-left: 315px; }
 div.cp-logo div.logo-controls .upload-logo ul { display: none; }
 div.cp-logo div.logo-controls .QqUploader-uploader { display: inline-block;}
