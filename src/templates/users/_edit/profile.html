@@ -19,10 +19,11 @@
 {% set content %}
 
 	{% includeJsResource "js/global/ui/QQUploader.js" %}
-	{% includeJsResource "js/profile.js" %}
-	{% includeCssResource "css/profile.css" %}
 	{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-	{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+    {% includeJsResource "js/global/ui/ImageUpload.js" %}
+    {% includeJsResource "js/profile.js" %}
+    {% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+    {% includeCssResource "css/profile.css" %}
 
 	{% set photoInput %}
 		<div class="user-photo" data-user="{{ account.id }}">
@@ -31,12 +32,8 @@
 				{% if account.photo %}
 					<div class="btn upload-photo">{{ "Change photo"|t }}</div>
 					<div class="btn delete-photo">{{ "Delete photo"|t }}</div>
-					{#<a href="javascript:;" class="upload-photo" data-message="{{ 'Change photo'|t }}">{{ "Change photo"|t }}</a>#}
-					{# "or"|t #}
-					{#<a href="javascript:;" class="delete-photo">{{ "Delete current photo"|t }}</a>#}
 				{% else %}
 					<div class="btn upload-photo">{{ "Upload a photo"|t }}</div>
-					{#<a href="javascript:;" class="upload-photo" data-message="{{ 'Upload a photo'|t }}">{{ "Upload a photo"|t }}</a>#}
 				{% endif %}
 			</div>
 		</div>

@@ -73,3 +73,7 @@ html, body, #sidebar, #main { height: 100%; }
 #main .nav ul li a:hover:after { display: inline-block; }
 #main .nav ul li a.sel:after { display: inline-block; color: #2c2c2c; }
 #main .nav + div { margin-left: 175px; }
+
+/* image cropping modal */
+div.crop-image div.image-chooser { width: 100%; }
+div.crop-image div.image-chooser img { display: block; margin: 0 auto; }

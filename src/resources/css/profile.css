@@ -10,5 +10,3 @@ div.user-photo div.user-photo-controls .upload-photo ul { display: none; }
 div.user-photo div.user-photo-controls .QqUploader-uploader { display: inline-block;}
 
 div.profile-image-modal { width: 500px; }
-div.profile-image-chooser { width: 500px; }
-div.profile-image-chooser img { display: block; margin: 0 auto; }
