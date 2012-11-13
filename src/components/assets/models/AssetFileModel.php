@@ -73,12 +73,12 @@ class AssetFileModel extends BaseModel
 		if ($width > $height)
 		{
 			$thumbWidth = $maxSize;
-			$thumbHeight = $height * ($maxSize / $width);
+			$thumbHeight = $height * ($maxSize / max(1, $width));
 		}
 		else
 		{
 			$thumbHeight = $maxSize;
-			$thumbWidth = $width * ($maxSize / $height);
+			$thumbWidth = $width * ($maxSize / max(1, $height));
 		}
 
 		return array('width' => $thumbWidth, 'height' => $thumbHeight);
