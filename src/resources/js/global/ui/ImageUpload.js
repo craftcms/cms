@@ -242,7 +242,7 @@
                     rectangleHeight = $target.height();
                     rectangleWidth = rectangleHeight * proportions[0] / proportions[1];
                 } else {
-                    rectangleHeight = rectangleWidth = $target.width();
+                    rectangleHeight = rectangleWidth = Math.min($target.width(), $target.height());
                 }
                 x1 = Math.round(($target.width() - rectangleWidth) / 2);
                 y1 = Math.round(($target.height() - rectangleHeight) / 2);
