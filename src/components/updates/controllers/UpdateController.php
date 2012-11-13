@@ -22,6 +22,15 @@ class UpdateController extends BaseController
 	}
 
 	/**
+	 * Redirects to the Blocks download URL.
+	 */
+	public function actionDownloadBlocksUpdate()
+	{
+		$url = 'http://beta.blockscms.com/index.php/actions/licenses/downloadBlocks?licenseKey='.Blocks::getLicenseKey();
+		blx()->request->redirect($url);
+	}
+
+	/**
 	 * Returns the update info JSON.
 	 */
 	public function actionGetUpdates()

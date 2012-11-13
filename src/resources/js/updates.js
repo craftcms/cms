@@ -91,7 +91,18 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					'</span>'
 				);
 
-				$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Update')+'</a>');
+ 				if (response.blocks.manualUpdateRequired)
+ 				{
+ 					var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
+ 					$btn.on('click', function() {
+ 						var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
+ 						$('<iframe/>', { src: src }).appendTo(Blocks.$body).hide();
+ 					});
+ 				}
+				else
+				{
+					$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Update')+'</a>');
+				}
 
 				var $tr = $('<tr/>').appendTo($tbody),
 					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
@@ -162,7 +173,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 			count++;
 		}
 
-		if (reponse.packages)
+		if (response.packages)
 		{
 			count++;
 		}
