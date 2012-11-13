@@ -139,12 +139,17 @@ class EntryModel extends BaseEntityModel
 		{
 			if ($this->uri)
 			{
-				return UrlHelper::getUrl($this->uri);
+				$uri = $this->uri;
 			}
 		}
 		else
 		{
-			return UrlHelper::getUrl('blog/'.$this->uri);
+			$uri = 'blog/'.$this->uri;
+		}
+
+		if (!empty($uri))
+		{
+			return rtrim(Blocks::getSiteUrl(), '/').'/'.$uri;
 		}
 	}
 
