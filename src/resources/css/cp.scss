@@ -75,5 +75,5 @@ html, body, #sidebar, #main { height: 100%; }
 #main .nav + div { margin-left: 175px; }
 
 /* image cropping modal */
-div.crop-image div.image-chooser { width: 100%; }
-div.crop-image div.image-chooser img { display: block; margin: 0 auto; }
+div.crop-image div.image-chooser { position: relative; }
+div.crop-image div.image-chooser img { display: block; }

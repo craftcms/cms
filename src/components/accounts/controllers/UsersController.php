@@ -258,7 +258,7 @@ class UsersController extends BaseEntityController
 					throw new Exception(Blocks::t("Operation not permitted."));
 				}
 
-				$folderPath = blx()->path->getTempUploadPath().'userphotos/'.$user->username.'/';
+				$folderPath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/';
 
 				IOHelper::clearFolder($folderPath);
 
@@ -332,18 +332,18 @@ class UsersController extends BaseEntityController
 			}
 
 			// make sure that this is this user's file
-			$imagePath = blx()->path->getTempUploadPath().'userphotos/'.$user->username.'/'.$source;
+			$imagePath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
 			{
 				blx()->users->deleteUserPhoto($user);
 				if (blx()->users->cropAndSaveUserPhoto($imagePath, $x1, $x2, $y1, $y2, $user))
 				{
-					IOHelper::clearFolder(blx()->path->getTempUploadPath().'userphotos/'.$user->username);
+					IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
 					$this->returnJson(array('success' => true));
 				}
 			}
-			IOHelper::clearFolder(blx()->path->getTempUploadPath().'userphotos/'.$user->username);
+			IOHelper::clearFolder(blx()->path->getTempUploadsPath().'userphotos/'.$user->username);
 		}
 		catch (Exception $exception)
 		{

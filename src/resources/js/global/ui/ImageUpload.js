@@ -93,10 +93,12 @@
                         modal.show();
                         modal.removeListener(Blocks.ui.Modal.$shade, 'click');
 
-                        $modalContainerDiv.find('img').load(function () {
-                            var profileTool = new ImageAreaTool(settings.areaToolOptions);
-                            profileTool.showArea(modal);
-                        });
+                        setTimeout(function() {
+                            $modalContainerDiv.find('img').load(function () {
+                                var profileTool = new ImageAreaTool(settings.areaToolOptions);
+                                profileTool.showArea(modal);
+                            });
+                        }, 1);
                     }
                 },
                 allowedExtensions: ['jpg', 'jpeg', 'gif', 'png'],
@@ -214,8 +216,8 @@
                 resizable: true,
                 show: true,
                 persistent: true,
-                handles: true
-
+                handles: true,
+                parent: this.$container
             };
 
             var areaSelect = $target.imgAreaSelect(areaOptions);

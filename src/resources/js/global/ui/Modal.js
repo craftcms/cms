@@ -151,8 +151,8 @@ Blocks.ui.Modal = Blocks.Base.extend({
 			viewportHeight = Blocks.$window.height(),
 			modalWidth = this.getWidth(),
 			modalHeight = this.getHeight(),
-			left = (viewportWidth - modalWidth) / 2,
-			top = (viewportHeight - modalHeight) / 2;
+			left = Math.round((viewportWidth - modalWidth) / 2),
+			top = Math.round((viewportHeight - modalHeight) / 2);
 
 		this.$container.css({
 			top: top,

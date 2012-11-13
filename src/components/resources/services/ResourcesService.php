@@ -43,7 +43,7 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 
-						return blx()->path->getTempUploadPath().'userphotos/'.$segs[2].'/'.$segs[3];
+						return blx()->path->getTempUploadsPath().'userphotos/'.$segs[2].'/'.$segs[3];
 					}
 					else
 					{
@@ -82,6 +82,11 @@ class ResourcesService extends BaseApplicationComponent
 				}
 
 				case 'tempuploads':
+				{
+					array_shift($segs);
+					return blx()->path->getTempUploadsPath().implode('/', $segs);
+				}
+
 				case 'logo':
 				{
 					return blx()->path->getStoragePath().implode('/', $segs);
