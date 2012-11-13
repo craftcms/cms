@@ -210,7 +210,9 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 		}
 		else
 		{
-			this.$urlInput.focus();
+			setTimeout($.proxy(function() {
+				this.$urlInput.focus();
+			}, this), 100);
 		}
 
 		this.base($container);
