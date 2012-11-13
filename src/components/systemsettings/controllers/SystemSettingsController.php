@@ -17,18 +17,14 @@ class SystemSettingsController extends BaseController
 		$generalSettingsModel = new GeneralSettingsModel();
 		$generalSettingsModel->siteName = blx()->request->getPost('siteName');
 		$generalSettingsModel->siteUrl = blx()->request->getPost('siteUrl');
-		/* HIDE */
 		$generalSettingsModel->licenseKey = blx()->request->getPost('licenseKey');
-		/* end HIDE */
 
 		if ($generalSettingsModel->validate())
 		{
 			$info = InfoRecord::model()->find();
 			$info->siteName = $generalSettingsModel->siteName;
 			$info->siteUrl = $generalSettingsModel->siteUrl;
-			/* HIDE */
 			$info->licenseKey = $generalSettingsModel->licenseKey;
-			/* end HIDE */
 			$info->save();
 
 			blx()->user->setNotice(Blocks::t('General settings saved.'));

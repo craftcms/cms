@@ -35,6 +35,16 @@
 			errors: (post is defined ? post.getErrors('siteUrl') : null)
 		}) }}
 
+		{{ forms.textField({
+			label: "License Key"|t,
+			id: 'licenseKey',
+			class: 'code',
+			name: 'licenseKey',
+			value: (post is defined ? post.licenseKey : blx.app.licenseKey),
+			required: true,
+			errors: (post is defined ? post.getErrors('licenseKey') : null)
+		}) }}
+
 		{% if blx.hasPackage('Rebrand') %}
 
             {% includeJsResource "js/global/ui/QQUploader.js" %}

@@ -14,9 +14,7 @@ class GeneralSettingsModel extends BaseModel
 		return array(
 			'siteName'   => array(AttributeType::Name, 'required' => true),
 			'siteUrl'    => array(AttributeType::Url, 'required' => true),
-			/* HIDE */
-			'licenseKey' => AttributeType::LicenseKey,
-			/* end HIDE */
+			'licenseKey' => array(AttributeType::LicenseKey, 'required' => true),
 		);
 	}
 }
