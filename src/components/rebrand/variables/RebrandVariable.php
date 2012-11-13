@@ -7,37 +7,64 @@ namespace Blocks;
  */
 class RebrandVariable
 {
+	private $_logoPath;
+	private $_logoVariable;
+
 	/**
-	 * Returns true if there is an admin panel logo uploaded.
+	 * Returns whether a custom logo has been uploaded.
 	 *
 	 * @return bool
 	 */
 	public function isLogoUploaded()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
-		{
-			$fileList = IOHelper::getFolderContents(blx()->path->getStoragePath() . 'logo/', false);
-			return !empty($fileList);
-		}
-		return false;
+		return ($this->_getLogoPath() !== false);
 	}
 
 	/**
-	 * Return the URL to the admin panel logo.
+	 * Returns the logo variable, or false if a logo hasn't been uploaded.
 	 *
-	 * @return string
+	 * @return LogoVariable|false
 	 */
-	public function getLogoUrl()
+	public function getLogo()
 	{
-		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		if (!isset($this->_logoVariable))
 		{
-			$fileList = IOHelper::getFolderContents(blx()->path->getStoragePath() . 'logo/', false);
-			if (!empty($fileList))
+			$logoPath = $this->_getLogoPath();
+
+			if ($logoPath !== false)
 			{
-				return UrlHelper::getResourceUrl('logo/' . pathinfo(reset($fileList), PATHINFO_BASENAME));
+				$this->_logoVariable = new LogoVariable($logoPath);
+			}
+			else
+			{
+				$this->_logoVariable = false;
 			}
 		}
 
-		return false;
+		return $this->_logoVariable;
+	}
+
+	/**
+	 * Returns the path to the logo, or false if a logo hasn't been uploaded.
+	 *
+	 * @access private
+	 * @return string|false
+	 */
+	private function _getLogoPath()
+	{
+		if (!isset($this->_logoPath))
+		{
+			$files = IOHelper::getFolderContents(blx()->path->getStoragePath().'logo/', false);
+			if (!empty($files))
+			{
+				$this->_logoPath = $files[0];
+			}
+			else
+			{
+				$this->_logoPath = false;
+			}
+		}
+
+		return $this->_logoPath;
 	}
 }

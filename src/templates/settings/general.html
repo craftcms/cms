@@ -47,35 +47,37 @@
 
 		{% if blx.hasPackage('Rebrand') %}
 
-            {% includeTranslations
-                "Are you sure you want to delete the logo?"
-            %}
-            {% includeJsResource "js/global/ui/QQUploader.js" %}
-            {% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
-            {% includeJsResource "js/global/ui/ImageUpload.js" %}
-            {% includeJsResource "js/rebrand.js" %}
-            {% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
-            {% includeCssResource "css/rebrand.css" %}
+			{% includeTranslations
+				"Are you sure you want to delete the logo?"
+			%}
+			{% includeJsResource "js/global/ui/QQUploader.js" %}
+			{% includeJsResource "lib/imgareaselect/jquery.imgareaselect.pack.js" %}
+			{% includeJsResource "js/global/ui/ImageUpload.js" %}
+			{% includeJsResource "js/rebrand.js" %}
+			{% includeCssResource "lib/imgareaselect/imgareaselect-animated.css" %}
+			{% includeCssResource "css/rebrand.css" %}
 
-            {% set logoInput %}
-                <div class="cp-logo">
-                    <div class="current-logo"><img src="{{ blx.rebrand.isLogoUploaded() ? blx.rebrand.logoUrl : resourceUrl('images/blocks.png') }}" alt="{{ "Logo"|t }}" /></div>
-                    <div class="logo-controls">
-                        {% if blx.rebrand.isLogoUploaded() %}
-                            <div class="btn upload-logo">{{ "Change logo"|t }}</div><br /><br />
-                            <div class="btn delete-logo">{{ "Delete logo"|t }}</div>
-                        {% else %}
-                            <div class="btn upload-logo">{{ "Upload a logo"|t }}</div>
-                        {% endif %}
-                    </div>
-                </div>
-            {% endset %}
+			{% set logoInput %}
+				<div class="cp-logo">
+					<div class="current-logo" {% if blx.rebrand.isLogoUploaded -%}
+							style="background-image: url({{ blx.rebrand.logo.url }}); width: {{ blx.rebrand.logo.width }}px; height: {{ blx.rebrand.logo.height }}px;"
+						{%- endif %}></div>
+					<div class="logo-controls"{% if blx.rebrand.isLogoUploaded %} style="margin-left: {{ blx.rebrand.logo.width + 15 }}px;"{%- endif %}>
+						{% if blx.rebrand.isLogoUploaded %}
+							<div class="btn upload-logo">{{ "Change logo"|t }}</div>
+							<div class="btn delete-logo">{{ "Delete logo"|t }}</div>
+						{% else %}
+							<div class="btn upload-logo">{{ "Upload a logo"|t }}</div>
+						{% endif %}
+					</div>
+				</div>
+			{% endset %}
 
-            {{ forms.field({
-                label: "Logo"|t
-            }, logoInput) }}
+			{{ forms.field({
+				label: "Logo"|t
+			}, logoInput) }}
 
-            <div class="clear"></div>
+			<div class="clear"></div>
 		{% endif %}
 
 		<div class="buttons">

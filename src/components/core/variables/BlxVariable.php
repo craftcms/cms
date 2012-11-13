@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class BlxVariable
 {
+	private $_rebrandVariable;
+
 	/**
 	 * @param $name
 	 * @return mixed
@@ -213,7 +215,12 @@ class BlxVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
-			return new RebrandVariable();
+			if (!isset($this->_rebrandVariable))
+			{
+				$this->_rebrandVariable = new RebrandVariable();
+			}
+
+			return $this->_rebrandVariable;
 		}
 	}
 
