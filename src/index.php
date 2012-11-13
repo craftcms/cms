@@ -17,17 +17,33 @@ defined('BLOCKS_BASE_PATH')         || define('BLOCKS_BASE_PATH', str_replace('\
 defined('BLOCKS_APP_PATH')          || define('BLOCKS_APP_PATH',          BLOCKS_BASE_PATH.'app/');
 defined('BLOCKS_CONFIG_PATH')       || define('BLOCKS_CONFIG_PATH',       BLOCKS_BASE_PATH.'config/');
 defined('BLOCKS_PLUGINS_PATH')      || define('BLOCKS_PLUGINS_PATH',      BLOCKS_BASE_PATH.'plugins/');
-defined('BLOCKS_RUNTIME_PATH')      || define('BLOCKS_RUNTIME_PATH',      BLOCKS_BASE_PATH.'runtime/');
-defined('BLOCKS_UPLOADS_PATH')      || define('BLOCKS_UPLOADS_PATH',      BLOCKS_RUNTIME_PATH.'uploads/');
+defined('BLOCKS_STORAGE_PATH')      || define('BLOCKS_STORAGE_PATH',      BLOCKS_BASE_PATH.'storage/');
 defined('BLOCKS_TEMPLATES_PATH')    || define('BLOCKS_TEMPLATES_PATH',    BLOCKS_BASE_PATH.'templates/');
 defined('BLOCKS_TRANSLATIONS_PATH') || define('BLOCKS_TRANSLATIONS_PATH', BLOCKS_BASE_PATH.'translations/');
 defined('BLOCKS_CP_REQUEST')        || define('BLOCKS_CP_REQUEST', false);
 defined('YII_TRACE_LEVEL')          || define('YII_TRACE_LEVEL', 3);
 
-// Check early if runtime is a valid folder and writable.
-if (($runtimePath = realpath(BLOCKS_RUNTIME_PATH)) === false || !is_dir($runtimePath) || !is_writable($runtimePath))
+// Check early if storage/ is a valid folder and writable.
+if (($storagePath = realpath(BLOCKS_STORAGE_PATH)) === false || !is_dir($storagePath) || !is_writable($storagePath))
 {
-	exit('Blocks runtime path "'.$runtimePath.'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+	exit('Blocks storage path "'.$storagePath.'" isn&rsquo;t valid. Please make sure it is a folder writable by your web server process.');
+}
+
+// Create the runtime path if it doesn't exist already
+// (code borrowed from IOHelper)
+$runtimePath = BLOCKS_STORAGE_PATH.'runtime/';
+if (!is_dir($runtimePath))
+{
+	$oldumask = umask(0);
+
+	if (!mkdir($runtimePath, 0754, true))
+	{
+		exit('Tried to create a folder at '.$runtimePath.', but could not.');
+	}
+
+	// Because setting permission with mkdir is a crapshoot.
+	chmod($runtimePath, 0754);
+	umask($oldumask);
 }
 
 // In case yiic is running

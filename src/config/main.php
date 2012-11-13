@@ -187,7 +187,7 @@ return CMap::mergeArray(
 
 	array(
 		'basePath'    => BLOCKS_APP_PATH,
-		'runtimePath' => BLOCKS_RUNTIME_PATH,
+		'runtimePath' => BLOCKS_STORAGE_PATH.'runtime/',
 		'name'        => 'Blocks',
 
 		// autoloading model and component classes

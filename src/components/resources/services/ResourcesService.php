@@ -81,10 +81,10 @@ class ResourcesService extends BaseApplicationComponent
 					}
 				}
 
-				case 'uploads':
+				case 'tempuploads':
+				case 'logo':
 				{
-					array_shift($segs);
-					return blx()->path->getUploadsPath() . implode('/', $segs);
+					return blx()->path->getStoragePath().implode('/', $segs);
 				}
 			}
 		}

@@ -22,7 +22,7 @@ class RebrandController extends BaseController
 			// Make sure a file was uploaded
 			if ($uploader->file && $uploader->file->getSize())
 			{
-				$folderPath = blx()->path->getUploadsPath().'temp/';
+				$folderPath = blx()->path->getStoragePath().'tempuploads/';
 				IOHelper::ensureFolderExists($folderPath);
 				IOHelper::clearFolder($folderPath);
 
@@ -48,7 +48,7 @@ class RebrandController extends BaseController
 
 					$html = blx()->templates->render('settings/_edit/crop_logo',
 						array(
-							'imageUrl' => UrlHelper::getResourceUrl('uploads/temp/'.$fileName),
+							'imageUrl' => UrlHelper::getResourceUrl('tempuploads/'.$fileName),
 							'width' => round($width * $factor),
 							'height' => round($height * $factor),
 							'factor' => $factor
@@ -83,11 +83,11 @@ class RebrandController extends BaseController
 			$y2 = blx()->request->getRequiredPost('y2');
 			$source = blx()->request->getRequiredPost('source');
 
-			$imagePath = blx()->path->getUploadsPath().'temp/'.$source;
+			$imagePath = blx()->path->getStoragePath().'tempuploads/'.$source;
 
 			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
 			{
-				$targetPath = blx()->path->getUploadsPath().'logo/';
+				$targetPath = blx()->path->getStoragePath().'logo/';
 
 				IOHelper::ensureFolderExists($targetPath);
 
@@ -118,7 +118,7 @@ class RebrandController extends BaseController
 	public function actionDeleteLogo()
 	{
 		$this->requireAdmin();
-		IOHelper::clearFolder(blx()->path->getUploadsPath().'logo/');
+		IOHelper::clearFolder(blx()->path->getStoragePath().'logo/');
 		$this->returnJson(array('success' => true));
 	}
 }

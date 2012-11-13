@@ -35,9 +35,9 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
-	public function getUploadsPath()
+	public function getStoragePath()
 	{
-		return BLOCKS_UPLOADS_PATH;
+		return BLOCKS_STORAGE_PATH;
 	}
 
 	/**
@@ -45,7 +45,9 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getRuntimePath()
 	{
-		return BLOCKS_RUNTIME_PATH;
+		$path = $this->getStoragePath().'runtime/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
 	}
 
 	/**
@@ -63,7 +65,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getUserPhotosPath()
 	{
-		$path = $this->getUploadsPath().'userphotos/';
+		$path = $this->getStoragePath().'userphotos/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}
@@ -73,7 +75,7 @@ class PathService extends BaseApplicationComponent
 	 */
 	public function getLogPath()
 	{
-		$path = $this->getRuntimePath().'logs/';
+		$path = $this->getStoragePath().'logs/';
 		IOHelper::ensureFolderExists($path);
 		return $path;
 	}

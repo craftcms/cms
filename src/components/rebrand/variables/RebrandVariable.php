@@ -16,7 +16,7 @@ class RebrandVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
-			$fileList = IOHelper::getFolderContents(blx()->path->getUploadsPath() . 'logo/', false);
+			$fileList = IOHelper::getFolderContents(blx()->path->getStoragePath() . 'logo/', false);
 			return !empty($fileList);
 		}
 		return false;
@@ -31,10 +31,10 @@ class RebrandVariable
 	{
 		if (Blocks::hasPackage(BlocksPackage::Rebrand))
 		{
-			$fileList = IOHelper::getFolderContents(blx()->path->getUploadsPath() . 'logo/', false);
+			$fileList = IOHelper::getFolderContents(blx()->path->getStoragePath() . 'logo/', false);
 			if (!empty($fileList))
 			{
-				return UrlHelper::getResourceUrl('uploads/logo/' . pathinfo(reset($fileList), PATHINFO_BASENAME));
+				return UrlHelper::getResourceUrl('logo/' . pathinfo(reset($fileList), PATHINFO_BASENAME));
 			}
 		}
 
