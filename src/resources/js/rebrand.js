@@ -13,7 +13,7 @@
 
         areaToolOptions:
         {
-            aspectRatio: "3:1",
+            aspectRatio: "",
             initialRectangle: {
                 mode: "auto"
             }

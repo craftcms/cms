@@ -95,7 +95,7 @@ class RebrandController extends BaseController
 					blx()->images
 						->loadImage($imagePath)
 						->crop($x1, $x2, $y1, $y2)
-						->scale(300, 100)
+						->scale(300, 300)
 						->saveAs($targetPath.$source);
 
 				IOHelper::deleteFile($imagePath);

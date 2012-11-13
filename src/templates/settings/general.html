@@ -59,7 +59,7 @@
 
             {% set logoInput %}
                 <div class="cp-logo">
-                    <div class="current-logo" style="background-image: url({{ blx.rebrand.isLogoUploaded() ? blx.rebrand.logoUrl : resourceUrl('images/blocks.png') }});"></div>
+                    <div class="current-logo"><img src="{{ blx.rebrand.isLogoUploaded() ? blx.rebrand.logoUrl : resourceUrl('images/blocks.png') }}" alt="{{ "Logo"|t }}" /></div>
                     <div class="logo-controls">
                         {% if blx.rebrand.isLogoUploaded() %}
                             <div class="btn upload-logo">{{ "Change logo"|t }}</div><br /><br />
@@ -75,6 +75,7 @@
                 label: "Logo"|t
             }, logoInput) }}
 
+            <div class="clear"></div>
 		{% endif %}
 
 		<div class="buttons">
