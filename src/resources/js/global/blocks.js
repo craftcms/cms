@@ -712,19 +712,27 @@ Blocks.shake = function(elem, property)
 	var $elem = $(elem);
 
 	if (!property)
+	{
 		property = 'margin-left';
+	}
 
 	var startingPoint = parseInt($elem.css(property));
 	if (isNaN(startingPoint))
-		startingPoint = 0;
-
-	for (var i = 10; i > 0; i--)
 	{
-		var value = startingPoint + (i % 2 ? -1 : 1) * i;
-		$elem.animate({property: value}, {
-			duration: 50,
-			queue: true
-		});
+		startingPoint = 0;
+	}
+
+	var duration = 25;
+
+	for (var i = 0; i <= 10; i++)
+	{
+		(function(i) {
+			setTimeout(function() {
+				var properties = {};
+				properties[property] = startingPoint + (i % 2 ? -1 : 1) * (10-i);
+				$elem.animate(properties, duration);
+			}, (duration * i));
+		})(i);
 	}
 };
 
