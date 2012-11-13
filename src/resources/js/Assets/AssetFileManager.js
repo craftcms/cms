@@ -80,7 +80,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 
             this.uploader = new qqUploader.FileUploader({
                 element:      this.$upload[0],
-                action:       Blocks.actionUrl + 'assets/uploadFile',
+                action:       Blocks.actionUrl + '/assets/uploadFile',
                 template:     '<div class="assets-qq-uploader">'
                     +   '<div class="assets-qq-upload-drop-area"></div>'
                     +   '<a href="" class="btn submit assets-qq-upload-button" data-icon="↑" style="position: relative; overflow: hidden; direction: ltr; ">' + Blocks.t('Upload files') + '</a>'
