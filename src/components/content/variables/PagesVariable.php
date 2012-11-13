@@ -51,7 +51,7 @@ class PagesVariable
 	 * @param int $id
 	 * @return PageBlockModel|null
 	 */
-	public function getPageBlockById($id)
+	public function getBlockById($id)
 	{
 		return blx()->pages->getBlockById($id);
 	}
