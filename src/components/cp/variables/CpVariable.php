@@ -34,18 +34,21 @@ class CpVariable
 			}
 		}
 
-		$numberOfUpdates = blx()->updates->getTotalNumberOfAvailableUpdates();
-
-		if ($numberOfUpdates > 0)
+		if (blx()->account->isAdmin())
 		{
-			$nav['updates'] = array('name' => Blocks::t('Updates'), 'badge' => $numberOfUpdates);
-		}
-		else
-		{
-			$nav['updates'] = array('name' => Blocks::t('Updates'));
-		}
+			$numberOfUpdates = blx()->updates->getTotalNumberOfAvailableUpdates();
 
-		$nav['settings'] = array('name' => Blocks::t('Settings'));
+			if ($numberOfUpdates > 0)
+			{
+				$nav['updates'] = array('name' => Blocks::t('Updates'), 'badge' => $numberOfUpdates);
+			}
+			else
+			{
+				$nav['updates'] = array('name' => Blocks::t('Updates'));
+			}
+
+			$nav['settings'] = array('name' => Blocks::t('Settings'));
+		}
 
 		return $nav;
 	}
