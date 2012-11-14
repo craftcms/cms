@@ -426,13 +426,14 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Calls a hook in any plugin that has it.
 	 *
-	 * @param string $methodName
+	 * @param string $hook
 	 * @param array $args
 	 * @return array
 	 */
-	public function callHook($methodName, $args = array())
+	public function callHook($hook, $args = array())
 	{
 		$result = array();
+		$methodName = 'hook'.ucfirst($hook);
 
 		foreach ($this->getPlugins() as $plugin)
 		{
