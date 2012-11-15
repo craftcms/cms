@@ -134,14 +134,14 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * Returns a specific URI segment
+	 * Returns a specific URI segment, or null if the segment doesn't exist.
 	 *
 	 * @param int $num
 	 * @return string|null
 	 */
 	public function getSegment($num)
 	{
-		if (isset($this->_segments[$num-1]))
+		if ($num > 0 && isset($this->_segments[$num-1]))
 		{
 			return $this->_segments[$num-1];
 		}

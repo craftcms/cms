@@ -48,15 +48,14 @@ class HttpRequestVariable
 	}
 
 	/**
-	 * Returns a specific URI segment.
+	 * Returns a specific URI segment, or null if the segment doesn't exist.
 	 *
 	 * @param int $num
-	 * @param string $default
-	 * @return string
+	 * @return string|null
 	 */
-	public function getSegment($num, $default = null)
+	public function getSegment($num)
 	{
-		return blx()->request->getSegment($num, $default);
+		return blx()->request->getSegment($num);
 	}
 
 	/**
