@@ -60,17 +60,4 @@ class TemplateLoader implements \Twig_LoaderInterface
 			return false;
 		}
 	}
-
-	/**
-	 * Finds the template path based on its name.
-	 *
-	 * @access protected
-	 * @param string $name The name of the template to load
-	 * @throws TemplateLoaderException
-	 * @return string The template path
-	 */
-	protected function findTemplate($name)
-	{
-
-	}
 }
