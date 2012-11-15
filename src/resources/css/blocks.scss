@@ -124,9 +124,9 @@ td.right { float: none; text-align: right; }
 .move:before { content: 'm'; color: #ccc; }
 .move:hover:before { color: $linkcolor; }
 
-.delete { display: inline-block; }
-.delete:before { content: 'R'; color: #ccc; }
-.delete:hover:before { color: $errorcolor; }
+.icon.delete { display: inline-block; }
+.icon.delete:before { content: 'R'; color: #ccc; }
+.icon.delete:hover:before { color: $errorcolor; }
 
 .hidden { display: none !important; }
 
