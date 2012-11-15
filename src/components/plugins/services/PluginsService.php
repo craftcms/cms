@@ -71,6 +71,8 @@ class PluginsService extends BaseApplicationComponent
 				'enabled' => true
 			));
 
+			$names = array();
+
 			foreach ($records as $record)
 			{
 				$plugin = $this->_getPlugin($record->class);
@@ -80,6 +82,7 @@ class PluginsService extends BaseApplicationComponent
 					$lcHandle = strtolower($plugin->getClassHandle());
 					$this->_plugins[$lcHandle] = $plugin;
 					$this->_enabledPlugins[$lcHandle] = $plugin;
+					$names[] = $plugin->getName();
 
 					$plugin->setSettings($record->settings);
 
@@ -90,6 +93,9 @@ class PluginsService extends BaseApplicationComponent
 					$this->_registerPluginServices($plugin->getClassHandle());
 				}
 			}
+
+			// Sort plugins by name
+			array_multisort($names, $this->_enabledPlugins);
 
 			// Now that all of the components have been imported,
 			// initialize all the plugins
@@ -165,6 +171,7 @@ class PluginsService extends BaseApplicationComponent
 			if (!isset($this->_allPlugins))
 			{
 				$this->_allPlugins = array();
+				$names = array();
 
 				// Find all of the plugins in the plugins folder
 				$pluginsPath = blx()->path->getPluginsPath();
@@ -185,9 +192,13 @@ class PluginsService extends BaseApplicationComponent
 						if ($plugin)
 						{
 							$this->_allPlugins[] = $plugin;
+							$names[] = $plugin->getName();
 						}
 					}
 				}
+
+				// Sort plugins by name
+				array_multisort($names, $this->_allPlugins);
 			}
 
 			return $this->_allPlugins;
