@@ -242,7 +242,7 @@ Blocks.ui.LinksBlock = Blocks.Base.extend({
 				var id = $($entities[i]).attr('data-id'),
 					$entity = $hiddenEntities.filter('[data-id='+id+']:first');
 
-				$entity.closest('tr').enable();
+				$entity.closest('tr').removeClass('hidden');
 				this._modalSelect.addItems($entity);
 			}
 		}
