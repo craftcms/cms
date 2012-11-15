@@ -181,7 +181,12 @@ class LinksBlockType extends BaseBlockType
 		$settings['addLabel'] = Blocks::t($settings['addLabel']);
 		$jsonSettings = JsonHelper::encode($settings);
 
-		$entityIds = JsonHelper::encode(array_keys($entities));
+		$entityIds = array();
+		foreach ($entities as $entity)
+		{
+			$entityIds[] = (int) $entity->id;
+		}
+		$entityIds = JsonHelper::encode($entityIds);
 
 		blx()->templates->includeJs('new Blocks.ui.LinksBlock("'.$name.'", '.$jsonSettings.', '.$entityIds.');');
 
