@@ -417,6 +417,20 @@ class HttpRequestService extends \CHttpRequest
 		}
 	}
 
+	/**
+	 * Returns a cookie, if it's set.
+	 *
+	 * @param string $name
+	 * @return \CHttpCookie|null
+	 */
+	public function getCookie($name)
+	{
+		if (isset($this->cookies[$name]))
+		{
+			return $this->cookies[$name];
+		}
+	}
+
 	// Rename getIsX() => isX() functions for consistency
 	//  - We realize that these methods could be called as if they're properties (using CComponent's magic getter)
 	//    but we're trying to resist the temptation of magic methods for the sake of code obviousness.
