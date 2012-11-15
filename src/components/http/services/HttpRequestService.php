@@ -506,7 +506,7 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$resourceTrigger = blx()->config->resourceTrigger;
 		$actionTrigger = blx()->config->actionTrigger;
-		$logoutTriggerWord = blx()->config->logoutTriggerWord;
+		$logoutTrigger = blx()->config->logoutTrigger;
 		$firstSegment = $this->getSegment(1);
 
 		// If the first path segment is the resource trigger word, it's a resource request.
@@ -517,12 +517,12 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || $firstSegment === $logoutTriggerWord)
+		if ($firstSegment === $actionTrigger || $firstSegment === $logoutTrigger)
 		{
 			$this->_isActionRequest = true;
 
 			// Map actions/logout to actions/account/logout
-			if ($firstSegment === $logoutTriggerWord)
+			if ($firstSegment === $logoutTrigger)
 			{
 				$this->_actionSegments = array('account', 'logout');
 			}

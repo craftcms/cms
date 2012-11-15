@@ -32,7 +32,7 @@ $blocksConfig['actionTrigger'] = 'actions';
 /**
  * The URL segment to trigger a user session logout.
  */
-$blocksConfig['logoutTriggerWord'] = 'logout';
+$blocksConfig['logoutTrigger'] = 'logout';
 
 /**
  * The amount of time to cache stuff in runtime/.
