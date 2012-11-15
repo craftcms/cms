@@ -13,6 +13,7 @@ class HttpRequestService extends \CHttpRequest
 	private $_isCpRequest = false;
 	private $_isResourceRequest = false;
 	private $_isActionRequest = false;
+	private $_isTemplateRequest = false;
 
 	private $_actionSegments;
 	private $_isMobileBrowser;
@@ -148,14 +149,6 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @param $urlFormat
-	 */
-	public function setUrlFormat($urlFormat)
-	{
-		$this->_urlFormat = $urlFormat;
-	}
-
-	/**
 	 * Returns whether this is a CP request.
 	 *
 	 * @return bool
@@ -193,6 +186,16 @@ class HttpRequestService extends \CHttpRequest
 	public function isActionRequest()
 	{
 		return $this->_isActionRequest;
+	}
+
+	/**
+	 * Returns whether this is a template request.
+	 *
+	 * @return bool
+	 */
+	public function isTemplateRequest()
+	{
+		return $this->_isTemplateRequest;
 	}
 
 	/**
@@ -536,6 +539,9 @@ class HttpRequestService extends \CHttpRequest
 		{
 			$this->_isActionRequest = true;
 			$this->_actionSegments = array_filter(explode('/', $action));
+			return;
 		}
+
+		$this->_isTemplateRequest = true;
 	}
 }
