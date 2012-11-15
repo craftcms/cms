@@ -145,7 +145,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 				'<div class="heading">' +
 					'<label for="template">'+Blocks.t("Load this template")+':</label>' +
 				'</div>' +
-				'<div class="textwrapper"><input id="template" type="text" class="text template"></div>' +
+				'<input id="template" type="text" class="text fullwidth template">' +
 			'</div>' +
 			'<div class="buttons">' +
 				'<input type="submit" class="btn submit" value="'+Blocks.t("Save")+'"> ' +

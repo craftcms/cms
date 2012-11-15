@@ -18,10 +18,6 @@ Blocks.Installer = Blocks.Base.extend({
 		this.$screens = Blocks.$body.children('.modal');
 
 		setTimeout($.proxy(this, 'showWelcomeScreen'), 500);
-
-		// Preload the spinner image
-		var spinner = new Image;
-		spinner.src = Blocks.resourceUrl+'images/submit-spinner.gif';
 	},
 
 	showWelcomeScreen: function()

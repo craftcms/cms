@@ -57,10 +57,9 @@ Blocks.ui.NiceText = Blocks.Base.extend({
 				this.showingHint = true;
 
 			// Focus the input when clicking on the hint
-			var $focusTargets = this.$hint.add(this.$input.parent('.textwrapper'));
-			this.addListener($focusTargets, 'mousedown', function(event) {
+			this.addListener(this.$hint, 'mousedown', function(event) {
 				event.preventDefault();
-				this.$input.focus()
+				this.$input.focus();
 			});
 		}
 

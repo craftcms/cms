@@ -26,7 +26,7 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 /* icons */
 .icon:before,
 .menulist ul li a.active:before,
-.textwrapper.search:before,
+.search:before,
 .datewrapper:before,
 .entity:before,
 .secure:before,
@@ -108,6 +108,8 @@ td.right { float: none; text-align: right; }
 
 .no-outline { outline: none; }
 .clear { display: block; clear: both; height: 0; }
+
+.fullwidth { width: 100%; }
 
 .token { display: inline-block; border: 1px solid #c1c1c1; border-radius: 10px; padding: 0 7px 1px; font-size: 12px; line-height: 14px; color: #555; text-shadow: 0 1px 1px rgba(255,255,255,0.5); background: #ddd; }
 .token:focus { border-color: #999; background: #aaa; outline: none; }
@@ -454,7 +456,7 @@ ul.tree,
 input.text,
 textarea.text,
 .text input,
-.text textarea { font-size: 13px; color: #555; }
+.text textarea { font-size: 13px; color: #555; box-sizing: border-box; }
 
 .field { position: relative; margin: 25px 0; }
 .field .heading { margin-bottom: 4px; }
@@ -469,10 +471,6 @@ textarea.text,
 .checkbox + .checkbox { margin-top: 3px; }
 .field.checkbox + .field.checkbox { margin-top: -22px; }
 
-/* text */
-.textwrapper { padding-right: 16px; }
-.textwrapper > .text { display: block; width: 100%; }
-
 .text { padding: 7px; background: #fff; }
 .text input { margin: 0; padding: 0; border: none; outline: none; }
 .text.small { padding: 3px; }
@@ -482,14 +480,14 @@ textarea.text,
 .input.errors .border-box,
 .text.error { border-color: $errorcolor !important; }
 
-.textwrapper.search { position: relative; padding-right: 36px; cursor: text; }
-.textwrapper.search:before { position: absolute; top: 7px; left: 8px; content: "s"; color: #a1a4a6; }
-.textwrapper.search .text { padding-left: 27px; }
+.search { position: relative; cursor: text; }
+.search:before { position: absolute; top: 7px; left: 8px; content: "s"; color: #a1a4a6; }
+.search .text { padding-left: 27px; }
 
 .texthint-container { position: relative; height: 0; }
 .texthint { position: absolute; top: -1px; width: 100%; color: #a1a4a6; cursor: text; }
 
-.passwordwrapper { position: relative; padding-right: 79px; }
+.passwordwrapper { position: relative; }
 .passwordwrapper .password { width: 100%; }
 .passwordwrapper .password-toggle { display: block; position: absolute; top: 7px; right: 0; width: 44px; text-align: center; }
 .password { padding-right: 70px; }
