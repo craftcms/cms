@@ -19,7 +19,8 @@ h1 { margin-bottom: 35px; text-align: center; }
 
 .buttons { position: absolute; bottom: 35px; right: 35px; }
 .buttons .btn { padding-right: 10px; }
-.buttons .btn:after { @include icon; margin-left: 8px; font-size: 20px; width: 20px; content: '→'; }
+.buttons .btn:after,
+#licensekeysubmit:after { @include icon; margin-left: 8px; font-size: 20px; width: 20px; content: '→'; }
 .buttons .btn.loading:after { height: 24px; content: ''; background: url(../images/submit-spinner.gif) no-repeat 0 0; }
 
 .dots { position: absolute; bottom: 10px; left: 50%; margin-left: -22px; }
@@ -34,10 +35,9 @@ input.hidden { position: absolute; top: 100px; }
 #welcome .buttons { position: static; margin-top: 0; text-align: center; }
 
 #welcome #licensekeyform { position: relative; margin: 0 auto; padding-right: 42px; width: 22em; }
-#welcome #licensekeyform .text { padding: 8px; font-size: 15px !important; }
-#welcome #licensekeyform .btn { position: absolute; top: 0; right: 0; padding: 0 10px 0 12px; width: 15px; }
-#welcome #licensekeyform .btn span { display: inline-block; width: 0; overflow: hidden; }
-#welcome #licensekeyform .btn:before { margin: 0; }
+#welcome #licensekeyform .text { padding: 8px; text-align: center; font-size: 15px !important; }
+#welcome #licensekeyform .btn { position: absolute; top: 0; right: 0; padding: 0 12px 0 9px; width: 15px; }
+#licensekeysubmit:after { margin-left: 0; }
 
 #accountform,
 #siteform { width: 50%; float: right; }

@@ -3,7 +3,9 @@
 
 	<form id="licensekeyform">
 		<div class="textwrapper"><input id="licensekey" type="text" class="text nicetext code" data-hint="{{ 'Enter your license key…'|t }}" value="@@@licenseKey@@@"></div>
-		<div id="licensekeysubmit" class="btn big submit" data-icon="→"><span>{{ "Go"|t }}</span></div>
+		<div id="licensekeysubmit" class="btn big submit">
+			<input type="submit" tabindex="-1" value="{{ 'Submit'|t }}">
+		</div>
 	</form>
 
 	{% include "_special/install/dots" with {dot: 1} %}
