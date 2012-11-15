@@ -52,6 +52,7 @@ body, input, textarea { font-family: HelveticaNeue, sans-serif; }
 .nav ul li a:hover { color: $linkcolor; text-decoration: none; }
 .nav ul li a .status { margin: 0 7px 0 6px; }
 .nav ul li a .badge { display: block; float: right; padding: 0 7px; border-radius: 9px; line-height: 18px; font-weight: bold; }
+.nav ul li a[data-icon]:before { margin: 0 8px 0 3px; }
 .nav ul li a.sel { color: #2c2c2c; }
 
 /* headings */
