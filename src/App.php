@@ -67,16 +67,16 @@ class App extends \CWebApplication
 		if ($this->isDbUpdateNeeded())
 		{
 			// Let's let all CP requests through.
-			if ($this->request->getType() == HttpRequestType::CP)
+			if ($this->request->isCpRequest())
 			{
 				$this->runController('update/manualUpdate');
 				$this->end();
 			}
 			// We'll also let action requests to UpdateController through as well.
-			else if ($this->request->getType() == HttpRequestType::Action && (($actionPath = $this->request->getActionPath()) !== null) && isset($actionPath[0]) && $actionPath[0] == 'update')
+			else if ($this->request->isActionRequest() && (($actionSegs = $this->request->getActionSegments()) !== null) && isset($actionSegs[0]) && $actionSegs[0] == 'update')
 			{
-				$controller = $actionPath[0];
-				$action = isset($actionPath[1]) ? $actionPath[1] : 'index';
+				$controller = $actionSegs[0];
+				$action = isset($actionSegs[1]) ? $actionSegs[1] : 'index';
 				$this->runController($controller.'/'.$action);
 				$this->end();
 			}
@@ -86,8 +86,8 @@ class App extends \CWebApplication
 			}
 		}
 
-		// If it's not a CP request OR the system is on, let's continue processing.
-		if (Blocks::isSystemOn() || (!Blocks::isSystemOn() && ($this->request->getType() == HttpRequestType::CP || ($this->request->getType() == HttpRequestType::Action && BLOCKS_CP_REQUEST))))
+		// If the system is on OR it's a CP request, let's continue processing.
+		if (Blocks::isSystemOn() || $this->request->isCpRequest())
 		{
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
@@ -116,17 +116,19 @@ class App extends \CWebApplication
 	 */
 	private function _processInstallRequest()
 	{
+		$isCpRequest = $this->request->isCpRequest();
+
 		// Are they requesting an installer template/action specifically?
-		if ($this->request->getType() == HttpRequestType::CP && $this->request->getSegment(1) === 'install')
+		if ($isCpRequest && $this->request->getSegment(1) === 'install')
 		{
 			$action = $this->request->getSegment(2, 'index');
 			$this->runController('install/'.$action);
 			$this->end();
 		}
-		else if (BLOCKS_CP_REQUEST && $this->request->getType() == HttpRequestType::Action)
+		else if ($isCpRequest && $this->request->isActionRequest())
 		{
-			$actionPath = $this->request->getActionPath();
-			if (isset($actionPath[0]) && $actionPath[0] == 'install')
+			$actionSegs = $this->request->getActionSegments();
+			if (isset($actionSegs[0]) && $actionSegs[0] == 'install')
 			{
 				$this->_processActionRequest();
 			}
@@ -136,7 +138,7 @@ class App extends \CWebApplication
 		else if (!$this->isInstalled())
 		{
 			// Give it to them if accessing the CP
-			if ($this->request->getType() == HttpRequestType::CP)
+			if ($isCpRequest)
 			{
 				$url = UrlHelper::getUrl('install');
 				$this->request->redirect($url);
@@ -198,15 +200,15 @@ class App extends \CWebApplication
 	 */
 	private function _processActionRequest()
 	{
-		if ($this->request->getType() == HttpRequestType::Action)
+		if ($this->request->isActionRequest())
 		{
-			$actionPath = $this->request->getActionPath();
+			$actionSegs = $this->request->getActionSegments();
 
 			// See if there is a first segment.
-			if (isset($actionPath[0]))
+			if (isset($actionSegs[0]))
 			{
-				$controller = $actionPath[0];
-				$action = isset($actionPath[1]) ? $actionPath[1] : '';
+				$controller = $actionSegs[0];
+				$action = isset($actionSegs[1]) ? $actionSegs[1] : '';
 
 				// Check for a valid controller
 				$class = __NAMESPACE__.'\\'.ucfirst($controller).'Controller';
@@ -219,7 +221,7 @@ class App extends \CWebApplication
 				else
 				{
 					// Mayhaps this is a plugin action request.
-					$plugin = strtolower($actionPath[0]);
+					$plugin = strtolower($actionSegs[0]);
 
 					if (($plugin = blx()->plugins->getPlugin($plugin)) !== null)
 					{
@@ -227,13 +229,13 @@ class App extends \CWebApplication
 
 						// Check to see if the second segment is an existing controller.  If no second segment, check for "PluginHandle"Controller, which is a plugin's default controller.
 						// i.e. pluginHandle/testController or pluginHandle/pluginController
-						$controller = (isset($actionPath[1]) ? ucfirst($pluginHandle).'_'.ucfirst($actionPath[1]) : ucfirst($pluginHandle)).'Controller';
+						$controller = (isset($actionSegs[1]) ? ucfirst($pluginHandle).'_'.ucfirst($actionSegs[1]) : ucfirst($pluginHandle)).'Controller';
 
 						if (class_exists(__NAMESPACE__.'\\'.$controller))
 						{
 							// Check to see if there is a 3rd path segment.  If so, use it for the action.  If not, use the default Index for the action.
 							// i.e. pluginHandle/pluginController/index or pluginHandle/pluginController/testAction
-							$action = isset($actionPath[2]) ? $actionPath[2] : 'Index';
+							$action = isset($actionSegs[2]) ? $actionSegs[2] : 'Index';
 
 							$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
 							$this->runController($route);
@@ -248,7 +250,7 @@ class App extends \CWebApplication
 
 							if (class_exists(__NAMESPACE__.'\\'.$controller))
 							{
-								$action = $actionPath[1];
+								$action = $actionSegs[1];
 
 								$route = substr($controller, 0, strpos($controller, 'Controller')).'/'.$action;
 								$this->runController($route);
@@ -296,7 +298,7 @@ class App extends \CWebApplication
 	 */
 	private function _processResourceRequest()
 	{
-		if ($this->request->getType() == HttpRequestType::Resource)
+		if ($this->request->isResourceRequest())
 		{
 			// Get the path segments, except for the first one which we already know is "resources"
 			$segs = array_slice(array_merge($this->request->getSegments()), 1);

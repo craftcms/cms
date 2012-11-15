@@ -15,17 +15,22 @@
 $blocksConfig['devMode'] = false;
 
 /**
- *
+ * The URL segment to trigger a CP request.
+ */
+$blocksConfig['cpTrigger'] = 'admin';
+
+/**
+ * The URL segment to trigger a resource request.
  */
 $blocksConfig['resourceTrigger'] = 'resources';
 
 /**
- *
+ * The URL segment to trigger a controller action request.
  */
 $blocksConfig['actionTrigger'] = 'actions';
 
 /**
- *
+ * The URL segment to trigger a user session logout.
  */
 $blocksConfig['logoutTriggerWord'] = 'logout';
 

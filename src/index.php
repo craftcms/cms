@@ -20,7 +20,6 @@ defined('BLOCKS_PLUGINS_PATH')      || define('BLOCKS_PLUGINS_PATH',      BLOCKS
 defined('BLOCKS_STORAGE_PATH')      || define('BLOCKS_STORAGE_PATH',      BLOCKS_BASE_PATH.'storage/');
 defined('BLOCKS_TEMPLATES_PATH')    || define('BLOCKS_TEMPLATES_PATH',    BLOCKS_BASE_PATH.'templates/');
 defined('BLOCKS_TRANSLATIONS_PATH') || define('BLOCKS_TRANSLATIONS_PATH', BLOCKS_BASE_PATH.'translations/');
-defined('BLOCKS_CP_REQUEST')        || define('BLOCKS_CP_REQUEST', false);
 defined('YII_TRACE_LEVEL')          || define('YII_TRACE_LEVEL', 3);
 
 // Check early if storage/ is a valid folder and writable.

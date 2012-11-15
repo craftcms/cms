@@ -7,16 +7,15 @@ namespace Blocks;
 class UrlHelper
 {
 	/**
-	 * Returns a URL.
+	 * Returns either a CP or a site URL, depending on the request type.
 	 *
 	 * @static
 	 * @param string $path
 	 * @param array|string|null $params
-	 * @param string|null $protocol protocol to use (e.g. http, https). If empty, the protocol used for the current request will be used.
-	 * @param bool|null $autoBaseUrl Whether to automatically determine the base URL based on the current request's URL.
+	 * @param string|null $protocol
 	 * @return string
 	 */
-	public static function getUrl($path = '', $params = null, $protocol = '', $autoBaseUrl = false)
+	public static function getUrl($path = '', $params = null, $protocol = '')
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (strpos($path, '://') !== false)
@@ -24,58 +23,45 @@ class UrlHelper
 			return $path;
 		}
 
-		// Get the base URL
-		if ($autoBaseUrl || BLOCKS_CP_REQUEST)
-		{
-			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
-		}
-		else
-		{
-			$baseUrl = Blocks::getSiteUrl();
-		}
-
-		$baseUrl = rtrim($baseUrl, '/');
 		$path = trim($path, '/');
 
-		$anchor = '';
-
-		// Normalize the params
-		if (is_array($params))
+		if (blx()->request->isCpRequest())
 		{
-			foreach ($params as $name => $value)
-			{
-				if (!is_numeric($name))
-				{
-					if ($name == '#')
-					{
-						$anchor = '#'.$value;
-					}
-					else if ($value !== null && $value !== '')
-					{
-						$params[] = $name.'='.$value;
-					}
-
-					unset($params[$name]);
-				}
-			}
-
-			$params = implode('&', array_filter($params));
-		}
-		else
-		{
-			$params = ltrim($params, '&?');
+			$path = blx()->config->cpTrigger.'/'.$path;
 		}
 
-		// Put it all together
-		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
-		{
-			return $baseUrl.($path ? '/'.$path : '').($params ? '?'.$params : '').$anchor;
-		}
-		else
-		{
-			$pathParam = blx()->urlManager->pathParam;
-			return $baseUrl.($path || $params ? '?'.($path ? $pathParam.'='.$path : '').($path && $params ? '&' : '').$params : '').$anchor;
-		}
+		return static::_getUrl($path, $params, $protocol);
+	}
+
+	/**
+	 * Returns a CP URL.
+	 *
+	 * @static
+	 * @param string $path
+	 * @param array|string|null $params
+	 * @param string|null $protocol
+	 * @return string
+	 */
+	public static function getCpUrl($path = '', $params = null, $protocol = '')
+	{
+		$path = trim($path, '/');
+		$path = blx()->config->cpTrigger.'/'.$path;
+		return static::_getUrl($path, $params, $protocol);
+	}
+
+	/**
+	 * Returns a site URL.
+	 *
+	 * @static
+	 * @param string $path
+	 * @param array|string|null $params
+	 * @param string|null $protocol
+	 * @return string
+	 */
+	public static function getSiteUrl($path = '', $params = null, $protocol = '')
+	{
+		$path = trim($path, '/');
+		return static::_getUrl($path, $params, $protocol);
 	}
 
 	/**
@@ -124,5 +110,70 @@ class UrlHelper
 	{
 		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
 		return static::getUrl($path, $params, $protocol, true);
+	}
+
+	/**
+	 * Returns a URL.
+	 *
+	 * @static
+	 * @access private
+	 * @param string $path
+	 * @param array|string $params
+	 * @param string protocol
+	 */
+	private function _getUrl($path, $params, $protocol)
+	{
+		$anchor = '';
+
+		// Normalize the params
+		if (is_array($params))
+		{
+			foreach ($params as $name => $value)
+			{
+				if (!is_numeric($name))
+				{
+					if ($name == '#')
+					{
+						$anchor = '#'.$value;
+					}
+					else if ($value !== null && $value !== '')
+					{
+						$params[] = $name.'='.$value;
+					}
+
+					unset($params[$name]);
+				}
+			}
+
+			$params = implode('&', array_filter($params));
+		}
+		else
+		{
+			$params = ltrim($params, '&?');
+		}
+
+		// If the URL has any query string params, they'll get dropped by the index.php redirect
+		// so just use the actual request URL instead.
+		if ($params)
+		{
+			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
+		}
+		else
+		{
+			$baseUrl = Blocks::getSiteUrl();
+		}
+
+		$baseUrl = rtrim($baseUrl, '/');
+
+		// Put it all together
+		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
+		{
+			return $baseUrl.($path ? '/'.$path : '').($params ? '?'.$params : '').$anchor;
+		}
+		else
+		{
+			$pathParam = blx()->urlManager->pathParam;
+			return $baseUrl.($path || $params ? '?'.($path ? $pathParam.'='.$path : '').($path && $params ? '&' : '').$params : '').$anchor;
+		}
 	}
 }

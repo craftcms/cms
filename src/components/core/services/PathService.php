@@ -181,7 +181,7 @@ class PathService extends BaseApplicationComponent
 	{
 		if (!isset($this->_templatesPath))
 		{
-			if (BLOCKS_CP_REQUEST)
+			if (blx()->request->isCpRequest())
 			{
 				$this->_templatesPath = $this->getCpTemplatesPath();
 			}

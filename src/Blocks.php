@@ -148,7 +148,7 @@ class Blocks extends \Yii
 					$port = ':'.$port;
 				}
 
-				static::$_siteUrl = $storedBlocksInfo->siteUrl.$port;
+				static::$_siteUrl = rtrim($storedBlocksInfo->siteUrl, '/').$port;
 			}
 			else
 			{

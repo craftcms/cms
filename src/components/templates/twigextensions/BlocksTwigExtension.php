@@ -100,6 +100,8 @@ class BlocksTwigExtension extends \Twig_Extension
 	{
 		return array(
 			'url'             => new \Twig_Function_Function('\Blocks\UrlHelper::getUrl'),
+			'cpUrl'           => new \Twig_Function_Function('\Blocks\UrlHelper::getCpUrl'),
+			'siteUrl'         => new \Twig_Function_Function('\Blocks\UrlHelper::getSiteUrl'),
 			'resourceUrl'     => new \Twig_Function_Function('\Blocks\UrlHelper::getResourceUrl'),
 			'actionUrl'       => new \Twig_Function_Function('\Blocks\UrlHelper::getActionUrl'),
 			'getHeadNodes'    => new \Twig_Function_Function('\Blocks\blx()->templates->getHeadNodes'),

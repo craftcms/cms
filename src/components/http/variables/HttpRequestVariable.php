@@ -19,25 +19,21 @@ class HttpRequestVariable
 	/**
 	 * Returns the request's URI.
 	 *
-	 * @param string $name
-	 * @param string $default
 	 * @return mixed
 	 */
 	public function getUri()
 	{
-		return blx()->request->getUri();
+		return blx()->request->getPath();
 	}
 
 	/**
 	 * Returns the request's full URL.
 	 *
-	 * @param string $name
-	 * @param string $default
 	 * @return mixed
 	 */
 	public function getUrl()
 	{
-		$uri = blx()->request->getUri();
+		$uri = blx()->request->getPath();
 		return UrlHelper::getUrl($uri);
 	}
 

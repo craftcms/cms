@@ -6,121 +6,52 @@ namespace Blocks;
  */
 class HttpRequestService extends \CHttpRequest
 {
-	private $_actionPath;
 	private $_urlFormat;
-	private $_uri;
-	private $_queryStringPath;
+	private $_path;
 	private $_segments;
-	private $_type;
+
+	private $_isCpRequest = false;
+	private $_isResourceRequest = false;
+	private $_isActionRequest = false;
+
+	private $_actionSegments;
 	private $_isMobileBrowser;
 	private $_mimeType;
 	private $_browserLanguages;
 
 	/**
-	 * Returns the request's URI.
-	 *
-	 * @return string
+	 * Init
 	 */
-	public function getUri()
+	public function init()
 	{
-		if (!isset($this->_uri))
+		parent::init();
+
+		// Get the path
+		if ($this->getUrlFormat() == UrlFormat::PathInfo)
 		{
-			// urlFormat determines where to look for a path first
-			if ($this->getUrlFormat() == UrlFormat::PathInfo)
-			{
-				$this->_uri = $this->getPathInfo() ? $this->getPathInfo() : $this->getQueryStringPath();
-			}
-			else
-			{
-				$this->_uri = $this->getQueryStringPath() ? $this->getQueryStringPath() : $this->getPathInfo();
-			}
+			$pathInfo = $this->getPathInfo();
+			$this->_path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
+		}
+		else
+		{
+			$queryString = $this->_getQueryStringPath();
+			$this->_path = $queryString ? $queryString : $this->getPathInfo();
 		}
 
-		return $this->_uri;
-	}
+		// Get the path segments
+		$this->_segments = array_filter(explode('/', $this->_path));
 
-	/**
-	 * @return mixed
-	 */
-	public function getMimeType()
-	{
-		if (!$this->_mimeType)
+		// Is this a CP request?
+		$this->_isCpRequest = ($this->getSegment(1) == blx()->config->cpTrigger);
+
+		if ($this->_isCpRequest)
 		{
-			$extension = IOHelper::getExtension($this->getUri(), 'html');
-			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
+			// Chop the CP trigger segment off of the path & segments array
+			array_shift($this->_segments);
+			$this->_path = implode('/', $this->_segments);
 		}
 
-		return $this->_mimeType;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getActionPath()
-	{
-		if (!$this->_actionPath)
-		{
-			// Ugly.
-			$this->getType();
-		}
-
-		return $this->_actionPath;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getQueryStringPath()
-	{
-		if (!isset($this->_queryStringPath))
-		{
-			$pathParam = blx()->urlManager->pathParam;
-			$this->_queryStringPath = trim($this->getQuery($pathParam, ''), '/');
-		}
-
-		return $this->_queryStringPath;
-	}
-
-	/**
-	 * Returns all URI segments.
-	 *
-	 * @param $path
-	 */
-	public function setQueryStringPath($path)
-	{
-		$this->_queryStringPath = $path;
-	}
-
-	/**
-	 * @return mixed
-	 */
-	public function getSegments()
-	{
-		if (!isset($this->_segments))
-		{
-			$this->_segments = array_filter(explode('/', $this->getUri()));
-		}
-
-		return $this->_segments;
-	}
-
-	/**
-	 * Returns a specific URI segment
-	 *
-	 * @param      $num
-	 * @param null $default
-	 * @return mixed The requested path segment, or null
-	 */
-	public function getSegment($num, $default = null)
-	{
-		$segments = $this->getSegments();
-
-		if (isset($segments[$num - 1]))
-		{
-			return $segments[$num - 1];
-		}
-
-		return $default;
+		$this->_checkRequestType();
 	}
 
 	/**
@@ -183,6 +114,40 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
+	 * Returns the request's path, without the CP trigger segment if there is one.
+	 *
+	 * @return string
+	 */
+	public function getPath()
+	{
+		return $this->_path;
+	}
+
+	/**
+	 * Returns an array of the path segments, without the CP trigger segment if there is one.
+	 *
+	 * @return array
+	 */
+	public function getSegments()
+	{
+		return $this->_segments;
+	}
+
+	/**
+	 * Returns a specific URI segment
+	 *
+	 * @param int $num
+	 * @return string|null
+	 */
+	public function getSegment($num)
+	{
+		if (isset($this->_segments[$num-1]))
+		{
+			return $this->_segments[$num-1];
+		}
+	}
+
+	/**
 	 * @param $urlFormat
 	 */
 	public function setUrlFormat($urlFormat)
@@ -191,64 +156,67 @@ class HttpRequestService extends \CHttpRequest
 	}
 
 	/**
-	 * @return string The request type (Action, Resource, CP, or Site)
+	 * Returns whether this is a CP request.
+	 *
+	 * @return bool
 	 */
-	public function getType()
+	public function isCpRequest()
 	{
-		if (!isset($this->_type))
+		return $this->_isCpRequest;
+	}
+
+	/**
+	 * Returns whether this is a site request.
+	 *
+	 * @return bool
+	 */
+	public function isSiteRequest()
+	{
+		return !$this->_isCpRequest;
+	}
+
+	/**
+	 * Returns whether this is a resource request.
+	 *
+	 * @return bool
+	 */
+	public function isResourceRequest()
+	{
+		return $this->_isResourceRequest;
+	}
+
+	/**
+	 * Returns whether this is an action request.
+	 *
+	 * @return bool
+	 */
+	public function isActionRequest()
+	{
+		return $this->_isActionRequest;
+	}
+
+	/**
+	 * Returns an array of the action path segments for action requests.
+	 *
+	 * @return array|null
+	 */
+	public function getActionSegments()
+	{
+		return $this->_actionSegments;
+	}
+
+	/**
+	 * @return mixed
+	 */
+	public function getMimeType()
+	{
+		if (!$this->_mimeType)
 		{
-			$resourceTrigger = blx()->config->resourceTrigger;
-			$actionTrigger = blx()->config->actionTrigger;
-			$logoutTriggerWord = blx()->config->logoutTriggerWord;
-
-			$firstSegment = $this->getSegment(1);
-
-			// If the first path segment is the resource trigger word, it's a resource request.
-			if ($firstSegment === $resourceTrigger)
-			{
-				$this->_type = HttpRequestType::Resource;
-			}
-
-			// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request.
-			else if ($firstSegment === $actionTrigger || $firstSegment === $logoutTriggerWord)
-			{
-				$this->_type = HttpRequestType::Action;
-
-				// If it's an action request, we set the actionPath for the given request.
-
-				// Special case for logging out.
-				if ($firstSegment === $logoutTriggerWord)
-				{
-					$segs = array('account', 'logout');
-				}
-				else
-				{
-					$segs = array_slice(array_merge($this->getSegments()), 1);
-				}
-
-				$this->_actionPath = $segs;
-			}
-			// Check post for action request.  If so, it's an action request and set action path.
-			else if (($action = $this->getParam('action')) !== null)
-			{
-				$this->_type = HttpRequestType::Action;
-				$this->_actionPath = array_filter(explode('/', $action));
-			}
-
-			// If we made it here and BLOCKS_CP_REQUEST is set, it's a CP request.
-			else if (BLOCKS_CP_REQUEST === true)
-			{
-				$this->_type = HttpRequestType::CP;
-			}
-
-			// If we made it here, it's a front-end site request.
-			else
-			{
-				$this->_type = HttpRequestType::Site;
-			}
+			$extension = IOHelper::getExtension($this->getPath(), 'html');
+			$this->_mimeType = IOHelper::getMimeTypeByExtension('.'.$extension);
 		}
 
-		return $this->_type;
+		return $this->_mimeType;
 	}
 
 	/**
@@ -423,15 +391,6 @@ class HttpRequestService extends \CHttpRequest
 			header('Expires: 0');
 			header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
 		}
-		// Cache for 1 month, unless Blocks is in dev mode
-		if (blx()->config->devMode == true)
-		{
-
-		}
-		else
-		{
-
-		}
 
 		if (!ob_get_length())
 		{
@@ -521,5 +480,62 @@ class HttpRequestService extends \CHttpRequest
 	public function isFlashRequest()
 	{
 		return $this->getIsFlashRequest();
+	}
+
+	/**
+	 * Returns the query string path.
+	 *
+	 * @access private
+	 * @return string
+	 */
+	private function _getQueryStringPath()
+	{
+		$pathParam = blx()->urlManager->pathParam;
+		return trim($this->getQuery($pathParam, ''), '/');
+	}
+
+	/**
+	 * Checks to see if this is an action or resource request.
+	 *
+	 * @access private
+	 */
+	private function _checkRequestType()
+	{
+		$resourceTrigger = blx()->config->resourceTrigger;
+		$actionTrigger = blx()->config->actionTrigger;
+		$logoutTriggerWord = blx()->config->logoutTriggerWord;
+		$firstSegment = $this->getSegment(1);
+
+		// If the first path segment is the resource trigger word, it's a resource request.
+		if ($firstSegment === $resourceTrigger)
+		{
+			$this->_isResourceRequest = true;
+			return;
+		}
+
+		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
+		if ($firstSegment === $actionTrigger || $firstSegment === $logoutTriggerWord)
+		{
+			$this->_isActionRequest = true;
+
+			// Map actions/logout to actions/account/logout
+			if ($firstSegment === $logoutTriggerWord)
+			{
+				$this->_actionSegments = array('account', 'logout');
+			}
+			else
+			{
+				$this->_actionSegments = array_slice($this->_segments, 1);
+			}
+
+			return;
+		}
+
+		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
+		if ($action = $this->getParam('action'))
+		{
+			$this->_isActionRequest = true;
+			$this->_actionSegments = array_filter(explode('/', $action));
+		}
 	}
 }

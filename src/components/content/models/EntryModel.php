@@ -135,21 +135,9 @@ class EntryModel extends BaseEntityModel
 	 */
 	public function getUrl()
 	{
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
+		if ($this->uri)
 		{
-			if ($this->uri)
-			{
-				$uri = $this->uri;
-			}
-		}
-		else
-		{
-			$uri = 'blog/'.$this->uri;
-		}
-
-		if (!empty($uri))
-		{
-			return rtrim(Blocks::getSiteUrl(), '/').'/'.$uri;
+			return UrlHelper::getSiteUrl($this->uri);
 		}
 	}
 

@@ -324,7 +324,7 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			$viewPaths = array();
 
-			if (blx()->request->getType() == HttpRequestType::Site)
+			if (blx()->request->isSiteRequest())
 			{
 				$viewPaths[] = blx()->path->getSiteTemplatesPath();
 			}
@@ -349,7 +349,7 @@ class TemplatesService extends BaseApplicationComponent
 		// Otherwise maybe it's a plugin template?
 
 		// Only attempt to match against a plugin's templates if this is a CP or action request.
-		if (($mode = blx()->request->getType()) == HttpRequestType::CP || $mode == HttpRequestType::Action)
+		if (blx()->request->isCpRequest() || blx()->request->isActionRequest())
 		{
 			$parts = array_filter(explode('/', $name));
 			$pluginHandle = strtolower(array_shift($parts));

@@ -38,7 +38,7 @@ class UrlManager extends \CUrlManager
 	public function processTemplateMatching()
 	{
 		// we'll never have a db entry match on a control panel request
-		if (blx()->isInstalled() && !BLOCKS_CP_REQUEST)
+		if (blx()->isInstalled() && !blx()->request->isCpRequest())
 		{
 			if (($path = $this->matchPage()) !== false)
 			{
@@ -76,7 +76,7 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchPage()
 	{
-		$page = blx()->pages->getPageByUri(blx()->request->getUri());
+		$page = blx()->pages->getPageByUri(blx()->request->getPath());
 
 		if ($page)
 		{
@@ -95,7 +95,7 @@ class UrlManager extends \CUrlManager
 	public function matchEntry()
 	{
 		$criteria = new EntryCriteria();
-		$criteria->uri = blx()->request->getUri();
+		$criteria->uri = blx()->request->getPath();
 		$criteria->includeContent = true;
 		$entry = blx()->entries->findEntry($criteria);
 
@@ -120,7 +120,7 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchRoute()
 	{
-		if (BLOCKS_CP_REQUEST)
+		if (blx()->request->isCpRequest())
 		{
 			// Check the Blocks predefined routes.
 			foreach ($this->cpRoutes as $pattern => $template)
@@ -168,7 +168,7 @@ class UrlManager extends \CUrlManager
 	private function _matchRouteInternal($urlPattern)
 	{
 		// Does it match?
-		if (preg_match('/^'.$urlPattern.'$/', blx()->request->getUri(), $match))
+		if (preg_match('/^'.$urlPattern.'$/', blx()->request->getPath(), $match))
 		{
 			// Set any capture variables
 			foreach ($match as $key => $value)
@@ -202,6 +202,6 @@ class UrlManager extends \CUrlManager
 			}
 		}
 
-		return blx()->request->getUri();
+		return blx()->request->getPath();
 	}
 }
