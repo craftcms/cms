@@ -1,12 +1,22 @@
-<div id="cantinstall" class="main">
-	<h1>{{ "Can’t install Blocks"|t }} :(</h1>
-	<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
+{% extends "_layouts/base" %}
+{% set title = "Can’t install Blocks"|t %}
 
-	<ul class="bullets">
-		{% for req in reqCheck.requirements %}
-			{% if req.result == 'failed' %}
-				<li>{{ req.notes }}</li>
-			{% endif %}
-		{% endfor %}
-	</ul>
-</div>
+
+{% set body %}
+	<div class="lockedup">
+		<div class="pane" style="margin-top: -100px !important;">
+			<h2>{{ title }} :(</h2>
+			<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
+
+			<ul class="bullets">
+				{% for req in reqCheck.requirements %}
+					{% if req.result == 'failed' %}
+						<li>{{ req.notes }}</li>
+					{% endif %}
+				{% endfor %}
+			</ul>
+
+			<p>{{ "Please talk to your host/IT department about upgrading PHP or your server."|t }}</p>
+		</div>
+	</div>
+{% endset %}
