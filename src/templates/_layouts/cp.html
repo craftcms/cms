@@ -39,7 +39,7 @@
 
 	<div id="notifications-wrapper">
 		<div id="notifications">
-			{% for type, message in blx.session.getFlashes %}
+			{% for type, message in blx.session.flashes %}
 				<div class="notification {{ type }}">{{ message }}</div>
 			{% endfor %}
 		</div>
