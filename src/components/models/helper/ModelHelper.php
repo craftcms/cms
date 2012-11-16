@@ -428,7 +428,7 @@ class ModelHelper
 
 		if ($urlAttributes)
 		{
-			$rules[] = array(implode(',', $urlAttributes), 'url', 'defaultScheme' => 'http');
+			$rules[] = array(implode(',', $urlAttributes), 'Blocks\UrlValidator', 'defaultScheme' => 'http');
 		}
 
 		if ($strictLengthAttributes)
