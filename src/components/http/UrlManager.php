@@ -22,7 +22,7 @@ class UrlManager extends \CUrlManager
 		$this->appendParams = false;
 
 		// makes more sense to set in HttpRequest
-		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
+		if (blx()->config->usePathInfo())
 		{
 			$this->setUrlFormat(static::PATH_FORMAT);
 		}

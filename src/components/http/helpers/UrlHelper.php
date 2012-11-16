@@ -28,9 +28,14 @@ class UrlHelper
 		if (blx()->request->isCpRequest())
 		{
 			$path = blx()->config->cpTrigger.'/'.$path;
+			$dynamicBaseUrl = true;
+		}
+		else
+		{
+			$dynamicBaseUrl = false;
 		}
 
-		return static::_getUrl($path, $params, $protocol);
+		return static::_getUrl($path, $params, $protocol, $dynamicBaseUrl);
 	}
 
 	/**
@@ -46,7 +51,7 @@ class UrlHelper
 	{
 		$path = trim($path, '/');
 		$path = blx()->config->cpTrigger.'/'.$path;
-		return static::_getUrl($path, $params, $protocol);
+		return static::_getUrl($path, $params, $protocol, true);
 	}
 
 	/**
@@ -61,7 +66,7 @@ class UrlHelper
 	public static function getSiteUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		return static::_getUrl($path, $params, $protocol);
+		return static::_getUrl($path, $params, $protocol, false);
 	}
 
 	/**
@@ -121,7 +126,7 @@ class UrlHelper
 	 * @param array|string $params
 	 * @param string protocol
 	 */
-	private function _getUrl($path, $params, $protocol)
+	private function _getUrl($path, $params, $protocol, $dynamicBaseUrl)
 	{
 		$anchor = '';
 
@@ -152,21 +157,27 @@ class UrlHelper
 			$params = ltrim($params, '&?');
 		}
 
-		// If the URL has any query string params, they'll get dropped by the index.php redirect
-		// so just use the actual request URL instead.
-		if ($params)
+		if ($dynamicBaseUrl)
 		{
 			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
+
+			if (blx()->config->omitScriptNameInUrls())
+			{
+				$baseUrl = substr($baseUrl, 0, strrpos($baseUrl, '/'));
+			}
 		}
 		else
 		{
 			$baseUrl = Blocks::getSiteUrl();
+
+			if (!blx()->config->omitScriptNameInUrls())
+			{
+				$baseUrl .= strrchr(blx()->urlManager->getBaseUrl(), '/');
+			}
 		}
 
-		$baseUrl = rtrim($baseUrl, '/');
-
 		// Put it all together
-		if (blx()->request->getUrlFormat() == UrlFormat::PathInfo)
+		if (blx()->config->usePathInfo())
 		{
 			return $baseUrl.($path ? '/'.$path : '').($params ? '?'.$params : '').$anchor;
 		}

@@ -136,6 +136,13 @@ class HttpRequestVariable
 	 */
 	public function getUrlFormat()
 	{
-		return blx()->request->getUrlFormat();
+		if (blx()->config->usePathInfo())
+		{
+			return 'pathinfo';
+		}
+		else
+		{
+			return 'querystring';
+		}
 	}
 }

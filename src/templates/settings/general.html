@@ -28,7 +28,6 @@
 
 		{{ forms.textField({
 			label: "Site URL"|t,
-			instructions: "If you aren’t hiding index.php in your .htaccess file, you must include ‘/index.php’ here."|t,
 			id: 'siteUrl',
 			name: 'siteUrl',
 			value: (post is defined ? post.siteUrl : blx.app.siteUrl),

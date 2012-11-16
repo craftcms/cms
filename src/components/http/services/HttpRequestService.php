@@ -6,7 +6,6 @@ namespace Blocks;
  */
 class HttpRequestService extends \CHttpRequest
 {
-	private $_urlFormat;
 	private $_path;
 	private $_segments;
 
@@ -28,7 +27,7 @@ class HttpRequestService extends \CHttpRequest
 		parent::init();
 
 		// Get the path
-		if ($this->getUrlFormat() == UrlFormat::PathInfo)
+		if (blx()->config->usePathInfo())
 		{
 			$pathInfo = $this->getPathInfo();
 			$this->_path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
@@ -53,65 +52,6 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		$this->_checkRequestType();
-	}
-
-	/**
-	 * Returns which URL format we're using (PATH_INFO or the query string)
-	 *
-	 * @return string
-	 */
-	public function getUrlFormat()
-	{
-		if (!isset($this->_urlFormat))
-		{
-			// If config[urlFormat] is set to either PathInfo or QueryString, take their word for it.
-			if (blx()->config->urlFormat == UrlFormat::PathInfo)
-			{
-				$this->_urlFormat = UrlFormat::PathInfo;
-			}
-			else if (blx()->config->urlFormat == UrlFormat::QueryString)
-			{
-				$this->_urlFormat = UrlFormat::QueryString;
-			}
-			// Check if it's cached
-			else if (($cachedUrlFormat = blx()->fileCache->get('urlFormat')) !== false)
-			{
-				$this->_urlFormat = $cachedUrlFormat;
-			}
-			else
-			{
-				// If there is already a PATH_INFO var available, we know it supports it.
-				if (isset($_SERVER['PATH_INFO']))
-				{
-					$this->_urlFormat = UrlFormat::PathInfo;
-				}
-				else
-				{
-					$this->_urlFormat = UrlFormat::QueryString;
-
-					// Last ditch, let's try to determine if PATH_INFO is enabled on the server.
-					try
-					{
-						$url = blx()->request->getHostInfo().blx()->request->getScriptUrl().'/testpathinfo';
-						$response = \Requests::get($url);
-
-						if ($response->success && $response->body === 'success')
-						{
-							$this->_urlFormat = UrlFormat::PathInfo;
-						}
-					}
-					catch (\Exception $e)
-					{
-						Blocks::log('Unable to determine if server PATH_INFO is enabled: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
-					}
-				}
-
-				// cache it and set it to expire according to config
-				blx()->fileCache->set('urlFormat', $this->_urlFormat, blx()->config->getCacheDuration());
-			}
-		}
-
-		return $this->_urlFormat;
 	}
 
 	/**

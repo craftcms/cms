@@ -6,8 +6,15 @@ if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 50300)
 	exit('Blocks requires PHP 5.3.0 or later, but you&rsquo;re running '.PHP_VERSION.'. Please talk to your host/IT department about upgrading PHP or your server.');
 }
 
+// Is this a script name redirect test?
+if ((isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testScriptNameRedirect')
+	|| (isset($_SERVER['QUERY_STRING']) && strpos($_SERVER['QUERY_STRING'], 'testScriptNameRedirect') !== false))
+{
+	exit('success');
+}
+
 // Is this a PATH_INFO test?
-if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testpathinfo')
+if (isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == '/testPathInfo')
 {
 	exit('success');
 }

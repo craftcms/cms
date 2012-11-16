@@ -51,16 +51,29 @@ $blocksConfig['cacheDuration'] = 'P1D';
 $blocksConfig['devModeCacheDuration'] = 'PT5S';
 
 /**
- * How to format the URLs.
+ * Whether generated URLs should omit 'index.php', e.g. http://domain.com/path
+ * as opposed to showing it, e.g. http://domain.com/index.php/path
  *
- * Possible values:
- *  - 'pathinfo' (index.php/path)
- *  - 'querystring' (index.php?p=path)
- *  - 'auto'
+ * This can only be possible if your server is configured to redirect would-be 404's to index.php,
+ * for example, with the redirect found in the 'htaccess' file that came with Blocks:
  *
- * If you're not sure whether your server supports PATH_INFO, we recommend you leave this on 'auto'.
+ *     RewriteEngine On
+ *
+ *     RewriteCond %{REQUEST_FILENAME} !-f
+ *     RewriteCond %{REQUEST_FILENAME} !-d
+ *     RewriteRule (.+) /index.php?p=$1 [QSA,L]
+ *
+ * Possible values: true, false, 'auto'
  */
-$blocksConfig['urlFormat'] = 'auto';
+$blocksConfig['omitScriptNameInUrls'] = 'auto';
+
+/**
+ * Whether generated URLs should be formatted using PATH_INFO, e.g. http://domain.com/index.php/path/,
+ * as opposed to using the query string, e.g. http://domain.com/index.php?p=path
+ *
+ * Possible values: true, false, 'auto'
+ */
+$blocksConfig['usePathInfo'] = 'auto';
 
 /**
  * If you have Apache's mod_xsendfile installed and configured, set this to 'true' and Blocks will
