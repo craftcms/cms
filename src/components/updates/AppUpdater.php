@@ -86,14 +86,14 @@ class AppUpdater implements IUpdater
 
 		// Download the package from ET.
 		Blocks::log('Downloading patch file to '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
-		if (!blx()->et->downloadPackage($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
+		if (!blx()->et->downloadUpdate($latestBuild->version, $latestBuild->build, $this->_downloadFilePath))
 		{
 			throw new Exception(Blocks::t('There was a problem downloading the package.'));
 		}
 
-		// Validate the downloaded package against ET.
-		Blocks::log('Validating downloaded package.', \CLogger::LEVEL_INFO);
-		if (!$this->validatePackage($latestBuild->version, $latestBuild->build))
+		// Validate the downloaded update against ET.
+		Blocks::log('Validating downloaded update.', \CLogger::LEVEL_INFO);
+		if (!$this->validateUpdate($latestBuild->version, $latestBuild->build))
 		{
 			throw new Exception(Blocks::t('There was a problem validating the downloaded package.'));
 		}
