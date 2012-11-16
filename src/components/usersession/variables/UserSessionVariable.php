@@ -37,13 +37,24 @@ class UserSessionVariable
 	}
 
 	/**
-	 * Returns flash data.
+	 * Returns a flash message by a given key.
 	 *
 	 * @param string $key
-	 * @param mixed $defaultValue
+	 * @param mixed
 	 */
 	public function getFlash($key, $defaultValue = null)
 	{
 		return blx()->user->getFlash($key, $defaultValue);
+	}
+
+	/**
+	 * Returns whether a flash message exists by a given key.
+	 *
+	 * @param string $key
+	 * @return mixed
+	 */
+	public function hasFlash($key)
+	{
+		return blx()->user->hasFlash($key);
 	}
 }

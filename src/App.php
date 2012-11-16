@@ -67,7 +67,7 @@ class App extends \CWebApplication
 		if ($this->isDbUpdateNeeded())
 		{
 			// Let's let all CP requests through.
-			if ($this->request->isCpRequest())
+			if ($this->request->isCpRequest() && !$this->request->isActionRequest())
 			{
 				$this->runController('update/manualUpdate');
 				$this->end();

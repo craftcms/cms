@@ -236,7 +236,12 @@ abstract class BaseRecord extends \CActiveRecord
 	public function dropTable()
 	{
 		$table = $this->getTableName();
-		blx()->db->createCommand()->dropTable($table);
+
+		// Does the table exist?
+		if (blx()->db->getSchema()->getTable('{{'.$table.'}}'))
+		{
+			blx()->db->createCommand()->dropTable($table);
+		}
 	}
 
 	/**
@@ -262,10 +267,21 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		$table = $this->getTableName();
 
-		foreach ($this->getBelongsToRelations() as $name => $config)
+		// Does the table exist?
+		if (blx()->db->getSchema()->getTable('{{'.$table.'}}'))
 		{
-			$fkName = "{$table}_{$name}_fk";
-			blx()->db->createCommand()->dropForeignKey($fkName, $table);
+			foreach ($this->getBelongsToRelations() as $name => $config)
+			{
+				$otherModel = new $config[1];
+				$otherTable = $otherModel->getTableName();
+
+				// Does the other table exist?
+				if (blx()->db->getSchema()->getTable('{{'.$otherTable.'}}'))
+				{
+					$fkName = "{$table}_{$name}_fk";
+					blx()->db->createCommand()->dropForeignKey($fkName, $table);
+				}
+			}
 		}
 	}
 

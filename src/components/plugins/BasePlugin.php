@@ -50,6 +50,46 @@ abstract class BasePlugin extends BaseComponent
 	}
 
 	/**
+	 * Creates any tables defined by the plugin's records.
+	 */
+	public function createTables()
+	{
+		$records = $this->getRecords('install');
+
+		// Create all tables first
+		foreach ($records as $record)
+		{
+			$record->createTable();
+		}
+
+		// Then add the foreign keys
+		foreach ($records as $record)
+		{
+			$record->addForeignKeys();
+		}
+	}
+
+	/**
+	 * Drops any tables defined by the plugin's records.
+	 */
+	public function dropTables()
+	{
+		$records = $this->getRecords();
+
+		// Drop all foreign keys first
+		foreach ($records as $record)
+		{
+			$record->dropForeignKeys();
+		}
+
+		// Then drop the tables
+		foreach ($records as $record)
+		{
+			$record->dropTable();
+		}
+	}
+
+	/**
 	 * Perform any actions after the plugin has been installed.
 	 */
 	public function onAfterInstall()
@@ -61,5 +101,26 @@ abstract class BasePlugin extends BaseComponent
 	 */
 	public function onBeforeUninstall()
 	{
+	}
+
+	/**
+	 * Returns the record classes provided by this plugin.
+	 *
+	 * @access protected
+	 * @param string|null $scenario The scenario to initialize the records with
+	 * @return array
+	 */
+	protected function getRecords($scenario = null)
+	{
+		$records = array();
+		$classes = blx()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'records');
+
+		foreach ($classes as $class)
+		{
+			$nsClass = __NAMESPACE__.'\\'.$class;
+			$records[] = new $nsClass($scenario);
+		}
+
+		return $records;
 	}
 }

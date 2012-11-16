@@ -59,6 +59,13 @@ class TemplatesService extends BaseApplicationComponent
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}
 
+			// Give plugins a chance to add their own Twig extensions
+			$pluginExtensions = blx()->plugins->callHook('addTwigExtension');
+			foreach ($pluginExtensions as $extension)
+			{
+				$twig->addExtension($extension);
+			}
+
 			$this->_twig = $twig;
 		}
 
