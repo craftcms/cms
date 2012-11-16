@@ -120,7 +120,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	private function _getLockedAccountErrorCode()
 	{
-		if (blx()->config->cooldownDuration)
+		if (blx()->config->get('cooldownDuration'))
 		{
 			return static::ERROR_ACCOUNT_COOLDOWN;
 		}

@@ -45,7 +45,7 @@ class TemplatesService extends BaseApplicationComponent
 			$options['cache'] = blx()->path->getCompiledTemplatesPath();
 			$options['auto_reload'] = true;
 
-			if (blx()->config->devMode)
+			if (blx()->config->get('devMode'))
 			{
 				$options['debug'] = true;
 				$options['strict_variables'] = true;
@@ -54,7 +54,7 @@ class TemplatesService extends BaseApplicationComponent
 			$twig = new \Twig_Environment($loader, $options);
 			$twig->addExtension(new BlocksTwigExtension());
 
-			if (blx()->config->devMode)
+			if (blx()->config->get('devMode'))
 			{
 				$twig->addExtension(new \Twig_Extension_Debug());
 			}

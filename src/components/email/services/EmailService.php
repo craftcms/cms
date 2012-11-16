@@ -56,7 +56,7 @@ class EmailService extends BaseApplicationComponent
 					$emailSettings['timeout'] = $this->_defaultEmailTimeout;
 				}
 
-				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], blx()->config->devMode ? 1 : 0);
+				$pop->authorize($emailSettings['host'], $emailSettings['port'], $emailSettings['timeout'], $emailSettings['username'], $emailSettings['password'], blx()->config->get('devMode') ? 1 : 0);
 
 				$this->_setSmtpSettings($email, $emailSettings);
 				break;

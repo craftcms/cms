@@ -56,7 +56,7 @@ class AccountService extends BaseApplicationComponent
 		if ($code)
 		{
 			$date = new DateTime();
-			$duration = new DateInterval(blx()->config->verificationCodeDuration);
+			$duration = new DateInterval(blx()->config->get('verificationCodeDuration'));
 			$date->sub($duration);
 
 			$userRecord = UserRecord::model()->find(
@@ -375,7 +375,7 @@ class AccountService extends BaseApplicationComponent
 			$userRecord->invalidLoginCount++;
 
 			// Was that one bad password too many?
-			if ($userRecord->invalidLoginCount >= blx()->config->maxInvalidLogins)
+			if ($userRecord->invalidLoginCount >= blx()->config->get('maxInvalidLogins'))
 			{
 				$userRecord->status = $user->status = UserStatus::Locked;
 				$userRecord->invalidLoginCount = null;
@@ -407,7 +407,7 @@ class AccountService extends BaseApplicationComponent
 	{
 		if ($userRecord->invalidLoginWindowStart)
 		{
-			$duration = new DateInterval(blx()->config->invalidLoginWindowDuration);
+			$duration = new DateInterval(blx()->config->get('invalidLoginWindowDuration'));
 			$end = $userRecord->invalidLoginWindowStart->add($duration);
 			return ($end >= new DateTime());
 		}

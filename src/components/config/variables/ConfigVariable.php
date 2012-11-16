@@ -25,7 +25,7 @@ class ConfigVariable
 	 */
 	function __get($name)
 	{
-		return (string)blx()->config->getItem($name);
+		return (string)blx()->config->get($name);
 	}
 
 	/**

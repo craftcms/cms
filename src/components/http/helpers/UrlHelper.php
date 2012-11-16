@@ -27,7 +27,7 @@ class UrlHelper
 
 		if (blx()->request->isCpRequest())
 		{
-			$path = blx()->config->cpTrigger.($path ? '/'.$path : '');
+			$path = blx()->config->get('cpTrigger').($path ? '/'.$path : '');
 			$dynamicBaseUrl = true;
 		}
 		else
@@ -50,7 +50,7 @@ class UrlHelper
 	public static function getCpUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		$path = blx()->config->cpTrigger.'/'.$path;
+		$path = blx()->config->get('cpTrigger').'/'.$path;
 		return static::_getUrl($path, $params, $protocol, true);
 	}
 
@@ -81,10 +81,10 @@ class UrlHelper
 	public static function getResourceUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = $origPath = trim($path, '/');
-		$path = blx()->config->resourceTrigger.'/'.$path;
+		$path = blx()->config->get('resourceTrigger').'/'.$path;
 
 		// Add timestamp to the resource URL for caching, if Blocks is not operating in dev mode
-		if ($origPath && !blx()->config->devMode)
+		if ($origPath && !blx()->config->get('devMode'))
 		{
 			$realPath = blx()->resources->getResourcePath($origPath);
 
@@ -113,7 +113,7 @@ class UrlHelper
 	 */
 	public static function getActionUrl($path = '', $params = null, $protocol = '')
 	{
-		$path = blx()->config->actionTrigger.'/'.trim($path, '/');
+		$path = blx()->config->get('actionTrigger').'/'.trim($path, '/');
 		return static::getUrl($path, $params, $protocol, true);
 	}
 

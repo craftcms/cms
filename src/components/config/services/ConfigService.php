@@ -11,38 +11,17 @@ class ConfigService extends BaseApplicationComponent
 	private $_usePathInfo;
 
 	/**
-	 * Adds config items to the mix of possible magic getter properties
+	 * Returns a config item value, or null if it doesn't exist.
 	 *
-	 * @param $name
-	 * @return mixed|null
+	 * @param string $item
+	 * @return mixed
 	 */
-	function __get($name)
-	{
-		if (parent::__isset($name))
-		{
-			return parent::__get($name);
-		}
-		else
-		{
-			return $this->getItem($name);
-		}
-	}
-
-	/**
-	 * Get a config item
-	 *
-	 * @param      $item
-	 * @param null $default
-	 * @return null
-	 */
-	public function getItem($item, $default = null)
+	public function get($item)
 	{
 		if (isset(blx()->params['blocksConfig'][$item]))
 		{
 			return blx()->params['blocksConfig'][$item];
 		}
-
-		return $default;
 	}
 
 	/**
@@ -71,7 +50,7 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (!isset($this->_cacheDuration))
 		{
-			$duration = $this->getItem('cacheDuration');
+			$duration = $this->get('cacheDuration');
 
 			if ($duration)
 			{
@@ -98,7 +77,7 @@ class ConfigService extends BaseApplicationComponent
 			$this->_omitScriptNameInUrls = false;
 
 			// Check if the config value has actually been set to true/false
-			$configVal = $this->getItem('omitScriptNameInUrls');
+			$configVal = $this->get('omitScriptNameInUrls');
 
 			if (is_bool($configVal))
 			{
@@ -153,7 +132,7 @@ class ConfigService extends BaseApplicationComponent
 			$this->_usePathInfo = false;
 
 			// Check if the config value has actually been set to true/false
-			$configVal = $this->getItem('usePathInfo');
+			$configVal = $this->get('usePathInfo');
 
 			if (is_bool($configVal))
 			{

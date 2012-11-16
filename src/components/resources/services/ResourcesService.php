@@ -26,7 +26,7 @@ class ResourcesService extends BaseApplicationComponent
 				case 'js':
 				{
 					// Route to js/compressed/ if useCompressedJs is enabled
-					if (blx()->config->useCompressedJs)
+					if (blx()->config->get('useCompressedJs'))
 					{
 						array_splice($segs, 1, 0, 'compressed');
 						$path = implode('/', $segs);
@@ -151,7 +151,7 @@ class ResourcesService extends BaseApplicationComponent
 			$content = preg_replace_callback('/(url\(([\'"]?))(.+?)(\2\))/', array(&$this, '_normalizeCssUrl'), $content);
 		}
 
-		if (!blx()->config->useXSendFile)
+		if (!blx()->config->get('useXSendFile'))
 		{
 			$options['forceDownload'] = false;
 
@@ -186,7 +186,7 @@ class ResourcesService extends BaseApplicationComponent
 		$url = IOHelper::getFolderName(blx()->request->getPath()).'/'.$match[3];
 
 		// Make sure this is a resource URL
-		$resourceTrigger = blx()->config->resourceTrigger;
+		$resourceTrigger = blx()->config->get('resourceTrigger');
 		$resourceTriggerPos = strpos($url, $resourceTrigger);
 		if ($resourceTriggerPos !== false)
 		{

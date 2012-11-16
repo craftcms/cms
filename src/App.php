@@ -503,7 +503,7 @@ class App extends \CWebApplication
 	{
 		$exceptionArr['error'] = $data['message'];
 
-		if (blx()->config->devMode)
+		if (blx()->config->get('devMode'))
 		{
 			$exceptionArr['trace']  = $data['trace'];
 			$exceptionArr['traces'] = $data['traces'];
@@ -527,7 +527,7 @@ class App extends \CWebApplication
 	 */
 	public function returnAjaxError($code, $message, $file, $line)
 	{
-		if(blx()->config->devMode == true)
+		if(blx()->config->get('devMode'))
 		{
 			$outputTrace = '';
 			$trace = debug_backtrace();

@@ -13,7 +13,7 @@ class DbConnection extends \CDbConnection
 	{
 		parent::init();
 
-		if (blx()->config->devMode)
+		if (blx()->config->get('devMode'))
 		{
 			$this->enableProfiling = true;
 			$this->enableParamLogging = true;

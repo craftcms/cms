@@ -18,7 +18,7 @@ namespace Blocks;
  * whose name is the language code (e.g. zh_cn/error500.php).
  *
  * Development templates are displayed when the application is in dev mode
- * (i.e. blx()->config->devMode = true). Detailed error information with source code
+ * (i.e. blx()->config->get('devMode') = true). Detailed error information with source code
  * are displayed in these templates. Production templates are meant to be shown
  * to end-users and are used when the application is in production mode.
  * For security reasons, they only display the error message without any
@@ -63,7 +63,7 @@ class ErrorHandler extends \CErrorHandler
 			}
 		}
 
-		$this->_devMode = blx()->config->devMode || $admin;
+		$this->_devMode = blx()->config->get('devMode') || $admin;
 	}
 
 	/**

@@ -168,7 +168,7 @@ class UserModel extends BaseEntityModel
 		if ($this->status == UserStatus::Locked)
 		{
 			$cooldownEnd = clone $this->lockoutDate;
-			$cooldownEnd->add(new DateInterval(blx()->config->cooldownDuration));
+			$cooldownEnd->add(new DateInterval(blx()->config->get('cooldownDuration')));
 
 			return $cooldownEnd;
 		}
@@ -207,7 +207,7 @@ class UserModel extends BaseEntityModel
 		// Is the user in cooldown mode, and are they past their window?
 		if ($user->status == UserStatus::Locked)
 		{
-			$cooldownDuration = blx()->config->cooldownDuration;
+			$cooldownDuration = blx()->config->get('cooldownDuration');
 
 			if ($cooldownDuration)
 			{

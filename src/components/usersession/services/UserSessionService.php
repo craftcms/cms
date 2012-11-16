@@ -178,7 +178,7 @@ class UserSessionService extends \CWebUser
 			// Was the login successful?
 			if ($this->_identity->errorCode == UserIdentity::ERROR_NONE)
 			{
-				$rememberUsernameDuration = blx()->config->rememberUsernameDuration;
+				$rememberUsernameDuration = blx()->config->get('rememberUsernameDuration');
 				if ($rememberUsernameDuration)
 				{
 					$interval = new DateInterval($rememberUsernameDuration);
@@ -193,11 +193,11 @@ class UserSessionService extends \CWebUser
 
 				if ($rememberMe)
 				{
-					$duration = blx()->config->rememberedUserSessionDuration;
+					$duration = blx()->config->get('rememberedUserSessionDuration');
 				}
 				else
 				{
-					$duration = blx()->config->userSessionDuration;
+					$duration = blx()->config->get('userSessionDuration');
 				}
 
 				if ($duration)

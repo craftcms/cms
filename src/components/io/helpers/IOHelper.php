@@ -1226,7 +1226,7 @@ class IOHelper
 	 */
 	public static function getAllowedFileExtensions()
 	{
-		return  ArrayHelper::stringToArray(blx()->config->allowedFileExtensions);
+		return  ArrayHelper::stringToArray(blx()->config->get('allowedFileExtensions'));
 	}
 
 	/**

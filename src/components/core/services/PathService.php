@@ -233,7 +233,7 @@ class PathService extends BaseApplicationComponent
 	public function getOfflineTemplatePath()
 	{
 		// If the user has set offlinePath config item, let's use it.
-		if (($path = blx()->config->offlinePath) !== null)
+		if (($path = blx()->config->get('offlinePath')) !== null)
 		{
 			return substr($path, 0, strlen($path) - strlen(IOHelper::getFileName($path)));
 		}

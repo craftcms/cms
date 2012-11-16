@@ -399,7 +399,7 @@ class Blocks extends \Yii
 		}
 
 		$translation = parent::t($category, $message, $normalizedVariables, $source, $language);
-		if (blx()->config->translationDebugOutput)
+		if (blx()->config->get('translationDebugOutput'))
 		{
 			$translation = '@'.$translation.'@';
 		}

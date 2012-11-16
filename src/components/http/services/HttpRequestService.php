@@ -42,7 +42,7 @@ class HttpRequestService extends \CHttpRequest
 		$this->_segments = array_filter(explode('/', $this->_path));
 
 		// Is this a CP request?
-		$this->_isCpRequest = ($this->getSegment(1) == blx()->config->cpTrigger);
+		$this->_isCpRequest = ($this->getSegment(1) == blx()->config->get('cpTrigger'));
 
 		if ($this->_isCpRequest)
 		{
@@ -458,9 +458,9 @@ class HttpRequestService extends \CHttpRequest
 	 */
 	private function _checkRequestType()
 	{
-		$resourceTrigger = blx()->config->resourceTrigger;
-		$actionTrigger = blx()->config->actionTrigger;
-		$logoutTrigger = blx()->config->logoutTrigger;
+		$resourceTrigger = blx()->config->get('resourceTrigger');
+		$actionTrigger = blx()->config->get('actionTrigger');
+		$logoutTrigger = blx()->config->get('logoutTrigger');
 		$firstSegment = $this->getSegment(1);
 
 		// If the first path segment is the resource trigger word, it's a resource request.
