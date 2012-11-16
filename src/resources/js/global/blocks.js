@@ -112,7 +112,7 @@ Blocks.getUrl = function(path, params)
 
 			if (name == '#')
 			{
-				anchor = '#'+value;
+				anchor = value;
 			}
 			else if (value !== null && value !== '')
 			{
@@ -133,14 +133,63 @@ Blocks.getUrl = function(path, params)
 	}
 
 	// Put it all together
-	if (Blocks.urlFormat == 'pathinfo')
+	var url = Blocks.baseUrl;
+
+	// Does the base URL already have a query string?
+	var qsMarker = url.indexOf('?');
+	if (qsMarker != '-1')
 	{
-		return Blocks.baseUrl+(path ? '/'+path : '')+(params ? '?'+params : '')+anchor;
+		// Append params with the existing query string, and chop it off of the base URL
+		var qs = url.substr(qsMarker+1);
+		url = url.substr(0, qsMarker);
+
+		if (qs)
+		{
+			params = qs + (params ? '&'+params : '');
+		}
 	}
-	else
+
+	if (!Blocks.usePathInfo && path)
 	{
-		return Blocks.baseUrl+(path || params ? '?'+(path ? 'p='+path : '')+(path && params ? '&' : '')+(params ? params : '') : '')+anchor;
+		// Is the p= param already set?
+		if (params && params.substr(0, 2) == 'p=')
+		{
+			var endPath = params.indexOf('&');
+			if (endPath != -1)
+			{
+				var basePath = params.substring(2, endPath-1);
+				params = params.substr(endPath+1);
+			}
+			else
+			{
+				var basePath = params.substr(2);
+				params = null;
+			}
+
+			path = basePath + (path ? '/'+path : '');
+		}
+
+		// Now move the path into the params
+		params = 'p='+path + (params ? '&'+params : '');
+		path = null;
 	}
+
+	if (path)
+	{
+		url += '/'+path;
+	}
+
+	if (params)
+	{
+		url += '?'+params;
+	}
+
+	if (anchor)
+	{
+		url += '#'+anchor;
+	}
+
+	return url;
 };
 
 /**
@@ -152,7 +201,7 @@ Blocks.getUrl = function(path, params)
  */
 Blocks.getResourceUrl = function(path, params)
 {
-	path = Blocks.actionTrigger+'/'+Blocks.trim(path, '/');
+	path = Blocks.resourceTrigger+'/'+Blocks.trim(path, '/');
 	return Blocks.getUrl(path, params);
 };
 

@@ -27,7 +27,7 @@ class UrlHelper
 
 		if (blx()->request->isCpRequest())
 		{
-			$path = blx()->config->cpTrigger.'/'.$path;
+			$path = blx()->config->cpTrigger.($path ? '/'.$path : '');
 			$dynamicBaseUrl = true;
 		}
 		else

@@ -27,4 +27,14 @@ class ConfigVariable
 	{
 		return (string)blx()->config->getItem($name);
 	}
+
+	/**
+	 * Returns whether generated URLs should be formatted using PATH_INFO.
+	 *
+	 * @return bool
+	 */
+	public function usePathInfo()
+	{
+		return blx()->config->usePathInfo();
+	}
 }

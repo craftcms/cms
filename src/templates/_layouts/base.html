@@ -52,19 +52,18 @@
 
 <script type="text/javascript">
 	window.Blocks = {
-		baseUrl: '{{ url("", null, "", true) }}',
+		baseUrl: '{{ url() }}',
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
-		urlFormat: '{{ blx.request.urlFormat }}',
+		usePathInfo: {{ blx.config.usePathInfo ? 'true' : 'false' }},
 		resourceTrigger: '{{ blx.config.resourceTrigger }}',
 		actionTrigger: '{{ blx.config.actionTrigger }}',
 		language: '{{ blx.language }}',
 		packages: {{ blx.getPackages|json_encode|raw }},
 		translations: {{ getTranslations()|raw }},
-        maxUploadSize: {{ blx.app.getMaxUploadSize() }}
+		maxUploadSize: {{ blx.app.getMaxUploadSize() }}
 	};
-
-    </script>
+</script>
 
 {{ getFootNodes()|raw }}
 </body>
