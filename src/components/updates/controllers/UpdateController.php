@@ -26,7 +26,7 @@ class UpdateController extends BaseController
 	 */
 	public function actionDownloadBlocksUpdate()
 	{
-		$url = 'https://elliott.blockscms.com/index.php/actions/licenses/downloadBlocks?licenseKey='.Blocks::getLicenseKey();
+		$url = 'https://elliott.blockscms.com/actions/licenses/downloadBlocks?licenseKey='.Blocks::getLicenseKey();
 		blx()->request->redirect($url);
 	}
 
