@@ -370,6 +370,22 @@ class App extends \CWebApplication
 				$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 			}
 		}
+		// Most likely missing PDO in general or the specific database PDO driver.
+		catch(\CDbException $e)
+		{
+			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+
+			// TODO: Multi-db driver check.
+			if (!extension_loaded('pdo'))
+			{
+				$messages[] = Blocks::t('Blocks requires the PDO extension to operate.');
+			}
+
+			if (!extension_loaded('pdo_mysql'))
+			{
+				$messages[] = Blocks::t('Blocks requires the PDO_MYSQL driver to operate.');
+			}
+		}
 		catch (\Exception $e)
 		{
 			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
@@ -433,8 +449,15 @@ class App extends \CWebApplication
 	{
 		if (!isset($this->_isInstalled))
 		{
-			$infoTable = $this->db->getSchema()->getTable('{{info}}');
-			$this->_isInstalled = (bool)$infoTable;
+			if (!$this->isDbConfigValid())
+			{
+				$this->_isInstalled = false;
+			}
+			else
+			{
+				$infoTable = $this->db->getSchema()->getTable('{{info}}');
+				$this->_isInstalled = (bool)$infoTable;
+			}
 		}
 
 		return $this->_isInstalled;
