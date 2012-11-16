@@ -312,25 +312,7 @@ class PluginsService extends BaseApplicationComponent
 			$this->_enabledPlugins[$lcHandle] = $plugin;
 
 			$this->_importPluginComponents($plugin);
-			$installableRecords = $this->_getPluginRecords($handle, 'install');
-
-			// Create all tables first.
-			foreach ($installableRecords as $record)
-			{
-				if (method_exists($record, 'createTable'))
-				{
-					$record->createTable();
-				}
-			}
-
-			// Create all foreign keys next.
-			foreach ($installableRecords as $record)
-			{
-				if (method_exists($record, 'addForeignKeys'))
-				{
-					$record->addForeignKeys();
-				}
-			}
+			$plugin->createTables();
 
 			$transaction->commit();
 		}
@@ -378,22 +360,10 @@ class PluginsService extends BaseApplicationComponent
 
 		$plugin->onBeforeUninstall();
 
-		$records = $this->_getPluginRecords($handle);
-
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			// Remove any foreign keys.
-			foreach ($records as $record)
-			{
-				$record->dropForeignKeys();
-			}
-
-			// Remove any tables.
-			foreach ($records as $record)
-			{
-				$record->dropTable();
-			}
+			$plugin->dropTables();
 
 			// Remove the row from the database.
 			blx()->db->createCommand()->delete('plugins', array('class' => $plugin->getClassHandle()));
@@ -486,7 +456,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	public function getPluginComponentsByType($pluginHandle, $componentType)
 	{
-		$classes = $this->_getPluginComponentClassesByType($pluginHandle, $componentType);
+		$classes = $this->getPluginComponentClassesByType($pluginHandle, $componentType);
 
 		$components = array();
 
@@ -550,12 +520,11 @@ class PluginsService extends BaseApplicationComponent
 	/**
 	 * Returns all of a plugin's component class names of a certain type.
 	 *
-	 * @access private
 	 * @param string $pluginHandle
 	 * @param string $componentType
 	 * @return array
 	 */
-	private function _getPluginComponentClassesByType($pluginHandle, $componentType)
+	public function getPluginComponentClassesByType($pluginHandle, $componentType)
 	{
 		$plugin = $this->getPlugin($pluginHandle);
 
@@ -590,29 +559,6 @@ class PluginsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns all of a plugin's records, possibly initialized with a given scenario.
-	 *
-	 * @access private
-	 * @param string      $handle
-	 * @param string|null $scenario
-	 * @return mixed
-	 */
-	private function _getPluginRecords($handle, $scenario = null)
-	{
-		$classes = $this->_getPluginComponentClassesByType($handle, 'records');
-
-		$records = array();
-
-		foreach ($classes as $class)
-		{
-			$nsClass = __NAMESPACE__.'\\'.$class;
-			$records[] = new $nsClass($scenario);
-		}
-
-		return $records;
-	}
-
-	/**
 	 * Registers any services provided by a plugin.
 	 *
 	 * @access private
@@ -622,7 +568,7 @@ class PluginsService extends BaseApplicationComponent
 	 */
 	private function _registerPluginServices($handle)
 	{
-		$classes = $this->_getPluginComponentClassesByType($handle, 'services');
+		$classes = $this->getPluginComponentClassesByType($handle, 'services');
 
 		$services = array();
 
