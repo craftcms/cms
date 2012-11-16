@@ -178,7 +178,7 @@ $components['session']['sessionName'] = 'BlocksSessionId';
 
 $components['user']['class'] = 'Blocks\UserSessionService';
 $components['user']['allowAutoLogin'] = true;
-$components['user']['loginUrl'] = array('/login');
+$components['user']['loginUrl'] = 'login';
 $components['user']['autoRenewCookie'] = true;
 
 

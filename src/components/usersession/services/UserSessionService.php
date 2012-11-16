@@ -31,14 +31,11 @@ class UserSessionService extends \CWebUser
 	 */
 	public function loginRequired()
 	{
-		$app = blx();
-		$request = $app->getRequest();
-
-		if (!$request->isAjaxRequest())
+		if (!blx()->request->isAjaxRequest())
 		{
-			if ($request->getPathInfo() !== '')
+			if (blx()->request->getPathInfo() !== '')
 			{
-				$this->setReturnUrl($request->getUrl());
+				$this->setReturnUrl(blx()->request->getPath());
 			}
 		}
 		elseif (isset($this->loginRequiredAjaxResponse))
@@ -47,20 +44,8 @@ class UserSessionService extends \CWebUser
 			blx()->end();
 		}
 
-		if (($url = $this->loginUrl) !== null)
-		{
-			if (is_array($url))
-			{
-				$route = isset($url[0]) ? $url[0] : $app->defaultController;
-				$url = $app->createUrl($route, array_splice($url, 1));
-			}
-
-			$request->redirect($url);
-		}
-		else
-		{
-			throw new HttpException(403, Blocks::t('Login is required.'));
-		}
+		$url = UrlHelper::getUrl($this->loginUrl);
+		blx()->request->redirect($url);
 	}
 
 	/**

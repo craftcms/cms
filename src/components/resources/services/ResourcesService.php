@@ -183,7 +183,7 @@ class ResourcesService extends BaseApplicationComponent
 			return $match[0];
 		}
 
-		$url = IOHelper::getFolderName(blx()->request->getUrl()).'/'.$match[3];
+		$url = IOHelper::getFolderName(blx()->request->getPath()).'/'.$match[3];
 
 		// Make sure this is a resource URL
 		$resourceTrigger = blx()->config->resourceTrigger;
