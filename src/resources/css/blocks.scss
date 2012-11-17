@@ -433,6 +433,8 @@ ul.tree,
 .menulist h2 { margin: 10px 0 3px; }
 .menulist ul li + li { margin-top: 0; }
 .menulist ul li a { margin-left: -30px; padding: 3px 15px 3px 30px; }
+.menulist ul li a:hover,
+.menulist ul li a:hover .light { color: #fff }
 .menulist ul li a.active { color: #999; cursor: default; }
 .menulist ul li a.active:before { content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
 

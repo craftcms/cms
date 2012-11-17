@@ -179,10 +179,12 @@
 
 			{% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
 
+				<!-- HIDE -->
 				<input type="hidden" name="action" value="entryRevisions/saveVersionAsDraft">
 				<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
 				<input type="hidden" name="versionId" value="{{ entry.versionId }}">
 				<input type="submit" class="btn" value="{{ 'Save as Draft'|t }}">
+				<!-- end HIDE -->
 
 			{% else %}
 
