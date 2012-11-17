@@ -111,7 +111,7 @@ class PluginsService extends BaseApplicationComponent
 	 *
 	 * @param string $handle
 	 * @param bool   $enabledOnly
-	 * @return mixed
+	 * @return BasePlugin|null
 	 */
 	public function getPlugin($handle, $enabledOnly = true)
 	{
@@ -130,7 +130,7 @@ class PluginsService extends BaseApplicationComponent
 		}
 		else
 		{
-			if (!isset($this->_plugins[$lcHandle]))
+			if (!array_key_exists($lcHandle, $this->_plugins))
 			{
 				// Make sure $handle has the right casing
 				$handle = $this->_getPluginHandleFromFileSystem($handle);
