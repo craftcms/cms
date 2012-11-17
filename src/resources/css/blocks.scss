@@ -429,11 +429,12 @@ ul.tree,
 .menu ul li a { display: block; margin: 0 -15px; padding: 4px 15px; font-size: 12px; color: #555; text-decoration: none; }
 .menu ul li a:not(.active):hover { color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); }
 
-.menulist { padding-left: 33px; }
+.menulist { padding-left: 30px; }
 .menulist h2 { margin: 10px 0 3px; }
-.menulist ul li a { margin-left: -33px; padding-left: 33px; }
+.menulist ul li + li { margin-top: 0; }
+.menulist ul li a { margin-left: -30px; padding: 3px 15px 3px 30px; }
 .menulist ul li a.active { color: #999; cursor: default; }
-.menulist ul li a.active:before { content: "√"; float: left; margin: 2px 0 0 -18px; font-size: 16px; }
+.menulist ul li a.active:before { content: "√"; float: left; margin: -1px 0 0 -18px; font-size: 15px; }
 
 /* ----------------------------------------
 /*  Fields
