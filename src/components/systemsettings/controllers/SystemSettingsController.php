@@ -47,6 +47,60 @@ class SystemSettingsController extends BaseController
 	{
 		$this->requirePostRequest();
 
+		$settings = $this->_getEmailSettingsFromPost();
+
+		if ($settings !== false)
+		{
+			if (blx()->systemSettings->saveSettings('email', $settings))
+			{
+				blx()->user->setNotice(Blocks::t('Email settings saved.'));
+				$this->redirectToPostedUrl();
+			}
+		}
+
+		blx()->user->setError(Blocks::t('Couldn’t save email settings.'));
+
+		$this->renderRequestedTemplate(array(
+			'settings' => $emailSettings
+		));
+	}
+
+	/**
+	 * Tests the email settings.
+	 */
+	public function actionTestEmailSettings()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$settings = $this->_getEmailSettingsFromPost();
+
+		if ($settings !== false)
+		{
+			try
+			{
+				if (blx()->email->sendTestEmail($settings))
+				{
+					$this->returnJson(array('success' => true));
+				}
+			}
+			catch (\Exception $e)
+			{
+				Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+			}
+		}
+
+		$this->returnErrorJson(Blocks::t('There was an error testing your email settings.'));
+	}
+
+	/**
+	 * Returns the email settings from the post data.
+	 *
+	 * @access private
+	 * @return array
+	 */
+	private function _getEmailSettingsFromPost()
+	{
 		$emailSettings = new EmailSettingsModel();
 		$gMailSmtp = 'smtp.gmail.com';
 
@@ -72,134 +126,70 @@ class SystemSettingsController extends BaseController
 		$emailSettings->emailAddress                = blx()->request->getPost('emailAddress');
 		$emailSettings->senderName                  = blx()->request->getPost('senderName');
 
-		$emailSettings->testEmailAddress            = blx()->request->getPost('testEmailAddress');
-
 		// Validate user input
-		if ($emailSettings->validate())
+		if (!$emailSettings->validate())
 		{
-			$settings = array('protocol' => $emailSettings->protocol);
-			$settings['emailAddress'] = $emailSettings->emailAddress;
-			$settings['senderName'] = $emailSettings->senderName;
+			return false;
+		}
 
-			if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		$settings['protocol']     = $emailSettings->protocol;
+		$settings['emailAddress'] = $emailSettings->emailAddress;
+		$settings['senderName']   = $emailSettings->senderName;
+
+		if (Blocks::hasPackage(BlocksPackage::Rebrand))
+		{
+			$settings['template'] = blx()->request->getPost('template');
+		}
+
+		switch ($emailSettings->protocol)
+		{
+			case EmailerType::Smtp:
 			{
-				$settings['template'] = blx()->request->getPost('template');
-			}
-
-			switch ($emailSettings->protocol)
-			{
-				case EmailerType::Smtp:
+				if ($emailSettings->smtpAuth)
 				{
-					if ($emailSettings->smtpAuth)
-					{
-						$settings['smtpAuth'] = 1;
-						$settings['username'] = $emailSettings->username;
-						$settings['password'] = $emailSettings->password;
-					}
-
-					$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
-
-					$settings['port'] = $emailSettings->port;
-					$settings['host'] = $emailSettings->host;
-					$settings['timeout'] = $emailSettings->timeout;
-
-					if ($emailSettings->smtpKeepAlive)
-					{
-						$settings['smtpKeepAlive'] = 1;
-					}
-
-					break;
-				}
-
-				case EmailerType::Pop:
-				{
-					$settings['port'] = $emailSettings->port;
-					$settings['host'] = $emailSettings->host;
-					$settings['username'] = $emailSettings->username;
-					$settings['password'] = $emailSettings->password;
-					$settings['timeout'] = $emailSettings->timeout;
-
-					break;
-				}
-
-				case EmailerType::Gmail:
-				{
-					$settings['host'] = $gMailSmtp;
 					$settings['smtpAuth'] = 1;
-					$settings['smtpSecureTransportType'] = 'ssl';
 					$settings['username'] = $emailSettings->username;
 					$settings['password'] = $emailSettings->password;
-					$settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
-					$settings['timeout'] = $emailSettings->timeout;
-					break;
 				}
-			}
 
-			if (blx()->email->saveSettings($settings))
-			{
-				if ($emailSettings->testEmailAddress)
+				$settings['smtpSecureTransportType'] = $emailSettings->smtpSecureTransportType;
+
+				$settings['port'] = $emailSettings->port;
+				$settings['host'] = $emailSettings->host;
+				$settings['timeout'] = $emailSettings->timeout;
+
+				if ($emailSettings->smtpKeepAlive)
 				{
-					try
-					{
-						blx()->email->sendTestEmail($emailSettings);
-					}
-					catch (\Exception $e)
-					{
-						Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
-						blx()->user->setError(Blocks::t('Unable to send email with these settings.'));
-						$this->redirectToPostedUrl();
-					}
+					$settings['smtpKeepAlive'] = 1;
 				}
 
-				blx()->user->setNotice(Blocks::t('Email settings saved.'));
-				$this->redirectToPostedUrl();
+				break;
 			}
-			else
+
+			case EmailerType::Pop:
 			{
-				blx()->user->setError(Blocks::t('Couldn’t save email settings.'));
+				$settings['port'] = $emailSettings->port;
+				$settings['host'] = $emailSettings->host;
+				$settings['username'] = $emailSettings->username;
+				$settings['password'] = $emailSettings->password;
+				$settings['timeout'] = $emailSettings->timeout;
+
+				break;
 			}
-		}
-		else
-		{
-			blx()->user->setError(Blocks::t('Couldn’t save email settings.'));
-		}
 
-		$this->renderRequestedTemplate(array(
-			'settings' => $emailSettings
-		));
-	}
-
-	/**
-	 * Saves the advanced settings.
-	 */
-	public function actionSaveAdvancedSettings()
-	{
-		$this->requirePostRequest();
-
-		$settings = array();
-
-		$checkboxes = array('showDebugInfo', 'useUncompressedJs', 'disablePlugins');
-		foreach ($checkboxes as $key)
-		{
-			if (blx()->request->getPost($key))
+			case EmailerType::Gmail:
 			{
-				$settings[$key] = true;
+				$settings['host'] = $gMailSmtp;
+				$settings['smtpAuth'] = 1;
+				$settings['smtpSecureTransportType'] = 'ssl';
+				$settings['username'] = $emailSettings->username;
+				$settings['password'] = $emailSettings->password;
+				$settings['port'] = $emailSettings->smtpSecureTransportType == 'tls' ? '587' : '465';
+				$settings['timeout'] = $emailSettings->timeout;
+				break;
 			}
 		}
 
-		if (blx()->systemSettings->saveSettings('advanced', $settings))
-		{
-			blx()->user->setNotice(Blocks::t('Advanced settings saved.'));
-
-			$this->redirectToPostedUrl();
-		}
-		else
-		{
-			blx()->user->setError(Blocks::t('Couldn’t save advanced settings.'));
-
-			$this->renderRequestedTemplate(array(
-				'settings' => $settings
-			));
-		}
+		return $settings;
 	}
 }

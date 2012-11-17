@@ -6,6 +6,7 @@ namespace Blocks;
  */
 class EmailService extends BaseApplicationComponent
 {
+	private $_settings;
 	private $_defaultEmailTimeout = 10;
 
 	/**
@@ -241,18 +242,12 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function getSettings()
 	{
-		return blx()->systemSettings->getSettings('email');
-	}
+		if (!isset($this->_settings))
+		{
+			$this->_settings = blx()->systemSettings->getSettings('email');
+		}
 
-	/**
-	 * Saves the system email settings.
-	 *
-	 * @param array $settings
-	 * @return bool
-	 */
-	public function saveSettings($settings)
-	{
-		return blx()->systemSettings->saveSettings('email', $settings);
+		return $this->_settings;
 	}
 
 	/**
@@ -261,18 +256,21 @@ class EmailService extends BaseApplicationComponent
 	 */
 	public function sendTestEmail($settings)
 	{
+		$this->_settings = $settings;
+
 		$user = blx()->account->getCurrentUser();
-		$user->email = $settings->testEmailAddress;
 		$newSettings = array();
 
 		foreach ($settings as $key => $value)
 		{
-			if (strpos($key, 'password') === false && $key !== 'senderName' && $key !== 'testEmailAddress')
+			if ($key == 'password' && $value)
 			{
-				$newSettings[$key] = $value;
+				$value = 'xxxxx';
 			}
-		};
 
-		$this->sendEmailByKey($user, 'test_email', array('settings' => $newSettings));
+			$newSettings[$key] = $value;
+		}
+
+		return $this->sendEmailByKey($user, 'test_email', array('settings' => $newSettings));
 	}
 }
