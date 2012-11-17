@@ -124,6 +124,27 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Publishes a draft.
+	 *
+	 * @param EntryDraftModel $draft
+	 * @return bool
+	 */
+	public function publishDraft(EntryDraftModel $draft)
+	{
+		$draftRecord = $this->_getDraftRecord($draft);
+
+		if (blx()->entries->saveEntry($draft))
+		{
+			$draftRecord->delete();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Returns a draft record.
 	 *
 	 * @access private
