@@ -175,7 +175,7 @@
 				<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 				<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
 
-				<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}/preview">
+				<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
 
 			{% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
 
