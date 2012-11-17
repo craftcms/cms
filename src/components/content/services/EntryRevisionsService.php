@@ -60,7 +60,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'language' => blx()->language,
 		));
 
-		return EntryDraftModel::populateModels($draftRecords, 'id');
+		return EntryDraftModel::populateModels($draftRecords, 'draftId');
 	}
 
 	/**
@@ -207,6 +207,6 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'language' => blx()->language,
 		));
 
-		return EntryVersionModel::populateModels($versionRecords, 'id');
+		return EntryVersionModel::populateModels($versionRecords, 'versionId');
 	}
 }
