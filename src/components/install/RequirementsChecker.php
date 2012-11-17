@@ -39,90 +39,49 @@ class RequirementsChecker extends \CComponent
 				class_exists('Reflection', false),
 				true,
 				'<a href="http://blockscms.com">Blocks</a>',
-				''
+				'The <a href="http://php.net/manual/en/class.reflectionextension.php">ReflectionExtension</a> is required.'
 			),
 			new Requirement(
 				Blocks::t('PCRE extension'),
 				extension_loaded("pcre"),
 				true,
 				'<a href="http://blockscms.com">Blocks</a>',
-				''
+				'<a href="http://php.net/manual/en/book.pcre.php">PCRE</a> is required.'
 			),
 			new Requirement(
 				'SPL extension',
 				extension_loaded("SPL"),
 				true,
 				'<a href="http://blockscms.com">Blocks</a>',
-				''
-			),
-			new Requirement(
-				Blocks::t('DOM extension'),
-				class_exists("DOMDocument",false),
-				false,
-				'<a href="http://www.yiiframework.com/doc/api/CHtmlPurifier">CHtmlPurifier</a>, <a href="http://www.yiiframework.com/doc/api/CWsdlGenerator">CWsdlGenerator</a>',
-				''
+				'<a href="http://php.net/manual/en/book.spl.php">SPL</a> is required.'
 			),
 			new Requirement(
 				Blocks::t('PDO extension'),
 				extension_loaded('pdo'),
-				false,
+				true,
 				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				''
-			),
-			new Requirement(
-				Blocks::t('PDO SQLite extension'),
-				extension_loaded('pdo_sqlite'),
-				false,
-				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				Blocks::t('This is required if you are using SQLite database.')
+				'<a href="http://php.net/manual/en/book.pdo.php">PDO</a> is required.'
 			),
 			new Requirement(
 				Blocks::t('PDO MySQL extension'),
 				extension_loaded('pdo_mysql'),
-				false,
+				true,
 				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				Blocks::t('This is required if you are using MySQL database.')
-			),
-			new Requirement(
-				Blocks::t('PDO PostgreSQL extension'),
-				extension_loaded('pdo_pgsql'),
-				false,
-				Blocks::t('All <a href="http://www.yiiframework.com/doc/api/#system.db">DB-related classes</a>'),
-				Blocks::t('This is required if you are using PostgreSQL database.')),
-			new Requirement(
-				Blocks::t('Memcache extension'),
-				extension_loaded("memcache") || extension_loaded("memcached"),
-				false,
-				'<a href="http://www.yiiframework.com/doc/api/CMemCache">CMemCache</a>',
-				extension_loaded("memcached") ? Blocks::t('To use memcached set <a href="http://www.yiiframework.com/doc/api/CMemCache#useMemcached-detail">CMemCache::useMemcached</a> to <code>true</code>.') : Blocks::t('Only required if you plan on using Memcache.')
-			),
-			new Requirement(
-				Blocks::t('APC extension'),
-				extension_loaded("apc"),
-				false,
-				'<a href="http://www.yiiframework.com/doc/api/CApcCache">CApcCache</a>',
-				Blocks::t('Only required if you plan on APC for caching.')
+				Blocks::t('The PDO_MYSQL driver is required if you are using a MySQL database.')
 			),
 			new Requirement(
 				Blocks::t('Mcrypt extension'),
 				extension_loaded("mcrypt"),
 				false,
 				'<a href="http://www.yiiframework.com/doc/api/CSecurityManager">CSecurityManager</a>',
-				Blocks::t('This is required by encrypt and decrypt methods.')
-			),
-			new Requirement(
-				Blocks::t('SOAP extension'),
-				extension_loaded("soap"),
-				false,
-				'<a href="http://www.yiiframework.com/doc/api/CWebService">CWebService</a>, <a href="http://www.yiiframework.com/doc/api/CWebServiceAction">CWebServiceAction</a>',
-				''
+				Blocks::t('<a href="http://php.net/manual/en/book.mcrypt.php">Mcrypt</a> is required.')
 			),
 			new Requirement(
 				Blocks::t('GD extension w/ FreeType support'),
-				($message = $this->_checkGD()) === '',
-				false,
+				extension_loaded('gd'),
+				true,
 				'<a href="http://www.yiiframework.com/doc/api/CCaptchaAction">CCaptchaAction</a>, Assets',
-				$message
+				'<a href="http://php.net/manual/en/book.image.php">GD</a> is required.'
 			),
 			new Requirement(
 				Blocks::t('MySQL version'),
@@ -136,7 +95,7 @@ class RequirementsChecker extends \CComponent
 				function_exists('glob'),
 				true,
 				'<a href="http://blockscms.com">Blocks</a>',
-				Blocks::t('Your PHP installation does not support the <a href="http://us.php.net/manual/en/function.glob.php">glob</a> function.')
+				Blocks::t('<a href="http://us.php.net/manual/en/function.glob.php">Glob</a> is required.')
 			),
 		);
 	}
@@ -174,27 +133,6 @@ class RequirementsChecker extends \CComponent
 		}
 
 		return '';
-	}
-
-	/**
-	 * @access private
-	 * @return string
-	 */
-	private function _checkGD()
-	{
-		if (extension_loaded('gd'))
-		{
-			$gdInfo = gd_info();
-
-			if ($gdInfo['FreeType Support'])
-			{
-				return '';
-			}
-
-			return Blocks::t('GD installed').'<br />'.Blocks::t('FreeType support not installed.');
-		}
-
-		return Blocks::t('GD not installed');
 	}
 
 	/**
