@@ -277,7 +277,7 @@ class AppUpdater implements IUpdater
 	 * @return bool
 	 * @throws Exception
 	 */
-	public function validatePackage($version, $build)
+	public function validateUpdate($version, $build)
 	{
 		Blocks::log('Validating MD5 for '.$this->_downloadFilePath, \CLogger::LEVEL_INFO);
 		$sourceMD5 = blx()->et->getReleaseMD5($version, $build);
