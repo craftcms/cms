@@ -38,8 +38,9 @@ class EntryVersionModel extends EntryModel
 		// Merge the version and entry data
 		$entryData = $attributes['data'];
 		$blockContent = $entryData['blocks'];
-		unset($attributes['data'], $entryData['blocks']);
 		$attributes['versionId'] = $attributes['id'];
+		$attributes['id'] = $attributes['entryId'];
+		unset($attributes['data'], $entryData['blocks'], $attributes['entryId']);
 
 		$attributes = array_merge($attributes, $entryData);
 

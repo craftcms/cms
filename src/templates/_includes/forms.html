@@ -17,7 +17,7 @@
 	(config.class ? config.class : null),
 	(config.hint ? 'nicetext' : null),
 	(config.type == 'password' ? 'password' : null),
-	(config.size ? null : 'fullwidth'),
+	(config.size is defined and config.size ? null : 'fullwidth'),
 	(config.errors ? 'error' : null)
 ]|filter|join(' ') }}{% endmacro %}
 
@@ -52,7 +52,7 @@
 {% macro textarea(config) %}
 	{% set config = { id: null, class: null, type: 'text', rows: 2, cols: 50, name: null, value: null, disabled: false, hint: null, errors: null }|merge(config) %}
 	{% set class = _self.textClass(config) %}
-	<textarea{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }} fullwidth" rows="{{ config.rows }}" cols="{{ config.cols }}" name="{{ config.name }}"{% if config.disabled %} disabled{% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea>
+	<textarea{% if config.id %} id="{{ config.id }}"{% endif %} class="{{ class }}" rows="{{ config.rows }}" cols="{{ config.cols }}" name="{{ config.name }}"{% if config.disabled %} disabled{% endif %}{% if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea>
 {% endmacro %}
 
 

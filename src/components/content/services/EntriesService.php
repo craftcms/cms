@@ -424,6 +424,12 @@ class EntriesService extends BaseEntityService
 				}
 			}
 
+			// Save a new version
+			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			{
+				blx()->entryRevisions->saveVersion($entry);
+			}
+
 			// Give the block types a chance to do any post-processing
 			foreach ($blockTypes as $blockType)
 			{

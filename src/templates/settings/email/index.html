@@ -3,6 +3,10 @@
 {% set title = "Email"|t %}
 {% set centered = true %}
 {% includeJsResource "js/email_settings.js" %}
+{% includeTranslations
+	"Email sent successfully! Check your inbox.",
+	"An unknown error occurred."
+%}
 
 
 {% if settings is not defined %}
@@ -25,7 +29,7 @@
 
 
 {% set content %}
-	<form method="post" action="" class="centered" accept-charset="UTF-8">
+	<form id="settings-form" method="post" action="" class="centered" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="systemSettings/saveEmailSettings">
 		<input type="hidden" name="redirect" value="settings">
 
@@ -158,21 +162,10 @@
 
 		<hr>
 
-		<div>
-			{{ forms.textField({
-				label: "Test Email Address"|t,
-				instructions: "Enter an email address if you would like to send a test email using these settings"|t,
-				id: 'testEmailAddress',
-				name: 'testEmailAddress',
-				value: (settings.testEmailAddress is defined ? settings.testEmailAddress : null),
-				errors: (freshSettings ? null : settings.getErrors('testEmailAddress'))
-			}) }}
-		</div>
-
-		<hr>
-
 		<div class="buttons">
 			<input class="btn submit" type="submit" value="{{ 'Save'|t }}">
+			<div id="test" class="btn">{{ "Test"|t }}</div>
+			<div id="test-spinner" class="spinner hidden"></div>
 		</div>
 	</form>
 {% endset %}

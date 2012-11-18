@@ -60,7 +60,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'language' => blx()->language,
 		));
 
-		return EntryDraftModel::populateModels($draftRecords, 'id');
+		return EntryDraftModel::populateModels($draftRecords, 'draftId');
 	}
 
 	/**
@@ -72,49 +72,32 @@ class EntryRevisionsService extends BaseApplicationComponent
 	public function saveDraft(EntryDraftModel $draft)
 	{
 		$draftRecord = $this->_getDraftRecord($draft);
-
-		$postDate = DateTimeHelper::normalizeDate($draft->postDate);
-		$expiryDate = DateTimeHelper::normalizeDate($draft->expiryDate);
-
-		$draftData = array(
-			'authorId' => $draft->authorId,
-			'title' => $draft->title,
-			'slug' => $draft->slug,
-			'postDate' => ($postDate ? $postDate->getTimestamp() : null),
-			'expiryDate' => ($expiryDate ? $expiryDate->getTimestamp() : null),
-			'enabled' => $draft->enabled,
-			'tags' => $draft->tags,
-			'blocks' => array(),
-		);
-
-		if (Blocks::hasPackage(BlocksPackage::PublishPro))
-		{
-			$blocks = blx()->sections->getBlocksBySectionId($draft->sectionId);
-		}
-		else
-		{
-			$blocks = blx()->entries->getAllBlocks();
-		}
-
-		$content = $draft->getRawContent();
-
-		foreach ($blocks as $block)
-		{
-			if (isset($content[$block->handle]))
-			{
-				$draftData['blocks'][$block->id] = $content[$block->handle];
-			}
-			else
-			{
-				$draftData['blocks'][$block->id] = null;
-			}
-		}
-
-		$draftRecord->data = $draftData;
+		$draftRecord->data = $this->_getRevisionData($draft);
 
 		if ($draftRecord->save())
 		{
 			$draft->draftId = $draftRecord->id;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Publishes a draft.
+	 *
+	 * @param EntryDraftModel $draft
+	 * @return bool
+	 */
+	public function publishDraft(EntryDraftModel $draft)
+	{
+		$draftRecord = $this->_getDraftRecord($draft);
+
+		if (blx()->entries->saveEntry($draft))
+		{
+			$draftRecord->delete();
 			return true;
 		}
 		else
@@ -207,6 +190,63 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'language' => blx()->language,
 		));
 
-		return EntryVersionModel::populateModels($versionRecords, 'id');
+		return EntryVersionModel::populateModels($versionRecords, 'versionId');
+	}
+
+	/**
+	 * Saves a new versoin.
+	 *
+	 * @param EntryModel $entry
+	 * @return bool
+	 */
+	public function saveVersion(EntryModel $entry)
+	{
+		$versionRecord = new EntryVersionRecord();
+		$versionRecord->entryId = $entry->id;
+		$versionRecord->sectionId = $entry->sectionId;
+		$versionRecord->creatorId = blx()->account->getCurrentUser()->id;
+		$versionRecord->language = $entry->language;
+		$versionRecord->data = $this->_getRevisionData($entry);
+		return $versionRecord->save();
+	}
+
+	/**
+	 * Returns an array of all the revision data for a draft or version.
+	 *
+	 * @param EntryDraftModel|EntryVersionModel $revision
+	 * @return array
+	 */
+	public function _getRevisionData($revision)
+	{
+		$postDate = DateTimeHelper::normalizeDate($revision->postDate);
+		$expiryDate = DateTimeHelper::normalizeDate($revision->expiryDate);
+
+		$revisionData = array(
+			'authorId' => $revision->authorId,
+			'title' => $revision->title,
+			'slug' => $revision->slug,
+			'postDate' => ($postDate ? $postDate->getTimestamp() : null),
+			'expiryDate' => ($expiryDate ? $expiryDate->getTimestamp() : null),
+			'enabled' => $revision->enabled,
+			'tags' => $revision->tags,
+			'blocks' => array(),
+		);
+
+		$blocks = blx()->sections->getBlocksBySectionId($revision->sectionId);
+		$content = $revision->getRawContent();
+
+		foreach ($blocks as $block)
+		{
+			if (isset($content[$block->handle]))
+			{
+				$revisionData['blocks'][$block->id] = $content[$block->handle];
+			}
+			else
+			{
+				$revisionData['blocks'][$block->id] = null;
+			}
+		}
+
+		return $revisionData;
 	}
 }

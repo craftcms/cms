@@ -15,7 +15,7 @@ class UrlHelper
 	 * @param string|null $protocol
 	 * @return string
 	 */
-	public static function getUrl($path = '', $params = null, $protocol = '')
+	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)
 	{
 		// Return $path if it appears to be an absolute URL.
 		if (strpos($path, '://') !== false)
@@ -35,7 +35,7 @@ class UrlHelper
 			$dynamicBaseUrl = false;
 		}
 
-		return static::_getUrl($path, $params, $protocol, $dynamicBaseUrl);
+		return static::_getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName);
 	}
 
 	/**
@@ -51,7 +51,7 @@ class UrlHelper
 	{
 		$path = trim($path, '/');
 		$path = blx()->config->get('cpTrigger').'/'.$path;
-		return static::_getUrl($path, $params, $protocol, true);
+		return static::_getUrl($path, $params, $protocol, true, false);
 	}
 
 	/**
@@ -66,7 +66,7 @@ class UrlHelper
 	public static function getSiteUrl($path = '', $params = null, $protocol = '')
 	{
 		$path = trim($path, '/');
-		return static::_getUrl($path, $params, $protocol, false);
+		return static::_getUrl($path, $params, $protocol, false, false);
 	}
 
 	/**
@@ -126,7 +126,7 @@ class UrlHelper
 	 * @param array|string $params
 	 * @param string protocol
 	 */
-	private function _getUrl($path, $params, $protocol, $dynamicBaseUrl)
+	private function _getUrl($path, $params, $protocol, $dynamicBaseUrl, $mustShowScriptName)
 	{
 		$anchor = '';
 
@@ -161,7 +161,7 @@ class UrlHelper
 		{
 			$baseUrl = blx()->request->getHostInfo($protocol).blx()->urlManager->getBaseUrl();
 
-			if (blx()->config->omitScriptNameInUrls())
+			if (!$mustShowScriptName && blx()->config->omitScriptNameInUrls())
 			{
 				$baseUrl = substr($baseUrl, 0, strrpos($baseUrl, '/'));
 			}
@@ -170,7 +170,7 @@ class UrlHelper
 		{
 			$baseUrl = Blocks::getSiteUrl();
 
-			if (!blx()->config->omitScriptNameInUrls())
+			if ($mustShowScriptName || !blx()->config->omitScriptNameInUrls())
 			{
 				$baseUrl .= strrchr(blx()->urlManager->getBaseUrl(), '/');
 			}

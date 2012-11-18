@@ -26,7 +26,6 @@ $cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']        = 
 $cpRoutes['content\/globals']                                                 = 'content/globals/index';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/new']                     = 'content/entries/_edit';
 $cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)']        = 'content/entries/_edit';
-$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/preview'] = 'content/entries/_edit';
 $cpRoutes['content\/(?P<filter>'.$handle.')']                                 = 'content/entries/index';
 
 $cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';

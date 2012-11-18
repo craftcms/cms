@@ -94,21 +94,24 @@ class UrlManager extends \CUrlManager
 	 */
 	public function matchEntry()
 	{
-		$criteria = new EntryCriteria();
-		$criteria->uri = blx()->request->getPath();
-		$criteria->includeContent = true;
-		$entry = blx()->entries->findEntry($criteria);
-
-		if ($entry)
+		$path = blx()->request->getPath();
+		if ($path)
 		{
-			$this->_templateVariables['entry'] = $entry;
-			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			$criteria = new EntryCriteria();
+			$criteria->uri = blx()->request->getPath();
+			$entry = blx()->entries->findEntry($criteria);
+
+			if ($entry)
 			{
-				return $entry->getSection()->template;
-			}
-			else
-			{
-				return 'blog/_entry';
+				$this->_templateVariables['entry'] = $entry;
+				if (Blocks::hasPackage(BlocksPackage::PublishPro))
+				{
+					return $entry->getSection()->template;
+				}
+				else
+				{
+					return 'blog/_entry';
+				}
 			}
 		}
 

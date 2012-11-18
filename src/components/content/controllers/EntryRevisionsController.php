@@ -14,9 +14,11 @@ class EntryRevisionsController extends BaseController
 		$this->requirePostRequest();
 
 		$draftId = blx()->request->getPost('draftId');
+
 		if ($draftId)
 		{
 			$draft = blx()->entryRevisions->getDraftById($draftId);
+
 			if (!$draft)
 			{
 				throw new Exception(Blocks::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
@@ -29,33 +31,10 @@ class EntryRevisionsController extends BaseController
 			$draft->sectionId = blx()->request->getRequiredPost('sectionId');
 			$draft->creatorId = blx()->account->getCurrentUser()->id;
 
-			//if (Blocks::hasPackage(BlocksPackage::Language))
-			//{
-			//	$draft->language = blx()->request->getPost('language');
-			//}
-			//else
-			//{
-				$draft->language = blx()->language;
-			//}
+			$draft->language = blx()->language;
 		}
 
-		$draft->title = blx()->request->getPost('title');
-		$draft->slug = blx()->request->getPost('slug');
-		$draft->postDate = $this->getDateFromPost('postDate');
-		$draft->expiryDate = $this->getDateFromPost('expiryDate');
-		$draft->enabled = blx()->request->getPost('enabled');
-		$draft->tags = blx()->request->getPost('tags');
-
-		$draft->setContent(blx()->request->getPost('blocks'));
-
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			$draft->authorId = blx()->request->getPost('author');
-		}
-		else
-		{
-			$draft->authorId = blx()->account->getCurrentUser()->id;
-		}
+		$this->_setDraftValuesFromPost($draft);
 
 		if (blx()->entryRevisions->saveDraft($draft))
 		{
@@ -73,6 +52,68 @@ class EntryRevisionsController extends BaseController
 			$this->renderRequestedTemplate(array(
 				'entry' => $draft
 			));
+		}
+	}
+
+	/**
+	 * Publishes a draft.
+	 */
+	public function actionPublishDraft()
+	{
+		$this->requirePostRequest();
+
+		$draftId = blx()->request->getPost('draftId');
+		$draft = blx()->entryRevisions->getDraftById($draftId);
+
+		if (!$draft)
+		{
+			throw new Exception(Blocks::t('No draft exists with the ID “{id}”', array('id' => $draftId)));
+		}
+
+		$this->_setDraftValuesFromPost($draft);
+
+		if (blx()->entryRevisions->publishDraft($draft))
+		{
+			blx()->user->setNotice(Blocks::t('Draft published.'));
+
+			$this->redirectToPostedUrl(array(
+				'entryId' => $draft->id
+			));
+		}
+		else
+		{
+			blx()->user->setError(Blocks::t('Couldn’t publish draft.'));
+
+			$this->renderRequestedTemplate(array(
+				'entry' => $draft
+			));
+		}
+	}
+
+	/**
+	 * Sets the draft model's values from the post data.
+	 *
+	 * @access private
+	 * @param EntryDraftModel $draft
+	 */
+	private function _setDraftValuesFromPost(EntryDraftModel $draft)
+	{
+		$draft->title = blx()->request->getPost('title');
+		$draft->slug = blx()->request->getPost('slug');
+		$draft->postDate = $this->getDateFromPost('postDate');
+		$draft->expiryDate = $this->getDateFromPost('expiryDate');
+		$draft->enabled = blx()->request->getPost('enabled');
+		$draft->tags = blx()->request->getPost('tags');
+
+		$draft->setContent(blx()->request->getPost('blocks'));
+
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			$draft->authorId = blx()->request->getPost('author');
+		}
+		else
+		{
+			$draft->authorId = blx()->account->getCurrentUser()->id;
 		}
 	}
 }

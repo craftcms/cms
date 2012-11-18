@@ -2,9 +2,12 @@
 
 var EmailSettingsForm = Blocks.Base.extend({
 
+	$form: null,
 	$protocolField: null,
 	$protocolSelect: null,
 	$hiddenFields: null,
+	$testBtn: null,
+	$testSpinner: null,
 	$protocolSettingsPane: null,
 	$protocolSettingsPaneHead: null,
 	$protocolSettingsPaneBody: null,
@@ -12,9 +15,12 @@ var EmailSettingsForm = Blocks.Base.extend({
 
 	init: function()
 	{
+		this.$form = $('#settings-form');
 		this.$protocolField = $('#protocol-field');
 		this.$protocolSelect = $('#protocol');
 		this.$hiddenFields = $('#hidden-fields');
+		this.$testBtn = $('#test');
+		this.$testSpinner = $('#test-spinner');
 
 		this._onEmailTypeChange();
 		this.addListener(this.$protocolSelect, 'change', '_onEmailTypeChange');
@@ -23,6 +29,8 @@ var EmailSettingsForm = Blocks.Base.extend({
 		this.smtpAuthSwitch = new Blocks.ui.LightSwitch('#smtpAuth', {
 			onChange: $.proxy(this, '_onSmtpAuthChange')
 		});
+
+		this.addListener(this.$testBtn, 'activate', 'sendTestEmail');
 	},
 
 	getField: function(fieldIndex)
@@ -54,6 +62,32 @@ var EmailSettingsForm = Blocks.Base.extend({
 				$lastField = $field;
 			}
 		}
+	},
+
+	sendTestEmail: function()
+	{
+		if (this.$testBtn.hasClass('active')) return;
+
+		this.$testBtn.addClass('active');
+		this.$testSpinner.removeClass('hidden');
+
+		var data = Blocks.getPostData(this.$form);
+		delete data.action;
+
+		Blocks.postActionRequest('systemSettings/testEmailSettings', data, $.proxy(function(response) {
+			this.$testBtn.removeClass('active');
+			this.$testSpinner.addClass('hidden');
+
+			if (response.success)
+			{
+				alert(Blocks.t('Email sent successfully! Check your inbox.'));
+			}
+			else
+			{
+				var error = response.error || Blocks.t('An unknown error occurred.');
+				alert(error);
+			}
+		}, this));
 	}
 
 }, {
