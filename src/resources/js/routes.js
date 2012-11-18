@@ -129,7 +129,7 @@ var RouteSettingsModal = Blocks.ui.Modal.extend({
 			'<h1></h1>' +
 			'<div class="field">' +
 				'<div class="heading">' +
-					'<label for="url">'+Blocks.t("If the URL looks like this")+':</label>' +
+					'<label for="url">'+Blocks.t("If the URI looks like this")+':</label>' +
 				'</div>' +
 				'<div id="url" class="text url"></div>' +
 				'<div class="url-tokens">' +
