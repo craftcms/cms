@@ -54,7 +54,7 @@ class ErrorHandler extends \CErrorHandler
 
 		$admin = false;
 
-		if (blx()->isDbConfigValid() && blx()->isInstalled())
+		if (blx()->isInstalled())
 		{
 			// Set whether the currently logged in user is an admin.
 			if (($currentUser = blx()->account->getCurrentUser()) !== null)

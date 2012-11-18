@@ -38,6 +38,12 @@ class EtModel extends BaseModel
 		// Any packages installed on the client.
 		$attributes['installedPackages'] = AttributeType::String;
 
+		// The local version number.
+		$attributes['localVersion'] = AttributeType::String;
+
+		// The local build number.
+		$attributes['localBuild'] = AttributeType::String;
+
 		// Any errors to return;
 		$attributes['errors'] = AttributeType::Mixed;
 

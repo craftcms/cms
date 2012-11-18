@@ -47,4 +47,4 @@ $dbConfig['charset'] = 'utf8';
 /**
  * The collation to use when creating tables.
  */
-$dbConfig['collation'] = 'utf8_general_ci';
+$dbConfig['collation'] = 'utf8_unicode_ci';

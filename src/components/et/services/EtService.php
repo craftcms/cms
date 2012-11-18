@@ -37,17 +37,16 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $version
-	 * @param $build
+	 * @param $localBuild
+	 * @param $localVersion
 	 * @param $downloadPath
 	 * @return bool
 	 */
-	public function downloadPackage($version, $build, $downloadPath)
+	public function downloadUpdate($localBuild, $localVersion, $downloadPath)
 	{
 		$params = array(
-			'versionNumber' => $version,
-			'buildNumber' => $build,
-			'type' => AppReleaseFileType::Patch
+			'localBuild' => $localBuild,
+			'localVersion' => $localVersion,
 		);
 
 		$et = new Et(ElliottEndpoints::DownloadUpdate, 60);
@@ -72,7 +71,6 @@ class EtService extends BaseApplicationComponent
 		$params = array(
 			'versionNumber' => $version,
 			'buildNumber' => $build,
-			'type' => AppReleaseFileType::Patch
 		);
 
 		$et = new Et(ElliottEndpoints::GetAppReleaseFileMD5);

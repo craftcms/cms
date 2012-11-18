@@ -80,6 +80,8 @@ class Et
 		$this->_model->requestTime = DateTimeHelper::currentTime();
 		$this->_model->requestPort = blx()->request->getPort();
 		$this->_model->installedPackages = ArrayHelper::stringToArray(Blocks::getPackages());
+		$this->_model->localBuild = Blocks::getBuild();
+		$this->_model->localVersion= Blocks::getVersion();
 
 		$this->_options['useragent'] = 'blocks-requests/'.\Requests::VERSION;
 		$this->_options['timeout'] = $this->_timeout;
