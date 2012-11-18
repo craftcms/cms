@@ -60,7 +60,7 @@ class UserLinkType extends BaseLinkType
 	 */
 	public function populateEntities($data)
 	{
-		return blx()->users->populateUsers($data);
+		return UserModel::populateModels($data);
 	}
 
 	/**
