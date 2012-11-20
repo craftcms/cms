@@ -32,9 +32,7 @@
 
 {{ forms.textareaField({
 	label: "Instructions"|t,
-	instructions: (blx.hasPackage('PublishPro')
-		? "Helper text to guide you when authoring an entry."|t
-		: "Helper text to guide the author."|t),
+	instructions: "Helper text to guide the author."|t,
 	name: 'instructions',
 	value: (block ? block.instructions : null),
 	errors: (block ? block.getErrors('instructions') : null),
@@ -42,7 +40,7 @@
 }) }}
 
 {{ forms.checkboxField({
-	label: "This entry block is required"|t,
+	label: "This block is required"|t,
 	name: 'required',
 	checked: (block ? block.required : false)
 }) }}
@@ -50,7 +48,7 @@
 {% if blx.hasPackage('Language') and canBeTranslatable is defined and canBeTranslatable %}
 	{% if blx.systemSettings.languages %}
 		{{ forms.checkboxField({
-			label: "This entry block is translatable"|t,
+			label: "This block is translatable"|t,
 			name: 'translatable',
 			checked: (block ? block.translatable : false)
 		}) }}
