@@ -209,6 +209,11 @@ class DashboardService extends BaseApplicationComponent
 			'title' => 'Blog & Tonic'
 		);
 		$this->saveUserWidget($widget);
+
+		// Get Help widget
+		$widget = new WidgetModel();
+		$widget->type = 'GetHelp';
+		$this->saveUserWidget($widget);
 	}
 
 	/**
