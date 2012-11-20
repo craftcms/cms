@@ -108,16 +108,19 @@ class DashboardController extends BaseController
 		$user = blx()->account->getCurrentUser();
 
 		$result = $hsapi->requestCreate(array(
-			'sFirstName' => $user->firstName,
-			'sLastName' => $user->lastName,
+			'sFirstName' => $user->getFriendlyName(),
+			'sLastName' => ($user->lastName ? $user->lastName : 'Doe'),
 			'sEmail' => $user->email,
 			'tNote' => $message
 		));
 
-		print_r($result); die();
-
-		$return = array_merge(array('success' => true), $result);
-
-		$this->returnJson($return);
+		if ($result)
+		{
+			$this->returnJson(array('success' => true));
+		}
+		else
+		{
+			$this->returnErrorJson($hsapi->errors);
+		}
 	}
 }
