@@ -91,4 +91,31 @@ class DashboardController extends BaseController
 		$items = blx()->dashboard->getFeedItems($url, $limit);
 		$this->returnJson(array('items' => $items));
 	}
+
+	/**
+	 * Creates a new support ticket for the GetHelp widget.
+	 */
+	public function actionSendSupportRequest()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$message = blx()->request->getRequiredPost('message');
+
+		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
+		$hsapi = new \HelpSpotAPI(array('helpSpotApiURL' => "http://support.blockscms.com/api/index.php"));
+
+		$user = blx()->account->getCurrentUser();
+
+		$result = $hsapi->requestCreate(array(
+			'sFirstName' => $user->firstName,
+			'sLastName' => $user->lastName,
+			'sEmail' => $user->email,
+			'tNote' => $message
+		));
+
+		$return = array_merge(array('success' => true), $result);
+
+		$this->returnJson($return);
+	}
 }

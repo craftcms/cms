@@ -1,0 +1,16 @@
+{% from "_includes/forms" import textarea %}
+
+
+{{ textarea({
+	class: 'message nicetext',
+	rows: 10,
+	value: message
+}) }}
+
+<div class="buttons">
+	<div class="btn submit">{{ "Send"|t }}</div>
+	<div class="spinner hidden"></div>
+</div>
+
+{% set email %}<a href="mailto:support@blockscms.com">support@blockscms.com</a>{% endset %}
+<p class="error hidden">{{ "Couldn’t send your message. Please email it to {email} instead."|t({ email: email }) }}</p>
