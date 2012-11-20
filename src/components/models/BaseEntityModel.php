@@ -41,7 +41,7 @@ abstract class BaseEntityModel extends BaseModel
 		$blocks = $this->_getBlocks();
 		if (isset($blocks[$name]))
 		{
-			if (!isset($this->_preppedContent[$name]))
+			if (!isset($this->_preppedContent) || !array_key_exists($name, $this->_preppedContent))
 			{
 				$content = $this->_getContent();
 				if (isset($content[$name]))
