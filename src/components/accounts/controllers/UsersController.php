@@ -9,7 +9,7 @@ class UsersController extends BaseEntityController
 	/**
 	 * Returns the block service instance.
 	 *
-	 * @return UserProfileBlocksService
+	 * @return UsersService
 	 */
 	protected function getService()
 	{
@@ -321,6 +321,9 @@ class UsersController extends BaseEntityController
 			$y1 = blx()->request->getRequiredPost('y1');
 			$y2 = blx()->request->getRequiredPost('y2');
 			$source = blx()->request->getRequiredPost('source');
+
+			// Strip off any querystring info.
+			$source = substr($source, 0, strpos($source, '?'));
 
 			if ($userId == blx()->user->getId() || blx()->account->isAdmin())
 			{
