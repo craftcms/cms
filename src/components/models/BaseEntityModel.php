@@ -54,7 +54,13 @@ abstract class BaseEntityModel extends BaseModel
 				}
 
 				$blockType = blx()->blockTypes->populateBlockType($blocks[$name], $this);
-				$this->_preppedContent[$name] = $blockType->prepValue($value);
+
+				if ($blockType)
+				{
+					$value = $blockType->prepValue($value);
+				}
+
+				$this->_preppedContent[$name] = $value;
 			}
 
 			return $this->_preppedContent[$name];
