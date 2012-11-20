@@ -26,6 +26,7 @@
 			name: 'name',
 			value: (section is defined ? section.name : null),
 			errors: (section is defined ? section.getErrors('name') : null),
+			autofocus: true,
 			required: true,
 			translatable: true
 		}) }}

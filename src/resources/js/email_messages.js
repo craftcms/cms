@@ -112,6 +112,10 @@ var MessageSettingsModal = Blocks.ui.Modal.extend({
 			this.addListener(this.$container, 'submit', 'saveMessage');
 			this.addListener(this.$cancelBtn, 'click', 'cancel');
 
+			setTimeout($.proxy(function() {
+				this.$subjectInput.focus();
+			}, this), 100)
+
 		}, this));
 	},
 

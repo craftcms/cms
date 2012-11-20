@@ -39,6 +39,7 @@
 			id: 'username',
 			name: 'username',
 			value: (account is defined ? account.username : null),
+			autofocus: true,
 			required: true,
 			errors: (account is defined ? account.getErrors('username') : null)
 		}) }}

@@ -35,6 +35,7 @@
 			name: 'title',
 			value: (page is defined ? page.title : null),
 			errors: (page is defined ? page.getErrors('title') : null),
+			autofocus: true,
 			required: true,
 			translatable: true
 		}) }}

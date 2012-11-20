@@ -22,6 +22,7 @@
 			id: 'siteName',
 			name: 'siteName',
 			value: (post is defined ? post.siteName : blx.app.siteName),
+			autofocus: true,
 			required: true,
 			errors: (post is defined ? post.getErrors('siteName') : null)
 		}) }}

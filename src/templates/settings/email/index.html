@@ -39,6 +39,7 @@
 			id: 'emailAddress',
 			name: 'emailAddress',
 			value: (settings.emailAddress is defined ? settings.emailAddress : null),
+			autofocus: true,
 			required: true,
 			errors: (freshSettings ? null : settings.getErrors('emailAddress'))
 		}) }}
