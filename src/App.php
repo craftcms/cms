@@ -374,16 +374,25 @@ class App extends \CWebApplication
 		catch(\CDbException $e)
 		{
 			Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+			$missingPdo = false;
 
 			// TODO: Multi-db driver check.
 			if (!extension_loaded('pdo'))
 			{
+				$missingPdo = true;
 				$messages[] = Blocks::t('Blocks requires the PDO extension to operate.');
 			}
 
 			if (!extension_loaded('pdo_mysql'))
 			{
+				$missingPdo = true;
 				$messages[] = Blocks::t('Blocks requires the PDO_MYSQL driver to operate.');
+			}
+
+			if (!$missingPdo)
+			{
+				Blocks::log($e->getMessage(), \CLogger::LEVEL_ERROR);
+				$messages[] = Blocks::t('There is a problem connecting to the database with the credentials supplied in your db config file.');
 			}
 		}
 		catch (\Exception $e)
