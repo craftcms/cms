@@ -33,7 +33,6 @@
 		{%- if config.value %} value="{{ config.value }}"{% endif %}
 		{%- if config.maxlength %} maxlength="{{ config.maxlength }}"{% endif %}
 		{%- if config.autofocus %} autofocus{% endif %}
-		{%- if config.required %} required{% endif %}
 		{%- if config.disabled %} disabled {% endif %}
 		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>
 	{%- if config.type == 'password' %}</div>{% endif %}
@@ -64,7 +63,6 @@
 	<textarea class="{{ class }}" rows="{{ config.rows }}" cols="{{ config.cols }}" name="{{ config.name }}"
 		{%- if config.id %} id="{{ config.id }}"{% endif %}
 		{%- if config.autofocus %} autofocus{% endif %}
-		{%- if config.required %} required{% endif %}
 		{%- if config.disabled %} disabled{% endif %}
 		{%- if config.hint %} data-hint="{{ config.hint }}"{% endif %}>{{ config.value }}</textarea>
 {% endmacro %}
@@ -79,7 +77,6 @@
 			{%- if config.toggle %} class="fieldtoggle"{% endif %}
 			{%- if config.name %} name="{{ config.name }}"{% endif %}
 			{%- if config.autofocus %} autofocus{% endif %}
-			{%- if config.required %} required{% endif %}
 			{%- if config.disabled %} disabled{% endif %}
 			{%- if config.targetPrefix %} data-target-prefix="{{ config.targetPrefix }}"{% endif %}>
 			{% for value, label in config.options %}
@@ -96,7 +93,6 @@
 		{%- if config.id %} id="{{ config.id }}"{% endif %}
 		{%- if config.name %} name="{{ config.name }}[]"{% endif %}
 		{%- if config.autofocus %} autofocus{% endif %}
-		{%- if config.required %} required{% endif %}
 		{%- if config.disabled %} disabled{% endif %}
 		{%- if config.size %} size="{{ config.size }}"{% endif %}>
 		{% for value, label in config.options %}
@@ -205,7 +201,6 @@
 		{%- if config.id %} id="{{ config.id }}"{% endif %}
 		{%- if config.name %} name="{{ config.name }}"{% endif %}
 		{%- if config.autofocus %} autofocus{% endif %}
-		{%- if config.required %} required{% endif %}
 		{%- if config.disabled %} disabled{% endif %}>
 {% endmacro %}
 
