@@ -2,6 +2,10 @@
 {% includeCssResource "css/cp.css" first %}
 
 {% set body %}
+	{% if user.admin and blx.config.devMode %}
+		<div id="devmode" title="{{ 'Blocks is running in Dev Mode.'|t }}"></div>
+	{% endif %}
+
 	<div id="sidebar">
 		<div id="header">
 			<h2 id="sitename">{{ siteName }}</h2>

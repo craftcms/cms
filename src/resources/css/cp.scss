@@ -5,6 +5,9 @@
 html, body, #sidebar, #main { height: 100%; }
 #sidebar, #main { overflow: auto; }
 
+/* dev mode */
+#devmode { position: fixed; z-index: 2; left: 0; top: 0; width: 100%; height: 3px; background: url(../images/devmode.png) repeat-x; cursor: help; }
+
 /* sidebar */
 #sidebar { position: fixed; z-index: 1; left: 0; top: 0; width: 200px; background: #1a1a1a; }
 #sidebar a { color: #b3b3b3; }
@@ -79,3 +82,12 @@ html, body, #sidebar, #main { height: 100%; }
 /* image cropping modal */
 div.crop-image div.image-chooser { position: relative; }
 div.crop-image div.image-chooser img { display: block; }
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+	   only screen and (   -moz-min-device-pixel-ratio: 1.5),
+	   only screen and (     -o-min-device-pixel-ratio: 3/2),
+	   only screen and (        min-device-pixel-ratio: 1.5),
+	   only screen and (        min-resolution: 1.5dppx)
+{
+	#devmode { background-image: url(../images/devmode_2x.png); background-size: 53px 3px; }
+}
