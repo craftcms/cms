@@ -214,7 +214,7 @@
 
 
 {% macro field(config, input) %}
-	{% set config = { id: null, label: null, instructions: null, required: false, translatable: false, inputClass: null, errors: null }|merge(config) %}
+	{% set config = { id: null, label: null, instructions: null, required: false, translatable: false, errors: null }|merge(config) %}
 	<div class="field"{% if config.id %} id="{{ config.id }}-field"{% endif %}>
 		{% if config.label or config.instructions %}
 			<div class="heading">
@@ -232,7 +232,7 @@
 				{% endif %}
 			</div>
 		{% endif %}
-		<div class="input{% if config.inputClass %} {{ config.inputClass }}{% endif %}{% if config.errors %} errors{% endif %}">
+		<div class="input{% if config.errors %} errors{% endif %}">
 			{{ input|raw }}
 		</div>
 		{{ _self.errorList(config.errors) }}

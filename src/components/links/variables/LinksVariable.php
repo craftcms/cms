@@ -32,19 +32,4 @@ class LinksVariable
 			return new LinkTypeVariable($linkType);
 		}
 	}
-
-	/**
-	 * Populates a block type.
-	 *
-	 * @param BaseBlockModel $block
-	 * @return BaseLinkType|null
-	 */
-	public function populateLinkType(BaseBlockModel $block)
-	{
-		$linkType = blx()->links->populateLinkType($block);
-		if ($linkType)
-		{
-			return new LinkTypeVariable($linkType);
-		}
-	}
 }

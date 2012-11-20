@@ -4,7 +4,12 @@
 {% set value = (entity ? attribute(entity, block.handle) : null) %}
 {% set errors = (entity ? entity.getErrors(block.handle) : null) %}
 {% set blockType = blx.blockTypes.populateBlockType(block, entity) %}
-{% set input = blockType.getInputHtml(block.handle, value) %}
+
+{% if blockType %}
+	{% set input = blockType.getInputHtml(block.handle, value) %}
+{% else %}
+	{% set input = '<p class="error">' ~ "The blocktype class “{class}” could not be found."|t({ class: block.type }) ~ '</p>' %}
+{% endif %}
 
 {{ field({
 	label: block.name,
@@ -12,6 +17,5 @@
 	translatable: block.translatable,
 	instructions: block.instructions,
 	id: block.handle,
-	inputClass: blockType.classHandle|lower,
 	errors: errors
 }, input)|ns('blocks')|raw }}

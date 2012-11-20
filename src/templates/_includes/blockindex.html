@@ -20,7 +20,14 @@
 						{%- if block.required %} <span class="required"></span>{% endif -%}
 					</th>
 					<td><code>{{ block.handle }}</code></td>
-					<td>{{ blx.blockTypes.populateBlockType(block).name }}</td>
+					<td>
+						{% set blockType = blx.blockTypes.populateBlockType(block) %}
+						{% if blockType %}
+							{{ blockType.name }}
+						{% else %}
+							<span class="error">{{ block.type }}</span>
+						{% endif %}
+					</td>
 					{% if sortable %}<td class="thin"><a class="move icon" title="{{ 'Reorder'|t }}"></a></td>{% endif %}
 					<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 				</tr>

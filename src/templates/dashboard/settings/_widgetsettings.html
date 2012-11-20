@@ -10,7 +10,12 @@
 
 {% if widget is defined %}
 	{% set widgetType = blx.dashboard.populateWidgetType(widget) %}
+	{% set isWidgetTypeMissing = not widgetType %}
 {% else %}
+	{% set isWidgetTypeMissing = false %}
+{% endif %}
+
+{% if widgetType is not defined or isWidgetTypeMissing %}
 	{% set widgetType = blx.dashboard.getWidgetType('Feed') %}
 {% endif %}
 
@@ -48,6 +53,7 @@
 			name: 'type',
 			options: widgetTypes,
 			value: widgetType.classHandle,
+			errors: (isWidgetTypeMissing ? ["The widget class “{class}” could not be found."|t({ class: widget.type })] : null),
 			autofocus: true,
 			toggle: true
 		}) }}

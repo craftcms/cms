@@ -3,7 +3,12 @@
 
 {% if block %}
 	{% set blockType = blx.blockTypes.populateBlockType(block) %}
+	{% set isBlockTypeMissing = not blockType %}
 {% else %}
+	{% set isBlockTypeMissing = false %}
+{% endif %}
+
+{% if blockType is not defined or isBlockTypeMissing %}
 	{% set blockType = blx.blockTypes.getBlockType('PlainText') %}
 {% endif %}
 
@@ -65,6 +70,7 @@
 	name: 'type',
 	options: blockTypes,
 	value: blockType.classHandle,
+	errors: (isBlockTypeMissing ? ["The blocktype class “{class}” could not be found."|t({ class: block.type })] : null),
 	toggle: true
 }) }}
 
