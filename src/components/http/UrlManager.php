@@ -81,7 +81,7 @@ class UrlManager extends \CUrlManager
 		if ($page)
 		{
 			$this->_templateVariables['page'] = $page;
-			return $page->uri;
+			return $page->template;
 		}
 
 		return false;
