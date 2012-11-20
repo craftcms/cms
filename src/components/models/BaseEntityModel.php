@@ -41,7 +41,7 @@ abstract class BaseEntityModel extends BaseModel
 		$blocks = $this->_getBlocks();
 		if (isset($blocks[$name]))
 		{
-			if (!isset($this->_preppedContent[$name]))
+			if (!isset($this->_preppedContent) || !array_key_exists($name, $this->_preppedContent))
 			{
 				$content = $this->_getContent();
 				if (isset($content[$name]))
@@ -54,7 +54,13 @@ abstract class BaseEntityModel extends BaseModel
 				}
 
 				$blockType = blx()->blockTypes->populateBlockType($blocks[$name], $this);
-				$this->_preppedContent[$name] = $blockType->prepValue($value);
+
+				if ($blockType)
+				{
+					$value = $blockType->prepValue($value);
+				}
+
+				$this->_preppedContent[$name] = $value;
 			}
 
 			return $this->_preppedContent[$name];

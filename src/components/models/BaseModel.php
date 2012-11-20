@@ -282,27 +282,22 @@ abstract class BaseModel extends \CModel
 	 */
 	public static function populateModels($data, $index = null)
 	{
-		if ($data)
+		$models = array();
+
+		foreach ($data as $attributes)
 		{
-			$models = array();
+			$model = static::populateModel($attributes);
 
-			foreach ($data as $attributes)
+			if ($index === null)
 			{
-				$model = static::populateModel($attributes);
-
-				if ($index === null)
-				{
-					$models[] = $model;
-				}
-				else
-				{
-					$models[$model->$index] = $model;
-				}
+				$models[] = $model;
 			}
-
-			return $models;
+			else
+			{
+				$models[$model->$index] = $model;
+			}
 		}
 
-		return null;
+		return $models;
 	}
 }

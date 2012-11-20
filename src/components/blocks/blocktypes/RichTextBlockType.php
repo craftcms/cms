@@ -52,6 +52,19 @@ class RichTextBlockType extends BaseBlockType
 	}
 
 	/**
+	 * Preps the block value for use.
+	 *
+	 * @param mixed $value
+	 * @return mixed
+	 */
+	public function prepValue($value)
+	{
+		// Prevent everyone from having to use the |raw filter when outputting RTE content
+		$charset = blx()->templates->getTwig()->getCharset();
+		return new \Twig_Markup($value, $charset);
+	}
+
+	/**
 	 * Returns the block's input HTML.
 	 *
 	 * @param string $name
