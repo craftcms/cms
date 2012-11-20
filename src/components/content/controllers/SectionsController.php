@@ -39,12 +39,12 @@ class SectionsController extends BaseEntityController
 
 		$section = new SectionModel();
 
-		$section->id = blx()->request->getPost('sectionId');
-		$section->name = blx()->request->getPost('name');
-		$section->handle = blx()->request->getPost('handle');
-		$section->hasUrls = blx()->request->getPost('hasUrls');
+		$section->id        = blx()->request->getPost('sectionId');
+		$section->name      = blx()->request->getPost('name');
+		$section->handle    = blx()->request->getPost('handle');
+		$section->hasUrls   = (bool) blx()->request->getPost('hasUrls');
 		$section->urlFormat = blx()->request->getPost('urlFormat');
-		$section->template = blx()->request->getPost('template');
+		$section->template  = blx()->request->getPost('template');
 
 		if (blx()->sections->saveSection($section))
 		{
