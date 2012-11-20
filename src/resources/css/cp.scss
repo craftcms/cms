@@ -42,6 +42,8 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li a#nav-updates:before { content: 'V'; }
 #sidebar .nav ul li a#nav-settings:before { content: 'S'; }
 
+#sidebar #version { position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; font-size: 11px; color: #666; }
+
 /* main */
 #main { position: relative; margin-left: 200px; }
 
