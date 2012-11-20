@@ -22,6 +22,7 @@ if ($tablePrefix)
 	$tablePrefix .= '_';
 }
 
+$packages = explode(',', BLOCKS_PACKAGES);
 $common = require(BLOCKS_APP_PATH.'config/common.php');
 
 return CMap::mergeArray($common, array(
