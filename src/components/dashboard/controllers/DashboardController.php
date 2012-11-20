@@ -103,7 +103,7 @@ class DashboardController extends BaseController
 		$message = blx()->request->getRequiredPost('message');
 
 		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
-		$hsapi = new \HelpSpotAPI(array('helpSpotApiURL' => "http://support.blockscms.com/api/index.php"));
+		$hsapi = new \HelpSpotAPI(array('helpSpotApiURL' => "https://support.blockscms.com/api/index.php"));
 
 		$user = blx()->account->getCurrentUser();
 
@@ -113,6 +113,8 @@ class DashboardController extends BaseController
 			'sEmail' => $user->email,
 			'tNote' => $message
 		));
+
+		print_r($result); die();
 
 		$return = array_merge(array('success' => true), $result);
 
