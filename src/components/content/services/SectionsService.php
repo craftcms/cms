@@ -328,9 +328,10 @@ class SectionsService extends BaseEntityService
 			$oldContentTable = $this->getSectionContentTableName($oldSection);
 		}
 
-		$sectionRecord->name      = $section->name;
-		$sectionRecord->handle    = $section->handle;
-		$sectionRecord->hasUrls   = $section->hasUrls;
+		$sectionRecord->name       = $section->name;
+		$sectionRecord->handle     = $section->handle;
+		$sectionRecord->titleLabel = $section->titleLabel;
+		$sectionRecord->hasUrls    = $section->hasUrls;
 
 		if ($section->hasUrls)
 		{

@@ -18,15 +18,19 @@ class SectionModel extends BaseModel
 		return Blocks::t($this->name);
 	}
 
+	/**
+	 * @return array
+	 */
 	public function defineAttributes()
 	{
-		$attributes['id'] = AttributeType::Number;
-		$attributes['name'] = AttributeType::String;
-		$attributes['handle'] = AttributeType::String;
-		$attributes['hasUrls'] = AttributeType::Bool;
-		$attributes['urlFormat'] = AttributeType::String;
-		$attributes['template'] = AttributeType::String;
-
-		return $attributes;
+		return array(
+			'id'         => AttributeType::Number,
+			'name'       => AttributeType::String,
+			'handle'     => AttributeType::String,
+			'titleLabel' => AttributeType::String,
+			'hasUrls'    => AttributeType::Bool,
+			'urlFormat'  => AttributeType::String,
+			'template'   => AttributeType::String,
+		);
 	}
 }

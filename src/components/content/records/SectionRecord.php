@@ -20,11 +20,12 @@ class SectionRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'name'      => array(AttributeType::Name, 'required' => true),
-			'handle'    => array(AttributeType::Handle, 'maxLength' => 45, 'required' => true),
-			'hasUrls'   => array(AttributeType::Bool, 'default' => true),
-			'urlFormat' => array(AttributeType::String, 'label' => 'URL Format'),
-			'template'  => AttributeType::Template,
+			'name'       => array(AttributeType::Name, 'required' => true),
+			'handle'     => array(AttributeType::Handle, 'maxLength' => 45, 'required' => true),
+			'titleLabel' => array(AttributeType::String, 'required' => true, 'default' => 'Title'),
+			'hasUrls'    => array(AttributeType::Bool, 'default' => true),
+			'urlFormat'  => array(AttributeType::String, 'label' => 'URL Format'),
+			'template'   => AttributeType::Template,
 		);
 	}
 

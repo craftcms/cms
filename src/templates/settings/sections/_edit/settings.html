@@ -41,6 +41,17 @@
 			required: true
 		}) }}
 
+		{{ forms.textField({
+			label: "“Title” Label"|t,
+			instructions: "What do you want the entries’ “Title” fields to be labeled?"|t,
+			id: 'titleLabel',
+			name: 'titleLabel',
+			value: (section is defined ? section.titleLabel : 'Title'),
+			errors: (section is defined ? section.getErrors('titleLabel') : null),
+			required: true,
+			translatable: true
+		}) }}
+
 		{{ forms.checkboxField({
 			label: "Entries in this section have their own URLs"|t,
 			name: 'hasUrls',
