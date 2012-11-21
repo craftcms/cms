@@ -458,7 +458,10 @@ ul.tree,
 input.text,
 textarea.text,
 .text input,
-.text textarea { font-size: 13px; color: #555; box-sizing: border-box; }
+.text textarea { font-size: 13px; color: #555; box-sizing: border-box;
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+}
 
 .field { position: relative; margin: 25px 0; }
 .field .heading { margin-bottom: 4px; }
