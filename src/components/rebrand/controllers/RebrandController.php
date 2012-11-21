@@ -83,8 +83,12 @@ class RebrandController extends BaseController
 			$y2 = blx()->request->getRequiredPost('y2');
 			$source = blx()->request->getRequiredPost('source');
 
-			// Strip off any querystring info.
-			$source = substr($source, 0, strpos($source, '?'));
+			// Strip off any querystring info, if any.
+			if (($qIndex = strpos($source, '?')) !== false)
+			{
+				$source = substr($source, 0, strpos($source, '?'));
+			}
+
 			$imagePath = blx()->path->getTempUploadsPath().$source;
 
 			if (IOHelper::fileExists($imagePath) && blx()->images->setMemoryForImage($imagePath))
