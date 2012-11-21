@@ -29,7 +29,7 @@ class Twig_Parser implements Twig_ParserInterface
     protected $macros;
     protected $env;
     protected $reservedMacroNames;
-    protected $importedFunctions;
+    protected $importedSymbols;
     protected $traits;
     protected $embeddedTemplates = array();
 
@@ -51,6 +51,11 @@ class Twig_Parser implements Twig_ParserInterface
     public function getVarName()
     {
         return sprintf('__internal_%s', hash('sha1', uniqid(mt_rand(), true), false));
+    }
+
+    public function getFilename()
+    {
+        return $this->stream->getFilename();
     }
 
     /**
@@ -88,7 +93,7 @@ class Twig_Parser implements Twig_ParserInterface
         $this->macros = array();
         $this->traits = array();
         $this->blockStack = array();
-        $this->importedFunctions = array(array());
+        $this->importedSymbols = array(array());
         $this->embeddedTemplates = array();
 
         try {
@@ -100,14 +105,18 @@ class Twig_Parser implements Twig_ParserInterface
                 }
             }
         } catch (Twig_Error_Syntax $e) {
-            if (null === $e->getTemplateFile()) {
-                $e->setTemplateFile($this->stream->getFilename());
+            if (!$e->getTemplateFile()) {
+                $e->setTemplateFile($this->getFilename());
+            }
+
+            if (!$e->getTemplateLine()) {
+                $e->setTemplateLine($this->stream->getCurrent()->getLine());
             }
 
             throw $e;
         }
 
-        $node = new Twig_Node_Module(new Twig_Node_Body(array($body)), $this->parent, new Twig_Node($this->blocks), new Twig_Node($this->macros), new Twig_Node($this->traits), $this->embeddedTemplates, $this->stream->getFilename());
+        $node = new Twig_Node_Module(new Twig_Node_Body(array($body)), $this->parent, new Twig_Node($this->blocks), new Twig_Node($this->macros), new Twig_Node($this->traits), $this->embeddedTemplates, $this->getFilename());
 
         $traverser = new Twig_NodeTraverser($this->env, $this->visitors);
 
@@ -144,7 +153,7 @@ class Twig_Parser implements Twig_ParserInterface
                     $token = $this->getCurrentToken();
 
                     if ($token->getType() !== Twig_Token::NAME_TYPE) {
-                        throw new Twig_Error_Syntax('A block must start with a tag name', $token->getLine(), $this->stream->getFilename());
+                        throw new Twig_Error_Syntax('A block must start with a tag name', $token->getLine(), $this->getFilename());
                     }
 
                     if (null !== $test && call_user_func($test, $token)) {
@@ -167,7 +176,7 @@ class Twig_Parser implements Twig_ParserInterface
                                 $error .= sprintf(' (expecting closing tag for the "%s" tag defined near line %s)', $test[0]->getTag(), $lineno);
                             }
 
-                            throw new Twig_Error_Syntax($error, $token->getLine(), $this->stream->getFilename());
+                            throw new Twig_Error_Syntax($error, $token->getLine(), $this->getFilename());
                         }
 
                         $message = sprintf('Unknown tag name "%s"', $token->getValue());
@@ -175,7 +184,7 @@ class Twig_Parser implements Twig_ParserInterface
                             $message = sprintf('%s. Did you mean "%s"', $message, implode('", "', $alternatives));
                         }
 
-                        throw new Twig_Error_Syntax($message, $token->getLine(), $this->stream->getFilename());
+                        throw new Twig_Error_Syntax($message, $token->getLine(), $this->getFilename());
                     }
 
                     $this->stream->next();
@@ -187,7 +196,7 @@ class Twig_Parser implements Twig_ParserInterface
                     break;
 
                 default:
-                    throw new Twig_Error_Syntax('Lexer or parser ended up in unsupported state.', -1, $this->stream->getFilename());
+                    throw new Twig_Error_Syntax('Lexer or parser ended up in unsupported state.', 0, $this->getFilename());
             }
         }
 
@@ -259,7 +268,7 @@ class Twig_Parser implements Twig_ParserInterface
         }
 
         if (in_array($name, $this->reservedMacroNames)) {
-            throw new Twig_Error_Syntax(sprintf('"%s" cannot be used as a macro name as it is a reserved keyword', $name), $node->getLine());
+            throw new Twig_Error_Syntax(sprintf('"%s" cannot be used as a macro name as it is a reserved keyword', $name), $node->getLine(), $this->getFilename());
         }
 
         $this->macros[$name] = $node;
@@ -282,33 +291,33 @@ class Twig_Parser implements Twig_ParserInterface
         $this->embeddedTemplates[] = $template;
     }
 
-    public function addImportedFunction($alias, $name, Twig_Node_Expression $node)
+    public function addImportedSymbol($type, $alias, $name = null, Twig_Node_Expression $node = null)
     {
-        $this->importedFunctions[0][$alias] = array('name' => $name, 'node' => $node);
+        $this->importedSymbols[0][$type][$alias] = array('name' => $name, 'node' => $node);
     }
 
-    public function getImportedFunction($alias)
+    public function getImportedSymbol($type, $alias)
     {
-        foreach ($this->importedFunctions as $functions) {
-            if (isset($functions[$alias])) {
-                return $functions[$alias];
+        foreach ($this->importedSymbols as $functions) {
+            if (isset($functions[$type][$alias])) {
+                return $functions[$type][$alias];
             }
         }
     }
 
     public function isMainScope()
     {
-        return 1 === count($this->importedFunctions);
+        return 1 === count($this->importedSymbols);
     }
 
     public function pushLocalScope()
     {
-        array_unshift($this->importedFunctions, array());
+        array_unshift($this->importedSymbols, array());
     }
 
     public function popLocalScope()
     {
-        array_shift($this->importedFunctions);
+        array_shift($this->importedSymbols);
     }
 
     /**
@@ -360,10 +369,10 @@ class Twig_Parser implements Twig_ParserInterface
             (!$node instanceof Twig_Node_Text && !$node instanceof Twig_Node_BlockReference && $node instanceof Twig_NodeOutputInterface)
         ) {
             if (false !== strpos((string) $node, chr(0xEF).chr(0xBB).chr(0xBF))) {
-                throw new Twig_Error_Syntax('A template that extends another one cannot have a body but a byte order mark (BOM) has been detected; it must be removed.', $node->getLine(), $this->stream->getFilename());
+                throw new Twig_Error_Syntax('A template that extends another one cannot have a body but a byte order mark (BOM) has been detected; it must be removed.', $node->getLine(), $this->getFilename());
             }
 
-            throw new Twig_Error_Syntax('A template that extends another one cannot have a body.', $node->getLine(), $this->stream->getFilename());
+            throw new Twig_Error_Syntax('A template that extends another one cannot have a body.', $node->getLine(), $this->getFilename());
         }
 
         // bypass "set" nodes as they "capture" the output

@@ -24,14 +24,10 @@
  * @package    twig
  * @author     Fabien Potencier <fabien@symfony.com>
  */
-class Twig_Loader_String implements Twig_LoaderInterface
+class Twig_Loader_String implements Twig_LoaderInterface, Twig_ExistsLoaderInterface
 {
     /**
-     * Gets the source code of a template, given its name.
-     *
-     * @param string $name The name of the template to load
-     *
-     * @return string The template source code
+     * {@inheritdoc}
      */
     public function getSource($name)
     {
@@ -39,11 +35,15 @@ class Twig_Loader_String implements Twig_LoaderInterface
     }
 
     /**
-     * Gets the cache key to use for the cache for a given template name.
-     *
-     * @param string $name The name of the template to load
-     *
-     * @return string The cache key
+     * {@inheritdoc}
+     */
+    public function exists($name)
+    {
+        return true;
+    }
+
+    /**
+     * {@inheritdoc}
      */
     public function getCacheKey($name)
     {
@@ -51,10 +51,7 @@ class Twig_Loader_String implements Twig_LoaderInterface
     }
 
     /**
-     * Returns true if the template is still fresh.
-     *
-     * @param string    $name The template name
-     * @param timestamp $time The last modification time of the cached template
+     * {@inheritdoc}
      */
     public function isFresh($name, $time)
     {
