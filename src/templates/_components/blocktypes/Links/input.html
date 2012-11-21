@@ -1,33 +1,35 @@
 {% set minRows = settings.limit ? min(3, settings.limit) : 3 %}
 {% set bufferRows = (minRows > entities|length ? minRows - entities|length : 0) %}
 
-<input type="hidden" name="{{ name }}[]" value="">
+<div class="links">
+	<input type="hidden" name="{{ name }}[]" value="">
 
-<div id="{{ name }}" class="border-box">
-	<table class="data">
-		<tbody>
-			{% for entity in entities %}
-				<tr>
-					<td>
-						<div class="entity" data-id="{{ entity.id }}">
-							{{ entity }}
-							<input type="hidden" name="{{ name }}[]" value="{{ entity.id }}">
-						</div>
-					</td>
-				</tr>
-			{% endfor %}
-			{% if bufferRows %}
-				{% for i in 1..bufferRows %}
-					<tr class="filler">
-						<td></td>
+	<div id="{{ name }}" class="border-box">
+		<table class="data">
+			<tbody>
+				{% for entity in entities %}
+					<tr>
+						<td>
+							<div class="entity" data-id="{{ entity.id }}">
+								{{ entity }}
+								<input type="hidden" name="{{ name }}[]" value="{{ entity.id }}">
+							</div>
+						</td>
 					</tr>
 				{% endfor %}
-			{% endif %}
-		</tbody>
-	</table>
-</div>
+				{% if bufferRows %}
+					{% for i in 1..bufferRows %}
+						<tr class="filler">
+							<td></td>
+						</tr>
+					{% endfor %}
+				{% endif %}
+			</tbody>
+		</table>
+	</div>
 
-<div class="buttons">
-	<div class="btn add icon small{% if settings.limit and entities|length >= settings.limit %} disabled{% endif %}">{{ settings.addLabel }}</div>
-	<div class="btn remove small disabled">{{ settings.removeLabel }}</div>
+	<div class="buttons">
+		<div class="btn add icon small{% if settings.limit and entities|length >= settings.limit %} disabled{% endif %}">{{ settings.addLabel }}</div>
+		<div class="btn remove small disabled">{{ settings.removeLabel }}</div>
+	</div>
 </div>
