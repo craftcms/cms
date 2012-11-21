@@ -29,7 +29,7 @@
 			<ul>
 				{% for handle, item in blx.cp.nav %}
 					<li>
-						<a id="nav-{{ handle }}" href="{{ url(handle) }}" {% if blx.request.segment(1) == handle %}class="sel"{% endif %}>
+						<a id="nav-{{ handle }}" class="{% if item.hasIcon is defined and item.hasIcon %}hasicon{% endif %} {% if blx.request.segment(1) == handle %}sel{% endif %}" href="{{ url(handle) }}">
 							{{- item.name -}}
 							{%- if item.badge is defined and item.badge -%}
 								<span class="badge">{{ item.badge }}</span>
