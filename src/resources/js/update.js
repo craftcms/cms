@@ -29,35 +29,30 @@ if (!updateHandle)
 function getUpdateInfo()
 {
 	// get the name and latest version
-	var url = Blocks.getActionUrl('update/getUpdates');
-
 	var data = {
 		handle: updateHandle
 	};
 
-	$.getJSON(url, data, function(data, textStatus) {
-		if (!data || textStatus != 'success')
+	Blocks.postActionRequest('update/getUpdates', data, function(response) {
+		if (response.success)
 		{
-			showError(Blocks.t('An unknown error occurred.'));
-			return;
-		}
+			if (response.updateInfo)
+			{
+				updateInfo = data.updateInfo;
+				totalUpdates = updateInfo.length;
 
-		if (data.error)
+				updateNext();
+			}
+			else
+			{
+				showSuccess(Blocks.t('You’re already up-to-date.'));
+			}
+		}
+		else
 		{
-			showError(data.error);
-			return;
+			var error = (data.error || Blocks.t('An unknown error occurred.'));
+			showError(error)
 		}
-
-		if (!data.updateInfo)
-		{
-			showSuccess(Blocks.t('You’re already up-to-date.'));
-			return;
-		}
-
-		updateInfo = data.updateInfo;
-		totalUpdates = updateInfo.length;
-
-		updateNext();
 	});
 }
 

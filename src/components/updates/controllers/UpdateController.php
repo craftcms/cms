@@ -37,7 +37,7 @@ class UpdateController extends BaseController
 	{
 		$this->requireAjaxRequest();
 
-		$handle = blx()->request->getRequiredQuery('handle');
+		$handle = blx()->request->getRequiredPost('handle');
 
 		$return = array();
 		$updateInfo = blx()->updates->getUpdates();
@@ -98,7 +98,7 @@ class UpdateController extends BaseController
 				}
 			}
 
-			$r = array('updateInfo' => $return);
+			$r = array('success' => true, 'updateInfo' => $return);
 			$this->returnJson($r);
 		}
 		catch (\Exception $e)
