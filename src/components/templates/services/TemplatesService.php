@@ -14,6 +14,7 @@ class TemplatesService extends BaseApplicationComponent
 	private $_cssFiles = array();
 	private $_jsFiles = array();
 	private $_css = array();
+	private $_hiResCss = array();
 	private $_js = array();
 	private $_translations = array();
 
@@ -188,13 +189,25 @@ class TemplatesService extends BaseApplicationComponent
 	/**
 	 * Prepares CSS for inclusion in the template.
 	 *
-	 * @param           $css
+	 * @param string    $css
 	 * @param bool|null $first
 	 * @return void
 	 */
 	public function includeCss($css, $first = false)
 	{
 		ArrayHelper::prependOrAppend($this->_css, trim($css), $first);
+	}
+
+	/**
+	 * Prepares Hi-res targetted CSS for inclusion in the template.
+	 *
+	 * @param string    $css
+	 * @param bool|null $first
+	 * @return void
+	 */
+	public function includeHiResCss($css, $first = false)
+	{
+		ArrayHelper::prependOrAppend($this->_hiResCss, trim($css), $first);
 	}
 
 	/**
@@ -222,6 +235,18 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			$node = '<link rel="stylesheet" type="text/css" href="'.$url.'"/>';
 			$this->includeHeadNode($node);
+		}
+
+		// Is there any hi-res CSS to include?
+		if (!empty($this->_hiResCss))
+		{
+			$this->includeCss("@media only screen and (-webkit-min-device-pixel-ratio: 1.5),\n" .
+				"only screen and (   -moz-min-device-pixel-ratio: 1.5),\n" .
+				"only screen and (     -o-min-device-pixel-ratio: 3/2),\n" .
+				"only screen and (        min-device-pixel-ratio: 1.5),\n" .
+				"only screen and (        min-resolution: 1.5dppx){\n" .
+				implode("\n\n", $this->_hiResCss)."\n" .
+			'}');
 		}
 
 		// Is there any CSS to include?
