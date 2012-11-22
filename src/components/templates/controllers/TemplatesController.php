@@ -29,29 +29,4 @@ class TemplatesController extends BaseController
 
 		$this->renderRequestedTemplate();
 	}
-
-	/**
-	 * Display the offline template.
-	 */
-	public function actionOffline()
-	{
-		if (($path = blx()->config->get('offlinePath')) !== null)
-		{
-			$templateName = IOHelper::getFileName($path, false);
-		}
-		else
-		{
-			$templateName = '_offline';
-		}
-
-		// Temporarily swap the templates path
-		$originalTemplatesPath = blx()->path->getTemplatesPath();
-		blx()->path->setTemplatesPath(blx()->path->getOfflineTemplatePath());
-
-		$this->renderTemplate($templateName, array(), false);
-
-		// Set it back to the original
-		blx()->path->setTemplatesPath($originalTemplatesPath);
-		blx()->setViewPath(null);
-	}
 }
