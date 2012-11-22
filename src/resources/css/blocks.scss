@@ -577,9 +577,9 @@ textarea.text,
 ul.errors { margin-top: 5px; list-style-type: square; padding-left: 20px; }
 ul.errors li { color: $errorcolor; }
 
-/* locked-up CP dialog */
-.lockedup { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(250,250,250,0.9); }
-.lockedup .pane { top: 50%; margin: -75px auto 0 !important; width: 320px; }
+/* message pages */
+.message-container { position: absolute; z-index: 9999; top: 0; left: 0; width: 100%; height: 100%; background: rgba(250,250,250,0.9); }
+.message-container #message { top: 50%; margin-left: auto; margin-right: auto; width: 320px; }
 
 /* ----------------------------------------
 /*  Retina graphics

@@ -1,4 +1,4 @@
-{% extends "_layouts/base" %}
+{% extends "_layouts/message" %}
 {% set title = "Verify Account"|t %}
 {% import "_includes/forms" as forms %}
 
@@ -7,25 +7,21 @@
 {% if not user %}{% exit 404 %}{% endif %}
 
 
-{% set body %}
-	<div class="lockedup">
-		<div class="pane">
-			<form method="post" action="" accept-charset="UTF-8">
-				{{ forms.passwordField({
-					id: 'newPassword',
-					label: "Choose a new password"|t,
-					name: 'newPassword',
-					errors: (errors is defined ? errors : null)
-				}) }}
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		{{ forms.passwordField({
+			id: 'newPassword',
+			label: "Choose a new password"|t,
+			name: 'newPassword',
+			errors: (errors is defined ? errors : null)
+		}) }}
 
-				<input type="hidden" name="action" value="account/resetPassword">
-				<input type="hidden" name="redirect" value="dashboard">
-				<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
+		<input type="hidden" name="action" value="account/resetPassword">
+		<input type="hidden" name="redirect" value="dashboard">
+		<input type="hidden" name="verificationCode" value="{{ verificationCode }}">
 
-				<div class="buttons">
-					<input class="btn submit" type="submit" value="{{ 'Reset Password'|t }}">
-				</div>
-			</form>
+		<div class="buttons">
+			<input class="btn submit" type="submit" value="{{ 'Reset Password'|t }}">
 		</div>
-	</div>
+	</form>
 {% endset %}
