@@ -399,11 +399,21 @@ class ErrorHandler extends \CErrorHandler
 		}
 		else
 		{
-			$relativePath = IOHelper::getFileName($viewFile, false);
+			$fileName = IOHelper::getFileName($viewFile, false);
+
+			// If this is a site request, make sure the error template exists
+			if (blx()->request->isSiteRequest())
+			{
+				if (!IOHelper::fileExists(blx()->path->getSiteTemplatesPath().$fileName.'.html'))
+				{
+					// Set PathService to use the CP templates path instead
+					blx()->path->setTemplatesPath(blx()->path->getCpTemplatesPath());
+				}
+			}
 
 			try
 			{
-				if (($output = blx()->templates->render($relativePath, $data)) !== false)
+				if (($output = blx()->templates->render($fileName, $data)) !== false)
 				{
 					echo $output;
 				}

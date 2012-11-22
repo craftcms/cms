@@ -363,28 +363,6 @@ class TemplatesService extends BaseApplicationComponent
 		//  - We need to set this for each template request, in case it was changed to a plugin's template path
 		$basePath = blx()->path->getTemplatesPath();
 
-		// If it's an error template we might need to check for a user-defined template on the front-end of the site.
-		if ($this->_isErrorTemplate($name))
-		{
-			$viewPaths = array();
-
-			if (blx()->request->isSiteRequest())
-			{
-				$viewPaths[] = blx()->path->getSiteTemplatesPath();
-			}
-
-			$viewPaths[] = blx()->path->getCpTemplatesPath();
-
-			foreach ($viewPaths as $viewPath)
-			{
-				if (IOHelper::fileExists($viewPath.$name.'.html'))
-				{
-					$basePath = IOHelper::getRealPath($viewPath);
-					break;
-				}
-			}
-		}
-
 		if (($path = $this->_findTemplate($basePath.$name)) !== null)
 		{
 			return $this->_templatePaths[$name] = $path;
@@ -435,18 +413,6 @@ class TemplatesService extends BaseApplicationComponent
 		{
 			throw new \Twig_Error_Loader(Blocks::t('Looks like you try to load a template outside the template folder: {template}.', array('template' => $name)));
 		}
-	}
-
-	/**
-	 * Checks to see if the template name matches error, error400, error500, etc. or exception.
-	 *
-	 * @access private
-	 * @param $name
-	 * @return int
-	 */
-	private function _isErrorTemplate($name)
-	{
-		return preg_match("/^(error([0-9]{3})?|exception)$/uis", $name);
 	}
 
 	/**
