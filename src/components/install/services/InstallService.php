@@ -285,6 +285,7 @@ class InstallService extends BaseApplicationComponent
 			$section->hasUrls = true;
 			$section->urlFormat = 'blog/{slug}';
 			$section->template = 'blog/_entry';
+			$section->titleLabel = 'Title';
 
 			if (blx()->sections->saveSection($section))
 			{
