@@ -1,22 +1,18 @@
-{% extends "_layouts/base" %}
+{% extends "_layouts/message" %}
 {% set title = "Can’t install Blocks"|t %}
 
 
-{% set body %}
-	<div class="lockedup">
-		<div class="pane" style="margin-top: -100px !important;">
-			<h2>{{ title }} :(</h2>
-			<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
+{% set content %}
+	<h2>{{ title }} :(</h2>
+	<p>{{ "Your server doesn’t meet the following requirements to install Blocks:"|t }}</p>
 
-			<ul class="bullets">
-				{% for req in reqCheck.requirements %}
-					{% if req.result == 'failed' %}
-						<li>{{ req.notes }}</li>
-					{% endif %}
-				{% endfor %}
-			</ul>
+	<ul class="bullets">
+		{% for req in reqCheck.requirements %}
+			{% if req.result == 'failed' %}
+				<li>{{ req.notes }}</li>
+			{% endif %}
+		{% endfor %}
+	</ul>
 
-			<p>{{ "Please talk to your host/IT department about upgrading PHP or your server."|t }}</p>
-		</div>
-	</div>
+	<p>{{ "Please talk to your host/IT department about upgrading your server."|t }}</p>
 {% endset %}

@@ -1,16 +1,12 @@
-{% extends "_layouts/base" %}
+{% extends "_layouts/message" %}
 {% set title = "Update Blocks"|t %}
 
 
-{% set body %}
-	<div class="lockedup">
-		<div class="pane">
-			<p>{{ "To complete the Blocks update, some changes must be made to your database."|t }}</p>
-			<div class="buttons">
-				<div id="finishup" class="btn submit">{{ "Finish up"|t }}</div>
-				<div id="spinner" class="spinner hidden"></div>
-			</div>
-		</div>
+{% set content %}
+	<p>{{ "To complete the Blocks update, some changes must be made to your database."|t }}</p>
+	<div class="buttons">
+		<div id="finishup" class="btn submit">{{ "Finish up"|t }}</div>
+		<div id="spinner" class="spinner hidden"></div>
 	</div>
 {% endset %}
 

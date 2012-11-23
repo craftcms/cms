@@ -37,7 +37,9 @@ html, body, #sidebar, #main { height: 100%; }
 #sidebar .nav ul li a.sel { border-right-color: #0c4466; color: #fff; text-shadow: 0 0px 3px rgba(0,0,0,0.5); background: hsl(203, 79%, 45%); }
 #sidebar .nav ul li a.sel .badge { color: #fff; background: #1a1a1a; }
 
-#sidebar .nav ul li a:before { @include icon; content: 'P'; float: left; margin-left: -26px; width: 22px; font-size: 18px; }
+#sidebar .nav ul li a:not(.hasicon):before { @include icon; content: 'P'; float: left; margin-left: -26px; width: 22px; font-size: 18px; }
+#sidebar .nav ul li a.hasicon { background-repeat: no-repeat; background-position: 13px 5px; background-size: 16px 16px; }
+
 #sidebar .nav ul li a#nav-dashboard:before { content: 'D'; }
 #sidebar .nav ul li a#nav-content:before { content: 'C'; }
 #sidebar .nav ul li a#nav-assets:before { content: 'A'; }

@@ -104,7 +104,7 @@ class App extends \CWebApplication
 		else
 		{
 			// Display the offline template for the front-end.
-			$this->runController('templates/offline');
+			throw new HttpException(503);
 		}
 	}
 

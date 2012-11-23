@@ -1,0 +1,15 @@
+{% extends "_layouts/base" %}
+
+{% set body %}
+	<div class="message-container">
+		<div id="message" class="pane">
+			{{ content }}
+		</div>
+
+		<script type="text/javascript">
+			var message = document.getElementById('message'),
+				margin = -Math.round(message.offsetHeight / 2);
+			message.setAttribute('style', 'margin-top: '+margin+'px !important;');
+		</script>
+	</div>
+{% endset %}

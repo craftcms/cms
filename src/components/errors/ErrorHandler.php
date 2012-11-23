@@ -98,33 +98,11 @@ class ErrorHandler extends \CErrorHandler
 				$errorLine = $trace['line'];
 			}
 
-			// If this is a template renderer exception, we don't want to show any stack track information.
-			if ($exception instanceof \Twig_Error_Syntax || $exception instanceof \Twig_Error_Runtime)
+			// If this is a Twig exception, show the template instead
+			if ($exception instanceof \Twig_Error)
 			{
 				// This is the template file for the exception.
 				$templateFile = blx()->templates->findTemplate($exception->getTemplateFile());
-
-				// This is the template file for the request.
-				$stackTraceStartTemplate = blx()->templates->findTemplate(blx()->urlManager->processTemplateMatching());
-
-				$traces = array();
-
-				// If the requested template file is not the same as the template file the exception was thrown in, let's try and build a stack trace.
-				if ($templateFile !== $stackTraceStartTemplate)
-				{
-					if (IOHelper::fileExists($stackTraceStartTemplate))
-					{
-						$traces = $this->processTemplateStackTrace($stackTraceStartTemplate);
-					}
-
-					$traces = $this->prepStackTrace($traces);
-					$traces = array_reverse($traces);
-
-					if ($traces[0]['file'] == $templateFile)
-					{
-						unset($traces[0]);
-					}
-				}
 
 				$this->_error = $data = array(
 					'code' => 500,
@@ -134,7 +112,6 @@ class ErrorHandler extends \CErrorHandler
 					'file' => $templateFile,
 					'line' => $exception->getTemplateLine(),
 					'trace' => '',
-					'traces' => $traces,
 				);
 			}
 			else
@@ -422,11 +399,21 @@ class ErrorHandler extends \CErrorHandler
 		}
 		else
 		{
-			$relativePath = IOHelper::getFileName($viewFile, false);
+			$fileName = IOHelper::getFileName($viewFile, false);
+
+			// If this is a site request, make sure the error template exists
+			if (blx()->request->isSiteRequest())
+			{
+				if (!IOHelper::fileExists(blx()->path->getSiteTemplatesPath().$fileName.'.html'))
+				{
+					// Set PathService to use the CP templates path instead
+					blx()->path->setTemplatesPath(blx()->path->getCpTemplatesPath());
+				}
+			}
 
 			try
 			{
-				if (($output = blx()->templates->render($relativePath, $data)) !== false)
+				if (($output = blx()->templates->render($fileName, $data)) !== false)
 				{
 					echo $output;
 				}
