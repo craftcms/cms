@@ -376,6 +376,8 @@ class PluginsService extends BaseApplicationComponent
 			throw $e;
 		}
 
+		unset($this->_plugins[strtolower($handle)]);
+
 		return true;
 	}
 
