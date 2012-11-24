@@ -9,7 +9,7 @@ class EntriesController extends BaseEntityController
 	/**
 	 * Returns the block service instance.
 	 *
-	 * @return EntryBlocksService
+	 * @return EntriesService
 	 */
 	protected function getService()
 	{

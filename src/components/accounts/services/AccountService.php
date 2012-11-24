@@ -79,7 +79,7 @@ class AccountService extends BaseApplicationComponent
 	public function getCurrentUser()
 	{
 		// Is a user actually logged in?
-		if (blx()->isInstalled() && !empty(blx()->user))
+		if (blx()->isInstalled() && !empty(blx()->user) && blx()->user->isLoggedIn())
 		{
 			if (!isset($this->_currentUser))
 			{
