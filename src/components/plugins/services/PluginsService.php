@@ -215,6 +215,7 @@ class PluginsService extends BaseApplicationComponent
 	public function enablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
+		$lcHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -232,8 +233,6 @@ class PluginsService extends BaseApplicationComponent
 		);
 
 		$plugin->isEnabled = true;
-
-		$lcHandle = strtolower($plugin->getClassHandle());
 		$this->_enabledPlugins[$lcHandle] = $plugin;
 
 		return true;
@@ -249,6 +248,7 @@ class PluginsService extends BaseApplicationComponent
 	public function disablePlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle);
+		$lcHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -266,8 +266,6 @@ class PluginsService extends BaseApplicationComponent
 		);
 
 		$plugin->isEnabled = false;
-
-		$lcHandle = strtolower($plugin->getClassHandle());
 		unset($this->_enabledPlugins[$lcHandle]);
 
 		return true;
@@ -284,6 +282,7 @@ class PluginsService extends BaseApplicationComponent
 	public function installPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
+		$lcHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -307,8 +306,6 @@ class PluginsService extends BaseApplicationComponent
 
 			$plugin->isInstalled = true;
 			$plugin->isEnabled = true;
-
-			$lcHandle = strtolower($plugin->getClassHandle());
 			$this->_enabledPlugins[$lcHandle] = $plugin;
 
 			$this->_importPluginComponents($plugin);
@@ -338,6 +335,7 @@ class PluginsService extends BaseApplicationComponent
 	public function uninstallPlugin($handle)
 	{
 		$plugin = $this->getPlugin($handle, false);
+		$lcHandle = strtolower($plugin->getClassHandle());
 
 		if (!$plugin)
 		{
@@ -352,9 +350,8 @@ class PluginsService extends BaseApplicationComponent
 		if (!$plugin->isEnabled)
 		{
 			// Pretend that the plugin is enabled just for this request
-			$lcHandle = strtolower($plugin->getClassHandle());
+			$plugin->isEnabled = true;
 			$this->_enabledPlugins[$lcHandle] = $plugin;
-
 			$this->_importPluginComponents($plugin);
 		}
 
@@ -376,7 +373,9 @@ class PluginsService extends BaseApplicationComponent
 			throw $e;
 		}
 
-		unset($this->_plugins[strtolower($handle)]);
+		$plugin->isEnabled = false;
+		$plugin->isInstalled = false;
+		unset($this->_enabledPlugins[$lcHandle]);
 
 		return true;
 	}
