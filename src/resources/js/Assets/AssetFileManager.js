@@ -1,3 +1,4 @@
+var b;
 (function($) {
 
 // define the Assets global
@@ -11,7 +12,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 // -------------------------------------------
 
     /**
-     * File Manager
+     * File Manager.
      */
     Assets.FileManager = Blocks.Base.extend({
         init: function($manager, options) {
@@ -34,7 +35,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.$left = $('> .nav', this.$manager);
             this.$right = $('> .asset-content', this.$manager);
 
-            this.$status = $('> .assets-fm-status', this.$rightFooter);
+            this.$sources = $('> .assets-sources', this.$left);
 
             this.$folderContainer = $('> .folder-container', this.$right);
 
@@ -52,8 +53,8 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 
             this.currentState = {
                 view: 'thumbs',
-                current_folder: null,
-                current_source: null
+                current_source: null,
+                current_folder: null
             };
 
             this.storageKey = 'Blocks_Assets_' + this.options.namespace;
@@ -115,9 +116,30 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
                 onComplete:   $.proxy(this, '_onUploadComplete')
             });
 
-            // Load the folder
-            this.reloadFolderView();
+            if (this.currentState.current_source == null) {
+                this.storeState('current_source', this.$sources.find('a[data-source]').attr('data-source'));
+            }
 
+            this.selectSource(this.$sources.find('a[data-source=' + this.currentState.current_source + ']'));
+
+            this.$sources.find('a').click($.proxy(function (event) {
+                this.storeState('current_source', $(event.target).attr('data-source'));
+                this.selectSource($(event.target));
+            }, this));
+        },
+
+        /**
+         * Select the source.
+         *
+         * @param sourceElement jQuery object with the link element
+         */
+        selectSource: function (sourceElement) {
+
+            this.$sources.find('a').removeClass('sel');
+            sourceElement.addClass('sel');
+            this.storeState('current_folder', sourceElement.attr('data-folder'));
+
+            this.reloadFolderView();
 
             this.uploader.setParams({
                 folder_id: this.getCurrentFolderId()
@@ -129,7 +151,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
         },
 
         /**
-         * Load the folder view
+         * Load the folder view.
          */
         loadFolderView: function (folderId) {
 
@@ -156,19 +178,25 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
         },
 
         /**
-         * Gets current folder id - if none is set in the current state, then grabs it from the $folderContainer attribute
+         * Gets current folder id - if none is set in the current state, then grabs it from the $folderContainer attribute.
+         * If that is empty, then grabs one from the selected source.
+         *
          * @return mixed
          */
         getCurrentFolderId: function () {
-            // TODO: we should remember the state here, but for that we have to make multiple sources work for navigation first
-            //if (this.currentState.current_folder == null || typeof this.currentState.current_folder == "udefined") {
+            if (this.currentState.current_folder == null || typeof this.currentState.current_folder == "udefined") {
                 this.storeState('current_folder', this.$folderContainer.attr('data-folder'));
-            //}
+            }
+            if (this.currentState.current_folder == 0) {
+                this.storeState('current_folder', this.$sources.find('a[data-source=' + this.currentState.current_source + ']').attr('data-folder'));
+            }
+
             return this.currentState.current_folder;
         },
 
         /**
-         * Set the upload folder parameter for uploader
+         * Set the upload folder parameter for uploader.
+         *
          * @param folderId
          * @private
          */
