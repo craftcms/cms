@@ -67,7 +67,7 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 			id = $row.attr(this.settings.idAttribute),
 			name = $row.attr(this.settings.nameAttribute);
 
-		if (confirm(Blocks.t(this.settings.confirmDeleteMessage, { name: name })))
+		if (this.confirmDeleteObject($row))
 		{
 			Blocks.postActionRequest(this.settings.deleteAction, { id: id }, $.proxy(function(response) {
 				if (response.success)
@@ -89,6 +89,12 @@ Blocks.ui.AdminTable = Blocks.Base.extend({
 				}
 			}, this));
 		}
+	},
+
+	confirmDeleteObject: function($row)
+	{
+		var name = $row.attr(this.settings.nameAttribute);
+		return confirm(Blocks.t(this.settings.confirmDeleteMessage, { name: name }));
 	}
 }, {
 	defaults: {
