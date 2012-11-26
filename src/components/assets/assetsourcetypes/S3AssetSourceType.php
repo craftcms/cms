@@ -224,12 +224,16 @@ class S3AssetSourceType extends BaseAssetSourceType
 			$fileModel->size = $indexEntryModel->size;
 
 			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $uriPath);
-			$fileModel->dateModified = $fileInfo['time'];
 
-			if ($fileModel->kind == 'image')
+			if ($fileModel->kind == 'image' && $fileModel->dateModified != $fileInfo['time'])
 			{
-				// TODO: Download the image from S3 and get it's dimensions
+
+				$targetPath = blx()->path->getAssetsImageSourcePath() . $fileModel->filename;
+				$this->_s3->getObject($settings->bucket, $indexEntryModel->uri, $targetPath);
+				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
+
+			$fileModel->dateModified = $fileInfo['time'];
 
 			blx()->assets->storeFile($fileModel);
 		}
