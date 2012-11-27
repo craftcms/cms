@@ -48,8 +48,8 @@ class m121126_225547_cascade_deletes extends \CDbMigration
 		blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id', 'CASCADE');
 
 		// Drop the old pluginId FK from blx_widgets while we're at it
-		//blx()->db->createCommand()->dropForeignKey('widgets_plugin_fk', 'widgets');
-		//blx()->db->createCommand()->dropColumn('widgets', 'pluginId');
+		blx()->db->createCommand()->dropForeignKey('widgets_plugin_fk', 'widgets');
+		blx()->db->createCommand()->dropColumn('widgets', 'pluginId');
 
 		return true;
 	}
