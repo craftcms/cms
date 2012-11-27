@@ -118,7 +118,7 @@ td.right { float: none; text-align: right; }
 .settings-btn { display: block; width: 16px; height: 16px; background: url(../images/settings-btn.png); cursor: pointer; }
 .settings-btn.sel { background-position: 0 100%; }
 
-.error { color: $errorcolor; }
+.error { color: $errorcolor !important; }
 
 .move { display: inline-block; cursor: move; }
 .move:before { content: 'm'; color: #ccc; }

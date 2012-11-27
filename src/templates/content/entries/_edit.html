@@ -53,6 +53,9 @@
 {% endif %}
 
 
+{% set hasSettingsErrors = (entry is defined and (entry.getErrors('slug') or entry.getErrors('postDate') or entry.getErrors('expiryDate') or entry.getErrors('tags'))) %}
+
+
 {% set header %}
 	<h1>{{ title|raw }}</h1>
 
@@ -72,7 +75,7 @@
 
 {% set tabs %}
 	<li><a class="edit icon active" data-target="entry-content">{{ "Content"|t }}</a></li>
-	<li><a class="settings icon" data-target="entry-settings">{{ "Settings"|t }}</a></li>
+	<li><a class="settings icon{% if hasSettingsErrors %} error{% endif %}" data-target="entry-settings">{{ "Settings"|t }}</a></li>
 {% endset %}
 
 

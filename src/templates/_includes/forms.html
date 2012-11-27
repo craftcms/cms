@@ -17,8 +17,7 @@
 	(config.class ? config.class : null),
 	(config.hint ? 'nicetext' : null),
 	(config.type == 'password' ? 'password' : null),
-	(config.size is defined and config.size ? null : 'fullwidth'),
-	(config.errors ? 'error' : null)
+	(config.size is defined and config.size ? null : 'fullwidth')
 ]|filter|join(' ') }}{% endmacro %}
 
 
