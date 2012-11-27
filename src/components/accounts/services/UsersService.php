@@ -153,7 +153,7 @@ class UsersService extends BaseEntityService
 		}
 
 		$result = $query->queryAll();
-		return UserModel::populateModels($result, 'id');
+		return UserModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**

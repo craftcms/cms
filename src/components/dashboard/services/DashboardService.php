@@ -41,15 +41,16 @@ class DashboardService extends BaseApplicationComponent
 	/**
 	 * Returns the dashboard widgets for the current user.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getUserWidgets()
+	public function getUserWidgets($indexBy = null)
 	{
 		$widgetRecords = WidgetRecord::model()->ordered()->findAllByAttributes(array(
 			'userId' => blx()->account->getCurrentUser()->id
 		));
 
-		return WidgetModel::populateModels($widgetRecords, 'id');
+		return WidgetModel::populateModels($widgetRecords, $indexBy);
 	}
 
 	/**

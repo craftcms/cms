@@ -94,12 +94,13 @@ class PagesService extends BaseEntityService
 	/**
 	 * Gets all pages.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getAllPages()
+	public function getAllPages($indexBy = null)
 	{
 		$pageRecords = PageRecord::model()->ordered()->findAll();
-		return PageModel::populateModels($pageRecords, 'id');
+		return PageModel::populateModels($pageRecords, $indexBy);
 	}
 
 	/**

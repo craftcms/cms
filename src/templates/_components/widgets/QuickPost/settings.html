@@ -24,7 +24,7 @@
 
 {% if blx.hasPackage('PublishPro') %}
 
-	{% set sections = blx.sections.find %}
+	{% set sections = blx.sections.indexBy('id').find %}
 
 	{{ forms.selectField({
 		label: "Section"|t,

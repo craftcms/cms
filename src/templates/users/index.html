@@ -1,8 +1,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Users"|t %}
 
-{% set groups = blx.userGroups.getAllGroups %}
-
 {% set statuses = { active: 'on', pending: '', locked: 'pending', suspended: 'off' } %}
 {% set showStatus = true %}
 
@@ -36,7 +34,7 @@
 		<ul>
 			<li><a href="{{ url('users') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>
 
-			{% for group in groups %}
+			{% for group in blx.userGroups.getAllGroups %}
 				<li><a href="{{ url('users/' ~ group.handle) }}" {% if filter == group.handle %}class="sel"{% endif %}>{{ group.name|t }}</a></li>
 			{% endfor %}
 

@@ -56,11 +56,12 @@ class AssetsVariable
 	/**
 	 * Returns all asset sources.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function sources()
+	public function getAllSources($indexBy = null)
 	{
-		return blx()->assetSources->getAllSources();
+		return blx()->assetSources->getAllSources($indexBy);
 	}
 
 	/**

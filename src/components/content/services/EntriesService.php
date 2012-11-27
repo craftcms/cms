@@ -82,7 +82,7 @@ class EntriesService extends BaseEntityService
 		}
 
 		$result = $query->queryAll();
-		return EntryModel::populateModels($result, 'id');
+		return EntryModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**

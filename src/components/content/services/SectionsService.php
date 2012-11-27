@@ -153,7 +153,7 @@ class SectionsService extends BaseEntityService
 		}
 
 		$result = $query->queryAll();
-		return SectionModel::populateModels($result, 'id');
+		return SectionModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**

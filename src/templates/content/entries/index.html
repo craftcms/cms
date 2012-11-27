@@ -47,7 +47,7 @@
 							</ul>
 						</div>
 					{% else %}
-						<a class="btn submit add icon" href="{{ url('content/'~sections[sections|keys[0]].handle~'/new') }}">{{ "New Entry"|t }}</a>
+						<a class="btn submit add icon" href="{{ url('content/'~sections[0].handle~'/new') }}">{{ "New Entry"|t }}</a>
 					{% endif %}
 				{% else %}
 					<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>

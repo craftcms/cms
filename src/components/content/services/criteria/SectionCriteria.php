@@ -11,7 +11,8 @@ class SectionCriteria extends BaseCriteria
 	public $hasUrls = false;
 	public $order = 'name asc';
 	public $offset;
-	public $limit = 100;
+	public $limit;
+	public $indexBy;
 
 	/**
 	 * Returns all sections that match the criteria.

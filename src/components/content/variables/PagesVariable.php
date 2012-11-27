@@ -63,11 +63,12 @@ class PagesVariable
 	/**
 	 * Gets all pages.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getAllPages()
+	public function getAllPages($indexBy = null)
 	{
-		return blx()->pages->getAllPages();
+		return blx()->pages->getAllPages($indexBy);
 	}
 
 	/**
