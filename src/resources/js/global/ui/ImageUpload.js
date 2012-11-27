@@ -1,6 +1,6 @@
 (function($) {
 
-    var $modalContainerDiv;
+    var $modalContainerDiv = null;
 
     /**
      * Image Upload tool.
@@ -54,10 +54,8 @@
 
         _imageHandler: null,
 
-
         init: function(settings) {
             settings = $.extend(this._defaultSettings, settings);
-            $modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Blocks.$body);
             this._imageHandler = new ImageHandler(settings);
         }
     }),
@@ -77,6 +75,11 @@
                 params:     this._settings.postParameters,
                 multiple:   false,
                 onComplete: function (fileId, fileName, response) {
+
+                    if ($modalContainerDiv == null) {
+                        $modalContainerDiv = $('<div class="modal"></div>').addClass(settings.modalClass).appendTo(Blocks.$body);
+                    }
+                    
                     if (response.html) {
                         $modalContainerDiv.empty().append(response.html);
                         if (!this.modal) {
