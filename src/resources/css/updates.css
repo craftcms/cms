@@ -7,6 +7,7 @@
 #no-system-updates,
 #system-updates,
 #no-plugin-updates,
+#update-error,
 #plugin-updates { display: none; }
 
 #updates td.notes { border-top: none; padding-bottom: 15px; }
@@ -17,3 +18,5 @@
 #updates td.notes .category.added { background: #1888cd; }
 #updates td.notes .category.improved { background: #00b007; }
 #updates td.notes .category.fixed { background: #ff471a; }
+
+#update-error { padding-top: 120px; }
