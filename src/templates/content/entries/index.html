@@ -76,37 +76,43 @@
 			</ul>
 		</nav>
 
+		{% set entries = blx.entries.find(params) %}
+
 		<div>
 			<div class="toolbar">
 				<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
 			</div>
 
-			{% if blx.entries.total(params) %}
+			<p id="noentries"{% if entries|length %} class="hidden"{% endif %}>
+				{{ "No entries exist yet."|t }}
+			</p>
+
+			{% if entries|length %}
 				{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
 				{% set colWidth = round(100 / totalCols) %}
-				<table class="data">
+				<table id="entries" class="data">
 					<thead>
 						<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
 						<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
 						{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
 						{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
+						<td class="thin"></td>
 					</thead>
 					<tbody>
-						{% for entry in blx.entries.find(params) %}
+						{% for entry in entries %}
 							{% if blx.hasPackage('PublishPro') %}
 								{% set entrySection = sections[entry.sectionId] %}
 							{% endif %}
-							<tr>
+							<tr data-id="{{ entry.id }}" data-name="{{ entry.title|t }}">
 								<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
 								<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
 								{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
 								{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+								<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
 							</tr>
 						{% endfor %}
 					</tbody>
 				</table>
-			{% else %}
-				<p>{{ "No entries exist yet."|t }}</p>
 			{% endif %}
 		</div>
 	{% else %}
@@ -116,3 +122,13 @@
 		</p>
 	{% endif %}
 {% endset %}
+
+
+{% set js %}
+	new Blocks.ui.AdminTable({
+		tableSelector: '#entries',
+		noObjectsSelector: '#noentries',
+		deleteAction: 'entries/deleteEntry'
+	});
+{% endset %}
+{% includeJs js %}
