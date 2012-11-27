@@ -52,13 +52,11 @@
 }) }}
 
 {% if blx.hasPackage('Language') and canBeTranslatable is defined and canBeTranslatable %}
-	{% if blx.systemSettings.languages %}
-		{{ forms.checkboxField({
-			label: "This block is translatable"|t,
-			name: 'translatable',
-			checked: (block ? block.translatable : false)
-		}) }}
-	{% endif %}
+	{{ forms.checkboxField({
+		label: "This block is translatable"|t,
+		name: 'translatable',
+		checked: (block ? block.translatable : false)
+	}) }}
 {% endif %}
 
 {% set blockTypes = blx.blockTypes.getAllBlockTypes %}
