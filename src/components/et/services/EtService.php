@@ -11,7 +11,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function ping()
 	{
-		$et = new Et(ElliottEndpoints::Ping);
+		$et = new Et(ElliottEndPoints::Ping);
 		$response = $et->phoneHome();
 
 		return $response;
@@ -23,7 +23,7 @@ class EtService extends BaseApplicationComponent
 	 */
 	public function check($updateInfo)
 	{
-		$et = new Et(ElliottEndpoints::CheckForUpdates);
+		$et = new Et(ElliottEndPoints::CheckForUpdates);
 		$et->getModel()->data = $updateInfo;
 		$etModel = $et->phoneHome();
 
@@ -37,48 +37,26 @@ class EtService extends BaseApplicationComponent
 	}
 
 	/**
-	 * @param $localBuild
-	 * @param $localVersion
 	 * @param $downloadPath
 	 * @return bool
 	 */
-	public function downloadUpdate($localBuild, $localVersion, $downloadPath)
+	public function downloadUpdate($downloadPath)
 	{
-		$params = array(
-			'localBuild' => $localBuild,
-			'localVersion' => $localVersion,
-		);
+		$et = new Et(ElliottEndPoints::DownloadUpdate, 60);
 
-		$et = new Et(ElliottEndpoints::DownloadUpdate, 60);
-		$et->setDestinationFileName($downloadPath);
-		$et->getModel()->data = $params;
-
-		if ($et->phoneHome())
+		if (IOHelper::folderExists($downloadPath))
 		{
-			return true;
+			$downloadPath .= StringHelper::UUID().'.zip';
+		}
+
+		$et->setDestinationFileName($downloadPath);
+
+		if (($fileName = $et->phoneHome()) !== null)
+		{
+			return $fileName;
 		}
 
 		return false;
-	}
-
-	/**
-	 * @param $version
-	 * @param $build
-	 * @return null
-	 */
-	public function getReleaseMD5($version, $build)
-	{
-		$params = array(
-			'versionNumber' => $version,
-			'buildNumber' => $build,
-		);
-
-		$et = new Et(ElliottEndpoints::GetAppReleaseFileMD5);
-		$et->getModel()->data = $params;
-		$package = $et->phoneHome();
-
-		$sourceMD5 = $package->data;
-		return $sourceMD5;
 	}
 
 	/**
@@ -114,6 +92,8 @@ class EtService extends BaseApplicationComponent
 	{
 		$updateModel = UpdateModel::populateModel($etModel->data);
 		$blocksUpdateModel = BlocksUpdateModel::populateModel($etModel->data['blocks']);
+		$blocksNewReleases = BlocksNewReleaseModel::populateModels($blocksUpdateModel->releases);
+		$blocksUpdateModel->releases = $blocksNewReleases;
 
 		$pluginUpdateModels = array();
 
@@ -121,7 +101,11 @@ class EtService extends BaseApplicationComponent
 		{
 			foreach ($etModel->data['plugins'] as $key => $pluginAttributes)
 			{
-				$pluginUpdateModels[$key] = PluginUpdateModel::populateModel($pluginAttributes);
+				$pluginUpdateModel = PluginUpdateModel::populateModel($pluginAttributes);
+				$pluginNewReleases = PluginNewReleaseModel::populateModel($pluginUpdateModel->releases);
+				$pluginUpdateModel->releases = $pluginNewReleases;
+
+				$pluginUpdateModels[$key] = PluginUpdateModel::populateModel($pluginUpdateModel);
 			}
 		}
 

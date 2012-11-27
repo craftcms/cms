@@ -25,7 +25,7 @@ class UpdateHelper
 			}
 
 			$rowData = explode(';', $row);
-			$file = IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]);
+			$file = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
 
 			if (IOHelper::fileExists($file.'.bak'))
 			{
@@ -60,8 +60,8 @@ class UpdateHelper
 
 				$rowData = explode(';', $row);
 
-				$destFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators(blx()->path->getAppPath().'../../'.$rowData[0]));
-				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/'.$rowData[0]));
+				$destFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]));
+				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$rowData[0]));
 
 				switch (trim($rowData[1]))
 				{
@@ -76,8 +76,12 @@ class UpdateHelper
 					case PatchManifestFileAction::Remove:
 					{
 						// rename in case we need to rollback.  the cleanup will remove the backup files.
-						Blocks::log('Renaming file for delete: '.$destFile, \CLogger::LEVEL_INFO);
-						IOHelper::rename($destFile, $destFile.'.bak');
+						if ($destFile)
+						{
+							Blocks::log('Renaming file for delete: '.$destFile, \CLogger::LEVEL_INFO);
+							IOHelper::rename($destFile, $destFile.'.bak');
+						}
+
 						break;
 					}
 
@@ -122,7 +126,7 @@ class UpdateHelper
 	 */
 	public static function isManifestMigrationLine($line)
 	{
-		if (strpos($line, '/migrations/') !== false)
+		if (strpos($line, 'migrations/') !== false)
 		{
 			return true;
 		}
@@ -146,24 +150,9 @@ class UpdateHelper
 			array_pop($manifestFileData);
 		}
 
+		$manifestFileData = array_map('trim', $manifestFileData);
+
 		return $manifestFileData;
-	}
-
-	/**
-	 * @static
-	 * @param $downloadPath
-	 * @return mixed
-	 */
-	public static function getTempFolderForPackage($downloadPath)
-	{
-		$tempPath = IOHelper::normalizePathSeparators(IOHelper::getFolderName($downloadPath, true).'/'.IOHelper::getFileName($downloadPath, false.'_temp'));
-
-		if (IOHelper::folderExists($tempPath))
-		{
-			IOHelper::deleteFolder($tempPath);
-		}
-
-		return IOHelper::createFolder($tempPath);
 	}
 
 	/**

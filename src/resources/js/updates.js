@@ -94,14 +94,14 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
  				if (response.blocks.manualUpdateRequired)
  				{
  					var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
- 					$btn.on('click', function() {
+					$btn.on('click', function() {
  						var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
  						$('<iframe/>', { src: src }).appendTo(Blocks.$body).hide();
  					});
  				}
 				else
 				{
-					$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Update')+'</a>');
+					$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks?handle=Blocks')+'">'+Blocks.t('Update')+'</a>');
 				}
 
 				var $tr = $('<tr/>').appendTo($tbody),

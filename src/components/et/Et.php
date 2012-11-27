@@ -109,7 +109,19 @@ class Et
 			{
 				if (isset($this->_options['filename']))
 				{
-					return true;
+					$fileName = IOHelper::getFileName($this->_options['filename'], false);
+
+					// If the file name is a UUID, we know it was temporarily set and they want to use the name of the file that was on the sending server.
+					if (StringHelper::isUUID($fileName))
+					{
+						$contentDisposition = $response->headers->offsetGet('content-disposition');
+						preg_match("/\"(.*)\"/us", $contentDisposition, $matches);
+						$fileName = $matches[1];
+
+						IOHelper::rename($this->_options['filename'], IOHelper::getFolderName($this->_options['filename']).$fileName);
+					}
+
+					return $fileName;
 				}
 
 				$etModel = blx()->et->decodeEtValues($response->body);
