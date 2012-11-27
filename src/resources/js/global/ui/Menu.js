@@ -113,7 +113,7 @@ Blocks.ui.Menu = Blocks.Base.extend({
 			btnWidth = $btn.outerWidth(),
 			css = {
 				top: btnOffset.top + $btn.outerHeight(),
-				minWidth: btnWidth
+				minWidth: (btnWidth - 32)
 			};
 
 		if (this.$container.attr('data-align') == 'right')
