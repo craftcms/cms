@@ -33,72 +33,86 @@
 
 
 {% set content %}
-	<nav class="nav">
-		{% if not blx.hasPackage('PublishPro') %}
+	{% if not blx.hasPackage('PublishPro') or sections|length %}
+		<nav class="nav">
 			<div class="buttons">
-				<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
-			</div>
-		{% endif %}
-
-		<ul>
-			<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
-
-			{% if blx.hasPackage('PublishPro') %}
-				{% for section in sections %}
-					<li><a href="{{ url('content/' ~ section.handle) }}" {% if filter == section.handle %}class="sel"{% endif %}>{{ section.name|t }}</a></li>
-				{% endfor %}
-			{% endif %}
-
-			{% for status, class in statuses %}
-				{% set total = blx.entries.status(status).total %}
-				{% if total %}
-					<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
+				{% if blx.hasPackage('PublishPro') %}
+					{% if sections|length > 1 %}
+						<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
+						<div class="menu">
+							<ul>
+								{% for section in sections %}
+									<li><a href="{{ url('content/' ~ section.handle ~ '/new') }}">{{ section.name|t }}</a></li>
+								{% endfor %}
+							</ul>
+						</div>
+					{% else %}
+						<a class="btn submit add icon" href="{{ url('content/'~sections[sections|keys[0]].handle~'/new') }}">{{ "New Entry"|t }}</a>
+					{% endif %}
+				{% else %}
+					<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
 				{% endif %}
-			{% endfor %}
-
-			{% if blx.entries.archived(true).total %}
-				<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
-			{% endif %}
-		</ul>
-	</nav>
-
-	<div>
-		<div class="toolbar">
-			<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
-		</div>
-
-		{% if blx.entries.total(params) %}
-			{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
-			{% set colWidth = round(100 / totalCols) %}
-			<table class="data">
-				<thead>
-					<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
-					<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
-					{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
-					{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
-				</thead>
-				<tbody>
-					{% for entry in blx.entries.find(params) %}
-						{% if blx.hasPackage('PublishPro') %}
-							{% set entrySection = sections[entry.sectionId] %}
-						{% endif %}
-						<tr>
-							<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
-							<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
-							{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
-							{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
-						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
-		{% else %}
-			<p>{{ "No entries exist yet."|t }}</p>
-		{% endif %}
-
-		{% if blx.hasPackage('PublishPro') and not showSection %}
-			<div class="buttons">
-				<a class="btn submit add icon" href="{{ url('content/' ~ filter ~ '/new') }}">{{ "New Entry"|t }}</a>
 			</div>
-		{% endif %}
-	</div>
+
+			<ul>
+				<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
+
+				{% if blx.hasPackage('PublishPro') %}
+					{% for section in sections %}
+						<li><a href="{{ url('content/' ~ section.handle) }}" {% if filter == section.handle %}class="sel"{% endif %}>{{ section.name|t }}</a></li>
+					{% endfor %}
+				{% endif %}
+
+				{% for status, class in statuses %}
+					{% set total = blx.entries.status(status).total %}
+					{% if total %}
+						<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
+					{% endif %}
+				{% endfor %}
+
+				{% if blx.entries.archived(true).total %}
+					<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
+				{% endif %}
+			</ul>
+		</nav>
+
+		<div>
+			<div class="toolbar">
+				<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
+			</div>
+
+			{% if blx.entries.total(params) %}
+				{% set totalCols = 2 + (showStatus ? 1 : 0) + (showSection ? 1 : 0) %}
+				{% set colWidth = round(100 / totalCols) %}
+				<table class="data">
+					<thead>
+						<th scope="col" width="{{ colWidth }}%">{{ "Title"|t }}</th>
+						<th scope="col" width="{{ colWidth }}%">{{ "Slug"|t }}</th>
+						{% if showSection %}<th scope="col" width="{{ colWidth }}%">{{ "Section"|t }}</th>{% endif %}
+						{% if showStatus %}<th scope="col" width="{{ colWidth }}%">{{ "Status"|t }}</th>{% endif %}
+					</thead>
+					<tbody>
+						{% for entry in blx.entries.find(params) %}
+							{% if blx.hasPackage('PublishPro') %}
+								{% set entrySection = sections[entry.sectionId] %}
+							{% endif %}
+							<tr>
+								<th scope="row"><a href="{{ entry.cpEditUrl }}">{{ entry.title }}</a></th>
+								<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
+								{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
+								{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% else %}
+				<p>{{ "No entries exist yet."|t }}</p>
+			{% endif %}
+		</div>
+	{% else %}
+		<p class="centeralign">
+			{{ "No sections exist yet."|t }}
+			<a class="go" href="{{ url('settings/sections/new') }}">{{ "Create the first one"|t }}</a>
+		</p>
+	{% endif %}
 {% endset %}
