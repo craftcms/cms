@@ -75,9 +75,11 @@ class RichTextBlockType extends BaseBlockType
 	{
 		blx()->templates->includeCssResource('lib/redactor/redactor.css');
 		blx()->templates->includeJsResource('lib/redactor/redactor.min.js');
+		blx()->templates->includeJsResource('lib/redactor/plugins/fullscreen.js');
 
 		$config = array(
-			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table')
+			'buttons' => array('html','|','formatting','|','bold','italic','|','unorderedlist','orderedlist','|','link','image','video','table'),
+			'plugins' => array('fullscreen'),
 		);
 
 		if ($this->getSettings()->minHeight)
