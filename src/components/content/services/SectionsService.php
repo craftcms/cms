@@ -419,32 +419,27 @@ class SectionsService extends BaseEntityService
 	*/
 	public function deleteSectionById($sectionId)
 	{
-		$sectionRecord = $this->_getSectionRecordById($sectionId);
-
 		$transaction = blx()->db->beginTransaction();
 		try
 		{
-			// Delete the entire content table
-			$section = SectionModel::populateModel($sectionRecord);
+			// First delete the entries (this will take care of associated links, etc.)
+			$entryIds = blx()->db->createCommand()
+				->select('id')
+				->from('entries')
+				->where(array('sectionId' => $sectionId))
+				->queryColumn();
 
-			// Delete the entries and titles
-			// TODO: Fix SQL
-			blx()->db->createCommand()
-				->setText('delete e, t from {{entries}} e inner join {{entrytitles}} t
-				           where e.id = t.entryId and e.sectionId = '.$section->id)
-				->query();
-
-			// Delete the entry blocks
-			blx()->db->createCommand()
-				->delete('entryblocks', array('sectionId' => $sectionId));
-
-			// Delete the section
-			$sectionRecord->delete();
+			blx()->entries->deleteEntryById($entryIds);
 
 			// Delete the content table.
+			$sectionRecord = $this->_getSectionRecordById($sectionId);
+			$section = SectionModel::populateModel($sectionRecord);
 			$contentRecord = new SectionContentRecord($section);
 			$contentRecord->dropForeignKeys();
 			$contentRecord->dropTable();
+
+			// Delete the section
+			blx()->db->createCommand()->delete('sections', array('id' => $sectionId));
 
 			$transaction->commit();
 		}

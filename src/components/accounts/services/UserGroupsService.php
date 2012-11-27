@@ -133,26 +133,11 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Deletes a user group by its ID.
 	 *
 	 * @param int $groupId
-	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteGroupById($groupId)
 	{
-		$groupRecord = $this->_getGroupRecordById($groupId);
-		$group = UserGroupModel::populateModel($groupRecord);
-
-		$transaction = blx()->db->beginTransaction();
-		try
-		{
-			$groupRecord->delete();
-			$transaction->commit();
-		}
-		catch (\Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		blx()->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
 	}
 

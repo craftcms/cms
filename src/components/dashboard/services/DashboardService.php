@@ -129,9 +129,7 @@ class DashboardService extends BaseApplicationComponent
 	 */
 	public function deleteUserWidgetById($widgetId)
 	{
-		$widgetRecord = $this->_getUserWidgetRecordById($widgetId);
-		$widgetRecord->delete();
-
+		blx()->db->createCommand()->delete('widgets', array('id' => $widgetId));
 		return true;
 	}
 

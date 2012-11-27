@@ -21,7 +21,7 @@ class InstallService extends BaseApplicationComponent
 			throw new Exception(Blocks::t('Blocks is already installed.'));
 		}
 
-		$records = $this->_findInstallableRecords();
+		$records = $this->findInstallableRecords();
 
 		// Start the transaction
 		$transaction = blx()->db->beginTransaction();
@@ -60,10 +60,9 @@ class InstallService extends BaseApplicationComponent
 	/**
 	 * Finds installable records from the models folder.
 	 *
-	 * @access private
 	 * @return array
 	 */
-	private function _findInstallableRecords()
+	public function findInstallableRecords()
 	{
 		$records = array();
 		$componentsDir = IOHelper::getFolder(blx()->path->getComponentsPath());
@@ -150,8 +149,8 @@ class InstallService extends BaseApplicationComponent
 				'userId'  => array('column' => ColumnType::Int, 'required' => true)
 			));
 
-			blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id');
-			blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id');
+			blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id', 'CASCADE');
+			blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id', 'CASCADE');
 		}
 	}
 

@@ -59,7 +59,7 @@ class SectionContentRecord extends BaseEntityRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
+			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 

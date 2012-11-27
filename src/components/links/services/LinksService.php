@@ -159,6 +159,58 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Deletes any links involving a specified entity(s) by its type and ID(s).
+	 *
+	 * @param string $type
+	 * @param int|array $entityId
+	 * @return bool
+	 */
+	public function deleteLinksForEntity($type, $entityId)
+	{
+		// Get all link criteria involving this entity type
+		$leftCriteriaIds = blx()->db->createCommand()
+			->select('id')
+			->from('linkcriteria')
+			->where(array('leftEntityType' => $type))
+			->queryColumn();
+
+		$rightCriteriaIds = blx()->db->createCommand()
+			->select('id')
+			->from('linkcriteria')
+			->where(array('rightEntityType' => $type))
+			->queryColumn();
+
+		// Delete the links
+		if ($leftCriteriaIds || $rightCriteriaIds)
+		{
+			$leftCondition = array('and',
+				array('in', 'criteriaId', $leftCriteriaIds),
+				(is_array($entityId) ? array('in', 'leftEntityId', $entityId) : 'leftEntityId = '.(int)$entityId));
+
+			$rightCondition = array('and',
+				array('in', 'criteriaId', $rightCriteriaIds),
+				(is_array($entityId) ? array('in', 'rightEntityId', $entityId) : 'rightEntityId = '.(int)$entityId));
+
+			if ($leftCriteriaIds && $rightCriteriaIds)
+			{
+				$conditions = array('or', $leftCondition, $rightCondition);
+			}
+			else if ($leftCriteriaIds)
+			{
+				$conditions = $leftCondition;
+			}
+			else
+			{
+				$conditions = $rightCondition;
+			}
+
+			blx()->db->createCommand()->delete('links', $conditions);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Returns a link type instance.
 	 *
 	 * @param string $type

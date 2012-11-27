@@ -201,33 +201,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function deleteSourceById($sourceId)
 	{
-		$sourceRecord = $this->_getSourceRecordById($sourceId);
-
-		$transaction = blx()->db->beginTransaction();
-		try
-		{
-			$folderParams = new FolderCriteria(
-				array(
-					'sourceId' => $sourceId
-				)
-			);
-
-			$folders = blx()->assets->getFolders($folderParams);
-
-			foreach ($folders as $folder)
-			{
-				blx()->assets->deleteFolder($folder);
-			}
-
-			$sourceRecord->delete();
-			$transaction->commit();
-		}
-		catch (\Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		blx()->db->createCommand()->delete('assetsources', array('id' => $sourceId));
 		return true;
 	}
 

@@ -36,7 +36,7 @@ class AssetIndexDataRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true),
+			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 

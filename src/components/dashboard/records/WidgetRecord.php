@@ -32,8 +32,7 @@ class WidgetRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'user'   => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true),
-			'plugin' => array(static::BELONGS_TO, 'PluginRecord', 'pluginId'),
+			'user' => array(static::BELONGS_TO, 'UserRecord', 'userId', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 }

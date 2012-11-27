@@ -43,7 +43,7 @@ class EntryRecord extends BaseRecord
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			$relations['section']  = array(static::BELONGS_TO, 'SectionRecord', 'required' => true);
+			$relations['section']  = array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE);
 			$relations['versions'] = array(static::HAS_MANY, 'EntryVersionRecord', 'entryId');
 		}
 

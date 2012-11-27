@@ -88,22 +88,15 @@ class RoutesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Deletes a route.
+	 * Deletes a route by its ID.
 	 *
-	 * @param int $routeId The route ID
-	 * @throws Exception
-	 * @return void
+	 * @param int $routeId
+	 * @return bool
 	 */
-	public function deleteRoute($routeId)
+	public function deleteRouteById($routeId)
 	{
-		$route = $this->getRouteById($routeId);
-
-		if (!$route)
-		{
-			throw new Exception(Blocks::t('No route exists with the ID “{id}”', array('id' => $routeId)));
-		}
-
-		$route->delete();
+		blx()->db->createCommand()->delete('routes', array('id' => $routeId));
+		return true;
 	}
 
 	/**

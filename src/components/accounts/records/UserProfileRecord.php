@@ -31,7 +31,7 @@ class UserProfileRecord extends BaseEntityRecord
 	public function defineRelations()
 	{
 		return array(
-			'user' => array(static::BELONGS_TO, 'UserRecord', 'unique' => true, 'required' => true),
+			'user' => array(static::BELONGS_TO, 'UserRecord', 'unique' => true, 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 }

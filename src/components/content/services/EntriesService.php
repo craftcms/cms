@@ -447,6 +447,33 @@ class EntriesService extends BaseEntityService
 	}
 
 	/**
+	 * Deletes an entry(s) by its ID(s).
+	 *
+	 * @param int|array $entryId
+	 * @return bool
+	 */
+	public function deleteEntryById($entryId)
+	{
+		// First delete any links
+		blx()->links->deleteLinksForEntity('Entry', $entryId);
+
+		// Then delete the entry rows
+		// (everything else should cascade-delete from there)
+		if (is_array($entryId))
+		{
+			$condition = array('in', 'id', $entryId);
+		}
+		else
+		{
+			$condition = array('id' => $entryId);
+		}
+
+		blx()->db->createCommand()->delete('entries', $condition);
+
+		return true;
+	}
+
+	/**
 	 * Keeps the given $entryTagRecord->count column up-to-date with the number of entries using that tag.
 	 *
 	 * @param EntryTagRecord $entryTagRecord
