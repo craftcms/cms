@@ -55,7 +55,7 @@
 		baseUrl: '{{ url() }}',
 		actionUrl: '{{ actionUrl() }}',
 		resourceUrl: '{{ resourceUrl() }}',
-		usePathInfo: {{ blx.config.usePathInfo ? 'true' : 'false' }},
+		usePathInfo: {{ blx.config.usePathInfo() ? 'true' : 'false' }},
 		resourceTrigger: '{{ blx.config.resourceTrigger }}',
 		actionTrigger: '{{ blx.config.actionTrigger }}',
 		language: '{{ blx.language }}',
