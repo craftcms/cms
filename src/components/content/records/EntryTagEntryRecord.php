@@ -20,8 +20,8 @@ class EntryTagEntryRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'tag' => array(static::BELONGS_TO, 'EntryTagRecord', 'required' => true),
-			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
+			'tag' => array(static::BELONGS_TO, 'EntryTagRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'entry' => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 }

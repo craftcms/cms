@@ -1,11 +1,11 @@
 {% extends "_layouts/cp" %}
 {% set title = "Assets"|t %}
 {% includeCssResource "css/assets.css" %}
-{% set sources = blx.assets.sources %}
+{% set sources = blx.assets.getAllSources %}
 {% set view = 'thumbs' %}
 
 {% if sources is not empty %}
-    {% set folder = blx.assets.getFolderBySourceId(     sources[ (sources|keys[0]) ].id ) %}
+    {% set folder = blx.assets.getFolderBySourceId(sources[0].id) %}
 {%  endif%}
 
 {% set header %}

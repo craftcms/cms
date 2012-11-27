@@ -9,12 +9,13 @@ class UserGroupsService extends BaseApplicationComponent
 	/**
 	 * Returns all user groups.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getAllGroups()
+	public function getAllGroups($indexBy = null)
 	{
 		$groupRecords = UserGroupRecord::model()->findAll();
-		return UserGroupModel::populateModels($groupRecords, 'id');
+		return UserGroupModel::populateModels($groupRecords, $indexBy);
 	}
 
 	/**
@@ -55,9 +56,10 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Gets user groups by a user ID.
 	 *
 	 * @param int $userId
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getGroupsByUserId($userId)
+	public function getGroupsByUserId($userId, $indexBy = null)
 	{
 		$query = blx()->db->createCommand()
 			->select('g.*')
@@ -66,7 +68,7 @@ class UserGroupsService extends BaseApplicationComponent
 			->where(array('gu.userId' => $userId))
 			->queryAll();
 
-		return UserGroupModel::populateModels($query, 'id');
+		return UserGroupModel::populateModels($query, $indexBy);
 	}
 
 	/**
@@ -133,26 +135,11 @@ class UserGroupsService extends BaseApplicationComponent
 	 * Deletes a user group by its ID.
 	 *
 	 * @param int $groupId
-	 * @throws \Exception
 	 * @return bool
 	 */
 	public function deleteGroupById($groupId)
 	{
-		$groupRecord = $this->_getGroupRecordById($groupId);
-		$group = UserGroupModel::populateModel($groupRecord);
-
-		$transaction = blx()->db->beginTransaction();
-		try
-		{
-			$groupRecord->delete();
-			$transaction->commit();
-		}
-		catch (\Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		blx()->db->createCommand()->delete('usergroups', array('id' => $groupId));
 		return true;
 	}
 

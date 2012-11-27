@@ -39,45 +39,15 @@ class AssetSourcesService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Populates an asset source model.
-	 *
-	 * @param array|AssetSourceRecord $attributes
-	 * @return AssetSourceModel
-	 */
-	public function populateSource($attributes)
-	{
-		return AssetSourceModel::populateModel($attributes);
-	}
-
-	/**
-	 * Mass-populates asset source model.
-	 *
-	 * @param array  $data
-	 * @param string $index
-	 * @return array
-	 */
-	public function populateSources($data, $index = 'id')
-	{
-		$sources = array();
-
-		foreach ($data as $attributes)
-		{
-			$source = $this->populateSource($attributes);
-			$sources[$source->$index] = $source;
-		}
-
-		return $sources;
-	}
-
-	/**
 	 * Returns all asset sources.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getAllSources()
+	public function getAllSources($indexBy = null)
 	{
 		$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
-		return $this->populateSources($sourceRecords);
+		return AssetSourceModel::populateModels($sourceRecords, $indexBy);
 	}
 
 	/**
@@ -92,7 +62,7 @@ class AssetSourcesService extends BaseApplicationComponent
 
 		if ($sourceRecord)
 		{
-			return $this->populateSource($sourceRecord);
+			return AssetSourceModel::populateModel($sourceRecord);
 		}
 	}
 
@@ -201,33 +171,7 @@ class AssetSourcesService extends BaseApplicationComponent
 	 */
 	public function deleteSourceById($sourceId)
 	{
-		$sourceRecord = $this->_getSourceRecordById($sourceId);
-
-		$transaction = blx()->db->beginTransaction();
-		try
-		{
-			$folderParams = new FolderCriteria(
-				array(
-					'sourceId' => $sourceId
-				)
-			);
-
-			$folders = blx()->assets->getFolders($folderParams);
-
-			foreach ($folders as $folder)
-			{
-				blx()->assets->deleteFolder($folder);
-			}
-
-			$sourceRecord->delete();
-			$transaction->commit();
-		}
-		catch (\Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		blx()->db->createCommand()->delete('assetsources', array('id' => $sourceId));
 		return true;
 	}
 

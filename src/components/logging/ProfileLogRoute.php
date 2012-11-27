@@ -17,9 +17,9 @@ class ProfileLogRoute extends \CProfileLogRoute
 		$isAjax = blx()->request->isAjaxRequest();
 		$mimeType = blx()->request->getMimeType();
 
-		if (blx()->config->get('devMode'))
+		if (blx()->config->get('devMode') && !blx()->request->isResourceRequest())
 		{
-			if ($this->showInFireBug && blx()->config->get('devMode'))
+			if ($this->showInFireBug)
 			{
 				if ($isAjax && $this->ignoreAjaxInFireBug)
 				{

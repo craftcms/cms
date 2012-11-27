@@ -88,4 +88,18 @@ class EntriesController extends BaseEntityController
 			}
 		}
 	}
+
+	/**
+	 * Deletes an entry.
+	 */
+	public function actionDeleteEntry()
+	{
+		$this->requirePostRequest();
+		$this->requireAjaxRequest();
+
+		$entryId = blx()->request->getRequiredPost('id');
+
+		blx()->entries->deleteEntryById($entryId);
+		$this->returnJson(array('success' => true));
+	}
 }

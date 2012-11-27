@@ -32,8 +32,8 @@ class EntryDraftRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'entry'   => array(static::BELONGS_TO, 'EntryRecord', 'required' => true),
-			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true),
+			'entry'   => array(static::BELONGS_TO, 'EntryRecord', 'required' => true, 'onDelete' => static::CASCADE),
+			'section' => array(static::BELONGS_TO, 'SectionRecord', 'required' => true, 'onDelete' => static::CASCADE),
 			'creator' => array(static::BELONGS_TO, 'UserRecord', 'required' => true),
 		);
 	}

@@ -317,12 +317,13 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
-	 * Delete a folder by it's model
-	 * @param AssetFolderModel $folderModel
+	 * Delete a folder by it's model.
+	 *
+	 * @param AssetFolderModel $folder
 	 */
-	public function deleteFolder(AssetFolderModel $folderModel)
+	public function deleteFolder(AssetFolderModel $folder)
 	{
-		AssetFolderRecord::model()->findById($folderModel->id)->delete();
+		blx()->db->createCommand()->delete('assetfolders', array('id' => $folder->id));
 	}
 
 	/**

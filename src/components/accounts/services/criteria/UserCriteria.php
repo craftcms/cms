@@ -19,6 +19,7 @@ class UserCriteria extends BaseCriteria
 	public $order = 'username asc';
 	public $offset;
 	public $limit = 100;
+	public $indexBy;
 
 	/**
 	 * Returns all users that match the criteria.

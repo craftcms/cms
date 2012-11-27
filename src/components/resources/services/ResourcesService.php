@@ -113,6 +113,16 @@ class ResourcesService extends BaseApplicationComponent
 			}
 		}
 
+		// Maybe a plugin wants to do something custom with this URL
+		$pluginPaths = blx()->plugins->callHook('getResourcePath', array($path));
+		foreach ($pluginPaths as $path)
+		{
+			if ($path && IOHelper::fileExists($path))
+			{
+				return $path;
+			}
+		}
+
 		// Couldn't find the file
 		return false;
 	}

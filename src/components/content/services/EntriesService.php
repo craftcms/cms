@@ -82,7 +82,7 @@ class EntriesService extends BaseEntityService
 		}
 
 		$result = $query->queryAll();
-		return EntryModel::populateModels($result, 'id');
+		return EntryModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**
@@ -444,6 +444,33 @@ class EntriesService extends BaseEntityService
 
 			return false;
 		}
+	}
+
+	/**
+	 * Deletes an entry(s) by its ID(s).
+	 *
+	 * @param int|array $entryId
+	 * @return bool
+	 */
+	public function deleteEntryById($entryId)
+	{
+		// First delete any links
+		blx()->links->deleteLinksForEntity('Entry', $entryId);
+
+		// Then delete the entry rows
+		// (everything else should cascade-delete from there)
+		if (is_array($entryId))
+		{
+			$condition = array('in', 'id', $entryId);
+		}
+		else
+		{
+			$condition = array('id' => $entryId);
+		}
+
+		blx()->db->createCommand()->delete('entries', $condition);
+
+		return true;
 	}
 
 	/**

@@ -33,7 +33,7 @@ class LinkRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'criteria' => array(static::BELONGS_TO, 'LinkCriteriaRecord'),
+			'criteria' => array(static::BELONGS_TO, 'LinkCriteriaRecord', 'onDelete' => static::CASCADE),
 		);
 	}
 

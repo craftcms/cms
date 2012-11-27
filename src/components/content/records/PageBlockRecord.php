@@ -20,7 +20,7 @@ class PageBlockRecord extends BaseBlockRecord
 	public function defineRelations()
 	{
 		return array(
-			'page' => array(static::BELONGS_TO, 'PageRecord', 'required' => true),
+			'page' => array(static::BELONGS_TO, 'PageRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 

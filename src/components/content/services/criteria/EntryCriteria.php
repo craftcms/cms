@@ -17,6 +17,7 @@ class EntryCriteria extends BaseCriteria
 	public $order = 'dateCreated desc';
 	public $offset;
 	public $limit = 100;
+	public $indexBy;
 
 	/**
 	 * Returns all entries that match the criteria.

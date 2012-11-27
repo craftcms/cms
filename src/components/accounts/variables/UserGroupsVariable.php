@@ -9,11 +9,12 @@ class UserGroupsVariable
 	/**
 	 * Returns all user groups.
 	 *
+	 * @param stirng|null $indexBy
 	 * @return array
 	 */
-	public function getAllGroups()
+	public function getAllGroups($indexBy = null)
 	{
-		return blx()->userGroups->getAllGroups();
+		return blx()->userGroups->getAllGroups($indexBy);
 	}
 
 	/**

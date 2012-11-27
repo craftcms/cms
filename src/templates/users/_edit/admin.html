@@ -34,7 +34,7 @@
 			}) }}
 		</div>
 
-		{% set userGroups = account.groups %}
+		{% set userGroups = account.getGroups('id') %}
 
 		{% for group in blx.userGroups.getAllGroups %}
 			<div>

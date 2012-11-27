@@ -94,12 +94,13 @@ class PagesService extends BaseEntityService
 	/**
 	 * Gets all pages.
 	 *
+	 * @param string|null $indexBy
 	 * @return array
 	 */
-	public function getAllPages()
+	public function getAllPages($indexBy = null)
 	{
 		$pageRecords = PageRecord::model()->ordered()->findAll();
-		return PageModel::populateModels($pageRecords, 'id');
+		return PageModel::populateModels($pageRecords, $indexBy);
 	}
 
 	/**
@@ -229,35 +230,11 @@ class PagesService extends BaseEntityService
 	 * Deletes a page by its ID.
 	 *
 	 * @param int $pageId
-	 * @throws \Exception
 	 * @return bool
 	*/
 	public function deletePageById($pageId)
 	{
-		$pageRecord = $this->_getPageRecordById($pageId);
-
-		$transaction = blx()->db->beginTransaction();
-		try
-		{
-			// Delete the page blocks
-			blx()->db->createCommand()
-				->delete('pageblocks', array('pageId' => $pageId));
-
-			// Delete the page content
-			blx()->db->createCommand()
-				->delete('pagecontent', array('pageId' => $pageId));
-
-			// Delete the page
-			$pageRecord->delete();
-
-			$transaction->commit();
-		}
-		catch (\Exception $e)
-		{
-			$transaction->rollBack();
-			throw $e;
-		}
-
+		blx()->db->createCommand()->delete('pages', array('id' => $pageId));
 		return true;
 	}
 

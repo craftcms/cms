@@ -41,7 +41,7 @@ class RoutesController extends BaseController
 		$this->requirePostRequest();
 
 		$routeId = blx()->request->getRequiredPost('routeId');
-		blx()->routes->deleteRoute($routeId);
+		blx()->routes->deleteRouteById($routeId);
 
 		$this->returnJson(array('success' => true));
 	}

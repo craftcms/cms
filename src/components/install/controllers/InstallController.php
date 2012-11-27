@@ -137,7 +137,7 @@ class InstallController extends BaseController
 		$inputs['siteUrl']    = blx()->request->getPost('siteUrl');
 		$inputs['language']   = blx()->request->getPost('language');
 
-		blx()->installer->run($inputs);
+		blx()->install->run($inputs);
 
 		$return = array('success' => true);
 		$this->returnJson($return);

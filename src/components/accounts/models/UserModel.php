@@ -98,13 +98,14 @@ class UserModel extends BaseEntityModel
 	/**
 	 * Returns the user's groups.
 	 *
+	 * @param string|null $indexBy
 	 * @return array|null
 	 */
-	public function getGroups()
+	public function getGroups($indexBy = null)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return blx()->userGroups->getGroupsByUserId($this->id);
+			return blx()->userGroups->getGroupsByUserId($this->id, $indexBy);
 		}
 	}
 

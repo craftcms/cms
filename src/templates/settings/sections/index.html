@@ -1,3 +1,8 @@
+{% includeJsResource "js/SectionAdminTable.js" %}
+{% includeTranslations
+	"Are you sure you want to delete “{name}” and its {entries} entries?"
+%}
+
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
 {% set centered = true %}
@@ -27,7 +32,7 @@
 			</thead>
 			<tbody>
 				{% for section in sections %}
-					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}">
+					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}" data-entries="{{ blx.entries.sectionId(section.id).total }}">
 						<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
 						<td><code>{{ section.handle }}</code></td>
 						<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ blx.entryBlocks.getTotalBlocksBySectionId(section.id) }}</a></td>
@@ -45,10 +50,6 @@
 
 
 {% set js %}
-	new Blocks.ui.AdminTable({
-		tableSelector: '#sections',
-		noObjectsSelector: '#nosections',
-		deleteAction: 'sections/deleteSection'
-	});
+	new Blocks.ui.SectionAdminTable();
 {% endset %}
 {% includeJs js %}

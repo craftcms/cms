@@ -20,7 +20,7 @@ class AssetContentRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'file' => array(static::BELONGS_TO, 'AssetFileRecord', 'unique' => true, 'required' => true),
+			'file' => array(static::BELONGS_TO, 'AssetFileRecord', 'unique' => true, 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 }

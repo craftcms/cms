@@ -8,6 +8,12 @@ namespace Blocks;
  */
 abstract class BaseRecord extends \CActiveRecord
 {
+	const RESTRICT = 'RESTRICT';
+	const CASCADE = 'CASCADE';
+	const NO_ACTION = 'NO ACTION';
+	const SET_DEFAULT = 'SET DEFAULT';
+	const SET_NULL = 'SET NULL';
+
 	/**
 	 * Constructor
 	 * @param string $scenario
@@ -256,7 +262,24 @@ abstract class BaseRecord extends \CActiveRecord
 			$otherModel = new $config[1];
 			$otherTable = $otherModel->getTableName();
 			$fkName = "{$table}_{$name}_fk";
-			blx()->db->createCommand()->addForeignKey($fkName, $table, $config[2], $otherTable, 'id');
+
+			if (isset($config['onDelete']))
+			{
+				$onDelete = $config['onDelete'];
+			}
+			else
+			{
+				if (empty($config['required']))
+				{
+					$onDelete = static::SET_NULL;
+				}
+				else
+				{
+					$onDelete = null;
+				}
+			}
+
+			blx()->db->createCommand()->addForeignKey($fkName, $table, $config[2], $otherTable, 'id', $onDelete);
 		}
 	}
 
@@ -363,7 +386,7 @@ abstract class BaseRecord extends \CActiveRecord
 			$this->_normalizeRelation($name, $config);
 
 			// Unset any keys that CActiveRecord isn't expecting
-			unset($config['required'], $config['unique']);
+			unset($config['required'], $config['unique'], $config['onDelete']);
 		}
 
 		return $relations;

@@ -31,8 +31,8 @@ class AssetFolderRecord extends BaseRecord
 	public function defineRelations()
 	{
 		return array(
-			'parent' => array(static::BELONGS_TO, 'AssetFolderRecord'),
-			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true),
+			'parent' => array(static::BELONGS_TO, 'AssetFolderRecord', 'onDelete' => static::CASCADE),
+			'source' => array(static::BELONGS_TO, 'AssetSourceRecord', 'required' => true, 'onDelete' => static::CASCADE),
 		);
 	}
 
