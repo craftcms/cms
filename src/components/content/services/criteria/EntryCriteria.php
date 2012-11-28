@@ -12,6 +12,9 @@ class EntryCriteria extends BaseCriteria
 	public $sectionId;
 	public $section;
 	public $language;
+	public $authorId;
+	public $authorGroupId;
+	public $authorGroup;
 	public $after;
 	public $before;
 	public $status = 'live';
