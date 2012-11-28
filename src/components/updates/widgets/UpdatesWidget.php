@@ -47,7 +47,7 @@ class UpdatesWidget extends BaseWidget
 				'name'     => 'Blocks',
 				'handle'   => 'Blocks',
 				'version'  => $updateModel->blocks->latestVersion.' Build '.$updateModel->blocks->latestBuild,
-				'date'     => new DateTime('@'.$updateModel->blocks->latestDate),
+				'date'     => $updateModel->blocks->latestDate,
 				'critical' => $updateModel->blocks->criticalUpdateAvailable
 			);
 		}
@@ -63,7 +63,7 @@ class UpdatesWidget extends BaseWidget
 						'name'    => $plugin->displayName,
 						'handle'  => $plugin->class,
 						'version' => $plugin->latestVersion,
-						'date'    => new DateTime('@'.$plugin->latestDate)
+						'date'    => $plugin->latestDate
 					);
 				}
 			}
