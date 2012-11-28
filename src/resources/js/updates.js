@@ -97,7 +97,8 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					$th.html('Blocks '+response.blocks.releases[0].version +
 						' <span class="light">' +
 						Blocks.t('build {build}', { build: response.blocks.releases[0].build }) +
-						'</span>'
+						'</span>' +
+						(response.blocks.criticalUpdateAvailable ? '<span class="critical">'+Blocks.t('Critical')+'</span>' : '')
 					);
 
 					if (response.blocks.manualUpdateRequired)
