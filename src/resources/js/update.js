@@ -38,7 +38,7 @@ function getUpdateInfo()
 		{
 			if (response.updateInfo)
 			{
-				updateInfo = data.updateInfo;
+				updateInfo = response.updateInfo;
 				totalUpdates = updateInfo.length;
 
 				updateNext();
@@ -85,7 +85,7 @@ function updateNext()
 
 			// Redirect to the Dashboard in half a second
 			setTimeout(function() {
-				window.location = Blocks.baseUrl+'dashboard';
+				window.location = Blocks.getUrl('dashboard');
 			}, 500);
 
 			return;

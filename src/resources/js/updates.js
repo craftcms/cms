@@ -72,120 +72,130 @@ var atLeastOnePluginHasARelease = function(plugins)
 Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 
 	$('#loading').fadeOut('fast', function() {
-		if (response.blocks.releases || response.packages)
+		if (response.errors && response.errors.length > 0)
 		{
-			var $table = $('#system-updates'),
-				$tbody = $table.children('tbody');
+			var $div = $('#update-error');
 
-			$table.show();
-
-			if (response.blocks.releases)
-			{
-				var $tr = $('<tr/>').appendTo($tbody),
-					$th = $('<th/>').appendTo($tr),
-					$td = $('<td class="thin rightalign"/>').appendTo($tr);
-
-				$th.html('Blocks '+response.blocks.releases[0].version +
-					' <span class="light">' +
-					Blocks.t('build {build}', { build: response.blocks.releases[0].build }) +
-					'</span>'
-				);
-
- 				if (response.blocks.manualUpdateRequired)
- 				{
- 					var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
- 					$btn.on('click', function() {
- 						var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
- 						$('<iframe/>', { src: src }).appendTo(Blocks.$body).hide();
- 					});
- 				}
-				else
-				{
-					$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Update')+'</a>');
-				}
-
-				var $tr = $('<tr/>').appendTo($tbody),
-					$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
-
-				new ReleaseNotes($td, response.blocks.releases, 'Blocks');
-			}
-
-			if (response.packages)
-			{
-				var $tr = $('<tr/>').appendTo($tbody),
-					$th = $('<th/>').appendTo($tr),
-					$td = $('<td class="thin rightalign"/>').appendTo($tr),
-					$btn = $('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Install')+'</a>').appendTo($td);
-
-				var packageValues = { packages: response.packages.join(', ') };
-				$th.html(response.packages.length > 1 ? Blocks.t('{packages} upgrades', packageValues) : Blocks.t('{packages} upgrade', packageValues));
-
-				if (response.blocks)
-				{
-					$btn.addClass('disabled');
-					$btn.attr('title', Blocks.t('Blocks update required'));
-				}
-			}
+			$div.html(response.errors[0]);
+			$div.show();
 		}
 		else
 		{
-			$('#no-system-updates').show();
-		}
-
-		if (response.plugins && atLeastOnePluginHasARelease(response.plugins))
-		{
-			var $table = $('#plugin-updates'),
-				$tbody = $table.children('tbody');
-
-			$table.show();
-
-			for (var i  in response.plugins)
+			if ((response.blocks && response.blocks.releases) || response.packages)
 			{
-				var plugin = response.plugins[i];
+				var $table = $('#system-updates'),
+					$tbody = $table.children('tbody');
 
-				if (plugin.releases && plugin.releases.length > 0)
+				$table.show();
+
+				if (response.blocks.releases)
 				{
 					var $tr = $('<tr/>').appendTo($tbody),
 						$th = $('<th/>').appendTo($tr),
 						$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-					$th.html(plugin.displayName+' '+plugin.releases[0].version);
+					$th.html('Blocks '+response.blocks.releases[0].version +
+						' <span class="light">' +
+						Blocks.t('build {build}', { build: response.blocks.releases[0].build }) +
+						'</span>'
+					);
 
-					$td.html('<a class="btn" href="'+Blocks.getUrl('updates/'+plugin['class'].toLowerCase())+'">'+Blocks.t('Update')+'</a>');
+					if (response.blocks.manualUpdateRequired)
+					{
+						var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
+						$btn.on('click', function() {
+							var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
+							$('<iframe/>', { src: src }).appendTo(Blocks.$body).hide();
+						});
+					}
+					else
+					{
+						$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks?handle=Blocks')+'">'+Blocks.t('Update')+'</a>');
+					}
 
 					var $tr = $('<tr/>').appendTo($tbody),
 						$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
 
-					new ReleaseNotes($td, plugin.releases, plugin.displayName);
+					new ReleaseNotes($td, response.blocks.releases, 'Blocks');
+				}
+
+				if (response.packages)
+				{
+					var $tr = $('<tr/>').appendTo($tbody),
+						$th = $('<th/>').appendTo($tr),
+						$td = $('<td class="thin rightalign"/>').appendTo($tr),
+						$btn = $('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Install')+'</a>').appendTo($td);
+
+					var packageValues = { packages: response.packages.join(', ') };
+					$th.html(response.packages.length > 1 ? Blocks.t('{packages} upgrades', packageValues) : Blocks.t('{packages} upgrade', packageValues));
+
+					if (response.blocks)
+					{
+						$btn.addClass('disabled');
+						$btn.attr('title', Blocks.t('Blocks update required'));
+					}
 				}
 			}
-		}
-		else
-		{
-			$('#no-plugin-updates').show();
-		}
+			else
+			{
+				$('#no-system-updates').show();
+			}
 
-		$('#updates').fadeIn('fast');
+			if (response.plugins && atLeastOnePluginHasARelease(response.plugins))
+			{
+				var $table = $('#plugin-updates'),
+					$tbody = $table.children('tbody');
 
-		var count = 0;
-		if (response.blocks.releases)
-		{
-			count++;
-		}
+				$table.show();
 
-		if (response.packages)
-		{
-			count++;
-		}
+				for (var i  in response.plugins)
+				{
+					var plugin = response.plugins[i];
 
-		if (atLeastOnePluginHasARelease(response.plugins))
-		{
-			count++;
-		}
+					if (plugin.releases && plugin.releases.length > 0)
+					{
+						var $tr = $('<tr/>').appendTo($tbody),
+							$th = $('<th/>').appendTo($tr),
+							$td = $('<td class="thin rightalign"/>').appendTo($tr);
 
-		if (count > 2)
-		{
-			$('#update-all').fadeIn('fast');
+						$th.html(plugin.displayName+' '+plugin.releases[0].version);
+
+						$td.html('<a class="btn" href="'+Blocks.getUrl('updates/'+plugin['class'].toLowerCase())+'">'+Blocks.t('Update')+'</a>');
+
+						var $tr = $('<tr/>').appendTo($tbody),
+							$td = $('<td class="notes" colspan="2"/>').appendTo($tr);
+
+						new ReleaseNotes($td, plugin.releases, plugin.displayName);
+					}
+				}
+			}
+			else
+			{
+				$('#no-plugin-updates').show();
+			}
+
+			$('#updates').fadeIn('fast');
+
+			var count = 0;
+			if (response.blocks && response.blocks.releases)
+			{
+				count++;
+			}
+
+			if (response.packages)
+			{
+				count++;
+			}
+
+			if (atLeastOnePluginHasARelease(response.plugins))
+			{
+				count++;
+			}
+
+			if (count > 2)
+			{
+				$('#update-all').fadeIn('fast');
+			}
 		}
 	});
 

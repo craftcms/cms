@@ -142,14 +142,16 @@ class UpdatesService extends BaseApplicationComponent
 				if ($etModel == null)
 				{
 					$updateModel = new UpdateModel();
+					$errors[] = Blocks::t('An error occurred when trying to determine if an update is available. Please try again shortly. If the error persists, please contact <a href="mailto://support@blockscms.com">support@pixelandtonic.com</a>.');
+					$updateModel->errors = $errors;
 				}
 				else
 				{
 					$updateModel = $etModel->data;
-				}
 
-				// cache it and set it to expire according to config
-				blx()->fileCache->set('updateinfo', $updateModel);
+					// cache it and set it to expire according to config
+					blx()->fileCache->set('updateinfo', $updateModel);
+				}
 			}
 
 			$this->_updateModel = $updateModel;
@@ -253,7 +255,7 @@ class UpdatesService extends BaseApplicationComponent
 		$updateModel->plugins = $pluginUpdateModels;
 
 		$etModel = blx()->et->check($updateModel);
-		return ($etModel == null ? new EtModel() : $etModel);
+		return $etModel;
 	}
 
 	/**
