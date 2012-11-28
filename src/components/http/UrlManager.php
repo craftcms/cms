@@ -38,7 +38,7 @@ class UrlManager extends \CUrlManager
 	public function processTemplateMatching()
 	{
 		// we'll never have a db entry match on a control panel request
-		if (blx()->isInstalled() && !blx()->request->isCpRequest())
+		if (blx()->isInstalled() && blx()->request->isSiteRequest())
 		{
 			if (($path = $this->matchPage()) !== false)
 			{
