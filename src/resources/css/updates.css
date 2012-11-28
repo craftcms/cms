@@ -10,6 +10,8 @@
 #update-error,
 #plugin-updates { display: none; }
 
+#updates .critical { margin-left: 5px; padding: 2px 5px; color: #fff; background: #d6301a; }
+
 #updates td.notes { border-top: none; padding-bottom: 15px; }
 #updates td.notes th { border: none; padding: 12px 0; }
 #updates td.notes td { border: none; padding-top: 3px; padding-bottom: 3px; vertical-align: top; }

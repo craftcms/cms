@@ -23,13 +23,18 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		$id = $this->model->id;
+		if (blx()->updates->isUpdateInfoCached())
+		{
+			return blx()->templates->render('_components/widgets/Updates/body', array(
+				'total' => blx()->updates->getTotalNumberOfAvailableUpdates()
+			));
+		}
+		else
+		{
+			blx()->templates->includeJsResource('js/UpdatesWidget.js');
+			blx()->templates->includeJs('new Blocks.UpdatesWidget('.$this->model->id.');');
 
-		$js = "new Blocks.UpdatesWidget({$id});";
-
-		blx()->templates->includeJsResource('js/UpdatesWidget.js');
-		blx()->templates->includeJs($js);
-
-		return blx()->templates->render('_components/widgets/Updates/body');
+			return '<p class="centeralign">'.Blocks::t('Checking for updates…').'</p>';
+		}
 	}
 }

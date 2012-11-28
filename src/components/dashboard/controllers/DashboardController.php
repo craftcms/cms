@@ -123,4 +123,16 @@ class DashboardController extends BaseController
 			$this->returnErrorJson($hsapi->errors);
 		}
 	}
+
+	/**
+	 * Returns the update widget HTML.
+	 */
+	public function actionCheckForUpdates()
+	{
+		blx()->updates->getUpdates();
+
+		$this->renderTemplate('_components/widgets/Updates/body', array(
+			'total' => blx()->updates->getTotalNumberOfAvailableUpdates()
+		));
+	}
 }
