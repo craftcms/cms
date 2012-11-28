@@ -1,19 +1,5 @@
-{% if updates %}
-	<table class="data">
-		<tbody>
-			{% for update in updates %}
-				<tr>
-					<td><strong>{{ update.name }}</strong> {{ update.version }} {% if update.critical %}<div class="badge warning">{{ "Critical"|t }}</div>{% endif %}</td>
-					<td class="timestamp">{{ update.date }}</td>
-				</tr>
-			{% endfor %}
-				<tr>
-					<td colspan="2" style="text-align: center">
-						<a href="{{ url('updates') }}">{{ "Go To Updates"|t }}</a>
-					</td>
-				</tr>
-		</tbody>
-	</table>
-{% else %}
-	<p>{{ "No updates available."|t }}</p>
-{% endif %}
+<table class="data">
+	<tr>
+		<td>&nbsp;</td>
+	</tr>
+</table>

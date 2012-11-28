@@ -54,7 +54,7 @@ class UpdateController extends BaseController
 				case 'all':
 				{
 					// Blocks first.
-					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
+					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild, 'critical' => $updateInfo->blocks->criticalUpdateAvailable, 'releaseDate' => $updateInfo->blocks->latestDate->getTimestamp());
 
 					// Plugins
 					if ($updateInfo->plugins !== null)
@@ -63,7 +63,7 @@ class UpdateController extends BaseController
 						{
 							if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable && count($plugin->releases) > 0)
 							{
-								$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion);
+								$return[] = array('handle' => $plugin->class, 'name' => $plugin->displayName, 'version' => $plugin->latestVersion, 'critical' => $plugin->criticalUpdateAvailable, 'releaseDate' => $plugin->latestDate->getTimestamp());
 							}
 						}
 					}
@@ -73,7 +73,7 @@ class UpdateController extends BaseController
 
 				case 'blocks':
 				{
-					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild);
+					$return[] = array('handle' => 'Blocks', 'name' => 'Blocks', 'version' => $updateInfo->blocks->latestVersion.'.'.$updateInfo->blocks->latestBuild, 'critical' => $updateInfo->blocks->criticalUpdateAvailable, 'releaseDate' => $updateInfo->blocks->latestDate->getTimestamp());
 					break;
 				}
 
@@ -84,7 +84,7 @@ class UpdateController extends BaseController
 					{
 						if (isset($updateInfo->plugins[$handle]) && $updateInfo->plugins[$handle]->status == PluginVersionUpdateStatus::UpdateAvailable && count($updateInfo->plugins[$handle]->releases) > 0)
 						{
-							$return[] = array('handle' => $updateInfo->plugins[$handle]->handle, 'name' => $updateInfo->plugins[$handle]->displayName, 'version' => $updateInfo->plugins[$handle]->latestVersion);
+							$return[] = array('handle' => $updateInfo->plugins[$handle]->handle, 'name' => $updateInfo->plugins[$handle]->displayName, 'version' => $updateInfo->plugins[$handle]->latestVersion, 'critical' => $updateInfo->plugins[$handle]->criticalUpdateAvailable, 'releaseDate' => $updateInfo->plugins[$handle]->latestDate->getTimestamp());
 						}
 						else
 						{

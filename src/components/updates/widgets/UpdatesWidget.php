@@ -23,52 +23,13 @@ class UpdatesWidget extends BaseWidget
 	 */
 	public function getBodyHtml()
 	{
-		return blx()->templates->render('_components/widgets/Updates/body', array(
-			'updates' => $this->_getUpdates()
-		));
-	}
+		$id = $this->model->id;
 
-	/**
-	 * Gets the available updates.
-	 *
-	 * @access private
-	 * @return array
-	 */
-	private function _getUpdates()
-	{
-		$updates = array();
+		$js = "new Blocks.UpdatesWidget({$id});";
 
-		$updateModel = blx()->updates->getUpdates();
+		blx()->templates->includeJsResource('js/UpdatesWidget.js');
+		blx()->templates->includeJs($js);
 
-		// Blocks first
-		if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
-		{
-			$updates[] = array(
-				'name'     => 'Blocks',
-				'handle'   => 'Blocks',
-				'version'  => $updateModel->blocks->latestVersion.' Build '.$updateModel->blocks->latestBuild,
-				'date'     => $updateModel->blocks->latestDate,
-				'critical' => $updateModel->blocks->criticalUpdateAvailable
-			);
-		}
-
-		// Plugins next
-		if ($updateModel->plugins !== null && count($updateModel->plugins) > 0)
-		{
-			foreach ($updateModel->plugins as $plugin)
-			{
-				if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
-				{
-					$updates[] = array(
-						'name'    => $plugin->displayName,
-						'handle'  => $plugin->class,
-						'version' => $plugin->latestVersion,
-						'date'    => $plugin->latestDate
-					);
-				}
-			}
-		}
-
-		return $updates;
+		return blx()->templates->render('_components/widgets/Updates/body');
 	}
 }
