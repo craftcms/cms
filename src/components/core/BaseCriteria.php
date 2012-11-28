@@ -24,9 +24,16 @@ abstract class BaseCriteria
 	 */
 	function __call($name, $arguments)
 	{
-		if (property_exists($this, $name) && count($arguments) == 1)
+		if (property_exists($this, $name))
 		{
-			$this->$name = $arguments[0];
+			if (count($arguments) == 1)
+			{
+				$this->$name = $arguments[0];
+			}
+			else
+			{
+				$this->$name = $arguments;
+			}
 		}
 
 		return $this;
