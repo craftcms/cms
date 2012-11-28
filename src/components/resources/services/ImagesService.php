@@ -54,4 +54,16 @@ class ImagesService extends BaseApplicationComponent
 			return false;
 		}
 	}
+
+	/**
+	 * Cleans an image by it's path, clearing embedded JS and PHP code.
+	 *
+	 * @param $filePath
+	 * @return bool
+	 */
+	public function cleanImage($filePath)
+	{
+		$image = new Image();
+		return $image->loadImage($filePath)->saveAs($filePath);
+	}
 }

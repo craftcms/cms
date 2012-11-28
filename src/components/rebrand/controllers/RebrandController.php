@@ -37,6 +37,8 @@ class RebrandController extends BaseController
 					$this->returnErrorJson(Blocks::t('The uploaded image is too large'));
 				}
 
+				blx()->images->cleanImage($folderPath.$fileName);
+
 				$constraint = 500;
 				list ($width, $height) = getimagesize($folderPath.$fileName);
 
