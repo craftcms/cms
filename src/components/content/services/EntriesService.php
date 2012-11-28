@@ -218,6 +218,30 @@ class EntriesService extends BaseEntityService
 			$whereParams[':language'] = blx()->language;
 		}
 
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			if ($criteria->authorId && $criteria->authorId != '*')
+			{
+				$whereConditions[] = DbHelper::parseParam('e.authorId', $criteria->authorId, $whereParams);
+			}
+
+			if (($criteria->authorGroupId && $criteria->authorGroupId != '*') || ($criteria->authorGroup && $criteria->authorGroup != '*'))
+			{
+				$query->join('usergroups_users ugu', 'ugu.userId = e.authorId');
+
+				if ($criteria->authorGroupId && $criteria->authorGroupId != '*')
+				{
+					$whereConditions[] = DbHelper::parseParam('ugu.groupId', $criteria->authorGroupId, $whereParams);
+				}
+
+				if ($criteria->authorGroup && $criteria->authorGroup != '*')
+				{
+					$query->join('usergroups ug', 'ug.id = ugu.groupId');
+					$whereConditions[] = DbHelper::parseParam('ug.handle', $criteria->authorGroup, $whereParams);
+				}
+			}
+		}
+
 		if (count($whereConditions) == 1)
 		{
 			$query->where($whereConditions[0], $whereParams);
