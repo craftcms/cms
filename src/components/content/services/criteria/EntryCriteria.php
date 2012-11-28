@@ -19,7 +19,7 @@ class EntryCriteria extends BaseCriteria
 	public $before;
 	public $status = 'live';
 	public $archived = false;
-	public $order = 'dateCreated desc';
+	public $order = 'postDate desc';
 	public $offset;
 	public $limit = 100;
 	public $indexBy;
