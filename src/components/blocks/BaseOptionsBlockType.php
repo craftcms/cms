@@ -30,16 +30,19 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 	public function prepSettings($settings)
 	{
 		// Expand the options setting into an array.
-		if (!empty($settings['options']) && is_string($settings['options']))
+		if (!isset($settings['options']) || !is_array($settings['options']))
 		{
 			$options = array();
 
-			$lines = array_filter(preg_split('/[\r\n]+/', $settings['options']));
-
-			foreach($lines as $line)
+			if (!empty($settings['options']) && is_string($settings['options']))
 			{
-				$parts = preg_split('/=>/', $line, 2);
-				$options[trim($parts[0])] = (isset($parts[1])) ? trim($parts[1]) : trim($parts[0]);
+				$lines = array_filter(preg_split('/[\r\n]+/', $settings['options']));
+
+				foreach($lines as $line)
+				{
+					$parts = preg_split('/=>/', $line, 2);
+					$options[trim($parts[0])] = (isset($parts[1])) ? trim($parts[1]) : trim($parts[0]);
+				}
 			}
 
 			$settings['options'] = $options;
@@ -75,15 +78,18 @@ abstract class BaseOptionsBlockType extends BaseBlockType
 		// Prepare the options array for the textarea
 		$options = '';
 
-		foreach ($this->getSettings()->options as $value => $label)
+		if (is_array($this->getSettings()->options))
 		{
-			if ((string)$value === (string)$label)
+			foreach ($this->getSettings()->options as $value => $label)
 			{
-				$options .= $label."\n";
-			}
-			else
-			{
-				$options .= $value.' => '.$label."\n";
+				if ((string)$value === (string)$label)
+				{
+					$options .= $label."\n";
+				}
+				else
+				{
+					$options .= $value.' => '.$label."\n";
+				}
 			}
 		}
 
