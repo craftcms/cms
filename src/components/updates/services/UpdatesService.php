@@ -67,18 +67,24 @@ class UpdatesService extends BaseApplicationComponent
 			$updateModel = $this->getUpdates();
 			$count = 0;
 
-			if (isset($updateModel->blocks->releases) && count($updateModel->blocks->releases) > 0)
+			if ($updateModel->blocks->versionUpdateStatus == VersionUpdateStatus::UpdateAvailable)
 			{
-				$count++;
+				if (isset($updateModel->blocks->releases) && count($updateModel->blocks->releases) > 0)
+				{
+					$count++;
+				}
 			}
 
 			if (isset($updateModel->plugins))
 			{
 				foreach ($updateModel->plugins as $plugin)
 				{
-					if (isset($plugin->releases) && count($plugin->releases) > 0)
+					if ($plugin->status == PluginVersionUpdateStatus::UpdateAvailable)
 					{
-						$count++;
+						if (isset($plugin->releases) && count($plugin->releases) > 0)
+						{
+							$count++;
+						}
 					}
 				}
 			}
