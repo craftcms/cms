@@ -94,21 +94,30 @@ class ConfigService extends BaseApplicationComponent
 				}
 				else
 				{
-					// Test the server for it
-					try
+					// PHP Dev Server does omit the script name from 404s without any help from a redirect script,
+					// *unless* the URI looks like a file, in which case it'll just throw a 404.
+					if (AppHelper::isPhpDevServer())
 					{
-						$baseUrl = blx()->request->getHostInfo().blx()->request->getScriptUrl();
-						$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-						$response = \Requests::get($url);
-
-						if ($response->success && $response->body === 'success')
-						{
-							$this->_omitScriptNameInUrls = true;
-						}
+						$this->_omitScriptNameInUrls = false;
 					}
-					catch (\Exception $e)
+					else
 					{
-						Blocks::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+						// Test the server for it
+						try
+						{
+							$baseUrl = blx()->request->getHostInfo().blx()->request->getScriptUrl();
+							$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+							$response = \Requests::get($url);
+
+							if ($response->success && $response->body === 'success')
+							{
+								$this->_omitScriptNameInUrls = true;
+							}
+						}
+						catch (\Exception $e)
+						{
+							Blocks::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+						}
 					}
 
 					// Cache it
@@ -151,6 +160,12 @@ class ConfigService extends BaseApplicationComponent
 				{
 					// If there is already a PATH_INFO var available, we know it supports it.
 					if (isset($_SERVER['PATH_INFO']))
+					{
+						$this->_usePathInfo = true;
+					}
+					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
+					// so we need to explicitly check for that.
+					else if (AppHelper::isPhpDevServer())
 					{
 						$this->_usePathInfo = true;
 					}
