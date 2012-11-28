@@ -10,9 +10,10 @@ class UrlHelper
 	 * Returns either a CP or a site URL, depending on the request type.
 	 *
 	 * @static
-	 * @param string $path
+	 * @param string            $path
 	 * @param array|string|null $params
-	 * @param string|null $protocol
+	 * @param string|null       $protocol
+	 * @param bool              $mustShowScriptName
 	 * @return string
 	 */
 	public static function getUrl($path = '', $params = null, $protocol = '', $mustShowScriptName = false)

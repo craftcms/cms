@@ -294,21 +294,19 @@ class HttpRequestService extends \CHttpRequest
 	 *
 	 * We're overriding this from \CHttpRequest so we can have more control over the headers.
 	 *
-	 * @param string $fileName
+	 * @param string $path
 	 * @param string $content
 	 * @param array|null $options
 	 * @param bool|null $terminate
 	 */
-	public function sendFile($fileName, $content, $options = array(), $terminate = true)
+	public function sendFile($path, $content, $options = array(), $terminate = true)
 	{
+		$fileName = IOHelper::getFileName($path, true);
+
 		// Default to disposition to 'download'
 		if (!isset($options['forceDownload']) || $options['forceDownload'])
 		{
-			$disposition = 'attachment';
-		}
-		else
-		{
-			$disposition = 'inline';
+			header('Content-Disposition: attachment; filename="'.$fileName.'"');
 		}
 
 		if (empty($options['mimeType']))
@@ -323,10 +321,11 @@ class HttpRequestService extends \CHttpRequest
 
 		if (!empty($options['cache']))
 		{
-			$cacheTime = 2592000; // 30 days
-			header('Expires: ' . gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT');
+			$cacheTime = 31536000; // 1 year
+			header('Expires: '.gmdate('D, d M Y H:i:s', time() + $cacheTime).' GMT');
 			header('Pragma: cache');
-			header('Cache-Control: max-age=' . $cacheTime);
+			header('Cache-Control: max-age='.$cacheTime);
+			header('Last-Modified: '.gmdate('D, d M Y H:i:s', IOHelper::getLastTimeModified($path).' GMT'));
 		}
 		else
 		{
@@ -337,11 +336,13 @@ class HttpRequestService extends \CHttpRequest
 
 		if (!ob_get_length())
 		{
-			header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content,'8bit') : strlen($content)));
+			header('Content-Length: '.(function_exists('mb_strlen') ? mb_strlen($content, '8bit') : strlen($content)));
 		}
 
-		header('Content-Disposition: '.$disposition.'; filename="'.$fileName.'"');
-		header('Content-Transfer-Encoding: binary');
+		if ($options['mimeType'] == 'application/x-javascript' || $options['mimeType'] == 'text/css')
+		{
+			header('Vary: Accept-Encoding');
+		}
 
 		if($terminate)
 		{
@@ -489,7 +490,7 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If there's a non-empty 'action' param (either in the query string or post data), it's an action request
-		if ($action = $this->getParam('action'))
+		if (($action = $this->getParam('action')) !== null)
 		{
 			$this->_isActionRequest = true;
 			$this->_actionSegments = array_filter(explode('/', $action));
@@ -499,3 +500,4 @@ class HttpRequestService extends \CHttpRequest
 		$this->_isTemplateRequest = true;
 	}
 }
+

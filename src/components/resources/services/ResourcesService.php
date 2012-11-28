@@ -170,7 +170,7 @@ class ResourcesService extends BaseApplicationComponent
 				$options['cache'] = true;
 			}
 
-			blx()->request->sendFile(IOHelper::getFileName($path), $content, $options);
+			blx()->request->sendFile($path, $content, $options);
 		}
 		else
 		{
