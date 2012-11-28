@@ -93,8 +93,14 @@ class ArrayHelper
 		{
 			return $str;
 		}
-
-		return array_map('trim', explode(',', $str));
+		else if (is_string($str))
+		{
+			return array_map('trim', explode(',', $str));
+		}
+		else
+		{
+			return array($str);
+		}
 	}
 
 	/**

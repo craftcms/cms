@@ -206,7 +206,7 @@ class DbHelper
 	 * Parses a service param value to a DbCommand where condition.
 	 *
 	 * @param string $key
-	 * @param string $values
+	 * @param string|array $values
 	 * @param array &$params
 	 * @return mixed
 	 */
@@ -215,6 +215,7 @@ class DbHelper
 		$conditions = array();
 
 		$values = ArrayHelper::stringToArray($values);
+
 		foreach ($values as $value)
 		{
 			$operator = '=';
@@ -258,9 +259,66 @@ class DbHelper
 				$params[$param] = trim($value);
 				$conditions[] = $key.$operator.$param;
 			}
+		}
 
-			// Stop looping through operators
-			break;
+		if (count($conditions) == 1)
+		{
+			return $conditions[0];
+		}
+		else
+		{
+			array_unshift($conditions, 'or');
+			return $conditions;
+		}
+	}
+
+	/**
+	 * Parses a date param value to a DbCommand where condition.
+	 *
+	 * @param string $key
+	 * @param string $operator
+	 * @param string|array|DateTime $dates
+	 * @param array &$params
+	 * @return mixed
+	 */
+	public function parseDateParam($key, $operator, $dates, &$params)
+	{
+		$conditions = array();
+
+		$dates = ArrayHelper::stringToArray($dates);
+
+		foreach ($dates as $date)
+		{
+			if (!$date instanceof \DateTime)
+			{
+				$date = (string) $date;
+
+				if (preg_match('/^(\d{4})(?:-(\d{1,2})(?:-(\d{1,2})(?: (\d{1,2})\:(\d{2})(?:\:(\d{2}))?)?)?)?$/', $date, $m))
+				{
+					$format = 'Y-m-d h:i:s';
+
+					$date = $m[1] .                                                          // year
+						'-'.(!empty($m[2]) ? (strlen($m[2] == 1 ? '0' : '').$m[2]) : '01') . // month
+						'-'.(!empty($m[3]) ? (strlen($m[3] == 1 ? '0' : '').$m[3]) : '01') . // day
+						' '.(!empty($m[4]) ? (strlen($m[4] == 1 ? '0' : '').$m[4]) : '00') . // hour
+						':'.(!empty($m[5]) ? $m[5] : '00') .                                 // minute
+						':'.(!empty($m[6]) ? $m[6] : '00');                                  // second
+				}
+				else if (preg_match('/^\d{10}$/', $date))
+				{
+					$format = 'U';
+				}
+				else
+				{
+					$format = '';
+				}
+
+				$date = DateTime::createFromFormat($format, $date);
+			}
+
+			$param = ':p'.StringHelper::randomString(9);
+			$params[$param] = $date->getTimestamp();
+			$conditions[] = $key.$operator.$param;
 		}
 
 		if (count($conditions) == 1)

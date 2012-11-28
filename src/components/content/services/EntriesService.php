@@ -164,6 +164,16 @@ class EntriesService extends BaseEntityService
 			$whereConditions[] = DbHelper::parseParam('e.uri', $criteria->uri, $whereParams);
 		}
 
+		if ($criteria->after)
+		{
+			$whereConditions[] = DbHelper::parseDateParam('e.postDate', '>=', $criteria->after, $whereParams);
+		}
+
+		if ($criteria->before)
+		{
+			$whereConditions[] = DbHelper::parseDateParam('e.postDate', '<', $criteria->before, $whereParams);
+		}
+
 		if ($criteria->archived)
 		{
 			$whereConditions[] = 'e.archived = 1';

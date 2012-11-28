@@ -12,6 +12,8 @@ class EntryCriteria extends BaseCriteria
 	public $sectionId;
 	public $section;
 	public $language;
+	public $after;
+	public $before;
 	public $status = 'live';
 	public $archived = false;
 	public $order = 'dateCreated desc';
