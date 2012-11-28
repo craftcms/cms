@@ -44,13 +44,6 @@ $blocksConfig['logoutTrigger'] = 'logout';
 $blocksConfig['cacheDuration'] = 'P1D';
 
 /**
- * The amount of time to cache stuff in runtime/ when in dev mode.
- *
- * @see http://www.php.net/manual/en/dateinterval.construct.php
- */
-$blocksConfig['devModeCacheDuration'] = 'PT5S';
-
-/**
  * Whether generated URLs should omit 'index.php', e.g. http://domain.com/path
  * as opposed to showing it, e.g. http://domain.com/index.php/path
  *

@@ -12,8 +12,6 @@ if ($blocksConfig['devMode'] == true)
 	ini_set('display_errors', 1);
 	ini_set('log_errors', 1);
 	ini_set('error_log', BLOCKS_STORAGE_PATH.'logs/phperrors.log');
-
-	$blocksConfig['cacheDuration'] = $blocksConfig['devModeCacheDuration'];
 }
 else
 {
