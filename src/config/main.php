@@ -31,7 +31,7 @@ $cpRoutes['content\/(?P<filter>'.$handle.')']                                 = 
 $cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
 
-$cpRoutes['update\/(?P<handle>[^\/]*)']                                       = 'update';
+$cpRoutes['updates\/go\/(?P<handle>[^\/]*)']                                  = 'updates/_go';
 
 $cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
 $cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
