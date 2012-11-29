@@ -74,14 +74,14 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (!isset($this->_omitScriptNameInUrls))
 		{
-			$this->_omitScriptNameInUrls = false;
+			$this->_omitScriptNameInUrls = 'no';
 
 			// Check if the config value has actually been set to true/false
 			$configVal = $this->get('omitScriptNameInUrls');
 
 			if (is_bool($configVal))
 			{
-				$this->_omitScriptNameInUrls = $configVal;
+				$this->_omitScriptNameInUrls = ($configVal == true ? 'yes' : 'no');
 			}
 			else
 			{
@@ -90,34 +90,25 @@ class ConfigService extends BaseApplicationComponent
 
 				if ($cachedVal !== false)
 				{
-					$this->_omitScriptNameInUrls = (bool) $cachedVal;
+					$this->_omitScriptNameInUrls = $cachedVal;
 				}
 				else
 				{
-					// PHP Dev Server does omit the script name from 404s without any help from a redirect script,
-					// *unless* the URI looks like a file, in which case it'll just throw a 404.
-					if (AppHelper::isPhpDevServer())
+					// Test the server for it
+					try
 					{
-						$this->_omitScriptNameInUrls = false;
-					}
-					else
-					{
-						// Test the server for it
-						try
-						{
-							$baseUrl = blx()->request->getHostInfo().blx()->request->getScriptUrl();
-							$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
-							$response = \Requests::get($url);
+						$baseUrl = blx()->request->getHostInfo().blx()->request->getScriptUrl();
+						$url = substr($baseUrl, 0, strrpos($baseUrl, '/')).'/testScriptNameRedirect';
+						$response = \Requests::get($url);
 
-							if ($response->success && $response->body === 'success')
-							{
-								$this->_omitScriptNameInUrls = true;
-							}
-						}
-						catch (\Exception $e)
+						if ($response->success && $response->body === 'success')
 						{
-							Blocks::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
+							$this->_omitScriptNameInUrls = 'yes';
 						}
+					}
+					catch (\Exception $e)
+					{
+						Blocks::log('Unable to determine if a script name redirect is in place on the server: '.$e->getMessage(), \CLogger::LEVEL_ERROR);
 					}
 
 					// Cache it
@@ -126,7 +117,7 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_omitScriptNameInUrls;
+		return $this->_omitScriptNameInUrls == 'no' ? false : true;
 	}
 
 	/**
@@ -138,14 +129,14 @@ class ConfigService extends BaseApplicationComponent
 	{
 		if (!isset($this->_usePathInfo))
 		{
-			$this->_usePathInfo = false;
+			$this->_usePathInfo = 'no';
 
 			// Check if the config value has actually been set to true/false
 			$configVal = $this->get('usePathInfo');
 
 			if (is_bool($configVal))
 			{
-				$this->_usePathInfo = $configVal;
+				$this->_usePathInfo = ($configVal == true ? 'yes' : 'no');
 			}
 			else
 			{
@@ -154,18 +145,12 @@ class ConfigService extends BaseApplicationComponent
 
 				if ($cachedVal !== false)
 				{
-					$this->_usePathInfo = (bool) $cachedVal;
+					$this->_usePathInfo = $cachedVal;
 				}
 				else
 				{
 					// If there is already a PATH_INFO var available, we know it supports it.
 					if (isset($_SERVER['PATH_INFO']))
-					{
-						$this->_usePathInfo = true;
-					}
-					// PHP Dev Server supports path info, and doesn't support simultaneous requests,
-					// so we need to explicitly check for that.
-					else if (AppHelper::isPhpDevServer())
 					{
 						$this->_usePathInfo = true;
 					}
@@ -179,7 +164,7 @@ class ConfigService extends BaseApplicationComponent
 
 							if ($response->success && $response->body === 'success')
 							{
-								$this->_usePathInfo = true;
+								$this->_usePathInfo = 'yes';
 							}
 						}
 						catch (\Exception $e)
@@ -194,6 +179,6 @@ class ConfigService extends BaseApplicationComponent
 			}
 		}
 
-		return $this->_usePathInfo;
+		return $this->_usePathInfo == 'no' ? false : true;
 	}
 }
