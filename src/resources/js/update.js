@@ -92,6 +92,12 @@ function updateNext()
 		}
 
 		updateNext();
+	},
+
+	function(jqXHR, textStatus, errorThrown)
+	{
+		showError(Blocks.t('An unknown error occurred while updating {name}.', {'name': updateInfo[updating].name}));
+		return;
 	});
 }
 
