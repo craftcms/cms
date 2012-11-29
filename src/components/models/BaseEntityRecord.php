@@ -26,18 +26,21 @@ abstract class BaseEntityRecord extends BaseRecord
 		{
 			$blockType = blx()->blockTypes->populateBlockType($block);
 
-			$attribute = $blockType->defineContentAttribute();
-			if ($attribute !== false)
+			if (!empty($blockType))
 			{
-				$attribute = ModelHelper::normalizeAttributeConfig($attribute);
-				$attribute['label'] = $block->name;
-
-				if ($block->required)
+				$attribute = $blockType->defineContentAttribute();
+				if ($attribute !== false)
 				{
-					$attribute['required'] = true;
-				}
+					$attribute = ModelHelper::normalizeAttributeConfig($attribute);
+					$attribute['label'] = $block->name;
 
-				$attributes[$block->handle] = $attribute;
+					if ($block->required)
+					{
+						$attribute['required'] = true;
+					}
+
+					$attributes[$block->handle] = $attribute;
+				}
 			}
 		}
 
