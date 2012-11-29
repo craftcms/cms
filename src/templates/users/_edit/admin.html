@@ -21,7 +21,6 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="users/saveAdminSettings">
-		<input type="hidden" name="redirect" value="users/{{ account.id }}/admin">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
 		<h2>Groups and Permissions</h2>
@@ -55,6 +54,7 @@
 	<hr>
 
 	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="userId" value="{{ account.id }}">
 
 		<h2>User Info</h2>
 
@@ -112,11 +112,9 @@
 			</tbody>
 		</table>
 
-		<hr>
+		{% if not account.isCurrent %}
+			<hr>
 
-		<input type="hidden" name="userId" value="{{ account.id }}">
-
-		{% if true or not account.isCurrent %}
 			{% if account.status != 'suspended' %}
 				<input type="button" class="btn small formsubmit" value="{{ 'Suspend'|t }}" data-action="users/suspendUser">
 			{% endif %}

@@ -4,7 +4,7 @@
 
 
 {% if account is defined and account.id %}
-	{% if account.id == user.id %}
+	{% if account.isCurrent %}
 		{% set heading = "My Account"|t %}
 		{% set baseUrl = 'myaccount' %}
 	{% else %}

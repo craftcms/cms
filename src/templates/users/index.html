@@ -65,7 +65,7 @@
 			<tbody>
 				{% for account in blx.users.find(params) %}
 					<tr>
-						{% set accountUrl = url(account.id == user.id ? 'myaccount' : 'users/' ~ account.id) %}
+						{% set accountUrl = url(account.isCurrent ? 'myaccount' : 'users/' ~ account.id) %}
 						<th scope="row"><a href="{{ accountUrl }}">{{ account.username }}</a></th>
 						<td>{{ account.fullName }}</td>
 						<td>{% if account.email %}<a href="mailto:{{ account.email }}">{{ account.email }}</a>{% endif %}</td>
