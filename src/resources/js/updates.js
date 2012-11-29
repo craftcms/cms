@@ -111,7 +111,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					}
 					else
 					{
-						$td.html('<a class="btn" href="'+Blocks.getUrl('update/blocks?handle=Blocks')+'">'+Blocks.t('Update')+'</a>');
+						$td.html('<a class="btn" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>');
 					}
 
 					var $tr = $('<tr/>').appendTo($tbody),
@@ -125,7 +125,7 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 					var $tr = $('<tr/>').appendTo($tbody),
 						$th = $('<th/>').appendTo($tr),
 						$td = $('<td class="thin rightalign"/>').appendTo($tr),
-						$btn = $('<a class="btn" href="'+Blocks.getUrl('update/blocks')+'">'+Blocks.t('Install')+'</a>').appendTo($td);
+						$btn = $('<a class="btn" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Install')+'</a>').appendTo($td);
 
 					var packageValues = { packages: response.packages.join(', ') };
 					$th.html(response.packages.length > 1 ? Blocks.t('{packages} upgrades', packageValues) : Blocks.t('{packages} upgrade', packageValues));

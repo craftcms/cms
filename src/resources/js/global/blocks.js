@@ -223,28 +223,27 @@ Blocks.getActionUrl = function(path, params)
  *
  * @param string action
  * @param object|null data
- * @param function|null callback
+ * @param function|null onSuccess
+ * @param funciton|null onError
  */
-Blocks.postActionRequest = function(action, data, callback)
+Blocks.postActionRequest = function(action, data, onSuccess, onError)
 {
 	var url = Blocks.getActionUrl(action);
 
 	// Param mapping
 	if (typeof data == 'function')
 	{
-		// (action, callback)
-		callback = data;
+		// (action, onSuccess, onError)
+		onSuccess = data;
+		onError = onSuccess;
 		data = {};
 	}
 
 	return $.ajax(url, {
 		type: 'POST',
 		data: data,
-		success: callback,
-		error: function(jqXHR, textStatus, errorThrown)
-		{
-			console.log(jqXHR, textStatus, errorThrown);
-		}
+		success: onSuccess,
+		error: onError
 	});
 };
 
