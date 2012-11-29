@@ -7,7 +7,8 @@
 	name: 'path',
 	value: settings.path,
 	errors: settings.getErrors('path'),
-	required: true
+	required: true,
+    hint: '/path/to/folder/'
 }) }}
 
 {{ textField({
@@ -17,5 +18,6 @@
 	name: 'url',
 	value: settings.url,
 	errors: settings.getErrors('url'),
-	required: true
+	required: true,
+    hint: 'http://url/to/folder/'
 }) }}
