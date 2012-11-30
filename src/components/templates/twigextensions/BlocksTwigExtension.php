@@ -123,7 +123,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getGlobals()
 	{
 		$globals['blx'] = new BlxVariable();
-		$globals['date'] = new DateTime();
+		$globals['now'] = new DateTime();
 
 		if (blx()->isInstalled())
 		{
