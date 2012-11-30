@@ -149,7 +149,7 @@
 				instructions: "List multiple tags separated by commas."|t,
 				id: 'tags',
 				name: 'tags',
-				value: (entry is defined ? (entry.tags ? entry.tags : entry.getTags|join(', ')) : null),
+				value: (entry is defined ? entry.tags|join(', ') : null),
 				errors: (entry is defined ? entry.getErrors('tags') : null),
 			}) }}
 

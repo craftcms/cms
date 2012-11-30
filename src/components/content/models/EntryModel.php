@@ -31,7 +31,6 @@ class EntryModel extends BaseEntityModel
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
-		$attributes['tags'] = AttributeType::String;
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
@@ -188,5 +187,15 @@ class EntryModel extends BaseEntityModel
 		}
 
 		return $this->_tags;
+	}
+
+	/**
+	 * Sets the entry's tags
+	 *
+	 * @param array|string $tags
+	 */
+	public function setTags($tags)
+	{
+		$this->_tags = ArrayHelper::stringToArray($tags);
 	}
 }

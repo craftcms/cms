@@ -578,26 +578,19 @@ class EntriesService extends BaseEntityService
 	 */
 	private function _processTags(EntryModel $entry, EntryRecord $entryRecord)
 	{
-		$newEntryTags = explode(',', $entry->tags);
 		$entryTagRecords = array();
 
 		// Get the entries' current EntryTags
 		$currentEntryTagRecords = $this->_getTagsForEntry($entryRecord);
 
-		// Trim any whitespaces from the new tag names.
-		foreach ($newEntryTags as $key => $entryTag)
-		{
-			$newEntryTags[$key] = trim($entryTag);
-		}
-
 		// See if any tags have even changed for this entry.
-		if (count($currentEntryTagRecords) == count($newEntryTags))
+		if (count($currentEntryTagRecords) == count($entry->tags))
 		{
 			$identical = true;
 
 			foreach ($currentEntryTagRecords as $currentEntryTagRecord)
 			{
-				if (!preg_grep("/{$currentEntryTagRecord->name}/i", $newEntryTags))
+				if (!preg_grep("/{$currentEntryTagRecord->name}/i", $entry->tags))
 				{
 					// Something is different.
 					$identical = false;
@@ -613,7 +606,7 @@ class EntriesService extends BaseEntityService
 		}
 
 		// Process the new entry tags.
-		foreach ($newEntryTags as $newEntryTag)
+		foreach ($entry->tags as $newEntryTag)
 		{
 			foreach ($currentEntryTagRecords as $currentEntryTagRecord)
 			{
@@ -644,7 +637,7 @@ class EntriesService extends BaseEntityService
 		// Now check for deleted tags from the entry.
 		foreach ($currentEntryTagRecords as $currentEntryTagRecord)
 		{
-			foreach ($newEntryTags as $newEntryTag)
+			foreach ($entry->tags as $newEntryTag)
 			{
 				if (strtolower($currentEntryTagRecord->name) == strtolower($newEntryTag))
 				{
@@ -691,11 +684,17 @@ class EntriesService extends BaseEntityService
 	 */
 	public function getTagsByEntryId($entryId)
 	{
+		$tags = array();
+
 		$entryRecord = EntryRecord::model()->findByPk($entryId);
 		$entryTagRecords = $this->_getTagsForEntry($entryRecord);
 
-		$entryTagModels = EntryTagModel::populateModels($entryTagRecords);
-		return $entryTagModels;
+		foreach ($entryTagRecords as $record)
+		{
+			$tags[] = $record->name;
+		}
+
+		return $tags;
 	}
 
 	/**
