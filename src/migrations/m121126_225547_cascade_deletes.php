@@ -41,11 +41,14 @@ class m121126_225547_cascade_deletes extends \CDbMigration
 			$record->addForeignKeys();
 		}
 
-		// Don't forget the usergroups_users table
-		blx()->db->createCommand()->dropForeignKey('usergroups_users_group_fk', 'usergroups_users');
-		blx()->db->createCommand()->dropForeignKey('usergroups_users_user_fk', 'usergroups_users');
-		blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id', 'CASCADE');
-		blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id', 'CASCADE');
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			// Don't forget the usergroups_users table
+			blx()->db->createCommand()->dropForeignKey('usergroups_users_group_fk', 'usergroups_users');
+			blx()->db->createCommand()->dropForeignKey('usergroups_users_user_fk', 'usergroups_users');
+			blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id', 'CASCADE');
+			blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id', 'CASCADE');
+		}
 
 		// Drop the old pluginId FK from blx_widgets while we're at it
 		blx()->db->createCommand()->dropForeignKey('widgets_plugin_fk', 'widgets');
