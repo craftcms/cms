@@ -393,6 +393,15 @@ class EntriesService extends BaseEntityService
 
 				if ($section->hasUrls)
 				{
+					// Make sure the section's URL format is valid. This shouldn't be possible due to section validation,
+					// but it's not enforced by the DB, so anything is possible.
+					if (!$section->urlFormat || strpos($section->urlFormat, '{slug}') === false)
+					{
+						throw new Exception(Blocks::t('The section “{section}” doesn’t have a valid URL Format.', array(
+							'section' => Blocks::t($section->name)
+						)));
+					}
+
 					$entryRecord->uri = str_replace('{slug}', $entry->slug, $section->urlFormat);
 				}
 			}
