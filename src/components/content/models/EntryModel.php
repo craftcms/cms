@@ -27,6 +27,7 @@ class EntryModel extends BaseEntityModel
 		$attributes['language'] = AttributeType::Language;
 		$attributes['title'] = AttributeType::String;
 		$attributes['slug'] = AttributeType::String;
+		$attributes['uri'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
@@ -35,7 +36,6 @@ class EntryModel extends BaseEntityModel
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$attributes['sectionId'] = AttributeType::Number;
-			$attributes['uri'] = AttributeType::String;
 		}
 
 		return $attributes;

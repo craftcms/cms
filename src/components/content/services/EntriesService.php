@@ -405,6 +405,10 @@ class EntriesService extends BaseEntityService
 					$entryRecord->uri = str_replace('{slug}', $entry->slug, $section->urlFormat);
 				}
 			}
+			else
+			{
+				$entryRecord->uri = 'blog/'.$entry->slug;
+			}
 
 			$entryRecord->save(false);
 
