@@ -164,7 +164,7 @@ class EntryModel extends BaseEntityModel
 
 		if (!empty($path))
 		{
-			return UrlHelper::getUrl($path);
+			return UrlHelper::getCpUrl($path);
 		}
 	}
 
