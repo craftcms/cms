@@ -23,7 +23,7 @@ class m121130_144727_core_entry_uris extends \CDbMigration
 			blx()->db->createCommand()->createIndex('entries_uri_unique_idx', 'entries', 'uri', true);
 
 			// Fill 'er up
-			blx()->db->createCommand()->setText('UPDATE '.blx()->db->tablePrefix.'entries SET uri = CONCAT("blog/", slug)');
+			blx()->db->createCommand()->setText('UPDATE '.blx()->db->tablePrefix.'entries SET uri = CONCAT("blog/", slug)')->execute();
 		}
 
 		return true;
