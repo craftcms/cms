@@ -92,8 +92,12 @@ class EtService extends BaseApplicationComponent
 	{
 		$updateModel = UpdateModel::populateModel($etModel->data);
 		$blocksUpdateModel = BlocksUpdateModel::populateModel($etModel->data['blocks']);
-		$blocksNewReleases = BlocksNewReleaseModel::populateModels($blocksUpdateModel->releases);
-		$blocksUpdateModel->releases = $blocksNewReleases;
+
+		if (!empty($blocksUpdateModel->releases))
+		{
+			$blocksNewReleases = BlocksNewReleaseModel::populateModels($blocksUpdateModel->releases);
+			$blocksUpdateModel->releases = $blocksNewReleases;
+		}
 
 		$pluginUpdateModels = array();
 
@@ -102,8 +106,11 @@ class EtService extends BaseApplicationComponent
 			foreach ($etModel->data['plugins'] as $key => $pluginAttributes)
 			{
 				$pluginUpdateModel = PluginUpdateModel::populateModel($pluginAttributes);
-				$pluginNewReleases = PluginNewReleaseModel::populateModel($pluginUpdateModel->releases);
-				$pluginUpdateModel->releases = $pluginNewReleases;
+				if (!empty($pluginUpdateModel->releases))
+				{
+					$pluginNewReleases = PluginNewReleaseModel::populateModel($pluginUpdateModel->releases);
+					$pluginUpdateModel->releases = $pluginNewReleases;
+				}
 
 				$pluginUpdateModels[$key] = PluginUpdateModel::populateModel($pluginUpdateModel);
 			}
