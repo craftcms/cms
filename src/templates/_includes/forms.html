@@ -204,6 +204,19 @@
 {% endmacro %}
 
 
+{% macro lightswitch(config) %}
+	{% set config = { id: null, name: null, on: false, onLabel: "Yes"|t, offLabel: "No"|t, toggle: null }|merge(config) %}
+	<div class="lightswitch{% if config.on %} on{% endif %}"{% if config.toggle %} data-target="{{ config.toggle }}"{% endif %} tabindex="0">
+		<div class="container">
+			<div class="label on">{{ config.onLabel }}</div>
+			<div class="handle"></div>
+			<div class="label off">{{ config.offLabel }}</div>
+		</div>
+		<input type="hidden" name="{{ config.name }}" value="{{ config.on ? 'on' : '' }}">
+	</div>
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -279,4 +292,9 @@
 
 {% macro fileField(config) %}
 	{{ _self.field(config, _self.file(config)) }}
+{% endmacro %}
+
+
+{% macro lightswitchField(config) %}
+	{{ _self.field(config, _self.lightswitch(config)) }}
 {% endmacro %}

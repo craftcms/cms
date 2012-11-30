@@ -24,12 +24,6 @@ var EmailSettingsForm = Blocks.Base.extend({
 
 		this._onEmailTypeChange();
 		this.addListener(this.$protocolSelect, 'change', '_onEmailTypeChange');
-
-		// Initialize Switch and Pill fields
-		this.smtpAuthSwitch = new Blocks.ui.LightSwitch('#smtpAuth', {
-			onChange: $.proxy(this, '_onSmtpAuthChange')
-		});
-
 		this.addListener(this.$testBtn, 'activate', 'sendTestEmail');
 	},
 
