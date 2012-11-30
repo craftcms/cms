@@ -15,7 +15,7 @@ class SystemSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$generalSettingsModel = new GeneralSettingsModel();
-		$generalSettingsModel->isSystemOn = blx()->request->getPost('isSystemOn');
+		$generalSettingsModel->isSystemOn = (bool) blx()->request->getPost('isSystemOn');
 		$generalSettingsModel->siteName = blx()->request->getPost('siteName');
 		$generalSettingsModel->siteUrl = blx()->request->getPost('siteUrl');
 		$generalSettingsModel->licenseKey = blx()->request->getPost('licenseKey');
