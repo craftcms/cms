@@ -67,6 +67,16 @@ class AppVariable
 	}
 
 	/**
+	 * Returns whether the system is on.
+	 *
+	 * @return string
+	 */
+	public function isSystemOn()
+	{
+		return Blocks::isSystemOn();
+	}
+
+	/**
 	 * Return max upload size in bytes.
 	 *
 	 * @return int

@@ -15,6 +15,7 @@ class SystemSettingsController extends BaseController
 		$this->requirePostRequest();
 
 		$generalSettingsModel = new GeneralSettingsModel();
+		$generalSettingsModel->isSystemOn = blx()->request->getPost('isSystemOn');
 		$generalSettingsModel->siteName = blx()->request->getPost('siteName');
 		$generalSettingsModel->siteUrl = blx()->request->getPost('siteUrl');
 		$generalSettingsModel->licenseKey = blx()->request->getPost('licenseKey');
@@ -22,6 +23,7 @@ class SystemSettingsController extends BaseController
 		if ($generalSettingsModel->validate())
 		{
 			$info = InfoRecord::model()->find();
+			$info->on = $generalSettingsModel->isSystemOn;
 			$info->siteName = $generalSettingsModel->siteName;
 			$info->siteUrl = $generalSettingsModel->siteUrl;
 			$info->licenseKey = $generalSettingsModel->licenseKey;
