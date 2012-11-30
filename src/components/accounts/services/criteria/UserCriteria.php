@@ -14,7 +14,7 @@ class UserCriteria extends BaseCriteria
 	public $lastName;
 	public $email;
 	public $admin;
-	public $status;
+	public $status = 'active';
 	public $lastLoginDate;
 	public $order = 'username asc';
 	public $offset;

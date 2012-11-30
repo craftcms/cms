@@ -12,7 +12,7 @@
 	{% if blx.request.segment(1) == 'myaccount' %}
 		{% set account = user %}
 	{% elseif userId %}
-		{% set account = blx.users.id(userId).first %}
+		{% set account = blx.users.status('*').id(userId).first %}
 	{% endif %}
 	{% if not account %}{% exit 404 %}{% endif %}
 {% endif %}
