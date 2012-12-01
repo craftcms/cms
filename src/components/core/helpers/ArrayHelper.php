@@ -101,7 +101,7 @@ class ArrayHelper
 		{
 			return array_map('trim', explode(',', $str));
 		}
-		else if ($str !== null)
+		else
 		{
 			return array($str);
 		}
