@@ -1,9 +1,19 @@
 <?php
 
-require_once(BLOCKS_APP_PATH.'config/defaults/blocks.php');
-require_once(BLOCKS_APP_PATH.'config/defaults/db.php');
-require_once(BLOCKS_CONFIG_PATH.'blocks.php');
-require_once(BLOCKS_CONFIG_PATH.'db.php');
+// Load the configs
+$blocksConfig = require_once(BLOCKS_APP_PATH.'config/defaults/blocks.php');
+$dbConfig = require_once(BLOCKS_APP_PATH.'config/defaults/db.php');
+
+if (is_array($_blocksConfig = require_once(BLOCKS_CONFIG_PATH.'blocks.php')))
+{
+	$blocksConfig = array_merge($blocksConfig, $_blocksConfig);
+}
+
+if (is_array($_dbConfig = require_once(BLOCKS_CONFIG_PATH.'db.php')))
+{
+	$dbConfig = array_merge($dbConfig, $_dbConfig);
+}
+
 
 if ($blocksConfig['devMode'] == true)
 {

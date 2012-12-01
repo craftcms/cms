@@ -9,30 +9,39 @@
  * blocks/config/config.php, and make your change there.
  */
 
+return array(
+
 /**
  * Determines whether the system is in dev mode or not.
  */
-$blocksConfig['devMode'] = false;
+'devMode' => true,
 
 /**
  * The URL segment to trigger a CP request.
  */
-$blocksConfig['cpTrigger'] = 'admin';
+'cpTrigger' => 'admin',
 
 /**
  * The URL segment to trigger a resource request.
  */
-$blocksConfig['resourceTrigger'] = 'resources';
+'resourceTrigger' => 'resources',
 
 /**
  * The URL segment to trigger a controller action request.
  */
-$blocksConfig['actionTrigger'] = 'actions';
+'actionTrigger' => 'actions',
+
+/**
+ * The source of the site routes. Possible values are 'file' and 'db'.
+ *
+ * If set to 'file', Blocks will look for routes in blocks/config/routes.php
+ */
+'siteRoutesSource' => 'db',
 
 /**
  * The URL segment to trigger a user session logout.
  */
-$blocksConfig['logoutTrigger'] = 'logout';
+'logoutTrigger' => 'logout',
 
 /**
  * The amount of time to cache stuff in runtime/.
@@ -41,7 +50,7 @@ $blocksConfig['logoutTrigger'] = 'logout';
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['cacheDuration'] = 'P1D';
+'cacheDuration' => 'P1D',
 
 /**
  * Whether generated URLs should omit 'index.php', e.g. http://domain.com/path
@@ -58,7 +67,7 @@ $blocksConfig['cacheDuration'] = 'P1D';
  *
  * Possible values: true, false, 'auto'
  */
-$blocksConfig['omitScriptNameInUrls'] = 'auto';
+'omitScriptNameInUrls' => 'auto',
 
 /**
  * Whether generated URLs should be formatted using PATH_INFO, e.g. http://domain.com/index.php/path/,
@@ -66,13 +75,13 @@ $blocksConfig['omitScriptNameInUrls'] = 'auto';
  *
  * Possible values: true, false, 'auto'
  */
-$blocksConfig['usePathInfo'] = 'auto';
+'usePathInfo' => 'auto',
 
 /**
  * If you have Apache's mod_xsendfile installed and configured, set this to 'true' and Blocks will
  * use xSendFile to transfer files.
  */
-$blocksConfig['useXSendFile'] = false;
+'useXSendFile' => false,
 
 /**
  * The amount of time a user stays logged in.
@@ -81,7 +90,7 @@ $blocksConfig['useXSendFile'] = false;
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['userSessionDuration'] = 'PT1H';
+'userSessionDuration' => 'PT1H',
 
 /**
  * The amount of time a user stays logged if "Remember Me" is checked.
@@ -90,7 +99,7 @@ $blocksConfig['userSessionDuration'] = 'PT1H';
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['rememberedUserSessionDuration'] = 'P2W';
+'rememberedUserSessionDuration' => 'P2W',
 
 /**
  * The amount of time we'll remember usernames.
@@ -99,20 +108,20 @@ $blocksConfig['rememberedUserSessionDuration'] = 'P2W';
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['rememberUsernameDuration'] = 'P1Y';
+'rememberUsernameDuration' => 'P1Y',
 
 /**
  * The amount of time a newly generated email verification code will last before expiring.
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['verificationCodeDuration'] = 'P1D';
+'verificationCodeDuration' => 'P1D',
 
 /**
  * The number of invalid login attempts within the 'invalidLoginWindowDuration' before the account
  * gets locked.
  */
-$blocksConfig['maxInvalidLogins'] = 5;
+'maxInvalidLogins' => 5,
 
 /**
  * The amount of time to track invalid login attempts for a user.
@@ -121,7 +130,7 @@ $blocksConfig['maxInvalidLogins'] = 5;
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['invalidLoginWindowDuration'] = 'PT1H';
+'invalidLoginWindowDuration' => 'PT1H',
 
 /**
  * The amount of time a user must wait before logging in after their account is locked.
@@ -131,7 +140,7 @@ $blocksConfig['invalidLoginWindowDuration'] = 'PT1H';
  *
  * @see http://www.php.net/manual/en/dateinterval.construct.php
  */
-$blocksConfig['cooldownDuration'] = 'PT5M';
+'cooldownDuration' => 'PT5M',
 
 // PHPPass Config
 /**
@@ -140,20 +149,23 @@ $blocksConfig['cooldownDuration'] = 'PT5M';
  *
  * This setting should be kept between 4 and 31.
  */
-$blocksConfig['phpPass-iterationCount'] = 8;
+'phpPass-iterationCount' => 8,
 
 /**
  * Controls whether to use the minified and merged JavaScript in the resources/js/uncompressed or
  * the resources/js/compressed folder.
  */
-$blocksConfig['useCompressedJs'] = true;
+'useCompressedJs' => true,
 
 /**
  * Controls whether to add the @ symbol around translated strings to help during dubugging.
  */
-$blocksConfig['translationDebugOutput'] = false;
+'translationDebugOutput' => false,
 
-$blocksConfig['allowedFileExtensions'] = '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,mpc,mpeg,mpg,ods,odt,pdf,png,ppt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,wma,wmv,xls,xlsx,zip';
+/**
+ * Allowed file upload extensions.
+ */
+'allowedFileExtensions' => '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,flv,gif,gz,gzip,htm,html,jpeg,jpg,mid,mov,mp3,mp4,mpc,mpeg,mpg,ods,odt,pdf,png,pt,pptx,pxd,qt,ram,rar,rm,rmi,rmvb,rtf,sdc,sitd,swf,sxc,sxw,tar,tgz,tif,tiff,txt,vsd,wav,wma,wmv,xls,xlsx,zip',
 
 /**
  * Error Path Keys
@@ -170,3 +182,5 @@ $blocksConfig['allowedFileExtensions'] = '7z,aiff,asf,avi,bmp,csv,doc,docx,fla,f
  * Offline Path Key
  * 'offlinePath'    => blocks.app.templates._offline
  */
+
+);
