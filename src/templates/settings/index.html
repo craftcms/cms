@@ -13,7 +13,9 @@
 
 	<ul class="icons">
 		<li><a href="{{ url('settings/general') }}" data-icon="g">{{ "General"|t }}</a></li>
-		<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
+		{% if blx.config.siteRoutesSource != 'file' %}
+			<li><a href="{{ url('settings/routes') }}" data-icon="⇈">{{ "Routes"|t }}</a></li>
+		{% endif %}
 		{% if blx.hasPackage('Users') %}
 			<li><a href="{{ url('settings/users') }}" data-icon="U">{{ "Users"|t }}</a></li>
 		{% endif %}
