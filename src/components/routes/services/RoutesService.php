@@ -11,7 +11,16 @@ class RoutesService extends BaseApplicationComponent
 	 */
 	public function getAllRoutes()
 	{
-		return RouteRecord::model()->ordered()->findAll();
+		$routes = array();
+
+		$records = RouteRecord::model()->ordered()->findAll();
+
+		foreach ($records as $record)
+		{
+			$routes[$record->urlPattern] = $record->template;
+		}
+
+		return $routes;
 	}
 
 	/**
