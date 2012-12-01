@@ -45,10 +45,11 @@ class LinksBlockType extends BaseBlockType
 	protected function defineSettings()
 	{
 		return array(
-			'criteriaId'  => AttributeType::Number,
-			'addLabel'    => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
-			'removeLabel' => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
-			'limit'       => array(AttributeType::Number, 'min' => 0),
+			'criteriaId'    => AttributeType::Number,
+			'addLabel'      => array(AttributeType::String, 'required' => true, 'default' => 'Add Links'),
+			'removeLabel'   => array(AttributeType::String, 'required' => true, 'default' => 'Remove Links'),
+			'limit'         => array(AttributeType::Number, 'min' => 0),
+			'reverseHandle' => AttributeType::String,
 		);
 	}
 
@@ -119,6 +120,7 @@ class LinksBlockType extends BaseBlockType
 		}
 
 		$criteria->ltrHandle = $this->model->handle;
+		$criteria->rtlHandle = ($settings['reverseHandle'] ? $settings['reverseHandle'] : null);
 		$criteria->leftEntityType = $this->model->getClassHandle();
 		$criteria->rightEntityType = $type;
 		$criteria->rightSettings = $linkTypeSettings;
