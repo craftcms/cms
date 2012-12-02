@@ -17,43 +17,38 @@ class UserCriteria extends BaseCriteria
 	public $status = 'active';
 	public $lastLoginDate;
 	public $order = 'username asc';
-	public $offset;
-	public $limit = 100;
 	public $indexBy;
 
 	/**
 	 * Returns all users that match the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return array
 	 */
-	public function find($criteria = null)
+	protected function findEntities()
 	{
-		$this->setCriteria($criteria);
 		return blx()->users->findUsers($this);
 	}
 
 	/**
 	 * Returns the first section that matches the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return UserModel|null
 	 */
-	public function first($criteria = null)
+	protected function findFirstEntity()
 	{
-		$this->setCriteria($criteria);
 		return blx()->users->findUser($this);
 	}
 
 	/**
 	 * Returns the total users that match the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return int
 	 */
-	public function total($criteria = null)
+	protected function getTotalEntities()
 	{
-		$this->setCriteria($criteria);
 		return blx()->users->getTotalUsers($this);
 	}
 }

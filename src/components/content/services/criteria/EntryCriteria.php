@@ -20,43 +20,38 @@ class EntryCriteria extends BaseCriteria
 	public $status = 'live';
 	public $archived = false;
 	public $order = 'postDate desc';
-	public $offset;
-	public $limit = 100;
 	public $indexBy;
 
 	/**
 	 * Returns all entries that match the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return array
 	 */
-	public function find($criteria = null)
+	protected function findEntities()
 	{
-		$this->setCriteria($criteria);
 		return blx()->entries->findEntries($this);
 	}
 
 	/**
 	 * Returns the first entry that matches the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return EntryModel|null
 	 */
-	public function first($criteria = null)
+	protected function findFirstEntity()
 	{
-		$this->setCriteria($criteria);
 		return blx()->entries->findEntry($this);
 	}
 
 	/**
 	 * Returns the total entries that match the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return int
 	 */
-	public function total($criteria = null)
+	protected function getTotalEntities()
 	{
-		$this->setCriteria($criteria);
 		return blx()->entries->getTotalEntries($this);
 	}
 }

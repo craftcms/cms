@@ -10,43 +10,39 @@ class SectionCriteria extends BaseCriteria
 	public $handle;
 	public $hasUrls = false;
 	public $order = 'name asc';
-	public $offset;
 	public $limit;
 	public $indexBy;
 
 	/**
 	 * Returns all sections that match the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return array
 	 */
-	public function find($criteria = null)
+	protected function findEntities()
 	{
-		$this->setCriteria($criteria);
 		return blx()->sections->findSections($this);
 	}
 
 	/**
 	 * Returns the first section that matches the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return SectionModel|null
 	 */
-	public function first($criteria = null)
+	protected function findFirstEntity()
 	{
-		$this->setCriteria($criteria);
 		return blx()->sections->findSection($this);
 	}
 
 	/**
 	 * Returns the total sections that match the criteria.
 	 *
-	 * @param array|null $criteria
+	 * @access protected
 	 * @return int
 	 */
-	public function total($criteria = null)
+	protected function getTotalEntities()
 	{
-		$this->setCriteria($criteria);
 		return blx()->sections->getTotalSections($this);
 	}
 }
