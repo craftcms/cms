@@ -337,6 +337,12 @@ div.btn.submit input { position: absolute; left: 100%; }
 h1 + .actions { margin-top: -100px; }
 h2 + .actions { margin-top: -54px; }
 
+/* pagination */
+.paginate { margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px dotted #dbdbdb; height: 31px; text-align: right; }
+#content.centered .paginate { text-align: center; }
+.paginate p { display: inline; padding-top: 7px; }
+.paginate .btngroup { margin-left: 15px; }
+
 /* ----------------------------------------
 /*  Tables
 /* ----------------------------------------*/

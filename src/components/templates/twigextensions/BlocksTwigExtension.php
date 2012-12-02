@@ -23,6 +23,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			new IncludeResource_TokenParser('includeJs'),
 			new IncludeTranslations_TokenParser(),
 			new Exit_TokenParser(),
+			new Paginate_TokenParser(),
 		);
 	}
 

@@ -8,6 +8,7 @@ class HttpRequestService extends \CHttpRequest
 {
 	private $_path;
 	private $_segments;
+	private $_pageNum = 1;
 
 	private $_isCpRequest = false;
 	private $_isResourceRequest = false;
@@ -30,16 +31,16 @@ class HttpRequestService extends \CHttpRequest
 		if (blx()->config->usePathInfo())
 		{
 			$pathInfo = $this->getPathInfo();
-			$this->_path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
+			$path = $pathInfo ? $pathInfo : $this->_getQueryStringPath();
 		}
 		else
 		{
 			$queryString = $this->_getQueryStringPath();
-			$this->_path = $queryString ? $queryString : $this->getPathInfo();
+			$path = $queryString ? $queryString : $this->getPathInfo();
 		}
 
 		// Get the path segments
-		$this->_segments = array_filter(explode('/', $this->_path));
+		$this->_segments = array_filter(explode('/', $path));
 
 		// Is this a CP request?
 		$this->_isCpRequest = ($this->getSegment(1) == blx()->config->get('cpTrigger'));
@@ -48,8 +49,22 @@ class HttpRequestService extends \CHttpRequest
 		{
 			// Chop the CP trigger segment off of the path & segments array
 			array_shift($this->_segments);
-			$this->_path = implode('/', $this->_segments);
 		}
+
+		// Is this a paginated request?
+		if ($this->_segments)
+		{
+			$lastSegment = $this->_segments[count($this->_segments)-1];
+
+			if (preg_match('/p(\d+)/', $lastSegment, $match))
+			{
+				$this->_pageNum = $match[1];
+				array_pop($this->_segments);
+			}
+		}
+
+		// Now that we've chopped off the admin/page segments, set the path
+		$this->_path = implode('/', $this->_segments);
 
 		$this->_checkRequestType();
 	}
@@ -86,6 +101,16 @@ class HttpRequestService extends \CHttpRequest
 		{
 			return $this->_segments[$num-1];
 		}
+	}
+
+	/**
+	 * Returns the page number if this is a paginated request.
+	 *
+	 * @return int
+	 */
+	public function getPageNum()
+	{
+		return $this->_pageNum;
 	}
 
 	/**
