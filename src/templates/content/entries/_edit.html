@@ -44,7 +44,7 @@
 
 
 {% if isNewEntry %}
-	{% set title = "Create a new entry"|t %}
+	{% set title = "Create a new {section} entry"|t({ section: (blx.hasPackage('PublishPro') ? section.name : 'Blog'|t) }) %}
 {% else %}
 	{% set title = "Editing “{title}”"|t({ title: entry.title|t }) %}
 	{% if entry is defined and entry.classHandle != 'Entry' %}
