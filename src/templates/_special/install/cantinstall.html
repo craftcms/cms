@@ -9,7 +9,7 @@
 	<ul class="bullets">
 		{% for req in reqCheck.requirements %}
 			{% if req.result == 'failed' %}
-				<li>{{ req.notes }}</li>
+				<li>{{ req.notes|raw }}</li>
 			{% endif %}
 		{% endfor %}
 	</ul>
