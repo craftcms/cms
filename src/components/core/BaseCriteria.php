@@ -70,7 +70,7 @@ abstract class BaseCriteria
 	public function find($criteria = null)
 	{
 		$this->setCriteria($criteria);
-		$this->findEntities();
+		return $this->findEntities();
 	}
 
 	/**
@@ -82,7 +82,7 @@ abstract class BaseCriteria
 	public function first($criteria = null)
 	{
 		$this->setCriteria($criteria);
-		$this->findFirstEntity();
+		return $this->findFirstEntity();
 	}
 
 	/**
@@ -94,7 +94,7 @@ abstract class BaseCriteria
 	public function total($criteria = null)
 	{
 		$this->setCriteria($criteria);
-		$this->getTotalEntities();
+		return $this->getTotalEntities();
 	}
 
 	/**
