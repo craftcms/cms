@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class AssetBlockRecord extends BaseBlockRecord
 {
+	protected $reservedHandleWords = array('filename', 'kind', 'width', 'height', 'size', 'dateModified');
+
 	/**
 	 * @return string
 	 */

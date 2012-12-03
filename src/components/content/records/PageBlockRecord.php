@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class PageBlockRecord extends BaseBlockRecord
 {
+	protected $reservedHandleWords = array('title', 'uri', 'template', 'url');
+
 	/**
 	 * @return string
 	 */

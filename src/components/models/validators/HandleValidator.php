@@ -8,7 +8,7 @@ class HandleValidator extends \CValidator
 {
 	public $reservedWords = array();
 
-	protected static $baseReservedWords = array('this', 'true', 'false', 'y', 'n', 'yes', 'no', 'url', 'uri');
+	protected static $baseReservedWords = array('id', 'dateCreated', 'dateUpdated', 'uid', 'this', 'true', 'false', 'y', 'n', 'yes', 'no', 'classHandle', 'attributeNames', 'attributes', 'attribute', 'rules', 'attributeLabels', 'blocks', 'content', 'rawContent');
 
 	/**
 	 * @param $object
@@ -22,8 +22,10 @@ class HandleValidator extends \CValidator
 		if ($handle)
 		{
 			$reservedWords = array_merge($this->reservedWords, static::$baseReservedWords);
+			$reservedWords = array_map('strtolower', $reservedWords);
+			$lcHandle = strtolower($handle);
 
-			if (in_array($handle, $reservedWords))
+			if (in_array($lcHandle, $reservedWords))
 			{
 				$message = Blocks::t('“{handle}” is a reserved word.', array('handle' => $handle));
 				$this->addError($object, $attribute, $message);
