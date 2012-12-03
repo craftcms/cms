@@ -331,12 +331,21 @@ class AppUpdater implements IUpdater
 			$filePath = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
 
 			// Check to see if the file we need to update is writable.
-			if (IOHelper::fileExists($filePath));
+			if (IOHelper::fileExists($filePath))
 			{
 				if (!IOHelper::isWritable($filePath))
 				{
 					$this->_writableErrors[] = $filePath;
 				}
+			}
+			// In this case, it's an 'added' update file.
+			else if (($folderPath = IOHelper::folderExists(IOHelper::getFolderName($filePath))) == true)
+			{
+				if (!IOHelper::isWritable($folderPath))
+				{
+					$this->_writableErrors[] = $filePath;
+				}
+
 			}
 		}
 
