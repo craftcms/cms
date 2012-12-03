@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class EntryBlockRecord extends BaseBlockRecord
 {
+	protected $reservedHandleWords = array('authorId', 'sectionId', 'language', 'title', 'slug', 'uri', 'postDate', 'expiryDate', 'enabled', 'status', 'author', 'url', 'cpEditUrl', 'tags');
+
 	/**
 	 * @return string
 	 */
