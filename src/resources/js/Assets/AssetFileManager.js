@@ -35,6 +35,8 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.$left = $('> .nav', this.$manager);
             this.$right = $('> .asset-content', this.$manager);
 
+            this.$status = $('> .asset-status', this.$right);
+
             this.$sources = $('> .assets-sources', this.$left);
 
             this.$folderContainer = $('> .folder-container', this.$right);
