@@ -87,7 +87,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
 
-		return array('source_id' => $this->model->id, 'total' => $total, 'missing_folders' => $missingFolders);
+		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
 
 	/**

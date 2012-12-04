@@ -3,7 +3,6 @@ namespace Blocks;
 
 /**
  * Handles asset indexing tasks
- * TODO: clean up after indexing - delete obsolete and such
  */
 class AssetIndexingController extends BaseController
 {
@@ -12,8 +11,10 @@ class AssetIndexingController extends BaseController
 	 */
 	public function actionGetSessionId()
 	{
+		$this->requireLogin();
 		$this->requireAjaxRequest();
-		$this->returnJson(array('session_id' => blx()->assetIndexing->getIndexingSessionId()));
+
+		$this->returnJson(array('sessionId' => blx()->assetIndexing->getIndexingSessionId()));
 	}
 
 	/**
@@ -21,7 +22,10 @@ class AssetIndexingController extends BaseController
 	 */
 	public function actionStartIndex()
 	{
-		$sourceId = blx()->request->getRequiredPost('source_id');
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$sourceId = blx()->request->getRequiredPost('sourceId');
 		$sessionId = blx()->request->getRequiredPost('session');
 
 		$this->returnJson(blx()->assetIndexing->getIndexListForSource($sessionId, $sourceId));
@@ -32,11 +36,28 @@ class AssetIndexingController extends BaseController
 	 */
 	public function actionPerformIndex()
 	{
-		$sourceId = blx()->request->getRequiredPost('source_id');
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$sourceId = blx()->request->getRequiredPost('sourceId');
 		$sessionId = blx()->request->getRequiredPost('session');
 		$offset = blx()->request->getRequiredPost('offset');
 
 		$this->returnJson(blx()->assetIndexing->processIndexForSource($sessionId, $offset, $sourceId));
 
+	}
+
+	public function actionFinishIndex()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+
+		$sources = blx()->request->getRequiredPost('sources');
+		$command = blx()->request->getRequiredPost('command');
+		$sessionId = blx()->request->getRequiredPost('sessionId');
+
+		$sources = explode(",", $sources);
+
+		$this->returnJson(blx()->assetIndexing->finishIndex($sessionId, $sources, $command));
 	}
 }

@@ -3,6 +3,13 @@
 {% set title = "Asset Indexing"|t %}
 {% set sources = blx.assets.getAllSources %}
 
+{% includeTranslations
+    "The following items were found in the database that do not have a physical match.",
+    "Folders",
+    "Files",
+    "Cancel",
+    "Delete"
+%}
 
 {% set content %}
 	<p id="nosources" {% if sources|length %}style="display: none"{% endif %}>
@@ -32,14 +39,6 @@
         <div class="buttons">
             <a href="javascript:;" class="btn" id="start-index">{{ "Index"|t }}</a>
         </div>
-
-        {#<div id="index-report">
-            <div id="index-message"></div>
-            <div id="index-obsolete"></div>
-            <div class="buttons">
-                <a href="javascript:;" class="btn" id="finish-index">{{ "Finish indexing"|t }}</a>
-            </div>
-        </div>#}
 	{% endif %}
 
 {% endset %}

@@ -13,6 +13,8 @@ namespace Blocks;
  * @property ImagesService          $images			The images service
  * @property ResourcesService		$resources		The resources service
  * @property HttpRequestService 	$request 		The request service
+ * @property DbConnection			$db				Database
+ * @property LinksService			$links			The links service
  */
 class App extends \CWebApplication
 {

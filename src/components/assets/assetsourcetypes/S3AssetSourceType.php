@@ -192,7 +192,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
 
-		return array('source_id' => $this->model->id, 'total' => $total, 'missing_folders' => $missingFolders);
+		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
 
 	/**
@@ -259,7 +259,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	/**
 	 * Set S3 credentials.
 	 *
-	 * @param $accessKey
+	 * @param $keyId
 	 * @param $secretKey
 	 */
 	private function _setS3Credentials($keyId, $secret)

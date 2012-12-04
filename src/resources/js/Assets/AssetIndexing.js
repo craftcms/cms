@@ -1,5 +1,7 @@
 (function($) {
 
+    var $modalContainerDiv = null;
+
     var IndexingManager = Blocks.Base.extend({
 
         $startIndexingButton: null,
@@ -11,6 +13,10 @@
 
         sessionId: null,
         queue: null,
+
+        modal: null,
+
+        missingFolders: [],
 
         init: function()
         {
@@ -40,97 +46,155 @@
             }
 
             this.$startIndexingButton.addClass('disabled');
-            var _t = this;
 
-            Blocks.postActionRequest('assetIndexing/getSessionId', function(data){
-                _t.sessionId = data.session_id;
-                _t.queue = new AjaxQueueManager(10, _t.displayIndexingReport, _t);
+            checkedSources.prop('disabled', true);
 
+            Blocks.postActionRequest('assetIndexing/getSessionId', $.proxy(function(data){
+                this.sessionId = data.sessionId;
+                this.missingFolders = [];
+                this.queue = new AjaxQueueManager(10, this.displayIndexingReport, this);
+
+                var _t = this;
 
                 checkedSources.each(function () {
                     _t.$sourceProgressBars.html('');
                     var progress_bar = $(this).parents('tr').find('td.index-progress');
 
                     var params = {
-                        source_id: $(this).attr('source_id'),
+                        sourceId: $(this).attr('source_id'),
                         session: _t.sessionId
                     };
 
-                    _t.queue.addItem(Blocks.getActionUrl('assetIndexing/startIndex'), params, function (data) {
+                    _t.queue.addItem(Blocks.getActionUrl('assetIndexing/startIndex'), params, $.proxy(function (data) {
 
                         progress_bar.attr('total', data.total).attr('current', 0);
                         for (var i = 0; i < data.total; i++) {
                             params = {
-                                session: _t.sessionId,
-                                source_id: data.source_id,
+                                session: this.sessionId,
+                                sourceId: data.sourceId,
                                 offset: i
                             };
 
-                            _t.queue.addItem(Blocks.getActionUrl('assetIndexing/performIndex'), params, function () {
+                            this.queue.addItem(Blocks.getActionUrl('assetIndexing/performIndex'), params, function () {
                                 progress_bar.attr('current', parseInt(progress_bar.attr('current'), 10) + 1);
                                 progress_bar.html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
                             });
                         }
-                    });
+
+                        for (var folder_id in data.missingFolders) {
+                            this.missingFolders.push({folder_id: folder_id, folder_name: data.missingFolders[folder_id]});
+                        }
+                    }, _t));
                 });
-                _t.queue.startQueue();
-            });
+                this.queue.startQueue();
+            }, this));
         },
 
         /**
          * Display Indexing report after all is done
          */
         displayIndexingReport: function () {
-            console.log(this);
+
             this.$startIndexingButton.removeClass('disabled');
             this.$sourceProgressBars.html('');
-            return;
-            // TODO deal with obsolete files
-            /*$('input.assets-index.disabled').removeClass('disabled');
-            $('div.progress-bar').remove();
+
             var sources = [];
-            sources_to_index.each(function () {
-                sources.push($(this).attr('id'));
+            this.$sourceCheckboxes.filter(':checked').each(function () {
+                sources.push($(this).attr('source_id'));
             });
 
+            if ($modalContainerDiv == null) {
+                $modalContainerDiv = $('<div class="modal index-report"></div>').addClass().appendTo(Blocks.$body);
+            }
+
+            if (this.modal == null) {
+                this.modal = new Blocks.ui.Modal();
+                this.modal.sessionId = this.sessionId;
+                this.modal.IndexingManager = this;
+            }
+
             var params = {
-                ACT: Assets.actions.finish_index,
-                session: session,
+                sessionId: this.sessionId,
                 command: JSON.stringify({command: 'statistics'}),
                 sources: sources.join(",")
             };
 
-            $.post(Assets.siteUrl, params, function (data) {
-                data = JSON.parse(data);
-                if (typeof data.folders != "undefined" || typeof data.files != "undefined") {
-                    $('div#assets-dialog div#index-message').html(Assets.lang.index_stale_entries_message);
+            $.post(Blocks.getActionUrl('assetIndexing/finishIndex'), params, $.proxy(function (data) {
+                var html = '';
 
-                    var html = ''
-                    if (typeof data.folders != "undefined") {
-                        html += '<div class="index-data-container"><strong>' + Assets.lang.index_folders + '</strong>';
-                        for (var folder_id in data.folders) {
-                            html += '<div><label><input type="checkbox" checked="checked" class="delete_folder" value="' + folder_id + '" /> ' + data.folders[folder_id] + '</label></div>';
+                if (typeof data.files != "undefined" || this.missingFolders.length > 0) {
+                    html += '<p>' + Blocks.t('The following items were found in the database that do not have a physical match.') +  '</p>';
+
+                    if (this.missingFolders.length > 0) {
+                        html += '<div class="report-part"><strong>' + Blocks.t('Folders') + '</strong>';
+                        for (var i = 0; i < this.missingFolders.length; i++) {
+                            html += '<div><label><input type="checkbox" checked="checked" class="delete_folder" value="' + this.missingFolders[i].folder_id + '" /> ' + this.missingFolders[i].folder_name + '</label></div>';
                         }
                         html += '</div>'
                     }
 
                     if (typeof data.files != "undefined") {
-                        html += '<div class="index-data-container"><strong>' + Assets.lang.index_files + '</strong>';
+                        html += '<div class="report-part"><strong>' + Blocks.t('Files') + '</strong>';
                         for (var file_id in data.files) {
                             html += '<div><label><input type="checkbox" checked="checked" class="delete_file" value="' + file_id + '" /> ' + data.files[file_id] + '</label></div>';
                         }
                         html += '</div>'
                     }
 
-                    html += '<br /><input type="button" class="submit" value="' + Assets.lang._delete + '" onclick="deleteSelectedFiles();"/>';
-                    $('#index-status-report').empty().append(html);
+                    html += '<footer class="footer"><ul class="right">';
+                    html += '<li><input type="button" class="btn cancel" value="' + Blocks.t('Cancel') + '"></li>';
+                    html += '<li><input type="button" class="btn submit delete" value="' + Blocks.t('Delete') + '"></li>';
+                    html += '</ul></footer>';
 
+                    $modalContainerDiv.empty().append(html);
+                    this.modal.setContainer($modalContainerDiv);
+
+                    this.modal.show();
+                    this.modal.removeListener(Blocks.ui.Modal.$shade, 'click');
+
+                    this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
+                        this.IndexingManager.$sourceCheckboxes.filter(':checked').prop('checked', false).prop('disabled', false);
+                        this.hide();
+                    });
+
+                    this.modal.addListener(this.modal.$container.find('.btn.delete'), 'click', function () {
+
+                        var command = {};
+                        command.command = 'delete';
+                        command.folderIds = [];
+                        command.fileIds = [];
+
+                        this.$container.find('input.delete_folder:checked').each(function (){
+                            command.folderIds.push($(this).val());
+                        });
+
+                        this.$container.find('input.delete_file:checked').each(function (){
+                            command.fileIds.push($(this).val());
+                        });
+
+                        var sources = [];
+                        this.IndexingManager.$sourceCheckboxes.filter(':checked').each(function () {
+                            sources.push($(this).attr('source_id'));
+                        });
+
+                        var params = {
+                            sessionId: this.sessionId,
+                            command: JSON.stringify(command),
+                            sources: sources.join(",")
+                        };
+
+                        $.post(Blocks.getActionUrl('assetIndexing/finishIndex'), params, $.proxy(function(data) {
+                            this.hide();
+                            this.IndexingManager.$sourceCheckboxes.filter(':checked').prop('checked', false).prop('disabled', false);
+                        }, this));
+                    });
                 } else {
-                    $('div#assets-dialog div#index-status-report').empty();
-                    $('div#index-message').html(Assets.lang.index_complete);
+                    this.$sourceCheckboxes.filter(':checked').prop('checked', false).prop('disabled', false);
                 }
-                $('div#assets-dialog').show();
-            });*/
+
+
+            }, this));
+
         }
 
 
