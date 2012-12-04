@@ -1,0 +1,34 @@
+{% extends "settings/assets/_layout" %}
+{% set page = "sizes" %}
+{% set title = "Asset Sizes"|t %}
+{% set sizes = blx.assets.getAllAssetSizes %}
+
+
+{% set content %}
+<p id="nosizes"{% if sizes|length %} class="hidden"{% endif %}>
+    {{ "No Asset sizes exist yet."|t }}
+</p>
+
+{% if sizes|length %}
+    <table id="sizes" class="data">
+        <thead>
+        <th scope="col">{{ "Name"|t }}</th>
+        <th scope="col">{{ "Dimensions"|t }}</th>
+        <td class="thin"></td>
+        </thead>
+        <tbody>
+        {% for size in sizes %}
+            <tr data-id="{{ size.id }}" data-name="{{ size.name|t }}">
+                <th scope="row"><a href="{{ url('settings/assets/sizes/' ~ size.handle) }}">{{ size.name|t }}</a></th>
+                <th scope="row">{{ size.width }} x {{ size.height }}</th>
+                <td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+
+<div class="buttons">
+    <a class="btn add icon" href="{{ url('settings/assets/sizes/new') }}">{{ "New Size"|t }}</a>
+</div>
+{% endset %}
