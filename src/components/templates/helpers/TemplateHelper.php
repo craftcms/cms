@@ -1,0 +1,42 @@
+<?php
+namespace Blocks;
+
+/**
+ *
+ */
+class TemplateHelper
+{
+	/**
+	 * Paginates a BaseCriteria instance.
+	 */
+	public static function paginateCriteria(BaseCriteria $criteria)
+	{
+		$currentPage = blx()->request->getPageNum();
+		$limit = $criteria->limit;
+		$total = $criteria->total();
+		$totalPages = ceil($total / $limit);
+
+		if ($currentPage > $totalPages)
+		{
+			$currentPage = $totalPages;
+		}
+
+		$offset = $limit * ($currentPage - 1);
+
+		$info = array(
+			'first'       => $offset + 1,
+			'last'        => $offset + $limit,
+			'total'       => $total,
+			'currentPage' => $currentPage,
+			'totalPages'  => $totalPages,
+			'prevUrl'     => ($currentPage > 1           ? UrlHelper::getUrl(blx()->request->getPath().'/p'.($currentPage-1)) : null),
+			'nextUrl'     => ($currentPage < $totalPages ? UrlHelper::getUrl(blx()->request->getPath().'/p'.($currentPage+1)) : null),
+		);
+
+		// Get the entities
+		$criteria->offset = $offset;
+		$entities = $criteria->find();
+
+		return array($info, $entities);
+	}
+}

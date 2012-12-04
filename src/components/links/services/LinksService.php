@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class LinksService extends BaseApplicationComponent
 {
+	private $_criteriaRecordsByRightTypeAndHandle;
+
 	/**
 	 * Returns all installed link types.
 	 *
@@ -39,6 +41,28 @@ class LinksService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns a criteria ID by the right-hand entity type and RTL handle
+	 *
+	 * @param string $type
+	 * @param string $rtlHandle
+	 * @return int
+	 */
+	public function getCriteriaRecordByRightTypeAndHandle($type, $rtlHandle)
+	{
+		if (!isset($this->_criteriaRecordsByRightTypeAndHandle[$type][$rtlHandle]))
+		{
+			$record = LinkCriteriaRecord::model()->findByAttributes(array(
+				'rightEntityType' => $type,
+				'rtlHandle' => $rtlHandle
+			));
+
+			$this->_criteriaRecordsByRightTypeAndHandle[$type][$rtlHandle] = $record;
+		}
+
+		return $this->_criteriaRecordsByRightTypeAndHandle[$type][$rtlHandle];
+	}
+
+	/**
 	 * Gets the linked entities.
 	 *
 	 * @param int $criteriaId
@@ -66,6 +90,46 @@ class LinksService extends BaseApplicationComponent
 
 		$rows = $query->queryAll();
 		return $linkType->populateEntities($rows);
+	}
+
+	/**
+	* Gets the reverse linked entities.
+	*
+	 * @param string $type
+	 * @param string $rtlHandle
+	 * @param int $rightEntityId
+	* @return array|false
+	*/
+	public function getReverseLinkedEntities($type, $rtlHandle, $rightEntityId)
+	{
+		$criteria = $this->getCriteriaRecordByRightTypeAndHandle($type, $rtlHandle);
+
+		if ($criteria)
+		{
+			$linkType = $this->getLinkType($criteria->leftEntityType);
+
+			if ($linkType)
+			{
+				$table = $linkType->getEntityTableName();
+				$query = blx()->db->createCommand()
+					->select($table.'.*')
+					->from($table.' '.$table)
+					->join('links l', 'l.leftEntityId = '.$table.'.id')
+					->where(array(
+						'l.criteriaId'   => $criteria->id,
+						'l.rightEntityId' => $rightEntityId
+					))
+					->order('l.leftSortOrder');
+
+				// Give the link type a chance to make any changes
+				$query = $linkType->modifyLinkedEntitiesQuery($query);
+
+				$rows = $query->queryAll();
+				return $linkType->populateEntities($rows);
+			}
+		}
+
+		return false;
 	}
 
 	/**

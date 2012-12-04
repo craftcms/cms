@@ -17,6 +17,15 @@
 		<input type="hidden" name="action" value="systemSettings/saveGeneralSettings">
 		<input type="hidden" name="redirect" value="settings">
 
+		{{ forms.lightswitchField({
+			label: "System Status"|t,
+			id: 'on',
+			name: 'isSystemOn',
+			on: (post is defined ? post.on : blx.app.isSystemOn),
+			onLabel: "On"|t,
+			offLabel: "Off"|t
+		}) }}
+
 		{{ forms.textField({
 			label: "Site Name"|t,
 			id: 'siteName',

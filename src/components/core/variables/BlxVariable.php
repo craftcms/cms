@@ -150,11 +150,12 @@ class BlxVariable
 	}
 
 	/**
+	 * @param array|null $criteria
 	 * @return EntryCriteria
 	 */
-	public function entries()
+	public function entries($criteria = null)
 	{
-		return new EntryCriteria();
+		return new EntryCriteria($criteria);
 	}
 
 	/**
@@ -241,13 +242,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @param array|null $criteria
 	 * @return SectionCriteria|null
 	 */
-	public function sections()
+	public function sections($criteria = null)
 	{
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
-			return new SectionCriteria();
+			return new SectionCriteria($criteria);
 		}
 	}
 
@@ -268,13 +270,14 @@ class BlxVariable
 	}
 
 	/**
+	 * @param array|null $criteria
 	 * @return UserCriteria|null
 	 */
-	public function users()
+	public function users($criteria = null)
 	{
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
-			return new UserCriteria();
+			return new UserCriteria($criteria);
 		}
 	}
 

@@ -61,6 +61,12 @@ class UpdateHelper
 				$rowData = explode(';', $row);
 
 				$destFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]));
+
+				if (!$destFile)
+				{
+					$destFile = IOHelper::normalizePathSeparators(blx()->path->getAppPath().$rowData[0]);
+				}
+
 				$sourceFile = IOHelper::getRealPath(IOHelper::normalizePathSeparators($sourceTempFolder.'/app/'.$rowData[0]));
 
 				switch (trim($rowData[1]))

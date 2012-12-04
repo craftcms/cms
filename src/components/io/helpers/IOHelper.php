@@ -169,7 +169,7 @@ class IOHelper
 
 		// Check tmp file for read/write capabilities
 		$rm = static::fileExists($path);
-		$f = fopen($path, 'a');
+		$f = @fopen($path, 'a');
 
 		if ($f === false)
 		{

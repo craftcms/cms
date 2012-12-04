@@ -44,7 +44,7 @@
 
 
 {% if isNewEntry %}
-	{% set title = "Create a new entry"|t %}
+	{% set title = "Create a new {section} entry"|t({ section: (blx.hasPackage('PublishPro') ? section.name : 'Blog'|t) }) %}
 {% else %}
 	{% set title = "Editing “{title}”"|t({ title: entry.title|t }) %}
 	{% if entry is defined and entry.classHandle != 'Entry' %}
@@ -149,7 +149,7 @@
 				instructions: "List multiple tags separated by commas."|t,
 				id: 'tags',
 				name: 'tags',
-				value: (entry is defined ? (entry.tags ? entry.tags : entry.getTags|join(', ')) : null),
+				value: (entry is defined ? entry.tags|join(', ') : null),
 				errors: (entry is defined ? entry.getErrors('tags') : null),
 			}) }}
 

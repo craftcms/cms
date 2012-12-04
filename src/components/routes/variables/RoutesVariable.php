@@ -13,7 +13,7 @@ class RoutesVariable
 	{
 		$return = array();
 
-		$routes = blx()->routes->getAllRoutes();
+		$routes = RouteRecord::model()->ordered()->findAll();
 
 		foreach ($routes as $route)
 		{

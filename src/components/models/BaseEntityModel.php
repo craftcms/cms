@@ -18,15 +18,26 @@ abstract class BaseEntityModel extends BaseModel
 	 */
 	function __isset($name)
 	{
+		if (parent::__isset($name))
+		{
+			return true;
+		}
+
 		$blocks = $this->_getBlocks();
+
 		if (isset($blocks[$name]))
 		{
 			return true;
 		}
-		else
+
+		$linkCriteria = blx()->links->getCriteriaRecordByRightTypeAndHandle($this->getClassHandle(), $name);
+
+		if ($linkCriteria)
 		{
-			return parent::__isset($name);
+			return true;
 		}
+
+		return false;
 	}
 
 	/**
@@ -37,37 +48,54 @@ abstract class BaseEntityModel extends BaseModel
 	 */
 	function __get($name)
 	{
-		// Is $name a block handle?
-		$blocks = $this->_getBlocks();
-		if (isset($blocks[$name]))
-		{
-			if (!isset($this->_preppedContent) || !array_key_exists($name, $this->_preppedContent))
-			{
-				$content = $this->_getContent();
-				if (isset($content[$name]))
-				{
-					$value = $content[$name];
-				}
-				else
-				{
-					$value = null;
-				}
-
-				$blockType = blx()->blockTypes->populateBlockType($blocks[$name], $this);
-
-				if ($blockType)
-				{
-					$value = $blockType->prepValue($value);
-				}
-
-				$this->_preppedContent[$name] = $value;
-			}
-
-			return $this->_preppedContent[$name];
-		}
-		else
+		// Run through the BaseModel/CModel stuff first
+		try
 		{
 			return parent::__get($name);
+		}
+		catch(\Exception $e)
+		{
+			// Is $name a block handle?
+			$blocks = $this->_getBlocks();
+			if (isset($blocks[$name]))
+			{
+				if (!isset($this->_preppedContent) || !array_key_exists($name, $this->_preppedContent))
+				{
+					$content = $this->_getContent();
+					if (isset($content[$name]))
+					{
+						$value = $content[$name];
+					}
+					else
+					{
+						$value = null;
+					}
+
+					$blockType = blx()->blockTypes->populateBlockType($blocks[$name], $this);
+
+					if ($blockType)
+					{
+						$value = $blockType->prepValue($value);
+					}
+
+					$this->_preppedContent[$name] = $value;
+				}
+
+				return $this->_preppedContent[$name];
+			}
+			else if ($this->getAttribute('id'))
+			{
+				// Maybe it's a reverse link handle?
+				$linkedEntities = blx()->links->getReverseLinkedEntities($this->getClassHandle(), $name, $this->getAttribute('id'));
+
+				if ($linkedEntities !== false)
+				{
+					return $linkedEntities;
+				}
+			}
+
+			// Fine, throw the exception
+			throw $e;
 		}
 	}
 

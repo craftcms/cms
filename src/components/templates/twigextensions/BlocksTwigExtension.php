@@ -20,9 +20,11 @@ class BlocksTwigExtension extends \Twig_Extension
 			new IncludeResource_TokenParser('includeCssResource'),
 			new IncludeResource_TokenParser('includeJsResource'),
 			new IncludeResource_TokenParser('includeCss'),
+			new IncludeResource_TokenParser('includeHiResCss'),
 			new IncludeResource_TokenParser('includeJs'),
 			new IncludeTranslations_TokenParser(),
 			new Exit_TokenParser(),
+			new Paginate_TokenParser(),
 		);
 	}
 
@@ -45,7 +47,6 @@ class BlocksTwigExtension extends \Twig_Extension
 			'currency'   => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatCurrency'),
 			'percentage' => new \Twig_Filter_Function('\Blocks\blx()->numberFormatter->formatPercentage'),
 			'datetime'   => new \Twig_Filter_Function('\Blocks\blx()->dateFormatter->formatDateTime'),
-			'text'       => new \Twig_Filter_Method($this, 'textFilter'),
 			'without'    => new \Twig_Filter_Method($this, 'withoutFilter'),
 			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
@@ -81,17 +82,6 @@ class BlocksTwigExtension extends \Twig_Extension
 	}
 
 	/**
-	 * Returns the text without any HTML tags.
-	 *
-	 * @param string $str
-	 * @return string
-	 */
-	public function textFilter($str)
-	{
-		return preg_replace('/\<[^\>]+\>/', '', $str);
-	}
-
-	/**
 	 * Returns a list of functions to add to the existing list.
 	 *
 	 * @return array An array of functions
@@ -123,7 +113,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getGlobals()
 	{
 		$globals['blx'] = new BlxVariable();
-		$globals['date'] = new DateTime();
+		$globals['now'] = new DateTime();
 
 		if (blx()->isInstalled())
 		{

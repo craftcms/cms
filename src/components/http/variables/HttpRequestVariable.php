@@ -21,7 +21,7 @@ class HttpRequestVariable
 	 *
 	 * @return mixed
 	 */
-	public function getUri()
+	public function getPath()
 	{
 		return blx()->request->getPath();
 	}

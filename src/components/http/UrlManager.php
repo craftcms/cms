@@ -126,24 +126,18 @@ class UrlManager extends \CUrlManager
 		if (blx()->request->isCpRequest())
 		{
 			// Check the Blocks predefined routes.
-			foreach ($this->cpRoutes as $pattern => $template)
+			if (($template = $this->_matchRoutes($this->cpRoutes)) !== false)
 			{
-				if ($this->_matchRouteInternal($pattern))
-				{
-					return $template;
-				}
+				return $template;
 			}
 
 			// As a last ditch to match routes, check to see if any plugins have routes registered that will match.
 			$pluginCpRoutes = blx()->plugins->callHook('registerCpRoutes');
 			foreach ($pluginCpRoutes as $pluginRoutes)
 			{
-				foreach ($pluginRoutes as $pattern => $template)
+				if (($template = $this->_matchRoutes($pluginRoutes)) !== false)
 				{
-					if ($this->_matchRouteInternal($pattern))
-					{
-						return $template;
-					}
+					return $template;
 				}
 			}
 		}
@@ -152,12 +146,9 @@ class UrlManager extends \CUrlManager
 			// Check the user-defined routes
 			$siteRoutes = blx()->routes->getAllRoutes();
 
-			foreach ($siteRoutes as $route)
+			if (($template = $this->_matchRoutes($siteRoutes)) !== false)
 			{
-				if ($this->_matchRouteInternal($route->urlPattern))
-				{
-					return $route->template;
-				}
+				return $template;
 			}
 		}
 
@@ -165,24 +156,30 @@ class UrlManager extends \CUrlManager
 	}
 
 	/**
-	 * @param $urlPattern
-	 * @return bool
+	 * Tests the request path against a series of routes, and returns the matched route's template, or false.
+	 *
+	 * @access private
+	 * @param array $routes
+	 * @return string|false
 	 */
-	private function _matchRouteInternal($urlPattern)
+	private function _matchRoutes($routes)
 	{
-		// Does it match?
-		if (preg_match('/^'.$urlPattern.'$/', blx()->request->getPath(), $match))
+		foreach ($routes as $pattern => $template)
 		{
-			// Set any capture variables
-			foreach ($match as $key => $value)
+			// Does it match?
+			if (preg_match('/^'.$pattern.'$/', blx()->request->getPath(), $match))
 			{
-				if (!is_numeric($key))
+				// Set any capture variables
+				foreach ($match as $key => $value)
 				{
-					$this->_templateVariables[$key] = $value;
+					if (!is_numeric($key))
+					{
+						$this->_templateVariables[$key] = $value;
+					}
 				}
-			}
 
-			return true;
+				return $template;
+			}
 		}
 
 		return false;

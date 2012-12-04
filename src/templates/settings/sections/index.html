@@ -6,7 +6,6 @@
 {% extends "_layouts/cp" %}
 {% set title = "Sections"|t %}
 {% set centered = true %}
-{% set sections = blx.sections.find %}
 
 
 {% set header %}
@@ -18,30 +17,37 @@
 
 
 {% set content %}
-	<p id="nosections"{% if sections|length %} class="hidden"{% endif %}>
-		{{ "No sections exist yet."|t }}
-	</p>
+	{% paginate blx.sections.limit(50) as sections %}
 
-	{% if sections|length %}
-		<table id="sections" class="data">
-			<thead>
-				<th scope="col" width="33%">{{ "Name"|t }}</th>
-				<th scope="col" width="33%">{{ "Handle"|t }}</th>
-				<th scope="col" width="33%">{{ "Blocks"|t }}</th>
-				<td class="thin"></td>
-			</thead>
-			<tbody>
-				{% for section in sections %}
-					<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}" data-entries="{{ blx.entries.sectionId(section.id).total }}">
-						<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
-						<td><code>{{ section.handle }}</code></td>
-						<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ blx.entryBlocks.getTotalBlocksBySectionId(section.id) }}</a></td>
-						<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
-					</tr>
-				{% endfor %}
-			</tbody>
-		</table>
-	{% endif %}
+		<p id="nosections"{% if sections|length %} class="hidden"{% endif %}>
+			{{ "No sections exist yet."|t }}
+		</p>
+
+		{% if sections|length %}
+
+			{% include "_includes/paginatelinks" with { type: "sections"|t } %}
+
+			<table id="sections" class="data">
+				<thead>
+					<th scope="col" width="33%">{{ "Name"|t }}</th>
+					<th scope="col" width="33%">{{ "Handle"|t }}</th>
+					<th scope="col" width="33%">{{ "Blocks"|t }}</th>
+					<td class="thin"></td>
+				</thead>
+				<tbody>
+					{% for section in sections %}
+						<tr data-id="{{ section.id }}" data-name="{{ section.name|t }}" data-entries="{{ blx.entries.sectionId(section.id).total }}">
+							<th scope="row"><a href="{{ url('settings/sections/' ~ section.id) }}">{{ section.name|t }}</a></th>
+							<td><code>{{ section.handle }}</code></td>
+							<td><a href="{{ url('settings/sections/' ~ section.id ~ '/blocks') }}">{{ blx.entryBlocks.getTotalBlocksBySectionId(section.id) }}</a></td>
+							<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% endif %}
+
+	{% endpaginate %}
 
 	<div class="buttons">
 		<a href="{{ url('settings/sections/new') }}" class="btn add icon">{{ "New Section"|t }}</a>

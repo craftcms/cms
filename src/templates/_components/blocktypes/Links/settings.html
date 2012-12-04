@@ -55,3 +55,12 @@
 	value: settings.limit,
 	size: 5
 }) }}
+
+{{ forms.textField({
+	label: "Reverse Link Handle"|t,
+	instructions: "How you’ll refer to the links in the templates, from the linked entities."|t,
+	id: 'reverseHandle',
+	name: 'reverseHandle',
+	class: 'code',
+	value: settings.reverseHandle
+}) }}

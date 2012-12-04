@@ -9,7 +9,7 @@ Date: 1/14/2009
 Desc: A fully implemented php wrapper class for the HelpSpot API.
 Requires cURL & XML support. Includes Keith Devens' XML serializer/unserializer.
 
-See Helpspot knowledgebook for API methods and attribute definations:
+See Helpspot knowledgebook for API methods and attribute definitions:
 http://www.userscape.com/helpdesk/index.php?pg=kb.book&id=6
 
 ************************************* NOTES *************************************
@@ -41,7 +41,7 @@ Desc: Create a request via the public api which does not require a password. Thi
 					'tNote' => 'This is a test note'
 				));
 
-PRIVATE REQUEST CREATIONG
+PRIVATE REQUEST CREATING
 Desc: This uses the private API to create a request which opens up many more possibilities for populating fields, assigning the request and more
 
 	include('HelpSpotAPI.php');
@@ -60,7 +60,7 @@ Desc: This uses the private API to create a request which opens up many more pos
 							));
 
 SEARCHING FOR REQUESTS
-Desc: Search for requests. It's also possible to retreive filters of requests as well, see docs for details.
+Desc: Search for requests. It's also possible to retrieve filters of requests as well, see docs for details.
 
 	include('HelpSpotAPI.php');
 	$hsapi = new HelpSpotAPI(array(
@@ -433,7 +433,7 @@ class HelpSpotAPI {
 	}
 
 	/*** Requester ***/
-	// Excecute a request to the API - does most of the heavy lifting
+	// Execute a request to the API - does most of the heavy lifting
 	function request($requestParams) {
 		// Init vars
 		$return = false;																// Preset return value
@@ -509,7 +509,7 @@ class HelpSpotAPI {
 				}
 				$return = false;
 			}
-			// If caching enabled and this is not a POST request (never cache HTTP POST results) and there WAS an erorr caching the content.
+			// If caching enabled and this is not a POST request (never cache HTTP POST results) and there WAS an error caching the content.
 			elseif( 	$cacheRequest
 					&& !$this->httpRequestPost
 					&& !$this->cacheEngine->cache($this->username.$this->helpSpotApiURL.$this->queryString, $return) )
@@ -538,7 +538,7 @@ class HelpSpotAPI {
 		{
 			$curl = curl_init();													// Init cURL call
 			curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);								// We want a string back
-			curl_setopt($curl, CURLOPT_TIMEOUT, $this->callTimeout);						// Timeout after $callTimout seconds
+			curl_setopt($curl, CURLOPT_TIMEOUT, $this->callTimeout);						// Timeout after $callTimeout seconds
 			curl_setopt($curl, CURLOPT_USERPWD, $this->username.':'.$this->password);			// Set username & pw
 
 			// If this is an HTTP POST request
@@ -566,8 +566,8 @@ class HelpSpotAPI {
 			// If error occurred then update error string
 			if(curl_errno($curl))
 			{
-			    $this->errors = 'Error: '.curl_error($curl);
-			    $return = false;
+				$this->errors = 'Error: '.curl_error($curl);
+				$return = false;
 			}
 
 			curl_close($curl);														// Properly close connection
@@ -718,7 +718,7 @@ class HelpSpotApiCacheEngine {
 		unlink($file);															// Delete cache file
 	}
 
-	// Get HS cache files - custom alias of PHP's antive glob() function (glob() function is not available on many shared servers)
+	// Get HS cache files - custom alias of PHP's native glob() function (glob() function is not available on many shared servers)
 	function safe_glob($dir){
 		$return = array();														// Array of files to return
 		$dh = null;															// Directory handle
@@ -822,7 +822,7 @@ class HS_XML{
 	var $last_opened_tag; #keeps track of the last tag opened.
 
 	function HS_XML(){
- 		$this->parser = &xml_parser_create();
+		$this->parser = &xml_parser_create();
 		xml_parser_set_option($this->parser, XML_OPTION_CASE_FOLDING, false);
 		xml_set_object($this->parser, $this);
 		xml_set_element_handler($this->parser, 'open','close');

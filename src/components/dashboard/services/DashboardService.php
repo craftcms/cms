@@ -209,6 +209,11 @@ class DashboardService extends BaseApplicationComponent
 		);
 		$this->saveUserWidget($widget);
 
+		// Updates widget
+		$widget = new WidgetModel();
+		$widget->type = 'Updates';
+		$this->saveUserWidget($widget);
+
 		// Get Help widget
 		$widget = new WidgetModel();
 		$widget->type = 'GetHelp';

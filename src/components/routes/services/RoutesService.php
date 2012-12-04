@@ -6,12 +6,42 @@ namespace Blocks;
  */
 class RoutesService extends BaseApplicationComponent
 {
+	private $_routes;
+
 	/**
 	 * Returns all of the routes.
 	 */
 	public function getAllRoutes()
 	{
-		return RouteRecord::model()->ordered()->findAll();
+		if (!isset($this->_routes))
+		{
+			$this->_routes = array();
+
+			// Where should we look for routes?
+			if (blx()->config->get('siteRoutesSource') == 'file')
+			{
+				$path = blx()->path->getConfigPath().'routes.php';
+
+				if (IOHelper::fileExists($path))
+				{
+					if (is_array($routes = require_once $path))
+					{
+						$this->_routes = $routes;
+					}
+				}
+			}
+			else
+			{
+				$records = RouteRecord::model()->ordered()->findAll();
+
+				foreach ($records as $record)
+				{
+					$this->_routes[$record->urlPattern] = $record->template;
+				}
+			}
+		}
+
+		return $this->_routes;
 	}
 
 	/**

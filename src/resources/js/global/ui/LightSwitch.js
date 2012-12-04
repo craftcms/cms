@@ -36,11 +36,10 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 
 		this.on = this.$outerContainer.hasClass('on');
 
-		Blocks.preventOutlineOnMouseFocus(this.$outerContainer);
-		this.addListener(this.$innerContainer, 'mousedown', '_onMouseDown');
+		this.addListener(this.$outerContainer, 'mousedown', '_onMouseDown');
 		this.addListener(this.$outerContainer, 'keydown', '_onKeyDown');
 
-		this.dragger = new Blocks.ui.BaseDrag(this.$innerContainer, {
+		this.dragger = new Blocks.ui.BaseDrag(this.$outerContainer, {
 			axis: 'x',
 			ignoreButtons: false,
 			onDragStart: $.proxy(this, '_onDragStart'),
@@ -155,7 +154,7 @@ Blocks.ui.LightSwitch = Blocks.Base.extend({
 	}
 
 }, {
-	offMargin: -31,
+	offMargin: -50,
 	defaults: {
 		onChange: function(){}
 	}

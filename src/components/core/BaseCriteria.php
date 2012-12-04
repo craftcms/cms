@@ -6,6 +6,9 @@ namespace Blocks;
  */
 abstract class BaseCriteria
 {
+	public $offset = 0;
+	public $limit = 100;
+
 	/**
 	 * Constructor
 	 *
@@ -57,4 +60,67 @@ abstract class BaseCriteria
 			}
 		}
 	}
+
+	/**
+	 * Returns all entities that match the criteria.
+	 *
+	 * @param array|null $criteria
+	 * @return array
+	 */
+	public function find($criteria = null)
+	{
+		$this->setCriteria($criteria);
+		return $this->findEntities();
+	}
+
+	/**
+	 * Returns the first entity that matches the criteria.
+	 *
+	 * @param array|null $criteria
+	 * @return EntryModel|null
+	 */
+	public function first($criteria = null)
+	{
+		$this->setCriteria($criteria);
+		return $this->findFirstEntity();
+	}
+
+	/**
+	 * Returns the total entities that match the criteria.
+	 *
+	 * @param array|null $criteria
+	 * @return int
+	 */
+	public function total($criteria = null)
+	{
+		$this->setCriteria($criteria);
+		return $this->getTotalEntities();
+	}
+
+	/**
+	 * Returns all entities that match the criteria.
+	 *
+	 * @abstract
+	 * @access protected
+	 * @return array
+	 */
+	abstract protected function findEntities();
+
+	/**
+	 * Returns the first entity that matches the criteria.
+	 *
+	 * @abstract
+	 * @access protected
+	 * @return EntryModel|null
+	 */
+	abstract protected function findFirstEntity();
+
+	/**
+	 * Returns the total entities that match the criteria.
+	 *
+	 * @abstract
+	 * @access protected
+	 * @return int
+	 */
+	abstract protected function getTotalEntities();
 }

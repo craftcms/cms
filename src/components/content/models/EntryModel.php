@@ -27,15 +27,14 @@ class EntryModel extends BaseEntityModel
 		$attributes['language'] = AttributeType::Language;
 		$attributes['title'] = AttributeType::String;
 		$attributes['slug'] = AttributeType::String;
+		$attributes['uri'] = AttributeType::String;
 		$attributes['postDate'] = AttributeType::DateTime;
 		$attributes['expiryDate'] = AttributeType::DateTime;
 		$attributes['enabled'] = AttributeType::Bool;
-		$attributes['tags'] = AttributeType::String;
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
 		{
 			$attributes['sectionId'] = AttributeType::Number;
-			$attributes['uri'] = AttributeType::String;
 		}
 
 		return $attributes;
@@ -164,7 +163,7 @@ class EntryModel extends BaseEntityModel
 
 		if (!empty($path))
 		{
-			return UrlHelper::getUrl($path);
+			return UrlHelper::getCpUrl($path);
 		}
 	}
 
@@ -188,5 +187,15 @@ class EntryModel extends BaseEntityModel
 		}
 
 		return $this->_tags;
+	}
+
+	/**
+	 * Sets the entry's tags
+	 *
+	 * @param array|string $tags
+	 */
+	public function setTags($tags)
+	{
+		$this->_tags = ArrayHelper::stringToArray($tags);
 	}
 }
