@@ -32,7 +32,7 @@ class GlobalsController extends BaseEntityController
 		}
 		else
 		{
-			$content->language = blx()->language;
+			$content->language = Blocks::getLanguage();
 		}
 
 		if (blx()->globals->saveGlobalContent($content))

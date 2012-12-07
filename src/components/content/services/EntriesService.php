@@ -323,6 +323,7 @@ class EntriesService extends BaseEntityService
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function saveEntry(EntryModel $entry)
@@ -768,7 +769,7 @@ class EntriesService extends BaseEntityService
 	{
 		if (!$entry->language)
 		{
-			$entry->language = blx()->language;
+			$entry->language = Blocks::getLanguage();
 		}
 
 		if ($entry->id)
@@ -800,7 +801,7 @@ class EntriesService extends BaseEntityService
 	{
 		if (!$entry->language)
 		{
-			$entry->language = blx()->language;
+			$entry->language = Blocks::getLanguage();
 		}
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))
