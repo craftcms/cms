@@ -110,7 +110,7 @@ abstract class BasePlugin extends BaseComponent
 	 * @param string|null $scenario The scenario to initialize the records with
 	 * @return array
 	 */
-	protected function getRecords($scenario = null)
+	public function getRecords($scenario = null)
 	{
 		$records = array();
 		$classes = blx()->plugins->getPluginComponentClassesByType($this->getClassHandle(), 'records');
