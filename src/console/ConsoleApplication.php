@@ -18,21 +18,6 @@ class ConsoleApplication extends \CConsoleApplication
 			Blocks::import($alias);
 		}
 
-		/*$aliases = array(
-			'app.*',
-			'app.console.*',
-			'app.console.commands.*',
-			'app.components.datetime.*',
-			'app.components.db.*',
-			'app.components.email.*',
-			'app.components.enums.*',
-			'app.components.logging.*',
-			'app.components.updates.*',
-			'app.components.core.helpers.*',
-			'app.components.core.validators.*',
-			'app.migrations.*',
-		);*/
-
 		parent::init();
 	}
 
@@ -42,5 +27,13 @@ class ConsoleApplication extends \CConsoleApplication
 	protected function createCommandRunner()
 	{
 		return new ConsoleCommandRunner();
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isInstalled()
+	{
+		return true;
 	}
 }
