@@ -242,8 +242,8 @@ class MigrationsService extends BaseApplicationComponent
 		Blocks::log('Creating migration history table "'.$this->migrationTable.'"', \CLogger::LEVEL_INFO);
 
 		$db->createCommand()->createTable($this->migrationTable, array(
-			'version' => 'string NOT NULL',
-			'apply_time' => 'integer',
+			'version'    => array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
+			'apply_time' => array(AttributeType::DateTime, 'required' => true),
 		));
 
 		$db->createCommand()->createIndex("migration_version_unique_idx", $this->migrationTable, "version", true);
