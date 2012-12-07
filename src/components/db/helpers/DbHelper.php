@@ -281,7 +281,7 @@ class DbHelper
 	 * @param array &$params
 	 * @return mixed
 	 */
-	public function parseDateParam($key, $operator, $dates, &$params)
+	public static function parseDateParam($key, $operator, $dates, &$params)
 	{
 		$conditions = array();
 
