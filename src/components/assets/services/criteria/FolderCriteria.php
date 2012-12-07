@@ -14,4 +14,34 @@ class FolderCriteria extends BaseCriteria
 	public $order = 'name asc';
 	public $offset;
 	public $limit;
+
+	/**
+	 * Returns all entities that match the criteria.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function findEntities()
+	{
+	}
+
+	/**
+	 * Returns the first entity that matches the criteria.
+	 *
+	 * @access protected
+	 * @return EntryModel|null
+	 */
+	protected function findFirstEntity()
+	{
+	}
+
+	/**
+	 * Returns the total entities that match the criteria.
+	 *
+	 * @access protected
+	 * @return int
+	 */
+	protected function getTotalEntities()
+	{
+	}
 }
