@@ -318,7 +318,7 @@ class AccountService extends BaseApplicationComponent
 			$userRecord->verificationCode = null;
 			$userRecord->verificationCodeIssuedDate = null;
 			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
-			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentTime();
+			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentTimeForDb();
 
 			$user->newPassword = null;
 
@@ -346,7 +346,7 @@ class AccountService extends BaseApplicationComponent
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->authSessionToken = $authSessionToken;
-		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentTime();
+		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentTimeForDb();
 		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
 		$userRecord->invalidLoginWindowStart = null;
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
@@ -365,9 +365,9 @@ class AccountService extends BaseApplicationComponent
 	public function handleInvalidLogin(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
-		$currentTime = DateTimeHelper::currentTime();
+		$currentTimeDb = DateTimeHelper::currentTimeForDb();
 
-		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
+		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTimeDb;
 		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
 
 		if ($this->_isUserInsideInvalidLoginWindow($userRecord))
@@ -380,13 +380,13 @@ class AccountService extends BaseApplicationComponent
 				$userRecord->status = $user->status = UserStatus::Locked;
 				$userRecord->invalidLoginCount = null;
 				$userRecord->invalidLoginWindowStart = null;
-				$userRecord->lockoutDate = $user->lockoutDate = $currentTime;
+				$userRecord->lockoutDate = $user->lockoutDate = $currentTimeDb;
 			}
 		}
 		else
 		{
 			// Start the invalid login window and counter
-			$userRecord->invalidLoginWindowStart = $currentTime;
+			$userRecord->invalidLoginWindowStart = $currentTimeDb;
 			$userRecord->invalidLoginCount = 1;
 		}
 

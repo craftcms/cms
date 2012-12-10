@@ -140,8 +140,8 @@ class DbCommand extends \CDbCommand
 	{
 		$table = $this->_addTablePrefix($table);
 
-		$columns['dateCreated'] = DateTimeHelper::currentTime();
-		$columns['dateUpdated'] = DateTimeHelper::currentTime();
+		$columns['dateCreated'] = DateTimeHelper::currentTimeForDb();
+		$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
 		$columns['uid'] = StringHelper::UUID();
 
 		return parent::insert($table, $columns);
@@ -163,8 +163,8 @@ class DbCommand extends \CDbCommand
 
 		foreach ($vals as &$val)
 		{
-			$val[] = DateTimeHelper::currentTime();
-			$val[] = DateTimeHelper::currentTime();
+			$val[] = DateTimeHelper::currentTimeForDb();
+			$val[] = DateTimeHelper::currentTimeForDb();
 			$val[] = StringHelper::UUID();
 		}
 
@@ -184,7 +184,7 @@ class DbCommand extends \CDbCommand
 		$table = $this->_addTablePrefix($table);
 		$conditions = $this->_normalizeConditions($conditions, $params);
 
-		$columns['dateUpdated'] = DateTimeHelper::currentTime();
+		$columns['dateUpdated'] = DateTimeHelper::currentTimeForDb();
 
 		return parent::update($table, $columns, $conditions, $params);
 	}

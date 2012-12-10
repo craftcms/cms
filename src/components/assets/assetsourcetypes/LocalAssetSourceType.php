@@ -120,7 +120,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			blx()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
-			$fileModel->dateModified = IOHelper::getLastTimeModified($indexEntryModel->uri);
+			$fileModel->dateModified = DateTimeHelper::formatTimeForDb(IOHelper::getLastTimeModified($indexEntryModel->uri));
 
 			if ($fileModel->kind == 'image')
 			{
@@ -217,9 +217,9 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		for ($i = 1; $i <= 50; $i++)
 		{
-			if (!isset($existingFiles[$fileName . '_' . $i . '.' . $extension]))
+			if (!isset($existingFiles[$fileName.'_'.$i.'.'.$extension]))
 			{
-				return $fileName . '_' . $i . '.' . $extension;
+				return $fileName.'_'.$i.'.'.$extension;
 			}
 		}
 

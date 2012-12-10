@@ -7,6 +7,7 @@ namespace Blocks;
 class MigrationsService extends BaseApplicationComponent
 {
 	private $_db;
+	private $_timeFormat = 'db';
 
 	const BASE_MIGRATION = 'm000000_000000_base';
 
@@ -20,7 +21,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @var string the name of the table for keeping applied migration information.
 	 * This table will be automatically created if not exists. Defaults to 'tbl_migration'.
-	 * The table structure is: (version varchar(255) primary key, apply_time integer)
+	 * The table structure is: (version varchar(255) primary key, integer)
 	 */
 	public $migrationTable = 'migrations';
 
@@ -41,7 +42,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function init()
 	{
-		$path= Blocks::getPathOfAlias($this->migrationPath);
+		$path = Blocks::getPathOfAlias($this->migrationPath);
 
 		if ($path === false || !IOHelper::folderExists($path))
 		{
@@ -152,9 +153,14 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($migration->up() !== false)
 		{
+			// We do this to because of migrating from int timestamps to native db date/time datatypes.
+			$table = blx()->db->schema->getTable("{{{$this->migrationTable}}}", true);
+			$column = $table->getColumn('apply_time');
+			$time = $column->dbType == ColumnType::DateTime ? DateTimeHelper::currentTimeForDb() : DateTimeHelper::currentTimeStamp();
+
 			$this->getDbConnection()->createCommand()->insert($this->migrationTable, array(
 				'version' => $class,
-				'apply_time' => time(),
+				'apply_time' => $time,
 			));
 
 			$time = microtime(true) - $start;
@@ -250,7 +256,7 @@ class MigrationsService extends BaseApplicationComponent
 
 		$db->createCommand()->insert($this->migrationTable, array(
 			'version' => static::BASE_MIGRATION,
-			'apply_time' => time(),
+			'apply_time' => DateTimeHelper::currentTimeForDb(),
 		));
 
 		Blocks::log('Created migration history table "'.$this->migrationTable.'"', \CLogger::LEVEL_INFO);

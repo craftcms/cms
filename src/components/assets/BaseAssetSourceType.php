@@ -113,6 +113,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 		if ($response->getStatus() == AssetOperationResponseModel::StatusSuccess)
 		{*/
 			//$filename = pathinfo($response->getResponseData()->fileName, PATHINFO_BASENAME);
+			$modifiedTime = DateTimeHelper::formatTimeForDb(filemtime($filePath));
 
 			$fileModel = new AssetFileModel();
 			$fileModel->sourceId = $this->model->id;
@@ -120,7 +121,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			$fileModel->filename = pathinfo($filename, PATHINFO_BASENAME);
 			$fileModel->kind = IOHelper::getFileKind(pathinfo($filename, PATHINFO_EXTENSION));
 			$fileModel->size = filesize($filePath);
-			$fileModel->dateModified = filemtime($filePath);
+			$fileModel->dateModified = $modifiedTime;
 
 			if ($fileModel->kind == 'image')
 			{

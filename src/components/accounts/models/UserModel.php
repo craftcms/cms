@@ -42,22 +42,13 @@ class UserModel extends BaseEntityModel
 			'emailFormat'                  => array(AttributeType::String, 'default' => 'text'),
 			'admin'                        => AttributeType::Bool,
 			'status'                       => AttributeType::Enum,
-			//'authSessionToken'           => AttributeType::String,
 			'lastLoginDate'                => AttributeType::DateTime,
-			//'lastLoginAttemptIPAddress'  => AttributeType::String,
-			//'invalidLoginWindowStart'    => AttributeType::DateTime,
 			'invalidLoginCount'            => AttributeType::Number,
 			'lastInvalidLoginDate'         => AttributeType::DateTime,
 			'lockoutDate'                  => AttributeType::DateTime,
-			//'verificationCode'           => AttributeType::String,
-			//'verificationCodeIssuedDate' => AttributeType::DateTime,
 			'passwordResetRequired'        => AttributeType::Bool,
 			'lastPasswordChangeDate'       => AttributeType::DateTime,
-			//'archivedUsername'           => AttributeType::String,
-			//'archivedEmail'              => AttributeType::Email,
-
 			'dateCreated'                  => AttributeType::DateTime,
-
 			'verificationRequired'         => AttributeType::Bool,
 			'newPassword'                  => AttributeType::String,
 		);

@@ -78,7 +78,7 @@ class EntryModel extends BaseEntityModel
 	{
 		if ($this->enabled)
 		{
-			$currentTime = DateTimeHelper::currentTime();
+			$currentTime = DateTimeHelper::currentTimeStamp();
 			$postDate = ($this->postDate ? $this->postDate->getTimestamp() : null);
 			$expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
 

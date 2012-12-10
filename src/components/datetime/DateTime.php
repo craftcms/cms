@@ -7,6 +7,7 @@ namespace Blocks;
 class DateTime extends \DateTime
 {
 	const W3C_DATE = 'Y-m-d';
+	const MYSQL_DATETIME = 'Y-m-d H:i:s';
 
 	/**
 	 * Creates a new \Blocks\DateTime object (rather than \DateTime)

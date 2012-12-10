@@ -96,12 +96,12 @@ abstract class BaseRecord extends \CActiveRecord
 		// Populate dateCreated and uid if this is a new record
 		if ($this->isNewRecord())
 		{
-			$this->dateCreated = DateTimeHelper::currentTime();
+			$this->dateCreated = DateTimeHelper::currentTimeForDb();
 			$this->uid = StringHelper::UUID();
 		}
 
 		// Update the dateUpdated
-		$this->dateUpdated = DateTimeHelper::currentTime();
+		$this->dateUpdated = DateTimeHelper::currentTimeForDb();
 	}
 
 	/**

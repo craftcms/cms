@@ -10,10 +10,33 @@ class DateTimeHelper
 	 * @static
 	 * @return int
 	 */
-	public static function currentTime()
+	public static function currentTimeStamp()
 	{
 		$date = new DateTime();
 		return $date->getTimestamp();
+	}
+
+	/**
+	 * @static
+	 * @return string
+	 */
+	public static function currentTimeForDb()
+	{
+		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
+		// For now, it's MySQL only.
+		$date = new DateTime();
+		return $date->format(DateTime::MYSQL_DATETIME);
+	}
+
+	/**
+	 * @param $timeStamp
+	 * @return DateTime
+	 */
+	public static function formatTimeForDb($timeStamp)
+	{
+		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
+		// For now, it's MySQL only.
+		return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeStamp);
 	}
 
 	/**
