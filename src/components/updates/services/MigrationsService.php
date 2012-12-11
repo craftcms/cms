@@ -7,7 +7,6 @@ namespace Blocks;
 class MigrationsService extends BaseApplicationComponent
 {
 	private $_db;
-	private $_timeFormat = 'db';
 
 	const BASE_MIGRATION = 'm000000_000000_base';
 

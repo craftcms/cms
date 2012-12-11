@@ -514,7 +514,7 @@ class ModelHelper
 			{
 				if ($storedValue instanceof \DateTime)
 				{
-					$newValue = $storedValue->getTimestamp();
+					$newValue = DateTimeHelper::formatTimeForDb($storedValue->getTimestamp());
 				}
 				break;
 			}

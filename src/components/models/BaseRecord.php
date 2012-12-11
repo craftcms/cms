@@ -35,9 +35,9 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		ModelHelper::populateAttributeDefaults($this);
 
-		$this->attachEventHandler('onAfterFind', array($this, 'propAttributesForUse'));
+		$this->attachEventHandler('onAfterFind', array($this, 'prepAttributesForUse'));
 		$this->attachEventHandler('onBeforeSave', array($this, 'prepAttributesForSave'));
-		$this->attachEventHandler('onAfterSave', array($this, 'propAttributesForUse'));
+		$this->attachEventHandler('onAfterSave', array($this, 'prepAttributesForUse'));
 	}
 
 	/**
@@ -109,7 +109,7 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return null
 	 */
-	public function propAttributesForUse()
+	public function prepAttributesForUse()
 	{
 		foreach ($this->defineAttributes() as $name => $config)
 		{
@@ -122,8 +122,8 @@ abstract class BaseRecord extends \CActiveRecord
 				{
 					if ($value)
 					{
-						$dateTime = new DateTime();
-						$dateTime->setTimestamp($value);
+						// TODO: MySQL specific.
+						$dateTime = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
 						$this->setAttribute($name, $dateTime);
 					}
 					break;
@@ -444,5 +444,45 @@ abstract class BaseRecord extends \CActiveRecord
 		return new \CActiveDataProvider($this, array(
 			'criteria' => $criteria
 		));
+	}
+
+	/**
+	 * Sets the named attribute value.
+	 * You may also use $this->AttributeName to set the attribute value.
+	 *
+	 * @param string $name the attribute name
+	 * @param mixed $value the attribute value.
+	 * @return boolean whether the attribute exists and the assignment is conducted successfully
+	 * @see hasAttribute
+	 */
+	public function setAttribute($name, $value)
+	{
+		// If value is valid timestamp and the underlying column type is datetime, convert to datetime object
+		if (DateTimeHelper::isValidTimeStamp($value))
+		{
+			$table = blx()->db->schema->getTable("{{{$this->getTableName()}}}");
+			$column = $table->getColumn($name);
+			if ($column->dbType == ColumnType::DateTime)
+			{
+				$dt = new DateTime();
+				$dt->setTimestamp($value);
+				$value = $dt;
+			}
+		}
+
+		if (property_exists($this, $name))
+		{
+			$this->$name = $value;
+		}
+		else if (isset($this->getMetaData()->columns[$name]))
+		{
+			$this->_attributes[$name] = $value;
+		}
+		else
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

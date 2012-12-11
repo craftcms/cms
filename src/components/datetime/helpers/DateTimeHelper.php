@@ -36,7 +36,8 @@ class DateTimeHelper
 	{
 		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
 		// For now, it's MySQL only.
-		return DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $timeStamp);
+		$dt = new DateTime('@'.$timeStamp);
+		return $dt->format(DateTime::MYSQL_DATETIME);
 	}
 
 	/**
