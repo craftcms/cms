@@ -173,7 +173,7 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Blocks::log('Flushing update info from cache.', \CLogger::LEVEL_INFO);
 
-		if (blx()->fileCache->delete('updateinfo'))
+		if (IOHelper::clearFolder(blx()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(blx()->path->getCachePath()))
 		{
 			return true;
 		}
