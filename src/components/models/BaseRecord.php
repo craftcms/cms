@@ -122,8 +122,17 @@ abstract class BaseRecord extends \CActiveRecord
 				{
 					if ($value)
 					{
-						// TODO: MySQL specific.
-						$dateTime = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
+						if (DateTimeHelper::isValidTimeStamp($value))
+						{
+							$dateTime = new DateTime();
+							$dateTime->setTimestamp($value);
+						}
+						else
+						{
+							// TODO: MySQL specific.
+							$dateTime = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
+						}
+
 						$this->setAttribute($name, $dateTime);
 					}
 					break;
