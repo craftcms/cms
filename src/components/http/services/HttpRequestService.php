@@ -54,12 +54,18 @@ class HttpRequestService extends \CHttpRequest
 		// Is this a paginated request?
 		if ($this->_segments)
 		{
-			$lastSegment = $this->_segments[count($this->_segments)-1];
+			// Match against the entire path string as opposed to just the last segment
+			// so that we can support "/page/2"-style pagination URLs
+			$path = implode('/', $this->_segments);
+			$pageTrigger = str_replace('/', '\/', blx()->config->get('pageTrigger'));
 
-			if (preg_match('/p(\d+)/', $lastSegment, $match))
+			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
 			{
-				$this->_pageNum = $match[1];
-				array_pop($this->_segments);
+				// Capture the page num
+				$this->_pageNum = $match[2];
+
+				// Reset the segments without the pagination stuff
+				$this->_segments = array_filter(explode('/', $match[1]));
 			}
 		}
 

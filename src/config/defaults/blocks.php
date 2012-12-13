@@ -32,6 +32,11 @@ return array(
 'actionTrigger' => 'actions',
 
 /**
+ * The string that precedes the page number in paginated requests.
+ */
+'pageTrigger' => 'p',
+
+/**
  * The source of the site routes. Possible values are 'file' and 'db'.
  *
  * If set to 'file', Blocks will look for routes in blocks/config/routes.php
