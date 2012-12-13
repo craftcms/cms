@@ -23,19 +23,18 @@ class UsersController extends BaseEntityController
 	{
 		$this->requirePostRequest();
 
-		$userId = blx()->request->getPost('userId');
+		$userId = blx()->request->getRequiredPost('userId');
 
-		if ($userId)
+		if ($userId != blx()->user->getUser()->id)
 		{
-			$user = blx()->account->getUserById($userId);
-			if (!$user)
-			{
-				throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
-			}
+			blx()->user->requirePermission('editUsers');
 		}
-		else
+
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
 		{
-			$user = new UserModel();
+			throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 		}
 
 		$user->firstName = blx()->request->getPost('firstName');
@@ -43,7 +42,7 @@ class UsersController extends BaseEntityController
 
 		$user->setContent(blx()->request->getPost('blocks'));
 
-		$userSaved = blx()->account->saveUser($user);
+		$userSaved = blx()->accounts->saveUser($user);
 		$profileSaved = blx()->users->saveProfile($user);
 
 		if ($userSaved && $profileSaved)
@@ -62,177 +61,6 @@ class UsersController extends BaseEntityController
 	}
 
 	/**
-	 * Saves a user's admin settings.
-	 */
-	public function actionSaveAdminSettings()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		$user->admin = (bool)blx()->request->getPost('admin');
-		blx()->account->saveUser($user);
-
-		// Update the user groups
-		$groupIds = blx()->request->getPost('groups');
-		blx()->userGroups->assignUserToGroups($userId, $groupIds);
-
-		blx()->user->setNotice(Blocks::t('Admin settings saved.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Sends a new verification email to a user.
-	 */
-	public function actionSendVerificationEmail()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->account->sendVerificationEmail($user);
-
-		blx()->user->setNotice(Blocks::t('Verification email sent.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Activates a user, bypassing email verification.
-	 */
-	public function actionActivateUser()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->account->activateUser($user);
-
-		blx()->user->setNotice(Blocks::t('User activated.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Unlocks a user, bypassing the cooldown phase.
-	 */
-	public function actionUnlockUser()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->account->unlockUser($user);
-
-		blx()->user->setNotice(Blocks::t('User activated.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Suspends a user.
-	 */
-	public function actionSuspendUser()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->account->suspendUser($user);
-
-		blx()->user->setNotice(Blocks::t('User suspended.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Unsuspends a user.
-	 */
-	public function actionUnsuspendUser()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->account->unsuspendUser($user);
-
-		blx()->user->setNotice(Blocks::t('User unsuspended.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Archives a user.
-	 */
-	public function actionArchiveUser()
-	{
-		$this->requirePostRequest();
-		$this->requireAdmin();
-
-		$userId = blx()->request->getRequiredPost('userId');
-		$user = blx()->account->getUserById($userId);
-
-		if (!$user)
-		{
-			$this->_noUserExists($userId);
-		}
-
-		blx()->account->archiveUser($user);
-
-		blx()->user->setNotice(Blocks::t('User deleted.'));
-		$this->redirectToPostedUrl();
-	}
-
-	/**
-	 * Throws a "no user exists" exception
-	 *
-	 * @access private
-	 * @param int $userId
-	 * @throws Exception
-	 */
-	private function _noUserExists($userId)
-	{
-		throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
-	}
-
-	/**
 	 * Upload a user photo.
 	 */
 	public function actionUploadUserPhoto()
@@ -240,6 +68,11 @@ class UsersController extends BaseEntityController
 		$this->requireAjaxRequest();
 		$this->requireLogin();
 		$userId = blx()->request->getRequiredQuery('userId');
+
+		if ($userId != blx()->user->getUser()->id)
+		{
+			blx()->user->requirePermission('editUsers');
+		}
 
 		// Upload the file and drop it in the temporary folder
 		$uploader = new \qqFileUploader();
@@ -249,14 +82,7 @@ class UsersController extends BaseEntityController
 			// Make sure a file was uploaded
 			if ($uploader->file && $uploader->file->getSize())
 			{
-				if ($userId == blx()->user->getId() || blx()->account->isAdmin())
-				{
-					$user = blx()->account->getUserById($userId);
-				}
-				else
-				{
-					throw new Exception(Blocks::t("Operation not permitted."));
-				}
+				$user = blx()->accounts->getUserById($userId);
 
 				$folderPath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/';
 
@@ -316,6 +142,11 @@ class UsersController extends BaseEntityController
 
 		$userId = blx()->request->getRequiredPost('userId');
 
+		if ($userId != blx()->user->getUser()->id)
+		{
+			blx()->user->requirePermission('editUsers');
+		}
+
 		try
 		{
 			$x1 = blx()->request->getRequiredPost('x1');
@@ -330,14 +161,7 @@ class UsersController extends BaseEntityController
 				$source = substr($source, 0, strpos($source, '?'));
 			}
 
-			if ($userId == blx()->user->getId() || blx()->account->isAdmin())
-			{
-				$user = blx()->account->getUserById($userId);
-			}
-			else
-			{
-				throw new Exception(Blocks::t("Operation not permitted."));
-			}
+			$user = blx()->accounts->getUserById($userId);
 
 			// make sure that this is this user's file
 			$imagePath = blx()->path->getTempUploadsPath().'userphotos/'.$user->username.'/'.$source;
@@ -370,16 +194,214 @@ class UsersController extends BaseEntityController
 		$this->requireLogin();
 		$userId = blx()->request->getRequiredPost('userId');
 
-		if ($userId == blx()->user->getId() || blx()->account->isAdmin())
+		if ($userId != blx()->user->getUser()->id)
 		{
-			$user = blx()->account->getUserById($userId);
-			blx()->users->deleteUserPhoto($user);
-
-			$record = UserRecord::model()->findById($user->id);
-			$record->photo = null;
-			$record->save();
+			blx()->user->requirePermission('editUsers');
 		}
 
+		$user = blx()->accounts->getUserById($userId);
+		blx()->users->deleteUserPhoto($user);
+
+		$record = UserRecord::model()->findById($user->id);
+		$record->photo = null;
+		$record->save();
+
 		$this->returnJson(array('success' => true));
+	}
+
+	/**
+	 * Saves a user's admin settings.
+	 */
+	public function actionSaveUserGroups()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$groupIds = blx()->request->getPost('groups');
+
+		blx()->userGroups->assignUserToGroups($userId, $groupIds);
+
+		blx()->user->setNotice(Blocks::t('User groups saved.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Saves a user's admin settings.
+	 */
+	public function actionSaveUserPermissions()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		$user->admin = (bool)blx()->request->getPost('admin');
+		blx()->accounts->saveUser($user);
+
+		// Update the user permissions
+		if ($user->admin)
+		{
+			$permissions = array();
+		}
+		else
+		{
+			$permissions = blx()->request->getPost('permissions');
+		}
+
+		blx()->userPermissions->saveUserPermissions($userId, $permissions);
+
+		blx()->user->setNotice(Blocks::t('Permissions saved.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Sends a new verification email to a user.
+	 */
+	public function actionSendVerificationEmail()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->accounts->sendVerificationEmail($user);
+
+		blx()->user->setNotice(Blocks::t('Verification email sent.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Activates a user, bypassing email verification.
+	 */
+	public function actionActivateUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->accounts->activateUser($user);
+
+		blx()->user->setNotice(Blocks::t('User activated.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Unlocks a user, bypassing the cooldown phase.
+	 */
+	public function actionUnlockUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->accounts->unlockUser($user);
+
+		blx()->user->setNotice(Blocks::t('User activated.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Suspends a user.
+	 */
+	public function actionSuspendUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->accounts->suspendUser($user);
+
+		blx()->user->setNotice(Blocks::t('User suspended.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Unsuspends a user.
+	 */
+	public function actionUnsuspendUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->accounts->unsuspendUser($user);
+
+		blx()->user->setNotice(Blocks::t('User unsuspended.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Archives a user.
+	 */
+	public function actionArchiveUser()
+	{
+		$this->requirePostRequest();
+		blx()->user->requirePermission('administrateUsers');
+
+		$userId = blx()->request->getRequiredPost('userId');
+		$user = blx()->accounts->getUserById($userId);
+
+		if (!$user)
+		{
+			$this->_noUserExists($userId);
+		}
+
+		blx()->accounts->archiveUser($user);
+
+		blx()->user->setNotice(Blocks::t('User deleted.'));
+		$this->redirectToPostedUrl();
+	}
+
+	/**
+	 * Throws a "no user exists" exception
+	 *
+	 * @access private
+	 * @param int $userId
+	 * @throws Exception
+	 */
+	private function _noUserExists($userId)
+	{
+		throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
 	}
 }

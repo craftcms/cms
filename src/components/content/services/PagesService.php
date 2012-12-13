@@ -104,6 +104,35 @@ class PagesService extends BaseEntityService
 	}
 
 	/**
+	 * Gets all pages that are editable by the current user.
+	 *
+	 * @param string|null $indexBy
+	 * @return array
+	 */
+	public function getEditablePages($indexBy = null)
+	{
+		$editablePages = array();
+		$allPages = $this->getAllPages();
+
+		foreach ($allPages as $page)
+		{
+			if (blx()->user->can('editPage'.$page->id))
+			{
+				if ($indexBy === null)
+				{
+					$editablePages[] = $page;
+				}
+				else
+				{
+					$editablePages[$page->$indexBy] = $page;
+				}
+			}
+		}
+
+		return $editablePages;
+	}
+
+	/**
 	 * Gets the total number of pages.
 	 *
 	 * @return int

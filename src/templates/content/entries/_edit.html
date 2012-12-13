@@ -8,7 +8,14 @@
 {% if blx.hasPackage('PublishPro') %}
 	{% set section = blx.sections.handle(sectionHandle).first %}
 	{% if not section %}{% exit 404 %}{% endif %}
+
+	{% set permissionSuffix = 'InSection'~section.id %}
+{% else %}
+	{% set permissionSuffix = '' %}
 {% endif %}
+
+
+{% requirePermission 'editEntries'~permissionSuffix %}
 
 
 {% if entry is not defined and entryId is defined %}
@@ -27,7 +34,18 @@
 {% set isNewEntry = (entry is not defined or not entry.id) %}
 
 
+{% if isNewEntry %}
+	{% requirePermission 'createEntries'~permissionSuffix %}
+{% elseif entry.authorId != user.id %}
+	{% requirePermission 'editPeerEntries'~permissionSuffix %}
+{% endif %}
+
+
 {% if not isNewEntry and entry.classHandle == 'EntryDraft' %}
+	{% if entry.creatorId != user.id %}
+		{% requirePermission 'editPeerEntryDrafts'~permissionSuffix %}
+	{% endif %}
+
 	{% set revisionLabel = "Draft {id}"|t({ id: draftId }) %}
 {% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
 	{% set revisionLabel = "Version {id}"|t({ id: versionId }) %}
@@ -153,20 +171,22 @@
 				errors: (entry is defined ? entry.getErrors('tags') : null),
 			}) }}
 
-			{% set statusLabel -%}
-				{{ "Status:"|t }} <i>{{ isNewEntry ? "Never saved"|t : entry.status|ucfirst|t }}</i>
-			{%- endset %}
-			{% set statusInput %}
-				{{ forms.checkboxField({
-					label: "Entry is enabled",
-					name: 'enabled',
-					checked: (entry is defined ? entry.enabled : true)
-				}) }}
-			{% endset %}
-			{{ forms.field({
-				label: statusLabel,
-				instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
-			}, statusInput) }}
+			{% if user.can('publishEntries'~permissionSuffix) %}
+				{% set statusLabel -%}
+					{{ "Status:"|t }} <i>{{ isNewEntry ? "Never saved"|t : entry.status|ucfirst|t }}</i>
+				{%- endset %}
+				{% set statusInput %}
+					{{ forms.checkboxField({
+						label: "Entry is enabled",
+						name: 'enabled',
+						checked: (entry is defined ? entry.enabled : true)
+					}) }}
+				{% endset %}
+				{{ forms.field({
+					label: statusLabel,
+					instructions: "An entry is only “live” if it is enabled, has a Post Date in the past, and an Expiration Date in the future."|t
+				}, statusInput) }}
+			{% endif %}
 		</div>
 
 		<hr>
@@ -179,7 +199,9 @@
 				<input type="hidden" name="draftId" value="{{ entry.draftId }}">
 				<input type="submit" class="btn submit" value="{{ 'Save Draft'|t }}">
 
-				<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
+				{% if user.can('publishEntries'~permissionSuffix) and (entry.creatorId == user.id or user.can('publishPeerEntryDrafts'~permissionSuffix)) %}
+					<input type="button" class="btn formsubmit" value="{{ 'Publish Draft'|t }}" data-action="entryRevisions/publishDraft" data-redirect="{{ entry.cpEditUrl }}">
+				{% endif %}
 
 			{% elseif not isNewEntry and entry.classHandle == 'EntryVersion' %}
 
@@ -192,16 +214,24 @@
 
 			{% else %}
 
-				<input type="hidden" name="action" value="entries/saveEntry">
-				{% if blx.hasPackage('PublishPro') %}
-					<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
-				{% else %}
-					<input type="hidden" name="redirect" value="content/blog/{entryId}">
-				{% endif %}
-				<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+				{% if isNewEntry or not entry.enabled or user.can('publishEntries'~permissionSuffix) %}
+					<input type="hidden" name="action" value="entries/saveEntry">
+					{% if blx.hasPackage('PublishPro') %}
+						<input type="hidden" name="redirect" value="content/{{ section.handle }}/{entryId}">
+					{% else %}
+						<input type="hidden" name="redirect" value="content/blog/{entryId}">
+					{% endif %}
+					<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
 
-				{% if not isNewEntry and blx.hasPackage('PublishPro') %}
-					<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" value="entryRevisions/createDraft" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+					{% if not isNewEntry and blx.hasPackage('PublishPro') %}
+						<input type="button" class="btn formsubmit" value="{{ 'Save as Draft'|t }}" value="entryRevisions/createDraft" data-action="entryRevisions/saveDraft" data-redirect="{{ entry.cpEditUrl }}/drafts/{draftId}">
+					{% endif %}
+				{% else %}
+					{% if blx.hasPackage('PublishPro') %}
+						<input type="hidden" name="action" value="entryRevisions/createDraft">
+						<input type="hidden" name="redirect" value="{{ entry.cpEditUrl }}/drafts/{draftId}">
+						<input type="submit" class="btn submit" value="{{ 'Save as Draft'|t }}">
+					{% endif %}
 				{% endif %}
 			{% endif %}
 		</div>

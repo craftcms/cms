@@ -45,7 +45,7 @@ class AccountController extends BaseController
 				}
 				case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
 				{
-					$user = blx()->account->getUserByUsernameOrEmail($loginName);
+					$user = blx()->accounts->getUserByUsernameOrEmail($loginName);
 					$timeRemaining = $user->getRemainingCooldownTime();
 
 					if ($timeRemaining)
@@ -91,11 +91,11 @@ class AccountController extends BaseController
 
 		$loginName = blx()->request->getRequiredPost('loginName');
 
-		$user = blx()->account->getUserByUsernameOrEmail($loginName);
+		$user = blx()->accounts->getUserByUsernameOrEmail($loginName);
 
 		if ($user)
 		{
-			if (blx()->account->sendForgotPasswordEmail($user))
+			if (blx()->accounts->sendForgotPasswordEmail($user))
 			{
 				$this->returnJson(array('success' => true));
 			}
@@ -119,7 +119,7 @@ class AccountController extends BaseController
 
 		$verificationCode = blx()->request->getRequiredPost('verificationCode');
 
-		$user = blx()->account->getUserByVerificationCode($verificationCode);
+		$user = blx()->accounts->getUserByVerificationCode($verificationCode);
 
 		if (!$user)
 		{
@@ -128,7 +128,7 @@ class AccountController extends BaseController
 
 		$user->newPassword = blx()->request->getRequiredPost('newPassword');
 
-		if (blx()->account->changePassword($user))
+		if (blx()->accounts->changePassword($user))
 		{
 			if (!blx()->user->isLoggedIn())
 			{
@@ -159,12 +159,18 @@ class AccountController extends BaseController
 		}
 		else
 		{
-			$userId = blx()->account->getCurrentUser()->id;
+			$userId = blx()->user->getUser()->id;
 		}
 
 		if ($userId)
 		{
-			$user = blx()->account->getUserById($userId);
+			if ($userId != blx()->user->getUser())
+			{
+				blx()->user->requirePermission('editUsers');
+			}
+
+			$user = blx()->accounts->getUserById($userId);
+
 			if (!$user)
 			{
 				throw new Exception(Blocks::t('No user exists with the ID “{id}”.', array('id' => $userId)));
@@ -172,6 +178,8 @@ class AccountController extends BaseController
 		}
 		else
 		{
+			blx()->user->requirePermission('registerUsers');
+
 			$user = new UserModel();
 		}
 
@@ -183,7 +191,7 @@ class AccountController extends BaseController
 		// Only admins can opt out of email verification
 		if (!$user->id)
 		{
-			if (blx()->account->isAdmin())
+			if (blx()->user->isAdmin())
 			{
 				$user->verificationRequired = (bool)blx()->request->getPost('verificationRequired');
 			}
@@ -194,18 +202,18 @@ class AccountController extends BaseController
 		}
 
 		// Only admins can change other users' passwords
-		if ($user->isCurrent() || blx()->account->isAdmin())
+		if ($user->isCurrent() || blx()->user->isAdmin())
 		{
 			$user->newPassword = blx()->request->getPost('newPassword');
 		}
 
 		// Only admins can require users to reset their passwords
-		if (blx()->account->isAdmin())
+		if (blx()->user->isAdmin())
 		{
 			$user->passwordResetRequired = (bool)blx()->request->getPost('passwordResetRequired');
 		}
 
-		if (blx()->account->saveUser($user))
+		if (blx()->accounts->saveUser($user))
 		{
 			blx()->user->setNotice(Blocks::t('User saved.'));
 			$this->redirectToPostedUrl(array(

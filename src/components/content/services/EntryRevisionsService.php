@@ -48,7 +48,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Returns drafts by an entry ID.
+	 * Returns drafts of a given entry.
 	 *
 	 * @param int $entryId
 	 * @return array
@@ -60,7 +60,34 @@ class EntryRevisionsService extends BaseApplicationComponent
 			'language' => blx()->language,
 		));
 
-		return EntryDraftModel::populateModels($draftRecords, 'draftId');
+		return EntryDraftModel::populateModels($draftRecords);
+	}
+
+	/**
+	 * Returns the drafts of a given entry that are editable by the current user.
+	 *
+	 * @param int $entryId
+	 * @return array
+	 */
+	public function getEditableDraftsByEntryId($entryId)
+	{
+		$editableDrafts = array();
+		$user = blx()->user->getUser();
+
+		if ($user)
+		{
+			$allDrafts = $this->getDraftsByEntryId($entryId);
+
+			foreach ($allDrafts as $draft)
+			{
+				if ($draft->creatorId == $user->id || $user->can('editPeerEntryDraftsInSection'.$draft->sectionId))
+				{
+					$editableDrafts[] = $draft;
+				}
+			}
+		}
+
+		return $editableDrafts;
 	}
 
 	/**
@@ -204,7 +231,7 @@ class EntryRevisionsService extends BaseApplicationComponent
 		$versionRecord = new EntryVersionRecord();
 		$versionRecord->entryId = $entry->id;
 		$versionRecord->sectionId = $entry->sectionId;
-		$versionRecord->creatorId = blx()->account->getCurrentUser()->id;
+		$versionRecord->creatorId = blx()->user->getUser()->id;
 		$versionRecord->language = $entry->language;
 		$versionRecord->data = $this->_getRevisionData($entry);
 		return $versionRecord->save();

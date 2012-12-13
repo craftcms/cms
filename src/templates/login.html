@@ -1,4 +1,4 @@
-{% if blx.session.isLoggedIn %}
+{% if user and user.can('accessCp') %}
 	{% redirect "dashboard" %}
 {% endif %}
 

@@ -29,7 +29,7 @@ class EntryRevisionsController extends BaseController
 			$draft = new EntryDraftModel();
 			$draft->id = blx()->request->getRequiredPost('entryId');
 			$draft->sectionId = blx()->request->getRequiredPost('sectionId');
-			$draft->creatorId = blx()->account->getCurrentUser()->id;
+			$draft->creatorId = blx()->user->getUser()->id;
 
 			$draft->language = blx()->language;
 		}
@@ -113,7 +113,7 @@ class EntryRevisionsController extends BaseController
 		}
 		else
 		{
-			$draft->authorId = blx()->account->getCurrentUser()->id;
+			$draft->authorId = blx()->user->getUser()->id;
 		}
 	}
 }

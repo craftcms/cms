@@ -91,11 +91,11 @@ class BlxVariable
 	}
 
 	/**
-	 * @return AccountVariable
+	 * @return AccountsVariable
 	 */
 	public function account()
 	{
-		return new AccountVariable();
+		return new AccountsVariable();
 	}
 
 	/**
@@ -300,6 +300,17 @@ class BlxVariable
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			return new UserGroupsVariable();
+		}
+	}
+
+	/**
+	 * @return UserPermissionsVariable|null
+	 */
+	public function userPermissions()
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			return new UserPermissionsVariable();
 		}
 	}
 

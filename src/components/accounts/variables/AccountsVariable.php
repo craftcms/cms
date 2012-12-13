@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * User account functions
  */
-class AccountVariable
+class AccountsVariable
 {
 	/**
 	 * Gets a user by a verification code.
@@ -14,6 +14,6 @@ class AccountVariable
 	 */
 	public function getUserByVerificationCode($code)
 	{
-		return blx()->account->getUserByVerificationCode($code);
+		return blx()->accounts->getUserByVerificationCode($code);
 	}
 }

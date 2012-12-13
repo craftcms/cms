@@ -18,6 +18,42 @@ class UserSessionService extends \CWebUser
 	private $_identity;
 
 	/**
+	 * Stores the current user model.
+	 *
+	 * @access private
+	 * @var UserModel|false
+	 */
+	private $_user;
+
+	/**
+	 * Gets the currently logged-in user.
+	 *
+	 * @return UserModel|false
+	 */
+	public function getUser()
+	{
+		// Does a user appear to be logged in?
+		if (blx()->isInstalled() && !$this->getIsGuest())
+		{
+			if (!isset($this->_user))
+			{
+				$userRecord = UserRecord::model()->findById($this->getId());
+
+				if ($userRecord)
+				{
+					$this->_user = UserModel::populateModel($userRecord);
+				}
+				else
+				{
+					$this->_user = false;
+				}
+			}
+
+			return $this->_user ? $this->_user : null;
+		}
+	}
+
+	/**
 	 * @param null $defaultUrl
 	 * @return mixed
 	 */
@@ -140,7 +176,8 @@ class UserSessionService extends \CWebUser
 	 */
 	public function isGuest()
 	{
-		return $this->getIsGuest();
+		$user = $this->getUser();
+		return empty($user);
 	}
 
 	/**
@@ -151,6 +188,43 @@ class UserSessionService extends \CWebUser
 	public function isLoggedIn()
 	{
 		return !$this->isGuest();
+	}
+
+	/**
+	 * Returns whether the current user is an admin.
+	 *
+	 * @return bool
+	 */
+	public function isAdmin()
+	{
+		$user = $this->getUser();
+		return ($user && $user->admin);
+	}
+
+	/**
+	 * Returns whether the current user has a given permission.
+	 *
+	 * @param string $permissionName
+	 * @return bool
+	 */
+	public function can($permissionName)
+	{
+		$user = $this->getUser();
+		return ($user && $user->can($permissionName));
+	}
+
+	/**
+	 * Requires that the current user has a given permission, otherwise a 403 exception is thrown.
+	 *
+	 * @param string $permissionName
+	 * @throws HttpException
+	 */
+	public function requirePermission($permissionName)
+	{
+		if (!$this->can($permissionName))
+		{
+			throw new HttpException(403);
+		}
 	}
 
 	/**

@@ -1,0 +1,35 @@
+{% macro permissionList(context, permissions, id, hidden) %}
+	{% from "_includes/forms" import checkbox %}
+	<ul{% if id %} id="{{ id }}"{% endif %} class="indent{% if hidden %} hidden{% endif %}">
+		{% for permissionName, props in permissions %}
+			{% set isInGroupPermissions = (context.groupPermissions is defined and permissionName|lower in context.groupPermissions) %}
+			{% set checked = (isInGroupPermissions
+				? true
+				: (context.userOrGroup is not empty
+					? (context.userOrGroup.hasErrors
+						? (permissionName in blx.request.getPost('permissions', []))
+						: context.userOrGroup.can(permissionName))
+					: false)) %}
+			{% set hasNestedPermissions = props.nested is defined and props.nested is not empty %}
+			<li>
+				{{ checkbox({
+					label: props.label,
+					name: 'permissions[]',
+					value: permissionName,
+					checked: checked,
+					disabled: isInGroupPermissions,
+					toggle: (hasNestedPermissions ? permissionName~'-nested' : null)
+				}) }}
+				{% if hasNestedPermissions %}
+					{{ _self.permissionList(context, props.nested, permissionName~'-nested', not checked) }}
+				{% endif %}
+			</li>
+		{% endfor %}
+	</ul>
+{% endmacro %}
+
+{% for category, catPermissions in blx.userPermissions.getAllPermissions() %}
+	<h3>{{ category }}</h3>
+
+	{{ _self.permissionList(_context, catPermissions) }}
+{% endfor %}

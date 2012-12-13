@@ -258,7 +258,7 @@ class EmailService extends BaseApplicationComponent
 	{
 		$this->_settings = $settings;
 
-		$user = blx()->account->getCurrentUser();
+		$user = blx()->user->getUser();
 		$newSettings = array();
 
 		foreach ($settings as $key => $value)

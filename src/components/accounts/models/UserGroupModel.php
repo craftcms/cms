@@ -29,4 +29,22 @@ class UserGroupModel extends BaseModel
 
 		return $attributes;
 	}
+
+	/**
+	 * Returns whether the group has permission to perform a given action.
+	 *
+	 * @param string $permission
+	 * @return bool
+	 */
+	public function can($permission)
+	{
+		if ($this->id)
+		{
+			return blx()->userPermissions->doesGroupHavePermission($this->id, $permission);
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

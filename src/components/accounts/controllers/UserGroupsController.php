@@ -21,6 +21,10 @@ class UserGroupsController extends BaseController
 		// Did it save?
 		if (blx()->userGroups->saveGroup($group))
 		{
+			// Save the new permissions
+			$permissions = blx()->request->getPost('permissions', array());
+			blx()->userPermissions->saveGroupPermissions($group->id, $permissions);
+
 			blx()->user->setNotice(Blocks::t('Group saved.'));
 			$this->redirectToPostedUrl();
 		}

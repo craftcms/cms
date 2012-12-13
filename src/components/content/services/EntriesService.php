@@ -64,25 +64,30 @@ class EntriesService extends BaseEntityService
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
-		$this->_applyEntryConditions($query, $criteria);
-
-		if ($criteria->order)
+		if ($this->_applyEntryConditions($query, $criteria))
 		{
-			$query->order($criteria->order);
-		}
+			if ($criteria->order)
+			{
+				$query->order($criteria->order);
+			}
 
-		if ($criteria->offset)
+			if ($criteria->offset)
+			{
+				$query->offset($criteria->offset);
+			}
+
+			if ($criteria->limit)
+			{
+				$query->limit($criteria->limit);
+			}
+
+			$result = $query->queryAll();
+			return EntryModel::populateModels($result, $criteria->indexBy);
+		}
+		else
 		{
-			$query->offset($criteria->offset);
+			return array();
 		}
-
-		if ($criteria->limit)
-		{
-			$query->limit($criteria->limit);
-		}
-
-		$result = $query->queryAll();
-		return EntryModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**
@@ -103,13 +108,14 @@ class EntriesService extends BaseEntityService
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
-		$this->_applyEntryConditions($query, $criteria);
-
-		$result = $query->queryRow();
-
-		if ($result)
+		if ($this->_applyEntryConditions($query, $criteria))
 		{
-			return EntryModel::populateModel($result);
+			$result = $query->queryRow();
+
+			if ($result)
+			{
+				return EntryModel::populateModel($result);
+			}
 		}
 	}
 
@@ -131,9 +137,14 @@ class EntriesService extends BaseEntityService
 			->from('entries e')
 			->join('entrytitles t', 'e.id = t.entryId');
 
-		$this->_applyEntryConditions($query, $criteria);
-
-		return (int) $query->queryScalar();
+		if ($this->_applyEntryConditions($query, $criteria))
+		{
+			return (int) $query->queryScalar();
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	/**
@@ -143,6 +154,7 @@ class EntriesService extends BaseEntityService
 	 * @param DbCommand $query
 	 * @param           $criteria
 	 * @param array     $criteria
+	 * @return bool
 	 */
 	private function _applyEntryConditions($query, $criteria)
 	{
@@ -189,6 +201,50 @@ class EntriesService extends BaseEntityService
 				if ($statusCondition)
 				{
 					$whereConditions[] = $statusCondition;
+				}
+			}
+		}
+
+		if ($criteria->editable)
+		{
+			$user = blx()->user->getUser();
+
+			if (!$user)
+			{
+				return false;
+			}
+
+			if (Blocks::hasPackage(BlocksPackage::PublishPro))
+			{
+				$editableSectionIds = blx()->sections->getEditableSectionIds();
+				$whereConditions[] = array('in', 'sectionId', $editableSectionIds);
+
+				$noPeerConditions = array();
+
+				foreach ($editableSectionIds as $sectionId)
+				{
+					if (!$user->can('editPeerEntriesInSection'.$sectionId))
+					{
+						$noPeerConditions[] = array('or', 'sectionId != '.$sectionId, 'authorId = '.$user->id);
+					}
+				}
+
+				if ($noPeerConditions)
+				{
+					array_unshift($noPeerConditions, 'and');
+					$whereConditions[] = $noPeerConditions;
+				}
+			}
+			else
+			{
+				if (!$user->can('editEntries'))
+				{
+					return false;
+				}
+
+				if (!$user->can('editPeerEntries'))
+				{
+					$whereConditions[] = 'authorId = '.$user->id;
 				}
 			}
 		}
@@ -251,6 +307,8 @@ class EntriesService extends BaseEntityService
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
 		}
+
+		return true;
 	}
 
 	/**

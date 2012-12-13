@@ -15,6 +15,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	{
 		return array(
 			new Redirect_TokenParser(),
+			new RequirePermission_TokenParser(),
 			new IncludeResource_TokenParser('includeCssFile'),
 			new IncludeResource_TokenParser('includeJsFile'),
 			new IncludeResource_TokenParser('includeCssResource'),
@@ -120,7 +121,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			$globals['siteName'] = Blocks::getSiteName();
 			$globals['siteUrl'] = Blocks::getSiteUrl();
 			$globals['globals'] = blx()->globals->getGlobalContent();
-			$globals['user'] = blx()->account->getCurrentUser();
+			$globals['user'] = blx()->user->getUser();
 		}
 
 		return $globals;

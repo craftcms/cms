@@ -8,6 +8,8 @@
 		{% set heading = "My Account"|t %}
 		{% set baseUrl = 'myaccount' %}
 	{% else %}
+		{% requirePermission 'editUsers' %}
+
 		{% set name = account.fullName ? account.fullName : account.username %}
 		{% set lastChar = name|slice(account.fullName|length-1) %}
 		{% set heading = name ~ (lastChar|lower == "s" ? "’" : "’s") ~ ' ' ~ "Account"|t %}
@@ -15,6 +17,8 @@
 	{% endif %}
 	{% set title = heading ~ " - " ~ pageTitle %}
 {% else %}
+	{% requirePermission 'registerUsers' %}
+
 	{% set heading = "Register a new user"|t %}
 	{% set title = heading %}
 {% endif %}
@@ -33,7 +37,7 @@
 		<li><a class="settings icon{% if blx.request.lastSegment not in ['profile', 'info', 'admin'] %} active{% endif %}" href="{{ url(baseUrl) }}">{{ "Account"|t }}</a></li>
 		<li><a href="{{ url(baseUrl ~ '/profile') }}" {% if blx.request.lastSegment == 'profile' %}class="active"{% endif %} data-icon="p">{{ "Profile"|t }}</a></li>
 
-		{% if user.admin %}
+		{% if user.can('administrateUsers') %}
 			<li><a href="{{ url(baseUrl ~ '/admin') }}" {% if blx.request.lastSegment == 'admin' %}class="active"{% endif %} data-icon="☻">{{ "Admin"|t }}</a></li>
 		{% endif %}
 	{% endset %}

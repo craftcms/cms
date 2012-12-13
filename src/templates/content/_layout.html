@@ -1,5 +1,5 @@
 {% extends "_layouts/cp" %}
-{% set totalGlobals = blx.globals.getTotalBlocks %}
+{% set totalGlobals = (user.can('editGlobals') ? blx.globals.getTotalBlocks : 0) %}
 
 
 {% set header %}
