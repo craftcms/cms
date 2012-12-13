@@ -395,6 +395,7 @@ class EntriesService extends BaseEntityService
 			$this->_generateEntrySlug($entry);
 		}
 
+		$entryRecord->authorId = $entry->authorId;
 		$entryRecord->slug = $entry->slug;
 		$titleRecord->title = $entry->title;
 		$entryRecord->postDate = DateTimeHelper::normalizeDate($entry->postDate, true);
@@ -804,7 +805,6 @@ class EntriesService extends BaseEntityService
 		else
 		{
 			$entryRecord = new EntryRecord();
-			$entryRecord->authorId = $entry->authorId;
 
 			if (Blocks::hasPackage(BlocksPackage::PublishPro))
 			{
