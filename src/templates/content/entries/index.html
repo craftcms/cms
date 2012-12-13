@@ -4,7 +4,18 @@
 
 
 {% if blx.hasPackage('PublishPro') %}
-	{% set sections = blx.sections.indexBy('id').find %}
+	{% set sections = blx.sections.editable(true).indexBy('id').find %}
+	{% set sectionHandles = [] %}
+	{% set newEntrySections = [] %}
+
+	{% for section in sections %}
+		{% set sectionHandles = sectionHandles|merge([section.handle]) %}
+
+		{% if user.can('createEntriesInSection'~section.id) %}
+			{% set newEntrySections = newEntrySections|merge([section]) %}
+		{% endif %}
+	{% endfor %}
+
 	{% set showSection = true %}
 {% else %}
 	{% set showSection = false %}
@@ -24,7 +35,7 @@
 {% elseif filter == 'archived' %}
 	{% set params = { archived: true } %}
 	{% set showStatus = false %}
-{% elseif blx.hasPackage('PublishPro') and blx.sections.handle(filter).total %}
+{% elseif blx.hasPackage('PublishPro') and filter in sectionHandles %}
 	{% set params = { section: filter, status: '*' } %}
 	{% set showSection = false %}
 {% else %}
@@ -32,27 +43,38 @@
 {% endif %}
 
 
+{% if showSection %}
+	{% set params = params|merge({ sectionId: sections|keys }) %}
+{% endif %}
+
+
 {% set content %}
 	{% if not blx.hasPackage('PublishPro') or sections|length %}
 		<nav class="nav">
-			<div class="buttons">
-				{% if blx.hasPackage('PublishPro') %}
-					{% if sections|length > 1 %}
-						<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
-						<div class="menu">
-							<ul>
-								{% for section in sections %}
-									<li><a href="{{ url('content/' ~ section.handle ~ '/new') }}">{{ section.name|t }}</a></li>
-								{% endfor %}
-							</ul>
-						</div>
-					{% else %}
-						<a class="btn submit add icon" href="{{ url('content/'~sections[sections|keys[0]].handle~'/new') }}">{{ "New Entry"|t }}</a>
-					{% endif %}
-				{% else %}
-					<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
+			{% if blx.hasPackage('PublishPro') %}
+				{% if newEntrySections|length %}
+					<div class="buttons">
+						{% if newEntrySections|length > 1 %}
+							<div class="btn submit menubtn add icon">{{ "New Entry"|t }}</div>
+							<div class="menu">
+								<ul>
+									{% for section in newEntrySections %}
+										<li><a href="{{ url('content/' ~ section.handle ~ '/new') }}">{{ section.name|t }}</a></li>
+									{% endfor %}
+								</ul>
+							</div>
+						{% else %}
+							<a class="btn submit add icon" href="{{ url('content/'~sections[sections|keys[0]].handle~'/new') }}">{{ "New Entry"|t }}</a>
+						{% endif %}
+					</div>
 				{% endif %}
-			</div>
+			{% else %}
+				{% if user.can('createEntries') %}
+					<div class="buttons">
+						<a class="btn submit add icon" href="{{ url('content/blog/new') }}">{{ "New Entry"|t }}</a>
+					</div>
+				{% endif %}
+			{% endif %}
 
 			<ul>
 				<li><a href="{{ url('content') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Entries"|t }}</a></li>
@@ -64,13 +86,16 @@
 				{% endif %}
 
 				{% for status, class in statuses %}
-					{% set total = blx.entries.status(status).total %}
-					{% if total %}
+					{% if blx.entries.status(status).editable(true).total %}
 						<li><a href="{{ url('content/' ~ status) }}" {% if filter == status %}class="sel"{% endif %}><div class="status {{ class }}"></div> {{ status|ucfirst|t }}</a></li>
 					{% endif %}
 				{% endfor %}
 
-				{% if blx.entries.archived(true).total %}
+				{% set archivedParams = { archived: true } %}
+				{% if blx.hasPackage('PublishPro') %}
+					{% set archivedParams = archivedParams|merge({ section: sectionHandles }) %}
+				{% endif %}
+				{% if blx.entries.archived(true).editable(true).total %}
 					<li><a href="{{ url('content/archive') }}" {% if filter == 'archive' %}class="sel"{% endif %} data-icon="d">{{ "Archived"|t }}</a></li>
 				{% endif %}
 			</ul>
@@ -81,7 +106,7 @@
 				<div class="search"><input type="text" class="text nicetext fullwidth" data-hint="{{ 'Search entries'|t }}"></div>
 			</div>
 
-			{% paginate blx.entries(params).limit(50) as entries %}
+			{% paginate blx.entries(params).editable(true).limit(50) as entries %}
 
 				<p id="noentries"{% if entries|length %} class="hidden"{% endif %}>
 					{{ "No entries exist yet."|t }}
@@ -111,7 +136,11 @@
 									<td><a href="{{ entry.url }}">{{ entry.slug }}</a></td>
 									{% if showSection %}<td>{{ entrySection.name }}</th>{% endif %}
 									{% if showStatus %}<td><div class="status {{ statuses[entry.status] }}"></div> {{ entry.status|ucfirst|t }}</td>{% endif %}
-									<td class="thin"><a class="delete icon" title="{{ 'Delete'|t }}"></a></td>
+									<td class="thin">
+										{% if entry.authorId == user.id or user.can('deletePeerEntries'~(blx.hasPackage('PublishPro') ? 'InSection'~entry.sectionId : '')) %}
+											<a class="delete icon" title="{{ 'Delete'|t }}"></a>
+										{% endif %}
+									</td>
 								</tr>
 							{% endfor %}
 						</tbody>
@@ -123,7 +152,9 @@
 	{% else %}
 		<p class="centeralign">
 			{{ "No sections exist yet."|t }}
-			<a class="go" href="{{ url('settings/sections/new') }}">{{ "Create the first one"|t }}</a>
+			{% if user.admin %}
+				<a class="go" href="{{ url('settings/sections/new') }}">{{ "Create the first one"|t }}</a>
+			{% endif %}
 		</p>
 	{% endif %}
 {% endset %}

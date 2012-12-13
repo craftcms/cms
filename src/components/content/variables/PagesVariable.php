@@ -72,6 +72,17 @@ class PagesVariable
 	}
 
 	/**
+	 * Gets all pages that are editable by the current user.
+	 *
+	 * @param string|null $indexBy
+	 * @return array
+	 */
+	public function getEditablePages($indexBy = null)
+	{
+		return blx()->pages->getEditablePages($indexBy);
+	}
+
+	/**
 	 * Gets the total number of pages.
 	 *
 	 * @return int

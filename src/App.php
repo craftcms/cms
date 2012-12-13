@@ -10,7 +10,7 @@ namespace Blocks;
  * @property AssetSourcesService    $assetSources   The assets sources service
  * @property PathService            $path			The path service
  * @property UsersService           $users			The users service
- * @property AccountService         $account		The account service
+ * @property AccountsService         $account		The account service
  * @property ImagesService          $images			The images service
  * @property ResourcesService		$resources		The resources service
  * @property HttpRequestService 	$request 		The request service
@@ -90,7 +90,10 @@ class App extends \CWebApplication
 		}
 
 		// If the system is on OR it's a CP request, let's continue processing.
-		if (Blocks::isSystemOn() || $this->request->isCpRequest())
+		if (Blocks::isSystemOn() || (
+			($this->request->isSiteRequest() && $this->account->can('accessSiteWhenSystemIsOff')) ||
+			($this->request->isCpRequest()) && $this->account->can('accessCpWhenSystemIsOff')
+		))
 		{
 			// Attempt to set the target language from user preferences.
 			$this->_processUserPreferredLanguage();
@@ -184,7 +187,7 @@ class App extends \CWebApplication
 		// See if the user is logged in.
 		if (blx()->user->isLoggedIn())
 		{
-			$user = blx()->account->getCurrentUser();
+			$user = blx()->user->getUser();
 			$userLanguage = Locale::getCanonicalID($user->language);
 
 			// If the user has a preferred language saved and we have translation data for it, set the target language.

@@ -57,6 +57,6 @@ class EntryDraftModel extends EntryModel
 	 */
 	public function getCreator()
 	{
-		return blx()->account->getUserById($this->creatorId);
+		return blx()->accounts->getUserById($this->creatorId);
 	}
 }

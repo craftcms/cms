@@ -21,7 +21,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = blx()->account->getUserByUsernameOrEmail($this->username);
+		$user = blx()->accounts->getUserByUsernameOrEmail($this->username);
 
 		if ($user)
 		{
@@ -74,7 +74,7 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						blx()->account->sendForgotPasswordEmail($user);
+						blx()->accounts->sendForgotPasswordEmail($user);
 					}
 					else
 					{
@@ -84,13 +84,13 @@ class UserIdentity extends \CUserIdentity
 						$this->errorCode = static::ERROR_NONE;
 
 						$authSessionToken = StringHelper::UUID();
-						blx()->account->handleSuccessfulLogin($user, $authSessionToken);
+						blx()->accounts->handleSuccessfulLogin($user, $authSessionToken);
 						$this->setState('authSessionToken', $authSessionToken);
 					}
 				}
 				else
 				{
-					blx()->account->handleInvalidLogin($user);
+					blx()->accounts->handleInvalidLogin($user);
 
 					// Was that one bad password too many?
 					if ($user->status == UserStatus::Locked)

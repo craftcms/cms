@@ -421,7 +421,7 @@ class PluginsService extends BaseApplicationComponent
 		{
 			if (method_exists($plugin, $methodName))
 			{
-				$result[] = call_user_func_array(array($plugin, $methodName), $args);
+				$result[$plugin->getClassHandle()] = call_user_func_array(array($plugin, $methodName), $args);
 			}
 		}
 

@@ -7,6 +7,7 @@
 Blocks.ui.FieldToggle = Blocks.Base.extend({
 
 	$toggle: null,
+	reverse: null,
 	targetPrefix: null,
 
 	_$target: null,
@@ -26,6 +27,7 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 		this.$toggle.data('fieldtoggle', this);
 
 		this.type = this.getType();
+		this.reverse = !!this.$toggle.attr('data-reverse-toggle');
 
 		if (this.type == 'select')
 		{
@@ -105,6 +107,11 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 				var show = !!this.getToggleVal();
 			}
 
+			if (this.reverse)
+			{
+				show = !show;
+			}
+
 			if (show)
 			{
 				this.showTarget();
@@ -157,7 +164,9 @@ Blocks.ui.FieldToggle = Blocks.Base.extend({
 					this.$toggle.addClass('collapsed');
 				}
 
-				this.getTarget().stop().animate({height: 0}, 'fast');
+				this.getTarget().stop().animate({height: 0}, 'fast', $.proxy(function() {
+					this.getTarget().addClass('hidden');
+				}, this));
 			}
 		}
 	}

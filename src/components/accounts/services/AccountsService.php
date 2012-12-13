@@ -4,11 +4,17 @@ namespace Blocks;
 /**
  *
  */
-class AccountService extends BaseApplicationComponent
+class AccountsService extends BaseApplicationComponent
 {
-	public $accountVerificationPath = 'verify';
-
-	private $_currentUser;
+	/**
+	 * Returns the account verification path.
+	 *
+	 * @return string
+	 */
+	public function getAccountVerificationPath()
+	{
+		return 'verify';
+	}
 
 	/**
 	 * Gets a user by their ID.
@@ -68,54 +74,6 @@ class AccountService extends BaseApplicationComponent
 			{
 				return UserModel::populateModel($userRecord);
 			}
-		}
-	}
-
-	/**
-	 * Gets the currently logged-in user.
-	 *
-	 * @return UserModel
-	 */
-	public function getCurrentUser()
-	{
-		// Is a user actually logged in?
-		if (blx()->isInstalled() && !empty(blx()->user) && blx()->user->isLoggedIn())
-		{
-			if (!isset($this->_currentUser))
-			{
-				$userId = blx()->user->getId();
-				$userRecord = UserRecord::model()->findById($userId);
-
-				if ($userRecord)
-				{
-					$this->_currentUser = UserModel::populateModel($userRecord);
-				}
-				else
-				{
-					$this->_currentUser = null;
-				}
-			}
-
-			return $this->_currentUser;
-		}
-	}
-
-	/**
-	 * Returns whether the current user is an admin.
-	 *
-	 * @return bool
-	 */
-	public function isAdmin()
-	{
-		$user = $this->getCurrentUser();
-
-		if ($user)
-		{
-			return $user->admin;
-		}
-		else
-		{
-			return false;
 		}
 	}
 
@@ -261,7 +219,7 @@ class AccountService extends BaseApplicationComponent
 	{
 		if ($userRecord->verificationCode)
 		{
-			return UrlHelper::getUrl($this->accountVerificationPath, array(
+			return UrlHelper::getUrl($this->getAccountVerificationPath(), array(
 				'code' => $userRecord->verificationCode
 			));
 		}

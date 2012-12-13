@@ -94,7 +94,7 @@ if (in_array('Users', $packages))
 //  Component config
 // -------------------------------------------
 
-$components['account']['class']           = 'Blocks\AccountService';
+$components['accounts']['class']          = 'Blocks\AccountsService';
 $components['assets']['class']            = 'Blocks\AssetsService';
 $components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
 $components['assetSizes']['class']        = 'Blocks\AssetSizesService';
@@ -133,6 +133,7 @@ if (in_array('Users', $packages))
 {
 	$components['users']['class']             = 'Blocks\UsersService';
 	$components['userGroups']['class']        = 'Blocks\UserGroupsService';
+	$components['userPermissions']['class']   = 'Blocks\UserPermissionsService';
 }
 
 if (in_array('Rebrand', $packages))
