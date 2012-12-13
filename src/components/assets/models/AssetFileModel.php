@@ -6,10 +6,6 @@ namespace Blocks;
  */
 class AssetFileModel extends BaseModel
 {
-	/**
-	 * @var BaseAssetSourceType
-	 */
-	private $_sourceType = null;
 
 	/**
 	 * User the filename as the string representation.
@@ -56,7 +52,7 @@ class AssetFileModel extends BaseModel
 	 */
 	public function getUrl()
 	{
-		return $this->getSourceType()->getSettings()->url . $this->getFolder()->fullPath . $this->filename;
+		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url . $this->getFolder()->fullPath . $this->filename;
 	}
 
 	/**
@@ -67,7 +63,7 @@ class AssetFileModel extends BaseModel
 	 */
 	public function getThumbSize($maxSize = 125)
 	{
-		$path = $this->getSourceType()->getSettings()->path . $this->getFolder()->fullPath . $this->filename;
+		$path = blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->path . $this->getFolder()->fullPath . $this->filename;
 		list($width, $height) = getimagesize($path);
 
 		if ($width > $height)
@@ -82,18 +78,5 @@ class AssetFileModel extends BaseModel
 		}
 
 		return array('width' => $thumbWidth, 'height' => $thumbHeight);
-	}
-
-	/**
-	 * @return BaseAssetSourceType|null
-	 */
-	protected function getSourceType()
-	{
-		if (!isset($this->_sourceType))
-		{
-			$this->_sourceType = blx()->assetSources->getSourceTypeById($this->sourceId);
-		}
-
-		return $this->_sourceType;
 	}
 }

@@ -24,7 +24,7 @@ class AssetSizesController extends BaseController
 		if (blx()->assetSizes->saveSize($size))
 		{
 			blx()->user->setNotice(Blocks::t('Size saved.'));
-			$this->redirectToPostedUrl();
+			$this->redirectToPostedUrl(array('handle' => $size->handle));
 		}
 		else
 		{

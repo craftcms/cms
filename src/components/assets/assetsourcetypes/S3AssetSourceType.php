@@ -27,7 +27,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public function __construct()
 	{
 		$settings = $this->getSettings();
-		$this->_s3 = new \S3($this->getSettings()->keyId, $settings->secret);
+		$this->_s3 = new \S3($settings->keyId, $settings->secret);
 	}
 
 	/**
@@ -67,6 +67,17 @@ class S3AssetSourceType extends BaseAssetSourceType
 		return blx()->templates->render('_components/assetsourcetypes/S3/settings', array(
 			'settings' => $this->getSettings()
 		));
+	}
+
+	/**
+	 * Prepare the S3 connection for requests to this bucket.
+	 */
+	private function _prepareForRequests()
+	{
+		$settings = $this->getSettings();
+		\S3::setAuth($settings->keyId, $settings->secret);
+
+		$this->_s3->setEndpoint(static::getEndpointByLocation($settings->location));
 	}
 
 	/**
@@ -236,10 +247,11 @@ class S3AssetSourceType extends BaseAssetSourceType
 			$fileModel->dateModified = $fileInfo['time'];
 
 			blx()->assets->storeFile($fileModel);
+
+			return $fileModel->id;
 		}
 
-
-		return true;
+		return false;
 	}
 
 	/**
@@ -260,11 +272,56 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 * Set S3 credentials.
 	 *
 	 * @param $keyId
-	 * @param $secretKey
+	 * @param $secret
 	 */
 	private function _setS3Credentials($keyId, $secret)
 	{
 		\S3::setAuth($keyId, $secret);
 	}
 
+	/**
+	 * Get the image source path with the optional handle name.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @return mixed
+	 */
+	public function getImageSourcePath(AssetFileModel $fileModel)
+	{
+		return blx()->path->getAssetsImageSourcePath().$fileModel->filename;
+	}
+
+	/**
+	 * Get the timestamp of when a file size was last modified.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $sizeHandle
+	 * @return mixed
+	 */
+	public function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle)
+	{
+		$folder = $fileModel->getFolder();
+		$path = $folder->fullPath . '_handle/' . $fileModel->id . pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+		$this->_prepareForRequests();
+		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
+		if (empty($info))
+		{
+			return false;
+		}
+		return $info['time'];
+	}
+
+	/**
+	* Put an image size for the File and handle using the provided path to the source image.
+	*
+	* @param AssetFileModel $fileModel
+	* @param $handle
+	* @param $sourceImage
+	* @return mixed
+	*/
+	public function putImageSize(AssetFileModel $fileModel, $handle, $sourceImage)
+	{
+		$this->_prepareForRequests();
+		$targetFile = rtrim($fileModel->getFolder()->fullPath, '/').'/_'.$handle.'/'.$fileModel->filename;
+		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile);
+	}
 }

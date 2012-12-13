@@ -1,0 +1,73 @@
+{% extends "settings/assets/_layout" %}
+{% set page = "operations" %}
+{% set title = "Asset operations"|t %}
+{% set sources = blx.assets.getAllSources %}
+
+{% includeTranslations
+    "The following items were found in the database that do not have a physical match.",
+    "Folders",
+    "Files",
+    "Cancel",
+    "Delete"
+%}
+
+{% set content %}
+	<p id="nosources" {% if sources|length %}style="display: none"{% endif %}>
+		{{ "No sources exist yet."|t }}
+	</p>
+
+	{% if sources|length %}
+
+        {% from "_includes/forms" import checkboxSelectField, checkboxField %}
+
+        {% if sizeHandle is defined %}
+            {% set sizeValue = sizeHandle %}
+        {% else %}
+            {% set sizeValue = 0 %}
+        {% endif %}
+
+        {{ checkboxSelectField({
+            label: "Asset Sources"|t,
+            instructions: "Which sources do you want to perform operations on?"|t,
+            id: 'sourceId',
+            name: 'sourceId',
+            options: sources,
+            values: '',
+            class: "assets-sources"
+        }) }}
+
+        {{ checkboxField({
+            label: "Update indexes"|t,
+            id: 'do-index',
+            name: 'do-index',
+            class: 'assets-index'
+        }) }}
+
+        {% set sizes = blx.assets.getAllAssetSizes() %}
+
+        {% if sizes|length >0 %}
+            {{ checkboxSelectField({
+                label: "Update size"|t,
+                instructions: "Which sizes do you want updated?"|t,
+                id: 'size',
+                name: 'size',
+                options: sizes,
+                values: sizeValue,
+                class: "assets-sizes"
+            }) }}
+        {% endif %}
+
+        <div class="operation-progress">
+
+        </div>
+
+        <div class="buttons">
+            <a href="javascript:;" class="btn" id="start-operations">{{ "Perform selected operations"|t }}</a>
+        </div>
+
+        {% includeJsResource "js/Assets/Assetoperations.js" %}
+        {% includeJsResource "js/QueueManager.js" %}
+
+    {% endif %}
+
+{% endset %}

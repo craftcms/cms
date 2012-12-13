@@ -27,7 +27,7 @@ class AssetSizesService extends BaseApplicationComponent
 	 * Get an asset size by it's handle.
 	 *
 	 * @param $handle
-	 * @return null
+	 * @return AssetSizeModel
 	 */
 	public function getAssetSize($handle)
 	{
@@ -69,6 +69,12 @@ class AssetSizesService extends BaseApplicationComponent
 
 		$sizeRecord->name = $size->name;
 		$sizeRecord->handle = $size->handle;
+
+		if ($sizeRecord->width != $size->width || $sizeRecord->height != $size->height)
+		{
+			$sizeRecord->dimensionChangeTime = time();
+		}
+
 		$sizeRecord->width = $size->width;
 		$sizeRecord->height = $size->height;
 
@@ -142,5 +148,45 @@ class AssetSizesService extends BaseApplicationComponent
 	private function _noSizeExists($handle)
 	{
 		throw new Exception(Blocks::t("Can't find the size with handle “{handle}”", array('handle' => $handle)));
+	}
+
+	/**
+	 * Update the asset sizes for the FileModel.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param array $sizesToUpdate
+	 * @return bool
+	 */
+	public function updateSizes(AssetFileModel $fileModel, array $sizesToUpdate)
+	{
+		$sourceType = blx()->assetSources->getSourceTypeById($fileModel->sourceId);
+		$imageSource = $sourceType->getImageSourcePath($fileModel);
+
+		if (!IOHelper::fileExists($imageSource))
+		{
+			return false;
+		}
+
+
+		foreach ($sizesToUpdate as $handle)
+		{
+			$size = $this->getAssetSize($handle);
+
+			// This will set the time modified to 0 for files that don't exist.
+			$timeModified = (int) $sourceType->getTimeSizeModified($fileModel, $handle);
+
+			// Create the size if the file doesn't exist, or if it was created before the image was last updated
+			// or if the size dimensions have changed since it was last created
+			if ($timeModified < $fileModel->dateModified || $timeModified < $size->dimensionChangeTime)
+			{
+				$targetFile = AssetsHelper::getTempFilePath(pathinfo($fileModel->filename, PATHINFO_EXTENSION));
+				blx()->images->loadImage($imageSource)->resizeTo($size->width, $size->height)->saveAs($targetFile);
+				clearstatcache(true, $targetFile);
+				$sourceType->putImageSize($fileModel, $handle, $targetFile);
+				IOHelper::deleteFile($targetFile);
+			}
+		}
+
+		return true;
 	}
 }

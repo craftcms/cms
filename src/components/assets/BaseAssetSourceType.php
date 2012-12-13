@@ -30,6 +30,23 @@ abstract class BaseAssetSourceType extends BaseComponent
 	abstract public function processIndex($sessionId, $offset);
 
 	/**
+	 * Get the image source path with the optional handle name.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @return mixed
+	 */
+	public abstract function getImageSourcePath(AssetFileModel $fileModel);
+
+	/**
+	 * Get the timestamp of when a file size was last modified.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $sizeHandle
+	 * @return mixed
+	 */
+	public abstract function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle);
+
+	/**
 	 * Insert a file from path in folder.
 	 *
 	 * @param AssetFolderModel $folder
@@ -48,6 +65,16 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 * @return mixed
 	 */
 	//abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
+
+	/**
+	 * Put an image size for the File and handle using the provided path to the source image.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param $handle
+	 * @param $sourceImage
+	 * @return mixed
+	 */
+	abstract public function putImageSize(AssetFileModel $fileModel, $handle, $sourceImage);
 
 	/**
 	 * Return a result object for prompting the user about filename conflicts.

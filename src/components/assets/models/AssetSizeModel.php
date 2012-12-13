@@ -22,11 +22,12 @@ class AssetSizeModel extends BaseModel
 	public function defineAttributes()
 	{
 		return array(
-			'id'       => AttributeType::Number,
-			'name'     => AttributeType::String,
-			'handle'   => AttributeType::Handle,
-			'width'    => AttributeType::Number,
-			'height'   => AttributeType::Number
+			'id'                  => AttributeType::Number,
+			'name'                => AttributeType::String,
+			'handle'              => AttributeType::Handle,
+			'width'               => AttributeType::Number,
+			'height'              => AttributeType::Number,
+			'dimensionChangeTime' => AttributeType::Number
 		);
 	}
 }

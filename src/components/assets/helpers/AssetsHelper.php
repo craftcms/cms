@@ -13,12 +13,15 @@ class AssetsHelper
 	const IndexSkipItemsPattern = '/.*(Thumbs\.db|__MACOSX|__MACOSX\/|__MACOSX\/.*|\.DS_STORE)$/i';
 
 	/**
-	 * Get a temporary file path
+	 * Get a temporary file path.
+	 *
+	 * @param string $extension extension to use. "tmp" by default.
 	 * @return mixed
 	 */
-	public static function getTempFilePath()
+	public static function getTempFilePath($extension = 'tmp')
 	{
-		$fileName = uniqid('assets', true) . '.tmp';
+		$extension = preg_replace('/[^a-z]/i', '', $extension);
+		$fileName = uniqid('assets', true) . '.' . $extension;
 		return IOHelper::createFile(blx()->path->getTempPath() . $fileName)->getRealPath();
 	}
 }

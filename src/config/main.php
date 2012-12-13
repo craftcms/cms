@@ -34,7 +34,8 @@ $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 
 $cpRoutes['updates\/go\/(?P<handle>[^\/]*)']                                  = 'updates/_go';
 
 $cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
-$cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
+$cpRoutes['settings\/assets\/operations\/(?P<sizeHandle>'.$handle.')?']       = 'settings/assets/operations/index';
+$cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
 $cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
 $cpRoutes['settings\/assets\/sizes\/new']                                     = 'settings/assets/sizes/_settings';
 $cpRoutes['settings\/assets\/sizes\/(?P<sizeHandle>'.$handle.')']             = 'settings/assets/sizes/_settings';

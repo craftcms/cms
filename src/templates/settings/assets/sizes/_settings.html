@@ -29,7 +29,8 @@
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
 		<input type="hidden" name="action" value="assetSizes/saveSize">
-		<input type="hidden" name="redirect" value="settings/assets">
+		<input type="hidden" name="redirect" value="settings/assets/operations/{handle}">
+
 		{% if not isNewSize %}<input type="hidden" name="sizeId" value="{{ size.id }}">{% endif %}
 
 		{{ forms.textField({
