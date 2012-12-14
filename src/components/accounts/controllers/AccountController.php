@@ -14,33 +14,42 @@ class AccountController extends BaseController
 	public function actionLogin()
 	{
 		$this->requirePostRequest();
-		$this->requireAjaxRequest();
 
 		$loginName = blx()->request->getPost('loginName');
 		$password = blx()->request->getPost('password');
-		$rememberMe = (bool)blx()->request->getPost('rememberMe');
+		$rememberMe = (bool) blx()->request->getPost('rememberMe');
 
 		if (blx()->user->login($loginName, $password, $rememberMe))
 		{
-			$this->returnJson(array(
-				'success' => true,
-				'redirectUrl' => blx()->user->getReturnUrl()
-			));
+			$redirectUrl = blx()->user->getReturnUrl();
+
+			if (blx()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'success' => true,
+					'redirectUrl' => $redirectUrl
+				));
+			}
+			else
+			{
+				blx()->user->setNotice(Blocks::t('Logged in.'));
+				$this->redirect($redirectUrl);
+			}
 		}
 		else
 		{
-			switch (blx()->user->getLoginErrorCode())
+			$errorCode = blx()->user->getLoginErrorCode();
+
+			switch ($errorCode)
 			{
 				case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
 				{
-					$this->returnJson(array(
-						'notice' => Blocks::t('You need to reset your password. Check your email for instructions.')
-					));
+					$error = Blocks::t('You need to reset your password. Check your email for instructions.');
 					break;
 				}
 				case UserIdentity::ERROR_ACCOUNT_LOCKED:
 				{
-					$this->returnErrorJson(Blocks::t('Account locked.'));
+					$error = Blocks::t('Account locked.');
 					break;
 				}
 				case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
@@ -51,23 +60,40 @@ class AccountController extends BaseController
 					if ($timeRemaining)
 					{
 						$humanTimeRemaining = DateTimeHelper::secondsToHumanTimeDuration($timeRemaining, false);
-						$this->returnErrorJson(Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining)));
+						$error = Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
 					}
 					else
 					{
-						$this->returnErrorJson(Blocks::t('Account locked.'));
+						$error = Blocks::t('Account locked.');
 					}
 					break;
 				}
 				case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
 				{
-					$this->returnErrorJson(Blocks::t('Account suspended.'));
+					$error = Blocks::t('Account suspended.');
 					break;
 				}
 				default:
 				{
-					$this->returnErrorJson(Blocks::t('Invalid username or password.').'<br><a>'.Blocks::t('Forget your password?').'</a>');
+					$error = Blocks::t('Invalid username or password.');
 				}
+			}
+
+			if (blx()->request->isAjaxRequest())
+			{
+				$this->returnJson(array(
+					'errorCode' => $errorCode,
+					'error' => $error
+				));
+			}
+			else
+			{
+				blx()->user->setError($error);
+
+				$this->renderRequestedTemplate(array(
+					'loginName' => $loginName,
+					'rememberMe' => $rememberMe
+				));
 			}
 		}
 	}

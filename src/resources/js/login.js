@@ -111,9 +111,12 @@ var LoginForm = Blocks.Base.extend({
 				// Add the error message
 				this.showError(response.error);
 
-				var $forgotPasswordLink = this.$error.find('a');
-				if ($forgotPasswordLink.length)
+				if (response.errorCode == 2)
+				{
+					$('<br/>').appendTo(this.$error);
+					var $forgotPasswordLink = $('<a>'+Blocks.t('Forget your password?')+'</a>').appendTo(this.$error);
 					this.addListener($forgotPasswordLink, 'mousedown', 'onForgetPassword');
+				}
 			}
 		}, this));
 
