@@ -53,6 +53,8 @@
 			required: true
 		}) }}
 
+		<hr>
+
 		<h2>{{ "Permissions"|t }}</h2>
 
 		{% include "_includes/permissions" with { userOrGroup: (group is defined ? group : null) } only %}

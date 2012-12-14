@@ -4,9 +4,9 @@ namespace Blocks;
 /**
  * Handles user account related tasks.
  */
-class AccountController extends BaseController
+class AccountsController extends BaseController
 {
-	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionResetPassword');
+	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionResetPassword', 'actionSaveUser');
 
 	/**
 	 * Displays the login template. If valid login information, redirects to previous template.
@@ -26,14 +26,13 @@ class AccountController extends BaseController
 			if (blx()->request->isAjaxRequest())
 			{
 				$this->returnJson(array(
-					'success' => true,
-					'redirectUrl' => $redirectUrl
+					'success' => true
 				));
 			}
 			else
 			{
 				blx()->user->setNotice(Blocks::t('Logged in.'));
-				$this->redirect($redirectUrl);
+				$this->redirectToPostedUrl();
 			}
 		}
 		else
@@ -59,7 +58,7 @@ class AccountController extends BaseController
 
 					if ($timeRemaining)
 					{
-						$humanTimeRemaining = DateTimeHelper::secondsToHumanTimeDuration($timeRemaining, false);
+						$humanTimeRemaining = $timeRemaining->humanDuration(false);
 						$error = Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
 					}
 					else
@@ -182,15 +181,21 @@ class AccountController extends BaseController
 		if (Blocks::hasPackage(BlocksPackage::Users))
 		{
 			$userId = blx()->request->getPost('userId');
+
+			if ($userId)
+			{
+				$this->requireLogin();
+			}
 		}
 		else
 		{
+			$this->requireLogin();
 			$userId = blx()->user->getUser()->id;
 		}
 
 		if ($userId)
 		{
-			if ($userId != blx()->user->getUser())
+			if ($userId != blx()->user->getUser()->id)
 			{
 				blx()->user->requirePermission('editUsers');
 			}
@@ -204,7 +209,10 @@ class AccountController extends BaseController
 		}
 		else
 		{
-			blx()->user->requirePermission('registerUsers');
+			if (!blx()->systemSettings->getSetting('users', 'allowPublicRegistration', false))
+			{
+				blx()->user->requirePermission('registerUsers');
+			}
 
 			$user = new UserModel();
 		}
@@ -214,12 +222,12 @@ class AccountController extends BaseController
 		$user->emailFormat = blx()->request->getPost('emailFormat');
 		$user->language = blx()->request->getPost('language');
 
-		// Only admins can opt out of email verification
+		// Only admins can opt out of requiring email verification
 		if (!$user->id)
 		{
 			if (blx()->user->isAdmin())
 			{
-				$user->verificationRequired = (bool)blx()->request->getPost('verificationRequired');
+				$user->verificationRequired = (bool) blx()->request->getPost('verificationRequired');
 			}
 			else
 			{
@@ -228,7 +236,7 @@ class AccountController extends BaseController
 		}
 
 		// Only admins can change other users' passwords
-		if ($user->isCurrent() || blx()->user->isAdmin())
+		if (!$user->id || $user->isCurrent() || blx()->user->isAdmin())
 		{
 			$user->newPassword = blx()->request->getPost('newPassword');
 		}
@@ -250,7 +258,7 @@ class AccountController extends BaseController
 		{
 			blx()->user->setError(Blocks::t('Couldn’t save user.'));
 			$this->renderRequestedTemplate(array(
-				'user' => $user
+				'account' => $user
 			));
 		}
 	}

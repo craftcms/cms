@@ -27,6 +27,17 @@ class UserSessionVariable
 	}
 
 	/**
+	 * Returns the URL the user was trying to access before getting sent to the login page.
+	 *
+	 * @param null $defaultUrl
+	 * @return mixed
+	 */
+	public function getReturnUrl($defaultUrl = '')
+	{
+		return blx()->user->getReturnUrl($defaultUrl);
+	}
+
+	/**
 	 * Returns all flash data for the user.
 	 *
 	 * @return array

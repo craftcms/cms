@@ -107,7 +107,7 @@
 				{% if account.status == 'locked' and blx.config.cooldownDuration %}
 					<tr>
 						<th class="nowrap">{{ "Cooldown Time Remaining"|t }}</th>
-						<td>{% set timeRemaining = account.remainingCooldownTime.humanDuration %}</td>
+						<td>{{ account.remainingCooldownTime.humanDuration }}</td>
 					</tr>
 				{% endif %}
 				<tr>

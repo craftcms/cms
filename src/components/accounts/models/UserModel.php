@@ -221,7 +221,7 @@ class UserModel extends BaseEntityModel
 	/**
 	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
 	 *
-	 * @return int|null The number of seconds left until cooldown is over.
+	 * @return DateInterval|null
 	 */
 	public function getRemainingCooldownTime()
 	{
@@ -232,7 +232,7 @@ class UserModel extends BaseEntityModel
 
 			if ($currentTime < $cooldownEnd)
 			{
-				return $cooldownEnd->getTimestamp() - $currentTime->getTimestamp();
+				return $currentTime->diff($cooldownEnd);
 			}
 		}
 	}

@@ -507,10 +507,10 @@ class HttpRequestService extends \CHttpRequest
 		{
 			$this->_isActionRequest = true;
 
-			// Map actions/logout to actions/account/logout
+			// Map actions/logout to actions/accounts/logout
 			if ($firstSegment === $logoutTrigger)
 			{
-				$this->_actionSegments = array('account', 'logout');
+				$this->_actionSegments = array('accounts', 'logout');
 			}
 			else
 			{

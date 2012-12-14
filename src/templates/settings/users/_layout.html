@@ -13,4 +13,5 @@
 {% set tabs %}
 	<li><a{% if page == 'groups' %} class="active"{% endif %} href="{{ url('settings/users') }}" data-icon="U">{{ "User Groups"|t }}</a></li>
 	<li><a{% if page == 'blocks' %} class="active"{% endif %} href="{{ url('settings/users/blocks') }}" data-icon="b">{{ "Profile Blocks"|t }}</a></li>
+	<li><a class="settings icon{% if page == 'settings' %} active{% endif %}" href="{{ url('settings/users/settings') }}">{{ "Settings"|t }}</a></li>
 {% endset %}

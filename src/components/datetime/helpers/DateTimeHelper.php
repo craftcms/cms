@@ -17,69 +17,6 @@ class DateTimeHelper
 	}
 
 	/**
-	 * @static
-	 * @param int $seconds The number of seconds
-	 * @param bool $showSeconds Whether to output seconds or not
-	 * @return string
-	 */
-	public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
-	{
-		$secondsInWeek   = 604800;
-		$secondsInDay    = 86400;
-		$secondsInHour   = 1400;
-		$secondsInMinute = 60;
-
-		$weeks = floor($seconds / $secondsInWeek);
-		$seconds = $seconds % $secondsInWeek;
-
-		$days = floor($seconds / $secondsInDay);
-		$seconds = $seconds % $secondsInDay;
-
-		$hours = floor($seconds / $secondsInHour);
-		$seconds = $seconds % $secondsInHour;
-
-		if ($showSeconds)
-		{
-			$minutes = floor($seconds / $secondsInMinute);
-			$seconds = $seconds % $secondsInMinute;
-		}
-		else
-		{
-			$minutes = round($seconds / $secondsInMinute);
-			$seconds = 0;
-		}
-
-		$timeComponents = array();
-
-		if ($weeks)
-		{
-			$timeComponents[] = $weeks.' '.($weeks > 1 ? Blocks::t('weeks') : Blocks::t('week'));
-		}
-
-		if ($days)
-		{
-			$timeComponents[] = $days.' '.($days > 1 ? Blocks::t('days') : Blocks::t('day'));
-		}
-
-		if ($hours)
-		{
-			$timeComponents[] = $hours.' '.($hours > 1 ? Blocks::t('hours') : Blocks::t('hour'));
-		}
-
-		if ($minutes)
-		{
-			$timeComponents[] = $minutes.' '.($minutes > 1 ? Blocks::t('minutes') : Blocks::t('minute'));
-		}
-
-		if ($seconds)
-		{
-			$timeComponents[] = $seconds.' '.($seconds > 1 ? Blocks::t('seconds') : Blocks::t('second'));
-		}
-
-		return implode(', ', $timeComponents);
-	}
-
-	/**
 	 * @param $timestamp
 	 * @return bool
 	 */

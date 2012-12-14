@@ -101,6 +101,16 @@ class AccountsService extends BaseApplicationComponent
 			$userRecord = new UserRecord();
 		}
 
+		if (!$user->emailFormat)
+		{
+			$user->emailFormat = 'text';
+		}
+
+		if (!$user->language)
+		{
+			$user->language = blx()->language;
+		}
+
 		$userRecord->username = $user->username;
 		$userRecord->firstName = $user->firstName;
 		$userRecord->lastName = $user->lastName;

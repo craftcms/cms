@@ -54,12 +54,14 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
+	 * Returns the URL the user was trying to access before getting sent to the login page.
+	 *
 	 * @param null $defaultUrl
 	 * @return mixed
 	 */
-	public function getReturnUrl($defaultUrl = null)
+	public function getReturnUrl($defaultUrl = '')
 	{
-		return $this->getState('__returnUrl', $defaultUrl === null ? UrlHelper::getUrl('dashboard') : HtmlHelper::normalizeUrl($defaultUrl));
+		return $this->getState('__returnUrl', UrlHelper::getUrl($defaultUrl));
 	}
 
 	/**

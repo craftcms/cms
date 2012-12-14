@@ -57,6 +57,28 @@ class SystemSettingsService extends BaseApplicationComponent
 	}
 
 	/**
+	 * Returns an individual system setting.
+	 *
+	 * @param string $category
+	 * @param string $key
+	 * @param mixed $default
+	 * @return mixed
+	 */
+	public function getSetting($category, $key, $default = null)
+	{
+		$settings = $this->getSettings($category);
+
+		if (isset($settings[$key]))
+		{
+			return $settings[$key];
+		}
+		else
+		{
+			return $default;
+		}
+	}
+
+	/**
 	 * Saves the system settings for a category.
 	 *
 	 * @param string $category

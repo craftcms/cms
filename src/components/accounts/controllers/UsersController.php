@@ -394,6 +394,31 @@ class UsersController extends BaseEntityController
 	}
 
 	/**
+	 * Saves the system user settings.
+	 */
+	public function actionSaveUserSettings()
+	{
+		$this->requirePostRequest();
+		$this->requireAdmin();
+
+		$settings['allowPublicRegistration'] = (bool) blx()->request->getPost('allowPublicRegistration');
+
+		if (blx()->systemSettings->saveSettings('users', $settings))
+		{
+			blx()->user->setNotice(Blocks::t('Email settings saved.'));
+			$this->redirectToPostedUrl();
+		}
+		else
+		{
+			blx()->user->setError(Blocks::t('Couldn’t save user settings.'));
+
+			$this->renderRequestedTemplate(array(
+				'settings' => $settings
+			));
+		}
+	}
+
+	/**
 	 * Throws a "no user exists" exception
 	 *
 	 * @access private
