@@ -441,23 +441,25 @@ class ErrorHandler extends \CErrorHandler
 	 */
 	protected function getViewFileInternal($templatePath, $templateName, $code, $srcLanguage = null)
 	{
-		$extension = IOHelper::getExtension($templatePath.$templateName, 'html');
-
 		if (strpos($templatePath, '/framework/') !== false)
 		{
 			$extension = 'php';
+		}
+		else
+		{
+			$extension = 'html';
+
+			if ($code && is_numeric($code))
+			{
+				$templateName = (string) $code;
+			}
 		}
 
 		if ($templateName == 'error')
 		{
 			if (!empty($code))
 			{
-				if (!is_numeric($code))
-				{
-					$code = '';
-				}
-
-				$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.$code.'.'.$extension), $srcLanguage);
+				$templateFile = blx()->findLocalizedFile(IOHelper::getRealPath($templatePath.'/'.$templateName.'.'.$extension), $srcLanguage);
 
 				if (IOHelper::fileExists($templateFile))
 				{
