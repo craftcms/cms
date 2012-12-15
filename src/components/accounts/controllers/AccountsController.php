@@ -112,7 +112,6 @@ class AccountsController extends BaseController
 	public function actionForgotPassword()
 	{
 		$this->requirePostRequest();
-		$this->requireAjaxRequest();
 
 		$loginName = blx()->request->getRequiredPost('loginName');
 
@@ -122,16 +121,34 @@ class AccountsController extends BaseController
 		{
 			if (blx()->accounts->sendForgotPasswordEmail($user))
 			{
-				$this->returnJson(array('success' => true));
+				if (blx()->request->isAjaxRequest())
+				{
+					$this->returnJson(array('success' => true));
+				}
+				else
+				{
+					blx()->user->setNotice(Blocks::t('Check your email for instructions to reset your password.'));
+					$this->redirectToPostedUrl();
+				}
 			}
 			else
 			{
-				$this->returnErrorJson(Blocks::t('There was a problem sending the forgot password email.'));
+				$error = Blocks::t('There was a problem sending the forgot password email.');
 			}
 		}
 		else
 		{
-			$this->returnErrorJson(Blocks::t('Invalid username or email.'));
+			$error = Blocks::t('Invalid username or email.');
+		}
+
+		if (blx()->request->isAjaxRequest())
+		{
+			$this->returnErrorJson($error);
+		}
+		else
+		{
+			blx()->user->setError($error);
+			$this->renderRequestedTemplate();
 		}
 	}
 

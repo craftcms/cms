@@ -167,7 +167,7 @@ var MessageSentModal = Blocks.ui.Modal.extend({
 
 	init: function()
 	{
-		var $container = $('<div class="pane email-sent">'+Blocks.t('We’ve sent you an email with instructions to reset your password.')+'</div>')
+		var $container = $('<div class="pane email-sent">'+Blocks.t('Check your email for instructions to reset your password.')+'</div>')
 			.appendTo(Blocks.$body);
 
 		this.base($container);
