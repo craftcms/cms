@@ -13,6 +13,7 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_ACCOUNT_COOLDOWN        = 51;
 	const ERROR_PASSWORD_RESET_REQUIRED = 52;
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
+	const ERROR_NO_CP_ACCESS            = 54;
 
 	/**
 	 * Authenticates a user against the database.
@@ -75,6 +76,10 @@ class UserIdentity extends \CUserIdentity
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
 						blx()->accounts->sendForgotPasswordEmail($user);
+					}
+					else if (blx()->request->isCpRequest() && !$user->can('accessCp'))
+					{
+						$this->errorCode = static::ERROR_NO_CP_ACCESS;
 					}
 					else
 					{
