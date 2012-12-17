@@ -163,6 +163,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 				IOHelper::copyFile($filePath, blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
 			}
 
+			blx()->assetSizes->updateSizes($fileModel, array_keys(blx()->assetSizes->getAssetSizes()));
 			// Now that we have stored all this information, we have to send back the original conflict response
 			/*if (isset($conflictResponse))
 			{

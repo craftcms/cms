@@ -103,7 +103,7 @@ class ResourcesService extends BaseApplicationComponent
 					$sourceType = blx()->assetSources->getSourceTypeById($fileModel->sourceId);
 
 					$size = IOHelper::cleanFilename($segs[2]);
-					$thumbFolder = blx()->path->getAssetsSizesPath().$fileModel->id.'/'.$size.'/';
+					$thumbFolder = blx()->path->getAssetsThumbSizesPath().$fileModel->id.'/'.$size.'/';
 					IOHelper::ensureFolderExists($thumbFolder);
 
 					$thumbPath = $thumbFolder.$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);

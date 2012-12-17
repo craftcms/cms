@@ -51,7 +51,7 @@
                 checkedSizes.push($(this).val());
             });
 
-            var doIndex = $('input.assets-index').prop('checked');
+            var doIndex = this.$indexCheckbox.prop('checked');
 
             var checkedSources = this.$sourceCheckboxes.filter(':checked');
 
@@ -126,6 +126,10 @@
             this.$startOperationsButton.removeClass('disabled');
             this.$progressBarContainer.html('');
 
+            if ( ! this.$indexCheckbox.prop('checked')) {
+                this.releaseLock();
+                return;
+            }
             var checkedSources = [];
 
             this.$sourceCheckboxes.filter(':checked').each(function () {
@@ -215,43 +219,34 @@
                         $.post(Blocks.getActionUrl('assetOperations/finishIndex'), params, $.proxy(function(data) {
                             this.hide();
 
-                            this.OperationManager.$sourceMasterCheckbox.prop('disabled', false);
-                            if (this.OperationManager.$sourceMasterCheckbox.prop('checked')) {
-                                this.OperationManager.$sourceMasterCheckbox.prop('disabled', false);
-                            } else {
-                                this.OperationManager.$sourceCheckboxes.prop('disabled', false);
-                            }
+                            this.OperationManager.releaseLock();
 
-                            this.OperationManager.$sizeMasterCheckbox.prop('disabled', false);
-                            if (this.OperationManager.$sizeMasterCheckbox.prop('checked')) {
-                                this.OperationManager.$sizeMasterCheckbox.prop('disabled', false);
-                            } else {
-                                this.OperationManager.$sizeCheckboxes.prop('disabled', false);
-                            }
-
-                            this.OperationManager.$indexCheckbox.prop('disabled', false);
                         }, this));
                     });
                 } else {
-                    this.$sourceMasterCheckbox.prop('disabled', false);
-                    if (this.$sourceMasterCheckbox.prop('checked')) {
-                        this.$sourceMasterCheckbox.prop('disabled', false);
-                    } else {
-                        this.$sourceCheckboxes.prop('disabled', false);
-                    }
-                    this.$sizeMasterCheckbox.prop('disabled', false);
-                    if (this.$sizeMasterCheckbox.prop('checked')) {
-                        this.$sizeMasterCheckbox.prop('disabled', false);
-                    } else {
-                        this.$sizeCheckboxes.prop('disabled', false);
-                    }
-
-                    this.$indexCheckbox.prop('disabled', false);
+                    this.releaseLock();
                 }
 
 
             }, this));
 
+        },
+
+        releaseLock: function () {
+            this.$sourceMasterCheckbox.prop('disabled', false);
+            if (this.$sourceMasterCheckbox.prop('checked')) {
+                this.$sourceMasterCheckbox.prop('disabled', false);
+            } else {
+                this.$sourceCheckboxes.prop('disabled', false);
+            }
+            this.$sizeMasterCheckbox.prop('disabled', false);
+            if (this.$sizeMasterCheckbox.prop('checked')) {
+                this.$sizeMasterCheckbox.prop('disabled', false);
+            } else {
+                this.$sizeCheckboxes.prop('disabled', false);
+            }
+
+            this.$indexCheckbox.prop('disabled', false);
         }
 
 

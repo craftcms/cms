@@ -143,6 +143,8 @@ class AssetIndexingService extends BaseApplicationComponent
 				{
 					blx()->links->deleteLinksForEntity('Asset', $command['fileIds']);
 					blx()->db->createCommand()->delete('assetfiles', array('in', 'id', $command['fileIds']));
+
+					// TODO: delete all created sizes as well
 					foreach ($command['fileIds'] as $fileId)
 					{
 						$files = glob(blx()->path->getAssetsImageSourcePath().$fileId.'.*');
@@ -150,7 +152,7 @@ class AssetIndexingService extends BaseApplicationComponent
 						{
 							IOHelper::deleteFile($file);
 						}
-						IOHelper::deleteFolder(blx()->path->getAssetsSizesPath().$fileId);
+						IOHelper::deleteFolder(blx()->path->getAssetsThumbSizesPath().$fileId);
 					}
 				}
 
