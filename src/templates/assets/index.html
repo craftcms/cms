@@ -25,9 +25,7 @@
 
                 <ul class="assets-sources">
                     {% for source in sources %}
-                        {% if source.type == 'Local' %}
-                            <li><a href="javascript:;" data-source="{{ source.id }}" data-folder="{{ blx.assets.getFolderBySourceId(source.id).id }}">{{ source.name }}</a></li>
-                        {% endif %}
+                        <li><a href="javascript:;" data-source="{{ source.id }}" data-folder="{{ blx.assets.getFolderBySourceId(source.id).id }}">{{ source.name }}</a></li>
                     {% endfor %}
                 </ul>
             </nav>

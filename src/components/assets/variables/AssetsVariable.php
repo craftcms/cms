@@ -15,7 +15,7 @@ class AssetsVariable
 	 *
 	 * @return array
 	 */
-	public function 	getAllSourceTypes()
+	public function getAllSourceTypes()
 	{
 		$sourceTypes = blx()->assetSources->getAllSourceTypes();
 		return AssetSourceTypeVariable::populateVariables($sourceTypes);

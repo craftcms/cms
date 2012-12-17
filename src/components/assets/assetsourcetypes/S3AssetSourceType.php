@@ -138,13 +138,25 @@ class S3AssetSourceType extends BaseAssetSourceType
 	{
 
 		$settings = $this->getSettings();
-		$this->_setS3Credentials($settings->keyId, $settings->secret);
-		$this->_s3->setEndpoint(static::getEndpointByLocation($settings->location));
+		$this->_prepareForRequests();
 
 		$offset = 0;
 		$total = 0;
 
 		$fileList = $this->_s3->getBucket($settings->bucket);
+
+		$fileList = array_filter($fileList, function ($value) {
+			$path = $value['name'];
+			$segments = explode('/', $path);
+			foreach ($segments as $segment)
+			{
+				if (isset($segment[0]) && $segment[0] == '_')
+				{
+					return false;
+				}
+			}
+			return true;
+		});
 
 		$bucketFolders = array();
 
@@ -226,21 +238,23 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 		$fileModel = $this->_indexFile($uriPath);
 
+		$this->_prepareForRequests();
 		if ($fileModel)
 		{
 			$settings = $this->getSettings();
-			static::_setS3Credentials($settings->keyId, $settings->secret);
+
 			blx()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
 
 			$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $uriPath);
 
-			if ($fileModel->kind == 'image' && $fileModel->dateModified != $fileInfo['time'])
-			{
+			$targetPath = blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 
-				$targetPath = blx()->path->getAssetsImageSourcePath() . $fileModel->filename;
+			if ($fileModel->kind == 'image' && $fileModel->dateModified != $fileInfo['time'] || !IOHelper::fileExists($targetPath))
+			{
 				$this->_s3->getObject($settings->bucket, $indexEntryModel->uri, $targetPath);
+				clearstatcache();
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
 
@@ -265,18 +279,51 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	protected function _insertFileInFolder(AssetFolderModel $folder, $filePath, $fileName)
 	{
-		// TODO: Implement _insertFileInFolder() method.
-	}
 
-	/**
-	 * Set S3 credentials.
-	 *
-	 * @param $keyId
-	 * @param $secret
-	 */
-	private function _setS3Credentials($keyId, $secret)
-	{
-		\S3::setAuth($keyId, $secret);
+		$fileName = IOHelper::cleanFilename($fileName);
+
+		$extension = IOHelper::getExtension($fileName);
+
+		if (! IOHelper::isExtensionAllowed($extension))
+		{
+			throw new Exception(Blocks::t('This file type is not allowed'));
+		}
+
+		$uriPath = $folder->fullPath.$fileName;
+
+		$this->_prepareForRequests();
+		$settings = $this->getSettings();
+		$fileInfo = $this->_s3->getObjectInfo($settings->bucket, $uriPath);
+
+		if ($fileInfo)
+		{
+			/*$response = new AssetOperationResponseModel();
+			$response->setResponse(AssetOperationResponseModel::StatusConflict);
+			$response->setResponseDataItem('prompt', $this->_getUserPromptOptions($fileName));
+			return $response;*/
+			// TODO handle the conflict instead of just saving as new
+			$targetPath = $folder->fullPath.$this->_getNameReplacement($folder, $fileName);
+			if (!$targetPath)
+			{
+				throw new Exception(Blocks::t('Could not find a suitable replacement name for file'));
+			}
+			else
+			{
+				$uriPath = $targetPath;
+			}
+		}
+
+		$this->_prepareForRequests();
+		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath))
+		{
+			throw new Exception(Blocks::t('Could not copy file to target destination'));
+		}
+
+		/*$response = new AssetOperationResponseModel();
+		$response->setResponse(AssetOperationResponseModel::StatusSuccess);
+		$response->setResponseDataItem('file_path', $targetPath);
+		return $response;*/
+		return $uriPath;
 	}
 
 	/**
@@ -287,7 +334,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 	 */
 	public function getImageSourcePath(AssetFileModel $fileModel)
 	{
-		return blx()->path->getAssetsImageSourcePath().$fileModel->filename;
+		return blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 	}
 
 	/**
@@ -324,4 +371,32 @@ class S3AssetSourceType extends BaseAssetSourceType
 		$targetFile = rtrim($fileModel->getFolder()->fullPath, '/').'/_'.$handle.'/'.$fileModel->filename;
 		return $this->_s3->putObject(array('file' => $sourceImage), $this->getSettings()->bucket, $targetFile);
 	}
+
+	/**
+	 * Get a name replacement for a filename already taken in a folder.
+	 *
+	 * @param AssetFolderModel $folder
+	 * @param $fileName
+	 * @return mixed
+	 */
+	protected function _getNameReplacement(AssetFolderModel $folder, $fileName)
+	{
+		$this->_prepareForRequests();
+		$fileList = $this->_s3->getBucket($this->getSettings()->bucket, $folder->fullPath);
+
+		$fileNameParts = explode(".", $fileName);
+
+		$extension = array_pop($fileNameParts);
+
+		$fileNameStart = join(".", $fileNameParts) . '_';
+		$index = 1;
+
+		while ( isset($fileList[$folder->fullPath . $fileNameStart . $index . '.' . $extension]))
+		{
+			$index++;
+		}
+
+		return $fileNameStart . $index . '.' . $extension;
+	}
+
 }

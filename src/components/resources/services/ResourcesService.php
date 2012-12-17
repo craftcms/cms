@@ -52,9 +52,9 @@ class ResourcesService extends BaseApplicationComponent
 							return false;
 						}
 
-						$username = $segs[1];
-						$size     = $segs[2];
-						$filename = $segs[3];
+						$username = IOHelper::cleanFilename($segs[1]);
+						$size     = IOHelper::cleanFilename($segs[2]);
+						$filename = IOHelper::cleanFilename($segs[3]);
 
 						$userPhotosPath = blx()->path->getUserPhotosPath().$username.'/';
 						$sizedPhotoFolder = $userPhotosPath.$size.'/';
@@ -85,6 +85,42 @@ class ResourcesService extends BaseApplicationComponent
 				{
 					array_shift($segs);
 					return blx()->path->getTempUploadsPath().implode('/', $segs);
+				}
+
+				case 'assets':
+				{
+					if (empty($segs[1]) || empty($segs[2]) || !is_numeric($segs[1]) || !is_numeric($segs[2]))
+					{
+						return false;
+					}
+
+					$fileModel = blx()->assets->getFileById($segs[1]);
+					if (empty($fileModel))
+					{
+						return false;
+					}
+
+					$sourceType = blx()->assetSources->getSourceTypeById($fileModel->sourceId);
+
+					$size = IOHelper::cleanFilename($segs[2]);
+					$thumbFolder = blx()->path->getAssetsSizesPath().$fileModel->id.'/'.$size.'/';
+					IOHelper::ensureFolderExists($thumbFolder);
+
+					$thumbPath = $thumbFolder.$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+
+					if (!IOHelper::fileExists($thumbPath))
+					{
+						$sourcePath = $sourceType->getImageSourcePath($fileModel);
+						if (!IOHelper::fileExists($sourcePath))
+						{
+							return false;
+						}
+						blx()->images->loadImage($sourcePath)
+							->scale($size, $size)
+							->saveAs($thumbPath);
+					}
+
+					return $thumbPath;
 				}
 
 				case 'logo':

@@ -26,6 +26,11 @@ class Image
 
 		$this->_extension = IOHelper::getExtension($path);
 
+		if (!blx()->images->setMemoryForImage($path))
+		{
+			throw new Exception(Blocks::t("Not enough memory available to perform this image operation."));
+		}
+
 		switch ($this->_extension)
 		{
 			case 'jpg':

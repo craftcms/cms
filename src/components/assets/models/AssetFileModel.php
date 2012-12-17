@@ -56,27 +56,19 @@ class AssetFileModel extends BaseModel
 	}
 
 	/**
-	 * Returns the size of the thumbnail.
+	 * Get Thumbnail URL.
 	 *
-	 * @param int $maxSize
-	 * @return array
+	 * @param int $size
+	 * @return string
 	 */
-	public function getThumbSize($maxSize = 125)
+	public function getThumbnailUrl($size = 125)
 	{
-		$path = blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->path . $this->getFolder()->fullPath . $this->filename;
-		list($width, $height) = getimagesize($path);
-
-		if ($width > $height)
+		if (!is_numeric($size))
 		{
-			$thumbWidth = $maxSize;
-			$thumbHeight = $height * ($maxSize / max(1, $width));
-		}
-		else
-		{
-			$thumbHeight = $maxSize;
-			$thumbWidth = $width * ($maxSize / max(1, $height));
+			$size = 125;
 		}
 
-		return array('width' => $thumbWidth, 'height' => $thumbHeight);
+		return UrlHelper::getResourceUrl('assets/' . $this->id . '/' . $size);
+
 	}
 }

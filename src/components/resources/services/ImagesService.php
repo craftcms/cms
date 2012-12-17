@@ -16,6 +16,7 @@ class ImagesService extends BaseApplicationComponent
 	public function loadImage($path)
 	{
 		$image = new Image();
+		$this->setMemoryForImage($path);
 		$image->loadImage($path);
 		return $image;
 	}

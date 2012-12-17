@@ -64,7 +64,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 * @param $fileName
 	 * @return mixed
 	 */
-	//abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
+	abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
 
 	/**
 	 * Put an image size for the File and handle using the provided path to the source image.
@@ -157,7 +157,11 @@ abstract class BaseAssetSourceType extends BaseComponent
 			}
 
 			$fileModel->id = blx()->assets->storeFile($fileModel);
-			IOHelper::deleteFile($filePath);
+
+			if ($this->model->type != 'Local')
+			{
+				IOHelper::copyFile($filePath, blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
+			}
 
 			// Now that we have stored all this information, we have to send back the original conflict response
 			/*if (isset($conflictResponse))
