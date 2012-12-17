@@ -93,7 +93,7 @@ class BlxVariable
 	/**
 	 * @return AccountsVariable
 	 */
-	public function account()
+	public function accounts()
 	{
 		return new AccountsVariable();
 	}
