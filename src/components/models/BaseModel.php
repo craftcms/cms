@@ -261,9 +261,17 @@ abstract class BaseModel extends \CModel
 				$value = $attributes[$name];
 				$config = ModelHelper::normalizeAttributeConfig($config);
 
-				if ($config['type'] == AttributeType::DateTime && is_numeric($value))
+				if ($config['type'] == AttributeType::DateTime && DateTimeHelper::isValidTimeStamp($value))
 				{
 					$value = new DateTime('@'.$value);
+				}
+				else if ($config['type'] == AttributeType::DateTime && $config['column'] == ColumnType::DateTime)
+				{
+					if (!$value instanceof \DateTime)
+					{
+						// TODO: MySql specific
+						$value = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
+					}
 				}
 
 				$model->setAttribute($name, $value);

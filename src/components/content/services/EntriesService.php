@@ -334,8 +334,8 @@ class EntriesService extends BaseEntityService
 				{
 					$statusConditions[] = array('and',
 						'e.enabled = 1',
-						'e.postDate <= '.$currentTimeDb,
-						array('or', 'e.expiryDate is null', 'e.expiryDate > '.$currentTimeDb)
+						"e.postDate <= '{$currentTimeDb}'",
+						array('or', 'e.expiryDate is null', "e.expiryDate > '{$currentTimeDb}'")
 					);
 					break;
 				}
@@ -343,7 +343,7 @@ class EntriesService extends BaseEntityService
 				{
 					$statusConditions[] = array('and',
 						'e.enabled = 1',
-						'e.postDate > '.$currentTimeDb
+						"e.postDate > '{$currentTimeDb}'"
 					);
 					break;
 				}
@@ -352,7 +352,7 @@ class EntriesService extends BaseEntityService
 					$statusConditions[] = array('and',
 						'e.enabled = 1',
 						'e.expiryDate is not null',
-						'e.expiryDate <= '.$currentTimeDb
+						"e.expiryDate <= '{$currentTimeDb}'"
 					);
 					break;
 				}
