@@ -53,6 +53,16 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getDbBackupPath()
+	{
+		$path = $this->getStoragePath().'backups/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getTempPath()
 	{
 		$path = $this->getRuntimePath().'temp/';
