@@ -63,7 +63,7 @@ class m121204_222713_datetime_conversion extends \CDbMigration
 		{
 			$flattenedRecords['migrations'] = array(
 				'apply_time' => array(
-					0 => 'datetime',
+					0 => ColumnType::DateTime,
 					'required' => true,
 				)
 			);
@@ -72,7 +72,7 @@ class m121204_222713_datetime_conversion extends \CDbMigration
 		// Add the activity table
 		$flattenedRecords['activity'] = array(
 			'logtime' => array(
-				0 => 'datetime',
+				0 => ColumnType::DateTime,
 				'required' => true,
 			)
 		);
@@ -82,8 +82,8 @@ class m121204_222713_datetime_conversion extends \CDbMigration
 		foreach ($flattenedRecords as $tableName => $attributes)
 		{
 			// Manually add dateCreated and dateUpdated
-			$attributes['dateUpdated'] = array(0 => 'datetime', 'required' => true);
-			$attributes['dateCreated'] = array(0 => 'datetime', 'required' => true);
+			$attributes['dateUpdated'] = array(0 => ColumnType::DateTime, 'required' => true);
+			$attributes['dateCreated'] = array(0 => ColumnType::DateTime, 'required' => true);
 
 			foreach ($attributes as $column => $attribute)
 			{
@@ -139,6 +139,10 @@ class m121204_222713_datetime_conversion extends \CDbMigration
 				}
 			}
 		}
+
+		// Refresh the schema metadata so the rest of the request sees the schema changes.
+		blx()->db->getSchema()->refresh();
+		InfoRecord::model()->refreshMetaData();
 
 		return true;
 	}
