@@ -7,12 +7,20 @@ namespace Blocks;
 class DateTimeHelper
 {
 	/**
+	 * @return DateTime
+	 */
+	public static function currentUTCDateTime()
+	{
+		return new DateTime(null, new \DateTimeZone('UTC'));
+	}
+
+	/**
 	 * @static
 	 * @return int
 	 */
 	public static function currentTimeStamp()
 	{
-		$date = new DateTime(\DateTimeZone::UTC);
+		$date = static::currentUTCDateTime();
 		return $date->getTimestamp();
 	}
 
@@ -24,7 +32,7 @@ class DateTimeHelper
 	{
 		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
 		// For now, it's MySQL only.
-		$date = new DateTime(\DateTimeZone::UTC);
+		$date = DateTimeHelper::currentUTCDateTime();
 		return $date->format(DateTime::MYSQL_DATETIME);
 	}
 
@@ -547,7 +555,7 @@ class DateTimeHelper
 		}
 		else if ($required)
 		{
-			return new DateTime(\DateTimeZone::UTC);
+			return DateTimeHelper::currentUTCDateTime();
 		}
 	}
 

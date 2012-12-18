@@ -116,7 +116,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getGlobals()
 	{
 		$globals['blx'] = new BlxVariable();
-		$globals['now'] = new DateTime(\DateTimeZone::UTC);
+		$globals['now'] = DateTimeHelper::currentUTCDateTime();
 		$globals['loginUrl'] = UrlHelper::getUrl(blx()->config->get('loginPath'));
 		$globals['logoutUrl'] = UrlHelper::getUrl(blx()->config->get('logoutPath'));
 

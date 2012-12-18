@@ -218,7 +218,7 @@ class UserModel extends BaseEntityModel
 	{
 		if ($this->status == UserStatus::Locked)
 		{
-			$currentTime = new DateTime(\DateTimeZone::UTC);
+			$currentTime = DateTimeHelper::currentUTCDateTime();
 			$cooldownEnd = $this->getCooldownEndTime();
 
 			if ($currentTime < $cooldownEnd)
