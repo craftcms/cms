@@ -258,7 +258,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 				list ($fileModel->width, $fileModel->height) = getimagesize($targetPath);
 			}
 
-			$fileModel->dateModified = $fileInfo['time'];
+			$fileModel->dateModified = new DateTime('@'.$fileInfo['time']);
 
 			blx()->assets->storeFile($fileModel);
 
@@ -347,14 +347,14 @@ class S3AssetSourceType extends BaseAssetSourceType
 	public function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle)
 	{
 		$folder = $fileModel->getFolder();
-		$path = $folder->fullPath . '_handle/' . $fileModel->id . pathinfo($fileModel->filename, PATHINFO_EXTENSION);
+		$path = $folder->fullPath.'_'.$sizeHandle.'/'.$fileModel->filename;
 		$this->_prepareForRequests();
 		$info = $this->_s3->getObjectInfo($this->getSettings()->bucket, $path);
 		if (empty($info))
 		{
 			return false;
 		}
-		return $info['time'];
+		return new DateTime('@'.$info['time']);
 	}
 
 	/**

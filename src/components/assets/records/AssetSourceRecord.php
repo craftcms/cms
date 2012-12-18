@@ -24,7 +24,6 @@ class AssetSourceRecord extends BaseRecord
 			'type'                => array(AttributeType::ClassName, 'required' => true),
 			'settings'            => AttributeType::Mixed,
 			'sortOrder'           => AttributeType::SortOrder,
-			'dimensionChangeTime' => AttributeType::Number
 		);
 	}
 

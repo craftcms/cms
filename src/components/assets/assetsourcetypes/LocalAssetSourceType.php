@@ -133,7 +133,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			blx()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
-			$fileModel->dateModified = IOHelper::getLastTimeModified($indexEntryModel->uri);
+			$fileModel->dateModified = new DateTime('@'.IOHelper::getLastTimeModified($indexEntryModel->uri));
 
 			if ($fileModel->kind == 'image')
 			{
@@ -255,7 +255,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 		{
 			return false;
 		}
-		return IOHelper::getLastTimeModified($path);
+		return new DateTime('@'.IOHelper::getLastTimeModified($path));
 	}
 
 	/**

@@ -72,7 +72,7 @@ class AssetSizesService extends BaseApplicationComponent
 
 		if ($sizeRecord->width != $size->width || $sizeRecord->height != $size->height)
 		{
-			$sizeRecord->dimensionChangeTime = time();
+			$sizeRecord->dimensionChangeTime = new DateTime('@'.time());
 		}
 
 		$sizeRecord->width = $size->width;
@@ -172,12 +172,11 @@ class AssetSizesService extends BaseApplicationComponent
 		{
 			$size = $this->getAssetSize($handle);
 
-			// This will set the time modified to 0 for files that don't exist.
-			$timeModified = (int) $sourceType->getTimeSizeModified($fileModel, $handle);
+			$timeModified = $sourceType->getTimeSizeModified($fileModel, $handle);
 
 			// Create the size if the file doesn't exist, or if it was created before the image was last updated
 			// or if the size dimensions have changed since it was last created
-			if ($timeModified < $fileModel->dateModified || $timeModified < $size->dimensionChangeTime)
+			if (!$timeModified || $timeModified < $fileModel->dateModified || $timeModified < $size->dimensionChangeTime)
 			{
 				$targetFile = AssetsHelper::getTempFilePath(pathinfo($fileModel->filename, PATHINFO_EXTENSION));
 				blx()->images->loadImage($imageSource)->resizeTo($size->width, $size->height)->saveAs($targetFile);

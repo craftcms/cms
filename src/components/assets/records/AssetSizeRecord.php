@@ -23,7 +23,8 @@ class AssetSizeRecord extends BaseRecord
 			'name'     => array(AttributeType::String, 'required' => true),
 			'handle' => array(AttributeType::String, 'required' => true),
 			'height' => array(AttributeType::Number, 'required' => true),
-			'width' => array(AttributeType::Number, 'required' => true)
+			'width' => array(AttributeType::Number, 'required' => true),
+			'dimensionChangeTime' => AttributeType::DateTime
 		);
 	}
 
