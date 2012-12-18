@@ -124,8 +124,6 @@ if (in_array('Users', $packages))
 //  CP routes
 // -------------------------------------------
 
-$handle = '[a-zA-Z][a-zA-Z0-9_]*';
-
 $cpRoutes['content']                                                          = 'content/entries/index';
 
 $cpRoutes['content\/pages']                                                   = 'content/pages';
@@ -137,9 +135,9 @@ $cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/new']                     = 
 $cpRoutes['content\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']        = 'content/pages/_edit/blocks/settings';
 
 $cpRoutes['content\/globals']                                                 = 'content/globals/index';
-$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/new']                     = 'content/entries/_edit';
-$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)']        = 'content/entries/_edit';
-$cpRoutes['content\/(?P<filter>'.$handle.')']                                 = 'content/entries/index';
+$cpRoutes['content\/(?P<sectionHandle>{handle})\/new']                        = 'content/entries/_edit';
+$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)']           = 'content/entries/_edit';
+$cpRoutes['content\/(?P<filter>{handle})']                                    = 'content/entries/index';
 
 $cpRoutes['dashboard\/settings\/new']                                         = 'dashboard/settings/_widgetsettings';
 $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 'dashboard/settings/_widgetsettings';
@@ -158,14 +156,14 @@ $cpRoutes['settings\/pages\/(?P<pageId>\d+)']                                 = 
 $cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks']                         = 'settings/pages/_edit/blocks/index';
 $cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/new']                    = 'settings/pages/_edit/blocks/settings';
 $cpRoutes['settings\/pages\/(?P<pageId>\d+)\/blocks\/(?P<blockId>\d+)']       = 'settings/pages/_edit/blocks/settings';
-$cpRoutes['settings\/plugins\/(?P<pluginClass>'.$handle.')']                  = 'settings/plugins/_settings';
+$cpRoutes['settings\/plugins\/(?P<pluginClass>{handle})']                     = 'settings/plugins/_settings';
 
 $cpRoutes['myaccount']                                                        = 'users/_edit/account';
 
 if (in_array('PublishPro', $packages))
 {
-	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']     = 'content/entries/_edit';
-	$cpRoutes['content\/(?P<sectionHandle>'.$handle.')\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)'] = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/drafts\/(?P<draftId>\d+)']        = 'content/entries/_edit';
+	$cpRoutes['content\/(?P<sectionHandle>{handle})\/(?P<entryId>\d+)\/versions\/(?P<versionId>\d+)']    = 'content/entries/_edit';
 
 	$cpRoutes['settings\/sections\/new']                                          = 'settings/sections/_edit/settings';
 	$cpRoutes['settings\/sections\/(?P<sectionId>\d+)']                           = 'settings/sections/_edit/settings';
@@ -187,7 +185,7 @@ if (in_array('Users', $packages))
 	$cpRoutes['myaccount\/admin']                                                 = 'users/_edit/admin';
 
 	$cpRoutes['users\/new']                                                       = 'users/_edit/account';
-	$cpRoutes['users\/(?P<filter>'.$handle.')']                                   = 'users';
+	$cpRoutes['users\/(?P<filter>{handle})']                                      = 'users';
 	$cpRoutes['users\/(?P<userId>\d+)']                                           = 'users/_edit/account';
 	$cpRoutes['users\/(?P<userId>\d+)\/profile']                                  = 'users/_edit/profile';
 	$cpRoutes['users\/(?P<userId>\d+)\/admin']                                    = 'users/_edit/admin';
@@ -204,7 +202,7 @@ if (in_array('Users', $packages))
 //  Component config
 // -------------------------------------------
 
-$components['account']['class']           = 'Blocks\AccountService';
+$components['accounts']['class']          = 'Blocks\AccountsService';
 $components['assets']['class']            = 'Blocks\AssetsService';
 $components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
 $components['assetSources']['class']      = 'Blocks\AssetSourcesService';
