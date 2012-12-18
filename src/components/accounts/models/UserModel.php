@@ -131,15 +131,29 @@ class UserModel extends BaseEntityModel
 	}
 
 	/**
+	 * Returns the URL to the user's photo.
+	 *
+	 * @param int $size
+	 * @return string|null
+	 */
+	public function getPhotoUrl($size = 100)
+	{
+		if ($this->photo)
+		{
+			return UrlHelper::getResourceUrl('userphotos/'.$this->username.'/'.$size.'/'.$this->photo);
+		}
+	}
+
+	/**
 	 * Returns whether this is the current logged-in user.
 	 *
 	 * @return bool
 	 */
-	function isCurrent()
+	public function isCurrent()
 	{
 		if ($this->id)
 		{
-			$currentUser = blx()->account->getCurrentUser();
+			$currentUser = blx()->user->getUser();
 
 			if ($currentUser)
 			{
@@ -148,6 +162,35 @@ class UserModel extends BaseEntityModel
 		}
 
 		return false;
+	}
+
+	/**
+	 * Returns whether the user has permission to perform a given action.
+	 *
+	 * @param string $permission
+	 * @return bool
+	 */
+	public function can($permission)
+	{
+		if (Blocks::hasPackage(BlocksPackage::Users))
+		{
+			if ($this->admin)
+			{
+				return true;
+			}
+			else if ($this->id)
+			{
+				return blx()->userPermissions->doesUserHavePermission($this->id, $permission);
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	/**
@@ -169,7 +212,7 @@ class UserModel extends BaseEntityModel
 	/**
 	 * Returns the remaining cooldown time for this user, if they've entered their password incorrectly too many times.
 	 *
-	 * @return int|null The number of seconds left until cooldown is over.
+	 * @return DateInterval|null
 	 */
 	public function getRemainingCooldownTime()
 	{
@@ -180,7 +223,7 @@ class UserModel extends BaseEntityModel
 
 			if ($currentTime < $cooldownEnd)
 			{
-				return $cooldownEnd->getTimestamp() - $currentTime->getTimestamp();
+				return $currentTime->diff($cooldownEnd);
 			}
 		}
 	}
@@ -205,25 +248,11 @@ class UserModel extends BaseEntityModel
 			{
 				if (!$user->getRemainingCooldownTime())
 				{
-					blx()->account->activateUser($user);
+					blx()->accounts->activateUser($user);
 				}
 			}
 		}
 
 		return $user;
-	}
-
-	/**
-	 * Returns the URL to the user's photo.
-	 *
-	 * @param int $size
-	 * @return string|null
-	 */
-	public function getPhotoUrl($size = 100)
-	{
-		if ($this->photo)
-		{
-			return UrlHelper::getResourceUrl('userphotos/'.$this->username.'/'.$size.'/'.$this->photo);
-		}
 	}
 }

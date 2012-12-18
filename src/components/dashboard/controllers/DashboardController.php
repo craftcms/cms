@@ -105,7 +105,7 @@ class DashboardController extends BaseController
 		require_once blx()->path->getLibPath().'HelpSpotAPI.php';
 		$hsapi = new \HelpSpotAPI(array('helpSpotApiURL' => "https://support.blockscms.com/api/index.php"));
 
-		$user = blx()->account->getCurrentUser();
+		$user = blx()->user->getUser();
 
 		$result = $hsapi->requestCreate(array(
 			'sFirstName' => $user->getFriendlyName(),

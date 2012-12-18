@@ -102,7 +102,7 @@
 
 
 {% macro checkbox(config) %}
-	{% set config = { id: null, class: null, name: null, value: '1', checked: false, toggle: null, autofocus: false, disabled: false, label: null }|merge(config) %}
+	{% set config = { id: null, class: null, name: null, value: '1', checked: false, toggle: null, reverseToggle: false, autofocus: false, disabled: false, label: null }|merge(config) %}
 	{% set class = [ (config.class), (config.toggle ? 'fieldtoggle' : null) ]|filter|join(' ') %}
 	<label>
 		<input type="checkbox" value="{{ config.value }}"
@@ -112,7 +112,8 @@
 			{%- if config.checked %} checked{% endif %}
 			{%- if config.autofocus %} autofocus{% endif %}
 			{%- if config.disabled %} disabled{% endif %}
-			{%- if config.toggle %} data-target="{{ config.toggle }}"{% endif %}>
+			{%- if config.toggle %} data-target="{{ config.toggle }}"{% endif %}
+			{%- if config.reverseToggle %} data-reverse-toggle="y"{% endif %}>
 		{{ config.label|raw }}
 	</label>
 {% endmacro %}

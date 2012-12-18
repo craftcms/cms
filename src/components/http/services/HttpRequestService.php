@@ -54,12 +54,18 @@ class HttpRequestService extends \CHttpRequest
 		// Is this a paginated request?
 		if ($this->_segments)
 		{
-			$lastSegment = $this->_segments[count($this->_segments)-1];
+			// Match against the entire path string as opposed to just the last segment
+			// so that we can support "/page/2"-style pagination URLs
+			$path = implode('/', $this->_segments);
+			$pageTrigger = str_replace('/', '\/', blx()->config->get('pageTrigger'));
 
-			if (preg_match('/p(\d+)/', $lastSegment, $match))
+			if (preg_match("/(.*)\b{$pageTrigger}(\d+)$/", $path, $match))
 			{
-				$this->_pageNum = $match[1];
-				array_pop($this->_segments);
+				// Capture the page num
+				$this->_pageNum = $match[2];
+
+				// Reset the segments without the pagination stuff
+				$this->_segments = array_filter(explode('/', $match[1]));
 			}
 		}
 
@@ -486,7 +492,9 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$resourceTrigger = blx()->config->get('resourceTrigger');
 		$actionTrigger = blx()->config->get('actionTrigger');
-		$logoutTrigger = blx()->config->get('logoutTrigger');
+		$loginPath = trim(blx()->config->get('loginPath'), '/');
+		$resetPasswordPath = trim(blx()->config->get('resetPasswordPath'), '/');
+		$logoutPath = trim(blx()->config->get('logoutPath'), '/');
 		$firstSegment = $this->getSegment(1);
 
 		// If the first path segment is the resource trigger word, it's a resource request.
@@ -497,14 +505,21 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || $firstSegment === $logoutTrigger)
+		if ($firstSegment === $actionTrigger || in_array($this->_path, array($loginPath, $resetPasswordPath, $logoutPath)))
 		{
 			$this->_isActionRequest = true;
 
-			// Map actions/logout to actions/account/logout
-			if ($firstSegment === $logoutTrigger)
+			if ($this->_path == $loginPath)
 			{
-				$this->_actionSegments = array('account', 'logout');
+				$this->_actionSegments = array('accounts', 'login');
+			}
+			else if ($this->_path == $resetPasswordPath)
+			{
+				$this->_actionSegments = array('accounts', 'resetPassword');
+			}
+			else if ($this->_path == $logoutPath)
+			{
+				$this->_actionSegments = array('accounts', 'logout');
 			}
 			else
 			{

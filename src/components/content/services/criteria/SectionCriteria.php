@@ -9,6 +9,7 @@ class SectionCriteria extends BaseCriteria
 	public $id;
 	public $handle;
 	public $hasUrls = false;
+	public $editable = false;
 	public $order = 'name asc';
 	public $limit;
 	public $indexBy;

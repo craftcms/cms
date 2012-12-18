@@ -1,3 +1,5 @@
+{% requirePermission 'editUsers' %}
+
 {% extends "_layouts/cp" %}
 {% set title = "Users"|t %}
 
@@ -27,9 +29,11 @@
 
 {% set content %}
 	<nav class="nav">
-		<div class="buttons">
-			<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
-		</div>
+		{% if user.can('registerUsers') %}
+			<div class="buttons">
+				<a class="btn submit add icon" href="{{ url('users/new') }}">{{ "New User"|t }}</a>
+			</div>
+		{% endif %}
 
 		<ul>
 			<li><a href="{{ url('users') }}" {% if not filter %}class="sel"{% endif %}>{{ "All Users"|t }}</a></li>

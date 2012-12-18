@@ -13,6 +13,7 @@ class UserIdentity extends \CUserIdentity
 	const ERROR_ACCOUNT_COOLDOWN        = 51;
 	const ERROR_PASSWORD_RESET_REQUIRED = 52;
 	const ERROR_ACCOUNT_SUSPENDED       = 53;
+	const ERROR_NO_CP_ACCESS            = 54;
 
 	/**
 	 * Authenticates a user against the database.
@@ -21,7 +22,7 @@ class UserIdentity extends \CUserIdentity
 	 */
 	public function authenticate()
 	{
-		$user = blx()->account->getUserByUsernameOrEmail($this->username);
+		$user = blx()->accounts->getUserByUsernameOrEmail($this->username);
 
 		if ($user)
 		{
@@ -74,7 +75,11 @@ class UserIdentity extends \CUserIdentity
 					{
 						$this->_id = $user->id;
 						$this->errorCode = static::ERROR_PASSWORD_RESET_REQUIRED;
-						blx()->account->sendForgotPasswordEmail($user);
+						blx()->accounts->sendForgotPasswordEmail($user);
+					}
+					else if (blx()->request->isCpRequest() && !$user->can('accessCp'))
+					{
+						$this->errorCode = static::ERROR_NO_CP_ACCESS;
 					}
 					else
 					{
@@ -84,13 +89,13 @@ class UserIdentity extends \CUserIdentity
 						$this->errorCode = static::ERROR_NONE;
 
 						$authSessionToken = StringHelper::UUID();
-						blx()->account->handleSuccessfulLogin($user, $authSessionToken);
+						blx()->accounts->handleSuccessfulLogin($user, $authSessionToken);
 						$this->setState('authSessionToken', $authSessionToken);
 					}
 				}
 				else
 				{
-					blx()->account->handleInvalidLogin($user);
+					blx()->accounts->handleInvalidLogin($user);
 
 					// Was that one bad password too many?
 					if ($user->status == UserStatus::Locked)

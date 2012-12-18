@@ -10,6 +10,8 @@ class RoutesService extends BaseApplicationComponent
 
 	/**
 	 * Returns all of the routes.
+	 *
+	 * @return array
 	 */
 	public function getAllRoutes()
 	{
@@ -24,10 +26,7 @@ class RoutesService extends BaseApplicationComponent
 
 				if (IOHelper::fileExists($path))
 				{
-					if (is_array($routes = require_once $path))
-					{
-						$this->_routes = $routes;
-					}
+					$this->_routes = require_once $path;
 				}
 			}
 			else
@@ -42,17 +41,6 @@ class RoutesService extends BaseApplicationComponent
 		}
 
 		return $this->_routes;
-	}
-
-	/**
-	 * Returns a route by its ID.
-	 *
-	 * @param int $routeId The route ID
-	 */
-	public function getRouteById($routeId)
-	{
-		$route = RouteRecord::model()->findById($routeId);
-		return $route;
 	}
 
 	/**
@@ -71,7 +59,7 @@ class RoutesService extends BaseApplicationComponent
 	{
 		if ($routeId !== null)
 		{
-			$route = $this->getRouteById($routeId);
+			$route = $this->_getRecordRouteById($routeId);
 
 			if (!$route)
 			{
@@ -142,5 +130,16 @@ class RoutesService extends BaseApplicationComponent
 			$condition = array('id' => $routeId);
 			blx()->db->createCommand()->update('routes', $data, $condition);
 		}
+	}
+
+	/**
+	 * Returns a route by its ID.
+	 *
+	 * @param int $routeId The route ID
+	 * @return RouteRecord|null
+	 */
+	private function _getRecordRouteById($routeId)
+	{
+		return RouteRecord::model()->findById($routeId);
 	}
 }

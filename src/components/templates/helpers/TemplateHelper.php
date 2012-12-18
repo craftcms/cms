@@ -23,14 +23,17 @@ class TemplateHelper
 
 		$offset = $limit * ($currentPage - 1);
 
+		$path = blx()->request->getPath();
+		$pageUrlPrefix = ($path ? $path.'/' : '').blx()->config->get('pageTrigger');
+
 		$info = array(
 			'first'       => $offset + 1,
 			'last'        => $offset + $limit,
 			'total'       => $total,
 			'currentPage' => $currentPage,
 			'totalPages'  => $totalPages,
-			'prevUrl'     => ($currentPage > 1           ? UrlHelper::getUrl(blx()->request->getPath().'/p'.($currentPage-1)) : null),
-			'nextUrl'     => ($currentPage < $totalPages ? UrlHelper::getUrl(blx()->request->getPath().'/p'.($currentPage+1)) : null),
+			'prevUrl'     => ($currentPage > 1           ? UrlHelper::getUrl($pageUrlPrefix.($currentPage-1)) : null),
+			'nextUrl'     => ($currentPage < $totalPages ? UrlHelper::getUrl($pageUrlPrefix.($currentPage+1)) : null),
 		);
 
 		// Get the entities

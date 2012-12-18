@@ -7,6 +7,8 @@ namespace Blocks;
 class SectionsService extends BaseEntityService
 {
 	private $_blocksBySection;
+	private $_allSectionIds;
+	private $_editableSectionIds;
 	private $_sections;
 
 	// -------------------------------------------
@@ -120,6 +122,48 @@ class SectionsService extends BaseEntityService
 	}
 
 	/**
+	 * Returns all of the section IDs.
+	 *
+	 * @return array
+	 */
+	public function getAllSectionIds()
+	{
+		if (!isset($this->_allSectionIds))
+		{
+			$this->_allSectionIds = blx()->db->createCommand()
+				->select('id')
+				->from('sections')
+				->queryColumn();
+		}
+
+		return $this->_allSectionIds;
+	}
+
+	/**
+	 * Returns all of the section IDs that are editable by the current user.
+	 *
+	 * @return array
+	 */
+	public function getEditableSectionIds()
+	{
+		if (!isset($this->_editableSectionIds))
+		{
+			$this->_editableSectionIds = array();
+			$allSectionIds = $this->getAllSectionIds();
+
+			foreach ($allSectionIds as $sectionId)
+			{
+				if (blx()->user->can('editEntriesInSection'.$sectionId))
+				{
+					$this->_editableSectionIds[] = $sectionId;
+				}
+			}
+		}
+
+		return $this->_editableSectionIds;
+	}
+
+	/**
 	 * Gets sections.
 	 *
 	 * @param SectionCriteria|null $criteria
@@ -135,25 +179,30 @@ class SectionsService extends BaseEntityService
 		$query = blx()->db->createCommand()
 			->from('sections');
 
-		$this->_applySectionConditions($query, $criteria);
-
-		if ($criteria->order)
+		if ($this->_applySectionConditions($query, $criteria))
 		{
-			$query->order($criteria->order);
-		}
+			if ($criteria->order)
+			{
+				$query->order($criteria->order);
+			}
 
-		if ($criteria->offset)
+			if ($criteria->offset)
+			{
+				$query->offset($criteria->offset);
+			}
+
+			if ($criteria->limit)
+			{
+				$query->limit($criteria->limit);
+			}
+
+			$result = $query->queryAll();
+			return SectionModel::populateModels($result, $criteria->indexBy);
+		}
+		else
 		{
-			$query->offset($criteria->offset);
+			return array();
 		}
-
-		if ($criteria->limit)
-		{
-			$query->limit($criteria->limit);
-		}
-
-		$result = $query->queryAll();
-		return SectionModel::populateModels($result, $criteria->indexBy);
 	}
 
 	/**
@@ -172,13 +221,14 @@ class SectionsService extends BaseEntityService
 		$query = blx()->db->createCommand()
 			->from('sections');
 
-		$this->_applySectionConditions($query, $criteria);
-
-		$result = $query->queryRow();
-
-		if ($result)
+		if ($this->_applySectionConditions($query, $criteria))
 		{
-			return SectionModel::populateModel($result);
+			$result = $query->queryRow();
+
+			if ($result)
+			{
+				return SectionModel::populateModel($result);
+			}
 		}
 	}
 
@@ -199,9 +249,14 @@ class SectionsService extends BaseEntityService
 			->select('count(id)')
 			->from('sections');
 
-		$this->_applySectionConditions($query, $criteria);
-
-		return (int) $query->queryScalar();
+		if ($this->_applySectionConditions($query, $criteria))
+		{
+			return (int) $query->queryScalar();
+		}
+		else
+		{
+			return 0;
+		}
 	}
 
 	/**
@@ -210,11 +265,24 @@ class SectionsService extends BaseEntityService
 	 * @access private
 	 * @param DbCommand $query
 	 * @param array $criteria
+	 * @return bool
 	 */
 	private function _applySectionConditions($query, $criteria)
 	{
 		$whereConditions = array();
 		$whereParams = array();
+
+		if ($criteria->editable && !blx()->user->isAdmin())
+		{
+			$editableSectionIds = $this->getEditableSectionIds();
+
+			if (!$editableSectionIds)
+			{
+				return false;
+			}
+
+			$whereConditions[] = array('in', 'id', $editableSectionIds);
+		}
 
 		if ($criteria->id)
 		{
@@ -236,6 +304,8 @@ class SectionsService extends BaseEntityService
 			array_unshift($whereConditions, 'and');
 			$query->where($whereConditions, $whereParams);
 		}
+
+		return true;
 	}
 
 	/**

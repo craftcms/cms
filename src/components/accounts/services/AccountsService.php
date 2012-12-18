@@ -4,12 +4,8 @@ namespace Blocks;
 /**
  *
  */
-class AccountService extends BaseApplicationComponent
+class AccountsService extends BaseApplicationComponent
 {
-	public $accountVerificationPath = 'verify';
-
-	private $_currentUser;
-
 	/**
 	 * Gets a user by their ID.
 	 *
@@ -72,54 +68,6 @@ class AccountService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Gets the currently logged-in user.
-	 *
-	 * @return UserModel
-	 */
-	public function getCurrentUser()
-	{
-		// Is a user actually logged in?
-		if (blx()->isInstalled() && !empty(blx()->user) && blx()->user->isLoggedIn())
-		{
-			if (!isset($this->_currentUser))
-			{
-				$userId = blx()->user->getId();
-				$userRecord = UserRecord::model()->findById($userId);
-
-				if ($userRecord)
-				{
-					$this->_currentUser = UserModel::populateModel($userRecord);
-				}
-				else
-				{
-					$this->_currentUser = null;
-				}
-			}
-
-			return $this->_currentUser;
-		}
-	}
-
-	/**
-	 * Returns whether the current user is an admin.
-	 *
-	 * @return bool
-	 */
-	public function isAdmin()
-	{
-		$user = $this->getCurrentUser();
-
-		if ($user)
-		{
-			return $user->admin;
-		}
-		else
-		{
-			return false;
-		}
-	}
-
-	/**
 	 * Saves a user, or registers a new one.
 	 *
 	 * @param UserModel $user
@@ -142,6 +90,16 @@ class AccountService extends BaseApplicationComponent
 		else
 		{
 			$userRecord = new UserRecord();
+		}
+
+		if (!$user->emailFormat)
+		{
+			$user->emailFormat = 'text';
+		}
+
+		if (!$user->language)
+		{
+			$user->language = blx()->language;
 		}
 
 		$userRecord->username = $user->username;
@@ -262,7 +220,7 @@ class AccountService extends BaseApplicationComponent
 	{
 		if ($userRecord->verificationCode)
 		{
-			return UrlHelper::getUrl($this->accountVerificationPath, array(
+			return UrlHelper::getUrl(blx()->config->get('resetPasswordPath'), array(
 				'code' => $userRecord->verificationCode
 			));
 		}

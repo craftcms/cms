@@ -101,17 +101,31 @@ Blocks.postActionRequest('update/getAvailableUpdates', function(response) {
 						(response.blocks.criticalUpdateAvailable ? '<span class="critical">'+Blocks.t('Critical')+'</span>' : '')
 					);
 
-					if (response.blocks.manualUpdateRequired)
+					var handleDownloadClick = function($btn)
 					{
-						var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
 						$btn.on('click', function() {
 							var src = Blocks.getActionUrl('update/downloadBlocksUpdate');
 							$('<iframe/>', { src: src }).appendTo(Blocks.$body).hide();
 						});
+					};
+
+					if (response.blocks.manualUpdateRequired)
+					{
+						var $btn = $('<div class="btn">'+Blocks.t('Download')+'</div>').appendTo($td);
+						handleDownloadClick($btn);
 					}
 					else
 					{
-						$td.html('<a class="btn" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>');
+						var $btnGroup = $('<div class="btngroup"/>').appendTo($td),
+							$updateBtn = $('<a class="btn" href="'+Blocks.getUrl('updates/go/blocks')+'">'+Blocks.t('Update')+'</a>').appendTo($btnGroup),
+							$menuBtn = $('<div class="btn menubtn nolabel"/>').appendTo($btnGroup),
+							$menu = $('<div class="menu" data-align="right"/>').appendTo($btnGroup),
+							$menuUl = $('<ul/>').appendTo($menu),
+							$downloadLi = $('<li/>').appendTo($menuUl),
+							$downloadBtn = $('<a>'+Blocks.t('Download')+'</a>').appendTo($downloadLi);
+
+						new Blocks.ui.MenuBtn($menuBtn);
+						handleDownloadClick($downloadBtn);
 					}
 
 					var $tr = $('<tr/>').appendTo($tbody),

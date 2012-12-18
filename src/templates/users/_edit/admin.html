@@ -1,11 +1,8 @@
+{% requirePermission 'administrateUsers' %}
+
 {% extends "users/_edit/layout" %}
 {% import "_includes/forms" as forms %}
 {% set pageTitle = "Administration"|t %}
-
-
-{% if not user.admin %}
-	{% exit 404 %}
-{% endif %}
 
 
 {% if account is not defined %}
@@ -20,31 +17,60 @@
 
 {% set content %}
 	<form method="post" action="" accept-charset="UTF-8">
-		<input type="hidden" name="action" value="users/saveAdminSettings">
+		<input type="hidden" name="action" value="users/saveUserGroups">
 		<input type="hidden" name="userId" value="{{ account.id }}">
 
-		<h2>Groups and Permissions</h2>
+		<h2>{{ "User Groups"|t }}</h2>
 
-		<div>
+		{% set allGroups = blx.userGroups.getAllGroups %}
+		{% set userGroups = account.getGroups('id') %}
+
+		{% if allGroups %}
+			<ul>
+				{% for group in allGroups %}
+					<li>
+						{{ forms.checkbox({
+							label: group.name,
+							name: 'groups[]',
+							value: group.id,
+							checked: (group.id in userGroups|keys)
+						}) }}
+					</li>
+				{% endfor %}
+			</ul>
+		{% else %}
+			<p>{{ "No user groups exist yet."|t }}</p>
+		{% endif %}
+
+		<div class="buttons">
+			<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+
+	<hr>
+
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="users/saveUserPermissions">
+		<input type="hidden" name="userId" value="{{ account.id }}">
+
+		<h2>{{ "Permissions"|t }}</h2>
+
+		<div class="field">
 			{{ forms.checkbox({
 				label: '<strong>' ~ "Admin"|t ~ '</strong>',
 				name: 'admin',
-				checked: account.admin
+				checked: account.admin,
+				toggle: 'permissions',
+				reverseToggle: true
 			}) }}
 		</div>
 
-		{% set userGroups = account.getGroups('id') %}
-
-		{% for group in blx.userGroups.getAllGroups %}
-			<div>
-				{{ forms.checkbox({
-					label: group.name,
-					name: 'groups[]',
-					value: group.id,
-					checked: (group.id in userGroups|keys)
-				}) }}
-			</div>
-		{% endfor %}
+		<div id="permissions" class="field{% if account.admin %} hidden{% endif %}">
+			{% include "_includes/permissions" with {
+				userOrGroup: (account.admin ? null : account),
+				groupPermissions: blx.userPermissions.getGroupPermissionsByUserId(account.id)
+			} only %}
+		</div>
 
 		<div class="buttons">
 			<input type="submit" class="btn small submit" value="{{ 'Save'|t }}">
@@ -81,7 +107,7 @@
 				{% if account.status == 'locked' and blx.config.cooldownDuration %}
 					<tr>
 						<th class="nowrap">{{ "Cooldown Time Remaining"|t }}</th>
-						<td>{% set timeRemaining = account.remainingCooldownTime.humanDuration %}</td>
+						<td>{{ account.remainingCooldownTime.humanDuration }}</td>
 					</tr>
 				{% endif %}
 				<tr>

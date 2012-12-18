@@ -18,34 +18,50 @@ class UserSessionService extends \CWebUser
 	private $_identity;
 
 	/**
-	 * @param null $defaultUrl
-	 * @return mixed
+	 * Stores the current user model.
+	 *
+	 * @access private
+	 * @var UserModel|false
 	 */
-	public function getReturnUrl($defaultUrl = null)
+	private $_user;
+
+	/**
+	 * Gets the currently logged-in user.
+	 *
+	 * @return UserModel|false
+	 */
+	public function getUser()
 	{
-		return $this->getState('__returnUrl', $defaultUrl === null ? UrlHelper::getUrl('dashboard') : HtmlHelper::normalizeUrl($defaultUrl));
+		// Does a user appear to be logged in?
+		if (blx()->isInstalled() && !$this->getIsGuest())
+		{
+			if (!isset($this->_user))
+			{
+				$userRecord = UserRecord::model()->findById($this->getId());
+
+				if ($userRecord)
+				{
+					$this->_user = UserModel::populateModel($userRecord);
+				}
+				else
+				{
+					$this->_user = false;
+				}
+			}
+
+			return $this->_user ? $this->_user : null;
+		}
 	}
 
 	/**
-	 * @throws HttpException
+	 * Returns the URL the user was trying to access before getting sent to the login page.
+	 *
+	 * @param null $defaultUrl
+	 * @return mixed
 	 */
-	public function loginRequired()
+	public function getReturnUrl($defaultUrl = '')
 	{
-		if (!blx()->request->isAjaxRequest())
-		{
-			if (blx()->request->getPathInfo() !== '')
-			{
-				$this->setReturnUrl(blx()->request->getPath());
-			}
-		}
-		elseif (isset($this->loginRequiredAjaxResponse))
-		{
-			echo $this->loginRequiredAjaxResponse;
-			blx()->end();
-		}
-
-		$url = UrlHelper::getUrl($this->loginUrl);
-		blx()->request->redirect($url);
+		return $this->getState('__returnUrl', UrlHelper::getUrl($defaultUrl));
 	}
 
 	/**
@@ -140,7 +156,8 @@ class UserSessionService extends \CWebUser
 	 */
 	public function isGuest()
 	{
-		return $this->getIsGuest();
+		$user = $this->getUser();
+		return empty($user);
 	}
 
 	/**
@@ -151,6 +168,76 @@ class UserSessionService extends \CWebUser
 	public function isLoggedIn()
 	{
 		return !$this->isGuest();
+	}
+
+	/**
+	 * Returns whether the current user is an admin.
+	 *
+	 * @return bool
+	 */
+	public function isAdmin()
+	{
+		$user = $this->getUser();
+		return ($user && $user->admin);
+	}
+
+	/**
+	 * Returns whether the current user has a given permission.
+	 *
+	 * @param string $permissionName
+	 * @return bool
+	 */
+	public function can($permissionName)
+	{
+		$user = $this->getUser();
+		return ($user && $user->can($permissionName));
+	}
+
+	/**
+	 * Requires that the current user has a given permission, otherwise a 403 exception is thrown.
+	 *
+	 * @param string $permissionName
+	 * @throws HttpException
+	 */
+	public function requirePermission($permissionName)
+	{
+		if (!$this->can($permissionName))
+		{
+			throw new HttpException(403);
+		}
+	}
+
+	/**
+	 * Requires that the user is logged in, otherwise redirects them to the login page.
+	 */
+	public function requireLogin()
+	{
+		if ($this->isGuest())
+		{
+			if (!blx()->request->isAjaxRequest())
+			{
+				if (blx()->request->getPathInfo() !== '')
+				{
+					$this->setReturnUrl(blx()->request->getPath());
+				}
+			}
+			elseif (isset($this->loginRequiredAjaxResponse))
+			{
+				echo $this->loginRequiredAjaxResponse;
+				blx()->end();
+			}
+
+			$url = UrlHelper::getUrl($this->loginUrl);
+			blx()->request->redirect($url);
+		}
+	}
+
+	/**
+	 * Pointless Wrapper for requireLogin(), but \CWebUser uses loginRequired() so we must support it as well.
+	 */
+	public function loginRequired()
+	{
+		$this->requireLogin();
 	}
 
 	/**

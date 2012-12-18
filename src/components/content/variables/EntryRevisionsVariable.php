@@ -22,6 +22,17 @@ class EntryRevisionsVariable
 	}
 
 	/**
+	 * Returns the drafts of a given entry that are editable by the current user.
+	 *
+	 * @param int $entryId
+	 * @return array
+	 */
+	public function getEditableDraftsByEntryId($entryId)
+	{
+		return blx()->entryRevisions->getEditableDraftsByEntryId($entryId);
+	}
+
+	/**
 	 * Returns an entry draft by its offset.
 	 *
 	 * @param $draftId

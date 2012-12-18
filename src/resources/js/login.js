@@ -76,7 +76,7 @@ var LoginForm = Blocks.Base.extend({
 			loginName: this.$loginNameInput.val()
 		};
 
-		Blocks.postActionRequest('account/forgotPassword', data, $.proxy(function(response) {
+		Blocks.postActionRequest('accounts/forgotPassword', data, $.proxy(function(response) {
 			if (response.success)
 			{
 				new MessageSentModal();
@@ -98,10 +98,10 @@ var LoginForm = Blocks.Base.extend({
 			rememberMe: (this.$rememberMeCheckbox.attr('checked') ? 'y' : '')
 		};
 
-		Blocks.postActionRequest('account/login', data, $.proxy(function(response) {
+		Blocks.postActionRequest('accounts/login', data, $.proxy(function(response) {
 			if (response.success)
 			{
-				window.location = response.redirectUrl;
+				window.location = window.returnUrl;
 			}
 			else
 			{
@@ -111,9 +111,12 @@ var LoginForm = Blocks.Base.extend({
 				// Add the error message
 				this.showError(response.error);
 
-				var $forgotPasswordLink = this.$error.find('a');
-				if ($forgotPasswordLink.length)
+				if (response.errorCode == 2)
+				{
+					$('<br/>').appendTo(this.$error);
+					var $forgotPasswordLink = $('<a>'+Blocks.t('Forget your password?')+'</a>').appendTo(this.$error);
 					this.addListener($forgotPasswordLink, 'mousedown', 'onForgetPassword');
+				}
 			}
 		}, this));
 
@@ -164,7 +167,7 @@ var MessageSentModal = Blocks.ui.Modal.extend({
 
 	init: function()
 	{
-		var $container = $('<div class="pane email-sent">'+Blocks.t('We’ve sent you an email with instructions to reset your password.')+'</div>')
+		var $container = $('<div class="pane email-sent">'+Blocks.t('Check your email for instructions to reset your password.')+'</div>')
 			.appendTo(Blocks.$body);
 
 		this.base($container);

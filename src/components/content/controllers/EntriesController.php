@@ -26,7 +26,7 @@ class EntriesController extends BaseEntityController
 		$entry = new EntryModel();
 
 		$entry->id = blx()->request->getPost('entryId');
-		$entry->authorId = blx()->request->getPost('author', blx()->account->getCurrentUser()->id);
+		$entry->authorId = blx()->request->getPost('author', blx()->user->getUser()->id);
 		$entry->title = blx()->request->getPost('title');
 		$entry->slug = blx()->request->getPost('slug');
 		$entry->postDate = $this->getDateFromPost('postDate');

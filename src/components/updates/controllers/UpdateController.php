@@ -17,6 +17,8 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetAvailableUpdates()
 	{
+		blx()->user->requirePermission('autoUpdateBlocks');
+
 		$updates = blx()->updates->getUpdates(true);
 		$this->returnJson($updates);
 	}
@@ -26,6 +28,8 @@ class UpdateController extends BaseController
 	 */
 	public function actionDownloadBlocksUpdate()
 	{
+		blx()->user->requirePermission('autoUpdateBlocks');
+
 		$url = 'https://elliott.blockscms.com/actions/licenses/downloadBlocks?licenseKey='.Blocks::getLicenseKey();
 		blx()->request->redirect($url);
 	}
@@ -35,6 +39,8 @@ class UpdateController extends BaseController
 	 */
 	public function actionGetUpdates()
 	{
+		blx()->user->requirePermission('autoUpdateBlocks');
+
 		$this->requireAjaxRequest();
 
 		$handle = blx()->request->getRequiredPost('handle');
@@ -112,6 +118,8 @@ class UpdateController extends BaseController
 	 */
 	public function actionRunAutoUpdate()
 	{
+		blx()->user->requirePermission('autoUpdateBlocks');
+
 		$this->requirePostRequest();
 		$this->requireAjaxRequest();
 

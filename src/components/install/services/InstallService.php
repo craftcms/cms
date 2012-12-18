@@ -32,7 +32,6 @@ class InstallService extends BaseApplicationComponent
 			// Create the tables
 			$this->_createTablesFromRecords($records);
 			$this->_createForeignKeysFromRecords($records);
-			$this->_createJoinTables();
 
 			Blocks::log('Committing the transaction.', \CLogger::LEVEL_INFO);
 			$transaction->commit();
@@ -135,26 +134,6 @@ class InstallService extends BaseApplicationComponent
 	}
 
 	/**
-	 * Creates any many to many join tables.
-	 *
-	 * @access private
-	 */
-	private function _createJoinTables()
-	{
-		// usergroups to users
-		if (Blocks::hasPackage(BlocksPackage::Users))
-		{
-			blx()->db->createCommand()->createTable('usergroups_users', array(
-				'groupId' => array('column' => ColumnType::Int, 'required' => true),
-				'userId'  => array('column' => ColumnType::Int, 'required' => true)
-			));
-
-			blx()->db->createCommand()->addForeignKey('usergroups_users_group_fk', 'usergroups_users', 'groupId', 'usergroups', 'id', 'CASCADE');
-			blx()->db->createCommand()->addForeignKey('usergroups_users_user_fk', 'usergroups_users', 'userId', 'users', 'id', 'CASCADE');
-		}
-	}
-
-	/**
 	 * Populates the info table with install and environment information.
 	 *
 	 * @access private
@@ -207,7 +186,7 @@ class InstallService extends BaseApplicationComponent
 		$user->language = blx()->language;
 		$user->admin = true;
 
-		if (blx()->account->saveUser($user))
+		if (blx()->accounts->saveUser($user))
 		{
 			Blocks::log('User created successfully.', \CLogger::LEVEL_INFO);
 		}

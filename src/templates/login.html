@@ -1,15 +1,12 @@
-{% if blx.session.isLoggedIn %}
-	{% redirect "dashboard" %}
-{% endif %}
-
 {% extends "_layouts/base" %}
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
 {% includeCssResource "css/login.css" %}
 {% includeJsResource "js/login.js" %}
 {% includeTranslations
+	"Forget your password?",
 	"Reset Password",
-	"We’ve sent you an email with instructions to reset your password."
+	"Check your email for instructions to reset your password."
 %}
 
 {% set body %}
@@ -25,7 +22,7 @@
 						{%- set padding = logo.height + 30 %}
 						style="background-image: url({{ logo.url }}); background-size: {{ logo.width }}px {{ logo.height }}px; padding-top: {{ padding }}px; margin-top: -{{ round((156+padding)/2) }}px"
 					{%- endif %}>' +
-					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.getRememberedUsername })|e("js") }}' +
+					'{{ forms.textField({ id: "loginName", hint: "Username or Email"|t, value: blx.session.rememberedUsername })|e("js") }}' +
 
 					'<div id="login-fields" class="nested-fields">' +
 						'{{ forms.passwordField({ id: "password", hint: "Password"|t })|e("js") }}' +
@@ -44,7 +41,8 @@
 				'</form>'
 			);
 
-			document.getElementById("{{ (blx.session.getRememberedUsername ? 'password' : 'loginName') }}").focus();
+			document.getElementById("{{ (blx.session.rememberedUsername ? 'password' : 'loginName') }}").focus();
+			window.returnUrl = '{{ blx.session.returnUrl|e('js') }}';
 		}
 		else
 		{

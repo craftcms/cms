@@ -166,6 +166,9 @@ class UrlManager extends \CUrlManager
 	{
 		foreach ($routes as $pattern => $template)
 		{
+			// Parse {handle} tokens
+			$pattern = str_replace('{handle}', '[a-zA-Z][a-zA-Z0-9_]*', $pattern);
+
 			// Does it match?
 			if (preg_match('/^'.$pattern.'$/', blx()->request->getPath(), $match))
 			{
