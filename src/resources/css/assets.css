@@ -7,7 +7,7 @@
 #main .files.thumbs ul { margin: -25px 0 0 -15px; }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }
 #main .files.thumbs ul li { float: left; margin: 25px 0 0 15px; width: 125px; text-align: center; }
-#main .files.thumbs ul li .thumb { width: 100%; height: 125px; background-repeat: no-repeat; background-position: 50% 100%; }
+#main .files.thumbs ul li .thumb { width: 100%; height: 125px; background-repeat: no-repeat; background-position: 50% 50%; }
 #main .files.thumbs ul li .filename {  margin-top: 7px; font-size: 11px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; text-align: center; }
 
 /*-- list --*/

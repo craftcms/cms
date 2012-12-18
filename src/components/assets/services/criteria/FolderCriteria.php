@@ -16,32 +16,35 @@ class FolderCriteria extends BaseCriteria
 	public $limit;
 
 	/**
-	 * Returns all entities that match the criteria.
+	 * Returns all entries that match the criteria.
 	 *
 	 * @access protected
 	 * @return array
 	 */
 	protected function findEntities()
 	{
+		return blx()->assets->getFolders($this);
 	}
 
 	/**
-	 * Returns the first entity that matches the criteria.
+	 * Returns the first entry that matches the criteria.
 	 *
 	 * @access protected
 	 * @return EntryModel|null
 	 */
 	protected function findFirstEntity()
 	{
+		return blx()->assets->getFolder($this);
 	}
 
 	/**
-	 * Returns the total entities that match the criteria.
+	 * Returns the total entries that match the criteria.
 	 *
 	 * @access protected
 	 * @return int
 	 */
 	protected function getTotalEntities()
 	{
+		return blx()->assets->getTotalFolders($this);
 	}
 }

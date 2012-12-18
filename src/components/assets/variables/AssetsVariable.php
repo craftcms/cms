@@ -135,4 +135,29 @@ class AssetsVariable
 			)
 		);
 	}
+
+	// -------------------------------------------
+	// Sizes
+	// -------------------------------------------
+
+	/**
+	 * Get all asset sizes.
+	 *
+	 * @return array|null
+	 */
+	public function getAllAssetSizes()
+	{
+		return blx()->assetSizes->getAssetSizes();
+	}
+
+	/**
+	 * Get asset size by it's handle.
+	 *
+	 * @param $handle
+	 * @return null
+	 */
+	public function getSizeByHandle($handle)
+	{
+		return blx()->assetSizes->getAssetSize($handle);
+	}
 }

@@ -120,4 +120,102 @@ class AssetIndexingService extends BaseApplicationComponent
 	{
 		blx()->db->createCommand()->update('assetindexdata', array('recordId' => $recordId), array('id' => $entryId));
 	}
+
+	/**
+	 * Finish indexing by sessionId, source list and a JSON command.
+	 *
+	 * @param $sessionId
+	 * @param $sources
+	 * @param $command
+	 * @return array $output
+	 * @throws Exception
+	 */
+	public function finishIndex($sessionId, $sources, $command)
+	{
+		$command = JsonHelper::decode($command);
+		$output = array();
+
+		switch ($command['command'])
+		{
+			case 'delete':
+			{
+				if ( ! empty($command['fileIds']))
+				{
+					blx()->links->deleteLinksForEntity('Asset', $command['fileIds']);
+					blx()->db->createCommand()->delete('assetfiles', array('in', 'id', $command['fileIds']));
+
+					// TODO: delete all created sizes as well
+					foreach ($command['fileIds'] as $fileId)
+					{
+						$files = glob(blx()->path->getAssetsImageSourcePath().$fileId.'.*');
+						foreach ($files as $file)
+						{
+							IOHelper::deleteFile($file);
+						}
+						IOHelper::deleteFolder(blx()->path->getAssetsThumbSizesPath().$fileId);
+					}
+				}
+
+				if ( ! empty($command['folderIds']))
+				{
+					$folders = blx()->assets->getFolders(new FolderCriteria(array('id' => $command['folderIds'])));
+
+					foreach ($folders as $folder)
+					{
+						$fileIds = blx()->db->createCommand()
+							->select('fi.id')
+							->from('assetfiles AS fi')
+							->join('assetfolders AS fo', 'fi.folderId = fo.id AND fo.fullPath LIKE :fullPath AND fo.sourceId = :sourceId',
+								array(
+									':fullPath' => $folder->fullPath.'%',
+									':sourceId' => $folder->sourceId
+								))
+							->queryColumn();
+						blx()->links->deleteLinksForEntity('Asset', $fileIds);
+
+					}
+
+					blx()->db->createCommand()->delete('assetfolders', 'id IN (:folderIds)', array(':folderIds' => join(",", $command['folderIds'])));
+				}
+
+				$output['success'] = TRUE;
+				break;
+			}
+
+			case 'statistics':
+			{
+				$processedFiles = blx()->db->createCommand()
+					->select('recordId')
+					->from('assetindexdata')
+					->where('sessionId = :sessionId', array(':sessionId' => $sessionId))
+					->queryColumn();
+
+				$processedFiles = array_flip($processedFiles);
+
+				$fileEntries = blx()->db->createCommand()
+						->select('fi.sourceId, fi.id AS fileId, fi.filename, fo.fullPath, s.name AS sourceName')
+						->from('assetfiles AS fi')
+						->join('assetfolders AS fo', 'fi.folderId = fo.id')
+						->join('assetsources AS s', 's.id = fi.sourceId')
+						->where(array('in', 'fi.sourceId', $sources))
+						->queryAll();
+
+				foreach ($fileEntries as $fileEntry) {
+					if ( !isset($processedFiles[$fileEntry['fileId']]) )
+					{
+						$output['files'][$fileEntry['fileId']] = $fileEntry['sourceName']. '/' . $fileEntry['fullPath'] . $fileEntry['filename'];
+					}
+				}
+
+				blx()->db->createCommand()->delete('assetindexdata', array('sessionId' => $sessionId));
+
+				break;
+			}
+
+			default:
+				throw new Exception(Blocks::t('Unkown indexing command!'));
+		}
+
+		return $output;
+	}
 }

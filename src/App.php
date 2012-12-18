@@ -6,6 +6,7 @@ namespace Blocks;
  * @property TemplatesService       $templates      The template service
  * @property AssetsService          $assets         The assets service
  * @property AssetIndexingService   $assetIndexing  The assets indexing service
+ * @property AssetSizesService      $assetSizes     The assets sizes service
  * @property AssetSourcesService    $assetSources   The assets sources service
  * @property PathService            $path			The path service
  * @property UsersService           $users			The users service
@@ -13,6 +14,8 @@ namespace Blocks;
  * @property ImagesService          $images			The images service
  * @property ResourcesService		$resources		The resources service
  * @property HttpRequestService 	$request 		The request service
+ * @property DbConnection			$db				Database
+ * @property LinksService			$links			The links service
  */
 class App extends \CWebApplication
 {

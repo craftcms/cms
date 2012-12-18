@@ -54,7 +54,20 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$indexedFolderIds[blx()->assetIndexing->ensureTopFolder($this->model)] = true;
 
-		$fileList = IOHelper::getFolderContents($this->getSettings()->path);
+		$localPath = $this->getSettings()->path;
+		$fileList = IOHelper::getFolderContents($localPath, true);
+		$fileList = array_filter($fileList, function ($value) use ($localPath) {
+			$path = substr($value, strlen($localPath));
+			$segments = explode('/', $path);
+			foreach ($segments as $segment)
+			{
+				if (isset($segment[0]) && $segment[0] == '_')
+				{
+					return false;
+				}
+			}
+			return true;
+		});
 
 		$offset = 0;
 		$total = 0;
@@ -87,7 +100,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		$missingFolders = $this->_getMissingFolders($indexedFolderIds);
 
-		return array('source_id' => $this->model->id, 'total' => $total, 'missing_folders' => $missingFolders);
+		return array('sourceId' => $this->model->id, 'total' => $total, 'missingFolders' => $missingFolders);
 	}
 
 	/**
@@ -120,7 +133,7 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			blx()->assetIndexing->updateIndexEntryRecordId($indexEntryModel->id, $fileModel->id);
 
 			$fileModel->size = $indexEntryModel->size;
-			$fileModel->dateModified = DateTimeHelper::formatTimeForDb(IOHelper::getLastTimeModified($indexEntryModel->uri));
+			$fileModel->dateModified = new DateTime('@'.IOHelper::getLastTimeModified($indexEntryModel->uri));
 
 			if ($fileModel->kind == 'image')
 			{
@@ -130,9 +143,11 @@ class LocalAssetSourceType extends BaseAssetSourceType
 			}
 
 			blx()->assets->storeFile($fileModel);
+
+			return $fileModel->id;
 		}
 
-		return true;
+		return false;
 	}
 
 	/**
@@ -217,14 +232,68 @@ class LocalAssetSourceType extends BaseAssetSourceType
 
 		for ($i = 1; $i <= 50; $i++)
 		{
-			if (!isset($existingFiles[$fileName.'_'.$i.'.'.$extension]))
+			if (!isset($existingFiles[$fileName . '_' . $i . '.' . $extension]))
 			{
-				return $fileName.'_'.$i.'.'.$extension;
+				return $fileName . '_' . $i . '.' . $extension;
 			}
 		}
 
 		return false;
 	}
 
+	/**
+	 * Get the timestamp of when a file size was last modified.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $sizeHandle
+	 * @return mixed
+	 */
+	public function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle)
+	{
+		$path = $this->_getImageServerPath($fileModel, $sizeHandle);
+		if (!IOHelper::fileExists($path))
+		{
+			return false;
+		}
+		return new DateTime('@'.IOHelper::getLastTimeModified($path));
+	}
 
+	/**
+	 * Put an image size for the File and handle using the provided path to the source image.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param $handle
+	 * @param $sourceImage
+	 * @return mixed
+	 */
+	public function putImageSize(AssetFileModel $fileModel, $handle, $sourceImage)
+	{
+		return IOHelper::copyFile($sourceImage, $this->_getImageServerPath($fileModel, $handle));
+	}
+
+	/**
+	 * Get the image source path with the optional handle name.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $handle
+	 * @return mixed
+	 */
+	public function getImageSourcePath(AssetFileModel $fileModel, $handle = '')
+	{
+		return $this->_getImageServerPath($fileModel, $handle);
+	}
+
+	/**
+	 * Get the local path for an image, opt	ionally with a size handle.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $handle
+	 * @return string
+	 */
+	private function _getImageServerPath(AssetFileModel $fileModel, $handle = '')
+	{
+		$targetFolder = $this->getSettings()->path.$fileModel->getFolder()->fullPath;
+		$targetFolder .= !empty($handle) ? '_'.$handle.'/': '';
+		return $targetFolder.$fileModel->filename;
+	}
 }

@@ -1,0 +1,87 @@
+{% extends "_layouts/cp" %}
+{% set centered = true %}
+{% import "_includes/forms" as forms %}
+
+
+{% if size is not defined and sizeHandle is defined %}
+	{% set size = blx.assets.getSizeByHandle(sizeHandle) %}
+	{% if not size %}{% exit 404 %}{% endif %}
+{% endif %}
+
+{% set isNewSize = (size is not defined or not size.id) %}
+
+
+{% if isNewSize %}
+	{% set title = "Create a new asset size"|t %}
+{% else %}
+	{% set title = "{name} Settings"|t({ name: '<i>'~size.name|t~'</i>' }) %}
+{% endif %}
+
+
+{% set header %}
+	<h1>{{ title|raw }}</h1>
+	<ul class="left">
+		<li><a href="{{ url('settings/assets') }}" class="backbtn">{{ "Asset Sizes"|t }}</a></li>
+	</ul>
+{% endset %}
+
+
+{% set content %}
+	<form method="post" action="" accept-charset="UTF-8">
+		<input type="hidden" name="action" value="assetSizes/saveSize">
+		<input type="hidden" name="redirect" value="{{ url('settings/assets/operations', { size: '{handle}' }) }}">
+
+		{% if not isNewSize %}<input type="hidden" name="sizeId" value="{{ size.id }}">{% endif %}
+
+		{{ forms.textField({
+			label: "Name"|t,
+			id: 'name',
+			name: 'name',
+			value: (size is defined ? size.name : null),
+			errors: (size is defined ? size.getErrors('name') : null),
+			autofocus: true,
+			required: true,
+			translatable: true
+		}) }}
+
+		{{ forms.textField({
+            label: "Handle"|t,
+            id: "handle",
+            name: "handle",
+            value: (size is defined ? size.handle : null),
+            errors: (size is defined ? size.getErrors('handle') : null),
+            required: true,
+            translatable: true
+        }) }}
+
+        {{ forms.textField({
+        label: "Width"|t,
+        id: "width",
+        name: "width",
+        value: (size is defined ? size.width : null),
+        errors: (size is defined ? size.getErrors('width') : null),
+        required: true,
+        translatable: true
+        }) }}
+
+        {{ forms.textField({
+        label: "Height"|t,
+        id: "height",
+        name: "height",
+        value: (size is defined ? size.height : null),
+        errors: (size is defined ? size.getErrors('height') : null),
+        required: true,
+        translatable: true
+        }) }}
+
+        <div class="buttons">
+			<input type="submit" class="btn submit" value="{{ 'Save'|t }}">
+		</div>
+	</form>
+{% endset %}
+
+
+{% set js %}
+    {% if size is not defined or not size.handle %}new Blocks.ui.HandleGenerator('#name', '#handle');{% endif %}
+{% endset %}
+{% includeJs js %}

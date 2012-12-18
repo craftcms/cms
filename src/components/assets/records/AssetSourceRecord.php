@@ -20,10 +20,10 @@ class AssetSourceRecord extends BaseRecord
 	public function defineAttributes()
 	{
 		return array(
-			'name'      => array(AttributeType::Name, 'required' => true),
-			'type'      => array(AttributeType::ClassName, 'required' => true),
-			'settings'  => AttributeType::Mixed,
-			'sortOrder' => AttributeType::SortOrder,
+			'name'                => array(AttributeType::Name, 'required' => true),
+			'type'                => array(AttributeType::ClassName, 'required' => true),
+			'settings'            => AttributeType::Mixed,
+			'sortOrder'           => AttributeType::SortOrder,
 		);
 	}
 

@@ -25,7 +25,7 @@ class AssetFileRecord extends BaseRecord
 			'width'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
 			'height'		=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::SmallInt),
 			'size'			=> array(AttributeType::Number, 'min' => 0, 'column' => ColumnType::Int),
-			'dateModified'	=> array(AttributeType::DateTime),
+			'dateModified'	=> AttributeType::DateTime
 		);
 	}
 

@@ -14,4 +14,37 @@ class FileCriteria extends BaseCriteria
 	public $order = 'filename asc';
 	public $offset;
 	public $limit;
+
+	/**
+	 * Returns all entries that match the criteria.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function findEntities()
+	{
+		return blx()->assets->getFiles($this);
+	}
+
+	/**
+	 * Returns the first entry that matches the criteria.
+	 *
+	 * @access protected
+	 * @return EntryModel|null
+	 */
+	protected function findFirstEntity()
+	{
+		return blx()->assets->getFiles($this);
+	}
+
+	/**
+	 * Returns the total entries that match the criteria.
+	 *
+	 * @access protected
+	 * @return int
+	 */
+	protected function getTotalEntities()
+	{
+		return blx()->assets->getTotalFiles($this);
+	}
 }

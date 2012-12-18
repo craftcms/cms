@@ -179,6 +179,28 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
+	 * Gets the total number of files.
+	 *
+	 * @param FileCriteria|null $criteria
+	 * @return int
+	 */
+	public function getTotalFiles(FileCriteria $criteria = null)
+	{
+		if (!$criteria)
+		{
+			$criteria = new FileCriteria();
+		}
+
+		$query = blx()->db->createCommand()
+			->select('count(id)')
+			->from('assetfiles AS f');
+
+		$this->_applyFileConditions($query, $criteria);
+
+		return (int) $query->queryScalar();
+	}
+
+	/**
 	 * Applies WHERE conditions to a DbCommand query for folders.
 	 *
 	 * @access private
@@ -399,6 +421,28 @@ class AssetsService extends BaseEntityService
 		}
 
 		return null;
+	}
+
+	/**
+	 * Gets the total number of folders.
+	 *
+	 * @param FolderCriteria|null $criteria
+	 * @return int
+	 */
+	public function getTotalFolders(FolderCriteria $criteria = null)
+	{
+		if (!$criteria)
+		{
+			$criteria = new FolderCriteria();
+		}
+
+		$query = blx()->db->createCommand()
+			->select('count(id)')
+			->from('assetfolders AS f');
+
+		$this->_applyFolderConditions($query, $criteria);
+
+		return (int) $query->queryScalar();
 	}
 
 	/**

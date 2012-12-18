@@ -24,7 +24,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.$toolbar = $('.toolbar', this.$manager);
 
             this.$viewAsThumbsBtn = $('a.thumbs', this.$toolbar);
-            this.$viewInListBtn   = $('a.list', this.$toolbar);
+            this.$viewAsListBtn   = $('a.list', this.$toolbar);
 
             this.$upload = $('.buttons .assets-upload', this.$manager);
 
@@ -34,6 +34,8 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 
             this.$left = $('> .nav', this.$manager);
             this.$right = $('> .asset-content', this.$manager);
+
+            this.$status = $('> .asset-status', this.$right);
 
             this.$sources = $('> .assets-sources', this.$left);
 
@@ -77,7 +79,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 
             // -------------------------------------------
             //  File Uploads
-            // -------------------------------------------Lo
+            // -------------------------------------------
 
             this.uploader = new qqUploader.FileUploader({
                 element:      this.$upload[0],
@@ -116,16 +118,56 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
                 onComplete:   $.proxy(this, '_onUploadComplete')
             });
 
-            if (this.currentState.current_source == null) {
-                this.storeState('current_source', this.$sources.find('a[data-source]').attr('data-source'));
-            }
-
-            this.selectSource(this.$sources.find('a[data-source=' + this.currentState.current_source + ']'));
+            // ---------------------------------------
+            // Asset events
+            // ---------------------------------------
 
             this.$sources.find('a').click($.proxy(function (event) {
                 this.storeState('current_source', $(event.target).attr('data-source'));
                 this.selectSource($(event.target));
             }, this));
+
+            // Switch between views
+            this.$viewAsThumbsBtn.click($.proxy(function () {
+                this.selectViewType('thumbs');
+                this.markActiveViewButton();
+            }, this));
+
+            this.$viewAsListBtn.click($.proxy(function () {
+                this.selectViewType('list');
+                this.markActiveViewButton();
+            }, this));
+
+            // Load up the folder
+            if (this.currentState.current_source == null) {
+                this.storeState('current_source', this.$sources.find('a[data-source]').attr('data-source'));
+            }
+
+            this.selectSource(this.$sources.find('a[data-source=' + this.currentState.current_source + ']'));
+            this.markActiveViewButton();
+        },
+
+        /**
+         * Select the view type to use.
+         *
+         * @param type
+         */
+        selectViewType: function (type) {
+            this.storeState('view', type);
+            this.reloadFolderView();
+        },
+
+        /**
+         * Add the class to the appropriate view button and remove from the other.
+         */
+        markActiveViewButton: function () {
+            if (this.currentState.view == 'thumbs') {
+                this.$viewAsThumbsBtn.addClass('active');
+                this.$viewAsListBtn.removeClass('active');
+            } else {
+                this.$viewAsThumbsBtn.removeClass('active');
+                this.$viewAsListBtn.addClass('active');
+            }
         },
 
         /**
@@ -142,7 +184,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.reloadFolderView();
 
             this.uploader.setParams({
-                folder_id: this.getCurrentFolderId()
+                folderId: this.getCurrentFolderId()
             });
         },
 
@@ -158,13 +200,13 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.$spinner.show();
 
             var params = {
-                request_id: ++this.requestId,
-                folder_id: folderId,
-                view_type: this.currentState.view
+                requestId: ++this.requestId,
+                folderId: folderId,
+                viewType: this.currentState.view
             };
 
             Blocks.postActionRequest('assets/viewFolder', params, $.proxy(function(data, textStatus) {
-                if (data.request_id != this.requestId) {
+                if (data.requestId != this.requestId) {
                     return;
                 }
                 this.$folderContainer.attr('data', folderId);
@@ -201,7 +243,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
          * @private
          */
         _setUploadFolder: function (folderId) {
-            this.uploader.setParams({folder_id: folderId});
+            this.uploader.setParams({folderId: folderId});
         },
 
         /**

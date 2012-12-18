@@ -30,6 +30,23 @@ abstract class BaseAssetSourceType extends BaseComponent
 	abstract public function processIndex($sessionId, $offset);
 
 	/**
+	 * Get the image source path with the optional handle name.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @return mixed
+	 */
+	public abstract function getImageSourcePath(AssetFileModel $fileModel);
+
+	/**
+	 * Get the timestamp of when a file size was last modified.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param string $sizeHandle
+	 * @return mixed
+	 */
+	public abstract function getTimeSizeModified(AssetFileModel $fileModel, $sizeHandle);
+
+	/**
 	 * Insert a file from path in folder.
 	 *
 	 * @param AssetFolderModel $folder
@@ -47,7 +64,17 @@ abstract class BaseAssetSourceType extends BaseComponent
 	 * @param $fileName
 	 * @return mixed
 	 */
-	//abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
+	abstract protected function _getNameReplacement(AssetFolderModel $folder, $fileName);
+
+	/**
+	 * Put an image size for the File and handle using the provided path to the source image.
+	 *
+	 * @param AssetFileModel $fileModel
+	 * @param $handle
+	 * @param $sourceImage
+	 * @return mixed
+	 */
+	abstract public function putImageSize(AssetFileModel $fileModel, $handle, $sourceImage);
 
 	/**
 	 * Return a result object for prompting the user about filename conflicts.
@@ -113,7 +140,6 @@ abstract class BaseAssetSourceType extends BaseComponent
 		if ($response->getStatus() == AssetOperationResponseModel::StatusSuccess)
 		{*/
 			//$filename = pathinfo($response->getResponseData()->fileName, PATHINFO_BASENAME);
-			$modifiedTime = DateTimeHelper::formatTimeForDb(filemtime($filePath));
 
 			$fileModel = new AssetFileModel();
 			$fileModel->sourceId = $this->model->id;
@@ -121,7 +147,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			$fileModel->filename = pathinfo($filename, PATHINFO_BASENAME);
 			$fileModel->kind = IOHelper::getFileKind(pathinfo($filename, PATHINFO_EXTENSION));
 			$fileModel->size = filesize($filePath);
-			$fileModel->dateModified = $modifiedTime;
+			$fileModel->dateModified = new DateTime('@'.IOHelper::getLastTimeModified($filePath));
 
 			if ($fileModel->kind == 'image')
 			{
@@ -131,8 +157,13 @@ abstract class BaseAssetSourceType extends BaseComponent
 			}
 
 			$fileModel->id = blx()->assets->storeFile($fileModel);
-			IOHelper::deleteFile($filePath);
 
+			if ($this->model->type != 'Local')
+			{
+				IOHelper::copyFile($filePath, blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel, PATHINFO_EXTENSION));
+			}
+
+			blx()->assetSizes->updateSizes($fileModel, array_keys(blx()->assetSizes->getAssetSizes()));
 			// Now that we have stored all this information, we have to send back the original conflict response
 			/*if (isset($conflictResponse))
 			{
