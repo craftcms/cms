@@ -8,6 +8,7 @@
         $sourceMasterCheckbox: null,
         $sourceCheckboxes: null,
         $indexCheckbox: null,
+        $sizesCheckbox: null,
         $sizeMasterCheckbox: null,
         $sizeCheckboxes: null,
         $progressBarContainer: null,
@@ -28,9 +29,10 @@
             this.$sourceCheckboxes = $('.assets-sources input[type=checkbox]').not('.all');
 
             this.$indexCheckbox = $('#do-index');
+            this.$sizesCheckbox = $('#do-sizes');
 
-            this.$sizeMasterCheckbox = $('.assets-sizes input[type=checkbox].all');
-            this.$sizeCheckboxes = $('.assets-sizes input[type=checkbox]').not('.all');
+            this.$sizeMasterCheckbox = $('#sizes input[type=checkbox].all');
+            this.$sizeCheckboxes = $('#sizes input[type=checkbox]').not('.all');
 
             this.$progressBarContainer = $('.operation-progress');
 
@@ -40,16 +42,19 @@
 
         startOperations: function ()
         {
-
             if (this.$startOperationsButton.hasClass('disabled'))
             {
                 return;
             }
 
             var checkedSizes = [];
-            this.$sizeCheckboxes.filter(':checked').each(function () {
-                checkedSizes.push($(this).val());
-            });
+
+            if (this.$sizesCheckbox.prop('checked'))
+            {
+                this.$sizeCheckboxes.filter(':checked').each(function () {
+                    checkedSizes.push($(this).val());
+                });
+            }
 
             var doIndex = this.$indexCheckbox.prop('checked');
 
