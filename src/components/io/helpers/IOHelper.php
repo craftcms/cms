@@ -218,7 +218,7 @@ class IOHelper
 	 */
 	public static function getFolderName($path, $fullPath = true)
 	{
-		$path = static::normalizePathSeparators($path);
+		$path = rtrim(static::normalizePathSeparators($path), '/');
 
 		if ($fullPath)
 		{
