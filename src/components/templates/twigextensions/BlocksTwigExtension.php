@@ -15,6 +15,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	{
 		return array(
 			new Redirect_TokenParser(),
+			new RequireLogin_TokenParser(),
 			new RequirePermission_TokenParser(),
 			new IncludeResource_TokenParser('includeCssFile'),
 			new IncludeResource_TokenParser('includeJsFile'),
@@ -115,6 +116,8 @@ class BlocksTwigExtension extends \Twig_Extension
 	{
 		$globals['blx'] = new BlxVariable();
 		$globals['now'] = new DateTime();
+		$globals['loginUrl'] = UrlHelper::getUrl(blx()->config->get('loginPath'));
+		$globals['logoutUrl'] = UrlHelper::getUrl(blx()->config->get('logoutPath'));
 
 		if (blx()->isInstalled())
 		{

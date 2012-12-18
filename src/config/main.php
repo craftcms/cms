@@ -169,14 +169,14 @@ $components['log']['routes'] = array(
 	),
 );
 
-$components['session']['autoStart'] = true;
-$components['session']['cookieMode'] = 'only';
-$components['session']['class'] = 'Blocks\HttpSessionService';
+$components['session']['autoStart']   = true;
+$components['session']['cookieMode']  = 'only';
+$components['session']['class']       = 'Blocks\HttpSessionService';
 $components['session']['sessionName'] = 'BlocksSessionId';
 
-$components['user']['class'] = 'Blocks\UserSessionService';
-$components['user']['allowAutoLogin'] = true;
-$components['user']['loginUrl'] = 'login';
+$components['user']['class']           = 'Blocks\UserSessionService';
+$components['user']['allowAutoLogin']  = true;
+$components['user']['loginUrl']        = $blocksConfig['loginPath'];
 $components['user']['autoRenewCookie'] = true;
 
 

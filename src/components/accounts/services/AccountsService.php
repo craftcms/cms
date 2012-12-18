@@ -7,16 +7,6 @@ namespace Blocks;
 class AccountsService extends BaseApplicationComponent
 {
 	/**
-	 * Returns the account verification path.
-	 *
-	 * @return string
-	 */
-	public function getAccountVerificationPath()
-	{
-		return 'verify';
-	}
-
-	/**
 	 * Gets a user by their ID.
 	 *
 	 * @param $id
@@ -229,7 +219,7 @@ class AccountsService extends BaseApplicationComponent
 	{
 		if ($userRecord->verificationCode)
 		{
-			return UrlHelper::getUrl($this->getAccountVerificationPath(), array(
+			return UrlHelper::getUrl(blx()->config->get('resetPasswordPath'), array(
 				'code' => $userRecord->verificationCode
 			));
 		}

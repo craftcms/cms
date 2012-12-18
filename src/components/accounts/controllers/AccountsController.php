@@ -6,100 +6,119 @@ namespace Blocks;
  */
 class AccountsController extends BaseController
 {
-	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionResetPassword', 'actionSaveUser');
+	protected $allowAnonymous = array('actionLogin', 'actionForgotPassword', 'actionVerify', 'actionResetPassword', 'actionSaveUser');
 
 	/**
-	 * Displays the login template. If valid login information, redirects to previous template.
+	 * Displays the login template, and handles login post requests.
 	 */
 	public function actionLogin()
 	{
-		$this->requirePostRequest();
-
-		$loginName = blx()->request->getPost('loginName');
-		$password = blx()->request->getPost('password');
-		$rememberMe = (bool) blx()->request->getPost('rememberMe');
-
-		if (blx()->user->login($loginName, $password, $rememberMe))
+		if (blx()->user->isLoggedIn())
 		{
-			$redirectUrl = blx()->user->getReturnUrl();
+			$this->redirect('');
+		}
 
-			if (blx()->request->isAjaxRequest())
+		$vars = array();
+
+		if (blx()->request->isPostRequest())
+		{
+			$loginName = blx()->request->getPost('loginName');
+			$password = blx()->request->getPost('password');
+			$rememberMe = (bool) blx()->request->getPost('rememberMe');
+
+			if (blx()->user->login($loginName, $password, $rememberMe))
 			{
-				$this->returnJson(array(
-					'success' => true
-				));
+				$redirectUrl = blx()->user->getReturnUrl();
+
+				if (blx()->request->isAjaxRequest())
+				{
+					$this->returnJson(array(
+						'success' => true
+					));
+				}
+				else
+				{
+					blx()->user->setNotice(Blocks::t('Logged in.'));
+					$this->redirectToPostedUrl();
+				}
 			}
 			else
 			{
-				blx()->user->setNotice(Blocks::t('Logged in.'));
-				$this->redirectToPostedUrl();
+				$errorCode = blx()->user->getLoginErrorCode();
+
+				switch ($errorCode)
+				{
+					case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
+					{
+						$error = Blocks::t('You need to reset your password. Check your email for instructions.');
+						break;
+					}
+					case UserIdentity::ERROR_ACCOUNT_LOCKED:
+					{
+						$error = Blocks::t('Account locked.');
+						break;
+					}
+					case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
+					{
+						$user = blx()->accounts->getUserByUsernameOrEmail($loginName);
+						$timeRemaining = $user->getRemainingCooldownTime();
+
+						if ($timeRemaining)
+						{
+							$humanTimeRemaining = $timeRemaining->humanDuration(false);
+							$error = Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
+						}
+						else
+						{
+							$error = Blocks::t('Account locked.');
+						}
+						break;
+					}
+					case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
+					{
+						$error = Blocks::t('Account suspended.');
+						break;
+					}
+					case UserIdentity::ERROR_NO_CP_ACCESS:
+					{
+						$error = Blocks::t('You cannot access the CP with that account.');
+						break;
+					}
+					default:
+					{
+						$error = Blocks::t('Invalid username or password.');
+					}
+				}
+
+				if (blx()->request->isAjaxRequest())
+				{
+					$this->returnJson(array(
+						'errorCode' => $errorCode,
+						'error' => $error
+					));
+				}
+				else
+				{
+					blx()->user->setError($error);
+
+					$vars = array(
+						'loginName' => $loginName,
+						'rememberMe' => $rememberMe
+					);
+				}
 			}
+		}
+
+		if (blx()->request->isCpRequest())
+		{
+			$template = 'login';
 		}
 		else
 		{
-			$errorCode = blx()->user->getLoginErrorCode();
-
-			switch ($errorCode)
-			{
-				case UserIdentity::ERROR_PASSWORD_RESET_REQUIRED:
-				{
-					$error = Blocks::t('You need to reset your password. Check your email for instructions.');
-					break;
-				}
-				case UserIdentity::ERROR_ACCOUNT_LOCKED:
-				{
-					$error = Blocks::t('Account locked.');
-					break;
-				}
-				case UserIdentity::ERROR_ACCOUNT_COOLDOWN:
-				{
-					$user = blx()->accounts->getUserByUsernameOrEmail($loginName);
-					$timeRemaining = $user->getRemainingCooldownTime();
-
-					if ($timeRemaining)
-					{
-						$humanTimeRemaining = $timeRemaining->humanDuration(false);
-						$error = Blocks::t('Account locked. Try again in {time}.', array('time' => $humanTimeRemaining));
-					}
-					else
-					{
-						$error = Blocks::t('Account locked.');
-					}
-					break;
-				}
-				case UserIdentity::ERROR_ACCOUNT_SUSPENDED:
-				{
-					$error = Blocks::t('Account suspended.');
-					break;
-				}
-				case UserIdentity::ERROR_NO_CP_ACCESS:
-				{
-					$error = Blocks::t('You cannot access the CP with that account.');
-					break;
-				}
-				default:
-				{
-					$error = Blocks::t('Invalid username or password.');
-				}
-			}
-
-			if (blx()->request->isAjaxRequest())
-			{
-				$this->returnJson(array(
-					'errorCode' => $errorCode,
-					'error' => $error
-				));
-			}
-			else
-			{
-				blx()->user->setError($error);
-
-				$this->renderRequestedTemplate(array(
-					'loginName' => $loginName,
-					'rememberMe' => $rememberMe
-				));
-			}
+			$template = blx()->config->get('loginPath');
 		}
+
+		$this->renderTemplate($template, $vars);
 	}
 
 	/**
@@ -162,33 +181,63 @@ class AccountsController extends BaseController
 	 */
 	public function actionResetPassword()
 	{
-		$this->requirePostRequest();
-
-		$verificationCode = blx()->request->getRequiredPost('verificationCode');
-
-		$user = blx()->accounts->getUserByVerificationCode($verificationCode);
-
-		if (!$user)
+		if (blx()->user->isLoggedIn())
 		{
-			throw new Exception('Invalid verification code.');
+			$this->redirect('');
 		}
 
-		$user->newPassword = blx()->request->getRequiredPost('newPassword');
-
-		if (blx()->accounts->changePassword($user))
+		if (blx()->request->isPostRequest())
 		{
-			if (!blx()->user->isLoggedIn())
+			$this->requirePostRequest();
+
+			$code = blx()->request->getRequiredPost('code');
+			$user = blx()->accounts->getUserByVerificationCode($code);
+
+			if (!$user)
 			{
-				blx()->user->login($user->username, $user->newPassword);
+				throw new Exception(Blocks::t('Invalid verification code.'));
 			}
 
-			blx()->user->setNotice(Blocks::t('Password updated.'));
-			$this->redirect('dashboard');
+			$user->newPassword = blx()->request->getRequiredPost('newPassword');
+
+			if (blx()->accounts->changePassword($user))
+			{
+				// Log them in
+				blx()->user->login($user->username, $user->newPassword);
+
+				blx()->user->setNotice(Blocks::t('Password updated.'));
+				$this->redirectToPostedUrl();
+			}
+			else
+			{
+				blx()->user->setNotice(Blocks::t('Couldn’t update password.'));
+
+				$this->renderRequestedTemplate(array(
+					'errors' => $user->getErrors('newPassword')
+				));
+			}
 		}
 		else
 		{
-			$this->renderRequestedTemplate(array(
-				'errors' => $user->getErrors('newPassword')
+			$code = blx()->request->getQuery('code');
+			$user = blx()->accounts->getUserByVerificationCode($code);
+
+			if (!$user)
+			{
+				throw new HttpException(404);
+			}
+
+			if (blx()->request->isCpRequest())
+			{
+				$template = 'resetpassword';
+			}
+			else
+			{
+				$template = blx()->config->get('resetPasswordPath');
+			}
+
+			$this->renderTemplate($template, array(
+				'code' => $code
 			));
 		}
 	}
@@ -206,12 +255,12 @@ class AccountsController extends BaseController
 
 			if ($userId)
 			{
-				$this->requireLogin();
+				blx()->user->requireLogin();
 			}
 		}
 		else
 		{
-			$this->requireLogin();
+			blx()->user->requireLogin();
 			$userId = blx()->user->getUser()->id;
 		}
 

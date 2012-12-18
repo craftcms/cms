@@ -492,7 +492,9 @@ class HttpRequestService extends \CHttpRequest
 	{
 		$resourceTrigger = blx()->config->get('resourceTrigger');
 		$actionTrigger = blx()->config->get('actionTrigger');
-		$logoutTrigger = blx()->config->get('logoutTrigger');
+		$loginPath = trim(blx()->config->get('loginPath'), '/');
+		$resetPasswordPath = trim(blx()->config->get('resetPasswordPath'), '/');
+		$logoutPath = trim(blx()->config->get('logoutPath'), '/');
 		$firstSegment = $this->getSegment(1);
 
 		// If the first path segment is the resource trigger word, it's a resource request.
@@ -503,12 +505,19 @@ class HttpRequestService extends \CHttpRequest
 		}
 
 		// If the first path segment is the action trigger word, or the logout trigger word (special case), it's an action request
-		if ($firstSegment === $actionTrigger || $firstSegment === $logoutTrigger)
+		if ($firstSegment === $actionTrigger || in_array($this->_path, array($loginPath, $resetPasswordPath, $logoutPath)))
 		{
 			$this->_isActionRequest = true;
 
-			// Map actions/logout to actions/accounts/logout
-			if ($firstSegment === $logoutTrigger)
+			if ($this->_path == $loginPath)
+			{
+				$this->_actionSegments = array('accounts', 'login');
+			}
+			else if ($this->_path == $resetPasswordPath)
+			{
+				$this->_actionSegments = array('accounts', 'resetPassword');
+			}
+			else if ($this->_path == $logoutPath)
 			{
 				$this->_actionSegments = array('accounts', 'logout');
 			}

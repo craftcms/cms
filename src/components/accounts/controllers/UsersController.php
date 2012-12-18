@@ -66,7 +66,7 @@ class UsersController extends BaseEntityController
 	public function actionUploadUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		$this->requireLogin();
+		blx()->user->requireLogin();
 		$userId = blx()->request->getRequiredQuery('userId');
 
 		if ($userId != blx()->user->getUser()->id)
@@ -138,7 +138,7 @@ class UsersController extends BaseEntityController
 	public function actionCropUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		$this->requireLogin();
+		blx()->user->requireLogin();
 
 		$userId = blx()->request->getRequiredPost('userId');
 
@@ -191,7 +191,7 @@ class UsersController extends BaseEntityController
 	public function actionDeleteUserPhoto()
 	{
 		$this->requireAjaxRequest();
-		$this->requireLogin();
+		blx()->user->requireLogin();
 		$userId = blx()->request->getRequiredPost('userId');
 
 		if ($userId != blx()->user->getUser()->id)

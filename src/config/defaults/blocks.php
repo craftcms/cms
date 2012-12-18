@@ -44,9 +44,19 @@ return array(
 'siteRoutesSource' => 'db',
 
 /**
- * The URL segment to trigger a user session logout.
+ * The path to redirect to when accessing a page that requires the user to be logged in.
  */
-'logoutTrigger' => 'logout',
+'loginPath' => 'login',
+
+/**
+ * The path Blocks will use to reset users' passwords.
+ */
+'resetPasswordPath' => 'resetpassword',
+
+/**
+ * The path to trigger a user session logout.
+ */
+'logoutPath' => 'logout',
 
 /**
  * The amount of time to cache stuff in runtime/.

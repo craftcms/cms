@@ -65,28 +65,6 @@ class UserSessionService extends \CWebUser
 	}
 
 	/**
-	 * @throws HttpException
-	 */
-	public function loginRequired()
-	{
-		if (!blx()->request->isAjaxRequest())
-		{
-			if (blx()->request->getPathInfo() !== '')
-			{
-				$this->setReturnUrl(blx()->request->getPath());
-			}
-		}
-		elseif (isset($this->loginRequiredAjaxResponse))
-		{
-			echo $this->loginRequiredAjaxResponse;
-			blx()->end();
-		}
-
-		$url = UrlHelper::getUrl($this->loginUrl);
-		blx()->request->redirect($url);
-	}
-
-	/**
 	 * @param $id
 	 * @param $states
 	 * @param $fromCookie
@@ -227,6 +205,39 @@ class UserSessionService extends \CWebUser
 		{
 			throw new HttpException(403);
 		}
+	}
+
+	/**
+	 * Requires that the user is logged in, otherwise redirects them to the login page.
+	 */
+	public function requireLogin()
+	{
+		if ($this->isGuest())
+		{
+			if (!blx()->request->isAjaxRequest())
+			{
+				if (blx()->request->getPathInfo() !== '')
+				{
+					$this->setReturnUrl(blx()->request->getPath());
+				}
+			}
+			elseif (isset($this->loginRequiredAjaxResponse))
+			{
+				echo $this->loginRequiredAjaxResponse;
+				blx()->end();
+			}
+
+			$url = UrlHelper::getUrl($this->loginUrl);
+			blx()->request->redirect($url);
+		}
+	}
+
+	/**
+	 * Pointless Wrapper for requireLogin(), but \CWebUser uses loginRequired() so we must support it as well.
+	 */
+	public function loginRequired()
+	{
+		$this->requireLogin();
 	}
 
 	/**

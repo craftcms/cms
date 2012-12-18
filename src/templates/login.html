@@ -1,7 +1,3 @@
-{% if user and user.can('accessCp') %}
-	{% redirect "dashboard" %}
-{% endif %}
-
 {% extends "_layouts/base" %}
 {% import "_includes/forms" as forms %}
 {% set title = "Login"|t %}
