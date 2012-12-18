@@ -74,7 +74,11 @@ $configArray = array(
 
 		'i18n' => array(
 			'class' => 'Blocks\LocalizationService',
-		)
+		),
+
+		'formatter' => array(
+			'class' => '\CFormatter'
+		),
 	),
 
 	'params' => array(
