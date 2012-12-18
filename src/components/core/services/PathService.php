@@ -103,6 +103,16 @@ class PathService extends BaseApplicationComponent
 	/**
 	 * @return string
 	 */
+	public function getAssetsThumbSizesPath()
+	{
+		$path = $this->getAssetsPath() . 'thumbsizes/';
+		IOHelper::ensureFolderExists($path);
+		return $path;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getLogPath()
 	{
 		$path = $this->getStoragePath().'logs/';

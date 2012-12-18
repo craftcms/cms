@@ -6,10 +6,6 @@ namespace Blocks;
  */
 class AssetFileModel extends BaseModel
 {
-	/**
-	 * @var BaseAssetSourceType
-	 */
-	private $_sourceType = null;
 
 	/**
 	 * User the filename as the string representation.
@@ -56,44 +52,23 @@ class AssetFileModel extends BaseModel
 	 */
 	public function getUrl()
 	{
-		return $this->getSourceType()->getSettings()->url . $this->getFolder()->fullPath . $this->filename;
+		return blx()->assetSources->getSourceTypeById($this->sourceId)->getSettings()->url . $this->getFolder()->fullPath . $this->filename;
 	}
 
 	/**
-	 * Returns the size of the thumbnail.
+	 * Get Thumbnail URL.
 	 *
-	 * @param int $maxSize
-	 * @return array
+	 * @param int $size
+	 * @return string
 	 */
-	public function getThumbSize($maxSize = 125)
+	public function getThumbnailUrl($size = 125)
 	{
-		$path = $this->getSourceType()->getSettings()->path . $this->getFolder()->fullPath . $this->filename;
-		list($width, $height) = getimagesize($path);
-
-		if ($width > $height)
+		if (!is_numeric($size))
 		{
-			$thumbWidth = $maxSize;
-			$thumbHeight = $height * ($maxSize / max(1, $width));
-		}
-		else
-		{
-			$thumbHeight = $maxSize;
-			$thumbWidth = $width * ($maxSize / max(1, $height));
+			$size = 125;
 		}
 
-		return array('width' => $thumbWidth, 'height' => $thumbHeight);
-	}
+		return UrlHelper::getResourceUrl('assets/' . $this->id . '/' . $size);
 
-	/**
-	 * @return BaseAssetSourceType|null
-	 */
-	protected function getSourceType()
-	{
-		if (!isset($this->_sourceType))
-		{
-			$this->_sourceType = blx()->assetSources->getSourceTypeById($this->sourceId);
-		}
-
-		return $this->_sourceType;
 	}
 }

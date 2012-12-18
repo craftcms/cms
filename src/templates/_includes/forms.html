@@ -137,8 +137,8 @@
 
 
 {% macro checkboxSelect(config) %}
-	{% set config = { id: null, allLabel: "All"|t, name: null, options: [], values: [], autofocus: false }|merge(config) %}
-	<div class="checkbox-select">
+	{% set config = { id: null, allLabel: "All"|t, name: null, options: [], values: [], autofocus: false, class: ""}|merge(config) %}
+	<div class="checkbox-select {{ config.class }}">
 		<div>
 			{{ _self.checkbox({
 				id: config.id,

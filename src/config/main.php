@@ -32,8 +32,11 @@ $cpRoutes['dashboard\/settings\/(?P<widgetId>\d+)']                           = 
 $cpRoutes['updates\/go\/(?P<handle>[^\/]*)']                                  = 'updates/_go';
 
 $cpRoutes['settings\/assets']                                                 = 'settings/assets/sources';
-$cpRoutes['settings\/assets\/sources\/new']                                   = 'settings/assets/sources/_settings';
+$cpRoutes['settings\/assets\/operations\/(?P<sizeHandle>'.$handle.')?']       = 'settings/assets/operations/index';
 $cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
+$cpRoutes['settings\/assets\/sources\/(?P<sourceId>\d+)']                     = 'settings/assets/sources/_settings';
+$cpRoutes['settings\/assets\/sizes\/new']                                     = 'settings/assets/sizes/_settings';
+$cpRoutes['settings\/assets\/sizes\/(?P<sizeHandle>'.$handle.')']             = 'settings/assets/sizes/_settings';
 $cpRoutes['settings\/assets\/blocks\/new']                                    = 'settings/assets/blocks/_settings';
 $cpRoutes['settings\/assets\/blocks\/(?P<blockId>\d+)']                       = 'settings/assets/blocks/_settings';
 $cpRoutes['settings\/globals\/new']                                           = 'settings/globals/_settings';
@@ -92,6 +95,7 @@ if (in_array('Users', $packages))
 $components['accounts']['class']          = 'Blocks\AccountsService';
 $components['assets']['class']            = 'Blocks\AssetsService';
 $components['assetIndexing']['class']     = 'Blocks\AssetIndexingService';
+$components['assetSizes']['class']        = 'Blocks\AssetSizesService';
 $components['assetSources']['class']      = 'Blocks\AssetSourcesService';
 $components['blockTypes']['class']        = 'Blocks\BlockTypesService';
 $components['components']['class']        = 'Blocks\ComponentsService';

@@ -47,7 +47,14 @@ class AssetSourcesService extends BaseApplicationComponent
 	public function getAllSources($indexBy = null)
 	{
 		$sourceRecords = AssetSourceRecord::model()->ordered()->findAll();
-		return AssetSourceModel::populateModels($sourceRecords, $indexBy);
+		$sources =  AssetSourceModel::populateModels($sourceRecords, $indexBy);
+		$output = array();
+		foreach ($sources as $source)
+		{
+			$output[$source->id] = $source;
+		}
+
+		return $output;
 	}
 
 	/**
