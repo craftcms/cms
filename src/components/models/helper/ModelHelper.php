@@ -17,7 +17,7 @@ class ModelHelper
 		AttributeType::Bool       => array('maxLength' => 1, 'default' => false, 'required' => true, 'column' => ColumnType::TinyInt, 'unsigned' => true),
 		AttributeType::Build      => array('column' => ColumnType::Int, 'unsigned' => true),
 		AttributeType::ClassName  => array('maxLength' => 150, 'column' => ColumnType::Char),
-		AttributeType::DateTime   => array('column' => ColumnType::Int),
+		AttributeType::DateTime   => array('column' => ColumnType::DateTime),
 		AttributeType::Email      => array('minLength' => 5, 'column' => ColumnType::Varchar),
 		AttributeType::Enum       => array('column' => ColumnType::Enum),
 		AttributeType::Handle     => array('reservedWords' => 'id,dateCreated,dateUpdated,uid,title', 'column' => ColumnType::Char),
