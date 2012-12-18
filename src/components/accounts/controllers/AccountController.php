@@ -118,7 +118,6 @@ class AccountController extends BaseController
 		$this->requirePostRequest();
 
 		$verificationCode = blx()->request->getRequiredPost('verificationCode');
-
 		$user = blx()->account->getUserByVerificationCode($verificationCode);
 
 		if (!$user)
@@ -126,13 +125,14 @@ class AccountController extends BaseController
 			throw new Exception('Invalid verification code.');
 		}
 
-		$user->newPassword = blx()->request->getRequiredPost('newPassword');
+		$newPassword = blx()->request->getRequiredPost('newPassword');
+		$user->newPassword = $newPassword;
 
 		if (blx()->account->changePassword($user))
 		{
 			if (!blx()->user->isLoggedIn())
 			{
-				blx()->user->login($user->username, $user->newPassword);
+				blx()->user->login($user->username, $newPassword);
 			}
 
 			blx()->user->setNotice(Blocks::t('Password updated.'));
