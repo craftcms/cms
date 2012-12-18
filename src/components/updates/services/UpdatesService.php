@@ -218,6 +218,21 @@ class UpdatesService extends BaseApplicationComponent
 	}
 
 	/**
+	 * @return bool
+	 */
+	public function doDatabaseUpdate()
+	{
+		$appUpdater = new AppUpdater(false);
+
+		if ($appUpdater->doDatabaseUpdate())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @param $pluginHandle
 	 * @return bool
 	 */

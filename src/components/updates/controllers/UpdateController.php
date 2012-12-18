@@ -168,7 +168,7 @@ class UpdateController extends BaseController
 			blx()->updates->turnSystemOffBeforeUpdate();
 
 			// run migrations to top
-			if (blx()->migrations->runToTop())
+			if (blx()->updates->doDatabaseUpdate())
 			{
 				// update db with version info.
 				if (blx()->updates->setNewBlocksInfo(Blocks::getVersion(), Blocks::getBuild(), Blocks::getReleaseDate()))
