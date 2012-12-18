@@ -42,26 +42,28 @@
                         label: "Update indexes"|t,
                         id: 'do-index',
                         name: 'do-index',
-                        class: 'assets-index'
+                        class: 'assets-index',
                     }) }}
                 </li>
 
                 {% set sizes = blx.assets.getAllAssetSizes() %}
                 {% if sizes|length %}
+                    {% set sizesChecked = (blx.request.getQuery('size') is not empty) %}
                     <li>
                         {{ forms.checkbox({
                             label: "Update sizes"|t,
                             id: 'do-sizes',
                             name: 'do-sizes',
                             class: 'assets-sizes',
+                            checked: sizesChecked,
                             toggle: 'sizes'
                         }) }}
-                        <ul id="sizes" class="indent hidden checkbox-select">
+                        <ul id="sizes" class="indent{% if not sizesChecked %} hidden{% endif %} checkbox-select">
                             <li>
                                 {{ forms.checkbox({
                                     class: 'all',
                                     label: '<b>' ~ "All"|t ~ '</b>',
-                                    checked: true
+                                    checked: (not sizesChecked)
                                 }) }}
                             </li>
                             {% for size in sizes %}
@@ -70,8 +72,8 @@
                                         label: size.name,
                                         name: size ~ '[]',
                                         value: size.handle,
-                                        checked: true,
-                                        disabled: true
+                                        checked: (not sizesChecked or (sizesChecked and blx.request.getQuery('size') == size.handle)),
+                                        disabled: (not sizesChecked)
                                     }) }}
                                 </li>
                             {% endfor %}
