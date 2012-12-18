@@ -29,4 +29,18 @@ class DbConnection extends \CDbConnection
 		$this->setActive(true);
 		return new DbCommand($this, $query);
 	}
+
+	/**
+	 * @return bool|string
+	 */
+	public function fullBackup()
+	{
+		$backup = new DbBackup();
+		if (($backupFile = $backup->run()) !== false)
+		{
+			return $backupFile;
+		}
+
+		return false;
+	}
 }
