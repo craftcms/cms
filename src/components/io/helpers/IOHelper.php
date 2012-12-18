@@ -218,11 +218,15 @@ class IOHelper
 	 */
 	public static function getFolderName($path, $fullPath = true)
 	{
-		$path = rtrim(static::normalizePathSeparators($path), '/');
+		$path = static::normalizePathSeparators($path);
 
 		if ($fullPath)
 		{
-			return static::normalizePathSeparators(pathinfo($path, PATHINFO_DIRNAME));
+			$folder = static::normalizePathSeparators(pathinfo($path, PATHINFO_DIRNAME));
+
+			// normalizePathSeparators() only enforces the trailing slash for known directories
+			// so let's be sure that it'll be there.
+			return rtrim($folder, '/').'/';
 		}
 		else
 		{
