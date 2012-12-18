@@ -12,7 +12,7 @@ class DateTimeHelper
 	 */
 	public static function currentTimeStamp()
 	{
-		$date = new DateTime();
+		$date = new DateTime(\DateTimeZone::UTC);
 		return $date->getTimestamp();
 	}
 
@@ -24,7 +24,7 @@ class DateTimeHelper
 	{
 		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
 		// For now, it's MySQL only.
-		$date = new DateTime();
+		$date = new DateTime(\DateTimeZone::UTC);
 		return $date->format(DateTime::MYSQL_DATETIME);
 	}
 
@@ -540,15 +540,14 @@ class DateTimeHelper
 		{
 			return $dateAttribute;
 		}
-		else if (is_numeric($dateAttribute))
+		else if (static::isValidTimeStamp($dateAttribute))
 		{
-			$dateTime = new DateTime();
-			$dateTime->setTimestamp($dateAttribute);
+			$dateTime = new DateTime('@'.$dateAttribute);
 			return $dateTime;
 		}
 		else if ($required)
 		{
-			return new DateTime();
+			return new DateTime(\DateTimeZone::UTC);
 		}
 	}
 
