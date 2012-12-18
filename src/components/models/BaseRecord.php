@@ -85,7 +85,11 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function prepAttributesForSave()
 	{
-		foreach ($this->defineAttributes() as $name => $config)
+		$attributes = $this->defineAttributes();
+		$attributes['dateUpdated'] = array('0' => AttributeType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array('0' => AttributeType::DateTime, 'required' => true);
+
+		foreach ($attributes as $name => $config)
 		{
 			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
@@ -111,7 +115,11 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function prepAttributesForUse()
 	{
-		foreach ($this->defineAttributes() as $name => $config)
+		$attributes = $this->defineAttributes();
+		$attributes['dateUpdated'] = array('0' => AttributeType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array('0' => AttributeType::DateTime, 'required' => true);
+
+		foreach ($attributes as $name => $config)
 		{
 			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
@@ -124,8 +132,7 @@ abstract class BaseRecord extends \CActiveRecord
 					{
 						if (DateTimeHelper::isValidTimeStamp($value))
 						{
-							$dateTime = new DateTime();
-							$dateTime->setTimestamp($value);
+							$dateTime = new DateTime('@'.$value);
 						}
 						else
 						{
@@ -473,8 +480,7 @@ abstract class BaseRecord extends \CActiveRecord
 			$column = $table->getColumn($name);
 			if ($column->dbType == ColumnType::DateTime)
 			{
-				$dt = new DateTime();
-				$dt->setTimestamp($value);
+				$dt = new DateTime('@'.$value);
 				$value = $dt;
 			}
 		}
