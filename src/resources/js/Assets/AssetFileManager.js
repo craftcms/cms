@@ -184,7 +184,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.reloadFolderView();
 
             this.uploader.setParams({
-                folder_id: this.getCurrentFolderId()
+                folderId: this.getCurrentFolderId()
             });
         },
 
@@ -200,13 +200,13 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.$spinner.show();
 
             var params = {
-                request_id: ++this.requestId,
-                folder_id: folderId,
-                view_type: this.currentState.view
+                requestId: ++this.requestId,
+                folderId: folderId,
+                viewType: this.currentState.view
             };
 
             Blocks.postActionRequest('assets/viewFolder', params, $.proxy(function(data, textStatus) {
-                if (data.request_id != this.requestId) {
+                if (data.requestId != this.requestId) {
                     return;
                 }
                 this.$folderContainer.attr('data', folderId);
@@ -243,7 +243,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
          * @private
          */
         _setUploadFolder: function (folderId) {
-            this.uploader.setParams({folder_id: folderId});
+            this.uploader.setParams({folderId: folderId});
         },
 
         /**
