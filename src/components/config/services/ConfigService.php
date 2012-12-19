@@ -151,7 +151,7 @@ class ConfigService extends BaseApplicationComponent
 				{
 					// If there is already a PATH_INFO var available, we know it supports it.
 					// Added the !empty() check for nginx.
-					if (isset($_SERVER['PATH_INFO']) && !empty($_SERVER['PATH_INFO']))
+					if (!empty($_SERVER['PATH_INFO']))
 					{
 						$this->_usePathInfo = true;
 					}
