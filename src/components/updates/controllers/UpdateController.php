@@ -30,7 +30,7 @@ class UpdateController extends BaseController
 	{
 		blx()->user->requirePermission('autoUpdateBlocks');
 
-		$url = 'https://elliott.blockscms.com/actions/licenses/downloadBlocks?licenseKey='.Blocks::getLicenseKey();
+		$url = ElliottEndPoints::DownloadBlocks.'?licenseKey='.Blocks::getLicenseKey();
 		blx()->request->redirect($url);
 	}
 
