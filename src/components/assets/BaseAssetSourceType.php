@@ -147,7 +147,7 @@ abstract class BaseAssetSourceType extends BaseComponent
 			$fileModel->filename = pathinfo($filename, PATHINFO_BASENAME);
 			$fileModel->kind = IOHelper::getFileKind(pathinfo($filename, PATHINFO_EXTENSION));
 			$fileModel->size = filesize($filePath);
-			$fileModel->dateModified = new DateTime('@'.IOHelper::getLastTimeModified($filePath));
+			$fileModel->dateModified = IOHelper::getLastTimeModified($filePath);
 
 			if ($fileModel->kind == 'image')
 			{

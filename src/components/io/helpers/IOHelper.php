@@ -284,7 +284,7 @@ class IOHelper
 	}
 
 	/**
-	 * Returns the last modified time for the given path in timestamp format or false if the file or folder does not exist.
+	 * Returns the last modified time for the given path in DateTime format or false if the file or folder does not exist.
 	 *
 	 * @static
 	 * @param  string   $path The path to test.
@@ -296,7 +296,7 @@ class IOHelper
 
 		if (static::fileExists($path) || static::folderExists($path))
 		{
-			return filemtime($path);
+			return new DateTime(@filemtime($path));
 		}
 
 		return false;

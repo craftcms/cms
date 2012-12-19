@@ -53,7 +53,8 @@ class TemplateLoader implements \Twig_LoaderInterface
 	{
 		if (is_string($template))
 		{
-			return IOHelper::getLastTimeModified(blx()->templates->findTemplate($template)) <= $time;
+			$modifiedTime = IOHelper::getLastTimeModified(blx()->templates->findTemplate($template));
+			return  $modifiedTime->getTimestamp() <= $time;
 		}
 		else
 		{
