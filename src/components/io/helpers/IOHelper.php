@@ -296,7 +296,7 @@ class IOHelper
 
 		if (static::fileExists($path) || static::folderExists($path))
 		{
-			return new DateTime(@filemtime($path));
+			return new DateTime('@'.filemtime($path));
 		}
 
 		return false;
