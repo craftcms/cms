@@ -119,10 +119,13 @@ class m121218_222713_datetime_conversion extends \CDbMigration
 							// No need to convert if the current value is empty.
 							if (!empty($oldTime))
 							{
-								$convertedTime = blx()->db->createCommand("SELECT CONVERT_TZ(FROM_UNIXTIME({$oldTime}), '{$dbTimeZone}', '+00:00') AS timezone;")->queryRow();
-								$convertedTime = $convertedTime['timezone'];
+								if (DateTimeHelper::isValidTimeStamp($oldTime))
+								{
+									$convertedTime = blx()->db->createCommand("SELECT CONVERT_TZ(FROM_UNIXTIME({$oldTime}), '{$dbTimeZone}', '+00:00') AS timezone;")->queryRow();
+									$convertedTime = $convertedTime['timezone'];
 
-								blx()->db->createCommand("UPDATE `{$fullTableName}` SET `{$tempColumn}` = '{$convertedTime}' WHERE `id` = {$row['id']}")->execute();
+									blx()->db->createCommand("UPDATE `{$fullTableName}` SET `{$tempColumn}` = '{$convertedTime}' WHERE `id` = {$row['id']}")->execute();
+								}
 							}
 						}
 					}
