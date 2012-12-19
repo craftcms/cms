@@ -94,7 +94,7 @@ class m121218_222713_datetime_conversion extends \CDbMigration
 				// We found a "DateTime" column.
 				if (isset($config['type']) && $config['type'] == AttributeType::DateTime)
 				{
-					$tempColumn = $column.'_temp';
+					$tempColumn = $column.'_'.StringHelper::randomString(12);
 
 					$required = false;
 					if (isset($config['required']) && $config['required'] == true)
