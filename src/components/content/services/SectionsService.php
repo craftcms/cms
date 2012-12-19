@@ -118,7 +118,7 @@ class SectionsService extends BaseEntityService
 	 */
 	public function getSectionContentTableName(SectionModel $section)
 	{
-		return 'entrycontent_'.$section->handle;
+		return 'entrycontent_'.strtolower($section->handle);
 	}
 
 	/**
