@@ -98,7 +98,7 @@ class UrlHelper
 
 				$dateParam = blx()->resources->dateParam;
 				$timeModified = IOHelper::getLastTimeModified($realPath);
-				$params[$dateParam] = $timeModified;
+				$params[$dateParam] = $timeModified->getTimestamp();
 			}
 		}
 
