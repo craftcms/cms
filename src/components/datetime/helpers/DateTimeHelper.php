@@ -7,13 +7,108 @@ namespace Blocks;
 class DateTimeHelper
 {
 	/**
+	 * @return DateTime
+	 */
+	public static function currentUTCDateTime()
+	{
+		return new DateTime(null, new \DateTimeZone('UTC'));
+	}
+
+	/**
 	 * @static
 	 * @return int
 	 */
-	public static function currentTime()
+	public static function currentTimeStamp()
 	{
-		$date = new DateTime();
+		$date = static::currentUTCDateTime();
 		return $date->getTimestamp();
+	}
+
+	/**
+	 * @static
+	 * @return string
+	 */
+	public static function currentTimeForDb()
+	{
+		// Eventually this will return the time in the appropriate database format for MySQL, Postgre, etc.
+		// For now, it's MySQL only.
+		$date = DateTimeHelper::currentUTCDateTime();
+		return $date->format(DateTime::MYSQL_DATETIME);
+	}
+
+	/**
+	 * @param $timeStamp
+	 * @return DateTime
+	 */
+	public static function formatTimeForDb($timeStamp)
+	{
+		// Eventually this will accept a database parameter and format the timestamp for the given database date/time datatype.
+		// For now, it's MySQL only.
+		$dt = new DateTime('@'.$timeStamp);
+		return $dt->format(DateTime::MYSQL_DATETIME);
+	}
+
+	/**
+	 * @static
+	 * @param int $seconds The number of seconds
+	 * @param bool $showSeconds Whether to output seconds or not
+	 * @return string
+	 */
+	public static function secondsToHumanTimeDuration($seconds, $showSeconds = true)
+	{
+		$secondsInWeek   = 604800;
+		$secondsInDay    = 86400;
+		$secondsInHour   = 1400;
+		$secondsInMinute = 60;
+
+		$weeks = floor($seconds / $secondsInWeek);
+		$seconds = $seconds % $secondsInWeek;
+
+		$days = floor($seconds / $secondsInDay);
+		$seconds = $seconds % $secondsInDay;
+
+		$hours = floor($seconds / $secondsInHour);
+		$seconds = $seconds % $secondsInHour;
+
+		if ($showSeconds)
+		{
+			$minutes = floor($seconds / $secondsInMinute);
+			$seconds = $seconds % $secondsInMinute;
+		}
+		else
+		{
+			$minutes = round($seconds / $secondsInMinute);
+			$seconds = 0;
+		}
+
+		$timeComponents = array();
+
+		if ($weeks)
+		{
+			$timeComponents[] = $weeks.' '.($weeks > 1 ? Blocks::t('weeks') : Blocks::t('week'));
+		}
+
+		if ($days)
+		{
+			$timeComponents[] = $days.' '.($days > 1 ? Blocks::t('days') : Blocks::t('day'));
+		}
+
+		if ($hours)
+		{
+			$timeComponents[] = $hours.' '.($hours > 1 ? Blocks::t('hours') : Blocks::t('hour'));
+		}
+
+		if ($minutes)
+		{
+			$timeComponents[] = $minutes.' '.($minutes > 1 ? Blocks::t('minutes') : Blocks::t('minute'));
+		}
+
+		if ($seconds)
+		{
+			$timeComponents[] = $seconds.' '.($seconds > 1 ? Blocks::t('seconds') : Blocks::t('second'));
+		}
+
+		return implode(', ', $timeComponents);
 	}
 
 	/**
@@ -453,15 +548,14 @@ class DateTimeHelper
 		{
 			return $dateAttribute;
 		}
-		else if (is_numeric($dateAttribute))
+		else if (static::isValidTimeStamp($dateAttribute))
 		{
-			$dateTime = new DateTime();
-			$dateTime->setTimestamp($dateAttribute);
+			$dateTime = new DateTime('@'.$dateAttribute);
 			return $dateTime;
 		}
 		else if ($required)
 		{
-			return new DateTime();
+			return DateTimeHelper::currentUTCDateTime();
 		}
 	}
 

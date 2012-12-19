@@ -20,7 +20,7 @@ class MigrationsService extends BaseApplicationComponent
 	/**
 	 * @var string the name of the table for keeping applied migration information.
 	 * This table will be automatically created if not exists. Defaults to 'tbl_migration'.
-	 * The table structure is: (version varchar(255) primary key, apply_time integer)
+	 * The table structure is: (version varchar(255) primary key, integer)
 	 */
 	public $migrationTable = 'migrations';
 
@@ -41,7 +41,7 @@ class MigrationsService extends BaseApplicationComponent
 	 */
 	public function init()
 	{
-		$path= Blocks::getPathOfAlias($this->migrationPath);
+		$path = Blocks::getPathOfAlias($this->migrationPath);
 
 		if ($path === false || !IOHelper::folderExists($path))
 		{
@@ -152,9 +152,14 @@ class MigrationsService extends BaseApplicationComponent
 
 		if ($migration->up() !== false)
 		{
+			// We do this to because of migrating from int timestamps to native db date/time datatypes.
+			$table = blx()->db->schema->getTable("{{{$this->migrationTable}}}", true);
+			$column = $table->getColumn('apply_time');
+			$time = $column->dbType == ColumnType::DateTime ? DateTimeHelper::currentTimeForDb() : DateTimeHelper::currentTimeStamp();
+
 			$this->getDbConnection()->createCommand()->insert($this->migrationTable, array(
 				'version' => $class,
-				'apply_time' => time(),
+				'apply_time' => $time,
 			));
 
 			$time = microtime(true) - $start;
@@ -242,15 +247,15 @@ class MigrationsService extends BaseApplicationComponent
 		Blocks::log('Creating migration history table "'.$this->migrationTable.'"', \CLogger::LEVEL_INFO);
 
 		$db->createCommand()->createTable($this->migrationTable, array(
-			'version' => 'string NOT NULL',
-			'apply_time' => 'integer',
+			'version'    => array(AttributeType::String, 'column' => ColumnType::Varchar, 'maxLength' => 200, 'required' => true),
+			'apply_time' => array(AttributeType::DateTime, 'required' => true),
 		));
 
 		$db->createCommand()->createIndex("migration_version_unique_idx", $this->migrationTable, "version", true);
 
 		$db->createCommand()->insert($this->migrationTable, array(
 			'version' => static::BASE_MIGRATION,
-			'apply_time' => time(),
+			'apply_time' => DateTimeHelper::currentTimeForDb(),
 		));
 
 		Blocks::log('Created migration history table "'.$this->migrationTable.'"', \CLogger::LEVEL_INFO);

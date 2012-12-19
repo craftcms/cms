@@ -198,12 +198,13 @@ class AccountsController extends BaseController
 				throw new Exception(Blocks::t('Invalid verification code.'));
 			}
 
-			$user->newPassword = blx()->request->getRequiredPost('newPassword');
+			$newPassword = blx()->request->getRequiredPost('newPassword');
+			$user->newPassword = $newPassword;
 
 			if (blx()->accounts->changePassword($user))
 			{
 				// Log them in
-				blx()->user->login($user->username, $user->newPassword);
+				blx()->user->login($user->username, $newPassword);
 
 				blx()->user->setNotice(Blocks::t('Password updated.'));
 				$this->redirectToPostedUrl();

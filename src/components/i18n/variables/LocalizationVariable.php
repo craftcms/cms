@@ -37,7 +37,9 @@ class LocalizationVariable
 	{
 		// If no language is specified, default to the user's language
 		if (!$language)
+		{
 			$language = blx()->language;
+		}
 
 		$languageData = blx()->i18n->getLanguageData($language);
 		$localeName = $languageData->getLocaleDisplayName($locale);

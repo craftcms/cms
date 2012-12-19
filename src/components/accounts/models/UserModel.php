@@ -42,22 +42,13 @@ class UserModel extends BaseEntityModel
 			'emailFormat'                  => array(AttributeType::String, 'default' => 'text'),
 			'admin'                        => AttributeType::Bool,
 			'status'                       => AttributeType::Enum,
-			//'authSessionToken'           => AttributeType::String,
 			'lastLoginDate'                => AttributeType::DateTime,
-			//'lastLoginAttemptIPAddress'  => AttributeType::String,
-			//'invalidLoginWindowStart'    => AttributeType::DateTime,
 			'invalidLoginCount'            => AttributeType::Number,
 			'lastInvalidLoginDate'         => AttributeType::DateTime,
 			'lockoutDate'                  => AttributeType::DateTime,
-			//'verificationCode'           => AttributeType::String,
-			//'verificationCodeIssuedDate' => AttributeType::DateTime,
 			'passwordResetRequired'        => AttributeType::Bool,
 			'lastPasswordChangeDate'       => AttributeType::DateTime,
-			//'archivedUsername'           => AttributeType::String,
-			//'archivedEmail'              => AttributeType::Email,
-
 			'dateCreated'                  => AttributeType::DateTime,
-
 			'verificationRequired'         => AttributeType::Bool,
 			'newPassword'                  => AttributeType::String,
 		);
@@ -227,7 +218,7 @@ class UserModel extends BaseEntityModel
 	{
 		if ($this->status == UserStatus::Locked)
 		{
-			$currentTime = new DateTime();
+			$currentTime = DateTimeHelper::currentUTCDateTime();
 			$cooldownEnd = $this->getCooldownEndTime();
 
 			if ($currentTime < $cooldownEnd)

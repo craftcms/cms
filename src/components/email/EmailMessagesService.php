@@ -17,7 +17,7 @@ class EmailMessagesService extends BaseApplicationComponent
 		// Find any custom messages
 		if (!$language)
 		{
-			$language = blx()->language;
+			$language = Blocks::getLanguage();
 		}
 
 		$records = EmailMessageRecord::model()->findAllByAttributes(array(
@@ -80,7 +80,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	{
 		if (!$language)
 		{
-			$language = blx()->language;
+			$language = Blocks::getLanguage();
 		}
 
 		$message = new EmailMessageModel();
@@ -133,7 +133,7 @@ class EmailMessagesService extends BaseApplicationComponent
 	{
 		if (!$language)
 		{
-			$language = blx()->language;
+			$language = Blocks::getLanguage();
 		}
 
 		$record = EmailMessageRecord::model()->findByAttributes(array(

@@ -6,6 +6,8 @@ namespace Blocks;
  */
 class MigrateCommand extends \MigrateCommand
 {
+	private $_rootMigrationPath;
+
 	/**
 	 *
 	 */
@@ -61,15 +63,6 @@ EXAMPLES
    Shows the next 10 migrations that have not been applied.
 
 EOD;
-	}
-
-	/**
-	 * @param $class
-	 * @return bool|void
-	 */
-	protected function migrateDown($class)
-	{
-		die("Down migrations are not supported\n");
 	}
 
 	/**
@@ -146,7 +139,7 @@ EOD;
 	 */
 	protected function instantiateMigration($class)
 	{
-		$file = IOHelper::normalizePathSeparators($this->migrationPath.'/'.$class.'.php');
+		$file = IOHelper::normalizePathSeparators($this->_rootMigrationPath.'/'.$class.'.php');
 
 		require_once($file);
 
@@ -230,11 +223,11 @@ EOD;
 
 		if ($path === false || !IOHelper::folderExists($path))
 		{
-			echo 'Error: The migration directory does not exist: '.$this->migrationPath."\n";
+			echo 'Error: The migration directory does not exist: '.$this->_rootMigrationPath."\n";
 			exit(1);
 		}
 
-		$this->migrationPath = $path;
+		$this->_rootMigrationPath = $path;
 
 		$yiiVersion = Blocks::getYiiVersion();
 		echo "\nBlocks Migration Tool v1.0 (based on Yii v{$yiiVersion})\n\n";
@@ -273,12 +266,27 @@ EOD;
 
 		$name = 'm'.gmdate('ymd_His').'_'.$name;
 		$content = strtr($this->getTemplate(), array('{ClassName}' => $name));
-		$file = $this->migrationPath.DIRECTORY_SEPARATOR.$name.'.php';
+		$file = $this->_rootMigrationPath.DIRECTORY_SEPARATOR.$name.'.php';
 
 		if ($this->confirm("Create new migration '$file'?"))
 		{
 			IOHelper::writeToFile($file, $content);
 			echo "New migration created successfully.\n";
 		}
+	}
+
+	/**
+	 * @param $args
+	 * @return int|void
+	 */
+	public function actionUp($args)
+	{
+		if (blx()->migrations->runToTop())
+		{
+			echo "Success";
+		}
+
+		echo "There was a problem.";
+		return 1;
 	}
 }

@@ -23,8 +23,8 @@ class AssetsController extends BaseEntityController
 	public function actionUploadFile()
 	{
 		$this->requireAjaxRequest();
-		$folderId = blx()->request->getRequiredQuery('folder_id');
-		$userResponse = blx()->request->getPost('user_response');
+		$folderId = blx()->request->getRequiredQuery('folderId');
+		$userResponse = blx()->request->getPost('userResponse');
 
 		$output = blx()->assets->uploadFile($folderId, $userResponse);
 
@@ -37,9 +37,9 @@ class AssetsController extends BaseEntityController
 	public function actionViewFolder()
 	{
 		$this->requireAjaxRequest();
-		$folderId = blx()->request->getRequiredPost('folder_id');
-		$requestId = blx()->request->getPost('request_id', 0);
-		$viewType = blx()->request->getPost('view_type', 'thumbs');
+		$folderId = blx()->request->getRequiredPost('folderId');
+		$requestId = blx()->request->getPost('requestId', 0);
+		$viewType = blx()->request->getPost('viewType', 'thumbs');
 
 		$folder = blx()->assets->getFolderById($folderId);
 		$files = blx()->assets->getFilesByFolderId($folderId);
@@ -54,7 +54,22 @@ class AssetsController extends BaseEntityController
 		);
 
 		$this->returnJson(array(
-			'request_id' => $requestId,
+			'requestId' => $requestId,
+			'html' => $html
+		));
+	}
+
+	public function actionViewFile()
+	{
+		$requestId = blx()->request->getPost('requestId', 0);
+		$fileId = blx()->request->getRequiredPost('fileId');
+		$html = blx()->templates->render('assets/_views/file',
+			array(
+				'file' => blx()->assets->getFileById($fileId)
+			)
+		);
+		$this->returnJson(array(
+			'requestId' => $requestId,
 			'html' => $html
 		));
 	}

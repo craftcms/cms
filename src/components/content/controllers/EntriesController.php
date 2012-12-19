@@ -47,7 +47,7 @@ class EntriesController extends BaseEntityController
 		}
 		else
 		{
-			$entry->language = blx()->language;
+			$entry->language = Blocks::getLanguage();
 		}
 
 		if (blx()->entries->saveEntry($entry))

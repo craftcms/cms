@@ -251,7 +251,9 @@ class S3AssetSourceType extends BaseAssetSourceType
 
 			$targetPath = blx()->path->getAssetsImageSourcePath().$fileModel->id.'.'.pathinfo($fileModel->filename, PATHINFO_EXTENSION);
 
-			if ($fileModel->kind == 'image' && $fileModel->dateModified != $fileInfo['time'] || !IOHelper::fileExists($targetPath))
+			$timeModified = new DateTime('@'.$fileInfo['time']);
+
+			if ($fileModel->kind == 'image' && $fileModel->dateModified != $timeModified || !IOHelper::fileExists($targetPath))
 			{
 				$this->_s3->getObject($settings->bucket, $indexEntryModel->uri, $targetPath);
 				clearstatcache();
@@ -313,6 +315,7 @@ class S3AssetSourceType extends BaseAssetSourceType
 			}
 		}
 
+		clearstatcache();
 		$this->_prepareForRequests();
 		if (!$this->_s3->putObject(array('file' => $filePath), $this->getSettings()->bucket, $uriPath))
 		{

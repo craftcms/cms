@@ -51,13 +51,13 @@ class AccountsService extends BaseApplicationComponent
 	{
 		if ($code)
 		{
-			$date = new DateTime();
+			$date = DateTimeHelper::currentUTCDateTime();
 			$duration = new DateInterval(blx()->config->get('verificationCodeDuration'));
 			$date->sub($duration);
 
 			$userRecord = UserRecord::model()->find(
 				'verificationCode = :code and verificationCodeIssuedDate > :date',
-				array(':code' => $code, ':date' => $date->getTimestamp())
+				array(':code' => $code, ':date' => DateTimeHelper::formatTimeForDb($date->getTimestamp()))
 			);
 
 			if ($userRecord)
@@ -71,6 +71,7 @@ class AccountsService extends BaseApplicationComponent
 	 * Saves a user, or registers a new one.
 	 *
 	 * @param UserModel $user
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function saveUser(UserModel $user)
@@ -204,7 +205,7 @@ class AccountsService extends BaseApplicationComponent
 	private function _setVerificationCodeOnUserRecord(UserRecord $userRecord)
 	{
 		$userRecord->verificationCode = StringHelper::UUID();
-		$userRecord->verificationCodeIssuedDate = new DateTime();
+		$userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
 	}
 
 	/**
@@ -276,7 +277,7 @@ class AccountsService extends BaseApplicationComponent
 			$userRecord->verificationCode = null;
 			$userRecord->verificationCodeIssuedDate = null;
 			$userRecord->passwordResetRequired = $user->passwordResetRequired = false;
-			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentTime();
+			$userRecord->lastPasswordChangeDate = $user->lastPasswordChangeDate = DateTimeHelper::currentUTCDateTime();
 
 			$user->newPassword = null;
 
@@ -304,7 +305,7 @@ class AccountsService extends BaseApplicationComponent
 		$userRecord = $this->_getUserRecordById($user->id);
 
 		$userRecord->authSessionToken = $authSessionToken;
-		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentTime();
+		$userRecord->lastLoginDate = $user->lastLoginDate = DateTimeHelper::currentUTCDateTime();
 		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
 		$userRecord->invalidLoginWindowStart = null;
 		$userRecord->invalidLoginCount = $user->invalidLoginCount = null;
@@ -323,7 +324,7 @@ class AccountsService extends BaseApplicationComponent
 	public function handleInvalidLogin(UserModel $user)
 	{
 		$userRecord = $this->_getUserRecordById($user->id);
-		$currentTime = DateTimeHelper::currentTime();
+		$currentTime = DateTimeHelper::currentUTCDateTime();
 
 		$userRecord->lastInvalidLoginDate = $user->lastInvalidLoginDate = $currentTime;
 		$userRecord->lastLoginAttemptIPAddress = blx()->request->getUserHostAddress();
@@ -367,7 +368,7 @@ class AccountsService extends BaseApplicationComponent
 		{
 			$duration = new DateInterval(blx()->config->get('invalidLoginWindowDuration'));
 			$end = $userRecord->invalidLoginWindowStart->add($duration);
-			return ($end >= new DateTime());
+			return ($end >= DateTimeHelper::currentUTCDateTime());
 		}
 		else
 		{
@@ -388,6 +389,7 @@ class AccountsService extends BaseApplicationComponent
 		$userRecord->status = $user->status = UserStatus::Active;
 		$userRecord->verificationCode = null;
 		$userRecord->verificationCodeIssuedDate = null;
+		$userRecord->lockoutDate = null;
 
 		return $userRecord->save();
 	}

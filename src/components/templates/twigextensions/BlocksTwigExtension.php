@@ -53,6 +53,7 @@ class BlocksTwigExtension extends \Twig_Extension
 			'filter'     => new \Twig_Filter_Function('array_filter'),
 			'ucfirst'    => new \Twig_Filter_Function('ucfirst'),
 			'lcfirst'    => new \Twig_Filter_Function('lcfirst'),
+			'filesize'	 => new \Twig_Filter_Function('\Blocks\blx()->formatter->formatSize'),
 		);
 	}
 
@@ -115,7 +116,7 @@ class BlocksTwigExtension extends \Twig_Extension
 	public function getGlobals()
 	{
 		$globals['blx'] = new BlxVariable();
-		$globals['now'] = new DateTime();
+		$globals['now'] = DateTimeHelper::currentUTCDateTime();
 		$globals['loginUrl'] = UrlHelper::getUrl(blx()->config->get('loginPath'));
 		$globals['logoutUrl'] = UrlHelper::getUrl(blx()->config->get('logoutPath'));
 

@@ -326,7 +326,7 @@ class EntriesService extends BaseEntityService
 		foreach ($statuses as $status)
 		{
 			$status = strtolower($status);
-			$currentTime = DateTimeHelper::currentTime();
+			$currentTimeDb = DateTimeHelper::currentTimeForDb();
 
 			switch ($status)
 			{
@@ -334,8 +334,8 @@ class EntriesService extends BaseEntityService
 				{
 					$statusConditions[] = array('and',
 						'e.enabled = 1',
-						'e.postDate <= '.$currentTime,
-						array('or', 'e.expiryDate is null', 'e.expiryDate > '.$currentTime)
+						"e.postDate <= '{$currentTimeDb}'",
+						array('or', 'e.expiryDate is null', "e.expiryDate > '{$currentTimeDb}'")
 					);
 					break;
 				}
@@ -343,7 +343,7 @@ class EntriesService extends BaseEntityService
 				{
 					$statusConditions[] = array('and',
 						'e.enabled = 1',
-						'e.postDate > '.$currentTime
+						"e.postDate > '{$currentTimeDb}'"
 					);
 					break;
 				}
@@ -352,7 +352,7 @@ class EntriesService extends BaseEntityService
 					$statusConditions[] = array('and',
 						'e.enabled = 1',
 						'e.expiryDate is not null',
-						'e.expiryDate <= '.$currentTime
+						"e.expiryDate <= '{$currentTimeDb}'"
 					);
 					break;
 				}
@@ -381,6 +381,7 @@ class EntriesService extends BaseEntityService
 	 * Saves an entry.
 	 *
 	 * @param EntryModel $entry
+	 * @throws Exception
 	 * @return bool
 	 */
 	public function saveEntry(EntryModel $entry)
@@ -826,7 +827,7 @@ class EntriesService extends BaseEntityService
 	{
 		if (!$entry->language)
 		{
-			$entry->language = blx()->language;
+			$entry->language = Blocks::getLanguage();
 		}
 
 		if ($entry->id)
@@ -858,7 +859,7 @@ class EntriesService extends BaseEntityService
 	{
 		if (!$entry->language)
 		{
-			$entry->language = blx()->language;
+			$entry->language = Blocks::getLanguage();
 		}
 
 		if (Blocks::hasPackage(BlocksPackage::PublishPro))

@@ -405,7 +405,7 @@ class UsersController extends BaseEntityController
 
 		if (blx()->systemSettings->saveSettings('users', $settings))
 		{
-			blx()->user->setNotice(Blocks::t('Email settings saved.'));
+			blx()->user->setNotice(Blocks::t('User settings saved.'));
 			$this->redirectToPostedUrl();
 		}
 		else

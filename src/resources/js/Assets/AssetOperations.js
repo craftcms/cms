@@ -108,7 +108,7 @@
 
                             this.queue.addItem(Blocks.getActionUrl('assetOperations/performIndex'), params, function () {
                                 progress_bar.attr('current', parseInt(progress_bar.attr('current'), 10) + 1);
-                                progress_bar.html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
+                                progress_bar.find('>span').html(progress_bar.attr('current') + ' / ' + progress_bar.attr('total'));
                             });
                         }
 
@@ -191,7 +191,7 @@
                     this.modal.removeListener(Blocks.ui.Modal.$shade, 'click');
 
                     this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
-                        this.OperationManager.$sourceCheckboxes.filter(':checked').prop('checked', false).prop('disabled', false);
+                        this.OperationManager.releaseLock();
                         this.hide();
                     });
 

@@ -24,6 +24,7 @@ abstract class BaseCriteria
 	 *
 	 * @param string $name
 	 * @param array $arguments
+	 * @return BaseCriteria
 	 */
 	function __call($name, $arguments)
 	{

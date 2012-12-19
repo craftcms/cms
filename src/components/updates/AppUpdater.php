@@ -7,7 +7,6 @@ namespace Blocks;
 class AppUpdater implements IUpdater
 {
 	private $_buildsToUpdate;
-	private $_migrationsToRun = false;
 	private $_updateModel;
 	private $_downloadFilePath;
 	private $_unzipFolder;
@@ -115,23 +114,9 @@ class AppUpdater implements IUpdater
 			throw new Exception(Blocks::t('Blocks needs to be able to write to the follow files, but can’t: {files}', array('files' => implode('<br />', $this->_writableErrors))));
 		}
 
-		// Check to see if there any migrations to run.
-		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
-		$this->gatherMigrations();
-
 		// Take the site offline.
 		Blocks::log('Taking the site offline for update.', \CLogger::LEVEL_INFO);
 		blx()->updates->turnSystemOffBeforeUpdate();
-
-		// If there are migrations to run, run them.
-		if ($this->_migrationsToRun === true)
-		{
-			Blocks::log('Starting to run update migrations.', \CLogger::LEVEL_INFO);
-			if (!$this->doDatabaseUpdate())
-			{
-				throw new Exception(Blocks::t('There was a problem updating your database.'));
-			}
-		}
 
 		// Backup any files about to be updated.
 		Blocks::log('Backing up files that are about to be updated.', \CLogger::LEVEL_INFO);
@@ -145,6 +130,19 @@ class AppUpdater implements IUpdater
 		if (!UpdateHelper::doFileUpdate($this->_getManifestData(), $this->_unzipFolder))
 		{
 			throw new Exception(Blocks::t('There was a problem updating your files.'));
+		}
+
+		// Check to see if there any migrations to run.
+		Blocks::log('Checking to see if there are any migrations to run in the update.', \CLogger::LEVEL_INFO);
+
+				// If there are migrations to run, run them.
+		if ($this->migrationsToRun())
+		{
+			Blocks::log('Starting to run update migrations.', \CLogger::LEVEL_INFO);
+			if (!$this->doDatabaseUpdate())
+			{
+				throw new Exception(Blocks::t('There was a problem updating your database.'));
+			}
 		}
 
 		// Bring the system back online.
@@ -206,7 +204,7 @@ class AppUpdater implements IUpdater
 	 *
 	 * @return mixed
 	 */
-	public function gatherMigrations()
+	public function migrationsToRun()
 	{
 		$manifestData = $this->_getManifestData();
 
@@ -218,10 +216,11 @@ class AppUpdater implements IUpdater
 			if (UpdateHelper::isManifestMigrationLine($row[0]) && $row[1] == PatchManifestFileAction::Add)
 			{
 				Blocks::log('Found migration file: '.$row[0], \CLogger::LEVEL_INFO);
-				UpdateHelper::copyMigrationFile($this->_unzipFolder.'/app/'.$row[0]);
-				$this->_migrationsToRun = true;
+				return true;
 			}
 		}
+
+		return false;
 	}
 
 	/**

@@ -35,9 +35,9 @@ abstract class BaseRecord extends \CActiveRecord
 	{
 		ModelHelper::populateAttributeDefaults($this);
 
-		$this->attachEventHandler('onAfterFind', array($this, 'propAttributesForUse'));
+		$this->attachEventHandler('onAfterFind', array($this, 'prepAttributesForUse'));
 		$this->attachEventHandler('onBeforeSave', array($this, 'prepAttributesForSave'));
-		$this->attachEventHandler('onAfterSave', array($this, 'propAttributesForUse'));
+		$this->attachEventHandler('onAfterSave', array($this, 'prepAttributesForUse'));
 	}
 
 	/**
@@ -85,7 +85,11 @@ abstract class BaseRecord extends \CActiveRecord
 	 */
 	public function prepAttributesForSave()
 	{
-		foreach ($this->defineAttributes() as $name => $config)
+		$attributes = $this->defineAttributes();
+		$attributes['dateUpdated'] = array('0' => AttributeType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array('0' => AttributeType::DateTime, 'required' => true);
+
+		foreach ($attributes as $name => $config)
 		{
 			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
@@ -96,12 +100,12 @@ abstract class BaseRecord extends \CActiveRecord
 		// Populate dateCreated and uid if this is a new record
 		if ($this->isNewRecord())
 		{
-			$this->dateCreated = DateTimeHelper::currentTime();
+			$this->dateCreated = DateTimeHelper::currentTimeForDb();
 			$this->uid = StringHelper::UUID();
 		}
 
 		// Update the dateUpdated
-		$this->dateUpdated = DateTimeHelper::currentTime();
+		$this->dateUpdated = DateTimeHelper::currentTimeForDb();
 	}
 
 	/**
@@ -109,9 +113,13 @@ abstract class BaseRecord extends \CActiveRecord
 	 *
 	 * @return null
 	 */
-	public function propAttributesForUse()
+	public function prepAttributesForUse()
 	{
-		foreach ($this->defineAttributes() as $name => $config)
+		$attributes = $this->defineAttributes();
+		$attributes['dateUpdated'] = array('0' => AttributeType::DateTime, 'required' => true);
+		$attributes['dateCreated'] = array('0' => AttributeType::DateTime, 'required' => true);
+
+		foreach ($attributes as $name => $config)
 		{
 			$config = ModelHelper::normalizeAttributeConfig($config);
 			$value = $this->getAttribute($name);
@@ -122,8 +130,16 @@ abstract class BaseRecord extends \CActiveRecord
 				{
 					if ($value)
 					{
-						$dateTime = new DateTime();
-						$dateTime->setTimestamp($value);
+						if (DateTimeHelper::isValidTimeStamp($value))
+						{
+							$dateTime = new DateTime('@'.$value);
+						}
+						else
+						{
+							// TODO: MySQL specific.
+							$dateTime = DateTime::createFromFormat(DateTime::MYSQL_DATETIME, $value);
+						}
+
 						$this->setAttribute($name, $dateTime);
 					}
 					break;
@@ -444,5 +460,44 @@ abstract class BaseRecord extends \CActiveRecord
 		return new \CActiveDataProvider($this, array(
 			'criteria' => $criteria
 		));
+	}
+
+	/**
+	 * Sets the named attribute value.
+	 * You may also use $this->AttributeName to set the attribute value.
+	 *
+	 * @param string $name the attribute name
+	 * @param mixed $value the attribute value.
+	 * @return boolean whether the attribute exists and the assignment is conducted successfully
+	 * @see hasAttribute
+	 */
+	public function setAttribute($name, $value)
+	{
+		// If value is valid timestamp and the underlying column type is datetime, convert to datetime object
+		if (DateTimeHelper::isValidTimeStamp($value))
+		{
+			$table = blx()->db->schema->getTable("{{{$this->getTableName()}}}");
+			$column = $table->getColumn($name);
+			if ($column->dbType == ColumnType::DateTime)
+			{
+				$dt = new DateTime('@'.$value);
+				$value = $dt;
+			}
+		}
+
+		if (property_exists($this, $name))
+		{
+			$this->$name = $value;
+		}
+		else if (isset($this->getMetaData()->columns[$name]))
+		{
+			$this->_attributes[$name] = $value;
+		}
+		else
+		{
+			return false;
+		}
+
+		return true;
 	}
 }

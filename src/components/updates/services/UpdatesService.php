@@ -173,7 +173,7 @@ class UpdatesService extends BaseApplicationComponent
 	{
 		Blocks::log('Flushing update info from cache.', \CLogger::LEVEL_INFO);
 
-		if (blx()->fileCache->delete('updateinfo'))
+		if (IOHelper::clearFolder(blx()->path->getCompiledTemplatesPath()) && IOHelper::clearFolder(blx()->path->getCachePath()))
 		{
 			return true;
 		}
@@ -210,6 +210,21 @@ class UpdatesService extends BaseApplicationComponent
 		$appUpdater = new AppUpdater();
 
 		if ($appUpdater->start())
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function doDatabaseUpdate()
+	{
+		$appUpdater = new AppUpdater(false);
+
+		if ($appUpdater->doDatabaseUpdate())
 		{
 			return true;
 		}
