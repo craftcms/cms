@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  * The class name is the UTC timestamp in the format of mYYMMDD_HHMMSS_migrationName
  */
-class m121204_222713_datetime_conversion extends \CDbMigration
+class m121218_222713_datetime_conversion extends \CDbMigration
 {
 	/**
 	 * Any migration code in here is wrapped inside of a transaction.
@@ -13,6 +13,8 @@ class m121204_222713_datetime_conversion extends \CDbMigration
 	 */
 	public function safeUp()
 	{
+		ini_set('memory_limit', '64M');
+
 		// Find all record classes
 		$records = blx()->install->findInstallableRecords();
 
