@@ -12,14 +12,27 @@ class AppUpdater implements IUpdater
 	private $_unzipFolder;
 	private $_manifestData;
 	private $_writableErrors = null;
+	private $_dbBackupPath;
+	private $_backupDb;
 
 	/**
 	 *
 	 */
-	function __construct()
+	function __construct($forceCheck = true, $backupDb = true)
 	{
-		$this->_updateModel = blx()->updates->getUpdates(true);
-		$this->_buildsToUpdate = $this->_updateModel->blocks->releases;
+		if ($forceCheck)
+		{
+			$this->_updateModel = blx()->updates->getUpdates(true);
+
+			if (!empty($this->_updateModel->errors))
+			{
+				throw new Exception(implode(',', $this->_updateModel->errors));
+			}
+
+			$this->_buildsToUpdate = $this->_updateModel->blocks->releases;
+		}
+
+		$this->_backupDb = $backupDb;
 	}
 
 	/**
@@ -138,9 +151,18 @@ class AppUpdater implements IUpdater
 				// If there are migrations to run, run them.
 		if ($this->migrationsToRun())
 		{
-			Blocks::log('Starting to run update migrations.', \CLogger::LEVEL_INFO);
-			if (!$this->doDatabaseUpdate())
+			try
 			{
+				Blocks::log('Starting to run update migrations.', \CLogger::LEVEL_INFO);
+				if (!$this->doDatabaseUpdate())
+				{
+					UpdateHelper::rollBackFileChanges($this->_getManifestData());
+					throw new Exception(Blocks::t('There was a problem updating your database.'));
+				}
+			}
+			catch (\Exception $e)
+			{
+				UpdateHelper::rollBackFileChanges($this->_getManifestData());
 				throw new Exception(Blocks::t('There was a problem updating your database.'));
 			}
 		}
@@ -224,15 +246,41 @@ class AppUpdater implements IUpdater
 	}
 
 	/**
-	 * Run the database migrations to top.
+	 * Run the database migrations to top.  Will optionally backup the database before running migrations.
 	 *
+	 * @throws \Exception
 	 * @return bool
 	 */
 	public function doDatabaseUpdate()
 	{
-		if (blx()->migrations->runToTop())
+		try
 		{
-			return true;
+			if ($this->_backupDb)
+			{
+				$dbBackup = new DbBackup();
+				$this->_dbBackupPath = $dbBackup->run();
+			}
+
+			if (blx()->migrations->runToTop())
+			{
+				return true;
+			}
+		}
+		catch(\Exception $e)
+		{
+			// We had migrations to run and something went wrong. Let's try to restore the backup database.
+			if ($this->_backupDb)
+			{
+				UpdateHelper::rollBackDatabaseChanges($this->_dbBackupPath);
+			}
+
+			throw $e;
+		}
+
+		// We had migrations to run and something went wrong. Let's try to restore the backup database.
+		if ($this->_backupDb)
+		{
+			UpdateHelper::rollBackDatabaseChanges($this->_dbBackupPath);
 		}
 
 		return false;

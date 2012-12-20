@@ -35,6 +35,15 @@ class UpdateHelper
 	}
 
 	/**
+	 * @param $backupPath
+	 */
+	public static function rollBackDatabaseChanges($backupPath)
+	{
+		$dbBackup = new DbBackup();
+		$dbBackup->restore($backupPath);
+	}
+
+	/**
 	 * @static
 	 *
 	 * @param $manifestData

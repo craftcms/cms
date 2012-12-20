@@ -49,8 +49,17 @@ class DbBackup
 
 		foreach ($sql as $statement)
 		{
+			$statement = trim($statement);
+
+			if (empty($statement) || strpos($statement, '-- ') !== false)
+			{
+				continue;
+			}
+
+			$statement .= ';';
+
 			Blocks::log('Executing SQL statement: '.$statement, \CLogger::LEVEL_INFO);
-			$test = blx()->db->createCommand($sql)->queryAll();
+			$result = blx()->db->createCommand($statement)->query();
 		}
 	}
 
