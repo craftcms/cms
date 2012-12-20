@@ -25,7 +25,10 @@
 
                 <ul class="assets-sources">
                     {% for source in sources %}
-                        <li><a href="javascript:;" data-source="{{ source.id }}" data-folder="{{ blx.assets.getFolderBySourceId(source.id).id }}">{{ source.name }}</a></li>
+                        {% set folder = blx.assets.getFolderBySourceId(source.id) %}
+                        {% if folder %}
+                            <li><a href="javascript:;" data-source="{{ source.id }}" data-folder="{{ folder.id }}">{{ source.name }}</a></li>
+                        {% endif %}
                     {% endfor %}
                 </ul>
             </nav>
