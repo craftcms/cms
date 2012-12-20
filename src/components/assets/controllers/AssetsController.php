@@ -74,7 +74,9 @@ class AssetsController extends BaseEntityController
 		);
 		$this->returnJson(array(
 			'requestId' => $requestId,
-			'html' => $html
+			'headHtml' => blx()->templates->getHeadNodes(),
+			'bodyHtml' => $html,
+			'footHtml' => blx()->templates->getFootNodes(),
 		));
 	}
 

@@ -251,7 +251,9 @@ var b;
                         this.modal = new Blocks.ui.Modal();
                     }
 
-                    $modalContainerDiv.empty().append(data.html);
+                    $modalContainerDiv.empty().append(data.headHtml);
+                    $modalContainerDiv.append(data.bodyHtml);
+                    $modalContainerDiv.append(data.footHtml);
                     this.modal.setContainer($modalContainerDiv);
 
                     this.modal.show();
