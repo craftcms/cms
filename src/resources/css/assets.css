@@ -3,6 +3,8 @@
 #main .toolbar .btngroup { float: right; }
 #main .toolbar .search { margin-right: 86px; }
 
+#main .files .open-file{ -webkit-touch-callout: none; -webkit-user-select: none; -khtml-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;}
+
 /*-- thumbs --*/
 #main .files.thumbs ul { margin: -25px 0 0 -15px; }
 #main .files.thumbs ul:after { content: '.'; display: block; height: 0; clear: both; visibility: hidden; }

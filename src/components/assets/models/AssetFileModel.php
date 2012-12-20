@@ -4,7 +4,7 @@ namespace Blocks;
 /**
  *
  */
-class AssetFileModel extends BaseModel
+class AssetFileModel extends BaseEntityModel
 {
 
 	/**
@@ -71,4 +71,28 @@ class AssetFileModel extends BaseModel
 		return UrlHelper::getResourceUrl('assets/' . $this->id . '/' . $size);
 
 	}
+
+	/**
+	 * Gets the blocks.
+	 *
+	 * @access protected
+	 * @return array
+	 */
+	protected function getBlocks()
+	{
+		return blx()->assets->getAllBlocks();
+	}
+
+	/**
+	 * Gets the content.
+	 *
+	 * @access protected
+	 * @return AssetContentRecord
+	 */
+	protected function getContent()
+	{
+		return blx()->assets->getFileContentRecordByFileId($this->id);
+	}
+
+
 }

@@ -16,7 +16,7 @@
             secret: $('.s3-secret-key').val()
         };
 
-        $.post(Blocks.actionUrl + 'assetSources/getS3Buckets', params, $.proxy(function (response) {
+        $.post(Blocks.actionUrl + '/assetSources/getS3Buckets', params, $.proxy(function (response) {
             $(this).removeClass('disabled');
             if (response.error)
             {

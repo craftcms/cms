@@ -3,6 +3,7 @@ namespace Blocks;
 
 /**
  * Handles asset tasks
+ * TODO: Permissions?
  */
 class AssetsController extends BaseEntityController
 {
@@ -59,6 +60,9 @@ class AssetsController extends BaseEntityController
 		));
 	}
 
+	/**
+	 * View a file's block content.
+	 */
 	public function actionViewFile()
 	{
 		$requestId = blx()->request->getPost('requestId', 0);
@@ -72,5 +76,21 @@ class AssetsController extends BaseEntityController
 			'requestId' => $requestId,
 			'html' => $html
 		));
+	}
+
+	/**
+	 * Save a file's block content
+	 */
+	public function actionSaveFile()
+	{
+		$this->requireLogin();
+		$this->requireAjaxRequest();
+		$file = blx()->assets->getFileById(blx()->request->getRequiredPost('fileId'));
+
+		if ($file) {
+			$file->setContent(blx()->request->getPost('blocks'));
+			blx()->assets->storeFileBlocks($file);
+			$this->returnJson(array('success' => true));
+		}
 	}
 }

@@ -1,15 +1,18 @@
+
 var b;
 (function($) {
 
-// define the Assets global
-if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
+    var $modalContainerDiv = null;
+
+    // define the Assets global
+    if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 
 
-});
+    });
 
-// -------------------------------------------
-//  File Manager classes
-// -------------------------------------------
+    // -------------------------------------------
+    //  File Manager classes
+    // -------------------------------------------
 
     /**
      * File Manager.
@@ -44,6 +47,7 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
             this.$uploadProgress = $('> .assets-fm-uploadprogress', this.$manager);
             this.$uploadProgressBar = $('.assets-fm-pb-bar', this.$uploadProgress);
 
+            this.modal = null;
 
             this.sort = 'asc';
 
@@ -216,7 +220,62 @@ if (typeof window.Assets == 'undefined') window.Assets = Blocks.Base.extend({
 
                 this.$spinner.hide();
 
+                this.applyBindings();
+
             }, this));
+        },
+
+        applyBindings: function () {
+
+            // Make ourselves available
+            var _this = this;
+            this.$folderContainer.find('.open-file').dblclick(function () {
+                _this.$spinner.show();
+                var params = {
+                    requestId: ++_this.requestId,
+                    fileId: $(this).attr('data-file')
+                };
+
+                Blocks.postActionRequest('assets/viewFile', params, $.proxy(function(data, textStatus) {
+                    if (data.requestId != this.requestId) {
+                        return;
+                    }
+
+                    this.$spinner.hide();
+
+                    if ($modalContainerDiv == null) {
+                        $modalContainerDiv = $('<div class="modal view-file"></div>').addClass().appendTo(Blocks.$body);
+                    }
+
+                    if (this.modal == null) {
+                        this.modal = new Blocks.ui.Modal();
+                    }
+
+                    $modalContainerDiv.empty().append(data.html);
+                    this.modal.setContainer($modalContainerDiv);
+
+                    this.modal.show();
+
+                    this.modal.addListener(Blocks.ui.Modal.$shade, 'click', function () {
+                        this.hide();
+                    });
+
+                    this.modal.addListener(this.modal.$container.find('.btn.cancel'), 'click', function () {
+                        this.hide();
+                    });
+
+                    this.modal.addListener(this.modal.$container.find('.btn.submit'), 'click', function () {
+                        this.removeListener(Blocks.ui.Modal.$shade, 'click');
+
+                        var params = $('form#file-blocks').serialize();
+
+                        Blocks.postActionRequest('assets/saveFile', params, $.proxy(function(data, textStatus) {
+                            this.hide();
+                        }, this));
+                    });
+
+                }, _this));
+            });
         },
 
         /**

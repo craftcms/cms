@@ -179,6 +179,27 @@ class AssetsService extends BaseEntityService
 	}
 
 	/**
+	 * Gets a file's content record by its file ID.
+	 *
+	 * @param int $fileId
+	 * @return AssetContentRecord
+	 */
+	public function getFileContentRecordByFileId($fileId)
+	{
+		$contentRecord = AssetContentRecord::model()->findByAttributes(array(
+			'fileId' => $fileId
+		));
+
+		if (!$contentRecord)
+		{
+			$contentRecord = new AssetContentRecord();
+			$contentRecord->fileId = $fileId;
+		}
+
+		return $contentRecord;
+	}
+
+	/**
 	 * Gets the total number of files.
 	 *
 	 * @param FileCriteria|null $criteria
@@ -274,6 +295,54 @@ class AssetsService extends BaseEntityService
 		$record->save();
 
 		return $record->id;
+	}
+
+	/**
+	 * Store block's contents for a file.
+	 *
+	 * @param AssetFileModel $file
+	 * @return bool
+	 */
+	public function storeFileBlocks(AssetFileModel $file)
+	{
+
+		$contentRecord = $this->getFileContentRecordByFileId($file->id);
+
+		// Populate the blocks' content
+		$blocks = $this->getAllBlocks();
+		$blockTypes = array();
+
+		foreach ($blocks as $block)
+		{
+			$blockType = blx()->blockTypes->populateBlockType($block);
+			$blockType->entity = $file;
+
+			if ($blockType->defineContentAttribute() !== false)
+			{
+				$handle = $block->handle;
+				$contentRecord->$handle = $blockType->getPostData();
+			}
+
+			// Keep the block type instance around for calling onAfterEntitySave()
+			$blockTypes[] = $blockType;
+		}
+
+		if ($contentRecord->save())
+		{
+			// Give the block types a chance to do any post-processing
+			foreach ($blockTypes as $blockType)
+			{
+				$blockType->onAfterEntitySave();
+			}
+
+			return true;
+		}
+		else
+		{
+			$contentRecord->addErrors($contentRecord->getErrors());
+
+			return false;
+		}
 	}
 
 	// -------------------------------------------

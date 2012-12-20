@@ -127,6 +127,7 @@ class AssetSourcesService extends BaseApplicationComponent
 				$source->id = $sourceRecord->id;
 			}
 
+			blx()->assetIndexing->ensureTopFolder($source);
 			return true;
 		}
 		else

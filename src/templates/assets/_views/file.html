@@ -1,4 +1,14 @@
-{% include "_includes/blockfields" with {
-    blocks: blx.assetBlockos.getAllBlocks,
-    entity: file
-} only %}
+<header class="header"><h1>{{ "Editing data for "|t }}{{ file.filename }}</h1></header>
+<form id="file-blocks">
+    <input type="hidden" name="fileId" value="{{ file.id }}" />
+    {% include "_includes/blockfields" with {
+        blocks: blx.assets.getAllBlocks,
+        entity: file
+    } only %}
+</form>
+<footer class="footer">
+    <ul class="right">
+        <li><input type="button" class="btn cancel" value="{{ 'Cancel'|t }}"></li>
+        <li><input type="submit" class="btn submit" value="{{ 'Save'|t }}"></li>
+    </ul>
+</footer>
