@@ -204,16 +204,10 @@ class Blocks extends \Yii
 	public static function turnSystemOn()
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
-		$blocksInfo = InfoRecord::model()->find();
-
-		if ($blocksInfo)
+		// Not using Active Record here to prevent issues with turning the site on/off during a migration
+		if (blx()->db->createCommand()->update('info', array('on' => 1)) > 0)
 		{
-			$blocksInfo->on = true;
-
-			if ($blocksInfo->save())
-			{
-				return true;
-			}
+			return true;
 		}
 
 		return false;
@@ -228,16 +222,10 @@ class Blocks extends \Yii
 	public static function turnSystemOff()
 	{
 		// Don't use the the static property $_storedBlocksInfo.  We want the latest info possible.
-		$blocksInfo = InfoRecord::model()->find();
-
-		if ($blocksInfo)
+		// Not using Active Record here to prevent issues with turning the site on/off during a migration
+		if (blx()->db->createCommand()->update('info', array('on' => 0)) > 0)
 		{
-			$blocksInfo->on = false;
-
-			if ($blocksInfo->save())
-			{
-				return true;
-			}
+			return true;
 		}
 
 		return false;
